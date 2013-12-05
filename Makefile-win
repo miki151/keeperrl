@@ -13,7 +13,7 @@ ifndef OPTFLAGS
 endif
 
 OBJDIR = obj
-NAME = zagadka
+NAME = keeper
 
 ROOT = ./
 TOROOT = ./../
