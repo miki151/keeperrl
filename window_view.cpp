@@ -148,6 +148,7 @@ Tile getTile(const ViewObject& obj) {
     case ViewId::VULTURE: return Tile('v', darkGray);
     case ViewId::BODY_PART: return Tile('%', red);
     case ViewId::BONE: return Tile('%', white);
+    case ViewId::MOUNTAIN_BUSH:
     case ViewId::BUSH: return Tile('&', darkGreen);
     case ViewId::DECID_TREE: return Tile(0x1f70d, darkGreen, true);
     case ViewId::CANIF_TREE: return Tile(0x2663, darkGreen, true);
