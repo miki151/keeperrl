@@ -144,6 +144,27 @@ void Player::itemsMessage() {
 
 ItemType typeDisplayOrder[] { ItemType::WEAPON, ItemType::RANGED_WEAPON, ItemType::AMMO, ItemType::ARMOR, ItemType::POTION, ItemType::SCROLL, ItemType::FOOD, ItemType::BOOK, ItemType::AMULET, ItemType::TOOL, ItemType::CORPSE, ItemType::OTHER, ItemType::GOLD };
 
+static string getText(ItemType type) {
+  switch (type) {
+    case ItemType::WEAPON: return "Weapons";
+    case ItemType::RANGED_WEAPON: return "Ranged weapons";
+    case ItemType::AMMO: return "Projectiles";
+    case ItemType::AMULET: return "Amulets";
+    case ItemType::ARMOR: return "Armor";
+    case ItemType::SCROLL: return "Scrolls";
+    case ItemType::POTION: return "Potions";
+    case ItemType::FOOD: return "Comestibles";
+    case ItemType::BOOK: return "Books";
+    case ItemType::TOOL: return "Tools";
+    case ItemType::CORPSE: return "Corpses";
+    case ItemType::OTHER: return "Other";
+    case ItemType::GOLD: return "Gold";
+  }
+  Debug(FATAL) << int(type);
+  return "";
+}
+
+
 vector<Item*> Player::chooseItem(const string& text, function<bool (Item*)> predicate, bool onlyDisplay, Optional<string> otherOption) {
   map<ItemType, vector<Item*> > typeGroups = groupBy<Item*, ItemType>(
       creature->getEquipment().getItems(predicate), [](Item* const& item) { return item->getType();});
@@ -151,7 +172,7 @@ vector<Item*> Player::chooseItem(const string& text, function<bool (Item*)> pred
   vector<vector<Item*> > groups;
   for (auto elem : typeDisplayOrder) 
     if (typeGroups[elem].size() > 0) {
-      names.push_back(View::getTitlePrefix(Item::getText(elem)));
+      names.push_back(View::getTitlePrefix(getText(elem)));
       getItemNames(typeGroups[elem], names, groups);
     }
   if (onlyDisplay) {

@@ -874,8 +874,8 @@ class Roads : public LevelMaker {
       return ShortestPath::infinity;
     SquareType type = builder->getType(pos);
     if (type == SquareType::PATH)
-      return 0.1;
-    return pow(1 + builder->getHeightMap(pos), 2);
+      return 1;
+    return 1 + pow(1 + builder->getHeightMap(pos), 2);
   }
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
@@ -1272,7 +1272,7 @@ LevelMaker* LevelMaker::towerLevel(Optional<StairKey> down, Optional<StairKey> u
 LevelMaker* LevelMaker::topLevel(
     CreatureFactory forrestCreatures,
     CreatureFactory villageCreatures,
-    Location* villageLocation,
+    vector<Location*> villageLocation,
     CreatureFactory cementaryCreatures,
     CreatureFactory goblins,
     CreatureFactory pyramidCreatures) {
@@ -1288,10 +1288,12 @@ LevelMaker* LevelMaker::topLevel(
     subSizes.emplace_back(Random.getRandom(60, 120), Random.getRandom(60, 120));
     subMakers.push_back(lake);
   }
-  MakerQueue* elvenVillage = village(villageCreatures, villageLocation);
-  elvenVillage->addMaker(new StartingPos(SquareType::GRASS));
-  subMakers.push_back(elvenVillage);
-  subSizes.emplace_back(30, 20);
+  for (Location* loc : villageLocation) {
+    MakerQueue* elvenVillage = village(villageCreatures, loc);
+    elvenVillage->addMaker(new StartingPos(SquareType::GRASS));
+    subMakers.push_back(elvenVillage);
+    subSizes.emplace_back(30, 20);
+  }
   for (int i : Range(Random.getRandom(3))) {
     subMakers.push_back(banditCamp());
     subSizes.emplace_back(12,8);
@@ -1411,7 +1413,7 @@ LevelMaker* LevelMaker::pyramidLevel(CreatureFactory cfactory, vector<StairKey> 
   for (StairKey key : up)
     queue->addMaker(new Stairs(StairDirection::UP, key, SquareType::FLOOR));
   if (down.size() == 0)
-    queue->addMaker(new LevelExit(SquareType::PATH));
+    queue->addMaker(new LevelExit(SquareType::PATH, SquareAttrib::CONNECT));
   else
     queue->addMaker(new Creatures(cfactory, 3, 5, MonsterAIFactory::monster()));
   queue->addMaker(new Connector({5, 3, 0}));
@@ -1424,20 +1426,14 @@ LevelMaker* LevelMaker::collectiveLevel(vector<StairKey> up, vector<StairKey> do
   queue->addMaker(underground());
   vector<LevelMaker*> makers;
   vector<pair<int, int>> sizes;
-  for (StairKey key : up) {
-    MakerQueue* area = new MakerQueue();
-    area->addMaker(new Blob(SquareType::PATH));
-    area->addMaker(new Stairs(StairDirection::UP, key, SquareType::PATH));
-    makers.push_back(area);
-    sizes.emplace_back(10, 10);
-  }
-  for (StairKey key : down) {
-    MakerQueue* area = new MakerQueue();
-    area->addMaker(new Blob(SquareType::PATH));
+  MakerQueue* area = new MakerQueue();
+  area->addMaker(new Blob(SquareType::PATH));
+  for (StairKey key : down)
     area->addMaker(new Stairs(StairDirection::DOWN, key, SquareType::PATH));
-    makers.push_back(area);
-    sizes.emplace_back(10, 10);
-  }
+  for (StairKey key : up)
+    area->addMaker(new Stairs(StairDirection::UP, key, SquareType::PATH));
+  makers.push_back(area);
+  sizes.emplace_back(10, 10);
   MakerQueue* startPos = new MakerQueue();
   startPos->addMaker(new Blob(SquareType::PATH));
   startPos->addMaker(new StartingPos(SquareType::PATH));

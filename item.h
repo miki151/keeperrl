@@ -46,7 +46,6 @@ class Item : private ItemAttributes {
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;
-  static string getText(ItemType type);
   void addModifier(AttrType attributeType, int value);
   int getModifier(AttrType attributeType) const;
 

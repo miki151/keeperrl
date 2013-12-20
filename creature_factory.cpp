@@ -604,7 +604,7 @@ CreatureFactory CreatureFactory::elvenVillage() {
 CreatureFactory CreatureFactory::forrest() {
   return CreatureFactory(Tribe::wildlife,
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR, CreatureId::LEPRECHAUN },
-      { 2, 1, 1, 3}, {});
+      { 2, 1, 1, 1}, {});
 }
 
 CreatureFactory CreatureFactory::crypt() {

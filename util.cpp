@@ -155,6 +155,13 @@ vector<Vec2> Vec2::corners() {
   return { Vec2(1, 1), Vec2(1, -1), Vec2(-1, -1), Vec2(-1, 1)};
 }
 
+vector<Vec2> Rectangle::getAllSquares() {
+  vector<Vec2> ret;
+  for (Vec2 v : (*this))
+    ret.push_back(v);
+  return ret;
+}
+
 bool Vec2::inRectangle(int px, int py, int kx, int ky) const {
   return x >= px && x < kx && y >= py && y < ky;
 }

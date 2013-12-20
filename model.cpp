@@ -73,7 +73,7 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker, bool surface) {
 Model::Model(View* v) : view(v) {
 }
 
-Level* Model::prepareTopLevel(Location* villageLocation) {
+Level* Model::prepareTopLevel(vector<Location*> villageLocation) {
   Level* top = buildLevel(
       Level::Builder(600, 600, "Wilderness"),
       LevelMaker::topLevel(
@@ -99,9 +99,18 @@ Level* Model::prepareTopLevel(Location* villageLocation) {
   return top;
 }
 
+static const int numVillages = 3;
+
+vector<Location*> getVillageLocations() {
+  vector<Location*> ret;
+  for (int i : Range(numVillages))
+    ret.push_back(new Location(NameGenerator::townNames.getNext(), ""));
+  return ret;
+}
+
 Model* Model::heroModel(View* view, const string& heroName) {
   Model* m = new Model(view);
-  Level* top = m->prepareTopLevel(new Location("village of " + NameGenerator::townNames.getNext(), ""));
+  Level* top = m->prepareTopLevel(getVillageLocations());
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(1), {StairKey::DWARF}, {StairKey::DWARF}));
@@ -169,8 +178,8 @@ Model* Model::heroModel(View* view, const string& heroName) {
 Model* Model::collectiveModel(View* view, int numCreatures) {
   Model* m = new Model(view);
   CreatureFactory factory = CreatureFactory::collectiveStart();
-  Location* villageLocation = new Location("village of " + NameGenerator::townNames.getNext(), "");
-  Level* top = m->prepareTopLevel(villageLocation);
+  vector<Location*> villageLocations = getVillageLocations();
+  Level* top = m->prepareTopLevel(villageLocations);
   Level* second = m->buildLevel(
           Level::Builder(60, 35, "Dungeons of doom "),
           LevelMaker::roomLevel(CreatureFactory::level(3), {StairKey::DWARF}, {StairKey::DWARF}));
@@ -193,28 +202,34 @@ Model* Model::collectiveModel(View* view, int numCreatures) {
     m->collective->addCreature(c.get());
     m->addCreature(std::move(c));
   }
-  VillageControl* control = VillageControl::humanVillage(m->collective, villageLocation,
-      StairDirection::DOWN, StairKey::DWARF);
-  CreatureFactory firstAttack = CreatureFactory::collectiveEnemies();
-  CreatureFactory lastAttack = CreatureFactory::collectiveFinalAttack();
-  vector<pair<int, int>> heroAttackTime {
-      { 100, Random.getRandom(2, 5) },
-      { 200, Random.getRandom(4, 8) },
-      { 300, Random.getRandom(12, 18) }};
-  for (int i : All(heroAttackTime)) {
-    CreatureFactory& factory = (i == heroAttackTime.size() - 1 ? lastAttack : firstAttack);
-    for (int k : Range(heroAttackTime[i].second)) {
-      PCreature c = factory.random(MonsterAIFactory::villageControl(control, villageLocation));
-      control->addCreature(c.get(), heroAttackTime[i].first);
-      top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(c));
+  vector<tuple<int, int, int>> heroAttackTime {
+      { make_tuple(800, 2, 4) },
+      { make_tuple(1400, 4, 7) },
+      { make_tuple(2000, 12, 18) }};
+  for (Location* loc : villageLocations) {
+    VillageControl* control = VillageControl::humanVillage(m->collective, loc,
+        StairDirection::DOWN, StairKey::DWARF);
+    CreatureFactory firstAttack = CreatureFactory::collectiveEnemies();
+    CreatureFactory lastAttack = CreatureFactory::collectiveFinalAttack();
+    for (int i : All(heroAttackTime)) {
+      int attackTime = get<0>(heroAttackTime[i]) + Random.getRandom(-200, 200);
+      int heroCount = Random.getRandom(get<1>(heroAttackTime[i]), get<2>(heroAttackTime[i]));
+      CreatureFactory& factory = (i == heroAttackTime.size() - 1 ? lastAttack : firstAttack);
+      for (int k : Range(heroCount)) {
+        PCreature c = factory.random(MonsterAIFactory::villageControl(control, loc));
+        control->addCreature(c.get(), attackTime);
+        top->landCreature(loc->getBounds().getAllSquares(), std::move(c));
+      }
     }
   }
   VillageControl* dwarfControl = VillageControl::dwarfVillage(m->collective, l, StairDirection::UP, StairKey::DWARF);
   for (int i : All(heroAttackTime)) {
     CreatureFactory factory = CreatureFactory::singleType(Tribe::dwarven, CreatureId::DWARF);
-    for (int k : Range(heroAttackTime[i].second)) {
+    int attackTime = get<0>(heroAttackTime[i]) + Random.getRandom(-200, 200);
+    int heroCount = Random.getRandom(get<1>(heroAttackTime[i]), get<2>(heroAttackTime[i]));
+    for (int k : Range(heroCount)) {
       PCreature c = factory.random(MonsterAIFactory::villageControl(dwarfControl, nullptr));
-      dwarfControl->addCreature(c.get(), heroAttackTime[i].first);
+      dwarfControl->addCreature(c.get(), attackTime);
       dwarf->landCreature(StairDirection::UP, StairKey::DWARF, std::move(c));
     }
   }

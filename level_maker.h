@@ -15,7 +15,7 @@ class LevelMaker {
   static LevelMaker* topLevel(
       CreatureFactory forrest,
       CreatureFactory village,
-      Location* villageLocation,
+      vector<Location*> villageLocation,
       CreatureFactory cementaryCreatures,
       CreatureFactory goblins,
       CreatureFactory pyramid);

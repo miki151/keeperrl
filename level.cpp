@@ -86,6 +86,12 @@ Vec2 Level::landCreature(StairDirection direction, StairKey key, PCreature creat
   return pos;
 }
 
+Vec2 Level::landCreature(vector<Vec2> landing, PCreature creature) {
+  Vec2 pos = landCreature(landing, creature.get());
+  model->addCreature(std::move(creature));
+  return pos;
+}
+
 Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
   CHECK(creature);
   if (entryMessage != "") {

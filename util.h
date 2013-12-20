@@ -117,6 +117,7 @@ class Rectangle {
 
   Vec2 randomVec2() const;
   Vec2 middle() const;
+  vector<Vec2> getAllSquares();
 
   class Iter {
     public:

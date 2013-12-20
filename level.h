@@ -47,6 +47,7 @@ class Level {
 
   /** Lands the creature on the level randomly choosing one of the given squares.
       Returns the position of the stairs that were used.*/
+  Vec2 landCreature(vector<Vec2> landing, PCreature creature);
   Vec2 landCreature(vector<Vec2> landing, Creature* creature);
 
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */

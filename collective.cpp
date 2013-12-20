@@ -1,9 +1,10 @@
 #include "stdafx.h"
 
-enum Warning { NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_HATCHERY, NO_TRAINING };
+enum Warning { NO_CONNECTION, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_HATCHERY, NO_TRAINING };
 static const int numWarnings = 6;
 static bool warning[numWarnings] = {0};
 static string warningText[] {
+  "You need to connect to the stairs to attract minions.",
   "You need to build a treasure room.",
   "You need a larger treasure room.",
   "You need a lair for your minions.",
@@ -459,6 +460,7 @@ void Collective::tick() {
     addCreature(c.get());
     level->landCreature(StairDirection::DOWN, StairKey::DWARF, std::move(c));
   }
+  warning[NO_CONNECTION] = !isDownstairsVisible();
   warning[NO_BEDS] = mySquares[SquareType::BED].size() == 0 && !minions.empty();
   warning[MORE_BEDS] = mySquares[SquareType::BED].size() < minions.size() - vampires.size();
   warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && !minions.empty();

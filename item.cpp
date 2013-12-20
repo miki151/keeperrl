@@ -143,24 +143,6 @@ const ViewObject& Item::getViewObject() const {
   return viewObject;
 }
 
-string Item::getText(ItemType type) {
-  map<ItemType, string> m {
-      { ItemType::WEAPON,"Weapons" },
-      { ItemType::RANGED_WEAPON,"Ranged weapons" },
-      { ItemType::AMMO,"Projectiles" },
-      { ItemType::AMULET,"Amulets" },
-      { ItemType::ARMOR,"Armor" },
-      { ItemType::SCROLL,"Scrolls" },
-      { ItemType::POTION,"Potions" },
-      { ItemType::FOOD,"Comestibles" },
-      { ItemType::BOOK,"Books" },
-      { ItemType::TOOL,"Tools" },
-      { ItemType::CORPSE,"Corpses" },
-      { ItemType::OTHER,"Other" },
-      { ItemType::GOLD,"Gold" }};
-  TRY(return m.at(type), "Unknown type");
-}
-
 ItemType Item::getType() const {
   return *type;
 }
@@ -234,7 +216,7 @@ void Item::setName(const string& n) {
 }
 
 string Item::getName(bool plural, bool blind) const {
-  string suff = uses && displayUses && inspected ? string(" (") + convertToString(*uses) + ")" : "";
+  string suff = uses && displayUses && inspected ? string(" (") + convertToString(*uses) + " uses left)" : "";
   if (fire.isBurning())
     suff.append(" (burning)");
   if (unpaid)
