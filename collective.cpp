@@ -340,7 +340,8 @@ void Collective::processInput(View* view) {
           return;
         switch (buildInfo[currentButton].buildType) {
           case BuildInfo::IMP:
-              if (numGold() >= getImpCost()) {
+              if (numGold() >= getImpCost() && selection == NONE) {
+                selection = SELECT;
                 PCreature imp = CreatureFactory::fromId(CreatureId::IMP, Tribe::player,
                     MonsterAIFactory::collective(this));
                 for (Vec2 v : pos.neighbors8(true))
@@ -510,14 +511,19 @@ void Collective::tick() {
       }
       if (mySquares[SquareType::GRAVE].count(pos) && Random.roll(200) && 
           vampires.size() < mySquares[SquareType::GRAVE].size() && minions.size() < minionLimit) {
-        PCreature vampire = undeadFactory.random(MonsterAIFactory::collective(this));
-        for (Vec2 v : pos.neighbors8(true))
-          if (level->getSquare(v)->canEnter(vampire.get())) {
-            level->getSquare(pos)->removeItems(corpses);
-            vampires.push_back(vampire.get());
-            addCreature(vampire.get());
-            level->addCreature(v, std::move(vampire));
-            break;
+        for (Item* it : corpses)
+          if (it->getCorpseInfo()->canBeRevived) {
+            PCreature vampire = undeadFactory.random(MonsterAIFactory::collective(this));
+            for (Vec2 v : pos.neighbors8(true))
+              if (level->getSquare(v)->canEnter(vampire.get())) {
+                level->getSquare(pos)->removeItems({it});
+                vampires.push_back(vampire.get());
+                addCreature(vampire.get());
+                level->addCreature(v, std::move(vampire));
+                break;
+              }
+            if (!vampire)
+              break;
           }
       }
     }

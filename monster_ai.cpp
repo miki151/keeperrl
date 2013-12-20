@@ -505,16 +505,41 @@ class GuardSquare : public GuardTarget {
   Vec2 pos;
 };
 
-class GuardCreature : public GuardTarget {
+class GuardCreature : public GuardTarget, public EventListener {
   public:
-  GuardCreature(Creature* c, Creature* _target, double minDist, double maxDist) : GuardTarget(c, minDist, maxDist), target(_target) {}
+  GuardCreature(Creature* c, Creature* _target, double minDist, double maxDist) 
+      : GuardTarget(c, minDist, maxDist), target(_target) {
+    EventListener::addListener(this);
+  }
 
+  ~GuardCreature() {
+    EventListener::removeListener(this);
+  }
+
+  virtual void onChangeLevelEvent(const Creature* c, const Level* from,
+      Vec2 pos, const Level* to, Vec2 toPos) override {
+    if (c == target)
+      levelChanges[from] = pos;
+  }
   virtual MoveInfo getMove() override {
-    return getMoveTowards(target->getPosition());
+    if (target->isDead())
+      return NoMove;
+    if (target->getLevel() == creature->getLevel())
+      return getMoveTowards(target->getPosition());
+    if (!levelChanges.count(creature->getLevel()))
+      return NoMove;
+    Vec2 stairs = levelChanges.at(creature->getLevel());
+    if (stairs == creature->getPosition() && creature->getSquare()->getApplyType(creature))
+      return {1.0, [=] {
+        creature->applySquare();
+      }};
+    else
+      return getMoveTowards(stairs);
   }
 
   private:
   Creature* target;
+  map<const Level*, Vec2> levelChanges;
 };
 
 class Thief : public Behaviour {

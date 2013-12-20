@@ -1113,7 +1113,7 @@ class Circle : public LevelMaker {
   ItemId item;
 };
 
-LevelMaker* underground() {
+static LevelMaker* underground(bool monsters) {
   MakerQueue* queue = new MakerQueue();
   if (Random.roll(1)) {
     LevelMaker* cavern = new Blob(SquareType::PATH);
@@ -1142,18 +1142,21 @@ LevelMaker* underground() {
           queue->addMaker(new RandomLocations(
           vector<LevelMaker*>(numLakes, new Blob(lakeType, Nothing(), SquareAttrib::LAKE)),
           sizes, new AlwaysTrue(), false));
- /*         Deity* deity = Deity::getDeity(
-              (lakeType == SquareType::MAGMA) ? DeityHabitat::FIRE : DeityHabitat::WATER);
-          queue->addMaker(new Shrine(deity, lakeType,
-              new TypePredicate(lakeType), SquareType::ROCK_WALL, nullptr));
-          if (lakeType == SquareType::WATER) {
-            queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::monster, CreatureId::KRAKEN), 1, 2,
-                  MonsterAIFactory::monster(), SquareType::WATER));
+          if (monsters) {
+            Deity* deity = Deity::getDeity(
+                (lakeType == SquareType::MAGMA) ? DeityHabitat::FIRE : DeityHabitat::WATER);
+            queue->addMaker(new Shrine(deity, lakeType,
+                  new TypePredicate(lakeType), SquareType::ROCK_WALL, nullptr));
+            if (lakeType == SquareType::WATER) {
+              queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::monster, CreatureId::KRAKEN), 1, 2,
+                    MonsterAIFactory::monster(), SquareType::WATER));
+            }
+            if (lakeType == SquareType::MAGMA) {
+              queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::monster,
+                    CreatureId::FIRE_SPHERE), 1, 4,
+                    MonsterAIFactory::monster(), SquareType::MAGMA));
+            }
           }
-          if (lakeType == SquareType::MAGMA) {
-            queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::monster, CreatureId::FIRE_SPHERE), 1, 4,
-                  MonsterAIFactory::monster(), SquareType::MAGMA));
-          }*/
           break;
           }
     default: break;
@@ -1168,7 +1171,7 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up,
       { SquareType::TORTURE_TABLE, make_pair(2, 3)}};
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareType::BLACK_WALL));
-  queue->addMaker(underground());
+  queue->addMaker(underground(true));
   queue->addMaker(new RoomMaker(8, 15, 4, 7, SquareType::ROCK_WALL, SquareType::BLACK_WALL));
   queue->addMaker(new Connector({5, 3, 0}));
   if (Random.roll(2)) {
@@ -1278,7 +1281,7 @@ LevelMaker* LevelMaker::topLevel(
     CreatureFactory pyramidCreatures) {
   MakerQueue* queue = new MakerQueue();
   vector<SquareType> vegetationLow { SquareType::CANIF_TREE, SquareType::BUSH };
-  vector<SquareType> vegetationHigh { SquareType::DECID_TREE, SquareType::BUSH };
+  vector<SquareType> vegetationHigh { SquareType::DECID_TREE, SquareType::MOUNTAIN_BUSH };
   vector<double> probs { 2, 1 };
   LevelMaker* lake = makeLake();
   int numLakes = 1;//Random.getRandom(1, 2);
@@ -1423,7 +1426,7 @@ LevelMaker* LevelMaker::pyramidLevel(CreatureFactory cfactory, vector<StairKey> 
 LevelMaker* LevelMaker::collectiveLevel(vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareType::ROCK_WALL));
-  queue->addMaker(underground());
+  queue->addMaker(underground(false));
   vector<LevelMaker*> makers;
   vector<pair<int, int>> sizes;
   MakerQueue* area = new MakerQueue();

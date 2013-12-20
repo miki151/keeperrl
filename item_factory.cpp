@@ -99,7 +99,8 @@ class AmuletOfEnemyCheck : public Item {
 
 class Corpse : public Item {
   public:
-  Corpse(const ViewObject& obj, const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN, double rottingT) : 
+  Corpse(const ViewObject& obj, const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN, 
+        double rottingT, Item::CorpseInfo info) : 
       Item(obj, attr), 
       object2(obj2), 
       rottingTime(rottingT), 
@@ -128,20 +129,26 @@ class Corpse : public Item {
     }
   }
 
+  virtual Optional<CorpseInfo> getCorpseInfo() const override { 
+    return corpseInfo;
+  }
+
   private:
   ViewObject object2;
   bool rotten = false;
   double rottenTime = -1;
   double rottingTime;
   string rottenName;
+  CorpseInfo corpseInfo;
 };
 
-PItem ItemFactory::corpse(CreatureId id, ItemType type) {
+PItem ItemFactory::corpse(CreatureId id, ItemType type, Item::CorpseInfo corpseInfo) {
   PCreature c = CreatureFactory::fromId(id, Tribe::monster);
-  return corpse(c->getName() + " corpse", c->getName() + " skeleton", c->getWeight());
+  return corpse(c->getName() + " corpse", c->getName() + " skeleton", c->getWeight(), type, corpseInfo);
 }
 
-PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemType type) {
+PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemType type,
+    Item::CorpseInfo corpseInfo) {
   const double rotTime = 300;
   return PItem(new Corpse(
         ViewObject(ViewId::BODY_PART, ViewLayer::ITEM, name),
@@ -151,7 +158,8 @@ PItem ItemFactory::corpse(const string& name, const string& rottenName, double w
           i.type = type;
           i.weight = weight;),
         rottenName,
-        rotTime));
+        rotTime,
+        corpseInfo));
 }
 
 class Potion : public Item {

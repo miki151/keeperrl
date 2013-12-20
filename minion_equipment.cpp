@@ -3,14 +3,18 @@
 Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
   if (it->getType() == ItemType::WEAPON)
     return MinionEquipment::WEAPON;
+  if (it->getType() == ItemType::RANGED_WEAPON)
+    return MinionEquipment::BOW;
+  if (it->getType() == ItemType::AMMO)
+    return MinionEquipment::ARROW;
   if (it->getType() == ItemType::ARMOR) {
     if (it->getEquipmentSlot() == EquipmentSlot::BODY_ARMOR)
       return MinionEquipment::BODY_ARMOR;
     if (it->getEquipmentSlot() == EquipmentSlot::HELMET)
       return MinionEquipment::HELMET;
   }
-  if (it->getType() == ItemType::TOOL && it->getEffectType() == EffectType::HEAL)
-    return MinionEquipment::FIRST_AID_KIT;
+  if (it->getEffectType() == EffectType::HEAL)
+    return MinionEquipment::HEALING;
   return Nothing();
 }
 
@@ -20,8 +24,9 @@ bool MinionEquipment::isItemUseful(const Item* it) {
 
 bool MinionEquipment::needs(const Creature* c, const Item* it) {
   EquipmentType type = *getEquipmentType(it);
-  return (!equipmentMap.count(make_pair(c, type)) &&
-      (c->canEquip(it) || (type == MinionEquipment::FIRST_AID_KIT && !c->isUndead() &&
+  return (type == ARROW && c->getEquipment().getItems(Item::typePredicate(ItemType::AMMO)).size() < 20) ||
+      (!equipmentMap.count(make_pair(c, type)) &&
+      (c->canEquip(it) || (type == HEALING && !c->isUndead() &&
           c->getEquipment().getItems(Item::effectPredicate(EffectType::HEAL)).empty())));
 }
 

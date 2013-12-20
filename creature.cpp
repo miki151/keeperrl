@@ -845,7 +845,7 @@ void Creature::injureHead(bool drop) {
     ++injuredHeads;
   if (drop)
     getSquare()->dropItem(ItemFactory::corpse(*name +" head", *name + " skull", *weight / 12,
-          isFood ? ItemType::FOOD : ItemType::CORPSE));
+          isFood ? ItemType::FOOD : ItemType::CORPSE, {false}));
 }
 
 void Creature::attack(const Creature* c1) {
@@ -1187,7 +1187,7 @@ void Creature::take(PItem item) {
 
 void Creature::dropCorpse() {
   getSquare()->dropItem(ItemFactory::corpse(*name + " corpse", *name + " skeleton", *weight,
-        isFood ? ItemType::FOOD : ItemType::CORPSE));
+        isFood ? ItemType::FOOD : ItemType::CORPSE, {true}));
 }
 
 void Creature::die(const Creature* attacker, bool dropInventory) {
@@ -1250,7 +1250,7 @@ void Creature::fire(Vec2 direction) {
 
 void Creature::squash(Vec2 direction) {
   if (canDestroy(direction))
-    destroy(direction);
+    getSquare(direction)->destroy(getAttr(AttrType::STRENGTH));
   Creature* c = getSquare(direction)->getCreature();
   if (c) {
     c->you(MsgType::KILLED_BY, getTheName());

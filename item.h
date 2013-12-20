@@ -83,6 +83,12 @@ class Item : private ItemAttributes {
 
   static map<string, vector<Item*>> stackItems(vector<Item*>);
 
+  struct CorpseInfo {
+    bool canBeRevived;
+  };
+
+  virtual Optional<CorpseInfo> getCorpseInfo() const { return Nothing(); }
+
   protected:
   virtual void specialTick(double time, Level*, Vec2 position) {}
   void setName(const string& name);
