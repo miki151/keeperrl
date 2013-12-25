@@ -862,7 +862,7 @@ void Creature::injureHead(bool drop) {
           isFood ? ItemType::FOOD : ItemType::CORPSE, {false}));
 }
 
-void Creature::attack(const Creature* c1) {
+void Creature::attack(const Creature* c1, bool spend) {
   Creature* c = const_cast<Creature*>(c1);
   int toHitVariance = 9;
   int attackVariance = 6;
@@ -902,7 +902,8 @@ void Creature::attack(const Creature* c1) {
   }
   else
     you(MsgType::MISS_ATTACK, enemyName);
-  spendTime(1);
+  if (spend)
+    spendTime(1);
 }
 
 bool Creature::dodgeAttack(Attack attack) {

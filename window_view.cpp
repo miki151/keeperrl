@@ -620,10 +620,11 @@ void WindowView::initialize() {
   tileFont.loadFromFile("coolvetica rg.ttf");
   symbolFont.loadFromFile("Symbola.ttf");
 
-  normalLayout = MapLayout::gridLayout(screenWidth, screenHeight, 36, 36, -20, 0, 225, 0, 1, allLayers);
+  Vec2 size = (getTile == getSpriteTile ? Vec2(36, 36) : Vec2(16, 20));
+  normalLayout = MapLayout::gridLayout(screenWidth, screenHeight, size.x, size.y, -20, 0, 225, 0, 1, allLayers);
   tppLayout = MapLayout::tppLayout(screenWidth, screenHeight, 18, 18, 0, 30, 220, 85);
-  unzoomLayout = MapLayout::gridLayout(screenWidth, screenHeight, 18, 18, 0, 30, 220, 85, 1,
-      {ViewLayer::FLOOR, ViewLayer::CREATURE});
+  unzoomLayout = MapLayout::gridLayout(screenWidth, screenHeight, size.x / 2, size.y / 2, 0, 30, 220, 85, 1,
+      {ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE});
   worldLayout = MapLayout::worldLayout(screenWidth, screenHeight, 0, 80, 220, 75);
   allLayouts.push_back(normalLayout);
   allLayouts.push_back(tppLayout);
@@ -1152,67 +1153,74 @@ bool tileConnects(ViewId id, Vec2 pos) {
 
 
 void WindowView::drawObjectAbs(int x, int y, const ViewIndex& index, int sizeX, int sizeY, Vec2 tilePos, bool mem) {
-  for (ViewLayer layer : mapLayout->getLayers())
-    if (index.hasObject(layer)) {
-      ViewObject object = index.getObject(layer);
-      if (object.isPlayer()) {
-          drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
-//          int w = 1;
-//          drawFilledRectangle(x + w, y + w, x + sizeX - w, y + sizeY - w, black);
-        }
-      Tile tile = getTile(object);
-      Optional<Color> color;
-      if (mem)
-        color = Color(200, 200, 200);
-      else
-        color = getBleedingColor(object);
-      if (object.isInvisible() || tile.translucent) {
-        if (color)
-          color = transparency(*color, 70);
-        else
-          color = Color(255, 255, 255, 70);
-      }
-      if (tile.hasSpriteCoord()) {
-        int moveY = 0;
-        int off = (nominalSize -  tileSize[tile.getTexNum()]) / 2;
-        int sz = tileSize[tile.getTexNum()];
-        int width = mapLayout->squareWidth(Vec2(x, y)) - 2 * off;
-        int height = mapLayout->squareHeight(Vec2(x, y)) - 2 * off;
-        set<Dir> dirs;
-        for (Vec2 dir : getConnectionDirs(object.id()))
-          if (tileConnects(object.id(), tilePos + dir))
-            dirs.insert(dir.getCardinalDir());
-        Vec2 coord = tile.getSpriteCoord(dirs);
-
-        if (object.layer() == ViewLayer::CREATURE) {
-          drawSprite(x, y, 2 * nominalSize, 22 * nominalSize, nominalSize, nominalSize, tiles[0], width, height);
-          moveY = -4 - object.getSizeIncrease() / 2;
-        }
-        if (tile.background) {
-          Vec2 bgCoord = tile.background->getSpriteCoord();
-          drawSprite(x + off, y + moveY + off, bgCoord.x * sz,
-              bgCoord.y * sz, sz, sz, tiles[tile.background->getTexNum()], width, height, color);
-          drawSprite(x, y, nominalSize, 22 * nominalSize, nominalSize, nominalSize, tiles[0], width, height);
-          if (object.layer() == ViewLayer::FLOOR && shadowed.count(tilePos))
-            drawSprite(x, y, 1 * nominalSize, 21 * nominalSize, nominalSize, nominalSize, tiles[5], width, height);
-        }
-        drawSprite(x + off, y + moveY + off, coord.x * sz,
-            coord.y * sz, sz, sz, tiles[tile.getTexNum()], width, height, color);
-        if (object.layer() == ViewLayer::FLOOR && shadowed.count(tilePos) && !tile.background)
-          drawSprite(x, y, 1 * nominalSize, 21 * nominalSize, nominalSize, nominalSize, tiles[5], width, height);
-      } else {
-        drawText(tile.symFont ? symbolFont : tileFont, sizeY + object.getSizeIncrease(), getColor(object),
-            x + sizeX / 2, y - 3 - object.getSizeIncrease(), tile.text, true);
-        if (object.getBurning() > 0) {
-          drawText(symbolFont, sizeY, getFireColor(),
-              x + sizeX / 2, y + sizeY - 3, L'ѡ', true);
-          if (object.getBurning() > 0.5)
-            drawText(symbolFont, sizeY, getFireColor(),
-                x + sizeX / 2, y + sizeY - 3, L'Ѡ', true);
-        }
-      }
-
+  vector<ViewObject> objects;
+  if (getTile == getSpriteTile) {
+    for (ViewLayer layer : mapLayout->getLayers())
+      if (index.hasObject(layer))
+        objects.push_back(index.getObject(layer));
+  } else
+    if (auto object = index.getTopObject(mapLayout->getLayers()))
+      objects.push_back(*object);
+  for (ViewObject& object : objects) {
+    if (object.isPlayer()) {
+      drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
     }
+    Tile tile = getTile(object);
+    Optional<Color> color;
+    if (mem)
+      color = Color(200, 200, 200);
+    else
+      color = getBleedingColor(object);
+    if (object.isInvisible() || tile.translucent) {
+      if (color)
+        color = transparency(*color, 70);
+      else
+        color = Color(255, 255, 255, 70);
+    }
+    if (tile.hasSpriteCoord()) {
+      int moveY = 0;
+      int off = (nominalSize -  tileSize[tile.getTexNum()]) / 2;
+      int sz = tileSize[tile.getTexNum()];
+      int width = mapLayout->squareWidth(Vec2(x, y)) - 2 * off;
+      int height = mapLayout->squareHeight(Vec2(x, y)) - 2 * off;
+      set<Dir> dirs;
+      for (Vec2 dir : getConnectionDirs(object.id()))
+        if (tileConnects(object.id(), tilePos + dir))
+          dirs.insert(dir.getCardinalDir());
+      Vec2 coord = tile.getSpriteCoord(dirs);
+
+      if (object.layer() == ViewLayer::CREATURE) {
+        drawSprite(x, y, 2 * nominalSize, 22 * nominalSize, nominalSize, nominalSize, tiles[0], width, height);
+        moveY = -4 - object.getSizeIncrease() / 2;
+      }
+      if (tile.background) {
+        Vec2 bgCoord = tile.background->getSpriteCoord();
+        drawSprite(x + off, y + moveY + off, bgCoord.x * sz,
+            bgCoord.y * sz, sz, sz, tiles[tile.background->getTexNum()], width, height, color);
+        drawSprite(x, y, nominalSize, 22 * nominalSize, nominalSize, nominalSize, tiles[0], width, height);
+        if (object.layer() == ViewLayer::FLOOR && shadowed.count(tilePos))
+          drawSprite(x, y, 1 * nominalSize, 21 * nominalSize, nominalSize, nominalSize, tiles[5], width, height);
+      }
+      drawSprite(x + off, y + moveY + off, coord.x * sz,
+          coord.y * sz, sz, sz, tiles[tile.getTexNum()], width, height, color);
+      if (object.layer() == ViewLayer::FLOOR && shadowed.count(tilePos) && !tile.background)
+        drawSprite(x, y, 1 * nominalSize, 21 * nominalSize, nominalSize, nominalSize, tiles[5], width, height);
+      if (object.getBurning() > 0) {
+        drawSprite(x, y, Random.getRandom(10, 12) * nominalSize, 0 * nominalSize,
+            nominalSize, nominalSize, tiles[2], width, height);
+      }
+    } else {
+      drawText(tile.symFont ? symbolFont : tileFont, sizeY + object.getSizeIncrease(), getColor(object),
+          x + sizeX / 2, y - 3 - object.getSizeIncrease(), tile.text, true);
+      if (object.getBurning() > 0) {
+        drawText(symbolFont, sizeY, getFireColor(),
+            x + sizeX / 2, y + sizeY - 3, L'ѡ', true);
+        if (object.getBurning() > 0.5)
+          drawText(symbolFont, sizeY, getFireColor(),
+              x + sizeX / 2, y + sizeY - 3, L'Ѡ', true);
+      }
+    }
+  }
   if (auto highlight = index.getHighlight())
     drawFilledRectangle(x, y, x + sizeX, y + sizeY, getHighlightColor(*highlight));
 }

@@ -350,7 +350,7 @@ void Collective::processInput(View* view) {
                     MonsterAIFactory::collective(this));
                 for (Vec2 v : pos.neighbors8(true))
                   if (v.inRectangle(level->getBounds()) && level->getSquare(v)->canEnter(imp.get()) 
-                      && memory[level].hasViewIndex(v)) {
+                      && canSee(v)) {
                     takeGold(getImpCost());
                     addCreature(imp.get());
                     level->addCreature(v, std::move(imp));
@@ -383,7 +383,8 @@ void Collective::processInput(View* view) {
                 if (diggingSquare || selection != NONE) {
                   if (!marked.count(pos) && selection != DESELECT && diggingSquare && 
                       numGold() >= info.cost && 
-                      (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos))) {
+                      (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) &&
+                      (info.type == SquareType::FLOOR || canSee(pos))) {
                     markSquare(pos, info);
                     selection = SELECT;
                     takeGold(info.cost);

@@ -132,6 +132,7 @@ void Square::tick(double time) {
     if (fire.isBurntOut()) {
       level->globalMessage(position, "The " + getName() + " burns out");
       burnOut();
+      return;
     }
     if (creature)
       creature->setOnFire(fire.getSize());

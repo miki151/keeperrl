@@ -21,7 +21,7 @@ ViewObject ViewIndex::getObject(ViewLayer l) const {
   TRY(return objects.at(l), "no object on layer " << (int)l);
 }
 
-Optional<ViewObject> ViewIndex::getTopObject(vector<ViewLayer> layers) {
+Optional<ViewObject> ViewIndex::getTopObject(vector<ViewLayer> layers) const {
   for (auto it = allLayers.rbegin(); it != allLayers.rend(); ++it)
     if (contains(layers, *it) && hasObject(*it))
       return getObject(*it);

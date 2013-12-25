@@ -9,7 +9,7 @@ class ViewIndex {
   bool hasObject(ViewLayer) const;
   void removeObject(ViewLayer);
   ViewObject getObject(ViewLayer) const;
-  Optional<ViewObject> getTopObject(vector<ViewLayer>);
+  Optional<ViewObject> getTopObject(vector<ViewLayer>) const;
   bool isEmpty() const;
 
   void setHighlight(HighlightType, double amount = 1);
