@@ -127,25 +127,20 @@ class Water : public Square {
 
 class Chest : public Square {
   public:
-  Chest(const ViewObject& object, const string& name, CreatureId id, int minC, int maxC,
+  Chest(const ViewObject& object, const ViewObject& opened, const string& name, CreatureId id, int minC, int maxC,
         const string& _msgItem, const string& _msgMonster, const string& _msgGold,
         ItemFactory _itemFactory) : 
-      Square(object, name, true, true, 30, 0.5), creatureId(id), minCreatures(minC), maxCreatures(maxC), msgItem(_msgItem), msgMonster(_msgMonster), msgGold(_msgGold), itemFactory(_itemFactory) {}
+      Square(object, name, true, true, 30, 0.5), creatureId(id), minCreatures(minC), maxCreatures(maxC), msgItem(_msgItem), msgMonster(_msgMonster), msgGold(_msgGold), itemFactory(_itemFactory), openedObject(opened) {}
 
   virtual void onEnterSpecial(Creature* c) override {
-    c->privateMessage("There is a " + string(isBurnt() ? "burnt " : destroyed ? "destroyed " : opened ? " opened " : "") + getName() + " here");
+    c->privateMessage(string("There is a ") + (opened ? " opened " : "") + getName() + " here");
   }
 
   virtual bool canDestroy() const override {
     return true;
   }
 
-  virtual void destroy(int strength) override {
-    if (destroyed)
-      return;
-    destroyed = true;
-    setViewObject(ViewObject(ViewId::DESTROYED_FURNITURE, ViewLayer::FLOOR, string("Destroyed ") + getName()));
-    getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
+  virtual void onConstructNewSquare(Square* s) override {
     if (opened)
       return;
     vector<PItem> item;
@@ -155,26 +150,11 @@ class Chest : public Square {
       for (int i : Range(Random.getRandom(minCreatures, maxCreatures)))
         item.push_back(ItemFactory::corpse(creatureId));
     }
-    dropItems(std::move(item));
-  }
-
-  virtual void burnOut() override {
-    setViewObject(ViewObject(ViewId::BURNT_FURNITURE, ViewLayer::FLOOR, string("Burnt ") + getName()));
-    destroyed = true;
-    if (opened)
-      return;
-    vector<PItem> item;
-    if (!Random.roll(10))
-      item.push_back(itemFactory.random());
-    else {
-      for (int i : Range(Random.getRandom(minCreatures, maxCreatures)))
-        item.push_back(ItemFactory::corpse(creatureId));
-    }
-    dropItems(std::move(item));
+    s->dropItems(std::move(item));
   }
 
   virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
-    if (opened || destroyed) 
+    if (opened) 
       return Nothing();
     else
       return SquareApplyType::USE_CHEST;
@@ -184,6 +164,7 @@ class Chest : public Square {
     CHECK(!opened);
     c->privateMessage("You open the " + getName());
     opened = true;
+    setViewObject(openedObject);
     int r = Random.getRandom(10);
     if (r < 5) {
       c->privateMessage(msgItem);
@@ -219,8 +200,8 @@ class Chest : public Square {
   int minCreatures, maxCreatures;
   string msgItem, msgMonster, msgGold;
   bool opened = false;
-  bool destroyed = false;
   ItemFactory itemFactory;
+  ViewObject openedObject;
 };
 
 class Fountain : public Square {
@@ -235,16 +216,8 @@ class Fountain : public Square {
     return true;
   }
 
-  virtual void destroy(int strength) override {
-    if (destroyed)
-      return;
-    getLevel()->globalMessage(getPosition(), "The fountain is destroyed.");
-    destroyed = true;
-    setViewObject(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "Floor"));
-  }
-
   virtual void onEnterSpecial(Creature* c) override {
-    c->privateMessage("There is a " + string(destroyed ? "destroyed founain" : "fountain") + " here");
+    c->privateMessage("There is a " + getName() + " here");
   }
 
   virtual void onApply(Creature* c) override {
@@ -255,7 +228,6 @@ class Fountain : public Square {
 
   private:
   int seed = Random.getRandom(123456);
-  bool destroyed = false;
 };
 
 class Tree : public Square {
@@ -301,7 +273,7 @@ class TrapSquare : public Square {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (effect) {
+    if (effect && c->isPlayer()) {
       c->you(MsgType::TRIGGER_TRAP, "");
       effect->applyToCreature(c, EffectStrength::NORMAL);
       effect = nullptr;
@@ -321,35 +293,13 @@ class Door : public Square {
     return true;
   }
 
-  virtual void destroy(int strength) override {
-    if (destroyed)
-      return;
-    getLevel()->globalMessage(getPosition(), "The door is destroyed.");
-    destroyed = true;
-    setCanSeeThru(true);
-    getLevel()->updateVisibility(getPosition());
-    setViewObject(ViewObject(ViewId::DESTROYED_FURNITURE, ViewLayer::FLOOR, "Destroyed door"));
-  }
-
-  virtual void burnOut() override {
-    setCanSeeThru(true);
-    getLevel()->updateVisibility(getPosition());
-    setViewObject(ViewObject(ViewId::BURNT_FURNITURE, ViewLayer::FLOOR, "Burnt door"));
-    destroyed = true;
-  }
-
   virtual bool canEnterSpecial(const Creature* c) const override {
     return true;
-    return c->isHumanoid() || destroyed;
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    c->privateMessage(isBurnt() ? "There is a burnt door here." : 
-          destroyed ? "There is a destroyed door here." :  "You open the door.");
+    c->privateMessage("You open the door.");
   }
-
-  protected:
-  bool destroyed = false;
 };
 
 class TribeDoor : public Door {
@@ -365,7 +315,7 @@ class TribeDoor : public Door {
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return (c->canWalk() && c->getTribe() == Tribe::player) || destroyed;
+    return (c->canWalk() && c->getTribe() == Tribe::player);
   }
 
   private:
@@ -381,26 +331,9 @@ class Furniture : public Square {
     return true;
   }
 
-  virtual void destroy(int strength) override {
-    if (destroyed)
-      return;
-    getLevel()->globalMessage(getPosition(), "The " + name + " is destroyed.");
-    destroyed = true;
-    setName("destroyed " + getName());
-    setViewObject(ViewObject(ViewId::DESTROYED_FURNITURE, ViewLayer::FLOOR, getName()));
-  }
-
-  virtual void burnOut() override {
-    setName("burnt " + getName());
-    setViewObject(ViewObject(ViewId::BURNT_FURNITURE, ViewLayer::FLOOR, getName()));
-  }
-
   virtual void onEnterSpecial(Creature* c) override {
     c->privateMessage("There is a " + getName() + " here.");
   }
-
-  private:
-  bool destroyed = false;
 };
 
 class Bed : public Furniture {
@@ -450,15 +383,6 @@ class Altar : public Square {
     return true;
   }
 
-  virtual void destroy(int strength) override {
-    if (destroyed)
-      return;
-    getLevel()->globalMessage(getPosition(), "The shrine is destroyed.");
-    destroyed = true;
-    setName("destroyed shrine");
-    setViewObject(ViewObject(ViewId::DESTROYED_FURNITURE, ViewLayer::FLOOR, getName()));
-  }
-
   virtual void onEnterSpecial(Creature* c) override {
     c->privateMessage("This is a shrine to " + deity->getName());
     c->privateMessage((deity->getGender() == Gender::MALE ? "He lives in " : "She lives in ")
@@ -478,7 +402,6 @@ class Altar : public Square {
 
   private:
   Deity* deity;
-  bool destroyed = false;
 };
 
 class ConstructionDropItems : public SolidSquare {
@@ -563,21 +486,27 @@ Square* SquareFactory::get(SquareType s) {
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR, "Rope bridge"), "rope bridge", true);
     case SquareType::GRASS:
         return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR, "Grass"), "grass", true);
+    case SquareType::GRASS_ROAD:
+        return new Square(ViewObject(ViewId::GRASS_ROAD, ViewLayer::FLOOR, "Road"), "road", true);
+    case SquareType::HILL_ROAD:
+        return new Square(ViewObject(ViewId::HILL_ROAD, ViewLayer::FLOOR, "Road"), "road", true);
     case SquareType::ROCK_WALL:
-        return new SolidSquare(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Wall"), "wall", false,
+        return new SolidSquare(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Wall", true), "wall", false,
             {{SquareType::FLOOR, Random.getRandom(3, 8)}});
     case SquareType::GOLD_ORE:
-        return new ConstructionDropItems(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR, "Gold ore"), "gold ore",
+        return new ConstructionDropItems(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR, "Gold ore", true), "gold ore",
             {{SquareType::FLOOR, Random.getRandom(30, 80)}},
             ItemFactory::fromId(ItemId::GOLD_PIECE, Random.getRandom(30, 60)));
     case SquareType::LOW_ROCK_WALL:
         return new SolidSquare(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Wall"), "wall", true);
     case SquareType::WOOD_WALL:
-        return new SolidSquare(ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR, "Wooden wall"), "wall", false);
+        return new SolidSquare(ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR, "Wooden wall", true), "wall", false);
     case SquareType::BLACK_WALL:
-        return new SolidSquare(ViewObject(ViewId::BLACK_WALL, ViewLayer::FLOOR, "Wall"), "wall", false);
+        return new SolidSquare(ViewObject(ViewId::BLACK_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
     case SquareType::YELLOW_WALL:
-        return new SolidSquare(ViewObject(ViewId::YELLOW_WALL, ViewLayer::FLOOR, "Wall"), "wall", false);
+        return new SolidSquare(ViewObject(ViewId::YELLOW_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
+    case SquareType::HELL_WALL:
+        return new SolidSquare(ViewObject(ViewId::HELL_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
     case SquareType::MOUNTAIN:
         return new SolidSquare(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain"), "mountain", true);
     case SquareType::GLACIER:
@@ -599,6 +528,8 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::CANIF_TREE: return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"));
     case SquareType::DECID_TREE: return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"));
     case SquareType::BUSH: return new Furniture(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush", 1);
+    case SquareType::MOUNTAIN_BUSH: return new Furniture(ViewObject(
+                                          ViewId::MOUNTAIN_BUSH, ViewLayer::FLOOR, "Bush"), "bush", 1);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
@@ -618,14 +549,16 @@ Square* SquareFactory::get(SquareType s) {
         Debug(FATAL) << "Altars are not handled by this method.";
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
                                           Effect::getEffect(EffectType::ROLLING_BOULDER));
+    case SquareType::POISON_GAS: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
+                                          Effect::getEffect(EffectType::EMIT_POISON_GAS));
     case SquareType::FOUNTAIN:
         return new Fountain(ViewObject(ViewId::FOUNTAIN, ViewLayer::FLOOR, "Fountain"));
     case SquareType::CHEST:
-        return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"), "chest", CreatureId::RAT, 3, 6, "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::dungeon());
+        return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"), ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest", CreatureId::RAT, 3, 6, "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::dungeon());
     case SquareType::TREASURE_CHEST:
         return new Furniture(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);
     case SquareType::COFFIN:
-        return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"), "coffin", CreatureId::VAMPIRE, 1, 2, "There is a rotting corpse inside. You find an item.", "There is a rotting corpse inside. The corpse is alive!", "There is a rotting corpse inside. You find some gold.", ItemFactory::dungeon());
+        return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"), ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin", CreatureId::VAMPIRE, 1, 2, "There is a rotting corpse inside. You find an item.", "There is a rotting corpse inside. The corpse is alive!", "There is a rotting corpse inside. You find some gold.", ItemFactory::dungeon());
     case SquareType::GRAVE:
         return new Grave(ViewObject(ViewId::GRAVE, ViewLayer::FLOOR, "Grave"), "grave");
     case SquareType::IRON_BARS:
@@ -640,13 +573,19 @@ Square* SquareFactory::get(SquareType s) {
   return 0;
 }
 
-Square* SquareFactory::getStairs(StairDirection direction, StairKey key) {
-  switch(direction) {
+Square* SquareFactory::getStairs(StairDirection direction, StairKey key, StairLook look) {
+  ViewId id1, id2;
+  switch (look) {
+    case StairLook::NORMAL: id1 = ViewId::UP_STAIRCASE; id2 = ViewId::DOWN_STAIRCASE; break;
+    case StairLook::HELL: id1 = ViewId::UP_STAIRCASE_HELL; id2 = ViewId::DOWN_STAIRCASE_HELL; break;
+    case StairLook::PYRAMID: id1 = ViewId::UP_STAIRCASE_PYR; id2 = ViewId::DOWN_STAIRCASE_PYR; break;
+  }
+  switch (direction) {
     case StairDirection::UP:
-        return new Staircase(ViewObject(ViewId::UP_STAIRCASE, ViewLayer::FLOOR, "Stairs leading up"),
+        return new Staircase(ViewObject(id1, ViewLayer::FLOOR, "Stairs leading up"),
             "stairs leading up", direction, key);
     case StairDirection::DOWN:
-        return new Staircase(ViewObject(ViewId::DOWN_STAIRCASE, ViewLayer::FLOOR, "Stairs leading down"),
+        return new Staircase(ViewObject(id2, ViewLayer::FLOOR, "Stairs leading down"),
             "stairs leading down", direction, key);
   }
   return nullptr;

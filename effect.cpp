@@ -105,7 +105,7 @@ void GuardingBuilderEffect::applyToCreature(Creature* c, EffectStrength strength
     }
   Vec2 pos = c->getPosition();
   if (dest)
-    c->move(*dest);
+    c->getLevel()->moveCreature(c, *dest);
   else {
     Effect::getEffect(EffectType::TELEPORT)->applyToCreature(c, EffectStrength::NORMAL);
   }

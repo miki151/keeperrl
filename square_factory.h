@@ -17,7 +17,7 @@ inline StairDirection opposite(StairDirection d) {
 class SquareFactory {
   public:
   static Square* get(SquareType);
-  static Square* getStairs(StairDirection, StairKey);
+  static Square* getStairs(StairDirection, StairKey, StairLook = StairLook::NORMAL);
   static Square* getAltar(Deity*);
 
   private:

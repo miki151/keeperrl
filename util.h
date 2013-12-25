@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "debug.h"
+#include "enums.h"
 
 template <class T>
 string convertToString(const T& t);
@@ -49,6 +50,7 @@ vector<string> split(const string& s, char delim);
 
 class Rectangle;
 
+
 class Vec2 {
   public:
   int x, y;
@@ -77,6 +79,7 @@ class Vec2 {
   pair<Vec2, Vec2> approxL1() const;
   string getBearing() const;
   bool isCardinal4() const;
+  Dir getCardinalDir() const;
 
   vector<Vec2> box(int radius, bool shuffle = false);
   static vector<Vec2> directions8(bool shuffle = false);
@@ -91,6 +94,15 @@ namespace std {
 template <> struct hash<Vec2> {
   size_t operator()(const Vec2& obj) const {
     return hash<int>()(obj.x) * 10000 + hash<int>()(obj.y);
+  }
+};
+
+template <class T> struct hash<set<T>> {
+  size_t operator()(const set<T>& v) const {
+    size_t ret = 0;
+    for (const T& elem : v)
+      ret = ret * 79146198 + hash<T>()(elem);
+    return ret;
   }
 };
 

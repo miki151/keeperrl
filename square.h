@@ -85,10 +85,10 @@ class Square {
   virtual bool canDestroy() const { return false; }
 
   /** Called when something destroyed this square.*/
-  virtual void destroy(int strength) { Debug(FATAL) << "Can't destroy " << name; }
+  virtual void destroy(int strength);
 
   /** Called when this square is burned completely.*/
-  virtual void burnOut() {}
+  virtual void burnOut();
 
   /** Exposes the square and objects on it to fire.*/
   void setOnFire(double amount);

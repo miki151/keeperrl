@@ -10,7 +10,8 @@ class Level;
 
 class ShortestPath {
   public:
-  ShortestPath(const Level* level, const Creature* creature, Vec2 target, Vec2 from, double mult = 0);
+  ShortestPath(const Level* level, const Creature* creature, Vec2 target, Vec2 from, double mult = 0,
+      bool avoidEnemies = false);
   ShortestPath(
       Rectangle area,
       function<double(Vec2)> entryFun,

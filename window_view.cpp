@@ -53,14 +53,51 @@ View* View::createReplayView(ifstream& ifs) {
   return new ReplayView<WindowView>(ifs);
 }
 
-struct Tile {
+class Tile {
+  public:
   Color color;
   String text;
   bool symFont = false;
-  int px = -1, py = -1;
+  Optional<Tile> background;
+  bool translucent = false;
   Tile(sf::Uint32 ch, Color col, bool sym = false) : color(col), text(ch), symFont(sym) {
   }
-  Tile(int x, int y) : px(x), py(y) {}
+  Tile(int x, int y, int num = 0) : tileCoord(Vec2(x, y)), texNum(num) {}
+  Tile(int x, int y, int num, Tile bg) : background(bg), tileCoord(Vec2(x, y)), texNum(num) {}
+
+  Tile& addConnection(set<Dir> c, int x, int y) {
+    connections.insert({c, Vec2(x, y)});
+    return *this;
+  }
+
+  Tile& setTranslucent() {
+    translucent = true;
+    return *this;
+  }
+
+  bool hasSpriteCoord() {
+    return tileCoord;
+  }
+
+  Vec2 getSpriteCoord() {
+    return *tileCoord;
+  }
+
+  Vec2 getSpriteCoord(set<Dir> c) {
+    if (connections.count(c))
+      return connections.at(c);
+    else return *tileCoord;
+  }
+
+  int getTexNum() {
+    CHECK(tileCoord) << "Not a sprite tile";
+    return texNum;
+  }
+
+  private:
+  Optional<Vec2> tileCoord;
+  int texNum = 0;
+  unordered_map<set<Dir>, Vec2> connections;
 };
 
 Tile getSpecialCreature(const ViewObject& obj, bool humanoid) {
@@ -79,7 +116,245 @@ Tile getSpecialCreature(const ViewObject& obj, bool humanoid) {
   return Tile(c, col);
 }
 
-Tile getTile(const ViewObject& obj) {
+Tile getSpecialCreatureSprite(const ViewObject& obj, bool humanoid) {
+  RandomGen r;
+  r.init(std::hash<string>()(obj.getBareDescription()));
+  if (humanoid)
+    return Tile(r.getRandom(7), 10);
+  else
+    return Tile(r.getRandom(7, 14), 10);
+}
+
+Tile getSprite(ViewId id);
+
+Tile getRoadTile(int pathSet, ViewId background) {
+  return Tile(0, pathSet, 5, getSprite(background))
+    .addConnection({Dir::E, Dir::W}, 2, pathSet)
+    .addConnection({Dir::W}, 3, pathSet)
+    .addConnection({Dir::E}, 1, pathSet)
+    .addConnection({Dir::S}, 4, pathSet)
+    .addConnection({Dir::N, Dir::S}, 5, pathSet)
+    .addConnection({Dir::N}, 6, pathSet)
+    .addConnection({Dir::S, Dir::E}, 7, pathSet)
+    .addConnection({Dir::S, Dir::W}, 8, pathSet)
+    .addConnection({Dir::N, Dir::E}, 9, pathSet)
+    .addConnection({Dir::N, Dir::W}, 10, pathSet)
+    .addConnection({Dir::N, Dir::E, Dir::S, Dir::W}, 11, pathSet)
+    .addConnection({Dir::E, Dir::S, Dir::W}, 12, pathSet)
+    .addConnection({Dir::N, Dir::S, Dir::W}, 13, pathSet)
+    .addConnection({Dir::N, Dir::E, Dir::S}, 14, pathSet)
+    .addConnection({Dir::N, Dir::E, Dir::W}, 15, pathSet);
+}
+
+Tile getWallTile(int wallSet, Optional<ViewId> background = Nothing()) {
+  return (background ? Tile(9, wallSet, 1, getSprite(*background)) : Tile(9, wallSet, 1))
+    .addConnection({Dir::E, Dir::W}, 11, wallSet)
+    .addConnection({Dir::W}, 12, wallSet)
+    .addConnection({Dir::E}, 10, wallSet)
+    .addConnection({Dir::S}, 13, wallSet)
+    .addConnection({Dir::N, Dir::S}, 14, wallSet)
+    .addConnection({Dir::N}, 15, wallSet)
+    .addConnection({Dir::E, Dir::S}, 16, wallSet)
+    .addConnection({Dir::S, Dir::W}, 17, wallSet)
+    .addConnection({Dir::N, Dir::E}, 18, wallSet)
+    .addConnection({Dir::N, Dir::W}, 19, wallSet)
+    .addConnection({Dir::N, Dir::E, Dir::S, Dir::W}, 20, wallSet)
+    .addConnection({Dir::E, Dir::S, Dir::W}, 21, wallSet)
+    .addConnection({Dir::N, Dir::S, Dir::W}, 22, wallSet)
+    .addConnection({Dir::N, Dir::E, Dir::S}, 23, wallSet)
+    .addConnection({Dir::N, Dir::E, Dir::W}, 24, wallSet);
+}
+
+Tile getWaterTile(int leftX) {
+  return Tile(leftX, 5, 4)
+    .addConnection({Dir::N, Dir::E, Dir::S, Dir::W}, leftX - 1, 7)
+    .addConnection({Dir::E, Dir::S, Dir::W}, leftX, 4)
+    .addConnection({Dir::N, Dir::E, Dir::W}, leftX, 6)
+    .addConnection({Dir::N, Dir::S, Dir::W}, leftX + 1, 5)
+    .addConnection({Dir::N, Dir::E, Dir::S}, leftX - 1, 5)
+    .addConnection({Dir::N, Dir::E}, leftX - 1, 6)
+    .addConnection({Dir::E, Dir::S}, leftX - 1, 4)
+    .addConnection({Dir::S, Dir::W}, leftX + 1, 4)
+    .addConnection({Dir::N, Dir::W}, leftX + 1, 6)
+    .addConnection({Dir::S}, leftX, 7)
+    .addConnection({Dir::N}, leftX, 8)
+    .addConnection({Dir::W}, leftX + 1, 7)
+    .addConnection({Dir::E}, leftX + 1, 8)
+    .addConnection({Dir::N, Dir::S}, leftX + 1, 12)
+    .addConnection({Dir::E, Dir::W}, leftX, 11);
+}
+
+Tile getSprite(ViewId id) {
+  switch (id) {
+    case ViewId::PLAYER: return Tile(1, 0);
+    case ViewId::UNKNOWN_MONSTER: return Tile('?', lightGreen);
+    case ViewId::SPECIAL_BEAST: return Tile(7, 10);
+    case ViewId::SPECIAL_HUMANOID: return Tile(6, 10);
+    case ViewId::ELF: return Tile(12, 6);
+    case ViewId::ELF_CHILD: return Tile(12, 6);
+    case ViewId::ELF_LORD: return Tile(13, 6);
+    case ViewId::ELVEN_SHOPKEEPER: return Tile(4, 2);
+    case ViewId::IMP: return Tile(18, 0);
+    case ViewId::BILE_DEMON: return Tile(9, 14);
+    case ViewId::HELL_HOUND: return Tile(14, 12);
+    case ViewId::CHICKEN: return Tile(18, 1);
+    case ViewId::DWARF: return Tile(2, 6);
+    case ViewId::DWARF_BARON: return Tile(3, 6);
+    case ViewId::DWARVEN_SHOPKEEPER: return Tile(4, 2);
+    case ViewId::BRIDGE: return Tile(24, 0, 4);
+    case ViewId::HILL_ROAD: return getRoadTile(9, ViewId::HILL);
+    case ViewId::GRASS_ROAD: return getRoadTile(7, ViewId::GRASS);
+    case ViewId::PATH:
+    case ViewId::FLOOR: return Tile(3, 14, 1);
+    case ViewId::SAND: return Tile(7, 12, 2);
+    case ViewId::GRASS: return Tile(0, 13, 2);
+    case ViewId::WALL: return getWallTile(2);
+    case ViewId::MOUNTAIN: return Tile(18, 2, 2, getSprite(ViewId::HILL));
+ /*                                 .addConnection({Dir::N, Dir::E, Dir::S, Dir::W, 
+                                        Dir::NE, Dir::SE, Dir::SW, Dir::NW}, 19, 10)
+                                  .addConnection({Dir::E, Dir::S, Dir::W, Dir::SE, Dir::SW}, 19, 9)
+                                  .addConnection({Dir::N, Dir::E, Dir::W, Dir::NW, Dir::NE}, 19, 11)
+                                  .addConnection({Dir::N, Dir::S, Dir::W, Dir::NW, Dir::SW}, 20, 10)
+                                  .addConnection({Dir::N, Dir::E, Dir::S, Dir::NE, Dir::SE}, 18, 10)
+                                  .addConnection({Dir::S, Dir::W, Dir::SW}, 20, 9)
+                                  .addConnection({Dir::E, Dir::S, Dir::SE}, 18, 9)
+                                  .addConnection({Dir::N, Dir::W, Dir::NW}, 20, 11)
+                                  .addConnection({Dir::N, Dir::E, Dir::NE}, 18, 11);*/
+    case ViewId::GOLD_ORE: return Tile(0, 16, 1);
+    case ViewId::SNOW: return Tile(16, 2, 2, getSprite(ViewId::HILL));
+    case ViewId::HILL: return Tile(3, 13, 2);
+    case ViewId::WOOD_WALL: return getWallTile(4);
+    case ViewId::BLACK_WALL: return getWallTile(2);
+    case ViewId::YELLOW_WALL: return getWallTile(8);
+    case ViewId::HELL_WALL: return getWallTile(22, ViewId::PATH);
+    case ViewId::SECRETPASS: return Tile(0, 15, 1);
+    case ViewId::DOWN_STAIRCASE: return Tile(8, 0, 1);
+    case ViewId::UP_STAIRCASE: return Tile(7, 0, 1, getSprite(ViewId::FLOOR));
+    case ViewId::DOWN_STAIRCASE_HELL: return Tile(8, 1, 1);
+    case ViewId::UP_STAIRCASE_HELL: return Tile(7, 22, 1, getSprite(ViewId::FLOOR));
+    case ViewId::DOWN_STAIRCASE_PYR: return Tile(8, 8, 1);
+    case ViewId::UP_STAIRCASE_PYR: return Tile(7, 8, 1, getSprite(ViewId::FLOOR));
+    case ViewId::GREAT_GOBLIN: return Tile('O', purple);
+    case ViewId::GOBLIN: return Tile(5, 14);
+    case ViewId::BANDIT: return Tile(0, 2);
+    case ViewId::DEVIL: return Tile(17, 18);
+    case ViewId::DARK_KNIGHT: return Tile(12, 14);
+    case ViewId::KNIGHT: return Tile(0, 0);
+    case ViewId::AVATAR: return Tile(9, 0);
+    case ViewId::ARCHER: return Tile(2, 0);
+    case ViewId::PESEANT: return Tile(1, 2);
+    case ViewId::CHILD: return Tile(2, 2);
+    case ViewId::ZOMBIE: return Tile(0, 16);
+    case ViewId::VAMPIRE: return Tile(12, 16);
+    case ViewId::MUMMY: return Tile(7, 16);
+    case ViewId::MUMMY_LORD: return Tile(8, 16);
+    case ViewId::JACKAL: return Tile(12, 12);
+    case ViewId::DEER: return Tile(18, 4);
+    case ViewId::HORSE: return Tile(18, 2);
+    case ViewId::COW: return Tile(18, 3);
+    case ViewId::SHEEP: return Tile('s', white);
+    case ViewId::PIG: return Tile(18, 5);
+    case ViewId::BOAR: return Tile(18, 6);
+    case ViewId::FOX: return Tile(13, 12);
+    case ViewId::WOLF: return Tile(14, 12);
+    case ViewId::VODNIK: return Tile('f', green);
+    case ViewId::KRAKEN: return Tile(7, 19);
+    case ViewId::DEATH: return Tile(9, 16);
+    case ViewId::KRAKEN2: return Tile(7, 19);
+    case ViewId::NIGHTMARE: return Tile(9, 16);
+    case ViewId::FIRE_SPHERE: return Tile(16, 20);
+    case ViewId::BEAR: return Tile(12, 18);
+    case ViewId::BAT: return Tile(2, 12);
+    case ViewId::GNOME: return Tile(13, 8);
+    case ViewId::LEPRECHAUN: return Tile(16, 8);
+    case ViewId::RAT: return Tile(7, 12);
+    case ViewId::SNAKE: return Tile(9, 12);
+    case ViewId::VULTURE: return Tile(17, 12);
+    case ViewId::BODY_PART: return Tile(9, 4, 3);
+    case ViewId::BONE: return Tile(3, 0, 2);
+    case ViewId::BUSH: return Tile(15, 3, 2, getSprite(ViewId::GRASS));
+    case ViewId::MOUNTAIN_BUSH: return Tile(15, 3, 2, getSprite(ViewId::HILL));
+    case ViewId::DECID_TREE: return Tile(21, 3, 2, getSprite(ViewId::HILL));
+    case ViewId::CANIF_TREE: return Tile(20, 3, 2, getSprite(ViewId::GRASS));
+    case ViewId::WATER: return getWaterTile(5);
+    case ViewId::MAGMA: return getWaterTile(11);
+    case ViewId::ABYSS: return Tile('~', darkGray);
+    case ViewId::DOOR: return Tile(4, 2, 2, getSprite(ViewId::FLOOR));
+    case ViewId::SWORD: return Tile(12, 9, 3);
+    case ViewId::ELVEN_SWORD: return Tile(14, 9, 3);
+    case ViewId::KNIFE: return Tile(20, 9, 3);
+    case ViewId::WAR_HAMMER: return Tile(10, 7, 3);
+    case ViewId::BATTLE_AXE: return Tile(13, 7, 3);
+    case ViewId::BOW: return Tile(14, 8, 3);
+    case ViewId::ARROW: return Tile(5, 8, 3);
+    case ViewId::SCROLL: return Tile(3, 6, 3);
+    case ViewId::STEEL_AMULET: return Tile(1, 1, 3);
+    case ViewId::COPPER_AMULET: return Tile(2, 1, 3);
+    case ViewId::CRYSTAL_AMULET: return Tile(4, 1, 3);
+    case ViewId::WOODEN_AMULET: return Tile(0, 1, 3);
+    case ViewId::AMBER_AMULET: return Tile(3, 1, 3);
+    case ViewId::BOOK: return Tile(0, 3, 3);
+    case ViewId::FIRST_AID: return Tile(12, 2, 3);
+    case ViewId::TRAP_ITEM: return Tile(12, 4, 3);
+    case ViewId::EFFERVESCENT_POTION: return Tile(6, 0, 3);
+    case ViewId::MURKY_POTION: return Tile(10, 0, 3);
+    case ViewId::SWIRLY_POTION: return Tile(9, 0, 3);
+    case ViewId::VIOLET_POTION: return Tile(7, 0, 3);
+    case ViewId::PUCE_POTION: return Tile(8, 0, 3);
+    case ViewId::SMOKY_POTION: return Tile(11, 0, 3);
+    case ViewId::FIZZY_POTION: return Tile(9, 0, 3);
+    case ViewId::MILKY_POTION: return Tile(11, 0, 3);
+    case ViewId::PINK_MUSHROOM:
+    case ViewId::DOTTED_MUSHROOM:
+    case ViewId::GLOWING_MUSHROOM:
+    case ViewId::GREEN_MUSHROOM:
+    case ViewId::BLACK_MUSHROOM:
+    case ViewId::SLIMY_MUSHROOM: return Tile(5, 4, 3);
+    case ViewId::FOUNTAIN: return Tile(0, 7, 2, getSprite(ViewId::FLOOR));
+    case ViewId::GOLD: return Tile(8, 3, 3);
+    case ViewId::CHEST: return Tile(3, 3, 2, getSprite(ViewId::FLOOR));
+    case ViewId::OPENED_CHEST: return Tile(6, 3, 2, getSprite(ViewId::FLOOR));
+    case ViewId::COFFIN: return Tile(7, 3, 2, getSprite(ViewId::FLOOR));
+    case ViewId::OPENED_COFFIN: return Tile(8, 3, 2, getSprite(ViewId::FLOOR));
+    case ViewId::BOULDER: return Tile(18, 7);
+    case ViewId::UNARMED_BOULDER_TRAP: return Tile(18, 7).setTranslucent();
+    case ViewId::PORTAL: return Tile(1, 6, 2);
+    case ViewId::TRAP: return Tile(L'➹', yellow, true);
+    case ViewId::GAS_TRAP: return Tile(L'☠', green, true);
+    case ViewId::UNARMED_GAS_TRAP: return Tile(L'☠', lightGray, true);
+    case ViewId::ROCK: return Tile(6, 1, 3);
+    case ViewId::BED: return Tile(5, 4, 2, getSprite(ViewId::FLOOR));
+    case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
+    case ViewId::ALTAR: return Tile(2, 7, 2, getSprite(ViewId::FLOOR));
+    case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, getSprite(ViewId::FLOOR));
+    case ViewId::TRAINING_DUMMY: return Tile(0, 5, 2, getSprite(ViewId::FLOOR));
+    case ViewId::WORKSHOP: return Tile(9, 4, 2, getSprite(ViewId::FLOOR));
+    case ViewId::GRAVE: return Tile(0, 0, 2, getSprite(ViewId::FLOOR));
+    case ViewId::BARS: return Tile(L'⧻', lightBlue);
+    case ViewId::BORDER_GUARD: return Tile(' ', white);
+    case ViewId::LEATHER_ARMOR: return Tile(0, 12, 3);
+    case ViewId::LEATHER_HELM: return Tile(10, 12, 3);
+    case ViewId::CHAIN_ARMOR: return Tile(1, 12, 3);
+    case ViewId::IRON_HELM: return Tile(14, 12, 3);
+    case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
+    case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
+    case ViewId::FALLEN_TREE: return Tile('*', green);
+    case ViewId::BURNT_TREE: return Tile('*', darkGray);
+    case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
+  }
+  Debug(FATAL) << "unhandled view id " << (int)id;
+  return Tile(' ', white);
+}
+
+Tile getSpriteTile(const ViewObject& obj) {
+  if (obj.id() == ViewId::SPECIAL_BEAST)
+    return getSpecialCreatureSprite(obj, false);
+  if (obj.id() == ViewId::SPECIAL_HUMANOID)
+    return getSpecialCreatureSprite(obj, true);
+  return getSprite(obj.id());
+}
+
+Tile getAsciiTile(const ViewObject& obj) {
   switch (obj.id()) {
     case ViewId::PLAYER: return Tile('@', white);
     case ViewId::UNKNOWN_MONSTER: return Tile('?', lightGreen);
@@ -98,6 +373,8 @@ Tile getTile(const ViewObject& obj) {
     case ViewId::DWARVEN_SHOPKEEPER: return Tile('h', lightBlue);
     case ViewId::FLOOR: return Tile('.', white);
     case ViewId::BRIDGE: return Tile('_', brown);
+    case ViewId::GRASS_ROAD: return Tile('.', lightGray);
+    case ViewId::HILL_ROAD: return Tile('.', lightGray);
     case ViewId::PATH: return Tile('.', lightGray);
     case ViewId::SAND: return Tile('.', yellow);
     case ViewId::GRASS: return Tile(0x1d0f0, green, true);
@@ -109,12 +386,19 @@ Tile getTile(const ViewObject& obj) {
     case ViewId::WOOD_WALL: return Tile('#', darkBrown);
     case ViewId::BLACK_WALL: return Tile('#', lightGray);
     case ViewId::YELLOW_WALL: return Tile('#', yellow);
+    case ViewId::HELL_WALL: return Tile('#', red);
     case ViewId::SECRETPASS: return Tile('#', lightGray);
     case ViewId::DOWN_STAIRCASE: return Tile(0x2798, almostWhite, true);
     case ViewId::UP_STAIRCASE: return Tile(0x279a, almostWhite, true);
+    case ViewId::DOWN_STAIRCASE_HELL: return Tile(0x2798, red, true);
+    case ViewId::UP_STAIRCASE_HELL: return Tile(0x279a, red, true);
+    case ViewId::DOWN_STAIRCASE_PYR: return Tile(0x2798, yellow, true);
+    case ViewId::UP_STAIRCASE_PYR: return Tile(0x279a, yellow, true);
     case ViewId::GREAT_GOBLIN: return Tile('O', purple);
     case ViewId::GOBLIN: return Tile('o', darkBlue);
     case ViewId::BANDIT: return Tile('@', darkBlue);
+    case ViewId::DARK_KNIGHT: return Tile('@', purple);
+    case ViewId::DEVIL: return Tile('&', purple);
     case ViewId::KNIGHT: return Tile('@', white);
     case ViewId::AVATAR: return Tile('@', blue);
     case ViewId::ARCHER: return Tile('@', brown);
@@ -148,6 +432,7 @@ Tile getTile(const ViewObject& obj) {
     case ViewId::VULTURE: return Tile('v', darkGray);
     case ViewId::BODY_PART: return Tile('%', red);
     case ViewId::BONE: return Tile('%', white);
+    case ViewId::MOUNTAIN_BUSH:
     case ViewId::BUSH: return Tile('&', darkGreen);
     case ViewId::DECID_TREE: return Tile(0x1f70d, darkGreen, true);
     case ViewId::CANIF_TREE: return Tile(0x2663, darkGreen, true);
@@ -187,7 +472,9 @@ Tile getTile(const ViewObject& obj) {
     case ViewId::BLACK_MUSHROOM: return Tile(0x22c6, darkGray, true);
     case ViewId::FOUNTAIN: return Tile('0', lightBlue);
     case ViewId::GOLD: return Tile('$', yellow);
+    case ViewId::OPENED_CHEST:
     case ViewId::CHEST: return Tile('=', brown);
+    case ViewId::OPENED_COFFIN:
     case ViewId::COFFIN: return Tile(L'⚰', darkGray, true);
     case ViewId::BOULDER: return Tile(L'●', lightGray, true);
     case ViewId::UNARMED_BOULDER_TRAP: return Tile(L'○', lightGray, true);
@@ -219,6 +506,8 @@ Tile getTile(const ViewObject& obj) {
   return Tile(' ', white);
 }
 
+auto getTile = getSpriteTile;
+
 RenderWindow* display;
 sf::View* sfView;
 
@@ -233,7 +522,9 @@ Font tileFont;
 Font symbolFont;
 
 Image mapBuffer;
-Texture tiles;
+vector<Texture> tiles;
+vector<int> tileSize { 36, 36, 36, 24, 36, 36 };
+int nominalSize = 36;
 
 class Clock {
   public:
@@ -276,12 +567,7 @@ class Clock {
 
 static Clock myClock;
 
-int getTextWidth(const Font& font, int size, String s) {
-  Text t(s, font, size);
-  return t.getLocalBounds().width;
-}
-
-void drawText(const Font& font, int size, Color color, int x, int y, String s, bool center = false) {
+static void drawText(const Font& font, int size, Color color, int x, int y, String s, bool center = false) {
   int ox = 0;
   int oy = 0;
   Text t(s, font, size);
@@ -295,17 +581,17 @@ void drawText(const Font& font, int size, Color color, int x, int y, String s, b
   display->draw(t);
 }
 
-void drawText(Color color, int x, int y, string s, bool center = false, int size = textSize) {
+static void drawText(Color color, int x, int y, string s, bool center = false, int size = textSize) {
   std::basic_string<sf::Uint32> utf32;
   sf::Utf8::toUtf32(s.begin(), s.end(), std::back_inserter(utf32));
   drawText(textFont, size, color, x, y, utf32, center);
 }
 
-void drawText(Color color, int x, int y, const char* c, bool center = false, int size = textSize) {
+static void drawText(Color color, int x, int y, const char* c, bool center = false, int size = textSize) {
   drawText(textFont, size, color, x, y, String(c), center);
 }
 
-void drawImage(int px, int py, const Image& image) {
+static void drawImage(int px, int py, const Image& image) {
   Texture t;
   t.loadFromImage(image);
   Sprite s(t);
@@ -313,9 +599,14 @@ void drawImage(int px, int py, const Image& image) {
   display->draw(s);
 }
 
-void drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t) {
+static void drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t, int dw = -1, int dh = -1,
+    Optional<Color> color = Nothing()) {
   Sprite s(t, sf::IntRect(px, py, w, h));
   s.setPosition(x, y);
+  if (color)
+    s.setColor(*color);
+  if (dw != -1)
+    s.setScale(double(dw) / w, double(dh) / h);
   display->draw(s);
 }
 
@@ -329,9 +620,9 @@ void WindowView::initialize() {
   tileFont.loadFromFile("coolvetica rg.ttf");
   symbolFont.loadFromFile("Symbola.ttf");
 
-  normalLayout = MapLayout::gridLayout(screenWidth, screenHeight, 16, 20, 0, 30, 255, 0, 1, allLayers);
-  tppLayout = MapLayout::tppLayout(screenWidth, screenHeight, 16, 20, 0, 30, 220, 85);
-  unzoomLayout = MapLayout::gridLayout(screenWidth, screenHeight, 8, 10, 0, 30, 220, 85, 1,
+  normalLayout = MapLayout::gridLayout(screenWidth, screenHeight, 36, 36, -20, 0, 225, 0, 1, allLayers);
+  tppLayout = MapLayout::tppLayout(screenWidth, screenHeight, 18, 18, 0, 30, 220, 85);
+  unzoomLayout = MapLayout::gridLayout(screenWidth, screenHeight, 18, 18, 0, 30, 220, 85, 1,
       {ViewLayer::FLOOR, ViewLayer::CREATURE});
   worldLayout = MapLayout::worldLayout(screenWidth, screenHeight, 0, 80, 220, 75);
   allLayouts.push_back(normalLayout);
@@ -340,16 +631,62 @@ void WindowView::initialize() {
   allLayouts.push_back(worldLayout);
   mapBuffer.create(600, 600);
   mapLayout = normalLayout;
-   //Image tileImage;
-  //CHECK(tileImage.loadFromFile("tile_test.png"));
-  //tiles.loadFromImage(tileImage);
+  Image tileImage;
+  CHECK(tileImage.loadFromFile("tiles_int.png"));
+  Image tileImage2;
+  CHECK(tileImage2.loadFromFile("tiles2_int.png"));
+  Image tileImage3;
+  CHECK(tileImage3.loadFromFile("tiles3_int.png"));
+  Image tileImage4;
+  CHECK(tileImage4.loadFromFile("tiles4_int.png"));
+  Image tileImage5;
+  CHECK(tileImage5.loadFromFile("tiles5_int.png"));
+  Image tileImage6;
+  CHECK(tileImage6.loadFromFile("tiles6_int.png"));
+  tiles.resize(6);
+  tiles[0].loadFromImage(tileImage);
+  tiles[1].loadFromImage(tileImage2);
+  tiles[2].loadFromImage(tileImage3);
+  tiles[3].loadFromImage(tileImage4);
+  tiles[4].loadFromImage(tileImage5);
+  tiles[5].loadFromImage(tileImage6);
+  //for (Texture& tex : tiles)
+  //  tex.setSmooth(true);
 }
 
 void WindowView::displaySplash(bool& ready) {
   Image splash;
-  CHECK(splash.loadFromFile("splash.png"));
-  drawImage((screenWidth - splash.getSize().x) / 2, (screenHeight - splash.getSize().y) / 2, splash);
-  drawText(white, screenWidth / 2, screenHeight - 60, "Loading...", true);
+  CHECK(splash.loadFromFile("splash2f.png"));
+  int bottomMargin = 100;
+  drawImage(50, screenHeight - bottomMargin, splash);
+  vector<Rectangle> drawn;
+  vector<string> paths { "splash2e.png", "splash2a.png", "splash2b.png", "splash2c.png", "splash2d.png" };
+  random_shuffle(++paths.begin(), paths.end(), [](int a) { return Random.getRandom(a);});
+  for (auto path : paths) {
+    CHECK(splash.loadFromFile(path));
+    int cnt = 100;
+    while (1) {
+      int px = Random.getRandom(screenWidth - splash.getSize().x);
+      int py = Random.getRandom(screenHeight - bottomMargin - splash.getSize().y);
+      Rectangle pos(px, py, px + splash.getSize().x, py + splash.getSize().y);
+      bool bad = false;
+      for (Rectangle& rec : drawn)
+        if (pos.intersects(rec)) {
+          bad = true;
+          break;
+        }
+      if (bad) {
+        if (--cnt > 0)
+          continue;
+        else
+          break;
+      }
+      drawn.push_back(pos);
+      drawImage(pos.getPX(), pos.getPY(), splash);
+      break;
+    }
+  }
+ // drawText(white, screenWidth / 2, screenHeight - 60, "Loading...", true);
   drawAndClearBuffer();
   while (!ready) {
     sf::sleep(sf::milliseconds(30));
@@ -392,10 +729,16 @@ Optional<Event::KeyEvent> WindowView::readkey() {
       wasPaused = true;
     }
     display->waitEvent(event);
-    if (considerScrollEvent(event))
-      return Nothing();
     if (wasPaused)
       myClock.cont();
+    bool scrolled = false;
+    while (considerScrollEvent(event)) {
+      if (!display->pollEvent(event))
+        return Nothing();
+      scrolled = true;
+    }
+    if (scrolled)
+      return Nothing();
     Debug() << "Event " << event.type;
     if (event.type == Event::KeyPressed) {
       Event::KeyEvent ret(event.key);
@@ -419,7 +762,7 @@ void drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outlin
   r.setPosition(t.getPX(), t.getPY());
   r.setFillColor(color);
   if (outline) {
-    r.setOutlineThickness(2);
+    r.setOutlineThickness(-2);
     r.setOutlineColor(*outline);
   }
   display->draw(r);
@@ -427,6 +770,13 @@ void drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outlin
 
 void drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline = Nothing()) {
   drawFilledRectangle(Rectangle(px, py, kx, ky), color, outline);
+}
+
+static Color getBleedingColor(const ViewObject& object) {
+  double bleeding = object.getBleeding();
+  if (bleeding > 0)
+    bleeding = 0.3 + bleeding * 0.7;
+  return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
 }
 
 static Color getColor(const ViewObject& object) {
@@ -440,14 +790,14 @@ static Color getColor(const ViewObject& object) {
   if (bleeding > 0)
     bleeding = 0.5 + bleeding / 2;
   bleeding = min(1., bleeding);
-  Color color = getTile(object).color;
+  Color color = getAsciiTile(object).color;
   return Color(
       (1 - bleeding) * color.r + bleeding * 255,
       (1 - bleeding) * color.g,
       (1 - bleeding) * color.b);
 }
 
-static Color getMemoryColor(const ViewObject& object) {
+/*static Color getMemoryColor(const ViewObject& object) {
   Color color = getTile(object).color;
   float cf = 3.5;
   float r = color.r, g = color.g, b = color.b;
@@ -455,6 +805,10 @@ static Color getMemoryColor(const ViewObject& object) {
         (cf * r + g + b) / (2 + cf),
         (r + g * cf + b) / (2 + cf),
         (r + g + b * cf) / (2 + cf));
+}*/
+
+static Color transparency(const Color& color, int trans) {
+  return Color(color.r, color.g, color.b, trans);
 }
 
 int fireVar = 50;
@@ -479,7 +833,7 @@ Color getSpeedColor(int value) {
 }
 
 int topBarHeight = 50;
-int rightBarWidth = 230;
+int rightBarWidth = 250;
 
 void WindowView::drawPlayerInfo() {
   GameInfo::PlayerInfo& info = gameInfo.playerInfo;
@@ -540,7 +894,13 @@ static map<string, pair<ViewObject, int>> getCreatureMap(vector<const Creature*>
 
 static void drawViewObject(const ViewObject& obj, int x, int y) {
     Tile tile = getTile(obj);
-    drawText(tile.symFont ? symbolFont : textFont, 20, getColor(obj), x, y, tile.text, true);
+    if (tile.hasSpriteCoord()) {
+      int sz = tileSize[tile.getTexNum()];
+      int of = (nominalSize - sz) / 2;
+      Vec2 coord = tile.getSpriteCoord();
+      drawSprite(x - sz / 2, y + of, coord.x * sz, coord.y * sz, sz, sz, tiles[tile.getTexNum()], sz * 2 / 3, sz * 2 /3);
+    } else
+      drawText(tile.symFont ? symbolFont : textFont, 20, getColor(obj), x, y, tile.text, true);
 }
 
 void WindowView::drawMinions(GameInfo::BandInfo& info) {
@@ -601,7 +961,7 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
         if (c->getName() == chosenCreature)
           chosen.push_back(c);
       drawFilledRectangle(screenWidth - rightBarWidth - width - 20, lineStart,
-          screenWidth - rightBarWidth, legendStartHeight + 35 + (chosen.size() + 3) * legendLineHeight, black);
+          screenWidth - rightBarWidth - 10, legendStartHeight + 35 + (chosen.size() + 3) * legendLineHeight, black);
       drawText(lightBlue, screenWidth - rightBarWidth - width - 10, lineStart, 
           info.gatheringTeam ? "Click to add to team:" : "Click to possess:");
       int cnt = 1;
@@ -637,7 +997,7 @@ void WindowView::drawBuildings(GameInfo::BandInfo& info) {
   
 void WindowView::drawKeeperHelp() {
   vector<string> helpText { "use mouse to", "dig and build", "", "click on minion list", "to possess",
-    "", "heroes come from", "the up staircase", "", "[space]  pause", "[z]  zoom"};
+    "", "heroes come from", "the stairs", "", "[space]  pause", "[z]  zoom"};
   int cnt = 0;
   for (string line : helpText) {
     int height = legendStartHeight + cnt * legendLineHeight;
@@ -651,7 +1011,7 @@ void WindowView::drawBandInfo() {
   int line0 = screenHeight - 90;
   int line1 = screenHeight - 65;
   int line2 = screenHeight - 40;
-  drawFilledRectangle(0, line1 - 10, screenWidth - rightBarWidth, screenHeight, translucentBlack);
+  drawFilledRectangle(0, line1 - 10, screenWidth - rightBarWidth - 30, screenHeight, translucentBlack);
   string playerLine = info.name;
   drawText(white, 10, line1, playerLine);
   if (!myClock.isPaused())
@@ -745,41 +1105,118 @@ static vector<pair<string, string>> keyMapping {
   return Vec2(center.x + cx, d.y > 0 ? area.getKY() - 1: area.getPY());
 }*/
 
-void WindowView::drawObjectAbs(int x, int y, const ViewObject& object, Color color, int sizeX, int sizeY) {
-  Tile tile = getTile(object);
-  if (tile.px >= 0) {
-    drawSprite(x, y, tile.px * 32, tile.py * 32, 32, 32, tiles);
-  }
-  else {
-    if (object.isPlayer()) {
-      drawFilledRectangle(x, y, x + sizeX, y + sizeY, gray);
-      int w = 1;
-      drawFilledRectangle(x + w, y + w, x + sizeX - w, y + sizeY - w, black);
-    }
-    drawText(tile.symFont ? symbolFont : tileFont, sizeY + object.getSizeIncrease(), color,
-        x + sizeX / 2, y - 3 - object.getSizeIncrease(), tile.text, true);
-    if (object.getBurning() > 0) {
-      drawText(symbolFont, sizeY, getFireColor(),
-          x + sizeX / 2, y + sizeY - 3, L'ѡ', true);
-      if (object.getBurning() > 0.5)
-        drawText(symbolFont, sizeY, getFireColor(),
-            x + sizeX / 2, y + sizeY - 3, L'Ѡ', true);
-    }
-  }
-}
-
-unordered_map<Vec2, ViewObject> objects;
-const MapMemory* lastMemory = nullptr;
-unordered_map<Vec2, Color> marked;
-
 Color getHighlightColor(ViewIndex::HighlightInfo info) {
   switch (info.type) {
-    case HighlightType::BUILD: return yellow;
-    case HighlightType::POISON_GAS: return Color(0, info.amount * 255, 0);
+    case HighlightType::BUILD: return transparency(yellow, 170);
+    case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
   }
   Debug(FATAL) << "pokpok";
   return black;
 }
+
+map<Vec2, ViewIndex> objects;
+const MapMemory* lastMemory = nullptr;
+set<Vec2> shadowed;
+
+enum class ConnectionId {
+  ROAD,
+  WALL,
+  WATER,
+};
+
+Optional<ConnectionId> getConnectionId(ViewId id) {
+  switch (id) {
+    case ViewId::GRASS_ROAD:
+    case ViewId::HILL_ROAD: return ConnectionId::ROAD;
+    case ViewId::BLACK_WALL:
+    case ViewId::YELLOW_WALL:
+    case ViewId::HELL_WALL:
+    case ViewId::WOOD_WALL:
+    case ViewId::WALL: return ConnectionId::WALL;
+    case ViewId::MAGMA:
+    case ViewId::WATER: return ConnectionId::WATER;
+    default: return Nothing();
+  }
+}
+
+vector<Vec2> getConnectionDirs(ViewId id) {
+  return Vec2::directions4();
+}
+
+map<Vec2, ConnectionId> floorIds;
+
+bool tileConnects(ViewId id, Vec2 pos) {
+  return floorIds.count(pos) && getConnectionId(id) == floorIds.at(pos);
+}
+
+
+
+void WindowView::drawObjectAbs(int x, int y, const ViewIndex& index, int sizeX, int sizeY, Vec2 tilePos, bool mem) {
+  for (ViewLayer layer : mapLayout->getLayers())
+    if (index.hasObject(layer)) {
+      ViewObject object = index.getObject(layer);
+      if (object.isPlayer()) {
+          drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
+//          int w = 1;
+//          drawFilledRectangle(x + w, y + w, x + sizeX - w, y + sizeY - w, black);
+        }
+      Tile tile = getTile(object);
+      Optional<Color> color;
+      if (mem)
+        color = Color(200, 200, 200);
+      else
+        color = getBleedingColor(object);
+      if (object.isInvisible() || tile.translucent) {
+        if (color)
+          color = transparency(*color, 70);
+        else
+          color = Color(255, 255, 255, 70);
+      }
+      if (tile.hasSpriteCoord()) {
+        int moveY = 0;
+        int off = (nominalSize -  tileSize[tile.getTexNum()]) / 2;
+        int sz = tileSize[tile.getTexNum()];
+        int width = mapLayout->squareWidth(Vec2(x, y)) - 2 * off;
+        int height = mapLayout->squareHeight(Vec2(x, y)) - 2 * off;
+        set<Dir> dirs;
+        for (Vec2 dir : getConnectionDirs(object.id()))
+          if (tileConnects(object.id(), tilePos + dir))
+            dirs.insert(dir.getCardinalDir());
+        Vec2 coord = tile.getSpriteCoord(dirs);
+
+        if (object.layer() == ViewLayer::CREATURE) {
+          drawSprite(x, y, 2 * nominalSize, 22 * nominalSize, nominalSize, nominalSize, tiles[0], width, height);
+          moveY = -4 - object.getSizeIncrease() / 2;
+        }
+        if (tile.background) {
+          Vec2 bgCoord = tile.background->getSpriteCoord();
+          drawSprite(x + off, y + moveY + off, bgCoord.x * sz,
+              bgCoord.y * sz, sz, sz, tiles[tile.background->getTexNum()], width, height, color);
+          drawSprite(x, y, nominalSize, 22 * nominalSize, nominalSize, nominalSize, tiles[0], width, height);
+          if (object.layer() == ViewLayer::FLOOR && shadowed.count(tilePos))
+            drawSprite(x, y, 1 * nominalSize, 21 * nominalSize, nominalSize, nominalSize, tiles[5], width, height);
+        }
+        drawSprite(x + off, y + moveY + off, coord.x * sz,
+            coord.y * sz, sz, sz, tiles[tile.getTexNum()], width, height, color);
+        if (object.layer() == ViewLayer::FLOOR && shadowed.count(tilePos) && !tile.background)
+          drawSprite(x, y, 1 * nominalSize, 21 * nominalSize, nominalSize, nominalSize, tiles[5], width, height);
+      } else {
+        drawText(tile.symFont ? symbolFont : tileFont, sizeY + object.getSizeIncrease(), getColor(object),
+            x + sizeX / 2, y - 3 - object.getSizeIncrease(), tile.text, true);
+        if (object.getBurning() > 0) {
+          drawText(symbolFont, sizeY, getFireColor(),
+              x + sizeX / 2, y + sizeY - 3, L'ѡ', true);
+          if (object.getBurning() > 0.5)
+            drawText(symbolFont, sizeY, getFireColor(),
+                x + sizeX / 2, y + sizeY - 3, L'Ѡ', true);
+        }
+      }
+
+    }
+  if (auto highlight = index.getHighlight())
+    drawFilledRectangle(x, y, x + sizeX, y + sizeY, getHighlightColor(*highlight));
+}
+
 
 void WindowView::resetCenter() {
   center = Vec2(0, 0);
@@ -789,7 +1226,6 @@ void WindowView::refreshView(const CreatureView* collective) {
   const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
   objects.clear();
-  marked.clear();
   if (center == Vec2(0, 0) || collective->staticPosition())
     center = collective->getPosition().mult(Vec2(mapLayout->squareWidth(Vec2(0, 0)),
           mapLayout->squareHeight(Vec2(0, 0))));
@@ -799,37 +1235,64 @@ void WindowView::refreshView(const CreatureView* collective) {
   movePos.y = max(movePos.y, 0);
   movePos.y = min(movePos.y, int(collective->getLevel()->getBounds().getKY() * mapLayout->squareHeight(Vec2(0, 0))));
   mapLayout->updatePlayerPos(movePos);
+  shadowed.clear();
+  floorIds.clear();
+  lastMemory = &collective->getMemory(level);
   for (Vec2 pos : mapLayout->getAllTiles()) 
     if (level->inBounds(pos)) {
       ViewIndex index = collective->getViewIndex(pos);
-      if (index.getHighlight())
-        marked[pos] = getHighlightColor(*index.getHighlight());
-      Optional<ViewObject> obj = index.getTopObject(mapLayout->getLayers());
-      if (obj)
-        objects.insert(std::make_pair(pos, *obj));
+      objects.insert(std::make_pair(pos, index));
+      if (index.hasObject(ViewLayer::FLOOR)) {
+        ViewObject object = index.getObject(ViewLayer::FLOOR);
+        if (object.castsShadow()) {
+          shadowed.erase(pos);
+          shadowed.insert(pos + Vec2(0, 1));
+        }
+        if (auto id = getConnectionId(object.id()))
+          floorIds.insert(make_pair(pos, *id));
+      }
+      if (lastMemory->hasViewIndex(pos)) {
+        ViewIndex index = lastMemory->getViewIndex(pos);
+        objects.insert(std::make_pair(pos, index));
+        if (index.hasObject(ViewLayer::FLOOR)) {
+          ViewObject object = index.getObject(ViewLayer::FLOOR);
+          if (object.castsShadow()) {
+            shadowed.erase(pos);
+            shadowed.insert(pos + Vec2(0, 1));
+          }
+        if (auto id = getConnectionId(object.id()))
+          floorIds.insert(make_pair(pos, *id));
+       }
+      }
     }
   //  for (const Creature* c : player->getVisibleCreatures())
-//    if (!projectOnScreen(c->getPosition()).inRectangle(mapWindowMargin))
+  //    if (!projectOnScreen(c->getPosition()).inRectangle(mapWindowMargin))
 //      objects.insert(std::make_pair(c->getPosition(), c->getViewObject()));
-  lastMemory = &collective->getMemory(level);
   refreshScreen();
 }
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
   for (Vec2 pos : trajectory) {
+    if (!objects.count(pos))
+      continue;
+    ViewIndex& index = objects.at(pos);
     Optional<ViewObject> prev;
-    if (objects.count(pos))
-      prev = objects.at(pos);
-    objects.erase(pos);
-    objects.insert({pos, object});
+    if (index.hasObject(object.layer()))
+      prev = index.getObject(object.layer());
+    index.removeObject(object.layer());
+    index.insert(object);
     refreshScreen();
     // sf::sleep(sf::milliseconds(30));
-    objects.erase(pos);
+    index.removeObject(object.layer());
     if (prev)
-      objects.insert({pos, *prev});
+      index.insert(*prev);
   }
-  objects.erase(trajectory.back());
-  objects.insert({trajectory.back(), object});
+  if (objects.count(trajectory.back())) {
+    ViewIndex& index = objects.at(trajectory.back());
+    if (index.hasObject(object.layer()))
+      index.removeObject(object.layer());
+    index.insert(object);
+  }
 }
 
 void WindowView::drawMap() {
@@ -842,33 +1305,31 @@ void WindowView::drawMap() {
   for (Vec2 wpos : mapLayout->getAllTiles()) {
     int sizeX = mapLayout->squareWidth(wpos);
     int sizeY = mapLayout->squareHeight(wpos);
-    Vec2 pos = mapLayout->projectOnScreen(wpos, 0);
-    if (marked.count(wpos))
-      drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, marked.at(wpos));
-    if (lastMemory->hasViewIndex(wpos) && !objects.count(wpos)) {
+    Vec2 pos = mapLayout->projectOnScreen(wpos);
+    if (lastMemory->hasViewIndex(wpos) && (!objects.count(wpos) || objects.at(wpos).isEmpty())) {
+      if (sizeX > 1)
+        drawObjectAbs(pos.x, pos.y, lastMemory->getViewIndex(wpos), sizeX, sizeY, wpos, true);
       Optional<ViewObject> object = lastMemory->getViewIndex(wpos).getTopObject(mapLayout->getLayers());
-      if (object) {
-        if (sizeX > 1)
-          drawObjectAbs(pos.x, pos.y, *object, getMemoryColor(*object), sizeX, sizeY);
-        else {
-          mapBuffer.setPixel(pos.x, pos.y, getColor(*object));
-          pixelView = true;
-        }
+      if (object && sizeX == 1) {
+        mapBuffer.setPixel(pos.x, pos.y, getColor(*object));
+        pixelView = true;
       }
     }
   }
   map<string, ViewObject> objIndex;
   for (auto elem : objects) {
-    objIndex.insert(std::make_pair(elem.second.getDescription(), elem.second));
+    Optional<ViewObject> topObject = elem.second.getTopObject(mapLayout->getLayers());
+    if (topObject)
+      objIndex.insert(std::make_pair(topObject->getDescription(), *topObject));
     Vec2 wpos = elem.first;
     int sizeX = mapLayout->squareWidth(wpos);
     int sizeY = mapLayout->squareHeight(wpos);
-    Vec2 pos = mapLayout->projectOnScreen(wpos, elem.second.getHeight());
-    if (sizeX > 1)
-      drawObjectAbs(pos.x, pos.y,
-          elem.second, getColor(elem.second), sizeX, sizeY);
-    else {
-      mapBuffer.setPixel(pos.x, pos.y, getColor(elem.second));
+    Vec2 pos = mapLayout->projectOnScreen(wpos);
+    if (sizeX > 1) {
+      drawObjectAbs(pos.x, pos.y, elem.second, sizeX, sizeY, wpos);
+    } else {
+      if (topObject)
+        mapBuffer.setPixel(pos.x, pos.y, getColor(*topObject));
       pixelView = true;
     }
   //  }
@@ -883,7 +1344,7 @@ void WindowView::drawMap() {
   if (pixelView)
     drawImage(mapLayout->getBounds().getPX(), mapLayout->getBounds().getPY(), mapBuffer);
   int rightPos = screenWidth - rightBarWidth;
-  drawFilledRectangle(rightPos - 10, topBarHeight - 10, screenWidth, screenHeight, translucentBlack);
+  drawFilledRectangle(rightPos - 30, 0, screenWidth, screenHeight, translucentBlack);
   if (gameInfo.infoType == GameInfo::InfoType::PLAYER || collectiveOption == CollectiveOption::LEGEND) {
     int cnt = 0;
     if (legendOption == LegendOption::OBJECTS) {
@@ -1323,6 +1784,8 @@ Action WindowView::getAction() {
     oldMessage = true;
     if (!key)
       return Action(ActionId::IDLE);
+    if (mapLayout == worldLayout)
+      unzoom(false, false);
     auto optionalAction = mapLayout->overrideAction(*key);
     if (optionalAction)
       return *optionalAction;

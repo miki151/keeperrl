@@ -10,7 +10,7 @@ void Model::update(double totalTime) {
   if (collective)
     collective->render(view);
   do {
-    if (collective) {
+    if (collective && !collective->isTurnBased()) {
       // process a few times so events don't stack up when game is paused
       for (int i : Range(5))
         collective->processInput(view);
@@ -54,7 +54,7 @@ void Model::update(double totalTime) {
 }
 
 void Model::addCreature(PCreature c) {
-  c->setTime(timeQueue.getCurrentTime());
+  c->setTime(timeQueue.getCurrentTime() + 1);
   CHECK(c->getLevel() != nullptr) << "Creature must already be located on a level.";
   timeQueue.addCreature(std::move(c));
 }
@@ -73,16 +73,10 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker, bool surface) {
 Model::Model(View* v) : view(v) {
 }
 
-Level* Model::prepareTopLevel(vector<Location*> villageLocation) {
+Level* Model::prepareTopLevel(vector<Location*> villageLocation, vector<CreatureFactory> cfactory) {
   Level* top = buildLevel(
       Level::Builder(600, 600, "Wilderness"),
-      LevelMaker::topLevel(
-          CreatureFactory::forrest(),
-          CreatureFactory::humanVillage(),
-          villageLocation,
-          CreatureFactory::crypt(),
-          CreatureFactory::goblinTown(1),
-          CreatureFactory::pyramid(0)),
+      LevelMaker::topLevel(CreatureFactory::forrest(), cfactory, villageLocation),
       true);
   Level* c1 = buildLevel(
       Level::Builder(30, 20, "Crypt"),
@@ -99,7 +93,7 @@ Level* Model::prepareTopLevel(vector<Location*> villageLocation) {
   return top;
 }
 
-static const int numVillages = 3;
+static const int numVillages = 2;
 
 vector<Location*> getVillageLocations() {
   vector<Location*> ret;
@@ -110,7 +104,8 @@ vector<Location*> getVillageLocations() {
 
 Model* Model::heroModel(View* view, const string& heroName) {
   Model* m = new Model(view);
-  Level* top = m->prepareTopLevel(getVillageLocations());
+  Level* top = m->prepareTopLevel(getVillageLocations(),
+      {CreatureFactory::humanVillage(), CreatureFactory::elvenVillage()});
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(1), {StairKey::DWARF}, {StairKey::DWARF}));
@@ -179,19 +174,25 @@ Model* Model::collectiveModel(View* view, int numCreatures) {
   Model* m = new Model(view);
   CreatureFactory factory = CreatureFactory::collectiveStart();
   vector<Location*> villageLocations = getVillageLocations();
-  Level* top = m->prepareTopLevel(villageLocations);
+  Level* top = m->prepareTopLevel(villageLocations,
+      {CreatureFactory::humanVillage(), CreatureFactory::elvenVillagePeaceful()});
   Level* second = m->buildLevel(
           Level::Builder(60, 35, "Dungeons of doom "),
           LevelMaker::roomLevel(CreatureFactory::level(3), {StairKey::DWARF}, {StairKey::DWARF}));
+  m->collective = new Collective(CreatureFactory::collectiveMinions(), CreatureFactory::collectiveUndead());
   Level* l = m->buildLevel(Level::Builder(60, 35, "A Cave"),
-      LevelMaker::collectiveLevel({StairKey::DWARF}, {StairKey::DWARF}));
+      LevelMaker::collectiveLevel({StairKey::DWARF}, {StairKey::DWARF}, StairKey::TOWER, m->collective));
   Level* dwarf = m->buildLevel(
           Level::Builder(60, 35, NameGenerator::townNames.getNext()),
-          LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(1), {StairKey::DWARF}, {}));
+          LevelMaker::mineTownLevel(CreatureFactory::singleType(Tribe::dwarven, CreatureId::DWARF),
+              {StairKey::DWARF}, {}));
+  Level* hell = m->buildLevel(
+          Level::Builder(30, 20, "Hell"),
+          LevelMaker::hellLevel(CreatureFactory::hellLevel(), {StairKey::TOWER}, {}));
   m->addLink(StairDirection::DOWN, StairKey::DWARF, top, l);
   m->addLink(StairDirection::DOWN, StairKey::DWARF, l, second);
   m->addLink(StairDirection::DOWN, StairKey::DWARF, second, dwarf);
-  m->collective = new Collective(CreatureFactory::collectiveMinions(), CreatureFactory::collectiveUndead());
+  m->addLink(StairDirection::DOWN, StairKey::TOWER, l, hell);
   m->collective->setLevel(l);
   Tribe::elven->addEnemy(Tribe::player);
   Tribe::dwarven->addEnemy(Tribe::player);
@@ -206,11 +207,18 @@ Model* Model::collectiveModel(View* view, int numCreatures) {
       { make_tuple(800, 2, 4) },
       { make_tuple(1400, 4, 7) },
       { make_tuple(2000, 12, 18) }};
+  vector<pair<CreatureFactory, CreatureFactory>> villageFactories {
+    { CreatureFactory::collectiveEnemies(), CreatureFactory::collectiveFinalAttack() },
+    { CreatureFactory::collectiveElfEnemies(), CreatureFactory::collectiveElfFinalAttack() }
+  };
+  CHECK(villageFactories.size() == villageLocations.size());
+  int cnt = 0;
   for (Location* loc : villageLocations) {
     VillageControl* control = VillageControl::humanVillage(m->collective, loc,
         StairDirection::DOWN, StairKey::DWARF);
-    CreatureFactory firstAttack = CreatureFactory::collectiveEnemies();
-    CreatureFactory lastAttack = CreatureFactory::collectiveFinalAttack();
+    CreatureFactory firstAttack = villageFactories[cnt].first;
+    CreatureFactory lastAttack = villageFactories[cnt].second;
+    ++cnt;
     for (int i : All(heroAttackTime)) {
       int attackTime = get<0>(heroAttackTime[i]) + Random.getRandom(-200, 200);
       int heroCount = Random.getRandom(get<1>(heroAttackTime[i]), get<2>(heroAttackTime[i]));
@@ -223,8 +231,10 @@ Model* Model::collectiveModel(View* view, int numCreatures) {
     }
   }
   VillageControl* dwarfControl = VillageControl::dwarfVillage(m->collective, l, StairDirection::UP, StairKey::DWARF);
+  CreatureFactory firstAttack = CreatureFactory::singleType(Tribe::dwarven, CreatureId::DWARF);
+  CreatureFactory lastAttack = CreatureFactory::dwarfTown(1);
   for (int i : All(heroAttackTime)) {
-    CreatureFactory factory = CreatureFactory::singleType(Tribe::dwarven, CreatureId::DWARF);
+    CreatureFactory& factory = (i == heroAttackTime.size() - 1 ? lastAttack : firstAttack);
     int attackTime = get<0>(heroAttackTime[i]) + Random.getRandom(-200, 200);
     int heroCount = Random.getRandom(get<1>(heroAttackTime[i]), get<2>(heroAttackTime[i]));
     for (int k : Range(heroCount)) {

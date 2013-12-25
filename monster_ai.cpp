@@ -290,7 +290,7 @@ class Fighter : public Behaviour, public EventListener {
   virtual double itemValue(const Item* item) {
     if (item->getEffectType() &&
         contains({EffectType::INVISIBLE, EffectType::SLOW, EffectType::BLINDNESS, EffectType::SLEEP,
-          EffectType::TELEPORT}, *item->getEffectType()))
+          EffectType::TELEPORT, EffectType::STR_BONUS, EffectType::DEX_BONUS}, *item->getEffectType()))
       return 1;
     if (item->getType() == ItemType::AMMO && creature->hasSkill(Skill::archery))
       return 0.1;
@@ -399,6 +399,12 @@ class Fighter : public Behaviour, public EventListener {
     }
     if (distance <= 3) {
       MoveInfo move = tryToApplyItem(EffectType::INVISIBLE, 1);
+      if (move.isValid())
+        return move;
+      move = tryToApplyItem(EffectType::STR_BONUS, 1);
+      if (move.isValid())
+        return move;
+      move = tryToApplyItem(EffectType::DEX_BONUS, 1);
       if (move.isValid())
         return move;
     }

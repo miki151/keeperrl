@@ -19,6 +19,10 @@ ViewIndex Creature::getViewIndex(Vec2 pos) const {
   return level->getSquare(pos)->getViewIndex(this);
 }
 
+void Creature::addEnemyVision(EnemyVision vision) {
+  enemyVision.push_back(vision);
+}
+
 void Creature::pushController(Controller* ctrl) {
   viewObject.setPlayer(true);
   controllerStack.push(std::move(controller));
@@ -218,9 +222,15 @@ const vector<const Creature*>& Creature::getVisibleEnemies() const {
 
 void Creature::updateVisibleEnemies() {
   visibleEnemies.clear();
-  for (const Creature* c : level->getAllCreatures())
-    if (isEnemy(c) && canSee(c))
-      visibleEnemies.push_back(c);
+  for (const Creature* c : level->getAllCreatures()) 
+    if (isEnemy(c)) {
+      bool canSeeEnemy = seeAllEnemies || canSee(c);
+      for (auto vision : enemyVision)
+        if (canSeeEnemy |= vision(c))
+          break;
+      if (canSeeEnemy)
+        visibleEnemies.push_back(c);
+  }
 }
 
 vector<const Creature*> Creature::getVisibleCreatures() const {
@@ -531,8 +541,8 @@ int dexPenNoArm = 2;
 int dexPenNoLeg = 10;
 int dexPenNoWing = 5;
 
-int strPenNoArm = 1;
-int strPenNoLeg = 3;
+int strPenNoArm = 2;
+int strPenNoLeg = 5;
 int strPenNoWing = 2;
 
 int Creature::getAttr(AttrType type) const {
@@ -547,7 +557,9 @@ int Creature::getAttr(AttrType type) const {
           def *= 0.66;
         if (strBonus)
           def += attrBonus;
-        def -= injuredArms * strPenNoArm + injuredLegs * strPenNoLeg + injuredWings * strPenNoWing;
+        def -= (injuredArms + lostArms) * strPenNoArm + 
+               (injuredLegs + lostLegs) * strPenNoLeg +
+               (injuredWings + lostWings) * strPenNoWing;
         break;
     case AttrType::DEXTERITY:
         def *= 0.666 + health / 3;
@@ -555,7 +567,9 @@ int Creature::getAttr(AttrType type) const {
           def = 0;
         if (dexBonus)
           def += attrBonus;
-        def -= injuredArms * dexPenNoArm + injuredLegs * dexPenNoLeg + injuredWings * dexPenNoWing;
+        def -= (injuredArms + lostArms) * dexPenNoArm + 
+               (injuredLegs + lostLegs) * dexPenNoLeg +
+               (injuredWings + lostWings) * dexPenNoWing;
         break;
     case AttrType::THROWN_DAMAGE: 
     case AttrType::DAMAGE: 
@@ -1497,7 +1511,11 @@ int Creature::getExpLevel() const {
   return expLevel;
 }
 
-Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool away) {
+Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool avoidEnemies) {
+  return getMoveTowards(pos, false, avoidEnemies);
+}
+
+Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool away, bool avoidEnemies) {
   Debug() << "" << getPosition() << (away ? "Moving away from" : " Moving toward ") << pos;
   bool newPath = false;
   if (!shortestPath || shortestPath->getTarget() != pos || shortestPath->isReversed() != away) {
@@ -1535,7 +1553,7 @@ Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool away) {
 
 Optional<Vec2> Creature::getMoveAway(Vec2 pos, bool pathfinding) {
   if ((pos - getPosition()).length8() <= 5 && pathfinding) {
-    Optional<Vec2> move = getMoveTowards(pos, true);
+    Optional<Vec2> move = getMoveTowards(pos, true, false);
     if (move)
       return move;
   }

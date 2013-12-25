@@ -151,6 +151,27 @@ bool Vec2::isCardinal4() const {
   return abs(x) + abs(y) == 1;
 }
 
+Dir Vec2::getCardinalDir() const {
+  if (x == 0 && y == -1)
+    return Dir::N;
+  if (x == 1 && y == -1)
+    return Dir::NE;
+  if (x == 1 && y == 0)
+    return Dir::E;
+  if (x == 1 && y == 1)
+    return Dir::SE;
+  if (x == 0 && y == 1)
+    return Dir::S;
+  if (x == -1 && y == 1)
+    return Dir::SW;
+  if (x == -1 && y == 0)
+    return Dir::W;
+  if (x == -1 && y == -1)
+    return Dir::NW;
+  Debug(FATAL) << "Not cardinal dir " << *this;
+  return Dir::N;
+}
+
 vector<Vec2> Vec2::corners() {
   return { Vec2(1, 1), Vec2(1, -1), Vec2(-1, -1), Vec2(-1, 1)};
 }
@@ -332,15 +353,7 @@ int Rectangle::getH() const {
 }
 
 bool Rectangle::intersects(const Rectangle& other) const {
-    bool a = Vec2(px, py).inRectangle(other);
-    bool b = Vec2(kx - 1, py).inRectangle(other);
-    bool c = Vec2(px, ky - 1).inRectangle(other);
-    bool d = Vec2(kx - 1, ky - 1).inRectangle(other);
-    bool e = Vec2(other.px, other.py).inRectangle(*this);
-    bool f = Vec2(other.kx - 1, other.py).inRectangle(*this);
-    bool g = Vec2(other.px, other.ky - 1).inRectangle(*this);
-    bool h = Vec2(other.kx - 1, other.ky - 1).inRectangle(*this);
-    return a || b || c || d || e || f || g || h;
+  return max(px, other.px) < min(kx, other.kx) && max(py, other.py) < min(ky, other.ky);
 }
 
 Rectangle Rectangle::minusMargin(int margin) const {

@@ -275,16 +275,23 @@ ItemFactory ItemFactory::villageShop() {
 }
 
 ItemFactory ItemFactory::dwarfShop() {
+  ItemFactory ret = armory();
+  ret.unique.push_back(ItemId::PORTAL_SCROLL);
+  return ret;
+}
+
+ItemFactory ItemFactory::armory() {
   return ItemFactory({
       {ItemId::KNIFE, 5 },
       {ItemId::SWORD, 2 },
       {ItemId::BATTLE_AXE, 2 },
       {ItemId::WAR_HAMMER, 2 },
+      {ItemId::BOW, 2 },
+      {ItemId::ARROW, 8 },
       {ItemId::LEATHER_ARMOR, 2 },
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 2 },
-      {ItemId::IRON_HELM, 1} },
-      {ItemId::PORTAL_SCROLL});
+      {ItemId::IRON_HELM, 1} });
 }
 
 ItemFactory ItemFactory::goblinShop() {
@@ -575,7 +582,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.weight = 0.1;
             i.thrownDamage = 5;
             i.thrownToHit = -5;
-            i.price = 60;)));
+            i.price = 2;)));
     case ItemId::LEATHER_ARMOR: return PItem(new Item(
         ViewObject(ViewId::LEATHER_ARMOR, ViewLayer::ITEM, "Armor"), ITATTR(
             i.name = "leather armor";

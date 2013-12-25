@@ -477,7 +477,10 @@ void Player::makeMove() {
     case ActionId::PAY_DEBT: payDebtAction(); break;
     case ActionId::CHAT: chatAction(); break;
     case ActionId::SHOW_HISTORY: messageBuffer.showHistory(); break;
-    case ActionId::UNPOSSESS: creature->popController(); return; break;
+    case ActionId::UNPOSSESS: if (creature->canPopController()) {
+                                creature->popController();
+                                return;
+                              } break;
     case ActionId::IDLE: break;
   }
   if (creature->isSleeping() && creature->canPopController()) {

@@ -15,14 +15,16 @@ static Table<double> initDistTable(Vec2 to, Vec2 from, int levelWidth, int level
   return Table<double>(Rectangle(p, p + k), ShortestPath::infinity);
 }
 
-ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to, Vec2 from, double mult) : 
-    distance(initDistTable(to, from, level->getWidth(), level->getHeight())), 
+ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to, Vec2 from, double mult,
+    bool avoidEnemies) : distance(initDistTable(to, from, level->getWidth(), level->getHeight())), 
     target(to), 
     directions(Vec2::directions8()) {
-  auto entryFun = [level, creature](Vec2 pos) { 
+  auto entryFun = [=](Vec2 pos) { 
       if (level->getSquare(pos)->canEnter(creature) || creature->getPosition() == pos) 
         return 1.0;
-      if (level->getSquare(pos)->canEnterEmpty(creature) || level->getSquare(pos)->canDestroy())
+      if ((level->getSquare(pos)->canEnterEmpty(creature) || level->getSquare(pos)->canDestroy())
+          && (!avoidEnemies || !level->getSquare(pos)->getCreature() 
+              || !level->getSquare(pos)->getCreature()->isEnemy(creature)))
         return 5.0;
       return infinity;};
   auto lengthFun = [](Vec2 v) { return v.length8(); };

@@ -496,7 +496,7 @@ class VillageElder : public Creature {
       who->privateMessage(
           "Go kill their leader, " + elders[0]->getTheName());
       if (weapon) {
-        who->privateMessage("As a proof, bring me his weapon, " + weapon->getArtifactName() + ".\"");
+        who->privateMessage("As a proof, bring me his weapon, the " + weapon->getArtifactName() + ".\"");
         bringItem = weapon;
       } else
         killCreature = elders[0];
@@ -601,6 +601,11 @@ CreatureFactory CreatureFactory::elvenVillage() {
       { 2, 2, 1, 1}, { CreatureId::ELF_LORD});
 }
 
+CreatureFactory CreatureFactory::elvenVillagePeaceful() {
+  return CreatureFactory(Tribe::elven, { CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW },
+      { 2, 1, 1}, {});
+}
+
 CreatureFactory CreatureFactory::forrest() {
   return CreatureFactory(Tribe::wildlife,
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR, CreatureId::LEPRECHAUN },
@@ -609,6 +614,10 @@ CreatureFactory CreatureFactory::forrest() {
 
 CreatureFactory CreatureFactory::crypt() {
   return CreatureFactory(Tribe::monster, { CreatureId::ZOMBIE}, { 1}, {});
+}
+
+CreatureFactory CreatureFactory::hellLevel() {
+  return CreatureFactory(Tribe::monster, { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
 }
 
 CreatureFactory CreatureFactory::collectiveUndead() {
@@ -633,6 +642,18 @@ CreatureFactory CreatureFactory::collectiveFinalAttack() {
   return CreatureFactory(Tribe::monster, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {CreatureId::AVATAR});
 }
 
+CreatureFactory CreatureFactory::collectiveElfEnemies() {
+  return CreatureFactory(Tribe::monster, { CreatureId::ELF}, { 1}, {});
+}
+
+CreatureFactory CreatureFactory::collectiveElfFinalAttack() {
+  return CreatureFactory(Tribe::monster, { CreatureId::ELF, }, { 1}, {CreatureId::ELF_LORD});
+}
+
+CreatureFactory CreatureFactory::collectiveSurpriseEnemies() {
+  return CreatureFactory(Tribe::monster, { CreatureId::SPECIAL_MONSTER}, { 1}, {});
+}
+
 CreatureFactory CreatureFactory::dwarfTown(int num) {
   int maxLevel = 3;
   CHECK(num <= maxLevel && num > 0);
@@ -642,7 +663,7 @@ CreatureFactory CreatureFactory::dwarfTown(int num) {
       { CreatureId::RAT, { 2, 1, 1}},
       { CreatureId::BAT, { 0, 1, 1 }},
       { CreatureId::DWARF, { 6, 1, 1 }},
-      { CreatureId::GOBLIN, { 2, 1, 1 }}};
+      { CreatureId::GOBLIN, { 1, 1, 1 }}};
   vector<vector<CreatureId>> uniqueMonsters(maxLevel);
   uniqueMonsters[0].push_back(CreatureId::DWARF_BARON);
   vector<CreatureId> ids;
@@ -811,6 +832,28 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all law enforcement";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "bandit";), tribe, factory);
+    case CreatureId::DEVIL: return get(ViewId::DEVIL, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 19;
+                                c.dexterity = 16;
+                                c.barehandedDamage = 10;
+                                c.humanoid = true;
+                                c.weight = 80;
+                                c.chatReactionFriendly = "curses all dungeons";
+                                c.chatReactionHostile = "\"Die!\"";
+                                c.name = "devil";), tribe, factory);
+    case CreatureId::DARK_KNIGHT: return get(ViewId::DARK_KNIGHT, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 22;
+                                c.dexterity = 19;
+                                c.barehandedDamage = 3;
+                                c.humanoid = true;
+                                c.weight = 100;
+                                c.chatReactionFriendly = "curses all dungeons";
+                                c.chatReactionHostile = "\"Die!\"";
+                                c.name = "dark knight";), tribe, factory);
     case CreatureId::KNIGHT: return get(ViewId::KNIGHT, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
@@ -832,7 +875,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.weight = 120;
                                 c.chatReactionFriendly = "curses all dungeons";
                                 c.chatReactionHostile = "\"Die!\"";
-                                c.name = "Avatar";), tribe, factory);
+                                c.name = "Duke of " + NameGenerator::worldNames.getNext();), tribe, factory);
     case CreatureId::ARCHER: return get(ViewId::ARCHER, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
@@ -1306,7 +1349,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.animal = true;
                                 c.name = "bat";), tribe, factory);
     case CreatureId::DEATH: return get(ViewId::DEATH, CATTR(
-                                c.speed = 120;
+                                c.speed = 95;
                                 c.size = CreatureSize::LARGE;
                                 c.strength = 100;
                                 c.dexterity = 35;
@@ -1386,12 +1429,15 @@ vector<ItemId> getInventory(CreatureId id) {
             .add(ItemId::CHAIN_ARMOR)
             .add(randomHealing())
             .add(ItemId::GOLD_PIECE, Random.getRandom(30, 80));
+    case CreatureId::DEVIL: return ItemList()
+            .add(chooseRandom({ItemId::BLINDNESS_POTION, ItemId::SLEEP_POTION, ItemId::SLOW_POTION}));
+    case CreatureId::DARK_KNIGHT:
     case CreatureId::AVATAR: return ItemList()
             .add(ItemId::SPECIAL_BATTLE_AXE)
             .add(ItemId::CHAIN_ARMOR)
             .add(ItemId::IRON_HELM)
             .add(ItemId::HEALING_POTION, Random.getRandom(3, 7))
-            .add(ItemId::GOLD_PIECE, Random.getRandom(30, 80));
+            .add(ItemId::GOLD_PIECE, Random.getRandom(200, 300));
     case CreatureId::BANDIT:
     case CreatureId::GOBLIN: return ItemList()
             .add(chooseRandom({ItemId::SWORD}, {3}))

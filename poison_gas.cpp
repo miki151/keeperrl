@@ -5,8 +5,8 @@ void PoisonGas::addAmount(double a) {
   amount = min(3., a + amount);
 }
 
-const double decrease = 0.002;
-const double spread = 0.15;
+const double decrease = 0.001;
+const double spread = 0.10;
 
 void PoisonGas::tick(Level* level, Vec2 pos) {
   if (amount < 0.00001) {

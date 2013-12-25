@@ -62,7 +62,7 @@ PTask Task::construction(Collective* col, Vec2 target, SquareType type) {
 }
   
 MoveInfo Task::getMoveToPosition(Creature *c) {
-  Optional<Vec2> move = c->getMoveTowards(position);
+  Optional<Vec2> move = c->getMoveTowards(position, true);
   if (move)
     return {1.0, [=] {
       c->move(*move);
@@ -164,7 +164,10 @@ class BringItem : public PickItem {
       return PickItem::getMove(c);
     setPosition(target);
     if (c->getPosition() == target) {
-      vector<Item*> myItems(items.begin(), items.end());
+      vector<Item*> myItems;
+      for (Item* it : items)
+        if (c->getEquipment().hasItem(it))
+          myItems.push_back(it);
       return {1.0, [=] {
         onBroughtItem(c, myItems);
         setDone();

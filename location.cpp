@@ -5,6 +5,12 @@ Location::Location(const string& _name, const string& desc) : name(_name), descr
 
 Location::Location() : bounds(-1, -1, 1, 1) {}
 
+Location::Location(bool s) : bounds(-1, -1, 1, 1), surprise(s) {}
+
+bool Location::isMarkedAsSurprise() const {
+  return surprise;
+}
+
 string Location::getName() const {
   return *name;
 }

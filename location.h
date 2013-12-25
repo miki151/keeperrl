@@ -7,9 +7,11 @@ class Location {
   public:
   Location(const string& name, const string& description);
   Location();
+  Location(bool surprise);
   string getName() const;
   string getDescription() const;
   bool hasName() const;
+  bool isMarkedAsSurprise() const;
   Rectangle getBounds() const;
   void setBounds(Rectangle);
   void setLevel(const Level*);
@@ -24,6 +26,7 @@ class Location {
   Optional<string> description;
   Rectangle bounds;
   const Level* level;
+  bool surprise = false;
 };
 
 #endif

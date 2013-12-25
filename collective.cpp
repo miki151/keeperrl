@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 enum Warning { NO_CONNECTION, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_HATCHERY, NO_TRAINING };
-static const int numWarnings = 6;
+static const int numWarnings = 7;
 static bool warning[numWarnings] = {0};
 static string warningText[] {
   "You need to connect to the stairs to attract minions.",
@@ -166,6 +166,10 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
       index.insert(getTrapObject(traps.at(pos).type));
     if (guardPosts.count(pos))
       index.insert(ViewObject(ViewId::GUARD_POST, ViewLayer::LARGE_ITEM, "Guard post"));
+  }
+  if (const Location* loc = level->getLocation(pos)) {
+    if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !memory[level].hasViewIndex(pos))
+      index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
   }
   return index;
 }
@@ -345,7 +349,8 @@ void Collective::processInput(View* view) {
                 PCreature imp = CreatureFactory::fromId(CreatureId::IMP, Tribe::player,
                     MonsterAIFactory::collective(this));
                 for (Vec2 v : pos.neighbors8(true))
-                  if (v.inRectangle(level->getBounds()) && level->getSquare(v)->canEnter(imp.get())) {
+                  if (v.inRectangle(level->getBounds()) && level->getSquare(v)->canEnter(imp.get()) 
+                      && memory[level].hasViewIndex(v)) {
                     takeGold(getImpCost());
                     addCreature(imp.get());
                     level->addCreature(v, std::move(imp));
@@ -432,7 +437,7 @@ Vec2 Collective::getHeartPos() const {
 }
 
 ItemPredicate Collective::unMarkedItems(ItemType type) const {
-  return [this, type](Item* it) {
+  return [this, type](const Item* it) {
       return it->getType() == type && !markedItems.count(it); };
 }
 
@@ -455,8 +460,9 @@ bool Collective::isDownstairsVisible() const {
 }
 
 void Collective::tick() {
-  if (isDownstairsVisible() && (minions.size() < mySquares[SquareType::BED].size() || minions.empty()) && 
-      Random.roll(40) && minions.size() < minionLimit) {
+  if (isDownstairsVisible()
+      && (minions.size() - vampires.size() < mySquares[SquareType::BED].size() || minions.empty())
+      && Random.roll(40) && minions.size() < minionLimit) {
     PCreature c = minionFactory.random(MonsterAIFactory::collective(this));
     addCreature(c.get());
     level->landCreature(StairDirection::DOWN, StairKey::DWARF, std::move(c));
@@ -481,6 +487,11 @@ void Collective::tick() {
     }
   }
   for (Vec2 pos : myTiles) {
+    if (Creature* c = level->getSquare(pos)->getCreature())
+      if (!contains(creatures, c) && c->getTribe() == Tribe::player
+          && !contains({"chicken", "boulder"}, c->getName()))
+        // We just found a friendly creature (and not a boulder nor a chicken)
+        addCreature(c);
     vector<Item*> gold = level->getSquare(pos)->getItems(unMarkedItems(ItemType::GOLD));
     if (gold.size() > 0 && !mySquares[SquareType::TREASURE_CHEST].count(pos)) {
       if (!mySquares[SquareType::TREASURE_CHEST].empty()) {
@@ -692,6 +703,8 @@ MoveInfo Collective::getMinionMove(Creature* c) {
 }
 
 MoveInfo Collective::getMove(Creature* c) {
+  if (!contains(creatures, c))
+    return NoMove;
   if (!contains(imps, c)) {
     CHECK(contains(minions, c));
     return getMinionMove(c);
@@ -760,8 +773,10 @@ void Collective::addCreature(Creature* c) {
   if (!c->canConstruct(SquareType::FLOOR)) {
     minions.push_back(c);
     minionTasks.insert(make_pair(c, getTasksForMinion(c)));
-  } else
+  } else {
     imps.push_back(c);
+    c->addEnemyVision([this](const Creature* c) { return canSee(c); });
+  }
 }
 
 void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {

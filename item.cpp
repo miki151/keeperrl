@@ -22,15 +22,15 @@ bool Item::isIdentified(const string& name) {
 }
 
 ItemPredicate Item::effectPredicate(EffectType type) {
-  return [type](Item* item) { return item->getEffectType() == type; };
+  return [type](const Item* item) { return item->getEffectType() == type; };
 }
 
 ItemPredicate Item::typePredicate(ItemType type) {
-  return [type](Item* item) { return item->getType() == type; };
+  return [type](const Item* item) { return item->getType() == type; };
 }
 
 ItemPredicate Item::typePredicate(vector<ItemType> type) {
-  return [&type](Item* item) { return contains(type, item->getType()); };
+  return [&type](const Item* item) { return contains(type, item->getType()); };
 }
 
 map<string, vector<Item*>> Item::stackItems(vector<Item*> items) {

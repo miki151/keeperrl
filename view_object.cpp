@@ -2,9 +2,14 @@
 
 using namespace std;
 
-ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d) : resource_id(id), viewLayer(l), description(d) {
+ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d, bool _shadow)
+    : resource_id(id), viewLayer(l), description(d), shadow(_shadow) {
   if (islower(description[0]))
     description[0] = toupper(description[0]);
+}
+
+bool ViewObject::castsShadow() const {
+  return shadow;
 }
 
 void ViewObject::setBleeding(double b) {

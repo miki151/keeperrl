@@ -19,6 +19,7 @@ class ItemFactory {
   vector<PItem> getAll();
 
   static ItemFactory dungeon();
+  static ItemFactory armory();
   static ItemFactory potions();
   static ItemFactory scrolls();
   static ItemFactory mushrooms();

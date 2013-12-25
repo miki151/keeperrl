@@ -9,7 +9,15 @@ bool ViewIndex::hasObject(ViewLayer l) const {
   return objects.count(l);
 }
 
-ViewObject ViewIndex::getObject(ViewLayer l) {
+void ViewIndex::removeObject(ViewLayer l) {
+  objects.erase(l);
+}
+
+bool ViewIndex::isEmpty() const {
+  return objects.empty();
+}
+
+ViewObject ViewIndex::getObject(ViewLayer l) const {
   TRY(return objects.at(l), "no object on layer " << (int)l);
 }
 

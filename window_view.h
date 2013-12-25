@@ -8,6 +8,7 @@
 #include "action.h"
 #include "map_layout.h"
 
+class ViewIndex;
 
 /** See view.h for documentation.*/
 class WindowView: public View {
@@ -57,7 +58,8 @@ class WindowView: public View {
   void refreshScreen(bool flipBuffer = true);
   void refreshText();
   void drawAndClearBuffer();
-  void drawObjectAbs(int x, int y, const ViewObject& object, sf::Color color, int sizeX, int sizeY);
+
+  void drawObjectAbs(int x, int y, const ViewIndex&, int sizeX, int sizeY, Vec2 tilePos, bool memory = false);
   void darkenObjectAbs(int x, int y);
   void clearMessageBox();
   void unzoom(bool, bool);

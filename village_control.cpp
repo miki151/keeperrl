@@ -1,8 +1,11 @@
 #include "stdafx.h"
 
+static int counter = 0;
+
 VillageControl::VillageControl(const Collective* c, const Level* l, StairDirection dir, StairKey key, string n) 
     : villain(c), level(l), direction(dir), stairKey(key), name(n) {
   EventListener::addListener(this);
+  ++counter;
 }
 
 VillageControl::~VillageControl() {
@@ -11,6 +14,7 @@ VillageControl::~VillageControl() {
 
 void VillageControl::addCreature(Creature* c, int attackTime) {
   attackTimes.insert(make_pair(c, attackTime));
+  lastAttackTime = max(lastAttackTime, attackTime);
   messages.insert(attackTime);
 }
 
@@ -21,14 +25,21 @@ bool VillageControl::startedAttack(Creature* c) {
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
   if (attackTimes.count(victim)) {
     attackTimes.erase(victim);
-    if (attackTimes.empty())
+    if (attackTimes.empty()) {
       messageBuffer.addMessage(MessageBuffer::important("You have defeated the inhabitants of " + name));
+      if (--counter == 0)
+        messageBuffer.addMessage(MessageBuffer::important("You have conquered this land. Thanks for playing KeeperRL alpha."));
+    }
   }
 }
 
 void VillageControl::onEnteredDungeon(int attackTime) {
   if (messages.count(attackTime)) {
-    messageBuffer.addMessage(MessageBuffer::important("The inhabitants of " + name + " are attacking!"));
+    if (attackTime < lastAttackTime)
+      messageBuffer.addMessage(MessageBuffer::important("The inhabitants of " + name + " are attacking!"));
+    else
+      messageBuffer.addMessage(MessageBuffer::important("The inhabitants of " + name + 
+            " have gathered for a final assault!"));
     messages.erase(attackTime);
   }
 }

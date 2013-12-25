@@ -6,7 +6,7 @@
 
 class ViewObject {
   public:
-  ViewObject(ViewId id, ViewLayer l, const string& description);
+  ViewObject(ViewId id, ViewLayer l, const string& description, bool castsShadow = false);
 
   ViewObject() { Debug(FATAL) << "Don't call this constructor"; }
 
@@ -35,6 +35,8 @@ class ViewObject {
   void setSizeIncrease(double);
   double getSizeIncrease() const;
 
+  bool castsShadow() const;
+
   string getDescription() const;
   string getBareDescription() const;
 
@@ -57,6 +59,7 @@ class ViewObject {
   double burning = false;
   double height = 0;
   double sizeIncrease = 0;
+  bool shadow;
 };
 
 

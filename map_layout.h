@@ -17,7 +17,9 @@ class MapLayout {
 
   virtual double squareWidth(Vec2 mapPos) = 0;
   virtual double squareHeight(Vec2 mapPos) = 0;
-  virtual Vec2 projectOnScreen(Vec2 mapPos, double height) = 0;
+  virtual void increaseSize() {}
+  virtual void decreaseSize() {}
+  virtual Vec2 projectOnScreen(Vec2 mapPos) = 0;
   virtual Vec2 projectOnMap(Vec2 screenPos) = 0;
   virtual vector<Vec2> getAllTiles() = 0;
   virtual void updatePlayerPos(Vec2) = 0;

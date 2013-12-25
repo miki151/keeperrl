@@ -97,7 +97,7 @@ class Collective : public CreatureView, public EventListener {
   vector<Creature*> imps;
   vector<Creature*> vampires;
   vector<PTask> tasks;
-  set<Item*> markedItems;
+  set<const Item*> markedItems;
   map<Vec2, Task*> marked;
   map<Task*, Creature*> taken;
   map<Creature*, Task*> taskMap;

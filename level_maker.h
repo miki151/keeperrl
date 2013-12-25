@@ -12,21 +12,19 @@ class LevelMaker {
 
   static LevelMaker* roomLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* cryptLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down);
+  static LevelMaker* hellLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* topLevel(
       CreatureFactory forrest,
-      CreatureFactory village,
-      vector<Location*> villageLocation,
-      CreatureFactory cementaryCreatures,
-      CreatureFactory goblins,
-      CreatureFactory pyramid);
+      vector<CreatureFactory> village,
+      vector<Location*> villageLocation);
   static LevelMaker* mineTownLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* goblinTownLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down);
 
-  static LevelMaker* pyramidLevel(CreatureFactory, vector<StairKey> up, vector<StairKey> down);
+  static LevelMaker* pyramidLevel(Optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* towerLevel(Optional<StairKey> down, Optional<StairKey> up);
   static Vec2 getRandomExit(Rectangle rect);
 
-  static LevelMaker* collectiveLevel(vector<StairKey> up, vector<StairKey> down);
+  static LevelMaker* collectiveLevel(vector<StairKey> up, vector<StairKey> down, StairKey hellDown, Collective* col);
 };
 
 #endif

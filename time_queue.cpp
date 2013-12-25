@@ -47,6 +47,7 @@ Creature* TimeQueue::getMinCreature() {
     queue.pop();
     removeDead();
     queue.push({elem.creature, elem.creature->getTime()});
+    CHECK(queue.top().creature->getTime() == queue.top().time);
     return queue.top().creature;
   }
   /*for (PCreature& c : creatures)

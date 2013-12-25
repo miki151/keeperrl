@@ -20,6 +20,7 @@ class VillageControl : public EventListener {
   protected:
   VillageControl(const Collective* villain, const Level*, StairDirection, StairKey, string name);
   map<const Creature*, int> attackTimes;
+  int lastAttackTime = -1;
   unordered_set<int> messages;
   const Collective* villain;
   const Level* level;

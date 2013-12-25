@@ -68,9 +68,20 @@ void Square::construct(SquareType type) {
   CHECK(canConstruct(type));
   if (--constructions[type] == 0) {
     PSquare newSquare = PSquare(SquareFactory::get(type));
-    onConstructNewSquare(newSquare.get());
     level->replaceSquare(position, std::move(newSquare));
   }
+}
+
+void Square::destroy(int strength) {
+  CHECK(canDestroy());
+  getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
+  EventListener::addSquareReplacedEvent(getLevel(), getPosition());
+  getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareType::FLOOR)));
+}
+
+void Square::burnOut() {
+  if (canDestroy())
+    destroy(12345);
 }
 
 const vector<Vec2>& Square::getTravelDir() const {

@@ -41,7 +41,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   virtual Vec2 getPosition() const override;
   bool dodgeAttack(Attack);
   bool takeDamage(Attack);
-  void heal(double amount = 1, bool replaceLimgs = false);
+  void heal(double amount = 1, bool replaceLimbs = false);
   double getHealth() const;
   double getWeight() const;
   void sleep(int time);
@@ -175,7 +175,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   bool isPanicking() const;
   Item* getWeapon() const;
 
-  Optional<Vec2> getMoveTowards(Vec2 pos, bool away = false);
+  Optional<Vec2> getMoveTowards(Vec2 pos, bool avoidEnemies = false);
   Optional<Vec2> getMoveAway(Vec2 pos, bool pathfinding = true);
   bool atTarget() const;
   void die(const Creature* attacker = nullptr, bool dropInventory = true);
@@ -204,10 +204,15 @@ class Creature : private CreatureAttributes, public CreatureView {
   void setSpeed(double);
   double getSpeed() const;
 
+  typedef function<bool(const Creature*)> EnemyVision;
+
+  void addEnemyVision(EnemyVision);
+
   protected:
   void setViewObject(const ViewObject&);
 
   private:
+  Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool avoidEnemies);
   double getInventoryWeight() const;
   Item* getAmmo() const;
   void updateViewObject();
@@ -273,6 +278,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   const Creature* holding = nullptr;
   PController controller;
   stack<PController> controllerStack;
+  vector<EnemyVision> enemyVision;
 };
 
 

@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+ItemPredicate mushroomPredicate = [](const Item* it) {
+  return contains({EffectType::STR_BONUS, EffectType::DEX_BONUS}, it->getEffectType());
+};
+
 Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
   if (it->getType() == ItemType::WEAPON)
     return MinionEquipment::WEAPON;
@@ -15,6 +19,8 @@ Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
   }
   if (it->getEffectType() == EffectType::HEAL)
     return MinionEquipment::HEALING;
+  if (mushroomPredicate(it))
+    return MinionEquipment::MUSHROOM;
   return Nothing();
 }
 
@@ -24,10 +30,12 @@ bool MinionEquipment::isItemUseful(const Item* it) {
 
 bool MinionEquipment::needs(const Creature* c, const Item* it) {
   EquipmentType type = *getEquipmentType(it);
-  return (type == ARROW && c->getEquipment().getItems(Item::typePredicate(ItemType::AMMO)).size() < 20) ||
+  return (type == ARROW && c->getEquipment().getItems(Item::typePredicate(ItemType::AMMO)).size() < 20 
+          && c->hasSkill(Skill::archery)) ||
       (!equipmentMap.count(make_pair(c, type)) &&
       (c->canEquip(it) || (type == HEALING && !c->isUndead() &&
-          c->getEquipment().getItems(Item::effectPredicate(EffectType::HEAL)).empty())));
+          c->getEquipment().getItems(Item::effectPredicate(EffectType::HEAL)).empty()) ||
+      (type == MUSHROOM && c->getEquipment().getItems(mushroomPredicate).empty())));
 }
 
 bool MinionEquipment::needsItem(const Creature* c, const Item* it) {

@@ -38,7 +38,17 @@ class GridLayout : public MapLayout {
     return squareW;
   }
 
-  virtual Vec2 projectOnScreen(Vec2 mapPos, double height) override {
+  virtual void increaseSize() override {
+    ++squareW;
+    ++squareH;
+  }
+
+  virtual void decreaseSize() {
+    --squareW;
+    --squareH;
+  }
+
+  virtual Vec2 projectOnScreen(Vec2 mapPos) override {
     return getBounds().middle() + (mapPos).mult(Vec2(squareW, squareH)) - center;
   }
 
@@ -82,7 +92,7 @@ class WorldLayout : public GridLayout {
       : GridLayout(screenW, screenH, 1, 1, leftM, topM, rightM, bottomM, 1,
           {ViewLayer::FLOOR, ViewLayer::CREATURE}) {}
 
-  virtual Vec2 projectOnScreen(Vec2 mapPos, double height) override {
+  virtual Vec2 projectOnScreen(Vec2 mapPos) override {
     return mapPos;
   }
 };
@@ -122,17 +132,17 @@ class TppLayout : public MapLayout {
     return screenPos;
   }
 
-  virtual Vec2 projectOnScreen(Vec2 mapPos, double height) override {
+  virtual Vec2 projectOnScreen(Vec2 mapPos) override {
     VecD dir = translateToScreen(mapPos - center);
     return getBounds().middle() + Vec2(offsetX + multX * atan2(dir.x, camOffset - dir.y) * squareW,
-        offsetY - multY * atan2(camOffset - dir.y, camHeight - height * 0) * squareH);
+        offsetY - multY * atan2(camOffset - dir.y, camHeight /* - height*/) * squareH);
   }
 
   virtual vector<Vec2> getAllTiles() override {
     int horizon = 50;
     vector<Vec2> ret;
     for (Vec2 v : Rectangle(center.x - horizon, center.y - horizon, center.x + horizon, center.y + horizon))
-      if (projectOnScreen(v, 0).inRectangle(getBounds()))
+      if (projectOnScreen(v).inRectangle(getBounds()))
         ret.push_back(v);
     return ret;
   }

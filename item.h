@@ -12,7 +12,7 @@
 class Level;
 
 class Item;
-typedef function<bool(Item*)> ItemPredicate;
+typedef function<bool(const Item*)> ItemPredicate;
 
 class Item : private ItemAttributes {
   public:

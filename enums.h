@@ -75,9 +75,14 @@ enum class SquareAttrib {
   RIVER,
   ROAD_CUT_THRU,
   ROOM,
+  COLLECTIVE_START,
+  COLLECTIVE_STAIRS,
 };
 
 ENUM_HASH(SquareAttrib);
+
+enum class Dir { N, S, E, W, NE, NW, SE, SW };
+ENUM_HASH(Dir);
 
 enum class StairKey { DWARF, CRYPT, GOBLIN, PLAYER_SPAWN, PYRAMID, TOWER };
 enum class StairDirection { UP, DOWN };
@@ -89,6 +94,9 @@ enum class CreatureId {
 
     SPECIAL_MONSTER,
     SPECIAL_MONSTER_HUMANOID,
+
+    DEVIL,
+    DARK_KNIGHT,
 
     ZOMBIE,
     VAMPIRE,
@@ -202,6 +210,12 @@ enum class HighlightType {
   POISON_GAS,
 };
 
+enum class StairLook {
+  NORMAL,
+  HELL,
+  PYRAMID,
+};
+
 const static vector<ViewLayer> allLayers =
     {ViewLayer::FLOOR, ViewLayer::ITEM, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE};
 
@@ -220,6 +234,8 @@ enum class ViewId {
   BILE_DEMON,
   HELL_HOUND,
   CHICKEN,
+  DARK_KNIGHT,
+  DEVIL,
   KNIGHT,
   AVATAR,
   ARCHER,
@@ -262,6 +278,8 @@ enum class ViewId {
   SAND,
   BRIDGE,
   PATH,
+  GRASS_ROAD,
+  HILL_ROAD,
   GRASS,
   WALL,
   HILL,
@@ -271,9 +289,14 @@ enum class ViewId {
   WOOD_WALL,
   BLACK_WALL,
   YELLOW_WALL,
+  HELL_WALL,
   SECRETPASS,
   DOWN_STAIRCASE,
   UP_STAIRCASE,
+  DOWN_STAIRCASE_HELL,
+  UP_STAIRCASE_HELL,
+  DOWN_STAIRCASE_PYR,
+  UP_STAIRCASE_PYR,
   CANIF_TREE,
   DECID_TREE,
   BUSH,
@@ -284,7 +307,9 @@ enum class ViewId {
   DOOR,
   FOUNTAIN,
   CHEST,
+  OPENED_CHEST,
   COFFIN,
+  OPENED_COFFIN,
   BED,
   TORTURE_TABLE,
   TRAINING_DUMMY,
@@ -356,7 +381,10 @@ enum class SquareType {
   FLOOR,
   BRIDGE,
   PATH,
+  GRASS_ROAD,
+  HILL_ROAD,
   GRASS,
+  HELL_WALL,
   ROCK_WALL,
   LOW_ROCK_WALL,
   WOOD_WALL,
@@ -383,6 +411,7 @@ enum class SquareType {
   DUNGEON_HEART,
   GRAVE,
   ROLLING_BOULDER,
+  POISON_GAS,
   FOUNTAIN,
   CHEST,
   TREASURE_CHEST,
