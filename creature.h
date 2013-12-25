@@ -124,7 +124,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   void drop(const vector<Item*>& item);
   void drop(vector<PItem> item);
   bool canAttack(const Creature*) const;
-  void attack(const Creature*);
+  void attack(const Creature*, bool spendTime = true);
   bool canBumpInto(Vec2 direction) const;
   void bumpInto(Vec2 direction);
   void applyItem(Item* item);

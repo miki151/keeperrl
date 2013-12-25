@@ -59,8 +59,8 @@ class Portal : public Trigger {
     if (startTime == -1)
       startTime = time;
     if (time - startTime >= 100) {
-      level->getSquare(position)->removeTrigger(this);
       level->globalMessage(position, "The portal disappears.");
+      level->getSquare(position)->removeTrigger(this);
     }
   }
 
