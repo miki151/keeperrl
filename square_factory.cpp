@@ -391,8 +391,11 @@ class Altar : public Square {
         + deity->getEpithets());
   }
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
-    return SquareApplyType::PRAY;
+  virtual Optional<SquareApplyType> getApplyType(const Creature* c) const override { 
+    if (c->isHumanoid())
+      return SquareApplyType::PRAY;
+    else
+      return Nothing();
   }
 
   virtual void onApply(Creature* c) override {

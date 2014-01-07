@@ -202,6 +202,8 @@ void Player::dropAction(bool extended) {
 }
 
 void Player::onItemsAppeared(vector<Item*> items) {
+  if (!creature->canPickUp(items))
+    return;
   vector<string> names;
   vector<vector<Item*> > groups;
   getItemNames(items, names, groups);
@@ -218,6 +220,12 @@ void Player::onItemsAppeared(vector<Item*> items) {
 }
 
 void Player::applyAction() {
+  if (!creature->isHumanoid())
+    return;
+  if (creature->numGoodArms() == 0) {
+    privateMessage("You don't have hands!");
+    return;
+  }
   vector<Item*> items = chooseItem("Choose an item to apply:", [this](Item* item) {
       return (
                item->getType() == ItemType::TOOL ||

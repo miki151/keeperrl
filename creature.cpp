@@ -1340,13 +1340,7 @@ void Creature::applyItem(Item* item) {
 }
 
 bool Creature::canApplyItem(Item* item) const {
-  if (!isHumanoid())
-    return false;
-  if (!numGoodArms()) {
-    privateMessage("You don't have hands!");
-    return false;
-  } else
-    return true; 
+  return isHumanoid() && numGoodArms() > 0;
 }
 
 bool Creature::canThrowItem(Item* item) {
