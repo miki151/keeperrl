@@ -511,6 +511,17 @@ class GuardSquare : public GuardTarget {
   Vec2 pos;
 };
 
+class Wait : public Behaviour {
+  public:
+  Wait(Creature* c) : Behaviour(c) {}
+
+  virtual MoveInfo getMove() override {
+    return {1.0, [this] () {
+      creature->wait();
+    }};
+  }
+};
+
 class GuardCreature : public GuardTarget, public EventListener {
   public:
   GuardCreature(Creature* c, Creature* _target, double minDist, double maxDist) 
@@ -740,18 +751,24 @@ MonsterAIFactory MonsterAIFactory::villageControl(VillageControl* col, Location*
       });
 }
 
-MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l) {
-  return MonsterAIFactory([l](Creature* c) {
+MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l, bool moveRandomly) {
+  return MonsterAIFactory([=](Creature* c) {
       vector<Behaviour*> actors { 
           new Heal(c),
           new Thief(c),
           new Fighter(c, 0.6, true),
-          new MoveRandomly(c, 3),
           new AttackPest(c),
           new GoldLust(c)};
-      vector<int> weights { 5, 4, 3, 1, 1, 1 };
+      vector<int> weights { 5, 4, 3, 1, 1 };
       if (l != nullptr) {
         actors.push_back(new GuardArea(c, l));
+        weights.push_back(1);
+      }
+      if (moveRandomly) {
+        actors.push_back(new MoveRandomly(c, 3));
+        weights.push_back(1);
+      } else {
+        actors.push_back(new Wait(c));
         weights.push_back(1);
       }
       return new MonsterAI(c, actors, weights);

@@ -859,7 +859,7 @@ void Creature::injureHead(bool drop) {
     ++injuredHeads;
   if (drop)
     getSquare()->dropItem(ItemFactory::corpse(*name +" head", *name + " skull", *weight / 12,
-          isFood ? ItemType::FOOD : ItemType::CORPSE, {false}));
+          isFood ? ItemType::FOOD : ItemType::CORPSE));
 }
 
 void Creature::attack(const Creature* c1, bool spend) {
@@ -1202,7 +1202,7 @@ void Creature::take(PItem item) {
 
 void Creature::dropCorpse() {
   getSquare()->dropItem(ItemFactory::corpse(*name + " corpse", *name + " skeleton", *weight,
-        isFood ? ItemType::FOOD : ItemType::CORPSE, {true}));
+        isFood ? ItemType::FOOD : ItemType::CORPSE, {true, heads > 0}));
 }
 
 void Creature::die(const Creature* attacker, bool dropInventory) {
@@ -1471,6 +1471,10 @@ int Creature::numLegs() const {
 
 int Creature::numWings() const {
   return wings;
+}
+
+int Creature::numHeads() const {
+  return heads;
 }
 
 bool Creature::lostLimbs() const {

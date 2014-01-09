@@ -352,6 +352,22 @@ int Rectangle::getH() const {
   return ky - py;
 }
 
+Vec2 Rectangle::getTopLeft() const {
+  return Vec2(px, py);
+}
+
+Vec2 Rectangle::getBottomRight() const {
+  return Vec2(kx, ky);
+}
+
+Vec2 Rectangle::getTopRight() const {
+  return Vec2(kx, py);
+}
+
+Vec2 Rectangle::getBottomLeft() const {
+  return Vec2(px, ky);
+}
+
 bool Rectangle::intersects(const Rectangle& other) const {
   return max(px, other.px) < min(kx, other.kx) && max(py, other.py) < min(ky, other.ky);
 }

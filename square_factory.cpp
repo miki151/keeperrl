@@ -153,8 +153,8 @@ class Chest : public Square {
     s->dropItems(std::move(item));
   }
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
-    if (opened) 
+  virtual Optional<SquareApplyType> getApplyType(const Creature* c) const override { 
+    if (opened || !c->isHumanoid()) 
       return Nothing();
     else
       return SquareApplyType::USE_CHEST;
@@ -294,7 +294,7 @@ class Door : public Square {
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return true;
+    return c->canWalk();
   }
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -468,7 +468,7 @@ class Hatchery : public Square {
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return c->canWalk() || c->getName() == "chicken";
+    return c->canWalk() || c->getName() == "chicken" || c->getName() == "pig";
   }
 
 };
@@ -489,6 +489,8 @@ Square* SquareFactory::get(SquareType s) {
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR, "Rope bridge"), "rope bridge", true);
     case SquareType::GRASS:
         return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR, "Grass"), "grass", true);
+    case SquareType::MUD:
+        return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR, "Mud"), "mud", true);
     case SquareType::GRASS_ROAD:
         return new Square(ViewObject(ViewId::GRASS_ROAD, ViewLayer::FLOOR, "Road"), "road", true);
     case SquareType::HILL_ROAD:
@@ -501,7 +503,7 @@ Square* SquareFactory::get(SquareType s) {
             {{SquareType::FLOOR, Random.getRandom(30, 80)}},
             ItemFactory::fromId(ItemId::GOLD_PIECE, Random.getRandom(30, 60)));
     case SquareType::LOW_ROCK_WALL:
-        return new SolidSquare(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Wall"), "wall", true);
+        return new SolidSquare(ViewObject(ViewId::LOW_ROCK_WALL, ViewLayer::FLOOR, "Wall"), "wall", false);
     case SquareType::WOOD_WALL:
         return new SolidSquare(ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR, "Wooden wall", true), "wall", false);
     case SquareType::BLACK_WALL:
@@ -510,6 +512,8 @@ Square* SquareFactory::get(SquareType s) {
         return new SolidSquare(ViewObject(ViewId::YELLOW_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
     case SquareType::HELL_WALL:
         return new SolidSquare(ViewObject(ViewId::HELL_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
+    case SquareType::CASTLE_WALL:
+        return new SolidSquare(ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
     case SquareType::MOUNTAIN:
         return new SolidSquare(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain"), "mountain", true);
     case SquareType::GLACIER:
@@ -544,7 +548,7 @@ Square* SquareFactory::get(SquareType s) {
         return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), 
             "workshop stand", ItemFactory::workshop());
     case SquareType::HATCHERY:
-        return new Hatchery(ViewObject(ViewId::GRASS, ViewLayer::FLOOR, "Hatchery"), "hatchery");
+        return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR, "Hatchery"), "hatchery");
     case SquareType::DUNGEON_HEART:
         return new SolidSquare(ViewObject(ViewId::DUNGEON_HEART, ViewLayer::FLOOR, "Dungeon heart"),
             "dungeon heart", true);
@@ -581,7 +585,9 @@ Square* SquareFactory::getStairs(StairDirection direction, StairKey key, StairLo
   switch (look) {
     case StairLook::NORMAL: id1 = ViewId::UP_STAIRCASE; id2 = ViewId::DOWN_STAIRCASE; break;
     case StairLook::HELL: id1 = ViewId::UP_STAIRCASE_HELL; id2 = ViewId::DOWN_STAIRCASE_HELL; break;
+    case StairLook::CELLAR: id1 = ViewId::UP_STAIRCASE_CELLAR; id2 = ViewId::DOWN_STAIRCASE_CELLAR; break;
     case StairLook::PYRAMID: id1 = ViewId::UP_STAIRCASE_PYR; id2 = ViewId::DOWN_STAIRCASE_PYR; break;
+    case StairLook::DUNGEON_ENTRANCE: id1 = id2 = ViewId::DUNGEON_ENTRANCE; break;
   }
   switch (direction) {
     case StairDirection::UP:

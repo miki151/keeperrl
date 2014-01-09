@@ -46,7 +46,7 @@ class Model {
   Model(View* view);
   Level* buildLevel(Level::Builder&& b, LevelMaker*, bool surface = false);
   void addLink(StairDirection, StairKey, Level*, Level*);
-  Level* prepareTopLevel(vector<Location*>, vector<CreatureFactory> cfactory);
+  Level* prepareTopLevel(vector<SettlementInfo> settlements);
 
   vector<Level*> levels;
   View* view;

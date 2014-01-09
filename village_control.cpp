@@ -101,8 +101,8 @@ class HumanVillageControl : public VillageControl {
   vector<Vec2> genPathToDungeon() {
     Vec2 start(-1, -1);
     const Level* level = villageLocation->getLevel();
-    for (Vec2 v : villageLocation->getBounds())
-      if (!level->getSquare(v)->getTravelDir().empty()) {
+    for (Vec2 v : villageLocation->getBounds().minusMargin(-1))
+      if (level->getSquare(v)->getName() == "road") {
         start = v;
         break;
       }

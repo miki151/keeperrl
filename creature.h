@@ -97,6 +97,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   int numArms() const;
   int numLegs() const;
   int numWings() const;
+  int numHeads() const;
   bool lostLimbs() const;
   int numGoodArms() const;
   int numGoodLegs() const;

@@ -513,6 +513,8 @@ class VillageElder : public Creature {
     }
     if (tribeQuest(who))
       return;
+    Creature::onChat(who);
+    return;
  //   if (teach(who))
  //     return;
     const vector<Location*> locations = getLevel()->getAllLocations();
@@ -590,10 +592,16 @@ CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const ve
     : tribe(t), creatures(c), weights(w), unique(u) {
 }
 
+CreatureFactory CreatureFactory::humanVillagePeaceful() {
+  return CreatureFactory(Tribe::human, { CreatureId::PESEANT,
+      CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG },
+      { 2, 1, 1, 1, 1}, {});
+}
+
 CreatureFactory CreatureFactory::humanVillage() {
-  return CreatureFactory(Tribe::elven, { CreatureId::PESEANT,
-      CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW },
-      { 2, 1, 1, 1}, {});
+  return CreatureFactory(Tribe::human, { CreatureId::PESEANT, CreatureId::KNIGHT,
+      CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG },
+      { 2, 1, 1, 1, 1, 1}, { CreatureId::AVATAR});
 }
 
 CreatureFactory CreatureFactory::elvenVillage() {
@@ -609,7 +617,7 @@ CreatureFactory CreatureFactory::elvenVillagePeaceful() {
 CreatureFactory CreatureFactory::forrest() {
   return CreatureFactory(Tribe::wildlife,
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR, CreatureId::LEPRECHAUN },
-      { 2, 1, 1, 1}, {});
+      { 4, 2, 2, 1}, {});
 }
 
 CreatureFactory CreatureFactory::crypt() {
@@ -635,19 +643,19 @@ CreatureFactory CreatureFactory::collectiveMinions() {
 }
 
 CreatureFactory CreatureFactory::collectiveEnemies() {
-  return CreatureFactory(Tribe::monster, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {});
+  return CreatureFactory(Tribe::human, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {});
 }
 
 CreatureFactory CreatureFactory::collectiveFinalAttack() {
-  return CreatureFactory(Tribe::monster, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {CreatureId::AVATAR});
+  return CreatureFactory(Tribe::human, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {CreatureId::AVATAR});
 }
 
 CreatureFactory CreatureFactory::collectiveElfEnemies() {
-  return CreatureFactory(Tribe::monster, { CreatureId::ELF}, { 1}, {});
+  return CreatureFactory(Tribe::elven, { CreatureId::ELF}, { 1}, {});
 }
 
 CreatureFactory CreatureFactory::collectiveElfFinalAttack() {
-  return CreatureFactory(Tribe::monster, { CreatureId::ELF, }, { 1}, {CreatureId::ELF_LORD});
+  return CreatureFactory(Tribe::elven, { CreatureId::ELF, }, { 1}, {CreatureId::ELF_LORD});
 }
 
 CreatureFactory CreatureFactory::collectiveSurpriseEnemies() {
@@ -832,6 +840,18 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all law enforcement";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "bandit";), tribe, factory);
+    case CreatureId::GHOST: return get(ViewId::GHOST, CATTR(
+                                c.speed = 80;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 13;
+                                c.dexterity = 19;
+                                c.barehandedDamage = 10;
+                                c.humanoid = false;
+                                c.noBody = true;
+                                c.weight = 10;
+                                c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
+                                c.chatReactionHostile = "\"Wouuuouuu!!!\"";
+                                c.name = "ghost";), tribe, factory);
     case CreatureId::DEVIL: return get(ViewId::DEVIL, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
@@ -865,6 +885,17 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all dungeons";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "knight";), tribe, factory);
+    case CreatureId::CASTLE_GUARD: return get(ViewId::CASTLE_GUARD, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 19;
+                                c.dexterity = 16;
+                                c.barehandedDamage = 3;
+                                c.humanoid = true;
+                                c.weight = 100;
+                                c.chatReactionFriendly = "curses all dungeons";
+                                c.chatReactionHostile = "\"Die!\"";
+                                c.name = "guard";), tribe, factory);
     case CreatureId::AVATAR: return get(ViewId::AVATAR, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
@@ -1424,6 +1455,7 @@ vector<ItemId> getInventory(CreatureId id) {
             .add(ItemId::LEATHER_ARMOR)
             .add(randomHealing())
             .add(ItemId::GOLD_PIECE, Random.getRandom(20, 50));
+    case CreatureId::CASTLE_GUARD:
     case CreatureId::KNIGHT: return ItemList()
             .add(ItemId::SWORD)
             .add(ItemId::CHAIN_ARMOR)

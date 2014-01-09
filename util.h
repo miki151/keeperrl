@@ -123,6 +123,11 @@ class Rectangle {
   int getW() const;
   int getH() const;
 
+  Vec2 getTopLeft() const;
+  Vec2 getBottomRight() const;
+  Vec2 getTopRight() const;
+  Vec2 getBottomLeft() const;
+
   bool intersects(const Rectangle& other) const;
 
   Rectangle minusMargin(int margin) const;
@@ -651,6 +656,8 @@ T getOnlyElement(const vector<T>& v) {
 }
 
 inline string addAParticle(const string& s) {
+  if (isupper(s[0]))
+    return s;
   if (contains({'a', 'e', 'u', 'i', 'o'}, s[0]))
     return string("an ") + s;
   else

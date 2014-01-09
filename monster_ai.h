@@ -61,7 +61,8 @@ class MonsterAIFactory {
   static MonsterAIFactory collective(Collective*);
   static MonsterAIFactory villageControl(VillageControl*, Location*);
   static MonsterAIFactory monster();
-  static MonsterAIFactory stayInLocation(Location*);
+  static MonsterAIFactory stayInLocation(Location*, bool moveRandomly = true);
+  static MonsterAIFactory guardSquare(Vec2 pos);
   static MonsterAIFactory wildlifeNonPredator();
   static MonsterAIFactory scavengerBird(Vec2 corpsePos);
   static MonsterAIFactory follower(Creature*, int radius);

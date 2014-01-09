@@ -73,10 +73,10 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker, bool surface) {
 Model::Model(View* v) : view(v) {
 }
 
-Level* Model::prepareTopLevel(vector<Location*> villageLocation, vector<CreatureFactory> cfactory) {
+Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
   Level* top = buildLevel(
       Level::Builder(600, 600, "Wilderness"),
-      LevelMaker::topLevel(CreatureFactory::forrest(), cfactory, villageLocation),
+      LevelMaker::topLevel(CreatureFactory::forrest(), settlements),
       true);
   Level* c1 = buildLevel(
       Level::Builder(30, 20, "Crypt"),
@@ -87,13 +87,18 @@ Level* Model::prepareTopLevel(vector<Location*> villageLocation, vector<Creature
   Level* p2 = buildLevel(
       Level::Builder(11, 11, "Pyramid Level 3"),
       LevelMaker::pyramidLevel(CreatureFactory::pyramid(2), {}, {StairKey::PYRAMID}));
+  Level* cellar = buildLevel(
+      Level::Builder(30, 20, "Cellar"),
+      LevelMaker::cellarLevel(CreatureFactory::singleType(Tribe::monster, CreatureId::GHOST),
+          SquareType::LOW_ROCK_WALL, StairLook::CELLAR, {StairKey::CASTLE_CELLAR}, {}));
   addLink(StairDirection::DOWN, StairKey::CRYPT, top, c1);
   addLink(StairDirection::UP, StairKey::PYRAMID, top, p1);
   addLink(StairDirection::UP, StairKey::PYRAMID, p1, p2);
+  addLink(StairDirection::DOWN, StairKey::CASTLE_CELLAR, top, cellar);
   return top;
 }
 
-static const int numVillages = 2;
+static const int numVillages = 3;
 
 vector<Location*> getVillageLocations() {
   vector<Location*> ret;
@@ -104,8 +109,11 @@ vector<Location*> getVillageLocations() {
 
 Model* Model::heroModel(View* view, const string& heroName) {
   Model* m = new Model(view);
-  Level* top = m->prepareTopLevel(getVillageLocations(),
-      {CreatureFactory::humanVillage(), CreatureFactory::elvenVillage()});
+  vector<Location*> locations = getVillageLocations();
+  Level* top = m->prepareTopLevel({
+      {SettlementType::CASTLE, CreatureFactory::humanVillage(), locations[0], Tribe::human},
+      {SettlementType::VILLAGE, CreatureFactory::humanVillagePeaceful(), locations[1], Tribe::human},
+      {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), locations[2], Tribe::elven}});
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(1), {StairKey::DWARF}, {StairKey::DWARF}));
@@ -164,9 +172,9 @@ Model* Model::heroModel(View* view, const string& heroName) {
   for (int i : Range(Random.getRandom(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
   Tribe::goblin->makeSlightEnemy(player.get());
-  Level* start = d1;
+  Level* start = top;
   start->setPlayer(player.get());
-  start->landCreature(StairDirection::UP, StairKey::DWARF, std::move(player));
+  start->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(player));
   return m;
 }
 
@@ -174,8 +182,10 @@ Model* Model::collectiveModel(View* view, int numCreatures) {
   Model* m = new Model(view);
   CreatureFactory factory = CreatureFactory::collectiveStart();
   vector<Location*> villageLocations = getVillageLocations();
-  Level* top = m->prepareTopLevel(villageLocations,
-      {CreatureFactory::humanVillage(), CreatureFactory::elvenVillagePeaceful()});
+  Level* top = m->prepareTopLevel({
+      {SettlementType::CASTLE, CreatureFactory::humanVillagePeaceful(), villageLocations[0], Tribe::human},
+      {SettlementType::VILLAGE, CreatureFactory::elvenVillagePeaceful(), villageLocations[1], Tribe::elven},
+      {SettlementType::VILLAGE, CreatureFactory::humanVillagePeaceful(), villageLocations[2], Tribe::human}});
   Level* second = m->buildLevel(
           Level::Builder(60, 35, "Dungeons of doom "),
           LevelMaker::roomLevel(CreatureFactory::level(3), {StairKey::DWARF}, {StairKey::DWARF}));
@@ -188,7 +198,8 @@ Model* Model::collectiveModel(View* view, int numCreatures) {
               {StairKey::DWARF}, {}));
   Level* hell = m->buildLevel(
           Level::Builder(30, 20, "Hell"),
-          LevelMaker::hellLevel(CreatureFactory::hellLevel(), {StairKey::TOWER}, {}));
+          LevelMaker::cellarLevel(CreatureFactory::hellLevel(), SquareType::HELL_WALL, StairLook::HELL,
+              {StairKey::TOWER}, {}));
   m->addLink(StairDirection::DOWN, StairKey::DWARF, top, l);
   m->addLink(StairDirection::DOWN, StairKey::DWARF, l, second);
   m->addLink(StairDirection::DOWN, StairKey::DWARF, second, dwarf);
@@ -197,6 +208,7 @@ Model* Model::collectiveModel(View* view, int numCreatures) {
   Tribe::elven->addEnemy(Tribe::player);
   Tribe::dwarven->addEnemy(Tribe::player);
   Tribe::goblin->addEnemy(Tribe::player);
+  Tribe::human->addEnemy(Tribe::player);
   for (int i : Range(numCreatures)) {
     PCreature c = factory.random(MonsterAIFactory::collective(m->collective));
     l->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
@@ -211,14 +223,12 @@ Model* Model::collectiveModel(View* view, int numCreatures) {
     { CreatureFactory::collectiveEnemies(), CreatureFactory::collectiveFinalAttack() },
     { CreatureFactory::collectiveElfEnemies(), CreatureFactory::collectiveElfFinalAttack() }
   };
-  CHECK(villageFactories.size() == villageLocations.size());
   int cnt = 0;
   for (Location* loc : villageLocations) {
     VillageControl* control = VillageControl::humanVillage(m->collective, loc,
         StairDirection::DOWN, StairKey::DWARF);
     CreatureFactory firstAttack = villageFactories[cnt].first;
     CreatureFactory lastAttack = villageFactories[cnt].second;
-    ++cnt;
     for (int i : All(heroAttackTime)) {
       int attackTime = get<0>(heroAttackTime[i]) + Random.getRandom(-200, 200);
       int heroCount = Random.getRandom(get<1>(heroAttackTime[i]), get<2>(heroAttackTime[i]));
@@ -229,6 +239,8 @@ Model* Model::collectiveModel(View* view, int numCreatures) {
         top->landCreature(loc->getBounds().getAllSquares(), std::move(c));
       }
     }
+    if (++cnt > 1)
+      break;
   }
   VillageControl* dwarfControl = VillageControl::dwarfVillage(m->collective, l, StairDirection::UP, StairKey::DWARF);
   CreatureFactory firstAttack = CreatureFactory::singleType(Tribe::dwarven, CreatureId::DWARF);

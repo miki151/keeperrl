@@ -15,6 +15,7 @@ Tribe* const Tribe::monster = new Tribe("", false);
 Tribe* const Tribe::pest = new Tribe("", false);
 Tribe* const Tribe::wildlife = new Tribe("", false);
 Tribe* const Tribe::elven = new Tribe("elves", true);
+Tribe* const Tribe::human = new Tribe("humans", true);
 Tribe* const Tribe::goblin = new Tribe("goblins", true);
 Tribe* const Tribe::dwarven = new Tribe("dwarves", true);
 Tribe* const Tribe::player = new Tribe("", false);
@@ -105,6 +106,7 @@ void Tribe::init() {
   EventListener::addListener(goblin);
   EventListener::addListener(dwarven);
   EventListener::addListener(elven);
+  EventListener::addListener(human);
   elven->addEnemy(goblin);
   elven->addEnemy(dwarven);
   goblin->addEnemy(dwarven);

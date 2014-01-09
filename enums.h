@@ -49,6 +49,7 @@ enum class MsgType {
     BURN,
     DROWN,
     SET_UP_TRAP,
+    DECAPITATE,
     KILLED_BY,
     MISS_ATTACK}; //
 enum class BodyPart { HEAD, TORSO, ARM, WING, LEG, BACK};
@@ -84,7 +85,7 @@ ENUM_HASH(SquareAttrib);
 enum class Dir { N, S, E, W, NE, NW, SE, SW };
 ENUM_HASH(Dir);
 
-enum class StairKey { DWARF, CRYPT, GOBLIN, PLAYER_SPAWN, PYRAMID, TOWER };
+enum class StairKey { DWARF, CRYPT, GOBLIN, PLAYER_SPAWN, PYRAMID, TOWER, CASTLE_CELLAR };
 enum class StairDirection { UP, DOWN };
 
 enum class CreatureId {
@@ -95,6 +96,7 @@ enum class CreatureId {
     SPECIAL_MONSTER,
     SPECIAL_MONSTER_HUMANOID,
 
+    GHOST,
     DEVIL,
     DARK_KNIGHT,
 
@@ -115,6 +117,7 @@ enum class CreatureId {
 
     KNIGHT,
     AVATAR,
+    CASTLE_GUARD,
     ARCHER,
     PESEANT,
     CHILD,
@@ -213,7 +216,14 @@ enum class HighlightType {
 enum class StairLook {
   NORMAL,
   HELL,
+  CELLAR,
   PYRAMID,
+  DUNGEON_ENTRANCE,
+};
+
+enum class SettlementType {
+  VILLAGE,
+  CASTLE,
 };
 
 const static vector<ViewLayer> allLayers =
@@ -235,8 +245,10 @@ enum class ViewId {
   HELL_HOUND,
   CHICKEN,
   DARK_KNIGHT,
+  GHOST,
   DEVIL,
   KNIGHT,
+  CASTLE_GUARD,
   AVATAR,
   ARCHER,
   PESEANT,
@@ -281,6 +293,7 @@ enum class ViewId {
   GRASS_ROAD,
   HILL_ROAD,
   GRASS,
+  MUD,
   WALL,
   HILL,
   MOUNTAIN,
@@ -290,11 +303,16 @@ enum class ViewId {
   BLACK_WALL,
   YELLOW_WALL,
   HELL_WALL,
+  LOW_ROCK_WALL,
+  CASTLE_WALL,
   SECRETPASS,
+  DUNGEON_ENTRANCE,
   DOWN_STAIRCASE,
   UP_STAIRCASE,
   DOWN_STAIRCASE_HELL,
   UP_STAIRCASE_HELL,
+  DOWN_STAIRCASE_CELLAR,
+  UP_STAIRCASE_CELLAR,
   DOWN_STAIRCASE_PYR,
   UP_STAIRCASE_PYR,
   CANIF_TREE,
@@ -384,12 +402,14 @@ enum class SquareType {
   GRASS_ROAD,
   HILL_ROAD,
   GRASS,
+  MUD,
   HELL_WALL,
   ROCK_WALL,
   LOW_ROCK_WALL,
   WOOD_WALL,
   BLACK_WALL,
   YELLOW_WALL,
+  CASTLE_WALL,
   MOUNTAIN,
   GLACIER,
   HILL,
@@ -424,6 +444,19 @@ enum class SquareType {
   BORDER_GUARD,
   ALTAR,
 };
+
+inline bool isWall(SquareType type) {
+  switch (type) {
+    case SquareType::HELL_WALL:
+    case SquareType::LOW_ROCK_WALL:
+    case SquareType::ROCK_WALL:
+    case SquareType::BLACK_WALL:
+    case SquareType::YELLOW_WALL:
+    case SquareType::WOOD_WALL:
+    case SquareType::CASTLE_WALL: return true;
+    default: return false;
+  }
+}
 
 
 #endif

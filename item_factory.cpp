@@ -107,6 +107,16 @@ class Corpse : public Item {
       rottenName(rottenN) {
   }
 
+  virtual void apply(Creature* c, Level* l) override {
+    Item* it = c->getEquipment().getItem(EquipmentSlot::WEAPON);
+    if (it && it->getAttackType() == AttackType::CUT) {
+      c->you(MsgType::DECAPITATE, getTheName());
+      setName("decapitated " + getName());
+    } else {
+      c->privateMessage("You need something sharp to decapitate the corpse.");
+    }
+  }
+
   virtual void specialTick(double time, Level* level, Vec2 position) override {
     if (rottenTime == -1)
       rottenTime = time + rottingTime;

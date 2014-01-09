@@ -43,19 +43,18 @@ const Level* Location::getLevel() const {
 class TowerTopLocation : public Location {
   public:
 
-/*  virtual void onCreature(Creature* cr) override {
-    if (!cr->isPlayer())
+  virtual void onCreature(Creature* c) override {
+    if (!c->isPlayer())
       return;
-    Player* c = dynamic_cast<Player*>(cr);
     if (!entered.count(c) && !c->isBlind()) {
-      for (Vec2 v : c->getLevel()->getBounds())
+ /*     for (Vec2 v : c->getLevel()->getBounds())
         if ((v - c->getPosition()).lengthD() < 300 && !c->getLevel()->getSquare(v)->isCovered())
-          c->remember(v, c->getLevel()->getSquare(v)->getViewObject());
+          c->remember(v, c->getLevel()->getSquare(v)->getViewObject());*/
       c->privateMessage("You stand at the top of a very tall stone tower.");
       c->privateMessage("You see distant land in all directions.");
       entered.insert(c);
     }
-  }*/
+  }
 
   private:
   unordered_set<Creature*> entered;

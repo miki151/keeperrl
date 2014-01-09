@@ -29,6 +29,7 @@ class Tribe : public EventListener {
   static Tribe* const monster;
   static Tribe* const pest;
   static Tribe* const wildlife;
+  static Tribe* const human;
   static Tribe* const elven;
   static Tribe* const dwarven;
   static Tribe* const goblin;

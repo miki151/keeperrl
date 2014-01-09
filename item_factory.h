@@ -33,9 +33,9 @@ class ItemFactory {
   static PItem fromId(ItemId);
   static vector<PItem> fromId(ItemId, int num);
   static PItem corpse(const string& name, const string& rottenName, double weight, ItemType = ItemType::CORPSE,
-      Item::CorpseInfo corpseInfo = {false});
+      Item::CorpseInfo corpseInfo = {false, false});
   static PItem corpse(CreatureId, ItemType type = ItemType::CORPSE,
-      Item::CorpseInfo corpseInfo = {false});
+      Item::CorpseInfo corpseInfo = {false, false});
   static PItem trapItem(PTrigger trigger, string trapName);
 
   static void init();
