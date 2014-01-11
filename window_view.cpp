@@ -195,7 +195,7 @@ Tile getSprite(ViewId id) {
     case ViewId::ELF_LORD: return Tile(13, 6);
     case ViewId::ELVEN_SHOPKEEPER: return Tile(4, 2);
     case ViewId::IMP: return Tile(18, 0);
-    case ViewId::BILE_DEMON: return Tile(9, 14);
+    case ViewId::BILE_DEMON: return Tile(8, 14);
     case ViewId::HELL_HOUND: return Tile(14, 12);
     case ViewId::CHICKEN: return Tile(18, 1);
     case ViewId::DWARF: return Tile(2, 6);
@@ -289,10 +289,13 @@ Tile getSprite(ViewId id) {
     case ViewId::ABYSS: return Tile('~', darkGray);
     case ViewId::DOOR: return Tile(4, 2, 2, getSprite(ViewId::FLOOR));
     case ViewId::SWORD: return Tile(12, 9, 3);
+    case ViewId::SPECIAL_SWORD: return Tile(13, 9, 3);
     case ViewId::ELVEN_SWORD: return Tile(14, 9, 3);
     case ViewId::KNIFE: return Tile(20, 9, 3);
     case ViewId::WAR_HAMMER: return Tile(10, 7, 3);
+    case ViewId::SPECIAL_WAR_HAMMER: return Tile(11, 7, 3);
     case ViewId::BATTLE_AXE: return Tile(13, 7, 3);
+    case ViewId::SPECIAL_BATTLE_AXE: return Tile(21, 7, 3);
     case ViewId::BOW: return Tile(14, 8, 3);
     case ViewId::ARROW: return Tile(5, 8, 3);
     case ViewId::SCROLL: return Tile(3, 6, 3);
@@ -344,6 +347,9 @@ Tile getSprite(ViewId id) {
     case ViewId::LEATHER_HELM: return Tile(10, 12, 3);
     case ViewId::CHAIN_ARMOR: return Tile(1, 12, 3);
     case ViewId::IRON_HELM: return Tile(14, 12, 3);
+    case ViewId::LEATHER_BOOTS: return Tile(0, 13, 3);
+    case ViewId::IRON_BOOTS: return Tile(6, 13, 3);
+    case ViewId::SPEED_BOOTS: return Tile(3, 13, 3);
     case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
     case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
     case ViewId::FALLEN_TREE: return Tile('*', green);
@@ -400,7 +406,9 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::HELL_WALL: return Tile('#', red);
     case ViewId::SECRETPASS: return Tile('#', lightGray);
     case ViewId::DUNGEON_ENTRANCE:
+    case ViewId::DOWN_STAIRCASE_CELLAR:
     case ViewId::DOWN_STAIRCASE: return Tile(0x2798, almostWhite, true);
+    case ViewId::UP_STAIRCASE_CELLAR:
     case ViewId::UP_STAIRCASE: return Tile(0x279a, almostWhite, true);
     case ViewId::DOWN_STAIRCASE_HELL: return Tile(0x2798, red, true);
     case ViewId::UP_STAIRCASE_HELL: return Tile(0x279a, red, true);
@@ -453,12 +461,15 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::WATER: return Tile('~', lightBlue);
     case ViewId::MAGMA: return Tile('~', red);
     case ViewId::ABYSS: return Tile('~', darkGray);
-    case ViewId::DOOR: return Tile(0x1f062, brown, true);
+    case ViewId::DOOR: return Tile('|', brown);
     case ViewId::SWORD: return Tile(')', lightGray);
+    case ViewId::SPECIAL_SWORD: return Tile(')', yellow);
     case ViewId::ELVEN_SWORD: return Tile(')', gray);
     case ViewId::KNIFE: return Tile(')', white);
     case ViewId::WAR_HAMMER: return Tile(')', blue);
+    case ViewId::SPECIAL_WAR_HAMMER: return Tile(')', lightBlue);
     case ViewId::BATTLE_AXE: return Tile(')', green);
+    case ViewId::SPECIAL_BATTLE_AXE: return Tile(')', lightGreen);
     case ViewId::BOW: return Tile(')', brown);
     case ViewId::ARROW: return Tile('\\', brown);
     case ViewId::SCROLL: return Tile('?', white);
@@ -510,6 +521,9 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::LEATHER_HELM: return Tile('[', brown);
     case ViewId::CHAIN_ARMOR: return Tile('[', lightGray);
     case ViewId::IRON_HELM: return Tile('[', lightGray);
+    case ViewId::LEATHER_BOOTS: return Tile('[', brown);
+    case ViewId::IRON_BOOTS: return Tile('[', lightGray);
+    case ViewId::SPEED_BOOTS: return Tile('[', lightBlue);
     case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
     case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
     case ViewId::FALLEN_TREE: return Tile('*', green);
@@ -520,7 +534,12 @@ Tile getAsciiTile(const ViewObject& obj) {
   return Tile(' ', white);
 }
 
-auto getTile = getSpriteTile;
+static Tile getTile(const ViewObject& obj, bool sprite) {
+  if (sprite)
+    return getSpriteTile(obj);
+  else
+    return getAsciiTile(obj);
+}
 
 RenderWindow* display;
 sf::View* sfView;
@@ -581,6 +600,11 @@ class Clock {
 
 static Clock myClock;
 
+static int getTextLength(string s, const Font& font = textFont, int size = textSize) {
+  Text t(s, font, size);
+  return t.getLocalBounds().width;
+}
+
 static void drawText(const Font& font, int size, Color color, int x, int y, String s, bool center = false) {
   int ox = 0;
   int oy = 0;
@@ -634,18 +658,25 @@ void WindowView::initialize() {
   tileFont.loadFromFile("coolvetica rg.ttf");
   symbolFont.loadFromFile("Symbola.ttf");
 
-  Vec2 size = (getTile == getSpriteTile ? Vec2(36, 36) : Vec2(16, 20));
-  normalLayout = MapLayout::gridLayout(screenWidth, screenHeight, size.x, size.y, -20, 0, 225, 0, 1, allLayers);
-  tppLayout = MapLayout::tppLayout(screenWidth, screenHeight, 18, 18, 0, 30, 220, 85);
-  unzoomLayout = MapLayout::gridLayout(screenWidth, screenHeight, size.x / 2, size.y / 2, 0, 30, 220, 85, 1,
-      {ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE});
+  asciiLayouts = {
+      MapLayout::gridLayout(screenWidth, screenHeight, 16, 20, -20, 0, 225, 0, 1, allLayers),
+      MapLayout::gridLayout(screenWidth, screenHeight, 8, 10, 0, 30, 220, 85, 1,
+      {ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
+  spriteLayouts = {
+      MapLayout::gridLayout(screenWidth, screenHeight, 36, 36, -20, 0, 225, 0, 1, allLayers),
+      MapLayout::gridLayout(screenWidth, screenHeight, 18, 18, 0, 30, 220, 85, 1,
+      {ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), true};
+  currentTileLayout = spriteLayouts;
+
+  mapLayout = currentTileLayout.normalLayout;
+
   worldLayout = MapLayout::worldLayout(screenWidth, screenHeight, 0, 80, 220, 75);
-  allLayouts.push_back(normalLayout);
-  allLayouts.push_back(tppLayout);
-  allLayouts.push_back(unzoomLayout);
+  allLayouts.push_back(asciiLayouts.normalLayout);
+  allLayouts.push_back(asciiLayouts.unzoomLayout);
+  allLayouts.push_back(spriteLayouts.normalLayout);
+  allLayouts.push_back(spriteLayouts.unzoomLayout);
   allLayouts.push_back(worldLayout);
   mapBuffer.create(600, 600);
-  mapLayout = normalLayout;
   Image tileImage;
   CHECK(tileImage.loadFromFile("tiles_int.png"));
   Image tileImage2;
@@ -735,7 +766,15 @@ void WindowView::resize(int width, int height) {
   display->setView(*(sfView = new sf::View(sf::FloatRect(0, 0, screenWidth, screenHeight))));
 }
 
-Optional<Event::KeyEvent> WindowView::readkey() {
+Optional<Vec2> mousePos;
+
+Optional<Vec2> WindowView::getHighlightedTile() {
+  if (!mousePos)
+    return Nothing();
+  return mapLayout->projectOnMap(*mousePos);
+}
+
+WindowView::BlockingEvent WindowView::readkey() {
   Event event;
   while (1) {
     bool wasPaused = false;
@@ -748,24 +787,37 @@ Optional<Event::KeyEvent> WindowView::readkey() {
       myClock.cont();
     bool scrolled = false;
     while (considerScrollEvent(event)) {
+      mousePos = Nothing();
       if (!display->pollEvent(event))
-        return Nothing();
+        return { BlockingEvent::IDLE };
       scrolled = true;
     }
     if (scrolled)
-      return Nothing();
+      return { BlockingEvent::IDLE };
     Debug() << "Event " << event.type;
     if (event.type == Event::KeyPressed) {
       Event::KeyEvent ret(event.key);
+      mousePos = Nothing();
       while (display->pollEvent(event));
-      return ret;
+      return { BlockingEvent::KEY, ret };
     }
+    bool mouseEv = false;
+    while (event.type == Event::MouseMoved) {
+      mouseEv = true;
+      mousePos = Vec2(event.mouseMove.x, event.mouseMove.y);
+      if (!display->pollEvent(event))
+        return { BlockingEvent::MOUSE_MOVE };
+    }
+    if (mouseEv && event.type == Event::MouseMoved)
+      return { BlockingEvent::MOUSE_MOVE };
+    if (event.type == Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
+      return { BlockingEvent::MOUSE_LEFT };
     if (event.type == Event::Resized) {
       resize(event.size.width, event.size.height);
-      return Nothing();
+      return { BlockingEvent::IDLE };
     }
     if (event.type == Event::GainedFocus)
-      return Nothing();
+      return { BlockingEvent::IDLE };
   }
 }
 
@@ -789,6 +841,8 @@ void drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<C
 
 static Color getBleedingColor(const ViewObject& object) {
   double bleeding = object.getBleeding();
+ /* if (object.isPoisoned())
+    return Color(0, 255, 0);*/
   if (bleeding > 0)
     bleeding = 0.3 + bleeding * 0.7;
   return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
@@ -849,6 +903,7 @@ Color getSpeedColor(int value) {
 
 int topBarHeight = 50;
 int rightBarWidth = 250;
+int bottomBarHeight = 75;
 
 void WindowView::drawPlayerInfo() {
   GameInfo::PlayerInfo& info = gameInfo.playerInfo;
@@ -858,10 +913,9 @@ void WindowView::drawPlayerInfo() {
   for (int i : All(info.adjectives))
     title = string(i <info.adjectives.size() - 1 ? ", " : " ") + info.adjectives[i] + title;
  // int line0 = screenHeight - 115;
-  int line0 = screenHeight - 90;
-  int line1 = screenHeight - 65;
-  int line2 = screenHeight - 40;
-  drawFilledRectangle(0, line1 - 10, screenWidth - rightBarWidth, screenHeight, translucentBlack);
+  int line1 = screenHeight - bottomBarHeight + 10;
+  int line2 = line1 + 25;
+  drawFilledRectangle(0, screenHeight - bottomBarHeight, screenWidth - rightBarWidth, screenHeight, translucentBlack);
   string wielding = info.weaponName != "" ? "wielding " + info.weaponName : "barehanded";  
   string playerLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title);
   int attrSpace = 8;
@@ -907,8 +961,8 @@ static map<string, pair<ViewObject, int>> getCreatureMap(vector<const Creature*>
   return creatureMap;
 }
 
-static void drawViewObject(const ViewObject& obj, int x, int y) {
-    Tile tile = getTile(obj);
+static void drawViewObject(const ViewObject& obj, int x, int y, bool sprite) {
+    Tile tile = getTile(obj, sprite);
     if (tile.hasSpriteCoord()) {
       int sz = tileSize[tile.getTexNum()];
       int of = (nominalSize - sz) / 2;
@@ -926,7 +980,7 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
   int lineStart = legendStartHeight + 35;
   for (auto elem : creatureMap){
     int height = lineStart + cnt * legendLineHeight;
-    drawViewObject(elem.second.first, screenWidth - rightBarWidth + 10, height);
+    drawViewObject(elem.second.first, screenWidth - rightBarWidth + 10, height, currentTileLayout.sprites);
     Color col = (elem.first == chosenCreature) ? green : white;
     drawText(col, screenWidth - rightBarWidth + 30, height,
         convertToString(elem.second.second) + "   " + elem.first);
@@ -960,7 +1014,7 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
     drawText(white, screenWidth - rightBarWidth, lineStart + (cnt + 1) * legendLineHeight, "Enemies:");
     for (auto elem : enemyMap){
       int height = lineStart + (cnt + 2) * legendLineHeight + 10;
-      drawViewObject(elem.second.first, screenWidth - rightBarWidth + 10, height);
+      drawViewObject(elem.second.first, screenWidth - rightBarWidth + 10, height, currentTileLayout.sprites);
       drawText(white, screenWidth - rightBarWidth + 30, height,
           convertToString(elem.second.second) + "   " + elem.first);
       ++cnt;
@@ -982,7 +1036,7 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
       int cnt = 1;
       for (const Creature* c : chosen) {
         int height = lineStart + cnt * legendLineHeight;
-        drawViewObject(c->getViewObject(), screenWidth - rightBarWidth - width, height);
+        drawViewObject(c->getViewObject(), screenWidth - rightBarWidth - width, height, currentTileLayout.sprites);
         drawText(contains(info.team, c) ? green : white, screenWidth - rightBarWidth - width + 30, height,
             "level: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c]);
         creatureButtons.emplace_back(screenWidth - rightBarWidth - width, height,
@@ -1002,7 +1056,7 @@ void WindowView::drawBuildings(GameInfo::BandInfo& info) {
   for (int i : All(info.buttons)) {
     string text = get<0>(info.buttons[i]);
     int height = legendStartHeight + i * legendLineHeight;
-    drawViewObject(get<1>(info.buttons[i]), screenWidth - rightBarWidth, height);
+    drawViewObject(get<1>(info.buttons[i]), screenWidth - rightBarWidth, height, currentTileLayout.sprites);
     drawText(i == info.activeButton ? green : (get<2>(info.buttons[i]) ? white : lightGray),
         screenWidth - rightBarWidth + 30, height, text);
     roomButtons.emplace_back(screenWidth - rightBarWidth, height,
@@ -1170,7 +1224,7 @@ bool tileConnects(ViewId id, Vec2 pos) {
 
 void WindowView::drawObjectAbs(int x, int y, const ViewIndex& index, int sizeX, int sizeY, Vec2 tilePos, bool mem) {
   vector<ViewObject> objects;
-  if (getTile == getSpriteTile) {
+  if (currentTileLayout.sprites) {
     for (ViewLayer layer : mapLayout->getLayers())
       if (index.hasObject(layer))
         objects.push_back(index.getObject(layer));
@@ -1181,7 +1235,7 @@ void WindowView::drawObjectAbs(int x, int y, const ViewIndex& index, int sizeX, 
     if (object.isPlayer()) {
       drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
     }
-    Tile tile = getTile(object);
+    Tile tile = getTile(object, currentTileLayout.sprites);
     Optional<Color> color;
     if (mem)
       color = Color(200, 200, 200);
@@ -1237,6 +1291,10 @@ void WindowView::drawObjectAbs(int x, int y, const ViewIndex& index, int sizeX, 
       }
     }
   }
+  if (getHighlightedTile() == tilePos) {
+    drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
+  }
+
   if (auto highlight = index.getHighlight())
     drawFilledRectangle(x, y, x + sizeX, y + sizeY, getHighlightColor(*highlight));
 }
@@ -1326,6 +1384,8 @@ void WindowView::drawMap() {
   Rectangle mapWindow = mapLayout->getBounds();
   drawFilledRectangle(mapWindow, black);
   bool pixelView = false;
+  map<string, ViewObject> objIndex;
+  Optional<ViewObject> highlighted;
   for (Vec2 wpos : mapLayout->getAllTiles()) {
     int sizeX = mapLayout->squareWidth(wpos);
     int sizeY = mapLayout->squareHeight(wpos);
@@ -1334,17 +1394,24 @@ void WindowView::drawMap() {
       if (sizeX > 1)
         drawObjectAbs(pos.x, pos.y, lastMemory->getViewIndex(wpos), sizeX, sizeY, wpos, true);
       Optional<ViewObject> object = lastMemory->getViewIndex(wpos).getTopObject(mapLayout->getLayers());
+      if (object) {
+        objIndex.insert(std::make_pair(object->getDescription(), *object));
+        if (getHighlightedTile() == wpos)
+          highlighted = *object;
+      }
       if (object && sizeX == 1) {
         mapBuffer.setPixel(pos.x, pos.y, getColor(*object));
         pixelView = true;
       }
     }
   }
-  map<string, ViewObject> objIndex;
   for (auto elem : objects) {
     Optional<ViewObject> topObject = elem.second.getTopObject(mapLayout->getLayers());
-    if (topObject)
+    if (topObject) {
       objIndex.insert(std::make_pair(topObject->getDescription(), *topObject));
+      if (getHighlightedTile() == elem.first)
+        highlighted = *topObject;
+    }
     Vec2 wpos = elem.first;
     int sizeX = mapLayout->squareWidth(wpos);
     int sizeY = mapLayout->squareHeight(wpos);
@@ -1373,7 +1440,7 @@ void WindowView::drawMap() {
     int cnt = 0;
     if (legendOption == LegendOption::OBJECTS) {
       for (auto elem : objIndex) {
-        drawViewObject(elem.second, rightPos, legendStartHeight + cnt * 25);
+        drawViewObject(elem.second, rightPos, legendStartHeight + cnt * 25, currentTileLayout.sprites);
         drawText(white, rightPos + 30, legendStartHeight + cnt * 25, elem.first);
         ++cnt;
       }
@@ -1391,8 +1458,20 @@ void WindowView::drawMap() {
       }
     }
   }
+  if (getHighlightedTile() && highlighted) {
+    string text = highlighted->getDescription(true);
+    int height = 30;
+    int width = getTextLength(text) + 30;
+    Vec2 pos(screenWidth - rightBarWidth - width, screenHeight - bottomBarHeight - height); //mapLayout->projectOnScreen(*getHighlightedTile()) + Vec2(30, 30);
+    drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(black, 190));
+    Color col = white;
+    if (highlighted->isHostile())
+      col = red;
+    else if (highlighted->isFriendly())
+      col = green;
+    drawText(col, pos.x + 10, pos.y + 1, text);
+  }
   refreshText();
-
 //}
 }
 
@@ -1412,13 +1491,23 @@ int indexHeight(const vector<string>& options, int index) {
   return -1;
 }
 
+Optional<int> reverseIndexHeight(const vector<string>& options, int height) {
+  if (height < 0 || height >= options.size() || View::hasTitlePrefix(options[height]) )
+    return Nothing();
+  int sub = 0;
+  for (int i : Range(height))
+    if (View::hasTitlePrefix(options[i]))
+      ++sub;
+  return height - sub;
+}
+
 Optional<Vec2> WindowView::chooseDirection(const string& message) {
   showMessage(message);
   refreshScreen();
   do {
-    auto key = readkey();
-    if (key)
-      switch (key->code) {
+    BlockingEvent event = readkey();
+    if (event.type == BlockingEvent::KEY)
+      switch (event.key->code) {
         case Keyboard::Up:
         case Keyboard::Numpad8: showMessage(""); refreshScreen(); return Vec2(0, -1);
         case Keyboard::Numpad9: showMessage(""); refreshScreen(); return Vec2(1, -1);
@@ -1457,9 +1546,9 @@ bool WindowView::yesOrNoPrompt(const string& message) {
   showMessage(message + " (y/n)");
   refreshScreen();
   do {
-    auto key = readkey();
-    if (key)
-      switch (key->code) {
+    BlockingEvent event = readkey();
+    if (event.type == BlockingEvent::KEY)
+      switch (event.key->code) {
         case Keyboard::Y: showMessage(""); refreshScreen(); return true;
         case Keyboard::Escape:
         case Keyboard::Space:
@@ -1482,6 +1571,8 @@ Optional<int> WindowView::getNumber(const string& title, int max) {
 
 int getMaxLines();
 
+Optional<int> getIndex(const vector<string>& options, bool hasTitle, Vec2 mousePos);
+
 Optional<int> WindowView::chooseFromList(const string& title, const vector<string>& options, int index) {
   if (options.size() == 0)
     return Nothing();
@@ -1500,9 +1591,9 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<strin
         ++itemsCutoff;
     vector<string> window = getPrefix(options, cutoff , numLines);
     drawList(title, window, index - itemsCutoff);
-    auto key = readkey();
-    if (key)
-      switch (key->code) {
+    BlockingEvent event = readkey();
+    if (event.type == BlockingEvent::KEY)
+      switch (event.key->code) {
         case Keyboard::PageDown: index += 10; if (index >= count) index = count - 1; break;
         case Keyboard::PageUp: index -= 10; if (index < 0) index = 0; break;
         case Keyboard::Numpad8:
@@ -1510,10 +1601,22 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<strin
         case Keyboard::Numpad2:
         case Keyboard::Down: if (index < count - 1) ++index; break;
         case Keyboard::Numpad5:
-        case Keyboard::Return : clearMessageBox(); /*showMessage("");*/ return index;
-        case Keyboard::Escape : clearMessageBox();/* showMessage("");*/ return Nothing();
+        case Keyboard::Return : clearMessageBox(); return index;
+        case Keyboard::Escape : clearMessageBox(); return Nothing();
         default: break;
       }
+    else if (event.type == BlockingEvent::MOUSE_MOVE && mousePos) {
+      if (Optional<int> mouseIndex = getIndex(window, !title.empty(), *mousePos)) {
+        index = *mouseIndex;
+        Debug() << "Index " << index;
+      }
+    } else if (event.type == BlockingEvent::MOUSE_LEFT) {
+      clearMessageBox();
+      if (mousePos && getIndex(window, !title.empty(), *mousePos))
+        return index;
+      else
+        return Nothing();
+    }
   }
   Debug(FATAL) << "Very bad";
   return 123;
@@ -1542,9 +1645,9 @@ void WindowView::presentList(const string& title, const vector<string>& options,
     numLines = min((int) options.size(), getMaxLines());
     vector<string> window = getPrefix(options, index, numLines);
     drawList(title, window, -1);
-    auto key = readkey();
-    if (key)
-      switch (key->code) {
+    BlockingEvent event = readkey();
+    if (event.type == BlockingEvent::KEY)
+      switch (event.key->code) {
         case Keyboard::Numpad8:
         case Keyboard::Up: if (index > 0) --index; break;
         case Keyboard::Numpad2:
@@ -1552,6 +1655,11 @@ void WindowView::presentList(const string& title, const vector<string>& options,
         case Keyboard::Return : refreshScreen(); return;
         case Keyboard::Escape : refreshScreen(); return;
         default: break;
+      }
+    else
+      if (event.type == BlockingEvent::MOUSE_LEFT) {
+        refreshScreen();
+        return;
       }
   }
   refreshScreen();
@@ -1561,32 +1669,52 @@ static int yMargin = 10;
 static int itemYMargin = 20;
 static int itemSpacing = 25;
 static int ySpacing = 100;
+int windowWidth = 800;
 
 int getMaxLines() {
   return (screenHeight - ySpacing - ySpacing - 2 * yMargin - itemSpacing - itemYMargin) / itemSpacing;
+}
+
+Optional<int> getIndex(const vector<string>& options, bool hasTitle, Vec2 mousePos) {
+  int xSpacing = (screenWidth - windowWidth) / 2;
+  Rectangle window(xSpacing, ySpacing, xSpacing + windowWidth, screenHeight - ySpacing);
+  if (!mousePos.inRectangle(window))
+    return Nothing();
+  return reverseIndexHeight(options,
+      (mousePos.y - ySpacing - yMargin + (hasTitle ? 0 : itemSpacing) - itemYMargin) / itemSpacing - 1);
 }
 
 void WindowView::drawList(const string& title, const vector<string>& options, int hightlight) {
   int xMargin = 10;
   int itemXMargin = 30;
   int border = 2;
-  int h = 0;
-  int width = 800;
-  int xSpacing = (screenWidth - width) / 2;
+  int h = -1;
+  int xSpacing = (screenWidth - windowWidth) / 2;
+  int topMargin = yMargin;
   refreshScreen(false);
   if (hightlight > -1) 
     h = indexHeight(options, hightlight);
-  //drawFilledRectangle(xSpacing, ySpacing, screenWidth - xSpacing, screenHeight - ySpacing, white);
-  drawFilledRectangle(xSpacing, ySpacing, xSpacing + width, screenHeight - ySpacing, translucentBlack, white);
-  drawText(white, xSpacing + xMargin, ySpacing + yMargin, title);
-  if (hightlight > -1) 
-    drawFilledRectangle(xSpacing + xMargin, ySpacing + yMargin + (h + 1) * itemSpacing + itemYMargin, 
-        width + xSpacing - xMargin, ySpacing + yMargin + (h + 2) * itemSpacing + itemYMargin -1, darkGreen);
+  Rectangle window(xSpacing, ySpacing, xSpacing + windowWidth, screenHeight - ySpacing);
+  drawFilledRectangle(window, translucentBlack, white);
+  int mouseHeight = -1;
+ /* if (mousePos && mousePos->inRectangle(window)) {
+    h = -1;
+    mouseHeight = mousePos->y;
+  }*/
+  if (!title.empty())
+    drawText(white, xSpacing + xMargin, ySpacing + yMargin, title);
+  else
+    topMargin -= itemSpacing;
   for (int i : All(options)) {  
-    if (!hasTitlePrefix(options[i]))
-      drawText(white, xSpacing + xMargin + itemXMargin, ySpacing + yMargin + (i + 1) * itemSpacing + itemYMargin, options[i]);
+    int beginH = ySpacing + topMargin + (i + 1) * itemSpacing + itemYMargin;
+    if (!hasTitlePrefix(options[i])) {
+      if (hightlight > -1 && (h == i || (mouseHeight >= beginH && mouseHeight < beginH + itemSpacing))) 
+        drawFilledRectangle(xSpacing + xMargin, beginH, 
+            windowWidth + xSpacing - xMargin, beginH + itemSpacing - 1, darkGreen);
+      drawText(white, xSpacing + xMargin + itemXMargin, beginH, options[i]);
+    }
     else
-      drawText(yellow, xSpacing + xMargin, ySpacing + yMargin + (i + 1) * itemSpacing + itemYMargin, removeTitlePrefix(options[i]));
+      drawText(yellow, xSpacing + xMargin, beginH, removeTitlePrefix(options[i]));
 
   }
   drawAndClearBuffer();
@@ -1615,8 +1743,9 @@ void WindowView::addMessage(const string& message) {
     currentMessage[messageInd] += " (more)";
     refreshScreen();
     while (1) {
-      auto key = readkey();
-      if (key && (key->code == Keyboard::Space || key->code == Keyboard::Return))
+      BlockingEvent event = readkey();
+      if (event.type == BlockingEvent::KEY &&
+          (event.key->code == Keyboard::Space || event.key->code == Keyboard::Return))
         break;
     }
     showMessage(message);
@@ -1633,11 +1762,19 @@ void WindowView::unzoom(bool pixel, bool tpp) {
     mapLayout = worldLayout;
  /* else if (tpp && mapLayout != tppLayout)
     mapLayout = tppLayout;*/
-  else if (mapLayout != normalLayout)
-    mapLayout = normalLayout;
+  else if (mapLayout != currentTileLayout.normalLayout)
+    mapLayout = currentTileLayout.normalLayout;
   else
-    mapLayout = unzoomLayout;
+    mapLayout = currentTileLayout.unzoomLayout;
   refreshScreen();
+}
+
+void WindowView::switchTiles() {
+  if (!currentTileLayout.sprites)
+    currentTileLayout = spriteLayouts;
+  else
+    currentTileLayout = asciiLayouts;
+  mapLayout = currentTileLayout.normalLayout;
 }
 
 bool WindowView::travelInterrupt() {
@@ -1716,6 +1853,10 @@ CollectiveAction WindowView::getClick() {
         switch (event.key.code) {
           case Keyboard::Z:
             unzoom(false, false);
+            center = Vec2(0, 0);
+            return CollectiveAction(CollectiveAction::IDLE);
+          case Keyboard::F2:
+            switchTiles();
             center = Vec2(0, 0);
             return CollectiveAction(CollectiveAction::IDLE);
           case Keyboard::Space:
@@ -1802,10 +1943,63 @@ CollectiveAction WindowView::getClick() {
   return CollectiveAction(CollectiveAction::IDLE);
 }
 
+struct KeyInfo {
+  string keyDesc;
+  string action;
+  Event::KeyEvent event;
+  bool shift;
+};
+
+vector<KeyInfo> keyInfo {
+  { "I", "Inventory", Keyboard::I, false },
+  { "E", "Manage equipment", Keyboard::E, false },
+  { "Enter", "Pick up items or interact with square", Keyboard::Return, false },
+  { "D", "Drop item", Keyboard::D, false },
+  { "A", "Apply item", Keyboard::A, false },
+  { "T", "Throw item", Keyboard::T, false },
+  { "M", "Show message history", Keyboard::M, false },
+  { "C", "Chat with someone", Keyboard::C, false },
+  { "P", "Pay debt", Keyboard::P, false },
+  { "U", "Unpossess", Keyboard::U, false },
+  { "Space", "Wait", Keyboard::Space, false },
+  { "Z", "Zoom in/out", Keyboard::Z, false },
+  { "Shift + Z", "World map", Keyboard::Z, true },
+  { "F2", "Switch between graphics and ascii", Keyboard::F2, false },
+  { "Escape", "Quit", Keyboard::Escape, false },
+};
+
+Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
+  vector<string> options {
+      View::getTitlePrefix("Move around with the number pad."),
+      View::getTitlePrefix("Fast travel with ctrl + arrow."),
+      View::getTitlePrefix("Fire arrows with alt + arrow."),
+      View::getTitlePrefix("Choose action:") };
+  for (int i : All(keyInfo)) {
+    Debug() << "Action " << keyInfo[i].action;
+    options.push_back(keyInfo[i].action + "   [ " + keyInfo[i].keyDesc + " ]");
+  }
+  auto index = chooseFromList("", options);
+  if (!index)
+    return Nothing();
+  return keyInfo[*index].event;
+}
+
 Action WindowView::getAction() {
   while (1) {
-    auto key = readkey();
+    BlockingEvent event = readkey();
     oldMessage = true;
+    if (event.type == BlockingEvent::IDLE || event.type == BlockingEvent::MOUSE_MOVE)
+      return Action(ActionId::IDLE);
+    if (event.type == BlockingEvent::MOUSE_LEFT) {
+      if (auto pos = getHighlightedTile()) {
+ //       mousePos = Nothing();
+        return Action(ActionId::MOVE_TO, *pos);
+      } else
+        return Action(ActionId::IDLE);
+    }
+    auto key = event.key;
+    if (key->code == Keyboard::F1)
+      key = getEventFromMenu();
     if (!key)
       return Action(ActionId::IDLE);
     if (mapLayout == worldLayout)
@@ -1817,6 +2011,7 @@ Action WindowView::getAction() {
       case Keyboard::Escape : if (yesOrNoPrompt("Are you sure you want to quit?")) exit(0); break;
       case Keyboard::Z: unzoom(key->shift, key->control); return Action(ActionId::IDLE);
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
+      case Keyboard::F2: switchTiles(); return Action(ActionId::IDLE);
       case Keyboard::Up:
       case Keyboard::Numpad8: return Action(getDirActionId(*key), Vec2(0, -1));
       case Keyboard::Numpad9: return Action(getDirActionId(*key), Vec2(1, -1));

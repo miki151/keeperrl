@@ -50,7 +50,7 @@ class Portal : public Trigger {
     return other && !Random.roll(5);
   }
 
-  virtual void onInterceptFlyingItem(PItem it, Attack a, int remainingDist, Vec2 dir) {
+  virtual void onInterceptFlyingItem(PItem it, const Attack& a, int remainingDist, Vec2 dir) {
     level->globalMessage(position, it->getTheName() + " disappears in the portal.");
     other->level->throwItem(std::move(it), a, remainingDist, other->position, dir);
   }

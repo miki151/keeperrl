@@ -5,6 +5,7 @@
 
 enum class ActionId {
      MOVE,
+     MOVE_TO,
      TRAVEL,
      FIRE,
      PICK_UP,

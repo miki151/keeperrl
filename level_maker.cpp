@@ -700,19 +700,21 @@ class RandomLocations : public LevelMaker {
 
 class Margin : public LevelMaker {
   public:
-  Margin(int s, LevelMaker* in) : size(s), inside(in) {}
+  Margin(int s, LevelMaker* in) : left(s), top(s), right(s), bottom(s), inside(in) {}
+  Margin(int _left, int _top, int _right, int _bottom, LevelMaker* in) 
+      :left(_left) ,top(_top), right(_right), bottom(_bottom), inside(in) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
-    CHECK(area.getW() > 2 * size && area.getH() > 2 * size);
+    CHECK(area.getW() > left + right && area.getH() > top + bottom);
     inside->make(builder, Rectangle(
-          area.getPX() + size,
-          area.getPY() + size,
-          area.getKX() - size,
-          area.getKY() - size));
+          area.getPX() + left,
+          area.getPY() + top,
+          area.getKX() - right,
+          area.getKY() - bottom));
   }
 
   private:
-  int size;
+  int left, top, right, bottom;
   LevelMaker* inside;
 };
 
@@ -1093,6 +1095,9 @@ class Division : public LevelMaker {
   Division(double _hRatio, LevelMaker* _left, LevelMaker* _right, Optional<SquareType> _wall = Nothing()) 
       : vRatio(-1), hRatio(_hRatio), upperLeft(_left), upperRight(_right), wall(_wall) {}
 
+  Division(bool, double _vRatio, LevelMaker* _top, LevelMaker* _bottom, Optional<SquareType> _wall = Nothing()) 
+      : vRatio(_vRatio), hRatio(-1), upperLeft(_top), lowerLeft(_bottom), wall(_wall) {}
+
   void makeHorizDiv(Level::Builder* builder, Rectangle area) {
     int hDiv = area.getPX() + min(area.getW() - 1, max(1, (int) (hRatio * area.getW())));
     if (upperLeft)
@@ -1102,6 +1107,17 @@ class Division : public LevelMaker {
     if (wall)
       for (int i : Range(area.getPY(), area.getKY()))
         builder->putSquare(Vec2(hDiv, i), *wall);
+  }
+
+  void makeVertDiv(Level::Builder* builder, Rectangle area) {
+    int vDiv = area.getPY() + min(area.getH() - 1, max(1, (int) (vRatio * area.getH())));
+    if (upperLeft)
+      upperLeft->make(builder, Rectangle(area.getPX(), area.getPY(), area.getKX(), vDiv));
+    if (lowerLeft)
+      lowerLeft->make(builder, Rectangle(area.getPX(), vDiv + (wall ? 1 : 0), area.getKX(), area.getKY()));
+    if (wall)
+      for (int i : Range(area.getPX(), area.getKX()))
+        builder->putSquare(Vec2(i, vDiv), *wall);
   }
 
   void makeDiv(Level::Builder* builder, Rectangle area) {
@@ -1127,6 +1143,8 @@ class Division : public LevelMaker {
   virtual void make(Level::Builder* builder, Rectangle area) override {
     if (vRatio < 0)
       makeHorizDiv(builder, area);
+    else if (hRatio < 0)
+      makeVertDiv(builder, area);
     else
       makeDiv(builder, area);
   }
@@ -1268,9 +1286,17 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up,
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareType::BLACK_WALL));
   queue->addMaker(underground(true));
-  queue->addMaker(new RoomMaker(8, 15, 4, 7, SquareType::ROCK_WALL, SquareType::BLACK_WALL));
+  LevelMaker* shopMaker = nullptr;
+  if (Random.roll(3)) {
+      shopMaker = new ShopMaker(chooseRandom({
+            ItemFactory::villageShop(),
+            ItemFactory::dwarfShop(),
+            ItemFactory::goblinShop()}),
+          Tribe::human, Random.getRandom(8, 16));
+  }
+  queue->addMaker(new RoomMaker(8, 15, 4, 7, SquareType::ROCK_WALL, SquareType::BLACK_WALL, shopMaker));
   queue->addMaker(new Connector({5, 3, 0}));
-  if (Random.roll(2)) {
+  if (Random.roll(3)) {
     Deity* deity = Deity::getDeity(chooseRandom({DeityHabitat::STONE, DeityHabitat::EARTH}));
     queue->addMaker(new Shrine(deity, SquareType::FLOOR,
         new TypePredicate({SquareType::ROCK_WALL, SquareType::BLACK_WALL}), SquareType::ROCK_WALL, nullptr));
@@ -1320,7 +1346,7 @@ MakerQueue* village(CreatureFactory factory, Location* loc, Tribe* tribe) {
   queue->addMaker(new LocationMaker(loc));
   queue->addMaker(new Empty(SquareType::GRASS));
   vector<LevelMaker*> insideMakers {
-      new ShopMaker(ItemFactory::villageShop(), tribe, 10),
+      new ShopMaker(ItemFactory::villageShop(), tribe, Random.getRandom(8, 16)),
       hatchery(CreatureFactory::singleType(Tribe::elven, CreatureId::PIG), 3, 5),
       new DungeonFeatures(SquareType::FLOOR, featureCount)};
   queue->addMaker(new Buildings(4, 8, 3, 7,
@@ -1331,10 +1357,10 @@ MakerQueue* village(CreatureFactory factory, Location* loc, Tribe* tribe) {
 }
 
 MakerQueue* castle(CreatureFactory factory, Location* loc, Tribe* tribe, vector<StairKey> downStairs) {
-  LevelMaker* castleRoom = new Empty(SquareType::FLOOR);
+  LevelMaker* castleRoom = new BorderGuard(new Empty(SquareType::FLOOR), SquareType::CASTLE_WALL);
   MakerQueue* leftSide = new MakerQueue();
-  leftSide->addMaker(new Division(Random.getDouble(0.3, 0.7), Random.getDouble(0.3, 0.7),
-      castleRoom, castleRoom, castleRoom, castleRoom, SquareType::CASTLE_WALL));
+  leftSide->addMaker(new Division(true, Random.getDouble(0.5, 0.5),
+      new Margin(1, -1, -1, 1, castleRoom), new Margin(1, 1, -1, -1, castleRoom)));
   map<SquareType, pair<int, int> > featureCount { 
       { SquareType::CHEST, make_pair(3, 8) },
       { SquareType::BED, make_pair(5, 8) }};
@@ -1345,7 +1371,7 @@ MakerQueue* castle(CreatureFactory factory, Location* loc, Tribe* tribe, vector<
   MakerQueue* inside = new MakerQueue();
   inside->addMaker(new Empty(SquareType::MUD));
   vector<LevelMaker*> insideMakers {
-      new ShopMaker(ItemFactory::villageShop(), tribe, 10)};
+      new ShopMaker(ItemFactory::villageShop(), tribe, Random.getRandom(8, 16))};
   inside->addMaker(new Division(Random.getDouble(0.25, 0.4), leftSide,
         new Buildings(2, 6, 3, 6, SquareType::CASTLE_WALL, SquareType::FLOOR, SquareType::DOOR, false, insideMakers, false),
         SquareType::CASTLE_WALL));
@@ -1393,6 +1419,8 @@ LevelMaker* makeLake() {
   Location* loc = new Location();
   queue->addMaker(new LocationMaker(loc));
   queue->addMaker(new Blob(SquareType::WATER, SquareType::SAND, SquareAttrib::LAKE));
+  queue->addMaker(new Margin(10, new RandomLocations({new Blob(SquareType::GRASS, SquareType::SAND)}, {{15, 15}},
+          new TypePredicate(SquareType::WATER))));
  // queue->addMaker(new Creatures(CreatureFactory::singleType(CreatureId::VODNIK), 2, 5, MonsterAIFactory::stayInLocation(loc)));
   return queue;
 }
@@ -1432,7 +1460,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
     if (settlement.type == SettlementType::CASTLE)
       queue->addMaker(new StartingPos(new TypePredicate(SquareType::MUD)));
     subMakers.push_back(queue);
-    subSizes.emplace_back(30, 20);
+    subSizes.emplace_back(30, 21);
   }
   for (int i : Range(Random.getRandom(3))) {
     subMakers.push_back(banditCamp());
@@ -1504,7 +1532,7 @@ LevelMaker* LevelMaker::goblinTownLevel(CreatureFactory cfactory, vector<StairKe
   }
   queue->addMaker(new RandomLocations(vCavern, sizes, new AlwaysTrue(), false));
   queue->addMaker(new RoomMaker(5, 8, 4, 7, SquareType::ROCK_WALL, Nothing(),
-        new ShopMaker(ItemFactory::goblinShop(), Tribe::goblin, 10), false));
+        new ShopMaker(ItemFactory::goblinShop(), Tribe::goblin, Random.getRandom(8, 16)), false));
   queue->addMaker(new Connector({1, 0, 0}));
   for (StairKey key : down)
     queue->addMaker(new Stairs(StairDirection::DOWN, key, new TypePredicate(SquareType::FLOOR)));
@@ -1530,7 +1558,7 @@ LevelMaker* LevelMaker::mineTownLevel(CreatureFactory cfactory, vector<StairKey>
   }
   queue->addMaker(new RandomLocations(vCavern, sizes, new AlwaysTrue(), false));
   queue->addMaker(new RoomMaker(6, 12, 4, 7, SquareType::ROCK_WALL, Nothing(),
-        new ShopMaker(ItemFactory::dwarfShop(), Tribe::dwarven, 10), false));
+        new ShopMaker(ItemFactory::dwarfShop(), Tribe::dwarven, Random.getRandom(8, 16)), false));
   queue->addMaker(new Connector({1, 0, 0}));
   for (StairKey key : down)
     queue->addMaker(new Stairs(StairDirection::DOWN, key, new TypePredicate(SquareType::FLOOR)));

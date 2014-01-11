@@ -14,15 +14,22 @@ class ViewObject {
   double getBleeding() const;
 
   void setHostile(bool);
+  bool isHostile() const;
+  bool isFriendly() const;
+
   void setBlind(bool);
-  void setInvisible(bool);
 
   void setPlayer(bool);
   bool isPlayer() const;
 
   void setHidden(bool);
   bool isHidden() const;
+
+  void setInvisible(bool);
   bool isInvisible() const;
+
+  void setPoisoned(bool);
+  bool isPoisoned() const;
 
   static void setHallu(bool);
 
@@ -35,9 +42,15 @@ class ViewObject {
   void setSizeIncrease(double);
   double getSizeIncrease() const;
 
+  void setAttack(int);
+  void setDefense(int);
+
+  Optional<int> getAttack() const;
+  Optional<int> getDefense() const;
+
   bool castsShadow() const;
 
-  string getDescription() const;
+  string getDescription(bool stats = false) const;
   string getBareDescription() const;
 
   ViewLayer layer() const;
@@ -48,9 +61,11 @@ class ViewObject {
 
   private:
   double bleeding = 0;
-  bool hostile = false;
+  Optional<bool> hostile;
+  bool friendly = false;
   bool blind = false;
   bool invisible = false;
+  bool poisoned = false;
   bool player = false;
   ViewId resource_id;
   ViewLayer viewLayer;
@@ -60,6 +75,8 @@ class ViewObject {
   double height = 0;
   double sizeIncrease = 0;
   bool shadow;
+  Optional<int> attack;
+  Optional<int> defense;
 };
 
 

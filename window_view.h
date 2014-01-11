@@ -51,18 +51,25 @@ class WindowView: public View {
   void drawBuildings(GameInfo::BandInfo& info);
   void drawMinions(GameInfo::BandInfo& info);
   void drawKeeperHelp();
-  Optional<sf::Event::KeyEvent> readkey();
+  struct BlockingEvent {
+    enum Type { IDLE, KEY, MOUSE_LEFT, MOUSE_MOVE } type;
+    Optional<sf::Event::KeyEvent> key;
+  };
+  BlockingEvent readkey();
+  Optional<sf::Event::KeyEvent> getEventFromMenu();
 
   void showMessage(const string& message);
   void drawList(const string& title, const vector<string>& options, int hightlight);
   void refreshScreen(bool flipBuffer = true);
   void refreshText();
   void drawAndClearBuffer();
+  Optional<Vec2> getHighlightedTile();
 
   void drawObjectAbs(int x, int y, const ViewIndex&, int sizeX, int sizeY, Vec2 tilePos, bool memory = false);
   void darkenObjectAbs(int x, int y);
   void clearMessageBox();
   void unzoom(bool, bool);
+  void switchTiles();
   void resize(int, int);
 
   bool considerScrollEvent(sf::Event&);
@@ -89,9 +96,15 @@ class WindowView: public View {
   LegendOption legendOption = LegendOption::OBJECTS;
 
   MapLayout* mapLayout;
-  MapLayout* normalLayout;
-  MapLayout* tppLayout;
-  MapLayout* unzoomLayout;
+
+  struct TileLayouts {
+    MapLayout* normalLayout;
+    MapLayout* unzoomLayout;
+    bool sprites;
+  };
+  TileLayouts asciiLayouts;
+  TileLayouts spriteLayouts;
+  TileLayouts currentTileLayout;
   MapLayout* worldLayout;
   vector<MapLayout*> allLayouts;
 

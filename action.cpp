@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
-vector<ActionId> dirActions {ActionId::MOVE, ActionId::TRAVEL, ActionId::FIRE, ActionId::THROW_DIR};
+vector<ActionId> dirActions {ActionId::MOVE, ActionId::MOVE_TO, ActionId::TRAVEL, ActionId::FIRE,
+    ActionId::THROW_DIR};
 
 Action::Action() {
 }

@@ -301,7 +301,9 @@ ItemFactory ItemFactory::armory() {
       {ItemId::LEATHER_ARMOR, 2 },
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 2 },
-      {ItemId::IRON_HELM, 1} });
+      {ItemId::IRON_HELM, 1},
+      {ItemId::LEATHER_BOOTS, 2 },
+      {ItemId::IRON_BOOTS, 1} });
 }
 
 ItemFactory ItemFactory::goblinShop() {
@@ -314,6 +316,8 @@ ItemFactory ItemFactory::goblinShop() {
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 2 },
       {ItemId::IRON_HELM, 1 },
+      {ItemId::LEATHER_BOOTS, 2 },
+      {ItemId::IRON_BOOTS, 1 },
       {ItemId::PANIC_MUSHROOM, 1 },
       {ItemId::RAGE_MUSHROOM, 1 },
       {ItemId::STRENGTH_MUSHROOM, 1 },
@@ -332,6 +336,8 @@ ItemFactory ItemFactory::workshop() {
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 2 },
       {ItemId::IRON_HELM, 1 },
+      {ItemId::IRON_BOOTS, 1 },
+      {ItemId::LEATHER_BOOTS, 2 },
       {ItemId::SPECIAL_SWORD, 0.1},
       {ItemId::SPECIAL_BATTLE_AXE, 0.1},
       {ItemId::SPECIAL_WAR_HAMMER, 0.1}});
@@ -384,9 +390,12 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::WAR_HAMMER, 20 },
       {ItemId::SPECIAL_WAR_HAMMER, 1 },
       {ItemId::LEATHER_ARMOR, 20 },
-      {ItemId::CHAIN_ARMOR, 0 },
+      {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 20 },
-      {ItemId::IRON_HELM, 0 },
+      {ItemId::IRON_HELM, 5 },
+      {ItemId::LEATHER_BOOTS, 20 },
+      {ItemId::IRON_BOOTS, 5 },
+      {ItemId::SPEED_BOOTS, 1 },
       {ItemId::TELE_SCROLL, 30 },
       {ItemId::PORTAL_SCROLL, 10 },
       {ItemId::IDENTIFY_SCROLL, 30 },
@@ -513,7 +522,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.attackType = AttackType::STAB;)));
     case ItemId::SPECIAL_SWORD: artifact = true;
     case ItemId::SWORD: return PItem(new Item(
-        ViewObject(ViewId::SWORD, ViewLayer::ITEM, "Sword"), ITATTR(
+        ViewObject(artifact ? ViewId::SPECIAL_SWORD : ViewId::SWORD, ViewLayer::ITEM, "Sword"), ITATTR(
             i.name = "sword";
             i.type = ItemType::WEAPON;
             i.weight = 1.5;
@@ -539,7 +548,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.attackType = AttackType::CUT;)));
     case ItemId::SPECIAL_BATTLE_AXE: artifact = true;
     case ItemId::BATTLE_AXE: return PItem(new Item(
-        ViewObject(ViewId::BATTLE_AXE, ViewLayer::ITEM, "Battle axe"), ITATTR(
+        ViewObject(artifact ? ViewId::SPECIAL_BATTLE_AXE : ViewId::BATTLE_AXE, ViewLayer::ITEM, "Battle axe"), ITATTR(
             i.name = "battle axe";
             i.type = ItemType::WEAPON;
             i.weight = 8;
@@ -554,7 +563,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.attackType = AttackType::CUT;)));
     case ItemId::SPECIAL_WAR_HAMMER: artifact = true;
     case ItemId::WAR_HAMMER: return PItem(new Item(
-        ViewObject(ViewId::WAR_HAMMER, ViewLayer::ITEM, "War hammer"), ITATTR(
+        ViewObject(artifact ? ViewId::SPECIAL_WAR_HAMMER : ViewId::WAR_HAMMER, ViewLayer::ITEM, "War hammer"), ITATTR(
             i.name = "war hammer";
             i.type = ItemType::WEAPON;
             i.weight = 8;
@@ -583,7 +592,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.name = "short bow";
             i.type = ItemType::RANGED_WEAPON;
             i.weight = 1;
-            i.rangedWeaponAccuracy = 10;
+            i.rangedWeaponAccuracy = 10 + maybePlusMinusOne(4);
             i.price = 60;)));
     case ItemId::ARROW: return PItem(new Item(
         ViewObject(ViewId::ARROW, ViewLayer::ITEM, "Arrow"), ITATTR(
@@ -615,7 +624,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.type = ItemType::ARMOR;
             i.weight = 15;
             i.armorType = ArmorType::BODY_ARMOR;
-            i.price = 170;
+            i.price = 130;
             i.defense = 5 + maybePlusMinusOne(4);)));
     case ItemId::IRON_HELM: return PItem(new Item(
         ViewObject(ViewId::IRON_HELM, ViewLayer::ITEM, "Helmet"), ITATTR(
@@ -623,8 +632,33 @@ PItem ItemFactory::fromId(ItemId id) {
             i.type = ItemType::ARMOR;
             i.weight = 4;
             i.armorType = ArmorType::HELMET;
-            i.price = 70;
-            i.defense=2 + maybePlusMinusOne(4);)));
+            i.price = 40;
+            i.defense= 2 + maybePlusMinusOne(4);)));
+    case ItemId::LEATHER_BOOTS: return PItem(new Item(
+        ViewObject(ViewId::LEATHER_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
+            i.name = "leather boots";
+            i.type = ItemType::ARMOR;
+            i.weight = 2;
+            i.armorType = ArmorType::BOOTS;
+            i.price = 10;
+            i.defense = 1 + maybePlusMinusOne(4);)));
+    case ItemId::IRON_BOOTS: return PItem(new Item(
+        ViewObject(ViewId::IRON_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
+            i.name = "iron boots";
+            i.type = ItemType::ARMOR;
+            i.weight = 4;
+            i.armorType = ArmorType::BOOTS;
+            i.price = 40;
+            i.defense = 2 + maybePlusMinusOne(4);)));
+    case ItemId::SPEED_BOOTS: return PItem(new Item(
+        ViewObject(ViewId::SPEED_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
+            i.name = "boots of speed";
+            i.type = ItemType::ARMOR;
+            i.weight = 2;
+            i.armorType = ArmorType::BOOTS;
+            i.price = 160;
+            i.speed = 30;
+            i.defense = 1 + maybePlusMinusOne(4);)));
     case ItemId::WARNING_AMULET: return PItem(
         new AmuletOfWarning(ViewObject(amulet_ids[0], ViewLayer::ITEM, "Amulet"), 
           ITATTR(
@@ -710,6 +744,7 @@ PItem ItemFactory::fromId(ItemId id) {
                                        "Makes you blind for some time.");
     case ItemId::INVISIBLE_POTION: return getPotion(5, "invisibility", EffectType::INVISIBLE, 60,
                                        "Makes you and your belongings invisible for a short time.");
+    case ItemId::POISON_POTION: return getPotion(0, "poison", EffectType::POISON, 100, "Poisons.");
     case ItemId::PANIC_MUSHROOM: return getMushroom("panic", EffectType::PANIC,
                                      "Makes the one who ate it favor defensive actions over offensive.");
     case ItemId::RAGE_MUSHROOM: return getMushroom("rage", EffectType::RAGE,

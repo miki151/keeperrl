@@ -31,13 +31,15 @@ map<EquipmentSlot, string> slotSuffixes = {
     {EquipmentSlot::RANGED_WEAPON, "(ranged weapon ready)"},
     {EquipmentSlot::BODY_ARMOR, "(being worn)"},
     {EquipmentSlot::HELMET, "(being worn)"},
+    {EquipmentSlot::BOOTS, "(being worn)"},
     {EquipmentSlot::AMULET, "(being worn)"}};
 
 map<EquipmentSlot, string> slotTitles = {
     {EquipmentSlot::WEAPON, "Weapon"},
     {EquipmentSlot::RANGED_WEAPON, "Ranged weapon"},
-    {EquipmentSlot::BODY_ARMOR, "Body armor"},
     {EquipmentSlot::HELMET, "Helmet"},
+    {EquipmentSlot::BODY_ARMOR, "Body armor"},
+    {EquipmentSlot::BOOTS, "Boots"},
     {EquipmentSlot::AMULET, "Amulet"}};
 
 View* Player::getView() {
@@ -242,10 +244,13 @@ void Player::applyAction() {
   }
   if (items[0]->getApplyTime() > 1) {
     for (const Creature* c : creature->getVisibleEnemies())
-      if ((c->getPosition() - creature->getPosition()).length8() < 3 && 
-          !view->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " + 
+      if ((c->getPosition() - creature->getPosition()).length8() < 3) { 
+        if (!view->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " + 
             convertToString(items[0]->getApplyTime()) + " turns. Are you sure you want to continue?"))
-        return;
+          return;
+        else
+          break;
+      }
   }
   if (creature->canApplyItem(items[0])) {
     privateMessage("You " + items[0]->getApplyMsgFirstPerson());
@@ -351,13 +356,7 @@ void Player::hideAction() {
   }
 }
 
-void Player::travelAction() {
-  if (!creature->canMove(travelDir) || view->travelInterrupt()) {
-    travelling = false;
-    return;
-  }
-  creature->move(travelDir);
-  itemsMessage();
+bool Player::interruptedByEnemy() {
   vector<const Creature*> enemies = creature->getVisibleEnemies();
   vector<string> ignoreCreatures { "a boar" ,"a deer", "a fox", "a vulture", "a rat", "a jackal", "a boulder" };
   if (enemies.size() > 0) {
@@ -365,10 +364,19 @@ void Player::travelAction() {
       if (!contains(ignoreCreatures, c->getAName())) {
         view->refreshView(creature);
         privateMessage("You notice " + c->getAName());
-        travelling = false;
-        return;
+        return true;
       }
   }
+  return false;
+}
+
+void Player::travelAction() {
+  if (!creature->canMove(travelDir) || view->travelInterrupt() || interruptedByEnemy()) {
+    travelling = false;
+    return;
+  }
+  creature->move(travelDir);
+  itemsMessage();
   const Location* currentLocation = creature->getLevel()->getLocation(creature->getPosition());
   if (lastLocation != currentLocation && currentLocation != nullptr && currentLocation->hasName()) {
     privateMessage("You arrive at " + addAParticle(currentLocation->getName()));
@@ -384,6 +392,22 @@ void Player::travelAction() {
   Optional<int> myIndex = findElement(squareDirs, -travelDir);
   CHECK(myIndex) << "Bad travel data in square";
   travelDir = squareDirs[(*myIndex + 1) % 2];
+}
+
+void Player::targetAction() {
+  CHECK(target);
+  if (creature->getPosition() == *target || view->travelInterrupt()) {
+    target = Nothing();
+    return;
+  }
+  Optional<Vec2> move = creature->getMoveTowards(*target);
+  if (move)
+    creature->move(*move);
+  else
+    target = Nothing();
+  itemsMessage();
+  if (interruptedByEnemy())
+    target = Nothing();
 }
 
 void Player::payDebtAction() {
@@ -463,14 +487,23 @@ void Player::makeMove() {
   }
   if (travelling)
     travelAction();
+  else if (target)
+    targetAction();
   else {
     Action action = view->getAction();
-  Vec2 direction(-100, -100);
+  vector<Vec2> direction;
   bool travel = false;
   switch (action.getId()) {
     case ActionId::FIRE: fireAction(action.getDirection()); break;
     case ActionId::TRAVEL: travel = true;
-    case ActionId::MOVE: direction = action.getDirection(); break;
+    case ActionId::MOVE: direction.push_back(action.getDirection()); break;
+    case ActionId::MOVE_TO: if (action.getDirection().dist8(creature->getPosition()) == 1)
+                              direction.push_back(action.getDirection() - creature->getPosition());
+                            else if (action.getDirection() != creature->getPosition())
+                              target = action.getDirection();
+                            else
+                              pickUpAction(false);
+                            break;
     case ActionId::SHOW_INVENTORY: displayInventory(); break;
     case ActionId::PICK_UP: pickUpAction(false); break;
     case ActionId::EXT_PICK_UP: pickUpAction(true); break;
@@ -495,25 +528,27 @@ void Player::makeMove() {
     creature->popController();
     return;
   }
-  if (direction.x > -100) {
+  for (Vec2 dir : direction)
     if (travel) {
       vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
-      if (findElement(squareDirs, direction)) {
-        travelDir = direction;
+      if (findElement(squareDirs, dir)) {
+        travelDir = dir;
         lastLocation = creature->getLevel()->getLocation(creature->getPosition());
         travelling = true;
         travelAction();
       }
     } else
-    if (creature->canMove(direction)) {
-      creature->move(direction);
+    if (creature->canMove(dir)) {
+      creature->move(dir);
       itemsMessage();
+      break;
     } else {
-      const Creature *c = creature->getConstSquare(direction)->getCreature();
-      if (creature->canBumpInto(direction) && creature->isEnemy(c))
-        creature->bumpInto(direction);
+      const Creature *c = creature->getConstSquare(dir)->getCreature();
+      if (creature->canBumpInto(dir) && creature->isEnemy(c)) {
+        creature->bumpInto(dir);
+        break;
+      }
     }
-  }
   }
   for (Vec2 pos : creature->getLevel()->getVisibleTiles(creature)) {
     ViewIndex index = creature->getLevel()->getSquare(pos)->getViewIndex(creature);
@@ -549,7 +584,7 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::DIE: messageBuffer.addMessage("You die!!"); break;
     case MsgType::TELE_DISAPPEAR: msg = "You are standing somewhere else!"; break;
     case MsgType::BLEEDING_STOPS: msg = "Your bleeding stops."; break;
-    case MsgType::DIE_OF_BLEEDING: msg = "You die of wounds."; break;
+    case MsgType::DIE_OF: msg = "You die" + (param.empty() ? string(".") : " of " + param); break;
     case MsgType::MISS_ATTACK: msg = "You miss " + param; break;
     case MsgType::MISS_THROWN_ATTACK: msg = param + " misses you"; break;
     case MsgType::HIT_THROWN_ITEM: msg = param + " hits you"; break;
@@ -580,6 +615,8 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::DROWN: msg = "You drown in the " + param; break;
     case MsgType::SET_UP_TRAP: msg = "You set up the trap"; break;
     case MsgType::KILLED_BY: msg = "You are killed by " + param; break;
+    case MsgType::TURN: msg = "You turn into " + param; break;
+    case MsgType::HIT: msg = "You hit " + param; break;
     default: break;
   }
   messageBuffer.addMessage(msg);

@@ -12,7 +12,7 @@ class Trigger {
 
   virtual void onCreatureEnter(Creature* c) {}
   virtual bool interceptsFlyingItem(Item* it) const { return false; }
-  virtual void onInterceptFlyingItem(PItem it, Attack a, int remainingDist, Vec2 dir) {}
+  virtual void onInterceptFlyingItem(PItem it, const Attack& a, int remainingDist, Vec2 dir) {}
 
   virtual void tick(double time) {}
 

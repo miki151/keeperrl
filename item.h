@@ -67,7 +67,7 @@ class Item : private ItemAttributes {
   double getFireSize() const;
 
   void onHitSquare(Vec2 position, Square*);
-  void onHitCreature(Creature* c, Attack attack);
+  void onHitCreature(Creature* c, const Attack& attack);
 
   int getAccuracy() const;
   double getApplyTime() const;

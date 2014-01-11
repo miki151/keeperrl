@@ -150,9 +150,9 @@ class Square {
   ViewObject getViewObject() const;
   ViewIndex getViewIndex(const CreatureView* c) const;
 
-  bool itemLands(Item* item, Attack attack);
+  bool itemLands(Item* item, const Attack& attack);
   virtual bool itemBounces(Item* item) const;
-  void onItemLands(PItem item, Attack attack, int remainingDist, Vec2 dir);
+  void onItemLands(PItem item, const Attack& attack, int remainingDist, Vec2 dir);
   vector<Item*> getItems(function<bool (Item*)> predicate = alwaysTrue<Item*>());
   PItem removeItem(Item*);
   vector<PItem> removeItems(vector<Item*>);

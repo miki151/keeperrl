@@ -16,6 +16,8 @@ Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
       return MinionEquipment::BODY_ARMOR;
     if (it->getEquipmentSlot() == EquipmentSlot::HELMET)
       return MinionEquipment::HELMET;
+    if (it->getEquipmentSlot() == EquipmentSlot::BOOTS)
+      return MinionEquipment::BOOTS;
   }
   if (it->getEffectType() == EffectType::HEAL)
     return MinionEquipment::HEALING;

@@ -53,13 +53,13 @@ class Heal : public Behaviour {
   }
 
   virtual MoveInfo getMove() {
-    if (!creature->isHumanoid() || creature->getHealth() == 1)
-      return {0, nullptr};
     for (Vec2 v : Vec2::directions8())
       if (creature->canHeal(v) && creature->isFriend(creature->getConstSquare(v)->getCreature())) {
         creature->getConstSquare(v)->getCreature()->privateMessage("\"Let me help you my friend.\"");
         creature->heal(v);
       }
+    if (!creature->isHumanoid() || creature->getHealth() == 1)
+      return {0, nullptr};
     MoveInfo move = tryToApplyItem(EffectType::HEAL, 1);
     if (move.move)
       return { min(1.0, 1.5 - creature->getHealth()), move.move };

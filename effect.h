@@ -33,6 +33,7 @@ enum class EffectType {
     FIRE_SPHERE_PET,
     GUARDING_BOULDER,
     EMIT_POISON_GAS,
+    POISON,
 };
 
 class Effect {
@@ -48,6 +49,12 @@ class Effect {
 
   private:
   EffectType type;
+};
+
+class PoisonEffect : public Effect {
+  public:
+  PoisonEffect();
+  virtual void applyToCreature(Creature*, EffectStrength);
 };
 
 class EmitPoisonGasEffect : public Effect {

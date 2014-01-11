@@ -47,6 +47,11 @@ map<EffectStrength, int> identifyNum {
     {EffectStrength::NORMAL, 1},
     {EffectStrength::STRONG, 400}};
 
+map<EffectStrength, int> poisonDeathTime { 
+    {EffectStrength::WEAK, 200},
+    {EffectStrength::NORMAL, 60},
+    {EffectStrength::STRONG, 20}};
+
 Effect::Effect(EffectType t) : type(t) {}
 
 EffectType Effect::getType() {
@@ -77,6 +82,7 @@ PEffect Effect::getEffect(EffectType type) {
     case EffectType::FIRE_SPHERE_PET: return PEffect(new FireSpherePetEffect());
     case EffectType::GUARDING_BOULDER: return PEffect(new GuardingBuilderEffect());
     case EffectType::EMIT_POISON_GAS: return PEffect(new EmitPoisonGasEffect());
+    case EffectType::POISON: return PEffect(new PoisonEffect());
     default: Debug(FATAL) << "Can't construct effect " << (int)type;
   }
   return PEffect(nullptr);
@@ -84,6 +90,12 @@ PEffect Effect::getEffect(EffectType type) {
 
 PEffect Effect::giveItemEffect(ItemId id, int num) {
   return PEffect(new GiveItemEffect(id, num));
+}
+
+PoisonEffect::PoisonEffect() : Effect(EffectType::POISON) {}
+
+void PoisonEffect::applyToCreature(Creature* c, EffectStrength strength) {
+  c->poison(poisonDeathTime.at(strength));
 }
 
 EmitPoisonGasEffect::EmitPoisonGasEffect() : Effect(EffectType::EMIT_POISON_GAS) {}
@@ -131,7 +143,8 @@ void FireSpherePetEffect::applyToCreature(Creature* c, EffectStrength strength) 
 EnhanceArmorEffect::EnhanceArmorEffect() : Effect(EffectType::ENHANCE_ARMOR) {}
 
 void EnhanceArmorEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  for (EquipmentSlot slot : randomPermutation({ EquipmentSlot::BODY_ARMOR, EquipmentSlot::HELMET}))
+  for (EquipmentSlot slot : randomPermutation({
+        EquipmentSlot::BODY_ARMOR, EquipmentSlot::HELMET, EquipmentSlot::BOOTS}))
     if (Item* item = c->getEquipment().getItem(slot)) {
       c->you(MsgType::YOUR, item->getName() + " seems improved");
       item->addModifier(AttrType::DEFENSE, 1);

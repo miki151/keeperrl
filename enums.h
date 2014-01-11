@@ -17,7 +17,7 @@ enum class MsgType {
     FALL,
     PANIC,
     RAGE,
-    DIE_OF_BLEEDING,
+    DIE_OF,
     ARE, // bleeding
     YOUR, // your head is cut off
     FALL_ASLEEP, //
@@ -33,6 +33,7 @@ enum class MsgType {
     KICK,
     PUNCH,
     BITE,
+    HIT,
     CRAWL,
     TRIGGER_TRAP,
     DROP_WEAPON,
@@ -50,6 +51,7 @@ enum class MsgType {
     DROWN,
     SET_UP_TRAP,
     DECAPITATE,
+    TURN,
     KILLED_BY,
     MISS_ATTACK}; //
 enum class BodyPart { HEAD, TORSO, ARM, WING, LEG, BACK};
@@ -58,8 +60,8 @@ enum class AttackLevel { LOW, MIDDLE, HIGH };
 enum class AttrType { STRENGTH, DAMAGE, TO_HIT, THROWN_DAMAGE, THROWN_TO_HIT, DEXTERITY, DEFENSE, SPEED, INV_LIMIT};
 enum class ItemType { WEAPON, RANGED_WEAPON, AMMO, ARMOR, SCROLL, POTION, BOOK, AMULET, TOOL, OTHER, GOLD, FOOD,
     CORPSE };
-enum class EquipmentSlot { WEAPON, RANGED_WEAPON, BODY_ARMOR, HELMET, AMULET };
-enum class ArmorType { BODY_ARMOR, HELMET };
+enum class EquipmentSlot { WEAPON, RANGED_WEAPON, BODY_ARMOR, HELMET, BOOTS, AMULET };
+enum class ArmorType { BODY_ARMOR, HELMET, BOOTS };
 
 enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP };
 
@@ -166,6 +168,9 @@ enum class ItemId { KNIFE,
   LEATHER_HELM,
   CHAIN_ARMOR,
   IRON_HELM,
+  LEATHER_BOOTS,
+  IRON_BOOTS,
+  SPEED_BOOTS,
   TELE_SCROLL,
   PORTAL_SCROLL,
   IDENTIFY_SCROLL,
@@ -180,6 +185,7 @@ enum class ItemId { KNIFE,
   SLEEP_POTION,
   BLINDNESS_POTION,
   INVISIBLE_POTION,
+  POISON_POTION,
   PANIC_MUSHROOM,
   RAGE_MUSHROOM,
   STRENGTH_MUSHROOM,
@@ -345,10 +351,13 @@ enum class ViewId {
   BODY_PART,
   BONE,
   SWORD,
+  SPECIAL_SWORD,
   ELVEN_SWORD,
   KNIFE,
   WAR_HAMMER,
+  SPECIAL_WAR_HAMMER,
   BATTLE_AXE,
+  SPECIAL_BATTLE_AXE,
   BOW,
   ARROW,
   SCROLL,
@@ -372,6 +381,9 @@ enum class ViewId {
   LEATHER_HELM,
   CHAIN_ARMOR,
   IRON_HELM,
+  LEATHER_BOOTS,
+  IRON_BOOTS,
+  SPEED_BOOTS,
   BOULDER,
   UNARMED_BOULDER_TRAP,
   PORTAL,

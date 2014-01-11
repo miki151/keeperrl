@@ -39,8 +39,8 @@ class Creature : private CreatureAttributes, public CreatureView {
   Square* getSquare(Vec2 direction);
   void setPosition(Vec2 pos);
   virtual Vec2 getPosition() const override;
-  bool dodgeAttack(Attack);
-  bool takeDamage(Attack);
+  bool dodgeAttack(const Attack&);
+  bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);
   double getHealth() const;
   double getWeight() const;
@@ -153,6 +153,9 @@ class Creature : private CreatureAttributes, public CreatureView {
   bool isBlind() const;
   void makeInvisible(double time);
   bool isInvisible() const;
+  void poison(double time);
+  void curePoisoning();
+  bool isPoisoned() const;
   void giveStrBonus(double time);
   void giveDexBonus(double time);
   bool canFlyAway() const;
@@ -208,9 +211,6 @@ class Creature : private CreatureAttributes, public CreatureView {
   typedef function<bool(const Creature*)> EnemyVision;
 
   void addEnemyVision(EnemyVision);
-
-  protected:
-  void setViewObject(const ViewObject&);
 
   private:
   Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool avoidEnemies);
@@ -272,6 +272,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   TimerVar hallucinating;
   TimerVar blinded;
   TimerVar invisible;
+  TimerVar poisoned;
   int expLevel = 1;
   vector<const Creature*> unknownAttacker;
   vector<const Creature*> visibleEnemies;

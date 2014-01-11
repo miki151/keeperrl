@@ -112,7 +112,7 @@ void Item::onHitSquare(Vec2 position, Square* s) {
     s->getConstLevel()->globalMessage(position, getTheName() + " hits the " + s->getName());
 }
 
-void Item::onHitCreature(Creature* c, Attack attack) {
+void Item::onHitCreature(Creature* c, const Attack& attack) {
   if (fragile) {
     c->you(MsgType::ITEM_CRASHES, getTheName());
     discarded = true;
@@ -326,6 +326,8 @@ EquipmentSlot Item::getEquipmentSlot() const {
     return EquipmentSlot::BODY_ARMOR;
   if (armorType == ArmorType::HELMET)
     return EquipmentSlot::HELMET;
+  if (armorType == ArmorType::BOOTS)
+    return EquipmentSlot::BOOTS;
   Debug(FATAL) << "other equipment slot";
   return EquipmentSlot::HELMET;
 }

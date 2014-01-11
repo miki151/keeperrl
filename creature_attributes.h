@@ -5,6 +5,7 @@
 #include <functional>
 
 #include "util.h"
+#include "effect.h"
 #include "skill.h"
 
 // WTF is this defined
@@ -31,6 +32,8 @@ class CreatureAttributes {
   Optional<string> firstName;
   bool specialMonster = false;
   int barehandedDamage = 0;
+  Optional<AttackType> barehandedAttack;
+  Optional<EffectType> attackEffect;
   int legs = 2;
   int arms = 2;
   int wings = 0;

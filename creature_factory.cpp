@@ -183,7 +183,7 @@ class KrakenController : public Monster {
     switch (type) {
       case MsgType::KILLED_BY: msg = "The kraken's tentacle is cut by " + param; break;
       case MsgType::DIE:
-      case MsgType::DIE_OF_BLEEDING: return;
+      case MsgType::DIE_OF: return;
       default: Monster::you(type, param); break;
     }
     if (!msg.empty())
@@ -843,9 +843,10 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
     case CreatureId::GHOST: return get(ViewId::GHOST, CATTR(
                                 c.speed = 80;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 13;
+                                c.strength = 14;
                                 c.dexterity = 19;
-                                c.barehandedDamage = 10;
+                                c.barehandedDamage = 3;
+                                c.barehandedAttack = AttackType::HIT;
                                 c.humanoid = false;
                                 c.noBody = true;
                                 c.weight = 10;
@@ -1057,7 +1058,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.weight = 140;
                                 c.courage = 1;
                                 c.firstName = NameGenerator::demonNames.getNext();
-                                c.name = "bile demon";), tribe, factory);
+                                c.name = "ogre";), tribe, factory);
     case CreatureId::HELL_HOUND: return get(ViewId::HELL_HOUND, CATTR(
                                 c.speed = 160;
                                 c.size = CreatureSize::MEDIUM;
@@ -1282,6 +1283,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.humanoid = false;
                                 c.weight = 2;
                                 c.animal = true;
+                                c.attackEffect = EffectType::POISON;
                                 c.skills.insert(Skill::swimming);
                                 c.name = "snake";), Tribe::pest, factory);
     case CreatureId::VULTURE: return get(ViewId::VULTURE, CATTR(
@@ -1448,17 +1450,20 @@ vector<ItemId> getInventory(CreatureId id) {
             .add(ItemId::TELE_SCROLL, Random.getRandom(1, 4));
     case CreatureId::GNOME: return ItemList()
             .add(chooseRandom({ItemId::KNIFE}))
+            .maybe(0.3, ItemId::LEATHER_BOOTS)
             .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.getRandom(20, 36)));
     case CreatureId::ARCHER: return ItemList()
             .add(ItemId::BOW).add(ItemId::ARROW, Random.getRandom(20, 36))
             .add(ItemId::KNIFE)
             .add(ItemId::LEATHER_ARMOR)
+            .add(ItemId::LEATHER_BOOTS)
             .add(randomHealing())
             .add(ItemId::GOLD_PIECE, Random.getRandom(20, 50));
     case CreatureId::CASTLE_GUARD:
     case CreatureId::KNIGHT: return ItemList()
             .add(ItemId::SWORD)
             .add(ItemId::CHAIN_ARMOR)
+            .add(ItemId::LEATHER_BOOTS)
             .add(randomHealing())
             .add(ItemId::GOLD_PIECE, Random.getRandom(30, 80));
     case CreatureId::DEVIL: return ItemList()
@@ -1468,6 +1473,7 @@ vector<ItemId> getInventory(CreatureId id) {
             .add(ItemId::SPECIAL_BATTLE_AXE)
             .add(ItemId::CHAIN_ARMOR)
             .add(ItemId::IRON_HELM)
+            .add(ItemId::IRON_BOOTS)
             .add(ItemId::HEALING_POTION, Random.getRandom(3, 7))
             .add(ItemId::GOLD_PIECE, Random.getRandom(200, 300));
     case CreatureId::BANDIT:
@@ -1478,19 +1484,24 @@ vector<ItemId> getInventory(CreatureId id) {
             .maybe(0.2, ItemId::GOLD_PIECE, Random.getRandom(10, 30));
     case CreatureId::GREAT_GOBLIN: return ItemList()
             .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
-            .add(ItemId::IRON_HELM).add(ItemId::CHAIN_ARMOR)
-            .add(randomBackup()).add(ItemId::KNIFE, Random.getRandom(2, 5))
+            .add(ItemId::IRON_HELM)
+            .add(ItemId::IRON_BOOTS)
+            .add(ItemId::CHAIN_ARMOR)
+            .add(randomBackup())
+            .add(ItemId::KNIFE, Random.getRandom(2, 5))
             .add(ItemId::GOLD_PIECE, Random.getRandom(100, 200));
     case CreatureId::DWARF: return ItemList()
             .add(chooseRandom({ItemId::BATTLE_AXE, ItemId::WAR_HAMMER}, {1, 1}))
             .maybe(0.6, randomBackup())
             .add(ItemId::CHAIN_ARMOR)
             .maybe(0.5, ItemId::IRON_HELM)
+            .maybe(0.3, ItemId::IRON_BOOTS)
             .maybe(0.2, ItemId::GOLD_PIECE, Random.getRandom(10, 30));
     case CreatureId::DWARF_BARON: return ItemList()
             .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
             .add(randomBackup())
             .add(ItemId::CHAIN_ARMOR)
+            .add(ItemId::IRON_BOOTS)
             .add(ItemId::IRON_HELM);
     case CreatureId::ELF_LORD: return ItemList()
             .add(ItemId::SPECIAL_ELVEN_SWORD)

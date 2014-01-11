@@ -501,6 +501,22 @@ bool Creature::isInvisible() const {
   return invisible;
 }
 
+void Creature::poison(double time) {
+  you(MsgType::ARE, "poisoned");
+  viewObject.setPoisoned(true);
+  poisoned.set(getTime() + time);
+}
+
+void Creature::curePoisoning() {
+  you(MsgType::ARE, "cured from poisoning");
+  viewObject.setPoisoned(false);
+  poisoned.unset();
+}
+
+bool Creature::isPoisoned() const {
+  return poisoned;
+}
+
 void Creature::rage(double time) {
   if (sleeping)
     return;
@@ -728,6 +744,13 @@ void Creature::tick(double realTime) {
     you(MsgType::TURN_VISIBLE, "");
     viewObject.setInvisible(false);
   }
+  if (poisoned.isFinished(realTime)) {
+    you(MsgType::ARE, "no longer poisoned");
+  } 
+  else if (poisoned) {
+    bleed(1.0 / 60);
+    privateMessage("You feel poison flowing in your veins.");
+  }
   double delta = realTime - lastTick;
   lastTick = realTime;
   updateViewObject();
@@ -739,7 +762,7 @@ void Creature::tick(double realTime) {
   if (health < 0.5)
     health -= delta / 40;
   if (health <= 0) {
-    you(MsgType::DIE_OF_BLEEDING, "");
+    you(MsgType::DIE_OF, isPoisoned() ? "poisoning" : "bleeding");
     die(lastAttacker);
   }
 
@@ -775,7 +798,7 @@ BodyPart Creature::getBodyPart(AttackLevel attack) const {
   return BodyPart::ARM;
 }
 
-string getAttackParam(AttackType type) {
+static string getAttackParam(AttackType type) {
   switch (type) {
     case AttackType::CUT: return "cut";
     case AttackType::STAB: return "stab";
@@ -862,6 +885,18 @@ void Creature::injureHead(bool drop) {
           isFood ? ItemType::FOOD : ItemType::CORPSE));
 }
 
+static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
+  if (weapon)
+    return type == AttackType::STAB ? MsgType::THRUST_WEAPON : MsgType::SWING_WEAPON;
+  switch (type) {
+    case AttackType::BITE: return MsgType::BITE;
+    case AttackType::PUNCH: return level == AttackLevel::LOW ? MsgType::KICK : MsgType::PUNCH;
+    case AttackType::HIT: return MsgType::HIT;
+    default: Debug(FATAL) << "Unhandled barehanded attack: " << int(type);
+  }
+  return MsgType(0);
+}
+
 void Creature::attack(const Creature* c1, bool spend) {
   Creature* c = const_cast<Creature*>(c1);
   int toHitVariance = 9;
@@ -883,20 +918,16 @@ void Creature::attack(const Creature* c1, bool spend) {
     }
     you(MsgType::ATTACK_SURPRISE, enemyName);
   }
-  Attack attack(this, getRandomAttackLevel(), getAttackType(), toHit, damage, backstab);
+  Attack attack(this, getRandomAttackLevel(), getAttackType(), toHit, damage, backstab,
+      attackEffect ? Effect::getEffect(*attackEffect) : nullptr);
   if (!c->dodgeAttack(attack)) {
     if (getWeapon()) {
-      you(getWeapon()->getAttackType() == AttackType::STAB ?
-          MsgType::THRUST_WEAPON : MsgType::SWING_WEAPON, getWeapon()->getName());
+      you(getAttackMsg(attack.getType(), true, attack.getLevel()), getWeapon()->getName());
       if (!canSee(c))
         privateMessage("You hit something.");
     }
     else {
-      if (isHumanoid()) {
-        you(attack.getLevel() == AttackLevel::LOW ? MsgType::KICK : MsgType::PUNCH, enemyName);
-      }
-      else
-        you(MsgType::BITE, enemyName);
+      you(getAttackMsg(attack.getType(), false, attack.getLevel()), enemyName);
     }
     c->takeDamage(attack);
   }
@@ -906,7 +937,7 @@ void Creature::attack(const Creature* c1, bool spend) {
     spendTime(1);
 }
 
-bool Creature::dodgeAttack(Attack attack) {
+bool Creature::dodgeAttack(const Attack& attack) {
   Debug() << getTheName() << " dodging " << attack.getAttacker()->getName() << " to hit " << attack.getToHit() << " dodge " << getAttr(AttrType::TO_HIT);
   if (const Creature* c = attack.getAttacker()) {
     if (!canSee(c))
@@ -918,12 +949,14 @@ bool Creature::dodgeAttack(Attack attack) {
   return canSee(attack.getAttacker()) && attack.getToHit() <= getAttr(AttrType::TO_HIT);
 }
 
-bool Creature::takeDamage(Attack attack) {
+bool Creature::takeDamage(const Attack& attack) {
   if (sleeping)
     wakeUp();
   int defense = getAttr(AttrType::DEFENSE);
   Debug() << getTheName() << " attacked by " << attack.getAttacker()->getName() << " damage " << attack.getStrength() << " defense " << defense;
   if (attack.getStrength() > defense) {
+    if (Effect* effect = attack.getEffect())
+      effect->applyToCreature(this, EffectStrength::NORMAL);
     lastAttacker = attack.getAttacker();
     double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
     dam *= damageMultiplier;
@@ -979,6 +1012,10 @@ bool Creature::takeDamage(Attack attack) {
           }
           break;
       }
+    } else {
+      you(MsgType::TURN, "whisp of smoke");
+      die(attack.getAttacker());
+      return true;
     }
     if (health <= 0) {
       you(MsgType::ARE, "critically wounded");
@@ -997,9 +1034,14 @@ bool Creature::takeDamage(Attack attack) {
 }
 
 void Creature::updateViewObject() {
-  if (const Creature* c = getLevel()->getPlayer())
+  viewObject.setDefense(getAttr(AttrType::DEFENSE));
+  viewObject.setAttack(getAttr(AttrType::DAMAGE));
+  if (const Creature* c = getLevel()->getPlayer()) {
     if (isEnemy(c))
       viewObject.setHostile(true);
+    else
+      viewObject.setHostile(false);
+  }
   viewObject.setBleeding(1 - health);
 }
 
@@ -1324,6 +1366,8 @@ Item* Creature::getWeapon() const {
 AttackType Creature::getAttackType() const {
   if (getWeapon())
     return getWeapon()->getAttackType();
+  else if (barehandedAttack)
+    return *barehandedAttack;
   else
     return isHumanoid() ? AttackType::PUNCH : AttackType::BITE;
 }
@@ -1377,7 +1421,7 @@ void Creature::throwItem(Item* item, Vec2 direction) {
     damage += 7;
     toHit += 4;
   }
-  Attack attack(this, getRandomAttackLevel(), item->getAttackType(), toHit, damage);
+  Attack attack(this, getRandomAttackLevel(), item->getAttackType(), toHit, damage, false, PEffect(nullptr));
   level->throwItem(equipment.removeItem(item), attack, dist, getPosition(), direction);
   spendTime(1);
 }
@@ -1386,9 +1430,9 @@ const ViewObject& Creature::getViewObject() const {
   return viewObject;
 }
 
-void Creature::setViewObject(const ViewObject& obj) {
+/*void Creature::setViewObject(const ViewObject& obj) {
   viewObject = obj;
-}
+}*/
 
 bool Creature::canSee(const Creature* c) const {
   return !isBlind() && !c->isInvisible() &&

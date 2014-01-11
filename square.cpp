@@ -144,7 +144,7 @@ void Square::tick(double time) {
   tickSpecial(time);
 }
 
-bool Square::itemLands(Item* item, Attack attack) {
+bool Square::itemLands(Item* item, const Attack& attack) {
   if (creature) {
     if (!creature->dodgeAttack(attack))
       return true;
@@ -163,7 +163,7 @@ bool Square::itemBounces(Item* item) const {
   return !canEnterEmpty(Creature::getDefault());
 }
 
-void Square::onItemLands(PItem item, Attack attack, int remainingDist, Vec2 dir) {
+void Square::onItemLands(PItem item, const Attack& attack, int remainingDist, Vec2 dir) {
   if (creature) {
     item->onHitCreature(creature, attack);
     if (!item->isDiscarded())

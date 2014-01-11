@@ -20,6 +20,14 @@ void ViewObject::setHostile(bool s) {
   hostile = s;
 }
 
+bool ViewObject::isHostile() const {
+  return hostile && *hostile;
+}
+
+bool ViewObject::isFriendly() const {
+  return hostile && !(*hostile);
+}
+
 void ViewObject::setBlind(bool s) {
   blind = s;
 }
@@ -32,6 +40,13 @@ bool ViewObject::isInvisible() const {
   return invisible;
 }
 
+void ViewObject::setPoisoned(bool s) {
+  poisoned = s;
+}
+
+bool ViewObject::isPoisoned() const {
+  return poisoned;
+}
 
 void ViewObject::setPlayer(bool s) {
   player = s;
@@ -81,21 +96,37 @@ string ViewObject::getBareDescription() const {
   return description;
 }
 
-string ViewObject::getDescription() const {
-  string mods = getBleeding() > 0 ? "wounded" : "";
-  if (hostile) {
-    if (mods.size() > 0)
-      mods.append(", ");
-    mods.append("hostile");
-  }
-  if (blind) {
-    if (mods.size() > 0)
-      mods.append(", ");
-    mods.append("blind");
-  }
- if (mods.size() > 0)
-    mods = " (" + mods + ")";
-  return description + mods;
+string ViewObject::getDescription(bool stats) const {
+  string attr;
+  if (attack && stats)
+    attr = " att: " + convertToString(*attack) + " def: " + convertToString(*defense) + " ";
+  vector<string> mods;
+  if (getBleeding() > 0) 
+    mods.push_back("wounded");
+  if (blind)
+    mods.push_back("blind");
+  if (poisoned)
+    mods.push_back("poisoned");
+  if (mods.size() > 0)
+    return description + attr + "(" + combine(mods) + ")";
+  else
+    return description + attr;
+}
+
+void ViewObject::setAttack(int val) {
+  attack = val;
+}
+
+void ViewObject::setDefense(int val) {
+  defense = val;
+}
+
+Optional<int> ViewObject::getAttack() const {
+  return attack;
+}
+
+Optional<int> ViewObject::getDefense() const {
+  return defense;
 }
 
 ViewLayer ViewObject::layer() const {

@@ -117,7 +117,7 @@ Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
   return Vec2(0, 0);
 }
 
-void Level::throwItem(PItem item, Attack attack, int maxDist, Vec2 position, Vec2 direction) {
+void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction) {
   int cnt = 1;
   vector<Vec2> trajectory;
   for (Vec2 v = position + direction;; v += direction) {

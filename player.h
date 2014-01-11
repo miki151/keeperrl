@@ -44,7 +44,9 @@ class Player : public Controller, public EventListener {
   void takeOffAction();
   void hideAction();
   void displayInventory();
+  bool interruptedByEnemy();
   void travelAction();
+  void targetAction();
   void payDebtAction();
   void chatAction();
   void fireAction(Vec2 dir);
@@ -56,6 +58,7 @@ class Player : public Controller, public EventListener {
   View* view = nullptr;
   bool travelling = false;
   Vec2 travelDir;
+  Optional<Vec2> target;
   const Location* lastLocation;
   vector<const Creature*> specialCreatures;
   bool displayGreeting;

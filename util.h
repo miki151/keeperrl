@@ -451,10 +451,20 @@ class Optional {
   Optional(Nothing) {}
   Optional() {}
 
+  Optional<T>& operator = (const Optional<T>& t) {
+    if (t)
+      elem.reset(new T(*t));
+    else
+      elem.reset();
+    return *this;
+  }
+
   T& operator = (const T& t) {
     elem.reset(new T(t));
     return *elem.get();
   }
+
+  Optional<T>& operator = (Optional<T>&& t) = default;
 
   void operator = (Nothing) {
     elem.reset();

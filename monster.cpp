@@ -45,7 +45,8 @@ void Monster::you(MsgType type, const string& param) const {
     case MsgType::TELE_APPEAR: msg = creature->getTheName() + " appears out of nowhere!"; break;
     case MsgType::TELE_DISAPPEAR: msg = creature->getTheName() + " suddenly disappears!"; break;
     case MsgType::BLEEDING_STOPS: msg = creature->getTheName() + "'s bleeding stops."; break;
-    case MsgType::DIE_OF_BLEEDING: msg = creature->getTheName() + " dies."; break;
+    case MsgType::DIE_OF: msg = creature->getTheName() +
+                          " dies" + (param.empty() ? string(".") : " of " + param); break;
     case MsgType::FALL_APART: msg = creature->getTheName() + " falls apart."; break;
     case MsgType::MISS_ATTACK: msg = creature->getTheName() + addName(" misses", param); break;
     case MsgType::MISS_THROWN_ATTACK: msg = param + " misses " + creature->getTheName(); break;
@@ -74,6 +75,8 @@ void Monster::you(MsgType type, const string& param) const {
     case MsgType::DROWN: msg = creature->getTheName() + " drowns in the " + param; msgNoSee = "You hear a loud splash" ;break;
     case MsgType::SET_UP_TRAP: msg = "You set up the trap"; break;
     case MsgType::KILLED_BY: msg = creature->getTheName() + " is killed by " + param; break;
+    case MsgType::TURN: msg = creature->getTheName() + " turns into " + param; break;
+    case MsgType::HIT: msg = creature->getTheName() + addName(" hits", param); break;
     default: break;
   }
   if (!msg.empty())
