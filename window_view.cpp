@@ -1522,22 +1522,6 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
   } while (1);
 }
 
-void WindowView::clearMessageBox() {
-  messageInd = 0;
-  oldMessage = false;
-  for (int i : All(currentMessage))
-    currentMessage[i].clear();
-}
-
-
-void WindowView::showMessage(const string& message) {
-  messageInd = 0;
-  oldMessage = false;
-  for (int i : All(currentMessage))
-    currentMessage[i].clear();
-  currentMessage[0] = message;
-}
-
 bool WindowView::yesOrNoPrompt(const string& message) {
   showMessage(message + " (y/n)");
   refreshScreen();
@@ -1721,7 +1705,21 @@ void WindowView::drawAndClearBuffer() {
   display->clear(black);
 }
 
+void WindowView::clearMessageBox() {
+  messageInd = 0;
+  oldMessage = false;
+  for (int i : All(currentMessage))
+    currentMessage[i].clear();
+}
 
+
+void WindowView::showMessage(const string& message) {
+  messageInd = 0;
+  oldMessage = false;
+  for (int i : All(currentMessage))
+    currentMessage[i].clear();
+  currentMessage[0] = message;
+}
 
 void WindowView::addImportantMessage(const string& message) {
   presentText("Important!", message);
@@ -1731,12 +1729,21 @@ void WindowView::clearMessages() {
   showMessage("");
 }
 
+void WindowView::retireMessages() {
+  string lastMsg = currentMessage[messageInd];
+  showMessage(lastMsg);
+  oldMessage = true;
+}
 void WindowView::addMessage(const string& message) {
-  if (oldMessage)
-    showMessage("");
+  oldMessage = false;
+/*  if (oldMessage)
+    showMessage("");*/
   if (currentMessage[messageInd].size() + message.size() + 1 > maxMsgLength &&
       messageInd == currentMessage.size() - 1) {
-    currentMessage[messageInd] += " (more)";
+    currentMessage.pop_front();
+    currentMessage.push_back("");
+  }
+ /*   currentMessage[messageInd] += " (more)";
     refreshScreen();
     while (1) {
       BlockingEvent event = readkey();
@@ -1745,12 +1752,12 @@ void WindowView::addMessage(const string& message) {
         break;
     }
     showMessage(message);
-  } else {
+  } else {*/
     if (currentMessage[messageInd].size() + message.size() + 1 > maxMsgLength)
       ++messageInd;
     currentMessage[messageInd] += (currentMessage[messageInd].size() > 0 ? " " : "") + message;
     refreshScreen();
-  }
+//  }
 }
 
 void WindowView::unzoom(bool pixel, bool tpp) {
@@ -1981,7 +1988,7 @@ Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
 Action WindowView::getAction() {
   while (1) {
     BlockingEvent event = readkey();
-    oldMessage = true;
+    retireMessages();
     if (event.type == BlockingEvent::IDLE || event.type == BlockingEvent::MOUSE_MOVE)
       return Action(ActionId::IDLE);
     if (event.type == BlockingEvent::MOUSE_LEFT) {

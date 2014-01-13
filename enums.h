@@ -80,6 +80,7 @@ enum class SquareAttrib {
   ROOM,
   COLLECTIVE_START,
   COLLECTIVE_STAIRS,
+  FOG,
 };
 
 ENUM_HASH(SquareAttrib);

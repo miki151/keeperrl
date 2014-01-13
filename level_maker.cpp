@@ -16,8 +16,16 @@ class AttribPredicate : public SquarePredicate {
     return builder->hasAttrib(pos, onAttr);
   }
 
-  private:
+  protected:
   SquareAttrib onAttr;
+};
+
+class NoAttribPredicate : public AttribPredicate {
+  using AttribPredicate::AttribPredicate;
+
+  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+    return !builder->hasAttrib(pos, onAttr);
+  }
 };
 
 class TypePredicate : public SquarePredicate {
@@ -39,6 +47,19 @@ class AlwaysTrue : public SquarePredicate {
   virtual bool apply(Level::Builder* builder, Vec2 pos) override {
     return true;
   }
+};
+
+class AndPredicates : public SquarePredicate {
+  public:
+  AndPredicates(SquarePredicate* a1, SquarePredicate* a2) : p1(a1), p2(a2) {}
+
+  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+    return p1->apply(builder, pos) && p2->apply(builder, pos);
+  }
+
+  private:
+  SquarePredicate* p1;
+  SquarePredicate* p2;
 };
 
 class RoomMaker : public LevelMaker {
@@ -858,9 +879,10 @@ class Mountains : public LevelMaker {
     int gCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0, fCnt = 0;
     for (Vec2 v : area) {
       builder->setHeightMap(v, wys[v]);
-      if (fog[v] >= cutOffValFogLow) {
+      if (fog[v] > cutOffValFogLow) {
         ++fCnt;
         builder->setFog(v, min(1.0, (fog[v] - cutOffValFogLow) / (cutOffValFogHigh - cutOffValFogLow)));
+        builder->addAttrib(v, SquareAttrib::FOG);
       }
       if (wys[v] > cutOffValSnow) {
         builder->putSquare(v, SquareType::GLACIER, SquareAttrib::ROAD_CUT_THRU);
@@ -1509,8 +1531,8 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   queue->addMaker(new Vegetation(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
   queue->addMaker(new Vegetation(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
   queue->addMaker(new Vegetation(0.2, 0.3, SquareType::MOUNTAIN, vegetationHigh, probs));
-  queue->addMaker(new Margin(100,
-        new RandomLocations(subMakers, subSizes, new AttribPredicate(SquareAttrib::LOWLAND))));
+  queue->addMaker(new Margin(100, new RandomLocations(subMakers, subSizes,
+      new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND), new NoAttribPredicate(SquareAttrib::FOG)))));
   MakerQueue* tower = new MakerQueue();
   tower->addMaker(towerLevel(StairKey::TOWER, Nothing()));
   tower->addMaker(new LocationMaker(Location::towerTopLocation()));

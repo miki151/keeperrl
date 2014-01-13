@@ -59,6 +59,7 @@ class WindowView: public View {
   Optional<sf::Event::KeyEvent> getEventFromMenu();
 
   void showMessage(const string& message);
+  void retireMessages();
   void drawList(const string& title, const vector<string>& options, int hightlight);
   void refreshScreen(bool flipBuffer = true);
   void refreshText();
@@ -76,7 +77,7 @@ class WindowView: public View {
 
   int messageInd = 0;
   const static unsigned int maxMsgLength = 90;
-  vector<string> currentMessage = vector<string>(3, "");
+  std::deque<string> currentMessage = std::deque<string>(3, "");
   bool oldMessage = false;
 
   enum class CollectiveOption {
