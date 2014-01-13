@@ -336,7 +336,7 @@ class ShopkeeperController : public Monster, public EventListener {
         creatures.push_back(c);
         if (!prevCreatures.count(c) && !thieves.count(c) && !creature->isEnemy(c)) {
           if (!debt.count(c))
-            c->privateMessage("\"Welcome to " + creature->getName() + "'s shop!\"");
+            c->privateMessage("\"Welcome to " + *creature->getFirstName() + "'s shop!\"");
           else {
             c->privateMessage("\"Pay your debt or... !\"");
             thiefCount.erase(c);
@@ -564,7 +564,8 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
         c.weight = 100;
         c.chatReactionFriendly = "complains about high import tax";
         c.chatReactionHostile = "\"Die!\"";
-        c.name = NameGenerator::firstNames.getNext();),
+        c.name = "shopkeeper";
+        c.firstName = NameGenerator::firstNames.getNext();),
       ControllerFactory([shopArea](Creature* c) { 
           return new ShopkeeperController(c, shopArea); })));
   vector<ItemId> inventory(Random.getRandom(100, 300), ItemId::GOLD_PIECE);

@@ -271,18 +271,8 @@ vector<Square*> Level::getTickingSquares() const {
 }
 
 Level::Builder::Builder(int width, int height, const string& n) : squares(width, height), heightMap(width, height),
-    fog(width, height, 0), attrib(width, height), type(width, height), name(n) {
+    fog(width, height, 0), attrib(width, height), type(width, height, SquareType(0)), name(n) {
 }
-
-/*Level::Builder::Builder(Builder&& other) :
-  squares(std::move(other.squares)),
-  heightMap(std::move(other.heightMap)),
-  attrib(std::move(other.attrib)),
-  type(std::move(other.type)),
-  creatures(std::move(other.creatures)),
-  entryMessage(other.entryMessage),
-  name(other.name) {
-}*/
 
 bool Level::Builder::hasAttrib(Vec2 pos, SquareAttrib attr) {
   CHECK(squares[pos] != nullptr);
@@ -322,6 +312,7 @@ void Level::Builder::putSquare(Vec2 pos, SquareType t, vector<SquareAttrib> attr
 }
 
 void Level::Builder::putSquare(Vec2 pos, Square* square, SquareType t, Optional<SquareAttrib> attr) {
+  CHECK(!contains({SquareType::UP_STAIRS, SquareType::DOWN_STAIRS}, type[pos])) << "Attempted to overwrite stairs";
   square->setPosition(pos);
   squares[pos].reset(std::move(square));
   if (attr)

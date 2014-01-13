@@ -648,9 +648,9 @@ class MakerQueue : public LevelMaker {
 
 class RandomLocations : public LevelMaker {
   public:
-  RandomLocations(const vector<LevelMaker*>& _insideMakers,
-      const vector<pair<int, int>>& _sizes, SquarePredicate* pred, bool _separate = true)
-      : insideMakers(_insideMakers), sizes(_sizes), predicate(pred), separate(_separate) {
+  RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
+      SquarePredicate* pred, bool _separate = true, map<pair<LevelMaker*, LevelMaker*>, double> _minDistance = {})
+      : insideMakers(_insideMakers), sizes(_sizes), predicate(pred), separate(_separate), minDistance(_minDistance) {
         CHECK(insideMakers.size() == sizes.size());
       }
 
@@ -667,7 +667,7 @@ class RandomLocations : public LevelMaker {
     makeCnt(builder, area, 100);
   }
 
-  void makeCnt(Level::Builder* builder, Rectangle area, int tries) const {
+  void makeCnt(Level::Builder* builder, Rectangle area, int tries) {
     vector<Rectangle> occupied;
     for (int i : All(insideMakers)) {
       int width = sizes[i].first;
@@ -675,12 +675,18 @@ class RandomLocations : public LevelMaker {
       CHECK(width <= area.getW() && height <= area.getH());
       int px;
       int py;
-      int cnt = 10000;
+      int cnt = 1000;
       bool ok;
       do {
         ok = true;
         px = area.getPX() + Random.getRandom(area.getW() - width);
         py = area.getPY() + Random.getRandom(area.getH() - height);
+        for (int j : Range(i))
+          if (minDistance[{insideMakers[j], insideMakers[i]}] >
+                  Vec2(px + width / 2, py + height / 2).dist8(occupied[j].middle())) {
+            ok = false;
+            break;
+          }
         if (!predicate->apply(builder, Vec2(px, py)) ||
             !predicate->apply(builder, Vec2(px + width - 1, py)) || 
             !predicate->apply(builder, Vec2(px + width - 1, py + height - 1)) || 
@@ -716,6 +722,7 @@ class RandomLocations : public LevelMaker {
   vector<pair<int, int>> sizes;
   SquarePredicate* predicate;
   bool separate;
+  map<pair<LevelMaker*, LevelMaker*>, double> minDistance;
 };
 
 class Margin : public LevelMaker {
@@ -1687,7 +1694,7 @@ LevelMaker* LevelMaker::collectiveLevel(vector<StairKey> up, vector<StairKey> do
     makers.push_back(new Blob(SquareType::GOLD_ORE));
     sizes.emplace_back(Random.getRandom(5, 10), Random.getRandom(5, 10));
   }
-  queue->addMaker(new RandomLocations(makers, sizes, new AlwaysTrue()));
+  queue->addMaker(new RandomLocations(makers, sizes, new AlwaysTrue(), true, {{{area, startPos}, 20}}));
   return new BorderGuard(queue, SquareType::BLACK_WALL);
 }
 
