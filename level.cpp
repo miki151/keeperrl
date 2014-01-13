@@ -270,10 +270,11 @@ vector<Square*> Level::getTickingSquares() const {
   return tickingSquares;
 }
 
-Level::Builder::Builder(int width, int height, const string& n) : squares(width, height), heightMap(width, height), attrib(width, height), type(width, height), name(n) {
+Level::Builder::Builder(int width, int height, const string& n) : squares(width, height), heightMap(width, height),
+    fog(width, height, 0), attrib(width, height), type(width, height), name(n) {
 }
 
-Level::Builder::Builder(Builder&& other) :
+/*Level::Builder::Builder(Builder&& other) :
   squares(std::move(other.squares)),
   heightMap(std::move(other.heightMap)),
   attrib(std::move(other.attrib)),
@@ -281,7 +282,7 @@ Level::Builder::Builder(Builder&& other) :
   creatures(std::move(other.creatures)),
   entryMessage(other.entryMessage),
   name(other.name) {
-}
+}*/
 
 bool Level::Builder::hasAttrib(Vec2 pos, SquareAttrib attr) {
   CHECK(squares[pos] != nullptr);
@@ -336,6 +337,10 @@ void Level::Builder::setHeightMap(Vec2 pos, double h) {
   heightMap[pos] = h;
 }
 
+void Level::Builder::setFog(Vec2 pos, double value) {
+  fog[pos] = value;
+}
+
 double Level::Builder::getHeightMap(Vec2 pos) {
   return heightMap[pos];
 }
@@ -369,7 +374,8 @@ Level* Level::Builder::build(Model* m, bool surface) {
     if (covered.count(v) || !surface) {
       Debug() << "Covered " << v;
       squares[v]->setCovered(true);
-    }
+    } else
+      squares[v]->setFog(fog[v]);
   }
   Level* l = new Level(std::move(squares), m, locations, entryMessage, name);
   for (PCreature& c : creatures) {

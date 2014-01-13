@@ -649,7 +649,6 @@ class RandomLocations : public LevelMaker {
   void makeCnt(Level::Builder* builder, Rectangle area, int tries) const {
     vector<Rectangle> occupied;
     for (int i : All(insideMakers)) {
-      LevelMaker* maker = insideMakers[i];
       int width = sizes[i].first;
       int height = sizes[i].second;
       CHECK(width <= area.getW() && height <= area.getH());
@@ -772,6 +771,7 @@ Table<double> genNoiseMap(Rectangle area, bool lowMiddle, double varianceMult) {
   int width = 1;
   while (width < area.getW() - 1 || width < area.getH() - 1)
     width *= 2;
+  width /= 2;
   ++width;
   Table<double> wys(width, width);
   wys[0][0] = 1;
@@ -845,13 +845,23 @@ class Mountains : public LevelMaker {
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
     Table<double> wys = genNoiseMap(area, true, 0.7);
+    Table<double> fog = genNoiseMap(area, true, 0.5);
+    for (Vec2 v : area)
+      fog[v] += wys[v] / 2;
     vector<double> values = sortedValues(wys);
+    vector<double> fogValues = sortedValues(fog);
     double cutOffValHill = values[(int)(ratio * double(values.size()))];
     double cutOffVal = values[(int)((0.5 + ratio) / 1.5 * double(values.size()))];
     double cutOffValSnow = values[(int)((3. + ratio) / 4. * double(values.size()))];
-    int gCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0;
+    double cutOffValFogLow = fogValues[(int)(( ratio) / 1.0 * double(fogValues.size()))];
+    double cutOffValFogHigh = fogValues[(int)((1.0 + ratio) / 2.0 * double(fogValues.size()))];
+    int gCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0, fCnt = 0;
     for (Vec2 v : area) {
       builder->setHeightMap(v, wys[v]);
+      if (fog[v] >= cutOffValFogLow) {
+        ++fCnt;
+        builder->setFog(v, min(1.0, (fog[v] - cutOffValFogLow) / (cutOffValFogHigh - cutOffValFogLow)));
+      }
       if (wys[v] > cutOffValSnow) {
         builder->putSquare(v, SquareType::GLACIER, SquareAttrib::ROAD_CUT_THRU);
         ++gCnt;
@@ -869,7 +879,7 @@ class Mountains : public LevelMaker {
         ++lCnt;
       }
     }
-    Debug() << "Terrain distribution " << gCnt << " glacier, " << mCnt << " mountain, " << hCnt << " hill, " << lCnt << " lowland";
+    Debug() << "Terrain distribution " << gCnt << " glacier, " << mCnt << " mountain, " << hCnt << " hill, " << lCnt << " lowland, " << fCnt << " fog";
   }
 
   private:

@@ -164,6 +164,8 @@ class Square {
 
   virtual ~Square() {};
 
+  void setFog(double val);
+
   protected:
   void onEnter(Creature*);
   virtual bool canEnterSpecial(const Creature*) const;
@@ -194,6 +196,7 @@ class Square {
   PoisonGas poisonGas;
   map<SquareType, int> constructions;
   bool ticking;
+  double fog = 0;
 };
 
 class SolidSquare : public Square {

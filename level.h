@@ -140,7 +140,7 @@ class Level {
     Builder(int width, int height, const string& name);
     
     /** Move constructor.*/
-    Builder(Builder&&);
+    Builder(Builder&&) = default;
 
     /** Returns a given square.*/
     Square* getSquare(Vec2);
@@ -189,6 +189,9 @@ class Level {
     /** Returns the height of the given square.*/
     double getHeightMap(Vec2 pos);
 
+    /** Adds fog to given square. The fog value is between 0 and 1.*/
+    void setFog(Vec2 pos, double value);
+
     /** Sets the location name for the given square. The name will remain if the square is changed.*/
     void addLocation(Location*);
 
@@ -198,6 +201,7 @@ class Level {
     private:
     Table<PSquare> squares;
     Table<double> heightMap;
+    Table<double> fog;
     vector<Location*> locations;
     unordered_set<Vec2> covered;
     Table<unordered_set<SquareAttrib>> attrib;

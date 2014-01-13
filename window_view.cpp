@@ -554,6 +554,8 @@ int smallTextSize = 12;
 Font tileFont;
 Font symbolFont;
 
+int maxTilesX = 600;
+int maxTilesY = 600;
 Image mapBuffer;
 vector<Texture> tiles;
 vector<int> tileSize { 36, 36, 36, 24, 36, 36 };
@@ -648,6 +650,10 @@ static void drawSprite(int x, int y, int px, int py, int w, int h, const Texture
   display->draw(s);
 }
 
+int topBarHeight = 50;
+int rightBarWidth = 250;
+int bottomBarHeight = 75;
+
 void WindowView::initialize() {
   display = new RenderWindow(VideoMode(1024, 600, 32), "KeeperRL");
   sfView = new sf::View(display->getDefaultView());
@@ -659,7 +665,8 @@ void WindowView::initialize() {
   symbolFont.loadFromFile("Symbola.ttf");
 
   asciiLayouts = {
-      MapLayout::gridLayout(screenWidth, screenHeight, 16, 20, -20, 0, 225, 0, 1, allLayers),
+      MapLayout::gridLayout(screenWidth, screenHeight, 16, 20, -20, topBarHeight - 20, rightBarWidth - 20,
+          bottomBarHeight - 20, 1, allLayers),
       MapLayout::gridLayout(screenWidth, screenHeight, 8, 10, 0, 30, 220, 85, 1,
       {ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
   spriteLayouts = {
@@ -676,7 +683,7 @@ void WindowView::initialize() {
   allLayouts.push_back(spriteLayouts.normalLayout);
   allLayouts.push_back(spriteLayouts.unzoomLayout);
   allLayouts.push_back(worldLayout);
-  mapBuffer.create(600, 600);
+  mapBuffer.create(maxTilesX, maxTilesY);
   Image tileImage;
   CHECK(tileImage.loadFromFile("tiles_int.png"));
   Image tileImage2;
@@ -774,6 +781,8 @@ Optional<Vec2> WindowView::getHighlightedTile() {
   return mapLayout->projectOnMap(*mousePos);
 }
 
+static bool leftMouseButtonPressed = false;
+
 WindowView::BlockingEvent WindowView::readkey() {
   Event event;
   while (1) {
@@ -812,6 +821,9 @@ WindowView::BlockingEvent WindowView::readkey() {
       return { BlockingEvent::MOUSE_MOVE };
     if (event.type == Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
       return { BlockingEvent::MOUSE_LEFT };
+    if (event.type == Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+      leftMouseButtonPressed = false;
+    }
     if (event.type == Event::Resized) {
       resize(event.size.width, event.size.height);
       return { BlockingEvent::IDLE };
@@ -900,10 +912,6 @@ Color getSpeedColor(int value) {
   else
     return Color(255, max(0, 255 + (value - 100) * 4), max(0, 255 + (value - 100) * 4));
 }
-
-int topBarHeight = 50;
-int rightBarWidth = 250;
-int bottomBarHeight = 75;
 
 void WindowView::drawPlayerInfo() {
   GameInfo::PlayerInfo& info = gameInfo.playerInfo;
@@ -1177,13 +1185,15 @@ static vector<pair<string, string>> keyMapping {
 Color getHighlightColor(ViewIndex::HighlightInfo info) {
   switch (info.type) {
     case HighlightType::BUILD: return transparency(yellow, 170);
+    case HighlightType::FOG: return transparency(white, 170 * info.amount);
     case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
+    case HighlightType::MEMORY: return transparency(black, 80);
   }
   Debug(FATAL) << "pokpok";
   return black;
 }
 
-map<Vec2, ViewIndex> objects;
+Table<Optional<ViewIndex>> objects(maxTilesX, maxTilesY);
 const MapMemory* lastMemory = nullptr;
 set<Vec2> shadowed;
 
@@ -1222,7 +1232,8 @@ bool tileConnects(ViewId id, Vec2 pos) {
 
 
 
-void WindowView::drawObjectAbs(int x, int y, const ViewIndex& index, int sizeX, int sizeY, Vec2 tilePos, bool mem) {
+Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& index, int sizeX, int sizeY,
+    Vec2 tilePos) {
   vector<ViewObject> objects;
   if (currentTileLayout.sprites) {
     for (ViewLayer layer : mapLayout->getLayers())
@@ -1237,10 +1248,7 @@ void WindowView::drawObjectAbs(int x, int y, const ViewIndex& index, int sizeX, 
     }
     Tile tile = getTile(object, currentTileLayout.sprites);
     Optional<Color> color;
-    if (mem)
-      color = Color(200, 200, 200);
-    else
-      color = getBleedingColor(object);
+    color = getBleedingColor(object);
     if (object.isInvisible() || tile.translucent) {
       if (color)
         color = transparency(*color, 70);
@@ -1280,7 +1288,7 @@ void WindowView::drawObjectAbs(int x, int y, const ViewIndex& index, int sizeX, 
             nominalSize, nominalSize, tiles[2], width, height);
       }
     } else {
-      drawText(tile.symFont ? symbolFont : tileFont, sizeY + object.getSizeIncrease(), getColor(object),
+      drawText(tile.symFont ? symbolFont : tileFont, sizeY + object.getSizeIncrease(), tile.color,
           x + sizeX / 2, y - 3 - object.getSizeIncrease(), tile.text, true);
       if (object.getBurning() > 0) {
         drawText(symbolFont, sizeY, getFireColor(),
@@ -1294,9 +1302,12 @@ void WindowView::drawObjectAbs(int x, int y, const ViewIndex& index, int sizeX, 
   if (getHighlightedTile() == tilePos) {
     drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
   }
-
   if (auto highlight = index.getHighlight())
     drawFilledRectangle(x, y, x + sizeX, y + sizeY, getHighlightColor(*highlight));
+  if (!objects.empty())
+    return objects.back();
+  else
+    return Nothing();
 }
 
 
@@ -1307,7 +1318,8 @@ void WindowView::resetCenter() {
 void WindowView::refreshView(const CreatureView* collective) {
   const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
-  objects.clear();
+  for (Vec2 pos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY)))
+    objects[pos] = Nothing();
   if (center == Vec2(0, 0) || collective->staticPosition())
     center = collective->getPosition().mult(Vec2(mapLayout->squareWidth(Vec2(0, 0)),
           mapLayout->squareHeight(Vec2(0, 0))));
@@ -1320,10 +1332,10 @@ void WindowView::refreshView(const CreatureView* collective) {
   shadowed.clear();
   floorIds.clear();
   lastMemory = &collective->getMemory(level);
-  for (Vec2 pos : mapLayout->getAllTiles()) 
+  for (Vec2 pos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY))) 
     if (level->inBounds(pos)) {
       ViewIndex index = collective->getViewIndex(pos);
-      objects.insert(std::make_pair(pos, index));
+      objects[pos] = index;
       if (index.hasObject(ViewLayer::FLOOR)) {
         ViewObject object = index.getObject(ViewLayer::FLOOR);
         if (object.castsShadow()) {
@@ -1333,9 +1345,9 @@ void WindowView::refreshView(const CreatureView* collective) {
         if (auto id = getConnectionId(object.id()))
           floorIds.insert(make_pair(pos, *id));
       }
-      if (lastMemory->hasViewIndex(pos)) {
+      if (index.isEmpty() && lastMemory->hasViewIndex(pos)) {
         ViewIndex index = lastMemory->getViewIndex(pos);
-        objects.insert(std::make_pair(pos, index));
+        objects[pos] = index;
         if (index.hasObject(ViewLayer::FLOOR)) {
           ViewObject object = index.getObject(ViewLayer::FLOOR);
           if (object.castsShadow()) {
@@ -1355,9 +1367,9 @@ void WindowView::refreshView(const CreatureView* collective) {
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
   for (Vec2 pos : trajectory) {
-    if (!objects.count(pos))
+    if (!objects[pos])
       continue;
-    ViewIndex& index = objects.at(pos);
+    ViewIndex& index = *objects[pos];
     Optional<ViewObject> prev;
     if (index.hasObject(object.layer()))
       prev = index.getObject(object.layer());
@@ -1369,8 +1381,8 @@ void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
     if (prev)
       index.insert(*prev);
   }
-  if (objects.count(trajectory.back())) {
-    ViewIndex& index = objects.at(trajectory.back());
+  if (objects[trajectory.back()]) {
+    ViewIndex& index = *objects[trajectory.back()];
     if (index.hasObject(object.layer()))
       index.removeObject(object.layer());
     index.insert(object);
@@ -1386,42 +1398,26 @@ void WindowView::drawMap() {
   bool pixelView = false;
   map<string, ViewObject> objIndex;
   Optional<ViewObject> highlighted;
-  for (Vec2 wpos : mapLayout->getAllTiles()) {
+  for (Vec2 wpos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY))) {
+    if (!objects[wpos])
+      continue;
     int sizeX = mapLayout->squareWidth(wpos);
     int sizeY = mapLayout->squareHeight(wpos);
     Vec2 pos = mapLayout->projectOnScreen(wpos);
-    if (lastMemory->hasViewIndex(wpos) && (!objects.count(wpos) || objects.at(wpos).isEmpty())) {
-      if (sizeX > 1)
-        drawObjectAbs(pos.x, pos.y, lastMemory->getViewIndex(wpos), sizeX, sizeY, wpos, true);
-      Optional<ViewObject> object = lastMemory->getViewIndex(wpos).getTopObject(mapLayout->getLayers());
-      if (object) {
-        objIndex.insert(std::make_pair(object->getDescription(), *object));
-        if (getHighlightedTile() == wpos)
-          highlighted = *object;
-      }
-      if (object && sizeX == 1) {
-        mapBuffer.setPixel(pos.x, pos.y, getColor(*object));
-        pixelView = true;
-      }
-    }
-  }
-  for (auto elem : objects) {
-    Optional<ViewObject> topObject = elem.second.getTopObject(mapLayout->getLayers());
-    if (topObject) {
-      objIndex.insert(std::make_pair(topObject->getDescription(), *topObject));
-      if (getHighlightedTile() == elem.first)
-        highlighted = *topObject;
-    }
-    Vec2 wpos = elem.first;
-    int sizeX = mapLayout->squareWidth(wpos);
-    int sizeY = mapLayout->squareHeight(wpos);
-    Vec2 pos = mapLayout->projectOnScreen(wpos);
+    const ViewIndex& index = *objects[wpos];
+    Optional<ViewObject> topObject;
     if (sizeX > 1) {
-      drawObjectAbs(pos.x, pos.y, elem.second, sizeX, sizeY, wpos);
+      topObject = drawObjectAbs(pos.x, pos.y, index, sizeX, sizeY, wpos);
     } else {
+      topObject = index.getTopObject(mapLayout->getLayers());
       if (topObject)
         mapBuffer.setPixel(pos.x, pos.y, getColor(*topObject));
       pixelView = true;
+    }
+    if (topObject) {
+      objIndex.insert(std::make_pair(topObject->getDescription(), *topObject));
+      if (getHighlightedTile() == wpos)
+        highlighted = *topObject;
     }
   //  }
   /* else  if (elem.second.layer() == ViewLayer::CREATURE && mapView->font != nullptr) {
@@ -1811,7 +1807,6 @@ bool WindowView::isClockStopped() {
   return myClock.isPaused();
 }
 
-bool pressed = false;
 bool rightPressed = false;
 
 bool WindowView::considerScrollEvent(sf::Event& event) {
@@ -1878,12 +1873,12 @@ CollectiveAction WindowView::getClick() {
         break;
       case Event::MouseButtonReleased :
           if (event.mouseButton.button == sf::Mouse::Left) {
-            pressed = false;
+            leftMouseButtonPressed = false;
             return CollectiveAction(CollectiveAction::BUTTON_RELEASE);
           }
           break;
       case Event::MouseMoved:
-          if (pressed) {
+          if (leftMouseButtonPressed) {
             Vec2 goTo = mapLayout->projectOnMap(Vec2(event.mouseMove.x, event.mouseMove.y));
             if (goTo != lastGoTo ) {
               return CollectiveAction(CollectiveAction::GO_TO, goTo);
@@ -1927,7 +1922,7 @@ CollectiveAction WindowView::getClick() {
             if (descriptionButton && clickPos.inRectangle(*descriptionButton)) {
               return CollectiveAction(CollectiveAction::CREATURE_DESCRIPTION, chosenCreatures[0]);
             }
-            pressed = true;
+            leftMouseButtonPressed = true;
             chosenCreature = "";
             t = CollectiveAction::GO_TO;
             return CollectiveAction(t, mapLayout->projectOnMap(clickPos));
@@ -1947,25 +1942,24 @@ struct KeyInfo {
   string keyDesc;
   string action;
   Event::KeyEvent event;
-  bool shift;
 };
 
 vector<KeyInfo> keyInfo {
-  { "I", "Inventory", Keyboard::I, false },
-  { "E", "Manage equipment", Keyboard::E, false },
-  { "Enter", "Pick up items or interact with square", Keyboard::Return, false },
-  { "D", "Drop item", Keyboard::D, false },
-  { "A", "Apply item", Keyboard::A, false },
-  { "T", "Throw item", Keyboard::T, false },
-  { "M", "Show message history", Keyboard::M, false },
-  { "C", "Chat with someone", Keyboard::C, false },
-  { "P", "Pay debt", Keyboard::P, false },
-  { "U", "Unpossess", Keyboard::U, false },
-  { "Space", "Wait", Keyboard::Space, false },
-  { "Z", "Zoom in/out", Keyboard::Z, false },
-  { "Shift + Z", "World map", Keyboard::Z, true },
-  { "F2", "Switch between graphics and ascii", Keyboard::F2, false },
-  { "Escape", "Quit", Keyboard::Escape, false },
+  { "I", "Inventory", {Keyboard::I}},
+  { "E", "Manage equipment", {Keyboard::E}},
+  { "Enter", "Pick up items or interact with square", {Keyboard::Return}},
+  { "D", "Drop item", {Keyboard::D}},
+  { "A", "Apply item", {Keyboard::A}},
+  { "T", "Throw item", {Keyboard::T}},
+  { "M", "Show message history", {Keyboard::M}},
+  { "C", "Chat with someone", {Keyboard::C}},
+  { "P", "Pay debt", {Keyboard::P}},
+  { "U", "Unpossess", {Keyboard::U}},
+  { "Space", "Wait", {Keyboard::Space}},
+  { "Z", "Zoom in/out", {Keyboard::Z}},
+  { "Shift + Z", "World map", {Keyboard::Z, false, false, true}},
+  { "F2", "Switch between graphics and ascii", {Keyboard::F2}},
+  { "Escape", "Quit", {Keyboard::Escape}},
 };
 
 Optional<Event::KeyEvent> WindowView::getEventFromMenu() {

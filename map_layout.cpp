@@ -61,11 +61,14 @@ class GridLayout : public MapLayout {
     center = pos;
   }
 
-  virtual vector<Vec2> getAllTiles() override {
+  virtual vector<Vec2> getAllTiles(Rectangle bounds) override {
     vector<Vec2> ret;
     Rectangle grid(getBounds().getW() / squareW, getBounds().getH() / squareH);
-    for (Vec2 v : grid)
-      ret.push_back(v + center.div(Vec2(squareW, squareH)) - grid.middle());
+    for (Vec2 v : grid) {
+      Vec2 pos = v + center.div(Vec2(squareW, squareH)) - grid.middle();
+      if (pos.inRectangle(bounds))
+        ret.push_back(pos);
+    }
     return ret;
   }
 
@@ -138,7 +141,7 @@ class TppLayout : public MapLayout {
         offsetY - multY * atan2(camOffset - dir.y, camHeight /* - height*/) * squareH);
   }
 
-  virtual vector<Vec2> getAllTiles() override {
+  virtual vector<Vec2> getAllTiles(Rectangle bounds) override {
     int horizon = 50;
     vector<Vec2> ret;
     for (Vec2 v : Rectangle(center.x - horizon, center.y - horizon, center.x + horizon, center.y + horizon))

@@ -224,7 +224,7 @@ void Creature::updateVisibleEnemies() {
   visibleEnemies.clear();
   for (const Creature* c : level->getAllCreatures()) 
     if (isEnemy(c)) {
-      bool canSeeEnemy = seeAllEnemies || canSee(c);
+      bool canSeeEnemy = canSee(c);
       for (auto vision : enemyVision)
         if (canSeeEnemy |= vision(c))
           break;

@@ -1,16 +1,24 @@
 #include "stdafx.h"
 
+ViewIndex::ViewIndex() {
+  objIndex = vector<int>(allLayers.size(), -1);
+}
 void ViewIndex::insert(const ViewObject& obj) {
-  objects.erase(obj.layer());
-  objects.emplace(obj.layer(), obj);
+  int ind = objIndex[int(obj.layer())];
+  if (ind > -1)
+    objects[ind] = obj;
+  else {
+    objIndex[int(obj.layer())] = objects.size();
+    objects.push_back(obj);
+  }
 }
 
 bool ViewIndex::hasObject(ViewLayer l) const {
-  return objects.count(l);
+  return objIndex[int(l)] > -1;
 }
 
 void ViewIndex::removeObject(ViewLayer l) {
-  objects.erase(l);
+  objIndex[int(l)] = -1;
 }
 
 bool ViewIndex::isEmpty() const {
@@ -18,13 +26,15 @@ bool ViewIndex::isEmpty() const {
 }
 
 ViewObject ViewIndex::getObject(ViewLayer l) const {
-  TRY(return objects.at(l), "no object on layer " << (int)l);
+  int ind = objIndex[int(l)];
+  CHECK(ind > -1) << "No object on layer " << int(l);
+  return objects[ind];
 }
 
-Optional<ViewObject> ViewIndex::getTopObject(vector<ViewLayer> layers) const {
-  for (auto it = allLayers.rbegin(); it != allLayers.rend(); ++it)
-    if (contains(layers, *it) && hasObject(*it))
-      return getObject(*it);
+Optional<ViewObject> ViewIndex::getTopObject(const vector<ViewLayer>& layers) const {
+  for (int i = layers.size() - 1; i >= 0; --i)
+    if (hasObject(layers[i]))
+      return getObject(layers[i]);
   return Nothing();
 }
 

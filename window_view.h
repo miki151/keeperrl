@@ -65,7 +65,7 @@ class WindowView: public View {
   void drawAndClearBuffer();
   Optional<Vec2> getHighlightedTile();
 
-  void drawObjectAbs(int x, int y, const ViewIndex&, int sizeX, int sizeY, Vec2 tilePos, bool memory = false);
+  Optional<ViewObject> drawObjectAbs(int x, int y, const ViewIndex&, int sizeX, int sizeY, Vec2 tilePos);
   void darkenObjectAbs(int x, int y);
   void clearMessageBox();
   void unzoom(bool, bool);

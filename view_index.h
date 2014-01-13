@@ -5,11 +5,12 @@
 
 class ViewIndex {
   public:
+  ViewIndex();
   void insert(const ViewObject& obj);
   bool hasObject(ViewLayer) const;
   void removeObject(ViewLayer);
   ViewObject getObject(ViewLayer) const;
-  Optional<ViewObject> getTopObject(vector<ViewLayer>) const;
+  Optional<ViewObject> getTopObject(const vector<ViewLayer>&) const;
   bool isEmpty() const;
 
   void setHighlight(HighlightType, double amount = 1);
@@ -22,7 +23,8 @@ class ViewIndex {
   Optional<HighlightInfo> getHighlight() const;
 
   private:
-  unordered_map<ViewLayer, ViewObject> objects;
+  vector<int> objIndex;
+  vector<ViewObject> objects;
   Optional<HighlightInfo> highlight;
 };
 

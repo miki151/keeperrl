@@ -217,6 +217,8 @@ enum class ViewLayer {
 enum class HighlightType {
   BUILD,
   POISON_GAS,
+  FOG,
+  MEMORY,
 };
 
 enum class StairLook {

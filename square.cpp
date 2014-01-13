@@ -111,6 +111,10 @@ void Square::setViewObject(const ViewObject& o) {
   viewObject = o;
 }
 
+void Square::setFog(double val) {
+  fog = val;
+}
+
 void Square::tick(double time) {
   if (!inventory.isEmpty())
     for (Item* item : inventory.getItems()) {
@@ -251,9 +255,13 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
         ret.insert(addFire(*obj, fireSize));
     if (Item* it = getTopItem())
       ret.insert(addFire(it->getViewObject(), fireSize));
-  } 
-  if (poisonGas.getAmount() > 0)
-    ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas.getAmount()));
+  }
+  if (c->canSee(position)) {
+    if (poisonGas.getAmount() > 0)
+      ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas.getAmount()));
+    if (fog)
+      ret.setHighlight(HighlightType::FOG, fog);
+  }
   return ret;
 }
 

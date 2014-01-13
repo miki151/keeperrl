@@ -55,7 +55,6 @@ class CreatureAttributes {
   double carryingMultiplier = 1;
   bool permanentlyBlind = false;
   bool invincible = false;
-  bool seeAllEnemies = false;
   double damageMultiplier = 1;
   unordered_set<Skill*> skills;
   map<int, Skill*> skillGain {{4, Skill::twoHandedWeapon}, {6, Skill::knifeThrowing}, {10, Skill::archery}};

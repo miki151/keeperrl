@@ -108,9 +108,11 @@ template <class T> struct hash<set<T>> {
 
 }
 
-
 class Rectangle {
   public:
+  friend class Vec2;
+  template<typename T>
+  friend class Table;
   Rectangle(int width, int height);
   Rectangle(Vec2 dim);
   Rectangle(int px, int py, int kx, int ky);
@@ -150,10 +152,10 @@ class Rectangle {
     int px, py, kx, ky;
   };
 
-  Iter begin();
-  Iter end();
+  Iter begin() const;
+  Iter end() const;
   private:
-  int px, py, kx, ky;
+  int px, py, kx, ky, w, h;
 };
 
 class Range {
@@ -202,6 +204,7 @@ class RandomGen {
 
   private:
   default_random_engine generator;
+  std::uniform_real_distribution<double> defaultDist;
 };
 
 extern RandomGen Random;
@@ -211,37 +214,37 @@ class Table {
   public:
   Table(Table&& t) = default;
 
-  Table(int x, int y, int w, int h) : width(w), height(h), px(x), py(y), mem(new T[width * height]()) {
+  Table(int x, int y, int w, int h) : bounds(x, y, x + w, y + h), mem(new T[w * h]) {
   }
 
-  Table(const Rectangle& rect) : Table(rect.getPX(), rect.getPY(), rect.getW(), rect.getH()) {
+  Table(const Rectangle& rect) : bounds(rect), mem(new T[rect.w * rect.h]){
   }
 
-  Table(const Rectangle& rect, const T& value) : Table(rect.getPX(), rect.getPY(), rect.getW(), rect.getH(), value) {
+  Table(const Rectangle& rect, const T& value) : Table(rect) {
+    for (int i : Range(bounds.w * bounds.h))
+      mem[i] = value;
   }
 
   Table(int w, int h) : Table(0, 0, w, h) {
   }
 
-  Table(int x, int y, int width, int height, const T& value) : Table(x, y, width, height) {
-    for (int i : Range(width * height))
-      mem[i] = value;
+  Table(int x, int y, int width, int height, const T& value) : Table(Rectangle(x, y, x + width, y + height), value) {
   }
 
   Table(int width, int height, const T& value) : Table(0, 0, width, height, value) {
   }
 
-  Rectangle getBounds() const {
-    return Rectangle(px, py, px + width, py + height);
+  const Rectangle& getBounds() const {
+    return bounds;
   }
 
   Table& operator = (Table&& other) = default;
 
   int getWidth() const {
-    return width;
+    return bounds.w;
   }
   int getHeight() const {
-    return height;
+    return bounds.h;
   }
 
   class RowAccess {
@@ -264,32 +267,31 @@ class Table {
   };
 
   RowAccess operator[](int ind) {
-    return RowAccess(mem.get() + (ind - px) * height, py, height);
+    return RowAccess(mem.get() + (ind - bounds.px) * bounds.h, bounds.py, bounds.h);
   }
  
   RowAccess operator[](int ind) const {
-    return RowAccess(mem.get() + (ind - px) * height, py, height);
+    return RowAccess(mem.get() + (ind - bounds.px) * bounds.h, bounds.py, bounds.h);
   }
  
-  T& operator[](Vec2 vAbs) {
-    Vec2 v(vAbs.x - px, vAbs.y - py);
+  T& operator[](const Vec2& vAbs) {
+    return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
+    /*Vec2 v(vAbs.x - px, vAbs.y - py);
     CHECK(v.x >= 0 && v.y >= 0 && v.x < width && v.y < height) <<
         "Table index out of bounds " << getBounds() << " " << vAbs;
-    return mem[v.x * height + v.y];
+    return mem[v.x * height + v.y];*/
   }
 
-  const T& operator[](Vec2 vAbs) const {
-    Vec2 v(vAbs.x - px, vAbs.y - py);
+  const T& operator[](const Vec2& vAbs) const {
+    return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
+/*    Vec2 v(vAbs.x - px, vAbs.y - py);
     CHECK(v.x >= 0 && v.y >= 0 && v.x < width && v.y < height) <<
         "Table index out of bounds " << getBounds() << " " << vAbs;
-    return mem[v.x * height + v.y];
+    return mem[v.x * height + v.y];*/
   }
 
   private:
-  int width;
-  int height;
-  int px = 0;
-  int py = 0;
+  Rectangle bounds;
   unique_ptr<T[]> mem;
 };
 

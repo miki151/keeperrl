@@ -2,6 +2,7 @@
 
 void MapMemory::addObject(Vec2 pos, const ViewObject& obj) {
   table[pos].insert(obj);
+  table[pos].setHighlight(HighlightType::MEMORY);
 }
 
 void MapMemory::clearSquare(Vec2 pos) {
