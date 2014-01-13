@@ -19,8 +19,12 @@ ViewIndex Creature::getViewIndex(Vec2 pos) const {
   return level->getSquare(pos)->getViewIndex(this);
 }
 
-void Creature::addEnemyVision(EnemyVision vision) {
-  enemyVision.push_back(vision);
+void Creature::addCreatureVision(CreatureVision* vision) {
+  creatureVision.push_back(vision);
+}
+
+void Creature::removeCreatureVision(CreatureVision* vision) {
+  removeElement(creatureVision, vision);
 }
 
 void Creature::pushController(Controller* ctrl) {
@@ -223,14 +227,8 @@ const vector<const Creature*>& Creature::getVisibleEnemies() const {
 void Creature::updateVisibleEnemies() {
   visibleEnemies.clear();
   for (const Creature* c : level->getAllCreatures()) 
-    if (isEnemy(c)) {
-      bool canSeeEnemy = canSee(c);
-      for (auto vision : enemyVision)
-        if (canSeeEnemy |= vision(c))
-          break;
-      if (canSeeEnemy)
-        visibleEnemies.push_back(c);
-  }
+    if (isEnemy(c) && canSee(c))
+      visibleEnemies.push_back(c);
 }
 
 vector<const Creature*> Creature::getVisibleCreatures() const {
@@ -1435,6 +1433,9 @@ const ViewObject& Creature::getViewObject() const {
 }*/
 
 bool Creature::canSee(const Creature* c) const {
+  for (auto fun : creatureVision)
+    if ((*fun)(this, c))
+      return true;
   return !isBlind() && !c->isInvisible() &&
          (!c->isHidden() || c->knowsHiding(this)) && 
          getLevel()->canSee(position, c->getPosition());

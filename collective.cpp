@@ -377,6 +377,10 @@ void Collective::processInput(View* view) {
               }
               break;
           case BuildInfo::SQUARE: {
+                if (marked.count(pos) && selection != SELECT) {
+                  unmarkSquare(pos);
+                  selection = DESELECT;
+                }
                 BuildInfo::SquareInfo info = buildInfo[currentButton].squareInfo;
                 bool diggingSquare = !memory[level].hasViewIndex(pos) ||
                   (level->getSquare(pos)->canConstruct(info.type));
@@ -388,11 +392,7 @@ void Collective::processInput(View* view) {
                     markSquare(pos, info);
                     selection = SELECT;
                     takeGold(info.cost);
-                  } else
-                    if (marked.count(pos) && selection != SELECT) {
-                      unmarkSquare(pos);
-                      selection = DESELECT;
-                    }
+                  }
                 }
               }
               break;
@@ -776,7 +776,7 @@ void Collective::addCreature(Creature* c) {
     minionTasks.insert(make_pair(c, getTasksForMinion(c)));
   } else {
     imps.push_back(c);
-    c->addEnemyVision([this](const Creature* c) { return canSee(c); });
+ //   c->addEnemyVision([this](const Creature* c) { return canSee(c); });
   }
 }
 

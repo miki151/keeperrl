@@ -345,6 +345,7 @@ Tile getSprite(ViewId id) {
     case ViewId::BORDER_GUARD: return Tile(' ', white);
     case ViewId::LEATHER_ARMOR: return Tile(0, 12, 3);
     case ViewId::LEATHER_HELM: return Tile(10, 12, 3);
+    case ViewId::TELEPATHY_HELM: return Tile(17, 12, 3);
     case ViewId::CHAIN_ARMOR: return Tile(1, 12, 3);
     case ViewId::IRON_HELM: return Tile(14, 12, 3);
     case ViewId::LEATHER_BOOTS: return Tile(0, 13, 3);
@@ -519,6 +520,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::BORDER_GUARD: return Tile(' ', white);
     case ViewId::LEATHER_ARMOR: return Tile('[', brown);
     case ViewId::LEATHER_HELM: return Tile('[', brown);
+    case ViewId::TELEPATHY_HELM: return Tile('[', lightGreen);
     case ViewId::CHAIN_ARMOR: return Tile('[', lightGray);
     case ViewId::IRON_HELM: return Tile('[', lightGray);
     case ViewId::LEATHER_BOOTS: return Tile('[', brown);

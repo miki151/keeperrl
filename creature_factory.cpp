@@ -557,7 +557,7 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
       CATTR(
         c.speed = 100;
         c.size = CreatureSize::LARGE;
-        c.strength = 15;
+        c.strength = 17;
         c.dexterity = 13;
         c.barehandedDamage = 13;
         c.humanoid = true;
@@ -567,7 +567,13 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
         c.name = NameGenerator::firstNames.getNext();),
       ControllerFactory([shopArea](Creature* c) { 
           return new ShopkeeperController(c, shopArea); })));
-  return addInventory(std::move(ret), vector<ItemId>(Random.getRandom(100, 300), ItemId::GOLD_PIECE));
+  vector<ItemId> inventory(Random.getRandom(100, 300), ItemId::GOLD_PIECE);
+  inventory.push_back(ItemId::SWORD);
+  inventory.push_back(ItemId::LEATHER_ARMOR);
+  inventory.push_back(ItemId::LEATHER_BOOTS);
+  inventory.push_back(ItemId::HEALING_POTION);
+  inventory.push_back(ItemId::HEALING_POTION);
+  return addInventory(std::move(ret), inventory);
 }
 
 

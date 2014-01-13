@@ -208,9 +208,10 @@ class Creature : private CreatureAttributes, public CreatureView {
   void setSpeed(double);
   double getSpeed() const;
 
-  typedef function<bool(const Creature*)> EnemyVision;
+  typedef function<bool(const Creature*, const Creature*)> CreatureVision;
 
-  void addEnemyVision(EnemyVision);
+  void addCreatureVision(CreatureVision*);
+  void removeCreatureVision(CreatureVision*);
 
   private:
   Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool avoidEnemies);
@@ -280,7 +281,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   const Creature* holding = nullptr;
   PController controller;
   stack<PController> controllerStack;
-  vector<EnemyVision> enemyVision;
+  vector<CreatureVision*> creatureVision;
 };
 
 

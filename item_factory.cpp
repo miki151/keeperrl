@@ -97,6 +97,23 @@ class AmuletOfEnemyCheck : public Item {
   EnemyCheck* check;
 };
 
+class ItemOfCreatureVision : public Item {
+  public:
+  ItemOfCreatureVision(const ViewObject& obj, const ItemAttributes& attr, Creature::CreatureVision v)
+      : Item(obj, attr), vision(v) {}
+
+  virtual void onEquipSpecial(Creature* c) {
+    c->addCreatureVision(&vision);
+  }
+
+  virtual void onUnequipSpecial(Creature* c) {
+    c->removeCreatureVision(&vision);
+  }
+
+  private:
+  Creature::CreatureVision vision;
+};
+
 class Corpse : public Item {
   public:
   Corpse(const ViewObject& obj, const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN, 
@@ -301,8 +318,10 @@ ItemFactory ItemFactory::armory() {
       {ItemId::LEATHER_ARMOR, 2 },
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 2 },
+      {ItemId::TELEPATHY_HELM, 0.1 },
       {ItemId::IRON_HELM, 1},
       {ItemId::LEATHER_BOOTS, 2 },
+      {ItemId::SPEED_BOOTS, 0.1 },
       {ItemId::IRON_BOOTS, 1} });
 }
 
@@ -316,8 +335,10 @@ ItemFactory ItemFactory::goblinShop() {
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 2 },
       {ItemId::IRON_HELM, 1 },
+      {ItemId::TELEPATHY_HELM, 0.1 },
       {ItemId::LEATHER_BOOTS, 2 },
       {ItemId::IRON_BOOTS, 1 },
+      {ItemId::SPEED_BOOTS, 0.1 },
       {ItemId::PANIC_MUSHROOM, 1 },
       {ItemId::RAGE_MUSHROOM, 1 },
       {ItemId::STRENGTH_MUSHROOM, 1 },
@@ -393,6 +414,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 20 },
       {ItemId::IRON_HELM, 5 },
+      {ItemId::TELEPATHY_HELM, 1 },
       {ItemId::LEATHER_BOOTS, 20 },
       {ItemId::IRON_BOOTS, 5 },
       {ItemId::SPEED_BOOTS, 1 },
@@ -634,6 +656,17 @@ PItem ItemFactory::fromId(ItemId id) {
             i.armorType = ArmorType::HELMET;
             i.price = 40;
             i.defense= 2 + maybePlusMinusOne(4);)));
+    case ItemId::TELEPATHY_HELM: return PItem(new ItemOfCreatureVision(
+        ViewObject(ViewId::TELEPATHY_HELM, ViewLayer::ITEM, "Helmet"), ITATTR(
+            i.name = "helm of telepathy";
+            i.type = ItemType::ARMOR;
+            i.weight = 1.5;
+            i.armorType = ArmorType::HELMET;
+            i.price = 140;
+            i.defense= 1 + maybePlusMinusOne(4);),
+                [](const Creature* c1, const Creature* c2) {
+                  return c1->getPosition().dist8(c2->getPosition()) < 5;
+                }));
     case ItemId::LEATHER_BOOTS: return PItem(new Item(
         ViewObject(ViewId::LEATHER_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
             i.name = "leather boots";
