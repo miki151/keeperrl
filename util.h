@@ -198,6 +198,7 @@ class RandomGen {
   void init(int seed);
   int getRandom(int max);
   int getRandom(int min, int max);
+  int getRandom(const vector<double>& weights, double r = -1);
   double getDouble();
   double getDouble(double a, double b);
   bool roll(int chance);
@@ -296,28 +297,14 @@ class Table {
 };
 
 template <typename T>
-T chooseRandom(const vector<T>& vi, const vector<double>& pi, double r = -1) {
-  vector<T> v(vi);
-  vector<double> p(pi);
+T chooseRandom(const vector<T>& v, const vector<double>& p, double r = -1) {
   CHECK(v.size() == p.size());
-  double sum = 0;
-  for (double elem : p)
-    sum += elem;
-  if (r == -1)
-    r = Random.getDouble(0, sum);
-  sum = 0;
-  for (int i : All(p)) {
-    sum += p[i];
-    if (sum >= r)
-      return v[i];
-  }
-  return v.back();
+  return v[Random.getRandom(p, r)];
 }
 
 
 template <typename T>
-T chooseRandom(const vector<T>& vi, double r = -1) {
-  vector<T> v(vi);
+T chooseRandom(const vector<T>& v, double r = -1) {
   vector<double> pi(v.size(), 1);
   return chooseRandom(v, pi, r);
 }
@@ -351,11 +338,11 @@ T chooseRandom(vector<pair<T, double>> vi, double r = -1) {
   }
   return chooseRandom(v, p);
 }
-
+/*
 template <typename T>
 T chooseRandom(initializer_list<pair<T, double>> vi, double r = -1) {
   return chooseRandom(vector<pair<T, double>>(vi), r);
-}
+}*/
 
 template <typename T>
 vector<T> randomPermutation(vector<T> v) {
@@ -416,11 +403,21 @@ bool contains(const initializer_list<T>& v, const V& elem) {
 }
 
 template <typename T>
-vector<T> concat(const vector<T>& v, const vector<T>& w) {
-  vector<T> ret(v);
+void append(vector<T>& v, const vector<T>& w) {
   for (T elem : w)
-    ret.push_back(elem);
-  return ret;
+    v.push_back(elem);
+}
+
+template <typename T>
+void append(vector<T>& v, vector<T>&& w) {
+  for (T& elem : w)
+    v.push_back(std::move(elem));
+}
+
+template <typename T>
+vector<T> concat(vector<T> v, const vector<T>& w) {
+  append(v, w);
+  return v;
 }
 
 template <class T>
@@ -665,6 +662,12 @@ template<class T>
 T getOnlyElement(const vector<T>& v) {
   CHECK(v.size() == 1);
   return v[0];
+}
+
+template<class T>
+T getOnlyElement(vector<T>&& v) {
+  CHECK(v.size() == 1);
+  return std::move(v[0]);
 }
 
 inline string addAParticle(const string& s) {

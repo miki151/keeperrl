@@ -321,7 +321,7 @@ class Items : public LevelMaker {
       do {
         pos = Vec2(Random.getRandom(area.getPX(), area.getKX()), Random.getRandom(area.getPY(), area.getKY()));
       } while (builder->getType(pos) != onType);
-      builder->getSquare(pos)->dropItem(factory.random());
+      builder->getSquare(pos)->dropItems(factory.random());
     }
   }
 
@@ -1092,7 +1092,7 @@ class ShopMaker : public LevelMaker {
     builder->putCreature(pos[Random.getRandom(pos.size())], std::move(shopkeeper));
     for (int i : Range(numItems)) {
       Vec2 v = pos[Random.getRandom(pos.size())];
-      builder->getSquare(v)->dropItem(factory.random());
+      builder->getSquare(v)->dropItems(factory.random());
     }
   }
 

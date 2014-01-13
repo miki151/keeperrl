@@ -145,7 +145,7 @@ class Chest : public Square {
       return;
     vector<PItem> item;
     if (!Random.roll(10))
-      item.push_back(itemFactory.random());
+      append(item, itemFactory.random());
     else {
       for (int i : Range(Random.getRandom(minCreatures, maxCreatures)))
         item.push_back(ItemFactory::corpse(creatureId));
@@ -165,24 +165,16 @@ class Chest : public Square {
     c->privateMessage("You open the " + getName());
     opened = true;
     setViewObject(openedObject);
-    int r = Random.getRandom(10);
-    if (r < 5) {
+    if (!Random.roll(5)) {
       c->privateMessage(msgItem);
-      PItem item = itemFactory.random();
-      Item* it = item.get();
-      dropItem(std::move(item));
-      EventListener::addItemsAppeared(getLevel(), getPosition(), {it});
-      c->onItemsAppeared({it});
-    } else if (r < 9) {
-      c->privateMessage(msgGold);
-      vector<PItem> items = ItemFactory::fromId(ItemId::GOLD_PIECE, Random.getRandom(5, 16));
+      vector<PItem> items = itemFactory.random();
       vector<Item*> it;
       for (PItem& e : items)
         it.push_back(e.get());
       dropItems(std::move(items));
-      EventListener::addItemsAppeared(getLevel(),getPosition(), it);
+      EventListener::addItemsAppeared(getLevel(), getPosition(), it);
       c->onItemsAppeared(it);
-    } else{
+    } else {
       c->privateMessage(msgMonster);
       int numR = Random.getRandom(minCreatures, maxCreatures);
       for (Vec2 v : getPosition().neighbors8(true)) {
@@ -222,7 +214,7 @@ class Fountain : public Square {
 
   virtual void onApply(Creature* c) override {
     c->privateMessage("You drink from the fountain.");
-    PItem potion = ItemFactory::potions().random(seed);
+    PItem potion = getOnlyElement(ItemFactory::potions().random(seed));
     potion->apply(c, getLevel());
   }
 
@@ -445,7 +437,7 @@ class Workshop : public Furniture {
 
   virtual void onApply(Creature* c) override {
     if (Random.roll(40))
-      dropItem(factory.random());
+      dropItems(factory.random());
   }
 
   private:
@@ -561,11 +553,11 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::FOUNTAIN:
         return new Fountain(ViewObject(ViewId::FOUNTAIN, ViewLayer::FLOOR, "Fountain"));
     case SquareType::CHEST:
-        return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"), ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest", CreatureId::RAT, 3, 6, "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::dungeon());
+        return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"), ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest", CreatureId::RAT, 3, 6, "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::chest());
     case SquareType::TREASURE_CHEST:
         return new Furniture(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);
     case SquareType::COFFIN:
-        return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"), ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin", CreatureId::VAMPIRE, 1, 2, "There is a rotting corpse inside. You find an item.", "There is a rotting corpse inside. The corpse is alive!", "There is a rotting corpse inside. You find some gold.", ItemFactory::dungeon());
+        return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"), ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin", CreatureId::VAMPIRE, 1, 2, "There is a rotting corpse inside. You find an item.", "There is a rotting corpse inside. The corpse is alive!", "There is a rotting corpse inside. You find some gold.", ItemFactory::chest());
     case SquareType::GRAVE:
         return new Grave(ViewObject(ViewId::GRAVE, ViewLayer::FLOOR, "Grave"), "grave");
     case SquareType::IRON_BARS:

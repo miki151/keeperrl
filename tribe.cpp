@@ -43,6 +43,7 @@ void Tribe::initStanding(const Creature* c) {
 }
 
 void Tribe::addEnemy(Tribe* t) {
+  CHECK(t != this);
   enemyTribes.insert(t);
   t->enemyTribes.insert(this);
 }
@@ -111,6 +112,7 @@ void Tribe::init() {
   elven->addEnemy(dwarven);
   goblin->addEnemy(dwarven);
   goblin->addEnemy(wildlife);
+  human->addEnemy(goblin);
   player->addEnemy(monster);
   player->addEnemy(goblin);
   player->addEnemy(pest);

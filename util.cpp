@@ -15,6 +15,21 @@ int RandomGen::getRandom(int min, int max) {
   return uniform_int_distribution<int>(min, max - 1)(generator);
 }
 
+int RandomGen::getRandom(const vector<double>& weights, double r) {
+  double sum = 0;
+  for (double elem : weights)
+    sum += elem;
+  if (r == -1)
+    r = Random.getDouble(0, sum);
+  sum = 0;
+  for (int i : All(weights)) {
+    sum += weights[i];
+    if (sum >= r)
+      return i;
+  }
+  return weights.size() - 1;
+}
+
 bool RandomGen::roll(int chance) {
   return getRandom(chance) == 0;
 }

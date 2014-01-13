@@ -251,26 +251,39 @@ static vector<string> potion_looks = { "effervescent", "murky", "swirly", "viole
 static vector<ViewId> potion_ids = { ViewId::EFFERVESCENT_POTION, ViewId::MURKY_POTION, ViewId::SWIRLY_POTION, ViewId::VIOLET_POTION, ViewId::PUCE_POTION, ViewId::SMOKY_POTION, ViewId::FIZZY_POTION, ViewId::MILKY_POTION};
 static vector<string> scroll_looks;
 
-ItemFactory::ItemFactory(const vector<pair<ItemId, double>>& _items,
+ItemFactory::ItemFactory(const vector<ItemInfo>& _items,
       const vector<ItemId>& _unique) : unique(_unique) {
-  for (auto elem : _items) {
-    items.push_back(elem.first);
-    weights.push_back(elem.second);
-  }
+  for (auto elem : _items)
+    addItem(elem);
 }
 
-PItem ItemFactory::random(Optional<int> seed) {
+ItemFactory& ItemFactory::addItem(ItemInfo elem) {
+  items.push_back(elem.id);
+  weights.push_back(elem.weight);
+  minCount.push_back(elem.minCount);
+  maxCount.push_back(elem.maxCount);
+  return *this;
+}
+
+ItemFactory& ItemFactory::addUniqueItem(ItemId id) {
+  unique.push_back(id);
+  return *this;
+}
+
+vector<PItem> ItemFactory::random(Optional<int> seed) {
   if (unique.size() > 0) {
     ItemId id = unique.back();
     unique.pop_back();
-    return fromId(id);
+    return fromId(id, 1);
   }
+  int index;
   if (seed) {
     RandomGen gen;
     gen.init(*seed);
-    return fromId(items[gen.getRandom(items.size())]);
-  }
-  return fromId(chooseRandom(items, weights));
+    index = gen.getRandom(weights);
+  } else
+    index = Random.getRandom(weights);
+  return fromId(items[index], Random.getRandom(minCount[index], maxCount[index]));
 }
 
 vector<PItem> ItemFactory::getAll() {
@@ -302,9 +315,7 @@ ItemFactory ItemFactory::villageShop() {
 }
 
 ItemFactory ItemFactory::dwarfShop() {
-  ItemFactory ret = armory();
-  ret.unique.push_back(ItemId::PORTAL_SCROLL);
-  return ret;
+  return armory().addUniqueItem(ItemId::PORTAL_SCROLL);
 }
 
 ItemFactory ItemFactory::armory() {
@@ -314,7 +325,7 @@ ItemFactory ItemFactory::armory() {
       {ItemId::BATTLE_AXE, 2 },
       {ItemId::WAR_HAMMER, 2 },
       {ItemId::BOW, 2 },
-      {ItemId::ARROW, 8 },
+      {ItemId::ARROW, 8, 20, 30 },
       {ItemId::LEATHER_ARMOR, 2 },
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 2 },
@@ -432,6 +443,10 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::FIRST_AID_KIT, 30 }});
 }
 
+ItemFactory ItemFactory::chest() {
+  return dungeon().addItem({ItemId::GOLD_PIECE, 300, 20, 100});
+}
+
 ItemFactory ItemFactory::singleType(ItemId id) {
   return ItemFactory({{id, 1}});
 }
@@ -468,8 +483,6 @@ PItem getScroll(string name, EffectType effect, int price, string description) {
             i.name = "scroll labelled " + name;
             i.plural= "scrolls labelled " + name;
             i.description = description;
- /*           i.realName = "scroll of " + name;
-            i.realPlural = "scrolls of " + name;*/
             i.blindName = "scroll";
             i.type= ItemType::SCROLL;
             i.weight = 0.1;

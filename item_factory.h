@@ -13,12 +13,11 @@ class Item;
 
 class ItemFactory {
   public:
-  ItemFactory(const vector<pair<ItemId, double>>&,
-      const vector<ItemId>& unique = vector<ItemId>());
-  PItem random(Optional<int> seed = Nothing());
+  vector<PItem> random(Optional<int> seed = Nothing());
   vector<PItem> getAll();
 
   static ItemFactory dungeon();
+  static ItemFactory chest();
   static ItemFactory armory();
   static ItemFactory potions();
   static ItemFactory scrolls();
@@ -41,8 +40,23 @@ class ItemFactory {
   static void init();
 
   private:
+  struct ItemInfo {
+    ItemInfo(ItemId _id, double _weight) : id(_id), weight(_weight) {}
+    ItemInfo(ItemId _id, double _weight, int minC, int maxC)
+        : id(_id), weight(_weight), minCount(minC), maxCount(maxC) {}
+
+    ItemId id;
+    double weight;
+    int minCount = 1;
+    int maxCount = 2;
+  };
+  ItemFactory(const vector<ItemInfo>&, const vector<ItemId>& unique = vector<ItemId>());
+  ItemFactory& addItem(ItemInfo);
+  ItemFactory& addUniqueItem(ItemId);
   vector<ItemId> items;
   vector<double> weights;
+  vector<int> minCount;
+  vector<int> maxCount;
   vector<ItemId> unique;
 };
 

@@ -380,7 +380,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ELF_LORD: return Tile('@', darkGreen);
     case ViewId::ELVEN_SHOPKEEPER: return Tile('@', lightBlue);
     case ViewId::IMP: return Tile('i', lightBrown);
-    case ViewId::BILE_DEMON: return Tile('Q', orange);
+    case ViewId::BILE_DEMON: return Tile('O', green);
     case ViewId::HELL_HOUND: return Tile('d', purple);
     case ViewId::CHICKEN: return Tile('c', yellow);
     case ViewId::DWARF: return Tile('h', blue);
@@ -1290,7 +1290,7 @@ Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& in
             nominalSize, nominalSize, tiles[2], width, height);
       }
     } else {
-      drawText(tile.symFont ? symbolFont : tileFont, sizeY + object.getSizeIncrease(), tile.color,
+      drawText(tile.symFont ? symbolFont : tileFont, sizeY + object.getSizeIncrease(), getColor(object),
           x + sizeX / 2, y - 3 - object.getSizeIncrease(), tile.text, true);
       if (object.getBurning() > 0) {
         drawText(symbolFont, sizeY, getFireColor(),
@@ -1737,6 +1737,8 @@ void WindowView::retireMessages() {
   oldMessage = true;
 }
 void WindowView::addMessage(const string& message) {
+  if (oldMessage)
+    showMessage("");
   oldMessage = false;
 /*  if (oldMessage)
     showMessage("");*/
