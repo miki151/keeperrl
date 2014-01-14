@@ -1889,6 +1889,7 @@ CollectiveAction WindowView::getClick() {
           }
           break;
       case Event::MouseMoved:
+          mousePos = Vec2(event.mouseMove.x, event.mouseMove.y);
           if (leftMouseButtonPressed) {
             Vec2 goTo = mapLayout->projectOnMap(Vec2(event.mouseMove.x, event.mouseMove.y));
             if (goTo != lastGoTo ) {

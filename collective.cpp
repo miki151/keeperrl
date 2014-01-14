@@ -376,11 +376,18 @@ void Collective::processInput(View* view) {
                 selection = SELECT;
               }
               break;
-          case BuildInfo::SQUARE: {
-                if (marked.count(pos) && selection != SELECT) {
-                  unmarkSquare(pos);
-                  selection = DESELECT;
-                }
+          case BuildInfo::SQUARE:
+              if (selection == NONE) {
+                if (Creature* c = level->getSquare(pos)->getCreature())
+                  if (contains(minions, c)) {
+                    possess(c, view);
+                    break;
+                  }
+              }
+              if (marked.count(pos) && selection != SELECT) {
+                unmarkSquare(pos);
+                selection = DESELECT;
+              } else {
                 BuildInfo::SquareInfo info = buildInfo[currentButton].squareInfo;
                 bool diggingSquare = !memory[level].hasViewIndex(pos) ||
                   (level->getSquare(pos)->canConstruct(info.type));
