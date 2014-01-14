@@ -114,12 +114,12 @@ string Deity::getHabitatString() const {
 
 static void grantGift(Creature* c, ItemId id, string deity, int num = 1) {
   c->privateMessage(deity + " grants you a gift.");
-  Effect::giveItemEffect(id, num)->applyToCreature(c, EffectStrength::NORMAL);
+  c->takeItems(ItemFactory::fromId(id, num), nullptr);
 }
 
 static void applyEffect(Creature* c, EffectType effect, string msg) {
   c->privateMessage(msg);
-  Effect::getEffect(effect)->applyToCreature(c, EffectStrength::STRONG);
+  Effect::applyToCreature(c, effect, EffectStrength::STRONG);
 }
 
 void Deity::onPrayer(Creature* c) {

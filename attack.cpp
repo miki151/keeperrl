@@ -2,8 +2,8 @@
 
 using namespace std;
 
-Attack::Attack(const Creature* a, AttackLevel l, AttackType t, int h, int s, bool b, PEffect _effect)
-    : attacker(a), level(l), type(t), toHit(h), strength(s), back(b), effect(std::move(_effect)) {}
+Attack::Attack(const Creature* a, AttackLevel l, AttackType t, int h, int s, bool b, Optional<EffectType> _effect)
+    : attacker(a), level(l), type(t), toHit(h), strength(s), back(b), effect(_effect) {}
   
 const Creature* Attack::getAttacker() const {
   return attacker;
@@ -29,6 +29,6 @@ bool Attack::inTheBack() const {
   return back;
 }
   
-Effect* Attack::getEffect() const {
-  return effect.get();
+Optional<EffectType> Attack::getEffect() const {
+  return effect;
 }

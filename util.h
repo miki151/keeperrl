@@ -18,9 +18,6 @@ typedef unique_ptr<Item> PItem;
 class Creature;
 typedef unique_ptr<Creature> PCreature;
 
-class Effect;
-typedef unique_ptr<Effect> PEffect;
-
 class Square;
 typedef unique_ptr<Square> PSquare;
 

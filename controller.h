@@ -14,13 +14,11 @@ class Controller {
   virtual void privateMessage(const string& message) const {}
 
   virtual void onKilled(const Creature* attacker) {}
-  virtual void onItemsAppeared(vector<Item*> items) {}
+  virtual void onItemsAppeared(vector<Item*> items, const Creature* from) { }
   virtual const MapMemory& getMemory(const Level* l = nullptr) const = 0;
 
   virtual void makeMove() = 0;
 
-  virtual bool wantsItems(const Creature* from, vector<Item*> items) const { return false; }
-  virtual void takeItems(const Creature* from, vector<PItem> items) {}
   virtual int getDebt(const Creature* debtor) const { return 0; }
 
   virtual void onBump(Creature*) = 0;

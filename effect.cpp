@@ -47,68 +47,18 @@ map<EffectStrength, int> identifyNum {
     {EffectStrength::NORMAL, 1},
     {EffectStrength::STRONG, 400}};
 
-map<EffectStrength, int> poisonDeathTime { 
+map<EffectStrength, int> poisonTime { 
     {EffectStrength::WEAK, 200},
     {EffectStrength::NORMAL, 60},
     {EffectStrength::STRONG, 20}};
 
-Effect::Effect(EffectType t) : type(t) {}
-
-EffectType Effect::getType() {
-  return type;
-}
-
-PEffect Effect::getEffect(EffectType type) {
-  switch (type) {
-    case EffectType::HEAL: return PEffect(new HealingEffect());
-    case EffectType::IDENTIFY: return PEffect(new IdentifyEffect());
-    case EffectType::TELEPORT: return PEffect(new TeleportEffect());
-    case EffectType::PORTAL: return PEffect(new PortalEffect());
-    case EffectType::SLEEP: return PEffect(new SleepEffect());
-    case EffectType::PANIC: return PEffect(new PanicEffect());
-    case EffectType::RAGE: return PEffect(new RageEffect());
-    case EffectType::ROLLING_BOULDER: return PEffect(new RollingBoulderEffect());
-    case EffectType::FIRE: return PEffect(new FireEffect());
-    case EffectType::SLOW: return PEffect(new SlowEffect());
-    case EffectType::SPEED: return PEffect(new SpeedEffect());
-    case EffectType::HALLU: return PEffect(new HalluEffect());
-    case EffectType::BLINDNESS: return PEffect(new BlindnessEffect());
-    case EffectType::INVISIBLE: return PEffect(new InvisibleEffect());
-    case EffectType::STR_BONUS: return PEffect(new StrBonusEffect());
-    case EffectType::DEX_BONUS: return PEffect(new DexBonusEffect());
-    case EffectType::DESTROY_EQUIPMENT: return PEffect(new DestroyEquipmemntEffect());
-    case EffectType::ENHANCE_ARMOR: return PEffect(new EnhanceArmorEffect());
-    case EffectType::ENHANCE_WEAPON: return PEffect(new EnhanceWeaponEffect());
-    case EffectType::FIRE_SPHERE_PET: return PEffect(new FireSpherePetEffect());
-    case EffectType::GUARDING_BOULDER: return PEffect(new GuardingBuilderEffect());
-    case EffectType::EMIT_POISON_GAS: return PEffect(new EmitPoisonGasEffect());
-    case EffectType::POISON: return PEffect(new PoisonEffect());
-    default: Debug(FATAL) << "Can't construct effect " << (int)type;
-  }
-  return PEffect(nullptr);
-}
-
-PEffect Effect::giveItemEffect(ItemId id, int num) {
-  return PEffect(new GiveItemEffect(id, num));
-}
-
-PoisonEffect::PoisonEffect() : Effect(EffectType::POISON) {}
-
-void PoisonEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->poison(poisonDeathTime.at(strength));
-}
-
-EmitPoisonGasEffect::EmitPoisonGasEffect() : Effect(EffectType::EMIT_POISON_GAS) {}
-
-void EmitPoisonGasEffect::applyToCreature(Creature* c, EffectStrength strength) {
+static void emitPoisonGas(Creature* c, EffectStrength strength) {
   for (Vec2 v : Vec2::directions8())
     c->getSquare(v)->addPoisonGas(1);
   c->getSquare()->addPoisonGas(2);
 }
 
-GuardingBuilderEffect::GuardingBuilderEffect() : Effect(EffectType::GUARDING_BOULDER) {}
-
-void GuardingBuilderEffect::applyToCreature(Creature* c, EffectStrength strength) {
+static void guardingBuilder(Creature* c) {
   Optional<Vec2> dest;
   for (Vec2 v : Vec2::directions8(true))
     if (c->canMove(v) && !c->getSquare(v)->getCreature()) {
@@ -119,7 +69,7 @@ void GuardingBuilderEffect::applyToCreature(Creature* c, EffectStrength strength
   if (dest)
     c->getLevel()->moveCreature(c, *dest);
   else {
-    Effect::getEffect(EffectType::TELEPORT)->applyToCreature(c, EffectStrength::NORMAL);
+    Effect::applyToCreature(c, EffectType::TELEPORT, EffectStrength::NORMAL);
   }
   if (c->getPosition() != pos) {
     PCreature boulder = CreatureFactory::getGuardingBoulder(c->getTribe());
@@ -127,9 +77,7 @@ void GuardingBuilderEffect::applyToCreature(Creature* c, EffectStrength strength
   }
 }
 
-FireSpherePetEffect::FireSpherePetEffect() : Effect(EffectType::FIRE_SPHERE_PET) {}
-
-void FireSpherePetEffect::applyToCreature(Creature* c, EffectStrength strength) {
+static void fireSpherePet(Creature* c) {
   PCreature sphere = CreatureFactory::fromId(
       CreatureId::FIRE_SPHERE, c->getTribe(), MonsterAIFactory::follower(c, 1));
   for (Vec2 v : Vec2::directions8(true))
@@ -140,9 +88,7 @@ void FireSpherePetEffect::applyToCreature(Creature* c, EffectStrength strength) 
     }
 }
 
-EnhanceArmorEffect::EnhanceArmorEffect() : Effect(EffectType::ENHANCE_ARMOR) {}
-
-void EnhanceArmorEffect::applyToCreature(Creature* c, EffectStrength strength) {
+static void enhanceArmor(Creature* c) {
   for (EquipmentSlot slot : randomPermutation({
         EquipmentSlot::BODY_ARMOR, EquipmentSlot::HELMET, EquipmentSlot::BOOTS}))
     if (Item* item = c->getEquipment().getItem(slot)) {
@@ -152,18 +98,14 @@ void EnhanceArmorEffect::applyToCreature(Creature* c, EffectStrength strength) {
     }
 }
 
-EnhanceWeaponEffect::EnhanceWeaponEffect() : Effect(EffectType::ENHANCE_WEAPON) {}
-
-void EnhanceWeaponEffect::applyToCreature(Creature* c, EffectStrength strength) {
+static void enhanceWeapon(Creature* c) {
   if (Item* item = c->getEquipment().getItem(EquipmentSlot::WEAPON)) {
     c->you(MsgType::YOUR, item->getName() + " seems improved");
     item->addModifier(chooseRandom({AttrType::TO_HIT, AttrType::DAMAGE}), 1);
   }
 }
 
-DestroyEquipmemntEffect::DestroyEquipmemntEffect() : Effect(EffectType::DESTROY_EQUIPMENT) {}
-
-void DestroyEquipmemntEffect::applyToCreature(Creature* c, EffectStrength strength) {
+static void destroyEquipment(Creature* c) {
   vector<Item*> equiped;
   for (Item* item : c->getEquipment().getItems())
     if (c->getEquipment().isEquiped(item))
@@ -174,103 +116,20 @@ void DestroyEquipmemntEffect::applyToCreature(Creature* c, EffectStrength streng
   return;
 }
 
-HealingEffect::HealingEffect() : Effect(EffectType::HEAL) {}
-
-void HealingEffect::applyToCreature(Creature* c, EffectStrength strength) {
+static void heal(Creature* c, EffectStrength strength) {
   if (c->getHealth() < 1 || (strength == EffectStrength::STRONG && c->lostLimbs()))
     c->heal(1, strength == EffectStrength::STRONG);
   else
     c->privateMessage("You feel refreshed.");
 }
 
-SleepEffect::SleepEffect() : Effect(EffectType::SLEEP) {}
-
-void SleepEffect::applyToCreature(Creature* c, EffectStrength strength) {
+static void sleep(Creature* c, EffectStrength strength) {
   Square *square = c->getLevel()->getSquare(c->getPosition());
   c->you(MsgType::FALL_ASLEEP, square->getName());
   c->sleep(Random.getRandom(sleepTime[strength]));
 }
 
-GiveItemEffect::GiveItemEffect(ItemId i, int n) : Effect(EffectType::GIVE_ITEM), id(i), num(n) {}
-
-void GiveItemEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  vector<PItem> item = ItemFactory::fromId(id, num);
-  vector<Item*> ref(item.size());
-  transform(item.begin(), item.end(), ref.begin(), [](PItem& it) { return it.get();});
-  c->getLevel()->getSquare(c->getPosition())->dropItems(std::move(item));
-  c->onItemsAppeared(ref);
-}
-
-IdentifyEffect::IdentifyEffect() : Effect(EffectType::IDENTIFY) {}
-
-void IdentifyEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->grantIdentify(identifyNum[strength]);
-}
-
-PanicEffect::PanicEffect() : Effect(EffectType::PANIC) {}
-
-void PanicEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->panic(panicTime[strength]);
-}
-
-RageEffect::RageEffect() : Effect(EffectType::RAGE) {}
-
-void RageEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->rage(panicTime[strength]);
-}
-
-HalluEffect::HalluEffect() : Effect(EffectType::RAGE) {}
-
-void HalluEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->hallucinate(halluTime[strength]);
-}
-
-StrBonusEffect::StrBonusEffect() : Effect(EffectType::STR_BONUS) {}
-
-void StrBonusEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->giveStrBonus(attrBonusTime[strength]);
-}
-
-DexBonusEffect::DexBonusEffect() : Effect(EffectType::STR_BONUS) {}
-
-void DexBonusEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->giveDexBonus(attrBonusTime[strength]);
-}
-
-SlowEffect::SlowEffect() : Effect(EffectType::SLOW) {}
-
-void SlowEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->slowDown(panicTime[strength]);
-}
-
-SpeedEffect::SpeedEffect() : Effect(EffectType::SPEED) {}
-
-void SpeedEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->speedUp(panicTime[strength]);
-}
-
-BlindnessEffect::BlindnessEffect() : Effect(EffectType::BLINDNESS) {}
-
-void BlindnessEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->blind(blindTime[strength]);
-}
-
-InvisibleEffect::InvisibleEffect() : Effect(EffectType::INVISIBLE) {}
-
-void InvisibleEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->makeInvisible(invisibleTime[strength]);
-}
-
-FireEffect::FireEffect() : Effect(EffectType::FIRE) {}
-
-void FireEffect::applyToCreature(Creature* c, EffectStrength strength) {
-  c->setOnFire(fireAmount[strength]);
-}
-
-PortalEffect::PortalEffect() : Effect(EffectType::PORTAL) {
-}
-
-void PortalEffect::applyToCreature(Creature* c, EffectStrength) {
+static void portal(Creature* c) {
   Level* l = c->getLevel();
   for (Vec2 v : c->getPosition().neighbors8(true))
     if (l->getSquare(v)->canEnter(c)) {
@@ -281,10 +140,7 @@ void PortalEffect::applyToCreature(Creature* c, EffectStrength) {
     }
 }
 
-TeleportEffect::TeleportEffect() : Effect(EffectType::TELEPORT) {
-}
-
-void TeleportEffect::applyToCreature(Creature* c, EffectStrength) {
+static void teleport(Creature* c) {
   Vec2 pos;
   int cnt = 1000;
   int maxRadius = 8;
@@ -314,9 +170,7 @@ void TeleportEffect::applyToCreature(Creature* c, EffectStrength) {
   c->you(MsgType::TELE_APPEAR, "");
 }
 
-RollingBoulderEffect::RollingBoulderEffect() : Effect(EffectType::ROLLING_BOULDER) {}
-
-void RollingBoulderEffect::applyToCreature(Creature* c, EffectStrength strength) {
+static void rollingBoulder(Creature* c) {
   int maxDist = 7;
   int minDist = 5;
   Level* l = c->getLevel();
@@ -348,6 +202,34 @@ void RollingBoulderEffect::applyToCreature(Creature* c, EffectStrength strength)
     } 
     l->addCreature(pos + dir * dist, CreatureFactory::getRollingBoulder(dir * (-1)));
     return;
+  }
+}
+
+void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strength) {
+  switch (type) {
+    case EffectType::POISON: c->poison(poisonTime.at(strength)); break;
+    case EffectType::EMIT_POISON_GAS: emitPoisonGas(c, strength); break;
+    case EffectType::GUARDING_BOULDER: guardingBuilder(c); break;
+    case EffectType::FIRE_SPHERE_PET: fireSpherePet(c); break;
+    case EffectType::ENHANCE_ARMOR: enhanceArmor(c); break;
+    case EffectType::ENHANCE_WEAPON: enhanceWeapon(c); break;
+    case EffectType::DESTROY_EQUIPMENT: destroyEquipment(c); break;
+    case EffectType::HEAL: heal(c, strength); break;
+    case EffectType::SLEEP: sleep(c, strength); break;
+    case EffectType::IDENTIFY: c->grantIdentify(identifyNum[strength]); break;
+    case EffectType::PANIC: c->panic(panicTime[strength]); break;
+    case EffectType::RAGE: c->rage(panicTime[strength]); break;
+    case EffectType::HALLU: c->hallucinate(panicTime[strength]); break;
+    case EffectType::STR_BONUS: c->giveStrBonus(attrBonusTime[strength]); break;
+    case EffectType::DEX_BONUS: c->giveDexBonus(attrBonusTime[strength]); break;
+    case EffectType::SLOW: c->slowDown(panicTime[strength]); break;
+    case EffectType::SPEED: c->speedUp(panicTime[strength]); break;
+    case EffectType::BLINDNESS: c->blind(blindTime[strength]); break;
+    case EffectType::INVISIBLE: c->makeInvisible(invisibleTime[strength]); break;
+    case EffectType::FIRE: c->setOnFire(fireAmount[strength]); break;
+    case EffectType::PORTAL: portal(c); break;
+    case EffectType::TELEPORT: teleport(c); break;
+    case EffectType::ROLLING_BOULDER: rollingBoulder(c); break;
   }
 }
 

@@ -168,12 +168,8 @@ class Chest : public Square {
     if (!Random.roll(5)) {
       c->privateMessage(msgItem);
       vector<PItem> items = itemFactory.random();
-      vector<Item*> it;
-      for (PItem& e : items)
-        it.push_back(e.get());
-      dropItems(std::move(items));
-      EventListener::addItemsAppeared(getLevel(), getPosition(), it);
-      c->onItemsAppeared(it);
+      EventListener::addItemsAppeared(getLevel(), getPosition(), Item::extractRefs(items));
+      c->takeItems(std::move(items), nullptr);
     } else {
       c->privateMessage(msgMonster);
       int numR = Random.getRandom(minCreatures, maxCreatures);
@@ -261,19 +257,20 @@ class Tree : public Square {
 
 class TrapSquare : public Square {
   public:
-  TrapSquare(const ViewObject& object, PEffect e) : Square(object, "floor", true), effect(std::move(e)) {
+  TrapSquare(const ViewObject& object, EffectType e) : Square(object, "floor", true), effect(e) {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (effect && c->isPlayer()) {
+    if (active && c->isPlayer()) {
       c->you(MsgType::TRIGGER_TRAP, "");
-      effect->applyToCreature(c, EffectStrength::NORMAL);
-      effect = nullptr;
+      Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
+      active = false;
     }
   }
 
   private:
-  PEffect effect;
+  bool active = true;
+  EffectType effect;
   Tribe* tribe;
 };
 
@@ -337,7 +334,7 @@ class Bed : public Furniture {
   }
 
   virtual void onApply(Creature* c) override {
-    Effect::getEffect(EffectType::SLEEP)->applyToCreature(c, EffectStrength::STRONG);
+    Effect::applyToCreature(c, EffectType::SLEEP, EffectStrength::STRONG);
     getLevel()->addTickingSquare(getPosition());
   }
 
@@ -547,9 +544,9 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::ALTAR:
         Debug(FATAL) << "Altars are not handled by this method.";
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
-                                          Effect::getEffect(EffectType::ROLLING_BOULDER));
+                                          EffectType::ROLLING_BOULDER);
     case SquareType::POISON_GAS: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
-                                          Effect::getEffect(EffectType::EMIT_POISON_GAS));
+                                          EffectType::EMIT_POISON_GAS);
     case SquareType::FOUNTAIN:
         return new Fountain(ViewObject(ViewId::FOUNTAIN, ViewLayer::FLOOR, "Fountain"));
     case SquareType::CHEST:

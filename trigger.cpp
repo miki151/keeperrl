@@ -79,24 +79,24 @@ PTrigger Trigger::getPortal(const ViewObject& obj, Level* l, Vec2 position) {
 
 class Trap : public Trigger {
   public:
-  Trap(const ViewObject& obj, Level* l, Vec2 position, PEffect _effect, Tribe* _tribe)
-      : Trigger(obj, l, position), effect(std::move(_effect)), tribe(_tribe) {
+  Trap(const ViewObject& obj, Level* l, Vec2 position, EffectType _effect, Tribe* _tribe)
+      : Trigger(obj, l, position), effect(_effect), tribe(_tribe) {
   }
 
   virtual void onCreatureEnter(Creature* c) override {
     if (c->getTribe() != tribe) {
       c->you(MsgType::TRIGGER_TRAP, "");
-      effect->applyToCreature(c, EffectStrength::NORMAL);
+      Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
       EventListener::addTriggerEvent(c->getLevel(), c->getPosition());
       c->getSquare()->removeTrigger(this);
     }
   }
 
   private:
-  PEffect effect;
+  EffectType effect;
   Tribe* tribe;
 };
   
-PTrigger Trigger::getTrap(const ViewObject& obj, Level* l, Vec2 position, PEffect effect, Tribe* tribe) {
+PTrigger Trigger::getTrap(const ViewObject& obj, Level* l, Vec2 position, EffectType effect, Tribe* tribe) {
   return PTrigger(new Trap(obj, l, position, std::move(effect), tribe));
 }

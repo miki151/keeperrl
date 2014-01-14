@@ -18,7 +18,7 @@ class Player : public Controller, public EventListener {
   virtual void privateMessage(const string& message) const override;
 
   virtual void onKilled(const Creature* attacker) override;
-  virtual void onItemsAppeared(vector<Item*> items) override;
+  virtual void onItemsAppeared(vector<Item*> items, const Creature* from);
 
   View* getView();
 

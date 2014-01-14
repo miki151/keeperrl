@@ -80,12 +80,10 @@ int Creature::getDebt(const Creature* debtor) const {
   return controller->getDebt(debtor);
 }
 
-bool Creature::wantsItems(const Creature* from, vector<Item*> items) const {
-  return controller->wantsItems(from, items);
-}
-
-void Creature::takeItems(const Creature* from, vector<PItem> items) {
-  return controller->takeItems(from, std::move(items));
+void Creature::takeItems(vector<PItem> items, const Creature* from) {
+  vector<Item*> ref = Item::extractRefs(items);
+  getSquare()->dropItems(std::move(items));
+  controller->onItemsAppeared(ref, from);
 }
 
 void Creature::you(MsgType type, const string& param) const {
@@ -98,10 +96,6 @@ void Creature::you(const string& param) const {
 
 void Creature::privateMessage(const string& message) const {
   controller->privateMessage(message);
-}
-
-void Creature::onItemsAppeared(vector<Item*> items) {
-  controller->onItemsAppeared(items);
 }
 
 void Creature::grantIdentify(int numItems) {
@@ -276,7 +270,7 @@ bool Creature::canPickUp(const vector<Item*>& items) const {
   return true;
 }
 
-void Creature::pickUp(const vector<Item*>& items) {
+void Creature::pickUp(const vector<Item*>& items, bool spendT) {
   CHECK(canPickUp(items));
   Debug() << getTheName() << " pickup ";
   for (auto item : items) {
@@ -285,7 +279,8 @@ void Creature::pickUp(const vector<Item*>& items) {
   if (getInventoryWeight() > getAttr(AttrType::INV_LIMIT))
     privateMessage("You are overloaded.");
   EventListener::addPickupEvent(this, items);
-  spendTime(1);
+  if (spendT)
+    spendTime(1);
 }
 
 void Creature::drop(const vector<Item*>& items) {
@@ -916,8 +911,7 @@ void Creature::attack(const Creature* c1, bool spend) {
     }
     you(MsgType::ATTACK_SURPRISE, enemyName);
   }
-  Attack attack(this, getRandomAttackLevel(), getAttackType(), toHit, damage, backstab,
-      attackEffect ? Effect::getEffect(*attackEffect) : nullptr);
+  Attack attack(this, getRandomAttackLevel(), getAttackType(), toHit, damage, backstab, attackEffect);
   if (!c->dodgeAttack(attack)) {
     if (getWeapon()) {
       you(getAttackMsg(attack.getType(), true, attack.getLevel()), getWeapon()->getName());
@@ -953,8 +947,8 @@ bool Creature::takeDamage(const Attack& attack) {
   int defense = getAttr(AttrType::DEFENSE);
   Debug() << getTheName() << " attacked by " << attack.getAttacker()->getName() << " damage " << attack.getStrength() << " defense " << defense;
   if (attack.getStrength() > defense) {
-    if (Effect* effect = attack.getEffect())
-      effect->applyToCreature(this, EffectStrength::NORMAL);
+    if (auto effect = attack.getEffect())
+      Effect::applyToCreature(this, *effect, EffectStrength::NORMAL);
     lastAttacker = attack.getAttacker();
     double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
     dam *= damageMultiplier;
@@ -1272,8 +1266,7 @@ void Creature::flyAway() {
 }
 
 void Creature::give(const Creature* whom, vector<Item*> items) {
-  CHECK(whom->wantsItems(this, items));
-  getLevel()->getSquare(whom->getPosition())->getCreature()->takeItems(this, equipment.removeItems(items));
+  getLevel()->getSquare(whom->getPosition())->getCreature()->takeItems(equipment.removeItems(items), this);
 }
 
 bool Creature::canFire(Vec2 direction) const {
@@ -1419,7 +1412,7 @@ void Creature::throwItem(Item* item, Vec2 direction) {
     damage += 7;
     toHit += 4;
   }
-  Attack attack(this, getRandomAttackLevel(), item->getAttackType(), toHit, damage, false, PEffect(nullptr));
+  Attack attack(this, getRandomAttackLevel(), item->getAttackType(), toHit, damage, false, Nothing());
   level->throwItem(equipment.removeItem(item), attack, dist, getPosition(), direction);
   spendTime(1);
 }

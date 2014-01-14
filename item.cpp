@@ -15,6 +15,12 @@ bool Item::isEverythingIdentified() {
 }
 
 bool Item::everythingIdentified = false;
+  
+vector<Item*> Item::extractRefs(const vector<PItem>& item) {
+  vector<Item*> ref(item.size());
+  transform(item.begin(), item.end(), ref.begin(), [](const PItem& it) { return it.get();});
+  return ref;
+}
 
 static set<string> ident;
 bool Item::isIdentified(const string& name) {
@@ -121,7 +127,7 @@ void Item::onHitCreature(Creature* c, const Attack& attack) {
   if (c->takeDamage(attack))
     return;
   if (effect && getType() == ItemType::POTION) {
-    Effect::getEffect(*effect)->applyToCreature(c, EffectStrength::NORMAL);
+    Effect::applyToCreature(c, *effect, EffectStrength::NORMAL);
     if (c->getLevel()->playerCanSee(c->getPosition()))
       identify();
   }
@@ -167,7 +173,7 @@ void Item::apply(Creature* c, Level* l) {
   if (identifyOnApply && l->playerCanSee(c->getPosition()))
     identify(*name);
   if (effect)
-    Effect::getEffect(*effect)->applyToCreature(c, EffectStrength::NORMAL);
+    Effect::applyToCreature(c, *effect, EffectStrength::NORMAL);
   if (uses && (-- *uses) == 0) {
     discarded = true;
     if (usedUpMsg)

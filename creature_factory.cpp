@@ -365,19 +365,12 @@ class ShopkeeperController : public Monster, public EventListener {
     Monster::makeMove();
   }
 
-  virtual bool wantsItems(const Creature* from, vector<Item*> items) const override {
-    for (Item* it : items)
-      if (it->getType() != ItemType::GOLD)
-        return false;
-    return true;
-  }
-
-  virtual void takeItems(const Creature* from, vector<PItem> items) {
-    for (PItem& item : items) {
-      CHECK(wantsItems(from, {item.get()}));
+  virtual void onItemsAppeared(vector<Item*> items, const Creature* from) {
+    for (Item* item : items) {
+      CHECK(item->getType() == ItemType::GOLD);
       --debt[from];
-      creature->take(std::move(item));
     }
+    creature->pickUp(items, false);
     CHECK(debt[from] == 0) << "Bad debt " << debt[from];
     debt.erase(from);
     for (Item* it : from->getEquipment().getItems())

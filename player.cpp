@@ -203,7 +203,7 @@ void Player::dropAction(bool extended) {
   creature->drop(getPrefix(items, 0, num));
 }
 
-void Player::onItemsAppeared(vector<Item*> items) {
+void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   if (!creature->canPickUp(items))
     return;
   vector<string> names;
@@ -218,7 +218,7 @@ void Player::onItemsAppeared(vector<Item*> items) {
   if (num < 1)
     return;
   messageBuffer.addMessage("You take " + getPluralName(groups[*index][0], num));
-  creature->pickUp(getPrefix(groups[*index], 0, num));
+  creature->pickUp(getPrefix(groups[*index], 0, num), false);
 }
 
 void Player::applyAction() {
@@ -499,7 +499,8 @@ void Player::makeMove() {
     case ActionId::MOVE: direction.push_back(action.getDirection()); break;
     case ActionId::MOVE_TO: if (action.getDirection().dist8(creature->getPosition()) == 1)
                               direction.push_back(action.getDirection() - creature->getPosition());
-                            else if (action.getDirection() != creature->getPosition())
+                            else
+                            if (action.getDirection() != creature->getPosition())
                               target = action.getDirection();
                             else
                               pickUpAction(false);

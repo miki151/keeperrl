@@ -1337,6 +1337,13 @@ void WindowView::refreshView(const CreatureView* collective) {
   for (Vec2 pos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY))) 
     if (level->inBounds(pos)) {
       ViewIndex index = collective->getViewIndex(pos);
+      if (!index.hasObject(ViewLayer::FLOOR) && !index.isEmpty() && lastMemory->hasViewIndex(pos)
+          && lastMemory->getViewIndex(pos).hasObject(ViewLayer::FLOOR)) {
+        // special case when monster is visible but floor is only in memory
+        index.insert(lastMemory->getViewIndex(pos).getObject(ViewLayer::FLOOR));
+      }
+      if (index.isEmpty() && lastMemory->hasViewIndex(pos))
+        index = lastMemory->getViewIndex(pos);
       objects[pos] = index;
       if (index.hasObject(ViewLayer::FLOOR)) {
         ViewObject object = index.getObject(ViewLayer::FLOOR);
@@ -1346,19 +1353,6 @@ void WindowView::refreshView(const CreatureView* collective) {
         }
         if (auto id = getConnectionId(object.id()))
           floorIds.insert(make_pair(pos, *id));
-      }
-      if (index.isEmpty() && lastMemory->hasViewIndex(pos)) {
-        ViewIndex index = lastMemory->getViewIndex(pos);
-        objects[pos] = index;
-        if (index.hasObject(ViewLayer::FLOOR)) {
-          ViewObject object = index.getObject(ViewLayer::FLOOR);
-          if (object.castsShadow()) {
-            shadowed.erase(pos);
-            shadowed.insert(pos + Vec2(0, 1));
-          }
-        if (auto id = getConnectionId(object.id()))
-          floorIds.insert(make_pair(pos, *id));
-       }
       }
     }
   //  for (const Creature* c : player->getVisibleCreatures())
@@ -1589,7 +1583,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<strin
       }
     else if (event.type == BlockingEvent::MOUSE_MOVE && mousePos) {
       if (Optional<int> mouseIndex = getIndex(window, !title.empty(), *mousePos)) {
-        index = *mouseIndex;
+        index = *mouseIndex + itemsCutoff;
         Debug() << "Index " << index;
       }
     } else if (event.type == BlockingEvent::MOUSE_LEFT) {

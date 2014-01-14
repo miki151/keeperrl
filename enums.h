@@ -475,5 +475,33 @@ inline bool isWall(SquareType type) {
   }
 }
 
+enum class EffectStrength { WEAK, NORMAL, STRONG };
+enum class EffectType { 
+    TELEPORT,
+    HEAL,
+    SLEEP,
+    IDENTIFY,
+    PANIC,
+    RAGE,
+    ROLLING_BOULDER,
+    FIRE,
+    SLOW,
+    SPEED,
+    HALLU,
+    STR_BONUS,
+    DEX_BONUS,
+    BLINDNESS,
+    INVISIBLE,
+    PORTAL,
+    DESTROY_EQUIPMENT,
+    ENHANCE_ARMOR,
+    ENHANCE_WEAPON,
+    FIRE_SPHERE_PET,
+    GUARDING_BOULDER,
+    EMIT_POISON_GAS,
+    POISON,
+};
+
+
 
 #endif

@@ -224,20 +224,18 @@ class SkillBook : public Item {
 
 class TrapItem : public Item {
   public:
-  TrapItem(ViewObject object, ViewObject _trapObject, const ItemAttributes& attr, PEffect _effect)
+  TrapItem(ViewObject object, ViewObject _trapObject, const ItemAttributes& attr, EffectType _effect)
       : Item(object, attr), effect(std::move(_effect)), trapObject(_trapObject) {
   }
 
   virtual void apply(Creature* c, Level* l) override {
-    CHECK(effect);
     c->you(MsgType::SET_UP_TRAP, "");
-    c->getSquare()->addTrigger(Trigger::getTrap(trapObject, 
-            l, c->getPosition(), std::move(effect), c->getTribe()));
+    c->getSquare()->addTrigger(Trigger::getTrap(trapObject, l, c->getPosition(), effect, c->getTribe()));
     discarded = true;
   }
 
   private:
-  PEffect effect;
+  EffectType effect;
   ViewObject trapObject;
 };
 
@@ -778,7 +776,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.uses = 1;
             i.usedUpMsg = true;
             i.trapType = TrapType::POISON_GAS;
-            i.price = 10;), Effect::getEffect(EffectType::EMIT_POISON_GAS)));
+            i.price = 10;), EffectType::EMIT_POISON_GAS));
     case ItemId::HEALING_POTION: return getPotion(0, "healing", EffectType::HEAL, 40, "Heals all your wounds.");
     case ItemId::SLEEP_POTION: return getPotion(1, "sleep", EffectType::SLEEP, 40,
                                    "Puts anyone to sleep immediately.");

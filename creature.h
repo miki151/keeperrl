@@ -73,8 +73,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   int getDebt(const Creature* debtor) const;
   vector<Item*> getGold(int num) const;
 
-  bool wantsItems(const Creature* from, vector<Item*> items) const;
-  void takeItems(const Creature* from, vector<PItem> items);
+  void takeItems(vector<PItem> items, const Creature* from);
 
   void youHit(BodyPart part, AttackType type) const;
 
@@ -121,7 +120,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   void wait();
   vector<Item*> getPickUpOptions() const;
   bool canPickUp(const vector<Item*>& item) const;
-  void pickUp(const vector<Item*>& item);
+  void pickUp(const vector<Item*>& item, bool spendTime = true);
   void drop(const vector<Item*>& item);
   void drop(vector<PItem> item);
   bool canAttack(const Creature*) const;
@@ -197,7 +196,6 @@ class Creature : private CreatureAttributes, public CreatureView {
   void you(const string& param) const;
   void privateMessage(const string& message) const;
   bool isPlayer() const;
-  void onItemsAppeared(vector<Item*> items);
   const MapMemory& getMemory(const Level* l = nullptr) const;
   void grantIdentify(int numItems);
 

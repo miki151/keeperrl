@@ -17,7 +17,7 @@ class Trigger {
   virtual void tick(double time) {}
 
   static PTrigger getPortal(const ViewObject& obj, Level*, Vec2 position);
-  static PTrigger getTrap(const ViewObject& obj, Level* l, Vec2 position, PEffect _effect, Tribe* _tribe);
+  static PTrigger getTrap(const ViewObject& obj, Level* l, Vec2 position, EffectType effect, Tribe* tribe);
 
   protected:
   Trigger(Level*, Vec2 position);
