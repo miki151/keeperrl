@@ -282,10 +282,6 @@ class Door : public Square {
     return true;
   }
 
-  virtual bool canEnterSpecial(const Creature* c) const override {
-    return c->canWalk();
-  }
-
   virtual void onEnterSpecial(Creature* c) override {
     c->privateMessage("You open the door.");
   }
@@ -503,6 +499,8 @@ Square* SquareFactory::get(SquareType s) {
         return new SolidSquare(ViewObject(ViewId::HELL_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
     case SquareType::CASTLE_WALL:
         return new SolidSquare(ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
+    case SquareType::MUD_WALL:
+        return new SolidSquare(ViewObject(ViewId::MUD_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
     case SquareType::MOUNTAIN:
         return new SolidSquare(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain"), "mountain", true);
     case SquareType::GLACIER:
@@ -577,6 +575,7 @@ Square* SquareFactory::getStairs(StairDirection direction, StairKey key, StairLo
     case StairLook::CELLAR: id1 = ViewId::UP_STAIRCASE_CELLAR; id2 = ViewId::DOWN_STAIRCASE_CELLAR; break;
     case StairLook::PYRAMID: id1 = ViewId::UP_STAIRCASE_PYR; id2 = ViewId::DOWN_STAIRCASE_PYR; break;
     case StairLook::DUNGEON_ENTRANCE: id1 = id2 = ViewId::DUNGEON_ENTRANCE; break;
+    case StairLook::DUNGEON_ENTRANCE_MUD: id1 = id2 = ViewId::DUNGEON_ENTRANCE_MUD; break;
   }
   switch (direction) {
     case StairDirection::UP:

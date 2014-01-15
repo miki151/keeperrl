@@ -91,10 +91,17 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
       Level::Builder(30, 20, "Cellar"),
       LevelMaker::cellarLevel(CreatureFactory::singleType(Tribe::monster, CreatureId::GHOST),
           SquareType::LOW_ROCK_WALL, StairLook::CELLAR, {StairKey::CASTLE_CELLAR}, {}));
+  bool drag = false; // Random.roll(2);
+  Level* dragon = buildLevel(
+      Level::Builder(40, 30, drag ? "Dragon Cave" : "Cyclop's Cave"),
+      LevelMaker::cavernLevel(CreatureFactory::singleType(Tribe::monster,
+          drag ? CreatureId::DRAGON : CreatureId::CYCLOPS),
+          SquareType::MUD_WALL, SquareType::MUD, StairLook::NORMAL, {StairKey::DRAGON}, {}));
   addLink(StairDirection::DOWN, StairKey::CRYPT, top, c1);
   addLink(StairDirection::UP, StairKey::PYRAMID, top, p1);
   addLink(StairDirection::UP, StairKey::PYRAMID, p1, p2);
   addLink(StairDirection::DOWN, StairKey::CASTLE_CELLAR, top, cellar);
+  addLink(StairDirection::DOWN, StairKey::DRAGON, top, dragon);
   return top;
 }
 
@@ -168,7 +175,9 @@ Model* Model::heroModel(View* view, const string& heroName) {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
-      ItemId::TELEPATHY_HELM,
+      ItemId::WORD_OF_POWER_SCROLL,
+      ItemId::WORD_OF_POWER_SCROLL,
+      ItemId::WORD_OF_POWER_SCROLL,
       ItemId::LEATHER_ARMOR, ItemId::LEATHER_HELM});
   for (int i : Range(Random.getRandom(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));

@@ -8,7 +8,7 @@ class Creature;
 class Attack {
   public:
   Attack(const Creature* attacker, AttackLevel level, AttackType type, int toHit, int strength,
-      bool back, Optional<EffectType> effect);
+      bool back, Optional<EffectType> effect = Nothing());
 
   const Creature* getAttacker() const;
   int getStrength() const;

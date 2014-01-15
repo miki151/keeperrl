@@ -139,6 +139,11 @@ void Creature::makeMove() {
     spendTime(1);
     return;
   }
+  if (stunned) {
+    spendTime(1);
+    stunned = false;
+    return;
+  }
   updateVisibleEnemies();
   if (swapPositionCooldown)
     --swapPositionCooldown;
@@ -510,6 +515,11 @@ bool Creature::isPoisoned() const {
   return poisoned;
 }
 
+void Creature::makeStunned() {
+  you(MsgType::ARE, "stunned");
+  stunned = true;
+}
+
 void Creature::rage(double time) {
   if (sleeping)
     return;
@@ -800,6 +810,7 @@ static string getAttackParam(AttackType type) {
     case AttackType::BITE: return "bite";
     case AttackType::HIT: return "hit";
     case AttackType::SHOOT: return "shot";
+    case AttackType::SPELL: return "spell";
   }
   return "";
 }
@@ -944,6 +955,9 @@ bool Creature::dodgeAttack(const Attack& attack) {
 bool Creature::takeDamage(const Attack& attack) {
   if (sleeping)
     wakeUp();
+  if (const Creature* c = attack.getAttacker())
+    if (!contains(privateEnemies, c))
+      privateEnemies.push_back(c);
   int defense = getAttr(AttrType::DEFENSE);
   Debug() << getTheName() << " attacked by " << attack.getAttacker()->getName() << " damage " << attack.getStrength() << " defense " << defense;
   if (attack.getStrength() > defense) {
@@ -955,54 +969,56 @@ bool Creature::takeDamage(const Attack& attack) {
     if (!undead)
       bleed(dam);
     if (!noBody) {
-      BodyPart part = attack.inTheBack() ? BodyPart::BACK : getBodyPart(attack.getLevel());
-      switch (part) {
-        case BodyPart::BACK:
-          youHit(part, attack.getType());
-          break;
-        case BodyPart::WING:
-          if (dam >= 0.3 && wings > injuredWings) {
-            youHit(BodyPart::WING, attack.getType()); 
-            injureWing(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
-            if (health <= 0)
-              health = 0.01;
-            return false;
-          }
-        case BodyPart::ARM:
-          if (dam >= 0.5 && arms > injuredArms) {
-            youHit(BodyPart::ARM, attack.getType()); 
-            injureArm(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
-            if (health <= 0)
-              health = 0.01;
-            return false;
-          }
-        case BodyPart::LEG:
-          if (dam >= 0.8 && legs > injuredLegs) {
-            youHit(BodyPart::LEG, attack.getType()); 
-            injureLeg(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
-            if (health <= 0)
-              health = 0.01;
-            return false;
-          }
-        case BodyPart::HEAD:
-          if (dam >= 0.8 && heads > injuredHeads) {
-            youHit(BodyPart::HEAD, attack.getType()); 
-            injureHead(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
-            if (!undead) {
-              you(MsgType::DIE, "");
-              die(attack.getAttacker());
+      if (attack.getType() != AttackType::SPELL) {
+        BodyPart part = attack.inTheBack() ? BodyPart::BACK : getBodyPart(attack.getLevel());
+        switch (part) {
+          case BodyPart::BACK:
+            youHit(part, attack.getType());
+            break;
+          case BodyPart::WING:
+            if (dam >= 0.3 && wings > injuredWings) {
+              youHit(BodyPart::WING, attack.getType()); 
+              injureWing(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
+              if (health <= 0)
+                health = 0.01;
+              return false;
             }
-            return true;
-          }
-        case BodyPart::TORSO:
-          if (dam >= 1.5) {
-            youHit(BodyPart::TORSO, attack.getType());
-            if (!undead)
-              you(MsgType::DIE, "");
-            die(attack.getAttacker());
-            return true;
-          }
-          break;
+          case BodyPart::ARM:
+            if (dam >= 0.5 && arms > injuredArms) {
+              youHit(BodyPart::ARM, attack.getType()); 
+              injureArm(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
+              if (health <= 0)
+                health = 0.01;
+              return false;
+            }
+          case BodyPart::LEG:
+            if (dam >= 0.8 && legs > injuredLegs) {
+              youHit(BodyPart::LEG, attack.getType()); 
+              injureLeg(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
+              if (health <= 0)
+                health = 0.01;
+              return false;
+            }
+          case BodyPart::HEAD:
+            if (dam >= 0.8 && heads > injuredHeads) {
+              youHit(BodyPart::HEAD, attack.getType()); 
+              injureHead(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
+              if (!undead) {
+                you(MsgType::DIE, "");
+                die(attack.getAttacker());
+              }
+              return true;
+            }
+          case BodyPart::TORSO:
+            if (dam >= 1.5) {
+              youHit(BodyPart::TORSO, attack.getType());
+              if (!undead)
+                you(MsgType::DIE, "");
+              die(attack.getAttacker());
+              return true;
+            }
+            break;
+        }
       }
     } else {
       you(MsgType::TURN, "whisp of smoke");
@@ -1055,6 +1071,14 @@ string sizeStr(CreatureSize s) {
   return 0;
 }
 
+string adjectives(CreatureSize s, bool undead, bool noBody) {
+  vector<string> ret {sizeStr(s)};
+  if (undead)
+    ret.push_back("undead");
+  if (noBody)
+    ret.push_back("body-less");
+  return combine(ret);
+}
 
 string limbsStr(int arms, int legs, int wings) {
   vector<string> ret;
@@ -1104,9 +1128,19 @@ string Creature::getDescription() const {
   else
   if (Item* item = getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))
     weapon = " It's wielding " + item->getAName() + ".";*/
-  return getTheName() + " is a " + sizeStr(*size) + (isHumanoid() ? " humanoid creature" : " beast") +
+  string attack;
+  if (attackEffect) {
+    switch (*attackEffect) {
+      case EffectType::POISON: attack = "poison"; break;
+      case EffectType::FIRE: attack = "fire"; break;
+      default: Debug(FATAL) << "Unhandled monster attack " << int(*attackEffect);
+    }
+    attack = " It has a " + attack + " attack.";
+  }
+  return getTheName() + " is a " + adjectives(*size, undead, noBody) +
+      (isHumanoid() ? " humanoid creature" : " beast") +
       (!isHumanoid() ? limbsStr(arms, legs, wings) : (wings ? " with wings" : "")) + ". " +
-     "It is " + attrStr(*strength > 16, *dexterity > 16, *speed > 100) + "." + weapon;
+     "It is " + attrStr(*strength > 16, *dexterity > 16, *speed > 100) + "." + weapon + attack;
 }
 
 void Creature::setSpeed(double value) {
@@ -1621,6 +1655,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::HIT: you(MsgType::ARE, "hit in the back of the head!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the " + 
                                      chooseRandom<string>({"back", "neck"})); break;
+          default: Debug(FATAL) << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::HEAD: 
@@ -1633,6 +1668,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the head!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the eye!"); break;
+          default: Debug(FATAL) << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::TORSO:
@@ -1645,6 +1681,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the chest!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "stomach receives a deadly blow!"); break;
+          default: Debug(FATAL) << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::ARM:
@@ -1656,6 +1693,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "arm is smashed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the arm!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "arm is broken!"); break;
+          default: Debug(FATAL) << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::WING:
@@ -1667,6 +1705,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "wing is smashed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the wing!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "wing is broken!"); break;
+          default: Debug(FATAL) << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::LEG:
@@ -1678,6 +1717,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "knee is crushed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the leg!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "leg is broken!"); break;
+          default: Debug(FATAL) << "Unhandled attack type " << int(type);
         }
         break;
   }

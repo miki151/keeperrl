@@ -230,8 +230,10 @@ Tile getSprite(ViewId id) {
     case ViewId::LOW_ROCK_WALL: return getWallTile(21, ViewId::PATH);
     case ViewId::HELL_WALL: return getWallTile(22, ViewId::PATH);
     case ViewId::CASTLE_WALL: return getWallTile(5);
+    case ViewId::MUD_WALL: return getWallTile(13);
     case ViewId::SECRETPASS: return Tile(0, 15, 1);
     case ViewId::DUNGEON_ENTRANCE: return Tile(15, 2, 2, getSprite(ViewId::HILL));
+    case ViewId::DUNGEON_ENTRANCE_MUD: return Tile(19, 2, 2, getSprite(ViewId::MUD));
     case ViewId::DOWN_STAIRCASE: return Tile(8, 0, 1);
     case ViewId::UP_STAIRCASE: return Tile(7, 0, 1, getSprite(ViewId::FLOOR));
     case ViewId::DOWN_STAIRCASE_CELLAR: return Tile(8, 21, 1);
@@ -246,6 +248,8 @@ Tile getSprite(ViewId id) {
     case ViewId::GHOST: return Tile(6, 16);
     case ViewId::DEVIL: return Tile(17, 18);
     case ViewId::DARK_KNIGHT: return Tile(12, 14);
+    case ViewId::DRAGON: return Tile(3, 18);
+    case ViewId::CYCLOPS: return Tile(10, 14);
     case ViewId::KNIGHT: return Tile(0, 0);
     case ViewId::CASTLE_GUARD: return Tile(15, 2);
     case ViewId::AVATAR: return Tile(9, 0);
@@ -395,6 +399,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::MUD: return Tile(0x1d0f0, brown, true);
     case ViewId::GRASS: return Tile(0x1d0f0, green, true);
     case ViewId::CASTLE_WALL: return Tile('#', lightGray);
+    case ViewId::MUD_WALL: return Tile('#', lightBrown);
     case ViewId::WALL: return Tile('#', lightGray);
     case ViewId::MOUNTAIN: return Tile(0x25ee, darkGray, true);
     case ViewId::GOLD_ORE: return Tile(L'⁂', yellow, true);
@@ -407,6 +412,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::HELL_WALL: return Tile('#', red);
     case ViewId::SECRETPASS: return Tile('#', lightGray);
     case ViewId::DUNGEON_ENTRANCE:
+    case ViewId::DUNGEON_ENTRANCE_MUD:
     case ViewId::DOWN_STAIRCASE_CELLAR:
     case ViewId::DOWN_STAIRCASE: return Tile(0x2798, almostWhite, true);
     case ViewId::UP_STAIRCASE_CELLAR:
@@ -419,6 +425,8 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::GOBLIN: return Tile('o', darkBlue);
     case ViewId::BANDIT: return Tile('@', darkBlue);
     case ViewId::DARK_KNIGHT: return Tile('@', purple);
+    case ViewId::DRAGON: return Tile('D', green);
+    case ViewId::CYCLOPS: return Tile('C', green);
     case ViewId::GHOST: return Tile('&', white);
     case ViewId::DEVIL: return Tile('&', purple);
     case ViewId::CASTLE_GUARD: return Tile('@', lightGray);
@@ -698,13 +706,16 @@ void WindowView::initialize() {
   CHECK(tileImage5.loadFromFile("tiles5_int.png"));
   Image tileImage6;
   CHECK(tileImage6.loadFromFile("tiles6_int.png"));
-  tiles.resize(6);
+  Image tileImage7;
+  CHECK(tileImage7.loadFromFile("tiles7_int.png"));
+  tiles.resize(7);
   tiles[0].loadFromImage(tileImage);
   tiles[1].loadFromImage(tileImage2);
   tiles[2].loadFromImage(tileImage3);
   tiles[3].loadFromImage(tileImage4);
   tiles[4].loadFromImage(tileImage5);
   tiles[5].loadFromImage(tileImage6);
+  tiles[6].loadFromImage(tileImage7);
   //for (Texture& tex : tiles)
   //  tex.setSmooth(true);
 }
@@ -1215,6 +1226,7 @@ Optional<ConnectionId> getConnectionId(ViewId id) {
     case ViewId::LOW_ROCK_WALL:
     case ViewId::WOOD_WALL:
     case ViewId::CASTLE_WALL:
+    case ViewId::MUD_WALL:
     case ViewId::WALL: return ConnectionId::WALL;
     case ViewId::MAGMA:
     case ViewId::WATER: return ConnectionId::WATER;
@@ -1383,6 +1395,24 @@ void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
       index.removeObject(object.layer());
     index.insert(object);
   }
+}
+
+void WindowView::animation(Vec2 pos, AnimationId id) {
+  CHECK(id == AnimationId::EXPLOSION);
+  Vec2 wpos = mapLayout->projectOnScreen(pos);
+  refreshScreen(false);
+  drawSprite(wpos.x, wpos.y, 510, 628, 36, 36, tiles[6]);
+  drawAndClearBuffer();
+  sf::sleep(sf::milliseconds(50));
+  refreshScreen(false);
+  drawSprite(wpos.x - 17, wpos.y - 17, 683, 611, 70, 70, tiles[6]);
+  drawAndClearBuffer();
+  sf::sleep(sf::milliseconds(50));
+  refreshScreen(false);
+  drawSprite(wpos.x - 29, wpos.y - 29, 577, 598, 94, 94, tiles[6]);
+  drawAndClearBuffer();
+  sf::sleep(sf::milliseconds(50));
+  refreshScreen(true);
 }
 
 void WindowView::drawMap() {

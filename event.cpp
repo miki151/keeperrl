@@ -47,6 +47,12 @@ void EventListener::addThrowEvent(const Level* level, const Creature* thrower,
       l->onThrowEvent(thrower, item, trajectory);
 }
   
+void EventListener::addExplosionEvent(const Level* level, Vec2 pos) {
+  for (EventListener* l : listeners)
+    if (l->getListenerLevel() == level || l->getListenerLevel() == nullptr)
+      l->onExplosionEvent(level, pos);
+}
+
 void EventListener::addTriggerEvent(const Level* level, Vec2 pos) {
   for (EventListener* l : listeners)
     if (l->getListenerLevel() == level || l->getListenerLevel() == nullptr)

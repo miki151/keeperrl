@@ -28,6 +28,7 @@ class WindowView: public View {
   virtual Optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
+  virtual void animation(Vec2 pos, AnimationId) override;
 
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<string>& options, bool scrollDown) override;

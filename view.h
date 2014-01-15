@@ -73,6 +73,9 @@ class View {
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;
 
+  /** Draws an special animation on the map.*/
+  virtual void animation(Vec2 pos, AnimationId) = 0;
+
   /** Returns the current real time in milliseconds. The clock is stopped on blocking keyboard input,
       so it can be used to sync game time in real-time mode.*/
   virtual int getTimeMilli() = 0;

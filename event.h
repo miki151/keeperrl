@@ -10,6 +10,7 @@ class EventListener {
   virtual void onKillEvent(const Creature* victim, const Creature* killer) {}
   virtual void onAttackEvent(const Creature* victim, const Creature* attacker) {}
   virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) {}
+  virtual void onExplosionEvent(const Level* level, Vec2 pos) {}
   virtual void onTriggerEvent(const Level*, Vec2 pos) {}
   virtual void onSquareReplacedEvent(const Level*, Vec2 pos) {}
   virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) {}
@@ -20,6 +21,7 @@ class EventListener {
   static void addKillEvent(const Creature* victim, const Creature* killer);
   static void addAttackEvent(const Creature* victim, const Creature* attacker);
   static void addThrowEvent(const Level*, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory);
+  static void addExplosionEvent(const Level* level, Vec2 pos);
   static void addTriggerEvent(const Level*, Vec2 pos);
   static void addSquareReplacedEvent(const Level*, Vec2 pos);
   static void addChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos);

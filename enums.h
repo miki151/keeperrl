@@ -55,7 +55,7 @@ enum class MsgType {
     KILLED_BY,
     MISS_ATTACK}; //
 enum class BodyPart { HEAD, TORSO, ARM, WING, LEG, BACK};
-enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, HIT, SHOOT};
+enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, HIT, SHOOT, SPELL};
 enum class AttackLevel { LOW, MIDDLE, HIGH };
 enum class AttrType { STRENGTH, DAMAGE, TO_HIT, THROWN_DAMAGE, THROWN_TO_HIT, DEXTERITY, DEFENSE, SPEED, INV_LIMIT};
 enum class ItemType { WEAPON, RANGED_WEAPON, AMMO, ARMOR, SCROLL, POTION, BOOK, AMULET, TOOL, OTHER, GOLD, FOOD,
@@ -77,6 +77,7 @@ enum class SquareAttrib {
   LAKE,
   RIVER,
   ROAD_CUT_THRU,
+  NO_ROAD,
   ROOM,
   COLLECTIVE_START,
   COLLECTIVE_STAIRS,
@@ -88,7 +89,7 @@ ENUM_HASH(SquareAttrib);
 enum class Dir { N, S, E, W, NE, NW, SE, SW };
 ENUM_HASH(Dir);
 
-enum class StairKey { DWARF, CRYPT, GOBLIN, PLAYER_SPAWN, PYRAMID, TOWER, CASTLE_CELLAR };
+enum class StairKey { DWARF, CRYPT, GOBLIN, PLAYER_SPAWN, PYRAMID, TOWER, CASTLE_CELLAR, DRAGON };
 enum class StairDirection { UP, DOWN };
 
 enum class CreatureId {
@@ -102,6 +103,8 @@ enum class CreatureId {
     GHOST,
     DEVIL,
     DARK_KNIGHT,
+    DRAGON,
+    CYCLOPS,
 
     ZOMBIE,
     VAMPIRE,
@@ -183,6 +186,7 @@ enum class ItemId { KNIFE,
   ENHANCE_A_SCROLL,
   ENHANCE_W_SCROLL,
   FIRE_SPHERE_SCROLL,
+  WORD_OF_POWER_SCROLL,
   HEALING_POTION,
   SLEEP_POTION,
   BLINDNESS_POTION,
@@ -229,6 +233,7 @@ enum class StairLook {
   CELLAR,
   PYRAMID,
   DUNGEON_ENTRANCE,
+  DUNGEON_ENTRANCE_MUD,
 };
 
 enum class SettlementType {
@@ -255,6 +260,8 @@ enum class ViewId {
   HELL_HOUND,
   CHICKEN,
   DARK_KNIGHT,
+  DRAGON,
+  CYCLOPS,
   GHOST,
   DEVIL,
   KNIGHT,
@@ -315,8 +322,10 @@ enum class ViewId {
   HELL_WALL,
   LOW_ROCK_WALL,
   CASTLE_WALL,
+  MUD_WALL,
   SECRETPASS,
   DUNGEON_ENTRANCE,
+  DUNGEON_ENTRANCE_MUD,
   DOWN_STAIRCASE,
   UP_STAIRCASE,
   DOWN_STAIRCASE_HELL,
@@ -427,6 +436,7 @@ enum class SquareType {
   BLACK_WALL,
   YELLOW_WALL,
   CASTLE_WALL,
+  MUD_WALL,
   MOUNTAIN,
   GLACIER,
   HILL,
@@ -470,6 +480,7 @@ inline bool isWall(SquareType type) {
     case SquareType::BLACK_WALL:
     case SquareType::YELLOW_WALL:
     case SquareType::WOOD_WALL:
+    case SquareType::MUD_WALL:
     case SquareType::CASTLE_WALL: return true;
     default: return false;
   }
@@ -500,8 +511,11 @@ enum class EffectType {
     GUARDING_BOULDER,
     EMIT_POISON_GAS,
     POISON,
+    WORD_OF_POWER,
 };
 
-
+enum class AnimationId {
+  EXPLOSION,
+};
 
 #endif

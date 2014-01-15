@@ -9,7 +9,7 @@ const double decrease = 0.001;
 const double spread = 0.10;
 
 void PoisonGas::tick(Level* level, Vec2 pos) {
-  if (amount < 0.00001) {
+  if (amount < 0.1) {
     amount = 0;
     return;
   }

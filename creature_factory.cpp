@@ -534,6 +534,16 @@ class VillageElder : public Creature {
   const Creature* killCreature = nullptr;
 };
 
+class DragonController : public Monster {
+  public:
+  using Monster::Monster;
+
+  virtual void makeMove() override {
+    Effect::applyToCreature(creature, EffectType::EMIT_POISON_GAS, EffectStrength::WEAK);
+    Monster::makeMove();
+  }
+};
+
 PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemId>& items) {
   for (ItemId item : items) {
     PItem it = ItemFactory::fromId(item);
@@ -625,7 +635,7 @@ CreatureFactory CreatureFactory::crypt() {
 }
 
 CreatureFactory CreatureFactory::hellLevel() {
-  return CreatureFactory(Tribe::monster, { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
+  return CreatureFactory(Tribe::monster, { CreatureId::DRAGON}, { 1}, {CreatureId::DARK_KNIGHT});
 }
 
 CreatureFactory CreatureFactory::collectiveUndead() {
@@ -771,15 +781,30 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
           c.chatReactionFriendly = c.chatReactionHostile = "The " + name + " snarls.";
         }
         c.name = name;
-        c.wings = r.roll(4) ? 2 : 0;
-        if (c.wings)
-          c.flyer = true;
-        if (*c.humanoid == false) {
-          c.arms = r.roll(2) ? 2 : 0;
-          c.legs = r.getRandom(3) * 2;
-          *c.strength += 5;
-          *c.dexterity += 5;
-          c.barehandedDamage += 5;
+        if (Random.roll(10)) {
+          c.noBody = true;
+          c.wings = c.arms = c.legs = 0;
+          *c.strength -= 5;
+          *c.dexterity += 10;
+          c.barehandedDamage += 10;
+        } else {
+          c.wings = r.roll(4) ? 2 : 0;
+          if (c.wings)
+            c.flyer = true;
+          if (*c.humanoid == false) {
+            c.arms = r.roll(2) ? 2 : 0;
+            c.legs = r.getRandom(3) * 2;
+            *c.strength += 5;
+            *c.dexterity += 5;
+            c.barehandedDamage += 5;
+            switch (Random.getRandom(8)) {
+              case 0: c.attackEffect = EffectType::POISON; break;
+              case 1: c.attackEffect = EffectType::FIRE; c.barehandedAttack = AttackType::HIT; break;
+              default: break;
+            }
+          }
+          if (Random.roll(10))
+            c.undead = true;
         }
         if (r.roll(3))
           c.skills.insert(Skill::swimming);
@@ -875,6 +900,30 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all dungeons";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "dark knight";), tribe, factory);
+    case CreatureId::CYCLOPS: return get(ViewId::CYCLOPS, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 25;
+                                c.dexterity = 18;
+                                c.barehandedDamage = 10;
+                                c.humanoid = true;
+                                c.weight = 150;
+                                c.firstName = NameGenerator::demonNames.getNext();
+                                c.name = "cyclops";), tribe, factory);
+    case CreatureId::DRAGON: return get(ViewId::DRAGON, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 27;
+                                c.dexterity = 15;
+                                c.barehandedDamage = 10;
+                                c.humanoid = false;
+                                c.weight = 1000;
+                                c.wings = 2;
+                                c.breathing = false;
+                                c.firstName = NameGenerator::demonNames.getNext();
+                                c.name = "dragon";), tribe, ControllerFactory([=](Creature* c) {
+                                      return new DragonController(c, actorFactory);
+                                    }));
     case CreatureId::KNIGHT: return get(ViewId::KNIGHT, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;

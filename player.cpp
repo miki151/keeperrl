@@ -22,6 +22,14 @@ void Player::onThrowEvent(const Creature* thrower, const Item* item, const vecto
       return;
     }
 }
+
+void Player::onExplosionEvent(const Level* level, Vec2 pos) {
+  if (creature->canSee(pos))
+    view->animation(pos, AnimationId::EXPLOSION);
+  else
+    creature->privateMessage("BOOM!");
+}
+
 ControllerFactory Player::getFactory(View* f, map<const Level*, MapMemory>* levelMemory) {
   return ControllerFactory([=](Creature* c) { return new Player(c, f, true, levelMemory);});
 }

@@ -52,10 +52,49 @@ map<EffectStrength, int> poisonTime {
     {EffectStrength::NORMAL, 60},
     {EffectStrength::STRONG, 20}};
 
+map<EffectStrength, double> gasAmount { 
+    {EffectStrength::WEAK, 0.4},
+    {EffectStrength::NORMAL, 2},
+    {EffectStrength::STRONG, 5}};
+
+map<EffectStrength, double> wordOfPowerDist { 
+    {EffectStrength::WEAK, 1},
+    {EffectStrength::NORMAL, 3},
+    {EffectStrength::STRONG, 10}};
+
+static void wordOfPower(Creature* c, EffectStrength strength) {
+  Level* l = c->getLevel();
+  EventListener::addExplosionEvent(c->getLevel(), c->getPosition());
+  for (Vec2 v : Vec2::directions8(true)) {
+    if (Creature* other = c->getSquare(v)->getCreature()) {
+      if (other->isStationary())
+        continue;
+      if (!other->isDead()) {
+        int dist = 0;
+        for (int i : Range(1, wordOfPowerDist.at(strength)))
+          if (l->canMoveCreature(other, v * i))
+            dist = i;
+          else
+            break;
+        if (dist > 0) {
+          l->moveCreature(other, v * dist);
+          other->you(MsgType::ARE, "pushed back");
+        }
+        other->makeStunned();
+        other->takeDamage(Attack(c, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 25, false));
+      }
+    }
+    for (PItem& it : c->getSquare(v)->removeItems(c->getSquare(v)->getItems())) {
+      Item* ref = it.get();
+      l->throwItem(std::move(it), Attack(c, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}), ref->getAttackType(), 15, 15, false), wordOfPowerDist.at(strength), c->getPosition(), v);
+    }
+  }
+}
+
 static void emitPoisonGas(Creature* c, EffectStrength strength) {
   for (Vec2 v : Vec2::directions8())
-    c->getSquare(v)->addPoisonGas(1);
-  c->getSquare()->addPoisonGas(2);
+    c->getSquare(v)->addPoisonGas(gasAmount.at(strength) / 2);
+  c->getSquare()->addPoisonGas(gasAmount.at(strength));
 }
 
 static void guardingBuilder(Creature* c) {
@@ -207,6 +246,7 @@ static void rollingBoulder(Creature* c) {
 
 void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strength) {
   switch (type) {
+    case EffectType::WORD_OF_POWER: wordOfPower(c, strength); break;
     case EffectType::POISON: c->poison(poisonTime.at(strength)); break;
     case EffectType::EMIT_POISON_GAS: emitPoisonGas(c, strength); break;
     case EffectType::GUARDING_BOULDER: guardingBuilder(c); break;

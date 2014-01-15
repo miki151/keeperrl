@@ -155,6 +155,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   void poison(double time);
   void curePoisoning();
   bool isPoisoned() const;
+  void makeStunned();
   void giveStrBonus(double time);
   void giveDexBonus(double time);
   bool canFlyAway() const;
@@ -272,6 +273,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   TimerVar blinded;
   TimerVar invisible;
   TimerVar poisoned;
+  bool stunned = false;
   int expLevel = 1;
   vector<const Creature*> unknownAttacker;
   vector<const Creature*> visibleEnemies;

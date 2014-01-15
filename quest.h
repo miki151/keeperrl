@@ -6,7 +6,7 @@
 
 #include "util.h"
 
-enum class QuestName { GOLD };
+enum class QuestName { POKPOK };
 
 class Quest {
   public:

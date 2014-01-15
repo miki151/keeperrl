@@ -26,7 +26,7 @@ void Quest::finish() {
 }
 
 void Quest::initialize() {
-  quests.insert(make_pair(QuestName::GOLD, Quest()));
+  quests.insert(make_pair(QuestName::POKPOK, Quest()));
 }
 
 Quest& Quest::get(QuestName name) {
