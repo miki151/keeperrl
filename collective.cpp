@@ -28,8 +28,14 @@ vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo(BuildInfo::GUARD_POST),
 };
 
+#ifndef DEBUG
+const int creditVal = 50;
+#else
+const int creditVal = 500;
+#endif
+
 Collective::Collective(CreatureFactory factory, CreatureFactory undead) 
-    : minionFactory(factory), undeadFactory(undead), credit(50) {
+    : minionFactory(factory), undeadFactory(undead), credit(creditVal) {
   EventListener::addListener(this);
   // init the map so the values can be safely read with .at()
   for (BuildInfo info : buildInfo)

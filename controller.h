@@ -27,6 +27,28 @@ class Controller {
   virtual ~Controller() {}
 };
 
+class DoNothingController : public Controller {
+  virtual bool isPlayer() const override {
+    return false;
+  }
+
+  virtual void you(MsgType type, const string& param) const override {
+  }
+
+  virtual void you(const string& param) const override {
+  }
+
+  virtual const MapMemory& getMemory(const Level* l = nullptr) const override {
+    return MapMemory::empty();
+  }
+
+  virtual void makeMove() override {
+  }
+
+  virtual void onBump(Creature*) override {
+  }
+};
+
 class ControllerFactory {
   public:
   ControllerFactory(function<Controller* (Creature*)>);

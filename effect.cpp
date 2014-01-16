@@ -62,6 +62,66 @@ map<EffectStrength, double> wordOfPowerDist {
     {EffectStrength::NORMAL, 3},
     {EffectStrength::STRONG, 10}};
 
+class IllusionController : public DoNothingController {
+  public:
+  IllusionController(Creature* c, double deathT) : creature(c), deathTime(deathT) {}
+
+  void kill() {
+    creature->globalMessage("The illusion disappears.");
+    creature->die();
+  }
+
+  virtual void onBump(Creature*) override {
+    kill();
+  }
+
+  virtual void makeMove() override {
+    if (creature->getTime() >= deathTime)
+      kill();
+    creature->wait();
+  }
+
+  private:
+  Creature* creature;
+  double deathTime;
+};
+
+static void deception(Creature* c) {
+  int numCreated = 0;
+  int radius = 3;
+  vector<Vec2> area = Rectangle(-radius, -radius, radius, radius).getAllSquares();
+  int number = Random.getRandom(3, 7);
+  for (int i : Range(number)) {
+    ViewObject viewObject(c->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
+    viewObject.setInvisible(true);
+    PCreature illusion = PCreature(new Creature(viewObject, c->getTribe(), CATTR(
+          c.speed = 100;
+          c.weight = 1;
+          c.size = CreatureSize::LARGE;
+          c.strength = 1;
+          c.dexterity = 1;
+          c.stationary = true;
+          c.permanentlyBlind = true;
+          c.noSleep = true;
+          c.breathing = false;
+          c.noBody = true;
+          c.humanoid = true;
+          c.name = "illusion";),
+        ControllerFactory([c] (Creature* o) { return new IllusionController(o, c->getTime()
+            + Random.getRandom(5, 10));})));
+    for (Vec2 v : randomPermutation(area))
+      if (c->getSquare(v)->canEnter(illusion.get())) {
+        ++numCreated;
+        c->getLevel()->addCreature(c->getPosition() + v, std::move(illusion));
+        break;
+      }
+  }
+ /* if (numCreated == 1)
+    c->privateMessage("An optical illusion of yourself appears.");
+  else if (numCreated > 1)
+    c->privateMessage("Optical illusions of yourself appear.");*/
+}
+
 static void wordOfPower(Creature* c, EffectStrength strength) {
   Level* l = c->getLevel();
   EventListener::addExplosionEvent(c->getLevel(), c->getPosition());
@@ -246,6 +306,7 @@ static void rollingBoulder(Creature* c) {
 
 void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strength) {
   switch (type) {
+    case EffectType::DECEPTION: deception(c); break;
     case EffectType::WORD_OF_POWER: wordOfPower(c, strength); break;
     case EffectType::POISON: c->poison(poisonTime.at(strength)); break;
     case EffectType::EMIT_POISON_GAS: emitPoisonGas(c, strength); break;

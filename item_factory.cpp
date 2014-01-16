@@ -300,7 +300,8 @@ ItemFactory ItemFactory::villageShop() {
       {ItemId::IDENTIFY_SCROLL, 5 },
       {ItemId::FIRE_SCROLL, 5 },
       {ItemId::FIRE_SPHERE_SCROLL, 5 },
-      {ItemId::WORD_OF_POWER_SCROLL, 2 },
+      {ItemId::WORD_OF_POWER_SCROLL, 1 },
+      {ItemId::DECEPTION_SCROLL, 2 },
       {ItemId::HEALING_POTION, 7 },
       {ItemId::SLEEP_POTION, 5 },
       {ItemId::SLOW_POTION, 5 },
@@ -391,6 +392,7 @@ ItemFactory ItemFactory::scrolls() {
       {ItemId::FIRE_SCROLL, 1 },
       {ItemId::FIRE_SPHERE_SCROLL, 1 },
       {ItemId::WORD_OF_POWER_SCROLL, 1 },
+      {ItemId::DECEPTION_SCROLL, 1 },
       {ItemId::PORTAL_SCROLL, 1 }});
 }
 
@@ -434,7 +436,8 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::IDENTIFY_SCROLL, 30 },
       {ItemId::FIRE_SCROLL, 30 },
       {ItemId::FIRE_SPHERE_SCROLL, 30 },
-      {ItemId::WORD_OF_POWER_SCROLL, 10 },
+      {ItemId::WORD_OF_POWER_SCROLL, 5 },
+      {ItemId::DECEPTION_SCROLL, 10 },
       {ItemId::HEALING_POTION, 50 },
       {ItemId::SLEEP_POTION, 50 },
       {ItemId::SLOW_POTION, 50 },
@@ -820,8 +823,10 @@ PItem ItemFactory::fromId(ItemId id) {
                                       "Increases the defense value of a piece of armor.");
     case ItemId::FIRE_SPHERE_SCROLL: return getScroll("sphaera ignis", EffectType::FIRE_SPHERE_PET, 100,
                                       "Creates a sphere of fire.");
-    case ItemId::WORD_OF_POWER_SCROLL: return getScroll("spiritus virtutis", EffectType::WORD_OF_POWER, 150,
+    case ItemId::WORD_OF_POWER_SCROLL: return getScroll("verbum potentiae", EffectType::WORD_OF_POWER, 150,
                                       "Causes an explosion of energy that throws back all sorrounding creatures.");
+    case ItemId::DECEPTION_SCROLL: return getScroll("deceptio", EffectType::DECEPTION, 150,
+                                      "Creates optical illusions of the spellcaster to decept enemies.");
     case ItemId::FIRE_SCROLL: return PItem(new FireScroll(
          ViewObject(ViewId::SCROLL, ViewLayer::ITEM, "Scroll"), ITATTR(
             i.name = "scroll labelled combustio";

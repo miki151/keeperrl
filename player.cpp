@@ -563,7 +563,7 @@ void Player::makeMove() {
       break;
     } else {
       const Creature *c = creature->getConstSquare(dir)->getCreature();
-      if (creature->canBumpInto(dir) && creature->isEnemy(c)) {
+      if (creature->canBumpInto(dir)) {
         creature->bumpInto(dir);
         break;
       }
