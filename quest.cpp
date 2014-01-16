@@ -2,35 +2,60 @@
 
 using namespace std;
 
-Quest::Quest() : state(State::CLOSED) {}
+class KillTribeQuest : public Quest, public EventListener {
+  public:
+  KillTribeQuest(Tribe* _tribe, string msg, bool onlyImp = false)
+      : tribe(_tribe), message(msg), onlyImportant(onlyImp) {
+    EventListener::addListener(this);
+  }
 
-bool Quest::isClosed() const {
-  return state == State::CLOSED;
+  virtual bool isFinished() const override {
+    for (const Creature* c : (onlyImportant ? tribe->getImportantMembers() : tribe->getMembers()))
+      if (!c->isDead())
+        return false;
+    return true;
+  }
+
+  virtual void onKillEvent(const Creature* member, const Creature* attacker) {
+    if (isFinished() && !notified) {
+      notified = true;
+      for (auto c : adventurers)
+        c->privateMessage(MessageBuffer::important("Your quest is finished."));
+    }
+  }
+
+  virtual string getMessage() const override {
+    return message;
+  }
+
+  private:
+  Tribe* tribe;
+  string message;
+  bool onlyImportant;
+  bool notified = false;
+};
+
+Quest* Quest::killTribeQuest(Tribe* tribe, string message, bool onlyImp) {
+  return new KillTribeQuest(tribe, message, onlyImp);
 }
 
-bool Quest::isOpen() const {
-  return state == State::OPEN;
-}
-
-bool Quest::isFinished() const {
-  return state == State::FINISHED;
-}
-
-void Quest::open() {
-  state = State::OPEN;
-}
-
-void Quest::finish() {
-  Debug() << "Quest finished";
-  state = State::FINISHED;
-}
+Quest* Quest::dragon;
+Quest* Quest::castleCellar;
+Quest* Quest::bandits;
 
 void Quest::initialize() {
-  quests.insert(make_pair(QuestName::POKPOK, Quest()));
+}
+  
+void Quest::addAdventurer(const Creature* c) {
+  adventurers.insert(c);
 }
 
-Quest& Quest::get(QuestName name) {
-  TRY(return quests.at(name), "Unknown quest.");
+void Quest::setLocation(const Location* loc) {
+  CHECK(location == nullptr) << "Attempted to set quest location for a second time";
+  location = loc;
 }
 
-map<QuestName, Quest> Quest::quests;
+const Location* Quest::getLocation() const {
+  return location;
+}
+

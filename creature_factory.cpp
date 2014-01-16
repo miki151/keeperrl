@@ -444,9 +444,9 @@ class ShopkeeperController : public Monster, public EventListener {
 
 class VillageElder : public Creature {
   public:
-  VillageElder(vector<pair<Skill*, double>> _teachSkills, vector<Tribe*> tribeQuest,
+  VillageElder(vector<pair<Skill*, double>> _teachSkills, vector<Quest*> _quests,
       const ViewObject& object, Tribe* t, const CreatureAttributes& attr, ControllerFactory factory) : 
-      Creature(object, t, attr, factory), teachSkills(_teachSkills), tribeQuestOrder(tribeQuest) {
+      Creature(object, t, attr, factory), teachSkills(_teachSkills), quests(_quests) {
     getTribe()->addImportantMember(this);
   }
 
@@ -468,32 +468,17 @@ class VillageElder : public Creature {
   }
 
   bool tribeQuest(Creature* who) {
-    for (Tribe* tribe : tribeQuestOrder) {
-      vector<const Creature*> elders = tribe->getImportantMembers();
-      CHECKEQ((int)elders.size(), 1);
-      if ((killCreature == elders[0] && killCreature->isDead()) || 
-          (bringItem && who->getEquipment().hasItem(bringItem))) {
-        who->privateMessage("\"" + who->getName() + ", you have fulfilled your quest.\"");
-        teach(who);
-        killCreature = nullptr;
-        bringItem = nullptr;
+    for (Quest* q : quests) {
+      if (q->isFinished()) {  
+        who->privateMessage("\"" + (*who->getFirstName()) + ", you have fulfilled your quest.\"");
+        removeElement(quests, q);
         return true;
       }
-      if (elders[0]->isDead())
-        continue;
-      Item* weapon = nullptr;
-      for (Item* it : elders[0]->getEquipment().getItems(Item::typePredicate(ItemType::WEAPON)))
-        if (weapon == nullptr || it->getModifier(AttrType::DAMAGE) > weapon->getModifier(AttrType::DAMAGE))
-          weapon = it;
-      who->privateMessage("\"The " + tribe->getName() + " have long been a nuisance for us.");
-      who->privateMessage(
-          "Go kill their leader, " + elders[0]->getTheName());
-      if (weapon) {
-        who->privateMessage("As a proof, bring me his weapon, the " + weapon->getArtifactName() + ".\"");
-        bringItem = weapon;
-      } else
-        killCreature = elders[0];
-      
+      string message = MessageBuffer::important(q->getMessage());
+      if (const Location* loc = q->getLocation())
+        message += " You need to head " + (loc->getBounds().middle() - getPosition()).getBearing() + " to find it.";
+      who->privateMessage(message);
+      q->addAdventurer(who);
       return true;
     }
     return false;
@@ -529,7 +514,7 @@ class VillageElder : public Creature {
 
   private:
   vector<pair<Skill*, double>> teachSkills;
-  vector<Tribe*> tribeQuestOrder;
+  vector<Quest*> quests;
   const Item* bringItem = nullptr;
   const Creature* killCreature = nullptr;
 };
@@ -730,6 +715,7 @@ CreatureFactory CreatureFactory::level(int num) {
       { CreatureId::GOBLIN, { 20, 20, 30, 50, 50, 100, 200, 400 }},
       { CreatureId::BILE_DEMON, { 0, 0, 100, 100, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::JACKAL, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
+      { CreatureId::SPIDER, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
       { CreatureId::RAT, { 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::BAT, { 100, 100, 200, 200, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::ZOMBIE, { 0, 0, 0, 30, 50, 100, 100, 100, 100, 100 }},
@@ -946,7 +932,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all dungeons";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "guard";), tribe, factory);
-    case CreatureId::AVATAR: return get(ViewId::AVATAR, CATTR(
+    case CreatureId::AVATAR: return PCreature(new VillageElder({}, {Quest::castleCellar, Quest::dragon},
+                                ViewObject(ViewId::AVATAR, ViewLayer::CREATURE, "Duke"), tribe, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
                                 c.strength = 23;
@@ -956,7 +943,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.weight = 120;
                                 c.chatReactionFriendly = "curses all dungeons";
                                 c.chatReactionHostile = "\"Die!\"";
-                                c.name = "Duke of " + NameGenerator::worldNames.getNext();), tribe, factory);
+                                c.name = "Duke of " + NameGenerator::worldNames.getNext();), factory));
     case CreatureId::ARCHER: return get(ViewId::ARCHER, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
@@ -1057,8 +1044,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = NameGenerator::aztecNames.getNext();), tribe, factory);
     case CreatureId::GREAT_GOBLIN: return PCreature(new VillageElder(
-                                {{Skill::mushrooms, 0.1}, {Skill::knifeThrowing, 0.6}},
-                                {Tribe::dwarven, Tribe::elven},
+                                {},
+                                {},
                                 ViewObject(ViewId::GREAT_GOBLIN, ViewLayer::CREATURE, "Great goblin"), Tribe::goblin,
                                 CATTR(
                                 c.speed = 100;
@@ -1172,8 +1159,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "dwarf";), Tribe::dwarven, factory);
     case CreatureId::DWARF_BARON: return PCreature(new VillageElder(
-                                {{Skill::twoHandedWeapon, 0.1}, {Skill::twoHandedWeapon, 0.6}},
-                                {Tribe::goblin, Tribe::elven},
+                                {},
+                                {},
                                 ViewObject(ViewId::DWARF_BARON, ViewLayer::CREATURE, "Dwarf baron"), Tribe::dwarven, 
                                 CATTR(
                                 c.speed = 80;
@@ -1213,8 +1200,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionHostile = "\"Help!\"";
                                 c.name = "elf child";), Tribe::elven, factory);
     case CreatureId::ELF_LORD: return PCreature(new VillageElder(
-                                {{Skill::ambush, 0.1}, {Skill::archery, 0.6}},
-                                {Tribe::dwarven, Tribe::goblin},
+                                {},
+                                {Quest::bandits},
                                 ViewObject(ViewId::ELF_LORD, ViewLayer::CREATURE, "Elf lord"), Tribe::elven, CATTR(
                                 c.speed = 140;
                                 c.size = CreatureSize::MEDIUM;
@@ -1323,6 +1310,20 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.animal = true;
                                 c.skills.insert(Skill::swimming);
                                 c.name = "rat";), Tribe::pest, factory);
+    case CreatureId::SPIDER: { bool spider = Random.roll(2);
+                             return get(spider ? ViewId::SPIDER : ViewId::SCORPION, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::SMALL;
+                                c.strength = 9;
+                                c.dexterity = 16;
+                                c.barehandedDamage = 12;
+                                c.attackEffect = EffectType::POISON;
+                                c.humanoid = false;
+                                c.weight = 0.3;
+                                c.legs = 8;
+                                c.arms = 0;
+                                c.animal = true;
+                                c.name = spider ? "spider" : "scorpion";), Tribe::pest, factory); }
     case CreatureId::SNAKE: return get(ViewId::SNAKE, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::SMALL;

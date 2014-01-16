@@ -1446,8 +1446,9 @@ MakerQueue* banditCamp() {
         SquareType::WOOD_WALL, SquareType::FLOOR, SquareType::DOOR,
         false, insideMakers, false));
   Location* loc = new Location("bandit hideout", "The bandits have robbed many travelers and townsfolk.");
+  Quest::bandits->setLocation(loc);
   queue->addMaker(new LocationMaker(loc));
-  queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::goblin, CreatureId::BANDIT), 3, 7,
+  queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::bandit, CreatureId::BANDIT), 3, 7,
         MonsterAIFactory::stayInLocation(loc), SquareType::GRASS));
   return queue;
 }
@@ -1484,9 +1485,10 @@ LevelMaker* LevelMaker::towerLevel(Optional<StairKey> down, Optional<StairKey> u
   return queue;
 }
 
-LevelMaker* makeDragonSwamp(StairKey down) {
+LevelMaker* makeDragonSwamp(StairKey down, Quest* dragonQuest) {
   MakerQueue* queue = new MakerQueue();
   Location* loc = new Location();
+  dragonQuest->setLocation(loc);
   queue->addMaker(new LocationMaker(loc));
   queue->addMaker(new Blob(SquareType::MUD));
   queue->addMaker(new Margin(3, new Stairs(StairDirection::DOWN, down, new TypePredicate(SquareType::MUD), Nothing(),
@@ -1508,6 +1510,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
     subMakers.push_back(lake);
   }
   LevelMaker* castleMaker = nullptr;
+  LevelMaker* elvenVillage = nullptr;
   for (SettlementInfo settlement : settlements) {
     MakerQueue* queue = 
         (settlement.type == SettlementType::CASTLE ?
@@ -1516,17 +1519,20 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
     if (settlement.type == SettlementType::CASTLE) {
       queue->addMaker(new StartingPos(new TypePredicate(SquareType::MUD)));
       castleMaker = queue;
+    } else
+    if (settlement.tribe == Tribe::elven) {
+    //  queue->addMaker(new StartingPos(new TypePredicate(SquareType::GRASS)));
+      elvenVillage = queue;
     }
     subMakers.push_back(queue);
     subSizes.emplace_back(30, 21);
   }
-  LevelMaker* swamp = makeDragonSwamp(StairKey::DRAGON);
+  LevelMaker* swamp = makeDragonSwamp(StairKey::DRAGON, Quest::dragon);
   subMakers.push_back(swamp);
   subSizes.emplace_back(10, 10);
-  for (int i : Range(Random.getRandom(3))) {
-    subMakers.push_back(banditCamp());
-    subSizes.emplace_back(12,8);
-  }
+  LevelMaker* bandits = banditCamp();
+  subMakers.push_back(bandits);
+  subSizes.emplace_back(12,8);
   int numCemeteries = 1;
   for (int i : Range(numCemeteries)) {
     Location* loc = new Location("old cemetery", "Terrible evil is said to be lurking there.");
@@ -1561,7 +1567,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   queue->addMaker(new Vegetation(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
   queue->addMaker(new Vegetation(0.2, 0.3, SquareType::MOUNTAIN, vegetationHigh, probs));
   queue->addMaker(new Margin(100, new RandomLocations(subMakers, subSizes,
-      new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND), new NoAttribPredicate(SquareAttrib::FOG)), true, {}, {{{castleMaker, swamp}, 50}})));
+      new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND), new NoAttribPredicate(SquareAttrib::FOG)), true, {{{elvenVillage, bandits}, 50}}, {{{castleMaker, swamp}, 50}, {{elvenVillage, bandits}, 100}})));
   MakerQueue* tower = new MakerQueue();
   tower->addMaker(towerLevel(StairKey::TOWER, Nothing()));
   tower->addMaker(new LocationMaker(Location::towerTopLocation()));
@@ -1723,7 +1729,7 @@ LevelMaker* LevelMaker::collectiveLevel(vector<StairKey> up, vector<StairKey> do
 LevelMaker* LevelMaker::cellarLevel(CreatureFactory cfactory, SquareType wallType, StairLook stairLook,
     vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
-  map<SquareType, pair<int, int> > featureCount { 
+  map<SquareType, pair<int, int> > featureCount {
       { SquareType::CHEST, make_pair(3, 7)}};
   queue->addMaker(new Empty(wallType));
   queue->addMaker(new RoomMaker(8, 15, 3, 5, wallType, wallType));

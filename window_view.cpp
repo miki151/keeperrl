@@ -280,6 +280,8 @@ Tile getSprite(ViewId id) {
     case ViewId::GNOME: return Tile(13, 8);
     case ViewId::LEPRECHAUN: return Tile(16, 8);
     case ViewId::RAT: return Tile(7, 12);
+    case ViewId::SPIDER: return Tile(6, 12);
+    case ViewId::SCORPION: return Tile(11, 18);
     case ViewId::SNAKE: return Tile(9, 12);
     case ViewId::VULTURE: return Tile(17, 12);
     case ViewId::BODY_PART: return Tile(9, 4, 3);
@@ -412,7 +414,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::HELL_WALL: return Tile('#', red);
     case ViewId::SECRETPASS: return Tile('#', lightGray);
     case ViewId::DUNGEON_ENTRANCE:
-    case ViewId::DUNGEON_ENTRANCE_MUD:
+    case ViewId::DUNGEON_ENTRANCE_MUD: Tile(0x2798, brown, true);
     case ViewId::DOWN_STAIRCASE_CELLAR:
     case ViewId::DOWN_STAIRCASE: return Tile(0x2798, almostWhite, true);
     case ViewId::UP_STAIRCASE_CELLAR:
@@ -459,7 +461,9 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::GNOME: return Tile('g', green);
     case ViewId::LEPRECHAUN: return Tile('l', green);
     case ViewId::RAT: return Tile('r', brown);
-    case ViewId::SNAKE: return Tile('s', yellow);
+    case ViewId::SPIDER: return Tile('s', brown);
+    case ViewId::SCORPION: return Tile('s', lightGray);
+    case ViewId::SNAKE: return Tile('S', yellow);
     case ViewId::VULTURE: return Tile('v', darkGray);
     case ViewId::BODY_PART: return Tile('%', red);
     case ViewId::BONE: return Tile('%', white);

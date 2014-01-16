@@ -6,22 +6,25 @@
 
 #include "util.h"
 
-enum class QuestName { POKPOK };
-
 class Quest {
   public:
-  Quest();
-  void open();
-  void finish();
-  bool isOpen() const;
-  bool isFinished() const;
-  bool isClosed() const;
-  static void initialize();
-  static Quest& get(QuestName);
+  virtual bool isFinished() const = 0;
+  virtual string getMessage() const = 0;
+  void addAdventurer(const Creature* c);
+  void setLocation(const Location*);
+  const Location* getLocation() const;
 
-  private:
-  enum class State { CLOSED, OPEN, FINISHED } state;
-  static map<QuestName, Quest> quests;
+  static void initialize();
+  static Quest* dragon;
+  static Quest* castleCellar;
+  static Quest* bandits;
+
+  static Quest* killTribeQuest(Tribe* tribe, string message, bool onlyImp = false);
+
+
+  protected:
+  unordered_set<const Creature*> adventurers;
+  const Location* location = nullptr;
 };
 
 #endif

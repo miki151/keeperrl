@@ -11,6 +11,7 @@ Creature* Creature::getDefault() {
 Creature::Creature(ViewObject o, Tribe* t, const CreatureAttributes& attr, ControllerFactory f) : CreatureAttributes(attr), viewObject(o), time(0), tribe(t), dead(false), lastTick(0), controller(f.get(this)) {
   static int cnt = 1;
   uniqueId = ++cnt;
+  tribe->addMember(this);
   for (Skill* skill : skills)
     skill->onTeach(this);
 }

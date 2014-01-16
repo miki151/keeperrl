@@ -534,7 +534,8 @@ void Player::makeMove() {
     case ActionId::IDLE: break;
   }
   if (creature->isSleeping() && creature->canPopController()) {
-    creature->popController();
+    if (view->yesOrNoPrompt("Do you want to leave your minion?"))
+      creature->popController();
     return;
   }
   for (Vec2 dir : direction)

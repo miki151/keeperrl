@@ -74,6 +74,15 @@ Model::Model(View* v) : view(v) {
 }
 
 Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
+  pair<CreatureId, string> castleNem1 = chooseRandom<pair<CreatureId, string>>(
+      {{CreatureId::GHOST, "The castle cellar is haunted. Go and kill the evil that is lurking there."},
+      {CreatureId::SPIDER, "The castle cellar is infested by vermin. Go and clean it up."}});
+  pair<CreatureId, string> castleNem2 = chooseRandom<pair<CreatureId, string>>(
+      {{CreatureId::DRAGON, "dragon"}, {CreatureId::CYCLOPS, "cyclops"}});
+  Quest::dragon = Quest::killTribeQuest(Tribe::dragon, "There is a " + castleNem2.second + 
+      " living in a cave. Kill it.");
+  Quest::castleCellar = Quest::killTribeQuest(Tribe::castleCellar, castleNem1.second);
+  Quest::bandits = Quest::killTribeQuest(Tribe::bandit, "There is a bandit camp nearby. Kill them all.");
   Level* top = buildLevel(
       Level::Builder(600, 600, "Wilderness"),
       LevelMaker::topLevel(CreatureFactory::forrest(), settlements),
@@ -89,19 +98,18 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
       LevelMaker::pyramidLevel(CreatureFactory::pyramid(2), {}, {StairKey::PYRAMID}));
   Level* cellar = buildLevel(
       Level::Builder(30, 20, "Cellar"),
-      LevelMaker::cellarLevel(CreatureFactory::singleType(Tribe::monster, CreatureId::GHOST),
+      LevelMaker::cellarLevel(CreatureFactory::singleType(Tribe::castleCellar, castleNem1.first),
           SquareType::LOW_ROCK_WALL, StairLook::CELLAR, {StairKey::CASTLE_CELLAR}, {}));
-  bool drag = false; // Random.roll(2);
   Level* dragon = buildLevel(
-      Level::Builder(40, 30, drag ? "Dragon Cave" : "Cyclop's Cave"),
-      LevelMaker::cavernLevel(CreatureFactory::singleType(Tribe::monster,
-          drag ? CreatureId::DRAGON : CreatureId::CYCLOPS),
+      Level::Builder(40, 30, capitalFirst(castleNem2.second) + "'s Cave"),
+      LevelMaker::cavernLevel(CreatureFactory::singleType(Tribe::dragon, castleNem2.first),
           SquareType::MUD_WALL, SquareType::MUD, StairLook::NORMAL, {StairKey::DRAGON}, {}));
   addLink(StairDirection::DOWN, StairKey::CRYPT, top, c1);
   addLink(StairDirection::UP, StairKey::PYRAMID, top, p1);
   addLink(StairDirection::UP, StairKey::PYRAMID, p1, p2);
   addLink(StairDirection::DOWN, StairKey::CASTLE_CELLAR, top, cellar);
-  addLink(StairDirection::DOWN, StairKey::DRAGON, top, dragon);
+  addLink(StairDirection::DOWN, StairKey::DRAGON, top, dragon); 
+
   return top;
 }
 

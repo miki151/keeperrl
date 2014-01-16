@@ -19,6 +19,9 @@ Tribe* const Tribe::human = new Tribe("humans", true);
 Tribe* const Tribe::goblin = new Tribe("goblins", true);
 Tribe* const Tribe::dwarven = new Tribe("dwarves", true);
 Tribe* const Tribe::player = new Tribe("", false);
+Tribe* const Tribe::dragon = new Tribe("", false);
+Tribe* const Tribe::castleCellar = new Tribe("", false);
+Tribe* const Tribe::bandit = new Tribe("", false);
 Tribe* const Tribe::killEveryone = new KillEveryone();
 
 Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
@@ -67,15 +70,21 @@ double Tribe::getMultiplier(const Creature* member) {
 
 
 void Tribe::onKillEvent(const Creature* member, const Creature* attacker) {
-  if (member->getTribe() != this || attacker == nullptr)
-    return;
-  initStanding(attacker);
-  standing[attacker] -= killPenalty * getMultiplier(member);
-  for (Tribe* t : enemyTribes)
-    if (t->diplomatic) {
-      t->initStanding(attacker);
-      t->standing[attacker] += killBonus * getMultiplier(member);
-    }
+  if (contains(members, member)) {
+    CHECK(member->getTribe() == this);
+    removeElement(members, member);
+    if (contains(importantMembers, member))
+      removeElement(importantMembers, member);
+    if (attacker == nullptr)
+      return;
+    initStanding(attacker);
+    standing[attacker] -= killPenalty * getMultiplier(member);
+    for (Tribe* t : enemyTribes)
+      if (t->diplomatic) {
+        t->initStanding(attacker);
+        t->standing[attacker] += killBonus * getMultiplier(member);
+      }
+  }
 }
 
 void Tribe::onAttackEvent(const Creature* member, const Creature* attacker) {
@@ -92,8 +101,16 @@ void Tribe::addImportantMember(const Creature* c) {
   importantMembers.push_back(c);
 }
 
+void Tribe::addMember(const Creature* c) {
+  members.push_back(c);
+}
+
 vector<const Creature*> Tribe::getImportantMembers() {
   return importantMembers;
+}
+
+vector<const Creature*> Tribe::getMembers() {
+  return members;
 }
 
 void Tribe::onItemsStolen(const Creature* attacker) {
@@ -104,18 +121,25 @@ void Tribe::onItemsStolen(const Creature* attacker) {
 }
 
 void Tribe::init() {
-  EventListener::addListener(goblin);
-  EventListener::addListener(dwarven);
   EventListener::addListener(elven);
+  EventListener::addListener(goblin);
   EventListener::addListener(human);
+  EventListener::addListener(castleCellar);
+  EventListener::addListener(dragon);
+  EventListener::addListener(bandit);
   elven->addEnemy(goblin);
   elven->addEnemy(dwarven);
+  elven->addEnemy(bandit);
   goblin->addEnemy(dwarven);
   goblin->addEnemy(wildlife);
   human->addEnemy(goblin);
+  human->addEnemy(bandit);
   player->addEnemy(monster);
   player->addEnemy(goblin);
   player->addEnemy(pest);
+  player->addEnemy(castleCellar);
+  player->addEnemy(dragon);
+  player->addEnemy(bandit);
   monster->addEnemy(wildlife);
   wildlife->addEnemy(player);
   wildlife->addEnemy(goblin);

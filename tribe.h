@@ -19,8 +19,10 @@ class Tribe : public EventListener {
 
   void onItemsStolen(const Creature* thief);
   void makeSlightEnemy(const Creature*);
+  void addMember(const Creature*);
   void addImportantMember(const Creature*);
   vector<const Creature*> getImportantMembers();
+  vector<const Creature*> getMembers();
   const string& getName();
   void addEnemy(Tribe*);
 
@@ -35,6 +37,9 @@ class Tribe : public EventListener {
   static Tribe* const goblin;
   static Tribe* const player;
   static Tribe* const vulture;
+  static Tribe* const dragon;
+  static Tribe* const castleCellar;
+  static Tribe* const bandit;
   static Tribe* const killEveryone;
 
   private:
@@ -47,6 +52,7 @@ class Tribe : public EventListener {
   unordered_map<const Creature*, double> standing;
   vector<pair<const Creature*, const Creature*>> attacks;
   vector<const Creature*> importantMembers;
+  vector<const Creature*> members;
   unordered_set<Tribe*> enemyTribes;
   string name;
 };
