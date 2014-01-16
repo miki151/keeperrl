@@ -302,6 +302,7 @@ ItemFactory ItemFactory::villageShop() {
       {ItemId::FIRE_SPHERE_SCROLL, 5 },
       {ItemId::WORD_OF_POWER_SCROLL, 1 },
       {ItemId::DECEPTION_SCROLL, 2 },
+      {ItemId::SUMMON_INSECTS_SCROLL, 5 },
       {ItemId::HEALING_POTION, 7 },
       {ItemId::SLEEP_POTION, 5 },
       {ItemId::SLOW_POTION, 5 },
@@ -393,6 +394,7 @@ ItemFactory ItemFactory::scrolls() {
       {ItemId::FIRE_SPHERE_SCROLL, 1 },
       {ItemId::WORD_OF_POWER_SCROLL, 1 },
       {ItemId::DECEPTION_SCROLL, 1 },
+      {ItemId::SUMMON_INSECTS_SCROLL, 1 },
       {ItemId::PORTAL_SCROLL, 1 }});
 }
 
@@ -438,6 +440,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::FIRE_SPHERE_SCROLL, 30 },
       {ItemId::WORD_OF_POWER_SCROLL, 5 },
       {ItemId::DECEPTION_SCROLL, 10 },
+      {ItemId::SUMMON_INSECTS_SCROLL, 30 },
       {ItemId::HEALING_POTION, 50 },
       {ItemId::SLEEP_POTION, 50 },
       {ItemId::SLOW_POTION, 50 },
@@ -827,6 +830,8 @@ PItem ItemFactory::fromId(ItemId id) {
                                       "Causes an explosion of energy that throws back all sorrounding creatures.");
     case ItemId::DECEPTION_SCROLL: return getScroll("deceptio", EffectType::DECEPTION, 150,
                                       "Creates optical illusions of the spellcaster to decept enemies.");
+    case ItemId::SUMMON_INSECTS_SCROLL: return getScroll("vocet insecta", EffectType::SUMMON_INSECTS, 60,
+                                      "Summon insects to confuse enemies.");
     case ItemId::FIRE_SCROLL: return PItem(new FireScroll(
          ViewObject(ViewId::SCROLL, ViewLayer::ITEM, "Scroll"), ITATTR(
             i.name = "scroll labelled combustio";

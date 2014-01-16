@@ -187,6 +187,7 @@ Model* Model::heroModel(View* view, const string& heroName) {
       ItemId::DECEPTION_SCROLL,
       ItemId::DECEPTION_SCROLL,
       ItemId::DECEPTION_SCROLL,
+      ItemId::SUMMON_INSECTS_SCROLL,
       ItemId::LEATHER_ARMOR, ItemId::LEATHER_HELM});
   for (int i : Range(Random.getRandom(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));

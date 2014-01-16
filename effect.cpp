@@ -86,15 +86,32 @@ class IllusionController : public DoNothingController {
   double deathTime;
 };
 
-static void deception(Creature* c) {
+static int summonCreatures(Creature* c, int radius, vector<PCreature> creatures) {
   int numCreated = 0;
-  int radius = 3;
   vector<Vec2> area = Rectangle(-radius, -radius, radius, radius).getAllSquares();
-  int number = Random.getRandom(3, 7);
-  for (int i : Range(number)) {
+  for (int i : All(creatures))
+    for (Vec2 v : randomPermutation(area))
+      if (c->getSquare(v)->canEnter(creatures[i].get())) {
+        ++numCreated;
+        c->getLevel()->addCreature(c->getPosition() + v, std::move(creatures[i]));
+        break;
+  }
+  return numCreated;
+}
+
+static void insects(Creature* c) {
+  vector<PCreature> creatures;
+  for (int i : Range(Random.getRandom(3, 7)))
+    creatures.push_back(CreatureFactory::fromId(CreatureId::FLY, c->getTribe()));
+  summonCreatures(c, 1, std::move(creatures));
+}
+
+static void deception(Creature* c) {
+  vector<PCreature> creatures;
+  for (int i : Range(Random.getRandom(3, 7))) {
     ViewObject viewObject(c->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
     viewObject.setInvisible(true);
-    PCreature illusion = PCreature(new Creature(viewObject, c->getTribe(), CATTR(
+    creatures.push_back(PCreature(new Creature(viewObject, c->getTribe(), CATTR(
           c.speed = 100;
           c.weight = 1;
           c.size = CreatureSize::LARGE;
@@ -108,18 +125,9 @@ static void deception(Creature* c) {
           c.humanoid = true;
           c.name = "illusion";),
         ControllerFactory([c] (Creature* o) { return new IllusionController(o, c->getTime()
-            + Random.getRandom(5, 10));})));
-    for (Vec2 v : randomPermutation(area))
-      if (c->getSquare(v)->canEnter(illusion.get())) {
-        ++numCreated;
-        c->getLevel()->addCreature(c->getPosition() + v, std::move(illusion));
-        break;
-      }
+            + Random.getRandom(5, 10));}))));
   }
- /* if (numCreated == 1)
-    c->privateMessage("An optical illusion of yourself appears.");
-  else if (numCreated > 1)
-    c->privateMessage("Optical illusions of yourself appear.");*/
+  summonCreatures(c, 2, std::move(creatures));
 }
 
 static void wordOfPower(Creature* c, EffectStrength strength) {
@@ -306,6 +314,7 @@ static void rollingBoulder(Creature* c) {
 
 void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strength) {
   switch (type) {
+    case EffectType::SUMMON_INSECTS: insects(c); break;
     case EffectType::DECEPTION: deception(c); break;
     case EffectType::WORD_OF_POWER: wordOfPower(c, strength); break;
     case EffectType::POISON: c->poison(poisonTime.at(strength)); break;

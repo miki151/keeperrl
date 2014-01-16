@@ -190,6 +190,7 @@ enum class ItemId { KNIFE,
   FIRE_SPHERE_SCROLL,
   WORD_OF_POWER_SCROLL,
   DECEPTION_SCROLL,
+  SUMMON_INSECTS_SCROLL,
   HEALING_POTION,
   SLEEP_POTION,
   BLINDNESS_POTION,
@@ -519,6 +520,7 @@ enum class EffectType {
     POISON,
     WORD_OF_POWER,
     DECEPTION,
+    SUMMON_INSECTS,
 };
 
 enum class AnimationId {
