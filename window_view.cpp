@@ -281,6 +281,7 @@ Tile getSprite(ViewId id) {
     case ViewId::LEPRECHAUN: return Tile(16, 8);
     case ViewId::RAT: return Tile(7, 12);
     case ViewId::SPIDER: return Tile(6, 12);
+    case ViewId::FLY: return Tile(10, 12);
     case ViewId::SCORPION: return Tile(11, 18);
     case ViewId::SNAKE: return Tile(9, 12);
     case ViewId::VULTURE: return Tile(17, 12);
@@ -462,6 +463,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::LEPRECHAUN: return Tile('l', green);
     case ViewId::RAT: return Tile('r', brown);
     case ViewId::SPIDER: return Tile('s', brown);
+    case ViewId::FLY: return Tile('b', gray);
     case ViewId::SCORPION: return Tile('s', lightGray);
     case ViewId::SNAKE: return Tile('S', yellow);
     case ViewId::VULTURE: return Tile('v', darkGray);
@@ -1339,9 +1341,9 @@ void WindowView::refreshView(const CreatureView* collective) {
   for (Vec2 pos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY)))
     objects[pos] = Nothing();
   if (center == Vec2(0, 0) || collective->staticPosition())
-    center = collective->getPosition().mult(Vec2(mapLayout->squareWidth(Vec2(0, 0)),
-          mapLayout->squareHeight(Vec2(0, 0))));
-  Vec2 movePos = center - mouseOffset;
+    center = collective->getPosition();
+  Vec2 movePos = (center - mouseOffset).mult(Vec2(mapLayout->squareWidth(Vec2(0, 0)),
+        mapLayout->squareHeight(Vec2(0, 0))));
   movePos.x = max(movePos.x, 0);
   movePos.x = min(movePos.x, int(collective->getLevel()->getBounds().getKX() * mapLayout->squareWidth(Vec2(0, 0))));
   movePos.y = max(movePos.y, 0);
@@ -1860,7 +1862,8 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
       break;
     case Event::MouseMoved:
       if (rightPressed) {
-        mouseOffset = Vec2(event.mouseMove.x, event.mouseMove.y) - lastMousePos;
+        mouseOffset = (Vec2(event.mouseMove.x, event.mouseMove.y) - lastMousePos).div(
+            Vec2(mapLayout->squareWidth(Vec2(0, 0)), mapLayout->squareHeight(Vec2(0, 0))));
         return true;
       }
       break;
@@ -1887,11 +1890,9 @@ CollectiveAction WindowView::getClick() {
         switch (event.key.code) {
           case Keyboard::Z:
             unzoom(false, false);
-            center = Vec2(0, 0);
             return CollectiveAction(CollectiveAction::IDLE);
           case Keyboard::F2:
             switchTiles();
-            center = Vec2(0, 0);
             return CollectiveAction(CollectiveAction::IDLE);
           case Keyboard::Space:
             if (!myClock.isPaused())

@@ -1327,7 +1327,20 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.legs = 8;
                                 c.arms = 0;
                                 c.animal = true;
-                                c.name = spider ? "spider" : "scorpion";), Tribe::pest, factory); }
+                                c.name = spider ? "spider" : "scorpion";), tribe, factory); }
+    case CreatureId::FLY: {  bool fly = Random.roll(1);
+                             return get(fly ? ViewId::FLY : ViewId::SCORPION, CATTR(
+                                c.speed = 150;
+                                c.size = CreatureSize::SMALL;
+                                c.strength = 1;
+                                c.dexterity = 14;
+                                c.barehandedDamage = 0;
+                                c.humanoid = false;
+                                c.weight = 0.1;
+                                c.legs = 6;
+                                c.arms = 0;
+                                c.animal = true;
+                                c.name = fly ? "fly" : "something else later";), tribe, factory); }
     case CreatureId::SNAKE: return get(ViewId::SNAKE, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::SMALL;

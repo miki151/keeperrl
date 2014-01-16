@@ -154,6 +154,7 @@ enum class CreatureId {
     SNAKE,
     CAVE_BEAR,
     SPIDER,
+    FLY,
     RAT};
 
 
@@ -292,6 +293,7 @@ enum class ViewId {
   BAT,
   RAT,
   SPIDER,
+  FLY,
   SCORPION,
   SNAKE,
   VULTURE,
