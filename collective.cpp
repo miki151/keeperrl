@@ -49,7 +49,7 @@ void Collective::render(View* view) {
   if (possessed && (!possessed->isPlayer() || possessed->isDead())) {
     if (contains(team, possessed))
       removeElement(team, possessed);
-    if (possessed->isDead() && !team.empty()) {
+    if ((possessed->isDead() || possessed->isSleeping()) && !team.empty()) {
       possess(team.front(), view);
     } else {
       view->setTimeMilli(possessed->getTime() * 300);

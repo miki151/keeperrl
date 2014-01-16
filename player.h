@@ -24,6 +24,7 @@ class Player : public Controller, public EventListener {
 
   const MapMemory& getMemory(const Level* l = nullptr) const;
   virtual void makeMove() override;
+  virtual void sleeping() override;
 
   virtual void onBump(Creature*);
 

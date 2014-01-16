@@ -137,6 +137,7 @@ void Creature::makeMove() {
   if (holding && holding->isDead())
     holding = nullptr;
   if (sleeping) {
+    controller->sleeping();
     spendTime(1);
     return;
   }
@@ -947,7 +948,7 @@ bool Creature::dodgeAttack(const Attack& attack) {
     if (!canSee(c))
       unknownAttacker.push_back(c);
     EventListener::addAttackEvent(this, c);
-    if (!contains(privateEnemies, c))
+    if (!contains(privateEnemies, c) && c->getTribe() != tribe)
       privateEnemies.push_back(c);
   }
   return canSee(attack.getAttacker()) && attack.getToHit() <= getAttr(AttrType::TO_HIT);
@@ -957,7 +958,7 @@ bool Creature::takeDamage(const Attack& attack) {
   if (sleeping)
     wakeUp();
   if (const Creature* c = attack.getAttacker())
-    if (!contains(privateEnemies, c))
+    if (!contains(privateEnemies, c) && c->getTribe() != tribe)
       privateEnemies.push_back(c);
   int defense = getAttr(AttrType::DEFENSE);
   Debug() << getTheName() << " attacked by " << attack.getAttacker()->getName() << " damage " << attack.getStrength() << " defense " << defense;

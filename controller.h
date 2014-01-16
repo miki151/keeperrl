@@ -18,6 +18,7 @@ class Controller {
   virtual const MapMemory& getMemory(const Level* l = nullptr) const = 0;
 
   virtual void makeMove() = 0;
+  virtual void sleeping() {}
 
   virtual int getDebt(const Creature* debtor) const { return 0; }
 

@@ -523,6 +523,10 @@ class DragonController : public Monster {
   public:
   using Monster::Monster;
 
+  virtual void sleeping() override {
+    Effect::applyToCreature(creature, EffectType::EMIT_POISON_GAS, EffectStrength::WEAK);
+  }
+
   virtual void makeMove() override {
     Effect::applyToCreature(creature, EffectType::EMIT_POISON_GAS, EffectStrength::WEAK);
     Monster::makeMove();

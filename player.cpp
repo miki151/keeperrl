@@ -470,6 +470,15 @@ void Player::remember(Vec2 pos, const ViewObject& object) {
   (*levelMemory)[creature->getLevel()].addObject(pos, object);
 }
 
+void Player::sleeping() {
+  if (creature->isHallucinating())
+    ViewObject::setHallu(true);
+  else
+    ViewObject::setHallu(false);
+  MEASURE(
+      view->refreshView(creature),
+      "level render time");
+}
 
 void Player::makeMove() {
   vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
@@ -534,7 +543,7 @@ void Player::makeMove() {
     case ActionId::IDLE: break;
   }
   if (creature->isSleeping() && creature->canPopController()) {
-    if (view->yesOrNoPrompt("Do you want to leave your minion?"))
+    if (view->yesOrNoPrompt("You fell asleep. Do you want to leave your minion?"))
       creature->popController();
     return;
   }
