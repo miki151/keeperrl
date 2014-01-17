@@ -801,6 +801,7 @@ Optional<Vec2> WindowView::getHighlightedTile() {
 }
 
 static bool leftMouseButtonPressed = false;
+static bool rightMouseButtonPressed = false;
 
 WindowView::BlockingEvent WindowView::readkey() {
   Event event;
@@ -813,6 +814,22 @@ WindowView::BlockingEvent WindowView::readkey() {
     display->waitEvent(event);
     if (wasPaused)
       myClock.cont();
+    Debug() << "Event " << event.type;
+    if (event.type == Event::KeyPressed) {
+      Event::KeyEvent ret(event.key);
+      mousePos = Nothing();
+      while (display->pollEvent(event));
+      return { BlockingEvent::KEY, ret };
+    }
+    bool mouseEv = false;
+    while (event.type == Event::MouseMoved && !rightMouseButtonPressed) {
+      mouseEv = true;
+      mousePos = Vec2(event.mouseMove.x, event.mouseMove.y);
+      if (!display->pollEvent(event))
+        return { BlockingEvent::MOUSE_MOVE };
+    }
+    if (mouseEv && event.type == Event::MouseMoved)
+      return { BlockingEvent::MOUSE_MOVE };
     bool scrolled = false;
     while (considerScrollEvent(event)) {
       mousePos = Nothing();
@@ -822,22 +839,6 @@ WindowView::BlockingEvent WindowView::readkey() {
     }
     if (scrolled)
       return { BlockingEvent::IDLE };
-    Debug() << "Event " << event.type;
-    if (event.type == Event::KeyPressed) {
-      Event::KeyEvent ret(event.key);
-      mousePos = Nothing();
-      while (display->pollEvent(event));
-      return { BlockingEvent::KEY, ret };
-    }
-    bool mouseEv = false;
-    while (event.type == Event::MouseMoved) {
-      mouseEv = true;
-      mousePos = Vec2(event.mouseMove.x, event.mouseMove.y);
-      if (!display->pollEvent(event))
-        return { BlockingEvent::MOUSE_MOVE };
-    }
-    if (mouseEv && event.type == Event::MouseMoved)
-      return { BlockingEvent::MOUSE_MOVE };
     if (event.type == Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
       return { BlockingEvent::MOUSE_LEFT };
     if (event.type == Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
@@ -1187,7 +1188,7 @@ static vector<pair<string, string>> keyMapping {
   {"F1", "legend"},
 };
 
-/*Vec2 WindowView::projectOnBorders(Rectangle area, Vec2 pos) {
+Vec2 WindowView::projectOnBorders(Rectangle area, Vec2 pos) {
   Vec2 center = Vec2((area.getPX() + area.getKX()) / 2, (area.getPY() + area.getKY()) / 2);
   Vec2 d = pos - center;
   if (d.x == 0) {
@@ -1199,7 +1200,7 @@ static vector<pair<string, string>> keyMapping {
   int cx = d.x * area.getH() / 2 / abs(d.y);
   CHECK(center.x + cx >= area.getPX() && center.x + cx < area.getKX());
   return Vec2(center.x + cx, d.y > 0 ? area.getKY() - 1: area.getPY());
-}*/
+}
 
 Color getHighlightColor(ViewIndex::HighlightInfo info) {
   switch (info.type) {
@@ -1213,6 +1214,7 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
 }
 
 Table<Optional<ViewIndex>> objects(maxTilesX, maxTilesY);
+map<Vec2, ViewObject> borderCreatures;
 const MapMemory* lastMemory = nullptr;
 set<Vec2> shadowed;
 
@@ -1279,8 +1281,8 @@ Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& in
       int moveY = 0;
       int off = (nominalSize -  tileSize[tile.getTexNum()]) / 2;
       int sz = tileSize[tile.getTexNum()];
-      int width = mapLayout->squareWidth(Vec2(x, y)) - 2 * off;
-      int height = mapLayout->squareHeight(Vec2(x, y)) - 2 * off;
+      int width = sizeX - 2 * off;
+      int height = sizeY - 2 * off;
       set<Dir> dirs;
       for (Vec2 dir : getConnectionDirs(object.id()))
         if (tileConnects(object.id(), tilePos + dir))
@@ -1332,7 +1334,7 @@ Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& in
 
 
 void WindowView::resetCenter() {
-  center = Vec2(0, 0);
+  center = {0, 0};
 }
 
 void WindowView::refreshView(const CreatureView* collective) {
@@ -1340,14 +1342,14 @@ void WindowView::refreshView(const CreatureView* collective) {
   collective->refreshGameInfo(gameInfo);
   for (Vec2 pos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY)))
     objects[pos] = Nothing();
-  if (center == Vec2(0, 0) || collective->staticPosition())
-    center = collective->getPosition();
-  Vec2 movePos = (center - mouseOffset).mult(Vec2(mapLayout->squareWidth(Vec2(0, 0)),
-        mapLayout->squareHeight(Vec2(0, 0))));
+  if ((center.x == 0 && center.y == 0) || collective->staticPosition())
+    center = {double(collective->getPosition().x), double(collective->getPosition().y)};
+  Vec2 movePos = Vec2((center.x - mouseOffset.x) * mapLayout->squareWidth(),
+      (center.y - mouseOffset.y) * mapLayout->squareHeight());
   movePos.x = max(movePos.x, 0);
-  movePos.x = min(movePos.x, int(collective->getLevel()->getBounds().getKX() * mapLayout->squareWidth(Vec2(0, 0))));
+  movePos.x = min(movePos.x, int(collective->getLevel()->getBounds().getKX() * mapLayout->squareWidth()));
   movePos.y = max(movePos.y, 0);
-  movePos.y = min(movePos.y, int(collective->getLevel()->getBounds().getKY() * mapLayout->squareHeight(Vec2(0, 0))));
+  movePos.y = min(movePos.y, int(collective->getLevel()->getBounds().getKY() * mapLayout->squareHeight()));
   mapLayout->updatePlayerPos(movePos);
   shadowed.clear();
   floorIds.clear();
@@ -1357,7 +1359,7 @@ void WindowView::refreshView(const CreatureView* collective) {
       ViewIndex index = collective->getViewIndex(pos);
       if (!index.hasObject(ViewLayer::FLOOR) && !index.isEmpty() && lastMemory->hasViewIndex(pos)
           && lastMemory->getViewIndex(pos).hasObject(ViewLayer::FLOOR)) {
-        // special case when monster is visible but floor is only in memory
+        // special case when monster or item is visible but floor is only in memory
         index.insert(lastMemory->getViewIndex(pos).getObject(ViewLayer::FLOOR));
       }
       if (index.isEmpty() && lastMemory->hasViewIndex(pos))
@@ -1373,9 +1375,10 @@ void WindowView::refreshView(const CreatureView* collective) {
           floorIds.insert(make_pair(pos, *id));
       }
     }
-  //  for (const Creature* c : player->getVisibleCreatures())
-  //    if (!projectOnScreen(c->getPosition()).inRectangle(mapWindowMargin))
-//      objects.insert(std::make_pair(c->getPosition(), c->getViewObject()));
+  borderCreatures.clear();
+ /* for (const Creature* c : collective->getVisibleCreatures())
+    if (!c->getPosition().inRectangle(mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY))))
+      borderCreatures.insert(std::make_pair(c->getPosition(), c->getViewObject()));*/
   refreshScreen();
 }
 
@@ -1425,7 +1428,9 @@ void WindowView::drawMap() {
   if (!lastMemory)
     return;
 
-  Rectangle mapWindow = mapLayout->getBounds();
+  int sizeX = mapLayout->squareWidth();
+  int sizeY = mapLayout->squareHeight();
+ Rectangle mapWindow = mapLayout->getBounds();
   drawFilledRectangle(mapWindow, black);
   bool pixelView = false;
   map<string, ViewObject> objIndex;
@@ -1433,8 +1438,6 @@ void WindowView::drawMap() {
   for (Vec2 wpos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY))) {
     if (!objects[wpos])
       continue;
-    int sizeX = mapLayout->squareWidth(wpos);
-    int sizeY = mapLayout->squareHeight(wpos);
     Vec2 pos = mapLayout->projectOnScreen(wpos);
     const ViewIndex& index = *objects[wpos];
     Optional<ViewObject> topObject;
@@ -1451,15 +1454,17 @@ void WindowView::drawMap() {
       if (getHighlightedTile() == wpos)
         highlighted = *topObject;
     }
-  //  }
-  /* else  if (elem.second.layer() == ViewLayer::CREATURE && mapView->font != nullptr) {
-      Vec2 proj = projectOnBorders(mapWindow, pos);
-      drawObjectAbs(
-          mapView->mapX + proj.x * mapView->squareWidth,
-          mapView->mapY + proj.y * mapView->squareHeight,
-          elem.second, getColor(elem.second), &smallFont, &smallSymbolFont);
-    }*/
   }
+  for (auto elem : borderCreatures) {
+    Vec2 pos = mapLayout->projectOnScreen(elem.first);
+    Vec2 proj = projectOnBorders(mapLayout->getBounds().minusMargin(10), pos);
+    ViewIndex index;
+    index.insert(elem.second);
+      drawObjectAbs(
+          proj.x,
+          proj.y,
+          index, sizeX / 2, sizeY / 2, elem.first);
+    }
   if (pixelView)
     drawImage(mapLayout->getBounds().getPX(), mapLayout->getBounds().getPY(), mapBuffer);
   int rightPos = screenWidth - rightBarWidth;
@@ -1848,28 +1853,27 @@ bool WindowView::isClockStopped() {
   return myClock.isPaused();
 }
 
-bool rightPressed = false;
 
 bool WindowView::considerScrollEvent(sf::Event& event) {
   switch (event.type) {
     case Event::MouseButtonReleased :
       if (event.mouseButton.button == sf::Mouse::Right) {
-        center -= mouseOffset;
-        mouseOffset = Vec2(0, 0);
-        rightPressed = false;
+        center = {center.x - mouseOffset.x, center.y - mouseOffset.y};
+        mouseOffset = {0.0, 0.0};
+        rightMouseButtonPressed = false;
         return true;
       }
       break;
     case Event::MouseMoved:
-      if (rightPressed) {
-        mouseOffset = (Vec2(event.mouseMove.x, event.mouseMove.y) - lastMousePos).div(
-            Vec2(mapLayout->squareWidth(Vec2(0, 0)), mapLayout->squareHeight(Vec2(0, 0))));
+      if (rightMouseButtonPressed) {
+        mouseOffset = {double(event.mouseMove.x - lastMousePos.x) / mapLayout->squareWidth(),
+                       double(event.mouseMove.y - lastMousePos.y) / mapLayout->squareHeight() };
         return true;
       }
       break;
     case Event::MouseButtonPressed:
       if (event.mouseButton.button == sf::Mouse::Right) {
-        rightPressed = true;
+        rightMouseButtonPressed = true;
         lastMousePos = Vec2(event.mouseButton.x, event.mouseButton.y);
         return true;
       }

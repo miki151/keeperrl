@@ -247,8 +247,8 @@ class Tree : public Square {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    c->privateMessage(isBurnt() ? "There is a burnt tree here." : 
-        destroyed ? "There is fallen tree here." : "You pass beneath a tree");
+ /*   c->privateMessage(isBurnt() ? "There is a burnt tree here." : 
+        destroyed ? "There is fallen tree here." : "You pass beneath a tree");*/
   }
 
   private:
@@ -317,7 +317,7 @@ class Furniture : public Square {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    c->privateMessage("There is a " + getName() + " here.");
+   // c->privateMessage("There is a " + getName() + " here.");
   }
 };
 

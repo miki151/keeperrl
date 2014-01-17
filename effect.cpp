@@ -53,7 +53,7 @@ map<EffectStrength, int> poisonTime {
     {EffectStrength::STRONG, 20}};
 
 map<EffectStrength, double> gasAmount { 
-    {EffectStrength::WEAK, 0.4},
+    {EffectStrength::WEAK, 0.3},
     {EffectStrength::NORMAL, 2},
     {EffectStrength::STRONG, 5}};
 

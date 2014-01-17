@@ -81,7 +81,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   
   void globalMessage(const string& playerCanSee, const string& cant = "") const;
   const vector<const Creature*>& getVisibleEnemies() const;
-  vector<const Creature*> getVisibleCreatures() const;
+  vector<const Creature*> getVisibleCreatures() const override;
 
   bool isDead() const;
   bool isHumanoid() const;

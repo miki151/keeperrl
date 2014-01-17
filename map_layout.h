@@ -15,13 +15,13 @@ class MapLayout {
 
   vector<ViewLayer> getLayers() const;
 
-  virtual double squareWidth(Vec2 mapPos) = 0;
-  virtual double squareHeight(Vec2 mapPos) = 0;
+  virtual double squareWidth() = 0;
+  virtual double squareHeight() = 0;
   virtual void increaseSize() {}
   virtual void decreaseSize() {}
   virtual Vec2 projectOnScreen(Vec2 mapPos) = 0;
   virtual Vec2 projectOnMap(Vec2 screenPos) = 0;
-  virtual vector<Vec2> getAllTiles(Rectangle bounds) = 0;
+  virtual Rectangle getAllTiles(Rectangle bounds) = 0;
   virtual void updatePlayerPos(Vec2) = 0;
   virtual Optional<Action> overrideAction(const sf::Event::KeyEvent&) { return Nothing(); };
 
@@ -31,12 +31,6 @@ class MapLayout {
       int leftMargin, int topMargin,
       int rightMargin, int bottomMargin,
       int boxMargin, vector<ViewLayer> layers);
-
-  static MapLayout* tppLayout(
-      int screenW, int screenH,
-      int squareWidth, int squareHeight,
-      int leftMargin, int topMargin,
-      int rightMargin, int bottomMargin);
 
   static MapLayout* worldLayout(int screenW, int screenH,
     int leftMargin, int topMargin,

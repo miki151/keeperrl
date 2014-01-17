@@ -123,8 +123,10 @@ class WindowView: public View {
   vector<const Creature*> chosenCreatures;
 
   Vec2 lastMousePos;
-  Vec2 mouseOffset;
-  Vec2 center;
+  struct {
+    double x;
+    double y;
+  } mouseOffset, center;
 };
 
 

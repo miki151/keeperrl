@@ -15,6 +15,7 @@ class CreatureView {
   virtual bool canSee(Vec2 position) const = 0;
   virtual const Level* getLevel() const = 0;
   virtual vector<const Creature*> getUnknownAttacker() const = 0;
+  virtual vector<const Creature*> getVisibleCreatures() const { return {}; }
 };
 
 #endif

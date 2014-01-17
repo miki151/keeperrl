@@ -1091,12 +1091,11 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
     case CreatureId::BILE_DEMON: return get(ViewId::BILE_DEMON, CATTR(
                                 c.speed = 80;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 24;
-                                c.dexterity = 14;
-                                c.barehandedDamage = 10;
+                                c.strength = 23;
+                                c.dexterity = 15;
+                                c.barehandedDamage = 9;
                                 c.humanoid = false;
                                 c.weight = 140;
-                                c.courage = 1;
                                 c.firstName = NameGenerator::demonNames.getNext();
                                 c.name = "ogre";), tribe, factory);
     case CreatureId::HELL_HOUND: return get(ViewId::HELL_HOUND, CATTR(
@@ -1107,7 +1106,6 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 5;
                                 c.humanoid = false;
                                 c.weight = 50;
-                                c.courage = 1;
                                 c.firstName = NameGenerator::dogNames.getNext();
                                 c.name = "hell hound";), tribe, factory);
     case CreatureId::CHICKEN: return get(ViewId::CHICKEN, CATTR(
@@ -1118,7 +1116,6 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 5;
                                 c.humanoid = false;
                                 c.weight = 3;
-                                c.courage = 1;
                                 c.walker = false;
                                 c.isFood = true;
                                 c.name = "chicken";), tribe, factory);
@@ -1334,11 +1331,12 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.size = CreatureSize::SMALL;
                                 c.strength = 1;
                                 c.dexterity = 14;
-                                c.barehandedDamage = 0;
+                                c.barehandedDamage = 10;
                                 c.humanoid = false;
                                 c.weight = 0.1;
                                 c.legs = 6;
                                 c.arms = 0;
+                                c.courage = 100;
                                 c.animal = true;
                                 c.name = fly ? "fly" : "something else later";), tribe, factory); }
     case CreatureId::SNAKE: return get(ViewId::SNAKE, CATTR(

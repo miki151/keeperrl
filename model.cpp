@@ -76,7 +76,7 @@ Model::Model(View* v) : view(v) {
 Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
   pair<CreatureId, string> castleNem1 = chooseRandom<pair<CreatureId, string>>(
       {{CreatureId::GHOST, "The castle cellar is haunted. Go and kill the evil that is lurking there."},
-      {CreatureId::SPIDER, "The castle cellar is infested by vermin. Go and clean it up."}});
+      {CreatureId::SPIDER, "The castle cellar is infested by vermin. Go and clean it up."}}, {1, 1});
   pair<CreatureId, string> castleNem2 = chooseRandom<pair<CreatureId, string>>(
       {{CreatureId::DRAGON, "dragon"}, {CreatureId::CYCLOPS, "cyclops"}});
   Quest::dragon = Quest::killTribeQuest(Tribe::dragon, "There is a " + castleNem2.second + 

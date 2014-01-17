@@ -325,7 +325,7 @@ ItemFactory ItemFactory::armory() {
       {ItemId::SWORD, 2 },
       {ItemId::BATTLE_AXE, 2 },
       {ItemId::WAR_HAMMER, 2 },
-      {ItemId::BOW, 2 },
+      {ItemId::BOW, 4 },
       {ItemId::ARROW, 8, 20, 30 },
       {ItemId::LEATHER_ARMOR, 2 },
       {ItemId::CHAIN_ARMOR, 1 },
@@ -451,7 +451,7 @@ ItemFactory ItemFactory::dungeon() {
 }
 
 ItemFactory ItemFactory::chest() {
-  return dungeon().addItem({ItemId::GOLD_PIECE, 300, 20, 100});
+  return dungeon().addItem({ItemId::GOLD_PIECE, 300, 20, 41});
 }
 
 ItemFactory ItemFactory::singleType(ItemId id) {
