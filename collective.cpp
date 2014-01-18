@@ -382,6 +382,7 @@ void Collective::processInput(View* view) {
                 if (getTrapItems(trapType).size() > 0 && canPlacePost(pos)){
                   traps[pos] = {trapType, false, false};
                   trapMap[trapType].push_back(pos);
+                  updateTraps();
                 }
               }
               break;
@@ -495,19 +496,7 @@ bool Collective::isThroneBuilt() const {
   return !mySquares.at(SquareType::KEEPER_THRONE).empty();
 }
 
-void Collective::tick() {
-  if (isThroneBuilt()
-      && (minions.size() - vampires.size() < mySquares[SquareType::BED].size() || minions.empty())
-      && Random.roll(40) && minions.size() < minionLimit) {
-    PCreature c = minionFactory.random(MonsterAIFactory::collective(this));
-    addCreature(c.get());
-    level->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(c));
-  }
-  warning[NO_CONNECTION] = !isThroneBuilt();
-  warning[NO_BEDS] = mySquares[SquareType::BED].size() == 0 && !minions.empty();
-  warning[MORE_BEDS] = mySquares[SquareType::BED].size() < minions.size() - vampires.size();
-  warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && !minions.empty();
-  warning[NO_HATCHERY] = mySquares[SquareType::HATCHERY].empty() && !minions.empty();
+void Collective::updateTraps() {
   map<TrapType, vector<pair<Item*, Vec2>>> trapItems {
     {TrapType::BOULDER, getTrapItems(TrapType::BOULDER, myTiles)},
     {TrapType::POISON_GAS, getTrapItems(TrapType::POISON_GAS, myTiles)}};
@@ -522,6 +511,22 @@ void Collective::tick() {
       }
     }
   }
+}
+
+void Collective::tick() {
+  if (isThroneBuilt()
+      && (minions.size() - vampires.size() < mySquares[SquareType::BED].size() || minions.empty())
+      && Random.roll(40) && minions.size() < minionLimit) {
+    PCreature c = minionFactory.random(MonsterAIFactory::collective(this));
+    addCreature(c.get());
+    level->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(c));
+  }
+  warning[NO_CONNECTION] = !isThroneBuilt();
+  warning[NO_BEDS] = mySquares[SquareType::BED].size() == 0 && !minions.empty();
+  warning[MORE_BEDS] = mySquares[SquareType::BED].size() < minions.size() - vampires.size();
+  warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && !minions.empty();
+  warning[NO_HATCHERY] = mySquares[SquareType::HATCHERY].empty() && !minions.empty();
+  updateTraps();
   for (Vec2 pos : myTiles) {
     if (Creature* c = level->getSquare(pos)->getCreature())
       if (!contains(creatures, c) && c->getTribe() == Tribe::player

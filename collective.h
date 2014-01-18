@@ -93,6 +93,7 @@ class Collective : public CreatureView, public EventListener {
   bool canPlacePost(Vec2 pos) const;
   void freeFromGuardPost(const Creature*);
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
+  void updateTraps();
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
   CreatureFactory minionFactory;
