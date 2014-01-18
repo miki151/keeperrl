@@ -113,6 +113,7 @@ enum class CreatureId {
     VAMPIRE_BAT,
     MUMMY,
     MUMMY_LORD,
+    SKELETON,
     
     DWARF,
     DWARF_BARON,
@@ -281,6 +282,7 @@ enum class ViewId {
   GOBLIN,
   BANDIT,
   ZOMBIE,
+  SKELETON,
   VAMPIRE,
   MUMMY,
   MUMMY_LORD,

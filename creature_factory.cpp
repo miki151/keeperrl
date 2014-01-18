@@ -727,6 +727,7 @@ CreatureFactory CreatureFactory::level(int num) {
       { CreatureId::RAT, { 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::BAT, { 100, 100, 200, 200, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::ZOMBIE, { 0, 0, 0, 30, 50, 100, 100, 100, 100, 100 }},
+      { CreatureId::SKELETON, { 0, 0, 0, 30, 50, 100, 100, 100, 100, 100 }},
       { CreatureId::VAMPIRE_BAT, { 0, 0, 0, 10, 30, 50, 100, 100, 100, 100 }},
       { CreatureId::NIGHTMARE, { 5, 5, 10, 10, 20, 30, 30, 40, 40, 40 }},
       { CreatureId::DWARF, { 400, 200, 100, 50, 50, 30, 20, 20 }}};
@@ -1002,19 +1003,29 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
     case CreatureId::ZOMBIE: return get(ViewId::ZOMBIE, CATTR(
                                 c.speed = 60;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 12;
+                                c.strength = 14;
                                 c.dexterity = 13;
                                 c.barehandedDamage = 13;
                                 c.humanoid = true;
                                 c.weight = 100;
                                 c.undead = true;
                                 c.name = "zombie";), tribe, factory);
+    case CreatureId::SKELETON: return get(ViewId::SKELETON, CATTR(
+                                c.speed = 80;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 14;
+                                c.dexterity = 13;
+                                c.barehandedDamage = 13;
+                                c.humanoid = true;
+                                c.weight = 50;
+                                c.undead = true;
+                                c.name = "skeleton";), tribe, factory);
     case CreatureId::VAMPIRE_BAT:
     case CreatureId::VAMPIRE: return get(ViewId::VAMPIRE, CATTR(
                                 c.speed = 120;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 15;
-                                c.dexterity = 15;
+                                c.strength = 17;
+                                c.dexterity = 17;
                                 c.barehandedDamage = 2;
                                 c.humanoid = true;
                                 c.weight = 100;

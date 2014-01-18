@@ -88,6 +88,7 @@ class Item : private ItemAttributes {
   struct CorpseInfo {
     bool canBeRevived;
     bool hasHead;
+    bool isSkeleton;
   };
 
   virtual Optional<CorpseInfo> getCorpseInfo() const { return Nothing(); }

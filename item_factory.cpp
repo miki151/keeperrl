@@ -140,8 +140,9 @@ class Corpse : public Item {
     if (time >= rottenTime && !rotten) {
       setName(rottenName);
       viewObject = object2;
-      rotten = true;
-    } else if (getWeight() > 10 &&  !rotten && !level->getSquare(position)->isCovered() && Random.roll(35)) {
+      corpseInfo.isSkeleton = true;
+    } else if (getWeight() > 10 && !corpseInfo.isSkeleton && 
+        !level->getSquare(position)->isCovered() && Random.roll(35)) {
       for (Vec2 v : position.neighbors8(true))
         if (level->inBounds(v)) {
           PCreature vulture = CreatureFactory::fromId(

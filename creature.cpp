@@ -563,7 +563,7 @@ int attrBonus = 3;
 
 int dexPenNoArm = 2;
 int dexPenNoLeg = 10;
-int dexPenNoWing = 5;
+int dexPenNoWing = 3;
 
 int strPenNoArm = 2;
 int strPenNoLeg = 5;
@@ -1275,7 +1275,7 @@ void Creature::take(PItem item) {
 
 void Creature::dropCorpse() {
   getSquare()->dropItem(ItemFactory::corpse(*name + " corpse", *name + " skeleton", *weight,
-        isFood ? ItemType::FOOD : ItemType::CORPSE, {true, heads > 0}));
+        isFood ? ItemType::FOOD : ItemType::CORPSE, {true, heads > 0, false}));
 }
 
 void Creature::die(const Creature* attacker, bool dropInventory) {

@@ -312,7 +312,7 @@ bool Collective::canBuildDoor(Vec2 pos) const {
   auto wallFun = [=](Vec2 pos) {
       return level->getSquare(pos)->canConstruct(SquareType::FLOOR) ||
           !pos.inRectangle(innerRect); };
-  return pos.inRectangle(innerRect) && 
+  return !traps.count(pos) && pos.inRectangle(innerRect) && 
       ((wallFun(pos - Vec2(0, 1)) && wallFun(pos - Vec2(0, -1))) ||
        (wallFun(pos - Vec2(1, 0)) && wallFun(pos - Vec2(-1, 0))));
 }
@@ -565,7 +565,12 @@ void Collective::tick() {
           vampires.size() < mySquares[SquareType::GRAVE].size() && minions.size() < minionLimit) {
         for (Item* it : corpses)
           if (it->getCorpseInfo()->canBeRevived) {
-            PCreature vampire = undeadFactory.random(MonsterAIFactory::collective(this));
+            PCreature vampire;
+            if (!it->getCorpseInfo()->isSkeleton)
+              vampire = undeadFactory.random(MonsterAIFactory::collective(this));
+            else
+              vampire = CreatureFactory::fromId(CreatureId::SKELETON, Tribe::player,
+                  MonsterAIFactory::collective(this));
             for (Vec2 v : pos.neighbors8(true))
               if (level->getSquare(v)->canEnter(vampire.get())) {
                 level->getSquare(pos)->removeItems({it});
