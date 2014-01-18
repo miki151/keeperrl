@@ -18,11 +18,11 @@ class Player : public Controller, public EventListener {
   virtual void privateMessage(const string& message) const override;
 
   virtual void onKilled(const Creature* attacker) override;
-  virtual void onItemsAppeared(vector<Item*> items, const Creature* from);
+  virtual void onItemsAppeared(vector<Item*> items, const Creature* from) override;
 
-  View* getView();
+  virtual const MapMemory& getMemory(const Level* l = nullptr) const override;
+  virtual void learnLocation(const Location*) override;
 
-  const MapMemory& getMemory(const Level* l = nullptr) const;
   virtual void makeMove() override;
   virtual void sleeping() override;
 

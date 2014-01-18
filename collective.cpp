@@ -4,7 +4,7 @@ enum Warning { NO_CONNECTION, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_HAT
 static const int numWarnings = 7;
 static bool warning[numWarnings] = {0};
 static string warningText[] {
-  "You need to connect to the stairs to attract minions.",
+  "You need to build a throne for yourself.",
   "You need to build a treasure room.",
   "You need a larger treasure room.",
   "You need a lair for your minions.",
@@ -12,7 +12,13 @@ static string warningText[] {
   "Your minions are hungry!",
   "You need training posts for your minions"};
 
-vector<Collective::BuildInfo> Collective::buildInfo {
+
+vector<Collective::BuildInfo> Collective::initialBuildInfo {
+    BuildInfo({SquareType::FLOOR, 0, "Dig"}),
+    BuildInfo({SquareType::KEEPER_THRONE, 0, "Throne"}),
+}; 
+
+vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::FLOOR, 0, "Dig"}),
     BuildInfo({SquareType::TREASURE_CHEST, 0, "Treasure room"}),
     BuildInfo({SquareType::TRIBE_DOOR, 20, "Door"}),
@@ -28,6 +34,14 @@ vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo(BuildInfo::GUARD_POST),
 };
 
+vector<Collective::BuildInfo>& Collective::getBuildInfo() const {
+  if (!isThroneBuilt())
+    return initialBuildInfo;
+  else
+    return normalBuildInfo;
+};
+
+
 #ifndef DEBUG
 const int creditVal = 50;
 #else
@@ -38,7 +52,7 @@ Collective::Collective(CreatureFactory factory, CreatureFactory undead)
     : minionFactory(factory), undeadFactory(undead), credit(creditVal) {
   EventListener::addListener(this);
   // init the map so the values can be safely read with .at()
-  for (BuildInfo info : buildInfo)
+  for (BuildInfo info : concat(initialBuildInfo, normalBuildInfo))
     if (info.buildType == BuildInfo::SQUARE)
       mySquares[info.squareInfo.type].clear();
     else if (info.buildType == BuildInfo::TRAP)
@@ -91,7 +105,6 @@ vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squa
   return ret;
 }
 
-
 void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   gameInfo.infoType = View::GameInfo::InfoType::BAND;
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
@@ -99,7 +112,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.name = "KeeperRL";
   info.buttons.clear();
   int gold = numGold();
-  for (BuildInfo button : buildInfo)
+  for (BuildInfo button : getBuildInfo())
     switch (button.buildType) {
       case BuildInfo::SQUARE: {
             BuildInfo::SquareInfo& elem = button.squareInfo;
@@ -348,7 +361,7 @@ void Collective::processInput(View* view) {
         Vec2 pos = action.getPosition();
         if (!pos.inRectangle(level->getBounds()))
           return;
-        switch (buildInfo[currentButton].buildType) {
+        switch (getBuildInfo()[currentButton].buildType) {
           case BuildInfo::IMP:
               if (numGold() >= getImpCost() && selection == NONE) {
                 selection = SELECT;
@@ -365,7 +378,7 @@ void Collective::processInput(View* view) {
               }
               break;
           case BuildInfo::TRAP: {
-                TrapType trapType = buildInfo[currentButton].trapInfo.type;
+                TrapType trapType = getBuildInfo()[currentButton].trapInfo.type;
                 if (getTrapItems(trapType).size() > 0 && canPlacePost(pos)){
                   traps[pos] = {trapType, false, false};
                   trapMap[trapType].push_back(pos);
@@ -393,18 +406,23 @@ void Collective::processInput(View* view) {
               if (marked.count(pos) && selection != SELECT) {
                 unmarkSquare(pos);
                 selection = DESELECT;
+                if (throneMarked == pos)
+                  throneMarked = Nothing();
               } else {
-                BuildInfo::SquareInfo info = buildInfo[currentButton].squareInfo;
+                BuildInfo::SquareInfo info = getBuildInfo()[currentButton].squareInfo;
                 bool diggingSquare = !memory[level].hasViewIndex(pos) ||
                   (level->getSquare(pos)->canConstruct(info.type));
                 if (diggingSquare || selection != NONE) {
                   if (!marked.count(pos) && selection != DESELECT && diggingSquare && 
                       numGold() >= info.cost && 
+                      (info.type != SquareType::KEEPER_THRONE || !throneMarked) &&
                       (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) &&
                       (info.type == SquareType::FLOOR || canSee(pos))) {
                     markSquare(pos, info);
                     selection = SELECT;
                     takeGold(info.cost);
+                    if (info.type == SquareType::KEEPER_THRONE)
+                      throneMarked = pos;
                   }
                 }
               }
@@ -419,6 +437,7 @@ void Collective::processInput(View* view) {
 }
 
 void Collective::onConstructed(Vec2 pos, SquareType type) {
+  myTiles.insert(pos);
   CHECK(!mySquares[type].count(pos));
   mySquares[type].insert(pos);
   if (contains({SquareType::FLOOR, SquareType::BRIDGE}, type))
@@ -459,7 +478,6 @@ void Collective::update(Creature* c) {
   if (!contains(creatures, c) || c->getLevel() != level)
     return;
   for (Vec2 pos : level->getVisibleTiles(c)) {
-    myTiles.insert(pos);
     ViewIndex index = level->getSquare(pos)->getViewIndex(c);
     memory[level].clearSquare(pos);
     for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
@@ -469,19 +487,23 @@ void Collective::update(Creature* c) {
 }
 
 bool Collective::isDownstairsVisible() const {
-  Vec2 pos = getOnlyElement(level->getLandingSquares(StairDirection::DOWN, StairKey::DWARF));
-  return memory[level].hasViewIndex(pos);
+  vector<Vec2> v = level->getLandingSquares(StairDirection::DOWN, StairKey::DWARF);
+  return v.size() == 1 && memory[level].hasViewIndex(v[0]);
+}
+
+bool Collective::isThroneBuilt() const {
+  return !mySquares.at(SquareType::KEEPER_THRONE).empty();
 }
 
 void Collective::tick() {
-  if (isDownstairsVisible()
+  if (isThroneBuilt()
       && (minions.size() - vampires.size() < mySquares[SquareType::BED].size() || minions.empty())
       && Random.roll(40) && minions.size() < minionLimit) {
     PCreature c = minionFactory.random(MonsterAIFactory::collective(this));
     addCreature(c.get());
-    level->landCreature(StairDirection::DOWN, StairKey::DWARF, std::move(c));
+    level->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(c));
   }
-  warning[NO_CONNECTION] = !isDownstairsVisible();
+  warning[NO_CONNECTION] = !isThroneBuilt();
   warning[NO_BEDS] = mySquares[SquareType::BED].size() == 0 && !minions.empty();
   warning[MORE_BEDS] = mySquares[SquareType::BED].size() < minions.size() - vampires.size();
   warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && !minions.empty();
@@ -691,16 +713,20 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         minionTaskStrings[c] = "sleeping";
         break; }
     case MinionTask::TRAIN:
-        if (mySquares[SquareType::TRAINING_DUMMY].empty())
+        if (mySquares[SquareType::TRAINING_DUMMY].empty()) {
+          minionTasks.at(c).setState(MinionTask::SLEEP);
           return NoMove;
+        }
         addTask(Task::applySquare(this, mySquares[SquareType::TRAINING_DUMMY]), c);
         minionTaskStrings[c] = "training";
         break;
     case MinionTask::TRAIN_IDLE:
         return NoMove;
     case MinionTask::WORKSHOP:
-        if (mySquares[SquareType::WORKSHOP].empty())
+        if (mySquares[SquareType::WORKSHOP].empty()) {
+          minionTasks.at(c).setState(MinionTask::SLEEP);
           return NoMove;
+        }
         addTask(Task::applySquare(this, mySquares[SquareType::WORKSHOP]), c);
         minionTaskStrings[c] = "crafting";
         break;
@@ -717,8 +743,21 @@ MoveInfo Collective::getMinionMove(Creature* c) {
 }
 
 MoveInfo Collective::getMove(Creature* c) {
-  if (!contains(creatures, c))
-    return NoMove;
+  if (c == heart) {
+    if (isThroneBuilt()) {
+      Vec2 thronePos = getOnlyElement(mySquares.at(SquareType::KEEPER_THRONE));
+      if (c->getPosition() != thronePos) {
+        if (auto move = c->getMoveTowards(thronePos))
+          return {1.0, [=] {
+            c->move(*move);
+          }};
+      }
+    }
+    return {1.0, [=] {
+      c->wait();
+    }};      
+  }
+  CHECK(contains(creatures, c));
   if (!contains(imps, c)) {
     CHECK(contains(minions, c));
     return getMinionMove(c);
@@ -756,8 +795,20 @@ MoveInfo Collective::getMove(Creature* c) {
     taskMap[c] = closest;
     taken[closest] = c;
     return closest->getMove(c);
-  } else
-    return NoMove;
+  } else {
+    if (!isThroneBuilt() && heart->getLevel() == c->getLevel()) {
+      Vec2 heartPos = heart->getPosition();
+      if (heartPos.dist8(c->getPosition()) < 3)
+        return NoMove;
+      if (auto move = c->getMoveTowards(heartPos))
+        return {1.0, [=] {
+          c->move(*move);
+        }};
+      else
+        return NoMove;
+    } else
+      return NoMove;
+  }
 }
 
 MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
@@ -777,11 +828,8 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
 }
 
 void Collective::addCreature(Creature* c) {
-  if (c->getName() == "dungeon heart") {
-    CHECK(heart == nullptr) << "Too many dungeon hearts";
+  if (heart == nullptr) {
     heart = c;
-    creatures.push_back(c);
-    return;
   }
   creatures.push_back(c);
   if (!c->canConstruct(SquareType::FLOOR)) {
@@ -795,13 +843,13 @@ void Collective::addCreature(Creature* c) {
 
 void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
   if (l == level) {
-    bool found = false;
+ //   bool found = false;
     for (auto& elem : mySquares)
       if (elem.second.count(pos)) {
         elem.second.erase(pos);
-        found = true;
+   //     found = true;
       }
-    CHECK(found);
+ //   CHECK(found);
   }
 }
 

@@ -176,6 +176,8 @@ class Creature : private CreatureAttributes, public CreatureView {
   
   virtual void onChat(Creature*);
 
+  void learnLocation(const Location*);
+
   bool isPanicking() const;
   Item* getWeapon() const;
 

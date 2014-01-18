@@ -2,6 +2,7 @@
 #define _CONTROLLER_H
 
 class Creature;
+class Location;
 
 class Controller {
   public:
@@ -16,6 +17,8 @@ class Controller {
   virtual void onKilled(const Creature* attacker) {}
   virtual void onItemsAppeared(vector<Item*> items, const Creature* from) { }
   virtual const MapMemory& getMemory(const Level* l = nullptr) const = 0;
+
+  virtual void learnLocation(const Location*) { }
 
   virtual void makeMove() = 0;
   virtual void sleeping() {}

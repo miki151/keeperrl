@@ -444,7 +444,7 @@ class ShopkeeperController : public Monster, public EventListener {
 
 class VillageElder : public Creature {
   public:
-  VillageElder(vector<pair<Skill*, double>> _teachSkills, vector<Quest*> _quests,
+  VillageElder(vector<pair<Skill*, double>> _teachSkills, vector<pair<Quest*, int>> _quests,
       const ViewObject& object, Tribe* t, const CreatureAttributes& attr, ControllerFactory factory) : 
       Creature(object, t, attr, factory), teachSkills(_teachSkills), quests(_quests) {
     getTribe()->addImportantMember(this);
@@ -468,17 +468,21 @@ class VillageElder : public Creature {
   }
 
   bool tribeQuest(Creature* who) {
-    for (Quest* q : quests) {
-      if (q->isFinished()) {  
-        who->privateMessage("\"" + (*who->getFirstName()) + ", you have fulfilled your quest.\"");
+    for (pair<Quest*, int> q : quests) {
+      if (q.first->isFinished()) {  
+        who->privateMessage("\"" + (*who->getFirstName()) +
+            ", you have fulfilled your quest. Here is your payment.\"");
+        who->takeItems(ItemFactory::fromId(ItemId::GOLD_PIECE, q.second), this);
         removeElement(quests, q);
         return true;
       }
-      string message = MessageBuffer::important(q->getMessage());
-      if (const Location* loc = q->getLocation())
+      string message = MessageBuffer::important(q.first->getMessage());
+      if (const Location* loc = q.first->getLocation()) {
         message += " You need to head " + (loc->getBounds().middle() - getPosition()).getBearing() + " to find it.";
+        who->learnLocation(loc);
+      }
       who->privateMessage(message);
-      q->addAdventurer(who);
+      q.first->addAdventurer(who);
       return true;
     }
     return false;
@@ -514,7 +518,7 @@ class VillageElder : public Creature {
 
   private:
   vector<pair<Skill*, double>> teachSkills;
-  vector<Quest*> quests;
+  vector<pair<Quest*, int>> quests;
   const Item* bringItem = nullptr;
   const Creature* killCreature = nullptr;
 };
@@ -624,7 +628,7 @@ CreatureFactory CreatureFactory::crypt() {
 }
 
 CreatureFactory CreatureFactory::hellLevel() {
-  return CreatureFactory(Tribe::monster, { CreatureId::DRAGON}, { 1}, {CreatureId::DARK_KNIGHT});
+  return CreatureFactory(Tribe::monster, { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
 }
 
 CreatureFactory CreatureFactory::collectiveUndead() {
@@ -633,7 +637,7 @@ CreatureFactory CreatureFactory::collectiveUndead() {
 }
 
 CreatureFactory CreatureFactory::collectiveStart() {
-  return CreatureFactory(Tribe::player, { CreatureId::IMP}, { 1}, {CreatureId::DUNGEON_HEART} );
+  return CreatureFactory(Tribe::player, { CreatureId::IMP}, { 1}, {} );
 }
 
 CreatureFactory CreatureFactory::collectiveMinions() {
@@ -832,9 +836,21 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
 PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
   ControllerFactory factory = Monster::getFactory(actorFactory);
   switch (id) {
+    case CreatureId::KEEPER: return get(ViewId::KEEPER, CATTR(
+                               c.speed = 100;
+                               c.weight = 90;
+                               c.size = CreatureSize::LARGE;
+                               c.strength = 12;
+                               c.dexterity = 15;
+                               c.barehandedDamage = 5;
+                               c.humanoid = true;
+                               c.name = "Keeper";
+                               c.firstName = NameGenerator::firstNames.getNext();
+                               c.skills.insert(Skill::archery);
+                               c.skills.insert(Skill::twoHandedWeapon);), tribe, factory);
     case CreatureId::GOBLIN: return get(ViewId::GOBLIN, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
+                                   c.speed = 100;
+                                   c.size = CreatureSize::LARGE;
                                 c.strength = 16;
                                 c.dexterity = 14;
                                 c.barehandedDamage = 3;
@@ -936,7 +952,9 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all dungeons";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "guard";), tribe, factory);
-    case CreatureId::AVATAR: return PCreature(new VillageElder({}, {Quest::castleCellar, Quest::dragon},
+    case CreatureId::AVATAR: return PCreature(new VillageElder({}, {
+                                    {Quest::castleCellar, Random.getRandom(80, 120)},
+                                    {Quest::dragon, Random.getRandom(180, 320)}},
                                 ViewObject(ViewId::AVATAR, ViewLayer::CREATURE, "Duke"), tribe, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
@@ -1202,7 +1220,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.name = "elf child";), Tribe::elven, factory);
     case CreatureId::ELF_LORD: return PCreature(new VillageElder(
                                 {},
-                                {Quest::bandits},
+                                {{Quest::bandits, Random.getRandom(80, 120)}},
                                 ViewObject(ViewId::ELF_LORD, ViewLayer::CREATURE, "Elf lord"), Tribe::elven, CATTR(
                                 c.speed = 140;
                                 c.size = CreatureSize::MEDIUM;

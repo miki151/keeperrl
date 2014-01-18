@@ -445,6 +445,9 @@ void Creature::onChat(Creature* from) {
   }
 }
 
+void Creature::learnLocation(const Location* loc) {
+  controller->learnLocation(loc);
+}
 void Creature::stealFrom(Vec2 direction, const vector<Item*>& items) {
   Creature* c = NOTNULL(getSquare(direction)->getCreature());
   equipment.addItems(c->steal(items));

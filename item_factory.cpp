@@ -312,7 +312,7 @@ ItemFactory ItemFactory::villageShop() {
       {ItemId::WARNING_AMULET, 1 },
       {ItemId::HEALING_AMULET, 1 },
       {ItemId::DEFENSE_AMULET, 1 },
-      {ItemId::FIRST_AID_KIT, 5} });
+      {ItemId::FIRST_AID_KIT, 5} }, { ItemId::SPEED_BOOTS, ItemId::TELEPATHY_HELM});
 }
 
 ItemFactory ItemFactory::dwarfShop() {
@@ -333,7 +333,7 @@ ItemFactory ItemFactory::armory() {
       {ItemId::TELEPATHY_HELM, 0.1 },
       {ItemId::IRON_HELM, 1},
       {ItemId::LEATHER_BOOTS, 2 },
-      {ItemId::SPEED_BOOTS, 0.1 },
+      {ItemId::SPEED_BOOTS, 0.5 },
       {ItemId::IRON_BOOTS, 1} });
 }
 
@@ -350,7 +350,7 @@ ItemFactory ItemFactory::goblinShop() {
       {ItemId::TELEPATHY_HELM, 0.1 },
       {ItemId::LEATHER_BOOTS, 2 },
       {ItemId::IRON_BOOTS, 1 },
-      {ItemId::SPEED_BOOTS, 0.1 },
+      {ItemId::SPEED_BOOTS, 0.3 },
       {ItemId::PANIC_MUSHROOM, 1 },
       {ItemId::RAGE_MUSHROOM, 1 },
       {ItemId::STRENGTH_MUSHROOM, 1 },
@@ -383,6 +383,7 @@ ItemFactory ItemFactory::potions() {
       {ItemId::SLOW_POTION, 1 },
       {ItemId::BLINDNESS_POTION, 1 },
       {ItemId::INVISIBLE_POTION, 1 },
+      {ItemId::POISON_POTION, 1 },
       {ItemId::SPEED_POTION, 1 }});
 }
 
@@ -431,8 +432,8 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::IRON_HELM, 5 },
       {ItemId::TELEPATHY_HELM, 1 },
       {ItemId::LEATHER_BOOTS, 20 },
-      {ItemId::IRON_BOOTS, 5 },
-      {ItemId::SPEED_BOOTS, 1 },
+      {ItemId::IRON_BOOTS, 7 },
+      {ItemId::SPEED_BOOTS, 3 },
       {ItemId::TELE_SCROLL, 30 },
       {ItemId::PORTAL_SCROLL, 10 },
       {ItemId::IDENTIFY_SCROLL, 30 },
@@ -447,6 +448,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::SPEED_POTION, 50 },
       {ItemId::BLINDNESS_POTION, 30 },
       {ItemId::INVISIBLE_POTION, 10 },
+      {ItemId::POISON_POTION, 20 },
       {ItemId::FIRST_AID_KIT, 30 }});
 }
 
@@ -682,7 +684,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.type = ItemType::ARMOR;
             i.weight = 1.5;
             i.armorType = ArmorType::HELMET;
-            i.price = 140;
+            i.price = 340;
             i.defense= 1 + maybePlusMinusOne(4);),
                 [](const Creature* c1, const Creature* c2) {
                   return c1->getPosition().dist8(c2->getPosition()) < 5;
@@ -709,7 +711,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.type = ItemType::ARMOR;
             i.weight = 2;
             i.armorType = ArmorType::BOOTS;
-            i.price = 160;
+            i.price = 360;
             i.speed = 30;
             i.defense = 1 + maybePlusMinusOne(4);)));
     case ItemId::WARNING_AMULET: return PItem(
@@ -719,7 +721,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.realName = "amulet of warning";
             i.description = "Warns about dangerous beasts and enemies.";
             i.type = ItemType::AMULET;
-            i.price = 300;
+            i.price = 220;
             i.identifiable = true;
             i.weight = 0.3;), 5));
     case ItemId::HEALING_AMULET: return PItem(
@@ -750,7 +752,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.realName = "amulet of nature affinity";
             i.description = "Makes all animals peaceful.";
             i.type = ItemType::AMULET;
-            i.price = 300;
+            i.price = 120;
             i.identifiable = true;
             i.weight = 0.3;), EnemyCheck::friendlyAnimals(0.5)));
     case ItemId::FIRST_AID_KIT: return PItem(new Item(

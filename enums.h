@@ -93,6 +93,8 @@ enum class StairKey { DWARF, CRYPT, GOBLIN, PLAYER_SPAWN, PYRAMID, TOWER, CASTLE
 enum class StairDirection { UP, DOWN };
 
 enum class CreatureId {
+    KEEPER,
+
     GOBLIN,
     GREAT_GOBLIN,
     BANDIT,
@@ -252,6 +254,7 @@ ENUM_HASH(ViewLayer);
 
 enum class ViewId { 
   PLAYER,
+  KEEPER,
   ELF,
   ELF_CHILD,
   ELF_LORD,
@@ -321,6 +324,7 @@ enum class ViewId {
   WALL,
   HILL,
   MOUNTAIN,
+  MOUNTAIN2,
   SNOW,
   GOLD_ORE,
   WOOD_WALL,
@@ -354,6 +358,7 @@ enum class ViewId {
   OPENED_CHEST,
   COFFIN,
   OPENED_COFFIN,
+  THRONE,
   BED,
   TORTURE_TABLE,
   TRAINING_DUMMY,
@@ -445,6 +450,7 @@ enum class SquareType {
   CASTLE_WALL,
   MUD_WALL,
   MOUNTAIN,
+  MOUNTAIN2,
   GLACIER,
   HILL,
   SECRET_PASS,
@@ -462,7 +468,7 @@ enum class SquareType {
   TRAINING_DUMMY,
   WORKSHOP,
   HATCHERY,
-  DUNGEON_HEART,
+  KEEPER_THRONE,
   GRAVE,
   ROLLING_BOULDER,
   POISON_GAS,

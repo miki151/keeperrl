@@ -51,7 +51,8 @@ class HumanVillageControl : public VillageControl {
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(startedAttack(c));
-    if (pathToDungeon.empty())
+    onEnteredDungeon(attackTimes.at(c));
+    if (pathToDungeon.empty() && c->getLevel() != villain->getLevel())
       pathToDungeon = genPathToDungeon();
     if (c->getLevel() == villain->getLevel()) {
       if (Optional<Vec2> move = c->getMoveTowards(villain->getHeartPos())) 
@@ -60,7 +61,7 @@ class HumanVillageControl : public VillageControl {
         }};
       else {
         for (Vec2 v : Vec2::directions8(true))
-          if (c->canDestroy(v))
+          if (c->canDestroy(v) && c->getSquare(v)->getName() == "door")
             return {1.0, [this, v, c] () {
               c->destroy(v);
             }};

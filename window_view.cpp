@@ -187,6 +187,7 @@ Tile getWaterTile(int leftX) {
 Tile getSprite(ViewId id) {
   switch (id) {
     case ViewId::PLAYER: return Tile(1, 0);
+    case ViewId::KEEPER: return Tile(3, 0);
     case ViewId::UNKNOWN_MONSTER: return Tile('?', lightGreen);
     case ViewId::SPECIAL_BEAST: return Tile(7, 10);
     case ViewId::SPECIAL_HUMANOID: return Tile(6, 10);
@@ -211,6 +212,7 @@ Tile getSprite(ViewId id) {
     case ViewId::GRASS: return Tile(0, 13, 2);
     case ViewId::WALL: return getWallTile(2);
     case ViewId::MOUNTAIN: return Tile(17, 2, 2, getSprite(ViewId::HILL));
+    case ViewId::MOUNTAIN2: return getWallTile(21, ViewId::HILL);
  /*                                 .addConnection({Dir::N, Dir::E, Dir::S, Dir::W, 
                                         Dir::NE, Dir::SE, Dir::SW, Dir::NW}, 19, 10)
                                   .addConnection({Dir::E, Dir::S, Dir::W, Dir::SE, Dir::SW}, 19, 9)
@@ -342,6 +344,7 @@ Tile getSprite(ViewId id) {
     case ViewId::UNARMED_GAS_TRAP: return Tile(L'☠', lightGray, true);
     case ViewId::ROCK: return Tile(6, 1, 3);
     case ViewId::BED: return Tile(5, 4, 2, getSprite(ViewId::FLOOR));
+    case ViewId::THRONE: return Tile(7, 4, 2, getSprite(ViewId::FLOOR));
     case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
     case ViewId::ALTAR: return Tile(2, 7, 2, getSprite(ViewId::FLOOR));
     case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, getSprite(ViewId::FLOOR));
@@ -379,6 +382,7 @@ Tile getSpriteTile(const ViewObject& obj) {
 Tile getAsciiTile(const ViewObject& obj) {
   switch (obj.id()) {
     case ViewId::PLAYER: return Tile('@', white);
+    case ViewId::KEEPER: return Tile('@', purple);
     case ViewId::UNKNOWN_MONSTER: return Tile('?', lightGreen);
     case ViewId::SPECIAL_BEAST: return getSpecialCreature(obj, false);
     case ViewId::SPECIAL_HUMANOID: return getSpecialCreature(obj, true);
@@ -405,6 +409,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::MUD_WALL: return Tile('#', lightBrown);
     case ViewId::WALL: return Tile('#', lightGray);
     case ViewId::MOUNTAIN: return Tile(0x25ee, darkGray, true);
+    case ViewId::MOUNTAIN2: return Tile('#', darkGray);
     case ViewId::GOLD_ORE: return Tile(L'⁂', yellow, true);
     case ViewId::SNOW: return Tile(0x25ee, white, true);
     case ViewId::HILL: return Tile(0x1d022, darkGreen, true);
@@ -525,6 +530,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ROCK: return Tile('*', lightGray);
     case ViewId::BED: return Tile('=', white);
     case ViewId::DUNGEON_HEART: return Tile(L'♥', white, true);
+    case ViewId::THRONE: return Tile(L'Ω', purple);
     case ViewId::ALTAR: return Tile(L'Ω', white);
     case ViewId::TORTURE_TABLE: return Tile('=', gray);
     case ViewId::TRAINING_DUMMY: return Tile(L'‡', brown, true);
@@ -1205,7 +1211,7 @@ Vec2 WindowView::projectOnBorders(Rectangle area, Vec2 pos) {
 Color getHighlightColor(ViewIndex::HighlightInfo info) {
   switch (info.type) {
     case HighlightType::BUILD: return transparency(yellow, 170);
-    case HighlightType::FOG: return transparency(white, 170 * info.amount);
+    case HighlightType::FOG: return transparency(white, 120 * info.amount);
     case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
     case HighlightType::MEMORY: return transparency(black, 80);
   }
@@ -1222,6 +1228,7 @@ enum class ConnectionId {
   ROAD,
   WALL,
   WATER,
+  MOUNTAIN2,
 };
 
 Optional<ConnectionId> getConnectionId(ViewId id) {
@@ -1238,6 +1245,7 @@ Optional<ConnectionId> getConnectionId(ViewId id) {
     case ViewId::WALL: return ConnectionId::WALL;
     case ViewId::MAGMA:
     case ViewId::WATER: return ConnectionId::WATER;
+    case ViewId::MOUNTAIN2: return ConnectionId::MOUNTAIN2;
     default: return Nothing();
   }
 }

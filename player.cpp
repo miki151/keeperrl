@@ -23,6 +23,11 @@ void Player::onThrowEvent(const Creature* thrower, const Item* item, const vecto
     }
 }
 
+void Player::learnLocation(const Location* loc) {
+  for (Vec2 v : loc->getBounds())
+    remember(v, creature->getLevel()->getSquare(v)->getViewObject());
+}
+
 void Player::onExplosionEvent(const Level* level, Vec2 pos) {
   if (creature->canSee(pos))
     view->animation(pos, AnimationId::EXPLOSION);
@@ -49,13 +54,6 @@ map<EquipmentSlot, string> slotTitles = {
     {EquipmentSlot::BODY_ARMOR, "Body armor"},
     {EquipmentSlot::BOOTS, "Boots"},
     {EquipmentSlot::AMULET, "Amulet"}};
-
-View* Player::getView() {
-  MEASURE(
-      view->refreshView(creature),
-      "level render time");
-  return view;
-}
 
 void Player::onBump(Creature*) {
   Debug(FATAL) << "Shouldn't call onBump on a player";

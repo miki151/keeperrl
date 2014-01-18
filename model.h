@@ -22,7 +22,7 @@ class Model {
   static Model* heroModel(View* view, const string& heroName);
  
   /** Generates levels and all game entities for a collective game. */
-  static Model* collectiveModel(View* view, int numCreatures);
+  static Model* collectiveModel(View* view);
 
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
@@ -47,6 +47,7 @@ class Model {
   Level* buildLevel(Level::Builder&& b, LevelMaker*, bool surface = false);
   void addLink(StairDirection, StairKey, Level*, Level*);
   Level* prepareTopLevel(vector<SettlementInfo> settlements);
+  Level* prepareTopLevel2(vector<SettlementInfo> settlements);
 
   vector<Level*> levels;
   View* view;

@@ -651,6 +651,15 @@ class RandomLocations : public LevelMaker {
   RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
       SquarePredicate* pred, bool _separate = true, map<pair<LevelMaker*, LevelMaker*>, double> _minDistance = {},
       map<pair<LevelMaker*, LevelMaker*>, double> _maxDistance = {})
+      : insideMakers(_insideMakers), sizes(_sizes), predicate(sizes.size(), pred), separate(_separate),
+        minDistance(_minDistance), maxDistance(_maxDistance) {
+        CHECK(insideMakers.size() == sizes.size());
+      }
+
+  RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
+      const vector<SquarePredicate*> pred, bool _separate = true,
+      map<pair<LevelMaker*, LevelMaker*>, double> _minDistance = {},
+      map<pair<LevelMaker*, LevelMaker*>, double> _maxDistance = {})
       : insideMakers(_insideMakers), sizes(_sizes), predicate(pred), separate(_separate), minDistance(_minDistance),
         maxDistance(_maxDistance) {
         CHECK(insideMakers.size() == sizes.size());
@@ -692,10 +701,10 @@ class RandomLocations : public LevelMaker {
             ok = false;
             break;
           }
-        if (!predicate->apply(builder, Vec2(px, py)) ||
-            !predicate->apply(builder, Vec2(px + width - 1, py)) || 
-            !predicate->apply(builder, Vec2(px + width - 1, py + height - 1)) || 
-            !predicate->apply(builder, Vec2(px, py + height - 1))) 
+        if (!predicate[i]->apply(builder, Vec2(px, py)) ||
+            !predicate[i]->apply(builder, Vec2(px + width - 1, py)) || 
+            !predicate[i]->apply(builder, Vec2(px + width - 1, py + height - 1)) || 
+            !predicate[i]->apply(builder, Vec2(px, py + height - 1))) 
           ok = false;
         else
         if (separate)
@@ -725,7 +734,7 @@ class RandomLocations : public LevelMaker {
   private:
   vector<LevelMaker*> insideMakers;
   vector<pair<int, int>> sizes;
-  SquarePredicate* predicate;
+  vector<SquarePredicate*> predicate;
   bool separate;
   map<pair<LevelMaker*, LevelMaker*>, double> minDistance;
   map<pair<LevelMaker*, LevelMaker*>, double> maxDistance;
@@ -801,18 +810,18 @@ void addAvg(int x, int y, const Table<double>& wys, double& avg, int& num) {
   } 
 }
 
-Table<double> genNoiseMap(Rectangle area, bool lowMiddle, double varianceMult) {
+Table<double> genNoiseMap(Rectangle area, vector<int> cornerLevels, double varianceMult) {
   int width = 1;
   while (width < area.getW() - 1 || width < area.getH() - 1)
     width *= 2;
   width /= 2;
   ++width;
   Table<double> wys(width, width);
-  wys[0][0] = 1;
-  wys[0][width - 1] = 1;
-  wys[width - 1][0] = 1;
-  wys[width - 1][width - 1] = 1;
-  wys[(width - 1) / 2][(width - 1) / 2] = lowMiddle ? 0 : 1;
+  wys[0][0] = cornerLevels[0];
+  wys[width - 1][0] = cornerLevels[1];
+  wys[width - 1][width - 1] = cornerLevels[2];
+  wys[0][width - 1] = cornerLevels[3];
+  wys[(width - 1) / 2][(width - 1) / 2] = cornerLevels[4];
 
   double variance = 0.5;
   double heightDiff = 0.1;
@@ -874,12 +883,14 @@ vector<double> sortedValues(const Table<double>& t) {
 
 class Mountains : public LevelMaker {
   public:
-  Mountains(double r) : ratio(r) {}
+  Mountains(double r, double varianceM, vector<int> _cornerLevels, bool _makeFog = true,
+      vector<SquareType> _types = {SquareType::GLACIER, SquareType::MOUNTAIN, SquareType::HILL}) 
+      : ratio(r), cornerLevels(_cornerLevels), types(_types), makeFog(_makeFog), varianceMult(varianceM) {}
 
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
-    Table<double> wys = genNoiseMap(area, true, 0.7);
-    Table<double> fog = genNoiseMap(area, true, 0.5);
+    Table<double> wys = genNoiseMap(area, cornerLevels, varianceMult);
+    Table<double> fog = genNoiseMap(area, {0, 0, 0, 0, 0}, 0.5);
     for (Vec2 v : area)
       fog[v] += wys[v] / 2;
     vector<double> values = sortedValues(wys);
@@ -892,21 +903,21 @@ class Mountains : public LevelMaker {
     int gCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0, fCnt = 0;
     for (Vec2 v : area) {
       builder->setHeightMap(v, wys[v]);
-      if (fog[v] > cutOffValFogLow) {
+      if (makeFog && fog[v] > cutOffValFogLow) {
         ++fCnt;
         builder->setFog(v, min(1.0, (fog[v] - cutOffValFogLow) / (cutOffValFogHigh - cutOffValFogLow)));
         builder->addAttrib(v, SquareAttrib::FOG);
       }
       if (wys[v] > cutOffValSnow) {
-        builder->putSquare(v, SquareType::GLACIER, SquareAttrib::ROAD_CUT_THRU);
+        builder->putSquare(v, types[0], SquareAttrib::ROAD_CUT_THRU);
         ++gCnt;
       }
       else if (wys[v] > cutOffVal) {
-        builder->putSquare(v, SquareType::MOUNTAIN, {SquareAttrib::MOUNTAIN, SquareAttrib::ROAD_CUT_THRU});
+        builder->putSquare(v, types[1], {SquareAttrib::MOUNTAIN, SquareAttrib::ROAD_CUT_THRU});
         ++mCnt;
       }
       else if (wys[v] > cutOffValHill) {
-        builder->putSquare(v, SquareType::HILL, SquareAttrib::HILL);
+        builder->putSquare(v, types[2], SquareAttrib::HILL);
         ++hCnt;
       }
       else {
@@ -919,6 +930,10 @@ class Mountains : public LevelMaker {
 
   private:
   double ratio;
+  vector<int> cornerLevels;
+  vector<SquareType> types;
+  bool makeFog;
+  double varianceMult;
 };
 
 class Roads : public LevelMaker {
@@ -990,7 +1005,7 @@ class Vegetation : public LevelMaker {
       : ratio(_ratio), density(_density), types(_types), probs(_probs), onType(_onType) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
-    Table<double> wys = genNoiseMap(area, false, 0.9);
+    Table<double> wys = genNoiseMap(area, {0, 0, 0, 0, 0}, 0.9);
     vector<double> values = sortedValues(wys);
     double cutoff = values[values.size() * ratio];
     for (Vec2 v : area)
@@ -1019,22 +1034,40 @@ class LocationMaker : public LevelMaker {
   Location* location;
 };
 
-class AddAttrib : public LevelMaker {
+class ForEachSquare : public LevelMaker {
   public:
-  AddAttrib(SquareAttrib attr, bool _remove = false) : attrib(attr), remove(_remove) {}
+  ForEachSquare(function<void(Level::Builder*, Vec2 pos)> f,
+      SquarePredicate* _onPred = nullptr) : fun(f), onPred(_onPred) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
     for (Vec2 v : area)
-      if (!remove)
-        builder->addAttrib(v, attrib);
-      else
-        builder->removeAttrib(v, attrib);
+      if (!onPred || onPred->apply(builder, v))
+        fun(builder, v);
   }
   
-  private:
-  SquareAttrib attrib;
-  bool remove;
+  protected:
+  function<void(Level::Builder*, Vec2 pos)> fun;
+  SquarePredicate* onPred;
 };
+
+class AddAttrib : public ForEachSquare {
+  public:
+  AddAttrib(SquareAttrib attr, SquarePredicate* _onPred = nullptr) 
+      : ForEachSquare([attr](Level::Builder* b, Vec2 pos) { b->addAttrib(pos, attr); }) {}
+};
+
+class RemoveAttrib : public ForEachSquare {
+  public:
+  RemoveAttrib(SquareAttrib attr, SquarePredicate* _onPred = nullptr) 
+      : ForEachSquare([attr](Level::Builder* b, Vec2 pos) { b->removeAttrib(pos, attr); }) {}
+};
+
+class SetCovered : public ForEachSquare {
+  public:
+  SetCovered(SquarePredicate* _onPred = nullptr) 
+      : ForEachSquare([](Level::Builder* b, Vec2 pos) { b->setCovered(pos); }) {}
+};
+
 
 class FlockAndLeader : public LevelMaker {
   public:
@@ -1429,7 +1462,7 @@ MakerQueue* castle(CreatureFactory factory, Location* loc, Tribe* tribe, vector<
   queue->addMaker(new AreaCorners(new BorderGuard(new Empty(SquareType::FLOOR), SquareType::CASTLE_WALL), Vec2(5, 5)));
   queue->addMaker(new Margin(insideMargin, new Connector({0, 1, 0}, 18)));
   queue->addMaker(new Margin(insideMargin, new CastleExit(tribe)));
-  queue->addMaker(new LocationMaker(loc));
+  queue->addMaker(new Margin(insideMargin, new LocationMaker(loc)));
   queue->addMaker(new Creatures(factory, 10, 20, MonsterAIFactory::stayInLocation(loc), SquareType::MUD));
   return queue;
 }
@@ -1477,7 +1510,7 @@ LevelMaker* LevelMaker::towerLevel(Optional<StairKey> down, Optional<StairKey> u
   queue->addMaker(new Empty(up ? SquareType::ROCK_WALL : SquareType::LOW_ROCK_WALL));
   queue->addMaker(new Margin(1, new Empty(SquareType::FLOOR)));
   queue->addMaker(new Margin(1, new AddAttrib(SquareAttrib::ROOM)));
-  queue->addMaker(new AddAttrib(SquareAttrib::ROAD_CUT_THRU, true));
+  queue->addMaker(new RemoveAttrib(SquareAttrib::ROAD_CUT_THRU));
   LevelMaker* downStairs = (down) ? new Stairs(StairDirection::DOWN, *down,
       new TypePredicate(SquareType::FLOOR)) : nullptr;
   LevelMaker* upStairs = (up) ? new Stairs(StairDirection::UP, *up, new TypePredicate(SquareType::FLOOR)) : nullptr;
@@ -1558,10 +1591,10 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   MakerQueue* pyramid = new MakerQueue();
   pyramid->addMaker(new LocationMaker(new Location("ancient pyramid", "Terrible evil is said to be lurking there.")));
   pyramid->addMaker(new Margin(1, pyramidLevel(Nothing(), {StairKey::PYRAMID}, {})));
-  subMakers.push_back(pyramid);
-  subSizes.emplace_back(17, 17);
+ // subMakers.push_back(pyramid);
+ // subSizes.emplace_back(17, 17);
   queue->addMaker(new Empty(SquareType::GRASS));
-  queue->addMaker(new Mountains(0.5));
+  queue->addMaker(new Mountains(0.5, 0.7, {1, 1, 1, 1, 0}));
  // queue->addMaker(new MountainRiver(30, '='));
   queue->addMaker(new Vegetation(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
   queue->addMaker(new Vegetation(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
@@ -1580,6 +1613,54 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   queue->addMaker(new Shrine(deity, SquareType::PATH,
         new TypePredicate({SquareType::GRASS, SquareType::DECID_TREE, SquareType::BUSH}), SquareType::WOOD_WALL, new LocationMaker(new Location("shrine", "It is dedicated to the god " + deity->getName()))));*/
   queue->addMaker(new Creatures(forrestCreatures, 30, 50, MonsterAIFactory::wildlifeNonPredator()));
+  queue->addMaker(new Items(ItemFactory::mushrooms(), SquareType::GRASS, 30, 60));
+  return new BorderGuard(queue);
+}
+
+LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
+  MakerQueue* queue = new MakerQueue();
+  vector<SquareType> vegetationLow { SquareType::CANIF_TREE, SquareType::BUSH };
+  vector<SquareType> vegetationHigh { SquareType::DECID_TREE, SquareType::MOUNTAIN_BUSH };
+  vector<double> probs { 2, 1 };
+  vector<pair<int, int>> subSizes;
+  vector<LevelMaker*> subMakers;
+  vector<SquarePredicate*> predicates;
+  LevelMaker* castleMaker;
+  for (SettlementInfo settlement : settlements) {
+    MakerQueue* queue = 
+        (settlement.type == SettlementType::CASTLE ?
+            castle(settlement.factory, settlement.location, settlement.tribe, {StairKey::CASTLE_CELLAR}) :
+            village(settlement.factory, settlement.location, settlement.tribe));
+    castleMaker = queue;
+    if (settlement.type == SettlementType::CASTLE) {
+    } else
+    if (settlement.tribe == Tribe::elven) {
+    //  queue->addMaker(new StartingPos(new TypePredicate(SquareType::GRASS)));
+    }
+    subMakers.push_back(queue);
+    predicates.push_back(new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
+          new NoAttribPredicate(SquareAttrib::FOG)));
+    subSizes.emplace_back(30, 21);
+  }
+  LevelMaker* startingPos = new StartingPos(new TypePredicate(SquareType::HILL));
+  subMakers.push_back(startingPos);
+  subSizes.emplace_back(4, 4);
+  predicates.push_back(new TypePredicate(SquareType::HILL));
+  for (int i : Range(Random.getRandom(4, 7))) {
+    subMakers.push_back(new Blob(SquareType::GOLD_ORE));
+    subSizes.emplace_back(Random.getRandom(5, 10), Random.getRandom(5, 10)); 
+    predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
+  }
+  queue->addMaker(new Empty(SquareType::GRASS));
+  queue->addMaker(new Mountains(0.5, 0.4, {0, 1, 1, 0, 0}, false,
+        {SquareType::MOUNTAIN2, SquareType::MOUNTAIN2, SquareType::HILL}));
+  queue->addMaker(new SetCovered(new TypePredicate(SquareType::MOUNTAIN2)));
+  queue->addMaker(new Vegetation(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
+  queue->addMaker(new Vegetation(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
+  queue->addMaker(new Vegetation(0.2, 0.3, SquareType::MOUNTAIN, vegetationHigh, probs));
+  queue->addMaker(new Margin(10, new RandomLocations(subMakers, subSizes, predicates, true,
+          {{{castleMaker, startingPos}, 50}}, {})));
+  queue->addMaker(new Roads(SquareType::PATH));
   queue->addMaker(new Items(ItemFactory::mushrooms(), SquareType::GRASS, 30, 60));
   return new BorderGuard(queue);
 }
@@ -1640,7 +1721,7 @@ LevelMaker* LevelMaker::pyramidLevel(Optional<CreatureFactory> cfactory, vector<
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareType::YELLOW_WALL));
   queue->addMaker(new AddAttrib(SquareAttrib::NO_DIG));
-  queue->addMaker(new Margin(1, new AddAttrib(SquareAttrib::NO_DIG, true)));
+  queue->addMaker(new Margin(1, new RemoveAttrib(SquareAttrib::NO_DIG)));
   queue->addMaker(new RoomMaker(2, 5, 4, 6, SquareType::YELLOW_WALL, SquareType::YELLOW_WALL, nullptr, true));
   for (StairKey key : down)
     queue->addMaker(new Stairs(StairDirection::DOWN, key, new TypePredicate(SquareType::FLOOR)));

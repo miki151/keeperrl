@@ -37,10 +37,9 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
   }
 }
 
-
-ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun, vector<Vec2> dir, Vec2 to, Optional<Vec2> from, double mult) :
-    distance(a.getPX(), a.getPY(), a.getW(), a.getH(), infinity), 
-    target(to), directions(dir) {
+ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun,
+    vector<Vec2> dir, Vec2 to, Optional<Vec2> from, double mult)
+    : distance(a.getPX(), a.getPY(), a.getW(), a.getH(), infinity), target(to), directions(dir) {
   if (mult == 0)
     init(entryFun, lengthFun, target, from);
   else {

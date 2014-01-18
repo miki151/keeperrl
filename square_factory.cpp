@@ -469,7 +469,8 @@ Square* SquareFactory::get(SquareType s) {
         return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR, "Floor"), "floor", true, false, 0, 0, 
             {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
             {SquareType::ROCK_WALL, 20}, {SquareType::TRAINING_DUMMY, 10}, {SquareType::HATCHERY, 3}, 
-            {SquareType::GRAVE, 10}, {SquareType::ROLLING_BOULDER, 10}, {SquareType::WORKSHOP, 10}});
+            {SquareType::GRAVE, 10}, {SquareType::ROLLING_BOULDER, 10}, {SquareType::WORKSHOP, 10},
+            {SquareType::KEEPER_THRONE, 10}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR, "Rope bridge"), "rope bridge", true);
     case SquareType::GRASS:
@@ -503,6 +504,9 @@ Square* SquareFactory::get(SquareType s) {
         return new SolidSquare(ViewObject(ViewId::MUD_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
     case SquareType::MOUNTAIN:
         return new SolidSquare(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain"), "mountain", true);
+    case SquareType::MOUNTAIN2:
+        return new SolidSquare(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain"), "mountain", false,
+            {{SquareType::FLOOR, Random.getRandom(3, 8)}});
     case SquareType::GLACIER:
         return new SolidSquare(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"), "mountain", true);
     case SquareType::HILL:
@@ -536,9 +540,8 @@ Square* SquareFactory::get(SquareType s) {
             "workshop stand", ItemFactory::workshop());
     case SquareType::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR, "Hatchery"), "hatchery");
-    case SquareType::DUNGEON_HEART:
-        return new SolidSquare(ViewObject(ViewId::DUNGEON_HEART, ViewLayer::FLOOR, "Dungeon heart"),
-            "dungeon heart", true);
+    case SquareType::KEEPER_THRONE:
+        return new Square(ViewObject(ViewId::THRONE, ViewLayer::FLOOR, "Throne"), "throne", true);
     case SquareType::ALTAR:
         Debug(FATAL) << "Altars are not handled by this method.";
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),

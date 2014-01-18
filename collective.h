@@ -73,8 +73,13 @@ class Collective : public CreatureView, public EventListener {
     }
 
   };
-  static vector<BuildInfo> buildInfo;
+  static vector<Collective::BuildInfo> initialBuildInfo;
+  static vector<Collective::BuildInfo> normalBuildInfo;
+
+  vector<Collective::BuildInfo>& getBuildInfo() const;
+
   bool isDownstairsVisible() const;
+  bool isThroneBuilt() const;
   void markSquare(Vec2 pos, BuildInfo::SquareInfo);
   void unmarkSquare(Vec2 pos);
   void removeTask(Task*);
@@ -129,6 +134,7 @@ class Collective : public CreatureView, public EventListener {
     const Creature* attender;
   };
   map<Vec2, GuardPostInfo> guardPosts;
+  Optional<Vec2> throneMarked;
 };
 
 #endif

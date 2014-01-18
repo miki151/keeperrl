@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
   dwarf = (choice == 1);
   Model* model;
 #ifndef WINDOWS
-  thread t = !dwarf ? (thread([&] { model = Model::collectiveModel(view, 5); modelReady = true; })) :
+  thread t = !dwarf ? (thread([&] { model = Model::collectiveModel(view); modelReady = true; })) :
     (thread([&] { model = Model::heroModel(view, heroName); modelReady = true; }));
   view->displaySplash(modelReady);
 #else
