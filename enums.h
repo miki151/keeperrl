@@ -81,6 +81,7 @@ enum class SquareAttrib {
   ROOM,
   COLLECTIVE_START,
   COLLECTIVE_STAIRS,
+  EMPTY_ROOM,
   FOG,
 };
 
@@ -110,6 +111,7 @@ enum class CreatureId {
 
     ZOMBIE,
     VAMPIRE,
+    VAMPIRE_LORD,
     VAMPIRE_BAT,
     MUMMY,
     MUMMY_LORD,
@@ -293,6 +295,7 @@ enum class ViewId {
   ZOMBIE,
   SKELETON,
   VAMPIRE,
+  VAMPIRE_LORD,
   MUMMY,
   MUMMY_LORD,
   HORSE,
@@ -374,6 +377,7 @@ enum class ViewId {
   STOCKPILE,
   TORTURE_TABLE,
   TRAINING_DUMMY,
+  LIBRARY,
   WORKSHOP,
   DUNGEON_HEART,
   ALTAR,
@@ -382,8 +386,8 @@ enum class ViewId {
   BORDER_GUARD,
   DESTROYED_FURNITURE,
   BURNT_FURNITURE,
-  FALLEN_TREE, 
-  BURNT_TREE, 
+  FALLEN_TREE,
+  BURNT_TREE,
 
   BODY_PART,
   BONE,
@@ -439,6 +443,7 @@ enum class ViewId {
 
   TRAP_ITEM,
   GUARD_POST,
+  MANA,
 };
 
 enum class Gender {
@@ -480,6 +485,7 @@ enum class SquareType {
   STOCKPILE,
   TORTURE_TABLE,
   TRAINING_DUMMY,
+  LIBRARY,
   WORKSHOP,
   HATCHERY,
   KEEPER_THRONE,

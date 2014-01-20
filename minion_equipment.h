@@ -5,7 +5,7 @@ class MinionEquipment {
   public:
   bool needsItem(const Creature*, const Item*);
 
-  bool isItemUseful(const Item*);
+  bool isItemUseful(const Item*) const;
 
   private:
   enum EquipmentType { WEAPON, BODY_ARMOR, HELMET, BOOTS, HEALING, BOW, ARROW, MUSHROOM };

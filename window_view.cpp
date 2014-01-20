@@ -261,6 +261,7 @@ Tile getSprite(ViewId id) {
     case ViewId::ZOMBIE: return Tile(0, 16);
     case ViewId::SKELETON: return Tile(2, 16);
     case ViewId::VAMPIRE: return Tile(12, 16);
+    case ViewId::VAMPIRE_LORD: return Tile(13, 16);
     case ViewId::MUMMY: return Tile(7, 16);
     case ViewId::MUMMY_LORD: return Tile(8, 16);
     case ViewId::JACKAL: return Tile(12, 12);
@@ -352,6 +353,7 @@ Tile getSprite(ViewId id) {
     case ViewId::ALTAR: return Tile(2, 7, 2, getSprite(ViewId::FLOOR));
     case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, getSprite(ViewId::FLOOR));
     case ViewId::TRAINING_DUMMY: return Tile(0, 5, 2, getSprite(ViewId::FLOOR));
+    case ViewId::LIBRARY: return Tile(2, 4, 2, getSprite(ViewId::FLOOR));
     case ViewId::WORKSHOP: return Tile(9, 4, 2, getSprite(ViewId::FLOOR));
     case ViewId::GRAVE: return Tile(0, 0, 2, getSprite(ViewId::FLOOR));
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
@@ -366,9 +368,10 @@ Tile getSprite(ViewId id) {
     case ViewId::SPEED_BOOTS: return Tile(3, 13, 3);
     case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
     case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
-    case ViewId::FALLEN_TREE: return Tile('*', green);
-    case ViewId::BURNT_TREE: return Tile('*', darkGray);
+    case ViewId::BURNT_TREE:
+    case ViewId::FALLEN_TREE: return Tile(26, 3, 2);
     case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
+    case ViewId::MANA: return Tile(5, 10, 2);
   }
   Debug(FATAL) << "unhandled view id " << (int)id;
   return Tile(' ', white);
@@ -449,6 +452,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ZOMBIE: return Tile('Z', green);
     case ViewId::SKELETON: return Tile('Z', white);
     case ViewId::VAMPIRE: return Tile('V', darkGray);
+    case ViewId::VAMPIRE_LORD: return Tile('V', purple);
     case ViewId::MUMMY: return Tile('Z', yellow);
     case ViewId::MUMMY_LORD: return Tile('Z', orange);
     case ViewId::JACKAL: return Tile('d', lightBrown);
@@ -540,6 +544,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ALTAR: return Tile(L'Ω', white);
     case ViewId::TORTURE_TABLE: return Tile('=', gray);
     case ViewId::TRAINING_DUMMY: return Tile(L'‡', brown, true);
+    case ViewId::LIBRARY: return Tile(L'▤', purple, true);
     case ViewId::WORKSHOP: return Tile('&', lightBlue);
     case ViewId::GRAVE: return Tile(0x2617, gray, true);
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
@@ -557,6 +562,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::FALLEN_TREE: return Tile('*', green);
     case ViewId::BURNT_TREE: return Tile('*', darkGray);
     case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
+    case ViewId::MANA: return Tile(5, 10, 2);
   }
   Debug(FATAL) << "unhandled view id " << (int)obj.id();
   return Tile(' ', white);

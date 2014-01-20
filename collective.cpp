@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-enum Warning { NO_CONNECTION, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_HATCHERY, NO_TRAINING };
+enum Warning { NO_CONNECTION, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_TRAINING };
 static const int numWarnings = 7;
 static bool warning[numWarnings] = {0};
 static string warningText[] {
@@ -9,7 +9,6 @@ static string warningText[] {
   "You need a larger treasure room.",
   "You need a lair for your minions.",
   "You need a larger lair for your minions.",
-  "Your minions are hungry!",
   "You need training posts for your minions"};
 
 
@@ -22,13 +21,14 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::FLOOR, ResourceId::GOLD, 0, "Dig"}),
     BuildInfo(BuildInfo::CUT_TREE),
     BuildInfo({SquareType::STOCKPILE, ResourceId::GOLD, 0, "Storage"}),
-    BuildInfo({SquareType::TREASURE_CHEST, ResourceId::GOLD, 0, "Treasure room"}),
+    BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 4, "Treasure room"}),
     BuildInfo({SquareType::TRIBE_DOOR, ResourceId::WOOD, 4, "Door"}),
     BuildInfo({SquareType::BRIDGE, ResourceId::WOOD, 12, "Bridge"}),
     BuildInfo({SquareType::BED, ResourceId::WOOD, 8, "Lair"}),
-    BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::WOOD, 8, "Training room"}),
-    BuildInfo({SquareType::WORKSHOP, ResourceId::WOOD, 5, "Workshop"}),
-    BuildInfo({SquareType::GRAVE, ResourceId::WOOD, 5, "Graveyard"}),
+    BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::GOLD, 50, "Training room"}),
+    BuildInfo({SquareType::LIBRARY, ResourceId::GOLD, 50, "Library"}),
+    BuildInfo({SquareType::WORKSHOP, ResourceId::GOLD, 50, "Workshop"}),
+    BuildInfo({SquareType::GRAVE, ResourceId::GOLD, 100, "Graveyard"}),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
     BuildInfo(BuildInfo::IMP),
@@ -45,13 +45,24 @@ Collective::ResourceInfo info ;
 
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
   {ResourceId::GOLD, { SquareType::TREASURE_CHEST, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE}},
-  {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK}},
-  {ResourceId::IRON, { SquareType::STOCKPILE, Item::namePredicate("iron ore"), ItemId::WOOD_PLANK}},
+  {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK}}
 };
 
 
+vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
+  return {
+    {unMarkedItems(ItemType::CORPSE), SquareType::GRAVE, true},
+    {[this](const Item* it) {
+        return minionEquipment.isItemUseful(it) && !markedItems.count(it);
+      }, SquareType::WORKSHOP, false},
+    {[this](const Item* it) {
+        return it->getName() == "wood plank" && !markedItems.count(it); },
+      SquareType::STOCKPILE, false},
+  };
+}
+
 Collective::Collective(CreatureFactory factory, CreatureFactory undead) 
-    : minionFactory(factory), undeadFactory(undead) {
+    : minionFactory(factory), undeadFactory(undead), mana(100) {
   EventListener::addListener(this);
   // init the map so the values can be safely read with .at()
   for (BuildInfo info : concat(initialBuildInfo, normalBuildInfo))
@@ -62,7 +73,7 @@ Collective::Collective(CreatureFactory factory, CreatureFactory undead)
   credit = {
     {ResourceId::GOLD, 100},
     {ResourceId::WOOD, 40},
-    {ResourceId::IRON, 0},
+ //   {ResourceId::IRON, 0},
   };
 }
 
@@ -153,15 +164,13 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
                ViewObject(ViewId::WOOD_PLANK, ViewLayer::CREATURE, ""), "Cut tree", Nothing(), "", true});
            break;
       case BuildInfo::IMP: {
-           pair<ViewObject, int> cost = {
-              ItemFactory::fromId(resourceInfo.at(getImpCost().id).itemId)->getViewObject(),
-              getImpCost().value };
+           pair<ViewObject, int> cost = {ViewObject::mana(), getImpCost()};
            info.buttons.push_back({
                ViewObject(ViewId::IMP, ViewLayer::CREATURE, ""),
                "Imp",
                cost,
                "[" + convertToString(imps.size()) + "]",
-               getImpCost().value <= numGold(getImpCost().id)});
+               getImpCost() <= mana});
            break; }
       case BuildInfo::GUARD_POST:
            info.buttons.push_back({
@@ -182,6 +191,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.numGold.clear();
   for (auto elem : resourceInfo)
     info.numGold.push_back({getResourceViewObject(elem.first), numGold(elem.first)});
+  info.numGold.push_back({ViewObject::mana(), mana});
   info.warning = "";
   for (int i : Range(numWarnings))
     if (warning[i]) {
@@ -320,10 +330,10 @@ void Collective::returnGold(CostInfo amount) {
         dropItems(ItemFactory::fromId(resourceInfo.at(amount.id).itemId, amount.value));
 }
 
-Collective::CostInfo Collective::getImpCost() const {
+int Collective::getImpCost() const {
   if (imps.size() < startImpNum)
-    return {ResourceId::GOLD, 0};
-  return {ResourceId::GOLD, int(basicImpCost * pow(2, double(imps.size() - startImpNum) / 5))};
+    return 0;
+  return basicImpCost * pow(2, double(imps.size() - startImpNum) / 5);
 }
 
 void Collective::possess(const Creature* cr, View* view) {
@@ -401,14 +411,14 @@ void Collective::processInput(View* view) {
         }
         switch (getBuildInfo()[currentButton].buildType) {
           case BuildInfo::IMP:
-              if (numGold(getImpCost().id) >= getImpCost().value && selection == NONE) {
+              if (mana >= getImpCost() && selection == NONE) {
                 selection = SELECT;
                 PCreature imp = CreatureFactory::fromId(CreatureId::IMP, Tribe::player,
                     MonsterAIFactory::collective(this));
                 for (Vec2 v : pos.neighbors8(true))
                   if (v.inRectangle(level->getBounds()) && level->getSquare(v)->canEnter(imp.get()) 
                       && canSee(v)) {
-                    takeGold(getImpCost());
+                    mana -= getImpCost();
                     addCreature(imp.get());
                     level->addCreature(v, std::move(imp));
                     break;
@@ -577,12 +587,11 @@ void Collective::tick() {
   warning[NO_BEDS] = mySquares[SquareType::BED].size() == 0 && !minions.empty();
   warning[MORE_BEDS] = mySquares[SquareType::BED].size() < minions.size() - vampires.size();
   warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && !minions.empty();
-  warning[NO_HATCHERY] = mySquares[SquareType::HATCHERY].empty() && !minions.empty();
   updateTraps();
   for (Vec2 pos : myTiles) {
     if (Creature* c = level->getSquare(pos)->getCreature())
       if (!contains(creatures, c) && c->getTribe() == Tribe::player
-          && !contains({"chicken", "boulder"}, c->getName()))
+          && !contains({"boulder"}, c->getName()))
         // We just found a friendly creature (and not a boulder nor a chicken)
         addCreature(c);
     vector<Item*> gold = level->getSquare(pos)->getItems(unMarkedItems(ItemType::GOLD));
@@ -607,12 +616,6 @@ void Collective::tick() {
     }
     vector<Item*> corpses = level->getSquare(pos)->getItems(unMarkedItems(ItemType::CORPSE));
     if (corpses.size() > 0) {
-      if (!mySquares[SquareType::GRAVE].count(pos) && 
-          !mySquares[SquareType::GRAVE].empty()) {
-        Vec2 target = chooseRandom(mySquares[SquareType::GRAVE]);
-        addTask(Task::bringItem(this, pos, {corpses[0]}, target));
-        markedItems.insert({corpses[0]});
-      }
       if (mySquares[SquareType::GRAVE].count(pos) && Random.roll(200) && 
           vampires.size() < mySquares[SquareType::GRAVE].size() && minions.size() < minionLimit) {
         for (Item* it : corpses)
@@ -636,13 +639,16 @@ void Collective::tick() {
           }
       }
     }
-    vector<Item*> equipment = level->getSquare(pos)->getItems([this](Item* it) {
-        return minionEquipment.isItemUseful(it) && !markedItems.count(it); });
-    if (!equipment.empty() && !mySquares[SquareType::WORKSHOP].empty() &&
-        !mySquares[SquareType::WORKSHOP].count(pos)) {
-      Vec2 target = chooseRandom(mySquares[SquareType::WORKSHOP]);
-      addTask(Task::bringItem(this, pos, equipment, target));
-      markedItems.insert(equipment.begin(), equipment.end());
+    for (ItemFetchInfo elem : getFetchInfo()) {
+      vector<Item*> equipment = level->getSquare(pos)->getItems(elem.predicate);
+      if (!equipment.empty() && !mySquares[elem.destination].empty() &&
+          !mySquares[elem.destination].count(pos)) {
+        if (elem.oneAtATime)
+          equipment = {equipment[0]};
+        Vec2 target = chooseRandom(mySquares[elem.destination]);
+        addTask(Task::bringItem(this, pos, equipment, target));
+        markedItems.insert(equipment.begin(), equipment.end());
+      }
     }
     if (marked.count(pos) && marked.at(pos)->isImpossible(level) && !taken.count(marked.at(pos)))
       removeTask(marked.at(pos));
@@ -949,7 +955,8 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
       removeElement(minions, c);
     if (contains(vampires, c))
       removeElement(vampires, c);
-  }
+  } else
+    mana += 10;
 }
   
 const Level* Collective::getLevel() const {

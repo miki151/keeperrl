@@ -552,7 +552,7 @@ bool Creature::isPanicking() const {
 
 int Creature::getAttrVal(AttrType type) const {
   switch (type) {
-    case AttrType::SPEED: return *speed + expLevel * 4;
+    case AttrType::SPEED: return *speed + expLevel * 3;
     case AttrType::DEXTERITY: return *dexterity + expLevel / 2;
     case AttrType::STRENGTH: return *strength + (expLevel - 1) / 2;
     default: return 0;
@@ -754,6 +754,7 @@ void Creature::tick(double realTime) {
   }
   if (poisoned.isFinished(realTime)) {
     you(MsgType::ARE, "no longer poisoned");
+    viewObject.setPoisoned(false);
   } 
   else if (poisoned) {
     bleed(1.0 / 60);

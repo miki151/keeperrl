@@ -61,6 +61,7 @@ class ViewObject {
 
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();
+  const static ViewObject& mana();
 
   private:
   double bleeding = 0;

@@ -53,7 +53,7 @@ class Collective : public CreatureView, public EventListener {
   enum class ResourceId {
     GOLD,
     WOOD,
-    IRON,
+ //   IRON,
   };
 
   struct ResourceInfo {
@@ -61,7 +61,6 @@ class Collective : public CreatureView, public EventListener {
     ItemPredicate predicate;
     ItemId itemId;
   };
-
 
   private:
   struct BuildInfo {
@@ -98,6 +97,14 @@ class Collective : public CreatureView, public EventListener {
 
   map<ResourceId, int> credit;
 
+  struct ItemFetchInfo {
+    ItemPredicate predicate;
+    SquareType destination;
+    bool oneAtATime;
+  };
+
+  vector<ItemFetchInfo> getFetchInfo() const;
+
   bool isDownstairsVisible() const;
   bool isThroneBuilt() const;
   struct CostInfo {
@@ -112,7 +119,7 @@ class Collective : public CreatureView, public EventListener {
   int numGold(ResourceId) const;
   void takeGold(CostInfo);
   void returnGold(CostInfo);
-  CostInfo getImpCost() const;
+  int getImpCost() const;
   bool canBuildDoor(Vec2 pos) const;
   bool canPlacePost(Vec2 pos) const;
   void freeFromGuardPost(const Creature*);
@@ -159,6 +166,7 @@ class Collective : public CreatureView, public EventListener {
   };
   map<Vec2, GuardPostInfo> guardPosts;
   Optional<Vec2> throneMarked;
+  int mana;
 };
 
 #endif

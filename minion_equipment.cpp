@@ -26,7 +26,7 @@ Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
   return Nothing();
 }
 
-bool MinionEquipment::isItemUseful(const Item* it) {
+bool MinionEquipment::isItemUseful(const Item* it) const {
   return getEquipmentType(it);
 }
 
@@ -34,8 +34,7 @@ bool MinionEquipment::needs(const Creature* c, const Item* it) {
   EquipmentType type = *getEquipmentType(it);
   return (type == ARROW && c->getEquipment().getItems(Item::typePredicate(ItemType::AMMO)).size() < 20 
           && c->hasSkill(Skill::archery)) ||
-      (!equipmentMap.count(make_pair(c, type)) &&
-      (c->canEquip(it) || (type == HEALING && !c->isUndead() &&
+      ((c->canEquip(it) || (type == HEALING && !c->isUndead() &&
           c->getEquipment().getItems(Item::effectPredicate(EffectType::HEAL)).empty()) ||
       (type == MUSHROOM && c->getEquipment().getItems(mushroomPredicate).empty())));
 }
@@ -53,7 +52,6 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it) {
     return false;
   if (needs(c, it)) {
     owners[it] = c;
-    equipmentMap[make_pair(c, *getEquipmentType(it))] = it;
     return true;
   } else
     return false;
