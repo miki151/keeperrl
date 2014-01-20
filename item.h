@@ -82,6 +82,7 @@ class Item : private ItemAttributes {
   static ItemPredicate effectPredicate(EffectType);
   static ItemPredicate typePredicate(ItemType);
   static ItemPredicate typePredicate(vector<ItemType>);
+  static ItemPredicate namePredicate(const string& name);
 
   static map<string, vector<Item*>> stackItems(vector<Item*>);
 

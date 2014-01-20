@@ -12,6 +12,15 @@ bool ViewObject::castsShadow() const {
   return shadow;
 }
 
+ViewObject& ViewObject::setWaterDepth(double depth) {
+  waterDepth = depth;
+  return *this;
+}
+
+double ViewObject::getWaterDepth() const {
+  return waterDepth;
+}
+
 void ViewObject::setBleeding(double b) {
   bleeding = b;
 }

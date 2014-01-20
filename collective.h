@@ -50,10 +50,24 @@ class Collective : public CreatureView, public EventListener {
 
   bool isTurnBased();
 
+  enum class ResourceId {
+    GOLD,
+    WOOD,
+    IRON,
+  };
+
+  struct ResourceInfo {
+    SquareType storageType;
+    ItemPredicate predicate;
+    ItemId itemId;
+  };
+
+
   private:
   struct BuildInfo {
     struct SquareInfo {
       SquareType type;
+      ResourceId resourceId;
       int cost;
       string name;
     } squareInfo;
@@ -64,12 +78,12 @@ class Collective : public CreatureView, public EventListener {
       ViewId viewId;
     } trapInfo;
 
-    enum BuildType { SQUARE, IMP, TRAP, GUARD_POST} buildType;
+    enum BuildType { SQUARE, CUT_TREE, IMP, TRAP, GUARD_POST} buildType;
 
     BuildInfo(SquareInfo info) : squareInfo(info), buildType(SQUARE) {}
     BuildInfo(TrapInfo info) : trapInfo(info), buildType(TRAP) {}
     BuildInfo(BuildType type) : buildType(type) {
-      CHECK(contains({IMP, GUARD_POST}, type));
+      CHECK(contains({IMP, GUARD_POST, CUT_TREE}, type));
     }
 
   };
@@ -78,17 +92,27 @@ class Collective : public CreatureView, public EventListener {
 
   vector<Collective::BuildInfo>& getBuildInfo() const;
 
+  const static map<ResourceId, ResourceInfo> resourceInfo;
+
+  ViewObject getResourceViewObject(ResourceId id) const;
+
+  map<ResourceId, int> credit;
+
   bool isDownstairsVisible() const;
   bool isThroneBuilt() const;
-  void markSquare(Vec2 pos, BuildInfo::SquareInfo);
+  struct CostInfo {
+    ResourceId id;
+    int value;
+  };
+  void markSquare(Vec2 pos, SquareType type, CostInfo);
   void unmarkSquare(Vec2 pos);
   void removeTask(Task*);
   void addTask(PTask, Creature*);
   void addTask(PTask);
-  int numGold() const;
-  void takeGold(int);
-  void returnGold(int);
-  int getImpCost() const;
+  int numGold(ResourceId) const;
+  void takeGold(CostInfo);
+  void returnGold(CostInfo);
+  CostInfo getImpCost() const;
   bool canBuildDoor(Vec2 pos) const;
   bool canPlacePost(Vec2 pos) const;
   void freeFromGuardPost(const Creature*);
@@ -107,7 +131,7 @@ class Collective : public CreatureView, public EventListener {
   map<Vec2, Task*> marked;
   map<Task*, Creature*> taken;
   map<Creature*, Task*> taskMap;
-  map<Task*, int> completionCost;
+  map<Task*, CostInfo> completionCost;
   struct TrapInfo {
     TrapType type;
     bool armed;
@@ -128,7 +152,6 @@ class Collective : public CreatureView, public EventListener {
   vector<Creature*> team;
   map<const Level*, Vec2> teamLevelChanges;
   map<const Level*, Vec2> levelChangeHistory;
-  int credit;
   Creature* possessed = nullptr;
   MinionEquipment minionEquipment;
   struct GuardPostInfo {

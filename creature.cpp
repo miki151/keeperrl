@@ -1155,6 +1155,11 @@ void Creature::setSpeed(double value) {
 double Creature::getSpeed() const {
   return *speed;
 }
+  
+CreatureSize Creature::getSize() const {
+  return *size;
+}
+
 void Creature::heal(double amount, bool replaceLimbs) {
   Debug() << getTheName() << " heal";
   if (health < 1) {

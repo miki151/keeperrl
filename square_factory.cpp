@@ -92,20 +92,18 @@ class SecretPassage : public Square {
   bool uncovered;
 };
 
-class Water : public Square {
+class Magma : public Square {
   public:
-  Water(const ViewObject& object, const string& name, const string& itemMsg, const string& noSee,
-      MsgType _msgType, bool swimming = true)
-      : Square(object, name, true, false, 0, 0, {{SquareType::BRIDGE, 20}}), itemMessage(itemMsg), noSeeMsg(noSee),
-      msgType(_msgType), swimmingAllowed(swimming) {}
+  Magma(const ViewObject& object, const string& name, const string& itemMsg, const string& noSee)
+      : Square(object, name, true, false, 0, 0, {{SquareType::BRIDGE, 20}}), itemMessage(itemMsg), noSeeMsg(noSee) {}
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return (c->canSwim() && swimmingAllowed) || c->canFly() || c->isBlind() || c->isHeld();
+    return c->canFly() || c->isBlind() || c->isHeld();
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (!c->canFly() && (!c->canSwim() || !swimmingAllowed)) {
-      c->you(msgType, getName());
+    if (!c->canFly()) {
+      c->you(MsgType::BURN, getName());
       c->die(nullptr, false);
     }
   }
@@ -121,8 +119,50 @@ class Water : public Square {
   private:
   string itemMessage;
   string noSeeMsg;
-  MsgType msgType;
-  bool swimmingAllowed;
+};
+
+class Water : public Square {
+  public:
+  Water(ViewObject object, const string& name, const string& itemMsg, const string& noSee, double _depth)
+      : Square(object.setWaterDepth(_depth), name, true, false, 0, 0, {{SquareType::BRIDGE, 20}}),
+        itemMessage(itemMsg), noSeeMsg(noSee), depth(_depth) {}
+
+  bool canWalk(const Creature* c) const {
+    switch (c->getSize()) {
+      case CreatureSize::HUGE: return depth < 3;
+      case CreatureSize::LARGE: return depth < 1.5;
+      case CreatureSize::MEDIUM: return depth < 1;
+      case CreatureSize::SMALL: return depth < 0.3;
+    }
+    return false;
+  }
+
+  virtual bool canEnterSpecial(const Creature* c) const override {
+    bool can = canWalk(c) || c->canSwim() || c->canFly() || c->isBlind() || c->isHeld();
+    if (!can)
+      c->privateMessage("The water is too deep.");
+    return can;
+  }
+
+  virtual void onEnterSpecial(Creature* c) override {
+    if (!c->canFly() && !c->canSwim() && !canWalk(c)) {
+      c->you(MsgType::DROWN, getName());
+      c->die(nullptr, false);
+    }
+  }
+
+  virtual void dropItem(PItem item) override {
+    getLevel()->globalMessage(getPosition(), item->getTheName() + " " + itemMessage, noSeeMsg);
+  }
+
+  virtual bool itemBounces(Item*) const override {
+    return false;
+  }
+
+  private:
+  string itemMessage;
+  string noSeeMsg;
+  double depth;
 };
 
 class Chest : public Square {
@@ -220,7 +260,8 @@ class Fountain : public Square {
 
 class Tree : public Square {
   public:
-  Tree(const ViewObject& object) : Square(object, "tree", false, true, 100, 0.5) {}
+  Tree(const ViewObject& object, map<SquareType, int> construct) : Square(object, "tree", false, true, 100, 0.5,
+      construct) {}
 
   virtual bool canDestroy() const override {
     return true;
@@ -234,6 +275,10 @@ class Tree : public Square {
     setCanSeeThru(true);
     getLevel()->updateVisibility(getPosition());
     setViewObject(ViewObject(ViewId::FALLEN_TREE, ViewLayer::FLOOR, "Fallen tree"));
+  }
+
+  virtual void onConstructNewSquare(Square* s) override {
+    s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, Random.getRandom(3, 6)));
   }
 
   virtual void burnOut() override {
@@ -468,8 +513,8 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::FLOOR:
         return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR, "Floor"), "floor", true, false, 0, 0, 
             {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
-            {SquareType::ROCK_WALL, 20}, {SquareType::TRAINING_DUMMY, 10}, {SquareType::HATCHERY, 3}, 
-            {SquareType::GRAVE, 10}, {SquareType::ROLLING_BOULDER, 10}, {SquareType::WORKSHOP, 10},
+            {SquareType::TRAINING_DUMMY, 10}, {SquareType::STOCKPILE, 1},
+            {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10},
             {SquareType::KEEPER_THRONE, 10}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR, "Rope bridge"), "rope bridge", true);
@@ -516,19 +561,23 @@ Square* SquareFactory::get(SquareType s) {
                                  ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "Floor"));
     case SquareType::WATER:
         return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR, "Water"), "water",
-            "sinks in the water", "You hear a splash", MsgType::DROWN);
+            "sinks in the water", "You hear a splash", 100);
     case SquareType::MAGMA: 
-        return new Water(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR, "Magma"),
-            "magma", "burns in the magma", "", MsgType::BURN, false);
+        return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR, "Magma"),
+            "magma", "burns in the magma", "");
     case SquareType::ABYSS: 
         Debug(FATAL) << "Unimplemented";
     case SquareType::SAND: return new Square(ViewObject(ViewId::SAND, ViewLayer::FLOOR, "Sand"), "sand", true);
-    case SquareType::CANIF_TREE: return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"));
-    case SquareType::DECID_TREE: return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"));
+    case SquareType::CANIF_TREE: return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"),
+                                     {{SquareType::GRASS, 20}});
+    case SquareType::DECID_TREE: return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"),
+                                     {{SquareType::HILL, 20}});
     case SquareType::BUSH: return new Furniture(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush", 1);
     case SquareType::MOUNTAIN_BUSH: return new Furniture(ViewObject(
                                           ViewId::MOUNTAIN_BUSH, ViewLayer::FLOOR, "Bush"), "bush", 1);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
+    case SquareType::STOCKPILE:
+        return new Square(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR, "Floor"), "floor", true);
     case SquareType::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
             "torture table", 0.3);
@@ -589,4 +638,9 @@ Square* SquareFactory::getStairs(StairDirection direction, StairKey key, StairLo
             "stairs leading down", direction, key);
   }
   return nullptr;
+}
+  
+Square* SquareFactory::getWater(double depth) {
+  return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR, "Water"), "water",
+      "sinks in the water", "You hear a splash", depth);
 }

@@ -344,6 +344,8 @@ Tile getSprite(ViewId id) {
     case ViewId::GAS_TRAP: return Tile(L'☠', green, true);
     case ViewId::UNARMED_GAS_TRAP: return Tile(L'☠', lightGray, true);
     case ViewId::ROCK: return Tile(6, 1, 3);
+    case ViewId::WOOD_PLANK: return Tile(7, 10, 2);
+    case ViewId::STOCKPILE: return Tile(4, 1, 1);
     case ViewId::BED: return Tile(5, 4, 2, getSprite(ViewId::FLOOR));
     case ViewId::THRONE: return Tile(7, 4, 2, getSprite(ViewId::FLOOR));
     case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
@@ -530,6 +532,8 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::GAS_TRAP: return Tile(L'☠', green, true);
     case ViewId::UNARMED_GAS_TRAP: return Tile(L'☠', lightGray, true);
     case ViewId::ROCK: return Tile('*', lightGray);
+    case ViewId::WOOD_PLANK: return Tile('\\', brown);
+    case ViewId::STOCKPILE: return Tile('.', yellow);
     case ViewId::BED: return Tile('=', white);
     case ViewId::DUNGEON_HEART: return Tile(L'♥', white, true);
     case ViewId::THRONE: return Tile(L'Ω', purple);
@@ -1090,11 +1094,22 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
 
 void WindowView::drawBuildings(GameInfo::BandInfo& info) {
   for (int i : All(info.buttons)) {
-    string text = get<0>(info.buttons[i]);
     int height = legendStartHeight + i * legendLineHeight;
-    drawViewObject(get<1>(info.buttons[i]), screenWidth - rightBarWidth, height, currentTileLayout.sprites);
-    drawText(i == info.activeButton ? green : (get<2>(info.buttons[i]) ? white : lightGray),
-        screenWidth - rightBarWidth + 30, height, text);
+    drawViewObject(info.buttons[i].object, screenWidth - rightBarWidth, height, currentTileLayout.sprites);
+    Color color = white;
+    if (i == info.activeButton)
+      color = green;
+    else if (!info.buttons[i].active)
+      color = lightGray;
+    string text = info.buttons[i].name + " " + info.buttons[i].count;
+    drawText(color, screenWidth - rightBarWidth + 30, height, text);
+ //   int posX = screenWidth - rightBarWidth + 60 + getTextLength(text);
+    if (info.buttons[i].cost) {
+      string costText = convertToString(info.buttons[i].cost->second);
+      int posX = screenWidth - getTextLength(costText) - 10;
+      drawViewObject(info.buttons[i].cost->first, screenWidth - 40, height, true);
+      drawText(color, posX, height, costText);
+    }
     roomButtons.emplace_back(screenWidth - rightBarWidth, height,
         screenWidth - rightBarWidth + 150, height + legendLineHeight);
   }
@@ -1124,7 +1139,12 @@ void WindowView::drawBandInfo() {
   else
     drawText(red, 10, line2, "PAUSED");
 
-  drawText(white, 600, line2, "$ " + convertToString(info.numGold) + "    T:" + convertToString<int>(info.time));
+  string resources;
+  for (int i : All(info.numGold)) {
+    drawText(white, 300 + 120 * i, line1, convertToString<int>(info.numGold[i].count));
+    drawViewObject(info.numGold[i].viewObject, 288 + 120 * i, line1, true);
+  }
+  drawText(white, 900, line2, "T:" + convertToString<int>(info.time));
   sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, L'i', L'?'};
   optionButtons.clear();
   for (int i = 0; i < 4; ++i) {
@@ -1286,6 +1306,10 @@ Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& in
         color = transparency(*color, 70);
       else
         color = Color(255, 255, 255, 70);
+    }
+    if (object.getWaterDepth() > 0) {
+      int val = max(0.0, 255.0 - min(2.0, object.getWaterDepth()) * 60);
+      color = Color(val, val, val);
     }
     if (tile.hasSpriteCoord()) {
       int moveY = 0;

@@ -846,6 +846,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                c.barehandedDamage = 5;
                                c.humanoid = true;
                                c.name = "Keeper";
+                               c.courage = 0.01;
                                c.firstName = NameGenerator::firstNames.getNext();
                                c.skills.insert(Skill::archery);
                                c.skills.insert(Skill::twoHandedWeapon);), tribe, factory);

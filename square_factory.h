@@ -19,6 +19,7 @@ class SquareFactory {
   static Square* get(SquareType);
   static Square* getStairs(StairDirection, StairKey, StairLook = StairLook::NORMAL);
   static Square* getAltar(Deity*);
+  static Square* getWater(double depth);
 
   private:
 };

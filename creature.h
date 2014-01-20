@@ -208,6 +208,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   bool canPopController();
   void setSpeed(double);
   double getSpeed() const;
+  CreatureSize getSize() const;
 
   typedef function<bool(const Creature*, const Creature*)> CreatureVision;
 

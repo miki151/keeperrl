@@ -39,6 +39,10 @@ ItemPredicate Item::typePredicate(vector<ItemType> type) {
   return [&type](const Item* item) { return contains(type, item->getType()); };
 }
 
+ItemPredicate Item::namePredicate(const string& name) {
+  return [name](const Item* item) { return item->getName() == name; };
+}
+
 map<string, vector<Item*>> Item::stackItems(vector<Item*> items) {
   map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [](const Item* item) {
         return item->getAName();

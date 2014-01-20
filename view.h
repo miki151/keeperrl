@@ -117,12 +117,23 @@ class View {
       int number;
       string name;
       string warning;
-      vector<tuple<string, ViewObject, bool>> buttons;
+      struct Button {
+        ViewObject object;
+        string name;
+        Optional<pair<ViewObject, int>> cost;
+        string count;
+        bool active;
+      };
+      vector<Button> buttons;
       string monsterHeader;
       vector<const Creature*> creatures;
       vector<const Creature*> enemies;
       map<const Creature*, string> tasks;
-      int numGold = 0;
+      struct Resource {
+        ViewObject viewObject;
+        int count;
+      };
+      vector<Resource> numGold;
       int activeButton = 0;
       double time;
       bool gatheringTeam = false;

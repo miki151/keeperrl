@@ -29,7 +29,10 @@ const MapMemory& Monster::getMemory(const Level* l) const {
 }
 
 void Monster::onBump(Creature* c) {
-  c->attack(creature, false);
+  if (c->isEnemy(creature))
+    c->attack(creature, false);
+  else if (c->canMove(creature->getPosition() - c->getPosition()))
+    c->move(creature->getPosition() - c->getPosition());
 }
 
 void Monster::you(MsgType type, const string& param) const {

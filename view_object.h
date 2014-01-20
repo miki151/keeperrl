@@ -50,6 +50,9 @@ class ViewObject {
 
   bool castsShadow() const;
 
+  ViewObject& setWaterDepth(double);
+  double getWaterDepth() const;
+
   string getDescription(bool stats = false) const;
   string getBareDescription() const;
 
@@ -77,6 +80,7 @@ class ViewObject {
   bool shadow;
   Optional<int> attack;
   Optional<int> defense;
+  double waterDepth = -1;
 };
 
 
