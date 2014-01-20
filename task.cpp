@@ -90,8 +90,11 @@ class PickItem : public Task {
     if (c->getPosition() == getPosition()) {
       vector<Item*> hereItems;
       for (Item* it : c->getPickUpOptions())
-        if (items.count(it))
+        if (items.count(it)) {
           hereItems.push_back(it);
+          items.erase(it);
+        }
+      getCollective()->onCantPickItem(vector<Item*>(items.begin(), items.end()));
       if (hereItems.empty()) {
         setDone();
         return NoMove;
@@ -104,8 +107,10 @@ class PickItem : public Task {
           onPickedUp();
           getCollective()->onPickedUp(getPosition(), hereItems);
         }}; 
-      else
+      else {
+        getCollective()->onCantPickItem(hereItems);
         return NoMove;
+      }
     }
     else
       return getMoveToPosition(c);

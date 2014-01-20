@@ -777,7 +777,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
           c.chatReactionFriendly = c.chatReactionHostile = "The " + name + " snarls.";
         }
         c.name = name;
-        if (Random.roll(10)) {
+        if (!(*c.humanoid) && Random.roll(10)) {
           c.noBody = true;
           c.wings = c.arms = c.legs = 0;
           *c.strength -= 5;

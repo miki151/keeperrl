@@ -514,6 +514,11 @@ void Collective::onPickedUp(Vec2 pos, vector<Item*> items) {
   for (Item* it : items)
     markedItems.erase(it);
 }
+  
+void Collective::onCantPickItem(vector<Item*> items) {
+  for (Item* it : items)
+    markedItems.erase(it);
+}
 
 void Collective::onBrought(Vec2 pos, vector<Item*> items) {
 }

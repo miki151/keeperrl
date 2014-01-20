@@ -43,6 +43,7 @@ class Collective : public CreatureView, public EventListener {
   void onAppliedItem(Vec2 pos, Item* item);
   void onAppliedItemCancel(Vec2 pos);
   void onPickedUp(Vec2 pos, vector<Item*> items);
+  void onCantPickItem(vector<Item*> items);
 
   Vec2 getHeartPos() const;
   void render(View*);
