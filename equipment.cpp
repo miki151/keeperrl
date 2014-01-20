@@ -1,7 +1,10 @@
 #include "stdafx.h"
 
+#include "equipment.h"
+
 using namespace std;
 
+class Item;
 Item* Equipment::getItem(EquipmentSlot slot) const {
   if (items.count(slot) > 0)
     return items.at(slot);

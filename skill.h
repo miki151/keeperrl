@@ -3,6 +3,7 @@
 
 #include <string>
 
+class Creature;
 class Skill {
   public:
   string getName() const;

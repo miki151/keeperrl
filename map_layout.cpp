@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include "map_layout.h"
 
 MapLayout::MapLayout(

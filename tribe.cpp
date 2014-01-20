@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "tribe.h"
 
 using namespace std;
 

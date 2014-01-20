@@ -3,6 +3,8 @@
 
 #include "util.h"
 
+class Level;
+
 class PoisonGas {
   public:
   void addAmount(double amount);

@@ -1,5 +1,12 @@
 #include "stdafx.h"
 
+#include "player.h"
+#include "location.h"
+#include "level.h"
+#include "message_buffer.h"
+#include "ranged_weapon.h"
+#include "name_generator.h"
+
 using namespace std;
 
 Player::Player(Creature* c, View* v, bool greet, map<const Level*, MapMemory>* memory) :
@@ -134,7 +141,7 @@ void Player::pickUpAction(bool extended) {
   }
   vector<Item*> pickUpItems = getPrefix(groups[index], 0, num);
   if (creature->canPickUp(pickUpItems)) {
-    messageBuffer.addMessage("You pick up " + getPluralName(groups[index][0], num));
+    creature->privateMessage("You pick up " + getPluralName(groups[index][0], num));
     creature->pickUp(pickUpItems);
   }
 }
@@ -205,7 +212,7 @@ void Player::dropAction(bool extended) {
       return;
     num = *res;
   }
-  messageBuffer.addMessage("You drop " + getPluralName(items[0], num));
+  creature->privateMessage("You drop " + getPluralName(items[0], num));
   creature->drop(getPrefix(items, 0, num));
 }
 
@@ -223,7 +230,7 @@ void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   int num = groups[*index].size(); //groups[index].size() == 1 ? 1 : howMany(view, groups[index].size());
   if (num < 1)
     return;
-  messageBuffer.addMessage("You take " + getPluralName(groups[*index][0], num));
+  creature->privateMessage("You take " + getPluralName(groups[*index][0], num));
   creature->pickUp(getPrefix(groups[*index], 0, num), false);
 }
 
@@ -276,7 +283,7 @@ void Player::throwAction(Optional<Vec2> dir) {
     dir = *cDir;
   }
   if (creature->canThrowItem(items[0])) {
-    messageBuffer.addMessage("You throw " + items[0]->getAName(false, creature->isBlind()));
+    creature->privateMessage("You throw " + items[0]->getAName(false, creature->isBlind()));
     creature->throwItem(items[0], *dir);
   }
 }

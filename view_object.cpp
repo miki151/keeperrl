@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "view_object.h"
+
 using namespace std;
 
 ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d, bool _shadow)

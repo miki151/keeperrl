@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "poison_gas.h"
+#include "level.h"
+
 void PoisonGas::addAmount(double a) {
   CHECK(a > 0);
   amount = min(3., a + amount);

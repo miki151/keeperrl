@@ -3,6 +3,7 @@
 
 #include "util.h"
 
+class Level;
 class Fire {
   public:
   Fire(double objectWeight, double objectFlamability);

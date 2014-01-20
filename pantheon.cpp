@@ -1,5 +1,11 @@
 #include "stdafx.h"
 
+#include "pantheon.h"
+#include "creature.h"
+#include "item_factory.h"
+#include "creature_factory.h"
+#include "level.h"
+
 static map<DeityHabitat, vector<Epithet>> epithetsMap {
   { DeityHabitat::FIRE,
       { Epithet::WAR, Epithet::DEATH, Epithet::DESTRUCTION, Epithet::WEALTH,

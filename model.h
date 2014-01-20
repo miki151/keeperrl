@@ -9,6 +9,7 @@
 #include "level_generator.h"
 #include "square_factory.h"
 #include "monster.h"
+#include "level_maker.h"
 
 class Collective;
 

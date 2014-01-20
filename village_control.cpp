@@ -1,5 +1,11 @@
 #include "stdafx.h"
 
+#include "village_control.h"
+#include "message_buffer.h"
+#include "collective.h"
+#include "square.h"
+#include "level.h"
+
 static int counter = 0;
 
 VillageControl::VillageControl(const Collective* c, const Level* l, StairDirection dir, StairKey key, string n) 

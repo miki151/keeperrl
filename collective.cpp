@@ -1,5 +1,11 @@
 #include "stdafx.h"
 
+#include "collective.h"
+#include "level.h"
+#include "task.h"
+#include "player.h"
+#include "message_buffer.h"
+
 enum Warning { NO_CONNECTION, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_TRAINING };
 static const int numWarnings = 7;
 static bool warning[numWarnings] = {0};

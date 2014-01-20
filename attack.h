@@ -2,6 +2,7 @@
 #define _ATTACK_H
 
 #include "enums.h"
+#include "util.h"
 
 class Creature;
 

@@ -1,8 +1,14 @@
 #ifndef _CONTROLLER_H
 #define _CONTROLLER_H
 
+#include "enums.h"
+#include "util.h"
+
 class Creature;
 class Location;
+class MapMemory;
+class Item;
+class Level;
 
 class Controller {
   public:
@@ -41,9 +47,7 @@ class DoNothingController : public Controller {
   virtual void you(const string& param) const override {
   }
 
-  virtual const MapMemory& getMemory(const Level* l = nullptr) const override {
-    return MapMemory::empty();
-  }
+  virtual const MapMemory& getMemory(const Level* l = nullptr) const override;
 
   virtual void makeMove() override {
   }

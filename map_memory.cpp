@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "map_memory.h"
+
 void MapMemory::addObject(Vec2 pos, const ViewObject& obj) {
   table[pos].insert(obj);
   table[pos].setHighlight(HighlightType::MEMORY);

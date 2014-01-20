@@ -1,5 +1,13 @@
 #include "stdafx.h"
 
+#include "effect.h"
+#include "controller.h"
+#include "creature.h"
+#include "square.h"
+#include "level.h"
+#include "creature_factory.h"
+#include "message_buffer.h"
+
 using namespace std;
 
 map<EffectStrength, int> healingPoints { 

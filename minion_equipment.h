@@ -1,6 +1,11 @@
 #ifndef _MINION_EQUIPMENT_H
 #define _MINION_EQUIPMENT_H
 
+#include "util.h"
+
+class Creature;
+class Item;
+
 class MinionEquipment {
   public:
   bool needsItem(const Creature*, const Item*);

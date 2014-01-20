@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "collective_action.h"
+
 vector<CollectiveAction::Type> vectorTypes { CollectiveAction::GO_TO };
 vector<CollectiveAction::Type> intTypes { CollectiveAction::ROOM_BUTTON };
 vector<CollectiveAction::Type> creatureTypes { CollectiveAction::CREATURE_BUTTON,

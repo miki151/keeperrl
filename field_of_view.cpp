@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "field_of_view.h"
+
 using namespace std;
 
 

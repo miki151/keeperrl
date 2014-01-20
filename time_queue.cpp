@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "time_queue.h"
+
 using namespace std;
 
 TimeQueue::TimeQueue() : queue([](QElem e1, QElem e2) {

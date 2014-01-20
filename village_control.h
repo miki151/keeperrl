@@ -1,6 +1,9 @@
 #ifndef _VILLAGE_CONTROL_H
 #define _VILLAGE_CONTROL_H
 
+#include "event.h"
+#include "monster_ai.h"
+
 class VillageControl : public EventListener {
   public:
   virtual ~VillageControl();

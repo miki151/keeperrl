@@ -5,6 +5,7 @@
 
 #include "util.h"
 #include "enums.h"
+#include "action.h"
 
 class MapLayout {
   public:

@@ -6,6 +6,9 @@
 
 #include "util.h"
 
+class Location;
+class Tribe;
+
 class Quest {
   public:
   virtual bool isFinished() const = 0;

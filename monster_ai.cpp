@@ -1,5 +1,11 @@
 #include "stdafx.h"
 
+#include "monster_ai.h"
+#include "square.h"
+#include "level.h"
+#include "collective.h"
+#include "village_control.h"
+
 using namespace std;
 
 Behaviour::Behaviour(Creature* c) : creature(c) {

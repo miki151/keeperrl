@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "skill.h"
+#include "item_factory.h"
+
 string Skill::getName() const {
   return name;
 }

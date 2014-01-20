@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "task.h"
+#include "level.h"
+#include "collective.h"
 
 Task::Task(Collective* col, Vec2 pos) : position(pos), collective(col) {}
 

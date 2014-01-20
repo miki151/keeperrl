@@ -1,5 +1,11 @@
 #include "stdafx.h"
 
+#include "creature.h"
+#include "creature_factory.h"
+#include "level.h"
+#include "enemy_check.h"
+#include "ranged_weapon.h"
+
 using namespace std;
 
 Creature* Creature::getDefault() {

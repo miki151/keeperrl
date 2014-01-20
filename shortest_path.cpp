@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#include "shortest_path.h"
+#include "level.h"
+#include "creature.h"
+
 using namespace std;
 
 const double ShortestPath::infinity = 1000000000;

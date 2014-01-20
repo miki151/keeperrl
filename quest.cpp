@@ -1,5 +1,10 @@
 #include "stdafx.h"
 
+#include "quest.h"
+#include "event.h"
+#include "tribe.h"
+#include "message_buffer.h"
+
 using namespace std;
 
 class KillTribeQuest : public Quest, public EventListener {

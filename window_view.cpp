@@ -1,5 +1,10 @@
 #include "stdafx.h"
 
+#include "window_view.h"
+#include "logging_view.h"
+#include "replay_view.h"
+#include "creature.h"
+#include "level.h"
 
 using sf::Color;
 using sf::String;

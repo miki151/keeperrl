@@ -2,7 +2,7 @@
 
 CC = g++
 LD = g++
-CFLAGS = -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wl,-rpath=.
+CFLAGS = -Wfatal-errors -Werror -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wl,-rpath=.
 
 CMD:=$(shell rm -f zagadka)
 
@@ -59,7 +59,7 @@ all: $(OBJDIR) $(NAME)
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
-stdafx.h.gch: stdafx.h $(wildcard *.h)
+stdafx.h.gch: stdafx.h
 	$(CC) -MMD $(CFLAGS) -c $< -o $@
 
 ifndef OPT

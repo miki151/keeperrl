@@ -7,6 +7,7 @@
 
 #include "util.h"
 #include "name_generator.h"
+#include "item.h"
 
 class Item;
 

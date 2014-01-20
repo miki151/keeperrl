@@ -1,5 +1,10 @@
 #include "stdafx.h"
 
+#include "markov_chain.h"
+#include "debug.h"
+#include "enums.h"
+#include "util.h"
+
 template<class T>
 MarkovChain<T>::MarkovChain(T s, map<T, vector<pair<T, double>>> t) : state(s), transitions(t) {
   for (auto elem : transitions) {

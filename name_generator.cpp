@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "name_generator.h"
+#include "util.h"
+
 NameGenerator NameGenerator::scrolls;
 NameGenerator NameGenerator::firstNames;
 NameGenerator NameGenerator::aztecNames;

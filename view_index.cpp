@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "view_index.h"
+
 ViewIndex::ViewIndex() {
   objIndex = vector<int>(allLayers.size(), -1);
 }

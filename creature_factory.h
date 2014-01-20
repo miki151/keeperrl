@@ -10,6 +10,7 @@
 #include "tribe.h"
 #include "view_object.h"
 #include "item_factory.h"
+#include "monster_ai.h"
 
 class Creature;
 class ItemFactory;

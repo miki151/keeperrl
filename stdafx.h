@@ -50,7 +50,7 @@ using std::priority_queue;
 using std::make_pair;
 using std::stack;
 
-#include "window_view.h"
+/*#include "window_view.h"
 #include "action.h"
 #include "attack.h"
 #include "collective.h"
@@ -105,6 +105,6 @@ using std::stack;
 #include "view.h"
 #include "view_index.h"
 #include "view_object.h"
-#include "village_control.h"
+#include "village_control.h"*/
 
 #endif

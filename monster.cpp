@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "monster.h"
+
 using namespace std;
 
 Monster::Monster(Creature* c, MonsterAIFactory f) : 

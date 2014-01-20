@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "debug.h"
+#include "util.h"
+
 using namespace std;
 
 Debug::Debug(DebugType t) : out((string[]) { "INFO ", "FATAL "}[t]), type(t) {

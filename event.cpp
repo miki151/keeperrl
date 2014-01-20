@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "event.h"
+#include "creature.h"
+
 vector<EventListener*> EventListener::listeners;
 
 void EventListener::addListener(EventListener* l) {

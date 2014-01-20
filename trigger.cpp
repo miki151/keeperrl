@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "trigger.h"
+#include "level.h"
+
 Trigger::Trigger(Level* l, Vec2 p) : level(l), position(p) {
 }
 

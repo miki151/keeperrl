@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "location.h"
+#include "creature.h"
+
 Location::Location(const string& _name, const string& desc) : name(_name), description(desc), bounds(-1, -1, 1, 1) {
 }
 

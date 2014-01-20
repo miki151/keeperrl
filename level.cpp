@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#include "level.h"
+#include "location.h"
+#include "model.h"
+
 using namespace std;
 
 

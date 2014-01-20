@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "util.h"
+
 using namespace std;
 
 void RandomGen::init(int seed) {

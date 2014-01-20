@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "view.h"
+
 using namespace std;
 
 

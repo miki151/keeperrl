@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#include "minion_equipment.h"
+#include "item.h"
+#include "creature.h"
+
 ItemPredicate mushroomPredicate = [](const Item* it) {
   return contains({EffectType::STR_BONUS, EffectType::DEX_BONUS}, it->getEffectType());
 };

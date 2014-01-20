@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "ranged_weapon.h"
+#include "creature.h"
+#include "level.h"
 
 RangedWeapon::RangedWeapon(ViewObject o, const ItemAttributes& attr) : Item(o, attr) {}
 

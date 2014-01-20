@@ -1,6 +1,11 @@
 #ifndef _EVENT_H
 #define _EVENT_H
 
+#include "util.h"
+
+class Level;
+class Creature;
+class Item;
 
 class EventListener {
   public:

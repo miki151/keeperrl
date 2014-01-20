@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "inventory.h"
+
 using namespace std;
 
 void Inventory::addItem(PItem item) {

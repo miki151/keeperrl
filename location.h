@@ -3,6 +3,8 @@
 
 #include "util.h"
 
+class Level;
+
 class Location {
   public:
   Location(const string& name, const string& description);

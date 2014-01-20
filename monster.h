@@ -4,6 +4,7 @@
 #include "creature.h"
 #include "shortest_path.h"
 #include "enums.h"
+#include "monster_ai.h"
 
 class Monster : public Controller {
   public:

@@ -1,26 +1,13 @@
 #include "stdafx.h"
 
+#include "square_factory.h"
+#include "square.h"
+#include "creature.h"
+#include "level.h"
+#include "item_factory.h"
+#include "creature_factory.h"
+
 using namespace std;
-
-class MessageSquare : public Square {
-  public:
-  MessageSquare(const ViewObject& obj, const string& name, bool see, bool once, bool hide, const string& msg) : Square(obj, name, see, hide), message(msg) {
-    state = once ? State::ONCE : State::ALWAYS;
-  }
-
-  protected:
-  virtual void onEnterSpecial(Creature* c) override {
-    if (c->isPlayer() && state != State::NEVER) {
-      messageBuffer.addMessage(message);
-      if (state == State::ONCE)
-        state = State::NEVER;
-    }
-  }
-
-  private:
-  enum class State { ALWAYS, ONCE, NEVER } state;
-  string message;
-};
 
 class Staircase : public Square {
   public:
@@ -69,7 +56,7 @@ class SecretPassage : public Square {
     if (uncovered)
       return;
     if (getLevel()->playerCanSee(getPosition())) {
-      messageBuffer.addMessage("A secret passage is destroyed!");
+      getLevel()->globalMessage(getPosition(), "A secret passage is destroyed!");
       uncover(getPosition());
     }
   }
@@ -78,11 +65,11 @@ class SecretPassage : public Square {
     if (uncovered)
       return;
     if (c->isPlayer()) {
-      messageBuffer.addMessage("You found a secret passage!");
+      c->privateMessage("You found a secret passage!");
       uncover(c->getPosition());
     } else 
     if (getLevel()->playerCanSee(c->getPosition())) {
-      messageBuffer.addMessage(c->getTheName() + " uncovers a secret passage!");
+      getLevel()->globalMessage(getPosition(), c->getTheName() + " uncovers a secret passage!");
       uncover(c->getPosition());
     }
   }

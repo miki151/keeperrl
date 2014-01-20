@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "attack.h"
+
 using namespace std;
 
 Attack::Attack(const Creature* a, AttackLevel l, AttackType t, int h, int s, bool b, Optional<EffectType> _effect)

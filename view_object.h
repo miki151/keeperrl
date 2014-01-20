@@ -3,6 +3,7 @@
 
 #include "debug.h"
 #include "enums.h"
+#include "util.h"
 
 class ViewObject {
   public:

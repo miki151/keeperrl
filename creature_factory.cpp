@@ -1,5 +1,11 @@
 #include "stdafx.h"
 
+#include "creature_factory.h"
+#include "monster.h"
+#include "level.h"
+#include "quest.h"
+#include "message_buffer.h"
+
 using namespace std;
 
 static map<string, function<PCreature ()> > creatureMap;

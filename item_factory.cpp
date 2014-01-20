@@ -1,5 +1,12 @@
 #include "stdafx.h"
 
+#include "item_factory.h"
+#include "level.h"
+#include "creature_factory.h"
+#include "util.h"
+#include "ranged_weapon.h"
+#include "enemy_check.h"
+
 using namespace std;
 
 class FireScroll : public Item {

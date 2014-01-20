@@ -1,5 +1,11 @@
 #include "stdafx.h"
 
+#include "view.h"
+#include "model.h"
+#include "quest.h"
+#include "tribe.h"
+#include "message_buffer.h"
+
 using namespace std;
 
 int main(int argc, char* argv[]) {

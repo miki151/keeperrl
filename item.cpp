@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#include "item.h"
+#include "creature.h"
+#include "level.h"
+
 using namespace std;
 
 Item::Item(ViewObject o, const ItemAttributes& attr)

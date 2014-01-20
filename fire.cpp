@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "fire.h"
+
 Fire::Fire(double objectWeight, double objectFlamability) : weight(objectWeight), flamability(objectFlamability) {}
 
 double epsilon = 0.001;

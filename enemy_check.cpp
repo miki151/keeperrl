@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "enemy_check.h"
 
 EnemyCheck::EnemyCheck(double w) : weight(w){}
 

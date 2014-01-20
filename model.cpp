@@ -1,5 +1,11 @@
 #include "stdafx.h"
 
+#include "model.h"
+#include "collective.h"
+#include "quest.h"
+#include "player.h"
+#include "village_control.h"
+
 using namespace std;
 
 bool Model::isTurnBased() {
