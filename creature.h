@@ -217,11 +217,11 @@ class Creature : private CreatureAttributes, public CreatureView {
   void addCreatureVision(CreatureVision*);
   void removeCreatureVision(CreatureVision*);
 
-  void addSpell(SpellInfo);
-  
+  void addSpell(SpellId);
   const vector<SpellInfo>& getSpells() const;
   bool canCastSpell(int index) const;
   void castSpell(int index);
+  static SpellInfo getSpell(SpellId);
 
   private:
   Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool avoidEnemies);

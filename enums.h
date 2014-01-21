@@ -551,7 +551,15 @@ enum class AnimationId {
   EXPLOSION,
 };
 
+enum class SpellId {
+  HEALING,
+  TELEPORT,
+  INVISIBILITY,
+  WORD_OF_POWER,
+};
+
 struct SpellInfo {
+  SpellId id;
   string name;
   EffectType type;
   double ready;

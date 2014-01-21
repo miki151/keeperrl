@@ -32,8 +32,22 @@ ViewIndex Creature::getViewIndex(Vec2 pos) const {
   return level->getSquare(pos)->getViewIndex(this);
 }
 
-void Creature::addSpell(SpellInfo info) {
-  spells.push_back(info);
+SpellInfo Creature::getSpell(SpellId id) {
+  switch (id) {
+    case SpellId::HEALING: return {SpellId::HEALING, "healing", EffectType::HEAL, 0, 30};
+    case SpellId::TELEPORT: return {SpellId::HEALING, "escape", EffectType::TELEPORT, 0, 30};
+    case SpellId::INVISIBILITY: return {SpellId::HEALING, "invisibility", EffectType::INVISIBLE, 0, 300};
+    case SpellId::WORD_OF_POWER: return {SpellId::HEALING, "word of power", EffectType::WORD_OF_POWER, 0, 300};
+  }
+  Debug(FATAL) << "wpeofk";
+  return getSpell(SpellId::HEALING);
+}
+
+void Creature::addSpell(SpellId id) {
+  for (SpellInfo& info : spells)
+    if (info.id == id)
+      return;
+  spells.push_back(getSpell(id));
 }
 
 const vector<SpellInfo>& Creature::getSpells() const {

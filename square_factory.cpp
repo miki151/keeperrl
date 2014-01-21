@@ -440,22 +440,33 @@ class ConstructionDropItems : public SolidSquare {
 
 class TrainingDummy : public Furniture {
   public:
-  TrainingDummy(const ViewObject& object, const string& name, int _numLevels = 100000) : Furniture(object, name, 1),
-      numLevels(_numLevels) {}
+  TrainingDummy(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
 
   virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
     return SquareApplyType::TRAIN;
   }
 
   virtual void onApply(Creature* c) override {
-    if (numLevels > 0 && Random.roll(50)) {
+    if (Random.roll(50)) {
       c->increaseExpLevel(1);
-      --numLevels;
+    }
+  }
+};
+
+class Library : public TrainingDummy {
+  public:
+  Library(const ViewObject& object, const string& name) : TrainingDummy(object, name) {
+    spell = chooseRandom({SpellId::HEALING, SpellId::TELEPORT, SpellId::INVISIBILITY, SpellId::WORD_OF_POWER});
+  }
+
+  virtual void onApply(Creature* c) override {
+    if (Random.roll(50)) {
+      c->addSpell(spell);
     }
   }
 
   private:
-  int numLevels;
+  SpellId spell;
 };
 
 class Workshop : public Furniture {
@@ -574,8 +585,8 @@ Square* SquareFactory::get(SquareType s) {
         return new TrainingDummy(ViewObject(ViewId::TRAINING_DUMMY, ViewLayer::FLOOR, "Training post"), 
             "training post");
     case SquareType::LIBRARY:
-        return new TrainingDummy(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
-            "book shelf", 1);
+        return new Library(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
+            "book shelf");
     case SquareType::WORKSHOP:
         return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), 
             "workshop stand", ItemFactory::workshop());
