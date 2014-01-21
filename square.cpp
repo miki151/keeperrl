@@ -234,6 +234,11 @@ ViewObject Square::getViewObject() const {
   return viewObject;
 }
 
+void Square::setBackground(const Square* square) {
+  const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject) : square->viewObject;
+  backgroundObject = ViewObject(obj.id(), ViewLayer::FLOOR_BACKGROUND, "", false);
+}
+
 static ViewObject addFire(const ViewObject& obj, double fire) {
   ViewObject r(obj);
   r.setBurning(fire);
@@ -253,6 +258,8 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
     ret.insert(addFire(ViewObject::unknownMonster(), fireSize));
 
   if (c->canSee(position)) {
+    if (backgroundObject)
+      ret.insert(*backgroundObject);
     ret.insert(getViewObject());
     for (const PTrigger& t : triggers)
       if (auto obj = t->getViewObject())

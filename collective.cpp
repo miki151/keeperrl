@@ -60,7 +60,7 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
     {unMarkedItems(ItemType::CORPSE), SquareType::GRAVE, true},
     {[this](const Item* it) {
         return minionEquipment.isItemUseful(it) && !markedItems.count(it);
-      }, SquareType::WORKSHOP, false},
+      }, SquareType::STOCKPILE, false},
     {[this](const Item* it) {
         return it->getName() == "wood plank" && !markedItems.count(it); },
       SquareType::STOCKPILE, false},
@@ -260,6 +260,15 @@ void Collective::addTask(PTask task, Creature* c) {
 
 void Collective::addTask(PTask task) {
   tasks.push_back(std::move(task));
+}
+
+void Collective::delayTask(Task* task, double time) {
+  CHECK(task->canTransfer());
+  delayed.insert({task, time});
+  if (taken.count(task)) {
+    taskMap.erase(taken.at(task));
+    taken.erase(task);
+  }
 }
 
 void Collective::removeTask(Task* task) {
@@ -600,11 +609,16 @@ void Collective::tick() {
   warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && !minions.empty();
   updateTraps();
   for (Vec2 pos : myTiles) {
-    if (Creature* c = level->getSquare(pos)->getCreature())
+    if (Creature* c = level->getSquare(pos)->getCreature()) {
       if (!contains(creatures, c) && c->getTribe() == Tribe::player
           && !contains({"boulder"}, c->getName()))
         // We just found a friendly creature (and not a boulder nor a chicken)
         addCreature(c);
+      if (c->getTribe() != Tribe::player)
+        for (PTask& task : tasks)
+          if (task->getPosition() == pos && task->canTransfer())
+            delayTask(task.get(), c->getTime() + 50);
+    }
     vector<Item*> gold = level->getSquare(pos)->getItems(unMarkedItems(ItemType::GOLD));
     if (gold.size() > 0 && !mySquares[SquareType::TREASURE_CHEST].count(pos)) {
       if (!mySquares[SquareType::TREASURE_CHEST].empty()) {
@@ -770,7 +784,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     } else
       return task->getMove(c);
   }
-  for (Vec2 v : mySquares[SquareType::WORKSHOP])
+  for (Vec2 v : mySquares[SquareType::STOCKPILE])
     for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
           return minionEquipment.needsItem(c, it); })) {
       if (c->canEquip(it)) {
@@ -854,6 +868,12 @@ MoveInfo Collective::getMove(Creature* c) {
   }
   Task* closest = nullptr;
   for (PTask& task : tasks) {
+    if (delayed.count(task.get())) { 
+      if (delayed.at(task.get()) > c->getTime())
+        continue;
+      else 
+        delayed.erase(task.get());
+    }
     double dist = (task->getPosition() - c->getPosition()).length8();
     if ((!taken.count(task.get()) || (task->canTransfer() 
                                 && (task->getPosition() - taken.at(task.get())->getPosition()).length8() > dist))

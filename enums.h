@@ -236,6 +236,7 @@ enum class ViewLayer {
   LARGE_ITEM,
   ITEM,
   FLOOR,
+  FLOOR_BACKGROUND,
 };
 
 enum class HighlightType {
@@ -257,10 +258,11 @@ enum class StairLook {
 enum class SettlementType {
   VILLAGE,
   CASTLE,
+  COTTAGE,
 };
 
 const static vector<ViewLayer> allLayers =
-    {ViewLayer::FLOOR, ViewLayer::ITEM, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE};
+    {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::ITEM, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE};
 
 ENUM_HASH(ViewLayer);
 
@@ -331,8 +333,7 @@ enum class ViewId {
   SAND,
   BRIDGE,
   PATH,
-  GRASS_ROAD,
-  HILL_ROAD,
+  ROAD,
   GRASS,
   MUD,
   WALL,
@@ -362,7 +363,6 @@ enum class ViewId {
   CANIF_TREE,
   DECID_TREE,
   BUSH,
-  MOUNTAIN_BUSH,
   WATER,
   MAGMA,
   ABYSS,
@@ -455,8 +455,7 @@ enum class SquareType {
   FLOOR,
   BRIDGE,
   PATH,
-  GRASS_ROAD,
-  HILL_ROAD,
+  ROAD,
   GRASS,
   MUD,
   HELL_WALL,
@@ -480,7 +479,6 @@ enum class SquareType {
   DECID_TREE,
   CANIF_TREE,
   BUSH,
-  MOUNTAIN_BUSH,
   BED,
   STOCKPILE,
   TORTURE_TABLE,

@@ -115,6 +115,7 @@ class Collective : public CreatureView, public EventListener {
   void markSquare(Vec2 pos, SquareType type, CostInfo);
   void unmarkSquare(Vec2 pos);
   void removeTask(Task*);
+  void delayTask(Task*, double t);
   void addTask(PTask, Creature*);
   void addTask(PTask);
   int numGold(ResourceId) const;
@@ -139,6 +140,7 @@ class Collective : public CreatureView, public EventListener {
   map<Vec2, Task*> marked;
   map<Task*, Creature*> taken;
   map<Creature*, Task*> taskMap;
+  map<Task*, double> delayed;
   map<Task*, CostInfo> completionCost;
   struct TrapInfo {
     TrapType type;

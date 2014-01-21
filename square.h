@@ -148,6 +148,7 @@ class Square {
   void tick(double time);
 
   ViewObject getViewObject() const;
+  void setBackground(const Square*);
   ViewIndex getViewIndex(const CreatureView* c) const;
 
   bool itemLands(Item* item, const Attack& attack);
@@ -185,6 +186,7 @@ class Square {
   Creature* creature = nullptr;
   vector<PTrigger> triggers;
   ViewObject viewObject;
+  Optional<ViewObject> backgroundObject;
   bool seeThru;
   bool hide;
   int strength;

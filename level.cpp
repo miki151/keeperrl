@@ -299,28 +299,27 @@ SquareType Level::Builder::getType(Vec2 pos) {
   return type[pos];
 }
 
-void Level::Builder::putSquare(Vec2 pos, SquareType t, Optional<SquareAttrib> at) {
-  squares[pos].reset(SquareFactory::get(t));
-  squares[pos]->setPosition(pos);
-  if (at)
-    attrib[pos].insert(*at);
-  type[pos] = t;
+void Level::Builder::putSquare(Vec2 pos, SquareType t, Optional<SquareAttrib> at, bool onBackground) {
+  putSquare(pos, SquareFactory::get(t), t, at, onBackground);
 }
 
-void Level::Builder::putSquare(Vec2 pos, SquareType t, vector<SquareAttrib> attribs) {
-  squares[pos].reset(SquareFactory::get(t));
-  squares[pos]->setPosition(pos);
-  for (auto at : attribs)
-    attrib[pos].insert(at);
-  type[pos] = t;
+void Level::Builder::putSquare(Vec2 pos, SquareType t, vector<SquareAttrib> at, bool onBackground) {
+  putSquare(pos, SquareFactory::get(t), t, at, onBackground);
 }
 
-void Level::Builder::putSquare(Vec2 pos, Square* square, SquareType t, Optional<SquareAttrib> attr) {
+void Level::Builder::putSquare(Vec2 pos, Square* square, SquareType t, Optional<SquareAttrib> attr,
+    bool onBackground) {
+  putSquare(pos, square, t, attr ? vector<SquareAttrib>({*attr}) : vector<SquareAttrib>(), onBackground);
+}
+
+void Level::Builder::putSquare(Vec2 pos, Square* square, SquareType t, vector<SquareAttrib> attr, bool onBackground) {
   CHECK(!contains({SquareType::UP_STAIRS, SquareType::DOWN_STAIRS}, type[pos])) << "Attempted to overwrite stairs";
   square->setPosition(pos);
+  if (squares[pos] && onBackground)
+    square->setBackground(squares[pos].get());
   squares[pos].reset(std::move(square));
-  if (attr)
-    attrib[pos].insert(*attr);
+  for (SquareAttrib at : attr)
+    attrib[pos].insert(at);
   type[pos] = t;
 }
 

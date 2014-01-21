@@ -63,12 +63,12 @@ class Tile {
   Color color;
   String text;
   bool symFont = false;
-  Optional<Tile> background;
   bool translucent = false;
+  bool stickingOut = false;
   Tile(sf::Uint32 ch, Color col, bool sym = false) : color(col), text(ch), symFont(sym) {
   }
-  Tile(int x, int y, int num = 0) : tileCoord(Vec2(x, y)), texNum(num) {}
-  Tile(int x, int y, int num, Tile bg) : background(bg), tileCoord(Vec2(x, y)), texNum(num) {}
+  Tile(int x, int y, int num = 0, bool _stickingOut = false) : stickingOut(_stickingOut),tileCoord(Vec2(x, y)), 
+      texNum(num) {}
 
   Tile& addConnection(set<Dir> c, int x, int y) {
     connections.insert({c, Vec2(x, y)});
@@ -132,8 +132,8 @@ Tile getSpecialCreatureSprite(const ViewObject& obj, bool humanoid) {
 
 Tile getSprite(ViewId id);
 
-Tile getRoadTile(int pathSet, ViewId background) {
-  return Tile(0, pathSet, 5, getSprite(background))
+Tile getRoadTile(int pathSet) {
+  return Tile(0, pathSet, 5)
     .addConnection({Dir::E, Dir::W}, 2, pathSet)
     .addConnection({Dir::W}, 3, pathSet)
     .addConnection({Dir::E}, 1, pathSet)
@@ -151,8 +151,8 @@ Tile getRoadTile(int pathSet, ViewId background) {
     .addConnection({Dir::N, Dir::E, Dir::W}, 15, pathSet);
 }
 
-Tile getWallTile(int wallSet, Optional<ViewId> background = Nothing()) {
-  return (background ? Tile(9, wallSet, 1, getSprite(*background)) : Tile(9, wallSet, 1))
+Tile getWallTile(int wallSet) {
+  return Tile(9, wallSet, 1, true)
     .addConnection({Dir::E, Dir::W}, 11, wallSet)
     .addConnection({Dir::W}, 12, wallSet)
     .addConnection({Dir::E}, 10, wallSet)
@@ -208,16 +208,15 @@ Tile getSprite(ViewId id) {
     case ViewId::DWARF_BARON: return Tile(3, 6);
     case ViewId::DWARVEN_SHOPKEEPER: return Tile(4, 2);
     case ViewId::BRIDGE: return Tile(24, 0, 4);
-    case ViewId::HILL_ROAD: return getRoadTile(7, ViewId::HILL);
-    case ViewId::GRASS_ROAD: return getRoadTile(7, ViewId::GRASS);
+    case ViewId::ROAD: return getRoadTile(7);
     case ViewId::PATH:
     case ViewId::FLOOR: return Tile(3, 14, 1);
     case ViewId::SAND: return Tile(7, 12, 2);
     case ViewId::MUD: return Tile(3, 12, 2);
     case ViewId::GRASS: return Tile(0, 13, 2);
     case ViewId::WALL: return getWallTile(2);
-    case ViewId::MOUNTAIN: return Tile(17, 2, 2, getSprite(ViewId::HILL));
-    case ViewId::MOUNTAIN2: return getWallTile(21, ViewId::HILL);
+    case ViewId::MOUNTAIN: return Tile(17, 2, 2, true);
+    case ViewId::MOUNTAIN2: return getWallTile(21);
  /*                                 .addConnection({Dir::N, Dir::E, Dir::S, Dir::W, 
                                         Dir::NE, Dir::SE, Dir::SW, Dir::NW}, 19, 10)
                                   .addConnection({Dir::E, Dir::S, Dir::W, Dir::SE, Dir::SW}, 19, 9)
@@ -229,26 +228,26 @@ Tile getSprite(ViewId id) {
                                   .addConnection({Dir::N, Dir::W, Dir::NW}, 20, 11)
                                   .addConnection({Dir::N, Dir::E, Dir::NE}, 18, 11);*/
     case ViewId::GOLD_ORE: return Tile(0, 16, 1);
-    case ViewId::SNOW: return Tile(16, 2, 2, getSprite(ViewId::HILL));
+    case ViewId::SNOW: return Tile(16, 2, 2, true);
     case ViewId::HILL: return Tile(3, 13, 2);
     case ViewId::WOOD_WALL: return getWallTile(4);
     case ViewId::BLACK_WALL: return getWallTile(2);
     case ViewId::YELLOW_WALL: return getWallTile(8);
-    case ViewId::LOW_ROCK_WALL: return getWallTile(21, ViewId::PATH);
-    case ViewId::HELL_WALL: return getWallTile(22, ViewId::PATH);
+    case ViewId::LOW_ROCK_WALL: return getWallTile(21);
+    case ViewId::HELL_WALL: return getWallTile(22);
     case ViewId::CASTLE_WALL: return getWallTile(5);
     case ViewId::MUD_WALL: return getWallTile(13);
     case ViewId::SECRETPASS: return Tile(0, 15, 1);
-    case ViewId::DUNGEON_ENTRANCE: return Tile(15, 2, 2, getSprite(ViewId::HILL));
-    case ViewId::DUNGEON_ENTRANCE_MUD: return Tile(19, 2, 2, getSprite(ViewId::MUD));
-    case ViewId::DOWN_STAIRCASE: return Tile(8, 0, 1);
-    case ViewId::UP_STAIRCASE: return Tile(7, 0, 1, getSprite(ViewId::FLOOR));
-    case ViewId::DOWN_STAIRCASE_CELLAR: return Tile(8, 21, 1);
-    case ViewId::UP_STAIRCASE_CELLAR: return Tile(7, 21, 1, getSprite(ViewId::FLOOR));
-    case ViewId::DOWN_STAIRCASE_HELL: return Tile(8, 1, 1);
-    case ViewId::UP_STAIRCASE_HELL: return Tile(7, 22, 1, getSprite(ViewId::FLOOR));
-    case ViewId::DOWN_STAIRCASE_PYR: return Tile(8, 8, 1);
-    case ViewId::UP_STAIRCASE_PYR: return Tile(7, 8, 1, getSprite(ViewId::FLOOR));
+    case ViewId::DUNGEON_ENTRANCE: return Tile(15, 2, 2, true);
+    case ViewId::DUNGEON_ENTRANCE_MUD: return Tile(19, 2, 2, true);
+    case ViewId::DOWN_STAIRCASE: return Tile(8, 0, 1, true);
+    case ViewId::UP_STAIRCASE: return Tile(7, 0, 1, true);
+    case ViewId::DOWN_STAIRCASE_CELLAR: return Tile(8, 21, 1, true);
+    case ViewId::UP_STAIRCASE_CELLAR: return Tile(7, 21, 1, true);
+    case ViewId::DOWN_STAIRCASE_HELL: return Tile(8, 1, 1, true);
+    case ViewId::UP_STAIRCASE_HELL: return Tile(7, 22, 1, true);
+    case ViewId::DOWN_STAIRCASE_PYR: return Tile(8, 8, 1, true);
+    case ViewId::UP_STAIRCASE_PYR: return Tile(7, 8, 1, true);
     case ViewId::GREAT_GOBLIN: return Tile(6, 14);
     case ViewId::GOBLIN: return Tile(5, 14);
     case ViewId::BANDIT: return Tile(0, 2);
@@ -296,14 +295,13 @@ Tile getSprite(ViewId id) {
     case ViewId::VULTURE: return Tile(17, 12);
     case ViewId::BODY_PART: return Tile(9, 4, 3);
     case ViewId::BONE: return Tile(3, 0, 2);
-    case ViewId::BUSH: return Tile(15, 3, 2, getSprite(ViewId::GRASS));
-    case ViewId::MOUNTAIN_BUSH: return Tile(15, 3, 2, getSprite(ViewId::HILL));
-    case ViewId::DECID_TREE: return Tile(21, 3, 2, getSprite(ViewId::HILL));
-    case ViewId::CANIF_TREE: return Tile(20, 3, 2, getSprite(ViewId::GRASS));
+    case ViewId::BUSH: return Tile(15, 3, 2, true);
+    case ViewId::DECID_TREE: return Tile(21, 3, 2, true);
+    case ViewId::CANIF_TREE: return Tile(20, 3, 2, true);
     case ViewId::WATER: return getWaterTile(5);
     case ViewId::MAGMA: return getWaterTile(11);
     case ViewId::ABYSS: return Tile('~', darkGray);
-    case ViewId::DOOR: return Tile(4, 2, 2, getSprite(ViewId::FLOOR));
+    case ViewId::DOOR: return Tile(4, 2, 2, true);
     case ViewId::SWORD: return Tile(12, 9, 3);
     case ViewId::SPECIAL_SWORD: return Tile(13, 9, 3);
     case ViewId::ELVEN_SWORD: return Tile(14, 9, 3);
@@ -337,12 +335,12 @@ Tile getSprite(ViewId id) {
     case ViewId::GREEN_MUSHROOM:
     case ViewId::BLACK_MUSHROOM:
     case ViewId::SLIMY_MUSHROOM: return Tile(5, 4, 3);
-    case ViewId::FOUNTAIN: return Tile(0, 7, 2, getSprite(ViewId::FLOOR));
-    case ViewId::GOLD: return Tile(8, 3, 3);
-    case ViewId::CHEST: return Tile(3, 3, 2, getSprite(ViewId::FLOOR));
-    case ViewId::OPENED_CHEST: return Tile(6, 3, 2, getSprite(ViewId::FLOOR));
-    case ViewId::COFFIN: return Tile(7, 3, 2, getSprite(ViewId::FLOOR));
-    case ViewId::OPENED_COFFIN: return Tile(8, 3, 2, getSprite(ViewId::FLOOR));
+    case ViewId::FOUNTAIN: return Tile(0, 7, 2, true);
+    case ViewId::GOLD: return Tile(8, 3, 3, true);
+    case ViewId::CHEST: return Tile(3, 3, 2, true);
+    case ViewId::OPENED_CHEST: return Tile(6, 3, 2, true);
+    case ViewId::COFFIN: return Tile(7, 3, 2, true);
+    case ViewId::OPENED_COFFIN: return Tile(8, 3, 2, true);
     case ViewId::BOULDER: return Tile(18, 7);
     case ViewId::UNARMED_BOULDER_TRAP: return Tile(18, 7).setTranslucent();
     case ViewId::PORTAL: return Tile(1, 6, 2);
@@ -352,15 +350,15 @@ Tile getSprite(ViewId id) {
     case ViewId::ROCK: return Tile(6, 1, 3);
     case ViewId::WOOD_PLANK: return Tile(7, 10, 2);
     case ViewId::STOCKPILE: return Tile(4, 1, 1);
-    case ViewId::BED: return Tile(5, 4, 2, getSprite(ViewId::FLOOR));
-    case ViewId::THRONE: return Tile(7, 4, 2, getSprite(ViewId::FLOOR));
+    case ViewId::BED: return Tile(5, 4, 2, true);
+    case ViewId::THRONE: return Tile(7, 4, 2, true);
     case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
-    case ViewId::ALTAR: return Tile(2, 7, 2, getSprite(ViewId::FLOOR));
-    case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, getSprite(ViewId::FLOOR));
-    case ViewId::TRAINING_DUMMY: return Tile(0, 5, 2, getSprite(ViewId::FLOOR));
-    case ViewId::LIBRARY: return Tile(2, 4, 2, getSprite(ViewId::FLOOR));
-    case ViewId::WORKSHOP: return Tile(9, 4, 2, getSprite(ViewId::FLOOR));
-    case ViewId::GRAVE: return Tile(0, 0, 2, getSprite(ViewId::FLOOR));
+    case ViewId::ALTAR: return Tile(2, 7, 2, true);
+    case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, true);
+    case ViewId::TRAINING_DUMMY: return Tile(0, 5, 2, true);
+    case ViewId::LIBRARY: return Tile(2, 4, 2, true);
+    case ViewId::WORKSHOP: return Tile(9, 4, 2, true);
+    case ViewId::GRAVE: return Tile(0, 0, 2, true);
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
     case ViewId::BORDER_GUARD: return Tile(' ', white);
     case ViewId::LEATHER_ARMOR: return Tile(0, 12, 3);
@@ -374,7 +372,7 @@ Tile getSprite(ViewId id) {
     case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
     case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
     case ViewId::BURNT_TREE:
-    case ViewId::FALLEN_TREE: return Tile(26, 3, 2);
+    case ViewId::FALLEN_TREE: return Tile(26, 3, 2, true);
     case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
     case ViewId::MANA: return Tile(5, 10, 2);
   }
@@ -410,8 +408,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::DWARVEN_SHOPKEEPER: return Tile('h', lightBlue);
     case ViewId::FLOOR: return Tile('.', white);
     case ViewId::BRIDGE: return Tile('_', brown);
-    case ViewId::GRASS_ROAD: return Tile('.', lightGray);
-    case ViewId::HILL_ROAD: return Tile('.', lightGray);
+    case ViewId::ROAD: return Tile('.', lightGray);
     case ViewId::PATH: return Tile('.', lightGray);
     case ViewId::SAND: return Tile('.', yellow);
     case ViewId::MUD: return Tile(0x1d0f0, brown, true);
@@ -487,7 +484,6 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::VULTURE: return Tile('v', darkGray);
     case ViewId::BODY_PART: return Tile('%', red);
     case ViewId::BONE: return Tile('%', white);
-    case ViewId::MOUNTAIN_BUSH:
     case ViewId::BUSH: return Tile('&', darkGreen);
     case ViewId::DECID_TREE: return Tile(0x1f70d, darkGreen, true);
     case ViewId::CANIF_TREE: return Tile(0x2663, darkGreen, true);
@@ -711,7 +707,7 @@ void WindowView::initialize() {
   spriteLayouts = {
       MapLayout::gridLayout(screenWidth, screenHeight, 36, 36, -20, 0, 225, 0, 1, allLayers),
       MapLayout::gridLayout(screenWidth, screenHeight, 18, 18, 0, 30, 220, 85, 1,
-      {ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), true};
+      {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), true};
   currentTileLayout = spriteLayouts;
 
   mapLayout = currentTileLayout.normalLayout;
@@ -1266,8 +1262,7 @@ enum class ConnectionId {
 
 Optional<ConnectionId> getConnectionId(ViewId id) {
   switch (id) {
-    case ViewId::GRASS_ROAD:
-    case ViewId::HILL_ROAD: return ConnectionId::ROAD;
+    case ViewId::ROAD: return ConnectionId::ROAD;
     case ViewId::BLACK_WALL:
     case ViewId::YELLOW_WALL:
     case ViewId::HELL_WALL:
@@ -1338,17 +1333,10 @@ Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& in
         drawSprite(x, y, 2 * nominalSize, 22 * nominalSize, nominalSize, nominalSize, tiles[0], width, height);
         moveY = -4 - object.getSizeIncrease() / 2;
       }
-      if (tile.background) {
-        Vec2 bgCoord = tile.background->getSpriteCoord();
-        drawSprite(x + off, y + moveY + off, bgCoord.x * sz,
-            bgCoord.y * sz, sz, sz, tiles[tile.background->getTexNum()], width, height, color);
-        drawSprite(x, y, nominalSize, 22 * nominalSize, nominalSize, nominalSize, tiles[0], width, height);
-        if (object.layer() == ViewLayer::FLOOR && shadowed.count(tilePos))
-          drawSprite(x, y, 1 * nominalSize, 21 * nominalSize, nominalSize, nominalSize, tiles[5], width, height);
-      }
       drawSprite(x + off, y + moveY + off, coord.x * sz,
           coord.y * sz, sz, sz, tiles[tile.getTexNum()], width, height, color);
-      if (object.layer() == ViewLayer::FLOOR && shadowed.count(tilePos) && !tile.background)
+      if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
+          shadowed.count(tilePos) && !tile.stickingOut)
         drawSprite(x, y, 1 * nominalSize, 21 * nominalSize, nominalSize, nominalSize, tiles[5], width, height);
       if (object.getBurning() > 0) {
         drawSprite(x, y, Random.getRandom(10, 12) * nominalSize, 0 * nominalSize,

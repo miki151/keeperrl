@@ -577,7 +577,7 @@ void Player::makeMove() {
   for (Vec2 pos : creature->getLevel()->getVisibleTiles(creature)) {
     ViewIndex index = creature->getLevel()->getSquare(pos)->getViewIndex(creature);
     (*levelMemory)[creature->getLevel()].clearSquare(pos);
-    for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
+    for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
       if (index.hasObject(l))
         remember(pos, index.getObject(l));
   }

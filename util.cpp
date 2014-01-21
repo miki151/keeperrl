@@ -17,6 +17,31 @@ int RandomGen::getRandom(int min, int max) {
   return uniform_int_distribution<int>(min, max - 1)(generator);
 }
 
+void RandomGen::makeShuffle(string id, int min, int max) {
+  shuffleMap.erase(id);
+  ShuffleInfo info;
+  info.minRange = min;
+  info.maxRange = max;
+  for (int i : Range(min, max))
+    info.numbers.push_back(i);
+  random_shuffle(info.numbers.begin(), info.numbers.end(), [](int a) { return Random.getRandom(a);});
+  shuffleMap.insert({id, std::move(info)});
+}
+
+int RandomGen::getRandom(const string& shuffleId, int min, int max) {
+  if (!shuffleMap.count(shuffleId))
+    makeShuffle(shuffleId, min, max);
+  else {
+    ShuffleInfo& info = shuffleMap.at(shuffleId);
+    if (info.minRange != min || info.maxRange != max || info.numbers.empty())
+      makeShuffle(shuffleId, min, max);
+  }
+  ShuffleInfo& info = shuffleMap.at(shuffleId);
+  int ret = info.numbers.back();
+  info.numbers.pop_back();
+  return ret;
+}
+
 int RandomGen::getRandom(const vector<double>& weights, double r) {
   double sum = 0;
   for (double elem : weights)

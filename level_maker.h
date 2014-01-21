@@ -11,6 +11,8 @@ struct SettlementInfo {
   CreatureFactory factory;
   Location* location;
   Tribe* tribe;
+  pair<int, int> size;
+  vector<StairKey> downStairs;
 };
 
 class LevelMaker {

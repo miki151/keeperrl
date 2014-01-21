@@ -190,19 +190,29 @@ Range All(const T& container) {
 
 extern const vector<Vec2> neighbors;
 
+#define GET_ID(uniqueId) (string(__FILE__) + convertToString(__LINE__) + convertToString(uniqueId))
+
 class RandomGen {
   public:
   void init(int seed);
   int getRandom(int max);
   int getRandom(int min, int max);
+  int getRandom(const string& shuffleId, int min, int max);
   int getRandom(const vector<double>& weights, double r = -1);
   double getDouble();
   double getDouble(double a, double b);
   bool roll(int chance);
 
   private:
+  void makeShuffle(string id, int min, int max);
   default_random_engine generator;
   std::uniform_real_distribution<double> defaultDist;
+  struct ShuffleInfo {
+    int minRange;
+    int maxRange;
+    vector<int> numbers;
+  };
+  unordered_map<string, ShuffleInfo> shuffleMap;
 };
 
 extern RandomGen Random;

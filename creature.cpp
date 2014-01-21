@@ -921,8 +921,8 @@ void Creature::attack(const Creature* c1, bool spend) {
       << "Bad attack direction " << c->getPosition() - getPosition();
   CHECK(canAttack(c));
   Debug() << getTheName() << " attacking " << c->getName();
-  int toHit = Random.getRandom(-toHitVariance, toHitVariance) + getAttr(AttrType::TO_HIT);
-  int damage = Random.getRandom(-attackVariance, attackVariance) + getAttr(AttrType::DAMAGE);
+  int toHit = Random.getRandom(GET_ID(uniqueId), -toHitVariance, toHitVariance) + getAttr(AttrType::TO_HIT);
+  int damage = Random.getRandom(GET_ID(uniqueId), -attackVariance, attackVariance) + getAttr(AttrType::DAMAGE);
   bool backstab = false;
   string enemyName = getLevel()->playerCanSee(c) ? c->getTheName() : "something";
   if (c->isPlayer())

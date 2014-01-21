@@ -81,7 +81,7 @@ Model::Model(View* v) : view(v) {
 
 Level* Model::prepareTopLevel2(vector<SettlementInfo> settlements) {
   Level* top = buildLevel(
-      Level::Builder(120, 70, "Wilderness"),
+      Level::Builder(180, 120, "Wilderness"),
       LevelMaker::topLevel2(CreatureFactory::forrest(), settlements),
       true);
   return top;
@@ -138,9 +138,10 @@ Model* Model::heroModel(View* view, const string& heroName) {
   Model* m = new Model(view);
   vector<Location*> locations = getVillageLocations(3);
   Level* top = m->prepareTopLevel({
-      {SettlementType::CASTLE, CreatureFactory::humanVillage(), locations[0], Tribe::human},
-      {SettlementType::VILLAGE, CreatureFactory::humanVillagePeaceful(), locations[1], Tribe::human},
-      {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), locations[2], Tribe::elven}});
+      {SettlementType::CASTLE, CreatureFactory::humanVillage(), locations[0], Tribe::human, {30, 20},
+          {StairKey::CASTLE_CELLAR}},
+      {SettlementType::VILLAGE, CreatureFactory::humanVillagePeaceful(), locations[1], Tribe::human, {30, 20}, {}},
+      {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), locations[2], Tribe::elven, {30, 20}, {}}});
 /*  Level* top = m->prepareTopLevel2({
       {SettlementType::CASTLE, CreatureFactory::humanVillage(), locations[0], Tribe::human}});*/
   Level* d1 = m->buildLevel(
@@ -216,12 +217,13 @@ Model* Model::collectiveModel(View* view) {
   Model* m = new Model(view);
   CreatureFactory factory = CreatureFactory::collectiveStart();
   vector<Location*> villageLocations = getVillageLocations(1);
-  /*Level* top = m->prepareTopLevel({
-      {SettlementType::CASTLE, CreatureFactory::humanVillagePeaceful(), villageLocations[0], Tribe::human},
-      {SettlementType::VILLAGE, CreatureFactory::elvenVillagePeaceful(), villageLocations[1], Tribe::elven},
-      {SettlementType::VILLAGE, CreatureFactory::humanVillagePeaceful(), villageLocations[2], Tribe::human}});*/
-  Level* top = m->prepareTopLevel2({
-      {SettlementType::CASTLE, CreatureFactory::humanVillagePeaceful(), villageLocations[0], Tribe::human}});
+  vector<SettlementInfo> settlements{
+    {SettlementType::CASTLE, CreatureFactory::humanVillagePeaceful(), villageLocations[0], Tribe::human,{30, 20}, {}}
+  };
+  for (int i : Range(2, 5))
+    settlements.push_back(
+       {SettlementType::COTTAGE, CreatureFactory::humanVillagePeaceful(), new Location(), Tribe::human,{10, 10}, {}});
+  Level* top = m->prepareTopLevel2(settlements);
   m->collective = new Collective(CreatureFactory::collectiveMinions(), CreatureFactory::collectiveUndead());
   m->collective->setLevel(top);
   Tribe::human->addEnemy(Tribe::player);
@@ -239,9 +241,9 @@ Model* Model::collectiveModel(View* view) {
     m->addCreature(std::move(c));
   }
   vector<tuple<int, int, int>> heroAttackTime {
-      { make_tuple(800, 2, 4) },
-      { make_tuple(1400, 4, 7) },
-      { make_tuple(2000, 12, 18) }};
+      { make_tuple(1200, 2, 4) },
+      { make_tuple(1800, 4, 7) },
+      { make_tuple(2500, 12, 18) }};
   vector<pair<CreatureFactory, CreatureFactory>> villageFactories {
     { CreatureFactory::collectiveEnemies(), CreatureFactory::collectiveFinalAttack() },
     { CreatureFactory::collectiveElfEnemies(), CreatureFactory::collectiveElfFinalAttack() }

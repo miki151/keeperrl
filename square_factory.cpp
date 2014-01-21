@@ -515,10 +515,8 @@ Square* SquareFactory::get(SquareType s) {
         return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR, "Grass"), "grass", true);
     case SquareType::MUD:
         return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR, "Mud"), "mud", true);
-    case SquareType::GRASS_ROAD:
-        return new Square(ViewObject(ViewId::GRASS_ROAD, ViewLayer::FLOOR, "Road"), "road", true);
-    case SquareType::HILL_ROAD:
-        return new Square(ViewObject(ViewId::HILL_ROAD, ViewLayer::FLOOR, "Road"), "road", true);
+    case SquareType::ROAD:
+        return new Square(ViewObject(ViewId::ROAD, ViewLayer::FLOOR, "Road"), "road", true);
     case SquareType::ROCK_WALL:
         return new SolidSquare(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Wall", true), "wall", false,
             {{SquareType::FLOOR, Random.getRandom(3, 8)}});
@@ -566,8 +564,6 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::DECID_TREE: return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"),
                                      {{SquareType::HILL, 20}});
     case SquareType::BUSH: return new Furniture(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush", 1);
-    case SquareType::MOUNTAIN_BUSH: return new Furniture(ViewObject(
-                                          ViewId::MOUNTAIN_BUSH, ViewLayer::FLOOR, "Bush"), "bush", 1);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::STOCKPILE:
         return new Square(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR, "Floor"), "floor", true);

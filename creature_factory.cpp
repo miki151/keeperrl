@@ -1365,7 +1365,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.speed = 100;
                                 c.size = CreatureSize::SMALL;
                                 c.strength = 9;
-                                c.dexterity = 16;
+                                c.dexterity = 13;
                                 c.barehandedDamage = 12;
                                 c.attackEffect = EffectType::POISON;
                                 c.humanoid = false;
