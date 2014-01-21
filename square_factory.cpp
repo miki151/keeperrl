@@ -449,7 +449,7 @@ class TrainingDummy : public Furniture {
 
   virtual void onApply(Creature* c) override {
     if (numLevels > 0 && Random.roll(50)) {
-      c->increaseExpLevel();
+      c->increaseExpLevel(1);
       --numLevels;
     }
   }

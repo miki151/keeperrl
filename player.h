@@ -51,6 +51,7 @@ class Player : public Controller, public EventListener {
   void targetAction();
   void payDebtAction();
   void chatAction();
+  void spellAction();
   void fireAction(Vec2 dir);
   vector<Item*> chooseItem(const string& text, function<bool (Item*)> predicate, bool displayOnly = false,
       Optional<string> otherOption = Nothing());

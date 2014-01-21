@@ -465,6 +465,23 @@ void Player::fireAction(Vec2 dir) {
     creature->fire(dir);
 }
 
+void Player::spellAction() {
+  vector<string> list;
+  auto spells = creature->getSpells();
+  for (int i : All(spells)) {
+    list.push_back(spells[i].name + " " + (creature->canCastSpell(i) ? "(ready)" : ""));
+  }
+  auto index = view->chooseFromList("Cast a spell:", list);
+  if (!index)
+    return;
+  if (!creature->canCastSpell(*index)) {
+    spellAction();
+    return;
+  }
+  creature->privateMessage("You cast " + spells[*index].name);
+  creature->castSpell(*index);
+}
+
 const MapMemory& Player::getMemory(const Level* l) const {
   if (l == nullptr) 
     l = creature->getLevel();
@@ -545,6 +562,7 @@ void Player::makeMove() {
                                 creature->popController();
                                 return;
                               } break;
+    case ActionId::CAST_SPELL: spellAction(); break;
     case ActionId::IDLE: break;
   }
   if (creature->isSleeping() && creature->canPopController()) {

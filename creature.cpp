@@ -14,6 +14,12 @@ Creature* Creature::getDefault() {
   return defaultCreature.get();
 }
 
+bool increaseExperience = true;
+
+void Creature::noExperienceLevels() {
+  increaseExperience = false;
+}
+
 Creature::Creature(ViewObject o, Tribe* t, const CreatureAttributes& attr, ControllerFactory f) : CreatureAttributes(attr), viewObject(o), time(0), tribe(t), dead(false), lastTick(0), controller(f.get(this)) {
   static int cnt = 1;
   uniqueId = ++cnt;
@@ -24,6 +30,25 @@ Creature::Creature(ViewObject o, Tribe* t, const CreatureAttributes& attr, Contr
 
 ViewIndex Creature::getViewIndex(Vec2 pos) const {
   return level->getSquare(pos)->getViewIndex(this);
+}
+
+void Creature::addSpell(SpellInfo info) {
+  spells.push_back(info);
+}
+
+const vector<SpellInfo>& Creature::getSpells() const {
+  return spells;
+}
+
+bool Creature::canCastSpell(int index) const {
+  CHECK(index >= 0 && index < spells.size());
+  return spells[index].ready <= getTime();
+}
+
+void Creature::castSpell(int index) {
+  CHECK(canCastSpell(index));
+  Effect::applyToCreature(this, spells[index].type, EffectStrength::NORMAL);
+  spells[index].ready = getTime() + spells[index].difficulty;
 }
 
 void Creature::addCreatureVision(CreatureVision* vision) {
@@ -558,9 +583,9 @@ bool Creature::isPanicking() const {
 
 int Creature::getAttrVal(AttrType type) const {
   switch (type) {
-    case AttrType::SPEED: return *speed + expLevel * 3;
-    case AttrType::DEXTERITY: return *dexterity + expLevel / 2;
-    case AttrType::STRENGTH: return *strength + (expLevel - 1) / 2;
+    case AttrType::SPEED: return *speed + getExpLevel() * 3;
+    case AttrType::DEXTERITY: return *dexterity + getExpLevel() / 2;
+    case AttrType::STRENGTH: return *strength + (getExpLevel() - 1) / 2;
     default: return 0;
   }
 }
@@ -945,6 +970,8 @@ void Creature::attack(const Creature* c1, bool spend) {
       you(getAttackMsg(attack.getType(), false, attack.getLevel()), enemyName);
     }
     c->takeDamage(attack);
+    if (c->isDead())
+      increaseExpLevel(c->getDifficultyPoints() / 200);
   }
   else
     you(MsgType::MISS_ATTACK, enemyName);
@@ -1455,9 +1482,9 @@ void Creature::throwItem(Item* item, Vec2 direction) {
     dist = 2 * str / 15;
   else 
     Debug(FATAL) << "Item too heavy.";
-  int toHit = Random.getRandom(-toHitVariance, toHitVariance) +
+  int toHit = Random.getRandom(GET_ID(uniqueId), -toHitVariance, toHitVariance) +
       getAttr(AttrType::THROWN_TO_HIT) + item->getModifier(AttrType::THROWN_TO_HIT);
-  int damage = Random.getRandom(-attackVariance, attackVariance) +
+  int damage = Random.getRandom(GET_ID(uniqueId), -attackVariance, attackVariance) +
       getAttr(AttrType::THROWN_DAMAGE) + item->getModifier(AttrType::THROWN_DAMAGE);
   if (hasSkill(Skill::knifeThrowing) && item->getAttackType() == AttackType::STAB) {
     damage += 7;
@@ -1586,17 +1613,22 @@ double Creature::getCourage() const {
   return courage;
 }
 
-void Creature::increaseExpLevel() {
-  if (expLevel < maxLevel) {
-    ++expLevel;
-    viewObject.setSizeIncrease(0.3);
-    if (skillGain.count(expLevel))
-      addSkill(skillGain.at(expLevel));
+void Creature::increaseExpLevel(double amount) {
+  if (expLevel < maxLevel && increaseExperience) {
+    expLevel += amount;
+ //   viewObject.setSizeIncrease(0.3);
+    if (skillGain.count(getExpLevel()))
+      addSkill(skillGain.at(getExpLevel()));
   }
 }
 
 int Creature::getExpLevel() const {
   return expLevel;
+}
+  
+int Creature::getDifficultyPoints() const {
+  return getAttr(AttrType::DEFENSE) + getAttr(AttrType::TO_HIT) + getAttr(AttrType::DAMAGE)
+      + getAttr(AttrType::SPEED) / 10;
 }
 
 Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool avoidEnemies) {

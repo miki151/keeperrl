@@ -135,6 +135,7 @@ vector<Location*> getVillageLocations(int numVillages) {
 }
 
 Model* Model::heroModel(View* view, const string& heroName) {
+  Creature::noExperienceLevels();
   Model* m = new Model(view);
   vector<Location*> locations = getVillageLocations(3);
   Level* top = m->prepareTopLevel({

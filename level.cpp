@@ -49,6 +49,7 @@ void Level::replaceSquare(Vec2 pos, PSquare square) {
     square->dropItem(squares[pos]->removeItem(it));
   squares[pos]->onConstructNewSquare(square.get());
   square->setCovered(squares[pos]->isCovered());
+  square->setBackground(squares[pos].get());
   squares[pos] = std::move(square);
   squares[pos]->setPosition(pos);
   squares[pos]->setLevel(this);

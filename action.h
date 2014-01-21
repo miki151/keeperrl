@@ -25,6 +25,7 @@ enum class ActionId {
      CHAT,
      WAIT,
      UNPOSSESS,
+     CAST_SPELL,
      IDLE
 };
 

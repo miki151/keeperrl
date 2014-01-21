@@ -563,7 +563,7 @@ void Collective::update(Creature* c) {
   for (Vec2 pos : level->getVisibleTiles(c)) {
     ViewIndex index = level->getSquare(pos)->getViewIndex(c);
     memory[level].clearSquare(pos);
-    for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
+    for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
       if (index.hasObject(l))
         memory[level].addObject(pos, index.getObject(l));
   }
@@ -986,8 +986,10 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
       removeElement(minions, c);
     if (contains(vampires, c))
       removeElement(vampires, c);
-  } else
-    mana += 10;
+  } else {
+    mana += victim->getDifficultyPoints() / 3;
+    heart->increaseExpLevel(victim->getDifficultyPoints() / 1000);
+  }
 }
   
 const Level* Collective::getLevel() const {

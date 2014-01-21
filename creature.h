@@ -24,6 +24,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   virtual ~Creature() {}
 
   static Creature* getDefault();
+  static void noExperienceLevels();
 
   const ViewObject& getViewObject() const;
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
@@ -103,8 +104,9 @@ class Creature : private CreatureAttributes, public CreatureView {
   int numGoodHeads() const;
   double getCourage() const;
 
-  void increaseExpLevel();
+  void increaseExpLevel(double);
   int getExpLevel() const;
+  int getDifficultyPoints() const;
 
   string getDescription() const;
   bool isSpecialMonster() const;
@@ -215,6 +217,12 @@ class Creature : private CreatureAttributes, public CreatureView {
   void addCreatureVision(CreatureVision*);
   void removeCreatureVision(CreatureVision*);
 
+  void addSpell(SpellInfo);
+  
+  const vector<SpellInfo>& getSpells() const;
+  bool canCastSpell(int index) const;
+  void castSpell(int index);
+
   private:
   Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool avoidEnemies);
   double getInventoryWeight() const;
@@ -277,7 +285,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   TimerVar invisible;
   TimerVar poisoned;
   bool stunned = false;
-  int expLevel = 1;
+  double expLevel = 1;
   vector<const Creature*> unknownAttacker;
   vector<const Creature*> visibleEnemies;
   vector<const Creature*> privateEnemies;

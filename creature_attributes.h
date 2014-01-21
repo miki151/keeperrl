@@ -58,6 +58,7 @@ class CreatureAttributes {
   double damageMultiplier = 1;
   unordered_set<Skill*> skills;
   map<int, Skill*> skillGain {{4, Skill::twoHandedWeapon}, {6, Skill::knifeThrowing}, {10, Skill::archery}};
+  vector<SpellInfo> spells;
 };
 
 #endif

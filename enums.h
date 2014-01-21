@@ -551,4 +551,11 @@ enum class AnimationId {
   EXPLOSION,
 };
 
+struct SpellInfo {
+  string name;
+  EffectType type;
+  double ready;
+  int difficulty;
+};
+
 #endif

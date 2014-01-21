@@ -1704,6 +1704,7 @@ void WindowView::presentList(const string& title, const vector<string>& options,
         case Keyboard::Down: if (index < options.size() - numLines) ++index; break;
         case Keyboard::Return : refreshScreen(); return;
         case Keyboard::Escape : refreshScreen(); return;
+        case Keyboard::Space : refreshScreen(); return;
         default: break;
       }
     else
@@ -2111,6 +2112,7 @@ Action WindowView::getAction() {
       case Keyboard::P: return Action(ActionId::PAY_DEBT);
       case Keyboard::C: return Action(ActionId::CHAT);
       case Keyboard::U: return Action(ActionId::UNPOSSESS);
+      case Keyboard::S: return Action(ActionId::CAST_SPELL);
       default: break;
     }
   }
