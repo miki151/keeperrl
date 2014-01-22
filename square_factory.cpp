@@ -507,6 +507,19 @@ class Hatchery : public Square {
 
 };
 
+class Throne : public Furniture {
+  public:
+  Throne(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
+
+  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
+    return SquareApplyType::WORKSHOP;
+  }
+
+  virtual void onApply(Creature* c) override {
+    c->privateMessage("You sit on the throne.");
+  }
+};
+
 Square* SquareFactory::getAltar(Deity* deity) {
   return new Altar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity);
 }
@@ -515,17 +528,17 @@ Square* SquareFactory::get(SquareType s) {
   switch (s) {
     case SquareType::PATH:
     case SquareType::FLOOR:
-        return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR, "Floor"), "floor", true, false, 0, 0, 
+        return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", true, false, 0, 0, 
             {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
             {SquareType::TRAINING_DUMMY, 10}, {SquareType::LIBRARY, 10}, {SquareType::STOCKPILE, 1},
             {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10},
             {SquareType::KEEPER_THRONE, 10}});
     case SquareType::BRIDGE:
-        return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR, "Rope bridge"), "rope bridge", true);
+        return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR_BACKGROUND,"Rope bridge"), "rope bridge", true);
     case SquareType::GRASS:
-        return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR, "Grass"), "grass", true);
+        return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND, "Grass"), "grass", true);
     case SquareType::MUD:
-        return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR, "Mud"), "mud", true);
+        return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Mud"), "mud", true);
     case SquareType::ROAD:
         return new Square(ViewObject(ViewId::ROAD, ViewLayer::FLOOR, "Road"), "road", true);
     case SquareType::ROCK_WALL:
@@ -557,19 +570,20 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::GLACIER:
         return new SolidSquare(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"), "mountain", true);
     case SquareType::HILL:
-        return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR, "Hill"), "hill", true);
+        return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND, "Hill"), "hill", true);
     case SquareType::SECRET_PASS:
         return new SecretPassage(ViewObject(ViewId::SECRETPASS, ViewLayer::FLOOR, "Wall"),
                                  ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "Floor"));
     case SquareType::WATER:
-        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR, "Water"), "water",
+        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water",
             "sinks in the water", "You hear a splash", 100);
     case SquareType::MAGMA: 
-        return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR, "Magma"),
+        return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR_BACKGROUND, "Magma"),
             "magma", "burns in the magma", "");
     case SquareType::ABYSS: 
         Debug(FATAL) << "Unimplemented";
-    case SquareType::SAND: return new Square(ViewObject(ViewId::SAND, ViewLayer::FLOOR, "Sand"), "sand", true);
+    case SquareType::SAND: return new Square(ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND, "Sand"),
+                               "sand", true);
     case SquareType::CANIF_TREE: return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"),
                                      {{SquareType::GRASS, 20}});
     case SquareType::DECID_TREE: return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"),
@@ -577,7 +591,7 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::BUSH: return new Furniture(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush", 1);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::STOCKPILE:
-        return new Square(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR, "Floor"), "floor", true);
+        return new Square(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", true);
     case SquareType::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
             "torture table", 0.3);
@@ -591,9 +605,9 @@ Square* SquareFactory::get(SquareType s) {
         return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), 
             "workshop stand", ItemFactory::workshop());
     case SquareType::HATCHERY:
-        return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR, "Hatchery"), "hatchery");
+        return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery");
     case SquareType::KEEPER_THRONE:
-        return new Square(ViewObject(ViewId::THRONE, ViewLayer::FLOOR, "Throne"), "throne", true);
+        return new Throne(ViewObject(ViewId::THRONE, ViewLayer::FLOOR, "Throne"), "throne");
     case SquareType::ALTAR:
         Debug(FATAL) << "Altars are not handled by this method.";
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),

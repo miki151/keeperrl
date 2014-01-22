@@ -235,8 +235,11 @@ ViewObject Square::getViewObject() const {
 }
 
 void Square::setBackground(const Square* square) {
-  const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject) : square->viewObject;
-  backgroundObject = ViewObject(obj.id(), ViewLayer::FLOOR_BACKGROUND, "", false);
+  if (viewObject.layer() != ViewLayer::FLOOR_BACKGROUND) {
+    const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject) : square->viewObject;
+    if (obj.layer() == ViewLayer::FLOOR_BACKGROUND)
+      backgroundObject = obj;
+  }
 }
 
 static ViewObject addFire(const ViewObject& obj, double fire) {

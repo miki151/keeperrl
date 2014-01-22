@@ -207,11 +207,9 @@ class Connector : public LevelMaker {
             default:
               Debug(FATAL) << "Unhandled square type " << (int)builder->getType(v);
           }
-        if (newType == SquareType::DOOR) {
+        if (newType == SquareType::DOOR)
           builder->putSquare(v, SquareType::FLOOR);
-          builder->putSquare(v, newType, Nothing(), true);
-        } else
-          builder->putSquare(v, newType);
+        builder->putSquare(v, newType);
       }
       if (builder->getType(v) == SquareType::PATH || 
           builder->getType(v) == SquareType::BRIDGE || 
@@ -278,7 +276,7 @@ class DungeonFeatures : public LevelMaker {
       int num = Random.getRandom(iter.second.first, iter.second.second);
       for (int i : Range(num)) {
         int vInd = Random.getRandom(available.size());
-        builder->putSquare(available[vInd], iter.first, Nothing(), true);
+        builder->putSquare(available[vInd], iter.first);
         if (attr)
           builder->addAttrib(available[vInd], *attr);
         removeIndex(available, vInd);
@@ -629,7 +627,7 @@ class Buildings : public LevelMaker {
                py + (buildingRow * h)) :
           getRandomExit(Rectangle(px, py, px + w + 1, py + h + 1));
       builder->putSquare(doorLoc, floor);
-      builder->putSquare(doorLoc, door, Nothing(), true);
+      builder->putSquare(doorLoc, door);
       Rectangle inside(px + 1, py + 1, px + w, py + h);
       if (i < insideMakers.size()) 
         insideMakers[i]->make(builder, inside);
@@ -639,7 +637,7 @@ class Buildings : public LevelMaker {
    }
     if (roadConnection)
       builder->putSquare(Vec2((area.getPX() + area.getKX()) / 2, area.getPY() + alignHeight),
-          SquareType::ROAD, SquareAttrib::CONNECT, true);
+          SquareType::ROAD, SquareAttrib::CONNECT);
   }
 
   private:
@@ -832,7 +830,7 @@ class Shrine : public LevelMaker {
         continue;
       }
       builder->putSquare(pos, floorType);
-      builder->putSquare(pos, SquareFactory::getAltar(deity), SquareType::ALTAR, Nothing(), true);
+      builder->putSquare(pos, SquareFactory::getAltar(deity), SquareType::ALTAR);
       for (Vec2 fl : pos.neighbors8())
         if (wallPredicate->apply(builder, fl))
           builder->putSquare(fl, newWall);
@@ -960,12 +958,12 @@ class Mountains : public LevelMaker {
       }
       if (wys[v] > cutOffValSnow) {
         builder->putSquare(v, types[2]);
-        builder->putSquare(v, types[0], SquareAttrib::ROAD_CUT_THRU, true);
+        builder->putSquare(v, types[0], SquareAttrib::ROAD_CUT_THRU);
         ++gCnt;
       }
       else if (wys[v] > cutOffVal) {
         builder->putSquare(v, types[2]);
-        builder->putSquare(v, types[1], {SquareAttrib::MOUNTAIN, SquareAttrib::ROAD_CUT_THRU}, true);
+        builder->putSquare(v, types[1], {SquareAttrib::MOUNTAIN, SquareAttrib::ROAD_CUT_THRU});
         ++mCnt;
       }
       else if (wys[v] > cutOffValHill) {
@@ -1021,7 +1019,7 @@ class Roads : public LevelMaker {
       for (Vec2 v = p2; v != p1; v = path.getNextMove(v)) {
         SquareType roadType = SquareType::ROAD;
         if (v != p2 && v != p1 && builder->getType(v) != roadType)
-          builder->putSquare(v, roadType, Nothing(), true);
+          builder->putSquare(v, roadType);
         if (prev.x > -1)
           builder->getSquare(v)->addTravelDir(prev - v);
         builder->getSquare(v)->addTravelDir(path.getNextMove(v) - v);
@@ -1061,7 +1059,7 @@ class Vegetation : public LevelMaker {
     double cutoff = values[values.size() * ratio];
     for (Vec2 v : area)
       if (builder->getType(v) == onType && wys[v] < cutoff && Random.getDouble() <= density)
-        builder->putSquare(v, chooseRandom(types, probs), Nothing(), true);
+        builder->putSquare(v, chooseRandom(types, probs));
   }
 
   private:
@@ -1162,7 +1160,7 @@ class Stairs : public LevelMaker {
     CHECK(pos.size() > 0) << "Couldn't find position for stairs " << area;
     SquareType type = direction == StairDirection::DOWN ? SquareType::DOWN_STAIRS : SquareType::UP_STAIRS;
     builder->putSquare(pos[Random.getRandom(pos.size())], SquareFactory::getStairs(direction, key, stairLook),
-        type, setAttr, true);
+        type, setAttr);
   }
 
   private:
@@ -1333,7 +1331,7 @@ class CastleExit : public LevelMaker {
     Vec2 loc(area.getKX() - 1, area.middle().y);
  //   builder->putSquare(loc, SquareType::DOOR);
     builder->putSquare(loc + Vec2(2, 0), SquareType::FLOOR);
-    builder->putSquare(loc + Vec2(2, 0), SquareType::DOOR, SquareAttrib::CONNECT, true);
+    builder->putSquare(loc + Vec2(2, 0), SquareType::DOOR, SquareAttrib::CONNECT);
     vector<Vec2> walls { Vec2(1, -2), Vec2(2, -2), Vec2(2, -1), Vec2(2, 1), Vec2(2, 2), Vec2(1, 2)};
     for (Vec2 v : walls)
       builder->putSquare(loc + v, SquareType::CASTLE_WALL);

@@ -42,9 +42,9 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
 };
 
 vector<Collective::BuildInfo>& Collective::getBuildInfo() const {
-  if (!isThroneBuilt())
+ /* if (!isThroneBuilt())
     return initialBuildInfo;
-  else
+  else*/
     return normalBuildInfo;
 };
 Collective::ResourceInfo info ;
@@ -596,14 +596,13 @@ void Collective::updateTraps() {
 }
 
 void Collective::tick() {
-  if (isThroneBuilt()
-      && (minions.size() - vampires.size() < mySquares[SquareType::BED].size() || minions.empty())
+  if ((minions.size() - vampires.size() < mySquares[SquareType::BED].size() || minions.empty())
       && Random.roll(40) && minions.size() < minionLimit) {
     PCreature c = minionFactory.random(MonsterAIFactory::collective(this));
     addCreature(c.get());
     level->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(c));
   }
-  warning[NO_CONNECTION] = !isThroneBuilt();
+ // warning[NO_CONNECTION] = !isThroneBuilt();
   warning[NO_BEDS] = mySquares[SquareType::BED].size() == 0 && !minions.empty();
   warning[MORE_BEDS] = mySquares[SquareType::BED].size() < minions.size() - vampires.size();
   warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && !minions.empty();
@@ -753,7 +752,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
       return NoMove;
   }
   for (auto& elem : guardPosts) {
-    bool isTraining = contains({MinionTask::TRAIN, MinionTask::TRAIN_IDLE}, minionTasks.at(c).getState());
+    bool isTraining = contains({MinionTask::TRAIN}, minionTasks.at(c).getState());
     if (elem.second.attender == c) {
       if (isTraining) {
         minionTasks.at(c).update();
@@ -769,7 +768,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     }
   }
   for (auto& elem : guardPosts) {
-    bool isTraining = contains({MinionTask::TRAIN, MinionTask::TRAIN_IDLE}, minionTasks.at(c).getState());
+    bool isTraining = contains({MinionTask::TRAIN}, minionTasks.at(c).getState());
     if (elem.second.attender == nullptr && isTraining) {
       elem.second.attender = c;
       if (taskMap.count(c))
@@ -799,6 +798,11 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     minionTasks.at(c).setState(MinionTask::SLEEP);
   switch (minionTasks.at(c).getState()) {
     case MinionTask::SLEEP: {
+        if (c == heart) {
+          return {1.0, [c] {
+            c->wait();
+          }};
+        }
         set<Vec2>& whatBeds = (contains(vampires, c) ? mySquares[SquareType::GRAVE] : mySquares[SquareType::BED]);
         if (whatBeds.empty())
           return NoMove;
@@ -813,7 +817,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         addTask(Task::applySquare(this, mySquares[SquareType::TRAINING_DUMMY]), c);
         minionTaskStrings[c] = "training";
         break;
-    case MinionTask::TRAIN_IDLE:
+    case MinionTask::IDLE:
         return NoMove;
     case MinionTask::WORKSHOP:
         if (mySquares[SquareType::WORKSHOP].empty()) {
@@ -823,8 +827,14 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         addTask(Task::applySquare(this, mySquares[SquareType::WORKSHOP]), c);
         minionTaskStrings[c] = "crafting";
         break;
-    case MinionTask::WORKSHOP_IDLE:
-        return NoMove;
+    case MinionTask::STUDY:
+        if (mySquares[SquareType::LIBRARY].empty()) {
+          minionTasks.at(c).setState(MinionTask::SLEEP);
+          return NoMove;
+        }
+        addTask(Task::applySquare(this, mySquares[SquareType::LIBRARY]), c);
+        minionTaskStrings[c] = "researching";
+        break;
     case MinionTask::EAT:
         if (mySquares[SquareType::HATCHERY].empty())
           return NoMove;
@@ -836,7 +846,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
 }
 
 MoveInfo Collective::getMove(Creature* c) {
-  if (c == heart) {
+ /* if (c == heart) {
     if (isThroneBuilt()) {
       Vec2 thronePos = getOnlyElement(mySquares.at(SquareType::KEEPER_THRONE));
       if (c->getPosition() != thronePos) {
@@ -846,10 +856,7 @@ MoveInfo Collective::getMove(Creature* c) {
           }};
       }
     }
-    return {1.0, [=] {
-      c->wait();
-    }};      
-  }
+  }*/
   CHECK(contains(creatures, c));
   if (!contains(imps, c)) {
     CHECK(contains(minions, c));
@@ -895,7 +902,7 @@ MoveInfo Collective::getMove(Creature* c) {
     taken[closest] = c;
     return closest->getMove(c);
   } else {
-    if (!isThroneBuilt() && heart->getLevel() == c->getLevel()) {
+    if (!myTiles.count(c->getPosition()) && heart->getLevel() == c->getLevel()) {
       Vec2 heartPos = heart->getPosition();
       if (heartPos.dist8(c->getPosition()) < 3)
         return NoMove;
@@ -911,19 +918,23 @@ MoveInfo Collective::getMove(Creature* c) {
 }
 
 MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
-  MinionTask t1, t2;
+  MinionTask t1;
+  if (c == heart)
+    return MarkovChain<MinionTask>(MinionTask::SLEEP, {
+      {MinionTask::SLEEP, {{ MinionTask::STUDY, 0.05}}},
+      {MinionTask::STUDY, {{ MinionTask::IDLE, 0.1}, { MinionTask::SLEEP, 0.02}}},
+      {MinionTask::IDLE, {{ MinionTask::STUDY, 1}}}});
+
   if (c->getName() == "gnome") {
     t1 = MinionTask::WORKSHOP;
-    t2 = MinionTask::WORKSHOP_IDLE;
   } else {
     t1 = MinionTask::TRAIN;
-    t2 = MinionTask::TRAIN_IDLE;
   }
   return MarkovChain<MinionTask>(MinionTask::SLEEP, {
       {MinionTask::SLEEP, {{ MinionTask::EAT, 0.5}, { t1, 0.5}}},
       {MinionTask::EAT, {{ t1, 0.4}, { MinionTask::SLEEP, 0.2}}},
-      {t1, {{ MinionTask::EAT, 0.005}, { MinionTask::SLEEP, 0.005}, {t2, 0.99}}},
-      {t2, {{ t1, 1}}}});
+      {t1, {{ MinionTask::EAT, 0.005}, { MinionTask::SLEEP, 0.005}, {MinionTask::IDLE, 0.99}}},
+      {MinionTask::IDLE, {{ t1, 1}}}});
 }
 
 void Collective::addCreature(Creature* c) {

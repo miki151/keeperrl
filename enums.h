@@ -65,7 +65,7 @@ enum class ArmorType { BODY_ARMOR, HELMET, BOOTS };
 
 enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP };
 
-enum class MinionTask { EAT, SLEEP, TRAIN, TRAIN_IDLE, WORKSHOP, WORKSHOP_IDLE };
+enum class MinionTask { EAT, SLEEP, TRAIN, IDLE, WORKSHOP, STUDY};
 enum class TrapType { BOULDER, POISON_GAS };
 
 enum class SquareAttrib {
