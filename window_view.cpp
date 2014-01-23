@@ -723,11 +723,10 @@ void WindowView::initialize() {
       MapLayout::gridLayout(screenWidth, screenHeight, 16, 20, -20, topBarHeight - 20, rightBarWidth - 20,
           bottomBarHeight - 20, 1, allLayers),
       MapLayout::gridLayout(screenWidth, screenHeight, 8, 10, 0, 30, 220, 85, 1,
-      {ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
+      {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
   spriteLayouts = {
       MapLayout::gridLayout(screenWidth, screenHeight, 36, 36, -20, 0, 225, 0, 1, allLayers),
-      MapLayout::gridLayout(screenWidth, screenHeight, 18, 18, 0, 30, 220, 85, 1,
-      {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), true};
+      MapLayout::gridLayout(screenWidth, screenHeight, 18, 18, 0, 30, 220, 85, 1, allLayers), true};
   currentTileLayout = spriteLayouts;
 
   mapLayout = currentTileLayout.normalLayout;

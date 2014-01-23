@@ -107,7 +107,7 @@ void Collective::render(View* view) {
       team.clear();
       gatheringTeam = false;
       teamLevelChanges.clear();
-      view->resetCenter();
+ //     view->resetCenter();
     }
   }
   if (!possessed) {
@@ -117,7 +117,7 @@ void Collective::render(View* view) {
 }
 
 bool Collective::isTurnBased() {
-  return possessed != nullptr;
+  return possessed != nullptr && possessed->isPlayer();
 }
 
 vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squares) const {
@@ -524,6 +524,7 @@ int Collective::getImpCost() const {
 }
 
 void Collective::possess(const Creature* cr, View* view) {
+  view->stopClock();
   CHECK(contains(creatures, cr));
   CHECK(!cr->isDead());
   Creature* c = const_cast<Creature*>(cr);
@@ -1096,13 +1097,10 @@ void Collective::addCreature(Creature* c) {
 
 void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
   if (l == level) {
- //   bool found = false;
     for (auto& elem : mySquares)
       if (elem.second.count(pos)) {
         elem.second.erase(pos);
-   //     found = true;
       }
- //   CHECK(found);
   }
 }
 
