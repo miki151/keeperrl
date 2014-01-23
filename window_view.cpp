@@ -1007,14 +1007,15 @@ void WindowView::drawPlayerInfo() {
   int startX = 10;
   bottomKeyButtons.clear();
   for (int i : All(bottomKeys)) {
-    int endX = startX + getTextLength(bottomKeys[i].action) + keySpacing;
-    drawText(lightBlue, startX, line2, bottomKeys[i].action);
+    string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
+    int endX = startX + getTextLength(text) + keySpacing;
+    drawText(lightBlue, startX, line2, text);
     bottomKeyButtons.emplace_back(startX, line2, endX, line2 + 25);
     startX = endX;
   }
-  sf::Uint32 optionSyms[] = {0x1f718, L'i', L'?'};
+  sf::Uint32 optionSyms[] = {0x1f718, L'i'};
   optionButtons.clear();
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 2; ++i) {
     int w = 45;
     int line = topBarHeight - 20;
     int h = 45;
@@ -1562,10 +1563,6 @@ void WindowView::drawMap() {
         drawText(white, rightPos + 30, legendStartHeight + cnt * 25, elem.first);
         ++cnt;
       }
-      string f1text;
-      if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
-        f1text = "F1 for help";
-      drawText(lightBlue, rightPos, legendStartHeight + cnt * 25 + 25, f1text);
     }
   }
   if (getHighlightedTile() && highlighted) {
