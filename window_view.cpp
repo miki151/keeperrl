@@ -295,9 +295,10 @@ Tile getSprite(ViewId id) {
     case ViewId::VULTURE: return Tile(17, 12);
     case ViewId::BODY_PART: return Tile(9, 4, 3);
     case ViewId::BONE: return Tile(3, 0, 2);
-    case ViewId::BUSH: return Tile(15, 3, 2, true);
+    case ViewId::BUSH: return Tile(17, 0, 2, true);
     case ViewId::DECID_TREE: return Tile(21, 3, 2, true);
     case ViewId::CANIF_TREE: return Tile(20, 3, 2, true);
+    case ViewId::TREE_TRUNK: return Tile(26, 3, 2, true);
     case ViewId::WATER: return getWaterTile(5);
     case ViewId::MAGMA: return getWaterTile(11);
     case ViewId::ABYSS: return Tile('~', darkGray);
@@ -487,6 +488,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::BUSH: return Tile('&', darkGreen);
     case ViewId::DECID_TREE: return Tile(0x1f70d, darkGreen, true);
     case ViewId::CANIF_TREE: return Tile(0x2663, darkGreen, true);
+    case ViewId::TREE_TRUNK: return Tile('.', brown);
     case ViewId::WATER: return Tile('~', lightBlue);
     case ViewId::MAGMA: return Tile('~', red);
     case ViewId::ABYSS: return Tile('~', darkGray);
@@ -636,6 +638,24 @@ class Clock {
 };
 
 static Clock myClock;
+
+class TempClockPause {
+  public:
+  TempClockPause() {
+    if (!myClock.isPaused()) {
+      myClock.pause();
+      cont = true;
+    }
+  }
+
+  ~TempClockPause() {
+    if (cont)
+      myClock.cont();
+  }
+
+  private:
+  bool cont;
+};
 
 static int getTextLength(string s, const Font& font = textFont, int size = textSize) {
   Text t(s, font, size);
@@ -825,14 +845,7 @@ static bool rightMouseButtonPressed = false;
 WindowView::BlockingEvent WindowView::readkey() {
   Event event;
   while (1) {
-    bool wasPaused = false;
-    if (!myClock.isPaused()) {
-      myClock.pause();
-      wasPaused = true;
-    }
     display->waitEvent(event);
-    if (wasPaused)
-      myClock.cont();
     Debug() << "Event " << event.type;
     if (event.type == Event::KeyPressed) {
       Event::KeyEvent ret(event.key);
@@ -1606,6 +1619,7 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
 }
 
 bool WindowView::yesOrNoPrompt(const string& message) {
+  TempClockPause pause;
   showMessage(message + " (y/n)");
   refreshScreen();
   do {
@@ -1637,6 +1651,7 @@ int getMaxLines();
 Optional<int> getIndex(const vector<string>& options, bool hasTitle, Vec2 mousePos);
 
 Optional<int> WindowView::chooseFromList(const string& title, const vector<string>& options, int index) {
+  TempClockPause pause;
   if (options.size() == 0)
     return Nothing();
   int numLines = min((int) options.size(), getMaxLines());
@@ -1648,6 +1663,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<strin
     presentList(title, options, false);
     return Nothing();
   }
+  index = min(index, count - 1);
   while (1) {
     numLines = min((int) options.size(), getMaxLines());
     int height = indexHeight(options, index);
@@ -1690,6 +1706,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<strin
 }
 
 void WindowView::presentText(const string& title, const string& text) {
+  TempClockPause pause;
   int maxWidth = 80;
   vector<string> rows;
   for (string line : split(text, '\n')) {
@@ -1704,6 +1721,7 @@ void WindowView::presentText(const string& title, const string& text) {
 }
 
 void WindowView::presentList(const string& title, const vector<string>& options, bool scrollDown) {
+  TempClockPause pause;
   int numLines = min((int) options.size(), getMaxLines());
   if (numLines == 0)
     return;

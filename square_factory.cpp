@@ -247,8 +247,8 @@ class Fountain : public Square {
 
 class Tree : public Square {
   public:
-  Tree(const ViewObject& object, map<SquareType, int> construct) : Square(object, "tree", false, true, 100, 0.5,
-      construct) {}
+  Tree(const ViewObject& object, const string& name, int _numWood, map<SquareType, int> construct)
+      : Square(object, name, false, true, 100, 0.5, construct), numWood(_numWood) {}
 
   virtual bool canDestroy() const override {
     return true;
@@ -265,7 +265,7 @@ class Tree : public Square {
   }
 
   virtual void onConstructNewSquare(Square* s) override {
-    s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, Random.getRandom(5, 10)));
+    s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
   }
 
   virtual void burnOut() override {
@@ -285,6 +285,7 @@ class Tree : public Square {
 
   private:
   bool destroyed = false;
+  int numWood;
 };
 
 class TrapSquare : public Square {
@@ -460,9 +461,9 @@ class Library : public TrainingDummy {
   }
 
   virtual void onApply(Creature* c) override {
-    if (Random.roll(50)) {
+ /*   if (Random.roll(50)) {
       c->addSpell(spell);
-    }
+    }*/
   }
 
   private:
@@ -584,11 +585,14 @@ Square* SquareFactory::get(SquareType s) {
         Debug(FATAL) << "Unimplemented";
     case SquareType::SAND: return new Square(ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND, "Sand"),
                                "sand", true);
-    case SquareType::CANIF_TREE: return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"),
-                                     {{SquareType::GRASS, 20}});
-    case SquareType::DECID_TREE: return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"),
-                                     {{SquareType::HILL, 20}});
-    case SquareType::BUSH: return new Furniture(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush", 1);
+    case SquareType::CANIF_TREE: return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"), "tree", 
+                                     Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
+    case SquareType::DECID_TREE: return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"), "tree",
+                                     Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
+    case SquareType::BUSH: return new Tree(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush",
+                                     Random.getRandom(5, 10), {{SquareType::TREE_TRUNK, 20}});
+    case SquareType::TREE_TRUNK: return new Furniture(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
+                                   "tree trunk", 0);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::STOCKPILE:
         return new Square(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", true);

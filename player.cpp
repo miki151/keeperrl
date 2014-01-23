@@ -304,6 +304,7 @@ void Player::equipmentAction() {
       else
         list.push_back("[Nothing]");
     }
+    view->refreshView(creature);
     Optional<int> newIndex = view->chooseFromList("Equipment", list, index);
     if (!newIndex) {
       creature->finishEquipChain();
@@ -469,7 +470,10 @@ void Player::spellAction() {
   vector<string> list;
   auto spells = creature->getSpells();
   for (int i : All(spells)) {
-    list.push_back(spells[i].name + " " + (creature->canCastSpell(i) ? "(ready)" : ""));
+    list.push_back(spells[i].name + " " + (!creature->canCastSpell(i) ? "(ready in " +
+          convertToString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""));
+    if (!creature->canCastSpell(i))
+      list.back() = View::getModifier(View::INACTIVE, list.back());
   }
   auto index = view->chooseFromList("Cast a spell:", list);
   if (!index)

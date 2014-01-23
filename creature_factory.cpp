@@ -92,6 +92,8 @@ class BoulderController : public Monster {
   }
 
   virtual void onBump(Creature* c) override {
+    if (myTribe)
+      return;
     Vec2 dir = creature->getPosition() - c->getPosition();
     string it = c->canSee(creature) ? creature->getTheName() : "it";
     string something = c->canSee(creature) ? creature->getTheName() : "something";

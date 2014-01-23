@@ -35,9 +35,9 @@ ViewIndex Creature::getViewIndex(Vec2 pos) const {
 SpellInfo Creature::getSpell(SpellId id) {
   switch (id) {
     case SpellId::HEALING: return {SpellId::HEALING, "healing", EffectType::HEAL, 0, 30};
-    case SpellId::TELEPORT: return {SpellId::HEALING, "escape", EffectType::TELEPORT, 0, 30};
-    case SpellId::INVISIBILITY: return {SpellId::HEALING, "invisibility", EffectType::INVISIBLE, 0, 300};
-    case SpellId::WORD_OF_POWER: return {SpellId::HEALING, "word of power", EffectType::WORD_OF_POWER, 0, 300};
+    case SpellId::TELEPORT: return {SpellId::TELEPORT, "escape", EffectType::TELEPORT, 0, 30};
+    case SpellId::INVISIBILITY: return {SpellId::INVISIBILITY, "invisibility", EffectType::INVISIBLE, 0, 300};
+    case SpellId::WORD_OF_POWER: return {SpellId::WORD_OF_POWER, "word of power", EffectType::WORD_OF_POWER, 0, 300};
   }
   Debug(FATAL) << "wpeofk";
   return getSpell(SpellId::HEALING);

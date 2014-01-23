@@ -193,6 +193,11 @@ vector<RaisingInfo> raisingInfo {
   {CreatureId::VAMPIRE_LORD, 100, 3},
 };
 
+static string getTechLevelName(int level) {
+  CHECK(level >= 0 && level < 4);
+  return vector<string>({"basic", "advanced", "master", "legendary"})[level];
+}
+
 void Collective::handlePersonalSpells(View* view) {
   string text("The Keeper can learn personal spells for use in combat and other situations. "
       "You can cast them by 's' when you are in control of the Keeper.\n \n");
@@ -212,7 +217,7 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   set<Vec2> graves = mySquares.at(SquareType::GRAVE);
   if (graves.empty()) {
     if (firstTime)
-      view->presentText("Information", "You need to build a cemetery and collect corpses to raise undead.");
+      view->presentText("Information", "You need to build a graveyard and collect corpses to raise undead.");
     return;
   }
   if (graves.size() <= vampires.size()) {
@@ -241,10 +246,11 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
     else
       creatures.push_back({std::move(c), info.manaCost});
   }
-  auto index = view->chooseFromList("Raise undead: " + convertToString(corpses.size()) + " bodies available", options,
-      prevItem);
+  auto index = view->chooseFromList("Necromancy level: " + getTechLevelName(techLevel) + ", " +
+      convertToString(corpses.size()) + " bodies available", options, prevItem);
   if (!index)
     return;
+  // TODO: try many corpses before failing
   auto elem = chooseRandom(corpses);
   PCreature& creature = creatures[*index].first;
   mana -= creatures[*index].second;
@@ -262,7 +268,35 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   handleNecromancy(view, *index, false);
 }
 
-void Collective::handleLibrary(View*) {
+vector<int> techAdvancePoints { 1, 2, 3, 1000};
+
+void Collective::handleLibrary(View* view) {
+  if (mySquares.at(SquareType::LIBRARY).empty()) {
+    view->presentText("", "You need to build a library to start research.");
+    return;
+  }
+  vector<string> options;
+  int points = int(techCounter);
+  options.push_back(View::getModifier(View::TITLE, "You have " + convertToString(techCounter) 
+        + " knowledge points available."));
+  vector<TechId> availableTechs;
+  for (TechId id : techIds) {
+    options.push_back(getTechName(id) + ": " + getTechLevelName(techLevels.at(id)));
+    int neededPoints = techAdvancePoints[techLevels.at(id)];
+    if (neededPoints < 1000)
+      options.back() += "  (" + convertToString(neededPoints) + " points to advance)";
+    if (neededPoints <= points) {
+      availableTechs.push_back(id);
+    } else
+      options.back() = View::getModifier(View::INACTIVE, options.back());
+  }
+  auto index = view->chooseFromList("Library", options);
+  if (!index)
+    return;
+  TechId id = availableTechs[*index];
+  techCounter -= techAdvancePoints[techLevels.at(id)];
+  ++techLevels[id];
+  handleLibrary(view);
 }
 
 void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
@@ -615,13 +649,10 @@ void Collective::processInput(View* view) {
                 if (throneMarked == pos)
                   throneMarked = Nothing();
               } else {
-                bool grassTree = level->getSquare(pos)->canConstruct(SquareType::GRASS);
-                bool hillTree = level->getSquare(pos)->canConstruct(SquareType::HILL);
-                if (grassTree || hillTree || selection != NONE) {
-                  if (!marked.count(pos) && selection != DESELECT && (grassTree || hillTree)) {
-                    markSquare(pos, grassTree ? SquareType::GRASS : SquareType::HILL, {ResourceId::GOLD, 0});
-                    selection = SELECT;
-                  }
+                if (!marked.count(pos) && selection != DESELECT &&
+                    level->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
+                  markSquare(pos, SquareType::TREE_TRUNK, {ResourceId::GOLD, 0});
+                  selection = SELECT;
                 }
               }
               break;
@@ -635,18 +666,16 @@ void Collective::processInput(View* view) {
                 BuildInfo::SquareInfo info = getBuildInfo()[currentButton].squareInfo;
                 bool diggingSquare = !memory[level].hasViewIndex(pos) ||
                   (level->getSquare(pos)->canConstruct(info.type));
-                if (diggingSquare || selection != NONE) {
-                  if (!marked.count(pos) && selection != DESELECT && diggingSquare && 
-                      numGold(info.resourceId) >= info.cost && 
-                      (info.type != SquareType::KEEPER_THRONE || !throneMarked) &&
-                      (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) &&
-                      (info.type == SquareType::FLOOR || canSee(pos))) {
-                    markSquare(pos, info.type, {info.resourceId, info.cost});
-                    selection = SELECT;
-                    takeGold({info.resourceId, info.cost});
-                    if (info.type == SquareType::KEEPER_THRONE)
-                      throneMarked = pos;
-                  }
+                if (!marked.count(pos) && selection != DESELECT && diggingSquare && 
+                    numGold(info.resourceId) >= info.cost && 
+                    (info.type != SquareType::KEEPER_THRONE || !throneMarked) &&
+                    (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) &&
+                    (info.type == SquareType::FLOOR || canSee(pos))) {
+                  markSquare(pos, info.type, {info.resourceId, info.cost});
+                  selection = SELECT;
+                  takeGold({info.resourceId, info.cost});
+                  if (info.type == SquareType::KEEPER_THRONE)
+                    throneMarked = pos;
                 }
               }
               break;
@@ -1111,9 +1140,11 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
       removeElement(minions, c);
     if (contains(vampires, c))
       removeElement(vampires, c);
-  } else {
-    mana += victim->getDifficultyPoints() / 3;
-    heart->increaseExpLevel(victim->getDifficultyPoints() / 1000);
+  } else if (victim->getTribe() != Tribe::player) {
+    double incMana = victim->getDifficultyPoints();
+    mana += incMana;
+    Debug() << "Mana increase " << incMana << " from " << victim->getName();
+    heart->increaseExpLevel(victim->getDifficultyPoints() / 300);
   }
 }
   
