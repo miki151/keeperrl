@@ -156,7 +156,7 @@ static vector<ItemId> marketItems {
 
 void Collective::handleMarket(View* view, int prevItem) {
   if (mySquares[SquareType::STOCKPILE].empty()) {
-    view->presentText("Information", "You need a storage room to buy items.");
+    view->presentText("Information", "You need a storage room to use the market.");
     return;
   }
   vector<string> options;
@@ -177,6 +177,92 @@ void Collective::handleMarket(View* view, int prevItem) {
   level->getSquare(dest)->dropItem(std::move(items[*index]));
   view->refreshView(this);
   handleMarket(view, *index);
+}
+
+struct RaisingInfo {
+  CreatureId id;
+  int manaCost;
+  int minLevel;
+};
+
+vector<RaisingInfo> raisingInfo {
+  {CreatureId::SKELETON, 30, 0},
+  {CreatureId::ZOMBIE, 50, 0},
+  {CreatureId::MUMMY, 50, 1},
+  {CreatureId::VAMPIRE, 50, 2},
+  {CreatureId::VAMPIRE_LORD, 100, 3},
+};
+
+void Collective::handlePersonalSpells(View* view) {
+  string text("The Keeper can learn personal spells for use in combat and other situations. "
+      "You can cast them by 's' when you are in control of the Keeper.\n \n");
+  vector<SpellInfo> spells = heart->getSpells();
+  if (spells.empty())
+    text += "You don't know any spells yet.";
+  else {
+    text += "Available spells:\n";
+    for (SpellInfo elem : spells)
+      text += elem.name + "\n";
+  }
+  view->presentText("", text);
+}
+
+void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
+  int techLevel = techLevels[TechId::NECROMANCY];
+  set<Vec2> graves = mySquares.at(SquareType::GRAVE);
+  if (graves.empty()) {
+    if (firstTime)
+      view->presentText("Information", "You need to build a cemetery and collect corpses to raise undead.");
+    return;
+  }
+  if (graves.size() <= vampires.size()) {
+    if (firstTime)
+      view->presentText("Information", "You need to build more graves first for your undead to sleep in.");
+    return;
+  }
+  vector<pair<Vec2, Item*>> corpses;
+  for (Vec2 pos : graves) {
+    for (Item* it : level->getSquare(pos)->getItems([](const Item* it) {
+        return it->getType() == ItemType::CORPSE && it->getCorpseInfo()->canBeRevived; }))
+      corpses.push_back({pos, it});
+  }
+  if (corpses.empty()) {
+    if (firstTime)
+      view->presentText("Information", "You need to collect some corpses to raise undead.");
+    return;
+  }
+  vector<string> options;
+  vector<pair<PCreature, int>> creatures;
+  for (RaisingInfo info : raisingInfo) {
+    PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
+    options.push_back(c->getName() + "  mana: " + convertToString(info.manaCost));
+    if (info.minLevel > techLevel || info.manaCost > mana)
+      options.back() = View::getModifier(View::INACTIVE, options.back());
+    else
+      creatures.push_back({std::move(c), info.manaCost});
+  }
+  auto index = view->chooseFromList("Raise undead: " + convertToString(corpses.size()) + " bodies available", options,
+      prevItem);
+  if (!index)
+    return;
+  auto elem = chooseRandom(corpses);
+  PCreature& creature = creatures[*index].first;
+  mana -= creatures[*index].second;
+  for (Vec2 v : elem.first.neighbors8(true))
+    if (level->getSquare(v)->canEnter(creature.get())) {
+      level->getSquare(elem.first)->removeItems({elem.second});
+      vampires.push_back(creature.get());
+      addCreature(creature.get());
+      level->addCreature(v, std::move(creature));
+      break;
+    }
+  if (creature)
+    messageBuffer.addMessage(MessageBuffer::important("You have failed to reanimate the corpse."));
+  view->refreshView(this);
+  handleNecromancy(view, *index, false);
+}
+
+void Collective::handleLibrary(View*) {
 }
 
 void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
@@ -453,6 +539,16 @@ void Collective::processInput(View* view) {
         break;
     case CollectiveAction::CANCEL_TEAM: gatheringTeam = false; team.clear(); break;
     case CollectiveAction::MARKET: handleMarket(view); break;
+    case CollectiveAction::TECHNOLOGY:
+        if (action.getNum() < techIds.size())
+          switch (techIds[action.getNum()]) {
+            case TechId::NECROMANCY: handleNecromancy(view); break;
+            case TechId::SPELLCASTING: handlePersonalSpells(view); break;
+            default: break;
+          };
+        if (action.getNum() == techIds.size() + 1)
+          handleLibrary(view);
+        break;
     case CollectiveAction::ROOM_BUTTON: currentButton = action.getNum(); break;
     case CollectiveAction::CREATURE_BUTTON: 
         if (!gatheringTeam)
@@ -694,31 +790,6 @@ void Collective::tick() {
         }
       } else {
         warning[NO_CHESTS] = true;
-      }
-    }
-    vector<Item*> corpses = level->getSquare(pos)->getItems(unMarkedItems(ItemType::CORPSE));
-    if (corpses.size() > 0) {
-      if (mySquares[SquareType::GRAVE].count(pos) && Random.roll(200) && 
-          vampires.size() < mySquares[SquareType::GRAVE].size() && minions.size() < minionLimit) {
-        for (Item* it : corpses)
-          if (it->getCorpseInfo()->canBeRevived) {
-            PCreature vampire;
-            if (!it->getCorpseInfo()->isSkeleton)
-              vampire = undeadFactory.random(MonsterAIFactory::collective(this));
-            else
-              vampire = CreatureFactory::fromId(CreatureId::SKELETON, Tribe::player,
-                  MonsterAIFactory::collective(this));
-            for (Vec2 v : pos.neighbors8(true))
-              if (level->getSquare(v)->canEnter(vampire.get())) {
-                level->getSquare(pos)->removeItems({it});
-                vampires.push_back(vampire.get());
-                addCreature(vampire.get());
-                level->addCreature(v, std::move(vampire));
-                break;
-              }
-            if (!vampire)
-              break;
-          }
       }
     }
     for (ItemFetchInfo elem : getFetchInfo()) {

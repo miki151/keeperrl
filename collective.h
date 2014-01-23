@@ -130,6 +130,9 @@ class Collective : public CreatureView, public EventListener {
   bool canPlacePost(Vec2 pos) const;
   void freeFromGuardPost(const Creature*);
   void handleMarket(View*, int prevItem = 0);
+  void handleNecromancy(View*, int prevItem = 0, bool firstTime = true);
+  void handlePersonalSpells(View*);
+  void handleLibrary(View*);
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   void updateTraps();
   ItemPredicate unMarkedItems(ItemType) const;

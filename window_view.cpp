@@ -1989,6 +1989,9 @@ CollectiveAction WindowView::getClick() {
           if (event.mouseButton.button == sf::Mouse::Left) {
             if (marketButton && clickPos.inRectangle(*marketButton))
               return CollectiveAction(CollectiveAction::MARKET);
+            for (int i : All(techButtons))
+              if (clickPos.inRectangle(techButtons[i]))
+                return CollectiveAction(CollectiveAction::TECHNOLOGY, i);
             if (teamButton && clickPos.inRectangle(*teamButton))
               return CollectiveAction(CollectiveAction::GATHER_TEAM);
             if (cancelTeamButton && clickPos.inRectangle(*cancelTeamButton)) {
