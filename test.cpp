@@ -130,9 +130,9 @@ void testRandom() {
 
 void testViewTitlePrefix() {
   string a = "pokpok";
-  CHECK(!View::hasTitlePrefix(a));
-  CHECK(View::hasTitlePrefix(View::getTitlePrefix(a)));
-  CHECK(View::removeTitlePrefix(View::getTitlePrefix(a)) == a);
+  CHECK(!View::hasModifier({View::TITLE}, (a));
+  CHECK(View::hasModifier({View::TITLE}, View::getModifier(View::TITLE, a)));
+  CHECK(View::removeModifier(View::Title, View::getModifier({View::TITLE}, a)) == a);
 }
 
 void testRange() {

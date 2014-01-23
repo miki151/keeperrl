@@ -1122,6 +1122,15 @@ void WindowView::drawBuildings(GameInfo::BandInfo& info) {
   }
 }
   
+void WindowView::drawTechnology(GameInfo::BandInfo& info) {
+  for (int i : All(info.techButtons)) {
+    int height = legendStartHeight + i * legendLineHeight;
+    drawText(white, screenWidth - rightBarWidth, height, info.techButtons[i].name);
+    techButtons.emplace_back(screenWidth - rightBarWidth, height,
+        screenWidth - rightBarWidth + 150, height + legendLineHeight);
+  }
+}
+
 void WindowView::drawKeeperHelp() {
   vector<string> helpText { "use mouse to", "dig and build", "", "click on minion list", "to possess",
     "", "heroes come from", "the stairs", "", "[space]  pause", "[z]  zoom"};
@@ -1139,7 +1148,7 @@ void WindowView::drawBandInfo() {
   int line1 = screenHeight - 65;
   int line2 = screenHeight - 40;
   drawFilledRectangle(0, line1 - 10, screenWidth - rightBarWidth - 30, screenHeight, translucentBlack);
-  string playerLine = info.name;
+  string playerLine = info.name + "   T:" + convertToString<int>(info.time);
   drawText(white, 10, line1, playerLine);
   if (!myClock.isPaused())
     drawText(red, 10, line2, info.warning);
@@ -1147,24 +1156,29 @@ void WindowView::drawBandInfo() {
     drawText(red, 10, line2, "PAUSED");
 
   string resources;
+  int resourceSpacing = 100;
+  int resourceX = 300;
   for (int i : All(info.numGold)) {
-    drawText(white, 300 + 120 * i, line1, convertToString<int>(info.numGold[i].count));
-    drawViewObject(info.numGold[i].viewObject, 288 + 120 * i, line1, true);
+    drawText(white, resourceX + resourceSpacing * i, line1, convertToString<int>(info.numGold[i].count));
+    drawViewObject(info.numGold[i].viewObject, 288 + resourceSpacing * i, line1, true);
   }
-  drawText(white, 900, line2, "T:" + convertToString<int>(info.time));
-  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, L'i', L'?'};
+  int marketX = resourceX + resourceSpacing * info.numGold.size();
+  drawText(white, marketX, line1, "market");
+  marketButton = Rectangle(marketX, line1, marketX + getTextLength("market"), line1 + legendLineHeight);
+  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f728, L'i', L'?'};
   optionButtons.clear();
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < 5; ++i) {
     int w = 45;
     int line = topBarHeight - 20;
     int h = 45;
     int leftPos = screenWidth - rightBarWidth + 15;
-    drawText(i < 2 ? symbolFont : textFont, 35, i == int(collectiveOption) ? green : white,
+    drawText(i < 3 ? symbolFont : textFont, 35, i == int(collectiveOption) ? green : white,
         leftPos + i * w, line, optionSyms[i], true);
     optionButtons.emplace_back(leftPos + i * w - w / 2, line,
         leftPos + (i + 1) * w - w / 2, line + h);
   }
   roomButtons.clear();
+  techButtons.clear();
   int cnt = 0;
   creatureGroupButtons.clear();
   creatureButtons.clear();
@@ -1179,6 +1193,7 @@ void WindowView::drawBandInfo() {
     case CollectiveOption::MINIONS: drawMinions(info); break;
     case CollectiveOption::BUILDINGS: drawBuildings(info); break;
     case CollectiveOption::KEY_MAPPING: drawKeeperHelp(); break;
+    case CollectiveOption::TECHNOLOGY: drawTechnology(info); break;
     case CollectiveOption::LEGEND: break;
   }
 }
@@ -1305,14 +1320,12 @@ Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& in
       drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
     }
     Tile tile = getTile(object, currentTileLayout.sprites);
-    Optional<Color> color;
-    color = getBleedingColor(object);
-    if (object.isInvisible() || tile.translucent) {
-      if (color)
-        color = transparency(*color, 70);
-      else
-        color = Color(255, 255, 255, 70);
-    }
+    Color color = getBleedingColor(object);
+    if (object.isInvisible() || tile.translucent)
+      color = transparency(color, 70);
+    else if (object.isIllusion())
+      color = transparency(color, 150);
+
     if (object.getWaterDepth() > 0) {
       int val = max(0.0, 255.0 - min(2.0, object.getWaterDepth()) * 60);
       color = Color(val, val, val);
@@ -1551,18 +1564,18 @@ int indexHeight(const vector<string>& options, int index) {
   CHECK(index < options.size() && index >= 0);
   int tmp = 0;
   for (int i : All(options))
-    if (!View::hasTitlePrefix(options[i]) && tmp++ == index)
+    if (!View::hasModifier({View::TITLE, View::INACTIVE}, options[i]) && tmp++ == index)
       return i;
   Debug(FATAL) << "Bad index " << options << " " << index;
   return -1;
 }
 
 Optional<int> reverseIndexHeight(const vector<string>& options, int height) {
-  if (height < 0 || height >= options.size() || View::hasTitlePrefix(options[height]) )
+  if (height < 0 || height >= options.size() || View::hasModifier({View::TITLE, View::INACTIVE}, options[height]) )
     return Nothing();
   int sub = 0;
   for (int i : Range(height))
-    if (View::hasTitlePrefix(options[i]))
+    if (View::hasModifier({View::TITLE, View::INACTIVE}, options[i]))
       ++sub;
   return height - sub;
 }
@@ -1629,15 +1642,19 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<strin
   int numLines = min((int) options.size(), getMaxLines());
   int count = 0;
   for (string s : options)
-    if (!hasTitlePrefix(s))
+    if (!hasModifier({View::TITLE, View::INACTIVE}, s))
       ++count;
+  if (count == 0) {
+    presentList(title, options, false);
+    return Nothing();
+  }
   while (1) {
     numLines = min((int) options.size(), getMaxLines());
     int height = indexHeight(options, index);
     int cutoff = min(max(0, height - numLines / 2), (int) options.size() - numLines);
     int itemsCutoff = 0;
     for (int i : Range(cutoff))
-      if (!hasTitlePrefix(options[i]))
+      if (!hasModifier({View::TITLE, View::INACTIVE}, options[i]))
         ++itemsCutoff;
     vector<string> window = getPrefix(options, cutoff , numLines);
     drawList(title, window, index - itemsCutoff);
@@ -1758,15 +1775,16 @@ void WindowView::drawList(const string& title, const vector<string>& options, in
     topMargin -= itemSpacing;
   for (int i : All(options)) {  
     int beginH = ySpacing + topMargin + (i + 1) * itemSpacing + itemYMargin;
-    if (!hasTitlePrefix(options[i])) {
+    if (hasModifier({View::TITLE}, options[i]))
+      drawText(yellow, xSpacing + xMargin, beginH, removeModifier(View::TITLE, options[i]));
+    else if (hasModifier({View::INACTIVE}, options[i]))
+      drawText(gray, xSpacing + xMargin + itemXMargin, beginH, removeModifier(View::INACTIVE, options[i]));
+    else {
       if (hightlight > -1 && (h == i || (mouseHeight >= beginH && mouseHeight < beginH + itemSpacing))) 
         drawFilledRectangle(xSpacing + xMargin, beginH, 
             windowWidth + xSpacing - xMargin, beginH + itemSpacing - 1, darkGreen);
       drawText(white, xSpacing + xMargin + itemXMargin, beginH, options[i]);
     }
-    else
-      drawText(yellow, xSpacing + xMargin, beginH, removeTitlePrefix(options[i]));
-
   }
   drawAndClearBuffer();
 }
@@ -1942,9 +1960,6 @@ CollectiveAction WindowView::getClick() {
             if (yesOrNoPrompt("Are you sure you want to quit?"))
               exit(0);
             break;
- /*         case Keyboard::F1:
-            collectiveOption = CollectiveOption((1 + int(collectiveOption)) % 4);
-            break;*/
           default:
             break;
         }
@@ -1972,6 +1987,8 @@ CollectiveAction WindowView::getClick() {
           if (event.mouseButton.button == sf::Mouse::Right)
             chosenCreature = "";
           if (event.mouseButton.button == sf::Mouse::Left) {
+            if (marketButton && clickPos.inRectangle(*marketButton))
+              return CollectiveAction(CollectiveAction::MARKET);
             if (teamButton && clickPos.inRectangle(*teamButton))
               return CollectiveAction(CollectiveAction::GATHER_TEAM);
             if (cancelTeamButton && clickPos.inRectangle(*cancelTeamButton)) {
@@ -2043,10 +2060,10 @@ vector<KeyInfo> keyInfo {
 
 Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
   vector<string> options {
-      View::getTitlePrefix("Move around with the number pad."),
-      View::getTitlePrefix("Fast travel with ctrl + arrow."),
-      View::getTitlePrefix("Fire arrows with alt + arrow."),
-      View::getTitlePrefix("Choose action:") };
+      View::getModifier(View::TITLE, "Move around with the number pad."),
+      View::getModifier(View::TITLE, "Fast travel with ctrl + arrow."),
+      View::getModifier(View::TITLE, "Fire arrows with alt + arrow."),
+      View::getModifier(View::TITLE, "Choose action:") };
   for (int i : All(keyInfo)) {
     Debug() << "Action " << keyInfo[i].action;
     options.push_back(keyInfo[i].action + "   [ " + keyInfo[i].keyDesc + " ]");

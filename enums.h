@@ -65,7 +65,7 @@ enum class ArmorType { BODY_ARMOR, HELMET, BOOTS };
 
 enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP };
 
-enum class MinionTask { EAT, SLEEP, TRAIN, IDLE, WORKSHOP, STUDY};
+enum class MinionTask { EAT, SLEEP, TRAIN, WORKSHOP, STUDY};
 enum class TrapType { BOULDER, POISON_GAS };
 
 enum class SquareAttrib {
@@ -565,5 +565,15 @@ struct SpellInfo {
   double ready;
   int difficulty;
 };
+
+enum class TechId {
+  NECROMANCY,
+  BEAST_TAMING,
+  MATTER_ANIMATION,
+  SPELLCASTING,
+};
+
+ENUM_HASH(TechId);
+
 
 #endif

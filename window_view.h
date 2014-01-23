@@ -50,6 +50,7 @@ class WindowView: public View {
   void drawPlayerInfo();
   void drawBandInfo();
   void drawBuildings(GameInfo::BandInfo& info);
+  void drawTechnology(GameInfo::BandInfo& info);
   void drawMinions(GameInfo::BandInfo& info);
   void drawKeeperHelp();
   struct BlockingEvent {
@@ -84,6 +85,7 @@ class WindowView: public View {
   enum class CollectiveOption {
     BUILDINGS,
     MINIONS,
+    TECHNOLOGY,
     LEGEND,
     KEY_MAPPING,
   };
@@ -112,6 +114,7 @@ class WindowView: public View {
 
   vector<Rectangle> optionButtons;
   vector<Rectangle> roomButtons;
+  vector<Rectangle> techButtons;
   vector<Rectangle> creatureGroupButtons;
   vector<Rectangle> creatureButtons;
   Optional<Rectangle> descriptionButton;
@@ -121,6 +124,7 @@ class WindowView: public View {
   vector<string> creatureNames;
   string chosenCreature;
   vector<const Creature*> chosenCreatures;
+  Optional<Rectangle> marketButton;
 
   Vec2 lastMousePos;
   struct {

@@ -118,7 +118,7 @@ static void deception(Creature* c) {
   vector<PCreature> creatures;
   for (int i : Range(Random.getRandom(3, 7))) {
     ViewObject viewObject(c->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
-    viewObject.setInvisible(true);
+    viewObject.setIllusion(true);
     creatures.push_back(PCreature(new Creature(viewObject, c->getTribe(), CATTR(
           c.speed = 100;
           c.weight = 1;

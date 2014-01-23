@@ -31,10 +31,10 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::TRIBE_DOOR, ResourceId::WOOD, 4, "Door"}),
     BuildInfo({SquareType::BRIDGE, ResourceId::WOOD, 12, "Bridge"}),
     BuildInfo({SquareType::BED, ResourceId::WOOD, 8, "Lair"}),
-    BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::GOLD, 50, "Training room"}),
-    BuildInfo({SquareType::LIBRARY, ResourceId::GOLD, 50, "Library"}),
-    BuildInfo({SquareType::WORKSHOP, ResourceId::GOLD, 50, "Workshop"}),
-    BuildInfo({SquareType::GRAVE, ResourceId::GOLD, 100, "Graveyard"}),
+    BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::WOOD, 18, "Training room"}),
+    BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 18, "Library"}),
+    BuildInfo({SquareType::WORKSHOP, ResourceId::WOOD, 12, "Workshop"}),
+    BuildInfo({SquareType::GRAVE, ResourceId::WOOD, 18, "Graveyard"}),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
     BuildInfo(BuildInfo::IMP),
@@ -47,13 +47,15 @@ vector<Collective::BuildInfo>& Collective::getBuildInfo() const {
   else*/
     return normalBuildInfo;
 };
-Collective::ResourceInfo info ;
+Collective::ResourceInfo info;
 
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
   {ResourceId::GOLD, { SquareType::TREASURE_CHEST, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE}},
   {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK}}
 };
 
+vector<TechId> techIds {
+  TechId::NECROMANCY, TechId::BEAST_TAMING, TechId::MATTER_ANIMATION, TechId::SPELLCASTING};
 
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   return {
@@ -81,6 +83,8 @@ Collective::Collective(CreatureFactory factory, CreatureFactory undead)
     {ResourceId::WOOD, 40},
  //   {ResourceId::IRON, 0},
   };
+  for (TechId id: techIds)
+    techLevels[id] = 0;
 }
 
 
@@ -131,6 +135,48 @@ vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squa
 
 ViewObject Collective::getResourceViewObject(ResourceId id) const {
   return ItemFactory::fromId(resourceInfo.at(id).itemId)->getViewObject();
+}
+
+static string getTechName(TechId id) {
+  switch (id) {
+    case TechId::BEAST_TAMING: return "beast taming";
+    case TechId::MATTER_ANIMATION: return "matter animation";
+    case TechId::NECROMANCY: return "necromancy";
+    case TechId::SPELLCASTING: return "personal spells";
+  }
+  Debug(FATAL) << "pwofk";
+  return "";
+}
+
+static vector<ItemId> marketItems {
+  ItemId::HEALING_POTION,
+  ItemId::SPEED_POTION,
+  ItemId::INVISIBLE_POTION,
+};
+
+void Collective::handleMarket(View* view, int prevItem) {
+  if (mySquares[SquareType::STOCKPILE].empty()) {
+    view->presentText("Information", "You need a storage room to buy items.");
+    return;
+  }
+  vector<string> options;
+  vector<PItem> items;
+  for (ItemId id : marketItems) {
+    PItem item = ItemFactory::fromId(id);
+    options.push_back(item->getName() + "    $" + convertToString(item->getPrice()));
+    if (item->getPrice() > numGold(ResourceId::GOLD))
+      options.back() = View::getModifier(View::INACTIVE, options.back());
+    else
+      items.push_back(std::move(item));
+  }
+  auto index = view->chooseFromList("Buy items", options, prevItem);
+  if (!index)
+    return;
+  Vec2 dest = chooseRandom(mySquares[SquareType::STOCKPILE]);
+  takeGold({ResourceId::GOLD, items[*index]->getPrice()});
+  level->getSquare(dest)->dropItem(std::move(items[*index]));
+  view->refreshView(this);
+  handleMarket(view, *index);
 }
 
 void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
@@ -209,6 +255,12 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.team.clear();
   for (Creature* c : team)
     info.team.push_back(c);
+  info.techButtons.clear();
+  for (TechId id : techIds) {
+    info.techButtons.push_back({getTechName(id)});
+  }
+  info.techButtons.push_back({""});
+  info.techButtons.push_back({"library"});
 }
 
 const MapMemory& Collective::getMemory(const Level* l) const {
@@ -400,6 +452,7 @@ void Collective::processInput(View* view) {
           gatheringTeam = true;
         break;
     case CollectiveAction::CANCEL_TEAM: gatheringTeam = false; team.clear(); break;
+    case CollectiveAction::MARKET: handleMarket(view); break;
     case CollectiveAction::ROOM_BUTTON: currentButton = action.getNum(); break;
     case CollectiveAction::CREATURE_BUTTON: 
         if (!gatheringTeam)
@@ -542,6 +595,11 @@ void Collective::onAppliedItem(Vec2 pos, Item* item) {
   CHECK(item->getTrapType());
   traps[pos].marked = false;
   traps[pos].armed = true;
+}
+
+void Collective::onAppliedSquare(Vec2 pos) {
+  if (mySquares.at(SquareType::LIBRARY).count(pos))
+    techCounter += Random.getDouble(0.01, 0.02);
 }
 
 void Collective::onAppliedItemCancel(Vec2 pos) {
@@ -817,8 +875,6 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         addTask(Task::applySquare(this, mySquares[SquareType::TRAINING_DUMMY]), c);
         minionTaskStrings[c] = "training";
         break;
-    case MinionTask::IDLE:
-        return NoMove;
     case MinionTask::WORKSHOP:
         if (mySquares[SquareType::WORKSHOP].empty()) {
           minionTasks.at(c).setState(MinionTask::SLEEP);
@@ -846,17 +902,6 @@ MoveInfo Collective::getMinionMove(Creature* c) {
 }
 
 MoveInfo Collective::getMove(Creature* c) {
- /* if (c == heart) {
-    if (isThroneBuilt()) {
-      Vec2 thronePos = getOnlyElement(mySquares.at(SquareType::KEEPER_THRONE));
-      if (c->getPosition() != thronePos) {
-        if (auto move = c->getMoveTowards(thronePos))
-          return {1.0, [=] {
-            c->move(*move);
-          }};
-      }
-    }
-  }*/
   CHECK(contains(creatures, c));
   if (!contains(imps, c)) {
     CHECK(contains(minions, c));
@@ -922,8 +967,7 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
   if (c == heart)
     return MarkovChain<MinionTask>(MinionTask::SLEEP, {
       {MinionTask::SLEEP, {{ MinionTask::STUDY, 0.05}}},
-      {MinionTask::STUDY, {{ MinionTask::IDLE, 0.1}, { MinionTask::SLEEP, 0.02}}},
-      {MinionTask::IDLE, {{ MinionTask::STUDY, 1}}}});
+      {MinionTask::STUDY, {{ MinionTask::SLEEP, 0.02}}}});
 
   if (c->getName() == "gnome") {
     t1 = MinionTask::WORKSHOP;
@@ -933,8 +977,7 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
   return MarkovChain<MinionTask>(MinionTask::SLEEP, {
       {MinionTask::SLEEP, {{ MinionTask::EAT, 0.5}, { t1, 0.5}}},
       {MinionTask::EAT, {{ t1, 0.4}, { MinionTask::SLEEP, 0.2}}},
-      {t1, {{ MinionTask::EAT, 0.005}, { MinionTask::SLEEP, 0.005}, {MinionTask::IDLE, 0.99}}},
-      {MinionTask::IDLE, {{ t1, 1}}}});
+      {t1, {{ MinionTask::EAT, 0.005}, { MinionTask::SLEEP, 0.005}}}});
 }
 
 void Collective::addCreature(Creature* c) {

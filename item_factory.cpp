@@ -803,9 +803,9 @@ PItem ItemFactory::fromId(ItemId id) {
                                   "Makes all your moves very sluggish");
     case ItemId::SPEED_POTION: return getPotion(3, "speed", EffectType::SPEED, 60,
                                   "Makes all your moves very swift");
-    case ItemId::BLINDNESS_POTION: return getPotion(4, "blindness", EffectType::BLINDNESS, 60,
+    case ItemId::BLINDNESS_POTION: return getPotion(4, "blindness", EffectType::BLINDNESS, 80,
                                        "Makes you blind for some time.");
-    case ItemId::INVISIBLE_POTION: return getPotion(5, "invisibility", EffectType::INVISIBLE, 60,
+    case ItemId::INVISIBLE_POTION: return getPotion(5, "invisibility", EffectType::INVISIBLE, 120,
                                        "Makes you and your belongings invisible for a short time.");
     case ItemId::POISON_POTION: return getPotion(0, "poison", EffectType::POISON, 100, "Poisons.");
     case ItemId::PANIC_MUSHROOM: return getMushroom("panic", EffectType::PANIC,

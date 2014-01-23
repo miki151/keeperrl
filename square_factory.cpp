@@ -265,7 +265,7 @@ class Tree : public Square {
   }
 
   virtual void onConstructNewSquare(Square* s) override {
-    s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, Random.getRandom(3, 6)));
+    s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, Random.getRandom(5, 10)));
   }
 
   virtual void burnOut() override {

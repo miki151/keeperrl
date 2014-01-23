@@ -187,7 +187,7 @@ vector<Item*> Player::chooseItem(const string& text, function<bool (Item*)> pred
   vector<vector<Item*> > groups;
   for (auto elem : typeDisplayOrder) 
     if (typeGroups[elem].size() > 0) {
-      names.push_back(View::getTitlePrefix(getText(elem)));
+      names.push_back(View::getModifier(View::TITLE, getText(elem)));
       getItemNames(typeGroups[elem], names, groups);
     }
   if (onlyDisplay) {
@@ -297,7 +297,7 @@ void Player::equipmentAction() {
   while (1) {
     vector<string> list;
     for (auto slot : slots) {
-      list.push_back(View::getTitlePrefix(slotTitles.at(slot)));
+      list.push_back(View::getModifier(View::TITLE, slotTitles.at(slot)));
       Item* item = creature->getEquipment().getItem(slot);
       if (item)
         list.push_back(item->getNameAndModifiers());

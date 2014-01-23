@@ -11,7 +11,7 @@ const double ShortestPath::infinity = 1000000000;
 const int revShortestLimit = 15;
 
 static Table<double> initDistTable(Vec2 to, Vec2 from, int levelWidth, int levelHeight) {
-  int margin = 20;
+  int margin = 40;
   Vec2 p(max(0, min(to.x, from.x) - margin),
          max(0, min(to.y, from.y) - margin));
   Vec2 k(min(levelWidth - p.x, abs(to.x - from.x) + 2 * margin),

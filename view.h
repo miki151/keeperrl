@@ -98,14 +98,19 @@ class View {
   /** Returns a default View that reads all player actions from a file instead of the keyboard.*/
   static View* createReplayView(ifstream& ifs);
 
+  enum ElemMod {
+    TITLE,
+    INACTIVE,
+  };
+
   /** Marks a given menu item to be displayed as a title.*/
-  static string getTitlePrefix(const string& name);
+  static string getModifier(ElemMod, const string& name);
 
   /** Returns whether a menu item is marked as a title.*/
-  static bool hasTitlePrefix(const string& name);
+  static bool hasModifier(vector<ElemMod>, const string& name);
 
   /** Removes the title prefix from a menu item.*/
-  static string removeTitlePrefix(const string& name);
+  static string removeModifier(ElemMod, const string& name);
 
   /** Represents all the game information displayed around the map window.*/
   class GameInfo {
@@ -138,6 +143,11 @@ class View {
       double time;
       bool gatheringTeam = false;
       vector<const Creature*> team;
+
+      struct TechButton {
+        string name;
+      };
+      vector<TechButton> techButtons;
     } bandInfo;
 
     class PlayerInfo {

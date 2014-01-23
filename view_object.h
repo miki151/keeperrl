@@ -29,6 +29,9 @@ class ViewObject {
   void setInvisible(bool);
   bool isInvisible() const;
 
+  void setIllusion(bool);
+  bool isIllusion() const;
+
   void setPoisoned(bool);
   bool isPoisoned() const;
 
@@ -70,6 +73,7 @@ class ViewObject {
   bool friendly = false;
   bool blind = false;
   bool invisible = false;
+  bool illusion = false;
   bool poisoned = false;
   bool player = false;
   ViewId resource_id;

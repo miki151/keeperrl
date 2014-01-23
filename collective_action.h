@@ -5,8 +5,8 @@
 
 class CollectiveAction {
   public:
-  enum Type { GO_TO, IDLE, BUTTON_RELEASE, ROOM_BUTTON, IMP_BUTTON, CREATURE_BUTTON,
-      CREATURE_DESCRIPTION, GATHER_TEAM, CANCEL_TEAM };
+  enum Type { IDLE, GO_TO, BUTTON_RELEASE, ROOM_BUTTON, IMP_BUTTON, CREATURE_BUTTON,
+      CREATURE_DESCRIPTION, GATHER_TEAM, CANCEL_TEAM, MARKET };
 
   CollectiveAction(Type, Vec2 pos);
   CollectiveAction(Type, int);

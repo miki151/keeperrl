@@ -250,6 +250,7 @@ class ApplySquare : public Task {
       return {1.0, [this, c] {
         c->applySquare();
         setDone();
+        getCollective()->onAppliedSquare(c->getPosition());
       }};
     } else {
       MoveInfo move = getMoveToPosition(c);

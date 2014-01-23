@@ -41,6 +41,7 @@ class Collective : public CreatureView, public EventListener {
   void onConstructed(Vec2 pos, SquareType);
   void onBrought(Vec2 pos, vector<Item*> items);
   void onAppliedItem(Vec2 pos, Item* item);
+  void onAppliedSquare(Vec2 pos);
   void onAppliedItemCancel(Vec2 pos);
   void onPickedUp(Vec2 pos, vector<Item*> items);
   void onCantPickItem(vector<Item*> items);
@@ -106,6 +107,9 @@ class Collective : public CreatureView, public EventListener {
 
   vector<ItemFetchInfo> getFetchInfo() const;
 
+  unordered_map<TechId, int> techLevels;
+  double techCounter = 0;
+
   bool isDownstairsVisible() const;
   bool isThroneBuilt() const;
   struct CostInfo {
@@ -125,6 +129,7 @@ class Collective : public CreatureView, public EventListener {
   bool canBuildDoor(Vec2 pos) const;
   bool canPlacePost(Vec2 pos) const;
   void freeFromGuardPost(const Creature*);
+  void handleMarket(View*, int prevItem = 0);
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   void updateTraps();
   ItemPredicate unMarkedItems(ItemType) const;

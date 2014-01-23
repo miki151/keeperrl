@@ -20,7 +20,7 @@ CollectiveAction::CollectiveAction(Type t, const Creature* c) : type(t), creatur
 }
 
 CollectiveAction::CollectiveAction(Type t) : type(t) {
-  CHECK(!contains(intTypes, t) && !contains(vectorTypes, t));
+  CHECK(!contains(intTypes, t) && !contains(vectorTypes, t) && !contains(creatureTypes, t));
 }
 
 CollectiveAction::Type CollectiveAction::getType() {

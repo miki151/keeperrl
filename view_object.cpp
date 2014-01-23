@@ -51,6 +51,14 @@ bool ViewObject::isInvisible() const {
   return invisible;
 }
 
+void ViewObject::setIllusion(bool s) {
+  illusion = s;
+}
+
+bool ViewObject::isIllusion() const {
+  return illusion;
+}
+
 void ViewObject::setPoisoned(bool s) {
   poisoned = s;
 }
