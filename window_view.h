@@ -48,6 +48,7 @@ class WindowView: public View {
 
   void drawMap();
   void drawPlayerInfo();
+  void drawPlayerStats(GameInfo::PlayerInfo&);
   void drawBandInfo();
   void drawBuildings(GameInfo::BandInfo& info);
   void drawTechnology(GameInfo::BandInfo& info);
@@ -93,11 +94,11 @@ class WindowView: public View {
   CollectiveOption collectiveOption = CollectiveOption::BUILDINGS;
 
   enum class LegendOption {
+    STATS,
     OBJECTS,
-    KEY_MAPPING,
   };
   
-  LegendOption legendOption = LegendOption::OBJECTS;
+  LegendOption legendOption = LegendOption::STATS;
 
   MapLayout* mapLayout;
 
@@ -112,6 +113,7 @@ class WindowView: public View {
   MapLayout* worldLayout;
   vector<MapLayout*> allLayouts;
 
+  vector<Rectangle> bottomKeyButtons;
   vector<Rectangle> optionButtons;
   vector<Rectangle> roomButtons;
   vector<Rectangle> techButtons;

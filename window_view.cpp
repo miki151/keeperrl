@@ -838,6 +838,22 @@ Optional<Vec2> WindowView::getHighlightedTile() {
   return mapLayout->projectOnMap(*mousePos);
 }
 
+struct KeyInfo {
+  string keyDesc;
+  string action;
+  Event::KeyEvent event;
+};
+
+vector<KeyInfo> bottomKeys {
+  { "Z", "Zoom", {Keyboard::Z}},
+  { "I", "Inventory", {Keyboard::I}},
+  { "E", "Equipment", {Keyboard::E}},
+  { "D", "Drop", {Keyboard::D}},
+  { "A", "Apply", {Keyboard::A}},
+  { "F1", "More commands", {Keyboard::F1}},
+};
+
+
 static bool leftMouseButtonPressed = false;
 static bool rightMouseButtonPressed = false;
 
@@ -846,12 +862,6 @@ WindowView::BlockingEvent WindowView::readkey() {
   while (1) {
     display->waitEvent(event);
     Debug() << "Event " << event.type;
-    if (event.type == Event::KeyPressed) {
-      Event::KeyEvent ret(event.key);
-      mousePos = Nothing();
-      while (display->pollEvent(event));
-      return { BlockingEvent::KEY, ret };
-    }
     bool mouseEv = false;
     while (event.type == Event::MouseMoved && !rightMouseButtonPressed) {
       mouseEv = true;
@@ -861,6 +871,12 @@ WindowView::BlockingEvent WindowView::readkey() {
     }
     if (mouseEv && event.type == Event::MouseMoved)
       return { BlockingEvent::MOUSE_MOVE };
+    if (event.type == Event::KeyPressed) {
+      Event::KeyEvent ret(event.key);
+      mousePos = Nothing();
+      while (display->pollEvent(event));
+      return { BlockingEvent::KEY, ret };
+    }
     bool scrolled = false;
     while (considerScrollEvent(event)) {
       mousePos = Nothing();
@@ -870,8 +886,18 @@ WindowView::BlockingEvent WindowView::readkey() {
     }
     if (scrolled)
       return { BlockingEvent::IDLE };
-    if (event.type == Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
+    if (event.type == Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+      for (int i : All(optionButtons))
+        if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(optionButtons[i])) {
+          legendOption = LegendOption(i);
+          return { BlockingEvent::IDLE };
+        }
+      for (int i : All(bottomKeyButtons))
+        if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(bottomKeyButtons[i])) {
+          return { BlockingEvent::KEY, bottomKeys[i].event };
+        }
       return { BlockingEvent::MOUSE_LEFT };
+    }
     if (event.type == Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
       leftMouseButtonPressed = false;
     }
@@ -971,31 +997,58 @@ void WindowView::drawPlayerInfo() {
     title = " " + title;
   for (int i : All(info.adjectives))
     title = string(i <info.adjectives.size() - 1 ? ", " : " ") + info.adjectives[i] + title;
- // int line0 = screenHeight - 115;
   int line1 = screenHeight - bottomBarHeight + 10;
   int line2 = line1 + 25;
+  string playerLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title) +
+    "      T: " + convertToString<int>(info.time) + "        " + info.levelName;
   drawFilledRectangle(0, screenHeight - bottomBarHeight, screenWidth - rightBarWidth, screenHeight, translucentBlack);
-  string wielding = info.weaponName != "" ? "wielding " + info.weaponName : "barehanded";  
-  string playerLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title);
-  int attrSpace = 8;
-  string speed =
-    "Speed: " + convertToString(info.speed) + string(attrSpace, ' ');
-  string attr =
-    "Attack: " + convertToString(info.attack) + string(attrSpace, ' ') +
-    "Defense: " + convertToString(info.defense) + string(attrSpace, ' ') +
-    "Strength: " + convertToString(info.strength) + string(attrSpace, ' ') +
-    "Dexterity: " + convertToString(info.dexterity) + string(attrSpace, ' ');
- //   (info.bleeding ? "  bleeding" : "");
-  string money = "$: " + convertToString(info.numGold);
-  string turn = " T:" + convertToString<int>(info.time);
   drawText(white, 10, line1, playerLine);
-  drawText(getSpeedColor(info.speed), 10, line2, speed);
-  drawText(white, 135, line2, attr + "    " + turn);
-  drawText(white, 350, line1, info.levelName + "  " + money);
-  drawText(white, 600, line1, wielding);
- // printStanding(screenWidth - rightBarWidth, line0, info.elfStanding, "elves");
- // printStanding(screenWidth - rightBarWidth, line1, info.dwarfStanding, "dwarves");
- // printStanding(screenWidth - rightBarWidth, line2, info.goblinStanding, "goblins");
+  int keySpacing = 60;
+  int startX = 10;
+  bottomKeyButtons.clear();
+  for (int i : All(bottomKeys)) {
+    int endX = startX + getTextLength(bottomKeys[i].action) + keySpacing;
+    drawText(lightBlue, startX, line2, bottomKeys[i].action);
+    bottomKeyButtons.emplace_back(startX, line2, endX, line2 + 25);
+    startX = endX;
+  }
+  sf::Uint32 optionSyms[] = {0x1f718, L'i', L'?'};
+  optionButtons.clear();
+  for (int i = 0; i < 3; ++i) {
+    int w = 45;
+    int line = topBarHeight - 20;
+    int h = 45;
+    int leftPos = screenWidth - rightBarWidth + 15;
+    drawText(i < 1 ? symbolFont : textFont, 35, i == int(legendOption) ? green : white,
+        leftPos + i * w, line, optionSyms[i], true);
+    optionButtons.emplace_back(leftPos + i * w - w / 2, line,
+        leftPos + (i + 1) * w - w / 2, line + h);
+  }
+  switch (legendOption) {
+    case LegendOption::STATS: drawPlayerStats(info); break;
+    case LegendOption::OBJECTS: break;
+  }
+}
+
+const int legendLineHeight = 30;
+const int legendStartHeight = topBarHeight + 80;
+
+void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
+  int lineStart = legendStartHeight;
+  int lineX = screenWidth - rightBarWidth + 10;
+  vector<string> lines {
+      info.weaponName != "" ? "wielding " + info.weaponName : "barehanded",
+      "",
+      "Attack: " + convertToString(info.attack),
+      "Defense: " + convertToString(info.defense),
+      "Strength: " + convertToString(info.strength),
+      "Dexterity: " + convertToString(info.dexterity),
+      "Speed: " + convertToString(info.speed),
+      "$: " + convertToString(info.numGold),
+  };
+  for (int i : All(lines)) {
+    drawText(white, lineX, lineStart + legendLineHeight * i, lines[i]);
+  }
 }
 
 string getPlural(const string& a, const string&b, int num) {
@@ -1004,9 +1057,6 @@ string getPlural(const string& a, const string&b, int num) {
   else
     return convertToString(num) + " " + b;
 }
-
-const int legendLineHeight = 30;
-const int legendStartHeight = topBarHeight + 80;
 
 static map<string, pair<ViewObject, int>> getCreatureMap(vector<const Creature*> creatures) {
   map<string, pair<ViewObject, int>> creatureMap;
@@ -1226,29 +1276,6 @@ void WindowView::refreshText() {
     case GameInfo::InfoType::BAND: drawBandInfo(); break;
   }
 }
-
-static vector<pair<string, string>> keyMapping {
-  {"u", "leave minion"},
-  {"i", "inventory"},
-  {"e", "equipment"},
-  {"pad 5 or enter", ""},
-  {"", "pick up or"},
-  {"", "interact"},
-  {"", "with square"},
-  {"d", "drop"},
-  {"space", "wait"},
-  {"a", "apply item"},
-  {"t", "throw"},
-  {"m", "history"},
-  {"h", "hide"},
-  {"c", "chat"},
-  {"p", "pay"},
-  {"ctrl + arrow", "travel"},
-  {"alt + arrow", "fire"},
-  {"z", "zoom"},
-  {"shift + z", "world map"},
-  {"F1", "legend"},
-};
 
 Vec2 WindowView::projectOnBorders(Rectangle area, Vec2 pos) {
   Vec2 center = Vec2((area.getPX() + area.getKX()) / 2, (area.getPY() + area.getKY()) / 2);
@@ -1539,14 +1566,6 @@ void WindowView::drawMap() {
       if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
         f1text = "F1 for help";
       drawText(lightBlue, rightPos, legendStartHeight + cnt * 25 + 25, f1text);
-    } else {
-      int i = 0;
-      for (auto elem : keyMapping) {
-        if (elem.first.size() > 0)
-          drawText(lightBlue, rightPos - 5, legendStartHeight + i * 21, "[" + elem.first + "]");
-        drawText(lightBlue, rightPos + 110, legendStartHeight + i * 21, elem.second);
-        ++i;
-      }
     }
   }
   if (getHighlightedTile() && highlighted) {
@@ -2053,12 +2072,6 @@ CollectiveAction WindowView::getClick() {
   }
   return CollectiveAction(CollectiveAction::IDLE);
 }
-
-struct KeyInfo {
-  string keyDesc;
-  string action;
-  Event::KeyEvent event;
-};
 
 vector<KeyInfo> keyInfo {
   { "I", "Inventory", {Keyboard::I}},

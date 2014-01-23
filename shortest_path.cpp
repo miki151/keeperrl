@@ -110,7 +110,7 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<int(Vec2)> 
 
   priority_queue<Vec2, vector<Vec2>, decltype(comparator)> q(comparator) ;
   for (Vec2 v : distance.getBounds()) {
-    double dist = distance[v];
+    double dist = getDistance(v);
     if (dist <= limit) {
       setDistance(v, mult * dist);
       q.push(v);
@@ -127,8 +127,8 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<int(Vec2)> 
     q.pop();
     for (Vec2 dir : directions)
       if ((pos + dir).inRectangle(distance.getBounds())) {
-        if (getDistance(pos + dir) > distance[pos] + entryFun(pos + dir) && distance[pos + dir] < 0) {
-          distance[pos + dir] = distance[pos] + entryFun(pos + dir);
+        if (getDistance(pos + dir) > getDistance(pos) + entryFun(pos + dir) && getDistance(pos + dir) < 0) {
+          setDistance(pos + dir, getDistance(pos) + entryFun(pos + dir));
           q.push(pos + dir);
         }
       }
