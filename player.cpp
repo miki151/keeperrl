@@ -124,7 +124,7 @@ void Player::pickUpAction(bool extended) {
     return;
   int index = 0;
   if (names.size() > 1) {
-    Optional<int> res = view->chooseFromList("Choose an item to pick up:", names);
+    Optional<int> res = view->chooseFromList("Choose an item to pick up:", View::getListElem(names));
     if (!res)
       return;
     else
@@ -183,12 +183,14 @@ static string getText(ItemType type) {
 vector<Item*> Player::chooseItem(const string& text, function<bool (Item*)> predicate, bool onlyDisplay, Optional<string> otherOption) {
   map<ItemType, vector<Item*> > typeGroups = groupBy<Item*, ItemType>(
       creature->getEquipment().getItems(predicate), [](Item* const& item) { return item->getType();});
-  vector<string> names;
+  vector<View::ListElem> names;
   vector<vector<Item*> > groups;
   for (auto elem : typeDisplayOrder) 
     if (typeGroups[elem].size() > 0) {
-      names.push_back(View::getModifier(View::TITLE, getText(elem)));
-      getItemNames(typeGroups[elem], names, groups);
+      names.push_back(View::ListElem(getText(elem), View::TITLE));
+      vector<string> itemNames;
+      getItemNames(typeGroups[elem], itemNames, groups);
+      append(names, View::getListElem(itemNames));
     }
   if (onlyDisplay) {
     view->presentList(text, names);
@@ -223,7 +225,7 @@ void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   vector<vector<Item*> > groups;
   getItemNames(items, names, groups);
   CHECK(!names.empty());
-  Optional<int> index = view->chooseFromList("Do you want to take it?", names);
+  Optional<int> index = view->chooseFromList("Do you want to take it?", View::getListElem(names));
   if (!index) {
     return;
   }
@@ -242,15 +244,13 @@ void Player::applyAction() {
     return;
   }
   vector<Item*> items = chooseItem("Choose an item to apply:", [this](Item* item) {
-      return (
-               item->getType() == ItemType::TOOL ||
-               item->getType() == ItemType::POTION ||
-               item->getType() == ItemType::FOOD ||
-               item->getType() == ItemType::BOOK ||
-               item->getType() == ItemType::SCROLL)
-            && creature->canApplyItem(item);});
+      return creature->canApplyItem(item);});
   if (items.size() == 0)
     return;
+  applyItem(items);
+}
+
+void Player::applyItem(vector<Item*> items) {
   if (creature->isBlind() && contains({ItemType::SCROLL, ItemType::BOOK}, items[0]->getType())) {
     privateMessage("You can't read while blind!");
     return;
@@ -276,6 +276,10 @@ void Player::throwAction(Optional<Vec2> dir) {
       return !creature->getEquipment().isEquiped(item);});
   if (items.size() == 0)
     return;
+  throwItem(items, dir);
+}
+
+void Player::throwItem(vector<Item*> items, Optional<Vec2> dir) {
   if (!dir) {
     auto cDir = view->chooseDirection("Which direction do you want to throw?");
     if (!cDir)
@@ -295,9 +299,9 @@ void Player::equipmentAction() {
   int index = 0;
   creature->startEquipChain();
   while (1) {
-    vector<string> list;
+    vector<View::ListElem> list;
     for (auto slot : slots) {
-      list.push_back(View::getModifier(View::TITLE, slotTitles.at(slot)));
+      list.push_back(View::ListElem(slotTitles.at(slot), View::TITLE));
       Item* item = creature->getEquipment().getItem(slot);
       if (item)
         list.push_back(item->getNameAndModifiers());
@@ -355,7 +359,45 @@ void Player::grantIdentify(int numItems) {
 }
 
 void Player::displayInventory() {
-  chooseItem("Inventory:", [](Item* item) { return true; }, true);
+  vector<Item*> item = chooseItem("Inventory:", [](Item* item) { return true; });
+  if (item.size() == 0)
+    return; 
+  vector<View::ListElem> options;
+  if (creature->canEquip(item[0])) {
+    options.push_back("equip");
+  }
+  if (creature->canApplyItem(item[0])) {
+    options.push_back("apply");
+  }
+  if (creature->canUnequip(item[0]))
+    options.push_back("remove");
+  else {
+    options.push_back("throw");
+    options.push_back("drop");
+  }
+  auto index = view->chooseFromList("What to do with " + getPluralName(item[0], item.size()) + "?", options);
+  if (!index) {
+    displayInventory();
+    return;
+  }
+  if (options[*index].getText() == "drop") {
+    creature->privateMessage("You drop " + getPluralName(item[0], item.size()));
+    creature->drop(item);
+  }
+  if (options[*index].getText() == "throw") {
+    throwItem(item);
+  }
+  if (options[*index].getText() == "apply") {
+    applyItem(item);
+  }
+  if (options[*index].getText() == "remove") {
+    creature->privateMessage("You remove " + getPluralName(item[0], item.size()));
+    creature->unequip(getOnlyElement(item));
+  }
+  if (options[*index].getText() == "equip") {
+    creature->privateMessage("You equip " + getPluralName(item[0], item.size()));
+    creature->equip(item[0]);
+  }
 }
 
 void Player::hideAction() {
@@ -441,17 +483,18 @@ void Player::payDebtAction() {
     }
 }
 
-void Player::chatAction() {
+void Player::chatAction(Optional<Vec2> dir) {
   vector<const Creature*> creatures;
   for (Vec2 v : Vec2::directions8())
     if (const Creature* c = creature->getConstSquare(v)->getCreature())
       creatures.push_back(c);
-  if (creatures.size() == 1) {
+  if (creatures.size() == 1 && !dir) {
     privateMessage("You chat with " + creatures[0]->getTheName());
     creature->chatTo(creatures[0]->getPosition() - creature->getPosition());
   } else
-  if (creatures.size() > 1) {
-    Optional<Vec2> dir = view->chooseDirection("Which direction?");
+  if (creatures.size() > 1 || dir) {
+    if (!dir)
+      dir = view->chooseDirection("Which direction?");
     if (!dir)
       return;
     if (const Creature* c = creature->getConstSquare(*dir)->getCreature()) {
@@ -467,13 +510,14 @@ void Player::fireAction(Vec2 dir) {
 }
 
 void Player::spellAction() {
-  vector<string> list;
+  vector<View::ListElem> list;
   auto spells = creature->getSpells();
   for (int i : All(spells)) {
-    list.push_back(spells[i].name + " " + (!creature->canCastSpell(i) ? "(ready in " +
-          convertToString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""));
+    Optional<View::ElemMod> mod;
     if (!creature->canCastSpell(i))
-      list.back() = View::getModifier(View::INACTIVE, list.back());
+      mod = View::INACTIVE;
+    list.push_back(View::ListElem(spells[i].name + " " + (!creature->canCastSpell(i) ? "(ready in " +
+          convertToString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""), mod));
   }
   auto index = view->chooseFromList("Cast a spell:", list);
   if (!index)
@@ -540,9 +584,16 @@ void Player::makeMove() {
     case ActionId::FIRE: fireAction(action.getDirection()); break;
     case ActionId::TRAVEL: travel = true;
     case ActionId::MOVE: direction.push_back(action.getDirection()); break;
-    case ActionId::MOVE_TO: if (action.getDirection().dist8(creature->getPosition()) == 1)
-                              direction.push_back(action.getDirection() - creature->getPosition());
-                            else
+    case ActionId::MOVE_TO: if (action.getDirection().dist8(creature->getPosition()) == 1) {
+                              Vec2 dir = action.getDirection() - creature->getPosition();
+                              if (const Creature* c = creature->getConstSquare(dir)->getCreature()) {
+                                if (!creature->isEnemy(c)) {
+                                  chatAction(dir);
+                                  break;
+                                }
+                              }
+                              direction.push_back(dir);
+                            } else
                             if (action.getDirection() != creature->getPosition())
                               target = action.getDirection();
                             else

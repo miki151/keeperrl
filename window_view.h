@@ -24,14 +24,16 @@ class WindowView: public View {
   virtual void clearMessages() override;
   virtual void refreshView(const CreatureView*) override;
   virtual void resetCenter() override;
-  virtual Optional<int> chooseFromList(const string& title, const vector<string>& options, int index = 0) override;
+  virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
+      Optional<ActionId> exitAction = Nothing()) override;
   virtual Optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
   virtual void animation(Vec2 pos, AnimationId) override;
 
   virtual void presentText(const string& title, const string& text) override;
-  virtual void presentList(const string& title, const vector<string>& options, bool scrollDown) override;
+  virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
+      Optional<ActionId> exitAction = Nothing()) override;
   virtual Optional<int> getNumber(const string& title, int max) override;
 
   virtual Action getAction() override;
@@ -63,7 +65,7 @@ class WindowView: public View {
 
   void showMessage(const string& message);
   void retireMessages();
-  void drawList(const string& title, const vector<string>& options, int hightlight);
+  void drawList(const string& title, const vector<ListElem>& options, int hightlight);
   void refreshScreen(bool flipBuffer = true);
   void refreshText();
   void drawAndClearBuffer();

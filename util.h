@@ -345,11 +345,6 @@ T chooseRandom(vector<pair<T, double>> vi, double r = -1) {
   }
   return chooseRandom(v, p);
 }
-/*
-template <typename T>
-T chooseRandom(initializer_list<pair<T, double>> vi, double r = -1) {
-  return chooseRandom(vector<pair<T, double>>(vi), r);
-}*/
 
 template <typename T>
 vector<T> randomPermutation(vector<T> v) {
@@ -393,6 +388,13 @@ vector<T> getPrefix(const vector<T>& v, int start, int length) {
   vector<T> ret;
   for (int i : Range(start, start + length))
     ret.push_back(v[i]);
+  return ret;
+}
+
+template <typename T, typename U>
+vector<T> transform2(const vector<U>& u, function<T(const U&)> fun) {
+  vector<T> ret(u.size());
+  transform(u.begin(), u.end(), ret.begin(), fun);
   return ret;
 }
 

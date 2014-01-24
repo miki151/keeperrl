@@ -20,8 +20,9 @@ class LoggingView : public T {
       return res;
     }
 
-    virtual Optional<int> chooseFromList(const string& title, const vector<string>& options, int index) override {
-      auto res = T::chooseFromList(title, options, index);
+    virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
+        Optional<ActionId> action) override {
+      auto res = T::chooseFromList(title, options, index, action);
       output << "chooseFromList ";
       if (res)
         output << *res << endl;

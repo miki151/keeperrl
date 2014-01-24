@@ -1,5 +1,10 @@
 #include "stdafx.h"
 
+#include "debug.h"
+#include "util.h"
+#include "shortest_path.h"
+#include "level_maker.h"
+
 using namespace std;
 
 void testStringConvertion() {
@@ -126,13 +131,6 @@ void testRandom() {
   CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 2, 3}, 6) == "pikpik");
   CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 0, 3}, 1) == "pokpok");
   CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 0, 3}, 2) == "pikpik");
-}
-
-void testViewTitlePrefix() {
-  string a = "pokpok";
-  CHECK(!View::hasModifier({View::TITLE}, (a));
-  CHECK(View::hasModifier({View::TITLE}, View::getModifier(View::TITLE, a)));
-  CHECK(View::removeModifier(View::Title, View::getModifier({View::TITLE}, a)) == a);
 }
 
 void testRange() {
@@ -326,6 +324,14 @@ void testCombine() {
   CHECKEQ(combine(words), "pok and pik");
 }
 
+void testTransform2() {
+  vector<int> v { 5, 4, 3, 2, 1};
+  vector<string> s { "s5", "s4", "s3", "s2", "s1" };
+  function<string(const int&)> func = [](const int& a) { return "s" + convertToString(a); };
+  vector<string> res = transform2(v, func);
+  CHECKEQ(res, s);
+}
+
 int main() {
   Debug::init();
   testStringConvertion();
@@ -338,7 +344,6 @@ int main() {
   testShortestPath2();
   testShortestPathReverse();
   testRandom();
-  testViewTitlePrefix();
   testRange();
   testContains();
   testPredicates();

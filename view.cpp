@@ -7,22 +7,25 @@ using namespace std;
 
 const static string prefix[] {"[title]", "[inactive]"};
 
-string View::getModifier(ElemMod mod, const string& name) {
-  return prefix[int(mod)] + name;
+View::ListElem::ListElem(const string& t, Optional<ElemMod> m, Optional<ActionId> a) : text(t), mod(m), action(a) {
 }
 
-bool View::hasModifier(vector<ElemMod> mods, const string& name) {
-  for (ElemMod mod : mods) {
-    string pref = prefix[int(mod)];
-    if (name.size() >= pref.size() && name.substr(0, pref.size()) == pref)
-      return true;
-  }
-  return false;
+View::ListElem::ListElem(const char* s) : ListElem(s, Nothing(), Nothing()) {
 }
 
-string View::removeModifier(ElemMod mod, const string& name) {
-  CHECK(hasModifier({mod}, name));
-  return name.substr(prefix[int(mod)].size());
+const string& View::ListElem::getText() const {
+  return text;
 }
 
+Optional<View::ElemMod> View::ListElem::getMod() const {
+  return mod;
+}
 
+Optional<ActionId> View::ListElem::getActionId() const {
+  return action;
+}
+
+vector<View::ListElem> View::getListElem(const vector<string>& v) {
+  function<ListElem(const string&)> fun = [](const string& s) -> ListElem { return ListElem(s); };
+  return transform2(v, fun);
+}

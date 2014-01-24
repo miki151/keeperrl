@@ -42,7 +42,9 @@ class Player : public Controller, public EventListener {
   void dropAction(bool extended);
   void equipmentAction();
   void applyAction();
+  void applyItem(vector<Item*> item);
   void throwAction(Optional<Vec2> dir = Nothing());
+  void throwItem(vector<Item*> item, Optional<Vec2> dir = Nothing());
   void takeOffAction();
   void hideAction();
   void displayInventory();
@@ -50,7 +52,7 @@ class Player : public Controller, public EventListener {
   void travelAction();
   void targetAction();
   void payDebtAction();
-  void chatAction();
+  void chatAction(Optional<Vec2> dir = Nothing());
   void spellAction();
   void fireAction(Vec2 dir);
   vector<Item*> chooseItem(const string& text, function<bool (Item*)> predicate, bool displayOnly = false,

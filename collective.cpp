@@ -159,14 +159,15 @@ void Collective::handleMarket(View* view, int prevItem) {
     view->presentText("Information", "You need a storage room to use the market.");
     return;
   }
-  vector<string> options;
+  vector<View::ListElem> options;
   vector<PItem> items;
   for (ItemId id : marketItems) {
     PItem item = ItemFactory::fromId(id);
-    options.push_back(item->getName() + "    $" + convertToString(item->getPrice()));
+    Optional<View::ElemMod> mod;
     if (item->getPrice() > numGold(ResourceId::GOLD))
-      options.back() = View::getModifier(View::INACTIVE, options.back());
-    else
+      mod = View::INACTIVE;
+    options.push_back(View::ListElem(item->getName() + "    $" + convertToString(item->getPrice()), mod));
+    if (!mod)
       items.push_back(std::move(item));
   }
   auto index = view->chooseFromList("Buy items", options, prevItem);
@@ -236,14 +237,15 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
       view->presentText("Information", "You need to collect some corpses to raise undead.");
     return;
   }
-  vector<string> options;
+  vector<View::ListElem> options;
   vector<pair<PCreature, int>> creatures;
   for (RaisingInfo info : raisingInfo) {
-    PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
-    options.push_back(c->getName() + "  mana: " + convertToString(info.manaCost));
+    Optional<View::ElemMod> mod;
     if (info.minLevel > techLevel || info.manaCost > mana)
-      options.back() = View::getModifier(View::INACTIVE, options.back());
-    else
+      mod = View::INACTIVE;
+    PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
+    options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost), mod));
+    if (!mod)
       creatures.push_back({std::move(c), info.manaCost});
   }
   auto index = view->chooseFromList("Necromancy level: " + getTechLevelName(techLevel) + ", " +
@@ -275,20 +277,22 @@ void Collective::handleLibrary(View* view) {
     view->presentText("", "You need to build a library to start research.");
     return;
   }
-  vector<string> options;
+  vector<View::ListElem> options;
   int points = int(techCounter);
-  options.push_back(View::getModifier(View::TITLE, "You have " + convertToString(techCounter) 
-        + " knowledge points available."));
+  options.push_back(View::ListElem("You have " + convertToString(techCounter) 
+        + " knowledge points available.", View::TITLE));
   vector<TechId> availableTechs;
   for (TechId id : techIds) {
-    options.push_back(getTechName(id) + ": " + getTechLevelName(techLevels.at(id)));
+    Optional<View::ElemMod> mod;
+    string text = getTechName(id) + ": " + getTechLevelName(techLevels.at(id));
     int neededPoints = techAdvancePoints[techLevels.at(id)];
     if (neededPoints < 1000)
-      options.back() += "  (" + convertToString(neededPoints) + " points to advance)";
+      text += "  (" + convertToString(neededPoints) + " points to advance)";
     if (neededPoints <= points) {
       availableTechs.push_back(id);
     } else
-      options.back() = View::getModifier(View::INACTIVE, options.back());
+      mod = View::INACTIVE;
+    options.push_back(View::ListElem(text, mod));
   }
   auto index = view->chooseFromList("Library", options);
   if (!index)

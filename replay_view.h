@@ -13,15 +13,6 @@ class ReplayView : public T {
       T::close();
     }
 
-    virtual void addMessage(const string&) override {
-    }
-
-    virtual void presentList(const string& title, const vector<string>& options, bool scrollDown) override {
-    }
-
-    virtual void addImportantMessage(const string&) override {
-    }
-
     virtual Action getAction() override {
  //     T::getAction();
  //     usleep(300000);
@@ -34,7 +25,8 @@ class ReplayView : public T {
       return action;
     }
 
-    virtual Optional<int> chooseFromList(const string& title, const vector<string>& options, int index) override {
+    virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
+        Optional<ActionId> a) override {
       string method;
       string action;
       input >> method >> action;

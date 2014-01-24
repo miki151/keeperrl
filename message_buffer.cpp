@@ -37,7 +37,7 @@ void MessageBuffer::initialize(View* view) {
 }
 
 void MessageBuffer::showHistory() {
-  view->presentList("Messages:", messages, true); 
+  view->presentList("Messages:", View::getListElem(messages), true); 
 }
 
 const static string importantPref = "IMPORTANT";

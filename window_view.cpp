@@ -1000,7 +1000,7 @@ void WindowView::drawPlayerInfo() {
   int line1 = screenHeight - bottomBarHeight + 10;
   int line2 = line1 + 25;
   string playerLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title) +
-    "      T: " + convertToString<int>(info.time) + "        " + info.levelName;
+    "          T: " + convertToString<int>(info.time) + "            " + info.levelName;
   drawFilledRectangle(0, screenHeight - bottomBarHeight, screenWidth - rightBarWidth, screenHeight, translucentBlack);
   drawText(white, 10, line1, playerLine);
   int keySpacing = 60;
@@ -1588,22 +1588,22 @@ void WindowView::refreshScreen(bool flipBuffer) {
     drawAndClearBuffer();
 }
 
-int indexHeight(const vector<string>& options, int index) {
+int indexHeight(const vector<View::ListElem>& options, int index) {
   CHECK(index < options.size() && index >= 0);
   int tmp = 0;
   for (int i : All(options))
-    if (!View::hasModifier({View::TITLE, View::INACTIVE}, options[i]) && tmp++ == index)
+    if (!options[i].getMod() && tmp++ == index)
       return i;
-  Debug(FATAL) << "Bad index " << options << " " << index;
+  Debug(FATAL) << "Bad index " << int(options.size()) << " " << index;
   return -1;
 }
 
-Optional<int> reverseIndexHeight(const vector<string>& options, int height) {
-  if (height < 0 || height >= options.size() || View::hasModifier({View::TITLE, View::INACTIVE}, options[height]) )
+Optional<int> reverseIndexHeight(const vector<View::ListElem>& options, int height) {
+  if (height < 0 || height >= options.size() || options[height].getMod())
     return Nothing();
   int sub = 0;
   for (int i : Range(height))
-    if (View::hasModifier({View::TITLE, View::INACTIVE}, options[i]))
+    if (options[i].getMod())
       ++sub;
   return height - sub;
 }
@@ -1651,7 +1651,7 @@ bool WindowView::yesOrNoPrompt(const string& message) {
 }
 
 Optional<int> WindowView::getNumber(const string& title, int max) {
-  vector<string> options;
+  vector<View::ListElem> options;
   for (int i : Range(1, max + 1))
     options.push_back(convertToString(i));
   Optional<int> res = WindowView::chooseFromList(title, options);
@@ -1663,16 +1663,17 @@ Optional<int> WindowView::getNumber(const string& title, int max) {
 
 int getMaxLines();
 
-Optional<int> getIndex(const vector<string>& options, bool hasTitle, Vec2 mousePos);
+Optional<int> getIndex(const vector<View::ListElem>& options, bool hasTitle, Vec2 mousePos);
 
-Optional<int> WindowView::chooseFromList(const string& title, const vector<string>& options, int index) {
+Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
+    Optional<ActionId> exitAction) {
   TempClockPause pause;
   if (options.size() == 0)
     return Nothing();
   int numLines = min((int) options.size(), getMaxLines());
   int count = 0;
-  for (string s : options)
-    if (!hasModifier({View::TITLE, View::INACTIVE}, s))
+  for (ListElem elem : options)
+    if (!elem.getMod())
       ++count;
   if (count == 0) {
     presentList(title, options, false);
@@ -1685,9 +1686,9 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<strin
     int cutoff = min(max(0, height - numLines / 2), (int) options.size() - numLines);
     int itemsCutoff = 0;
     for (int i : Range(cutoff))
-      if (!hasModifier({View::TITLE, View::INACTIVE}, options[i]))
+      if (!options[i].getMod())
         ++itemsCutoff;
-    vector<string> window = getPrefix(options, cutoff , numLines);
+    vector<ListElem> window = getPrefix(options, cutoff , numLines);
     drawList(title, window, index - itemsCutoff);
     BlockingEvent event = readkey();
     if (event.type == BlockingEvent::KEY)
@@ -1732,10 +1733,11 @@ void WindowView::presentText(const string& title, const string& text) {
       else
         rows.push_back(word);
   }
-  presentList(title, rows, false);
+  presentList(title, View::getListElem(rows), false);
 }
 
-void WindowView::presentList(const string& title, const vector<string>& options, bool scrollDown) {
+void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown,
+    Optional<ActionId> exitAction) {
   TempClockPause pause;
   int numLines = min((int) options.size(), getMaxLines());
   if (numLines == 0)
@@ -1743,7 +1745,7 @@ void WindowView::presentList(const string& title, const vector<string>& options,
   int index = scrollDown ? options.size() - numLines : 0;
   while (1) {
     numLines = min((int) options.size(), getMaxLines());
-    vector<string> window = getPrefix(options, index, numLines);
+    vector<ListElem> window = getPrefix(options, index, numLines);
     drawList(title, window, -1);
     BlockingEvent event = readkey();
     if (event.type == BlockingEvent::KEY)
@@ -1776,7 +1778,7 @@ int getMaxLines() {
   return (screenHeight - ySpacing - ySpacing - 2 * yMargin - itemSpacing - itemYMargin) / itemSpacing;
 }
 
-Optional<int> getIndex(const vector<string>& options, bool hasTitle, Vec2 mousePos) {
+Optional<int> getIndex(const vector<View::ListElem>& options, bool hasTitle, Vec2 mousePos) {
   int xSpacing = (screenWidth - windowWidth) / 2;
   Rectangle window(xSpacing, ySpacing, xSpacing + windowWidth, screenHeight - ySpacing);
   if (!mousePos.inRectangle(window))
@@ -1785,7 +1787,7 @@ Optional<int> getIndex(const vector<string>& options, bool hasTitle, Vec2 mouseP
       (mousePos.y - ySpacing - yMargin + (hasTitle ? 0 : itemSpacing) - itemYMargin) / itemSpacing - 1);
 }
 
-void WindowView::drawList(const string& title, const vector<string>& options, int hightlight) {
+void WindowView::drawList(const string& title, const vector<ListElem>& options, int hightlight) {
   int xMargin = 10;
   int itemXMargin = 30;
   int border = 2;
@@ -1808,16 +1810,15 @@ void WindowView::drawList(const string& title, const vector<string>& options, in
     topMargin -= itemSpacing;
   for (int i : All(options)) {  
     int beginH = ySpacing + topMargin + (i + 1) * itemSpacing + itemYMargin;
-    if (hasModifier({View::TITLE}, options[i]))
-      drawText(yellow, xSpacing + xMargin, beginH, removeModifier(View::TITLE, options[i]));
-    else if (hasModifier({View::INACTIVE}, options[i]))
-      drawText(gray, xSpacing + xMargin + itemXMargin, beginH, removeModifier(View::INACTIVE, options[i]));
-    else {
+    if (!options[i].getMod()) {
       if (hightlight > -1 && (h == i || (mouseHeight >= beginH && mouseHeight < beginH + itemSpacing))) 
         drawFilledRectangle(xSpacing + xMargin, beginH, 
             windowWidth + xSpacing - xMargin, beginH + itemSpacing - 1, darkGreen);
-      drawText(white, xSpacing + xMargin + itemXMargin, beginH, options[i]);
-    }
+      drawText(white, xSpacing + xMargin + itemXMargin, beginH, options[i].getText());
+    } else if (options[i].getMod() == View::TITLE)
+      drawText(yellow, xSpacing + xMargin, beginH, options[i].getText());
+    else if (options[i].getMod() == View::INACTIVE)
+      drawText(gray, xSpacing + xMargin + itemXMargin, beginH, options[i].getText());
   }
   drawAndClearBuffer();
 }
@@ -2089,11 +2090,11 @@ vector<KeyInfo> keyInfo {
 };
 
 Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
-  vector<string> options {
-      View::getModifier(View::TITLE, "Move around with the number pad."),
-      View::getModifier(View::TITLE, "Fast travel with ctrl + arrow."),
-      View::getModifier(View::TITLE, "Fire arrows with alt + arrow."),
-      View::getModifier(View::TITLE, "Choose action:") };
+  vector<View::ListElem> options {
+      View::ListElem("Move around with the number pad.", View::TITLE),
+      View::ListElem("Fast travel with ctrl + arrow.", View::TITLE),
+      View::ListElem("Fire arrows with alt + arrow.", View::TITLE),
+      View::ListElem("Choose action:", View::TITLE) };
   for (int i : All(keyInfo)) {
     Debug() << "Action " << keyInfo[i].action;
     options.push_back(keyInfo[i].action + "   [ " + keyInfo[i].keyDesc + " ]");

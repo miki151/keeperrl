@@ -387,6 +387,8 @@ bool Creature::canEquip(const Item* item) const {
 }
 
 bool Creature::canUnequip(const Item* item) const {
+  if (!equipment.isEquiped(item))
+    return false;
   if (!isHumanoid())
     return false;
   if (numGoodArms() == 0) {
@@ -816,8 +818,10 @@ void Creature::tick(double realTime) {
     die(lastAttacker);
     return;
   }
-  if (health < 0.5)
+  if (health < 0.5) {
     health -= delta / 40;
+    privateMessage("You are bleeding.");
+  }
   if (health <= 0) {
     you(MsgType::DIE_OF, isPoisoned() ? "poisoning" : "bleeding");
     die(lastAttacker);
@@ -1470,7 +1474,8 @@ void Creature::applyItem(Item* item) {
 }
 
 bool Creature::canApplyItem(Item* item) const {
-  return isHumanoid() && numGoodArms() > 0;
+  return contains({ItemType::TOOL, ItemType::POTION, ItemType::FOOD, ItemType::BOOK, ItemType::SCROLL},
+      item->getType()) && isHumanoid() && numGoodArms() > 0;
 }
 
 bool Creature::canThrowItem(Item* item) {

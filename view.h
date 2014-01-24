@@ -51,9 +51,33 @@ class View {
   /** Returns whether a travel interrupt key is pressed at a given moment.*/
   virtual bool travelInterrupt() = 0;
 
+  enum ElemMod {
+    TITLE,
+    INACTIVE,
+  };
+
+  class ListElem {
+    public:
+    ListElem(const char*);
+    ListElem(const string& text = "", Optional<ElemMod> mod = Nothing(),
+        Optional<ActionId> triggerAction = Nothing());
+
+    const string& getText() const;
+    Optional<ElemMod> getMod() const;
+    Optional<ActionId> getActionId() const;
+
+    private:
+    string text;
+    Optional<ElemMod> mod;
+    Optional<ActionId> action;
+  };
+
+  static vector<ListElem> getListElem(const vector<string>&);
+
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
       Returns Nothing() if the player cancelled the choice.*/
-  virtual Optional<int> chooseFromList(const string& title, const vector<string>& options, int index = 0) = 0;
+  virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
+      Optional<ActionId> exitAction = Nothing()) = 0;
 
   /** Let's the player choose a direction from the main 8. Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<Vec2> chooseDirection(const string& message) = 0;
@@ -65,7 +89,8 @@ class View {
   virtual void presentText(const string& title, const string& text) = 0;
 
   /** Draws a window with a list of items.*/
-  virtual void presentList(const string& title, const vector<string>& options, bool scrollDown = false) = 0;
+  virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
+      Optional<ActionId> exitAction = Nothing()) = 0;
 
   /** Let's the player choose a number. Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<int> getNumber(const string& title, int max) = 0;
@@ -87,6 +112,7 @@ class View {
   virtual void setTimeMilli(int) = 0;
 
   /** Continues the real time clock after it had been stopped.*/
+
   virtual void continueClock() = 0;
 
   /** Returns whether the real time clock is currently stopped.*/
@@ -97,20 +123,6 @@ class View {
 
   /** Returns a default View that reads all player actions from a file instead of the keyboard.*/
   static View* createReplayView(ifstream& ifs);
-
-  enum ElemMod {
-    TITLE,
-    INACTIVE,
-  };
-
-  /** Marks a given menu item to be displayed as a title.*/
-  static string getModifier(ElemMod, const string& name);
-
-  /** Returns whether a menu item is marked as a title.*/
-  static bool hasModifier(vector<ElemMod>, const string& name);
-
-  /** Removes the title prefix from a menu item.*/
-  static string removeModifier(ElemMod, const string& name);
 
   /** Represents all the game information displayed around the map window.*/
   class GameInfo {
