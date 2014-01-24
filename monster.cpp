@@ -44,7 +44,7 @@ void Monster::you(MsgType type, const string& param) const {
     case MsgType::YOUR: msg = creature->getTheName() + "'s " + param; break;
     case MsgType::FEEL: msg = creature->getTheName() + " looks " + param; break;
     case MsgType::FALL_ASLEEP: msg = (creature->getTheName() + " falls asleep") + (param.size() > 0 ? " on the " + param : ".");
-                               msgNoSee = "You hear snorring."; break;
+                               msgNoSee = "You hear snoring."; break;
     case MsgType::WAKE_UP: msg = creature->getTheName() + " wakes up."; break;
     case MsgType::DIE: msg = creature->getTheName() + " is killed!"; break;
     case MsgType::TELE_APPEAR: msg = creature->getTheName() + " appears out of nowhere!"; break;

@@ -1890,6 +1890,7 @@ LevelMaker* LevelMaker::cellarLevel(CreatureFactory cfactory, SquareType wallTyp
   MakerQueue* queue = new MakerQueue();
   map<SquareType, pair<int, int> > featureCount {
       { SquareType::CHEST, make_pair(3, 7)}};
+  queue->addMaker(new Empty(SquareType::FLOOR));
   queue->addMaker(new Empty(wallType));
   queue->addMaker(new RoomMaker(8, 15, 3, 5, wallType, wallType));
   queue->addMaker(new Connector({1, 0, 0}));

@@ -999,7 +999,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.weight = 100;
                                 c.chatReactionFriendly = "curses all dungeons";
                                 c.chatReactionHostile = "\"Heeelp!\"";
-                                c.name = "peseant";), tribe, factory);
+                                c.name = "peaseant";), tribe, factory);
     case CreatureId::CHILD: return get(ViewId::CHILD, CATTR(
                                 c.speed = 140;
                                 c.size = CreatureSize::LARGE;

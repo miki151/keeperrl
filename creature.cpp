@@ -273,7 +273,10 @@ const vector<const Creature*>& Creature::getVisibleEnemies() const {
 void Creature::updateVisibleEnemies() {
   visibleEnemies.clear();
   for (const Creature* c : level->getAllCreatures()) 
-    if (isEnemy(c) && canSee(c))
+    if (isEnemy(c) && (canSee(c)))
+      visibleEnemies.push_back(c);
+  for (const Creature* c : getUnknownAttacker())
+    if (!contains(visibleEnemies, c))
       visibleEnemies.push_back(c);
 }
 
@@ -1712,7 +1715,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
         switch (type) {
           case AttackType::SHOOT: you(MsgType::ARE, "shot in the spine!"); break;
           case AttackType::BITE: you(MsgType::YOUR, "head is bitten off!"); break;
-          case AttackType::CUT: you(MsgType::YOUR, "head is choped off!"); break;
+          case AttackType::CUT: you(MsgType::YOUR, "head is chopped off!"); break;
           case AttackType::CRUSH: you(MsgType::YOUR, "skull is shattered!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the back of the head!"); break;
@@ -1726,7 +1729,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::SHOOT: you(MsgType::YOUR, "shot in the " +
                                       chooseRandom<string>({"eye", "neck", "forehead"}) + "!"); break;
           case AttackType::BITE: you(MsgType::YOUR, "head is bitten off!"); break;
-          case AttackType::CUT: you(MsgType::YOUR, "head is choped off!"); break;
+          case AttackType::CUT: you(MsgType::YOUR, "head is chopped off!"); break;
           case AttackType::CRUSH: you(MsgType::YOUR, "skull is shattered!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the head!"); break;
@@ -1751,7 +1754,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
         switch (type) {
           case AttackType::SHOOT: you(MsgType::YOUR, "shot in the arm!"); break;
           case AttackType::BITE: you(MsgType::YOUR, "arm is bitten off!"); break;
-          case AttackType::CUT: you(MsgType::YOUR, "arm is choped off!"); break;
+          case AttackType::CUT: you(MsgType::YOUR, "arm is chopped off!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the arm!"); break;
           case AttackType::CRUSH: you(MsgType::YOUR, "arm is smashed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the arm!"); break;
@@ -1763,7 +1766,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
         switch (type) {
           case AttackType::SHOOT: you(MsgType::YOUR, "shot in the wing!"); break;
           case AttackType::BITE: you(MsgType::YOUR, "wing is bitten off!"); break;
-          case AttackType::CUT: you(MsgType::YOUR, "wing is choped off!"); break;
+          case AttackType::CUT: you(MsgType::YOUR, "wing is chopped off!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the wing!"); break;
           case AttackType::CRUSH: you(MsgType::YOUR, "wing is smashed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the wing!"); break;
