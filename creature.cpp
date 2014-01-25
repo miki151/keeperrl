@@ -86,7 +86,7 @@ void Creature::popController() {
   controllerStack.pop();
 }
 
-bool Creature::canPopController() {
+bool Creature::canPopController() const {
   return !controllerStack.empty();
 }
 
@@ -1802,10 +1802,15 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     gameInfo.infoType = View::GameInfo::InfoType::PLAYER;
     View::GameInfo::PlayerInfo& info = gameInfo.playerInfo;
     info.speed = getAttr(AttrType::SPEED);
-    if (firstName)
+    if (firstName) {
       info.playerName = *firstName;
-    info.title = *name;
+      info.title = *name;
+    } else {
+      info.playerName = "";
+      info.title = *name;
+    }
     info.adjectives.clear();
+    info.possessed = canPopController();
     if (isBlind())
       info.adjectives.push_back("blind");
     if (isInvisible())
@@ -1826,7 +1831,6 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     info.levelName = location && location->hasName() 
       ? capitalFirst(location->getName()) : getLevel()->getName();
     info.defense = getAttr(AttrType::DEFENSE);
-    info.bleeding = getHealth() < 1;
     info.attack = getAttr(AttrType::DAMAGE);
     info.strength = getAttr(AttrType::STRENGTH);
     info.dexterity = getAttr(AttrType::DEXTERITY);

@@ -1011,6 +1011,39 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "plaaaaay!";
                                 c.chatReactionHostile = "\"Heeelp!\"";
                                 c.name = "child";), tribe, factory);
+    case CreatureId::CLAY_GOLEM: return get(ViewId::CLAY_GOLEM, CATTR(
+                                c.speed = 60;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 17;
+                                c.dexterity = 13;
+                                c.barehandedDamage = 13;
+                                c.humanoid = false;
+                                c.noSleep = true;
+                                c.breathing = false;
+                                c.weight = 100;
+                                c.name = "clay golem";), tribe, factory);
+    case CreatureId::STONE_GOLEM: return get(ViewId::STONE_GOLEM, CATTR(
+                                c.speed = 80;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 19;
+                                c.dexterity = 13;
+                                c.barehandedDamage = 15;
+                                c.humanoid = false;
+                                c.noSleep = true;
+                                c.breathing = false;
+                                c.weight = 120;
+                                c.name = "stone golem";), tribe, factory);
+    case CreatureId::IRON_GOLEM: return get(ViewId::IRON_GOLEM, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 21;
+                                c.dexterity = 13;
+                                c.barehandedDamage = 17;
+                                c.humanoid = false;
+                                c.noSleep = true;
+                                c.breathing = false;
+                                c.weight = 120;
+                                c.name = "iron golem";), tribe, factory);
     case CreatureId::ZOMBIE: return get(ViewId::ZOMBIE, CATTR(
                                 c.speed = 60;
                                 c.size = CreatureSize::LARGE;

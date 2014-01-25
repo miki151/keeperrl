@@ -262,6 +262,9 @@ Tile getSprite(ViewId id) {
     case ViewId::ARCHER: return Tile(2, 0);
     case ViewId::PESEANT: return Tile(1, 2);
     case ViewId::CHILD: return Tile(2, 2);
+    case ViewId::CLAY_GOLEM: return Tile(12, 10);
+    case ViewId::STONE_GOLEM: return Tile(10, 10);
+    case ViewId::IRON_GOLEM: return Tile(11, 10);
     case ViewId::ZOMBIE: return Tile(0, 16);
     case ViewId::SKELETON: return Tile(2, 16);
     case ViewId::VAMPIRE: return Tile(12, 16);
@@ -358,6 +361,7 @@ Tile getSprite(ViewId id) {
     case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, true);
     case ViewId::TRAINING_DUMMY: return Tile(0, 5, 2, true);
     case ViewId::LIBRARY: return Tile(2, 4, 2, true);
+    case ViewId::LABORATORY: return Tile(2, 5, 2, true);
     case ViewId::WORKSHOP: return Tile(9, 4, 2, true);
     case ViewId::GRAVE: return Tile(0, 0, 2, true);
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
@@ -452,6 +456,9 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ARCHER: return Tile('@', brown);
     case ViewId::PESEANT: return Tile('@', green);
     case ViewId::CHILD: return Tile('@', lightGreen);
+    case ViewId::CLAY_GOLEM: return Tile('Y', yellow);
+    case ViewId::STONE_GOLEM: return Tile('Y', lightGray);
+    case ViewId::IRON_GOLEM: return Tile('Y', orange);
     case ViewId::ZOMBIE: return Tile('Z', green);
     case ViewId::SKELETON: return Tile('Z', white);
     case ViewId::VAMPIRE: return Tile('V', darkGray);
@@ -548,6 +555,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::TORTURE_TABLE: return Tile('=', gray);
     case ViewId::TRAINING_DUMMY: return Tile(L'‡', brown, true);
     case ViewId::LIBRARY: return Tile(L'▤', purple, true);
+    case ViewId::LABORATORY: return Tile(0x1d17, purple, true);
     case ViewId::WORKSHOP: return Tile('&', lightBlue);
     case ViewId::GRAVE: return Tile(0x2617, gray, true);
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
@@ -807,7 +815,7 @@ void WindowView::displaySplash(bool& ready) {
       }
       if (event.type == Event::GainedFocus || event.type == Event::Resized) {
         drawImage((screenWidth - splash.getSize().x) / 2, (screenHeight - splash.getSize().y) / 2, splash);
-        drawText(white, screenWidth / 2, screenHeight - 60, "Loading...", true);
+        drawText(white, screenWidth / 2, screenHeight - 60, "Creating a new world, just for you...", true);
         drawAndClearBuffer();
       }
     }
@@ -844,15 +852,7 @@ struct KeyInfo {
   Event::KeyEvent event;
 };
 
-vector<KeyInfo> bottomKeys {
-  { "Z", "Zoom", {Keyboard::Z}},
-  { "I", "Inventory", {Keyboard::I}},
-  { "E", "Equipment", {Keyboard::E}},
-  { "D", "Drop", {Keyboard::D}},
-  { "A", "Apply", {Keyboard::A}},
-  { "F1", "More commands", {Keyboard::F1}},
-};
-
+vector<KeyInfo> bottomKeys;
 
 static bool leftMouseButtonPressed = false;
 static bool rightMouseButtonPressed = false;
@@ -1006,6 +1006,16 @@ void WindowView::drawPlayerInfo() {
   int keySpacing = 60;
   int startX = 10;
   bottomKeyButtons.clear();
+  bottomKeys =  {
+      { "Z", "Zoom", {Keyboard::Z}},
+      { "I", "Inventory", {Keyboard::I}},
+      { "E", "Equipment", {Keyboard::E}},
+      { "F1", "More commands", {Keyboard::F1}},
+  };
+
+  if (info.possessed)
+    bottomKeys = concat({{ "U", "Leave minion", {Keyboard::U}}}, bottomKeys);
+
   for (int i : All(bottomKeys)) {
     string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
     int endX = startX + getTextLength(text) + keySpacing;

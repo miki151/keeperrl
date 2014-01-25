@@ -207,7 +207,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   Controller* getController();
   void pushController(Controller*);
   void popController();
-  bool canPopController();
+  bool canPopController() const;
   void setSpeed(double);
   double getSpeed() const;
   CreatureSize getSize() const;

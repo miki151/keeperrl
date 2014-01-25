@@ -169,7 +169,7 @@ class View {
       int attack;
       int strength;
       int dexterity;
-      bool bleeding;
+      bool possessed;
       double time;
       int numGold;
       string playerName;

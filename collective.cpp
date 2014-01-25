@@ -6,11 +6,11 @@
 #include "player.h"
 #include "message_buffer.h"
 
-enum Warning { NO_CONNECTION, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_TRAINING };
+enum Warning { NO_MANA, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_TRAINING };
 static const int numWarnings = 7;
 static bool warning[numWarnings] = {0};
 static string warningText[] {
-  "You need to build a throne for yourself.",
+  "You need to kill some innocent beings to increase mana.",
   "You need to build a treasure room.",
   "You need a larger treasure room.",
   "You need a lair for your minions.",
@@ -29,16 +29,23 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::STOCKPILE, ResourceId::GOLD, 0, "Storage"}),
     BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 4, "Treasure room"}),
     BuildInfo({SquareType::TRIBE_DOOR, ResourceId::WOOD, 4, "Door"}),
-    BuildInfo({SquareType::BRIDGE, ResourceId::WOOD, 12, "Bridge"}),
     BuildInfo({SquareType::BED, ResourceId::WOOD, 8, "Lair"}),
     BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::WOOD, 18, "Training room"}),
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 18, "Library"}),
+    BuildInfo({SquareType::LABORATORY, ResourceId::WOOD, 18, "Laboratory"}),
     BuildInfo({SquareType::WORKSHOP, ResourceId::WOOD, 12, "Workshop"}),
     BuildInfo({SquareType::GRAVE, ResourceId::WOOD, 18, "Graveyard"}),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
     BuildInfo(BuildInfo::IMP),
     BuildInfo(BuildInfo::GUARD_POST),
+};
+
+vector<MinionType> minionTypes {
+  MinionType::IMP,
+  MinionType::NORMAL,
+  MinionType::UNDEAD,
+  MinionType::GOLEM,
 };
 
 vector<Collective::BuildInfo>& Collective::getBuildInfo() const {
@@ -85,6 +92,8 @@ Collective::Collective(CreatureFactory factory, CreatureFactory undead)
   };
   for (TechId id: techIds)
     techLevels[id] = 0;
+  for (MinionType t : minionTypes)
+    minionByType[t].clear();
 }
 
 
@@ -221,7 +230,7 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
       view->presentText("Information", "You need to build a graveyard and collect corpses to raise undead.");
     return;
   }
-  if (graves.size() <= vampires.size()) {
+  if (graves.size() <= minionByType.at(MinionType::UNDEAD).size()) {
     if (firstTime)
       view->presentText("Information", "You need to build more graves first for your undead to sleep in.");
     return;
@@ -244,7 +253,8 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
     if (info.minLevel > techLevel || info.manaCost > mana)
       mod = View::INACTIVE;
     PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
-    options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost), mod));
+    options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost) +
+          " level:" + convertToString(info.minLevel), mod));
     if (!mod)
       creatures.push_back({std::move(c), info.manaCost});
   }
@@ -259,8 +269,7 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   for (Vec2 v : elem.first.neighbors8(true))
     if (level->getSquare(v)->canEnter(creature.get())) {
       level->getSquare(elem.first)->removeItems({elem.second});
-      vampires.push_back(creature.get());
-      addCreature(creature.get());
+      addCreature(creature.get(), MinionType::UNDEAD);
       level->addCreature(v, std::move(creature));
       break;
     }
@@ -268,6 +277,57 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
     messageBuffer.addMessage(MessageBuffer::important("You have failed to reanimate the corpse."));
   view->refreshView(this);
   handleNecromancy(view, *index, false);
+}
+
+vector<RaisingInfo> animationInfo {
+  {CreatureId::CLAY_GOLEM, 30, 0},
+  {CreatureId::STONE_GOLEM, 50, 1},
+  {CreatureId::IRON_GOLEM, 50, 2},
+};
+
+
+void Collective::handleMatterAnimation(View* view, int prevItem, bool firstTime) {
+  int techLevel = techLevels[TechId::MATTER_ANIMATION];
+  set<Vec2> labs = mySquares.at(SquareType::LABORATORY);
+  if (labs.empty()) {
+    if (firstTime)
+      view->presentText("Information", "You need to build a laboratory to animate golems.");
+    return;
+  }
+  if (labs.size() <= minionByType.at(MinionType::GOLEM).size()) {
+    if (firstTime)
+      view->presentText("Information", "You need to build a larger laboratory to animate more golems.");
+    return;
+  }
+
+  vector<View::ListElem> options;
+  vector<pair<PCreature, int>> creatures;
+  for (RaisingInfo info : animationInfo) {
+    Optional<View::ElemMod> mod;
+    if (info.minLevel > techLevel || info.manaCost > mana)
+      mod = View::INACTIVE;
+    PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
+    options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost) + 
+          " level:" + convertToString(info.minLevel), mod));
+    if (!mod)
+      creatures.push_back({std::move(c), info.manaCost});
+  }
+  auto index = view->chooseFromList("Matter animation level: " + getTechLevelName(techLevel), options, prevItem);
+  if (!index)
+    return;
+  Vec2 pos = chooseRandom(mySquares.at(SquareType::LABORATORY));
+  PCreature& creature = creatures[*index].first;
+  mana -= creatures[*index].second;
+  for (Vec2 v : pos.neighbors8(true))
+    if (level->getSquare(v)->canEnter(creature.get())) {
+      addCreature(creature.get(), MinionType::GOLEM);
+      level->addCreature(v, std::move(creature));
+      break;
+    }
+  if (creature)
+    messageBuffer.addMessage(MessageBuffer::important("You have failed to animate the golem."));
+  view->refreshView(this);
+  handleMatterAnimation(view, *index, false);
 }
 
 vector<int> techAdvancePoints { 1, 2, 3, 1000};
@@ -583,6 +643,7 @@ void Collective::processInput(View* view) {
           switch (techIds[action.getNum()]) {
             case TechId::NECROMANCY: handleNecromancy(view); break;
             case TechId::SPELLCASTING: handlePersonalSpells(view); break;
+            case TechId::MATTER_ANIMATION: handleMatterAnimation(view); break;
             default: break;
           };
         if (action.getNum() == techIds.size() + 1)
@@ -622,7 +683,7 @@ void Collective::processInput(View* view) {
                   if (v.inRectangle(level->getBounds()) && level->getSquare(v)->canEnter(imp.get()) 
                       && canSee(v)) {
                     mana -= getImpCost();
-                    addCreature(imp.get());
+                    addCreature(imp.get(), MinionType::IMP);
                     level->addCreature(v, std::move(imp));
                     break;
                   }
@@ -784,15 +845,15 @@ void Collective::updateTraps() {
 }
 
 void Collective::tick() {
-  if ((minions.size() - vampires.size() < mySquares[SquareType::BED].size() || minions.empty())
+  if ((minionByType.at(MinionType::NORMAL).size() < mySquares[SquareType::BED].size() || minions.empty())
       && Random.roll(40) && minions.size() < minionLimit) {
     PCreature c = minionFactory.random(MonsterAIFactory::collective(this));
     addCreature(c.get());
     level->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(c));
   }
- // warning[NO_CONNECTION] = !isThroneBuilt();
+  warning[NO_MANA] = mana < 20;
   warning[NO_BEDS] = mySquares[SquareType::BED].size() == 0 && !minions.empty();
-  warning[MORE_BEDS] = mySquares[SquareType::BED].size() < minions.size() - vampires.size();
+  warning[MORE_BEDS] = mySquares[SquareType::BED].size() < minionByType.at(MinionType::NORMAL).size();
   warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && !minions.empty();
   updateTraps();
   for (Vec2 pos : myTiles) {
@@ -966,7 +1027,8 @@ MoveInfo Collective::getMinionMove(Creature* c) {
             c->wait();
           }};
         }
-        set<Vec2>& whatBeds = (contains(vampires, c) ? mySquares[SquareType::GRAVE] : mySquares[SquareType::BED]);
+        set<Vec2>& whatBeds = (contains(minionByType.at(MinionType::UNDEAD), c) ? 
+            mySquares[SquareType::GRAVE] : mySquares[SquareType::BED]);
         if (whatBeds.empty())
           return NoMove;
         addTask(Task::applySquare(this, whatBeds), c);
@@ -974,7 +1036,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         break; }
     case MinionTask::TRAIN:
         if (mySquares[SquareType::TRAINING_DUMMY].empty()) {
-          minionTasks.at(c).setState(MinionTask::SLEEP);
+          minionTasks.at(c).update();
           return NoMove;
         }
         addTask(Task::applySquare(this, mySquares[SquareType::TRAINING_DUMMY]), c);
@@ -1073,6 +1135,9 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
     return MarkovChain<MinionTask>(MinionTask::SLEEP, {
       {MinionTask::SLEEP, {{ MinionTask::STUDY, 0.05}}},
       {MinionTask::STUDY, {{ MinionTask::SLEEP, 0.02}}}});
+  if (contains(minionByType.at(MinionType::GOLEM), c))
+    return MarkovChain<MinionTask>(MinionTask::TRAIN, {
+      {MinionTask::TRAIN, {}}});
 
   if (c->getName() == "gnome") {
     t1 = MinionTask::WORKSHOP;
@@ -1085,14 +1150,15 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
       {t1, {{ MinionTask::EAT, 0.005}, { MinionTask::SLEEP, 0.005}}}});
 }
 
-void Collective::addCreature(Creature* c) {
+void Collective::addCreature(Creature* c, MinionType type) {
   if (heart == nullptr) {
     heart = c;
   }
   creatures.push_back(c);
-  if (!c->canConstruct(SquareType::FLOOR)) {
+  if (type != MinionType::IMP) {
     minions.push_back(c);
     minionTasks.insert(make_pair(c, getTasksForMinion(c)));
+    minionByType[type].push_back(c);
   } else {
     imps.push_back(c);
  //   c->addEnemyVision([this](const Creature* c) { return canSee(c); });
@@ -1140,8 +1206,9 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
       removeElement(imps, c);
     if (contains(minions, c))
       removeElement(minions, c);
-    if (contains(vampires, c))
-      removeElement(vampires, c);
+    for (MinionType type : minionTypes)
+      if (contains(minionByType.at(type), c))
+        removeElement(minionByType.at(type), c);
   } else if (victim->getTribe() != Tribe::player) {
     double incMana = victim->getDifficultyPoints();
     mana += incMana;

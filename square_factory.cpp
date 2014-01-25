@@ -533,7 +533,7 @@ Square* SquareFactory::get(SquareType s) {
             {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
             {SquareType::TRAINING_DUMMY, 10}, {SquareType::LIBRARY, 10}, {SquareType::STOCKPILE, 1},
             {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10},
-            {SquareType::KEEPER_THRONE, 10}});
+            {SquareType::LABORATORY, 10}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR_BACKGROUND,"Rope bridge"), "rope bridge", true);
     case SquareType::GRASS:
@@ -605,6 +605,8 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::LIBRARY:
         return new Library(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
             "book shelf");
+    case SquareType::LABORATORY: return new Furniture(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "cauldron"),
+                                   "cauldron", 0);
     case SquareType::WORKSHOP:
         return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), 
             "workshop stand", ItemFactory::workshop());

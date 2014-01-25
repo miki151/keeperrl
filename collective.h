@@ -9,6 +9,14 @@
 #include "markov_chain.h"
 #include "minion_equipment.h"
 
+enum class MinionType {
+  IMP,
+  NORMAL,
+  UNDEAD,
+  GOLEM,
+};
+
+ENUM_HASH(MinionType);
 
 class Collective : public CreatureView, public EventListener {
   public:
@@ -33,7 +41,7 @@ class Collective : public CreatureView, public EventListener {
   void update(Creature*);
   MoveInfo getMove(Creature* c);
   MoveInfo getMinionMove(Creature* c);
-  void addCreature(Creature* c);
+  void addCreature(Creature* c, MinionType = MinionType::NORMAL);
   void setLevel(Level* l);
 
   virtual const Level* getLevel() const;
@@ -131,6 +139,7 @@ class Collective : public CreatureView, public EventListener {
   void freeFromGuardPost(const Creature*);
   void handleMarket(View*, int prevItem = 0);
   void handleNecromancy(View*, int prevItem = 0, bool firstTime = true);
+  void handleMatterAnimation(View*, int prevItem = 0, bool firstTime = true);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
@@ -142,7 +151,7 @@ class Collective : public CreatureView, public EventListener {
   vector<Creature*> creatures;
   vector<Creature*> minions;
   vector<Creature*> imps;
-  vector<Creature*> vampires;
+  unordered_map<MinionType, vector<Creature*>> minionByType;
   vector<PTask> tasks;
   set<const Item*> markedItems;
   map<Vec2, Task*> marked;
