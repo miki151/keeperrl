@@ -80,7 +80,7 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<int(Vec2)> len
       return;
     }
     q.pop();
-    for (Vec2 dir : directions) {
+    for (Vec2 dir : randomPermutation(directions)) {
       Vec2 next = pos + dir;
       if (next.inRectangle(distance.getBounds())) {
         double cdist = getDistance(pos);

@@ -126,7 +126,6 @@ enum class CreatureId {
 
     IMP,
     BILE_DEMON,
-    HELL_HOUND,
     CHICKEN,
     DUNGEON_HEART,
 
@@ -152,6 +151,7 @@ enum class CreatureId {
     DEER,
     BOAR,
     FOX,
+    RAVEN,
     VULTURE,
     WOLF,
 
@@ -163,6 +163,7 @@ enum class CreatureId {
     SNAKE,
     CAVE_BEAR,
     SPIDER,
+    SCORPION,
     FLY,
     RAT};
 
@@ -282,7 +283,6 @@ enum class ViewId {
   DWARVEN_SHOPKEEPER,
   IMP,
   BILE_DEMON,
-  HELL_HOUND,
   CHICKEN,
   DARK_KNIGHT,
   DRAGON,
@@ -324,6 +324,7 @@ enum class ViewId {
   SCORPION,
   SNAKE,
   VULTURE,
+  RAVEN,
   GNOME,
   VODNIK,
   LEPRECHAUN,
@@ -387,6 +388,7 @@ enum class ViewId {
   TRAINING_DUMMY,
   LIBRARY,
   LABORATORY,
+  ANIMAL_TRAP,
   WORKSHOP,
   DUNGEON_HEART,
   ALTAR,
@@ -495,6 +497,7 @@ enum class SquareType {
   TRAINING_DUMMY,
   LIBRARY,
   LABORATORY,
+  ANIMAL_TRAP,
   WORKSHOP,
   HATCHERY,
   KEEPER_THRONE,
@@ -564,6 +567,12 @@ enum class AnimationId {
 
 enum class SpellId {
   HEALING,
+  SUMMON_INSECTS,
+  DECEPTION,
+  SPEED_SELF,
+  STR_BONUS,
+  DEX_BONUS,
+  FIRE_SPHERE_PET,
   TELEPORT,
   INVISIBILITY,
   WORD_OF_POWER,

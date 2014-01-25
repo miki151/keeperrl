@@ -34,8 +34,14 @@ ViewIndex Creature::getViewIndex(Vec2 pos) const {
 
 SpellInfo Creature::getSpell(SpellId id) {
   switch (id) {
-    case SpellId::HEALING: return {SpellId::HEALING, "healing", EffectType::HEAL, 0, 30};
-    case SpellId::TELEPORT: return {SpellId::TELEPORT, "escape", EffectType::TELEPORT, 0, 30};
+    case SpellId::HEALING: return {id, "healing", EffectType::HEAL, 0, 30};
+    case SpellId::SUMMON_INSECTS: return {id, "summon insects", EffectType::SUMMON_INSECTS, 0, 30};
+    case SpellId::DECEPTION: return {id, "deception", EffectType::DECEPTION, 0, 60};
+    case SpellId::SPEED_SELF: return {id, "haste self", EffectType::SPEED, 0, 60};
+    case SpellId::STR_BONUS: return {id, "strength", EffectType::STR_BONUS, 0, 90};
+    case SpellId::DEX_BONUS: return {id, "dexterity", EffectType::DEX_BONUS, 0, 90};
+    case SpellId::FIRE_SPHERE_PET: return {id, "fire sphere", EffectType::FIRE_SPHERE_PET, 0, 90};
+    case SpellId::TELEPORT: return {SpellId::TELEPORT, "escape", EffectType::TELEPORT, 0, 120};
     case SpellId::INVISIBILITY: return {SpellId::INVISIBILITY, "invisibility", EffectType::INVISIBLE, 0, 300};
     case SpellId::WORD_OF_POWER: return {SpellId::WORD_OF_POWER, "word of power", EffectType::WORD_OF_POWER, 0, 300};
   }

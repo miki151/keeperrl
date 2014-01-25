@@ -256,6 +256,7 @@ class Fighter : public Behaviour, public EventListener {
       if (!creature->getWeapon() && weapon)
         myDamage += weapon->getModifier(AttrType::DAMAGE);
       double powerRatio = courage * myDamage / other->getAttr(AttrType::DAMAGE);
+      bool significantEnemy = myDamage < 3 * other->getAttr(AttrType::DAMAGE);
       double weight = 1. - creature->getHealth() * 0.9;
       if (powerRatio < maxPowerRatio)
         weight += 2 - powerRatio * 2;
@@ -271,13 +272,13 @@ class Fighter : public Behaviour, public EventListener {
           if (move.isValid())
             return move;
           else
-            return getAttackMove(other);
+            return getAttackMove(other, significantEnemy && chase);
         }
         return NoMove;
       } else
-        return getAttackMove(other);
+        return getAttackMove(other, significantEnemy && chase);
     } else
-      return getAttackMove(nullptr);
+      return getAttackMove(nullptr, chase);
   }
 
   MoveInfo getPanicMove(const Creature* other, double weight) {
@@ -365,7 +366,7 @@ class Fighter : public Behaviour, public EventListener {
     return NoMove;
   }
 
-  MoveInfo getAttackMove(const Creature* other) {
+  MoveInfo getAttackMove(const Creature* other, bool chase) {
     int radius = 4;
     int distance = 10000;
     double lastSeenTimeout = 20;

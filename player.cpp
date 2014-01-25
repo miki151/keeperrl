@@ -512,22 +512,25 @@ void Player::fireAction(Vec2 dir) {
 void Player::spellAction() {
   vector<View::ListElem> list;
   auto spells = creature->getSpells();
+  vector<int> canCast;
   for (int i : All(spells)) {
     Optional<View::ElemMod> mod;
     if (!creature->canCastSpell(i))
       mod = View::INACTIVE;
+    else
+      canCast.push_back(i);
     list.push_back(View::ListElem(spells[i].name + " " + (!creature->canCastSpell(i) ? "(ready in " +
           convertToString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""), mod));
   }
   auto index = view->chooseFromList("Cast a spell:", list);
   if (!index)
     return;
-  if (!creature->canCastSpell(*index)) {
+  if (!creature->canCastSpell(canCast[*index])) {
     spellAction();
     return;
   }
-  creature->privateMessage("You cast " + spells[*index].name);
-  creature->castSpell(*index);
+  creature->privateMessage("You cast " + spells[canCast[*index]].name);
+  creature->castSpell(canCast[*index]);
 }
 
 const MapMemory& Player::getMemory(const Level* l) const {

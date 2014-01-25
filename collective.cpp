@@ -34,6 +34,7 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 18, "Library"}),
     BuildInfo({SquareType::LABORATORY, ResourceId::WOOD, 18, "Laboratory"}),
     BuildInfo({SquareType::WORKSHOP, ResourceId::WOOD, 12, "Workshop"}),
+    BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast trap"}),
     BuildInfo({SquareType::GRAVE, ResourceId::WOOD, 18, "Graveyard"}),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
@@ -46,6 +47,7 @@ vector<MinionType> minionTypes {
   MinionType::NORMAL,
   MinionType::UNDEAD,
   MinionType::GOLEM,
+  MinionType::BEAST,
 };
 
 vector<Collective::BuildInfo>& Collective::getBuildInfo() const {
@@ -66,13 +68,13 @@ vector<TechId> techIds {
 
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   return {
-    {unMarkedItems(ItemType::CORPSE), SquareType::GRAVE, true},
+    {unMarkedItems(ItemType::CORPSE), SquareType::GRAVE, true, {}},
     {[this](const Item* it) {
         return minionEquipment.isItemUseful(it) && !markedItems.count(it);
-      }, SquareType::STOCKPILE, false},
+      }, SquareType::STOCKPILE, false, {}},
     {[this](const Item* it) {
         return it->getName() == "wood plank" && !markedItems.count(it); },
-      SquareType::STOCKPILE, false},
+      SquareType::STOCKPILE, false, {SquareType::TREE_TRUNK}},
   };
 }
 
@@ -80,6 +82,7 @@ Collective::Collective(CreatureFactory factory, CreatureFactory undead)
     : minionFactory(factory), undeadFactory(undead), mana(100) {
   EventListener::addListener(this);
   // init the map so the values can be safely read with .at()
+  mySquares[SquareType::TREE_TRUNK].clear();
   for (BuildInfo info : concat(initialBuildInfo, normalBuildInfo))
     if (info.buildType == BuildInfo::SQUARE)
       mySquares[info.squareInfo.type].clear();
@@ -149,7 +152,7 @@ ViewObject Collective::getResourceViewObject(ResourceId id) const {
 static string getTechName(TechId id) {
   switch (id) {
     case TechId::BEAST_TAMING: return "beast taming";
-    case TechId::MATTER_ANIMATION: return "matter animation";
+    case TechId::MATTER_ANIMATION: return "golem animation";
     case TechId::NECROMANCY: return "necromancy";
     case TechId::SPELLCASTING: return "personal spells";
   }
@@ -189,38 +192,54 @@ void Collective::handleMarket(View* view, int prevItem) {
   handleMarket(view, *index);
 }
 
-struct RaisingInfo {
-  CreatureId id;
-  int manaCost;
-  int minLevel;
+static string getTechLevelName(int level) {
+  CHECK(level >= 0 && level < 4);
+  return vector<string>({"basic", "advanced", "master", "legendary"})[level];
+}
+
+struct SpellLearningInfo {
+  SpellId id;
+  int techLevel;
 };
 
-vector<RaisingInfo> raisingInfo {
+vector<SpellLearningInfo> spellLearning {
+    { SpellId::HEALING, 0 },
+    { SpellId::SUMMON_INSECTS, 0},
+    { SpellId::DECEPTION, 1},
+    { SpellId::SPEED_SELF, 1},
+    { SpellId::STR_BONUS, 1},
+    { SpellId::DEX_BONUS, 2},
+    { SpellId::FIRE_SPHERE_PET, 2},
+    { SpellId::TELEPORT, 2},
+    { SpellId::INVISIBILITY, 3},
+    { SpellId::WORD_OF_POWER, 3},
+};
+
+
+void Collective::handlePersonalSpells(View* view) {
+  vector<View::ListElem> options {
+      View::ListElem("The Keeper can learn personal spells for use in combat and other situations. ", View::TITLE),
+      View::ListElem("You can cast them by 's' when you are in control of the Keeper.", View::TITLE)};
+  vector<SpellId> knownSpells;
+  for (SpellInfo spell : heart->getSpells())
+    knownSpells.push_back(spell.id);
+  for (auto elem : spellLearning) {
+    SpellInfo spell = Creature::getSpell(elem.id);
+    Optional<View::ElemMod> mod;
+    if (!contains(knownSpells, spell.id))
+      mod = View::INACTIVE;
+    options.push_back(View::ListElem(spell.name + "  level: " + getTechLevelName(elem.techLevel), mod));
+  }
+  view->presentList("Personal spells", options);
+}
+
+vector<Collective::SpawnInfo> raisingInfo {
   {CreatureId::SKELETON, 30, 0},
   {CreatureId::ZOMBIE, 50, 0},
   {CreatureId::MUMMY, 50, 1},
   {CreatureId::VAMPIRE, 50, 2},
   {CreatureId::VAMPIRE_LORD, 100, 3},
 };
-
-static string getTechLevelName(int level) {
-  CHECK(level >= 0 && level < 4);
-  return vector<string>({"basic", "advanced", "master", "legendary"})[level];
-}
-
-void Collective::handlePersonalSpells(View* view) {
-  string text("The Keeper can learn personal spells for use in combat and other situations. "
-      "You can cast them by 's' when you are in control of the Keeper.\n \n");
-  vector<SpellInfo> spells = heart->getSpells();
-  if (spells.empty())
-    text += "You don't know any spells yet.";
-  else {
-    text += "Available spells:\n";
-    for (SpellInfo elem : spells)
-      text += elem.name + "\n";
-  }
-  view->presentText("", text);
-}
 
 void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   int techLevel = techLevels[TechId::NECROMANCY];
@@ -248,13 +267,13 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   }
   vector<View::ListElem> options;
   vector<pair<PCreature, int>> creatures;
-  for (RaisingInfo info : raisingInfo) {
+  for (SpawnInfo info : raisingInfo) {
     Optional<View::ElemMod> mod;
     if (info.minLevel > techLevel || info.manaCost > mana)
       mod = View::INACTIVE;
     PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
     options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost) +
-          " level:" + convertToString(info.minLevel), mod));
+          "  level: " + getTechLevelName(info.minLevel), mod));
     if (!mod)
       creatures.push_back({std::move(c), info.manaCost});
   }
@@ -279,55 +298,81 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   handleNecromancy(view, *index, false);
 }
 
-vector<RaisingInfo> animationInfo {
+vector<Collective::SpawnInfo> animationInfo {
   {CreatureId::CLAY_GOLEM, 30, 0},
   {CreatureId::STONE_GOLEM, 50, 1},
   {CreatureId::IRON_GOLEM, 50, 2},
 };
 
 
-void Collective::handleMatterAnimation(View* view, int prevItem, bool firstTime) {
-  int techLevel = techLevels[TechId::MATTER_ANIMATION];
-  set<Vec2> labs = mySquares.at(SquareType::LABORATORY);
-  if (labs.empty()) {
-    if (firstTime)
-      view->presentText("Information", "You need to build a laboratory to animate golems.");
-    return;
-  }
-  if (labs.size() <= minionByType.at(MinionType::GOLEM).size()) {
-    if (firstTime)
-      view->presentText("Information", "You need to build a larger laboratory to animate more golems.");
-    return;
-  }
+void Collective::handleMatterAnimation(View* view) {
+  handleSpawning(view, TechId::MATTER_ANIMATION, SquareType::LABORATORY,
+      "You need to build a laboratory to animate golems.", "You need a larger laboratory.", "Golem animation",
+      MinionType::GOLEM, animationInfo);
+}
 
-  vector<View::ListElem> options;
-  vector<pair<PCreature, int>> creatures;
-  for (RaisingInfo info : animationInfo) {
-    Optional<View::ElemMod> mod;
-    if (info.minLevel > techLevel || info.manaCost > mana)
-      mod = View::INACTIVE;
-    PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
-    options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost) + 
-          " level:" + convertToString(info.minLevel), mod));
-    if (!mod)
-      creatures.push_back({std::move(c), info.manaCost});
-  }
-  auto index = view->chooseFromList("Matter animation level: " + getTechLevelName(techLevel), options, prevItem);
-  if (!index)
-    return;
-  Vec2 pos = chooseRandom(mySquares.at(SquareType::LABORATORY));
-  PCreature& creature = creatures[*index].first;
-  mana -= creatures[*index].second;
-  for (Vec2 v : pos.neighbors8(true))
-    if (level->getSquare(v)->canEnter(creature.get())) {
-      addCreature(creature.get(), MinionType::GOLEM);
-      level->addCreature(v, std::move(creature));
-      break;
+vector<Collective::SpawnInfo> tamingInfo {
+  {CreatureId::RAVEN, 5, 0},
+  {CreatureId::SPIDER, 20, 1},
+  {CreatureId::WOLF, 30, 2},
+  {CreatureId::CAVE_BEAR, 50, 3},
+};
+
+void Collective::handleBeastTaming(View* view) {
+  handleSpawning(view, TechId::BEAST_TAMING, SquareType::ANIMAL_TRAP,
+      "You need to build cages to trap beasts.", "You need more cages.", "Beast taming",
+      MinionType::BEAST, tamingInfo);
+}
+
+void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquare,
+    const string& info1, const string& info2, const string& title, MinionType minionType,
+    vector<SpawnInfo> spawnInfo) {
+  int techLevel = techLevels[techId];
+  set<Vec2> cages = mySquares.at(spawnSquare);
+  int prevItem = false;
+  bool firstTime = true;
+  while (1) {
+    if (cages.empty()) {
+      if (firstTime)
+        view->presentText("Information", info1);
+      return;
     }
-  if (creature)
-    messageBuffer.addMessage(MessageBuffer::important("You have failed to animate the golem."));
-  view->refreshView(this);
-  handleMatterAnimation(view, *index, false);
+    if (cages.size() <= minionByType.at(minionType).size()) {
+      if (firstTime)
+        view->presentText("Information", info2);
+      return;
+    }
+
+    vector<View::ListElem> options;
+    vector<pair<PCreature, int>> creatures;
+    for (SpawnInfo info : spawnInfo) {
+      Optional<View::ElemMod> mod;
+      if (info.minLevel > techLevel || info.manaCost > mana)
+        mod = View::INACTIVE;
+      PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
+      options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost) + 
+            "   level: " + getTechLevelName(info.minLevel), mod));
+      if (!mod)
+        creatures.push_back({std::move(c), info.manaCost});
+    }
+    auto index = view->chooseFromList(title + " level: " + getTechLevelName(techLevel), options, prevItem);
+    if (!index)
+      return;
+    Vec2 pos = chooseRandom(cages);
+    PCreature& creature = creatures[*index].first;
+    mana -= creatures[*index].second;
+    for (Vec2 v : pos.neighbors8(true))
+      if (level->getSquare(v)->canEnter(creature.get())) {
+        addCreature(creature.get(), minionType);
+        level->addCreature(v, std::move(creature));
+        break;
+      }
+    if (creature)
+      messageBuffer.addMessage(MessageBuffer::important("The spell failed."));
+    view->refreshView(this);
+    prevItem = *index;
+    firstTime = false;
+  }
 }
 
 vector<int> techAdvancePoints { 1, 2, 3, 1000};
@@ -360,6 +405,10 @@ void Collective::handleLibrary(View* view) {
   TechId id = availableTechs[*index];
   techCounter -= techAdvancePoints[techLevels.at(id)];
   ++techLevels[id];
+  if (id == TechId::SPELLCASTING)
+    for (auto elem : spellLearning)
+      if (elem.techLevel == techLevels[id])
+        heart->addSpell(elem.id);
   handleLibrary(view);
 }
 
@@ -644,6 +693,7 @@ void Collective::processInput(View* view) {
             case TechId::NECROMANCY: handleNecromancy(view); break;
             case TechId::SPELLCASTING: handlePersonalSpells(view); break;
             case TechId::MATTER_ANIMATION: handleMatterAnimation(view); break;
+            case TechId::BEAST_TAMING: handleBeastTaming(view); break;
             default: break;
           };
         if (action.getNum() == techIds.size() + 1)
@@ -755,7 +805,8 @@ void Collective::processInput(View* view) {
 }
 
 void Collective::onConstructed(Vec2 pos, SquareType type) {
-  myTiles.insert(pos);
+  if (!contains({SquareType::ANIMAL_TRAP, SquareType::TREE_TRUNK}, type))
+    myTiles.insert(pos);
   CHECK(!mySquares[type].count(pos));
   mySquares[type].insert(pos);
   if (contains({SquareType::FLOOR, SquareType::BRIDGE}, type))
@@ -887,21 +938,30 @@ void Collective::tick() {
         warning[NO_CHESTS] = true;
       }
     }
-    for (ItemFetchInfo elem : getFetchInfo()) {
-      vector<Item*> equipment = level->getSquare(pos)->getItems(elem.predicate);
-      if (!equipment.empty() && !mySquares[elem.destination].empty() &&
-          !mySquares[elem.destination].count(pos)) {
-        if (elem.oneAtATime)
-          equipment = {equipment[0]};
-        Vec2 target = chooseRandom(mySquares[elem.destination]);
-        addTask(Task::bringItem(this, pos, equipment, target));
-        markedItems.insert(equipment.begin(), equipment.end());
-      }
-    }
     if (marked.count(pos) && marked.at(pos)->isImpossible(level) && !taken.count(marked.at(pos)))
       removeTask(marked.at(pos));
   }
+  for (ItemFetchInfo elem : getFetchInfo()) {
+    for (Vec2 pos : myTiles)
+      fetchItems(pos, elem);
+    for (SquareType type : elem.additionalPos)
+      for (Vec2 pos : mySquares.at(type))
+        fetchItems(pos, elem);
+  }
 }
+
+void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
+  vector<Item*> equipment = level->getSquare(pos)->getItems(elem.predicate);
+  if (!equipment.empty() && !mySquares[elem.destination].empty() &&
+      !mySquares[elem.destination].count(pos)) {
+    if (elem.oneAtATime)
+      equipment = {equipment[0]};
+    Vec2 target = chooseRandom(mySquares[elem.destination]);
+    addTask(Task::bringItem(this, pos, equipment, target));
+    markedItems.insert(equipment.begin(), equipment.end());
+  }
+}
+
 
 bool Collective::canSee(const Creature* c) const {
   return canSee(c->getPosition());
@@ -975,6 +1035,8 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     else
       return NoMove;
   }
+  if (contains(minionByType.at(MinionType::BEAST), c))
+    return NoMove;
   for (auto& elem : guardPosts) {
     bool isTraining = contains({MinionTask::TRAIN}, minionTasks.at(c).getState());
     if (elem.second.attender == c) {

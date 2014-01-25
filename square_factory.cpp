@@ -537,7 +537,7 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR_BACKGROUND,"Rope bridge"), "rope bridge", true);
     case SquareType::GRASS:
-        return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND, "Grass"), "grass", true);
+        return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND, "Grass"), "grass", true, false, 0, 0, {{SquareType::ANIMAL_TRAP, 10}});
     case SquareType::MUD:
         return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Mud"), "mud", true);
     case SquareType::ROAD:
@@ -599,6 +599,9 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
             "torture table", 0.3);
+    case SquareType::ANIMAL_TRAP:
+        return new Furniture(ViewObject(ViewId::ANIMAL_TRAP, ViewLayer::FLOOR, "Animal trap"), 
+            "animal trap", 0.3);
     case SquareType::TRAINING_DUMMY:
         return new TrainingDummy(ViewObject(ViewId::TRAINING_DUMMY, ViewLayer::FLOOR, "Training post"), 
             "training post");

@@ -649,8 +649,8 @@ CreatureFactory CreatureFactory::collectiveStart() {
 }
 
 CreatureFactory CreatureFactory::collectiveMinions() {
-  return CreatureFactory(Tribe::player, { CreatureId::GNOME, CreatureId::BILE_DEMON, CreatureId::HELL_HOUND,
-      CreatureId::SPECIAL_MONSTER}, { 3, 4, 5, 1}, {CreatureId::SPECIAL_MONSTER_HUMANOID});
+  return CreatureFactory(Tribe::player, { CreatureId::GNOME, CreatureId::BILE_DEMON,
+      CreatureId::SPECIAL_MONSTER}, { 3, 4, 1}, {CreatureId::SPECIAL_MONSTER_HUMANOID});
 }
 
 CreatureFactory CreatureFactory::collectiveEnemies() {
@@ -732,6 +732,7 @@ CreatureFactory CreatureFactory::level(int num) {
       { CreatureId::BILE_DEMON, { 0, 0, 100, 100, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::JACKAL, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
       { CreatureId::SPIDER, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
+      { CreatureId::SCORPION, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
       { CreatureId::RAT, { 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::BAT, { 100, 100, 200, 200, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::ZOMBIE, { 0, 0, 0, 30, 50, 100, 100, 100, 100, 100 }},
@@ -1183,16 +1184,6 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.weight = 140;
                                 c.firstName = NameGenerator::demonNames.getNext();
                                 c.name = "ogre";), tribe, factory);
-    case CreatureId::HELL_HOUND: return get(ViewId::HELL_HOUND, CATTR(
-                                c.speed = 160;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 16;
-                                c.dexterity = 17;
-                                c.barehandedDamage = 5;
-                                c.humanoid = false;
-                                c.weight = 50;
-                                c.firstName = NameGenerator::dogNames.getNext();
-                                c.name = "hell hound";), tribe, factory);
     case CreatureId::CHICKEN: return get(ViewId::CHICKEN, CATTR(
                                 c.speed = 50;
                                 c.size = CreatureSize::SMALL;
@@ -1396,8 +1387,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.animal = true;
                                 c.skills.insert(Skill::swimming);
                                 c.name = "rat";), Tribe::pest, factory);
-    case CreatureId::SPIDER: { bool spider = Random.roll(2);
-                             return get(spider ? ViewId::SPIDER : ViewId::SCORPION, CATTR(
+    case CreatureId::SCORPION: return get(ViewId::SCORPION, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::SMALL;
                                 c.strength = 9;
@@ -1409,7 +1399,20 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.legs = 8;
                                 c.arms = 0;
                                 c.animal = true;
-                                c.name = spider ? "spider" : "scorpion";), tribe, factory); }
+                                c.name = "scorpion";), tribe, factory);
+    case CreatureId::SPIDER: return get(ViewId::SPIDER, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::SMALL;
+                                c.strength = 9;
+                                c.dexterity = 13;
+                                c.barehandedDamage = 12;
+                                c.attackEffect = EffectType::POISON;
+                                c.humanoid = false;
+                                c.weight = 0.3;
+                                c.legs = 8;
+                                c.arms = 0;
+                                c.animal = true;
+                                c.name = "spider";), tribe, factory);
     case CreatureId::FLY: {  bool fly = Random.roll(1);
                              return get(fly ? ViewId::FLY : ViewId::SCORPION, CATTR(
                                 c.speed = 150;
@@ -1436,6 +1439,20 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.attackEffect = EffectType::POISON;
                                 c.skills.insert(Skill::swimming);
                                 c.name = "snake";), Tribe::pest, factory);
+    case CreatureId::RAVEN: return get(ViewId::RAVEN, CATTR(
+                                c.speed = 250;
+                                c.size = CreatureSize::SMALL;
+                                c.strength = 2;
+                                c.dexterity = 12;
+                                c.barehandedDamage = 0;
+                                c.humanoid = false;
+                                c.weight = 0.5;
+                                c.arms = 0;
+                                c.legs = 0;
+                                c.wings = 2;
+                                c.animal = true;
+                                c.flyer = true;
+                                c.name = "raven";), tribe, factory);
     case CreatureId::VULTURE: return get(ViewId::VULTURE, CATTR(
                                 c.speed = 80;
                                 c.size = CreatureSize::SMALL;

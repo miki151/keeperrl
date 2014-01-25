@@ -14,6 +14,7 @@ enum class MinionType {
   NORMAL,
   UNDEAD,
   GOLEM,
+  BEAST,
 };
 
 ENUM_HASH(MinionType);
@@ -72,6 +73,13 @@ class Collective : public CreatureView, public EventListener {
     ItemId itemId;
   };
 
+  struct SpawnInfo {
+    CreatureId id;
+    int manaCost;
+    int minLevel;
+  };
+
+
   private:
   struct BuildInfo {
     struct SquareInfo {
@@ -111,9 +119,11 @@ class Collective : public CreatureView, public EventListener {
     ItemPredicate predicate;
     SquareType destination;
     bool oneAtATime;
+    vector<SquareType> additionalPos;
   };
 
   vector<ItemFetchInfo> getFetchInfo() const;
+  void fetchItems(Vec2 pos, ItemFetchInfo);
 
   unordered_map<TechId, int> techLevels;
   double techCounter = 0;
@@ -139,7 +149,10 @@ class Collective : public CreatureView, public EventListener {
   void freeFromGuardPost(const Creature*);
   void handleMarket(View*, int prevItem = 0);
   void handleNecromancy(View*, int prevItem = 0, bool firstTime = true);
-  void handleMatterAnimation(View*, int prevItem = 0, bool firstTime = true);
+  void handleMatterAnimation(View*);
+  void handleBeastTaming(View*);
+  void handleSpawning(View* view, TechId techId, SquareType spawnSquare, const string& info1, 
+      const string& info2, const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;

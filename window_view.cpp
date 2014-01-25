@@ -202,7 +202,6 @@ Tile getSprite(ViewId id) {
     case ViewId::ELVEN_SHOPKEEPER: return Tile(4, 2);
     case ViewId::IMP: return Tile(18, 0);
     case ViewId::BILE_DEMON: return Tile(8, 14);
-    case ViewId::HELL_HOUND: return Tile(14, 12);
     case ViewId::CHICKEN: return Tile(18, 1);
     case ViewId::DWARF: return Tile(2, 6);
     case ViewId::DWARF_BARON: return Tile(3, 6);
@@ -296,6 +295,7 @@ Tile getSprite(ViewId id) {
     case ViewId::SCORPION: return Tile(11, 18);
     case ViewId::SNAKE: return Tile(9, 12);
     case ViewId::VULTURE: return Tile(17, 12);
+    case ViewId::RAVEN: return Tile(17, 12);
     case ViewId::BODY_PART: return Tile(9, 4, 3);
     case ViewId::BONE: return Tile(3, 0, 2);
     case ViewId::BUSH: return Tile(17, 0, 2, true);
@@ -362,6 +362,7 @@ Tile getSprite(ViewId id) {
     case ViewId::TRAINING_DUMMY: return Tile(0, 5, 2, true);
     case ViewId::LIBRARY: return Tile(2, 4, 2, true);
     case ViewId::LABORATORY: return Tile(2, 5, 2, true);
+    case ViewId::ANIMAL_TRAP: return Tile(3, 8, 2, true);
     case ViewId::WORKSHOP: return Tile(9, 4, 2, true);
     case ViewId::GRAVE: return Tile(0, 0, 2, true);
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
@@ -406,7 +407,6 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ELVEN_SHOPKEEPER: return Tile('@', lightBlue);
     case ViewId::IMP: return Tile('i', lightBrown);
     case ViewId::BILE_DEMON: return Tile('O', green);
-    case ViewId::HELL_HOUND: return Tile('d', purple);
     case ViewId::CHICKEN: return Tile('c', yellow);
     case ViewId::DWARF: return Tile('h', blue);
     case ViewId::DWARF_BARON: return Tile('h', darkBlue);
@@ -490,6 +490,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::SCORPION: return Tile('s', lightGray);
     case ViewId::SNAKE: return Tile('S', yellow);
     case ViewId::VULTURE: return Tile('v', darkGray);
+    case ViewId::RAVEN: return Tile('v', darkGray);
     case ViewId::BODY_PART: return Tile('%', red);
     case ViewId::BONE: return Tile('%', white);
     case ViewId::BUSH: return Tile('&', darkGreen);
@@ -555,7 +556,8 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::TORTURE_TABLE: return Tile('=', gray);
     case ViewId::TRAINING_DUMMY: return Tile(L'‡', brown, true);
     case ViewId::LIBRARY: return Tile(L'▤', purple, true);
-    case ViewId::LABORATORY: return Tile(0x1d17, purple, true);
+    case ViewId::LABORATORY: return Tile(L'ω', purple, true);
+    case ViewId::ANIMAL_TRAP: return Tile(L'▥', lightGray, true);
     case ViewId::WORKSHOP: return Tile('&', lightBlue);
     case ViewId::GRAVE: return Tile(0x2617, gray, true);
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
@@ -1042,7 +1044,7 @@ void WindowView::drawPlayerInfo() {
 }
 
 const int legendLineHeight = 30;
-const int legendStartHeight = topBarHeight + 80;
+const int legendStartHeight = topBarHeight + 50;
 
 void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   int lineStart = legendStartHeight;
