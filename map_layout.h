@@ -31,7 +31,7 @@ class MapLayout {
       int squareWidth, int squareHeight,
       int leftMargin, int topMargin,
       int rightMargin, int bottomMargin,
-      int boxMargin, vector<ViewLayer> layers);
+      vector<ViewLayer> layers);
 
   static MapLayout* worldLayout(int screenW, int screenH,
     int leftMargin, int topMargin,

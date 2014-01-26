@@ -285,7 +285,7 @@ Tile getSprite(ViewId id) {
     case ViewId::KRAKEN2: return Tile(7, 19);
     case ViewId::NIGHTMARE: return Tile(9, 16);
     case ViewId::FIRE_SPHERE: return Tile(16, 20);
-    case ViewId::BEAR: return Tile(12, 18);
+    case ViewId::BEAR: return Tile(8, 18);
     case ViewId::BAT: return Tile(2, 12);
     case ViewId::GNOME: return Tile(13, 8);
     case ViewId::LEPRECHAUN: return Tile(16, 8);
@@ -715,8 +715,9 @@ static void drawSprite(int x, int y, int px, int py, int w, int h, const Texture
   display->draw(s);
 }
 
-int topBarHeight = 50;
-int rightBarWidth = 250;
+int topBarHeight = 10;
+int rightBarWidth = 280;
+int rightBarText = 250;
 int bottomBarHeight = 75;
 
 void WindowView::initialize() {
@@ -730,13 +731,15 @@ void WindowView::initialize() {
   symbolFont.loadFromFile("Symbola.ttf");
 
   asciiLayouts = {
-      MapLayout::gridLayout(screenWidth, screenHeight, 16, 20, -20, topBarHeight - 20, rightBarWidth - 20,
-          bottomBarHeight - 20, 1, allLayers),
-      MapLayout::gridLayout(screenWidth, screenHeight, 8, 10, 0, 30, 220, 85, 1,
+      MapLayout::gridLayout(screenWidth, screenHeight, 16, 20, 0, topBarHeight, rightBarWidth, bottomBarHeight,
+          allLayers),
+      MapLayout::gridLayout(screenWidth, screenHeight, 8, 10, 0, topBarHeight, rightBarWidth, bottomBarHeight,
       {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
   spriteLayouts = {
-      MapLayout::gridLayout(screenWidth, screenHeight, 36, 36, -20, 0, 225, 0, 1, allLayers),
-      MapLayout::gridLayout(screenWidth, screenHeight, 18, 18, 0, 30, 220, 85, 1, allLayers), true};
+      MapLayout::gridLayout(screenWidth, screenHeight, 36, 36, 0, topBarHeight, rightBarWidth,
+          bottomBarHeight, allLayers),
+      MapLayout::gridLayout(screenWidth, screenHeight, 18, 18, 0, topBarHeight, rightBarWidth,
+          bottomBarHeight, allLayers), true};
   currentTileLayout = spriteLayouts;
 
   mapLayout = currentTileLayout.normalLayout;
@@ -1001,11 +1004,11 @@ void WindowView::drawPlayerInfo() {
     title = string(i <info.adjectives.size() - 1 ? ", " : " ") + info.adjectives[i] + title;
   int line1 = screenHeight - bottomBarHeight + 10;
   int line2 = line1 + 25;
+  drawFilledRectangle(0, screenHeight - bottomBarHeight, screenWidth - rightBarWidth, screenHeight, translucentBlack);
   string playerLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title) +
     "          T: " + convertToString<int>(info.time) + "            " + info.levelName;
-  drawFilledRectangle(0, screenHeight - bottomBarHeight, screenWidth - rightBarWidth, screenHeight, translucentBlack);
   drawText(white, 10, line1, playerLine);
-  int keySpacing = 60;
+  int keySpacing = 50;
   int startX = 10;
   bottomKeyButtons.clear();
   bottomKeys =  {
@@ -1014,9 +1017,10 @@ void WindowView::drawPlayerInfo() {
       { "E", "Equipment", {Keyboard::E}},
       { "F1", "More commands", {Keyboard::F1}},
   };
-
   if (info.possessed)
     bottomKeys = concat({{ "U", "Leave minion", {Keyboard::U}}}, bottomKeys);
+  if (info.spellcaster)
+    bottomKeys = concat({{ "S", "Cast spell", {Keyboard::S}}}, bottomKeys);
 
   for (int i : All(bottomKeys)) {
     string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
@@ -1029,9 +1033,9 @@ void WindowView::drawPlayerInfo() {
   optionButtons.clear();
   for (int i = 0; i < 2; ++i) {
     int w = 45;
-    int line = topBarHeight - 20;
+    int line = topBarHeight;
     int h = 45;
-    int leftPos = screenWidth - rightBarWidth + 15;
+    int leftPos = screenWidth - rightBarText + 15;
     drawText(i < 1 ? symbolFont : textFont, 35, i == int(legendOption) ? green : white,
         leftPos + i * w, line, optionSyms[i], true);
     optionButtons.emplace_back(leftPos + i * w - w / 2, line,
@@ -1044,11 +1048,11 @@ void WindowView::drawPlayerInfo() {
 }
 
 const int legendLineHeight = 30;
-const int legendStartHeight = topBarHeight + 50;
+const int legendStartHeight = topBarHeight + 70;
 
 void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   int lineStart = legendStartHeight;
-  int lineX = screenWidth - rightBarWidth + 10;
+  int lineX = screenWidth - rightBarText + 10;
   vector<string> lines {
       info.weaponName != "" ? "wielding " + info.weaponName : "barehanded",
       "",
@@ -1097,48 +1101,45 @@ static void drawViewObject(const ViewObject& obj, int x, int y, bool sprite) {
 void WindowView::drawMinions(GameInfo::BandInfo& info) {
   map<string, pair<ViewObject, int>> creatureMap = getCreatureMap(info.creatures);
   map<string, pair<ViewObject, int>> enemyMap = getCreatureMap(info.enemies);
-  drawText(white, screenWidth - rightBarWidth, legendStartHeight, info.monsterHeader);
+  drawText(white, screenWidth - rightBarText, legendStartHeight, info.monsterHeader);
   int cnt = 0;
   int lineStart = legendStartHeight + 35;
+  int textX = screenWidth - rightBarText + 10;
   for (auto elem : creatureMap){
     int height = lineStart + cnt * legendLineHeight;
-    drawViewObject(elem.second.first, screenWidth - rightBarWidth + 10, height, currentTileLayout.sprites);
+    drawViewObject(elem.second.first, textX, height, currentTileLayout.sprites);
     Color col = (elem.first == chosenCreature) ? green : white;
-    drawText(col, screenWidth - rightBarWidth + 30, height,
+    drawText(col, textX + 20, height,
         convertToString(elem.second.second) + "   " + elem.first);
-    creatureGroupButtons.emplace_back(
-        screenWidth - rightBarWidth, height, screenWidth - rightBarWidth + 150, height + legendLineHeight);
+    creatureGroupButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
     creatureNames.push_back(elem.first);
     ++cnt;
   }
   
   if (info.gatheringTeam && !info.team.empty()) {
-    drawText(white, screenWidth - rightBarWidth, lineStart + (cnt + 1) * legendLineHeight, 
+    drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, 
         getPlural("monster", "monsters", info.team.size()));
     ++cnt;
   }
   if (info.creatures.size() > 1 || info.gatheringTeam) {
     int height = lineStart + (cnt + 1) * legendLineHeight;
-    drawText((info.gatheringTeam && info.team.empty()) ? green : white, screenWidth - rightBarWidth, height, 
+    drawText((info.gatheringTeam && info.team.empty()) ? green : white, textX, height, 
         info.team.empty() ? "[gather team]" : "[command team]");
     int butWidth = 150;
-    teamButton = Rectangle(screenWidth - rightBarWidth, height,
-        screenWidth - rightBarWidth + butWidth, height + legendLineHeight);
+    teamButton = Rectangle(textX, height, textX + butWidth, height + legendLineHeight);
     if (info.gatheringTeam) {
-      drawText(white, screenWidth - rightBarWidth + butWidth, height, "[cancel]");
-      cancelTeamButton = Rectangle(screenWidth - rightBarWidth + butWidth, height,
-          screenWidth - rightBarWidth + 230, height + legendLineHeight);
+      drawText(white, textX + butWidth, height, "[cancel]");
+      cancelTeamButton = Rectangle(textX + butWidth, height, textX + 230, height + legendLineHeight);
     }
     cnt += 2;
   }
   ++cnt;
   if (!enemyMap.empty()) {
-    drawText(white, screenWidth - rightBarWidth, lineStart + (cnt + 1) * legendLineHeight, "Enemies:");
+    drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, "Enemies:");
     for (auto elem : enemyMap){
       int height = lineStart + (cnt + 2) * legendLineHeight + 10;
-      drawViewObject(elem.second.first, screenWidth - rightBarWidth + 10, height, currentTileLayout.sprites);
-      drawText(white, screenWidth - rightBarWidth + 30, height,
-          convertToString(elem.second.second) + "   " + elem.first);
+      drawViewObject(elem.second.first, textX, height, currentTileLayout.sprites);
+      drawText(white, textX + 20, height, convertToString(elem.second.second) + "   " + elem.first);
       ++cnt;
     }
   }
@@ -1151,40 +1152,39 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
       for (const Creature* c : info.creatures)
         if (c->getName() == chosenCreature)
           chosen.push_back(c);
-      drawFilledRectangle(screenWidth - rightBarWidth - width - 20, lineStart,
-          screenWidth - rightBarWidth - 10, legendStartHeight + 35 + (chosen.size() + 3) * legendLineHeight, black);
-      drawText(lightBlue, screenWidth - rightBarWidth - width - 10, lineStart, 
+      drawFilledRectangle(textX - width - 20, lineStart,
+          textX - 10, legendStartHeight + 35 + (chosen.size() + 3) * legendLineHeight, black);
+      drawText(lightBlue, textX - width - 10, lineStart, 
           info.gatheringTeam ? "Click to add to team:" : "Click to possess:");
       int cnt = 1;
       for (const Creature* c : chosen) {
         int height = lineStart + cnt * legendLineHeight;
-        drawViewObject(c->getViewObject(), screenWidth - rightBarWidth - width, height, currentTileLayout.sprites);
-        drawText(contains(info.team, c) ? green : white, screenWidth - rightBarWidth - width + 30, height,
+        drawViewObject(c->getViewObject(), textX - width, height, currentTileLayout.sprites);
+        drawText(contains(info.team, c) ? green : white, textX - width + 30, height,
             "level: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c]);
-        creatureButtons.emplace_back(screenWidth - rightBarWidth - width, height,
-            screenWidth - rightBarWidth, height + legendLineHeight);
+        creatureButtons.emplace_back(textX - width, height, textX, height + legendLineHeight);
         chosenCreatures.push_back(c);
         ++cnt;
       }
       int height = lineStart + cnt * legendLineHeight + 10;
-      drawText(white, screenWidth - rightBarWidth - width, height, "[show description]");
-      descriptionButton = Rectangle(screenWidth - rightBarWidth - width, height,
-          screenWidth - rightBarWidth, height + legendLineHeight);
+      drawText(white, textX - width, height, "[show description]");
+      descriptionButton = Rectangle(textX - width, height, textX, height + legendLineHeight);
     }
   }
 }
 
 void WindowView::drawBuildings(GameInfo::BandInfo& info) {
+  int textX = screenWidth - rightBarText;
   for (int i : All(info.buttons)) {
     int height = legendStartHeight + i * legendLineHeight;
-    drawViewObject(info.buttons[i].object, screenWidth - rightBarWidth, height, currentTileLayout.sprites);
+    drawViewObject(info.buttons[i].object, textX, height, currentTileLayout.sprites);
     Color color = white;
     if (i == info.activeButton)
       color = green;
     else if (!info.buttons[i].active)
       color = lightGray;
     string text = info.buttons[i].name + " " + info.buttons[i].count;
-    drawText(color, screenWidth - rightBarWidth + 30, height, text);
+    drawText(color, textX + 30, height, text);
  //   int posX = screenWidth - rightBarWidth + 60 + getTextLength(text);
     if (info.buttons[i].cost) {
       string costText = convertToString(info.buttons[i].cost->second);
@@ -1192,17 +1192,18 @@ void WindowView::drawBuildings(GameInfo::BandInfo& info) {
       drawViewObject(info.buttons[i].cost->first, screenWidth - 40, height, true);
       drawText(color, posX, height, costText);
     }
-    roomButtons.emplace_back(screenWidth - rightBarWidth, height,
-        screenWidth - rightBarWidth + 150, height + legendLineHeight);
+    roomButtons.emplace_back(textX, height,textX + 150, height + legendLineHeight);
   }
 }
   
 void WindowView::drawTechnology(GameInfo::BandInfo& info) {
+  int textX = screenWidth - rightBarText;
   for (int i : All(info.techButtons)) {
     int height = legendStartHeight + i * legendLineHeight;
-    drawText(white, screenWidth - rightBarWidth, height, info.techButtons[i].name);
-    techButtons.emplace_back(screenWidth - rightBarWidth, height,
-        screenWidth - rightBarWidth + 150, height + legendLineHeight);
+    if (info.techButtons[i].viewObject)
+      drawViewObject(*info.techButtons[i].viewObject, textX, height, true);
+    drawText(white, textX + 20, height, info.techButtons[i].name);
+    techButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
   }
 }
 
@@ -1212,7 +1213,7 @@ void WindowView::drawKeeperHelp() {
   int cnt = 0;
   for (string line : helpText) {
     int height = legendStartHeight + cnt * legendLineHeight;
-    drawText(lightBlue, screenWidth - rightBarWidth, height, line);
+    drawText(lightBlue, screenWidth - rightBarText, height, line);
     cnt ++;
   }
 }
@@ -1222,7 +1223,7 @@ void WindowView::drawBandInfo() {
   int line0 = screenHeight - 90;
   int line1 = screenHeight - 65;
   int line2 = screenHeight - 40;
-  drawFilledRectangle(0, line1 - 10, screenWidth - rightBarWidth - 30, screenHeight, translucentBlack);
+  drawFilledRectangle(0, line1 - 10, screenWidth - rightBarWidth, screenHeight, translucentBlack);
   string playerLine = info.name + "   T:" + convertToString<int>(info.time);
   drawText(white, 10, line1, playerLine);
   if (!myClock.isPaused())
@@ -1244,9 +1245,9 @@ void WindowView::drawBandInfo() {
   optionButtons.clear();
   for (int i = 0; i < 5; ++i) {
     int w = 45;
-    int line = topBarHeight - 20;
+    int line = topBarHeight;
     int h = 45;
-    int leftPos = screenWidth - rightBarWidth + 15;
+    int leftPos = screenWidth - rightBarText + 15;
     drawText(i < 3 ? symbolFont : textFont, 35, i == int(collectiveOption) ? green : white,
         leftPos + i * w, line, optionSyms[i], true);
     optionButtons.emplace_back(leftPos + i * w - w / 2, line,
@@ -1279,7 +1280,7 @@ void WindowView::refreshText() {
   for (int i : All(currentMessage))
     if (!currentMessage[i].empty())
       numMsg = i + 1;
-  drawFilledRectangle(0, 0, screenWidth, lineHeight * (numMsg + 1), translucentBlack);
+  drawFilledRectangle(0, 0, screenWidth, max(topBarHeight, lineHeight * (numMsg + 1)), translucentBlack);
   for (int i : All(currentMessage))
     drawText(oldMessage ? gray : white, 10, 10 + lineHeight * i, currentMessage[i]);
   switch (gameInfo.infoType) {
@@ -1565,8 +1566,8 @@ void WindowView::drawMap() {
     }
   if (pixelView)
     drawImage(mapLayout->getBounds().getPX(), mapLayout->getBounds().getPY(), mapBuffer);
-  int rightPos = screenWidth - rightBarWidth;
-  drawFilledRectangle(rightPos - 30, 0, screenWidth, screenHeight, translucentBlack);
+  int rightPos = screenWidth -rightBarText;
+  drawFilledRectangle(screenWidth - rightBarWidth, 0, screenWidth, screenHeight, translucentBlack);
   if (gameInfo.infoType == GameInfo::InfoType::PLAYER || collectiveOption == CollectiveOption::LEGEND) {
     int cnt = 0;
     if (legendOption == LegendOption::OBJECTS) {
@@ -2084,18 +2085,19 @@ CollectiveAction WindowView::getClick() {
 }
 
 vector<KeyInfo> keyInfo {
-  { "I", "Inventory", {Keyboard::I}},
-  { "E", "Manage equipment", {Keyboard::E}},
+//  { "I", "Inventory", {Keyboard::I}},
+//  { "E", "Manage equipment", {Keyboard::E}},
   { "Enter", "Pick up items or interact with square", {Keyboard::Return}},
   { "D", "Drop item", {Keyboard::D}},
   { "A", "Apply item", {Keyboard::A}},
   { "T", "Throw item", {Keyboard::T}},
+//  { "S", "Cast spell", {Keyboard::S}},
   { "M", "Show message history", {Keyboard::M}},
   { "C", "Chat with someone", {Keyboard::C}},
   { "P", "Pay debt", {Keyboard::P}},
-  { "U", "Unpossess", {Keyboard::U}},
+  //{ "U", "Unpossess", {Keyboard::U}},
   { "Space", "Wait", {Keyboard::Space}},
-  { "Z", "Zoom in/out", {Keyboard::Z}},
+  //{ "Z", "Zoom in/out", {Keyboard::Z}},
   { "Shift + Z", "World map", {Keyboard::Z, false, false, true}},
   { "F2", "Switch between graphics and ascii", {Keyboard::F2}},
   { "Escape", "Quit", {Keyboard::Escape}},

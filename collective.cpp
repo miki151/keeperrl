@@ -160,6 +160,17 @@ static string getTechName(TechId id) {
   return "";
 }
 
+static ViewObject getTechViewObject(TechId id) {
+  switch (id) {
+    case TechId::BEAST_TAMING: return ViewObject(ViewId::BEAR, ViewLayer::CREATURE, "");
+    case TechId::MATTER_ANIMATION: return ViewObject(ViewId::IRON_GOLEM, ViewLayer::CREATURE, "");
+    case TechId::NECROMANCY: return ViewObject(ViewId::VAMPIRE_LORD, ViewLayer::CREATURE, "");
+    case TechId::SPELLCASTING: return ViewObject(ViewId::SCROLL, ViewLayer::CREATURE, "");
+  }
+  Debug(FATAL) << "pwofk";
+  return ViewObject();
+}
+
 static vector<ItemId> marketItems {
   ItemId::HEALING_POTION,
   ItemId::SPEED_POTION,
@@ -219,7 +230,7 @@ vector<SpellLearningInfo> spellLearning {
 void Collective::handlePersonalSpells(View* view) {
   vector<View::ListElem> options {
       View::ListElem("The Keeper can learn personal spells for use in combat and other situations. ", View::TITLE),
-      View::ListElem("You can cast them by 's' when you are in control of the Keeper.", View::TITLE)};
+      View::ListElem("You can cast them with 's' when you are in control of the Keeper.", View::TITLE)};
   vector<SpellId> knownSpells;
   for (SpellInfo spell : heart->getSpells())
     knownSpells.push_back(spell.id);
@@ -490,10 +501,10 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
     info.team.push_back(c);
   info.techButtons.clear();
   for (TechId id : techIds) {
-    info.techButtons.push_back({getTechName(id)});
+    info.techButtons.push_back({getTechViewObject(id), getTechName(id)});
   }
-  info.techButtons.push_back({""});
-  info.techButtons.push_back({"library"});
+  info.techButtons.push_back({Nothing(), ""});
+  info.techButtons.push_back({ViewObject(ViewId::LIBRARY, ViewLayer::CREATURE, ""), "library"});
 }
 
 const MapMemory& Collective::getMemory(const Level* l) const {
@@ -1215,6 +1226,9 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
 void Collective::addCreature(Creature* c, MinionType type) {
   if (heart == nullptr) {
     heart = c;
+    for (auto elem : spellLearning)
+      if (elem.techLevel == 0)
+        heart->addSpell(elem.id);
   }
   creatures.push_back(c);
   if (type != MinionType::IMP) {

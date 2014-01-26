@@ -1817,6 +1817,7 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     }
     info.adjectives.clear();
     info.possessed = canPopController();
+    info.spellcaster = !spells.empty();
     if (isBlind())
       info.adjectives.push_back("blind");
     if (isInvisible())

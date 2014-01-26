@@ -157,6 +157,7 @@ class View {
       vector<const Creature*> team;
 
       struct TechButton {
+        Optional<ViewObject> viewObject;
         string name;
       };
       vector<TechButton> techButtons;
@@ -170,6 +171,7 @@ class View {
       int strength;
       int dexterity;
       bool possessed;
+      bool spellcaster;
       double time;
       int numGold;
       string playerName;
