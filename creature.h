@@ -47,6 +47,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   double getWeight() const;
   void sleep(int time);
   bool isSleeping() const;
+  bool canSleep() const;
   void wakeUp();
   void take(PItem item);
   void take(vector<PItem> item);

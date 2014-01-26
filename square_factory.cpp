@@ -576,10 +576,10 @@ Square* SquareFactory::get(SquareType s) {
         return new SecretPassage(ViewObject(ViewId::SECRETPASS, ViewLayer::FLOOR, "Wall"),
                                  ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "Floor"));
     case SquareType::WATER:
-        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water",
+        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR, "Water"), "water",
             "sinks in the water", "You hear a splash", 100);
     case SquareType::MAGMA: 
-        return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR_BACKGROUND, "Magma"),
+        return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR, "Magma"),
             "magma", "burns in the magma", "");
     case SquareType::ABYSS: 
         Debug(FATAL) << "Unimplemented";

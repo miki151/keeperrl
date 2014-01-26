@@ -20,6 +20,7 @@ int margin = 15;
 
 ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to, Vec2 from, double mult,
     bool avoidEnemies) : target(to), directions(Vec2::directions8()), bounds(level->getBounds()) {
+  CHECK(level->getBounds().getKX() <= maxSize && level->getBounds().getKY() <= maxSize);
   auto entryFun = [=](Vec2 pos) { 
       if (level->getSquare(pos)->canEnter(creature) || creature->getPosition() == pos) 
         return 1.0;
@@ -42,6 +43,7 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
 
 ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun,
     vector<Vec2> dir, Vec2 to, Vec2 from, double mult) : target(to), directions(dir), bounds(a) {
+  CHECK(a.getKX() <= maxSize && a.getKY() <= maxSize && a.getPX() >= 0 && a.getPY() >= 0);
   if (mult == 0)
     init(entryFun, lengthFun, target, from);
   else {

@@ -78,19 +78,21 @@ class Heal : public Behaviour {
       }};
     Vec2 bedRadius(10, 10);
     Level* l = creature->getLevel();
-    if (!hasBed || hasBed->level != creature->getLevel()) {
-      for (Vec2 v : Rectangle(creature->getPosition() - bedRadius, creature->getPosition() + bedRadius))
-        if (l->inBounds(v) && l->getSquare(v)->getApplyType(creature) == SquareApplyType::SLEEP)
-        if (Optional<Vec2> move = creature->getMoveTowards(v))
+    if (creature->canSleep()) {
+      if (!hasBed || hasBed->level != creature->getLevel()) {
+        for (Vec2 v : Rectangle(creature->getPosition() - bedRadius, creature->getPosition() + bedRadius))
+          if (l->inBounds(v) && l->getSquare(v)->getApplyType(creature) == SquareApplyType::SLEEP)
+            if (Optional<Vec2> move = creature->getMoveTowards(v))
+              return { 0.4 * min(1.0, 1.5 - creature->getHealth()), [=] {
+                creature->move(*move);
+                hasBed = {v, creature->getLevel() };
+              }};
+      } else 
+        if (Optional<Vec2> move = creature->getMoveTowards(hasBed->pos))
           return { 0.4 * min(1.0, 1.5 - creature->getHealth()), [=] {
             creature->move(*move);
-            hasBed = {v, creature->getLevel() };
           }};
-    } else 
-      if (Optional<Vec2> move = creature->getMoveTowards(hasBed->pos))
-        return { 0.4 * min(1.0, 1.5 - creature->getHealth()), [=] {
-          creature->move(*move);
-        }};
+    }
 
     return {0, nullptr};
   }

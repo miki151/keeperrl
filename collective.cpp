@@ -10,7 +10,7 @@ enum Warning { NO_MANA, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_TRAINING 
 static const int numWarnings = 7;
 static bool warning[numWarnings] = {0};
 static string warningText[] {
-  "You need to kill some innocent beings to increase mana.",
+  "You need to kill some innocent beings for more mana.",
   "You need to build a treasure room.",
   "You need a larger treasure room.",
   "You need a lair for your minions.",
@@ -1091,7 +1091,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
       return taskMap.at(c)->getMove(c);
     }
   minionTasks.at(c).update();
-  if (c->getHealth() < 1)
+  if (c->getHealth() < 1 && c->canSleep())
     minionTasks.at(c).setState(MinionTask::SLEEP);
   switch (minionTasks.at(c).getState()) {
     case MinionTask::SLEEP: {

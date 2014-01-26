@@ -1316,6 +1316,10 @@ bool Creature::isSleeping() const {
   return sleeping;
 }
 
+bool Creature::canSleep() const {
+  return !noSleep;
+}
+
 void Creature::wakeUp() {
   you(MsgType::WAKE_UP, "");
   sleeping.unset();
