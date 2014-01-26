@@ -415,6 +415,10 @@ bool Rectangle::intersects(const Rectangle& other) const {
   return max(px, other.px) < min(kx, other.kx) && max(py, other.py) < min(ky, other.ky);
 }
 
+Rectangle Rectangle::intersection(const Rectangle& other) const {
+  return Rectangle(max(px, other.px), max(py, other.py), min(kx, other.kx), min(ky, other.ky));
+}
+
 Rectangle Rectangle::minusMargin(int margin) const {
   CHECK(px + margin < kx - margin && py + margin < ky - margin) << "Margin too big";
   return Rectangle(px + margin, py + margin, kx - margin, ky - margin);

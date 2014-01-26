@@ -10,19 +10,16 @@ const double ShortestPath::infinity = 1000000000;
 
 const int revShortestLimit = 15;
 
-static Table<double> initDistTable(Vec2 to, Vec2 from, int levelWidth, int levelHeight) {
-  int margin = 40;
-  Vec2 p(max(0, min(to.x, from.x) - margin),
-         max(0, min(to.y, from.y) - margin));
-  Vec2 k(min(levelWidth - p.x, abs(to.x - from.x) + 2 * margin),
-         min(levelHeight - p.y, abs(to.y - from.y) + 2 * margin));
-  return Table<double>(Rectangle(p, p + k), ShortestPath::infinity);
-}
+const int maxSize = 600;
+
+Table<double> ddist(maxSize, maxSize);
+Table<int> dirty(maxSize, maxSize, 0);
+int counter = 1;
+
+int margin = 15;
 
 ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to, Vec2 from, double mult,
-    bool avoidEnemies) : distance(initDistTable(to, from, level->getWidth(), level->getHeight())), 
-    target(to), 
-    directions(Vec2::directions8()) {
+    bool avoidEnemies) : target(to), directions(Vec2::directions8()), bounds(level->getBounds()) {
   auto entryFun = [=](Vec2 pos) { 
       if (level->getSquare(pos)->canEnter(creature) || creature->getPosition() == pos) 
         return 1.0;
@@ -35,6 +32,8 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
   if (mult == 0)
     init(entryFun, lengthFun, target, from);
   else {
+    bounds = bounds.intersection(Rectangle(min(to.x, from.x) - margin, min(to.y, from.y) - margin,
+        max(to.x, from.x) + margin, max(to.y, from.y) + margin));
     init(entryFun, lengthFun, target, Nothing(), revShortestLimit);
     setDistance(target, infinity);
     reverse(entryFun, lengthFun, mult, from, revShortestLimit);
@@ -42,8 +41,7 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
 }
 
 ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun,
-    vector<Vec2> dir, Vec2 to, Optional<Vec2> from, double mult)
-    : distance(a.getPX(), a.getPY(), a.getW(), a.getH(), infinity), target(to), directions(dir) {
+    vector<Vec2> dir, Vec2 to, Vec2 from, double mult) : target(to), directions(dir), bounds(a) {
   if (mult == 0)
     init(entryFun, lengthFun, target, from);
   else {
@@ -54,19 +52,23 @@ ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, functio
 }
 
 double ShortestPath::getDistance(Vec2 v) const {
-  return distance[v];
+  return dirty[v] < counter ? infinity : ddist[v];
 }
 void ShortestPath::setDistance(Vec2 v, double d) {
-  distance[v] = d;
+  ddist[v] = d;
+  dirty[v] = counter;
 }
 
-void ShortestPath::init(function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun, Vec2 target, Optional<Vec2> from, Optional<int> limit) {
+void ShortestPath::init(function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun, Vec2 target,
+    Optional<Vec2> from, Optional<int> limit) {
   reversed = false;
+  ++counter;
   function<bool(Vec2, Vec2)> comparator;
   if (from)
-    comparator = [=](Vec2 pos1, Vec2 pos2) { return this->getDistance(pos1) + lengthFun(*from - pos1) > this->getDistance(pos2) + lengthFun(*from - pos2); };
+    comparator = [=](Vec2 pos1, Vec2 pos2) {
+      return this->getDistance(pos1) + lengthFun(*from - pos1) > this->getDistance(pos2) + lengthFun(*from - pos2); };
   else
-    comparator = [this](Vec2 pos1, Vec2 pos2) { return this->getDistance(pos1) > this->getDistance(pos2); }; 
+    comparator = [this](Vec2 pos1, Vec2 pos2) { return this->getDistance(pos1) > this->getDistance(pos2); };
   priority_queue<Vec2, vector<Vec2>, decltype(comparator)> q(comparator) ;
   setDistance(target, 0);
   q.push(target);
@@ -76,13 +78,14 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<int(Vec2)> len
     Vec2 pos = q.top();
    // Debug() << "Popping " << pos << " " << distance[pos]  << " " << (from ? (*from - pos).length4() : 0);
     if (from == pos || (limit && getDistance(pos) >= *limit)) {
-      Debug() << "Shortest path from " << (from ? *from : Vec2(-1,-1)) << " to " << target << " " << numPopped << " visited";
+      Debug() << "Shortest path from " << (from ? *from : Vec2(-1, -1)) << " to " << target << " " << numPopped << " visited";
+      constructPath(pos);
       return;
     }
     q.pop();
-    for (Vec2 dir : randomPermutation(directions)) {
+    for (Vec2 dir : directions) {
       Vec2 next = pos + dir;
-      if (next.inRectangle(distance.getBounds())) {
+      if (next.inRectangle(bounds)) {
         double cdist = getDistance(pos);
         double ndist = getDistance(next);
         if (cdist < ndist) {
@@ -96,20 +99,17 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<int(Vec2)> len
       }
     }
   }
-//  if (from)
   Debug() << "Shortest path exhausted, " << numPopped << " visited";
 }
 
-void ShortestPath::reverse(function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun, double mult, Optional<Vec2> from, int limit) {
+void ShortestPath::reverse(function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun, double mult, Vec2 from,
+    int limit) {
   reversed = true;
-  function<bool(Vec2, Vec2)> comparator;
-  if (from)
-    comparator = [=](Vec2 pos1, Vec2 pos2) { return this->getDistance(pos1) + lengthFun(*from - pos1) > this->getDistance(pos2) + lengthFun(*from - pos2); };
-  else
-    comparator = [this](Vec2 pos1, Vec2 pos2) { return this->getDistance(pos1) > this->getDistance(pos2); }; 
+  function<bool(Vec2, Vec2)> comparator = [=](Vec2 pos1, Vec2 pos2) {
+    return this->getDistance(pos1) + lengthFun(from - pos1) > this->getDistance(pos2) + lengthFun(from - pos2); };
 
   priority_queue<Vec2, vector<Vec2>, decltype(comparator)> q(comparator) ;
-  for (Vec2 v : distance.getBounds()) {
+  for (Vec2 v : bounds) {
     double dist = getDistance(v);
     if (dist <= limit) {
       setDistance(v, mult * dist);
@@ -122,11 +122,12 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<int(Vec2)> 
     Vec2 pos = q.top();
     if (from == pos) {
       Debug() << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
+      constructPath(pos, true);
       return;
     }
     q.pop();
     for (Vec2 dir : directions)
-      if ((pos + dir).inRectangle(distance.getBounds())) {
+      if ((pos + dir).inRectangle(bounds)) {
         if (getDistance(pos + dir) > getDistance(pos) + entryFun(pos + dir) && getDistance(pos + dir) < 0) {
           setDistance(pos + dir, getDistance(pos) + entryFun(pos + dir));
           q.push(pos + dir);
@@ -136,35 +137,46 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<int(Vec2)> 
   Debug() << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
 }
 
+void ShortestPath::constructPath(Vec2 pos, bool reversed) {
+  vector<Vec2> ret;
+  while (pos != target) {
+    Vec2 next;
+    double lowest = getDistance(pos);
+    CHECK(lowest < infinity);
+    for (Vec2 dir : directions) {
+      double dist;
+      if ((pos + dir).inRectangle(bounds) && (dist = getDistance(pos + dir)) < lowest) {
+        lowest = dist;
+        next = pos + dir;
+      }
+    }
+    if (lowest >= getDistance(pos)) {
+      if (reversed)
+        break;
+      else
+        Debug(FATAL) << "can't track path";
+    }
+    ret.push_back(pos);
+    pos = next;
+  }
+  if (!reversed)
+    ret.push_back(target);
+  path = vector<Vec2>(ret.rbegin(), ret.rend());
+}
+
 bool ShortestPath::isReversed() const {
   return reversed;
 }
 
 bool ShortestPath::isReachable(Vec2 pos) const {
-  if (!pos.inRectangle(distance.getBounds()))
-    return false;
-  if (getDistance(pos) == infinity)
-    return false;
-  for (Vec2 dir : directions)
-    if ((pos + dir).inRectangle(distance.getBounds()) && getDistance(pos + dir) < getDistance(pos))
-      return true;
-  return false;
+  return path.size() >= 2 && (path.back() == pos || path[path.size() - 2] == pos);
 }
 
-Vec2 ShortestPath::getNextMove(Vec2 pos) const {
+Vec2 ShortestPath::getNextMove(Vec2 pos) {
   CHECK(isReachable(pos));
-  CHECK(pos != target) << "Already arrived at target.";
-  double lowest = getDistance(pos);
-  Vec2 next;
-  for (Vec2 dir : directions) {
-    double dist;
-    if ((pos + dir).inRectangle(distance.getBounds()) && (dist = getDistance(pos + dir)) < lowest) {
-      lowest = dist;
-      next = pos + dir;
-    }
-  }
-  CHECK(lowest < getDistance(pos)) << "Unable to continue shortest path.";
-  return next;
+  if (pos != path.back())
+    path.pop_back();
+  return path[path.size() - 2];
 }
 
 Vec2 ShortestPath::getTarget() const {

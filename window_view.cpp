@@ -1239,11 +1239,11 @@ void WindowView::drawBandInfo() {
     drawViewObject(info.numGold[i].viewObject, 288 + resourceSpacing * i, line1, true);
   }
   int marketX = resourceX + resourceSpacing * info.numGold.size();
-  drawText(white, marketX, line1, "market");
+  drawText(white, marketX, line1, "black market");
   marketButton = Rectangle(marketX, line1, marketX + getTextLength("market"), line1 + legendLineHeight);
-  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f728, L'i', L'?'};
+  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f728, L'?'};
   optionButtons.clear();
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 4; ++i) {
     int w = 45;
     int line = topBarHeight;
     int h = 45;
@@ -1270,7 +1270,6 @@ void WindowView::drawBandInfo() {
     case CollectiveOption::BUILDINGS: drawBuildings(info); break;
     case CollectiveOption::KEY_MAPPING: drawKeeperHelp(); break;
     case CollectiveOption::TECHNOLOGY: drawTechnology(info); break;
-    case CollectiveOption::LEGEND: break;
   }
 }
 
@@ -1568,7 +1567,7 @@ void WindowView::drawMap() {
     drawImage(mapLayout->getBounds().getPX(), mapLayout->getBounds().getPY(), mapBuffer);
   int rightPos = screenWidth -rightBarText;
   drawFilledRectangle(screenWidth - rightBarWidth, 0, screenWidth, screenHeight, translucentBlack);
-  if (gameInfo.infoType == GameInfo::InfoType::PLAYER || collectiveOption == CollectiveOption::LEGEND) {
+  if (gameInfo.infoType == GameInfo::InfoType::PLAYER) {
     int cnt = 0;
     if (legendOption == LegendOption::OBJECTS) {
       for (auto elem : objIndex) {

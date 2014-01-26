@@ -128,6 +128,7 @@ class Rectangle {
   Vec2 getBottomLeft() const;
 
   bool intersects(const Rectangle& other) const;
+  Rectangle intersection(const Rectangle& other) const;
 
   Rectangle minusMargin(int margin) const;
 

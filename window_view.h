@@ -89,7 +89,6 @@ class WindowView: public View {
     BUILDINGS,
     MINIONS,
     TECHNOLOGY,
-    LEGEND,
     KEY_MAPPING,
   };
   

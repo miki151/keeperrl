@@ -82,7 +82,7 @@ void testShortestPath() {
   ShortestPath path(Rectangle(5, 5),
       [table](Vec2 pos) { return table[pos.y][pos.x];},
       [] (Vec2 v) { return v.length4(); },
-      Vec2::directions4(), Vec2(4, 0));
+      Vec2::directions4(), Vec2(4, 0), Vec2(1, 0));
   vector<Vec2> res {Vec2(1, 0)};
   while (res.back() != Vec2(4, 0)) {
     res.push_back(path.getNextMove(res.back()));
@@ -104,7 +104,7 @@ void testShortestPath2() {
   ShortestPath path(Rectangle(5, 5),
       [table](Vec2 pos) { return table[pos.y][pos.x];},
       [] (Vec2 v) { return v.length4(); },
-      Vec2::directions4(), Vec2(4, 0));
+      Vec2::directions4(), Vec2(4, 0), Vec2(1, 0));
   CHECK(!path.isReachable(Vec2(1, 0)));
 }
 
@@ -113,7 +113,7 @@ void testShortestPathReverse() {
   ShortestPath path(Rectangle(11, 3),
       [table](Vec2 pos) { return table[pos.y][pos.x];},
       [] (Vec2 v) { return v.length4(); },
-      Vec2::directions4(), Vec2(1, 1), Nothing(), -1.3);
+      Vec2::directions4(), Vec2(1, 1), Vec2(1, 0), -1.3);
 /*  vector<Vec2> res {Vec2(1, 0)};
   while (res.back() != Vec2(4, 0)) {
     res.push_back(path.getNextMove(res.back()));
