@@ -5,6 +5,7 @@
 #include "task.h"
 #include "player.h"
 #include "message_buffer.h"
+#include "model.h"
 
 enum Warning { NO_MANA, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_TRAINING };
 static const int numWarnings = 7;
@@ -1257,8 +1258,9 @@ void Collective::onTriggerEvent(const Level* l, Vec2 pos) {
 
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim == heart) {
-    messageBuffer.addMessage(MessageBuffer::important("Your dungeon heart was destroyed. "
-          "You've been playing KeeperRL alpha."));
+    Model::gameOver(heart, "innocent beings", points);
+ /*   messageBuffer.addMessage(MessageBuffer::important("Your dungeon heart was destroyed. "
+          "You've been playing KeeperRL alpha."));*/
     exit(0);
   }
   if (contains(creatures, victim)) {
@@ -1288,6 +1290,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   } else if (victim->getTribe() != Tribe::player) {
     double incMana = victim->getDifficultyPoints();
     mana += incMana;
+    points += victim->getDifficultyPoints();
     Debug() << "Mana increase " << incMana << " from " << victim->getName();
     heart->increaseExpLevel(victim->getDifficultyPoints() / 300);
   }

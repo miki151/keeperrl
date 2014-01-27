@@ -200,6 +200,7 @@ class Collective : public CreatureView, public EventListener {
   map<Vec2, GuardPostInfo> guardPosts;
   Optional<Vec2> throneMarked;
   int mana;
+  int points = 0;
 };
 
 #endif

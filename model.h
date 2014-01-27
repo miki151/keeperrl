@@ -43,6 +43,8 @@ class Model {
 
   bool isTurnBased();
 
+  static void gameOver(const Creature* player, const string& enemiesString, int points);
+
   private:
   Model(View* view);
   Level* buildLevel(Level::Builder&& b, LevelMaker*, bool surface = false);

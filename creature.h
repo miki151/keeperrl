@@ -86,6 +86,8 @@ class Creature : private CreatureAttributes, public CreatureView {
   vector<const Creature*> getVisibleCreatures() const override;
 
   bool isDead() const;
+  const Creature* getLastAttacker() const;
+  vector<const Creature*> getKills() const;
   bool isHumanoid() const;
   bool isAnimal() const;
   bool isStationary() const;
@@ -295,6 +297,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   PController controller;
   stack<PController> controllerStack;
   vector<CreatureVision*> creatureVision;
+  mutable vector<const Creature*> kills;
 };
 
 

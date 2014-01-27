@@ -33,6 +33,7 @@ class Player : public Controller, public EventListener {
   virtual const Level* getListenerLevel() const override;
   virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) override;
   virtual void onExplosionEvent(const Level* level, Vec2 pos) override;
+  virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
 
 
   private:
@@ -68,6 +69,7 @@ class Player : public Controller, public EventListener {
   vector<const Creature*> specialCreatures;
   bool displayGreeting;
   map<const Level*, MapMemory>* levelMemory;
+  int points = 0;
 };
 
 #endif

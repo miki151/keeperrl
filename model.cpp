@@ -5,6 +5,7 @@
 #include "quest.h"
 #include "player.h"
 #include "village_control.h"
+#include "message_buffer.h"
 
 using namespace std;
 
@@ -307,4 +308,16 @@ void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
     current->setPlayer(nullptr);
     target->setPlayer(c);
   }
+}
+  
+void Model::gameOver(const Creature* creature, const string& enemiesString, int points) {
+  string text = "And so dies ";
+  if (auto firstName = creature->getFirstName())
+    text += *firstName + " ";
+  text += "the " + creature->getName();
+  if (const Creature* c = creature->getLastAttacker())
+    text += ", killed by a " + c->getName();
+  text += ". He killed " + convertToString(creature->getKills().size()) 
+      + " " + enemiesString + " and scored " + convertToString(points) + " points.";
+  messageBuffer.addMessage(MessageBuffer::important(text));
 }

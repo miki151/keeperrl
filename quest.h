@@ -17,7 +17,6 @@ class Quest {
   void setLocation(const Location*);
   const Location* getLocation() const;
 
-  static void initialize();
   static Quest* dragon;
   static Quest* castleCellar;
   static Quest* bandits;

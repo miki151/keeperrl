@@ -6,6 +6,7 @@
 #include "message_buffer.h"
 #include "ranged_weapon.h"
 #include "name_generator.h"
+#include "model.h"
 
 using namespace std;
 
@@ -40,6 +41,11 @@ void Player::onExplosionEvent(const Level* level, Vec2 pos) {
     view->animation(pos, AnimationId::EXPLOSION);
   else
     creature->privateMessage("BOOM!");
+}
+
+void Player::onKillEvent(const Creature* victim, const Creature* killer) {
+  if (killer == creature)
+    points += victim->getDifficultyPoints();
 }
 
 ControllerFactory Player::getFactory(View* f, map<const Level*, MapMemory>* levelMemory) {
@@ -724,7 +730,10 @@ void Player::you(MsgType type, const string& param) const {
 
 
 void Player::onKilled(const Creature* attacker) {
-  messageBuffer.showHistory();
+  if (!creature->canPopController())
+    Model::gameOver(creature, "monsters", points);
+  if (view->yesOrNoPrompt("Would you like to see the last messages?"))
+    messageBuffer.showHistory();
   if (!creature->canPopController()) {
     exit(0);
   } else

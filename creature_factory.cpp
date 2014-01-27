@@ -889,7 +889,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.size = CreatureSize::LARGE;
                                 c.strength = 14;
                                 c.dexterity = 19;
-                                c.barehandedDamage = 3;
+                                c.barehandedDamage = 5;
                                 c.barehandedAttack = AttackType::HIT;
                                 c.humanoid = false;
                                 c.noBody = true;
@@ -1018,6 +1018,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.strength = 17;
                                 c.dexterity = 13;
                                 c.barehandedDamage = 13;
+                                c.barehandedAttack = AttackType::PUNCH;
                                 c.humanoid = false;
                                 c.noSleep = true;
                                 c.notLiving = true;
@@ -1392,7 +1393,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.size = CreatureSize::SMALL;
                                 c.strength = 9;
                                 c.dexterity = 13;
-                                c.barehandedDamage = 12;
+                                c.barehandedDamage = 10;
                                 c.attackEffect = EffectType::POISON;
                                 c.humanoid = false;
                                 c.weight = 0.3;
@@ -1405,7 +1406,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.size = CreatureSize::SMALL;
                                 c.strength = 9;
                                 c.dexterity = 13;
-                                c.barehandedDamage = 12;
+                                c.barehandedDamage = 10;
                                 c.attackEffect = EffectType::POISON;
                                 c.humanoid = false;
                                 c.weight = 0.3;

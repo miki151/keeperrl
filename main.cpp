@@ -40,7 +40,6 @@ int main(int argc, char* argv[]) {
     CHECK(input.is_open());
     view = View::createReplayView(input);
   }
-  Quest::initialize();
   Tribe::init();
   Item::identifyEverything();
   NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",

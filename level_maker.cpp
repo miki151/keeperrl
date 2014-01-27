@@ -1741,58 +1741,44 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   return new BorderGuard(queue);
 }
 
-LevelMaker* LevelMaker::goblinTownLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down) {
+static LevelMaker* townLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down,
+    SquareType furniture, int numCavern, int maxCavernSize, int minRooms, int maxRooms, ItemFactory shopFactory,
+    Tribe* shopTribe) {
   MakerQueue* queue = new MakerQueue();
   map<SquareType, pair<int, int> > featureCount {
       { SquareType::CHEST, make_pair(4, 8) },
-      { SquareType::TORTURE_TABLE, make_pair(4, 8) }};
+      { furniture, make_pair(4, 8) }};
   queue->addMaker(new Empty(SquareType::ROCK_WALL));
   LevelMaker* cavern = new UniformBlob(SquareType::PATH);
   vector<LevelMaker*> vCavern;
   vector<pair<int, int>> sizes;
-  for (int i : Range(40)) {
-    sizes.push_back(make_pair(Random.getRandom(5, 10), Random.getRandom(5, 10)));
+  for (int i : Range(numCavern)) {
+    sizes.push_back(make_pair(Random.getRandom(5, maxCavernSize), Random.getRandom(5, maxCavernSize)));
     vCavern.push_back(cavern);
   }
   queue->addMaker(new RandomLocations(vCavern, sizes, new AlwaysTrue(), false));
-  queue->addMaker(new RoomMaker(5, 8, 4, 7, SquareType::ROCK_WALL, Nothing(),
-        new ShopMaker(ItemFactory::goblinShop(), Tribe::goblin, Random.getRandom(8, 16)), false));
+  queue->addMaker(new RoomMaker(minRooms, maxRooms, 4, 7, SquareType::ROCK_WALL, Nothing(),
+        new ShopMaker(shopFactory, shopTribe, Random.getRandom(8, 16)), false));
   queue->addMaker(new Connector({1, 0, 0}));
+  SquarePredicate* featurePred = new AndPredicates(new AttribPredicate(SquareAttrib::EMPTY_ROOM),
+      new TypePredicate(SquareType::FLOOR));
   for (StairKey key : down)
-    queue->addMaker(new Stairs(StairDirection::DOWN, key, new AttribPredicate(SquareAttrib::EMPTY_ROOM)));
+    queue->addMaker(new Stairs(StairDirection::DOWN, key, featurePred));
   for (StairKey key : up)
-    queue->addMaker(new Stairs(StairDirection::UP, key, new AttribPredicate(SquareAttrib::EMPTY_ROOM)));
-  queue->addMaker(new DungeonFeatures(new AndPredicates(new AttribPredicate(SquareAttrib::EMPTY_ROOM),
-          new TypePredicate(SquareType::FLOOR)), featureCount));
+    queue->addMaker(new Stairs(StairDirection::UP, key, featurePred));
+  queue->addMaker(new DungeonFeatures(featurePred, featureCount));
   queue->addMaker(new Creatures(cfactory, 10, 15, MonsterAIFactory::monster()));
   return new BorderGuard(queue, SquareType::BLACK_WALL);
 }
 
+
+LevelMaker* LevelMaker::goblinTownLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down) {
+  return townLevel(cfactory, up, down, SquareType::TORTURE_TABLE, 40, 10, 5, 8, ItemFactory::goblinShop(),
+      Tribe::goblin);
+}
+
 LevelMaker* LevelMaker::mineTownLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down) {
-  MakerQueue* queue = new MakerQueue();
-  map<SquareType, pair<int, int> > featureCount {
-      { SquareType::CHEST, make_pair(4, 8) },
-      { SquareType::BED, make_pair(4, 8) }};
-  queue->addMaker(new Empty(SquareType::ROCK_WALL));
-  LevelMaker* cavern = new UniformBlob(SquareType::PATH);
-  vector<LevelMaker*> vCavern;
-  vector<pair<int, int>> sizes;
-  for (int i : Range(20)) {
-    sizes.push_back(make_pair(Random.getRandom(5, 25), Random.getRandom(5, 25)));
-    vCavern.push_back(cavern);
-  }
-  queue->addMaker(new RandomLocations(vCavern, sizes, new AlwaysTrue(), false));
-  queue->addMaker(new RoomMaker(6, 12, 4, 7, SquareType::ROCK_WALL, Nothing(),
-        new ShopMaker(ItemFactory::dwarfShop(), Tribe::dwarven, Random.getRandom(8, 16)), false));
-  queue->addMaker(new Connector({1, 0, 0}));
-  for (StairKey key : down)
-    queue->addMaker(new Stairs(StairDirection::DOWN, key, new AttribPredicate(SquareAttrib::EMPTY_ROOM)));
-  for (StairKey key : up)
-    queue->addMaker(new Stairs(StairDirection::UP, key, new AttribPredicate(SquareAttrib::EMPTY_ROOM)));
-  queue->addMaker(new DungeonFeatures(new AndPredicates(new AttribPredicate(SquareAttrib::EMPTY_ROOM),
-          new TypePredicate(SquareType::FLOOR)), featureCount));
-  queue->addMaker(new Creatures(cfactory, 10, 15, MonsterAIFactory::monster()));
-  return new BorderGuard(queue, SquareType::BLACK_WALL);
+  return townLevel(cfactory, up, down, SquareType::BED, 20, 25, 6, 12, ItemFactory::dwarfShop(), Tribe::dwarven);
 }
 
 LevelMaker* LevelMaker::pyramidLevel(Optional<CreatureFactory> cfactory, vector<StairKey> up, vector<StairKey> down) {

@@ -100,6 +100,14 @@ bool Creature::isDead() const {
   return dead;
 }
 
+const Creature* Creature::getLastAttacker() const {
+  return lastAttacker;
+}
+
+vector<const Creature*> Creature::getKills() const {
+  return kills;
+}
+
 void Creature::spendTime(double t) {
   time += 100.0 * t / (double) getAttr(AttrType::SPEED);
   hidden = false;
@@ -1353,6 +1361,7 @@ void Creature::dropCorpse() {
 void Creature::die(const Creature* attacker, bool dropInventory) {
   Debug() << getTheName() << " dies.";
   controller->onKilled(attacker);
+  attacker->kills.push_back(this);
   if (dropInventory)
     for (PItem& item : equipment.removeAllItems()) {
       level->getSquare(position)->dropItem(std::move(item));
