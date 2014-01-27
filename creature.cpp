@@ -819,7 +819,7 @@ void Creature::tick(double realTime) {
   double delta = realTime - lastTick;
   lastTick = realTime;
   updateViewObject();
-  if (undead && numGoodArms() + numGoodLegs() + numGoodHeads() <= 2) {
+  if (isNotLiving() && numGoodArms() + numGoodLegs() + numGoodHeads() <= 2) {
     you(MsgType::FALL_APART, "");
     die(lastAttacker);
     return;
@@ -1032,7 +1032,7 @@ bool Creature::takeDamage(const Attack& attack) {
     lastAttacker = attack.getAttacker();
     double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
     dam *= damageMultiplier;
-    if (!undead)
+    if (!isNotLiving())
       bleed(dam);
     if (!noBody) {
       if (attack.getType() != AttackType::SPELL) {
@@ -1069,7 +1069,7 @@ bool Creature::takeDamage(const Attack& attack) {
             if (dam >= 0.8 && heads > injuredHeads) {
               youHit(BodyPart::HEAD, attack.getType()); 
               injureHead(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
-              if (!undead) {
+              if (!isNotLiving()) {
                 you(MsgType::DIE, "");
                 die(attack.getAttacker());
               }
@@ -1078,7 +1078,7 @@ bool Creature::takeDamage(const Attack& attack) {
           case BodyPart::TORSO:
             if (dam >= 1.5) {
               youHit(BodyPart::TORSO, attack.getType());
-              if (!undead)
+              if (!isNotLiving())
                 you(MsgType::DIE, "");
               die(attack.getAttacker());
               return true;
@@ -1137,8 +1137,10 @@ string sizeStr(CreatureSize s) {
   return 0;
 }
 
-string adjectives(CreatureSize s, bool undead, bool noBody) {
+static string adjectives(CreatureSize s, bool undead, bool notLiving, bool noBody) {
   vector<string> ret {sizeStr(s)};
+  if (notLiving)
+    ret.push_back("non-living");
   if (undead)
     ret.push_back("undead");
   if (noBody)
@@ -1203,7 +1205,7 @@ string Creature::getDescription() const {
     }
     attack = " It has a " + attack + " attack.";
   }
-  return getTheName() + " is a " + adjectives(*size, undead, noBody) +
+  return getTheName() + " is a " + adjectives(*size, undead, notLiving, noBody) +
       (isHumanoid() ? " humanoid creature" : " beast") +
       (!isHumanoid() ? limbsStr(arms, legs, wings) : (wings ? " with wings" : "")) + ". " +
      "It is " + attrStr(*strength > 16, *dexterity > 16, *speed > 100) + "." + weapon + attack;
@@ -1283,7 +1285,7 @@ void Creature::setOnFire(double amount) {
 }
 
 void Creature::poisonWithGas(double amount) {
-  if (breathing && !undead) {
+  if (breathing && !isNotLiving()) {
     you(MsgType::ARE, "poisoned by the gas");
     bleed(amount / double(getAttr(AttrType::STRENGTH)));
   }
@@ -1597,6 +1599,10 @@ bool Creature::isUndead() const {
   return undead;
 }
 
+bool Creature::isNotLiving() const {
+  return undead || notLiving;
+}
+
 bool Creature::canSwim() const {
   return contains(skills, Skill::swimming);
 }
@@ -1670,7 +1676,8 @@ Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool avoidEnemies) {
 Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool away, bool avoidEnemies) {
   Debug() << "" << getPosition() << (away ? "Moving away from" : " Moving toward ") << pos;
   bool newPath = false;
-  if (!shortestPath || shortestPath->getTarget() != pos || shortestPath->isReversed() != away) {
+  bool targetChanged = shortestPath && shortestPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10;
+  if (!shortestPath || targetChanged || shortestPath->isReversed() != away) {
     newPath = true;
     if (!away)
       shortestPath = ShortestPath(getLevel(), this, pos, getPosition());

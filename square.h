@@ -17,11 +17,11 @@ class Level;
 class Square {
   public:
   /** Constructs a square objects.
-    * \param obstructing true if the square doesn't obstruct view
+    * \param noObstruct true if the square doesn't obstruct view
     * \param canHide true if the player can hide at this square
     * \param strength square resistance to demolition
     */
-  Square(const ViewObject& vo, const string& name, bool obstructing, bool canHide = false,
+  Square(const ViewObject& vo, const string& name, bool noObstruct, bool canHide = false,
       int strength = 0, double flamability = 0, map<SquareType, int> constructions = {}, bool ticking = false);
 
   /** Returns the square name. */

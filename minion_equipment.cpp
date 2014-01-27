@@ -38,7 +38,7 @@ bool MinionEquipment::needs(const Creature* c, const Item* it) {
   EquipmentType type = *getEquipmentType(it);
   return (type == ARROW && c->getEquipment().getItems(Item::typePredicate(ItemType::AMMO)).size() < 20 
           && c->hasSkill(Skill::archery)) ||
-      ((c->canEquip(it) || (type == HEALING && !c->isUndead() &&
+      ((c->canEquip(it) || (type == HEALING && !c->isNotLiving() &&
           c->getEquipment().getItems(Item::effectPredicate(EffectType::HEAL)).empty()) ||
       (type == MUSHROOM && c->getEquipment().getItems(mushroomPredicate).empty())));
 }

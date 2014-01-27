@@ -1906,7 +1906,6 @@ void WindowView::unzoom(bool pixel, bool tpp) {
     mapLayout = currentTileLayout.normalLayout;
   else
     mapLayout = currentTileLayout.unzoomLayout;
-  refreshScreen();
 }
 
 void WindowView::switchTiles() {

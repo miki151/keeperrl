@@ -46,6 +46,7 @@ class CreatureAttributes {
   bool healer = false;
   bool flyer = false;
   bool undead = false;
+  bool notLiving = false;
   bool walker = true;
   bool isFood = false;
   bool stationary = false;

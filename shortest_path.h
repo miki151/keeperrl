@@ -30,9 +30,9 @@ class ShortestPath {
   static const double infinity;
 
   private:
-  void init(function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun, Vec2 target, Optional<Vec2> from,
+  void init(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, Vec2 target, Optional<Vec2> from,
       Optional<int> limit = Nothing());
-  void reverse(function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun, double mult, Vec2 from, int limit);
+  void reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, double mult, Vec2 from, int limit);
   void setDistance(Vec2, double);
   double getDistance(Vec2 pos) const;
   void constructPath(Vec2 start, bool reversed = false);

@@ -1383,7 +1383,7 @@ static LevelMaker* underground(bool monsters) {
             sizes.emplace_back(size, size);
           }
           queue->addMaker(new RandomLocations(
-          vector<LevelMaker*>(numLakes, new Lake()),
+          vector<LevelMaker*>(numLakes, new UniformBlob(lakeType, Nothing(), SquareAttrib::LAKE)),
           sizes, new AlwaysTrue(), false));
           if (monsters) {
             Deity* deity = Deity::getDeity(

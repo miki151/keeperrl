@@ -1020,7 +1020,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 13;
                                 c.humanoid = false;
                                 c.noSleep = true;
-                                c.breathing = false;
+                                c.notLiving = true;
                                 c.weight = 100;
                                 c.name = "clay golem";), tribe, factory);
     case CreatureId::STONE_GOLEM: return get(ViewId::STONE_GOLEM, CATTR(
@@ -1031,7 +1031,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 15;
                                 c.humanoid = false;
                                 c.noSleep = true;
-                                c.breathing = false;
+                                c.notLiving = true;
                                 c.weight = 120;
                                 c.name = "stone golem";), tribe, factory);
     case CreatureId::IRON_GOLEM: return get(ViewId::IRON_GOLEM, CATTR(
@@ -1042,7 +1042,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 17;
                                 c.humanoid = false;
                                 c.noSleep = true;
-                                c.breathing = false;
+                                c.notLiving = true;
                                 c.weight = 120;
                                 c.name = "iron golem";), tribe, factory);
     case CreatureId::ZOMBIE: return get(ViewId::ZOMBIE, CATTR(

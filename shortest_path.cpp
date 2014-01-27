@@ -29,10 +29,11 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
               || !level->getSquare(pos)->getCreature()->isEnemy(creature)))
         return 5.0;
       return infinity;};
-  auto lengthFun = [](Vec2 v) { return v.length8(); };
-  if (mult == 0)
-    init(entryFun, lengthFun, target, from);
-  else {
+  if (mult == 0) {
+    // Use a suboptimal, but faster pathfinding.
+    init(entryFun, [](Vec2 v)->double { return 2 * v.lengthD(); }, target, from);
+  } else {
+    auto lengthFun = [](Vec2 v)->double { return v.length8(); };
     bounds = bounds.intersection(Rectangle(min(to.x, from.x) - margin, min(to.y, from.y) - margin,
         max(to.x, from.x) + margin, max(to.y, from.y) + margin));
     init(entryFun, lengthFun, target, Nothing(), revShortestLimit);
@@ -61,7 +62,7 @@ void ShortestPath::setDistance(Vec2 v, double d) {
   dirty[v] = counter;
 }
 
-void ShortestPath::init(function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun, Vec2 target,
+void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, Vec2 target,
     Optional<Vec2> from, Optional<int> limit) {
   reversed = false;
   ++counter;
@@ -80,7 +81,7 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<int(Vec2)> len
     Vec2 pos = q.top();
    // Debug() << "Popping " << pos << " " << distance[pos]  << " " << (from ? (*from - pos).length4() : 0);
     if (from == pos || (limit && getDistance(pos) >= *limit)) {
-      Debug() << "Shortest path from " << (from ? *from : Vec2(-1, -1)) << " to " << target << " " << numPopped << " visited";
+      Debug() << "Shortest path from " << (from ? *from : Vec2(-1, -1)) << " to " << target << " " << numPopped << " visited distance " << getDistance(pos);
       constructPath(pos);
       return;
     }
@@ -104,7 +105,7 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<int(Vec2)> len
   Debug() << "Shortest path exhausted, " << numPopped << " visited";
 }
 
-void ShortestPath::reverse(function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun, double mult, Vec2 from,
+void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, double mult, Vec2 from,
     int limit) {
   reversed = true;
   function<bool(Vec2, Vec2)> comparator = [=](Vec2 pos1, Vec2 pos2) {
