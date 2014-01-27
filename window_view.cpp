@@ -261,9 +261,9 @@ Tile getSprite(ViewId id) {
     case ViewId::ARCHER: return Tile(2, 0);
     case ViewId::PESEANT: return Tile(1, 2);
     case ViewId::CHILD: return Tile(2, 2);
-    case ViewId::CLAY_GOLEM: return Tile(12, 10);
+    case ViewId::CLAY_GOLEM: return Tile(12, 11);
     case ViewId::STONE_GOLEM: return Tile(10, 10);
-    case ViewId::IRON_GOLEM: return Tile(11, 10);
+    case ViewId::IRON_GOLEM: return Tile(12, 10);
     case ViewId::ZOMBIE: return Tile(0, 16);
     case ViewId::SKELETON: return Tile(2, 16);
     case ViewId::VAMPIRE: return Tile(12, 16);
