@@ -18,6 +18,7 @@ class Collective;
   */
 class Model {
   public:
+  Model(View* view);
 
   /** Generates levels and all game entities for a single player game. */
   static Model* heroModel(View* view, const string& heroName);
@@ -43,10 +44,11 @@ class Model {
 
   bool isTurnBased();
 
-  static void gameOver(const Creature* player, const string& enemiesString, int points);
+  void gameOver(const Creature* player, const string& enemiesString, int points);
+  void conquered(const string& title, const string& land, vector<const Creature*> kills, int points);
+  void showHighscore(bool highlightLast = false);
 
   private:
-  Model(View* view);
   Level* buildLevel(Level::Builder&& b, LevelMaker*, bool surface = false);
   void addLink(StairDirection, StairKey, Level*, Level*);
   Level* prepareTopLevel(vector<SettlementInfo> settlements);

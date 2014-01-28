@@ -15,17 +15,17 @@ class VillageControl : public EventListener {
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
 
-  static VillageControl* humanVillage(const Collective* villain, const Location* villageLocation, 
+  static VillageControl* humanVillage(Collective* villain, const Location* villageLocation, 
       StairDirection dir, StairKey key);
-  static VillageControl* dwarfVillage(const Collective* villain, const Level*, 
+  static VillageControl* dwarfVillage(Collective* villain, const Level*, 
       StairDirection dir, StairKey key);
 
   protected:
-  VillageControl(const Collective* villain, const Level*, StairDirection, StairKey, string name);
+  VillageControl(Collective* villain, const Level*, StairDirection, StairKey, string name);
   map<const Creature*, int> attackTimes;
   int lastAttackTime = -1;
   unordered_set<int> messages;
-  const Collective* villain;
+  Collective* villain;
   const Level* level;
   StairDirection direction;
   StairKey stairKey;

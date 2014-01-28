@@ -49,21 +49,28 @@ int main(int argc, char* argv[]) {
   messageBuffer.initialize(view);
   string heroName = NameGenerator::firstNames.getNext();
   view->initialize();
-  auto choice = view->chooseFromList("Welcome to KeeperRL.", { "Keeper mode", "Adventure mode"});
-  if (!choice)
-    exit(0);
-  dwarf = (choice == 1);
-  Model* model;
-  thread t = !dwarf ? (thread([&] { model = Model::collectiveModel(view); modelReady = true; })) :
-    (thread([&] { model = Model::heroModel(view, heroName); modelReady = true; }));
-  view->displaySplash(modelReady);
-  int var = 0;
-  view->setTimeMilli(0);
   while (1) {
-    if (model->isTurnBased())
-      model->update(var++);
-    else
-      model->update(double(view->getTimeMilli()) / 300);
+    auto choice = view->chooseFromList("Welcome to KeeperRL.", { "Keeper mode", "Adventure mode", "Highscores"});
+    if (!choice)
+      exit(0);
+    if (choice == 2) {
+      Model* m = new Model(view);
+      m->showHighscore();
+      continue;
+    }
+    dwarf = (choice == 1);
+    Model* model;
+    thread t = !dwarf ? (thread([&] { model = Model::collectiveModel(view); modelReady = true; })) :
+      (thread([&] { model = Model::heroModel(view, heroName); modelReady = true; }));
+    view->displaySplash(modelReady);
+    int var = 0;
+    view->setTimeMilli(0);
+    while (1) {
+      if (model->isTurnBased())
+        model->update(var++);
+      else
+        model->update(double(view->getTimeMilli()) / 300);
+    }
   }
   return 0;
 }

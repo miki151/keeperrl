@@ -79,8 +79,8 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   };
 }
 
-Collective::Collective(CreatureFactory factory, CreatureFactory undead) 
-    : minionFactory(factory), undeadFactory(undead), mana(100) {
+Collective::Collective(Model* m, CreatureFactory factory) 
+    : minionFactory(factory), mana(100), model(m) {
   EventListener::addListener(this);
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
@@ -656,7 +656,7 @@ void Collective::possess(const Creature* cr, View* view) {
   if (c->isSleeping())
     c->wakeUp();
   freeFromGuardPost(c);
-  c->pushController(new Player(c, view, false, &memory));
+  c->pushController(new Player(c, view, model, false, &memory));
   possessed = c;
   c->getLevel()->setPlayer(c);
 }
@@ -1256,9 +1256,13 @@ void Collective::onTriggerEvent(const Level* l, Vec2 pos) {
     traps.at(pos).armed = false;
 }
 
+void Collective::onConqueredLand(const string& name) {
+  model->conquered(*heart->getFirstName() + " the keeper", name, kills, points);
+}
+
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim == heart) {
-    Model::gameOver(heart, "innocent beings", points);
+    model->gameOver(heart, "innocent beings", points);
  /*   messageBuffer.addMessage(MessageBuffer::important("Your dungeon heart was destroyed. "
           "You've been playing KeeperRL alpha."));*/
     exit(0);
@@ -1290,6 +1294,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   } else if (victim->getTribe() != Tribe::player) {
     double incMana = victim->getDifficultyPoints();
     mana += incMana;
+    kills.push_back(victim);
     points += victim->getDifficultyPoints();
     Debug() << "Mana increase " << incMana << " from " << victim->getName();
     heart->increaseExpLevel(victim->getDifficultyPoints() / 300);

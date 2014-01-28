@@ -1361,7 +1361,8 @@ void Creature::dropCorpse() {
 void Creature::die(const Creature* attacker, bool dropInventory) {
   Debug() << getTheName() << " dies.";
   controller->onKilled(attacker);
-  attacker->kills.push_back(this);
+  if (attacker)
+    attacker->kills.push_back(this);
   if (dropInventory)
     for (PItem& item : equipment.removeAllItems()) {
       level->getSquare(position)->dropItem(std::move(item));

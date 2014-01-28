@@ -172,7 +172,7 @@ bool ShortestPath::isReversed() const {
 }
 
 bool ShortestPath::isReachable(Vec2 pos) const {
-  return path.size() >= 2 && (path.back() == pos || path[path.size() - 2] == pos);
+  return (path.size() >= 2 && path.back() == pos) || (path.size() >= 3 && path[path.size() - 2] == pos);
 }
 
 Vec2 ShortestPath::getNextMove(Vec2 pos) {

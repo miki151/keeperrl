@@ -193,10 +193,10 @@ Model* Model::heroModel(View* view, const string& heroName) {
           c.dexterity = 15;
           c.barehandedDamage = 5;
           c.humanoid = true;
-          c.name = "adventurer";
+          c.name = "Adventurer";
           c.firstName = heroName;
           c.skills.insert(Skill::archery);
-          c.skills.insert(Skill::twoHandedWeapon);), Player::getFactory(view, levelMemory))), {
+          c.skills.insert(Skill::twoHandedWeapon);), Player::getFactory(view, m, levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
@@ -225,7 +225,7 @@ Model* Model::collectiveModel(View* view) {
     settlements.push_back(
        {SettlementType::COTTAGE, CreatureFactory::humanVillagePeaceful(), new Location(), Tribe::human,{10, 10}, {}});
   Level* top = m->prepareTopLevel2(settlements);
-  m->collective = new Collective(CreatureFactory::collectiveMinions(), CreatureFactory::collectiveUndead());
+  m->collective = new Collective(m, CreatureFactory::collectiveMinions());
   m->collective->setLevel(top);
   Tribe::human->addEnemy(Tribe::player);
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::player,
@@ -310,14 +310,68 @@ void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
   }
 }
   
+void Model::conquered(const string& title, const string& land, vector<const Creature*> kills, int points) {
+  view->presentText("Victory", "You have conquered this land. You killed " + convertToString(kills.size()) +
+      " innocent beings and scored " + convertToString(points) + " points. Thank you for playing KeeperRL alpha.");
+  ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
+    << title << "," << "conquered the land of " + land + "," << points << std::endl;
+  showHighscore(true);
+}
+
 void Model::gameOver(const Creature* creature, const string& enemiesString, int points) {
   string text = "And so dies ";
+  string title;
   if (auto firstName = creature->getFirstName())
-    text += *firstName + " ";
-  text += "the " + creature->getName();
-  if (const Creature* c = creature->getLastAttacker())
-    text += ", killed by a " + c->getName();
+    title = *firstName + " ";
+  title += "the " + creature->getName();
+  text += title;
+  string killer;
+  if (const Creature* c = creature->getLastAttacker()) {
+    killer = c->getName();
+    text += ", killed by a " + killer;
+  }
   text += ". He killed " + convertToString(creature->getKills().size()) 
       + " " + enemiesString + " and scored " + convertToString(points) + " points.";
-  messageBuffer.addMessage(MessageBuffer::important(text));
+  view->presentText("Game over", text);
+  ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
+    << title << "," << "killed by a " + killer << "," << points << std::endl;
+  showHighscore(true);
+}
+
+void Model::showHighscore(bool highlightLast) {
+  struct Elem {
+    string name;
+    string killer;
+    int points;
+    bool highlight = false;
+  };
+  vector<Elem> v;
+  ifstream in("highscore.txt");
+  while (1) {
+    char buf[100];
+    in.getline(buf, 100);
+    if (!in)
+      break;
+    vector<string> p = split(string(buf), ',');
+    CHECK(p.size() == 3) << "INnput error " << p;
+    Elem e;
+    e.name = p[0];
+    e.killer = p[1];
+    e.points = convertFromString<int>(p[2]);
+    v.push_back(e);
+  }
+  if (v.empty())
+    return;
+  if (highlightLast)
+    v.back().highlight = true;
+  sort(v.begin(), v.end(), [] (const Elem& a, const Elem& b) -> bool {
+      return a.points > b.points;
+    });
+  vector<View::ListElem> scores;
+  for (Elem& elem : v) {
+    scores.push_back(View::ListElem(elem.name + ", " + elem.killer + "       " +
+        convertToString(elem.points) + " points",
+        highlightLast && !elem.highlight ? Optional<View::ElemMod>(View::INACTIVE) : Nothing()));
+  }
+  view->presentList("Highscores", scores);
 }

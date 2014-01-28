@@ -8,7 +8,7 @@
 
 static int counter = 0;
 
-VillageControl::VillageControl(const Collective* c, const Level* l, StairDirection dir, StairKey key, string n) 
+VillageControl::VillageControl(Collective* c, const Level* l, StairDirection dir, StairKey key, string n) 
     : villain(c), level(l), direction(dir), stairKey(key), name(n) {
   EventListener::addListener(this);
   ++counter;
@@ -33,8 +33,9 @@ void VillageControl::onKillEvent(const Creature* victim, const Creature* killer)
     attackTimes.erase(victim);
     if (attackTimes.empty()) {
       messageBuffer.addMessage(MessageBuffer::important("You have defeated the inhabitants of " + name));
-      if (--counter == 0)
-        messageBuffer.addMessage(MessageBuffer::important("You have conquered this land. Thanks for playing KeeperRL alpha."));
+      if (--counter == 0) {
+        villain->onConqueredLand(NameGenerator::worldNames.getNext());
+      }
     }
   }
 }
@@ -52,7 +53,7 @@ void VillageControl::onEnteredDungeon(int attackTime) {
 
 class HumanVillageControl : public VillageControl {
   public:
-  HumanVillageControl(const Collective* villain, const Location* location, StairDirection dir, StairKey key)
+  HumanVillageControl(Collective* villain, const Location* location, StairDirection dir, StairKey key)
       : VillageControl(villain, location->getLevel(), dir, key, location->getName()), villageLocation(location) {}
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -145,7 +146,7 @@ class HumanVillageControl : public VillageControl {
   map<Creature*, int> lastPathLocation;
 };
 
-VillageControl* VillageControl::humanVillage(const Collective* villain, const Location* location,
+VillageControl* VillageControl::humanVillage(Collective* villain, const Location* location,
     StairDirection dir, StairKey key) {
   return new HumanVillageControl(villain, location, dir, key);
 }
@@ -153,7 +154,7 @@ VillageControl* VillageControl::humanVillage(const Collective* villain, const Lo
 
 class DwarfVillageControl : public VillageControl {
   public:
-  DwarfVillageControl(const Collective* villain, const Level* level, StairDirection dir, StairKey key)
+  DwarfVillageControl(Collective* villain, const Level* level, StairDirection dir, StairKey key)
       : VillageControl(villain, level, dir, key, "the Dwarven Halls") {}
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -218,7 +219,7 @@ class DwarfVillageControl : public VillageControl {
   map<Creature*, int> lastPathLocation;
 };
 
-VillageControl* VillageControl::dwarfVillage(const Collective* villain, const Level* level,
+VillageControl* VillageControl::dwarfVillage(Collective* villain, const Level* level,
     StairDirection dir, StairKey key) {
   return new DwarfVillageControl(villain, level, dir, key);
 }

@@ -10,8 +10,8 @@
 
 using namespace std;
 
-Player::Player(Creature* c, View* v, bool greet, map<const Level*, MapMemory>* memory) :
-    creature(c), view(v), displayGreeting(greet), levelMemory(memory) {
+Player::Player(Creature* c, View* v, Model* m, bool greet, map<const Level*, MapMemory>* memory) :
+    creature(c), view(v), displayGreeting(greet), levelMemory(memory), model(m) {
   EventListener::addListener(this);
 }
 
@@ -48,8 +48,8 @@ void Player::onKillEvent(const Creature* victim, const Creature* killer) {
     points += victim->getDifficultyPoints();
 }
 
-ControllerFactory Player::getFactory(View* f, map<const Level*, MapMemory>* levelMemory) {
-  return ControllerFactory([=](Creature* c) { return new Player(c, f, true, levelMemory);});
+ControllerFactory Player::getFactory(View* f, Model *m, map<const Level*, MapMemory>* levelMemory) {
+  return ControllerFactory([=](Creature* c) { return new Player(c, f, m, true, levelMemory);});
 }
 
 map<EquipmentSlot, string> slotSuffixes = {
@@ -730,11 +730,10 @@ void Player::you(MsgType type, const string& param) const {
 
 
 void Player::onKilled(const Creature* attacker) {
-  if (!creature->canPopController())
-    Model::gameOver(creature, "monsters", points);
-  if (view->yesOrNoPrompt("Would you like to see the last messages?"))
-    messageBuffer.showHistory();
   if (!creature->canPopController()) {
+    model->gameOver(creature, "monsters", points);
+    if (view->yesOrNoPrompt("Would you like to see the last messages?"))
+      messageBuffer.showHistory();
     exit(0);
   } else
     creature->popController();

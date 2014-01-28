@@ -4,10 +4,11 @@
 #include "creature.h"
 
 class View;
+class Model;
 
 class Player : public Controller, public EventListener {
   public:
-  Player(Creature*, View*, bool displayGreeting, map<const Level*, MapMemory>* levelMemory);
+  Player(Creature*, View*, Model*, bool displayGreeting, map<const Level*, MapMemory>* levelMemory);
   virtual ~Player();
   virtual void grantIdentify(int numItems) override;
 
@@ -28,7 +29,7 @@ class Player : public Controller, public EventListener {
 
   virtual void onBump(Creature*);
 
-  static ControllerFactory getFactory(View*, map<const Level*, MapMemory>* levelMemory);
+  static ControllerFactory getFactory(View*, Model*, map<const Level*, MapMemory>* levelMemory);
   
   virtual const Level* getListenerLevel() const override;
   virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) override;
@@ -70,6 +71,7 @@ class Player : public Controller, public EventListener {
   bool displayGreeting;
   map<const Level*, MapMemory>* levelMemory;
   int points = 0;
+  Model* model;
 };
 
 #endif

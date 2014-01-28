@@ -859,7 +859,6 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                c.courage = 0.01;
                                c.firstName = NameGenerator::firstNames.getNext();
                                c.spells.push_back(Creature::getSpell(SpellId::HEALING));
-                               c.skills.insert(Skill::archery);
                                c.skills.insert(Skill::twoHandedWeapon);), tribe, factory);
     case CreatureId::GOBLIN: return get(ViewId::GOBLIN, CATTR(
                                    c.speed = 100;

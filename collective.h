@@ -19,9 +19,11 @@ enum class MinionType {
 
 ENUM_HASH(MinionType);
 
+class Model;
+
 class Collective : public CreatureView, public EventListener {
   public:
-  Collective(CreatureFactory minionFactory, CreatureFactory undeadFactory);
+  Collective(Model*, CreatureFactory minionFactory);
   virtual const MapMemory& getMemory(const Level* l) const override;
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
   virtual void refreshGameInfo(View::GameInfo&) const  override;
@@ -36,6 +38,7 @@ class Collective : public CreatureView, public EventListener {
   virtual void onTriggerEvent(const Level*, Vec2 pos) override;
   virtual void onSquareReplacedEvent(const Level*, Vec2 pos) override;
   virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) override;
+  void onConqueredLand(const string& name);
 
   void processInput(View* view);
   void tick();
@@ -160,7 +163,6 @@ class Collective : public CreatureView, public EventListener {
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
   CreatureFactory minionFactory;
-  CreatureFactory undeadFactory;
   vector<Creature*> creatures;
   vector<Creature*> minions;
   vector<Creature*> imps;
@@ -201,6 +203,8 @@ class Collective : public CreatureView, public EventListener {
   Optional<Vec2> throneMarked;
   int mana;
   int points = 0;
+  Model* model;
+  vector<const Creature*> kills;
 };
 
 #endif
