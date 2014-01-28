@@ -30,8 +30,9 @@ class NameGenerator {
       const string& demonsPath,
       const string& dogsPath);
   private:
-  NameGenerator(vector<string> names);
+  NameGenerator(vector<string> names, bool oneName = false);
   queue<string> names;
+  bool oneName;
 };
 
 #endif

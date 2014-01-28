@@ -64,7 +64,7 @@ void NameGenerator::init(const string& firstNamesPath, const string& aztecNamesP
   aztecNames = NameGenerator(readLines(aztecNamesPath));
   creatureNames = NameGenerator(readLines(creatureNamesPath));
   weaponNames = NameGenerator(readLines(weaponNamesPath));
-  worldNames = NameGenerator(readLines(worldsPath));
+  worldNames = NameGenerator(readLines(worldsPath), true);
   townNames = NameGenerator(readLines(townsPath));
   deityNames = NameGenerator(readLines(deitiesPath));
   dwarfNames = NameGenerator(readLines(dwarfsPath));
@@ -76,13 +76,13 @@ void NameGenerator::init(const string& firstNamesPath, const string& aztecNamesP
 string NameGenerator::getNext() {
   CHECK(!names.empty()) << "Out of names!";
   string ret = names.front();
-  names.pop();
+  if (!oneName)
+    names.pop();
   return ret;
 }
 
   
-NameGenerator::NameGenerator(vector<string> list) {
-  random_shuffle(list.begin(), list.end(),[](int a) { return Random.getRandom(a);});
-  for (string name : list)
+NameGenerator::NameGenerator(vector<string> list, bool oneN) : oneName(oneN) {
+  for (string name : randomPermutation(list))
     names.push(name);
 }
