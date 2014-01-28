@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
   string heroName = NameGenerator::firstNames.getNext();
   view->initialize();
   while (1) {
-    auto choice = view->chooseFromList("Welcome to KeeperRL.", { "Keeper mode", "Adventure mode", "Highscores"});
+    auto choice = view->chooseFromList("Welcome to KeeperRL.", { "Keeper mode", "Adventure mode", "High scores"});
     if (!choice)
       exit(0);
     if (choice == 2) {

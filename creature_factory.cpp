@@ -1157,7 +1157,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 3;
                                 c.humanoid = true;
                                 c.weight = 45;
-                                c.chatReactionFriendly = "talks about digging";
+                                c.chatReactionFriendly = "talks about crafting";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "gnome";), tribe, factory);
     case CreatureId::IMP: return get(ViewId::IMP, CATTR(
@@ -1177,10 +1177,10 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
     case CreatureId::BILE_DEMON: return get(ViewId::BILE_DEMON, CATTR(
                                 c.speed = 80;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 23;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 9;
-                                c.humanoid = false;
+                                c.strength = 19;
+                                c.dexterity = 12;
+                                c.barehandedDamage = 4;
+                                c.humanoid = true;
                                 c.weight = 140;
                                 c.firstName = NameGenerator::demonNames.getNext();
                                 c.name = "ogre";), tribe, factory);
@@ -1470,8 +1470,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
     case CreatureId::WOLF: return get(ViewId::WOLF, CATTR(
                                 c.speed = 160;
                                 c.size = CreatureSize::MEDIUM;
-                                c.strength = 10;
-                                c.dexterity = 15;
+                                c.strength = 15;
+                                c.dexterity = 17;
                                 c.barehandedDamage = 10;
                                 c.humanoid = false;
                                 c.animal = true;

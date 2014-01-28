@@ -373,5 +373,5 @@ void Model::showHighscore(bool highlightLast) {
         convertToString(elem.points) + " points",
         highlightLast && !elem.highlight ? Optional<View::ElemMod>(View::INACTIVE) : Nothing()));
   }
-  view->presentList("Highscores", scores);
+  view->presentList("High scores", scores);
 }

@@ -454,6 +454,7 @@ enum class ViewId {
 
   TRAP_ITEM,
   GUARD_POST,
+  DESTROY_BUTTON,
   MANA,
 };
 

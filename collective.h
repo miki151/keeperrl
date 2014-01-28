@@ -98,12 +98,12 @@ class Collective : public CreatureView, public EventListener {
       ViewId viewId;
     } trapInfo;
 
-    enum BuildType { SQUARE, CUT_TREE, IMP, TRAP, GUARD_POST} buildType;
+    enum BuildType { SQUARE, CUT_TREE, IMP, TRAP, GUARD_POST, DESTROY} buildType;
 
     BuildInfo(SquareInfo info) : squareInfo(info), buildType(SQUARE) {}
     BuildInfo(TrapInfo info) : trapInfo(info), buildType(TRAP) {}
     BuildInfo(BuildType type) : buildType(type) {
-      CHECK(contains({IMP, GUARD_POST, CUT_TREE}, type));
+      CHECK(contains({IMP, GUARD_POST, CUT_TREE, DESTROY}, type));
     }
 
   };

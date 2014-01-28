@@ -39,6 +39,7 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::GRAVE, ResourceId::WOOD, 18, "Graveyard"}),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
+    BuildInfo(BuildInfo::DESTROY),
     BuildInfo(BuildInfo::IMP),
     BuildInfo(BuildInfo::GUARD_POST),
 };
@@ -469,10 +470,14 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
                "[" + convertToString(imps.size()) + "]",
                getImpCost() <= mana});
            break; }
+      case BuildInfo::DESTROY:
+           info.buttons.push_back({
+               ViewObject(ViewId::DESTROY_BUTTON, ViewLayer::CREATURE, ""), "Destruct", Nothing(), "", true});
+           break;
       case BuildInfo::GUARD_POST:
            info.buttons.push_back({
                ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", Nothing(), "", true});
-
+           break;
     }
   info.activeButton = currentButton;
   info.tasks = minionTaskStrings;
@@ -753,12 +758,16 @@ void Collective::processInput(View* view) {
               break;
           case BuildInfo::TRAP: {
                 TrapType trapType = getBuildInfo()[currentButton].trapInfo.type;
-                if (getTrapItems(trapType).size() > 0 && canPlacePost(pos)){
+                if (getTrapItems(trapType).size() > 0 && canPlacePost(pos) && myTiles.count(pos)){
                   traps[pos] = {trapType, false, false};
                   trapMap[trapType].push_back(pos);
                   updateTraps();
                 }
               }
+              break;
+          case BuildInfo::DESTROY:
+              if (level->getSquare(pos)->canDestroy() && myTiles.count(pos))
+                level->getSquare(pos)->destroy(10000);
               break;
           case BuildInfo::GUARD_POST:
               if (guardPosts.count(pos) && selection != SELECT) {

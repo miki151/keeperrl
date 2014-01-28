@@ -380,6 +380,7 @@ Tile getSprite(ViewId id) {
     case ViewId::BURNT_TREE:
     case ViewId::FALLEN_TREE: return Tile(26, 3, 2, true);
     case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
+    case ViewId::DESTROY_BUTTON: return Tile('X', red);
     case ViewId::MANA: return Tile(5, 10, 2);
   }
   Debug(FATAL) << "unhandled view id " << (int)id;
@@ -575,6 +576,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::FALLEN_TREE: return Tile('*', green);
     case ViewId::BURNT_TREE: return Tile('*', darkGray);
     case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
+    case ViewId::DESTROY_BUTTON: return Tile('X', red);
     case ViewId::MANA: return Tile(5, 10, 2);
   }
   Debug(FATAL) << "unhandled view id " << (int)obj.id();
