@@ -242,9 +242,9 @@ Model* Model::collectiveModel(View* view) {
     m->addCreature(std::move(c));
   }
   vector<tuple<int, int, int>> heroAttackTime {
-      { make_tuple(1200, 2, 4) },
-      { make_tuple(1800, 4, 7) },
-      { make_tuple(2500, 12, 18) }};
+      { make_tuple(1400, 2, 4) },
+      { make_tuple(2200, 4, 7) },
+      { make_tuple(3200, 12, 18) }};
   vector<pair<CreatureFactory, CreatureFactory>> villageFactories {
     { CreatureFactory::collectiveEnemies(), CreatureFactory::collectiveFinalAttack() },
     { CreatureFactory::collectiveElfEnemies(), CreatureFactory::collectiveElfFinalAttack() }
@@ -256,7 +256,7 @@ Model* Model::collectiveModel(View* view) {
     CreatureFactory firstAttack = villageFactories[cnt].first;
     CreatureFactory lastAttack = villageFactories[cnt].second;
     for (int i : All(heroAttackTime)) {
-      int attackTime = get<0>(heroAttackTime[i]) + Random.getRandom(-200, 200);
+      int attackTime = get<0>(heroAttackTime[i]);
       int heroCount = Random.getRandom(get<1>(heroAttackTime[i]), get<2>(heroAttackTime[i]));
       CreatureFactory& factory = (i == heroAttackTime.size() - 1 ? lastAttack : firstAttack);
       for (int k : Range(heroCount)) {
@@ -318,7 +318,7 @@ void Model::conquered(const string& title, const string& land, vector<const Crea
   showHighscore(true);
 }
 
-void Model::gameOver(const Creature* creature, const string& enemiesString, int points) {
+void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
   string text = "And so dies ";
   string title;
   if (auto firstName = creature->getFirstName())
@@ -330,7 +330,7 @@ void Model::gameOver(const Creature* creature, const string& enemiesString, int 
     killer = c->getName();
     text += ", killed by a " + killer;
   }
-  text += ". He killed " + convertToString(creature->getKills().size()) 
+  text += ". He killed " + convertToString(numKills) 
       + " " + enemiesString + " and scored " + convertToString(points) + " points.";
   view->presentText("Game over", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)

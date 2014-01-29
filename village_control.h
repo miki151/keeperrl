@@ -7,7 +7,7 @@
 class VillageControl : public EventListener {
   public:
   virtual ~VillageControl();
-  void addCreature(Creature* c, int attackTime);
+  void addCreature(Creature* c, int attackPoints);
   void onEnteredDungeon(int attackTime);
 
   virtual MoveInfo getMove(Creature* c) = 0;
@@ -22,8 +22,14 @@ class VillageControl : public EventListener {
 
   protected:
   VillageControl(Collective* villain, const Level*, StairDirection, StairKey, string name);
-  map<const Creature*, int> attackTimes;
-  int lastAttackTime = -1;
+  struct AttackInfo {
+    vector<const Creature*> creatures;
+    int attackTime = -1;
+    bool msg = true;
+  };
+  map<int, AttackInfo> attackInfo;
+  vector<const Creature*> allCreatures;
+  int numAttacks = 0;
   unordered_set<int> messages;
   Collective* villain;
   const Level* level;

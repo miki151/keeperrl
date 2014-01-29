@@ -248,7 +248,7 @@ class Fountain : public Square {
 class Tree : public Square {
   public:
   Tree(const ViewObject& object, const string& name, bool noObstruct, int _numWood, map<SquareType, int> construct)
-      : Square(object, name, noObstruct, true, 100, 0.5, construct), numWood(_numWood) {}
+      : Square(object, name, noObstruct, true, 100, 0.5, construct), numWood(_numWood), bounces(!noObstruct) {}
 
   virtual bool canDestroy() const override {
     return true;
@@ -275,7 +275,7 @@ class Tree : public Square {
   }
 
   virtual bool itemBounces(Item* item) const {
-    return true;
+    return bounces;
   }
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -286,6 +286,7 @@ class Tree : public Square {
   private:
   bool destroyed = false;
   int numWood;
+  bool bounces;
 };
 
 class TrapSquare : public Square {

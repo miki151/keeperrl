@@ -44,7 +44,7 @@ class Model {
 
   bool isTurnBased();
 
-  void gameOver(const Creature* player, const string& enemiesString, int points);
+  void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, const string& land, vector<const Creature*> kills, int points);
   void showHighscore(bool highlightLast = false);
 

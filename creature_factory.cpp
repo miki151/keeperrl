@@ -1029,6 +1029,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.strength = 19;
                                 c.dexterity = 13;
                                 c.barehandedDamage = 15;
+                                c.barehandedAttack = AttackType::PUNCH;
                                 c.humanoid = false;
                                 c.noSleep = true;
                                 c.notLiving = true;
@@ -1040,6 +1041,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.strength = 21;
                                 c.dexterity = 13;
                                 c.barehandedDamage = 17;
+                                c.barehandedAttack = AttackType::PUNCH;
                                 c.humanoid = false;
                                 c.noSleep = true;
                                 c.notLiving = true;
@@ -1157,7 +1159,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 3;
                                 c.humanoid = true;
                                 c.weight = 45;
-                                c.chatReactionFriendly = "talks about crafting";
+                                c.chatReactionFriendly = "talks about digging";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "gnome";), tribe, factory);
     case CreatureId::IMP: return get(ViewId::IMP, CATTR(

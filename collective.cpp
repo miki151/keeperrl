@@ -900,6 +900,10 @@ Vec2 Collective::getHeartPos() const {
   return heart->getPosition();
 }
 
+int Collective::getNumPoints() const {
+  return points;
+}
+
 ItemPredicate Collective::unMarkedItems(ItemType type) const {
   return [this, type](const Item* it) {
       return it->getType() == type && !markedItems.count(it); };
@@ -1298,7 +1302,7 @@ void Collective::onConqueredLand(const string& name) {
 
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim == heart) {
-    model->gameOver(heart, "innocent beings", points);
+    model->gameOver(heart, kills.size(), "innocent beings", points);
  /*   messageBuffer.addMessage(MessageBuffer::important("Your dungeon heart was destroyed. "
           "You've been playing KeeperRL alpha."));*/
     exit(0);

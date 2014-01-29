@@ -18,36 +18,45 @@ VillageControl::~VillageControl() {
   EventListener::removeListener(this);
 }
 
-void VillageControl::addCreature(Creature* c, int attackTime) {
-  attackTimes.insert(make_pair(c, attackTime));
-  lastAttackTime = max(lastAttackTime, attackTime);
-  messages.insert(attackTime);
+void VillageControl::addCreature(Creature* c, int attackPoints) {
+  attackInfo[attackPoints].creatures.push_back(c);
+  allCreatures.push_back(c);
 }
 
 bool VillageControl::startedAttack(Creature* c) {
-  return attackTimes.count(c) && attackTimes.at(c) <= c->getTime();
+  int keeperPointsMult = 2;
+  for (auto& elem : attackInfo)
+    if (contains(elem.second.creatures, c)) {
+      if (elem.second.attackTime > -1) {
+        if (elem.second.attackTime <= c->getTime()) {
+          if (elem.second.msg) {
+            if (++numAttacks < attackInfo.size())
+              messageBuffer.addMessage(MessageBuffer::important("The inhabitants of " + name + " are attacking!"));
+            else
+              messageBuffer.addMessage(MessageBuffer::important("The inhabitants of " + name + 
+                    " have gathered for a final assault!"));
+            elem.second.msg = false;
+          }
+          return true;
+        }
+      } else
+        if (elem.first <= c->getTime() + villain->getNumPoints() * keeperPointsMult) {
+          elem.second.attackTime = c->getTime() + 50;
+          messages.insert(elem.second.attackTime);
+        }
+    }
+  return false;
 }
 
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
-  if (attackTimes.count(victim)) {
-    attackTimes.erase(victim);
-    if (attackTimes.empty()) {
+  if (contains(allCreatures, victim)) {
+    removeElement(allCreatures, victim);
+    if (allCreatures.empty()) {
       messageBuffer.addMessage(MessageBuffer::important("You have defeated the inhabitants of " + name));
       if (--counter == 0) {
         villain->onConqueredLand(NameGenerator::worldNames.getNext());
       }
     }
-  }
-}
-
-void VillageControl::onEnteredDungeon(int attackTime) {
-  if (messages.count(attackTime)) {
-    if (attackTime < lastAttackTime)
-      messageBuffer.addMessage(MessageBuffer::important("The inhabitants of " + name + " are attacking!"));
-    else
-      messageBuffer.addMessage(MessageBuffer::important("The inhabitants of " + name + 
-            " have gathered for a final assault!"));
-    messages.erase(attackTime);
   }
 }
 
@@ -58,7 +67,6 @@ class HumanVillageControl : public VillageControl {
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(startedAttack(c));
-    onEnteredDungeon(attackTimes.at(c));
     if (pathToDungeon.empty() && c->getLevel() != villain->getLevel())
       pathToDungeon = genPathToDungeon();
     if (c->getLevel() == villain->getLevel()) {
@@ -79,8 +87,8 @@ class HumanVillageControl : public VillageControl {
       if (c->getPosition() == stairs)
         return {1.0, [this, c] () {
           c->applySquare();
-          if (c->getLevel() == villain->getLevel())
-            onEnteredDungeon(attackTimes.at(c));
+ /*         if (c->getLevel() == villain->getLevel())
+            onEnteredDungeon(attackTimes.at(c));*/
         }};
       int& pathInd = lastPathLocation[c];
       CHECK(pathInd >= 0 && pathInd < pathToDungeon.size() - 1)
@@ -177,8 +185,8 @@ class DwarfVillageControl : public VillageControl {
       if (c->getPosition() == stairs)
         return {1.0, [this, c] () {
           c->applySquare();
-          if (c->getLevel() == villain->getLevel())
-            onEnteredDungeon(attackTimes.at(c));
+ /*         if (c->getLevel() == villain->getLevel())
+            onEnteredDungeon(attackTimes.at(c));*/
         }};
       if (Optional<Vec2> move = c->getMoveTowards(stairs)) 
           return {1.0, [=] () {
