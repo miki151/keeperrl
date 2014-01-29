@@ -72,6 +72,7 @@ class Player : public Controller, public EventListener {
   map<const Level*, MapMemory>* levelMemory;
   int points = 0;
   Model* model;
+  bool displayTravelInfo = true;
 };
 
 #endif

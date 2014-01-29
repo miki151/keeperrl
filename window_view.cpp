@@ -1710,9 +1710,9 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
         case Keyboard::PageDown: index += 10; if (index >= count) index = count - 1; break;
         case Keyboard::PageUp: index -= 10; if (index < 0) index = 0; break;
         case Keyboard::Numpad8:
-        case Keyboard::Up: if (index > 0) --index; break;
+        case Keyboard::Up: index = (index - 1 + count) % count;  break;
         case Keyboard::Numpad2:
-        case Keyboard::Down: if (index < count - 1) ++index; break;
+        case Keyboard::Down: index = (index + 1 + count) % count; break;
         case Keyboard::Numpad5:
         case Keyboard::Return : clearMessageBox(); return index;
         case Keyboard::Escape : clearMessageBox(); return Nothing();

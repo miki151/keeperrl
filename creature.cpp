@@ -1420,8 +1420,7 @@ void Creature::fire(Vec2 direction) {
 void Creature::squash(Vec2 direction) {
   if (canDestroy(direction))
     getSquare(direction)->destroy(getAttr(AttrType::STRENGTH));
-  Creature* c = getSquare(direction)->getCreature();
-  if (c) {
+  if (Creature* c = getSquare(direction)->getCreature()) {
     c->you(MsgType::KILLED_BY, getTheName());
     c->die();
   }

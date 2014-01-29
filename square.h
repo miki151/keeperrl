@@ -125,6 +125,9 @@ class Square {
   /** Removes the trigger from the square.*/
   PTrigger removeTrigger(Trigger*);
 
+  /** Removes all triggers from the square.*/
+  void removeTriggers();
+
   //@{
   /** Drops item or items on the square. The square assumes ownership.*/
   virtual void dropItem(PItem);

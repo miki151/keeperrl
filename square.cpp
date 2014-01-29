@@ -319,6 +319,10 @@ PTrigger Square::removeTrigger(Trigger* trigger) {
   return ret;
 }
 
+void Square::removeTriggers() {
+  triggers.clear();
+}
+
 const Creature* Square::getCreature() const {
   return creature;
 }

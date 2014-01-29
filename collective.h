@@ -205,6 +205,7 @@ class Collective : public CreatureView, public EventListener {
   int points = 0;
   Model* model;
   vector<const Creature*> kills;
+  bool showWelcomeMsg = true;
 };
 
 #endif

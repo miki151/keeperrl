@@ -569,6 +569,10 @@ void Player::makeMove() {
   MEASURE(
       view->refreshView(creature),
       "level render time");
+  if (displayTravelInfo && creature->getConstSquare()->getName() == "road") {
+    view->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
+    displayTravelInfo = false;
+  }
   static bool greeting = false;
   if (displayGreeting) {
     CHECK(creature->getFirstName());

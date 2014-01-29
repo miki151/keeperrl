@@ -142,7 +142,7 @@ Model* Model::heroModel(View* view, const string& heroName) {
   Level* top = m->prepareTopLevel({
       {SettlementType::CASTLE, CreatureFactory::humanVillage(), locations[0], Tribe::human, {30, 20},
           {StairKey::CASTLE_CELLAR}},
-      {SettlementType::VILLAGE, CreatureFactory::humanVillagePeaceful(), locations[1], Tribe::human, {30, 20}, {}},
+ //     {SettlementType::VILLAGE, CreatureFactory::humanVillagePeaceful(), locations[1], Tribe::human, {30, 20}, {}},
       {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), locations[2], Tribe::elven, {30, 20}, {}}});
 /*  Level* top = m->prepareTopLevel2({
       {SettlementType::CASTLE, CreatureFactory::humanVillage(), locations[0], Tribe::human}});*/

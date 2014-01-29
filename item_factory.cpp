@@ -128,7 +128,8 @@ class Corpse : public Item {
       Item(obj, attr), 
       object2(obj2), 
       rottingTime(rottingT), 
-      rottenName(rottenN) {
+      rottenName(rottenN),
+      corpseInfo(info) {
   }
 
   virtual void apply(Creature* c, Level* l) override {
@@ -367,9 +368,8 @@ ItemFactory ItemFactory::goblinShop() {
 
 ItemFactory ItemFactory::workshop() {
   return ItemFactory({
-      {ItemId::FIRST_AID_KIT, 5 },
-      {ItemId::BOULDER_TRAP_ITEM, 5 },
-      {ItemId::GAS_TRAP_ITEM, 5 },
+      {ItemId::BOULDER_TRAP_ITEM, 3 },
+      {ItemId::GAS_TRAP_ITEM, 3 },
       {ItemId::SWORD, 2 },
       {ItemId::BATTLE_AXE, 1 },
       {ItemId::WAR_HAMMER, 1 },

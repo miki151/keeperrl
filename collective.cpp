@@ -104,7 +104,7 @@ Collective::Collective(Model* m, CreatureFactory factory)
 
 const int basicImpCost = 20;
 int startImpNum = -1;
-const int minionLimit = 16;
+const int minionLimit = 20;
 
 
 void Collective::render(View* view) {
@@ -128,6 +128,11 @@ void Collective::render(View* view) {
     view->refreshView(this);
   } else
     view->stopClock();
+  if (showWelcomeMsg) {
+    view->refreshView(this);
+    showWelcomeMsg = false;
+    view->presentText("", "So it begins.\n \n<insert a story about an evil warlock who has been banished and will now take revenge on everyone>\n \nWalk around and find a suitable spot to dig into the mountain. Then press 'u' to leave the Keeper body, and instruct your imps to dig, cut trees and mine gold. Build the needed rooms to attract and train your minions, and when the time comes go out to war (or defend yourself).");
+  }
 }
 
 bool Collective::isTurnBased() {
@@ -257,6 +262,11 @@ vector<Collective::SpawnInfo> raisingInfo {
 void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   int techLevel = techLevels[TechId::NECROMANCY];
   set<Vec2> graves = mySquares.at(SquareType::GRAVE);
+  if (minions.size() >= minionLimit) {
+    if (firstTime)
+      view->presentText("Information", "You have reached the limit of the number of minions.");
+    return;
+  }
   if (graves.empty()) {
     if (firstTime)
       view->presentText("Information", "You need to build a graveyard and collect corpses to raise undead.");
@@ -345,6 +355,11 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
   int prevItem = false;
   bool firstTime = true;
   while (1) {
+    if (minions.size() >= minionLimit) {
+      if (firstTime)
+        view->presentText("Information", "You have reached the limit of the number of minions.");
+      return;
+    }
     if (cages.empty()) {
       if (firstTime)
         view->presentText("Information", info1);
@@ -472,7 +487,8 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
            break; }
       case BuildInfo::DESTROY:
            info.buttons.push_back({
-               ViewObject(ViewId::DESTROY_BUTTON, ViewLayer::CREATURE, ""), "Destruct", Nothing(), "", true});
+               ViewObject(ViewId::DESTROY_BUTTON, ViewLayer::CREATURE, ""), "Remove construction", Nothing(), "",
+                   true});
            break;
       case BuildInfo::GUARD_POST:
            info.buttons.push_back({
@@ -766,8 +782,17 @@ void Collective::processInput(View* view) {
               }
               break;
           case BuildInfo::DESTROY:
+              selection = SELECT;
               if (level->getSquare(pos)->canDestroy() && myTiles.count(pos))
                 level->getSquare(pos)->destroy(10000);
+              level->getSquare(pos)->removeTriggers();
+              if (Creature* c = level->getSquare(pos)->getCreature())
+                if (c->getName() == "boulder")
+                  c->die(nullptr, false);
+              if (traps.count(pos)) {
+                removeElement(trapMap.at(traps.at(pos).type), pos);
+                traps.erase(pos);
+              }
               break;
           case BuildInfo::GUARD_POST:
               if (guardPosts.count(pos) && selection != SELECT) {
@@ -856,8 +881,10 @@ void Collective::onBrought(Vec2 pos, vector<Item*> items) {
 
 void Collective::onAppliedItem(Vec2 pos, Item* item) {
   CHECK(item->getTrapType());
-  traps[pos].marked = false;
-  traps[pos].armed = true;
+  if (traps.count(pos)) {
+    traps[pos].marked = false;
+    traps[pos].armed = true;
+  }
 }
 
 void Collective::onAppliedSquare(Vec2 pos) {
