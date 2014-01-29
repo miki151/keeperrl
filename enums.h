@@ -112,6 +112,7 @@ enum class CreatureId {
     CLAY_GOLEM,
     STONE_GOLEM,
     IRON_GOLEM,
+    LAVA_GOLEM,
 
     ZOMBIE,
     VAMPIRE,
@@ -162,6 +163,7 @@ enum class CreatureId {
     BAT,
     SNAKE,
     CAVE_BEAR,
+    ACID_MOUND,
     SPIDER,
     SCORPION,
     FLY,
@@ -301,6 +303,7 @@ enum class ViewId {
   CLAY_GOLEM,
   STONE_GOLEM,
   IRON_GOLEM,
+  LAVA_GOLEM,
   ZOMBIE,
   SKELETON,
   VAMPIRE,
@@ -321,6 +324,7 @@ enum class ViewId {
   RAT,
   SPIDER,
   FLY,
+  ACID_MOUND,
   SCORPION,
   SNAKE,
   VULTURE,
@@ -560,6 +564,7 @@ enum class EffectType {
     WORD_OF_POWER,
     DECEPTION,
     SUMMON_INSECTS,
+    ACID,
 };
 
 enum class AnimationId {

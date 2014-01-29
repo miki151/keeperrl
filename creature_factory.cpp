@@ -731,8 +731,9 @@ CreatureFactory CreatureFactory::level(int num) {
       { CreatureId::GOBLIN, { 20, 20, 30, 50, 50, 100, 200, 400 }},
       { CreatureId::BILE_DEMON, { 0, 0, 100, 100, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::JACKAL, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
-      { CreatureId::SPIDER, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
-      { CreatureId::SCORPION, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
+      { CreatureId::ACID_MOUND, { 50, 50, 50, 50, 50, 50, 50, 50, 50, 50 }},
+      { CreatureId::SPIDER, { 200, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
+      { CreatureId::SCORPION, { 200, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
       { CreatureId::RAT, { 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::BAT, { 100, 100, 200, 200, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::ZOMBIE, { 0, 0, 0, 30, 50, 100, 100, 100, 100, 100 }},
@@ -1047,6 +1048,34 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.notLiving = true;
                                 c.weight = 120;
                                 c.name = "iron golem";), tribe, factory);
+    case CreatureId::LAVA_GOLEM: return get(ViewId::LAVA_GOLEM, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 21;
+                                c.dexterity = 15;
+                                c.barehandedDamage = 17;
+                                c.barehandedAttack = AttackType::PUNCH;
+                                c.attackEffect = EffectType::FIRE;
+                                c.humanoid = false;
+                                c.noSleep = true;
+                                c.notLiving = true;
+                                c.weight = 120;
+                                c.name = "iron golem";), tribe, factory);
+    case CreatureId::ACID_MOUND: return get(ViewId::ACID_MOUND, CATTR(
+                                c.speed = 80;
+                                c.size = CreatureSize::LARGE;
+                                c.strength = 15;
+                                c.dexterity = 5;
+                                c.barehandedDamage = 1;
+                                c.humanoid = false;
+                                c.passiveAttack = EffectType::ACID;
+                                c.legs = 0;
+                                c.arms = 0;
+                                c.heads = 0;
+                                c.noSleep = true;
+                                c.stationary = true;
+                                c.weight = 120;
+                                c.name = "acid jelly";), tribe, Monster::getFactory(MonsterAIFactory::idle()));
     case CreatureId::ZOMBIE: return get(ViewId::ZOMBIE, CATTR(
                                 c.speed = 60;
                                 c.size = CreatureSize::LARGE;

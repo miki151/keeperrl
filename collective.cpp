@@ -333,6 +333,7 @@ vector<Collective::SpawnInfo> animationInfo {
   {CreatureId::CLAY_GOLEM, 30, 0},
   {CreatureId::STONE_GOLEM, 50, 1},
   {CreatureId::IRON_GOLEM, 50, 2},
+  {CreatureId::LAVA_GOLEM, 100, 3},
 };
 
 

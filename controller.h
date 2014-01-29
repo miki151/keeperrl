@@ -37,23 +37,18 @@ class Controller {
 };
 
 class DoNothingController : public Controller {
-  virtual bool isPlayer() const override {
-    return false;
-  }
+  public:
+  DoNothingController(Creature* c) : creature(c) {}
 
-  virtual void you(MsgType type, const string& param) const override {
-  }
-
-  virtual void you(const string& param) const override {
-  }
-
+  virtual bool isPlayer() const override;
+  virtual void you(MsgType type, const string& param) const override;
+  virtual void you(const string& param) const override;
   virtual const MapMemory& getMemory(const Level* l = nullptr) const override;
+  virtual void makeMove() override;
+  virtual void onBump(Creature*) override;
 
-  virtual void makeMove() override {
-  }
-
-  virtual void onBump(Creature*) override {
-  }
+  private:
+  Creature* creature;
 };
 
 class ControllerFactory {

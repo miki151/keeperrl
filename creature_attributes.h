@@ -34,6 +34,7 @@ class CreatureAttributes {
   int barehandedDamage = 0;
   Optional<AttackType> barehandedAttack;
   Optional<EffectType> attackEffect;
+  Optional<EffectType> passiveAttack;
   int legs = 2;
   int arms = 2;
   int wings = 0;

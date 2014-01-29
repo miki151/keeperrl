@@ -72,7 +72,7 @@ map<EffectStrength, double> wordOfPowerDist {
 
 class IllusionController : public DoNothingController {
   public:
-  IllusionController(Creature* c, double deathT) : creature(c), deathTime(deathT) {}
+  IllusionController(Creature* c, double deathT) : DoNothingController(c), creature(c), deathTime(deathT) {}
 
   void kill() {
     creature->globalMessage("The illusion disappears.");
@@ -203,20 +203,21 @@ static void fireSpherePet(Creature* c) {
     }
 }
 
-static void enhanceArmor(Creature* c) {
+static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improved") {
   for (EquipmentSlot slot : randomPermutation({
         EquipmentSlot::BODY_ARMOR, EquipmentSlot::HELMET, EquipmentSlot::BOOTS}))
     if (Item* item = c->getEquipment().getItem(slot)) {
-      c->you(MsgType::YOUR, item->getName() + " seems improved");
-      item->addModifier(AttrType::DEFENSE, 1);
+      c->you(MsgType::YOUR, item->getName() + " " + msg);
+      if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
+        item->addModifier(AttrType::DEFENSE, mod);
       return;
     }
 }
 
-static void enhanceWeapon(Creature* c) {
+static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is improved") {
   if (Item* item = c->getEquipment().getItem(EquipmentSlot::WEAPON)) {
-    c->you(MsgType::YOUR, item->getName() + " seems improved");
-    item->addModifier(chooseRandom({AttrType::TO_HIT, AttrType::DAMAGE}), 1);
+    c->you(MsgType::YOUR, item->getName() + " " + msg);
+    item->addModifier(chooseRandom({AttrType::TO_HIT, AttrType::DAMAGE}), mod);
   }
 }
 
@@ -320,8 +321,18 @@ static void rollingBoulder(Creature* c) {
   }
 }
 
+static void acid(Creature* c) {
+  c->you(MsgType::ARE, "hurt by the acid");
+  c->bleed(0.2);
+  switch (Random.getRandom(2)) {
+    case 0 : enhanceArmor(c, -1, "corrodes"); break;
+    case 1 : enhanceWeapon(c, -1, "corrodes"); break;
+  }
+}
+
 void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strength) {
   switch (type) {
+    case EffectType::ACID: acid(c); break;
     case EffectType::SUMMON_INSECTS: insects(c); break;
     case EffectType::DECEPTION: deception(c); break;
     case EffectType::WORD_OF_POWER: wordOfPower(c, strength); break;

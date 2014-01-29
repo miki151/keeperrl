@@ -827,7 +827,7 @@ void Creature::tick(double realTime) {
   double delta = realTime - lastTick;
   lastTick = realTime;
   updateViewObject();
-  if (isNotLiving() && numGoodArms() + numGoodLegs() + numGoodHeads() <= 2) {
+  if (isNotLiving() && numLostOrInjuredBodyParts() >= 4) {
     you(MsgType::FALL_APART, "");
     die(lastAttacker);
     return;
@@ -1034,6 +1034,11 @@ bool Creature::takeDamage(const Attack& attack) {
       privateEnemies.push_back(c);
   int defense = getAttr(AttrType::DEFENSE);
   Debug() << getTheName() << " attacked by " << attack.getAttacker()->getName() << " damage " << attack.getStrength() << " defense " << defense;
+  if (passiveAttack && attack.getAttacker()) {
+    Creature* other = const_cast<Creature*>(attack.getAttacker());
+    Effect::applyToCreature(other, *passiveAttack, EffectStrength::NORMAL);
+    other->lastAttacker = this;
+  }
   if (attack.getStrength() > defense) {
     if (auto effect = attack.getEffect())
       Effect::applyToCreature(this, *effect, EffectStrength::NORMAL);
@@ -1359,7 +1364,7 @@ void Creature::dropCorpse() {
 }
 
 void Creature::die(const Creature* attacker, bool dropInventory) {
-  Debug() << getTheName() << " dies.";
+  Debug() << getTheName() << " dies. Killed by " << (attacker ? attacker->getName() : "");
   controller->onKilled(attacker);
   if (attacker)
     attacker->kills.push_back(this);
@@ -1642,6 +1647,10 @@ int Creature::numHeads() const {
 
 bool Creature::lostLimbs() const {
   return lostWings > 0 || lostArms > 0 || lostLegs > 0;
+}
+
+int Creature::numLostOrInjuredBodyParts() const {
+  return lostWings + injuredWings + lostArms + injuredArms + lostLegs + injuredLegs + lostHeads + injuredHeads;
 }
 
 int Creature::numGoodArms() const {

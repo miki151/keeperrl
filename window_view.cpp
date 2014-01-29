@@ -108,7 +108,7 @@ class Tile {
 Tile getSpecialCreature(const ViewObject& obj, bool humanoid) {
   RandomGen r;
   r.init(std::hash<string>()(obj.getBareDescription()));
-  string let = humanoid ? "WETYUIPLKJHFAXBM" : "qwetyupkjfaxbnm";
+  string let = humanoid ? "WETUIPLKJHFAXBM" : "qwetyupkfaxbnm";
   char c;
   if (contains(let, obj.getBareDescription()[0]))
     c = obj.getBareDescription()[0];
@@ -127,7 +127,7 @@ Tile getSpecialCreatureSprite(const ViewObject& obj, bool humanoid) {
   if (humanoid)
     return Tile(r.getRandom(7), 10);
   else
-    return Tile(r.getRandom(7, 14), 10);
+    return Tile(r.getRandom(7, 10), 10);
 }
 
 Tile getSprite(ViewId id);
@@ -264,12 +264,14 @@ Tile getSprite(ViewId id) {
     case ViewId::CLAY_GOLEM: return Tile(12, 11);
     case ViewId::STONE_GOLEM: return Tile(10, 10);
     case ViewId::IRON_GOLEM: return Tile(12, 10);
+    case ViewId::LAVA_GOLEM: return Tile(13, 10);
     case ViewId::ZOMBIE: return Tile(0, 16);
     case ViewId::SKELETON: return Tile(2, 16);
     case ViewId::VAMPIRE: return Tile(12, 16);
     case ViewId::VAMPIRE_LORD: return Tile(13, 16);
     case ViewId::MUMMY: return Tile(7, 16);
     case ViewId::MUMMY_LORD: return Tile(8, 16);
+    case ViewId::ACID_MOUND: return Tile(1, 12);
     case ViewId::JACKAL: return Tile(12, 12);
     case ViewId::DEER: return Tile(18, 4);
     case ViewId::HORSE: return Tile(18, 2);
@@ -460,12 +462,14 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::CLAY_GOLEM: return Tile('Y', yellow);
     case ViewId::STONE_GOLEM: return Tile('Y', lightGray);
     case ViewId::IRON_GOLEM: return Tile('Y', orange);
+    case ViewId::LAVA_GOLEM: return Tile('Y', purple);
     case ViewId::ZOMBIE: return Tile('Z', green);
     case ViewId::SKELETON: return Tile('Z', white);
     case ViewId::VAMPIRE: return Tile('V', darkGray);
     case ViewId::VAMPIRE_LORD: return Tile('V', purple);
     case ViewId::MUMMY: return Tile('Z', yellow);
     case ViewId::MUMMY_LORD: return Tile('Z', orange);
+    case ViewId::ACID_MOUND: return Tile('j', green);
     case ViewId::JACKAL: return Tile('d', lightBrown);
     case ViewId::DEER: return Tile('R', darkBrown);
     case ViewId::HORSE: return Tile('H', lightBrown);
