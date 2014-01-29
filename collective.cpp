@@ -180,8 +180,16 @@ static ViewObject getTechViewObject(TechId id) {
 
 static vector<ItemId> marketItems {
   ItemId::HEALING_POTION,
-  ItemId::SPEED_POTION,
+  ItemId::SLEEP_POTION,
+  ItemId::BLINDNESS_POTION,
   ItemId::INVISIBLE_POTION,
+  ItemId::POISON_POTION,
+  ItemId::SLOW_POTION,
+  ItemId::SPEED_POTION,
+  ItemId::WARNING_AMULET,
+  ItemId::HEALING_AMULET,
+  ItemId::DEFENSE_AMULET,
+  ItemId::FRIENDLY_ANIMALS_AMULET,
 };
 
 void Collective::handleMarket(View* view, int prevItem) {
