@@ -90,8 +90,8 @@ Level* Model::prepareTopLevel2(vector<SettlementInfo> settlements) {
 
 Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
   pair<CreatureId, string> castleNem1 = chooseRandom<pair<CreatureId, string>>(
-      {{CreatureId::ACID_MOUND, "The castle cellar is haunted. Go and kill the evil that is lurking there."},
-      {CreatureId::SPIDER, "The castle cellar is infested by vermin. Go and clean it up."}}, {100, 1});
+      {{CreatureId::GHOST, "The castle cellar is haunted. Go and kill the evil that is lurking there."},
+      {CreatureId::SPIDER, "The castle cellar is infested by vermin. Go and clean it up."}}, {1, 1});
   pair<CreatureId, string> castleNem2 = chooseRandom<pair<CreatureId, string>>(
       {{CreatureId::DRAGON, "dragon"}, {CreatureId::CYCLOPS, "cyclops"}});
   Quest::dragon = Quest::killTribeQuest(Tribe::dragon, "There is a " + castleNem2.second + 
@@ -140,10 +140,11 @@ Model* Model::heroModel(View* view, const string& heroName) {
   Model* m = new Model(view);
   vector<Location*> locations = getVillageLocations(3);
   Level* top = m->prepareTopLevel({
-      {SettlementType::CASTLE, CreatureFactory::humanVillage(), locations[0], Tribe::human, {30, 20},
-          {StairKey::CASTLE_CELLAR}},
+      {SettlementType::CASTLE, CreatureFactory::humanVillage(), CreatureId::AVATAR, locations[0], Tribe::human,
+        {30, 20}, {StairKey::CASTLE_CELLAR}},
  //     {SettlementType::VILLAGE, CreatureFactory::humanVillagePeaceful(), locations[1], Tribe::human, {30, 20}, {}},
-      {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), locations[2], Tribe::elven, {30, 20}, {}}});
+      {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), CreatureId::ELF_LORD, locations[2], Tribe::elven,
+        {30, 20}, {}}});
 /*  Level* top = m->prepareTopLevel2({
       {SettlementType::CASTLE, CreatureFactory::humanVillage(), locations[0], Tribe::human}});*/
   Level* d1 = m->buildLevel(
@@ -215,11 +216,13 @@ Model* Model::collectiveModel(View* view) {
   CreatureFactory factory = CreatureFactory::collectiveStart();
   vector<Location*> villageLocations = getVillageLocations(1);
   vector<SettlementInfo> settlements{
-    {SettlementType::CASTLE, CreatureFactory::humanVillagePeaceful(), villageLocations[0], Tribe::human,{30, 20}, {}}
+    {SettlementType::CASTLE, CreatureFactory::humanVillagePeaceful(), Nothing(), villageLocations[0], Tribe::human,
+      {30, 20}, {}}
   };
   for (int i : Range(2, 5))
     settlements.push_back(
-       {SettlementType::COTTAGE, CreatureFactory::humanVillagePeaceful(), new Location(), Tribe::human,{10, 10}, {}});
+       {SettlementType::COTTAGE, CreatureFactory::humanVillagePeaceful(), Nothing(), new Location(), Tribe::human,
+       {10, 10}, {}});
   Level* top = m->prepareTopLevel2(settlements);
   m->collective = new Collective(m, CreatureFactory::collectiveMinions());
   m->collective->setLevel(top);

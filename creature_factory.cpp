@@ -612,12 +612,12 @@ CreatureFactory CreatureFactory::humanVillagePeaceful() {
 CreatureFactory CreatureFactory::humanVillage() {
   return CreatureFactory(Tribe::human, { CreatureId::PESEANT, CreatureId::KNIGHT,
       CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG },
-      { 2, 1, 1, 1, 1, 1}, { CreatureId::AVATAR});
+      { 2, 1, 1, 1, 1, 1}, {});
 }
 
 CreatureFactory CreatureFactory::elvenVillage() {
   return CreatureFactory(Tribe::elven, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW },
-      { 2, 2, 1, 1}, { CreatureId::ELF_LORD});
+      { 2, 2, 1, 1}, {});
 }
 
 CreatureFactory CreatureFactory::elvenVillagePeaceful() {

@@ -1467,7 +1467,7 @@ LevelMaker* hatchery(CreatureFactory factory, int minC, int maxC) {
   return queue;
 }
 
-MakerQueue* village(CreatureFactory factory, Location* loc, Tribe* tribe) {
+MakerQueue* village(CreatureFactory factory, Optional<CreatureId> elder, Location* loc, Tribe* tribe) {
   MakerQueue* queue = new MakerQueue();
   map<SquareType, pair<int, int> > featureCount { 
       { SquareType::CHEST, make_pair(0, 3) },
@@ -1478,6 +1478,9 @@ MakerQueue* village(CreatureFactory factory, Location* loc, Tribe* tribe) {
       new ShopMaker(ItemFactory::villageShop(), tribe, Random.getRandom(8, 16)),
       hatchery(CreatureFactory::singleType(Tribe::elven, CreatureId::PIG), 3, 5),
       new DungeonFeatures(new TypePredicate(SquareType::FLOOR), featureCount)};
+  if (elder)
+    insideMakers = concat({new Creatures(CreatureFactory::singleType(tribe, *elder), 1, 2,
+          MonsterAIFactory::stayInLocation(loc, false), SquareType::FLOOR)}, insideMakers);
   queue->addMaker(new Buildings(4, 8, 3, 7,
         SquareType::WOOD_WALL, SquareType::FLOOR, SquareType::DOOR,
         true, insideMakers));
@@ -1502,7 +1505,8 @@ MakerQueue* cottage(CreatureFactory factory, Tribe* tribe, Location* loc) {
   return queue;
 }
 
-MakerQueue* castle(CreatureFactory factory, Location* loc, Tribe* tribe, vector<StairKey> downStairs) {
+MakerQueue* castle(CreatureFactory factory, Optional<CreatureId> elder, Location* loc, Tribe* tribe,
+      vector<StairKey> downStairs) {
   LevelMaker* castleRoom = new BorderGuard(new Empty(SquareType::FLOOR, SquareAttrib::EMPTY_ROOM),
       SquareType::CASTLE_WALL);
   MakerQueue* leftSide = new MakerQueue();
@@ -1514,6 +1518,9 @@ MakerQueue* castle(CreatureFactory factory, Location* loc, Tribe* tribe, vector<
   leftSide->addMaker(new DungeonFeatures(new AttribPredicate(SquareAttrib::EMPTY_ROOM), featureCount));
   for (StairKey key : downStairs)
     leftSide->addMaker(new Stairs(StairDirection::DOWN, key, new TypePredicate(SquareType::FLOOR), Nothing()));
+  if (elder)
+    leftSide->addMaker(new Creatures(CreatureFactory::singleType(tribe, *elder), 1, 2,
+          MonsterAIFactory::stayInLocation(loc, false), SquareType::FLOOR));
 
   MakerQueue* inside = new MakerQueue();
   inside->addMaker(new Empty(SquareType::MUD));
@@ -1526,11 +1533,11 @@ MakerQueue* castle(CreatureFactory factory, Location* loc, Tribe* tribe, vector<
   insidePlusWall->addMaker(new BorderGuard(inside, SquareType::CASTLE_WALL));
   MakerQueue* queue = new MakerQueue();
   int insideMargin = 2;
+  queue->addMaker(new Margin(insideMargin, new LocationMaker(loc)));
   queue->addMaker(new Margin(insideMargin, insidePlusWall));
   queue->addMaker(new AreaCorners(new BorderGuard(new Empty(SquareType::FLOOR), SquareType::CASTLE_WALL), Vec2(5, 5)));
   queue->addMaker(new Margin(insideMargin, new Connector({0, 1, 0}, 18)));
   queue->addMaker(new Margin(insideMargin, new CastleExit(tribe)));
-  queue->addMaker(new Margin(insideMargin, new LocationMaker(loc)));
   queue->addMaker(new Creatures(factory, 10, 20, MonsterAIFactory::stayInLocation(loc), SquareType::MUD));
   return queue;
 }
@@ -1616,9 +1623,11 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   for (SettlementInfo settlement : settlements) {
     MakerQueue* queue;
     switch (settlement.type) {
-      case SettlementType::VILLAGE: queue = village(settlement.factory, settlement.location, settlement.tribe); break;
+      case SettlementType::VILLAGE:
+          queue = village(settlement.factory, settlement.elder, settlement.location, settlement.tribe); break;
       case SettlementType::CASTLE:
-          queue = castle(settlement.factory, settlement.location, settlement.tribe, settlement.downStairs);
+          queue = castle(settlement.factory, settlement.elder, settlement.location, settlement.tribe,
+              settlement.downStairs);
           queue->addMaker(new StartingPos(new TypePredicate(SquareType::MUD)));
           castleMaker = queue;
           break;
@@ -1707,9 +1716,10 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   for (SettlementInfo settlement : settlements) {
     MakerQueue* queue;
     switch (settlement.type) {
-      case SettlementType::VILLAGE: queue = village(settlement.factory, settlement.location, settlement.tribe); break;
-      case SettlementType::CASTLE: queue = castle(settlement.factory, settlement.location, settlement.tribe,
-                                       settlement.downStairs);
+      case SettlementType::VILLAGE:
+          queue = village(settlement.factory, settlement.elder, settlement.location, settlement.tribe); break;
+      case SettlementType::CASTLE: queue = castle(settlement.factory, settlement.elder, settlement.location,
+                                       settlement.tribe, settlement.downStairs);
                                    break;
       case SettlementType::COTTAGE: queue = cottage(settlement.factory, settlement.tribe, settlement.location); break;
     }
