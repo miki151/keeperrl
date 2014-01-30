@@ -1621,7 +1621,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   LevelMaker* castleMaker = nullptr;
   LevelMaker* elvenVillage = nullptr;
   for (SettlementInfo settlement : settlements) {
-    MakerQueue* queue;
+    MakerQueue* queue = nullptr;
     switch (settlement.type) {
       case SettlementType::VILLAGE:
           queue = village(settlement.factory, settlement.elder, settlement.location, settlement.tribe); break;
@@ -1714,7 +1714,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   subSizes.emplace_back(4, 4);
   map<pair<LevelMaker*, LevelMaker*>, double> minDistances;
   for (SettlementInfo settlement : settlements) {
-    MakerQueue* queue;
+    MakerQueue* queue = nullptr;
     switch (settlement.type) {
       case SettlementType::VILLAGE:
           queue = village(settlement.factory, settlement.elder, settlement.location, settlement.tribe); break;

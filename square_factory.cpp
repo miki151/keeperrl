@@ -647,7 +647,7 @@ Square* SquareFactory::get(SquareType s) {
 }
 
 Square* SquareFactory::getStairs(StairDirection direction, StairKey key, StairLook look) {
-  ViewId id1, id2;
+  ViewId id1 = ViewId(0), id2 = ViewId(0);
   switch (look) {
     case StairLook::NORMAL: id1 = ViewId::UP_STAIRCASE; id2 = ViewId::DOWN_STAIRCASE; break;
     case StairLook::HELL: id1 = ViewId::UP_STAIRCASE_HELL; id2 = ViewId::DOWN_STAIRCASE_HELL; break;
