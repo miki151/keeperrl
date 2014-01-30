@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
   while (1) {
     Tribe::init();
     Item::identifyEverything();
+    EventListener::initialize();
     NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
         "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt");
     ItemFactory::init();
@@ -61,9 +62,9 @@ int main(int argc, char* argv[]) {
       continue;
     }
     dwarf = (choice == 1);
-    Model* model;
-    thread t = !dwarf ? (thread([&] { model = Model::collectiveModel(view); modelReady = true; })) :
-      (thread([&] { model = Model::heroModel(view, heroName); modelReady = true; }));
+    unique_ptr<Model> model;
+    thread t = !dwarf ? (thread([&] { model.reset(Model::collectiveModel(view)); modelReady = true; })) :
+      (thread([&] { model.reset(Model::heroModel(view, heroName)); modelReady = true; }));
     view->displaySplash(modelReady);
     t.join();
     int var = 0;

@@ -156,7 +156,7 @@ class Level {
 
     /** Builds the level. The level will keep reference to the model.
         \paramname{surface} tells if this level is on the Earth surface.*/
-    Level* build(Model*, bool surface);
+    PLevel build(Model*, bool surface);
 
     /** Returns the width of the level.*/
     int getWidth();

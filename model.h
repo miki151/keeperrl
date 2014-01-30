@@ -57,7 +57,7 @@ class Model {
   Level* prepareTopLevel(vector<SettlementInfo> settlements);
   Level* prepareTopLevel2(vector<SettlementInfo> settlements);
 
-  vector<Level*> levels;
+  vector<PLevel> levels;
   View* view;
   TimeQueue timeQueue;
   vector<PCreature> deadCreatures;

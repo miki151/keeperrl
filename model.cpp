@@ -34,7 +34,7 @@ void Model::update(double totalTime) {
           for (Creature* c : timeQueue.getAllCreatures()) {
             c->tick(time);
           }
-          for (Level* l : levels)
+          for (PLevel& l : levels)
             for (Square* square : l->getTickingSquares())
               square->tick(time);
           lastTick = time;
@@ -74,7 +74,7 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker, bool surface) {
   Level::Builder builder(std::move(b));
   maker->make(&builder, Rectangle(builder.getWidth(), builder.getHeight()));
   levels.push_back(builder.build(this, surface));
-  return levels.back();
+  return levels.back().get();
 }
 
 Model::Model(View* v) : view(v) {

@@ -39,6 +39,9 @@ typedef unique_ptr<Controller> PController;
 class Trigger;
 typedef unique_ptr<Trigger> PTrigger;
 
+class Level;
+typedef unique_ptr<Level> PLevel;
+
 void trim(string& s);
 string toUpper(const string& s);
 string toLower(const string& s);

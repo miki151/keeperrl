@@ -362,7 +362,7 @@ void Level::Builder::setMessage(const string& message) {
   entryMessage = message;
 }
 
-Level* Level::Builder::build(Model* m, bool surface) {
+PLevel Level::Builder::build(Model* m, bool surface) {
   for (Vec2 v : heightMap.getBounds()) {
     squares[v]->setHeight(heightMap[v]);
     if (covered.count(v) || !surface) {
@@ -371,7 +371,7 @@ Level* Level::Builder::build(Model* m, bool surface) {
     } else
       squares[v]->setFog(fog[v]);
   }
-  Level* l = new Level(std::move(squares), m, locations, entryMessage, name);
+  PLevel l(new Level(std::move(squares), m, locations, entryMessage, name));
   for (PCreature& c : creatures) {
     Vec2 pos = c->getPosition();
     l->addCreature(pos, std::move(c));
