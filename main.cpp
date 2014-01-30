@@ -40,18 +40,20 @@ int main(int argc, char* argv[]) {
     CHECK(input.is_open());
     view = View::createReplayView(input);
   }
-  Tribe::init();
-  Item::identifyEverything();
-  NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
-      "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt");
-  ItemFactory::init();
-  bool modelReady = false;
-  messageBuffer.initialize(view);
-  string heroName = NameGenerator::firstNames.getNext();
-  view->initialize();
   while (1) {
-    auto choice = view->chooseFromList("Welcome to KeeperRL.", { "Keeper mode", "Adventure mode", "High scores"});
-    if (!choice)
+    Tribe::init();
+    Item::identifyEverything();
+    NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
+        "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt");
+    ItemFactory::init();
+    bool modelReady = false;
+    messageBuffer.initialize(view);
+    string heroName = NameGenerator::firstNames.getNext();
+    view->initialize();
+    auto choice = view->chooseFromList("", {
+        View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
+        View::ListElem("Or simply:", View::TITLE), "View high scores", "Quit"});
+    if (!choice || choice == 3)
       exit(0);
     if (choice == 2) {
       Model* m = new Model(view);
@@ -63,13 +65,17 @@ int main(int argc, char* argv[]) {
     thread t = !dwarf ? (thread([&] { model = Model::collectiveModel(view); modelReady = true; })) :
       (thread([&] { model = Model::heroModel(view, heroName); modelReady = true; }));
     view->displaySplash(modelReady);
+    t.join();
     int var = 0;
     view->setTimeMilli(0);
-    while (1) {
-      if (model->isTurnBased())
-        model->update(var++);
-      else
-        model->update(double(view->getTimeMilli()) / 300);
+    try {
+      while (1) {
+        if (model->isTurnBased())
+          model->update(var++);
+        else
+          model->update(double(view->getTimeMilli()) / 300);
+      }
+    } catch (...) {
     }
   }
   return 0;

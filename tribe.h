@@ -28,19 +28,19 @@ class Tribe : public EventListener {
 
   static void init();
 
-  static Tribe* const monster;
-  static Tribe* const pest;
-  static Tribe* const wildlife;
-  static Tribe* const human;
-  static Tribe* const elven;
-  static Tribe* const dwarven;
-  static Tribe* const goblin;
-  static Tribe* const player;
-  static Tribe* const vulture;
-  static Tribe* const dragon;
-  static Tribe* const castleCellar;
-  static Tribe* const bandit;
-  static Tribe* const killEveryone;
+  static Tribe* monster;
+  static Tribe* pest;
+  static Tribe* wildlife;
+  static Tribe* human;
+  static Tribe* elven;
+  static Tribe* dwarven;
+  static Tribe* goblin;
+  static Tribe* player;
+  static Tribe* vulture;
+  static Tribe* dragon;
+  static Tribe* castleCellar;
+  static Tribe* bandit;
+  static Tribe* killEveryone;
 
   private:
 

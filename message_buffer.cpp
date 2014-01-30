@@ -34,6 +34,7 @@ void MessageBuffer::addMessage(string msg) {
 
 void MessageBuffer::initialize(View* view) {
   this->view = view;
+  messages.clear();
 }
 
 void MessageBuffer::showHistory() {

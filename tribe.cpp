@@ -12,18 +12,18 @@ class KillEveryone : public Tribe {
   }
 };
 
-Tribe* const Tribe::monster = new Tribe("", false);
-Tribe* const Tribe::pest = new Tribe("", false);
-Tribe* const Tribe::wildlife = new Tribe("", false);
-Tribe* const Tribe::elven = new Tribe("elves", true);
-Tribe* const Tribe::human = new Tribe("humans", true);
-Tribe* const Tribe::goblin = new Tribe("goblins", true);
-Tribe* const Tribe::dwarven = new Tribe("dwarves", true);
-Tribe* const Tribe::player = new Tribe("", false);
-Tribe* const Tribe::dragon = new Tribe("", false);
-Tribe* const Tribe::castleCellar = new Tribe("", false);
-Tribe* const Tribe::bandit = new Tribe("", false);
-Tribe* const Tribe::killEveryone = new KillEveryone();
+Tribe* Tribe::monster = new Tribe("", false);
+Tribe* Tribe::pest = new Tribe("", false);
+Tribe* Tribe::wildlife = new Tribe("", false);
+Tribe* Tribe::elven = new Tribe("elves", true);
+Tribe* Tribe::human = new Tribe("humans", true);
+Tribe* Tribe::goblin = new Tribe("goblins", true);
+Tribe* Tribe::dwarven = new Tribe("dwarves", true);
+Tribe* Tribe::player = new Tribe("", false);
+Tribe* Tribe::dragon = new Tribe("", false);
+Tribe* Tribe::castleCellar = new Tribe("", false);
+Tribe* Tribe::bandit = new Tribe("", false);
+Tribe* Tribe::killEveryone = new KillEveryone();
 
 Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
 }
@@ -122,6 +122,18 @@ void Tribe::onItemsStolen(const Creature* attacker) {
 }
 
 void Tribe::init() {
+  monster = new Tribe("", false);
+  pest = new Tribe("", false);
+  wildlife = new Tribe("", false);
+  elven = new Tribe("elves", true);
+  human = new Tribe("humans", true);
+  goblin = new Tribe("goblins", true);
+  dwarven = new Tribe("dwarves", true);
+  player = new Tribe("", false);
+  dragon = new Tribe("", false);
+  castleCellar = new Tribe("", false);
+  bandit = new Tribe("", false);
+  killEveryone = new KillEveryone();
   EventListener::addListener(elven);
   EventListener::addListener(goblin);
   EventListener::addListener(human);

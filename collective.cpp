@@ -220,7 +220,7 @@ void Collective::handleMarket(View* view, int prevItem) {
 
 static string getTechLevelName(int level) {
   CHECK(level >= 0 && level < 4);
-  return vector<string>({"basic", "advanced", "master", "legendary"})[level];
+  return vector<string>({"basic", "advanced", "expert", "master"})[level];
 }
 
 struct SpellLearningInfo {
@@ -1326,9 +1326,6 @@ void Collective::onConqueredLand(const string& name) {
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim == heart) {
     model->gameOver(heart, kills.size(), "innocent beings", points);
- /*   messageBuffer.addMessage(MessageBuffer::important("Your dungeon heart was destroyed. "
-          "You've been playing KeeperRL alpha."));*/
-    exit(0);
   }
   if (contains(creatures, victim)) {
     Creature* c = const_cast<Creature*>(victim);

@@ -13,6 +13,9 @@
 
 class Collective;
 
+struct GameOverException {
+};
+
 /**
   * Main class that holds all game logic.
   */

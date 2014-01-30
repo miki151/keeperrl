@@ -594,7 +594,7 @@ static Tile getTile(const ViewObject& obj, bool sprite) {
     return getAsciiTile(obj);
 }
 
-RenderWindow* display;
+RenderWindow* display = nullptr;
 sf::View* sfView;
 
 int screenWidth;
@@ -726,77 +726,102 @@ int rightBarWidth = 280;
 int rightBarText = 250;
 int bottomBarHeight = 75;
 
+const MapMemory* lastMemory = nullptr;
+
 void WindowView::initialize() {
-  display = new RenderWindow(VideoMode(1024, 600, 32), "KeeperRL");
-  sfView = new sf::View(display->getDefaultView());
-  screenHeight = display->getSize().y;
-  screenWidth = display->getSize().x;
+  if (!display) {
+    display = new RenderWindow(VideoMode(1024, 600, 32), "KeeperRL");
+    sfView = new sf::View(display->getDefaultView());
+    screenHeight = display->getSize().y;
+    screenWidth = display->getSize().x;
 
-  textFont.loadFromFile("coolvetica rg.ttf");
-  tileFont.loadFromFile("coolvetica rg.ttf");
-  symbolFont.loadFromFile("Symbola.ttf");
+    textFont.loadFromFile("coolvetica rg.ttf");
+    tileFont.loadFromFile("coolvetica rg.ttf");
+    symbolFont.loadFromFile("Symbola.ttf");
 
-  asciiLayouts = {
+    asciiLayouts = {
       MapLayout::gridLayout(screenWidth, screenHeight, 16, 20, 0, topBarHeight, rightBarWidth, bottomBarHeight,
           allLayers),
       MapLayout::gridLayout(screenWidth, screenHeight, 8, 10, 0, topBarHeight, rightBarWidth, bottomBarHeight,
-      {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
-  spriteLayouts = {
+          {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
+    spriteLayouts = {
       MapLayout::gridLayout(screenWidth, screenHeight, 36, 36, 0, topBarHeight, rightBarWidth,
           bottomBarHeight, allLayers),
       MapLayout::gridLayout(screenWidth, screenHeight, 18, 18, 0, topBarHeight, rightBarWidth,
           bottomBarHeight, allLayers), true};
-  currentTileLayout = spriteLayouts;
+    currentTileLayout = spriteLayouts;
 
-  mapLayout = currentTileLayout.normalLayout;
+    mapLayout = currentTileLayout.normalLayout;
 
-  worldLayout = MapLayout::worldLayout(screenWidth, screenHeight, 0, 80, 220, 75);
-  allLayouts.push_back(asciiLayouts.normalLayout);
-  allLayouts.push_back(asciiLayouts.unzoomLayout);
-  allLayouts.push_back(spriteLayouts.normalLayout);
-  allLayouts.push_back(spriteLayouts.unzoomLayout);
-  allLayouts.push_back(worldLayout);
-  mapBuffer.create(maxTilesX, maxTilesY);
-  Image tileImage;
-  CHECK(tileImage.loadFromFile("tiles_int.png"));
-  Image tileImage2;
-  CHECK(tileImage2.loadFromFile("tiles2_int.png"));
-  Image tileImage3;
-  CHECK(tileImage3.loadFromFile("tiles3_int.png"));
-  Image tileImage4;
-  CHECK(tileImage4.loadFromFile("tiles4_int.png"));
-  Image tileImage5;
-  CHECK(tileImage5.loadFromFile("tiles5_int.png"));
-  Image tileImage6;
-  CHECK(tileImage6.loadFromFile("tiles6_int.png"));
-  Image tileImage7;
-  CHECK(tileImage7.loadFromFile("tiles7_int.png"));
-  tiles.resize(7);
-  tiles[0].loadFromImage(tileImage);
-  tiles[1].loadFromImage(tileImage2);
-  tiles[2].loadFromImage(tileImage3);
-  tiles[3].loadFromImage(tileImage4);
-  tiles[4].loadFromImage(tileImage5);
-  tiles[5].loadFromImage(tileImage6);
-  tiles[6].loadFromImage(tileImage7);
-  //for (Texture& tex : tiles)
-  //  tex.setSmooth(true);
+    worldLayout = MapLayout::worldLayout(screenWidth, screenHeight, 0, 80, 220, 75);
+    allLayouts.push_back(asciiLayouts.normalLayout);
+    allLayouts.push_back(asciiLayouts.unzoomLayout);
+    allLayouts.push_back(spriteLayouts.normalLayout);
+    allLayouts.push_back(spriteLayouts.unzoomLayout);
+    allLayouts.push_back(worldLayout);
+    mapBuffer.create(maxTilesX, maxTilesY);
+    Image tileImage;
+    CHECK(tileImage.loadFromFile("tiles_int.png"));
+    Image tileImage2;
+    CHECK(tileImage2.loadFromFile("tiles2_int.png"));
+    Image tileImage3;
+    CHECK(tileImage3.loadFromFile("tiles3_int.png"));
+    Image tileImage4;
+    CHECK(tileImage4.loadFromFile("tiles4_int.png"));
+    Image tileImage5;
+    CHECK(tileImage5.loadFromFile("tiles5_int.png"));
+    Image tileImage6;
+    CHECK(tileImage6.loadFromFile("tiles6_int.png"));
+    Image tileImage7;
+    CHECK(tileImage7.loadFromFile("tiles7_int.png"));
+    tiles.resize(7);
+    tiles[0].loadFromImage(tileImage);
+    tiles[1].loadFromImage(tileImage2);
+    tiles[2].loadFromImage(tileImage3);
+    tiles[3].loadFromImage(tileImage4);
+    tiles[4].loadFromImage(tileImage5);
+    tiles[5].loadFromImage(tileImage6);
+    tiles[6].loadFromImage(tileImage7);
+    //for (Texture& tex : tiles)
+    //  tex.setSmooth(true);
+  } else {
+    lastMemory = nullptr;
+  }
 }
 
-void WindowView::displaySplash(bool& ready) {
+static vector<Vec2> splashPositions;
+static vector<string> splashPaths { "splash2e.png", "splash2a.png", "splash2b.png", "splash2c.png", "splash2d.png" };
+
+void displayMenuSplash2() {
+  Image splash;
+  CHECK(splash.loadFromFile("splash2f.png"));
+  int bottomMargin = 90;
+  drawImage(screenWidth / 2 - 415, screenHeight - bottomMargin, splash);
+  CHECK(splash.loadFromFile("splash2e.png"));
+  drawImage((screenWidth - splash.getSize().x) / 2, 90 - splash.getSize().y, splash);
+}
+
+void displayMenuSplash() {
   Image splash;
   CHECK(splash.loadFromFile("splash2f.png"));
   int bottomMargin = 100;
-  drawImage(50, screenHeight - bottomMargin, splash);
+  drawImage(100, screenHeight - bottomMargin, splash);
   vector<Rectangle> drawn;
-  vector<string> paths { "splash2e.png", "splash2a.png", "splash2b.png", "splash2c.png", "splash2d.png" };
-  random_shuffle(++paths.begin(), paths.end(), [](int a) { return Random.getRandom(a);});
-  for (auto path : paths) {
-    CHECK(splash.loadFromFile(path));
+  if (splashPositions.empty())
+    random_shuffle(++splashPaths.begin(), splashPaths.end(), [](int a) { return Random.getRandom(a);});
+  for (int path : All(splashPaths)) {
+    CHECK(splash.loadFromFile(splashPaths[path]));
     int cnt = 100;
     while (1) {
-      int px = Random.getRandom(screenWidth - splash.getSize().x);
-      int py = Random.getRandom(screenHeight - bottomMargin - splash.getSize().y);
+      int px, py;
+      if (!splashPositions.empty()) {
+        px = splashPositions[path].x;
+        py = splashPositions[path].y;
+      } else {
+        px = Random.getRandom(screenWidth - splash.getSize().x);
+        py = Random.getRandom(screenHeight - bottomMargin - splash.getSize().y);
+        splashPositions.push_back({px, py});
+      }
       Rectangle pos(px, py, px + splash.getSize().x, py + splash.getSize().y);
       bool bad = false;
       for (Rectangle& rec : drawn)
@@ -816,18 +841,21 @@ void WindowView::displaySplash(bool& ready) {
     }
   }
  // drawText(white, screenWidth / 2, screenHeight - 60, "Loading...", true);
-  drawAndClearBuffer();
+ // drawAndClearBuffer();
+}
+
+void WindowView::displaySplash(bool& ready) {
+  Image splash;
+  CHECK(splash.loadFromFile(splashPaths[Random.getRandom(1, splashPaths.size())]));
   while (!ready) {
+    drawImage((screenWidth - splash.getSize().x) / 2, (screenHeight - splash.getSize().y) / 2, splash);
+    drawText(white, screenWidth / 2, screenHeight - 60, "Creating a new world, just for you...", true);
+    drawAndClearBuffer();
     sf::sleep(sf::milliseconds(30));
     Event event;
     while (display->pollEvent(event)) {
       if (event.type == Event::Resized) {
         resize(event.size.width, event.size.height);
-      }
-      if (event.type == Event::GainedFocus || event.type == Event::Resized) {
-        drawImage((screenWidth - splash.getSize().x) / 2, (screenHeight - splash.getSize().y) / 2, splash);
-        drawText(white, screenWidth / 2, screenHeight - 60, "Creating a new world, just for you...", true);
-        drawAndClearBuffer();
       }
     }
   }
@@ -1323,7 +1351,6 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
 
 Table<Optional<ViewIndex>> objects(maxTilesX, maxTilesY);
 map<Vec2, ViewObject> borderCreatures;
-const MapMemory* lastMemory = nullptr;
 set<Vec2> shadowed;
 
 enum class ConnectionId {
@@ -1529,8 +1556,10 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
 }
 
 void WindowView::drawMap() {
-  if (!lastMemory)
+  if (!lastMemory) {
+    displayMenuSplash2();
     return;
+  }
 
   int sizeX = mapLayout->squareWidth();
   int sizeY = mapLayout->squareHeight();
@@ -2147,7 +2176,9 @@ Action WindowView::getAction() {
     if (optionalAction)
       return *optionalAction;
     switch (key->code) {
-      case Keyboard::Escape : if (yesOrNoPrompt("Are you sure you want to quit?")) exit(0); break;
+      case Keyboard::Escape : if (yesOrNoPrompt("Are you sure you want to abandon your game?"))
+                                throw string();
+                              break;
       case Keyboard::Z: unzoom(key->shift, key->control); return Action(ActionId::IDLE);
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
       case Keyboard::F2: switchTiles(); return Action(ActionId::IDLE);

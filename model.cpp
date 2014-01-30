@@ -315,6 +315,7 @@ void Model::conquered(const string& title, const string& land, vector<const Crea
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "conquered the land of " + land + "," << points << std::endl;
   showHighscore(true);
+  throw GameOverException();
 }
 
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
@@ -335,6 +336,9 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "killed by a " + killer << "," << points << std::endl;
   showHighscore(true);
+  if (view->yesOrNoPrompt("Would you like to see the last messages?"))
+    messageBuffer.showHistory();
+  throw GameOverException();
 }
 
 void Model::showHighscore(bool highlightLast) {

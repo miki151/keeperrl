@@ -35,6 +35,7 @@ class EventListener {
   static void removeListener(EventListener*);
 
   virtual const Level* getListenerLevel() const { return nullptr; }
+  static void initialize();
 
   private:
   static vector<EventListener*> listeners;

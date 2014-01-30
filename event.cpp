@@ -5,6 +5,10 @@
 
 vector<EventListener*> EventListener::listeners;
 
+void EventListener::initialize() {
+  listeners.clear();
+}
+
 void EventListener::addListener(EventListener* l) {
   listeners.push_back(l);
 }
