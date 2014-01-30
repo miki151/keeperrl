@@ -214,12 +214,14 @@ Model* Model::heroModel(View* view, const string& heroName) {
 Model* Model::collectiveModel(View* view) {
   Model* m = new Model(view);
   CreatureFactory factory = CreatureFactory::collectiveStart();
-  vector<Location*> villageLocations = getVillageLocations(1);
+  vector<Location*> villageLocations = getVillageLocations(2);
   vector<SettlementInfo> settlements{
     {SettlementType::CASTLE, CreatureFactory::humanVillagePeaceful(), Nothing(), villageLocations[0], Tribe::human,
-      {30, 20}, {}}
-  };
-  for (int i : Range(2, 5))
+      {30, 20}, {}},
+    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), CreatureId::ELF_LORD, villageLocations[1],
+      Tribe::elven,
+      {30, 20}, {}}  };
+  for (int i : Range(3, 6))
     settlements.push_back(
        {SettlementType::COTTAGE, CreatureFactory::humanVillagePeaceful(), Nothing(), new Location(), Tribe::human,
        {10, 10}, {}});
@@ -227,6 +229,7 @@ Model* Model::collectiveModel(View* view) {
   m->collective = new Collective(m, CreatureFactory::collectiveMinions());
   m->collective->setLevel(top);
   Tribe::human->addEnemy(Tribe::player);
+  Tribe::elven->addEnemy(Tribe::player);
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::player,
       MonsterAIFactory::collective(m->collective));
   Creature* ref = c.get();
@@ -240,24 +243,29 @@ Model* Model::collectiveModel(View* view) {
     m->collective->addCreature(c.get(), MinionType::IMP);
     m->addCreature(std::move(c));
   }
-  vector<tuple<int, int, int>> heroAttackTime {
+  vector<vector<tuple<int, int, int>>> heroAttackTime { {
       { make_tuple(1400, 2, 4) },
       { make_tuple(2200, 4, 7) },
-      { make_tuple(3200, 12, 18) }};
+      { make_tuple(3200, 12, 18) }},
+    {{ make_tuple(1400, 2, 4) },
+      { make_tuple(2200, 2, 4) },
+      { make_tuple(3200, 4, 7) }}};
+
   vector<pair<CreatureFactory, CreatureFactory>> villageFactories {
     { CreatureFactory::collectiveEnemies(), CreatureFactory::collectiveFinalAttack() },
     { CreatureFactory::collectiveElfEnemies(), CreatureFactory::collectiveElfFinalAttack() }
   };
   int cnt = 0;
-  for (Location* loc : villageLocations) {
+  for (int i : All(villageLocations)) {
+    Location* loc = villageLocations[i];
     VillageControl* control = VillageControl::humanVillage(m->collective, loc,
         StairDirection::DOWN, StairKey::DWARF);
     CreatureFactory firstAttack = villageFactories[cnt].first;
     CreatureFactory lastAttack = villageFactories[cnt].second;
-    for (int i : All(heroAttackTime)) {
-      int attackTime = get<0>(heroAttackTime[i]);
-      int heroCount = Random.getRandom(get<1>(heroAttackTime[i]), get<2>(heroAttackTime[i]));
-      CreatureFactory& factory = (i == heroAttackTime.size() - 1 ? lastAttack : firstAttack);
+    for (int j : All(heroAttackTime[i])) {
+      int attackTime = get<0>(heroAttackTime[i][j]);
+      int heroCount = Random.getRandom(get<1>(heroAttackTime[i][j]), get<2>(heroAttackTime[i][j]));
+      CreatureFactory& factory = (j == heroAttackTime.size() - 1 ? lastAttack : firstAttack);
       for (int k : Range(heroCount)) {
         PCreature c = factory.random(MonsterAIFactory::villageControl(control, loc));
         control->addCreature(c.get(), attackTime);

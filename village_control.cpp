@@ -19,12 +19,14 @@ VillageControl::~VillageControl() {
 }
 
 void VillageControl::addCreature(Creature* c, int attackPoints) {
+  if (tribe == nullptr)
+    tribe = c->getTribe();
+  CHECK(c->getTribe() == tribe);
   attackInfo[attackPoints].creatures.push_back(c);
   allCreatures.push_back(c);
 }
 
 bool VillageControl::startedAttack(Creature* c) {
-  int keeperPointsMult = 2;
   for (auto& elem : attackInfo)
     if (contains(elem.second.creatures, c)) {
       if (elem.second.attackTime > -1) {
@@ -40,7 +42,7 @@ bool VillageControl::startedAttack(Creature* c) {
           return true;
         }
       } else
-        if (elem.first <= c->getTime() + villain->getNumPoints() * keeperPointsMult) {
+        if (elem.first <= c->getTime() + attackPoints) {
           elem.second.attackTime = c->getTime() + 50;
           messages.insert(elem.second.attackTime);
         }
@@ -49,6 +51,8 @@ bool VillageControl::startedAttack(Creature* c) {
 }
 
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
+  if (victim->getTribe() == tribe)
+    attackPoints += 2 * victim->getDifficultyPoints();
   if (contains(allCreatures, victim)) {
     removeElement(allCreatures, victim);
     if (allCreatures.empty()) {

@@ -536,6 +536,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   }
   info.techButtons.push_back({Nothing(), ""});
   info.techButtons.push_back({ViewObject(ViewId::LIBRARY, ViewLayer::CREATURE, ""), "library"});
+  info.techButtons.push_back({ViewObject(ViewId::GOLD, ViewLayer::CREATURE, ""), "black market"});
 }
 
 const MapMemory& Collective::getMemory(const Level* l) const {
@@ -740,6 +741,8 @@ void Collective::processInput(View* view) {
           };
         if (action.getNum() == techIds.size() + 1)
           handleLibrary(view);
+        if (action.getNum() == techIds.size() + 2)
+          handleMarket(view);
         break;
     case CollectiveAction::ROOM_BUTTON: currentButton = action.getNum(); break;
     case CollectiveAction::CREATURE_BUTTON: 
@@ -907,10 +910,6 @@ void Collective::onAppliedItemCancel(Vec2 pos) {
 
 Vec2 Collective::getHeartPos() const {
   return heart->getPosition();
-}
-
-int Collective::getNumPoints() const {
-  return points;
 }
 
 ItemPredicate Collective::unMarkedItems(ItemType type) const {

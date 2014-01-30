@@ -58,7 +58,6 @@ class Collective : public CreatureView, public EventListener {
   void onCantPickItem(vector<Item*> items);
 
   Vec2 getHeartPos() const;
-  int getNumPoints() const;
 
   void render(View*);
   void possess(const Creature*, View*);

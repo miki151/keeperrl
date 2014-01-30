@@ -971,7 +971,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 ViewObject(ViewId::AVATAR, ViewLayer::CREATURE, "Duke"), tribe, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 25;
+                                c.strength = 26;
                                 c.dexterity = 18;
                                 c.barehandedDamage = 8;
                                 c.humanoid = true;
@@ -1013,10 +1013,10 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionHostile = "\"Heeelp!\"";
                                 c.name = "child";), tribe, factory);
     case CreatureId::CLAY_GOLEM: return get(ViewId::CLAY_GOLEM, CATTR(
-                                c.speed = 60;
+                                c.speed = 50;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 17;
-                                c.dexterity = 13;
+                                c.strength = 14;
+                                c.dexterity = 12;
                                 c.barehandedDamage = 13;
                                 c.barehandedAttack = AttackType::PUNCH;
                                 c.humanoid = false;
@@ -1025,9 +1025,9 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.weight = 100;
                                 c.name = "clay golem";), tribe, factory);
     case CreatureId::STONE_GOLEM: return get(ViewId::STONE_GOLEM, CATTR(
-                                c.speed = 80;
+                                c.speed = 60;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 19;
+                                c.strength = 17;
                                 c.dexterity = 13;
                                 c.barehandedDamage = 15;
                                 c.barehandedAttack = AttackType::PUNCH;
@@ -1037,9 +1037,9 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.weight = 120;
                                 c.name = "stone golem";), tribe, factory);
     case CreatureId::IRON_GOLEM: return get(ViewId::IRON_GOLEM, CATTR(
-                                c.speed = 100;
+                                c.speed = 80;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 21;
+                                c.strength = 19;
                                 c.dexterity = 13;
                                 c.barehandedDamage = 17;
                                 c.barehandedAttack = AttackType::PUNCH;
@@ -1049,9 +1049,9 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.weight = 120;
                                 c.name = "iron golem";), tribe, factory);
     case CreatureId::LAVA_GOLEM: return get(ViewId::LAVA_GOLEM, CATTR(
-                                c.speed = 100;
+                                c.speed = 80;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 21;
+                                c.strength = 20;
                                 c.dexterity = 15;
                                 c.barehandedDamage = 17;
                                 c.barehandedAttack = AttackType::PUNCH;
@@ -1208,7 +1208,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
     case CreatureId::BILE_DEMON: return get(ViewId::BILE_DEMON, CATTR(
                                 c.speed = 80;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 19;
+                                c.strength = 17;
                                 c.dexterity = 12;
                                 c.barehandedDamage = 4;
                                 c.humanoid = true;

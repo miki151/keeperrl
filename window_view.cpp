@@ -200,7 +200,7 @@ Tile getSprite(ViewId id) {
     case ViewId::ELF_CHILD: return Tile(14, 6);
     case ViewId::ELF_LORD: return Tile(13, 6);
     case ViewId::ELVEN_SHOPKEEPER: return Tile(4, 2);
-    case ViewId::IMP: return Tile(18, 0);
+    case ViewId::IMP: return Tile(18, 19);
     case ViewId::BILE_DEMON: return Tile(8, 14);
     case ViewId::CHICKEN: return Tile(18, 1);
     case ViewId::DWARF: return Tile(2, 6);
@@ -1244,8 +1244,8 @@ void WindowView::drawTechnology(GameInfo::BandInfo& info) {
 }
 
 void WindowView::drawKeeperHelp() {
-  vector<string> helpText { "use mouse to", "dig and build", "", "click on minion list", "to possess",
-    "", "heroes come from", "the stairs", "", "[space]  pause", "[z]  zoom"};
+  vector<string> helpText { "use mouse to", "dig and build", "", "click on minion", "to possess",
+    "", "your enemies ", "are in the west", "[space]  pause", "[z]  zoom"};
   int cnt = 0;
   for (string line : helpText) {
     int height = legendStartHeight + cnt * legendLineHeight;
@@ -1275,8 +1275,8 @@ void WindowView::drawBandInfo() {
     drawViewObject(info.numGold[i].viewObject, 288 + resourceSpacing * i, line1, true);
   }
   int marketX = resourceX + resourceSpacing * info.numGold.size();
-  drawText(white, marketX, line1, "black market");
-  marketButton = Rectangle(marketX, line1, marketX + getTextLength("market"), line1 + legendLineHeight);
+ /* drawText(white, marketX, line1, "black market");
+  marketButton = Rectangle(marketX, line1, marketX + getTextLength("market"), line1 + legendLineHeight);*/
   sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f728, L'?'};
   optionButtons.clear();
   for (int i = 0; i < 4; ++i) {
@@ -2039,8 +2039,8 @@ CollectiveAction WindowView::getClick() {
               myClock.cont();
             return CollectiveAction(CollectiveAction::IDLE);
           case Keyboard::Escape:
-            if (yesOrNoPrompt("Are you sure you want to quit?"))
-              exit(0);
+            if (yesOrNoPrompt("Are you sure you want to abandon your game?"))
+              throw string();
             break;
           default:
             break;
@@ -2069,8 +2069,8 @@ CollectiveAction WindowView::getClick() {
           if (event.mouseButton.button == sf::Mouse::Right)
             chosenCreature = "";
           if (event.mouseButton.button == sf::Mouse::Left) {
-            if (marketButton && clickPos.inRectangle(*marketButton))
-              return CollectiveAction(CollectiveAction::MARKET);
+ /*           if (marketButton && clickPos.inRectangle(*marketButton))
+              return CollectiveAction(CollectiveAction::MARKET);*/
             for (int i : All(techButtons))
               if (clickPos.inRectangle(techButtons[i]))
                 return CollectiveAction(CollectiveAction::TECHNOLOGY, i);

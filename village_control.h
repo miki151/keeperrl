@@ -36,6 +36,8 @@ class VillageControl : public EventListener {
   StairDirection direction;
   StairKey stairKey;
   string name;
+  Tribe* tribe = nullptr;
+  int attackPoints = 0;
 };
 
 #endif

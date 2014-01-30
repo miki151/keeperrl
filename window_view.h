@@ -127,7 +127,6 @@ class WindowView: public View {
   vector<string> creatureNames;
   string chosenCreature;
   vector<const Creature*> chosenCreatures;
-  Optional<Rectangle> marketButton;
 
   Vec2 lastMousePos;
   struct {
