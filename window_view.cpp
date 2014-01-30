@@ -737,9 +737,9 @@ void WindowView::initialize() {
     screenHeight = display->getSize().y;
     screenWidth = display->getSize().x;
 
-    textFont.loadFromFile("coolvetica rg.ttf");
-    tileFont.loadFromFile("coolvetica rg.ttf");
-    symbolFont.loadFromFile("Symbola.ttf");
+    CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
+    CHECK(tileFont.loadFromFile("coolvetica rg.ttf"));
+    CHECK(symbolFont.loadFromFile("Symbola.ttf"));
 
     asciiLayouts = {
       MapLayout::gridLayout(screenWidth, screenHeight, 16, 20, 0, topBarHeight, rightBarWidth, bottomBarHeight,
