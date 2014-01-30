@@ -1620,6 +1620,8 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   }
   LevelMaker* castleMaker = nullptr;
   LevelMaker* elvenVillage = nullptr;
+  map<pair<LevelMaker*, LevelMaker*>, double> minDistances;
+  map<pair<LevelMaker*, LevelMaker*>, double> maxDistances;
   for (SettlementInfo settlement : settlements) {
     MakerQueue* queue = nullptr;
     switch (settlement.type) {
@@ -1640,15 +1642,23 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
     subMakers.push_back(queue);
     subSizes.push_back(settlement.size);
   }
+  for (int i : Range(Random.getRandom(2, 5))) {
+    subMakers.push_back(new Empty(SquareType::CROPS));
+    subSizes.emplace_back(Random.getRandom(5, 15), Random.getRandom(5, 15));
+    maxDistances[{elvenVillage, subMakers.back()}] = 18;
+  }
   LevelMaker* swamp = makeDragonSwamp(StairKey::DRAGON, Quest::dragon);
   subMakers.push_back(swamp);
   subSizes.emplace_back(10, 10);
+  maxDistances[{castleMaker, swamp}] = 50;
   Location* banditLocation = new Location("bandit hideout", "The bandits have robbed many travelers and townsfolk.");
   Quest::bandits->setLocation(banditLocation);
   LevelMaker* bandits = cottage(CreatureFactory::singleType(Tribe::bandit, CreatureId::BANDIT), Tribe::bandit,
       banditLocation);
   subMakers.push_back(bandits);
   subSizes.emplace_back(12,8);
+  maxDistances[{elvenVillage, bandits}] = 100;
+  minDistances[{elvenVillage, bandits}] = 50;
   int numCemeteries = 1;
   for (int i : Range(numCemeteries)) {
     Location* loc = new Location("old cemetery", "Terrible evil is said to be lurking there.");
@@ -1683,7 +1693,8 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   queue->addMaker(new Vegetation(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
   queue->addMaker(new Vegetation(0.2, 0.3, SquareType::MOUNTAIN, vegetationHigh, probs));
   queue->addMaker(new Margin(100, new RandomLocations(subMakers, subSizes,
-      new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND), new NoAttribPredicate(SquareAttrib::FOG)), true, {{{elvenVillage, bandits}, 50}}, {{{castleMaker, swamp}, 50}, {{elvenVillage, bandits}, 100}})));
+      new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND), new NoAttribPredicate(SquareAttrib::FOG)), true,
+      minDistances, maxDistances)));
   MakerQueue* tower = new MakerQueue();
   tower->addMaker(towerLevel(StairKey::TOWER, Nothing()));
   tower->addMaker(new LocationMaker(Location::towerTopLocation()));
