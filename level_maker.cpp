@@ -1713,6 +1713,8 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   predicates.push_back(new TypePredicate(SquareType::HILL));
   subSizes.emplace_back(4, 4);
   map<pair<LevelMaker*, LevelMaker*>, double> minDistances;
+  map<pair<LevelMaker*, LevelMaker*>, double> maxDistances;
+  vector<LevelMaker*> cottages;
   for (SettlementInfo settlement : settlements) {
     MakerQueue* queue = nullptr;
     switch (settlement.type) {
@@ -1721,7 +1723,9 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
       case SettlementType::CASTLE: queue = castle(settlement.factory, settlement.elder, settlement.location,
                                        settlement.tribe, settlement.downStairs);
                                    break;
-      case SettlementType::COTTAGE: queue = cottage(settlement.factory, settlement.tribe, settlement.location); break;
+      case SettlementType::COTTAGE: queue = cottage(settlement.factory, settlement.tribe, settlement.location);
+                                    cottages.push_back(queue);
+                                    break;
     }
     minDistances[{startingPos, queue}] = 50;
     subMakers.push_back(queue);
@@ -1729,6 +1733,13 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
           new NoAttribPredicate(SquareAttrib::FOG)));
     subSizes.emplace_back(settlement.size);
   }
+  for (LevelMaker* cottage : cottages)
+    for (int i : Range(Random.getRandom(1, 3))) {
+      subMakers.push_back(new Empty(SquareType::CROPS));
+      subSizes.emplace_back(Random.getRandom(5, 15), Random.getRandom(5, 15));
+      maxDistances[{cottage, subMakers.back()}] = 13;
+      predicates.push_back(new AttribPredicate(SquareAttrib::LOWLAND));
+    }
   subMakers.push_back(new Lake());
   subSizes.emplace_back(20, 20);
   predicates.push_back(new AttribPredicate(SquareAttrib::LOWLAND));
@@ -1744,7 +1755,8 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   queue->addMaker(new Vegetation(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
   queue->addMaker(new Vegetation(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
   queue->addMaker(new Vegetation(0.2, 0.3, SquareType::MOUNTAIN, vegetationHigh, probs));
-  queue->addMaker(new Margin(10, new RandomLocations(subMakers, subSizes, predicates, true, minDistances, {})));
+  queue->addMaker(new Margin(10, new RandomLocations(subMakers, subSizes, predicates, true, minDistances,
+          maxDistances)));
   queue->addMaker(new Roads(SquareType::PATH));
   queue->addMaker(new Items(ItemFactory::mushrooms(), SquareType::GRASS, 30, 60));
   return new BorderGuard(queue);

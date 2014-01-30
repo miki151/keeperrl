@@ -539,6 +539,9 @@ Square* SquareFactory::get(SquareType s) {
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR_BACKGROUND,"Rope bridge"), "rope bridge", true);
     case SquareType::GRASS:
         return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND, "Grass"), "grass", true, false, 0, 0, {{SquareType::ANIMAL_TRAP, 10}});
+    case SquareType::CROPS:
+        return new Square(ViewObject(ViewId::CROPS, ViewLayer::FLOOR_BACKGROUND, "Potatoes"),
+            "potatoes", true, false, 0, 0);
     case SquareType::MUD:
         return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Mud"), "mud", true);
     case SquareType::ROAD:

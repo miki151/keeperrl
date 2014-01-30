@@ -213,6 +213,7 @@ Tile getSprite(ViewId id) {
     case ViewId::SAND: return Tile(7, 12, 2);
     case ViewId::MUD: return Tile(3, 12, 2);
     case ViewId::GRASS: return Tile(0, 13, 2);
+    case ViewId::CROPS: return Tile(9, 12, 2);
     case ViewId::WALL: return getWallTile(2);
     case ViewId::MOUNTAIN: return Tile(17, 2, 2, true);
     case ViewId::MOUNTAIN2: return getWallTile(21);
@@ -421,6 +422,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::SAND: return Tile('.', yellow);
     case ViewId::MUD: return Tile(0x1d0f0, brown, true);
     case ViewId::GRASS: return Tile(0x1d0f0, green, true);
+    case ViewId::CROPS: return Tile(0x1d0f0, yellow, true);
     case ViewId::CASTLE_WALL: return Tile('#', lightGray);
     case ViewId::MUD_WALL: return Tile('#', lightBrown);
     case ViewId::WALL: return Tile('#', lightGray);
