@@ -44,7 +44,6 @@ class Collective : public CreatureView, public EventListener {
   void tick();
   void update(Creature*);
   MoveInfo getMove(Creature* c);
-  MoveInfo getMinionMove(Creature* c);
   void addCreature(Creature* c, MinionType = MinionType::NORMAL);
   void setLevel(Level* l);
 
@@ -132,6 +131,9 @@ class Collective : public CreatureView, public EventListener {
 
   unordered_map<TechId, int> techLevels;
   double techCounter = 0;
+
+  MoveInfo getBeastMove(Creature* c);
+  MoveInfo getMinionMove(Creature* c);
 
   bool isDownstairsVisible() const;
   bool isThroneBuilt() const;

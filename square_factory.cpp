@@ -275,7 +275,7 @@ class Tree : public Square {
   }
 
   virtual bool itemBounces(Item* item) const {
-    return bounces;
+    return bounces || Random.roll(2);
   }
 
   virtual void onEnterSpecial(Creature* c) override {

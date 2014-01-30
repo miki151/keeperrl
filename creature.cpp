@@ -178,7 +178,7 @@ bool Creature::canSwapPosition(Vec2 direction) const {
     privateMessage(c->getTheName() + " is sleeping.");
     return false;
   }
-  return (!swapPositionCooldown || isPlayer()) && !c->stationary &&
+  return (!swapPositionCooldown || isPlayer()) && !c->stationary && !c->invincible &&
       direction.length8() == 1 && !c->isPlayer() && !c->isEnemy(this) &&
       getConstSquare(direction)->canEnterEmpty(this) && getConstSquare()->canEnterEmpty(c);
 }

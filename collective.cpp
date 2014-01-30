@@ -1059,6 +1059,20 @@ void Collective::onChangeLevelEvent(const Creature* c, const Level* from, Vec2 p
   }
 }
 
+MoveInfo Collective::getBeastMove(Creature* c) {
+  if (!Random.roll(5))
+    return NoMove;
+  Vec2 radius(7, 7);
+  for (Vec2 v : randomPermutation(Rectangle(c->getPosition() - radius, c->getPosition() + radius).getAllSquares()))
+    if (!memory[level].hasViewIndex(v)) {
+      if (auto move = c->getMoveTowards(v))
+        return {1.0, [c, move]() { return c->move(*move); }};
+      else
+        return NoMove;
+    }
+  return NoMove;
+}
+
 MoveInfo Collective::getMinionMove(Creature* c) {
   if (possessed && contains(team, c)) {
     Optional<Vec2> v;
@@ -1097,7 +1111,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
       return NoMove;
   }
   if (contains(minionByType.at(MinionType::BEAST), c))
-    return NoMove;
+    return getBeastMove(c);
   for (auto& elem : guardPosts) {
     bool isTraining = contains({MinionTask::TRAIN}, minionTasks.at(c).getState());
     if (elem.second.attender == c) {
@@ -1306,7 +1320,7 @@ void Collective::onTriggerEvent(const Level* l, Vec2 pos) {
 }
 
 void Collective::onConqueredLand(const string& name) {
-  model->conquered(*heart->getFirstName() + " the keeper", name, kills, points);
+  model->conquered(*heart->getFirstName() + " the Keeper", name, kills, points);
 }
 
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {

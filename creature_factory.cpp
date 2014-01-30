@@ -36,7 +36,7 @@ class BoulderController : public Monster {
               EventListener::addTriggerEvent(creature->getLevel(), creature->getPosition());
               break;
             }
-          if (!creature->getSquare(v * i)->canEnter(creature))
+          if (!creature->getSquare(v * i)->canEnterEmpty(creature))
             break;
         }
         if (found)
@@ -155,7 +155,7 @@ PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
             c.weight = 1000;
             c.humanoid = false;
             c.size = CreatureSize::LARGE;
-            c.speed = 200;
+            c.speed = 150;
             c.permanentlyBlind = true;
             c.noSleep = true;
             c.stationary = true;
@@ -946,7 +946,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
     case CreatureId::KNIGHT: return get(ViewId::KNIGHT, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 19;
+                                c.strength = 20;
                                 c.dexterity = 16;
                                 c.barehandedDamage = 3;
                                 c.humanoid = true;
@@ -971,7 +971,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 ViewObject(ViewId::AVATAR, ViewLayer::CREATURE, "Duke"), tribe, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 23;
+                                c.strength = 25;
                                 c.dexterity = 18;
                                 c.barehandedDamage = 8;
                                 c.humanoid = true;
@@ -1060,7 +1060,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.noSleep = true;
                                 c.notLiving = true;
                                 c.weight = 120;
-                                c.name = "iron golem";), tribe, factory);
+                                c.name = "lava golem";), tribe, factory);
     case CreatureId::ACID_MOUND: return get(ViewId::ACID_MOUND, CATTR(
                                 c.speed = 80;
                                 c.size = CreatureSize::LARGE;

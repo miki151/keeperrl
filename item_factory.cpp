@@ -368,8 +368,8 @@ ItemFactory ItemFactory::goblinShop() {
 
 ItemFactory ItemFactory::workshop() {
   return ItemFactory({
-      {ItemId::BOULDER_TRAP_ITEM, 3 },
-      {ItemId::GAS_TRAP_ITEM, 3 },
+      {ItemId::BOULDER_TRAP_ITEM, 2 },
+      {ItemId::GAS_TRAP_ITEM, 2 },
       {ItemId::SWORD, 2 },
       {ItemId::BATTLE_AXE, 1 },
       {ItemId::WAR_HAMMER, 1 },
