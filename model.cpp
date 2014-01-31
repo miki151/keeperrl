@@ -221,9 +221,14 @@ Model* Model::collectiveModel(View* view) {
     {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), Nothing(), villageLocations[1],
       Tribe::elven,
       {30, 20}, {}}  };
-  for (int i : Range(3, 6))
+  vector<CreatureFactory> cottageF {
+    CreatureFactory::humanVillagePeaceful(),
+    CreatureFactory::elvenVillage(),
+  };
+  vector<Tribe*> cottageT { Tribe::human, Tribe::elven };
+  for (int i : Range(4, 8))
     settlements.push_back(
-       {SettlementType::COTTAGE, CreatureFactory::humanVillagePeaceful(), Nothing(), new Location(), Tribe::human,
+       {SettlementType::COTTAGE, cottageF[i % 2], Nothing(), new Location(), cottageT[i % 2],
        {10, 10}, {}});
   Level* top = m->prepareTopLevel2(settlements);
   m->collective = new Collective(m);
@@ -244,14 +249,14 @@ Model* Model::collectiveModel(View* view) {
     m->addCreature(std::move(c));
   }
   vector<vector<tuple<int, int, int>>> heroAttackTime { {
-      { make_tuple(1400, 2, 4) },
-      { make_tuple(1800, 2, 4) },
-      { make_tuple(2200, 4, 7) },
-      { make_tuple(3200, 12, 18) }},
-    {{ make_tuple(1400, 2, 4) },
-      { make_tuple(1800, 2, 4) },
-      { make_tuple(2200, 2, 4) },
-      { make_tuple(3200, 4, 7) }}};
+      { make_tuple(2000, 2, 4) },
+      { make_tuple(2600, 2, 4) },
+      { make_tuple(3000, 4, 7) },
+      { make_tuple(3400, 12, 18) }},
+    {{ make_tuple(1200, 2, 4) },
+      { make_tuple(1600, 2, 4) },
+      { make_tuple(2000, 2, 4) },
+      { make_tuple(2600, 4, 7) }}};
 
   vector<pair<CreatureFactory, CreatureFactory>> villageFactories {
     { CreatureFactory::collectiveEnemies(), CreatureFactory::collectiveFinalAttack() },

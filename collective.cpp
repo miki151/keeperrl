@@ -272,20 +272,19 @@ vector<Collective::SpawnInfo> raisingInfo {
 void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   int techLevel = techLevels[TechId::NECROMANCY];
   set<Vec2> graves = mySquares.at(SquareType::GRAVE);
+  vector<View::ListElem> options;
+  bool allInactive = false;
   if (minions.size() >= minionLimit) {
- //   if (firstTime)
-      view->presentText("Information", "You have reached the limit of the number of minions.");
-    return;
-  }
+    allInactive = true;
+    options.emplace_back("You have reached the limit of the number of minions.", View::TITLE);
+  } else
   if (graves.empty()) {
-   // if (firstTime)
-      view->presentText("Information", "You need to build a graveyard and collect corpses to raise undead.");
-    return;
-  }
+    allInactive = true;
+    options.emplace_back("You need to build a graveyard and collect corpses to raise undead.", View::TITLE);
+  } else
   if (graves.size() <= minionByType.at(MinionType::UNDEAD).size()) {
-    //if (firstTime)
-      view->presentText("Information", "You need to build more graves first for your undead to sleep in.");
-    return;
+    allInactive = true;
+    options.emplace_back("You need to build more graves for your undead to sleep in.", View::TITLE);
   }
   vector<pair<Vec2, Item*>> corpses;
   for (Vec2 pos : graves) {
@@ -293,16 +292,14 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
         return it->getType() == ItemType::CORPSE && it->getCorpseInfo()->canBeRevived; }))
       corpses.push_back({pos, it});
   }
-  if (corpses.empty()) {
-   // if (firstTime)
-      view->presentText("Information", "You need to collect some corpses to raise undead.");
-    return;
+  if (!allInactive && corpses.empty()) {
+    options.emplace_back("You need to collect some corpses to raise undead.", View::TITLE);
+    allInactive = true;
   }
-  vector<View::ListElem> options;
   vector<pair<PCreature, int>> creatures;
   for (SpawnInfo info : raisingInfo) {
     Optional<View::ElemMod> mod;
-    if (info.minLevel > techLevel || info.manaCost > mana)
+    if (allInactive || info.minLevel > techLevel || info.manaCost > mana)
       mod = View::INACTIVE;
     PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
     options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost) +
@@ -377,20 +374,20 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
   int techLevel = techLevels[techId];
   set<Vec2> cages = mySquares.at(spawnSquare);
   int prevItem = false;
- // bool firstTime = true;
+  bool firstTime = true;
   while (1) {
     if (minions.size() >= minionLimit) {
- //     if (firstTime)
+      if (firstTime)
         view->presentText("Information", "You have reached the limit of the number of minions.");
       return;
     }
     if (cages.empty()) {
-  //    if (firstTime)
+      if (firstTime)
         view->presentText("Information", info1);
       return;
     }
     if (cages.size() <= minionByType.at(minionType).size()) {
-   //   if (firstTime)
+      if (firstTime)
         view->presentText("Information", info2);
       return;
     }
@@ -423,7 +420,7 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
       messageBuffer.addMessage(MessageBuffer::important("The spell failed."));
     view->updateView(this);
     prevItem = *index;
- //   firstTime = false;
+    firstTime = false;
   }
 }
 
