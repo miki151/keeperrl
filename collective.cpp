@@ -7,14 +7,13 @@
 #include "message_buffer.h"
 #include "model.h"
 
-enum Warning { NO_MANA, NO_CHESTS, MORE_CHESTS, NO_TRAINING };
-static const int numWarnings = 4;
-static bool warning[numWarnings] = {0};
 static string warningText[] {
   "You need to kill some innocent beings for more mana.",
   "You need to build a treasure room.",
   "You need a larger treasure room.",
-  "You need training posts for your minions"};
+  "You need training posts for your minions",
+  "You need to build a storage room",
+  "You need to build a graveyard"};
 
 
 vector<Collective::BuildInfo> Collective::initialBuildInfo {
@@ -72,13 +71,13 @@ vector<TechId> techIds {
 
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   return {
-    {unMarkedItems(ItemType::CORPSE), SquareType::GRAVE, true, {}},
+    {unMarkedItems(ItemType::CORPSE), SquareType::GRAVE, true, {}, NO_GRAVES},
     {[this](const Item* it) {
         return minionEquipment.isItemUseful(it) && !markedItems.count(it);
-      }, SquareType::STOCKPILE, false, {}},
+      }, SquareType::STOCKPILE, false, {}, NO_STORAGE},
     {[this](const Item* it) {
         return it->getName() == "wood plank" && !markedItems.count(it); },
-      SquareType::STOCKPILE, false, {SquareType::TREE_TRUNK}},
+      SquareType::STOCKPILE, false, {SquareType::TREE_TRUNK}, NO_STORAGE},
   };
 }
 
@@ -985,7 +984,7 @@ void Collective::updateTraps() {
 
 void Collective::tick() {
   warning[NO_MANA] = mana < 20;
-  warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && !minions.empty();
+  warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && minions.size() > 1;
   updateTraps();
   for (Vec2 pos : myTiles) {
     if (Creature* c = level->getSquare(pos)->getCreature()) {
@@ -1032,13 +1031,19 @@ void Collective::tick() {
 
 void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
   vector<Item*> equipment = level->getSquare(pos)->getItems(elem.predicate);
-  if (!equipment.empty() && !mySquares[elem.destination].empty() &&
-      !mySquares[elem.destination].count(pos)) {
-    if (elem.oneAtATime)
-      equipment = {equipment[0]};
-    Vec2 target = chooseRandom(mySquares[elem.destination]);
-    addTask(Task::bringItem(this, pos, equipment, target));
-    markedItems.insert(equipment.begin(), equipment.end());
+  if (mySquares[elem.destination].count(pos))
+    return;
+  if (!equipment.empty()) {
+    if (mySquares[elem.destination].empty())
+      warning[elem.warning] = true;
+    else {
+      warning[elem.warning] = false;
+      if (elem.oneAtATime)
+        equipment = {equipment[0]};
+      Vec2 target = chooseRandom(mySquares[elem.destination]);
+      addTask(Task::bringItem(this, pos, equipment, target));
+      markedItems.insert(equipment.begin(), equipment.end());
+    }
   }
 }
 

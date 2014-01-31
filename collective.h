@@ -117,11 +117,16 @@ class Collective : public CreatureView, public EventListener {
 
   map<ResourceId, int> credit;
 
+  enum Warning { NO_MANA, NO_CHESTS, MORE_CHESTS, NO_TRAINING, NO_STORAGE, NO_GRAVES };
+  static const int numWarnings = 6;
+  bool warning[numWarnings] = {0};
+
   struct ItemFetchInfo {
     ItemPredicate predicate;
     SquareType destination;
     bool oneAtATime;
     vector<SquareType> additionalPos;
+    Warning warning;
   };
 
   vector<ItemFetchInfo> getFetchInfo() const;
@@ -209,6 +214,7 @@ class Collective : public CreatureView, public EventListener {
   Model* model;
   vector<const Creature*> kills;
   bool showWelcomeMsg = true;
+
 };
 
 #endif
