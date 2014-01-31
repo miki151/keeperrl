@@ -724,8 +724,8 @@ static void drawSprite(int x, int y, int px, int py, int w, int h, const Texture
 }
 
 int topBarHeight = 10;
-int rightBarWidth = 280;
-int rightBarText = 250;
+int rightBarWidth = 300;
+int rightBarText = rightBarWidth - 30;
 int bottomBarHeight = 75;
 
 const MapMemory* lastMemory = nullptr;
@@ -1188,23 +1188,24 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
       for (const Creature* c : info.creatures)
         if (c->getName() == chosenCreature)
           chosen.push_back(c);
-      drawFilledRectangle(textX - width - 20, lineStart,
-          textX - 10, legendStartHeight + 35 + (chosen.size() + 3) * legendLineHeight, black);
-      drawText(lightBlue, textX - width - 10, lineStart, 
+      int winX = screenWidth - rightBarWidth - width - 20;
+      drawFilledRectangle(winX, lineStart,
+          winX + width + 20, legendStartHeight + 35 + (chosen.size() + 3) * legendLineHeight, black);
+      drawText(lightBlue, winX + 10, lineStart, 
           info.gatheringTeam ? "Click to add to team:" : "Click to possess:");
       int cnt = 1;
       for (const Creature* c : chosen) {
         int height = lineStart + cnt * legendLineHeight;
-        drawViewObject(c->getViewObject(), textX - width, height, currentTileLayout.sprites);
+        drawViewObject(c->getViewObject(), winX + 20, height, currentTileLayout.sprites);
         drawText(contains(info.team, c) ? green : white, textX - width + 30, height,
             "level: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c]);
-        creatureButtons.emplace_back(textX - width, height, textX, height + legendLineHeight);
+        creatureButtons.emplace_back(winX + 20, height, winX + width + 20, height + legendLineHeight);
         chosenCreatures.push_back(c);
         ++cnt;
       }
       int height = lineStart + cnt * legendLineHeight + 10;
-      drawText(white, textX - width, height, "[show description]");
-      descriptionButton = Rectangle(textX - width, height, textX, height + legendLineHeight);
+      drawText(white, winX + 20, height, "[show description]");
+      descriptionButton = Rectangle(winX, height, winX + width + 20, height + legendLineHeight);
     }
   }
 }
@@ -1813,7 +1814,7 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
         case Keyboard::Down: if (index < options.size() - numLines) ++index; break;
         case Keyboard::Return : refreshScreen(); return;
         case Keyboard::Escape : refreshScreen(); return;
-        case Keyboard::Space : refreshScreen(); return;
+ //       case Keyboard::Space : refreshScreen(); return;
         default: break;
       }
     else

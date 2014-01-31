@@ -1428,7 +1428,7 @@ void Creature::squash(Vec2 direction) {
     getSquare(direction)->destroy(getAttr(AttrType::STRENGTH));
   if (Creature* c = getSquare(direction)->getCreature()) {
     c->you(MsgType::KILLED_BY, getTheName());
-    c->die();
+    c->die(this);
   }
 }
 
@@ -1674,8 +1674,10 @@ void Creature::increaseExpLevel(double amount) {
   if (expLevel < maxLevel && increaseExperience) {
     expLevel += amount;
  //   viewObject.setSizeIncrease(0.3);
-    if (skillGain.count(getExpLevel()))
+    if (skillGain.count(getExpLevel())) {
+      you(MsgType::ARE, "more experienced");
       addSkill(skillGain.at(getExpLevel()));
+    }
   }
 }
 

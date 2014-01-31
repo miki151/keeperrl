@@ -34,6 +34,7 @@ class BoulderController : public Monster {
               stopped = false;
               found = true;
               EventListener::addTriggerEvent(creature->getLevel(), creature->getPosition());
+              creature->globalMessage("The boulder starts rolling.", "You hear a heavy boulder rolling.");
               break;
             }
           if (!creature->getSquare(v * i)->canEnterEmpty(creature))
@@ -735,7 +736,7 @@ CreatureFactory CreatureFactory::level(int num) {
       { CreatureId::ZOMBIE, { 0, 0, 0, 30, 50, 100, 100, 100, 100, 100 }},
       { CreatureId::SKELETON, { 0, 0, 0, 30, 50, 100, 100, 100, 100, 100 }},
       { CreatureId::VAMPIRE, { 0, 0, 0, 10, 30, 50, 100, 100, 100, 100 }},
-      { CreatureId::VAMPIRE_LORD, { 0, 0, 0, 0, 10, 30, 50, 50, 100, 100 }},
+      { CreatureId::VAMPIRE_LORD, { 0, 0, 0, 0, 10, 10, 30, 50, 50, 50 }},
       { CreatureId::NIGHTMARE, { 5, 5, 10, 10, 20, 30, 30, 40, 40, 40 }},
       { CreatureId::DWARF, { 400, 200, 100, 50, 50, 30, 20, 20 }}};
   vector<vector<CreatureId>> uniqueMonsters(maxLevel);
@@ -857,7 +858,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                c.courage = 0.01;
                                c.firstName = NameGenerator::firstNames.getNext();
                                c.spells.push_back(Creature::getSpell(SpellId::HEALING));
-                               c.skillgain.clear();), tribe, factory);
+                               c.skillGain.clear();), tribe, factory);
     case CreatureId::GOBLIN: return get(ViewId::GOBLIN, CATTR(
                                    c.speed = 100;
                                    c.size = CreatureSize::LARGE;
@@ -1095,7 +1096,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.name = "skeleton";), tribe, factory);
     case CreatureId::VAMPIRE_BAT:
     case CreatureId::VAMPIRE: return get(ViewId::VAMPIRE, CATTR(
-                                c.speed = 120;
+                                c.speed = 100;
                                 c.size = CreatureSize::LARGE;
                                 c.strength = 17;
                                 c.dexterity = 17;
@@ -1107,10 +1108,10 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "vampire";), tribe, factory);
     case CreatureId::VAMPIRE_LORD: return get(ViewId::VAMPIRE_LORD, CATTR(
-                                c.speed = 140;
+                                c.speed = 120;
                                 c.size = CreatureSize::LARGE;
                                 c.strength = 20;
-                                c.dexterity = 20;
+                                c.dexterity = 18;
                                 c.barehandedDamage = 6;
                                 c.humanoid = true;
                                 c.weight = 100;

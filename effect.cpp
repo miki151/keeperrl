@@ -257,32 +257,47 @@ static void portal(Creature* c) {
 }
 
 static void teleport(Creature* c) {
-  Vec2 pos;
+  Vec2 pos = c->getPosition();
   int cnt = 1000;
-  int maxRadius = 8;
-  int minRadius = 4;
+  Vec2 enemyRadius(12, 12);
+  Vec2 teleRadius(6, 6);
   Level* l = c->getLevel();
-  vector<pair<int, Vec2>> dest;
-  for (Vec2 v : Rectangle(-maxRadius, -maxRadius, maxRadius, maxRadius))
-    if (int(v.lengthD()) <= maxRadius)
-      dest.emplace_back(v.lengthD(), v);
-  sort(dest.begin(), dest.end(),
-      [] (const pair<int, Vec2>& e1, const pair<int, Vec2>& e2) { return e1.first > e2.first; });
-  CHECK(dest.front().first > dest.back().first) << dest.front().first << " " << dest.front().second;
-  vector<Vec2> goodDest;
-  c->setHeld(nullptr);
-  for (int i : All(dest)) {
-    if (l->canMoveCreature(c, dest[i].second))
-      goodDest.push_back(dest[i].second);
-    if (i > 0 && dest[i].first < dest[i - 1].first && goodDest.size() > 0) {
-      pos = chooseRandom(goodDest);
-      break;
-    }
-    if (dest[i].first < minRadius)
-      c->privateMessage("The spell didn't work.");
+  Rectangle area = l->getBounds().intersection(Rectangle(pos - enemyRadius, pos + enemyRadius));
+  int infinity = 10000;
+  Table<int> weight(area, infinity);
+  queue<Vec2> q;
+  for (Vec2 v : area)
+    if (Creature *other = l->getSquare(v)->getCreature())
+      if (other->isEnemy(c)) {
+        q.push(v);
+        weight[v] = 0;
+      }
+  while (!q.empty()) {
+    Vec2 v = q.front();
+    q.pop();
+    for (Vec2 w : v.neighbors8())
+      if (w.inRectangle(area) && l->getSquare(w)->canEnterEmpty(Creature::getDefault()) && weight[w] == infinity) {
+        weight[w] = weight[v] + 1;
+        q.push(w);
+      }
   }
+  vector<Vec2> good;
+  int maxW = 0;
+  for (Vec2 v : l->getBounds().intersection(Rectangle(pos - teleRadius, pos + teleRadius))) {
+    if (!l->canMoveCreature(c, v - pos))
+      continue;
+    if (weight[v] == maxW)
+      good.push_back(v);
+    else if (weight[v] > maxW) {
+      good = {v};
+      maxW = weight[v];
+    }
+  }
+  if (maxW < 2)
+    c->privateMessage("The spell didn't work.");
+  CHECK(!good.empty());
   c->you(MsgType::TELE_DISAPPEAR, "");
-  l->moveCreature(c, pos);
+  l->moveCreature(c, chooseRandom(good) - pos);
   c->you(MsgType::TELE_APPEAR, "");
 }
 
