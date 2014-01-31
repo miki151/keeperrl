@@ -69,6 +69,7 @@ void Creature::castSpell(int index) {
   CHECK(canCastSpell(index));
   Effect::applyToCreature(this, spells[index].type, EffectStrength::NORMAL);
   spells[index].ready = getTime() + spells[index].difficulty;
+  spendTime(1);
 }
 
 void Creature::addCreatureVision(CreatureVision* vision) {
@@ -988,10 +989,10 @@ void Creature::attack(const Creature* c1, bool spend) {
   if (c->isPlayer())
     enemyName = "";
   if (!c->canSee(this) && canSee(c)) {
-    if (getWeapon() && getWeapon()->getAttackType() == AttackType::STAB) {
+ //   if (getWeapon() && getWeapon()->getAttackType() == AttackType::STAB) {
       damage += 15;
       backstab = true;
-    }
+ //   }
     you(MsgType::ATTACK_SURPRISE, enemyName);
   }
   Attack attack(this, getRandomAttackLevel(), getAttackType(), toHit, damage, backstab, attackEffect);
@@ -1753,10 +1754,10 @@ void Creature::youHit(BodyPart part, AttackType type) const {
   switch (part) {
     case BodyPart::BACK:
         switch (type) {
-          case AttackType::SHOOT: you(MsgType::ARE, "shot in the spine!"); break;
-          case AttackType::BITE: you(MsgType::YOUR, "head is bitten off!"); break;
-          case AttackType::CUT: you(MsgType::YOUR, "head is chopped off!"); break;
-          case AttackType::CRUSH: you(MsgType::YOUR, "skull is shattered!"); break;
+          case AttackType::SHOOT: you(MsgType::ARE, "shot in the back!"); break;
+          case AttackType::BITE: you(MsgType::ARE, "bitten in the neck!"); break;
+          case AttackType::CUT: you(MsgType::YOUR, "throat is cut!"); break;
+          case AttackType::CRUSH: you(MsgType::YOUR, "spine is crushed!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the back of the head!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the " + 
@@ -1766,7 +1767,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
         break;
     case BodyPart::HEAD: 
         switch (type) {
-          case AttackType::SHOOT: you(MsgType::YOUR, "shot in the " +
+          case AttackType::SHOOT: you(MsgType::ARE, "shot in the " +
                                       chooseRandom<string>({"eye", "neck", "forehead"}) + "!"); break;
           case AttackType::BITE: you(MsgType::YOUR, "head is bitten off!"); break;
           case AttackType::CUT: you(MsgType::YOUR, "head is chopped off!"); break;

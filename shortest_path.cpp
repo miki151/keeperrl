@@ -29,6 +29,8 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
               || !level->getSquare(pos)->getCreature()->isEnemy(creature)))
         return 5.0;
       return infinity;};
+  CHECK(to.inRectangle(level->getBounds()));
+  CHECK(from.inRectangle(level->getBounds()));
   if (mult == 0) {
     // Use a suboptimal, but faster pathfinding.
     init(entryFun, [](Vec2 v)->double { return 2 * v.lengthD(); }, target, from);

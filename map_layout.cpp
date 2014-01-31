@@ -90,7 +90,7 @@ class WorldLayout : public GridLayout {
   public:
   WorldLayout(int screenW, int screenH, int leftM, int topM, int rightM, int bottomM) 
       : GridLayout(screenW, screenH, 1, 1, leftM, topM, rightM, bottomM,
-          {ViewLayer::FLOOR, ViewLayer::CREATURE}) {}
+          {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::CREATURE}) {}
 
   virtual Vec2 projectOnScreen(Vec2 mapPos) override {
     return mapPos;

@@ -2035,7 +2035,7 @@ CollectiveAction WindowView::getClick() {
       case Event::KeyPressed:
         switch (event.key.code) {
           case Keyboard::Z:
-            unzoom(false, false);
+            unzoom(event.key.shift, event.key.control);
             return CollectiveAction(CollectiveAction::IDLE);
           case Keyboard::F2:
             switchTiles();
@@ -2048,7 +2048,7 @@ CollectiveAction WindowView::getClick() {
             return CollectiveAction(CollectiveAction::IDLE);
           case Keyboard::Escape:
             if (yesOrNoPrompt("Are you sure you want to abandon your game?"))
-              throw string();
+              throw GameOverException();
             break;
           default:
             break;
@@ -2187,7 +2187,7 @@ Action WindowView::getAction() {
       return *optionalAction;
     switch (key->code) {
       case Keyboard::Escape : if (yesOrNoPrompt("Are you sure you want to abandon your game?"))
-                                throw string();
+                                throw GameOverException();
                               break;
       case Keyboard::Z: unzoom(key->shift, key->control); return Action(ActionId::IDLE);
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);

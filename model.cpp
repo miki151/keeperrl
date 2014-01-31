@@ -218,7 +218,7 @@ Model* Model::collectiveModel(View* view) {
   vector<SettlementInfo> settlements{
     {SettlementType::CASTLE, CreatureFactory::humanVillagePeaceful(), Nothing(), villageLocations[0], Tribe::human,
       {30, 20}, {}},
-    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), CreatureId::ELF_LORD, villageLocations[1],
+    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), Nothing(), villageLocations[1],
       Tribe::elven,
       {30, 20}, {}}  };
   for (int i : Range(3, 6))
@@ -245,9 +245,11 @@ Model* Model::collectiveModel(View* view) {
   }
   vector<vector<tuple<int, int, int>>> heroAttackTime { {
       { make_tuple(1400, 2, 4) },
+      { make_tuple(1800, 2, 4) },
       { make_tuple(2200, 4, 7) },
       { make_tuple(3200, 12, 18) }},
     {{ make_tuple(1400, 2, 4) },
+      { make_tuple(1800, 2, 4) },
       { make_tuple(2200, 2, 4) },
       { make_tuple(3200, 4, 7) }}};
 
@@ -265,7 +267,7 @@ Model* Model::collectiveModel(View* view) {
     for (int j : All(heroAttackTime[i])) {
       int attackTime = get<0>(heroAttackTime[i][j]);
       int heroCount = Random.getRandom(get<1>(heroAttackTime[i][j]), get<2>(heroAttackTime[i][j]));
-      CreatureFactory& factory = (j == heroAttackTime.size() - 1 ? lastAttack : firstAttack);
+      CreatureFactory& factory = (j == heroAttackTime[i].size() - 1 ? lastAttack : firstAttack);
       for (int k : Range(heroCount)) {
         PCreature c = factory.random(MonsterAIFactory::villageControl(control, loc));
         control->addCreature(c.get(), attackTime);

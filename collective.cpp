@@ -11,7 +11,7 @@ static string warningText[] {
   "You need to kill some innocent beings for more mana.",
   "You need to build a treasure room.",
   "You need a larger treasure room.",
-  "You need training posts for your minions",
+  "You need a training room for your minions",
   "You need to build a storage room",
   "You need to build a graveyard"};
 
@@ -27,7 +27,7 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::STOCKPILE, ResourceId::GOLD, 0, "Storage"}),
     BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 4, "Treasure room"}),
     BuildInfo({SquareType::TRIBE_DOOR, ResourceId::WOOD, 4, "Door"}),
-    BuildInfo({SquareType::BED, ResourceId::WOOD, 8, "Lair"}),
+    BuildInfo({SquareType::BED, ResourceId::WOOD, 8, "Bed"}),
     BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::WOOD, 18, "Training room"}),
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 18, "Library"}),
     BuildInfo({SquareType::LABORATORY, ResourceId::WOOD, 18, "Laboratory"}),
@@ -81,7 +81,7 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   };
 }
 
-Collective::Collective(Model* m) : mana(100), model(m) {
+Collective::Collective(Model* m) : mana(200), model(m) {
   EventListener::addListener(this);
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
@@ -273,17 +273,17 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   int techLevel = techLevels[TechId::NECROMANCY];
   set<Vec2> graves = mySquares.at(SquareType::GRAVE);
   if (minions.size() >= minionLimit) {
-    if (firstTime)
+ //   if (firstTime)
       view->presentText("Information", "You have reached the limit of the number of minions.");
     return;
   }
   if (graves.empty()) {
-    if (firstTime)
+   // if (firstTime)
       view->presentText("Information", "You need to build a graveyard and collect corpses to raise undead.");
     return;
   }
   if (graves.size() <= minionByType.at(MinionType::UNDEAD).size()) {
-    if (firstTime)
+    //if (firstTime)
       view->presentText("Information", "You need to build more graves first for your undead to sleep in.");
     return;
   }
@@ -294,7 +294,7 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
       corpses.push_back({pos, it});
   }
   if (corpses.empty()) {
-    if (firstTime)
+   // if (firstTime)
       view->presentText("Information", "You need to collect some corpses to raise undead.");
     return;
   }
@@ -377,20 +377,20 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
   int techLevel = techLevels[techId];
   set<Vec2> cages = mySquares.at(spawnSquare);
   int prevItem = false;
-  bool firstTime = true;
+ // bool firstTime = true;
   while (1) {
     if (minions.size() >= minionLimit) {
-      if (firstTime)
+ //     if (firstTime)
         view->presentText("Information", "You have reached the limit of the number of minions.");
       return;
     }
     if (cages.empty()) {
-      if (firstTime)
+  //    if (firstTime)
         view->presentText("Information", info1);
       return;
     }
     if (cages.size() <= minionByType.at(minionType).size()) {
-      if (firstTime)
+   //   if (firstTime)
         view->presentText("Information", info2);
       return;
     }
@@ -423,7 +423,7 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
       messageBuffer.addMessage(MessageBuffer::important("The spell failed."));
     view->updateView(this);
     prevItem = *index;
-    firstTime = false;
+ //   firstTime = false;
   }
 }
 
@@ -1088,7 +1088,7 @@ MoveInfo Collective::getBeastMove(Creature* c) {
     return NoMove;
   Vec2 radius(7, 7);
   for (Vec2 v : randomPermutation(Rectangle(c->getPosition() - radius, c->getPosition() + radius).getAllSquares()))
-    if (!memory[level].hasViewIndex(v)) {
+    if (v.inRectangle(level->getBounds()) && !memory[level].hasViewIndex(v)) {
       if (auto move = c->getMoveTowards(v))
         return {1.0, [c, move]() { return c->move(*move); }};
       else
@@ -1183,11 +1183,6 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     minionTasks.at(c).setState(MinionTask::SLEEP);
   switch (minionTasks.at(c).getState()) {
     case MinionTask::SLEEP: {
-        if (c == heart) {
-          return {1.0, [c] {
-            c->wait();
-          }};
-        }
         set<Vec2>& whatBeds = (contains(minionByType.at(MinionType::UNDEAD), c) ? 
             mySquares[SquareType::GRAVE] : mySquares[SquareType::BED]);
         if (whatBeds.empty())
@@ -1205,7 +1200,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         break;
     case MinionTask::WORKSHOP:
         if (mySquares[SquareType::WORKSHOP].empty()) {
-          minionTasks.at(c).setState(MinionTask::SLEEP);
+          minionTasks.at(c).update();
           return NoMove;
         }
         addTask(Task::applySquare(this, mySquares[SquareType::WORKSHOP]), c);
@@ -1213,17 +1208,17 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         break;
     case MinionTask::STUDY:
         if (mySquares[SquareType::LIBRARY].empty()) {
-          minionTasks.at(c).setState(MinionTask::SLEEP);
+          minionTasks.at(c).update();
+          if (c == heart && !myTiles.empty() && !myTiles.count(c->getPosition())) {
+            if (auto move = c->getMoveTowards(chooseRandom(myTiles)))
+              return {1.0, [=] {
+                c->move(*move);
+              }};
+          }
           return NoMove;
         }
         addTask(Task::applySquare(this, mySquares[SquareType::LIBRARY]), c);
         minionTaskStrings[c] = "researching";
-        break;
-    case MinionTask::EAT:
-        if (mySquares[SquareType::HATCHERY].empty())
-          return NoMove;
-        minionTaskStrings[c] = "eating";
-        addTask(Task::eat(this, mySquares[SquareType::HATCHERY]), c);
         break;
   }
   return taskMap.at(c)->getMove(c);
@@ -1293,27 +1288,27 @@ MoveInfo Collective::getMove(Creature* c) {
 MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
   MinionTask t1;
   if (c == heart)
-    return MarkovChain<MinionTask>(MinionTask::SLEEP, {
-      {MinionTask::SLEEP, {{ MinionTask::STUDY, 0.05}}},
-      {MinionTask::STUDY, {{ MinionTask::SLEEP, 0.02}}}});
+    return MarkovChain<MinionTask>(MinionTask::STUDY, {
+      {MinionTask::STUDY, {{ MinionTask::STUDY, 1}}},
+      {MinionTask::SLEEP, {{ MinionTask::STUDY, 1}}}});
   if (contains(minionByType.at(MinionType::GOLEM), c))
     return MarkovChain<MinionTask>(MinionTask::TRAIN, {
       {MinionTask::TRAIN, {}}});
+  if (contains(minionByType.at(MinionType::NORMAL), c))
+    return MarkovChain<MinionTask>(MinionTask::SLEEP, {
+      {MinionTask::SLEEP, {{ MinionTask::TRAIN, 0.3}, { MinionTask::WORKSHOP, 0.3}}},
+      {MinionTask::WORKSHOP, {{ MinionTask::SLEEP, 0.005}}},
+      {MinionTask::TRAIN, {{ MinionTask::SLEEP, 0.005}}}});
 
-  if (c->getName() == "gnome") {
-    t1 = MinionTask::WORKSHOP;
-  } else {
-    t1 = MinionTask::TRAIN;
-  }
   return MarkovChain<MinionTask>(MinionTask::SLEEP, {
-      {MinionTask::SLEEP, {{ MinionTask::EAT, 0.5}, { t1, 0.5}}},
-      {MinionTask::EAT, {{ t1, 0.4}, { MinionTask::SLEEP, 0.2}}},
-      {t1, {{ MinionTask::EAT, 0.005}, { MinionTask::SLEEP, 0.005}}}});
+      {MinionTask::SLEEP, {{ MinionTask::TRAIN, 0.5}}},
+      {MinionTask::TRAIN, {{ MinionTask::SLEEP, 0.005}}}});
 }
 
 void Collective::addCreature(Creature* c, MinionType type) {
   if (heart == nullptr) {
     heart = c;
+    type = MinionType::KEEPER;
     for (auto elem : spellLearning)
       if (elem.techLevel == 0)
         heart->addSpell(elem.id);
@@ -1321,8 +1316,8 @@ void Collective::addCreature(Creature* c, MinionType type) {
   creatures.push_back(c);
   if (type != MinionType::IMP) {
     minions.push_back(c);
-    minionTasks.insert(make_pair(c, getTasksForMinion(c)));
     minionByType[type].push_back(c);
+    minionTasks.insert(make_pair(c, getTasksForMinion(c)));
   } else {
     imps.push_back(c);
  //   c->addEnemyVision([this](const Creature* c) { return canSee(c); });

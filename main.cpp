@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
         else
           model->update(double(view->getTimeMilli()) / 300);
       }
-    } catch (...) {
+    } catch (GameOverException ex) {
     }
   }
   return 0;

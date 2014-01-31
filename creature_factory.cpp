@@ -857,7 +857,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                c.courage = 0.01;
                                c.firstName = NameGenerator::firstNames.getNext();
                                c.spells.push_back(Creature::getSpell(SpellId::HEALING));
-                               c.skills.insert(Skill::twoHandedWeapon);), tribe, factory);
+                               c.skillgain.clear();), tribe, factory);
     case CreatureId::GOBLIN: return get(ViewId::GOBLIN, CATTR(
                                    c.speed = 100;
                                    c.size = CreatureSize::LARGE;
@@ -969,7 +969,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
                                 c.strength = 26;
-                                c.dexterity = 18;
+                                c.dexterity = 22;
                                 c.barehandedDamage = 8;
                                 c.humanoid = true;
                                 c.weight = 120;
@@ -1207,7 +1207,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.size = CreatureSize::LARGE;
                                 c.strength = 17;
                                 c.dexterity = 12;
-                                c.barehandedDamage = 4;
+                                c.barehandedDamage = 6;
                                 c.humanoid = true;
                                 c.weight = 140;
                                 c.firstName = NameGenerator::demonNames.getNext();
@@ -1669,8 +1669,9 @@ vector<ItemId> getInventory(CreatureId id) {
             .add(ItemId::CHAIN_ARMOR)
             .add(ItemId::IRON_HELM)
             .add(ItemId::IRON_BOOTS)
-            .add(ItemId::HEALING_POTION, Random.getRandom(3, 7))
+            .add(ItemId::HEALING_POTION, Random.getRandom(1, 4))
             .add(ItemId::GOLD_PIECE, Random.getRandom(200, 300));
+    case CreatureId::BILE_DEMON: return ItemList().add(ItemId::WAR_HAMMER);
     case CreatureId::BANDIT:
     case CreatureId::GOBLIN: return ItemList()
             .add(chooseRandom({ItemId::SWORD}, {3}))

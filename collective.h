@@ -14,6 +14,7 @@ enum class MinionType {
   UNDEAD,
   GOLEM,
   BEAST,
+  KEEPER,
 };
 
 ENUM_HASH(MinionType);
