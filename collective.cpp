@@ -7,15 +7,13 @@
 #include "message_buffer.h"
 #include "model.h"
 
-enum Warning { NO_MANA, NO_CHESTS, MORE_CHESTS, NO_BEDS, MORE_BEDS, NO_TRAINING };
-static const int numWarnings = 7;
+enum Warning { NO_MANA, NO_CHESTS, MORE_CHESTS, NO_TRAINING };
+static const int numWarnings = 4;
 static bool warning[numWarnings] = {0};
 static string warningText[] {
   "You need to kill some innocent beings for more mana.",
   "You need to build a treasure room.",
   "You need a larger treasure room.",
-  "You need a lair for your minions.",
-  "You need a larger lair for your minions.",
   "You need training posts for your minions"};
 
 
@@ -66,7 +64,11 @@ const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resource
 };
 
 vector<TechId> techIds {
-  TechId::NECROMANCY, TechId::BEAST_TAMING, TechId::MATTER_ANIMATION, TechId::SPELLCASTING};
+    TechId::HUMANOID_BREEDING,
+    TechId::NECROMANCY,
+    TechId::BEAST_TAMING,
+    TechId::MATTER_ANIMATION,
+    TechId::SPELLCASTING};
 
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   return {
@@ -80,8 +82,7 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   };
 }
 
-Collective::Collective(Model* m, CreatureFactory factory) 
-    : minionFactory(factory), mana(100), model(m) {
+Collective::Collective(Model* m) : mana(100), model(m) {
   EventListener::addListener(this);
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
@@ -161,6 +162,7 @@ static string getTechName(TechId id) {
     case TechId::BEAST_TAMING: return "beast taming";
     case TechId::MATTER_ANIMATION: return "golem animation";
     case TechId::NECROMANCY: return "necromancy";
+    case TechId::HUMANOID_BREEDING: return "humanoid breeding";
     case TechId::SPELLCASTING: return "personal spells";
   }
   Debug(FATAL) << "pwofk";
@@ -172,6 +174,7 @@ static ViewObject getTechViewObject(TechId id) {
     case TechId::BEAST_TAMING: return ViewObject(ViewId::BEAR, ViewLayer::CREATURE, "");
     case TechId::MATTER_ANIMATION: return ViewObject(ViewId::IRON_GOLEM, ViewLayer::CREATURE, "");
     case TechId::NECROMANCY: return ViewObject(ViewId::VAMPIRE_LORD, ViewLayer::CREATURE, "");
+    case TechId::HUMANOID_BREEDING: return ViewObject(ViewId::BILE_DEMON, ViewLayer::CREATURE, "");
     case TechId::SPELLCASTING: return ViewObject(ViewId::SCROLL, ViewLayer::CREATURE, "");
   }
   Debug(FATAL) << "pwofk";
@@ -214,7 +217,7 @@ void Collective::handleMarket(View* view, int prevItem) {
   Vec2 dest = chooseRandom(mySquares[SquareType::STOCKPILE]);
   takeGold({ResourceId::GOLD, items[*index]->getPrice()});
   level->getSquare(dest)->dropItem(std::move(items[*index]));
-  view->refreshView(this);
+  view->updateView(this);
   handleMarket(view, *index);
 }
 
@@ -325,7 +328,7 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
     }
   if (creature)
     messageBuffer.addMessage(MessageBuffer::important("You have failed to reanimate the corpse."));
-  view->refreshView(this);
+  view->updateView(this);
   handleNecromancy(view, *index, false);
 }
 
@@ -345,15 +348,28 @@ void Collective::handleMatterAnimation(View* view) {
 
 vector<Collective::SpawnInfo> tamingInfo {
   {CreatureId::RAVEN, 5, 0},
-  {CreatureId::SPIDER, 20, 1},
-  {CreatureId::WOLF, 30, 2},
-  {CreatureId::CAVE_BEAR, 50, 3},
+  {CreatureId::WOLF, 30, 1},
+  {CreatureId::CAVE_BEAR, 50, 2},
+  {CreatureId::SPECIAL_MONSTER, 100, 3},
 };
 
 void Collective::handleBeastTaming(View* view) {
   handleSpawning(view, TechId::BEAST_TAMING, SquareType::ANIMAL_TRAP,
       "You need to build cages to trap beasts.", "You need more cages.", "Beast taming",
       MinionType::BEAST, tamingInfo);
+}
+
+vector<Collective::SpawnInfo> breedingInfo {
+  {CreatureId::GNOME, 30, 0},
+  {CreatureId::GOBLIN, 50, 1},
+  {CreatureId::BILE_DEMON, 80, 2},
+  {CreatureId::SPECIAL_HUMANOID, 100, 3},
+};
+
+void Collective::handleHumanoidBreeding(View* view) {
+  handleSpawning(view, TechId::HUMANOID_BREEDING, SquareType::BED,
+      "You need to build beds to breed humanoids.", "You need more beds.", "Humanoid breeding",
+      MinionType::NORMAL, breedingInfo);
 }
 
 void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquare,
@@ -406,7 +422,7 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
       }
     if (creature)
       messageBuffer.addMessage(MessageBuffer::important("The spell failed."));
-    view->refreshView(this);
+    view->updateView(this);
     prevItem = *index;
     firstTime = false;
   }
@@ -417,6 +433,10 @@ vector<int> techAdvancePoints { 1, 2, 3, 1000};
 void Collective::handleLibrary(View* view) {
   if (mySquares.at(SquareType::LIBRARY).empty()) {
     view->presentText("", "You need to build a library to start research.");
+    return;
+  }
+  if (mySquares.at(SquareType::LIBRARY).size() <= numTotalTech()) {
+    view->presentText("", "You need a larger library to continue research.");
     return;
   }
   vector<View::ListElem> options;
@@ -447,6 +467,13 @@ void Collective::handleLibrary(View* view) {
       if (elem.techLevel == techLevels[id])
         heart->addSpell(elem.id);
   handleLibrary(view);
+}
+
+int Collective::numTotalTech() const {
+  int ret = 0;
+  for (auto id : techIds)
+    ret += techLevels.at(id);
+  return ret;
 }
 
 void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
@@ -737,6 +764,7 @@ void Collective::processInput(View* view) {
             case TechId::SPELLCASTING: handlePersonalSpells(view); break;
             case TechId::MATTER_ANIMATION: handleMatterAnimation(view); break;
             case TechId::BEAST_TAMING: handleBeastTaming(view); break;
+            case TechId::HUMANOID_BREEDING: handleHumanoidBreeding(view); break;
             default: break;
           };
         if (action.getNum() == techIds.size() + 1)
@@ -956,15 +984,7 @@ void Collective::updateTraps() {
 }
 
 void Collective::tick() {
-  if ((minionByType.at(MinionType::NORMAL).size() < mySquares[SquareType::BED].size() || minions.empty())
-      && Random.roll(40) && minions.size() < minionLimit) {
-    PCreature c = minionFactory.random(MonsterAIFactory::collective(this));
-    addCreature(c.get());
-    level->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(c));
-  }
   warning[NO_MANA] = mana < 20;
-  warning[NO_BEDS] = mySquares[SquareType::BED].size() == 0 && !minions.empty();
-  warning[MORE_BEDS] = mySquares[SquareType::BED].size() < minionByType.at(MinionType::NORMAL).size();
   warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && !minions.empty();
   updateTraps();
   for (Vec2 pos : myTiles) {
@@ -1356,7 +1376,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     kills.push_back(victim);
     points += victim->getDifficultyPoints();
     Debug() << "Mana increase " << incMana << " from " << victim->getName();
-    heart->increaseExpLevel(victim->getDifficultyPoints() / 300);
+    heart->increaseExpLevel(double(victim->getDifficultyPoints()) / 200);
   }
 }
   

@@ -5,6 +5,7 @@
 #include "collective.h"
 #include "square.h"
 #include "level.h"
+#include "name_generator.h"
 
 static int counter = 0;
 

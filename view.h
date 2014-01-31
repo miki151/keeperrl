@@ -29,6 +29,9 @@ class View {
   /** Reads the game state from \paramname{creatureView} and refreshes the display.*/
   virtual void refreshView(const CreatureView* creatureView) = 0;
 
+  /** Reads the game state from \paramname{creatureView} and only updates internal data, doesn't refresh.*/
+  virtual void updateView(const CreatureView* creatureView) = 0;
+
   /** Scrolls back to the center of the view on next refresh.*/
   virtual void resetCenter() = 0;
 

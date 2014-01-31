@@ -23,6 +23,7 @@ class WindowView: public View {
   virtual void addImportantMessage(const string& message) override;
   virtual void clearMessages() override;
   virtual void refreshView(const CreatureView*) override;
+  virtual void updateView(const CreatureView*) override;
   virtual void resetCenter() override;
   virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       Optional<ActionId> exitAction = Nothing()) override;
@@ -48,6 +49,7 @@ class WindowView: public View {
   static Vec2 projectOnBorders(Rectangle area, Vec2 pos);
   private:
 
+  void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   void drawMap();
   void drawPlayerInfo();
   void drawPlayerStats(GameInfo::PlayerInfo&);

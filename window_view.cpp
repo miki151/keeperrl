@@ -1470,7 +1470,15 @@ void WindowView::resetCenter() {
   center = {0, 0};
 }
 
+void WindowView::updateView(const CreatureView* collective) {
+  refreshViewInt(collective, false);
+}
+
 void WindowView::refreshView(const CreatureView* collective) {
+  refreshViewInt(collective);
+}
+
+void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer) {
   const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
   for (Vec2 pos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY)))
@@ -1512,7 +1520,7 @@ void WindowView::refreshView(const CreatureView* collective) {
  /* for (const Creature* c : collective->getVisibleCreatures())
     if (!c->getPosition().inRectangle(mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY))))
       borderCreatures.insert(std::make_pair(c->getPosition(), c->getViewObject()));*/
-  refreshScreen();
+  refreshScreen(flipBuffer);
 }
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {

@@ -314,7 +314,7 @@ void Player::equipmentAction() {
       else
         list.push_back("[Nothing]");
     }
-    view->refreshView(creature);
+    view->updateView(creature);
     Optional<int> newIndex = view->chooseFromList("Equipment", list, index);
     if (!newIndex) {
       creature->finishEquipChain();

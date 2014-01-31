@@ -29,7 +29,6 @@ class CreatureFactory {
   static CreatureFactory hellLevel();
   static CreatureFactory dwarfTown(int num);
   static CreatureFactory collectiveStart();
-  static CreatureFactory collectiveMinions();
   static CreatureFactory collectiveUndead();
   static CreatureFactory collectiveEnemies();
   static CreatureFactory collectiveFinalAttack();

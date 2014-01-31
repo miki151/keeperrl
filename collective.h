@@ -5,7 +5,6 @@
 #include "view.h"
 #include "monster_ai.h"
 #include "creature_view.h"
-#include "creature_factory.h"
 #include "markov_chain.h"
 #include "minion_equipment.h"
 
@@ -23,7 +22,7 @@ class Model;
 
 class Collective : public CreatureView, public EventListener {
   public:
-  Collective(Model*, CreatureFactory minionFactory);
+  Collective(Model*);
   virtual const MapMemory& getMemory(const Level* l) const override;
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
   virtual void refreshGameInfo(View::GameInfo&) const  override;
@@ -128,6 +127,7 @@ class Collective : public CreatureView, public EventListener {
   vector<ItemFetchInfo> getFetchInfo() const;
   void fetchItems(Vec2 pos, ItemFetchInfo);
 
+  int numTotalTech() const;
   unordered_map<TechId, int> techLevels;
   double techCounter = 0;
 
@@ -157,6 +157,7 @@ class Collective : public CreatureView, public EventListener {
   void handleNecromancy(View*, int prevItem = 0, bool firstTime = true);
   void handleMatterAnimation(View*);
   void handleBeastTaming(View*);
+  void handleHumanoidBreeding(View*);
   void handleSpawning(View* view, TechId techId, SquareType spawnSquare, const string& info1, 
       const string& info2, const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo);
   void handlePersonalSpells(View*);
@@ -165,7 +166,6 @@ class Collective : public CreatureView, public EventListener {
   void updateTraps();
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
-  CreatureFactory minionFactory;
   vector<Creature*> creatures;
   vector<Creature*> minions;
   vector<Creature*> imps;

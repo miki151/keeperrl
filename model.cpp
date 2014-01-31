@@ -226,7 +226,7 @@ Model* Model::collectiveModel(View* view) {
        {SettlementType::COTTAGE, CreatureFactory::humanVillagePeaceful(), Nothing(), new Location(), Tribe::human,
        {10, 10}, {}});
   Level* top = m->prepareTopLevel2(settlements);
-  m->collective = new Collective(m, CreatureFactory::collectiveMinions());
+  m->collective = new Collective(m);
   m->collective->setLevel(top);
   Tribe::human->addEnemy(Tribe::player);
   Tribe::elven->addEnemy(Tribe::player);

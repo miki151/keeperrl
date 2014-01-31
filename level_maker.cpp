@@ -1843,7 +1843,7 @@ LevelMaker* getSurprise(Collective* col, Optional<StairKey> hellDown = Nothing()
             break;
     case 1: queue->addMaker(new Items(ItemFactory::mushrooms(), SquareType::PATH, 5, 15));
             break;
-    case 2: queue->addMaker(new Creatures(CreatureFactory::collectiveMinions(), 1, 2,
+    case 2: queue->addMaker(new Creatures(CreatureFactory::collectiveSurpriseEnemies(), 1, 2,
                   MonsterAIFactory::collective(col)));
             break;
     case 3: {Deity* deity = Deity::getDeity(chooseRandom({DeityHabitat::STONE, DeityHabitat::EARTH}));

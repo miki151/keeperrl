@@ -648,11 +648,6 @@ CreatureFactory CreatureFactory::collectiveStart() {
   return CreatureFactory(Tribe::player, { CreatureId::IMP}, { 1}, {} );
 }
 
-CreatureFactory CreatureFactory::collectiveMinions() {
-  return CreatureFactory(Tribe::player, { CreatureId::GNOME, CreatureId::BILE_DEMON,
-      CreatureId::SPECIAL_MONSTER}, { 3, 4, 1}, {CreatureId::SPECIAL_MONSTER_HUMANOID});
-}
-
 CreatureFactory CreatureFactory::collectiveEnemies() {
   return CreatureFactory(Tribe::human, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {});
 }
@@ -726,6 +721,7 @@ CreatureFactory CreatureFactory::level(int num) {
   CHECK(num <= maxLevel && num > 0);
   map<CreatureId, vector<int>> frequencies {
       { CreatureId::SPECIAL_MONSTER, { 5, 8, 10, 12, 15, 18, 20, 22}},
+      { CreatureId::SPECIAL_HUMANOID, { 5, 8, 10, 12, 15, 18, 20, 22}},
       { CreatureId::GNOME, { 400, 200, 100, 100, 100, 100, 100, 100, 100, 100}},
       { CreatureId::LEPRECHAUN, { 20, 20, 20, 20, 20, 20, 20, 20}},
       { CreatureId::GOBLIN, { 20, 20, 30, 50, 50, 100, 200, 400 }},
@@ -744,6 +740,7 @@ CreatureFactory CreatureFactory::level(int num) {
       { CreatureId::DWARF, { 400, 200, 100, 50, 50, 30, 20, 20 }}};
   vector<vector<CreatureId>> uniqueMonsters(maxLevel);
   uniqueMonsters[Random.getRandom(5, maxLevel)].push_back(CreatureId::SPECIAL_MONSTER);
+  uniqueMonsters[Random.getRandom(5, maxLevel)].push_back(CreatureId::SPECIAL_HUMANOID);
   vector<CreatureId> ids;
   vector<double> freq;
   for (auto elem : frequencies) {
@@ -773,9 +770,9 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
   PCreature c = get(humanoid ? ViewId::SPECIAL_HUMANOID : ViewId::SPECIAL_BEAST, CATTR(
         c.speed = r.getRandom(70, 150);
         c.size = chooseRandom({CreatureSize::SMALL, CreatureSize::MEDIUM, CreatureSize::LARGE}, {1, 1, 1});
-        c.strength = r.getRandom(14, 21);
-        c.dexterity = r.getRandom(14, 21);
-        c.barehandedDamage = r.getRandom(10);
+        c.strength = r.getRandom(16, 25);
+        c.dexterity = r.getRandom(16, 25);
+        c.barehandedDamage = r.getRandom(5, 15);
         c.humanoid = humanoid;
         c.weight = c.size == CreatureSize::LARGE ? r.getRandom(80,120) : 
                    c.size == CreatureSize::MEDIUM ? r.getRandom(40, 60) :
@@ -824,7 +821,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
       c->take(ItemFactory::fromId(chooseRandom(
             {ItemId::SWORD, ItemId::BATTLE_AXE, ItemId::WAR_HAMMER})));
   } else {
-    switch (Random.getRandom(3)) {
+ /*   switch (Random.getRandom(3)) {
       case 0:
         c->take(ItemFactory::fromId(
               chooseRandom({ItemId::WARNING_AMULET, ItemId::HEALING_AMULET, ItemId::DEFENSE_AMULET})));
@@ -838,7 +835,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         break;
       default:
         Debug(FATAL) << "Unhandled case value";
-    }
+    }*/
 
   }
   Debug() << c->getDescription();
@@ -872,7 +869,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.skills.insert(Skill::twoHandedWeapon);
                                 c.chatReactionFriendly = "curses all elves";
                                 c.chatReactionHostile = "\"Die!\"";
-                                c.name = "goblin";), Tribe::goblin, factory);
+                                c.name = "goblin";), tribe, factory);
     case CreatureId::BANDIT: return get(ViewId::BANDIT, CATTR(
                                 c.speed = 80;
                                 c.size = CreatureSize::LARGE;
@@ -1591,8 +1588,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.breathing = false;
                                 c.name = "Death";), Tribe::killEveryone, factory);
     case CreatureId::SPECIAL_MONSTER: return getSpecial(NameGenerator::creatureNames.getNext(),
-                                                        tribe, Random.roll(2), factory);
-    case CreatureId::SPECIAL_MONSTER_HUMANOID: return getSpecial(NameGenerator::creatureNames.getNext(),
+                                                        tribe, false, factory);
+    case CreatureId::SPECIAL_HUMANOID: return getSpecial(NameGenerator::creatureNames.getNext(),
                                                         tribe, true, factory);
   }
   Debug(FATAL) << "unhandled case";
@@ -1678,8 +1675,7 @@ vector<ItemId> getInventory(CreatureId id) {
     case CreatureId::GOBLIN: return ItemList()
             .add(chooseRandom({ItemId::SWORD}, {3}))
             .add(ItemId::LEATHER_ARMOR)
-            .maybe(0.3, randomBackup())
-            .maybe(0.2, ItemId::GOLD_PIECE, Random.getRandom(10, 30));
+            .maybe(0.3, randomBackup());
     case CreatureId::GREAT_GOBLIN: return ItemList()
             .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
             .add(ItemId::IRON_HELM)
