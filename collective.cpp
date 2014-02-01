@@ -1294,7 +1294,7 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
     return MarkovChain<MinionTask>(MinionTask::TRAIN, {
       {MinionTask::TRAIN, {}}});
   if (contains(minionByType.at(MinionType::NORMAL), c)) {
-    double workshopTime = (c->getName() == "gnome" : 0.8 : 0.3);
+    double workshopTime = (c->getName() == "gnome" ? 0.8 : 0.3);
     return MarkovChain<MinionTask>(MinionTask::SLEEP, {
       {MinionTask::SLEEP, {{ MinionTask::TRAIN, 1 - workshopTime}, { MinionTask::WORKSHOP, workshopTime}}},
       {MinionTask::WORKSHOP, {{ MinionTask::SLEEP, 0.005}}},
