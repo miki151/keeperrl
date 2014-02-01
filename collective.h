@@ -67,7 +67,7 @@ class Collective : public CreatureView, public EventListener {
   enum class ResourceId {
     GOLD,
     WOOD,
- //   IRON,
+    IRON,
   };
 
   struct ResourceInfo {
@@ -135,7 +135,6 @@ class Collective : public CreatureView, public EventListener {
 
   int numTotalTech() const;
   unordered_map<TechId, int> techLevels;
-  double techCounter = 0;
 
   MoveInfo getBeastMove(Creature* c);
   MoveInfo getMinionMove(Creature* c);
@@ -210,7 +209,7 @@ class Collective : public CreatureView, public EventListener {
   };
   map<Vec2, GuardPostInfo> guardPosts;
   Optional<Vec2> throneMarked;
-  int mana;
+  double mana;
   int points = 0;
   Model* model;
   vector<const Creature*> kills;

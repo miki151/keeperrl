@@ -1759,6 +1759,11 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
     subSizes.emplace_back(Random.getRandom(5, 10), Random.getRandom(5, 10)); 
     predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
   }
+  for (int i : Range(Random.getRandom(5, 10))) {
+    subMakers.push_back(new UniformBlob(SquareType::IRON_ORE));
+    subSizes.emplace_back(Random.getRandom(5, 10), Random.getRandom(5, 10)); 
+    predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
+  }
   queue->addMaker(new Empty(SquareType::GRASS));
   queue->addMaker(new Mountains(0.7, 0.4, {0, 1, 1, 0, 0}, false,
         {SquareType::MOUNTAIN2, SquareType::MOUNTAIN2, SquareType::HILL}));

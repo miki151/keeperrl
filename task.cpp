@@ -246,12 +246,16 @@ class ApplySquare : public Task {
       setPosition(pos);
     }
     if (c->getPosition() == getPosition()) {
-      CHECK(c->getSquare()->getApplyType(c));
-      return {1.0, [this, c] {
-        c->applySquare();
+      if (c->getSquare()->getApplyType(c))
+        return {1.0, [this, c] {
+          c->applySquare();
+          setDone();
+          getCollective()->onAppliedSquare(c->getPosition());
+        }};
+      else {
         setDone();
-        getCollective()->onAppliedSquare(c->getPosition());
-      }};
+        return NoMove;
+      }
     } else {
       MoveInfo move = getMoveToPosition(c);
       if (!move.isValid() || ((getPosition() - c->getPosition()).length8() == 1 && c->getLevel()->getSquare(getPosition())->getCreature())) {

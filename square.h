@@ -207,8 +207,8 @@ class Square {
 class SolidSquare : public Square {
   public:
   SolidSquare(const ViewObject& vo, const string& name, bool canSee, map<SquareType, int> constructions = {},
-      bool alwaysVisible = false) :
-      Square(vo, name, canSee, false, 0, 0, constructions) {
+      bool alwaysVisible = false, double flamability = 0) :
+      Square(vo, name, canSee, false, 0, flamability, constructions) {
   }
 
   protected:

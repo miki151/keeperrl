@@ -370,7 +370,7 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::SPEED: c->speedUp(panicTime[strength]); break;
     case EffectType::BLINDNESS: c->blind(blindTime[strength]); break;
     case EffectType::INVISIBLE: c->makeInvisible(invisibleTime[strength]); break;
-    case EffectType::FIRE: c->setOnFire(fireAmount[strength]); break;
+    case EffectType::FIRE: c->getSquare()->setOnFire(fireAmount[strength]); break;
     case EffectType::PORTAL: portal(c); break;
     case EffectType::TELEPORT: teleport(c); break;
     case EffectType::ROLLING_BOULDER: rollingBoulder(c); break;

@@ -228,6 +228,7 @@ Tile getSprite(ViewId id) {
                                   .addConnection({Dir::N, Dir::W, Dir::NW}, 20, 11)
                                   .addConnection({Dir::N, Dir::E, Dir::NE}, 18, 11);*/
     case ViewId::GOLD_ORE: return Tile(0, 16, 1);
+    case ViewId::IRON_ORE: return Tile(0, 17, 1);
     case ViewId::SNOW: return Tile(16, 2, 2, true);
     case ViewId::HILL: return Tile(3, 13, 2);
     case ViewId::WOOD_WALL: return getWallTile(4);
@@ -355,6 +356,7 @@ Tile getSprite(ViewId id) {
     case ViewId::GAS_TRAP: return Tile(L'☠', green, true);
     case ViewId::UNARMED_GAS_TRAP: return Tile(L'☠', lightGray, true);
     case ViewId::ROCK: return Tile(6, 1, 3);
+    case ViewId::IRON_ROCK: return Tile(10, 1, 3);
     case ViewId::WOOD_PLANK: return Tile(7, 10, 2);
     case ViewId::STOCKPILE: return Tile(4, 1, 1);
     case ViewId::BED: return Tile(5, 4, 2, true);
@@ -429,6 +431,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::MOUNTAIN: return Tile(0x25ee, darkGray, true);
     case ViewId::MOUNTAIN2: return Tile('#', darkGray);
     case ViewId::GOLD_ORE: return Tile(L'⁂', yellow, true);
+    case ViewId::IRON_ORE: return Tile(L'⁂', lightGray, true);
     case ViewId::SNOW: return Tile(0x25ee, white, true);
     case ViewId::HILL: return Tile(0x1d022, darkGreen, true);
     case ViewId::WOOD_WALL: return Tile('#', darkBrown);
@@ -554,6 +557,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::GAS_TRAP: return Tile(L'☠', green, true);
     case ViewId::UNARMED_GAS_TRAP: return Tile(L'☠', lightGray, true);
     case ViewId::ROCK: return Tile('*', lightGray);
+    case ViewId::IRON_ROCK: return Tile('*', orange);
     case ViewId::WOOD_PLANK: return Tile('\\', brown);
     case ViewId::STOCKPILE: return Tile('.', yellow);
     case ViewId::BED: return Tile('=', white);
@@ -1448,10 +1452,10 @@ Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& in
           x + sizeX / 2, y - 3 - object.getSizeIncrease(), tile.text, true);
       if (object.getBurning() > 0) {
         drawText(symbolFont, sizeY, getFireColor(),
-            x + sizeX / 2, y + sizeY - 3, L'ѡ', true);
+            x + sizeX / 2, y - 3, L'ѡ', true);
         if (object.getBurning() > 0.5)
           drawText(symbolFont, sizeY, getFireColor(),
-              x + sizeX / 2, y + sizeY - 3, L'Ѡ', true);
+              x + sizeX / 2, y - 3, L'Ѡ', true);
       }
     }
   }

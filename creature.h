@@ -237,6 +237,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   int getAttrVal(AttrType type) const;
   int getToHit() const;
   BodyPart getBodyPart(AttackLevel attack) const;
+  bool isFireResistant() const;
   void injureLeg(bool drop);
   void injureArm(bool drop);
   void injureWing(bool drop);

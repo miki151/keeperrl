@@ -134,7 +134,7 @@ void Square::tick(double time) {
     viewObject.setBurning(fire.getSize());
     Debug() << getName() << " burning " << fire.getSize();
     for (Vec2 v : position.neighbors8(true))
-      if (fire.getSize() > Random.getDouble() * 60)
+      if (fire.getSize() > Random.getDouble() * 40)
         level->getSquare(v)->setOnFire(fire.getSize() / 20);
     fire.tick(level, position);
     if (fire.isBurntOut()) {

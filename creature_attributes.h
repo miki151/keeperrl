@@ -41,6 +41,7 @@ class CreatureAttributes {
   int heads = 1;
   bool noBody = false;
   bool fireResistant = false;
+  bool fireCreature = false;
   bool breathing = true;
   MustInitialize<bool> humanoid;
   bool animal = false;

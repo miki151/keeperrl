@@ -8,10 +8,10 @@
 #include "model.h"
 
 static string warningText[] {
-  "You need to kill some innocent beings for more mana.",
+  "Kill some innocent beings for more mana.",
   "You need to build a treasure room.",
   "You need a larger treasure room.",
-  "You need a training room for your minions",
+  "Build a training room for your minions",
   "You need to build a storage room",
   "You need to build a graveyard"};
 
@@ -28,10 +28,10 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 4, "Treasure room"}),
     BuildInfo({SquareType::TRIBE_DOOR, ResourceId::WOOD, 4, "Door"}),
     BuildInfo({SquareType::BED, ResourceId::WOOD, 8, "Bed"}),
-    BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::WOOD, 18, "Training room"}),
+    BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::IRON, 18, "Training room"}),
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 18, "Library"}),
-    BuildInfo({SquareType::LABORATORY, ResourceId::WOOD, 18, "Laboratory"}),
-    BuildInfo({SquareType::WORKSHOP, ResourceId::WOOD, 12, "Workshop"}),
+    BuildInfo({SquareType::LABORATORY, ResourceId::IRON, 18, "Laboratory"}),
+    BuildInfo({SquareType::WORKSHOP, ResourceId::IRON, 12, "Workshop"}),
     BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast trap"}),
     BuildInfo({SquareType::GRAVE, ResourceId::WOOD, 18, "Graveyard"}),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
@@ -59,7 +59,8 @@ Collective::ResourceInfo info;
 
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
   {ResourceId::GOLD, { SquareType::TREASURE_CHEST, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE}},
-  {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK}}
+  {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK}},
+  {ResourceId::IRON, { SquareType::STOCKPILE, Item::namePredicate("iron ore"), ItemId::IRON_ORE}},
 };
 
 vector<TechId> techIds {
@@ -78,6 +79,9 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
     {[this](const Item* it) {
         return it->getName() == "wood plank" && !markedItems.count(it); },
       SquareType::STOCKPILE, false, {SquareType::TREE_TRUNK}, NO_STORAGE},
+    {[this](const Item* it) {
+        return it->getName() == "iron ore" && !markedItems.count(it); },
+      SquareType::STOCKPILE, false, {}, NO_STORAGE},
   };
 }
 
@@ -93,7 +97,7 @@ Collective::Collective(Model* m) : mana(200), model(m) {
   credit = {
     {ResourceId::GOLD, 100},
     {ResourceId::WOOD, 40},
- //   {ResourceId::IRON, 0},
+    {ResourceId::IRON, 0},
   };
   for (TechId id: techIds)
     techLevels[id] = 0;
@@ -162,7 +166,7 @@ static string getTechName(TechId id) {
     case TechId::MATTER_ANIMATION: return "golem animation";
     case TechId::NECROMANCY: return "necromancy";
     case TechId::HUMANOID_BREEDING: return "humanoid breeding";
-    case TechId::SPELLCASTING: return "personal spells";
+    case TechId::SPELLCASTING: return "spellcasting";
   }
   Debug(FATAL) << "pwofk";
   return "";
@@ -246,7 +250,7 @@ vector<SpellLearningInfo> spellLearning {
 
 void Collective::handlePersonalSpells(View* view) {
   vector<View::ListElem> options {
-      View::ListElem("The Keeper can learn personal spells for use in combat and other situations. ", View::TITLE),
+      View::ListElem("The Keeper can learn spells for use in combat and other situations. ", View::TITLE),
       View::ListElem("You can cast them with 's' when you are in control of the Keeper.", View::TITLE)};
   vector<SpellId> knownSpells;
   for (SpellInfo spell : heart->getSpells())
@@ -258,7 +262,7 @@ void Collective::handlePersonalSpells(View* view) {
       mod = View::INACTIVE;
     options.push_back(View::ListElem(spell.name + "  level: " + getTechLevelName(elem.techLevel), mod));
   }
-  view->presentList("Personal spells", options);
+  view->presentList(capitalFirst(getTechName(TechId::SPELLCASTING)), options);
 }
 
 vector<Collective::SpawnInfo> raisingInfo {
@@ -424,7 +428,7 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
   }
 }
 
-vector<int> techAdvancePoints { 1, 2, 3, 1000};
+vector<int> techAdvancePoints { 100, 200, 300, 1000};
 
 void Collective::handleLibrary(View* view) {
   if (mySquares.at(SquareType::LIBRARY).empty()) {
@@ -436,17 +440,15 @@ void Collective::handleLibrary(View* view) {
     return;
   }
   vector<View::ListElem> options;
-  int points = int(techCounter);
-  options.push_back(View::ListElem("You have " + convertToString(techCounter) 
-        + " knowledge points available.", View::TITLE));
+  options.push_back(View::ListElem("You have " + convertToString(int(mana)) + " mana.", View::TITLE));
   vector<TechId> availableTechs;
   for (TechId id : techIds) {
     Optional<View::ElemMod> mod;
     string text = getTechName(id) + ": " + getTechLevelName(techLevels.at(id));
     int neededPoints = techAdvancePoints[techLevels.at(id)];
     if (neededPoints < 1000)
-      text += "  (" + convertToString(neededPoints) + " points to advance)";
-    if (neededPoints <= points) {
+      text += "  (" + convertToString(neededPoints) + " mana to advance)";
+    if (neededPoints <= mana) {
       availableTechs.push_back(id);
     } else
       mod = View::INACTIVE;
@@ -456,7 +458,7 @@ void Collective::handleLibrary(View* view) {
   if (!index)
     return;
   TechId id = availableTechs[*index];
-  techCounter -= techAdvancePoints[techLevels.at(id)];
+  mana -= techAdvancePoints[techLevels.at(id)];
   ++techLevels[id];
   if (id == TechId::SPELLCASTING)
     for (auto elem : spellLearning)
@@ -541,7 +543,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.numGold.clear();
   for (auto elem : resourceInfo)
     info.numGold.push_back({getResourceViewObject(elem.first), numGold(elem.first)});
-  info.numGold.push_back({ViewObject::mana(), mana});
+  info.numGold.push_back({ViewObject::mana(), int(mana)});
   info.warning = "";
   for (int i : Range(numWarnings))
     if (warning[i]) {
@@ -925,7 +927,7 @@ void Collective::onAppliedItem(Vec2 pos, Item* item) {
 
 void Collective::onAppliedSquare(Vec2 pos) {
   if (mySquares.at(SquareType::LIBRARY).count(pos))
-    techCounter += Random.getDouble(0.01, 0.02);
+    mana += Random.getDouble(1, 2);
 }
 
 void Collective::onAppliedItemCancel(Vec2 pos) {
@@ -980,7 +982,7 @@ void Collective::updateTraps() {
 }
 
 void Collective::tick() {
-  warning[NO_MANA] = mana < 20;
+  warning[NO_MANA] = mana < 100;
   warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && minions.size() > 1;
   updateTraps();
   for (Vec2 pos : myTiles) {
@@ -1063,7 +1065,7 @@ void Collective::setLevel(Level* l) {
   for (Vec2 v : l->getBounds())
     if (/*contains({SquareApplyType::ASCEND, SquareApplyType::DESCEND},
             l->getSquare(v)->getApplyType(Creature::getDefault())) ||*/
-        l->getSquare(v)->getName() == "gold ore")
+        contains({"gold ore", "iron ore"}, l->getSquare(v)->getName()))
       memory[l].addObject(v, l->getSquare(v)->getViewObject());
   level = l;
 }
@@ -1215,7 +1217,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
           return NoMove;
         }
         addTask(Task::applySquare(this, mySquares[SquareType::LIBRARY]), c);
-        minionTaskStrings[c] = "researching";
+        minionTaskStrings[c] = "research";
         break;
   }
   return taskMap.at(c)->getMove(c);
@@ -1291,11 +1293,13 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
   if (contains(minionByType.at(MinionType::GOLEM), c))
     return MarkovChain<MinionTask>(MinionTask::TRAIN, {
       {MinionTask::TRAIN, {}}});
-  if (contains(minionByType.at(MinionType::NORMAL), c))
+  if (contains(minionByType.at(MinionType::NORMAL), c)) {
+    double workshopTime = (c->getName() == "gnome" : 0.8 : 0.3);
     return MarkovChain<MinionTask>(MinionTask::SLEEP, {
-      {MinionTask::SLEEP, {{ MinionTask::TRAIN, 0.3}, { MinionTask::WORKSHOP, 0.3}}},
+      {MinionTask::SLEEP, {{ MinionTask::TRAIN, 1 - workshopTime}, { MinionTask::WORKSHOP, workshopTime}}},
       {MinionTask::WORKSHOP, {{ MinionTask::SLEEP, 0.005}}},
       {MinionTask::TRAIN, {{ MinionTask::SLEEP, 0.005}}}});
+  }
 
   return MarkovChain<MinionTask>(MinionTask::SLEEP, {
       {MinionTask::SLEEP, {{ MinionTask::TRAIN, 0.5}}},

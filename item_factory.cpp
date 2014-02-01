@@ -881,6 +881,12 @@ PItem ItemFactory::fromId(ItemId id) {
             i.type = ItemType::OTHER;
             i.price = 0;
             i.weight = 0.3;)));
+    case ItemId::IRON_ORE: return PItem(new Item(
+         ViewObject(ViewId::IRON_ROCK, ViewLayer::ITEM, "Iron ore"), ITATTR(
+            i.name = "iron ore";
+            i.type = ItemType::OTHER;
+            i.price = 0;
+            i.weight = 0.5;)));
     case ItemId::WOOD_PLANK: return PItem(new Item(
          ViewObject(ViewId::WOOD_PLANK, ViewLayer::ITEM, "Wood plank"), ITATTR(
             i.name = "wood plank";

@@ -311,7 +311,8 @@ class KamikazeController : public Monster {
         if (Creature* c = creature->getSquare(v)->getCreature())
           if (creature->isEnemy(c) && creature->canSee(c)) {
             creature->globalMessage(creature->getTheName() + " explodes!");
-            c->getSquare()->setOnFire(1);
+            for (Vec2 v : Vec2::directions8())
+              c->getSquare(v)->setOnFire(1);
             creature->die(nullptr, false);
             return;
           }
@@ -1057,6 +1058,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.humanoid = false;
                                 c.noSleep = true;
                                 c.notLiving = true;
+                                c.fireResistant = true;
                                 c.weight = 120;
                                 c.name = "lava golem";), tribe, factory);
     case CreatureId::ACID_MOUND: return get(ViewId::ACID_MOUND, CATTR(
@@ -1518,7 +1520,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.heads = 0;
                                 c.noBody = true;
                                 c.breathing = false;
-                                c.fireResistant = true;
+                                c.fireCreature = true;
                                 c.flyer = true;
                                 c.weight = 10;
                                 c.courage = 100;
