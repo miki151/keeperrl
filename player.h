@@ -57,9 +57,10 @@ class Player : public Controller, public EventListener {
   void chatAction(Optional<Vec2> dir = Nothing());
   void spellAction();
   void fireAction(Vec2 dir);
-  vector<Item*> chooseItem(const string& text, function<bool (Item*)> predicate, bool displayOnly = false,
+  vector<Item*> chooseItem(const string& text, ItemPredicate, bool displayOnly = false,
       Optional<string> otherOption = Nothing());
-  void getItemNames(vector<Item*> items, vector<string>& names, vector<vector<Item*> >& groups);
+  void getItemNames(vector<Item*> it, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
+      ItemPredicate = alwaysTrue<const Item*>());
   string getPluralName(Item* item, int num);
   Creature* creature;
   View* view = nullptr;

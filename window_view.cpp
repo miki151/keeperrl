@@ -2137,6 +2137,7 @@ vector<KeyInfo> keyInfo {
 //  { "E", "Manage equipment", {Keyboard::E}},
   { "Enter", "Pick up items or interact with square", {Keyboard::Return}},
   { "D", "Drop item", {Keyboard::D}},
+  { "Shift + D", "Extended drop - choose the number of items", {Keyboard::D}},
   { "A", "Apply item", {Keyboard::A}},
   { "T", "Throw item", {Keyboard::T}},
 //  { "S", "Cast spell", {Keyboard::S}},

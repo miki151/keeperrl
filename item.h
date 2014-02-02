@@ -59,8 +59,8 @@ class Item : private ItemAttributes {
 
   static void identify(const string& name);
   void identify();
-  bool isIdentified();
-  bool canIdentify();
+  bool isIdentified() const;
+  bool canIdentify() const;
   void onEquip(Creature*);
   void onUnequip(Creature*);
   virtual void onEquipSpecial(Creature*) {}

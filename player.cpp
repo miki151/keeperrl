@@ -72,7 +72,8 @@ void Player::onBump(Creature*) {
   Debug(FATAL) << "Shouldn't call onBump on a player";
 }
 
-void Player::getItemNames(vector<Item*> items, vector<string>& names, vector<vector<Item*> >& groups) {
+void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
+    ItemPredicate predicate) {
   map<string, vector<Item*> > ret = groupBy<Item*, string>(items, 
       [this] (Item* const& item) { 
         if (creature->getEquipment().isEquiped(item))
@@ -82,11 +83,14 @@ void Player::getItemNames(vector<Item*> items, vector<string>& names, vector<vec
           return item->getNameAndModifiers(false, creature->isBlind());});
   for (auto elem : ret) {
     if (elem.second.size() == 1)
-      names.push_back(elem.first);
+      names.push_back(View::ListElem(elem.first, predicate(elem.second[0]) ? Nothing() :
+            Optional<View::ElemMod>(View::INACTIVE)));
     else
-      names.push_back(convertToString<int>(elem.second.size()) + " " 
-          + elem.second[0]->getNameAndModifiers(true, creature->isBlind()));
-    groups.push_back(elem.second);
+      names.push_back(View::ListElem(convertToString<int>(elem.second.size()) + " " 
+          + elem.second[0]->getNameAndModifiers(true, creature->isBlind()),
+          predicate(elem.second[0]) ? Nothing() : Optional<View::ElemMod>(View::INACTIVE)));
+    if (predicate(elem.second[0]))
+      groups.push_back(elem.second);
   }
 }
 
@@ -123,14 +127,14 @@ void Player::pickUpAction(bool extended) {
     creature->applySquare();
     return;
   }
-  vector<string> names;
+  vector<View::ListElem> names;
   vector<vector<Item*> > groups;
   getItemNames(creature->getPickUpOptions(), names, groups);
   if (names.empty())
     return;
   int index = 0;
   if (names.size() > 1) {
-    Optional<int> res = view->chooseFromList("Choose an item to pick up:", View::getListElem(names));
+    Optional<int> res = view->chooseFromList("Choose an item to pick up:", names);
     if (!res)
       return;
     else
@@ -153,14 +157,15 @@ void Player::pickUpAction(bool extended) {
 }
 
 void Player::itemsMessage() {
-  vector<string> names;
+  vector<View::ListElem> names;
   vector<vector<Item*> > groups;
   getItemNames(creature->getPickUpOptions(), names, groups);
   if (names.size() > 1)
     privateMessage(creature->isBlind() ? "You feel here some items" : "You see here some items.");
   else if (names.size() == 1)
     privateMessage((creature->isBlind() ? string("You feel here ") : ("You see here ")) + 
-        (groups[0].size() == 1 ? "a " + groups[0][0]->getNameAndModifiers(false, creature->isBlind()) : names[0]));
+        (groups[0].size() == 1 ? "a " + groups[0][0]->getNameAndModifiers(false, creature->isBlind()) :
+            names[0].getText()));
 }
 
 ItemType typeDisplayOrder[] { ItemType::WEAPON, ItemType::RANGED_WEAPON, ItemType::AMMO, ItemType::ARMOR, ItemType::POTION, ItemType::SCROLL, ItemType::FOOD, ItemType::BOOK, ItemType::AMULET, ItemType::TOOL, ItemType::CORPSE, ItemType::OTHER, ItemType::GOLD };
@@ -186,17 +191,16 @@ static string getText(ItemType type) {
 }
 
 
-vector<Item*> Player::chooseItem(const string& text, function<bool (Item*)> predicate, bool onlyDisplay, Optional<string> otherOption) {
+vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, bool onlyDisplay,
+    Optional<string> otherOption) {
   map<ItemType, vector<Item*> > typeGroups = groupBy<Item*, ItemType>(
-      creature->getEquipment().getItems(predicate), [](Item* const& item) { return item->getType();});
+      creature->getEquipment().getItems(), [](Item* const& item) { return item->getType();});
   vector<View::ListElem> names;
   vector<vector<Item*> > groups;
   for (auto elem : typeDisplayOrder) 
     if (typeGroups[elem].size() > 0) {
       names.push_back(View::ListElem(getText(elem), View::TITLE));
-      vector<string> itemNames;
-      getItemNames(typeGroups[elem], itemNames, groups);
-      append(names, View::getListElem(itemNames));
+      getItemNames(typeGroups[elem], names, groups, predicate);
     }
   if (onlyDisplay) {
     view->presentList(text, names);
@@ -209,8 +213,8 @@ vector<Item*> Player::chooseItem(const string& text, function<bool (Item*)> pred
 }
 
 void Player::dropAction(bool extended) {
-  vector<Item*> items = chooseItem("Choose an item to drop:", [this](Item* item) {
-      return !creature->getEquipment().isEquiped(item);});
+  vector<Item*> items = chooseItem("Choose an item to drop:", [this](const Item* item) {
+      return !creature->getEquipment().isEquiped(item) || item->getType() == ItemType::WEAPON;});
   int num = items.size();
   if (num < 1)
     return;
@@ -227,11 +231,11 @@ void Player::dropAction(bool extended) {
 void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   if (!creature->canPickUp(items))
     return;
-  vector<string> names;
+  vector<View::ListElem> names;
   vector<vector<Item*> > groups;
   getItemNames(items, names, groups);
   CHECK(!names.empty());
-  Optional<int> index = view->chooseFromList("Do you want to take it?", View::getListElem(names));
+  Optional<int> index = view->chooseFromList("Do you want to take it?", names);
   if (!index) {
     return;
   }
@@ -249,7 +253,7 @@ void Player::applyAction() {
     privateMessage("You don't have hands!");
     return;
   }
-  vector<Item*> items = chooseItem("Choose an item to apply:", [this](Item* item) {
+  vector<Item*> items = chooseItem("Choose an item to apply:", [this](const Item* item) {
       return creature->canApplyItem(item);});
   if (items.size() == 0)
     return;
@@ -278,7 +282,7 @@ void Player::applyItem(vector<Item*> items) {
 }
 
 void Player::throwAction(Optional<Vec2> dir) {
-  vector<Item*> items = chooseItem("Choose an item to throw:", [this](Item* item) {
+  vector<Item*> items = chooseItem("Choose an item to throw:", [this](const Item* item) {
       return !creature->getEquipment().isEquiped(item);});
   if (items.size() == 0)
     return;
@@ -326,7 +330,7 @@ void Player::equipmentAction() {
       if (creature->canUnequip(item))
         creature->unequip(item);
     } else {
-      vector<Item*> items = chooseItem("Choose an item to equip:", [=](Item* item) {
+      vector<Item*> items = chooseItem("Choose an item to equip:", [=](const Item* item) {
           return item->canEquip()
           && !creature->getEquipment().isEquiped(item)
           && item->getEquipmentSlot() == slot;});
@@ -344,7 +348,7 @@ void Player::equipmentAction() {
 }
 
 void Player::grantIdentify(int numItems) {
-  auto unidentFun = [this](Item* item) { return item->canIdentify() && !item->isIdentified();};
+  auto unidentFun = [this](const Item* item) { return item->canIdentify() && !item->isIdentified();};
   vector<Item*> unIded = creature->getEquipment().getItems(unidentFun);
   if (unIded.empty()) {
     privateMessage("All your posessions are already identified");
@@ -365,9 +369,14 @@ void Player::grantIdentify(int numItems) {
 }
 
 void Player::displayInventory() {
-  vector<Item*> item = chooseItem("Inventory:", [](Item* item) { return true; });
-  if (item.size() == 0)
-    return; 
+  if (creature->getEquipment().isEmpty()) {
+    view->presentText("", "Your inventory is empty.");
+    return;
+  }
+  vector<Item*> item = chooseItem("Inventory:", alwaysTrue<const Item*>());
+  if (item.size() == 0) {
+    return;
+  }
   vector<View::ListElem> options;
   if (creature->canEquip(item[0])) {
     options.push_back("equip");

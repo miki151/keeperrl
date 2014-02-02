@@ -71,11 +71,11 @@ void Item::identify() {
   inspected = true;
 }
 
-bool Item::canIdentify() {
+bool Item::canIdentify() const {
   return identifiable;
 }
 
-bool Item::isIdentified() {
+bool Item::isIdentified() const {
   return isIdentified(*name);
 }
 

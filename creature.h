@@ -135,7 +135,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   bool canBumpInto(Vec2 direction) const;
   void bumpInto(Vec2 direction);
   void applyItem(Item* item);
-  bool canApplyItem(Item* item) const;
+  bool canApplyItem(const Item* item) const;
   void startEquipChain();
   void finishEquipChain();
   void equip(Item* item);

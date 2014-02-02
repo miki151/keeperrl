@@ -1506,7 +1506,7 @@ void Creature::applyItem(Item* item) {
   spendTime(time);
 }
 
-bool Creature::canApplyItem(Item* item) const {
+bool Creature::canApplyItem(const Item* item) const {
   return contains({ItemType::TOOL, ItemType::POTION, ItemType::FOOD, ItemType::BOOK, ItemType::SCROLL},
       item->getType()) && isHumanoid() && numGoodArms() > 0;
 }
