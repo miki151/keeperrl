@@ -6,6 +6,7 @@
 #include "player.h"
 #include "message_buffer.h"
 #include "model.h"
+#include "statistics.h"
 
 static string warningText[] {
   "Kill some innocent beings for more mana.",
@@ -384,11 +385,11 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
     if (minions.size() >= minionLimit) {
       allInactive = true;
       options.emplace_back("You have reached the limit of the number of minions.", View::TITLE);
-    }
+    } else
     if (cages.empty()) {
       allInactive = true;
       options.emplace_back(info1, View::TITLE);
-    }
+    } else
     if (cages.size() <= minionByType.at(minionType).size()) {
       allInactive = true;
       options.emplace_back(info2, View::TITLE);
@@ -460,6 +461,7 @@ void Collective::handleLibrary(View* view) {
     for (auto elem : spellLearning)
       if (elem.techLevel == techLevels[id])
         heart->addSpell(elem.id);
+  view->updateView(this);
   handleLibrary(view);
 }
 
@@ -613,11 +615,23 @@ void Collective::addTask(PTask task) {
 
 void Collective::delayTask(Task* task, double time) {
   CHECK(task->canTransfer());
-  delayed.insert({task, time});
+  delayed[task] = time;
+  Debug() << "Delaying " << (taken.count(task) ? "taken " : "") << task->getInfo();
   if (taken.count(task)) {
     taskMap.erase(taken.at(task));
     taken.erase(task);
   }
+}
+
+bool Collective::isDelayed(Task* task, double time) {
+  if (delayed.count(task)) {
+    if (delayed.at(task) > time)
+      return true;
+    else
+      delayed.erase(task);
+  }
+  return false;
+
 }
 
 void Collective::removeTask(Task* task) {
@@ -925,8 +939,19 @@ void Collective::onAppliedSquare(Vec2 pos) {
   if (mySquares.at(SquareType::LIBRARY).count(pos))
     mana += Random.getDouble(1, 2);
   if (mySquares.at(SquareType::LABORATORY).count(pos))
-    if (Random.roll(30))
+    if (Random.roll(30)) {
       level->getSquare(pos)->dropItems(ItemFactory::potions().random());
+      Statistics::add(StatId::POTION_PRODUCED);
+    }
+  if (mySquares.at(SquareType::WORKSHOP).count(pos))
+    if (Random.roll(40)) {
+      vector<PItem> items  = ItemFactory::workshop().random();
+      if (items[0]->getType() == ItemType::WEAPON)
+        Statistics::add(StatId::WEAPON_PRODUCED);
+      if (items[0]->getType() == ItemType::ARMOR)
+        Statistics::add(StatId::ARMOR_PRODUCED);
+      level->getSquare(pos)->dropItems(std::move(items));
+    }
 }
 
 void Collective::onAppliedItemCancel(Vec2 pos) {
@@ -980,10 +1005,50 @@ void Collective::updateTraps() {
   }
 }
 
+
+void Collective::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime) {
+  int infinity = 1000;
+  int minX = infinity, maxX = -infinity, minY = infinity, maxY = -infinity;
+  for (Vec2 v : enemyPos) {
+    minX = min(minX, v.x);
+    maxX = max(maxX, v.x);
+    minY = min(minY, v.y);
+    maxY = max(maxY, v.y);
+  }
+  int radius = 10;
+  Table<int> dist(Rectangle(minX - radius, minY - radius, maxX + radius, maxY + radius)
+      .intersection(level->getBounds()), infinity);
+  queue<Vec2> q;
+  for (Vec2 v : enemyPos) {
+    dist[v] = 0;
+    q.push(v);
+  }
+  map<Vec2, Task*> taskPos;
+  for (PTask& task : tasks)
+    if (task->canTransfer()) {
+      taskPos[task->getPosition()] = task.get();
+    } else
+      Debug() << "Delay: can't tranfer " << task->getInfo();
+  while (!q.empty()) {
+    Vec2 pos = q.front();
+    q.pop();
+    if (taskPos.count(pos))
+      delayTask(taskPos.at(pos), delayTime);
+    if (dist[pos] >= radius || !level->getSquare(pos)->canEnterEmpty(Creature::getDefault()))
+      continue;
+    for (Vec2 v : pos.neighbors8())
+      if (dist[v] == infinity) {
+        dist[v] = dist[pos] + 1;
+        q.push(v);
+      }
+  }
+}
+
 void Collective::tick() {
   warning[NO_MANA] = mana < 100;
   warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && minions.size() > 1;
   updateTraps();
+  vector<Vec2> enemyPos;
   for (Vec2 pos : myTiles) {
     if (Creature* c = level->getSquare(pos)->getCreature()) {
  /*     if (!contains(creatures, c) && c->getTribe() == Tribe::player
@@ -991,9 +1056,7 @@ void Collective::tick() {
         // We just found a friendly creature (and not a boulder nor a chicken)
         addCreature(c);*/
       if (c->getTribe() != Tribe::player)
-        for (PTask& task : tasks)
-          if (task->getPosition() == pos && task->canTransfer())
-            delayTask(task.get(), c->getTime() + 50);
+        enemyPos.push_back(c->getPosition());
     }
     vector<Item*> gold = level->getSquare(pos)->getItems(unMarkedItems(ItemType::GOLD));
     if (gold.size() > 0 && !mySquares[SquareType::TREASURE_CHEST].count(pos)) {
@@ -1025,6 +1088,8 @@ void Collective::tick() {
       for (Vec2 pos : mySquares.at(type))
         fetchItems(pos, elem);
   }
+  if (!enemyPos.empty())
+    delayDangerousTasks(enemyPos, heart->getTime() + 50);
 }
 
 void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
@@ -1200,8 +1265,8 @@ MoveInfo Collective::getMinionMove(Creature* c) {
   };
   MinionTaskInfo info = taskInfo.at(minionTasks.at(c).getState());
   if (mySquares[info.square].empty()) {
-    if (!minionTasks.at(c).updateToNext())
-      return NoMove;
+    minionTasks.at(c).updateToNext();
+    return NoMove;
   }
   addTask(Task::applySquare(this, mySquares[info.square]), c);
   minionTaskStrings[c] = info.desc;
@@ -1227,12 +1292,8 @@ MoveInfo Collective::getMove(Creature* c) {
   }
   Task* closest = nullptr;
   for (PTask& task : tasks) {
-    if (delayed.count(task.get())) { 
-      if (delayed.at(task.get()) > c->getTime())
-        continue;
-      else 
-        delayed.erase(task.get());
-    }
+    if (isDelayed(task.get(), c->getTime()))
+      continue;
     double dist = (task->getPosition() - c->getPosition()).length8();
     if ((!taken.count(task.get()) || (task->canTransfer() 
                                 && (task->getPosition() - taken.at(task.get())->getPosition()).length8() > dist))
@@ -1339,7 +1400,7 @@ void Collective::onConqueredLand(const string& name) {
 
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim == heart) {
-    model->gameOver(heart, kills.size(), "innocent beings", points);
+    model->gameOver(heart, kills.size(), "enemies", points);
   }
   if (contains(creatures, victim)) {
     Creature* c = const_cast<Creature*>(victim);

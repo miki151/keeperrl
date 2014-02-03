@@ -75,6 +75,7 @@ template string convertToString<int>(const int&);
 template string convertToString<size_t>(const size_t&);
 template string convertToString<char>(const char&);
 template string convertToString<double>(const double&);
+//template string convertToString<Vec2>(const Vec2&);
 
 template int convertFromString<int>(const string&);
 template char convertFromString<char>(const string&);
@@ -84,6 +85,13 @@ template <class T>
 string convertToString(const T& t){
   std::stringstream ss;
   ss << t;
+  return ss.str();
+}
+
+template <>
+string convertToString(const Vec2& t){
+  std::stringstream ss;
+  ss << "(" << t.x << "," << t.y << ")";
   return ss.str();
 }
 

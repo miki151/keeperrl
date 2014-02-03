@@ -5,6 +5,7 @@
 #include "quest.h"
 #include "tribe.h"
 #include "message_buffer.h"
+#include "statistics.h"
 
 using namespace std;
 
@@ -44,6 +45,7 @@ int main(int argc, char* argv[]) {
     Tribe::init();
     Item::identifyEverything();
     EventListener::initialize();
+    Statistics::init();
     NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
         "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt");
     ItemFactory::init();

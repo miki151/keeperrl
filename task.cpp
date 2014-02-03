@@ -34,6 +34,10 @@ class Construction : public Task {
     return !level->getSquare(getPosition())->canConstruct(type);
   }
 
+  virtual string getInfo() override {
+    return string("construct ") + typeid(type).name() + " " + convertToString(getPosition());
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     if (!c->hasSkill(Skill::construction))
       return NoMove;
@@ -88,6 +92,10 @@ class PickItem : public Task {
     return false;
   }
 
+  virtual string getInfo() override {
+    return "pick item " + (*items.begin())->getName() + " " + convertToString(getPosition());
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(!pickedUp);
     if (c->getPosition() == getPosition()) {
@@ -136,6 +144,10 @@ class EquipItem : public PickItem {
   virtual void onPickedUp() override {
   }
 
+  virtual string getInfo() override {
+    return "equip item " + (*items.begin())->getName() + " " + convertToString(getPosition());
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     if (!pickedUp)
       return PickItem::getMove(c);
@@ -162,6 +174,11 @@ class BringItem : public PickItem {
   virtual void onBroughtItem(Creature* c, vector<Item*> it) {
     //getCollective()->onBrought(c->getPosition(), it);
     c->drop(it);
+  }
+
+  virtual string getInfo() override {
+    return "bring item " + (*items.begin())->getName() + " " + convertToString(getPosition()) 
+      + " to " + convertToString(target);
   }
 
   virtual void onPickedUp() override {
@@ -211,6 +228,11 @@ class ApplyItem : public BringItem {
     getCollective()->onAppliedItemCancel(target);
   }
 
+  virtual string getInfo() override {
+    return "apply item " + (*items.begin())->getName() + " " + convertToString(getPosition()) +
+      " to " + convertToString(target);
+  }
+
   virtual void onBroughtItem(Creature* c, vector<Item*> it) override {
     CHECK(it.size() == 1);
     getCollective()->onAppliedItem(c->getPosition(), it[0]);
@@ -228,6 +250,10 @@ class ApplySquare : public Task {
 
   virtual bool canTransfer() override {
     return false;
+  }
+
+  virtual string getInfo() override {
+    return "apply square ";
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -288,6 +314,10 @@ class Eat : public Task {
 
   virtual bool canTransfer() override {
     return false;
+  }
+
+  virtual string getInfo() override {
+    return "eat";
   }
 
   Item* getDeadChicken(Square* s) {

@@ -8,6 +8,7 @@ class Task {
   Task(Collective*, Vec2 position);
 
   virtual MoveInfo getMove(Creature*) = 0;
+  virtual string getInfo() = 0;
   virtual bool isImpossible(const Level*) { return false; }
   virtual bool canTransfer() { return true; }
   virtual void cancel() {}

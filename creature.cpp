@@ -5,6 +5,7 @@
 #include "level.h"
 #include "enemy_check.h"
 #include "ranged_weapon.h"
+#include "statistics.h"
 
 using namespace std;
 
@@ -72,6 +73,7 @@ bool Creature::canCastSpell(int index) const {
 void Creature::castSpell(int index) {
   CHECK(canCastSpell(index));
   Effect::applyToCreature(this, spells[index].type, EffectStrength::NORMAL);
+  Statistics::add(StatId::SPELL_CAST);
   spells[index].ready = getTime() + spells[index].difficulty;
   spendTime(1);
 }
@@ -898,6 +900,7 @@ void Creature::injureLeg(bool drop) {
   if (legs == 0)
     return;
   if (drop) {
+    Statistics::add(StatId::CHOPPED_LIMB);
     --legs;
     ++lostLegs;
     if (injuredLegs > legs)
@@ -916,6 +919,7 @@ void Creature::injureLeg(bool drop) {
 
 void Creature::injureArm(bool dropArm) {
   if (dropArm) {
+    Statistics::add(StatId::CHOPPED_LIMB);
     --arms;
     ++lostArms;
     if (injuredArms > arms)
@@ -935,6 +939,7 @@ void Creature::injureArm(bool dropArm) {
 
 void Creature::injureWing(bool drop) {
   if (drop) {
+    Statistics::add(StatId::CHOPPED_LIMB);
     --wings;
     ++lostWings;
     if (injuredWings > wings)
@@ -957,6 +962,7 @@ void Creature::injureWing(bool drop) {
 
 void Creature::injureHead(bool drop) {
   if (drop) {
+    Statistics::add(StatId::CHOPPED_HEAD);
     --heads;
     if (injuredHeads > heads)
       --injuredHeads;
@@ -1384,6 +1390,9 @@ void Creature::die(const Creature* attacker, bool dropInventory) {
     dropCorpse();
   level->killCreature(this);
   EventListener::addKillEvent(this, attacker);
+  if (innocent)
+    Statistics::add(StatId::INNOCENT_KILLED);
+  Statistics::add(StatId::DEATH);
 }
 
 bool Creature::canFlyAway() const {

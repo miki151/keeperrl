@@ -23,7 +23,7 @@ class BoulderController : public Monster {
   virtual void makeMove() override {
     if (myTribe != nullptr && stopped) {
       for (Vec2 v : Vec2::directions8(true)) {
-        int radius = 6;
+        int radius = 4;
         bool found = false;
         for (int i = 1; i <= radius; ++i) {
           if (!(creature->getPosition() + (v * i)).inRectangle(creature->getLevel()->getBounds()))
@@ -998,6 +998,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 3;
                                 c.humanoid = true;
                                 c.weight = 100;
+                                c.innocent = true;
                                 c.chatReactionFriendly = "curses all dungeons";
                                 c.chatReactionHostile = "\"Heeelp!\"";
                                 c.name = "peaseant";), tribe, factory);
@@ -1009,6 +1010,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 3;
                                 c.humanoid = true;
                                 c.weight = 40;
+                                c.innocent = true;
                                 c.chatReactionFriendly = "plaaaaay!";
                                 c.chatReactionHostile = "\"Heeelp!\"";
                                 c.name = "child";), tribe, factory);
@@ -1304,6 +1306,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 0;
                                 c.humanoid = true;
                                 c.weight = 25;
+                                c.innocent = true;
                                 c.skills.insert(Skill::archery);
                                 c.chatReactionFriendly = "curses all dwarves";
                                 c.chatReactionHostile = "\"Help!\"";
@@ -1330,6 +1333,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.strength = 10;
                                 c.dexterity = 17;
                                 c.humanoid = false;
+                                c.innocent = true;
                                 c.weight = 500;
                                 c.animal = true;
                                 c.name = "horse";), tribe, factory);
@@ -1339,6 +1343,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.strength = 10;
                                 c.dexterity = 12;
                                 c.humanoid = false;
+                                c.innocent = true;
                                 c.weight = 400;
                                 c.animal = true;
                                 c.name = "cow";), tribe, factory);
@@ -1348,6 +1353,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.strength = 5;
                                 c.dexterity = 12;
                                 c.humanoid = false;
+                                c.innocent = true;
                                 c.weight = 40;
                                 c.animal = true;
                                 c.name = "sheep";), tribe, factory);
@@ -1357,6 +1363,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.strength = 12;
                                 c.dexterity = 8;
                                 c.humanoid = false;
+                                c.innocent = true;
                                 c.weight = 150;
                                 c.animal = true;
                                 c.name = "pig";), tribe, factory);
@@ -1376,6 +1383,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.strength = 10;
                                 c.dexterity = 17;
                                 c.humanoid = false;
+                                c.innocent = true;
                                 c.weight = 400;
                                 c.animal = true;
                                 c.name = "deer";), tribe, factory);
@@ -1385,6 +1393,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.strength = 18;
                                 c.dexterity = 15;
                                 c.humanoid = false;
+                                c.innocent = true;
                                 c.weight = 200;
                                 c.animal = true;
                                 c.name = "boar";), tribe, factory);
@@ -1394,6 +1403,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.strength = 10;
                                 c.dexterity = 15;
                                 c.barehandedDamage = 2;
+                                c.innocent = true;
                                 c.humanoid = false;
                                 c.weight = 10;
                                 c.animal = true;

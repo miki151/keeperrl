@@ -473,19 +473,14 @@ class Library : public TrainingDummy {
 
 class Workshop : public Furniture {
   public:
-  Workshop(const ViewObject& object, const string& name, ItemFactory f) : Furniture(object, name, 1), factory(f) {}
+  using Furniture::Furniture;
 
   virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
     return SquareApplyType::WORKSHOP;
   }
 
   virtual void onApply(Creature* c) override {
-    if (Random.roll(40))
-      dropItems(factory.random());
   }
-
-  private:
-  ItemFactory factory;
 };
 
 class Hatchery : public Square {
@@ -499,7 +494,7 @@ class Hatchery : public Square {
       if (Creature* c = getLevel()->getSquare(v)->getCreature())
         if (c->getName() == "chicken")
           return;
-    getLevel()->addCreature(getPosition(), CreatureFactory::fromId(CreatureId::CHICKEN, Tribe::player,
+    getLevel()->addCreature(getPosition(), CreatureFactory::fromId(CreatureId::CHICKEN, Tribe::peaceful,
           MonsterAIFactory::moveRandomly()));
   }
 
@@ -522,13 +517,9 @@ class Throne : public Furniture {
   }
 };
 
-class Laboratory : public Furniture {
+class Laboratory : public Workshop {
   public:
-  using Furniture::Furniture;
-
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
-    return SquareApplyType::WORKSHOP;
-  }
+  using Workshop::Workshop;
 
   virtual void onApply(Creature* c) override {
     c->privateMessage("You mix the concoction.");
@@ -634,7 +625,7 @@ Square* SquareFactory::get(SquareType s) {
                                    "cauldron", 0);
     case SquareType::WORKSHOP:
         return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), 
-            "workshop stand", ItemFactory::workshop());
+            "workshop stand", 1);
     case SquareType::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery");
     case SquareType::KEEPER_THRONE:

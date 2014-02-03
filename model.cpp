@@ -6,6 +6,7 @@
 #include "player.h"
 #include "village_control.h"
 #include "message_buffer.h"
+#include "statistics.h"
 
 using namespace std;
 
@@ -325,8 +326,12 @@ void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
 }
   
 void Model::conquered(const string& title, const string& land, vector<const Creature*> kills, int points) {
-  view->presentText("Victory", "You have conquered this land. You killed " + convertToString(kills.size()) +
-      " innocent beings and scored " + convertToString(points) + " points. Thank you for playing KeeperRL alpha.");
+  string text= "You have conquered this land. You killed " + convertToString(kills.size()) +
+      " innocent beings and scored " + convertToString(points) +
+      " points. Thank you for playing KeeperRL alpha.\n \n";
+  for (string stat : Statistics::getText())
+    text += stat + "\n";
+  view->presentText("Victory", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "conquered the land of " + land + "," << points << std::endl;
   showHighscore(true);
@@ -346,7 +351,9 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
     text += ", killed by a " + killer;
   }
   text += ". He killed " + convertToString(numKills) 
-      + " " + enemiesString + " and scored " + convertToString(points) + " points.";
+      + " " + enemiesString + " and scored " + convertToString(points) + " points.\n \n";
+  for (string stat : Statistics::getText())
+    text += stat + "\n";
   view->presentText("Game over", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "killed by a " + killer << "," << points << std::endl;

@@ -3,6 +3,7 @@
 #include "item.h"
 #include "creature.h"
 #include "level.h"
+#include "statistics.h"
 
 using namespace std;
 
@@ -178,6 +179,8 @@ Optional<TrapType> Item::getTrapType() const {
 }
 
 void Item::apply(Creature* c, Level* l) {
+  if (type == ItemType::SCROLL)
+    Statistics::add(StatId::SCROLL_READ);
   if (identifyOnApply && l->playerCanSee(c->getPosition()))
     identify(*name);
   if (effect)

@@ -4,26 +4,30 @@
 
 using namespace std;
 
-class KillEveryone : public Tribe {
+class Constant : public Tribe {
   public:
-  KillEveryone() : Tribe("", false) {}
+  Constant(double s) : Tribe("", false), standing(s) {}
   virtual double getStanding(const Creature*) const override {
-    return -1;
+    return standing;
   }
+
+  private:
+  double standing;
 };
 
-Tribe* Tribe::monster = new Tribe("", false);
-Tribe* Tribe::pest = new Tribe("", false);
-Tribe* Tribe::wildlife = new Tribe("", false);
-Tribe* Tribe::elven = new Tribe("elves", true);
-Tribe* Tribe::human = new Tribe("humans", true);
-Tribe* Tribe::goblin = new Tribe("goblins", true);
-Tribe* Tribe::dwarven = new Tribe("dwarves", true);
-Tribe* Tribe::player = new Tribe("", false);
-Tribe* Tribe::dragon = new Tribe("", false);
-Tribe* Tribe::castleCellar = new Tribe("", false);
-Tribe* Tribe::bandit = new Tribe("", false);
-Tribe* Tribe::killEveryone = new KillEveryone();
+Tribe* Tribe::monster;
+Tribe* Tribe::pest;
+Tribe* Tribe::wildlife;
+Tribe* Tribe::elven;
+Tribe* Tribe::human;
+Tribe* Tribe::goblin;
+Tribe* Tribe::dwarven;
+Tribe* Tribe::player;
+Tribe* Tribe::dragon;
+Tribe* Tribe::castleCellar;
+Tribe* Tribe::bandit;
+Tribe* Tribe::killEveryone;
+Tribe* Tribe::peaceful;
 
 Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
 }
@@ -133,7 +137,8 @@ void Tribe::init() {
   dragon = new Tribe("", false);
   castleCellar = new Tribe("", false);
   bandit = new Tribe("", false);
-  killEveryone = new KillEveryone();
+  killEveryone = new Constant(-1);
+  peaceful = new Constant(1);
   EventListener::addListener(elven);
   EventListener::addListener(goblin);
   EventListener::addListener(human);

@@ -41,6 +41,7 @@ class Tribe : public EventListener {
   static Tribe* castleCellar;
   static Tribe* bandit;
   static Tribe* killEveryone;
+  static Tribe* peaceful;
 
   private:
 

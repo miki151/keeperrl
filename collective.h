@@ -149,6 +149,8 @@ class Collective : public CreatureView, public EventListener {
   void unmarkSquare(Vec2 pos);
   void removeTask(Task*);
   void delayTask(Task*, double t);
+  bool isDelayed(Task* task, double time);
+  void delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime);
   void addTask(PTask, Creature*);
   void addTask(PTask);
   int numGold(ResourceId) const;

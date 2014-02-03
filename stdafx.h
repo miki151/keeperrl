@@ -26,6 +26,7 @@
 #include <tuple>
 #include <thread>
 #include <stack>
+#include <typeinfo>
 
 using std::string;
 using std::vector;

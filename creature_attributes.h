@@ -39,6 +39,7 @@ class CreatureAttributes {
   int arms = 2;
   int wings = 0;
   int heads = 1;
+  bool innocent = false;
   bool noBody = false;
   bool fireResistant = false;
   bool fireCreature = false;
