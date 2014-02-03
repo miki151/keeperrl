@@ -2,7 +2,7 @@
 
 CC = g++
 LD = g++
-CFLAGS =  -Werror -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wl,-rpath=.
+CFLAGS = -Wfatal-errors -Werror -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wl,-rpath=.
 
 CMD:=$(shell rm -f zagadka)
 

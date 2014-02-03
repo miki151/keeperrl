@@ -530,10 +530,14 @@ class Optional {
 };
 
 template <typename T, typename V>
-bool contains(const initializer_list<T>& v, const Optional<V>& elem) {
-  return elem && contains(vector<T>(v), *elem);
+bool contains(const vector<T>& v, const Optional<V>& elem) {
+  return elem && contains(v, *elem);
 }
 
+template <typename T, typename V>
+bool contains(const initializer_list<T>& v, const Optional<V>& elem) {
+  return contains(vector<T>(v), elem);
+}
 
 template <class T>
 class MustInitialize {

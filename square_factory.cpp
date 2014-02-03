@@ -522,6 +522,19 @@ class Throne : public Furniture {
   }
 };
 
+class Laboratory : public Furniture {
+  public:
+  using Furniture::Furniture;
+
+  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
+    return SquareApplyType::WORKSHOP;
+  }
+
+  virtual void onApply(Creature* c) override {
+    c->privateMessage("You mix the concoction.");
+  }
+};
+
 Square* SquareFactory::getAltar(Deity* deity) {
   return new Altar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity);
 }
@@ -617,7 +630,7 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::LIBRARY:
         return new Library(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
             "book shelf");
-    case SquareType::LABORATORY: return new Furniture(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "cauldron"),
+    case SquareType::LABORATORY: return new Laboratory(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "cauldron"),
                                    "cauldron", 0);
     case SquareType::WORKSHOP:
         return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), 

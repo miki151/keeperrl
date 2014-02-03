@@ -313,6 +313,7 @@ class KamikazeController : public Monster {
             creature->globalMessage(creature->getTheName() + " explodes!");
             for (Vec2 v : Vec2::directions8())
               c->getSquare(v)->setOnFire(1);
+            c->getSquare()->setOnFire(1);
             creature->die(nullptr, false);
             return;
           }
@@ -1286,7 +1287,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
     case CreatureId::ELF: return get(ViewId::ELF, CATTR(
                                 c.speed = 120;
                                 c.size = CreatureSize::MEDIUM;
-                                c.strength = 13;
+                                c.strength = 15;
                                 c.dexterity = 15;
                                 c.barehandedDamage = 3;
                                 c.humanoid = true;
@@ -1313,7 +1314,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 ViewObject(ViewId::ELF_LORD, ViewLayer::CREATURE, "Elf lord"), Tribe::elven, CATTR(
                                 c.speed = 140;
                                 c.size = CreatureSize::MEDIUM;
-                                c.strength = 13;
+                                c.strength = 17;
                                 c.dexterity = 18;
                                 c.barehandedDamage = 3;
                                 c.humanoid = true;

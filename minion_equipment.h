@@ -13,7 +13,7 @@ class MinionEquipment {
   bool isItemUseful(const Item*) const;
 
   private:
-  enum EquipmentType { WEAPON, BODY_ARMOR, HELMET, BOOTS, HEALING, BOW, ARROW, MUSHROOM };
+  enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
 
   bool needs(const Creature* c, const Item* it);
   static Optional<EquipmentType> getEquipmentType(const Item* it);

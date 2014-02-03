@@ -1043,7 +1043,7 @@ void WindowView::drawPlayerInfo() {
   for (int i : All(info.adjectives))
     title = string(i <info.adjectives.size() - 1 ? ", " : " ") + info.adjectives[i] + title;
   int line1 = screenHeight - bottomBarHeight + 10;
-  int line2 = line1 + 25;
+  int line2 = line1 + 28;
   drawFilledRectangle(0, screenHeight - bottomBarHeight, screenWidth - rightBarWidth, screenHeight, translucentBlack);
   string playerLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title) +
     "          T: " + convertToString<int>(info.time) + "            " + info.levelName;
@@ -1261,17 +1261,19 @@ void WindowView::drawKeeperHelp() {
 
 void WindowView::drawBandInfo() {
   GameInfo::BandInfo& info = gameInfo.bandInfo;
+  int lineHeight = 28;
   int line0 = screenHeight - 90;
-  int line1 = screenHeight - 65;
-  int line2 = screenHeight - 40;
+  int line1 = line0 + lineHeight;
+  int line2 = line1 + lineHeight;
   drawFilledRectangle(0, line1 - 10, screenWidth - rightBarWidth, screenHeight, translucentBlack);
   string playerLine = info.name + "   T:" + convertToString<int>(info.time);
   drawText(white, 10, line1, playerLine);
-  if (!myClock.isPaused())
-    drawText(red, 10, line2, info.warning);
-  else
+  drawText(red, 120, line2, info.warning);
+  if (myClock.isPaused())
     drawText(red, 10, line2, "PAUSED");
-
+  else
+    drawText(lightBlue, 10, line2, "PAUSE");
+  pauseButton = Rectangle(10, line2, 80, line2 + lineHeight);
   string resources;
   int resourceSpacing = 100;
   int resourceX = 300;
@@ -2092,6 +2094,12 @@ CollectiveAction WindowView::getClick() {
             if (cancelTeamButton && clickPos.inRectangle(*cancelTeamButton)) {
               chosenCreature = "";
               return CollectiveAction(CollectiveAction::CANCEL_TEAM);
+            }
+            if (pauseButton && clickPos.inRectangle(*pauseButton)) {
+              if (!myClock.isPaused())
+                myClock.pause();
+              else
+                myClock.cont();
             }
             for (int i : All(optionButtons))
               if (clickPos.inRectangle(optionButtons[i]))

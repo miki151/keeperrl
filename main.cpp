@@ -54,7 +54,9 @@ int main(int argc, char* argv[]) {
     auto choice = view->chooseFromList("", {
         View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
         View::ListElem("Or simply:", View::TITLE), "View high scores", "Quit"});
-    if (!choice || choice == 3)
+    if (!choice)
+      continue;
+    if (choice == 3)
       exit(0);
     if (choice == 2) {
       Model* m = new Model(view);

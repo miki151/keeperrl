@@ -32,7 +32,7 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 18, "Library"}),
     BuildInfo({SquareType::LABORATORY, ResourceId::IRON, 18, "Laboratory"}),
     BuildInfo({SquareType::WORKSHOP, ResourceId::IRON, 12, "Workshop"}),
-    BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast trap"}),
+    BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast cage"}),
     BuildInfo({SquareType::GRAVE, ResourceId::WOOD, 18, "Graveyard"}),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
@@ -377,30 +377,27 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
     vector<SpawnInfo> spawnInfo) {
   int techLevel = techLevels[techId];
   set<Vec2> cages = mySquares.at(spawnSquare);
-  int prevItem = false;
-  bool firstTime = true;
+  int prevItem = 0;
+  bool allInactive = false;
   while (1) {
+    vector<View::ListElem> options;
     if (minions.size() >= minionLimit) {
-      if (firstTime)
-        view->presentText("Information", "You have reached the limit of the number of minions.");
-      return;
+      allInactive = true;
+      options.emplace_back("You have reached the limit of the number of minions.", View::TITLE);
     }
     if (cages.empty()) {
-      if (firstTime)
-        view->presentText("Information", info1);
-      return;
+      allInactive = true;
+      options.emplace_back(info1, View::TITLE);
     }
     if (cages.size() <= minionByType.at(minionType).size()) {
-      if (firstTime)
-        view->presentText("Information", info2);
-      return;
+      allInactive = true;
+      options.emplace_back(info2, View::TITLE);
     }
 
-    vector<View::ListElem> options;
     vector<pair<PCreature, int>> creatures;
     for (SpawnInfo info : spawnInfo) {
       Optional<View::ElemMod> mod;
-      if (info.minLevel > techLevel || info.manaCost > mana)
+      if (allInactive || info.minLevel > techLevel || info.manaCost > mana)
         mod = View::INACTIVE;
       PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
       options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost) + 
@@ -424,7 +421,6 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
       messageBuffer.addMessage(MessageBuffer::important("The spell failed."));
     view->updateView(this);
     prevItem = *index;
-    firstTime = false;
   }
 }
 
@@ -928,6 +924,9 @@ void Collective::onAppliedItem(Vec2 pos, Item* item) {
 void Collective::onAppliedSquare(Vec2 pos) {
   if (mySquares.at(SquareType::LIBRARY).count(pos))
     mana += Random.getDouble(1, 2);
+  if (mySquares.at(SquareType::LABORATORY).count(pos))
+    if (Random.roll(30))
+      level->getSquare(pos)->dropItems(ItemFactory::potions().random());
 }
 
 void Collective::onAppliedItemCancel(Vec2 pos) {
@@ -987,10 +986,10 @@ void Collective::tick() {
   updateTraps();
   for (Vec2 pos : myTiles) {
     if (Creature* c = level->getSquare(pos)->getCreature()) {
-      if (!contains(creatures, c) && c->getTribe() == Tribe::player
+ /*     if (!contains(creatures, c) && c->getTribe() == Tribe::player
           && !contains({"boulder"}, c->getName()))
         // We just found a friendly creature (and not a boulder nor a chicken)
-        addCreature(c);
+        addCreature(c);*/
       if (c->getTribe() != Tribe::player)
         for (PTask& task : tasks)
           if (task->getPosition() == pos && task->canTransfer())
@@ -1180,46 +1179,32 @@ MoveInfo Collective::getMinionMove(Creature* c) {
   minionTasks.at(c).update();
   if (c->getHealth() < 1 && c->canSleep())
     minionTasks.at(c).setState(MinionTask::SLEEP);
-  switch (minionTasks.at(c).getState()) {
-    case MinionTask::SLEEP: {
-        set<Vec2>& whatBeds = (contains(minionByType.at(MinionType::UNDEAD), c) ? 
-            mySquares[SquareType::GRAVE] : mySquares[SquareType::BED]);
-        if (whatBeds.empty())
-          return NoMove;
-        addTask(Task::applySquare(this, whatBeds), c);
-        minionTaskStrings[c] = "sleeping";
-        break; }
-    case MinionTask::TRAIN:
-        if (mySquares[SquareType::TRAINING_DUMMY].empty()) {
-          minionTasks.at(c).update();
-          return NoMove;
-        }
-        addTask(Task::applySquare(this, mySquares[SquareType::TRAINING_DUMMY]), c);
-        minionTaskStrings[c] = "training";
-        break;
-    case MinionTask::WORKSHOP:
-        if (mySquares[SquareType::WORKSHOP].empty()) {
-          minionTasks.at(c).update();
-          return NoMove;
-        }
-        addTask(Task::applySquare(this, mySquares[SquareType::WORKSHOP]), c);
-        minionTaskStrings[c] = "crafting";
-        break;
-    case MinionTask::STUDY:
-        if (mySquares[SquareType::LIBRARY].empty()) {
-          minionTasks.at(c).update();
-          if (c == heart && !myTiles.empty() && !myTiles.count(c->getPosition())) {
-            if (auto move = c->getMoveTowards(chooseRandom(myTiles)))
-              return {1.0, [=] {
-                c->move(*move);
-              }};
-          }
-          return NoMove;
-        }
-        addTask(Task::applySquare(this, mySquares[SquareType::LIBRARY]), c);
-        minionTaskStrings[c] = "research";
-        break;
+  if (c == heart && !myTiles.empty() && !myTiles.count(c->getPosition())) {
+    if (auto move = c->getMoveTowards(chooseRandom(myTiles)))
+      return {1.0, [=] {
+        c->move(*move);
+      }};
   }
+  int taskRoll = 100;
+  struct MinionTaskInfo {
+    SquareType square;
+    string desc;
+  };
+  map<MinionTask, MinionTaskInfo> taskInfo {
+    {MinionTask::LABORATORY, {SquareType::LABORATORY, "lab"}},
+    {MinionTask::TRAIN, {SquareType::TRAINING_DUMMY, "training"}},
+    {MinionTask::WORKSHOP, {SquareType::WORKSHOP, "crafting"}},
+    {MinionTask::SLEEP, {SquareType::BED, "sleeping"}},
+    {MinionTask::GRAVE, {SquareType::GRAVE, "sleeping"}},
+    {MinionTask::STUDY, {SquareType::LIBRARY, "studying"}},
+  };
+  MinionTaskInfo info = taskInfo.at(minionTasks.at(c).getState());
+  if (mySquares[info.square].empty()) {
+    if (!minionTasks.at(c).updateToNext())
+      return NoMove;
+  }
+  addTask(Task::applySquare(this, mySquares[info.square]), c);
+  minionTaskStrings[c] = info.desc;
   return taskMap.at(c)->getMove(c);
 }
 
@@ -1288,17 +1273,26 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
   MinionTask t1;
   if (c == heart)
     return MarkovChain<MinionTask>(MinionTask::STUDY, {
-      {MinionTask::STUDY, {{ MinionTask::STUDY, 1}}},
+      {MinionTask::STUDY, {}},
       {MinionTask::SLEEP, {{ MinionTask::STUDY, 1}}}});
   if (contains(minionByType.at(MinionType::GOLEM), c))
     return MarkovChain<MinionTask>(MinionTask::TRAIN, {
       {MinionTask::TRAIN, {}}});
+  if (contains(minionByType.at(MinionType::UNDEAD), c))
+    return MarkovChain<MinionTask>(MinionTask::GRAVE, {
+      {MinionTask::GRAVE, {{ MinionTask::TRAIN, 0.5}}},
+      {MinionTask::TRAIN, {{ MinionTask::GRAVE, 0.005}}}});
   if (contains(minionByType.at(MinionType::NORMAL), c)) {
-    double workshopTime = (c->getName() == "gnome" ? 0.8 : 0.3);
+    double workshopTime = (c->getName() == "gnome" ? 0.5 : 0.3);
+    double labTime = (c->getName() == "gnome" ? 0.3 : 0.1);
+    double trainTime = 1 - workshopTime - labTime;
+    double changeFreq = 0.01;
     return MarkovChain<MinionTask>(MinionTask::SLEEP, {
-      {MinionTask::SLEEP, {{ MinionTask::TRAIN, 1 - workshopTime}, { MinionTask::WORKSHOP, workshopTime}}},
-      {MinionTask::WORKSHOP, {{ MinionTask::SLEEP, 0.005}}},
-      {MinionTask::TRAIN, {{ MinionTask::SLEEP, 0.005}}}});
+      {MinionTask::SLEEP, {{ MinionTask::TRAIN, trainTime}, { MinionTask::WORKSHOP, workshopTime},
+          {MinionTask::LABORATORY, labTime}}},
+      {MinionTask::WORKSHOP, {{ MinionTask::SLEEP, changeFreq}}},
+      {MinionTask::LABORATORY, {{ MinionTask::SLEEP, changeFreq}}},
+      {MinionTask::TRAIN, {{ MinionTask::SLEEP, changeFreq}}}});
   }
 
   return MarkovChain<MinionTask>(MinionTask::SLEEP, {

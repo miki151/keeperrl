@@ -10,6 +10,7 @@ class MarkovChain {
   T getState() const;
   void setState(T);
   void update();
+  bool updateToNext();
 
   private:
   T state;

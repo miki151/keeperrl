@@ -126,6 +126,7 @@ class WindowView: public View {
   Optional<Rectangle> teamButton;
   Optional<Rectangle> cancelTeamButton;
   Optional<Rectangle> impButton;
+  Optional<Rectangle> pauseButton;
   vector<string> creatureNames;
   string chosenCreature;
   vector<const Creature*> chosenCreatures;
