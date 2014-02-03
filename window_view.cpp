@@ -1509,10 +1509,13 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   for (Vec2 pos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY))) 
     if (level->inBounds(pos)) {
       ViewIndex index = collective->getViewIndex(pos);
-      if (!index.hasObject(ViewLayer::FLOOR) && !index.isEmpty() && lastMemory->hasViewIndex(pos)
-          && lastMemory->getViewIndex(pos).hasObject(ViewLayer::FLOOR)) {
+      if (!index.hasObject(ViewLayer::FLOOR) && !index.hasObject(ViewLayer::FLOOR_BACKGROUND) &&
+          !index.isEmpty() && lastMemory->hasViewIndex(pos)) {
         // special case when monster or item is visible but floor is only in memory
-        index.insert(lastMemory->getViewIndex(pos).getObject(ViewLayer::FLOOR));
+        if (lastMemory->getViewIndex(pos).hasObject(ViewLayer::FLOOR))
+          index.insert(lastMemory->getViewIndex(pos).getObject(ViewLayer::FLOOR));
+        if (lastMemory->getViewIndex(pos).hasObject(ViewLayer::FLOOR_BACKGROUND))
+          index.insert(lastMemory->getViewIndex(pos).getObject(ViewLayer::FLOOR_BACKGROUND));
       }
       if (index.isEmpty() && lastMemory->hasViewIndex(pos))
         index = lastMemory->getViewIndex(pos);
