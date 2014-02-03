@@ -79,6 +79,7 @@ class WindowView: public View {
   void unzoom(bool, bool);
   void switchTiles();
   void resize(int, int);
+  Rectangle getMapViewBounds() const;
 
   bool considerScrollEvent(sf::Event&);
 

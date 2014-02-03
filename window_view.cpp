@@ -732,6 +732,10 @@ int rightBarWidth = 300;
 int rightBarText = rightBarWidth - 30;
 int bottomBarHeight = 75;
 
+Rectangle WindowView::getMapViewBounds() const {
+  return Rectangle(0, topBarHeight, screenWidth - rightBarWidth, screenHeight - bottomBarHeight);
+}
+
 const MapMemory* lastMemory = nullptr;
 
 void WindowView::initialize() {
@@ -2070,8 +2074,8 @@ CollectiveAction WindowView::getClick() {
       case Event::MouseMoved:
           mousePos = Vec2(event.mouseMove.x, event.mouseMove.y);
           if (leftMouseButtonPressed) {
-            Vec2 goTo = mapLayout->projectOnMap(Vec2(event.mouseMove.x, event.mouseMove.y));
-            if (goTo != lastGoTo ) {
+            Vec2 goTo = mapLayout->projectOnMap(*mousePos);
+            if (goTo != lastGoTo && mousePos->inRectangle(getMapViewBounds())) {
               return CollectiveAction(CollectiveAction::GO_TO, goTo);
               lastGoTo = goTo;
             } else
@@ -2126,8 +2130,10 @@ CollectiveAction WindowView::getClick() {
             }
             leftMouseButtonPressed = true;
             chosenCreature = "";
-            t = CollectiveAction::GO_TO;
-            return CollectiveAction(t, mapLayout->projectOnMap(clickPos));
+            if (clickPos.inRectangle(getMapViewBounds())) {
+              t = CollectiveAction::GO_TO;
+              return CollectiveAction(t, mapLayout->projectOnMap(clickPos));
+            }
           }
           }
           break;
