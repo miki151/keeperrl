@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
     CHECK(input.is_open());
     view = View::createReplayView(input);
   }
+  int lastIndex = 0;
   while (1) {
     Tribe::init();
     Item::identifyEverything();
@@ -57,9 +58,10 @@ int main(int argc, char* argv[]) {
     view->initialize();
     auto choice = view->chooseFromList("", {
         View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
-        View::ListElem("Or simply:", View::TITLE), "Change options", "View high scores", "Quit"});
+        View::ListElem("Or simply:", View::TITLE), "Change options", "View high scores", "Quit"}, lastIndex);
     if (!choice)
       continue;
+    lastIndex = *choice;
     if (choice == 2) {
       Options::handle(view);
       continue;

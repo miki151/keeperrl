@@ -35,6 +35,7 @@ vector<string> offOn { "off", "on" };
 
 void Options::handle(View* view, int lastIndex) {
   vector<View::ListElem> options;
+  options.emplace_back("Set options:", View::TITLE);
   for (auto elem : names) {
     options.push_back(elem.second + "      " + offOn[getValue(elem.first)]);
   }
