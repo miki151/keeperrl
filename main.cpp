@@ -90,6 +90,13 @@ int main(int argc, char* argv[]) {
       }
     } catch (GameOverException ex) {
     }
+#ifdef RELEASE
+    catch (string ex) {
+      view->presentText("Sorry!", "The game has crashed with the following error:\n \n" + ex +
+          "\n \nIf you would be so kind, please send this line and a description of the circumstances to "
+          " rusolis@poczta.fm Thanks!");
+    }
+#endif
   }
   return 0;
 }

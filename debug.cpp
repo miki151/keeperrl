@@ -5,7 +5,12 @@
 
 using namespace std;
 
-Debug::Debug(DebugType t) : out((string[]) { "INFO ", "FATAL "}[t]), type(t) {
+Debug::Debug(DebugType t, const string& msg, int line) 
+    : out((string[]) { "INFO ", "FATAL "}[t] + " " + msg + ":" + convertToString(line)), type(t) {
+#ifdef RELEASE
+  if (t == DebugType::FATAL)
+    throw out;
+#endif
 }
 
 static ofstream output;

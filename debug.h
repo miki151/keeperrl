@@ -7,7 +7,7 @@
 
 #ifdef DEBUG
 
-#define CHECK(exp) if (!(exp)) Debug(FATAL) << __FILE__ << ":" << __LINE__ << ": " << #exp << " is false. "
+#define CHECK(exp) if (!(exp)) Debug(FATAL, __FILE__, __LINE__) << ": " << #exp << " is false. "
 //#define CHECKEQ(exp, exp2) if ((exp) != (exp2)) Debug(FATAL) << __FILE__ << ":" << __LINE__ << ": " << #exp << " = " << #exp2 << " is false. " << exp << " " << exp2
 #define TRY(exp, msg) do { try { exp; } catch (...) { Debug(FATAL) << __FILE__ << ":" << __LINE__ << ": " << #exp << " failed. " << msg; exp; } } while(0)
 
@@ -50,7 +50,7 @@ class NoDebug {
 
 class Debug {
   public:
-  Debug(DebugType t = INFO);
+  Debug(DebugType t = INFO, const string& msg = "", int line = 0);
   static void init();
   Debug& operator <<(const string& msg);
   Debug& operator <<(const int msg);
