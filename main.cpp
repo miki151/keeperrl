@@ -6,6 +6,7 @@
 #include "tribe.h"
 #include "message_buffer.h"
 #include "statistics.h"
+#include "options.h"
 
 using namespace std;
 
@@ -46,6 +47,7 @@ int main(int argc, char* argv[]) {
     Item::identifyEverything();
     EventListener::initialize();
     Statistics::init();
+    Options::init("options.txt");
     NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
         "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt");
     ItemFactory::init();
@@ -55,12 +57,16 @@ int main(int argc, char* argv[]) {
     view->initialize();
     auto choice = view->chooseFromList("", {
         View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
-        View::ListElem("Or simply:", View::TITLE), "View high scores", "Quit"});
+        View::ListElem("Or simply:", View::TITLE), "Change options", "View high scores", "Quit"});
     if (!choice)
       continue;
-    if (choice == 3)
-      exit(0);
     if (choice == 2) {
+      Options::handle(view);
+      continue;
+    }
+    if (choice == 4)
+      exit(0);
+    if (choice == 3) {
       Model* m = new Model(view);
       m->showHighscore();
       continue;

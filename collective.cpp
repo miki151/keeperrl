@@ -7,6 +7,7 @@
 #include "message_buffer.h"
 #include "model.h"
 #include "statistics.h"
+#include "options.h"
 
 static string warningText[] {
   "Kill some innocent beings for more mana.",
@@ -126,17 +127,21 @@ void Collective::render(View* view) {
       team.clear();
       gatheringTeam = false;
       teamLevelChanges.clear();
- //     view->resetCenter();
+      if (showDigMsg && Options::getValue(OptionId::HINTS)) {
+        view->refreshView(this);
+        showDigMsg = false;
+        view->presentText("", "Now use the mouse and start digging into the mountain. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them.");
+      }
     }
   }
   if (!possessed) {
     view->refreshView(this);
   } else
     view->stopClock();
-  if (showWelcomeMsg) {
+  if (showWelcomeMsg && Options::getValue(OptionId::HINTS)) {
     view->refreshView(this);
     showWelcomeMsg = false;
-    view->presentText("", "So it begins.\n \n<insert a story about an evil warlock who has been banished and will now take revenge on everyone>\n \nWalk around and find a suitable spot to dig into the mountain. Then press 'u' to leave the Keeper body, and instruct your imps to dig, cut trees and mine gold. Build the needed rooms to attract and train your minions, and when the time comes go out to war (or defend yourself).");
+    view->presentText("", "In short: you are an evil warlock who has been banished and will now take revenge on everyone.\n \nWalk around and find a suitable spot to dig into the mountain. You will need access to trees, iron and gold ore. Then press 'u' to leave the Keeper body.\n \nYou can turn these messages off in the options (press F2).");
   }
 }
 

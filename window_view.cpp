@@ -5,6 +5,7 @@
 #include "replay_view.h"
 #include "creature.h"
 #include "level.h"
+#include "options.h"
 
 using sf::Color;
 using sf::String;
@@ -1490,6 +1491,7 @@ void WindowView::refreshView(const CreatureView* collective) {
 }
 
 void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer) {
+  switchTiles();
   const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
   for (Vec2 pos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY)))
@@ -1968,11 +1970,15 @@ void WindowView::unzoom(bool pixel, bool tpp) {
 }
 
 void WindowView::switchTiles() {
-  if (!currentTileLayout.sprites)
-    currentTileLayout = spriteLayouts;
-  else
+  bool normal = (mapLayout == currentTileLayout.normalLayout);
+  if (Options::getValue(OptionId::ASCII))
     currentTileLayout = asciiLayouts;
-  mapLayout = currentTileLayout.normalLayout;
+  else
+    currentTileLayout = spriteLayouts;
+  if (normal)
+    mapLayout = currentTileLayout.normalLayout;
+  else
+    mapLayout = currentTileLayout.unzoomLayout;
 }
 
 bool WindowView::travelInterrupt() {
@@ -2051,9 +2057,7 @@ CollectiveAction WindowView::getClick() {
           case Keyboard::Z:
             unzoom(event.key.shift, event.key.control);
             return CollectiveAction(CollectiveAction::IDLE);
-          case Keyboard::F2:
-            switchTiles();
-            return CollectiveAction(CollectiveAction::IDLE);
+          case Keyboard::F2: Options::handle(this); refreshScreen(); break;
           case Keyboard::Space:
             if (!myClock.isPaused())
               myClock.pause();
@@ -2165,7 +2169,7 @@ vector<KeyInfo> keyInfo {
   { "Space", "Wait", {Keyboard::Space}},
   //{ "Z", "Zoom in/out", {Keyboard::Z}},
   { "Shift + Z", "World map", {Keyboard::Z, false, false, true}},
-  { "F2", "Switch between graphics and ascii", {Keyboard::F2}},
+  { "F2", "Change options", {Keyboard::F2}},
   { "Escape", "Quit", {Keyboard::Escape}},
 };
 
@@ -2214,7 +2218,7 @@ Action WindowView::getAction() {
                               break;
       case Keyboard::Z: unzoom(key->shift, key->control); return Action(ActionId::IDLE);
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
-      case Keyboard::F2: switchTiles(); return Action(ActionId::IDLE);
+      case Keyboard::F2: Options::handle(this); refreshScreen(); break;
       case Keyboard::Up:
       case Keyboard::Numpad8: return Action(getDirActionId(*key), Vec2(0, -1));
       case Keyboard::Numpad9: return Action(getDirActionId(*key), Vec2(1, -1));

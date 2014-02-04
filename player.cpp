@@ -7,6 +7,7 @@
 #include "ranged_weapon.h"
 #include "name_generator.h"
 #include "model.h"
+#include "options.h"
 
 using namespace std;
 
@@ -578,14 +579,15 @@ void Player::makeMove() {
   MEASURE(
       view->refreshView(creature),
       "level render time");
-  if (displayTravelInfo && creature->getConstSquare()->getName() == "road") {
+  if (Options::getValue(OptionId::HINTS) && displayTravelInfo && creature->getConstSquare()->getName() == "road") {
     view->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
   }
   static bool greeting = false;
-  if (displayGreeting) {
+  if (Options::getValue(OptionId::HINTS) && displayGreeting) {
     CHECK(creature->getFirstName());
-    view->presentText("", "Dear " + *creature->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + NameGenerator::worldNames.getNext() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::firstNames.getNext() + "\n \nPS.: Beware the goblins!");
+    view->presentText("", "Dear " + *creature->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + NameGenerator::worldNames.getNext() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::firstNames.getNext() + "\n \nPS.: Beware the goblins!"
+        "\n \nYou can turn these messages off in the options (press F2)");
     displayGreeting = false;
   }
   for (const Creature* c : creature->getVisibleEnemies()) {
