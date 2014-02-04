@@ -118,7 +118,7 @@ Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
         if (squares[next]->canEnterEmpty(creature))
           q.push(make_pair(next, v.second));
   }
-  Debug(FATAL) << "Failed to find any square to put creature";
+  FAIL << "Failed to find any square to put creature";
   return Vec2(0, 0);
 }
 

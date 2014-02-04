@@ -900,7 +900,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.price = 1;
             i.weight = 0.01;)));
   }
-  Debug(FATAL) << "unhandled item " << (int) id;
+  FAIL << "unhandled item " << (int) id;
   return PItem(nullptr);
 }
   

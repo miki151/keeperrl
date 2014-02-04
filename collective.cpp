@@ -174,7 +174,7 @@ static string getTechName(TechId id) {
     case TechId::HUMANOID_BREEDING: return "humanoid breeding";
     case TechId::SPELLCASTING: return "spellcasting";
   }
-  Debug(FATAL) << "pwofk";
+  FAIL << "pwofk";
   return "";
 }
 
@@ -186,7 +186,7 @@ static ViewObject getTechViewObject(TechId id) {
     case TechId::HUMANOID_BREEDING: return ViewObject(ViewId::BILE_DEMON, ViewLayer::CREATURE, "");
     case TechId::SPELLCASTING: return ViewObject(ViewId::SCROLL, ViewLayer::CREATURE, "");
   }
-  Debug(FATAL) << "pwofk";
+  FAIL << "pwofk";
   return ViewObject();
 }
 
@@ -699,7 +699,7 @@ void Collective::takeGold(CostInfo cost) {
         return;
     }
   }
-  Debug(FATAL) << "Didn't have enough gold";
+  FAIL << "Didn't have enough gold";
 }
 
 void Collective::returnGold(CostInfo amount) {

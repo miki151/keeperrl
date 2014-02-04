@@ -205,7 +205,7 @@ class Connector : public LevelMaker {
               newType = SquareType::PATH;
               break;
             default:
-              Debug(FATAL) << "Unhandled square type " << (int)builder->getType(v);
+              FAIL << "Unhandled square type " << (int)builder->getType(v);
           }
         if (newType == SquareType::DOOR)
           builder->putSquare(v, SquareType::FLOOR);
@@ -608,7 +608,7 @@ class Buildings : public LevelMaker {
       } while (!spaceOk && --cnt > 0);
       if (cnt == 0) {
         if (i < minBuildings)
-          Debug(FATAL) << "Failed to add " << minBuildings - i << " buildings out of " << minBuildings;
+          FAIL << "Failed to add " << minBuildings - i << " buildings out of " << minBuildings;
         else
           break;
       }

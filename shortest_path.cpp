@@ -159,7 +159,7 @@ void ShortestPath::constructPath(Vec2 pos, bool reversed) {
       if (reversed)
         break;
       else
-        Debug(FATAL) << "can't track path";
+        FAIL << "can't track path";
     }
     ret.push_back(pos);
     pos = next;

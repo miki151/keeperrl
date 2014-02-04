@@ -389,7 +389,7 @@ Tile getSprite(ViewId id) {
     case ViewId::DESTROY_BUTTON: return Tile('X', red);
     case ViewId::MANA: return Tile(5, 10, 2);
   }
-  Debug(FATAL) << "unhandled view id " << (int)id;
+  FAIL << "unhandled view id " << (int)id;
   return Tile(' ', white);
 }
 
@@ -590,7 +590,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::DESTROY_BUTTON: return Tile('X', red);
     case ViewId::MANA: return Tile(5, 10, 2);
   }
-  Debug(FATAL) << "unhandled view id " << (int)obj.id();
+  FAIL << "unhandled view id " << (int)obj.id();
   return Tile(' ', white);
 }
 
@@ -1359,7 +1359,7 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
     case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
     case HighlightType::MEMORY: return transparency(black, 80);
   }
-  Debug(FATAL) << "pokpok";
+  FAIL << "pokpok";
   return black;
 }
 
@@ -1667,7 +1667,7 @@ int indexHeight(const vector<View::ListElem>& options, int index) {
   for (int i : All(options))
     if (!options[i].getMod() && tmp++ == index)
       return i;
-  Debug(FATAL) << "Bad index " << int(options.size()) << " " << index;
+  FAIL << "Bad index " << int(options.size()) << " " << index;
   return -1;
 }
 
@@ -1790,7 +1790,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
         return Nothing();
     }
   }
-  Debug(FATAL) << "Very bad";
+  FAIL << "Very bad";
   return 123;
 }
 

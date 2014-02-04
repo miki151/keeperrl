@@ -25,7 +25,7 @@ EquipmentSlot Equipment::getSlot(const Item* item) const {
     if (elem.second == item) {
       return elem.first;
     }
-  Debug(FATAL) << "Item not in any slot " << item->getAName();
+  FAIL << "Item not in any slot " << item->getAName();
   return EquipmentSlot::WEAPON;
 }
 

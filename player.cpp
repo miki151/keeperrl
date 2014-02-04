@@ -70,7 +70,7 @@ map<EquipmentSlot, string> slotTitles = {
     {EquipmentSlot::AMULET, "Amulet"}};
 
 void Player::onBump(Creature*) {
-  Debug(FATAL) << "Shouldn't call onBump on a player";
+  FAIL << "Shouldn't call onBump on a player";
 }
 
 void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
@@ -110,7 +110,7 @@ static string getSquareQuestion(SquareApplyType type, string name) {
     case SquareApplyType::DRINK: return "Drink from the " + name;
     case SquareApplyType::PRAY: return "Pray at the " + name;
     case SquareApplyType::SLEEP: return "Go to sleep on the " + name;
-    default: Debug(FATAL) << "Unhandled";
+    default: FAIL << "Unhandled";
   }
   return "";
 }
@@ -187,7 +187,7 @@ static string getText(ItemType type) {
     case ItemType::OTHER: return "Other";
     case ItemType::GOLD: return "Gold";
   }
-  Debug(FATAL) << int(type);
+  FAIL << int(type);
   return "";
 }
 

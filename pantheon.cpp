@@ -265,7 +265,7 @@ Deity* Deity::getDeity(DeityHabitat h) {
   for (Deity* d : getDeities())
     if (d->getHabitat() == h)
       return d;
-  Debug(FATAL) << "Didn't find deity for habitat " << (int)h;
+  FAIL << "Didn't find deity for habitat " << (int)h;
   return getDeities()[0];
 }
  

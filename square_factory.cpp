@@ -595,7 +595,7 @@ Square* SquareFactory::get(SquareType s) {
         return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR, "Magma"),
             "magma", "burns in the magma", "");
     case SquareType::ABYSS: 
-        Debug(FATAL) << "Unimplemented";
+        FAIL << "Unimplemented";
     case SquareType::SAND: return new Square(ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND, "Sand"),
                                "sand", true);
     case SquareType::CANIF_TREE: return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"), "tree", 
@@ -631,7 +631,7 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::KEEPER_THRONE:
         return new Throne(ViewObject(ViewId::THRONE, ViewLayer::FLOOR, "Throne"), "throne");
     case SquareType::ALTAR:
-        Debug(FATAL) << "Altars are not handled by this method.";
+        FAIL << "Altars are not handled by this method.";
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
                                           EffectType::ROLLING_BOULDER);
     case SquareType::POISON_GAS: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
@@ -647,13 +647,13 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::GRAVE:
         return new Grave(ViewObject(ViewId::GRAVE, ViewLayer::FLOOR, "Grave"), "grave");
     case SquareType::IRON_BARS:
-        Debug(FATAL) << "Unimplemented";
+        FAIL << "Unimplemented";
     case SquareType::DOOR: return new Door(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door"));
     case SquareType::TRIBE_DOOR: return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::LARGE_ITEM, "Door"), 100);
     case SquareType::BORDER_GUARD:
         return new SolidSquare(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "Wall"), "wall", false);
     case SquareType::DOWN_STAIRS:
-    case SquareType::UP_STAIRS: Debug(FATAL) << "Stairs are not handled by this method.";
+    case SquareType::UP_STAIRS: FAIL << "Stairs are not handled by this method.";
   }
   return 0;
 }

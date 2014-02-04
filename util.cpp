@@ -218,7 +218,7 @@ Dir Vec2::getCardinalDir() const {
     return Dir::W;
   if (x == -1 && y == -1)
     return Dir::NW;
-  Debug(FATAL) << "Not cardinal dir " << *this;
+  FAIL << "Not cardinal dir " << *this;
   return Dir::N;
 }
 
@@ -347,7 +347,7 @@ string Vec2::getBearing() const {
     return "north";
   if (ang >= 6.5 && ang < 7.5)
     return "north-east";
-  Debug(FATAL) << ang;
+  FAIL << ang;
   return "";
 }
 

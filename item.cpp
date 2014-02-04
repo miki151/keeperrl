@@ -199,7 +199,7 @@ string Item::getApplyMsgThirdPerson() const {
     case ItemType::BOOK: return "reads " + getAName();
     case ItemType::TOOL: return "applies " + getAName();
     case ItemType::FOOD: return "eats " + getAName();
-    default: Debug(FATAL) << "Bad type for applying " << (int)getType();
+    default: FAIL << "Bad type for applying " << (int)getType();
   }
   return "";
 }
@@ -211,7 +211,7 @@ string Item::getApplyMsgFirstPerson() const {
     case ItemType::BOOK: return "read " + getAName();
     case ItemType::TOOL: return "apply " + getAName();
     case ItemType::FOOD: return "eat " + getAName();
-    default: Debug(FATAL) << "Bad type for applying " << (int)getType();
+    default: FAIL << "Bad type for applying " << (int)getType();
   }
   return "";
 }
@@ -223,7 +223,7 @@ string Item::getNoSeeApplyMsg() const {
     case ItemType::BOOK: return "You hear someone reading ";
     case ItemType::TOOL: return "";
     case ItemType::FOOD: return "";
-    default: Debug(FATAL) << "Bad type for applying " << (int)getType();
+    default: FAIL << "Bad type for applying " << (int)getType();
   }
   return "";
 }
@@ -345,7 +345,7 @@ EquipmentSlot Item::getEquipmentSlot() const {
     return EquipmentSlot::HELMET;
   if (armorType == ArmorType::BOOTS)
     return EquipmentSlot::BOOTS;
-  Debug(FATAL) << "other equipment slot";
+  FAIL << "other equipment slot";
   return EquipmentSlot::HELMET;
 }
 
@@ -364,7 +364,7 @@ void Item::addModifier(AttrType attributeType, int value) {
     case AttrType::DEXTERITY: dexterity += value; break;
     case AttrType::SPEED: speed += value; break;
     case AttrType::INV_LIMIT: break;
-    default: Debug(FATAL) << "Attribute not handled";
+    default: FAIL << "Attribute not handled";
   }
 }
 
@@ -379,7 +379,7 @@ int Item::getModifier(AttrType attributeType) const {
     case AttrType::DEXTERITY: return dexterity;
     case AttrType::SPEED: return speed;
     case AttrType::INV_LIMIT: return 0;
-    default: Debug(FATAL) << "Attribute not handled";
+    default: FAIL << "Attribute not handled";
   }
   return 0;
 }

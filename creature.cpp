@@ -46,7 +46,7 @@ SpellInfo Creature::getSpell(SpellId id) {
     case SpellId::INVISIBILITY: return {SpellId::INVISIBILITY, "invisibility", EffectType::INVISIBLE, 0, 300};
     case SpellId::WORD_OF_POWER: return {SpellId::WORD_OF_POWER, "word of power", EffectType::WORD_OF_POWER, 0, 300};
   }
-  Debug(FATAL) << "wpeofk";
+  FAIL << "wpeofk";
   return getSpell(SpellId::HEALING);
 }
 
@@ -981,7 +981,7 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
     case AttackType::BITE: return MsgType::BITE;
     case AttackType::PUNCH: return level == AttackLevel::LOW ? MsgType::KICK : MsgType::PUNCH;
     case AttackType::HIT: return MsgType::HIT;
-    default: Debug(FATAL) << "Unhandled barehanded attack: " << int(type);
+    default: FAIL << "Unhandled barehanded attack: " << int(type);
   }
   return MsgType(0);
 }
@@ -1227,7 +1227,7 @@ string Creature::getDescription() const {
     switch (*attackEffect) {
       case EffectType::POISON: attack = "poison"; break;
       case EffectType::FIRE: attack = "fire"; break;
-      default: Debug(FATAL) << "Unhandled monster attack " << int(*attackEffect);
+      default: FAIL << "Unhandled monster attack " << int(*attackEffect);
     }
     attack = " It has a " + attack + " attack.";
   }
@@ -1545,7 +1545,7 @@ void Creature::throwItem(Item* item, Vec2 direction) {
   else if (item->getWeight() <= 20)
     dist = 2 * str / 15;
   else 
-    Debug(FATAL) << "Item too heavy.";
+    FAIL << "Item too heavy.";
   int toHit = Random.getRandom(GET_ID(uniqueId), -toHitVariance, toHitVariance) +
       getAttr(AttrType::THROWN_TO_HIT) + item->getModifier(AttrType::THROWN_TO_HIT);
   int damage = Random.getRandom(GET_ID(uniqueId), -attackVariance, attackVariance) +
@@ -1779,7 +1779,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::HIT: you(MsgType::ARE, "hit in the back of the head!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the " + 
                                      chooseRandom<string>({"back", "neck"})); break;
-          default: Debug(FATAL) << "Unhandled attack type " << int(type);
+          default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::HEAD: 
@@ -1792,7 +1792,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the head!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the eye!"); break;
-          default: Debug(FATAL) << "Unhandled attack type " << int(type);
+          default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::TORSO:
@@ -1805,7 +1805,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the chest!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "stomach receives a deadly blow!"); break;
-          default: Debug(FATAL) << "Unhandled attack type " << int(type);
+          default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::ARM:
@@ -1817,7 +1817,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "arm is smashed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the arm!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "arm is broken!"); break;
-          default: Debug(FATAL) << "Unhandled attack type " << int(type);
+          default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::WING:
@@ -1829,7 +1829,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "wing is smashed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the wing!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "wing is broken!"); break;
-          default: Debug(FATAL) << "Unhandled attack type " << int(type);
+          default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::LEG:
@@ -1841,7 +1841,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "knee is crushed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the leg!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "leg is broken!"); break;
-          default: Debug(FATAL) << "Unhandled attack type " << int(type);
+          default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
   }

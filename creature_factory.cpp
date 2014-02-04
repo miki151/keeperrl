@@ -837,7 +837,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
               chooseRandom({ItemId::STRENGTH_MUSHROOM, ItemId::DEXTERITY_MUSHROOM}), Random.getRandom(3, 6)));
         break;
       default:
-        Debug(FATAL) << "Unhandled case value";
+        FAIL << "Unhandled case value";
     }*/
 
   }
@@ -1606,7 +1606,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
     case CreatureId::SPECIAL_HUMANOID: return getSpecial(NameGenerator::creatureNames.getNext(),
                                                         tribe, true, factory);
   }
-  Debug(FATAL) << "unhandled case";
+  FAIL << "unhandled case";
   return PCreature(nullptr);
 }
 
