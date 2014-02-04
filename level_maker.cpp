@@ -767,7 +767,7 @@ class RandomLocations : public LevelMaker {
           return;
         }
         else {
-          Debug(FATAL) << "Failed to find free space for " << (int)sizes.size() << " areas";
+          FAIL << "Failed to find free space for " << (int)sizes.size() << " areas";
         }
       }
       Rectangle bounds(px, py, px + width, py + height);

@@ -6,7 +6,7 @@
 using namespace std;
 
 Debug::Debug(DebugType t, const string& msg, int line) 
-    : out((string[]) { "INFO ", "FATAL "}[t] + " " + msg + ":" + convertToString(line)), type(t) {
+    : out((string[]) { "INFO ", "FATAL "}[t] + msg + ":" + convertToString(line) + " "), type(t) {
 #ifdef RELEASE
   if (t == DebugType::FATAL)
     throw out;

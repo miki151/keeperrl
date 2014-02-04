@@ -54,7 +54,6 @@ int main(int argc, char* argv[]) {
     ItemFactory::init();
     bool modelReady = false;
     messageBuffer.initialize(view);
-    string heroName = NameGenerator::firstNames.getNext();
     view->initialize();
     auto choice = view->chooseFromList("", {
         View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
@@ -75,10 +74,24 @@ int main(int argc, char* argv[]) {
     }
     dwarf = (choice == 1);
     unique_ptr<Model> model;
-    thread t = !dwarf ? (thread([&] { model.reset(Model::collectiveModel(view)); modelReady = true; })) :
-      (thread([&] { model.reset(Model::heroModel(view, heroName)); modelReady = true; }));
+    string ex;
+    thread t = (thread([&] {
+      for (int i : Range(5)) {
+        try {
+          model.reset(dwarf ? Model::heroModel(view) : Model::collectiveModel(view));
+          break;
+        } catch (string s) {
+          ex = s;
+        }
+      }
+      modelReady = true;
+    }));
     view->displaySplash(modelReady);
     t.join();
+    if (!model)
+      view->presentText("Sorry!", "World generation permanently failed with the following error:\n \n" + ex +
+          "\n \nIf you would be so kind, please send this line to rusolis@poczta.fm Thanks!");
+
     int var = 0;
     view->setTimeMilli(0);
     try {

@@ -136,7 +136,7 @@ vector<Location*> getVillageLocations(int numVillages) {
   return ret;
 }
 
-Model* Model::heroModel(View* view, const string& heroName) {
+Model* Model::heroModel(View* view) {
   Creature::noExperienceLevels();
   Model* m = new Model(view);
   vector<Location*> locations = getVillageLocations(3);
@@ -196,7 +196,7 @@ Model* Model::heroModel(View* view, const string& heroName) {
           c.barehandedDamage = 5;
           c.humanoid = true;
           c.name = "Adventurer";
-          c.firstName = heroName;
+          c.firstName = NameGenerator::firstNames.getNext();
           c.skills.insert(Skill::archery);
           c.skills.insert(Skill::twoHandedWeapon);), Player::getFactory(view, m, levelMemory))), {
       ItemId::FIRST_AID_KIT,

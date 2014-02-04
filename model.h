@@ -21,7 +21,7 @@ class Model {
   Model(View* view);
 
   /** Generates levels and all game entities for a single player game. */
-  static Model* heroModel(View* view, const string& heroName);
+  static Model* heroModel(View* view);
  
   /** Generates levels and all game entities for a collective game. */
   static Model* collectiveModel(View* view);
