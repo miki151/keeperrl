@@ -253,7 +253,7 @@ Tile getSprite(ViewId id) {
     case ViewId::GREAT_GOBLIN: return Tile(6, 14);
     case ViewId::GOBLIN: return Tile(5, 14);
     case ViewId::BANDIT: return Tile(0, 2);
-    case ViewId::GHOST: return Tile(6, 16);
+    case ViewId::GHOST: return Tile(6, 16).setTranslucent();
     case ViewId::DEVIL: return Tile(17, 18);
     case ViewId::DARK_KNIGHT: return Tile(12, 14);
     case ViewId::DRAGON: return Tile(3, 18);

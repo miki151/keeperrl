@@ -21,8 +21,9 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
 }
 
 void Level::addCreature(Vec2 position, PCreature c) {
-  putCreature(position, c.get());
+  Creature* ref = c.get();
   model->addCreature(std::move(c));
+  putCreature(position, ref);
 }
 
 void Level::putCreature(Vec2 position, Creature* c) {

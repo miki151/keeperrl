@@ -20,6 +20,8 @@ class Quest {
   static Quest* dragon;
   static Quest* castleCellar;
   static Quest* bandits;
+  static Quest* goblins;
+  static Quest* dwarves;
 
   static Quest* killTribeQuest(Tribe* tribe, string message, bool onlyImp = false);
 

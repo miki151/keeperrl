@@ -63,7 +63,6 @@ void Model::update(double totalTime) {
 
 void Model::addCreature(PCreature c) {
   c->setTime(timeQueue.getCurrentTime() + 1);
-  CHECK(c->getLevel() != nullptr) << "Creature must already be located on a level.";
   timeQueue.addCreature(std::move(c));
 }
 
@@ -99,6 +98,9 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
       " living in a cave. Kill it.");
   Quest::castleCellar = Quest::killTribeQuest(Tribe::castleCellar, castleNem1.second);
   Quest::bandits = Quest::killTribeQuest(Tribe::bandit, "There is a bandit camp nearby. Kill them all.");
+  Quest::dwarves = Quest::killTribeQuest(Tribe::dwarven, "Slay our enemy, the dwarf baron. I will reward you.", true);
+  Quest::goblins = Quest::killTribeQuest(Tribe::goblin, "The goblin den is located deep under the earth."
+      "Slay the great goblin. I will reward you.", true);
   Level* top = buildLevel(
       Level::Builder(600, 600, "Wilderness"),
       LevelMaker::topLevel(CreatureFactory::forrest(), settlements),

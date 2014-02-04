@@ -128,6 +128,7 @@ static void deception(Creature* c) {
           c.stationary = true;
           c.permanentlyBlind = true;
           c.noSleep = true;
+          c.flyer = true;
           c.breathing = false;
           c.noBody = true;
           c.humanoid = true;

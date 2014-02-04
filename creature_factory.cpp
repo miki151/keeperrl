@@ -679,8 +679,7 @@ CreatureFactory CreatureFactory::dwarfTown(int num) {
       { CreatureId::JACKAL, { 0, 1, 1 }},
       { CreatureId::RAT, { 2, 1, 1}},
       { CreatureId::BAT, { 0, 1, 1 }},
-      { CreatureId::DWARF, { 6, 1, 1 }},
-      { CreatureId::GOBLIN, { 1, 1, 1 }}};
+      { CreatureId::DWARF, { 6, 1, 1 }}};
   vector<vector<CreatureId>> uniqueMonsters(maxLevel);
   uniqueMonsters[0].push_back(CreatureId::DWARF_BARON);
   vector<CreatureId> ids;
@@ -1169,7 +1168,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.name = NameGenerator::aztecNames.getNext();), tribe, factory);
     case CreatureId::GREAT_GOBLIN: return PCreature(new VillageElder(
                                 {},
-                                {},
+                                {{Quest::dwarves, Random.getRandom(300, 400)}},
                                 ViewObject(ViewId::GREAT_GOBLIN, ViewLayer::CREATURE, "Great goblin"), Tribe::goblin,
                                 CATTR(
                                 c.speed = 100;
@@ -1271,7 +1270,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.name = "dwarf";), Tribe::dwarven, factory);
     case CreatureId::DWARF_BARON: return PCreature(new VillageElder(
                                 {},
-                                {},
+                                {{Quest::goblins, Random.getRandom(300, 400)}},
                                 ViewObject(ViewId::DWARF_BARON, ViewLayer::CREATURE, "Dwarf baron"), Tribe::dwarven, 
                                 CATTR(
                                 c.speed = 80;

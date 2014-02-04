@@ -47,6 +47,8 @@ Quest* Quest::killTribeQuest(Tribe* tribe, string message, bool onlyImp) {
 Quest* Quest::dragon;
 Quest* Quest::castleCellar;
 Quest* Quest::bandits;
+Quest* Quest::goblins;
+Quest* Quest::dwarves;
   
 void Quest::addAdventurer(const Creature* c) {
   adventurers.insert(c);
