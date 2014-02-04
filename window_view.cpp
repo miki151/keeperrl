@@ -2218,7 +2218,7 @@ Action WindowView::getAction() {
                               break;
       case Keyboard::Z: unzoom(key->shift, key->control); return Action(ActionId::IDLE);
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
-      case Keyboard::F2: Options::handle(this); refreshScreen(); break;
+      case Keyboard::F2: Options::handle(this); return Action(ActionId::IDLE);
       case Keyboard::Up:
       case Keyboard::Numpad8: return Action(getDirActionId(*key), Vec2(0, -1));
       case Keyboard::Numpad9: return Action(getDirActionId(*key), Vec2(1, -1));
