@@ -78,3 +78,9 @@ void EventListener::addChangeLevelEvent(const Creature* c, const Level* level, V
     if (l->getListenerLevel() == level || l->getListenerLevel() == nullptr)
       l->onChangeLevelEvent(c, level, pos, to, toPos);
 }
+  
+void EventListener::addCombatEvent(const Creature* c) {
+  for (EventListener* l : listeners)
+    if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
+      l->onCombatEvent(c);
+}

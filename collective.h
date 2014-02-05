@@ -35,6 +35,7 @@ class Collective : public CreatureView, public EventListener {
   virtual bool staticPosition() const override;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
+  virtual void onCombatEvent(const Creature*) override;
   virtual void onTriggerEvent(const Level*, Vec2 pos) override;
   virtual void onSquareReplacedEvent(const Level*, Vec2 pos) override;
   virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) override;
@@ -169,8 +170,9 @@ class Collective : public CreatureView, public EventListener {
       const string& info2, const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
-  vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   void updateTraps();
+  bool isInCombat(const Creature*) const;
+  vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
   vector<Creature*> creatures;
@@ -217,6 +219,7 @@ class Collective : public CreatureView, public EventListener {
   vector<const Creature*> kills;
   bool showWelcomeMsg = true;
   bool showDigMsg = true;
+  unordered_map<const Creature*, double> lastCombat;
 };
 
 #endif

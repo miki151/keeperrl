@@ -534,6 +534,9 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
     }
   info.activeButton = currentButton;
   info.tasks = minionTaskStrings;
+  for (Creature* c : minions)
+    if (isInCombat(c))
+      info.tasks[c] = "fighting";
   info.monsterHeader = "Monsters: " + convertToString(minions.size()) + " / " + convertToString(minionLimit);
   info.creatures.clear();
   for (Creature* c : minions)
@@ -1216,10 +1219,12 @@ MoveInfo Collective::getMinionMove(Creature* c) {
   if (contains(minionByType.at(MinionType::BEAST), c))
     return getBeastMove(c);
   for (auto& elem : guardPosts) {
-    bool isTraining = contains({MinionTask::TRAIN}, minionTasks.at(c).getState());
+    bool isTraining = contains({MinionTask::TRAIN, MinionTask::LABORATORY, MinionTask::WORKSHOP},
+        minionTasks.at(c).getState());
     if (elem.second.attender == c) {
       if (isTraining) {
         minionTasks.at(c).update();
+        minionTaskStrings[c] = "guarding";
         if (c->getPosition().dist8(elem.first) > 1) {
           if (auto move = c->getMoveTowards(elem.first))
             return {1.0, [=] {
@@ -1412,6 +1417,17 @@ void Collective::onTriggerEvent(const Level* l, Vec2 pos) {
 
 void Collective::onConqueredLand(const string& name) {
   model->conquered(*heart->getFirstName() + " the Keeper", name, kills, points);
+}
+
+void Collective::onCombatEvent(const Creature* c) {
+  CHECK(c != nullptr);
+  if (contains(minions, c))
+    lastCombat[c] = c->getTime();
+}
+
+bool Collective::isInCombat(const Creature* c) const {
+  double timeout = 5;
+  return lastCombat.count(c) && lastCombat.at(c) > c->getTime() -5;
 }
 
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {

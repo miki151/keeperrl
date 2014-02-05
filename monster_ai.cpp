@@ -289,7 +289,9 @@ class Fighter : public Behaviour, public EventListener {
       return {weight, teleMove.move};
     Optional<Vec2> move = creature->getMoveAway(other->getPosition(), chase);
     if (move)
-      return {weight, [this, move] () {
+      return {weight, [this, move, other] () {
+        EventListener::addCombatEvent(creature);
+        EventListener::addCombatEvent(other);
         creature->move(*move);
       }};
     else
@@ -348,6 +350,7 @@ class Fighter : public Behaviour, public EventListener {
       }
     if (best && creature->canThrowItem(best))
       return {1.0, [this, dir, best]() {
+        EventListener::addCombatEvent(creature);
         creature->globalMessage(creature->getTheName() + " throws " + best->getAName());
         creature->throwItem(best, dir);
       }};
@@ -362,6 +365,7 @@ class Fighter : public Behaviour, public EventListener {
       return {0, nullptr};
     if (creature->canFire(dir.shorten()))
       return {1.0, [this, dir]() {
+        EventListener::addCombatEvent(creature);
         creature->globalMessage(creature->getTheName() + " fires an arrow ");
         creature->fire(dir.shorten());
       }};
@@ -386,6 +390,7 @@ class Fighter : public Behaviour, public EventListener {
         Optional<Vec2> move = creature->getMoveTowards(lastSeen->pos);
         if (move)
           return {0.5, [this, move]() { 
+            EventListener::addCombatEvent(creature);
             Debug() << creature->getTheName() << " moving to last seen " << (lastSeen->pos - creature->getPosition());
             creature->move(*move);
           }};
@@ -401,9 +406,11 @@ class Fighter : public Behaviour, public EventListener {
     if (creature->isHumanoid() && !creature->getEquipment().getItem(EquipmentSlot::WEAPON)) {
       Item* weapon = getBestWeapon();
       if (weapon != nullptr && creature->canEquip(weapon))
-        return {3.0 / (2.0 + distance), [this, weapon]() {
-            creature->globalMessage(creature->getTheName() + " draws " + weapon->getAName());
-            creature->equip(weapon);
+        return {3.0 / (2.0 + distance), [this, weapon, other]() {
+          EventListener::addCombatEvent(creature);
+          EventListener::addCombatEvent(other);
+          creature->globalMessage(creature->getTheName() + " draws " + weapon->getAName());
+          creature->equip(weapon);
         }};
     }
     if (distance <= 3) {
@@ -428,7 +435,9 @@ class Fighter : public Behaviour, public EventListener {
         Optional<Vec2> move = creature->getMoveTowards(creature->getPosition() + enemyDir);
         lastSeen = Nothing();
         if (move)
-          return {0.7, [this, enemyDir, move]() {
+          return {0.7, [this, enemyDir, move, other]() {
+            EventListener::addCombatEvent(creature);
+            EventListener::addCombatEvent(other);
             lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel()};
             creature->move(*move);
           }};
@@ -437,6 +446,8 @@ class Fighter : public Behaviour, public EventListener {
     if (distance == 1) {
       if (creature->canAttack(other))
         return {1.0, [this, other]() {
+          EventListener::addCombatEvent(creature);
+          EventListener::addCombatEvent(other);
           creature->attack(other);
         }};
     }
