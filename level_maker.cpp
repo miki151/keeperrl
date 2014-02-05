@@ -479,7 +479,7 @@ class Blob : public LevelMaker {
       Vec2 pos = q.front();
       q.pop();
       for (Vec2 v : pos.neighbors8())
-        if (distance[v] == inf) {
+        if (v.inRectangle(area) && distance[v] == inf) {
           distance[v] = distance[pos] + 1;
           q.push(v);
           addSquare(builder, v, distance[v]);
