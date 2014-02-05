@@ -1098,18 +1098,30 @@ const int legendStartHeight = topBarHeight + 70;
 void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   int lineStart = legendStartHeight;
   int lineX = screenWidth - rightBarText + 10;
+  int line2X = screenWidth - rightBarText + 110;
   vector<string> lines {
       info.weaponName != "" ? "wielding " + info.weaponName : "barehanded",
       "",
-      "Attack: " + convertToString(info.attack),
-      "Defense: " + convertToString(info.defense),
-      "Strength: " + convertToString(info.strength),
-      "Dexterity: " + convertToString(info.dexterity),
-      "Speed: " + convertToString(info.speed),
-      "$: " + convertToString(info.numGold),
+      "Attack: ",
+      "Defense: ",
+      "Strength: ",
+      "Dexterity: ",
+      "Speed: ",
+      "Gold:",
+  };
+  vector<string> lines2 {
+    "",
+    "",
+    convertToString(info.attack),
+    convertToString(info.defense),
+    convertToString(info.strength),
+    convertToString(info.dexterity),
+    convertToString(info.speed),
+    convertToString(info.numGold),
   };
   for (int i : All(lines)) {
     drawText(white, lineX, lineStart + legendLineHeight * i, lines[i]);
+    drawText(white, line2X, lineStart + legendLineHeight * i, lines2[i]);
   }
 }
 

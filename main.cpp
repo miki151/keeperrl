@@ -18,6 +18,10 @@ int main(int argc, char* argv[]) {
   Debug::init();
   int seed = time(0);
   bool dwarf = false;
+  bool genExit = false;
+  if (argc == 3) {
+    genExit = dwarf = true;
+  }
   if (argc == 2 && argv[1][0] == 'd')
     dwarf = true;
   else
@@ -55,7 +59,7 @@ int main(int argc, char* argv[]) {
     bool modelReady = false;
     messageBuffer.initialize(view);
     view->initialize();
-    auto choice = view->chooseFromList("", {
+    auto choice = dwarf ? Optional<int>(1) : view->chooseFromList("", {
         View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
         View::ListElem("Or simply:", View::TITLE), "Change options", "View high scores", "Quit"}, lastIndex);
     if (!choice)
@@ -88,6 +92,8 @@ int main(int argc, char* argv[]) {
     }));
     view->displaySplash(modelReady);
     t.join();
+    if (genExit)
+      break;
     if (!model)
       view->presentText("Sorry!", "World generation permanently failed with the following error:\n \n" + ex +
           "\n \nIf you would be so kind, please send this line to rusolis@poczta.fm Thanks!");
