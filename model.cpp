@@ -99,7 +99,7 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
   Quest::castleCellar = Quest::killTribeQuest(Tribe::castleCellar, castleNem1.second);
   Quest::bandits = Quest::killTribeQuest(Tribe::bandit, "There is a bandit camp nearby. Kill them all.");
   Quest::dwarves = Quest::killTribeQuest(Tribe::dwarven, "Slay our enemy, the dwarf baron. I will reward you.", true);
-  Quest::goblins = Quest::killTribeQuest(Tribe::goblin, "The goblin den is located deep under the earth."
+  Quest::goblins = Quest::killTribeQuest(Tribe::goblin, "The goblin den is located deep under the earth. "
       "Slay the great goblin. I will reward you.", true);
   Level* top = buildLevel(
       Level::Builder(600, 600, "Wilderness"),

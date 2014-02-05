@@ -64,7 +64,7 @@ class Tile {
   Color color;
   String text;
   bool symFont = false;
-  bool translucent = false;
+  double translucent = 0;
   bool stickingOut = false;
   Tile(sf::Uint32 ch, Color col, bool sym = false) : color(col), text(ch), symFont(sym) {
   }
@@ -76,8 +76,8 @@ class Tile {
     return *this;
   }
 
-  Tile& setTranslucent() {
-    translucent = true;
+  Tile& setTranslucent(double v) {
+    translucent = v;
     return *this;
   }
 
@@ -253,7 +253,7 @@ Tile getSprite(ViewId id) {
     case ViewId::GREAT_GOBLIN: return Tile(6, 14);
     case ViewId::GOBLIN: return Tile(5, 14);
     case ViewId::BANDIT: return Tile(0, 2);
-    case ViewId::GHOST: return Tile(6, 16).setTranslucent();
+    case ViewId::GHOST: return Tile(6, 16).setTranslucent(0.5);
     case ViewId::DEVIL: return Tile(17, 18);
     case ViewId::DARK_KNIGHT: return Tile(12, 14);
     case ViewId::DRAGON: return Tile(3, 18);
@@ -351,7 +351,7 @@ Tile getSprite(ViewId id) {
     case ViewId::COFFIN: return Tile(7, 3, 2, true);
     case ViewId::OPENED_COFFIN: return Tile(8, 3, 2, true);
     case ViewId::BOULDER: return Tile(18, 7);
-    case ViewId::UNARMED_BOULDER_TRAP: return Tile(18, 7).setTranslucent();
+    case ViewId::UNARMED_BOULDER_TRAP: return Tile(18, 7).setTranslucent(0.6);
     case ViewId::PORTAL: return Tile(1, 6, 2);
     case ViewId::TRAP: return Tile(L'➹', yellow, true);
     case ViewId::GAS_TRAP: return Tile(L'☠', green, true);
@@ -1420,8 +1420,11 @@ Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& in
     }
     Tile tile = getTile(object, currentTileLayout.sprites);
     Color color = getBleedingColor(object);
-    if (object.isInvisible() || tile.translucent)
+    if (object.isInvisible())
       color = transparency(color, 70);
+    else
+    if (tile.translucent > 0)
+      color = transparency(color, 255 * (1 - tile.translucent));
     else if (object.isIllusion())
       color = transparency(color, 150);
 

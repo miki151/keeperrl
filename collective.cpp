@@ -912,10 +912,6 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     locked.clear();
   if (marked.count(pos))
     marked.erase(pos);
-  if (contains({SquareType::GRASS, SquareType::HILL}, type) && !mySquares.at(SquareType::STOCKPILE).empty()) {
-    addTask(Task::bringItem(this, pos, level->getSquare(pos)->getItems(Item::namePredicate("wood plank")), 
-        chooseRandom(mySquares.at(SquareType::STOCKPILE))));
-  }
 }
 
 void Collective::onPickedUp(Vec2 pos, vector<Item*> items) {
@@ -1097,6 +1093,21 @@ void Collective::tick() {
     delayDangerousTasks(enemyPos, heart->getTime() + 50);
 }
 
+static Vec2 chooseRandomClose(Vec2 start, const set<Vec2>& squares) {
+  int minD = 10000;
+  int margin = 5;
+  int a;
+  vector<Vec2> close;
+  for (Vec2 v : squares)
+    if ((a = v.dist8(start)) < minD)
+      minD = a;
+  for (Vec2 v : squares)
+    if (v.dist8(start) < minD + margin)
+      close.push_back(v);
+  CHECK(!close.empty());
+  return chooseRandom(close);
+}
+
 void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
   vector<Item*> equipment = level->getSquare(pos)->getItems(elem.predicate);
   if (mySquares[elem.destination].count(pos))
@@ -1108,7 +1119,7 @@ void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
       warning[elem.warning] = false;
       if (elem.oneAtATime)
         equipment = {equipment[0]};
-      Vec2 target = chooseRandom(mySquares[elem.destination]);
+      Vec2 target = chooseRandomClose(pos, mySquares[elem.destination]);
       addTask(Task::bringItem(this, pos, equipment, target));
       markedItems.insert(equipment.begin(), equipment.end());
     }
