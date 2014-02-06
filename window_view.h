@@ -24,6 +24,7 @@ class WindowView: public View {
   virtual void clearMessages() override;
   virtual void refreshView(const CreatureView*) override;
   virtual void updateView(const CreatureView*) override;
+  virtual void drawLevelMap(const Level*, const CreatureView*) override;
   virtual void resetCenter() override;
   virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       Optional<ActionId> exitAction = Nothing()) override;
@@ -114,7 +115,6 @@ class WindowView: public View {
   TileLayouts asciiLayouts;
   TileLayouts spriteLayouts;
   TileLayouts currentTileLayout;
-  MapLayout* worldLayout;
   vector<MapLayout*> allLayouts;
 
   vector<Rectangle> bottomKeyButtons;

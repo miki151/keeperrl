@@ -620,8 +620,7 @@ int smallTextSize = 12;
 Font tileFont;
 Font symbolFont;
 
-int maxTilesX = 600;
-int maxTilesY = 600;
+Rectangle maxLevelBounds(600, 600);
 Image mapBuffer;
 vector<Texture> tiles;
 vector<int> tileSize { 36, 36, 36, 24, 36, 36 };
@@ -715,11 +714,13 @@ static void drawText(Color color, int x, int y, const char* c, bool center = fal
   drawText(textFont, size, color, x, y, String(c), center);
 }
 
-static void drawImage(int px, int py, const Image& image) {
+static void drawImage(int px, int py, const Image& image, double scale = 1) {
   Texture t;
   t.loadFromImage(image);
   Sprite s(t);
   s.setPosition(px, py);
+  if (scale != 1)
+    s.setScale(scale, scale);
   display->draw(s);
 }
 
@@ -768,15 +769,10 @@ void WindowView::initialize() {
           bottomBarHeight, allLayers), true};
     currentTileLayout = spriteLayouts;
 
-    mapLayout = currentTileLayout.normalLayout;
-
-    worldLayout = MapLayout::worldLayout(screenWidth, screenHeight, 0, 80, 220, 75);
     allLayouts.push_back(asciiLayouts.normalLayout);
     allLayouts.push_back(asciiLayouts.unzoomLayout);
     allLayouts.push_back(spriteLayouts.normalLayout);
     allLayouts.push_back(spriteLayouts.unzoomLayout);
-    allLayouts.push_back(worldLayout);
-    mapBuffer.create(maxTilesX, maxTilesY);
     Image tileImage;
     CHECK(tileImage.loadFromFile("tiles_int.png"));
     Image tileImage2;
@@ -804,6 +800,8 @@ void WindowView::initialize() {
   } else {
     lastMemory = nullptr;
   }
+  mapBuffer.create(maxLevelBounds.getW(), maxLevelBounds.getH());
+  mapLayout = currentTileLayout.normalLayout;
 }
 
 static vector<Vec2> splashPositions;
@@ -1381,7 +1379,7 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
   return black;
 }
 
-Table<Optional<ViewIndex>> objects(maxTilesX, maxTilesY);
+Table<Optional<ViewIndex>> objects(maxLevelBounds.getW(), maxLevelBounds.getH());
 map<Vec2, ViewObject> borderCreatures;
 set<Vec2> shadowed;
 
@@ -1515,7 +1513,7 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   switchTiles();
   const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
-  for (Vec2 pos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY)))
+  for (Vec2 pos : mapLayout->getAllTiles(maxLevelBounds))
     objects[pos] = Nothing();
   if ((center.x == 0 && center.y == 0) || collective->staticPosition())
     center = {double(collective->getPosition().x), double(collective->getPosition().y)};
@@ -1529,7 +1527,7 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   shadowed.clear();
   floorIds.clear();
   lastMemory = &collective->getMemory(level);
-  for (Vec2 pos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY))) 
+  for (Vec2 pos : mapLayout->getAllTiles(maxLevelBounds)) 
     if (level->inBounds(pos)) {
       ViewIndex index = collective->getViewIndex(pos);
       if (!index.hasObject(ViewLayer::FLOOR) && !index.hasObject(ViewLayer::FLOOR_BACKGROUND) &&
@@ -1555,7 +1553,7 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
     }
   borderCreatures.clear();
  /* for (const Creature* c : collective->getVisibleCreatures())
-    if (!c->getPosition().inRectangle(mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY))))
+    if (!c->getPosition().inRectangle(mapLayout->getAllTiles(maxLevelBounds)))
       borderCreatures.insert(std::make_pair(c->getPosition(), c->getViewObject()));*/
   refreshScreen(flipBuffer);
 }
@@ -1602,6 +1600,23 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
   refreshScreen(true);
 }
 
+void WindowView::drawLevelMap(const Level* level, const CreatureView* creature) {
+  while (1) {
+    for (Vec2 v : maxLevelBounds)
+      if (!v.inRectangle(level->getBounds()) || !creature->getMemory(level).hasViewIndex(v))
+        mapBuffer.setPixel(v.x, v.y, black);
+      else
+        mapBuffer.setPixel(v.x, v.y, getColor(level->getSquare(v)->getViewObject()));
+    double scale = min(double(mapLayout->getBounds().getW()) / level->getBounds().getW(),
+        double(mapLayout->getBounds().getH()) / level->getBounds().getH());
+    drawImage(mapLayout->getBounds().getPX(), mapLayout->getBounds().getPY(), mapBuffer, scale);
+    drawAndClearBuffer();
+    BlockingEvent ev = readkey();
+    if (contains({BlockingEvent::KEY, BlockingEvent::MOUSE_LEFT}, ev.type))
+      break;
+  }
+}
+
 void WindowView::drawMap() {
   if (!lastMemory) {
     displayMenuSplash2();
@@ -1610,26 +1625,16 @@ void WindowView::drawMap() {
 
   int sizeX = mapLayout->squareWidth();
   int sizeY = mapLayout->squareHeight();
- Rectangle mapWindow = mapLayout->getBounds();
+  Rectangle mapWindow = mapLayout->getBounds();
   drawFilledRectangle(mapWindow, black);
-  bool pixelView = false;
   map<string, ViewObject> objIndex;
   Optional<ViewObject> highlighted;
-  for (Vec2 wpos : mapLayout->getAllTiles(Rectangle(maxTilesX, maxTilesY))) {
+  for (Vec2 wpos : mapLayout->getAllTiles(maxLevelBounds)) {
     if (!objects[wpos])
       continue;
     Vec2 pos = mapLayout->projectOnScreen(wpos);
     const ViewIndex& index = *objects[wpos];
-    Optional<ViewObject> topObject;
-    if (sizeX > 1) {
-      topObject = drawObjectAbs(pos.x, pos.y, index, sizeX, sizeY, wpos);
-    } else {
-      topObject = index.getTopObject(mapLayout->getLayers());
-      if (topObject)
-        mapBuffer.setPixel(pos.x, pos.y, getColor(*topObject));
-      pixelView = true;
-    }
-    if (topObject) {
+    if (auto topObject = drawObjectAbs(pos.x, pos.y, index, sizeX, sizeY, wpos)) {
       objIndex.insert(std::make_pair(topObject->getDescription(), *topObject));
       if (getHighlightedTile() == wpos)
         highlighted = *topObject;
@@ -1645,8 +1650,6 @@ void WindowView::drawMap() {
           proj.y,
           index, sizeX / 2, sizeY / 2, elem.first);
     }
-  if (pixelView)
-    drawImage(mapLayout->getBounds().getPX(), mapLayout->getBounds().getPY(), mapBuffer);
   int rightPos = screenWidth -rightBarText;
   drawFilledRectangle(screenWidth - rightBarWidth, 0, screenWidth, screenHeight, translucentBlack);
   if (gameInfo.infoType == GameInfo::InfoType::PLAYER) {
@@ -1980,11 +1983,7 @@ void WindowView::addMessage(const string& message) {
 }
 
 void WindowView::unzoom(bool pixel, bool tpp) {
-  if (pixel && mapLayout != worldLayout)
-    mapLayout = worldLayout;
- /* else if (tpp && mapLayout != tppLayout)
-    mapLayout = tppLayout;*/
-  else if (mapLayout != currentTileLayout.normalLayout)
+  if (mapLayout != currentTileLayout.normalLayout)
     mapLayout = currentTileLayout.normalLayout;
   else
     mapLayout = currentTileLayout.unzoomLayout;
@@ -2217,10 +2216,9 @@ Action WindowView::getAction() {
     if (event.type == BlockingEvent::IDLE || event.type == BlockingEvent::MOUSE_MOVE)
       return Action(ActionId::IDLE);
     if (event.type == BlockingEvent::MOUSE_LEFT) {
-      if (auto pos = getHighlightedTile()) {
- //       mousePos = Nothing();
+      if (auto pos = getHighlightedTile())
         return Action(ActionId::MOVE_TO, *pos);
-      } else
+      else
         return Action(ActionId::IDLE);
     }
     auto key = event.key;
@@ -2228,8 +2226,6 @@ Action WindowView::getAction() {
       key = getEventFromMenu();
     if (!key)
       return Action(ActionId::IDLE);
-    if (mapLayout == worldLayout)
-      unzoom(false, false);
     auto optionalAction = mapLayout->overrideAction(*key);
     if (optionalAction)
       return *optionalAction;
@@ -2237,7 +2233,12 @@ Action WindowView::getAction() {
       case Keyboard::Escape : if (yesOrNoPrompt("Are you sure you want to abandon your game?"))
                                 throw GameOverException();
                               break;
-      case Keyboard::Z: unzoom(key->shift, key->control); return Action(ActionId::IDLE);
+      case Keyboard::Z: if (key->shift)
+                          return Action(ActionId::DRAW_LEVEL_MAP);
+                        else {
+                          unzoom(key->shift, key->control);
+                          return Action(ActionId::IDLE);
+                        }
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
       case Keyboard::F2: Options::handle(this); return Action(ActionId::IDLE);
       case Keyboard::Up:

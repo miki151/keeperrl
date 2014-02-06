@@ -643,6 +643,7 @@ void Player::makeMove() {
                                 return;
                               } break;
     case ActionId::CAST_SPELL: spellAction(); break;
+    case ActionId::DRAW_LEVEL_MAP: view->drawLevelMap(creature->getLevel(), creature); break;
     case ActionId::IDLE: break;
   }
   if (creature->isSleeping() && creature->canPopController()) {

@@ -953,8 +953,8 @@ class Mountains : public LevelMaker {
       builder->setHeightMap(v, wys[v]);
       if (makeFog && fog[v] > cutOffValFogLow) {
         ++fCnt;
-        builder->setFog(v, min(1.0, (fog[v] - cutOffValFogLow) / (cutOffValFogHigh - cutOffValFogLow)));
-        builder->addAttrib(v, SquareAttrib::FOG);
+ //       builder->setFog(v, min(1.0, (fog[v] - cutOffValFogLow) / (cutOffValFogHigh - cutOffValFogLow)));
+ //       builder->addAttrib(v, SquareAttrib::FOG);
       }
       if (wys[v] > cutOffValSnow) {
         builder->putSquare(v, types[2]);

@@ -22,7 +22,7 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo(BuildInfo::DIG),
     BuildInfo({SquareType::STOCKPILE, ResourceId::GOLD, 0, "Storage"}),
     BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 5, "Treasure room"}),
-    BuildInfo({ResourceId::WOOD, 5, "door", ViewId::DOOR}),
+    BuildInfo({ResourceId::WOOD, 5, "Door", ViewId::DOOR}),
     BuildInfo({SquareType::BED, ResourceId::WOOD, 10, "Bed"}),
     BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::IRON, 20, "Training room"}),
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 20, "Library"}),

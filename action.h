@@ -26,6 +26,7 @@ enum class ActionId {
      WAIT,
      UNPOSSESS,
      CAST_SPELL,
+     DRAW_LEVEL_MAP,
      IDLE
 };
 
