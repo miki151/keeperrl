@@ -24,8 +24,7 @@ vector<Collective::BuildInfo> Collective::initialBuildInfo {
 }; 
 
 vector<Collective::BuildInfo> Collective::normalBuildInfo {
-    BuildInfo({SquareType::FLOOR, ResourceId::GOLD, 0, "Dig"}),
-    BuildInfo(BuildInfo::CUT_TREE),
+    BuildInfo(BuildInfo::DIG),
     BuildInfo({SquareType::STOCKPILE, ResourceId::GOLD, 0, "Storage"}),
     BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 4, "Treasure room"}),
     BuildInfo({ResourceId::WOOD, 4, "door", ViewId::DOOR}),
@@ -498,6 +497,12 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
                 elem.cost <= numGold(elem.resourceId) });
            }
            break;
+      case BuildInfo::DIG: {
+             info.buttons.push_back({
+                 ViewObject(ViewId::DIG_ICON, ViewLayer::LARGE_ITEM, ""),
+                 "dig or cut tree", Nothing(), "", true});
+           }
+           break;
       case BuildInfo::TRAP: {
              BuildInfo::TrapInfo& elem = button.trapInfo;
              int numTraps = getTrapItems(elem.type).size();
@@ -519,10 +524,6 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
                  "[" + convertToString(doors.size()) + "]",
                  elem.cost <= numGold(elem.resourceId)});
            }
-           break;
-      case BuildInfo::CUT_TREE:
-           info.buttons.push_back({
-               ViewObject(ViewId::WOOD_PLANK, ViewLayer::CREATURE, ""), "Cut tree", Nothing(), "", true});
            break;
       case BuildInfo::IMP: {
            pair<ViewObject, int> cost = {ViewObject::mana(), getImpCost()};
@@ -883,16 +884,18 @@ void Collective::processInput(View* view) {
                 selection = SELECT;
               }
               break;
-          case BuildInfo::CUT_TREE:
+          case BuildInfo::DIG:
               if (marked.count(pos) && selection != SELECT) {
                 unmarkSquare(pos);
                 selection = DESELECT;
-                if (throneMarked == pos)
-                  throneMarked = Nothing();
-              } else {
-                if (!marked.count(pos) && selection != DESELECT &&
-                    level->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
+              } else
+              if (!marked.count(pos) && selection != DESELECT) {
+                if (level->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
                   markSquare(pos, SquareType::TREE_TRUNK, {ResourceId::GOLD, 0});
+                  selection = SELECT;
+                } else
+                if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !memory[level].hasViewIndex(pos)) {
+                  markSquare(pos, SquareType::FLOOR, { ResourceId::GOLD, 0});
                   selection = SELECT;
                 }
               }
@@ -901,22 +904,17 @@ void Collective::processInput(View* view) {
               if (marked.count(pos) && selection != SELECT) {
                 unmarkSquare(pos);
                 selection = DESELECT;
-                if (throneMarked == pos)
-                  throneMarked = Nothing();
               } else {
                 BuildInfo::SquareInfo info = getBuildInfo()[currentButton].squareInfo;
                 bool diggingSquare = !memory[level].hasViewIndex(pos) ||
                   (level->getSquare(pos)->canConstruct(info.type));
                 if (!marked.count(pos) && selection != DESELECT && diggingSquare && 
                     numGold(info.resourceId) >= info.cost && 
-                    (info.type != SquareType::KEEPER_THRONE || !throneMarked) &&
                     (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) &&
                     (info.type == SquareType::FLOOR || canSee(pos))) {
                   markSquare(pos, info.type, {info.resourceId, info.cost});
                   selection = SELECT;
                   takeGold({info.resourceId, info.cost});
-                  if (info.type == SquareType::KEEPER_THRONE)
-                    throneMarked = pos;
                 }
               }
               break;

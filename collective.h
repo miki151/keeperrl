@@ -106,13 +106,13 @@ class Collective : public CreatureView, public EventListener {
       ViewId viewId;
     } doorInfo;
 
-    enum BuildType { SQUARE, CUT_TREE, IMP, TRAP, DOOR, GUARD_POST, DESTROY} buildType;
+    enum BuildType { DIG, SQUARE, IMP, TRAP, DOOR, GUARD_POST, DESTROY} buildType;
 
     BuildInfo(SquareInfo info) : squareInfo(info), buildType(SQUARE) {}
     BuildInfo(TrapInfo info) : trapInfo(info), buildType(TRAP) {}
     BuildInfo(DoorInfo info) : doorInfo(info), buildType(DOOR) {}
     BuildInfo(BuildType type) : buildType(type) {
-      CHECK(contains({IMP, GUARD_POST, CUT_TREE, DESTROY}, type));
+      CHECK(contains({DIG, IMP, GUARD_POST, DESTROY}, type));
     }
 
   };
@@ -226,7 +226,6 @@ class Collective : public CreatureView, public EventListener {
     const Creature* attender;
   };
   map<Vec2, GuardPostInfo> guardPosts;
-  Optional<Vec2> throneMarked;
   double mana;
   int points = 0;
   Model* model;

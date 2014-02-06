@@ -312,6 +312,7 @@ Tile getSprite(ViewId id) {
     case ViewId::ABYSS: return Tile('~', darkGray);
     case ViewId::DOOR: return Tile(4, 2, 2, true);
     case ViewId::PLANNED_DOOR: return Tile(4, 2, 2, true).setTranslucent(0.5);
+    case ViewId::DIG_ICON: return Tile(8, 10, 2);
     case ViewId::SWORD: return Tile(12, 9, 3);
     case ViewId::SPECIAL_SWORD: return Tile(13, 9, 3);
     case ViewId::ELVEN_SWORD: return Tile(14, 9, 3);
@@ -514,6 +515,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ABYSS: return Tile('~', darkGray);
     case ViewId::DOOR: return Tile('|', brown);
     case ViewId::PLANNED_DOOR: return Tile('|', darkBrown);
+    case ViewId::DIG_ICON: return Tile(8, 10, 2);
     case ViewId::SWORD: return Tile(')', lightGray);
     case ViewId::SPECIAL_SWORD: return Tile(')', yellow);
     case ViewId::ELVEN_SWORD: return Tile(')', gray);
@@ -893,7 +895,7 @@ void WindowView::resize(int width, int height) {
 Optional<Vec2> mousePos;
 
 Optional<Vec2> WindowView::getHighlightedTile() {
-  if (!mousePos)
+  if (!mousePos || !mousePos->inRectangle(getMapViewBounds()))
     return Nothing();
   return mapLayout->projectOnMap(*mousePos);
 }

@@ -384,6 +384,7 @@ enum class ViewId {
   ABYSS,
   DOOR,
   PLANNED_DOOR,
+  DIG_ICON,
   FOUNTAIN,
   CHEST,
   OPENED_CHEST,
