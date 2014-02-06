@@ -17,19 +17,19 @@ int main(int argc, char* argv[]) {
   string lognamePref = "log";
   Debug::init();
   int seed = time(0);
-  bool dwarf = false;
+  bool forceAdvMode = false;
   bool genExit = false;
   if (argc == 3) {
-    genExit = dwarf = true;
+    genExit = forceAdvMode = true;
   }
   if (argc == 2 && argv[1][0] == 'd')
-    dwarf = true;
+    forceAdvMode = true;
   else
   if (argc == 2 && argv[1][0] != 'l') {
     seed = convertFromString<int>(argv[1]);
     argc = 1;
   }
-  if (argc == 1 || dwarf) {
+  if (argc == 1 || forceAdvMode) {
     Random.init(seed);
     string fname(lognamePref);
     fname += convertToString(seed);
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     bool modelReady = false;
     messageBuffer.initialize(view);
     view->initialize();
-    auto choice = dwarf ? Optional<int>(1) : view->chooseFromList("", {
+    auto choice = forceAdvMode ? Optional<int>(1) : view->chooseFromList("", {
         View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
         View::ListElem("Or simply:", View::TITLE), "Change options", "View high scores", "Quit"}, lastIndex);
     if (!choice)
@@ -76,13 +76,12 @@ int main(int argc, char* argv[]) {
       m->showHighscore();
       continue;
     }
-    dwarf = (choice == 1);
     unique_ptr<Model> model;
     string ex;
     thread t = (thread([&] {
       for (int i : Range(5)) {
         try {
-          model.reset(dwarf ? Model::heroModel(view) : Model::collectiveModel(view));
+          model.reset(choice == 1 ? Model::heroModel(view) : Model::collectiveModel(view));
           break;
         } catch (string s) {
           ex = s;

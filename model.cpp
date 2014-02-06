@@ -94,8 +94,8 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
       {CreatureId::SPIDER, "The castle cellar is infested by vermin. Go and clean it up."}}, {1, 1});
   pair<CreatureId, string> castleNem2 = chooseRandom<pair<CreatureId, string>>(
       {{CreatureId::DRAGON, "dragon"}, {CreatureId::CYCLOPS, "cyclops"}});
-  Quest::dragon = Quest::killTribeQuest(Tribe::dragon, "There is a " + castleNem2.second + 
-      " living in a cave. Kill it.");
+  Quest::dragon = Quest::killTribeQuest(Tribe::dragon, "A " + castleNem2.second + 
+      " is harrasing our village. Kill it. It lives in a cave not far from here.");
   Quest::castleCellar = Quest::killTribeQuest(Tribe::castleCellar, castleNem1.second);
   Quest::bandits = Quest::killTribeQuest(Tribe::bandit, "There is a bandit camp nearby. Kill them all.");
   Quest::dwarves = Quest::killTribeQuest(Tribe::dwarven, "Slay our enemy, the dwarf baron. I will reward you.", true);

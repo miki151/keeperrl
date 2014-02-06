@@ -1260,7 +1260,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.size = CreatureSize::MEDIUM;
    //                             c.firstName = NameGenerator::dwarfNames.getNext();
                                 c.strength = 18;
-                                c.dexterity = 13;
+                                c.dexterity = 14;
                                 c.barehandedDamage = 3;
                                 c.humanoid = true;
                                 c.weight = 90;

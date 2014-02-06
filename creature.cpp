@@ -659,7 +659,8 @@ int Creature::getAttr(AttrType type) const {
                (injuredWings + lostWings) * strPenNoWing;
         break;
     case AttrType::DEXTERITY:
-        def *= 0.666 + health / 3;
+        if (health < 1)
+          def *= 0.666 + health / 3;
         if (sleeping)
           def = 0;
         if (dexBonus)
@@ -988,19 +989,21 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
 
 void Creature::attack(const Creature* c1, bool spend) {
   Creature* c = const_cast<Creature*>(c1);
-  int toHitVariance = 9;
-  int attackVariance = 6;
+  int toHitVariance = 7;
+  int damageVariance = 5;
   CHECK((c->getPosition() - getPosition()).length8() == 1)
       << "Bad attack direction " << c->getPosition() - getPosition();
   CHECK(canAttack(c));
   Debug() << getTheName() << " attacking " << c->getName();
-  int toHit = Random.getRandom(GET_ID(uniqueId), -toHitVariance, toHitVariance) + getAttr(AttrType::TO_HIT);
-  int damage = Random.getRandom(GET_ID(uniqueId), -attackVariance, attackVariance) + getAttr(AttrType::DAMAGE);
+  auto rToHit = [=] () { return Random.getRandom(GET_ID(uniqueId), -toHitVariance, toHitVariance); };
+  auto rDamage = [=] () { return Random.getRandom(GET_ID(uniqueId), -damageVariance, damageVariance); };
+  int toHit = rToHit() + rToHit() + getAttr(AttrType::TO_HIT);
+  int damage = rDamage() + rDamage() + getAttr(AttrType::DAMAGE);
   bool backstab = false;
   string enemyName = getLevel()->playerCanSee(c) ? c->getTheName() : "something";
   if (c->isPlayer())
     enemyName = "";
-  if (!c->canSee(this) && canSee(c)) {
+  if (!c->isSleeping() && !c->canSee(this) && canSee(c)) {
  //   if (getWeapon() && getWeapon()->getAttackType() == AttackType::STAB) {
       damage += 15;
       backstab = true;

@@ -1119,7 +1119,7 @@ void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
     convertToString(info.strength),
     convertToString(info.dexterity),
     convertToString(info.speed),
-    convertToString(info.numGold),
+    "$" + convertToString(info.numGold),
   };
   for (int i : All(lines)) {
     drawText(white, lineX, lineStart + legendLineHeight * i, lines[i]);
