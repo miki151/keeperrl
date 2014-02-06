@@ -1754,8 +1754,13 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   subMakers.push_back(new Lake());
   subSizes.emplace_back(20, 20);
   predicates.push_back(new AttribPredicate(SquareAttrib::LOWLAND));
-  for (int i : Range(Random.getRandom(2, 5))) {
+  for (int i : Range(Random.getRandom(1, 3))) {
     subMakers.push_back(new UniformBlob(SquareType::GOLD_ORE));
+    subSizes.emplace_back(Random.getRandom(5, 6), Random.getRandom(5, 6)); 
+    predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
+  }
+  for (int i : Range(Random.getRandom(2, 5))) {
+    subMakers.push_back(new UniformBlob(SquareType::STONE));
     subSizes.emplace_back(Random.getRandom(5, 10), Random.getRandom(5, 10)); 
     predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
   }

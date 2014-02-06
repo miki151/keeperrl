@@ -69,6 +69,7 @@ class Collective : public CreatureView, public EventListener {
     GOLD,
     WOOD,
     IRON,
+    STONE,
   };
 
   struct ResourceInfo {

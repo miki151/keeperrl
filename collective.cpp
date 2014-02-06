@@ -18,23 +18,18 @@ static string warningText[] {
   "You need to build a graveyard"};
 
 
-vector<Collective::BuildInfo> Collective::initialBuildInfo {
-    BuildInfo({SquareType::FLOOR, ResourceId::GOLD, 0, "Dig"}),
-    BuildInfo({SquareType::KEEPER_THRONE, ResourceId::GOLD, 0, "Throne"}),
-}; 
-
 vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo(BuildInfo::DIG),
     BuildInfo({SquareType::STOCKPILE, ResourceId::GOLD, 0, "Storage"}),
-    BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 4, "Treasure room"}),
-    BuildInfo({ResourceId::WOOD, 4, "door", ViewId::DOOR}),
-    BuildInfo({SquareType::BED, ResourceId::WOOD, 8, "Bed"}),
-    BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::IRON, 18, "Training room"}),
-    BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 18, "Library"}),
-    BuildInfo({SquareType::LABORATORY, ResourceId::IRON, 18, "Laboratory"}),
-    BuildInfo({SquareType::WORKSHOP, ResourceId::IRON, 12, "Workshop"}),
+    BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 5, "Treasure room"}),
+    BuildInfo({ResourceId::WOOD, 5, "door", ViewId::DOOR}),
+    BuildInfo({SquareType::BED, ResourceId::WOOD, 10, "Bed"}),
+    BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::IRON, 20, "Training room"}),
+    BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 20, "Library"}),
+    BuildInfo({SquareType::LABORATORY, ResourceId::IRON, 15, "Laboratory"}),
+    BuildInfo({SquareType::WORKSHOP, ResourceId::IRON, 15, "Workshop"}),
     BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast cage"}),
-    BuildInfo({SquareType::GRAVE, ResourceId::WOOD, 18, "Graveyard"}),
+    BuildInfo({SquareType::GRAVE, ResourceId::STONE, 20, "Graveyard"}),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
     BuildInfo(BuildInfo::DESTROY),
@@ -62,6 +57,7 @@ const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resource
   {ResourceId::GOLD, { SquareType::TREASURE_CHEST, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE}},
   {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK}},
   {ResourceId::IRON, { SquareType::STOCKPILE, Item::namePredicate("iron ore"), ItemId::IRON_ORE}},
+  {ResourceId::STONE, { SquareType::STOCKPILE, Item::namePredicate("rock"), ItemId::ROCK}},
 };
 
 vector<TechId> techIds {
@@ -83,6 +79,9 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
     {[this](const Item* it) {
         return it->getName() == "iron ore" && !markedItems.count(it); },
       SquareType::STOCKPILE, false, {}, NO_STORAGE},
+    {[this](const Item* it) {
+        return it->getName() == "rock" && !markedItems.count(it); },
+      SquareType::STOCKPILE, false, {}, NO_STORAGE},
   };
 }
 
@@ -90,15 +89,16 @@ Collective::Collective(Model* m) : mana(200), model(m) {
   EventListener::addListener(this);
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
-  for (BuildInfo info : concat(initialBuildInfo, normalBuildInfo))
+  for (BuildInfo info : normalBuildInfo)
     if (info.buildType == BuildInfo::SQUARE)
       mySquares[info.squareInfo.type].clear();
     else if (info.buildType == BuildInfo::TRAP)
       trapMap[info.trapInfo.type].clear();
   credit = {
     {ResourceId::GOLD, 100},
-    {ResourceId::WOOD, 40},
+    {ResourceId::WOOD, 0},
     {ResourceId::IRON, 0},
+    {ResourceId::STONE, 0},
   };
   for (TechId id: techIds)
     techLevels[id] = 0;
@@ -1181,7 +1181,7 @@ void Collective::setLevel(Level* l) {
   for (Vec2 v : l->getBounds())
     if (/*contains({SquareApplyType::ASCEND, SquareApplyType::DESCEND},
             l->getSquare(v)->getApplyType(Creature::getDefault())) ||*/
-        contains({"gold ore", "iron ore"}, l->getSquare(v)->getName()))
+        contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
       memory[l].addObject(v, l->getSquare(v)->getViewObject());
   level = l;
 }

@@ -561,6 +561,10 @@ Square* SquareFactory::get(SquareType s) {
         return new ConstructionDropItems(ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR, "Iron ore", true), "iron ore",
             {{SquareType::FLOOR, Random.getRandom(30, 80)}},
             ItemFactory::fromId(ItemId::IRON_ORE, Random.getRandom(5, 20)));
+    case SquareType::STONE:
+        return new ConstructionDropItems(ViewObject(ViewId::STONE, ViewLayer::FLOOR, "Stone", true), "stone",
+            {{SquareType::FLOOR, Random.getRandom(30, 80)}},
+            ItemFactory::fromId(ItemId::ROCK, Random.getRandom(5, 20)));
     case SquareType::LOW_ROCK_WALL:
         return new SolidSquare(ViewObject(ViewId::LOW_ROCK_WALL, ViewLayer::FLOOR, "Wall"), "wall", false);
     case SquareType::WOOD_WALL:

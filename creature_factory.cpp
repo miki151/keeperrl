@@ -127,7 +127,7 @@ class Boulder : public Creature {
             return new BoulderController(c, myTribe); })) {}
 
   virtual void dropCorpse() override {
-    drop(ItemFactory::fromId(ItemId::ROCK, Random.getRandom(100, 200)));
+    drop(ItemFactory::fromId(ItemId::ROCK, Random.getRandom(10, 20)));
   }
 };
 

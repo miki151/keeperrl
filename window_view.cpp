@@ -230,6 +230,7 @@ Tile getSprite(ViewId id) {
                                   .addConnection({Dir::N, Dir::E, Dir::NE}, 18, 11);*/
     case ViewId::GOLD_ORE: return Tile(0, 16, 1);
     case ViewId::IRON_ORE: return Tile(0, 17, 1);
+    case ViewId::STONE: return Tile(1, 17, 1);
     case ViewId::SNOW: return Tile(16, 2, 2, true);
     case ViewId::HILL: return Tile(3, 13, 2);
     case ViewId::WOOD_WALL: return getWallTile(4);
@@ -434,7 +435,8 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::MOUNTAIN: return Tile(0x25ee, darkGray, true);
     case ViewId::MOUNTAIN2: return Tile('#', darkGray);
     case ViewId::GOLD_ORE: return Tile(L'⁂', yellow, true);
-    case ViewId::IRON_ORE: return Tile(L'⁂', lightGray, true);
+    case ViewId::IRON_ORE: return Tile(L'⁂', darkBrown, true);
+    case ViewId::STONE: return Tile(L'⁂', lightGray, true);
     case ViewId::SNOW: return Tile(0x25ee, white, true);
     case ViewId::HILL: return Tile(0x1d022, darkGreen, true);
     case ViewId::WOOD_WALL: return Tile('#', darkBrown);
@@ -515,7 +517,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ABYSS: return Tile('~', darkGray);
     case ViewId::DOOR: return Tile('|', brown);
     case ViewId::PLANNED_DOOR: return Tile('|', darkBrown);
-    case ViewId::DIG_ICON: return Tile(8, 10, 2);
+    case ViewId::DIG_ICON: return Tile(0x2692, lightGray, true);
     case ViewId::SWORD: return Tile(')', lightGray);
     case ViewId::SPECIAL_SWORD: return Tile(')', yellow);
     case ViewId::ELVEN_SWORD: return Tile(')', gray);
@@ -1251,7 +1253,7 @@ void WindowView::drawBuildings(GameInfo::BandInfo& info) {
     if (info.buttons[i].cost) {
       string costText = convertToString(info.buttons[i].cost->second);
       int posX = screenWidth - getTextLength(costText) - 10;
-      drawViewObject(info.buttons[i].cost->first, screenWidth - 40, height, true);
+      drawViewObject(info.buttons[i].cost->first, screenWidth - 45, height, true);
       drawText(color, posX, height, costText);
     }
     roomButtons.emplace_back(textX, height,textX + 150, height + legendLineHeight);
