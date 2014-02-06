@@ -28,7 +28,7 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo(BuildInfo::CUT_TREE),
     BuildInfo({SquareType::STOCKPILE, ResourceId::GOLD, 0, "Storage"}),
     BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 4, "Treasure room"}),
-    BuildInfo({SquareType::TRIBE_DOOR, ResourceId::WOOD, 4, "Door"}),
+    BuildInfo({ResourceId::WOOD, 4, "door", ViewId::DOOR}),
     BuildInfo({SquareType::BED, ResourceId::WOOD, 8, "Bed"}),
     BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::IRON, 18, "Training room"}),
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 18, "Library"}),
@@ -509,6 +509,17 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
                  numTraps > 0});
            }
            break;
+      case BuildInfo::DOOR: {
+             BuildInfo::DoorInfo& elem = button.doorInfo;
+             pair<ViewObject, int> cost = {getResourceViewObject(elem.resourceId), elem.cost};
+             info.buttons.push_back({
+                 ViewObject(elem.viewId, ViewLayer::LARGE_ITEM, ""),
+                 elem.name,
+                 cost,
+                 "[" + convertToString(doors.size()) + "]",
+                 elem.cost <= numGold(elem.resourceId)});
+           }
+           break;
       case BuildInfo::CUT_TREE:
            info.buttons.push_back({
                ViewObject(ViewId::WOOD_PLANK, ViewLayer::CREATURE, ""), "Cut tree", Nothing(), "", true});
@@ -591,6 +602,8 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
       index.insert(getTrapObject(traps.at(pos).type));
     if (guardPosts.count(pos))
       index.insert(ViewObject(ViewId::GUARD_POST, ViewLayer::LARGE_ITEM, "Guard post"));
+    if (doors.count(pos))
+      index.insert(ViewObject(ViewId::PLANNED_DOOR, ViewLayer::LARGE_ITEM, "Planned door"));
   }
   if (const Location* loc = level->getLocation(pos)) {
     if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !memory[level].hasViewIndex(pos))
@@ -837,6 +850,14 @@ void Collective::processInput(View* view) {
                 }
               }
               break;
+          case BuildInfo::DOOR: {
+                BuildInfo::DoorInfo info = getBuildInfo()[currentButton].doorInfo;
+                if (numGold(info.resourceId) >= info.cost && canBuildDoor(pos)){
+                  doors[pos] = {{info.resourceId, info.cost}, false, false};
+                  updateTraps();
+                }
+              }
+              break;
           case BuildInfo::DESTROY:
               selection = SELECT;
               if (level->getSquare(pos)->canDestroy() && myTiles.count(pos))
@@ -849,6 +870,8 @@ void Collective::processInput(View* view) {
                 removeElement(trapMap.at(traps.at(pos).type), pos);
                 traps.erase(pos);
               }
+              if (doors.count(pos))
+                doors.erase(pos);
               break;
           case BuildInfo::GUARD_POST:
               if (guardPosts.count(pos) && selection != SELECT) {
@@ -915,6 +938,11 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     locked.clear();
   if (marked.count(pos))
     marked.erase(pos);
+  if (contains({SquareType::TRIBE_DOOR}, type)) {
+    CHECK(doors.count(pos));
+    doors.at(pos).built = true;
+    doors.at(pos).marked = false;
+  }
 }
 
 void Collective::onPickedUp(Vec2 pos, vector<Item*> items) {
@@ -1005,6 +1033,13 @@ void Collective::updateTraps() {
         items.pop_back();
         traps[elem.first].marked = true;
       }
+    }
+  }
+  for (auto& elem : doors) {
+    if (!elem.second.marked && !elem.second.built && numGold(elem.second.cost.id) >= elem.second.cost.value) {
+      addTask(Task::construction(this, elem.first, SquareType::TRIBE_DOOR));
+      elem.second.marked = true;
+      takeGold(elem.second.cost);
     }
   }
 }
@@ -1407,6 +1442,10 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
       if (elem.second.count(pos)) {
         elem.second.erase(pos);
       }
+    if (doors.count(pos)) {
+      DoorInfo& info = doors.at(pos);
+      info.marked = info.built = false;
+    }
   }
 }
 

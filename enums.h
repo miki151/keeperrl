@@ -383,6 +383,7 @@ enum class ViewId {
   MAGMA,
   ABYSS,
   DOOR,
+  PLANNED_DOOR,
   FOUNTAIN,
   CHEST,
   OPENED_CHEST,

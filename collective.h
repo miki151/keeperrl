@@ -99,10 +99,18 @@ class Collective : public CreatureView, public EventListener {
       ViewId viewId;
     } trapInfo;
 
-    enum BuildType { SQUARE, CUT_TREE, IMP, TRAP, GUARD_POST, DESTROY} buildType;
+    struct DoorInfo {
+      ResourceId resourceId;
+      int cost;
+      string name;
+      ViewId viewId;
+    } doorInfo;
+
+    enum BuildType { SQUARE, CUT_TREE, IMP, TRAP, DOOR, GUARD_POST, DESTROY} buildType;
 
     BuildInfo(SquareInfo info) : squareInfo(info), buildType(SQUARE) {}
     BuildInfo(TrapInfo info) : trapInfo(info), buildType(TRAP) {}
+    BuildInfo(DoorInfo info) : doorInfo(info), buildType(DOOR) {}
     BuildInfo(BuildType type) : buildType(type) {
       CHECK(contains({IMP, GUARD_POST, CUT_TREE, DESTROY}, type));
     }
@@ -193,6 +201,12 @@ class Collective : public CreatureView, public EventListener {
   };
   map<Vec2, TrapInfo> traps;
   map<TrapType, vector<Vec2>> trapMap;
+  struct DoorInfo {
+    CostInfo cost;
+    bool built;
+    bool marked;
+  };
+  map<Vec2, DoorInfo> doors;
   map<Creature*, MarkovChain<MinionTask>> minionTasks;
   map<const Creature*, string> minionTaskStrings;
   set<pair<Creature*, Task*>> locked;
