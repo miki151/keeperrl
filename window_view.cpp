@@ -2093,30 +2093,23 @@ bool WindowView::isClockStopped() {
 
 
 bool WindowView::considerScrollEvent(sf::Event& event) {
-  switch (event.type) {
-    case Event::MouseButtonReleased :
-      if (event.mouseButton.button == sf::Mouse::Right) {
-        center = {center.x - mouseOffset.x, center.y - mouseOffset.y};
-        mouseOffset = {0.0, 0.0};
-        return true;
-      }
-      break;
-    case Event::MouseMoved:
-      if (Mouse::isButtonPressed(Mouse::Right)) {
-        mouseOffset = {double(event.mouseMove.x - lastMousePos.x) / mapLayout->squareWidth(),
-                       double(event.mouseMove.y - lastMousePos.y) / mapLayout->squareHeight() };
-        return true;
-      }
-      break;
-    case Event::MouseButtonPressed:
-      if (event.mouseButton.button == sf::Mouse::Right) {
- //       rightMouseButtonPressed = true;
-        lastMousePos = Vec2(event.mouseButton.x, event.mouseButton.y);
-        return true;
-      }
-      break;
-    default:
-      break;
+  static bool lastPressed = false;
+  if (lastPressed && !Mouse::isButtonPressed(Mouse::Right)) {
+    center = {center.x - mouseOffset.x, center.y - mouseOffset.y};
+    mouseOffset = {0.0, 0.0};
+    lastPressed = false;
+    return true;
+  }
+  if (!lastPressed && Mouse::isButtonPressed(Mouse::Right)) {
+    lastMousePos = Vec2(Mouse::getPosition(*display).x, Mouse::getPosition(*display).y);
+    lastPressed = true;
+    return true;
+  }
+
+  if (event.type == Event::MouseMoved && lastPressed) {
+    mouseOffset = {double(event.mouseMove.x - lastMousePos.x) / mapLayout->squareWidth(),
+      double(event.mouseMove.y - lastMousePos.y) / mapLayout->squareHeight() };
+    return true;
   }
   return false;
 }
