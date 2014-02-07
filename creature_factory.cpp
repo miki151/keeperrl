@@ -619,13 +619,13 @@ CreatureFactory CreatureFactory::humanVillage() {
 }
 
 CreatureFactory CreatureFactory::elvenVillage() {
-  return CreatureFactory(Tribe::elven, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW },
-      { 2, 2, 1, 1}, {});
+  return CreatureFactory(Tribe::elven, { CreatureId::ELF, CreatureId::ELF_ARCHER,CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW },
+      { 2, 2, 2, 1, 1}, {});
 }
 
 CreatureFactory CreatureFactory::elvenVillagePeaceful() {
-  return CreatureFactory(Tribe::elven, { CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW },
-      { 2, 1, 1}, {});
+  return CreatureFactory(Tribe::elven, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW },
+      { 2, 2, 1, 1}, {});
 }
 
 CreatureFactory CreatureFactory::forrest() {
@@ -660,11 +660,11 @@ CreatureFactory CreatureFactory::collectiveFinalAttack() {
 }
 
 CreatureFactory CreatureFactory::collectiveElfEnemies() {
-  return CreatureFactory(Tribe::elven, { CreatureId::ELF}, { 1}, {});
+  return CreatureFactory(Tribe::elven, { CreatureId::ELF_ARCHER}, { 1}, {});
 }
 
 CreatureFactory CreatureFactory::collectiveElfFinalAttack() {
-  return CreatureFactory(Tribe::elven, { CreatureId::ELF, }, { 1}, {CreatureId::ELF_LORD});
+  return CreatureFactory(Tribe::elven, { CreatureId::ELF_ARCHER, }, { 1}, {CreatureId::ELF_LORD});
 }
 
 CreatureFactory CreatureFactory::collectiveSurpriseEnemies() {
@@ -1285,7 +1285,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all goblins";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "dwarf baron";), factory));
-    case CreatureId::ELF: return get(ViewId::ELF, CATTR(
+    case CreatureId::ELF_ARCHER: return get(ViewId::ELF_ARCHER, CATTR(
                                 c.speed = 120;
                                 c.size = CreatureSize::MEDIUM;
                                 c.strength = 15;
@@ -1294,6 +1294,18 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.humanoid = true;
                                 c.weight = 50;
                                 c.skills.insert(Skill::archery);
+                                c.chatReactionFriendly = "curses all dwarves";
+                                c.chatReactionHostile = "\"Die!\"";
+                                c.name = "elven archer";), Tribe::elven, factory);
+    case CreatureId::ELF: return get(ViewId::ELF, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::MEDIUM;
+                                c.strength = 15;
+                                c.dexterity = 13;
+                                c.barehandedDamage = 3;
+                                c.humanoid = true;
+                                c.weight = 50;
+                                c.innocent = true;
                                 c.chatReactionFriendly = "curses all dwarves";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "elf";), Tribe::elven, factory);
@@ -1717,7 +1729,7 @@ vector<ItemId> getInventory(CreatureId id) {
             .add(ItemId::BOW)
             .add(ItemId::ARROW, Random.getRandom(20, 36))
             .add(randomBackup());
-    case CreatureId::ELF: return ItemList()
+    case CreatureId::ELF_ARCHER: return ItemList()
             .add(ItemId::ELVEN_SWORD)
             .add(ItemId::LEATHER_ARMOR)
             .add(ItemId::BOW)

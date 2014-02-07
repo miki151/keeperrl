@@ -937,8 +937,7 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     locked.clear();
   if (marked.count(pos))
     marked.erase(pos);
-  if (contains({SquareType::TRIBE_DOOR}, type)) {
-    CHECK(doors.count(pos));
+  if (contains({SquareType::TRIBE_DOOR}, type) && doors.count(pos)) {
     doors.at(pos).built = true;
     doors.at(pos).marked = false;
   }

@@ -221,12 +221,12 @@ Model* Model::collectiveModel(View* view) {
   vector<SettlementInfo> settlements{
     {SettlementType::CASTLE, CreatureFactory::humanVillagePeaceful(), Nothing(), villageLocations[0], Tribe::human,
       {30, 20}, {}},
-    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), Nothing(), villageLocations[1],
+    {SettlementType::VILLAGE, CreatureFactory::elvenVillagePeaceful(), Nothing(), villageLocations[1],
       Tribe::elven,
       {30, 20}, {}}  };
   vector<CreatureFactory> cottageF {
     CreatureFactory::humanVillagePeaceful(),
-    CreatureFactory::elvenVillage(),
+    CreatureFactory::elvenVillagePeaceful(),
   };
   vector<Tribe*> cottageT { Tribe::human, Tribe::elven };
   for (int i : Range(4, 8))

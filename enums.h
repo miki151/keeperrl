@@ -138,6 +138,7 @@ enum class CreatureId {
     CHILD,
     
     ELF,
+    ELF_ARCHER,
     ELF_CHILD,
     ELF_LORD,
     HORSE,
@@ -278,6 +279,7 @@ enum class ViewId {
   PLAYER,
   KEEPER,
   ELF,
+  ELF_ARCHER,
   ELF_CHILD,
   ELF_LORD,
   ELVEN_SHOPKEEPER,
