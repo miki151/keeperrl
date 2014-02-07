@@ -750,6 +750,8 @@ void Collective::possess(const Creature* cr, View* view) {
 }
 
 bool Collective::canBuildDoor(Vec2 pos) const {
+  if (!level->getSquare(pos)->canConstruct(SquareType::TRIBE_DOOR))
+    return false;
   Rectangle innerRect = level->getBounds().minusMargin(1);
   auto wallFun = [=](Vec2 pos) {
       return level->getSquare(pos)->canConstruct(SquareType::FLOOR) ||

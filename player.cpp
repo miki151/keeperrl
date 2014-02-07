@@ -614,8 +614,14 @@ void Player::makeMove() {
                               }
                               direction.push_back(dir);
                             } else
-                            if (action.getDirection() != creature->getPosition())
+                            if (action.getDirection() != creature->getPosition()) {
                               target = action.getDirection();
+                              target = Vec2(min(creature->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
+                                  min(creature->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
+                              // Just in case
+                              if (!target->inRectangle(creature->getLevel()->getBounds()))
+                                target = Nothing();
+                            }
                             else
                               pickUpAction(false);
                             break;
