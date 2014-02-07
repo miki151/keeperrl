@@ -54,7 +54,6 @@ DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
 
 
 all: $(OBJDIR) $(NAME)
-	ctags --c++-kinds=+p --fields=+iaS --extra=+q *.h
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
