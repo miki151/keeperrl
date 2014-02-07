@@ -65,6 +65,7 @@ class Vec2 {
   bool operator != (const Vec2& v) const;
   Vec2 operator + (const Vec2& v) const;
   Vec2 operator * (int) const;
+  Vec2 operator * (double) const;
   Vec2 operator / (int) const;
   Vec2& operator += (const Vec2& v);
   Vec2 operator - (const Vec2& v) const;

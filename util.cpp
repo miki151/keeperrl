@@ -263,6 +263,10 @@ Vec2 Vec2::operator * (int a) const {
   return Vec2(x * a, y * a);
 }
 
+Vec2 Vec2::operator * (double a) const {
+  return Vec2(x * a, y * a);
+}
+
 Vec2 Vec2::operator / (int a) const {
   return Vec2(x / a, y / a);
 }

@@ -6,6 +6,7 @@
 #include "creature.h"
 #include "level.h"
 #include "options.h"
+#include "location.h"
 
 using sf::Color;
 using sf::String;
@@ -15,6 +16,7 @@ using sf::Text;
 using sf::Font;
 using sf::Event;
 using sf::RectangleShape;
+using sf::CircleShape;
 using sf::Vector2f;
 using sf::Vector2u;
 using sf::Image;
@@ -1600,16 +1602,54 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
   refreshScreen(true);
 }
 
+/*static void drawCircle(int px, int py, double r, Color c, Optional<Color> outline) {
+  CircleShape circle(r);
+  circle.setPosition(px - r, py - r);
+  circle.setFillColor(c);
+  if (outline) {
+    circle.setOutlineThickness(-2);
+    circle.setOutlineColor(*outline);
+  }
+  display->draw(circle);
+
+}*/
+
 void WindowView::drawLevelMap(const Level* level, const CreatureView* creature) {
+  vector<Vec2> roads;
   while (1) {
-    for (Vec2 v : maxLevelBounds)
-      if (!v.inRectangle(level->getBounds()) || !creature->getMemory(level).hasViewIndex(v))
+    for (Vec2 v : maxLevelBounds) {
+      if (!v.inRectangle(level->getBounds()) || (!creature->getMemory(level).hasViewIndex(v) && !creature->canSee(v)))
         mapBuffer.setPixel(v.x, v.y, black);
-      else
+      else {
         mapBuffer.setPixel(v.x, v.y, getColor(level->getSquare(v)->getViewObject()));
-    double scale = min(double(mapLayout->getBounds().getW()) / level->getBounds().getW(),
-        double(mapLayout->getBounds().getH()) / level->getBounds().getH());
-    drawImage(mapLayout->getBounds().getPX(), mapLayout->getBounds().getPY(), mapBuffer, scale);
+        if (level->getSquare(v)->getName() == "road")
+          roads.push_back(v);
+      }
+    }
+    Rectangle bounds = getMapViewBounds();
+    double scale = min(double(bounds.getW()) / level->getBounds().getW(),
+        double(bounds.getH()) / level->getBounds().getH());
+    drawImage(bounds.getPX(), bounds.getPY(), mapBuffer, scale);
+    for (Vec2 v : roads) {
+      Vec2 rrad(2, 2);
+      Vec2 pos = bounds.getTopLeft() + v * scale;
+      drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), brown);
+    }
+    Vec2 playerPos = bounds.getTopLeft() + creature->getPosition() * scale;
+    Vec2 rad(4, 4);
+    drawFilledRectangle(Rectangle(playerPos - rad, playerPos + rad), red);
+    for (const Location* loc : level->getAllLocations())
+      if (loc->hasName())
+        for (Vec2 v : loc->getBounds())
+          if (creature->getMemory(level).hasViewIndex(v) || creature->canSee(v)) {
+            string text = loc->getName();
+            Vec2 pos = bounds.getTopLeft() + loc->getBounds().getBottomRight() * scale;
+            drawFilledRectangle(pos.x, pos.y, pos.x + getTextLength(text) + 10, pos.y + 25,
+                transparency(black, 130));
+            drawText(white, pos.x + 5, pos.y, text);
+            break;
+          }
+
     drawAndClearBuffer();
     BlockingEvent ev = readkey();
     if (contains({BlockingEvent::KEY, BlockingEvent::MOUSE_LEFT}, ev.type))
