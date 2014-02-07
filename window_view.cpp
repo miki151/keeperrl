@@ -1384,6 +1384,7 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
 }
 
 Table<Optional<ViewIndex>> objects(maxLevelBounds.getW(), maxLevelBounds.getH());
+Rectangle levelBounds(1, 1);
 map<Vec2, ViewObject> borderCreatures;
 set<Vec2> shadowed;
 
@@ -1516,6 +1517,7 @@ void WindowView::refreshView(const CreatureView* collective) {
 void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer) {
   switchTiles();
   const Level* level = collective->getLevel();
+  levelBounds = level->getBounds();
   collective->refreshGameInfo(gameInfo);
   for (Vec2 pos : mapLayout->getAllTiles(maxLevelBounds))
     objects[pos] = Nothing();
@@ -1669,13 +1671,16 @@ void WindowView::drawMap() {
   int sizeX = mapLayout->squareWidth();
   int sizeY = mapLayout->squareHeight();
   Rectangle mapWindow = mapLayout->getBounds();
-  drawFilledRectangle(mapWindow, black);
+  drawFilledRectangle(mapWindow, darkGray);
   map<string, ViewObject> objIndex;
   Optional<ViewObject> highlighted;
   for (Vec2 wpos : mapLayout->getAllTiles(maxLevelBounds)) {
-    if (!objects[wpos])
-      continue;
     Vec2 pos = mapLayout->projectOnScreen(wpos);
+    if (!objects[wpos] || objects[wpos]->isEmpty()) {
+      if (wpos.inRectangle(levelBounds))
+        drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);
+      continue;
+    }
     const ViewIndex& index = *objects[wpos];
     if (auto topObject = drawObjectAbs(pos.x, pos.y, index, sizeX, sizeY, wpos)) {
       objIndex.insert(std::make_pair(topObject->getDescription(), *topObject));
