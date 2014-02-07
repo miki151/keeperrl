@@ -785,6 +785,7 @@ void Collective::processInput(View* view) {
         } else
           gatheringTeam = true;
         break;
+    case CollectiveAction::DRAW_LEVEL_MAP: view->drawLevelMap(level, this); break;
     case CollectiveAction::CANCEL_TEAM: gatheringTeam = false; team.clear(); break;
     case CollectiveAction::MARKET: handleMarket(view); break;
     case CollectiveAction::TECHNOLOGY:

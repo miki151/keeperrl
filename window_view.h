@@ -77,7 +77,7 @@ class WindowView: public View {
   Optional<ViewObject> drawObjectAbs(int x, int y, const ViewIndex&, int sizeX, int sizeY, Vec2 tilePos);
   void darkenObjectAbs(int x, int y);
   void clearMessageBox();
-  void unzoom(bool, bool);
+  void unzoom();
   void switchTiles();
   void resize(int, int);
   Rectangle getMapViewBounds() const;

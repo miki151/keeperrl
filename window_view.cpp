@@ -1615,6 +1615,7 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
 }*/
 
 void WindowView::drawLevelMap(const Level* level, const CreatureView* creature) {
+  TempClockPause pause;
   vector<Vec2> roads;
   while (1) {
     for (Vec2 v : maxLevelBounds) {
@@ -2022,7 +2023,7 @@ void WindowView::addMessage(const string& message) {
 //  }
 }
 
-void WindowView::unzoom(bool pixel, bool tpp) {
+void WindowView::unzoom() {
   if (mapLayout != currentTileLayout.normalLayout)
     mapLayout = currentTileLayout.normalLayout;
   else
@@ -2115,8 +2116,12 @@ CollectiveAction WindowView::getClick() {
       case Event::KeyPressed:
         switch (event.key.code) {
           case Keyboard::Z:
-            unzoom(event.key.shift, event.key.control);
-            return CollectiveAction(CollectiveAction::IDLE);
+            if (event.key.shift)
+              return CollectiveAction(CollectiveAction::DRAW_LEVEL_MAP);
+            else {
+              unzoom();
+              return CollectiveAction(CollectiveAction::IDLE);
+            }
           case Keyboard::F2: Options::handle(this); refreshScreen(); break;
           case Keyboard::Space:
             if (!myClock.isPaused())
@@ -2276,7 +2281,7 @@ Action WindowView::getAction() {
       case Keyboard::Z: if (key->shift)
                           return Action(ActionId::DRAW_LEVEL_MAP);
                         else {
-                          unzoom(key->shift, key->control);
+                          unzoom();
                           return Action(ActionId::IDLE);
                         }
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
