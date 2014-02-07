@@ -192,8 +192,7 @@ static string getText(ItemType type) {
 }
 
 
-vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, bool onlyDisplay,
-    Optional<string> otherOption) {
+vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Optional<ActionId> exitAction) {
   map<ItemType, vector<Item*> > typeGroups = groupBy<Item*, ItemType>(
       creature->getEquipment().getItems(), [](Item* const& item) { return item->getType();});
   vector<View::ListElem> names;
@@ -203,11 +202,7 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, bo
       names.push_back(View::ListElem(getText(elem), View::TITLE));
       getItemNames(typeGroups[elem], names, groups, predicate);
     }
-  if (onlyDisplay) {
-    view->presentList(text, names);
-    return vector<Item*>();
-  }
-  Optional<int> index = view->chooseFromList(text, names);
+  Optional<int> index = view->chooseFromList(text, names, 0, exitAction);
   if (index)
     return groups[*index];
   return vector<Item*>();
@@ -215,7 +210,7 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, bo
 
 void Player::dropAction(bool extended) {
   vector<Item*> items = chooseItem("Choose an item to drop:", [this](const Item* item) {
-      return !creature->getEquipment().isEquiped(item) || item->getType() == ItemType::WEAPON;});
+      return !creature->getEquipment().isEquiped(item) || item->getType() == ItemType::WEAPON;}, ActionId::DROP);
   int num = items.size();
   if (num < 1)
     return;
@@ -255,7 +250,7 @@ void Player::applyAction() {
     return;
   }
   vector<Item*> items = chooseItem("Choose an item to apply:", [this](const Item* item) {
-      return creature->canApplyItem(item);});
+      return creature->canApplyItem(item);}, ActionId::APPLY_ITEM);
   if (items.size() == 0)
     return;
   applyItem(items);
@@ -284,7 +279,7 @@ void Player::applyItem(vector<Item*> items) {
 
 void Player::throwAction(Optional<Vec2> dir) {
   vector<Item*> items = chooseItem("Choose an item to throw:", [this](const Item* item) {
-      return !creature->getEquipment().isEquiped(item);});
+      return !creature->getEquipment().isEquiped(item);}, ActionId::THROW);
   if (items.size() == 0)
     return;
   throwItem(items, dir);
@@ -320,7 +315,7 @@ void Player::equipmentAction() {
         list.push_back("[Nothing]");
     }
     view->updateView(creature);
-    Optional<int> newIndex = view->chooseFromList("Equipment", list, index);
+    Optional<int> newIndex = view->chooseFromList("Equipment", list, index, ActionId::EQUIPMENT);
     if (!newIndex) {
       creature->finishEquipChain();
       return;
@@ -374,7 +369,7 @@ void Player::displayInventory() {
     view->presentText("", "Your inventory is empty.");
     return;
   }
-  vector<Item*> item = chooseItem("Inventory:", alwaysTrue<const Item*>());
+  vector<Item*> item = chooseItem("Inventory:", alwaysTrue<const Item*>(), ActionId::SHOW_INVENTORY);
   if (item.size() == 0) {
     return;
   }

@@ -57,8 +57,7 @@ class Player : public Controller, public EventListener {
   void chatAction(Optional<Vec2> dir = Nothing());
   void spellAction();
   void fireAction(Vec2 dir);
-  vector<Item*> chooseItem(const string& text, ItemPredicate, bool displayOnly = false,
-      Optional<string> otherOption = Nothing());
+  vector<Item*> chooseItem(const string& text, ItemPredicate, Optional<ActionId> exitAction = Nothing());
   void getItemNames(vector<Item*> it, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());
   string getPluralName(Item* item, int num);

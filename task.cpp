@@ -176,6 +176,7 @@ class BringItem : public PickItem {
     c->drop(it);
   }
 
+  // TODO: this fails when item doesn't exist anymore, use cautiously
   virtual string getInfo() override {
     return "bring item " + (*items.begin())->getName() + " " + convertToString(getPosition()) 
       + " to " + convertToString(target);

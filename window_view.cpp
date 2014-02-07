@@ -1807,6 +1807,11 @@ Optional<int> getIndex(const vector<View::ListElem>& options, bool hasTitle, Vec
 
 Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
     Optional<ActionId> exitAction) {
+  return chooseFromList(title, options, index, exitAction, Nothing(), {});
+}
+
+Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
+    Optional<ActionId> exitAction, Optional<Event::KeyEvent> exitKey, vector<Event::KeyEvent> shortCuts) {
   TempClockPause pause;
   if (options.size() == 0)
     return Nothing();
@@ -1831,7 +1836,9 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
     vector<ListElem> window = getPrefix(options, cutoff , numLines);
     drawList(title, window, index - itemsCutoff);
     BlockingEvent event = readkey();
-    if (event.type == BlockingEvent::KEY)
+    if (event.type == BlockingEvent::KEY) {
+      if (exitAction && getSimpleActionId(*event.key) == *exitAction)
+        return Nothing();
       switch (event.key->code) {
         case Keyboard::PageDown: index += 10; if (index >= count) index = count - 1; break;
         case Keyboard::PageUp: index -= 10; if (index < 0) index = 0; break;
@@ -1844,6 +1851,12 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
         case Keyboard::Escape : clearMessageBox(); return Nothing();
         default: break;
       }
+      if (exitKey && exitKey->code == event.key->code && exitKey->shift == event.key->shift)
+        return Nothing();
+      for (int i : All(shortCuts))
+        if (shortCuts[i].code == event.key->code && shortCuts[i].shift == event.key->shift)
+          return i;
+    }
     else if (event.type == BlockingEvent::MOUSE_MOVE && mousePos) {
       if (Optional<int> mouseIndex = getIndex(window, !title.empty(), *mousePos)) {
         index = *mouseIndex + itemsCutoff;
@@ -2250,7 +2263,10 @@ Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
     Debug() << "Action " << keyInfo[i].action;
     options.push_back(keyInfo[i].action + "   [ " + keyInfo[i].keyDesc + " ]");
   }
-  auto index = chooseFromList("", options);
+  vector<Event::KeyEvent> shortCuts;
+  for (KeyInfo key : keyInfo)
+    shortCuts.push_back(key.event);
+  auto index = chooseFromList("", options, 0, Nothing(), Optional<Event::KeyEvent>({Keyboard::F1}), shortCuts);
   if (!index)
     return Nothing();
   return keyInfo[*index].event;
@@ -2276,16 +2292,14 @@ Action WindowView::getAction() {
     auto optionalAction = mapLayout->overrideAction(*key);
     if (optionalAction)
       return *optionalAction;
+    if (auto actionId = getSimpleActionId(*key))
+      return Action(*actionId);
+
     switch (key->code) {
       case Keyboard::Escape : if (yesOrNoPrompt("Are you sure you want to abandon your game?"))
                                 throw GameOverException();
                               break;
-      case Keyboard::Z: if (key->shift)
-                          return Action(ActionId::DRAW_LEVEL_MAP);
-                        else {
-                          unzoom();
-                          return Action(ActionId::IDLE);
-                        }
+      case Keyboard::Z: unzoom(); return Action(ActionId::IDLE);
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
       case Keyboard::F2: Options::handle(this); return Action(ActionId::IDLE);
       case Keyboard::Up:
@@ -2300,24 +2314,34 @@ Action WindowView::getAction() {
       case Keyboard::Left:
       case Keyboard::Numpad4: return Action(getDirActionId(*key), Vec2(-1, 0));
       case Keyboard::Numpad7: return Action(getDirActionId(*key), Vec2(-1, -1));
-      case Keyboard::Return:
-      case Keyboard::Numpad5: if (key->shift) return Action(ActionId::EXT_PICK_UP); 
-                                else return Action(ActionId::PICK_UP);
-      case Keyboard::I: return Action(ActionId::SHOW_INVENTORY);
-      case Keyboard::D: return Action(key->shift ? ActionId::EXT_DROP : ActionId::DROP);
-      case Keyboard::Space:
-      case Keyboard::Period: return Action(ActionId::WAIT);
-      case Keyboard::A: return Action(ActionId::APPLY_ITEM);
-      case Keyboard::E: return Action(ActionId::EQUIPMENT);
-      case Keyboard::T: return Action(ActionId::THROW);
-      case Keyboard::M: return Action(ActionId::SHOW_HISTORY);
-      case Keyboard::H: return Action(ActionId::HIDE);
-      case Keyboard::P: return Action(ActionId::PAY_DEBT);
-      case Keyboard::C: return Action(ActionId::CHAT);
-      case Keyboard::U: return Action(ActionId::UNPOSSESS);
-      case Keyboard::S: return Action(ActionId::CAST_SPELL);
       default: break;
     }
   }
+}
+
+Optional<ActionId> WindowView::getSimpleActionId(sf::Event::KeyEvent key) {
+  switch (key.code) {
+    case Keyboard::Z: if (key.shift)
+                        return ActionId::DRAW_LEVEL_MAP;
+                      break;
+    case Keyboard::Return:
+    case Keyboard::Numpad5: if (key.shift) return ActionId::EXT_PICK_UP; 
+                              else return ActionId::PICK_UP;
+    case Keyboard::I: return ActionId::SHOW_INVENTORY;
+    case Keyboard::D: return key.shift ? ActionId::EXT_DROP : ActionId::DROP;
+    case Keyboard::Space:
+    case Keyboard::Period: return ActionId::WAIT;
+    case Keyboard::A: return ActionId::APPLY_ITEM;
+    case Keyboard::E: return ActionId::EQUIPMENT;
+    case Keyboard::T: return ActionId::THROW;
+    case Keyboard::M: return ActionId::SHOW_HISTORY;
+    case Keyboard::H: return ActionId::HIDE;
+    case Keyboard::P: return ActionId::PAY_DEBT;
+    case Keyboard::C: return ActionId::CHAT;
+    case Keyboard::U: return ActionId::UNPOSSESS;
+    case Keyboard::S: return ActionId::CAST_SPELL;
+    default: break;
+  }
+  return Nothing();
 }
 

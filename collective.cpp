@@ -638,7 +638,7 @@ void Collective::addTask(PTask task) {
 void Collective::delayTask(Task* task, double time) {
   CHECK(task->canTransfer());
   delayed[task] = time;
-  Debug() << "Delaying " << (taken.count(task) ? "taken " : "") << task->getInfo();
+ // Debug() << "Delaying " << (taken.count(task) ? "taken " : "") << task->getInfo();
   if (taken.count(task)) {
     taskMap.erase(taken.at(task));
     taken.erase(task);
@@ -1065,7 +1065,7 @@ void Collective::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayT
     if (task->canTransfer()) {
       taskPos[task->getPosition()] = task.get();
     } else
-      Debug() << "Delay: can't tranfer " << task->getInfo();
+ //     Debug() << "Delay: can't tranfer " << task->getInfo();
   while (!q.empty()) {
     Vec2 pos = q.front();
     q.pop();

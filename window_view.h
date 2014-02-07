@@ -50,6 +50,9 @@ class WindowView: public View {
   static Vec2 projectOnBorders(Rectangle area, Vec2 pos);
   private:
 
+  Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index,
+      Optional<ActionId> exitAction, Optional<sf::Event::KeyEvent> exitKey, vector<sf::Event::KeyEvent> shortCuts);
+  Optional<ActionId> getSimpleActionId(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   void drawMap();
   void drawPlayerInfo();
