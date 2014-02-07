@@ -23,6 +23,7 @@ using sf::Image;
 using sf::Sprite;
 using sf::Texture;
 using sf::Keyboard;
+using sf::Mouse;
 
 using namespace std;
 
@@ -913,7 +914,6 @@ struct KeyInfo {
 vector<KeyInfo> bottomKeys;
 
 static bool leftMouseButtonPressed = false;
-static bool rightMouseButtonPressed = false;
 
 WindowView::BlockingEvent WindowView::readkey() {
   Event event;
@@ -921,7 +921,7 @@ WindowView::BlockingEvent WindowView::readkey() {
     display->waitEvent(event);
     Debug() << "Event " << event.type;
     bool mouseEv = false;
-    while (event.type == Event::MouseMoved && !rightMouseButtonPressed) {
+    while (event.type == Event::MouseMoved && !Mouse::isButtonPressed(Mouse::Right)) {
       mouseEv = true;
       mousePos = Vec2(event.mouseMove.x, event.mouseMove.y);
       if (!display->pollEvent(event))
@@ -2098,12 +2098,11 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
       if (event.mouseButton.button == sf::Mouse::Right) {
         center = {center.x - mouseOffset.x, center.y - mouseOffset.y};
         mouseOffset = {0.0, 0.0};
-        rightMouseButtonPressed = false;
         return true;
       }
       break;
     case Event::MouseMoved:
-      if (rightMouseButtonPressed) {
+      if (Mouse::isButtonPressed(Mouse::Right)) {
         mouseOffset = {double(event.mouseMove.x - lastMousePos.x) / mapLayout->squareWidth(),
                        double(event.mouseMove.y - lastMousePos.y) / mapLayout->squareHeight() };
         return true;
@@ -2111,7 +2110,7 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
       break;
     case Event::MouseButtonPressed:
       if (event.mouseButton.button == sf::Mouse::Right) {
-        rightMouseButtonPressed = true;
+ //       rightMouseButtonPressed = true;
         lastMousePos = Vec2(event.mouseButton.x, event.mouseButton.y);
         return true;
       }
