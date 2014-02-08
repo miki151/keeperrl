@@ -1754,20 +1754,33 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   subMakers.push_back(new Lake());
   subSizes.emplace_back(20, 20);
   predicates.push_back(new AttribPredicate(SquareAttrib::LOWLAND));
-  for (int i : Range(Random.getRandom(1, 3))) {
+  int maxResourceDist = 50;
+  int minGold = 1;
+  int maxGold = 3;
+  int minStone = 2;
+  int maxStone = 5;
+  int minIron = 5;
+  int maxIron = 10;
+  for (int i : Range(Random.getRandom(minGold, maxGold))) {
     subMakers.push_back(new UniformBlob(SquareType::GOLD_ORE));
     subSizes.emplace_back(Random.getRandom(5, 6), Random.getRandom(5, 6)); 
     predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
+    if (i < minGold)
+      maxDistances[{startingPos, subMakers.back()}] = maxResourceDist;
   }
-  for (int i : Range(Random.getRandom(2, 5))) {
+  for (int i : Range(Random.getRandom(minStone, maxStone))) {
     subMakers.push_back(new UniformBlob(SquareType::STONE));
     subSizes.emplace_back(Random.getRandom(5, 10), Random.getRandom(5, 10)); 
     predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
+    if (i < minStone)
+      maxDistances[{startingPos, subMakers.back()}] = maxResourceDist;
   }
-  for (int i : Range(Random.getRandom(5, 10))) {
+  for (int i : Range(Random.getRandom(minIron, maxIron))) {
     subMakers.push_back(new UniformBlob(SquareType::IRON_ORE));
     subSizes.emplace_back(Random.getRandom(5, 10), Random.getRandom(5, 10)); 
     predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
+    if (i < minIron)
+      maxDistances[{startingPos, subMakers.back()}] = maxResourceDist;
   }
   queue->addMaker(new Empty(SquareType::GRASS));
   queue->addMaker(new Mountains(0.7, 0.4, {0, 1, 1, 0, 0}, false,

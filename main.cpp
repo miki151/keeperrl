@@ -17,19 +17,23 @@ int main(int argc, char* argv[]) {
   string lognamePref = "log";
   Debug::init();
   int seed = time(0);
-  bool forceAdvMode = false;
+  int forceMode = -1;
   bool genExit = false;
   if (argc == 3) {
-    genExit = forceAdvMode = true;
+    genExit = true;
+    if (argv[2][0] == 'a')
+      forceMode = 1;
+    else
+      forceMode = 0;
   }
   if (argc == 2 && argv[1][0] == 'd')
-    forceAdvMode = true;
+    forceMode = 1;
   else
   if (argc == 2 && argv[1][0] != 'l') {
     seed = convertFromString<int>(argv[1]);
     argc = 1;
   }
-  if (argc == 1 || forceAdvMode) {
+  if (argc == 1 || forceMode > -1) {
     Random.init(seed);
     string fname(lognamePref);
     fname += convertToString(seed);
@@ -59,7 +63,7 @@ int main(int argc, char* argv[]) {
     bool modelReady = false;
     messageBuffer.initialize(view);
     view->initialize();
-    auto choice = forceAdvMode ? Optional<int>(1) : view->chooseFromList("", {
+    auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
         View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
         View::ListElem("Or simply:", View::TITLE), "Change options", "View high scores", "Quit"}, lastIndex);
     if (!choice)
