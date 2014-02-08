@@ -24,7 +24,7 @@ void ViewIndex::removeObject(ViewLayer l) {
 }
 
 bool ViewIndex::isEmpty() const {
-  return objects.empty();
+  return objects.empty() && !highlight;
 }
 
 ViewObject ViewIndex::getObject(ViewLayer l) const {
