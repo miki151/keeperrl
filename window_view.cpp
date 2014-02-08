@@ -1199,6 +1199,9 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
     cnt += 2;
   }
   ++cnt;
+  drawText(lightBlue, textX, lineStart + (cnt + 1) * legendLineHeight, "Click on minion to possess.");
+  ++cnt;
+  ++cnt;
   if (!enemyMap.empty()) {
     drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, "Enemies:");
     for (auto elem : enemyMap){
@@ -1300,7 +1303,7 @@ void WindowView::drawBandInfo() {
     drawText(lightBlue, 10, line2, "PAUSE");
   pauseButton = Rectangle(10, line2, 80, line2 + lineHeight);
   string resources;
-  int resourceSpacing = 100;
+  int resourceSpacing = 95;
   int resourceX = 300;
   for (int i : All(info.numGold)) {
     drawText(white, resourceX + resourceSpacing * i, line1, convertToString<int>(info.numGold[i].count));

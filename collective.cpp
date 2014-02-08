@@ -129,7 +129,7 @@ void Collective::render(View* view) {
       if (showDigMsg && Options::getValue(OptionId::HINTS)) {
         view->refreshView(this);
         showDigMsg = false;
-        view->presentText("", "Now use the mouse and start digging into the mountain. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them.");
+        view->presentText("", "Now use the mouse and start digging into the mountain. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab.");
       }
     }
   }
