@@ -2217,7 +2217,7 @@ CollectiveAction WindowView::getClick() {
             leftMouseButtonPressed = true;
             chosenCreature = "";
             if (clickPos.inRectangle(getMapViewBounds())) {
-              t = CollectiveAction::GO_TO;
+              t = collectiveOption == CollectiveOption::MINIONS ? CollectiveAction::POSSESS: CollectiveAction::GO_TO;
               return CollectiveAction(t, mapLayout->projectOnMap(clickPos));
             }
           }

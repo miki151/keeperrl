@@ -818,17 +818,19 @@ void Collective::processInput(View* view) {
         break;
     case CollectiveAction::CREATURE_DESCRIPTION: messageBuffer.addMessage(MessageBuffer::important(
                                                        action.getCreature()->getDescription())); break;
-    case CollectiveAction::GO_TO: {
+    case CollectiveAction::POSSESS: {
         Vec2 pos = action.getPosition();
         if (!pos.inRectangle(level->getBounds()))
           return;
-        if (selection == NONE) {
-          if (Creature* c = level->getSquare(pos)->getCreature())
-            if (contains(minions, c)) {
-              possess(c, view);
-              break;
-            }
+        if (Creature* c = level->getSquare(pos)->getCreature())
+          if (contains(minions, c)) {
+            possess(c, view);
+            break;
+          }
         }
+        break;
+    case CollectiveAction::GO_TO: {
+        Vec2 pos = action.getPosition();
         switch (getBuildInfo()[currentButton].buildType) {
           case BuildInfo::IMP:
               if (mana >= getImpCost() && selection == NONE) {
@@ -925,8 +927,7 @@ void Collective::processInput(View* view) {
       }
       break;
     case CollectiveAction::BUTTON_RELEASE: selection = NONE; break;
-
-    default: break;
+    case CollectiveAction::IDLE: break;
   }
 }
 

@@ -252,15 +252,15 @@ Model* Model::collectiveModel(View* view) {
     m->collective->addCreature(c.get(), MinionType::IMP);
     m->addCreature(std::move(c));
   }
-  int diffInc = Options::getValue(OptionId::EASY_GAME) ? 300 : 0;
+  int diffInc = Options::getValue(OptionId::EASY_GAME) ? 800 : 0;
   vector<vector<tuple<int, int, int>>> heroAttackTime { {
-      { make_tuple(2000 + diffInc, 2, 4) },
-      { make_tuple(2600 + diffInc, 2, 4) },
-      { make_tuple(3000 + diffInc, 4, 7) },
+      { make_tuple(1800 + diffInc, 2, 4) },
+      { make_tuple(2400 + diffInc, 2, 4) },
+      { make_tuple(2800 + diffInc, 4, 7) },
       { make_tuple(3400 + diffInc, 12, 18) }},
-    { { make_tuple(1500 + diffInc, 2, 4) },
-      { make_tuple(2000 + diffInc, 2, 4) },
-      { make_tuple(2600 + diffInc, 4, 7) }}};
+    { { make_tuple(1300 + diffInc, 2, 4) },
+      { make_tuple(1800 + diffInc, 2, 4) },
+      { make_tuple(2400 + diffInc, 4, 7) }}};
 
   vector<pair<CreatureFactory, CreatureFactory>> villageFactories {
     { CreatureFactory::collectiveEnemies(), CreatureFactory::collectiveFinalAttack() },

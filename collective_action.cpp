@@ -2,7 +2,7 @@
 
 #include "collective_action.h"
 
-vector<CollectiveAction::Type> vectorTypes { CollectiveAction::GO_TO };
+vector<CollectiveAction::Type> vectorTypes { CollectiveAction::GO_TO, CollectiveAction::POSSESS };
 vector<CollectiveAction::Type> intTypes { CollectiveAction::ROOM_BUTTON, CollectiveAction::TECHNOLOGY };
 vector<CollectiveAction::Type> creatureTypes { CollectiveAction::CREATURE_BUTTON,
     CollectiveAction::CREATURE_DESCRIPTION };
