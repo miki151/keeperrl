@@ -1288,16 +1288,17 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     } else
       return task->getMove(c);
   }
-  for (Vec2 v : mySquares[SquareType::STOCKPILE])
-    for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
-          return minionEquipment.needsItem(c, it); })) {
-      if (c->canEquip(it)) {
-        addTask(Task::equipItem(this, v, it), c);
+  if (c != heart || !underAttack())
+    for (Vec2 v : mySquares[SquareType::STOCKPILE])
+      for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
+            return minionEquipment.needsItem(c, it); })) {
+        if (c->canEquip(it)) {
+          addTask(Task::equipItem(this, v, it), c);
+        }
+        else
+          addTask(Task::pickItem(this, v, {it}), c);
+        return taskMap.at(c)->getMove(c);
       }
-      else
-        addTask(Task::pickItem(this, v, {it}), c);
-      return taskMap.at(c)->getMove(c);
-    }
   minionTasks.at(c).update();
   if (c->getHealth() < 1 && c->canSleep())
     minionTasks.at(c).setState(MinionTask::SLEEP);
@@ -1328,6 +1329,14 @@ MoveInfo Collective::getMinionMove(Creature* c) {
   addTask(Task::applySquare(this, mySquares[info.square]), c);
   minionTaskStrings[c] = info.desc;
   return taskMap.at(c)->getMove(c);
+}
+
+bool Collective::underAttack() const {
+  for (Vec2 v : myTiles)
+    if (const Creature* c = level->getSquare(v)->getCreature())
+      if (c->getTribe() != Tribe::player)
+        return true;
+  return false;
 }
 
 MoveInfo Collective::getMove(Creature* c) {
