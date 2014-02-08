@@ -297,6 +297,10 @@ int Vec2::dist8(Vec2 v) const {
   return (v - *this).length8();
 }
 
+double Vec2::distD(Vec2 v) const {
+  return (v - *this).lengthD();
+}
+
 int Vec2::length4() const {
   return abs(x) + abs(y);
 }

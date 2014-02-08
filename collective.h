@@ -182,6 +182,7 @@ class Collective : public CreatureView, public EventListener {
   void updateTraps();
   bool isInCombat(const Creature*) const;
   bool underAttack() const;
+  void addToMemory(Vec2 pos, const Creature*);
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);

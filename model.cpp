@@ -245,7 +245,7 @@ Model* Model::collectiveModel(View* view) {
   top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
   m->addCreature(std::move(c));
   m->collective->addCreature(ref);
-  m->collective->possess(ref, view);
+ // m->collective->possess(ref, view);
   for (int i : Range(4)) {
     PCreature c = factory.random(MonsterAIFactory::collective(m->collective));
     top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());

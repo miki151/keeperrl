@@ -234,6 +234,10 @@ ViewObject Square::getViewObject() const {
   return viewObject;
 }
 
+Optional<ViewObject> Square::getBackgroundObject() const {
+  return backgroundObject;
+}
+
 void Square::setBackground(const Square* square) {
   if (viewObject.layer() != ViewLayer::FLOOR_BACKGROUND) {
     const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject) : square->viewObject;

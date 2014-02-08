@@ -126,11 +126,11 @@ void Collective::render(View* view) {
       team.clear();
       gatheringTeam = false;
       teamLevelChanges.clear();
-      if (showDigMsg && Options::getValue(OptionId::HINTS)) {
+ /*     if (showDigMsg && Options::getValue(OptionId::HINTS)) {
         view->refreshView(this);
-        showDigMsg = false;
-        view->presentText("", "Now use the mouse and start digging into the mountain. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab.");
-      }
+        showDigMsg = false;*/
+  //      view->presentText("", "Now use the mouse and start digging into the mountain. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab.");
+//      }
     }
   }
   if (!possessed) {
@@ -140,7 +140,8 @@ void Collective::render(View* view) {
   if (showWelcomeMsg && Options::getValue(OptionId::HINTS)) {
     view->refreshView(this);
     showWelcomeMsg = false;
-    view->presentText("", "In short: you are an evil warlock who has been banished and will now take revenge on everyone.\n \nWalk around and find a suitable spot to dig into the mountain. You will need access to trees, iron and gold ore. Then press 'u' to leave the Keeper body.\n \nYou can turn these messages off in the options (press F2).");
+    view->presentText("Welcome", "In short: you are an evil warlock who has been banished and will now take revenge on everyone.\n \n"
+"Use the mouse to dig into the mountain. You will need access to trees, iron and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab.\n \n You can turn these messages off in the options (press F2).");
   }
 }
 
@@ -1000,16 +1001,26 @@ ItemPredicate Collective::unMarkedItems(ItemType type) const {
       return it->getType() == type && !markedItems.count(it); };
 }
 
-void Collective::update(Creature* c) {
-  if (!contains(creatures, c) || c->getLevel() != level)
-    return;
-  for (Vec2 pos : level->getVisibleTiles(c)) {
+void Collective::addToMemory(Vec2 pos, const Creature* c) {
+  if (!c) {
+    memory[level].addObject(pos, level->getSquare(pos)->getViewObject());
+    if (auto obj = level->getSquare(pos)->getBackgroundObject())
+      memory[level].addObject(pos, *obj);
+  }
+  else {
     ViewIndex index = level->getSquare(pos)->getViewIndex(c);
     memory[level].clearSquare(pos);
     for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
       if (index.hasObject(l))
         memory[level].addObject(pos, index.getObject(l));
   }
+}
+
+void Collective::update(Creature* c) {
+  if (!contains(creatures, c) || c->getLevel() != level)
+    return;
+  for (Vec2 pos : level->getVisibleTiles(c))
+    addToMemory(pos, c);
 }
 
 bool Collective::isDownstairsVisible() const {
@@ -1434,6 +1445,13 @@ void Collective::addCreature(Creature* c, MinionType type) {
     for (auto elem : spellLearning)
       if (elem.techLevel == 0)
         heart->addSpell(elem.id);
+    Vec2 radius(30, 30);
+    for (Vec2 pos : Rectangle(c->getPosition() - radius, c->getPosition() + radius))
+      if (pos.distD(c->getPosition()) <= radius.x && pos.inRectangle(level->getBounds()) 
+          && level->getSquare(pos)->canEnterEmpty(Creature::getDefault()))
+        for (Vec2 v : concat({pos}, pos.neighbors8()))
+          if (v.inRectangle(level->getBounds()))
+            addToMemory(v, nullptr);
   }
   creatures.push_back(c);
   if (type != MinionType::IMP) {

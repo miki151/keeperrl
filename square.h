@@ -151,6 +151,7 @@ class Square {
   void tick(double time);
 
   ViewObject getViewObject() const;
+  Optional<ViewObject> getBackgroundObject() const;
   void setBackground(const Square*);
   ViewIndex getViewIndex(const CreatureView* c) const;
 

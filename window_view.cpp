@@ -37,6 +37,7 @@ Color lightGray(150, 150, 150);
 Color gray(100, 100, 100);
 Color almostGray(102, 102, 102);
 Color darkGray(50, 50, 50);
+Color almostBlack(20, 20, 20);
 Color almostDarkGray(60, 60, 60);
 Color black(0, 0, 0);
 Color almostWhite(200, 200, 200);
@@ -807,6 +808,7 @@ void WindowView::initialize() {
   }
   mapBuffer.create(maxLevelBounds.getW(), maxLevelBounds.getH());
   mapLayout = currentTileLayout.normalLayout;
+  center = {0, 0};
 }
 
 static vector<Vec2> splashPositions;
@@ -1674,7 +1676,7 @@ void WindowView::drawMap() {
   int sizeX = mapLayout->squareWidth();
   int sizeY = mapLayout->squareHeight();
   Rectangle mapWindow = mapLayout->getBounds();
-  drawFilledRectangle(mapWindow, darkGray);
+  drawFilledRectangle(mapWindow, almostBlack);
   map<string, ViewObject> objIndex;
   Optional<ViewObject> highlighted;
   for (Vec2 wpos : mapLayout->getAllTiles(maxLevelBounds)) {
