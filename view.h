@@ -58,23 +58,25 @@ class View {
   virtual bool travelInterrupt() = 0;
 
   enum ElemMod {
+    NORMAL,
     TITLE,
     INACTIVE,
   };
 
   class ListElem {
     public:
-    ListElem(const char*);
-    ListElem(const string& text = "", Optional<ElemMod> mod = Nothing(),
+    ListElem(const char*, ElemMod mod = NORMAL,
+        Optional<ActionId> triggerAction = Nothing());
+    ListElem(const string& text = "", ElemMod mod = NORMAL,
         Optional<ActionId> triggerAction = Nothing());
 
     const string& getText() const;
-    Optional<ElemMod> getMod() const;
+    ElemMod getMod() const;
     Optional<ActionId> getActionId() const;
 
     private:
     string text;
-    Optional<ElemMod> mod;
+    ElemMod mod;
     Optional<ActionId> action;
   };
 

@@ -7,6 +7,7 @@
 #include "village_control.h"
 #include "message_buffer.h"
 #include "statistics.h"
+#include "options.h"
 
 using namespace std;
 
@@ -193,7 +194,7 @@ Model* Model::heroModel(View* view) {
           c.speed = 100;
           c.weight = 90;
           c.size = CreatureSize::LARGE;
-          c.strength = 15;
+          c.strength = 13;
           c.dexterity = 15;
           c.barehandedDamage = 5;
           c.humanoid = true;
@@ -251,15 +252,15 @@ Model* Model::collectiveModel(View* view) {
     m->collective->addCreature(c.get(), MinionType::IMP);
     m->addCreature(std::move(c));
   }
+  int diffInc = Options::getValue(OptionId::EASY_GAME) ? 300 : 0;
   vector<vector<tuple<int, int, int>>> heroAttackTime { {
-      { make_tuple(2000, 2, 4) },
-      { make_tuple(2600, 2, 4) },
-      { make_tuple(3000, 4, 7) },
-      { make_tuple(3400, 12, 18) }},
-    {{ make_tuple(1200, 2, 4) },
-      { make_tuple(1600, 2, 4) },
-      { make_tuple(2000, 2, 4) },
-      { make_tuple(2600, 4, 7) }}};
+      { make_tuple(2000 + diffInc, 2, 4) },
+      { make_tuple(2600 + diffInc, 2, 4) },
+      { make_tuple(3000 + diffInc, 4, 7) },
+      { make_tuple(3400 + diffInc, 12, 18) }},
+    { { make_tuple(1500 + diffInc, 2, 4) },
+      { make_tuple(2000 + diffInc, 2, 4) },
+      { make_tuple(2600 + diffInc, 4, 7) }}};
 
   vector<pair<CreatureFactory, CreatureFactory>> villageFactories {
     { CreatureFactory::collectiveEnemies(), CreatureFactory::collectiveFinalAttack() },
@@ -398,7 +399,7 @@ void Model::showHighscore(bool highlightLast) {
   for (Elem& elem : v) {
     scores.push_back(View::ListElem(elem.name + ", " + elem.killer + "       " +
         convertToString(elem.points) + " points",
-        highlightLast && !elem.highlight ? Optional<View::ElemMod>(View::INACTIVE) : Nothing()));
+        highlightLast && !elem.highlight ? View::INACTIVE : View::NORMAL));
   }
   view->presentList("High scores", scores);
 }

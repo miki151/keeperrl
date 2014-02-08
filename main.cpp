@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
       continue;
     lastIndex = *choice;
     if (choice == 2) {
-      Options::handle(view);
+      Options::handle(view, false);
       continue;
     }
     if (choice == 4)

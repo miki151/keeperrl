@@ -84,12 +84,11 @@ void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, ve
           return item->getNameAndModifiers(false, creature->isBlind());});
   for (auto elem : ret) {
     if (elem.second.size() == 1)
-      names.push_back(View::ListElem(elem.first, predicate(elem.second[0]) ? Nothing() :
-            Optional<View::ElemMod>(View::INACTIVE)));
+      names.emplace_back(elem.first, predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
     else
-      names.push_back(View::ListElem(convertToString<int>(elem.second.size()) + " " 
+      names.emplace_back(convertToString<int>(elem.second.size()) + " " 
           + elem.second[0]->getNameAndModifiers(true, creature->isBlind()),
-          predicate(elem.second[0]) ? Nothing() : Optional<View::ElemMod>(View::INACTIVE)));
+          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
     if (predicate(elem.second[0]))
       groups.push_back(elem.second);
   }
@@ -525,7 +524,7 @@ void Player::spellAction() {
   auto spells = creature->getSpells();
   vector<int> canCast;
   for (int i : All(spells)) {
-    Optional<View::ElemMod> mod;
+    View::ElemMod mod = View::NORMAL;
     if (!creature->canCastSpell(i))
       mod = View::INACTIVE;
     else

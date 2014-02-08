@@ -212,10 +212,10 @@ void Collective::handleMarket(View* view, int prevItem) {
   vector<PItem> items;
   for (ItemId id : marketItems) {
     PItem item = ItemFactory::fromId(id);
-    Optional<View::ElemMod> mod;
+    View::ElemMod mod = View::NORMAL;
     if (item->getPrice() > numGold(ResourceId::GOLD))
       mod = View::INACTIVE;
-    options.push_back(View::ListElem(item->getName() + "    $" + convertToString(item->getPrice()), mod));
+    options.emplace_back(item->getName() + "    $" + convertToString(item->getPrice()), mod);
     if (!mod)
       items.push_back(std::move(item));
   }
@@ -262,10 +262,10 @@ void Collective::handlePersonalSpells(View* view) {
     knownSpells.push_back(spell.id);
   for (auto elem : spellLearning) {
     SpellInfo spell = Creature::getSpell(elem.id);
-    Optional<View::ElemMod> mod;
+    View::ElemMod mod = View::NORMAL;
     if (!contains(knownSpells, spell.id))
       mod = View::INACTIVE;
-    options.push_back(View::ListElem(spell.name + "  level: " + getTechLevelName(elem.techLevel), mod));
+    options.emplace_back(spell.name + "  level: " + getTechLevelName(elem.techLevel), mod);
   }
   view->presentList(capitalFirst(getTechName(TechId::SPELLCASTING)), options);
 }
@@ -307,12 +307,12 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   }
   vector<pair<PCreature, int>> creatures;
   for (SpawnInfo info : raisingInfo) {
-    Optional<View::ElemMod> mod;
+    View::ElemMod mod = View::NORMAL;
     if (allInactive || info.minLevel > techLevel || info.manaCost > mana)
       mod = View::INACTIVE;
     PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
-    options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost) +
-          "  level: " + getTechLevelName(info.minLevel), mod));
+    options.emplace_back(c->getName() + "  mana: " + convertToString(info.manaCost) +
+          "  level: " + getTechLevelName(info.minLevel), mod);
     if (!mod)
       creatures.push_back({std::move(c), info.manaCost});
   }
@@ -401,12 +401,12 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
 
     vector<pair<PCreature, int>> creatures;
     for (SpawnInfo info : spawnInfo) {
-      Optional<View::ElemMod> mod;
+      View::ElemMod mod = View::NORMAL;
       if (allInactive || info.minLevel > techLevel || info.manaCost > mana)
         mod = View::INACTIVE;
       PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
-      options.push_back(View::ListElem(c->getName() + "  mana: " + convertToString(info.manaCost) + 
-            "   level: " + getTechLevelName(info.minLevel), mod));
+      options.emplace_back(c->getName() + "  mana: " + convertToString(info.manaCost) + 
+            "   level: " + getTechLevelName(info.minLevel), mod);
       if (!mod)
         creatures.push_back({std::move(c), info.manaCost});
     }
@@ -444,7 +444,7 @@ void Collective::handleLibrary(View* view) {
   options.push_back(View::ListElem("You have " + convertToString(int(mana)) + " mana.", View::TITLE));
   vector<TechId> availableTechs;
   for (TechId id : techIds) {
-    Optional<View::ElemMod> mod;
+    View::ElemMod mod = View::NORMAL;
     string text = getTechName(id) + ": " + getTechLevelName(techLevels.at(id));
     int neededPoints = techAdvancePoints[techLevels.at(id)];
     if (neededPoints < 1000)
@@ -453,7 +453,7 @@ void Collective::handleLibrary(View* view) {
       availableTechs.push_back(id);
     } else
       mod = View::INACTIVE;
-    options.push_back(View::ListElem(text, mod));
+    options.emplace_back(text, mod);
   }
   auto index = view->chooseFromList("Library", options);
   if (!index)

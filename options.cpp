@@ -6,11 +6,13 @@ string Options::filename;
 const unordered_map<OptionId, int> defaults {
   {OptionId::HINTS, 1},
   {OptionId::ASCII, 0},
+  {OptionId::EASY_GAME, 1},
 };
 
 const vector<pair<OptionId, string>> names {
   {OptionId::HINTS, "In-game hints"},
   {OptionId::ASCII, "Unicode graphics"},
+  {OptionId::EASY_GAME, "Game difficulty"},
 };
 
 void Options::init(const string& path) {
@@ -31,20 +33,31 @@ void Options::setValue(OptionId id, int value) {
   writeValues(filename, values);
 }
 
-vector<string> offOn { "off", "on" };
+unordered_map<OptionId, vector<string>> valueNames {
+  {OptionId::HINTS, { "off", "on" }},
+  {OptionId::ASCII, { "off", "on" }},
+  {OptionId::EASY_GAME, { "hard", "easy" }}};
 
-void Options::handle(View* view, int lastIndex) {
+unordered_set<OptionId> disabledInGame { OptionId::EASY_GAME };
+
+void Options::handle(View* view, bool inGame, int lastIndex) {
   vector<View::ListElem> options;
   options.emplace_back("Set options:", View::TITLE);
+  vector<OptionId> ret;
   for (auto elem : names) {
-    options.push_back(elem.second + "      " + offOn[getValue(elem.first)]);
+    View::ElemMod mod = View::NORMAL;
+    if (inGame && disabledInGame.count(elem.first))
+      mod = View::INACTIVE;
+    else
+      ret.push_back(elem.first);
+    options.emplace_back(elem.second + "      " + valueNames[elem.first][getValue(elem.first)], mod);
   }
   options.emplace_back("Done");
   auto index = view->chooseFromList("", options, lastIndex);
-  if (!index || (*index) == names.size())
+  if (!index || (*index) == ret.size())
     return;
-  setValue(names[*index].first, 1 - getValue(names[*index].first));
-  handle(view, *index);
+  setValue(ret[*index], 1 - getValue(ret[*index]));
+  handle(view, inGame, *index);
 }
 
 unordered_map<OptionId, int> Options::readValues(const string& path) {

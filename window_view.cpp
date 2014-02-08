@@ -1676,6 +1676,8 @@ void WindowView::drawMap() {
   Optional<ViewObject> highlighted;
   for (Vec2 wpos : mapLayout->getAllTiles(maxLevelBounds)) {
     Vec2 pos = mapLayout->projectOnScreen(wpos);
+    if (!currentTileLayout.sprites && wpos.inRectangle(levelBounds))
+      drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);
     if (!objects[wpos] || objects[wpos]->isEmpty()) {
       if (wpos.inRectangle(levelBounds))
         drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);
@@ -2134,7 +2136,7 @@ CollectiveAction WindowView::getClick() {
               unzoom();
               return CollectiveAction(CollectiveAction::IDLE);
             }
-          case Keyboard::F2: Options::handle(this); refreshScreen(); break;
+          case Keyboard::F2: Options::handle(this, true); refreshScreen(); break;
           case Keyboard::Space:
             if (!myClock.isPaused())
               myClock.pause();
@@ -2298,7 +2300,7 @@ Action WindowView::getAction() {
                               break;
       case Keyboard::Z: unzoom(); return Action(ActionId::IDLE);
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
-      case Keyboard::F2: Options::handle(this); return Action(ActionId::IDLE);
+      case Keyboard::F2: Options::handle(this, true); return Action(ActionId::IDLE);
       case Keyboard::Up:
       case Keyboard::Numpad8: return Action(getDirActionId(*key), Vec2(0, -1));
       case Keyboard::Numpad9: return Action(getDirActionId(*key), Vec2(1, -1));

@@ -6,6 +6,7 @@
 #include "enemy_check.h"
 #include "ranged_weapon.h"
 #include "statistics.h"
+#include "options.h"
 
 using namespace std;
 
@@ -649,6 +650,8 @@ int Creature::getAttr(AttrType type) const {
       def += item->getModifier(type);
   switch (type) {
     case AttrType::STRENGTH:
+        if (tribe == Tribe::player && Options::getValue(OptionId::EASY_GAME))
+          def += 2;
         def *= 0.666 + health / 3;
         if (sleeping)
           def *= 0.66;

@@ -5,19 +5,17 @@
 using namespace std;
 
 
-const static string prefix[] {"[title]", "[inactive]"};
-
-View::ListElem::ListElem(const string& t, Optional<ElemMod> m, Optional<ActionId> a) : text(t), mod(m), action(a) {
+View::ListElem::ListElem(const string& t, ElemMod m, Optional<ActionId> a) : text(t), mod(m), action(a) {
 }
 
-View::ListElem::ListElem(const char* s) : ListElem(s, Nothing(), Nothing()) {
+View::ListElem::ListElem(const char* s, ElemMod m, Optional<ActionId> a) : text(s), mod(m), action(a) {
 }
 
 const string& View::ListElem::getText() const {
   return text;
 }
 
-Optional<View::ElemMod> View::ListElem::getMod() const {
+View::ElemMod View::ListElem::getMod() const {
   return mod;
 }
 
