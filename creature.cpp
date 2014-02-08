@@ -652,7 +652,8 @@ int Creature::getAttr(AttrType type) const {
     case AttrType::STRENGTH:
         if (tribe == Tribe::player && Options::getValue(OptionId::EASY_GAME))
           def += 2;
-        def *= 0.666 + health / 3;
+        if (health < 1)
+          def *= 0.666 + health / 3;
         if (sleeping)
           def *= 0.66;
         if (strBonus)
