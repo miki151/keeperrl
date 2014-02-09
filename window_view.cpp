@@ -580,7 +580,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ALTAR: return Tile(L'Ω', white);
     case ViewId::TORTURE_TABLE: return Tile('=', gray);
     case ViewId::TRAINING_DUMMY: return Tile(L'‡', brown, true);
-    case ViewId::LIBRARY: return Tile(L'▤', purple, true);
+    case ViewId::LIBRARY: return Tile(L'▤', brown, true);
     case ViewId::LABORATORY: return Tile(L'ω', purple, true);
     case ViewId::ANIMAL_TRAP: return Tile(L'▥', lightGray, true);
     case ViewId::WORKSHOP: return Tile('&', lightBlue);
@@ -688,7 +688,7 @@ class TempClockPause {
   }
 
   private:
-  bool cont;
+  bool cont = false;
 };
 
 static int getTextLength(string s, const Font& font = textFont, int size = textSize) {
@@ -1314,10 +1314,10 @@ void WindowView::drawBandInfo() {
   int marketX = resourceX + resourceSpacing * info.numGold.size();
  /* drawText(white, marketX, line1, "black market");
   marketButton = Rectangle(marketX, line1, marketX + getTextLength("market"), line1 + legendLineHeight);*/
-  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f728, L'?'};
+  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f4d6, L'?'};
   optionButtons.clear();
   for (int i = 0; i < 4; ++i) {
-    int w = 45;
+    int w = 50;
     int line = topBarHeight;
     int h = 45;
     int leftPos = screenWidth - rightBarText + 15;
@@ -1744,18 +1744,18 @@ int indexHeight(const vector<View::ListElem>& options, int index) {
   CHECK(index < options.size() && index >= 0);
   int tmp = 0;
   for (int i : All(options))
-    if (!options[i].getMod() && tmp++ == index)
+    if (options[i].getMod() == View::NORMAL && tmp++ == index)
       return i;
   FAIL << "Bad index " << int(options.size()) << " " << index;
   return -1;
 }
 
 Optional<int> reverseIndexHeight(const vector<View::ListElem>& options, int height) {
-  if (height < 0 || height >= options.size() || options[height].getMod())
+  if (height < 0 || height >= options.size() || options[height].getMod() != View::NORMAL)
     return Nothing();
   int sub = 0;
   for (int i : Range(height))
-    if (options[i].getMod())
+    if (options[i].getMod() != View::NORMAL)
       ++sub;
   return height - sub;
 }
@@ -1827,11 +1827,18 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
   TempClockPause pause;
   if (options.size() == 0)
     return Nothing();
+  vector<int> indexes(options.size());
   int numLines = min((int) options.size(), getMaxLines());
   int count = 0;
-  for (ListElem elem : options)
-    if (!elem.getMod())
+  int elemCount = 0;
+  for (int i : All(options)) {
+    if (options[i].getMod() == View::NORMAL) {
+      indexes[count] = elemCount;
       ++count;
+    }
+    if (options[i].getMod() != View::TITLE)
+      ++elemCount;
+  }
   if (count == 0) {
     presentList(title, options, false);
     return Nothing();
@@ -1843,7 +1850,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
     int cutoff = min(max(0, height - numLines / 2), (int) options.size() - numLines);
     int itemsCutoff = 0;
     for (int i : Range(cutoff))
-      if (!options[i].getMod())
+      if (options[i].getMod() == View::NORMAL)
         ++itemsCutoff;
     vector<ListElem> window = getPrefix(options, cutoff , numLines);
     drawList(title, window, index - itemsCutoff);
@@ -1859,7 +1866,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
         case Keyboard::Numpad2:
         case Keyboard::Down: index = (index + 1 + count) % count; break;
         case Keyboard::Numpad5:
-        case Keyboard::Return : clearMessageBox(); return index;
+        case Keyboard::Return : clearMessageBox(); return indexes[index];
         case Keyboard::Escape : clearMessageBox(); return Nothing();
         default: break;
       }
@@ -1877,7 +1884,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
     } else if (event.type == BlockingEvent::MOUSE_LEFT) {
       clearMessageBox();
       if (mousePos && getIndex(window, !title.empty(), *mousePos))
-        return index;
+        return indexes[index];
       else
         return Nothing();
     }
@@ -1975,7 +1982,7 @@ void WindowView::drawList(const string& title, const vector<ListElem>& options, 
     topMargin -= itemSpacing;
   for (int i : All(options)) {  
     int beginH = ySpacing + topMargin + (i + 1) * itemSpacing + itemYMargin;
-    if (!options[i].getMod()) {
+    if (options[i].getMod() == View::NORMAL) {
       if (hightlight > -1 && (h == i || (mouseHeight >= beginH && mouseHeight < beginH + itemSpacing))) 
         drawFilledRectangle(xSpacing + xMargin, beginH, 
             windowWidth + xSpacing - xMargin, beginH + itemSpacing - 1, darkGreen);

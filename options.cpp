@@ -43,20 +43,15 @@ unordered_set<OptionId> disabledInGame { OptionId::EASY_GAME };
 void Options::handle(View* view, bool inGame, int lastIndex) {
   vector<View::ListElem> options;
   options.emplace_back("Set options:", View::TITLE);
-  vector<OptionId> ret;
   for (auto elem : names) {
-    View::ElemMod mod = View::NORMAL;
-    if (inGame && disabledInGame.count(elem.first))
-      mod = View::INACTIVE;
-    else
-      ret.push_back(elem.first);
-    options.emplace_back(elem.second + "      " + valueNames[elem.first][getValue(elem.first)], mod);
+    options.emplace_back(elem.second + "      " + valueNames[elem.first][getValue(elem.first)],
+        inGame && disabledInGame.count(elem.first) ? View::INACTIVE : View::NORMAL);
   }
   options.emplace_back("Done");
   auto index = view->chooseFromList("", options, lastIndex);
-  if (!index || (*index) == ret.size())
+  if (!index || (*index) == names.size())
     return;
-  setValue(ret[*index], 1 - getValue(ret[*index]));
+  setValue(names[*index].first, 1 - getValue(names[*index].first));
   handle(view, inGame, *index);
 }
 

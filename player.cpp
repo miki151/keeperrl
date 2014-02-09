@@ -89,8 +89,7 @@ void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, ve
       names.emplace_back(convertToString<int>(elem.second.size()) + " " 
           + elem.second[0]->getNameAndModifiers(true, creature->isBlind()),
           predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
-    if (predicate(elem.second[0]))
-      groups.push_back(elem.second);
+    groups.push_back(elem.second);
   }
 }
 
@@ -522,25 +521,15 @@ void Player::fireAction(Vec2 dir) {
 void Player::spellAction() {
   vector<View::ListElem> list;
   auto spells = creature->getSpells();
-  vector<int> canCast;
-  for (int i : All(spells)) {
-    View::ElemMod mod = View::NORMAL;
-    if (!creature->canCastSpell(i))
-      mod = View::INACTIVE;
-    else
-      canCast.push_back(i);
+  for (int i : All(spells))
     list.push_back(View::ListElem(spells[i].name + " " + (!creature->canCastSpell(i) ? "(ready in " +
-          convertToString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""), mod));
-  }
+          convertToString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""),
+          creature->canCastSpell(i) ? View::NORMAL : View::INACTIVE));
   auto index = view->chooseFromList("Cast a spell:", list);
   if (!index)
     return;
-  if (!creature->canCastSpell(canCast[*index])) {
-    spellAction();
-    return;
-  }
-  creature->privateMessage("You cast " + spells[canCast[*index]].name);
-  creature->castSpell(canCast[*index]);
+  creature->privateMessage("You cast " + spells[*index].name);
+  creature->castSpell(*index);
 }
 
 const MapMemory& Player::getMemory(const Level* l) const {

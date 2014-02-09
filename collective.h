@@ -84,6 +84,26 @@ class Collective : public CreatureView, public EventListener {
     int minLevel;
   };
 
+  enum class Warning { DIGGING, STORAGE, WOOD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, GRAVES, CHESTS, MANA, MORE_CHESTS };
+
+  static constexpr const char* const warningText[] {
+    "Start digging into the mountain to build a dungeon.",
+    "You need to build a storage room.",
+    "Cut down some trees for wood",
+    "Build a library to start research.",
+    "Use the library tab in the top-right to summon some minions.",
+    "You need to build beds for your minions.",
+    "Build a training room for your minions.",
+    "Build a workshop to produce equipment and traps.",
+    "Build a laboratory to produce potions.",
+    "You need a graveyard to collect corpses",
+    "You need to build a treasure room.",
+    "Kill some innocent beings for more mana.",
+    "You need a larger treasure room."};
+
+  const static int numWarnings = 13;
+  bool warning[numWarnings] = {0};
+
 
   private:
   struct BuildInfo {
@@ -127,10 +147,6 @@ class Collective : public CreatureView, public EventListener {
   ViewObject getResourceViewObject(ResourceId id) const;
 
   map<ResourceId, int> credit;
-
-  enum Warning { NO_MANA, NO_CHESTS, MORE_CHESTS, NO_TRAINING, NO_STORAGE, NO_GRAVES };
-  static const int numWarnings = 6;
-  bool warning[numWarnings] = {0};
 
   struct ItemFetchInfo {
     ItemPredicate predicate;

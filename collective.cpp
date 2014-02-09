@@ -9,14 +9,6 @@
 #include "statistics.h"
 #include "options.h"
 
-static string warningText[] {
-  "Kill some innocent beings for more mana.",
-  "You need to build a treasure room.",
-  "You need a larger treasure room.",
-  "Build a training room for your minions",
-  "You need to build a storage room",
-  "You need to build a graveyard"};
-
 
 vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo(BuildInfo::DIG),
@@ -53,6 +45,9 @@ vector<Collective::BuildInfo>& Collective::getBuildInfo() const {
 };
 Collective::ResourceInfo info;
 
+
+constexpr const char* const Collective::warningText[numWarnings];
+
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
   {ResourceId::GOLD, { SquareType::TREASURE_CHEST, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE}},
   {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK}},
@@ -69,26 +64,41 @@ vector<TechId> techIds {
 
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   return {
-    {unMarkedItems(ItemType::CORPSE), SquareType::GRAVE, true, {}, NO_GRAVES},
+    {unMarkedItems(ItemType::CORPSE), SquareType::GRAVE, true, {}, Warning::GRAVES},
     {[this](const Item* it) {
         return minionEquipment.isItemUseful(it) && !markedItems.count(it);
-      }, SquareType::STOCKPILE, false, {}, NO_STORAGE},
+      }, SquareType::STOCKPILE, false, {}, Warning::STORAGE},
     {[this](const Item* it) {
         return it->getName() == "wood plank" && !markedItems.count(it); },
-      SquareType::STOCKPILE, false, {SquareType::TREE_TRUNK}, NO_STORAGE},
+      SquareType::STOCKPILE, false, {SquareType::TREE_TRUNK}, Warning::STORAGE},
     {[this](const Item* it) {
         return it->getName() == "iron ore" && !markedItems.count(it); },
-      SquareType::STOCKPILE, false, {}, NO_STORAGE},
+      SquareType::STOCKPILE, false, {}, Warning::STORAGE},
     {[this](const Item* it) {
         return it->getName() == "rock" && !markedItems.count(it); },
-      SquareType::STOCKPILE, false, {}, NO_STORAGE},
+      SquareType::STOCKPILE, false, {}, Warning::STORAGE},
   };
 }
+
+struct MinionTaskInfo {
+  SquareType square;
+  string desc;
+  Collective::Warning warning;
+};
+map<MinionTask, MinionTaskInfo> taskInfo {
+  {MinionTask::LABORATORY, {SquareType::LABORATORY, "lab", Collective::Warning::LABORATORY}},
+    {MinionTask::TRAIN, {SquareType::TRAINING_DUMMY, "training", Collective::Warning::TRAINING}},
+    {MinionTask::WORKSHOP, {SquareType::WORKSHOP, "crafting", Collective::Warning::WORKSHOP}},
+    {MinionTask::SLEEP, {SquareType::BED, "sleeping", Collective::Warning::BEDS}},
+    {MinionTask::GRAVE, {SquareType::GRAVE, "sleeping", Collective::Warning::GRAVES}},
+    {MinionTask::STUDY, {SquareType::LIBRARY, "studying", Collective::Warning::LIBRARY}},
+};
 
 Collective::Collective(Model* m) : mana(200), model(m) {
   EventListener::addListener(this);
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
+  mySquares[SquareType::FLOOR].clear();
   for (BuildInfo info : normalBuildInfo)
     if (info.buildType == BuildInfo::SQUARE)
       mySquares[info.squareInfo.type].clear();
@@ -212,13 +222,9 @@ void Collective::handleMarket(View* view, int prevItem) {
   vector<View::ListElem> options;
   vector<PItem> items;
   for (ItemId id : marketItems) {
-    PItem item = ItemFactory::fromId(id);
-    View::ElemMod mod = View::NORMAL;
-    if (item->getPrice() > numGold(ResourceId::GOLD))
-      mod = View::INACTIVE;
-    options.emplace_back(item->getName() + "    $" + convertToString(item->getPrice()), mod);
-    if (!mod)
-      items.push_back(std::move(item));
+    items.push_back(ItemFactory::fromId(id));
+    options.emplace_back(items.back()->getName() + "    $" + convertToString(items.back()->getPrice()),
+        items.back()->getPrice() > numGold(ResourceId::GOLD) ? View::INACTIVE : View::NORMAL);
   }
   auto index = view->chooseFromList("Buy items", options, prevItem);
   if (!index)
@@ -308,14 +314,11 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   }
   vector<pair<PCreature, int>> creatures;
   for (SpawnInfo info : raisingInfo) {
-    View::ElemMod mod = View::NORMAL;
-    if (allInactive || info.minLevel > techLevel || info.manaCost > mana)
-      mod = View::INACTIVE;
-    PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
-    options.emplace_back(c->getName() + "  mana: " + convertToString(info.manaCost) +
-          "  level: " + getTechLevelName(info.minLevel), mod);
-    if (!mod)
-      creatures.push_back({std::move(c), info.manaCost});
+    creatures.push_back({CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this)),
+        info.manaCost});
+    options.emplace_back(creatures.back().first->getName() + "  mana: " + convertToString(info.manaCost) +
+          "  level: " + getTechLevelName(info.minLevel),
+          allInactive || info.minLevel > techLevel || info.manaCost > mana ? View::INACTIVE : View::NORMAL);
   }
   auto index = view->chooseFromList("Necromancy level: " + getTechLevelName(techLevel) + ", " +
       convertToString(corpses.size()) + " bodies available", options, prevItem);
@@ -402,14 +405,11 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
 
     vector<pair<PCreature, int>> creatures;
     for (SpawnInfo info : spawnInfo) {
-      View::ElemMod mod = View::NORMAL;
-      if (allInactive || info.minLevel > techLevel || info.manaCost > mana)
-        mod = View::INACTIVE;
-      PCreature c = CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this));
-      options.emplace_back(c->getName() + "  mana: " + convertToString(info.manaCost) + 
-            "   level: " + getTechLevelName(info.minLevel), mod);
-      if (!mod)
-        creatures.push_back({std::move(c), info.manaCost});
+      creatures.push_back({CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this)),
+          info.manaCost});
+      options.emplace_back(creatures.back().first->getName() + "  mana: " + convertToString(info.manaCost) + 
+            "   level: " + getTechLevelName(info.minLevel),
+            allInactive || info.minLevel > techLevel || info.manaCost > mana ? View::INACTIVE : View::NORMAL);
     }
     auto index = view->chooseFromList(title + " level: " + getTechLevelName(techLevel), options, prevItem);
     if (!index)
@@ -443,23 +443,17 @@ void Collective::handleLibrary(View* view) {
   }
   vector<View::ListElem> options;
   options.push_back(View::ListElem("You have " + convertToString(int(mana)) + " mana.", View::TITLE));
-  vector<TechId> availableTechs;
   for (TechId id : techIds) {
-    View::ElemMod mod = View::NORMAL;
     string text = getTechName(id) + ": " + getTechLevelName(techLevels.at(id));
     int neededPoints = techAdvancePoints[techLevels.at(id)];
     if (neededPoints < 1000)
       text += "  (" + convertToString(neededPoints) + " mana to advance)";
-    if (neededPoints <= mana) {
-      availableTechs.push_back(id);
-    } else
-      mod = View::INACTIVE;
-    options.emplace_back(text, mod);
+    options.emplace_back(text, neededPoints <= mana ? View::NORMAL : View::INACTIVE);
   }
   auto index = view->chooseFromList("Library", options);
   if (!index)
     return;
-  TechId id = availableTechs[*index];
+  TechId id = techIds[*index];
   mana -= techAdvancePoints[techLevels.at(id)];
   ++techLevels[id];
   if (id == TechId::SPELLCASTING)
@@ -1096,8 +1090,13 @@ void Collective::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayT
 }
 
 void Collective::tick() {
-  warning[NO_MANA] = mana < 100;
-  warning[NO_TRAINING] = mySquares[SquareType::TRAINING_DUMMY].empty() && minions.size() > 1;
+  warning[int(Warning::MANA)] = mana < 100;
+  warning[int(Warning::WOOD)] = numGold(ResourceId::WOOD) == 0;
+  warning[int(Warning::DIGGING)] = mySquares.at(SquareType::FLOOR).empty();
+  warning[int(Warning::MINIONS)] = minions.size() <= 1;
+  for (auto elem : taskInfo)
+    if (!mySquares.at(elem.second.square).empty())
+      warning[int(elem.second.warning)] = false;
   updateTraps();
   vector<Vec2> enemyPos;
   for (Vec2 pos : myTiles) {
@@ -1112,21 +1111,21 @@ void Collective::tick() {
     vector<Item*> gold = level->getSquare(pos)->getItems(unMarkedItems(ItemType::GOLD));
     if (gold.size() > 0 && !mySquares[SquareType::TREASURE_CHEST].count(pos)) {
       if (!mySquares[SquareType::TREASURE_CHEST].empty()) {
-        warning[NO_CHESTS] = false;
+        warning[int(Warning::CHESTS)] = false;
         Optional<Vec2> target;
         for (Vec2 chest : mySquares[SquareType::TREASURE_CHEST])
           if ((!target || (chest - pos).length8() < (*target - pos).length8()) && 
               level->getSquare(chest)->getItems(Item::typePredicate(ItemType::GOLD)).size() <= 30)
             target = chest;
         if (!target)
-          warning[MORE_CHESTS] = true;
+          warning[int(Warning::MORE_CHESTS)] = true;
         else {
-          warning[MORE_CHESTS] = false;
+          warning[int(Warning::MORE_CHESTS)] = false;
           addTask(Task::bringItem(this, pos, gold, *target));
           markedItems.insert(gold.begin(), gold.end());
         }
       } else {
-        warning[NO_CHESTS] = true;
+        warning[int(Warning::CHESTS)] = true;
       }
     }
     if (marked.count(pos) && marked.at(pos)->isImpossible(level) && !taken.count(marked.at(pos)))
@@ -1164,9 +1163,9 @@ void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
     return;
   if (!equipment.empty()) {
     if (mySquares[elem.destination].empty())
-      warning[elem.warning] = true;
+      warning[int(elem.warning)] = true;
     else {
-      warning[elem.warning] = false;
+      warning[int(elem.warning)] = false;
       if (elem.oneAtATime)
         equipment = {equipment[0]};
       Vec2 target = chooseRandomClose(pos, mySquares[elem.destination]);
@@ -1319,24 +1318,13 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         c->move(*move);
       }};
   }
-  int taskRoll = 100;
-  struct MinionTaskInfo {
-    SquareType square;
-    string desc;
-  };
-  map<MinionTask, MinionTaskInfo> taskInfo {
-    {MinionTask::LABORATORY, {SquareType::LABORATORY, "lab"}},
-    {MinionTask::TRAIN, {SquareType::TRAINING_DUMMY, "training"}},
-    {MinionTask::WORKSHOP, {SquareType::WORKSHOP, "crafting"}},
-    {MinionTask::SLEEP, {SquareType::BED, "sleeping"}},
-    {MinionTask::GRAVE, {SquareType::GRAVE, "sleeping"}},
-    {MinionTask::STUDY, {SquareType::LIBRARY, "studying"}},
-  };
   MinionTaskInfo info = taskInfo.at(minionTasks.at(c).getState());
   if (mySquares[info.square].empty()) {
     minionTasks.at(c).updateToNext();
+    warning[int(info.warning)] = true;
     return NoMove;
   }
+  warning[int(info.warning)] = false;
   addTask(Task::applySquare(this, mySquares[info.square]), c);
   minionTaskStrings[c] = info.desc;
   return taskMap.at(c)->getMove(c);
