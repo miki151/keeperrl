@@ -62,6 +62,7 @@ class WindowView: public View {
   void drawTechnology(GameInfo::BandInfo& info);
   void drawMinions(GameInfo::BandInfo& info);
   void drawKeeperHelp();
+  void drawHint(sf::Color color, const string& text);
   struct BlockingEvent {
     enum Type { IDLE, KEY, MOUSE_LEFT, MOUSE_MOVE } type;
     Optional<sf::Event::KeyEvent> key;

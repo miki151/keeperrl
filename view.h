@@ -139,7 +139,6 @@ class View {
 
     class BandInfo {
       public:
-      int number;
       string name;
       string warning;
       struct Button {
@@ -157,6 +156,7 @@ class View {
       struct Resource {
         ViewObject viewObject;
         int count;
+        string name;
       };
       vector<Resource> numGold;
       int activeButton = 0;

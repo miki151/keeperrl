@@ -396,6 +396,7 @@ Tile getSprite(ViewId id) {
     case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
     case ViewId::DESTROY_BUTTON: return Tile('X', red);
     case ViewId::MANA: return Tile(5, 10, 2);
+    case ViewId::DANGER: return Tile(12, 9, 2);
   }
   FAIL << "unhandled view id " << (int)id;
   return Tile(' ', white);
@@ -601,6 +602,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
     case ViewId::DESTROY_BUTTON: return Tile('X', red);
     case ViewId::MANA: return Tile(5, 10, 2);
+    case ViewId::DANGER: return Tile(12, 9, 2);
   }
   FAIL << "unhandled view id " << (int)obj.id();
   return Tile(' ', white);
@@ -1076,7 +1078,8 @@ void WindowView::drawPlayerInfo() {
     bottomKeys = concat({{ "U", "Leave minion", {Keyboard::U}}}, bottomKeys);
   if (info.spellcaster)
     bottomKeys = concat({{ "S", "Cast spell", {Keyboard::S}}}, bottomKeys);
-
+  if (bottomKeys.size() < 6)
+    bottomKeys = concat({{ "Shift + Z", "World map", {Keyboard::Z, false, false, true}}}, bottomKeys);
   for (int i : All(bottomKeys)) {
     string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
     int endX = startX + getTextLength(text) + keySpacing;
@@ -1280,7 +1283,7 @@ void WindowView::drawTechnology(GameInfo::BandInfo& info) {
 
 void WindowView::drawKeeperHelp() {
   vector<string> helpText { "use mouse to", "dig and build", "", "click on minion", "to possess",
-    "", "your enemies ", "are in the west", "[space]  pause", "[z]  zoom"};
+    "", "your enemies ", "are in the west", "[space]  pause", "[z]  zoom", "[shift + z] world map"};
   int cnt = 0;
   for (string line : helpText) {
     int height = legendStartHeight + cnt * legendLineHeight;
@@ -1296,8 +1299,8 @@ void WindowView::drawBandInfo() {
   int line1 = line0 + lineHeight;
   int line2 = line1 + lineHeight;
   drawFilledRectangle(0, line1 - 10, screenWidth - rightBarWidth, screenHeight, translucentBlack);
-  string playerLine = info.name + "   T:" + convertToString<int>(info.time);
-  drawText(white, 10, line1, playerLine);
+  string playerLine = "T:" + convertToString<int>(info.time);
+  drawText(white, screenWidth - rightBarWidth - 60, line1, playerLine);
   drawText(red, 120, line2, info.warning);
   if (myClock.isPaused())
     drawText(red, 10, line2, "PAUSED");
@@ -1306,10 +1309,12 @@ void WindowView::drawBandInfo() {
   pauseButton = Rectangle(10, line2, 80, line2 + lineHeight);
   string resources;
   int resourceSpacing = 95;
-  int resourceX = 300;
+  int resourceX = 45;
   for (int i : All(info.numGold)) {
     drawText(white, resourceX + resourceSpacing * i, line1, convertToString<int>(info.numGold[i].count));
-    drawViewObject(info.numGold[i].viewObject, 288 + resourceSpacing * i, line1, true);
+    drawViewObject(info.numGold[i].viewObject, resourceX - 12 + resourceSpacing * i, line1, true);
+    if (mousePos && mousePos->inRectangle(Rectangle(resourceX + resourceSpacing * i - 20, line1, resourceX + resourceSpacing * (i + 1) - 20, line1 + 30)))
+      drawHint(white, info.numGold[i].name);
   }
   int marketX = resourceX + resourceSpacing * info.numGold.size();
  /* drawText(white, marketX, line1, "black market");
@@ -1317,7 +1322,7 @@ void WindowView::drawBandInfo() {
   sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f4d6, L'?'};
   optionButtons.clear();
   for (int i = 0; i < 4; ++i) {
-    int w = 50;
+    int w = 60;
     int line = topBarHeight;
     int h = 45;
     int leftPos = screenWidth - rightBarText + 15;
@@ -1686,6 +1691,9 @@ void WindowView::drawMap() {
     if (!objects[wpos] || objects[wpos]->isEmpty()) {
       if (wpos.inRectangle(levelBounds))
         drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);
+      if (getHighlightedTile() == wpos) {
+        drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent, lightGray);
+      }
       continue;
     }
     const ViewIndex& index = *objects[wpos];
@@ -1718,20 +1726,23 @@ void WindowView::drawMap() {
     }
   }
   if (getHighlightedTile() && highlighted) {
-    string text = highlighted->getDescription(true);
-    int height = 30;
-    int width = getTextLength(text) + 30;
-    Vec2 pos(screenWidth - rightBarWidth - width, screenHeight - bottomBarHeight - height); //mapLayout->projectOnScreen(*getHighlightedTile()) + Vec2(30, 30);
-    drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(black, 190));
     Color col = white;
     if (highlighted->isHostile())
       col = red;
     else if (highlighted->isFriendly())
       col = green;
-    drawText(col, pos.x + 10, pos.y + 1, text);
+    drawHint(col, highlighted->getDescription(true));
   }
   refreshText();
 //}
+}
+
+void WindowView::drawHint(Color color, const string& text) {
+    int height = 30;
+    int width = getTextLength(text) + 30;
+    Vec2 pos(screenWidth - rightBarWidth - width, screenHeight - bottomBarHeight - height);
+    drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(black, 190));
+    drawText(color, pos.x + 10, pos.y + 1, text);
 }
 
 void WindowView::refreshScreen(bool flipBuffer) {

@@ -18,7 +18,7 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::BED, ResourceId::WOOD, 10, "Bed"}),
     BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::IRON, 20, "Training room"}),
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 20, "Library"}),
-    BuildInfo({SquareType::LABORATORY, ResourceId::IRON, 15, "Laboratory"}),
+    BuildInfo({SquareType::LABORATORY, ResourceId::STONE, 15, "Laboratory"}),
     BuildInfo({SquareType::WORKSHOP, ResourceId::IRON, 15, "Workshop"}),
     BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast cage"}),
     BuildInfo({SquareType::GRAVE, ResourceId::STONE, 20, "Graveyard"}),
@@ -49,10 +49,10 @@ Collective::ResourceInfo info;
 constexpr const char* const Collective::warningText[numWarnings];
 
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
-  {ResourceId::GOLD, { SquareType::TREASURE_CHEST, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE}},
-  {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK}},
-  {ResourceId::IRON, { SquareType::STOCKPILE, Item::namePredicate("iron ore"), ItemId::IRON_ORE}},
-  {ResourceId::STONE, { SquareType::STOCKPILE, Item::namePredicate("rock"), ItemId::ROCK}},
+  {ResourceId::GOLD, { SquareType::TREASURE_CHEST, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE, "gold"}},
+  {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK, "wood"}},
+  {ResourceId::IRON, { SquareType::STOCKPILE, Item::namePredicate("iron ore"), ItemId::IRON_ORE, "iron"}},
+  {ResourceId::STONE, { SquareType::STOCKPILE, Item::namePredicate("rock"), ItemId::ROCK, "stone"}},
 };
 
 vector<TechId> techIds {
@@ -474,7 +474,6 @@ int Collective::numTotalTech() const {
 void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   gameInfo.infoType = View::GameInfo::InfoType::BAND;
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
-  info.number = creatures.size();
   info.name = "KeeperRL";
   info.buttons.clear();
   for (BuildInfo button : getBuildInfo())
@@ -555,8 +554,10 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
         info.enemies.push_back(c);
   info.numGold.clear();
   for (auto elem : resourceInfo)
-    info.numGold.push_back({getResourceViewObject(elem.first), numGold(elem.first)});
-  info.numGold.push_back({ViewObject::mana(), int(mana)});
+    info.numGold.push_back({getResourceViewObject(elem.first), numGold(elem.first), elem.second.name});
+  info.numGold.push_back({ViewObject::mana(), int(mana), "mana"});
+  info.numGold.push_back({ViewObject(ViewId::DANGER, ViewLayer::CREATURE, ""), int(getDangerLevel()) + points,
+      "points"});
   info.warning = "";
   for (int i : Range(numWarnings))
     if (warning[i]) {
@@ -964,8 +965,9 @@ void Collective::onAppliedItem(Vec2 pos, Item* item) {
 }
 
 void Collective::onAppliedSquare(Vec2 pos) {
-  if (mySquares.at(SquareType::LIBRARY).count(pos))
-    mana += Random.getDouble(1, 2);
+  if (mySquares.at(SquareType::LIBRARY).count(pos)) {
+    mana += 1 + max(0., 1 - double(getDangerLevel()) / 1000);
+  }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
     if (Random.roll(30)) {
       level->getSquare(pos)->dropItems(ItemFactory::potions().random());
@@ -988,6 +990,13 @@ void Collective::onAppliedItemCancel(Vec2 pos) {
 
 Vec2 Collective::getHeartPos() const {
   return heart->getPosition();
+}
+
+double Collective::getDangerLevel() const {
+  double ret = 0;
+  for (const Creature* c : minions)
+    ret += c->getDifficultyPoints();
+  return ret;
 }
 
 ItemPredicate Collective::unMarkedItems(ItemType type) const {
@@ -1471,7 +1480,7 @@ void Collective::onTriggerEvent(const Level* l, Vec2 pos) {
 }
 
 void Collective::onConqueredLand(const string& name) {
-  model->conquered(*heart->getFirstName() + " the Keeper", name, kills, points);
+  model->conquered(*heart->getFirstName() + " the Keeper", name, kills, getDangerLevel() + points);
 }
 
 void Collective::onCombatEvent(const Creature* c) {
@@ -1487,7 +1496,7 @@ bool Collective::isInCombat(const Creature* c) const {
 
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim == heart) {
-    model->gameOver(heart, kills.size(), "enemies", points);
+    model->gameOver(heart, kills.size(), "enemies", getDangerLevel() + points);
   }
   if (contains(creatures, victim)) {
     Creature* c = const_cast<Creature*>(victim);

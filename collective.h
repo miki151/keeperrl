@@ -59,6 +59,7 @@ class Collective : public CreatureView, public EventListener {
   void onCantPickItem(vector<Item*> items);
 
   Vec2 getHeartPos() const;
+  double getDangerLevel() const;
 
   void render(View*);
   void possess(const Creature*, View*);
@@ -76,6 +77,7 @@ class Collective : public CreatureView, public EventListener {
     SquareType storageType;
     ItemPredicate predicate;
     ItemId itemId;
+    string name;
   };
 
   struct SpawnInfo {

@@ -469,6 +469,7 @@ enum class ViewId {
   GUARD_POST,
   DESTROY_BUTTON,
   MANA,
+  DANGER,
 };
 
 enum class Gender {

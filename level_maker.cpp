@@ -1757,8 +1757,8 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   int maxResourceDist = 50;
   int minGold = 1;
   int maxGold = 3;
-  int minStone = 2;
-  int maxStone = 5;
+  int minStone = 3;
+  int maxStone = 6;
   int minIron = 5;
   int maxIron = 10;
   for (int i : Range(Random.getRandom(minGold, maxGold))) {
