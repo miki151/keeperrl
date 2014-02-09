@@ -313,6 +313,7 @@ Tile getSprite(ViewId id) {
     case ViewId::DECID_TREE: return Tile(21, 3, 2, true);
     case ViewId::CANIF_TREE: return Tile(20, 3, 2, true);
     case ViewId::TREE_TRUNK: return Tile(26, 3, 2, true);
+    case ViewId::BURNT_TREE: return Tile(25, 3, 2, true);
     case ViewId::WATER: return getWaterTile(5);
     case ViewId::MAGMA: return getWaterTile(11);
     case ViewId::ABYSS: return Tile('~', darkGray);
@@ -391,7 +392,6 @@ Tile getSprite(ViewId id) {
     case ViewId::SPEED_BOOTS: return Tile(3, 13, 3);
     case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
     case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
-    case ViewId::BURNT_TREE:
     case ViewId::FALLEN_TREE: return Tile(26, 3, 2, true);
     case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
     case ViewId::DESTROY_BUTTON: return Tile('X', red);
@@ -518,6 +518,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::DECID_TREE: return Tile(0x1f70d, darkGreen, true);
     case ViewId::CANIF_TREE: return Tile(0x2663, darkGreen, true);
     case ViewId::TREE_TRUNK: return Tile('.', brown);
+    case ViewId::BURNT_TREE: return Tile('.', darkGray);
     case ViewId::WATER: return Tile('~', lightBlue);
     case ViewId::MAGMA: return Tile('~', red);
     case ViewId::ABYSS: return Tile('~', darkGray);
@@ -597,7 +598,6 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
     case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
     case ViewId::FALLEN_TREE: return Tile('*', green);
-    case ViewId::BURNT_TREE: return Tile('*', darkGray);
     case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
     case ViewId::DESTROY_BUTTON: return Tile('X', red);
     case ViewId::MANA: return Tile(5, 10, 2);
