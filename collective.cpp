@@ -827,6 +827,8 @@ void Collective::processInput(View* view) {
         break;
     case CollectiveAction::GO_TO: {
         Vec2 pos = action.getPosition();
+        if (!pos.inRectangle(level->getBounds()))
+          break;
         switch (getBuildInfo()[currentButton].buildType) {
           case BuildInfo::IMP:
               if (mana >= getImpCost() && selection == NONE) {

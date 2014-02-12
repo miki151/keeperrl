@@ -226,6 +226,11 @@ class RandomGen {
 
 extern RandomGen Random;
 
+inline Debug& operator <<(Debug& d, Rectangle rect) {
+  return d << "(" << rect.getPX() << "," << rect.getPY() << ") (" << rect.getKX() << "," << rect.getKY() << ")";
+}
+
+
 template <class T>
 class Table {
   public:
@@ -292,19 +297,25 @@ class Table {
   }
  
   T& operator[](const Vec2& vAbs) {
+#ifdef RELEASE
     return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
-    /*Vec2 v(vAbs.x - px, vAbs.y - py);
-    CHECK(v.x >= 0 && v.y >= 0 && v.x < width && v.y < height) <<
-        "Table index out of bounds " << getBounds() << " " << vAbs;
-    return mem[v.x * height + v.y];*/
+#else
+    Vec2 v = vAbs - bounds.getTopLeft();
+    CHECK(vAbs.inRectangle(bounds)) <<
+        "Table index out of bounds " << bounds << " " << vAbs;
+    return mem[v.x * bounds.h + v.y];
+#endif
   }
 
   const T& operator[](const Vec2& vAbs) const {
+#ifdef RELEASE
     return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
-/*    Vec2 v(vAbs.x - px, vAbs.y - py);
-    CHECK(v.x >= 0 && v.y >= 0 && v.x < width && v.y < height) <<
-        "Table index out of bounds " << getBounds() << " " << vAbs;
-    return mem[v.x * height + v.y];*/
+#else
+    Vec2 v = vAbs - bounds.getTopLeft();
+    CHECK(vAbs.inRectangle(bounds)) <<
+        "Table index out of bounds " << bounds << " " << vAbs;
+    return mem[v.x * bounds.h + v.y];
+#endif
   }
 
   private:
@@ -614,10 +625,6 @@ inline std::istream& operator >>(std::istream& d, Vec2& msg) {
   CHECKEQ((int)s.size(), 2);
   msg = Vec2(convertFromString<int>(s[0]), convertFromString<int>(s[1]));
   return d;
-}
-
-inline Debug& operator <<(Debug& d, Rectangle rect) {
-  return d << "(" << rect.getPX() << "," << rect.getPY() << ") (" << rect.getKX() << "," << rect.getKY() << ")";
 }
 
 template<class T>

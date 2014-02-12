@@ -259,10 +259,12 @@ static unordered_map<Vec2, const ViewObject*> background;
 
 
 const Square* Level::getSquare(Vec2 pos) const {
+  CHECK(inBounds(pos));
   return squares[pos].get();
 }
 
 Square* Level::getSquare(Vec2 pos) {
+  CHECK(inBounds(pos));
   return squares[pos].get();
 }
 
