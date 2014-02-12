@@ -20,13 +20,13 @@ vector<Collective::BuildInfo> Collective::normalBuildInfo {
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 20, "Library"}),
     BuildInfo({SquareType::LABORATORY, ResourceId::STONE, 15, "Laboratory"}),
     BuildInfo({SquareType::WORKSHOP, ResourceId::IRON, 15, "Workshop"}),
-    BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast cage"}),
+    BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast cage"}, "Place it in the forest."),
     BuildInfo({SquareType::GRAVE, ResourceId::STONE, 20, "Graveyard"}),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
     BuildInfo(BuildInfo::DESTROY),
     BuildInfo(BuildInfo::IMP),
-    BuildInfo(BuildInfo::GUARD_POST),
+    BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion."),
 };
 
 vector<MinionType> minionTypes {
@@ -476,7 +476,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.name = "KeeperRL";
   info.buttons.clear();
-  for (BuildInfo button : getBuildInfo())
+  for (BuildInfo button : getBuildInfo()) {
     switch (button.buildType) {
       case BuildInfo::SQUARE: {
             BuildInfo::SquareInfo& elem = button.squareInfo;
@@ -538,6 +538,8 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
                ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", Nothing(), "", true});
            break;
     }
+    info.buttons.back().help = button.help;
+  }
   info.activeButton = currentButton;
   info.tasks = minionTaskStrings;
   for (Creature* c : minions)

@@ -131,10 +131,12 @@ class Collective : public CreatureView, public EventListener {
 
     enum BuildType { DIG, SQUARE, IMP, TRAP, DOOR, GUARD_POST, DESTROY} buildType;
 
-    BuildInfo(SquareInfo info) : squareInfo(info), buildType(SQUARE) {}
-    BuildInfo(TrapInfo info) : trapInfo(info), buildType(TRAP) {}
-    BuildInfo(DoorInfo info) : doorInfo(info), buildType(DOOR) {}
-    BuildInfo(BuildType type) : buildType(type) {
+    string help;
+
+    BuildInfo(SquareInfo info, const string& h = "") : squareInfo(info), buildType(SQUARE), help(h) {}
+    BuildInfo(TrapInfo info, const string& h = "") : trapInfo(info), buildType(TRAP), help(h) {}
+    BuildInfo(DoorInfo info, const string& h = "") : doorInfo(info), buildType(DOOR), help(h) {}
+    BuildInfo(BuildType type, const string& h = "") : buildType(type), help(h) {
       CHECK(contains({DIG, IMP, GUARD_POST, DESTROY}, type));
     }
 

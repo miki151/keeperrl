@@ -147,6 +147,7 @@ class View {
         Optional<pair<ViewObject, int>> cost;
         string count;
         bool active;
+        string help;
       };
       vector<Button> buttons;
       string monsterHeader;

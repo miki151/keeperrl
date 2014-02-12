@@ -1267,6 +1267,8 @@ void WindowView::drawBuildings(GameInfo::BandInfo& info) {
       drawText(color, posX, height, costText);
     }
     roomButtons.emplace_back(textX, height,textX + 150, height + legendLineHeight);
+    if (!info.buttons[i].help.empty() && mousePos && mousePos->inRectangle(roomButtons.back()))
+      drawHint(white, info.buttons[i].help);
   }
 }
   
