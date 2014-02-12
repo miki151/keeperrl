@@ -1054,7 +1054,7 @@ bool Creature::takeDamage(const Attack& attack) {
       privateEnemies.push_back(c);
   int defense = getAttr(AttrType::DEFENSE);
   Debug() << getTheName() << " attacked by " << attack.getAttacker()->getName() << " damage " << attack.getStrength() << " defense " << defense;
-  if (passiveAttack && attack.getAttacker()) {
+  if (passiveAttack && attack.getAttacker() && attack.getAttacker()->getPosition().dist8(position) == 1) {
     Creature* other = const_cast<Creature*>(attack.getAttacker());
     Effect::applyToCreature(other, *passiveAttack, EffectStrength::NORMAL);
     other->lastAttacker = this;
