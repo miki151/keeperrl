@@ -1774,10 +1774,35 @@ Optional<int> reverseIndexHeight(const vector<View::ListElem>& options, int heig
 }
 
 Optional<Vec2> WindowView::chooseDirection(const string& message) {
-  showMessage(message);
-  refreshScreen();
   do {
+    showMessage(message);
     BlockingEvent event = readkey();
+    if (event.type == BlockingEvent::MOUSE_MOVE || event.type == BlockingEvent::MOUSE_LEFT) {
+      if (auto pos = getHighlightedTile()) {
+        refreshScreen(false);
+        int numArrow = 0;
+        Vec2 middle = mapLayout->getAllTiles(maxLevelBounds).middle();
+        if (pos == middle)
+          continue;
+        Vec2 dir = (*pos - middle).getBearing();
+        switch (dir.getCardinalDir()) {
+          case Dir::N: numArrow = 2; break;
+          case Dir::S: numArrow = 6; break;
+          case Dir::E: numArrow = 4; break;
+          case Dir::W: numArrow = 0; break;
+          case Dir::NE: numArrow = 3; break;
+          case Dir::NW: numArrow = 1; break;
+          case Dir::SE: numArrow = 5; break;
+          case Dir::SW: numArrow = 7; break;
+        }
+        Vec2 wpos = mapLayout->projectOnScreen(middle + dir);
+        drawSprite(wpos.x, wpos.y, 16 * 36, (8 + numArrow) * 36, 36, 36, tiles[4]);
+        drawAndClearBuffer();
+        if (event.type == BlockingEvent::MOUSE_LEFT)
+          return dir;
+      }
+    } else
+    refreshScreen();
     if (event.type == BlockingEvent::KEY)
       switch (event.key->code) {
         case Keyboard::Up:

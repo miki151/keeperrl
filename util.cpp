@@ -42,6 +42,21 @@ int RandomGen::getRandom(const string& shuffleId, int min, int max) {
   return ret;
 }
 
+string getCardinalName(Dir d) {
+  switch (d) {
+    case Dir::N: return "north";
+    case Dir::S: return "south";
+    case Dir::E: return "east";
+    case Dir::W: return "west";
+    case Dir::NE: return "north-east";
+    case Dir::NW: return "north-weast";
+    case Dir::SE: return "south-east";
+    case Dir::SW: return "south-west";
+  }
+  FAIL << int(d);
+  return "";
+}
+
 int RandomGen::getRandom(const vector<double>& weights, double r) {
   double sum = 0;
   for (double elem : weights)
@@ -335,28 +350,28 @@ pair<Vec2, Vec2> Vec2::approxL1() const {
   return make_pair(Vec2(sgn(x, x), sgn(y,y)), Vec2(sgn(x, y), sgn(y, x)));
 }
 
-string Vec2::getBearing() const {
+Vec2 Vec2::getBearing() const {
   double ang = atan2(y, x) / 3.14159265359 * 180 / 45;
   if (ang < 0)
     ang += 8;
   if (ang < 0.5 || ang >= 7.5)
-    return "east";
+    return Vec2(1, 0);
   if (ang >= 0.5 && ang < 1.5)
-    return "south-east";
+    return Vec2(1, 1);
   if (ang >= 1.5 && ang < 2.5)
-    return "south";
+    return Vec2(0, 1);
   if (ang >= 2.5 && ang < 3.5)
-    return "south-west";
+    return Vec2(-1, 1);
   if (ang >= 3.5 && ang < 4.5)
-    return "west";
+    return Vec2(-1, 0);
   if (ang >= 4.5 && ang < 5.5)
-    return "north-west";
+    return Vec2(-1, -1);
   if (ang >= 5.5 && ang < 6.5)
-    return "north";
+    return Vec2(0, -1);
   if (ang >= 6.5 && ang < 7.5)
-    return "north-east";
+    return Vec2(1, -1);
   FAIL << ang;
-  return "";
+  return Vec2(0, 0);
 }
 
 Rectangle::Rectangle(int _w, int _h) : px(0), py(0), kx(_w), ky(_h), w(_w), h(_h) {

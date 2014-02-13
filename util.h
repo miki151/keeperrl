@@ -82,7 +82,7 @@ class Vec2 {
   double lengthD() const;
   Vec2 shorten() const;
   pair<Vec2, Vec2> approxL1() const;
-  string getBearing() const;
+  Vec2 getBearing() const;
   bool isCardinal4() const;
   Dir getCardinalDir() const;
 
@@ -93,6 +93,8 @@ class Vec2 {
   vector<Vec2> neighbors4(bool shuffle = false) const;
   static vector<Vec2> corners();
 };
+
+string getCardinalName(Dir d);
 
 namespace std {
 

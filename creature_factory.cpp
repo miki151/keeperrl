@@ -489,7 +489,8 @@ class VillageElder : public Creature {
       }
       string message = MessageBuffer::important(q.first->getMessage());
       if (const Location* loc = q.first->getLocation()) {
-        message += " You need to head " + (loc->getBounds().middle() - getPosition()).getBearing() + " to find it.";
+        message += " You need to head " + 
+          getCardinalName((loc->getBounds().middle() - getPosition()).getBearing().getCardinalDir()) + " to find it.";
         who->learnLocation(loc);
       }
       who->privateMessage(message);
@@ -519,7 +520,7 @@ class VillageElder : public Creature {
         if (l->hasName() && l != getLevel()->getLocation(getPosition())) {
           Vec2 dir = l->getBounds().middle() - getPosition();
           string dist = dir.lengthD() > 150 ? "far" : "close";
-          string bearing = dir.getBearing();
+          string bearing = getCardinalName(dir.getBearing().getCardinalDir());
           who->privateMessage("\"There is a " + l->getName() + " " + dist + " in the " + bearing + "\"");
           who->privateMessage("\"" + l->getDescription() + "\"");
           return;
