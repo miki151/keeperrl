@@ -430,7 +430,8 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
   }
 }
 
-vector<int> techAdvancePoints { 100, 200, 300, 1000};
+int infMana = 1000000;
+vector<int> techAdvancePoints { 100, 200, 300, infMana};
 
 void Collective::handleLibrary(View* view) {
   if (mySquares.at(SquareType::LIBRARY).empty()) {
@@ -446,7 +447,7 @@ void Collective::handleLibrary(View* view) {
   for (TechId id : techIds) {
     string text = getTechName(id) + ": " + getTechLevelName(techLevels.at(id));
     int neededPoints = techAdvancePoints[techLevels.at(id)];
-    if (neededPoints < 1000)
+    if (neededPoints < infMana)
       text += "  (" + convertToString(neededPoints) + " mana to advance)";
     options.emplace_back(text, neededPoints <= mana ? View::NORMAL : View::INACTIVE);
   }
@@ -1065,7 +1066,7 @@ void Collective::updateTraps() {
 
 
 void Collective::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime) {
-  int infinity = 1000;
+  int infinity = 1000000;
   int minX = infinity, maxX = -infinity, minY = infinity, maxY = -infinity;
   for (Vec2 v : enemyPos) {
     minX = min(minX, v.x);
