@@ -23,6 +23,7 @@
 #include <thread>
 #include <stack>
 #include <typeinfo>
+#include <tuple>
 
 #ifndef RELEASE
 
