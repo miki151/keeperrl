@@ -1,8 +1,6 @@
 #ifndef _WINDOW_VIEW
 #define _WINDOW_VIEW
 
-#include <SFML/Graphics.hpp>
-
 #include "util.h"
 #include "view.h"
 #include "action.h"
@@ -15,6 +13,7 @@ class WindowView: public View {
   public:
   
   virtual void initialize() override;
+  virtual void reset() override;
   virtual void displaySplash(bool& ready) override;
 
   virtual void close() override;

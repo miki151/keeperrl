@@ -7,6 +7,7 @@
 #include "level.h"
 #include "options.h"
 #include "location.h"
+#include "renderer.h"
 
 using sf::Color;
 using sf::String;
@@ -615,18 +616,7 @@ static Tile getTile(const ViewObject& obj, bool sprite) {
     return getAsciiTile(obj);
 }
 
-RenderWindow* display = nullptr;
-sf::View* sfView;
 
-int screenWidth;
-int screenHeight;
-
-Font textFont;
-int textSize = 20;
-int smallTextSize = 12;
-
-Font tileFont;
-Font symbolFont;
 
 Rectangle maxLevelBounds(600, 600);
 Image mapBuffer;
@@ -693,121 +683,66 @@ class TempClockPause {
   bool cont = false;
 };
 
-static int getTextLength(string s, const Font& font = textFont, int size = textSize) {
-  Text t(s, font, size);
-  return t.getLocalBounds().width;
-}
-
-static void drawText(const Font& font, int size, Color color, int x, int y, String s, bool center = false) {
-  int ox = 0;
-  int oy = 0;
-  Text t(s, font, size);
-  if (center) {
-    sf::FloatRect bounds = t.getLocalBounds();
-    ox -= bounds.left + bounds.width / 2;
-    //oy -= bounds.top + bounds.height / 2;
-  }
-  t.setPosition(x + ox, y + oy);
-  t.setColor(color);
-  display->draw(t);
-}
-
-static void drawText(Color color, int x, int y, string s, bool center = false, int size = textSize) {
-  std::basic_string<sf::Uint32> utf32;
-  sf::Utf8::toUtf32(s.begin(), s.end(), std::back_inserter(utf32));
-  drawText(textFont, size, color, x, y, utf32, center);
-}
-
-static void drawText(Color color, int x, int y, const char* c, bool center = false, int size = textSize) {
-  drawText(textFont, size, color, x, y, String(c), center);
-}
-
-static void drawImage(int px, int py, const Image& image, double scale = 1) {
-  Texture t;
-  t.loadFromImage(image);
-  Sprite s(t);
-  s.setPosition(px, py);
-  if (scale != 1)
-    s.setScale(scale, scale);
-  display->draw(s);
-}
-
-static void drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t, int dw = -1, int dh = -1,
-    Optional<Color> color = Nothing()) {
-  Sprite s(t, sf::IntRect(px, py, w, h));
-  s.setPosition(x, y);
-  if (color)
-    s.setColor(*color);
-  if (dw != -1)
-    s.setScale(double(dw) / w, double(dh) / h);
-  display->draw(s);
-}
 
 int topBarHeight = 10;
 int rightBarWidth = 300;
 int rightBarText = rightBarWidth - 30;
 int bottomBarHeight = 75;
 
+Renderer renderer;
+
 Rectangle WindowView::getMapViewBounds() const {
-  return Rectangle(0, topBarHeight, screenWidth - rightBarWidth, screenHeight - bottomBarHeight);
+  return Rectangle(0, topBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight() - bottomBarHeight);
 }
 
 const MapMemory* lastMemory = nullptr;
 
+
 void WindowView::initialize() {
-  if (!display) {
-    display = new RenderWindow(VideoMode(1024, 600, 32), "KeeperRL");
-    sfView = new sf::View(display->getDefaultView());
-    screenHeight = display->getSize().y;
-    screenWidth = display->getSize().x;
+  renderer.initialize(1024, 600, 32, "KeeperRL");
 
-    CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
-    CHECK(tileFont.loadFromFile("Lato-Bol.ttf"));
-    CHECK(symbolFont.loadFromFile("Symbola.ttf"));
+  asciiLayouts = {
+    MapLayout::gridLayout(renderer.getWidth(), renderer.getHeight(), 16, 20, 0, topBarHeight, rightBarWidth, bottomBarHeight,
+        allLayers),
+    MapLayout::gridLayout(renderer.getWidth(), renderer.getHeight(), 8, 10, 0, topBarHeight, rightBarWidth, bottomBarHeight,
+        {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
+  spriteLayouts = {
+    MapLayout::gridLayout(renderer.getWidth(), renderer.getHeight(), 36, 36, 0, topBarHeight, rightBarWidth,
+        bottomBarHeight, allLayers),
+    MapLayout::gridLayout(renderer.getWidth(), renderer.getHeight(), 18, 18, 0, topBarHeight, rightBarWidth,
+        bottomBarHeight, allLayers), true};
+  currentTileLayout = spriteLayouts;
 
-    asciiLayouts = {
-      MapLayout::gridLayout(screenWidth, screenHeight, 16, 20, 0, topBarHeight, rightBarWidth, bottomBarHeight,
-          allLayers),
-      MapLayout::gridLayout(screenWidth, screenHeight, 8, 10, 0, topBarHeight, rightBarWidth, bottomBarHeight,
-          {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
-    spriteLayouts = {
-      MapLayout::gridLayout(screenWidth, screenHeight, 36, 36, 0, topBarHeight, rightBarWidth,
-          bottomBarHeight, allLayers),
-      MapLayout::gridLayout(screenWidth, screenHeight, 18, 18, 0, topBarHeight, rightBarWidth,
-          bottomBarHeight, allLayers), true};
-    currentTileLayout = spriteLayouts;
+  allLayouts.push_back(asciiLayouts.normalLayout);
+  allLayouts.push_back(asciiLayouts.unzoomLayout);
+  allLayouts.push_back(spriteLayouts.normalLayout);
+  allLayouts.push_back(spriteLayouts.unzoomLayout);
+  Image tileImage;
+  CHECK(tileImage.loadFromFile("tiles_int.png"));
+  Image tileImage2;
+  CHECK(tileImage2.loadFromFile("tiles2_int.png"));
+  Image tileImage3;
+  CHECK(tileImage3.loadFromFile("tiles3_int.png"));
+  Image tileImage4;
+  CHECK(tileImage4.loadFromFile("tiles4_int.png"));
+  Image tileImage5;
+  CHECK(tileImage5.loadFromFile("tiles5_int.png"));
+  Image tileImage6;
+  CHECK(tileImage6.loadFromFile("tiles6_int.png"));
+  Image tileImage7;
+  CHECK(tileImage7.loadFromFile("tiles7_int.png"));
+  tiles.resize(7);
+  tiles[0].loadFromImage(tileImage);
+  tiles[1].loadFromImage(tileImage2);
+  tiles[2].loadFromImage(tileImage3);
+  tiles[3].loadFromImage(tileImage4);
+  tiles[4].loadFromImage(tileImage5);
+  tiles[5].loadFromImage(tileImage6);
+  tiles[6].loadFromImage(tileImage7);
+}
 
-    allLayouts.push_back(asciiLayouts.normalLayout);
-    allLayouts.push_back(asciiLayouts.unzoomLayout);
-    allLayouts.push_back(spriteLayouts.normalLayout);
-    allLayouts.push_back(spriteLayouts.unzoomLayout);
-    Image tileImage;
-    CHECK(tileImage.loadFromFile("tiles_int.png"));
-    Image tileImage2;
-    CHECK(tileImage2.loadFromFile("tiles2_int.png"));
-    Image tileImage3;
-    CHECK(tileImage3.loadFromFile("tiles3_int.png"));
-    Image tileImage4;
-    CHECK(tileImage4.loadFromFile("tiles4_int.png"));
-    Image tileImage5;
-    CHECK(tileImage5.loadFromFile("tiles5_int.png"));
-    Image tileImage6;
-    CHECK(tileImage6.loadFromFile("tiles6_int.png"));
-    Image tileImage7;
-    CHECK(tileImage7.loadFromFile("tiles7_int.png"));
-    tiles.resize(7);
-    tiles[0].loadFromImage(tileImage);
-    tiles[1].loadFromImage(tileImage2);
-    tiles[2].loadFromImage(tileImage3);
-    tiles[3].loadFromImage(tileImage4);
-    tiles[4].loadFromImage(tileImage5);
-    tiles[5].loadFromImage(tileImage6);
-    tiles[6].loadFromImage(tileImage7);
-    //for (Texture& tex : tiles)
-    //  tex.setSmooth(true);
-  } else {
-    lastMemory = nullptr;
-  }
+void WindowView::reset() {
+  lastMemory = nullptr;
   mapBuffer.create(maxLevelBounds.getW(), maxLevelBounds.getH());
   mapLayout = currentTileLayout.normalLayout;
   center = {0, 0};
@@ -820,16 +755,16 @@ void displayMenuSplash2() {
   Image splash;
   CHECK(splash.loadFromFile("splash2f.png"));
   int bottomMargin = 90;
-  drawImage(screenWidth / 2 - 415, screenHeight - bottomMargin, splash);
+  renderer.drawImage(renderer.getWidth() / 2 - 415, renderer.getHeight() - bottomMargin, splash);
   CHECK(splash.loadFromFile("splash2e.png"));
-  drawImage((screenWidth - splash.getSize().x) / 2, 90 - splash.getSize().y, splash);
+  renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2, 90 - splash.getSize().y, splash);
 }
 
 void displayMenuSplash() {
   Image splash;
   CHECK(splash.loadFromFile("splash2f.png"));
   int bottomMargin = 100;
-  drawImage(100, screenHeight - bottomMargin, splash);
+  renderer.drawImage(100, renderer.getHeight() - bottomMargin, splash);
   vector<Rectangle> drawn;
   if (splashPositions.empty())
     random_shuffle(++splashPaths.begin(), splashPaths.end(), [](int a) { return Random.getRandom(a);});
@@ -842,8 +777,8 @@ void displayMenuSplash() {
         px = splashPositions[path].x;
         py = splashPositions[path].y;
       } else {
-        px = Random.getRandom(screenWidth - splash.getSize().x);
-        py = Random.getRandom(screenHeight - bottomMargin - splash.getSize().y);
+        px = Random.getRandom(renderer.getWidth() - splash.getSize().x);
+        py = Random.getRandom(renderer.getHeight() - bottomMargin - splash.getSize().y);
         splashPositions.push_back({px, py});
       }
       Rectangle pos(px, py, px + splash.getSize().x, py + splash.getSize().y);
@@ -860,11 +795,11 @@ void displayMenuSplash() {
           break;
       }
       drawn.push_back(pos);
-      drawImage(pos.getPX(), pos.getPY(), splash);
+      renderer.drawImage(pos.getPX(), pos.getPY(), splash);
       break;
     }
   }
- // drawText(white, screenWidth / 2, screenHeight - 60, "Loading...", true);
+ // drawText(white, renderer.getWidth() / 2, renderer.getHeight() - 60, "Loading...", true);
  // drawAndClearBuffer();
 }
 
@@ -872,12 +807,12 @@ void WindowView::displaySplash(bool& ready) {
   Image splash;
   CHECK(splash.loadFromFile(splashPaths[Random.getRandom(1, splashPaths.size())]));
   while (!ready) {
-    drawImage((screenWidth - splash.getSize().x) / 2, (screenHeight - splash.getSize().y) / 2, splash);
-    drawText(white, screenWidth / 2, screenHeight - 60, "Creating a new world, just for you...", true);
-    drawAndClearBuffer();
+    renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2, (renderer.getHeight() - splash.getSize().y) / 2, splash);
+    renderer.drawText(white, renderer.getWidth() / 2, renderer.getHeight() - 60, "Creating a new world, just for you...", true);
+    renderer.drawAndClearBuffer();
     sf::sleep(sf::milliseconds(30));
     Event event;
-    while (display->pollEvent(event)) {
+    while (renderer.pollEvent(event)) {
       if (event.type == Event::Resized) {
         resize(event.size.width, event.size.height);
       }
@@ -887,18 +822,16 @@ void WindowView::displaySplash(bool& ready) {
 
 bool keypressed() {
   Event event;
-  while (display->pollEvent(event))
+  while (renderer.pollEvent(event))
     if (event.type == Event::KeyPressed)
       return true;
   return false;
 }
 
 void WindowView::resize(int width, int height) {
-  screenWidth = width;
-  screenHeight = height;
+  renderer.resize(width, height);
   for (MapLayout* layout : allLayouts)
-    layout->updateScreenSize(screenWidth, screenHeight);
-  display->setView(*(sfView = new sf::View(sf::FloatRect(0, 0, screenWidth, screenHeight))));
+    layout->updateScreenSize(renderer.getWidth(), renderer.getHeight());
 }
 
 Optional<Vec2> mousePos;
@@ -922,13 +855,13 @@ static bool leftMouseButtonPressed = false;
 WindowView::BlockingEvent WindowView::readkey() {
   Event event;
   while (1) {
-    display->waitEvent(event);
+    renderer.waitEvent(event);
     Debug() << "Event " << event.type;
     bool mouseEv = false;
     while (event.type == Event::MouseMoved && !Mouse::isButtonPressed(Mouse::Right)) {
       mouseEv = true;
       mousePos = Vec2(event.mouseMove.x, event.mouseMove.y);
-      if (!display->pollEvent(event))
+      if (!renderer.pollEvent(event))
         return { BlockingEvent::MOUSE_MOVE };
     }
     if (mouseEv && event.type == Event::MouseMoved)
@@ -936,13 +869,13 @@ WindowView::BlockingEvent WindowView::readkey() {
     if (event.type == Event::KeyPressed) {
       Event::KeyEvent ret(event.key);
       mousePos = Nothing();
-      while (display->pollEvent(event));
+      while (renderer.pollEvent(event));
       return { BlockingEvent::KEY, ret };
     }
     bool scrolled = false;
     while (considerScrollEvent(event)) {
       mousePos = Nothing();
-      if (!display->pollEvent(event))
+      if (!renderer.pollEvent(event))
         return { BlockingEvent::IDLE };
       scrolled = true;
     }
@@ -975,21 +908,6 @@ WindowView::BlockingEvent WindowView::readkey() {
 void WindowView::close() {
 }
 
-void drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline = Nothing()) {
-  RectangleShape r(Vector2f(t.getW(), t.getH()));
-  r.setPosition(t.getPX(), t.getPY());
-  r.setFillColor(color);
-  if (outline) {
-    r.setOutlineThickness(-2);
-    r.setOutlineColor(*outline);
-  }
-  display->draw(r);
-}
-
-void drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline = Nothing()) {
-  drawFilledRectangle(Rectangle(px, py, kx, ky), color, outline);
-}
-
 static Color getBleedingColor(const ViewObject& object) {
   double bleeding = object.getBleeding();
  /* if (object.isPoisoned())
@@ -1004,8 +922,6 @@ static Color getColor(const ViewObject& object) {
     return darkGray;
   if (object.isHidden())
     return lightGray;
- /* if (object.isBurning())
-    return red;*/
   double bleeding = object.getBleeding();
   if (bleeding > 0)
     bleeding = 0.5 + bleeding / 2;
@@ -1016,16 +932,6 @@ static Color getColor(const ViewObject& object) {
       (1 - bleeding) * color.g,
       (1 - bleeding) * color.b);
 }
-
-/*static Color getMemoryColor(const ViewObject& object) {
-  Color color = getTile(object).color;
-  float cf = 3.5;
-  float r = color.r, g = color.g, b = color.b;
-  return Color(
-        (cf * r + g + b) / (2 + cf),
-        (r + g * cf + b) / (2 + cf),
-        (r + g + b * cf) / (2 + cf));
-}*/
 
 static Color transparency(const Color& color, int trans) {
   return Color(color.r, color.g, color.b, trans);
@@ -1042,7 +948,7 @@ void printStanding(int x, int y, double standing, const string& tribeName) {
   Color color = standing < 0
       ? Color(255, 255 * (1. + standing), 255 *(1. + standing))
       : Color(255 * (1. - standing), 255, 255 * (1. - standing));
-  drawText(color, x, y, (standing >= 0 ? "friend of " : "enemy of ") + tribeName);
+  renderer.drawText(color, x, y, (standing >= 0 ? "friend of " : "enemy of ") + tribeName);
 }
 
 Color getSpeedColor(int value) {
@@ -1059,12 +965,13 @@ void WindowView::drawPlayerInfo() {
     title = " " + title;
   for (int i : All(info.adjectives))
     title = string(i <info.adjectives.size() - 1 ? ", " : " ") + info.adjectives[i] + title;
-  int line1 = screenHeight - bottomBarHeight + 10;
+  int line1 = renderer.getHeight() - bottomBarHeight + 10;
   int line2 = line1 + 28;
-  drawFilledRectangle(0, screenHeight - bottomBarHeight, screenWidth - rightBarWidth, screenHeight, translucentBlack);
+  renderer.drawFilledRectangle(0, renderer.getHeight() - bottomBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight(),
+      translucentBlack);
   string playerLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title) +
     "          T: " + convertToString<int>(info.time) + "            " + info.levelName;
-  drawText(white, 10, line1, playerLine);
+  renderer.drawText(white, 10, line1, playerLine);
   int keySpacing = 50;
   int startX = 10;
   bottomKeyButtons.clear();
@@ -1082,8 +989,8 @@ void WindowView::drawPlayerInfo() {
     bottomKeys = concat({{ "Shift + Z", "World map", {Keyboard::Z, false, false, true}}}, bottomKeys);
   for (int i : All(bottomKeys)) {
     string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
-    int endX = startX + getTextLength(text) + keySpacing;
-    drawText(lightBlue, startX, line2, text);
+    int endX = startX + renderer.getTextLength(text) + keySpacing;
+    renderer.drawText(lightBlue, startX, line2, text);
     bottomKeyButtons.emplace_back(startX, line2, endX, line2 + 25);
     startX = endX;
   }
@@ -1093,8 +1000,8 @@ void WindowView::drawPlayerInfo() {
     int w = 45;
     int line = topBarHeight;
     int h = 45;
-    int leftPos = screenWidth - rightBarText + 15;
-    drawText(i < 1 ? symbolFont : textFont, 35, i == int(legendOption) ? green : white,
+    int leftPos = renderer.getWidth() - rightBarText + 15;
+    renderer.drawText(i < 1 ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 35, i == int(legendOption) ? green : white,
         leftPos + i * w, line, optionSyms[i], true);
     optionButtons.emplace_back(leftPos + i * w - w / 2, line,
         leftPos + (i + 1) * w - w / 2, line + h);
@@ -1110,8 +1017,8 @@ const int legendStartHeight = topBarHeight + 70;
 
 void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   int lineStart = legendStartHeight;
-  int lineX = screenWidth - rightBarText + 10;
-  int line2X = screenWidth - rightBarText + 110;
+  int lineX = renderer.getWidth() - rightBarText + 10;
+  int line2X = renderer.getWidth() - rightBarText + 110;
   vector<string> lines {
       info.weaponName != "" ? "wielding " + info.weaponName : "barehanded",
       "",
@@ -1133,8 +1040,8 @@ void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
     "$" + convertToString(info.numGold),
   };
   for (int i : All(lines)) {
-    drawText(white, lineX, lineStart + legendLineHeight * i, lines[i]);
-    drawText(white, line2X, lineStart + legendLineHeight * i, lines2[i]);
+    renderer.drawText(white, lineX, lineStart + legendLineHeight * i, lines[i]);
+    renderer.drawText(white, line2X, lineStart + legendLineHeight * i, lines2[i]);
   }
 }
 
@@ -1163,23 +1070,23 @@ static void drawViewObject(const ViewObject& obj, int x, int y, bool sprite) {
       int sz = tileSize[tile.getTexNum()];
       int of = (nominalSize - sz) / 2;
       Vec2 coord = tile.getSpriteCoord();
-      drawSprite(x - sz / 2, y + of, coord.x * sz, coord.y * sz, sz, sz, tiles[tile.getTexNum()], sz * 2 / 3, sz * 2 /3);
+      renderer.drawSprite(x - sz / 2, y + of, coord.x * sz, coord.y * sz, sz, sz, tiles[tile.getTexNum()], sz * 2 / 3, sz * 2 /3);
     } else
-      drawText(tile.symFont ? symbolFont : textFont, 20, getColor(obj), x, y, tile.text, true);
+      renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, getColor(obj), x, y, tile.text, true);
 }
 
 void WindowView::drawMinions(GameInfo::BandInfo& info) {
   map<string, pair<ViewObject, int>> creatureMap = getCreatureMap(info.creatures);
   map<string, pair<ViewObject, int>> enemyMap = getCreatureMap(info.enemies);
-  drawText(white, screenWidth - rightBarText, legendStartHeight, info.monsterHeader);
+  renderer.drawText(white, renderer.getWidth() - rightBarText, legendStartHeight, info.monsterHeader);
   int cnt = 0;
   int lineStart = legendStartHeight + 35;
-  int textX = screenWidth - rightBarText + 10;
+  int textX = renderer.getWidth() - rightBarText + 10;
   for (auto elem : creatureMap){
     int height = lineStart + cnt * legendLineHeight;
     drawViewObject(elem.second.first, textX, height, currentTileLayout.sprites);
     Color col = (elem.first == chosenCreature) ? green : white;
-    drawText(col, textX + 20, height,
+    renderer.drawText(col, textX + 20, height,
         convertToString(elem.second.second) + "   " + elem.first);
     creatureGroupButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
     creatureNames.push_back(elem.first);
@@ -1187,32 +1094,32 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
   }
   
   if (info.gatheringTeam && !info.team.empty()) {
-    drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, 
+    renderer.drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, 
         getPlural("monster", "monsters", info.team.size()));
     ++cnt;
   }
   if (info.creatures.size() > 1 || info.gatheringTeam) {
     int height = lineStart + (cnt + 1) * legendLineHeight;
-    drawText((info.gatheringTeam && info.team.empty()) ? green : white, textX, height, 
+    renderer.drawText((info.gatheringTeam && info.team.empty()) ? green : white, textX, height, 
         info.team.empty() ? "[gather team]" : "[command team]");
     int butWidth = 150;
     teamButton = Rectangle(textX, height, textX + butWidth, height + legendLineHeight);
     if (info.gatheringTeam) {
-      drawText(white, textX + butWidth, height, "[cancel]");
+      renderer.drawText(white, textX + butWidth, height, "[cancel]");
       cancelTeamButton = Rectangle(textX + butWidth, height, textX + 230, height + legendLineHeight);
     }
     cnt += 2;
   }
   ++cnt;
-  drawText(lightBlue, textX, lineStart + (cnt + 1) * legendLineHeight, "Click on minion to possess.");
+  renderer.drawText(lightBlue, textX, lineStart + (cnt + 1) * legendLineHeight, "Click on minion to possess.");
   ++cnt;
   ++cnt;
   if (!enemyMap.empty()) {
-    drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, "Enemies:");
+    renderer.drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, "Enemies:");
     for (auto elem : enemyMap){
       int height = lineStart + (cnt + 2) * legendLineHeight + 10;
       drawViewObject(elem.second.first, textX, height, currentTileLayout.sprites);
-      drawText(white, textX + 20, height, convertToString(elem.second.second) + "   " + elem.first);
+      renderer.drawText(white, textX + 20, height, convertToString(elem.second.second) + "   " + elem.first);
       ++cnt;
     }
   }
@@ -1225,30 +1132,30 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
       for (const Creature* c : info.creatures)
         if (c->getName() == chosenCreature)
           chosen.push_back(c);
-      int winX = screenWidth - rightBarWidth - width - 20;
-      drawFilledRectangle(winX, lineStart,
+      int winX = renderer.getWidth() - rightBarWidth - width - 20;
+      renderer.drawFilledRectangle(winX, lineStart,
           winX + width + 20, legendStartHeight + 35 + (chosen.size() + 3) * legendLineHeight, black);
-      drawText(lightBlue, winX + 10, lineStart, 
+      renderer.drawText(lightBlue, winX + 10, lineStart, 
           info.gatheringTeam ? "Click to add to team:" : "Click to possess:");
       int cnt = 1;
       for (const Creature* c : chosen) {
         int height = lineStart + cnt * legendLineHeight;
         drawViewObject(c->getViewObject(), winX + 20, height, currentTileLayout.sprites);
-        drawText(contains(info.team, c) ? green : white, textX - width + 30, height,
+        renderer.drawText(contains(info.team, c) ? green : white, textX - width + 30, height,
             "level: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c]);
         creatureButtons.emplace_back(winX + 20, height, winX + width + 20, height + legendLineHeight);
         chosenCreatures.push_back(c);
         ++cnt;
       }
       int height = lineStart + cnt * legendLineHeight + 10;
-      drawText(white, winX + 20, height, "[show description]");
+      renderer.drawText(white, winX + 20, height, "[show description]");
       descriptionButton = Rectangle(winX, height, winX + width + 20, height + legendLineHeight);
     }
   }
 }
 
 void WindowView::drawBuildings(GameInfo::BandInfo& info) {
-  int textX = screenWidth - rightBarText;
+  int textX = renderer.getWidth() - rightBarText;
   for (int i : All(info.buttons)) {
     int height = legendStartHeight + i * legendLineHeight;
     drawViewObject(info.buttons[i].object, textX, height, currentTileLayout.sprites);
@@ -1258,13 +1165,13 @@ void WindowView::drawBuildings(GameInfo::BandInfo& info) {
     else if (!info.buttons[i].active)
       color = lightGray;
     string text = info.buttons[i].name + " " + info.buttons[i].count;
-    drawText(color, textX + 30, height, text);
- //   int posX = screenWidth - rightBarWidth + 60 + getTextLength(text);
+    renderer.drawText(color, textX + 30, height, text);
+ //   int posX = renderer.getWidth() - rightBarWidth + 60 + getTextLength(text);
     if (info.buttons[i].cost) {
       string costText = convertToString(info.buttons[i].cost->second);
-      int posX = screenWidth - getTextLength(costText) - 10;
-      drawViewObject(info.buttons[i].cost->first, screenWidth - 45, height, true);
-      drawText(color, posX, height, costText);
+      int posX = renderer.getWidth() - renderer.getTextLength(costText) - 10;
+      drawViewObject(info.buttons[i].cost->first, renderer.getWidth() - 45, height, true);
+      renderer.drawText(color, posX, height, costText);
     }
     roomButtons.emplace_back(textX, height,textX + 150, height + legendLineHeight);
     if (!info.buttons[i].help.empty() && mousePos && mousePos->inRectangle(roomButtons.back()))
@@ -1273,12 +1180,12 @@ void WindowView::drawBuildings(GameInfo::BandInfo& info) {
 }
   
 void WindowView::drawTechnology(GameInfo::BandInfo& info) {
-  int textX = screenWidth - rightBarText;
+  int textX = renderer.getWidth() - rightBarText;
   for (int i : All(info.techButtons)) {
     int height = legendStartHeight + i * legendLineHeight;
     if (info.techButtons[i].viewObject)
       drawViewObject(*info.techButtons[i].viewObject, textX, height, true);
-    drawText(white, textX + 20, height, info.techButtons[i].name);
+    renderer.drawText(white, textX + 20, height, info.techButtons[i].name);
     techButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
   }
 }
@@ -1289,7 +1196,7 @@ void WindowView::drawKeeperHelp() {
   int cnt = 0;
   for (string line : helpText) {
     int height = legendStartHeight + cnt * legendLineHeight;
-    drawText(lightBlue, screenWidth - rightBarText, height, line);
+    renderer.drawText(lightBlue, renderer.getWidth() - rightBarText, height, line);
     cnt ++;
   }
 }
@@ -1297,23 +1204,23 @@ void WindowView::drawKeeperHelp() {
 void WindowView::drawBandInfo() {
   GameInfo::BandInfo& info = gameInfo.bandInfo;
   int lineHeight = 28;
-  int line0 = screenHeight - 90;
+  int line0 = renderer.getHeight() - 90;
   int line1 = line0 + lineHeight;
   int line2 = line1 + lineHeight;
-  drawFilledRectangle(0, line1 - 10, screenWidth - rightBarWidth, screenHeight, translucentBlack);
+  renderer.drawFilledRectangle(0, line1 - 10, renderer.getWidth() - rightBarWidth, renderer.getHeight(), translucentBlack);
   string playerLine = "T:" + convertToString<int>(info.time);
-  drawText(white, screenWidth - rightBarWidth - 60, line1, playerLine);
-  drawText(red, 120, line2, info.warning);
+  renderer.drawText(white, renderer.getWidth() - rightBarWidth - 60, line1, playerLine);
+  renderer.drawText(red, 120, line2, info.warning);
   if (myClock.isPaused())
-    drawText(red, 10, line2, "PAUSED");
+    renderer.drawText(red, 10, line2, "PAUSED");
   else
-    drawText(lightBlue, 10, line2, "PAUSE");
+    renderer.drawText(lightBlue, 10, line2, "PAUSE");
   pauseButton = Rectangle(10, line2, 80, line2 + lineHeight);
   string resources;
   int resourceSpacing = 95;
   int resourceX = 45;
   for (int i : All(info.numGold)) {
-    drawText(white, resourceX + resourceSpacing * i, line1, convertToString<int>(info.numGold[i].count));
+    renderer.drawText(white, resourceX + resourceSpacing * i, line1, convertToString<int>(info.numGold[i].count));
     drawViewObject(info.numGold[i].viewObject, resourceX - 12 + resourceSpacing * i, line1, true);
     if (mousePos && mousePos->inRectangle(Rectangle(resourceX + resourceSpacing * i - 20, line1, resourceX + resourceSpacing * (i + 1) - 20, line1 + 30)))
       drawHint(white, info.numGold[i].name);
@@ -1327,8 +1234,8 @@ void WindowView::drawBandInfo() {
     int w = 60;
     int line = topBarHeight;
     int h = 45;
-    int leftPos = screenWidth - rightBarText + 15;
-    drawText(i < 3 ? symbolFont : textFont, 35, i == int(collectiveOption) ? green : white,
+    int leftPos = renderer.getWidth() - rightBarText + 15;
+    renderer.drawText(i < 3 ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 35, i == int(collectiveOption) ? green : white,
         leftPos + i * w, line, optionSyms[i], true);
     optionButtons.emplace_back(leftPos + i * w - w / 2, line,
         leftPos + (i + 1) * w - w / 2, line + h);
@@ -1359,29 +1266,15 @@ void WindowView::refreshText() {
   for (int i : All(currentMessage))
     if (!currentMessage[i].empty())
       numMsg = i + 1;
-  drawFilledRectangle(0, 0, screenWidth, max(topBarHeight, lineHeight * (numMsg + 1)), translucentBlack);
+  renderer.drawFilledRectangle(0, 0, renderer.getWidth(), max(topBarHeight, lineHeight * (numMsg + 1)), translucentBlack);
   for (int i : All(currentMessage))
-    drawText(oldMessage ? gray : white, 10, 10 + lineHeight * i, currentMessage[i]);
+    renderer.drawText(oldMessage ? gray : white, 10, 10 + lineHeight * i, currentMessage[i]);
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::PLAYER:
         drawPlayerInfo();
         break;
     case GameInfo::InfoType::BAND: drawBandInfo(); break;
   }
-}
-
-Vec2 WindowView::projectOnBorders(Rectangle area, Vec2 pos) {
-  Vec2 center = Vec2((area.getPX() + area.getKX()) / 2, (area.getPY() + area.getKY()) / 2);
-  Vec2 d = pos - center;
-  if (d.x == 0) {
-    return Vec2(center.x, d.y > 0 ? area.getKY() - 1 : area.getPY());
-  }
-  int cy = d.y * area.getW() / 2 / abs(d.x);
-  if (center.y + cy >= area.getPY() && center.y + cy < area.getKY())
-    return Vec2(d.x > 0 ? area.getKX() - 1 : area.getPX(), center.y + cy);
-  int cx = d.x * area.getH() / 2 / abs(d.y);
-  CHECK(center.x + cx >= area.getPX() && center.x + cx < area.getKX());
-  return Vec2(center.x + cx, d.y > 0 ? area.getKY() - 1: area.getPY());
 }
 
 Color getHighlightColor(ViewIndex::HighlightInfo info) {
@@ -1398,7 +1291,6 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
 
 Table<Optional<ViewIndex>> objects(maxLevelBounds.getW(), maxLevelBounds.getH());
 Rectangle levelBounds(1, 1);
-map<Vec2, ViewObject> borderCreatures;
 set<Vec2> shadowed;
 
 enum class ConnectionId {
@@ -1450,7 +1342,7 @@ Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& in
       objects.push_back(*object);
   for (ViewObject& object : objects) {
     if (object.isPlayer()) {
-      drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
+      renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
     }
     Tile tile = getTile(object, currentTileLayout.sprites);
     Color color = getBleedingColor(object);
@@ -1479,35 +1371,36 @@ Optional<ViewObject> WindowView::drawObjectAbs(int x, int y, const ViewIndex& in
       Vec2 coord = tile.getSpriteCoord(dirs);
 
       if (object.layer() == ViewLayer::CREATURE) {
-        drawSprite(x, y, 2 * nominalSize, 22 * nominalSize, nominalSize, nominalSize, tiles[0], width, height);
+        renderer.drawSprite(x, y, 2 * nominalSize, 22 * nominalSize, nominalSize, nominalSize, tiles[0], width, height);
         moveY = -4 - object.getSizeIncrease() / 2;
       }
-      drawSprite(x + off, y + moveY + off, coord.x * sz,
+      renderer.drawSprite(x + off, y + moveY + off, coord.x * sz,
           coord.y * sz, sz, sz, tiles[tile.getTexNum()], width, height, color);
       if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
           shadowed.count(tilePos) && !tile.stickingOut)
-        drawSprite(x, y, 1 * nominalSize, 21 * nominalSize, nominalSize, nominalSize, tiles[5], width, height);
+        renderer.drawSprite(x, y, 1 * nominalSize, 21 * nominalSize, nominalSize, nominalSize, tiles[5], width, height);
       if (object.getBurning() > 0) {
-        drawSprite(x, y, Random.getRandom(10, 12) * nominalSize, 0 * nominalSize,
+        renderer.drawSprite(x, y, Random.getRandom(10, 12) * nominalSize, 0 * nominalSize,
             nominalSize, nominalSize, tiles[2], width, height);
       }
     } else {
-      drawText(tile.symFont ? symbolFont : tileFont, sizeY + object.getSizeIncrease(), getColor(object),
+      renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT,
+          sizeY + object.getSizeIncrease(), getColor(object),
           x + sizeX / 2, y - 3 - object.getSizeIncrease(), tile.text, true);
       if (object.getBurning() > 0) {
-        drawText(symbolFont, sizeY, getFireColor(),
+        renderer.drawText(Renderer::SYMBOL_FONT, sizeY, getFireColor(),
             x + sizeX / 2, y - 3, L'ѡ', true);
         if (object.getBurning() > 0.5)
-          drawText(symbolFont, sizeY, getFireColor(),
+          renderer.drawText(Renderer::SYMBOL_FONT, sizeY, getFireColor(),
               x + sizeX / 2, y - 3, L'Ѡ', true);
       }
     }
   }
   if (getHighlightedTile() == tilePos) {
-    drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
+    renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
   }
   if (auto highlight = index.getHighlight())
-    drawFilledRectangle(x, y, x + sizeX, y + sizeY, getHighlightColor(*highlight));
+    renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, getHighlightColor(*highlight));
   if (!objects.empty())
     return objects.back();
   else
@@ -1570,10 +1463,6 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
           floorIds.insert(make_pair(pos, *id));
       }
     }
-  borderCreatures.clear();
- /* for (const Creature* c : collective->getVisibleCreatures())
-    if (!c->getPosition().inRectangle(mapLayout->getAllTiles(maxLevelBounds)))
-      borderCreatures.insert(std::make_pair(c->getPosition(), c->getViewObject()));*/
   refreshScreen(flipBuffer);
 }
 
@@ -1605,31 +1494,19 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
   CHECK(id == AnimationId::EXPLOSION);
   Vec2 wpos = mapLayout->projectOnScreen(pos);
   refreshScreen(false);
-  drawSprite(wpos.x, wpos.y, 510, 628, 36, 36, tiles[6]);
-  drawAndClearBuffer();
+  renderer.drawSprite(wpos.x, wpos.y, 510, 628, 36, 36, tiles[6]);
+  renderer.drawAndClearBuffer();
   sf::sleep(sf::milliseconds(50));
   refreshScreen(false);
-  drawSprite(wpos.x - 17, wpos.y - 17, 683, 611, 70, 70, tiles[6]);
-  drawAndClearBuffer();
+  renderer.drawSprite(wpos.x - 17, wpos.y - 17, 683, 611, 70, 70, tiles[6]);
+  renderer.drawAndClearBuffer();
   sf::sleep(sf::milliseconds(50));
   refreshScreen(false);
-  drawSprite(wpos.x - 29, wpos.y - 29, 577, 598, 94, 94, tiles[6]);
-  drawAndClearBuffer();
+  renderer.drawSprite(wpos.x - 29, wpos.y - 29, 577, 598, 94, 94, tiles[6]);
+  renderer.drawAndClearBuffer();
   sf::sleep(sf::milliseconds(50));
   refreshScreen(true);
 }
-
-/*static void drawCircle(int px, int py, double r, Color c, Optional<Color> outline) {
-  CircleShape circle(r);
-  circle.setPosition(px - r, py - r);
-  circle.setFillColor(c);
-  if (outline) {
-    circle.setOutlineThickness(-2);
-    circle.setOutlineColor(*outline);
-  }
-  display->draw(circle);
-
-}*/
 
 void WindowView::drawLevelMap(const Level* level, const CreatureView* creature) {
   TempClockPause pause;
@@ -1647,28 +1524,28 @@ void WindowView::drawLevelMap(const Level* level, const CreatureView* creature) 
     Rectangle bounds = getMapViewBounds();
     double scale = min(double(bounds.getW()) / level->getBounds().getW(),
         double(bounds.getH()) / level->getBounds().getH());
-    drawImage(bounds.getPX(), bounds.getPY(), mapBuffer, scale);
+    renderer.drawImage(bounds.getPX(), bounds.getPY(), mapBuffer, scale);
     for (Vec2 v : roads) {
       Vec2 rrad(2, 2);
       Vec2 pos = bounds.getTopLeft() + v * scale;
-      drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), brown);
+      renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), brown);
     }
     Vec2 playerPos = bounds.getTopLeft() + creature->getPosition() * scale;
     Vec2 rad(4, 4);
-    drawFilledRectangle(Rectangle(playerPos - rad, playerPos + rad), red);
+    renderer.drawFilledRectangle(Rectangle(playerPos - rad, playerPos + rad), red);
     for (const Location* loc : level->getAllLocations())
       if (loc->hasName())
         for (Vec2 v : loc->getBounds())
           if (creature->getMemory(level).hasViewIndex(v) || creature->canSee(v)) {
             string text = loc->getName();
             Vec2 pos = bounds.getTopLeft() + loc->getBounds().getBottomRight() * scale;
-            drawFilledRectangle(pos.x, pos.y, pos.x + getTextLength(text) + 10, pos.y + 25,
+            renderer.drawFilledRectangle(pos.x, pos.y, pos.x + renderer.getTextLength(text) + 10, pos.y + 25,
                 transparency(black, 130));
-            drawText(white, pos.x + 5, pos.y, text);
+            renderer.drawText(white, pos.x + 5, pos.y, text);
             break;
           }
 
-    drawAndClearBuffer();
+    renderer.drawAndClearBuffer();
     BlockingEvent ev = readkey();
     if (contains({BlockingEvent::KEY, BlockingEvent::MOUSE_LEFT}, ev.type))
       break;
@@ -1684,18 +1561,18 @@ void WindowView::drawMap() {
   int sizeX = mapLayout->squareWidth();
   int sizeY = mapLayout->squareHeight();
   Rectangle mapWindow = mapLayout->getBounds();
-  drawFilledRectangle(mapWindow, almostBlack);
+  renderer.drawFilledRectangle(mapWindow, almostBlack);
   map<string, ViewObject> objIndex;
   Optional<ViewObject> highlighted;
   for (Vec2 wpos : mapLayout->getAllTiles(maxLevelBounds)) {
     Vec2 pos = mapLayout->projectOnScreen(wpos);
     if (!currentTileLayout.sprites && wpos.inRectangle(levelBounds))
-      drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);
+      renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);
     if (!objects[wpos] || objects[wpos]->isEmpty()) {
       if (wpos.inRectangle(levelBounds))
-        drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);
+        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);
       if (getHighlightedTile() == wpos) {
-        drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent, lightGray);
+        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent, lightGray);
       }
       continue;
     }
@@ -1706,24 +1583,14 @@ void WindowView::drawMap() {
         highlighted = *topObject;
     }
   }
-  for (auto elem : borderCreatures) {
-    Vec2 pos = mapLayout->projectOnScreen(elem.first);
-    Vec2 proj = projectOnBorders(mapLayout->getBounds().minusMargin(10), pos);
-    ViewIndex index;
-    index.insert(elem.second);
-      drawObjectAbs(
-          proj.x,
-          proj.y,
-          index, sizeX / 2, sizeY / 2, elem.first);
-    }
-  int rightPos = screenWidth -rightBarText;
-  drawFilledRectangle(screenWidth - rightBarWidth, 0, screenWidth, screenHeight, translucentBlack);
+  int rightPos = renderer.getWidth() -rightBarText;
+  renderer.drawFilledRectangle(renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight(), translucentBlack);
   if (gameInfo.infoType == GameInfo::InfoType::PLAYER) {
     int cnt = 0;
     if (legendOption == LegendOption::OBJECTS) {
       for (auto elem : objIndex) {
         drawViewObject(elem.second, rightPos, legendStartHeight + cnt * 25, currentTileLayout.sprites);
-        drawText(white, rightPos + 30, legendStartHeight + cnt * 25, elem.first);
+        renderer.drawText(white, rightPos + 30, legendStartHeight + cnt * 25, elem.first);
         ++cnt;
       }
     }
@@ -1742,16 +1609,16 @@ void WindowView::drawMap() {
 
 void WindowView::drawHint(Color color, const string& text) {
     int height = 30;
-    int width = getTextLength(text) + 30;
-    Vec2 pos(screenWidth - rightBarWidth - width, screenHeight - bottomBarHeight - height);
-    drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(black, 190));
-    drawText(color, pos.x + 10, pos.y + 1, text);
+    int width = renderer.getTextLength(text) + 30;
+    Vec2 pos(renderer.getWidth() - rightBarWidth - width, renderer.getHeight() - bottomBarHeight - height);
+    renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(black, 190));
+    renderer.drawText(color, pos.x + 10, pos.y + 1, text);
 }
 
 void WindowView::refreshScreen(bool flipBuffer) {
   drawMap();
   if (flipBuffer)
-    drawAndClearBuffer();
+    renderer.drawAndClearBuffer();
 }
 
 int indexHeight(const vector<View::ListElem>& options, int index) {
@@ -1799,8 +1666,8 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
           case Dir::SW: numArrow = 7; break;
         }
         Vec2 wpos = mapLayout->projectOnScreen(middle + dir);
-        drawSprite(wpos.x, wpos.y, 16 * 36, (8 + numArrow) * 36, 36, 36, tiles[4]);
-        drawAndClearBuffer();
+        renderer.drawSprite(wpos.x, wpos.y, 16 * 36, (8 + numArrow) * 36, 36, 36, tiles[4]);
+        renderer.drawAndClearBuffer();
         if (event.type == BlockingEvent::MOUSE_LEFT)
           return dir;
       }
@@ -1988,12 +1855,12 @@ static int ySpacing = 100;
 int windowWidth = 800;
 
 int getMaxLines() {
-  return (screenHeight - ySpacing - ySpacing - 2 * yMargin - itemSpacing - itemYMargin) / itemSpacing;
+  return (renderer.getHeight() - ySpacing - ySpacing - 2 * yMargin - itemSpacing - itemYMargin) / itemSpacing;
 }
 
 Optional<int> getIndex(const vector<View::ListElem>& options, bool hasTitle, Vec2 mousePos) {
-  int xSpacing = (screenWidth - windowWidth) / 2;
-  Rectangle window(xSpacing, ySpacing, xSpacing + windowWidth, screenHeight - ySpacing);
+  int xSpacing = (renderer.getWidth() - windowWidth) / 2;
+  Rectangle window(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
   if (!mousePos.inRectangle(window))
     return Nothing();
   return reverseIndexHeight(options,
@@ -2005,40 +1872,35 @@ void WindowView::drawList(const string& title, const vector<ListElem>& options, 
   int itemXMargin = 30;
   int border = 2;
   int h = -1;
-  int xSpacing = (screenWidth - windowWidth) / 2;
+  int xSpacing = (renderer.getWidth() - windowWidth) / 2;
   int topMargin = yMargin;
   refreshScreen(false);
   if (hightlight > -1) 
     h = indexHeight(options, hightlight);
-  Rectangle window(xSpacing, ySpacing, xSpacing + windowWidth, screenHeight - ySpacing);
-  drawFilledRectangle(window, translucentBlack, white);
+  Rectangle window(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
+  renderer.drawFilledRectangle(window, translucentBlack, white);
   int mouseHeight = -1;
  /* if (mousePos && mousePos->inRectangle(window)) {
     h = -1;
     mouseHeight = mousePos->y;
   }*/
   if (!title.empty())
-    drawText(white, xSpacing + xMargin, ySpacing + yMargin, title);
+    renderer.drawText(white, xSpacing + xMargin, ySpacing + yMargin, title);
   else
     topMargin -= itemSpacing;
   for (int i : All(options)) {  
     int beginH = ySpacing + topMargin + (i + 1) * itemSpacing + itemYMargin;
     if (options[i].getMod() == View::NORMAL) {
       if (hightlight > -1 && (h == i || (mouseHeight >= beginH && mouseHeight < beginH + itemSpacing))) 
-        drawFilledRectangle(xSpacing + xMargin, beginH, 
+        renderer.drawFilledRectangle(xSpacing + xMargin, beginH, 
             windowWidth + xSpacing - xMargin, beginH + itemSpacing - 1, darkGreen);
-      drawText(white, xSpacing + xMargin + itemXMargin, beginH, options[i].getText());
+      renderer.drawText(white, xSpacing + xMargin + itemXMargin, beginH, options[i].getText());
     } else if (options[i].getMod() == View::TITLE)
-      drawText(yellow, xSpacing + xMargin, beginH, options[i].getText());
+      renderer.drawText(yellow, xSpacing + xMargin, beginH, options[i].getText());
     else if (options[i].getMod() == View::INACTIVE)
-      drawText(gray, xSpacing + xMargin + itemXMargin, beginH, options[i].getText());
+      renderer.drawText(gray, xSpacing + xMargin + itemXMargin, beginH, options[i].getText());
   }
-  drawAndClearBuffer();
-}
-
-void WindowView::drawAndClearBuffer() {
-  display->display();
-  display->clear(black);
+  renderer.drawAndClearBuffer();
 }
 
 void WindowView::clearMessageBox() {
@@ -2161,7 +2023,7 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
     return true;
   }
   if (!lastPressed && Mouse::isButtonPressed(Mouse::Right)) {
-    lastMousePos = Vec2(Mouse::getPosition(*display).x, Mouse::getPosition(*display).y);
+    lastMousePos = renderer.getMousePos();
     lastPressed = true;
     return true;
   }
@@ -2177,7 +2039,7 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
 Vec2 lastGoTo(-1, -1);
 CollectiveAction WindowView::getClick() {
   Event event;
-  while (display->pollEvent(event)) {
+  while (renderer.pollEvent(event)) {
     considerScrollEvent(event);
     switch (event.type) {
       case Event::KeyPressed:

@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
     view = View::createReplayView(input);
   }
   int lastIndex = 0;
+  view->initialize();
   while (1) {
     Tribe::init();
     Item::identifyEverything();
@@ -62,7 +63,7 @@ int main(int argc, char* argv[]) {
     ItemFactory::init();
     bool modelReady = false;
     messageBuffer.initialize(view);
-    view->initialize();
+    view->reset();
     auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
         View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
         View::ListElem("Or simply:", View::TITLE), "Change options", "View high scores", "Quit"}, lastIndex);
