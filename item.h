@@ -69,8 +69,8 @@ class Item : private ItemAttributes {
   virtual void setOnFire(double amount, const Level* level, Vec2 position);
   double getFireSize() const;
 
-  void onHitSquare(Vec2 position, Square*);
-  void onHitCreature(Creature* c, const Attack& attack);
+  void onHitSquareMessage(Vec2 position, Square*, bool plural);
+  void onHitCreature(Creature* c, const Attack& attack, bool plural);
 
   int getAccuracy() const;
   double getApplyTime() const;

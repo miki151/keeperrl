@@ -151,17 +151,20 @@ void Square::tick(double time) {
   tickSpecial(time);
 }
 
-bool Square::itemLands(Item* item, const Attack& attack) {
+bool Square::itemLands(vector<Item*> item, const Attack& attack) {
   if (creature) {
     if (!creature->dodgeAttack(attack))
       return true;
     else {
-      creature->you(MsgType::MISS_THROWN_ATTACK, item->getTheName());
+      if (item.size() > 1)
+        creature->you(MsgType::MISS_THROWN_ITEM_PLURAL, item[0]->getTheName(true));
+      else
+        creature->you(MsgType::MISS_THROWN_ITEM, item[0]->getTheName());
       return false;
     }
   }
   for (PTrigger& t : triggers)
-    if (t->interceptsFlyingItem(item))
+    if (t->interceptsFlyingItem(item[0]))
       return true;
   return false;
 }
@@ -170,22 +173,22 @@ bool Square::itemBounces(Item* item) const {
   return !canEnterEmpty(Creature::getDefault());
 }
 
-void Square::onItemLands(PItem item, const Attack& attack, int remainingDist, Vec2 dir) {
+void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir) {
   if (creature) {
-    item->onHitCreature(creature, attack);
-    if (!item->isDiscarded())
-      dropItem(std::move(item));
+    item[0]->onHitCreature(creature, attack, item.size() > 1);
+    if (!item[0]->isDiscarded())
+      dropItems(std::move(item));
     return;
   }
   for (PTrigger& t : triggers)
-    if (t->interceptsFlyingItem(item.get())) {
+    if (t->interceptsFlyingItem(item[0].get())) {
       t->onInterceptFlyingItem(std::move(item), attack, remainingDist, dir);
       return;
     }
 
-  item->onHitSquare(position, this);
-  if (!item->isDiscarded())
-    dropItem(std::move(item));
+  item[0]->onHitSquareMessage(position, this, item.size() > 1);
+  if (!item[0]->isDiscarded())
+    dropItems(std::move(item));
 }
 
 bool Square::canEnter(const Creature* c) const {
@@ -283,7 +286,7 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
 }
 
 void Square::onEnter(Creature* c) {
-  for (Trigger* t : refCopy(triggers))
+  for (Trigger* t : extractRefs(triggers))
     t->onCreatureEnter(c);
   onEnterSpecial(c);
 }

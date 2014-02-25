@@ -43,7 +43,7 @@ class Level;
 typedef unique_ptr<Level> PLevel;
 
 template<class T>
-vector<T*> refCopy(const vector<unique_ptr<T>>& v) {
+vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
   vector<T*> ret;
   for (auto& el : v)
     ret.push_back(el.get());
@@ -342,6 +342,11 @@ class Table {
   Rectangle bounds;
   unique_ptr<T[]> mem;
 };
+
+template <typename T>
+T chooseElem(const vector<T>& v, int ind) {
+  return v[ind];
+}
 
 template <typename T>
 T chooseRandom(const vector<T>& v, const vector<double>& p, double r = -1) {
@@ -694,12 +699,28 @@ Optional<int> findElement(const vector<T*>& v, const T* element) {
 }
 
 template<class T>
+Optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
+  for (int i : All(v))
+    if (v[i].get() == element)
+      return i;
+  return Nothing();
+}
+
+template<class T>
 void removeElement(vector<T>& v, const T& element) {
   auto ind = findElement(v, element);
   CHECK(ind) << "Element not found";
   removeIndex(v, *ind);
 }
 
+template<class T>
+unique_ptr<T> removeElement(vector<unique_ptr<T>>& v, const T* element) {
+  auto ind = findElement(v, element);
+  CHECK(ind) << "Element not found";
+  unique_ptr<T> ret = std::move(v[*ind]);
+  removeIndex(v, *ind);
+  return ret;
+}
 template<class T>
 void removeElement(vector<T*>& v, const T* element) {
   auto ind = findElement(v, element);

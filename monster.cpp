@@ -54,9 +54,12 @@ void Monster::you(MsgType type, const string& param) const {
                           " dies" + (param.empty() ? string(".") : " of " + param); break;
     case MsgType::FALL_APART: msg = creature->getTheName() + " falls apart."; break;
     case MsgType::MISS_ATTACK: msg = creature->getTheName() + addName(" misses", param); break;
-    case MsgType::MISS_THROWN_ATTACK: msg = param + " misses " + creature->getTheName(); break;
+    case MsgType::MISS_THROWN_ITEM: msg = param + " misses " + creature->getTheName(); break;
+    case MsgType::MISS_THROWN_ITEM_PLURAL: msg = param + " miss " + creature->getTheName(); break;
     case MsgType::HIT_THROWN_ITEM: msg = param + " hits " + creature->getTheName(); break;
-    case MsgType::CRASH_THROWN_ITEM: msg = param + " crashes on " + creature->getTheName() + "'s head"; break;
+    case MsgType::HIT_THROWN_ITEM_PLURAL: msg = param + " hit " + creature->getTheName(); break;
+    case MsgType::ITEM_CRASHES: msg = param + " crashes on " + creature->getTheName(); break;
+    case MsgType::ITEM_CRASHES_PLURAL: msg = param + " crash on " + creature->getTheName(); break;
     case MsgType::GET_HIT_NODAMAGE: msg = "The " + param + " is harmless."; break;
     case MsgType::COLLAPSE: msg = creature->getTheName() + " collapses."; break;
     case MsgType::FALL: msg = creature->getTheName() + " falls on the " + param; break;
@@ -73,7 +76,6 @@ void Monster::you(MsgType type, const string& param) const {
     case MsgType::TURN_INVISIBLE: msg = creature->getTheName() + " disappears!"; break;
     case MsgType::TURN_VISIBLE: msg = creature->getTheName() + " appears out of nowhere!"; break;
     case MsgType::DROP_WEAPON: msg = creature->getTheName() + " drops his " + param; break;
-    case MsgType::ITEM_CRASHES: msg = param + " crashes on " + creature->getTheName(); break;
     case MsgType::ENTER_PORTAL: msg = creature->getTheName() + " disappears in the portal."; break;
     case MsgType::HAPPENS_TO: msg = param + " " + creature->getTheName(); break;
     case MsgType::BURN: msg = creature->getTheName() + " burns in the " + param; msgNoSee = "You hear a horrible shriek"; break;

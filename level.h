@@ -94,6 +94,7 @@ class Level {
 
   /** Performs a throw of the item, with all consequences of the event.*/
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction);
+  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction);
 
   /** Sets the creature that is assumed to be the player.*/
   void setPlayer(Creature* player);

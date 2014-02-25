@@ -122,20 +122,27 @@ Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
 }
 
 void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction) {
+  vector<PItem> v;
+  v.push_back(std::move(item));
+  throwItem(std::move(v), attack, maxDist, position, direction);
+}
+
+void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction) {
+  CHECK(!item.empty());
   int cnt = 1;
   vector<Vec2> trajectory;
   for (Vec2 v = position + direction;; v += direction) {
     trajectory.push_back(v);
-    if (getSquare(v)->itemBounces(item.get())) {
-        item->onHitSquare(v, getSquare(v));
+    if (getSquare(v)->itemBounces(item[0].get())) {
+        item[0]->onHitSquareMessage(v, getSquare(v), item.size() > 1);
         trajectory.pop_back();
-        EventListener::addThrowEvent(this, attack.getAttacker(), item.get(), trajectory);
-        if (!item->isDiscarded())
-          getSquare(v - direction)->dropItem(std::move(item));
+        EventListener::addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
+        if (!item[0]->isDiscarded())
+          getSquare(v - direction)->dropItems(std::move(item));
         return;
     }
-    if (++cnt > maxDist || getSquare(v)->itemLands(item.get(), attack)) {
-      EventListener::addThrowEvent(this, attack.getAttacker(), item.get(), trajectory);
+    if (++cnt > maxDist || getSquare(v)->itemLands(extractRefs(item), attack)) {
+      EventListener::addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
       getSquare(v)->onItemLands(std::move(item), attack, maxDist - cnt - 1, direction);
       return;
     }

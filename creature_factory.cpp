@@ -83,8 +83,6 @@ class BoulderController : public Monster {
       case MsgType::DROWN: msg = creature->getTheName() + " falls into the " + param;
                            msgNoSee = "You hear a loud splash"; break;
       case MsgType::KILLED_BY: msg = creature->getTheName() + " is destroyed by " + param; break;
-      case MsgType::HIT_THROWN_ITEM: msg = param + " hits " + creature->getTheName(); break;
-      case MsgType::CRASH_THROWN_ITEM: msg = param + " crashes on " + creature->getTheName(); break;
       case MsgType::ENTER_PORTAL: msg = creature->getTheName() + " disappears in the portal."; break;
       default: break;
     }

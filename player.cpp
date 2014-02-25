@@ -698,9 +698,12 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::BLEEDING_STOPS: msg = "Your bleeding stops."; break;
     case MsgType::DIE_OF: msg = "You die" + (param.empty() ? string(".") : " of " + param); break;
     case MsgType::MISS_ATTACK: msg = "You miss " + param; break;
-    case MsgType::MISS_THROWN_ATTACK: msg = param + " misses you"; break;
+    case MsgType::MISS_THROWN_ITEM: msg = param + " misses you"; break;
+    case MsgType::MISS_THROWN_ITEM_PLURAL: msg = param + " miss you"; break;
     case MsgType::HIT_THROWN_ITEM: msg = param + " hits you"; break;
-    case MsgType::CRASH_THROWN_ITEM: msg = param + " crashes on your head"; break;
+    case MsgType::HIT_THROWN_ITEM_PLURAL: msg = param + " hit you"; break;
+    case MsgType::ITEM_CRASHES: msg = param + " crashes on you."; break;
+    case MsgType::ITEM_CRASHES_PLURAL: msg = param + " crash on you."; break;
     case MsgType::GET_HIT_NODAMAGE: msg = "The " + param + " is harmless."; break;
     case MsgType::COLLAPSE: msg = "You collapse."; break;
     case MsgType::TRIGGER_TRAP: msg = "You trigger something."; break;
@@ -720,7 +723,6 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::TURN_INVISIBLE: msg = "You can see through yourself!"; break;
     case MsgType::TURN_VISIBLE: msg = "You are no longer invisible"; break;
     case MsgType::DROP_WEAPON: msg = "You drop your " + param; break;
-    case MsgType::ITEM_CRASHES: msg = param + " crashes on you."; break;
     case MsgType::ENTER_PORTAL: msg = "You enter the portal"; break;
     case MsgType::HAPPENS_TO: msg = param + " you."; break;
     case MsgType::BURN: msg = "You burn in the " + param; break;

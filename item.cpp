@@ -125,21 +125,23 @@ void Item::tick(double time, Level* level, Vec2 position) {
   specialTick(time, level, position);
 }
 
-void Item::onHitSquare(Vec2 position, Square* s) {
+void Item::onHitSquareMessage(Vec2 position, Square* s, bool plural) {
   if (fragile) {
     s->getConstLevel()->globalMessage(position,
-        getTheName() + " crashes on the " + s->getName(), "You hear a crash");
+        getTheName(plural) + chooseElem<string>({" crashes", " crash"}, int(plural)) + " on the " + s->getName(),
+        "You hear a crash");
     discarded = true;
   } else
-    s->getConstLevel()->globalMessage(position, getTheName() + " hits the " + s->getName());
+    s->getConstLevel()->globalMessage(position, getTheName(plural) +
+        chooseElem<string>({" hits", " hit"}, int(plural)) + " the " + s->getName());
 }
 
-void Item::onHitCreature(Creature* c, const Attack& attack) {
+void Item::onHitCreature(Creature* c, const Attack& attack, bool plural) {
   if (fragile) {
-    c->you(MsgType::ITEM_CRASHES, getTheName());
+    c->you(plural ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getTheName(plural));
     discarded = true;
   } else
-    c->you(MsgType::HIT_THROWN_ITEM, getTheName());
+    c->you(plural ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getTheName(plural));
   if (c->takeDamage(attack))
     return;
   if (effect && getType() == ItemType::POTION) {
@@ -261,7 +263,7 @@ string Item::getAName(bool getPlural, bool blind) const {
 }
 
 string Item::getTheName(bool getPlural, bool blind) const {
-  string the = (noArticle || getPlural) ? "" : "the ";
+  string the = noArticle ? "" : "the ";
   return the + getName(getPlural, blind);
 }
 

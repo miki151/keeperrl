@@ -161,9 +161,12 @@ static void wordOfPower(Creature* c, EffectStrength strength) {
         other->takeDamage(Attack(c, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 25, false));
       }
     }
-    for (PItem& it : c->getSquare(v)->removeItems(c->getSquare(v)->getItems())) {
-      Item* ref = it.get();
-      l->throwItem(std::move(it), Attack(c, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}), ref->getAttackType(), 15, 15, false), wordOfPowerDist.at(strength), c->getPosition(), v);
+    map<string, vector<Item*>> stacks = Item::stackItems(c->getSquare(v)->getItems());
+    for (auto elem : stacks) {
+      l->throwItem(
+        c->getSquare(v)->removeItems(elem.second),
+        Attack(c, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
+        elem.second[0]->getAttackType(), 15, 15, false), wordOfPowerDist.at(strength), c->getPosition(), v);
     }
   }
 }

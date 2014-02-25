@@ -53,8 +53,9 @@ class Portal : public Trigger {
     return other && !Random.roll(5);
   }
 
-  virtual void onInterceptFlyingItem(PItem it, const Attack& a, int remainingDist, Vec2 dir) {
-    level->globalMessage(position, it->getTheName() + " disappears in the portal.");
+  virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir) {
+    string name = it[0]->getTheName(it.size() > 1);
+    level->globalMessage(position, name + " disappears in the portal.");
     other->level->throwItem(std::move(it), a, remainingDist, other->position, dir);
   }
 
