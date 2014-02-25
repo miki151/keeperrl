@@ -56,7 +56,7 @@ class CreatureAttributes {
   bool noSleep = false;
   double courage = 1;
   int maxLevel = 10;
-  double carryingMultiplier = 1;
+  bool carryAnything = false;
   bool permanentlyBlind = false;
   bool invincible = false;
   double damageMultiplier = 1;

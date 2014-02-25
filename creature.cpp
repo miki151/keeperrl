@@ -696,7 +696,7 @@ int Creature::getAttr(AttrType type) const {
         break;
     case AttrType::SPEED: {
         double totWeight = getInventoryWeight();
-        if (totWeight > getAttr(AttrType::STRENGTH))
+        if (!carryAnything && totWeight > getAttr(AttrType::STRENGTH))
           def -= 20.0 * totWeight / def;
         if (slowed)
           def /= 2;
@@ -704,7 +704,9 @@ int Creature::getAttr(AttrType type) const {
           def *= 2;
         break;}
     case AttrType::INV_LIMIT:
-        return getAttr(AttrType::STRENGTH) * 2 * carryingMultiplier;
+        if (carryAnything)
+          return 1000000;
+        return getAttr(AttrType::STRENGTH) * 2;
  //   default:
  //       break;
   }

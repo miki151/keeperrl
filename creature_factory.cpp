@@ -1203,7 +1203,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.humanoid = true;
                                 c.weight = 30;
                                 c.courage = 0.1;
-                                c.carryingMultiplier = 10;
+                                c.carryAnything = true;
                                 c.skills.insert(Skill::construction);
                                 c.chatReactionFriendly = "talks about digging";
                                 c.chatReactionHostile = "\"Die!\"";
