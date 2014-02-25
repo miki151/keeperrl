@@ -42,6 +42,14 @@ typedef unique_ptr<Trigger> PTrigger;
 class Level;
 typedef unique_ptr<Level> PLevel;
 
+template<class T>
+vector<T*> refCopy(const vector<unique_ptr<T>>& v) {
+  vector<T*> ret;
+  for (auto& el : v)
+    ret.push_back(el.get());
+  return ret;
+}
+
 struct GameOverException {
 };
 

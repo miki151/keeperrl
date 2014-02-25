@@ -283,7 +283,7 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
 }
 
 void Square::onEnter(Creature* c) {
-  for (PTrigger& t : triggers)
+  for (Trigger* t : refCopy(triggers))
     t->onCreatureEnter(c);
   onEnterSpecial(c);
 }
@@ -313,13 +313,13 @@ void Square::addTrigger(PTrigger t) {
 }
 
 PTrigger Square::removeTrigger(Trigger* trigger) {
-  PTrigger ret;
   for (PTrigger& t : triggers)
     if (t.get() == trigger) {
-      ret = std::move(t);
+      PTrigger ret = std::move(t);
       removeElement(triggers, t);
+      return ret;
     }
-  return ret;
+  return nullptr;
 }
 
 void Square::removeTriggers() {
