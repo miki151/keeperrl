@@ -1774,6 +1774,8 @@ Optional<int> reverseIndexHeight(const vector<View::ListElem>& options, int heig
 }
 
 Optional<Vec2> WindowView::chooseDirection(const string& message) {
+  showMessage(message);
+  refreshScreen();
   do {
     showMessage(message);
     BlockingEvent event = readkey();
