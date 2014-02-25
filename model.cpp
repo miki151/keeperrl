@@ -20,7 +20,7 @@ void Model::update(double totalTime) {
   do {
     if (collective && !collective->isTurnBased()) {
       // process a few times so events don't stack up when game is paused
-      for (int i : Range(5))
+      for (int i : Range(10))
         collective->processInput(view);
     }
     Creature* creature = timeQueue.getNextCreature();
