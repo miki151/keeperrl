@@ -5,10 +5,12 @@
 #include "level.h"
 #include "statistics.h"
 
-using namespace std;
+
 
 Item::Item(ViewObject o, const ItemAttributes& attr)
     : ItemAttributes(attr), viewObject(o), inspected(everythingIdentified), fire(*weight, flamability) {
+  static int cnt = 1;
+  uniqueId = ++cnt;
 }
 
 void Item::identifyEverything() {
@@ -20,7 +22,12 @@ bool Item::isEverythingIdentified() {
 }
 
 bool Item::everythingIdentified = false;
-  
+ 
+int Item::getUniqueId() const {
+  return uniqueId;
+}
+
+ 
 vector<Item*> Item::extractRefs(const vector<PItem>& item) {
   vector<Item*> ref(item.size());
   transform(item.begin(), item.end(), ref.begin(), [](const PItem& it) { return it.get();});

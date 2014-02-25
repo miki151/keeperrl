@@ -1096,7 +1096,7 @@ void Collective::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayT
     if (dist[pos] >= radius || !level->getSquare(pos)->canEnterEmpty(Creature::getDefault()))
       continue;
     for (Vec2 v : pos.neighbors8())
-      if (dist[v] == infinity) {
+      if (v.inRectangle(dist.getBounds()) && dist[v] == infinity) {
         dist[v] = dist[pos] + 1;
         q.push(v);
       }

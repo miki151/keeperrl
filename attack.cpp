@@ -2,7 +2,7 @@
 
 #include "attack.h"
 
-using namespace std;
+
 
 Attack::Attack(const Creature* a, AttackLevel l, AttackType t, int h, int s, bool b, Optional<EffectType> _effect)
     : attacker(a), level(l), type(t), toHit(h), strength(s), back(b), effect(_effect) {}

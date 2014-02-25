@@ -2,8 +2,6 @@
 
 #include "view.h"
 
-using namespace std;
-
 
 View::ListElem::ListElem(const string& t, ElemMod m, Optional<ActionId> a) : text(t), mod(m), action(a) {
 }

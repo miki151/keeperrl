@@ -3,7 +3,7 @@
 #include "level_maker.h"
 #include "quest.h"
 
-using namespace std;
+
 
 
 class SquarePredicate {

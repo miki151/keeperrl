@@ -2,7 +2,7 @@
 
 #include "monster.h"
 
-using namespace std;
+
 
 Monster::Monster(Creature* c, MonsterAIFactory f) : 
     creature(c), actor(f.getMonsterAI(c)) {}

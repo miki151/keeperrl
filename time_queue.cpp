@@ -2,7 +2,6 @@
 
 #include "time_queue.h"
 
-using namespace std;
 
 TimeQueue::TimeQueue() : queue([](QElem e1, QElem e2) {
     return e1.time > e2.time || (e1.time == e2.time && e1.creature->getUniqueId() > e2.creature->getUniqueId());

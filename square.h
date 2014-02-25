@@ -1,8 +1,6 @@
 #ifndef _SQUARE_H
 #define _SQUARE_H
 
-#include <vector>
-#include <assert.h>
 #include "util.h"
 #include "item.h"
 #include "creature.h"

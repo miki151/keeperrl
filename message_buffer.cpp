@@ -2,7 +2,7 @@
 
 #include "message_buffer.h"
 
-using namespace std;
+
 
 MessageBuffer messageBuffer;
 

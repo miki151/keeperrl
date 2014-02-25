@@ -25,7 +25,7 @@ using sf::Texture;
 using sf::Keyboard;
 using sf::Mouse;
 
-using namespace std;
+
 
 Color white(255, 255, 255);
 Color yellow(250, 255, 0);
@@ -112,7 +112,7 @@ class Tile {
 
 Tile getSpecialCreature(const ViewObject& obj, bool humanoid) {
   RandomGen r;
-  r.init(std::hash<string>()(obj.getBareDescription()));
+  r.init(hash<string>()(obj.getBareDescription()));
   string let = humanoid ? "WETUIPLKJHFAXBM" : "qwetyupkfaxbnm";
   char c;
   if (contains(let, obj.getBareDescription()[0]))
@@ -128,7 +128,7 @@ Tile getSpecialCreature(const ViewObject& obj, bool humanoid) {
 
 Tile getSpecialCreatureSprite(const ViewObject& obj, bool humanoid) {
   RandomGen r;
-  r.init(std::hash<string>()(obj.getBareDescription()));
+  r.init(hash<string>()(obj.getBareDescription()));
   if (humanoid)
     return Tile(r.getRandom(7), 10);
   else

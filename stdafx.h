@@ -7,19 +7,15 @@
 #include <sstream>
 #include <string>
 #include <cstdlib>
-#include <vector>
-#include <string>
 #include <memory>
 #include "ctype.h"
 #include <cstring>
-#include <set>
 #include <time.h>
 #include <cstdlib>
 #include <sys/time.h>
 #include <typeinfo>
 #include <unordered_set>
 #include <unordered_map>
-#include <map>
 #include <queue>
 #include <random>
 #include <stdexcept>
@@ -28,9 +24,34 @@
 #include <stack>
 #include <typeinfo>
 
-using std::string;
+#ifndef RELEASE
+
+#include <debug/vector>
+#include <debug/string>
+#include <debug/deque>
+#include <debug/set>
+#include <debug/map>
+using __gnu_debug::vector;
+using __gnu_debug::map;
+using __gnu_debug::set;
+using __gnu_debug::deque;
+using __gnu_debug::string;
+
+#else
+
+#include <vector>
+#include <string>
+#include <deque>
+#include <set>
+#include <map>
 using std::vector;
 using std::map;
+using std::set;
+using std::deque;
+using std::string;
+
+#endif
+
 using std::queue;
 using std::unique_ptr;
 using std::default_random_engine;
@@ -39,7 +60,6 @@ using std::initializer_list;
 using std::unordered_set;
 using std::pair;
 using std::tuple;
-using std::set;
 using std::out_of_range;
 using std::unordered_map;
 using std::min;
@@ -50,62 +70,11 @@ using std::endl;
 using std::priority_queue;
 using std::make_pair;
 using std::stack;
-
-/*#include "window_view.h"
-#include "action.h"
-#include "attack.h"
-#include "collective.h"
-#include "collective_action.h"
-#include "controller.h"
-#include "creature_attributes.h"
-#include "creature_factory.h"
-#include "creature_view.h"
-#include "creature.h"
-#include "debug.h"
-#include "effect.h"
-#include "enemy_check.h"
-#include "enums.h"
-#include "equipment.h"
-#include "event.h"
-#include "field_of_view.h"
-#include "fire.h"
-#include "inventory.h"
-#include "item_attributes.h"
-#include "item_factory.h"
-#include "item.h"
-#include "level_generator.h"
-#include "level.h"
-#include "level_maker.h"
-#include "location.h"
-#include "logging_view.h"
-#include "map_layout.h"
-#include "map_memory.h"
-#include "markov_chain.h"
-#include "message_buffer.h"
-#include "minion_equipment.h"
-#include "model.h"
-#include "monster.h"
-#include "monster_ai.h"
-#include "name_generator.h"
-#include "pantheon.h"
-#include "player.h"
-#include "poison_gas.h"
-#include "quest.h"
-#include "ranged_weapon.h"
-#include "replay_view.h"
-#include "shortest_path.h"
-#include "skill.h"
-#include "square_factory.h"
-#include "square.h"
-#include "task.h"
-#include "time_queue.h"
-#include "timer_var.h"
-#include "tribe.h"
-#include "trigger.h"
-#include "util.h"
-#include "view.h"
-#include "view_index.h"
-#include "view_object.h"
-#include "village_control.h"*/
+using std::uniform_int_distribution;
+using std::uniform_real_distribution;
+using std::make_tuple;
+using std::get;
+using std::hash;
+using std::thread;
 
 #endif

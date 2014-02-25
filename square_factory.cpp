@@ -7,8 +7,6 @@
 #include "item_factory.h"
 #include "creature_factory.h"
 
-using namespace std;
-
 class Staircase : public Square {
   public:
   Staircase(const ViewObject& obj, const string& name, StairDirection dir, StairKey key)

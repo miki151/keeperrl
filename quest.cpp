@@ -5,7 +5,7 @@
 #include "tribe.h"
 #include "message_buffer.h"
 
-using namespace std;
+
 
 class KillTribeQuest : public Quest, public EventListener {
   public:

@@ -2,7 +2,7 @@
 
 #include "view_object.h"
 
-using namespace std;
+
 
 ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d, bool _shadow)
     : resource_id(id), viewLayer(l), description(d), shadow(_shadow) {

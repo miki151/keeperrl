@@ -2,7 +2,7 @@
 
 #include "tribe.h"
 
-using namespace std;
+
 
 class Constant : public Tribe {
   public:

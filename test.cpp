@@ -5,7 +5,7 @@
 #include "shortest_path.h"
 #include "level_maker.h"
 
-using namespace std;
+
 
 void testStringConvertion() {
   CHECK(convertToString(1234) == "1234");

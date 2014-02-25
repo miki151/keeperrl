@@ -6,7 +6,7 @@
 #include "quest.h"
 #include "message_buffer.h"
 
-using namespace std;
+
 
 static map<string, function<PCreature ()> > creatureMap;
 static map<string, vector<string> > inventoryMap;

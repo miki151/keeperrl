@@ -104,7 +104,17 @@ template <> struct hash<Vec2> {
   }
 };
 
-template <class T> struct hash<set<T>> {
+#ifndef RELEASE
+template <> struct hash<__gnu_debug::string> {
+  size_t operator()(const string& v) const {
+    return hash<std::string>()(v);
+  }
+};
+
+template <class T> struct hash<__gnu_debug::set<T>> {
+#else
+template <class T> struct hash<std::set<T>> {
+#endif
   size_t operator()(const set<T>& v) const {
     size_t ret = 0;
     for (const T& elem : v)

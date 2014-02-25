@@ -9,7 +9,7 @@
 #include "model.h"
 #include "options.h"
 
-using namespace std;
+
 
 Player::Player(Creature* c, View* v, Model* m, bool greet, map<const Level*, MapMemory>* memory) :
     creature(c), view(v), displayGreeting(greet), levelMemory(memory), model(m) {

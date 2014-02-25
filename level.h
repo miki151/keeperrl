@@ -1,9 +1,6 @@
 #ifndef _LEVEL_H
 #define _LEVEL_H
 
-#include <map>
-#include <vector>
-#include <unordered_set>
 #include "util.h"
 #include "time_queue.h"
 #include "debug.h"

@@ -2,7 +2,7 @@
 
 #include "field_of_view.h"
 
-using namespace std;
+
 
 
 FieldOfView::FieldOfView(const Table<PSquare>& s) : squares(s), visibility(squares.getWidth(), squares.getHeight()) {
@@ -20,7 +20,8 @@ void FieldOfView::squareChanged(Vec2 pos) {
   vector<Vec2> updateList;
   if (!visibility[pos])
     visibility[pos] = Visibility(squares, pos.x, pos.y);
-  for (Vec2 v : visibility[pos]->getVisibleTiles())
+  vector<Vec2> visible = visibility[pos]->getVisibleTiles();
+  for (Vec2 v : visible)
     if (visibility[v] && visibility[v]->checkVisible(pos.x - v.x, pos.y - v.y)) {
       visibility[v] = Nothing();
     }

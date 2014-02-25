@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-using namespace std;
+
 
 class MonkeyView : public View {
   public:

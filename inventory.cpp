@@ -2,7 +2,7 @@
 
 #include "inventory.h"
 
-using namespace std;
+
 
 void Inventory::addItem(PItem item) {
   itemsCache.push_back(item.get());

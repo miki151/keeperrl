@@ -2,7 +2,6 @@
 
 #include "util.h"
 
-using namespace std;
 
 void RandomGen::init(int seed) {
   generator.seed(seed);

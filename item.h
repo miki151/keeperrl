@@ -19,6 +19,7 @@ class Item : private ItemAttributes {
   typedef ItemAttributes ItemAttributes;
   Item(ViewObject o, const ItemAttributes&);
   virtual ~Item() {}
+  int getUniqueId() const;
 
   static void identifyEverything();
   static bool isEverythingIdentified();
@@ -109,6 +110,7 @@ class Item : private ItemAttributes {
   string getBlindName(bool plural) const;
   bool unpaid = false;
   Fire fire;
+  int uniqueId;
 };
 
 #endif

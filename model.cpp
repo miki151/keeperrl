@@ -9,7 +9,6 @@
 #include "statistics.h"
 #include "options.h"
 
-using namespace std;
 
 bool Model::isTurnBased() {
   return !collective || collective->isTurnBased();

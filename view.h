@@ -1,10 +1,6 @@
 #ifndef _VIEW_H
 #define _VIEW_H
 
-#include <string>
-#include <vector>
-#include <map>
-
 #include "util.h"
 #include "action.h"
 #include "collective_action.h"

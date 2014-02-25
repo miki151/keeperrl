@@ -6,7 +6,7 @@
 #include "collective.h"
 #include "village_control.h"
 
-using namespace std;
+
 
 Behaviour::Behaviour(Creature* c) : creature(c) {
 }

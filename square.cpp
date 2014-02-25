@@ -4,7 +4,6 @@
 #include "square_factory.h"
 #include "level.h"
 
-using namespace std;
 
 Square::Square(const ViewObject& vo, const string& n, bool see, bool canHide, int s, double f,
     map<SquareType, int> construct, bool tick) 

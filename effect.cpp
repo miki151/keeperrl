@@ -8,7 +8,7 @@
 #include "creature_factory.h"
 #include "message_buffer.h"
 
-using namespace std;
+
 
 map<EffectStrength, int> healingPoints { 
     {EffectStrength::WEAK, 5},

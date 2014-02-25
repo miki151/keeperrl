@@ -2,7 +2,7 @@
 
 #include "equipment.h"
 
-using namespace std;
+
 
 class Item;
 Item* Equipment::getItem(EquipmentSlot slot) const {

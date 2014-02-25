@@ -1,7 +1,6 @@
 #ifndef _TIME_QUEUE_H
 #define _TIME_QUEUE_H
 
-#include <vector>
 #include "util.h"
 #include "creature.h"
 

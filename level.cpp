@@ -4,8 +4,6 @@
 #include "location.h"
 #include "model.h"
 
-using namespace std;
-
 
 Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n) 
     : squares(std::move(s)), locations(l), model(m), fieldOfView(squares), entryMessage(message), 

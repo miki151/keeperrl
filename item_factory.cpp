@@ -7,7 +7,7 @@
 #include "ranged_weapon.h"
 #include "enemy_check.h"
 
-using namespace std;
+
 
 class FireScroll : public Item {
   public:

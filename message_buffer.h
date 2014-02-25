@@ -1,9 +1,6 @@
 #ifndef _MESSAGE_BUFFER_H
 #define _MESSAGE_BUFFER_H
 
-#include <string>
-#include <vector>
-
 #include "util.h"
 #include "view.h"
 

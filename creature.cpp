@@ -8,7 +8,7 @@
 #include "statistics.h"
 #include "options.h"
 
-using namespace std;
+
 
 Creature* Creature::getDefault() {
   static PCreature defaultCreature = CreatureFactory::fromId(CreatureId::GNOME, Tribe::monster,

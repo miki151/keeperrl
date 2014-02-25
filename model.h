@@ -1,8 +1,6 @@
 #ifndef _MODEL_H
 #define _MODEL_H
 
-#include <vector>
-#include <queue>
 #include "util.h"
 #include "level.h"
 #include "action.h"
