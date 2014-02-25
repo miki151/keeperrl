@@ -762,7 +762,7 @@ void WindowView::initialize() {
     screenWidth = display->getSize().x;
 
     CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
-    CHECK(tileFont.loadFromFile("coolvetica rg.ttf"));
+    CHECK(tileFont.loadFromFile("Lato-Bol.ttf"));
     CHECK(symbolFont.loadFromFile("Symbola.ttf"));
 
     asciiLayouts = {
