@@ -113,6 +113,8 @@ class PickItem : public Task {
       items = set<Item*>(hereItems.begin(), hereItems.end());
       if (c->canPickUp(hereItems))
         return {1.0, [=] {
+          for (auto elem : Item::stackItems(hereItems))
+            c->globalMessage(c->getTheName() + " picks up " + elem.first, "");
           c->pickUp(hereItems);
           pickedUp = true;
           onPickedUp();
@@ -155,6 +157,7 @@ class EquipItem : public PickItem {
     for (Item* it : items)
       if (c->canEquip(it))
         return {1.0, [=] {
+          c->globalMessage(c->getTheName() + " equips " + it->getAName());
           c->equip(it);
           setDone();
         }};
@@ -173,6 +176,8 @@ class BringItem : public PickItem {
 
   virtual void onBroughtItem(Creature* c, vector<Item*> it) {
     //getCollective()->onBrought(c->getPosition(), it);
+    for (auto elem : Item::stackItems(it))
+      c->globalMessage(c->getTheName() + " drops " + elem.first);
     c->drop(it);
   }
 
@@ -235,9 +240,11 @@ class ApplyItem : public BringItem {
   }
 
   virtual void onBroughtItem(Creature* c, vector<Item*> it) override {
-    CHECK(it.size() == 1);
-    getCollective()->onAppliedItem(c->getPosition(), it[0]);
-    c->applyItem(it[0]);
+    Item* item = getOnlyElement(it);
+    getCollective()->onAppliedItem(c->getPosition(), item);
+    c->globalMessage(c->getTheName() + " " + item->getApplyMsgThirdPerson(),
+        item->getNoSeeApplyMsg());
+    c->applyItem(item);
   }
 };
 
