@@ -142,6 +142,7 @@ class Rectangle {
   Rectangle(Vec2 dim);
   Rectangle(int px, int py, int kx, int ky);
   Rectangle(Vec2 p, Vec2 k);
+  static Rectangle boundingBox(const vector<Vec2>& v);
 
   int getPX() const;
   int getPY() const;

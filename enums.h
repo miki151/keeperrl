@@ -252,6 +252,7 @@ enum class ViewLayer {
 
 enum class HighlightType {
   BUILD,
+  RECT_SELECTION,
   POISON_GAS,
   FOG,
   MEMORY,

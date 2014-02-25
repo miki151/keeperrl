@@ -240,6 +240,18 @@ vector<Vec2> Vec2::corners() {
   return { Vec2(1, 1), Vec2(1, -1), Vec2(-1, -1), Vec2(-1, 1)};
 }
 
+Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {
+  int infinity = 1000000;
+  int minX = infinity, maxX = -infinity, minY = infinity, maxY = -infinity;
+  for (Vec2 v : verts) {
+    minX = min(minX, v.x);
+    maxX = max(maxX, v.x);
+    minY = min(minY, v.y);
+    maxY = max(maxY, v.y);
+  }
+  return Rectangle(minX, minY, maxX + 1, maxY + 1);
+}
+
 vector<Vec2> Rectangle::getAllSquares() {
   vector<Vec2> ret;
   for (Vec2 v : (*this))

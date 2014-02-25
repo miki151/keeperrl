@@ -108,6 +108,7 @@ class Collective : public CreatureView, public EventListener {
 
 
   private:
+  void handleSelection(Vec2 pos, bool rectangle);
   struct BuildInfo {
     struct SquareInfo {
       SquareType type;
@@ -255,6 +256,8 @@ class Collective : public CreatureView, public EventListener {
   vector<const Creature*> kills;
   bool showWelcomeMsg = true;
   bool showDigMsg = true;
+  Optional<Vec2> rectSelectCorner;
+  Optional<Vec2> rectSelectCorner2;
   unordered_map<const Creature*, double> lastCombat;
 };
 

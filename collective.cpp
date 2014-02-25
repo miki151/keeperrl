@@ -597,6 +597,9 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
   ViewIndex index = level->getSquare(pos)->getViewIndex(this);
   if (marked.count(pos))
     index.setHighlight(HighlightType::BUILD);
+  else if (rectSelectCorner && rectSelectCorner2 && pos.inRectangle(Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2})))
+    index.setHighlight(HighlightType::RECT_SELECTION);
+
   if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
     if (traps.count(pos))
       index.insert(getTrapObject(traps.at(pos).type));
@@ -828,107 +831,125 @@ void Collective::processInput(View* view) {
           }
         }
         break;
-    case CollectiveAction::GO_TO: {
-        Vec2 pos = action.getPosition();
-        if (!pos.inRectangle(level->getBounds()))
-          break;
-        switch (getBuildInfo()[currentButton].buildType) {
-          case BuildInfo::IMP:
-              if (mana >= getImpCost() && selection == NONE) {
-                selection = SELECT;
-                PCreature imp = CreatureFactory::fromId(CreatureId::IMP, Tribe::player,
-                    MonsterAIFactory::collective(this));
-                for (Vec2 v : pos.neighbors8(true))
-                  if (v.inRectangle(level->getBounds()) && level->getSquare(v)->canEnter(imp.get()) 
-                      && canSee(v)) {
-                    mana -= getImpCost();
-                    addCreature(imp.get(), MinionType::IMP);
-                    level->addCreature(v, std::move(imp));
-                    break;
-                  }
-              }
+    case CollectiveAction::RECT_SELECTION:
+        if (rectSelectCorner) {
+          rectSelectCorner2 = action.getPosition();
+        } else
+          rectSelectCorner = action.getPosition();
+        break;
+    case CollectiveAction::GO_TO:
+        handleSelection(action.getPosition(), false);
+        break;
+    case CollectiveAction::BUTTON_RELEASE:
+        selection = NONE;
+        if (rectSelectCorner && rectSelectCorner2) {
+          handleSelection(*rectSelectCorner, true);
+          for (Vec2 v : Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2}))
+            handleSelection(v, true);
+        }
+        rectSelectCorner = Nothing();
+        rectSelectCorner2 = Nothing();
+        selection = NONE;
+        break;
+    case CollectiveAction::IDLE: break;
+  }
+}
+
+void Collective::handleSelection(Vec2 pos, bool rectangle) {
+  if (!pos.inRectangle(level->getBounds()))
+    return;
+  switch (getBuildInfo()[currentButton].buildType) {
+    case BuildInfo::IMP:
+        if (mana >= getImpCost() && selection == NONE && !rectangle) {
+          selection = SELECT;
+          PCreature imp = CreatureFactory::fromId(CreatureId::IMP, Tribe::player,
+              MonsterAIFactory::collective(this));
+          for (Vec2 v : pos.neighbors8(true))
+            if (v.inRectangle(level->getBounds()) && level->getSquare(v)->canEnter(imp.get()) 
+                && canSee(v)) {
+              mana -= getImpCost();
+              addCreature(imp.get(), MinionType::IMP);
+              level->addCreature(v, std::move(imp));
               break;
-          case BuildInfo::TRAP: {
-                TrapType trapType = getBuildInfo()[currentButton].trapInfo.type;
-                if (getTrapItems(trapType).size() > 0 && canPlacePost(pos) && myTiles.count(pos)){
-                  traps[pos] = {trapType, false, false};
-                  trapMap[trapType].push_back(pos);
-                  updateTraps();
-                }
-              }
-              break;
-          case BuildInfo::DOOR: {
-                BuildInfo::DoorInfo info = getBuildInfo()[currentButton].doorInfo;
-                if (numGold(info.resourceId) >= info.cost && canBuildDoor(pos)){
-                  doors[pos] = {{info.resourceId, info.cost}, false, false};
-                  updateTraps();
-                }
-              }
-              break;
-          case BuildInfo::DESTROY:
-              selection = SELECT;
-              if (level->getSquare(pos)->canDestroy() && myTiles.count(pos))
-                level->getSquare(pos)->destroy(10000);
-              level->getSquare(pos)->removeTriggers();
-              if (Creature* c = level->getSquare(pos)->getCreature())
-                if (c->getName() == "boulder")
-                  c->die(nullptr, false);
-              if (traps.count(pos)) {
-                removeElement(trapMap.at(traps.at(pos).type), pos);
-                traps.erase(pos);
-              }
-              if (doors.count(pos))
-                doors.erase(pos);
-              break;
-          case BuildInfo::GUARD_POST:
-              if (guardPosts.count(pos) && selection != SELECT) {
-                guardPosts.erase(pos);
-                selection = DESELECT;
-              }
-              else if (canPlacePost(pos) && guardPosts.size() < minions.size() && selection != DESELECT) {
-                guardPosts[pos] = {nullptr};
-                selection = SELECT;
-              }
-              break;
-          case BuildInfo::DIG:
-              if (marked.count(pos) && selection != SELECT) {
-                unmarkSquare(pos);
-                selection = DESELECT;
-              } else
-              if (!marked.count(pos) && selection != DESELECT) {
-                if (level->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
-                  markSquare(pos, SquareType::TREE_TRUNK, {ResourceId::GOLD, 0});
-                  selection = SELECT;
-                } else
-                if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !memory[level].hasViewIndex(pos)) {
-                  markSquare(pos, SquareType::FLOOR, { ResourceId::GOLD, 0});
-                  selection = SELECT;
-                }
-              }
-              break;
-          case BuildInfo::SQUARE:
-              if (marked.count(pos) && selection != SELECT) {
-                unmarkSquare(pos);
-                selection = DESELECT;
-              } else {
-                BuildInfo::SquareInfo info = getBuildInfo()[currentButton].squareInfo;
-                bool diggingSquare = !memory[level].hasViewIndex(pos) ||
-                  (level->getSquare(pos)->canConstruct(info.type));
-                if (!marked.count(pos) && selection != DESELECT && diggingSquare && 
-                    numGold(info.resourceId) >= info.cost && 
-                    (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) &&
-                    (info.type == SquareType::FLOOR || canSee(pos))) {
-                  markSquare(pos, info.type, {info.resourceId, info.cost});
-                  selection = SELECT;
-                  takeGold({info.resourceId, info.cost});
-                }
-              }
-              break;
+            }
+        }
+        break;
+    case BuildInfo::TRAP: {
+        TrapType trapType = getBuildInfo()[currentButton].trapInfo.type;
+        if (getTrapItems(trapType).size() > 0 && canPlacePost(pos) && myTiles.count(pos)) {
+          traps[pos] = {trapType, false, false};
+          trapMap[trapType].push_back(pos);
+          updateTraps();
         }
       }
       break;
-    case CollectiveAction::BUTTON_RELEASE: selection = NONE; break;
-    case CollectiveAction::IDLE: break;
+    case BuildInfo::DOOR: {
+        BuildInfo::DoorInfo info = getBuildInfo()[currentButton].doorInfo;
+        if (numGold(info.resourceId) >= info.cost && canBuildDoor(pos)){
+          doors[pos] = {{info.resourceId, info.cost}, false, false};
+          updateTraps();
+        }
+      }
+      break;
+    case BuildInfo::DESTROY:
+        selection = SELECT;
+        if (level->getSquare(pos)->canDestroy() && myTiles.count(pos))
+          level->getSquare(pos)->destroy(10000);
+        level->getSquare(pos)->removeTriggers();
+        if (Creature* c = level->getSquare(pos)->getCreature())
+          if (c->getName() == "boulder")
+            c->die(nullptr, false);
+        if (traps.count(pos)) {
+          removeElement(trapMap.at(traps.at(pos).type), pos);
+          traps.erase(pos);
+        }
+        if (doors.count(pos))
+          doors.erase(pos);
+        break;
+    case BuildInfo::GUARD_POST:
+        if (guardPosts.count(pos) && selection != SELECT) {
+          guardPosts.erase(pos);
+          selection = DESELECT;
+        }
+        else if (canPlacePost(pos) && guardPosts.size() < minions.size() && selection != DESELECT) {
+          guardPosts[pos] = {nullptr};
+          selection = SELECT;
+        }
+        break;
+    case BuildInfo::DIG:
+        if (marked.count(pos) && selection != SELECT) {
+          unmarkSquare(pos);
+          selection = DESELECT;
+        } else
+          if (!marked.count(pos) && selection != DESELECT) {
+            if (level->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
+              markSquare(pos, SquareType::TREE_TRUNK, {ResourceId::GOLD, 0});
+              selection = SELECT;
+            } else
+              if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !memory[level].hasViewIndex(pos)) {
+                markSquare(pos, SquareType::FLOOR, { ResourceId::GOLD, 0});
+                selection = SELECT;
+              }
+          }
+        break;
+    case BuildInfo::SQUARE:
+        if (marked.count(pos) && selection != SELECT) {
+          unmarkSquare(pos);
+          selection = DESELECT;
+        } else {
+          BuildInfo::SquareInfo info = getBuildInfo()[currentButton].squareInfo;
+          bool diggingSquare = !memory[level].hasViewIndex(pos) ||
+            (level->getSquare(pos)->canConstruct(info.type));
+          if (!marked.count(pos) && selection != DESELECT && diggingSquare && 
+              numGold(info.resourceId) >= info.cost && 
+              (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) &&
+              (info.type == SquareType::FLOOR || canSee(pos))) {
+            markSquare(pos, info.type, {info.resourceId, info.cost});
+            selection = SELECT;
+            takeGold({info.resourceId, info.cost});
+          }
+        }
+        break;
   }
 }
 
@@ -1067,16 +1088,8 @@ void Collective::updateTraps() {
 
 void Collective::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime) {
   int infinity = 1000000;
-  int minX = infinity, maxX = -infinity, minY = infinity, maxY = -infinity;
-  for (Vec2 v : enemyPos) {
-    minX = min(minX, v.x);
-    maxX = max(maxX, v.x);
-    minY = min(minY, v.y);
-    maxY = max(maxY, v.y);
-  }
   int radius = 10;
-  Table<int> dist(Rectangle(minX - radius, minY - radius, maxX + radius, maxY + radius)
-      .intersection(level->getBounds()), infinity);
+  Table<int> dist(Rectangle::boundingBox(enemyPos).minusMargin(-radius).intersection(level->getBounds()), infinity);
   queue<Vec2> q;
   for (Vec2 v : enemyPos) {
     dist[v] = 0;

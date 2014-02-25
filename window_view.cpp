@@ -1387,6 +1387,7 @@ Vec2 WindowView::projectOnBorders(Rectangle area, Vec2 pos) {
 Color getHighlightColor(ViewIndex::HighlightInfo info) {
   switch (info.type) {
     case HighlightType::BUILD: return transparency(yellow, 170);
+    case HighlightType::RECT_SELECTION: return transparency(yellow, 90);
     case HighlightType::FOG: return transparency(white, 120 * info.amount);
     case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
     case HighlightType::MEMORY: return transparency(black, 80);
@@ -2214,14 +2215,14 @@ CollectiveAction WindowView::getClick() {
           if (leftMouseButtonPressed) {
             Vec2 goTo = mapLayout->projectOnMap(*mousePos);
             if (goTo != lastGoTo && mousePos->inRectangle(getMapViewBounds())) {
-              return CollectiveAction(CollectiveAction::GO_TO, goTo);
+              return CollectiveAction(Keyboard::isKeyPressed(Keyboard::LShift) ? CollectiveAction::RECT_SELECTION : 
+                  CollectiveAction::GO_TO, goTo);
               lastGoTo = goTo;
             } else
               continue;
           }
           break;
       case Event::MouseButtonPressed: {
-          CollectiveAction::Type t;
           Vec2 clickPos(event.mouseButton.x, event.mouseButton.y);
           if (event.mouseButton.button == sf::Mouse::Right)
             chosenCreature = "";
@@ -2269,7 +2270,13 @@ CollectiveAction WindowView::getClick() {
             leftMouseButtonPressed = true;
             chosenCreature = "";
             if (clickPos.inRectangle(getMapViewBounds())) {
-              t = collectiveOption == CollectiveOption::MINIONS ? CollectiveAction::POSSESS: CollectiveAction::GO_TO;
+              CollectiveAction::Type t;
+              if (collectiveOption == CollectiveOption::MINIONS)
+                t = CollectiveAction::POSSESS;
+              else if (Keyboard::isKeyPressed(Keyboard::LShift))
+                t = CollectiveAction::RECT_SELECTION;
+              else
+                t = CollectiveAction::GO_TO;
               return CollectiveAction(t, mapLayout->projectOnMap(clickPos));
             }
           }
