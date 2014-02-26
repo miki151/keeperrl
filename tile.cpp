@@ -494,8 +494,8 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::FALLEN_TREE: return Tile('*', green);
     case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
     case ViewId::DESTROY_BUTTON: return Tile('X', red);
-    case ViewId::MANA: return Tile(5, 10, 2);
-    case ViewId::DANGER: return Tile(12, 9, 2);
+    case ViewId::MANA: return Tile('*', blue);
+    case ViewId::DANGER: return Tile('*', red);
   }
   FAIL << "unhandled view id " << (int)obj.id();
   return Tile(' ', white);

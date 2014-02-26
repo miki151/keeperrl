@@ -30,7 +30,7 @@ void MapLayout::updatePlayerPos(Vec2 pos) {
 
 Rectangle MapLayout::getAllTiles(Rectangle screenBounds1, Rectangle tableBounds) {
   vector<Vec2> ret;
-  Rectangle screenBounds = screenBounds1.minusMargin(-squareH);
+  Rectangle screenBounds = screenBounds1.minusMargin(-2 * squareH);
   Rectangle grid(screenBounds.getW() / squareW, screenBounds.getH() / squareH);
   Vec2 offset = center.div(Vec2(squareW, squareH)) - grid.middle();
   return tableBounds.intersection(grid.translate(offset));

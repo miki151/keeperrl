@@ -117,9 +117,35 @@ Rectangle WindowView::getMapViewBounds() const {
 
 Table<Optional<ViewIndex>> objects(maxLevelBounds.getW(), maxLevelBounds.getH());
 
+bool tilesOk = true;
+
 void WindowView::initialize() {
   renderer.initialize(1024, 600, 32, "KeeperRL");
 
+  Image tileImage;
+  tilesOk &= tileImage.loadFromFile("tiles_int.png");
+  Image tileImage2;
+  tilesOk &= tileImage2.loadFromFile("tiles2_int.png");
+  Image tileImage3;
+  tilesOk &= tileImage3.loadFromFile("tiles3_int.png");
+  Image tileImage4;
+  tilesOk &= tileImage4.loadFromFile("tiles4_int.png");
+  Image tileImage5;
+  tilesOk &= tileImage5.loadFromFile("tiles5_int.png");
+  Image tileImage6;
+  tilesOk &= tileImage6.loadFromFile("tiles6_int.png");
+  Image tileImage7;
+  tilesOk &= tileImage7.loadFromFile("tiles7_int.png");
+  if (tilesOk) {
+    Renderer::tiles.resize(7);
+    Renderer::tiles[0].loadFromImage(tileImage);
+    Renderer::tiles[1].loadFromImage(tileImage2);
+    Renderer::tiles[2].loadFromImage(tileImage3);
+    Renderer::tiles[3].loadFromImage(tileImage4);
+    Renderer::tiles[4].loadFromImage(tileImage5);
+    Renderer::tiles[5].loadFromImage(tileImage6);
+    Renderer::tiles[6].loadFromImage(tileImage7);
+  }
   asciiLayouts = {
     MapLayout(16, 20, allLayers),
     MapLayout(8, 10,
@@ -127,31 +153,11 @@ void WindowView::initialize() {
   spriteLayouts = {
     MapLayout(36, 36, allLayers),
     MapLayout(18, 18, allLayers), true};
-  currentTileLayout = spriteLayouts;
-  mapGui = new MapGui(getMapViewBounds(), objects);
-  Image tileImage;
-  CHECK(tileImage.loadFromFile("tiles_int.png"));
-  Image tileImage2;
-  CHECK(tileImage2.loadFromFile("tiles2_int.png"));
-  Image tileImage3;
-  CHECK(tileImage3.loadFromFile("tiles3_int.png"));
-  Image tileImage4;
-  CHECK(tileImage4.loadFromFile("tiles4_int.png"));
-  Image tileImage5;
-  CHECK(tileImage5.loadFromFile("tiles5_int.png"));
-  Image tileImage6;
-  CHECK(tileImage6.loadFromFile("tiles6_int.png"));
-  Image tileImage7;
-  CHECK(tileImage7.loadFromFile("tiles7_int.png"));
-  Renderer::tiles.resize(7);
-  Renderer::tiles[0].loadFromImage(tileImage);
-  Renderer::tiles[1].loadFromImage(tileImage2);
-  Renderer::tiles[2].loadFromImage(tileImage3);
-  Renderer::tiles[3].loadFromImage(tileImage4);
-  Renderer::tiles[4].loadFromImage(tileImage5);
-  Renderer::tiles[5].loadFromImage(tileImage6);
-  Renderer::tiles[6].loadFromImage(tileImage7);
-}
+  if (tilesOk)
+    currentTileLayout = spriteLayouts;
+  else
+    currentTileLayout = asciiLayouts;
+  mapGui = new MapGui(getMapViewBounds(), objects);}
 
 void WindowView::reset() {
   mapBuffer.create(maxLevelBounds.getW(), maxLevelBounds.getH());
@@ -546,7 +552,7 @@ void WindowView::drawBuildings(GameInfo::BandInfo& info) {
     if (info.buttons[i].cost) {
       string costText = convertToString(info.buttons[i].cost->second);
       int posX = renderer.getWidth() - renderer.getTextLength(costText) - 10;
-      drawViewObject(info.buttons[i].cost->first, renderer.getWidth() - 45, height, true);
+      drawViewObject(info.buttons[i].cost->first, renderer.getWidth() - 45, height, currentTileLayout.sprites);
       renderer.drawText(color, posX, height, costText);
     }
     roomButtons.emplace_back(textX, height,textX + 150, height + legendLineHeight);
@@ -560,7 +566,7 @@ void WindowView::drawTechnology(GameInfo::BandInfo& info) {
   for (int i : All(info.techButtons)) {
     int height = legendStartHeight + i * legendLineHeight;
     if (info.techButtons[i].viewObject)
-      drawViewObject(*info.techButtons[i].viewObject, textX, height, true);
+      drawViewObject(*info.techButtons[i].viewObject, textX, height, currentTileLayout.sprites);
     renderer.drawText(white, textX + 20, height, info.techButtons[i].name);
     techButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
   }
@@ -597,7 +603,7 @@ void WindowView::drawBandInfo() {
   int resourceX = 45;
   for (int i : All(info.numGold)) {
     renderer.drawText(white, resourceX + resourceSpacing * i, line1, convertToString<int>(info.numGold[i].count));
-    drawViewObject(info.numGold[i].viewObject, resourceX - 12 + resourceSpacing * i, line1, true);
+    drawViewObject(info.numGold[i].viewObject, resourceX - 12 + resourceSpacing * i, line1,currentTileLayout.sprites);
     if (mousePos && mousePos->inRectangle(Rectangle(resourceX + resourceSpacing * i - 20, line1, resourceX + resourceSpacing * (i + 1) - 20, line1 + 30)))
       mapGui->drawHint(renderer, white, info.numGold[i].name);
   }
@@ -1199,7 +1205,7 @@ void WindowView::unzoom() {
 
 void WindowView::switchTiles() {
   bool normal = (mapLayout == &currentTileLayout.normalLayout);
-  if (Options::getValue(OptionId::ASCII))
+  if (Options::getValue(OptionId::ASCII) || !tilesOk)
     currentTileLayout = asciiLayouts;
   else
     currentTileLayout = spriteLayouts;
