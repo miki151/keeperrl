@@ -297,6 +297,10 @@ void Player::throwItem(vector<Item*> items, Optional<Vec2> dir) {
 }
 
 void Player::equipmentAction() {
+  if (!creature->isHumanoid()) {
+    creature->privateMessage("You can't use any equipment.");
+    return;
+  }
   vector<EquipmentSlot> slots;
   for (auto slot : slotTitles)
     slots.push_back(slot.first);
@@ -363,6 +367,10 @@ void Player::grantIdentify(int numItems) {
 }
 
 void Player::displayInventory() {
+  if (!creature->isHumanoid()) {
+    view->presentText("", "You can't use inventory.");
+    return;
+  }
   if (creature->getEquipment().isEmpty()) {
     view->presentText("", "Your inventory is empty.");
     return;

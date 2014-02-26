@@ -9,43 +9,23 @@
 
 class MapLayout {
   public:
-  MapLayout(int screenWidth, int screenHeight, int leftMargin, int topMargin, int rightMargin, int bottomMargin,
-      vector<ViewLayer> layers);
-  Rectangle getBounds();
-  void updateScreenSize(int width, int height);
+  MapLayout() {}
+  MapLayout(int squareW, int squareH, vector<ViewLayer> layers);
 
   vector<ViewLayer> getLayers() const;
 
-  virtual double squareWidth() = 0;
-  virtual double squareHeight() = 0;
-  virtual void increaseSize() {}
-  virtual void decreaseSize() {}
-  virtual Vec2 projectOnScreen(Vec2 mapPos) = 0;
-  virtual Vec2 projectOnMap(Vec2 screenPos) = 0;
-  virtual Rectangle getAllTiles(Rectangle bounds) = 0;
-  virtual void updatePlayerPos(Vec2) = 0;
-  virtual Optional<Action> overrideAction(const sf::Event::KeyEvent&) { return Nothing(); };
+  int squareWidth();
+  int squareHeight();
+  Vec2 projectOnScreen(Rectangle bounds, Vec2 mapPos);
+  Vec2 projectOnMap(Rectangle bounds, Vec2 screenPos);
+  Rectangle getAllTiles(Rectangle screenBounds, Rectangle tableBounds);
+  void updatePlayerPos(Vec2);
 
-  static MapLayout* gridLayout(
-      int screenW, int screenH,
-      int squareWidth, int squareHeight,
-      int leftMargin, int topMargin,
-      int rightMargin, int bottomMargin,
-      vector<ViewLayer> layers);
-
-  static MapLayout* worldLayout(int screenW, int screenH,
-    int leftMargin, int topMargin,
-    int rightMargin, int bottomMargin);
-
-  protected:
-  int screenWidth;
-  int screenHeight;
-  int leftMargin;
-  int topMargin;
-  int rightMargin;
-  int bottomMargin;
-
+  private:
   vector<ViewLayer> layers;
+  Vec2 center;
+  int squareW;
+  int squareH;
 };
 
 

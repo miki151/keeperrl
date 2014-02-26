@@ -14,6 +14,38 @@ using sf::Texture;
 using sf::RenderWindow;
 using sf::Event;
 
+namespace colors {
+  extern const Color white;
+  extern const Color yellow;
+  extern const Color lightBrown;
+  extern const Color orangeBrown;
+  extern const Color brown;
+  extern const Color darkBrown;
+  extern const Color lightGray;
+  extern const Color gray;
+  extern const Color almostGray;
+  extern const Color darkGray;
+  extern const Color almostBlack;
+  extern const Color almostDarkGray;
+  extern const Color black;
+  extern const Color almostWhite;
+  extern const Color green;
+  extern const Color lightGreen;
+  extern const Color darkGreen;
+  extern const Color red;
+  extern const Color lightRed;
+  extern const Color pink;
+  extern const Color orange;
+  extern const Color blue;
+  extern const Color darkBlue;
+  extern const Color lightBlue;
+  extern const Color purple;
+  extern const Color violet;
+  extern const Color translucentBlack;
+
+  Color transparency(const Color& color, int trans);
+}
+
 class Renderer {
   public: 
   const static int textSize = 19;
@@ -36,9 +68,15 @@ class Renderer {
   void waitEvent(Event&);
   Vec2 getMousePos();
 
+  static vector<Texture> tiles;
+  const static vector<int> tileSize;
+  const static int nominalSize;
+
   private:
   RenderWindow* display = nullptr;
   sf::View* sfView;
+  stack<Vec2> translations;
+  Vec2 translation;
 };
 
 #endif

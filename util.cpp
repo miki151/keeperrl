@@ -461,6 +461,10 @@ Rectangle Rectangle::intersection(const Rectangle& other) const {
   return Rectangle(max(px, other.px), max(py, other.py), min(kx, other.kx), min(ky, other.ky));
 }
 
+Rectangle Rectangle::translate(Vec2 v) const {
+  return Rectangle(getTopLeft() + v, getBottomRight() + v);
+}
+
 Rectangle Rectangle::minusMargin(int margin) const {
   CHECK(px + margin < kx - margin && py + margin < ky - margin) << "Margin too big";
   return Rectangle(px + margin, py + margin, kx - margin, ky - margin);

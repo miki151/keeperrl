@@ -160,6 +160,7 @@ class Rectangle {
   Rectangle intersection(const Rectangle& other) const;
 
   Rectangle minusMargin(int margin) const;
+  Rectangle translate(Vec2 v) const;
 
   Vec2 randomVec2() const;
   Vec2 middle() const;

@@ -7,6 +7,44 @@ Font textFont;
 Font tileFont;
 Font symbolFont;
 
+namespace colors {
+  const Color white(255, 255, 255);
+  const Color yellow(250, 255, 0);
+  const Color lightBrown(210, 150, 0);
+  const Color orangeBrown(250, 150, 0);
+  const Color brown(240, 130, 0);
+  const Color darkBrown(100, 60, 0);
+  const Color lightGray(150, 150, 150);
+  const Color gray(100, 100, 100);
+  const Color almostGray(102, 102, 102);
+  const Color darkGray(50, 50, 50);
+  const Color almostBlack(20, 20, 20);
+  const Color almostDarkGray(60, 60, 60);
+  const Color black(0, 0, 0);
+  const Color almostWhite(200, 200, 200);
+  const Color green(0, 255, 0);
+  const Color lightGreen(100, 255, 100);
+  const Color darkGreen(0, 150, 0);
+  const Color red(255, 0, 0);
+  const Color lightRed(255, 100, 100);
+  const Color pink(255, 20, 147);
+  const Color orange(255, 165, 0);
+  const Color blue(0, 0, 255);
+  const Color darkBlue(50, 50, 200);
+  const Color lightBlue(100, 100, 255);
+  const Color purple(160, 32, 240);
+  const Color violet(120, 0, 255);
+  const Color translucentBlack(0, 0, 0);
+
+  Color transparency(const Color& color, int trans) {
+    return Color(color.r, color.g, color.b, trans);
+  }
+}
+
+vector<Texture> Renderer::tiles;
+const vector<int> Renderer::tileSize { 36, 36, 36, 24, 36, 36 };
+const int Renderer::nominalSize = 36;
+
 int Renderer::getTextLength(string s) {
   Text t(s, textFont, textSize);
   return t.getLocalBounds().width;
@@ -116,5 +154,7 @@ void Renderer::waitEvent(Event& ev) {
 }
 
 Vec2 Renderer::getMousePos() {
-  return Vec2(Mouse::getPosition(*display).x, Mouse::getPosition(*display).y);
+  auto pos = Mouse::getPosition(*display);
+  return Vec2(pos.x, pos.y);
 }
+

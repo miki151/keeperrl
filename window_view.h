@@ -5,6 +5,7 @@
 #include "view.h"
 #include "action.h"
 #include "map_layout.h"
+#include "map_gui.h"
 
 class ViewIndex;
 
@@ -46,7 +47,7 @@ class WindowView: public View {
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   
-  static Vec2 projectOnBorders(Rectangle area, Vec2 pos);
+  static Color getFireColor();
   private:
 
   Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index,
@@ -109,16 +110,18 @@ class WindowView: public View {
   LegendOption legendOption = LegendOption::STATS;
 
   MapLayout* mapLayout;
+  MapGui* mapGui;
+
+  bool gameReady = false;
 
   struct TileLayouts {
-    MapLayout* normalLayout;
-    MapLayout* unzoomLayout;
+    MapLayout normalLayout;
+    MapLayout unzoomLayout;
     bool sprites;
   };
   TileLayouts asciiLayouts;
   TileLayouts spriteLayouts;
   TileLayouts currentTileLayout;
-  vector<MapLayout*> allLayouts;
 
   vector<Rectangle> bottomKeyButtons;
   vector<Rectangle> optionButtons;

@@ -337,7 +337,7 @@ void Model::conquered(const string& title, const string& land, vector<const Crea
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "conquered the land of " + land + "," << points << std::endl;
   showHighscore(true);
-  throw GameOverException();
+  //throw GameOverException();
 }
 
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
