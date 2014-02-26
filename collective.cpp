@@ -123,6 +123,14 @@ const int minionLimit = 20;
 
 
 void Collective::render(View* view) {
+  if (possessed && possessed != heart && isInCombat(heart) && lastControlKeeperQuestion < heart->getTime() - 50) {
+    lastControlKeeperQuestion = heart->getTime();
+    if (view->yesOrNoPrompt("Your keeper is engaged in combat. Do you want to control him?")) {
+      possessed->popController();
+      possess(heart, view);
+      return;
+    }
+  }
   if (possessed && (!possessed->isPlayer() || possessed->isDead())) {
     if (contains(team, possessed))
       removeElement(team, possessed);
@@ -775,6 +783,13 @@ void Collective::freeFromGuardPost(const Creature* c) {
 }
 
 void Collective::processInput(View* view) {
+  if (!possessed && isInCombat(heart) && lastControlKeeperQuestion < heart->getTime() - 50) {
+    lastControlKeeperQuestion = heart->getTime();
+    if (view->yesOrNoPrompt("Your keeper is engaged in combat. Do you want to control him?")) {
+      possess(heart, view);
+      return;
+    }
+  }
   CollectiveAction action = view->getClick();
   switch (action.getType()) {
     case CollectiveAction::GATHER_TEAM:

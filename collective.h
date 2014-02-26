@@ -259,6 +259,7 @@ class Collective : public CreatureView, public EventListener {
   Optional<Vec2> rectSelectCorner;
   Optional<Vec2> rectSelectCorner2;
   unordered_map<const Creature*, double> lastCombat;
+  double lastControlKeeperQuestion = -100;
 };
 
 #endif
