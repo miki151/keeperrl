@@ -143,10 +143,10 @@ Model* Model::heroModel(View* view) {
   Model* m = new Model(view);
   vector<Location*> locations = getVillageLocations(3);
   Level* top = m->prepareTopLevel({
-      {SettlementType::CASTLE, CreatureFactory::humanVillage(), CreatureId::AVATAR, locations[0], Tribe::human,
+      {SettlementType::CASTLE, CreatureFactory::humanVillage(0.3), CreatureId::AVATAR, locations[0], Tribe::human,
         {30, 20}, {StairKey::CASTLE_CELLAR}},
  //     {SettlementType::VILLAGE, CreatureFactory::humanVillagePeaceful(), locations[1], Tribe::human, {30, 20}, {}},
-      {SettlementType::VILLAGE, CreatureFactory::elvenVillage(), CreatureId::ELF_LORD, locations[2], Tribe::elven,
+      {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.3), CreatureId::ELF_LORD, locations[2], Tribe::elven,
         {30, 20}, {}}});
 /*  Level* top = m->prepareTopLevel2({
       {SettlementType::CASTLE, CreatureFactory::humanVillage(), locations[0], Tribe::human}});*/
@@ -219,14 +219,14 @@ Model* Model::collectiveModel(View* view) {
   CreatureFactory factory = CreatureFactory::collectiveStart();
   vector<Location*> villageLocations = getVillageLocations(2);
   vector<SettlementInfo> settlements{
-    {SettlementType::CASTLE, CreatureFactory::humanVillagePeaceful(), Nothing(), villageLocations[0], Tribe::human,
+    {SettlementType::CASTLE, CreatureFactory::humanVillage(0.6),CreatureId::AVATAR, villageLocations[0], Tribe::human,
       {30, 20}, {}},
-    {SettlementType::VILLAGE, CreatureFactory::elvenVillagePeaceful(), Nothing(), villageLocations[1],
+    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.6), CreatureId::ELF_LORD, villageLocations[1],
       Tribe::elven,
       {30, 20}, {}}  };
   vector<CreatureFactory> cottageF {
-    CreatureFactory::humanVillagePeaceful(),
-    CreatureFactory::elvenVillagePeaceful(),
+    CreatureFactory::humanVillage(0),
+    CreatureFactory::elvenVillage(0),
   };
   vector<Tribe*> cottageT { Tribe::human, Tribe::elven };
   for (int i : Range(4, 8))
@@ -255,29 +255,25 @@ Model* Model::collectiveModel(View* view) {
   vector<vector<tuple<int, int, int>>> heroAttackTime { {
       { make_tuple(1800 + diffInc, 2, 4) },
       { make_tuple(2400 + diffInc, 2, 4) },
-      { make_tuple(2800 + diffInc, 4, 7) },
-      { make_tuple(3400 + diffInc, 12, 18) }},
+      { make_tuple(2800 + diffInc, 4, 7) }},
     { { make_tuple(1300 + diffInc, 2, 4) },
-      { make_tuple(1800 + diffInc, 2, 4) },
       { make_tuple(2400 + diffInc, 4, 7) }}};
 
-  vector<pair<CreatureFactory, CreatureFactory>> villageFactories {
-    { CreatureFactory::collectiveEnemies(), CreatureFactory::collectiveFinalAttack() },
-    { CreatureFactory::collectiveElfEnemies(), CreatureFactory::collectiveElfFinalAttack() }
+  vector<CreatureFactory> villageFactories {
+    { CreatureFactory::collectiveEnemies() },
+    { CreatureFactory::collectiveElfEnemies() }
   };
   int cnt = 0;
   for (int i : All(villageLocations)) {
     Location* loc = villageLocations[i];
-    VillageControl* control = VillageControl::humanVillage(m->collective, loc,
+    VillageControl* control = VillageControl::topLevelVillage(m->collective, loc,
         StairDirection::DOWN, StairKey::DWARF);
-    CreatureFactory firstAttack = villageFactories[cnt].first;
-    CreatureFactory lastAttack = villageFactories[cnt].second;
+    CreatureFactory firstAttack = villageFactories[cnt];
     for (int j : All(heroAttackTime[i])) {
       int attackTime = get<0>(heroAttackTime[i][j]);
       int heroCount = Random.getRandom(get<1>(heroAttackTime[i][j]), get<2>(heroAttackTime[i][j]));
-      CreatureFactory& factory = (j == heroAttackTime[i].size() - 1 ? lastAttack : firstAttack);
       for (int k : Range(heroCount)) {
-        PCreature c = factory.random(MonsterAIFactory::villageControl(control, loc));
+        PCreature c = firstAttack.random(MonsterAIFactory::villageControl(control, loc));
         control->addCreature(c.get(), attackTime);
         top->landCreature(loc->getBounds().getAllSquares(), std::move(c));
       }

@@ -605,26 +605,33 @@ CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const ve
     : tribe(t), creatures(c), weights(w), unique(u) {
 }
 
-CreatureFactory CreatureFactory::humanVillagePeaceful() {
-  return CreatureFactory(Tribe::human, { CreatureId::PESEANT,
+CreatureFactory CreatureFactory::humanVillage(double armedRatio) {
+  CHECK(armedRatio < 0.999 && armedRatio >= 0);
+  CreatureFactory ret(Tribe::human, { CreatureId::PESEANT,
       CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG },
       { 2, 1, 1, 1, 1}, {});
+  if (armedRatio == 0)
+    return ret;
+  double sum = 0;
+  for (double w : ret.weights)
+    sum += w;
+  ret.weights.push_back(sum * armedRatio / (1 - armedRatio));
+  ret.creatures.push_back(CreatureId::KNIGHT);
+  return ret;
 }
 
-CreatureFactory CreatureFactory::humanVillage() {
-  return CreatureFactory(Tribe::human, { CreatureId::PESEANT, CreatureId::KNIGHT,
-      CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG },
-      { 2, 1, 1, 1, 1, 1}, {});
-}
-
-CreatureFactory CreatureFactory::elvenVillage() {
-  return CreatureFactory(Tribe::elven, { CreatureId::ELF, CreatureId::ELF_ARCHER,CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW },
-      { 2, 2, 2, 1, 1}, {});
-}
-
-CreatureFactory CreatureFactory::elvenVillagePeaceful() {
-  return CreatureFactory(Tribe::elven, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW },
+CreatureFactory CreatureFactory::elvenVillage(double armedRatio) {
+  CHECK(armedRatio < 0.999 && armedRatio >= 0);
+  CreatureFactory ret(Tribe::elven, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW },
       { 2, 2, 1, 1}, {});
+  if (armedRatio == 0)
+    return ret;
+  double sum = 0;
+  for (double w : ret.weights)
+    sum += w;
+  ret.weights.push_back(sum * armedRatio / (1 - armedRatio));
+  ret.creatures.push_back(CreatureId::ELF_ARCHER);
+  return ret;
 }
 
 CreatureFactory CreatureFactory::forrest() {

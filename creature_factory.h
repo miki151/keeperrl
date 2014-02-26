@@ -20,10 +20,8 @@ class CreatureFactory {
   public:
   static PCreature fromId(CreatureId, Tribe*, MonsterAIFactory = MonsterAIFactory::monster());
   static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
-  static CreatureFactory humanVillage();
-  static CreatureFactory humanVillagePeaceful();
-  static CreatureFactory elvenVillage();
-  static CreatureFactory elvenVillagePeaceful();
+  static CreatureFactory humanVillage(double armedPercent);
+  static CreatureFactory elvenVillage(double armedPercent);
   static CreatureFactory forrest();
   static CreatureFactory crypt();
   static CreatureFactory hellLevel();

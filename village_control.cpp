@@ -20,8 +20,10 @@ VillageControl::~VillageControl() {
 }
 
 void VillageControl::addCreature(Creature* c, int attackPoints) {
-  if (tribe == nullptr)
+  if (tribe == nullptr) {
     tribe = c->getTribe();
+    CHECK(!tribe->getImportantMembers().empty());
+  }
   CHECK(c->getTribe() == tribe);
   attackInfo[attackPoints].creatures.push_back(c);
   allCreatures.push_back(c);
@@ -33,11 +35,8 @@ bool VillageControl::startedAttack(Creature* c) {
       if (elem.second.attackTime > -1) {
         if (elem.second.attackTime <= c->getTime()) {
           if (elem.second.msg) {
-            if (++numAttacks < attackInfo.size())
-              messageBuffer.addMessage(MessageBuffer::important("The inhabitants of " + name + " are attacking!"));
-            else
-              messageBuffer.addMessage(MessageBuffer::important("The inhabitants of " + name + 
-                    " have gathered for a final assault!"));
+            messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
+                  " of " + name + " are attacking!"));
             elem.second.msg = false;
           }
           return true;
@@ -54,13 +53,15 @@ bool VillageControl::startedAttack(Creature* c) {
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim->getTribe() == tribe)
     attackPoints += 2 * victim->getDifficultyPoints();
+  if (victim == getOnlyElement(tribe->getImportantMembers()) && --counter == 0) {
+    villain->onConqueredLand(NameGenerator::worldNames.getNext());
+  }
   if (contains(allCreatures, victim)) {
     removeElement(allCreatures, victim);
     if (allCreatures.empty()) {
-      messageBuffer.addMessage(MessageBuffer::important("You have defeated the inhabitants of " + name));
-      if (--counter == 0) {
-        villain->onConqueredLand(NameGenerator::worldNames.getNext());
-      }
+      messageBuffer.addMessage(MessageBuffer::important("You have defeated the pathetic attacks of the " 
+            + tribe->getName() +" of " + name + ". Take advantage of their weakened defense and kill their leader, "
+            "the " + getOnlyElement(tribe->getImportantMembers())->getName()));
     }
   }
 }
@@ -159,7 +160,7 @@ class HumanVillageControl : public VillageControl {
   map<Creature*, int> lastPathLocation;
 };
 
-VillageControl* VillageControl::humanVillage(Collective* villain, const Location* location,
+VillageControl* VillageControl::topLevelVillage(Collective* villain, const Location* location,
     StairDirection dir, StairKey key) {
   return new HumanVillageControl(villain, location, dir, key);
 }

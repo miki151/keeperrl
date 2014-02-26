@@ -15,7 +15,7 @@ class VillageControl : public EventListener {
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
 
-  static VillageControl* humanVillage(Collective* villain, const Location* villageLocation, 
+  static VillageControl* topLevelVillage(Collective* villain, const Location* villageLocation, 
       StairDirection dir, StairKey key);
   static VillageControl* dwarfVillage(Collective* villain, const Level*, 
       StairDirection dir, StairKey key);
