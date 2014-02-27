@@ -174,10 +174,15 @@ class View {
     class PlayerInfo {
       public:
       int speed;
+      int speedBonus;
       int defense;
+      int defBonus;
       int attack;
+      int attBonus;
       int strength;
+      int strBonus;
       int dexterity;
+      int dexBonus;
       bool possessed;
       bool spellcaster;
       double time;

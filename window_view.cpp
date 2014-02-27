@@ -397,6 +397,16 @@ void WindowView::drawPlayerInfo() {
 const int legendLineHeight = 30;
 const int legendStartHeight = topBarHeight + 70;
 
+static Color getBonusColor(int bonus) {
+  switch (bonus) {
+    case -1: return red;
+    case 0: return white;
+    case 1: return green;
+  }
+  FAIL << "Bad bonus number" << bonus;
+  return white;
+}
+
 void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   int lineStart = legendStartHeight;
   int lineX = renderer.getWidth() - rightBarText + 10;
@@ -411,19 +421,19 @@ void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
       "Speed: ",
       "Gold:",
   };
-  vector<string> lines2 {
-    "",
-    "",
-    convertToString(info.attack),
-    convertToString(info.defense),
-    convertToString(info.strength),
-    convertToString(info.dexterity),
-    convertToString(info.speed),
-    "$" + convertToString(info.numGold),
+  vector<pair<string, Color>> lines2 {
+    {"", white},
+    {"", white},
+    {convertToString(info.attack), getBonusColor(info.attBonus)},
+    {convertToString(info.defense), getBonusColor(info.defBonus)},
+    {convertToString(info.strength), getBonusColor(info.strBonus)},
+    {convertToString(info.dexterity), getBonusColor(info.dexBonus)},
+    {convertToString(info.speed), getBonusColor(info.speedBonus)},
+    {"$" + convertToString(info.numGold), white},
   };
   for (int i : All(lines)) {
-    renderer.drawText(white, lineX, lineStart + legendLineHeight * i, lines[i]);
-    renderer.drawText(white, line2X, lineStart + legendLineHeight * i, lines2[i]);
+    renderer.drawText(lines2[i].second, lineX, lineStart + legendLineHeight * i, lines[i]);
+    renderer.drawText(lines2[i].second, line2X, lineStart + legendLineHeight * i, lines2[i].first);
   }
 }
 

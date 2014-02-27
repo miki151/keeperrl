@@ -1863,7 +1863,6 @@ vector<const Creature*> Creature::getUnknownAttacker() const {
 void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     gameInfo.infoType = View::GameInfo::InfoType::PLAYER;
     View::GameInfo::PlayerInfo& info = gameInfo.playerInfo;
-    info.speed = getAttr(AttrType::SPEED);
     if (firstName) {
       info.playerName = *firstName;
       info.title = *name;
@@ -1893,10 +1892,16 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     const Location* location = getLevel()->getLocation(getPosition());
     info.levelName = location && location->hasName() 
       ? capitalFirst(location->getName()) : getLevel()->getName();
+    info.speed = getAttr(AttrType::SPEED);
+    info.speedBonus = speeding ? 1 : slowed ? -1 : 0;
     info.defense = getAttr(AttrType::DEFENSE);
+    info.defBonus = enraged ? -1 : panicking ? 1 : 0;
     info.attack = getAttr(AttrType::DAMAGE);
+    info.attBonus = enraged ? 1 : panicking ? -1 : 0;
     info.strength = getAttr(AttrType::STRENGTH);
+    info.strBonus = strBonus;
     info.dexterity = getAttr(AttrType::DEXTERITY);
+    info.dexBonus = dexBonus;
     info.time = getTime();
     info.numGold = getGold(100000000).size();
     info.elfStanding = Tribe::elven->getStanding(this);
