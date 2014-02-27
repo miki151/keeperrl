@@ -48,7 +48,7 @@ string getCardinalName(Dir d) {
     case Dir::E: return "east";
     case Dir::W: return "west";
     case Dir::NE: return "north-east";
-    case Dir::NW: return "north-weast";
+    case Dir::NW: return "north-west";
     case Dir::SE: return "south-east";
     case Dir::SW: return "south-west";
   }
@@ -383,6 +383,13 @@ Vec2 Vec2::getBearing() const {
     return Vec2(1, -1);
   FAIL << ang;
   return Vec2(0, 0);
+}
+
+Vec2 Vec2::getCenterOfWeight(vector<Vec2> vs) {
+  Vec2 ret;
+  for (Vec2 v : vs)
+    ret += v;
+  return ret / vs.size();
 }
 
 Rectangle::Rectangle(int _w, int _h) : px(0), py(0), kx(_w), ky(_h), w(_w), h(_h) {

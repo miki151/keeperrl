@@ -158,7 +158,7 @@ void Collective::render(View* view) {
   if (showWelcomeMsg && Options::getValue(OptionId::HINTS)) {
     view->refreshView(this);
     showWelcomeMsg = false;
-    view->presentText("Welcome", "In short: you are an evil warlock who has been banished and will now take revenge on everyone.\n \n"
+    view->presentText("Welcome", "In short: you are a warlock who has been banished from the lawful world for practicing black magic. You are going to claim the land of " + NameGenerator::worldNames.getNext() + " and make it your domain. Best way to achieve this is to kill all the village leaders.\n \n"
 "Use the mouse to dig into the mountain. You will need access to trees, iron and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab.\n \n You can turn these messages off in the options (press F2).");
   }
 }
@@ -1033,11 +1033,23 @@ Vec2 Collective::getHeartPos() const {
   return heart->getPosition();
 }
 
+Vec2 Collective::getDungeonCenter() const {
+  if (!myTiles.empty())
+    return Vec2::getCenterOfWeight(vector<Vec2>(myTiles.begin(), myTiles.end()));
+  else
+    return heart->getPosition();
+}
+
 double Collective::getDangerLevel() const {
   double ret = 0;
   for (const Creature* c : minions)
     ret += c->getDifficultyPoints();
   return ret;
+}
+
+void Collective::learnLocation(const Location* loc) {
+  for (Vec2 pos : loc->getBounds())
+    memory[loc->getLevel()].addObject(pos, level->getSquare(pos)->getViewObject());
 }
 
 ItemPredicate Collective::unMarkedItems(ItemType type) const {

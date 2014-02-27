@@ -14,9 +14,10 @@ class Collective;
 /**
   * Main class that holds all game logic.
   */
-class Model {
+class Model : public EventListener {
   public:
   Model(View* view);
+  ~Model();
 
   /** Generates levels and all game entities for a single player game. */
   static Model* heroModel(View* view);
@@ -42,11 +43,13 @@ class Model {
 
   bool isTurnBased();
 
+  void onKillEvent(const Creature* victim, const Creature* killer) override;
   void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, const string& land, vector<const Creature*> kills, int points);
   void showHighscore(bool highlightLast = false);
 
   private:
+  void dwarvesMessage();
   Level* buildLevel(Level::Builder&& b, LevelMaker*, bool surface = false);
   void addLink(StairDirection, StairKey, Level*, Level*);
   Level* prepareTopLevel(vector<SettlementInfo> settlements);
@@ -59,6 +62,10 @@ class Model {
   double lastTick = -1000;
   map<tuple<StairDirection, StairKey, Level*>, Level*> levelLinks;
   Collective* collective = nullptr;
+  bool elvesDead = false;
+  bool humansDead = false;
+  bool dwarvesDead = false;
+  bool won = false;
 };
 
 #endif

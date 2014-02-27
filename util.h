@@ -93,6 +93,7 @@ class Vec2 {
   Vec2 getBearing() const;
   bool isCardinal4() const;
   Dir getCardinalDir() const;
+  static Vec2 getCenterOfWeight(vector<Vec2>);
 
   vector<Vec2> box(int radius, bool shuffle = false);
   static vector<Vec2> directions8(bool shuffle = false);

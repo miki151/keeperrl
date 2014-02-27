@@ -15,8 +15,9 @@ bool Model::isTurnBased() {
 }
 
 void Model::update(double totalTime) {
-  if (collective)
+  if (collective) {
     collective->render(view);
+  }
   do {
     if (collective && !collective->isTurnBased()) {
       // process a few times so events don't stack up when game is paused
@@ -72,12 +73,17 @@ void Model::removeCreature(Creature* c) {
 
 Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker, bool surface) {
   Level::Builder builder(std::move(b));
-  maker->make(&builder, Rectangle(builder.getWidth(), builder.getHeight()));
+  maker->make(&builder, builder.getBounds());
   levels.push_back(builder.build(this, surface));
   return levels.back().get();
 }
 
 Model::Model(View* v) : view(v) {
+  EventListener::addListener(this);
+}
+
+Model::~Model() {
+  EventListener::removeListener(this);
 }
 
 Level* Model::prepareTopLevel2(vector<SettlementInfo> settlements) {
@@ -214,6 +220,41 @@ Model* Model::heroModel(View* view) {
   return m;
 }
 
+void Model::dwarvesMessage() {
+  CHECK(collective);
+  string msg = "We forgot about the funny bearded midgets living under the mountain. ";
+  Vec2 stairPos = getOnlyElement(levels[0]->getLandingSquares(StairDirection::DOWN, StairKey::DWARF));
+  string direction = getCardinalName((stairPos - collective->getDungeonCenter()).getBearing().getCardinalDir());
+  msg += "Their dungeon is located to the " + direction + " from your keep. You get extra points for personally murdering the dwarf baron.";
+  collective->learnLocation(NOTNULL(levels[0]->getLocation(stairPos)));
+  view->presentText("", msg);
+}
+
+void Model::onKillEvent(const Creature* victim, const Creature* killer) {
+  if (!collective)
+    return;
+  if (victim == getOnlyElement(Tribe::human->getImportantMembers())) {
+    view->presentText("", "This is an ex-duke.");
+    humansDead = true;
+    if (elvesDead && !dwarvesDead)
+      dwarvesMessage();
+  }
+  if (victim == getOnlyElement(Tribe::elven->getImportantMembers())) {
+    view->presentText("", "This is an ex-lord.");
+    elvesDead = true;
+    if (humansDead && !dwarvesDead)
+      dwarvesMessage();
+  }
+  if (victim == getOnlyElement(Tribe::dwarven->getImportantMembers())) {
+    view->presentText("", "This is an ex-baron.");
+    dwarvesDead = true;
+  }
+  if (dwarvesDead && humansDead && elvesDead && !won) {
+    collective->onConqueredLand(NameGenerator::worldNames.getNext());
+    won = true;
+  }
+}
+
 Model* Model::collectiveModel(View* view) {
   Model* m = new Model(view);
   CreatureFactory factory = CreatureFactory::collectiveStart();
@@ -234,10 +275,15 @@ Model* Model::collectiveModel(View* view) {
        {SettlementType::COTTAGE, cottageF[i % 2], Nothing(), new Location(), cottageT[i % 2],
        {10, 10}, {}});
   Level* top = m->prepareTopLevel2(settlements);
+  Level* d1 = m->buildLevel(
+      Level::Builder(60, 35, "Dwarven Halls"),
+      LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(1), {StairKey::DWARF}, {}));
+  m->addLink(StairDirection::DOWN, StairKey::DWARF, top, d1);
   m->collective = new Collective(m);
   m->collective->setLevel(top);
   Tribe::human->addEnemy(Tribe::player);
   Tribe::elven->addEnemy(Tribe::player);
+  Tribe::dwarven->addEnemy(Tribe::player);
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::player,
       MonsterAIFactory::collective(m->collective));
   Creature* ref = c.get();

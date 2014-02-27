@@ -126,7 +126,7 @@ class Level {
   /** Returns the player creature.*/
   const Creature* getPlayer() const;
 
-  /** Returns name of the given location. Returns empty string if none. **/
+  /** Returns name of the given location. Returns nullptr if none. **/
   const Location* getLocation(Vec2) const;
 
   const vector<Location*> getAllLocations() const;
@@ -156,11 +156,8 @@ class Level {
         \paramname{surface} tells if this level is on the Earth surface.*/
     PLevel build(Model*, bool surface);
 
-    /** Returns the width of the level.*/
-    int getWidth();
-
-    /** Returns the height of the level.*/
-    int getHeight();
+    /** Returns the size of the level.*/
+    Rectangle getBounds();
 
     //@{
     /** Puts a square on given position. Sets optional attributes of the square. The attributes remain if the square is changed.*/

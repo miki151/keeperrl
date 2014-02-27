@@ -53,15 +53,13 @@ bool VillageControl::startedAttack(Creature* c) {
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim->getTribe() == tribe)
     attackPoints += 2 * victim->getDifficultyPoints();
-  if (victim == getOnlyElement(tribe->getImportantMembers()) && --counter == 0) {
-    villain->onConqueredLand(NameGenerator::worldNames.getNext());
-  }
   if (contains(allCreatures, victim)) {
     removeElement(allCreatures, victim);
-    if (allCreatures.empty()) {
+    const Creature* leader = getOnlyElement(tribe->getImportantMembers());
+    if (allCreatures.empty() && !leader->isDead()) {
       messageBuffer.addMessage(MessageBuffer::important("You have defeated the pathetic attacks of the " 
             + tribe->getName() +" of " + name + ". Take advantage of their weakened defense and kill their leader, "
-            "the " + getOnlyElement(tribe->getImportantMembers())->getName()));
+            "the " + leader->getName()));
     }
   }
 }

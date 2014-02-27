@@ -1156,7 +1156,7 @@ void WindowView::showMessage(const string& message) {
 }
 
 void WindowView::addImportantMessage(const string& message) {
-  presentText("Important!", message);
+  presentText("", message);
 }
 
 void WindowView::clearMessages() { 

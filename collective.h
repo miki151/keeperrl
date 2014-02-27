@@ -59,7 +59,9 @@ class Collective : public CreatureView, public EventListener {
   void onCantPickItem(vector<Item*> items);
 
   Vec2 getHeartPos() const;
+  Vec2 getDungeonCenter() const;
   double getDangerLevel() const;
+  void learnLocation(const Location* loc);
 
   void render(View*);
   void possess(const Creature*, View*);

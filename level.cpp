@@ -387,12 +387,8 @@ PLevel Level::Builder::build(Model* m, bool surface) {
   return l;
 }
 
-int Level::Builder::getWidth() {
-  return squares.getWidth();
-}
-
-int Level::Builder::getHeight() {
-  return squares.getHeight();
+Rectangle Level::Builder::getBounds() {
+  return squares.getBounds();
 }
 
 bool Level::inBounds(Vec2 pos) const {

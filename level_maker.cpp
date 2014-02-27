@@ -45,6 +45,25 @@ class TypePredicate : public SquarePredicate {
   vector<SquareType> onType;
 };
 
+class BorderPredicate : public SquarePredicate {
+  public:
+  BorderPredicate(SquareType type, SquareType neighbour) : onType(type), neighbourType(neighbour) {}
+
+  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+    bool okNeighbour = false;
+    for (Vec2 v : pos.neighbors4())
+      if (v.inRectangle(builder->getBounds()) && builder->getType(v) == neighbourType) {
+        okNeighbour = true;
+        break;
+      }
+    return okNeighbour && onType == builder->getType(pos);
+  }
+
+  private:
+  SquareType onType;
+  SquareType neighbourType;
+};
+
 class AlwaysTrue : public SquarePredicate {
   public:
   virtual bool apply(Level::Builder* builder, Vec2 pos) override {
@@ -1566,7 +1585,7 @@ LevelMaker* dungeonEntrance(StairKey key, SquareType onType, const string& dunge
   queue->addMaker(new Stairs(StairDirection::DOWN, key, new TypePredicate(onType), SquareAttrib::CONNECT,
       StairLook::DUNGEON_ENTRANCE));
   queue->addMaker(new LocationMaker(new Location("dungeon entrance", dungeonDesc)));
-  return new RandomLocations({queue}, {make_pair(1, 1)}, new TypePredicate(SquareType::MOUNTAIN));
+  return queue;
 }
 
 LevelMaker* makeLake() {
@@ -1782,6 +1801,10 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
     if (i < minIron)
       maxDistances[{startingPos, subMakers.back()}] = maxResourceDist;
   }
+  subMakers.push_back(dungeonEntrance(StairKey::DWARF, SquareType::MOUNTAIN2, "dwarven halls"));
+  subSizes.emplace_back(1, 1);
+  predicates.push_back(new BorderPredicate(SquareType::MOUNTAIN2, SquareType::HILL));
+  minDistances[{startingPos, subMakers.back()}] = 50;
   queue->addMaker(new Empty(SquareType::GRASS));
   queue->addMaker(new Mountains(0.7, 0.4, {0, 1, 1, 0, 0}, false,
         {SquareType::MOUNTAIN2, SquareType::MOUNTAIN2, SquareType::HILL}));
