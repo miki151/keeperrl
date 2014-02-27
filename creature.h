@@ -94,6 +94,7 @@ class Creature : private CreatureAttributes, public CreatureView {
   void setStationary();
   bool isInvincible() const;
   bool isUndead() const;
+  bool hasBrain() const;
   bool isNotLiving() const;
   bool canSwim() const;
   bool canFly() const;

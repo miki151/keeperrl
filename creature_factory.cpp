@@ -1028,6 +1028,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedAttack = AttackType::PUNCH;
                                 c.humanoid = false;
                                 c.noSleep = true;
+                                c.brain = false;
                                 c.notLiving = true;
                                 c.weight = 100;
                                 c.name = "clay golem";), tribe, factory);
@@ -1040,6 +1041,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedAttack = AttackType::PUNCH;
                                 c.humanoid = false;
                                 c.noSleep = true;
+                                c.brain = false;
                                 c.notLiving = true;
                                 c.weight = 120;
                                 c.name = "stone golem";), tribe, factory);
@@ -1052,6 +1054,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedAttack = AttackType::PUNCH;
                                 c.humanoid = false;
                                 c.noSleep = true;
+                                c.brain = false;
                                 c.notLiving = true;
                                 c.weight = 120;
                                 c.name = "iron golem";), tribe, factory);
@@ -1065,6 +1068,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.attackEffect = EffectType::FIRE;
                                 c.humanoid = false;
                                 c.noSleep = true;
+                                c.brain = false;
                                 c.notLiving = true;
                                 c.fireResistant = true;
                                 c.weight = 120;
@@ -1080,6 +1084,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.legs = 0;
                                 c.arms = 0;
                                 c.heads = 0;
+                                c.brain = false;
                                 c.noSleep = true;
                                 c.stationary = true;
                                 c.weight = 120;
@@ -1091,6 +1096,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.dexterity = 13;
                                 c.barehandedDamage = 13;
                                 c.humanoid = true;
+                                c.brain = false;
                                 c.weight = 100;
                                 c.undead = true;
                                 c.name = "zombie";), tribe, factory);
@@ -1101,6 +1107,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.dexterity = 13;
                                 c.barehandedDamage = 13;
                                 c.humanoid = true;
+                                c.brain = false;
                                 c.weight = 50;
                                 c.undead = true;
                                 c.name = "skeleton";), tribe, factory);
@@ -1156,6 +1163,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 13;
                                 c.humanoid = true;
                                 c.weight = 100;
+                                c.brain = false;
                                 c.undead = true;
                                 c.skills.insert(Skill::twoHandedWeapon);
                                 c.name = "mummy";), tribe, factory);
@@ -1167,6 +1175,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.barehandedDamage = 13;
                                 c.humanoid = true;
                                 c.weight = 120;
+                                c.brain = false;
                                 c.undead = true;
                                 c.skills.insert(Skill::twoHandedWeapon);
                                 c.chatReactionFriendly = "curses all gravediggers";
@@ -1548,6 +1557,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.heads = 0;
                                 c.noBody = true;
                                 c.breathing = false;
+                                c.brain = false;
                                 c.fireCreature = true;
                                 c.flyer = true;
                                 c.weight = 10;

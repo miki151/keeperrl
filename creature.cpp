@@ -1642,6 +1642,10 @@ bool Creature::isNotLiving() const {
   return undead || notLiving;
 }
 
+bool Creature::hasBrain() const {
+  return brain;
+}
+
 bool Creature::canSwim() const {
   return contains(skills, Skill::swimming);
 }

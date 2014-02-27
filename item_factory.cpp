@@ -695,7 +695,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.price = 340;
             i.defense= 1 + maybePlusMinusOne(4);),
                 [](const Creature* c1, const Creature* c2) {
-                  return c1->getPosition().dist8(c2->getPosition()) < 5;
+                  return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->hasBrain();
                 }));
     case ItemId::LEATHER_BOOTS: return PItem(new Item(
         ViewObject(ViewId::LEATHER_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(

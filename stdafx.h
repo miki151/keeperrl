@@ -26,6 +26,10 @@
 #include <tuple>
 
 #ifndef RELEASE
+#define DEBUG_STL
+#endif
+
+#ifdef DEBUG_STL
 
 #include <debug/vector>
 #include <debug/string>
