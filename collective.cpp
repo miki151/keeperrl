@@ -367,7 +367,7 @@ vector<Collective::SpawnInfo> tamingInfo {
   {CreatureId::RAVEN, 5, 0},
   {CreatureId::WOLF, 30, 1},
   {CreatureId::CAVE_BEAR, 50, 2},
-  {CreatureId::SPECIAL_MONSTER, 100, 3},
+  {CreatureId::SPECIAL_MONSTER_KEEPER, 100, 3},
 };
 
 void Collective::handleBeastTaming(View* view) {

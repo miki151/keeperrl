@@ -103,6 +103,7 @@ enum class CreatureId {
     BANDIT,
 
     SPECIAL_MONSTER,
+    SPECIAL_MONSTER_KEEPER,
     SPECIAL_HUMANOID,
 
     GHOST,

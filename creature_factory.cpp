@@ -772,7 +772,7 @@ vector<PCreature> CreatureFactory::getFlock(int size, CreatureId id, Creature* l
   return ret;
 }
 
-PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, ControllerFactory factory) {
+PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, ControllerFactory factory, bool keeper) {
   RandomGen r;
   r.init(hash<string>()(name));
   PCreature c = get(humanoid ? ViewId::SPECIAL_HUMANOID : ViewId::SPECIAL_BEAST, CATTR(
@@ -827,9 +827,9 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
       c->take(ItemFactory::fromId(ItemId::ARROW, Random.getRandom(20, 36)));
     } else
       c->take(ItemFactory::fromId(chooseRandom(
-            {ItemId::SWORD, ItemId::BATTLE_AXE, ItemId::WAR_HAMMER})));
-  } else {
- /*   switch (Random.getRandom(3)) {
+            {ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER})));
+  } else if (!keeper) {
+    switch (Random.getRandom(3)) {
       case 0:
         c->take(ItemFactory::fromId(
               chooseRandom({ItemId::WARNING_AMULET, ItemId::HEALING_AMULET, ItemId::DEFENSE_AMULET})));
@@ -843,7 +843,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         break;
       default:
         FAIL << "Unhandled case value";
-    }*/
+    }
 
   }
   Debug() << c->getDescription();
@@ -1629,9 +1629,11 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.breathing = false;
                                 c.name = "Death";), Tribe::killEveryone, factory);
     case CreatureId::SPECIAL_MONSTER: return getSpecial(NameGenerator::creatureNames.getNext(),
-                                                        tribe, false, factory);
+                                                        tribe, false, factory, false);
+    case CreatureId::SPECIAL_MONSTER_KEEPER: return getSpecial(NameGenerator::creatureNames.getNext(),
+                                                        tribe, false, factory, true);
     case CreatureId::SPECIAL_HUMANOID: return getSpecial(NameGenerator::creatureNames.getNext(),
-                                                        tribe, true, factory);
+                                                        tribe, true, factory, false);
   }
   FAIL << "unhandled case";
   return PCreature(nullptr);
