@@ -1235,20 +1235,12 @@ bool Collective::canSee(const Creature* c) const {
 }
 
 bool Collective::canSee(Vec2 position) const {
-  return memory[level].hasViewIndex(position)
-      || contains(level->getLandingSquares(StairDirection::DOWN, StairKey::DWARF), position)
-      || contains(level->getLandingSquares(StairDirection::UP, StairKey::DWARF), position);
-  for (Creature* member : creatures)
-    if (member->canSee(position))
-      return true;
-  return false;
+  return memory[level].hasViewIndex(position);
 }
 
 void Collective::setLevel(Level* l) {
   for (Vec2 v : l->getBounds())
-    if (/*contains({SquareApplyType::ASCEND, SquareApplyType::DESCEND},
-            l->getSquare(v)->getApplyType(Creature::getDefault())) ||*/
-        contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
+    if (contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
       memory[l].addObject(v, l->getSquare(v)->getViewObject());
   level = l;
 }

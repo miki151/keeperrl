@@ -801,8 +801,13 @@ void WindowView::drawLevelMap(const Level* level, const CreatureView* creature) 
 
     renderer.drawAndClearBuffer();
     BlockingEvent ev = readkey();
-    if (contains({BlockingEvent::KEY, BlockingEvent::MOUSE_LEFT}, ev.type))
-      break;
+    if (ev.type == BlockingEvent::KEY)
+      return;
+    if (ev.type == BlockingEvent::MOUSE_LEFT) {
+      Vec2 pos = renderer.getMousePos() - bounds.getTopLeft();
+      center = {double(pos.x) / scale, double(pos.y) / scale};
+      return;
+    }
   }
 }
 
