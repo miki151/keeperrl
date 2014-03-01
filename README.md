@@ -18,6 +18,7 @@ In terminal:
   ```
   git clone https://github.com/miki151/keeperrl.git
   cd keeperrl
-  make -j 8
+  make -j 8 # for slow & debug mode or
+  make -j 8 OPT=true # for release
   ./keeper
   ```
