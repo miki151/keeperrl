@@ -16,8 +16,7 @@ static vector<EffectType> combatConsumables {
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(equipmentMap)
-    & BOOST_SERIALIZATION_NVP(owners);
+  ar & BOOST_SERIALIZATION_NVP(owners);
 }
 
 SERIALIZABLE(MinionEquipment);
@@ -40,24 +39,29 @@ bool MinionEquipment::isItemUseful(const Item* it) const {
 
 bool MinionEquipment::needs(const Creature* c, const Item* it) {
   EquipmentType type = *getEquipmentType(it);
-  return c->canEquip(it) || (type == ARCHERY && c->hasSkill(Skill::archery))
+  return c->canEquip(it) || (type == ARCHERY && c->hasSkill(Skill::archery) && (c->canEquip(it) || it->getType() == ItemType::AMMO))
       || (type == HEALING && !c->isNotLiving()) 
       || type == COMBAT_ITEM;
 }
 
 bool MinionEquipment::needsItem(const Creature* c, const Item* it) {
-  if (owners.count(it)) {
-    if (owners.at(it) == c)
+  if (owners.count(it->getUniqueId())) {
+    if (owners.at(it->getUniqueId()) == c) {
+      if (!needs(c, it)) {
+        owners.erase(it->getUniqueId());
+        return false;
+      }
       return true;
-    if (owners.at(it)->isDead())
-      owners.erase(it);
+    }
+    if (owners.at(it->getUniqueId())->isDead())
+      owners.erase(it->getUniqueId());
     else
       return false;
   }
   if (!getEquipmentType(it) || !c->isHumanoid())
     return false;
   if (needs(c, it)) {
-    owners[it] = c;
+    owners[it->getUniqueId()] = c;
     return true;
   } else
     return false;

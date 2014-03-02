@@ -3,6 +3,7 @@
 #include "task.h"
 #include "level.h"
 #include "collective.h"
+#include "entity_set.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -15,6 +16,9 @@ void Task::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Task);
 
 Task::Task(Collective* col, Vec2 pos) : position(pos), collective(col) {}
+
+Task::~Task() {
+}
 
 Vec2 Task::getPosition() {
   return position;
@@ -99,7 +103,7 @@ MoveInfo Task::getMoveToPosition(Creature *c) {
 class PickItem : public Task {
   public:
   PickItem(Collective* col, Vec2 position, vector<Item*> _items) 
-      : Task(col, position), items(_items.begin(), _items.end()) {
+      : Task(col, position), items(_items) {
   }
 
   virtual void onPickedUp() {
@@ -111,7 +115,7 @@ class PickItem : public Task {
   }
 
   virtual string getInfo() override {
-    return "pick item " + (*items.begin())->getName() + " " + convertToString(getPosition());
+    return "pick item " + convertToString(getPosition());
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -119,16 +123,16 @@ class PickItem : public Task {
     if (c->getPosition() == getPosition()) {
       vector<Item*> hereItems;
       for (Item* it : c->getPickUpOptions())
-        if (items.count(it)) {
+        if (items.contains(it)) {
           hereItems.push_back(it);
           items.erase(it);
         }
-      getCollective()->onCantPickItem(vector<Item*>(items.begin(), items.end()));
+      getCollective()->onCantPickItem(items);
       if (hereItems.empty()) {
         setDone();
         return NoMove;
       }
-      items = set<Item*>(hereItems.begin(), hereItems.end());
+      items = hereItems;
       if (c->canPickUp(hereItems))
         return {1.0, [=] {
           for (auto elem : Item::stackItems(hereItems))
@@ -139,7 +143,7 @@ class PickItem : public Task {
           getCollective()->onPickedUp(getPosition(), hereItems);
         }}; 
       else {
-        getCollective()->onCantPickItem(hereItems);
+        getCollective()->onCantPickItem(items);
         return NoMove;
       }
     }
@@ -157,7 +161,7 @@ class PickItem : public Task {
   SERIALIZATION_CONSTRUCTOR(PickItem);
 
   protected:
-  set<Item*> items;
+  EntitySet items;
   bool pickedUp = false;
 };
 
@@ -174,21 +178,23 @@ class EquipItem : public PickItem {
   }
 
   virtual string getInfo() override {
-    return "equip item " + (*items.begin())->getName() + " " + convertToString(getPosition());
+    return "equip item " + convertToString(getPosition());
   }
 
   virtual MoveInfo getMove(Creature* c) override {
     if (!pickedUp)
       return PickItem::getMove(c);
-    CHECK(items.size() <= 1);
-    for (Item* it : items)
-      if (c->canEquip(it))
-        return {1.0, [=] {
-          c->globalMessage(c->getTheName() + " equips " + it->getAName());
-          c->equip(it);
-          setDone();
-        }};
-    return NoMove;
+    vector<Item*> it = c->getEquipment().getItems(items.containsPredicate());
+    if (!it.empty() && c->canEquip(getOnlyElement(it)))
+      return {1.0, [=] {
+        c->globalMessage(c->getTheName() + " equips " + getOnlyElement(it)->getAName());
+        c->equip(getOnlyElement(it));
+        setDone();
+      }};
+    else {
+      setDone();
+      return NoMove;
+    }
   }
 
   template <class Archive> 
@@ -215,9 +221,8 @@ class BringItem : public PickItem {
     c->drop(it);
   }
 
-  // TODO: this fails when item doesn't exist anymore, use cautiously
   virtual string getInfo() override {
-    return "bring item " + (*items.begin())->getName() + " " + convertToString(getPosition()) 
+    return "bring item from " + convertToString(getPosition())
       + " to " + convertToString(target);
   }
 
@@ -229,10 +234,7 @@ class BringItem : public PickItem {
       return PickItem::getMove(c);
     setPosition(target);
     if (c->getPosition() == target) {
-      vector<Item*> myItems;
-      for (Item* it : items)
-        if (c->getEquipment().hasItem(it))
-          myItems.push_back(it);
+      vector<Item*> myItems = c->getEquipment().getItems(items.containsPredicate());
       return {1.0, [=] {
         onBroughtItem(c, myItems);
         setDone();
@@ -277,7 +279,7 @@ class ApplyItem : public BringItem {
   }
 
   virtual string getInfo() override {
-    return "apply item " + (*items.begin())->getName() + " " + convertToString(getPosition()) +
+    return "apply item from " + convertToString(getPosition()) +
       " to " + convertToString(target);
   }
 

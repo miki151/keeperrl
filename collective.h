@@ -8,6 +8,7 @@
 #include "markov_chain.h"
 #include "minion_equipment.h"
 #include "task.h"
+#include "entity_set.h"
 
 enum class MinionType {
   IMP,
@@ -57,8 +58,8 @@ class Collective : public CreatureView, public EventListener {
   void onAppliedItem(Vec2 pos, Item* item);
   void onAppliedSquare(Vec2 pos);
   void onAppliedItemCancel(Vec2 pos);
-  void onPickedUp(Vec2 pos, vector<Item*> items);
-  void onCantPickItem(vector<Item*> items);
+  void onPickedUp(Vec2 pos, EntitySet);
+  void onCantPickItem(EntitySet items);
 
   const Creature* getKeeper() const;
   Vec2 getDungeonCenter() const;
@@ -203,7 +204,7 @@ class Collective : public CreatureView, public EventListener {
   void addToMemory(Vec2 pos, const Creature*);
   bool isItemMarked(const Item*) const;
   void markItem(const Item*);
-  void unmarkItem(const Item*);
+  void unmarkItem(UniqueId);
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
@@ -211,7 +212,7 @@ class Collective : public CreatureView, public EventListener {
   vector<Creature*> minions;
   vector<Creature*> imps;
   unordered_map<MinionType, vector<Creature*>> minionByType;
-  set<UniqueId> markedItems;
+  EntitySet markedItems;
 
   class TaskMap {
     public:

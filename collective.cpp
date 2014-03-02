@@ -659,15 +659,15 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
 }
 
 bool Collective::isItemMarked(const Item* it) const {
-  return markedItems.count(it->getUniqueId());
+  return markedItems.contains(it->getUniqueId());
 }
 
 void Collective::markItem(const Item* it) {
   markedItems.insert(it->getUniqueId());
 }
 
-void Collective::unmarkItem(const Item* it) {
-  markedItems.erase(it->getUniqueId());
+void Collective::unmarkItem(UniqueId id) {
+  markedItems.erase(id);
 }
 
 const MapMemory& Collective::getMemory(const Level* l) const {
@@ -761,7 +761,6 @@ bool Collective::TaskMap::isDelayed(Task* task, double time) {
 }
 
 void Collective::TaskMap::removeTask(Task* task) {
-  task->cancel();
   delayed.erase(task);
   completionCost.erase(task);
   if (marked.count(task->getPosition()))
@@ -794,7 +793,7 @@ bool Collective::TaskMap::isMarked(Vec2 pos) const {
 }
 
 void Collective::TaskMap::markSquare(Vec2 pos, PTask task, CostInfo cost) {
-  tasks.push_back(std::move(task));
+  addTask(std::move(task));
   marked[pos] = tasks.back().get();
   if (cost.value)
     completionCost[tasks.back().get()] = cost;
@@ -1101,15 +1100,14 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   }
 }
 
-void Collective::onPickedUp(Vec2 pos, vector<Item*> items) {
-  CHECK(!items.empty());
-  for (Item* it : items)
-    unmarkItem(it);
+void Collective::onPickedUp(Vec2 pos, EntitySet items) {
+  for (UniqueId id : items)
+    unmarkItem(id);
 }
   
-void Collective::onCantPickItem(vector<Item*> items) {
-  for (Item* it : items)
-    unmarkItem(it);
+void Collective::onCantPickItem(EntitySet items) {
+  for (UniqueId id : items)
+    unmarkItem(id);
 }
 
 void Collective::onBrought(Vec2 pos, vector<Item*> items) {
@@ -1144,7 +1142,8 @@ void Collective::onAppliedSquare(Vec2 pos) {
 }
 
 void Collective::onAppliedItemCancel(Vec2 pos) {
-  traps.at(pos).marked = false;
+  if (traps.count(pos))
+    traps.at(pos).marked = false;
 }
 
 const Creature* Collective::getKeeper() const {
@@ -1520,7 +1519,7 @@ Task* Collective::TaskMap::getTaskForImp(Creature* c) {
 }
 
 void Collective::TaskMap::takeTask(const Creature* c, Task* task) {
-  free(task);
+  freeTask(task);
   taskMap[c] = task;
   taken[task] = c;
 }
@@ -1670,9 +1669,10 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     if (contains(team, c))
       removeElement(team, c);
     if (Task* task = taskMap.getTask(c)) {
-      if (!task->canTransfer())
+      if (!task->canTransfer()) {
+        task->cancel();
         taskMap.removeTask(task);
-      else
+      } else
         taskMap.freeTask(task);
     }
     if (contains(imps, c))
@@ -1682,7 +1682,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     for (MinionType type : minionTypes)
       if (contains(minionByType.at(type), c))
         removeElement(minionByType.at(type), c);
-  } else if (victim->getTribe() != Tribe::player) {
+  } else if (victim->getTribe() != Tribe::player && killer->getTribe() == Tribe::player) {
     double incMana = victim->getDifficultyPoints();
     mana += incMana;
     kills.push_back(victim);

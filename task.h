@@ -7,6 +7,7 @@
 class Task : public UniqueEntity {
   public:
   Task(Collective*, Vec2 position);
+  virtual ~Task();
 
   virtual MoveInfo getMove(Creature*) = 0;
   virtual string getInfo() = 0;

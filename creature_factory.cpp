@@ -5,6 +5,7 @@
 #include "level.h"
 #include "quest.h"
 #include "message_buffer.h"
+#include "entity_set.h"
 
 static map<string, function<PCreature ()> > creatureMap;
 static map<string, vector<string> > inventoryMap;
@@ -368,7 +369,7 @@ class ShopkeeperController : public Monster, public EventListener {
     if (firstMove) {
       for (Vec2 v : shopArea->getBounds())
         for (Item* item : creature->getLevel()->getSquare(v)->getItems()) {
-          myItems.push_back(item->getUniqueId());
+          myItems.insert(item);
           item->setShopkeeper(creature);
         }
       firstMove = false;
@@ -397,7 +398,7 @@ class ShopkeeperController : public Monster, public EventListener {
           debt.erase(c);
           thieves.insert(c);
           for (Item* item : c->getEquipment().getItems())
-            if (contains(unpaidItems[c], item->getUniqueId()))
+            if (unpaidItems[c].contains(item))
               item->setShopkeeper(nullptr);
           break;
         }
@@ -417,9 +418,9 @@ class ShopkeeperController : public Monster, public EventListener {
     CHECK(debt[from] == 0) << "Bad debt " << debt[from];
     debt.erase(from);
     for (Item* it : from->getEquipment().getItems())
-      if (contains(unpaidItems[from], it->getUniqueId())) {
+      if (unpaidItems[from].contains(it)) {
         it->setShopkeeper(nullptr);
-        removeElement(myItems, it->getUniqueId());
+        myItems.erase(it);
       }
     unpaidItems.erase(from);
   }
@@ -428,7 +429,7 @@ class ShopkeeperController : public Monster, public EventListener {
     if (position.inRectangle(shopArea->getBounds())) {
       for (Item* it : items) {
         it->setShopkeeper(creature);
-        myItems.push_back(it->getUniqueId());
+        myItems.insert(it);
       }
     }
   }
@@ -436,9 +437,9 @@ class ShopkeeperController : public Monster, public EventListener {
   virtual void onPickupEvent(const Creature* c, const vector<Item*>& items) override {
     if (c->getPosition().inRectangle(shopArea->getBounds())) {
       for (const Item* item : items)
-        if (Optional<int> elem  = findElement(myItems, item->getUniqueId())) {
+        if (myItems.contains(item)) {
           debt[c] += item->getPrice();
-          unpaidItems[c].push_back(myItems[*elem]);
+          unpaidItems[c].insert(item);
         }
     }
   }
@@ -446,10 +447,10 @@ class ShopkeeperController : public Monster, public EventListener {
   virtual void onDropEvent(const Creature* c, const vector<Item*>& items) override {
     if (c->getPosition().inRectangle(shopArea->getBounds())) {
       for (const Item* item : items)
-        if (findElement(myItems, item->getUniqueId())) {
+        if (myItems.contains(item)) {
           if ((debt[c] -= item->getPrice()) <= 0)
             debt.erase(c);
-          removeElement(unpaidItems[c], item->getUniqueId());
+          unpaidItems[c].erase(item);
         }
     }
   }
@@ -488,9 +489,9 @@ class ShopkeeperController : public Monster, public EventListener {
   unordered_map<const Creature*, int> debt;
   unordered_map<const Creature*, int> thiefCount;
   unordered_set<const Creature*> thieves;
-  unordered_map<const Creature*, vector<int>> unpaidItems;
+  unordered_map<const Creature*, EntitySet> unpaidItems;
   Location* shopArea;
-  vector<int> myItems;
+  EntitySet myItems;
   bool firstMove = true;
 };
 

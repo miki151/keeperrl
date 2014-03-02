@@ -19,7 +19,7 @@ class Item : private ItemAttributes, public UniqueEntity {
   public:
   typedef ItemAttributes ItemAttributes;
   Item(ViewObject o, const ItemAttributes&);
-  virtual ~Item() {}
+  virtual ~Item();
 
   static void identifyEverything();
   static bool isEverythingIdentified();

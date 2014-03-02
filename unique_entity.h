@@ -7,7 +7,6 @@ class UniqueEntity {
   public:
   UniqueEntity();
   UniqueId getUniqueId() const;
-  virtual ~UniqueEntity(){}
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);

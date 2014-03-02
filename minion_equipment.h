@@ -2,6 +2,7 @@
 #define _MINION_EQUIPMENT_H
 
 #include "util.h"
+#include "unique_entity.h"
 
 class Creature;
 class Item;
@@ -21,8 +22,7 @@ class MinionEquipment {
   bool needs(const Creature* c, const Item* it);
   static Optional<EquipmentType> getEquipmentType(const Item* it);
 
-  map<pair<const Creature*, EquipmentType>, const Item*> equipmentMap;
-  map<const Item*, const Creature*> owners;
+  map<UniqueId, const Creature*> owners;
 };
 
 #endif

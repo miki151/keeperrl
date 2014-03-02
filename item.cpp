@@ -32,6 +32,9 @@ Item::Item(ViewObject o, const ItemAttributes& attr)
     : ItemAttributes(attr), viewObject(o), inspected(everythingIdentified), fire(*weight, flamability) {
 }
 
+Item::~Item() {
+}
+
 void Item::identifyEverything() {
   everythingIdentified = true;
 }
