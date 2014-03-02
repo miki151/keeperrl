@@ -2,7 +2,15 @@
 
 #include "monster.h"
 
+template <class Archive> 
+void Monster::serialize(Archive& ar, const unsigned int version) {
+  ar & SUBCLASS(Controller)
+     & BOOST_SERIALIZATION_NVP(creature)
+     & BOOST_SERIALIZATION_NVP(actor)
+     & BOOST_SERIALIZATION_NVP(enemies);
+}
 
+SERIALIZABLE(Monster);
 
 Monster::Monster(Creature* c, MonsterAIFactory f) : 
     creature(c), actor(f.getMonsterAI(c)) {}
@@ -93,3 +101,4 @@ void Monster::you(MsgType type, const string& param) const {
 void Monster::you(const string& param) const {
   creature->globalMessage(creature->getTheName() + " " + param);
 }
+

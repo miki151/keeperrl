@@ -2,7 +2,12 @@
 
 #include "equipment.h"
 
+template <class Archive> 
+void Equipment::serialize(Archive& ar, const unsigned int version) {
+  ar & SUBCLASS(Inventory) & BOOST_SERIALIZATION_NVP(items);
+}
 
+SERIALIZABLE(Equipment);
 
 class Item;
 Item* Equipment::getItem(EquipmentSlot slot) const {

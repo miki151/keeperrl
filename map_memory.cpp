@@ -2,6 +2,14 @@
 
 #include "map_memory.h"
 
+
+template <class Archive> 
+void MapMemory::serialize(Archive& ar, const unsigned int version) {
+  ar & BOOST_SERIALIZATION_NVP(table);
+}
+
+SERIALIZABLE(MapMemory);
+
 void MapMemory::addObject(Vec2 pos, const ViewObject& obj) {
   table[pos].insert(obj);
   table[pos].setHighlight(HighlightType::MEMORY);

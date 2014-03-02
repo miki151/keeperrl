@@ -13,6 +13,12 @@ class EnemyCheck {
   static EnemyCheck* allEnemies(double weight);
   static EnemyCheck* friendlyAnimals(double weight);
 
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
+  protected:
+  SERIALIZATION_DECL(EnemyCheck);
+
   private:
   double weight;
 };

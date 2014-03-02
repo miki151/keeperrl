@@ -16,6 +16,8 @@ class Equipment : public Inventory {
   vector<PItem> removeItems(const vector<Item*>&);
   vector<PItem> removeAllItems();
 
+  SERIALIZATION_DECL(Equipment);
+
   private:
   map<EquipmentSlot, Item*> items;
 };

@@ -23,6 +23,9 @@ class Location {
 
   static Location* towerTopLocation();
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
+
   private:
   Optional<string> name;
   Optional<string> description;

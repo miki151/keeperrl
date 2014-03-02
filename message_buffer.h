@@ -12,6 +12,9 @@ class MessageBuffer {
 
   static string important(const string& msg);
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
+
   private:
   static bool isImportant(const string& msg);
   static void removeImportant(string& msg);

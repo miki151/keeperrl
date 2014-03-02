@@ -23,8 +23,22 @@ class Quest {
   static Quest* goblins;
   static Quest* dwarves;
 
+  template <class Archive>
+  static void serializeAll(Archive& ar) {
+    ar& BOOST_SERIALIZATION_NVP(dragon)
+      & BOOST_SERIALIZATION_NVP(castleCellar)
+      & BOOST_SERIALIZATION_NVP(bandits)
+      & BOOST_SERIALIZATION_NVP(goblins)
+      & BOOST_SERIALIZATION_NVP(dwarves);
+  }
+
   static Quest* killTribeQuest(Tribe* tribe, string message, bool onlyImp = false);
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
+
+  template <class Archive>
+  static void registerTypes(Archive& ar);
 
   protected:
   unordered_set<const Creature*> adventurers;

@@ -4,10 +4,27 @@
 #include "location.h"
 #include "model.h"
 
+template <class Archive> 
+void Level::serialize(Archive& ar, const unsigned int version) { 
+  ar& BOOST_SERIALIZATION_NVP(squares)
+    & BOOST_SERIALIZATION_NVP(landingSquares)
+    & BOOST_SERIALIZATION_NVP(locations)
+    & BOOST_SERIALIZATION_NVP(tickingSquares)
+    & BOOST_SERIALIZATION_NVP(creatures)
+    & BOOST_SERIALIZATION_NVP(model)
+    & BOOST_SERIALIZATION_NVP(fieldOfView)
+    & BOOST_SERIALIZATION_NVP(entryMessage)
+    & BOOST_SERIALIZATION_NVP(name)
+    & BOOST_SERIALIZATION_NVP(player)
+    & BOOST_SERIALIZATION_NVP(backgroundLevel)
+    & BOOST_SERIALIZATION_NVP(backgroundOffset); 
+}  
+
+SERIALIZABLE(Level);
 
 Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n) 
     : squares(std::move(s)), locations(l), model(m), fieldOfView(squares), entryMessage(message), 
-    name(n), player(nullptr) {
+    name(n) {
   for (Vec2 pos : squares.getBounds()) {
     squares[pos]->setLevel(this);
     Optional<pair<StairDirection, StairKey>> link = squares[pos]->getLandingLink();
@@ -283,7 +300,7 @@ vector<Square*> Level::getTickingSquares() const {
   return tickingSquares;
 }
 
-Level::Builder::Builder(int width, int height, const string& n) : squares(width, height), heightMap(width, height),
+Level::Builder::Builder(int width, int height, const string& n) : squares(width, height), heightMap(width, height, 0),
     fog(width, height, 0), attrib(width, height), type(width, height, SquareType(0)), name(n) {
 }
 

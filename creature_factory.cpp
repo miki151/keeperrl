@@ -6,8 +6,6 @@
 #include "quest.h"
 #include "message_buffer.h"
 
-
-
 static map<string, function<PCreature ()> > creatureMap;
 static map<string, vector<string> > inventoryMap;
 static vector<string> keys;
@@ -108,6 +106,16 @@ class BoulderController : public Monster {
     }
   }
 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Monster) 
+      & BOOST_SERIALIZATION_NVP(direction)
+      & BOOST_SERIALIZATION_NVP(stopped)
+      & BOOST_SERIALIZATION_NVP(myTribe);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(BoulderController);
+
   private:
   Vec2 direction;
   bool stopped = false;
@@ -127,6 +135,13 @@ class Boulder : public Creature {
   virtual void dropCorpse() override {
     drop(ItemFactory::fromId(ItemId::ROCK, Random.getRandom(10, 20)));
   }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Creature);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Boulder);
 };
 
 PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
@@ -263,8 +278,22 @@ class KrakenController : public Monster {
         }
     creature->wait();
   }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Monster)
+      & BOOST_SERIALIZATION_NVP(numSpawns)
+      & BOOST_SERIALIZATION_NVP(waitNow)
+      & BOOST_SERIALIZATION_NVP(ready)
+      & BOOST_SERIALIZATION_NVP(held)
+      & BOOST_SERIALIZATION_NVP(spawns)
+      & BOOST_SERIALIZATION_NVP(father);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(KrakenController);
+
   private:
-  int numSpawns;
+  int numSpawns = 0;
   bool waitNow = true;
   bool ready = false;
   Creature* held = nullptr;
@@ -317,13 +346,18 @@ class KamikazeController : public Monster {
           }
     Monster::makeMove();
   }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Monster);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(KamikazeController);
 };
 
 class ShopkeeperController : public Monster, public EventListener {
   public:
-
   ShopkeeperController(Creature* c, Location* area) : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
-    EventListener::addListener(this);
   }
 
   virtual void makeMove() override {
@@ -334,8 +368,8 @@ class ShopkeeperController : public Monster, public EventListener {
     if (firstMove) {
       for (Vec2 v : shopArea->getBounds())
         for (Item* item : creature->getLevel()->getSquare(v)->getItems()) {
-          myItems.push_back(item);
-          item->setUnpaid(true);
+          myItems.push_back(item->getUniqueId());
+          item->setShopkeeper(creature);
         }
       firstMove = false;
     }
@@ -363,8 +397,8 @@ class ShopkeeperController : public Monster, public EventListener {
           debt.erase(c);
           thieves.insert(c);
           for (Item* item : c->getEquipment().getItems())
-            if (contains(unpaidItems[c], item))
-              item->setUnpaid(false);
+            if (contains(unpaidItems[c], item->getUniqueId()))
+              item->setShopkeeper(nullptr);
           break;
         }
       }
@@ -383,52 +417,45 @@ class ShopkeeperController : public Monster, public EventListener {
     CHECK(debt[from] == 0) << "Bad debt " << debt[from];
     debt.erase(from);
     for (Item* it : from->getEquipment().getItems())
-      if (contains(unpaidItems[from], it)) {
-        it->setUnpaid(false);
-        removeElement(myItems, it);
+      if (contains(unpaidItems[from], it->getUniqueId())) {
+        it->setShopkeeper(nullptr);
+        removeElement(myItems, it->getUniqueId());
       }
     unpaidItems.erase(from);
   }
   
   virtual void onItemsAppeared(Vec2 position, const vector<Item*>& items) override {
     if (position.inRectangle(shopArea->getBounds())) {
-      myItems.insert(myItems.end(), items.begin(), items.end());
-      for (Item* it : items)
-        it->setUnpaid(true);
+      for (Item* it : items) {
+        it->setShopkeeper(creature);
+        myItems.push_back(it->getUniqueId());
+      }
     }
   }
 
   virtual void onPickupEvent(const Creature* c, const vector<Item*>& items) override {
     if (c->getPosition().inRectangle(shopArea->getBounds())) {
-      for (const Item* it1 : items)
-        if (Optional<int> elem  = findElement(myItems, it1)) {
-          Item* item = myItems[*elem];
+      for (const Item* item : items)
+        if (Optional<int> elem  = findElement(myItems, item->getUniqueId())) {
           debt[c] += item->getPrice();
-          unpaidItems[c].push_back(item);
+          unpaidItems[c].push_back(myItems[*elem]);
         }
     }
   }
 
   virtual void onDropEvent(const Creature* c, const vector<Item*>& items) override {
     if (c->getPosition().inRectangle(shopArea->getBounds())) {
-      for (const Item* it1 : items)
-        if (Optional<int> elem  = findElement(myItems, it1)) {
-          Item* item = myItems[*elem];
-          if ((debt[c] -= item->getPrice()) == 0)
+      for (const Item* item : items)
+        if (findElement(myItems, item->getUniqueId())) {
+          if ((debt[c] -= item->getPrice()) <= 0)
             debt.erase(c);
-          removeElement(unpaidItems[c], item);
+          removeElement(unpaidItems[c], item->getUniqueId());
         }
     }
   }
 
   virtual const Level* getListenerLevel() const override {
     return creature->getLevel();
-  }
-
-  virtual void onKilled(const Creature* attacker) override {
-    EventListener::removeListener(this);
-    for (Item* item : myItems)
-      item->setUnpaid(false);
   }
 
   virtual int getDebt(const Creature* debtor) const override {
@@ -440,14 +467,30 @@ class ShopkeeperController : public Monster, public EventListener {
     }
   }
 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(EventListener)
+      & SUBCLASS(Monster)
+      & BOOST_SERIALIZATION_NVP(prevCreatures)
+      & BOOST_SERIALIZATION_NVP(debt)
+      & BOOST_SERIALIZATION_NVP(thiefCount)
+      & BOOST_SERIALIZATION_NVP(thieves)
+      & BOOST_SERIALIZATION_NVP(unpaidItems)
+      & BOOST_SERIALIZATION_NVP(shopArea)
+      & BOOST_SERIALIZATION_NVP(myItems)
+      & BOOST_SERIALIZATION_NVP(firstMove);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
+
   private:
   unordered_set<const Creature*> prevCreatures;
   unordered_map<const Creature*, int> debt;
   unordered_map<const Creature*, int> thiefCount;
   unordered_set<const Creature*> thieves;
-  unordered_map<const Creature*, vector<Item*>> unpaidItems;
+  unordered_map<const Creature*, vector<int>> unpaidItems;
   Location* shopArea;
-  vector<Item*> myItems;
+  vector<int> myItems;
   bool firstMove = true;
 };
 
@@ -526,6 +569,17 @@ class VillageElder : public Creature {
       }
   }
 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Creature)
+      & BOOST_SERIALIZATION_NVP(teachSkills)
+      & BOOST_SERIALIZATION_NVP(quests)
+      & BOOST_SERIALIZATION_NVP(bringItem)
+      & BOOST_SERIALIZATION_NVP(killCreature);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(VillageElder);
+
   private:
   vector<pair<Skill*, double>> teachSkills;
   vector<pair<Quest*, int>> quests;
@@ -545,7 +599,25 @@ class DragonController : public Monster {
     Effect::applyToCreature(creature, EffectType::EMIT_POISON_GAS, EffectStrength::WEAK);
     Monster::makeMove();
   }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Monster);
+  }
 };
+
+template <class Archive>
+void CreatureFactory::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, DragonController);
+  REGISTER_TYPE(ar, BoulderController);
+  REGISTER_TYPE(ar, Boulder);
+  REGISTER_TYPE(ar, KrakenController);
+  REGISTER_TYPE(ar, KamikazeController);
+  REGISTER_TYPE(ar, ShopkeeperController);
+  REGISTER_TYPE(ar, VillageElder);
+}
+
+REGISTER_TYPES(CreatureFactory);
 
 PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemId>& items) {
   for (ItemId item : items) {
@@ -893,7 +965,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.speed = 80;
                                 c.size = CreatureSize::LARGE;
                                 c.strength = 14;
-                                c.dexterity = 19;
+                                c.dexterity = 17;
                                 c.barehandedDamage = 5;
                                 c.barehandedAttack = AttackType::HIT;
                                 c.humanoid = false;

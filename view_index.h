@@ -18,9 +18,15 @@ class ViewIndex {
   struct HighlightInfo {
     HighlightType type;
     double amount;
+
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version);
   };
 
   Optional<HighlightInfo> getHighlight() const;
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
 
   private:
   vector<int> objIndex;

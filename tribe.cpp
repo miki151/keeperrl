@@ -2,18 +2,43 @@
 
 #include "tribe.h"
 
+template <class Archive> 
+void Tribe::serialize(Archive& ar, const unsigned int version) {
+  ar& SUBCLASS(EventListener)
+    & BOOST_SERIALIZATION_NVP(diplomatic)
+    & BOOST_SERIALIZATION_NVP(standing)
+    & BOOST_SERIALIZATION_NVP(attacks)
+    & BOOST_SERIALIZATION_NVP(importantMembers)
+    & BOOST_SERIALIZATION_NVP(members)
+    & BOOST_SERIALIZATION_NVP(enemyTribes)
+    & BOOST_SERIALIZATION_NVP(name);
+}
 
+SERIALIZABLE(Tribe);
 
 class Constant : public Tribe {
   public:
+  Constant() {}
   Constant(double s) : Tribe("", false), standing(s) {}
   virtual double getStanding(const Creature*) const override {
     return standing;
   }
 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Tribe) & BOOST_SERIALIZATION_NVP(standing);
+  }
+
   private:
   double standing;
 };
+
+template <class Archive>
+void Tribe::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, Constant);
+}
+
+REGISTER_TYPES(Tribe);
 
 Tribe* Tribe::monster;
 Tribe* Tribe::pest;
@@ -30,6 +55,12 @@ Tribe* Tribe::killEveryone;
 Tribe* Tribe::peaceful;
 
 Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
+}
+
+void Tribe::removeMember(const Creature* c) {
+  removeElement(members, c);
+  if (contains(importantMembers, c))
+    removeElement(importantMembers, c);
 }
 
 const string& Tribe::getName() {
@@ -77,9 +108,6 @@ double Tribe::getMultiplier(const Creature* member) {
 void Tribe::onKillEvent(const Creature* member, const Creature* attacker) {
   if (contains(members, member)) {
     CHECK(member->getTribe() == this);
-    removeElement(members, member);
-    if (contains(importantMembers, member))
-      removeElement(importantMembers, member);
     if (attacker == nullptr)
       return;
     initStanding(attacker);
@@ -110,12 +138,18 @@ void Tribe::addMember(const Creature* c) {
   members.push_back(c);
 }
 
-vector<const Creature*> Tribe::getImportantMembers() {
-  return importantMembers;
+vector<const Creature*> Tribe::getImportantMembers(bool includeDead) {
+  if (includeDead)
+    return importantMembers;
+  else
+    return filter(importantMembers, [](const Creature* c) { return !c->isDead(); });
 }
 
-vector<const Creature*> Tribe::getMembers() {
-  return members;
+vector<const Creature*> Tribe::getMembers(bool includeDead) {
+  if (includeDead)
+    return members;
+  else
+    return filter(members, [](const Creature* c)->bool { return !c->isDead(); });
 }
 
 void Tribe::onItemsStolen(const Creature* attacker) {
@@ -139,12 +173,6 @@ void Tribe::init() {
   bandit = new Tribe("", false);
   killEveryone = new Constant(-1);
   peaceful = new Constant(1);
-  EventListener::addListener(elven);
-  EventListener::addListener(goblin);
-  EventListener::addListener(human);
-  EventListener::addListener(castleCellar);
-  EventListener::addListener(dragon);
-  EventListener::addListener(bandit);
   elven->addEnemy(goblin);
   elven->addEnemy(dwarven);
   elven->addEnemy(bandit);

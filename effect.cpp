@@ -8,8 +8,6 @@
 #include "creature_factory.h"
 #include "message_buffer.h"
 
-
-
 map<EffectStrength, int> healingPoints { 
     {EffectStrength::WEAK, 5},
     {EffectStrength::NORMAL, 15},
@@ -89,10 +87,26 @@ class IllusionController : public DoNothingController {
     creature->wait();
   }
 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(DoNothingController) 
+      & BOOST_SERIALIZATION_NVP(creature)
+      & BOOST_SERIALIZATION_NVP(deathTime);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(IllusionController);
+
   private:
   Creature* creature;
   double deathTime;
 };
+
+template <class Archive>
+void Effect::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, IllusionController);
+}
+
+REGISTER_TYPES(Effect);
 
 static int summonCreatures(Creature* c, int radius, vector<PCreature> creatures) {
   int numCreated = 0;

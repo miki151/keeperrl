@@ -5,12 +5,36 @@
 #include "level.h"
 #include "statistics.h"
 
+static int idCounter = 1;
+
+template <class Archive> 
+void Item::serialize(Archive& ar, const unsigned int version) {
+  ItemAttributes::serialize(ar, version);
+  ar& BOOST_SERIALIZATION_NVP(viewObject)
+    & BOOST_SERIALIZATION_NVP(discarded)
+    & BOOST_SERIALIZATION_NVP(inspected)
+    & BOOST_SERIALIZATION_NVP(shopkeeper)
+    & BOOST_SERIALIZATION_NVP(fire)
+    & BOOST_SERIALIZATION_NVP(uniqueId);
+  if (uniqueId > idCounter)
+    idCounter = uniqueId;
+}
+
+SERIALIZABLE(Item);
+
+template <class Archive> 
+void Item::CorpseInfo::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(canBeRevived)
+    & BOOST_SERIALIZATION_NVP(hasHead)
+    & BOOST_SERIALIZATION_NVP(isSkeleton);
+}
+
+SERIALIZABLE(Item::CorpseInfo);
 
 
 Item::Item(ViewObject o, const ItemAttributes& attr)
     : ItemAttributes(attr), viewObject(o), inspected(everythingIdentified), fire(*weight, flamability) {
-  static int cnt = 1;
-  uniqueId = ++cnt;
+  uniqueId = ++idCounter;
 }
 
 void Item::identifyEverything() {
@@ -26,7 +50,6 @@ bool Item::everythingIdentified = false;
 int Item::getUniqueId() const {
   return uniqueId;
 }
-
  
 vector<Item*> Item::extractRefs(const vector<PItem>& item) {
   vector<Item*> ref(item.size());
@@ -175,12 +198,15 @@ int Item::getPrice() const {
   return price;
 }
 
-void Item::setUnpaid(bool p) {
-  unpaid = p;
+void Item::setShopkeeper(const Creature* s) {
+  shopkeeper = s;
 }
 
-bool Item::isUnpaid() const {
-  return unpaid;
+const Creature* Item::getShopkeeper() const {
+  if (!shopkeeper || shopkeeper->isDead())
+    return nullptr;
+  else
+    return shopkeeper;
 }
 
 Optional<TrapType> Item::getTrapType() const {
@@ -194,7 +220,7 @@ void Item::apply(Creature* c, Level* l) {
     identify(*name);
   if (effect)
     Effect::applyToCreature(c, *effect, EffectStrength::NORMAL);
-  if (uses && (-- *uses) == 0) {
+  if (uses > -1 && --uses == 0) {
     discarded = true;
     if (usedUpMsg)
       c->privateMessage(getTheName() + " is used up.");
@@ -242,10 +268,10 @@ void Item::setName(const string& n) {
 }
 
 string Item::getName(bool plural, bool blind) const {
-  string suff = uses && displayUses && inspected ? string(" (") + convertToString(*uses) + " uses left)" : "";
+  string suff = uses > -1 && displayUses && inspected ? string(" (") + convertToString(uses) + " uses left)" : "";
   if (fire.isBurning())
     suff.append(" (burning)");
-  if (unpaid)
+  if (getShopkeeper())
     suff += " (" + convertToString(getPrice()) + (plural ? " zorkmids each)" : " zorkmids)");
   if (blind)
     return getBlindName(plural);

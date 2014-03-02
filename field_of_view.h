@@ -11,20 +11,13 @@ class FieldOfView {
   const vector<Vec2>& getVisibleTiles(Vec2 from);
   void squareChanged(Vec2 pos);
 
+  SERIALIZATION_DECL(FieldOfView);
+
   private:
 
   const static int sightRange = 30;
 
   class Visibility {
-    char visible[sightRange * 2 + 1][sightRange * 2 + 1];
-    vector<Vec2> visibleTiles;
-    void calculate(int,int,int,int, int, int, int, int,
-        function<bool (int, int)> isBlocking,
-        function<void (int, int)> setVisible);
-    void setVisible(int, int);
-
-    int px, py;
-
     public:
 
     bool checkVisible(int x,int y) const;
@@ -33,9 +26,21 @@ class FieldOfView {
     Visibility(const Table<PSquare>& squares, int x, int y);
     Visibility(Visibility&&) = default;
     Visibility& operator = (Visibility&&) = default;
-  };
 
-  const Table<PSquare>& squares;
+    SERIALIZATION_DECL(Visibility);
+
+    private:
+    char visible[sightRange * 2 + 1][sightRange * 2 + 1];
+    vector<Vec2> visibleTiles;
+    void calculate(int,int,int,int, int, int, int, int,
+        function<bool (int, int)> isBlocking,
+        function<void (int, int)> setVisible);
+    void setVisible(int, int);
+
+    int px, py;
+  };
+  
+  const Table<PSquare>* squares;
   Table<Optional<Visibility>> visibility;
 };
 

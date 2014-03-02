@@ -8,7 +8,26 @@
 #include "message_buffer.h"
 #include "statistics.h"
 #include "options.h"
+#include "task.h"
 
+template <class Archive> 
+void Model::serialize(Archive& ar, const unsigned int version) { 
+  ar& BOOST_SERIALIZATION_NVP(levels)
+    & BOOST_SERIALIZATION_NVP(timeQueue)
+    & BOOST_SERIALIZATION_NVP(deadCreatures)
+    & BOOST_SERIALIZATION_NVP(lastTick)
+    & BOOST_SERIALIZATION_NVP(levelLinks)
+    & BOOST_SERIALIZATION_NVP(collective)
+    & BOOST_SERIALIZATION_NVP(elvesDead)
+    & BOOST_SERIALIZATION_NVP(humansDead)
+    & BOOST_SERIALIZATION_NVP(dwarvesDead)
+    & BOOST_SERIALIZATION_NVP(won);
+  Skill::serializeAll(ar);
+  Quest::serializeAll(ar);
+  Tribe::serializeAll(ar);
+}
+
+SERIALIZABLE(Model);
 
 bool Model::isTurnBased() {
   return !collective || collective->isTurnBased();
@@ -79,11 +98,9 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker, bool surface) {
 }
 
 Model::Model(View* v) : view(v) {
-  EventListener::addListener(this);
 }
 
 Model::~Model() {
-  EventListener::removeListener(this);
 }
 
 Level* Model::prepareTopLevel2(vector<SettlementInfo> settlements) {
@@ -220,6 +237,17 @@ Model* Model::heroModel(View* view) {
   return m;
 }
 
+string Model::getGameIdentifier() const {
+  if (collective)
+    return *collective->getKeeper()->getFirstName();
+  else
+    for (const PLevel& l : levels)
+      if (const Creature* c = l->getPlayer())
+        return *c->getFirstName();
+  FAIL << "Couldn't find the player object";
+  return "";
+}
+
 void Model::dwarvesMessage() {
   CHECK(collective);
   string msg = "We forgot about the funny bearded midgets living under the mountain. ";
@@ -233,19 +261,19 @@ void Model::dwarvesMessage() {
 void Model::onKillEvent(const Creature* victim, const Creature* killer) {
   if (!collective)
     return;
-  if (victim == getOnlyElement(Tribe::human->getImportantMembers())) {
+  if (!humansDead && victim == getOnlyElement(Tribe::human->getImportantMembers(true))) {
     view->presentText("", "This is an ex-duke.");
     humansDead = true;
     if (elvesDead && !dwarvesDead)
       dwarvesMessage();
   }
-  if (victim == getOnlyElement(Tribe::elven->getImportantMembers())) {
+  if (!elvesDead && victim == getOnlyElement(Tribe::elven->getImportantMembers(true))) {
     view->presentText("", "This is an ex-lord.");
     elvesDead = true;
     if (humansDead && !dwarvesDead)
       dwarvesMessage();
   }
-  if (victim == getOnlyElement(Tribe::dwarven->getImportantMembers())) {
+  if (!dwarvesDead && victim == getOnlyElement(Tribe::dwarven->getImportantMembers(true))) {
     view->presentText("", "This is an ex-baron.");
     dwarvesDead = true;
   }
@@ -342,6 +370,16 @@ Model* Model::collectiveModel(View* view) {
   }
   Tribe::player->addEnemy(Tribe::dwarven);*/
   return m;
+}
+
+View* Model::getView() {
+  return view;
+}
+
+void Model::setView(View* v) {
+  view = v;
+  if (collective)
+    v->setTimeMilli(collective->getKeeper()->getTime() * 300);
 }
 
 void Model::addLink(StairDirection dir, StairKey key, Level* l1, Level* l2) {

@@ -156,6 +156,12 @@ bool contains(const string& s, const string& p) {
   return s.find(p) != string::npos;
 }
 
+template <class Archive> 
+void Vec2::serialize(Archive& ar, const unsigned int version) {
+  ar & BOOST_SERIALIZATION_NVP(x) & BOOST_SERIALIZATION_NVP(y);
+}
+
+SERIALIZABLE(Vec2);
 
 Vec2::Vec2(int _x, int _y) : x(_x), y(_y) {
 }
@@ -239,6 +245,18 @@ Dir Vec2::getCardinalDir() const {
 vector<Vec2> Vec2::corners() {
   return { Vec2(1, 1), Vec2(1, -1), Vec2(-1, -1), Vec2(-1, 1)};
 }
+
+template <class Archive> 
+void Rectangle::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(px)
+    & BOOST_SERIALIZATION_NVP(py)
+    & BOOST_SERIALIZATION_NVP(kx)
+    & BOOST_SERIALIZATION_NVP(ky)
+    & BOOST_SERIALIZATION_NVP(w)
+    & BOOST_SERIALIZATION_NVP(h);
+}
+
+SERIALIZABLE(Rectangle);
 
 Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {
   int infinity = 1000000;

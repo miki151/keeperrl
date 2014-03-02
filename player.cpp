@@ -9,15 +9,30 @@
 #include "model.h"
 #include "options.h"
 
+template <class Archive> 
+void Player::serialize(Archive& ar, const unsigned int version) {
+  ar& SUBCLASS(Controller)
+    & SUBCLASS(EventListener) 
+    & BOOST_SERIALIZATION_NVP(creature)
+    & BOOST_SERIALIZATION_NVP(travelling)
+    & BOOST_SERIALIZATION_NVP(travelDir)
+    & BOOST_SERIALIZATION_NVP(target)
+    & BOOST_SERIALIZATION_NVP(lastLocation)
+    & BOOST_SERIALIZATION_NVP(specialCreatures)
+    & BOOST_SERIALIZATION_NVP(displayGreeting)
+    & BOOST_SERIALIZATION_NVP(levelMemory)
+    & BOOST_SERIALIZATION_NVP(points)
+    & BOOST_SERIALIZATION_NVP(model)
+    & BOOST_SERIALIZATION_NVP(displayTravelInfo);
+}
 
+SERIALIZABLE(Player);
 
 Player::Player(Creature* c, View* v, Model* m, bool greet, map<const Level*, MapMemory>* memory) :
-    creature(c), view(v), displayGreeting(greet), levelMemory(memory), model(m) {
-  EventListener::addListener(this);
+    creature(c), displayGreeting(greet), levelMemory(memory), model(m) {
 }
 
 Player::~Player() {
-  EventListener::removeListener(this);
 }
 
 const Level* Player::getListenerLevel() const {
@@ -27,7 +42,7 @@ const Level* Player::getListenerLevel() const {
 void Player::onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) {
   for (Vec2 v : trajectory)
     if (creature->canSee(v)) {
-      view->animateObject(trajectory, item->getViewObject());
+      model->getView()->animateObject(trajectory, item->getViewObject());
       return;
     }
 }
@@ -39,7 +54,7 @@ void Player::learnLocation(const Location* loc) {
 
 void Player::onExplosionEvent(const Level* level, Vec2 pos) {
   if (creature->canSee(pos))
-    view->animation(pos, AnimationId::EXPLOSION);
+    model->getView()->animation(pos, AnimationId::EXPLOSION);
   else
     creature->privateMessage("BOOM!");
 }
@@ -122,7 +137,7 @@ void Player::pickUpAction(bool extended) {
   const Square* square = creature->getConstSquare();
   if (square->getApplyType(creature) && canUseSquare(*square->getApplyType(creature)) &&
       (items.empty() ||
-       view->yesOrNoPrompt(getSquareQuestion(*square->getApplyType(creature), square->getName())))) {
+       model->getView()->yesOrNoPrompt(getSquareQuestion(*square->getApplyType(creature), square->getName())))) {
     creature->applySquare();
     return;
   }
@@ -133,7 +148,7 @@ void Player::pickUpAction(bool extended) {
     return;
   int index = 0;
   if (names.size() > 1) {
-    Optional<int> res = view->chooseFromList("Choose an item to pick up:", names);
+    Optional<int> res = model->getView()->chooseFromList("Choose an item to pick up:", names);
     if (!res)
       return;
     else
@@ -143,7 +158,7 @@ void Player::pickUpAction(bool extended) {
   if (num < 1)
     return;
   if (extended && num > 1) {
-    Optional<int> res = view->getNumber("Pick up how many " + groups[index][0]->getName(true) + "?", num);
+    Optional<int> res = model->getView()->getNumber("Pick up how many " + groups[index][0]->getName(true) + "?", num);
     if (!res)
       return;
     num = *res;
@@ -200,7 +215,7 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Op
       names.push_back(View::ListElem(getText(elem), View::TITLE));
       getItemNames(typeGroups[elem], names, groups, predicate);
     }
-  Optional<int> index = view->chooseFromList(text, names, 0, exitAction);
+  Optional<int> index = model->getView()->chooseFromList(text, names, 0, exitAction);
   if (index)
     return groups[*index];
   return vector<Item*>();
@@ -213,7 +228,7 @@ void Player::dropAction(bool extended) {
   if (num < 1)
     return;
   if (extended && num > 1) {
-    Optional<int> res = view->getNumber("Drop how many " + items[0]->getName(true, creature->isBlind()) + "?", num);
+    Optional<int> res = model->getView()->getNumber("Drop how many " + items[0]->getName(true, creature->isBlind()) + "?", num);
     if (!res)
       return;
     num = *res;
@@ -229,11 +244,11 @@ void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   vector<vector<Item*> > groups;
   getItemNames(items, names, groups);
   CHECK(!names.empty());
-  Optional<int> index = view->chooseFromList("Do you want to take it?", names);
+  Optional<int> index = model->getView()->chooseFromList("Do you want to take it?", names);
   if (!index) {
     return;
   }
-  int num = groups[*index].size(); //groups[index].size() == 1 ? 1 : howMany(view, groups[index].size());
+  int num = groups[*index].size(); //groups[index].size() == 1 ? 1 : howMany(model->getView(), groups[index].size());
   if (num < 1)
     return;
   creature->privateMessage("You take " + getPluralName(groups[*index][0], num));
@@ -262,7 +277,7 @@ void Player::applyItem(vector<Item*> items) {
   if (items[0]->getApplyTime() > 1) {
     for (const Creature* c : creature->getVisibleEnemies())
       if ((c->getPosition() - creature->getPosition()).length8() < 3) { 
-        if (!view->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " + 
+        if (!model->getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " + 
             convertToString(items[0]->getApplyTime()) + " turns. Are you sure you want to continue?"))
           return;
         else
@@ -285,7 +300,7 @@ void Player::throwAction(Optional<Vec2> dir) {
 
 void Player::throwItem(vector<Item*> items, Optional<Vec2> dir) {
   if (!dir) {
-    auto cDir = view->chooseDirection("Which direction do you want to throw?");
+    auto cDir = model->getView()->chooseDirection("Which direction do you want to throw?");
     if (!cDir)
       return;
     dir = *cDir;
@@ -316,8 +331,8 @@ void Player::equipmentAction() {
       else
         list.push_back("[Nothing]");
     }
-    view->updateView(creature);
-    Optional<int> newIndex = view->chooseFromList("Equipment", list, index, ActionId::EQUIPMENT);
+    model->getView()->updateView(creature);
+    Optional<int> newIndex = model->getView()->chooseFromList("Equipment", list, index, ActionId::EQUIPMENT);
     if (!newIndex) {
       creature->finishEquipChain();
       return;
@@ -368,11 +383,11 @@ void Player::grantIdentify(int numItems) {
 
 void Player::displayInventory() {
   if (!creature->isHumanoid()) {
-    view->presentText("", "You can't use inventory.");
+    model->getView()->presentText("", "You can't use inventory.");
     return;
   }
   if (creature->getEquipment().isEmpty()) {
-    view->presentText("", "Your inventory is empty.");
+    model->getView()->presentText("", "Your inventory is empty.");
     return;
   }
   vector<Item*> item = chooseItem("Inventory:", alwaysTrue<const Item*>(), ActionId::SHOW_INVENTORY);
@@ -392,7 +407,7 @@ void Player::displayInventory() {
     options.push_back("throw");
     options.push_back("drop");
   }
-  auto index = view->chooseFromList("What to do with " + getPluralName(item[0], item.size()) + "?", options);
+  auto index = model->getView()->chooseFromList("What to do with " + getPluralName(item[0], item.size()) + "?", options);
   if (!index) {
     displayInventory();
     return;
@@ -435,7 +450,7 @@ bool Player::interruptedByEnemy() {
   if (enemies.size() > 0) {
     for (const Creature* c : enemies)
       if (!contains(ignoreCreatures, c->getAName())) {
-        view->refreshView(creature);
+        model->getView()->refreshView(creature);
         privateMessage("You notice " + c->getAName());
         return true;
       }
@@ -444,7 +459,7 @@ bool Player::interruptedByEnemy() {
 }
 
 void Player::travelAction() {
-  if (!creature->canMove(travelDir) || view->travelInterrupt() || interruptedByEnemy()) {
+  if (!creature->canMove(travelDir) || model->getView()->travelInterrupt() || interruptedByEnemy()) {
     travelling = false;
     return;
   }
@@ -469,7 +484,7 @@ void Player::travelAction() {
 
 void Player::targetAction() {
   CHECK(target);
-  if (creature->getPosition() == *target || view->travelInterrupt()) {
+  if (creature->getPosition() == *target || model->getView()->travelInterrupt()) {
     target = Nothing();
     return;
   }
@@ -490,7 +505,7 @@ void Player::payDebtAction() {
         vector<Item*> gold = creature->getGold(debt);
         if (gold.size() < debt) {
           privateMessage("You don't have enough gold to pay.");
-        } else if (view->yesOrNoPrompt("Buy items for " + convertToString(debt) + " zorkmids?")) {
+        } else if (model->getView()->yesOrNoPrompt("Buy items for " + convertToString(debt) + " zorkmids?")) {
           privateMessage("You pay " + c->getName() + " " + convertToString(debt) + " zorkmids.");
           creature->give(c, gold);
         }
@@ -511,7 +526,7 @@ void Player::chatAction(Optional<Vec2> dir) {
   } else
   if (creatures.size() > 1 || dir) {
     if (!dir)
-      dir = view->chooseDirection("Which direction?");
+      dir = model->getView()->chooseDirection("Which direction?");
     if (!dir)
       return;
     if (const Creature* c = creature->getConstSquare(*dir)->getCreature()) {
@@ -533,7 +548,7 @@ void Player::spellAction() {
     list.push_back(View::ListElem(spells[i].name + " " + (!creature->canCastSpell(i) ? "(ready in " +
           convertToString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""),
           creature->canCastSpell(i) ? View::NORMAL : View::INACTIVE));
-  auto index = view->chooseFromList("Cast a spell:", list);
+  auto index = model->getView()->chooseFromList("Cast a spell:", list);
   if (!index)
     return;
   creature->privateMessage("You cast " + spells[*index].name);
@@ -556,7 +571,7 @@ void Player::sleeping() {
   else
     ViewObject::setHallu(false);
   MEASURE(
-      view->refreshView(creature),
+      model->getView()->refreshView(creature),
       "level render time");
 }
 
@@ -568,17 +583,17 @@ void Player::makeMove() {
   else
     ViewObject::setHallu(false);
   MEASURE(
-      view->refreshView(creature),
+      model->getView()->refreshView(creature),
       "level render time");
   if (Options::getValue(OptionId::HINTS) && displayTravelInfo && creature->getConstSquare()->getName() == "road") {
-    view->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
+    model->getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
   }
   static bool greeting = false;
   if (Options::getValue(OptionId::HINTS) && displayGreeting) {
     CHECK(creature->getFirstName());
-    view->presentText("", "Dear " + *creature->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + NameGenerator::worldNames.getNext() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::firstNames.getNext() + "\n \nPS.: Beware the goblins!");
-    view->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
+    model->getView()->presentText("", "Dear " + *creature->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + NameGenerator::worldNames.getNext() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::firstNames.getNext() + "\n \nPS.: Beware the goblins!");
+    model->getView()->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
         "\n \nYou can turn these messages off in the options (press F2).");
     displayGreeting = false;
   }
@@ -593,7 +608,7 @@ void Player::makeMove() {
   else if (target)
     targetAction();
   else {
-    Action action = view->getAction();
+    Action action = model->getView()->getAction();
   vector<Vec2> direction;
   bool travel = false;
   switch (action.getId()) {
@@ -640,11 +655,11 @@ void Player::makeMove() {
                                 return;
                               } break;
     case ActionId::CAST_SPELL: spellAction(); break;
-    case ActionId::DRAW_LEVEL_MAP: view->drawLevelMap(creature->getLevel(), creature); break;
+    case ActionId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature->getLevel(), creature); break;
     case ActionId::IDLE: break;
   }
   if (creature->isSleeping() && creature->canPopController()) {
-    if (view->yesOrNoPrompt("You fell asleep. Do you want to leave your minion?"))
+    if (model->getView()->yesOrNoPrompt("You fell asleep. Do you want to leave your minion?"))
       creature->popController();
     return;
   }

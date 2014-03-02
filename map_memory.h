@@ -13,6 +13,9 @@ class MapMemory {
   ViewIndex getViewIndex(Vec2 pos) const;
   static const MapMemory& empty();
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
+
   private:
   unordered_map<Vec2, ViewIndex> table;
 };

@@ -13,6 +13,8 @@ class Fire {
   double getSize() const;
   bool isBurntOut() const;
 
+  SERIALIZATION_DECL(Fire);
+
   private:
   double burnt = 0;
   double size = 0;

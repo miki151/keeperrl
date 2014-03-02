@@ -8,7 +8,81 @@
 #include "statistics.h"
 #include "options.h"
 
+template <class Archive> 
+void Creature::Vision::serialize(Archive& ar, const unsigned int version) {
+}
 
+SERIALIZABLE(Creature::Vision);
+
+template <class Archive> 
+void SpellInfo::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(id)
+    & BOOST_SERIALIZATION_NVP(name)
+    & BOOST_SERIALIZATION_NVP(type)
+    & BOOST_SERIALIZATION_NVP(ready)
+    & BOOST_SERIALIZATION_NVP(difficulty);
+}
+
+SERIALIZABLE(SpellInfo);
+
+static int idCounter = 1;
+
+template <class Archive> 
+void Creature::serialize(Archive& ar, const unsigned int version) { 
+  ar
+    & SUBCLASS(CreatureAttributes)
+    & SUBCLASS(CreatureView)
+    & BOOST_SERIALIZATION_NVP(viewObject)
+    & BOOST_SERIALIZATION_NVP(level)
+    & BOOST_SERIALIZATION_NVP(position)
+    & BOOST_SERIALIZATION_NVP(time)
+    & BOOST_SERIALIZATION_NVP(equipment)
+    & BOOST_SERIALIZATION_NVP(uniqueId)
+    & BOOST_SERIALIZATION_NVP(shortestPath)
+    & BOOST_SERIALIZATION_NVP(knownHiding)
+    & BOOST_SERIALIZATION_NVP(tribe)
+    & BOOST_SERIALIZATION_NVP(enemyChecks)
+    & BOOST_SERIALIZATION_NVP(health)
+    & BOOST_SERIALIZATION_NVP(dead)
+    & BOOST_SERIALIZATION_NVP(lastTick)
+    & BOOST_SERIALIZATION_NVP(collapsed)
+    & BOOST_SERIALIZATION_NVP(injuredArms)
+    & BOOST_SERIALIZATION_NVP(injuredLegs)
+    & BOOST_SERIALIZATION_NVP(injuredWings)
+    & BOOST_SERIALIZATION_NVP(injuredHeads)
+    & BOOST_SERIALIZATION_NVP(lostArms)
+    & BOOST_SERIALIZATION_NVP(lostLegs)
+    & BOOST_SERIALIZATION_NVP(lostWings)
+    & BOOST_SERIALIZATION_NVP(lostHeads)
+    & BOOST_SERIALIZATION_NVP(hidden)
+    & BOOST_SERIALIZATION_NVP(lastAttacker)
+    & BOOST_SERIALIZATION_NVP(swapPositionCooldown)
+    & BOOST_SERIALIZATION_NVP(sleeping)
+    & BOOST_SERIALIZATION_NVP(panicking)
+    & BOOST_SERIALIZATION_NVP(enraged)
+    & BOOST_SERIALIZATION_NVP(slowed)
+    & BOOST_SERIALIZATION_NVP(speeding)
+    & BOOST_SERIALIZATION_NVP(strBonus)
+    & BOOST_SERIALIZATION_NVP(dexBonus)
+    & BOOST_SERIALIZATION_NVP(hallucinating)
+    & BOOST_SERIALIZATION_NVP(blinded)
+    & BOOST_SERIALIZATION_NVP(invisible)
+    & BOOST_SERIALIZATION_NVP(poisoned)
+    & BOOST_SERIALIZATION_NVP(stunned)
+    & BOOST_SERIALIZATION_NVP(expLevel)
+    & BOOST_SERIALIZATION_NVP(unknownAttacker)
+    & BOOST_SERIALIZATION_NVP(visibleEnemies)
+    & BOOST_SERIALIZATION_NVP(privateEnemies)
+    & BOOST_SERIALIZATION_NVP(holding)
+    & BOOST_SERIALIZATION_NVP(controller)
+    & BOOST_SERIALIZATION_NVP(controllerStack)
+    & BOOST_SERIALIZATION_NVP(visions)
+    & BOOST_SERIALIZATION_NVP(kills);
+  if (uniqueId > idCounter)
+    idCounter = uniqueId;
+}
+
+SERIALIZABLE(Creature);
 
 Creature* Creature::getDefault() {
   static PCreature defaultCreature = CreatureFactory::fromId(CreatureId::GNOME, Tribe::monster,
@@ -22,12 +96,15 @@ void Creature::noExperienceLevels() {
   increaseExperience = false;
 }
 
-Creature::Creature(ViewObject o, Tribe* t, const CreatureAttributes& attr, ControllerFactory f) : CreatureAttributes(attr), viewObject(o), time(0), tribe(t), dead(false), lastTick(0), controller(f.get(this)) {
-  static int cnt = 1;
-  uniqueId = ++cnt;
+Creature::Creature(ViewObject o, Tribe* t, const CreatureAttributes& attr, ControllerFactory f) : CreatureAttributes(attr), viewObject(o), tribe(t), controller(f.get(this)) {
+  uniqueId = ++idCounter;
   tribe->addMember(this);
   for (Skill* skill : skills)
     skill->onTeach(this);
+}
+
+Creature::~Creature() {
+  tribe->removeMember(this);
 }
 
 ViewIndex Creature::getViewIndex(Vec2 pos) const {
@@ -79,25 +156,25 @@ void Creature::castSpell(int index) {
   spendTime(1);
 }
 
-void Creature::addCreatureVision(CreatureVision* vision) {
-  creatureVision.push_back(vision);
+void Creature::addVision(Vision* vision) {
+  visions.push_back(vision);
 }
 
-void Creature::removeCreatureVision(CreatureVision* vision) {
-  removeElement(creatureVision, vision);
+void Creature::removeVision(Vision* vision) {
+  removeElement(visions, vision);
 }
 
 void Creature::pushController(Controller* ctrl) {
   viewObject.setPlayer(true);
-  controllerStack.push(std::move(controller));
+  controllerStack.push_back(std::move(controller));
   controller.reset(ctrl);
 }
 
 void Creature::popController() {
   viewObject.setPlayer(false);
   CHECK(canPopController());
-  controller = std::move(controllerStack.top());
-  controllerStack.pop();
+  controller = std::move(controllerStack.back());
+  controllerStack.pop_back();
 }
 
 bool Creature::canPopController() const {
@@ -995,8 +1072,8 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
 
 void Creature::attack(const Creature* c1, bool spend) {
   Creature* c = const_cast<Creature*>(c1);
-  int toHitVariance = 7;
-  int damageVariance = 5;
+  int toHitVariance = 9;
+  int damageVariance = 7;
   CHECK((c->getPosition() - getPosition()).length8() == 1)
       << "Bad attack direction " << c->getPosition() - getPosition();
   CHECK(canAttack(c));
@@ -1147,9 +1224,9 @@ void Creature::updateViewObject() {
   viewObject.setAttack(getAttr(AttrType::DAMAGE));
   if (const Creature* c = getLevel()->getPlayer()) {
     if (isEnemy(c))
-      viewObject.setHostile(true);
+      viewObject.setEnemyStatus(ViewObject::HOSTILE);
     else
-      viewObject.setHostile(false);
+      viewObject.setEnemyStatus(ViewObject::FRIENDLY);
   }
   viewObject.setBleeding(1 - health);
 }
@@ -1577,8 +1654,8 @@ const ViewObject& Creature::getViewObject() const {
 }*/
 
 bool Creature::canSee(const Creature* c) const {
-  for (auto fun : creatureVision)
-    if ((*fun)(this, c))
+  for (Vision* v : visions)
+    if (v->canSee(this, c))
       return true;
   return !isBlind() && !c->isInvisible() &&
          (!c->isHidden() || c->knowsHiding(this)) && 

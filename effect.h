@@ -11,6 +11,9 @@ class Item;
 class Effect {
   public:
   static void applyToCreature(Creature*, EffectType, EffectStrength);
+
+  template <class Archive>
+  static void registerTypes(Archive& ar);
 };
 
 #endif

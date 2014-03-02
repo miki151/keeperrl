@@ -3,6 +3,14 @@
 #include "poison_gas.h"
 #include "level.h"
 
+
+template <class Archive> 
+void PoisonGas::serialize(Archive& ar, const unsigned int version) {
+  ar & BOOST_SERIALIZATION_NVP(amount);
+}
+
+SERIALIZABLE(PoisonGas);
+
 void PoisonGas::addAmount(double a) {
   CHECK(a > 0);
   amount = min(3., a + amount);

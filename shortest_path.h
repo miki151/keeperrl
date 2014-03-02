@@ -29,6 +29,8 @@ class ShortestPath {
 
   static const double infinity;
 
+  SERIALIZATION_DECL(ShortestPath);
+
   private:
   void init(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, Vec2 target, Optional<Vec2> from,
       Optional<int> limit = Nothing());

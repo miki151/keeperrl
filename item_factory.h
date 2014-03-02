@@ -11,7 +11,6 @@
 
 class Item;
 
-
 class ItemFactory {
   public:
   vector<PItem> random(Optional<int> seed = Nothing());
@@ -39,6 +38,11 @@ class ItemFactory {
   static PItem trapItem(PTrigger trigger, string trapName);
 
   static void init();
+
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
+  SERIALIZATION_DECL(ItemFactory);
 
   private:
   struct ItemInfo {

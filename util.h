@@ -5,6 +5,7 @@
 
 #include "debug.h"
 #include "enums.h"
+#include "serialization.h"
 
 template <class T>
 string convertToString(const T& t);
@@ -51,6 +52,9 @@ vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
 }
 
 struct GameOverException {
+};
+
+struct SaveGameException {
 };
 
 void trim(string& s);
@@ -101,6 +105,9 @@ class Vec2 {
   static vector<Vec2> directions4(bool shuffle = false);
   vector<Vec2> neighbors4(bool shuffle = false) const;
   static vector<Vec2> corners();
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
 };
 
 string getCardinalName(Dir d);
@@ -183,6 +190,9 @@ class Rectangle {
 
   Iter begin() const;
   Iter end() const;
+
+  SERIALIZATION_DECL(Rectangle);
+
   private:
   int px, py, kx, ky, w, h;
 };
@@ -341,6 +351,25 @@ class Table {
 #endif
   }
 
+  template <class Archive> 
+  void save(Archive& ar, const unsigned int version) const {
+    ar << BOOST_SERIALIZATION_NVP(bounds);
+    for (Vec2 v : bounds)
+      ar << boost::serialization::make_nvp("Elem", (*this)[v]);
+  }
+
+  template <class Archive> 
+  void load(Archive& ar, const unsigned int version) {
+    ar >> BOOST_SERIALIZATION_NVP(bounds);
+    mem.reset(new T[bounds.getW() * bounds.getH()]);
+    for (Vec2 v : bounds)
+      ar >> boost::serialization::make_nvp("Elem", (*this)[v]);
+  }
+
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+  SERIALIZATION_CONSTRUCTOR(Table);
+
   private:
   Rectangle bounds;
   unique_ptr<T[]> mem;
@@ -446,6 +475,15 @@ vector<T> transform2(const vector<U>& u, function<T(const U&)> fun) {
   return ret;
 }
 
+template <typename T, typename Predicate>
+vector<T> filter(const vector<T>& v, Predicate predicate) {
+  vector<T> ret;
+  for (const T& t : v)
+    if (predicate(t))
+      ret.push_back(t);
+  return ret;
+}
+
 template <typename T, typename V>
 bool contains(const T& v, const V& elem) {
   return std::find(v.begin(), v.end(), elem) != v.end();
@@ -498,76 +536,87 @@ class Nothing {
 template <class T>
 class Optional {
   public:
-  Optional(const T& t) : elem(new T(t)) {}
+  Optional(const T& t) {
+    elem.push_back(t);
+  }
   Optional(const Optional<T>& t) {
     if (t)
-      elem.reset(new T(*t));
+      elem.push_back(*t);
   }
   Optional(Optional<T>&&) = default;
   Optional(Nothing) {}
   Optional() {}
 
   Optional<T>& operator = (const Optional<T>& t) {
-    if (t)
-      elem.reset(new T(*t));
+    if (t) {
+      elem.clear();
+      elem.push_back(*t);
+    }
     else
-      elem.reset();
+      elem.clear();
     return *this;
   }
 
   T& operator = (const T& t) {
-    elem.reset(new T(t));
-    return *elem.get();
+    elem.clear();
+    elem.push_back(t);
+    return elem.front();
   }
 
   Optional<T>& operator = (Optional<T>&& t) = default;
 
   void operator = (Nothing) {
-    elem.reset();
+    elem.clear();
   }
 
   T& operator = (T&& t) {
-    if (elem)
-      *elem = std::move(t);
-    else
-      elem.reset(new T(std::move(t)));
-    return *elem.get();
+    if (!elem.empty())
+      elem.front() = std::move(t);
+    else {
+      elem.push_back(std::move(t));
+    }
+    return elem.front();
   }
 
   T* operator -> () {
-    CHECK(elem.get() != nullptr);
-    return elem.get();
+    CHECK(!elem.empty());
+    return &elem.front();
   }
 
   const T* operator -> () const {
-    CHECK(elem.get() != nullptr);
-    return elem.get();
+    CHECK(!elem.empty());
+    return &elem.front();
   }
 
   bool operator == (const T& t) const {
-    return elem.get() && *elem.get() == t;
+    return !elem.empty() && elem.front() == t;
   }
 
-  bool operator != (const T& t) const {
-    return !elem.get() || *elem.get() != t;
-  }
+ /* bool operator != (const T& t) const {
+    return !elem.empty() || elem.get() != t;
+  }*/
 
   operator bool() const {
-    return elem.get() != nullptr;
+    return !elem.empty();
   }
 
   T& operator * () {
-    CHECK(elem.get());
-    return *elem.get();
+    CHECK(!elem.empty());
+    return elem.front();
   }
 
   const T& operator * () const {
-    CHECK(elem.get());
-    return *elem.get();
+    CHECK(!elem.empty());
+    return elem.front();
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & BOOST_SERIALIZATION_NVP(elem);
   }
 
   private:
-  unique_ptr<T> elem;
+  vector<T> elem;
 };
 
 template <typename T, typename V>
@@ -626,6 +675,11 @@ class MustInitialize {
   const T& operator * () const {
     CHECK(!elem.empty()) << "Element not initialized";
     return elem.front();
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & BOOST_SERIALIZATION_NVP(elem);
   }
 
   private:

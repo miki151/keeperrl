@@ -17,7 +17,6 @@ class Player;
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level {
   public:
-
   /** Checks if the creature can move to \paramname{direction}. This ensures 
     * that a subsequent call to #moveCreature will not fail.*/
   bool canMoveCreature(const Creature*, Vec2 direction) const;
@@ -209,20 +208,21 @@ class Level {
 
   typedef unique_ptr<Builder> PBuilder;
 
+  SERIALIZATION_DECL(Level);
+
   private:
   Table<PSquare> squares;
   map<pair<StairDirection, StairKey>, vector<Vec2>> landingSquares;
   vector<Location*> locations;
   vector<Square*> tickingSquares;
   vector<Creature*> creatures;
-  Model* model;
+  Model* model = nullptr;
   mutable FieldOfView fieldOfView;
   string entryMessage;
   string name;
-  Creature* player;
+  Creature* player = nullptr;
   const Level* backgroundLevel = nullptr;
   Vec2 backgroundOffset;
-  View* view;
   
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name);
 

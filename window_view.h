@@ -15,7 +15,7 @@ class WindowView: public View {
   
   virtual void initialize() override;
   virtual void reset() override;
-  virtual void displaySplash(bool& ready) override;
+  virtual void displaySplash(View::SplashType, bool& ready) override;
 
   virtual void close() override;
 
@@ -48,8 +48,10 @@ class WindowView: public View {
   virtual void continueClock() override;
   
   static Color getFireColor();
+
   private:
 
+  void exitQuestion();
   Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index,
       Optional<ActionId> exitAction, Optional<sf::Event::KeyEvent> exitKey, vector<sf::Event::KeyEvent> shortCuts);
   Optional<ActionId> getSimpleActionId(sf::Event::KeyEvent key);

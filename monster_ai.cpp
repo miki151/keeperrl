@@ -5,7 +5,22 @@
 #include "level.h"
 #include "collective.h"
 #include "village_control.h"
+#include "task.h"
 
+template <class Archive> 
+void MonsterAI::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(behaviours)
+    & BOOST_SERIALIZATION_NVP(weights)
+    & BOOST_SERIALIZATION_NVP(creature)
+    & BOOST_SERIALIZATION_NVP(pickItems);
+}
+
+SERIALIZABLE(MonsterAI);
+
+template <class Archive> 
+void Behaviour::serialize(Archive& ar, const unsigned int version) {
+  ar & BOOST_SERIALIZATION_NVP(creature);
+}
 
 
 Behaviour::Behaviour(Creature* c) : creature(c) {
@@ -97,10 +112,22 @@ class Heal : public Behaviour {
     return {0, nullptr};
   }
 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(hasBed);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Heal);
+
   private:
   struct BedInfo {
     Vec2 pos;
     const Level* level;
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & BOOST_SERIALIZATION_NVP(pos) & BOOST_SERIALIZATION_NVP(level);
+    }
   };
   Optional<BedInfo> hasBed;
 };
@@ -111,6 +138,13 @@ class Rest : public Behaviour {
 
   virtual MoveInfo getMove() {
     return {0.1, [=] { creature->wait(); }};
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Rest);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
   }
 };
 
@@ -152,6 +186,13 @@ class MoveRandomly : public Behaviour {
     return contains(memory, pos);
   }
 
+  SERIALIZATION_CONSTRUCTOR(MoveRandomly);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(memory) & BOOST_SERIALIZATION_NVP(memSize);
+  }
+
   private:
   deque<Vec2> memory;
   int memSize;
@@ -180,6 +221,13 @@ class AttackPest : public Behaviour {
     else
       return NoMove;
   }
+
+  SERIALIZATION_CONSTRUCTOR(AttackPest);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+  }
 };
 
 class BirdFlyAway : public Behaviour {
@@ -197,6 +245,13 @@ class BirdFlyAway : public Behaviour {
       return NoMove;
   }
 
+  SERIALIZATION_CONSTRUCTOR(BirdFlyAway);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(maxDist);
+  }
+
   private:
   double maxDist;
 };
@@ -211,17 +266,22 @@ class GoldLust : public Behaviour {
     else
       return 0;
   }
+
+  SERIALIZATION_CONSTRUCTOR(GoldLust);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+  }
 };
 
 class Fighter : public Behaviour, public EventListener {
   public:
   Fighter(Creature* c, double powerR, bool _chase) : Behaviour(c), maxPowerRatio(powerR), chase(_chase) {
-    EventListener::addListener(this);
     courage = c->getCourage();
   }
 
-  virtual ~Fighter() override {
-    EventListener::removeListener(this);
+  virtual ~Fighter() {
   }
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override {
@@ -454,6 +514,14 @@ class Fighter : public Behaviour, public EventListener {
     return NoMove;
   }
 
+  SERIALIZATION_CONSTRUCTOR(Fighter);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(maxPowerRatio) & BOOST_SERIALIZATION_NVP(courage) 
+      & BOOST_SERIALIZATION_NVP(chase) & BOOST_SERIALIZATION_NVP(lastSeen);
+  }
+
   private:
   double maxPowerRatio;
   double courage;
@@ -462,6 +530,11 @@ class Fighter : public Behaviour, public EventListener {
     Vec2 pos;
     double time;
     const Level* level;
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & BOOST_SERIALIZATION_NVP(pos) & BOOST_SERIALIZATION_NVP(time) & BOOST_SERIALIZATION_NVP(level);
+    }
   };
   Optional<LastSeen> lastSeen;
 };
@@ -469,6 +542,13 @@ class Fighter : public Behaviour, public EventListener {
 class GuardTarget : public Behaviour {
   public:
   GuardTarget(Creature* c, double minD, double maxD) : Behaviour(c), minDist(minD), maxDist(maxD) {}
+
+  SERIALIZATION_CONSTRUCTOR(GuardTarget);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(minDist) & BOOST_SERIALIZATION_NVP(maxDist);
+  }
 
   protected:
   MoveInfo getMoveTowards(Vec2 target) {
@@ -514,6 +594,13 @@ class GuardArea : public Behaviour {
     return NoMove;
   }
 
+  SERIALIZATION_CONSTRUCTOR(GuardArea);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(location) & BOOST_SERIALIZATION_NVP(area);
+  }
+
   private:
   const Location* location;
   Rectangle area;
@@ -525,6 +612,13 @@ class GuardSquare : public GuardTarget {
 
   virtual MoveInfo getMove() override {
     return getMoveTowards(pos);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(GuardSquare);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(GuardTarget) & BOOST_SERIALIZATION_NVP(pos);
   }
 
   private:
@@ -540,17 +634,22 @@ class Wait : public Behaviour {
       creature->wait();
     }};
   }
+
+  SERIALIZATION_CONSTRUCTOR(Wait);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+  }
 };
 
 class GuardCreature : public GuardTarget, public EventListener {
   public:
   GuardCreature(Creature* c, Creature* _target, double minDist, double maxDist) 
       : GuardTarget(c, minDist, maxDist), target(_target) {
-    EventListener::addListener(this);
   }
 
-  ~GuardCreature() {
-    EventListener::removeListener(this);
+  virtual ~GuardCreature() {
   }
 
   virtual void onChangeLevelEvent(const Creature* c, const Level* from,
@@ -572,6 +671,14 @@ class GuardCreature : public GuardTarget, public EventListener {
       }};
     else
       return getMoveTowards(stairs);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(GuardCreature);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(GuardTarget) & SUBCLASS(EventListener) & BOOST_SERIALIZATION_NVP(target) 
+      & BOOST_SERIALIZATION_NVP(levelChanges);
   }
 
   private:
@@ -617,6 +724,13 @@ class Thief : public Behaviour {
     return {0, nullptr};
   }
 
+  SERIALIZATION_CONSTRUCTOR(Thief);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(robbed);
+  }
+
   private:
   vector<const Creature*> robbed;
 };
@@ -629,6 +743,13 @@ class ByCollective : public Behaviour {
     return collective->getMove(creature);
   }
 
+  SERIALIZATION_CONSTRUCTOR(ByCollective);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(collective);
+  }
+
   private:
   Collective* collective;
 };
@@ -639,6 +760,13 @@ class ChooseRandom : public Behaviour {
 
   virtual MoveInfo getMove() override {
     return chooseRandom(behaviours, weights)->getMove();
+  }
+
+  SERIALIZATION_CONSTRUCTOR(ChooseRandom);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(behaviours) & BOOST_SERIALIZATION_NVP(weights);
   }
 
   private:
@@ -658,6 +786,13 @@ class GoToHeart : public Behaviour {
     else
       return NoMove;
   };
+
+  SERIALIZATION_CONSTRUCTOR(GoToHeart);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(heartPos);
+  }
 
   private:
   Vec2 heartPos;
@@ -680,10 +815,40 @@ class ByVillageControl : public Behaviour {
       return NoMove;
   }
 
+  SERIALIZATION_CONSTRUCTOR(ByVillageControl);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(villageControl) & BOOST_SERIALIZATION_NVP(guardArea);
+  }
+
   private:
   VillageControl* villageControl;
   PBehaviour guardArea;
 };
+
+template <class Archive>
+void MonsterAI::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, Heal);
+  REGISTER_TYPE(ar, Rest);
+  REGISTER_TYPE(ar, MoveRandomly);
+  REGISTER_TYPE(ar, AttackPest);
+  REGISTER_TYPE(ar, BirdFlyAway);
+  REGISTER_TYPE(ar, GoldLust);
+  REGISTER_TYPE(ar, Fighter);
+  REGISTER_TYPE(ar, GuardTarget);
+  REGISTER_TYPE(ar, GuardArea);
+  REGISTER_TYPE(ar, GuardSquare);
+  REGISTER_TYPE(ar, GuardCreature);
+  REGISTER_TYPE(ar, Wait);
+  REGISTER_TYPE(ar, Thief);
+  REGISTER_TYPE(ar, ByCollective);
+  REGISTER_TYPE(ar, ChooseRandom);
+  REGISTER_TYPE(ar, GoToHeart);
+  REGISTER_TYPE(ar, ByVillageControl);
+}
+
+REGISTER_TYPES(MonsterAI);
 
 MonsterAI::MonsterAI(Creature* c, const vector<Behaviour*>& beh, const vector<int>& w, bool pick) :
     weights(w), creature(c), pickItems(pick) {
@@ -702,7 +867,7 @@ void MonsterAI::makeMove() {
       map<string, vector<Item*>> stacks = Item::stackItems(creature->getPickUpOptions());
       for (auto elem : stacks) {
         Item* item = elem.second[0];
-        if (!item->isUnpaid() && creature->canPickUp(elem.second)) {
+        if (!item->getShopkeeper() && creature->canPickUp(elem.second)) {
           MoveInfo pickupMove { behaviours[i]->itemValue(item) * weights[i], [=]() {
             creature->globalMessage(creature->getTheName() + " picks up " + elem.first, "");
             creature->pickUp(elem.second);

@@ -1,6 +1,8 @@
 #ifndef _ENUMS_H
 #define _ENUMS_H
 
+#include "serialization.h"
+
 #define ENUM_HASH(name) \
 namespace std { \
   template <> struct hash<name> { \
@@ -599,14 +601,6 @@ enum class SpellId {
   TELEPORT,
   INVISIBILITY,
   WORD_OF_POWER,
-};
-
-struct SpellInfo {
-  SpellId id;
-  string name;
-  EffectType type;
-  double ready;
-  int difficulty;
 };
 
 enum class TechId {

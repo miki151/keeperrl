@@ -42,8 +42,8 @@ class Item : private ItemAttributes {
   ItemType getType() const;
   
   int getPrice() const;
-  void setUnpaid(bool);
-  bool isUnpaid() const;
+  void setShopkeeper(const Creature* shopkeeper);
+  const Creature* getShopkeeper() const;
 
   Optional<TrapType> getTrapType() const;
 
@@ -91,9 +91,14 @@ class Item : private ItemAttributes {
     bool canBeRevived;
     bool hasHead;
     bool isSkeleton;
+
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version);
   };
 
   virtual Optional<CorpseInfo> getCorpseInfo() const { return Nothing(); }
+
+  SERIALIZATION_DECL(Item);
 
   protected:
   virtual void specialTick(double time, Level*, Vec2 position) {}
@@ -108,7 +113,7 @@ class Item : private ItemAttributes {
   string getVisibleName(bool plural) const;
   string getRealName(bool plural) const;
   string getBlindName(bool plural) const;
-  bool unpaid = false;
+  const Creature* shopkeeper = nullptr;
   Fire fire;
   int uniqueId;
 };

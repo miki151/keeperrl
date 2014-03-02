@@ -11,16 +11,35 @@ class Skill {
 
   virtual void onTeach(Creature* c) {}
 
-  static Skill* const ambush;
-  static Skill* const twoHandedWeapon;
-  static Skill* const knifeThrowing;
-  static Skill* const stealing;
-  static Skill* const mushrooms;
-  static Skill* const potions;
-  static Skill* const amulets;
-  static Skill* const swimming;
-  static Skill* const archery;
-  static Skill* const construction;
+  static Skill* ambush;
+  static Skill* twoHandedWeapon;
+  static Skill* knifeThrowing;
+  static Skill* stealing;
+  static Skill* mushrooms;
+  static Skill* potions;
+  static Skill* amulets;
+  static Skill* swimming;
+  static Skill* archery;
+  static Skill* construction;
+
+  SERIALIZATION_DECL(Skill);
+  
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
+  template <class Archive>
+  static void serializeAll(Archive& ar) {
+    ar& BOOST_SERIALIZATION_NVP(ambush)
+      & BOOST_SERIALIZATION_NVP(twoHandedWeapon)
+      & BOOST_SERIALIZATION_NVP(knifeThrowing)
+      & BOOST_SERIALIZATION_NVP(stealing)
+      & BOOST_SERIALIZATION_NVP(mushrooms)
+      & BOOST_SERIALIZATION_NVP(potions)
+      & BOOST_SERIALIZATION_NVP(amulets)
+      & BOOST_SERIALIZATION_NVP(swimming)
+      & BOOST_SERIALIZATION_NVP(archery)
+      & BOOST_SERIALIZATION_NVP(construction);
+  }
 
   protected:
   Skill(string name, string helpText);

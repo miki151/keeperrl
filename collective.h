@@ -7,6 +7,7 @@
 #include "creature_view.h"
 #include "markov_chain.h"
 #include "minion_equipment.h"
+#include "task.h"
 
 enum class MinionType {
   IMP,
@@ -25,6 +26,7 @@ class Collective : public CreatureView, public EventListener {
   public:
   Collective(Model*);
   virtual const MapMemory& getMemory(const Level* l) const override;
+  MapMemory& getMemory(const Level* l);
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
   virtual void refreshGameInfo(View::GameInfo&) const  override;
   virtual Vec2 getPosition() const  override;
@@ -58,7 +60,7 @@ class Collective : public CreatureView, public EventListener {
   void onPickedUp(Vec2 pos, vector<Item*> items);
   void onCantPickItem(vector<Item*> items);
 
-  Vec2 getHeartPos() const;
+  const Creature* getKeeper() const;
   Vec2 getDungeonCenter() const;
   double getDangerLevel() const;
   void learnLocation(const Location* loc);
@@ -108,6 +110,8 @@ class Collective : public CreatureView, public EventListener {
   const static int numWarnings = 13;
   bool warning[numWarnings] = {0};
 
+  protected:
+  SERIALIZATION_DECL(Collective);
 
   private:
   void handleSelection(Vec2 pos, bool rectangle);
@@ -144,10 +148,7 @@ class Collective : public CreatureView, public EventListener {
     }
 
   };
-  static vector<Collective::BuildInfo> initialBuildInfo;
-  static vector<Collective::BuildInfo> normalBuildInfo;
-
-  vector<Collective::BuildInfo>& getBuildInfo() const;
+  const static vector<Collective::BuildInfo> buildInfo;
 
   const static map<ResourceId, ResourceInfo> resourceInfo;
 
@@ -173,10 +174,11 @@ class Collective : public CreatureView, public EventListener {
   MoveInfo getMinionMove(Creature* c);
 
   bool isDownstairsVisible() const;
-  bool isThroneBuilt() const;
   struct CostInfo {
     ResourceId id;
     int value;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
   };
   void markSquare(Vec2 pos, SquareType type, CostInfo);
   void unmarkSquare(Vec2 pos);
@@ -224,6 +226,8 @@ class Collective : public CreatureView, public EventListener {
     TrapType type;
     bool armed;
     bool marked;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
   };
   map<Vec2, TrapInfo> traps;
   map<TrapType, vector<Vec2>> trapMap;
@@ -231,6 +235,8 @@ class Collective : public CreatureView, public EventListener {
     CostInfo cost;
     bool built;
     bool marked;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
   };
   map<Vec2, DoorInfo> doors;
   map<Creature*, MarkovChain<MinionTask>> minionTasks;
@@ -238,9 +244,9 @@ class Collective : public CreatureView, public EventListener {
   set<pair<Creature*, Task*>> locked;
   map<SquareType, set<Vec2>> mySquares;
   set<Vec2> myTiles;
-  Level* level;
-  Creature* heart = nullptr;
-  mutable map<const Level*, MapMemory> memory;
+  Level* level = nullptr;
+  Creature* keeper = nullptr;
+  mutable map<const Level*, MapMemory>* memory;
   int currentButton = 0;
   bool gatheringTeam = false;
   vector<Creature*> team;
@@ -250,6 +256,8 @@ class Collective : public CreatureView, public EventListener {
   MinionEquipment minionEquipment;
   struct GuardPostInfo {
     const Creature* attender;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
   };
   map<Vec2, GuardPostInfo> guardPosts;
   double mana;
@@ -257,7 +265,6 @@ class Collective : public CreatureView, public EventListener {
   Model* model;
   vector<const Creature*> kills;
   bool showWelcomeMsg = true;
-  bool showDigMsg = true;
   Optional<Vec2> rectSelectCorner;
   Optional<Vec2> rectSelectCorner2;
   unordered_map<const Creature*, double> lastCombat;

@@ -24,9 +24,18 @@
 #include <stack>
 #include <typeinfo>
 #include <tuple>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/deque.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/string.hpp>
 
 #ifndef RELEASE
-#define DEBUG_STL
+//#define DEBUG_STL
 #endif
 
 #ifdef DEBUG_STL
@@ -57,6 +66,7 @@ using std::string;
 
 #endif
 
+
 using std::queue;
 using std::unique_ptr;
 using std::default_random_engine;
@@ -82,4 +92,5 @@ using std::get;
 using std::hash;
 using std::thread;
 
+#include "serialization.h"
 #endif

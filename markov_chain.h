@@ -12,6 +12,8 @@ class MarkovChain {
   void update();
   bool updateToNext();
 
+  SERIALIZATION_DECL(MarkovChain);
+
   private:
   T state;
   map<T, vector<pair<T, double>>> transitions;

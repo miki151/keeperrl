@@ -9,12 +9,11 @@ class ViewObject {
   public:
   ViewObject(ViewId id, ViewLayer l, const string& description, bool castsShadow = false);
 
-  ViewObject() { Debug(FATAL) << "Don't call this constructor"; }
-
   void setBleeding(double);
   double getBleeding() const;
 
-  void setHostile(bool);
+  enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
+  void setEnemyStatus(EnemyStatus);
   bool isHostile() const;
   bool isFriendly() const;
 
@@ -67,10 +66,11 @@ class ViewObject {
   const static ViewObject& empty();
   const static ViewObject& mana();
 
+  SERIALIZATION_DECL(ViewObject);
+
   private:
   double bleeding = 0;
-  Optional<bool> hostile;
-  bool friendly = false;
+  EnemyStatus enemyStatus = UNKNOWN;
   bool blind = false;
   bool invisible = false;
   bool illusion = false;
@@ -84,8 +84,8 @@ class ViewObject {
   double height = 0;
   double sizeIncrease = 0;
   bool shadow;
-  Optional<int> attack;
-  Optional<int> defense;
+  int attack = -1;
+  int defense = -1;
   double waterDepth = -1;
 };
 

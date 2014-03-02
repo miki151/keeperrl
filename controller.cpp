@@ -4,6 +4,19 @@
 #include "map_memory.h"
 #include "creature.h"
 
+template <class Archive> 
+void DoNothingController::serialize(Archive& ar, const unsigned int version) {
+  ar & BOOST_SERIALIZATION_NVP(creature);
+}
+
+SERIALIZABLE(DoNothingController);
+
+template <class Archive> 
+void Controller::serialize(Archive& ar, const unsigned int version) {
+}
+
+SERIALIZABLE(Controller);
+
 ControllerFactory::ControllerFactory(function<Controller* (Creature*)> f) : fun(f) {}
 
 PController ControllerFactory::get(Creature* c) {

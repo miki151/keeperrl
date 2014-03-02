@@ -11,6 +11,9 @@ class PoisonGas {
   void tick(Level*, Vec2 pos);
   double getAmount() const;
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
+
   private:
   double amount = 0;
 };

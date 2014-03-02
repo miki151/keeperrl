@@ -10,9 +10,9 @@
 
 class Tribe : public EventListener {
   public:
-  virtual double getStanding(const Creature*) const;
-
   Tribe(const string& name, bool diplomatic);
+
+  virtual double getStanding(const Creature*) const;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
   virtual void onAttackEvent(const Creature* victim, const Creature* attacker) override;
@@ -20,9 +20,10 @@ class Tribe : public EventListener {
   void onItemsStolen(const Creature* thief);
   void makeSlightEnemy(const Creature*);
   void addMember(const Creature*);
+  void removeMember(const Creature*);
   void addImportantMember(const Creature*);
-  vector<const Creature*> getImportantMembers();
-  vector<const Creature*> getMembers();
+  vector<const Creature*> getImportantMembers(bool includeDead = false);
+  vector<const Creature*> getMembers(bool includeDead = false);
   const string& getName();
   void addEnemy(Tribe*);
 
@@ -36,12 +37,33 @@ class Tribe : public EventListener {
   static Tribe* dwarven;
   static Tribe* goblin;
   static Tribe* player;
-  static Tribe* vulture;
   static Tribe* dragon;
   static Tribe* castleCellar;
   static Tribe* bandit;
   static Tribe* killEveryone;
   static Tribe* peaceful;
+
+  template <class Archive>
+  static void serializeAll(Archive& ar) {
+    ar& BOOST_SERIALIZATION_NVP(monster)
+      & BOOST_SERIALIZATION_NVP(pest)
+      & BOOST_SERIALIZATION_NVP(wildlife)
+      & BOOST_SERIALIZATION_NVP(human)
+      & BOOST_SERIALIZATION_NVP(elven)
+      & BOOST_SERIALIZATION_NVP(dwarven)
+      & BOOST_SERIALIZATION_NVP(goblin)
+      & BOOST_SERIALIZATION_NVP(player)
+      & BOOST_SERIALIZATION_NVP(dragon)
+      & BOOST_SERIALIZATION_NVP(castleCellar)
+      & BOOST_SERIALIZATION_NVP(bandit)
+      & BOOST_SERIALIZATION_NVP(killEveryone)
+      & BOOST_SERIALIZATION_NVP(peaceful);
+  }
+
+  SERIALIZATION_DECL(Tribe);
+
+  template <class Archive>
+  static void registerTypes(Archive& ar);
 
   private:
 

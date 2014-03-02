@@ -8,6 +8,16 @@
 #include "enemy_check.h"
 
 
+template <class Archive> 
+void ItemFactory::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(items)
+    & BOOST_SERIALIZATION_NVP(weights)
+    & BOOST_SERIALIZATION_NVP(minCount)
+    & BOOST_SERIALIZATION_NVP(maxCount)
+    & BOOST_SERIALIZATION_NVP(unique);
+}
+
+SERIALIZABLE(ItemFactory);
 
 class FireScroll : public Item {
   public:
@@ -25,6 +35,13 @@ class FireScroll : public Item {
       set = false;
     }
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Item) & BOOST_SERIALIZATION_NVP(set);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(FireScroll);
 
   private:
   bool set = false;
@@ -62,7 +79,14 @@ class AmuletOfWarning : public Item {
         owner->privateMessage(getTheName() + " vibrates");
     }
   }
-  
+ 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Item) & BOOST_SERIALIZATION_NVP(radius);
+  }
+ 
+  SERIALIZATION_CONSTRUCTOR(AmuletOfWarning);
+
   private:
   int radius;
 };
@@ -83,7 +107,14 @@ class AmuletOfHealing : public Item {
     } else 
       lastTick = -1;
   }
-  
+ 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Item) & BOOST_SERIALIZATION_NVP(lastTick);
+  }
+ 
+  SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
+
   private:
   double lastTick = -1;
 };
@@ -100,25 +131,51 @@ class AmuletOfEnemyCheck : public Item {
     c->removeEnemyCheck(check);
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Item) & BOOST_SERIALIZATION_NVP(check);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(AmuletOfEnemyCheck);
+
   private:
   EnemyCheck* check;
 };
 
+class Telepathy : public Creature::Vision {
+  public:
+  virtual bool canSee(const Creature* c1, const Creature* c2) override {
+    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->hasBrain();
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Creature::Vision);
+  }
+};
+
 class ItemOfCreatureVision : public Item {
   public:
-  ItemOfCreatureVision(const ViewObject& obj, const ItemAttributes& attr, Creature::CreatureVision v)
+  ItemOfCreatureVision(const ViewObject& obj, const ItemAttributes& attr, Creature::Vision* v)
       : Item(obj, attr), vision(v) {}
 
   virtual void onEquipSpecial(Creature* c) {
-    c->addCreatureVision(&vision);
+    c->addVision(vision.get());
   }
 
   virtual void onUnequipSpecial(Creature* c) {
-    c->removeCreatureVision(&vision);
+    c->removeVision(vision.get());
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Item) & BOOST_SERIALIZATION_NVP(vision);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(ItemOfCreatureVision);
+
   private:
-  Creature::CreatureVision vision;
+  unique_ptr<Creature::Vision> vision;
 };
 
 class Corpse : public Item {
@@ -169,6 +226,19 @@ class Corpse : public Item {
     return corpseInfo;
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Item) 
+      & BOOST_SERIALIZATION_NVP(object2) 
+      & BOOST_SERIALIZATION_NVP(rotten)
+      & BOOST_SERIALIZATION_NVP(rottenTime)
+      & BOOST_SERIALIZATION_NVP(rottingTime)
+      & BOOST_SERIALIZATION_NVP(rottenName)
+      & BOOST_SERIALIZATION_NVP(corpseInfo);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Corpse);
+
   private:
   ViewObject object2;
   bool rotten = false;
@@ -215,6 +285,13 @@ class Potion : public Item {
     heat = max(0., heat - 0.005);
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Item) & BOOST_SERIALIZATION_NVP(heat);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Potion);
+
   private:
   double heat = 0;
 };
@@ -226,6 +303,13 @@ class SkillBook : public Item {
   virtual void apply(Creature* c, Level* l) override {
     c->addSkill(skill);
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Item) & BOOST_SERIALIZATION_NVP(skill);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(SkillBook);
 
   private:
   Skill* skill;
@@ -243,10 +327,33 @@ class TrapItem : public Item {
     discarded = true;
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Item) & BOOST_SERIALIZATION_NVP(effect) & BOOST_SERIALIZATION_NVP(trapObject);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(TrapItem);
+
   private:
   EffectType effect;
   ViewObject trapObject;
 };
+
+template <class Archive>
+void ItemFactory::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, TrapItem);
+  REGISTER_TYPE(ar, SkillBook);
+  REGISTER_TYPE(ar, Potion);
+  REGISTER_TYPE(ar, FireScroll);
+  REGISTER_TYPE(ar, AmuletOfWarning);
+  REGISTER_TYPE(ar, AmuletOfHealing);
+  REGISTER_TYPE(ar, AmuletOfEnemyCheck);
+  REGISTER_TYPE(ar, Telepathy);
+  REGISTER_TYPE(ar, ItemOfCreatureVision);
+  REGISTER_TYPE(ar, Corpse);
+}
+
+REGISTER_TYPES(ItemFactory);
 
 static vector<string> amulet_looks = { "steel", "copper", "crystal", "wooden", "amber"};
 static vector<ViewId> amulet_ids = { ViewId::STEEL_AMULET, ViewId::COPPER_AMULET, ViewId::CRYSTAL_AMULET, ViewId::WOODEN_AMULET, ViewId::AMBER_AMULET};
@@ -694,9 +801,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.armorType = ArmorType::HELMET;
             i.price = 340;
             i.defense= 1 + maybePlusMinusOne(4);),
-                [](const Creature* c1, const Creature* c2) {
-                  return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->hasBrain();
-                }));
+                new Telepathy() ));
     case ItemId::LEATHER_BOOTS: return PItem(new Item(
         ViewObject(ViewId::LEATHER_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
             i.name = "leather boots";

@@ -30,6 +30,14 @@ class Staircase : public Square {
     auto link = getLandingLink();
     getLevel()->changeLevel(link->first, link->second, c);
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Square);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Staircase);
+
 };
 
 class SecretPassage : public Square {
@@ -41,7 +49,6 @@ class SecretPassage : public Square {
     uncovered = true;
     setName("floor");
     setViewObject(secondary);
-    face.clear();
     setCanSeeThru(true);
     getLevel()->updateVisibility(pos);
   }
@@ -72,6 +79,15 @@ class SecretPassage : public Square {
     }
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Square)
+      & BOOST_SERIALIZATION_NVP(secondary)
+      & BOOST_SERIALIZATION_NVP(uncovered);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(SecretPassage);
+
   private:
   ViewObject secondary;
   bool uncovered;
@@ -100,6 +116,15 @@ class Magma : public Square {
   virtual bool itemBounces(Item*) const override {
     return false;
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Square)
+      & BOOST_SERIALIZATION_NVP(itemMessage)
+      & BOOST_SERIALIZATION_NVP(noSeeMsg);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Magma);
 
   private:
   string itemMessage;
@@ -144,6 +169,16 @@ class Water : public Square {
     return false;
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Square)
+      & BOOST_SERIALIZATION_NVP(itemMessage)
+      & BOOST_SERIALIZATION_NVP(noSeeMsg) 
+      & BOOST_SERIALIZATION_NVP(depth);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Water);
+  
   private:
   string itemMessage;
   string noSeeMsg;
@@ -208,6 +243,23 @@ class Chest : public Square {
       }
     }
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Square)
+      & BOOST_SERIALIZATION_NVP(creatureId)
+      & BOOST_SERIALIZATION_NVP(minCreatures)
+      & BOOST_SERIALIZATION_NVP(maxCreatures) 
+      & BOOST_SERIALIZATION_NVP(msgItem)
+      & BOOST_SERIALIZATION_NVP(msgMonster)
+      & BOOST_SERIALIZATION_NVP(msgGold)
+      & BOOST_SERIALIZATION_NVP(opened)
+      & BOOST_SERIALIZATION_NVP(itemFactory)
+      & BOOST_SERIALIZATION_NVP(openedObject);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Chest);
+
   private:
   CreatureId creatureId;
   int minCreatures, maxCreatures;
@@ -238,6 +290,14 @@ class Fountain : public Square {
     PItem potion = getOnlyElement(ItemFactory::potions().random(seed));
     potion->apply(c, getLevel());
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Square)
+      & BOOST_SERIALIZATION_NVP(seed);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Fountain);
 
   private:
   int seed = Random.getRandom(123456);
@@ -281,6 +341,16 @@ class Tree : public Square {
         destroyed ? "There is fallen tree here." : "You pass beneath a tree");*/
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Square)
+      & BOOST_SERIALIZATION_NVP(destroyed)
+      & BOOST_SERIALIZATION_NVP(numWood)
+      & BOOST_SERIALIZATION_NVP(bounces);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Tree);
+
   private:
   bool destroyed = false;
   int numWood;
@@ -300,10 +370,18 @@ class TrapSquare : public Square {
     }
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Square)
+      & BOOST_SERIALIZATION_NVP(active)
+      & BOOST_SERIALIZATION_NVP(effect);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(TrapSquare);
+
   private:
   bool active = true;
   EffectType effect;
-  Tribe* tribe;
 };
 
 class Door : public Square {
@@ -317,6 +395,13 @@ class Door : public Square {
   virtual void onEnterSpecial(Creature* c) override {
     c->privateMessage("You open the door.");
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Square);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Door);
 };
 
 class TribeDoor : public Door {
@@ -335,6 +420,14 @@ class TribeDoor : public Door {
     return (c->canWalk() && c->getTribe() == Tribe::player);
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Door)
+      & BOOST_SERIALIZATION_NVP(destructionStrength);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(TribeDoor);
+
   private:
   int destructionStrength;
 };
@@ -351,6 +444,13 @@ class Furniture : public Square {
   virtual void onEnterSpecial(Creature* c) override {
    // c->privateMessage("There is a " + getName() + " here.");
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Square);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Furniture);
 };
 
 class Bed : public Furniture {
@@ -370,6 +470,13 @@ class Bed : public Furniture {
     if (getCreature() && getCreature()->isSleeping())
       getCreature()->heal(0.005);
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Furniture);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Bed);
 };
 
 class Grave : public Bed {
@@ -384,10 +491,16 @@ class Grave : public Bed {
   }
 
   virtual void onApply(Creature* c) override {
-    if (c->getName() != "vampire")
-      return;
+    CHECK(c->isUndead());
     Bed::onApply(c);
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Bed);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Grave);
 };
 
 class Altar : public Square {
@@ -420,6 +533,14 @@ class Altar : public Square {
     deity->onPrayer(c);
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Square)
+      & BOOST_SERIALIZATION_NVP(deity);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Altar);
+
   private:
   Deity* deity;
 };
@@ -433,6 +554,14 @@ class ConstructionDropItems : public SolidSquare {
   virtual void onConstructNewSquare(Square* s) override {
     s->dropItems(std::move(items));
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(SolidSquare)
+      & BOOST_SERIALIZATION_NVP(items);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(ConstructionDropItems);
 
   private:
   vector<PItem> items;
@@ -451,22 +580,26 @@ class TrainingDummy : public Furniture {
       c->increaseExpLevel(1);
     }
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Furniture);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(TrainingDummy);
 };
 
 class Library : public TrainingDummy {
   public:
-  Library(const ViewObject& object, const string& name) : TrainingDummy(object, name) {
-    spell = chooseRandom({SpellId::HEALING, SpellId::TELEPORT, SpellId::INVISIBILITY, SpellId::WORD_OF_POWER});
-  }
+  using TrainingDummy::TrainingDummy;
 
   virtual void onApply(Creature* c) override {
- /*   if (Random.roll(50)) {
-      c->addSpell(spell);
-    }*/
   }
 
-  private:
-  SpellId spell;
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(TrainingDummy);
+  }
 };
 
 class Workshop : public Furniture {
@@ -478,6 +611,11 @@ class Workshop : public Furniture {
   }
 
   virtual void onApply(Creature* c) override {
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Furniture);
   }
 };
 
@@ -500,6 +638,12 @@ class Hatchery : public Square {
     return c->canWalk() || c->getName() == "chicken" || c->getName() == "pig";
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Square);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Hatchery);
 };
 
 class Throne : public Furniture {
@@ -513,6 +657,13 @@ class Throne : public Furniture {
   virtual void onApply(Creature* c) override {
     c->privateMessage("You sit on the throne.");
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Furniture);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Throne);
 };
 
 class Laboratory : public Workshop {
@@ -522,11 +673,43 @@ class Laboratory : public Workshop {
   virtual void onApply(Creature* c) override {
     c->privateMessage("You mix the concoction.");
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Workshop);
+  }
 };
 
 Square* SquareFactory::getAltar(Deity* deity) {
   return new Altar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity);
 }
+
+template <class Archive>
+void SquareFactory::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, Laboratory);
+  REGISTER_TYPE(ar, Throne);
+  REGISTER_TYPE(ar, Staircase);
+  REGISTER_TYPE(ar, SecretPassage);
+  REGISTER_TYPE(ar, Magma);
+  REGISTER_TYPE(ar, Water);
+  REGISTER_TYPE(ar, Chest);
+  REGISTER_TYPE(ar, Fountain);
+  REGISTER_TYPE(ar, Tree);
+  REGISTER_TYPE(ar, TrapSquare);
+  REGISTER_TYPE(ar, Door);
+  REGISTER_TYPE(ar, TribeDoor);
+  REGISTER_TYPE(ar, Furniture);
+  REGISTER_TYPE(ar, Bed);
+  REGISTER_TYPE(ar, Grave);
+  REGISTER_TYPE(ar, Altar);
+  REGISTER_TYPE(ar, ConstructionDropItems);
+  REGISTER_TYPE(ar, TrainingDummy);
+  REGISTER_TYPE(ar, Library);
+  REGISTER_TYPE(ar, Workshop);
+  REGISTER_TYPE(ar, Hatchery);
+}
+
+REGISTER_TYPES(SquareFactory);
 
 Square* SquareFactory::get(SquareType s) {
   switch (s) {

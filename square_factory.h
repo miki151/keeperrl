@@ -21,6 +21,9 @@ class SquareFactory {
   static Square* getAltar(Deity*);
   static Square* getWater(double depth);
 
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
   private:
 };
 

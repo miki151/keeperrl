@@ -3,6 +3,15 @@
 #include "trigger.h"
 #include "level.h"
 
+template <class Archive> 
+void Trigger::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(viewObject)
+    & BOOST_SERIALIZATION_NVP(level)
+    & BOOST_SERIALIZATION_NVP(position);
+}
+
+SERIALIZABLE(Trigger);
+
 Trigger::Trigger(Level* l, Vec2 p) : level(l), position(p) {
 }
 
@@ -68,6 +77,17 @@ class Portal : public Trigger {
     }
   }
 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Trigger)
+      & BOOST_SERIALIZATION_NVP(startTime)
+      & BOOST_SERIALIZATION_NVP(active)
+      & BOOST_SERIALIZATION_NVP(other)
+      & BOOST_SERIALIZATION_NVP(previous);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Portal);
+
   private:
   double startTime = 1000000;
   bool active = true;
@@ -96,11 +116,28 @@ class Trap : public Trigger {
     }
   }
 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Trigger) 
+      & BOOST_SERIALIZATION_NVP(effect)
+      & BOOST_SERIALIZATION_NVP(tribe);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Trap);
+
   private:
   EffectType effect;
   Tribe* tribe;
 };
-  
+
+template <class Archive>
+void Trigger::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, Trap);
+  REGISTER_TYPE(ar, Portal);
+}
+
+REGISTER_TYPES(Trigger);
+
 PTrigger Trigger::getTrap(const ViewObject& obj, Level* l, Vec2 position, EffectType effect, Tribe* tribe) {
   return PTrigger(new Trap(obj, l, position, std::move(effect), tribe));
 }

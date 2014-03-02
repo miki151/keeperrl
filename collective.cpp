@@ -9,8 +9,82 @@
 #include "statistics.h"
 #include "options.h"
 
+template <class Archive> 
+void Collective::serialize(Archive& ar, const unsigned int version) {
+  ar& SUBCLASS(CreatureView)
+    & SUBCLASS(EventListener)
+    & BOOST_SERIALIZATION_NVP(credit)
+    & BOOST_SERIALIZATION_NVP(techLevels)
+    & BOOST_SERIALIZATION_NVP(creatures)
+    & BOOST_SERIALIZATION_NVP(minions)
+    & BOOST_SERIALIZATION_NVP(imps)
+    & BOOST_SERIALIZATION_NVP(minionByType)
+    & BOOST_SERIALIZATION_NVP(tasks)
+    & BOOST_SERIALIZATION_NVP(markedItems)
+    & BOOST_SERIALIZATION_NVP(marked)
+    & BOOST_SERIALIZATION_NVP(taken)
+    & BOOST_SERIALIZATION_NVP(taskMap)
+    & BOOST_SERIALIZATION_NVP(delayed)
+    & BOOST_SERIALIZATION_NVP(completionCost)
+    & BOOST_SERIALIZATION_NVP(traps)
+    & BOOST_SERIALIZATION_NVP(trapMap)
+    & BOOST_SERIALIZATION_NVP(doors)
+    & BOOST_SERIALIZATION_NVP(minionTasks)
+    & BOOST_SERIALIZATION_NVP(minionTaskStrings)
+    & BOOST_SERIALIZATION_NVP(locked)
+    & BOOST_SERIALIZATION_NVP(mySquares)
+    & BOOST_SERIALIZATION_NVP(myTiles)
+    & BOOST_SERIALIZATION_NVP(level)
+    & BOOST_SERIALIZATION_NVP(keeper)
+    & BOOST_SERIALIZATION_NVP(memory)
+    & BOOST_SERIALIZATION_NVP(team)
+    & BOOST_SERIALIZATION_NVP(teamLevelChanges)
+    & BOOST_SERIALIZATION_NVP(levelChangeHistory)
+    & BOOST_SERIALIZATION_NVP(possessed)
+    & BOOST_SERIALIZATION_NVP(minionEquipment)
+    & BOOST_SERIALIZATION_NVP(guardPosts)
+    & BOOST_SERIALIZATION_NVP(mana)
+    & BOOST_SERIALIZATION_NVP(points)
+    & BOOST_SERIALIZATION_NVP(model)
+    & BOOST_SERIALIZATION_NVP(kills)
+    & BOOST_SERIALIZATION_NVP(showWelcomeMsg);
+}
 
-vector<Collective::BuildInfo> Collective::normalBuildInfo {
+SERIALIZABLE(Collective);
+
+template <class Archive>
+void Collective::TrapInfo::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(type)
+    & BOOST_SERIALIZATION_NVP(armed)
+    & BOOST_SERIALIZATION_NVP(marked);
+}
+
+SERIALIZABLE(Collective::TrapInfo);
+
+template <class Archive>
+void Collective::DoorInfo::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(cost)
+    & BOOST_SERIALIZATION_NVP(built)
+    & BOOST_SERIALIZATION_NVP(marked);
+}
+
+SERIALIZABLE(Collective::DoorInfo);
+
+template <class Archive>
+void Collective::GuardPostInfo::serialize(Archive& ar, const unsigned int version) {
+  ar & BOOST_SERIALIZATION_NVP(attender);
+}
+
+SERIALIZABLE(Collective::GuardPostInfo);
+
+template <class Archive>
+void Collective::CostInfo::serialize(Archive& ar, const unsigned int version) {
+  ar & BOOST_SERIALIZATION_NVP(id) & BOOST_SERIALIZATION_NVP(value);
+}
+
+SERIALIZABLE(Collective::CostInfo);
+
+const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo(BuildInfo::DIG),
     BuildInfo({SquareType::STOCKPILE, ResourceId::GOLD, 0, "Storage"}),
     BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 5, "Treasure room"}),
@@ -37,14 +111,7 @@ vector<MinionType> minionTypes {
   MinionType::BEAST,
 };
 
-vector<Collective::BuildInfo>& Collective::getBuildInfo() const {
- /* if (!isThroneBuilt())
-    return initialBuildInfo;
-  else*/
-    return normalBuildInfo;
-};
 Collective::ResourceInfo info;
-
 
 constexpr const char* const Collective::warningText[numWarnings];
 
@@ -95,11 +162,11 @@ map<MinionTask, MinionTaskInfo> taskInfo {
 };
 
 Collective::Collective(Model* m) : mana(200), model(m) {
-  EventListener::addListener(this);
+  memory = new map<const Level*, MapMemory>;
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
   mySquares[SquareType::FLOOR].clear();
-  for (BuildInfo info : normalBuildInfo)
+  for (BuildInfo info : buildInfo)
     if (info.buildType == BuildInfo::SQUARE)
       mySquares[info.squareInfo.type].clear();
     else if (info.buildType == BuildInfo::TRAP)
@@ -123,11 +190,11 @@ const int minionLimit = 20;
 
 
 void Collective::render(View* view) {
-  if (possessed && possessed != heart && isInCombat(heart) && lastControlKeeperQuestion < heart->getTime() - 50) {
-    lastControlKeeperQuestion = heart->getTime();
+  if (possessed && possessed != keeper && isInCombat(keeper) && lastControlKeeperQuestion < keeper->getTime() - 50) {
+    lastControlKeeperQuestion = keeper->getTime();
     if (view->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
       possessed->popController();
-      possess(heart, view);
+      possess(keeper, view);
       return;
     }
   }
@@ -144,11 +211,6 @@ void Collective::render(View* view) {
       team.clear();
       gatheringTeam = false;
       teamLevelChanges.clear();
- /*     if (showDigMsg && Options::getValue(OptionId::HINTS)) {
-        view->refreshView(this);
-        showDigMsg = false;*/
-  //      view->presentText("", "Now use the mouse and start digging into the mountain. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab.");
-//      }
     }
   }
   if (!possessed) {
@@ -273,7 +335,7 @@ void Collective::handlePersonalSpells(View* view) {
       View::ListElem("The Keeper can learn spells for use in combat and other situations. ", View::TITLE),
       View::ListElem("You can cast them with 's' when you are in control of the Keeper.", View::TITLE)};
   vector<SpellId> knownSpells;
-  for (SpellInfo spell : heart->getSpells())
+  for (SpellInfo spell : keeper->getSpells())
     knownSpells.push_back(spell.id);
   for (auto elem : spellLearning) {
     SpellInfo spell = Creature::getSpell(elem.id);
@@ -468,7 +530,7 @@ void Collective::handleLibrary(View* view) {
   if (id == TechId::SPELLCASTING)
     for (auto elem : spellLearning)
       if (elem.techLevel == techLevels[id])
-        heart->addSpell(elem.id);
+        keeper->addSpell(elem.id);
   view->updateView(this);
   handleLibrary(view);
 }
@@ -485,7 +547,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.name = "KeeperRL";
   info.buttons.clear();
-  for (BuildInfo button : getBuildInfo()) {
+  for (BuildInfo button : buildInfo) {
     switch (button.buildType) {
       case BuildInfo::SQUARE: {
             BuildInfo::SquareInfo& elem = button.squareInfo;
@@ -575,7 +637,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
       info.warning = warningText[i];
       break;
     }
-  info.time = heart->getTime();
+  info.time = keeper->getTime();
   info.gatheringTeam = gatheringTeam;
   info.team.clear();
   for (Creature* c : team)
@@ -590,7 +652,11 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
 }
 
 const MapMemory& Collective::getMemory(const Level* l) const {
-  return memory[l];
+  return (*memory)[l];
+}
+
+MapMemory& Collective::getMemory(const Level* l) {
+  return (*memory)[l];
 }
 
 static ViewObject getTrapObject(TrapType type) {
@@ -617,7 +683,7 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
       index.insert(ViewObject(ViewId::PLANNED_DOOR, ViewLayer::LARGE_ITEM, "Planned door"));
   }
   if (const Location* loc = level->getLocation(pos)) {
-    if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !memory[level].hasViewIndex(pos))
+    if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !getMemory(level).hasViewIndex(pos))
       index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
   }
   return index;
@@ -628,7 +694,7 @@ bool Collective::staticPosition() const {
 }
 
 Vec2 Collective::getPosition() const {
-  return heart->getPosition();
+  return keeper->getPosition();
 }
 
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
@@ -754,7 +820,7 @@ void Collective::possess(const Creature* cr, View* view) {
   if (c->isSleeping())
     c->wakeUp();
   freeFromGuardPost(c);
-  c->pushController(new Player(c, view, model, false, &memory));
+  c->pushController(new Player(c, view, model, false, memory));
   possessed = c;
   c->getLevel()->setPlayer(c);
 }
@@ -773,7 +839,7 @@ bool Collective::canBuildDoor(Vec2 pos) const {
 
 bool Collective::canPlacePost(Vec2 pos) const {
   return !guardPosts.count(pos) && !traps.count(pos) &&
-      level->getSquare(pos)->canEnterEmpty(Creature::getDefault()) && memory[level].hasViewIndex(pos);
+      level->getSquare(pos)->canEnterEmpty(Creature::getDefault()) && getMemory(level).hasViewIndex(pos);
 }
   
 void Collective::freeFromGuardPost(const Creature* c) {
@@ -783,10 +849,10 @@ void Collective::freeFromGuardPost(const Creature* c) {
 }
 
 void Collective::processInput(View* view) {
-  if (!possessed && isInCombat(heart) && lastControlKeeperQuestion < heart->getTime() - 50) {
-    lastControlKeeperQuestion = heart->getTime();
+  if (!possessed && isInCombat(keeper) && lastControlKeeperQuestion < keeper->getTime() - 50) {
+    lastControlKeeperQuestion = keeper->getTime();
     if (view->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
-      possess(heart, view);
+      possess(keeper, view);
       return;
     }
   }
@@ -873,7 +939,7 @@ void Collective::processInput(View* view) {
 void Collective::handleSelection(Vec2 pos, bool rectangle) {
   if (!pos.inRectangle(level->getBounds()))
     return;
-  switch (getBuildInfo()[currentButton].buildType) {
+  switch (buildInfo[currentButton].buildType) {
     case BuildInfo::IMP:
         if (mana >= getImpCost() && selection == NONE && !rectangle) {
           selection = SELECT;
@@ -890,7 +956,7 @@ void Collective::handleSelection(Vec2 pos, bool rectangle) {
         }
         break;
     case BuildInfo::TRAP: {
-        TrapType trapType = getBuildInfo()[currentButton].trapInfo.type;
+        TrapType trapType = buildInfo[currentButton].trapInfo.type;
         if (getTrapItems(trapType).size() > 0 && canPlacePost(pos) && myTiles.count(pos)) {
           traps[pos] = {trapType, false, false};
           trapMap[trapType].push_back(pos);
@@ -899,7 +965,7 @@ void Collective::handleSelection(Vec2 pos, bool rectangle) {
       }
       break;
     case BuildInfo::DOOR: {
-        BuildInfo::DoorInfo info = getBuildInfo()[currentButton].doorInfo;
+        BuildInfo::DoorInfo info = buildInfo[currentButton].doorInfo;
         if (numGold(info.resourceId) >= info.cost && canBuildDoor(pos)){
           doors[pos] = {{info.resourceId, info.cost}, false, false};
           updateTraps();
@@ -941,7 +1007,7 @@ void Collective::handleSelection(Vec2 pos, bool rectangle) {
               markSquare(pos, SquareType::TREE_TRUNK, {ResourceId::GOLD, 0});
               selection = SELECT;
             } else
-              if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !memory[level].hasViewIndex(pos)) {
+              if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !getMemory(level).hasViewIndex(pos)) {
                 markSquare(pos, SquareType::FLOOR, { ResourceId::GOLD, 0});
                 selection = SELECT;
               }
@@ -952,8 +1018,8 @@ void Collective::handleSelection(Vec2 pos, bool rectangle) {
           unmarkSquare(pos);
           selection = DESELECT;
         } else {
-          BuildInfo::SquareInfo info = getBuildInfo()[currentButton].squareInfo;
-          bool diggingSquare = !memory[level].hasViewIndex(pos) ||
+          BuildInfo::SquareInfo info = buildInfo[currentButton].squareInfo;
+          bool diggingSquare = !getMemory(level).hasViewIndex(pos) ||
             (level->getSquare(pos)->canConstruct(info.type));
           if (!marked.count(pos) && selection != DESELECT && diggingSquare && 
               numGold(info.resourceId) >= info.cost && 
@@ -1029,15 +1095,15 @@ void Collective::onAppliedItemCancel(Vec2 pos) {
   traps.at(pos).marked = false;
 }
 
-Vec2 Collective::getHeartPos() const {
-  return heart->getPosition();
+const Creature* Collective::getKeeper() const {
+  return keeper;
 }
 
 Vec2 Collective::getDungeonCenter() const {
   if (!myTiles.empty())
     return Vec2::getCenterOfWeight(vector<Vec2>(myTiles.begin(), myTiles.end()));
   else
-    return heart->getPosition();
+    return keeper->getPosition();
 }
 
 double Collective::getDangerLevel() const {
@@ -1049,7 +1115,7 @@ double Collective::getDangerLevel() const {
 
 void Collective::learnLocation(const Location* loc) {
   for (Vec2 pos : loc->getBounds())
-    memory[loc->getLevel()].addObject(pos, level->getSquare(pos)->getViewObject());
+    getMemory(loc->getLevel()).addObject(pos, level->getSquare(pos)->getViewObject());
 }
 
 ItemPredicate Collective::unMarkedItems(ItemType type) const {
@@ -1059,16 +1125,16 @@ ItemPredicate Collective::unMarkedItems(ItemType type) const {
 
 void Collective::addToMemory(Vec2 pos, const Creature* c) {
   if (!c) {
-    memory[level].addObject(pos, level->getSquare(pos)->getViewObject());
+    getMemory(level).addObject(pos, level->getSquare(pos)->getViewObject());
     if (auto obj = level->getSquare(pos)->getBackgroundObject())
-      memory[level].addObject(pos, *obj);
+      getMemory(level).addObject(pos, *obj);
   }
   else {
     ViewIndex index = level->getSquare(pos)->getViewIndex(c);
-    memory[level].clearSquare(pos);
+    getMemory(level).clearSquare(pos);
     for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
       if (index.hasObject(l))
-        memory[level].addObject(pos, index.getObject(l));
+        getMemory(level).addObject(pos, index.getObject(l));
   }
 }
 
@@ -1081,11 +1147,7 @@ void Collective::update(Creature* c) {
 
 bool Collective::isDownstairsVisible() const {
   vector<Vec2> v = level->getLandingSquares(StairDirection::DOWN, StairKey::DWARF);
-  return v.size() == 1 && memory[level].hasViewIndex(v[0]);
-}
-
-bool Collective::isThroneBuilt() const {
-  return !mySquares.at(SquareType::KEEPER_THRONE).empty();
+  return v.size() == 1 && getMemory(level).hasViewIndex(v[0]);
 }
 
 void Collective::updateTraps() {
@@ -1193,7 +1255,7 @@ void Collective::tick() {
         fetchItems(pos, elem);
   }
   if (!enemyPos.empty())
-    delayDangerousTasks(enemyPos, heart->getTime() + 50);
+    delayDangerousTasks(enemyPos, keeper->getTime() + 50);
 }
 
 static Vec2 chooseRandomClose(Vec2 start, const set<Vec2>& squares) {
@@ -1235,13 +1297,13 @@ bool Collective::canSee(const Creature* c) const {
 }
 
 bool Collective::canSee(Vec2 position) const {
-  return memory[level].hasViewIndex(position);
+  return getMemory(level).hasViewIndex(position);
 }
 
 void Collective::setLevel(Level* l) {
   for (Vec2 v : l->getBounds())
     if (contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
-      memory[l].addObject(v, l->getSquare(v)->getViewObject());
+      getMemory(l).addObject(v, l->getSquare(v)->getViewObject());
   level = l;
 }
 
@@ -1262,7 +1324,7 @@ MoveInfo Collective::getBeastMove(Creature* c) {
     return NoMove;
   Vec2 radius(7, 7);
   for (Vec2 v : randomPermutation(Rectangle(c->getPosition() - radius, c->getPosition() + radius).getAllSquares()))
-    if (v.inRectangle(level->getBounds()) && !memory[level].hasViewIndex(v)) {
+    if (v.inRectangle(level->getBounds()) && !getMemory(level).hasViewIndex(v)) {
       if (auto move = c->getMoveTowards(v))
         return {1.0, [c, move]() { return c->move(*move); }};
       else
@@ -1344,7 +1406,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     } else
       return task->getMove(c);
   }
-  if (c != heart || !underAttack())
+  if (c != keeper || !underAttack())
     for (Vec2 v : mySquares[SquareType::STOCKPILE])
       for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
             return minionEquipment.needsItem(c, it); })) {
@@ -1358,7 +1420,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
   minionTasks.at(c).update();
   if (c->getHealth() < 1 && c->canSleep())
     minionTasks.at(c).setState(MinionTask::SLEEP);
-  if (c == heart && !myTiles.empty() && !myTiles.count(c->getPosition())) {
+  if (c == keeper && !myTiles.empty() && !myTiles.count(c->getPosition())) {
     if (auto move = c->getMoveTowards(chooseRandom(myTiles)))
       return {1.0, [=] {
         c->move(*move);
@@ -1426,11 +1488,11 @@ MoveInfo Collective::getMove(Creature* c) {
     taken[closest] = c;
     return closest->getMove(c);
   } else {
-    if (!myTiles.count(c->getPosition()) && heart->getLevel() == c->getLevel()) {
-      Vec2 heartPos = heart->getPosition();
-      if (heartPos.dist8(c->getPosition()) < 3)
+    if (!myTiles.count(c->getPosition()) && keeper->getLevel() == c->getLevel()) {
+      Vec2 keeperPos = keeper->getPosition();
+      if (keeperPos.dist8(c->getPosition()) < 3)
         return NoMove;
-      if (auto move = c->getMoveTowards(heartPos))
+      if (auto move = c->getMoveTowards(keeperPos))
         return {1.0, [=] {
           c->move(*move);
         }};
@@ -1443,7 +1505,7 @@ MoveInfo Collective::getMove(Creature* c) {
 
 MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
   MinionTask t1;
-  if (c == heart)
+  if (c == keeper)
     return MarkovChain<MinionTask>(MinionTask::STUDY, {
       {MinionTask::STUDY, {}},
       {MinionTask::SLEEP, {{ MinionTask::STUDY, 1}}}});
@@ -1473,12 +1535,12 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
 }
 
 void Collective::addCreature(Creature* c, MinionType type) {
-  if (heart == nullptr) {
-    heart = c;
+  if (keeper == nullptr) {
+    keeper = c;
     type = MinionType::KEEPER;
     for (auto elem : spellLearning)
       if (elem.techLevel == 0)
-        heart->addSpell(elem.id);
+        keeper->addSpell(elem.id);
     Vec2 radius(30, 30);
     for (Vec2 pos : Rectangle(c->getPosition() - radius, c->getPosition() + radius))
       if (pos.distD(c->getPosition()) <= radius.x && pos.inRectangle(level->getBounds()) 
@@ -1517,7 +1579,7 @@ void Collective::onTriggerEvent(const Level* l, Vec2 pos) {
 }
 
 void Collective::onConqueredLand(const string& name) {
-  model->conquered(*heart->getFirstName() + " the Keeper", name, kills, getDangerLevel() + points);
+  model->conquered(*keeper->getFirstName() + " the Keeper", name, kills, getDangerLevel() + points);
 }
 
 void Collective::onCombatEvent(const Creature* c) {
@@ -1532,8 +1594,8 @@ bool Collective::isInCombat(const Creature* c) const {
 }
 
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
-  if (victim == heart) {
-    model->gameOver(heart, kills.size(), "enemies", getDangerLevel() + points);
+  if (victim == keeper) {
+    model->gameOver(keeper, kills.size(), "enemies", getDangerLevel() + points);
   }
   if (contains(creatures, victim)) {
     Creature* c = const_cast<Creature*>(victim);
@@ -1565,7 +1627,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     kills.push_back(victim);
     points += victim->getDifficultyPoints();
     Debug() << "Mana increase " << incMana << " from " << victim->getName();
-    heart->increaseExpLevel(double(victim->getDifficultyPoints()) / 200);
+    keeper->increaseExpLevel(double(victim->getDifficultyPoints()) / 200);
   }
 }
   

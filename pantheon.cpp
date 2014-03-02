@@ -6,6 +6,18 @@
 #include "creature_factory.h"
 #include "level.h"
 
+
+template <class Archive> 
+void Deity::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(name)
+    & BOOST_SERIALIZATION_NVP(gender)
+    & BOOST_SERIALIZATION_NVP(epithets)
+    & BOOST_SERIALIZATION_NVP(usedEpithets)
+    & BOOST_SERIALIZATION_NVP(habitat);
+}
+
+SERIALIZABLE(Deity);
+
 static map<DeityHabitat, vector<Epithet>> epithetsMap {
   { DeityHabitat::FIRE,
       { Epithet::WAR, Epithet::DEATH, Epithet::DESTRUCTION, Epithet::WEALTH,

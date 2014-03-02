@@ -34,11 +34,15 @@ class EventListener {
   static void addSquareReplacedEvent(const Level*, Vec2 pos);
   static void addChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos);
 
-  static void addListener(EventListener*);
-  static void removeListener(EventListener*);
-
   virtual const Level* getListenerLevel() const { return nullptr; }
   static void initialize();
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+  }
+
+  EventListener();
+  virtual ~EventListener();
 
   private:
   static vector<EventListener*> listeners;

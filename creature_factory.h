@@ -47,7 +47,10 @@ class CreatureFactory {
   static PCreature addInventory(PCreature c, const vector<ItemId>& items);
 
   static void init();
-  
+ 
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
   private:
   CreatureFactory(Tribe* tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
       const vector<CreatureId>& unique);

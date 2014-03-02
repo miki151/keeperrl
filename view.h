@@ -12,6 +12,7 @@ class Level;
 
 class View {
   public:
+  virtual ~View() {}
 
   /** Does all the library specific init.*/
   virtual void initialize() = 0;
@@ -19,8 +20,10 @@ class View {
   /** Resets the view before a new game.*/
   virtual void reset() = 0;
 
+  enum SplashType { CREATING, LOADING, SAVING };
+
   /** Displays a splash screen in an active loop until \paramname{ready} is set to true in another thread.*/
-  virtual void displaySplash(bool& ready) = 0;
+  virtual void displaySplash(SplashType type, bool& ready) = 0;
 
   /** Shutdown routine.*/
   virtual void close() = 0;

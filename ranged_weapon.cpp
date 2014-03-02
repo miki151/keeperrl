@@ -4,6 +4,13 @@
 #include "creature.h"
 #include "level.h"
 
+template <class Archive> 
+void RangedWeapon::serialize(Archive& ar, const unsigned int version) {
+  ar & SUBCLASS(Item);
+}
+
+SERIALIZABLE(RangedWeapon);
+
 RangedWeapon::RangedWeapon(ViewObject o, const ItemAttributes& attr) : Item(o, attr) {}
 
 void RangedWeapon::fire(Creature* c, Level* l, PItem ammo, Vec2 dir) {

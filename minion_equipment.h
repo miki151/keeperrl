@@ -12,6 +12,9 @@ class MinionEquipment {
 
   bool isItemUseful(const Item*) const;
 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+
   private:
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
 

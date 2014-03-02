@@ -24,6 +24,11 @@ class Task {
   static PTask equipItem(Collective* col, Vec2 position, Item* item);
   static PTask pickItem(Collective* col, Vec2 position, vector<Item*> items);
 
+  SERIALIZATION_DECL(Task);
+
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
   protected:
   void setDone();
   void setPosition(Vec2);

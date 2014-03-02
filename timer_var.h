@@ -4,25 +4,16 @@
 
 class TimerVar {
   public:
-  void set(double t) {
-    timeout = t;
-  }
+  void set(double t);
 
-  void unset() {
-    timeout = -1;
-  }
+  void unset();
 
-  bool isFinished(double currentTime) {
-    if (timeout >= 0 && currentTime >= timeout) {
-      timeout = -1;
-      return true;
-    }
-    return false;
-  }
+  bool isFinished(double currentTime);
 
-  operator bool() const {
-    return timeout >= 0;
-  }
+  operator bool() const;
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
 
   private:
   double timeout = -1;

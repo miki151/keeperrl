@@ -2,6 +2,18 @@
 
 #include "location.h"
 #include "creature.h"
+#include "level.h"
+
+template <class Archive> 
+void Location::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(name)
+    & BOOST_SERIALIZATION_NVP(description)
+    & BOOST_SERIALIZATION_NVP(bounds)
+    & BOOST_SERIALIZATION_NVP(level)
+    & BOOST_SERIALIZATION_NVP(surprise);
+}
+
+SERIALIZABLE(Location);
 
 Location::Location(const string& _name, const string& desc) : name(_name), description(desc), bounds(-1, -1, 1, 1) {
 }
@@ -57,6 +69,11 @@ class TowerTopLocation : public Location {
       c->privateMessage("You see distant land in all directions.");
       entered.insert(c);
     }
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Location) & BOOST_SERIALIZATION_NVP(entered);
   }
 
   private:

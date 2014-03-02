@@ -4,6 +4,38 @@
 #include "square_factory.h"
 #include "level.h"
 
+template <class Archive> 
+void Square::serialize(Archive& ar, const unsigned int version) { 
+  ar& BOOST_SERIALIZATION_NVP(inventory)
+    & BOOST_SERIALIZATION_NVP(name)
+    & BOOST_SERIALIZATION_NVP(level)
+    & BOOST_SERIALIZATION_NVP(position)
+    & BOOST_SERIALIZATION_NVP(creature)
+    & BOOST_SERIALIZATION_NVP(triggers)
+    & BOOST_SERIALIZATION_NVP(viewObject)
+    & BOOST_SERIALIZATION_NVP(backgroundObject)
+    & BOOST_SERIALIZATION_NVP(seeThru)
+    & BOOST_SERIALIZATION_NVP(hide)
+    & BOOST_SERIALIZATION_NVP(strength)
+    & BOOST_SERIALIZATION_NVP(height)
+    & BOOST_SERIALIZATION_NVP(travelDir)
+    & BOOST_SERIALIZATION_NVP(covered)
+    & BOOST_SERIALIZATION_NVP(landingLink)
+    & BOOST_SERIALIZATION_NVP(fire)
+    & BOOST_SERIALIZATION_NVP(poisonGas)
+    & BOOST_SERIALIZATION_NVP(constructions)
+    & BOOST_SERIALIZATION_NVP(ticking)
+    & BOOST_SERIALIZATION_NVP(fog);
+}
+
+SERIALIZABLE(Square);
+
+template <class Archive> 
+void SolidSquare::serialize(Archive& ar, const unsigned int version) {
+  ar & SUBCLASS(Square);
+}
+
+SERIALIZABLE(SolidSquare);
 
 Square::Square(const ViewObject& vo, const string& n, bool see, bool canHide, int s, double f,
     map<SquareType, int> construct, bool tick) 

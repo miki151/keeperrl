@@ -5,16 +5,16 @@
 
 vector<EventListener*> EventListener::listeners;
 
+EventListener::EventListener() {
+  listeners.push_back(this);
+}
+
+EventListener::~EventListener() {
+  removeElement(listeners, this);
+}
+
 void EventListener::initialize() {
   listeners.clear();
-}
-
-void EventListener::addListener(EventListener* l) {
-  listeners.push_back(l);
-}
-
-void EventListener::removeListener(EventListener* l) {
-  removeElement(listeners, l);
 }
 
 void EventListener::addPickupEvent(const Creature* c, const vector<Item*>& items) {

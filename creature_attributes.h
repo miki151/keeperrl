@@ -15,6 +15,8 @@ enum class CreatureSize { SMALL, MEDIUM, LARGE, HUGE };
 
 #define CATTR(X) CreatureAttributes([&](CreatureAttributes& c) { X })
 
+class SpellInfo;
+
 class CreatureAttributes {
   public:
   CreatureAttributes(function<void(CreatureAttributes&)> fun) {
@@ -64,6 +66,9 @@ class CreatureAttributes {
   unordered_set<Skill*> skills;
   map<int, Skill*> skillGain {{4, Skill::twoHandedWeapon}, {6, Skill::knifeThrowing}, {10, Skill::archery}};
   vector<SpellInfo> spells;
+
+  protected:
+  SERIALIZATION_DECL(CreatureAttributes);
 };
 
 #endif

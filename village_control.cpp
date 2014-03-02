@@ -9,14 +9,40 @@
 
 static int counter = 0;
 
+
+template <class Archive>
+void VillageControl::serialize(Archive& ar, const unsigned int version) {
+  ar& SUBCLASS(EventListener)
+    & BOOST_SERIALIZATION_NVP(attackInfo)
+    & BOOST_SERIALIZATION_NVP(allCreatures)
+    & BOOST_SERIALIZATION_NVP(numAttacks)
+    & BOOST_SERIALIZATION_NVP(messages)
+    & BOOST_SERIALIZATION_NVP(villain)
+    & BOOST_SERIALIZATION_NVP(level)
+    & BOOST_SERIALIZATION_NVP(direction)
+    & BOOST_SERIALIZATION_NVP(stairKey)
+    & BOOST_SERIALIZATION_NVP(name)
+    & BOOST_SERIALIZATION_NVP(tribe)
+    & BOOST_SERIALIZATION_NVP(attackPoints);
+}
+
+SERIALIZABLE(VillageControl);
+
+template <class Archive>
+void VillageControl::AttackInfo::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(creatures)
+    & BOOST_SERIALIZATION_NVP(attackTime)
+    & BOOST_SERIALIZATION_NVP(msg);
+}
+
+SERIALIZABLE(VillageControl::AttackInfo);
+
 VillageControl::VillageControl(Collective* c, const Level* l, StairDirection dir, StairKey key, string n) 
     : villain(c), level(l), direction(dir), stairKey(key), name(n) {
-  EventListener::addListener(this);
   ++counter;
 }
 
 VillageControl::~VillageControl() {
-  EventListener::removeListener(this);
 }
 
 void VillageControl::addCreature(Creature* c, int attackPoints) {
@@ -74,7 +100,7 @@ class HumanVillageControl : public VillageControl {
     if (pathToDungeon.empty() && c->getLevel() != villain->getLevel())
       pathToDungeon = genPathToDungeon();
     if (c->getLevel() == villain->getLevel()) {
-      if (Optional<Vec2> move = c->getMoveTowards(villain->getHeartPos())) 
+      if (Optional<Vec2> move = c->getMoveTowards(villain->getKeeper()->getPosition())) 
         return {1.0, [this, move, c] () {
           c->move(*move);
         }};
@@ -116,6 +142,17 @@ class HumanVillageControl : public VillageControl {
     }
   }
 
+  SERIALIZATION_CONSTRUCTOR(HumanVillageControl);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(VillageControl)
+      & BOOST_SERIALIZATION_NVP(visited)
+      & BOOST_SERIALIZATION_NVP(villageLocation)
+      & BOOST_SERIALIZATION_NVP(pathToDungeon)
+      & BOOST_SERIALIZATION_NVP(lastPathLocation);
+  }
+
   private:
 
   vector<Vec2> genPathToDungeon() {
@@ -132,8 +169,6 @@ class HumanVillageControl : public VillageControl {
     reverse(path.begin(), path.end());
     return path;
   }
-
-  unordered_set<Vec2> visited;
 
   vector<Vec2> findStaircase(Vec2 start) {
     const Level* level = villageLocation->getLevel();
@@ -153,6 +188,7 @@ class HumanVillageControl : public VillageControl {
     return {};
   }
 
+  unordered_set<Vec2> visited;
   const Location* villageLocation;
   vector<Vec2> pathToDungeon;
   map<Creature*, int> lastPathLocation;
@@ -172,7 +208,7 @@ class DwarfVillageControl : public VillageControl {
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(startedAttack(c));
     if (c->getLevel() == villain->getLevel()) {
-      if (Optional<Vec2> move = c->getMoveTowards(villain->getHeartPos())) 
+      if (Optional<Vec2> move = c->getMoveTowards(villain->getKeeper()->getPosition())) 
         return {1.0, [this, move, c] () {
           c->move(*move);
         }};
@@ -201,35 +237,21 @@ class DwarfVillageControl : public VillageControl {
     }
   }
 
-  private:
+  SERIALIZATION_CONSTRUCTOR(DwarfVillageControl);
 
-  void genPathToDungeon() {
-    const Level* level = villageLocation->getLevel();
-    for (Vec2 v : villageLocation->getBounds())
-      if (level->getSquare(v)->getTravelDir().size() == 1) {
-        pathToDungeon.push_back(v);
-      }
-    CHECK(pathToDungeon.size() == 1) << "Couldn't find path beginning in village";
-    pathToDungeon.push_back(pathToDungeon.back() +
-        getOnlyElement(level->getSquare(pathToDungeon.back())->getTravelDir()));
-    while (1) {
-      vector<Vec2> nextMove = level->getSquare(pathToDungeon.back())->getTravelDir();
-      if (nextMove.size() == 1)
-        break;
-      CHECK(nextMove.size() == 2);
-      Vec2 next;
-      if (pathToDungeon.back() + nextMove[0] != pathToDungeon[pathToDungeon.size() - 2])
-        next = nextMove[0];
-      else
-        next = nextMove[1];
-      pathToDungeon.push_back(pathToDungeon.back() + next);
-    }
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(VillageControl);
   }
-
-  const Location* villageLocation;
-  vector<Vec2> pathToDungeon;
-  map<Creature*, int> lastPathLocation;
 };
+
+template <class Archive>
+void VillageControl::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, HumanVillageControl);
+  REGISTER_TYPE(ar, DwarfVillageControl);
+}
+
+REGISTER_TYPES(VillageControl);
 
 VillageControl* VillageControl::dwarfVillage(Collective* villain, const Level* level,
     StairDirection dir, StairKey key) {

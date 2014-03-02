@@ -105,7 +105,7 @@ class RoomMaker : public LevelMaker {
     int spaceBetween = 0;
     Table<int> taken(area.getKX(), area.getKY());
     for (Vec2 v : area)
-      taken[v] = squareType && squareType != builder->getType(v);
+      taken[v] = squareType && *squareType != builder->getType(v);
     int rooms = Random.getRandom(minRooms, maxRooms);
     int numShop = shopMaker ? Random.getRandom(rooms) : -1;
     for (int i : Range(rooms)) {

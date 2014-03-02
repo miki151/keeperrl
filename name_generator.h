@@ -29,6 +29,7 @@ class NameGenerator {
       const string& deitiesPath,
       const string& demonsPath,
       const string& dogsPath);
+
   private:
   NameGenerator(vector<string> names, bool oneName = false);
   queue<string> names;

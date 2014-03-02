@@ -49,6 +49,8 @@ class Deity {
   static vector<Deity*> getDeities();
   static Deity* getDeity(DeityHabitat);
 
+  SERIALIZATION_DECL(Deity);
+
   private:
   Deity(Deity&) {}
   string name;

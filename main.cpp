@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "dirent.h"
+
 #include "view.h"
 #include "model.h"
 #include "quest.h"
@@ -8,7 +10,46 @@
 #include "statistics.h"
 #include "options.h"
 
+const static string suffix = ".sav";
 
+vector<string> getSaveFiles() {
+  vector<string> ret;
+  struct dirent *ent;
+  DIR* dir = opendir(".");
+  CHECK(dir) << "Couldn't open current directory";
+  while (dirent* ent = readdir(dir)) {
+    string name(ent->d_name);
+    if (name.size() > suffix.size() && name.substr(name.size() - suffix.size()) == suffix)
+      ret.push_back(name);
+  }
+  closedir(dir);
+  return ret;
+}
+
+Optional<string> chooseSaveFile(View* view) {
+  vector<string> files = getSaveFiles();
+  auto ind = view->chooseFromList("Choose game", View::getListElem(files));
+  if (ind)
+    return files[*ind];
+  else
+    return Nothing();
+}
+
+unique_ptr<Model> loadGame(const string& filename) {
+  unique_ptr<Model> model;
+  ifstream ifs(filename);
+  boost::archive::binary_iarchive ia(ifs);
+  Serialization::registerTypes(ia);
+  ia >> BOOST_SERIALIZATION_NVP(model);
+  return model;
+}
+
+void saveGame(unique_ptr<Model> model, const string& filename) {
+  ofstream ofs(filename);
+  boost::archive::binary_oarchive oa(ofs);
+  Serialization::registerTypes(oa);
+  oa << BOOST_SERIALIZATION_NVP(model);
+}
 
 int main(int argc, char* argv[]) {
   View* view;
@@ -66,36 +107,51 @@ int main(int argc, char* argv[]) {
     view->reset();
     auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
         View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
-        View::ListElem("Or simply:", View::TITLE), "Change options", "View high scores", "Quit"}, lastIndex);
+        View::ListElem("Or simply:", View::TITLE), "Load a game", "Change options", "View high scores", "Quit"}, lastIndex);
     if (!choice)
       continue;
     lastIndex = *choice;
+    Optional<string> savedGame;
     if (choice == 2) {
+      savedGame = chooseSaveFile(view);
+      if (!savedGame)
+        continue;
+    }
+    if (choice == 3) {
       Options::handle(view, false);
       continue;
     }
-    if (choice == 4)
-      exit(0);
-    if (choice == 3) {
+    if (choice == 4) {
       Model* m = new Model(view);
       m->showHighscore();
       continue;
     }
+    if (choice == 5)
+      exit(0);
     unique_ptr<Model> model;
     string ex;
-    thread t = (thread([&] {
+    thread t([&] {
       for (int i : Range(5)) {
         try {
-          model.reset(choice == 1 ? Model::heroModel(view) : Model::collectiveModel(view));
+          if (savedGame) {
+            model = loadGame(*savedGame);
+          }
+          else if (choice == 1)
+            model.reset(Model::heroModel(view));
+          else {
+            CHECK(choice == 0);
+            model.reset(Model::collectiveModel(view));
+          }
           break;
         } catch (string s) {
           ex = s;
         }
       }
       modelReady = true;
-    }));
-    view->displaySplash(modelReady);
+    });
+    view->displaySplash(savedGame ? View::LOADING : View::CREATING, modelReady);
     t.join();
+    model->setView(view);
     if (genExit)
       break;
     if (!model)
@@ -103,7 +159,6 @@ int main(int argc, char* argv[]) {
           "\n \nIf you would be so kind, please send this line to rusolis@poczta.fm Thanks!");
 
     int var = 0;
-    view->setTimeMilli(0);
     try {
       while (1) {
         if (model->isTurnBased())
@@ -112,6 +167,13 @@ int main(int argc, char* argv[]) {
           model->update(double(view->getTimeMilli()) / 300);
       }
     } catch (GameOverException ex) {
+    } catch (SaveGameException ex) {
+      bool ready = false;
+      thread t([&] {
+        saveGame(std::move(model), model->getGameIdentifier() + ".sav");
+        ready = true; });
+      view->displaySplash(View::SAVING, ready);
+      t.join();
     }
 #ifdef RELEASE
     catch (string ex) {

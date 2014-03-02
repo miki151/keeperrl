@@ -2,7 +2,29 @@
 
 #include "view_object.h"
 
+template <class Archive> 
+void ViewObject::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(bleeding)
+    & BOOST_SERIALIZATION_NVP(enemyStatus)
+    & BOOST_SERIALIZATION_NVP(blind)
+    & BOOST_SERIALIZATION_NVP(invisible)
+    & BOOST_SERIALIZATION_NVP(illusion)
+    & BOOST_SERIALIZATION_NVP(poisoned)
+    & BOOST_SERIALIZATION_NVP(player)
+    & BOOST_SERIALIZATION_NVP(resource_id)
+    & BOOST_SERIALIZATION_NVP(viewLayer)
+    & BOOST_SERIALIZATION_NVP(description)
+    & BOOST_SERIALIZATION_NVP(hidden)
+    & BOOST_SERIALIZATION_NVP(burning)
+    & BOOST_SERIALIZATION_NVP(height)
+    & BOOST_SERIALIZATION_NVP(sizeIncrease)
+    & BOOST_SERIALIZATION_NVP(shadow)
+    & BOOST_SERIALIZATION_NVP(attack)
+    & BOOST_SERIALIZATION_NVP(defense)
+    & BOOST_SERIALIZATION_NVP(waterDepth);
+}
 
+SERIALIZABLE(ViewObject);
 
 ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d, bool _shadow)
     : resource_id(id), viewLayer(l), description(d), shadow(_shadow) {
@@ -27,16 +49,16 @@ void ViewObject::setBleeding(double b) {
   bleeding = b;
 }
 
-void ViewObject::setHostile(bool s) {
-  hostile = s;
+void ViewObject::setEnemyStatus(EnemyStatus s) {
+  enemyStatus = s;
 }
 
 bool ViewObject::isHostile() const {
-  return hostile && *hostile;
+  return enemyStatus == HOSTILE;
 }
 
 bool ViewObject::isFriendly() const {
-  return hostile && !(*hostile);
+  return enemyStatus == FRIENDLY;
 }
 
 void ViewObject::setBlind(bool s) {
@@ -117,8 +139,8 @@ string ViewObject::getBareDescription() const {
 
 string ViewObject::getDescription(bool stats) const {
   string attr;
-  if (attack && stats)
-    attr = " att: " + convertToString(*attack) + " def: " + convertToString(*defense) + " ";
+  if (attack > -1 && stats)
+    attr = " att: " + convertToString(attack) + " def: " + convertToString(defense) + " ";
   vector<string> mods;
   if (getBleeding() > 0) 
     mods.push_back("wounded");
@@ -141,11 +163,17 @@ void ViewObject::setDefense(int val) {
 }
 
 Optional<int> ViewObject::getAttack() const {
-  return attack;
+  if (attack > -1)
+    return attack;
+  else
+    return Nothing();
 }
 
 Optional<int> ViewObject::getDefense() const {
-  return defense;
+  if (defense > -1)
+    return defense;
+  else
+    return Nothing();
 }
 
 ViewLayer ViewObject::layer() const {

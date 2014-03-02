@@ -17,7 +17,7 @@ class ItemAttributes {
   ItemAttributes(function<void(ItemAttributes&)> fun) {
     fun(*this);
   }
-  
+
   MustInitialize<string> name;
   string description;
   MustInitialize<double> weight;
@@ -48,12 +48,15 @@ class ItemAttributes {
   double applyTime = 1;
   bool fragile = false;
   Optional<EffectType> effect;
-  Optional<int> uses;
+  int uses = -1;
   bool usedUpMsg = false;
   bool displayUses = false;
   bool identifyOnApply = true;
   bool identifiable = false;
   bool identifyOnEquip = true;
+
+  protected:
+  SERIALIZATION_DECL(ItemAttributes);
 };
 
 #endif

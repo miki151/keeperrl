@@ -2,7 +2,13 @@
 
 #include "inventory.h"
 
+template <class Archive> 
+void Inventory::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(items)
+    & BOOST_SERIALIZATION_NVP(itemsCache);
+}
 
+SERIALIZABLE(Inventory);
 
 void Inventory::addItem(PItem item) {
   itemsCache.push_back(item.get());

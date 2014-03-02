@@ -7,7 +7,6 @@
 
 class Trigger {
   public:
-
   Optional<ViewObject> getViewObject() const;
 
   virtual void onCreatureEnter(Creature* c) {}
@@ -18,6 +17,11 @@ class Trigger {
 
   static PTrigger getPortal(const ViewObject& obj, Level*, Vec2 position);
   static PTrigger getTrap(const ViewObject& obj, Level* l, Vec2 position, EffectType effect, Tribe* tribe);
+
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
+  SERIALIZATION_DECL(Trigger);
 
   protected:
   Trigger(Level*, Vec2 position);

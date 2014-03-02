@@ -17,11 +17,11 @@
 class Level;
 class Tribe;
 
-class Creature : private CreatureAttributes, public CreatureView {
+class Creature : public CreatureAttributes, public CreatureView {
   public:
   typedef CreatureAttributes CreatureAttributes;
   Creature(ViewObject o, Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
-  virtual ~Creature() {}
+  virtual ~Creature();
 
   static Creature* getDefault();
   static void noExperienceLevels();
@@ -218,16 +218,25 @@ class Creature : private CreatureAttributes, public CreatureView {
   double getSpeed() const;
   CreatureSize getSize() const;
 
-  typedef function<bool(const Creature*, const Creature*)> CreatureVision;
+  class Vision {
+    public:
+    virtual bool canSee(const Creature*, const Creature*) = 0;
+    virtual ~Vision() {}
 
-  void addCreatureVision(CreatureVision*);
-  void removeCreatureVision(CreatureVision*);
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version);
+  };
+
+  void addVision(Vision*);
+  void removeVision(Vision*);
 
   void addSpell(SpellId);
   const vector<SpellInfo>& getSpells() const;
   bool canCastSpell(int index) const;
   void castSpell(int index);
   static SpellInfo getSpell(SpellId);
+
+  SERIALIZATION_DECL(Creature);
 
   private:
   Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool avoidEnemies);
@@ -253,17 +262,16 @@ class Creature : private CreatureAttributes, public CreatureView {
   ViewObject viewObject;
   Level* level = nullptr;
   Vec2 position;
-  double time;
+  double time = 0;
   Equipment equipment;
   int uniqueId;
   Optional<ShortestPath> shortestPath;
   unordered_set<const Creature*> knownHiding;
   Tribe* tribe;
-  unordered_map<const Tribe*, double> standingOverride;
   vector<EnemyCheck*> enemyChecks;
   double health = 1;
-  bool dead;
-  double lastTick;
+  bool dead = false;
+  double lastTick = 0;
   bool collapsed = false;
   int injuredArms = 0;
   int injuredLegs = 0;
@@ -276,8 +284,6 @@ class Creature : private CreatureAttributes, public CreatureView {
   bool hidden = false;
   bool inEquipChain = false;
   int numEquipActions = 0;
-  Optional<Vec2> homePos;
-  const Creature* leader = nullptr;
   const Creature* lastAttacker = nullptr;
   int swapPositionCooldown = 0;
   TimerVar sleeping;
@@ -298,10 +304,22 @@ class Creature : private CreatureAttributes, public CreatureView {
   vector<const Creature*> privateEnemies;
   const Creature* holding = nullptr;
   PController controller;
-  stack<PController> controllerStack;
-  vector<CreatureVision*> creatureVision;
+  vector<PController> controllerStack;
+  vector<Vision*> visions;
   mutable vector<const Creature*> kills;
 };
+
+struct SpellInfo {
+  SpellId id;
+  string name;
+  EffectType type;
+  double ready;
+  int difficulty;
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
+};
+
 
 
 #endif

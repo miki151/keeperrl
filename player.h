@@ -36,6 +36,7 @@ class Player : public Controller, public EventListener {
   virtual void onExplosionEvent(const Level* level, Vec2 pos) override;
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
 
+  SERIALIZATION_DECL(Player);
 
   private:
   void remember(Vec2 pos, const ViewObject& object);
@@ -62,11 +63,10 @@ class Player : public Controller, public EventListener {
       ItemPredicate = alwaysTrue<const Item*>());
   string getPluralName(Item* item, int num);
   Creature* creature;
-  View* view = nullptr;
   bool travelling = false;
   Vec2 travelDir;
   Optional<Vec2> target;
-  const Location* lastLocation;
+  const Location* lastLocation = nullptr;
   vector<const Creature*> specialCreatures;
   bool displayGreeting;
   map<const Level*, MapMemory>* levelMemory;

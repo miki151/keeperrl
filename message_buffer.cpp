@@ -2,7 +2,12 @@
 
 #include "message_buffer.h"
 
+template <class Archive> 
+void MessageBuffer::serialize(Archive& ar, const unsigned int version) { 
+  ar & BOOST_SERIALIZATION_NVP(messages);
+}
 
+SERIALIZABLE(MessageBuffer);
 
 MessageBuffer messageBuffer;
 

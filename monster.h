@@ -21,6 +21,8 @@ class Monster : public Controller {
 
   static ControllerFactory getFactory(MonsterAIFactory);
 
+  SERIALIZATION_DECL(Monster);
+
   protected:
   Creature* creature;
 

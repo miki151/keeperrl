@@ -14,7 +14,7 @@ class Level;
 
 class Square {
   public:
-  /** Constructs a square objects.
+  /** Constructs a square object.
     * \param noObstruct true if the square doesn't obstruct view
     * \param canHide true if the player can hide at this square
     * \param strength square resistance to demolition
@@ -169,6 +169,8 @@ class Square {
 
   void setFog(double val);
 
+  SERIALIZATION_DECL(Square);
+
   protected:
   void onEnter(Creature*);
   virtual bool canEnterSpecial(const Creature*) const;
@@ -176,7 +178,6 @@ class Square {
   virtual void tickSpecial(double time) {}
   Level* getLevel();
   void setViewObject(const ViewObject&);
-  vector<Vec2> face;
   Inventory inventory;
   string name;
 
@@ -209,6 +210,8 @@ class SolidSquare : public Square {
       bool alwaysVisible = false, double flamability = 0) :
       Square(vo, name, canSee, false, 0, flamability, constructions) {
   }
+
+  SERIALIZATION_DECL(SolidSquare);
 
   protected:
   virtual bool canEnterSpecial(const Creature*) const;

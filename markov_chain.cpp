@@ -5,6 +5,15 @@
 #include "enums.h"
 #include "util.h"
 
+template <class T>
+template <class Archive>
+void MarkovChain<T>::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(state)
+    & BOOST_SERIALIZATION_NVP(transitions);
+}
+
+SERIALIZABLE(MarkovChain<MinionTask>);
+
 template<class T>
 MarkovChain<T>::MarkovChain(T s, map<T, vector<pair<T, double>>> t) : state(s), transitions(t) {
   for (auto elem : transitions) {

@@ -2,24 +2,39 @@
 
 #include "field_of_view.h"
 
+template <class Archive> 
+void FieldOfView::serialize(Archive& ar, const unsigned int version) {
+  ar & BOOST_SERIALIZATION_NVP(squares)
+     & BOOST_SERIALIZATION_NVP(visibility);
+}
 
+SERIALIZABLE(FieldOfView);
 
+template <class Archive> 
+void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(visible)
+    & BOOST_SERIALIZATION_NVP(visibleTiles)
+    & BOOST_SERIALIZATION_NVP(px)
+    & BOOST_SERIALIZATION_NVP(py);
+}
 
-FieldOfView::FieldOfView(const Table<PSquare>& s) : squares(s), visibility(squares.getWidth(), squares.getHeight()) {
+SERIALIZABLE(FieldOfView::Visibility);
+
+FieldOfView::FieldOfView(const Table<PSquare>& s) : squares(&s), visibility(s.getWidth(), s.getHeight()) {
 }
 
 bool FieldOfView::canSee(Vec2 from, Vec2 to) {
   if ((from - to).lengthD() > sightRange)
     return false;
   if (!visibility[from])
-    visibility[from] = Visibility(squares, from.x, from.y);
+    visibility[from] = Visibility(*squares, from.x, from.y);
   return visibility[from]->checkVisible(to.x - from.x, to.y - from.y);
 }
   
 void FieldOfView::squareChanged(Vec2 pos) {
   vector<Vec2> updateList;
   if (!visibility[pos])
-    visibility[pos] = Visibility(squares, pos.x, pos.y);
+    visibility[pos] = Visibility(*squares, pos.x, pos.y);
   vector<Vec2> visible = visibility[pos]->getVisibleTiles();
   for (Vec2 v : visible)
     if (visibility[v] && visibility[v]->checkVisible(pos.x - v.x, pos.y - v.y)) {
@@ -64,7 +79,7 @@ const vector<Vec2>& FieldOfView::Visibility::getVisibleTiles() const {
 
 const vector<Vec2>& FieldOfView::getVisibleTiles(Vec2 from) {
   if (!visibility[from]) {
-    visibility[from] = Visibility(squares, from.x, from.y);
+    visibility[from] = Visibility(*squares, from.x, from.y);
   }
   return visibility[from]->getVisibleTiles();
 }

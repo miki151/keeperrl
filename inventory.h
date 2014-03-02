@@ -22,6 +22,8 @@ class Inventory {
 
   bool isEmpty() const;
 
+  SERIALIZATION_DECL(Inventory);
+
   private:
   vector<PItem> items;
   vector<Item*> itemsCache;

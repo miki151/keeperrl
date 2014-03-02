@@ -14,6 +14,14 @@ static vector<EffectType> combatConsumables {
     EffectType::DEX_BONUS,
 };
 
+template <class Archive>
+void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(equipmentMap)
+    & BOOST_SERIALIZATION_NVP(owners);
+}
+
+SERIALIZABLE(MinionEquipment);
+
 Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
   if (contains({ItemType::WEAPON, ItemType::ARMOR}, it->getType()))
     return MinionEquipment::ARMOR;

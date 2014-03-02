@@ -4,7 +4,16 @@
 #include "level.h"
 #include "creature.h"
 
+template <class Archive> 
+void ShortestPath::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(path)
+    & BOOST_SERIALIZATION_NVP(target)
+    & BOOST_SERIALIZATION_NVP(directions)
+    & BOOST_SERIALIZATION_NVP(bounds)
+    & BOOST_SERIALIZATION_NVP(reversed);
+}
 
+SERIALIZABLE(ShortestPath);
 
 const double ShortestPath::infinity = 1000000000;
 

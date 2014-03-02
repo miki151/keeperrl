@@ -3,6 +3,24 @@
 #include "time_queue.h"
 
 
+template <class Archive> 
+void TimeQueue::serialize(Archive& ar, const unsigned int version) { 
+  ar& BOOST_SERIALIZATION_NVP(creatures)
+    & BOOST_SERIALIZATION_NVP(queue)
+    & BOOST_SERIALIZATION_NVP(dead);
+}
+
+SERIALIZABLE(TimeQueue);
+
+
+template <class Archive> 
+void TimeQueue::QElem::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(creature)
+    & BOOST_SERIALIZATION_NVP(time);
+}
+
+SERIALIZABLE(TimeQueue::QElem);
+
 TimeQueue::TimeQueue() : queue([](QElem e1, QElem e2) {
     return e1.time > e2.time || (e1.time == e2.time && e1.creature->getUniqueId() > e2.creature->getUniqueId());
 }) {}

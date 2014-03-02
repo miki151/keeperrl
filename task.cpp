@@ -4,6 +4,15 @@
 #include "level.h"
 #include "collective.h"
 
+template <class Archive> 
+void Task::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(position)
+    & BOOST_SERIALIZATION_NVP(done)
+    & BOOST_SERIALIZATION_NVP(collective);
+}
+
+SERIALIZABLE(Task);
+
 Task::Task(Collective* col, Vec2 pos) : position(pos), collective(col) {}
 
 Vec2 Task::getPosition() {
@@ -58,6 +67,14 @@ class Construction : public Task {
     } else
         return getMoveToPosition(c);
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Task)
+      & BOOST_SERIALIZATION_NVP(type);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Construction);
 
   private:
   SquareType type;
@@ -129,6 +146,15 @@ class PickItem : public Task {
       return getMoveToPosition(c);
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Task)
+      & BOOST_SERIALIZATION_NVP(items)
+      & BOOST_SERIALIZATION_NVP(pickedUp);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(PickItem);
+
   protected:
   set<Item*> items;
   bool pickedUp = false;
@@ -163,6 +189,13 @@ class EquipItem : public PickItem {
         }};
     return NoMove;
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(PickItem);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(EquipItem);
 };
 
 PTask Task::equipItem(Collective* col, Vec2 position, Item* items) {
@@ -216,6 +249,14 @@ class BringItem : public PickItem {
     return !pickedUp;
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(PickItem)
+      & BOOST_SERIALIZATION_NVP(target);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(BringItem);
+
   protected:
   Vec2 target;
 
@@ -246,6 +287,13 @@ class ApplyItem : public BringItem {
         item->getNoSeeApplyMsg());
     c->applyItem(item);
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(BringItem);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(ApplyItem);
 };
 
 PTask Task::applyItem(Collective* col, Vec2 position, Item* item, Vec2 target) {
@@ -305,6 +353,16 @@ class ApplySquare : public Task {
     }
   }
 
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Task)
+      & BOOST_SERIALIZATION_NVP(positions)
+      & BOOST_SERIALIZATION_NVP(rejectedPosition)
+      & BOOST_SERIALIZATION_NVP(invalidCount);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(ApplySquare);
+
   private:
   set<Vec2> positions;
   set<Vec2> rejectedPosition;
@@ -316,79 +374,14 @@ PTask Task::applySquare(Collective* col, set<Vec2> position) {
   return PTask(new ApplySquare(col, position));
 }
 
-class Eat : public Task {
-  public:
-  Eat(Collective* col, set<Vec2> pos) : Task(col, Vec2(-1, 1)), positions(pos) {}
-
-  virtual bool canTransfer() override {
-    return false;
-  }
-
-  virtual string getInfo() override {
-    return "eat";
-  }
-
-  Item* getDeadChicken(Square* s) {
-    vector<Item*> chickens = s->getItems(Item::typePredicate(ItemType::FOOD));
-    if (chickens.empty())
-      return nullptr;
-    else
-      return chickens[0];
-  }
-
-  virtual MoveInfo getMove(Creature* c) override {
-    Vec2 pos = getPosition();
-    if (pos.x == -1) {
-      pos = Vec2(-10000, -10000);
-      for (Vec2 v : positions)
-        if (!rejectedPosition.count(v) && (pos - c->getPosition()).length8() > (v - c->getPosition()).length8())
-          pos = v;
-      if (pos.x == -10000) {
-        setDone();
-        return NoMove;
-      }
-      setPosition(pos);
-    }
-    Item* chicken = getDeadChicken(c->getSquare());
-    if (chicken) {
-      return {1.0, [this, c, chicken] {
-        c->globalMessage(c->getTheName() + " eats " + chicken->getAName());
-        c->eat(chicken);
-        setDone();
-      }};
-    }
-    for (Vec2 v : Vec2::directions8(true)) {
-      Item* chicken = getDeadChicken(c->getSquare(v));
-      if (chicken && c->canMove(v))
-        return {1.0, [this, c, v] {
-          c->move(v);
-        }};
-      if (Creature* ch = c->getSquare(v)->getCreature())
-        if (ch->getName() == "chicken" && c->canAttack(ch)) {
-        return {1.0, [this, c, ch] {
-          c->attack(ch);
-        }};
-      }
-    }
-    MoveInfo move = getMoveToPosition(c);
-    if (!move.isValid() || ((getPosition() - c->getPosition()).length8() == 1 && c->getLevel()->getSquare(getPosition())->getCreature())) {
-      rejectedPosition.insert(getPosition());
-      setPosition(Vec2(-1, -1));
-      if (--invalidCount == 0) {
-        setDone();
-      }
-      return NoMove;
-    }
-    else 
-      return move;
-  }
-
-  private:
-  set<Vec2> positions;
-  set<Vec2> rejectedPosition;
-  int invalidCount = 5;
-};
-
-PTask Task::eat(Collective* col, set<Vec2> hatcherySquares) {
-  return PTask(new Eat(col, hatcherySquares));
+template <class Archive>
+void Task::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, Construction);
+  REGISTER_TYPE(ar, PickItem);
+  REGISTER_TYPE(ar, EquipItem);
+  REGISTER_TYPE(ar, BringItem);
+  REGISTER_TYPE(ar, ApplyItem);
+  REGISTER_TYPE(ar, ApplySquare);
 }
+
+REGISTER_TYPES(Task);

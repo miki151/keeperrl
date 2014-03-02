@@ -16,6 +16,11 @@ class CreatureView {
   virtual const Level* getLevel() const = 0;
   virtual vector<const Creature*> getUnknownAttacker() const = 0;
   virtual vector<const Creature*> getVisibleCreatures() const { return {}; }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {}
+
+  virtual ~CreatureView() {}
 };
 
 #endif

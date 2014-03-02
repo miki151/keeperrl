@@ -43,10 +43,17 @@ class Model : public EventListener {
 
   bool isTurnBased();
 
+  string getGameIdentifier() const;
+
+  View* getView();
+  void setView(View*);
+
   void onKillEvent(const Creature* victim, const Creature* killer) override;
   void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, const string& land, vector<const Creature*> kills, int points);
   void showHighscore(bool highlightLast = false);
+
+  SERIALIZATION_DECL(Model);
 
   private:
   void dwarvesMessage();

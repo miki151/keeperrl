@@ -34,6 +34,9 @@ class Controller {
   virtual void onBump(Creature*) = 0;
 
   virtual ~Controller() {}
+
+  protected:
+  SERIALIZATION_DECL(Controller);
 };
 
 class DoNothingController : public Controller {
@@ -46,6 +49,9 @@ class DoNothingController : public Controller {
   virtual const MapMemory& getMemory(const Level* l = nullptr) const override;
   virtual void makeMove() override;
   virtual void onBump(Creature*) override;
+
+  protected:
+  SERIALIZATION_DECL(DoNothingController);
 
   private:
   Creature* creature;

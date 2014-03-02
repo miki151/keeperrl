@@ -8,6 +8,8 @@ class RangedWeapon : public Item {
   RangedWeapon(ViewObject, const ItemAttributes&);
 
   virtual void fire(Creature*, Level*, PItem ammo, Vec2 dir);
+
+  SERIALIZATION_DECL(RangedWeapon);
 };
 
 #endif

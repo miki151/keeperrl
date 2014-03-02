@@ -33,7 +33,9 @@ class Behaviour {
   MoveInfo tryToApplyItem(EffectType, double maxTurns);
 
   virtual ~Behaviour() {}
-  
+
+  SERIALIZATION_DECL(Behaviour);
+
   protected:
   Creature* creature;
 };
@@ -41,6 +43,11 @@ class Behaviour {
 class MonsterAI {
   public:
   void makeMove();
+
+  SERIALIZATION_DECL(MonsterAI);
+
+  template <class Archive>
+  static void registerTypes(Archive& ar);
 
   private:
   friend class MonsterAIFactory;
