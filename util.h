@@ -468,8 +468,15 @@ vector<T> getPrefix(const vector<T>& v, int start, int length) {
   return ret;
 }
 
-template <typename T, typename U>
-vector<T> transform2(const vector<U>& u, function<T(const U&)> fun) {
+template <typename T, typename U, typename Fun>
+vector<T> transform2(const vector<U>& u, Fun fun) {
+  vector<T> ret(u.size());
+  transform(u.begin(), u.end(), ret.begin(), fun);
+  return ret;
+}
+
+template <typename T, typename U, typename Fun>
+vector<T> transform2(vector<U>& u, Fun fun) {
   vector<T> ret(u.size());
   transform(u.begin(), u.end(), ret.begin(), fun);
   return ret;

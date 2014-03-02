@@ -180,14 +180,7 @@ class Collective : public CreatureView, public EventListener {
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
   };
-  void markSquare(Vec2 pos, SquareType type, CostInfo);
-  void unmarkSquare(Vec2 pos);
-  void removeTask(Task*);
-  void delayTask(Task*, double t);
-  bool isDelayed(Task* task, double time);
   void delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime);
-  void addTask(PTask, Creature*);
-  void addTask(PTask);
   int numGold(ResourceId) const;
   void takeGold(CostInfo);
   void returnGold(CostInfo);
@@ -208,6 +201,9 @@ class Collective : public CreatureView, public EventListener {
   bool isInCombat(const Creature*) const;
   bool underAttack() const;
   void addToMemory(Vec2 pos, const Creature*);
+  bool isItemMarked(const Item*) const;
+  void markItem(const Item*);
+  void unmarkItem(const Item*);
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
@@ -215,13 +211,41 @@ class Collective : public CreatureView, public EventListener {
   vector<Creature*> minions;
   vector<Creature*> imps;
   unordered_map<MinionType, vector<Creature*>> minionByType;
-  vector<PTask> tasks;
-  set<const Item*> markedItems;
-  map<Vec2, Task*> marked;
-  map<Task*, Creature*> taken;
-  map<Creature*, Task*> taskMap;
-  map<Task*, double> delayed;
-  map<Task*, CostInfo> completionCost;
+  set<UniqueId> markedItems;
+
+  class TaskMap {
+    public:
+    void addTask(PTask);
+    void addTask(PTask, const Creature*);
+    Task* getTask(const Creature*) const;
+    void markSquare(Vec2 pos, PTask, CostInfo);
+    void unmarkSquare(Vec2 pos);
+    bool isMarked(Vec2 pos) const;
+    void removeTask(Task*);
+    void delayTask(Task*, double t);
+    bool isDelayed(Task* task, double time);
+    bool isLocked(const Creature*, const Task*) const;
+    void lock(const Creature*, const Task*);
+    void clearAllLocked();
+    vector<Task*> getTasks();
+    CostInfo getCompletionCost(Vec2 pos);
+    Task* getTaskForImp(Creature*);
+    void takeTask(const Creature*, Task*);
+    void freeTask(Task*);
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
+    private:
+    vector<PTask> tasks;
+    map<Vec2, Task*> marked;
+    map<Task*, const Creature*> taken;
+    map<const Creature*, Task*> taskMap;
+    map<Task*, double> delayed;
+    map<Task*, CostInfo> completionCost;
+    set<pair<const Creature*, UniqueId>> lockedTasks;
+  } taskMap;
+
   struct TrapInfo {
     TrapType type;
     bool armed;
@@ -241,7 +265,6 @@ class Collective : public CreatureView, public EventListener {
   map<Vec2, DoorInfo> doors;
   map<Creature*, MarkovChain<MinionTask>> minionTasks;
   map<const Creature*, string> minionTaskStrings;
-  set<pair<Creature*, Task*>> locked;
   map<SquareType, set<Vec2>> mySquares;
   set<Vec2> myTiles;
   Level* level = nullptr;

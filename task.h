@@ -2,8 +2,9 @@
 #define _TASK_H
 
 #include "monster_ai.h"
+#include "unique_entity.h"
 
-class Task {
+class Task : public UniqueEntity {
   public:
   Task(Collective*, Vec2 position);
 

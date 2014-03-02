@@ -25,19 +25,18 @@ void SpellInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(SpellInfo);
 
-static int idCounter = 1;
 
 template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
   ar
     & SUBCLASS(CreatureAttributes)
     & SUBCLASS(CreatureView)
+    & SUBCLASS(UniqueEntity)
     & BOOST_SERIALIZATION_NVP(viewObject)
     & BOOST_SERIALIZATION_NVP(level)
     & BOOST_SERIALIZATION_NVP(position)
     & BOOST_SERIALIZATION_NVP(time)
     & BOOST_SERIALIZATION_NVP(equipment)
-    & BOOST_SERIALIZATION_NVP(uniqueId)
     & BOOST_SERIALIZATION_NVP(shortestPath)
     & BOOST_SERIALIZATION_NVP(knownHiding)
     & BOOST_SERIALIZATION_NVP(tribe)
@@ -78,8 +77,6 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(controllerStack)
     & BOOST_SERIALIZATION_NVP(visions)
     & BOOST_SERIALIZATION_NVP(kills);
-  if (uniqueId > idCounter)
-    idCounter = uniqueId;
 }
 
 SERIALIZABLE(Creature);
@@ -97,7 +94,6 @@ void Creature::noExperienceLevels() {
 }
 
 Creature::Creature(ViewObject o, Tribe* t, const CreatureAttributes& attr, ControllerFactory f) : CreatureAttributes(attr), viewObject(o), tribe(t), controller(f.get(this)) {
-  uniqueId = ++idCounter;
   tribe->addMember(this);
   for (Skill* skill : skills)
     skill->onTeach(this);
@@ -325,10 +321,6 @@ void Creature::wait() {
   bool keepHiding = hidden;
   spendTime(1);
   hidden = keepHiding;
-}
-
-int Creature::getUniqueId() const {
-  return uniqueId;
 }
 
 const Equipment& Creature::getEquipment() const {
@@ -1078,8 +1070,8 @@ void Creature::attack(const Creature* c1, bool spend) {
       << "Bad attack direction " << c->getPosition() - getPosition();
   CHECK(canAttack(c));
   Debug() << getTheName() << " attacking " << c->getName();
-  auto rToHit = [=] () { return Random.getRandom(GET_ID(uniqueId), -toHitVariance, toHitVariance); };
-  auto rDamage = [=] () { return Random.getRandom(GET_ID(uniqueId), -damageVariance, damageVariance); };
+  auto rToHit = [=] () { return Random.getRandom(GET_ID(getUniqueId()), -toHitVariance, toHitVariance); };
+  auto rDamage = [=] () { return Random.getRandom(GET_ID(getUniqueId()), -damageVariance, damageVariance); };
   int toHit = rToHit() + rToHit() + getAttr(AttrType::TO_HIT);
   int damage = rDamage() + rDamage() + getAttr(AttrType::DAMAGE);
   bool backstab = false;
@@ -1632,9 +1624,9 @@ void Creature::throwItem(Item* item, Vec2 direction) {
     dist = 2 * str / 15;
   else 
     FAIL << "Item too heavy.";
-  int toHit = Random.getRandom(GET_ID(uniqueId), -toHitVariance, toHitVariance) +
+  int toHit = Random.getRandom(GET_ID(getUniqueId()), -toHitVariance, toHitVariance) +
       getAttr(AttrType::THROWN_TO_HIT) + item->getModifier(AttrType::THROWN_TO_HIT);
-  int damage = Random.getRandom(GET_ID(uniqueId), -attackVariance, attackVariance) +
+  int damage = Random.getRandom(GET_ID(getUniqueId()), -attackVariance, attackVariance) +
       getAttr(AttrType::THROWN_DAMAGE) + item->getModifier(AttrType::THROWN_DAMAGE);
   if (hasSkill(Skill::knifeThrowing) && item->getAttackType() == AttackType::STAB) {
     damage += 7;

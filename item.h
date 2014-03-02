@@ -8,18 +8,18 @@
 #include "enums.h"
 #include "attack.h"
 #include "fire.h"
+#include "unique_entity.h"
 
 class Level;
 
 class Item;
 typedef function<bool(const Item*)> ItemPredicate;
 
-class Item : private ItemAttributes {
+class Item : private ItemAttributes, public UniqueEntity {
   public:
   typedef ItemAttributes ItemAttributes;
   Item(ViewObject o, const ItemAttributes&);
   virtual ~Item() {}
-  int getUniqueId() const;
 
   static void identifyEverything();
   static bool isEverythingIdentified();
@@ -115,7 +115,6 @@ class Item : private ItemAttributes {
   string getBlindName(bool plural) const;
   const Creature* shopkeeper = nullptr;
   Fire fire;
-  int uniqueId;
 };
 
 #endif

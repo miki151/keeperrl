@@ -5,19 +5,15 @@
 #include "level.h"
 #include "statistics.h"
 
-static int idCounter = 1;
-
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
   ItemAttributes::serialize(ar, version);
-  ar& BOOST_SERIALIZATION_NVP(viewObject)
+  ar& SUBCLASS(UniqueEntity)
+    & BOOST_SERIALIZATION_NVP(viewObject)
     & BOOST_SERIALIZATION_NVP(discarded)
     & BOOST_SERIALIZATION_NVP(inspected)
     & BOOST_SERIALIZATION_NVP(shopkeeper)
-    & BOOST_SERIALIZATION_NVP(fire)
-    & BOOST_SERIALIZATION_NVP(uniqueId);
-  if (uniqueId > idCounter)
-    idCounter = uniqueId;
+    & BOOST_SERIALIZATION_NVP(fire);
 }
 
 SERIALIZABLE(Item);
@@ -34,7 +30,6 @@ SERIALIZABLE(Item::CorpseInfo);
 
 Item::Item(ViewObject o, const ItemAttributes& attr)
     : ItemAttributes(attr), viewObject(o), inspected(everythingIdentified), fire(*weight, flamability) {
-  uniqueId = ++idCounter;
 }
 
 void Item::identifyEverything() {
@@ -46,10 +41,6 @@ bool Item::isEverythingIdentified() {
 }
 
 bool Item::everythingIdentified = false;
- 
-int Item::getUniqueId() const {
-  return uniqueId;
-}
  
 vector<Item*> Item::extractRefs(const vector<PItem>& item) {
   vector<Item*> ref(item.size());

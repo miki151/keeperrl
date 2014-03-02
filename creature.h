@@ -13,11 +13,12 @@
 #include "map_memory.h"
 #include "creature_view.h"
 #include "controller.h"
+#include "unique_entity.h"
 
 class Level;
 class Tribe;
 
-class Creature : public CreatureAttributes, public CreatureView {
+class Creature : public CreatureAttributes, public CreatureView, public UniqueEntity {
   public:
   typedef CreatureAttributes CreatureAttributes;
   Creature(ViewObject o, Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
@@ -53,7 +54,6 @@ class Creature : public CreatureAttributes, public CreatureView {
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
   vector<PItem> steal(const vector<Item*> items);
-  int getUniqueId() const;
   virtual bool canSee(const Creature*) const override;
   virtual bool canSee(Vec2 pos) const override;
   void slowDown(double duration);
@@ -264,7 +264,6 @@ class Creature : public CreatureAttributes, public CreatureView {
   Vec2 position;
   double time = 0;
   Equipment equipment;
-  int uniqueId;
   Optional<ShortestPath> shortestPath;
   unordered_set<const Creature*> knownHiding;
   Tribe* tribe;

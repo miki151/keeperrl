@@ -6,7 +6,8 @@
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(position)
+  ar& SUBCLASS(UniqueEntity)
+    & BOOST_SERIALIZATION_NVP(position)
     & BOOST_SERIALIZATION_NVP(done)
     & BOOST_SERIALIZATION_NVP(collective);
 }
