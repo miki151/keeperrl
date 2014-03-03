@@ -173,6 +173,9 @@ class Collective : public CreatureView, public EventListener {
 
   MoveInfo getBeastMove(Creature* c);
   MoveInfo getMinionMove(Creature* c);
+  MoveInfo getGuardPostMove(Creature* c);
+  MoveInfo getPossessedMove(Creature* c);
+  MoveInfo getBacktrackMove(Creature* c);
 
   bool isDownstairsVisible() const;
   struct CostInfo {

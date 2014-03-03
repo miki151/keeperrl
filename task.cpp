@@ -343,7 +343,7 @@ class ApplySquare : public Task {
       }
     } else {
       MoveInfo move = getMoveToPosition(c);
-      if (!move.isValid() || ((getPosition() - c->getPosition()).length8() == 1 && c->getLevel()->getSquare(getPosition())->getCreature())) {
+      if (!move || ((getPosition() - c->getPosition()).length8() == 1 && c->getLevel()->getSquare(getPosition())->getCreature())) {
         rejectedPosition.insert(getPosition());
         setPosition(Vec2(-1, -1));
         if (--invalidCount == 0) {

@@ -330,8 +330,7 @@ class Fighter : public Behaviour, public EventListener {
       Debug() << creature->getName() << " panic weight " << weight;
       if (weight >= 0.5) {
         if ((creature->getPosition() - other->getPosition()).length8() < 7) {
-          MoveInfo move = getPanicMove(other, weight);
-          if (move.isValid())
+          if (MoveInfo move = getPanicMove(other, weight))
             return move;
           else
             return getAttackMove(other, significantEnemy && chase);
@@ -474,22 +473,17 @@ class Fighter : public Behaviour, public EventListener {
         }};
     }
     if (distance <= 3) {
-      MoveInfo move = tryToApplyItem(EffectType::INVISIBLE, 1);
-      if (move.isValid())
+      if (MoveInfo move = tryToApplyItem(EffectType::INVISIBLE, 1))
         return move;
-      move = tryToApplyItem(EffectType::STR_BONUS, 1);
-      if (move.isValid())
+      if (MoveInfo move = tryToApplyItem(EffectType::STR_BONUS, 1))
         return move;
-      move = tryToApplyItem(EffectType::DEX_BONUS, 1);
-      if (move.isValid())
+      if (MoveInfo move = tryToApplyItem(EffectType::DEX_BONUS, 1))
         return move;
     }
     if (distance > 1) {
-      MoveInfo move = getFireMove(enemyDir);
-      if (move.isValid())
+      if (MoveInfo move = getFireMove(enemyDir))
         return move;
-      move = getThrowMove(enemyDir);
-      if (move.isValid())
+      if (MoveInfo move = getThrowMove(enemyDir))
         return move;
       if (chase && other->getTribe() != Tribe::wildlife) {
         Optional<Vec2> move = creature->getMoveTowards(creature->getPosition() + enemyDir);

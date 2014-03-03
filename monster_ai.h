@@ -8,7 +8,7 @@ struct MoveInfo {
   double value;
   function<void ()> move;
 
-  bool isValid() const {
+  operator bool() const {
     return move != nullptr;
   }
 };

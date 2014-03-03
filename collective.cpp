@@ -1386,45 +1386,7 @@ MoveInfo Collective::getBeastMove(Creature* c) {
   return NoMove;
 }
 
-MoveInfo Collective::getMinionMove(Creature* c) {
-  if (possessed && contains(team, c)) {
-    Optional<Vec2> v;
-    if (possessed->getLevel() != c->getLevel()) {
-      if (teamLevelChanges.count(c->getLevel())) {
-        v = teamLevelChanges.at(c->getLevel());
-        if (v == c->getPosition())
-          return {1.0, [=] {
-            c->applySquare();
-          }};
-      }
-    } else 
-      v = possessed->getPosition();
-    if (v) {
-      if (auto move = c->getMoveTowards(*v))
-        return {1.0, [=] {
-          c->move(*move);
-        }};
-      else
-        return NoMove;
-    }
-  }
-  if (c->getLevel() != level) {
-    if (!levelChangeHistory.count(c->getLevel()))
-      return NoMove;
-    Vec2 target = levelChangeHistory.at(c->getLevel());
-    if (c->getPosition() == target)
-      return {1.0, [=] {
-        c->applySquare();
-      }};
-    else if (auto move = c->getMoveTowards(target))
-      return {1.0, [=] {
-        c->move(*move);
-      }};
-    else
-      return NoMove;
-  }
-  if (contains(minionByType.at(MinionType::BEAST), c))
-    return getBeastMove(c);
+MoveInfo Collective::getGuardPostMove(Creature* c) {
   for (auto& elem : guardPosts) {
     bool isTraining = contains({MinionTask::TRAIN, MinionTask::LABORATORY, MinionTask::WORKSHOP},
         minionTasks.at(c).getState());
@@ -1451,7 +1413,62 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         taskMap.removeTask(t);
     }
   }
- 
+  return NoMove;
+}
+
+MoveInfo Collective::getPossessedMove(Creature* c) {
+  if (possessed && contains(team, c)) {
+    Optional<Vec2> v;
+    if (possessed->getLevel() != c->getLevel()) {
+      if (teamLevelChanges.count(c->getLevel())) {
+        v = teamLevelChanges.at(c->getLevel());
+        if (v == c->getPosition())
+          return {1.0, [=] {
+            c->applySquare();
+          }};
+      }
+    } else 
+      v = possessed->getPosition();
+    if (v) {
+      if (auto move = c->getMoveTowards(*v))
+        return {1.0, [=] {
+          c->move(*move);
+        }};
+      else
+        return NoMove;
+    }
+  }
+  return NoMove;
+}
+
+MoveInfo Collective::getBacktrackMove(Creature* c) {
+  if (c->getLevel() != level) {
+    if (!levelChangeHistory.count(c->getLevel()))
+      return NoMove;
+    Vec2 target = levelChangeHistory.at(c->getLevel());
+    if (c->getPosition() == target)
+      return {1.0, [=] {
+        c->applySquare();
+      }};
+    else if (auto move = c->getMoveTowards(target))
+      return {1.0, [=] {
+        c->move(*move);
+      }};
+    else
+      return NoMove;
+  }
+  return NoMove;
+}
+
+MoveInfo Collective::getMinionMove(Creature* c) {
+  if (MoveInfo possessedMove = getPossessedMove(c))
+    return possessedMove;
+  if (MoveInfo backtrackMove = getBacktrackMove(c))
+    return backtrackMove;
+  if (contains(minionByType.at(MinionType::BEAST), c))
+    return getBeastMove(c);
+  if (MoveInfo guardPostMove = getGuardPostMove(c))
+    return guardPostMove;
   if (Task* task = taskMap.getTask(c)) {
     if (task->isDone()) {
       taskMap.removeTask(task);
@@ -1508,7 +1525,7 @@ Task* Collective::TaskMap::getTaskForImp(Creature* c) {
                                 && (task->getPosition() - taken.at(task.get())->getPosition()).length8() > dist))
            && (!closest ||
            dist < (closest->getPosition() - c->getPosition()).length8()) && !lockedTasks.count(make_pair(c, task->getUniqueId()))) {
-      bool valid = task->getMove(c).isValid();
+      bool valid = task->getMove(c);
       if (valid)
         closest = task.get();
       else
