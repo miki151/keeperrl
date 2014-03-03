@@ -144,11 +144,17 @@ class PickItem : public Task {
         }}; 
       else {
         getCollective()->onCantPickItem(items);
+        setDone();
         return NoMove;
       }
     }
-    else
-      return getMoveToPosition(c);
+    if (MoveInfo move = getMoveToPosition(c))
+      return move;
+    else if (c->getPosition().dist8(getPosition()) == 1) {
+      getCollective()->onCantPickItem(items);
+      setDone();
+    }
+    return NoMove;
   }
 
   template <class Archive> 

@@ -42,6 +42,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(model)
     & BOOST_SERIALIZATION_NVP(kills)
     & BOOST_SERIALIZATION_NVP(showWelcomeMsg);
+    & BOOST_SERIALIZATION_NVP(startImpNum);
 }
 
 SERIALIZABLE(Collective);
@@ -139,6 +140,7 @@ vector<TechId> techIds {
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   return {
     {unMarkedItems(ItemType::CORPSE), SquareType::GRAVE, true, {}, Warning::GRAVES},
+    {unMarkedItems(ItemType::GOLD), SquareType::TREASURE_CHEST, false, {}, Warning::CHESTS},
     {[this](const Item* it) {
         return minionEquipment.isItemUseful(it) && !isItemMarked(it);
       }, SquareType::STOCKPILE, false, {}, Warning::STORAGE},
@@ -192,7 +194,6 @@ Collective::Collective(Model* m) : mana(200), model(m) {
 
 
 const int basicImpCost = 20;
-int startImpNum = -1;
 const int minionLimit = 20;
 
 
@@ -1275,27 +1276,6 @@ void Collective::tick() {
       if (c->getTribe() != Tribe::player)
         enemyPos.push_back(c->getPosition());
     }
-    vector<Item*> gold = level->getSquare(pos)->getItems(unMarkedItems(ItemType::GOLD));
-    if (gold.size() > 0 && !mySquares[SquareType::TREASURE_CHEST].count(pos)) {
-      if (!mySquares[SquareType::TREASURE_CHEST].empty()) {
-        warning[int(Warning::CHESTS)] = false;
-        Optional<Vec2> target;
-        for (Vec2 chest : mySquares[SquareType::TREASURE_CHEST])
-          if ((!target || (chest - pos).length8() < (*target - pos).length8()) && 
-              level->getSquare(chest)->getItems(Item::typePredicate(ItemType::GOLD)).size() <= 30)
-            target = chest;
-        if (!target)
-          warning[int(Warning::MORE_CHESTS)] = true;
-        else {
-          warning[int(Warning::MORE_CHESTS)] = false;
-          taskMap.addTask(Task::bringItem(this, pos, gold, *target));
-          for (Item* it : gold)
-            markItem(it);
-        }
-      } else {
-        warning[int(Warning::CHESTS)] = true;
-      }
-    }
  /*   if (taskMap.isMarked(pos) && marked.at(pos)->isImpossible(level) && !taken.count(marked.at(pos)))
       removeTask(marked.at(pos));*/
   }
@@ -1326,6 +1306,8 @@ static Vec2 chooseRandomClose(Vec2 start, const set<Vec2>& squares) {
 }
 
 void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
+  if (traps.count(pos) && traps.at(pos).type == TrapType::BOULDER && traps.at(pos).armed == true)
+    return;
   vector<Item*> equipment = level->getSquare(pos)->getItems(elem.predicate);
   if (mySquares[elem.destination].count(pos))
     return;
