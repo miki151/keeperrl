@@ -41,7 +41,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(points)
     & BOOST_SERIALIZATION_NVP(model)
     & BOOST_SERIALIZATION_NVP(kills)
-    & BOOST_SERIALIZATION_NVP(showWelcomeMsg);
+    & BOOST_SERIALIZATION_NVP(showWelcomeMsg)
+    & BOOST_SERIALIZATION_NVP(delayedPos)
     & BOOST_SERIALIZATION_NVP(startImpNum);
 }
 
@@ -53,7 +54,6 @@ void Collective::TaskMap::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(marked)
     & BOOST_SERIALIZATION_NVP(taken)
     & BOOST_SERIALIZATION_NVP(taskMap)
-    & BOOST_SERIALIZATION_NVP(delayed)
     & BOOST_SERIALIZATION_NVP(lockedTasks)
     & BOOST_SERIALIZATION_NVP(completionCost);
 }
@@ -198,8 +198,8 @@ const int minionLimit = 20;
 
 
 void Collective::render(View* view) {
-  if (possessed && possessed != keeper && isInCombat(keeper) && lastControlKeeperQuestion < keeper->getTime() - 50) {
-    lastControlKeeperQuestion = keeper->getTime();
+  if (possessed && possessed != keeper && isInCombat(keeper) && lastControlKeeperQuestion < getTime() - 50) {
+    lastControlKeeperQuestion = getTime();
     if (view->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
       possessed->popController();
       possess(keeper, view);
@@ -645,7 +645,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
       info.warning = warningText[i];
       break;
     }
-  info.time = keeper->getTime();
+  info.time = getTime();
   info.gatheringTeam = gatheringTeam;
   info.team.clear();
   for (Creature* c : team)
@@ -740,29 +740,7 @@ void Collective::TaskMap::addTask(PTask task) {
   tasks.push_back(std::move(task));
 }
 
-void Collective::TaskMap::delayTask(Task* task, double time) {
-  CHECK(task->canTransfer());
-  delayed[task] = time;
- // Debug() << "Delaying " << (taken.count(task) ? "taken " : "") << task->getInfo();
-  if (taken.count(task)) {
-    taskMap.erase(taken.at(task));
-    taken.erase(task);
-  }
-}
-
-bool Collective::TaskMap::isDelayed(Task* task, double time) {
-  if (delayed.count(task)) {
-    if (delayed.at(task) > time)
-      return true;
-    else
-      delayed.erase(task);
-  }
-  return false;
-
-}
-
 void Collective::TaskMap::removeTask(Task* task) {
-  delayed.erase(task);
   completionCost.erase(task);
   if (marked.count(task->getPosition()))
     marked.erase(task->getPosition());
@@ -899,8 +877,8 @@ void Collective::freeFromGuardPost(const Creature* c) {
 }
 
 void Collective::processInput(View* view) {
-  if (!possessed && isInCombat(keeper) && lastControlKeeperQuestion < keeper->getTime() - 50) {
-    lastControlKeeperQuestion = keeper->getTime();
+  if (!possessed && isInCombat(keeper) && lastControlKeeperQuestion < getTime() - 50) {
+    lastControlKeeperQuestion = getTime();
     if (view->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
       possess(keeper, view);
       return;
@@ -1008,7 +986,7 @@ void Collective::handleSelection(Vec2 pos, bool rectangle) {
     case BuildInfo::TRAP: {
         TrapType trapType = buildInfo[currentButton].trapInfo.type;
         if (getTrapItems(trapType).size() > 0 && canPlacePost(pos) && myTiles.count(pos)) {
-          traps[pos] = {trapType, false, false};
+          traps[pos] = {trapType, false, 0};
           trapMap[trapType].push_back(pos);
           updateTraps();
         }
@@ -1097,7 +1075,7 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     taskMap.unmarkSquare(pos);
   if (contains({SquareType::TRIBE_DOOR}, type) && doors.count(pos)) {
     doors.at(pos).built = true;
-    doors.at(pos).marked = false;
+    doors.at(pos).marked = 0;
   }
 }
 
@@ -1117,14 +1095,14 @@ void Collective::onBrought(Vec2 pos, vector<Item*> items) {
 void Collective::onAppliedItem(Vec2 pos, Item* item) {
   CHECK(item->getTrapType());
   if (traps.count(pos)) {
-    traps[pos].marked = false;
+    traps[pos].marked = 0;
     traps[pos].armed = true;
   }
 }
 
 void Collective::onAppliedSquare(Vec2 pos) {
   if (mySquares.at(SquareType::LIBRARY).count(pos)) {
-    mana += 1 + max(0., 1 - double(getDangerLevel()) / 1000);
+    mana += 0.5 + max(0., 1.5 - double(getDangerLevel()) / 1000);
   }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
     if (Random.roll(30)) {
@@ -1144,7 +1122,7 @@ void Collective::onAppliedSquare(Vec2 pos) {
 
 void Collective::onAppliedItemCancel(Vec2 pos) {
   if (traps.count(pos))
-    traps.at(pos).marked = false;
+    traps.at(pos).marked = 0;
 }
 
 const Creature* Collective::getKeeper() const {
@@ -1202,30 +1180,38 @@ bool Collective::isDownstairsVisible() const {
   return v.size() == 1 && getMemory(level).hasViewIndex(v[0]);
 }
 
+// after this time applying trap or building door is rescheduled (imp death, etc).
+const static int timeToBuild = 50;
+
 void Collective::updateTraps() {
   map<TrapType, vector<pair<Item*, Vec2>>> trapItems {
     {TrapType::BOULDER, getTrapItems(TrapType::BOULDER, myTiles)},
     {TrapType::POISON_GAS, getTrapItems(TrapType::POISON_GAS, myTiles)}};
-  for (auto elem : traps) {
-    vector<pair<Item*, Vec2>>& items = trapItems.at(elem.second.type);
-    if (!items.empty()) {
-      if (!elem.second.armed && !elem.second.marked) {
-        taskMap.addTask(Task::applyItem(this, items.back().second, items.back().first, elem.first));
-        markItem(items.back().first);
-        items.pop_back();
-        traps[elem.first].marked = true;
+  for (auto elem : traps)
+    if (!isDelayed(elem.first)) {
+      vector<pair<Item*, Vec2>>& items = trapItems.at(elem.second.type);
+      if (!items.empty()) {
+        if (!elem.second.armed && elem.second.marked <= getTime()) {
+          taskMap.addTask(Task::applyItem(this, items.back().second, items.back().first, elem.first));
+          markItem(items.back().first);
+          items.pop_back();
+          traps[elem.first].marked = getTime() + timeToBuild;
+        }
       }
     }
-  }
-  for (auto& elem : doors) {
-    if (!elem.second.marked && !elem.second.built && numGold(elem.second.cost.id) >= elem.second.cost.value) {
+  for (auto& elem : doors)
+    if (!isDelayed(elem.first)
+        && elem.second.marked <= getTime() 
+        && !elem.second.built && numGold(elem.second.cost.id) >= elem.second.cost.value) {
       taskMap.addTask(Task::construction(this, elem.first, SquareType::TRIBE_DOOR));
-      elem.second.marked = true;
+      elem.second.marked = getTime() + timeToBuild;
       takeGold(elem.second.cost);
     }
-  }
 }
 
+double Collective::getTime() const {
+  return keeper->getTime();
+}
 
 void Collective::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime) {
   int infinity = 1000000;
@@ -1236,25 +1222,23 @@ void Collective::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayT
     dist[v] = 0;
     q.push(v);
   }
-  map<Vec2, Task*> taskPos;
-  for (Task* task : taskMap.getTasks())
-    if (task->canTransfer()) {
-      taskPos[task->getPosition()] = task;
-    }
- //     Debug() << "Delay: can't tranfer " << task->getInfo();
   while (!q.empty()) {
     Vec2 pos = q.front();
     q.pop();
-    if (taskPos.count(pos))
-      taskMap.delayTask(taskPos.at(pos), delayTime);
-    if (dist[pos] >= radius || !level->getSquare(pos)->canEnterEmpty(Creature::getDefault()))
+    delayedPos[pos] = delayTime;
+    if (dist[pos] >= radius)
       continue;
     for (Vec2 v : pos.neighbors8())
-      if (v.inRectangle(dist.getBounds()) && dist[v] == infinity) {
+      if (v.inRectangle(dist.getBounds()) && dist[v] == infinity &&
+          level->getSquare(v)->canEnterEmpty(Creature::getDefault()) && myTiles.count(v)) {
         dist[v] = dist[pos] + 1;
         q.push(v);
       }
   }
+}
+
+bool Collective::isDelayed(Vec2 pos) {
+  return delayedPos.count(pos) && delayedPos.at(pos) > getTime();
 }
 
 void Collective::tick() {
@@ -1265,7 +1249,8 @@ void Collective::tick() {
   for (auto elem : taskInfo)
     if (!mySquares.at(elem.second.square).empty())
       warning[int(elem.second.warning)] = false;
-  updateTraps();
+  map<Vec2, int> extendedTiles;
+  queue<Vec2> extendedQueue;
   vector<Vec2> enemyPos;
   for (Vec2 pos : myTiles) {
     if (Creature* c = level->getSquare(pos)->getCreature()) {
@@ -1278,7 +1263,32 @@ void Collective::tick() {
     }
  /*   if (taskMap.isMarked(pos) && marked.at(pos)->isImpossible(level) && !taken.count(marked.at(pos)))
       removeTask(marked.at(pos));*/
+    for (Vec2 v : pos.neighbors8())
+      if (v.inRectangle(level->getBounds) && !myTiles.count(v) && !extendedTiles.count(v) 
+          && level->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
+        extendedTiles[v] = 1;
+        extendedQueue.push(v);
+      }
   }
+  const int maxRadius = 10;
+  while (!extendedQueue.empty()) {
+    Vec2 pos = extendedQueue.front();
+    extendedQueue.pop();
+    if (Creature* c = level->getSquare(pos)->getCreature())
+      if (c->getTribe() != Tribe::player)
+        enemyPos.push_back(c->getPosition());
+    for (Vec2 v : pos.neighbors8())
+      if (v.inRectangle(level->getBounds) && !myTiles.count(v) && !extendedTiles.count(v) 
+          && level->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
+        int a = extendedTiles[v] = extendedTiles[pos] + 1;
+        if (a < maxRadius)
+          extendedQueue.push(v);
+      }
+
+  }
+  if (!enemyPos.empty())
+    delayDangerousTasks(enemyPos, getTime() + 20);
+  updateTraps();
   for (ItemFetchInfo elem : getFetchInfo()) {
     for (Vec2 pos : myTiles)
       fetchItems(pos, elem);
@@ -1286,8 +1296,6 @@ void Collective::tick() {
       for (Vec2 pos : mySquares.at(type))
         fetchItems(pos, elem);
   }
-  if (!enemyPos.empty())
-    delayDangerousTasks(enemyPos, keeper->getTime() + 20);
 }
 
 static Vec2 chooseRandomClose(Vec2 start, const set<Vec2>& squares) {
@@ -1306,7 +1314,7 @@ static Vec2 chooseRandomClose(Vec2 start, const set<Vec2>& squares) {
 }
 
 void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
-  if (traps.count(pos) && traps.at(pos).type == TrapType::BOULDER && traps.at(pos).armed == true)
+  if (isDelayed(pos) || (traps.count(pos) && traps.at(pos).type == TrapType::BOULDER && traps.at(pos).armed == true))
     return;
   vector<Item*> equipment = level->getSquare(pos)->getItems(elem.predicate);
   if (mySquares[elem.destination].count(pos))
@@ -1424,29 +1432,26 @@ MoveInfo Collective::getPossessedMove(Creature* c) {
 }
 
 MoveInfo Collective::getBacktrackMove(Creature* c) {
-  if (c->getLevel() != level) {
-    if (!levelChangeHistory.count(c->getLevel()))
-      return NoMove;
-    Vec2 target = levelChangeHistory.at(c->getLevel());
-    if (c->getPosition() == target)
-      return {1.0, [=] {
-        c->applySquare();
-      }};
-    else if (auto move = c->getMoveTowards(target))
-      return {1.0, [=] {
-        c->move(*move);
-      }};
-    else
-      return NoMove;
-  }
-  return NoMove;
+  if (!levelChangeHistory.count(c->getLevel()))
+    return NoMove;
+  Vec2 target = levelChangeHistory.at(c->getLevel());
+  if (c->getPosition() == target)
+    return {1.0, [=] {
+      c->applySquare();
+    }};
+  else if (auto move = c->getMoveTowards(target))
+    return {1.0, [=] {
+      c->move(*move);
+    }};
+  else
+    return NoMove;
 }
 
 MoveInfo Collective::getMinionMove(Creature* c) {
   if (MoveInfo possessedMove = getPossessedMove(c))
     return possessedMove;
-  if (MoveInfo backtrackMove = getBacktrackMove(c))
-    return backtrackMove;
+  if (c->getLevel() != level)
+    return getBacktrackMove(c);
   if (contains(minionByType.at(MinionType::BEAST), c))
     return getBeastMove(c);
   if (MoveInfo guardPostMove = getGuardPostMove(c))
@@ -1500,8 +1505,6 @@ bool Collective::underAttack() const {
 Task* Collective::TaskMap::getTaskForImp(Creature* c) {
   Task* closest = nullptr;
   for (PTask& task : tasks) {
-    if (isDelayed(task.get(), c->getTime()))
-      continue;
     double dist = (task->getPosition() - c->getPosition()).length8();
     if ((!taken.count(task.get()) || (task->canTransfer() 
                                 && (task->getPosition() - taken.at(task.get())->getPosition()).length8() > dist))
@@ -1623,7 +1626,8 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
       }
     if (doors.count(pos)) {
       DoorInfo& info = doors.at(pos);
-      info.marked = info.built = false;
+      info.marked = getTime() + 10; // wait a little before considering rebuilding
+      info.built = false;
     }
   }
 }

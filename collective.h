@@ -185,6 +185,9 @@ class Collective : public CreatureView, public EventListener {
     void serialize(Archive& ar, const unsigned int version);
   };
   void delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime);
+  bool isDelayed(Vec2 pos);
+  double getTime() const;
+  unordered_map<Vec2, double> delayedPos;
   int numGold(ResourceId) const;
   void takeGold(CostInfo);
   void returnGold(CostInfo);
@@ -226,8 +229,6 @@ class Collective : public CreatureView, public EventListener {
     void unmarkSquare(Vec2 pos);
     bool isMarked(Vec2 pos) const;
     void removeTask(Task*);
-    void delayTask(Task*, double t);
-    bool isDelayed(Task* task, double time);
     bool isLocked(const Creature*, const Task*) const;
     void lock(const Creature*, const Task*);
     void clearAllLocked();
@@ -245,7 +246,6 @@ class Collective : public CreatureView, public EventListener {
     map<Vec2, Task*> marked;
     map<Task*, const Creature*> taken;
     map<const Creature*, Task*> taskMap;
-    map<Task*, double> delayed;
     map<Task*, CostInfo> completionCost;
     set<pair<const Creature*, UniqueId>> lockedTasks;
   } taskMap;
@@ -253,7 +253,7 @@ class Collective : public CreatureView, public EventListener {
   struct TrapInfo {
     TrapType type;
     bool armed;
-    bool marked;
+    double marked;
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
   };
@@ -262,7 +262,7 @@ class Collective : public CreatureView, public EventListener {
   struct DoorInfo {
     CostInfo cost;
     bool built;
-    bool marked;
+    double marked;
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
   };
