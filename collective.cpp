@@ -1264,7 +1264,7 @@ void Collective::tick() {
  /*   if (taskMap.isMarked(pos) && marked.at(pos)->isImpossible(level) && !taken.count(marked.at(pos)))
       removeTask(marked.at(pos));*/
     for (Vec2 v : pos.neighbors8())
-      if (v.inRectangle(level->getBounds) && !myTiles.count(v) && !extendedTiles.count(v) 
+      if (v.inRectangle(level->getBounds()) && !myTiles.count(v) && !extendedTiles.count(v) 
           && level->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
         extendedTiles[v] = 1;
         extendedQueue.push(v);
@@ -1278,7 +1278,7 @@ void Collective::tick() {
       if (c->getTribe() != Tribe::player)
         enemyPos.push_back(c->getPosition());
     for (Vec2 v : pos.neighbors8())
-      if (v.inRectangle(level->getBounds) && !myTiles.count(v) && !extendedTiles.count(v) 
+      if (v.inRectangle(level->getBounds()) && !myTiles.count(v) && !extendedTiles.count(v) 
           && level->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
         int a = extendedTiles[v] = extendedTiles[pos] + 1;
         if (a < maxRadius)

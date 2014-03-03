@@ -248,6 +248,13 @@ string Model::getGameIdentifier() const {
   return "";
 }
 
+Model::GameType Model::getGameType() const {
+  if (collective)
+    return Model::KEEPER;
+  else
+    return Model::ADVENTURER;
+}
+
 void Model::dwarvesMessage() {
   CHECK(collective);
   string msg = "We forgot about the funny bearded midgets living under the mountain. ";

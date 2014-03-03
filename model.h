@@ -44,6 +44,8 @@ class Model : public EventListener {
   bool isTurnBased();
 
   string getGameIdentifier() const;
+  enum GameType { ADVENTURER, KEEPER };
+  GameType getGameType() const;
 
   View* getView();
   void setView(View*);

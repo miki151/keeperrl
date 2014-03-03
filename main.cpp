@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+//#include <boost/iostreams/filter/bzip2.hpp>
+
 #include "dirent.h"
 
 #include "view.h"
@@ -10,9 +14,10 @@
 #include "statistics.h"
 #include "options.h"
 
-const static string suffix = ".sav";
 
-vector<string> getSaveFiles() {
+using namespace boost::iostreams;
+
+static vector<string> getSaveFiles(const string& suffix) {
   vector<string> ret;
   struct dirent *ent;
   DIR* dir = opendir(".");
@@ -26,26 +31,58 @@ vector<string> getSaveFiles() {
   return ret;
 }
 
-Optional<string> chooseSaveFile(View* view) {
-  vector<string> files = getSaveFiles();
-  auto ind = view->chooseFromList("Choose game", View::getListElem(files));
+static string getSaveSuffix(Model::GameType t) {
+  switch (t) {
+    case Model::KEEPER: return ".kep";
+    case Model::ADVENTURER: return ".adv";
+  }
+  FAIL << "wef";
+  return "";
+}
+
+static Optional<string> chooseSaveFile(View* view) {
+  vector<string> filesKeeper = getSaveFiles(getSaveSuffix(Model::KEEPER));
+  vector<string> filesAdventurer = getSaveFiles(getSaveSuffix(Model::ADVENTURER));
+  if (filesKeeper.empty() && filesAdventurer.empty()) {
+    view->presentText("", "No save files found.");
+    return Nothing();
+  }
+  vector<View::ListElem> options;
+  if (!filesKeeper.empty()) {
+    auto removeSuf = [&] (const string& s) { return s.substr(0, s.size() - getSaveSuffix(Model::KEEPER).size()); };
+    options.emplace_back("Keeper games:", View::TITLE);
+    append(options, View::getListElem(transform2<string>(filesKeeper, removeSuf)));
+  }
+  if (!filesAdventurer.empty()) {
+    auto removeSuf = [&] (const string& s) { return s.substr(0, s.size() - getSaveSuffix(Model::ADVENTURER).size());};
+    options.emplace_back("Adventurer games:", View::TITLE);
+    append(options, View::getListElem(transform2<string>(filesAdventurer, removeSuf)));
+  }
+  auto ind = view->chooseFromList("Choose game", options);
   if (ind)
-    return files[*ind];
+    return concat(filesKeeper, filesAdventurer)[*ind];
   else
     return Nothing();
 }
 
-unique_ptr<Model> loadGame(const string& filename) {
+static unique_ptr<Model> loadGame(const string& filename) {
   unique_ptr<Model> model;
   ifstream ifs(filename);
-  boost::archive::binary_iarchive ia(ifs);
+  CHECK(ifs.good()) << "File not found: " << filename;
+  filtering_streambuf<input> in;
+ // in.push(bzip2_compressor());
+  in.push(ifs);
+  boost::archive::binary_iarchive ia(in);
   Serialization::registerTypes(ia);
   ia >> BOOST_SERIALIZATION_NVP(model);
   return model;
 }
 
-void saveGame(unique_ptr<Model> model, const string& filename) {
+static void saveGame(unique_ptr<Model> model, const string& filename) {
   ofstream ofs(filename);
+  boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
+ // out.push(zlib_compressor());
+  out.push(ofs);
   boost::archive::binary_oarchive oa(ofs);
   Serialization::registerTypes(oa);
   oa << BOOST_SERIALIZATION_NVP(model);
@@ -170,7 +207,7 @@ int main(int argc, char* argv[]) {
     } catch (SaveGameException ex) {
       bool ready = false;
       thread t([&] {
-        saveGame(std::move(model), model->getGameIdentifier() + ".sav");
+        saveGame(std::move(model), model->getGameIdentifier() + getSaveSuffix(model->getGameType()));
         ready = true; });
       view->displaySplash(View::SAVING, ready);
       t.join();
