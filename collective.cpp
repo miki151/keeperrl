@@ -1239,7 +1239,7 @@ void Collective::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayT
   for (Task* task : taskMap.getTasks())
     if (task->canTransfer()) {
       taskPos[task->getPosition()] = task;
-    } else
+    }
  //     Debug() << "Delay: can't tranfer " << task->getInfo();
   while (!q.empty()) {
     Vec2 pos = q.front();
@@ -1307,7 +1307,7 @@ void Collective::tick() {
         fetchItems(pos, elem);
   }
   if (!enemyPos.empty())
-    delayDangerousTasks(enemyPos, keeper->getTime() + 50);
+    delayDangerousTasks(enemyPos, keeper->getTime() + 20);
 }
 
 static Vec2 chooseRandomClose(Vec2 start, const set<Vec2>& squares) {
@@ -1699,7 +1699,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     for (MinionType type : minionTypes)
       if (contains(minionByType.at(type), c))
         removeElement(minionByType.at(type), c);
-  } else if (victim->getTribe() != Tribe::player && killer->getTribe() == Tribe::player) {
+  } else if (victim->getTribe() != Tribe::player && (!killer || killer->getTribe() == Tribe::player)) {
     double incMana = victim->getDifficultyPoints();
     mana += incMana;
     kills.push_back(victim);
