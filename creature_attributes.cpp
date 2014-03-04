@@ -21,6 +21,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(barehandedAttack)
     & BOOST_SERIALIZATION_NVP(attackEffect)
     & BOOST_SERIALIZATION_NVP(passiveAttack)
+    & BOOST_SERIALIZATION_NVP(gender)
     & BOOST_SERIALIZATION_NVP(legs)
     & BOOST_SERIALIZATION_NVP(arms)
     & BOOST_SERIALIZATION_NVP(heads)

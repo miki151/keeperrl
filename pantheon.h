@@ -2,6 +2,7 @@
 #define _PANTHEON_H
 
 #include "util.h"
+#include "gender.h"
 
 enum class DeityHabitat {
   EARTH,

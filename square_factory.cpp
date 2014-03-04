@@ -515,9 +515,8 @@ class Altar : public Square {
 
   virtual void onEnterSpecial(Creature* c) override {
     c->privateMessage("This is a shrine to " + deity->getName());
-    c->privateMessage((deity->getGender() == Gender::MALE ? "He lives in " : "She lives in ")
-        + deity->getHabitatString());
-    c->privateMessage((deity->getGender() == Gender::MALE ? "He is the god of " : "She is the goddess of ")
+    c->privateMessage(deity->getGender().he() + " lives in " + deity->getHabitatString());
+    c->privateMessage(deity->getGender().he() + " is the " + deity->getGender().god() + " of "
         + deity->getEpithets());
   }
 

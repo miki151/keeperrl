@@ -74,16 +74,20 @@ void Monster::you(MsgType type, const string& param) const {
     case MsgType::TRIGGER_TRAP: msg = creature->getTheName() + " triggers something."; break;
     case MsgType::PANIC: msg = creature->getTheName() + " panics."; break;
     case MsgType::RAGE: msg = creature->getTheName() + " is enraged."; break;
-    case MsgType::SWING_WEAPON: msg = creature->getTheName() + " swings his " + param; break;
-    case MsgType::THRUST_WEAPON: msg = creature->getTheName() + " thrusts his " + param; break;
+    case MsgType::SWING_WEAPON: msg = creature->getTheName() + " swings " + creature->getGender().his() + " " +
+                                    param; break;
+    case MsgType::THRUST_WEAPON: msg = creature->getTheName() + " thrusts " + creature->getGender().his() + " " +
+                                 param; break;
     case MsgType::KICK: msg = creature->getTheName() + addName(" kicks", param); break;
     case MsgType::BITE: msg = creature->getTheName() + addName(" bites", param); break;
     case MsgType::PUNCH: msg = creature->getTheName() + addName(" punches", param); break;
     case MsgType::CRAWL: msg = creature->getTheName() + " is crawling"; break;
-    case MsgType::STAND_UP: msg = creature->getTheName() + " is back on his feet"; break;
+    case MsgType::STAND_UP: msg = creature->getTheName() + " is back on " + creature->getGender().his() + " feet ";
+                            break;
     case MsgType::TURN_INVISIBLE: msg = creature->getTheName() + " disappears!"; break;
     case MsgType::TURN_VISIBLE: msg = creature->getTheName() + " appears out of nowhere!"; break;
-    case MsgType::DROP_WEAPON: msg = creature->getTheName() + " drops his " + param; break;
+    case MsgType::DROP_WEAPON: msg = creature->getTheName() + " drops " + creature->getGender().his() + " " + param;
+                               break;
     case MsgType::ENTER_PORTAL: msg = creature->getTheName() + " disappears in the portal."; break;
     case MsgType::HAPPENS_TO: msg = param + " " + creature->getTheName(); break;
     case MsgType::BURN: msg = creature->getTheName() + " burns in the " + param; msgNoSee = "You hear a horrible shriek"; break;

@@ -109,6 +109,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   int numGoodLegs() const;
   int numGoodHeads() const;
   double getCourage() const;
+  Gender getGender() const;
 
   void increaseExpLevel(double);
   int getExpLevel() const;

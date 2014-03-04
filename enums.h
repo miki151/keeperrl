@@ -113,6 +113,7 @@ enum class CreatureId {
     DARK_KNIGHT,
     DRAGON,
     CYCLOPS,
+    WITCH,
 
     CLAY_GOLEM,
     STONE_GOLEM,
@@ -298,6 +299,7 @@ enum class ViewId {
   DARK_KNIGHT,
   DRAGON,
   CYCLOPS,
+  WITCH,
   GHOST,
   DEVIL,
   KNIGHT,
@@ -476,11 +478,6 @@ enum class ViewId {
   DESTROY_BUTTON,
   MANA,
   DANGER,
-};
-
-enum class Gender {
-  MALE,
-  FEMALE,
 };
 
 enum class SquareType {

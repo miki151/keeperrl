@@ -9,6 +9,7 @@
 struct SettlementInfo {
   SettlementType type;
   CreatureFactory factory;
+  int numCreatures;
   Optional<CreatureId> elder;
   Location* location;
   Tribe* tribe;

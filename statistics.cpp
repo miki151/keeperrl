@@ -3,6 +3,13 @@
 
 unordered_map<StatId, int> Statistics::count;
 
+template <class Archive>
+void Statistics::serialize(Archive& ar, const unsigned int version) {
+  ar & BOOST_SERIALIZATION_NVP(count);
+}
+
+SERIALIZABLE(Statistics);
+
 void Statistics::init() {
   count.clear();
 }

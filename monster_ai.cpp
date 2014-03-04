@@ -50,8 +50,16 @@ Item* Behaviour::getBestWeapon() {
 }
 
 MoveInfo Behaviour::tryToApplyItem(EffectType type, double maxTurns) {
-  auto teleItems = creature->getEquipment().getItems(Item::effectPredicate(type)); 
-  for (Item* item : teleItems)
+  for (int i : All(creature->getSpells())) {
+    SpellInfo spell = creature->getSpells()[i];
+    if (spell.type == type && creature->canCastSpell(i))
+      return { 1, [=]() {
+        creature->globalMessage(creature->getTheName() + " casts " + spell.name);
+        creature->castSpell(i);
+      }};
+  }
+  auto items = creature->getEquipment().getItems(Item::effectPredicate(type)); 
+  for (Item* item : items)
     if (creature->canApplyItem(item) && item->getApplyTime() <= maxTurns)
       return { 1, [=]() {
         creature->globalMessage(creature->getTheName() + " " + item->getApplyMsgThirdPerson(),
@@ -358,9 +366,9 @@ class Fighter : public Behaviour, public EventListener {
   }
 
   virtual double itemValue(const Item* item) {
-    if (item->getEffectType() &&
-        contains({EffectType::INVISIBLE, EffectType::SLOW, EffectType::BLINDNESS, EffectType::SLEEP,
-          EffectType::TELEPORT, EffectType::STR_BONUS, EffectType::DEX_BONUS}, *item->getEffectType()))
+    if (contains({EffectType::INVISIBLE, EffectType::SLOW, EffectType::BLINDNESS, EffectType::SLEEP,
+            EffectType::POISON, EffectType::TELEPORT, EffectType::STR_BONUS, EffectType::DEX_BONUS},
+          item->getEffectType()))
       return 1;
     if (item->getType() == ItemType::AMMO && creature->hasSkill(Skill::archery))
       return 0.1;
@@ -386,8 +394,8 @@ class Fighter : public Behaviour, public EventListener {
   }
 
   double getThrowValue(Item* it) {
-    if (it->getEffectType() &&
-        contains({EffectType::SLOW, EffectType::BLINDNESS, EffectType::SLEEP}, *it->getEffectType()))
+    if (contains({EffectType::POISON, EffectType::SLOW, EffectType::BLINDNESS, EffectType::SLEEP},
+          it->getEffectType()))
       return 100;
     return it->getModifier(AttrType::THROWN_DAMAGE);
   }
@@ -478,6 +486,8 @@ class Fighter : public Behaviour, public EventListener {
       if (MoveInfo move = tryToApplyItem(EffectType::STR_BONUS, 1))
         return move;
       if (MoveInfo move = tryToApplyItem(EffectType::DEX_BONUS, 1))
+        return move;
+      if (MoveInfo move = tryToApplyItem(EffectType::SPEED, 1))
         return move;
     }
     if (distance > 1) {

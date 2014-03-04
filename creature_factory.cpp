@@ -997,6 +997,18 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all dungeons";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "dark knight";), tribe, factory);
+    case CreatureId::WITCH: return get(ViewId::WITCH, CATTR(
+                                c.speed = 100;
+                                c.size = CreatureSize::MEDIUM;
+                                c.strength = 14;
+                                c.dexterity = 12;
+                                c.barehandedDamage = 6;
+                                c.humanoid = true;
+                                c.weight = 50;
+                                c.gender = Gender::female;
+                                c.chatReactionFriendly = "curses all humans";
+                                c.chatReactionHostile = "\"Die!\"";
+                                c.name = "witch";), tribe, factory);
     case CreatureId::CYCLOPS: return get(ViewId::CYCLOPS, CATTR(
                                 c.speed = 100;
                                 c.size = CreatureSize::LARGE;
@@ -1384,6 +1396,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.skills.insert(Skill::archery);
                                 c.chatReactionFriendly = "curses all dwarves";
                                 c.chatReactionHostile = "\"Die!\"";
+                                c.spells.push_back(Creature::getSpell(SpellId::HEALING));
                                 c.name = "elven archer";), Tribe::elven, factory);
     case CreatureId::ELF: return get(ViewId::ELF, CATTR(
                                 c.speed = 100;
@@ -1396,6 +1409,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.innocent = true;
                                 c.chatReactionFriendly = "curses all dwarves";
                                 c.chatReactionHostile = "\"Die!\"";
+                                c.spells.push_back(Creature::getSpell(SpellId::HEALING));
                                 c.name = "elf";), Tribe::elven, factory);
     case CreatureId::ELF_CHILD: return get(ViewId::ELF_CHILD, CATTR(
                                 c.speed = 150;
@@ -1425,6 +1439,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.skills.insert(Skill::archery);
                                 c.chatReactionFriendly = "curses all dwarves";
                                 c.chatReactionHostile = "\"Die!\"";
+                                c.spells.push_back(Creature::getSpell(SpellId::HEALING));
                                 c.name = "elf lord";), factory));
     case CreatureId::HORSE: return get(ViewId::HORSE, CATTR(
                                 c.speed = 100;
@@ -1745,6 +1760,12 @@ class ItemList {
     return *this;
   }
 
+  ItemList& add(vector<ItemId> ids) {
+    for (ItemId id : ids)
+      ret.push_back(id);
+    return *this;
+  }
+
   operator vector<ItemId>() {
     return ret;
   }
@@ -1831,6 +1852,10 @@ vector<ItemId> getInventory(CreatureId id) {
     case CreatureId::MUMMY_LORD: return ItemList()
             .add(ItemId::GOLD_PIECE, Random.getRandom(100, 200)).add(
             chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD}, {1, 1, 1}));
+    case CreatureId::WITCH: return ItemList()
+            .add(ItemId::KNIFE)
+            .add({ItemId::HEALING_POTION, ItemId::SLEEP_POTION, ItemId::SLOW_POTION, ItemId::BLINDNESS_POTION,
+                ItemId::INVISIBLE_POTION, ItemId::POISON_POTION, ItemId::SPEED_POTION});
     default: return {};
   }
 }

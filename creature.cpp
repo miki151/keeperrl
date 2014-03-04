@@ -1767,6 +1767,10 @@ double Creature::getCourage() const {
   return courage;
 }
 
+Gender Creature::getGender() const {
+  return gender;
+}
+
 void Creature::increaseExpLevel(double amount) {
   if (expLevel < maxLevel && increaseExperience) {
     expLevel += amount;

@@ -7,6 +7,7 @@
 #include "util.h"
 #include "effect.h"
 #include "skill.h"
+#include "gender.h"
 
 // WTF is this defined
 #undef HUGE
@@ -37,6 +38,7 @@ class CreatureAttributes {
   Optional<AttackType> barehandedAttack;
   Optional<EffectType> attackEffect;
   Optional<EffectType> passiveAttack;
+  Gender gender = Gender::male;
   int legs = 2;
   int arms = 2;
   int wings = 0;

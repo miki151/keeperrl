@@ -25,6 +25,7 @@ void Model::serialize(Archive& ar, const unsigned int version) {
   Skill::serializeAll(ar);
   Quest::serializeAll(ar);
   Tribe::serializeAll(ar);
+  Statistics::serialize(ar, version);
 }
 
 SERIALIZABLE(Model);
@@ -166,13 +167,10 @@ Model* Model::heroModel(View* view) {
   Model* m = new Model(view);
   vector<Location*> locations = getVillageLocations(3);
   Level* top = m->prepareTopLevel({
-      {SettlementType::CASTLE, CreatureFactory::humanVillage(0.3), CreatureId::AVATAR, locations[0], Tribe::human,
-        {30, 20}, {StairKey::CASTLE_CELLAR}},
- //     {SettlementType::VILLAGE, CreatureFactory::humanVillagePeaceful(), locations[1], Tribe::human, {30, 20}, {}},
-      {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.3), CreatureId::ELF_LORD, locations[2], Tribe::elven,
-        {30, 20}, {}}});
-/*  Level* top = m->prepareTopLevel2({
-      {SettlementType::CASTLE, CreatureFactory::humanVillage(), locations[0], Tribe::human}});*/
+      {SettlementType::CASTLE, CreatureFactory::humanVillage(0.3), Random.getRandom(10, 20), CreatureId::AVATAR,
+          locations[0], Tribe::human, {30, 20}, {StairKey::CASTLE_CELLAR}},
+      {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.3), Random.getRandom(10, 20), CreatureId::ELF_LORD,
+          locations[2], Tribe::elven, {30, 20}, {}}});
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(1), {StairKey::DWARF}, {StairKey::DWARF}));
@@ -295,11 +293,10 @@ Model* Model::collectiveModel(View* view) {
   CreatureFactory factory = CreatureFactory::collectiveStart();
   vector<Location*> villageLocations = getVillageLocations(2);
   vector<SettlementInfo> settlements{
-    {SettlementType::CASTLE, CreatureFactory::humanVillage(0.6),CreatureId::AVATAR, villageLocations[0], Tribe::human,
-      {30, 20}, {}},
-    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.6), CreatureId::ELF_LORD, villageLocations[1],
-      Tribe::elven,
-      {30, 20}, {}}  };
+    {SettlementType::CASTLE, CreatureFactory::humanVillage(0.6), 20, CreatureId::AVATAR, villageLocations[0],
+      Tribe::human, {30, 20}, {}},
+    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.6), 10, CreatureId::ELF_LORD, villageLocations[1],
+      Tribe::elven, {30, 20}, {}}  };
   vector<CreatureFactory> cottageF {
     CreatureFactory::humanVillage(0),
     CreatureFactory::elvenVillage(0),
@@ -307,7 +304,7 @@ Model* Model::collectiveModel(View* view) {
   vector<Tribe*> cottageT { Tribe::human, Tribe::elven };
   for (int i : Range(4, 8))
     settlements.push_back(
-       {SettlementType::COTTAGE, cottageF[i % 2], Nothing(), new Location(), cottageT[i % 2],
+       {SettlementType::COTTAGE, cottageF[i % 2], Random.getRandom(3, 7), Nothing(), new Location(), cottageT[i % 2],
        {10, 10}, {}});
   Level* top = m->prepareTopLevel2(settlements);
   Level* d1 = m->buildLevel(

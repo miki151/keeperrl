@@ -24,6 +24,9 @@ class Statistics {
   static void add(StatId);
   static vector<string> getText();
 
+  template <class Archive>
+  static void serialize(Archive& ar, const unsigned int version);
+
   private:
   static unordered_map<StatId, int> count;
 };
