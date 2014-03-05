@@ -7,206 +7,206 @@
 #include "level.h"
 #include "name_generator.h"
 
-static int counter = 0;
-
-
 template <class Archive>
 void VillageControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(EventListener)
-    & BOOST_SERIALIZATION_NVP(attackInfo)
     & BOOST_SERIALIZATION_NVP(allCreatures)
-    & BOOST_SERIALIZATION_NVP(numAttacks)
-    & BOOST_SERIALIZATION_NVP(messages)
+    & BOOST_SERIALIZATION_NVP(aliveCreatures)
     & BOOST_SERIALIZATION_NVP(villain)
     & BOOST_SERIALIZATION_NVP(level)
-    & BOOST_SERIALIZATION_NVP(direction)
-    & BOOST_SERIALIZATION_NVP(stairKey)
     & BOOST_SERIALIZATION_NVP(name)
     & BOOST_SERIALIZATION_NVP(tribe)
-    & BOOST_SERIALIZATION_NVP(attackPoints);
+    & BOOST_SERIALIZATION_NVP(killedPoints)
+    & BOOST_SERIALIZATION_NVP(killedCoeff)
+    & BOOST_SERIALIZATION_NVP(powerCoeff)
+    & BOOST_SERIALIZATION_NVP(lastAttack)
+    & BOOST_SERIALIZATION_NVP(lastMyAttack)
+    & BOOST_SERIALIZATION_NVP(lastAttackLaunched)
+    & BOOST_SERIALIZATION_NVP(triggerAmounts)
+    & BOOST_SERIALIZATION_NVP(fightingCreatures);
 }
 
 SERIALIZABLE(VillageControl);
 
-template <class Archive>
-void VillageControl::AttackInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(creatures)
-    & BOOST_SERIALIZATION_NVP(attackTime)
-    & BOOST_SERIALIZATION_NVP(msg);
-}
-
-SERIALIZABLE(VillageControl::AttackInfo);
-
-VillageControl::VillageControl(Collective* c, const Level* l, StairDirection dir, StairKey key, string n) 
-    : villain(c), level(l), direction(dir), stairKey(key), name(n) {
-  ++counter;
+VillageControl::VillageControl(Collective* c, const Level* l, string n, double kCoeff, double pCoeff) 
+    : villain(c), level(l), name(n), killedCoeff(kCoeff), powerCoeff(pCoeff) {
 }
 
 VillageControl::~VillageControl() {
 }
 
-void VillageControl::addCreature(Creature* c, int attackPoints) {
+void VillageControl::addCreature(Creature* c) {
   if (tribe == nullptr) {
     tribe = c->getTribe();
-    CHECK(!tribe->getImportantMembers().empty());
+    CHECK(tribe->getLeader());
   }
   CHECK(c->getTribe() == tribe);
-  attackInfo[attackPoints].creatures.push_back(c);
+  CHECK(triggerAmounts.empty()) << "Attacks have already been calculated";
   allCreatures.push_back(c);
 }
 
-bool VillageControl::startedAttack(Creature* c) {
-  for (auto& elem : attackInfo)
-    if (contains(elem.second.creatures, c)) {
-      if (elem.second.attackTime > -1) {
-        if (elem.second.attackTime <= c->getTime()) {
-          if (elem.second.msg) {
+// How long to wait between being attacked and attacking
+const int attackDelay = 60;
+
+// How long to wait between consecutive attacks from the same village
+const int myAttacksDelay = 300;
+
+double VillageControl::getCurrentTrigger() {
+  double enemyPoints = killedCoeff * killedPoints + powerCoeff * villain->getDangerLevel();
+  double currentTrigger = 0;
+  for (double trigger : triggerAmounts)
+    if (trigger <= enemyPoints)
+      currentTrigger = trigger;
+    else
+      break;
+  return currentTrigger;
+}
+
+void VillageControl::tick(double time) {
+  if (triggerAmounts.empty())
+    calculateAttacks();
+  if (aliveCreatures.empty())
+    return;
+  if (lastAttack >= time - attackDelay || lastMyAttack >= time - myAttacksDelay)
+    return;
+  double lastAttackPoints = 0;
+  for (const Creature* c : allCreatures)
+    if (fightingCreatures.count(c))
+        lastAttackPoints += c->getDifficultyPoints();
+  bool firstAttack = lastAttackPoints == 0;
+  double currentTrigger = getCurrentTrigger();
+  if (lastAttackPoints < currentTrigger) {
+    lastMyAttack = time;
+    int numCreatures = 0;
+    for (const Creature* c : allCreatures)
+      if (!fightingCreatures.count(c) && !c->isDead()) {
+        ++numCreatures;
+        fightingCreatures.insert(c);
+        if ((lastAttackPoints += c->getDifficultyPoints()) >= currentTrigger)
+          break;
+      }
+    if (numCreatures > 0) {
+      if (currentTrigger >= *triggerAmounts.rbegin() - 0.001)
+        lastAttackLaunched = true;
+      if (fightingCreatures.size() < allCreatures.size()) {
+        if (numCreatures <= 3) {
+          if (firstAttack)
             messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
-                  " of " + name + " are attacking!"));
-            elem.second.msg = false;
-          }
-          return true;
-        }
+                  " of " + name + " have sent a small group to scout your dungeon. "
+                  "It it advisable that they never return from this mission."));
+          else
+            messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
+                  " of " + name + " are sending another small group of scouts. How cute is that?"));
+        } else
+          messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
+                " of " + name + " are attacking!"));
       } else
-        if (elem.first <= c->getTime() + attackPoints) {
-          elem.second.attackTime = c->getTime() + 50;
-          messages.insert(elem.second.attackTime);
-        }
+        messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
+              " of " + name + " have undertaken a final, desperate attack!"));
     }
-  return false;
+  }
+}
+
+bool VillageControl::isConquered() const {
+  return aliveCreatures.empty();
+}
+
+void VillageControl::calculateAttacks() {
+  CHECK(allCreatures[0] == tribe->getLeader());
+  // Put the leader at the end
+  std::swap(allCreatures[0], allCreatures.back());
+  aliveCreatures = allCreatures;
+  double myPower = 0;
+  for (const Creature* c : allCreatures)
+    myPower += c->getDifficultyPoints();
+  Debug() << "Village power " << myPower;
+  for (int i : Range(Random.getRandom(1, 3))) {
+    double trigger = Random.getDouble(0.4, myPower * 1.2);
+    triggerAmounts.insert(trigger);
+    Debug() << "Village trigger " << trigger;
+  }
+}
+
+bool VillageControl::startedAttack(Creature* creature) {
+  return fightingCreatures.count(creature);
 }
 
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim->getTribe() == tribe)
-    attackPoints += 2 * victim->getDifficultyPoints();
+    killedPoints += victim->getDifficultyPoints();
   if (contains(allCreatures, victim)) {
-    removeElement(allCreatures, victim);
-    const Creature* leader = getOnlyElement(tribe->getImportantMembers());
-    if (allCreatures.empty() && !leader->isDead()) {
-      messageBuffer.addMessage(MessageBuffer::important("You have defeated the pathetic attacks of the " 
-            + tribe->getName() +" of " + name + ". Take advantage of their weakened defense and kill their leader, "
-            "the " + leader->getName()));
+    lastAttack = victim->getTime();
+    removeElement(aliveCreatures, victim);
+    if (aliveCreatures.empty()) {
+      messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
+    } else {
+      if (fightingCreatures.count(victim) && lastAttackLaunched && !NOTNULL(tribe->getLeader())->isDead()) {
+        bool attackersDead = true;
+        for (const Creature* c : fightingCreatures)
+          if (!c->isDead())
+            attackersDead = false;
+        if (attackersDead)
+          messageBuffer.addMessage(MessageBuffer::important("You have defeated the pathetic attacks of the "
+                + tribe->getName() + " of " + name + ". Take advantage of their weakened defense and kill their "
+                "leader, the " + tribe->getLeader()->getName()));
+      }
     }
   }
 }
 
-class HumanVillageControl : public VillageControl {
+class TopLevelVillageControl : public VillageControl {
   public:
-  HumanVillageControl(Collective* villain, const Location* location, StairDirection dir, StairKey key)
-      : VillageControl(villain, location->getLevel(), dir, key, location->getName()), villageLocation(location) {}
+  TopLevelVillageControl(Collective* villain, const Location* location, double killedCoeff, double powerCoeff) 
+      : VillageControl(villain, location->getLevel(), location->getName(), killedCoeff, powerCoeff),
+      villageLocation(location) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    CHECK(startedAttack(c));
-    if (pathToDungeon.empty() && c->getLevel() != villain->getLevel())
-      pathToDungeon = genPathToDungeon();
-    if (c->getLevel() == villain->getLevel()) {
-      if (Optional<Vec2> move = c->getMoveTowards(villain->getKeeper()->getPosition())) 
-        return {1.0, [this, move, c] () {
-          c->move(*move);
-        }};
-      else {
-        for (Vec2 v : Vec2::directions8(true))
-          if (c->canDestroy(v) && c->getSquare(v)->getName() == "door")
-            return {1.0, [this, v, c] () {
-              c->destroy(v);
-            }};
-        return NoMove;
-      }
-    } else {
-      Vec2 stairs = getOnlyElement(c->getLevel()->getLandingSquares(direction, stairKey));
-      if (c->getPosition() == stairs)
-        return {1.0, [this, c] () {
-          c->applySquare();
- /*         if (c->getLevel() == villain->getLevel())
-            onEnteredDungeon(attackTimes.at(c));*/
-        }};
-      int& pathInd = lastPathLocation[c];
-      CHECK(pathInd >= 0 && pathInd < pathToDungeon.size() - 1)
-        << "Wrong index " << pathInd << " " << (int)pathToDungeon.size();
-      if (c->getPosition() == pathToDungeon[pathInd + 1])
-        ++pathInd;
-      if (c->getPosition() == pathToDungeon[pathInd]) {
-        if (c->canMove(pathToDungeon[pathInd + 1] - pathToDungeon[pathInd]))
-          return {1.0, [=] () {
-            c->move(pathToDungeon[pathInd + 1] - pathToDungeon[pathInd]);
+    if (!startedAttack(c))
+      return NoMove;
+    if (c->getLevel() != villain->getLevel())
+      return NoMove;
+    if (Optional<Vec2> move = c->getMoveTowards(villain->getKeeper()->getPosition())) 
+      return {1.0, [this, move, c] () {
+        c->move(*move);
+      }};
+    else {
+      for (Vec2 v : Vec2::directions8(true))
+        if (c->canDestroy(v) && c->getSquare(v)->getName() == "door")
+          return {1.0, [this, v, c] () {
+            c->destroy(v);
           }};
-        else
-          return NoMove;
-      } else 
-        if (Optional<Vec2> move = c->getMoveTowards(pathToDungeon[pathInd])) 
-          return {1.0, [=] () {
-            c->move(*move);
-          }};
-        else
-          return NoMove;
+      return NoMove;
     }
   }
 
-  SERIALIZATION_CONSTRUCTOR(HumanVillageControl);
+  SERIALIZATION_CONSTRUCTOR(TopLevelVillageControl);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(VillageControl)
       & BOOST_SERIALIZATION_NVP(visited)
-      & BOOST_SERIALIZATION_NVP(villageLocation)
-      & BOOST_SERIALIZATION_NVP(pathToDungeon)
-      & BOOST_SERIALIZATION_NVP(lastPathLocation);
-  }
-
-  private:
-
-  vector<Vec2> genPathToDungeon() {
-    Vec2 start(-1, -1);
-    const Level* level = villageLocation->getLevel();
-    for (Vec2 v : villageLocation->getBounds().minusMargin(-1))
-      if (level->getSquare(v)->getName() == "road") {
-        start = v;
-        break;
-      }
-    CHECK(start.x > -1) << "Couldn't find path beginning in village";
-    vector<Vec2> path = findStaircase(start);
-    CHECK(!path.empty()) << "Couldn't find down staircase";
-    reverse(path.begin(), path.end());
-    return path;
-  }
-
-  vector<Vec2> findStaircase(Vec2 start) {
-    const Level* level = villageLocation->getLevel();
-    visited.insert(start);
-    if (level->getSquare(start)->getApplyType(Creature::getDefault()) == SquareApplyType::DESCEND)
-      return {start};
-    for (Vec2 dir : level->getSquare(start)->getTravelDir()) {
-      Vec2 nextMove = start + dir;
-      if (!visited.count(nextMove)) {
-        vector<Vec2> path = findStaircase(nextMove);
-        if (!path.empty()) {
-          path.push_back(start);
-          return path;
-        }
-      }
-    }
-    return {};
+      & BOOST_SERIALIZATION_NVP(villageLocation);
   }
 
   unordered_set<Vec2> visited;
   const Location* villageLocation;
-  vector<Vec2> pathToDungeon;
-  map<Creature*, int> lastPathLocation;
 };
 
-VillageControl* VillageControl::topLevelVillage(Collective* villain, const Location* location,
-    StairDirection dir, StairKey key) {
-  return new HumanVillageControl(villain, location, dir, key);
+PVillageControl VillageControl::topLevelVillage(Collective* villain, const Location* location,
+    double killedCoeff, double powerCoeff) {
+  return PVillageControl(new TopLevelVillageControl(villain, location, killedCoeff, powerCoeff));
 }
 
 
 class DwarfVillageControl : public VillageControl {
   public:
-  DwarfVillageControl(Collective* villain, const Level* level, StairDirection dir, StairKey key)
-      : VillageControl(villain, level, dir, key, "the Dwarven Halls") {}
+  DwarfVillageControl(Collective* villain, const Level* level, StairDirection dir, StairKey key,
+    double killedCoeff, double powerCoeff)
+      : VillageControl(villain, level, "the Dwarven Halls", killedCoeff, powerCoeff), direction(dir), stairKey(key) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    CHECK(startedAttack(c));
+    if (!startedAttack(c))
+      return NoMove;
     if (c->getLevel() == villain->getLevel()) {
       if (Optional<Vec2> move = c->getMoveTowards(villain->getKeeper()->getPosition())) 
         return {1.0, [this, move, c] () {
@@ -225,8 +225,6 @@ class DwarfVillageControl : public VillageControl {
       if (c->getPosition() == stairs)
         return {1.0, [this, c] () {
           c->applySquare();
- /*         if (c->getLevel() == villain->getLevel())
-            onEnteredDungeon(attackTimes.at(c));*/
         }};
       if (Optional<Vec2> move = c->getMoveTowards(stairs)) 
           return {1.0, [=] () {
@@ -241,20 +239,23 @@ class DwarfVillageControl : public VillageControl {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(VillageControl);
+    ar& SUBCLASS(VillageControl) & BOOST_SERIALIZATION_NVP(direction) & BOOST_SERIALIZATION_NVP(stairKey);
   }
+
+  StairDirection direction;
+  StairKey stairKey;
 };
 
 template <class Archive>
 void VillageControl::registerTypes(Archive& ar) {
-  REGISTER_TYPE(ar, HumanVillageControl);
+  REGISTER_TYPE(ar, TopLevelVillageControl);
   REGISTER_TYPE(ar, DwarfVillageControl);
 }
 
 REGISTER_TYPES(VillageControl);
 
-VillageControl* VillageControl::dwarfVillage(Collective* villain, const Level* level,
-    StairDirection dir, StairKey key) {
-  return new DwarfVillageControl(villain, level, dir, key);
+PVillageControl VillageControl::dwarfVillage(Collective* villain, const Level* level,
+    StairDirection dir, StairKey key, double killedCoeff, double powerCoeff) {
+  return PVillageControl(new DwarfVillageControl(villain, level, dir, key, killedCoeff, powerCoeff));
 }
 

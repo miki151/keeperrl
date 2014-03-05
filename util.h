@@ -43,6 +43,9 @@ typedef unique_ptr<Trigger> PTrigger;
 class Level;
 typedef unique_ptr<Level> PLevel;
 
+class VillageControl;
+typedef unique_ptr<VillageControl> PVillageControl;
+
 template<class T>
 vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
   vector<T*> ret;

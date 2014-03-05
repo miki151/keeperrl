@@ -8,7 +8,7 @@ void Tribe::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(diplomatic)
     & BOOST_SERIALIZATION_NVP(standing)
     & BOOST_SERIALIZATION_NVP(attacks)
-    & BOOST_SERIALIZATION_NVP(importantMembers)
+    & BOOST_SERIALIZATION_NVP(leader)
     & BOOST_SERIALIZATION_NVP(members)
     & BOOST_SERIALIZATION_NVP(enemyTribes)
     & BOOST_SERIALIZATION_NVP(name);
@@ -58,9 +58,9 @@ Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
 }
 
 void Tribe::removeMember(const Creature* c) {
+  if (c == leader)
+    leader = nullptr;
   removeElement(members, c);
-  if (contains(importantMembers, c))
-    removeElement(importantMembers, c);
 }
 
 const string& Tribe::getName() {
@@ -98,12 +98,11 @@ static const double thiefPenalty = 0.5;
 static const double importantMemberMult = 0.5 / killBonus;
 
 double Tribe::getMultiplier(const Creature* member) {
-  if (contains(importantMembers, member))
+  if (member == leader)
     return importantMemberMult;
   else
     return 1;
 }
-
 
 void Tribe::onKillEvent(const Creature* member, const Creature* attacker) {
   if (contains(members, member)) {
@@ -130,19 +129,17 @@ void Tribe::onAttackEvent(const Creature* member, const Creature* attacker) {
   standing[attacker] -= attackPenalty * getMultiplier(member);
 }
 
-void Tribe::addImportantMember(const Creature* c) {
-  importantMembers.push_back(c);
-}
-
 void Tribe::addMember(const Creature* c) {
   members.push_back(c);
 }
 
-vector<const Creature*> Tribe::getImportantMembers(bool includeDead) {
-  if (includeDead)
-    return importantMembers;
-  else
-    return filter(importantMembers, [](const Creature* c) { return !c->isDead(); });
+void Tribe::setLeader(const Creature* c) {
+  CHECK(!leader);
+  leader = c;
+}
+
+const Creature* Tribe::getLeader() {
+  return leader;
 }
 
 vector<const Creature*> Tribe::getMembers(bool includeDead) {

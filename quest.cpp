@@ -21,7 +21,9 @@ class KillTribeQuest : public Quest, public EventListener {
   }
 
   virtual bool isFinished() const override {
-    for (const Creature* c : (onlyImportant ? tribe->getImportantMembers() : tribe->getMembers()))
+    if (onlyImportant)
+      return NOTNULL(tribe->getLeader())->isDead();
+    for (const Creature* c : tribe->getMembers())
       if (!c->isDead())
         return false;
     return true;

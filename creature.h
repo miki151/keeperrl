@@ -307,6 +307,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   vector<PController> controllerStack;
   vector<Vision*> visions;
   mutable vector<const Creature*> kills;
+  mutable double difficultyPoints = 0;
 };
 
 struct SpellInfo {

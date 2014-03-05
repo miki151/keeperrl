@@ -7,18 +7,20 @@
 class VillageControl : public EventListener {
   public:
   virtual ~VillageControl();
-  void addCreature(Creature* c, int attackPoints);
-  void onEnteredDungeon(int attackTime);
+  void addCreature(Creature* c);
 
   virtual MoveInfo getMove(Creature* c) = 0;
-  bool startedAttack(Creature* c);
+
+  void tick(double time);
+
+  bool isConquered() const;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
 
-  static VillageControl* topLevelVillage(Collective* villain, const Location* villageLocation, 
-      StairDirection dir, StairKey key);
-  static VillageControl* dwarfVillage(Collective* villain, const Level*, 
-      StairDirection dir, StairKey key);
+  static PVillageControl topLevelVillage(Collective* villain, const Location* villageLocation,
+      double killedCoeff, double powerCoeff);
+  static PVillageControl dwarfVillage(Collective* villain, const Level*, 
+      StairDirection dir, StairKey key, double killedCoeff, double powerCoeff);
 
   SERIALIZATION_DECL(VillageControl);
 
@@ -26,25 +28,24 @@ class VillageControl : public EventListener {
   static void registerTypes(Archive& ar);
 
   protected:
-  VillageControl(Collective* villain, const Level*, StairDirection, StairKey, string name);
-  struct AttackInfo {
-    vector<const Creature*> creatures;
-    int attackTime = -1;
-    bool msg = true;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-  };
-  map<int, AttackInfo> attackInfo;
+  VillageControl(Collective* villain, const Level*, string name, double killedCoeff, double powerCoeff);
+  void calculateAttacks();
+  double getCurrentTrigger();
+  bool startedAttack(Creature* creature);
   vector<const Creature*> allCreatures;
-  int numAttacks = 0;
-  unordered_set<int> messages;
+  vector<const Creature*> aliveCreatures;
   Collective* villain = nullptr;
   const Level* level = nullptr;
-  StairDirection direction;
-  StairKey stairKey;
   string name;
   Tribe* tribe = nullptr;
-  int attackPoints = 0;
+  double killedPoints = 0;
+  double killedCoeff;
+  double powerCoeff;
+  double lastAttack = 0;
+  double lastMyAttack = 0;
+  bool lastAttackLaunched = false;
+  set<double> triggerAmounts;
+  set<const Creature*> fightingCreatures;
 };
 
 #endif

@@ -21,8 +21,8 @@ class Tribe : public EventListener {
   void makeSlightEnemy(const Creature*);
   void addMember(const Creature*);
   void removeMember(const Creature*);
-  void addImportantMember(const Creature*);
-  vector<const Creature*> getImportantMembers(bool includeDead = false);
+  void setLeader(const Creature*);
+  const Creature* getLeader();
   vector<const Creature*> getMembers(bool includeDead = false);
   const string& getName();
   void addEnemy(Tribe*);
@@ -74,7 +74,7 @@ class Tribe : public EventListener {
 
   unordered_map<const Creature*, double> standing;
   vector<pair<const Creature*, const Creature*>> attacks;
-  vector<const Creature*> importantMembers;
+  const Creature* leader = nullptr;
   vector<const Creature*> members;
   unordered_set<Tribe*> enemyTribes;
   string name;

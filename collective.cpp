@@ -1102,7 +1102,7 @@ void Collective::onAppliedItem(Vec2 pos, Item* item) {
 
 void Collective::onAppliedSquare(Vec2 pos) {
   if (mySquares.at(SquareType::LIBRARY).count(pos)) {
-    mana += 0.5 + max(0., 1.5 - double(getDangerLevel()) / 1000);
+    mana += 0.3 + max(0., 2 - double(getDangerLevel()) / 500);
   }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
     if (Random.roll(30)) {
@@ -1686,7 +1686,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
       if (contains(minionByType.at(type), c))
         removeElement(minionByType.at(type), c);
   } else if (victim->getTribe() != Tribe::player && (!killer || killer->getTribe() == Tribe::player)) {
-    double incMana = victim->getDifficultyPoints();
+    double incMana = victim->getDifficultyPoints() / 3;
     mana += incMana;
     kills.push_back(victim);
     points += victim->getDifficultyPoints();

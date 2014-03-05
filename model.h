@@ -8,6 +8,7 @@
 #include "square_factory.h"
 #include "monster.h"
 #include "level_maker.h"
+#include "village_control.h"
 
 class Collective;
 
@@ -50,6 +51,7 @@ class Model : public EventListener {
   View* getView();
   void setView(View*);
 
+  void tick(double time);
   void onKillEvent(const Creature* victim, const Creature* killer) override;
   void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, const string& land, vector<const Creature*> kills, int points);
@@ -65,6 +67,7 @@ class Model : public EventListener {
   Level* prepareTopLevel2(vector<SettlementInfo> settlements);
 
   vector<PLevel> levels;
+  vector<PVillageControl> villageControls;
   View* view;
   TimeQueue timeQueue;
   vector<PCreature> deadCreatures;

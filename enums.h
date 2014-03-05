@@ -142,6 +142,8 @@ enum class CreatureId {
     ARCHER,
     PESEANT,
     CHILD,
+
+    LIZARDMAN,
     
     ELF,
     ELF_ARCHER,
@@ -290,6 +292,7 @@ enum class ViewId {
   ELF_CHILD,
   ELF_LORD,
   ELVEN_SHOPKEEPER,
+  LIZARDMAN,
   DWARF,
   DWARF_BARON,
   DWARVEN_SHOPKEEPER,

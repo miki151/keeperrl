@@ -500,7 +500,7 @@ class VillageElder : public Creature {
   VillageElder(vector<pair<Skill*, double>> _teachSkills, vector<pair<Quest*, int>> _quests,
       const ViewObject& object, Tribe* t, const CreatureAttributes& attr, ControllerFactory factory) : 
       Creature(object, t, attr, factory), teachSkills(_teachSkills), quests(_quests) {
-    getTribe()->addImportantMember(this);
+    getTribe()->setLeader(this);
   }
 
   bool teach(Creature* who) {
@@ -750,24 +750,12 @@ CreatureFactory CreatureFactory::collectiveSurpriseEnemies() {
   return CreatureFactory(Tribe::monster, { CreatureId::SPECIAL_MONSTER}, { 1}, {});
 }
 
-CreatureFactory CreatureFactory::dwarfTown(int num) {
-  int maxLevel = 3;
-  CHECK(num <= maxLevel && num > 0);
-  map<CreatureId, vector<int>> frequencies {
-      { CreatureId::GNOME, { 0, 1, 1}},
-      { CreatureId::JACKAL, { 0, 1, 1 }},
-      { CreatureId::RAT, { 2, 1, 1}},
-      { CreatureId::BAT, { 0, 1, 1 }},
-      { CreatureId::DWARF, { 6, 1, 1 }}};
-  vector<vector<CreatureId>> uniqueMonsters(maxLevel);
-  uniqueMonsters[0].push_back(CreatureId::DWARF_BARON);
-  vector<CreatureId> ids;
-  vector<double> freq;
-  for (auto elem : frequencies) {
-    ids.push_back(elem.first);
-    freq.push_back(elem.second[num - 1]);
-  }
-  return CreatureFactory(Tribe::monster, ids, freq, uniqueMonsters[num - 1]);
+CreatureFactory CreatureFactory::dwarfTownPeaceful() {
+  return CreatureFactory(Tribe::dwarven, { CreatureId::RAT}, { 1}, {});
+}
+
+CreatureFactory CreatureFactory::dwarfTown() {
+  return CreatureFactory(Tribe::dwarven, { CreatureId::DWARF}, { 1}, { CreatureId::DWARF_BARON});
 }
 
 CreatureFactory CreatureFactory::goblinTown(int num) {
@@ -1310,8 +1298,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
     case CreatureId::BILE_DEMON: return get(ViewId::BILE_DEMON, CATTR(
                                 c.speed = 80;
                                 c.size = CreatureSize::LARGE;
-                                c.strength = 17;
-                                c.dexterity = 12;
+                                c.strength = 19;
+                                c.dexterity = 14;
                                 c.barehandedDamage = 6;
                                 c.humanoid = true;
                                 c.weight = 140;
@@ -1359,8 +1347,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.speed = 80;
                                 c.size = CreatureSize::MEDIUM;
    //                             c.firstName = NameGenerator::dwarfNames.getNext();
-                                c.strength = 20;
-                                c.dexterity = 14;
+                                c.strength = 21;
+                                c.dexterity = 16;
                                 c.barehandedDamage = 3;
                                 c.humanoid = true;
                                 c.weight = 90;
@@ -1376,8 +1364,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.speed = 80;
                                 c.size = CreatureSize::MEDIUM;
  //                               c.firstName = NameGenerator::dwarfNames.getNext();
-                                c.strength = 22;
-                                c.dexterity = 16;
+                                c.strength = 23;
+                                c.dexterity = 18;
                                 c.barehandedDamage = 5;
                                 c.humanoid = true;
                                 c.weight = 120;
@@ -1385,6 +1373,17 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all goblins";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "dwarf baron";), factory));
+    case CreatureId::LIZARDMAN: return get(ViewId::LIZARDMAN, CATTR(
+                                c.speed = 120;
+                                c.size = CreatureSize::MEDIUM;
+                                c.strength = 15;
+                                c.dexterity = 13;
+                                c.barehandedDamage = 10;
+                                c.humanoid = true;
+                                c.weight = 50;
+                                c.chatReactionFriendly = "curses all humans";
+                                c.chatReactionHostile = "\"Die!\"";
+                                c.name = "lizardman";), tribe, factory);
     case CreatureId::ELF_ARCHER: return get(ViewId::ELF_ARCHER, CATTR(
                                 c.speed = 120;
                                 c.size = CreatureSize::MEDIUM;

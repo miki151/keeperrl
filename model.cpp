@@ -13,6 +13,7 @@
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
   ar& BOOST_SERIALIZATION_NVP(levels)
+    & BOOST_SERIALIZATION_NVP(villageControls)
     & BOOST_SERIALIZATION_NVP(timeQueue)
     & BOOST_SERIALIZATION_NVP(deadCreatures)
     & BOOST_SERIALIZATION_NVP(lastTick)
@@ -51,18 +52,7 @@ void Model::update(double totalTime) {
     if (time > totalTime)
       return;
     if (time >= lastTick + 1) {
-      MEASURE({
-          Debug() << "Turn " << time;
-          for (Creature* c : timeQueue.getAllCreatures()) {
-            c->tick(time);
-          }
-          for (PLevel& l : levels)
-            for (Square* square : l->getTickingSquares())
-              square->tick(time);
-          lastTick = time;
-          if (collective)
-            collective->tick();
-          }, "ticking time");
+      MEASURE({ tick(time); }, "ticking time");
     }
     bool unpossessed = false;
     if (!creature->isDead()) {
@@ -80,6 +70,28 @@ void Model::update(double totalTime) {
     if (unpossessed)
       break;
   } while (1);
+}
+
+void Model::tick(double time) {
+  Debug() << "Turn " << time;
+  for (Creature* c : timeQueue.getAllCreatures()) {
+    c->tick(time);
+  }
+  for (PLevel& l : levels)
+    for (Square* square : l->getTickingSquares())
+      square->tick(time);
+  lastTick = time;
+  if (collective)
+    collective->tick();
+  bool conquered = true;
+  for (PVillageControl& control : villageControls) {
+    control->tick(time);
+    conquered &= control->isConquered();
+  }
+  if (conquered && !won) {
+    collective->onConqueredLand(NameGenerator::worldNames.getNext());
+    won = true;
+  }
 }
 
 void Model::addCreature(PCreature c) {
@@ -173,7 +185,7 @@ Model* Model::heroModel(View* view) {
           locations[2], Tribe::elven, {30, 20}, {}}});
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
-      LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(1), {StairKey::DWARF}, {StairKey::DWARF}));
+      LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(), {StairKey::DWARF}, {StairKey::DWARF}));
   Level* g1 = m->buildLevel(
       Level::Builder(60, 35, "Goblin Den"),
       LevelMaker::goblinTownLevel(CreatureFactory::goblinTown(1), {StairKey::DWARF}, {}));
@@ -264,38 +276,16 @@ void Model::dwarvesMessage() {
 }
 
 void Model::onKillEvent(const Creature* victim, const Creature* killer) {
-  if (!collective)
-    return;
-  if (!humansDead && victim == getOnlyElement(Tribe::human->getImportantMembers(true))) {
-    view->presentText("", "This is an ex-duke.");
-    humansDead = true;
-    if (elvesDead && !dwarvesDead)
-      dwarvesMessage();
-  }
-  if (!elvesDead && victim == getOnlyElement(Tribe::elven->getImportantMembers(true))) {
-    view->presentText("", "This is an ex-lord.");
-    elvesDead = true;
-    if (humansDead && !dwarvesDead)
-      dwarvesMessage();
-  }
-  if (!dwarvesDead && victim == getOnlyElement(Tribe::dwarven->getImportantMembers(true))) {
-    view->presentText("", "This is an ex-baron.");
-    dwarvesDead = true;
-  }
-  if (dwarvesDead && humansDead && elvesDead && !won) {
-    collective->onConqueredLand(NameGenerator::worldNames.getNext());
-    won = true;
-  }
 }
 
 Model* Model::collectiveModel(View* view) {
   Model* m = new Model(view);
   CreatureFactory factory = CreatureFactory::collectiveStart();
   vector<Location*> villageLocations = getVillageLocations(2);
-  vector<SettlementInfo> settlements{
-    {SettlementType::CASTLE, CreatureFactory::humanVillage(0.6), 20, CreatureId::AVATAR, villageLocations[0],
+  vector<SettlementInfo> settlements {
+    {SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), 12, Nothing(), villageLocations[0],
       Tribe::human, {30, 20}, {}},
-    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.6), 10, CreatureId::ELF_LORD, villageLocations[1],
+    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.0), 7, Nothing(), villageLocations[1],
       Tribe::elven, {30, 20}, {}}  };
   vector<CreatureFactory> cottageF {
     CreatureFactory::humanVillage(0),
@@ -309,7 +299,7 @@ Model* Model::collectiveModel(View* view) {
   Level* top = m->prepareTopLevel2(settlements);
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
-      LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(1), {StairKey::DWARF}, {}));
+      LevelMaker::mineTownLevel(CreatureFactory::dwarfTownPeaceful(), {StairKey::DWARF}, {}));
   m->addLink(StairDirection::DOWN, StairKey::DWARF, top, d1);
   m->collective = new Collective(m);
   m->collective->setLevel(top);
@@ -329,50 +319,36 @@ Model* Model::collectiveModel(View* view) {
     m->collective->addCreature(c.get(), MinionType::IMP);
     m->addCreature(std::move(c));
   }
-  int diffInc = Options::getValue(OptionId::EASY_GAME) ? 800 : 0;
-  vector<vector<tuple<int, int, int>>> heroAttackTime { {
-      { make_tuple(1800 + diffInc, 2, 4) },
-      { make_tuple(2400 + diffInc, 2, 4) },
-      { make_tuple(2800 + diffInc, 4, 7) }},
-    { { make_tuple(1300 + diffInc, 2, 4) },
-      { make_tuple(2400 + diffInc, 4, 7) }}};
-
   vector<CreatureFactory> villageFactories {
-    { CreatureFactory::collectiveEnemies() },
-    { CreatureFactory::collectiveElfEnemies() }
+    { CreatureFactory::collectiveFinalAttack() },
+    { CreatureFactory::collectiveElfFinalAttack() }
+  };
+  vector<int> heroCounts {
+    20, 10
   };
   int cnt = 0;
+  auto killedCoeff = [] () { return Random.getDouble(0.1, 0.3); };
+  auto powerCoeff = [] () { return Random.getDouble(0.2, 1); };
   for (int i : All(villageLocations)) {
-    Location* loc = villageLocations[i];
-    VillageControl* control = VillageControl::topLevelVillage(m->collective, loc,
-        StairDirection::DOWN, StairKey::DWARF);
-    CreatureFactory firstAttack = villageFactories[cnt];
-    for (int j : All(heroAttackTime[i])) {
-      int attackTime = get<0>(heroAttackTime[i][j]);
-      int heroCount = Random.getRandom(get<1>(heroAttackTime[i][j]), get<2>(heroAttackTime[i][j]));
-      for (int k : Range(heroCount)) {
-        PCreature c = firstAttack.random(MonsterAIFactory::villageControl(control, loc));
-        control->addCreature(c.get(), attackTime);
-        top->landCreature(loc->getBounds().getAllSquares(), std::move(c));
-      }
+    PVillageControl control = VillageControl::topLevelVillage(m->collective, villageLocations[i],
+        killedCoeff(), powerCoeff());
+    for (int j : Range(heroCounts[i])) {
+      PCreature c = villageFactories[i].random(MonsterAIFactory::villageControl(control.get(), villageLocations[i]));
+      control->addCreature(c.get());
+      top->landCreature(villageLocations[i]->getBounds().getAllSquares(), std::move(c));
     }
-    if (++cnt > 1)
-      break;
+    m->villageControls.push_back(std::move(control));
   }
-/*  VillageControl* dwarfControl = VillageControl::dwarfVillage(m->collective, l, StairDirection::UP, StairKey::DWARF);
-  CreatureFactory firstAttack = CreatureFactory::singleType(Tribe::dwarven, CreatureId::DWARF);
-  CreatureFactory lastAttack = CreatureFactory::dwarfTown(1);
-  for (int i : All(heroAttackTime)) {
-    CreatureFactory& factory = (i == heroAttackTime.size() - 1 ? lastAttack : firstAttack);
-    int attackTime = get<0>(heroAttackTime[i]) + Random.getRandom(-200, 200);
-    int heroCount = Random.getRandom(get<1>(heroAttackTime[i]), get<2>(heroAttackTime[i]));
-    for (int k : Range(heroCount)) {
-      PCreature c = factory.random(MonsterAIFactory::villageControl(dwarfControl, nullptr));
-      dwarfControl->addCreature(c.get(), attackTime);
-      dwarf->landCreature(StairDirection::UP, StairKey::DWARF, std::move(c));
-    }
+  PVillageControl dwarfControl = VillageControl::dwarfVillage(m->collective, d1, StairDirection::UP, StairKey::DWARF,
+      killedCoeff(), powerCoeff());
+  int dwarfCount = 10;
+  factory = CreatureFactory::dwarfTown();
+  for (int k : Range(dwarfCount)) {
+    PCreature c = factory.random(MonsterAIFactory::villageControl(dwarfControl.get(), nullptr));
+    dwarfControl->addCreature(c.get());
+    d1->landCreature(StairDirection::UP, StairKey::DWARF, std::move(c));
   }
-  Tribe::player->addEnemy(Tribe::dwarven);*/
+  m->villageControls.push_back(std::move(dwarfControl));
   return m;
 }
 
@@ -414,7 +390,7 @@ void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
 void Model::conquered(const string& title, const string& land, vector<const Creature*> kills, int points) {
   string text= "You have conquered this land. You killed " + convertToString(kills.size()) +
       " innocent beings and scored " + convertToString(points) +
-      " points. Thank you for playing KeeperRL alpha.\n \n";
+      " points. Thank you for playing KeeperRL alpha. If you like the game, consider donating to support its development.\n \n";
   for (string stat : Statistics::getText())
     text += stat + "\n";
   view->presentText("Victory", text);

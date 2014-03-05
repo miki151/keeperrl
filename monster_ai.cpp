@@ -811,8 +811,8 @@ class ByVillageControl : public Behaviour {
   }
 
   virtual MoveInfo getMove() override {
-    if (villageControl->startedAttack(creature))
-      return villageControl->getMove(creature);
+    if (MoveInfo move = villageControl->getMove(creature))
+      return move;
     else if (guardArea)
       return guardArea->getMove();
     else

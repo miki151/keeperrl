@@ -76,7 +76,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(controller)
     & BOOST_SERIALIZATION_NVP(controllerStack)
     & BOOST_SERIALIZATION_NVP(visions)
-    & BOOST_SERIALIZATION_NVP(kills);
+    & BOOST_SERIALIZATION_NVP(kills)
+    & BOOST_SERIALIZATION_NVP(difficultyPoints);
 }
 
 SERIALIZABLE(Creature);
@@ -721,6 +722,8 @@ int Creature::getAttr(AttrType type) const {
     case AttrType::STRENGTH:
         if (tribe == Tribe::player && Options::getValue(OptionId::EASY_GAME))
           def += 2;
+        else
+          def -= 1;
         if (health < 1)
           def *= 0.666 + health / 3;
         if (sleeping)
@@ -872,6 +875,7 @@ void Creature::setTime(double t) {
 }
 
 void Creature::tick(double realTime) {
+  getDifficultyPoints();
   for (Item* item : equipment.getItems()) {
     item->tick(time, level, position);
     if (item->isDiscarded())
@@ -1097,7 +1101,7 @@ void Creature::attack(const Creature* c1, bool spend) {
     }
     c->takeDamage(attack);
     if (c->isDead())
-      increaseExpLevel(c->getDifficultyPoints() / 200);
+      increaseExpLevel(c->getDifficultyPoints() / 400);
   }
   else
     you(MsgType::MISS_ATTACK, enemyName);
@@ -1775,7 +1779,7 @@ void Creature::increaseExpLevel(double amount) {
   if (expLevel < maxLevel && increaseExperience) {
     expLevel += amount;
  //   viewObject.setSizeIncrease(0.3);
-    if (skillGain.count(getExpLevel())) {
+    if (skillGain.count(getExpLevel()) && isHumanoid()) {
       you(MsgType::ARE, "more experienced");
       addSkill(skillGain.at(getExpLevel()));
     }
@@ -1785,10 +1789,12 @@ void Creature::increaseExpLevel(double amount) {
 int Creature::getExpLevel() const {
   return expLevel;
 }
-  
+
 int Creature::getDifficultyPoints() const {
-  return getAttr(AttrType::DEFENSE) + getAttr(AttrType::TO_HIT) + getAttr(AttrType::DAMAGE)
-      + getAttr(AttrType::SPEED) / 10;
+  difficultyPoints = max<double>(difficultyPoints,
+      getAttr(AttrType::DEFENSE) + getAttr(AttrType::TO_HIT) + getAttr(AttrType::DAMAGE)
+      + getAttr(AttrType::SPEED) / 10);
+  return difficultyPoints;
 }
 
 Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool avoidEnemies) {
