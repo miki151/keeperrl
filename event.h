@@ -6,12 +6,13 @@
 class Level;
 class Creature;
 class Item;
+class Quest;
 
 class EventListener {
   public:
   virtual void onPickupEvent(const Creature*, const vector<Item*>& items) {}
   virtual void onDropEvent(const Creature*, const vector<Item*>& items) {}
-  virtual void onItemsAppeared(Vec2 position, const vector<Item*>& items) {}
+  virtual void onItemsAppearedEvent(Vec2 position, const vector<Item*>& items) {}
   virtual void onKillEvent(const Creature* victim, const Creature* killer) {}
   virtual void onAttackEvent(const Creature* victim, const Creature* attacker) {}
   // triggered when the monster AI is either attacking, chasing or fleeing
@@ -24,7 +25,7 @@ class EventListener {
 
   static void addPickupEvent(const Creature*, const vector<Item*>& items);
   static void addDropEvent(const Creature*, const vector<Item*>& items);
-  static void addItemsAppeared(const Level*, Vec2 position, const vector<Item*>& items);
+  static void addItemsAppearedEvent(const Level*, Vec2 position, const vector<Item*>& items);
   static void addKillEvent(const Creature* victim, const Creature* killer);
   static void addAttackEvent(const Creature* victim, const Creature* attacker);
   static void addCombatEvent(const Creature*);

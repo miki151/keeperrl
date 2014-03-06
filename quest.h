@@ -12,10 +12,8 @@ class Tribe;
 class Quest {
   public:
   virtual bool isFinished() const = 0;
-  virtual string getMessage() const = 0;
-  void addAdventurer(const Creature* c);
+  void addAdventurer(Creature* c);
   void setLocation(const Location*);
-  const Location* getLocation() const;
 
   static Quest* dragon;
   static Quest* castleCellar;
@@ -34,15 +32,16 @@ class Quest {
 
   static Quest* killTribeQuest(Tribe* tribe, string message, bool onlyImp = false);
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZATION_DECL(Quest);
 
   template <class Archive>
   static void registerTypes(Archive& ar);
 
   protected:
+  Quest(const string& startMessage);
   unordered_set<const Creature*> adventurers;
   const Location* location = nullptr;
+  string startMessage;
 };
 
 #endif

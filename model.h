@@ -9,6 +9,7 @@
 #include "monster.h"
 #include "level_maker.h"
 #include "village_control.h"
+#include "collective.h"
 
 class Collective;
 
@@ -45,8 +46,7 @@ class Model : public EventListener {
   bool isTurnBased();
 
   string getGameIdentifier() const;
-  enum GameType { ADVENTURER, KEEPER };
-  GameType getGameType() const;
+  void exitAction();
 
   View* getView();
   void setView(View*);
@@ -55,12 +55,17 @@ class Model : public EventListener {
   void onKillEvent(const Creature* victim, const Creature* killer) override;
   void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, const string& land, vector<const Creature*> kills, int points);
+  void killedKeeper(const string& title, const string& keeper, const string& land,
+    vector<const Creature*> kills, int points);
   void showHighscore(bool highlightLast = false);
+  void retireCollective();
 
   SERIALIZATION_DECL(Model);
 
   private:
-  void dwarvesMessage();
+  PCreature makePlayer();
+  const Creature* getPlayer() const;
+  void landHeroPlayer();
   Level* buildLevel(Level::Builder&& b, LevelMaker*, bool surface = false);
   void addLink(StairDirection, StairKey, Level*, Level*);
   Level* prepareTopLevel(vector<SettlementInfo> settlements);
@@ -73,11 +78,12 @@ class Model : public EventListener {
   vector<PCreature> deadCreatures;
   double lastTick = -1000;
   map<tuple<StairDirection, StairKey, Level*>, Level*> levelLinks;
-  Collective* collective = nullptr;
+  unique_ptr<Collective> collective;
   bool elvesDead = false;
   bool humansDead = false;
   bool dwarvesDead = false;
   bool won = false;
+  bool addHero = false;
 };
 
 #endif

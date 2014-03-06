@@ -9,15 +9,18 @@
 template <class Archive> 
 void Quest::serialize(Archive& ar, const unsigned int version) {
   ar& BOOST_SERIALIZATION_NVP(adventurers)
-    & BOOST_SERIALIZATION_NVP(location);
+    & BOOST_SERIALIZATION_NVP(location)
+    & BOOST_SERIALIZATION_NVP(startMessage);
 }
 
 SERIALIZABLE(Quest);
 
+Quest::Quest(const string& message) : startMessage(message) {}
+
 class KillTribeQuest : public Quest, public EventListener {
   public:
   KillTribeQuest(Tribe* _tribe, string msg, bool onlyImp = false)
-      : tribe(_tribe), message(msg), onlyImportant(onlyImp) {
+      : Quest(msg), tribe(_tribe), onlyImportant(onlyImp) {
   }
 
   virtual bool isFinished() const override {
@@ -32,13 +35,10 @@ class KillTribeQuest : public Quest, public EventListener {
   virtual void onKillEvent(const Creature* member, const Creature* attacker) {
     if (isFinished() && !notified) {
       notified = true;
-      for (auto c : adventurers)
+      for (auto c : adventurers) {
         c->privateMessage(MessageBuffer::important("Your quest is finished."));
+      }
     }
-  }
-
-  virtual string getMessage() const override {
-    return message;
   }
 
   template <class Archive>
@@ -46,7 +46,6 @@ class KillTribeQuest : public Quest, public EventListener {
     ar& SUBCLASS(Quest)
       & SUBCLASS(EventListener) 
       & BOOST_SERIALIZATION_NVP(tribe)
-      & BOOST_SERIALIZATION_NVP(message)
       & BOOST_SERIALIZATION_NVP(onlyImportant)
       & BOOST_SERIALIZATION_NVP(notified);
   }
@@ -55,7 +54,6 @@ class KillTribeQuest : public Quest, public EventListener {
 
   private:
   Tribe* tribe;
-  string message;
   bool onlyImportant;
   bool notified = false;
 };
@@ -71,22 +69,26 @@ Quest* Quest::killTribeQuest(Tribe* tribe, string message, bool onlyImp) {
   return new KillTribeQuest(tribe, message, onlyImp);
 }
 
-Quest* Quest::dragon;
-Quest* Quest::castleCellar;
-Quest* Quest::bandits;
-Quest* Quest::goblins;
-Quest* Quest::dwarves;
+Quest* Quest::dragon = nullptr;
+Quest* Quest::castleCellar = nullptr;
+Quest* Quest::bandits = nullptr;
+Quest* Quest::goblins = nullptr;
+Quest* Quest::dwarves = nullptr;
   
-void Quest::addAdventurer(const Creature* c) {
+void Quest::addAdventurer(Creature* c) {
+  string text = MessageBuffer::important(startMessage);
+  if (location) {
+    text += " You need to head " + 
+      getCardinalName((location->getBounds().middle() - c->getPosition()).getBearing().getCardinalDir()) + 
+      " to find it.";
+    c->learnLocation(location);
+  }
+  c->privateMessage(text);
   adventurers.insert(c);
 }
 
 void Quest::setLocation(const Location* loc) {
   CHECK(location == nullptr) << "Attempted to set quest location for a second time";
   location = loc;
-}
-
-const Location* Quest::getLocation() const {
-  return location;
 }
 

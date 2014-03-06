@@ -14,11 +14,12 @@
 #include "creature_view.h"
 #include "controller.h"
 #include "unique_entity.h"
+#include "event.h"
 
 class Level;
 class Tribe;
 
-class Creature : public CreatureAttributes, public CreatureView, public UniqueEntity {
+class Creature : public CreatureAttributes, public CreatureView, public UniqueEntity, public EventListener {
   public:
   typedef CreatureAttributes CreatureAttributes;
   Creature(ViewObject o, Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
@@ -64,10 +65,13 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   string getTheName() const;
   string getAName() const;
   string getName() const;
+  string getNameAndTitle() const;
   Optional<string> getFirstName() const;
   int getAttr(AttrType) const;
+  int getPoints() const;
+  void onKillEvent(const Creature* victim, const Creature* killer) override;
 
-  Tribe* getTribe() const;
+  virtual Tribe* getTribe() const override;
   bool isFriend(const Creature*) const;
   bool isEnemy(const Creature*) const;
   void addEnemyCheck(EnemyCheck*);
@@ -308,6 +312,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   vector<Vision*> visions;
   mutable vector<const Creature*> kills;
   mutable double difficultyPoints = 0;
+  int points = 0;
 };
 
 struct SpellInfo {

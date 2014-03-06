@@ -1270,16 +1270,6 @@ bool WindowView::isClockStopped() {
   return myClock.isPaused();
 }
 
-void WindowView::exitQuestion() {
-  auto ind = chooseFromList("", {"Save the game", "Abandon the game", "Cancel"});
-  if (ind == 0)
-    throw SaveGameException();
-  if (ind == 1)
-    throw GameOverException();
-  return;
-}
-
-
 bool WindowView::considerScrollEvent(sf::Event& event) {
   static bool lastPressed = false;
   if (lastPressed && !Mouse::isButtonPressed(Mouse::Right)) {
@@ -1325,8 +1315,7 @@ CollectiveAction WindowView::getClick() {
               myClock.cont();
             return CollectiveAction(CollectiveAction::IDLE);
           case Keyboard::Escape:
-            exitQuestion();
-            break;
+            return CollectiveAction(CollectiveAction::EXIT);
           default:
             break;
         }
@@ -1478,8 +1467,7 @@ Action WindowView::getAction() {
       return Action(*actionId);
 
     switch (key->code) {
-      case Keyboard::Escape: exitQuestion();
-                             break;
+      case Keyboard::Escape: return Action(ActionId::EXIT);
       case Keyboard::Z: unzoom(); return Action(ActionId::IDLE);
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
       case Keyboard::F2: Options::handle(this, true); return Action(ActionId::IDLE);

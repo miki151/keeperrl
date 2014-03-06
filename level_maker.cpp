@@ -1053,16 +1053,17 @@ class Roads : public LevelMaker {
 class StartingPos : public LevelMaker {
   public:
 
-  StartingPos(SquarePredicate* pred) : predicate(pred) {}
+  StartingPos(SquarePredicate* pred, StairKey key) : predicate(pred), stairKey(key) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
     for (Vec2 pos : area)
       if (predicate->apply(builder, pos))
-        builder->getSquare(pos)->setLandingLink(StairDirection::UP, StairKey::PLAYER_SPAWN);
+        builder->getSquare(pos)->setLandingLink(StairDirection::UP, stairKey);
   }
 
   private:
   SquarePredicate* predicate;
+  StairKey stairKey;
 };
 
 class Vegetation : public LevelMaker {
@@ -1633,7 +1634,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
       case SettlementType::CASTLE:
           queue = castle(settlement.factory, settlement.numCreatures, settlement.elder, settlement.location,
               settlement.tribe, settlement.downStairs);
-          queue->addMaker(new StartingPos(new TypePredicate(SquareType::MUD)));
+          queue->addMaker(new StartingPos(new TypePredicate(SquareType::MUD), StairKey::PLAYER_SPAWN));
           castleMaker = queue;
           break;
       case SettlementType::COTTAGE:
@@ -1734,7 +1735,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   vector<pair<int, int>> subSizes;
   vector<LevelMaker*> subMakers;
   vector<SquarePredicate*> predicates;
-  LevelMaker* startingPos = new StartingPos(new TypePredicate(SquareType::HILL));
+  LevelMaker* startingPos = new StartingPos(new TypePredicate(SquareType::HILL), StairKey::PLAYER_SPAWN);
   subMakers.push_back(startingPos);
   predicates.push_back(new TypePredicate(SquareType::HILL));
   subSizes.emplace_back(4, 4);
@@ -1751,6 +1752,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
       case SettlementType::CASTLE:
           queue = castle(settlement.factory, settlement.numCreatures, settlement.elder, settlement.location,
               settlement.tribe, settlement.downStairs);
+          queue->addMaker(new StartingPos(new TypePredicate(SquareType::MUD), StairKey::HERO_SPAWN));
           break;
       case SettlementType::COTTAGE:
           queue = cottage(settlement.factory, settlement.numCreatures, settlement.tribe, settlement.location);
@@ -1934,7 +1936,8 @@ LevelMaker* LevelMaker::collectiveLevel(vector<StairKey> up, vector<StairKey> do
   sizes.emplace_back(10, 10);
   MakerQueue* startPos = new MakerQueue();
   startPos->addMaker(new UniformBlob(SquareType::PATH, SquareType::ROCK_WALL, SquareAttrib::COLLECTIVE_START));
-  startPos->addMaker(new Margin(2, new StartingPos(new AttribPredicate(SquareAttrib::COLLECTIVE_START))));
+  startPos->addMaker(new Margin(2, new StartingPos(new AttribPredicate(SquareAttrib::COLLECTIVE_START),
+          StairKey::PLAYER_SPAWN)));
   makers.push_back(startPos);
   sizes.emplace_back(5, 5);
   for (int i : Range(Random.getRandom(2, 5))) {

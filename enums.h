@@ -94,7 +94,7 @@ ENUM_HASH(SquareAttrib);
 enum class Dir { N, S, E, W, NE, NW, SE, SW };
 ENUM_HASH(Dir);
 
-enum class StairKey { DWARF, CRYPT, GOBLIN, PLAYER_SPAWN, PYRAMID, TOWER, CASTLE_CELLAR, DRAGON };
+enum class StairKey { DWARF, CRYPT, GOBLIN, PLAYER_SPAWN, HERO_SPAWN, PYRAMID, TOWER, CASTLE_CELLAR, DRAGON };
 enum class StairDirection { UP, DOWN };
 
 enum class CreatureId {

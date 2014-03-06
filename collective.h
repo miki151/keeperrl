@@ -25,7 +25,7 @@ class Model;
 
 class Collective : public CreatureView, public EventListener {
   public:
-  Collective(Model*);
+  Collective(Model*, Tribe*);
   virtual const MapMemory& getMemory(const Level* l) const override;
   MapMemory& getMemory(const Level* l);
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
@@ -34,6 +34,7 @@ class Collective : public CreatureView, public EventListener {
   virtual bool canSee(const Creature*) const  override;
   virtual bool canSee(Vec2 position) const  override;
   virtual vector<const Creature*> getUnknownAttacker() const override;
+  virtual Tribe* getTribe() const override;
 
   virtual bool staticPosition() const override;
 
@@ -61,6 +62,7 @@ class Collective : public CreatureView, public EventListener {
   void onPickedUp(Vec2 pos, EntitySet);
   void onCantPickItem(EntitySet items);
 
+  bool isRetired() const;
   const Creature* getKeeper() const;
   Vec2 getDungeonCenter() const;
   double getDangerLevel() const;
@@ -70,6 +72,7 @@ class Collective : public CreatureView, public EventListener {
   void possess(const Creature*, View*);
 
   bool isTurnBased();
+  void retire();
 
   enum class ResourceId {
     GOLD,
@@ -297,6 +300,8 @@ class Collective : public CreatureView, public EventListener {
   unordered_map<const Creature*, double> lastCombat;
   double lastControlKeeperQuestion = -100;
   int startImpNum = -1;
+  bool retired = false;
+  Tribe* tribe = nullptr;
 };
 
 #endif

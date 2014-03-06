@@ -303,7 +303,7 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
       ret.insert(*backgroundObject);
     ret.insert(getViewObject());
     for (const PTrigger& t : triggers)
-      if (auto obj = t->getViewObject())
+      if (auto obj = t->getViewObject(c))
         ret.insert(addFire(*obj, fireSize));
     if (Item* it = getTopItem())
       ret.insert(addFire(it->getViewObject(), fireSize));

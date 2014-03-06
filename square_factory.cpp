@@ -228,7 +228,7 @@ class Chest : public Square {
     if (!Random.roll(5)) {
       c->privateMessage(msgItem);
       vector<PItem> items = itemFactory.random();
-      EventListener::addItemsAppeared(getLevel(), getPosition(), Item::extractRefs(items));
+      EventListener::addItemsAppearedEvent(getLevel(), getPosition(), Item::extractRefs(items));
       c->takeItems(std::move(items), nullptr);
     } else {
       c->privateMessage(msgMonster);
@@ -406,18 +406,18 @@ class Door : public Square {
 
 class TribeDoor : public Door {
   public:
-  TribeDoor(const ViewObject& object, int destStrength) : Door(object), destructionStrength(destStrength) {}
+  TribeDoor(const ViewObject& object, int destStrength) : Door(object), destructionStrength(destStrength) {
+  }
 
   virtual void destroy(int strength) override {
     destructionStrength -= strength;
     if (destructionStrength <= 0) {
-      EventListener::addSquareReplacedEvent(getLevel(), getPosition());
-      getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareType::FLOOR)));
+      Door::destroy(strength);
     }
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return (c->canWalk() && c->getTribe() == Tribe::player);
+    return (c->canWalk() && c->getTribe() == Tribe::keeper);
   }
 
   template <class Archive> 

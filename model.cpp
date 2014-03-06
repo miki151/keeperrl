@@ -22,7 +22,8 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(elvesDead)
     & BOOST_SERIALIZATION_NVP(humansDead)
     & BOOST_SERIALIZATION_NVP(dwarvesDead)
-    & BOOST_SERIALIZATION_NVP(won);
+    & BOOST_SERIALIZATION_NVP(won)
+    & BOOST_SERIALIZATION_NVP(addHero);
   Skill::serializeAll(ar);
   Quest::serializeAll(ar);
   Tribe::serializeAll(ar);
@@ -35,7 +36,19 @@ bool Model::isTurnBased() {
   return !collective || collective->isTurnBased();
 }
 
+const Creature* Model::getPlayer() const {
+  for (const PLevel& l : levels)
+    if (l->getPlayer())
+      return l->getPlayer();
+  return nullptr;
+}
+
 void Model::update(double totalTime) {
+  if (addHero) {
+    CHECK(collective && collective->isRetired());
+    landHeroPlayer();
+    addHero = false;
+  }
   if (collective) {
     collective->render(view);
   }
@@ -81,16 +94,17 @@ void Model::tick(double time) {
     for (Square* square : l->getTickingSquares())
       square->tick(time);
   lastTick = time;
-  if (collective)
+  if (collective) {
     collective->tick();
-  bool conquered = true;
-  for (PVillageControl& control : villageControls) {
-    control->tick(time);
-    conquered &= control->isConquered();
-  }
-  if (conquered && !won) {
-    collective->onConqueredLand(NameGenerator::worldNames.getNext());
-    won = true;
+    bool conquered = true;
+    for (PVillageControl& control : villageControls) {
+      control->tick(time);
+      conquered &= control->isConquered();
+    }
+    if (conquered && !won) {
+      collective->onConqueredLand(NameGenerator::worldNames.getNext());
+      won = true;
+    }
   }
 }
 
@@ -174,6 +188,13 @@ vector<Location*> getVillageLocations(int numVillages) {
   return ret;
 }
 
+static void setHandicap(Tribe* tribe) {
+  if (Options::getValue(OptionId::EASY_GAME))
+    tribe->setHandicap(2);
+  else
+    tribe->setHandicap(-1);
+}
+
 Model* Model::heroModel(View* view) {
   Creature::noExperienceLevels();
   Model* m = new Model(view);
@@ -219,6 +240,18 @@ Model* Model::heroModel(View* view) {
   m->addLink(StairDirection::DOWN, StairKey::DWARF, top, d1);
   m->addLink(StairDirection::DOWN, StairKey::DWARF, d1, gnomish[0]);
   m->addLink(StairDirection::UP, StairKey::DWARF, g1, gnomish.back());
+  PCreature player = m->makePlayer();
+  for (int i : Range(Random.getRandom(70, 131)))
+    player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
+  Tribe::goblin->makeSlightEnemy(player.get());
+  Level* start = top;
+  start->setPlayer(player.get());
+  start->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(player));
+  setHandicap(Tribe::player);
+  return m;
+}
+
+PCreature Model::makePlayer() {
   map<const Level*, MapMemory>* levelMemory = new map<const Level*, MapMemory>();
   PCreature player = CreatureFactory::addInventory(
       PCreature(new Creature(ViewObject(ViewId::PLAYER, ViewLayer::CREATURE, "Player"), Tribe::player,
@@ -233,54 +266,71 @@ Model* Model::heroModel(View* view) {
           c.name = "Adventurer";
           c.firstName = NameGenerator::firstNames.getNext();
           c.skills.insert(Skill::archery);
-          c.skills.insert(Skill::twoHandedWeapon);), Player::getFactory(view, m, levelMemory))), {
+          c.skills.insert(Skill::twoHandedWeapon);), Player::getFactory(view, this, levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
       ItemId::LEATHER_ARMOR, ItemId::LEATHER_HELM});
   for (int i : Range(Random.getRandom(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
-  Tribe::goblin->makeSlightEnemy(player.get());
-  Level* start = top;
-  start->setPlayer(player.get());
-  start->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(player));
-  return m;
+  return player;
+}
+
+void Model::exitAction() {
+  auto ind = view->chooseFromList("Would you like to:", {
+      collective && won ? "Retire fortress" : "Save the game",
+      "Abandon the game",
+      "Cancel"});
+  if (ind == 0) {
+    if (!collective || collective->isRetired())
+      throw SaveGameException(GameType::ADVENTURER);
+    else if (!won)
+      throw SaveGameException(GameType::KEEPER);
+    else {
+      retireCollective();
+      throw SaveGameException(GameType::RETIRED_KEEPER);
+    }
+  }
+  if (ind == 1)
+    throw GameOverException();
+  return;
+}
+
+void Model::retireCollective() {
+  CHECK(collective);
+  Statistics::init();
+  Tribe::keeper->setHandicap(0);
+  setHandicap(Tribe::player);
+  collective->retire();
+  won = false;
+  addHero = true;
+}
+
+void Model::landHeroPlayer() {
+  PCreature player = makePlayer();
+  levels[0]->setPlayer(player.get());
+  levels[0]->landCreature(StairDirection::UP, StairKey::HERO_SPAWN, std::move(player));
+  auto handicap = view->getNumber("Choose handicap", 10);
+  if (handicap)
+    Tribe::player->setHandicap(*handicap);
 }
 
 string Model::getGameIdentifier() const {
   if (collective)
     return *collective->getKeeper()->getFirstName();
   else
-    for (const PLevel& l : levels)
-      if (const Creature* c = l->getPlayer())
-        return *c->getFirstName();
-  FAIL << "Couldn't find the player object";
-  return "";
-}
-
-Model::GameType Model::getGameType() const {
-  if (collective)
-    return Model::KEEPER;
-  else
-    return Model::ADVENTURER;
-}
-
-void Model::dwarvesMessage() {
-  CHECK(collective);
-  string msg = "We forgot about the funny bearded midgets living under the mountain. ";
-  Vec2 stairPos = getOnlyElement(levels[0]->getLandingSquares(StairDirection::DOWN, StairKey::DWARF));
-  string direction = getCardinalName((stairPos - collective->getDungeonCenter()).getBearing().getCardinalDir());
-  msg += "Their dungeon is located to the " + direction + " from your keep. You get extra points for personally murdering the dwarf baron.";
-  collective->learnLocation(NOTNULL(levels[0]->getLocation(stairPos)));
-  view->presentText("", msg);
+    return *NOTNULL(getPlayer())->getFirstName();
 }
 
 void Model::onKillEvent(const Creature* victim, const Creature* killer) {
+  if (collective && collective->isRetired() && victim == collective->getKeeper()) {
+    const Creature* c = getPlayer();
+    killedKeeper(c->getNameAndTitle(), collective->getKeeper()->getNameAndTitle(), NameGenerator::worldNames.getNext(), c->getKills(), c->getPoints());
+  }
 }
 
 Model* Model::collectiveModel(View* view) {
   Model* m = new Model(view);
-  CreatureFactory factory = CreatureFactory::collectiveStart();
   vector<Location*> villageLocations = getVillageLocations(2);
   vector<SettlementInfo> settlements {
     {SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), 12, Nothing(), villageLocations[0],
@@ -301,20 +351,18 @@ Model* Model::collectiveModel(View* view) {
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(CreatureFactory::dwarfTownPeaceful(), {StairKey::DWARF}, {}));
   m->addLink(StairDirection::DOWN, StairKey::DWARF, top, d1);
-  m->collective = new Collective(m);
+  m->collective.reset(new Collective(m, Tribe::keeper));
   m->collective->setLevel(top);
-  Tribe::human->addEnemy(Tribe::player);
-  Tribe::elven->addEnemy(Tribe::player);
-  Tribe::dwarven->addEnemy(Tribe::player);
-  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::player,
-      MonsterAIFactory::collective(m->collective));
+  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::keeper,
+      MonsterAIFactory::collective(m->collective.get()));
   Creature* ref = c.get();
   top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
   m->addCreature(std::move(c));
   m->collective->addCreature(ref);
  // m->collective->possess(ref, view);
   for (int i : Range(4)) {
-    PCreature c = factory.random(MonsterAIFactory::collective(m->collective));
+    PCreature c = CreatureFactory::fromId(CreatureId::IMP, Tribe::keeper,
+        MonsterAIFactory::collective(m->collective.get()));
     top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
     m->collective->addCreature(c.get(), MinionType::IMP);
     m->addCreature(std::move(c));
@@ -330,7 +378,7 @@ Model* Model::collectiveModel(View* view) {
   auto killedCoeff = [] () { return Random.getDouble(0.1, 0.3); };
   auto powerCoeff = [] () { return Random.getDouble(0.2, 1); };
   for (int i : All(villageLocations)) {
-    PVillageControl control = VillageControl::topLevelVillage(m->collective, villageLocations[i],
+    PVillageControl control = VillageControl::topLevelVillage(m->collective.get(), villageLocations[i],
         killedCoeff(), powerCoeff());
     for (int j : Range(heroCounts[i])) {
       PCreature c = villageFactories[i].random(MonsterAIFactory::villageControl(control.get(), villageLocations[i]));
@@ -339,16 +387,17 @@ Model* Model::collectiveModel(View* view) {
     }
     m->villageControls.push_back(std::move(control));
   }
-  PVillageControl dwarfControl = VillageControl::dwarfVillage(m->collective, d1, StairDirection::UP, StairKey::DWARF,
-      killedCoeff(), powerCoeff());
+  PVillageControl dwarfControl = VillageControl::dwarfVillage(m->collective.get(), d1,
+      StairDirection::UP, StairKey::DWARF, killedCoeff(), powerCoeff());
   int dwarfCount = 10;
-  factory = CreatureFactory::dwarfTown();
+  CreatureFactory factory = CreatureFactory::dwarfTown();
   for (int k : Range(dwarfCount)) {
     PCreature c = factory.random(MonsterAIFactory::villageControl(dwarfControl.get(), nullptr));
     dwarfControl->addCreature(c.get());
     d1->landCreature(StairDirection::UP, StairKey::DWARF, std::move(c));
   }
   m->villageControls.push_back(std::move(dwarfControl));
+  setHandicap(Tribe::keeper);
   return m;
 }
 
@@ -397,7 +446,21 @@ void Model::conquered(const string& title, const string& land, vector<const Crea
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "conquered the land of " + land + "," << points << std::endl;
   showHighscore(true);
-  //throw GameOverException();
+}
+
+void Model::killedKeeper(const string& title, const string& keeper, const string& land,
+    vector<const Creature*> kills, int points) {
+  string text= "You have freed this land from the bloody reign of " + keeper + 
+      ". You killed " + convertToString(kills.size()) +
+      " enemies and scored " + convertToString(points) +
+      " points. Thank you for playing KeeperRL alpha. If you like the game, consider donating to support its development.\n \n";
+  for (string stat : Statistics::getText())
+    text += stat + "\n";
+  view->presentText("Victory", text);
+  ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
+    << title << "," << "freed the land of " + land + "," << points << std::endl;
+  showHighscore(true);
+  throw GameOverException();
 }
 
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {

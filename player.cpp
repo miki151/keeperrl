@@ -21,7 +21,6 @@ void Player::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(specialCreatures)
     & BOOST_SERIALIZATION_NVP(displayGreeting)
     & BOOST_SERIALIZATION_NVP(levelMemory)
-    & BOOST_SERIALIZATION_NVP(points)
     & BOOST_SERIALIZATION_NVP(model)
     & BOOST_SERIALIZATION_NVP(displayTravelInfo);
 }
@@ -57,11 +56,6 @@ void Player::onExplosionEvent(const Level* level, Vec2 pos) {
     model->getView()->animation(pos, AnimationId::EXPLOSION);
   else
     creature->privateMessage("BOOM!");
-}
-
-void Player::onKillEvent(const Creature* victim, const Creature* killer) {
-  if (killer == creature)
-    points += victim->getDifficultyPoints();
 }
 
 ControllerFactory Player::getFactory(View* f, Model *m, map<const Level*, MapMemory>* levelMemory) {
@@ -656,6 +650,7 @@ void Player::makeMove() {
                               } break;
     case ActionId::CAST_SPELL: spellAction(); break;
     case ActionId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature->getLevel(), creature); break;
+    case ActionId::EXIT: model->exitAction(); break;
     case ActionId::IDLE: break;
   }
   if (creature->isSleeping() && creature->canPopController()) {
@@ -681,6 +676,11 @@ void Player::makeMove() {
       const Creature *c = creature->getConstSquare(dir)->getCreature();
       if (creature->canBumpInto(dir)) {
         creature->bumpInto(dir);
+        break;
+      } else 
+      if (creature->canDestroy(dir)) {
+        privateMessage("You bash the " + creature->getSquare(dir)->getName());
+        creature->destroy(dir);
         break;
       }
     }
@@ -762,7 +762,7 @@ void Player::you(MsgType type, const string& param) const {
 
 void Player::onKilled(const Creature* attacker) {
   if (!creature->canPopController()) {
-    model->gameOver(creature, creature->getKills().size(), "monsters", points);
+    model->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
   } else
     creature->popController();
 }

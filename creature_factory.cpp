@@ -425,7 +425,7 @@ class ShopkeeperController : public Monster, public EventListener {
     unpaidItems.erase(from);
   }
   
-  virtual void onItemsAppeared(Vec2 position, const vector<Item*>& items) override {
+  virtual void onItemsAppearedEvent(Vec2 position, const vector<Item*>& items) override {
     if (position.inRectangle(shopArea->getBounds())) {
       for (Item* it : items) {
         it->setShopkeeper(creature);
@@ -528,16 +528,10 @@ class VillageElder : public Creature {
         who->takeItems(ItemFactory::fromId(ItemId::GOLD_PIECE, q.second), this);
         removeElement(quests, q);
         return true;
+      } else {
+        q.first->addAdventurer(who);
+        return true;
       }
-      string message = MessageBuffer::important(q.first->getMessage());
-      if (const Location* loc = q.first->getLocation()) {
-        message += " You need to head " + 
-          getCardinalName((loc->getBounds().middle() - getPosition()).getBearing().getCardinalDir()) + " to find it.";
-        who->learnLocation(loc);
-      }
-      who->privateMessage(message);
-      q.first->addAdventurer(who);
-      return true;
     }
     return false;
   }
@@ -719,15 +713,6 @@ CreatureFactory CreatureFactory::crypt() {
 
 CreatureFactory CreatureFactory::hellLevel() {
   return CreatureFactory(Tribe::monster, { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
-}
-
-CreatureFactory CreatureFactory::collectiveUndead() {
-  return CreatureFactory(Tribe::player, { CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::MUMMY},
-      {1, 1, 1}, {});
-}
-
-CreatureFactory CreatureFactory::collectiveStart() {
-  return CreatureFactory(Tribe::player, { CreatureId::IMP}, { 1}, {} );
 }
 
 CreatureFactory CreatureFactory::collectiveEnemies() {
@@ -923,7 +908,6 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                c.barehandedDamage = 5;
                                c.humanoid = true;
                                c.name = "Keeper";
-                               c.courage = 0.01;
                                c.firstName = NameGenerator::firstNames.getNext();
                                c.spells.push_back(Creature::getSpell(SpellId::HEALING));
                                c.skillGain.clear();), tribe, factory);

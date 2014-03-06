@@ -15,10 +15,12 @@ SERIALIZABLE(Trigger);
 Trigger::Trigger(Level* l, Vec2 p) : level(l), position(p) {
 }
 
+Trigger::~Trigger() {}
+
 Trigger::Trigger(const ViewObject& obj, Level* l, Vec2 p): viewObject(obj), level(l), position(p) {
 }
 
-Optional<ViewObject> Trigger::getViewObject() const {
+Optional<ViewObject> Trigger::getViewObject(const CreatureView*) const {
   return viewObject;
 }
 
@@ -105,6 +107,13 @@ class Trap : public Trigger {
   public:
   Trap(const ViewObject& obj, Level* l, Vec2 position, EffectType _effect, Tribe* _tribe)
       : Trigger(obj, l, position), effect(_effect), tribe(_tribe) {
+  }
+
+  virtual Optional<ViewObject> getViewObject(const CreatureView* c) const {
+    if (c->getTribe() == tribe)
+      return viewObject;
+    else
+      return Nothing();
   }
 
   virtual void onCreatureEnter(Creature* c) override {

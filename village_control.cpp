@@ -89,7 +89,7 @@ void VillageControl::tick(double time) {
       if (currentTrigger >= *triggerAmounts.rbegin() - 0.001)
         lastAttackLaunched = true;
       if (fightingCreatures.size() < allCreatures.size()) {
-        if (numCreatures <= 3) {
+/*        if (numCreatures <= 3) {
           if (firstAttack)
             messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
                   " of " + name + " have sent a small group to scout your dungeon. "
@@ -97,7 +97,7 @@ void VillageControl::tick(double time) {
           else
             messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
                   " of " + name + " are sending another small group of scouts. How cute is that?"));
-        } else
+        } else*/
           messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
                 " of " + name + " are attacking!"));
       } else
@@ -121,7 +121,7 @@ void VillageControl::calculateAttacks() {
     myPower += c->getDifficultyPoints();
   Debug() << "Village power " << myPower;
   for (int i : Range(Random.getRandom(1, 3))) {
-    double trigger = Random.getDouble(0.4, myPower * 1.2);
+    double trigger = myPower * Random.getDouble(0.4, 1.2);
     triggerAmounts.insert(trigger);
     Debug() << "Village trigger " << trigger;
   }

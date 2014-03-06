@@ -31,36 +31,38 @@ static vector<string> getSaveFiles(const string& suffix) {
   return ret;
 }
 
-static string getSaveSuffix(Model::GameType t) {
+static string getSaveSuffix(GameType t) {
   switch (t) {
-    case Model::KEEPER: return ".kep";
-    case Model::ADVENTURER: return ".adv";
+    case GameType::KEEPER: return ".kep";
+    case GameType::ADVENTURER: return ".adv";
+    case GameType::RETIRED_KEEPER: return ".ret";
   }
   FAIL << "wef";
   return "";
 }
 
-static Optional<string> chooseSaveFile(View* view) {
-  vector<string> filesKeeper = getSaveFiles(getSaveSuffix(Model::KEEPER));
-  vector<string> filesAdventurer = getSaveFiles(getSaveSuffix(Model::ADVENTURER));
-  if (filesKeeper.empty() && filesAdventurer.empty()) {
-    view->presentText("", "No save files found.");
-    return Nothing();
-  }
+static Optional<string> chooseSaveFile(vector<pair<GameType, string>> games, string noSaveMsg, View* view) {
   vector<View::ListElem> options;
-  if (!filesKeeper.empty()) {
-    auto removeSuf = [&] (const string& s) { return s.substr(0, s.size() - getSaveSuffix(Model::KEEPER).size()); };
-    options.emplace_back("Keeper games:", View::TITLE);
-    append(options, View::getListElem(transform2<string>(filesKeeper, removeSuf)));
+  bool noGames = true;
+  vector<string> allFiles;
+  for (auto elem : games) {
+    vector<string> files = getSaveFiles(getSaveSuffix(elem.first));
+    append(allFiles, files);
+    if (!files.empty()) {
+      noGames = false;
+      auto removeSuf = [&] (const string& s) { return s.substr(0, s.size() - 
+          getSaveSuffix(elem.first).size()); };
+      options.emplace_back(elem.second, View::TITLE);
+      append(options, View::getListElem(transform2<string>(files, removeSuf)));
+    }
   }
-  if (!filesAdventurer.empty()) {
-    auto removeSuf = [&] (const string& s) { return s.substr(0, s.size() - getSaveSuffix(Model::ADVENTURER).size());};
-    options.emplace_back("Adventurer games:", View::TITLE);
-    append(options, View::getListElem(transform2<string>(filesAdventurer, removeSuf)));
+  if (noGames) {
+    view->presentText("", noSaveMsg);
+    return Nothing();
   }
   auto ind = view->chooseFromList("Choose game", options);
   if (ind)
-    return concat(filesKeeper, filesAdventurer)[*ind];
+    return allFiles[*ind];
   else
     return Nothing();
 }
@@ -131,9 +133,9 @@ int main(int argc, char* argv[]) {
   int lastIndex = 0;
   view->initialize();
   while (1) {
-    Tribe::init();
     Item::identifyEverything();
     EventListener::initialize();
+    Tribe::init();
     Statistics::init();
     Options::init("options.txt");
     NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
@@ -143,27 +145,37 @@ int main(int argc, char* argv[]) {
     messageBuffer.initialize(view);
     view->reset();
     auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
-        View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer",
+        View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer", "Adventurer vs. Keeper",
         View::ListElem("Or simply:", View::TITLE), "Load a game", "Change options", "View high scores", "Quit"}, lastIndex);
     if (!choice)
       continue;
     lastIndex = *choice;
     Optional<string> savedGame;
     if (choice == 2) {
-      savedGame = chooseSaveFile(view);
+      savedGame = chooseSaveFile({
+          {GameType::RETIRED_KEEPER, "Retired keeper games:"}},
+          "No retired games found.", view);
       if (!savedGame)
         continue;
     }
     if (choice == 3) {
+      savedGame = chooseSaveFile({
+          {GameType::KEEPER, "Keeper games:"},
+          {GameType::ADVENTURER, "Adventurer games:"}},
+          "No save files found.", view);
+      if (!savedGame)
+        continue;
+    }
+    if (choice == 4) {
       Options::handle(view, false);
       continue;
     }
-    if (choice == 4) {
-      Model* m = new Model(view);
+    if (choice == 5) {
+      unique_ptr<Model> m(new Model(view));
       m->showHighscore();
       continue;
     }
-    if (choice == 5)
+    if (choice == 6)
       exit(0);
     unique_ptr<Model> model;
     string ex;
@@ -207,7 +219,7 @@ int main(int argc, char* argv[]) {
     } catch (SaveGameException ex) {
       bool ready = false;
       thread t([&] {
-        saveGame(std::move(model), model->getGameIdentifier() + getSaveSuffix(model->getGameType()));
+        saveGame(std::move(model), model->getGameIdentifier() + getSaveSuffix(ex.type));
         ready = true; });
       view->displaySplash(View::SAVING, ready);
       t.join();

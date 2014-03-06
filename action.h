@@ -27,7 +27,8 @@ enum class ActionId {
      UNPOSSESS,
      CAST_SPELL,
      DRAW_LEVEL_MAP,
-     IDLE
+     EXIT,
+     IDLE,
 };
 
 class Action {

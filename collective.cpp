@@ -43,7 +43,9 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(kills)
     & BOOST_SERIALIZATION_NVP(showWelcomeMsg)
     & BOOST_SERIALIZATION_NVP(delayedPos)
-    & BOOST_SERIALIZATION_NVP(startImpNum);
+    & BOOST_SERIALIZATION_NVP(startImpNum)
+    & BOOST_SERIALIZATION_NVP(retired)
+    & BOOST_SERIALIZATION_NVP(tribe);
 }
 
 SERIALIZABLE(Collective);
@@ -170,7 +172,7 @@ map<MinionTask, MinionTaskInfo> taskInfo {
     {MinionTask::STUDY, {SquareType::LIBRARY, "studying", Collective::Warning::LIBRARY}},
 };
 
-Collective::Collective(Model* m) : mana(200), model(m) {
+Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
   memory = new map<const Level*, MapMemory>;
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
@@ -198,6 +200,8 @@ const int minionLimit = 20;
 
 
 void Collective::render(View* view) {
+  if (retired)
+    return;
   if (possessed && possessed != keeper && isInCombat(keeper) && lastControlKeeperQuestion < getTime() - 50) {
     lastControlKeeperQuestion = getTime();
     if (view->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
@@ -234,7 +238,11 @@ void Collective::render(View* view) {
 }
 
 bool Collective::isTurnBased() {
-  return possessed != nullptr && possessed->isPlayer();
+  return retired || (possessed != nullptr && possessed->isPlayer());
+}
+
+void Collective::retire() {
+  retired = true;
 }
 
 vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squares) const {
@@ -392,7 +400,7 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   }
   vector<pair<PCreature, int>> creatures;
   for (SpawnInfo info : raisingInfo) {
-    creatures.push_back({CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this)),
+    creatures.push_back({CreatureFactory::fromId(info.id, tribe, MonsterAIFactory::collective(this)),
         info.manaCost});
     options.emplace_back(creatures.back().first->getName() + "  mana: " + convertToString(info.manaCost) +
           "  level: " + getTechLevelName(info.minLevel),
@@ -483,7 +491,7 @@ void Collective::handleSpawning(View* view, TechId techId, SquareType spawnSquar
 
     vector<pair<PCreature, int>> creatures;
     for (SpawnInfo info : spawnInfo) {
-      creatures.push_back({CreatureFactory::fromId(info.id, Tribe::player, MonsterAIFactory::collective(this)),
+      creatures.push_back({CreatureFactory::fromId(info.id, tribe, MonsterAIFactory::collective(this)),
           info.manaCost});
       options.emplace_back(creatures.back().first->getName() + "  mana: " + convertToString(info.manaCost) + 
             "   level: " + getTechLevelName(info.minLevel),
@@ -631,7 +639,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.enemies.clear();
   for (Vec2 v : myTiles)
     if (Creature* c = level->getSquare(v)->getCreature())
-      if (c->getTribe() != Tribe::player)
+      if (c->getTribe() != tribe)
         info.enemies.push_back(c);
   info.numGold.clear();
   for (auto elem : resourceInfo)
@@ -877,6 +885,8 @@ void Collective::freeFromGuardPost(const Creature* c) {
 }
 
 void Collective::processInput(View* view) {
+  if (retired)
+    return;
   if (!possessed && isInCombat(keeper) && lastControlKeeperQuestion < getTime() - 50) {
     lastControlKeeperQuestion = getTime();
     if (view->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
@@ -960,6 +970,7 @@ void Collective::processInput(View* view) {
         rectSelectCorner2 = Nothing();
         selection = NONE;
         break;
+    case CollectiveAction::EXIT: model->exitAction(); break;
     case CollectiveAction::IDLE: break;
   }
 }
@@ -971,7 +982,7 @@ void Collective::handleSelection(Vec2 pos, bool rectangle) {
     case BuildInfo::IMP:
         if (mana >= getImpCost() && selection == NONE && !rectangle) {
           selection = SELECT;
-          PCreature imp = CreatureFactory::fromId(CreatureId::IMP, Tribe::player,
+          PCreature imp = CreatureFactory::fromId(CreatureId::IMP, tribe,
               MonsterAIFactory::collective(this));
           for (Vec2 v : pos.neighbors8(true))
             if (v.inRectangle(level->getBounds()) && level->getSquare(v)->canEnter(imp.get()) 
@@ -1125,6 +1136,10 @@ void Collective::onAppliedItemCancel(Vec2 pos) {
     traps.at(pos).marked = 0;
 }
 
+bool Collective::isRetired() const {
+  return retired;
+}
+
 const Creature* Collective::getKeeper() const {
   return keeper;
 }
@@ -1254,11 +1269,11 @@ void Collective::tick() {
   vector<Vec2> enemyPos;
   for (Vec2 pos : myTiles) {
     if (Creature* c = level->getSquare(pos)->getCreature()) {
- /*     if (!contains(creatures, c) && c->getTribe() == Tribe::player
+ /*     if (!contains(creatures, c) && c->getTribe() == tribe
           && !contains({"boulder"}, c->getName()))
         // We just found a friendly creature (and not a boulder nor a chicken)
         addCreature(c);*/
-      if (c->getTribe() != Tribe::player)
+      if (c->getTribe() != tribe)
         enemyPos.push_back(c->getPosition());
     }
  /*   if (taskMap.isMarked(pos) && marked.at(pos)->isImpossible(level) && !taken.count(marked.at(pos)))
@@ -1275,7 +1290,7 @@ void Collective::tick() {
     Vec2 pos = extendedQueue.front();
     extendedQueue.pop();
     if (Creature* c = level->getSquare(pos)->getCreature())
-      if (c->getTribe() != Tribe::player)
+      if (c->getTribe() != tribe)
         enemyPos.push_back(c->getPosition());
     for (Vec2 v : pos.neighbors8())
       if (v.inRectangle(level->getBounds()) && !myTiles.count(v) && !extendedTiles.count(v) 
@@ -1352,6 +1367,10 @@ void Collective::setLevel(Level* l) {
 
 vector<const Creature*> Collective::getUnknownAttacker() const {
   return {};
+}
+
+Tribe* Collective::getTribe() const {
+  return tribe;
 }
 
 void Collective::onChangeLevelEvent(const Creature* c, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) {
@@ -1497,7 +1516,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
 bool Collective::underAttack() const {
   for (Vec2 v : myTiles)
     if (const Creature* c = level->getSquare(v)->getCreature())
-      if (c->getTribe() != Tribe::player)
+      if (c->getTribe() != tribe)
         return true;
   return false;
 }
@@ -1638,6 +1657,8 @@ void Collective::onTriggerEvent(const Level* l, Vec2 pos) {
 }
 
 void Collective::onConqueredLand(const string& name) {
+  if (retired)
+    return;
   model->conquered(*keeper->getFirstName() + " the Keeper", name, kills, getDangerLevel() + points);
 }
 
@@ -1660,7 +1681,7 @@ void Collective::TaskMap::freeTask(Task* task) {
 }
 
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
-  if (victim == keeper) {
+  if (victim == keeper && !retired) {
     model->gameOver(keeper, kills.size(), "enemies", getDangerLevel() + points);
   }
   if (contains(creatures, victim)) {
@@ -1685,7 +1706,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     for (MinionType type : minionTypes)
       if (contains(minionByType.at(type), c))
         removeElement(minionByType.at(type), c);
-  } else if (victim->getTribe() != Tribe::player && (!killer || killer->getTribe() == Tribe::player)) {
+  } else if (victim->getTribe() != tribe && (!killer || killer->getTribe() == tribe)) {
     double incMana = victim->getDifficultyPoints() / 3;
     mana += incMana;
     kills.push_back(victim);

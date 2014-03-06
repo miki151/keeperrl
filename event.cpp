@@ -14,7 +14,7 @@ EventListener::~EventListener() {
 }
 
 void EventListener::initialize() {
-  listeners.clear();
+  //CHECK(listeners.empty());
 }
 
 void EventListener::addPickupEvent(const Creature* c, const vector<Item*>& items) {
@@ -29,10 +29,10 @@ void EventListener::addDropEvent(const Creature* c, const vector<Item*>& items) 
       l->onDropEvent(c, items);
 }
 
-void EventListener::addItemsAppeared(const Level* level, Vec2 position, const vector<Item*>& items) {
+void EventListener::addItemsAppearedEvent(const Level* level, Vec2 position, const vector<Item*>& items) {
   for (EventListener* l : listeners)
     if (l->getListenerLevel() == level)
-      l->onItemsAppeared(position, items);
+      l->onItemsAppearedEvent(position, items);
 }
 
 void EventListener::addKillEvent(const Creature* victim, const Creature* killer) {
@@ -84,3 +84,4 @@ void EventListener::addCombatEvent(const Creature* c) {
     if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
       l->onCombatEvent(c);
 }
+

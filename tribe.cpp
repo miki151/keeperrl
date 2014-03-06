@@ -11,7 +11,8 @@ void Tribe::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(leader)
     & BOOST_SERIALIZATION_NVP(members)
     & BOOST_SERIALIZATION_NVP(enemyTribes)
-    & BOOST_SERIALIZATION_NVP(name);
+    & BOOST_SERIALIZATION_NVP(name)
+    & BOOST_SERIALIZATION_NVP(handicap);
 }
 
 SERIALIZABLE(Tribe);
@@ -40,21 +41,30 @@ void Tribe::registerTypes(Archive& ar) {
 
 REGISTER_TYPES(Tribe);
 
-Tribe* Tribe::monster;
-Tribe* Tribe::pest;
-Tribe* Tribe::wildlife;
-Tribe* Tribe::elven;
-Tribe* Tribe::human;
-Tribe* Tribe::goblin;
-Tribe* Tribe::dwarven;
-Tribe* Tribe::player;
-Tribe* Tribe::dragon;
-Tribe* Tribe::castleCellar;
-Tribe* Tribe::bandit;
-Tribe* Tribe::killEveryone;
-Tribe* Tribe::peaceful;
+Tribe* Tribe::monster = nullptr;
+Tribe* Tribe::pest = nullptr;
+Tribe* Tribe::wildlife = nullptr;
+Tribe* Tribe::elven = nullptr;
+Tribe* Tribe::human = nullptr;
+Tribe* Tribe::goblin = nullptr;
+Tribe* Tribe::dwarven = nullptr;
+Tribe* Tribe::player = nullptr;
+Tribe* Tribe::keeper = nullptr;
+Tribe* Tribe::dragon = nullptr;
+Tribe* Tribe::castleCellar = nullptr;
+Tribe* Tribe::bandit = nullptr;
+Tribe* Tribe::killEveryone = nullptr;
+Tribe* Tribe::peaceful = nullptr;
 
 Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
+}
+
+int Tribe::getHandicap() const {
+  return handicap;
+}
+
+void Tribe::setHandicap(int h) {
+  handicap = h;
 }
 
 void Tribe::removeMember(const Creature* c) {
@@ -165,11 +175,16 @@ void Tribe::init() {
   goblin = new Tribe("goblins", true);
   dwarven = new Tribe("dwarves", true);
   player = new Tribe("", false);
+  keeper = new Tribe("", false);
   dragon = new Tribe("", false);
   castleCellar = new Tribe("", false);
   bandit = new Tribe("", false);
   killEveryone = new Constant(-1);
   peaceful = new Constant(1);
+  keeper->addEnemy(player);
+  keeper->addEnemy(elven);
+  keeper->addEnemy(dwarven);
+  keeper->addEnemy(human);
   elven->addEnemy(goblin);
   elven->addEnemy(dwarven);
   elven->addEnemy(bandit);

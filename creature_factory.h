@@ -27,8 +27,6 @@ class CreatureFactory {
   static CreatureFactory hellLevel();
   static CreatureFactory dwarfTown();
   static CreatureFactory dwarfTownPeaceful();
-  static CreatureFactory collectiveStart();
-  static CreatureFactory collectiveUndead();
   static CreatureFactory collectiveEnemies();
   static CreatureFactory collectiveFinalAttack();
   static CreatureFactory collectiveElfEnemies();

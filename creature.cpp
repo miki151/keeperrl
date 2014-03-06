@@ -32,6 +32,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SUBCLASS(CreatureAttributes)
     & SUBCLASS(CreatureView)
     & SUBCLASS(UniqueEntity)
+    & SUBCLASS(EventListener)
     & BOOST_SERIALIZATION_NVP(viewObject)
     & BOOST_SERIALIZATION_NVP(level)
     & BOOST_SERIALIZATION_NVP(position)
@@ -77,7 +78,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(controllerStack)
     & BOOST_SERIALIZATION_NVP(visions)
     & BOOST_SERIALIZATION_NVP(kills)
-    & BOOST_SERIALIZATION_NVP(difficultyPoints);
+    & BOOST_SERIALIZATION_NVP(difficultyPoints)
+    & BOOST_SERIALIZATION_NVP(points);
 }
 
 SERIALIZABLE(Creature);
@@ -170,8 +172,11 @@ void Creature::pushController(Controller* ctrl) {
 void Creature::popController() {
   viewObject.setPlayer(false);
   CHECK(canPopController());
+  bool wasPlayer = controller->isPlayer();
   controller = std::move(controllerStack.back());
   controllerStack.pop_back();
+  if (wasPlayer && !controller->isPlayer())
+    level->setPlayer(nullptr);
 }
 
 bool Creature::canPopController() const {
@@ -720,10 +725,7 @@ int Creature::getAttr(AttrType type) const {
       def += item->getModifier(type);
   switch (type) {
     case AttrType::STRENGTH:
-        if (tribe == Tribe::player && Options::getValue(OptionId::EASY_GAME))
-          def += 2;
-        else
-          def -= 1;
+        def += tribe->getHandicap();
         if (health < 1)
           def *= 0.666 + health / 3;
         if (sleeping)
@@ -735,6 +737,7 @@ int Creature::getAttr(AttrType type) const {
                (injuredWings + lostWings) * strPenNoWing;
         break;
     case AttrType::DEXTERITY:
+        def += tribe->getHandicap();
         if (health < 1)
           def *= 0.666 + health / 3;
         if (sleeping)
@@ -783,6 +786,15 @@ int Creature::getAttr(AttrType type) const {
  //       break;
   }
   return max(0, def);
+}
+
+int Creature::getPoints() const {
+  return points;
+}
+
+void Creature::onKillEvent(const Creature* victim, const Creature* killer) {
+  if (killer == this)
+    points += victim->getDifficultyPoints();
 }
 
 double Creature::getInventoryWeight() const {
@@ -1941,6 +1953,13 @@ void Creature::youHit(BodyPart part, AttackType type) const {
 
 vector<const Creature*> Creature::getUnknownAttacker() const {
   return unknownAttacker;
+}
+
+string Creature::getNameAndTitle() const {
+  if (firstName)
+    return *firstName + " the " + getName();
+  else
+    return getTheName();
 }
 
 void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {

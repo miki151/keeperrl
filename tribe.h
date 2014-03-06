@@ -26,6 +26,8 @@ class Tribe : public EventListener {
   vector<const Creature*> getMembers(bool includeDead = false);
   const string& getName();
   void addEnemy(Tribe*);
+  int getHandicap() const;
+  void setHandicap(int);
 
   static void init();
 
@@ -42,6 +44,7 @@ class Tribe : public EventListener {
   static Tribe* bandit;
   static Tribe* killEveryone;
   static Tribe* peaceful;
+  static Tribe* keeper;
 
   template <class Archive>
   static void serializeAll(Archive& ar) {
@@ -57,7 +60,8 @@ class Tribe : public EventListener {
       & BOOST_SERIALIZATION_NVP(castleCellar)
       & BOOST_SERIALIZATION_NVP(bandit)
       & BOOST_SERIALIZATION_NVP(killEveryone)
-      & BOOST_SERIALIZATION_NVP(peaceful);
+      & BOOST_SERIALIZATION_NVP(peaceful)
+      & BOOST_SERIALIZATION_NVP(keeper);
   }
 
   SERIALIZATION_DECL(Tribe);
@@ -78,6 +82,7 @@ class Tribe : public EventListener {
   vector<const Creature*> members;
   unordered_set<Tribe*> enemyTribes;
   string name;
+  int handicap = 0;
 };
 
 #endif

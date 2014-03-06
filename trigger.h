@@ -7,7 +7,8 @@
 
 class Trigger {
   public:
-  Optional<ViewObject> getViewObject() const;
+  virtual Optional<ViewObject> getViewObject(const CreatureView*) const;
+  virtual ~Trigger();
 
   virtual void onCreatureEnter(Creature* c) {}
   virtual bool interceptsFlyingItem(Item* it) const { return false; }

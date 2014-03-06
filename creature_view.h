@@ -4,6 +4,8 @@
 #include "map_memory.h"
 #include "view.h"
 
+class Tribe;
+
 class CreatureView {
   public:
   virtual const MapMemory& getMemory(const Level* l) const = 0;
@@ -16,6 +18,7 @@ class CreatureView {
   virtual const Level* getLevel() const = 0;
   virtual vector<const Creature*> getUnknownAttacker() const = 0;
   virtual vector<const Creature*> getVisibleCreatures() const { return {}; }
+  virtual Tribe* getTribe() const = 0;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {}
