@@ -363,8 +363,13 @@ static void acid(Creature* c) {
   }
 }
 
+static void alarm(Creature* c) {
+  EventListener::addAlarmEvent(c->getLevel(), c->getPosition());
+}
+
 void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strength) {
   switch (type) {
+    case EffectType::ALARM: alarm(c); break;
     case EffectType::ACID: acid(c); break;
     case EffectType::SUMMON_INSECTS: insects(c); break;
     case EffectType::DECEPTION: deception(c); break;

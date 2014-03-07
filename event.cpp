@@ -85,3 +85,8 @@ void EventListener::addCombatEvent(const Creature* c) {
       l->onCombatEvent(c);
 }
 
+void EventListener::addAlarmEvent(const Level* level, Vec2 pos) {
+   for (EventListener* l : listeners)
+     if (l->getListenerLevel() == level || l->getListenerLevel() == nullptr)
+       l->onAlarmEvent(level, pos);
+}

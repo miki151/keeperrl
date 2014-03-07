@@ -45,7 +45,9 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(delayedPos)
     & BOOST_SERIALIZATION_NVP(startImpNum)
     & BOOST_SERIALIZATION_NVP(retired)
-    & BOOST_SERIALIZATION_NVP(tribe);
+    & BOOST_SERIALIZATION_NVP(tribe)
+    & BOOST_SERIALIZATION_NVP(alarmInfo.finishTime)
+    & BOOST_SERIALIZATION_NVP(alarmInfo.position);
 }
 
 SERIALIZABLE(Collective);
@@ -108,6 +110,7 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo({SquareType::GRAVE, ResourceId::STONE, 20, "Graveyard"}),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
+    BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}),
     BuildInfo(BuildInfo::DESTROY),
     BuildInfo(BuildInfo::IMP),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion."),
@@ -691,7 +694,9 @@ static ViewObject getTrapObject(TrapType type) {
   switch (type) {
     case TrapType::BOULDER: return ViewObject(ViewId::UNARMED_BOULDER_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
     case TrapType::POISON_GAS: return ViewObject(ViewId::UNARMED_GAS_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
+    case TrapType::ALARM: return ViewObject(ViewId::UNARMED_ALARM_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
   }
+  FAIL << "pofke";
   return ViewObject(ViewId::UNARMED_GAS_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
 }
 
@@ -1201,7 +1206,8 @@ const static int timeToBuild = 50;
 void Collective::updateTraps() {
   map<TrapType, vector<pair<Item*, Vec2>>> trapItems {
     {TrapType::BOULDER, getTrapItems(TrapType::BOULDER, myTiles)},
-    {TrapType::POISON_GAS, getTrapItems(TrapType::POISON_GAS, myTiles)}};
+    {TrapType::POISON_GAS, getTrapItems(TrapType::POISON_GAS, myTiles)},
+    {TrapType::ALARM, getTrapItems(TrapType::ALARM, myTiles)}};
   for (auto elem : traps)
     if (!isDelayed(elem.first)) {
       vector<pair<Item*, Vec2>>& items = trapItems.at(elem.second.type);
@@ -1303,6 +1309,8 @@ void Collective::tick() {
   }
   if (!enemyPos.empty())
     delayDangerousTasks(enemyPos, getTime() + 20);
+  else
+    alarmInfo.finishTime = -1000;
   updateTraps();
   for (ItemFetchInfo elem : getFetchInfo()) {
     for (Vec2 pos : myTiles)
@@ -1378,6 +1386,15 @@ void Collective::onChangeLevelEvent(const Creature* c, const Level* from, Vec2 p
     teamLevelChanges[from] = pos;
     if (!levelChangeHistory.count(to))
       levelChangeHistory[to] = toPos;
+  }
+}
+
+static const int alarmTime = 100;
+
+void Collective::onAlarmEvent(const Level* l, Vec2 pos) {
+  if (l == level) {
+    alarmInfo.finishTime = getTime() + alarmTime;
+    alarmInfo.position = pos;
   }
 }
 
@@ -1466,11 +1483,23 @@ MoveInfo Collective::getBacktrackMove(Creature* c) {
     return NoMove;
 }
 
+MoveInfo Collective::getAlarmMove(Creature* c) {
+  if (alarmInfo.finishTime > c->getTime())
+    if (auto move = c->getMoveTowards(alarmInfo.position))
+      return {1.0, [=] {
+        c->move(*move);
+      }};
+  return NoMove;
+}
+
 MoveInfo Collective::getMinionMove(Creature* c) {
   if (MoveInfo possessedMove = getPossessedMove(c))
     return possessedMove;
   if (c->getLevel() != level)
     return getBacktrackMove(c);
+  if (c != keeper)
+    if (MoveInfo alarmMove = getAlarmMove(c))
+      return alarmMove;
   if (contains(minionByType.at(MinionType::BEAST), c))
     return getBeastMove(c);
   if (MoveInfo guardPostMove = getGuardPostMove(c))

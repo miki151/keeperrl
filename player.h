@@ -34,6 +34,7 @@ class Player : public Controller, public EventListener {
   virtual const Level* getListenerLevel() const override;
   virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) override;
   virtual void onExplosionEvent(const Level* level, Vec2 pos) override;
+  virtual void onAlarmEvent(const Level*, Vec2 pos) override;
 
   SERIALIZATION_DECL(Player);
 

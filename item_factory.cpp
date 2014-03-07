@@ -477,6 +477,7 @@ ItemFactory ItemFactory::workshop() {
   return ItemFactory({
       {ItemId::BOULDER_TRAP_ITEM, 2 },
       {ItemId::GAS_TRAP_ITEM, 2 },
+      {ItemId::ALARM_TRAP_ITEM, 2 },
       {ItemId::SWORD, 2 },
       {ItemId::BATTLE_AXE, 1 },
       {ItemId::WAR_HAMMER, 1 },
@@ -880,7 +881,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.price = 10;
             i.effect = EffectType::HEAL;)));
     case ItemId::BOULDER_TRAP_ITEM: return PItem(new Item(
-        ViewObject(ViewId::TRAP_ITEM, ViewLayer::ITEM, "Unarmed trap"), ITATTR(
+        ViewObject(ViewId::TRAP_ITEM, ViewLayer::ITEM, "Unarmed boulder trap"), ITATTR(
             i.name = "boulder trap";
             i.weight = 0.5;
             i.type = ItemType::TOOL;
@@ -891,8 +892,8 @@ PItem ItemFactory::fromId(ItemId id) {
             i.trapType = TrapType::BOULDER;
             i.price = 10;)));
     case ItemId::GAS_TRAP_ITEM: return PItem(new TrapItem(
-        ViewObject(ViewId::TRAP_ITEM, ViewLayer::ITEM, "Unarmed trap"),
-        ViewObject(ViewId::GAS_TRAP, ViewLayer::LARGE_ITEM, "Trap"),ITATTR(
+        ViewObject(ViewId::TRAP_ITEM, ViewLayer::ITEM, "Unarmed gas trap"),
+        ViewObject(ViewId::GAS_TRAP, ViewLayer::LARGE_ITEM, "Gas trap"),ITATTR(
             i.name = "gas trap";
             i.weight = 0.5;
             i.type = ItemType::TOOL;
@@ -901,6 +902,17 @@ PItem ItemFactory::fromId(ItemId id) {
             i.usedUpMsg = true;
             i.trapType = TrapType::POISON_GAS;
             i.price = 10;), EffectType::EMIT_POISON_GAS));
+    case ItemId::ALARM_TRAP_ITEM: return PItem(new TrapItem(
+        ViewObject(ViewId::TRAP_ITEM, ViewLayer::ITEM, "Unarmed alarm trap"),
+        ViewObject(ViewId::ALARM_TRAP, ViewLayer::LARGE_ITEM, "Alarm trap"),ITATTR(
+            i.name = "alarm trap";
+            i.weight = 0.5;
+            i.type = ItemType::TOOL;
+            i.applyTime = 3;
+            i.uses = 1;
+            i.usedUpMsg = true;
+            i.trapType = TrapType::ALARM;
+            i.price = 10;), EffectType::ALARM));
     case ItemId::HEALING_POTION: return getPotion(0, "healing", EffectType::HEAL, 40, "Heals all your wounds.");
     case ItemId::SLEEP_POTION: return getPotion(1, "sleep", EffectType::SLEEP, 40,
                                    "Puts anyone to sleep immediately.");

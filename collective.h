@@ -43,6 +43,8 @@ class Collective : public CreatureView, public EventListener {
   virtual void onTriggerEvent(const Level*, Vec2 pos) override;
   virtual void onSquareReplacedEvent(const Level*, Vec2 pos) override;
   virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) override;
+  virtual void onAlarmEvent(const Level*, Vec2 pos) override;
+
   void onConqueredLand(const string& name);
 
   void processInput(View* view);
@@ -179,6 +181,7 @@ class Collective : public CreatureView, public EventListener {
   MoveInfo getGuardPostMove(Creature* c);
   MoveInfo getPossessedMove(Creature* c);
   MoveInfo getBacktrackMove(Creature* c);
+  MoveInfo getAlarmMove(Creature* c);
 
   bool isDownstairsVisible() const;
   struct CostInfo {
@@ -302,6 +305,10 @@ class Collective : public CreatureView, public EventListener {
   int startImpNum = -1;
   bool retired = false;
   Tribe* tribe = nullptr;
+  struct AlarmInfo {
+    double finishTime = -1000;
+    Vec2 position;
+  } alarmInfo;
 };
 
 #endif

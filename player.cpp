@@ -58,6 +58,14 @@ void Player::onExplosionEvent(const Level* level, Vec2 pos) {
     creature->privateMessage("BOOM!");
 }
 
+void Player::onAlarmEvent(const Level* l, Vec2 pos) {
+  if (pos == creature->getPosition())
+    privateMessage("An alarm sounds near you.");
+  else
+    privateMessage("An alarm sounds in the " + 
+        getCardinalName((pos - creature->getPosition()).getBearing().getCardinalDir()));
+}
+
 ControllerFactory Player::getFactory(View* f, Model *m, map<const Level*, MapMemory>* levelMemory) {
   return ControllerFactory([=](Creature* c) { return new Player(c, f, m, true, levelMemory);});
 }

@@ -22,6 +22,7 @@ class EventListener {
   virtual void onTriggerEvent(const Level*, Vec2 pos) {}
   virtual void onSquareReplacedEvent(const Level*, Vec2 pos) {}
   virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) {}
+  virtual void onAlarmEvent(const Level*, Vec2 pos) {}
 
   static void addPickupEvent(const Creature*, const vector<Item*>& items);
   static void addDropEvent(const Creature*, const vector<Item*>& items);
@@ -34,6 +35,7 @@ class EventListener {
   static void addTriggerEvent(const Level*, Vec2 pos);
   static void addSquareReplacedEvent(const Level*, Vec2 pos);
   static void addChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos);
+  static void addAlarmEvent(const Level*, Vec2 pos);
 
   virtual const Level* getListenerLevel() const { return nullptr; }
   static void initialize();
