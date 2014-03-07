@@ -33,6 +33,41 @@ class Serialization {
   static void registerTypes(Archive& ar);
 };
 
+class SerialChecker {
+  public:
+
+  void checkSerial();
+
+  class Check {
+    public:
+    Check(SerialChecker& checker, const string& name);
+    void tick();
+    void tickOff();
+
+    private:
+    bool ticked = false;
+    string name;
+  };
+
+  friend class Check;
+  private:
+  vector<Check*> checks;
+};
+
+#define SERIAL_CHECKER SerialChecker serialChecker
+#define CHECK_SERIAL serialChecker.checkSerial()
+#define SERIAL(X) X; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker,#X)
+#define SERIAL2(X, Y) X = Y; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker,#X)
+
+template <class T>
+T& checkSerial(T& t, SerialChecker::Check& check) {
+  check.tick();
+  return t;
+}
+
+#define SVAR(X) checkSerial(X, X##_Check)
+
+
 namespace boost { 
 namespace serialization {
 

@@ -38,3 +38,23 @@ void Serialization::registerTypes(Archive& ar) {
 }
 
 REGISTER_TYPES(Serialization);
+
+void SerialChecker::checkSerial() {
+  for (Check* c : checks)
+    c->tickOff();
+}
+
+SerialChecker::Check::Check(SerialChecker& checker, const string& name) {
+  checker.checks.push_back(this);
+}
+
+void SerialChecker::Check::tick() {
+  CHECK(!ticked) << name;
+  ticked = true;
+}
+
+void SerialChecker::Check::tickOff() {
+  CHECK(ticked) << name;
+  ticked = false;
+}
+

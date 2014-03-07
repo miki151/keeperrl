@@ -82,15 +82,17 @@ class SecretPassage : public Square {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & BOOST_SERIALIZATION_NVP(secondary)
-      & BOOST_SERIALIZATION_NVP(uncovered);
+      & SVAR(secondary)
+      & SVAR(uncovered);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(SecretPassage);
 
   private:
-  ViewObject secondary;
-  bool uncovered;
+  SERIAL_CHECKER;
+  ViewObject SERIAL(secondary);
+  bool SERIAL(uncovered);
 };
 
 class Magma : public Square {
@@ -120,15 +122,17 @@ class Magma : public Square {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & BOOST_SERIALIZATION_NVP(itemMessage)
-      & BOOST_SERIALIZATION_NVP(noSeeMsg);
+      & SVAR(itemMessage)
+      & SVAR(noSeeMsg);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Magma);
 
   private:
-  string itemMessage;
-  string noSeeMsg;
+  SERIAL_CHECKER;
+  string SERIAL(itemMessage);
+  string SERIAL(noSeeMsg);
 };
 
 class Water : public Square {
@@ -172,17 +176,19 @@ class Water : public Square {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & BOOST_SERIALIZATION_NVP(itemMessage)
-      & BOOST_SERIALIZATION_NVP(noSeeMsg) 
-      & BOOST_SERIALIZATION_NVP(depth);
+      & SVAR(itemMessage)
+      & SVAR(noSeeMsg) 
+      & SVAR(depth);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Water);
   
   private:
-  string itemMessage;
-  string noSeeMsg;
-  double depth;
+  SERIAL_CHECKER;
+  string SERIAL(itemMessage);
+  string SERIAL(noSeeMsg);
+  double SERIAL(depth);
 };
 
 class Chest : public Square {
@@ -247,26 +253,31 @@ class Chest : public Square {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & BOOST_SERIALIZATION_NVP(creatureId)
-      & BOOST_SERIALIZATION_NVP(minCreatures)
-      & BOOST_SERIALIZATION_NVP(maxCreatures) 
-      & BOOST_SERIALIZATION_NVP(msgItem)
-      & BOOST_SERIALIZATION_NVP(msgMonster)
-      & BOOST_SERIALIZATION_NVP(msgGold)
-      & BOOST_SERIALIZATION_NVP(opened)
-      & BOOST_SERIALIZATION_NVP(itemFactory)
-      & BOOST_SERIALIZATION_NVP(openedObject);
+      & SVAR(creatureId)
+      & SVAR(minCreatures)
+      & SVAR(maxCreatures) 
+      & SVAR(msgItem)
+      & SVAR(msgMonster)
+      & SVAR(msgGold)
+      & SVAR(opened)
+      & SVAR(itemFactory)
+      & SVAR(openedObject);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Chest);
 
   private:
-  CreatureId creatureId;
-  int minCreatures, maxCreatures;
-  string msgItem, msgMonster, msgGold;
-  bool opened = false;
-  ItemFactory itemFactory;
-  ViewObject openedObject;
+  SERIAL_CHECKER;
+  CreatureId SERIAL(creatureId);
+  int SERIAL(minCreatures);
+  int SERIAL(maxCreatures);
+  string SERIAL(msgItem);
+  string SERIAL(msgMonster);
+  string SERIAL(msgGold);
+  bool SERIAL2(opened, false);
+  ItemFactory SERIAL(itemFactory);
+  ViewObject SERIAL(openedObject);
 };
 
 class Fountain : public Square {
@@ -294,13 +305,15 @@ class Fountain : public Square {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & BOOST_SERIALIZATION_NVP(seed);
+      & SVAR(seed);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Fountain);
 
   private:
-  int seed = Random.getRandom(123456);
+  SERIAL_CHECKER;
+  int SERIAL2(seed, Random.getRandom(123456));
 };
 
 class Tree : public Square {
@@ -344,17 +357,19 @@ class Tree : public Square {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & BOOST_SERIALIZATION_NVP(destroyed)
-      & BOOST_SERIALIZATION_NVP(numWood)
-      & BOOST_SERIALIZATION_NVP(bounces);
+      & SVAR(destroyed)
+      & SVAR(numWood)
+      & SVAR(bounces);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Tree);
 
   private:
-  bool destroyed = false;
-  int numWood;
-  bool bounces;
+  SERIAL_CHECKER;
+  bool SERIAL2(destroyed, false);
+  int SERIAL(numWood);
+  bool SERIAL(bounces);
 };
 
 class TrapSquare : public Square {
@@ -373,15 +388,17 @@ class TrapSquare : public Square {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & BOOST_SERIALIZATION_NVP(active)
-      & BOOST_SERIALIZATION_NVP(effect);
+      & SVAR(active)
+      & SVAR(effect);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(TrapSquare);
 
   private:
-  bool active = true;
-  EffectType effect;
+  SERIAL_CHECKER;
+  bool SERIAL2(active, true);
+  EffectType SERIAL(effect);
 };
 
 class Door : public Square {
@@ -423,13 +440,15 @@ class TribeDoor : public Door {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Door)
-      & BOOST_SERIALIZATION_NVP(destructionStrength);
+      & SVAR(destructionStrength);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(TribeDoor);
 
   private:
-  int destructionStrength;
+  SERIAL_CHECKER;
+  int SERIAL(destructionStrength);
 };
 
 class Furniture : public Square {
@@ -535,13 +554,15 @@ class Altar : public Square {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & BOOST_SERIALIZATION_NVP(deity);
+      & SVAR(deity);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Altar);
 
   private:
-  Deity* deity;
+  SERIAL_CHECKER;
+  Deity* SERIAL(deity);
 };
 
 class ConstructionDropItems : public SolidSquare {
@@ -557,13 +578,15 @@ class ConstructionDropItems : public SolidSquare {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(SolidSquare)
-      & BOOST_SERIALIZATION_NVP(items);
+      & SVAR(items);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(ConstructionDropItems);
 
   private:
-  vector<PItem> items;
+  SERIAL_CHECKER;
+  vector<PItem> SERIAL(items);
 };
 
 class TrainingDummy : public Furniture {
