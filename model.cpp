@@ -312,7 +312,7 @@ void Model::landHeroPlayer() {
   PCreature player = makePlayer();
   levels[0]->setPlayer(player.get());
   levels[0]->landCreature(StairDirection::UP, StairKey::HERO_SPAWN, std::move(player));
-  auto handicap = view->getNumber("Choose handicap", 20);
+  auto handicap = view->getNumber("Choose handicap", 20, 5);
   if (handicap)
     Tribe::player->setHandicap(*handicap);
 }

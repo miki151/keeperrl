@@ -33,7 +33,8 @@ class BoulderController : public Monster {
               stopped = false;
               found = true;
               EventListener::addTriggerEvent(creature->getLevel(), creature->getPosition());
-              creature->globalMessage("The boulder starts rolling.", "You hear a heavy boulder rolling.");
+              creature->globalMessage(MessageBuffer::important("The boulder starts rolling."),
+                  MessageBuffer::important("You hear a heavy boulder rolling."));
               break;
             }
           if (!creature->getSquare(v * i)->canEnterEmpty(creature))

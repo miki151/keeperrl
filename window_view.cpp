@@ -967,9 +967,9 @@ bool WindowView::yesOrNoPrompt(const string& message) {
   } while (1);
 }
 
-Optional<int> WindowView::getNumber(const string& title, int max) {
+Optional<int> WindowView::getNumber(const string& title, int max, int increments) {
   vector<View::ListElem> options;
-  for (int i : Range(1, max + 1))
+  for (int i = 0; i <= max; i += increments)
     options.push_back(convertToString(i));
   Optional<int> res = WindowView::chooseFromList(title, options);
   if (!res)
