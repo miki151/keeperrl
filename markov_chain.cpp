@@ -52,4 +52,10 @@ bool MarkovChain<T>::updateToNext() {
   return true;
 }
 
+template<class T>
+bool MarkovChain<T>::containsState(T state) const {
+  return transitions.count(state);
+}
+
+
 template class MarkovChain<MinionTask>;

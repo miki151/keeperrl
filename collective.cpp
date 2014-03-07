@@ -1494,7 +1494,11 @@ MoveInfo Collective::getMinionMove(Creature* c) {
       }
   minionTasks.at(c).update();
   if (c->getHealth() < 1 && c->canSleep())
-    minionTasks.at(c).setState(MinionTask::SLEEP);
+    for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE})
+      if (minionTasks.at(c).containsState(t)) {
+        minionTasks.at(c).setState(t);
+        break;
+      }
   if (c == keeper && !myTiles.empty() && !myTiles.count(c->getPosition())) {
     if (auto move = c->getMoveTowards(chooseRandom(myTiles)))
       return {1.0, [=] {

@@ -96,14 +96,16 @@ void Model::tick(double time) {
   lastTick = time;
   if (collective) {
     collective->tick();
-    bool conquered = true;
-    for (PVillageControl& control : villageControls) {
-      control->tick(time);
-      conquered &= control->isConquered();
-    }
-    if (conquered && !won) {
-      collective->onConqueredLand(NameGenerator::worldNames.getNext());
-      won = true;
+    if (!collective->isRetired()) {
+      bool conquered = true;
+      for (PVillageControl& control : villageControls) {
+        control->tick(time);
+        conquered &= control->isConquered();
+      }
+      if (conquered && !won) {
+        collective->onConqueredLand(NameGenerator::worldNames.getNext());
+        won = true;
+      }
     }
   }
 }
@@ -310,13 +312,13 @@ void Model::landHeroPlayer() {
   PCreature player = makePlayer();
   levels[0]->setPlayer(player.get());
   levels[0]->landCreature(StairDirection::UP, StairKey::HERO_SPAWN, std::move(player));
-  auto handicap = view->getNumber("Choose handicap", 10);
+  auto handicap = view->getNumber("Choose handicap", 20);
   if (handicap)
     Tribe::player->setHandicap(*handicap);
 }
 
 string Model::getGameIdentifier() const {
-  if (collective)
+  if (collective && !getPlayer())
     return *collective->getKeeper()->getFirstName();
   else
     return *NOTNULL(getPlayer())->getFirstName();

@@ -11,6 +11,7 @@ class MarkovChain {
   void setState(T);
   void update();
   bool updateToNext();
+  bool containsState(T) const;
 
   SERIALIZATION_DECL(MarkovChain);
 

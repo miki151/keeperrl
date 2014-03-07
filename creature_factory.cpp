@@ -159,6 +159,7 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
             c.noSleep = true;
             c.invincible = true;
             c.breathing = false;
+            c.brain = false;
             c.name = "boulder";), direction));
 }
 
@@ -176,6 +177,7 @@ PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
             c.stationary = true;
             c.invincible = true;
             c.breathing = false;
+            c.brain = false;
             c.name = "boulder";), tribe));
 }
 
