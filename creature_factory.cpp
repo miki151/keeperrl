@@ -746,6 +746,10 @@ CreatureFactory CreatureFactory::dwarfTown() {
   return CreatureFactory(Tribe::dwarven, { CreatureId::DWARF}, { 1}, { CreatureId::DWARF_BARON});
 }
 
+CreatureFactory CreatureFactory::splash() {
+  return CreatureFactory(Tribe::keeper, { CreatureId::IMP}, { 1}, { CreatureId::KEEPER });
+}
+
 CreatureFactory CreatureFactory::goblinTown(int num) {
   int maxLevel = 3;
   CHECK(num <= maxLevel && num > 0);

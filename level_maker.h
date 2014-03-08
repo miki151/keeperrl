@@ -35,8 +35,8 @@ class LevelMaker {
   static LevelMaker* pyramidLevel(Optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* towerLevel(Optional<StairKey> down, Optional<StairKey> up);
   static Vec2 getRandomExit(Rectangle rect, int minCornerDist = 1);
-
   static LevelMaker* collectiveLevel(vector<StairKey> up, vector<StairKey> down, StairKey hellDown, Collective* col);
+  static LevelMaker* grassAndTrees();
 };
 
 #endif

@@ -7,7 +7,17 @@
 enum class OptionId {
   HINTS,
   ASCII,
-  EASY_GAME,
+
+  EASY_KEEPER,
+  AGGRESSIVE_HEROES,
+
+  EASY_ADVENTURER,
+};
+
+enum class OptionSet {
+  GENERAL,
+  KEEPER,
+  ADVENTURER,
 };
 
 ENUM_HASH(OptionId);
@@ -16,7 +26,7 @@ class Options {
   public:
   static void init(const string& path);
   static int getValue(OptionId);
-  static void handle(View*, bool inGame, int lastIndex = 0);
+  static void handle(View*, OptionSet, int lastIndex = 0);
 
   private:
   static void setValue(OptionId, int);

@@ -90,6 +90,22 @@ static void saveGame(unique_ptr<Model> model, const string& filename) {
   oa << BOOST_SERIALIZATION_NVP(model);
 }
 
+/*static Table<bool> readSplashTable(const string& path) {
+  ifstream in(path);
+  int x, y;
+  in >> x >> y;
+  Table<bool> ret(x, y);
+  for (int i : Range(y))
+    for (int j : Range(x))
+      in >> ret[j][i];
+  return ret;
+}*/
+
+static void saveExceptionLine(const string& path, const string& line) {
+  ofstream of(path, std::fstream::out | std::fstream::app);
+  of << line << std::endl;
+}
+
 int main(int argc, char* argv[]) {
   View* view;
   ifstream input;
@@ -130,6 +146,7 @@ int main(int argc, char* argv[]) {
     CHECK(input.is_open());
     view = View::createReplayView(input);
   }
+  //Table<bool> splash = readSplashTable("splash.map");
   int lastIndex = 0;
   view->initialize();
   while (1) {
@@ -167,9 +184,15 @@ int main(int argc, char* argv[]) {
         continue;
     }
     if (choice == 4) {
-      Options::handle(view, false);
+      Options::handle(view, OptionSet::GENERAL);
       continue;
     }
+    if (choice == 0) {
+      Options::handle(view, OptionSet::KEEPER, 1000);
+    } 
+    if (choice == 1) {
+      Options::handle(view, OptionSet::ADVENTURER, 1000);
+    } 
     if (choice == 5) {
       unique_ptr<Model> m(new Model(view));
       m->showHighscore();
@@ -203,10 +226,11 @@ int main(int argc, char* argv[]) {
     model->setView(view);
     if (genExit)
       break;
-    if (!model)
+    if (!model) {
       view->presentText("Sorry!", "World generation permanently failed with the following error:\n \n" + ex +
           "\n \nIf you would be so kind, please send this line to rusolis@poczta.fm Thanks!");
-
+      saveExceptionLine("crash.log", ex);
+    }
     int var = 0;
     try {
       while (1) {
@@ -229,6 +253,7 @@ int main(int argc, char* argv[]) {
       view->presentText("Sorry!", "The game has crashed with the following error:\n \n" + ex +
           "\n \nIf you would be so kind, please send this line and a description of the circumstances to "
           " rusolis@poczta.fm Thanks!");
+      saveExceptionLine("crash.log", ex);
     }
 #endif
   }

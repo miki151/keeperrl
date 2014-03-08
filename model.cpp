@@ -190,8 +190,8 @@ vector<Location*> getVillageLocations(int numVillages) {
   return ret;
 }
 
-static void setHandicap(Tribe* tribe) {
-  if (Options::getValue(OptionId::EASY_GAME))
+static void setHandicap(Tribe* tribe, bool easy) {
+  if (easy)
     tribe->setHandicap(2);
   else
     tribe->setHandicap(-1);
@@ -249,7 +249,7 @@ Model* Model::heroModel(View* view) {
   Level* start = top;
   start->setPlayer(player.get());
   start->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(player));
-  setHandicap(Tribe::player);
+  setHandicap(Tribe::player, Options::getValue(OptionId::EASY_ADVENTURER));
   return m;
 }
 
@@ -279,30 +279,33 @@ PCreature Model::makePlayer() {
 }
 
 void Model::exitAction() {
-  auto ind = view->chooseFromList("Would you like to:", {
-      collective && won ? "Retire fortress" : "Save the game",
-      "Abandon the game",
-      "Cancel"});
-  if (ind == 0) {
-    if (!collective || collective->isRetired())
-      throw SaveGameException(GameType::ADVENTURER);
-    else if (!won)
-      throw SaveGameException(GameType::KEEPER);
-    else {
-      retireCollective();
-      throw SaveGameException(GameType::RETIRED_KEEPER);
-    }
+  enum Action { RETIRE, SAVE, ABANDON, CANCEL };
+  vector<View::ListElem> options { "Save the game" };
+  vector<Action> actions { SAVE };
+  if (collective && (won || !Options::getValue(OptionId::AGGRESSIVE_HEROES))) {
+    options.emplace_back("Retire");
+    actions.push_back(RETIRE);
   }
-  if (ind == 1)
-    throw GameOverException();
-  return;
+  options.emplace_back("Abandon the game"); actions.push_back(ABANDON);
+  options.emplace_back("Cancel"); actions.push_back(CANCEL);
+  auto ind = view->chooseFromList("Would you like to:", options);
+  if (!ind)
+    return;
+  switch (actions[*ind]) {
+    case RETIRE: retireCollective(); throw SaveGameException(GameType::RETIRED_KEEPER);
+    case SAVE:if (!collective || collective->isRetired())
+                throw SaveGameException(GameType::ADVENTURER);
+              else if (!won)
+                throw SaveGameException(GameType::KEEPER);
+    case ABANDON: throw GameOverException();
+    default: break;
+  }
 }
 
 void Model::retireCollective() {
   CHECK(collective);
   Statistics::init();
   Tribe::keeper->setHandicap(0);
-  setHandicap(Tribe::player);
   collective->retire();
   won = false;
   addHero = true;
@@ -378,7 +381,9 @@ Model* Model::collectiveModel(View* view) {
   };
   int cnt = 0;
   auto killedCoeff = [] () { return Random.getDouble(0.1, 0.3); };
-  auto powerCoeff = [] () { return Random.getDouble(0.2, 1); };
+  auto powerCoeff = Options::getValue(OptionId::AGGRESSIVE_HEROES) 
+    ? [] () { return Random.getDouble(0.1, 0.8); }
+    : [] () { return 0.0; };
   for (int i : All(villageLocations)) {
     PVillageControl control = VillageControl::topLevelVillage(m->collective.get(), villageLocations[i],
         killedCoeff(), powerCoeff());
@@ -399,7 +404,25 @@ Model* Model::collectiveModel(View* view) {
     d1->landCreature(StairDirection::UP, StairKey::DWARF, std::move(c));
   }
   m->villageControls.push_back(std::move(dwarfControl));
-  setHandicap(Tribe::keeper);
+  setHandicap(Tribe::keeper, Options::getValue(OptionId::EASY_KEEPER));
+  return m;
+}
+
+Model* Model::splashModel(View* view, const Table<bool>& bitmap) {
+  Model* m = new Model(view);
+  Level* top = m->buildLevel(
+      Level::Builder(bitmap.getWidth(), bitmap.getHeight(), "Wilderness"),
+      LevelMaker::grassAndTrees(), true);
+  CreatureFactory factory = CreatureFactory::splash();
+  m->collective.reset(new Collective(m, Tribe::keeper));
+  m->collective->setLevel(top);
+  for (Vec2 v : bitmap.getBounds())
+    if (bitmap[v]) {
+      PCreature c = factory.random(MonsterAIFactory::guardSquare(v));
+      Creature* ref = c.get();
+      top->landCreature({bitmap.getBounds().randomVec2()}, std::move(c));
+      m->collective->addCreature(ref);
+    }
   return m;
 }
 
@@ -441,7 +464,7 @@ void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
 void Model::conquered(const string& title, const string& land, vector<const Creature*> kills, int points) {
   string text= "You have conquered this land. You killed " + convertToString(kills.size()) +
       " innocent beings and scored " + convertToString(points) +
-      " points. Thank you for playing KeeperRL alpha. If you like the game, consider donating to support its development.\n \n";
+      " points. Thank you for playing KeeperRL alpha.\n \nIf you like the game, consider donating to support its development.\n \n";
   for (string stat : Statistics::getText())
     text += stat + "\n";
   view->presentText("Victory", text);

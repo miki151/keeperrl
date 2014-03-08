@@ -999,6 +999,15 @@ MonsterAIFactory MonsterAIFactory::scavengerBird(Vec2 corpsePos) {
       });
 }
 
+MonsterAIFactory MonsterAIFactory::guardSquare(Vec2 pos) {
+  return MonsterAIFactory([=](Creature* c) {
+      return new MonsterAI(c, {
+          new Wait(c),
+          new GuardSquare(c, pos, 0, 1)},
+          {1, 2});
+      });
+}
+
 MonsterAIFactory MonsterAIFactory::follower(Creature* leader, int radius) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {

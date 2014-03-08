@@ -34,7 +34,7 @@ class CreatureFactory {
   static CreatureFactory collectiveSurpriseEnemies();
   static CreatureFactory goblinTown(int num);
   static CreatureFactory level(int num);
-  static CreatureFactory bottomLevel();
+  static CreatureFactory splash();
   static CreatureFactory singleType(Tribe*, CreatureId);
   static CreatureFactory pyramid(int level);
   PCreature random(MonsterAIFactory = MonsterAIFactory::monster());

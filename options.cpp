@@ -6,13 +6,23 @@ string Options::filename;
 const unordered_map<OptionId, int> defaults {
   {OptionId::HINTS, 1},
   {OptionId::ASCII, 0},
-  {OptionId::EASY_GAME, 1},
+  {OptionId::EASY_KEEPER, 1},
+  {OptionId::AGGRESSIVE_HEROES, 1},
+  {OptionId::EASY_ADVENTURER, 0},
 };
 
-const vector<pair<OptionId, string>> names {
+const map<OptionId, string> names {
   {OptionId::HINTS, "In-game hints"},
   {OptionId::ASCII, "Unicode graphics"},
-  {OptionId::EASY_GAME, "Game difficulty"},
+  {OptionId::EASY_KEEPER, "Game difficulty"},
+  {OptionId::AGGRESSIVE_HEROES, "Aggressive enemies"},
+  {OptionId::EASY_ADVENTURER, "Game difficulty"},
+};
+
+const map<OptionSet, vector<OptionId>> optionSets {
+  {OptionSet::GENERAL, {OptionId::HINTS, OptionId::ASCII}},
+  {OptionSet::KEEPER, {OptionId::EASY_KEEPER, OptionId::AGGRESSIVE_HEROES}},
+  {OptionSet::ADVENTURER, {OptionId::EASY_ADVENTURER}},
 };
 
 void Options::init(const string& path) {
@@ -36,23 +46,23 @@ void Options::setValue(OptionId id, int value) {
 unordered_map<OptionId, vector<string>> valueNames {
   {OptionId::HINTS, { "off", "on" }},
   {OptionId::ASCII, { "off", "on" }},
-  {OptionId::EASY_GAME, { "hard", "easy" }}};
+  {OptionId::EASY_KEEPER, { "hard", "easy" }},
+  {OptionId::AGGRESSIVE_HEROES, { "no", "yes" }},
+  {OptionId::EASY_ADVENTURER, { "hard", "easy" }},
+};
 
-unordered_set<OptionId> disabledInGame { OptionId::EASY_GAME };
-
-void Options::handle(View* view, bool inGame, int lastIndex) {
+void Options::handle(View* view, OptionSet set, int lastIndex) {
   vector<View::ListElem> options;
   options.emplace_back("Set options:", View::TITLE);
-  for (auto elem : names) {
-    options.emplace_back(elem.second + "      " + valueNames[elem.first][getValue(elem.first)],
-        inGame && disabledInGame.count(elem.first) ? View::INACTIVE : View::NORMAL);
-  }
+  for (OptionId option : optionSets.at(set))
+    options.emplace_back(names.at(option) + "      " + valueNames.at(option)[getValue(option)]);
   options.emplace_back("Done");
   auto index = view->chooseFromList("", options, lastIndex);
-  if (!index || (*index) == names.size())
+  if (!index || (*index) == optionSets.at(set).size())
     return;
-  setValue(names[*index].first, 1 - getValue(names[*index].first));
-  handle(view, inGame, *index);
+  OptionId option = optionSets.at(set)[*index];
+  setValue(option, 1 - getValue(option));
+  handle(view, set, *index);
 }
 
 unordered_map<OptionId, int> Options::readValues(const string& path) {

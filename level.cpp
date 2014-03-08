@@ -131,7 +131,7 @@ Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
       return v.second;
     } else
       for (Vec2 next : v.first.neighbors8(true))
-        if (squares[next]->canEnterEmpty(creature))
+        if (next.inRectangle(squares.getBounds()) && squares[next]->canEnterEmpty(creature))
           q.push(make_pair(next, v.second));
   }
   FAIL << "Failed to find any square to put creature";

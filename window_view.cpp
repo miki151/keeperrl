@@ -1307,7 +1307,7 @@ CollectiveAction WindowView::getClick() {
               unzoom();
               return CollectiveAction(CollectiveAction::IDLE);
             }
-          case Keyboard::F2: Options::handle(this, true); refreshScreen(); break;
+          case Keyboard::F2: Options::handle(this, OptionSet::GENERAL); refreshScreen(); break;
           case Keyboard::Space:
             if (!myClock.isPaused())
               myClock.pause();
@@ -1470,7 +1470,7 @@ Action WindowView::getAction() {
       case Keyboard::Escape: return Action(ActionId::EXIT);
       case Keyboard::Z: unzoom(); return Action(ActionId::IDLE);
       case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
-      case Keyboard::F2: Options::handle(this, true); return Action(ActionId::IDLE);
+      case Keyboard::F2: Options::handle(this, OptionSet::GENERAL); return Action(ActionId::IDLE);
       case Keyboard::Up:
       case Keyboard::Numpad8: return Action(getDirActionId(*key), Vec2(0, -1));
       case Keyboard::Numpad9: return Action(getDirActionId(*key), Vec2(1, -1));

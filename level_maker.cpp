@@ -1990,3 +1990,9 @@ LevelMaker* LevelMaker::cavernLevel(CreatureFactory cfactory, SquareType wallTyp
   return new BorderGuard(queue, wallType);
 }
 
+LevelMaker* LevelMaker::grassAndTrees() {
+  MakerQueue* queue = new MakerQueue();
+  queue->addMaker(new Empty(SquareType::GRASS));
+  queue->addMaker(new Vegetation(0.8, 0.5, SquareType::GRASS, {SquareType::CANIF_TREE}, {1}));
+  return new BorderGuard(queue, SquareType::BLACK_WALL);
+}
