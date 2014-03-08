@@ -272,6 +272,7 @@ PCreature Model::makePlayer() {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
+      ItemId::WARNING_AMULET,
       ItemId::LEATHER_ARMOR, ItemId::LEATHER_HELM});
   for (int i : Range(Random.getRandom(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
@@ -282,7 +283,7 @@ void Model::exitAction() {
   enum Action { RETIRE, SAVE, ABANDON, CANCEL };
   vector<View::ListElem> options { "Save the game" };
   vector<Action> actions { SAVE };
-  if (collective && (won || !Options::getValue(OptionId::AGGRESSIVE_HEROES))) {
+  if (collective && !collective->isRetired() && (won || !Options::getValue(OptionId::AGGRESSIVE_HEROES))) {
     options.emplace_back("Retire");
     actions.push_back(RETIRE);
   }

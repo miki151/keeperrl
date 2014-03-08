@@ -10,11 +10,12 @@ class Trigger {
   virtual Optional<ViewObject> getViewObject(const CreatureView*) const;
   virtual ~Trigger();
 
-  virtual void onCreatureEnter(Creature* c) {}
-  virtual bool interceptsFlyingItem(Item* it) const { return false; }
-  virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir) {}
+  virtual void onCreatureEnter(Creature* c);
+  virtual bool interceptsFlyingItem(Item* it) const;
+  virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir);
 
-  virtual void tick(double time) {}
+  virtual bool isDangerous(const Creature* c) const;
+  virtual void tick(double time);
 
   static PTrigger getPortal(const ViewObject& obj, Level*, Vec2 position);
   static PTrigger getTrap(const ViewObject& obj, Level* l, Vec2 position, EffectType effect, Tribe* tribe);

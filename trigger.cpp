@@ -24,6 +24,13 @@ Optional<ViewObject> Trigger::getViewObject(const CreatureView*) const {
   return viewObject;
 }
 
+void Trigger::onCreatureEnter(Creature* c) {}
+
+bool Trigger::interceptsFlyingItem(Item* it) const { return false; }
+void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir) {}
+bool Trigger::isDangerous(const Creature* c) const { return false; }
+void Trigger::tick(double time) {}
+
 class Portal : public Trigger {
   public:
   Portal(const ViewObject& obj, Level* l, Vec2 position) : Trigger(obj, l, position) {
@@ -114,6 +121,10 @@ class Trap : public Trigger {
       return viewObject;
     else
       return Nothing();
+  }
+
+  virtual bool isDangerous(const Creature* c) const override {
+    return c->getTribe() != tribe;
   }
 
   virtual void onCreatureEnter(Creature* c) override {

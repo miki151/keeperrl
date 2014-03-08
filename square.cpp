@@ -347,6 +347,10 @@ void Square::addTrigger(PTrigger t) {
   triggers.push_back(std::move(t));
 }
 
+const vector<Trigger*> Square::getTriggers() const {
+  return extractRefs(triggers);
+}
+
 PTrigger Square::removeTrigger(Trigger* trigger) {
   for (PTrigger& t : triggers)
     if (t.get() == trigger) {

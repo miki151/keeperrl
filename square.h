@@ -121,6 +121,9 @@ class Square {
   /** Adds a trigger to the square.*/
   void addTrigger(PTrigger);
 
+  /** Returns all triggers.*/
+  const vector<Trigger*> getTriggers() const;
+
   /** Removes the trigger from the square.*/
   PTrigger removeTrigger(Trigger*);
 

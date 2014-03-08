@@ -61,14 +61,21 @@ class AmuletOfWarning : public Item {
       for (Vec2 v : rect) {
         if (!level->inBounds(v))
           continue;
+        for (Trigger* t : level->getSquare(v)->getTriggers())
+          if (t->isDangerous(owner)) {
+            if (v.dist8(position) <= 1)
+              isBigDanger = true;
+            else
+              isDanger = true;
+          }
         if (Creature* c = level->getSquare(v)->getCreature()) {
           if (!owner->canSee(c) && c->isEnemy(owner)) {
             int diff = c->getAttr(AttrType::DAMAGE) - owner->getAttr(AttrType::DAMAGE);
             if (diff > 5)
               isBigDanger = true;
             else
-            if (diff > 0)
-              isDanger = true;
+              if (diff > 0)
+                isDanger = true;
           }
         }
       }
