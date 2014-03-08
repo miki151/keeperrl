@@ -44,9 +44,9 @@ map<EffectStrength, int> fireAmount {
     {EffectStrength::STRONG, 1}};
 
 map<EffectStrength, int> attrBonusTime { 
-    {EffectStrength::WEAK, 30},
-    {EffectStrength::NORMAL, 100},
-    {EffectStrength::STRONG, 450}};
+    {EffectStrength::WEAK, 10},
+    {EffectStrength::NORMAL, 40},
+    {EffectStrength::STRONG, 150}};
 
 map<EffectStrength, int> identifyNum { 
     {EffectStrength::WEAK, 1},
@@ -302,7 +302,7 @@ static void teleport(Creature* c) {
   vector<Vec2> good;
   int maxW = 0;
   for (Vec2 v : l->getBounds().intersection(Rectangle(pos - teleRadius, pos + teleRadius))) {
-    if (!l->canMoveCreature(c, v - pos))
+    if (!l->canMoveCreature(c, v - pos) || l->getSquare(v)->isBurning() || l->getSquare(v)->getPoisonGasAmount() > 0)
       continue;
     if (weight[v] == maxW)
       good.push_back(v);

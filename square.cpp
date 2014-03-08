@@ -260,8 +260,8 @@ double Square::getPoisonGasAmount() const {
   return poisonGas.getAmount();
 }
 
-bool Square::isBurnt() const {
-  return fire.isBurntOut();
+bool Square::isBurning() const {
+  return fire.isBurning();
 }
 
 ViewObject Square::getViewObject() const {

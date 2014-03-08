@@ -1430,6 +1430,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all dwarves";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.spells.push_back(Creature::getSpell(SpellId::HEALING));
+                                c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
+                                c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
                                 c.name = "elf lord";), factory));
     case CreatureId::HORSE: return get(ViewId::HORSE, CATTR(
                                 c.speed = 100;

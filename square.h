@@ -91,7 +91,8 @@ class Square {
   /** Exposes the square and objects on it to fire.*/
   void setOnFire(double amount);
 
-  bool isBurnt() const;
+  /** Returns whether the square is currently on fire.*/
+  bool isBurning() const;
 
   /** Adds some poison gas to the square.*/
   void addPoisonGas(double amount);
