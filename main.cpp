@@ -2,7 +2,7 @@
 
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
-//#include <boost/iostreams/filter/bzip2.hpp>
+#include "gzstream.h"
 
 #include "dirent.h"
 
@@ -69,10 +69,9 @@ static Optional<string> chooseSaveFile(vector<pair<GameType, string>> games, str
 
 static unique_ptr<Model> loadGame(const string& filename) {
   unique_ptr<Model> model;
-  ifstream ifs(filename);
+  igzstream ifs(filename.c_str());
   CHECK(ifs.good()) << "File not found: " << filename;
   filtering_streambuf<input> in;
- // in.push(bzip2_compressor());
   in.push(ifs);
   boost::archive::binary_iarchive ia(in);
   Serialization::registerTypes(ia);
@@ -81,9 +80,8 @@ static unique_ptr<Model> loadGame(const string& filename) {
 }
 
 static void saveGame(unique_ptr<Model> model, const string& filename) {
-  ofstream ofs(filename);
+  ogzstream ofs(filename.c_str());
   boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
- // out.push(zlib_compressor());
   out.push(ofs);
   boost::archive::binary_oarchive oa(ofs);
   Serialization::registerTypes(oa);

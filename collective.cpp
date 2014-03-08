@@ -892,7 +892,7 @@ void Collective::freeFromGuardPost(const Creature* c) {
 void Collective::processInput(View* view) {
   if (retired)
     return;
-  if (!possessed && isInCombat(keeper) && lastControlKeeperQuestion < getTime() - 50) {
+  if (!possessed && (isInCombat(keeper) || keeper->getHealth() < 1) && lastControlKeeperQuestion < getTime() - 50) {
     lastControlKeeperQuestion = getTime();
     if (view->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
       possess(keeper, view);
