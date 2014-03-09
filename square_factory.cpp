@@ -240,7 +240,7 @@ class Chest : public Square {
       c->privateMessage(msgMonster);
       int numR = Random.getRandom(minCreatures, maxCreatures);
       for (Vec2 v : getPosition().neighbors8(true)) {
-        PCreature rat = CreatureFactory::fromId(creatureId, Tribe::pest);
+        PCreature rat = CreatureFactory::fromId(creatureId,  Tribes::get(TribeId::PEST));
         if (getLevel()->getSquare(v)->canEnter(rat.get())) {
           getLevel()->addCreature(v, std::move(rat));
           if (--numR == 0)
@@ -434,7 +434,7 @@ class TribeDoor : public Door {
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return (c->canWalk() && c->getTribe() == Tribe::keeper);
+    return (c->canWalk() && c->getTribe() == Tribes::get(TribeId::KEEPER));
   }
 
   template <class Archive> 
@@ -652,8 +652,8 @@ class Hatchery : public Square {
       if (Creature* c = getLevel()->getSquare(v)->getCreature())
         if (c->getName() == "chicken")
           return;
-    getLevel()->addCreature(getPosition(), CreatureFactory::fromId(CreatureId::CHICKEN, Tribe::peaceful,
-          MonsterAIFactory::moveRandomly()));
+    getLevel()->addCreature(getPosition(), CreatureFactory::fromId(CreatureId::CHICKEN,
+          Tribes::get(TribeId::PEACEFUL), MonsterAIFactory::moveRandomly()));
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {

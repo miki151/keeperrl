@@ -148,7 +148,7 @@ void Deity::onPrayer(Creature* c) {
     bool noEffect = false;
     switch (epithet) {
       case Epithet::DEATH: {
-          PCreature death = CreatureFactory::fromId(CreatureId::DEATH, Tribe::killEveryone);
+          PCreature death = CreatureFactory::fromId(CreatureId::DEATH, Tribes::get(TribeId::KILL_EVERYONE));
           for (Vec2 v : c->getPosition().neighbors8(true))
             if (c->getLevel()->inBounds(v) && c->getLevel()->getSquare(v)->canEnter(death.get())) {
               c->privateMessage("Death appears before you.");
@@ -178,7 +178,7 @@ void Deity::onPrayer(Creature* c) {
           break;
       case Epithet::CHANGE:
           if (Random.roll(2) && c->getEquipment().getItem(EquipmentSlot::WEAPON)) {
-            PCreature snake = CreatureFactory::fromId(CreatureId::SNAKE, Tribe::pest);
+            PCreature snake = CreatureFactory::fromId(CreatureId::SNAKE, Tribes::get(TribeId::PEST));
             for (Vec2 v : c->getPosition().neighbors8(true))
               if (c->getLevel()->inBounds(v) && c->getLevel()->getSquare(v)->canEnter(snake.get())) {
                 c->getLevel()->addCreature(v, std::move(snake));

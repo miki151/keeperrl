@@ -14,7 +14,7 @@ EventListener::~EventListener() {
 }
 
 void EventListener::initialize() {
-  //CHECK(listeners.empty());
+  CHECK(listeners.empty());
 }
 
 void EventListener::addPickupEvent(const Creature* c, const vector<Item*>& items) {

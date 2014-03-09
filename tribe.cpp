@@ -41,21 +41,6 @@ void Tribe::registerTypes(Archive& ar) {
 
 REGISTER_TYPES(Tribe);
 
-Tribe* Tribe::monster = nullptr;
-Tribe* Tribe::pest = nullptr;
-Tribe* Tribe::wildlife = nullptr;
-Tribe* Tribe::elven = nullptr;
-Tribe* Tribe::human = nullptr;
-Tribe* Tribe::goblin = nullptr;
-Tribe* Tribe::dwarven = nullptr;
-Tribe* Tribe::player = nullptr;
-Tribe* Tribe::keeper = nullptr;
-Tribe* Tribe::dragon = nullptr;
-Tribe* Tribe::castleCellar = nullptr;
-Tribe* Tribe::bandit = nullptr;
-Tribe* Tribe::killEveryone = nullptr;
-Tribe* Tribe::peaceful = nullptr;
-
 Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
 }
 
@@ -167,40 +152,40 @@ void Tribe::onItemsStolen(const Creature* attacker) {
 }
 
 void Tribe::init() {
-  monster = new Tribe("", false);
-  pest = new Tribe("", false);
-  wildlife = new Tribe("", false);
-  elven = new Tribe("elves", true);
-  human = new Tribe("humans", true);
-  goblin = new Tribe("goblins", true);
-  dwarven = new Tribe("dwarves", true);
-  player = new Tribe("", false);
-  keeper = new Tribe("", false);
-  dragon = new Tribe("", false);
-  castleCellar = new Tribe("", false);
-  bandit = new Tribe("", false);
-  killEveryone = new Constant(-1);
-  peaceful = new Constant(1);
-  keeper->addEnemy(player);
-  keeper->addEnemy(elven);
-  keeper->addEnemy(dwarven);
-  keeper->addEnemy(human);
-  elven->addEnemy(goblin);
-  elven->addEnemy(dwarven);
-  elven->addEnemy(bandit);
-  goblin->addEnemy(dwarven);
-  goblin->addEnemy(wildlife);
-  human->addEnemy(goblin);
-  human->addEnemy(bandit);
-  player->addEnemy(monster);
-  player->addEnemy(goblin);
-  player->addEnemy(pest);
-  player->addEnemy(castleCellar);
-  player->addEnemy(dragon);
-  player->addEnemy(bandit);
-  monster->addEnemy(wildlife);
-  wildlife->addEnemy(player);
-  wildlife->addEnemy(goblin);
-  wildlife->addEnemy(monster);
+  Tribes::set(TribeId::MONSTER, new Tribe("", false));
+  Tribes::set(TribeId::PEST, new Tribe("", false));
+  Tribes::set(TribeId::WILDLIFE, new Tribe("", false));
+  Tribes::set(TribeId::ELVEN, new Tribe("elves", true));
+  Tribes::set(TribeId::HUMAN, new Tribe("humans", true));
+  Tribes::set(TribeId::GOBLIN, new Tribe("goblins", true));
+  Tribes::set(TribeId::DWARVEN, new Tribe("dwarves", true));
+  Tribes::set(TribeId::PLAYER, new Tribe("", false));
+  Tribes::set(TribeId::KEEPER, new Tribe("", false));
+  Tribes::set(TribeId::DRAGON, new Tribe("", false));
+  Tribes::set(TribeId::CASTLE_CELLAR, new Tribe("", false));
+  Tribes::set(TribeId::BANDIT, new Tribe("", false));
+  Tribes::set(TribeId::KILL_EVERYONE, new Constant(-1));
+  Tribes::set(TribeId::PEACEFUL, new Constant(1));
+  Tribes::get(TribeId::KEEPER)->addEnemy(Tribes::get(TribeId::PLAYER));
+  Tribes::get(TribeId::KEEPER)->addEnemy(Tribes::get(TribeId::ELVEN));
+  Tribes::get(TribeId::KEEPER)->addEnemy(Tribes::get(TribeId::DWARVEN));
+  Tribes::get(TribeId::KEEPER)->addEnemy(Tribes::get(TribeId::HUMAN));
+  Tribes::get(TribeId::ELVEN)->addEnemy(Tribes::get(TribeId::GOBLIN));
+  Tribes::get(TribeId::ELVEN)->addEnemy(Tribes::get(TribeId::DWARVEN));
+  Tribes::get(TribeId::ELVEN)->addEnemy(Tribes::get(TribeId::BANDIT));
+  Tribes::get(TribeId::GOBLIN)->addEnemy(Tribes::get(TribeId::DWARVEN));
+  Tribes::get(TribeId::GOBLIN)->addEnemy(Tribes::get(TribeId::WILDLIFE));
+  Tribes::get(TribeId::HUMAN)->addEnemy(Tribes::get(TribeId::GOBLIN));
+  Tribes::get(TribeId::HUMAN)->addEnemy(Tribes::get(TribeId::BANDIT));
+  Tribes::get(TribeId::PLAYER)->addEnemy(Tribes::get(TribeId::MONSTER));
+  Tribes::get(TribeId::PLAYER)->addEnemy(Tribes::get(TribeId::GOBLIN));
+  Tribes::get(TribeId::PLAYER)->addEnemy(Tribes::get(TribeId::PEST));
+  Tribes::get(TribeId::PLAYER)->addEnemy(Tribes::get(TribeId::CASTLE_CELLAR));
+  Tribes::get(TribeId::PLAYER)->addEnemy(Tribes::get(TribeId::DRAGON));
+  Tribes::get(TribeId::PLAYER)->addEnemy(Tribes::get(TribeId::BANDIT));
+  Tribes::get(TribeId::MONSTER)->addEnemy(Tribes::get(TribeId::WILDLIFE));
+  Tribes::get(TribeId::WILDLIFE)->addEnemy(Tribes::get(TribeId::PLAYER));
+  Tribes::get(TribeId::WILDLIFE)->addEnemy(Tribes::get(TribeId::GOBLIN));
+  Tribes::get(TribeId::WILDLIFE)->addEnemy(Tribes::get(TribeId::MONSTER));
 }
 

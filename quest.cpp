@@ -69,12 +69,6 @@ Quest* Quest::killTribeQuest(Tribe* tribe, string message, bool onlyImp) {
   return new KillTribeQuest(tribe, message, onlyImp);
 }
 
-Quest* Quest::dragon = nullptr;
-Quest* Quest::castleCellar = nullptr;
-Quest* Quest::bandits = nullptr;
-Quest* Quest::goblins = nullptr;
-Quest* Quest::dwarves = nullptr;
-  
 void Quest::addAdventurer(Creature* c) {
   string text = MessageBuffer::important(startMessage);
   if (location) {

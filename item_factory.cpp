@@ -218,7 +218,7 @@ class Corpse : public Item {
       for (Vec2 v : position.neighbors8(true))
         if (level->inBounds(v)) {
           PCreature vulture = CreatureFactory::fromId(
-              CreatureId::VULTURE, Tribe::pest, MonsterAIFactory::scavengerBird(v));
+              CreatureId::VULTURE, Tribes::get(TribeId::PEST), MonsterAIFactory::scavengerBird(v));
           if (level->getSquare(v)->canEnter(vulture.get())) {
             level->addCreature(v, std::move(vulture));
             level->globalMessage(v, "A vulture lands near " + getTheName());
@@ -256,7 +256,7 @@ class Corpse : public Item {
 };
 
 PItem ItemFactory::corpse(CreatureId id, ItemType type, Item::CorpseInfo corpseInfo) {
-  PCreature c = CreatureFactory::fromId(id, Tribe::monster);
+  PCreature c = CreatureFactory::fromId(id, Tribes::get(TribeId::MONSTER));
   return corpse(c->getName() + " corpse", c->getName() + " skeleton", c->getWeight(), type, corpseInfo);
 }
 

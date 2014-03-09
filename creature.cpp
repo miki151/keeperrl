@@ -84,9 +84,16 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Creature);
 
+static PCreature defaultCreature;
+
+void Creature::initialize() {
+  defaultCreature.reset();
+}
+
 Creature* Creature::getDefault() {
-  static PCreature defaultCreature = CreatureFactory::fromId(CreatureId::GNOME, Tribe::monster,
-      MonsterAIFactory::idle());
+  if (!defaultCreature)
+    defaultCreature = CreatureFactory::fromId(CreatureId::GNOME, Tribes::get(TribeId::MONSTER),
+        MonsterAIFactory::idle());
   return defaultCreature.get();
 }
 
@@ -2006,8 +2013,8 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     info.dexBonus = dexBonus;
     info.time = getTime();
     info.numGold = getGold(100000000).size();
-    info.elfStanding = Tribe::elven->getStanding(this);
-    info.dwarfStanding = Tribe::dwarven->getStanding(this);
-    info.goblinStanding = Tribe::goblin->getStanding(this);
+    info.elfStanding = Tribes::get(TribeId::ELVEN)->getStanding(this);
+    info.dwarfStanding = Tribes::get(TribeId::DWARVEN)->getStanding(this);
+    info.goblinStanding = Tribes::get(TribeId::GOBLIN)->getStanding(this);
   }
 

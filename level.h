@@ -12,7 +12,7 @@ class Model;
 class Square;
 class View;
 class Player;
-
+class LevelMaker;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level {
@@ -153,10 +153,7 @@ class Level {
 
     /** Builds the level. The level will keep reference to the model.
         \paramname{surface} tells if this level is on the Earth surface.*/
-    PLevel build(Model*, bool surface);
-
-    /** Returns the size of the level.*/
-    Rectangle getBounds();
+    PLevel build(Model*, LevelMaker*, bool surface);
 
     //@{
     /** Puts a square on given position. Sets optional attributes of the square. The attributes remain if the square is changed.*/
@@ -187,13 +184,23 @@ class Level {
     /** Adds fog to given square. The fog value is between 0 and 1.*/
     void setFog(Vec2 pos, double value);
 
-    /** Sets the location name for the given square. The name will remain if the square is changed.*/
-    void addLocation(Location*);
+    /** Adds a location to the level and sets its coordinates.*/
+    void addLocation(Location*, Rectangle area);
 
     /** Marks given square as covered. The value will remain if square is changed.*/
     void setCovered(Vec2);
     
+    enum Rot { CW0, CW1, CW2, CW3};
+
+    void pushMap(Rectangle bounds, Rot);
+    void popMap();
+    
     private:
+    Vec2::LinearMap identity();
+    Vec2::LinearMap deg90(Rectangle);
+    Vec2::LinearMap deg180(Rectangle);
+    Vec2::LinearMap deg270(Rectangle);
+    Vec2 transform(Vec2);
     Table<PSquare> squares;
     Table<double> heightMap;
     Table<double> fog;
@@ -204,6 +211,7 @@ class Level {
     vector<PCreature> creatures;
     string entryMessage;
     string name;
+    vector<Vec2::LinearMap> mapStack;
   };
 
   typedef unique_ptr<Builder> PBuilder;
@@ -211,6 +219,7 @@ class Level {
   SERIALIZATION_DECL(Level);
 
   private:
+  Vec2 transform(Vec2);
   Table<PSquare> squares;
   map<pair<StairDirection, StairKey>, vector<Vec2>> landingSquares;
   vector<Location*> locations;

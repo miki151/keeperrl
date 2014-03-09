@@ -30,7 +30,7 @@ const Creature* Behaviour::getClosestEnemy() {
   int dist = 1000000000;
   const Creature* result = nullptr;
   for (const Creature* other : creature->getVisibleEnemies()) {
-    if ((other->getPosition() - creature->getPosition()).length8() < dist && other->getTribe() != Tribe::pest) {
+    if ((other->getPosition() - creature->getPosition()).length8() < dist && other->getTribe() != Tribes::get(TribeId::PEST)) {
       result = other;
       dist = (other->getPosition() - creature->getPosition()).length8();
     }
@@ -211,12 +211,12 @@ class AttackPest : public Behaviour {
   AttackPest(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    if (creature->getTribe() == Tribe::pest)
+    if (creature->getTribe() == Tribes::get(TribeId::PEST))
       return NoMove;
     const Creature* other = nullptr;
     for (Vec2 v : Vec2::directions8(true))
       if (const Creature* c = creature->getConstSquare(v)->getCreature())
-        if (c->getTribe() == Tribe::pest) {
+        if (c->getTribe() == Tribes::get(TribeId::PEST)) {
           other = c;
           break;
         }
@@ -495,7 +495,7 @@ class Fighter : public Behaviour, public EventListener {
         return move;
       if (MoveInfo move = getThrowMove(enemyDir))
         return move;
-      if (chase && other->getTribe() != Tribe::wildlife) {
+      if (chase && other->getTribe() != Tribes::get(TribeId::WILDLIFE)) {
         Optional<Vec2> move = creature->getMoveTowards(creature->getPosition() + enemyDir);
         lastSeen = Nothing();
         if (move)

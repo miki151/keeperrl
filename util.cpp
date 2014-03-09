@@ -277,6 +277,12 @@ vector<Vec2> Rectangle::getAllSquares() {
   return ret;
 }
 
+Rectangle Rectangle::apply(Vec2::LinearMap map) const {
+  Vec2 v1 = map(Vec2(px, py));
+  Vec2 v2 = map(Vec2(kx - 1, ky - 1));
+  return Rectangle(min(v1.x, v2.x), min(v1.y, v2.y), max(v1.x, v2.x) + 1, max(v1.y, v2.y) + 1);
+}
+
 bool Vec2::inRectangle(int px, int py, int kx, int ky) const {
   return x >= px && x < kx && y >= py && y < ky;
 }

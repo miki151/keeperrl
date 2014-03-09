@@ -78,7 +78,7 @@ template<class Archive, class T, class U>
 inline void save(Archive& ar, const unordered_map<T, U>& t, unsigned int file_version){
   int count = t.size();
   ar << BOOST_SERIALIZATION_NVP(count);
-  for (auto elem : t)
+  for (auto& elem : t)
     ar << boost::serialization::make_nvp("key", elem.first) << boost::serialization::make_nvp("value", elem.second);
 }
 
@@ -89,10 +89,9 @@ inline void load(Archive& ar, unordered_map<T, U>& t, unsigned int){
   t.clear();
   t.reserve(count);
   while (count-- > 0) {
-    T key;
-    U val;
-    ar >> boost::serialization::make_nvp("key", key) >> boost::serialization::make_nvp("value", val);
-    t.insert({key, val});
+    pair<T, U> p;
+    ar >> boost::serialization::make_nvp("key", p.first) >> boost::serialization::make_nvp("value", p.second);
+    t.insert(std::move(p));
   }
 }
 

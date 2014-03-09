@@ -617,5 +617,25 @@ enum class TechId {
 
 ENUM_HASH(TechId);
 
+enum class QuestId { DRAGON, CASTLE_CELLAR, BANDITS, GOBLINS, DWARVES };
+ENUM_HASH(QuestId);
+
+enum class TribeId {
+  MONSTER,
+  PEST,
+  WILDLIFE,
+  HUMAN,
+  ELVEN,
+  DWARVEN,
+  GOBLIN,
+  PLAYER,
+  DRAGON,
+  CASTLE_CELLAR,
+  BANDIT,
+  KILL_EVERYONE,
+  PEACEFUL,
+  KEEPER,
+};
+ENUM_HASH(TribeId);
 
 #endif

@@ -149,6 +149,9 @@ int main(int argc, char* argv[]) {
   view->initialize();
   while (1) {
     Item::identifyEverything();
+    Quests::initialize();
+    Creature::initialize();
+    Tribes::initialize();
     EventListener::initialize();
     Tribe::init();
     Statistics::init();

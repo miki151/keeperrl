@@ -7,11 +7,10 @@
 #include "enums.h"
 #include "creature.h"
 #include "event.h"
+#include "singleton.h"
 
 class Tribe : public EventListener {
   public:
-  Tribe(const string& name, bool diplomatic);
-
   virtual double getStanding(const Creature*) const;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
@@ -29,45 +28,15 @@ class Tribe : public EventListener {
   int getHandicap() const;
   void setHandicap(int);
 
-  static void init();
-
-  static Tribe* monster;
-  static Tribe* pest;
-  static Tribe* wildlife;
-  static Tribe* human;
-  static Tribe* elven;
-  static Tribe* dwarven;
-  static Tribe* goblin;
-  static Tribe* player;
-  static Tribe* dragon;
-  static Tribe* castleCellar;
-  static Tribe* bandit;
-  static Tribe* killEveryone;
-  static Tribe* peaceful;
-  static Tribe* keeper;
-
-  template <class Archive>
-  static void serializeAll(Archive& ar) {
-    ar& BOOST_SERIALIZATION_NVP(monster)
-      & BOOST_SERIALIZATION_NVP(pest)
-      & BOOST_SERIALIZATION_NVP(wildlife)
-      & BOOST_SERIALIZATION_NVP(human)
-      & BOOST_SERIALIZATION_NVP(elven)
-      & BOOST_SERIALIZATION_NVP(dwarven)
-      & BOOST_SERIALIZATION_NVP(goblin)
-      & BOOST_SERIALIZATION_NVP(player)
-      & BOOST_SERIALIZATION_NVP(dragon)
-      & BOOST_SERIALIZATION_NVP(castleCellar)
-      & BOOST_SERIALIZATION_NVP(bandit)
-      & BOOST_SERIALIZATION_NVP(killEveryone)
-      & BOOST_SERIALIZATION_NVP(peaceful)
-      & BOOST_SERIALIZATION_NVP(keeper);
-  }
-
   SERIALIZATION_DECL(Tribe);
+
+  static void init();
 
   template <class Archive>
   static void registerTypes(Archive& ar);
+
+  protected:
+  Tribe(const string& name, bool diplomatic);
 
   private:
 
@@ -84,5 +53,7 @@ class Tribe : public EventListener {
   string name;
   int handicap = 0;
 };
+
+typedef Singleton<Tribe, TribeId> Tribes;
 
 #endif

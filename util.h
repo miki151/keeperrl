@@ -114,6 +114,8 @@ class Vec2 {
   vector<Vec2> neighbors4(bool shuffle = false) const;
   static vector<Vec2> corners();
 
+  typedef function<Vec2(Vec2)> LinearMap;
+
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 };
@@ -177,6 +179,7 @@ class Rectangle {
 
   Rectangle minusMargin(int margin) const;
   Rectangle translate(Vec2 v) const;
+  Rectangle apply(Vec2::LinearMap) const;
 
   Vec2 randomVec2() const;
   Vec2 middle() const;

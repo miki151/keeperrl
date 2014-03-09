@@ -304,25 +304,26 @@ Level::Builder::Builder(int width, int height, const string& n) : squares(width,
     fog(width, height, 0), attrib(width, height), type(width, height, SquareType(0)), name(n) {
 }
 
-bool Level::Builder::hasAttrib(Vec2 pos, SquareAttrib attr) {
+bool Level::Builder::hasAttrib(Vec2 posT, SquareAttrib attr) {
+  Vec2 pos = transform(posT);
   CHECK(squares[pos] != nullptr);
   return attrib[pos].count(attr);
 }
 
 void Level::Builder::addAttrib(Vec2 pos, SquareAttrib attr) {
-  attrib[pos].insert(attr);
+  attrib[transform(pos)].insert(attr);
 }
 
 void Level::Builder::removeAttrib(Vec2 pos, SquareAttrib attr) {
-  attrib[pos].erase(attr);
+  attrib[transform(pos)].erase(attr);
 }
 
 Square* Level::Builder::getSquare(Vec2 pos) {
-  return squares[pos].get();
+  return squares[transform(pos)].get();
 }
     
 SquareType Level::Builder::getType(Vec2 pos) {
-  return type[pos];
+  return type[transform(pos)];
 }
 
 void Level::Builder::putSquare(Vec2 pos, SquareType t, Optional<SquareAttrib> at) {
@@ -337,7 +338,8 @@ void Level::Builder::putSquare(Vec2 pos, Square* square, SquareType t, Optional<
   putSquare(pos, square, t, attr ? vector<SquareAttrib>({*attr}) : vector<SquareAttrib>());
 }
 
-void Level::Builder::putSquare(Vec2 pos, Square* square, SquareType t, vector<SquareAttrib> attr) {
+void Level::Builder::putSquare(Vec2 posT, Square* square, SquareType t, vector<SquareAttrib> attr) {
+  Vec2 pos = transform(posT);
   CHECK(!contains({SquareType::UP_STAIRS, SquareType::DOWN_STAIRS}, type[pos])) << "Attempted to overwrite stairs";
   square->setPosition(pos);
   if (squares[pos])
@@ -348,32 +350,34 @@ void Level::Builder::putSquare(Vec2 pos, Square* square, SquareType t, vector<Sq
   type[pos] = t;
 }
 
-void Level::Builder::addLocation(Location* l) {
+void Level::Builder::addLocation(Location* l, Rectangle area) {
+  l->setBounds(area.apply([this](Vec2 v) { return transform(v); }));
   locations.push_back(l);
 }
 
 void Level::Builder::setHeightMap(Vec2 pos, double h) {
-  heightMap[pos] = h;
+  heightMap[transform(pos)] = h;
 }
 
 void Level::Builder::setFog(Vec2 pos, double value) {
-  fog[pos] = value;
+  fog[transform(pos)] = value;
 }
 
 double Level::Builder::getHeightMap(Vec2 pos) {
-  return heightMap[pos];
+  return heightMap[transform(pos)];
 }
 
 void Level::Builder::setCovered(Vec2 pos) {
-  covered.insert(pos);
+  covered.insert(transform(pos));
 }
 
 void Level::Builder::putCreature(Vec2 pos, PCreature creature) {
-  creature->setPosition(pos);
+  creature->setPosition(transform(pos));
   creatures.push_back(NOTNULL(std::move(creature)));
 }
 
-bool Level::Builder::canPutCreature(Vec2 pos, Creature* c) {
+bool Level::Builder::canPutCreature(Vec2 posT, Creature* c) {
+  Vec2 pos = transform(posT);
   if (!squares[pos]->canEnter(c))
     return false;
   for (PCreature& c : creatures) {
@@ -387,7 +391,9 @@ void Level::Builder::setMessage(const string& message) {
   entryMessage = message;
 }
 
-PLevel Level::Builder::build(Model* m, bool surface) {
+PLevel Level::Builder::build(Model* m, LevelMaker* maker, bool surface) {
+  CHECK(mapStack.empty());
+  maker->make(this, squares.getBounds());
   for (Vec2 v : heightMap.getBounds()) {
     squares[v]->setHeight(heightMap[v]);
     if (covered.count(v) || !surface) {
@@ -404,8 +410,48 @@ PLevel Level::Builder::build(Model* m, bool surface) {
   return l;
 }
 
-Rectangle Level::Builder::getBounds() {
-  return squares.getBounds();
+Vec2::LinearMap Level::Builder::identity() {
+  return [](Vec2 v) { return v; };
+}
+
+Vec2::LinearMap Level::Builder::deg90(Rectangle bounds) {
+  return [bounds](Vec2 v) {
+    v -= bounds.getTopLeft();
+    return bounds.getTopLeft() + Vec2(v.y, v.x);
+  };
+}
+
+Vec2::LinearMap Level::Builder::deg180(Rectangle bounds) {
+  return [bounds](Vec2 v) {
+    return bounds.getTopLeft() - v + bounds.getBottomRight() - Vec2(1, 1);
+  };
+}
+
+Vec2::LinearMap Level::Builder::deg270(Rectangle bounds) {
+  return [bounds](Vec2 v) {
+    v -= bounds.getTopRight() - Vec2(1, 0);
+    return bounds.getTopLeft() + Vec2(v.y, -v.x);
+  };
+}
+
+void Level::Builder::pushMap(Rectangle bounds, Rot rot) {
+  switch (rot) {
+    case CW0: mapStack.push_back(identity()); break;
+    case CW1: mapStack.push_back(deg90(bounds)); break;
+    case CW2: mapStack.push_back(deg180(bounds)); break;
+    case CW3: mapStack.push_back(deg270(bounds)); break;
+  }
+}
+
+void Level::Builder::popMap() {
+  mapStack.pop_back();
+}
+
+Vec2 Level::Builder::transform(Vec2 v) {
+  for (auto m : mapStack) {
+    v = m(v);
+  }
+  return v;
 }
 
 bool Level::inBounds(Vec2 pos) const {

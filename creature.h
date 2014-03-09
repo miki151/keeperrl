@@ -27,6 +27,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   static Creature* getDefault();
   static void noExperienceLevels();
+  static void initialize();
 
   const ViewObject& getViewObject() const;
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
