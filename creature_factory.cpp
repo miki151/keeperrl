@@ -126,12 +126,12 @@ class BoulderController : public Monster {
 
 class Boulder : public Creature {
   public:
-  Boulder(const ViewObject& obj, const CreatureAttributes& attr, Vec2 dir) : 
-    Creature(obj, Tribes::get(TribeId::KILL_EVERYONE), attr, ControllerFactory([dir](Creature* c) { 
+  Boulder(const CreatureAttributes& attr, Vec2 dir) : 
+    Creature(Tribes::get(TribeId::KILL_EVERYONE), attr, ControllerFactory([dir](Creature* c) { 
             return new BoulderController(c, dir); })) {}
 
-  Boulder(const ViewObject& obj, const CreatureAttributes& attr, Tribe* myTribe) : 
-    Creature(obj, myTribe, attr, ControllerFactory([myTribe](Creature* c) { 
+  Boulder(const CreatureAttributes& attr, Tribe* myTribe) : 
+    Creature(myTribe, attr, ControllerFactory([myTribe](Creature* c) { 
             return new BoulderController(c, myTribe); })) {}
 
   virtual void dropCorpse() override {
@@ -147,8 +147,8 @@ class Boulder : public Creature {
 };
 
 PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
-  return PCreature(new Boulder(
-        ViewObject(ViewId::BOULDER, ViewLayer::CREATURE, "Boulder"), CATTR(
+  return PCreature(new Boulder(CATTR(
+            c.viewId = ViewId::BOULDER;
             c.dexterity = 1;
             c.strength = 1000;
             c.weight = 1000;
@@ -165,8 +165,8 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
 }
 
 PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
-  return PCreature(new Boulder(
-        ViewObject(ViewId::BOULDER, ViewLayer::CREATURE, "Boulder"), CATTR(
+  return PCreature(new Boulder(CATTR(
+            c.viewId = ViewId::BOULDER;
             c.dexterity = 1;
             c.strength = 1000;
             c.weight = 1000;
@@ -501,8 +501,8 @@ class ShopkeeperController : public Monster, public EventListener {
 class VillageElder : public Creature {
   public:
   VillageElder(vector<pair<Skill*, double>> _teachSkills, vector<pair<QuestId, int>> _quests,
-      const ViewObject& object, Tribe* t, const CreatureAttributes& attr, ControllerFactory factory) : 
-      Creature(object, t, attr, factory), teachSkills(_teachSkills) {
+      Tribe* t, const CreatureAttributes& attr, ControllerFactory factory) : 
+      Creature(t, attr, factory), teachSkills(_teachSkills) {
     getTribe()->setLeader(this);
     for (auto elem : _quests)
       if (Quests::exists(elem.first))
@@ -630,10 +630,9 @@ PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemId>& items
 }
 
 PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
-  PCreature ret(new Creature(
-      ViewObject(tribe == Tribes::get(TribeId::DWARVEN) ? ViewId::DWARVEN_SHOPKEEPER : ViewId::ELVEN_SHOPKEEPER,
-          ViewLayer::CREATURE, "Shopkeeper"), tribe,
+  PCreature ret(new Creature(tribe,
       CATTR(
+        c.viewId = tribe == Tribes::get(TribeId::DWARVEN) ? ViewId::DWARVEN_SHOPKEEPER : ViewId::ELVEN_SHOPKEEPER;
         c.speed = 100;
         c.size = CreatureSize::LARGE;
         c.strength = 17;
@@ -666,11 +665,11 @@ PCreature CreatureFactory::random(MonsterAIFactory actorFactory) {
   return fromId(chooseRandom(creatures, weights), tribe, actorFactory);
 }
 
-PCreature get(ViewId viewId,
+PCreature get(
     CreatureAttributes attr, 
     Tribe* tribe,
     ControllerFactory factory) {
-  return PCreature(new Creature(ViewObject(viewId, ViewLayer::CREATURE, *attr.name), tribe, attr, factory));
+  return PCreature(new Creature(tribe, attr, factory));
 }
 
 CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const vector<double>& w,
@@ -835,7 +834,8 @@ vector<PCreature> CreatureFactory::getFlock(int size, CreatureId id, Creature* l
 PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, ControllerFactory factory, bool keeper) {
   RandomGen r;
   r.init(hash<string>()(name));
-  PCreature c = get(humanoid ? ViewId::SPECIAL_HUMANOID : ViewId::SPECIAL_BEAST, CATTR(
+  PCreature c = get(CATTR(
+        c.viewId = humanoid ? ViewId::SPECIAL_HUMANOID : ViewId::SPECIAL_BEAST;
         c.speed = r.getRandom(70, 150);
         c.size = chooseRandom({CreatureSize::SMALL, CreatureSize::MEDIUM, CreatureSize::LARGE}, {1, 1, 1});
         c.strength = r.getRandom(16, 25);
@@ -910,837 +910,893 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
   return c;
 }
 
-PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
-  ControllerFactory factory = Monster::getFactory(actorFactory);
+#define INHERIT(ID, X) CreatureAttributes([&](CreatureAttributes& c) { c = getAttributes(CreatureId::ID); X })
+
+CreatureAttributes getAttributes(CreatureId id) {
   switch (id) {
-    case CreatureId::KEEPER: return get(ViewId::KEEPER, CATTR(
-                               c.speed = 100;
-                               c.weight = 90;
-                               c.size = CreatureSize::LARGE;
-                               c.strength = 15;
-                               c.dexterity = 15;
-                               c.barehandedDamage = 5;
-                               c.humanoid = true;
-                               c.name = "Keeper";
-                               c.firstName = NameGenerator::firstNames.getNext();
-                               c.spells.push_back(Creature::getSpell(SpellId::HEALING));
-                               c.skillGain.clear();), tribe, factory);
-    case CreatureId::GOBLIN: return get(ViewId::GOBLIN, CATTR(
-                                   c.speed = 100;
-                                   c.size = CreatureSize::LARGE;
-                                c.strength = 16;
-                                c.dexterity = 14;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 100;
-                                c.skills.insert(Skill::twoHandedWeapon);
-                                c.chatReactionFriendly = "curses all elves";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "goblin";), tribe, factory);
-    case CreatureId::BANDIT: return get(ViewId::BANDIT, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 15;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 100;
-                                c.chatReactionFriendly = "curses all law enforcement";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "bandit";), tribe, factory);
-    case CreatureId::GHOST: return get(ViewId::GHOST, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 14;
-                                c.dexterity = 17;
-                                c.barehandedDamage = 5;
-                                c.barehandedAttack = AttackType::HIT;
-                                c.humanoid = false;
-                                c.noBody = true;
-                                c.weight = 10;
-                                c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
-                                c.chatReactionHostile = "\"Wouuuouuu!!!\"";
-                                c.name = "ghost";), tribe, factory);
-    case CreatureId::DEVIL: return get(ViewId::DEVIL, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 19;
-                                c.dexterity = 16;
-                                c.barehandedDamage = 10;
-                                c.humanoid = true;
-                                c.weight = 80;
-                                c.chatReactionFriendly = "curses all dungeons";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "devil";), tribe, factory);
-    case CreatureId::DARK_KNIGHT: return get(ViewId::DARK_KNIGHT, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 22;
-                                c.dexterity = 19;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 100;
-                                c.chatReactionFriendly = "curses all dungeons";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "dark knight";), tribe, factory);
-    case CreatureId::WITCH: return get(ViewId::WITCH, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 14;
-                                c.dexterity = 12;
-                                c.barehandedDamage = 6;
-                                c.humanoid = true;
-                                c.weight = 50;
-                                c.gender = Gender::female;
-                                c.chatReactionFriendly = "curses all humans";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "witch";), tribe, factory);
-    case CreatureId::CYCLOPS: return get(ViewId::CYCLOPS, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 25;
-                                c.dexterity = 18;
-                                c.barehandedDamage = 10;
-                                c.humanoid = true;
-                                c.weight = 150;
-                                c.firstName = NameGenerator::demonNames.getNext();
-                                c.name = "cyclops";), tribe, factory);
-    case CreatureId::DRAGON: return get(ViewId::DRAGON, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 27;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 10;
-                                c.humanoid = false;
-                                c.weight = 1000;
-                                c.wings = 2;
-                                c.breathing = false;
-                                c.firstName = NameGenerator::demonNames.getNext();
-                                c.name = "dragon";), tribe, ControllerFactory([=](Creature* c) {
-                                      return new DragonController(c, actorFactory);
-                                    }));
-    case CreatureId::KNIGHT: return get(ViewId::KNIGHT, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 20;
-                                c.dexterity = 16;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 100;
-                                c.chatReactionFriendly = "curses all dungeons";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "knight";), tribe, factory);
-    case CreatureId::CASTLE_GUARD: return get(ViewId::CASTLE_GUARD, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 19;
-                                c.dexterity = 16;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 100;
-                                c.chatReactionFriendly = "curses all dungeons";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "guard";), tribe, factory);
-    case CreatureId::AVATAR: return PCreature(new VillageElder({}, {
-                                    {QuestId::CASTLE_CELLAR, Random.getRandom(80, 120)},
-                                    {QuestId::DRAGON, Random.getRandom(180, 320)}},
-                                ViewObject(ViewId::AVATAR, ViewLayer::CREATURE, "Duke"), tribe, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 26;
-                                c.dexterity = 22;
-                                c.barehandedDamage = 8;
-                                c.humanoid = true;
-                                c.weight = 120;
-                                c.chatReactionFriendly = "curses all dungeons";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "Duke of " + NameGenerator::worldNames.getNext();), factory));
-    case CreatureId::ARCHER: return get(ViewId::ARCHER, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 16;
-                                c.dexterity = 20;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 100;
-                                c.chatReactionFriendly = "curses all dungeons";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "archer";), tribe, factory);
-    case CreatureId::PESEANT: return get(ViewId::PESEANT, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 14;
-                                c.dexterity = 12;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 100;
-                                c.innocent = true;
-                                c.chatReactionFriendly = "curses all dungeons";
-                                c.chatReactionHostile = "\"Heeelp!\"";
-                                c.name = "peaseant";), tribe, factory);
-    case CreatureId::CHILD: return get(ViewId::CHILD, CATTR(
-                                c.speed = 140;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 8;
-                                c.dexterity = 16;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 40;
-                                c.innocent = true;
-                                c.chatReactionFriendly = "plaaaaay!";
-                                c.chatReactionHostile = "\"Heeelp!\"";
-                                c.name = "child";), tribe, factory);
-    case CreatureId::CLAY_GOLEM: return get(ViewId::CLAY_GOLEM, CATTR(
-                                c.speed = 50;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 14;
-                                c.dexterity = 12;
-                                c.barehandedDamage = 13;
-                                c.barehandedAttack = AttackType::PUNCH;
-                                c.humanoid = false;
-                                c.noSleep = true;
-                                c.brain = false;
-                                c.notLiving = true;
-                                c.weight = 100;
-                                c.name = "clay golem";), tribe, factory);
-    case CreatureId::STONE_GOLEM: return get(ViewId::STONE_GOLEM, CATTR(
-                                c.speed = 60;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 17;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 15;
-                                c.barehandedAttack = AttackType::PUNCH;
-                                c.humanoid = false;
-                                c.noSleep = true;
-                                c.brain = false;
-                                c.notLiving = true;
-                                c.weight = 120;
-                                c.name = "stone golem";), tribe, factory);
-    case CreatureId::IRON_GOLEM: return get(ViewId::IRON_GOLEM, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 19;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 17;
-                                c.barehandedAttack = AttackType::PUNCH;
-                                c.humanoid = false;
-                                c.noSleep = true;
-                                c.brain = false;
-                                c.notLiving = true;
-                                c.weight = 120;
-                                c.name = "iron golem";), tribe, factory);
-    case CreatureId::LAVA_GOLEM: return get(ViewId::LAVA_GOLEM, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 20;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 17;
-                                c.barehandedAttack = AttackType::PUNCH;
-                                c.attackEffect = EffectType::FIRE;
-                                c.humanoid = false;
-                                c.noSleep = true;
-                                c.brain = false;
-                                c.notLiving = true;
-                                c.fireResistant = true;
-                                c.weight = 120;
-                                c.name = "lava golem";), tribe, factory);
-    case CreatureId::ACID_MOUND: return get(ViewId::ACID_MOUND, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 15;
-                                c.dexterity = 5;
-                                c.barehandedDamage = 1;
-                                c.humanoid = false;
-                                c.passiveAttack = EffectType::ACID;
-                                c.legs = 0;
-                                c.arms = 0;
-                                c.heads = 0;
-                                c.brain = false;
-                                c.noSleep = true;
-                                c.stationary = true;
-                                c.weight = 120;
-                                c.name = "acid jelly";), tribe, Monster::getFactory(MonsterAIFactory::idle()));
-    case CreatureId::ZOMBIE: return get(ViewId::ZOMBIE, CATTR(
-                                c.speed = 60;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 14;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 13;
-                                c.humanoid = true;
-                                c.brain = false;
-                                c.weight = 100;
-                                c.undead = true;
-                                c.name = "zombie";), tribe, factory);
-    case CreatureId::SKELETON: return get(ViewId::SKELETON, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 14;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 13;
-                                c.humanoid = true;
-                                c.brain = false;
-                                c.weight = 50;
-                                c.undead = true;
-                                c.name = "skeleton";), tribe, factory);
+    case CreatureId::KEEPER: 
+      return CATTR(
+          c.viewId = ViewId::KEEPER;
+          c.speed = 100;
+          c.weight = 90;
+          c.size = CreatureSize::LARGE;
+          c.strength = 15;
+          c.dexterity = 15;
+          c.barehandedDamage = 5;
+          c.humanoid = true;
+          c.name = "Keeper";
+          c.firstName = NameGenerator::firstNames.getNext();
+          c.spells.push_back(Creature::getSpell(SpellId::HEALING));
+          c.skillGain.clear(););
+    case CreatureId::BANDIT: 
+      return CATTR(
+          c.viewId = ViewId::BANDIT;
+          c.speed = 80;
+          c.size = CreatureSize::LARGE;
+          c.strength = 15;
+          c.dexterity = 13;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 100;
+          c.chatReactionFriendly = "curses all law enforcement";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "bandit";);
+    case CreatureId::GHOST: 
+      return CATTR(
+          c.viewId = ViewId::GHOST;
+          c.speed = 80;
+          c.size = CreatureSize::LARGE;
+          c.strength = 14;
+          c.dexterity = 15;
+          c.barehandedDamage = 3;
+          c.barehandedAttack = AttackType::HIT;
+          c.humanoid = false;
+          c.noBody = true;
+          c.weight = 10;
+          c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
+          c.chatReactionHostile = "\"Wouuuouuu!!!\"";
+          c.name = "ghost";);
+    case CreatureId::DEVIL: 
+      return CATTR(
+          c.viewId = ViewId::DEVIL;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.strength = 19;
+          c.dexterity = 16;
+          c.barehandedDamage = 10;
+          c.humanoid = true;
+          c.weight = 80;
+          c.chatReactionFriendly = "curses all dungeons";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "devil";);
+    case CreatureId::DARK_KNIGHT: 
+      return CATTR(
+          c.viewId = ViewId::DARK_KNIGHT;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.strength = 22;
+          c.dexterity = 19;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 100;
+          c.chatReactionFriendly = "curses all dungeons";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "dark knight";);
+    case CreatureId::WITCH: 
+      return CATTR(
+          c.viewId = ViewId::WITCH;
+          c.speed = 100;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 14;
+          c.dexterity = 12;
+          c.barehandedDamage = 6;
+          c.humanoid = true;
+          c.weight = 50;
+          c.gender = Gender::female;
+          c.chatReactionFriendly = "curses all humans";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "witch";);
+    case CreatureId::CYCLOPS: 
+      return CATTR(
+          c.viewId = ViewId::CYCLOPS;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.strength = 25;
+          c.dexterity = 18;
+          c.barehandedDamage = 10;
+          c.humanoid = true;
+          c.weight = 150;
+          c.firstName = NameGenerator::demonNames.getNext();
+          c.name = "cyclops";);
+    case CreatureId::DRAGON: 
+      return CATTR(
+          c.viewId = ViewId::DRAGON;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.strength = 27;
+          c.dexterity = 15;
+          c.barehandedDamage = 10;
+          c.humanoid = false;
+          c.weight = 1000;
+          c.wings = 2;
+          c.breathing = false;
+          c.firstName = NameGenerator::demonNames.getNext();
+          c.name = "dragon";);
+    case CreatureId::KNIGHT: 
+      return CATTR(
+          c.viewId = ViewId::KNIGHT;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.strength = 20;
+          c.dexterity = 16;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 100;
+          c.chatReactionFriendly = "curses all dungeons";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "knight";);
+    case CreatureId::CASTLE_GUARD: 
+      return INHERIT(KNIGHT,
+          c.viewId = ViewId::CASTLE_GUARD;
+          c.name = "guard";);
+    case CreatureId::AVATAR: 
+      return INHERIT(KNIGHT,
+          c.viewId = ViewId::AVATAR;
+          c.strength += 6;
+          c.dexterity += 6;
+          c.barehandedDamage += 5;
+          c.name = "Duke of " + NameGenerator::worldNames.getNext(););
+    case CreatureId::ARCHER: 
+      return CATTR(
+          c.viewId = ViewId::ARCHER;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.strength = 16;
+          c.dexterity = 20;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 100;
+          c.chatReactionFriendly = "curses all dungeons";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "archer";);
+    case CreatureId::PESEANT: 
+      return CATTR(
+          c.viewId = ViewId::PESEANT;
+          c.speed = 80;
+          c.size = CreatureSize::LARGE;
+          c.strength = 14;
+          c.dexterity = 12;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 100;
+          c.innocent = true;
+          c.chatReactionFriendly = "curses all dungeons";
+          c.chatReactionHostile = "\"Heeelp!\"";
+          c.name = "peaseant";);
+    case CreatureId::CHILD: 
+      return INHERIT(PESEANT,
+          c.viewId = ViewId::CHILD;
+          c.speed = 140;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 8;
+          c.dexterity = 16;
+          c.weight = 40;
+          c.chatReactionFriendly = "\"plaaaaay!\"";
+          c.chatReactionHostile = "\"Heeelp!\"";
+          c.name = "child";);
+    case CreatureId::CLAY_GOLEM: 
+      return CATTR(
+          c.viewId = ViewId::CLAY_GOLEM;
+          c.speed = 50;
+          c.size = CreatureSize::LARGE;
+          c.strength = 14;
+          c.dexterity = 12;
+          c.barehandedDamage = 13;
+          c.barehandedAttack = AttackType::PUNCH;
+          c.humanoid = false;
+          c.noSleep = true;
+          c.brain = false;
+          c.notLiving = true;
+          c.weight = 100;
+          c.name = "clay golem";);
+    case CreatureId::STONE_GOLEM: 
+      return INHERIT(CLAY_GOLEM,
+          c.viewId = ViewId::STONE_GOLEM;
+          c.speed += 10;
+          c.strength += 2;
+          c.dexterity += 2;
+          c.barehandedDamage += 2;
+          c.weight += 20;
+          c.name = "stone golem";);
+    case CreatureId::IRON_GOLEM: 
+      return INHERIT(STONE_GOLEM,
+          c.viewId = ViewId::IRON_GOLEM;
+          c.speed += 10;
+          c.strength += 2;
+          c.dexterity += 2;
+          c.barehandedDamage += 2;
+          c.name = "iron golem";);
+    case CreatureId::LAVA_GOLEM: 
+      return INHERIT(IRON_GOLEM,
+          c.viewId = ViewId::LAVA_GOLEM;
+          c.speed += 10;
+          c.strength += 2;
+          c.dexterity += 2;
+          c.barehandedDamage += 2;
+          c.attackEffect = EffectType::FIRE;
+          c.fireResistant = true;
+          c.name = "lava golem";);
+    case CreatureId::ACID_MOUND: 
+      return CATTR(
+          c.viewId = ViewId::ACID_MOUND;
+          c.speed = 80;
+          c.size = CreatureSize::LARGE;
+          c.strength = 15;
+          c.dexterity = 5;
+          c.barehandedDamage = 1;
+          c.humanoid = false;
+          c.passiveAttack = EffectType::ACID;
+          c.legs = 0;
+          c.arms = 0;
+          c.heads = 0;
+          c.brain = false;
+          c.noSleep = true;
+          c.stationary = true;
+          c.weight = 120;
+          c.name = "acid jelly";);
+    case CreatureId::ZOMBIE: 
+      return CATTR(
+          c.viewId = ViewId::ZOMBIE;
+          c.speed = 60;
+          c.size = CreatureSize::LARGE;
+          c.strength = 14;
+          c.dexterity = 13;
+          c.barehandedDamage = 13;
+          c.humanoid = true;
+          c.brain = false;
+          c.weight = 100;
+          c.undead = true;
+          c.name = "zombie";);
+    case CreatureId::SKELETON: 
+      return CATTR(
+          c.viewId = ViewId::SKELETON;
+          c.speed = 80;
+          c.size = CreatureSize::LARGE;
+          c.strength = 14;
+          c.dexterity = 13;
+          c.barehandedDamage = 13;
+          c.humanoid = true;
+          c.brain = false;
+          c.weight = 50;
+          c.undead = true;
+          c.name = "skeleton";);
     case CreatureId::VAMPIRE_BAT:
-    case CreatureId::VAMPIRE: return get(ViewId::VAMPIRE, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 17;
-                                c.dexterity = 17;
-                                c.barehandedDamage = 2;
-                                c.humanoid = true;
-                                c.weight = 100;
-                                c.undead = true;
-                                c.chatReactionFriendly = "curses all humans";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "vampire";), tribe, factory);
-    case CreatureId::VAMPIRE_LORD: return get(ViewId::VAMPIRE_LORD, CATTR(
-                                c.speed = 120;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 20;
-                                c.dexterity = 18;
-                                c.barehandedDamage = 6;
-                                c.humanoid = true;
-                                c.weight = 100;
-                                c.undead = true;
-                                c.flyer = true;
-                                c.chatReactionFriendly = "curses all humans";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "vampire lord";), tribe, factory);
- /*   case CreatureId::VAMPIRE_BAT: return PCreature(new Shapechanger(
-                                   ViewObject(ViewId::BAT, ViewLayer::CREATURE, "Bat"),
-                                   tribe,
-                                CATTR(
-                                c.speed = 150;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 3;
-                                c.dexterity = 16;
-                                c.barehandedDamage = 12;
-                                c.humanoid = false;
-                                c.legs = 0;
-                                c.arms = 0;
-                                c.wings = 2;
-                                c.weight = 1;
-                                c.flyer = true;
-                                c.name = "bat";), {
-                                    CreatureId::VAMPIRE}
-                                    ));*/
-    case CreatureId::MUMMY: return get(ViewId::MUMMY, CATTR(
-                                c.speed = 60;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 12;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 13;
-                                c.humanoid = true;
-                                c.weight = 100;
-                                c.brain = false;
-                                c.undead = true;
-                                c.skills.insert(Skill::twoHandedWeapon);
-                                c.name = "mummy";), tribe, factory);
-    case CreatureId::MUMMY_LORD: return get(ViewId::MUMMY_LORD, CATTR(
-                                c.speed = 60;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 15;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 13;
-                                c.humanoid = true;
-                                c.weight = 120;
-                                c.brain = false;
-                                c.undead = true;
-                                c.skills.insert(Skill::twoHandedWeapon);
-                                c.chatReactionFriendly = "curses all gravediggers";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = NameGenerator::aztecNames.getNext();), tribe, factory);
-    case CreatureId::GREAT_GOBLIN: return PCreature(new VillageElder(
-                                {},
-                                {{QuestId::DWARVES, Random.getRandom(300, 400)}},
-                                ViewObject(ViewId::GREAT_GOBLIN, ViewLayer::CREATURE, "Great goblin"),
-                                Tribes::get(TribeId::GOBLIN),
-                                CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 20;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 5;
-                                c.humanoid = true;
-                                c.weight = 180;
-                                c.skills.insert(Skill::twoHandedWeapon);
-                                c.chatReactionFriendly = "curses all elves";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "great goblin";), factory));
-    case CreatureId::GNOME: return get(ViewId::GNOME, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 12;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 45;
-                                c.chatReactionFriendly = "talks about digging";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "gnome";), tribe, factory);
-    case CreatureId::IMP: return get(ViewId::IMP, CATTR(
-                                c.speed = 200;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 8;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 30;
-                                c.courage = 0.1;
-                                c.carryAnything = true;
-                                c.skills.insert(Skill::construction);
-                                c.chatReactionFriendly = "talks about digging";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "imp";), tribe, factory);
-    case CreatureId::BILE_DEMON: return get(ViewId::BILE_DEMON, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 19;
-                                c.dexterity = 14;
-                                c.barehandedDamage = 6;
-                                c.humanoid = true;
-                                c.weight = 140;
-                                c.firstName = NameGenerator::demonNames.getNext();
-                                c.name = "ogre";), tribe, factory);
-    case CreatureId::CHICKEN: return get(ViewId::CHICKEN, CATTR(
-                                c.speed = 50;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 2;
-                                c.dexterity = 2;
-                                c.barehandedDamage = 5;
-                                c.humanoid = false;
-                                c.weight = 3;
-                                c.walker = false;
-                                c.isFood = true;
-                                c.name = "chicken";), tribe, factory);
-    case CreatureId::DUNGEON_HEART: return get(ViewId::DUNGEON_HEART, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 23;
-                                c.dexterity = 14;
-                                c.barehandedDamage = 5;
-                                c.humanoid = false;
-                                c.legs = c.arms = c.heads = 0;
-                                c.weight = 100;
-                                c.walker = true;
-                                c.stationary = true;
-                                c.breathing = false;
-                                c.damageMultiplier = 0.1;
-                                c.name = "dungeon heart";), tribe, Monster::getFactory(MonsterAIFactory::idle()));
-    case CreatureId::LEPRECHAUN: return get(ViewId::LEPRECHAUN, CATTR(
-                                c.speed = 160;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 10;
-                                c.dexterity = 16;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 35;
-                                c.courage = 20;
-                                c.skills.insert(Skill::stealing);
-                                c.chatReactionFriendly = "discusses the weather";
-                                c.chatReactionHostile = "discusses the weather";
-                                c.name = "leprechaun";), tribe, factory);
-    case CreatureId::DWARF: return get(ViewId::DWARF, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::MEDIUM;
-   //                             c.firstName = NameGenerator::dwarfNames.getNext();
-                                c.strength = 21;
-                                c.dexterity = 16;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 90;
-                                c.skills.insert(Skill::twoHandedWeapon);
-                                c.chatReactionFriendly = "curses all goblins";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "dwarf";), Tribes::get(TribeId::DWARVEN), factory);
-    case CreatureId::DWARF_BARON: return PCreature(new VillageElder(
-                                {},
-                                {{QuestId::GOBLINS, Random.getRandom(300, 400)}},
-                                ViewObject(ViewId::DWARF_BARON, ViewLayer::CREATURE, "Dwarf baron"),
-                                Tribes::get(TribeId::DWARVEN), 
-                                CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::MEDIUM;
- //                               c.firstName = NameGenerator::dwarfNames.getNext();
-                                c.strength = 23;
-                                c.dexterity = 18;
-                                c.barehandedDamage = 5;
-                                c.humanoid = true;
-                                c.weight = 120;
-                                c.skills.insert(Skill::twoHandedWeapon);
-                                c.chatReactionFriendly = "curses all goblins";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "dwarf baron";), factory));
-    case CreatureId::LIZARDMAN: return get(ViewId::LIZARDMAN, CATTR(
-                                c.speed = 120;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 15;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 10;
-                                c.humanoid = true;
-                                c.weight = 50;
-                                c.chatReactionFriendly = "curses all humans";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "lizardman";), tribe, factory);
-    case CreatureId::LIZARDLORD: return PCreature(new VillageElder({}, {},
-                                ViewObject(ViewId::LIZARDLORD, ViewLayer::CREATURE, "Lizardman chief"),
-                                Tribes::get(TribeId::LIZARD), 
-                                CATTR(
-                                c.speed = 140;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 16;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 10;
-                                c.humanoid = true;
-                                c.weight = 60;
-                                c.chatReactionFriendly = "curses all humans";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.name = "lizardman chief";), factory));
-    case CreatureId::ELF_ARCHER: return get(ViewId::ELF_ARCHER, CATTR(
-                                c.speed = 120;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 15;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 50;
-                                c.skills.insert(Skill::archery);
-                                c.chatReactionFriendly = "curses all dwarves";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.spells.push_back(Creature::getSpell(SpellId::HEALING));
-                                c.name = "elven archer";), Tribes::get(TribeId::ELVEN), factory);
-    case CreatureId::ELF: return get(ViewId::ELF, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 15;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.weight = 50;
-                                c.innocent = true;
-                                c.chatReactionFriendly = "curses all dwarves";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.spells.push_back(Creature::getSpell(SpellId::HEALING));
-                                c.name = "elf";), Tribes::get(TribeId::ELVEN), factory);
-    case CreatureId::ELF_CHILD: return get(ViewId::ELF_CHILD, CATTR(
-                                c.speed = 150;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 7;
-                                c.dexterity = 17;
-                                c.barehandedDamage = 0;
-                                c.humanoid = true;
-                                c.weight = 25;
-                                c.innocent = true;
-                                c.skills.insert(Skill::archery);
-                                c.chatReactionFriendly = "curses all dwarves";
-                                c.chatReactionHostile = "\"Help!\"";
-                                c.name = "elf child";), Tribes::get(TribeId::ELVEN), factory);
-    case CreatureId::ELF_LORD: return PCreature(new VillageElder(
-                                {},
-                                {{QuestId::BANDITS, Random.getRandom(80, 120)}},
-                                ViewObject(ViewId::ELF_LORD, ViewLayer::CREATURE, "Elf lord"),
-                                Tribes::get(TribeId::ELVEN), CATTR(
-                                c.speed = 140;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 17;
-                                c.dexterity = 18;
-                                c.barehandedDamage = 3;
-                                c.humanoid = true;
-                                c.healer = true;
-                                c.weight = 50;
-                                c.skills.insert(Skill::archery);
-                                c.chatReactionFriendly = "curses all dwarves";
-                                c.chatReactionHostile = "\"Die!\"";
-                                c.spells.push_back(Creature::getSpell(SpellId::HEALING));
-                                c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
-                                c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
-                                c.name = "elf lord";), factory));
-    case CreatureId::HORSE: return get(ViewId::HORSE, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 10;
-                                c.dexterity = 17;
-                                c.humanoid = false;
-                                c.innocent = true;
-                                c.weight = 500;
-                                c.animal = true;
-                                c.name = "horse";), tribe, factory);
-    case CreatureId::COW: return get(ViewId::COW, CATTR(
-                                c.speed = 40;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 10;
-                                c.dexterity = 12;
-                                c.humanoid = false;
-                                c.innocent = true;
-                                c.weight = 400;
-                                c.animal = true;
-                                c.name = "cow";), tribe, factory);
-    case CreatureId::SHEEP: return get(ViewId::SHEEP, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 5;
-                                c.dexterity = 12;
-                                c.humanoid = false;
-                                c.innocent = true;
-                                c.weight = 40;
-                                c.animal = true;
-                                c.name = "sheep";), tribe, factory);
-    case CreatureId::PIG: return get(ViewId::PIG, CATTR(
-                                c.speed = 60;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 12;
-                                c.dexterity = 8;
-                                c.humanoid = false;
-                                c.innocent = true;
-                                c.weight = 150;
-                                c.animal = true;
-                                c.name = "pig";), tribe, factory);
-    case CreatureId::JACKAL: return get(ViewId::JACKAL, CATTR(
-                                c.speed = 120;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 10;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 2;
-                                c.humanoid = false;
-                                c.weight = 10;
-                                c.animal = true;
-                                c.name = "jackal";), tribe, factory);
-    case CreatureId::DEER: return get(ViewId::DEER, CATTR(
-                                c.speed = 200;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 10;
-                                c.dexterity = 17;
-                                c.humanoid = false;
-                                c.innocent = true;
-                                c.weight = 400;
-                                c.animal = true;
-                                c.name = "deer";), tribe, factory);
-    case CreatureId::BOAR: return get(ViewId::BOAR, CATTR(
-                                c.speed = 180;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 18;
-                                c.dexterity = 15;
-                                c.humanoid = false;
-                                c.innocent = true;
-                                c.weight = 200;
-                                c.animal = true;
-                                c.name = "boar";), tribe, factory);
-    case CreatureId::FOX: return get(ViewId::FOX, CATTR(
-                                c.speed = 140;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 10;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 2;
-                                c.innocent = true;
-                                c.humanoid = false;
-                                c.weight = 10;
-                                c.animal = true;
-                                c.name = "fox";), tribe, factory);
-    case CreatureId::CAVE_BEAR: return get(ViewId::BEAR, CATTR(
-                                c.speed = 120;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 18;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 5;
-                                c.weight = 250;
-                                c.humanoid = false;
-                                c.animal = true;
-                                c.name = "cave bear";), tribe, factory);
-    case CreatureId::RAT: return get(ViewId::RAT, CATTR(
-                                c.speed = 180;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 2;
-                                c.dexterity = 12;
-                                c.barehandedDamage = 2;
-                                c.humanoid = false;
-                                c.weight = 1;
-                                c.animal = true;
-                                c.skills.insert(Skill::swimming);
-                                c.name = "rat";), Tribes::get(TribeId::PEST), factory);
-    case CreatureId::SCORPION: return get(ViewId::SCORPION, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 9;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 10;
-                                c.attackEffect = EffectType::POISON;
-                                c.humanoid = false;
-                                c.weight = 0.3;
-                                c.legs = 8;
-                                c.arms = 0;
-                                c.animal = true;
-                                c.name = "scorpion";), tribe, factory);
-    case CreatureId::SPIDER: return get(ViewId::SPIDER, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 9;
-                                c.dexterity = 13;
-                                c.barehandedDamage = 10;
-                                c.attackEffect = EffectType::POISON;
-                                c.humanoid = false;
-                                c.weight = 0.3;
-                                c.legs = 8;
-                                c.arms = 0;
-                                c.animal = true;
-                                c.name = "spider";), tribe, factory);
-    case CreatureId::FLY: {  bool fly = Random.roll(1);
-                             return get(fly ? ViewId::FLY : ViewId::SCORPION, CATTR(
-                                c.speed = 150;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 1;
-                                c.dexterity = 14;
-                                c.barehandedDamage = 10;
-                                c.humanoid = false;
-                                c.weight = 0.1;
-                                c.legs = 6;
-                                c.arms = 0;
-                                c.courage = 100;
-                                c.animal = true;
-                                c.name = fly ? "fly" : "something else later";), tribe, factory); }
-    case CreatureId::SNAKE: return get(ViewId::SNAKE, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 2;
-                                c.dexterity = 14;
-                                c.barehandedDamage = 15;
-                                c.humanoid = false;
-                                c.weight = 2;
-                                c.animal = true;
-                                c.attackEffect = EffectType::POISON;
-                                c.skills.insert(Skill::swimming);
-                                c.name = "snake";), Tribes::get(TribeId::PEST), factory);
-    case CreatureId::RAVEN: return get(ViewId::RAVEN, CATTR(
-                                c.speed = 250;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 2;
-                                c.dexterity = 12;
-                                c.barehandedDamage = 0;
-                                c.humanoid = false;
-                                c.weight = 0.5;
-                                c.arms = 0;
-                                c.legs = 0;
-                                c.wings = 2;
-                                c.animal = true;
-                                c.flyer = true;
-                                c.name = "raven";), tribe, factory);
-    case CreatureId::VULTURE: return get(ViewId::VULTURE, CATTR(
-                                c.speed = 80;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 2;
-                                c.dexterity = 12;
-                                c.barehandedDamage = 2;
-                                c.humanoid = false;
-                                c.weight = 5;
-                                c.arms = 0;
-                                c.legs = 0;
-                                c.wings = 2;
-                                c.animal = true;
-                                c.flyer = true;
-                                c.name = "vulture";), Tribes::get(TribeId::PEST), factory);
-    case CreatureId::WOLF: return get(ViewId::WOLF, CATTR(
-                                c.speed = 160;
-                                c.size = CreatureSize::MEDIUM;
-                                c.strength = 15;
-                                c.dexterity = 17;
-                                c.barehandedDamage = 10;
-                                c.humanoid = false;
-                                c.animal = true;
-                                c.weight = 35;
-                                c.name = "wolf";), tribe, factory);
-    case CreatureId::FIRE_SPHERE: return get(ViewId::FIRE_SPHERE, CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 5;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 10;
-                                c.humanoid = false;
-                                c.arms = 0;
-                                c.legs = 0;
-                                c.heads = 0;
-                                c.noBody = true;
-                                c.breathing = false;
-                                c.brain = false;
-                                c.fireCreature = true;
-                                c.flyer = true;
-                                c.weight = 10;
-                                c.courage = 100;
-                                c.name = "fire sphere";), tribe, ControllerFactory([=](Creature* c) {
-                                      return new KamikazeController(c, actorFactory);
-                                    }));
-    case CreatureId::KRAKEN: return get(ViewId::KRAKEN, CATTR(
-                                c.speed = 40;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 15;
-                                c.dexterity = 15;
-                                c.barehandedDamage = 10;
-                                c.humanoid = false;
-                                c.arms = 0;
-                                c.legs = 0;
-                                c.heads = 0;
-                                c.skills.insert(Skill::swimming);
-                                c.weight = 100;
-                                c.name = "kraken";), tribe, ControllerFactory([=](Creature* c) {
-                                      return new KrakenController(c);
-                                    }));
-    case CreatureId::NIGHTMARE: /*return PCreature(new Shapechanger(
+    case CreatureId::VAMPIRE: 
+      return CATTR(
+          c.viewId = ViewId::VAMPIRE;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.strength = 17;
+          c.dexterity = 17;
+          c.barehandedDamage = 2;
+          c.humanoid = true;
+          c.weight = 100;
+          c.undead = true;
+          c.chatReactionFriendly = "curses all humans";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "vampire";);
+    case CreatureId::VAMPIRE_LORD: 
+      return INHERIT(VAMPIRE,
+          c.viewId = ViewId::VAMPIRE_LORD;
+          c.speed += 20;
+          c.strength += 3;
+          c.dexterity += 1;
+          c.barehandedDamage += 4;
+          c.flyer = true;
+          c.name = "vampire lord";);
+      /*   case CreatureId::VAMPIRE_BAT: 
+           return PCreature(new Shapechanger(
+           ViewObject(ViewId::BAT, ViewLayer::CREATURE, "Bat"),
+           tribe,
+           CATTR(
+           c.speed = 150;
+           c.size = CreatureSize::SMALL;
+           c.strength = 3;
+           c.dexterity = 16;
+           c.barehandedDamage = 12;
+           c.humanoid = false;
+           c.legs = 0;
+           c.arms = 0;
+           c.wings = 2;
+           c.weight = 1;
+           c.flyer = true;
+           c.name = "bat";), {
+           CreatureId::VAMPIRE}
+           ));*/
+    case CreatureId::MUMMY: 
+      return CATTR(
+          c.viewId = ViewId::MUMMY;
+          c.speed = 60;
+          c.size = CreatureSize::LARGE;
+          c.strength = 12;
+          c.dexterity = 13;
+          c.barehandedDamage = 13;
+          c.humanoid = true;
+          c.weight = 100;
+          c.brain = false;
+          c.undead = true;
+          c.skills.insert(Skill::twoHandedWeapon);
+          c.name = "mummy";);
+    case CreatureId::MUMMY_LORD: 
+      return INHERIT(MUMMY,
+          c.viewId = ViewId::MUMMY_LORD;
+          c.strength += 4;
+          c.dexterity += 2;
+          c.weight = 120;
+          c.chatReactionFriendly = "curses all gravediggers";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = NameGenerator::aztecNames.getNext(););
+    case CreatureId::GOBLIN: 
+      return CATTR(
+          c.viewId = ViewId::GOBLIN;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.strength = 16;
+          c.dexterity = 14;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 100;
+          c.skills.insert(Skill::twoHandedWeapon);
+          c.chatReactionFriendly = "curses all elves";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "goblin";);
+    case CreatureId::GREAT_GOBLIN: 
+      return INHERIT(GOBLIN,
+          c.viewId = ViewId::GREAT_GOBLIN;
+          c.strength += 6;
+          c.dexterity += 6;
+          c.weight += 80;
+          c.name = "great goblin";);
+    case CreatureId::GNOME: 
+      return CATTR(
+          c.viewId = ViewId::GNOME;
+          c.speed = 80;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 12;
+          c.dexterity = 13;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 45;
+          c.chatReactionFriendly = "talks about digging";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "gnome";);
+    case CreatureId::IMP: 
+      return CATTR(
+          c.viewId = ViewId::IMP;
+          c.speed = 200;
+          c.size = CreatureSize::SMALL;
+          c.strength = 8;
+          c.dexterity = 15;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 30;
+          c.courage = 0.1;
+          c.carryAnything = true;
+          c.skills.insert(Skill::construction);
+          c.chatReactionFriendly = "talks about digging";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "imp";);
+    case CreatureId::BILE_DEMON: 
+      return CATTR(
+          c.viewId = ViewId::BILE_DEMON;
+          c.speed = 80;
+          c.size = CreatureSize::LARGE;
+          c.strength = 19;
+          c.dexterity = 14;
+          c.barehandedDamage = 6;
+          c.humanoid = true;
+          c.weight = 140;
+          c.firstName = NameGenerator::demonNames.getNext();
+          c.name = "ogre";);
+    case CreatureId::CHICKEN: 
+      return CATTR(
+          c.viewId = ViewId::CHICKEN;
+          c.speed = 50;
+          c.size = CreatureSize::SMALL;
+          c.strength = 2;
+          c.dexterity = 2;
+          c.barehandedDamage = 5;
+          c.humanoid = false;
+          c.weight = 3;
+          c.walker = false;
+          c.isFood = true;
+          c.name = "chicken";);
+    case CreatureId::LEPRECHAUN: 
+      return CATTR(
+          c.viewId = ViewId::LEPRECHAUN;
+          c.speed = 160;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 10;
+          c.dexterity = 16;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 35;
+          c.courage = 20;
+          c.skills.insert(Skill::stealing);
+          c.chatReactionFriendly = "discusses the weather";
+          c.chatReactionHostile = "discusses the weather";
+          c.name = "leprechaun";);
+    case CreatureId::DWARF: 
+      return CATTR(
+          c.viewId = ViewId::DWARF;
+          c.speed = 80;
+          c.size = CreatureSize::MEDIUM;
+          // c.firstName = NameGenerator::dwarfNames.getNext();
+          c.strength = 21;
+          c.dexterity = 16;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 90;
+          c.skills.insert(Skill::twoHandedWeapon);
+          c.chatReactionFriendly = "curses all goblins";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "dwarf";);
+    case CreatureId::DWARF_BARON: 
+      return INHERIT(DWARF,
+          c.viewId = ViewId::DWARF_BARON;
+          //  c.firstName = NameGenerator::dwarfNames.getNext();
+          c.strength += 6;
+          c.dexterity += 3;
+          c.weight = 120;
+          c.name = "dwarf baron";);
+    case CreatureId::LIZARDMAN: 
+      return CATTR(
+          c.viewId = ViewId::LIZARDMAN;
+          c.speed = 120;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 15;
+          c.dexterity = 13;
+          c.barehandedDamage = 10;
+          c.attackEffect = EffectType::POISON;
+          c.humanoid = true;
+          c.weight = 50;
+          c.chatReactionFriendly = "curses all humans";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "lizardman";);
+    case CreatureId::LIZARDLORD: 
+      return INHERIT(LIZARDMAN,
+          c.viewId = ViewId::LIZARDLORD;
+          c.speed += 20;
+          c.strength += 4;
+          c.dexterity += 4;
+          c.weight = 60;
+          c.name = "lizardman chief";);
+    case CreatureId::ELF: 
+      return CATTR(
+          c.viewId = ViewId::ELF;
+          c.speed = 100;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 15;
+          c.dexterity = 15;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 50;
+          c.innocent = true;
+          c.chatReactionFriendly = "curses all dwarves";
+          c.chatReactionHostile = "\"Die!\"";
+          c.spells.push_back(Creature::getSpell(SpellId::HEALING));
+          c.name = "elf";);
+    case CreatureId::ELF_ARCHER: 
+      return INHERIT(ELF,
+          c.viewId = ViewId::ELF_ARCHER;
+          c.speed += 20;
+          c.innocent = false;
+          c.skills.insert(Skill::archery);
+          c.name = "elven archer";);
+    case CreatureId::ELF_CHILD: 
+      return INHERIT(ELF,
+          c.viewId = ViewId::ELF_CHILD;
+          c.speed += 20;
+          c.size = CreatureSize::SMALL;
+          c.strength = 7;
+          c.dexterity = 17;
+          c.barehandedDamage = 0;
+          c.weight = 25;
+          c.name = "elf child";);
+    case CreatureId::ELF_LORD: 
+      return INHERIT(ELF_ARCHER,
+          c.viewId = ViewId::ELF_LORD;
+          c.speed += 20;
+          c.strength += 3;
+          c.dexterity += 3;
+          c.healer = true;
+          c.spells.push_back(Creature::getSpell(SpellId::HEALING));
+          c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
+          c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
+          c.name = "elf lord";);
+    case CreatureId::HORSE: 
+      return CATTR(
+          c.viewId = ViewId::HORSE;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.strength = 10;
+          c.dexterity = 17;
+          c.humanoid = false;
+          c.innocent = true;
+          c.weight = 500;
+          c.animal = true;
+          c.name = "horse";);
+    case CreatureId::COW: 
+      return CATTR(
+          c.viewId = ViewId::COW;
+          c.speed = 40;
+          c.size = CreatureSize::LARGE;
+          c.strength = 10;
+          c.dexterity = 12;
+          c.humanoid = false;
+          c.innocent = true;
+          c.weight = 400;
+          c.animal = true;
+          c.name = "cow";);
+    case CreatureId::SHEEP: 
+      return CATTR(
+          c.viewId = ViewId::SHEEP;
+          c.speed = 80;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 5;
+          c.dexterity = 12;
+          c.humanoid = false;
+          c.innocent = true;
+          c.weight = 40;
+          c.animal = true;
+          c.name = "sheep";);
+    case CreatureId::PIG: 
+      return CATTR(
+          c.viewId = ViewId::PIG;
+          c.speed = 60;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 12;
+          c.dexterity = 8;
+          c.humanoid = false;
+          c.innocent = true;
+          c.weight = 150;
+          c.animal = true;
+          c.name = "pig";);
+    case CreatureId::JACKAL: 
+      return CATTR(
+          c.viewId = ViewId::JACKAL;
+          c.speed = 120;
+          c.size = CreatureSize::SMALL;
+          c.strength = 10;
+          c.dexterity = 15;
+          c.barehandedDamage = 2;
+          c.humanoid = false;
+          c.weight = 10;
+          c.animal = true;
+          c.name = "jackal";);
+    case CreatureId::DEER: 
+      return CATTR(
+          c.viewId = ViewId::DEER;
+          c.speed = 200;
+          c.size = CreatureSize::LARGE;
+          c.strength = 10;
+          c.dexterity = 17;
+          c.humanoid = false;
+          c.innocent = true;
+          c.weight = 400;
+          c.animal = true;
+          c.name = "deer";);
+    case CreatureId::BOAR: 
+      return CATTR(
+          c.viewId = ViewId::BOAR;
+          c.speed = 180;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 18;
+          c.dexterity = 15;
+          c.humanoid = false;
+          c.innocent = true;
+          c.weight = 200;
+          c.animal = true;
+          c.name = "boar";);
+    case CreatureId::FOX: 
+      return CATTR(
+          c.viewId = ViewId::FOX;
+          c.speed = 140;
+          c.size = CreatureSize::SMALL;
+          c.strength = 10;
+          c.dexterity = 15;
+          c.barehandedDamage = 2;
+          c.innocent = true;
+          c.humanoid = false;
+          c.weight = 10;
+          c.animal = true;
+          c.name = "fox";);
+    case CreatureId::CAVE_BEAR: 
+      return CATTR(
+          c.viewId = ViewId::BEAR;
+          c.speed = 120;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 18;
+          c.dexterity = 15;
+          c.barehandedDamage = 5;
+          c.weight = 250;
+          c.humanoid = false;
+          c.animal = true;
+          c.name = "cave bear";);
+    case CreatureId::RAT: 
+      return CATTR(
+          c.viewId = ViewId::RAT;
+          c.speed = 180;
+          c.size = CreatureSize::SMALL;
+          c.strength = 2;
+          c.dexterity = 12;
+          c.barehandedDamage = 2;
+          c.humanoid = false;
+          c.weight = 1;
+          c.animal = true;
+          c.skills.insert(Skill::swimming);
+          c.name = "rat";);
+    case CreatureId::SCORPION: 
+      return CATTR(
+          c.viewId = ViewId::SCORPION;
+          c.speed = 100;
+          c.size = CreatureSize::SMALL;
+          c.strength = 9;
+          c.dexterity = 13;
+          c.barehandedDamage = 10;
+          c.attackEffect = EffectType::POISON;
+          c.humanoid = false;
+          c.weight = 0.3;
+          c.legs = 8;
+          c.arms = 0;
+          c.animal = true;
+          c.name = "scorpion";);
+    case CreatureId::SPIDER: 
+      return INHERIT(SCORPION,
+          c.viewId = ViewId::SPIDER;
+          c.name = "spider";);
+    case CreatureId::FLY: 
+      return CATTR(
+          c.viewId = ViewId::FLY;
+          c.speed = 150;
+          c.size = CreatureSize::SMALL;
+          c.strength = 1;
+          c.dexterity = 14;
+          c.barehandedDamage = 10;
+          c.humanoid = false;
+          c.weight = 0.1;
+          c.legs = 6;
+          c.arms = 0;
+          c.courage = 100;
+          c.animal = true;
+          c.name = "fly";);
+    case CreatureId::SNAKE: 
+      return CATTR(
+          c.viewId = ViewId::SNAKE;
+          c.speed = 100;
+          c.size = CreatureSize::SMALL;
+          c.strength = 2;
+          c.dexterity = 14;
+          c.barehandedDamage = 15;
+          c.humanoid = false;
+          c.weight = 2;
+          c.animal = true;
+          c.attackEffect = EffectType::POISON;
+          c.skills.insert(Skill::swimming);
+          c.name = "snake";);
+    case CreatureId::RAVEN: 
+      return CATTR(
+          c.viewId = ViewId::RAVEN;
+          c.speed = 250;
+          c.size = CreatureSize::SMALL;
+          c.strength = 2;
+          c.dexterity = 12;
+          c.barehandedDamage = 0;
+          c.humanoid = false;
+          c.weight = 0.5;
+          c.arms = 0;
+          c.legs = 0;
+          c.wings = 2;
+          c.animal = true;
+          c.flyer = true;
+          c.name = "raven";);
+    case CreatureId::VULTURE: 
+      return CATTR(
+          c.viewId = ViewId::VULTURE;
+          c.speed = 80;
+          c.size = CreatureSize::SMALL;
+          c.strength = 2;
+          c.dexterity = 12;
+          c.barehandedDamage = 2;
+          c.humanoid = false;
+          c.weight = 5;
+          c.arms = 0;
+          c.legs = 0;
+          c.wings = 2;
+          c.animal = true;
+          c.flyer = true;
+          c.name = "vulture";);
+    case CreatureId::WOLF: 
+      return CATTR(
+          c.viewId = ViewId::WOLF;
+          c.speed = 160;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 15;
+          c.dexterity = 17;
+          c.barehandedDamage = 10;
+          c.humanoid = false;
+          c.animal = true;
+          c.weight = 35;
+          c.name = "wolf";);
+    case CreatureId::FIRE_SPHERE: 
+      return CATTR(
+          c.viewId = ViewId::FIRE_SPHERE;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.strength = 5;
+          c.dexterity = 15;
+          c.barehandedDamage = 10;
+          c.humanoid = false;
+          c.arms = 0;
+          c.legs = 0;
+          c.heads = 0;
+          c.noBody = true;
+          c.breathing = false;
+          c.brain = false;
+          c.fireCreature = true;
+          c.flyer = true;
+          c.weight = 10;
+          c.courage = 100;
+          c.name = "fire sphere";);
+    case CreatureId::KRAKEN: 
+      return CATTR(
+          c.viewId = ViewId::KRAKEN;
+          c.speed = 40;
+          c.size = CreatureSize::LARGE;
+          c.strength = 15;
+          c.dexterity = 15;
+          c.barehandedDamage = 10;
+          c.humanoid = false;
+          c.arms = 0;
+          c.legs = 0;
+          c.heads = 0;
+          c.skills.insert(Skill::swimming);
+          c.weight = 100;
+          c.name = "kraken";);
+    case CreatureId::NIGHTMARE: /*
+                                   return PCreature(new Shapechanger(
                                    ViewObject(ViewId::NIGHTMARE, ViewLayer::CREATURE, "nightmare"),
                                    Tribes::get(TribeId::MONSTER),
-                                CATTR(
-                                c.speed = 100;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 5;
-                                c.dexterity = 25;
-                                c.barehandedDamage = 10;
-                                c.humanoid = false;
-                                c.arms = 0;
-                                c.legs = 0;
-                                c.flyer = true;
-                                c.weight = 100;
-                                c.name = "nightmare";), {
-                                    CreatureId::CAVE_BEAR,
-                                    CreatureId::WOLF,
-                                    CreatureId::ZOMBIE,
-                                    CreatureId::VAMPIRE,
-                                    CreatureId::MUMMY,
-                                    CreatureId::FIRE_SPHERE,
-                                    CreatureId::SPECIAL_MONSTER,
-                                    }));*/
-    case CreatureId::BAT: return get(ViewId::BAT, CATTR(
-                                c.speed = 150;
-                                c.size = CreatureSize::SMALL;
-                                c.strength = 3;
-                                c.dexterity = 16;
-                                c.barehandedDamage = 12;
-                                c.humanoid = false;
-                                c.legs = 0;
-                                c.arms = 0;
-                                c.wings = 2;
-                                c.weight = 1;
-                                c.flyer = true;
-                                c.animal = true;
-                                c.name = "bat";), tribe, factory);
-    case CreatureId::DEATH: return get(ViewId::DEATH, CATTR(
-                                c.speed = 95;
-                                c.size = CreatureSize::LARGE;
-                                c.strength = 100;
-                                c.dexterity = 35;
-                                c.barehandedDamage = 10;
-                                c.chatReactionFriendly = c.chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\"";
-                                c.humanoid = true;
-                                c.weight = 30;
-                                c.breathing = false;
-                                c.name = "Death";), Tribes::get(TribeId::KILL_EVERYONE), factory);
-    case CreatureId::SPECIAL_MONSTER: return getSpecial(NameGenerator::creatureNames.getNext(),
-                                                        tribe, false, factory, false);
-    case CreatureId::SPECIAL_MONSTER_KEEPER: return getSpecial(NameGenerator::creatureNames.getNext(),
-                                                        tribe, false, factory, true);
-    case CreatureId::SPECIAL_HUMANOID: return getSpecial(NameGenerator::creatureNames.getNext(),
-                                                        tribe, true, factory, false);
+                                   CATTR(
+                                   c.speed = 100;
+                                   c.size = CreatureSize::LARGE;
+                                   c.strength = 5;
+                                   c.dexterity = 25;
+                                   c.barehandedDamage = 10;
+                                   c.humanoid = false;
+                                   c.arms = 0;
+                                   c.legs = 0;
+                                   c.flyer = true;
+                                   c.weight = 100;
+                                   c.name = "nightmare";), {
+                                   CreatureId::CAVE_BEAR,
+                                   CreatureId::WOLF,
+                                   CreatureId::ZOMBIE,
+                                   CreatureId::VAMPIRE,
+                                   CreatureId::MUMMY,
+                                   CreatureId::FIRE_SPHERE,
+                                   CreatureId::SPECIAL_MONSTER,
+                                   }));*/
+    case CreatureId::BAT: 
+      return CATTR(
+          c.viewId = ViewId::BAT;
+          c.speed = 150;
+          c.size = CreatureSize::SMALL;
+          c.strength = 3;
+          c.dexterity = 16;
+          c.barehandedDamage = 12;
+          c.humanoid = false;
+          c.legs = 0;
+          c.arms = 0;
+          c.wings = 2;
+          c.weight = 1;
+          c.flyer = true;
+          c.animal = true;
+          c.name = "bat";);
+    case CreatureId::DEATH: 
+      return CATTR(
+          c.viewId = ViewId::DEATH;
+          c.speed = 95;
+          c.size = CreatureSize::LARGE;
+          c.strength = 100;
+          c.dexterity = 35;
+          c.barehandedDamage = 10;
+          c.chatReactionFriendly = c.chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\"";
+          c.humanoid = true;
+          c.weight = 30;
+          c.breathing = false;
+          c.name = "Death";);
+    default: FAIL << "This is not handled here " << int(id);
   }
   FAIL << "unhandled case";
-  return PCreature(nullptr);
+  return CreatureAttributes([](CreatureAttributes&) {});
+}
+
+Tribe* getTribe(CreatureId id, Tribe* normalTribe) {
+  switch (id) {
+    case CreatureId::DEATH: return Tribes::get(TribeId::KILL_EVERYONE);
+    case CreatureId::RAT:
+    case CreatureId::SNAKE:
+    case CreatureId::VULTURE: return Tribes::get(TribeId::PEST);
+    case CreatureId::ELF_CHILD:
+    case CreatureId::ELF:
+    case CreatureId::ELF_LORD:
+    case CreatureId::ELF_ARCHER: return Tribes::get(TribeId::ELVEN);
+    case CreatureId::DWARF:
+    case CreatureId::DWARF_BARON: return Tribes::get(TribeId::DWARVEN);
+    case CreatureId::GREAT_GOBLIN: return Tribes::get(TribeId::GOBLIN);
+    default: return normalTribe;
+  }
+}
+
+ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
+  switch (id) {
+    case CreatureId::KRAKEN:
+      return ControllerFactory([=](Creature* c) {
+          return new KrakenController(c);
+          });
+    case CreatureId::FIRE_SPHERE:
+      return ControllerFactory([=](Creature* c) {
+          return new KamikazeController(c, normalFactory);
+          });
+    case CreatureId::ACID_MOUND:
+      return Monster::getFactory(MonsterAIFactory::idle());
+    case CreatureId::DRAGON:
+      return ControllerFactory([=](Creature* c) {
+          return new DragonController(c, normalFactory);
+          });
+    default: return Monster::getFactory(normalFactory);
+  }
+}
+PCreature getElder(vector<pair<Skill*, double>> teachSkills, vector<pair<QuestId, int>> quests, Tribe* tribe,
+    CreatureAttributes attributes, ControllerFactory factory) {
+    return PCreature(new VillageElder(teachSkills, quests, tribe, attributes, factory));
+}
+
+PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
+  ControllerFactory factory = Monster::getFactory(aiFactory);
+  switch (id) {
+    case CreatureId::SPECIAL_MONSTER:
+      return getSpecial(NameGenerator::creatureNames.getNext(),
+          tribe, false, factory, false);
+    case CreatureId::SPECIAL_MONSTER_KEEPER:
+      return getSpecial(NameGenerator::creatureNames.getNext(),
+          tribe, false, factory, true);
+    case CreatureId::SPECIAL_HUMANOID:
+      return getSpecial(NameGenerator::creatureNames.getNext(),
+          tribe, true, factory, false);
+    case CreatureId::ELF_LORD:
+      return PCreature(new VillageElder({},
+            {{QuestId::BANDITS, Random.getRandom(80, 120)}},
+            getTribe(id, tribe), getAttributes(id), factory));
+    case CreatureId::DWARF_BARON:
+      return PCreature(new VillageElder({},
+            {{QuestId::GOBLINS, Random.getRandom(300, 400)}},
+            getTribe(id, tribe), getAttributes(id), factory));
+    case CreatureId::GREAT_GOBLIN:
+      return PCreature(new VillageElder({},
+            {{QuestId::DWARVES, Random.getRandom(300, 400)}},
+            getTribe(id, tribe), getAttributes(id), factory));
+    case CreatureId::AVATAR:
+      return PCreature(new VillageElder({},
+            {{QuestId::CASTLE_CELLAR, Random.getRandom(80, 120)},
+            {QuestId::DRAGON, Random.getRandom(180, 320)}},
+            getTribe(id, tribe), getAttributes(id), factory));
+    case CreatureId::LIZARDLORD:
+      return PCreature(new VillageElder({}, {},
+            getTribe(id, tribe), getAttributes(id), factory));
+    default: return get(getAttributes(id), getTribe(id, tribe), getController(id, aiFactory));
+  }
 }
 
 ItemId randomHealing() {
@@ -1792,86 +1848,106 @@ class ItemList {
 
 vector<ItemId> getInventory(CreatureId id) {
   switch (id) {
-    case CreatureId::KEEPER: return ItemList()
-            .add(ItemId::LEATHER_ARMOR);
-    case CreatureId::DEATH: return ItemList()
-            .add(ItemId::SCYTHE);
-    case CreatureId::LEPRECHAUN: return ItemList()
-            .add(ItemId::TELE_SCROLL, Random.getRandom(1, 4));
-    case CreatureId::GNOME: return ItemList()
-            .add(chooseRandom({ItemId::KNIFE}))
-            .maybe(0.3, ItemId::LEATHER_BOOTS)
-            .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.getRandom(20, 36)));
-    case CreatureId::ARCHER: return ItemList()
-            .add(ItemId::BOW).add(ItemId::ARROW, Random.getRandom(20, 36))
-            .add(ItemId::KNIFE)
-            .add(ItemId::LEATHER_ARMOR)
-            .add(ItemId::LEATHER_BOOTS)
-            .add(randomHealing())
-            .add(ItemId::GOLD_PIECE, Random.getRandom(20, 50));
+    case CreatureId::KEEPER: 
+      return ItemList()
+        .add(ItemId::LEATHER_ARMOR);
+    case CreatureId::DEATH: 
+      return ItemList()
+        .add(ItemId::SCYTHE);
+    case CreatureId::LEPRECHAUN: 
+      return ItemList()
+        .add(ItemId::TELE_SCROLL, Random.getRandom(1, 4));
+    case CreatureId::GNOME: 
+      return ItemList()
+        .add(chooseRandom({ItemId::KNIFE}))
+        .maybe(0.3, ItemId::LEATHER_BOOTS)
+        .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.getRandom(20, 36)));
+    case CreatureId::LIZARDLORD: 
+    case CreatureId::LIZARDMAN: 
+      return ItemList().add(ItemId::LEATHER_ARMOR);
+    case CreatureId::ARCHER: 
+      return ItemList()
+        .add(ItemId::BOW).add(ItemId::ARROW, Random.getRandom(20, 36))
+        .add(ItemId::KNIFE)
+        .add(ItemId::LEATHER_ARMOR)
+        .add(ItemId::LEATHER_BOOTS)
+        .add(randomHealing())
+        .add(ItemId::GOLD_PIECE, Random.getRandom(20, 50));
     case CreatureId::CASTLE_GUARD:
-    case CreatureId::KNIGHT: return ItemList()
-            .add(ItemId::SWORD)
-            .add(ItemId::CHAIN_ARMOR)
-            .add(ItemId::LEATHER_BOOTS)
-            .add(randomHealing())
-            .add(ItemId::GOLD_PIECE, Random.getRandom(30, 80));
-    case CreatureId::DEVIL: return ItemList()
-            .add(chooseRandom({ItemId::BLINDNESS_POTION, ItemId::SLEEP_POTION, ItemId::SLOW_POTION}));
+    case CreatureId::KNIGHT: 
+      return ItemList()
+        .add(ItemId::SWORD)
+        .add(ItemId::CHAIN_ARMOR)
+        .add(ItemId::LEATHER_BOOTS)
+        .add(randomHealing())
+        .add(ItemId::GOLD_PIECE, Random.getRandom(30, 80));
+    case CreatureId::DEVIL: 
+      return ItemList()
+        .add(chooseRandom({ItemId::BLINDNESS_POTION, ItemId::SLEEP_POTION, ItemId::SLOW_POTION}));
     case CreatureId::DARK_KNIGHT:
-    case CreatureId::AVATAR: return ItemList()
-            .add(ItemId::SPECIAL_BATTLE_AXE)
-            .add(ItemId::CHAIN_ARMOR)
-            .add(ItemId::IRON_HELM)
-            .add(ItemId::IRON_BOOTS)
-            .add(ItemId::HEALING_POTION, Random.getRandom(1, 4))
-            .add(ItemId::GOLD_PIECE, Random.getRandom(200, 300));
-    case CreatureId::BILE_DEMON: return ItemList().add(ItemId::WAR_HAMMER);
+    case CreatureId::AVATAR: 
+      return ItemList()
+        .add(ItemId::SPECIAL_BATTLE_AXE)
+        .add(ItemId::CHAIN_ARMOR)
+        .add(ItemId::IRON_HELM)
+        .add(ItemId::IRON_BOOTS)
+        .add(ItemId::HEALING_POTION, Random.getRandom(1, 4))
+        .add(ItemId::GOLD_PIECE, Random.getRandom(200, 300));
+    case CreatureId::BILE_DEMON: 
+      return ItemList().add(ItemId::WAR_HAMMER);
     case CreatureId::BANDIT:
-    case CreatureId::GOBLIN: return ItemList()
-            .add(chooseRandom({ItemId::SWORD}, {3}))
-            .add(ItemId::LEATHER_ARMOR)
-            .maybe(0.3, randomBackup());
-    case CreatureId::GREAT_GOBLIN: return ItemList()
-            .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
-            .add(ItemId::IRON_HELM)
-            .add(ItemId::IRON_BOOTS)
-            .add(ItemId::CHAIN_ARMOR)
-            .add(randomBackup())
-            .add(ItemId::KNIFE, Random.getRandom(2, 5))
-            .add(ItemId::GOLD_PIECE, Random.getRandom(100, 200));
-    case CreatureId::DWARF: return ItemList()
-            .add(chooseRandom({ItemId::BATTLE_AXE, ItemId::WAR_HAMMER}, {1, 1}))
-            .maybe(0.6, randomBackup())
-            .add(ItemId::CHAIN_ARMOR)
-            .maybe(0.5, ItemId::IRON_HELM)
-            .maybe(0.3, ItemId::IRON_BOOTS)
-            .maybe(0.2, ItemId::GOLD_PIECE, Random.getRandom(10, 30));
-    case CreatureId::DWARF_BARON: return ItemList()
-            .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
-            .add(randomBackup())
-            .add(ItemId::CHAIN_ARMOR)
-            .add(ItemId::IRON_BOOTS)
-            .add(ItemId::IRON_HELM);
-    case CreatureId::ELF_LORD: return ItemList()
-            .add(ItemId::SPECIAL_ELVEN_SWORD)
-            .add(ItemId::LEATHER_ARMOR)
-            .add(ItemId::BOW)
-            .add(ItemId::ARROW, Random.getRandom(20, 36))
-            .add(randomBackup());
-    case CreatureId::ELF_ARCHER: return ItemList()
-            .add(ItemId::ELVEN_SWORD)
-            .add(ItemId::LEATHER_ARMOR)
-            .add(ItemId::BOW)
-            .add(ItemId::ARROW, Random.getRandom(20, 36))
-            .add(randomBackup());
-    case CreatureId::MUMMY_LORD: return ItemList()
-            .add(ItemId::GOLD_PIECE, Random.getRandom(100, 200)).add(
+    case CreatureId::GOBLIN: 
+      return ItemList()
+        .add(chooseRandom({ItemId::SWORD}, {3}))
+        .add(ItemId::LEATHER_ARMOR)
+        .maybe(0.3, randomBackup());
+    case CreatureId::GREAT_GOBLIN: 
+      return ItemList()
+        .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
+        .add(ItemId::IRON_HELM)
+        .add(ItemId::IRON_BOOTS)
+        .add(ItemId::CHAIN_ARMOR)
+        .add(randomBackup())
+        .add(ItemId::KNIFE, Random.getRandom(2, 5))
+        .add(ItemId::GOLD_PIECE, Random.getRandom(100, 200));
+    case CreatureId::DWARF: 
+      return ItemList()
+        .add(chooseRandom({ItemId::BATTLE_AXE, ItemId::WAR_HAMMER}, {1, 1}))
+        .maybe(0.6, randomBackup())
+        .add(ItemId::CHAIN_ARMOR)
+        .maybe(0.5, ItemId::IRON_HELM)
+        .maybe(0.3, ItemId::IRON_BOOTS)
+        .maybe(0.2, ItemId::GOLD_PIECE, Random.getRandom(10, 30));
+    case CreatureId::DWARF_BARON: 
+      return ItemList()
+        .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
+        .add(randomBackup())
+        .add(ItemId::CHAIN_ARMOR)
+        .add(ItemId::IRON_BOOTS)
+        .add(ItemId::IRON_HELM);
+    case CreatureId::ELF_LORD: 
+      return ItemList()
+        .add(ItemId::SPECIAL_ELVEN_SWORD)
+        .add(ItemId::LEATHER_ARMOR)
+        .add(ItemId::BOW)
+        .add(ItemId::ARROW, Random.getRandom(20, 36))
+        .add(randomBackup());
+    case CreatureId::ELF_ARCHER: 
+      return ItemList()
+        .add(ItemId::ELVEN_SWORD)
+        .add(ItemId::LEATHER_ARMOR)
+        .add(ItemId::BOW)
+        .add(ItemId::ARROW, Random.getRandom(20, 36))
+        .add(randomBackup());
+    case CreatureId::MUMMY_LORD: 
+      return ItemList()
+        .add(ItemId::GOLD_PIECE, Random.getRandom(100, 200)).add(
             chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD}, {1, 1, 1}));
-    case CreatureId::WITCH: return ItemList()
-            .add(ItemId::KNIFE)
-            .add({ItemId::HEALING_POTION, ItemId::SLEEP_POTION, ItemId::SLOW_POTION, ItemId::BLINDNESS_POTION,
-                ItemId::INVISIBLE_POTION, ItemId::POISON_POTION, ItemId::SPEED_POTION});
+    case CreatureId::WITCH: 
+      return ItemList()
+        .add(ItemId::KNIFE)
+        .add({ItemId::HEALING_POTION, ItemId::SLEEP_POTION, ItemId::SLOW_POTION, ItemId::BLINDNESS_POTION,
+            ItemId::INVISIBLE_POTION, ItemId::POISON_POTION, ItemId::SPEED_POTION});
     default: return {};
   }
 }

@@ -24,6 +24,7 @@ class CreatureAttributes {
     fun(*this);
   }
 
+  MustInitialize<ViewId> viewId;
   MustInitialize<string> name;
   MustInitialize<int> speed;
   MustInitialize<CreatureSize> size;

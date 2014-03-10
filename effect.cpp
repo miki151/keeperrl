@@ -134,11 +134,13 @@ static void deception(Creature* c) {
     ViewObject viewObject(c->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
     viewObject.setIllusion(true);
     creatures.push_back(PCreature(new Creature(viewObject, c->getTribe(), CATTR(
+          c.viewId = ViewId::ROCK; //overriden anyway
           c.speed = 100;
           c.weight = 1;
           c.size = CreatureSize::LARGE;
           c.strength = 1;
           c.dexterity = 1;
+          c.barehandedDamage = 20; // just so it's not ignored by creatures
           c.stationary = true;
           c.permanentlyBlind = true;
           c.noSleep = true;

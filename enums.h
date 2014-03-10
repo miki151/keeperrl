@@ -134,7 +134,6 @@ enum class CreatureId {
     IMP,
     BILE_DEMON,
     CHICKEN,
-    DUNGEON_HEART,
 
     KNIGHT,
     AVATAR,
@@ -181,6 +180,7 @@ enum class CreatureId {
 
 
 enum class ItemId { KNIFE,
+  SPEAR,
   SWORD,
   SPECIAL_SWORD,
   ELVEN_SWORD,
@@ -429,6 +429,7 @@ enum class ViewId {
 
   BODY_PART,
   BONE,
+  SPEAR,
   SWORD,
   SPECIAL_SWORD,
   ELVEN_SWORD,

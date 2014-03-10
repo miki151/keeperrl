@@ -1577,7 +1577,7 @@ MakerQueue* castle2(CreatureFactory factory, int numCreatures, Optional<Creature
   MakerQueue* inside = new MakerQueue();
   inside->addMaker(new Empty(SquareType::MUD));
   Location* room = new Location();
-  inside->addMaker(new Buildings(2, 3, 4, 6, SquareType::MUD_WALL, SquareType::FLOOR, SquareType::DOOR,
+  inside->addMaker(new Buildings(1, 2, 4, 6, SquareType::MUD_WALL, SquareType::FLOOR, SquareType::DOOR,
         false, {new LocationMaker(room)}, false));
   if (elder) {
     inside->addMaker(new Creatures(CreatureFactory::singleType(tribe, *elder), 1,

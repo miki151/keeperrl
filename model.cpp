@@ -261,8 +261,9 @@ Model* Model::heroModel(View* view) {
 PCreature Model::makePlayer() {
   map<const Level*, MapMemory>* levelMemory = new map<const Level*, MapMemory>();
   PCreature player = CreatureFactory::addInventory(
-      PCreature(new Creature(ViewObject(ViewId::PLAYER, ViewLayer::CREATURE, "Player"), Tribes::get(TribeId::PLAYER),
+      PCreature(new Creature(Tribes::get(TribeId::PLAYER),
       CATTR(
+          c.viewId = ViewId::PLAYER;
           c.speed = 100;
           c.weight = 90;
           c.size = CreatureSize::LARGE;
@@ -301,7 +302,7 @@ void Model::exitAction() {
     case RETIRE: retireCollective(); throw SaveGameException(GameType::RETIRED_KEEPER);
     case SAVE:if (!collective || collective->isRetired())
                 throw SaveGameException(GameType::ADVENTURER);
-              else if (!won)
+              else
                 throw SaveGameException(GameType::KEEPER);
     case ABANDON: throw GameOverException();
     default: break;

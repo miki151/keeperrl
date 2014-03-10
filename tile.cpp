@@ -217,6 +217,7 @@ Tile getSprite(ViewId id) {
     case ViewId::PLANNED_DOOR: return Tile(4, 2, 2, true).setTranslucent(0.5);
     case ViewId::DIG_ICON: return Tile(8, 10, 2);
     case ViewId::SWORD: return Tile(12, 9, 3);
+    case ViewId::SPEAR: return Tile(5, 8, 3);
     case ViewId::SPECIAL_SWORD: return Tile(13, 9, 3);
     case ViewId::ELVEN_SWORD: return Tile(14, 9, 3);
     case ViewId::KNIFE: return Tile(20, 9, 3);
@@ -428,6 +429,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::PLANNED_DOOR: return Tile('|', darkBrown);
     case ViewId::DIG_ICON: return Tile(0x2692, lightGray, true);
     case ViewId::SWORD: return Tile(')', lightGray);
+    case ViewId::SPEAR: return Tile('/', lightGray);
     case ViewId::SPECIAL_SWORD: return Tile(')', yellow);
     case ViewId::ELVEN_SWORD: return Tile(')', gray);
     case ViewId::KNIFE: return Tile(')', white);

@@ -687,6 +687,15 @@ PItem ItemFactory::fromId(ItemId id) {
             i.thrownToHit = 3;
             i.price = 5;
             i.attackType = AttackType::STAB;)));
+    case ItemId::SPEAR: return PItem(new Item(
+        ViewObject(ViewId::SPEAR, ViewLayer::ITEM, "Spear"), ITATTR(
+            i.name = "spear";
+            i.type = ItemType::WEAPON;
+            i.weight = 1.5;
+            i.damage = 10 + maybePlusMinusOne(4);
+            i.toHit = 2 + maybePlusMinusOne(4);
+            i.price = 20;
+            i.attackType = AttackType::STAB;)));
     case ItemId::SPECIAL_SWORD: artifact = true;
     case ItemId::SWORD: return PItem(new Item(
         ViewObject(artifact ? ViewId::SPECIAL_SWORD : ViewId::SWORD, ViewLayer::ITEM, "Sword"), ITATTR(

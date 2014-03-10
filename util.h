@@ -657,12 +657,16 @@ class MustInitialize {
   MustInitialize() {}
 
   T& operator = (const T& t) {
-
     if (!elem.empty())
       elem.pop();
     CHECK(elem.empty());
     elem.push(t);
     return elem.front();
+  }
+
+  T& operator += (const T& t) {
+    CHECK(!elem.empty()) << "Element not initialized";
+    return elem.front() += t;
   }
 
   T* operator -> () {

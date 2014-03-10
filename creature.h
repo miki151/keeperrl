@@ -22,7 +22,8 @@ class Tribe;
 class Creature : public CreatureAttributes, public CreatureView, public UniqueEntity, public EventListener {
   public:
   typedef CreatureAttributes CreatureAttributes;
-  Creature(ViewObject o, Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
+  Creature(Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
+  Creature(ViewObject, Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
   virtual ~Creature();
 
   static Creature* getDefault();

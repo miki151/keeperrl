@@ -103,11 +103,15 @@ void Creature::noExperienceLevels() {
   increaseExperience = false;
 }
 
-Creature::Creature(ViewObject o, Tribe* t, const CreatureAttributes& attr, ControllerFactory f) : CreatureAttributes(attr), viewObject(o), tribe(t), controller(f.get(this)) {
+Creature::Creature(ViewObject object, Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
+    : CreatureAttributes(attr), viewObject(object), tribe(t), controller(f.get(this)) {
   tribe->addMember(this);
   for (Skill* skill : skills)
     skill->onTeach(this);
 }
+
+Creature::Creature(Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
+    : Creature(ViewObject(*attr.viewId, ViewLayer::CREATURE, *attr.name), t, attr, f) {}
 
 Creature::~Creature() {
   tribe->removeMember(this);
