@@ -503,7 +503,7 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
     int butWidth = 150;
     teamButton = Rectangle(textX, height, textX + butWidth, height + legendLineHeight);
     if (info.gatheringTeam) {
-      renderer.drawText(white, textX + butWidth, height, "[cancel]");
+      renderer.drawText(white, textX + butWidth, height, "[disband]");
       cancelTeamButton = Rectangle(textX + butWidth, height, textX + 230, height + legendLineHeight);
     }
     cnt += 2;
@@ -1348,8 +1348,10 @@ CollectiveAction WindowView::getClick() {
             for (int i : All(techButtons))
               if (clickPos.inRectangle(techButtons[i]))
                 return CollectiveAction(CollectiveAction::TECHNOLOGY, i);
-            if (teamButton && clickPos.inRectangle(*teamButton))
+            if (teamButton && clickPos.inRectangle(*teamButton)) {
+              chosenCreature = "";
               return CollectiveAction(CollectiveAction::GATHER_TEAM);
+            }
             if (cancelTeamButton && clickPos.inRectangle(*cancelTeamButton)) {
               chosenCreature = "";
               return CollectiveAction(CollectiveAction::CANCEL_TEAM);

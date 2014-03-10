@@ -207,8 +207,8 @@ void Collective::unpossess() {
     possessed->popController();
   ViewObject::setHallu(false);
   possessed = nullptr;
-  team.clear();
-  gatheringTeam = false;
+ /* team.clear();
+  gatheringTeam = false;*/
   teamLevelChanges.clear();
 }
 
@@ -224,8 +224,8 @@ void Collective::render(View* view) {
     }
   }
   if (possessed && (!possessed->isPlayer() || possessed->isDead())) {
-    if (contains(team, possessed))
-      removeElement(team, possessed);
+ /*   if (contains(team, possessed))
+      removeElement(team, possessed);*/
     if ((possessed->isDead() || possessed->isSleeping()) && !team.empty()) {
       possess(team.front(), view);
     } else {
@@ -912,7 +912,7 @@ void Collective::processInput(View* view) {
     case CollectiveAction::GATHER_TEAM:
         if (gatheringTeam && !team.empty()) {
           possess(team[0], view);
-          gatheringTeam = false;
+ //         gatheringTeam = false;
           for (Creature* c : team) {
             freeFromGuardPost(c);
             if (c->isSleeping())
