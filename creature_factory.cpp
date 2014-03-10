@@ -737,6 +737,10 @@ CreatureFactory CreatureFactory::collectiveElfFinalAttack() {
   return CreatureFactory(Tribes::get(TribeId::ELVEN), { CreatureId::ELF_ARCHER, }, { 1}, {CreatureId::ELF_LORD});
 }
 
+CreatureFactory CreatureFactory::collectiveLizardFinalAttack() {
+  return CreatureFactory(Tribes::get(TribeId::LIZARD), { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
+}
+
 CreatureFactory CreatureFactory::collectiveSurpriseEnemies() {
   return CreatureFactory(Tribes::get(TribeId::MONSTER), { CreatureId::SPECIAL_MONSTER}, { 1}, {});
 }
@@ -1380,6 +1384,20 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory actorFactory) {
                                 c.chatReactionFriendly = "curses all humans";
                                 c.chatReactionHostile = "\"Die!\"";
                                 c.name = "lizardman";), tribe, factory);
+    case CreatureId::LIZARDLORD: return PCreature(new VillageElder({}, {},
+                                ViewObject(ViewId::LIZARDLORD, ViewLayer::CREATURE, "Lizardman chief"),
+                                Tribes::get(TribeId::LIZARD), 
+                                CATTR(
+                                c.speed = 140;
+                                c.size = CreatureSize::MEDIUM;
+                                c.strength = 16;
+                                c.dexterity = 15;
+                                c.barehandedDamage = 10;
+                                c.humanoid = true;
+                                c.weight = 60;
+                                c.chatReactionFriendly = "curses all humans";
+                                c.chatReactionHostile = "\"Die!\"";
+                                c.name = "lizardman chief";), factory));
     case CreatureId::ELF_ARCHER: return get(ViewId::ELF_ARCHER, CATTR(
                                 c.speed = 120;
                                 c.size = CreatureSize::MEDIUM;

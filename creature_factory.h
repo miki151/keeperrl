@@ -31,6 +31,7 @@ class CreatureFactory {
   static CreatureFactory collectiveFinalAttack();
   static CreatureFactory collectiveElfEnemies();
   static CreatureFactory collectiveElfFinalAttack();
+  static CreatureFactory collectiveLizardFinalAttack();
   static CreatureFactory collectiveSurpriseEnemies();
   static CreatureFactory goblinTown(int num);
   static CreatureFactory level(int num);

@@ -1351,30 +1351,34 @@ class AreaCorners : public LevelMaker {
 
 class CastleExit : public LevelMaker {
   public:
-  CastleExit(Tribe* _guardTribe) : guardTribe(_guardTribe) {}
+  CastleExit(Tribe* _guardTribe, SquareType _wallType, SquareType _floorType, CreatureId _guardId)
+    : guardTribe(_guardTribe), wallType(_wallType), floorType(_floorType), guardId(_guardId) {}
   
   virtual void make(Level::Builder* builder, Rectangle area) override {
     Vec2 loc(area.getKX() - 1, area.middle().y);
  //   builder->putSquare(loc, SquareType::DOOR);
-    builder->putSquare(loc + Vec2(2, 0), SquareType::FLOOR);
+    builder->putSquare(loc + Vec2(2, 0), floorType);
     builder->putSquare(loc + Vec2(2, 0), SquareType::DOOR, SquareAttrib::CONNECT);
     vector<Vec2> walls { Vec2(1, -2), Vec2(2, -2), Vec2(2, -1), Vec2(2, 1), Vec2(2, 2), Vec2(1, 2)};
     for (Vec2 v : walls)
-      builder->putSquare(loc + v, SquareType::CASTLE_WALL);
+      builder->putSquare(loc + v, wallType);
     vector<Vec2> floor { Vec2(1, -1), Vec2(1, 0), Vec2(1, 1), Vec2(0, -1), Vec2(0, 0), Vec2(0, 1) };
     for (Vec2 v : floor)
-      builder->putSquare(loc + v, SquareType::FLOOR);
+      builder->putSquare(loc + v, floorType);
     vector<Vec2> guardPos { Vec2(1, 1), Vec2(1, -1) };
     for (Vec2 pos : guardPos) {
       Location* guard = new Location();
       builder->addLocation(guard, Rectangle(loc + pos, loc + pos + Vec2(1, 1)));
-      builder->putCreature(loc + pos, CreatureFactory::fromId(CreatureId::CASTLE_GUARD, guardTribe,
+      builder->putCreature(loc + pos, CreatureFactory::fromId(guardId, guardTribe,
             MonsterAIFactory::stayInLocation(guard, false)));
     }
   }
 
   private:
   Tribe* guardTribe;
+  SquareType wallType;
+  SquareType floorType;
+  CreatureId guardId;
 };
 
 static LevelMaker* underground(bool monsters) {
@@ -1562,7 +1566,33 @@ MakerQueue* castle(CreatureFactory factory, int numCreatures, Optional<CreatureI
   queue->addMaker(new Margin(insideMargin, insidePlusWall));
   queue->addMaker(new AreaCorners(new BorderGuard(new Empty(SquareType::FLOOR), SquareType::CASTLE_WALL), Vec2(5, 5)));
   queue->addMaker(new Margin(insideMargin, new Connector({0, 1, 0}, 18)));
-  queue->addMaker(new Margin(insideMargin, new CastleExit(tribe)));
+  queue->addMaker(new Margin(insideMargin, new CastleExit(tribe, SquareType::CASTLE_WALL, SquareType::FLOOR,
+          CreatureId::CASTLE_GUARD)));
+  queue->addMaker(new Creatures(factory, numCreatures, MonsterAIFactory::stayInLocation(loc), SquareType::MUD));
+  return queue;
+}
+
+MakerQueue* castle2(CreatureFactory factory, int numCreatures, Optional<CreatureId> elder, Location* loc,
+    Tribe* tribe) {
+  MakerQueue* inside = new MakerQueue();
+  inside->addMaker(new Empty(SquareType::MUD));
+  Location* room = new Location();
+  inside->addMaker(new Buildings(2, 3, 4, 6, SquareType::MUD_WALL, SquareType::FLOOR, SquareType::DOOR,
+        false, {new LocationMaker(room)}, false));
+  if (elder) {
+    inside->addMaker(new Creatures(CreatureFactory::singleType(tribe, *elder), 1,
+          MonsterAIFactory::stayInLocation(room), SquareType::FLOOR));
+  }
+  MakerQueue* insidePlusWall = new MakerQueue();
+  insidePlusWall->addMaker(new BorderGuard(inside, SquareType::MUD_WALL));
+  MakerQueue* queue = new MakerQueue();
+  int insideMargin = 2;
+  queue->addMaker(new Margin(insideMargin, new LocationMaker(loc)));
+  queue->addMaker(new Margin(insideMargin, insidePlusWall));
+ // queue->addMaker(new AreaCorners(new BorderGuard(new Empty(SquareType::MUD), SquareType::MUD_WALL), Vec2(4, 4)));
+  queue->addMaker(new Margin(insideMargin, new Connector({0, 1, 0}, 18)));
+  queue->addMaker(new Margin(insideMargin, new CastleExit(tribe, SquareType::MUD_WALL, SquareType::MUD,
+          CreatureId::LIZARDMAN)));
   queue->addMaker(new Creatures(factory, numCreatures, MonsterAIFactory::stayInLocation(loc), SquareType::MUD));
   return queue;
 }
@@ -1643,6 +1673,10 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
               settlement.tribe, settlement.downStairs);
           queue->addMaker(new StartingPos(new TypePredicate(SquareType::MUD), StairKey::PLAYER_SPAWN));
           castleMaker = queue;
+          break;
+      case SettlementType::CASTLE2:
+          queue = castle2(settlement.factory, settlement.numCreatures, settlement.elder, settlement.location,
+              settlement.tribe);
           break;
       case SettlementType::COTTAGE:
           queue = cottage(settlement.factory, settlement.numCreatures, settlement.tribe, settlement.location); break;
@@ -1760,6 +1794,10 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
           queue = castle(settlement.factory, settlement.numCreatures, settlement.elder, settlement.location,
               settlement.tribe, settlement.downStairs);
           queue->addMaker(new StartingPos(new TypePredicate(SquareType::MUD), StairKey::HERO_SPAWN));
+          break;
+      case SettlementType::CASTLE2:
+          queue = castle2(settlement.factory, settlement.numCreatures, settlement.elder, settlement.location,
+              settlement.tribe);
           break;
       case SettlementType::COTTAGE:
           queue = cottage(settlement.factory, settlement.numCreatures, settlement.tribe, settlement.location);

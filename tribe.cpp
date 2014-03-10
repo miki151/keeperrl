@@ -153,6 +153,7 @@ void Tribe::onItemsStolen(const Creature* attacker) {
 
 void Tribe::init() {
   Tribes::set(TribeId::MONSTER, new Tribe("", false));
+  Tribes::set(TribeId::LIZARD, new Tribe("lizardmen", false));
   Tribes::set(TribeId::PEST, new Tribe("", false));
   Tribes::set(TribeId::WILDLIFE, new Tribe("", false));
   Tribes::set(TribeId::ELVEN, new Tribe("elves", true));
@@ -170,12 +171,14 @@ void Tribe::init() {
   Tribes::get(TribeId::KEEPER)->addEnemy(Tribes::get(TribeId::ELVEN));
   Tribes::get(TribeId::KEEPER)->addEnemy(Tribes::get(TribeId::DWARVEN));
   Tribes::get(TribeId::KEEPER)->addEnemy(Tribes::get(TribeId::HUMAN));
+  Tribes::get(TribeId::KEEPER)->addEnemy(Tribes::get(TribeId::LIZARD));
   Tribes::get(TribeId::ELVEN)->addEnemy(Tribes::get(TribeId::GOBLIN));
   Tribes::get(TribeId::ELVEN)->addEnemy(Tribes::get(TribeId::DWARVEN));
   Tribes::get(TribeId::ELVEN)->addEnemy(Tribes::get(TribeId::BANDIT));
   Tribes::get(TribeId::GOBLIN)->addEnemy(Tribes::get(TribeId::DWARVEN));
   Tribes::get(TribeId::GOBLIN)->addEnemy(Tribes::get(TribeId::WILDLIFE));
   Tribes::get(TribeId::HUMAN)->addEnemy(Tribes::get(TribeId::GOBLIN));
+  Tribes::get(TribeId::HUMAN)->addEnemy(Tribes::get(TribeId::LIZARD));
   Tribes::get(TribeId::HUMAN)->addEnemy(Tribes::get(TribeId::BANDIT));
   Tribes::get(TribeId::PLAYER)->addEnemy(Tribes::get(TribeId::MONSTER));
   Tribes::get(TribeId::PLAYER)->addEnemy(Tribes::get(TribeId::GOBLIN));

@@ -202,10 +202,13 @@ static void setHandicap(Tribe* tribe, bool easy) {
 Model* Model::heroModel(View* view) {
   Creature::noExperienceLevels();
   Model* m = new Model(view);
-  vector<Location*> locations = getVillageLocations(3);
+  vector<Location*> locations = getVillageLocations(4);
   Level* top = m->prepareTopLevel({
       {SettlementType::CASTLE, CreatureFactory::humanVillage(0.3), Random.getRandom(10, 20), CreatureId::AVATAR,
           locations[0], Tribes::get(TribeId::HUMAN), {30, 20}, {StairKey::CASTLE_CELLAR}},
+      {SettlementType::CASTLE2, CreatureFactory::singleType(Tribes::get(TribeId::LIZARD), CreatureId::LIZARDMAN),
+          Random.getRandom(5, 10), CreatureId::LIZARDLORD,
+          locations[1], Tribes::get(TribeId::LIZARD), {15, 15}, {}},
       {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.3), Random.getRandom(10, 20), CreatureId::ELF_LORD,
           locations[2], Tribes::get(TribeId::ELVEN), {30, 20}, {}}});
   Level* d1 = m->buildLevel(
@@ -339,11 +342,14 @@ void Model::onKillEvent(const Creature* victim, const Creature* killer) {
 
 Model* Model::collectiveModel(View* view) {
   Model* m = new Model(view);
-  vector<Location*> villageLocations = getVillageLocations(2);
+  vector<Location*> villageLocations = getVillageLocations(3);
   vector<SettlementInfo> settlements {
     {SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), 12, Nothing(), villageLocations[0],
       Tribes::get(TribeId::HUMAN), {30, 20}, {}},
-    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.0), 7, Nothing(), villageLocations[1],
+    {SettlementType::CASTLE2, CreatureFactory::singleType(Tribes::get(TribeId::LIZARD), CreatureId::LIZARDMAN),
+      Random.getRandom(2, 4), Nothing(),
+      villageLocations[1], Tribes::get(TribeId::LIZARD), {15, 15}, {}},
+    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.0), 7, Nothing(), villageLocations[2],
       Tribes::get(TribeId::ELVEN), {30, 20}, {}}  };
   vector<CreatureFactory> cottageF {
     CreatureFactory::humanVillage(0),
@@ -377,10 +383,11 @@ Model* Model::collectiveModel(View* view) {
   }
   vector<CreatureFactory> villageFactories {
     { CreatureFactory::collectiveFinalAttack() },
+    { CreatureFactory::collectiveLizardFinalAttack() },
     { CreatureFactory::collectiveElfFinalAttack() }
   };
   vector<int> heroCounts {
-    20, 10
+    20, 10, 10
   };
   int cnt = 0;
   auto killedCoeff = [] () { return Random.getDouble(0.1, 0.3); };

@@ -144,6 +144,7 @@ enum class CreatureId {
     CHILD,
 
     LIZARDMAN,
+    LIZARDLORD,
     
     ELF,
     ELF_ARCHER,
@@ -277,6 +278,7 @@ enum class StairLook {
 enum class SettlementType {
   VILLAGE,
   CASTLE,
+  CASTLE2,
   COTTAGE,
 };
 
@@ -294,6 +296,7 @@ enum class ViewId {
   ELF_LORD,
   ELVEN_SHOPKEEPER,
   LIZARDMAN,
+  LIZARDLORD,
   DWARF,
   DWARF_BARON,
   DWARVEN_SHOPKEEPER,
@@ -635,6 +638,7 @@ enum class TribeId {
   KILL_EVERYONE,
   PEACEFUL,
   KEEPER,
+  LIZARD,
 };
 ENUM_HASH(TribeId);
 
