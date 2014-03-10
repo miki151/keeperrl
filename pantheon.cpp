@@ -269,7 +269,8 @@ vector<Deity*> generateDeities() {
 }
 
 vector<Deity*> Deity::getDeities() {
-  static vector<Deity*> deities = generateDeities();
+  if (deities.empty())
+    deities = generateDeities();
   return deities;
 }
 
@@ -281,6 +282,7 @@ Deity* Deity::getDeity(DeityHabitat h) {
   return getDeities()[0];
 }
  
+vector<Deity*> Deity::deities;
 Deity::Deity(const string& n, Gender g, const vector<Epithet>& e, DeityHabitat h) :
     name(n), gender(g), epithets(e), habitat(h) {
 }

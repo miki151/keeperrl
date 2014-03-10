@@ -47,6 +47,7 @@ class CreatureAttributes {
   bool innocent = false;
   bool noBody = false;
   bool fireResistant = false;
+  bool poisonResistant = false;
   bool fireCreature = false;
   bool breathing = true;
   MustInitialize<bool> humanoid;

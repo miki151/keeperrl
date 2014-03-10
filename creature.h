@@ -245,7 +245,13 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   SERIALIZATION_DECL(Creature);
 
+  template <class Archive>
+  static void serializeAll(Archive& ar) {
+    ar & defaultCreature;
+  }
+
   private:
+  static PCreature defaultCreature;
   Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool avoidEnemies);
   double getInventoryWeight() const;
   Item* getAmmo() const;

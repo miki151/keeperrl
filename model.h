@@ -81,11 +81,9 @@ class Model : public EventListener {
   double lastTick = -1000;
   map<tuple<StairDirection, StairKey, Level*>, Level*> levelLinks;
   unique_ptr<Collective> collective;
-  bool elvesDead = false;
-  bool humansDead = false;
-  bool dwarvesDead = false;
   bool won = false;
   bool addHero = false;
+  bool adventurer = false;
 };
 
 #endif

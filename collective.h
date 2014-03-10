@@ -71,7 +71,6 @@ class Collective : public CreatureView, public EventListener {
   void learnLocation(const Location* loc);
 
   void render(View*);
-  void possess(const Creature*, View*);
 
   bool isTurnBased();
   void retire();
@@ -120,6 +119,8 @@ class Collective : public CreatureView, public EventListener {
   SERIALIZATION_DECL(Collective);
 
   private:
+  void unpossess();
+  void possess(const Creature*, View*);
   void handleSelection(Vec2 pos, bool rectangle);
   struct BuildInfo {
     struct SquareInfo {

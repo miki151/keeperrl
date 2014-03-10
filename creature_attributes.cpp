@@ -28,6 +28,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(innocent)
     & BOOST_SERIALIZATION_NVP(noBody)
     & BOOST_SERIALIZATION_NVP(fireResistant)
+    & BOOST_SERIALIZATION_NVP(poisonResistant)
     & BOOST_SERIALIZATION_NVP(fireCreature)
     & BOOST_SERIALIZATION_NVP(breathing)
     & BOOST_SERIALIZATION_NVP(humanoid)

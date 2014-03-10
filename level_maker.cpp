@@ -1518,11 +1518,10 @@ MakerQueue* village(CreatureFactory factory, int numCreatures, Optional<Creature
   return queue;
 }
 
-MakerQueue* cottage(CreatureFactory factory, int numCreatures, Tribe* tribe, Location* loc) {
+MakerQueue* cottage(CreatureFactory factory, int numCreatures, Location* loc,
+    const map<SquareType, pair<int, int> >& featureCount = {{ SquareType::CHEST, make_pair(4, 9) },
+      { SquareType::BED, make_pair(2, 4) }}) {
   MakerQueue* queue = new MakerQueue();
-  map<SquareType, pair<int, int> > featureCount { 
-      { SquareType::CHEST, make_pair(4, 9) },
-      { SquareType::BED, make_pair(2, 4) }};
   queue->addMaker(new Empty(SquareType::GRASS));
   vector<LevelMaker*> insideMakers {
       new DungeonFeatures(new TypePredicate(SquareType::FLOOR), featureCount)};
@@ -1679,7 +1678,10 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
               settlement.tribe);
           break;
       case SettlementType::COTTAGE:
-          queue = cottage(settlement.factory, settlement.numCreatures, settlement.tribe, settlement.location); break;
+          queue = cottage(settlement.factory, settlement.numCreatures, settlement.location); break;
+      case SettlementType::WITCH_HOUSE:
+          queue = cottage(settlement.factory, settlement.numCreatures, settlement.location,
+              {{ SquareType::LABORATORY, {2, 5}}}); break;
     }
     if (settlement.tribe == Tribes::get(TribeId::ELVEN)) {
     //  queue->addMaker(new StartingPos(new TypePredicate(SquareType::GRASS)));
@@ -1703,16 +1705,12 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   Location* banditLocation = new Location("bandit hideout", "The bandits have robbed many travelers and townsfolk.");
   Quests::get(QuestId::BANDITS)->setLocation(banditLocation);
   LevelMaker* bandits = cottage(CreatureFactory::singleType(Tribes::get(TribeId::BANDIT), CreatureId::BANDIT),
-      Random.getRandom(4, 7), Tribes::get(TribeId::BANDIT), banditLocation);
+      Random.getRandom(4, 7), banditLocation);
   subMakers.push_back(bandits);
   subSizes.emplace_back(12,8);
   predicates.push_back(lowlandPred);
   maxDistances[{elvenVillage, bandits}] = 100;
   minDistances[{elvenVillage, bandits}] = 50;
-  subMakers.push_back(cottage(CreatureFactory::singleType(Tribes::get(TribeId::BANDIT), CreatureId::WITCH), 1,
-        Tribes::get(TribeId::BANDIT), new Location()));
-  subSizes.emplace_back(10, 10);
-  predicates.push_back(lowlandPred);
   int numCemeteries = 1;
   for (int i : Range(numCemeteries)) {
     Location* loc = new Location("old cemetery", "Terrible evil is said to be lurking there.");
@@ -1800,8 +1798,11 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
               settlement.tribe);
           break;
       case SettlementType::COTTAGE:
-          queue = cottage(settlement.factory, settlement.numCreatures, settlement.tribe, settlement.location);
+          queue = cottage(settlement.factory, settlement.numCreatures, settlement.location);
           cottages.push_back(queue);
+      case SettlementType::WITCH_HOUSE:
+          queue = cottage(settlement.factory, settlement.numCreatures, settlement.location,
+              {{ SquareType::LABORATORY, {2, 5}}}); break;
           break;
     }
     minDistances[{startingPos, queue}] = 50;

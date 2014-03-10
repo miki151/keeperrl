@@ -47,12 +47,18 @@ class Deity {
   DeityHabitat getHabitat() const;
   void onPrayer(Creature* c);
 
-  static vector<Deity*> getDeities();
   static Deity* getDeity(DeityHabitat);
 
   SERIALIZATION_DECL(Deity);
 
+  template <class Archive>
+  static void serializeAll(Archive& ar) {
+    ar & deities;
+  }
+
   private:
+  static vector<Deity*> getDeities();
+  static vector<Deity*> deities;
   Deity(Deity&) {}
   string name;
   Gender gender;

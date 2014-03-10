@@ -280,6 +280,7 @@ enum class SettlementType {
   CASTLE,
   CASTLE2,
   COTTAGE,
+  WITCH_HOUSE,
 };
 
 const static vector<ViewLayer> allLayers =

@@ -84,7 +84,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Creature);
 
-static PCreature defaultCreature;
+PCreature Creature::defaultCreature;
 
 void Creature::initialize() {
   defaultCreature.reset();
@@ -665,15 +665,19 @@ bool Creature::isInvisible() const {
 }
 
 void Creature::poison(double time) {
-  you(MsgType::ARE, "poisoned");
-  viewObject.setPoisoned(true);
-  poisoned.set(getTime() + time);
+  if (!poisonResistant) {
+    you(MsgType::ARE, "poisoned");
+    viewObject.setPoisoned(true);
+    poisoned.set(getTime() + time);
+  }
 }
 
 void Creature::curePoisoning() {
-  you(MsgType::ARE, "cured from poisoning");
-  viewObject.setPoisoned(false);
-  poisoned.unset();
+  if (poisoned) {
+    you(MsgType::ARE, "cured from poisoning");
+    viewObject.setPoisoned(false);
+    poisoned.unset();
+  }
 }
 
 bool Creature::isPoisoned() const {
@@ -1416,7 +1420,7 @@ void Creature::setOnFire(double amount) {
 }
 
 void Creature::poisonWithGas(double amount) {
-  if (breathing && !isNotLiving()) {
+  if (!poisonResistant && breathing && !isNotLiving()) {
     you(MsgType::ARE, "poisoned by the gas");
     bleed(amount / double(getAttr(AttrType::STRENGTH)));
   }

@@ -873,7 +873,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.type = ItemType::AMULET;
             i.price = 300;
             i.identifiable = true;
-            i.defense = 5 + maybePlusMinusOne(4); 
+            i.defense = 3 + maybePlusMinusOne(4); 
             i.weight = 0.3;)));
     case ItemId::FRIENDLY_ANIMALS_AMULET: return PItem(
         new AmuletOfEnemyCheck(ViewObject(amulet_ids[3], ViewLayer::ITEM, "Amulet"), 

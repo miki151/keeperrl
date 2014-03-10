@@ -1019,7 +1019,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.weight = 1000;
           c.wings = 2;
-          c.breathing = false;
+          c.poisonResistant = true;
           c.firstName = NameGenerator::demonNames.getNext();
           c.name = "dragon";);
     case CreatureId::KNIGHT: 
@@ -1291,8 +1291,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::BILE_DEMON;
           c.speed = 80;
           c.size = CreatureSize::LARGE;
-          c.strength = 19;
-          c.dexterity = 14;
+          c.strength = 20;
+          c.dexterity = 17;
           c.barehandedDamage = 6;
           c.humanoid = true;
           c.weight = 140;
@@ -1357,7 +1357,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.strength = 15;
           c.dexterity = 13;
           c.barehandedDamage = 10;
+          c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType::POISON;
+          c.poisonResistant = true;
           c.humanoid = true;
           c.weight = 50;
           c.chatReactionFriendly = "curses all humans";

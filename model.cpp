@@ -19,14 +19,14 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(lastTick)
     & BOOST_SERIALIZATION_NVP(levelLinks)
     & BOOST_SERIALIZATION_NVP(collective)
-    & BOOST_SERIALIZATION_NVP(elvesDead)
-    & BOOST_SERIALIZATION_NVP(humansDead)
-    & BOOST_SERIALIZATION_NVP(dwarvesDead)
     & BOOST_SERIALIZATION_NVP(won)
-    & BOOST_SERIALIZATION_NVP(addHero);
+    & BOOST_SERIALIZATION_NVP(addHero)
+    & BOOST_SERIALIZATION_NVP(adventurer);
   Skill::serializeAll(ar);
+  Deity::serializeAll(ar);
   Quests::serializeAll(ar);
   Tribes::serializeAll(ar);
+  Creature::serializeAll(ar);
   Statistics::serialize(ar, version);
 }
 
@@ -202,6 +202,7 @@ static void setHandicap(Tribe* tribe, bool easy) {
 Model* Model::heroModel(View* view) {
   Creature::noExperienceLevels();
   Model* m = new Model(view);
+  m->adventurer = true;
   vector<Location*> locations = getVillageLocations(4);
   Level* top = m->prepareTopLevel({
       {SettlementType::CASTLE, CreatureFactory::humanVillage(0.3), Random.getRandom(10, 20), CreatureId::AVATAR,
@@ -210,7 +211,10 @@ Model* Model::heroModel(View* view) {
           Random.getRandom(5, 10), CreatureId::LIZARDLORD,
           locations[1], Tribes::get(TribeId::LIZARD), {15, 15}, {}},
       {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.3), Random.getRandom(10, 20), CreatureId::ELF_LORD,
-          locations[2], Tribes::get(TribeId::ELVEN), {30, 20}, {}}});
+          locations[2], Tribes::get(TribeId::ELVEN), {30, 20}, {}},
+      {SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER),
+        CreatureId::WITCH), 1,
+    Nothing(), new Location(), nullptr, {10, 10}, {}}});
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(), {StairKey::DWARF}, {StairKey::DWARF}));
@@ -325,11 +329,12 @@ void Model::landHeroPlayer() {
   auto handicap = view->getNumber("Choose handicap", 20, 5);
   if (handicap)
     Tribes::get(TribeId::PLAYER)->setHandicap(*handicap);
+  adventurer = true;
 }
 
 string Model::getGameIdentifier() const {
-  if (collective && !getPlayer())
-    return *collective->getKeeper()->getFirstName();
+  if (!adventurer)
+    return *NOTNULL(collective.get())->getKeeper()->getFirstName();
   else
     return *NOTNULL(getPlayer())->getFirstName();
 }
@@ -361,6 +366,9 @@ Model* Model::collectiveModel(View* view) {
     settlements.push_back(
        {SettlementType::COTTAGE, cottageF[i % 2], Random.getRandom(3, 7), Nothing(), new Location(), cottageT[i % 2],
        {10, 10}, {}});
+  settlements.push_back({SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER),
+        CreatureId::WITCH), 1,
+    Nothing(), new Location(), nullptr, {10, 10}, {}});
   Level* top = m->prepareTopLevel2(settlements);
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),

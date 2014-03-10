@@ -201,6 +201,16 @@ Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
 const int basicImpCost = 20;
 const int minionLimit = 20;
 
+void Collective::unpossess() {
+  CHECK(possessed);
+  if (possessed->isPlayer())
+    possessed->popController();
+  ViewObject::setHallu(false);
+  possessed = nullptr;
+  team.clear();
+  gatheringTeam = false;
+  teamLevelChanges.clear();
+}
 
 void Collective::render(View* view) {
   if (retired)
@@ -221,11 +231,7 @@ void Collective::render(View* view) {
     } else {
       view->setTimeMilli(possessed->getTime() * 300);
       view->clearMessages();
-      ViewObject::setHallu(false);
-      possessed = nullptr;
-      team.clear();
-      gatheringTeam = false;
-      teamLevelChanges.clear();
+      unpossess();
     }
   }
   if (!possessed) {
@@ -245,6 +251,8 @@ bool Collective::isTurnBased() {
 }
 
 void Collective::retire() {
+  if (possessed)
+    unpossess();
   retired = true;
 }
 
@@ -1395,6 +1403,9 @@ void Collective::onAlarmEvent(const Level* l, Vec2 pos) {
   if (l == level) {
     alarmInfo.finishTime = getTime() + alarmTime;
     alarmInfo.position = pos;
+    for (Creature* c : minions)
+      if (c->isSleeping())
+        c->wakeUp();
   }
 }
 
