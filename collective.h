@@ -280,7 +280,7 @@ class Collective : public CreatureView, public EventListener {
   set<Vec2> myTiles;
   Level* level = nullptr;
   Creature* keeper = nullptr;
-  mutable map<const Level*, MapMemory>* memory;
+  mutable unique_ptr<map<const Level*, MapMemory>> memory;
   int currentButton = 0;
   bool gatheringTeam = false;
   vector<Creature*> team;

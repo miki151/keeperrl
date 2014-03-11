@@ -176,7 +176,7 @@ map<MinionTask, MinionTaskInfo> taskInfo {
 };
 
 Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
-  memory = new map<const Level*, MapMemory>;
+  memory.reset(new map<const Level*, MapMemory>);
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
   mySquares[SquareType::FLOOR].clear();
@@ -691,11 +691,11 @@ void Collective::unmarkItem(UniqueId id) {
 }
 
 const MapMemory& Collective::getMemory(const Level* l) const {
-  return (*memory)[l];
+  return (*memory.get())[l];
 }
 
 MapMemory& Collective::getMemory(const Level* l) {
-  return (*memory)[l];
+  return (*memory.get())[l];
 }
 
 static ViewObject getTrapObject(TrapType type) {
@@ -869,7 +869,7 @@ void Collective::possess(const Creature* cr, View* view) {
   if (c->isSleeping())
     c->wakeUp();
   freeFromGuardPost(c);
-  c->pushController(new Player(c, view, model, false, memory));
+  c->pushController(new Player(c, view, model, false, memory.get()));
   possessed = c;
   c->getLevel()->setPlayer(c);
 }
@@ -1271,6 +1271,11 @@ bool Collective::isDelayed(Vec2 pos) {
 }
 
 void Collective::tick() {
+  if (retired)
+    if (const Creature* c = level->getPlayer())
+      if (Random.roll(30) && !myTiles.count(c->getPosition()))
+        c->privateMessage("You sense horrible evil in the " + 
+            getCardinalName((keeper->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
   warning[int(Warning::MANA)] = mana < 100;
   warning[int(Warning::WOOD)] = numGold(ResourceId::WOOD) == 0;
   warning[int(Warning::DIGGING)] = mySquares.at(SquareType::FLOOR).empty();

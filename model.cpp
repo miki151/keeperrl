@@ -133,7 +133,7 @@ Model::~Model() {
 
 Level* Model::prepareTopLevel2(vector<SettlementInfo> settlements) {
   Level* top = buildLevel(
-      Level::Builder(180, 120, "Wilderness"),
+      Level::Builder(250, 250, "Wilderness"),
       LevelMaker::topLevel2(CreatureFactory::forrest(), settlements),
       true);
   return top;

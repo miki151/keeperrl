@@ -665,7 +665,7 @@ bool Creature::isInvisible() const {
 }
 
 void Creature::poison(double time) {
-  if (!poisonResistant) {
+  if (!poisonResistant && !isNotLiving()) {
     you(MsgType::ARE, "poisoned");
     viewObject.setPoisoned(true);
     poisoned.set(getTime() + time);
