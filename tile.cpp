@@ -427,7 +427,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ABYSS: return Tile('~', darkGray);
     case ViewId::DOOR: return Tile('|', brown);
     case ViewId::PLANNED_DOOR: return Tile('|', darkBrown);
-    case ViewId::DIG_ICON: return Tile(0x2692, lightGray, true);
+    case ViewId::DIG_ICON: return Tile(0x26cf, lightGray, true);
     case ViewId::SWORD: return Tile(')', lightGray);
     case ViewId::SPEAR: return Tile('/', lightGray);
     case ViewId::SPECIAL_SWORD: return Tile(')', yellow);

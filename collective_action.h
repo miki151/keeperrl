@@ -5,9 +5,10 @@
 
 class CollectiveAction {
   public:
-  enum Type { IDLE, GO_TO, RECT_SELECTION, POSSESS, BUTTON_RELEASE, ROOM_BUTTON, CREATURE_BUTTON,
+  enum Type { IDLE, BUILD, WORKSHOP, RECT_SELECTION, POSSESS, BUTTON_RELEASE, CREATURE_BUTTON,
       CREATURE_DESCRIPTION, GATHER_TEAM, CANCEL_TEAM, MARKET, TECHNOLOGY, DRAW_LEVEL_MAP, EXIT };
 
+  CollectiveAction(Type, Vec2 pos, int);
   CollectiveAction(Type, Vec2 pos);
   CollectiveAction(Type, int);
   CollectiveAction(Type, const Creature*);

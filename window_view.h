@@ -60,8 +60,10 @@ class WindowView: public View {
   void drawPlayerInfo();
   void drawPlayerStats(GameInfo::PlayerInfo&);
   void drawBandInfo();
+  void drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active, vector<Rectangle>& viewButtons);
   void drawBuildings(GameInfo::BandInfo& info);
   void drawTechnology(GameInfo::BandInfo& info);
+  void drawWorkshop(GameInfo::BandInfo& info);
   void drawMinions(GameInfo::BandInfo& info);
   void drawKeeperHelp();
   void drawHint(sf::Color color, const string& text);
@@ -99,6 +101,7 @@ class WindowView: public View {
     BUILDINGS,
     MINIONS,
     TECHNOLOGY,
+    WORKSHOP,
     KEY_MAPPING,
   };
   
@@ -127,7 +130,10 @@ class WindowView: public View {
 
   vector<Rectangle> bottomKeyButtons;
   vector<Rectangle> optionButtons;
-  vector<Rectangle> roomButtons;
+  vector<Rectangle> buildingButtons;
+  vector<Rectangle> workshopButtons;
+  int activeBuilding = 0;
+  int activeWorkshop = 0;
   vector<Rectangle> techButtons;
   vector<Rectangle> creatureGroupButtons;
   vector<Rectangle> creatureButtons;

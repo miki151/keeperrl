@@ -141,7 +141,6 @@ class View {
 
     class BandInfo {
       public:
-      string name;
       string warning;
       struct Button {
         ViewObject object;
@@ -151,7 +150,8 @@ class View {
         bool active;
         string help;
       };
-      vector<Button> buttons;
+      vector<Button> buildings;
+      vector<Button> workshop;
       string monsterHeader;
       vector<const Creature*> creatures;
       vector<const Creature*> enemies;
@@ -162,7 +162,6 @@ class View {
         string name;
       };
       vector<Resource> numGold;
-      int activeButton = 0;
       double time;
       bool gatheringTeam = false;
       vector<const Creature*> team;

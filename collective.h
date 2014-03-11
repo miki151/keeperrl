@@ -121,7 +121,6 @@ class Collective : public CreatureView, public EventListener {
   private:
   void unpossess();
   void possess(const Creature*, View*);
-  void handleSelection(Vec2 pos, bool rectangle);
   struct BuildInfo {
     struct SquareInfo {
       SquareType type;
@@ -155,7 +154,10 @@ class Collective : public CreatureView, public EventListener {
     }
 
   };
-  const static vector<Collective::BuildInfo> buildInfo;
+  void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
+  vector<View::GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
+  const static vector<BuildInfo> buildInfo;
+  const static vector<BuildInfo> workshopInfo;
 
   const static map<ResourceId, ResourceInfo> resourceInfo;
 
@@ -281,7 +283,6 @@ class Collective : public CreatureView, public EventListener {
   Level* level = nullptr;
   Creature* keeper = nullptr;
   mutable unique_ptr<map<const Level*, MapMemory>> memory;
-  int currentButton = 0;
   bool gatheringTeam = false;
   vector<Creature*> team;
   map<const Level*, Vec2> teamLevelChanges;

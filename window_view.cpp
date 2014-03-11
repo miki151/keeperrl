@@ -552,31 +552,35 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
   }
 }
 
-void WindowView::drawBuildings(GameInfo::BandInfo& info) {
+void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active, vector<Rectangle>& viewButtons) {
+  viewButtons.clear();
   int textX = renderer.getWidth() - rightBarText;
-  for (int i : All(info.buttons)) {
+  for (int i : All(buttons)) {
     int height = legendStartHeight + i * legendLineHeight;
-    drawViewObject(info.buttons[i].object, textX, height, currentTileLayout.sprites);
+    drawViewObject(buttons[i].object, textX, height, currentTileLayout.sprites);
     Color color = white;
-    if (i == info.activeButton)
+    if (i == active)
       color = green;
-    else if (!info.buttons[i].active)
+    else if (!buttons[i].active)
       color = lightGray;
-    string text = info.buttons[i].name + " " + info.buttons[i].count;
+    string text = buttons[i].name + " " + buttons[i].count;
     renderer.drawText(color, textX + 30, height, text);
- //   int posX = renderer.getWidth() - rightBarWidth + 60 + getTextLength(text);
-    if (info.buttons[i].cost) {
-      string costText = convertToString(info.buttons[i].cost->second);
+    if (buttons[i].cost) {
+      string costText = convertToString(buttons[i].cost->second);
       int posX = renderer.getWidth() - renderer.getTextLength(costText) - 10;
-      drawViewObject(info.buttons[i].cost->first, renderer.getWidth() - 45, height, currentTileLayout.sprites);
+      drawViewObject(buttons[i].cost->first, renderer.getWidth() - 45, height, currentTileLayout.sprites);
       renderer.drawText(color, posX, height, costText);
     }
-    roomButtons.emplace_back(textX, height,textX + 150, height + legendLineHeight);
-    if (!info.buttons[i].help.empty() && mousePos && mousePos->inRectangle(roomButtons.back()))
-      mapGui->drawHint(renderer, white, info.buttons[i].help);
+    viewButtons.emplace_back(textX, height,textX + 150, height + legendLineHeight);
+    if (!buttons[i].help.empty() && mousePos && mousePos->inRectangle(viewButtons.back()))
+      mapGui->drawHint(renderer, white, buttons[i].help);
   }
 }
   
+void WindowView::drawBuildings(GameInfo::BandInfo& info) {
+  drawButtons(info.buildings, activeBuilding, buildingButtons);
+}
+
 void WindowView::drawTechnology(GameInfo::BandInfo& info) {
   int textX = renderer.getWidth() - rightBarText;
   for (int i : All(info.techButtons)) {
@@ -586,6 +590,10 @@ void WindowView::drawTechnology(GameInfo::BandInfo& info) {
     renderer.drawText(white, textX + 20, height, info.techButtons[i].name);
     techButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
   }
+}
+
+void WindowView::drawWorkshop(GameInfo::BandInfo& info) {
+  drawButtons(info.workshop, activeWorkshop, workshopButtons);
 }
 
 void WindowView::drawKeeperHelp() {
@@ -626,19 +634,18 @@ void WindowView::drawBandInfo() {
   int marketX = resourceX + resourceSpacing * info.numGold.size();
  /* drawText(white, marketX, line1, "black market");
   marketButton = Rectangle(marketX, line1, marketX + getTextLength("market"), line1 + legendLineHeight);*/
-  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f4d6, L'?'};
+  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f4d6, 0x2692, L'?'};
   optionButtons.clear();
-  for (int i = 0; i < 4; ++i) {
-    int w = 60;
+  for (int i = 0; i < 5; ++i) {
+    int w = 55;
     int line = topBarHeight;
     int h = 45;
     int leftPos = renderer.getWidth() - rightBarText + 15;
-    renderer.drawText(i < 3 ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 35, i == int(collectiveOption) ? green : white,
+    renderer.drawText(i < 4 ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 35, i == int(collectiveOption) ? green : white,
         leftPos + i * w, line, optionSyms[i], true);
     optionButtons.emplace_back(leftPos + i * w - w / 2, line,
         leftPos + (i + 1) * w - w / 2, line + h);
   }
-  roomButtons.clear();
   techButtons.clear();
   int cnt = 0;
   creatureGroupButtons.clear();
@@ -655,6 +662,7 @@ void WindowView::drawBandInfo() {
     case CollectiveOption::BUILDINGS: drawBuildings(info); break;
     case CollectiveOption::KEY_MAPPING: drawKeeperHelp(); break;
     case CollectiveOption::TECHNOLOGY: drawTechnology(info); break;
+    case CollectiveOption::WORKSHOP: drawWorkshop(info); break;
   }
 }
 
@@ -1323,7 +1331,8 @@ CollectiveAction WindowView::getClick() {
       case Event::MouseButtonReleased :
           if (event.mouseButton.button == sf::Mouse::Left) {
             leftMouseButtonPressed = false;
-            return CollectiveAction(CollectiveAction::BUTTON_RELEASE);
+            if (collectiveOption == CollectiveOption::BUILDINGS)
+              return CollectiveAction(CollectiveAction::BUTTON_RELEASE, activeBuilding);
           }
           break;
       case Event::MouseMoved:
@@ -1331,8 +1340,9 @@ CollectiveAction WindowView::getClick() {
           if (leftMouseButtonPressed) {
             Vec2 goTo = mapLayout->projectOnMap(getMapViewBounds(), *mousePos);
             if (goTo != lastGoTo && mousePos->inRectangle(getMapViewBounds())) {
-              return CollectiveAction(Keyboard::isKeyPressed(Keyboard::LShift) ? CollectiveAction::RECT_SELECTION : 
-                  CollectiveAction::GO_TO, goTo);
+              if (collectiveOption == CollectiveOption::BUILDINGS)
+                return CollectiveAction(Keyboard::isKeyPressed(Keyboard::LShift) ? CollectiveAction::RECT_SELECTION : 
+                    CollectiveAction::BUILD, goTo, activeBuilding);
               lastGoTo = goTo;
             } else
               continue;
@@ -1365,10 +1375,15 @@ CollectiveAction WindowView::getClick() {
             for (int i : All(optionButtons))
               if (clickPos.inRectangle(optionButtons[i]))
                   collectiveOption = (CollectiveOption) i;
-            for (int i : All(roomButtons))
-              if (clickPos.inRectangle(roomButtons[i])) {
+            for (int i : All(buildingButtons))
+              if (clickPos.inRectangle(buildingButtons[i])) {
                 chosenCreature = "";
-                return CollectiveAction(CollectiveAction::ROOM_BUTTON, i);
+                activeBuilding = i;
+              }
+            for (int i : All(workshopButtons))
+              if (clickPos.inRectangle(workshopButtons[i])) {
+                chosenCreature = "";
+                activeWorkshop = i;
               }
             for (int i : All(creatureGroupButtons))
               if (clickPos.inRectangle(creatureGroupButtons[i])) {
@@ -1388,14 +1403,17 @@ CollectiveAction WindowView::getClick() {
             leftMouseButtonPressed = true;
             chosenCreature = "";
             if (clickPos.inRectangle(getMapViewBounds())) {
-              CollectiveAction::Type t;
+              Vec2 pos = mapLayout->projectOnMap(getMapViewBounds(), clickPos);
               if (collectiveOption == CollectiveOption::MINIONS)
-                t = CollectiveAction::POSSESS;
-              else if (Keyboard::isKeyPressed(Keyboard::LShift))
-                t = CollectiveAction::RECT_SELECTION;
-              else
-                t = CollectiveAction::GO_TO;
-              return CollectiveAction(t, mapLayout->projectOnMap(getMapViewBounds(), clickPos));
+                return CollectiveAction(CollectiveAction::POSSESS, pos);
+              if (collectiveOption == CollectiveOption::WORKSHOP)
+                return CollectiveAction(CollectiveAction::WORKSHOP, pos, activeWorkshop);
+              if (collectiveOption == CollectiveOption::BUILDINGS) {
+                if (Keyboard::isKeyPressed(Keyboard::LShift))
+                  return CollectiveAction(CollectiveAction::RECT_SELECTION, pos, activeBuilding);
+                else
+                  return CollectiveAction(CollectiveAction::BUILD, pos, activeBuilding);
+              }
             }
           }
           }

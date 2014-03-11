@@ -100,7 +100,6 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo(BuildInfo::DIG),
     BuildInfo({SquareType::STOCKPILE, ResourceId::GOLD, 0, "Storage"}),
     BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 5, "Treasure room"}),
-    BuildInfo({ResourceId::WOOD, 5, "Door", ViewId::DOOR}),
     BuildInfo({SquareType::BED, ResourceId::WOOD, 10, "Bed"}),
     BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::IRON, 20, "Training room"}),
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 20, "Library"}),
@@ -108,12 +107,16 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo({SquareType::WORKSHOP, ResourceId::IRON, 15, "Workshop"}),
     BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast cage"}, "Place it in the forest."),
     BuildInfo({SquareType::GRAVE, ResourceId::STONE, 20, "Graveyard"}),
-    BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
-    BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
-    BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}),
     BuildInfo(BuildInfo::DESTROY),
     BuildInfo(BuildInfo::IMP),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion."),
+};
+
+const vector<Collective::BuildInfo> Collective::workshopInfo {
+    BuildInfo({ResourceId::WOOD, 5, "Door", ViewId::DOOR}),
+    BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}),
+    BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}),
+    BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}),
 };
 
 vector<MinionType> minionTypes {
@@ -569,11 +572,10 @@ int Collective::numTotalTech() const {
   return ret;
 }
 
-void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
-  gameInfo.infoType = View::GameInfo::InfoType::BAND;
-  View::GameInfo::BandInfo& info = gameInfo.bandInfo;
-  info.name = "KeeperRL";
-  info.buttons.clear();
+typedef View::GameInfo::BandInfo::Button Button;
+
+vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const {
+  vector<Button> buttons;
   for (BuildInfo button : buildInfo) {
     switch (button.buildType) {
       case BuildInfo::SQUARE: {
@@ -581,7 +583,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
             Optional<pair<ViewObject, int>> cost;
             if (elem.cost > 0)
               cost = {getResourceViewObject(elem.resourceId), elem.cost};
-            info.buttons.push_back({
+            buttons.push_back({
                 SquareFactory::get(elem.type)->getViewObject(),
                 elem.name,
                 cost,
@@ -590,7 +592,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
            }
            break;
       case BuildInfo::DIG: {
-             info.buttons.push_back({
+             buttons.push_back({
                  ViewObject(ViewId::DIG_ICON, ViewLayer::LARGE_ITEM, ""),
                  "dig or cut tree", Nothing(), "", true});
            }
@@ -598,7 +600,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
       case BuildInfo::TRAP: {
              BuildInfo::TrapInfo& elem = button.trapInfo;
              int numTraps = getTrapItems(elem.type).size();
-             info.buttons.push_back({
+             buttons.push_back({
                  ViewObject(elem.viewId, ViewLayer::LARGE_ITEM, ""),
                  elem.name,
                  Nothing(),
@@ -609,7 +611,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
       case BuildInfo::DOOR: {
              BuildInfo::DoorInfo& elem = button.doorInfo;
              pair<ViewObject, int> cost = {getResourceViewObject(elem.resourceId), elem.cost};
-             info.buttons.push_back({
+             buttons.push_back({
                  ViewObject(elem.viewId, ViewLayer::LARGE_ITEM, ""),
                  elem.name,
                  cost,
@@ -619,7 +621,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
            break;
       case BuildInfo::IMP: {
            pair<ViewObject, int> cost = {ViewObject::mana(), getImpCost()};
-           info.buttons.push_back({
+           buttons.push_back({
                ViewObject(ViewId::IMP, ViewLayer::CREATURE, ""),
                "Imp",
                cost,
@@ -627,18 +629,25 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
                getImpCost() <= mana});
            break; }
       case BuildInfo::DESTROY:
-           info.buttons.push_back({
+           buttons.push_back({
                ViewObject(ViewId::DESTROY_BUTTON, ViewLayer::CREATURE, ""), "Remove construction", Nothing(), "",
                    true});
            break;
       case BuildInfo::GUARD_POST:
-           info.buttons.push_back({
+           buttons.push_back({
                ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", Nothing(), "", true});
            break;
     }
-    info.buttons.back().help = button.help;
+    buttons.back().help = button.help;
   }
-  info.activeButton = currentButton;
+  return buttons;
+}
+
+void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
+  gameInfo.infoType = View::GameInfo::InfoType::BAND;
+  View::GameInfo::BandInfo& info = gameInfo.bandInfo;
+  info.buildings = fillButtons(buildInfo);
+  info.workshop = fillButtons(workshopInfo);
   info.tasks = minionTaskStrings;
   for (Creature* c : minions)
     if (isInCombat(c))
@@ -939,7 +948,6 @@ void Collective::processInput(View* view) {
         if (action.getNum() == techIds.size() + 2)
           handleMarket(view);
         break;
-    case CollectiveAction::ROOM_BUTTON: currentButton = action.getNum(); break;
     case CollectiveAction::CREATURE_BUTTON: 
         if (!gatheringTeam)
           possess(action.getCreature(), view);
@@ -969,15 +977,18 @@ void Collective::processInput(View* view) {
         } else
           rectSelectCorner = action.getPosition();
         break;
-    case CollectiveAction::GO_TO:
-        handleSelection(action.getPosition(), false);
+    case CollectiveAction::BUILD:
+        handleSelection(action.getPosition(), buildInfo[action.getNum()], false);
+        break;
+    case CollectiveAction::WORKSHOP:
+        handleSelection(action.getPosition(), workshopInfo[action.getNum()], false);
         break;
     case CollectiveAction::BUTTON_RELEASE:
         selection = NONE;
         if (rectSelectCorner && rectSelectCorner2) {
-          handleSelection(*rectSelectCorner, true);
+          handleSelection(*rectSelectCorner, buildInfo[action.getNum()], true);
           for (Vec2 v : Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2}))
-            handleSelection(v, true);
+            handleSelection(v, buildInfo[action.getNum()], true);
         }
         rectSelectCorner = Nothing();
         rectSelectCorner2 = Nothing();
@@ -988,10 +999,10 @@ void Collective::processInput(View* view) {
   }
 }
 
-void Collective::handleSelection(Vec2 pos, bool rectangle) {
+void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle) {
   if (!pos.inRectangle(level->getBounds()))
     return;
-  switch (buildInfo[currentButton].buildType) {
+  switch (building.buildType) {
     case BuildInfo::IMP:
         if (mana >= getImpCost() && selection == NONE && !rectangle) {
           selection = SELECT;
@@ -1008,7 +1019,7 @@ void Collective::handleSelection(Vec2 pos, bool rectangle) {
         }
         break;
     case BuildInfo::TRAP: {
-        TrapType trapType = buildInfo[currentButton].trapInfo.type;
+        TrapType trapType = building.trapInfo.type;
         if (getTrapItems(trapType).size() > 0 && canPlacePost(pos) && myTiles.count(pos)) {
           traps[pos] = {trapType, false, 0};
           trapMap[trapType].push_back(pos);
@@ -1017,7 +1028,7 @@ void Collective::handleSelection(Vec2 pos, bool rectangle) {
       }
       break;
     case BuildInfo::DOOR: {
-        BuildInfo::DoorInfo info = buildInfo[currentButton].doorInfo;
+        BuildInfo::DoorInfo info = building.doorInfo;
         if (numGold(info.resourceId) >= info.cost && canBuildDoor(pos)){
           doors[pos] = {{info.resourceId, info.cost}, false, false};
           updateTraps();
@@ -1072,7 +1083,7 @@ void Collective::handleSelection(Vec2 pos, bool rectangle) {
           taskMap.unmarkSquare(pos);
           selection = DESELECT;
         } else {
-          BuildInfo::SquareInfo info = buildInfo[currentButton].squareInfo;
+          BuildInfo::SquareInfo info = building.squareInfo;
           bool diggingSquare = !getMemory(level).hasViewIndex(pos) ||
             (level->getSquare(pos)->canConstruct(info.type));
           if (!taskMap.isMarked(pos) && selection != DESELECT && diggingSquare && 
