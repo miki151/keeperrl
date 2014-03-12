@@ -44,17 +44,36 @@ bool MinionEquipment::needs(const Creature* c, const Item* it) {
       || type == COMBAT_ITEM;
 }
 
+const Creature* MinionEquipment::getOwner(const Item* it) const {
+  if (owners.count(it->getUniqueId()))
+    return owners.at(it->getUniqueId());
+  else
+    return nullptr;
+}
+
+void MinionEquipment::discard(const Item* it) {
+  owners.erase(it->getUniqueId());
+}
+
+void MinionEquipment::own(const Creature* c, const Item* it) {
+  UniqueId id = it->getUniqueId();
+ /* if (owners.count(id))
+    removeElement(equipment.at(owners.at(id)), id);*/
+  owners[id] = c;
+//  equipment[c].push_back(id);
+}
+
 bool MinionEquipment::needsItem(const Creature* c, const Item* it) {
-  if (owners.count(it->getUniqueId())) {
-    if (owners.at(it->getUniqueId()) == c) {
+  if (const Creature* owner = getOwner(it)) {
+    if (c == owner) {
       if (!needs(c, it)) {
-        owners.erase(it->getUniqueId());
+        discard(it);
         return false;
       }
       return true;
     }
-    if (owners.at(it->getUniqueId())->isDead())
-      owners.erase(it->getUniqueId());
+    if (owner->isDead())
+      discard(it);
     else
       return false;
   }

@@ -185,6 +185,7 @@ class Collective : public CreatureView, public EventListener {
   MoveInfo getPossessedMove(Creature* c);
   MoveInfo getBacktrackMove(Creature* c);
   MoveInfo getAlarmMove(Creature* c);
+  MoveInfo getDropItems(Creature *c);
 
   bool isDownstairsVisible() const;
   struct CostInfo {
@@ -205,6 +206,10 @@ class Collective : public CreatureView, public EventListener {
   bool canPlacePost(Vec2 pos) const;
   void freeFromGuardPost(const Creature*);
   void handleMarket(View*, int prevItem = 0);
+  void getEquipmentItem(View* view, ItemPredicate predicate);
+  vector<Item*> getAllItems(ItemPredicate predicate);
+  const Item* chooseEquipmentItem(View* view, ItemPredicate predicate);
+  void handleEquipment(View* view, Creature* creature, int prevItem = 0);
   void handleNecromancy(View*, int prevItem = 0, bool firstTime = true);
   void handleMatterAnimation(View*);
   void handleBeastTaming(View*);

@@ -314,6 +314,78 @@ static vector<ItemId> marketItems {
   ItemId::FRIENDLY_ANIMALS_AMULET,
 };
 
+void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
+  if (!creature->isHumanoid()) {
+    view->presentText("", creature->getTheName() + " can't use any equipment.");
+    return;
+  }
+  vector<EquipmentSlot> slots;
+  for (auto slot : Equipment::slotTitles)
+    slots.push_back(slot.first);
+  vector<View::ListElem> list;
+  vector<Item*> ownedItems = getAllItems([this, creature](const Item* it) {
+      return minionEquipment.getOwner(it) == creature; });
+  vector<Item*> slotItems;
+  for (auto slot : slots) {
+    list.push_back(View::ListElem(Equipment::slotTitles.at(slot), View::TITLE));
+    Item* item = nullptr;
+    for (Item* it : ownedItems)
+      if (it->canEquip() && it->getEquipmentSlot() == slot)
+        item = it;
+    slotItems.push_back(item);
+    if (item)
+      list.push_back(item->getNameAndModifiers() + (creature->getEquipment().isEquiped(item) 
+            ? " (equiped)" : " (pending)"));
+    else
+      list.push_back("[Nothing]");
+  }
+  Optional<int> newIndex = model->getView()->chooseFromList(creature->getName() + "'s equipment", list, prevItem);
+  if (!newIndex)
+    return;
+  int index = *newIndex;
+  if (Item* item = slotItems[index])
+    minionEquipment.discard(item);
+  else {
+    const Item* chosenItem = chooseEquipmentItem(view, [&](const Item* it) {
+        return minionEquipment.getOwner(it) != creature
+            && it->canEquip() && it->getEquipmentSlot() == slots[index]; });
+    if (chosenItem)
+      minionEquipment.own(creature, chosenItem);
+  }
+  handleEquipment(view, creature, index);
+}
+
+vector<Item*> Collective::getAllItems(ItemPredicate predicate) {
+  vector<Item*> allItems;
+  for (Vec2 v : mySquares.at(SquareType::STOCKPILE))
+    append(allItems, level->getSquare(v)->getItems(predicate));
+  for (Creature* c : minions)
+    append(allItems, c->getEquipment().getItems(predicate));
+  return allItems;
+}
+
+const Item* Collective::chooseEquipmentItem(View* view, ItemPredicate predicate) {
+  vector<View::ListElem> options { View::ListElem("Free:", View::TITLE) };
+  vector<View::ListElem> options2 { View::ListElem("Used:", View::TITLE) };
+  vector<Item*> availableItems;
+  vector<Item*> usedItems;
+  for (Item* item : getAllItems(predicate))
+    if (const Creature* c = minionEquipment.getOwner(item)) {
+      options2.emplace_back(item->getNameAndModifiers() + " owned by " + c->getAName());
+      usedItems.push_back(item);
+    } else
+      availableItems.push_back(item);
+  vector<Item*> availableStacked;
+  for (auto elem : Item::stackItems(availableItems)) {
+    options.emplace_back(elem.first);
+    availableStacked.push_back(elem.second.front());
+  }
+  auto index = view->chooseFromList("Choose an item to equip: ", concat(options, options2));
+  if (!index)
+    return nullptr;
+  return concat(availableStacked, usedItems)[*index];
+}
+
 void Collective::handleMarket(View* view, int prevItem) {
   if (mySquares[SquareType::STOCKPILE].empty()) {
     view->presentText("Information", "You need a storage room to use the market.");
@@ -950,7 +1022,7 @@ void Collective::processInput(View* view) {
         break;
     case CollectiveAction::CREATURE_BUTTON: 
         if (!gatheringTeam)
-          possess(action.getCreature(), view);
+          handleEquipment(view, const_cast<Creature*>(action.getCreature()));
         else {
           if (contains(team, action.getCreature()))
             removeElement(team, action.getCreature());
@@ -1519,6 +1591,18 @@ MoveInfo Collective::getAlarmMove(Creature* c) {
   return NoMove;
 }
 
+MoveInfo Collective::getDropItems(Creature *c) {
+  if (myTiles.count(c->getPosition())) {
+    vector<Item*> items = c->getEquipment().getItems([this, c](const Item* item) {
+        return minionEquipment.isItemUseful(item) && minionEquipment.getOwner(item) != c; });
+    if (!items.empty())
+      return {1.0, [=] {
+        c->drop(items);
+      }};
+  }
+  return NoMove;   
+}
+
 MoveInfo Collective::getMinionMove(Creature* c) {
   if (MoveInfo possessedMove = getPossessedMove(c))
     return possessedMove;
@@ -1527,6 +1611,8 @@ MoveInfo Collective::getMinionMove(Creature* c) {
   if (c != keeper)
     if (MoveInfo alarmMove = getAlarmMove(c))
       return alarmMove;
+  if (MoveInfo dropMove = getDropItems(c))
+    return dropMove;
   if (contains(minionByType.at(MinionType::BEAST), c))
     return getBeastMove(c);
   if (MoveInfo guardPostMove = getGuardPostMove(c))
@@ -1695,6 +1781,8 @@ void Collective::addCreature(Creature* c, MinionType type) {
     imps.push_back(c);
  //   c->addEnemyVision([this](const Creature* c) { return canSee(c); });
   }
+  for (const Item* item : c->getEquipment().getItems())
+    minionEquipment.own(c, item);
 }
 
 void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {

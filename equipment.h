@@ -18,6 +18,8 @@ class Equipment : public Inventory {
 
   SERIALIZATION_DECL(Equipment);
 
+  static map<EquipmentSlot, string> slotTitles;
+
   private:
   map<EquipmentSlot, Item*> items;
 };

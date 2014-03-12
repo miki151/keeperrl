@@ -12,6 +12,9 @@ class MinionEquipment {
   bool needsItem(const Creature*, const Item*);
 
   bool isItemUseful(const Item*) const;
+  const Creature* getOwner(const Item*) const;
+  void own(const Creature*, const Item*);
+  void discard(const Item*);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

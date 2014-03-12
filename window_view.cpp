@@ -594,6 +594,8 @@ void WindowView::drawTechnology(GameInfo::BandInfo& info) {
 
 void WindowView::drawWorkshop(GameInfo::BandInfo& info) {
   drawButtons(info.workshop, activeWorkshop, workshopButtons);
+  int textX = renderer.getWidth() - rightBarText;
+  int textY = legendLineHeight * (info.workshop.size() + 1) + legendStartHeight;
 }
 
 void WindowView::drawKeeperHelp() {
@@ -628,12 +630,10 @@ void WindowView::drawBandInfo() {
   for (int i : All(info.numGold)) {
     renderer.drawText(white, resourceX + resourceSpacing * i, line1, convertToString<int>(info.numGold[i].count));
     drawViewObject(info.numGold[i].viewObject, resourceX - 12 + resourceSpacing * i, line1,currentTileLayout.sprites);
-    if (mousePos && mousePos->inRectangle(Rectangle(resourceX + resourceSpacing * i - 20, line1, resourceX + resourceSpacing * (i + 1) - 20, line1 + 30)))
+    if (mousePos && mousePos->inRectangle(Rectangle(resourceX + resourceSpacing * i - 20, line1,
+            resourceX + resourceSpacing * (i + 1) - 20, line1 + 30)))
       mapGui->drawHint(renderer, white, info.numGold[i].name);
   }
-  int marketX = resourceX + resourceSpacing * info.numGold.size();
- /* drawText(white, marketX, line1, "black market");
-  marketButton = Rectangle(marketX, line1, marketX + getTextLength("market"), line1 + legendLineHeight);*/
   sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f4d6, 0x2692, L'?'};
   optionButtons.clear();
   for (int i = 0; i < 5; ++i) {
@@ -1353,8 +1353,6 @@ CollectiveAction WindowView::getClick() {
           if (event.mouseButton.button == sf::Mouse::Right)
             chosenCreature = "";
           if (event.mouseButton.button == sf::Mouse::Left) {
- /*           if (marketButton && clickPos.inRectangle(*marketButton))
-              return CollectiveAction(CollectiveAction::MARKET);*/
             for (int i : All(techButtons))
               if (clickPos.inRectangle(techButtons[i]))
                 return CollectiveAction(CollectiveAction::TECHNOLOGY, i);

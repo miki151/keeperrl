@@ -78,14 +78,6 @@ map<EquipmentSlot, string> slotSuffixes = {
     {EquipmentSlot::BOOTS, "(being worn)"},
     {EquipmentSlot::AMULET, "(being worn)"}};
 
-map<EquipmentSlot, string> slotTitles = {
-    {EquipmentSlot::WEAPON, "Weapon"},
-    {EquipmentSlot::RANGED_WEAPON, "Ranged weapon"},
-    {EquipmentSlot::HELMET, "Helmet"},
-    {EquipmentSlot::BODY_ARMOR, "Body armor"},
-    {EquipmentSlot::BOOTS, "Boots"},
-    {EquipmentSlot::AMULET, "Amulet"}};
-
 void Player::onBump(Creature*) {
   FAIL << "Shouldn't call onBump on a player";
 }
@@ -319,14 +311,14 @@ void Player::equipmentAction() {
     return;
   }
   vector<EquipmentSlot> slots;
-  for (auto slot : slotTitles)
+  for (auto slot : Equipment::slotTitles)
     slots.push_back(slot.first);
   int index = 0;
   creature->startEquipChain();
   while (1) {
     vector<View::ListElem> list;
     for (auto slot : slots) {
-      list.push_back(View::ListElem(slotTitles.at(slot), View::TITLE));
+      list.push_back(View::ListElem(Equipment::slotTitles.at(slot), View::TITLE));
       Item* item = creature->getEquipment().getItem(slot);
       if (item)
         list.push_back(item->getNameAndModifiers());
@@ -351,10 +343,7 @@ void Player::equipmentAction() {
           && item->getEquipmentSlot() == slot;});
       if (items.size() == 0) {
         continue;
- //       finishEquipChain();
- //       return;
       }
-      //  messageBuffer.addMessage("You equip " + items[0]->getTheName());
       if (creature->canEquip(items[0])) {
         creature->equip(items[0]);
       }

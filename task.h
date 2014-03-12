@@ -24,6 +24,7 @@ class Task : public UniqueEntity {
   static PTask applySquare(Collective*, set<Vec2> squares);
   static PTask eat(Collective*, set<Vec2> hatcherySquares);
   static PTask equipItem(Collective* col, Vec2 position, Item* item);
+  static PTask unEquipItem(Collective* col, Vec2 position, Item* item);
   static PTask pickItem(Collective* col, Vec2 position, vector<Item*> items);
 
   SERIALIZATION_DECL(Task);

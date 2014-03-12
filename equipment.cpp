@@ -2,6 +2,15 @@
 
 #include "equipment.h"
 
+
+map<EquipmentSlot, string> Equipment::slotTitles = {
+  {EquipmentSlot::WEAPON, "Weapon"},
+  {EquipmentSlot::RANGED_WEAPON, "Ranged weapon"},
+  {EquipmentSlot::HELMET, "Helmet"},
+  {EquipmentSlot::BODY_ARMOR, "Body armor"},
+  {EquipmentSlot::BOOTS, "Boots"},
+  {EquipmentSlot::AMULET, "Amulet"}};
+
 template <class Archive> 
 void Equipment::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(Inventory) & BOOST_SERIALIZATION_NVP(items);
