@@ -9,7 +9,7 @@ class Item;
 
 class MinionEquipment {
   public:
-  bool needsItem(const Creature*, const Item*);
+  bool canTakeItem(const Creature*, const Item*);
 
   bool isItemUseful(const Item*) const;
   const Creature* getOwner(const Item*) const;

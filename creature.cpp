@@ -474,7 +474,7 @@ void Creature::finishEquipChain() {
   numEquipActions = 0;
 }
 
-bool Creature::canEquip(const Item* item) const {
+bool Creature::canEquipIfEmptySlot(const Item* item) const {
   if (!isHumanoid())
     return false;
   if (numGoodArms() == 0) {
@@ -493,7 +493,11 @@ bool Creature::canEquip(const Item* item) const {
     privateMessage("You need two hands to wield " + item->getAName() + "!");
     return false;
   }
-  return item->canEquip() && equipment.getItem(item->getEquipmentSlot()) == nullptr;
+  return item->canEquip();
+}
+
+bool Creature::canEquip(const Item* item) const {
+  return canEquipIfEmptySlot(item) && equipment.getItem(item->getEquipmentSlot()) == nullptr;
 }
 
 bool Creature::canUnequip(const Item* item) const {

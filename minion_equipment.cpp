@@ -22,7 +22,7 @@ void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(MinionEquipment);
 
 Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
-  if (contains({ItemType::WEAPON, ItemType::ARMOR}, it->getType()))
+  if (it->canEquip())
     return MinionEquipment::ARMOR;
   if (contains({ItemType::RANGED_WEAPON, ItemType::AMMO}, it->getType()))
     return MinionEquipment::ARCHERY;
@@ -38,10 +38,13 @@ bool MinionEquipment::isItemUseful(const Item* it) const {
 }
 
 bool MinionEquipment::needs(const Creature* c, const Item* it) {
-  EquipmentType type = *getEquipmentType(it);
-  return c->canEquip(it) || (type == ARCHERY && c->hasSkill(Skill::archery) && (c->canEquip(it) || it->getType() == ItemType::AMMO))
+  if (Optional<EquipmentType> type = *getEquipmentType(it))
+    return c->canEquip(it)
+      || (type == ARCHERY && c->hasSkill(Skill::archery) && (c->canEquip(it) || it->getType() == ItemType::AMMO))
       || (type == HEALING && !c->isNotLiving()) 
       || type == COMBAT_ITEM;
+  else
+    return false;
 }
 
 const Creature* MinionEquipment::getOwner(const Item* it) const {
@@ -63,7 +66,7 @@ void MinionEquipment::own(const Creature* c, const Item* it) {
 //  equipment[c].push_back(id);
 }
 
-bool MinionEquipment::needsItem(const Creature* c, const Item* it) {
+bool MinionEquipment::canTakeItem(const Creature* c, const Item* it) {
   if (const Creature* owner = getOwner(it)) {
     if (c == owner) {
       if (!needs(c, it)) {
@@ -79,10 +82,6 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it) {
   }
   if (!getEquipmentType(it) || !c->isHumanoid())
     return false;
-  if (needs(c, it)) {
-    owners[it->getUniqueId()] = c;
-    return true;
-  } else
-    return false;
+  return needs(c, it);
 }
 
