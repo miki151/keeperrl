@@ -350,8 +350,10 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
     list.push_back(View::ListElem(Equipment::slotTitles.at(slot), View::TITLE));
     Item* item = nullptr;
     for (Item* it : ownedItems)
-      if (it->canEquip() && it->getEquipmentSlot() == slot)
+      if (it->canEquip() && it->getEquipmentSlot() == slot) {
+        CHECK(!item);
         item = it;
+      }
     slotItems.push_back(item);
     if (item)
       list.push_back(item->getNameAndModifiers() + (creature->getEquipment().isEquiped(item) 
@@ -366,7 +368,8 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
   if (Item* item = slotItems[index])
     minionEquipment.discard(item);
   else {
-    const Item* chosenItem = chooseEquipmentItem(view, [&](const Item* it) {
+    Item* currentItem = creature->getEquipment().getItem(slots[index]);
+    const Item* chosenItem = chooseEquipmentItem(view, currentItem, [&](const Item* it) {
         return minionEquipment.getOwner(it) != creature
             && creature->canEquipIfEmptySlot(it) && it->getEquipmentSlot() == slots[index]; });
     if (chosenItem) {
@@ -378,25 +381,34 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
 
 vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
   vector<Item*> allItems;
-  for (Vec2 v : mySquares.at(SquareType::STOCKPILE))
+  for (Vec2 v : myTiles)
     append(allItems, level->getSquare(v)->getItems(predicate));
   if (includeMinions)
-    for (Creature* c : minions)
+    for (Creature* c : creatures)
       append(allItems, c->getEquipment().getItems(predicate));
   return allItems;
 }
 
-const Item* Collective::chooseEquipmentItem(View* view, ItemPredicate predicate) const {
-  vector<View::ListElem> options { View::ListElem("Free:", View::TITLE) };
+const Item* Collective::chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate) const {
+  vector<View::ListElem> options;
+  vector<Item*> currentItemVec;
+  if (currentItem) {
+    currentItemVec.push_back(currentItem);
+    options.push_back(View::ListElem("Currently equiped: ", View::TITLE));
+    options.push_back(currentItem->getNameAndModifiers());
+  }
+  options.emplace_back("Free:", View::TITLE);
   vector<View::ListElem> options2 { View::ListElem("Used:", View::TITLE) };
   vector<Item*> availableItems;
   vector<Item*> usedItems;
   for (Item* item : getAllItems(predicate))
-    if (const Creature* c = minionEquipment.getOwner(item)) {
-      options2.emplace_back(item->getNameAndModifiers() + " owned by " + c->getAName());
-      usedItems.push_back(item);
-    } else
-      availableItems.push_back(item);
+    if (item != currentItem) {
+      if (const Creature* c = minionEquipment.getOwner(item)) {
+        options2.emplace_back(item->getNameAndModifiers() + " owned by " + c->getAName());
+        usedItems.push_back(item);
+      } else
+        availableItems.push_back(item);
+    }
   vector<Item*> availableStacked;
   for (auto elem : Item::stackItems(availableItems)) {
     options.emplace_back(elem.first);
@@ -405,7 +417,7 @@ const Item* Collective::chooseEquipmentItem(View* view, ItemPredicate predicate)
   auto index = view->chooseFromList("Choose an item to equip: ", concat(options, options2));
   if (!index)
     return nullptr;
-  return concat(availableStacked, usedItems)[*index];
+  return concat<Item*>({currentItemVec, availableStacked, usedItems})[*index];
 }
 
 void Collective::handleMarket(View* view, int prevItem) {

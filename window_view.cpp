@@ -977,13 +977,16 @@ bool WindowView::yesOrNoPrompt(const string& message) {
 
 Optional<int> WindowView::getNumber(const string& title, int max, int increments) {
   vector<View::ListElem> options;
-  for (int i = 0; i <= max; i += increments)
+  vector<int> numbers;
+  for (int i = 0; i <= max; i += increments) {
     options.push_back(convertToString(i));
+    numbers.push_back(i);
+  }
   Optional<int> res = WindowView::chooseFromList(title, options);
   if (!res)
     return Nothing();
   else
-    return 1 + *res;
+    return 1 + numbers[*res];
 }
 
 int getMaxLines();

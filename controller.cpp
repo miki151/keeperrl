@@ -6,7 +6,8 @@
 
 template <class Archive> 
 void DoNothingController::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(creature);
+  ar & SUBCLASS(Controller)
+     & BOOST_SERIALIZATION_NVP(creature);
 }
 
 SERIALIZABLE(DoNothingController);
