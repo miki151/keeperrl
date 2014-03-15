@@ -13,6 +13,15 @@ class LoggingView : public T {
       T::close();
     }
 
+    virtual CollectiveAction getClick(double time) override {
+      CollectiveAction res = T::getClick(time);
+      if (res.getType() != CollectiveAction::IDLE) {
+        output << "getClick " << res << " " << time << endl;
+        output.flush();
+      }
+      return res;
+    }
+
     virtual Action getAction() override {
       Action res = T::getAction();
       output << "getAction " << res << endl;

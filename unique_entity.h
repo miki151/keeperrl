@@ -1,7 +1,7 @@
 #ifndef _UNIQUE_ENTITY_H
 #define _UNIQUE_ENTITY_H
 
-typedef int UniqueId;
+#include "enums.h"
 
 class UniqueEntity {
   public:

@@ -53,15 +53,18 @@ void Model::update(double totalTime) {
     collective->render(view);
   }
   do {
-    if (collective && !collective->isTurnBased()) {
-      // process a few times so events don't stack up when game is paused
-      for (int i : Range(10))
-        collective->processInput(view);
-    }
     Creature* creature = timeQueue.getNextCreature();
     CHECK(creature) << "No more creatures";
     Debug() << creature->getTheName() << " moving now";
     double time = creature->getTime();
+    if (collective && !collective->isTurnBased()) {
+      while (1) {
+        CollectiveAction action = view->getClick(time);
+        if (action.getType() == CollectiveAction::IDLE)
+          break;
+        collective->processInput(view, action);
+      }
+    }
     if (time > totalTime)
       return;
     if (time >= lastTick + 1) {

@@ -163,8 +163,8 @@ int main(int argc, char* argv[]) {
     messageBuffer.initialize(view);
     view->reset();
     auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
-        View::ListElem("Choose your profession:", View::TITLE), "Keeper", "Adventurer", "Adventurer vs. Keeper",
-        View::ListElem("Or simply:", View::TITLE), "Load a game", "Change options", "View high scores", "Quit"}, lastIndex);
+        View::ListElem("Choose your role:", View::TITLE), "Keeper", "Adventurer", "Adventurer vs. Keeper",
+        View::ListElem("Or simply:", View::TITLE), "Load a game", "Change settings", "View high scores", "Quit"}, lastIndex);
     if (!choice)
       continue;
     lastIndex = *choice;

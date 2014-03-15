@@ -54,7 +54,7 @@ class View {
   virtual Action getAction() = 0;
 
   /** Reads input in a non-blocking manner.*/
-  virtual CollectiveAction getClick() = 0;
+  virtual CollectiveAction getClick(double time) = 0;
 
   /** Returns whether a travel interrupt key is pressed at a given moment.*/
   virtual bool travelInterrupt() = 0;
@@ -155,7 +155,7 @@ class View {
       string monsterHeader;
       vector<const Creature*> creatures;
       vector<const Creature*> enemies;
-      map<const Creature*, string> tasks;
+      map<UniqueId, string> tasks;
       struct Resource {
         ViewObject viewObject;
         int count;

@@ -53,7 +53,7 @@ unordered_map<OptionId, vector<string>> valueNames {
 
 void Options::handle(View* view, OptionSet set, int lastIndex) {
   vector<View::ListElem> options;
-  options.emplace_back("Set options:", View::TITLE);
+  options.emplace_back("Change settings:", View::TITLE);
   for (OptionId option : optionSets.at(set))
     options.emplace_back(names.at(option) + "      " + valueNames.at(option)[getValue(option)]);
   options.emplace_back("Done");

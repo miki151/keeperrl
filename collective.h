@@ -47,7 +47,7 @@ class Collective : public CreatureView, public EventListener {
 
   void onConqueredLand(const string& name);
 
-  void processInput(View* view);
+  void processInput(View* view, CollectiveAction);
   void tick();
   void update(Creature*);
   MoveInfo getMove(Creature* c);
@@ -119,6 +119,7 @@ class Collective : public CreatureView, public EventListener {
   SERIALIZATION_DECL(Collective);
 
   private:
+  Creature* getCreature(UniqueId id);
   void unpossess();
   void possess(const Creature*, View*);
   struct BuildInfo {
@@ -282,8 +283,8 @@ class Collective : public CreatureView, public EventListener {
     void serialize(Archive& ar, const unsigned int version);
   };
   map<Vec2, DoorInfo> doors;
-  map<Creature*, MarkovChain<MinionTask>> minionTasks;
-  map<const Creature*, string> minionTaskStrings;
+  map<UniqueId, MarkovChain<MinionTask>> minionTasks;
+  map<UniqueId, string> minionTaskStrings;
   map<SquareType, set<Vec2>> mySquares;
   set<Vec2> myTiles;
   Level* level = nullptr;

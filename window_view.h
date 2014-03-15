@@ -39,7 +39,7 @@ class WindowView: public View {
   virtual Optional<int> getNumber(const string& title, int max, int increments = 1) override;
 
   virtual Action getAction() override;
-  virtual CollectiveAction getClick() override;
+  virtual CollectiveAction getClick(double time) override;
   virtual bool travelInterrupt() override;
   virtual int getTimeMilli() override;
   virtual void setTimeMilli(int) override;

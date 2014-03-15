@@ -1,6 +1,39 @@
 #ifndef _REPLAY_VIEW
 #define _REPLAY_VIEW
 
+class PushBackStream {
+  public:
+  PushBackStream(ifstream& in) : input(in) {}
+
+  template <class T>
+  PushBackStream& operator >> (T& elem) {
+    CHECK(pushed.empty());
+    input >> elem;
+    return *this;
+  }
+
+  PushBackStream& operator >> (string& elem) {
+    if (!pushed.empty()) {
+      elem = pushed;
+      pushed = "";
+    } else
+      input >> elem;
+    return *this;
+  }
+
+  void pushBack(const string& a) {
+    CHECK(pushed.empty());
+    pushed = a;
+  }
+
+  void close() {
+    input.close();
+  }
+
+  private:
+  string pushed;
+  ifstream& input;
+};
 
 template <class T>
 class ReplayView : public T {
@@ -11,6 +44,47 @@ class ReplayView : public T {
     virtual void close() override {
       input.close();
       T::close();
+    }
+
+    virtual void drawLevelMap(const Level*, const CreatureView*) {
+      return;
+    }
+
+    bool equal(double a, double b) {
+      return fabs(a - b) < 0.001;
+    }
+
+    virtual CollectiveAction getClick(double time) override {
+      T::getClick(time);
+      if (stackedAction) {
+        if (equal(time, stackedTime)) {
+          CollectiveAction ret = *stackedAction;
+          stackedAction = Nothing();
+          return ret;
+        }
+        CHECK(time < stackedTime);
+        return CollectiveAction::IDLE;
+      }
+      string method;
+      double actionTime;
+      CollectiveAction action;
+      input >> method;
+      if (method != "getClick") {
+        input.pushBack(method);
+        return CollectiveAction::IDLE;
+      }
+      input >> action >> actionTime;
+      Debug() << "get Click " << time << " " <<actionTime;
+      CHECKEQ(method, "getClick");
+      if (equal(time, actionTime))
+        return action;
+      else {
+        CHECK(actionTime > time);
+        CHECK(!stackedAction);
+        stackedAction = action;
+        stackedTime = actionTime;
+        return CollectiveAction::IDLE;
+      }
     }
 
     virtual Action getAction() override {
@@ -70,7 +144,9 @@ class ReplayView : public T {
         return convertFromString<int>(action);
     }
   private:
-    ifstream& input;
+    PushBackStream input;
+    Optional<CollectiveAction> stackedAction;
+    double stackedTime = -1000;
 };
 
 #endif

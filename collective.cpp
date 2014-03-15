@@ -322,8 +322,13 @@ void Collective::autoEquipment(Creature* creature) {
     slots.push_back(slot.first);
   vector<Item*> myItems = getAllItems([&](const Item* it) {
       return minionEquipment.getOwner(it) == creature && it->canEquip(); });
-  for (Item* it : myItems)
-    removeElement(slots, it->getEquipmentSlot());
+  for (Item* it : myItems) {
+    if (contains(slots, it->getEquipmentSlot()))
+      removeElement(slots, it->getEquipmentSlot());
+    else  // a rare occurence that minion owns 2 items of the same slot,
+          //should happen only when an item leaves the fortress and then is braught back
+      minionEquipment.discard(it);
+  }
   for (Item* it : getAllItems([&](const Item* it) {
       return minionEquipment.canTakeItem(creature, it); }, false)) {
     if (!it->canEquip() || contains(slots, it->getEquipmentSlot())) {
@@ -351,8 +356,11 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
     Item* item = nullptr;
     for (Item* it : ownedItems)
       if (it->canEquip() && it->getEquipmentSlot() == slot) {
-        CHECK(!item);
-        item = it;
+        if (item) // a rare occurence that minion owns 2 items of the same slot,
+                  //should happen only when an item leaves the fortress and then is braught back
+          minionEquipment.discard(it);
+        else
+          item = it;
       }
     slotItems.push_back(item);
     if (item)
@@ -757,7 +765,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.tasks = minionTaskStrings;
   for (Creature* c : minions)
     if (isInCombat(c))
-      info.tasks[c] = "fighting";
+      info.tasks[c->getUniqueId()] = "fighting";
   info.monsterHeader = "Monsters: " + convertToString(minions.size()) + " / " + convertToString(minionLimit);
   info.creatures.clear();
   for (Creature* c : minions)
@@ -1012,7 +1020,15 @@ void Collective::freeFromGuardPost(const Creature* c) {
       elem.second.attender = nullptr;
 }
 
-void Collective::processInput(View* view) {
+Creature* Collective::getCreature(UniqueId id) {
+  for (Creature* c : creatures)
+    if (c->getUniqueId() == id)
+      return c;
+  FAIL << "Creature not found " << id;
+  return nullptr;
+}
+
+void Collective::processInput(View* view, CollectiveAction action) {
   if (retired)
     return;
   if (!possessed && (isInCombat(keeper) || keeper->getHealth() < 1) && lastControlKeeperQuestion < getTime() - 50) {
@@ -1022,7 +1038,6 @@ void Collective::processInput(View* view) {
       return;
     }
   }
-  CollectiveAction action = view->getClick();
   switch (action.getType()) {
     case CollectiveAction::GATHER_TEAM:
         if (gatheringTeam && !team.empty()) {
@@ -1056,16 +1071,16 @@ void Collective::processInput(View* view) {
         break;
     case CollectiveAction::CREATURE_BUTTON: 
         if (!gatheringTeam)
-          handleEquipment(view, const_cast<Creature*>(action.getCreature()));
+          handleEquipment(view, getCreature(action.getNum()));
         else {
-          if (contains(team, action.getCreature()))
-            removeElement(team, action.getCreature());
+          if (contains(team, getCreature(action.getNum())))
+            removeElement(team, getCreature(action.getNum()));
           else
-            team.push_back(const_cast<Creature*>(action.getCreature()));
+            team.push_back(getCreature(action.getNum()));
         }
         break;
     case CollectiveAction::CREATURE_DESCRIPTION: messageBuffer.addMessage(MessageBuffer::important(
-                                                       action.getCreature()->getDescription())); break;
+                                                       getCreature(action.getNum())->getDescription())); break;
     case CollectiveAction::POSSESS: {
         Vec2 pos = action.getPosition();
         if (!pos.inRectangle(level->getBounds()))
@@ -1548,11 +1563,11 @@ MoveInfo Collective::getBeastMove(Creature* c) {
 MoveInfo Collective::getGuardPostMove(Creature* c) {
   for (auto& elem : guardPosts) {
     bool isTraining = contains({MinionTask::TRAIN, MinionTask::LABORATORY, MinionTask::WORKSHOP},
-        minionTasks.at(c).getState());
+        minionTasks.at(c->getUniqueId()).getState());
     if (elem.second.attender == c) {
       if (isTraining) {
-        minionTasks.at(c).update();
-        minionTaskStrings[c] = "guarding";
+        minionTasks.at(c->getUniqueId()).update();
+        minionTaskStrings[c->getUniqueId()] = "guarding";
         if (c->getPosition().dist8(elem.first) > 1) {
           if (auto move = c->getMoveTowards(elem.first))
             return {1.0, [=] {
@@ -1565,7 +1580,7 @@ MoveInfo Collective::getGuardPostMove(Creature* c) {
     }
   }
   for (auto& elem : guardPosts) {
-    bool isTraining = contains({MinionTask::TRAIN}, minionTasks.at(c).getState());
+    bool isTraining = contains({MinionTask::TRAIN}, minionTasks.at(c->getUniqueId()).getState());
     if (elem.second.attender == nullptr && isTraining) {
       elem.second.attender = c;
       if (Task* t = taskMap.getTask(c))
@@ -1668,11 +1683,11 @@ MoveInfo Collective::getMinionMove(Creature* c) {
           taskMap.addTask(Task::pickItem(this, v, {it}), c);
         return taskMap.getTask(c)->getMove(c);
       }
-  minionTasks.at(c).update();
+  minionTasks.at(c->getUniqueId()).update();
   if (c->getHealth() < 1 && c->canSleep())
     for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE})
-      if (minionTasks.at(c).containsState(t)) {
-        minionTasks.at(c).setState(t);
+      if (minionTasks.at(c->getUniqueId()).containsState(t)) {
+        minionTasks.at(c->getUniqueId()).setState(t);
         break;
       }
   if (c == keeper && !myTiles.empty() && !myTiles.count(c->getPosition())) {
@@ -1681,15 +1696,15 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         c->move(*move);
       }};
   }
-  MinionTaskInfo info = taskInfo.at(minionTasks.at(c).getState());
+  MinionTaskInfo info = taskInfo.at(minionTasks.at(c->getUniqueId()).getState());
   if (mySquares[info.square].empty()) {
-    minionTasks.at(c).updateToNext();
+    minionTasks.at(c->getUniqueId()).updateToNext();
     warning[int(info.warning)] = true;
     return NoMove;
   }
   warning[int(info.warning)] = false;
   taskMap.addTask(Task::applySquare(this, mySquares[info.square]), c);
-  minionTaskStrings[c] = info.desc;
+  minionTaskStrings[c->getUniqueId()] = info.desc;
   return taskMap.getTask(c)->getMove(c);
 }
 
@@ -1810,7 +1825,7 @@ void Collective::addCreature(Creature* c, MinionType type) {
   if (type != MinionType::IMP) {
     minions.push_back(c);
     minionByType[type].push_back(c);
-    minionTasks.insert(make_pair(c, getTasksForMinion(c)));
+    minionTasks.insert(make_pair(c->getUniqueId(), getTasksForMinion(c)));
   } else {
     imps.push_back(c);
  //   c->addEnemyVision([this](const Creature* c) { return canSee(c); });

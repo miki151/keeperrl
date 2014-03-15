@@ -12,6 +12,8 @@ namespace std { \
   }; \
 }
 
+typedef int UniqueId;
+
 enum class MsgType {
     FEEL, // better
     BLEEDING_STOPS,

@@ -11,19 +11,20 @@ class CollectiveAction {
   CollectiveAction(Type, Vec2 pos, int);
   CollectiveAction(Type, Vec2 pos);
   CollectiveAction(Type, int);
-  CollectiveAction(Type, const Creature*);
   CollectiveAction(Type);
+  CollectiveAction();
 
   Type getType();
   Vec2 getPosition();
   int getNum();
-  const Creature* getCreature();
 
   private:
   Type type;
   Vec2 pos;
   int num;
-  const Creature* creature;
 };
+
+std::ostream& operator << (std::ostream&, CollectiveAction);
+std::istream& operator >> (std::istream&, CollectiveAction&);
 
 #endif

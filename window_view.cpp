@@ -540,7 +540,7 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
         int height = lineStart + cnt * legendLineHeight;
         drawViewObject(c->getViewObject(), winX + 20, height, currentTileLayout.sprites);
         renderer.drawText(contains(info.team, c) ? green : white, textX - width + 30, height,
-            "level: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c]);
+            "level: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c->getUniqueId()]);
         creatureButtons.emplace_back(winX + 20, height, winX + width + 20, height + legendLineHeight);
         chosenCreatures.push_back(c);
         ++cnt;
@@ -1304,7 +1304,7 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
 }
 
 Vec2 lastGoTo(-1, -1);
-CollectiveAction WindowView::getClick() {
+CollectiveAction WindowView::getClick(double time) {
   Event event;
   while (renderer.pollEvent(event)) {
     considerScrollEvent(event);
@@ -1396,10 +1396,10 @@ CollectiveAction WindowView::getClick() {
               }
             for (int i : All(creatureButtons))
               if (clickPos.inRectangle(creatureButtons[i])) {
-                return CollectiveAction(CollectiveAction::CREATURE_BUTTON, chosenCreatures[i]);
+                return CollectiveAction(CollectiveAction::CREATURE_BUTTON, chosenCreatures[i]->getUniqueId());
               }
             if (descriptionButton && clickPos.inRectangle(*descriptionButton)) {
-              return CollectiveAction(CollectiveAction::CREATURE_DESCRIPTION, chosenCreatures[0]);
+              return CollectiveAction(CollectiveAction::CREATURE_DESCRIPTION, chosenCreatures[0]->getUniqueId());
             }
             leftMouseButtonPressed = true;
             chosenCreature = "";
@@ -1444,7 +1444,7 @@ vector<KeyInfo> keyInfo {
   { "Space", "Wait", {Keyboard::Space}},
   //{ "Z", "Zoom in/out", {Keyboard::Z}},
   { "Shift + Z", "World map", {Keyboard::Z, false, false, true}},
-  { "F2", "Change options", {Keyboard::F2}},
+  { "F2", "Change settings", {Keyboard::F2}},
   { "Escape", "Quit", {Keyboard::Escape}},
 };
 
