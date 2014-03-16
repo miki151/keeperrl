@@ -89,6 +89,7 @@ Tile getWaterTile(int leftX) {
 
 Tile getSprite(ViewId id) {
   switch (id) {
+    case ViewId::EMPTY: return Tile(' ', black);
     case ViewId::PLAYER: return Tile(1, 0);
     case ViewId::KEEPER: return Tile(3, 0);
     case ViewId::UNKNOWN_MONSTER: return Tile('?', lightGreen);
@@ -311,6 +312,7 @@ Tile getSpriteTile(const ViewObject& obj) {
 
 Tile getAsciiTile(const ViewObject& obj) {
   switch (obj.id()) {
+    case ViewId::EMPTY: return Tile(' ', black);
     case ViewId::PLAYER: return Tile('@', white);
     case ViewId::KEEPER: return Tile('@', purple);
     case ViewId::UNKNOWN_MONSTER: return Tile('?', lightGreen);

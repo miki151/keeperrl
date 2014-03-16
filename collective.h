@@ -22,6 +22,7 @@ enum class MinionType {
 ENUM_HASH(MinionType);
 
 class Model;
+class Technology;
 
 class Collective : public CreatureView, public EventListener {
   public:
@@ -92,7 +93,7 @@ class Collective : public CreatureView, public EventListener {
   struct SpawnInfo {
     CreatureId id;
     int manaCost;
-    int minLevel;
+    Optional<TechId> techId;
   };
 
   enum class Warning { DIGGING, STORAGE, WOOD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, GRAVES, CHESTS, MANA, MORE_CHESTS };
@@ -145,15 +146,13 @@ class Collective : public CreatureView, public EventListener {
 
     enum BuildType { DIG, SQUARE, IMP, TRAP, DOOR, GUARD_POST, DESTROY} buildType;
 
+    Optional<TechId> techId;
     string help;
 
-    BuildInfo(SquareInfo info, const string& h = "") : squareInfo(info), buildType(SQUARE), help(h) {}
-    BuildInfo(TrapInfo info, const string& h = "") : trapInfo(info), buildType(TRAP), help(h) {}
-    BuildInfo(DoorInfo info, const string& h = "") : doorInfo(info), buildType(DOOR), help(h) {}
-    BuildInfo(BuildType type, const string& h = "") : buildType(type), help(h) {
-      CHECK(contains({DIG, IMP, GUARD_POST, DESTROY}, type));
-    }
-
+    BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
+    BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
+    BuildInfo(DoorInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
+    BuildInfo(BuildType type, const string& h = "");
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
   vector<View::GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
@@ -177,8 +176,17 @@ class Collective : public CreatureView, public EventListener {
   vector<ItemFetchInfo> getFetchInfo() const;
   void fetchItems(Vec2 pos, ItemFetchInfo);
 
-  int numTotalTech() const;
-  unordered_map<TechId, int> techLevels;
+  vector<Technology*> technologies;
+  bool hasTech(TechId id) const;
+  int getMinLibrarySize() const;
+
+  typedef View::GameInfo::BandInfo::TechButton TechButton;
+
+  struct TechInfo {
+    TechButton button;
+    function<void(View*)> butFun;
+  };
+  vector<TechInfo> getTechInfo() const;
 
   MoveInfo getBeastMove(Creature* c);
   MoveInfo getMinionMove(Creature* c);
@@ -216,7 +224,7 @@ class Collective : public CreatureView, public EventListener {
   void handleMatterAnimation(View*);
   void handleBeastTaming(View*);
   void handleHumanoidBreeding(View*);
-  void handleSpawning(View* view, TechId techId, SquareType spawnSquare, const string& info1, 
+  void handleSpawning(View* view, SquareType spawnSquare, const string& info1, 
       const string& info2, const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);

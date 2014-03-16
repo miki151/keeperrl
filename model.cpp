@@ -9,6 +9,7 @@
 #include "statistics.h"
 #include "options.h"
 #include "task.h"
+#include "technology.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -27,6 +28,7 @@ void Model::serialize(Archive& ar, const unsigned int version) {
   Quests::serializeAll(ar);
   Tribes::serializeAll(ar);
   Creature::serializeAll(ar);
+  Technology::serializeAll(ar);
   Statistics::serialize(ar, version);
 }
 

@@ -8,6 +8,7 @@ static vector<EffectType> combatConsumables {
     EffectType::SPEED,
     EffectType::SLOW,
     EffectType::SLEEP,
+    EffectType::POISON,
     EffectType::BLINDNESS,
     EffectType::INVISIBLE,
     EffectType::STR_BONUS,

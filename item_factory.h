@@ -10,6 +10,7 @@
 #include "item.h"
 
 class Item;
+class Technology;
 
 class ItemFactory {
   public:
@@ -26,7 +27,8 @@ class ItemFactory {
   static ItemFactory villageShop();
   static ItemFactory dwarfShop();
   static ItemFactory goblinShop();
-  static ItemFactory workshop();
+  static ItemFactory workshop(const vector<Technology*>& techs);
+  static ItemFactory laboratory(const vector<Technology*>& techs);
   static ItemFactory singleType(ItemId);
 
   static PItem fromId(ItemId);

@@ -402,9 +402,11 @@ vector<const Creature*> Creature::getVisibleCreatures() const {
 }
 
 void Creature::addSkill(Skill* skill) {
-  skills.insert(skill);
-  skill->onTeach(this);
-  privateMessage(skill->getHelpText());
+  if (!skills.count(skill)) {
+    skills.insert(skill);
+    skill->onTeach(this);
+    privateMessage(skill->getHelpText());
+  }
 }
 
 bool Creature::hasSkill(Skill* skill) const {

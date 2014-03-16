@@ -6,7 +6,7 @@
 #include "util.h"
 #include "ranged_weapon.h"
 #include "enemy_check.h"
-
+#include "technology.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -480,23 +480,49 @@ ItemFactory ItemFactory::goblinShop() {
       {ItemId::DEXTERITY_MUSHROOM, 1} });
 }
 
-ItemFactory ItemFactory::workshop() {
-  return ItemFactory({
-      {ItemId::BOULDER_TRAP_ITEM, 2 },
-      {ItemId::GAS_TRAP_ITEM, 2 },
-      {ItemId::ALARM_TRAP_ITEM, 2 },
-      {ItemId::SWORD, 2 },
-      {ItemId::BATTLE_AXE, 1 },
-      {ItemId::WAR_HAMMER, 1 },
-      {ItemId::LEATHER_ARMOR, 2 },
-      {ItemId::CHAIN_ARMOR, 1 },
-      {ItemId::LEATHER_HELM, 2 },
-      {ItemId::IRON_HELM, 1 },
-      {ItemId::IRON_BOOTS, 1 },
-      {ItemId::LEATHER_BOOTS, 2 },
-      {ItemId::SPECIAL_SWORD, 0.1},
-      {ItemId::SPECIAL_BATTLE_AXE, 0.1},
-      {ItemId::SPECIAL_WAR_HAMMER, 0.1}});
+ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
+  ItemFactory factory({{ItemId::FIRST_AID_KIT, 2}});
+  if (contains(techs, Technology::get(TechId::TRAPS))) {
+    factory.addItem({ItemId::BOULDER_TRAP_ITEM, 2 });
+    factory.addItem({ItemId::GAS_TRAP_ITEM, 2 });
+    factory.addItem({ItemId::ALARM_TRAP_ITEM, 2 });
+  }
+  if (contains(techs, Technology::get(TechId::ARCHERY))) {
+    factory.addItem({ItemId::BOW, 2 });
+    factory.addItem({ItemId::ARROW, 2, 10, 30 });
+  }
+  if (contains(techs, Technology::get(TechId::TWO_H_WEAP))) {
+    factory.addItem({ItemId::BATTLE_AXE, 1 });
+    factory.addItem({ItemId::WAR_HAMMER, 1 });
+    factory.addItem({ItemId::SPECIAL_BATTLE_AXE, 0.05 });
+    factory.addItem({ItemId::SPECIAL_WAR_HAMMER, 0.05 });
+  }
+  if (contains(techs, Technology::get(TechId::IRON_WORKING))) {
+    factory.addItem({ItemId::SWORD, 2 });
+    factory.addItem({ItemId::SPECIAL_SWORD, 0.05 });
+    factory.addItem({ItemId::CHAIN_ARMOR, 2 });
+    factory.addItem({ItemId::IRON_HELM, 2 });
+    factory.addItem({ItemId::IRON_BOOTS, 2 });
+  } else {
+    factory.addItem({ItemId::LEATHER_ARMOR, 2 });
+    factory.addItem({ItemId::LEATHER_HELM, 2 });
+    factory.addItem({ItemId::LEATHER_BOOTS, 2 });
+  }
+  return factory;
+}
+
+ItemFactory ItemFactory::laboratory(const vector<Technology*>& techs) {
+  ItemFactory factory({
+      {ItemId::HEALING_POTION, 1 },
+      {ItemId::SLEEP_POTION, 1 },
+      {ItemId::SLOW_POTION, 1 }});
+  if (contains(techs, Technology::get(TechId::ALCHEMY_ADV))) {
+    factory.addItem({ItemId::BLINDNESS_POTION, 1 });
+    factory.addItem({ItemId::INVISIBLE_POTION, 1 });
+    factory.addItem({ItemId::POISON_POTION, 1 });
+    factory.addItem({ItemId::SPEED_POTION, 1 });
+  }
+  return factory;
 }
 
 ItemFactory ItemFactory::potions() {

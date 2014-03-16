@@ -13,6 +13,7 @@
 #include "message_buffer.h"
 #include "statistics.h"
 #include "options.h"
+#include "technology.h"
 
 
 using namespace boost::iostreams;
@@ -149,11 +150,13 @@ int main(int argc, char* argv[]) {
   view->initialize();
   while (1) {
     Item::identifyEverything();
-    Quests::initialize();
+    Quests::clearAll();
     Creature::initialize();
-    Tribes::initialize();
+    Tribes::clearAll();
+    Technology::clearAll();
     EventListener::initialize();
     Tribe::init();
+    Technology::init();
     Statistics::init();
     Options::init("options.txt");
     NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",

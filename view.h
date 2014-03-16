@@ -167,7 +167,7 @@ class View {
       vector<const Creature*> team;
 
       struct TechButton {
-        Optional<ViewObject> viewObject;
+        ViewId viewId;
         string name;
       };
       vector<TechButton> techButtons;

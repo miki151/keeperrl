@@ -585,8 +585,8 @@ void WindowView::drawTechnology(GameInfo::BandInfo& info) {
   int textX = renderer.getWidth() - rightBarText;
   for (int i : All(info.techButtons)) {
     int height = legendStartHeight + i * legendLineHeight;
-    if (info.techButtons[i].viewObject)
-      drawViewObject(*info.techButtons[i].viewObject, textX, height, currentTileLayout.sprites);
+    drawViewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, ""),
+        textX, height, currentTileLayout.sprites);
     renderer.drawText(white, textX + 20, height, info.techButtons[i].name);
     techButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
   }

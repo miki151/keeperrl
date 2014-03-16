@@ -786,6 +786,12 @@ Optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
 }
 
 template<class T>
+void removeElementMaybe(vector<T>& v, const T& element) {
+  if (auto ind = findElement(v, element))
+    removeIndex(v, *ind);
+}
+
+template<class T>
 void removeElement(vector<T>& v, const T& element) {
   auto ind = findElement(v, element);
   CHECK(ind) << "Element not found";

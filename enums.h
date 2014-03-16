@@ -291,6 +291,7 @@ const static vector<ViewLayer> allLayers =
 ENUM_HASH(ViewLayer);
 
 enum class ViewId { 
+  EMPTY,
   PLAYER,
   KEEPER,
   ELF,
@@ -614,16 +615,6 @@ enum class SpellId {
   WORD_OF_POWER,
 };
 
-enum class TechId {
-  NECROMANCY,
-  BEAST_TAMING,
-  MATTER_ANIMATION,
-  HUMANOID_BREEDING,
-  SPELLCASTING,
-};
-
-ENUM_HASH(TechId);
-
 enum class QuestId { DRAGON, CASTLE_CELLAR, BANDITS, GOBLINS, DWARVES };
 ENUM_HASH(QuestId);
 
@@ -644,6 +635,31 @@ enum class TribeId {
   KEEPER,
   LIZARD,
 };
+
 ENUM_HASH(TribeId);
+
+enum class TechId {
+  ALCHEMY,
+  ALCHEMY_ADV,
+  GOLEM,
+  GOLEM_ADV,
+  GOBLIN,
+  OGRE,
+  HUMANOID_MUT,
+  BEAST,
+  BEAST_MUT,
+  NECRO,
+  NECRO_ADV,
+  CRAFTING,
+  IRON_WORKING,
+  TWO_H_WEAP,
+  TRAPS,
+  ARCHERY,
+  SPELLS,
+  SPELLS_ADV,
+  SPELLS_MAS,
+};
+
+ENUM_HASH(TechId);
 
 #endif
