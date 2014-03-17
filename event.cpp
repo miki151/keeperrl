@@ -86,7 +86,12 @@ void EventListener::addCombatEvent(const Creature* c) {
 }
 
 void EventListener::addAlarmEvent(const Level* level, Vec2 pos) {
-   for (EventListener* l : listeners)
-     if (l->getListenerLevel() == level || l->getListenerLevel() == nullptr)
-       l->onAlarmEvent(level, pos);
+  for (EventListener* l : listeners)
+    if (l->getListenerLevel() == level || l->getListenerLevel() == nullptr)
+      l->onAlarmEvent(level, pos);
+}
+  
+void EventListener::addTechBookEvent(Technology* t) {
+  for (EventListener* l : listeners)
+    l->onTechBookEvent(t);
 }

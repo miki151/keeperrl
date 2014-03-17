@@ -986,7 +986,7 @@ Optional<int> WindowView::getNumber(const string& title, int max, int increments
   if (!res)
     return Nothing();
   else
-    return 1 + numbers[*res];
+    return numbers[*res];
 }
 
 int getMaxLines();

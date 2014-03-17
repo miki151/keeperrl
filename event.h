@@ -7,6 +7,7 @@ class Level;
 class Creature;
 class Item;
 class Quest;
+class Technology;
 
 class EventListener {
   public:
@@ -23,6 +24,7 @@ class EventListener {
   virtual void onSquareReplacedEvent(const Level*, Vec2 pos) {}
   virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) {}
   virtual void onAlarmEvent(const Level*, Vec2 pos) {}
+  virtual void onTechBookEvent(Technology*) {}
 
   static void addPickupEvent(const Creature*, const vector<Item*>& items);
   static void addDropEvent(const Creature*, const vector<Item*>& items);
@@ -36,6 +38,7 @@ class EventListener {
   static void addSquareReplacedEvent(const Level*, Vec2 pos);
   static void addChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos);
   static void addAlarmEvent(const Level*, Vec2 pos);
+  static void addTechBookEvent(Technology*);
 
   virtual const Level* getListenerLevel() const { return nullptr; }
   static void initialize();

@@ -852,6 +852,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
           c.chatReactionFriendly = c.chatReactionHostile = "The " + name + " snarls.";
         }
         c.name = name;
+        c.speciesName = humanoid ? "legendary humanoid" : "legendary beast";
         if (!(*c.humanoid) && Random.roll(10)) {
           c.noBody = true;
           c.wings = c.arms = c.legs = 0;
@@ -1404,6 +1405,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity = 17;
           c.barehandedDamage = 0;
           c.weight = 25;
+          c.spells.clear();
           c.name = "elf child";);
     case CreatureId::ELF_LORD: 
       return INHERIT(ELF_ARCHER,

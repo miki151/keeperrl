@@ -48,6 +48,7 @@ class Deity {
   void onPrayer(Creature* c);
 
   static Deity* getDeity(DeityHabitat);
+  static vector<Deity*> getDeities();
 
   SERIALIZATION_DECL(Deity);
 
@@ -57,7 +58,6 @@ class Deity {
   }
 
   private:
-  static vector<Deity*> getDeities();
   static vector<Deity*> deities;
   Deity(Deity&) {}
   string name;

@@ -45,6 +45,7 @@ class Collective : public CreatureView, public EventListener {
   virtual void onSquareReplacedEvent(const Level*, Vec2 pos) override;
   virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) override;
   virtual void onAlarmEvent(const Level*, Vec2 pos) override;
+  virtual void onTechBookEvent(Technology*) override;
 
   void onConqueredLand(const string& name);
 
@@ -75,6 +76,16 @@ class Collective : public CreatureView, public EventListener {
 
   bool isTurnBased();
   void retire();
+
+  struct RoomInfo {
+    string name;
+    string description;
+    Optional<TechId> techId;
+  };
+  static vector<RoomInfo> getRoomInfo();
+  static vector<SpellInfo> getSpellLearning(const Technology*);
+
+  static vector<CreatureId> getSpawnInfo(const Technology*);
 
   enum class ResourceId {
     GOLD,
@@ -179,6 +190,9 @@ class Collective : public CreatureView, public EventListener {
   vector<Technology*> technologies;
   bool hasTech(TechId id) const;
   int getMinLibrarySize() const;
+  void acquireTech(Technology*, bool free = false);
+  double getTechCost();
+  int numFreeTech = 0;
 
   typedef View::GameInfo::BandInfo::TechButton TechButton;
 

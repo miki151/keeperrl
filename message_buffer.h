@@ -7,6 +7,7 @@
 class MessageBuffer {
   public:
   void addMessage(string msg);
+  void addImportantMessage(string msg);
   void initialize(View* view);
   void showHistory();
 

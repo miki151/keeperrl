@@ -62,6 +62,16 @@ class Model : public EventListener {
   void showHighscore(bool highlightLast = false);
   void retireCollective();
 
+  void keeperopedia(int lastInd = 0);
+  void bestiary(int lastInd = 0);
+  void advancements(int lastInd = 0);
+  void advancement(const Technology* tech);
+  void rooms(int lastInd = 0);
+  void room(Collective::RoomInfo& info);
+  void deity(const Deity*);
+  void deities(int lastInd = 0);
+  void tribes(int lastInd = 0);
+
   SERIALIZATION_DECL(Model);
 
   private:

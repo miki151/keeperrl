@@ -1102,7 +1102,7 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
 void Creature::attack(const Creature* c1, bool spend) {
   Creature* c = const_cast<Creature*>(c1);
   int toHitVariance = 9;
-  int damageVariance = 7;
+  int damageVariance = 9;
   CHECK((c->getPosition() - getPosition()).length8() == 1)
       << "Bad attack direction " << c->getPosition() - getPosition();
   CHECK(canAttack(c));
@@ -1718,6 +1718,13 @@ Optional<string> Creature::getFirstName() const {
 
 string Creature::getName() const {
   return *name;
+}
+
+string Creature::getSpeciesName() const {
+  if (speciesName)
+    return *speciesName;
+  else
+    return *name;
 }
 
 bool Creature::isHumanoid() const {

@@ -849,4 +849,16 @@ inline string capitalFirst(string s) {
 
 string combine(const vector<string>& adj);
 
+template<class T>
+string combine(const vector<T*>& v) {
+  return combine(
+      transform2<string>(v, [](const T* e) { return e->getName(); }));
+}
+
+template<class T>
+string combine(const vector<T>& v) {
+  return combine(
+      transform2<string>(v, [](const T& e) { return e.name; }));
+}
+
 #endif

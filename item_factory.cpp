@@ -322,6 +322,30 @@ class SkillBook : public Item {
   Skill* skill;
 };
 
+class TechBook : public Item {
+  public:
+  TechBook(ViewObject object, const ItemAttributes& attr, Technology* t = nullptr)
+      : Item(object, attr), tech(t) {}
+
+  virtual void apply(Creature* c, Level* l) override {
+    if (!read || tech != nullptr) {
+      EventListener::addTechBookEvent(tech);
+      read = true;
+    }
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Item) & BOOST_SERIALIZATION_NVP(tech);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(TechBook);
+
+  private:
+  Technology* tech = nullptr;
+  bool read = false;
+};
+
 class TrapItem : public Item {
   public:
   TrapItem(ViewObject object, ViewObject _trapObject, const ItemAttributes& attr, EffectType _effect)
@@ -350,6 +374,7 @@ template <class Archive>
 void ItemFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, TrapItem);
   REGISTER_TYPE(ar, SkillBook);
+  REGISTER_TYPE(ar, TechBook);
   REGISTER_TYPE(ar, Potion);
   REGISTER_TYPE(ar, FireScroll);
   REGISTER_TYPE(ar, AmuletOfWarning);
@@ -1013,6 +1038,34 @@ PItem ItemFactory::fromId(ItemId id) {
             i.price = 15;
             i.flamability = 1;
             i.uses = 1;)));
+    case ItemId::SPELLS_MAS_BOOK: return PItem(new TechBook(
+        ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
+            i.name = "book of master sorcery";
+            i.weight = 0.5;
+            i.type = ItemType::BOOK;
+            i.applyTime = 3;
+            i.price = 300;), Technology::get(TechId::SPELLS_MAS)));
+    case ItemId::ALCHEMY_ADV_BOOK: return PItem(new TechBook(
+        ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
+            i.name = "book of advanced alchemy";
+            i.weight = 0.5;
+            i.type = ItemType::BOOK;
+            i.applyTime = 3;
+            i.price = 300;), Technology::get(TechId::ALCHEMY_ADV)));
+    case ItemId::IRON_WORKING_BOOK: return PItem(new TechBook(
+        ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
+            i.name = "book of iron working";
+            i.weight = 0.5;
+            i.type = ItemType::BOOK;
+            i.applyTime = 3;
+            i.price = 300;), Technology::get(TechId::IRON_WORKING)));
+    case ItemId::TECH_BOOK: return PItem(new TechBook(
+        ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
+            i.name = "book of knowledge";
+            i.weight = 0.5;
+            i.type = ItemType::BOOK;
+            i.applyTime = 3;
+            i.price = 300;)));
     case ItemId::MUSHROOM_BOOK: return PItem(new SkillBook(
         ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
             i.name = "book of mushrooms";

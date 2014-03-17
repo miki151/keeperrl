@@ -34,6 +34,7 @@ class CreatureAttributes {
   Optional<string> chatReactionFriendly;
   Optional<string> chatReactionHostile;
   Optional<string> firstName;
+  Optional<string> speciesName;
   bool specialMonster = false;
   int barehandedDamage = 0;
   Optional<AttackType> barehandedAttack;

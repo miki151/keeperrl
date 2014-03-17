@@ -15,6 +15,7 @@ struct SettlementInfo {
   Tribe* tribe;
   pair<int, int> size;
   vector<StairKey> downStairs;
+  Optional<ItemId> elderLoot;
 };
 
 class LevelMaker {

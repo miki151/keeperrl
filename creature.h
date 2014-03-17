@@ -67,6 +67,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   string getTheName() const;
   string getAName() const;
   string getName() const;
+  string getSpeciesName() const;
   string getNameAndTitle() const;
   Optional<string> getFirstName() const;
   int getAttr(AttrType) const;

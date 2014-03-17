@@ -37,6 +37,10 @@ void MessageBuffer::addMessage(string msg) {
   messages.push_back(msg);
 }
 
+void MessageBuffer::addImportantMessage(string msg) {
+  addMessage(important(msg));
+}
+
 void MessageBuffer::initialize(View* view) {
   this->view = view;
   messages.clear();

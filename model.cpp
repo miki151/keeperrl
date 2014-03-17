@@ -34,6 +34,97 @@ void Model::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Model);
 
+void Model::keeperopedia(int lastInd) {
+  auto index = view->chooseFromList("Choose topic:",
+      {"Advancements", "Deities"}, lastInd);
+  if (!index)
+    return;
+  switch (*index) {
+    case 0: advancements(); break;
+    case 1: deities(); break;
+    default: FAIL << "wfepok";
+  }
+  keeperopedia(*index);
+}
+
+void Model::bestiary(int lastInd) {
+}
+
+void Model::advancement(const Technology* tech) {
+  string text;
+  const vector<Technology*>& prerequisites = tech->getPrerequisites();
+  const vector<Technology*>& allowed = tech->getAllowed();
+  if (!prerequisites.empty())
+    text += "Requires: " + combine(prerequisites) + "\n";
+  if (!allowed.empty())
+    text += "Allows research: " + combine(allowed) + "\n";
+  const vector<SpellInfo>& spells = Collective::getSpellLearning(tech);
+  if (!spells.empty())
+    text += "Teaches spells: " + combine(spells) + "\n";
+  const vector<Collective::RoomInfo>& rooms = filter(Collective::getRoomInfo(), 
+      [tech] (const Collective::RoomInfo& info) { return info.techId && Technology::get(*info.techId) == tech;});
+  if (!rooms.empty())
+    text += "Unlocks rooms: " + combine(rooms) + "\n";
+  vector<string> minions = transform2<string>(Collective::getSpawnInfo(tech),
+      [](CreatureId id) { return CreatureFactory::fromId(id, Tribes::get(TribeId::MONSTER))->getSpeciesName();});
+  if (!minions.empty())
+    text += "Unlocks minions: " + combine(minions) + "\n";
+  if (!tech->canResearch())
+    text += " \nCan only be acquired by special means.";
+  view->presentText(capitalFirst(tech->getName()), text);
+}
+
+void Model::advancements(int lastInd) {
+  vector<View::ListElem> options;
+  vector<Technology*> techs = Technology::getSorted();
+  for (Technology* tech : techs)
+    options.push_back(tech->getName());
+  auto index = view->chooseFromList("Advancements", options, lastInd);
+  if (!index)
+    return;
+  advancement(techs[*index]);
+  advancements(*index);
+}
+
+void Model::room(Collective::RoomInfo& info) {
+  string text = info.description;
+  if (info.techId)
+    text += "\n \nRequires: " + Technology::get(*info.techId)->getName();
+  view->presentText(info.name, text);
+}
+
+void Model::rooms(int lastInd) {
+  vector<View::ListElem> options;
+  vector<Collective::RoomInfo> roomList = Collective::getRoomInfo();
+  for (auto& elem : roomList)
+    options.push_back(elem.name);
+  auto index = view->chooseFromList("Rooms", options, lastInd);
+  if (!index)
+    return;
+  room(roomList[*index]);
+  rooms(*index);
+}
+
+void Model::tribes(int lastInd) {
+}
+
+void Model::deity(const Deity* deity) {
+  view->presentText(deity->getName(),
+      "Lives in " + deity->getHabitatString() + " and is the " + deity->getGender().god() + " of "
+      + deity->getEpithets() + ".");
+}
+
+void Model::deities(int lastInd) {
+  vector<View::ListElem> options;
+  for (Deity* deity : Deity::getDeities())
+    options.push_back(deity->getName());
+  auto index = view->chooseFromList("Deities", options, lastInd);
+  if (!index)
+    return;
+  deity(Deity::getDeities()[*index]);
+  deities(*index);
+}
+
 bool Model::isTurnBased() {
   return !collective || collective->isTurnBased();
 }
@@ -355,12 +446,12 @@ Model* Model::collectiveModel(View* view) {
   vector<Location*> villageLocations = getVillageLocations(3);
   vector<SettlementInfo> settlements {
     {SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), 12, Nothing(), villageLocations[0],
-      Tribes::get(TribeId::HUMAN), {30, 20}, {}},
+      Tribes::get(TribeId::HUMAN), {30, 20}, {}, ItemId::TECH_BOOK},
     {SettlementType::CASTLE2, CreatureFactory::singleType(Tribes::get(TribeId::LIZARD), CreatureId::LIZARDMAN),
       Random.getRandom(2, 4), Nothing(),
-      villageLocations[1], Tribes::get(TribeId::LIZARD), {15, 15}, {}},
+      villageLocations[1], Tribes::get(TribeId::LIZARD), {15, 15}, {}, ItemId::TECH_BOOK},
     {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.0), 7, Nothing(), villageLocations[2],
-      Tribes::get(TribeId::ELVEN), {30, 20}, {}}  };
+      Tribes::get(TribeId::ELVEN), {30, 20}, {}, ItemId::SPELLS_MAS_BOOK} };
   vector<CreatureFactory> cottageF {
     CreatureFactory::humanVillage(0),
     CreatureFactory::elvenVillage(0),
@@ -372,7 +463,7 @@ Model* Model::collectiveModel(View* view) {
        {10, 10}, {}});
   settlements.push_back({SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER),
         CreatureId::WITCH), 1,
-    Nothing(), new Location(), nullptr, {10, 10}, {}});
+    Nothing(), new Location(), nullptr, {10, 10}, {}, ItemId::ALCHEMY_ADV_BOOK});
   Level* top = m->prepareTopLevel2(settlements);
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
@@ -403,9 +494,9 @@ Model* Model::collectiveModel(View* view) {
     20, 10, 10
   };
   int cnt = 0;
-  auto killedCoeff = [] () { return Random.getDouble(0.1, 0.3); };
+  auto killedCoeff = [] () { return Random.getDouble(0.3, 0.7); };
   auto powerCoeff = Options::getValue(OptionId::AGGRESSIVE_HEROES) 
-    ? [] () { return Random.getDouble(0.1, 0.8); }
+    ? [] () { return Random.getDouble(0.3, 0.9); }
     : [] () { return 0.0; };
   for (int i : All(villageLocations)) {
     PVillageControl control = VillageControl::topLevelVillage(m->collective.get(), villageLocations[i],
