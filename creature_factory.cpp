@@ -378,7 +378,7 @@ class ShopkeeperController : public Monster, public EventListener {
       firstMove = false;
     }
     vector<const Creature*> creatures;
-    for (Vec2 v : shopArea->getBounds())
+    for (Vec2 v : shopArea->getBounds().minusMargin(-1))
       if (const Creature* c = creature->getLevel()->getSquare(v)->getCreature()) {
         creatures.push_back(c);
         if (!prevCreatures.count(c) && !thieves.count(c) && !creature->isEnemy(c)) {

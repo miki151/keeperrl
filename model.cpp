@@ -299,18 +299,25 @@ Model* Model::heroModel(View* view) {
   Creature::noExperienceLevels();
   Model* m = new Model(view);
   m->adventurer = true;
-  vector<Location*> locations = getVillageLocations(4);
+  vector<Location*> locations = getVillageLocations(5);
+  Location* banditLocation = new Location("bandit hideout", "The bandits have robbed many travelers and townsfolk.");
   Level* top = m->prepareTopLevel({
       {SettlementType::CASTLE, CreatureFactory::humanVillage(0.3), Random.getRandom(10, 20), CreatureId::AVATAR,
-          locations[0], Tribes::get(TribeId::HUMAN), {30, 20}, {StairKey::CASTLE_CELLAR}},
-      {SettlementType::CASTLE2, CreatureFactory::singleType(Tribes::get(TribeId::LIZARD), CreatureId::LIZARDMAN),
+          locations[0], Tribes::get(TribeId::HUMAN), {30, 20}, BuildingId::BRICK, {StairKey::CASTLE_CELLAR},
+          CreatureId::CASTLE_GUARD, Nothing(), ItemFactory::villageShop()},
+      {SettlementType::VILLAGE, CreatureFactory::singleType(Tribes::get(TribeId::LIZARD), CreatureId::LIZARDMAN),
           Random.getRandom(5, 10), CreatureId::LIZARDLORD,
-          locations[1], Tribes::get(TribeId::LIZARD), {15, 15}, {}},
+          locations[2], Tribes::get(TribeId::LIZARD), {30, 20}, BuildingId::MUD, {}, Nothing(), Nothing(),
+          ItemFactory::mushrooms()},
       {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.3), Random.getRandom(10, 20), CreatureId::ELF_LORD,
-          locations[2], Tribes::get(TribeId::ELVEN), {30, 20}, {}},
-      {SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER),
-        CreatureId::WITCH), 1,
-    Nothing(), new Location(), nullptr, {10, 10}, {}}});
+          locations[3], Tribes::get(TribeId::ELVEN), {30, 20}, BuildingId::WOOD, {}, Nothing(), Nothing(),
+          ItemFactory::villageShop()},
+      {SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER), CreatureId::WITCH),
+      1, Nothing(), new Location(), nullptr, {10, 10}, BuildingId::WOOD, {}},
+      {SettlementType::COTTAGE, CreatureFactory::singleType(Tribes::get(TribeId::BANDIT), CreatureId::BANDIT),
+      Random.getRandom(4, 7), Nothing(), banditLocation, Tribes::get(TribeId::BANDIT), {12, 8}, BuildingId::WOOD, {}}
+      });
+  Quests::get(QuestId::BANDITS)->setLocation(banditLocation);
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(CreatureFactory::dwarfTown(), {StairKey::DWARF}, {StairKey::DWARF}));
@@ -443,27 +450,31 @@ void Model::onKillEvent(const Creature* victim, const Creature* killer) {
 
 Model* Model::collectiveModel(View* view) {
   Model* m = new Model(view);
-  vector<Location*> villageLocations = getVillageLocations(3);
+  vector<Location*> villageLocations = getVillageLocations(4);
   vector<SettlementInfo> settlements {
-    {SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), 12, Nothing(), villageLocations[0],
-      Tribes::get(TribeId::HUMAN), {30, 20}, {}, ItemId::TECH_BOOK},
-    {SettlementType::CASTLE2, CreatureFactory::singleType(Tribes::get(TribeId::LIZARD), CreatureId::LIZARDMAN),
+    {SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), Random.getRandom(2, 6), Nothing(),
+      villageLocations[0],
+      Tribes::get(TribeId::HUMAN), {30, 20}, BuildingId::BRICK, {}, CreatureId::CASTLE_GUARD, ItemId::TECH_BOOK},
+    {chooseRandom({SettlementType::CASTLE2, SettlementType::VILLAGE}), CreatureFactory::humanVillage(0.0),
+      Random.getRandom(2, 6), Nothing(), villageLocations[1], Tribes::get(TribeId::HUMAN), {15, 15},
+      BuildingId::BRICK, {}, CreatureId::CASTLE_GUARD},
+    {SettlementType::VILLAGE, CreatureFactory::singleType(Tribes::get(TribeId::LIZARD), CreatureId::LIZARDMAN),
       Random.getRandom(2, 4), Nothing(),
-      villageLocations[1], Tribes::get(TribeId::LIZARD), {15, 15}, {}, ItemId::TECH_BOOK},
-    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.0), 7, Nothing(), villageLocations[2],
-      Tribes::get(TribeId::ELVEN), {30, 20}, {}, ItemId::SPELLS_MAS_BOOK} };
+      villageLocations[2], Tribes::get(TribeId::LIZARD), {30, 20}, BuildingId::MUD, {}, Nothing(), ItemId::TECH_BOOK},
+    {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.0), 7, Nothing(), villageLocations[3],
+      Tribes::get(TribeId::ELVEN), {30, 20}, BuildingId::WOOD, {}, Nothing(), ItemId::SPELLS_MAS_BOOK},
+    {SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER), CreatureId::WITCH), 1,
+      Nothing(), new Location(), nullptr, {10, 10}, BuildingId::WOOD, {}, Nothing(), ItemId::ALCHEMY_ADV_BOOK}
+  };
   vector<CreatureFactory> cottageF {
     CreatureFactory::humanVillage(0),
     CreatureFactory::elvenVillage(0),
   };
   vector<Tribe*> cottageT { Tribes::get(TribeId::HUMAN), Tribes::get(TribeId::ELVEN) };
-  for (int i : Range(4, 8))
+  for (int i : Range(6, 12))
     settlements.push_back(
        {SettlementType::COTTAGE, cottageF[i % 2], Random.getRandom(3, 7), Nothing(), new Location(), cottageT[i % 2],
-       {10, 10}, {}});
-  settlements.push_back({SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER),
-        CreatureId::WITCH), 1,
-    Nothing(), new Location(), nullptr, {10, 10}, {}, ItemId::ALCHEMY_ADV_BOOK});
+       {10, 10}, BuildingId::WOOD, {}});
   Level* top = m->prepareTopLevel2(settlements);
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
@@ -487,16 +498,17 @@ Model* Model::collectiveModel(View* view) {
   }
   vector<CreatureFactory> villageFactories {
     { CreatureFactory::collectiveFinalAttack() },
+    { CreatureFactory::collectiveEnemies() },
     { CreatureFactory::collectiveLizardFinalAttack() },
     { CreatureFactory::collectiveElfFinalAttack() }
   };
   vector<int> heroCounts {
-    20, 10, 10
+    20, 10, 10, 10
   };
   int cnt = 0;
   auto killedCoeff = [] () { return Random.getDouble(0.3, 0.7); };
   auto powerCoeff = Options::getValue(OptionId::AGGRESSIVE_HEROES) 
-    ? [] () { return Random.getDouble(0.3, 0.9); }
+    ? [] () { return Random.getDouble(0.2, 0.6); }
     : [] () { return 0.0; };
   for (int i : All(villageLocations)) {
     PVillageControl control = VillageControl::topLevelVillage(m->collective.get(), villageLocations[i],

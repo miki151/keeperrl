@@ -5,6 +5,7 @@
 #include "level.h"
 #include "creature_factory.h"
 
+enum class BuildingId { WOOD, MUD, BRICK };
 
 struct SettlementInfo {
   SettlementType type;
@@ -14,8 +15,11 @@ struct SettlementInfo {
   Location* location;
   Tribe* tribe;
   pair<int, int> size;
+  BuildingId buildingId;
   vector<StairKey> downStairs;
+  Optional<CreatureId> guardId;
   Optional<ItemId> elderLoot;
+  Optional<ItemFactory> shopFactory;
 };
 
 class LevelMaker {

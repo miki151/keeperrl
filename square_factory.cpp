@@ -598,9 +598,7 @@ class TrainingDummy : public Furniture {
   }
 
   virtual void onApply(Creature* c) override {
-    if (Random.roll(50)) {
-      c->increaseExpLevel(1);
-    }
+    c->increaseExpLevel(Random.getRandom(0.01, 0.03));
   }
 
   template <class Archive> 

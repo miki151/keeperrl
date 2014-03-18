@@ -112,8 +112,7 @@ bool VillageControl::isConquered() const {
 }
 
 void VillageControl::calculateAttacks() {
-  CHECK(allCreatures[0] == tribe->getLeader());
-  // Put the leader at the end
+  // If there is a leader then he is added first, so put him at the end
   std::swap(allCreatures[0], allCreatures.back());
   aliveCreatures = allCreatures;
   double myPower = 0;
@@ -140,7 +139,8 @@ void VillageControl::onKillEvent(const Creature* victim, const Creature* killer)
     if (aliveCreatures.empty()) {
       messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
     } else {
-      if (fightingCreatures.count(victim) && lastAttackLaunched && !NOTNULL(tribe->getLeader())->isDead()) {
+ /*     if (fightingCreatures.count(victim) && lastAttackLaunched
+          && tribe->getLeader() && tribe->getLeader()->isDead()) {
         bool attackersDead = true;
         for (const Creature* c : fightingCreatures)
           if (!c->isDead())
@@ -149,7 +149,7 @@ void VillageControl::onKillEvent(const Creature* victim, const Creature* killer)
           messageBuffer.addMessage(MessageBuffer::important("You have defeated the pathetic attacks of the "
                 + tribe->getName() + " of " + name + ". Take advantage of their weakened defense and kill their "
                 "leader, the " + tribe->getLeader()->getName()));
-      }
+      }*/
     }
   }
 }
