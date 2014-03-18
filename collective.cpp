@@ -801,7 +801,7 @@ vector<Collective::TechInfo> Collective::getTechInfo() const {
       [this](View* view) { handleMarket(view); }});
   ret.push_back({{ViewId::EMPTY, ""}, [](View*) {}});
   ret.push_back({{ViewId::BOOK, "Keeperopedia"},
-      [this](View* view) { model->keeperopedia(); }});
+      [this](View* view) { model->keeperopedia.present(view); }});
   return ret;
 }
 
