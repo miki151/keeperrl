@@ -20,6 +20,7 @@ class MapLayout {
   Vec2 projectOnMap(Rectangle bounds, Vec2 screenPos);
   Rectangle getAllTiles(Rectangle screenBounds, Rectangle tableBounds);
   void updatePlayerPos(Vec2);
+  Vec2 getPlayerPos();
 
   private:
   vector<ViewLayer> layers;

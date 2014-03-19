@@ -24,7 +24,7 @@ class WindowView: public View {
   virtual void clearMessages() override;
   virtual void refreshView(const CreatureView*) override;
   virtual void updateView(const CreatureView*) override;
-  virtual void drawLevelMap(const Level*, const CreatureView*) override;
+  virtual void drawLevelMap(const CreatureView*) override;
   virtual void resetCenter() override;
   virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       Optional<ActionId> exitAction = Nothing()) override;
@@ -51,7 +51,8 @@ class WindowView: public View {
 
   private:
 
-  void exitQuestion();
+  void drawLevelMapPart(const Level* level, Rectangle levelPart, Rectangle bounds, const CreatureView* creature,
+      bool drawLocations = true);
   Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index,
       Optional<ActionId> exitAction, Optional<sf::Event::KeyEvent> exitKey, vector<sf::Event::KeyEvent> shortCuts);
   Optional<ActionId> getSimpleActionId(sf::Event::KeyEvent key);
@@ -68,7 +69,7 @@ class WindowView: public View {
   void drawKeeperHelp();
   void drawHint(sf::Color color, const string& text);
   struct BlockingEvent {
-    enum Type { IDLE, KEY, MOUSE_LEFT, MOUSE_MOVE } type;
+    enum Type { IDLE, KEY, MOUSE_LEFT, MOUSE_MOVE, MINIMAP } type;
     Optional<sf::Event::KeyEvent> key;
   };
   BlockingEvent readkey();

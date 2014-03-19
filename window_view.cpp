@@ -265,6 +265,8 @@ struct KeyInfo {
   Event::KeyEvent event;
 };
 
+Rectangle minimapBounds(20, 70, 120, 170);
+
 vector<KeyInfo> bottomKeys;
 
 static bool leftMouseButtonPressed = false;
@@ -299,13 +301,16 @@ WindowView::BlockingEvent WindowView::readkey() {
     if (scrolled)
       return { BlockingEvent::IDLE };
     if (event.type == Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+      Vec2 pos(event.mouseButton.x, event.mouseButton.y);
+      if (pos.inRectangle(minimapBounds))
+        return { BlockingEvent::MINIMAP };
       for (int i : All(optionButtons))
-        if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(optionButtons[i])) {
+        if (pos.inRectangle(optionButtons[i])) {
           legendOption = LegendOption(i);
           return { BlockingEvent::IDLE };
         }
       for (int i : All(bottomKeyButtons))
-        if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(bottomKeyButtons[i])) {
+        if (pos.inRectangle(bottomKeyButtons[i])) {
           return { BlockingEvent::KEY, bottomKeys[i].event };
         }
       return { BlockingEvent::MOUSE_LEFT };
@@ -702,7 +707,10 @@ void WindowView::refreshView(const CreatureView* collective) {
   refreshViewInt(collective);
 }
 
+const CreatureView* lastCreatureView = nullptr;
+
 void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer) {
+  lastCreatureView = collective;
   gameReady = true;
   switchTiles();
   const Level* level = collective->getLevel();
@@ -783,31 +791,39 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
   refreshScreen(true);
 }
 
-void WindowView::drawLevelMap(const Level* level, const CreatureView* creature) {
-  TempClockPause pause;
+static void putMapPixel(Vec2 pos, Color col) {
+  if (pos.inRectangle(maxLevelBounds))
+    mapBuffer.setPixel(pos.x, pos.y, col);
+}
+
+void WindowView::drawLevelMapPart(const Level* level, Rectangle levelPart, Rectangle bounds,
+    const CreatureView* creature, bool printLocations) {
   vector<Vec2> roads;
-  while (1) {
-    for (Vec2 v : maxLevelBounds) {
-      if (!v.inRectangle(level->getBounds()) || (!creature->getMemory(level).hasViewIndex(v) && !creature->canSee(v)))
-        mapBuffer.setPixel(v.x, v.y, black);
-      else {
-        mapBuffer.setPixel(v.x, v.y, Tile::getColor(level->getSquare(v)->getViewObject()));
-        if (level->getSquare(v)->getName() == "road")
-          roads.push_back(v);
-      }
+  double scale = min(double(bounds.getW()) / levelPart.getW(),
+      double(bounds.getH()) / levelPart.getH());
+  for (Vec2 v : Rectangle(bounds.getW() / scale, bounds.getH() / scale)) {
+    putMapPixel(v, black);
+  }
+  for (Vec2 v : levelPart) {
+    if (!v.inRectangle(level->getBounds()) || (!creature->getMemory(level).hasViewIndex(v) && !creature->canSee(v)))
+      putMapPixel(v - levelPart.getTopLeft(), black);
+    else {
+      putMapPixel(v - levelPart.getTopLeft(), Tile::getColor(level->getSquare(v)->getViewObject()));
+      if (level->getSquare(v)->getName() == "road")
+        roads.push_back(v - levelPart.getTopLeft());
     }
-    Rectangle bounds = getMapViewBounds();
-    double scale = min(double(bounds.getW()) / level->getBounds().getW(),
-        double(bounds.getH()) / level->getBounds().getH());
-    renderer.drawImage(bounds.getPX(), bounds.getPY(), mapBuffer, scale);
-    for (Vec2 v : roads) {
-      Vec2 rrad(2, 2);
-      Vec2 pos = bounds.getTopLeft() + v * scale;
-      renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), brown);
-    }
-    Vec2 playerPos = bounds.getTopLeft() + creature->getPosition() * scale;
-    Vec2 rad(4, 4);
+  }
+  renderer.drawImage(bounds.getPX(), bounds.getPY(), bounds.getKX(), bounds.getKY(), mapBuffer, scale);
+  for (Vec2 v : roads) {
+    Vec2 rrad(1, 1);
+    Vec2 pos = bounds.getTopLeft() + v * scale;
+    renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), brown);
+  }
+  Vec2 playerPos = bounds.getTopLeft() + (creature->getPosition() - levelPart.getTopLeft()) * scale;
+  Vec2 rad(3, 3);
+  if (playerPos.inRectangle(bounds.minusMargin(rad.x)))
     renderer.drawFilledRectangle(Rectangle(playerPos - rad, playerPos + rad), red);
+  if (printLocations)
     for (const Location* loc : level->getAllLocations())
       if (loc->hasName())
         for (Vec2 v : loc->getBounds())
@@ -819,7 +835,16 @@ void WindowView::drawLevelMap(const Level* level, const CreatureView* creature) 
             renderer.drawText(white, pos.x + 5, pos.y, text);
             break;
           }
+}
 
+void WindowView::drawLevelMap(const CreatureView* creature) {
+  const Level* level = creature->getLevel();
+  TempClockPause pause;
+  Rectangle bounds = getMapViewBounds();
+  double scale = min(double(bounds.getW()) / level->getBounds().getW(),
+      double(bounds.getH()) / level->getBounds().getH());
+  while (1) {
+    drawLevelMapPart(level, level->getBounds(), bounds, creature);
     renderer.drawAndClearBuffer();
     BlockingEvent ev = readkey();
     if (ev.type == BlockingEvent::KEY)
@@ -858,8 +883,17 @@ class FpsCounter {
   sf::Clock clock;
 } fpsCounter;
 
+
 void WindowView::drawMap() {
   mapGui->render(renderer);
+  if (lastCreatureView) {
+    const Level* level = lastCreatureView->getLevel();
+    Vec2 rad(60, 60);
+    Rectangle bounds(mapLayout->getPlayerPos() - rad, mapLayout->getPlayerPos() + rad);
+    renderer.drawFilledRectangle(minimapBounds.minusMargin(-2), Color::Transparent, gray);
+    if (level->getBounds().intersects(bounds))
+      drawLevelMapPart(level, bounds, minimapBounds, lastCreatureView, false);
+  }
   map<string, ViewObject> objIndex;
   for (Vec2 wpos : mapLayout->getAllTiles(getMapViewBounds(), objects.getBounds())) 
     if (objects[wpos]) {
@@ -1211,28 +1245,15 @@ void WindowView::addMessage(const string& message) {
   if (oldMessage)
     showMessage("");
   oldMessage = false;
-/*  if (oldMessage)
-    showMessage("");*/
   if (currentMessage[messageInd].size() + message.size() + 1 > maxMsgLength &&
       messageInd == currentMessage.size() - 1) {
     currentMessage.pop_front();
     currentMessage.push_back("");
   }
- /*   currentMessage[messageInd] += " (more)";
-    refreshScreen();
-    while (1) {
-      BlockingEvent event = readkey();
-      if (event.type == BlockingEvent::KEY &&
-          (event.key->code == Keyboard::Space || event.key->code == Keyboard::Return))
-        break;
-    }
-    showMessage(message);
-  } else {*/
     if (currentMessage[messageInd].size() + message.size() + 1 > maxMsgLength)
       ++messageInd;
     currentMessage[messageInd] += (currentMessage[messageInd].size() > 0 ? " " : "") + message;
     refreshScreen();
-//  }
 }
 
 void WindowView::unzoom() {
@@ -1319,12 +1340,8 @@ CollectiveAction WindowView::getClick(double time) {
       case Event::KeyPressed:
         switch (event.key.code) {
           case Keyboard::Z:
-            if (event.key.shift)
-              return CollectiveAction(CollectiveAction::DRAW_LEVEL_MAP);
-            else {
-              unzoom();
-              return CollectiveAction(CollectiveAction::IDLE);
-            }
+            unzoom();
+            return CollectiveAction(CollectiveAction::IDLE);
           case Keyboard::F2: Options::handle(this, OptionSet::GENERAL); refreshScreen(); break;
           case Keyboard::Space:
             if (!myClock.isPaused())
@@ -1363,6 +1380,8 @@ CollectiveAction WindowView::getClick(double time) {
           if (event.mouseButton.button == sf::Mouse::Right)
             chosenCreature = "";
           if (event.mouseButton.button == sf::Mouse::Left) {
+            if (clickPos.inRectangle(minimapBounds))
+              return CollectiveAction(CollectiveAction::DRAW_LEVEL_MAP);
             for (int i : All(techButtons))
               if (clickPos.inRectangle(techButtons[i]))
                 return CollectiveAction(CollectiveAction::TECHNOLOGY, i);
@@ -1479,6 +1498,8 @@ Action WindowView::getAction() {
     retireMessages();
     if (event.type == BlockingEvent::IDLE || event.type == BlockingEvent::MOUSE_MOVE)
       return Action(ActionId::IDLE);
+    if (event.type == BlockingEvent::MINIMAP)
+      return Action(ActionId::DRAW_LEVEL_MAP);
     if (event.type == BlockingEvent::MOUSE_LEFT) {
       if (auto pos = mapGui->getHighlightedTile(renderer))
         return Action(ActionId::MOVE_TO, *pos);
@@ -1517,9 +1538,6 @@ Action WindowView::getAction() {
 
 Optional<ActionId> WindowView::getSimpleActionId(sf::Event::KeyEvent key) {
   switch (key.code) {
-    case Keyboard::Z: if (key.shift)
-                        return ActionId::DRAW_LEVEL_MAP;
-                      break;
     case Keyboard::Return:
     case Keyboard::Numpad5: if (key.shift) return ActionId::EXT_PICK_UP; 
                               else return ActionId::PICK_UP;

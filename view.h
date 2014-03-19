@@ -35,7 +35,7 @@ class View {
   virtual void updateView(const CreatureView* creatureView) = 0;
 
   /** Draw a blocking view of the whole level.*/
-  virtual void drawLevelMap(const Level*, const CreatureView*) = 0;
+  virtual void drawLevelMap(const CreatureView*) = 0;
 
   /** Scrolls back to the center of the view on next refresh.*/
   virtual void resetCenter() = 0;

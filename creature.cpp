@@ -524,6 +524,7 @@ void Creature::equip(Item* item) {
   EquipmentSlot slot = item->getEquipmentSlot();
   equipment.equip(item, slot);
   item->onEquip(this);
+  EventListener::addEquipEvent(this, item);
   if (!inEquipChain)
     spendTime(1);
   else

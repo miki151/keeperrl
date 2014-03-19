@@ -85,9 +85,13 @@ void Renderer::drawText(Color color, int x, int y, const char* c, bool center, i
 }
 
 void Renderer::drawImage(int px, int py, const Image& image, double scale) {
+  drawImage(px, py, px + image.getSize().x * scale, py + image.getSize().y * scale, image, scale);
+}
+
+void Renderer::drawImage(int px, int py, int kx, int ky, const Image& image, double scale) {
   Texture t;
   t.loadFromImage(image);
-  Sprite s(t);
+  Sprite s(t, sf::IntRect(0, 0, (kx - px) / scale, (ky - py) / scale));
   s.setPosition(px, py);
   if (scale != 1)
     s.setScale(scale, scale);

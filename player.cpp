@@ -646,7 +646,7 @@ void Player::makeMove() {
                                 return;
                               } break;
     case ActionId::CAST_SPELL: spellAction(); break;
-    case ActionId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature->getLevel(), creature); break;
+    case ActionId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature); break;
     case ActionId::EXIT: model->exitAction(); break;
     case ActionId::IDLE: break;
   }

@@ -1107,7 +1107,7 @@ void Collective::processInput(View* view, CollectiveAction action) {
         } else
           gatheringTeam = true;
         break;
-    case CollectiveAction::DRAW_LEVEL_MAP: view->drawLevelMap(level, this); break;
+    case CollectiveAction::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case CollectiveAction::CANCEL_TEAM: gatheringTeam = false; team.clear(); break;
     case CollectiveAction::MARKET: handleMarket(view); break;
     case CollectiveAction::TECHNOLOGY: {
@@ -1610,6 +1610,11 @@ void Collective::onTechBookEvent(Technology* tech) {
     messageBuffer.addImportantMessage("The tome describes the knowledge of " + tech->getName()
         + ", which you already possess.");
   }
+}
+
+void Collective::onEquipEvent(const Creature* c, const Item* it) {
+  if (possessed == c)
+    minionEquipment.own(c, it);
 }
 
 MoveInfo Collective::getBeastMove(Creature* c) {

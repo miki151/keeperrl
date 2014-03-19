@@ -56,6 +56,7 @@ class Renderer {
   void drawText(Color color, int x, int y, string s, bool center = false, int size = textSize);
   void drawText(Color color, int x, int y, const char* c, bool center = false, int size = textSize);
   void drawImage(int px, int py, const Image& image, double scale = 1);
+  void drawImage(int px, int py, int kx, int ky, const Image& image, double scale = 1);
   void drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t, int dw = -1, int dh = -1,
       Optional<Color> color = Nothing());
   void drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline = Nothing());

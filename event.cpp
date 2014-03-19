@@ -95,3 +95,9 @@ void EventListener::addTechBookEvent(Technology* t) {
   for (EventListener* l : listeners)
     l->onTechBookEvent(t);
 }
+  
+void EventListener::addEquipEvent(const Creature* c, const Item* it) {
+  for (EventListener* l : listeners)
+    if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
+      l->onEquipEvent(c, it);
+}

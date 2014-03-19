@@ -28,6 +28,10 @@ void MapLayout::updatePlayerPos(Vec2 pos) {
   center = pos;
 }
 
+Vec2 MapLayout::getPlayerPos() {
+  return center.div(Vec2(squareW, squareH));
+}
+
 Rectangle MapLayout::getAllTiles(Rectangle screenBounds1, Rectangle tableBounds) {
   vector<Vec2> ret;
   Rectangle screenBounds = screenBounds1.minusMargin(-2 * squareH);
