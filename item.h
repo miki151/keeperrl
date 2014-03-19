@@ -85,7 +85,8 @@ class Item : private ItemAttributes, public UniqueEntity {
   static ItemPredicate typePredicate(vector<ItemType>);
   static ItemPredicate namePredicate(const string& name);
 
-  static map<string, vector<Item*>> stackItems(vector<Item*>);
+  static vector<pair<string, vector<Item*>>> stackItems(vector<Item*>,
+      function<string(const Item*)> addSuffix = [](const Item*) { return ""; });
 
   struct CorpseInfo {
     bool canBeRevived;

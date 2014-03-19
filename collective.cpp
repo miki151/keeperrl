@@ -355,7 +355,7 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
       return minionEquipment.getOwner(it) == creature; });
   vector<Item*> slotItems;
   for (auto slot : slots) {
-    list.push_back(View::ListElem(Equipment::slotTitles.at(slot), View::TITLE));
+    list.emplace_back(Equipment::slotTitles.at(slot), View::TITLE);
     Item* item = nullptr;
     for (Item* it : ownedItems)
       if (it->canEquip() && it->getEquipmentSlot() == slot) {
@@ -366,16 +366,32 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
           item = it;
       }
     slotItems.push_back(item);
-    if (item)
+    if (item) {
+      removeElement(ownedItems, item);
       list.push_back(item->getNameAndModifiers() + (creature->getEquipment().isEquiped(item) 
             ? " (equiped)" : " (pending)"));
-    else
+    } else
       list.push_back("[Nothing]");
   }
+  list.emplace_back(View::ListElem("Consumables", View::TITLE));
+  vector<pair<string, vector<Item*>>> consumables = Item::stackItems(ownedItems,
+      [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
+  for (auto elem : consumables)
+    list.push_back(elem.first);
+  list.push_back("[Add item]");
   Optional<int> newIndex = model->getView()->chooseFromList(creature->getName() + "'s equipment", list, prevItem);
   if (!newIndex)
     return;
   int index = *newIndex;
+  if (index == slotItems.size() + consumables.size()) { // [Add item]
+    const Item* chosenItem = chooseEquipmentItem(view, nullptr, [&](const Item* it) {
+        return minionEquipment.getOwner(it) != creature && !it->canEquip() && minionEquipment.isItemUseful(it); });
+    if (chosenItem)
+      minionEquipment.own(creature, chosenItem);
+  } else
+  if (index >= slotItems.size()) {  // a consumable item
+    minionEquipment.discard(consumables[index - slotItems.size()].second[0]);
+  } else
   if (Item* item = slotItems[index])
     minionEquipment.discard(item);
   else {
@@ -383,9 +399,8 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
     const Item* chosenItem = chooseEquipmentItem(view, currentItem, [&](const Item* it) {
         return minionEquipment.getOwner(it) != creature
             && creature->canEquipIfEmptySlot(it) && it->getEquipmentSlot() == slots[index]; });
-    if (chosenItem) {
+    if (chosenItem)
       minionEquipment.own(creature, chosenItem);
-    }
   }
   handleEquipment(view, creature, index);
 }

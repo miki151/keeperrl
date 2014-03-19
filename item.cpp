@@ -72,17 +72,18 @@ ItemPredicate Item::namePredicate(const string& name) {
   return [name](const Item* item) { return item->getName() == name; };
 }
 
-map<string, vector<Item*>> Item::stackItems(vector<Item*> items) {
-  map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [](const Item* item) {
-        return item->getNameAndModifiers();
+vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, function<string(const Item*)> suffix) {
+  map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [suffix](const Item* item) {
+        return item->getNameAndModifiers() + suffix(item);
       });
-  map<string, vector<Item*>> ret;
+  vector<pair<string, vector<Item*>>> ret;
   for (auto elem : stacks)
     if (elem.second.size() > 1)
-      ret.insert(make_pair(
-          convertToString<int>(elem.second.size()) + " " + elem.second[0]->getNameAndModifiers(true), elem.second));
+      ret.emplace_back(
+          convertToString<int>(elem.second.size()) + " " 
+          + elem.second[0]->getNameAndModifiers(true) + suffix(elem.second[0]), elem.second);
     else
-      ret.insert(elem);
+      ret.push_back(elem);
   return ret;
 }
 

@@ -177,8 +177,7 @@ static void wordOfPower(Creature* c, EffectStrength strength) {
         other->takeDamage(Attack(c, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 25, false));
       }
     }
-    map<string, vector<Item*>> stacks = Item::stackItems(c->getSquare(v)->getItems());
-    for (auto elem : stacks) {
+    for (auto elem : Item::stackItems(c->getSquare(v)->getItems())) {
       l->throwItem(
         c->getSquare(v)->removeItems(elem.second),
         Attack(c, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
