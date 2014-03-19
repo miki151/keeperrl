@@ -143,6 +143,8 @@ enum class CreatureId {
     ARCHER,
     PESEANT,
     CHILD,
+    SHAMAN,
+    WARRIOR,
 
     LIZARDMAN,
     LIZARDLORD,
@@ -323,6 +325,8 @@ enum class ViewId {
   ARCHER,
   PESEANT,
   CHILD,
+  SHAMAN,
+  WARRIOR,
   GREAT_GOBLIN,
   GOBLIN,
   BANDIT,

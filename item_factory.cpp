@@ -517,13 +517,13 @@ ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
     factory.addItem({ItemId::ARROW, 2, 10, 30 });
   }
   if (contains(techs, Technology::get(TechId::TWO_H_WEAP))) {
-    factory.addItem({ItemId::BATTLE_AXE, 1 });
-    factory.addItem({ItemId::WAR_HAMMER, 1 });
+    factory.addItem({ItemId::BATTLE_AXE, 2 });
+    factory.addItem({ItemId::WAR_HAMMER, 2 });
     factory.addItem({ItemId::SPECIAL_BATTLE_AXE, 0.05 });
     factory.addItem({ItemId::SPECIAL_WAR_HAMMER, 0.05 });
   }
   if (contains(techs, Technology::get(TechId::IRON_WORKING))) {
-    factory.addItem({ItemId::SWORD, 2 });
+    factory.addItem({ItemId::SWORD, 6 });
     factory.addItem({ItemId::SPECIAL_SWORD, 0.05 });
     factory.addItem({ItemId::CHAIN_ARMOR, 2 });
     factory.addItem({ItemId::IRON_HELM, 2 });

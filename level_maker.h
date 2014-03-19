@@ -5,7 +5,7 @@
 #include "level.h"
 #include "creature_factory.h"
 
-enum class BuildingId { WOOD, MUD, BRICK };
+enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE };
 
 struct SettlementInfo {
   SettlementType type;
@@ -14,7 +14,6 @@ struct SettlementInfo {
   Optional<CreatureId> elder;
   Location* location;
   Tribe* tribe;
-  pair<int, int> size;
   BuildingId buildingId;
   vector<StairKey> downStairs;
   Optional<CreatureId> guardId;
@@ -40,7 +39,6 @@ class LevelMaker {
   static LevelMaker* pyramidLevel(Optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* towerLevel(Optional<StairKey> down, Optional<StairKey> up);
   static Vec2 getRandomExit(Rectangle rect, int minCornerDist = 1);
-  static LevelMaker* collectiveLevel(vector<StairKey> up, vector<StairKey> down, StairKey hellDown, Collective* col);
   static LevelMaker* grassAndTrees();
 };
 

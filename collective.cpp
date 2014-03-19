@@ -116,7 +116,7 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 20, "Library"}),
     BuildInfo({SquareType::LABORATORY, ResourceId::STONE, 15, "Laboratory"}, TechId::ALCHEMY),
     BuildInfo({SquareType::WORKSHOP, ResourceId::IRON, 15, "Workshop"}, TechId::CRAFTING),
-    BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast cage"}, TechId::BEAST, "Place it in the forest."),
+    BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast cage"}, Nothing(), "Place it in the forest."),
     BuildInfo({SquareType::GRAVE, ResourceId::STONE, 20, "Graveyard"}, TechId::NECRO),
     BuildInfo(BuildInfo::DESTROY),
     BuildInfo(BuildInfo::IMP),
@@ -302,6 +302,20 @@ static vector<ItemId> marketItems {
   ItemId::DEFENSE_AMULET,
   ItemId::FRIENDLY_ANIMALS_AMULET,
 };
+
+void Collective::minionView(View* view, Creature* creature, int prevIndex) {
+  auto index = view->chooseFromList(capitalFirst(creature->getNameAndTitle()) 
+      + ", level " + convertToString(creature->getExpLevel()),
+      {"Possess", "Manage equipment", "Information"}, prevIndex);
+  if (!index)
+    return;
+  switch (*index) {
+    case 0: possess(creature, view); return;
+    case 1: handleEquipment(view, creature); break;
+    case 2: messageBuffer.addMessage(MessageBuffer::important(creature->getDescription())); break;
+  }
+  minionView(view, creature, *index);
+}
 
 void Collective::autoEquipment(Creature* creature) {
   if (!creature->isHumanoid())
@@ -581,10 +595,9 @@ void Collective::handleSpawning(View* view, SquareType spawnSquare, const string
     Vec2 pos = chooseRandom(cages);
     PCreature& creature = creatures[*index].first;
     mana -= creatures[*index].second;
-    for (Vec2 v : pos.neighbors8(true))
+    for (Vec2 v : concat({pos}, pos.neighbors8(true)))
       if (level->getSquare(v)->canEnter(creature.get())) {
-        addCreature(creature.get(), minionType);
-        level->addCreature(v, std::move(creature));
+        addCreature(std::move(creature), v, minionType);
         break;
       }
     if (creature)
@@ -642,8 +655,7 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   for (Vec2 v : elem.first.neighbors8(true))
     if (level->getSquare(v)->canEnter(creature.get())) {
       level->getSquare(elem.first)->removeItems({elem.second});
-      addCreature(creature.get(), MinionType::UNDEAD);
-      level->addCreature(v, std::move(creature));
+      addCreature(std::move(creature), v, MinionType::UNDEAD);
       break;
     }
   if (creature)
@@ -1104,7 +1116,7 @@ void Collective::processInput(View* view, CollectiveAction action) {
         break;}
     case CollectiveAction::CREATURE_BUTTON: 
         if (!gatheringTeam)
-          handleEquipment(view, getCreature(action.getNum()));
+          minionView(view, getCreature(action.getNum()));
         else {
           if (contains(team, getCreature(action.getNum())))
             removeElement(team, getCreature(action.getNum()));
@@ -1112,8 +1124,6 @@ void Collective::processInput(View* view, CollectiveAction action) {
             team.push_back(getCreature(action.getNum()));
         }
         break;
-    case CollectiveAction::CREATURE_DESCRIPTION: messageBuffer.addMessage(MessageBuffer::important(
-                                                       getCreature(action.getNum())->getDescription())); break;
     case CollectiveAction::POSSESS: {
         Vec2 pos = action.getPosition();
         if (!pos.inRectangle(level->getBounds()))
@@ -1168,8 +1178,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
             if (v.inRectangle(level->getBounds()) && level->getSquare(v)->canEnter(imp.get()) 
                 && canSee(v)) {
               mana -= getImpCost();
-              addCreature(imp.get(), MinionType::IMP);
-              level->addCreature(v, std::move(imp));
+              addCreature(std::move(imp), v, MinionType::IMP);
               break;
             }
         }
@@ -1459,10 +1468,6 @@ void Collective::tick() {
   vector<Vec2> enemyPos;
   for (Vec2 pos : myTiles) {
     if (Creature* c = level->getSquare(pos)->getCreature()) {
- /*     if (!contains(creatures, c) && c->getTribe() == tribe
-          && !contains({"boulder"}, c->getName()))
-        // We just found a friendly creature (and not a boulder nor a chicken)
-        addCreature(c);*/
       if (c->getTribe() != tribe)
         enemyPos.push_back(c->getPosition());
     }
@@ -1865,6 +1870,13 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
   return MarkovChain<MinionTask>(MinionTask::SLEEP, {
       {MinionTask::SLEEP, {{ MinionTask::TRAIN, 0.5}}},
       {MinionTask::TRAIN, {{ MinionTask::SLEEP, 0.005}}}});
+}
+
+void Collective::addCreature(PCreature creature, Vec2 v, MinionType type) {
+  // strip all spawned minions
+  creature->getEquipment().removeAllItems();
+  addCreature(creature.get(), type);
+  level->addCreature(v, std::move(creature));
 }
 
 void Collective::addCreature(Creature* c, MinionType type) {

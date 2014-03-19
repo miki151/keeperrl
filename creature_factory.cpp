@@ -720,28 +720,24 @@ CreatureFactory CreatureFactory::hellLevel() {
   return CreatureFactory(Tribes::get(TribeId::MONSTER), { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
 }
 
-CreatureFactory CreatureFactory::collectiveEnemies() {
-  return CreatureFactory(Tribes::get(TribeId::HUMAN), { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {});
+CreatureFactory CreatureFactory::vikingTown() {
+  return CreatureFactory(Tribes::get(TribeId::HUMAN), { CreatureId::WARRIOR}, { 1}, {});
 }
 
-CreatureFactory CreatureFactory::collectiveFinalAttack() {
+CreatureFactory CreatureFactory::vikingAttackers() {
+  return CreatureFactory(Tribes::get(TribeId::HUMAN), { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
+}
+
+CreatureFactory CreatureFactory::castleAttackers() {
   return CreatureFactory(Tribes::get(TribeId::HUMAN), { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {CreatureId::AVATAR});
 }
 
-CreatureFactory CreatureFactory::collectiveElfEnemies() {
-  return CreatureFactory(Tribes::get(TribeId::ELVEN), { CreatureId::ELF_ARCHER}, { 1}, {});
-}
-
-CreatureFactory CreatureFactory::collectiveElfFinalAttack() {
+CreatureFactory CreatureFactory::elfAttackers() {
   return CreatureFactory(Tribes::get(TribeId::ELVEN), { CreatureId::ELF_ARCHER, }, { 1}, {CreatureId::ELF_LORD});
 }
 
-CreatureFactory CreatureFactory::collectiveLizardFinalAttack() {
+CreatureFactory CreatureFactory::lizardAttackers() {
   return CreatureFactory(Tribes::get(TribeId::LIZARD), { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
-}
-
-CreatureFactory CreatureFactory::collectiveSurpriseEnemies() {
-  return CreatureFactory(Tribes::get(TribeId::MONSTER), { CreatureId::SPECIAL_MONSTER}, { 1}, {});
 }
 
 CreatureFactory CreatureFactory::dwarfTownPeaceful() {
@@ -1047,6 +1043,17 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity += 6;
           c.barehandedDamage += 5;
           c.name = "Duke of " + NameGenerator::worldNames.getNext(););
+    case CreatureId::WARRIOR:
+      return INHERIT(KNIGHT,
+          c.viewId = ViewId::WARRIOR;
+          c.name = "warrior";);
+    case CreatureId::SHAMAN:
+      return INHERIT(WARRIOR,
+          c.viewId = ViewId::SHAMAN;
+          c.spells.push_back(Creature::getSpell(SpellId::HEALING));
+          c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
+          c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
+          c.name = "shaman";);
     case CreatureId::ARCHER: 
       return CATTR(
           c.viewId = ViewId::ARCHER;
@@ -1347,7 +1354,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::DWARF_BARON;
           //  c.firstName = NameGenerator::dwarfNames.getNext();
           c.strength += 6;
-          c.dexterity += 3;
+          c.dexterity += 5;
+          c.speed += 10;
           c.weight = 120;
           c.name = "dwarf baron";);
     case CreatureId::LIZARDMAN: 
@@ -1370,8 +1378,8 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(LIZARDMAN,
           c.viewId = ViewId::LIZARDLORD;
           c.speed += 20;
-          c.strength += 4;
-          c.dexterity += 4;
+          c.strength += 6;
+          c.dexterity += 6;
           c.weight = 60;
           c.name = "lizardman chief";);
     case CreatureId::ELF: 
@@ -1852,9 +1860,6 @@ class ItemList {
 
 vector<ItemId> getInventory(CreatureId id) {
   switch (id) {
-    case CreatureId::KEEPER: 
-      return ItemList()
-        .add(ItemId::LEATHER_ARMOR);
     case CreatureId::DEATH: 
       return ItemList()
         .add(ItemId::SCYTHE);
@@ -1866,6 +1871,14 @@ vector<ItemId> getInventory(CreatureId id) {
         .add(chooseRandom({ItemId::KNIFE}))
         .maybe(0.3, ItemId::LEATHER_BOOTS)
         .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.getRandom(20, 36)));
+    case CreatureId::WARRIOR: 
+      return ItemList()
+        .add(ItemId::LEATHER_ARMOR)
+        .add(ItemId::SWORD);
+    case CreatureId::SHAMAN: 
+      return ItemList()
+        .add(ItemId::LEATHER_ARMOR)
+        .add(ItemId::SWORD);
     case CreatureId::LIZARDLORD: 
     case CreatureId::LIZARDMAN: 
       return ItemList().add(ItemId::LEATHER_ARMOR);

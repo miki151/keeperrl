@@ -450,14 +450,20 @@ string getPlural(const string& a, const string&b, int num) {
     return convertToString(num) + " " + b;
 }
 
-static map<string, pair<ViewObject, int>> getCreatureMap(vector<const Creature*> creatures) {
-  map<string, pair<ViewObject, int>> creatureMap;
+struct CreatureMapElem {
+  ViewObject object;
+  int count;
+  const Creature* any;
+};
+
+static map<string, CreatureMapElem> getCreatureMap(vector<const Creature*> creatures) {
+  map<string, CreatureMapElem> creatureMap;
   for (int i : All(creatures)) {
     auto elem = creatures[i];
     if (!creatureMap.count(elem->getName())) {
-      creatureMap.insert(make_pair(elem->getName(), make_pair(elem->getViewObject(), 1)));
+      creatureMap.insert(make_pair(elem->getName(), CreatureMapElem({elem->getViewObject(), 1, elem})));
     } else
-      ++creatureMap[elem->getName()].second;
+      ++creatureMap[elem->getName()].count;
   }
   return creatureMap;
 }
@@ -474,20 +480,24 @@ static void drawViewObject(const ViewObject& obj, int x, int y, bool sprite) {
 }
 
 void WindowView::drawMinions(GameInfo::BandInfo& info) {
-  map<string, pair<ViewObject, int>> creatureMap = getCreatureMap(info.creatures);
-  map<string, pair<ViewObject, int>> enemyMap = getCreatureMap(info.enemies);
+  map<string, CreatureMapElem> creatureMap = getCreatureMap(info.creatures);
+  map<string, CreatureMapElem> enemyMap = getCreatureMap(info.enemies);
   renderer.drawText(white, renderer.getWidth() - rightBarText, legendStartHeight, info.monsterHeader);
   int cnt = 0;
   int lineStart = legendStartHeight + 35;
   int textX = renderer.getWidth() - rightBarText + 10;
   for (auto elem : creatureMap){
     int height = lineStart + cnt * legendLineHeight;
-    drawViewObject(elem.second.first, textX, height, currentTileLayout.sprites);
+    drawViewObject(elem.second.object, textX, height, currentTileLayout.sprites);
     Color col = (elem.first == chosenCreature) ? green : white;
     renderer.drawText(col, textX + 20, height,
-        convertToString(elem.second.second) + "   " + elem.first);
+        convertToString(elem.second.count) + "   " + elem.first);
     creatureGroupButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
     creatureNames.push_back(elem.first);
+    if (elem.second.count == 1)
+      uniqueCreatures.push_back(elem.second.any);
+    else
+      uniqueCreatures.push_back(nullptr);
     ++cnt;
   }
   
@@ -516,8 +526,8 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
     renderer.drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, "Enemies:");
     for (auto elem : enemyMap){
       int height = lineStart + (cnt + 2) * legendLineHeight + 10;
-      drawViewObject(elem.second.first, textX, height, currentTileLayout.sprites);
-      renderer.drawText(white, textX + 20, height, convertToString(elem.second.second) + "   " + elem.first);
+      drawViewObject(elem.second.object, textX, height, currentTileLayout.sprites);
+      renderer.drawText(white, textX + 20, height, convertToString(elem.second.count) + "   " + elem.first);
       ++cnt;
     }
   }
@@ -545,9 +555,6 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
         chosenCreatures.push_back(c);
         ++cnt;
       }
-      int height = lineStart + cnt * legendLineHeight + 10;
-      renderer.drawText(white, winX + 20, height, "[show description]");
-      descriptionButton = Rectangle(winX, height, winX + width + 20, height + legendLineHeight);
     }
   }
 }
@@ -654,7 +661,7 @@ void WindowView::drawBandInfo() {
   teamButton = Nothing();
   cancelTeamButton = Nothing();
   chosenCreatures.clear();
-  descriptionButton = Nothing();
+  uniqueCreatures.clear();
   if (collectiveOption != CollectiveOption::MINIONS)
     chosenCreature = "";
   switch (collectiveOption) {
@@ -1388,6 +1395,8 @@ CollectiveAction WindowView::getClick(double time) {
               }
             for (int i : All(creatureGroupButtons))
               if (clickPos.inRectangle(creatureGroupButtons[i])) {
+                if (uniqueCreatures[i] != nullptr)
+                  return CollectiveAction(CollectiveAction::CREATURE_BUTTON, uniqueCreatures[i]->getUniqueId());
                 if (chosenCreature == creatureNames[i])
                   chosenCreature = "";
                 else
@@ -1398,9 +1407,6 @@ CollectiveAction WindowView::getClick(double time) {
               if (clickPos.inRectangle(creatureButtons[i])) {
                 return CollectiveAction(CollectiveAction::CREATURE_BUTTON, chosenCreatures[i]->getUniqueId());
               }
-            if (descriptionButton && clickPos.inRectangle(*descriptionButton)) {
-              return CollectiveAction(CollectiveAction::CREATURE_DESCRIPTION, chosenCreatures[0]->getUniqueId());
-            }
             leftMouseButtonPressed = true;
             chosenCreature = "";
             if (clickPos.inRectangle(getMapViewBounds())) {

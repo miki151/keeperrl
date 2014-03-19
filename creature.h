@@ -56,6 +56,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void take(PItem item);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
+  Equipment& getEquipment();
   vector<PItem> steal(const vector<Item*> items);
   virtual bool canSee(const Creature*) const override;
   virtual bool canSee(Vec2 pos) const override;

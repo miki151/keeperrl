@@ -53,7 +53,7 @@ class Collective : public CreatureView, public EventListener {
   void tick();
   void update(Creature*);
   MoveInfo getMove(Creature* c);
-  void addCreature(Creature* c, MinionType = MinionType::NORMAL);
+  void addCreature(Creature* c, MinionType);
   void setLevel(Level* l);
 
   virtual const Level* getLevel() const;
@@ -131,6 +131,7 @@ class Collective : public CreatureView, public EventListener {
   SERIALIZATION_DECL(Collective);
 
   private:
+  void addCreature(PCreature c, Vec2 v, MinionType);
   Creature* getCreature(UniqueId id);
   void unpossess();
   void possess(const Creature*, View*);
@@ -233,6 +234,7 @@ class Collective : public CreatureView, public EventListener {
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   const Item* chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate) const;
   void autoEquipment(Creature* creature);
+  void minionView(View* view, Creature* creature, int prevItem = 0);
   void handleEquipment(View* view, Creature* creature, int prevItem = 0);
   void handleNecromancy(View*, int prevItem = 0, bool firstTime = true);
   void handleMatterAnimation(View*);

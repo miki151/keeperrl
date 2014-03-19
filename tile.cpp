@@ -162,6 +162,8 @@ Tile getSprite(ViewId id) {
     case ViewId::CYCLOPS: return Tile(10, 14);
     case ViewId::WITCH: return Tile(15, 16);
     case ViewId::KNIGHT: return Tile(0, 0);
+    case ViewId::WARRIOR: return Tile(6, 0);
+    case ViewId::SHAMAN: return Tile(5, 0);
     case ViewId::CASTLE_GUARD: return Tile(15, 2);
     case ViewId::AVATAR: return Tile(9, 0);
     case ViewId::ARCHER: return Tile(2, 0);
@@ -376,6 +378,8 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::DEVIL: return Tile('&', purple);
     case ViewId::CASTLE_GUARD: return Tile('@', lightGray);
     case ViewId::KNIGHT: return Tile('@', lightGray);
+    case ViewId::WARRIOR: return Tile('@', darkGray);
+    case ViewId::SHAMAN: return Tile('@', yellow);
     case ViewId::AVATAR: return Tile('@', blue);
     case ViewId::ARCHER: return Tile('@', brown);
     case ViewId::PESEANT: return Tile('@', green);

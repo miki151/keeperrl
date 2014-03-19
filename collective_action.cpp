@@ -8,7 +8,7 @@ vector<CollectiveAction::Type> vectorIntTypes { CollectiveAction::BUILD, Collect
   CollectiveAction::RECT_SELECTION };
 vector<CollectiveAction::Type> vectorTypes { CollectiveAction::POSSESS };
 vector<CollectiveAction::Type> intTypes { CollectiveAction::TECHNOLOGY, CollectiveAction::BUTTON_RELEASE,
-    CollectiveAction::CREATURE_BUTTON, CollectiveAction::CREATURE_DESCRIPTION};
+    CollectiveAction::CREATURE_BUTTON};
 
 CollectiveAction::CollectiveAction(Type t, Vec2 p, int n) : type(t), pos(p), num(n) {
   CHECK(contains(vectorIntTypes, t));

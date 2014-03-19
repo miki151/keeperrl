@@ -137,11 +137,11 @@ class WindowView: public View {
   vector<Rectangle> techButtons;
   vector<Rectangle> creatureGroupButtons;
   vector<Rectangle> creatureButtons;
-  Optional<Rectangle> descriptionButton;
   Optional<Rectangle> teamButton;
   Optional<Rectangle> cancelTeamButton;
   Optional<Rectangle> impButton;
   Optional<Rectangle> pauseButton;
+  vector<const Creature*> uniqueCreatures;
   vector<string> creatureNames;
   string chosenCreature;
   vector<const Creature*> chosenCreatures;

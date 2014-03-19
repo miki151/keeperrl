@@ -27,12 +27,11 @@ class CreatureFactory {
   static CreatureFactory hellLevel();
   static CreatureFactory dwarfTown();
   static CreatureFactory dwarfTownPeaceful();
-  static CreatureFactory collectiveEnemies();
-  static CreatureFactory collectiveFinalAttack();
-  static CreatureFactory collectiveElfEnemies();
-  static CreatureFactory collectiveElfFinalAttack();
-  static CreatureFactory collectiveLizardFinalAttack();
-  static CreatureFactory collectiveSurpriseEnemies();
+  static CreatureFactory vikingTown();
+  static CreatureFactory vikingAttackers();
+  static CreatureFactory castleAttackers();
+  static CreatureFactory elfAttackers();
+  static CreatureFactory lizardAttackers();
   static CreatureFactory goblinTown(int num);
   static CreatureFactory level(int num);
   static CreatureFactory splash();

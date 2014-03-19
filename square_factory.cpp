@@ -598,7 +598,7 @@ class TrainingDummy : public Furniture {
   }
 
   virtual void onApply(Creature* c) override {
-    c->increaseExpLevel(Random.getRandom(0.01, 0.03));
+    c->increaseExpLevel(Random.getDouble(0.01, 0.03));
   }
 
   template <class Archive> 
@@ -767,7 +767,7 @@ Square* SquareFactory::get(SquareType s) {
             {{SquareType::FLOOR, Random.getRandom(30, 80)}},
             ItemFactory::fromId(ItemId::ROCK, Random.getRandom(5, 20)));
     case SquareType::LOW_ROCK_WALL:
-        return new SolidSquare(ViewObject(ViewId::LOW_ROCK_WALL, ViewLayer::FLOOR, "Wall"), "wall", false);
+        return new SolidSquare(ViewObject(ViewId::LOW_ROCK_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
     case SquareType::WOOD_WALL:
         return new SolidSquare(ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR, "Wooden wall", true), "wall", false,
             {}, false, 1);

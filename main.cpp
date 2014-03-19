@@ -232,7 +232,8 @@ int main(int argc, char* argv[]) {
       break;
     if (!model) {
       view->presentText("Sorry!", "World generation permanently failed with the following error:\n \n" + ex +
-          "\n \nIf you would be so kind, please send this line to rusolis@poczta.fm Thanks!");
+          "\n \nIf you would be so kind, please send the file \'crash.log\'"
+          " to rusolis@poczta.fm Thanks!");
       saveExceptionLine("crash.log", ex);
     }
     int var = 0;
@@ -255,8 +256,8 @@ int main(int argc, char* argv[]) {
 #ifdef RELEASE
     catch (string ex) {
       view->presentText("Sorry!", "The game has crashed with the following error:\n \n" + ex +
-          "\n \nIf you would be so kind, please send this line and a description of the circumstances to "
-          " rusolis@poczta.fm Thanks!");
+          "\n \nIf you would be so kind, please send the file \'crash.log\'"
+          " and a description of the circumstances to rusolis@poczta.fm Thanks!");
       saveExceptionLine("crash.log", ex);
     }
 #endif

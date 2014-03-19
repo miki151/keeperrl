@@ -344,6 +344,10 @@ const Equipment& Creature::getEquipment() const {
   return equipment;
 }
 
+Equipment& Creature::getEquipment() {
+  return equipment;
+}
+
 vector<PItem> Creature::steal(const vector<Item*> items) {
   return equipment.removeItems(items);
 }
@@ -1822,6 +1826,7 @@ void Creature::increaseExpLevel(double amount) {
     if (skillGain.count(getExpLevel()) && isHumanoid()) {
       you(MsgType::ARE, "more experienced");
       addSkill(skillGain.at(getExpLevel()));
+      skillGain.erase(getExpLevel());
     }
   }
 }

@@ -575,12 +575,14 @@ struct BuildingInfo {
 };
 
 BuildingInfo woodBuilding { SquareType::WOOD_WALL, SquareType::FLOOR, SquareType::GRASS, SquareType::DOOR};
+BuildingInfo woodCastleBuilding { SquareType::WOOD_WALL, SquareType::FLOOR, SquareType::MUD, SquareType::DOOR};
 BuildingInfo mudBuilding { SquareType::MUD_WALL, SquareType::MUD, SquareType::MUD, SquareType::MUD};
 BuildingInfo brickBuilding { SquareType::CASTLE_WALL, SquareType::FLOOR, SquareType::MUD, SquareType::DOOR};
 
 static BuildingInfo get(BuildingId id) {
   switch (id) {
     case BuildingId::WOOD: return woodBuilding;
+    case BuildingId::WOOD_CASTLE: return woodCastleBuilding;
     case BuildingId::MUD: return mudBuilding;
     case BuildingId::BRICK: return brickBuilding;
   }
@@ -1667,6 +1669,18 @@ LevelMaker* makeDragonSwamp(StairKey down, Quest* dragonQuest) {
   return queue;
 }
 
+pair<int, int> getSize(SettlementType type) {
+  switch (type) {
+    case SettlementType::WITCH_HOUSE:
+    case SettlementType::COTTAGE: return {Random.getRandom(8, 12), Random.getRandom(8, 12)};
+    case SettlementType::VILLAGE:
+    case SettlementType::CASTLE: return {30, 20};
+    case SettlementType::CASTLE2: return {15, 15};
+  }
+  FAIL << "fewf";
+  return {0, 0};
+}
+
 LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
   MakerQueue* queue = new MakerQueue();
   vector<SquareType> vegetationLow { SquareType::CANIF_TREE, SquareType::BUSH };
@@ -1708,7 +1722,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
     if (settlement.tribe == Tribes::get(TribeId::BANDIT))
       bandits = queue;
     subMakers.push_back(queue);
-    subSizes.push_back(settlement.size);
+    subSizes.push_back(getSize(settlement.type));
     predicates.push_back(lowlandPred);
   }
   maxDistances[{elvenVillage, bandits}] = 100;
@@ -1815,7 +1829,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
     subMakers.push_back(queue);
     predicates.push_back(new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
           new NoAttribPredicate(SquareAttrib::FOG)));
-    subSizes.emplace_back(settlement.size);
+    subSizes.emplace_back(getSize(settlement.type));
   }
   for (LevelMaker* cottage : cottages)
     for (int i : Range(Random.getRandom(1, 3))) {
@@ -1929,79 +1943,6 @@ LevelMaker* LevelMaker::pyramidLevel(Optional<CreatureFactory> cfactory, vector<
     queue->addMaker(new Creatures(*cfactory, Random.getRandom(3, 5), MonsterAIFactory::monster()));
   queue->addMaker(new Connector({1, 0, 0}));
   return queue;
-}
-
-LevelMaker* getSurprise(Collective* col, Optional<StairKey> hellDown = Nothing()) {
-  MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new UniformBlob(SquareType::PATH, SquareType::ROCK_WALL));
-  queue->addMaker(new LocationMaker(new Location(true)));
-  int numSurprise = Random.getRandom(8);
-  if (hellDown)
-    numSurprise = 8;
-  switch (numSurprise) {
-    case 0: queue->addMaker(new Items(ItemFactory::singleType(ItemId::GOLD_PIECE), SquareType::PATH, 500, 1000));
-            break;
-    case 1: queue->addMaker(new Items(ItemFactory::mushrooms(), SquareType::PATH, 5, 15));
-            break;
-    case 2: queue->addMaker(new Creatures(CreatureFactory::collectiveSurpriseEnemies(), 1,
-                  MonsterAIFactory::collective(col)));
-            break;
-    case 3: {Deity* deity = Deity::getDeity(chooseRandom({DeityHabitat::STONE, DeityHabitat::EARTH}));
-            queue->addMaker(new Shrine(deity, SquareType::PATH,
-                new TypePredicate({SquareType::ROCK_WALL, SquareType::BLACK_WALL}), SquareType::ROCK_WALL, nullptr));
-            break;
-            }
-    case 4: queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::MONSTER), CreatureId::RAT),
-                  Random.getRandom(3, 6), MonsterAIFactory::monster()));
-            break;
-    case 5: queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::MONSTER), CreatureId::BAT),
-                  Random.getRandom(3, 6), MonsterAIFactory::monster()));
-            break;
-    case 6: queue->addMaker(new Creatures(CreatureFactory::collectiveSurpriseEnemies(), Random.getRandom(1, 2),
-                  MonsterAIFactory::monster()));
-            break;
-    case 7: queue->addMaker(new Items(ItemFactory::armory(), SquareType::PATH, 5, 15));
-            break;
-    case 8: queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::MONSTER), CreatureId::DEVIL),
-                  Random.getRandom(2, 4), MonsterAIFactory::monster()));
-            queue->addMaker(new Stairs(StairDirection::DOWN, *hellDown, new TypePredicate(SquareType::PATH),
-                  Nothing(), StairLook::HELL));
-            break;
-  }
-  return queue;
-}
-  
-LevelMaker* LevelMaker::collectiveLevel(vector<StairKey> up, vector<StairKey> down, StairKey hellDown,
-    Collective* col) {
-  MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new Empty(SquareType::ROCK_WALL));
-  queue->addMaker(underground(false));
-  vector<LevelMaker*> makers;
-  vector<pair<int, int>> sizes;
-  MakerQueue* area = new MakerQueue();
-  area->addMaker(new UniformBlob(SquareType::PATH, SquareType::ROCK_WALL, SquareAttrib::COLLECTIVE_STAIRS));
-  for (StairKey key : down)
-    area->addMaker(new Stairs(StairDirection::DOWN, key, new AttribPredicate(SquareAttrib::COLLECTIVE_STAIRS)));
-  for (StairKey key : up)
-    area->addMaker(new Stairs(StairDirection::UP, key, new AttribPredicate(SquareAttrib::COLLECTIVE_STAIRS)));
-  makers.push_back(area);
-  sizes.emplace_back(10, 10);
-  MakerQueue* startPos = new MakerQueue();
-  startPos->addMaker(new UniformBlob(SquareType::PATH, SquareType::ROCK_WALL, SquareAttrib::COLLECTIVE_START));
-  startPos->addMaker(new Margin(2, new StartingPos(new AttribPredicate(SquareAttrib::COLLECTIVE_START),
-          StairKey::PLAYER_SPAWN)));
-  makers.push_back(startPos);
-  sizes.emplace_back(5, 5);
-  for (int i : Range(Random.getRandom(2, 5))) {
-    makers.push_back(i == 0 ? getSurprise(col, hellDown) : getSurprise(col));
-    sizes.emplace_back(5, 5);
-  }
-  for (int i : Range(Random.getRandom(4, 7))) {
-    makers.push_back(new UniformBlob(SquareType::GOLD_ORE));
-    sizes.emplace_back(Random.getRandom(5, 10), Random.getRandom(5, 10));
-  }
-  queue->addMaker(new RandomLocations(makers, sizes, new AlwaysTrue(), true, {{{area, startPos}, 20}}));
-  return new BorderGuard(queue, SquareType::BLACK_WALL);
 }
 
 LevelMaker* LevelMaker::cellarLevel(CreatureFactory cfactory, SquareType wallType, StairLook stairLook,
