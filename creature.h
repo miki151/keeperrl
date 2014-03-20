@@ -8,7 +8,6 @@
 #include "attack.h"
 #include "shortest_path.h"
 #include "tribe.h"
-#include "timer_var.h"
 #include "skill.h"
 #include "map_memory.h"
 #include "creature_view.h"
@@ -49,10 +48,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void heal(double amount = 1, bool replaceLimbs = false);
   double getHealth() const;
   double getWeight() const;
-  void sleep(int time);
-  bool isSleeping() const;
   bool canSleep() const;
-  void wakeUp();
   void take(PItem item);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
@@ -60,9 +56,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   vector<PItem> steal(const vector<Item*> items);
   virtual bool canSee(const Creature*) const override;
   virtual bool canSee(Vec2 pos) const override;
-  void slowDown(double duration);
-  void speedUp(double duration);
-
   void tick(double realTime);
 
   string getTheName() const;
@@ -162,20 +155,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void hide();
   bool isHidden() const;
   bool knowsHiding(const Creature*) const;
-  void panic(double time);
-  void rage(double time);
-  void hallucinate(double time);
-  bool isHallucinating() const;
-  void blind(double time);
   bool isBlind() const;
-  void makeInvisible(double time);
-  bool isInvisible() const;
-  void poison(double time);
-  void curePoisoning();
-  bool isPoisoned() const;
   void makeStunned();
-  void giveStrBonus(double time);
-  void giveDexBonus(double time);
   bool canFlyAway() const;
   void flyAway();
   bool canChatTo(Vec2 direction) const;
@@ -196,7 +177,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   void learnLocation(const Location*);
 
-  bool isPanicking() const;
   Item* getWeapon() const;
 
   Optional<Vec2> getMoveTowards(Vec2 pos, bool avoidEnemies = false);
@@ -253,7 +233,18 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
     ar & defaultCreature;
   }
 
+  enum LastingEffect {
+    SLEEP, PANIC, RAGE, SLOWED, SPEED, STR_BONUS, DEX_BONUS, HALLU, BLIND, INVISIBLE, POISON, ENTANGLED };
+
+  void addEffect(LastingEffect, double time);
+  void removeEffect(LastingEffect, bool msg = true);
+  bool isAffected(LastingEffect) const;
+
   private:
+  bool affects(LastingEffect effect) const;
+  void onAffected(LastingEffect effect);
+  void onRemoved(Creature::LastingEffect effect, bool msg);
+  void onTimedOut(Creature::LastingEffect effect, bool msg);
   static PCreature defaultCreature;
   Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool avoidEnemies);
   double getInventoryWeight() const;
@@ -301,17 +292,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   int numEquipActions = 0;
   const Creature* lastAttacker = nullptr;
   int swapPositionCooldown = 0;
-  TimerVar sleeping;
-  TimerVar panicking;
-  TimerVar enraged;
-  TimerVar slowed;
-  TimerVar speeding;
-  TimerVar strBonus;
-  TimerVar dexBonus;
-  TimerVar hallucinating;
-  TimerVar blinded;
-  TimerVar invisible;
-  TimerVar poisoned;
+  map<LastingEffect, double> lastingEffects;
   bool stunned = false;
   double expLevel = 1;
   vector<const Creature*> unknownAttacker;

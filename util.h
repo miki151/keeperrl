@@ -462,6 +462,11 @@ vector<T> getKeys(const map<T, V>& m) {
   return ret;
 }
 
+template <typename T>
+T copyThis(const T& t) {
+  return t;
+}
+
 template <typename T, typename V>
 map<V, vector<T> > groupBy(const vector<T>& values, function<V (const T&)> getKey) {
   map<V, vector<T> > ret;

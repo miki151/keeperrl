@@ -59,6 +59,7 @@ enum class MsgType {
     DECAPITATE,
     TURN,
     KILLED_BY,
+    BREAK_FREE,
     MISS_ATTACK}; //
 enum class BodyPart { HEAD, TORSO, ARM, WING, LEG, BACK};
 enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, HIT, SHOOT, SPELL};
@@ -72,7 +73,7 @@ enum class ArmorType { BODY_ARMOR, HELMET, BOOTS };
 enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP };
 
 enum class MinionTask { SLEEP, GRAVE, TRAIN, WORKSHOP, STUDY, LABORATORY};
-enum class TrapType { BOULDER, POISON_GAS, ALARM };
+enum class TrapType { BOULDER, POISON_GAS, ALARM, WEB, SURPRISE };
 
 enum class SquareAttrib {
   NO_DIG,
@@ -256,6 +257,8 @@ enum class ItemId { KNIFE,
   BOULDER_TRAP_ITEM,
   GAS_TRAP_ITEM,
   ALARM_TRAP_ITEM,
+  WEB_TRAP_ITEM,
+  SURPRISE_TRAP_ITEM,
 };
 
 enum class ViewLayer {
@@ -483,8 +486,12 @@ enum class ViewId {
   TRAP,
   GAS_TRAP,
   ALARM_TRAP,
+  WEB_TRAP,
+  SURPRISE_TRAP,
   UNARMED_GAS_TRAP,
   UNARMED_ALARM_TRAP,
+  UNARMED_WEB_TRAP,
+  UNARMED_SURPRISE_TRAP,
   ROCK,
   IRON_ROCK,
   WOOD_PLANK,
@@ -604,6 +611,8 @@ enum class EffectType {
     SUMMON_INSECTS,
     ACID,
     ALARM,
+    TELE_ENEMIES,
+    WEB,
 };
 
 enum class AnimationId {

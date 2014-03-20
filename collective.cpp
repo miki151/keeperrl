@@ -128,6 +128,8 @@ const vector<Collective::BuildInfo> Collective::workshopInfo {
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, TechId::TRAPS),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, TechId::TRAPS),
     BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS),
+    BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, TechId::TRAPS),
+    BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP}, TechId::TRAPS),
 };
 
 vector<Collective::RoomInfo> Collective::getRoomInfo() {
@@ -242,7 +244,7 @@ void Collective::render(View* view) {
   if (possessed && (!possessed->isPlayer() || possessed->isDead())) {
  /*   if (contains(team, possessed))
       removeElement(team, possessed);*/
-    if ((possessed->isDead() || possessed->isSleeping()) && !team.empty()) {
+    if ((possessed->isDead() || possessed->isAffected(Creature::SLEEP)) && !team.empty()) {
       possess(team.front(), view);
     } else {
       view->setTimeMilli(possessed->getTime() * 300);
@@ -897,6 +899,8 @@ static ViewObject getTrapObject(TrapType type) {
     case TrapType::BOULDER: return ViewObject(ViewId::UNARMED_BOULDER_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
     case TrapType::POISON_GAS: return ViewObject(ViewId::UNARMED_GAS_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
     case TrapType::ALARM: return ViewObject(ViewId::UNARMED_ALARM_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
+    case TrapType::WEB: return ViewObject(ViewId::UNARMED_WEB_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
+    case TrapType::SURPRISE: return ViewObject(ViewId::UNARMED_SURPRISE_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
   }
   FAIL << "pofke";
   return ViewObject(ViewId::UNARMED_GAS_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
@@ -1060,8 +1064,8 @@ void Collective::possess(const Creature* cr, View* view) {
   CHECK(contains(creatures, cr));
   CHECK(!cr->isDead());
   Creature* c = const_cast<Creature*>(cr);
-  if (c->isSleeping())
-    c->wakeUp();
+  if (c->isAffected(Creature::SLEEP))
+    c->removeEffect(Creature::SLEEP);
   freeFromGuardPost(c);
   c->pushController(new Player(c, view, model, false, memory.get()));
   possessed = c;
@@ -1116,8 +1120,8 @@ void Collective::processInput(View* view, CollectiveAction action) {
  //         gatheringTeam = false;
           for (Creature* c : team) {
             freeFromGuardPost(c);
-            if (c->isSleeping())
-              c->wakeUp();
+            if (c->isAffected(Creature::SLEEP))
+              c->removeEffect(Creature::SLEEP);
           }
         } else
           gatheringTeam = true;
@@ -1407,10 +1411,10 @@ bool Collective::isDownstairsVisible() const {
 const static int timeToBuild = 50;
 
 void Collective::updateTraps() {
-  map<TrapType, vector<pair<Item*, Vec2>>> trapItems {
-    {TrapType::BOULDER, getTrapItems(TrapType::BOULDER, myTiles)},
-    {TrapType::POISON_GAS, getTrapItems(TrapType::POISON_GAS, myTiles)},
-    {TrapType::ALARM, getTrapItems(TrapType::ALARM, myTiles)}};
+  map<TrapType, vector<pair<Item*, Vec2>>> trapItems;
+  for (const BuildInfo& info : workshopInfo)
+    if (info.buildType == BuildInfo::TRAP)
+      trapItems[info.trapInfo.type] = getTrapItems(info.trapInfo.type, myTiles);
   for (auto elem : traps)
     if (!isDelayed(elem.first)) {
       vector<pair<Item*, Vec2>>& items = trapItems.at(elem.second.type);
@@ -1600,8 +1604,8 @@ void Collective::onAlarmEvent(const Level* l, Vec2 pos) {
     alarmInfo.finishTime = getTime() + alarmTime;
     alarmInfo.position = pos;
     for (Creature* c : minions)
-      if (c->isSleeping())
-        c->wakeUp();
+      if (c->isAffected(Creature::SLEEP))
+        c->removeEffect(Creature::SLEEP);
   }
 }
 

@@ -265,7 +265,7 @@ struct KeyInfo {
   Event::KeyEvent event;
 };
 
-Rectangle minimapBounds(20, 70, 120, 170);
+Rectangle minimapBounds(20, 70, 100, 150);
 
 vector<KeyInfo> bottomKeys;
 
@@ -888,7 +888,7 @@ void WindowView::drawMap() {
   mapGui->render(renderer);
   if (lastCreatureView) {
     const Level* level = lastCreatureView->getLevel();
-    Vec2 rad(60, 60);
+    Vec2 rad(40, 40);
     Rectangle bounds(mapLayout->getPlayerPos() - rad, mapLayout->getPlayerPos() + rad);
     renderer.drawFilledRectangle(minimapBounds.minusMargin(-2), Color::Transparent, gray);
     if (level->getBounds().intersects(bounds))

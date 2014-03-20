@@ -293,6 +293,8 @@ void Player::throwAction(Optional<Vec2> dir) {
 }
 
 void Player::throwItem(vector<Item*> items, Optional<Vec2> dir) {
+  if (items[0]->getType() == ItemType::AMMO && Options::getValue(OptionId::HINTS))
+    privateMessage(MessageBuffer::important("To fire arrows equip a bow and use alt + direction key"));
   if (!dir) {
     auto cDir = model->getView()->chooseDirection("Which direction do you want to throw?");
     if (!cDir)
@@ -557,7 +559,7 @@ void Player::remember(Vec2 pos, const ViewObject& object) {
 }
 
 void Player::sleeping() {
-  if (creature->isHallucinating())
+  if (creature->isAffected(Creature::HALLU))
     ViewObject::setHallu(true);
   else
     ViewObject::setHallu(false);
@@ -569,7 +571,7 @@ void Player::sleeping() {
 void Player::makeMove() {
   vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
   const vector<Creature*>& creatures = creature->getLevel()->getAllCreatures();
-  if (creature->isHallucinating())
+  if (creature->isAffected(Creature::HALLU))
     ViewObject::setHallu(true);
   else
     ViewObject::setHallu(false);
@@ -650,7 +652,7 @@ void Player::makeMove() {
     case ActionId::EXIT: model->exitAction(); break;
     case ActionId::IDLE: break;
   }
-  if (creature->isSleeping() && creature->canPopController()) {
+  if (creature->isAffected(Creature::SLEEP) && creature->canPopController()) {
     if (model->getView()->yesOrNoPrompt("You fell asleep. Do you want to leave your minion?"))
       creature->popController();
     return;
@@ -734,9 +736,9 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::BITE: msg = "You bite " + param; break;
     case MsgType::PUNCH: msg = "You punch " + param; break;
     case MsgType::PANIC:
-          msg = !creature->isHallucinating() ? "You are suddenly very afraid" : "You freak out completely"; break;
+          msg = !creature->isAffected(Creature::HALLU) ? "You are suddenly very afraid" : "You freak out completely"; break;
     case MsgType::RAGE:
-          msg = !creature->isHallucinating() ?"You are suddenly very angry" : "This will be a very long trip."; break;
+          msg = !creature->isAffected(Creature::HALLU) ?"You are suddenly very angry" : "This will be a very long trip."; break;
     case MsgType::CRAWL: msg = "You are crawling"; break;
     case MsgType::STAND_UP: msg = "You are back on your feet"; break;
     case MsgType::CAN_SEE_HIDING: msg = param + " can see you hiding"; break;
@@ -750,6 +752,7 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::SET_UP_TRAP: msg = "You set up the trap"; break;
     case MsgType::KILLED_BY: msg = "You are killed by " + param; break;
     case MsgType::TURN: msg = "You turn into " + param; break;
+    case MsgType::BREAK_FREE: msg = "You break free from " + param; break;
     case MsgType::HIT: msg = "You hit " + param; break;
     default: break;
   }

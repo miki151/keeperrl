@@ -57,17 +57,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(hidden)
     & BOOST_SERIALIZATION_NVP(lastAttacker)
     & BOOST_SERIALIZATION_NVP(swapPositionCooldown)
-    & BOOST_SERIALIZATION_NVP(sleeping)
-    & BOOST_SERIALIZATION_NVP(panicking)
-    & BOOST_SERIALIZATION_NVP(enraged)
-    & BOOST_SERIALIZATION_NVP(slowed)
-    & BOOST_SERIALIZATION_NVP(speeding)
-    & BOOST_SERIALIZATION_NVP(strBonus)
-    & BOOST_SERIALIZATION_NVP(dexBonus)
-    & BOOST_SERIALIZATION_NVP(hallucinating)
-    & BOOST_SERIALIZATION_NVP(blinded)
-    & BOOST_SERIALIZATION_NVP(invisible)
-    & BOOST_SERIALIZATION_NVP(poisoned)
+    & BOOST_SERIALIZATION_NVP(lastingEffects)
     & BOOST_SERIALIZATION_NVP(stunned)
     & BOOST_SERIALIZATION_NVP(expLevel)
     & BOOST_SERIALIZATION_NVP(unknownAttacker)
@@ -212,7 +202,7 @@ void Creature::spendTime(double t) {
 }
 
 bool Creature::canMove(Vec2 direction) const {
-  if (holding) {
+  if (holding || isAffected(ENTANGLED)) {
     privateMessage("You can't break free!");
     return false;
   }
@@ -272,7 +262,7 @@ bool Creature::canSwapPosition(Vec2 direction) const {
   const Creature* c = getConstSquare(direction)->getCreature();
   if (!c)
     return false;
-  if (c->sleeping) {
+  if (c->isAffected(SLEEP)) {
     privateMessage(c->getTheName() + " is sleeping.");
     return false;
   }
@@ -293,7 +283,7 @@ void Creature::makeMove() {
   CHECK(!isDead());
   if (holding && holding->isDead())
     holding = nullptr;
-  if (sleeping) {
+  if (isAffected(SLEEP)) {
     controller->sleeping();
     spendTime(1);
     return;
@@ -632,97 +622,122 @@ bool Creature::knowsHiding(const Creature* c) const {
   return knownHiding.count(c) == 1;
 }
 
-void Creature::panic(double time) {
-  if (sleeping)
-    return;
-  enraged.unset();
-  if (!panicking)
-    you(MsgType::PANIC, "");
-  panicking.set(getTime() + time);
+bool Creature::affects(LastingEffect effect) const {
+  switch (effect) {
+    case RAGE:
+    case PANIC: return !isAffected(SLEEP);
+    case BLIND: return !permanentlyBlind;
+    case POISON: return !poisonResistant && !isNotLiving();
+    case ENTANGLED: return !noBody;
+    default: return true;
+  }
 }
 
-void Creature::hallucinate(double time) {
-  if (!isBlind())
-    privateMessage("The world explodes into colors!");
-  hallucinating.set(getTime() + time);
+void Creature::onAffected(LastingEffect effect) {
+  switch (effect) {
+    case PANIC:
+      removeEffect(RAGE, false);
+      you(MsgType::PANIC, "");
+      break;
+    case RAGE:
+      removeEffect(PANIC, false);
+      you(MsgType::RAGE, "");
+      break;
+    case HALLU: 
+      if (!isBlind())
+        privateMessage("The world explodes into colors!");
+      break;
+    case BLIND:
+      you(MsgType::ARE, "blind!");
+      viewObject.setBlind(true);
+      break;
+    case INVISIBLE:
+      if (!isBlind())
+        you(MsgType::TURN_INVISIBLE, "");
+      viewObject.setInvisible(true);
+      break;
+    case POISON:
+      you(MsgType::ARE, "poisoned");
+      viewObject.setPoisoned(true);
+      break;
+    case STR_BONUS: you(MsgType::FEEL, "stronger"); break;
+    case DEX_BONUS: you(MsgType::FEEL, "more agile"); break;
+    case SPEED: 
+      you(MsgType::ARE, "moving faster");
+      removeEffect(SLOWED, false);
+      break;
+    case SLOWED: 
+      you(MsgType::ARE, "moving more slowly");
+      removeEffect(SPEED, false);
+      break;
+    case ENTANGLED: you(MsgType::ARE, "entangled in a web"); break;
+    case SLEEP: you(MsgType::FALL_ASLEEP, ""); break;
+  }
 }
 
-bool Creature::isHallucinating() const {
-  return hallucinating;
+void Creature::onRemoved(LastingEffect effect, bool msg) {
+  switch (effect) {
+    case POISON:
+      if (msg)
+        you(MsgType::ARE, "cured from poisoning");
+      viewObject.setPoisoned(false);
+      break;
+    default: onTimedOut(effect, msg); break;
+  }
 }
 
-void Creature::blind(double time) {
-  if (permanentlyBlind)
-    return;
-  if (!blinded) 
-    you(MsgType::ARE, "blind!");
-  viewObject.setBlind(true);
-  blinded.set(getTime() + time);
+void Creature::onTimedOut(LastingEffect effect, bool msg) {
+  switch (effect) {
+    case SLOWED: if (msg) you(MsgType::ARE, "moving faster again"); break;
+    case SLEEP: if (msg) you(MsgType::WAKE_UP, ""); break;
+    case SPEED: if (msg) you(MsgType::ARE, "moving more slowly again"); break;
+    case STR_BONUS: if (msg) you(MsgType::ARE, "weaker again"); break;
+    case DEX_BONUS: if (msg) you(MsgType::ARE, "less agile again"); break;
+    case PANIC:
+    case RAGE:
+    case HALLU: if (msg) privateMessage("Your mind is clear again"); break;
+    case ENTANGLED: if (msg) you(MsgType::BREAK_FREE, "the web"); break;
+    case BLIND:
+      if (msg) 
+        you("can see again");
+      viewObject.setBlind(false);
+      break;
+    case INVISIBLE:
+      if (msg)
+        you(MsgType::TURN_VISIBLE, "");
+      viewObject.setInvisible(false);
+      break;
+    case POISON:
+      if (msg)
+        you(MsgType::ARE, "no longer poisoned");
+      viewObject.setPoisoned(false);
+      break;
+  } 
+}
+
+void Creature::addEffect(LastingEffect effect, double time) {
+  if (affects(effect)) {
+    lastingEffects[effect] = getTime() + time;
+    onAffected(effect);
+  }
+}
+
+void Creature::removeEffect(LastingEffect effect, bool msg) {
+  lastingEffects.erase(effect);
+  onRemoved(effect, msg);
+}
+
+bool Creature::isAffected(LastingEffect effect) const {
+  return lastingEffects.count(effect) && lastingEffects.at(effect) >= getTime();
 }
 
 bool Creature::isBlind() const {
-  return blinded || permanentlyBlind;
-}
-
-void Creature::makeInvisible(double time) {
-  if (!isBlind())
-    you(MsgType::TURN_INVISIBLE, "");
-  viewObject.setInvisible(true);
-  invisible.set(getTime() + time);
-}
-
-bool Creature::isInvisible() const {
-  return invisible;
-}
-
-void Creature::poison(double time) {
-  if (!poisonResistant && !isNotLiving()) {
-    you(MsgType::ARE, "poisoned");
-    viewObject.setPoisoned(true);
-    poisoned.set(getTime() + time);
-  }
-}
-
-void Creature::curePoisoning() {
-  if (poisoned) {
-    you(MsgType::ARE, "cured from poisoning");
-    viewObject.setPoisoned(false);
-    poisoned.unset();
-  }
-}
-
-bool Creature::isPoisoned() const {
-  return poisoned;
+  return isAffected(BLIND) || permanentlyBlind;
 }
 
 void Creature::makeStunned() {
   you(MsgType::ARE, "stunned");
   stunned = true;
-}
-
-void Creature::rage(double time) {
-  if (sleeping)
-    return;
-  panicking.unset();
-  if (!enraged)
-    you(MsgType::RAGE, "");
-  enraged.set(getTime() + time);
-}
-
-void Creature::giveStrBonus(double time) {
-  if (!strBonus)
-    you(MsgType::FEEL, "stronger");
-  strBonus.set(getTime() + time);
-}
-
-void Creature::giveDexBonus(double time) {
-  if (!dexBonus)
-    you(MsgType::FEEL, "more agile");
-  dexBonus.set(getTime() + time);
-}
-
-bool Creature::isPanicking() const {
-  return panicking;
 }
 
 int Creature::getAttrVal(AttrType type) const {
@@ -754,9 +769,9 @@ int Creature::getAttr(AttrType type) const {
         def += tribe->getHandicap();
         if (health < 1)
           def *= 0.666 + health / 3;
-        if (sleeping)
+        if (isAffected(SLEEP))
           def *= 0.66;
-        if (strBonus)
+        if (isAffected(STR_BONUS))
           def += attrBonus;
         def -= (injuredArms + lostArms) * strPenNoArm + 
                (injuredLegs + lostLegs) * strPenNoLeg +
@@ -766,9 +781,9 @@ int Creature::getAttr(AttrType type) const {
         def += tribe->getHandicap();
         if (health < 1)
           def *= 0.666 + health / 3;
-        if (sleeping)
+        if (isAffected(SLEEP))
           def = 0;
-        if (dexBonus)
+        if (isAffected(DEX_BONUS))
           def += attrBonus;
         def -= (injuredArms + lostArms) * dexPenNoArm + 
                (injuredLegs + lostLegs) * dexPenNoLeg +
@@ -779,16 +794,16 @@ int Creature::getAttr(AttrType type) const {
         def += getAttr(AttrType::STRENGTH);
         if (!getWeapon())
           def += barehandedDamage;
-        if (panicking)
+        if (isAffected(PANIC))
           def -= attrBonus;
-        if (enraged)
+        if (isAffected(RAGE))
           def += attrBonus;
         break;
     case AttrType::DEFENSE: 
         def += getAttr(AttrType::STRENGTH);
-        if (panicking)
+        if (isAffected(PANIC))
           def += attrBonus;
-        if (enraged)
+        if (isAffected(RAGE))
           def -= attrBonus;
         break;
     case AttrType::THROWN_TO_HIT: 
@@ -799,9 +814,9 @@ int Creature::getAttr(AttrType type) const {
         double totWeight = getInventoryWeight();
         if (!carryAnything && totWeight > getAttr(AttrType::STRENGTH))
           def -= 20.0 * totWeight / def;
-        if (slowed)
+        if (isAffected(SLOWED))
           def /= 2;
-        if (speeding)
+        if (isAffected(SPEED))
           def *= 2;
         break;}
     case AttrType::INV_LIMIT:
@@ -892,18 +907,6 @@ void Creature::setLevel(Level* l) {
   level = l;
 }
 
-void Creature::slowDown(double duration) {
-  you(MsgType::ARE, "moving more slowly");
-  speeding.unset();
-  slowed.set(getTime() + duration);
-}
-
-void Creature::speedUp(double duration) {
-  you(MsgType::ARE, "moving faster");
-  slowed.unset();
-  speeding.set(getTime() + duration);
-}
-
 double Creature::getTime() const {
   return time;
 }
@@ -919,35 +922,12 @@ void Creature::tick(double realTime) {
     if (item->isDiscarded())
       equipment.removeItem(item);
   }
-  if (slowed.isFinished(realTime))
-    you(MsgType::ARE, "moving faster again");
-  if (sleeping.isFinished(realTime))
-    you(MsgType::WAKE_UP, "");
-  if (speeding.isFinished(realTime))
-    you(MsgType::ARE, "moving more slowly again");
-  if (strBonus.isFinished(realTime))
-    you(MsgType::ARE, "weaker again");
-  if (dexBonus.isFinished(realTime))
-    you(MsgType::FEEL, "less agile again");
-  if (panicking.isFinished(realTime) || enraged.isFinished(realTime) || hallucinating.isFinished(realTime)) {
-    if (!hallucinating)
-      privateMessage("Your mind is clear again");
-    else
-      privateMessage("Your brain is hurting a bit less.");
-  }
-  if (blinded.isFinished(realTime)) {
-    you("can see again");
-    viewObject.setBlind(false);
-  }
-  if (invisible.isFinished(realTime)) {
-    you(MsgType::TURN_VISIBLE, "");
-    viewObject.setInvisible(false);
-  }
-  if (poisoned.isFinished(realTime)) {
-    you(MsgType::ARE, "no longer poisoned");
-    viewObject.setPoisoned(false);
-  } 
-  else if (poisoned) {
+  for (auto elem : copyThis(lastingEffects))
+    if (elem.second < realTime) {
+      lastingEffects.erase(elem.first);
+      onTimedOut(elem.first, true);
+    }
+  else if (isAffected(POISON)) {
     bleed(1.0 / 60);
     privateMessage("You feel poison flowing in your veins.");
   }
@@ -964,7 +944,7 @@ void Creature::tick(double realTime) {
     privateMessage("You are bleeding.");
   }
   if (health <= 0) {
-    you(MsgType::DIE_OF, isPoisoned() ? "poisoning" : "bleeding");
+    you(MsgType::DIE_OF, isAffected(POISON) ? "poisoning" : "bleeding");
     die(lastAttacker);
   }
 
@@ -1120,9 +1100,9 @@ void Creature::attack(const Creature* c1, bool spend) {
   string enemyName = getLevel()->playerCanSee(c) ? c->getTheName() : "something";
   if (c->isPlayer())
     enemyName = "";
-  if (!c->isSleeping() && !c->canSee(this) && canSee(c)) {
+  if (!c->canSee(this) && canSee(c)) {
  //   if (getWeapon() && getWeapon()->getAttackType() == AttackType::STAB) {
-      damage += 15;
+      damage += 10;
       backstab = true;
  //   }
     you(MsgType::ATTACK_SURPRISE, enemyName);
@@ -1160,8 +1140,8 @@ bool Creature::dodgeAttack(const Attack& attack) {
 }
 
 bool Creature::takeDamage(const Attack& attack) {
-  if (sleeping)
-    wakeUp();
+  if (isAffected(SLEEP))
+    removeEffect(SLEEP);
   if (const Creature* c = attack.getAttacker())
     if (!contains(privateEnemies, c) && c->getTribe() != tribe)
       privateEnemies.push_back(c);
@@ -1455,22 +1435,8 @@ bool Creature::isHeld() const {
   return holding != nullptr;
 }
 
-void Creature::sleep(int time) {
-  if (!noSleep)
-    sleeping.set(getTime() + time);
-}
-
-bool Creature::isSleeping() const {
-  return sleeping;
-}
-
 bool Creature::canSleep() const {
   return !noSleep;
-}
-
-void Creature::wakeUp() {
-  you(MsgType::WAKE_UP, "");
-  sleeping.unset();
 }
 
 void Creature::take(vector<PItem> items) {
@@ -1691,7 +1657,7 @@ bool Creature::canSee(const Creature* c) const {
   for (Vision* v : visions)
     if (v->canSee(this, c))
       return true;
-  return !isBlind() && !c->isInvisible() &&
+  return !isBlind() && !c->isAffected(INVISIBLE) &&
          (!c->isHidden() || c->knowsHiding(this)) && 
          getLevel()->canSee(position, c->getPosition());
 }
@@ -2011,7 +1977,7 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     info.spellcaster = !spells.empty();
     if (isBlind())
       info.adjectives.push_back("blind");
-    if (isInvisible())
+    if (isAffected(INVISIBLE))
       info.adjectives.push_back("invisible");
     if (numArms() == 1)
       info.adjectives.push_back("one-armed");
@@ -2021,7 +1987,7 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
       info.adjectives.push_back("one-legged");
     if (numLegs() == 0)
       info.adjectives.push_back("legless");
-    if (isHallucinating())
+    if (isAffected(HALLU))
       info.adjectives.push_back("tripped");
     Item* weapon = getEquipment().getItem(EquipmentSlot::WEAPON);
     info.weaponName = weapon ? weapon->getAName() : "";
@@ -2029,15 +1995,15 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     info.levelName = location && location->hasName() 
       ? capitalFirst(location->getName()) : getLevel()->getName();
     info.speed = getAttr(AttrType::SPEED);
-    info.speedBonus = speeding ? 1 : slowed ? -1 : 0;
+    info.speedBonus = isAffected(SPEED) ? 1 : isAffected(SLOWED) ? -1 : 0;
     info.defense = getAttr(AttrType::DEFENSE);
-    info.defBonus = enraged ? -1 : panicking ? 1 : 0;
+    info.defBonus = isAffected(RAGE) ? -1 : isAffected(PANIC) ? 1 : 0;
     info.attack = getAttr(AttrType::DAMAGE);
-    info.attBonus = enraged ? 1 : panicking ? -1 : 0;
+    info.attBonus = isAffected(RAGE) ? 1 : isAffected(PANIC) ? -1 : 0;
     info.strength = getAttr(AttrType::STRENGTH);
-    info.strBonus = strBonus;
+    info.strBonus = isAffected(STR_BONUS);
     info.dexterity = getAttr(AttrType::DEXTERITY);
-    info.dexBonus = dexBonus;
+    info.dexBonus = isAffected(DEX_BONUS);
     info.time = getTime();
     info.numGold = getGold(100000000).size();
     info.elfStanding = Tribes::get(TribeId::ELVEN)->getStanding(this);

@@ -486,7 +486,7 @@ class Bed : public Furniture {
   }
 
   virtual void tickSpecial(double time) override {
-    if (getCreature() && getCreature()->isSleeping())
+    if (getCreature() && getCreature()->isAffected(Creature::SLEEP))
       getCreature()->heal(0.005);
   }
 

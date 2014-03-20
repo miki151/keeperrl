@@ -95,6 +95,7 @@ void Monster::you(MsgType type, const string& param) const {
     case MsgType::SET_UP_TRAP: msg = "You set up the trap"; break;
     case MsgType::KILLED_BY: msg = creature->getTheName() + " is killed by " + param; break;
     case MsgType::TURN: msg = creature->getTheName() + " turns into " + param; break;
+    case MsgType::BREAK_FREE: msg = creature->getTheName() + " breaks free from " + param; break;
     case MsgType::HIT: msg = creature->getTheName() + addName(" hits", param); break;
     default: break;
   }

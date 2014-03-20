@@ -267,6 +267,10 @@ Tile getSprite(ViewId id) {
     case ViewId::UNARMED_GAS_TRAP: return Tile(L'☠', lightGray, true);
     case ViewId::ALARM_TRAP: return Tile(16, 5, 3);
     case ViewId::UNARMED_ALARM_TRAP: return Tile(16, 5, 3).setTranslucent(0.6);
+    case ViewId::WEB_TRAP: return Tile(4, 1, 2);
+    case ViewId::UNARMED_WEB_TRAP: return Tile(4, 1, 2).setTranslucent(0.6);
+    case ViewId::SURPRISE_TRAP: return Tile(9, 10, 2);
+    case ViewId::UNARMED_SURPRISE_TRAP: return Tile(9, 10, 2).setTranslucent(0.6);
     case ViewId::ROCK: return Tile(6, 1, 3);
     case ViewId::IRON_ROCK: return Tile(10, 1, 3);
     case ViewId::WOOD_PLANK: return Tile(7, 10, 2);
@@ -482,6 +486,10 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::UNARMED_GAS_TRAP: return Tile(L'☠', lightGray, true);
     case ViewId::ALARM_TRAP: return Tile(L'^', red, true);
     case ViewId::UNARMED_ALARM_TRAP: return Tile(L'^', lightGray, true);
+    case ViewId::WEB_TRAP: return Tile('#', white, true);
+    case ViewId::UNARMED_WEB_TRAP: return Tile('#', lightGray, true);
+    case ViewId::SURPRISE_TRAP: return Tile('^', blue, true);
+    case ViewId::UNARMED_SURPRISE_TRAP: return Tile('^', lightGray, true);
     case ViewId::ROCK: return Tile('*', lightGray);
     case ViewId::IRON_ROCK: return Tile('*', orange);
     case ViewId::WOOD_PLANK: return Tile('\\', brown);

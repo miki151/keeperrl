@@ -261,7 +261,7 @@ static void heal(Creature* c, EffectStrength strength) {
 static void sleep(Creature* c, EffectStrength strength) {
   Square *square = c->getLevel()->getSquare(c->getPosition());
   c->you(MsgType::FALL_ASLEEP, square->getName());
-  c->sleep(Random.getRandom(sleepTime[strength]));
+  c->addEffect(Creature::SLEEP, Random.getRandom(sleepTime[strength]));
 }
 
 static void portal(Creature* c) {
@@ -368,14 +368,40 @@ static void alarm(Creature* c) {
   EventListener::addAlarmEvent(c->getLevel(), c->getPosition());
 }
 
+static void teleEnemies(Creature* c) {
+  Vec2 rad(8, 8);
+  bool wasMsg = false;
+  Level* level = c->getLevel();
+  for (Vec2 v : randomPermutation(Rectangle(-rad, rad).getAllSquares()))
+    if (Creature* other = c->getSquare(v)->getCreature())
+      if (other->isEnemy(c) && v.length8() > 1) {
+        for (Vec2 dest : Vec2::directions8(true))
+          if (level->canMoveCreature(other, dest - v)) {
+            level->moveCreature(other, dest - v);
+            other->privateMessage("Time for a welcoming committee");
+            if (!wasMsg) {
+              c->privateMessage("Surprise!");
+              wasMsg = true;
+            }
+            break;
+          }
+      }
+}
+
+double entangledTime(int strength) {
+  return max(2, 25 - strength / 2);
+}
+
 void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strength) {
   switch (type) {
+    case EffectType::WEB: c->addEffect(Creature::ENTANGLED, entangledTime(c->getAttr(AttrType::STRENGTH))); break;
+    case EffectType::TELE_ENEMIES: teleEnemies(c); break;
     case EffectType::ALARM: alarm(c); break;
     case EffectType::ACID: acid(c); break;
     case EffectType::SUMMON_INSECTS: insects(c); break;
     case EffectType::DECEPTION: deception(c); break;
     case EffectType::WORD_OF_POWER: wordOfPower(c, strength); break;
-    case EffectType::POISON: c->poison(poisonTime.at(strength)); break;
+    case EffectType::POISON: c->addEffect(Creature::POISON, poisonTime.at(strength)); break;
     case EffectType::EMIT_POISON_GAS: emitPoisonGas(c, strength); break;
     case EffectType::GUARDING_BOULDER: guardingBuilder(c); break;
     case EffectType::FIRE_SPHERE_PET: fireSpherePet(c); break;
@@ -385,15 +411,15 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::HEAL: heal(c, strength); break;
     case EffectType::SLEEP: sleep(c, strength); break;
     case EffectType::IDENTIFY: c->grantIdentify(identifyNum[strength]); break;
-    case EffectType::PANIC: c->panic(panicTime[strength]); break;
-    case EffectType::RAGE: c->rage(panicTime[strength]); break;
-    case EffectType::HALLU: c->hallucinate(panicTime[strength]); break;
-    case EffectType::STR_BONUS: c->giveStrBonus(attrBonusTime[strength]); break;
-    case EffectType::DEX_BONUS: c->giveDexBonus(attrBonusTime[strength]); break;
-    case EffectType::SLOW: c->slowDown(panicTime[strength]); break;
-    case EffectType::SPEED: c->speedUp(panicTime[strength]); break;
-    case EffectType::BLINDNESS: c->blind(blindTime[strength]); break;
-    case EffectType::INVISIBLE: c->makeInvisible(invisibleTime[strength]); break;
+    case EffectType::PANIC: c->addEffect(Creature::PANIC, panicTime[strength]); break;
+    case EffectType::RAGE: c->addEffect(Creature::RAGE, panicTime[strength]); break;
+    case EffectType::HALLU: c->addEffect(Creature::HALLU, panicTime[strength]); break;
+    case EffectType::STR_BONUS: c->addEffect(Creature::STR_BONUS, attrBonusTime[strength]); break;
+    case EffectType::DEX_BONUS: c->addEffect(Creature::DEX_BONUS, attrBonusTime[strength]); break;
+    case EffectType::SLOW: c->addEffect(Creature::SLOWED, panicTime[strength]); break;
+    case EffectType::SPEED: c->addEffect(Creature::SPEED, panicTime[strength]); break;
+    case EffectType::BLINDNESS: c->addEffect(Creature::BLIND, blindTime[strength]); break;
+    case EffectType::INVISIBLE: c->addEffect(Creature::INVISIBLE, invisibleTime[strength]); break;
     case EffectType::FIRE: c->getSquare()->setOnFire(fireAmount[strength]); break;
     case EffectType::PORTAL: portal(c); break;
     case EffectType::TELEPORT: teleport(c); break;
