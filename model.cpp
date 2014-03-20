@@ -361,10 +361,6 @@ struct EnemyInfo {
 
 vector<EnemyInfo> getEnemyInfo() {
   return {
-    {{SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), Random.getRandom(2, 6), Nothing(),
-       getVillageLocation(),
-       Tribes::get(TribeId::HUMAN), BuildingId::BRICK, {}, CreatureId::CASTLE_GUARD, ItemId::TECH_BOOK},
-      20, CreatureFactory::castleAttackers()},
       {{SettlementType::CASTLE2, CreatureFactory::vikingTown(),
          Random.getRandom(2, 6), Nothing(), getVillageLocation(), Tribes::get(TribeId::HUMAN),
          BuildingId::WOOD_CASTLE, {}, CreatureId::WARRIOR},
@@ -376,6 +372,10 @@ vector<EnemyInfo> getEnemyInfo() {
       {{SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.0), 7, Nothing(), getVillageLocation(),
          Tribes::get(TribeId::ELVEN), BuildingId::WOOD, {}, Nothing(), ItemId::SPELLS_MAS_BOOK},
       10, CreatureFactory::elfAttackers()},
+      {{SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), Random.getRandom(2, 6), Nothing(),
+         getVillageLocation(),
+         Tribes::get(TribeId::HUMAN), BuildingId::BRICK, {}, CreatureId::CASTLE_GUARD, ItemId::TECH_BOOK},
+      20, CreatureFactory::castleAttackers()},
   };
 }
 
@@ -429,19 +429,8 @@ Model* Model::collectiveModel(View* view) {
     m->collective->addCreature(c.get(), MinionType::IMP);
     m->addCreature(std::move(c));
   }
-  for (auto& elem : enemyInfo) {
-    PVillageControl control = VillageControl::topLevelVillage(m->collective.get(), elem.settlement.location,
-        getKilledCoeff(), getPowerCoeff());
-    for (int j : Range(elem.heroCount)) {
-      PCreature c = elem.factory.random(MonsterAIFactory::villageControl(control.get(),
-            elem.settlement.location));
-      control->addCreature(c.get());
-      top->landCreature(elem.settlement.location->getBounds().getAllSquares(), std::move(c));
-    }
-    m->villageControls.push_back(std::move(control));
-  }
   PVillageControl dwarfControl = VillageControl::dwarfVillage(m->collective.get(), d1,
-      StairDirection::UP, StairKey::DWARF, getKilledCoeff(), getPowerCoeff());
+      StairDirection::UP, StairKey::DWARF, VillageControl::getPowerTrigger(getKilledCoeff(), getPowerCoeff()));
   int dwarfCount = 10;
   CreatureFactory factory = CreatureFactory::dwarfTown();
   for (int k : Range(dwarfCount)) {
@@ -450,6 +439,18 @@ Model* Model::collectiveModel(View* view) {
     d1->landCreature(StairDirection::UP, StairKey::DWARF, std::move(c));
   }
   m->villageControls.push_back(std::move(dwarfControl));
+  for (int i : All(enemyInfo)) {
+    PVillageControl control = VillageControl::topLevelVillage(m->collective.get(), enemyInfo[i].settlement.location,
+        i < enemyInfo.size() - 1 ? VillageControl::getPowerTrigger(getKilledCoeff(), getPowerCoeff())
+        : VillageControl::getFinalTrigger(extractRefs(m->villageControls)));
+    for (int j : Range(enemyInfo[i].heroCount)) {
+      PCreature c = enemyInfo[i].factory.random(MonsterAIFactory::villageControl(control.get(),
+            enemyInfo[i].settlement.location));
+      control->addCreature(c.get());
+      top->landCreature(enemyInfo[i].settlement.location->getBounds().getAllSquares(), std::move(c));
+    }
+    m->villageControls.push_back(std::move(control));
+  }
   setHandicap(Tribes::get(TribeId::KEEPER), Options::getValue(OptionId::EASY_KEEPER));
   return m;
 }

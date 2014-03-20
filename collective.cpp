@@ -117,7 +117,7 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo({SquareType::LABORATORY, ResourceId::STONE, 15, "Laboratory"}, TechId::ALCHEMY),
     BuildInfo({SquareType::WORKSHOP, ResourceId::IRON, 15, "Workshop"}, TechId::CRAFTING),
     BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast cage"}, Nothing(), "Place it in the forest."),
-    BuildInfo({SquareType::GRAVE, ResourceId::STONE, 20, "Graveyard"}, TechId::NECRO),
+    BuildInfo({SquareType::GRAVE, ResourceId::STONE, 20, "Graveyard"}),
     BuildInfo(BuildInfo::DESTROY),
     BuildInfo(BuildInfo::IMP),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion."),

@@ -11,25 +11,26 @@ template <class Archive>
 void VillageControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(EventListener)
     & BOOST_SERIALIZATION_NVP(allCreatures)
-    & BOOST_SERIALIZATION_NVP(aliveCreatures)
     & BOOST_SERIALIZATION_NVP(villain)
     & BOOST_SERIALIZATION_NVP(level)
     & BOOST_SERIALIZATION_NVP(name)
     & BOOST_SERIALIZATION_NVP(tribe)
-    & BOOST_SERIALIZATION_NVP(killedPoints)
-    & BOOST_SERIALIZATION_NVP(killedCoeff)
-    & BOOST_SERIALIZATION_NVP(powerCoeff)
-    & BOOST_SERIALIZATION_NVP(lastAttack)
-    & BOOST_SERIALIZATION_NVP(lastMyAttack)
-    & BOOST_SERIALIZATION_NVP(lastAttackLaunched)
-    & BOOST_SERIALIZATION_NVP(triggerAmounts)
-    & BOOST_SERIALIZATION_NVP(fightingCreatures);
+    & BOOST_SERIALIZATION_NVP(attackTrigger);
 }
 
 SERIALIZABLE(VillageControl);
 
-VillageControl::VillageControl(Collective* c, const Level* l, string n, double kCoeff, double pCoeff) 
-    : villain(c), level(l), name(n), killedCoeff(kCoeff), powerCoeff(pCoeff) {
+template <class Archive>
+void VillageControl::AttackTrigger::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(control)
+    & BOOST_SERIALIZATION_NVP(fightingCreatures);
+}
+
+SERIALIZABLE(VillageControl::AttackTrigger);
+
+VillageControl::VillageControl(Collective* c, const Level* l, string n, AttackTrigger* trigger) 
+    : villain(c), level(l), name(n), attackTrigger(trigger) {
+  attackTrigger->setVillageControl(this);
 }
 
 VillageControl::~VillageControl() {
@@ -38,105 +39,187 @@ VillageControl::~VillageControl() {
 void VillageControl::addCreature(Creature* c) {
   if (tribe == nullptr) {
     tribe = c->getTribe();
-    CHECK(tribe->getLeader());
   }
   CHECK(c->getTribe() == tribe);
-  CHECK(triggerAmounts.empty()) << "Attacks have already been calculated";
   allCreatures.push_back(c);
 }
 
-// How long to wait between being attacked and attacking
-const int attackDelay = 60;
-
-// How long to wait between consecutive attacks from the same village
-const int myAttacksDelay = 300;
-
-double VillageControl::getCurrentTrigger() {
-  double enemyPoints = killedCoeff * killedPoints + powerCoeff * villain->getDangerLevel();
-  double currentTrigger = 0;
-  for (double trigger : triggerAmounts)
-    if (trigger <= enemyPoints)
-      currentTrigger = trigger;
-    else
-      break;
-  return currentTrigger;
+vector<const Creature*> VillageControl::getAliveCreatures() const {
+  return filter(allCreatures, [](const Creature* c) { return !c->isDead(); });
 }
 
-void VillageControl::tick(double time) {
-  if (triggerAmounts.empty())
-    calculateAttacks();
-  if (aliveCreatures.empty())
-    return;
-  if (lastAttack >= time - attackDelay || lastMyAttack >= time - myAttacksDelay)
-    return;
-  double lastAttackPoints = 0;
-  for (const Creature* c : allCreatures)
-    if (fightingCreatures.count(c))
-        lastAttackPoints += c->getDifficultyPoints();
-  bool firstAttack = lastAttackPoints == 0;
-  double currentTrigger = getCurrentTrigger();
-  if (lastAttackPoints < currentTrigger) {
-    lastMyAttack = time;
-    int numCreatures = 0;
-    for (const Creature* c : allCreatures)
-      if (!fightingCreatures.count(c) && !c->isDead()) {
-        ++numCreatures;
-        fightingCreatures.insert(c);
-        if ((lastAttackPoints += c->getDifficultyPoints()) >= currentTrigger)
-          break;
-      }
-    if (numCreatures > 0) {
-      if (currentTrigger >= *triggerAmounts.rbegin() - 0.001)
-        lastAttackLaunched = true;
-      if (fightingCreatures.size() < allCreatures.size()) {
-/*        if (numCreatures <= 3) {
-          if (firstAttack)
-            messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
-                  " of " + name + " have sent a small group to scout your dungeon. "
-                  "It it advisable that they never return from this mission."));
-          else
-            messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
-                  " of " + name + " are sending another small group of scouts. How cute is that?"));
-        } else*/
-          messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
-                " of " + name + " are attacking!"));
-      } else
-        messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
-              " of " + name + " have undertaken a final, desperate attack!"));
+class PowerTrigger : public VillageControl::AttackTrigger, public EventListener {
+  public:
+  // How long to wait between being attacked and attacking
+  const int attackDelay = 60;
+
+  // How long to wait between consecutive attacks from the same village
+  const int myAttacksDelay = 300;
+
+  PowerTrigger(double _killedCoeff, double _powerCoeff) : killedCoeff(_killedCoeff), powerCoeff(_powerCoeff) {}
+  double getCurrentTrigger() {
+    double enemyPoints = killedCoeff * killedPoints + powerCoeff * control->villain->getDangerLevel();
+    double currentTrigger = 0;
+    for (double trigger : triggerAmounts)
+      if (trigger <= enemyPoints)
+        currentTrigger = trigger;
+      else
+        break;
+    return currentTrigger;
+  }
+
+  void calculateAttacks() {
+    // If there is a leader then he is added first, so put him at the end
+    std::swap(control->allCreatures[0], control->allCreatures.back());
+    double myPower = 0;
+    for (const Creature* c : control->allCreatures)
+      myPower += c->getDifficultyPoints();
+    Debug() << "Village power " << myPower;
+    for (int i : Range(Random.getRandom(1, 3))) {
+      double trigger = myPower * Random.getDouble(0.4, 1.2);
+      triggerAmounts.insert(trigger);
+      Debug() << "Village trigger " << trigger;
     }
   }
+
+  void onKillEvent(const Creature* victim, const Creature* killer) override {
+    if (victim->getTribe() == control->tribe)
+      killedPoints += victim->getDifficultyPoints();
+    if (contains(control->allCreatures, victim))
+      lastAttack = victim->getTime();
+  }
+
+
+  virtual void tick(double time) override {
+    if (triggerAmounts.empty())
+      calculateAttacks();
+    if (control->getAliveCreatures().empty())
+      return;
+    if (lastAttack >= time - attackDelay || lastMyAttack >= time - myAttacksDelay)
+      return;
+    double lastAttackPoints = 0;
+    for (const Creature* c : control->allCreatures)
+      if (fightingCreatures.count(c))
+        lastAttackPoints += c->getDifficultyPoints();
+    bool firstAttack = lastAttackPoints == 0;
+    double currentTrigger = getCurrentTrigger();
+    if (lastAttackPoints < currentTrigger) {
+      lastMyAttack = time;
+      int numCreatures = 0;
+      for (const Creature* c : control->allCreatures)
+        if (!fightingCreatures.count(c) && !c->isDead()) {
+          ++numCreatures;
+          fightingCreatures.insert(c);
+          if ((lastAttackPoints += c->getDifficultyPoints()) >= currentTrigger)
+            break;
+        }
+      if (numCreatures > 0) {
+        if (currentTrigger >= *triggerAmounts.rbegin() - 0.001)
+          lastAttackLaunched = true;
+      //  if (fightingCreatures.size() < control->allCreatures.size()) {
+          /*        if (numCreatures <= 3) {
+                    if (firstAttack)
+                    messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
+                    " of " + name + " have sent a small group to scout your dungeon. "
+                    "It it advisable that they never return from this mission."));
+                    else
+                    messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
+                    " of " + name + " are sending another small group of scouts. How cute is that?"));
+                    } else*/
+          messageBuffer.addMessage(MessageBuffer::important("The " + control->tribe->getName() + 
+                " of " + control->name + " are attacking!"));
+//        } else
+  //        messageBuffer.addMessage(MessageBuffer::important("The " + control->tribe->getName() + 
+    //            " of " + control->name + " have undertaken a final, desperate attack!"));
+      }
+    }
+  }
+
+  SERIALIZATION_CONSTRUCTOR(PowerTrigger);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(VillageControl::AttackTrigger)
+      & BOOST_SERIALIZATION_NVP(killedPoints)
+      & BOOST_SERIALIZATION_NVP(killedCoeff)
+      & BOOST_SERIALIZATION_NVP(powerCoeff)
+      & BOOST_SERIALIZATION_NVP(lastAttack)
+      & BOOST_SERIALIZATION_NVP(lastMyAttack)
+      & BOOST_SERIALIZATION_NVP(lastAttackLaunched)
+      & BOOST_SERIALIZATION_NVP(triggerAmounts);
+  }
+
+  private:
+  double killedPoints = 0;
+  double killedCoeff;
+  double powerCoeff;
+  double lastAttack = 0;
+  double lastMyAttack = 0;
+  bool lastAttackLaunched = false;
+  set<double> triggerAmounts;
+};
+
+VillageControl::AttackTrigger* VillageControl::getPowerTrigger(double killedCoeff, double powerCoeff) {
+  return new PowerTrigger(killedCoeff, powerCoeff);
+}
+
+
+class FinalTrigger : public VillageControl::AttackTrigger {
+  public:
+  FinalTrigger(vector<VillageControl*> _controls) : controls(_controls) {}
+
+  virtual void tick(double time) {
+    if (totalWar)
+      return;
+    bool allConquered = true;
+    for (VillageControl* c : controls)
+      allConquered &= c->isConquered();
+    if (allConquered && !control->isConquered()) {
+      messageBuffer.addMessage(MessageBuffer::important(control->tribe->getLeader()->getTheName() + 
+            " and his army have undertaken a final, desperate attack!"));
+      totalWar = true;
+      for (const Creature* c : control->allCreatures)
+        fightingCreatures.insert(c);
+    }
+  }
+
+  SERIALIZATION_CONSTRUCTOR(FinalTrigger);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(VillageControl::AttackTrigger)
+      & BOOST_SERIALIZATION_NVP(controls)
+      & BOOST_SERIALIZATION_NVP(totalWar);
+  }
+
+  private:
+  vector<VillageControl*> controls;
+  bool totalWar = false;
+};
+
+VillageControl::AttackTrigger* VillageControl::getFinalTrigger(vector<VillageControl*> otherControls) {
+  return new FinalTrigger(otherControls);
 }
 
 bool VillageControl::isConquered() const {
-  return aliveCreatures.empty();
+  return getAliveCreatures().empty();
 }
 
-void VillageControl::calculateAttacks() {
-  // If there is a leader then he is added first, so put him at the end
-  std::swap(allCreatures[0], allCreatures.back());
-  aliveCreatures = allCreatures;
-  double myPower = 0;
-  for (const Creature* c : allCreatures)
-    myPower += c->getDifficultyPoints();
-  Debug() << "Village power " << myPower;
-  for (int i : Range(Random.getRandom(1, 3))) {
-    double trigger = myPower * Random.getDouble(0.4, 1.2);
-    triggerAmounts.insert(trigger);
-    Debug() << "Village trigger " << trigger;
-  }
-}
-
-bool VillageControl::startedAttack(Creature* creature) {
+bool VillageControl::AttackTrigger::startedAttack(const Creature* creature) {
   return fightingCreatures.count(creature);
 }
 
+void VillageControl::AttackTrigger::setVillageControl(VillageControl* c) {
+  control = c;
+}
+
+void VillageControl::tick(double time) {
+  attackTrigger->tick(time);
+}
+
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
-  if (victim->getTribe() == tribe)
-    killedPoints += victim->getDifficultyPoints();
   if (contains(allCreatures, victim)) {
-    lastAttack = victim->getTime();
-    removeElement(aliveCreatures, victim);
-    if (aliveCreatures.empty()) {
+    if (getAliveCreatures().empty()) {
       messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
     } else {
  /*     if (fightingCreatures.count(victim) && lastAttackLaunched
@@ -156,12 +239,11 @@ void VillageControl::onKillEvent(const Creature* victim, const Creature* killer)
 
 class TopLevelVillageControl : public VillageControl {
   public:
-  TopLevelVillageControl(Collective* villain, const Location* location, double killedCoeff, double powerCoeff) 
-      : VillageControl(villain, location->getLevel(), location->getName(), killedCoeff, powerCoeff),
-      villageLocation(location) {}
+  TopLevelVillageControl(Collective* villain, const Location* location, AttackTrigger* t) 
+      : VillageControl(villain, location->getLevel(), location->getName(), t), villageLocation(location) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (!startedAttack(c))
+    if (!attackTrigger->startedAttack(c))
       return NoMove;
     if (c->getLevel() != villain->getLevel())
       return NoMove;
@@ -192,20 +274,18 @@ class TopLevelVillageControl : public VillageControl {
   const Location* villageLocation;
 };
 
-PVillageControl VillageControl::topLevelVillage(Collective* villain, const Location* location,
-    double killedCoeff, double powerCoeff) {
-  return PVillageControl(new TopLevelVillageControl(villain, location, killedCoeff, powerCoeff));
+PVillageControl VillageControl::topLevelVillage(Collective* villain, const Location* location, AttackTrigger* t) {
+  return PVillageControl(new TopLevelVillageControl(villain, location, t));
 }
 
 
 class DwarfVillageControl : public VillageControl {
   public:
-  DwarfVillageControl(Collective* villain, const Level* level, StairDirection dir, StairKey key,
-    double killedCoeff, double powerCoeff)
-      : VillageControl(villain, level, "the Dwarven Halls", killedCoeff, powerCoeff), direction(dir), stairKey(key) {}
+  DwarfVillageControl(Collective* villain, const Level* level, StairDirection dir, StairKey key, AttackTrigger* t)
+      : VillageControl(villain, level, "the Dwarven Halls", t), direction(dir), stairKey(key) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (!startedAttack(c))
+    if (!attackTrigger->startedAttack(c))
       return NoMove;
     if (c->getLevel() == villain->getLevel()) {
       if (Optional<Vec2> move = c->getMoveTowards(villain->getKeeper()->getPosition())) 
@@ -250,12 +330,14 @@ template <class Archive>
 void VillageControl::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, TopLevelVillageControl);
   REGISTER_TYPE(ar, DwarfVillageControl);
+  REGISTER_TYPE(ar, PowerTrigger);
+  REGISTER_TYPE(ar, FinalTrigger);
 }
 
 REGISTER_TYPES(VillageControl);
 
 PVillageControl VillageControl::dwarfVillage(Collective* villain, const Level* level,
-    StairDirection dir, StairKey key, double killedCoeff, double powerCoeff) {
-  return PVillageControl(new DwarfVillageControl(villain, level, dir, key, killedCoeff, powerCoeff));
+    StairDirection dir, StairKey key, AttackTrigger* t) {
+  return PVillageControl(new DwarfVillageControl(villain, level, dir, key, t));
 }
 

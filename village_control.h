@@ -14,13 +14,35 @@ class VillageControl : public EventListener {
   void tick(double time);
 
   bool isConquered() const;
+  vector<const Creature*> getAliveCreatures() const;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
 
-  static PVillageControl topLevelVillage(Collective* villain, const Location* villageLocation,
-      double killedCoeff, double powerCoeff);
+  class AttackTrigger {
+    public:
+    virtual void tick(double time) = 0;
+    bool startedAttack(const Creature*);
+    void setVillageControl(VillageControl*);
+
+    virtual ~AttackTrigger() {}
+
+    SERIALIZATION_DECL(AttackTrigger);
+
+    protected:
+    set<const Creature*> fightingCreatures;
+    VillageControl* control = nullptr;
+  };
+
+  static AttackTrigger* getPowerTrigger(double killedCoeff, double powerCoeff);
+  static AttackTrigger* getFinalTrigger(vector<VillageControl*> otherControls);
+
+  friend class AttackTrigger;
+  friend class PowerTrigger;
+  friend class FinalTrigger;
+
+  static PVillageControl topLevelVillage(Collective* villain, const Location* villageLocation, AttackTrigger*);
   static PVillageControl dwarfVillage(Collective* villain, const Level*, 
-      StairDirection dir, StairKey key, double killedCoeff, double powerCoeff);
+      StairDirection dir, StairKey key, AttackTrigger*);
 
   SERIALIZATION_DECL(VillageControl);
 
@@ -28,24 +50,13 @@ class VillageControl : public EventListener {
   static void registerTypes(Archive& ar);
 
   protected:
-  VillageControl(Collective* villain, const Level*, string name, double killedCoeff, double powerCoeff);
-  void calculateAttacks();
-  double getCurrentTrigger();
-  bool startedAttack(Creature* creature);
+  VillageControl(Collective* villain, const Level*, string name, AttackTrigger*);
   vector<const Creature*> allCreatures;
-  vector<const Creature*> aliveCreatures;
   Collective* villain = nullptr;
   const Level* level = nullptr;
   string name;
   Tribe* tribe = nullptr;
-  double killedPoints = 0;
-  double killedCoeff;
-  double powerCoeff;
-  double lastAttack = 0;
-  double lastMyAttack = 0;
-  bool lastAttackLaunched = false;
-  set<double> triggerAmounts;
-  set<const Creature*> fightingCreatures;
+  unique_ptr<AttackTrigger> attackTrigger;
 };
 
 #endif
