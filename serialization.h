@@ -263,7 +263,7 @@ inline void serialize(Archive & ar, std::vector<T, Allocator> & t, unsigned int 
 }
 
 //tuple
-template<uint N>
+template<int N>
 struct Serialize
 {
     template<class Archive, typename... Args>

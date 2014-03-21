@@ -15,6 +15,7 @@ class VillageControl : public EventListener {
 
   bool isConquered() const;
   vector<const Creature*> getAliveCreatures() const;
+  bool currentlyAttacking() const;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
 

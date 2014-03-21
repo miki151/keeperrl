@@ -48,6 +48,49 @@ vector<const Creature*> VillageControl::getAliveCreatures() const {
   return filter(allCreatures, [](const Creature* c) { return !c->isDead(); });
 }
 
+bool VillageControl::currentlyAttacking() const {
+  for (const Creature* c : getAliveCreatures())
+    if (attackTrigger->startedAttack(c))
+      return true;
+  return false;
+}
+
+bool VillageControl::isConquered() const {
+  return getAliveCreatures().empty();
+}
+
+bool VillageControl::AttackTrigger::startedAttack(const Creature* creature) {
+  return fightingCreatures.count(creature);
+}
+
+void VillageControl::AttackTrigger::setVillageControl(VillageControl* c) {
+  control = c;
+}
+
+void VillageControl::tick(double time) {
+  attackTrigger->tick(time);
+}
+
+void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
+  if (contains(allCreatures, victim)) {
+    if (getAliveCreatures().empty()) {
+      messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
+    } else {
+ /*     if (fightingCreatures.count(victim) && lastAttackLaunched
+          && tribe->getLeader() && tribe->getLeader()->isDead()) {
+        bool attackersDead = true;
+        for (const Creature* c : fightingCreatures)
+          if (!c->isDead())
+            attackersDead = false;
+        if (attackersDead)
+          messageBuffer.addMessage(MessageBuffer::important("You have defeated the pathetic attacks of the "
+                + tribe->getName() + " of " + name + ". Take advantage of their weakened defense and kill their "
+                "leader, the " + tribe->getLeader()->getName()));
+      }*/
+    }
+  }
+}
+
 class PowerTrigger : public VillageControl::AttackTrigger, public EventListener {
   public:
   // How long to wait between being attacked and attacking
@@ -199,42 +242,6 @@ class FinalTrigger : public VillageControl::AttackTrigger {
 
 VillageControl::AttackTrigger* VillageControl::getFinalTrigger(vector<VillageControl*> otherControls) {
   return new FinalTrigger(otherControls);
-}
-
-bool VillageControl::isConquered() const {
-  return getAliveCreatures().empty();
-}
-
-bool VillageControl::AttackTrigger::startedAttack(const Creature* creature) {
-  return fightingCreatures.count(creature);
-}
-
-void VillageControl::AttackTrigger::setVillageControl(VillageControl* c) {
-  control = c;
-}
-
-void VillageControl::tick(double time) {
-  attackTrigger->tick(time);
-}
-
-void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
-  if (contains(allCreatures, victim)) {
-    if (getAliveCreatures().empty()) {
-      messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
-    } else {
- /*     if (fightingCreatures.count(victim) && lastAttackLaunched
-          && tribe->getLeader() && tribe->getLeader()->isDead()) {
-        bool attackersDead = true;
-        for (const Creature* c : fightingCreatures)
-          if (!c->isDead())
-            attackersDead = false;
-        if (attackersDead)
-          messageBuffer.addMessage(MessageBuffer::important("You have defeated the pathetic attacks of the "
-                + tribe->getName() + " of " + name + ". Take advantage of their weakened defense and kill their "
-                "leader, the " + tribe->getLeader()->getName()));
-      }*/
-    }
-  }
 }
 
 class TopLevelVillageControl : public VillageControl {

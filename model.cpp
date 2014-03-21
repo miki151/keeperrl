@@ -298,23 +298,29 @@ PCreature Model::makePlayer() {
 
 void Model::exitAction() {
   enum Action { RETIRE, SAVE, ABANDON, CANCEL };
-  vector<View::ListElem> options { "Save the game" };
-  vector<Action> actions { SAVE };
-  if (collective && !collective->isRetired() && (won || !Options::getValue(OptionId::AGGRESSIVE_HEROES))) {
-    options.emplace_back("Retire");
-    actions.push_back(RETIRE);
-  }
-  options.emplace_back("Abandon the game"); actions.push_back(ABANDON);
-  options.emplace_back("Cancel"); actions.push_back(CANCEL);
+  vector<View::ListElem> options { "Save the game", "Retire", "Abandon the game", "Cancel" };
   auto ind = view->chooseFromList("Would you like to:", options);
   if (!ind)
     return;
-  switch (actions[*ind]) {
-    case RETIRE: retireCollective(); throw SaveGameException(GameType::RETIRED_KEEPER);
-    case SAVE:if (!collective || collective->isRetired())
-                throw SaveGameException(GameType::ADVENTURER);
-              else
-                throw SaveGameException(GameType::KEEPER);
+  switch (Action(*ind)) {
+    case RETIRE: {
+      bool canRetire = true;
+      for (PVillageControl& c : villageControls)
+        if (c->currentlyAttacking()) {
+          view->presentText("", "You can't retire now as there is an ongoing attack.");
+          canRetire = false;
+          break;
+        }
+      if (canRetire) {
+        retireCollective();
+        throw SaveGameException(GameType::RETIRED_KEEPER);
+      }
+      }
+    case SAVE:
+      if (!collective || collective->isRetired())
+        throw SaveGameException(GameType::ADVENTURER);
+      else
+        throw SaveGameException(GameType::KEEPER);
     case ABANDON: throw GameOverException();
     default: break;
   }
