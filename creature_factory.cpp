@@ -1024,8 +1024,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::KNIGHT;
           c.speed = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 20;
-          c.dexterity = 16;
+          c.strength = 21;
+          c.dexterity = 17;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
