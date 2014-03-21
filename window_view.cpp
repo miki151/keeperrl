@@ -378,8 +378,6 @@ void WindowView::drawPlayerInfo() {
     bottomKeys = concat({{ "U", "Leave minion", {Keyboard::U}}}, bottomKeys);
   if (info.spellcaster)
     bottomKeys = concat({{ "S", "Cast spell", {Keyboard::S}}}, bottomKeys);
-  if (bottomKeys.size() < 6)
-    bottomKeys = concat({{ "Shift + Z", "World map", {Keyboard::Z, false, false, true}}}, bottomKeys);
   for (int i : All(bottomKeys)) {
     string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
     int endX = startX + renderer.getTextLength(text) + keySpacing;
@@ -1339,6 +1337,10 @@ CollectiveAction WindowView::getClick(double time) {
     switch (event.type) {
       case Event::KeyPressed:
         switch (event.key.code) {
+          case Keyboard::Up: center.y -= 1; break;
+          case Keyboard::Down: center.y += 1; break;
+          case Keyboard::Left: center.x -= 1; break;
+          case Keyboard::Right: center.x += 1; break;
           case Keyboard::Z:
             unzoom();
             return CollectiveAction(CollectiveAction::IDLE);

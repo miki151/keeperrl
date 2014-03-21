@@ -153,7 +153,7 @@ void Tribe::onItemsStolen(const Creature* attacker) {
 
 void Tribe::init() {
   Tribes::set(TribeId::MONSTER, new Tribe("", false));
-  Tribes::set(TribeId::LIZARD, new Tribe("lizardmen", false));
+  Tribes::set(TribeId::LIZARD, new Tribe("lizardmen", true));
   Tribes::set(TribeId::PEST, new Tribe("", false));
   Tribes::set(TribeId::WILDLIFE, new Tribe("", false));
   Tribes::set(TribeId::ELVEN, new Tribe("elves", true));

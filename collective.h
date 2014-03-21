@@ -47,6 +47,7 @@ class Collective : public CreatureView, public EventListener {
   virtual void onAlarmEvent(const Level*, Vec2 pos) override;
   virtual void onTechBookEvent(Technology*) override;
   virtual void onEquipEvent(const Creature*, const Item*) override;
+  virtual void onPickupEvent(const Creature* c, const vector<Item*>& items);
 
   void onConqueredLand(const string& name);
 

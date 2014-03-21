@@ -51,6 +51,25 @@ unordered_map<OptionId, vector<string>> valueNames {
   {OptionId::EASY_ADVENTURER, { "hard", "easy" }},
 };
 
+bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
+  vector<View::ListElem> options;
+  options.emplace_back("Change settings:", View::TITLE);
+  for (OptionId option : optionSets.at(set))
+    options.emplace_back(names.at(option) + "      " + valueNames.at(option)[getValue(option)]);
+  options.emplace_back("Done");
+  options.emplace_back("Cancel");
+  if (lastIndex == -1)
+    lastIndex = optionSets.at(set).size();
+  auto index = view->chooseFromList("", options, lastIndex);
+  if (!index || (*index) == optionSets.at(set).size() + 1)
+    return false;
+  else if (index && (*index) == optionSets.at(set).size())
+    return true;
+  OptionId option = optionSets.at(set)[*index];
+  setValue(option, 1 - getValue(option));
+  return handleOrExit(view, set, *index);
+}
+
 void Options::handle(View* view, OptionSet set, int lastIndex) {
   vector<View::ListElem> options;
   options.emplace_back("Change settings:", View::TITLE);

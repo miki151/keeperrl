@@ -326,7 +326,7 @@ class Fighter : public Behaviour, public EventListener {
       if (!creature->getWeapon() && weapon)
         myDamage += weapon->getModifier(AttrType::DAMAGE);
       double powerRatio = courage * myDamage / other->getAttr(AttrType::DAMAGE);
-      bool significantEnemy = myDamage < 3 * other->getAttr(AttrType::DAMAGE);
+      bool significantEnemy = myDamage < 2 * other->getAttr(AttrType::DAMAGE);
       double weight = 1. - creature->getHealth() * 0.9;
       if (powerRatio < maxPowerRatio)
         weight += 2 - powerRatio * 2;
@@ -351,11 +351,12 @@ class Fighter : public Behaviour, public EventListener {
   }
 
   MoveInfo getPanicMove(const Creature* other, double weight) {
-    MoveInfo teleMove = tryToApplyItem(EffectType::TELEPORT, 1);
-    if (teleMove.move != nullptr)
+    if (auto teleMove = tryToApplyItem(EffectType::TELEPORT, 1))
       return {weight, teleMove.move};
-    Optional<Vec2> move = creature->getMoveAway(other->getPosition(), chase);
-    if (move)
+    if (other->getPosition().dist8(creature->getPosition()) > 3)
+      if (auto move = getFireMove(other->getPosition() - creature->getPosition()))
+        return {weight, move.move};
+    if (auto move = creature->getMoveAway(other->getPosition(), chase))
       return {weight, [this, move, other] () {
         EventListener::addCombatEvent(creature);
         EventListener::addCombatEvent(other);

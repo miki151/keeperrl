@@ -297,7 +297,7 @@ PCreature Model::makePlayer() {
 }
 
 void Model::exitAction() {
-  enum Action { RETIRE, SAVE, ABANDON, CANCEL };
+  enum Action { SAVE, RETIRE, ABANDON, CANCEL };
   vector<View::ListElem> options { "Save the game", "Retire", "Abandon the game", "Cancel" };
   auto ind = view->chooseFromList("Would you like to:", options);
   if (!ind)

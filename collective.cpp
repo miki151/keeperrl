@@ -129,7 +129,8 @@ const vector<Collective::BuildInfo> Collective::workshopInfo {
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, TechId::TRAPS),
     BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS),
     BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, TechId::TRAPS),
-    BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP}, TechId::TRAPS),
+    BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP}, TechId::TRAPS,
+        "Summons nearby minions to deal with the trespasser"),
 };
 
 vector<Collective::RoomInfo> Collective::getRoomInfo() {
@@ -259,8 +260,8 @@ void Collective::render(View* view) {
   if (showWelcomeMsg && Options::getValue(OptionId::HINTS)) {
     view->refreshView(this);
     showWelcomeMsg = false;
-    view->presentText("Welcome", "In short: you are a warlock who has been banished from the lawful world for practicing black magic. You are going to claim the land of " + NameGenerator::worldNames.getNext() + " and make it your domain. Best way to achieve this is to kill all the village leaders.\n \n"
-"Use the mouse to dig into the mountain. You will need access to trees, iron and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab.\n \n You can turn these messages off in the options (press F2).");
+    view->presentText("Welcome", "In short: you are a warlock who has been banished from the lawful world for practicing black magic. You are going to claim the land of " + NameGenerator::worldNames.getNext() + " and make it your domain. Best way to achieve this is to kill everyone.\n \n"
+"Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the options (press F2).");
   }
 }
 
@@ -1636,6 +1637,13 @@ void Collective::onEquipEvent(const Creature* c, const Item* it) {
     minionEquipment.own(c, it);
 }
 
+void Collective::onPickupEvent(const Creature* c, const vector<Item*>& items) {
+  if (possessed == c)
+    for (Item* it : items)
+      if (minionEquipment.isItemUseful(it))
+        minionEquipment.own(c, it);
+}
+
 MoveInfo Collective::getBeastMove(Creature* c) {
   if (!Random.roll(5))
     return NoMove;
@@ -1980,8 +1988,11 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     for (auto& elem : guardPosts)
       if (elem.second.attender == c)
         elem.second.attender = nullptr;
-    if (contains(team, c))
+    if (contains(team, c)) {
       removeElement(team, c);
+      if (team.empty())
+        gatheringTeam = false;
+    }
     if (Task* task = taskMap.getTask(c)) {
       if (!task->canTransfer()) {
         task->cancel();

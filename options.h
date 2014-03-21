@@ -27,6 +27,7 @@ class Options {
   static void init(const string& path);
   static int getValue(OptionId);
   static void handle(View*, OptionSet, int lastIndex = 0);
+  static bool handleOrExit(View*, OptionSet, int lastIndex = -1);
 
   private:
   static void setValue(OptionId, int);

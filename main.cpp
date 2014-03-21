@@ -1,5 +1,10 @@
 #include "stdafx.h"
 
+#include <ctime>
+#include <locale>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include "gzstream.h"
@@ -18,17 +23,28 @@
 
 using namespace boost::iostreams;
 
-static vector<string> getSaveFiles(const string& suffix) {
-  vector<string> ret;
+struct SaveFileInfo {
+  string path;
+  time_t date;
+};
+
+static vector<SaveFileInfo> getSaveFiles(const string& suffix) {
+  vector<SaveFileInfo> ret;
   struct dirent *ent;
   DIR* dir = opendir(".");
   CHECK(dir) << "Couldn't open current directory";
   while (dirent* ent = readdir(dir)) {
     string name(ent->d_name);
-    if (name.size() > suffix.size() && name.substr(name.size() - suffix.size()) == suffix)
-      ret.push_back(name);
+    if (name.size() > suffix.size() && name.substr(name.size() - suffix.size()) == suffix) {
+      struct stat buf;
+      stat(name.c_str(), &buf);
+      ret.push_back({name, buf.st_mtime});
+    }
   }
   closedir(dir);
+  sort(ret.begin(), ret.end(), [](const SaveFileInfo& a, const SaveFileInfo& b) {
+        return a.date > b.date;
+      });
   return ret;
 }
 
@@ -42,17 +58,23 @@ static string getSaveSuffix(GameType t) {
   return "";
 }
 
+static string getDateString(time_t t) {
+  char buf[100];
+  strftime(buf, sizeof(buf), "%c", std::localtime(&t));
+  return buf;
+}
+
 static Optional<string> chooseSaveFile(vector<pair<GameType, string>> games, string noSaveMsg, View* view) {
   vector<View::ListElem> options;
   bool noGames = true;
-  vector<string> allFiles;
+  vector<SaveFileInfo> allFiles;
   for (auto elem : games) {
-    vector<string> files = getSaveFiles(getSaveSuffix(elem.first));
+    vector<SaveFileInfo> files = getSaveFiles(getSaveSuffix(elem.first));
     append(allFiles, files);
     if (!files.empty()) {
       noGames = false;
-      auto removeSuf = [&] (const string& s) { return s.substr(0, s.size() - 
-          getSaveSuffix(elem.first).size()); };
+      auto removeSuf = [&] (const SaveFileInfo& s) { return s.path.substr(0, s.path.size() - 
+          getSaveSuffix(elem.first).size()) + "  (" + getDateString(s.date) + ")"; };
       options.emplace_back(elem.second, View::TITLE);
       append(options, View::getListElem(transform2<string>(files, removeSuf)));
     }
@@ -63,20 +85,26 @@ static Optional<string> chooseSaveFile(vector<pair<GameType, string>> games, str
   }
   auto ind = view->chooseFromList("Choose game", options);
   if (ind)
-    return allFiles[*ind];
+    return allFiles[*ind].path;
   else
     return Nothing();
 }
 
-static unique_ptr<Model> loadGame(const string& filename) {
+static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
   unique_ptr<Model> model;
-  igzstream ifs(filename.c_str());
-  CHECK(ifs.good()) << "File not found: " << filename;
-  filtering_streambuf<input> in;
-  in.push(ifs);
-  boost::archive::binary_iarchive ia(in);
-  Serialization::registerTypes(ia);
-  ia >> BOOST_SERIALIZATION_NVP(model);
+  {
+    igzstream ifs(filename.c_str());
+    CHECK(ifs.good()) << "File not found: " << filename;
+    filtering_streambuf<input> in;
+    in.push(ifs);
+    boost::archive::binary_iarchive ia(in);
+    Serialization::registerTypes(ia);
+    ia >> BOOST_SERIALIZATION_NVP(model);
+  }
+#ifdef RELEASE
+  if (eraseFile)
+    CHECK(!remove(filename.c_str()));
+#endif
   return model;
 }
 
@@ -192,10 +220,12 @@ int main(int argc, char* argv[]) {
       continue;
     }
     if (choice == 0) {
-      Options::handle(view, OptionSet::KEEPER, 1000);
+      if (!Options::handleOrExit(view, OptionSet::KEEPER, -1))
+        continue;
     } 
     if (choice == 1) {
-      Options::handle(view, OptionSet::ADVENTURER, 1000);
+      if (!Options::handleOrExit(view, OptionSet::ADVENTURER, -1))
+        continue;
     } 
     if (choice == 5) {
       unique_ptr<Model> m(new Model(view));
@@ -210,7 +240,7 @@ int main(int argc, char* argv[]) {
       for (int i : Range(5)) {
         try {
           if (savedGame) {
-            model = loadGame(*savedGame);
+            model = loadGame(*savedGame, choice == 3);
           }
           else if (choice == 1)
             model.reset(Model::heroModel(view));
