@@ -1213,6 +1213,9 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         break;
     case BuildInfo::TRAP: {
         TrapType trapType = building.trapInfo.type;
+        if (traps.count(pos)) {
+          traps.erase(pos);
+        } else
         if (canPlacePost(pos) && myTiles.count(pos)) {
           traps[pos] = {trapType, false, 0};
           trapMap[trapType].push_back(pos);

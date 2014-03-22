@@ -261,7 +261,7 @@ Tile getSprite(ViewId id) {
     case ViewId::BOULDER: return Tile(18, 7);
     case ViewId::PORTAL: return Tile(1, 6, 2);
     case ViewId::TRAP: return Tile(L'➹', yellow, true);
-    case ViewId::GAS_TRAP: return Tile(L'☠', green, true);
+    case ViewId::GAS_TRAP: return Tile(2, 6, 3);
     case ViewId::ALARM_TRAP: return Tile(16, 5, 3);
     case ViewId::WEB_TRAP: return Tile(4, 1, 2);
     case ViewId::SURPRISE_TRAP: return Tile(9, 10, 2);
