@@ -113,17 +113,17 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
     if (auto object = index.getTopObject(layout->getLayers()))
       objects.push_back(*object);
   for (ViewObject& object : objects) {
-    if (object.isPlayer()) {
+    if (object.hasModifier(ViewObject::PLAYER)) {
       renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
     }
     Tile tile = Tile::getTile(object, spriteMode);
     Color color = getBleedingColor(object);
-    if (object.isInvisible())
+    if (object.hasModifier(ViewObject::INVISIBLE))
       color = transparency(color, 70);
     else
     if (tile.translucent > 0)
       color = transparency(color, 255 * (1 - tile.translucent));
-    else if (object.isIllusion())
+    else if (object.hasModifier(ViewObject::ILLUSION))
       color = transparency(color, 150);
 
     if (object.getWaterDepth() > 0) {
@@ -191,7 +191,7 @@ void MapGui::updateObjects(const MapMemory* mem) {
     if (auto index = objects[wpos])
       if (index->hasObject(ViewLayer::FLOOR)) {
         ViewObject object = index->getObject(ViewLayer::FLOOR);
-        if (object.castsShadow()) {
+        if (object.hasModifier(ViewObject::CASTS_SHADOW)) {
           shadowed.erase(wpos);
           shadowed.insert(wpos + Vec2(0, 1));
         }

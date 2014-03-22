@@ -165,13 +165,13 @@ void Creature::removeVision(Vision* vision) {
 }
 
 void Creature::pushController(Controller* ctrl) {
-  viewObject.setPlayer(true);
+  viewObject.setModifier(ViewObject::PLAYER);
   controllerStack.push_back(std::move(controller));
   controller.reset(ctrl);
 }
 
 void Creature::popController() {
-  viewObject.setPlayer(false);
+  viewObject.removeModifier(ViewObject::PLAYER);
   CHECK(canPopController());
   bool wasPlayer = controller->isPlayer();
   controller = std::move(controllerStack.back());
@@ -299,7 +299,7 @@ void Creature::makeMove() {
   MEASURE(controller->makeMove(), "creature move time");
   CHECK(!inEquipChain) << "Someone forgot to finishEquipChain()";
   if (!hidden)
-    viewObject.setHidden(false);
+    viewObject.removeModifier(ViewObject::HIDDEN);
   unknownAttacker.clear();
   if (fireCreature && Random.roll(5))
     getSquare()->setOnFire(1);
@@ -569,7 +569,7 @@ bool Creature::canHide() const {
 
 void Creature::hide() {
   knownHiding.clear();
-  viewObject.setHidden(true);
+  viewObject.setModifier(ViewObject::HIDDEN);
   for (const Creature* c : getLevel()->getAllCreatures())
     if (c->canSee(this) && c->isEnemy(this)) {
       knownHiding.insert(c);
@@ -649,16 +649,16 @@ void Creature::onAffected(LastingEffect effect) {
       break;
     case BLIND:
       you(MsgType::ARE, "blind!");
-      viewObject.setBlind(true);
+      viewObject.setModifier(ViewObject::BLIND);
       break;
     case INVISIBLE:
       if (!isBlind())
         you(MsgType::TURN_INVISIBLE, "");
-      viewObject.setInvisible(true);
+      viewObject.setModifier(ViewObject::INVISIBLE);
       break;
     case POISON:
       you(MsgType::ARE, "poisoned");
-      viewObject.setPoisoned(true);
+      viewObject.setModifier(ViewObject::POISONED);
       break;
     case STR_BONUS: you(MsgType::FEEL, "stronger"); break;
     case DEX_BONUS: you(MsgType::FEEL, "more agile"); break;
@@ -680,7 +680,7 @@ void Creature::onRemoved(LastingEffect effect, bool msg) {
     case POISON:
       if (msg)
         you(MsgType::ARE, "cured from poisoning");
-      viewObject.setPoisoned(false);
+      viewObject.removeModifier(ViewObject::POISONED);
       break;
     default: onTimedOut(effect, msg); break;
   }
@@ -700,17 +700,17 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
     case BLIND:
       if (msg) 
         you("can see again");
-      viewObject.setBlind(false);
+      viewObject.removeModifier(ViewObject::BLIND);
       break;
     case INVISIBLE:
       if (msg)
         you(MsgType::TURN_VISIBLE, "");
-      viewObject.setInvisible(false);
+      viewObject.removeModifier(ViewObject::INVISIBLE);
       break;
     case POISON:
       if (msg)
         you(MsgType::ARE, "no longer poisoned");
-      viewObject.setPoisoned(false);
+      viewObject.removeModifier(ViewObject::POISONED);
       break;
   } 
 }

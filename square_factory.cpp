@@ -752,39 +752,51 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::ROAD:
         return new Square(ViewObject(ViewId::ROAD, ViewLayer::FLOOR, "Road"), "road", true);
     case SquareType::ROCK_WALL:
-        return new SolidSquare(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Wall", true), "wall", false,
+        return new SolidSquare(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Wall")
+            .setModifier(ViewObject::CASTS_SHADOW), "wall", false,
             {{SquareType::FLOOR, Random.getRandom(3, 8)}});
     case SquareType::GOLD_ORE:
-        return new ConstructionDropItems(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR, "Gold ore", true), "gold ore",
+        return new ConstructionDropItems(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR, "Gold ore")
+            .setModifier(ViewObject::CASTS_SHADOW), "gold ore",
             {{SquareType::FLOOR, Random.getRandom(30, 80)}},
             ItemFactory::fromId(ItemId::GOLD_PIECE, Random.getRandom(30, 60)));
     case SquareType::IRON_ORE:
-        return new ConstructionDropItems(ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR, "Iron ore", true), "iron ore",
+        return new ConstructionDropItems(ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR, "Iron ore")
+            .setModifier(ViewObject::CASTS_SHADOW), "iron ore",
             {{SquareType::FLOOR, Random.getRandom(15, 40)}},
             ItemFactory::fromId(ItemId::IRON_ORE, Random.getRandom(12, 27)));
     case SquareType::STONE:
-        return new ConstructionDropItems(ViewObject(ViewId::STONE, ViewLayer::FLOOR, "Stone", true), "stone",
+        return new ConstructionDropItems(ViewObject(ViewId::STONE, ViewLayer::FLOOR, "Stone")
+            .setModifier(ViewObject::CASTS_SHADOW), "stone",
             {{SquareType::FLOOR, Random.getRandom(30, 80)}},
             ItemFactory::fromId(ItemId::ROCK, Random.getRandom(5, 20)));
     case SquareType::LOW_ROCK_WALL:
-        return new SolidSquare(ViewObject(ViewId::LOW_ROCK_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
+        return new SolidSquare(ViewObject(ViewId::LOW_ROCK_WALL, ViewLayer::FLOOR, "Wall")
+            .setModifier(ViewObject::CASTS_SHADOW), "wall", false);
     case SquareType::WOOD_WALL:
-        return new SolidSquare(ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR, "Wooden wall", true), "wall", false,
+        return new SolidSquare(ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR, "Wooden wall")
+            .setModifier(ViewObject::CASTS_SHADOW), "wall", false,
             {}, false, 1);
     case SquareType::BLACK_WALL:
-        return new SolidSquare(ViewObject(ViewId::BLACK_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
+        return new SolidSquare(ViewObject(ViewId::BLACK_WALL, ViewLayer::FLOOR, "Wall")
+            .setModifier(ViewObject::CASTS_SHADOW), "wall", false);
     case SquareType::YELLOW_WALL:
-        return new SolidSquare(ViewObject(ViewId::YELLOW_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
+        return new SolidSquare(ViewObject(ViewId::YELLOW_WALL, ViewLayer::FLOOR, "Wall")
+            .setModifier(ViewObject::CASTS_SHADOW), "wall", false);
     case SquareType::HELL_WALL:
-        return new SolidSquare(ViewObject(ViewId::HELL_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
+        return new SolidSquare(ViewObject(ViewId::HELL_WALL, ViewLayer::FLOOR, "Wall")
+            .setModifier(ViewObject::CASTS_SHADOW), "wall", false);
     case SquareType::CASTLE_WALL:
-        return new SolidSquare(ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
+        return new SolidSquare(ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR, "Wall")
+            .setModifier(ViewObject::CASTS_SHADOW), "wall", false);
     case SquareType::MUD_WALL:
-        return new SolidSquare(ViewObject(ViewId::MUD_WALL, ViewLayer::FLOOR, "Wall", true), "wall", false);
+        return new SolidSquare(ViewObject(ViewId::MUD_WALL, ViewLayer::FLOOR, "Wall")
+            .setModifier(ViewObject::CASTS_SHADOW), "wall", false);
     case SquareType::MOUNTAIN:
         return new SolidSquare(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain"), "mountain", true);
     case SquareType::MOUNTAIN2:
-        return new SolidSquare(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain"), "mountain", false,
+        return new SolidSquare(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain")
+            .setModifier(ViewObject::CASTS_SHADOW), "mountain", false,
             {{SquareType::FLOOR, Random.getRandom(3, 8)}});
     case SquareType::GLACIER:
         return new SolidSquare(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"), "mountain", true);

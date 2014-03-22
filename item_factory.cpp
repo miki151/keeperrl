@@ -795,7 +795,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.type = ItemType::WEAPON;
             i.weight = 8;
             i.damage = 14 + maybePlusMinusOne(4);
-            i.toHit = 0 + maybePlusMinusOne(4);
+            i.toHit = 2 + maybePlusMinusOne(4);
             i.attackTime = 1.2;
             i.twoHanded = true;
             i.price = 140;
@@ -810,7 +810,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.type = ItemType::WEAPON;
             i.weight = 8;
             i.damage = 12 + maybePlusMinusOne(4);
-            i.toHit = 0 + maybePlusMinusOne(4);
+            i.toHit = 2 + maybePlusMinusOne(4);
             i.attackTime = 1.2;
             i.twoHanded = true;
             i.price = 100;

@@ -908,16 +908,13 @@ MapMemory& Collective::getMemory(const Level* l) {
   return (*memory.get())[l];
 }
 
-static ViewObject getTrapObject(TrapType type) {
-  switch (type) {
-    case TrapType::BOULDER: return ViewObject(ViewId::UNARMED_BOULDER_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
-    case TrapType::POISON_GAS: return ViewObject(ViewId::UNARMED_GAS_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
-    case TrapType::ALARM: return ViewObject(ViewId::UNARMED_ALARM_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
-    case TrapType::WEB: return ViewObject(ViewId::UNARMED_WEB_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
-    case TrapType::SURPRISE: return ViewObject(ViewId::UNARMED_SURPRISE_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
-  }
-  FAIL << "pofke";
-  return ViewObject(ViewId::UNARMED_GAS_TRAP, ViewLayer::LARGE_ITEM, "Unarmed trap");
+ViewObject Collective::getTrapObject(TrapType type) {
+  for (const Collective::BuildInfo& info : workshopInfo)
+    if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type)
+      return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed trap")
+        .setModifier(ViewObject::ILLUSION);
+  FAIL << "trap not found" << int(type);
+  return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM, "Unarmed trap");
 }
 
 ViewIndex Collective::getViewIndex(Vec2 pos) const {
@@ -933,7 +930,7 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
     if (guardPosts.count(pos))
       index.insert(ViewObject(ViewId::GUARD_POST, ViewLayer::LARGE_ITEM, "Guard post"));
     if (doors.count(pos))
-      index.insert(ViewObject(ViewId::PLANNED_DOOR, ViewLayer::LARGE_ITEM, "Planned door"));
+      index.insert(ViewObject(ViewId::DOOR, ViewLayer::LARGE_ITEM, "Planned door").setModifier(ViewObject::ILLUSION));
   }
   if (const Location* loc = level->getLocation(pos)) {
     if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !getMemory(level).hasViewIndex(pos))

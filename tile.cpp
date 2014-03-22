@@ -217,7 +217,6 @@ Tile getSprite(ViewId id) {
     case ViewId::MAGMA: return getWaterTile(11);
     case ViewId::ABYSS: return Tile('~', darkGray);
     case ViewId::DOOR: return Tile(4, 2, 2, true);
-    case ViewId::PLANNED_DOOR: return Tile(4, 2, 2, true).setTranslucent(0.5);
     case ViewId::DIG_ICON: return Tile(8, 10, 2);
     case ViewId::SWORD: return Tile(12, 9, 3);
     case ViewId::SPEAR: return Tile(5, 8, 3);
@@ -260,17 +259,12 @@ Tile getSprite(ViewId id) {
     case ViewId::COFFIN: return Tile(7, 3, 2, true);
     case ViewId::OPENED_COFFIN: return Tile(8, 3, 2, true);
     case ViewId::BOULDER: return Tile(18, 7);
-    case ViewId::UNARMED_BOULDER_TRAP: return Tile(18, 7).setTranslucent(0.6);
     case ViewId::PORTAL: return Tile(1, 6, 2);
     case ViewId::TRAP: return Tile(L'➹', yellow, true);
     case ViewId::GAS_TRAP: return Tile(L'☠', green, true);
-    case ViewId::UNARMED_GAS_TRAP: return Tile(L'☠', lightGray, true);
     case ViewId::ALARM_TRAP: return Tile(16, 5, 3);
-    case ViewId::UNARMED_ALARM_TRAP: return Tile(16, 5, 3).setTranslucent(0.6);
     case ViewId::WEB_TRAP: return Tile(4, 1, 2);
-    case ViewId::UNARMED_WEB_TRAP: return Tile(4, 1, 2).setTranslucent(0.6);
     case ViewId::SURPRISE_TRAP: return Tile(9, 10, 2);
-    case ViewId::UNARMED_SURPRISE_TRAP: return Tile(9, 10, 2).setTranslucent(0.6);
     case ViewId::ROCK: return Tile(6, 1, 3);
     case ViewId::IRON_ROCK: return Tile(10, 1, 3);
     case ViewId::WOOD_PLANK: return Tile(7, 10, 2);
@@ -436,7 +430,6 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::MAGMA: return Tile('~', red);
     case ViewId::ABYSS: return Tile('~', darkGray);
     case ViewId::DOOR: return Tile('|', brown);
-    case ViewId::PLANNED_DOOR: return Tile('|', darkBrown);
     case ViewId::DIG_ICON: return Tile(0x26cf, lightGray, true);
     case ViewId::SWORD: return Tile(')', lightGray);
     case ViewId::SPEAR: return Tile('/', lightGray);
@@ -479,17 +472,12 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::OPENED_COFFIN:
     case ViewId::COFFIN: return Tile(L'⚰', darkGray, true);
     case ViewId::BOULDER: return Tile(L'●', lightGray, true);
-    case ViewId::UNARMED_BOULDER_TRAP: return Tile(L'○', lightGray, true);
     case ViewId::PORTAL: return Tile(0x1d6af, lightGreen, true);
     case ViewId::TRAP: return Tile(L'➹', yellow, true);
     case ViewId::GAS_TRAP: return Tile(L'☠', green, true);
-    case ViewId::UNARMED_GAS_TRAP: return Tile(L'☠', lightGray, true);
     case ViewId::ALARM_TRAP: return Tile(L'^', red, true);
-    case ViewId::UNARMED_ALARM_TRAP: return Tile(L'^', lightGray, true);
     case ViewId::WEB_TRAP: return Tile('#', white, true);
-    case ViewId::UNARMED_WEB_TRAP: return Tile('#', lightGray, true);
     case ViewId::SURPRISE_TRAP: return Tile('^', blue, true);
-    case ViewId::UNARMED_SURPRISE_TRAP: return Tile('^', lightGray, true);
     case ViewId::ROCK: return Tile('*', lightGray);
     case ViewId::IRON_ROCK: return Tile('*', orange);
     case ViewId::WOOD_PLANK: return Tile('\\', brown);
@@ -535,9 +523,9 @@ Tile Tile::getTile(const ViewObject& obj, bool sprite) {
 }
 
 Color Tile::getColor(const ViewObject& object) {
-  if (object.isInvisible())
+  if (object.hasModifier(ViewObject::INVISIBLE))
     return darkGray;
-  if (object.isHidden())
+  if (object.hasModifier(ViewObject::HIDDEN))
     return lightGray;
   double bleeding = object.getBleeding();
   if (bleeding > 0)

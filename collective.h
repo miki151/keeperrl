@@ -247,6 +247,7 @@ class Collective : public CreatureView, public EventListener {
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   void updateTraps();
+  static ViewObject getTrapObject(TrapType type);
   bool isInCombat(const Creature*) const;
   bool underAttack() const;
   void addToMemory(Vec2 pos, const Creature*);

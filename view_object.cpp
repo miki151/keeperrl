@@ -6,19 +6,12 @@ template <class Archive>
 void ViewObject::serialize(Archive& ar, const unsigned int version) {
   ar& BOOST_SERIALIZATION_NVP(bleeding)
     & BOOST_SERIALIZATION_NVP(enemyStatus)
-    & BOOST_SERIALIZATION_NVP(blind)
-    & BOOST_SERIALIZATION_NVP(invisible)
-    & BOOST_SERIALIZATION_NVP(illusion)
-    & BOOST_SERIALIZATION_NVP(poisoned)
-    & BOOST_SERIALIZATION_NVP(player)
-    & BOOST_SERIALIZATION_NVP(resource_id)
     & BOOST_SERIALIZATION_NVP(viewLayer)
     & BOOST_SERIALIZATION_NVP(description)
-    & BOOST_SERIALIZATION_NVP(hidden)
     & BOOST_SERIALIZATION_NVP(burning)
     & BOOST_SERIALIZATION_NVP(height)
     & BOOST_SERIALIZATION_NVP(sizeIncrease)
-    & BOOST_SERIALIZATION_NVP(shadow)
+    & BOOST_SERIALIZATION_NVP(modifiers)
     & BOOST_SERIALIZATION_NVP(attack)
     & BOOST_SERIALIZATION_NVP(defense)
     & BOOST_SERIALIZATION_NVP(waterDepth);
@@ -26,14 +19,24 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(ViewObject);
 
-ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d, bool _shadow)
-    : resource_id(id), viewLayer(l), description(d), shadow(_shadow) {
+ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
+    : resource_id(id), viewLayer(l), description(d) {
   if (islower(description[0]))
     description[0] = toupper(description[0]);
 }
 
-bool ViewObject::castsShadow() const {
-  return shadow;
+ViewObject& ViewObject::setModifier(Modifier mod) {
+  modifiers.insert(mod);
+  return *this;
+}
+
+ViewObject& ViewObject::removeModifier(Modifier mod) {
+  modifiers.erase(mod);
+  return *this;
+}
+
+bool ViewObject::hasModifier(Modifier mod) const {
+  return modifiers.count(mod);
 }
 
 ViewObject& ViewObject::setWaterDepth(double depth) {
@@ -59,50 +62,6 @@ bool ViewObject::isHostile() const {
 
 bool ViewObject::isFriendly() const {
   return enemyStatus == FRIENDLY;
-}
-
-void ViewObject::setBlind(bool s) {
-  blind = s;
-}
-
-void ViewObject::setInvisible(bool s) {
-  invisible = s;
-}
-
-bool ViewObject::isInvisible() const {
-  return invisible;
-}
-
-void ViewObject::setIllusion(bool s) {
-  illusion = s;
-}
-
-bool ViewObject::isIllusion() const {
-  return illusion;
-}
-
-void ViewObject::setPoisoned(bool s) {
-  poisoned = s;
-}
-
-bool ViewObject::isPoisoned() const {
-  return poisoned;
-}
-
-void ViewObject::setPlayer(bool s) {
-  player = s;
-}
-
-bool ViewObject::isPlayer() const {
-  return player;
-}
-
-void ViewObject::setHidden(bool s) {
-  hidden = s;
-}
-
-bool ViewObject::isHidden() const {
-  return hidden;
 }
 
 void ViewObject::setBurning(double s) {
@@ -144,9 +103,9 @@ string ViewObject::getDescription(bool stats) const {
   vector<string> mods;
   if (getBleeding() > 0) 
     mods.push_back("wounded");
-  if (blind)
+  if (hasModifier(BLIND))
     mods.push_back("blind");
-  if (poisoned)
+  if (hasModifier(POISONED))
     mods.push_back("poisoned");
   if (mods.size() > 0)
     return description + attr + "(" + combine(mods) + ")";

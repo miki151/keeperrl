@@ -7,7 +7,7 @@
 
 class ViewObject {
   public:
-  ViewObject(ViewId id, ViewLayer l, const string& description, bool castsShadow = false);
+  ViewObject(ViewId id, ViewLayer l, const string& description);
 
   void setBleeding(double);
   double getBleeding() const;
@@ -17,22 +17,10 @@ class ViewObject {
   bool isHostile() const;
   bool isFriendly() const;
 
-  void setBlind(bool);
-
-  void setPlayer(bool);
-  bool isPlayer() const;
-
-  void setHidden(bool);
-  bool isHidden() const;
-
-  void setInvisible(bool);
-  bool isInvisible() const;
-
-  void setIllusion(bool);
-  bool isIllusion() const;
-
-  void setPoisoned(bool);
-  bool isPoisoned() const;
+  enum Modifier { BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW};
+  ViewObject& setModifier(Modifier);
+  ViewObject& removeModifier(Modifier);
+  bool hasModifier(Modifier) const;
 
   static void setHallu(bool);
 
@@ -50,8 +38,6 @@ class ViewObject {
 
   Optional<int> getAttack() const;
   Optional<int> getDefense() const;
-
-  bool castsShadow() const;
 
   ViewObject& setWaterDepth(double);
   double getWaterDepth() const;
@@ -71,19 +57,13 @@ class ViewObject {
   private:
   double bleeding = 0;
   EnemyStatus enemyStatus = UNKNOWN;
-  bool blind = false;
-  bool invisible = false;
-  bool illusion = false;
-  bool poisoned = false;
-  bool player = false;
+  set<Modifier> modifiers;
   ViewId resource_id;
   ViewLayer viewLayer;
   string description;
-  bool hidden = false;
   double burning = false;
   double height = 0;
   double sizeIncrease = 0;
-  bool shadow;
   int attack = -1;
   int defense = -1;
   double waterDepth = -1;
