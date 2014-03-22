@@ -162,3 +162,7 @@ Vec2 Renderer::getMousePos() {
   return Vec2(pos.x, pos.y);
 }
 
+void Renderer::setMousePos(Vec2 pos) {
+  Mouse::setPosition({pos.x, pos.y}, *display);
+}
+

@@ -197,6 +197,11 @@ class View {
       double elfStanding;
       double dwarfStanding;
       double goblinStanding;
+      struct Effect {
+        string name;
+        bool bad;
+      };
+      vector<Effect> effects;
     } playerInfo;
   } gameInfo;
 };

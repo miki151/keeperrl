@@ -68,6 +68,7 @@ class Renderer {
   bool pollEvent(Event&);
   void waitEvent(Event&);
   Vec2 getMousePos();
+  void setMousePos(Vec2);
 
   static vector<Texture> tiles;
   const static vector<int> tileSize;

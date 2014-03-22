@@ -1963,51 +1963,60 @@ string Creature::getNameAndTitle() const {
 }
 
 void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
-    gameInfo.infoType = View::GameInfo::InfoType::PLAYER;
-    View::GameInfo::PlayerInfo& info = gameInfo.playerInfo;
-    if (firstName) {
-      info.playerName = *firstName;
-      info.title = *name;
-    } else {
-      info.playerName = "";
-      info.title = *name;
-    }
-    info.adjectives.clear();
-    info.possessed = canPopController();
-    info.spellcaster = !spells.empty();
-    if (isBlind())
-      info.adjectives.push_back("blind");
-    if (isAffected(INVISIBLE))
-      info.adjectives.push_back("invisible");
-    if (numArms() == 1)
-      info.adjectives.push_back("one-armed");
-    if (numArms() == 0)
-      info.adjectives.push_back("armless");
-    if (numLegs() == 1)
-      info.adjectives.push_back("one-legged");
-    if (numLegs() == 0)
-      info.adjectives.push_back("legless");
-    if (isAffected(HALLU))
-      info.adjectives.push_back("tripped");
-    Item* weapon = getEquipment().getItem(EquipmentSlot::WEAPON);
-    info.weaponName = weapon ? weapon->getAName() : "";
-    const Location* location = getLevel()->getLocation(getPosition());
-    info.levelName = location && location->hasName() 
-      ? capitalFirst(location->getName()) : getLevel()->getName();
-    info.speed = getAttr(AttrType::SPEED);
-    info.speedBonus = isAffected(SPEED) ? 1 : isAffected(SLOWED) ? -1 : 0;
-    info.defense = getAttr(AttrType::DEFENSE);
-    info.defBonus = isAffected(RAGE) ? -1 : isAffected(PANIC) ? 1 : 0;
-    info.attack = getAttr(AttrType::DAMAGE);
-    info.attBonus = isAffected(RAGE) ? 1 : isAffected(PANIC) ? -1 : 0;
-    info.strength = getAttr(AttrType::STRENGTH);
-    info.strBonus = isAffected(STR_BONUS);
-    info.dexterity = getAttr(AttrType::DEXTERITY);
-    info.dexBonus = isAffected(DEX_BONUS);
-    info.time = getTime();
-    info.numGold = getGold(100000000).size();
-    info.elfStanding = Tribes::get(TribeId::ELVEN)->getStanding(this);
-    info.dwarfStanding = Tribes::get(TribeId::DWARVEN)->getStanding(this);
-    info.goblinStanding = Tribes::get(TribeId::GOBLIN)->getStanding(this);
+  gameInfo.infoType = View::GameInfo::InfoType::PLAYER;
+  View::GameInfo::PlayerInfo& info = gameInfo.playerInfo;
+  if (firstName) {
+    info.playerName = *firstName;
+    info.title = *name;
+  } else {
+    info.playerName = "";
+    info.title = *name;
   }
+  info.adjectives.clear();
+  info.possessed = canPopController();
+  info.spellcaster = !spells.empty();
+  if (isBlind())
+    info.adjectives.push_back("blind");
+  if (isAffected(INVISIBLE))
+    info.adjectives.push_back("invisible");
+  if (numArms() == 1)
+    info.adjectives.push_back("one-armed");
+  if (numArms() == 0)
+    info.adjectives.push_back("armless");
+  if (numLegs() == 1)
+    info.adjectives.push_back("one-legged");
+  if (numLegs() == 0)
+    info.adjectives.push_back("legless");
+  if (isAffected(HALLU))
+    info.adjectives.push_back("tripped");
+  Item* weapon = getEquipment().getItem(EquipmentSlot::WEAPON);
+  info.weaponName = weapon ? weapon->getAName() : "";
+  const Location* location = getLevel()->getLocation(getPosition());
+  info.levelName = location && location->hasName() 
+    ? capitalFirst(location->getName()) : getLevel()->getName();
+  info.speed = getAttr(AttrType::SPEED);
+  info.speedBonus = isAffected(SPEED) ? 1 : isAffected(SLOWED) ? -1 : 0;
+  info.defense = getAttr(AttrType::DEFENSE);
+  info.defBonus = isAffected(RAGE) ? -1 : isAffected(PANIC) ? 1 : 0;
+  info.attack = getAttr(AttrType::DAMAGE);
+  info.attBonus = isAffected(RAGE) ? 1 : isAffected(PANIC) ? -1 : 0;
+  info.strength = getAttr(AttrType::STRENGTH);
+  info.strBonus = isAffected(STR_BONUS);
+  info.dexterity = getAttr(AttrType::DEXTERITY);
+  info.dexBonus = isAffected(DEX_BONUS);
+  info.time = getTime();
+  info.numGold = getGold(100000000).size();
+  info.elfStanding = Tribes::get(TribeId::ELVEN)->getStanding(this);
+  info.dwarfStanding = Tribes::get(TribeId::DWARVEN)->getStanding(this);
+  info.goblinStanding = Tribes::get(TribeId::GOBLIN)->getStanding(this);
+  info.effects.clear();
+  for (LastingEffect effect : getKeys(lastingEffects))
+    if (isAffected(effect))
+      switch (effect) {
+        case POISON: info.effects.push_back({"poisoned", true}); break;
+        case SLEEP: info.effects.push_back({"sleeping", true}); break;
+        case ENTANGLED: info.effects.push_back({"entangled", true}); break;
+        default: break;
+      }
+}
 

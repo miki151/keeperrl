@@ -234,7 +234,7 @@ class Collective : public CreatureView, public EventListener {
   void handleMarket(View*, int prevItem = 0);
   void getEquipmentItem(View* view, ItemPredicate predicate);
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
-  const Item* chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate) const;
+  Item* chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate, int* index = nullptr) const;
   void autoEquipment(Creature* creature);
   void minionView(View* view, Creature* creature, int prevItem = 0);
   void handleEquipment(View* view, Creature* creature, int prevItem = 0);

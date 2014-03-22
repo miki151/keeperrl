@@ -283,6 +283,9 @@ WindowView::BlockingEvent WindowView::readkey() {
       if (!renderer.pollEvent(event))
         return { BlockingEvent::MOUSE_MOVE };
     }
+    if (event.type == sf::Event::MouseWheelMoved) {
+      return { BlockingEvent::MOUSE_WHEEL, Nothing(), event.mouseWheel.delta };
+    }
     if (mouseEv && event.type == Event::MouseMoved)
       return { BlockingEvent::MOUSE_MOVE };
     if (event.type == Event::KeyPressed) {
@@ -300,6 +303,8 @@ WindowView::BlockingEvent WindowView::readkey() {
     }
     if (scrolled)
       return { BlockingEvent::IDLE };
+    if (event.type == Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Middle)
+      return { BlockingEvent::WHEEL_BUTTON };
     if (event.type == Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
       Vec2 pos(event.mouseButton.x, event.mouseButton.y);
       if (pos.inRectangle(minimapBounds))
@@ -443,6 +448,10 @@ void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   for (int i : All(lines)) {
     renderer.drawText(lines2[i].second, lineX, lineStart + legendLineHeight * i, lines[i]);
     renderer.drawText(lines2[i].second, line2X, lineStart + legendLineHeight * i, lines2[i].first);
+  }
+  int h = lineStart + legendLineHeight * lines.size();
+  for (auto effect : info.effects) {
+    renderer.drawText(effect.bad ? red : green, lineX, h += legendLineHeight, effect.name);
   }
 }
 
@@ -1059,16 +1068,23 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
     return Nothing();
   }
   index = min(index, count - 1);
+  bool setMousePos = false;
+  int cutoff = -1;
   while (1) {
     numLines = min((int) options.size(), getMaxLines());
     int height = indexHeight(options, index);
-    int cutoff = min(max(0, height - numLines / 2), (int) options.size() - numLines);
+    int newCutoff = min(max(0, height - numLines / 2), (int) options.size() - numLines);
+    if (newCutoff != cutoff) {
+      cutoff = newCutoff;
+    } else
+      setMousePos = false;
     int itemsCutoff = 0;
     for (int i : Range(cutoff))
       if (options[i].getMod() == View::NORMAL)
         ++itemsCutoff;
-    vector<ListElem> window = getPrefix(options, cutoff , numLines);
-    drawList(title, window, index - itemsCutoff);
+    vector<ListElem> window = getPrefix(options, cutoff, numLines);
+    drawList(title, window, index - itemsCutoff, setMousePos);
+    setMousePos = false;
     BlockingEvent event = readkey();
     if (event.type == BlockingEvent::KEY) {
       if (exitAction && getSimpleActionId(*event.key) == *exitAction)
@@ -1077,9 +1093,9 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
         case Keyboard::PageDown: index += 10; if (index >= count) index = count - 1; break;
         case Keyboard::PageUp: index -= 10; if (index < 0) index = 0; break;
         case Keyboard::Numpad8:
-        case Keyboard::Up: index = (index - 1 + count) % count;  break;
+        case Keyboard::Up: index = (index - 1 + count) % count; height = indexHeight(options, index); break;
         case Keyboard::Numpad2:
-        case Keyboard::Down: index = (index + 1 + count) % count; break;
+        case Keyboard::Down: index = (index + 1 + count) % count; height = indexHeight(options, index); break;
         case Keyboard::Numpad5:
         case Keyboard::Return : clearMessageBox(); return indexes[index];
         case Keyboard::Escape : clearMessageBox(); return Nothing();
@@ -1093,10 +1109,15 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
     }
     else if (event.type == BlockingEvent::MOUSE_MOVE && mousePos) {
       if (Optional<int> mouseIndex = getIndex(window, !title.empty(), *mousePos)) {
-        index = *mouseIndex + itemsCutoff;
+        int newIndex = *mouseIndex + itemsCutoff;
+        if (newIndex != index) {
+          index = newIndex;
+          setMousePos = true;
+        }
         Debug() << "Index " << index;
       }
-    } else if (event.type == BlockingEvent::MOUSE_LEFT) {
+    }
+    else if (event.type == BlockingEvent::MOUSE_LEFT) {
       clearMessageBox();
       if (mousePos && getIndex(window, !title.empty(), *mousePos))
         return indexes[index];
@@ -1174,7 +1195,7 @@ Optional<int> getIndex(const vector<View::ListElem>& options, bool hasTitle, Vec
       (mousePos.y - ySpacing - yMargin + (hasTitle ? 0 : itemSpacing) - itemYMargin) / itemSpacing - 1);
 }
 
-void WindowView::drawList(const string& title, const vector<ListElem>& options, int hightlight) {
+void WindowView::drawList(const string& title, const vector<ListElem>& options, int hightlight, bool setMousePos) {
   int xMargin = 10;
   int itemXMargin = 30;
   int border = 2;
@@ -1186,11 +1207,6 @@ void WindowView::drawList(const string& title, const vector<ListElem>& options, 
     h = indexHeight(options, hightlight);
   Rectangle window(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
   renderer.drawFilledRectangle(window, translucentBlack, white);
-  int mouseHeight = -1;
- /* if (mousePos && mousePos->inRectangle(window)) {
-    h = -1;
-    mouseHeight = mousePos->y;
-  }*/
   if (!title.empty())
     renderer.drawText(white, xSpacing + xMargin, ySpacing + yMargin, title);
   else
@@ -1198,9 +1214,12 @@ void WindowView::drawList(const string& title, const vector<ListElem>& options, 
   for (int i : All(options)) {  
     int beginH = ySpacing + topMargin + (i + 1) * itemSpacing + itemYMargin;
     if (options[i].getMod() == View::NORMAL) {
-      if (hightlight > -1 && (h == i || (mouseHeight >= beginH && mouseHeight < beginH + itemSpacing))) 
+      if (hightlight > -1 && h == i) {
         renderer.drawFilledRectangle(xSpacing + xMargin, beginH, 
             windowWidth + xSpacing - xMargin, beginH + itemSpacing - 1, darkGreen);
+        if (setMousePos)
+          renderer.setMousePos(Vec2(renderer.getMousePos().x, beginH + itemSpacing / 2));
+      }
       renderer.drawText(white, xSpacing + xMargin + itemXMargin, beginH, options[i].getText());
     } else if (options[i].getMod() == View::TITLE)
       renderer.drawText(yellow, xSpacing + xMargin, beginH, options[i].getText());

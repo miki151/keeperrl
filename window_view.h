@@ -69,15 +69,16 @@ class WindowView: public View {
   void drawKeeperHelp();
   void drawHint(sf::Color color, const string& text);
   struct BlockingEvent {
-    enum Type { IDLE, KEY, MOUSE_LEFT, MOUSE_MOVE, MINIMAP } type;
+    enum Type { IDLE, KEY, MOUSE_LEFT, MOUSE_MOVE, MOUSE_WHEEL, WHEEL_BUTTON, MINIMAP } type;
     Optional<sf::Event::KeyEvent> key;
+    int wheelDiff;
   };
   BlockingEvent readkey();
   Optional<sf::Event::KeyEvent> getEventFromMenu();
 
   void showMessage(const string& message);
   void retireMessages();
-  void drawList(const string& title, const vector<ListElem>& options, int hightlight);
+  void drawList(const string& title, const vector<ListElem>& options, int hightlight, bool setMousePos = false);
   void refreshScreen(bool flipBuffer = true);
   void refreshText();
   void drawAndClearBuffer();
