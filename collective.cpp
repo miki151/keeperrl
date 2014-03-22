@@ -24,7 +24,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(taskMap)
     & BOOST_SERIALIZATION_NVP(traps)
     & BOOST_SERIALIZATION_NVP(trapMap)
-    & BOOST_SERIALIZATION_NVP(doors)
+    & BOOST_SERIALIZATION_NVP(constructions)
     & BOOST_SERIALIZATION_NVP(minionTasks)
     & BOOST_SERIALIZATION_NVP(minionTaskStrings)
     & BOOST_SERIALIZATION_NVP(mySquares)
@@ -75,13 +75,15 @@ void Collective::TrapInfo::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Collective::TrapInfo);
 
 template <class Archive>
-void Collective::DoorInfo::serialize(Archive& ar, const unsigned int version) {
+void Collective::ConstructionInfo::serialize(Archive& ar, const unsigned int version) {
   ar& BOOST_SERIALIZATION_NVP(cost)
     & BOOST_SERIALIZATION_NVP(built)
-    & BOOST_SERIALIZATION_NVP(marked);
+    & BOOST_SERIALIZATION_NVP(marked)
+    & BOOST_SERIALIZATION_NVP(type)
+    & BOOST_SERIALIZATION_NVP(task);
 }
 
-SERIALIZABLE(Collective::DoorInfo);
+SERIALIZABLE(Collective::ConstructionInfo);
 
 template <class Archive>
 void Collective::GuardPostInfo::serialize(Archive& ar, const unsigned int version) {
@@ -101,30 +103,28 @@ Collective::BuildInfo::BuildInfo(SquareInfo info, Optional<TechId> id, const str
     : squareInfo(info), buildType(SQUARE), techId(id), help(h) {}
 Collective::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h)
     : trapInfo(info), buildType(TRAP), techId(id), help(h) {}
-Collective::BuildInfo::BuildInfo(DoorInfo info, Optional<TechId> id, const string& h)
-    : doorInfo(info), buildType(DOOR), techId(id), help(h) {}
 Collective::BuildInfo::BuildInfo(BuildType type, const string& h) : buildType(type), help(h) {
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY}, type));
 }
 
 const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo(BuildInfo::DIG),
-    BuildInfo({SquareType::STOCKPILE, ResourceId::GOLD, 0, "Storage"}),
-    BuildInfo({SquareType::TREASURE_CHEST, ResourceId::WOOD, 5, "Treasure room"}),
-    BuildInfo({SquareType::BED, ResourceId::WOOD, 10, "Bed"}),
-    BuildInfo({SquareType::TRAINING_DUMMY, ResourceId::IRON, 20, "Training room"}),
-    BuildInfo({SquareType::LIBRARY, ResourceId::WOOD, 20, "Library"}),
-    BuildInfo({SquareType::LABORATORY, ResourceId::STONE, 15, "Laboratory"}, TechId::ALCHEMY),
-    BuildInfo({SquareType::WORKSHOP, ResourceId::IRON, 15, "Workshop"}, TechId::CRAFTING),
-    BuildInfo({SquareType::ANIMAL_TRAP, ResourceId::WOOD, 12, "Beast cage"}, Nothing(), "Place it in the forest."),
-    BuildInfo({SquareType::GRAVE, ResourceId::STONE, 20, "Graveyard"}),
+    BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Storage"}),
+    BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}),
+    BuildInfo({SquareType::BED, {ResourceId::WOOD, 10}, "Bed"}),
+    BuildInfo({SquareType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}),
+    BuildInfo({SquareType::LIBRARY, {ResourceId::WOOD, 20}, "Library"}),
+    BuildInfo({SquareType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY),
+    BuildInfo({SquareType::WORKSHOP, {ResourceId::IRON, 15}, "Workshop"}, TechId::CRAFTING),
+    BuildInfo({SquareType::ANIMAL_TRAP, {ResourceId::WOOD, 12}, "Beast cage"}, Nothing(), "Place it in the forest."),
+    BuildInfo({SquareType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}),
     BuildInfo(BuildInfo::DESTROY),
     BuildInfo(BuildInfo::IMP),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion."),
 };
 
 const vector<Collective::BuildInfo> Collective::workshopInfo {
-    BuildInfo({ResourceId::WOOD, 5, "Door", ViewId::DOOR}, TechId::CRAFTING),
+    BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING),
     BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, TechId::TRAPS),
     BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, TechId::TRAPS),
     BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS),
@@ -201,6 +201,7 @@ Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
   mySquares[SquareType::FLOOR].clear();
+  mySquares[SquareType::TRIBE_DOOR].clear();
   for (BuildInfo info : buildInfo)
     if (info.buildType == BuildInfo::SQUARE)
       mySquares[info.squareInfo.type].clear();
@@ -391,7 +392,7 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
     while (1) {
       const Item* chosenItem = chooseEquipmentItem(view, nullptr, [&](const Item* it) {
           return minionEquipment.getOwner(it) != creature && !it->canEquip()
-              && minionEquipment.canTakeItem(creature, it); }, &itIndex);
+              && minionEquipment.needs(creature, it); }, &itIndex);
       if (chosenItem)
         minionEquipment.own(creature, chosenItem);
       else break;
@@ -759,20 +760,20 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
       case BuildInfo::SQUARE: {
             BuildInfo::SquareInfo& elem = button.squareInfo;
             Optional<pair<ViewObject, int>> cost;
-            if (elem.cost > 0)
-              cost = {getResourceViewObject(elem.resourceId), elem.cost};
+            if (elem.cost.value > 0)
+              cost = {getResourceViewObject(elem.cost.id), elem.cost.value};
             buttons.push_back({
                 SquareFactory::get(elem.type)->getViewObject(),
                 elem.name,
                 cost,
-                (elem.cost > 0 ? "[" + convertToString(mySquares.at(elem.type).size()) + "]" : ""),
-                elem.cost <= numGold(elem.resourceId) && isTech });
+                (elem.cost.value > 0 ? "[" + convertToString(mySquares.at(elem.type).size()) + "]" : ""),
+                isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
            }
            break;
       case BuildInfo::DIG: {
              buttons.push_back({
                  ViewObject(ViewId::DIG_ICON, ViewLayer::LARGE_ITEM, ""),
-                 "dig or cut tree", Nothing(), "", true});
+                 "dig or cut tree", Nothing(), "", ""});
            }
            break;
       case BuildInfo::TRAP: {
@@ -783,18 +784,7 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
                  elem.name,
                  Nothing(),
                  "(" + convertToString(numTraps) + " ready)",
-                 numTraps > 0 && isTech});
-           }
-           break;
-      case BuildInfo::DOOR: {
-             BuildInfo::DoorInfo& elem = button.doorInfo;
-             pair<ViewObject, int> cost = {getResourceViewObject(elem.resourceId), elem.cost};
-             buttons.push_back({
-                 ViewObject(elem.viewId, ViewLayer::LARGE_ITEM, ""),
-                 elem.name,
-                 cost,
-                 "[" + convertToString(doors.size()) + "]",
-                 elem.cost <= numGold(elem.resourceId) && isTech});
+                 isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
            }
            break;
       case BuildInfo::IMP: {
@@ -804,16 +794,16 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
                "Imp",
                cost,
                "[" + convertToString(imps.size()) + "]",
-               getImpCost() <= mana});
+               getImpCost() <= mana ? "" : "inactive"});
            break; }
       case BuildInfo::DESTROY:
            buttons.push_back({
                ViewObject(ViewId::DESTROY_BUTTON, ViewLayer::CREATURE, ""), "Remove construction", Nothing(), "",
-                   true});
+                   ""});
            break;
       case BuildInfo::GUARD_POST:
            buttons.push_back({
-               ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", Nothing(), "", true});
+               ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", Nothing(), "", ""});
            break;
     }
     if (!isTech)
@@ -912,7 +902,7 @@ ViewObject Collective::getTrapObject(TrapType type) {
   for (const Collective::BuildInfo& info : workshopInfo)
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type)
       return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed trap")
-        .setModifier(ViewObject::ILLUSION);
+        .setModifier(ViewObject::PLANNED);
   FAIL << "trap not found" << int(type);
   return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM, "Unarmed trap");
 }
@@ -923,14 +913,13 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
     index.setHighlight(HighlightType::BUILD);
   else if (rectSelectCorner && rectSelectCorner2 && pos.inRectangle(Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2})))
     index.setHighlight(HighlightType::RECT_SELECTION);
-
   if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
     if (traps.count(pos))
       index.insert(getTrapObject(traps.at(pos).type));
     if (guardPosts.count(pos))
       index.insert(ViewObject(ViewId::GUARD_POST, ViewLayer::LARGE_ITEM, "Guard post"));
-    if (doors.count(pos))
-      index.insert(ViewObject(ViewId::DOOR, ViewLayer::LARGE_ITEM, "Planned door").setModifier(ViewObject::ILLUSION));
+    if (constructions.count(pos) && !constructions.at(pos).built)
+      index.insert(SquareFactory::get(constructions.at(pos).type)->getViewObject().setModifier(ViewObject::PLANNED));
   }
   if (const Location* loc = level->getLocation(pos)) {
     if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !getMemory(level).hasViewIndex(pos))
@@ -960,18 +949,24 @@ Task* Collective::TaskMap::getTask(const Creature* c) const {
     return nullptr;
 }
 
-void Collective::TaskMap::addTask(PTask task, const Creature* c) {
+Task* Collective::TaskMap::addTask(PTask task, const Creature* c) {
   taken[task.get()] = c;
   taskMap[c] = task.get();
-  addTask(std::move(task));
+  return addTask(std::move(task));
 }
 
-void Collective::TaskMap::addTask(PTask task) {
+Task* Collective::TaskMap::addTask(PTask task, CostInfo cost) {
   tasks.push_back(std::move(task));
+  completionCost[tasks.back().get()] = cost;
+  return tasks.back().get();
 }
 
-void Collective::TaskMap::removeTask(Task* task) {
-  completionCost.erase(task);
+Collective::CostInfo Collective::TaskMap::removeTask(Task* task) {
+  CostInfo cost {ResourceId::GOLD, 0};
+  if (completionCost.count(task)) {
+    cost = completionCost.at(task);
+    completionCost.erase(task);
+  }
   if (marked.count(task->getPosition()))
     marked.erase(task->getPosition());
   for (int i : All(tasks))
@@ -983,8 +978,16 @@ void Collective::TaskMap::removeTask(Task* task) {
     taskMap.erase(taken.at(task));
     taken.erase(task);
   }
+  return cost;
 }
 
+Collective::CostInfo Collective::TaskMap::removeTask(UniqueId id) {
+  for (PTask& task : tasks)
+    if (task->getUniqueId() == id) {
+      return removeTask(task.get());
+    }
+  return {ResourceId::GOLD, 0};
+}
 bool Collective::TaskMap::isLocked(const Creature* c, const Task* t) const {
   return lockedTasks.count({c, t->getUniqueId()});
 }
@@ -1001,11 +1004,9 @@ bool Collective::TaskMap::isMarked(Vec2 pos) const {
   return marked.count(pos);
 }
 
-void Collective::TaskMap::markSquare(Vec2 pos, PTask task, CostInfo cost) {
+void Collective::TaskMap::markSquare(Vec2 pos, PTask task) {
   addTask(std::move(task));
   marked[pos] = tasks.back().get();
-  if (cost.value)
-    completionCost[tasks.back().get()] = cost;
 }
 
 void Collective::TaskMap::unmarkSquare(Vec2 pos) {
@@ -1014,11 +1015,8 @@ void Collective::TaskMap::unmarkSquare(Vec2 pos) {
   marked.erase(pos);
 }
 
-Collective::CostInfo Collective::TaskMap::getCompletionCost(Vec2 pos) {
-  if (marked.count(pos) && completionCost.count(marked.at(pos)))
-    return completionCost.at(marked.at(pos));
-  else
-    return {ResourceId::GOLD, 0};
+bool Collective::hasGold(CostInfo cost) const {
+  return numGold(cost.id) >= cost.value;
 }
 
 int Collective::numGold(ResourceId id) const {
@@ -1215,18 +1213,10 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         break;
     case BuildInfo::TRAP: {
         TrapType trapType = building.trapInfo.type;
-        if (getTrapItems(trapType).size() > 0 && canPlacePost(pos) && myTiles.count(pos)) {
+        if (canPlacePost(pos) && myTiles.count(pos)) {
           traps[pos] = {trapType, false, 0};
           trapMap[trapType].push_back(pos);
-          updateTraps();
-        }
-      }
-      break;
-    case BuildInfo::DOOR: {
-        BuildInfo::DoorInfo info = building.doorInfo;
-        if (numGold(info.resourceId) >= info.cost && canBuildDoor(pos)){
-          doors[pos] = {{info.resourceId, info.cost}, false, false};
-          updateTraps();
+          updateConstructions();
         }
       }
       break;
@@ -1242,8 +1232,10 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
           removeElement(trapMap.at(traps.at(pos).type), pos);
           traps.erase(pos);
         }
-        if (doors.count(pos))
-          doors.erase(pos);
+        if (constructions.count(pos)) {
+          returnGold(taskMap.removeTask(constructions.at(pos).task));
+          constructions.erase(pos);
+        }
         break;
     case BuildInfo::GUARD_POST:
         if (guardPosts.count(pos) && selection != SELECT) {
@@ -1257,37 +1249,34 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         break;
     case BuildInfo::DIG:
         if (taskMap.isMarked(pos) && selection != SELECT) {
-          returnGold(taskMap.getCompletionCost(pos));
           taskMap.unmarkSquare(pos);
           selection = DESELECT;
         } else
           if (!taskMap.isMarked(pos) && selection != DESELECT) {
             if (level->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
-              taskMap.markSquare(pos, Task::construction(this, pos, SquareType::TREE_TRUNK), {ResourceId::GOLD, 0});
+              taskMap.markSquare(pos, Task::construction(this, pos, SquareType::TREE_TRUNK));
               selection = SELECT;
             } else
               if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !getMemory(level).hasViewIndex(pos)) {
-                taskMap.markSquare(pos, Task::construction(this, pos, SquareType::FLOOR), { ResourceId::GOLD, 0});
+                taskMap.markSquare(pos, Task::construction(this, pos, SquareType::FLOOR));
                 selection = SELECT;
               }
           }
         break;
     case BuildInfo::SQUARE:
-        if (taskMap.isMarked(pos) && selection != SELECT) {
-          returnGold(taskMap.getCompletionCost(pos));
-          taskMap.unmarkSquare(pos);
-          selection = DESELECT;
+        if (constructions.count(pos)) {
+          if (selection != SELECT) {
+            returnGold(taskMap.removeTask(constructions.at(pos).task));
+            constructions.erase(pos);
+            selection = DESELECT;
+          }
         } else {
           BuildInfo::SquareInfo info = building.squareInfo;
-          bool diggingSquare = !getMemory(level).hasViewIndex(pos) ||
-            (level->getSquare(pos)->canConstruct(info.type));
-          if (!taskMap.isMarked(pos) && selection != DESELECT && diggingSquare && 
-              numGold(info.resourceId) >= info.cost && 
-              (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) &&
-              (info.type == SquareType::FLOOR || canSee(pos))) {
-            taskMap.markSquare(pos, Task::construction(this, pos, info.type), {info.resourceId, info.cost});
+          if (getMemory(level).hasViewIndex(pos) && level->getSquare(pos)->canConstruct(info.type)
+              && (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
+            constructions[pos] = {info.cost, false, 0, info.type, -1};
             selection = SELECT;
-            takeGold({info.resourceId, info.cost});
+            updateConstructions();
           }
         }
         break;
@@ -1303,9 +1292,10 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     taskMap.clearAllLocked();
   if (taskMap.isMarked(pos))
     taskMap.unmarkSquare(pos);
-  if (contains({SquareType::TRIBE_DOOR}, type) && doors.count(pos)) {
-    doors.at(pos).built = true;
-    doors.at(pos).marked = 0;
+  if (constructions.count(pos)) {
+    constructions.at(pos).built = true;
+    constructions.at(pos).marked = 0;
+    constructions.at(pos).task = -1;
   }
 }
 
@@ -1421,7 +1411,7 @@ bool Collective::isDownstairsVisible() const {
 // after this time applying trap or building door is rescheduled (imp death, etc).
 const static int timeToBuild = 50;
 
-void Collective::updateTraps() {
+void Collective::updateConstructions() {
   map<TrapType, vector<pair<Item*, Vec2>>> trapItems;
   for (const BuildInfo& info : workshopInfo)
     if (info.buildType == BuildInfo::TRAP)
@@ -1438,11 +1428,12 @@ void Collective::updateTraps() {
         }
       }
     }
-  for (auto& elem : doors)
+  for (auto& elem : constructions)
     if (!isDelayed(elem.first)
         && elem.second.marked <= getTime() 
         && !elem.second.built && numGold(elem.second.cost.id) >= elem.second.cost.value) {
-      taskMap.addTask(Task::construction(this, elem.first, SquareType::TRIBE_DOOR));
+      elem.second.task = taskMap.addTask(Task::construction(this, elem.first, elem.second.type),
+          elem.second.cost)->getUniqueId();
       elem.second.marked = getTime() + timeToBuild;
       takeGold(elem.second.cost);
     }
@@ -1530,7 +1521,7 @@ void Collective::tick() {
     delayDangerousTasks(enemyPos, getTime() + 20);
   else
     alarmInfo.finishTime = -1000;
-  updateTraps();
+  updateConstructions();
   for (ItemFetchInfo elem : getFetchInfo()) {
     for (Vec2 pos : myTiles)
       fetchItems(pos, elem);
@@ -1951,10 +1942,11 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
       if (elem.second.count(pos)) {
         elem.second.erase(pos);
       }
-    if (doors.count(pos)) {
-      DoorInfo& info = doors.at(pos);
+    if (constructions.count(pos)) {
+      ConstructionInfo& info = constructions.at(pos);
       info.marked = getTime() + 10; // wait a little before considering rebuilding
       info.built = false;
+      info.task = -1;
     }
   }
 }
@@ -2006,7 +1998,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     if (Task* task = taskMap.getTask(c)) {
       if (!task->canTransfer()) {
         task->cancel();
-        taskMap.removeTask(task);
+        returnGold(taskMap.removeTask(task));
       } else
         taskMap.freeTask(task);
     }

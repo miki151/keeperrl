@@ -571,8 +571,10 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
   }
 }
 
-void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active, vector<Rectangle>& viewButtons) {
+void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active,
+    vector<Rectangle>& viewButtons, vector<string>& inactiveReasons) {
   viewButtons.clear();
+  inactiveReasons.clear();
   int textX = renderer.getWidth() - rightBarText;
   for (int i : All(buttons)) {
     int height = legendStartHeight + i * legendLineHeight;
@@ -580,8 +582,9 @@ void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int act
     Color color = white;
     if (i == active)
       color = green;
-    else if (!buttons[i].active)
+    else if (!buttons[i].inactiveReason.empty())
       color = lightGray;
+    inactiveReasons.push_back(buttons[i].inactiveReason);
     string text = buttons[i].name + " " + buttons[i].count;
     renderer.drawText(color, textX + 30, height, text);
     if (buttons[i].cost) {
@@ -597,7 +600,7 @@ void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int act
 }
   
 void WindowView::drawBuildings(GameInfo::BandInfo& info) {
-  drawButtons(info.buildings, activeBuilding, buildingButtons);
+  drawButtons(info.buildings, activeBuilding, buildingButtons, inactiveBuildingReasons);
 }
 
 void WindowView::drawTechnology(GameInfo::BandInfo& info) {
@@ -612,9 +615,7 @@ void WindowView::drawTechnology(GameInfo::BandInfo& info) {
 }
 
 void WindowView::drawWorkshop(GameInfo::BandInfo& info) {
-  drawButtons(info.workshop, activeWorkshop, workshopButtons);
-  int textX = renderer.getWidth() - rightBarText;
-  int textY = legendLineHeight * (info.workshop.size() + 1) + legendStartHeight;
+  drawButtons(info.workshop, activeWorkshop, workshopButtons, inactiveWorkshopReasons);
 }
 
 void WindowView::drawKeeperHelp() {
@@ -1423,15 +1424,23 @@ CollectiveAction WindowView::getClick(double time) {
             for (int i : All(optionButtons))
               if (clickPos.inRectangle(optionButtons[i]))
                   collectiveOption = (CollectiveOption) i;
-            for (int i : All(buildingButtons))
-              if (clickPos.inRectangle(buildingButtons[i])) {
-                chosenCreature = "";
-                activeBuilding = i;
-              }
+            if (collectiveOption == CollectiveOption::BUILDINGS)
+              for (int i : All(buildingButtons))
+                if (clickPos.inRectangle(buildingButtons[i])) {
+                  chosenCreature = "";
+                  if (inactiveBuildingReasons[i] == "" || inactiveBuildingReasons[i] == "inactive")
+                    activeBuilding = i;
+                  else
+                    presentText("", inactiveBuildingReasons[i]);
+                }
+            if (collectiveOption == CollectiveOption::WORKSHOP)
             for (int i : All(workshopButtons))
               if (clickPos.inRectangle(workshopButtons[i])) {
                 chosenCreature = "";
-                activeWorkshop = i;
+                if (inactiveWorkshopReasons[i] == "" || inactiveWorkshopReasons[i] == "inactive")
+                  activeWorkshop = i;
+                else
+                  presentText("", inactiveWorkshopReasons[i]);
               }
             for (int i : All(creatureGroupButtons))
               if (clickPos.inRectangle(creatureGroupButtons[i])) {

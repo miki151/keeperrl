@@ -39,7 +39,7 @@ bool MinionEquipment::isItemUseful(const Item* it) const {
 }
 
 bool MinionEquipment::needs(const Creature* c, const Item* it) {
-  if (Optional<EquipmentType> type = *getEquipmentType(it))
+  if (Optional<EquipmentType> type = getEquipmentType(it))
     return c->canEquip(it)
       || (type == ARCHERY && c->hasSkill(Skill::archery) && (c->canEquip(it) ||
               (it->getType() == ItemType::AMMO && c->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))))

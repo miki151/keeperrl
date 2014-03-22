@@ -61,7 +61,8 @@ class WindowView: public View {
   void drawPlayerInfo();
   void drawPlayerStats(GameInfo::PlayerInfo&);
   void drawBandInfo();
-  void drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active, vector<Rectangle>& viewButtons);
+  void drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active, vector<Rectangle>& viewButtons,
+      vector<string>& inactiveReasons);
   void drawBuildings(GameInfo::BandInfo& info);
   void drawTechnology(GameInfo::BandInfo& info);
   void drawWorkshop(GameInfo::BandInfo& info);
@@ -133,7 +134,9 @@ class WindowView: public View {
   vector<Rectangle> bottomKeyButtons;
   vector<Rectangle> optionButtons;
   vector<Rectangle> buildingButtons;
+  vector<string> inactiveBuildingReasons;
   vector<Rectangle> workshopButtons;
+  vector<string> inactiveWorkshopReasons;
   int activeBuilding = 0;
   int activeWorkshop = 0;
   vector<Rectangle> techButtons;

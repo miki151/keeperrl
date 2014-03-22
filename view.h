@@ -147,7 +147,7 @@ class View {
         string name;
         Optional<pair<ViewObject, int>> cost;
         string count;
-        bool active;
+        string inactiveReason;
         string help;
       };
       vector<Button> buildings;

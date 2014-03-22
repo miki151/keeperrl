@@ -12,6 +12,7 @@ class MinionEquipment {
   bool canTakeItem(const Creature*, const Item*);
 
   bool isItemUseful(const Item*) const;
+  bool needs(const Creature* c, const Item* it);
   const Creature* getOwner(const Item*) const;
   void own(const Creature*, const Item*);
   void discard(const Item*);
@@ -22,7 +23,6 @@ class MinionEquipment {
   private:
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
 
-  bool needs(const Creature* c, const Item* it);
   static Optional<EquipmentType> getEquipmentType(const Item* it);
 
   map<UniqueId, const Creature*> owners;

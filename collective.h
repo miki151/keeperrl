@@ -137,11 +137,16 @@ class Collective : public CreatureView, public EventListener {
   Creature* getCreature(UniqueId id);
   void unpossess();
   void possess(const Creature*, View*);
+  struct CostInfo {
+    ResourceId id;
+    int value;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+  };
   struct BuildInfo {
     struct SquareInfo {
       SquareType type;
-      ResourceId resourceId;
-      int cost;
+      CostInfo cost;
       string name;
     } squareInfo;
 
@@ -151,21 +156,13 @@ class Collective : public CreatureView, public EventListener {
       ViewId viewId;
     } trapInfo;
 
-    struct DoorInfo {
-      ResourceId resourceId;
-      int cost;
-      string name;
-      ViewId viewId;
-    } doorInfo;
-
-    enum BuildType { DIG, SQUARE, IMP, TRAP, DOOR, GUARD_POST, DESTROY} buildType;
+    enum BuildType { DIG, SQUARE, IMP, TRAP, GUARD_POST, DESTROY} buildType;
 
     Optional<TechId> techId;
     string help;
 
     BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
     BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
-    BuildInfo(DoorInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
     BuildInfo(BuildType type, const string& h = "");
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
@@ -214,17 +211,12 @@ class Collective : public CreatureView, public EventListener {
   MoveInfo getDropItems(Creature *c);
 
   bool isDownstairsVisible() const;
-  struct CostInfo {
-    ResourceId id;
-    int value;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-  };
   void delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime);
   bool isDelayed(Vec2 pos);
   double getTime() const;
   unordered_map<Vec2, double> delayedPos;
   int numGold(ResourceId) const;
+  bool hasGold(CostInfo) const;
   void takeGold(CostInfo);
   void returnGold(CostInfo);
   int getImpCost() const;
@@ -246,7 +238,7 @@ class Collective : public CreatureView, public EventListener {
       const string& info2, const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
-  void updateTraps();
+  void updateConstructions();
   static ViewObject getTrapObject(TrapType type);
   bool isInCombat(const Creature*) const;
   bool underAttack() const;
@@ -265,18 +257,18 @@ class Collective : public CreatureView, public EventListener {
 
   class TaskMap {
     public:
-    void addTask(PTask);
-    void addTask(PTask, const Creature*);
+    Task* addTask(PTask, CostInfo = {ResourceId::GOLD, 0});
+    Task* addTask(PTask, const Creature*);
     Task* getTask(const Creature*) const;
-    void markSquare(Vec2 pos, PTask, CostInfo);
+    void markSquare(Vec2 pos, PTask);
     void unmarkSquare(Vec2 pos);
     bool isMarked(Vec2 pos) const;
-    void removeTask(Task*);
+    CostInfo removeTask(Task*);
+    CostInfo removeTask(UniqueId);
     bool isLocked(const Creature*, const Task*) const;
     void lock(const Creature*, const Task*);
     void clearAllLocked();
     vector<Task*> getTasks();
-    CostInfo getCompletionCost(Vec2 pos);
     Task* getTaskForImp(Creature*);
     void takeTask(const Creature*, Task*);
     void freeTask(Task*);
@@ -302,14 +294,16 @@ class Collective : public CreatureView, public EventListener {
   };
   map<Vec2, TrapInfo> traps;
   map<TrapType, vector<Vec2>> trapMap;
-  struct DoorInfo {
+  struct ConstructionInfo {
     CostInfo cost;
     bool built;
     double marked;
+    SquareType type;
+    UniqueId task;
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
   };
-  map<Vec2, DoorInfo> doors;
+  map<Vec2, ConstructionInfo> constructions;
   map<UniqueId, MarkovChain<MinionTask>> minionTasks;
   map<UniqueId, string> minionTaskStrings;
   map<SquareType, set<Vec2>> mySquares;

@@ -326,7 +326,7 @@ class Fighter : public Behaviour, public EventListener {
       if (!creature->getWeapon() && weapon)
         myDamage += weapon->getModifier(AttrType::DAMAGE);
       double powerRatio = courage * myDamage / other->getAttr(AttrType::DAMAGE);
-      bool significantEnemy = myDamage < 2 * other->getAttr(AttrType::DAMAGE);
+      bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
       double weight = 1. - creature->getHealth() * 0.9;
       if (powerRatio < maxPowerRatio)
         weight += 2 - powerRatio * 2;

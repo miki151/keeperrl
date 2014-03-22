@@ -125,7 +125,8 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
       color = transparency(color, 255 * (1 - tile.translucent));
     else if (object.hasModifier(ViewObject::ILLUSION))
       color = transparency(color, 150);
-
+    else if (object.hasModifier(ViewObject::PLANNED))
+      color = transparency(color, 100);
     if (object.getWaterDepth() > 0) {
       int val = max(0.0, 255.0 - min(2.0, object.getWaterDepth()) * 60);
       color = Color(val, val, val);
