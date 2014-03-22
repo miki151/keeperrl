@@ -865,8 +865,10 @@ Square* SquareFactory::get(SquareType s) {
         return new Grave(ViewObject(ViewId::GRAVE, ViewLayer::FLOOR, "Grave"), "grave");
     case SquareType::IRON_BARS:
         FAIL << "Unimplemented";
-    case SquareType::DOOR: return new Door(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door"));
-    case SquareType::TRIBE_DOOR: return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::LARGE_ITEM, "Door"), 100);
+    case SquareType::DOOR: return new Door(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
+                               .setModifier(ViewObject::CASTS_SHADOW));
+    case SquareType::TRIBE_DOOR: return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::LARGE_ITEM, "Door")
+                                     .setModifier(ViewObject::CASTS_SHADOW), 100);
     case SquareType::BORDER_GUARD:
         return new SolidSquare(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "Wall"), "wall", false);
     case SquareType::DOWN_STAIRS:

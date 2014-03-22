@@ -1277,9 +1277,14 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
           BuildInfo::SquareInfo info = building.squareInfo;
           if (getMemory(level).hasViewIndex(pos) && level->getSquare(pos)->canConstruct(info.type)
               && (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
-            constructions[pos] = {info.cost, false, 0, info.type, -1};
-            selection = SELECT;
-            updateConstructions();
+            if (info.cost.value == 0) {
+              while (!level->getSquare(pos)->construct(info.type)) {}
+              onConstructed(pos, info.type);
+            } else {
+              constructions[pos] = {info.cost, false, 0, info.type, -1};
+              selection = SELECT;
+              updateConstructions();
+            }
           }
         }
         break;

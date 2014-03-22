@@ -99,12 +99,14 @@ bool Square::canConstruct(SquareType type) const {
   return constructions.count(type);
 }
 
-void Square::construct(SquareType type) {
+bool Square::construct(SquareType type) {
   CHECK(canConstruct(type));
   if (--constructions[type] == 0) {
     PSquare newSquare = PSquare(SquareFactory::get(type));
     level->replaceSquare(position, std::move(newSquare));
-  }
+    return true;
+  } else
+    return false;
 }
 
 void Square::destroy(int strength) {

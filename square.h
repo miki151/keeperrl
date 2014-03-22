@@ -142,8 +142,9 @@ class Square {
   /** Checks if another square can be constructed from this one.*/
   bool canConstruct(SquareType) const;
 
-  /** Constructs another square. The construction might finish after several attempts.*/
-  void construct(SquareType);
+  /** Constructs another square. The construction might finish after several attempts.
+    Returns true if construction was finishd.*/
+  bool construct(SquareType);
 
   /** Called just before swapping the old square for the new constructed one.*/
   virtual void onConstructNewSquare(Square* newSquare) {}
