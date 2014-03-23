@@ -57,7 +57,7 @@ void Model::update(double totalTime) {
   do {
     Creature* creature = timeQueue.getNextCreature();
     CHECK(creature) << "No more creatures";
-    Debug() << creature->getTheName() << " moving now";
+    Debug() << creature->getTheName() << " moving now " << creature->getTime();
     double time = creature->getTime();
     if (collective && !collective->isTurnBased()) {
       while (1) {

@@ -890,6 +890,12 @@ void Collective::unmarkItem(UniqueId id) {
   markedItems.erase(id);
 }
 
+void Collective::updateMemory() {
+  for (Vec2 v : level->getBounds())
+    if (knownTiles[v])
+      addToMemory(v);
+}
+
 const MapMemory& Collective::getMemory(const Level* l) const {
   return (*memory.get())[l];
 }
@@ -922,7 +928,7 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
       index.insert(SquareFactory::get(constructions.at(pos).type)->getViewObject().setModifier(ViewObject::PLANNED));
   }
   if (const Location* loc = level->getLocation(pos)) {
-    if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !getMemory(level).hasViewIndex(pos))
+    if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !knownPos(pos))
       index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
   }
   return index;
@@ -1076,6 +1082,7 @@ void Collective::possess(const Creature* cr, View* view) {
   if (c->isAffected(Creature::SLEEP))
     c->removeEffect(Creature::SLEEP);
   freeFromGuardPost(c);
+  updateMemory();
   c->pushController(new Player(c, view, model, false, memory.get()));
   possessed = c;
   c->getLevel()->setPlayer(c);
@@ -1095,7 +1102,7 @@ bool Collective::canBuildDoor(Vec2 pos) const {
 
 bool Collective::canPlacePost(Vec2 pos) const {
   return !guardPosts.count(pos) && !traps.count(pos) &&
-      level->getSquare(pos)->canEnterEmpty(Creature::getDefault()) && getMemory(level).hasViewIndex(pos);
+      level->getSquare(pos)->canEnterEmpty(Creature::getDefault()) && knownPos(pos);
 }
   
 void Collective::freeFromGuardPost(const Creature* c) {
@@ -1260,7 +1267,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
               taskMap.markSquare(pos, Task::construction(this, pos, SquareType::TREE_TRUNK));
               selection = SELECT;
             } else
-              if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !getMemory(level).hasViewIndex(pos)) {
+              if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !knownPos(pos)) {
                 taskMap.markSquare(pos, Task::construction(this, pos, SquareType::FLOOR));
                 selection = SELECT;
               }
@@ -1275,7 +1282,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
           }
         } else {
           BuildInfo::SquareInfo info = building.squareInfo;
-          if (getMemory(level).hasViewIndex(pos) && level->getSquare(pos)->canConstruct(info.type)
+          if (knownPos(pos) && level->getSquare(pos)->canConstruct(info.type)
               && (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
             if (info.cost.value == 0) {
               while (!level->getSquare(pos)->construct(info.type)) {}
@@ -1389,31 +1396,25 @@ ItemPredicate Collective::unMarkedItems(ItemType type) const {
       return it->getType() == type && !isItemMarked(it); };
 }
 
-void Collective::addToMemory(Vec2 pos, const Creature* c) {
-  if (!c) {
-    getMemory(level).addObject(pos, level->getSquare(pos)->getViewObject());
-    if (auto obj = level->getSquare(pos)->getBackgroundObject())
-      getMemory(level).addObject(pos, *obj);
-  }
-  else {
-    ViewIndex index = level->getSquare(pos)->getViewIndex(c);
-    getMemory(level).clearSquare(pos);
-    for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
-      if (index.hasObject(l))
-        getMemory(level).addObject(pos, index.getObject(l));
-  }
+void Collective::addToMemory(Vec2 pos) {
+  ViewIndex index = level->getSquare(pos)->getViewIndex(this);
+  getMemory(level).clearSquare(pos);
+  for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
+    if (index.hasObject(l))
+      getMemory(level).addObject(pos, index.getObject(l));
 }
 
 void Collective::update(Creature* c) {
   if (!contains(creatures, c) || c->getLevel() != level)
     return;
   for (Vec2 pos : level->getVisibleTiles(c))
-    addToMemory(pos, c);
+    knownTiles[pos] = true;
+//    addToMemory(pos, c);
 }
 
 bool Collective::isDownstairsVisible() const {
   vector<Vec2> v = level->getLandingSquares(StairDirection::DOWN, StairKey::DWARF);
-  return v.size() == 1 && getMemory(level).hasViewIndex(v[0]);
+  return v.size() == 1 && knownPos(v[0]);
 }
 
 // after this time applying trap or building door is rescheduled (imp death, etc).
@@ -1581,7 +1582,11 @@ bool Collective::canSee(const Creature* c) const {
 }
 
 bool Collective::canSee(Vec2 position) const {
-  return getMemory(level).hasViewIndex(position);
+  return knownPos(position);
+}
+
+bool Collective::knownPos(Vec2 position) const {
+  return knownTiles[position];
 }
 
 void Collective::setLevel(Level* l) {
@@ -1589,6 +1594,7 @@ void Collective::setLevel(Level* l) {
     if (contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
       getMemory(l).addObject(v, l->getSquare(v)->getViewObject());
   level = l;
+  knownTiles = Table<bool>(level->getBounds(), false);
 }
 
 vector<const Creature*> Collective::getUnknownAttacker() const {
@@ -1658,7 +1664,7 @@ MoveInfo Collective::getBeastMove(Creature* c) {
     return NoMove;
   Vec2 radius(7, 7);
   for (Vec2 v : randomPermutation(Rectangle(c->getPosition() - radius, c->getPosition() + radius).getAllSquares()))
-    if (v.inRectangle(level->getBounds()) && !getMemory(level).hasViewIndex(v)) {
+    if (v.inRectangle(level->getBounds()) && !knownPos(v)) {
       if (auto move = c->getMoveTowards(v))
         return {1.0, [c, move]() { return c->move(*move); }};
       else
@@ -1930,7 +1936,7 @@ void Collective::addCreature(Creature* c, MinionType type) {
           && level->getSquare(pos)->canEnterEmpty(Creature::getDefault()))
         for (Vec2 v : concat({pos}, pos.neighbors8()))
           if (v.inRectangle(level->getBounds()))
-            addToMemory(v, nullptr);
+            knownTiles[v] = true;
   }
   creatures.push_back(c);
   if (type != MinionType::IMP) {

@@ -135,6 +135,7 @@ class Collective : public CreatureView, public EventListener {
   private:
   void addCreature(PCreature c, Vec2 v, MinionType);
   Creature* getCreature(UniqueId id);
+  bool knownPos(Vec2) const;
   void unpossess();
   void possess(const Creature*, View*);
   struct CostInfo {
@@ -242,7 +243,8 @@ class Collective : public CreatureView, public EventListener {
   static ViewObject getTrapObject(TrapType type);
   bool isInCombat(const Creature*) const;
   bool underAttack() const;
-  void addToMemory(Vec2 pos, const Creature*);
+  void addToMemory(Vec2 pos);
+  void updateMemory();
   bool isItemMarked(const Item*) const;
   void markItem(const Item*);
   void unmarkItem(UniqueId);
@@ -311,6 +313,7 @@ class Collective : public CreatureView, public EventListener {
   Level* level = nullptr;
   Creature* keeper = nullptr;
   mutable unique_ptr<map<const Level*, MapMemory>> memory;
+  Table<bool> knownTiles;
   bool gatheringTeam = false;
   vector<Creature*> team;
   map<const Level*, Vec2> teamLevelChanges;

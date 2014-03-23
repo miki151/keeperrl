@@ -80,7 +80,6 @@ monkey: $(OBJS) $(OBJDIR)/monkey_test.o
 clean:
 	$(RM) $(OBJDIR)/*.o
 	$(RM) $(OBJDIR)/*.d
-	$(RM) log13*
 	$(RM) log.out
 	$(RM) $(OBJDIR)/test
 	$(RM) $(OBJDIR)-opt/*.o

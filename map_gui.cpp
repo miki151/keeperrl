@@ -68,7 +68,7 @@ enum class ConnectionId {
   MOUNTAIN2,
 };
 
-map<Vec2, ConnectionId> floorIds;
+unordered_map<Vec2, ConnectionId> floorIds;
 set<Vec2> shadowed;
 
 
