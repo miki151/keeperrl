@@ -17,7 +17,7 @@ class ViewObject {
   bool isHostile() const;
   bool isFriendly() const;
 
-  enum Modifier { BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED};
+  enum Modifier { BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED};
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;

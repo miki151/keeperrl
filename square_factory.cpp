@@ -48,7 +48,7 @@ class SecretPassage : public Square {
   void uncover(Vec2 pos) {
     uncovered = true;
     setName("floor");
-    setViewObject(secondary);
+    viewObject = secondary;
     setCanSeeThru(true);
     getLevel()->updateVisibility(pos);
   }
@@ -57,7 +57,7 @@ class SecretPassage : public Square {
     return true;
   }
 
-  virtual void destroy(int strength) override {
+  virtual void destroy() override {
     if (uncovered)
       return;
     if (getLevel()->playerCanSee(getPosition())) {
@@ -202,7 +202,7 @@ class Chest : public Square {
     c->privateMessage(string("There is a ") + (opened ? " opened " : "") + getName() + " here");
   }
 
-  virtual bool canDestroy() const override {
+  virtual bool canDestroy(const Creature*) const override {
     return true;
   }
 
@@ -230,7 +230,7 @@ class Chest : public Square {
     CHECK(!opened);
     c->privateMessage("You open the " + getName());
     opened = true;
-    setViewObject(openedObject);
+    viewObject = openedObject;
     if (!Random.roll(5)) {
       c->privateMessage(msgItem);
       vector<PItem> items = itemFactory.random();
@@ -288,7 +288,7 @@ class Fountain : public Square {
     return SquareApplyType::DRINK;
   }
 
-  virtual bool canDestroy() const override {
+  virtual bool canDestroy(const Creature*) const override {
     return true;
   }
 
@@ -325,14 +325,14 @@ class Tree : public Square {
     return true;
   }
 
-  virtual void destroy(int strength) override {
+  virtual void destroy() override {
     if (destroyed)
       return;
     getLevel()->globalMessage(getPosition(), "The tree falls.");
     destroyed = true;
     setCanSeeThru(true);
     getLevel()->updateVisibility(getPosition());
-    setViewObject(ViewObject(ViewId::FALLEN_TREE, ViewLayer::FLOOR, "Fallen tree"));
+    viewObject = ViewObject(ViewId::FALLEN_TREE, ViewLayer::FLOOR, "Fallen tree");
   }
 
   virtual void onConstructNewSquare(Square* s) override {
@@ -342,7 +342,7 @@ class Tree : public Square {
   virtual void burnOut() override {
     setCanSeeThru(true);
     getLevel()->updateVisibility(getPosition());
-    setViewObject(ViewObject(ViewId::BURNT_TREE, ViewLayer::FLOOR, "Burnt tree"));
+    viewObject = ViewObject(ViewId::BURNT_TREE, ViewLayer::FLOOR, "Burnt tree");
   }
 
   virtual bool itemBounces(Item* item) const {
@@ -405,7 +405,7 @@ class Door : public Square {
   public:
   Door(const ViewObject& object) : Square(object, "door", false, true, 100, 1) {}
 
-  virtual bool canDestroy() const override {
+  virtual bool canDestroy(const Creature*) const override {
     return true;
   }
 
@@ -426,21 +426,42 @@ class TribeDoor : public Door {
   TribeDoor(const ViewObject& object, int destStrength) : Door(object), destructionStrength(destStrength) {
   }
 
-  virtual void destroy(int strength) override {
-    destructionStrength -= strength;
+  virtual void destroy(const Creature* c) override {
+    destructionStrength -= c->getAttr(AttrType::STRENGTH);
     if (destructionStrength <= 0) {
-      Door::destroy(strength);
+      Door::destroy(c);
     }
   }
 
+  virtual bool canDestroy(const Creature* c) const override {
+    return c->getTribe() != Tribes::get(TribeId::KEEPER);
+  }
+
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return (c->canWalk() && c->getTribe() == Tribes::get(TribeId::KEEPER));
+    return !locked && c->canWalk() && c->getTribe() == Tribes::get(TribeId::KEEPER);
+  }
+
+  virtual bool canLock() const {
+    return true;
+  }
+
+  virtual bool isLocked() const {
+    return locked;
+  }
+
+  virtual void lock() {
+    locked = !locked;
+    if (locked)
+      viewObject.setModifier(ViewObject::LOCKED);
+    else
+      viewObject.removeModifier(ViewObject::LOCKED);
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Door)
-      & SVAR(destructionStrength);
+      & SVAR(destructionStrength)
+      & SVAR(locked);
     CHECK_SERIAL;
   }
 
@@ -449,6 +470,7 @@ class TribeDoor : public Door {
   private:
   SERIAL_CHECKER;
   int SERIAL(destructionStrength);
+  bool SERIAL2(locked, false);
 };
 
 class Furniture : public Square {
@@ -456,7 +478,7 @@ class Furniture : public Square {
   Furniture(const ViewObject& object, const string& name, double flamability) 
       : Square(object, name, true , true, 100, flamability) {}
 
-  virtual bool canDestroy() const override {
+  virtual bool canDestroy(const Creature*) const override {
     return true;
   }
 
@@ -528,7 +550,7 @@ class Altar : public Square {
       : Square(object, "shrine to " + d->getName(), true , true, 100, 0), deity(d) {
   }
 
-  virtual bool canDestroy() const override {
+  virtual bool canDestroy(const Creature*) const override {
     return true;
   }
 

@@ -109,7 +109,7 @@ bool Square::construct(SquareType type) {
     return false;
 }
 
-void Square::destroy(int strength) {
+void Square::destroy() {
   CHECK(canDestroy());
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   EventListener::addSquareReplacedEvent(getLevel(), getPosition());
@@ -118,7 +118,7 @@ void Square::destroy(int strength) {
 
 void Square::burnOut() {
   if (canDestroy())
-    destroy(12345);
+    destroy();
 }
 
 const vector<Vec2>& Square::getTravelDir() const {
@@ -142,10 +142,6 @@ const Level* Square::getConstLevel() const {
 
 Level* Square::getLevel() {
   return level;
-}
-
-void Square::setViewObject(const ViewObject& o) {
-  viewObject = o;
 }
 
 void Square::setFog(double val) {

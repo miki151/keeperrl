@@ -1462,7 +1462,7 @@ CollectiveAction WindowView::getClick(double time) {
               Vec2 pos = mapLayout->projectOnMap(getMapViewBounds(), clickPos);
               if (collectiveOption == CollectiveOption::MINIONS)
                 return CollectiveAction(CollectiveAction::POSSESS, pos);
-              if (collectiveOption == CollectiveOption::WORKSHOP)
+              if (collectiveOption == CollectiveOption::WORKSHOP && activeWorkshop >= 0)
                 return CollectiveAction(CollectiveAction::WORKSHOP, pos, activeWorkshop);
               if (collectiveOption == CollectiveOption::BUILDINGS) {
                 if (Keyboard::isKeyPressed(Keyboard::LShift))

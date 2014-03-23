@@ -32,6 +32,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(level)
     & BOOST_SERIALIZATION_NVP(keeper)
     & BOOST_SERIALIZATION_NVP(memory)
+    & BOOST_SERIALIZATION_NVP(knownTiles)
     & BOOST_SERIALIZATION_NVP(team)
     & BOOST_SERIALIZATION_NVP(teamLevelChanges)
     & BOOST_SERIALIZATION_NVP(levelChangeHistory)
@@ -1233,7 +1234,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
     case BuildInfo::DESTROY:
         selection = SELECT;
         if (level->getSquare(pos)->canDestroy() && myTiles.count(pos))
-          level->getSquare(pos)->destroy(10000);
+          level->getSquare(pos)->destroy();
         level->getSquare(pos)->removeTriggers();
         if (Creature* c = level->getSquare(pos)->getCreature())
           if (c->getName() == "boulder")
@@ -1258,44 +1259,66 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         }
         break;
     case BuildInfo::DIG:
-        if (taskMap.isMarked(pos) && selection != SELECT) {
-          taskMap.unmarkSquare(pos);
-          selection = DESELECT;
-        } else
-          if (!taskMap.isMarked(pos) && selection != DESELECT) {
-            if (level->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
-              taskMap.markSquare(pos, Task::construction(this, pos, SquareType::TREE_TRUNK));
-              selection = SELECT;
-            } else
-              if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !knownPos(pos)) {
-                taskMap.markSquare(pos, Task::construction(this, pos, SquareType::FLOOR));
+        if (!tryLockingDoor(pos)) {
+          if (taskMap.isMarked(pos) && selection != SELECT) {
+            taskMap.unmarkSquare(pos);
+            selection = DESELECT;
+          } else
+            if (!taskMap.isMarked(pos) && selection != DESELECT) {
+              if (level->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
+                taskMap.markSquare(pos, Task::construction(this, pos, SquareType::TREE_TRUNK));
                 selection = SELECT;
-              }
-          }
+              } else
+                if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !knownPos(pos)) {
+                  taskMap.markSquare(pos, Task::construction(this, pos, SquareType::FLOOR));
+                  selection = SELECT;
+                }
+            }
+        }
         break;
     case BuildInfo::SQUARE:
-        if (constructions.count(pos)) {
-          if (selection != SELECT) {
-            returnGold(taskMap.removeTask(constructions.at(pos).task));
-            constructions.erase(pos);
-            selection = DESELECT;
-          }
-        } else {
-          BuildInfo::SquareInfo info = building.squareInfo;
-          if (knownPos(pos) && level->getSquare(pos)->canConstruct(info.type)
-              && (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
-            if (info.cost.value == 0) {
-              while (!level->getSquare(pos)->construct(info.type)) {}
-              onConstructed(pos, info.type);
-            } else {
-              constructions[pos] = {info.cost, false, 0, info.type, -1};
-              selection = SELECT;
-              updateConstructions();
+        if (!tryLockingDoor(pos)) {
+          if (constructions.count(pos)) {
+            if (selection != SELECT) {
+              returnGold(taskMap.removeTask(constructions.at(pos).task));
+              constructions.erase(pos);
+              selection = DESELECT;
+            }
+          } else {
+            BuildInfo::SquareInfo info = building.squareInfo;
+            if (knownPos(pos) && level->getSquare(pos)->canConstruct(info.type)
+                && (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
+              if (info.cost.value == 0) {
+                while (!level->getSquare(pos)->construct(info.type)) {}
+                onConstructed(pos, info.type);
+              } else {
+                constructions[pos] = {info.cost, false, 0, info.type, -1};
+                selection = SELECT;
+                updateConstructions();
+              }
             }
           }
         }
         break;
   }
+}
+
+bool Collective::tryLockingDoor(Vec2 pos) {
+  return false;
+  if (constructions.count(pos)) {
+    Square* square = level->getSquare(pos);
+    if (square->canLock()) {
+      if (selection != DESELECT && !square->isLocked()) {
+        square->lock();
+        selection = SELECT;
+      } else if (selection != SELECT && square->isLocked()) {
+        square->lock();
+        selection = DESELECT;
+      }
+      return true;
+    }
+  }
+  return false;
 }
 
 void Collective::onConstructed(Vec2 pos, SquareType type) {
@@ -1836,12 +1859,12 @@ Task* Collective::TaskMap::getTaskForImp(Creature* c) {
     if ((!taken.count(task.get()) || (task->canTransfer() 
                                 && (task->getPosition() - taken.at(task.get())->getPosition()).length8() > dist))
            && (!closest ||
-           dist < (closest->getPosition() - c->getPosition()).length8()) && !lockedTasks.count(make_pair(c, task->getUniqueId()))) {
+           dist < (closest->getPosition() - c->getPosition()).length8()) && !isLocked(c, task.get())) {
       bool valid = task->getMove(c);
       if (valid)
         closest = task.get();
       else
-        lockedTasks.insert(make_pair(c, task->getUniqueId()));
+        lock(c, task.get());
     }
   }
   return closest;

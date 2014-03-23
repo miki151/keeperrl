@@ -248,6 +248,7 @@ class Collective : public CreatureView, public EventListener {
   bool isItemMarked(const Item*) const;
   void markItem(const Item*);
   void unmarkItem(UniqueId);
+  bool tryLockingDoor(Vec2 pos);
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);

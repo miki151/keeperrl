@@ -138,7 +138,7 @@ class WindowView: public View {
   vector<Rectangle> workshopButtons;
   vector<string> inactiveWorkshopReasons;
   int activeBuilding = 0;
-  int activeWorkshop = 0;
+  int activeWorkshop = -1;
   vector<Rectangle> techButtons;
   vector<Rectangle> creatureGroupButtons;
   vector<Rectangle> creatureButtons;

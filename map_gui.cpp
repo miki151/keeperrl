@@ -156,6 +156,8 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
         renderer.drawSprite(x, y, Random.getRandom(10, 12) * Renderer::nominalSize, 0 * Renderer::nominalSize,
             Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[2], width, height);
       }
+      if (object.hasModifier(ViewObject::LOCKED))
+        renderer.drawSprite(x + (Renderer::nominalSize - Renderer::tileSize[3]) / 2, y, 5 * Renderer::tileSize[3], 6 * Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tiles[3]);
     } else {
       renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT,
           sizeY + object.getSizeIncrease(), Tile::getColor(object),

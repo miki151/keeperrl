@@ -80,10 +80,12 @@ class Square {
   int getStrength() const;
 
   /** Checks if this square can be destroyed.*/
+  virtual bool canDestroy(const Creature* c) const { return canDestroy(); }
   virtual bool canDestroy() const { return false; }
 
   /** Called when something destroyed this square.*/
-  virtual void destroy(int strength);
+  virtual void destroy(const Creature* c) { destroy(); }
+  virtual void destroy();
 
   /** Called when this square is burned completely.*/
   virtual void burnOut();
@@ -149,9 +151,13 @@ class Square {
   /** Called just before swapping the old square for the new constructed one.*/
   virtual void onConstructNewSquare(Square* newSquare) {}
   
-  /** Triggers all time-dependent processes like burning. Calls tick() for creature and items if present.
+  /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(double time);
+
+  virtual bool canLock() const { return false; }
+  virtual bool isLocked() const { FAIL << "BAD"; return false; }
+  virtual void lock() { FAIL << "BAD"; }
 
   ViewObject getViewObject() const;
   Optional<ViewObject> getBackgroundObject() const;
@@ -182,9 +188,9 @@ class Square {
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(double time) {}
   Level* getLevel();
-  void setViewObject(const ViewObject&);
   Inventory inventory;
   string name;
+  ViewObject viewObject;
 
   private:
   Item* getTopItem() const;
@@ -193,7 +199,6 @@ class Square {
   Vec2 position;
   Creature* creature = nullptr;
   vector<PTrigger> triggers;
-  ViewObject viewObject;
   Optional<ViewObject> backgroundObject;
   bool seeThru;
   bool hide;

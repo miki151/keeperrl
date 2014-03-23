@@ -345,7 +345,7 @@ static void rollingBoulder(Creature* c) {
         MessageBuffer::important("You hear a heavy boulder rolling."));
     Square* target = l->getSquare(pos + dir * dist);
     if (target->canDestroy())
-      target->destroy(1000);
+      target->destroy();
     if (Creature *c = target->getCreature()) {
       c->you(MsgType::ARE, "killed by the boulder");
       c->die();
