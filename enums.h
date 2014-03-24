@@ -72,7 +72,7 @@ enum class ArmorType { BODY_ARMOR, HELMET, BOOTS };
 
 enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP };
 
-enum class MinionTask { SLEEP, GRAVE, TRAIN, WORKSHOP, STUDY, LABORATORY};
+enum class MinionTask { SLEEP, GRAVE, TRAIN, WORKSHOP, STUDY, LABORATORY, PRISON, TORTURE};
 enum class TrapType { BOULDER, POISON_GAS, ALARM, WEB, SURPRISE };
 
 enum class SquareAttrib {
@@ -135,6 +135,7 @@ enum class CreatureId {
     DWARF_BARON,
 
     IMP,
+    PRISONER,
     BILE_DEMON,
     CHICKEN,
 
@@ -314,6 +315,7 @@ enum class ViewId {
   DWARF_BARON,
   DWARVEN_SHOPKEEPER,
   IMP,
+  PRISONER,
   BILE_DEMON,
   CHICKEN,
   DARK_KNIGHT,
@@ -425,6 +427,7 @@ enum class ViewId {
   THRONE,
   BED,
   STOCKPILE,
+  PRISON,
   TORTURE_TABLE,
   TRAINING_DUMMY,
   LIBRARY,
@@ -544,7 +547,7 @@ enum class SquareType {
   ANIMAL_TRAP,
   WORKSHOP,
   HATCHERY,
-  KEEPER_THRONE,
+  PRISON,
   GRAVE,
   ROLLING_BOULDER,
   POISON_GAS,

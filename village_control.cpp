@@ -264,7 +264,9 @@ class TopLevelVillageControl : public VillageControl {
           return {1.0, [this, v, c] () {
             c->destroy(v);
           }};
-      return NoMove;
+      return {1.0, [c] () {
+        c->wait();
+      }};
     }
   }
 

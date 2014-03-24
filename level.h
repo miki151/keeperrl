@@ -49,7 +49,7 @@ class Level {
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
   vector<Vec2> getLandingSquares(StairDirection, StairKey) const;
 
-  /** Removes the creature from \paramname{position} from the level and model. The creature object is deleted.*/
+  /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
   void killCreature(Creature*);
 
   /** Recalculates visibility data assuming that \paramname{changedSquare} has changed

@@ -49,7 +49,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(retired)
     & BOOST_SERIALIZATION_NVP(tribe)
     & BOOST_SERIALIZATION_NVP(alarmInfo.finishTime)
-    & BOOST_SERIALIZATION_NVP(alarmInfo.position);
+    & BOOST_SERIALIZATION_NVP(alarmInfo.position)
+    & BOOST_SERIALIZATION_NVP(surrenders);
 }
 
 SERIALIZABLE(Collective);
@@ -119,6 +120,8 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo({SquareType::WORKSHOP, {ResourceId::IRON, 15}, "Workshop"}, TechId::CRAFTING),
     BuildInfo({SquareType::ANIMAL_TRAP, {ResourceId::WOOD, 12}, "Beast cage"}, Nothing(), "Place it in the forest."),
     BuildInfo({SquareType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}),
+    BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}),
+    BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}),
     BuildInfo(BuildInfo::DESTROY),
     BuildInfo(BuildInfo::IMP),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion."),
@@ -151,6 +154,7 @@ vector<MinionType> minionTypes {
   MinionType::UNDEAD,
   MinionType::GOLEM,
   MinionType::BEAST,
+  MinionType::PRISONER,
 };
 
 Collective::ResourceInfo info;
@@ -158,10 +162,14 @@ Collective::ResourceInfo info;
 constexpr const char* const Collective::warningText[numWarnings];
 
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
-  {ResourceId::GOLD, { SquareType::TREASURE_CHEST, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE, "gold"}},
-  {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK, "wood"}},
-  {ResourceId::IRON, { SquareType::STOCKPILE, Item::namePredicate("iron ore"), ItemId::IRON_ORE, "iron"}},
-  {ResourceId::STONE, { SquareType::STOCKPILE, Item::namePredicate("rock"), ItemId::ROCK, "stone"}},
+  {ResourceId::GOLD, { SquareType::TREASURE_CHEST, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE, "gold",
+                       Collective::Warning::GOLD}},
+  {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK, "wood",
+                       Collective::Warning::WOOD}},
+  {ResourceId::IRON, { SquareType::STOCKPILE, Item::namePredicate("iron ore"), ItemId::IRON_ORE, "iron",
+                       Collective::Warning::IRON}},
+  {ResourceId::STONE, { SquareType::STOCKPILE, Item::namePredicate("rock"), ItemId::ROCK, "stone",
+                       Collective::Warning::STONE}},
 };
 
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
@@ -195,6 +203,8 @@ map<MinionTask, MinionTaskInfo> taskInfo {
     {MinionTask::SLEEP, {SquareType::BED, "sleeping", Collective::Warning::BEDS}},
     {MinionTask::GRAVE, {SquareType::GRAVE, "sleeping", Collective::Warning::GRAVES}},
     {MinionTask::STUDY, {SquareType::LIBRARY, "studying", Collective::Warning::LIBRARY}},
+    {MinionTask::PRISON, {SquareType::PRISON, "prison", Collective::Warning::NO_PRISON}},
+    {MinionTask::TORTURE, {SquareType::TORTURE_TABLE, "tortured", Collective::Warning::TORTURE_ROOM}},
 };
 
 Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
@@ -236,14 +246,6 @@ void Collective::unpossess() {
 void Collective::render(View* view) {
   if (retired)
     return;
-  if (possessed && possessed != keeper && isInCombat(keeper) && lastControlKeeperQuestion < getTime() - 50) {
-    lastControlKeeperQuestion = getTime();
-    if (view->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
-      possessed->popController();
-      possess(keeper, view);
-      return;
-    }
-  }
   if (possessed && (!possessed->isPlayer() || possessed->isDead())) {
  /*   if (contains(team, possessed))
       removeElement(team, possessed);*/
@@ -557,7 +559,7 @@ void Collective::handleMatterAnimation(View* view) {
 }
 
 vector<Collective::SpawnInfo> tamingInfo {
-  {CreatureId::RAVEN, 5, Nothing()},
+  {CreatureId::PRISONER, 5, Nothing()},
   {CreatureId::WOLF, 30, TechId::BEAST},
   {CreatureId::CAVE_BEAR, 50, TechId::BEAST},
   {CreatureId::SPECIAL_MONSTER_KEEPER, 100, TechId::BEAST_MUT},
@@ -566,7 +568,7 @@ vector<Collective::SpawnInfo> tamingInfo {
 void Collective::handleBeastTaming(View* view) {
   handleSpawning(view, SquareType::ANIMAL_TRAP,
       "You need to build cages to trap beasts.", "You need more cages.", "Beast taming",
-      MinionType::BEAST, tamingInfo);
+      MinionType::PRISONER, tamingInfo);
 }
 
 vector<Collective::SpawnInfo> breedingInfo {
@@ -1123,13 +1125,6 @@ Creature* Collective::getCreature(UniqueId id) {
 void Collective::processInput(View* view, CollectiveAction action) {
   if (retired)
     return;
-  if (!possessed && (isInCombat(keeper) || keeper->getHealth() < 1) && lastControlKeeperQuestion < getTime() - 50) {
-    lastControlKeeperQuestion = getTime();
-    if (view->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
-      possess(keeper, view);
-      return;
-    }
-  }
   switch (action.getType()) {
     case CollectiveAction::GATHER_TEAM:
         if (gatheringTeam && !team.empty()) {
@@ -1428,6 +1423,16 @@ void Collective::addToMemory(Vec2 pos) {
 }
 
 void Collective::update(Creature* c) {
+  if (!retired && possessed != keeper && (isInCombat(keeper) || keeper->getHealth() < 1)
+      && lastControlKeeperQuestion < getTime() - 50) {
+    lastControlKeeperQuestion = getTime();
+    if (model->getView()->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
+      if (possessed && possessed != keeper)
+        possessed->popController();
+      possess(keeper, model->getView());
+      return;
+    }
+  }
   if (!contains(creatures, c) || c->getLevel() != level)
     return;
   for (Vec2 pos : level->getVisibleTiles(c))
@@ -1461,9 +1466,10 @@ void Collective::updateConstructions() {
       }
     }
   for (auto& elem : constructions)
-    if (!isDelayed(elem.first)
-        && elem.second.marked <= getTime() 
-        && !elem.second.built && numGold(elem.second.cost.id) >= elem.second.cost.value) {
+    if (!isDelayed(elem.first) && elem.second.marked <= getTime() && !elem.second.built) {
+      if ((warning[int(resourceInfo.at(elem.second.cost.id).warning)]
+          = (numGold(elem.second.cost.id) < elem.second.cost.value)))
+        continue;
       elem.second.task = taskMap.addTask(Task::construction(this, elem.first, elem.second.type),
           elem.second.cost)->getUniqueId();
       elem.second.marked = getTime() + timeToBuild;
@@ -1504,11 +1510,24 @@ bool Collective::isDelayed(Vec2 pos) {
 }
 
 void Collective::tick() {
-  if (retired)
+  if (retired) {
     if (const Creature* c = level->getPlayer())
       if (Random.roll(30) && !myTiles.count(c->getPosition()))
         c->privateMessage("You sense horrible evil in the " + 
             getCardinalName((keeper->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
+  } else {
+    for (Creature* c : copyThis(surrenders)) {
+      Vec2 pos = c->getPosition();
+      if (myTiles.count(pos) && !c->isDead()) {
+        level->globalMessage(pos, c->getTheName() + " surrenders.");
+        c->die(nullptr, true, false);
+        removeElement(surrenders, c);
+        addCreature(CreatureFactory::fromId(CreatureId::PRISONER, tribe, MonsterAIFactory::collective(this)),
+            pos, MinionType::IMP);
+      } else
+        removeElement(surrenders, c);
+    }
+  }
   warning[int(Warning::MANA)] = mana < 100;
   warning[int(Warning::WOOD)] = numGold(ResourceId::WOOD) == 0;
   warning[int(Warning::DIGGING)] = mySquares.at(SquareType::FLOOR).empty();
@@ -1553,6 +1572,30 @@ void Collective::tick() {
     delayDangerousTasks(enemyPos, getTime() + 20);
   else
     alarmInfo.finishTime = -1000;
+  bool allSurrender = !retired;
+  for (Vec2 v : enemyPos)
+    if (!contains(surrenders, NOTNULL(level->getSquare(v)->getCreature()))) {
+      allSurrender = false;
+      break;
+    }
+  if (allSurrender) {
+    for (Creature* c : copyThis(surrenders)) {
+      if ((warning[int(Warning::NO_PRISON)] = !mySquares.at(SquareType::PRISON).empty()))
+        break;
+      if ((warning[int(Warning::LARGER_PRISON)] =
+          (mySquares.at(SquareType::PRISON).size() < minionByType.at(MinionType::PRISONER).size() * 2)))
+        break;
+      Vec2 pos = c->getPosition();
+      if (myTiles.count(pos) && !c->isDead()) {
+        level->globalMessage(pos, c->getTheName() + " surrenders.");
+        c->die(nullptr, true, false);
+        removeElement(surrenders, c);
+        addCreature(CreatureFactory::fromId(CreatureId::PRISONER, tribe, MonsterAIFactory::collective(this)),
+            pos, MinionType::PRISONER);
+      } else
+        removeElement(surrenders, c);
+    }
+  }
   updateConstructions();
   for (ItemFetchInfo elem : getFetchInfo()) {
     for (Vec2 pos : myTiles)
@@ -1680,6 +1723,11 @@ void Collective::onPickupEvent(const Creature* c, const vector<Item*>& items) {
     for (Item* it : items)
       if (minionEquipment.isItemUseful(it))
         minionEquipment.own(c, it);
+}
+
+void Collective::onSurrenderEvent(Creature* who, const Creature* to) {
+  if (contains(creatures, to) && !contains(creatures, who) && !contains(surrenders, who))
+    surrenders.push_back(who);
 }
 
 MoveInfo Collective::getBeastMove(Creature* c) {
@@ -1917,6 +1965,9 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
     return MarkovChain<MinionTask>(MinionTask::STUDY, {
       {MinionTask::STUDY, {}},
       {MinionTask::SLEEP, {{ MinionTask::STUDY, 1}}}});
+  if (contains(minionByType.at(MinionType::PRISONER), c))
+    return MarkovChain<MinionTask>(MinionTask::PRISON, {
+      {MinionTask::PRISON, {}}});
   if (contains(minionByType.at(MinionType::GOLEM), c))
     return MarkovChain<MinionTask>(MinionTask::TRAIN, {
       {MinionTask::TRAIN, {}}});
@@ -1989,8 +2040,31 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
 }
 
 void Collective::onTriggerEvent(const Level* l, Vec2 pos) {
-  if (traps.count(pos) && l == level)
+  if (traps.count(pos) && l == level) {
     traps.at(pos).armed = false;
+    if (traps.at(pos).type == TrapType::SURPRISE)
+      handleSurprise(pos);
+  }
+}
+
+void Collective::handleSurprise(Vec2 pos) {
+  Vec2 rad(8, 8);
+  bool wasMsg = false;
+  Creature* c = NOTNULL(level->getSquare(pos)->getCreature());
+  for (Vec2 v : randomPermutation(Rectangle(pos - rad, pos + rad).getAllSquares()))
+    if (Creature* other = level->getSquare(v)->getCreature())
+      if (other != keeper && !contains(imps, other) && v.dist8(pos) > 1) {
+        for (Vec2 dest : pos.neighbors8(true))
+          if (level->canMoveCreature(other, dest - v)) {
+            level->moveCreature(other, dest - v);
+            other->privateMessage("Time for a welcoming committee");
+            if (!wasMsg) {
+              c->privateMessage("Surprise!");
+              wasMsg = true;
+            }
+            break;
+          }
+      }
 }
 
 void Collective::onConqueredLand(const string& name) {

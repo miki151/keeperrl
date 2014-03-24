@@ -369,23 +369,6 @@ static void alarm(Creature* c) {
 }
 
 static void teleEnemies(Creature* c) {
-  Vec2 rad(8, 8);
-  bool wasMsg = false;
-  Level* level = c->getLevel();
-  for (Vec2 v : randomPermutation(Rectangle(-rad, rad).getAllSquares()))
-    if (Creature* other = c->getSquare(v)->getCreature())
-      if (other->isEnemy(c) && v.length8() > 1) {
-        for (Vec2 dest : Vec2::directions8(true))
-          if (level->canMoveCreature(other, dest - v)) {
-            level->moveCreature(other, dest - v);
-            other->privateMessage("Time for a welcoming committee");
-            if (!wasMsg) {
-              c->privateMessage("Surprise!");
-              wasMsg = true;
-            }
-            break;
-          }
-      }
 }
 
 double entangledTime(int strength) {

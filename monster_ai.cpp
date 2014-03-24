@@ -337,11 +337,15 @@ class Fighter : public Behaviour, public EventListener {
         weight = 0;
       Debug() << creature->getName() << " panic weight " << weight;
       if (weight >= 0.5) {
-        if ((creature->getPosition() - other->getPosition()).length8() < 7) {
+        double dist = creature->getPosition().dist8(other->getPosition());
+        if (dist < 7) {
           if (MoveInfo move = getPanicMove(other, weight))
             return move;
-          else
+          else {
+            if (dist == 1)
+              EventListener::addSurrenderEvent(creature, other);
             return getAttackMove(other, significantEnemy && chase);
+          }
         }
         return NoMove;
       } else

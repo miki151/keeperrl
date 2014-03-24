@@ -202,7 +202,7 @@ class Chest : public Square {
     c->privateMessage(string("There is a ") + (opened ? " opened " : "") + getName() + " here");
   }
 
-  virtual bool canDestroy(const Creature*) const override {
+  virtual bool canDestroy() const override {
     return true;
   }
 
@@ -288,7 +288,7 @@ class Fountain : public Square {
     return SquareApplyType::DRINK;
   }
 
-  virtual bool canDestroy(const Creature*) const override {
+  virtual bool canDestroy() const override {
     return true;
   }
 
@@ -405,7 +405,7 @@ class Door : public Square {
   public:
   Door(const ViewObject& object) : Square(object, "door", false, true, 100, 1) {}
 
-  virtual bool canDestroy(const Creature*) const override {
+  virtual bool canDestroy() const override {
     return true;
   }
 
@@ -478,7 +478,7 @@ class Furniture : public Square {
   Furniture(const ViewObject& object, const string& name, double flamability) 
       : Square(object, name, true , true, 100, flamability) {}
 
-  virtual bool canDestroy(const Creature*) const override {
+  virtual bool canDestroy() const override {
     return true;
   }
 
@@ -550,7 +550,7 @@ class Altar : public Square {
       : Square(object, "shrine to " + d->getName(), true , true, 100, 0), deity(d) {
   }
 
-  virtual bool canDestroy(const Creature*) const override {
+  virtual bool canDestroy() const override {
     return true;
   }
 
@@ -688,26 +688,6 @@ class Hatchery : public Square {
   SERIALIZATION_CONSTRUCTOR(Hatchery);
 };
 
-class Throne : public Furniture {
-  public:
-  Throne(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
-
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
-    return SquareApplyType::WORKSHOP;
-  }
-
-  virtual void onApply(Creature* c) override {
-    c->privateMessage("You sit on the throne.");
-  }
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture);
-  }
-  
-  SERIALIZATION_CONSTRUCTOR(Throne);
-};
-
 class Laboratory : public Workshop {
   public:
   using Workshop::Workshop;
@@ -729,7 +709,6 @@ Square* SquareFactory::getAltar(Deity* deity) {
 template <class Archive>
 void SquareFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Laboratory);
-  REGISTER_TYPE(ar, Throne);
   REGISTER_TYPE(ar, Staircase);
   REGISTER_TYPE(ar, SecretPassage);
   REGISTER_TYPE(ar, Magma);
@@ -760,8 +739,8 @@ Square* SquareFactory::get(SquareType s) {
         return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", true, false, 0, 0, 
             {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
             {SquareType::TRAINING_DUMMY, 10}, {SquareType::LIBRARY, 10}, {SquareType::STOCKPILE, 1},
-            {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10},
-            {SquareType::LABORATORY, 10}});
+            {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10}, {SquareType::PRISON, 10},
+            {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR_BACKGROUND,"Rope bridge"), "rope bridge", true);
     case SquareType::GRASS:
@@ -847,7 +826,9 @@ Square* SquareFactory::get(SquareType s) {
                                    "tree trunk", 0);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::STOCKPILE:
-        return new Furniture(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", 0);
+        return new Furniture(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Storage"), "floor", 0);
+    case SquareType::PRISON:
+        return new Furniture(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"), "floor", 0);
     case SquareType::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
             "torture table", 0.3);
@@ -867,8 +848,6 @@ Square* SquareFactory::get(SquareType s) {
             "workshop stand", 1);
     case SquareType::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery");
-    case SquareType::KEEPER_THRONE:
-        return new Throne(ViewObject(ViewId::THRONE, ViewLayer::FLOOR, "Throne"), "throne");
     case SquareType::ALTAR:
         FAIL << "Altars are not handled by this method.";
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),

@@ -101,3 +101,9 @@ void EventListener::addEquipEvent(const Creature* c, const Item* it) {
     if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
       l->onEquipEvent(c, it);
 }
+
+void EventListener::addSurrenderEvent(Creature* c, const Creature* to) {
+  for (EventListener* l : listeners)
+    if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
+      l->onSurrenderEvent(c, to);
+}

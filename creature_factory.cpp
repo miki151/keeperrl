@@ -1024,8 +1024,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::KNIGHT;
           c.speed = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 21;
-          c.dexterity = 17;
+          c.strength = 23;
+          c.dexterity = 11;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1294,6 +1294,14 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "talks about digging";
           c.chatReactionHostile = "\"Die!\"";
           c.name = "imp";);
+    case CreatureId::PRISONER:
+      return INHERIT(IMP,
+          c.viewId = ViewId::PRISONER;
+          c.speed = 100;
+          c.size = CreatureSize::LARGE;
+          c.weight = 60;
+          c.chatReactionFriendly = "talks about escape plans";
+          c.name = "prisoner";);
     case CreatureId::BILE_DEMON: 
       return CATTR(
           c.viewId = ViewId::BILE_DEMON;

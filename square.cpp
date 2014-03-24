@@ -110,7 +110,7 @@ bool Square::construct(SquareType type) {
 }
 
 void Square::destroy() {
-  CHECK(canDestroy());
+ // CHECK(canDestroy());
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   EventListener::addSquareReplacedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareType::FLOOR)));

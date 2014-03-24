@@ -103,6 +103,7 @@ Tile getSprite(ViewId id) {
     case ViewId::LIZARDMAN: return Tile(8, 8);
     case ViewId::LIZARDLORD: return Tile(11, 8);
     case ViewId::IMP: return Tile(18, 19);
+    case ViewId::PRISONER: return Tile(18, 8);
     case ViewId::BILE_DEMON: return Tile(8, 14);
     case ViewId::CHICKEN: return Tile(18, 1);
     case ViewId::DWARF: return Tile(2, 6);
@@ -269,6 +270,7 @@ Tile getSprite(ViewId id) {
     case ViewId::IRON_ROCK: return Tile(10, 1, 3);
     case ViewId::WOOD_PLANK: return Tile(7, 10, 2);
     case ViewId::STOCKPILE: return Tile(4, 1, 1);
+    case ViewId::PRISON: return Tile(6, 2, 1);
     case ViewId::BED: return Tile(5, 4, 2, true);
     case ViewId::THRONE: return Tile(7, 4, 2, true);
     case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
@@ -326,6 +328,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::LIZARDMAN: return Tile('@', lightBrown);
     case ViewId::LIZARDLORD: return Tile('@', brown);
     case ViewId::IMP: return Tile('i', lightBrown);
+    case ViewId::PRISONER: return Tile('@', lightBrown);
     case ViewId::BILE_DEMON: return Tile('O', green);
     case ViewId::CHICKEN: return Tile('c', yellow);
     case ViewId::DWARF: return Tile('h', blue);
@@ -482,6 +485,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::IRON_ROCK: return Tile('*', orange);
     case ViewId::WOOD_PLANK: return Tile('\\', brown);
     case ViewId::STOCKPILE: return Tile('.', yellow);
+    case ViewId::PRISON: return Tile('.', blue);
     case ViewId::BED: return Tile('=', white);
     case ViewId::DUNGEON_HEART: return Tile(L'♥', white, true);
     case ViewId::THRONE: return Tile(L'Ω', purple);

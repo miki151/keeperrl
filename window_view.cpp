@@ -553,15 +553,15 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
         if (c->getName() == chosenCreature)
           chosen.push_back(c);
       int winX = renderer.getWidth() - rightBarWidth - width - 20;
-      renderer.drawFilledRectangle(winX, lineStart,
-          winX + width + 20, legendStartHeight + 35 + (chosen.size() + 3) * legendLineHeight, black);
+      renderer.drawFilledRectangle(winX, lineStart - 15,
+          winX + width + 20, legendStartHeight + (chosen.size() + 3) * legendLineHeight, black);
       renderer.drawText(lightBlue, winX + 10, lineStart, 
-          info.gatheringTeam ? "Click to add to team:" : "Click to possess:");
+          info.gatheringTeam ? "Click to add to team:" : "Click to control:");
       int cnt = 1;
       for (const Creature* c : chosen) {
         int height = lineStart + cnt * legendLineHeight;
-        drawViewObject(c->getViewObject(), winX + 20, height, currentTileLayout.sprites);
-        renderer.drawText(contains(info.team, c) ? green : white, textX - width + 30, height,
+        drawViewObject(c->getViewObject(), winX + 35, height, currentTileLayout.sprites);
+        renderer.drawText(contains(info.team, c) ? green : white, winX + 55, height,
             "level: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c->getUniqueId()]);
         creatureButtons.emplace_back(winX + 20, height, winX + width + 20, height + legendLineHeight);
         chosenCreatures.push_back(c);

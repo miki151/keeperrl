@@ -17,6 +17,7 @@ enum class MinionType {
   GOLEM,
   BEAST,
   KEEPER,
+  PRISONER,
 };
 
 ENUM_HASH(MinionType);
@@ -48,6 +49,7 @@ class Collective : public CreatureView, public EventListener {
   virtual void onTechBookEvent(Technology*) override;
   virtual void onEquipEvent(const Creature*, const Item*) override;
   virtual void onPickupEvent(const Creature* c, const vector<Item*>& items);
+  virtual void onSurrenderEvent(Creature* who, const Creature* to);
 
   void onConqueredLand(const string& name);
 
@@ -96,25 +98,29 @@ class Collective : public CreatureView, public EventListener {
     STONE,
   };
 
-  struct ResourceInfo {
-    SquareType storageType;
-    ItemPredicate predicate;
-    ItemId itemId;
-    string name;
-  };
-
   struct SpawnInfo {
     CreatureId id;
     int manaCost;
     Optional<TechId> techId;
   };
 
-  enum class Warning { DIGGING, STORAGE, WOOD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, GRAVES, CHESTS, MANA, MORE_CHESTS };
+  enum class Warning { DIGGING, STORAGE, WOOD, IRON, STONE, GOLD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, GRAVES, CHESTS, MANA, NO_PRISON, LARGER_PRISON, TORTURE_ROOM, MORE_CHESTS };
+
+  struct ResourceInfo {
+    SquareType storageType;
+    ItemPredicate predicate;
+    ItemId itemId;
+    string name;
+    Warning warning;
+  };
 
   static constexpr const char* const warningText[] {
     "Start digging into the mountain to build a dungeon.",
     "You need to build a storage room.",
-    "Cut down some trees for wood",
+    "Cut down some trees for wood.",
+    "You need to mine more iron.",
+    "You need to mine more stone.",
+    "You need to mine more gold.",
     "Build a library to start research.",
     "Use the library tab in the top-right to summon some minions.",
     "You need to build beds for your minions.",
@@ -124,9 +130,11 @@ class Collective : public CreatureView, public EventListener {
     "You need a graveyard to collect corpses",
     "You need to build a treasure room.",
     "Kill some innocent beings for more mana.",
+    "You need to build a prison.",
+    "You need a larger prison.",
     "You need a larger treasure room."};
 
-  const static int numWarnings = 13;
+  const static int numWarnings = 18;
   bool warning[numWarnings] = {0};
 
   protected:
@@ -135,6 +143,7 @@ class Collective : public CreatureView, public EventListener {
   private:
   void addCreature(PCreature c, Vec2 v, MinionType);
   Creature* getCreature(UniqueId id);
+  void handleSurprise(Vec2 pos);
   bool knownPos(Vec2) const;
   void unpossess();
   void possess(const Creature*, View*);
@@ -343,6 +352,7 @@ class Collective : public CreatureView, public EventListener {
     double finishTime = -1000;
     Vec2 position;
   } alarmInfo;
+  vector<Creature*> surrenders;
 };
 
 #endif

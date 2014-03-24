@@ -1119,7 +1119,7 @@ void Creature::attack(const Creature* c1, bool spend) {
     }
     c->takeDamage(attack);
     if (c->isDead())
-      increaseExpLevel(c->getDifficultyPoints() / 400);
+      increaseExpLevel(c->getDifficultyPoints() / 200);
   }
   else
     you(MsgType::MISS_ATTACK, enemyName);
@@ -1462,7 +1462,7 @@ void Creature::dropCorpse() {
         isFood ? ItemType::FOOD : ItemType::CORPSE, {true, heads > 0, false}));
 }
 
-void Creature::die(const Creature* attacker, bool dropInventory) {
+void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
   Debug() << getTheName() << " dies. Killed by " << (attacker ? attacker->getName() : "");
   controller->onKilled(attacker);
   if (attacker)
@@ -1472,7 +1472,7 @@ void Creature::die(const Creature* attacker, bool dropInventory) {
       level->getSquare(position)->dropItem(std::move(item));
     }
   dead = true;
-  if (dropInventory && !noBody)
+  if (dropInventory && dCorpse && !noBody)
     dropCorpse();
   level->killCreature(this);
   EventListener::addKillEvent(this, attacker);
