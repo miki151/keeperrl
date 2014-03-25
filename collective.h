@@ -50,6 +50,7 @@ class Collective : public CreatureView, public EventListener {
   virtual void onEquipEvent(const Creature*, const Item*) override;
   virtual void onPickupEvent(const Creature* c, const vector<Item*>& items);
   virtual void onSurrenderEvent(Creature* who, const Creature* to);
+  virtual void onTortureEvent(Creature* who, const Creature* torturer);
 
   void onConqueredLand(const string& name);
 
@@ -132,16 +133,17 @@ class Collective : public CreatureView, public EventListener {
     "Kill some innocent beings for more mana.",
     "You need to build a prison.",
     "You need a larger prison.",
+    "You need to build a torture room.",
     "You need a larger treasure room."};
 
-  const static int numWarnings = 18;
+  const static int numWarnings = 19;
   bool warning[numWarnings] = {0};
 
   protected:
   SERIALIZATION_DECL(Collective);
 
   private:
-  void addCreature(PCreature c, Vec2 v, MinionType);
+  Creature* addCreature(PCreature c, Vec2 v, MinionType);
   Creature* getCreature(UniqueId id);
   void handleSurprise(Vec2 pos);
   bool knownPos(Vec2) const;
@@ -215,6 +217,7 @@ class Collective : public CreatureView, public EventListener {
   MoveInfo getBeastMove(Creature* c);
   MoveInfo getMinionMove(Creature* c);
   MoveInfo getGuardPostMove(Creature* c);
+  MoveInfo getExecutionMove(Creature* c);
   MoveInfo getPossessedMove(Creature* c);
   MoveInfo getBacktrackMove(Creature* c);
   MoveInfo getAlarmMove(Creature* c);
@@ -238,6 +241,14 @@ class Collective : public CreatureView, public EventListener {
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   Item* chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate, int* index = nullptr) const;
   void autoEquipment(Creature* creature);
+  MinionType getMinionType(const Creature*) const;
+  void setMinionType(Creature*, MinionType type);
+
+  enum class MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, EXECUTE, LABOR };
+
+  void getMinionOptions(Creature*, vector<MinionOption>&, vector<View::ListElem>&);
+
+  int getNumMinions() const;
   void minionView(View* view, Creature* creature, int prevItem = 0);
   void handleEquipment(View* view, Creature* creature, int prevItem = 0);
   void handleNecromancy(View*, int prevItem = 0, bool firstTime = true);
@@ -263,7 +274,6 @@ class Collective : public CreatureView, public EventListener {
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
   vector<Creature*> creatures;
   vector<Creature*> minions;
-  vector<Creature*> imps;
   unordered_map<MinionType, vector<Creature*>> minionByType;
   EntitySet markedItems;
 
@@ -315,6 +325,8 @@ class Collective : public CreatureView, public EventListener {
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
   };
+  void setMinionTask(Creature* c, MinionTask task);
+  MinionTask getMinionTask(Creature* c) const;
   map<Vec2, ConstructionInfo> constructions;
   map<UniqueId, MarkovChain<MinionTask>> minionTasks;
   map<UniqueId, string> minionTaskStrings;
@@ -352,7 +364,13 @@ class Collective : public CreatureView, public EventListener {
     double finishTime = -1000;
     Vec2 position;
   } alarmInfo;
-  vector<Creature*> surrenders;
+  struct PrisonerInfo {
+    enum State { SURRENDER, PRISON, EXECUTE } state;
+    const Creature* attender;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+  };
+  map<Creature*, PrisonerInfo> prisonerInfo;
 };
 
 #endif

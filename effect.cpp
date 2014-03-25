@@ -173,7 +173,7 @@ static void wordOfPower(Creature* c, EffectStrength strength) {
           l->moveCreature(other, v * dist);
           other->you(MsgType::ARE, "pushed back");
         }
-        other->makeStunned();
+        other->addEffect(Creature::STUNNED, 2);
         other->takeDamage(Attack(c, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 25, false));
       }
     }

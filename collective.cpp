@@ -18,7 +18,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(technologies)
     & BOOST_SERIALIZATION_NVP(creatures)
     & BOOST_SERIALIZATION_NVP(minions)
-    & BOOST_SERIALIZATION_NVP(imps)
     & BOOST_SERIALIZATION_NVP(minionByType)
     & BOOST_SERIALIZATION_NVP(markedItems)
     & BOOST_SERIALIZATION_NVP(taskMap)
@@ -50,7 +49,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(tribe)
     & BOOST_SERIALIZATION_NVP(alarmInfo.finishTime)
     & BOOST_SERIALIZATION_NVP(alarmInfo.position)
-    & BOOST_SERIALIZATION_NVP(surrenders);
+    & BOOST_SERIALIZATION_NVP(prisonerInfo);
 }
 
 SERIALIZABLE(Collective);
@@ -101,6 +100,14 @@ void Collective::CostInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Collective::CostInfo);
 
+template <class Archive>
+void Collective::PrisonerInfo::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(state)
+    & BOOST_SERIALIZATION_NVP(attender);
+}
+
+SERIALIZABLE(Collective::PrisonerInfo);
+
 Collective::BuildInfo::BuildInfo(SquareInfo info, Optional<TechId> id, const string& h)
     : squareInfo(info), buildType(SQUARE), techId(id), help(h) {}
 Collective::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h)
@@ -149,6 +156,7 @@ vector<Collective::RoomInfo> Collective::getRoomInfo() {
 
 
 vector<MinionType> minionTypes {
+  MinionType::KEEPER,
   MinionType::IMP,
   MinionType::NORMAL,
   MinionType::UNDEAD,
@@ -197,7 +205,7 @@ struct MinionTaskInfo {
   Collective::Warning warning;
 };
 map<MinionTask, MinionTaskInfo> taskInfo {
-  {MinionTask::LABORATORY, {SquareType::LABORATORY, "lab", Collective::Warning::LABORATORY}},
+    {MinionTask::LABORATORY, {SquareType::LABORATORY, "lab", Collective::Warning::LABORATORY}},
     {MinionTask::TRAIN, {SquareType::TRAINING_DUMMY, "training", Collective::Warning::TRAINING}},
     {MinionTask::WORKSHOP, {SquareType::WORKSHOP, "crafting", Collective::Warning::WORKSHOP}},
     {MinionTask::SLEEP, {SquareType::BED, "sleeping", Collective::Warning::BEDS}},
@@ -310,16 +318,85 @@ static vector<ItemId> marketItems {
   ItemId::FRIENDLY_ANIMALS_AMULET,
 };
 
+MinionType Collective::getMinionType(const Creature* c) const {
+  for (auto elem : minionTypes)
+    if (contains(minionByType.at(elem), c))
+      return elem;
+  FAIL << "Minion type not found " << c->getName();
+  return MinionType(0);
+}
+
+void Collective::setMinionType(Creature* c, MinionType type) {
+  removeElement(minionByType.at(getMinionType(c)), c);
+  minionByType.at(type).push_back(c);
+  if (!contains({MinionType::IMP, MinionType::BEAST}, type))
+    minionTasks.at(c->getUniqueId()) = getTasksForMinion(c);
+}
+
+void Collective::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
+  switch (getMinionType(c)) {
+    case MinionType::IMP:
+      lOpt = {View::ListElem("Transfered to labor", View::TITLE)};
+      break;
+    case MinionType::PRISONER:
+      switch (prisonerInfo.at(c).state) {
+        case PrisonerInfo::EXECUTE:
+          lOpt = {View::ListElem("Execution ordered", View::TITLE)};
+          break;
+        case PrisonerInfo::PRISON:
+          mOpt = {MinionOption::PRISON, MinionOption::TORTURE, MinionOption::EXECUTE, MinionOption::LABOR };
+          lOpt = {"Send to prison", "Torture", "Execute", "Send to labor" };
+          break;
+        case PrisonerInfo::SURRENDER: FAIL << "state not handled: " << int(prisonerInfo.at(c).state);
+      }
+      break;
+    default:
+      mOpt = {MinionOption::POSSESS, MinionOption::EQUIPMENT, MinionOption::INFO };
+      lOpt = {"Possess", "Equipment", "Description" };
+      if (c->isAffected(Creature::SLEEP)) {
+        mOpt.push_back(MinionOption::WAKE_UP);
+        lOpt.push_back("Wake up");
+      }
+      break;
+  }
+}
+
+void Collective::setMinionTask(Creature* c, MinionTask task) {
+  minionTasks.at(c->getUniqueId()).setState(task);
+}
+
+MinionTask Collective::getMinionTask(Creature* c) const {
+  return minionTasks.at(c->getUniqueId()).getState();
+}
+
 void Collective::minionView(View* view, Creature* creature, int prevIndex) {
+  vector<MinionOption> mOpt;
+  vector<View::ListElem> lOpt;
+  getMinionOptions(creature, mOpt, lOpt);
   auto index = view->chooseFromList(capitalFirst(creature->getNameAndTitle()) 
-      + ", level " + convertToString(creature->getExpLevel()),
-      {"Possess", "Manage equipment", "Information"}, prevIndex);
+      + ", level: " + convertToString(creature->getExpLevel()) + ", kills: "
+      + convertToString(creature->getKills().size()), lOpt, prevIndex);
   if (!index)
     return;
-  switch (*index) {
-    case 0: possess(creature, view); return;
-    case 1: handleEquipment(view, creature); break;
-    case 2: messageBuffer.addMessage(MessageBuffer::important(creature->getDescription())); break;
+  switch (mOpt[*index]) {
+    case MinionOption::POSSESS: possess(creature, view); return;
+    case MinionOption::EQUIPMENT: handleEquipment(view, creature); break;
+    case MinionOption::INFO: messageBuffer.addMessage(MessageBuffer::important(creature->getDescription())); break;
+    case MinionOption::WAKE_UP: creature->removeEffect(Creature::SLEEP); return;
+    case MinionOption::PRISON:
+      setMinionTask(creature, MinionTask::PRISON);
+      return;
+    case MinionOption::TORTURE:
+      setMinionTask(creature, MinionTask::TORTURE);
+      return;
+    case MinionOption::EXECUTE:
+      prisonerInfo.at(creature) = {PrisonerInfo::EXECUTE, nullptr};
+      minionTaskStrings[creature->getUniqueId()] = "execution";
+      break;
+    case MinionOption::LABOR:
+      setMinionType(creature, MinionType::IMP);
+      minionTaskStrings[creature->getUniqueId()] = "labor";
+      break;
   }
   minionView(view, creature, *index);
 }
@@ -592,6 +669,10 @@ vector<CreatureId> Collective::getSpawnInfo(const Technology* tech) {
   return ret;
 }
 
+int Collective::getNumMinions() const {
+  return minions.size() - minionByType.at(MinionType::PRISONER).size();
+}
+
 void Collective::handleSpawning(View* view, SquareType spawnSquare, const string& info1, const string& info2,
     const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo) {
   set<Vec2> cages = mySquares.at(spawnSquare);
@@ -599,7 +680,7 @@ void Collective::handleSpawning(View* view, SquareType spawnSquare, const string
   bool allInactive = false;
   while (1) {
     vector<View::ListElem> options;
-    if (minions.size() >= minionLimit) {
+    if (getNumMinions() >= minionLimit) {
       allInactive = true;
       options.emplace_back("You have reached the limit of the number of minions.", View::TITLE);
     } else
@@ -646,7 +727,7 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   set<Vec2> graves = mySquares.at(SquareType::GRAVE);
   vector<View::ListElem> options;
   bool allInactive = false;
-  if (minions.size() >= minionLimit) {
+  if (getNumMinions() >= minionLimit) {
     allInactive = true;
     options.emplace_back("You have reached the limit of the number of minions.", View::TITLE);
   } else
@@ -796,7 +877,7 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
                ViewObject(ViewId::IMP, ViewLayer::CREATURE, ""),
                "Imp",
                cost,
-               "[" + convertToString(imps.size()) + "]",
+               "[" + convertToString(minionByType.at(MinionType::IMP).size()) + "]",
                getImpCost() <= mana ? "" : "inactive"});
            break; }
       case BuildInfo::DESTROY:
@@ -850,7 +931,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   for (Creature* c : minions)
     if (isInCombat(c))
       info.tasks[c->getUniqueId()] = "fighting";
-  info.monsterHeader = "Monsters: " + convertToString(minions.size()) + " / " + convertToString(minionLimit);
+  info.monsterHeader = "Monsters: " + convertToString(getNumMinions()) + " / " + convertToString(minionLimit);
   info.creatures.clear();
   for (Creature* c : minions)
     info.creatures.push_back(c);
@@ -1072,9 +1153,13 @@ void Collective::returnGold(CostInfo amount) {
 }
 
 int Collective::getImpCost() const {
-  if (imps.size() < startImpNum)
+  int numImps = 0;
+  for (Creature* c : minionByType.at(MinionType::IMP))
+    if (!contains(minions, c)) // see if it's not a prisoner
+      ++numImps;
+  if (numImps < startImpNum)
     return 0;
-  return basicImpCost * pow(2, double(imps.size() - startImpNum) / 5);
+  return basicImpCost * pow(2, double(numImps - startImpNum) / 5);
 }
 
 void Collective::possess(const Creature* cr, View* view) {
@@ -1161,7 +1246,8 @@ void Collective::processInput(View* view, CollectiveAction action) {
           return;
         if (Creature* c = level->getSquare(pos)->getCreature())
           if (contains(minions, c)) {
-            possess(c, view);
+            minionView(view, c);
+//            possess(c, view);
             break;
           }
         }
@@ -1248,7 +1334,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
           guardPosts.erase(pos);
           selection = DESELECT;
         }
-        else if (canPlacePost(pos) && guardPosts.size() < minions.size() && selection != DESELECT) {
+        else if (canPlacePost(pos) && guardPosts.size() < getNumMinions() && selection != DESELECT) {
           guardPosts[pos] = {nullptr};
           selection = SELECT;
         }
@@ -1515,23 +1601,11 @@ void Collective::tick() {
       if (Random.roll(30) && !myTiles.count(c->getPosition()))
         c->privateMessage("You sense horrible evil in the " + 
             getCardinalName((keeper->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
-  } else {
-    for (Creature* c : copyThis(surrenders)) {
-      Vec2 pos = c->getPosition();
-      if (myTiles.count(pos) && !c->isDead()) {
-        level->globalMessage(pos, c->getTheName() + " surrenders.");
-        c->die(nullptr, true, false);
-        removeElement(surrenders, c);
-        addCreature(CreatureFactory::fromId(CreatureId::PRISONER, tribe, MonsterAIFactory::collective(this)),
-            pos, MinionType::IMP);
-      } else
-        removeElement(surrenders, c);
-    }
   }
   warning[int(Warning::MANA)] = mana < 100;
   warning[int(Warning::WOOD)] = numGold(ResourceId::WOOD) == 0;
   warning[int(Warning::DIGGING)] = mySquares.at(SquareType::FLOOR).empty();
-  warning[int(Warning::MINIONS)] = minions.size() <= 1;
+  warning[int(Warning::MINIONS)] = getNumMinions() <= 1;
   for (auto elem : taskInfo)
     if (!mySquares.at(elem.second.square).empty())
       warning[int(elem.second.warning)] = false;
@@ -1574,27 +1648,23 @@ void Collective::tick() {
     alarmInfo.finishTime = -1000;
   bool allSurrender = !retired;
   for (Vec2 v : enemyPos)
-    if (!contains(surrenders, NOTNULL(level->getSquare(v)->getCreature()))) {
+    if (!prisonerInfo.count(NOTNULL(level->getSquare(v)->getCreature()))) {
       allSurrender = false;
       break;
     }
   if (allSurrender) {
-    for (Creature* c : copyThis(surrenders)) {
-      if ((warning[int(Warning::NO_PRISON)] = !mySquares.at(SquareType::PRISON).empty()))
-        break;
-      if ((warning[int(Warning::LARGER_PRISON)] =
-          (mySquares.at(SquareType::PRISON).size() < minionByType.at(MinionType::PRISONER).size() * 2)))
-        break;
-      Vec2 pos = c->getPosition();
-      if (myTiles.count(pos) && !c->isDead()) {
-        level->globalMessage(pos, c->getTheName() + " surrenders.");
-        c->die(nullptr, true, false);
-        removeElement(surrenders, c);
-        addCreature(CreatureFactory::fromId(CreatureId::PRISONER, tribe, MonsterAIFactory::collective(this)),
-            pos, MinionType::PRISONER);
-      } else
-        removeElement(surrenders, c);
-    }
+    for (auto elem : copyThis(prisonerInfo))
+      if (elem.second.state == PrisonerInfo::SURRENDER) {
+        Creature* c = elem.first;
+        Vec2 pos = c->getPosition();
+        if (myTiles.count(pos) && !c->isDead()) {
+          level->globalMessage(pos, c->getTheName() + " surrenders.");
+          c->die(nullptr, true, false);
+          addCreature(CreatureFactory::fromId(
+                CreatureId::PRISONER, tribe, MonsterAIFactory::collective(this)), pos, MinionType::PRISONER);
+        }
+        prisonerInfo.erase(c);
+      }
   }
   updateConstructions();
   for (ItemFetchInfo elem : getFetchInfo()) {
@@ -1726,8 +1796,12 @@ void Collective::onPickupEvent(const Creature* c, const vector<Item*>& items) {
 }
 
 void Collective::onSurrenderEvent(Creature* who, const Creature* to) {
-  if (contains(creatures, to) && !contains(creatures, who) && !contains(surrenders, who))
-    surrenders.push_back(who);
+  if (contains(creatures, to) && !contains(creatures, who) && !prisonerInfo.count(who))
+    prisonerInfo[who] = {PrisonerInfo::SURRENDER, nullptr};
+}
+
+void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
+  mana += 1;
 }
 
 MoveInfo Collective::getBeastMove(Creature* c) {
@@ -1836,6 +1910,44 @@ MoveInfo Collective::getDropItems(Creature *c) {
   return NoMove;   
 }
 
+MoveInfo Collective::getExecutionMove(Creature* c) {
+  if (contains({MinionType::BEAST, MinionType::PRISONER, MinionType::KEEPER}, getMinionType(c)))
+    return NoMove;
+  for (auto& elem : prisonerInfo)
+    if (elem.second.attender == c || !elem.second.attender || elem.second.attender->isDead()) {
+      if (elem.second.state == PrisonerInfo::EXECUTE) {
+        elem.second.attender = c;
+        if (elem.first->getPosition().dist8(c->getPosition()) == 1)
+          return {1.0, [=] () {
+            c->attack(elem.first);
+            c->globalMessage(c->getTheName() + " executes " + elem.first->getTheName());
+          }};
+        else if (auto move = c->getMoveTowards(elem.first->getPosition()))
+          return {1.0, [=] () {
+            c->move(*move);
+          }};
+        else
+          return NoMove;
+      }
+      if (getMinionTask(elem.first) == MinionTask::TORTURE) {
+        elem.second.attender = c;
+        if (elem.first->getPosition().dist8(c->getPosition()) == 1
+            && elem.first->getSquare()->getApplyType(elem.first) == SquareApplyType::TORTURE)
+          return {1.0, [=] () {
+            c->torture(elem.first);
+            c->globalMessage(c->getTheName() + " tortures " + elem.first->getTheName());
+          }};
+        else if (auto move = c->getMoveTowards(elem.first->getPosition()))
+          return {1.0, [=] () {
+            c->move(*move);
+          }};
+        else
+          return NoMove;
+      }
+    }
+  return NoMove;
+}
+
 MoveInfo Collective::getMinionMove(Creature* c) {
   if (MoveInfo possessedMove = getPossessedMove(c))
     return possessedMove;
@@ -1848,6 +1960,8 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     return dropMove;
   if (contains(minionByType.at(MinionType::BEAST), c))
     return getBeastMove(c);
+  if (MoveInfo execMove = getExecutionMove(c))
+    return execMove;
   if (MoveInfo guardPostMove = getGuardPostMove(c))
     return guardPostMove;
   if (Task* task = taskMap.getTask(c)) {
@@ -1926,14 +2040,14 @@ void Collective::TaskMap::takeTask(const Creature* c, Task* task) {
 
 MoveInfo Collective::getMove(Creature* c) {
   CHECK(contains(creatures, c));
-  if (!contains(imps, c)) {
+  if (!contains(minionByType.at(MinionType::IMP), c)) {
     CHECK(contains(minions, c));
     return getMinionMove(c);
   }
   if (c->getLevel() != level)
     return NoMove;
   if (startImpNum == -1)
-    startImpNum = imps.size();
+    startImpNum = minionByType.at(MinionType::IMP).size();
   if (Task* task = taskMap.getTask(c)) {
     if (task->isDone()) {
       taskMap.removeTask(task);
@@ -1960,50 +2074,54 @@ MoveInfo Collective::getMove(Creature* c) {
 }
 
 MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
-  MinionTask t1;
-  if (c == keeper)
-    return MarkovChain<MinionTask>(MinionTask::STUDY, {
-      {MinionTask::STUDY, {}},
-      {MinionTask::SLEEP, {{ MinionTask::STUDY, 1}}}});
-  if (contains(minionByType.at(MinionType::PRISONER), c))
-    return MarkovChain<MinionTask>(MinionTask::PRISON, {
-      {MinionTask::PRISON, {}}});
-  if (contains(minionByType.at(MinionType::GOLEM), c))
-    return MarkovChain<MinionTask>(MinionTask::TRAIN, {
-      {MinionTask::TRAIN, {}}});
-  if (contains(minionByType.at(MinionType::UNDEAD), c))
-    return MarkovChain<MinionTask>(MinionTask::GRAVE, {
-      {MinionTask::GRAVE, {{ MinionTask::TRAIN, 0.5}}},
-      {MinionTask::TRAIN, {{ MinionTask::GRAVE, 0.005}}}});
-  if (contains(minionByType.at(MinionType::NORMAL), c)) {
-    double workshopTime = (c->getName() == "gnome" ? 0.5 : 0.3);
-    double labTime = (c->getName() == "gnome" ? 0.3 : 0.1);
-    double trainTime = 1 - workshopTime - labTime;
-    double changeFreq = 0.01;
-    return MarkovChain<MinionTask>(MinionTask::SLEEP, {
-      {MinionTask::SLEEP, {{ MinionTask::TRAIN, trainTime}, { MinionTask::WORKSHOP, workshopTime},
+  switch (getMinionType(c)) {
+    case MinionType::KEEPER:
+      return MarkovChain<MinionTask>(MinionTask::STUDY, {
+          {MinionTask::STUDY, {}},
+          {MinionTask::SLEEP, {{ MinionTask::STUDY, 1}}}});
+    case MinionType::PRISONER:
+      return MarkovChain<MinionTask>(MinionTask::PRISON, {
+          {MinionTask::PRISON, {}},
+          {MinionTask::TORTURE, {{ MinionTask::PRISON, 0.001}}}});
+    case MinionType::GOLEM:
+      return MarkovChain<MinionTask>(MinionTask::TRAIN, {{MinionTask::TRAIN, {}}});
+    case MinionType::UNDEAD:
+      return MarkovChain<MinionTask>(MinionTask::GRAVE, {
+          {MinionTask::GRAVE, {{ MinionTask::TRAIN, 0.5}}},
+          {MinionTask::TRAIN, {{ MinionTask::GRAVE, 0.005}}}});
+    case MinionType::NORMAL: {
+      double workshopTime = (c->getName() == "gnome" ? 0.5 : 0.3);
+      double labTime = (c->getName() == "gnome" ? 0.3 : 0.1);
+      double trainTime = 1 - workshopTime - labTime;
+      double changeFreq = 0.01;
+      return MarkovChain<MinionTask>(MinionTask::SLEEP, {
+          {MinionTask::SLEEP, {{ MinionTask::TRAIN, trainTime}, { MinionTask::WORKSHOP, workshopTime},
           {MinionTask::LABORATORY, labTime}}},
-      {MinionTask::WORKSHOP, {{ MinionTask::SLEEP, changeFreq}}},
-      {MinionTask::LABORATORY, {{ MinionTask::SLEEP, changeFreq}}},
-      {MinionTask::TRAIN, {{ MinionTask::SLEEP, changeFreq}}}});
+          {MinionTask::WORKSHOP, {{ MinionTask::SLEEP, changeFreq}}},
+          {MinionTask::LABORATORY, {{ MinionTask::SLEEP, changeFreq}}},
+          {MinionTask::TRAIN, {{ MinionTask::SLEEP, changeFreq}}}});
+      }
+    case MinionType::BEAST:
+    case MinionType::IMP: FAIL << "Not handled by this method";
   }
-
-  return MarkovChain<MinionTask>(MinionTask::SLEEP, {
-      {MinionTask::SLEEP, {{ MinionTask::TRAIN, 0.5}}},
-      {MinionTask::TRAIN, {{ MinionTask::SLEEP, 0.005}}}});
+  FAIL <<"pokewf";
+  return MarkovChain<MinionTask>(MinionTask::TRAIN, {{MinionTask::TRAIN, {}}});
 }
 
-void Collective::addCreature(PCreature creature, Vec2 v, MinionType type) {
+Creature* Collective::addCreature(PCreature creature, Vec2 v, MinionType type) {
   // strip all spawned minions
   creature->getEquipment().removeAllItems();
   addCreature(creature.get(), type);
+  Creature* ret = creature.get();
   level->addCreature(v, std::move(creature));
+  return ret;
 }
 
 void Collective::addCreature(Creature* c, MinionType type) {
   if (keeper == nullptr) {
     keeper = c;
     type = MinionType::KEEPER;
+    minionByType[type].push_back(c);
     Vec2 radius(30, 30);
     for (Vec2 pos : Rectangle(c->getPosition() - radius, c->getPosition() + radius))
       if (pos.distD(c->getPosition()) <= radius.x && pos.inRectangle(level->getBounds()) 
@@ -2013,15 +2131,15 @@ void Collective::addCreature(Creature* c, MinionType type) {
             knownTiles[v] = true;
   }
   creatures.push_back(c);
-  if (type != MinionType::IMP) {
+  minionByType[type].push_back(c);
+  if (!contains({MinionType::IMP}, type))
     minions.push_back(c);
-    minionByType[type].push_back(c);
+  if (!contains({MinionType::BEAST, MinionType::IMP}, type))
     minionTasks.insert(make_pair(c->getUniqueId(), getTasksForMinion(c)));
-  } else {
-    imps.push_back(c);
-  }
   for (const Item* item : c->getEquipment().getItems())
     minionEquipment.own(c, item);
+  if (type == MinionType::PRISONER)
+    prisonerInfo[c] = {PrisonerInfo::PRISON, nullptr};
 }
 
 void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
@@ -2053,7 +2171,7 @@ void Collective::handleSurprise(Vec2 pos) {
   Creature* c = NOTNULL(level->getSquare(pos)->getCreature());
   for (Vec2 v : randomPermutation(Rectangle(pos - rad, pos + rad).getAllSquares()))
     if (Creature* other = level->getSquare(v)->getCreature())
-      if (other != keeper && !contains(imps, other) && v.dist8(pos) > 1) {
+      if (other != keeper && !contains(minionByType.at(MinionType::IMP), other) && v.dist8(pos) > 1) {
         for (Vec2 dest : pos.neighbors8(true))
           if (level->canMoveCreature(other, dest - v)) {
             level->moveCreature(other, dest - v);
@@ -2098,6 +2216,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   if (contains(creatures, victim)) {
     Creature* c = const_cast<Creature*>(victim);
     removeElement(creatures, c);
+    prisonerInfo.erase(c);
     for (auto& elem : guardPosts)
       if (elem.second.attender == c)
         elem.second.attender = nullptr;
@@ -2113,13 +2232,9 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
       } else
         taskMap.freeTask(task);
     }
-    if (contains(imps, c))
-      removeElement(imps, c);
     if (contains(minions, c))
       removeElement(minions, c);
-    for (MinionType type : minionTypes)
-      if (contains(minionByType.at(type), c))
-        removeElement(minionByType.at(type), c);
+    removeElement(minionByType.at(getMinionType(c)), c);
   } else if (victim->getTribe() != tribe && (!killer || killer->getTribe() == tribe)) {
     double incMana = victim->getDifficultyPoints() / 3;
     mana += incMana;

@@ -107,3 +107,10 @@ void EventListener::addSurrenderEvent(Creature* c, const Creature* to) {
     if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
       l->onSurrenderEvent(c, to);
 }
+  
+void EventListener::addTortureEvent(Creature* c, const Creature* torturer) {
+  for (EventListener* l : listeners)
+    if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
+      l->onTortureEvent(c, torturer);
+}
+

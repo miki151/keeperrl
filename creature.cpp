@@ -58,7 +58,6 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(lastAttacker)
     & BOOST_SERIALIZATION_NVP(swapPositionCooldown)
     & BOOST_SERIALIZATION_NVP(lastingEffects)
-    & BOOST_SERIALIZATION_NVP(stunned)
     & BOOST_SERIALIZATION_NVP(expLevel)
     & BOOST_SERIALIZATION_NVP(unknownAttacker)
     & BOOST_SERIALIZATION_NVP(visibleEnemies)
@@ -288,9 +287,8 @@ void Creature::makeMove() {
     spendTime(1);
     return;
   }
-  if (stunned) {
+  if (isAffected(STUNNED)) {
     spendTime(1);
-    stunned = false;
     return;
   }
   updateVisibleEnemies();
@@ -633,45 +631,47 @@ bool Creature::affects(LastingEffect effect) const {
   }
 }
 
-void Creature::onAffected(LastingEffect effect) {
+void Creature::onAffected(LastingEffect effect, bool msg) {
   switch (effect) {
+    case STUNNED:
+      if (msg) you(MsgType::ARE, "stunned");
     case PANIC:
       removeEffect(RAGE, false);
-      you(MsgType::PANIC, "");
+      if (msg) you(MsgType::PANIC, "");
       break;
     case RAGE:
       removeEffect(PANIC, false);
-      you(MsgType::RAGE, "");
+      if (msg) you(MsgType::RAGE, "");
       break;
     case HALLU: 
-      if (!isBlind())
+      if (!isBlind() && msg)
         privateMessage("The world explodes into colors!");
       break;
     case BLIND:
-      you(MsgType::ARE, "blind!");
+      if (msg) you(MsgType::ARE, "blind!");
       viewObject.setModifier(ViewObject::BLIND);
       break;
     case INVISIBLE:
-      if (!isBlind())
+      if (!isBlind() && msg)
         you(MsgType::TURN_INVISIBLE, "");
       viewObject.setModifier(ViewObject::INVISIBLE);
       break;
     case POISON:
-      you(MsgType::ARE, "poisoned");
+      if (msg) you(MsgType::ARE, "poisoned");
       viewObject.setModifier(ViewObject::POISONED);
       break;
-    case STR_BONUS: you(MsgType::FEEL, "stronger"); break;
-    case DEX_BONUS: you(MsgType::FEEL, "more agile"); break;
+    case STR_BONUS: if (msg) you(MsgType::FEEL, "stronger"); break;
+    case DEX_BONUS: if (msg) you(MsgType::FEEL, "more agile"); break;
     case SPEED: 
-      you(MsgType::ARE, "moving faster");
+      if (msg) you(MsgType::ARE, "moving faster");
       removeEffect(SLOWED, false);
       break;
     case SLOWED: 
-      you(MsgType::ARE, "moving more slowly");
+      if (msg) you(MsgType::ARE, "moving more slowly");
       removeEffect(SPEED, false);
       break;
-    case ENTANGLED: you(MsgType::ARE, "entangled in a web"); break;
-    case SLEEP: you(MsgType::FALL_ASLEEP, ""); break;
+    case ENTANGLED: if (msg) you(MsgType::ARE, "entangled in a web"); break;
+    case SLEEP: if (msg) you(MsgType::FALL_ASLEEP, ""); break;
   }
 }
 
@@ -688,6 +688,7 @@ void Creature::onRemoved(LastingEffect effect, bool msg) {
 
 void Creature::onTimedOut(LastingEffect effect, bool msg) {
   switch (effect) {
+    case STUNNED: break;
     case SLOWED: if (msg) you(MsgType::ARE, "moving faster again"); break;
     case SLEEP: if (msg) you(MsgType::WAKE_UP, ""); break;
     case SPEED: if (msg) you(MsgType::ARE, "moving more slowly again"); break;
@@ -715,10 +716,10 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
   } 
 }
 
-void Creature::addEffect(LastingEffect effect, double time) {
+void Creature::addEffect(LastingEffect effect, double time, bool msg) {
   if (affects(effect)) {
     lastingEffects[effect] = getTime() + time;
-    onAffected(effect);
+    onAffected(effect, msg);
   }
 }
 
@@ -733,11 +734,6 @@ bool Creature::isAffected(LastingEffect effect) const {
 
 bool Creature::isBlind() const {
   return isAffected(BLIND) || permanentlyBlind;
-}
-
-void Creature::makeStunned() {
-  you(MsgType::ARE, "stunned");
-  stunned = true;
 }
 
 int Creature::getAttrVal(AttrType type) const {
@@ -1493,6 +1489,18 @@ void Creature::flyAway() {
   level->killCreature(this);
 }
 
+void Creature::torture(Creature* c) {
+  CHECK(c->getSquare()->getApplyType(this) == SquareApplyType::TORTURE);
+  CHECK(c->getPosition().dist8(getPosition()) == 1);
+  c->globalMessage(c->getTheName() + " screams!", "You hear a terrifying scream");
+  c->addEffect(STUNNED, 3, false);
+  c->bleed(0.1);
+  if (c->health < 0.3 && !Random.roll(15))
+    c->heal();
+  EventListener::addTortureEvent(c, this);
+  spendTime(1);
+}
+
 void Creature::give(const Creature* whom, vector<Item*> items) {
   getLevel()->getSquare(whom->getPosition())->getCreature()->takeItems(equipment.removeItems(items), this);
 }
@@ -1622,7 +1630,7 @@ void Creature::throwItem(Item* item, Vec2 direction) {
   CHECK(canThrowItem(item));
   int dist = 0;
   int toHitVariance = 10;
-  int attackVariance = 7;
+  int attackVariance = 10;
   int str = getAttr(AttrType::STRENGTH);
   if (item->getWeight() <= 0.5)
     dist = 10 * str / 15;

@@ -475,12 +475,19 @@ class TribeDoor : public Door {
 
 class Furniture : public Square {
   public:
-  Furniture(const ViewObject& object, const string& name, double flamability) 
-      : Square(object, name, true , true, 100, flamability) {}
+  Furniture(const ViewObject& object, const string& name, double flamability,
+      Optional<SquareApplyType> _applyType = Nothing()) 
+      : Square(object, name, true , true, 100, flamability), applyType(_applyType) {}
 
   virtual bool canDestroy() const override {
     return true;
   }
+
+  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override {
+    return applyType;
+  }
+
+  virtual void onApply(Creature* c) {}
 
   virtual void onEnterSpecial(Creature* c) override {
    // c->privateMessage("There is a " + getName() + " here.");
@@ -488,10 +495,16 @@ class Furniture : public Square {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Square);
+    ar& SUBCLASS(Square)
+      & SVAR(applyType);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Furniture);
+  
+  private:
+  SERIAL_CHECKER;
+  Optional<SquareApplyType> SERIAL(applyType);
 };
 
 class Bed : public Furniture {
@@ -831,7 +844,7 @@ Square* SquareFactory::get(SquareType s) {
         return new Furniture(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"), "floor", 0);
     case SquareType::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
-            "torture table", 0.3);
+            "torture table", 0.3, SquareApplyType::TORTURE);
     case SquareType::ANIMAL_TRAP:
         return new Furniture(ViewObject(ViewId::ANIMAL_TRAP, ViewLayer::FLOOR, "Animal trap"), 
             "animal trap", 0.3);

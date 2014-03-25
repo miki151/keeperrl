@@ -156,9 +156,9 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   bool isHidden() const;
   bool knowsHiding(const Creature*) const;
   bool isBlind() const;
-  void makeStunned();
   bool canFlyAway() const;
   void flyAway();
+  void torture(Creature*);
   bool canChatTo(Vec2 direction) const;
   void chatTo(Vec2 direction);
   void stealFrom(Vec2 direction, const vector<Item*>&);
@@ -234,15 +234,15 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   }
 
   enum LastingEffect {
-    SLEEP, PANIC, RAGE, SLOWED, SPEED, STR_BONUS, DEX_BONUS, HALLU, BLIND, INVISIBLE, POISON, ENTANGLED };
+    SLEEP, PANIC, RAGE, SLOWED, SPEED, STR_BONUS, DEX_BONUS, HALLU, BLIND, INVISIBLE, POISON, ENTANGLED, STUNNED };
 
-  void addEffect(LastingEffect, double time);
+  void addEffect(LastingEffect, double time, bool msg = true);
   void removeEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
 
   private:
   bool affects(LastingEffect effect) const;
-  void onAffected(LastingEffect effect);
+  void onAffected(LastingEffect effect, bool msg);
   void onRemoved(Creature::LastingEffect effect, bool msg);
   void onTimedOut(Creature::LastingEffect effect, bool msg);
   static PCreature defaultCreature;
@@ -293,7 +293,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   const Creature* lastAttacker = nullptr;
   int swapPositionCooldown = 0;
   map<LastingEffect, double> lastingEffects;
-  bool stunned = false;
   double expLevel = 1;
   vector<const Creature*> unknownAttacker;
   vector<const Creature*> visibleEnemies;
