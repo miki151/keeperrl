@@ -386,7 +386,7 @@ vector<EnemyInfo> getEnemyInfo() {
 }
 
 static double getKilledCoeff() {
-  return Random.getDouble(0.3, 0.7);
+  return Random.getDouble(0.5, 0.9);
 };
 
 static double getPowerCoeff() {

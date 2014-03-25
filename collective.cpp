@@ -142,6 +142,8 @@ const vector<Collective::BuildInfo> Collective::workshopInfo {
     BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, TechId::TRAPS),
     BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP}, TechId::TRAPS,
         "Summons nearby minions to deal with the trespasser"),
+    BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, TechId::TRAPS,
+        "Causes the trespasser to panic"),
 };
 
 vector<Collective::RoomInfo> Collective::getRoomInfo() {
@@ -238,7 +240,7 @@ Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
 
 
 const int basicImpCost = 20;
-const int minionLimit = 20;
+const int minionLimit = 40;
 
 void Collective::unpossess() {
   CHECK(possessed);
@@ -402,7 +404,7 @@ void Collective::minionView(View* view, Creature* creature, int prevIndex) {
 }
 
 void Collective::autoEquipment(Creature* creature) {
-  if (!creature->isHumanoid())
+  if (!creature->isHumanoid() || getMinionType(creature) == MinionType::PRISONER)
     return;
   vector<EquipmentSlot> slots;
   for (auto slot : Equipment::slotTitles)
@@ -1439,9 +1441,17 @@ void Collective::onAppliedItem(Vec2 pos, Item* item) {
   }
 }
 
+set<TrapType> Collective::getNeededTraps() const {
+  set<TrapType> ret;
+  for (auto elem : traps)
+    if (!elem.second.marked && !elem.second.armed)
+      ret.insert(elem.second.type);
+  return ret;
+}
+
 void Collective::onAppliedSquare(Vec2 pos) {
   if (mySquares.at(SquareType::LIBRARY).count(pos)) {
-    mana += 0.3 + max(0., 2 - double(getDangerLevel()) / 500);
+    mana += 0.3 + max(0., 2 - (mana + double(getDangerLevel())) / 700);
   }
   if (mySquares.at(SquareType::TRAINING_DUMMY).count(pos)) {
     if (hasTech(TechId::ARCHERY) && Random.roll(30))
@@ -1454,7 +1464,13 @@ void Collective::onAppliedSquare(Vec2 pos) {
     }
   if (mySquares.at(SquareType::WORKSHOP).count(pos))
     if (Random.roll(40)) {
-      vector<PItem> items  = ItemFactory::workshop(technologies).random();
+      set<TrapType> neededTraps = getNeededTraps();
+      vector<PItem> items;
+      for (int i : Range(10)) {
+        items = ItemFactory::workshop(technologies).random();
+        if (neededTraps.empty() || (items[0]->getTrapType() && neededTraps.count(*items[0]->getTrapType())))
+          break;
+      }
       if (items[0]->getType() == ItemType::WEAPON)
         Statistics::add(StatId::WEAPON_PRODUCED);
       if (items[0]->getType() == ItemType::ARMOR)
@@ -1914,7 +1930,8 @@ MoveInfo Collective::getExecutionMove(Creature* c) {
   if (contains({MinionType::BEAST, MinionType::PRISONER, MinionType::KEEPER}, getMinionType(c)))
     return NoMove;
   for (auto& elem : prisonerInfo)
-    if (elem.second.attender == c || !elem.second.attender || elem.second.attender->isDead()) {
+    if (contains(creatures, elem.first) 
+        && (elem.second.attender == c || !elem.second.attender || elem.second.attender->isDead())) {
       if (elem.second.state == PrisonerInfo::EXECUTE) {
         elem.second.attender = c;
         if (elem.first->getPosition().dist8(c->getPosition()) == 1)
@@ -2090,7 +2107,7 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
           {MinionTask::GRAVE, {{ MinionTask::TRAIN, 0.5}}},
           {MinionTask::TRAIN, {{ MinionTask::GRAVE, 0.005}}}});
     case MinionType::NORMAL: {
-      double workshopTime = (c->getName() == "gnome" ? 0.5 : 0.3);
+      double workshopTime = (c->getName() == "gnome" ? 0.6 : 0.2);
       double labTime = (c->getName() == "gnome" ? 0.3 : 0.1);
       double trainTime = 1 - workshopTime - labTime;
       double changeFreq = 0.01;

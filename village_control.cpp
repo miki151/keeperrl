@@ -94,7 +94,7 @@ void VillageControl::onKillEvent(const Creature* victim, const Creature* killer)
 class PowerTrigger : public VillageControl::AttackTrigger, public EventListener {
   public:
   // How long to wait between being attacked and attacking
-  const int attackDelay = 60;
+  const int attackDelay = 100;
 
   // How long to wait between consecutive attacks from the same village
   const int myAttacksDelay = 300;
@@ -102,6 +102,7 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
   PowerTrigger(double _killedCoeff, double _powerCoeff) : killedCoeff(_killedCoeff), powerCoeff(_powerCoeff) {}
   double getCurrentTrigger() {
     double enemyPoints = killedCoeff * killedPoints + powerCoeff * control->villain->getDangerLevel();
+    Debug() << "Village " << control->name << " enemy points " << enemyPoints;
     double currentTrigger = 0;
     for (double trigger : triggerAmounts)
       if (trigger <= enemyPoints)
@@ -117,19 +118,19 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
     double myPower = 0;
     for (const Creature* c : control->allCreatures)
       myPower += c->getDifficultyPoints();
-    Debug() << "Village power " << myPower;
+    Debug() << "Village " << control->name << " power " << myPower;
     for (int i : Range(Random.getRandom(1, 3))) {
       double trigger = myPower * Random.getDouble(0.4, 1.2);
       triggerAmounts.insert(trigger);
-      Debug() << "Village trigger " << trigger;
+      Debug() << "Village " << control->name << " trigger " << trigger;
     }
   }
 
   void onKillEvent(const Creature* victim, const Creature* killer) override {
-    if (victim->getTribe() == control->tribe)
+    if (victim->getTribe() == control->tribe && (!killer ||  killer->getTribe() == Tribes::get(TribeId::KEEPER))) {
       killedPoints += victim->getDifficultyPoints();
-    if (contains(control->allCreatures, victim))
       lastAttack = victim->getTime();
+    }
   }
 
 

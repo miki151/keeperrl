@@ -508,11 +508,12 @@ ItemFactory ItemFactory::goblinShop() {
 ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
   ItemFactory factory({{ItemId::FIRST_AID_KIT, 2}});
   if (contains(techs, Technology::get(TechId::TRAPS))) {
-    factory.addItem({ItemId::BOULDER_TRAP_ITEM, 2 });
-    factory.addItem({ItemId::GAS_TRAP_ITEM, 2 });
-    factory.addItem({ItemId::ALARM_TRAP_ITEM, 2 });
-    factory.addItem({ItemId::WEB_TRAP_ITEM, 2 });
-    factory.addItem({ItemId::SURPRISE_TRAP_ITEM, 2 });
+    factory.addItem({ItemId::BOULDER_TRAP_ITEM, 1 });
+    factory.addItem({ItemId::GAS_TRAP_ITEM, 1 });
+    factory.addItem({ItemId::ALARM_TRAP_ITEM, 1 });
+    factory.addItem({ItemId::WEB_TRAP_ITEM, 1 });
+    factory.addItem({ItemId::SURPRISE_TRAP_ITEM, 1 });
+    factory.addItem({ItemId::TERROR_TRAP_ITEM, 1 });
   }
   if (contains(techs, Technology::get(TechId::ARCHERY))) {
     factory.addItem({ItemId::BOW, 2 });
@@ -527,11 +528,11 @@ ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
   if (contains(techs, Technology::get(TechId::IRON_WORKING))) {
     factory.addItem({ItemId::SWORD, 6 });
     factory.addItem({ItemId::SPECIAL_SWORD, 0.05 });
-    factory.addItem({ItemId::CHAIN_ARMOR, 2 });
+    factory.addItem({ItemId::CHAIN_ARMOR, 4 });
     factory.addItem({ItemId::IRON_HELM, 2 });
     factory.addItem({ItemId::IRON_BOOTS, 2 });
   } else {
-    factory.addItem({ItemId::LEATHER_ARMOR, 2 });
+    factory.addItem({ItemId::LEATHER_ARMOR, 4 });
     factory.addItem({ItemId::LEATHER_HELM, 2 });
     factory.addItem({ItemId::LEATHER_BOOTS, 2 });
   }
@@ -879,6 +880,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::TELEPATHY_HELM: return PItem(new ItemOfCreatureVision(
         ViewObject(ViewId::TELEPATHY_HELM, ViewLayer::ITEM, "Helmet"), ITATTR(
             i.name = "helm of telepathy";
+            i.plural = "helms of telepathy";
             i.type = ItemType::ARMOR;
             i.weight = 1.5;
             i.armorType = ArmorType::HELMET;
@@ -888,6 +890,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::LEATHER_BOOTS: return PItem(new Item(
         ViewObject(ViewId::LEATHER_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
             i.name = "leather boots";
+            i.plural = "pairs of leather boots";
             i.type = ItemType::ARMOR;
             i.weight = 2;
             i.armorType = ArmorType::BOOTS;
@@ -896,6 +899,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::IRON_BOOTS: return PItem(new Item(
         ViewObject(ViewId::IRON_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
             i.name = "iron boots";
+            i.plural = "pairs of iron boots";
             i.type = ItemType::ARMOR;
             i.weight = 4;
             i.armorType = ArmorType::BOOTS;
@@ -904,6 +908,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::SPEED_BOOTS: return PItem(new Item(
         ViewObject(ViewId::SPEED_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
             i.name = "boots of speed";
+            i.plural = "pairs of boots of speed";
             i.type = ItemType::ARMOR;
             i.weight = 2;
             i.armorType = ArmorType::BOOTS;
@@ -915,6 +920,7 @@ PItem ItemFactory::fromId(ItemId id) {
           ITATTR(
             i.name = amulet_looks[0] + " amulet";
             i.realName = "amulet of warning";
+            i.realPlural = "amulets of warning";
             i.description = "Warns about dangerous beasts and enemies.";
             i.type = ItemType::AMULET;
             i.price = 220;
@@ -925,6 +931,7 @@ PItem ItemFactory::fromId(ItemId id) {
           ITATTR(
             i.name = amulet_looks[1] + " amulet";
             i.realName = "amulet of healing";
+            i.realPlural = "amulets of healing";
             i.description = "Slowly heals all wounds.";
             i.type = ItemType::AMULET;
             i.price = 300;
@@ -935,6 +942,7 @@ PItem ItemFactory::fromId(ItemId id) {
           ITATTR(
             i.name = amulet_looks[2] + " amulet";
             i.realName = "amulet of defense";
+            i.realPlural = "amulets of defense";
             i.description = "Increases the toughness of your skin and flesh, making you harder to wound.";
             i.type = ItemType::AMULET;
             i.price = 300;
@@ -946,6 +954,7 @@ PItem ItemFactory::fromId(ItemId id) {
           ITATTR(
             i.name = amulet_looks[3] + " amulet";
             i.realName = "amulet of nature affinity";
+            i.realName = "amulets of nature affinity";
             i.description = "Makes all animals peaceful.";
             i.type = ItemType::AMULET;
             i.price = 120;
@@ -981,6 +990,8 @@ PItem ItemFactory::fromId(ItemId id) {
         return getTrap("alarm", ViewId::ALARM_TRAP, TrapType::ALARM, EffectType::ALARM);
     case ItemId::SURPRISE_TRAP_ITEM:
         return getTrap("surprise", ViewId::SURPRISE_TRAP, TrapType::SURPRISE, EffectType::TELE_ENEMIES);
+    case ItemId::TERROR_TRAP_ITEM:
+        return getTrap("terror", ViewId::TERROR_TRAP, TrapType::TERROR, EffectType::TERROR);
     case ItemId::HEALING_POTION: return getPotion(0, "healing", EffectType::HEAL, 40, "Heals all your wounds.");
     case ItemId::SLEEP_POTION: return getPotion(1, "sleep", EffectType::SLEEP, 40,
                                    "Puts anyone to sleep immediately.");
@@ -1042,6 +1053,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::SPELLS_MAS_BOOK: return PItem(new TechBook(
         ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
             i.name = "book of master sorcery";
+            i.plural = "books of master sorcery";
             i.weight = 0.5;
             i.type = ItemType::BOOK;
             i.applyTime = 3;
@@ -1049,6 +1061,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::ALCHEMY_ADV_BOOK: return PItem(new TechBook(
         ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
             i.name = "book of advanced alchemy";
+            i.plural = "books of advanced alchemy";
             i.weight = 0.5;
             i.type = ItemType::BOOK;
             i.applyTime = 3;
@@ -1056,6 +1069,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::IRON_WORKING_BOOK: return PItem(new TechBook(
         ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
             i.name = "book of iron working";
+            i.plural = "books of iron working";
             i.weight = 0.5;
             i.type = ItemType::BOOK;
             i.applyTime = 3;
@@ -1063,6 +1077,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::TECH_BOOK: return PItem(new TechBook(
         ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
             i.name = "book of knowledge";
+            i.plural = "bookss of knowledge";
             i.weight = 0.5;
             i.type = ItemType::BOOK;
             i.applyTime = 3;

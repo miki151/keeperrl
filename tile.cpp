@@ -266,6 +266,7 @@ Tile getSprite(ViewId id) {
     case ViewId::ALARM_TRAP: return Tile(16, 5, 3);
     case ViewId::WEB_TRAP: return Tile(4, 1, 2);
     case ViewId::SURPRISE_TRAP: return Tile(9, 10, 2);
+    case ViewId::TERROR_TRAP: return Tile(1, 6, 3);
     case ViewId::ROCK: return Tile(6, 1, 3);
     case ViewId::IRON_ROCK: return Tile(10, 1, 3);
     case ViewId::WOOD_PLANK: return Tile(7, 10, 2);
@@ -481,6 +482,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::ALARM_TRAP: return Tile(L'^', red, true);
     case ViewId::WEB_TRAP: return Tile('#', white, true);
     case ViewId::SURPRISE_TRAP: return Tile('^', blue, true);
+    case ViewId::TERROR_TRAP: return Tile('^', white, true);
     case ViewId::ROCK: return Tile('*', lightGray);
     case ViewId::IRON_ROCK: return Tile('*', orange);
     case ViewId::WOOD_PLANK: return Tile('\\', brown);

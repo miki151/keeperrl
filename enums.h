@@ -73,7 +73,7 @@ enum class ArmorType { BODY_ARMOR, HELMET, BOOTS };
 enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP, TORTURE };
 
 enum class MinionTask { SLEEP, GRAVE, TRAIN, WORKSHOP, STUDY, LABORATORY, PRISON, TORTURE};
-enum class TrapType { BOULDER, POISON_GAS, ALARM, WEB, SURPRISE };
+enum class TrapType { BOULDER, POISON_GAS, ALARM, WEB, SURPRISE, TERROR };
 
 enum class SquareAttrib {
   NO_DIG,
@@ -260,6 +260,7 @@ enum class ItemId { KNIFE,
   ALARM_TRAP_ITEM,
   WEB_TRAP_ITEM,
   SURPRISE_TRAP_ITEM,
+  TERROR_TRAP_ITEM,
 };
 
 enum class ViewLayer {
@@ -489,6 +490,7 @@ enum class ViewId {
   ALARM_TRAP,
   WEB_TRAP,
   SURPRISE_TRAP,
+  TERROR_TRAP,
   ROCK,
   IRON_ROCK,
   WOOD_PLANK,
@@ -610,6 +612,7 @@ enum class EffectType {
     ALARM,
     TELE_ENEMIES,
     WEB,
+    TERROR,
 };
 
 enum class AnimationId {

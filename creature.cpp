@@ -1492,7 +1492,8 @@ void Creature::flyAway() {
 void Creature::torture(Creature* c) {
   CHECK(c->getSquare()->getApplyType(this) == SquareApplyType::TORTURE);
   CHECK(c->getPosition().dist8(getPosition()) == 1);
-  c->globalMessage(c->getTheName() + " screams!", "You hear a terrifying scream");
+  if (Random.roll(4))
+    c->globalMessage(c->getTheName() + " screams!", "You hear a terrifying scream");
   c->addEffect(STUNNED, 3, false);
   c->bleed(0.1);
   if (c->health < 0.3 && !Random.roll(15))

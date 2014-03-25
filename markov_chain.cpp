@@ -22,7 +22,7 @@ MarkovChain<T>::MarkovChain(T s, map<T, vector<pair<T, double>>> t) : state(s), 
       sum += trans.second;
       CHECK(trans.first != elem.first);
     }
-    CHECK(sum <= 1);
+    CHECK(sum <= 1.0000001);
     if (sum < 1)
       transitions[elem.first].emplace_back(elem.first, 1 - sum);
   }

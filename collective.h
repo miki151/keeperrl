@@ -316,6 +316,8 @@ class Collective : public CreatureView, public EventListener {
   };
   map<Vec2, TrapInfo> traps;
   map<TrapType, vector<Vec2>> trapMap;
+  set<TrapType> getNeededTraps() const;
+
   struct ConstructionInfo {
     CostInfo cost;
     bool built;

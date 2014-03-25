@@ -190,6 +190,7 @@ static void emitPoisonGas(Creature* c, EffectStrength strength) {
   for (Vec2 v : Vec2::directions8())
     c->getSquare(v)->addPoisonGas(gasAmount.at(strength) / 2);
   c->getSquare()->addPoisonGas(gasAmount.at(strength));
+  c->globalMessage("A cloud of gas emerges", "You hear a hissing sound");
 }
 
 static void guardingBuilder(Creature* c) {
@@ -394,6 +395,8 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::HEAL: heal(c, strength); break;
     case EffectType::SLEEP: sleep(c, strength); break;
     case EffectType::IDENTIFY: c->grantIdentify(identifyNum[strength]); break;
+    case EffectType::TERROR: c->globalMessage("You hear maniacal laughter close by",
+                                 "You hear maniacal laughter in the distance");
     case EffectType::PANIC: c->addEffect(Creature::PANIC, panicTime[strength]); break;
     case EffectType::RAGE: c->addEffect(Creature::RAGE, panicTime[strength]); break;
     case EffectType::HALLU: c->addEffect(Creature::HALLU, panicTime[strength]); break;
