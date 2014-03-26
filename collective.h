@@ -139,6 +139,9 @@ class Collective : public CreatureView, public EventListener {
   const static int numWarnings = 19;
   bool warning[numWarnings] = {0};
 
+  enum class MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, EXECUTE, LABOR, TRAINING,
+    WORKSHOP, LAB };
+
   protected:
   SERIALIZATION_DECL(Collective);
 
@@ -245,8 +248,6 @@ class Collective : public CreatureView, public EventListener {
   void autoEquipment(Creature* creature);
   MinionType getMinionType(const Creature*) const;
   void setMinionType(Creature*, MinionType type);
-
-  enum class MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, EXECUTE, LABOR };
 
   void getMinionOptions(Creature*, vector<MinionOption>&, vector<View::ListElem>&);
 

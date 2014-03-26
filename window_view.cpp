@@ -579,10 +579,10 @@ void WindowView::drawVillages(GameInfo::VillageInfo& info) {
     height += legendLineHeight;
     renderer.drawText(white, textX + 40, height, "tribe: " + elem.tribeName);
     height += legendLineHeight;
-    renderer.drawText(white, textX + 40, height, "state: ");
-    renderer.drawText(elem.state == "conquered" ? green : red, textX + 40 + renderer.getTextLength("state: "), height,
-        elem.state.empty() ? "unknown" : elem.state);
-    height += legendLineHeight;
+    if (!elem.state.empty()) {
+      renderer.drawText(elem.state == "conquered" ? green : red, textX + 40, height, elem.state);
+      height += legendLineHeight;
+    }
   }
 }
 
@@ -635,7 +635,7 @@ void WindowView::drawWorkshop(GameInfo::BandInfo& info) {
 
 void WindowView::drawKeeperHelp() {
   vector<string> helpText { "use mouse to", "dig and build", "", "click on minion", "to possess",
-    "", "your enemies ", "are in the west", "[space]  pause", "[z]  zoom", "[shift + z] world map"};
+    "", "your enemies ", "are in the west", "", "[space]  pause", "[z]  zoom", "", "follow the red text :-)"};
   int cnt = 0;
   for (string line : helpText) {
     int height = legendStartHeight + cnt * legendLineHeight;
@@ -669,7 +669,7 @@ void WindowView::drawBandInfo() {
             resourceX + resourceSpacing * (i + 1) - 20, line1 + 30)))
       mapGui->drawHint(renderer, white, info.numGold[i].name);
   }
-  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f4d6, 0x2692, 0x265b, L'?'};
+  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f4d6, 0x2692, 0x2694, L'?'};
   optionButtons.clear();
   for (int i = 0; i < 6; ++i) {
     int w = 50;

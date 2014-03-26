@@ -341,6 +341,18 @@ void Collective::setMinionType(Creature* c, MinionType type) {
     minionTasks.at(c->getUniqueId()) = getTasksForMinion(c);
 }
 
+struct TaskOption {
+  MinionTask task;
+  Collective::MinionOption option;
+  string description;
+};
+
+vector<TaskOption> taskOptions { 
+  {MinionTask::TRAIN, Collective::MinionOption::TRAINING, "Training"},
+  {MinionTask::WORKSHOP, Collective::MinionOption::WORKSHOP, "Workshop"},
+  {MinionTask::LABORATORY, Collective::MinionOption::LAB, "Lab"},
+};
+
 void Collective::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
   switch (getMinionType(c)) {
     case MinionType::IMP:
@@ -361,6 +373,14 @@ void Collective::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vecto
     default:
       mOpt = {MinionOption::POSSESS, MinionOption::EQUIPMENT, MinionOption::INFO };
       lOpt = {"Possess", "Equipment", "Description" };
+      if (c != keeper) {
+        lOpt.emplace_back("Order task:", View::TITLE);
+        for (auto elem : taskOptions)
+          if (minionTasks.at(c->getUniqueId()).containsState(elem.task)) {
+            lOpt.push_back(elem.description);
+            mOpt.push_back(elem.option);
+          }
+      }
       if (c->isAffected(Creature::SLEEP)) {
         mOpt.push_back(MinionOption::WAKE_UP);
         lOpt.push_back("Wake up");
@@ -404,6 +424,14 @@ void Collective::minionView(View* view, Creature* creature, int prevIndex) {
     case MinionOption::LABOR:
       setMinionType(creature, MinionType::IMP);
       minionTaskStrings[creature->getUniqueId()] = "labor";
+      break;
+    default:
+      for (auto elem : taskOptions)
+        if (mOpt[*index] == elem.option) {
+          setMinionTask(creature, elem.task);
+          return;
+        }
+      FAIL << "Unknown option " << int(mOpt[*index]);
       break;
   }
   minionView(view, creature, *index);

@@ -30,6 +30,7 @@ namespace colors {
   const Color pink(255, 20, 147);
   const Color orange(255, 165, 0);
   const Color blue(0, 0, 255);
+  const Color nightBlue(0, 0, 50);
   const Color darkBlue(50, 50, 200);
   const Color lightBlue(100, 100, 255);
   const Color purple(160, 32, 240);

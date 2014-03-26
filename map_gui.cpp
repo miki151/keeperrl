@@ -44,6 +44,7 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
     case HighlightType::FOG: return transparency(white, 120 * info.amount);
     case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
     case HighlightType::MEMORY: return transparency(black, 80);
+    case HighlightType::NIGHT: return transparency(nightBlue, 80);
   }
   FAIL << "pokpok";
   return black;

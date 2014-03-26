@@ -38,6 +38,7 @@ namespace colors {
   extern const Color orange;
   extern const Color blue;
   extern const Color darkBlue;
+  extern const Color nightBlue;
   extern const Color lightBlue;
   extern const Color purple;
   extern const Color violet;

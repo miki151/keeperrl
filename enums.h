@@ -277,6 +277,7 @@ enum class HighlightType {
   POISON_GAS,
   FOG,
   MEMORY,
+  NIGHT,
 };
 
 enum class StairLook {
