@@ -854,8 +854,7 @@ Square* SquareFactory::get(SquareType s) {
         return new TrainingDummy(ViewObject(ViewId::TRAINING_DUMMY, ViewLayer::FLOOR, "Training post"), 
             "training post");
     case SquareType::IMPALED_HEAD:
-        return new Furniture(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head"), 
-            "impaled head", 0.3);
+        return new Square(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head"), "impaled head", true);
     case SquareType::LIBRARY:
         return new Library(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
             "book shelf");

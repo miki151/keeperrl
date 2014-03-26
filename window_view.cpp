@@ -1085,7 +1085,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
     return Nothing();
   }
   index = min(index, count - 1);
-  bool setMousePos = false;
+  int setMousePos = -1;
   int cutoff = -1;
   while (1) {
     numLines = min((int) options.size(), getMaxLines());
@@ -1094,14 +1094,14 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
     if (newCutoff != cutoff) {
       cutoff = newCutoff;
     } else
-      setMousePos = false;
+      setMousePos = -1;
     int itemsCutoff = 0;
     for (int i : Range(cutoff))
       if (options[i].getMod() == View::NORMAL)
         ++itemsCutoff;
     vector<ListElem> window = getPrefix(options, cutoff, numLines);
     drawList(title, window, index - itemsCutoff, setMousePos);
-    setMousePos = false;
+    setMousePos = -1;
     BlockingEvent event = readkey();
     if (event.type == BlockingEvent::KEY) {
       if (exitAction && getSimpleActionId(*event.key) == *exitAction)
@@ -1128,8 +1128,8 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
       if (Optional<int> mouseIndex = getIndex(window, !title.empty(), *mousePos)) {
         int newIndex = *mouseIndex + itemsCutoff;
         if (newIndex != index) {
+          setMousePos = (newIndex > index ? 0 : 1);
           index = newIndex;
-          setMousePos = true;
         }
         Debug() << "Index " << index;
       }
@@ -1212,7 +1212,7 @@ Optional<int> getIndex(const vector<View::ListElem>& options, bool hasTitle, Vec
       (mousePos.y - ySpacing - yMargin + (hasTitle ? 0 : itemSpacing) - itemYMargin) / itemSpacing - 1);
 }
 
-void WindowView::drawList(const string& title, const vector<ListElem>& options, int hightlight, bool setMousePos) {
+void WindowView::drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos) {
   int xMargin = 10;
   int itemXMargin = 30;
   int border = 2;
@@ -1234,8 +1234,8 @@ void WindowView::drawList(const string& title, const vector<ListElem>& options, 
       if (hightlight > -1 && h == i) {
         renderer.drawFilledRectangle(xSpacing + xMargin, beginH, 
             windowWidth + xSpacing - xMargin, beginH + itemSpacing - 1, darkGreen);
-        if (setMousePos)
-          renderer.setMousePos(Vec2(renderer.getMousePos().x, beginH + itemSpacing / 2));
+        if (setMousePos > -1)
+          renderer.setMousePos(Vec2(renderer.getMousePos().x, beginH + 1 + (itemSpacing - 3) * setMousePos));
       }
       renderer.drawText(white, xSpacing + xMargin + itemXMargin, beginH, options[i].getText());
     } else if (options[i].getMod() == View::TITLE)
@@ -1476,7 +1476,7 @@ CollectiveAction WindowView::getClick(double time) {
             chosenCreature = "";
             if (clickPos.inRectangle(getMapViewBounds())) {
               Vec2 pos = mapLayout->projectOnMap(getMapViewBounds(), clickPos);
-              if (collectiveOption == CollectiveOption::MINIONS)
+              if (!contains({CollectiveOption::WORKSHOP, CollectiveOption::BUILDINGS}, collectiveOption))
                 return CollectiveAction(CollectiveAction::POSSESS, pos);
               if (collectiveOption == CollectiveOption::WORKSHOP && activeWorkshop >= 0)
                 return CollectiveAction(CollectiveAction::WORKSHOP, pos, activeWorkshop);

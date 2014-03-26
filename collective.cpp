@@ -1405,8 +1405,6 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         }
         break;
     case BuildInfo::IMPALED_HEAD:
-        if (executions <= 0)
-          break;
     case BuildInfo::SQUARE:
         if (!tryLockingDoor(pos)) {
           if (constructions.count(pos)) {
@@ -1425,6 +1423,12 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
                 while (!level->getSquare(pos)->construct(info.type)) {}
                 onConstructed(pos, info.type);
               } else {
+                if (info.type == SquareType::IMPALED_HEAD) {
+                  if (executions <= 0)
+                    break;
+                  else
+                    --executions;
+                }
                 constructions[pos] = {info.cost, false, 0, info.type, -1};
                 selection = SELECT;
                 updateConstructions();
@@ -1628,8 +1632,6 @@ void Collective::updateConstructions() {
           elem.second.cost)->getUniqueId();
       elem.second.marked = getTime() + timeToBuild;
       takeGold(elem.second.cost);
-      if (elem.second.type == SquareType::IMPALED_HEAD)
-        --executions;
     }
 }
 
@@ -1987,8 +1989,6 @@ MoveInfo Collective::getExecutionMove(Creature* c) {
           return {1.0, [=] () {
             c->attack(elem.first);
             c->globalMessage(c->getTheName() + " executes " + elem.first->getTheName());
-            if (elem.first->isDead())
-              ++executions;
           }};
         else if (auto move = c->getMoveTowards(elem.first->getPosition()))
           return {1.0, [=] () {
@@ -2021,7 +2021,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     return getPossessedMove(c);
   if (c->getLevel() != level)
     return getBacktrackMove(c);
-  if (c != keeper)
+  if (!contains({MinionType::KEEPER, MinionType::PRISONER}, getMinionType(c)))
     if (MoveInfo alarmMove = getAlarmMove(c))
       return alarmMove;
   if (MoveInfo dropMove = getDropItems(c))
@@ -2239,7 +2239,9 @@ void Collective::handleSurprise(Vec2 pos) {
   Creature* c = NOTNULL(level->getSquare(pos)->getCreature());
   for (Vec2 v : randomPermutation(Rectangle(pos - rad, pos + rad).getAllSquares()))
     if (Creature* other = level->getSquare(v)->getCreature())
-      if (other != keeper && !contains(minionByType.at(MinionType::IMP), other) && v.dist8(pos) > 1) {
+      if (contains(minions, other)
+          && !contains({MinionType::IMP, MinionType::KEEPER, MinionType::PRISONER}, getMinionType(other))
+          && v.dist8(pos) > 1) {
         for (Vec2 dest : pos.neighbors8(true))
           if (level->canMoveCreature(other, dest - v)) {
             level->moveCreature(other, dest - v);
@@ -2284,6 +2286,8 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   if (contains(creatures, victim)) {
     Creature* c = const_cast<Creature*>(victim);
     removeElement(creatures, c);
+    if (getMinionType(victim) == MinionType::PRISONER && killer && contains(creatures, killer))
+      ++executions;
     prisonerInfo.erase(c);
     for (auto& elem : guardPosts)
       if (elem.second.attender == c)

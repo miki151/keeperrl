@@ -80,7 +80,7 @@ class WindowView: public View {
 
   void showMessage(const string& message);
   void retireMessages();
-  void drawList(const string& title, const vector<ListElem>& options, int hightlight, bool setMousePos = false);
+  void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void refreshText();
   void drawAndClearBuffer();

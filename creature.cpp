@@ -1496,8 +1496,12 @@ void Creature::torture(Creature* c) {
     c->globalMessage(c->getTheName() + " screams!", "You hear a terrifying scream");
   c->addEffect(STUNNED, 3, false);
   c->bleed(0.1);
-  if (c->health < 0.3 && !Random.roll(8))
-    c->heal();
+  if (c->health < 0.3) {
+    if (!Random.roll(8))
+      c->heal();
+    else
+    c->bleed(1);
+  }
   EventListener::addTortureEvent(c, this);
   spendTime(1);
 }

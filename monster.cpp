@@ -92,7 +92,7 @@ void Monster::you(MsgType type, const string& param) const {
     case MsgType::HAPPENS_TO: msg = param + " " + creature->getTheName(); break;
     case MsgType::BURN: msg = creature->getTheName() + " burns in the " + param; msgNoSee = "You hear a horrible shriek"; break;
     case MsgType::DROWN: msg = creature->getTheName() + " drowns in the " + param; msgNoSee = "You hear a loud splash" ;break;
-    case MsgType::SET_UP_TRAP: msg = "You set up the trap"; break;
+    case MsgType::SET_UP_TRAP: msg = creature->getTheName() + " sets up the trap"; break;
     case MsgType::KILLED_BY: msg = creature->getTheName() + " is killed by " + param; break;
     case MsgType::TURN: msg = creature->getTheName() + " turns into " + param; break;
     case MsgType::BREAK_FREE: msg = creature->getTheName() + " breaks free from " + param; break;
