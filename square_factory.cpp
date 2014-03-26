@@ -234,7 +234,7 @@ class Chest : public Square {
     if (!Random.roll(5)) {
       c->privateMessage(msgItem);
       vector<PItem> items = itemFactory.random();
-      EventListener::addItemsAppearedEvent(getLevel(), getPosition(), Item::extractRefs(items));
+      EventListener::addItemsAppearedEvent(getLevel(), getPosition(), extractRefs(items));
       c->takeItems(std::move(items), nullptr);
     } else {
       c->privateMessage(msgMonster);

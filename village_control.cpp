@@ -15,7 +15,8 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(level)
     & BOOST_SERIALIZATION_NVP(name)
     & BOOST_SERIALIZATION_NVP(tribe)
-    & BOOST_SERIALIZATION_NVP(attackTrigger);
+    & BOOST_SERIALIZATION_NVP(attackTrigger)
+    & BOOST_SERIALIZATION_NVP(atWar);
 }
 
 SERIALIZABLE(VillageControl);
@@ -72,6 +73,9 @@ void VillageControl::tick(double time) {
 }
 
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
+  if ((victim->getTribe() == tribe && (!killer ||  killer->getTribe() == Tribes::get(TribeId::KEEPER)))
+      || (victim->getTribe() == Tribes::get(TribeId::KEEPER) && killer && killer->getTribe() == tribe))
+    atWar = true;
   if (contains(allCreatures, victim)) {
     if (getAliveCreatures().empty()) {
       messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
@@ -207,6 +211,18 @@ VillageControl::AttackTrigger* VillageControl::getPowerTrigger(double killedCoef
   return new PowerTrigger(killedCoeff, powerCoeff);
 }
 
+View::GameInfo::VillageInfo::Village VillageControl::getVillageInfo() const {
+  View::GameInfo::VillageInfo::Village info;
+  info.name = name;
+  info.tribeName = tribe->getName();
+  if (currentlyAttacking())
+    info.state = "attacking!";
+  else if (isConquered())
+    info.state = "conquered";
+  else if (atWar)
+    info.state = "war";
+  return info;
+}
 
 class FinalTrigger : public VillageControl::AttackTrigger {
   public:

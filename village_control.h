@@ -3,6 +3,7 @@
 
 #include "event.h"
 #include "monster_ai.h"
+#include "view.h"
 
 class VillageControl : public EventListener {
   public:
@@ -18,6 +19,8 @@ class VillageControl : public EventListener {
   bool currentlyAttacking() const;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
+
+  View::GameInfo::VillageInfo::Village getVillageInfo() const;
 
   class AttackTrigger {
     public:
@@ -58,6 +61,7 @@ class VillageControl : public EventListener {
   string name;
   Tribe* tribe = nullptr;
   unique_ptr<AttackTrigger> attackTrigger;
+  bool atWar = false;
 };
 
 #endif

@@ -38,6 +38,10 @@ bool Model::isTurnBased() {
   return !collective || collective->isTurnBased();
 }
 
+const vector<VillageControl*> Model::getVillageControls() const {
+  return extractRefs(villageControls);
+}
+
 const Creature* Model::getPlayer() const {
   for (const PLevel& l : levels)
     if (l->getPlayer())

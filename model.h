@@ -46,6 +46,8 @@ class Model : public EventListener {
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
   void removeCreature(Creature*);
 
+  const vector<VillageControl*> getVillageControls() const;
+
   bool isTurnBased();
 
   string getGameIdentifier() const;

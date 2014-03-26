@@ -939,6 +939,9 @@ vector<Collective::TechInfo> Collective::getTechInfo() const {
 }
 
 void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
+  gameInfo.villageInfo.villages.clear();
+  for (VillageControl* c : model->getVillageControls())
+    gameInfo.villageInfo.villages.push_back(c->getVillageInfo());
   gameInfo.infoType = View::GameInfo::InfoType::BAND;
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.buildings = fillButtons(buildInfo);

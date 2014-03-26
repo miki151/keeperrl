@@ -45,12 +45,6 @@ bool Item::isEverythingIdentified() {
 
 bool Item::everythingIdentified = false;
  
-vector<Item*> Item::extractRefs(const vector<PItem>& item) {
-  vector<Item*> ref(item.size());
-  transform(item.begin(), item.end(), ref.begin(), [](const PItem& it) { return it.get();});
-  return ref;
-}
-
 static set<string> ident;
 bool Item::isIdentified(const string& name) {
   return everythingIdentified || ident.count(name);

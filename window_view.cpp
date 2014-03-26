@@ -571,6 +571,21 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
   }
 }
 
+void WindowView::drawVillages(GameInfo::VillageInfo& info) {
+  int textX = renderer.getWidth() - rightBarText;
+  int height = legendStartHeight;
+  for (auto elem : info.villages) {
+    renderer.drawText(white, textX, height, capitalFirst(elem.name));
+    height += legendLineHeight;
+    renderer.drawText(white, textX + 40, height, "tribe: " + elem.tribeName);
+    height += legendLineHeight;
+    renderer.drawText(white, textX + 40, height, "state: ");
+    renderer.drawText(elem.state == "conquered" ? green : red, textX + 40 + renderer.getTextLength("state: "), height,
+        elem.state.empty() ? "unknown" : elem.state);
+    height += legendLineHeight;
+  }
+}
+
 void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active,
     vector<Rectangle>& viewButtons, vector<string>& inactiveReasons) {
   viewButtons.clear();
@@ -654,14 +669,14 @@ void WindowView::drawBandInfo() {
             resourceX + resourceSpacing * (i + 1) - 20, line1 + 30)))
       mapGui->drawHint(renderer, white, info.numGold[i].name);
   }
-  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f4d6, 0x2692, L'?'};
+  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f4d6, 0x2692, 0x265b, L'?'};
   optionButtons.clear();
-  for (int i = 0; i < 5; ++i) {
-    int w = 55;
+  for (int i = 0; i < 6; ++i) {
+    int w = 50;
     int line = topBarHeight;
     int h = 45;
-    int leftPos = renderer.getWidth() - rightBarText + 15;
-    renderer.drawText(i < 4 ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 35, i == int(collectiveOption) ? green : white,
+    int leftPos = renderer.getWidth() - rightBarText - 5;
+    renderer.drawText(i < 5 ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 35, i == int(collectiveOption) ? green : white,
         leftPos + i * w, line, optionSyms[i], true);
     optionButtons.emplace_back(leftPos + i * w - w / 2, line,
         leftPos + (i + 1) * w - w / 2, line + h);
@@ -683,6 +698,7 @@ void WindowView::drawBandInfo() {
     case CollectiveOption::KEY_MAPPING: drawKeeperHelp(); break;
     case CollectiveOption::TECHNOLOGY: drawTechnology(info); break;
     case CollectiveOption::WORKSHOP: drawWorkshop(info); break;
+    case CollectiveOption::VILLAGES: drawVillages(gameInfo.villageInfo); break;
   }
 }
 

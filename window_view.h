@@ -66,6 +66,7 @@ class WindowView: public View {
   void drawBuildings(GameInfo::BandInfo& info);
   void drawTechnology(GameInfo::BandInfo& info);
   void drawWorkshop(GameInfo::BandInfo& info);
+  void drawVillages(GameInfo::VillageInfo& info);
   void drawMinions(GameInfo::BandInfo& info);
   void drawKeeperHelp();
   void drawHint(sf::Color color, const string& text);
@@ -105,6 +106,7 @@ class WindowView: public View {
     MINIONS,
     TECHNOLOGY,
     WORKSHOP,
+    VILLAGES,
     KEY_MAPPING,
   };
   

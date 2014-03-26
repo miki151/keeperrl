@@ -228,7 +228,7 @@ int Creature::getDebt(const Creature* debtor) const {
 }
 
 void Creature::takeItems(vector<PItem> items, const Creature* from) {
-  vector<Item*> ref = Item::extractRefs(items);
+  vector<Item*> ref = extractRefs(items);
   getSquare()->dropItems(std::move(items));
   controller->onItemsAppeared(ref, from);
 }

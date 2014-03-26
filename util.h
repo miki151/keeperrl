@@ -47,7 +47,15 @@ class VillageControl;
 typedef unique_ptr<VillageControl> PVillageControl;
 
 template<class T>
-vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
+vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
+  vector<T*> ret;
+  for (auto& el : v)
+    ret.push_back(el.get());
+  return ret;
+}
+
+template<class T>
+const vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
   vector<T*> ret;
   for (auto& el : v)
     ret.push_back(el.get());

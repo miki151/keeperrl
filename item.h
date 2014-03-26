@@ -24,8 +24,6 @@ class Item : private ItemAttributes, public UniqueEntity {
   static void identifyEverything();
   static bool isEverythingIdentified();
 
-  static vector<Item*> extractRefs(const vector<PItem>&);
-  
   virtual void apply(Creature*, Level*);
 
   bool isDiscarded();

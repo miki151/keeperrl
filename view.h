@@ -203,6 +203,16 @@ class View {
       };
       vector<Effect> effects;
     } playerInfo;
+
+    class VillageInfo {
+      public:
+      struct Village {
+        string name;
+        string tribeName;
+        string state;
+      };
+      vector<Village> villages;
+    } villageInfo;
   } gameInfo;
 };
 
