@@ -753,11 +753,12 @@ Square* SquareFactory::get(SquareType s) {
             {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
             {SquareType::TRAINING_DUMMY, 10}, {SquareType::LIBRARY, 10}, {SquareType::STOCKPILE, 1},
             {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10}, {SquareType::PRISON, 10},
-            {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}});
+            {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::IMPALED_HEAD, 5}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR_BACKGROUND,"Rope bridge"), "rope bridge", true);
     case SquareType::GRASS:
-        return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND, "Grass"), "grass", true, false, 0, 0, {{SquareType::ANIMAL_TRAP, 10}});
+        return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND, "Grass"), "grass", true, false, 0, 0,
+            {{SquareType::ANIMAL_TRAP, 10}, {SquareType::IMPALED_HEAD, 5}});
     case SquareType::CROPS:
         return new Square(ViewObject(ViewId::CROPS, ViewLayer::FLOOR_BACKGROUND, "Potatoes"),
             "potatoes", true, false, 0, 0);
@@ -815,7 +816,8 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::GLACIER:
         return new SolidSquare(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"), "mountain", true);
     case SquareType::HILL:
-        return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND, "Hill"), "hill", true);
+        return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND, "Hill"), "hill", true, false, 0, 0,
+            { {SquareType::IMPALED_HEAD, 5}});
     case SquareType::SECRET_PASS:
         return new SecretPassage(ViewObject(ViewId::SECRETPASS, ViewLayer::FLOOR, "Wall"),
                                  ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "Floor"));
@@ -851,6 +853,9 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::TRAINING_DUMMY:
         return new TrainingDummy(ViewObject(ViewId::TRAINING_DUMMY, ViewLayer::FLOOR, "Training post"), 
             "training post");
+    case SquareType::IMPALED_HEAD:
+        return new Furniture(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head"), 
+            "impaled head", 0.3);
     case SquareType::LIBRARY:
         return new Library(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
             "book shelf");

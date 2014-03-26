@@ -49,7 +49,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(tribe)
     & BOOST_SERIALIZATION_NVP(alarmInfo.finishTime)
     & BOOST_SERIALIZATION_NVP(alarmInfo.position)
-    & BOOST_SERIALIZATION_NVP(prisonerInfo);
+    & BOOST_SERIALIZATION_NVP(prisonerInfo)
+    & BOOST_SERIALIZATION_NVP(executions);
 }
 
 SERIALIZABLE(Collective);
@@ -115,10 +116,13 @@ Collective::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const strin
 Collective::BuildInfo::BuildInfo(BuildType type, const string& h) : buildType(type), help(h) {
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY}, type));
 }
+Collective::BuildInfo::BuildInfo(BuildType type, SquareInfo info) : squareInfo(info), buildType(type) {
+  CHECK(type == IMPALED_HEAD);
+}
 
 const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo(BuildInfo::DIG),
-    BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Storage"}),
+    BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Storage", true}),
     BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}),
     BuildInfo({SquareType::BED, {ResourceId::WOOD, 10}, "Bed"}),
     BuildInfo({SquareType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}),
@@ -136,14 +140,15 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
 
 const vector<Collective::BuildInfo> Collective::workshopInfo {
     BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING),
-    BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, TechId::TRAPS),
-    BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, TechId::TRAPS),
     BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS),
     BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, TechId::TRAPS),
-    BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP}, TechId::TRAPS,
-        "Summons nearby minions to deal with the trespasser"),
+    BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, TechId::TRAPS),
     BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, TechId::TRAPS,
         "Causes the trespasser to panic"),
+    BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, TechId::TRAPS),
+    BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP}, TechId::TRAPS,
+        "Summons nearby minions to deal with the trespasser"),
+    BuildInfo(BuildInfo::IMPALED_HEAD, {SquareType::IMPALED_HEAD, {ResourceId::GOLD, 0}, "Prisoner head"}),
 };
 
 vector<Collective::RoomInfo> Collective::getRoomInfo() {
@@ -221,6 +226,7 @@ Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
   memory.reset(new map<const Level*, MapMemory>);
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
+  mySquares[SquareType::IMPALED_HEAD].clear();
   mySquares[SquareType::FLOOR].clear();
   mySquares[SquareType::TRIBE_DOOR].clear();
   for (BuildInfo info : buildInfo)
@@ -638,23 +644,23 @@ void Collective::handleMatterAnimation(View* view) {
 }
 
 vector<Collective::SpawnInfo> tamingInfo {
-  {CreatureId::PRISONER, 5, Nothing()},
+  {CreatureId::RAVEN, 5, Nothing()},
   {CreatureId::WOLF, 30, TechId::BEAST},
   {CreatureId::CAVE_BEAR, 50, TechId::BEAST},
-  {CreatureId::SPECIAL_MONSTER_KEEPER, 100, TechId::BEAST_MUT},
+  {CreatureId::SPECIAL_MONSTER_KEEPER, 150, TechId::BEAST_MUT},
 };
 
 void Collective::handleBeastTaming(View* view) {
   handleSpawning(view, SquareType::ANIMAL_TRAP,
       "You need to build cages to trap beasts.", "You need more cages.", "Beast taming",
-      MinionType::PRISONER, tamingInfo);
+      MinionType::BEAST, tamingInfo);
 }
 
 vector<Collective::SpawnInfo> breedingInfo {
   {CreatureId::GNOME, 30, Nothing()},
   {CreatureId::GOBLIN, 50, TechId::GOBLIN},
   {CreatureId::BILE_DEMON, 80, TechId::OGRE},
-  {CreatureId::SPECIAL_HUMANOID, 100, TechId::HUMANOID_MUT},
+  {CreatureId::SPECIAL_HUMANOID, 150, TechId::HUMANOID_MUT},
 };
 
 void Collective::handleHumanoidBreeding(View* view) {
@@ -860,6 +866,14 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
              buttons.push_back({
                  ViewObject(ViewId::DIG_ICON, ViewLayer::LARGE_ITEM, ""),
                  "dig or cut tree", Nothing(), "", ""});
+           }
+           break;
+      case BuildInfo::IMPALED_HEAD: {
+           BuildInfo::SquareInfo& elem = button.squareInfo;
+             buttons.push_back({
+                 ViewObject(ViewId::IMPALED_HEAD, ViewLayer::LARGE_ITEM, ""),
+                 elem.name, Nothing(), "(" + convertToString(executions) + " ready)",
+                 executions > 0  ? "" : "inactive"});
            }
            break;
       case BuildInfo::TRAP: {
@@ -1359,11 +1373,16 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
             }
         }
         break;
+    case BuildInfo::IMPALED_HEAD:
+        if (executions <= 0)
+          break;
     case BuildInfo::SQUARE:
         if (!tryLockingDoor(pos)) {
           if (constructions.count(pos)) {
             if (selection != SELECT) {
               returnGold(taskMap.removeTask(constructions.at(pos).task));
+              if (constructions.at(pos).type == SquareType::IMPALED_HEAD)
+                ++executions;
               constructions.erase(pos);
               selection = DESELECT;
             }
@@ -1371,7 +1390,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
             BuildInfo::SquareInfo info = building.squareInfo;
             if (knownPos(pos) && level->getSquare(pos)->canConstruct(info.type)
                 && (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
-              if (info.cost.value == 0) {
+              if (info.buildImmediatly) {
                 while (!level->getSquare(pos)->construct(info.type)) {}
                 onConstructed(pos, info.type);
               } else {
@@ -1451,7 +1470,7 @@ set<TrapType> Collective::getNeededTraps() const {
 
 void Collective::onAppliedSquare(Vec2 pos) {
   if (mySquares.at(SquareType::LIBRARY).count(pos)) {
-    mana += 0.3 + max(0., 2 - (mana + double(getDangerLevel())) / 700);
+    mana += 0.3 + max(0., 2 - (mana + double(getDangerLevel(false))) / 700);
   }
   if (mySquares.at(SquareType::TRAINING_DUMMY).count(pos)) {
     if (hasTech(TechId::ARCHERY) && Random.roll(30))
@@ -1499,10 +1518,12 @@ Vec2 Collective::getDungeonCenter() const {
     return keeper->getPosition();
 }
 
-double Collective::getDangerLevel() const {
+double Collective::getDangerLevel(bool includeExecutions) const {
   double ret = 0;
   for (const Creature* c : minions)
     ret += c->getDifficultyPoints();
+  if (includeExecutions)
+    ret += mySquares.at(SquareType::IMPALED_HEAD).size() * 150;
   return ret;
 }
 
@@ -1576,6 +1597,8 @@ void Collective::updateConstructions() {
           elem.second.cost)->getUniqueId();
       elem.second.marked = getTime() + timeToBuild;
       takeGold(elem.second.cost);
+      if (elem.second.type == SquareType::IMPALED_HEAD)
+        --executions;
     }
 }
 
@@ -1865,27 +1888,22 @@ MoveInfo Collective::getGuardPostMove(Creature* c) {
 }
 
 MoveInfo Collective::getPossessedMove(Creature* c) {
-  if (possessed && contains(team, c)) {
-    Optional<Vec2> v;
-    if (possessed->getLevel() != c->getLevel()) {
-      if (teamLevelChanges.count(c->getLevel())) {
-        v = teamLevelChanges.at(c->getLevel());
-        if (v == c->getPosition())
-          return {1.0, [=] {
-            c->applySquare();
-          }};
-      }
-    } else 
-      v = possessed->getPosition();
-    if (v) {
-      if (auto move = c->getMoveTowards(*v))
+  Optional<Vec2> v;
+  if (possessed->getLevel() != c->getLevel()) {
+    if (teamLevelChanges.count(c->getLevel())) {
+      v = teamLevelChanges.at(c->getLevel());
+      if (v == c->getPosition())
         return {1.0, [=] {
-          c->move(*move);
+          c->applySquare();
         }};
-      else
-        return NoMove;
     }
-  }
+  } else 
+    v = possessed->getPosition();
+  if (v)
+    if (auto move = c->getMoveTowards(*v))
+      return {1.0, [=] {
+        c->move(*move);
+      }};
   return NoMove;
 }
 
@@ -1938,6 +1956,8 @@ MoveInfo Collective::getExecutionMove(Creature* c) {
           return {1.0, [=] () {
             c->attack(elem.first);
             c->globalMessage(c->getTheName() + " executes " + elem.first->getTheName());
+            if (elem.first->isDead())
+              ++executions;
           }};
         else if (auto move = c->getMoveTowards(elem.first->getPosition()))
           return {1.0, [=] () {
@@ -1966,8 +1986,8 @@ MoveInfo Collective::getExecutionMove(Creature* c) {
 }
 
 MoveInfo Collective::getMinionMove(Creature* c) {
-  if (MoveInfo possessedMove = getPossessedMove(c))
-    return possessedMove;
+  if (possessed && contains(team, c))
+    return getPossessedMove(c);
   if (c->getLevel() != level)
     return getBacktrackMove(c);
   if (c != keeper)

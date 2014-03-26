@@ -508,8 +508,8 @@ ItemFactory ItemFactory::goblinShop() {
 ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
   ItemFactory factory({{ItemId::FIRST_AID_KIT, 2}});
   if (contains(techs, Technology::get(TechId::TRAPS))) {
-    factory.addItem({ItemId::BOULDER_TRAP_ITEM, 1 });
-    factory.addItem({ItemId::GAS_TRAP_ITEM, 1 });
+    factory.addItem({ItemId::BOULDER_TRAP_ITEM, 0.5 });
+    factory.addItem({ItemId::GAS_TRAP_ITEM, 0.5 });
     factory.addItem({ItemId::ALARM_TRAP_ITEM, 1 });
     factory.addItem({ItemId::WEB_TRAP_ITEM, 1 });
     factory.addItem({ItemId::SURPRISE_TRAP_ITEM, 1 });
@@ -1007,7 +1007,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::PANIC_MUSHROOM: return getMushroom("panic", EffectType::PANIC,
                                      "Makes the one who ate it favor defensive actions over offensive.");
     case ItemId::RAGE_MUSHROOM: return getMushroom("rage", EffectType::RAGE,
-                                     "Makes the one who ate it favor offensive actions over deffensive.");
+                                     "Makes the one who ate it favor offensive actions over defensive.");
     case ItemId::HALLU_MUSHROOM: return getMushroom("magic", EffectType::HALLU,
                                      "Has a strong hallucinogenic effect.");
     case ItemId::STRENGTH_MUSHROOM: return getMushroom("strength", EffectType::STR_BONUS,

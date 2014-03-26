@@ -834,8 +834,8 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         c.viewId = humanoid ? ViewId::SPECIAL_HUMANOID : ViewId::SPECIAL_BEAST;
         c.speed = r.getRandom(70, 150);
         c.size = chooseRandom({CreatureSize::SMALL, CreatureSize::MEDIUM, CreatureSize::LARGE}, {1, 1, 1});
-        c.strength = r.getRandom(16, 25);
-        c.dexterity = r.getRandom(16, 25);
+        c.strength = r.getRandom(20, 28);
+        c.dexterity = r.getRandom(20, 28);
         c.barehandedDamage = r.getRandom(5, 15);
         c.humanoid = humanoid;
         c.weight = c.size == CreatureSize::LARGE ? r.getRandom(80,120) : 

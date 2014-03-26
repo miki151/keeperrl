@@ -1496,7 +1496,7 @@ void Creature::torture(Creature* c) {
     c->globalMessage(c->getTheName() + " screams!", "You hear a terrifying scream");
   c->addEffect(STUNNED, 3, false);
   c->bleed(0.1);
-  if (c->health < 0.3 && !Random.roll(15))
+  if (c->health < 0.3 && !Random.roll(8))
     c->heal();
   EventListener::addTortureEvent(c, this);
   spendTime(1);
@@ -2027,5 +2027,13 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
         case ENTANGLED: info.effects.push_back({"entangled", true}); break;
         default: break;
       }
+  if (injuredArms == 1)
+    info.effects.push_back({"injured arm", true});
+  if (injuredArms == 2)
+    info.effects.push_back({"two injured arms", true});
+  if (injuredLegs == 1)
+    info.effects.push_back({"injured leg", true});
+  if (injuredLegs == 2)
+    info.effects.push_back({"two injured legs", true});
 }
 

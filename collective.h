@@ -74,7 +74,7 @@ class Collective : public CreatureView, public EventListener {
   bool isRetired() const;
   const Creature* getKeeper() const;
   Vec2 getDungeonCenter() const;
-  double getDangerLevel() const;
+  double getDangerLevel(bool includeExecutions = true) const;
   void learnLocation(const Location* loc);
 
   void render(View*);
@@ -160,6 +160,7 @@ class Collective : public CreatureView, public EventListener {
       SquareType type;
       CostInfo cost;
       string name;
+      bool buildImmediatly;
     } squareInfo;
 
     struct TrapInfo {
@@ -168,12 +169,13 @@ class Collective : public CreatureView, public EventListener {
       ViewId viewId;
     } trapInfo;
 
-    enum BuildType { DIG, SQUARE, IMP, TRAP, GUARD_POST, DESTROY} buildType;
+    enum BuildType { DIG, SQUARE, IMP, TRAP, GUARD_POST, DESTROY, IMPALED_HEAD} buildType;
 
     Optional<TechId> techId;
     string help;
 
     BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
+    BuildInfo(BuildType type, SquareInfo info);
     BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
     BuildInfo(BuildType type, const string& h = "");
   };
@@ -373,6 +375,7 @@ class Collective : public CreatureView, public EventListener {
     void serialize(Archive& ar, const unsigned int version);
   };
   map<Creature*, PrisonerInfo> prisonerInfo;
+  int executions = 0;
 };
 
 #endif
