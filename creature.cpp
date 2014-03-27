@@ -119,9 +119,10 @@ SpellInfo Creature::getSpell(SpellId id) {
     case SpellId::STR_BONUS: return {id, "strength", EffectType::STR_BONUS, 0, 90};
     case SpellId::DEX_BONUS: return {id, "dexterity", EffectType::DEX_BONUS, 0, 90};
     case SpellId::FIRE_SPHERE_PET: return {id, "fire sphere", EffectType::FIRE_SPHERE_PET, 0, 20};
-    case SpellId::TELEPORT: return {SpellId::TELEPORT, "escape", EffectType::TELEPORT, 0, 120};
-    case SpellId::INVISIBILITY: return {SpellId::INVISIBILITY, "invisibility", EffectType::INVISIBLE, 0, 300};
-    case SpellId::WORD_OF_POWER: return {SpellId::WORD_OF_POWER, "word of power", EffectType::WORD_OF_POWER, 0, 300};
+    case SpellId::TELEPORT: return {id, "escape", EffectType::TELEPORT, 0, 120};
+    case SpellId::INVISIBILITY: return {id, "invisibility", EffectType::INVISIBLE, 0, 300};
+    case SpellId::WORD_OF_POWER: return {id, "word of power", EffectType::WORD_OF_POWER, 0, 300};
+    case SpellId::SUMMON_SPIRIT: return {id, "summon spirits", EffectType::SUMMON_SPIRIT, 0, 300};
   }
   FAIL << "wpeofk";
   return getSpell(SpellId::HEALING);
@@ -1497,7 +1498,7 @@ void Creature::torture(Creature* c) {
   c->addEffect(STUNNED, 3, false);
   c->bleed(0.1);
   if (c->health < 0.3) {
-    if (!Random.roll(8))
+    if (!Random.roll(15))
       c->heal();
     else
     c->bleed(1);
@@ -1800,8 +1801,8 @@ Gender Creature::getGender() const {
 }
 
 void Creature::increaseExpLevel(double amount) {
-  if (expLevel < maxLevel && increaseExperience) {
-    expLevel += amount;
+  if (increaseExperience) {
+    expLevel = min<double>(maxLevel, amount + expLevel);
  //   viewObject.setSizeIncrease(0.3);
     if (skillGain.count(getExpLevel()) && isHumanoid()) {
       you(MsgType::ARE, "more experienced");

@@ -14,6 +14,7 @@ NameGenerator NameGenerator::dwarfNames;
 NameGenerator NameGenerator::deityNames;
 NameGenerator NameGenerator::demonNames;
 NameGenerator NameGenerator::dogNames;
+NameGenerator NameGenerator::insults;
 
 string getSyllable() {
   string vowels = "aeyuio";
@@ -45,10 +46,29 @@ vector<string> readLines(const string& path) {
   return input;
 }
 
+vector<string> combined(const string& path) {
+  vector<string> input[3];
+  ifstream in(path);
+  CHECK(in.is_open()) << "Unable to open " << path;
+  int num;
+  in >> num;
+  char buf[100];
+  for (int w : Range(3))
+    for (int i : Range(num)) {
+      in.getline(buf, 100);
+      input[w].push_back(buf);
+    }
+  vector<string> ret;
+  for (int i : Range(3000))
+    ret.push_back("Thou " + chooseRandom(input[1]) + " " + chooseRandom(input[2]) + 
+        " " + chooseRandom(input[3]) + " ");
+  return ret;
+}
+
 void NameGenerator::init(const string& firstNamesPath, const string& aztecNamesPath,
       const string& creatureNamesPath, const string& weaponNamesPath, const string& worldsPath,
       const string& townsPath, const string& dwarfsPath, const string& deitiesPath, const string& demonsPath,
-      const string& dogsPath) {
+      const string& dogsPath, const string& insultsPath) {
   vector<string> input;
   for (int i : Range(1000)) {
     string ret;
@@ -69,7 +89,7 @@ void NameGenerator::init(const string& firstNamesPath, const string& aztecNamesP
   deityNames = NameGenerator(readLines(deitiesPath));
   dwarfNames = NameGenerator(readLines(dwarfsPath));
   demonNames = NameGenerator(readLines(demonsPath));
-  dogNames = NameGenerator(readLines(dogsPath));
+  insults = NameGenerator(readLines(insultsPath));
 }
 
 

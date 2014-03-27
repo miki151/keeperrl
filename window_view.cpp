@@ -634,8 +634,8 @@ void WindowView::drawWorkshop(GameInfo::BandInfo& info) {
 }
 
 void WindowView::drawKeeperHelp() {
-  vector<string> helpText { "use mouse to", "dig and build", "", "click on minion", "to possess",
-    "", "your enemies ", "are in the west", "", "[space]  pause", "[z]  zoom", "", "follow the red text :-)"};
+  vector<string> helpText { "use mouse to", "dig and build", "", "scroll with arrows", "or right mouse button", "", "click on minion", "to possess",
+    "", "your enemies ", "are in the west", "", "[space]  pause", "[z]  zoom", "", "follow the red hints :-)"};
   int cnt = 0;
   for (string line : helpText) {
     int height = legendStartHeight + cnt * legendLineHeight;
@@ -1373,10 +1373,10 @@ CollectiveAction WindowView::getClick(double time) {
     switch (event.type) {
       case Event::KeyPressed:
         switch (event.key.code) {
-          case Keyboard::Up: center.y -= 1; break;
-          case Keyboard::Down: center.y += 1; break;
-          case Keyboard::Left: center.x -= 1; break;
-          case Keyboard::Right: center.x += 1; break;
+          case Keyboard::Up: center.y -= 2.5; break;
+          case Keyboard::Down: center.y += 2.5; break;
+          case Keyboard::Left: center.x -= 2.5; break;
+          case Keyboard::Right: center.x += 2.5; break;
           case Keyboard::Z:
             unzoom();
             return CollectiveAction(CollectiveAction::IDLE);

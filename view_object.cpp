@@ -11,7 +11,6 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(description)
     & BOOST_SERIALIZATION_NVP(burning)
     & BOOST_SERIALIZATION_NVP(height)
-    & BOOST_SERIALIZATION_NVP(sizeIncrease)
     & BOOST_SERIALIZATION_NVP(modifiers)
     & BOOST_SERIALIZATION_NVP(attack)
     & BOOST_SERIALIZATION_NVP(defense)
@@ -83,14 +82,6 @@ void ViewObject::setHeight(double h) {
 
 double ViewObject::getHeight() const {
   return height;
-}
-
-void ViewObject::setSizeIncrease(double s) {
-  sizeIncrease += s;
-}
-
-double ViewObject::getSizeIncrease() const {
-  return sizeIncrease;
 }
 
 string ViewObject::getBareDescription() const {

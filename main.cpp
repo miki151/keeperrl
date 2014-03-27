@@ -188,7 +188,8 @@ int main(int argc, char* argv[]) {
     Statistics::init();
     Options::init("options.txt");
     NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
-        "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt");
+        "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt",
+        "insults.txt");
     ItemFactory::init();
     bool modelReady = false;
     messageBuffer.initialize(view);

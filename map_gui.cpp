@@ -144,9 +144,11 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
           dirs.insert(dir.getCardinalDir());
       Vec2 coord = tile.getSpriteCoord(dirs);
 
-      if (object.layer() == ViewLayer::CREATURE) {
-        renderer.drawSprite(x, y, 2 * Renderer::nominalSize, 22 * Renderer::nominalSize, Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[0], width, height);
-        moveY = -4 - object.getSizeIncrease() / 2;
+      if (object.hasModifier(ViewObject::MOVE_UP))
+        moveY = -6;
+      if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::ROUND_SHADOW)) {
+        renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize, 22 * Renderer::nominalSize, Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[0], width, height);
+        moveY = -6;
       }
       renderer.drawSprite(x + off, y + moveY + off, coord.x * sz,
           coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()], width, height, color);
@@ -160,9 +162,8 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
       if (object.hasModifier(ViewObject::LOCKED))
         renderer.drawSprite(x + (Renderer::nominalSize - Renderer::tileSize[3]) / 2, y, 5 * Renderer::tileSize[3], 6 * Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tiles[3]);
     } else {
-      renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT,
-          sizeY + object.getSizeIncrease(), Tile::getColor(object),
-          x + sizeX / 2, y - 3 - object.getSizeIncrease(), tile.text, true);
+      renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, sizeY, Tile::getColor(object),
+          x + sizeX / 2, y - 3, tile.text, true);
       if (object.getBurning() > 0) {
         renderer.drawText(Renderer::SYMBOL_FONT, sizeY, WindowView::getFireColor(),
             x + sizeX / 2, y - 3, L'ѡ', true);

@@ -112,6 +112,7 @@ enum class CreatureId {
     SPECIAL_HUMANOID,
 
     GHOST,
+    SPIRIT,
     DEVIL,
     DARK_KNIGHT,
     DRAGON,
@@ -254,6 +255,8 @@ enum class ItemId { KNIFE,
   IRON_WORKING_BOOK,
   ALCHEMY_ADV_BOOK,
   SPELLS_MAS_BOOK,
+  HUMANOID_MUT_BOOK,
+  BEAST_MUT_BOOK,
 
   BOULDER_TRAP_ITEM,
   GAS_TRAP_ITEM,
@@ -325,6 +328,7 @@ enum class ViewId {
   CYCLOPS,
   WITCH,
   GHOST,
+  SPIRIT,
   DEVIL,
   KNIGHT,
   CASTLE_GUARD,
@@ -616,6 +620,7 @@ enum class EffectType {
     TELE_ENEMIES,
     WEB,
     TERROR,
+    SUMMON_SPIRIT,
 };
 
 enum class AnimationId {
@@ -633,6 +638,7 @@ enum class SpellId {
   TELEPORT,
   INVISIBILITY,
   WORD_OF_POWER,
+  SUMMON_SPIRIT,
 };
 
 enum class QuestId { DRAGON, CASTLE_CELLAR, BANDITS, GOBLINS, DWARVES };
@@ -663,13 +669,15 @@ enum class TechId {
   ALCHEMY_ADV,
   GOLEM,
   GOLEM_ADV,
+  GOLEM_MAS,
   GOBLIN,
   OGRE,
   HUMANOID_MUT,
   BEAST,
   BEAST_MUT,
   NECRO,
-  NECRO_ADV,
+  VAMPIRE,
+  VAMPIRE_ADV,
   CRAFTING,
   IRON_WORKING,
   TWO_H_WEAP,

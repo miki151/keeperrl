@@ -17,7 +17,8 @@ class ViewObject {
   bool isHostile() const;
   bool isFriendly() const;
 
-  enum Modifier { BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED};
+  enum Modifier { BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
+    ROUND_SHADOW, MOVE_UP};
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;
@@ -29,9 +30,6 @@ class ViewObject {
 
   void setHeight(double);
   double getHeight() const;
-
-  void setSizeIncrease(double);
-  double getSizeIncrease() const;
 
   void setAttack(int);
   void setDefense(int);
@@ -63,7 +61,6 @@ class ViewObject {
   string description;
   double burning = false;
   double height = 0;
-  double sizeIncrease = 0;
   int attack = -1;
   int defense = -1;
   double waterDepth = -1;

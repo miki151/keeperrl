@@ -484,16 +484,11 @@ class Fighter : public Behaviour, public EventListener {
           creature->equip(weapon);
         }};
     }
-    if (distance <= 3) {
-      if (MoveInfo move = tryToApplyItem(EffectType::INVISIBLE, 1))
-        return move;
-      if (MoveInfo move = tryToApplyItem(EffectType::STR_BONUS, 1))
-        return move;
-      if (MoveInfo move = tryToApplyItem(EffectType::DEX_BONUS, 1))
-        return move;
-      if (MoveInfo move = tryToApplyItem(EffectType::SPEED, 1))
-        return move;
-    }
+    if (distance <= 3)
+      for (EffectType effect : {EffectType::INVISIBLE, EffectType::STR_BONUS, EffectType::DEX_BONUS,
+          EffectType::SPEED, EffectType::SUMMON_SPIRIT})
+        if (MoveInfo move = tryToApplyItem(effect, 1))
+          return move;
     if (distance > 1) {
       if (MoveInfo move = getFireMove(enemyDir))
         return move;
@@ -666,8 +661,11 @@ class GuardCreature : public GuardTarget, public EventListener {
       levelChanges[from] = pos;
   }
   virtual MoveInfo getMove() override {
-    if (target->isDead())
-      return NoMove;
+    if (target->isDead()) {
+      return {100.0, [=] {
+        creature->die(nullptr);
+      }};
+    }
     if (target->getLevel() == creature->getLevel())
       return getMoveTowards(target->getPosition());
     if (!levelChanges.count(creature->getLevel()))

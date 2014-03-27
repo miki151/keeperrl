@@ -119,7 +119,7 @@ Tile getSprite(ViewId id) {
     case ViewId::CROPS: return Tile(9, 12, 2);
     case ViewId::WALL: return getWallTile(2);
     case ViewId::MOUNTAIN: return Tile(17, 2, 2, true);
-    case ViewId::MOUNTAIN2: return getWallTile(21);
+    case ViewId::MOUNTAIN2: return getWallTile(19);
  /*                                 .addConnection({Dir::N, Dir::E, Dir::S, Dir::W, 
                                         Dir::NE, Dir::SE, Dir::SW, Dir::NW}, 19, 10)
                                   .addConnection({Dir::E, Dir::S, Dir::W, Dir::SE, Dir::SW}, 19, 9)
@@ -157,6 +157,7 @@ Tile getSprite(ViewId id) {
     case ViewId::GOBLIN: return Tile(5, 14);
     case ViewId::BANDIT: return Tile(0, 2);
     case ViewId::GHOST: return Tile(6, 16).setTranslucent(0.5);
+    case ViewId::SPIRIT: return Tile(17, 14);
     case ViewId::DEVIL: return Tile(17, 18);
     case ViewId::DARK_KNIGHT: return Tile(12, 14);
     case ViewId::DRAGON: return Tile(3, 18);
@@ -378,6 +379,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::CYCLOPS: return Tile('C', green);
     case ViewId::WITCH: return Tile('@', brown);
     case ViewId::GHOST: return Tile('&', white);
+    case ViewId::SPIRIT: return Tile('&', lightBlue);
     case ViewId::DEVIL: return Tile('&', purple);
     case ViewId::CASTLE_GUARD: return Tile('@', lightGray);
     case ViewId::KNIGHT: return Tile('@', lightGray);

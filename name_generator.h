@@ -17,6 +17,7 @@ class NameGenerator {
   static NameGenerator deityNames;
   static NameGenerator demonNames;
   static NameGenerator dogNames;
+  static NameGenerator insults;
 
   static void init(
       const string& firstNamesPath,
@@ -28,7 +29,9 @@ class NameGenerator {
       const string& dwarfPath,
       const string& deitiesPath,
       const string& demonsPath,
-      const string& dogsPath);
+      const string& dogsPath,
+      const string& insultsPath
+      );
 
   private:
   NameGenerator(vector<string> names, bool oneName = false);

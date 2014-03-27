@@ -458,6 +458,7 @@ void Collective::autoEquipment(Creature* creature) {
       minionEquipment.own(creature, it);
       if (it->canEquip())
         removeElement(slots, it->getEquipmentSlot());
+      break;
     }
   }
 }
@@ -654,14 +655,14 @@ void Collective::handlePersonalSpells(View* view) {
 vector<Collective::SpawnInfo> raisingInfo {
   {CreatureId::ZOMBIE, 30, TechId::NECRO},
   {CreatureId::MUMMY, 50, TechId::NECRO},
-  {CreatureId::VAMPIRE, 50, TechId::NECRO_ADV},
-  {CreatureId::VAMPIRE_LORD, 100, TechId::NECRO_ADV},
+  {CreatureId::VAMPIRE, 50, TechId::VAMPIRE},
+  {CreatureId::VAMPIRE_LORD, 100, TechId::VAMPIRE_ADV},
 };
 
 vector<Collective::SpawnInfo> animationInfo {
   {CreatureId::STONE_GOLEM, 50, TechId::GOLEM},
   {CreatureId::IRON_GOLEM, 50, TechId::GOLEM_ADV},
-  {CreatureId::LAVA_GOLEM, 100, TechId::GOLEM_ADV},
+  {CreatureId::LAVA_GOLEM, 100, TechId::GOLEM_MAS},
 };
 
 
@@ -968,8 +969,12 @@ vector<Collective::TechInfo> Collective::getTechInfo() const {
 
 void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   gameInfo.villageInfo.villages.clear();
-  for (VillageControl* c : model->getVillageControls())
+  bool attacking = false;
+  for (VillageControl* c : model->getVillageControls()) {
     gameInfo.villageInfo.villages.push_back(c->getVillageInfo());
+    if (c->currentlyAttacking())
+      attacking = true;
+  }
   gameInfo.infoType = View::GameInfo::InfoType::BAND;
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.buildings = fillButtons(buildInfo);
@@ -993,7 +998,11 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.numGold.push_back({ViewObject::mana(), int(mana), "mana"});
   info.numGold.push_back({ViewObject(ViewId::DANGER, ViewLayer::CREATURE, ""), int(getDangerLevel()) + points,
       "points"});
-  info.warning = "";
+  if (attacking) {
+    if (info.warning.empty())
+      info.warning = NameGenerator::insults.getNext();
+  } else
+    info.warning = "";
   for (int i : Range(numWarnings))
     if (warning[i]) {
       info.warning = warningText[i];
@@ -1417,7 +1426,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
             }
           } else {
             BuildInfo::SquareInfo info = building.squareInfo;
-            if (knownPos(pos) && level->getSquare(pos)->canConstruct(info.type)
+            if (knownPos(pos) && level->getSquare(pos)->canConstruct(info.type) && !traps.count(pos)
                 && (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
               if (info.buildImmediatly) {
                 while (!level->getSquare(pos)->construct(info.type)) {}
@@ -1656,7 +1665,7 @@ void Collective::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayT
       continue;
     for (Vec2 v : pos.neighbors8())
       if (v.inRectangle(dist.getBounds()) && dist[v] == infinity &&
-          level->getSquare(v)->canEnterEmpty(Creature::getDefault()) && myTiles.count(v)) {
+          /*level->getSquare(v)->canEnterEmpty(Creature::getDefault()) &&*/ myTiles.count(v)) {
         dist[v] = dist[pos] + 1;
         q.push(v);
       }

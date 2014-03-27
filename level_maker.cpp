@@ -1568,8 +1568,6 @@ MakerQueue* cottage(SettlementInfo info, const map<SquareType, pair<int, int> >&
   queue->addMaker(new LocationMaker(info.location));
   queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::stayInLocation(info.location),
         building.floorOutside));
-  if (info.elderLoot)
-    queue->addMaker(new Items(ItemFactory::singleType(*info.elderLoot), building.floorInside, 1, 2));
   return queue;
 }
 

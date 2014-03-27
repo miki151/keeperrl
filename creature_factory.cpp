@@ -61,7 +61,7 @@ class BoulderController : public Monster {
     if (creature->isDead())
       return;
     double speed = creature->getSpeed();
-    double deceleration = 0.1;
+    double deceleration = 0.07;
     speed -= deceleration * 100 * 100 / speed;
     if (speed < 30) {
       if (myTribe) {
@@ -172,7 +172,7 @@ PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
             c.weight = 1000;
             c.humanoid = false;
             c.size = CreatureSize::LARGE;
-            c.speed = 150;
+            c.speed = 140;
             c.permanentlyBlind = true;
             c.noSleep = true;
             c.stationary = true;
@@ -953,6 +953,14 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
           c.chatReactionHostile = "\"Wouuuouuu!!!\"";
           c.name = "ghost";);
+    case CreatureId::SPIRIT:
+      return INHERIT(GHOST,
+          c.viewId = ViewId::SPIRIT;
+          c.strength = 18;
+          c.speed = 100;
+          c.dexterity = 18;
+          c.barehandedDamage = 18;
+          c.name = "ancient spirit";);
     case CreatureId::DEVIL: 
       return CATTR(
           c.viewId = ViewId::DEVIL;

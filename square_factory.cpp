@@ -475,9 +475,9 @@ class TribeDoor : public Door {
 
 class Furniture : public Square {
   public:
-  Furniture(const ViewObject& object, const string& name, double flamability,
+  Furniture(ViewObject object, const string& name, double flamability,
       Optional<SquareApplyType> _applyType = Nothing()) 
-      : Square(object, name, true , true, 100, flamability), applyType(_applyType) {}
+      : Square(object.setModifier(ViewObject::MOVE_UP), name, true , true, 100, flamability), applyType(_applyType) {}
 
   virtual bool canDestroy() const override {
     return true;
@@ -633,7 +633,9 @@ class TrainingDummy : public Furniture {
   }
 
   virtual void onApply(Creature* c) override {
-    c->increaseExpLevel(Random.getDouble(0.01, 0.03));
+    double lev1 = 0.03;
+    double lev10 = 0.01;
+    c->increaseExpLevel(lev1 - double(c->getExpLevel() - 1) * (lev1 - lev10) / 9.0  );
   }
 
   template <class Archive> 
@@ -810,8 +812,7 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::MOUNTAIN:
         return new SolidSquare(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain"), "mountain", true);
     case SquareType::MOUNTAIN2:
-        return new SolidSquare(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain")
-            .setModifier(ViewObject::CASTS_SHADOW), "mountain", false,
+        return new SolidSquare(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain").setModifier(ViewObject::CASTS_SHADOW), "mountain", false,
             {{SquareType::FLOOR, Random.getRandom(3, 8)}});
     case SquareType::GLACIER:
         return new SolidSquare(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"), "mountain", true);
@@ -831,9 +832,11 @@ Square* SquareFactory::get(SquareType s) {
         FAIL << "Unimplemented";
     case SquareType::SAND: return new Square(ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND, "Sand"),
                                "sand", true);
-    case SquareType::CANIF_TREE: return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"), "tree", 
+    case SquareType::CANIF_TREE: return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree")
+                                     .setModifier(ViewObject::ROUND_SHADOW), "tree", 
                                      false, Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
-    case SquareType::DECID_TREE: return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"), "tree",
+    case SquareType::DECID_TREE: return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree")
+                                     .setModifier(ViewObject::ROUND_SHADOW), "tree",
                                      false, Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
     case SquareType::BUSH: return new Tree(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush",
                                      true, Random.getRandom(5, 10), {{SquareType::TREE_TRUNK, 10}});
@@ -841,9 +844,9 @@ Square* SquareFactory::get(SquareType s) {
                                    "tree trunk", 0);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::STOCKPILE:
-        return new Furniture(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Storage"), "floor", 0);
+        return new Square(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Storage"), "floor", true);
     case SquareType::PRISON:
-        return new Furniture(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"), "floor", 0);
+        return new Square(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"), "floor", true);
     case SquareType::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
             "torture table", 0.3, SquareApplyType::TORTURE);
@@ -885,7 +888,7 @@ Square* SquareFactory::get(SquareType s) {
         FAIL << "Unimplemented";
     case SquareType::DOOR: return new Door(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
                                .setModifier(ViewObject::CASTS_SHADOW));
-    case SquareType::TRIBE_DOOR: return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::LARGE_ITEM, "Door")
+    case SquareType::TRIBE_DOOR: return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
                                      .setModifier(ViewObject::CASTS_SHADOW), 100);
     case SquareType::BORDER_GUARD:
         return new SolidSquare(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "Wall"), "wall", false);

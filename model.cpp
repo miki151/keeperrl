@@ -142,7 +142,7 @@ Model::~Model() {
 
 Level* Model::prepareTopLevel2(vector<SettlementInfo> settlements) {
   Level* top = buildLevel(
-      Level::Builder(250, 250, "Wilderness"),
+      Level::Builder(200, 200, "Wilderness"),
       LevelMaker::topLevel2(CreatureFactory::forrest(), settlements),
       true);
   return top;
@@ -373,29 +373,31 @@ vector<EnemyInfo> getEnemyInfo() {
   return {
       {{SettlementType::CASTLE2, CreatureFactory::vikingTown(),
          Random.getRandom(2, 6), Nothing(), getVillageLocation(), Tribes::get(TribeId::HUMAN),
-         BuildingId::WOOD_CASTLE, {}, CreatureId::WARRIOR},
+         BuildingId::WOOD_CASTLE, {}, CreatureId::WARRIOR, ItemId::BEAST_MUT_BOOK},
       10, CreatureFactory::vikingAttackers()},
       {{SettlementType::VILLAGE, CreatureFactory::singleType(Tribes::get(TribeId::LIZARD), CreatureId::LIZARDMAN),
          Random.getRandom(2, 4), Nothing(), getVillageLocation(), Tribes::get(TribeId::LIZARD),
-         BuildingId::MUD, {}, Nothing(), ItemId::TECH_BOOK},
+         BuildingId::MUD, {}, Nothing(), ItemId::HUMANOID_MUT_BOOK, ItemFactory::mushrooms()},
       10, CreatureFactory::lizardAttackers()},
       {{SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.0), 7, Nothing(), getVillageLocation(),
-         Tribes::get(TribeId::ELVEN), BuildingId::WOOD, {}, Nothing(), ItemId::SPELLS_MAS_BOOK},
+         Tribes::get(TribeId::ELVEN), BuildingId::WOOD, {}, Nothing(), ItemId::SPELLS_MAS_BOOK,
+         ItemFactory::villageShop()},
       10, CreatureFactory::elfAttackers()},
       {{SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), Random.getRandom(2, 6), Nothing(),
          getVillageLocation(),
-         Tribes::get(TribeId::HUMAN), BuildingId::BRICK, {}, CreatureId::CASTLE_GUARD, ItemId::TECH_BOOK},
+         Tribes::get(TribeId::HUMAN), BuildingId::BRICK, {}, CreatureId::CASTLE_GUARD, Nothing(),
+         ItemFactory::villageShop()},
       20, CreatureFactory::castleAttackers()},
   };
 }
 
 static double getKilledCoeff() {
-  return Random.getDouble(0.5, 0.9);
+  return Random.getDouble(0.1, 1);
 };
 
 static double getPowerCoeff() {
   if (Options::getValue(OptionId::AGGRESSIVE_HEROES))
-    return Random.getDouble(0.2, 0.6);
+    return Random.getDouble(0.1, 0.7);
   else
     return 0.0;
 }

@@ -708,6 +708,17 @@ PItem getTrap(string name, ViewId viewId, TrapType trapType, EffectType effectTy
             i.price = 10;), effectType));
 }
 
+PItem getTechBook(TechId tech) {
+  return PItem(new TechBook(
+      ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
+            i.name = "book of " + Technology::get(tech)->getName();
+            i.plural = "books of " + Technology::get(tech)->getName();
+            i.weight = 1;
+            i.type = ItemType::BOOK;
+            i.applyTime = 3;
+            i.price = 1000;), Technology::get(tech)));
+}
+
 static int maybePlusMinusOne(int prob) {
   if (Random.roll(prob))
     return Random.getRandom(2) * 2 - 1;
@@ -1050,30 +1061,11 @@ PItem ItemFactory::fromId(ItemId id) {
             i.price = 15;
             i.flamability = 1;
             i.uses = 1;)));
-    case ItemId::SPELLS_MAS_BOOK: return PItem(new TechBook(
-        ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
-            i.name = "book of master sorcery";
-            i.plural = "books of master sorcery";
-            i.weight = 0.5;
-            i.type = ItemType::BOOK;
-            i.applyTime = 3;
-            i.price = 300;), Technology::get(TechId::SPELLS_MAS)));
-    case ItemId::ALCHEMY_ADV_BOOK: return PItem(new TechBook(
-        ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
-            i.name = "book of advanced alchemy";
-            i.plural = "books of advanced alchemy";
-            i.weight = 0.5;
-            i.type = ItemType::BOOK;
-            i.applyTime = 3;
-            i.price = 300;), Technology::get(TechId::ALCHEMY_ADV)));
-    case ItemId::IRON_WORKING_BOOK: return PItem(new TechBook(
-        ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
-            i.name = "book of iron working";
-            i.plural = "books of iron working";
-            i.weight = 0.5;
-            i.type = ItemType::BOOK;
-            i.applyTime = 3;
-            i.price = 300;), Technology::get(TechId::IRON_WORKING)));
+    case ItemId::SPELLS_MAS_BOOK: return getTechBook(TechId::SPELLS_MAS);
+    case ItemId::ALCHEMY_ADV_BOOK: return getTechBook(TechId::ALCHEMY_ADV);
+    case ItemId::IRON_WORKING_BOOK: return getTechBook(TechId::IRON_WORKING);
+    case ItemId::HUMANOID_MUT_BOOK: return getTechBook(TechId::HUMANOID_MUT);
+    case ItemId::BEAST_MUT_BOOK: return getTechBook(TechId::BEAST_MUT);
     case ItemId::TECH_BOOK: return PItem(new TechBook(
         ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
             i.name = "book of knowledge";
