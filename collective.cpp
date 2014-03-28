@@ -140,14 +140,18 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
 
 const vector<Collective::BuildInfo> Collective::workshopInfo {
     BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING),
-    BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS),
-    BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, TechId::TRAPS),
-    BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, TechId::TRAPS),
+    BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS,
+        "Summons all minions"),
+    BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, TechId::TRAPS,
+        "Immobilises the trespasser for some time."),
+    BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, TechId::TRAPS,
+        "Releases a cloud of poisonous gas."),
     BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, TechId::TRAPS,
-        "Causes the trespasser to panic"),
-    BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, TechId::TRAPS),
+        "Causes the trespasser to panic."),
+    BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, TechId::TRAPS,
+        "Causes a huge boulder to roll towards the enemy."),
     BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP}, TechId::TRAPS,
-        "Summons nearby minions to deal with the trespasser"),
+        "Teleports nearby minions to deal with the trespasser."),
     BuildInfo(BuildInfo::IMPALED_HEAD, {SquareType::IMPALED_HEAD, {ResourceId::GOLD, 0}, "Prisoner head"}),
 };
 
@@ -161,6 +165,17 @@ vector<Collective::RoomInfo> Collective::getRoomInfo() {
   return ret;
 }
 
+vector<Collective::RoomInfo> Collective::getWorkshopInfo() {
+  vector<RoomInfo> ret;
+  for (BuildInfo bInfo : workshopInfo)
+    if (bInfo.buildType == BuildInfo::TRAP) {
+      BuildInfo::TrapInfo info = bInfo.trapInfo;
+      ret.push_back({info.name, bInfo.help, bInfo.techId});
+    }
+    else if (bInfo.buildType == BuildInfo::IMPALED_HEAD)
+      ret.push_back({"Prisoner head", "An impaled prisoner head that aggreviates all enemies.", Nothing()});
+  return ret;
+}
 
 vector<MinionType> minionTypes {
   MinionType::KEEPER,

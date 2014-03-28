@@ -190,7 +190,7 @@ static void emitPoisonGas(Creature* c, EffectStrength strength) {
   for (Vec2 v : Vec2::directions8())
     c->getSquare(v)->addPoisonGas(gasAmount.at(strength) / 2);
   c->getSquare()->addPoisonGas(gasAmount.at(strength));
-  c->globalMessage("A cloud of gas emerges", "You hear a hissing sound");
+  c->globalMessage("A cloud of gas is released", "You hear a hissing sound");
 }
 
 static void guardingBuilder(Creature* c) {

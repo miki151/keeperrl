@@ -20,6 +20,7 @@ class Encyclopedia {
   void deity(View*, const Deity*);
   void deities(View*, int lastInd = 0);
   void tribes(View*, int lastInd = 0);
+  void workshop(View*, int lastInd = 0);
 };
 
 #endif

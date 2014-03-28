@@ -89,6 +89,7 @@ class Collective : public CreatureView, public EventListener {
     Optional<TechId> techId;
   };
   static vector<RoomInfo> getRoomInfo();
+  static vector<RoomInfo> getWorkshopInfo();
   static vector<SpellInfo> getSpellLearning(const Technology*);
 
   static vector<CreatureId> getSpawnInfo(const Technology*);

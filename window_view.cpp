@@ -1185,18 +1185,17 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
         case Keyboard::Up: if (index > 0) --index; break;
         case Keyboard::Numpad2:
         case Keyboard::Down: if (index < options.size() - numLines) ++index; break;
-        case Keyboard::Return : refreshScreen(); return;
-        case Keyboard::Escape : refreshScreen(); return;
+        case Keyboard::Return:
+        case Keyboard::Escape: return;
  //       case Keyboard::Space : refreshScreen(); return;
         default: break;
       }
     else
       if (event.type == BlockingEvent::MOUSE_LEFT) {
-        refreshScreen();
         return;
       }
   }
-  refreshScreen();
+ // refreshScreen();
 }
 
 static int yMargin = 10;
