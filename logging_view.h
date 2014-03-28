@@ -59,8 +59,8 @@ class LoggingView : public T {
       return res;
     }
 
-    virtual Optional<int> getNumber(const string& title, int max, int increments) override {
-      auto res = T::getNumber(title, max, increments);
+    virtual Optional<int> getNumber(const string& title, int min, int max, int increments) override {
+      auto res = T::getNumber(title, min, max, increments);
       output << "getNumber ";
       if (res)
         output << *res << endl;

@@ -60,7 +60,6 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(lastingEffects)
     & BOOST_SERIALIZATION_NVP(expLevel)
     & BOOST_SERIALIZATION_NVP(unknownAttacker)
-    & BOOST_SERIALIZATION_NVP(visibleEnemies)
     & BOOST_SERIALIZATION_NVP(privateEnemies)
     & BOOST_SERIALIZATION_NVP(holding)
     & BOOST_SERIALIZATION_NVP(controller)
@@ -367,31 +366,6 @@ void Creature::globalMessage(const string& playerCanSee, const string& cant) con
     else
       player->privateMessage(cant);
   }
-}
-
-const vector<const Creature*>& Creature::getVisibleEnemies() const {
-  return visibleEnemies;
-}
-
-void Creature::updateVisibleEnemies() {
-  visibleEnemies.clear();
-  for (const Creature* c : level->getAllCreatures()) 
-    if (isEnemy(c) && (canSee(c)))
-      visibleEnemies.push_back(c);
-  for (const Creature* c : getUnknownAttacker())
-    if (!contains(visibleEnemies, c))
-      visibleEnemies.push_back(c);
-}
-
-vector<const Creature*> Creature::getVisibleCreatures() const {
-  vector<const Creature*> res;
-  for (Creature* c : level->getAllCreatures())
-    if (canSee(c))
-      res.push_back(c);
-  for (const Creature* c : getUnknownAttacker())
-    if (!contains(res, c))
-      res.push_back(c);
-  return res;
 }
 
 void Creature::addSkill(Skill* skill) {
@@ -1222,8 +1196,12 @@ bool Creature::takeDamage(const Attack& attack) {
     } else
     if (health < 0.5)
       you(MsgType::ARE, "critically wounded");
-    else
-      you(MsgType::ARE, "wounded");
+    else {
+      if (!isNotLiving())
+        you(MsgType::ARE, "wounded");
+      else
+        you(MsgType::ARE, "not hurt");
+    }
   } else
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.getType()));
   const Creature* c = attack.getAttacker();

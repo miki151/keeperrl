@@ -133,7 +133,7 @@ class ReplayView : public T {
       return action;
     }
 
-    virtual Optional<int> getNumber(const string& title, int max, int increments) {
+    virtual Optional<int> getNumber(const string& title, int min, int max, int increments) override {
       string method;
       string action;
       input >> method >> action;

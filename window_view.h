@@ -36,7 +36,7 @@ class WindowView: public View {
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
       Optional<ActionId> exitAction = Nothing()) override;
-  virtual Optional<int> getNumber(const string& title, int max, int increments = 1) override;
+  virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
 
   virtual Action getAction() override;
   virtual CollectiveAction getClick(double time) override;

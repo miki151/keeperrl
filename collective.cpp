@@ -1806,7 +1806,6 @@ void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
   }
 }
 
-
 bool Collective::canSee(const Creature* c) const {
   return canSee(c->getPosition());
 }
@@ -1833,6 +1832,10 @@ vector<const Creature*> Collective::getUnknownAttacker() const {
 
 Tribe* Collective::getTribe() const {
   return tribe;
+}
+
+bool Collective::isEnemy(const Creature* c) const {
+  return keeper->isEnemy(c);
 }
 
 void Collective::onChangeLevelEvent(const Creature* c, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) {

@@ -17,13 +17,19 @@ class CreatureView {
   virtual bool canSee(Vec2 position) const = 0;
   virtual const Level* getLevel() const = 0;
   virtual vector<const Creature*> getUnknownAttacker() const = 0;
-  virtual vector<const Creature*> getVisibleCreatures() const { return {}; }
   virtual Tribe* getTribe() const = 0;
+  virtual bool isEnemy(const Creature*) const = 0;
+
+  void updateVisibleEnemies();
+  vector<const Creature*> getVisibleEnemies() const;
 
   template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {}
+  void serialize(Archive& ar, const unsigned int version);
 
   virtual ~CreatureView() {}
+
+  private:
+  vector<const Creature*> visibleEnemies;
 };
 
 #endif

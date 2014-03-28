@@ -56,6 +56,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   vector<PItem> steal(const vector<Item*> items);
   virtual bool canSee(const Creature*) const override;
   virtual bool canSee(Vec2 pos) const override;
+  virtual bool isEnemy(const Creature*) const override;
   void tick(double realTime);
 
   string getTheName() const;
@@ -70,7 +71,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   virtual Tribe* getTribe() const override;
   bool isFriend(const Creature*) const;
-  bool isEnemy(const Creature*) const;
   void addEnemyCheck(EnemyCheck*);
   void removeEnemyCheck(EnemyCheck*);
   int getDebt(const Creature* debtor) const;
@@ -83,8 +83,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   virtual void dropCorpse();
   
   void globalMessage(const string& playerCanSee, const string& cant = "") const;
-  const vector<const Creature*>& getVisibleEnemies() const;
-  vector<const Creature*> getVisibleCreatures() const override;
 
   bool isDead() const;
   const Creature* getLastAttacker() const;
@@ -263,7 +261,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   AttackType getAttackType() const;
   void spendTime(double time);
   BodyPart armOrWing() const;
-  void updateVisibleEnemies();
   pair<double, double> getStanding(const Creature* c) const;
 
   ViewObject viewObject;
@@ -295,7 +292,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   map<LastingEffect, double> lastingEffects;
   double expLevel = 1;
   vector<const Creature*> unknownAttacker;
-  vector<const Creature*> visibleEnemies;
   vector<const Creature*> privateEnemies;
   const Creature* holding = nullptr;
   PController controller;

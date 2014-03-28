@@ -634,7 +634,7 @@ void WindowView::drawWorkshop(GameInfo::BandInfo& info) {
 }
 
 void WindowView::drawKeeperHelp() {
-  vector<string> helpText { "use mouse to", "dig and build", "", "scroll with arrows", "or right mouse button", "", "click on minion", "to possess",
+  vector<string> helpText { "use mouse to dig and build", "shift selects rectangles", "", "scroll with arrows", "or right mouse button", "", "click on minion", "to possess",
     "", "your enemies ", "are in the west", "", "[space]  pause", "[z]  zoom", "", "follow the red hints :-)"};
   int cnt = 0;
   for (string line : helpText) {
@@ -846,7 +846,12 @@ void WindowView::drawLevelMapPart(const Level* level, Rectangle levelPart, Recta
   Vec2 playerPos = bounds.getTopLeft() + (creature->getPosition() - levelPart.getTopLeft()) * scale;
   Vec2 rad(3, 3);
   if (playerPos.inRectangle(bounds.minusMargin(rad.x)))
-    renderer.drawFilledRectangle(Rectangle(playerPos - rad, playerPos + rad), red);
+    renderer.drawFilledRectangle(Rectangle(playerPos - rad, playerPos + rad), blue);
+  for (const Creature* c : creature->getVisibleEnemies()) {
+    Vec2 pos = bounds.getTopLeft() + (c->getPosition() - levelPart.getTopLeft()) * scale;
+    if (pos.inRectangle(bounds.minusMargin(rad.x)))
+      renderer.drawFilledRectangle(Rectangle(pos - rad, pos + rad), red);
+  }
   if (printLocations)
     for (const Location* loc : level->getAllLocations())
       if (loc->hasName())
@@ -1040,10 +1045,11 @@ bool WindowView::yesOrNoPrompt(const string& message) {
   } while (1);
 }
 
-Optional<int> WindowView::getNumber(const string& title, int max, int increments) {
+Optional<int> WindowView::getNumber(const string& title, int min, int max, int increments) {
+  CHECK(min < max);
   vector<View::ListElem> options;
   vector<int> numbers;
-  for (int i = 0; i <= max; i += increments) {
+  for (int i = min; i <= max; i += increments) {
     options.push_back(convertToString(i));
     numbers.push_back(i);
   }
@@ -1504,7 +1510,8 @@ vector<KeyInfo> keyInfo {
 //  { "E", "Manage equipment", {Keyboard::E}},
   { "Enter", "Pick up items or interact with square", {Keyboard::Return}},
   { "D", "Drop item", {Keyboard::D}},
-  { "Shift + D", "Extended drop - choose the number of items", {Keyboard::D}},
+  { "Shift + D", "Extended drop - choose the number of items", {Keyboard::D, false, false, true}},
+  { "Shift + P", "Extended pick up - choose the number of items", {Keyboard::P, false, false, true}},
   { "A", "Apply item", {Keyboard::A}},
   { "T", "Throw item", {Keyboard::T}},
 //  { "S", "Cast spell", {Keyboard::S}},
@@ -1585,8 +1592,7 @@ Action WindowView::getAction() {
 Optional<ActionId> WindowView::getSimpleActionId(sf::Event::KeyEvent key) {
   switch (key.code) {
     case Keyboard::Return:
-    case Keyboard::Numpad5: if (key.shift) return ActionId::EXT_PICK_UP; 
-                              else return ActionId::PICK_UP;
+    case Keyboard::Numpad5: return ActionId::PICK_UP;
     case Keyboard::I: return ActionId::SHOW_INVENTORY;
     case Keyboard::D: return key.shift ? ActionId::EXT_DROP : ActionId::DROP;
     case Keyboard::Space:
@@ -1596,7 +1602,8 @@ Optional<ActionId> WindowView::getSimpleActionId(sf::Event::KeyEvent key) {
     case Keyboard::T: return ActionId::THROW;
     case Keyboard::M: return ActionId::SHOW_HISTORY;
     case Keyboard::H: return ActionId::HIDE;
-    case Keyboard::P: return ActionId::PAY_DEBT;
+    case Keyboard::P: if (key.shift) return ActionId::EXT_PICK_UP;
+                        else return ActionId::PAY_DEBT;
     case Keyboard::C: return ActionId::CHAT;
     case Keyboard::U: return ActionId::UNPOSSESS;
     case Keyboard::S: return ActionId::CAST_SPELL;

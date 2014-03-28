@@ -37,6 +37,7 @@ class Collective : public CreatureView, public EventListener {
   virtual bool canSee(Vec2 position) const  override;
   virtual vector<const Creature*> getUnknownAttacker() const override;
   virtual Tribe* getTribe() const override;
+  virtual bool isEnemy(const Creature*) const override;
 
   virtual bool staticPosition() const override;
 

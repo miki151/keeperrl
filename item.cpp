@@ -278,7 +278,7 @@ string Item::getAName(bool getPlural, bool blind) const {
 }
 
 string Item::getTheName(bool getPlural, bool blind) const {
-  string the = noArticle ? "" : "the ";
+  string the = (noArticle || getPlural) ? "" : "the ";
   return the + getName(getPlural, blind);
 }
 

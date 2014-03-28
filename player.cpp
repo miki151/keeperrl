@@ -152,7 +152,8 @@ void Player::pickUpAction(bool extended) {
   if (num < 1)
     return;
   if (extended && num > 1) {
-    Optional<int> res = model->getView()->getNumber("Pick up how many " + groups[index][0]->getName(true) + "?", num);
+    Optional<int> res = model->getView()->getNumber("Pick up how many " + groups[index][0]->getName(true) + "?",
+        1, num);
     if (!res)
       return;
     num = *res;
@@ -222,7 +223,8 @@ void Player::dropAction(bool extended) {
   if (num < 1)
     return;
   if (extended && num > 1) {
-    Optional<int> res = model->getView()->getNumber("Drop how many " + items[0]->getName(true, creature->isBlind()) + "?", num);
+    Optional<int> res = model->getView()->getNumber("Drop how many " + items[0]->getName(true, creature->isBlind()) 
+        + "?", 1, num);
     if (!res)
       return;
     num = *res;
