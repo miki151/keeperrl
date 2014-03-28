@@ -477,7 +477,8 @@ class Furniture : public Square {
   public:
   Furniture(ViewObject object, const string& name, double flamability,
       Optional<SquareApplyType> _applyType = Nothing()) 
-      : Square(object.setModifier(ViewObject::MOVE_UP), name, true , true, 100, flamability), applyType(_applyType) {}
+      : Square(object.setModifier(ViewObject::ROUND_SHADOW), name, true , true, 100, flamability),
+      applyType(_applyType) {}
 
   virtual bool canDestroy() const override {
     return true;
@@ -505,6 +506,15 @@ class Furniture : public Square {
   private:
   SERIAL_CHECKER;
   Optional<SquareApplyType> SERIAL(applyType);
+};
+
+class DestroyableSquare : public Square {
+  public:
+  using Square::Square;
+
+  virtual bool canDestroy() const override {
+    return true;
+  }
 };
 
 class Bed : public Furniture {
@@ -844,9 +854,11 @@ Square* SquareFactory::get(SquareType s) {
                                    "tree trunk", 0);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::STOCKPILE:
-        return new Square(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Storage"), "floor", true);
+        return new DestroyableSquare(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Storage"),
+            "floor", true);
     case SquareType::PRISON:
-        return new Square(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"), "floor", true);
+        return new DestroyableSquare(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"),
+            "floor", true);
     case SquareType::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
             "torture table", 0.3, SquareApplyType::TORTURE);

@@ -588,7 +588,7 @@ class VillageElder : public Creature {
   const Creature* killCreature = nullptr;
 };
 
-class DragonController : public Monster {
+class GreenDragonController : public Monster {
   public:
   using Monster::Monster;
 
@@ -607,9 +607,36 @@ class DragonController : public Monster {
   }
 };
 
+class RedDragonController : public Monster {
+  public:
+  using Monster::Monster;
+
+  virtual void makeMove() override {
+    if (creature->getTime() > lastSpawn + 10)
+      for (Vec2 v : Rectangle(-Vec2(5, 5), Vec2(5, 5)))
+        if (creature->getLevel()->inBounds(creature->getPosition() + v))
+          if (const Creature* c = creature->getSquare(v)->getCreature())
+            if (creature->isEnemy(c)) {
+              Effect::applyToCreature(creature, EffectType::FIRE_SPHERE_PET, EffectStrength::NORMAL);
+              lastSpawn = creature->getTime();
+            }
+    Monster::makeMove();
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Monster)
+      & BOOST_SERIALIZATION_NVP(lastSpawn);
+  }
+
+  private:
+  double lastSpawn = -100;
+};
+
 template <class Archive>
 void CreatureFactory::registerTypes(Archive& ar) {
-  REGISTER_TYPE(ar, DragonController);
+  REGISTER_TYPE(ar, GreenDragonController);
+  REGISTER_TYPE(ar, RedDragonController);
   REGISTER_TYPE(ar, BoulderController);
   REGISTER_TYPE(ar, Boulder);
   REGISTER_TYPE(ar, KrakenController);
@@ -1013,20 +1040,25 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 150;
           c.firstName = NameGenerator::demonNames.getNext();
           c.name = "cyclops";);
-    case CreatureId::DRAGON: 
+    case CreatureId::GREEN_DRAGON: 
       return CATTR(
-          c.viewId = ViewId::DRAGON;
+          c.viewId = ViewId::GREEN_DRAGON;
           c.speed = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 27;
+          c.strength = 35;
           c.dexterity = 15;
-          c.barehandedDamage = 10;
+          c.barehandedDamage = 5;
           c.humanoid = false;
           c.weight = 1000;
           c.wings = 2;
           c.poisonResistant = true;
           c.firstName = NameGenerator::demonNames.getNext();
           c.name = "dragon";);
+    case CreatureId::RED_DRAGON:
+      return INHERIT(GREEN_DRAGON,
+          c.viewId = ViewId::RED_DRAGON;
+          c.fireCreature = true;
+          c.poisonResistant = false;);
     case CreatureId::KNIGHT: 
       return CATTR(
           c.viewId = ViewId::KNIGHT;
@@ -1779,9 +1811,13 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
           });
     case CreatureId::ACID_MOUND:
       return Monster::getFactory(MonsterAIFactory::idle());
-    case CreatureId::DRAGON:
+    case CreatureId::GREEN_DRAGON:
       return ControllerFactory([=](Creature* c) {
-          return new DragonController(c, normalFactory);
+          return new GreenDragonController(c, normalFactory);
+          });
+    case CreatureId::RED_DRAGON:
+      return ControllerFactory([=](Creature* c) {
+          return new RedDragonController(c, normalFactory);
           });
     default: return Monster::getFactory(normalFactory);
   }

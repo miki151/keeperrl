@@ -172,7 +172,7 @@ class Collective : public CreatureView, public EventListener {
       ViewId viewId;
     } trapInfo;
 
-    enum BuildType { DIG, SQUARE, IMP, TRAP, GUARD_POST, DESTROY, IMPALED_HEAD} buildType;
+    enum BuildType { DIG, SQUARE, IMP, TRAP, GUARD_POST, DESTROY, IMPALED_HEAD, FETCH} buildType;
 
     Optional<TechId> techId;
     string help;
@@ -318,7 +318,6 @@ class Collective : public CreatureView, public EventListener {
     void serialize(Archive& ar, const unsigned int version);
   };
   map<Vec2, TrapInfo> traps;
-  map<TrapType, vector<Vec2>> trapMap;
   set<TrapType> getNeededTraps() const;
 
   struct ConstructionInfo {

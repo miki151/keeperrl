@@ -153,7 +153,7 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
       {{CreatureId::GHOST, "The castle cellar is haunted. Go and kill the evil that is lurking there."},
       {CreatureId::SPIDER, "The castle cellar is infested by vermin. Go and clean it up."}}, {1, 1});
   pair<CreatureId, string> castleNem2 = chooseRandom<pair<CreatureId, string>>(
-      {{CreatureId::DRAGON, "dragon"}, {CreatureId::CYCLOPS, "cyclops"}});
+      {{CreatureId::RED_DRAGON, "dragon"}, {CreatureId::GREEN_DRAGON, "dragon"}, {CreatureId::CYCLOPS, "cyclops"}}, {100, 1,1});
   Quests::set(QuestId::DRAGON, Quest::killTribeQuest(Tribes::get(TribeId::DRAGON), "A " + castleNem2.second + 
       " is harrasing our village. Kill it. It lives in a cave not far from here."));
   Quests::set(QuestId::CASTLE_CELLAR, Quest::killTribeQuest(Tribes::get(TribeId::CASTLE_CELLAR), castleNem1.second));

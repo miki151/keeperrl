@@ -59,9 +59,11 @@ vector<string> combined(const string& path) {
       input[w].push_back(buf);
     }
   vector<string> ret;
-  for (int i : Range(3000))
-    ret.push_back("Thou " + chooseRandom(input[1]) + " " + chooseRandom(input[2]) + 
-        " " + chooseRandom(input[3]) + " ");
+  for (int i : Range(3000)) {
+    ret.push_back("Thou " + chooseRandom(input[0]) + " " + chooseRandom(input[1]) + 
+        " " + chooseRandom(input[2]) + "!");
+    Debug() << ret.back();
+  }
   return ret;
 }
 
@@ -89,7 +91,7 @@ void NameGenerator::init(const string& firstNamesPath, const string& aztecNamesP
   deityNames = NameGenerator(readLines(deitiesPath));
   dwarfNames = NameGenerator(readLines(dwarfsPath));
   demonNames = NameGenerator(readLines(demonsPath));
-  insults = NameGenerator(readLines(insultsPath));
+  insults = NameGenerator(combined(insultsPath));
 }
 
 

@@ -160,7 +160,8 @@ Tile getSprite(ViewId id) {
     case ViewId::SPIRIT: return Tile(17, 14);
     case ViewId::DEVIL: return Tile(17, 18);
     case ViewId::DARK_KNIGHT: return Tile(12, 14);
-    case ViewId::DRAGON: return Tile(3, 18);
+    case ViewId::GREEN_DRAGON: return Tile(3, 18);
+    case ViewId::RED_DRAGON: return Tile(0, 18);
     case ViewId::CYCLOPS: return Tile(10, 14);
     case ViewId::WITCH: return Tile(15, 16);
     case ViewId::KNIGHT: return Tile(0, 0);
@@ -302,6 +303,7 @@ Tile getSprite(ViewId id) {
     case ViewId::DESTROY_BUTTON: return Tile('X', red);
     case ViewId::MANA: return Tile(5, 10, 2);
     case ViewId::DANGER: return Tile(12, 9, 2);
+    case ViewId::FETCH_ICON: return Tile(15, 11, 3);
   }
   FAIL << "unhandled view id " << (int)id;
   return Tile(' ', white);
@@ -375,7 +377,8 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::GOBLIN: return Tile('o', darkBlue);
     case ViewId::BANDIT: return Tile('@', darkBlue);
     case ViewId::DARK_KNIGHT: return Tile('@', purple);
-    case ViewId::DRAGON: return Tile('D', green);
+    case ViewId::GREEN_DRAGON: return Tile('D', green);
+    case ViewId::RED_DRAGON: return Tile('D', red);
     case ViewId::CYCLOPS: return Tile('C', green);
     case ViewId::WITCH: return Tile('@', brown);
     case ViewId::GHOST: return Tile('&', white);
@@ -520,6 +523,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::DESTROY_BUTTON: return Tile('X', red);
     case ViewId::MANA: return Tile('*', blue);
     case ViewId::DANGER: return Tile('*', red);
+    case ViewId::FETCH_ICON: return Tile(0x1f44b, lightBrown);
   }
   FAIL << "unhandled view id " << (int)obj.id();
   return Tile(' ', white);

@@ -2040,5 +2040,21 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     info.effects.push_back({"injured leg", true});
   if (injuredLegs == 2)
     info.effects.push_back({"two injured legs", true});
+  if (injuredWings == 1)
+    info.effects.push_back({"injured wing", true});
+  if (injuredWings == 2)
+    info.effects.push_back({"two injured wings", true});
+  if (lostArms == 1)
+    info.effects.push_back({"lost arm", true});
+  if (lostArms == 2)
+    info.effects.push_back({"two lost arms", true});
+  if (lostLegs == 1)
+    info.effects.push_back({"lost leg", true});
+  if (lostLegs == 2)
+    info.effects.push_back({"two lost legs", true});
+  if (lostWings == 1)
+    info.effects.push_back({"lost wing", true});
+  if (lostWings == 2)
+    info.effects.push_back({"two lost wings", true});
 }
 

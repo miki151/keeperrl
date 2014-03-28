@@ -22,7 +22,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & BOOST_SERIALIZATION_NVP(markedItems)
     & BOOST_SERIALIZATION_NVP(taskMap)
     & BOOST_SERIALIZATION_NVP(traps)
-    & BOOST_SERIALIZATION_NVP(trapMap)
     & BOOST_SERIALIZATION_NVP(constructions)
     & BOOST_SERIALIZATION_NVP(minionTasks)
     & BOOST_SERIALIZATION_NVP(minionTaskStrings)
@@ -114,7 +113,7 @@ Collective::BuildInfo::BuildInfo(SquareInfo info, Optional<TechId> id, const str
 Collective::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h)
     : trapInfo(info), buildType(TRAP), techId(id), help(h) {}
 Collective::BuildInfo::BuildInfo(BuildType type, const string& h) : buildType(type), help(h) {
-  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY}, type));
+  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH}, type));
 }
 Collective::BuildInfo::BuildInfo(BuildType type, SquareInfo info) : squareInfo(info), buildType(type) {
   CHECK(type == IMPALED_HEAD);
@@ -136,6 +135,7 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo(BuildInfo::DESTROY),
     BuildInfo(BuildInfo::IMP),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion."),
+    BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon."),
 };
 
 const vector<Collective::BuildInfo> Collective::workshopInfo {
@@ -232,8 +232,6 @@ Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
   for (BuildInfo info : buildInfo)
     if (info.buildType == BuildInfo::SQUARE)
       mySquares[info.squareInfo.type].clear();
-    else if (info.buildType == BuildInfo::TRAP)
-      trapMap[info.trapInfo.type].clear();
   credit = {
     {ResourceId::GOLD, 100},
     {ResourceId::WOOD, 0},
@@ -356,7 +354,8 @@ vector<TaskOption> taskOptions {
 void Collective::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
   switch (getMinionType(c)) {
     case MinionType::IMP:
-      lOpt = {View::ListElem("Transfered to labor", View::TITLE)};
+      mOpt = {MinionOption::PRISON, MinionOption::TORTURE, MinionOption::EXECUTE};
+      lOpt = {"Send to prison", "Torture", "Execute"};
       break;
     case MinionType::PRISONER:
       switch (prisonerInfo.at(c).state) {
@@ -413,11 +412,14 @@ void Collective::minionView(View* view, Creature* creature, int prevIndex) {
     case MinionOption::WAKE_UP: creature->removeEffect(Creature::SLEEP); return;
     case MinionOption::PRISON:
       setMinionTask(creature, MinionTask::PRISON);
+      setMinionType(creature, MinionType::PRISONER);
       return;
     case MinionOption::TORTURE:
+      setMinionType(creature, MinionType::PRISONER);
       setMinionTask(creature, MinionTask::TORTURE);
       return;
     case MinionOption::EXECUTE:
+      setMinionType(creature, MinionType::PRISONER);
       prisonerInfo.at(creature) = {PrisonerInfo::EXECUTE, nullptr};
       minionTaskStrings[creature->getUniqueId()] = "execution";
       break;
@@ -852,6 +854,9 @@ void Collective::handleLibrary(View* view) {
     string text = tech->getName();
     options.emplace_back(text, neededPoints <= mana && !allInactive ? View::NORMAL : View::INACTIVE);
   }
+  options.emplace_back("Researched:", View::TITLE);
+  for (Technology* tech : technologies)
+    options.emplace_back(tech->getName(), View::INACTIVE);
   auto index = view->chooseFromList("Library", options);
   if (!index)
     return;
@@ -903,6 +908,12 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
                  ViewObject(ViewId::IMPALED_HEAD, ViewLayer::LARGE_ITEM, ""),
                  elem.name, Nothing(), "(" + convertToString(executions) + " ready)",
                  executions > 0  ? "" : "inactive"});
+           }
+           break;
+      case BuildInfo::FETCH: {
+             buttons.push_back({
+                 ViewObject(ViewId::FETCH_ICON, ViewLayer::LARGE_ITEM, ""),
+                 "Fetch items", Nothing(), "", ""});
            }
            break;
       case BuildInfo::TRAP: {
@@ -1363,7 +1374,6 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         } else
         if (canPlacePost(pos) && myTiles.count(pos)) {
           traps[pos] = {trapType, false, 0};
-          trapMap[trapType].push_back(pos);
           updateConstructions();
         }
       }
@@ -1377,7 +1387,6 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
           if (c->getName() == "boulder")
             c->die(nullptr, false);
         if (traps.count(pos)) {
-          removeElement(trapMap.at(traps.at(pos).type), pos);
           traps.erase(pos);
         }
         if (constructions.count(pos)) {
@@ -1412,6 +1421,10 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
                 }
             }
         }
+        break;
+    case BuildInfo::FETCH:
+        for (ItemFetchInfo elem : getFetchInfo())
+          fetchItems(pos, elem);
         break;
     case BuildInfo::IMPALED_HEAD:
     case BuildInfo::SQUARE:

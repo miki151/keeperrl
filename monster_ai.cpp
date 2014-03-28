@@ -484,7 +484,7 @@ class Fighter : public Behaviour, public EventListener {
           creature->equip(weapon);
         }};
     }
-    if (distance <= 3)
+    if (distance <= 5)
       for (EffectType effect : {EffectType::INVISIBLE, EffectType::STR_BONUS, EffectType::DEX_BONUS,
           EffectType::SPEED, EffectType::SUMMON_SPIRIT})
         if (MoveInfo move = tryToApplyItem(effect, 1))

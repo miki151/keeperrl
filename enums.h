@@ -115,7 +115,8 @@ enum class CreatureId {
     SPIRIT,
     DEVIL,
     DARK_KNIGHT,
-    DRAGON,
+    GREEN_DRAGON,
+    RED_DRAGON,
     CYCLOPS,
     WITCH,
 
@@ -324,7 +325,8 @@ enum class ViewId {
   BILE_DEMON,
   CHICKEN,
   DARK_KNIGHT,
-  DRAGON,
+  GREEN_DRAGON,
+  RED_DRAGON,
   CYCLOPS,
   WITCH,
   GHOST,
@@ -512,6 +514,7 @@ enum class ViewId {
   DESTROY_BUTTON,
   MANA,
   DANGER,
+  FETCH_ICON,
 };
 
 enum class SquareType {
