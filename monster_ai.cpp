@@ -350,7 +350,7 @@ class Fighter : public Behaviour, public EventListener {
       } else
         return getAttackMove(other, significantEnemy && chase);
     } else
-      return getAttackMove(nullptr, chase);
+      return getLastSeenMove();
   }
 
   MoveInfo getPanicMove(const Creature* other, double weight) {
@@ -363,6 +363,7 @@ class Fighter : public Behaviour, public EventListener {
       return {weight, [this, move, other] () {
         EventListener::addCombatEvent(creature);
         EventListener::addCombatEvent(other);
+        lastSeen = {creature->getPosition(), creature->getTime(), creature->getLevel(), LastSeen::PANIC};
         creature->move(*move);
       }};
     else
@@ -443,32 +444,38 @@ class Fighter : public Behaviour, public EventListener {
     return NoMove;
   }
 
+  MoveInfo getLastSeenMove() {
+    if (!lastSeen) {
+      return NoMove;
+    }
+    double lastSeenTimeout = 20;
+    if (lastSeen->level != creature->getLevel() ||
+        lastSeen->time < creature->getTime() - lastSeenTimeout ||
+        lastSeen->pos == creature->getPosition()) {
+      lastSeen = Nothing();
+      return NoMove;
+    }
+    if (chase && lastSeen->type == LastSeen::ATTACK)
+      if (Optional<Vec2> move = creature->getMoveTowards(lastSeen->pos))
+        return {0.5, [this, move]() { 
+          EventListener::addCombatEvent(creature);
+          Debug() << creature->getTheName() << " moving to last seen " << (lastSeen->pos - creature->getPosition());
+          creature->move(*move);
+        }};
+    if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()) < 4)
+      if (Optional<Vec2> move = creature->getMoveAway(lastSeen->pos, chase))
+        return {0.5, [this, move]() { 
+          EventListener::addCombatEvent(creature);
+          Debug() << creature->getTheName() << " escaping last seen " << (lastSeen->pos - creature->getPosition());
+          creature->move(*move);
+        }};
+    return NoMove;
+  }
+
   MoveInfo getAttackMove(const Creature* other, bool chase) {
     int radius = 4;
     int distance = 10000;
-    double lastSeenTimeout = 20;
-    if (other == nullptr) {
-      if (!lastSeen) {
-         return NoMove;
-      }
-      if (lastSeen->level != creature->getLevel() ||
-          lastSeen->time < creature->getTime() - lastSeenTimeout ||
-          lastSeen->pos == creature->getPosition()) {
-        lastSeen = Nothing();
-        return NoMove;
-      }
-      if (chase) {
-        Optional<Vec2> move = creature->getMoveTowards(lastSeen->pos);
-        if (move)
-          return {0.5, [this, move]() { 
-            EventListener::addCombatEvent(creature);
-            Debug() << creature->getTheName() << " moving to last seen " << (lastSeen->pos - creature->getPosition());
-            creature->move(*move);
-          }};
-        else
-          return NoMove;
-      }
-    }
+    CHECK(other);
     if (other->isInvincible())
       return NoMove;
     Debug() << creature->getName() << " enemy " << other->getName();
@@ -498,10 +505,11 @@ class Fighter : public Behaviour, public EventListener {
         Optional<Vec2> move = creature->getMoveTowards(creature->getPosition() + enemyDir);
         lastSeen = Nothing();
         if (move)
-          return {0.7, [this, enemyDir, move, other]() {
+          return {max(0., 1.0 - double(distance) / 10), [this, enemyDir, move, other]() {
             EventListener::addCombatEvent(creature);
             EventListener::addCombatEvent(other);
-            lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel()};
+            lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel(),
+                LastSeen::ATTACK};
             creature->move(*move);
           }};
       }
@@ -533,10 +541,14 @@ class Fighter : public Behaviour, public EventListener {
     Vec2 pos;
     double time;
     const Level* level;
+    enum { ATTACK, PANIC} type;
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version) {
-      ar & BOOST_SERIALIZATION_NVP(pos) & BOOST_SERIALIZATION_NVP(time) & BOOST_SERIALIZATION_NVP(level);
+      ar& BOOST_SERIALIZATION_NVP(pos)
+        & BOOST_SERIALIZATION_NVP(time)
+        & BOOST_SERIALIZATION_NVP(level)
+        & BOOST_SERIALIZATION_NVP(type);
     }
   };
   Optional<LastSeen> lastSeen;

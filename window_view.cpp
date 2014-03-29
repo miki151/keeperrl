@@ -472,10 +472,10 @@ static map<string, CreatureMapElem> getCreatureMap(vector<const Creature*> creat
   map<string, CreatureMapElem> creatureMap;
   for (int i : All(creatures)) {
     auto elem = creatures[i];
-    if (!creatureMap.count(elem->getName())) {
-      creatureMap.insert(make_pair(elem->getName(), CreatureMapElem({elem->getViewObject(), 1, elem})));
+    if (!creatureMap.count(elem->getSpeciesName())) {
+      creatureMap.insert(make_pair(elem->getSpeciesName(), CreatureMapElem({elem->getViewObject(), 1, elem})));
     } else
-      ++creatureMap[elem->getName()].count;
+      ++creatureMap[elem->getSpeciesName()].count;
   }
   return creatureMap;
 }
@@ -550,7 +550,7 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
       int width = 220;
       vector<const Creature*> chosen;
       for (const Creature* c : info.creatures)
-        if (c->getName() == chosenCreature)
+        if (c->getSpeciesName() == chosenCreature)
           chosen.push_back(c);
       int winX = renderer.getWidth() - rightBarWidth - width - 20;
       renderer.drawFilledRectangle(winX, lineStart - 15,
@@ -560,9 +560,11 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
       int cnt = 1;
       for (const Creature* c : chosen) {
         int height = lineStart + cnt * legendLineHeight;
+        string line = "level: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c->getUniqueId()];
+        if (c->getSpeciesName() != c->getName())
+          line = c->getName() + " " + line;
         drawViewObject(c->getViewObject(), winX + 35, height, currentTileLayout.sprites);
-        renderer.drawText(contains(info.team, c) ? green : white, winX + 55, height,
-            "level: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c->getUniqueId()]);
+        renderer.drawText(contains(info.team, c) ? green : white, winX + 55, height, line);
         creatureButtons.emplace_back(winX + 20, height, winX + width + 20, height + legendLineHeight);
         chosenCreatures.push_back(c);
         ++cnt;

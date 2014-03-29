@@ -515,6 +515,11 @@ class DestroyableSquare : public Square {
   virtual bool canDestroy() const override {
     return true;
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Square);
+  }
 };
 
 class Bed : public Furniture {
@@ -746,6 +751,7 @@ void SquareFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, TribeDoor);
   REGISTER_TYPE(ar, Furniture);
   REGISTER_TYPE(ar, Bed);
+  REGISTER_TYPE(ar, DestroyableSquare);
   REGISTER_TYPE(ar, Grave);
   REGISTER_TYPE(ar, Altar);
   REGISTER_TYPE(ar, ConstructionDropItems);

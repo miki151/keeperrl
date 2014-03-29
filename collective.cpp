@@ -115,7 +115,8 @@ Collective::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const strin
 Collective::BuildInfo::BuildInfo(BuildType type, const string& h) : buildType(type), help(h) {
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH}, type));
 }
-Collective::BuildInfo::BuildInfo(BuildType type, SquareInfo info) : squareInfo(info), buildType(type) {
+Collective::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const string& h) 
+  : squareInfo(info), buildType(type), help(h) {
   CHECK(type == IMPALED_HEAD);
 }
 
@@ -152,7 +153,8 @@ const vector<Collective::BuildInfo> Collective::workshopInfo {
         "Causes a huge boulder to roll towards the enemy."),
     BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP}, TechId::TRAPS,
         "Teleports nearby minions to deal with the trespasser."),
-    BuildInfo(BuildInfo::IMPALED_HEAD, {SquareType::IMPALED_HEAD, {ResourceId::GOLD, 0}, "Prisoner head"}),
+    BuildInfo(BuildInfo::IMPALED_HEAD, {SquareType::IMPALED_HEAD, {ResourceId::GOLD, 0}, "Prisoner head"},
+        "Impaled head of an executed prisoner. Aggravates enemies."),
 };
 
 vector<Collective::RoomInfo> Collective::getRoomInfo() {
@@ -173,7 +175,7 @@ vector<Collective::RoomInfo> Collective::getWorkshopInfo() {
       ret.push_back({info.name, bInfo.help, bInfo.techId});
     }
     else if (bInfo.buildType == BuildInfo::IMPALED_HEAD)
-      ret.push_back({"Prisoner head", "An impaled prisoner head that aggreviates all enemies.", Nothing()});
+      ret.push_back({"Prisoner head", bInfo.help, Nothing()});
   return ret;
 }
 
@@ -455,7 +457,7 @@ void Collective::minionView(View* view, Creature* creature, int prevIndex) {
 }
 
 void Collective::autoEquipment(Creature* creature) {
-  if (!creature->isHumanoid() || getMinionType(creature) == MinionType::PRISONER)
+  if (!creature->isHumanoid() || getMinionType(creature) == MinionType::PRISONER || creature->getName() == "gnome")
     return;
   vector<EquipmentSlot> slots;
   for (auto slot : Equipment::slotTitles)
@@ -1711,6 +1713,7 @@ void Collective::tick() {
         c->privateMessage("You sense horrible evil in the " + 
             getCardinalName((keeper->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
   }
+  updateVisibleEnemies();
   warning[int(Warning::MANA)] = mana < 100;
   warning[int(Warning::WOOD)] = numGold(ResourceId::WOOD) == 0;
   warning[int(Warning::DIGGING)] = mySquares.at(SquareType::FLOOR).empty();

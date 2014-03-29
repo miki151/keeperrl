@@ -39,6 +39,7 @@ class CreatureAttributes {
   int barehandedDamage = 0;
   Optional<AttackType> barehandedAttack;
   Optional<EffectType> attackEffect;
+  bool harmlessApply = false; // apply the attack effect even if attack was harmless
   Optional<EffectType> passiveAttack;
   Gender gender = Gender::male;
   int legs = 2;

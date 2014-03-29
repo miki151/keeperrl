@@ -180,7 +180,7 @@ class Collective : public CreatureView, public EventListener {
     string help;
 
     BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
-    BuildInfo(BuildType type, SquareInfo info);
+    BuildInfo(BuildType type, SquareInfo info, const string& h = "");
     BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
     BuildInfo(BuildType type, const string& h = "");
   };

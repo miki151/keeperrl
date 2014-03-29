@@ -1202,8 +1202,11 @@ bool Creature::takeDamage(const Attack& attack) {
       else
         you(MsgType::ARE, "not hurt");
     }
-  } else
+  } else {
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.getType()));
+    if (attack.getAttacker()->harmlessApply)
+      Effect::applyToCreature(this, *attack.getEffect(), EffectStrength::NORMAL);
+  }
   const Creature* c = attack.getAttacker();
   return false;
 }

@@ -1081,6 +1081,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::AVATAR;
           c.strength += 6;
           c.dexterity += 6;
+          c.courage = 100;
           c.barehandedDamage += 5;
           c.name = "Duke of " + NameGenerator::worldNames.getNext(););
     case CreatureId::WARRIOR:
@@ -1090,9 +1091,11 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::SHAMAN:
       return INHERIT(WARRIOR,
           c.viewId = ViewId::SHAMAN;
+          c.courage = 100;
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
           c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
           c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
+          c.spells.push_back(Creature::getSpell(SpellId::SUMMON_SPIRIT));
           c.name = "shaman";);
     case CreatureId::ARCHER: 
       return CATTR(
@@ -1404,6 +1407,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.strength += 6;
           c.dexterity += 5;
           c.speed += 10;
+          c.courage = 100;
           c.weight = 120;
           c.name = "dwarf baron";);
     case CreatureId::LIZARDMAN: 
@@ -1416,6 +1420,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 10;
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType::POISON;
+          c.harmlessApply = true;
           c.poisonResistant = true;
           c.humanoid = true;
           c.weight = 50;
@@ -1428,6 +1433,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.speed += 20;
           c.strength += 6;
           c.dexterity += 6;
+          c.courage = 100;
           c.weight = 60;
           c.name = "lizardman chief";);
     case CreatureId::ELF: 
