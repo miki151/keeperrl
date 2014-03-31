@@ -61,11 +61,15 @@ class WindowView: public View {
   void drawPlayerInfo();
   void drawPlayerStats(GameInfo::PlayerInfo&);
   void drawBandInfo();
-  void drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active, vector<Rectangle>& viewButtons,
-      vector<string>& inactiveReasons, vector<char>& hotkeys);
+  void drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active, vector<Rectangle>& viewButtons);
+  void updateButtons(vector<GameInfo::BandInfo::Button> buttons, vector<string>& inactiveReasons,
+      vector<char>& hotkeys);
   void drawBuildings(GameInfo::BandInfo& info);
   void drawTechnology(GameInfo::BandInfo& info);
   void drawWorkshop(GameInfo::BandInfo& info);
+  void updateBuildings(GameInfo::BandInfo& info);
+  void updateTechnology(GameInfo::BandInfo& info);
+  void updateWorkshop(GameInfo::BandInfo& info);
   void drawVillages(GameInfo::VillageInfo& info);
   void drawMinions(GameInfo::BandInfo& info);
   void drawKeeperHelp();

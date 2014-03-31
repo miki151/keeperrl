@@ -560,7 +560,7 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
       int cnt = 1;
       for (const Creature* c : chosen) {
         int height = lineStart + cnt * legendLineHeight;
-        string line = "level: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c->getUniqueId()];
+        string line = "L: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c->getUniqueId()];
         if (c->getSpeciesName() != c->getName())
           line = c->getName() + " " + line;
         drawViewObject(c->getViewObject(), winX + 35, height, currentTileLayout.sprites);
@@ -588,11 +588,19 @@ void WindowView::drawVillages(GameInfo::VillageInfo& info) {
   }
 }
 
-void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active,
-    vector<Rectangle>& viewButtons, vector<string>& inactiveReasons, vector<char>& hotkeys) {
-  viewButtons.clear();
+void WindowView::updateButtons(vector<GameInfo::BandInfo::Button> buttons, vector<string>& inactiveReasons,
+    vector<char>& hotkeys) {
   inactiveReasons.clear();
   hotkeys.clear();
+  for (int i : All(buttons)) {
+    inactiveReasons.push_back(buttons[i].inactiveReason);
+    hotkeys.push_back(buttons[i].hotkey);
+  }
+}
+ 
+void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active,
+    vector<Rectangle>& viewButtons) {
+  viewButtons.clear();
   int textX = renderer.getWidth() - rightBarText;
   for (int i : All(buttons)) {
     int height = legendStartHeight + i * legendLineHeight;
@@ -602,8 +610,6 @@ void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int act
       color = green;
     else if (!buttons[i].inactiveReason.empty())
       color = lightGray;
-    inactiveReasons.push_back(buttons[i].inactiveReason);
-    hotkeys.push_back(buttons[i].hotkey);
     string text = buttons[i].name + " " + buttons[i].count;
     renderer.drawTextWithHotkey(color, textX + 30, height, text, buttons[i].hotkey);
     if (buttons[i].cost) {
@@ -619,19 +625,31 @@ void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int act
 }
   
 void WindowView::drawBuildings(GameInfo::BandInfo& info) {
-  drawButtons(info.buildings, activeBuilding, buildingButtons, inactiveBuildingReasons, buildingHotkeys);
+  drawButtons(info.buildings, activeBuilding, buildingButtons);
+}
+
+void WindowView::updateBuildings(GameInfo::BandInfo& info) {
+  updateButtons(info.buildings, inactiveBuildingReasons, buildingHotkeys);
 }
 
 void WindowView::drawWorkshop(GameInfo::BandInfo& info) {
-  drawButtons(info.workshop, activeWorkshop, workshopButtons, inactiveWorkshopReasons, workshopHotkeys);
+  drawButtons(info.workshop, activeWorkshop, workshopButtons);
+}
+
+void WindowView::updateWorkshop(GameInfo::BandInfo& info) {
+  updateButtons(info.workshop, inactiveWorkshopReasons, workshopHotkeys);
+}
+
+void WindowView::updateTechnology(GameInfo::BandInfo& info) {
+  techHotkeys.clear();
+  for (int i : All(info.techButtons))
+    techHotkeys.push_back(info.techButtons[i].hotkey);
 }
 
 void WindowView::drawTechnology(GameInfo::BandInfo& info) {
   int textX = renderer.getWidth() - rightBarText;
-  techHotkeys.clear();
   for (int i : All(info.techButtons)) {
     int height = legendStartHeight + i * legendLineHeight;
-    techHotkeys.push_back(info.techButtons[i].hotkey);
     drawViewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, ""),
         textX, height, currentTileLayout.sprites);
     renderer.drawTextWithHotkey(white, textX + 20, height, info.techButtons[i].name, info.techButtons[i].hotkey);
@@ -686,7 +704,7 @@ void WindowView::drawBandInfo() {
         leftPos + i * w, line, optionSyms[i], true);
     optionButtons.emplace_back(leftPos + i * w - w / 2, line,
         leftPos + (i + 1) * w - w / 2, line + h);
-  }
+ }
   techButtons.clear();
   int cnt = 0;
   creatureGroupButtons.clear();
@@ -698,10 +716,9 @@ void WindowView::drawBandInfo() {
   uniqueCreatures.clear();
   if (collectiveOption != CollectiveOption::MINIONS)
     chosenCreature = "";
-  if (techHotkeys.size() != info.techButtons.size()) {  // reload hotkeys
-    drawTechnology(info);
-    drawWorkshop(info);
-  }
+  updateTechnology(info);
+  updateWorkshop(info);
+  updateBuildings(info);
   switch (collectiveOption) {
     case CollectiveOption::MINIONS: drawMinions(info); break;
     case CollectiveOption::BUILDINGS: drawBuildings(info); break;

@@ -990,10 +990,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::SPIRIT:
       return INHERIT(GHOST,
           c.viewId = ViewId::SPIRIT;
-          c.strength = 18;
+          c.strength = 22;
           c.speed = 100;
-          c.dexterity = 18;
-          c.barehandedDamage = 18;
+          c.dexterity = 27;
+          c.barehandedDamage = 25;
           c.name = "ancient spirit";);
     case CreatureId::DEVIL: 
       return CATTR(
@@ -1423,8 +1423,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.speed = 120;
           c.size = CreatureSize::MEDIUM;
           c.strength = 15;
-          c.dexterity = 13;
-          c.barehandedDamage = 10;
+          c.dexterity = 18;
+          c.barehandedDamage = 7;
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType::POISON;
           c.harmlessApply = true;

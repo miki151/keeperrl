@@ -412,6 +412,10 @@ void Collective::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vecto
         case PrisonerInfo::SURRENDER: FAIL << "state not handled: " << int(prisonerInfo.at(c).state);
       }
       break;
+    case MinionType::BEAST:
+      mOpt = {MinionOption::POSSESS, MinionOption::INFO };
+      lOpt = {"Possess", "Description" };
+      break;
     default:
       mOpt = {MinionOption::POSSESS, MinionOption::EQUIPMENT, MinionOption::INFO };
       lOpt = {"Possess", "Equipment", "Description" };

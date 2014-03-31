@@ -709,7 +709,7 @@ bool Creature::isAffected(LastingEffect effect) const {
 }
 
 bool Creature::isBlind() const {
-  return isAffected(BLIND) || permanentlyBlind;
+  return isAffected(BLIND) || permanentlyBlind || (lostHeads > 0 && heads == 0);
 }
 
 int Creature::getAttrVal(AttrType type) const {
@@ -1719,7 +1719,7 @@ bool Creature::isUndead() const {
 }
 
 bool Creature::isNotLiving() const {
-  return undead || notLiving;
+  return undead || notLiving || noBody;
 }
 
 bool Creature::hasBrain() const {

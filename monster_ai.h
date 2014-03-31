@@ -11,6 +11,12 @@ struct MoveInfo {
   operator bool() const {
     return move != nullptr;
   }
+
+  MoveInfo setValue(double v) {
+    MoveInfo ret(*this);
+    ret.value = v;
+    return ret;
+  }
 };
 
 const MoveInfo NoMove = {0.0, nullptr};

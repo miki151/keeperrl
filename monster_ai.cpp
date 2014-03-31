@@ -301,7 +301,7 @@ class Fighter : public Behaviour, public EventListener {
     if (victim != creature && victim->getName() == creature->getName() && creature->canSee(victim)) {
       courage -= 0.1;
     }
-    if (lastSeen && victim->getPosition() == lastSeen->pos)
+    if (lastSeen && victim == lastSeen->creature)
       lastSeen = Nothing();
   }
 
@@ -368,7 +368,7 @@ class Fighter : public Behaviour, public EventListener {
       return {weight, [this, move, other] () {
         EventListener::addCombatEvent(creature);
         EventListener::addCombatEvent(other);
-        lastSeen = {creature->getPosition(), creature->getTime(), creature->getLevel(), LastSeen::PANIC};
+        lastSeen = {creature->getPosition(), creature->getTime(), creature->getLevel(), LastSeen::PANIC, other};
         creature->move(*move);
       }};
     else
@@ -514,7 +514,7 @@ class Fighter : public Behaviour, public EventListener {
             EventListener::addCombatEvent(creature);
             EventListener::addCombatEvent(other);
             lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel(),
-                LastSeen::ATTACK};
+                LastSeen::ATTACK, other};
             creature->move(*move);
           }};
       }
@@ -548,13 +548,15 @@ class Fighter : public Behaviour, public EventListener {
     double time;
     const Level* level;
     enum { ATTACK, PANIC} type;
+    const Creature* creature;
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version) {
       ar& BOOST_SERIALIZATION_NVP(pos)
         & BOOST_SERIALIZATION_NVP(time)
         & BOOST_SERIALIZATION_NVP(level)
-        & BOOST_SERIALIZATION_NVP(type);
+        & BOOST_SERIALIZATION_NVP(type)
+        & BOOST_SERIALIZATION_NVP(creature);
     }
   };
   Optional<LastSeen> SERIAL(lastSeen);
@@ -670,7 +672,7 @@ class Wait : public Behaviour {
 class Summoned : public GuardTarget, public EventListener {
   public:
   Summoned(Creature* c, Creature* _target, double minDist, double maxDist, double ttl) 
-      : GuardTarget(c, minDist, maxDist), target(_target), dieTime(c->getTime() + ttl) {
+      : GuardTarget(c, minDist, maxDist), target(_target), dieTime(target->getTime() + ttl) {
   }
 
   virtual ~Summoned() {
@@ -681,19 +683,24 @@ class Summoned : public GuardTarget, public EventListener {
     if (c == target)
       levelChanges[from] = pos;
   }
+
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getTime() > dieTime) {
-      return {100.0, [=] {
+      return {1.0, [=] {
         creature->die(nullptr);
       }};
     }
-    if (target->getLevel() == creature->getLevel())
-      return getMoveTowards(target->getPosition());
+    if (target->getLevel() == creature->getLevel()) {
+      if (MoveInfo move = getMoveTowards(target->getPosition()))
+        return move.setValue(0.5);
+      else
+        return NoMove;
+    }
     if (!levelChanges.count(creature->getLevel()))
       return NoMove;
     Vec2 stairs = levelChanges.at(creature->getLevel());
     if (stairs == creature->getPosition() && creature->getSquare()->getApplyType(creature))
-      return {1.0, [=] {
+      return {0.5, [=] {
         creature->applySquare();
       }};
     else
@@ -1043,12 +1050,12 @@ MonsterAIFactory MonsterAIFactory::guardSquare(Vec2 pos) {
 MonsterAIFactory MonsterAIFactory::summoned(Creature* leader, int ttl) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
+          new Summoned(c, leader, 1, 3, ttl),
           new Heal(c),
           new Fighter(c, 0.6, true),
-          new Summoned(c, leader, 1, 3, ttl),
           new MoveRandomly(c, 3),
           new GoldLust(c)},
-          { 4, 3, 2, 1, 1 });
+          { 5, 4, 3, 1, 1 });
       });
 }
 

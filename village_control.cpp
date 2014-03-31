@@ -232,15 +232,17 @@ class FinalTrigger : public VillageControl::AttackTrigger {
   FinalTrigger(vector<VillageControl*> _controls) : controls(_controls) {}
 
   virtual void tick(double time) {
-    if (totalWar)
+    if (totalWar < 0)
       return;
     bool allConquered = true;
     for (VillageControl* c : controls)
       allConquered &= c->isConquered();
-    if (allConquered && !control->isConquered()) {
+    if (allConquered && !control->isConquered() && totalWar == 100000)
+      totalWar = time + Random.getRandom(80, 200);
+    if (totalWar < time) {
       messageBuffer.addMessage(MessageBuffer::important(control->tribe->getLeader()->getTheName() + 
             " and his army have undertaken a final, desperate attack!"));
-      totalWar = true;
+      totalWar = -1;
       for (const Creature* c : control->allCreatures)
         fightingCreatures.insert(c);
     }
@@ -258,7 +260,7 @@ class FinalTrigger : public VillageControl::AttackTrigger {
 
   private:
   vector<VillageControl*> SERIAL(controls);
-  bool SERIAL2(totalWar, false);
+  double SERIAL2(totalWar, 100000);
 };
 
 VillageControl::AttackTrigger* VillageControl::getFinalTrigger(vector<VillageControl*> otherControls) {
