@@ -24,57 +24,58 @@ class CreatureAttributes {
     fun(*this);
   }
 
-  MustInitialize<ViewId> viewId;
-  MustInitialize<string> name;
-  MustInitialize<int> speed;
-  MustInitialize<CreatureSize> size;
-  MustInitialize<int> strength;
-  MustInitialize<int> dexterity;
-  MustInitialize<int> weight;
-  Optional<string> chatReactionFriendly;
-  Optional<string> chatReactionHostile;
-  Optional<string> firstName;
-  Optional<string> speciesName;
-  bool specialMonster = false;
-  int barehandedDamage = 0;
-  Optional<AttackType> barehandedAttack;
-  Optional<EffectType> attackEffect;
-  bool harmlessApply = false; // apply the attack effect even if attack was harmless
-  Optional<EffectType> passiveAttack;
-  Gender gender = Gender::male;
-  int legs = 2;
-  int arms = 2;
-  int wings = 0;
-  int heads = 1;
-  bool innocent = false;
-  bool noBody = false;
-  bool fireResistant = false;
-  bool poisonResistant = false;
-  bool fireCreature = false;
-  bool breathing = true;
-  MustInitialize<bool> humanoid;
-  bool animal = false;
-  bool healer = false;
-  bool flyer = false;
-  bool undead = false;
-  bool notLiving = false;
-  bool brain = true;
-  bool walker = true;
-  bool isFood = false;
-  bool stationary = false;
-  bool noSleep = false;
-  double courage = 1;
-  int maxLevel = 10;
-  bool carryAnything = false;
-  bool permanentlyBlind = false;
-  bool invincible = false;
-  double damageMultiplier = 1;
-  unordered_set<Skill*> skills;
-  map<int, Skill*> skillGain {{4, Skill::twoHandedWeapon}, {6, Skill::knifeThrowing}, {10, Skill::archery}};
-  vector<SpellInfo> spells;
-
-  protected:
+  CreatureAttributes(const CreatureAttributes& other) = default;
   SERIALIZATION_DECL(CreatureAttributes);
+
+  MustInitialize<ViewId> SERIAL(viewId);
+  MustInitialize<string> SERIAL(name);
+  MustInitialize<int> SERIAL(speed);
+  MustInitialize<CreatureSize> SERIAL(size);
+  MustInitialize<int> SERIAL(strength);
+  MustInitialize<int> SERIAL(dexterity);
+  MustInitialize<int> SERIAL(weight);
+  Optional<string> SERIAL(chatReactionFriendly);
+  Optional<string> SERIAL(chatReactionHostile);
+  Optional<string> SERIAL(firstName);
+  Optional<string> SERIAL(speciesName);
+  bool SERIAL2(specialMonster, false);
+  int SERIAL2(barehandedDamage, 0);
+  Optional<AttackType> SERIAL(barehandedAttack);
+  Optional<EffectType> SERIAL(attackEffect);
+  bool SERIAL2(harmlessApply, false); // apply the attack effect even if attack was harmless
+  Optional<EffectType> SERIAL(passiveAttack);
+  Gender SERIAL2(gender, Gender::male);
+  int SERIAL2(legs, 2);
+  int SERIAL2(arms, 2);
+  int SERIAL2(wings, 0);
+  int SERIAL2(heads, 1);
+  bool SERIAL2(innocent, false);
+  bool SERIAL2(noBody, false);
+  bool SERIAL2(fireResistant, false);
+  bool SERIAL2(poisonResistant, false);
+  bool SERIAL2(fireCreature, false);
+  bool SERIAL2(breathing, true);
+  MustInitialize<bool> SERIAL(humanoid);
+  bool SERIAL2(animal, false);
+  bool SERIAL2(healer, false);
+  bool SERIAL2(flyer, false);
+  bool SERIAL2(undead, false);
+  bool SERIAL2(notLiving, false);
+  bool SERIAL2(brain, true);
+  bool SERIAL2(walker, true);
+  bool SERIAL2(isFood, false);
+  bool SERIAL2(stationary, false);
+  bool SERIAL2(noSleep, false);
+  double SERIAL2(courage, 1);
+  int SERIAL2(maxLevel, 10);
+  bool SERIAL2(carryAnything, false);
+  bool SERIAL2(permanentlyBlind, false);
+  bool SERIAL2(invincible, false);
+  double SERIAL2(damageMultiplier, 1);
+  unordered_set<Skill*> SERIAL(skills);
+  map<int, Skill*> skillGain {{4, Skill::twoHandedWeapon}, {6, Skill::knifeThrowing}, {10, Skill::archery}};
+  SERIAL3(skillGain);
+  vector<SpellInfo> SERIAL(spells);
 };
 
 #endif

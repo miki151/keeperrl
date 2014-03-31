@@ -20,7 +20,8 @@ string Gender::god() const {
 
 template <class Archive>
 void Gender::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(fem);
+  ar & SVAR(fem);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Gender);

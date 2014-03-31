@@ -9,11 +9,12 @@ template <class Archive>
 void Item::serialize(Archive& ar, const unsigned int version) {
   ItemAttributes::serialize(ar, version);
   ar& SUBCLASS(UniqueEntity)
-    & BOOST_SERIALIZATION_NVP(viewObject)
-    & BOOST_SERIALIZATION_NVP(discarded)
-    & BOOST_SERIALIZATION_NVP(inspected)
-    & BOOST_SERIALIZATION_NVP(shopkeeper)
-    & BOOST_SERIALIZATION_NVP(fire);
+    & SVAR(viewObject)
+    & SVAR(discarded)
+    & SVAR(inspected)
+    & SVAR(shopkeeper)
+    & SVAR(fire);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Item);

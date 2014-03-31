@@ -45,8 +45,8 @@ class Skill {
   Skill(string name, string helpText);
 
   private:
-  string name;
-  string helpText;
+  string SERIAL(name);
+  string SERIAL(helpText);
 };
 
 

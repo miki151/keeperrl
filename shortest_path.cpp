@@ -6,11 +6,12 @@
 
 template <class Archive> 
 void ShortestPath::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(path)
-    & BOOST_SERIALIZATION_NVP(target)
-    & BOOST_SERIALIZATION_NVP(directions)
-    & BOOST_SERIALIZATION_NVP(bounds)
-    & BOOST_SERIALIZATION_NVP(reversed);
+  ar& SVAR(path)
+    & SVAR(target)
+    & SVAR(directions)
+    & SVAR(bounds)
+    & SVAR(reversed);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(ShortestPath);
@@ -25,7 +26,7 @@ Table<double> ddist(maxSize, maxSize);
 Table<int> dirty(maxSize, maxSize, 0);
 int counter = 1;
 
-int margin = 15;
+const int margin = 15;
 
 ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to, Vec2 from, double mult,
     bool avoidEnemies) : target(to), directions(Vec2::directions8()), bounds(level->getBounds()) {

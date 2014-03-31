@@ -78,17 +78,17 @@ class Model : public EventListener {
   Level* prepareTopLevel(vector<SettlementInfo> settlements);
   Level* prepareTopLevel2(vector<SettlementInfo> settlements);
 
-  vector<PLevel> levels;
-  vector<PVillageControl> villageControls;
+  vector<PLevel> SERIAL(levels);
+  vector<PVillageControl> SERIAL(villageControls);
   View* view;
-  TimeQueue timeQueue;
-  vector<PCreature> deadCreatures;
-  double lastTick = -1000;
-  map<tuple<StairDirection, StairKey, Level*>, Level*> levelLinks;
-  unique_ptr<Collective> collective;
-  bool won = false;
-  bool addHero = false;
-  bool adventurer = false;
+  TimeQueue SERIAL(timeQueue);
+  vector<PCreature> SERIAL(deadCreatures);
+  double SERIAL2(lastTick, -1000);
+  map<tuple<StairDirection, StairKey, Level*>, Level*> SERIAL(levelLinks);
+  unique_ptr<Collective> SERIAL(collective);
+  bool SERIAL2(won, false);
+  bool SERIAL2(addHero, false);
+  bool SERIAL2(adventurer, false);
 };
 
 #endif

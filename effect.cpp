@@ -90,15 +90,16 @@ class IllusionController : public DoNothingController {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(DoNothingController) 
-      & BOOST_SERIALIZATION_NVP(creature)
-      & BOOST_SERIALIZATION_NVP(deathTime);
+      & SVAR(creature)
+      & SVAR(deathTime);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(IllusionController);
 
   private:
-  Creature* creature;
-  double deathTime;
+  Creature* SERIAL(creature);
+  double SERIAL(deathTime);
 };
 
 template <class Archive>
@@ -212,10 +213,10 @@ static void guardingBuilder(Creature* c) {
   }
 }
 
-static void summon(Creature* c, CreatureId id, int num) {
+static void summon(Creature* c, CreatureId id, int num, int ttl) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(CreatureFactory::fromId(id, c->getTribe(), MonsterAIFactory::follower(c, 1)));
+    creatures.push_back(CreatureFactory::fromId(id, c->getTribe(), MonsterAIFactory::summoned(c, ttl)));
   summonCreatures(c, 2, std::move(creatures));
 }
 
@@ -384,7 +385,7 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::POISON: c->addEffect(Creature::POISON, poisonTime.at(strength)); break;
     case EffectType::EMIT_POISON_GAS: emitPoisonGas(c, strength); break;
     case EffectType::GUARDING_BOULDER: guardingBuilder(c); break;
-    case EffectType::FIRE_SPHERE_PET: summon(c, CreatureId::FIRE_SPHERE, 1); break;
+    case EffectType::FIRE_SPHERE_PET: summon(c, CreatureId::FIRE_SPHERE, 1, 30); break;
     case EffectType::ENHANCE_ARMOR: enhanceArmor(c); break;
     case EffectType::ENHANCE_WEAPON: enhanceWeapon(c); break;
     case EffectType::DESTROY_EQUIPMENT: destroyEquipment(c); break;
@@ -406,7 +407,7 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::PORTAL: portal(c); break;
     case EffectType::TELEPORT: teleport(c); break;
     case EffectType::ROLLING_BOULDER: rollingBoulder(c); break;
-    case EffectType::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.getRandom(2, 5)); break;
+    case EffectType::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.getRandom(2, 5), 100); break;
   }
 }
 

@@ -16,10 +16,12 @@ class MessageBuffer {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
+  SERIAL_CHECKER;
+
   private:
   static bool isImportant(const string& msg);
   static void removeImportant(string& msg);
-  vector<string> messages;
+  vector<string> SERIAL(messages);
   View* view;
 };
 

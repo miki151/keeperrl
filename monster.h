@@ -24,11 +24,11 @@ class Monster : public Controller {
   SERIALIZATION_DECL(Monster);
 
   protected:
-  Creature* creature;
+  Creature* SERIAL(creature);
 
   private:
-  PMonsterAI actor;
-  vector<const Creature*> enemies;
+  PMonsterAI SERIAL(actor);
+  vector<const Creature*> SERIAL(enemies);
 };
 
 #endif

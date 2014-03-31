@@ -53,17 +53,17 @@ class ViewObject {
   SERIALIZATION_DECL(ViewObject);
 
   private:
-  double bleeding = 0;
-  EnemyStatus enemyStatus = UNKNOWN;
-  set<Modifier> modifiers;
-  ViewId resource_id;
-  ViewLayer viewLayer;
-  string description;
-  double burning = false;
-  double height = 0;
-  int attack = -1;
-  int defense = -1;
-  double waterDepth = -1;
+  double SERIAL2(bleeding, 0);
+  EnemyStatus SERIAL2(enemyStatus, UNKNOWN);
+  set<Modifier> SERIAL(modifiers);
+  ViewId SERIAL(resource_id);
+  ViewLayer SERIAL(viewLayer);
+  string SERIAL(description);
+  double SERIAL2(burning, false);
+  double SERIAL2(height, 0);
+  int SERIAL2(attack, -1);
+  int SERIAL2(defense, -1);
+  double SERIAL2(waterDepth, -1);
 };
 
 

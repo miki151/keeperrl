@@ -60,11 +60,11 @@ class Deity {
   private:
   static vector<Deity*> deities;
   Deity(Deity&) {}
-  string name;
-  Gender gender;
-  vector<Epithet> epithets;
-  vector<Epithet> usedEpithets;
-  DeityHabitat habitat;
+  string SERIAL(name);
+  Gender SERIAL(gender);
+  vector<Epithet> SERIAL(epithets);
+  vector<Epithet> SERIAL(usedEpithets);
+  DeityHabitat SERIAL(habitat);
 };
 
 #endif

@@ -220,18 +220,18 @@ class Level {
 
   private:
   Vec2 transform(Vec2);
-  Table<PSquare> squares;
-  map<pair<StairDirection, StairKey>, vector<Vec2>> landingSquares;
-  vector<Location*> locations;
-  vector<Square*> tickingSquares;
-  vector<Creature*> creatures;
-  Model* model = nullptr;
-  mutable FieldOfView fieldOfView;
-  string entryMessage;
-  string name;
-  Creature* player = nullptr;
-  const Level* backgroundLevel = nullptr;
-  Vec2 backgroundOffset;
+  Table<PSquare> SERIAL(squares);
+  map<pair<StairDirection, StairKey>, vector<Vec2>> SERIAL(landingSquares);
+  vector<Location*> SERIAL(locations);
+  vector<Square*> SERIAL(tickingSquares);
+  vector<Creature*> SERIAL(creatures);
+  Model* SERIAL2(model, nullptr);
+  mutable FieldOfView SERIAL(fieldOfView);
+  string SERIAL(entryMessage);
+  string SERIAL(name);
+  Creature* SERIAL2(player, nullptr);
+  const Level* SERIAL2(backgroundLevel, nullptr);
+  Vec2 SERIAL(backgroundOffset);
   
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name);
 

@@ -111,17 +111,18 @@ class BoulderController : public Monster {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Monster) 
-      & BOOST_SERIALIZATION_NVP(direction)
-      & BOOST_SERIALIZATION_NVP(stopped)
-      & BOOST_SERIALIZATION_NVP(myTribe);
+      & SVAR(direction)
+      & SVAR(stopped)
+      & SVAR(myTribe);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(BoulderController);
 
   private:
-  Vec2 direction;
-  bool stopped = false;
-  Tribe* myTribe = nullptr;
+  Vec2 SERIAL(direction);
+  bool SERIAL2(stopped, false);
+  Tribe* SERIAL2(myTribe, nullptr);
 };
 
 class Boulder : public Creature {
@@ -286,23 +287,24 @@ class KrakenController : public Monster {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Monster)
-      & BOOST_SERIALIZATION_NVP(numSpawns)
-      & BOOST_SERIALIZATION_NVP(waitNow)
-      & BOOST_SERIALIZATION_NVP(ready)
-      & BOOST_SERIALIZATION_NVP(held)
-      & BOOST_SERIALIZATION_NVP(spawns)
-      & BOOST_SERIALIZATION_NVP(father);
+      & SVAR(numSpawns)
+      & SVAR(waitNow)
+      & SVAR(ready)
+      & SVAR(held)
+      & SVAR(spawns)
+      & SVAR(father);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(KrakenController);
 
   private:
-  int numSpawns = 0;
-  bool waitNow = true;
-  bool ready = false;
-  Creature* held = nullptr;
-  vector<Creature*> spawns;
-  KrakenController* father = nullptr;
+  int SERIAL2(numSpawns, 0);
+  bool SERIAL2(waitNow, true);
+  bool SERIAL2(ready, false);
+  Creature* SERIAL2(held, nullptr);
+  vector<Creature*> SERIAL(spawns);
+  KrakenController* SERIAL2(father, nullptr);
 };
 
 /*class Shapechanger : public Monster {
@@ -475,27 +477,28 @@ class ShopkeeperController : public Monster, public EventListener {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(EventListener)
       & SUBCLASS(Monster)
-      & BOOST_SERIALIZATION_NVP(prevCreatures)
-      & BOOST_SERIALIZATION_NVP(debt)
-      & BOOST_SERIALIZATION_NVP(thiefCount)
-      & BOOST_SERIALIZATION_NVP(thieves)
-      & BOOST_SERIALIZATION_NVP(unpaidItems)
-      & BOOST_SERIALIZATION_NVP(shopArea)
-      & BOOST_SERIALIZATION_NVP(myItems)
-      & BOOST_SERIALIZATION_NVP(firstMove);
+      & SVAR(prevCreatures)
+      & SVAR(debt)
+      & SVAR(thiefCount)
+      & SVAR(thieves)
+      & SVAR(unpaidItems)
+      & SVAR(shopArea)
+      & SVAR(myItems)
+      & SVAR(firstMove);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
 
   private:
-  unordered_set<const Creature*> prevCreatures;
-  unordered_map<const Creature*, int> debt;
-  unordered_map<const Creature*, int> thiefCount;
-  unordered_set<const Creature*> thieves;
-  unordered_map<const Creature*, EntitySet> unpaidItems;
-  Location* shopArea;
-  EntitySet myItems;
-  bool firstMove = true;
+  unordered_set<const Creature*> SERIAL(prevCreatures);
+  unordered_map<const Creature*, int> SERIAL(debt);
+  unordered_map<const Creature*, int> SERIAL(thiefCount);
+  unordered_set<const Creature*> SERIAL(thieves);
+  unordered_map<const Creature*, EntitySet> SERIAL(unpaidItems);
+  Location* SERIAL(shopArea);
+  EntitySet SERIAL(myItems);
+  bool SERIAL2(firstMove, true);
 };
 
 class VillageElder : public Creature {
@@ -573,19 +576,20 @@ class VillageElder : public Creature {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Creature)
-      & BOOST_SERIALIZATION_NVP(teachSkills)
-      & BOOST_SERIALIZATION_NVP(quests)
-      & BOOST_SERIALIZATION_NVP(bringItem)
-      & BOOST_SERIALIZATION_NVP(killCreature);
+      & SVAR(teachSkills)
+      & SVAR(quests)
+      & SVAR(bringItem)
+      & SVAR(killCreature);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(VillageElder);
 
   private:
-  vector<pair<Skill*, double>> teachSkills;
-  vector<pair<Quest*, int>> quests;
-  const Item* bringItem = nullptr;
-  const Creature* killCreature = nullptr;
+  vector<pair<Skill*, double>> SERIAL(teachSkills);
+  vector<pair<Quest*, int>> SERIAL(quests);
+  const Item* SERIAL2(bringItem, nullptr);
+  const Creature* SERIAL2(killCreature, nullptr);
 };
 
 class GreenDragonController : public Monster {
@@ -609,7 +613,7 @@ class GreenDragonController : public Monster {
 
 class RedDragonController : public Monster {
   public:
-  using Monster::Monster;
+  RedDragonController(Creature* c, MonsterAIFactory f) : Monster(c, f) {}
 
   virtual void makeMove() override {
     if (creature->getTime() > lastSpawn + 10)
@@ -626,11 +630,14 @@ class RedDragonController : public Monster {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Monster)
-      & BOOST_SERIALIZATION_NVP(lastSpawn);
+      & SVAR(lastSpawn);
+    CHECK_SERIAL;
   }
 
+  SERIALIZATION_CONSTRUCTOR(RedDragonController);
+
   private:
-  double lastSpawn = -100;
+  double SERIAL2(lastSpawn, -100);
 };
 
 template <class Archive>
@@ -845,14 +852,14 @@ CreatureFactory CreatureFactory::singleType(Tribe* tribe, CreatureId id) {
   return CreatureFactory(tribe, { id}, {1}, {});
 }
 
-vector<PCreature> CreatureFactory::getFlock(int size, CreatureId id, Creature* leader) {
+/*vector<PCreature> CreatureFactory::getFlock(int size, CreatureId id, Creature* leader) {
   vector<PCreature> ret;
   for (int i : Range(size)) {
     PCreature c = fromId(id, leader->getTribe(), MonsterAIFactory::follower(leader, 5));
     ret.push_back(std::move(c));
   }
   return ret;
-}
+}*/
 
 PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, ControllerFactory factory, bool keeper) {
   RandomGen r;

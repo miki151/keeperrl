@@ -9,17 +9,19 @@
 
 template <class Archive> 
 void MonsterAI::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(behaviours)
-    & BOOST_SERIALIZATION_NVP(weights)
-    & BOOST_SERIALIZATION_NVP(creature)
-    & BOOST_SERIALIZATION_NVP(pickItems);
+  ar& SVAR(behaviours)
+    & SVAR(weights)
+    & SVAR(creature)
+    & SVAR(pickItems);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(MonsterAI);
 
 template <class Archive> 
 void Behaviour::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(creature);
+  ar & SVAR(creature);
+  CHECK_SERIAL;
 }
 
 
@@ -54,7 +56,7 @@ MoveInfo Behaviour::tryToApplyItem(EffectType type, double maxTurns) {
     SpellInfo spell = creature->getSpells()[i];
     if (spell.type == type && creature->canCastSpell(i))
       return { 1, [=]() {
-        creature->globalMessage(creature->getTheName() + " casts " + spell.name);
+        creature->globalMessage(creature->getTheName() + " casts a spell.");
         creature->castSpell(i);
       }};
   }
@@ -122,7 +124,8 @@ class Heal : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(hasBed);
+    ar & SUBCLASS(Behaviour) & SVAR(hasBed);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Heal);
@@ -137,7 +140,7 @@ class Heal : public Behaviour {
       ar & BOOST_SERIALIZATION_NVP(pos) & BOOST_SERIALIZATION_NVP(level);
     }
   };
-  Optional<BedInfo> hasBed;
+  Optional<BedInfo> SERIAL(hasBed);
 };
 
 class Rest : public Behaviour {
@@ -198,12 +201,13 @@ class MoveRandomly : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(memory) & BOOST_SERIALIZATION_NVP(memSize);
+    ar & SUBCLASS(Behaviour) & SVAR(memory) & SVAR(memSize);
+    CHECK_SERIAL;
   }
 
   private:
-  deque<Vec2> memory;
-  int memSize;
+  deque<Vec2> SERIAL(memory);
+  int SERIAL(memSize);
 };
 
 class AttackPest : public Behaviour {
@@ -257,11 +261,12 @@ class BirdFlyAway : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(maxDist);
+    ar & SUBCLASS(Behaviour) & SVAR(maxDist);
+    CHECK_SERIAL;
   }
 
   private:
-  double maxDist;
+  double SERIAL(maxDist);
 };
 
 class GoldLust : public Behaviour {
@@ -529,14 +534,15 @@ class Fighter : public Behaviour, public EventListener {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(maxPowerRatio) & BOOST_SERIALIZATION_NVP(courage) 
-      & BOOST_SERIALIZATION_NVP(chase) & BOOST_SERIALIZATION_NVP(lastSeen);
+    ar & SUBCLASS(Behaviour) & SVAR(maxPowerRatio) & SVAR(courage) 
+      & SVAR(chase) & SVAR(lastSeen);
+    CHECK_SERIAL;
   }
 
   private:
-  double maxPowerRatio;
-  double courage;
-  bool chase;
+  double SERIAL(maxPowerRatio);
+  double SERIAL(courage);
+  bool SERIAL(chase);
   struct LastSeen {
     Vec2 pos;
     double time;
@@ -551,7 +557,7 @@ class Fighter : public Behaviour, public EventListener {
         & BOOST_SERIALIZATION_NVP(type);
     }
   };
-  Optional<LastSeen> lastSeen;
+  Optional<LastSeen> SERIAL(lastSeen);
 };
 
 class GuardTarget : public Behaviour {
@@ -562,7 +568,8 @@ class GuardTarget : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(minDist) & BOOST_SERIALIZATION_NVP(maxDist);
+    ar & SUBCLASS(Behaviour) & SVAR(minDist) & SVAR(maxDist);
+    CHECK_SERIAL;
   }
 
   protected:
@@ -582,8 +589,8 @@ class GuardTarget : public Behaviour {
   }
 
   private:
-  double minDist;
-  double maxDist;
+  double SERIAL(minDist);
+  double SERIAL(maxDist);
 };
 
 class GuardArea : public Behaviour {
@@ -613,12 +620,13 @@ class GuardArea : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(location) & BOOST_SERIALIZATION_NVP(area);
+    ar & SUBCLASS(Behaviour) & SVAR(location) & SVAR(area);
+    CHECK_SERIAL;
   }
 
   private:
-  const Location* location;
-  Rectangle area;
+  const Location* SERIAL(location);
+  Rectangle SERIAL(area);
 };
 
 class GuardSquare : public GuardTarget {
@@ -633,11 +641,12 @@ class GuardSquare : public GuardTarget {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(GuardTarget) & BOOST_SERIALIZATION_NVP(pos);
+    ar & SUBCLASS(GuardTarget) & SVAR(pos);
+    CHECK_SERIAL;
   }
 
   private:
-  Vec2 pos;
+  Vec2 SERIAL(pos);
 };
 
 class Wait : public Behaviour {
@@ -658,13 +667,13 @@ class Wait : public Behaviour {
   }
 };
 
-class GuardCreature : public GuardTarget, public EventListener {
+class Summoned : public GuardTarget, public EventListener {
   public:
-  GuardCreature(Creature* c, Creature* _target, double minDist, double maxDist) 
-      : GuardTarget(c, minDist, maxDist), target(_target) {
+  Summoned(Creature* c, Creature* _target, double minDist, double maxDist, double ttl) 
+      : GuardTarget(c, minDist, maxDist), target(_target), dieTime(c->getTime() + ttl) {
   }
 
-  virtual ~GuardCreature() {
+  virtual ~Summoned() {
   }
 
   virtual void onChangeLevelEvent(const Creature* c, const Level* from,
@@ -673,7 +682,7 @@ class GuardCreature : public GuardTarget, public EventListener {
       levelChanges[from] = pos;
   }
   virtual MoveInfo getMove() override {
-    if (target->isDead()) {
+    if (target->isDead() || creature->getTime() > dieTime) {
       return {100.0, [=] {
         creature->die(nullptr);
       }};
@@ -691,17 +700,22 @@ class GuardCreature : public GuardTarget, public EventListener {
       return getMoveTowards(stairs);
   }
 
-  SERIALIZATION_CONSTRUCTOR(GuardCreature);
+  SERIALIZATION_CONSTRUCTOR(Summoned);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(GuardTarget) & SUBCLASS(EventListener) & BOOST_SERIALIZATION_NVP(target) 
-      & BOOST_SERIALIZATION_NVP(levelChanges);
+    ar& SUBCLASS(GuardTarget)
+      & SUBCLASS(EventListener)
+      & SVAR(target) 
+      & SVAR(levelChanges)
+      & SVAR(dieTime);
+    CHECK_SERIAL;
   }
 
   private:
-  Creature* target;
-  map<const Level*, Vec2> levelChanges;
+  Creature* SERIAL(target);
+  map<const Level*, Vec2> SERIAL(levelChanges);
+  double SERIAL(dieTime);
 };
 
 class Thief : public Behaviour {
@@ -746,11 +760,12 @@ class Thief : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(robbed);
+    ar & SUBCLASS(Behaviour) & SVAR(robbed);
+    CHECK_SERIAL;
   }
 
   private:
-  vector<const Creature*> robbed;
+  vector<const Creature*> SERIAL(robbed);
 };
 
 class ByCollective : public Behaviour {
@@ -765,11 +780,12 @@ class ByCollective : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(collective);
+    ar & SUBCLASS(Behaviour) & SVAR(collective);
+    CHECK_SERIAL;
   }
 
   private:
-  Collective* collective;
+  Collective* SERIAL(collective);
 };
 
 class ChooseRandom : public Behaviour {
@@ -784,12 +800,13 @@ class ChooseRandom : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(behaviours) & BOOST_SERIALIZATION_NVP(weights);
+    ar & SUBCLASS(Behaviour) & SVAR(behaviours) & SVAR(weights);
+    CHECK_SERIAL;
   }
 
   private:
-  vector<Behaviour*> behaviours;
-  vector<double> weights;
+  vector<Behaviour*> SERIAL(behaviours);
+  vector<double> SERIAL(weights);
 };
 
 class GoToHeart : public Behaviour {
@@ -809,11 +826,12 @@ class GoToHeart : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(heartPos);
+    ar & SUBCLASS(Behaviour) & SVAR(heartPos);
+    CHECK_SERIAL;
   }
 
   private:
-  Vec2 heartPos;
+  Vec2 SERIAL(heartPos);
 };
 
 class ByVillageControl : public Behaviour {
@@ -837,12 +855,13 @@ class ByVillageControl : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & BOOST_SERIALIZATION_NVP(villageControl) & BOOST_SERIALIZATION_NVP(guardArea);
+    ar & SUBCLASS(Behaviour) & SVAR(villageControl) & SVAR(guardArea);
+    CHECK_SERIAL;
   }
 
   private:
-  VillageControl* villageControl;
-  PBehaviour guardArea;
+  VillageControl* SERIAL(villageControl);
+  PBehaviour SERIAL(guardArea);
 };
 
 template <class Archive>
@@ -857,7 +876,7 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, GuardTarget);
   REGISTER_TYPE(ar, GuardArea);
   REGISTER_TYPE(ar, GuardSquare);
-  REGISTER_TYPE(ar, GuardCreature);
+  REGISTER_TYPE(ar, Summoned);
   REGISTER_TYPE(ar, Wait);
   REGISTER_TYPE(ar, Thief);
   REGISTER_TYPE(ar, ByCollective);
@@ -1021,12 +1040,12 @@ MonsterAIFactory MonsterAIFactory::guardSquare(Vec2 pos) {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::follower(Creature* leader, int radius) {
+MonsterAIFactory MonsterAIFactory::summoned(Creature* leader, int ttl) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
           new Heal(c),
           new Fighter(c, 0.6, true),
-          new GuardCreature(c, leader, radius, 3 * radius),
+          new Summoned(c, leader, 1, 3, ttl),
           new MoveRandomly(c, 3),
           new GoldLust(c)},
           { 4, 3, 2, 1, 1 });

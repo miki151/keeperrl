@@ -4,17 +4,18 @@
 
 template <class Archive> 
 void ViewObject::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(bleeding)
-    & BOOST_SERIALIZATION_NVP(enemyStatus)
-    & BOOST_SERIALIZATION_NVP(resource_id)
-    & BOOST_SERIALIZATION_NVP(viewLayer)
-    & BOOST_SERIALIZATION_NVP(description)
-    & BOOST_SERIALIZATION_NVP(burning)
-    & BOOST_SERIALIZATION_NVP(height)
-    & BOOST_SERIALIZATION_NVP(modifiers)
-    & BOOST_SERIALIZATION_NVP(attack)
-    & BOOST_SERIALIZATION_NVP(defense)
-    & BOOST_SERIALIZATION_NVP(waterDepth);
+  ar& SVAR(bleeding)
+    & SVAR(enemyStatus)
+    & SVAR(resource_id)
+    & SVAR(viewLayer)
+    & SVAR(description)
+    & SVAR(burning)
+    & SVAR(height)
+    & SVAR(modifiers)
+    & SVAR(attack)
+    & SVAR(defense)
+    & SVAR(waterDepth);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(ViewObject);

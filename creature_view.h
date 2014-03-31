@@ -28,8 +28,10 @@ class CreatureView {
 
   virtual ~CreatureView() {}
 
+  SERIAL_CHECKER;
+
   private:
-  vector<const Creature*> visibleEnemies;
+  vector<const Creature*> SERIAL(visibleEnemies);
 };
 
 #endif

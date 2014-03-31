@@ -5,9 +5,10 @@
 
 template <class Archive> 
 void TimeQueue::serialize(Archive& ar, const unsigned int version) { 
-  ar& BOOST_SERIALIZATION_NVP(creatures)
-    & BOOST_SERIALIZATION_NVP(queue)
-    & BOOST_SERIALIZATION_NVP(dead);
+  ar& SVAR(creatures)
+    & SVAR(queue)
+    & SVAR(dead);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(TimeQueue);

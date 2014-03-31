@@ -15,7 +15,7 @@ class Gender {
   SERIALIZATION_DECL(Gender);
 
   private:
-  bool fem;
+  bool SERIAL(fem);
 };
 
 #endif

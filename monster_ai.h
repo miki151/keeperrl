@@ -37,7 +37,7 @@ class Behaviour {
   SERIALIZATION_DECL(Behaviour);
 
   protected:
-  Creature* creature;
+  Creature* SERIAL(creature);
 };
 
 class MonsterAI {
@@ -52,10 +52,10 @@ class MonsterAI {
   private:
   friend class MonsterAIFactory;
   MonsterAI(Creature*, const vector<Behaviour*>& behaviours, const vector<int>& weights, bool pickItems = true);
-  vector<PBehaviour> behaviours;
-  vector<int> weights;
-  Creature* creature;
-  bool pickItems;
+  vector<PBehaviour> SERIAL(behaviours);
+  vector<int> SERIAL(weights);
+  Creature* SERIAL(creature);
+  bool SERIAL(pickItems);
 };
 
 class Collective;
@@ -72,7 +72,7 @@ class MonsterAIFactory {
   static MonsterAIFactory guardSquare(Vec2 pos);
   static MonsterAIFactory wildlifeNonPredator();
   static MonsterAIFactory scavengerBird(Vec2 corpsePos);
-  static MonsterAIFactory follower(Creature*, int radius);
+  static MonsterAIFactory summoned(Creature*, int ttl);
   static MonsterAIFactory moveRandomly();
   static MonsterAIFactory idle();
 

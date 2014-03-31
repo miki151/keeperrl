@@ -5,9 +5,10 @@
 
 template <class Archive> 
 void ViewIndex::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(objIndex)
-    & BOOST_SERIALIZATION_NVP(objects)
-    & BOOST_SERIALIZATION_NVP(highlight);
+  ar& SVAR(objIndex)
+    & SVAR(objects)
+    & SVAR(highlight);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(ViewIndex);

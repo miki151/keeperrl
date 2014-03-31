@@ -5,9 +5,10 @@
 template <class Archive> 
 void Monster::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(Controller)
-     & BOOST_SERIALIZATION_NVP(creature)
-     & BOOST_SERIALIZATION_NVP(actor)
-     & BOOST_SERIALIZATION_NVP(enemies);
+     & SVAR(creature)
+     & SVAR(actor)
+     & SVAR(enemies);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Monster);

@@ -62,16 +62,16 @@ class Player : public Controller, public EventListener {
   void getItemNames(vector<Item*> it, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());
   string getPluralName(Item* item, int num);
-  Creature* creature;
-  bool travelling = false;
-  Vec2 travelDir;
-  Optional<Vec2> target;
-  const Location* lastLocation = nullptr;
-  vector<const Creature*> specialCreatures;
-  bool displayGreeting;
-  map<const Level*, MapMemory>* levelMemory;
-  Model* model;
-  bool displayTravelInfo = true;
+  Creature* SERIAL(creature);
+  bool SERIAL2(travelling, false);
+  Vec2 SERIAL(travelDir);
+  Optional<Vec2> SERIAL(target);
+  const Location* SERIAL2(lastLocation, nullptr);
+  vector<const Creature*> SERIAL(specialCreatures);
+  bool SERIAL(displayGreeting);
+  map<const Level*, MapMemory>* SERIAL(levelMemory);
+  Model* SERIAL(model);
+  bool SERIAL2(displayTravelInfo, true);
 };
 
 #endif

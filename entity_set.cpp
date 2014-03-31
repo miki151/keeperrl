@@ -39,7 +39,8 @@ bool EntitySet::contains(UniqueId id) const {
 
 template <class Archive> 
 void EntitySet::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(elems);
+  ar & SVAR(elems);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(EntitySet);

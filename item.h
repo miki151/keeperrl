@@ -102,9 +102,9 @@ class Item : private ItemAttributes, public UniqueEntity {
   protected:
   virtual void specialTick(double time, Level*, Vec2 position) {}
   void setName(const string& name);
-  ViewObject viewObject;
-  bool discarded = false;
-  bool inspected;
+  ViewObject SERIAL(viewObject);
+  bool SERIAL2(discarded, false);
+  bool SERIAL(inspected);
   static bool everythingIdentified;
 
   private:
@@ -112,8 +112,8 @@ class Item : private ItemAttributes, public UniqueEntity {
   string getVisibleName(bool plural) const;
   string getRealName(bool plural) const;
   string getBlindName(bool plural) const;
-  const Creature* shopkeeper = nullptr;
-  Fire fire;
+  const Creature* SERIAL2(shopkeeper, nullptr);
+  Fire SERIAL(fire);
 };
 
 #endif

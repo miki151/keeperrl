@@ -144,7 +144,6 @@ class Collective : public CreatureView, public EventListener {
   enum class MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, EXECUTE, LABOR, TRAINING,
     WORKSHOP, LAB };
 
-  protected:
   SERIALIZATION_DECL(Collective);
 
   private:
@@ -193,7 +192,7 @@ class Collective : public CreatureView, public EventListener {
 
   ViewObject getResourceViewObject(ResourceId id) const;
 
-  map<ResourceId, int> credit;
+  map<ResourceId, int> SERIAL(credit);
 
   struct ItemFetchInfo {
     ItemPredicate predicate;
@@ -206,12 +205,12 @@ class Collective : public CreatureView, public EventListener {
   vector<ItemFetchInfo> getFetchInfo() const;
   void fetchItems(Vec2 pos, ItemFetchInfo);
 
-  vector<Technology*> technologies;
+  vector<Technology*> SERIAL(technologies);
   bool hasTech(TechId id) const;
   int getMinLibrarySize() const;
   void acquireTech(Technology*, bool free = false);
   double getTechCost();
-  int numFreeTech = 0;
+  int SERIAL2(numFreeTech, 0);
 
   typedef View::GameInfo::BandInfo::TechButton TechButton;
 
@@ -234,7 +233,7 @@ class Collective : public CreatureView, public EventListener {
   void delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime);
   bool isDelayed(Vec2 pos);
   double getTime() const;
-  unordered_map<Vec2, double> delayedPos;
+  unordered_map<Vec2, double> SERIAL(delayedPos);
   int numGold(ResourceId) const;
   bool hasGold(CostInfo) const;
   void takeGold(CostInfo);
@@ -277,10 +276,10 @@ class Collective : public CreatureView, public EventListener {
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
-  vector<Creature*> creatures;
-  vector<Creature*> minions;
-  unordered_map<MinionType, vector<Creature*>> minionByType;
-  EntitySet markedItems;
+  vector<Creature*> SERIAL(creatures);
+  vector<Creature*> SERIAL(minions);
+  unordered_map<MinionType, vector<Creature*>> SERIAL(minionByType);
+  EntitySet SERIAL(markedItems);
 
   class TaskMap {
     public:
@@ -303,14 +302,16 @@ class Collective : public CreatureView, public EventListener {
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
 
+    SERIAL_CHECKER;
+
     private:
-    vector<PTask> tasks;
-    map<Vec2, Task*> marked;
-    map<Task*, const Creature*> taken;
-    map<const Creature*, Task*> taskMap;
-    map<Task*, CostInfo> completionCost;
-    set<pair<const Creature*, UniqueId>> lockedTasks;
-  } taskMap;
+    vector<PTask> SERIAL(tasks);
+    map<Vec2, Task*> SERIAL(marked);
+    map<Task*, const Creature*> SERIAL(taken);
+    map<const Creature*, Task*> SERIAL(taskMap);
+    map<Task*, CostInfo> SERIAL(completionCost);
+    set<pair<const Creature*, UniqueId>> SERIAL(lockedTasks);
+  } SERIAL(taskMap);
 
   struct TrapInfo {
     TrapType type;
@@ -319,7 +320,7 @@ class Collective : public CreatureView, public EventListener {
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
   };
-  map<Vec2, TrapInfo> traps;
+  map<Vec2, TrapInfo> SERIAL(traps);
   set<TrapType> getNeededTraps() const;
 
   struct ConstructionInfo {
@@ -333,51 +334,53 @@ class Collective : public CreatureView, public EventListener {
   };
   void setMinionTask(Creature* c, MinionTask task);
   MinionTask getMinionTask(Creature* c) const;
-  map<Vec2, ConstructionInfo> constructions;
-  map<UniqueId, MarkovChain<MinionTask>> minionTasks;
-  map<UniqueId, string> minionTaskStrings;
-  map<SquareType, set<Vec2>> mySquares;
-  set<Vec2> myTiles;
-  Level* level = nullptr;
-  Creature* keeper = nullptr;
-  mutable unique_ptr<map<const Level*, MapMemory>> memory;
-  Table<bool> knownTiles;
-  bool gatheringTeam = false;
-  vector<Creature*> team;
-  map<const Level*, Vec2> teamLevelChanges;
-  map<const Level*, Vec2> levelChangeHistory;
-  Creature* possessed = nullptr;
-  MinionEquipment minionEquipment;
+  map<Vec2, ConstructionInfo> SERIAL(constructions);
+  map<UniqueId, MarkovChain<MinionTask>> SERIAL(minionTasks);
+  map<UniqueId, string> SERIAL(minionTaskStrings);
+  map<SquareType, set<Vec2>> SERIAL(mySquares);
+  set<Vec2> SERIAL(myTiles);
+  Level* SERIAL2(level, nullptr);
+  Creature* SERIAL2(keeper, nullptr);
+  mutable unique_ptr<map<const Level*, MapMemory>> SERIAL(memory);
+  Table<bool> SERIAL(knownTiles);
+  bool SERIAL2(gatheringTeam, false);
+  vector<Creature*> SERIAL(team);
+  map<const Level*, Vec2> SERIAL(teamLevelChanges);
+  map<const Level*, Vec2> SERIAL(levelChangeHistory);
+  Creature* SERIAL2(possessed, nullptr);
+  MinionEquipment SERIAL(minionEquipment);
   struct GuardPostInfo {
     const Creature* attender;
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
   };
-  map<Vec2, GuardPostInfo> guardPosts;
-  double mana;
-  int points = 0;
-  Model* model;
-  vector<const Creature*> kills;
-  bool showWelcomeMsg = true;
+  map<Vec2, GuardPostInfo> SERIAL(guardPosts);
+  double SERIAL(mana);
+  int SERIAL2(points, 0);
+  Model* SERIAL(model);
+  vector<const Creature*> SERIAL(kills);
+  bool SERIAL2(showWelcomeMsg, true);
   Optional<Vec2> rectSelectCorner;
   Optional<Vec2> rectSelectCorner2;
-  unordered_map<const Creature*, double> lastCombat;
-  double lastControlKeeperQuestion = -100;
-  int startImpNum = -1;
-  bool retired = false;
-  Tribe* tribe = nullptr;
+  unordered_map<const Creature*, double> SERIAL(lastCombat);
+  double SERIAL2(lastControlKeeperQuestion, -100);
+  int SERIAL2(startImpNum, -1);
+  bool SERIAL2(retired, false);
+  Tribe* SERIAL2(tribe, nullptr);
   struct AlarmInfo {
     double finishTime = -1000;
     Vec2 position;
-  } alarmInfo;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+  } SERIAL(alarmInfo);
   struct PrisonerInfo {
     enum State { SURRENDER, PRISON, EXECUTE } state;
     const Creature* attender;
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
   };
-  map<Creature*, PrisonerInfo> prisonerInfo;
-  int executions = 0;
+  map<Creature*, PrisonerInfo> SERIAL(prisonerInfo);
+  int SERIAL2(executions, 0);
 };
 
 #endif

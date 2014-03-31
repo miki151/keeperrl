@@ -5,10 +5,11 @@
 
 template <class Archive> 
 void Fire::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(burnt)
-    & BOOST_SERIALIZATION_NVP(size)
-    & BOOST_SERIALIZATION_NVP(weight)
-    & BOOST_SERIALIZATION_NVP(flamability);
+  ar& SVAR(burnt)
+    & SVAR(size)
+    & SVAR(weight)
+    & SVAR(flamability);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Fire);

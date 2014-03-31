@@ -20,12 +20,14 @@ class MinionEquipment {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
+  SERIAL_CHECKER;
+
   private:
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
 
   static Optional<EquipmentType> getEquipmentType(const Item* it);
 
-  map<UniqueId, const Creature*> owners;
+  map<UniqueId, const Creature*> SERIAL(owners);
 };
 
 #endif

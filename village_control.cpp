@@ -10,21 +10,23 @@
 template <class Archive>
 void VillageControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(EventListener)
-    & BOOST_SERIALIZATION_NVP(allCreatures)
-    & BOOST_SERIALIZATION_NVP(villain)
-    & BOOST_SERIALIZATION_NVP(level)
-    & BOOST_SERIALIZATION_NVP(name)
-    & BOOST_SERIALIZATION_NVP(tribe)
-    & BOOST_SERIALIZATION_NVP(attackTrigger)
-    & BOOST_SERIALIZATION_NVP(atWar);
+    & SVAR(allCreatures)
+    & SVAR(villain)
+    & SVAR(level)
+    & SVAR(name)
+    & SVAR(tribe)
+    & SVAR(attackTrigger)
+    & SVAR(atWar);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(VillageControl);
 
 template <class Archive>
 void VillageControl::AttackTrigger::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(control)
-    & BOOST_SERIALIZATION_NVP(fightingCreatures);
+  ar& SVAR(control)
+    & SVAR(fightingCreatures);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(VillageControl::AttackTrigger);
@@ -188,23 +190,24 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(VillageControl::AttackTrigger)
-      & BOOST_SERIALIZATION_NVP(killedPoints)
-      & BOOST_SERIALIZATION_NVP(killedCoeff)
-      & BOOST_SERIALIZATION_NVP(powerCoeff)
-      & BOOST_SERIALIZATION_NVP(lastAttack)
-      & BOOST_SERIALIZATION_NVP(lastMyAttack)
-      & BOOST_SERIALIZATION_NVP(lastAttackLaunched)
-      & BOOST_SERIALIZATION_NVP(triggerAmounts);
+      & SVAR(killedPoints)
+      & SVAR(killedCoeff)
+      & SVAR(powerCoeff)
+      & SVAR(lastAttack)
+      & SVAR(lastMyAttack)
+      & SVAR(lastAttackLaunched)
+      & SVAR(triggerAmounts);
+    CHECK_SERIAL;
   }
 
   private:
-  double killedPoints = 0;
-  double killedCoeff;
-  double powerCoeff;
-  double lastAttack = 0;
-  double lastMyAttack = 0;
-  bool lastAttackLaunched = false;
-  set<double> triggerAmounts;
+  double SERIAL2(killedPoints, 0);
+  double SERIAL(killedCoeff);
+  double SERIAL(powerCoeff);
+  double SERIAL2(lastAttack, 0);
+  double SERIAL2(lastMyAttack, 0);
+  bool SERIAL2(lastAttackLaunched, false);
+  set<double> SERIAL(triggerAmounts);
 };
 
 VillageControl::AttackTrigger* VillageControl::getPowerTrigger(double killedCoeff, double powerCoeff) {
@@ -248,13 +251,14 @@ class FinalTrigger : public VillageControl::AttackTrigger {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(VillageControl::AttackTrigger)
-      & BOOST_SERIALIZATION_NVP(controls)
-      & BOOST_SERIALIZATION_NVP(totalWar);
+      & SVAR(controls)
+      & SVAR(totalWar);
+    CHECK_SERIAL;
   }
 
   private:
-  vector<VillageControl*> controls;
-  bool totalWar = false;
+  vector<VillageControl*> SERIAL(controls);
+  bool SERIAL2(totalWar, false);
 };
 
 VillageControl::AttackTrigger* VillageControl::getFinalTrigger(vector<VillageControl*> otherControls) {
@@ -292,12 +296,13 @@ class TopLevelVillageControl : public VillageControl {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(VillageControl)
-      & BOOST_SERIALIZATION_NVP(visited)
-      & BOOST_SERIALIZATION_NVP(villageLocation);
+      & SVAR(visited)
+      & SVAR(villageLocation);
+    CHECK_SERIAL;
   }
 
-  unordered_set<Vec2> visited;
-  const Location* villageLocation;
+  unordered_set<Vec2> SERIAL(visited);
+  const Location* SERIAL(villageLocation);
 };
 
 PVillageControl VillageControl::topLevelVillage(Collective* villain, const Location* location, AttackTrigger* t) {
@@ -345,11 +350,12 @@ class DwarfVillageControl : public VillageControl {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(VillageControl) & BOOST_SERIALIZATION_NVP(direction) & BOOST_SERIALIZATION_NVP(stairKey);
+    ar& SUBCLASS(VillageControl) & SVAR(direction) & SVAR(stairKey);
+    CHECK_SERIAL;
   }
 
-  StairDirection direction;
-  StairKey stairKey;
+  StairDirection SERIAL(direction);
+  StairKey SERIAL(stairKey);
 };
 
 template <class Archive>

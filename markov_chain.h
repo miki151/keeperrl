@@ -16,8 +16,8 @@ class MarkovChain {
   SERIALIZATION_DECL(MarkovChain);
 
   private:
-  T state;
-  map<T, vector<pair<T, double>>> transitions;
+  T SERIAL(state);
+  map<T, vector<pair<T, double>>> SERIAL(transitions);
 };
 
 #endif

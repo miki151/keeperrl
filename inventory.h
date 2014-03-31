@@ -25,8 +25,8 @@ class Inventory {
   SERIALIZATION_DECL(Inventory);
 
   private:
-  vector<PItem> items;
-  vector<Item*> itemsCache;
+  vector<PItem> SERIAL(items);
+  vector<Item*> SERIAL(itemsCache);
 };
 
 #endif

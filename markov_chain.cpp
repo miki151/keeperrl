@@ -8,8 +8,9 @@
 template <class T>
 template <class Archive>
 void MarkovChain<T>::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(state)
-    & BOOST_SERIALIZATION_NVP(transitions);
+  ar& SVAR(state)
+    & SVAR(transitions);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(MarkovChain<MinionTask>);

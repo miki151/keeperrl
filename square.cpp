@@ -6,26 +6,27 @@
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
-  ar& BOOST_SERIALIZATION_NVP(inventory)
-    & BOOST_SERIALIZATION_NVP(name)
-    & BOOST_SERIALIZATION_NVP(level)
-    & BOOST_SERIALIZATION_NVP(position)
-    & BOOST_SERIALIZATION_NVP(creature)
-    & BOOST_SERIALIZATION_NVP(triggers)
-    & BOOST_SERIALIZATION_NVP(viewObject)
-    & BOOST_SERIALIZATION_NVP(backgroundObject)
-    & BOOST_SERIALIZATION_NVP(seeThru)
-    & BOOST_SERIALIZATION_NVP(hide)
-    & BOOST_SERIALIZATION_NVP(strength)
-    & BOOST_SERIALIZATION_NVP(height)
-    & BOOST_SERIALIZATION_NVP(travelDir)
-    & BOOST_SERIALIZATION_NVP(covered)
-    & BOOST_SERIALIZATION_NVP(landingLink)
-    & BOOST_SERIALIZATION_NVP(fire)
-    & BOOST_SERIALIZATION_NVP(poisonGas)
-    & BOOST_SERIALIZATION_NVP(constructions)
-    & BOOST_SERIALIZATION_NVP(ticking)
-    & BOOST_SERIALIZATION_NVP(fog);
+  ar& SVAR(inventory)
+    & SVAR(name)
+    & SVAR(level)
+    & SVAR(position)
+    & SVAR(creature)
+    & SVAR(triggers)
+    & SVAR(viewObject)
+    & SVAR(backgroundObject)
+    & SVAR(seeThru)
+    & SVAR(hide)
+    & SVAR(strength)
+    & SVAR(height)
+    & SVAR(travelDir)
+    & SVAR(covered)
+    & SVAR(landingLink)
+    & SVAR(fire)
+    & SVAR(poisonGas)
+    & SVAR(constructions)
+    & SVAR(ticking)
+    & SVAR(fog);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Square);

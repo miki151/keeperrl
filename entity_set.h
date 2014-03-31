@@ -16,8 +16,10 @@ class EntitySet {
   void insert(UniqueId);
   void erase(UniqueId);
   bool contains(UniqueId) const;
+
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
+
   ItemPredicate containsPredicate() const;
 
   typedef set<UniqueId>::const_iterator Iter;
@@ -25,8 +27,10 @@ class EntitySet {
   Iter begin() const;
   Iter end() const;
 
+  SERIAL_CHECKER;
+
   private:
-  set<UniqueId> elems;
+  set<UniqueId> SERIAL(elems);
 };
 
 #endif

@@ -31,17 +31,19 @@ class FieldOfView {
 
     private:
     char visible[sightRange * 2 + 1][sightRange * 2 + 1];
-    vector<Vec2> visibleTiles;
+    SERIAL3(visible);
+    vector<Vec2> SERIAL(visibleTiles);
     void calculate(int,int,int,int, int, int, int, int,
         function<bool (int, int)> isBlocking,
         function<void (int, int)> setVisible);
     void setVisible(int, int);
 
-    int px, py;
+    int SERIAL(px);
+    int SERIAL(py);
   };
   
-  const Table<PSquare>* squares;
-  Table<Optional<Visibility>> visibility;
+  const Table<PSquare>* SERIAL(squares);
+  Table<Optional<Visibility>> SERIAL(visibility);
 };
 
 #endif

@@ -90,7 +90,6 @@ class SecretPassage : public Square {
   SERIALIZATION_CONSTRUCTOR(SecretPassage);
 
   private:
-  SERIAL_CHECKER;
   ViewObject SERIAL(secondary);
   bool SERIAL(uncovered);
 };
@@ -130,7 +129,6 @@ class Magma : public Square {
   SERIALIZATION_CONSTRUCTOR(Magma);
 
   private:
-  SERIAL_CHECKER;
   string SERIAL(itemMessage);
   string SERIAL(noSeeMsg);
 };
@@ -185,7 +183,6 @@ class Water : public Square {
   SERIALIZATION_CONSTRUCTOR(Water);
   
   private:
-  SERIAL_CHECKER;
   string SERIAL(itemMessage);
   string SERIAL(noSeeMsg);
   double SERIAL(depth);
@@ -268,7 +265,6 @@ class Chest : public Square {
   SERIALIZATION_CONSTRUCTOR(Chest);
 
   private:
-  SERIAL_CHECKER;
   CreatureId SERIAL(creatureId);
   int SERIAL(minCreatures);
   int SERIAL(maxCreatures);
@@ -312,7 +308,6 @@ class Fountain : public Square {
   SERIALIZATION_CONSTRUCTOR(Fountain);
 
   private:
-  SERIAL_CHECKER;
   int SERIAL2(seed, Random.getRandom(123456));
 };
 
@@ -366,7 +361,6 @@ class Tree : public Square {
   SERIALIZATION_CONSTRUCTOR(Tree);
 
   private:
-  SERIAL_CHECKER;
   bool SERIAL2(destroyed, false);
   int SERIAL(numWood);
   bool SERIAL(bounces);
@@ -396,7 +390,6 @@ class TrapSquare : public Square {
   SERIALIZATION_CONSTRUCTOR(TrapSquare);
 
   private:
-  SERIAL_CHECKER;
   bool SERIAL2(active, true);
   EffectType SERIAL(effect);
 };
@@ -468,7 +461,6 @@ class TribeDoor : public Door {
   SERIALIZATION_CONSTRUCTOR(TribeDoor);
 
   private:
-  SERIAL_CHECKER;
   int SERIAL(destructionStrength);
   bool SERIAL2(locked, false);
 };
@@ -504,7 +496,6 @@ class Furniture : public Square {
   SERIALIZATION_CONSTRUCTOR(Furniture);
   
   private:
-  SERIAL_CHECKER;
   Optional<SquareApplyType> SERIAL(applyType);
 };
 
@@ -611,7 +602,6 @@ class Altar : public Square {
   SERIALIZATION_CONSTRUCTOR(Altar);
 
   private:
-  SERIAL_CHECKER;
   Deity* SERIAL(deity);
 };
 
@@ -635,7 +625,6 @@ class ConstructionDropItems : public SolidSquare {
   SERIALIZATION_CONSTRUCTOR(ConstructionDropItems);
 
   private:
-  SERIAL_CHECKER;
   vector<PItem> SERIAL(items);
 };
 

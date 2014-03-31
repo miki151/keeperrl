@@ -29,9 +29,9 @@ class Trigger {
   Trigger(Level*, Vec2 position);
   Trigger(const ViewObject& obj, Level* l, Vec2 p);
 
-  Optional<ViewObject> viewObject;
-  Level* level;
-  Vec2 position;
+  Optional<ViewObject> SERIAL(viewObject);
+  Level* SERIAL(level);
+  Vec2 SERIAL(position);
 };
 
 #endif

@@ -9,11 +9,12 @@
 
 template <class Archive> 
 void Deity::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(name)
-    & BOOST_SERIALIZATION_NVP(gender)
-    & BOOST_SERIALIZATION_NVP(epithets)
-    & BOOST_SERIALIZATION_NVP(usedEpithets)
-    & BOOST_SERIALIZATION_NVP(habitat);
+  ar& SVAR(name)
+    & SVAR(gender)
+    & SVAR(epithets)
+    & SVAR(usedEpithets)
+    & SVAR(habitat);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Deity);

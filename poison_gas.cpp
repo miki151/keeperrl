@@ -6,7 +6,8 @@
 
 template <class Archive> 
 void PoisonGas::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(amount);
+  ar & SVAR(amount);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(PoisonGas);

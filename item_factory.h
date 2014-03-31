@@ -60,11 +60,11 @@ class ItemFactory {
   ItemFactory(const vector<ItemInfo>&, const vector<ItemId>& unique = vector<ItemId>());
   ItemFactory& addItem(ItemInfo);
   ItemFactory& addUniqueItem(ItemId);
-  vector<ItemId> items;
-  vector<double> weights;
-  vector<int> minCount;
-  vector<int> maxCount;
-  vector<ItemId> unique;
+  vector<ItemId> SERIAL(items);
+  vector<double> SERIAL(weights);
+  vector<int> SERIAL(minCount);
+  vector<int> SERIAL(maxCount);
+  vector<ItemId> SERIAL(unique);
 };
 
 #endif

@@ -26,9 +26,10 @@ class Quest {
 
   protected:
   Quest(const string& startMessage);
-  unordered_set<const Creature*> adventurers;
-  const Location* location = nullptr;
-  string startMessage;
+
+  unordered_set<const Creature*> SERIAL(adventurers);
+  const Location* SERIAL2(location, nullptr);
+  string SERIAL(startMessage);
 };
 
 typedef Singleton<Quest, QuestId> Quests;

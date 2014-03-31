@@ -26,12 +26,14 @@ class Location {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
+  SERIAL_CHECKER;
+
   private:
-  Optional<string> name;
-  Optional<string> description;
-  Rectangle bounds;
-  const Level* level;
-  bool surprise = false;
+  Optional<string> SERIAL(name);
+  Optional<string> SERIAL(description);
+  Rectangle SERIAL(bounds);
+  const Level* SERIAL(level);
+  bool SERIAL2(surprise, false);
 };
 
 #endif

@@ -6,18 +6,19 @@
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) { 
-  ar& BOOST_SERIALIZATION_NVP(squares)
-    & BOOST_SERIALIZATION_NVP(landingSquares)
-    & BOOST_SERIALIZATION_NVP(locations)
-    & BOOST_SERIALIZATION_NVP(tickingSquares)
-    & BOOST_SERIALIZATION_NVP(creatures)
-    & BOOST_SERIALIZATION_NVP(model)
-    & BOOST_SERIALIZATION_NVP(fieldOfView)
-    & BOOST_SERIALIZATION_NVP(entryMessage)
-    & BOOST_SERIALIZATION_NVP(name)
-    & BOOST_SERIALIZATION_NVP(player)
-    & BOOST_SERIALIZATION_NVP(backgroundLevel)
-    & BOOST_SERIALIZATION_NVP(backgroundOffset); 
+  ar& SVAR(squares)
+    & SVAR(landingSquares)
+    & SVAR(locations)
+    & SVAR(tickingSquares)
+    & SVAR(creatures)
+    & SVAR(model)
+    & SVAR(fieldOfView)
+    & SVAR(entryMessage)
+    & SVAR(name)
+    & SVAR(player)
+    & SVAR(backgroundLevel)
+    & SVAR(backgroundOffset); 
+  CHECK_SERIAL;
 }  
 
 SERIALIZABLE(Level);

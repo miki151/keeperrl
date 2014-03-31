@@ -4,8 +4,9 @@
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(items)
-    & BOOST_SERIALIZATION_NVP(itemsCache);
+  ar& SVAR(items)
+    & SVAR(itemsCache);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Inventory);

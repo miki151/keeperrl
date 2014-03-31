@@ -4,18 +4,20 @@
 
 template <class Archive> 
 void FieldOfView::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(squares)
-     & BOOST_SERIALIZATION_NVP(visibility);
+  ar & SVAR(squares)
+     & SVAR(visibility);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(FieldOfView);
 
 template <class Archive> 
 void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(visible)
-    & BOOST_SERIALIZATION_NVP(visibleTiles)
-    & BOOST_SERIALIZATION_NVP(px)
-    & BOOST_SERIALIZATION_NVP(py);
+  ar& SVAR(visible)
+    & SVAR(visibleTiles)
+    & SVAR(px)
+    & SVAR(py);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(FieldOfView::Visibility);

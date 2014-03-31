@@ -28,10 +28,11 @@ class ViewIndex {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
+  SERIAL_CHECKER;
   private:
-  vector<int> objIndex;
-  vector<ViewObject> objects;
-  Optional<HighlightInfo> highlight;
+  vector<int> SERIAL(objIndex);
+  vector<ViewObject> SERIAL(objects);
+  Optional<HighlightInfo> SERIAL(highlight);
 };
 
 #endif

@@ -188,30 +188,30 @@ class Square {
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(double time) {}
   Level* getLevel();
-  Inventory inventory;
-  string name;
-  ViewObject viewObject;
+  Inventory SERIAL(inventory);
+  string SERIAL(name);
+  ViewObject SERIAL(viewObject);
 
   private:
   Item* getTopItem() const;
 
-  Level* level = nullptr;
-  Vec2 position;
-  Creature* creature = nullptr;
-  vector<PTrigger> triggers;
-  Optional<ViewObject> backgroundObject;
-  bool seeThru;
-  bool hide;
-  int strength;
-  double height;
-  vector<Vec2> travelDir;
-  bool covered = false;
-  Optional<pair<StairDirection, StairKey>> landingLink;
-  Fire fire;
-  PoisonGas poisonGas;
-  map<SquareType, int> constructions;
-  bool ticking;
-  double fog = 0;
+  Level* SERIAL2(level, nullptr);
+  Vec2 SERIAL(position);
+  Creature* SERIAL2(creature, nullptr);
+  vector<PTrigger> SERIAL(triggers);
+  Optional<ViewObject> SERIAL(backgroundObject);
+  bool SERIAL(seeThru);
+  bool SERIAL(hide);
+  int SERIAL(strength);
+  double SERIAL(height);
+  vector<Vec2> SERIAL(travelDir);
+  bool SERIAL2(covered, false);
+  Optional<pair<StairDirection, StairKey>> SERIAL(landingLink);
+  Fire SERIAL(fire);
+  PoisonGas SERIAL(poisonGas);
+  map<SquareType, int> SERIAL(constructions);
+  bool SERIAL(ticking);
+  double SERIAL2(fog, 0);
 };
 
 class SolidSquare : public Square {

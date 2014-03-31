@@ -13,16 +13,17 @@
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
-  ar& BOOST_SERIALIZATION_NVP(levels)
-    & BOOST_SERIALIZATION_NVP(villageControls)
-    & BOOST_SERIALIZATION_NVP(timeQueue)
-    & BOOST_SERIALIZATION_NVP(deadCreatures)
-    & BOOST_SERIALIZATION_NVP(lastTick)
-    & BOOST_SERIALIZATION_NVP(levelLinks)
-    & BOOST_SERIALIZATION_NVP(collective)
-    & BOOST_SERIALIZATION_NVP(won)
-    & BOOST_SERIALIZATION_NVP(addHero)
-    & BOOST_SERIALIZATION_NVP(adventurer);
+  ar& SVAR(levels)
+    & SVAR(villageControls)
+    & SVAR(timeQueue)
+    & SVAR(deadCreatures)
+    & SVAR(lastTick)
+    & SVAR(levelLinks)
+    & SVAR(collective)
+    & SVAR(won)
+    & SVAR(addHero)
+    & SVAR(adventurer);
+  CHECK_SERIAL;
   Skill::serializeAll(ar);
   Deity::serializeAll(ar);
   Quests::serializeAll(ar);

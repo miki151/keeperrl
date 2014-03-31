@@ -8,9 +8,10 @@
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(UniqueEntity)
-    & BOOST_SERIALIZATION_NVP(position)
-    & BOOST_SERIALIZATION_NVP(done)
-    & BOOST_SERIALIZATION_NVP(collective);
+    & SVAR(position)
+    & SVAR(done)
+    & SVAR(collective);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Task);
@@ -76,13 +77,14 @@ class Construction : public Task {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Task)
-      & BOOST_SERIALIZATION_NVP(type);
+      & SVAR(type);
+    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(Construction);
 
   private:
-  SquareType type;
+  SquareType SERIAL(type);
 };
 
 
@@ -160,15 +162,16 @@ class PickItem : public Task {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Task)
-      & BOOST_SERIALIZATION_NVP(items)
-      & BOOST_SERIALIZATION_NVP(pickedUp);
+      & SVAR(items)
+      & SVAR(pickedUp);
+    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(PickItem);
 
   protected:
-  EntitySet items;
-  bool pickedUp = false;
+  EntitySet SERIAL(items);
+  bool SERIAL2(pickedUp, false);
 };
 
 PTask Task::pickItem(Collective* col, Vec2 position, vector<Item*> items) {
@@ -261,13 +264,14 @@ class BringItem : public PickItem {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(PickItem)
-      & BOOST_SERIALIZATION_NVP(target);
+      & SVAR(target);
+    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(BringItem);
 
   protected:
-  Vec2 target;
+  Vec2 SERIAL(target);
 
 };
 
@@ -365,17 +369,18 @@ class ApplySquare : public Task {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Task)
-      & BOOST_SERIALIZATION_NVP(positions)
-      & BOOST_SERIALIZATION_NVP(rejectedPosition)
-      & BOOST_SERIALIZATION_NVP(invalidCount);
+      & SVAR(positions)
+      & SVAR(rejectedPosition)
+      & SVAR(invalidCount);
+    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(ApplySquare);
 
   private:
-  set<Vec2> positions;
-  set<Vec2> rejectedPosition;
-  int invalidCount = 5;
+  set<Vec2> SERIAL(positions);
+  set<Vec2> SERIAL(rejectedPosition);
+  int SERIAL2(invalidCount, 5);
 };
 
 PTask Task::applySquare(Collective* col, set<Vec2> position) {

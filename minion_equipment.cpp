@@ -17,7 +17,8 @@ static vector<EffectType> combatConsumables {
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(owners);
+  ar & SVAR(owners);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(MinionEquipment);

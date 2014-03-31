@@ -13,16 +13,17 @@ template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Controller)
     & SUBCLASS(EventListener) 
-    & BOOST_SERIALIZATION_NVP(creature)
-    & BOOST_SERIALIZATION_NVP(travelling)
-    & BOOST_SERIALIZATION_NVP(travelDir)
-    & BOOST_SERIALIZATION_NVP(target)
-    & BOOST_SERIALIZATION_NVP(lastLocation)
-    & BOOST_SERIALIZATION_NVP(specialCreatures)
-    & BOOST_SERIALIZATION_NVP(displayGreeting)
-    & BOOST_SERIALIZATION_NVP(levelMemory)
-    & BOOST_SERIALIZATION_NVP(model)
-    & BOOST_SERIALIZATION_NVP(displayTravelInfo);
+    & SVAR(creature)
+    & SVAR(travelling)
+    & SVAR(travelDir)
+    & SVAR(target)
+    & SVAR(lastLocation)
+    & SVAR(specialCreatures)
+    & SVAR(displayGreeting)
+    & SVAR(levelMemory)
+    & SVAR(model)
+    & SVAR(displayTravelInfo);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Player);

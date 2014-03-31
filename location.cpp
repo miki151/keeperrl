@@ -6,11 +6,12 @@
 
 template <class Archive> 
 void Location::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(name)
-    & BOOST_SERIALIZATION_NVP(description)
-    & BOOST_SERIALIZATION_NVP(bounds)
-    & BOOST_SERIALIZATION_NVP(level)
-    & BOOST_SERIALIZATION_NVP(surprise);
+  ar& SVAR(name)
+    & SVAR(description)
+    & SVAR(bounds)
+    & SVAR(level)
+    & SVAR(surprise);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Location);
@@ -73,11 +74,12 @@ class TowerTopLocation : public Location {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Location) & BOOST_SERIALIZATION_NVP(entered);
+    ar & SUBCLASS(Location) & SVAR(entered);
+    CHECK_SERIAL;
   }
 
   private:
-  unordered_set<Creature*> entered;
+  unordered_set<Creature*> SERIAL(entered);
 };
 
 Location* Location::towerTopLocation() {

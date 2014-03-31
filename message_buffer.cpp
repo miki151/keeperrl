@@ -4,7 +4,8 @@
 
 template <class Archive> 
 void MessageBuffer::serialize(Archive& ar, const unsigned int version) { 
-  ar & BOOST_SERIALIZATION_NVP(messages);
+  ar & SVAR(messages);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(MessageBuffer);

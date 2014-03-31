@@ -6,8 +6,9 @@
 
 template <class Archive> 
 void Skill::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(name)
-    & BOOST_SERIALIZATION_NVP(helpText);
+  ar& SVAR(name)
+    & SVAR(helpText);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Skill);
@@ -35,12 +36,13 @@ class IdentifySkill : public Skill {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Skill) & BOOST_SERIALIZATION_NVP(factory);
+    ar & SUBCLASS(Skill) & SVAR(factory);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(IdentifySkill);
   private:
-  ItemFactory factory;
+  ItemFactory SERIAL(factory);
 };
 
 template <class Archive>

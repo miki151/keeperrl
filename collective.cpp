@@ -14,42 +14,46 @@ template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CreatureView)
     & SUBCLASS(EventListener)
-    & BOOST_SERIALIZATION_NVP(credit)
-    & BOOST_SERIALIZATION_NVP(technologies)
-    & BOOST_SERIALIZATION_NVP(creatures)
-    & BOOST_SERIALIZATION_NVP(minions)
-    & BOOST_SERIALIZATION_NVP(minionByType)
-    & BOOST_SERIALIZATION_NVP(markedItems)
-    & BOOST_SERIALIZATION_NVP(taskMap)
-    & BOOST_SERIALIZATION_NVP(traps)
-    & BOOST_SERIALIZATION_NVP(constructions)
-    & BOOST_SERIALIZATION_NVP(minionTasks)
-    & BOOST_SERIALIZATION_NVP(minionTaskStrings)
-    & BOOST_SERIALIZATION_NVP(mySquares)
-    & BOOST_SERIALIZATION_NVP(myTiles)
-    & BOOST_SERIALIZATION_NVP(level)
-    & BOOST_SERIALIZATION_NVP(keeper)
-    & BOOST_SERIALIZATION_NVP(memory)
-    & BOOST_SERIALIZATION_NVP(knownTiles)
-    & BOOST_SERIALIZATION_NVP(team)
-    & BOOST_SERIALIZATION_NVP(teamLevelChanges)
-    & BOOST_SERIALIZATION_NVP(levelChangeHistory)
-    & BOOST_SERIALIZATION_NVP(possessed)
-    & BOOST_SERIALIZATION_NVP(minionEquipment)
-    & BOOST_SERIALIZATION_NVP(guardPosts)
-    & BOOST_SERIALIZATION_NVP(mana)
-    & BOOST_SERIALIZATION_NVP(points)
-    & BOOST_SERIALIZATION_NVP(model)
-    & BOOST_SERIALIZATION_NVP(kills)
-    & BOOST_SERIALIZATION_NVP(showWelcomeMsg)
-    & BOOST_SERIALIZATION_NVP(delayedPos)
-    & BOOST_SERIALIZATION_NVP(startImpNum)
-    & BOOST_SERIALIZATION_NVP(retired)
-    & BOOST_SERIALIZATION_NVP(tribe)
-    & BOOST_SERIALIZATION_NVP(alarmInfo.finishTime)
-    & BOOST_SERIALIZATION_NVP(alarmInfo.position)
-    & BOOST_SERIALIZATION_NVP(prisonerInfo)
-    & BOOST_SERIALIZATION_NVP(executions);
+    & SVAR(credit)
+    & SVAR(technologies)
+    & SVAR(numFreeTech)
+    & SVAR(creatures)
+    & SVAR(minions)
+    & SVAR(minionByType)
+    & SVAR(markedItems)
+    & SVAR(taskMap)
+    & SVAR(traps)
+    & SVAR(constructions)
+    & SVAR(minionTasks)
+    & SVAR(minionTaskStrings)
+    & SVAR(mySquares)
+    & SVAR(myTiles)
+    & SVAR(level)
+    & SVAR(keeper)
+    & SVAR(memory)
+    & SVAR(knownTiles)
+    & SVAR(gatheringTeam)
+    & SVAR(team)
+    & SVAR(teamLevelChanges)
+    & SVAR(levelChangeHistory)
+    & SVAR(possessed)
+    & SVAR(minionEquipment)
+    & SVAR(guardPosts)
+    & SVAR(mana)
+    & SVAR(points)
+    & SVAR(model)
+    & SVAR(kills)
+    & SVAR(showWelcomeMsg)
+    & SVAR(delayedPos)
+    & SVAR(lastCombat)
+    & SVAR(lastControlKeeperQuestion)
+    & SVAR(startImpNum)
+    & SVAR(retired)
+    & SVAR(tribe)
+    & SVAR(alarmInfo)
+    & SVAR(prisonerInfo)
+    & SVAR(executions);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Collective);
@@ -65,6 +69,14 @@ void Collective::TaskMap::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Collective::TaskMap);
+
+template <class Archive>
+void Collective::AlarmInfo::serialize(Archive& ar, const unsigned int version) {
+   ar& BOOST_SERIALIZATION_NVP(finishTime)
+     & BOOST_SERIALIZATION_NVP(position);
+}
+
+SERIALIZABLE(Collective::AlarmInfo);
 
 template <class Archive>
 void Collective::TrapInfo::serialize(Archive& ar, const unsigned int version) {
@@ -250,7 +262,7 @@ Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
     if (info.buildType == BuildInfo::SQUARE)
       mySquares[info.squareInfo.type].clear();
   credit = {
-    {ResourceId::GOLD, 100},
+    {ResourceId::GOLD, 0},
     {ResourceId::WOOD, 0},
     {ResourceId::IRON, 0},
     {ResourceId::STONE, 0},
@@ -824,7 +836,7 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   auto elem = chooseRandom(corpses);
   PCreature& creature = creatures[*index].first;
   mana -= creatures[*index].second;
-  for (Vec2 v : elem.first.neighbors8(true))
+  for (Vec2 v : concat({elem.first}, elem.first.neighbors8(true)))
     if (level->getSquare(v)->canEnter(creature.get())) {
       level->getSquare(elem.first)->removeItems({elem.second});
       addCreature(std::move(creature), v, MinionType::UNDEAD);

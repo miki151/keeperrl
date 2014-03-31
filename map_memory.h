@@ -16,8 +16,10 @@ class MapMemory {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
+  SERIAL_CHECKER;
+
   private:
-  unordered_map<Vec2, ViewIndex> table;
+  unordered_map<Vec2, ViewIndex> SERIAL(table);
 };
 
 #endif

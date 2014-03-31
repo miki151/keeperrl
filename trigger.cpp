@@ -5,9 +5,10 @@
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(viewObject)
-    & BOOST_SERIALIZATION_NVP(level)
-    & BOOST_SERIALIZATION_NVP(position);
+  ar& SVAR(viewObject)
+    & SVAR(level)
+    & SVAR(position);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Trigger);
@@ -89,19 +90,20 @@ class Portal : public Trigger {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Trigger)
-      & BOOST_SERIALIZATION_NVP(startTime)
-      & BOOST_SERIALIZATION_NVP(active)
-      & BOOST_SERIALIZATION_NVP(other)
-      & BOOST_SERIALIZATION_NVP(previous);
+      & SVAR(startTime)
+      & SVAR(active)
+      & SVAR(other)
+      & SVAR(previous);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Portal);
 
   private:
-  double startTime = 1000000;
-  bool active = true;
-  Portal* other = nullptr;
-  static Portal* previous;
+  double SERIAL2(startTime, 1000000);
+  bool SERIAL2(active, true);
+  Portal* SERIAL2(other, nullptr);
+  static Portal* SERIAL(previous);
 };
 
 Portal* Portal::previous = nullptr;
@@ -139,15 +141,16 @@ class Trap : public Trigger {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Trigger) 
-      & BOOST_SERIALIZATION_NVP(effect)
-      & BOOST_SERIALIZATION_NVP(tribe);
+      & SVAR(effect)
+      & SVAR(tribe);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Trap);
 
   private:
-  EffectType effect;
-  Tribe* tribe;
+  EffectType SERIAL(effect);
+  Tribe* SERIAL(tribe);
 };
 
 template <class Archive>

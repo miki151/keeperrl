@@ -5,14 +5,15 @@
 template <class Archive> 
 void Tribe::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(EventListener)
-    & BOOST_SERIALIZATION_NVP(diplomatic)
-    & BOOST_SERIALIZATION_NVP(standing)
-    & BOOST_SERIALIZATION_NVP(attacks)
-    & BOOST_SERIALIZATION_NVP(leader)
-    & BOOST_SERIALIZATION_NVP(members)
-    & BOOST_SERIALIZATION_NVP(enemyTribes)
-    & BOOST_SERIALIZATION_NVP(name)
-    & BOOST_SERIALIZATION_NVP(handicap);
+    & SVAR(diplomatic)
+    & SVAR(standing)
+    & SVAR(attacks)
+    & SVAR(leader)
+    & SVAR(members)
+    & SVAR(enemyTribes)
+    & SVAR(name)
+    & SVAR(handicap);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Tribe);
@@ -27,11 +28,14 @@ class Constant : public Tribe {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Tribe) & BOOST_SERIALIZATION_NVP(standing);
+    ar & SUBCLASS(Tribe) & SVAR(standing);
+    CHECK_SERIAL;
   }
 
+  SERIAL_CHECKER;
+
   private:
-  double standing;
+  double SERIAL(standing);
 };
 
 template <class Archive>

@@ -33,8 +33,8 @@ class VillageControl : public EventListener {
     SERIALIZATION_DECL(AttackTrigger);
 
     protected:
-    set<const Creature*> fightingCreatures;
-    VillageControl* control = nullptr;
+    set<const Creature*> SERIAL(fightingCreatures);
+    VillageControl* SERIAL2(control, nullptr);
   };
 
   static AttackTrigger* getPowerTrigger(double killedCoeff, double powerCoeff);
@@ -55,13 +55,13 @@ class VillageControl : public EventListener {
 
   protected:
   VillageControl(Collective* villain, const Level*, string name, AttackTrigger*);
-  vector<const Creature*> allCreatures;
-  Collective* villain = nullptr;
-  const Level* level = nullptr;
-  string name;
-  Tribe* tribe = nullptr;
-  unique_ptr<AttackTrigger> attackTrigger;
-  bool atWar = false;
+  vector<const Creature*> SERIAL(allCreatures);
+  Collective* SERIAL2(villain, nullptr);
+  const Level* SERIAL2(level, nullptr);
+  string SERIAL(name);
+  Tribe* SERIAL2(tribe, nullptr);
+  unique_ptr<AttackTrigger> SERIAL(attackTrigger);
+  bool SERIAL2(atWar, false);
 };
 
 #endif

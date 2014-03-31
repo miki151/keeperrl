@@ -16,11 +16,14 @@ class TimeQueue {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
+  SERIAL_CHECKER;
+
   private:
   void removeDead();
   Creature* getMinCreature();
 
-  vector<PCreature> creatures;
+  vector<PCreature> SERIAL(creatures);
+
   struct QElem {
     Creature* creature;
     double time;
@@ -28,8 +31,8 @@ class TimeQueue {
     template <class Archive> 
     void serialize(Archive& ar, const unsigned int version);
   };
-  priority_queue<QElem, vector<QElem>, function<bool(QElem, QElem)>> queue;
-  unordered_set<Creature*> dead;
+  priority_queue<QElem, vector<QElem>, function<bool(QElem, QElem)>> SERIAL(queue);
+  unordered_set<Creature*> SERIAL(dead);
 };
 
 #endif

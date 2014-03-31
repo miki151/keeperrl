@@ -39,9 +39,9 @@ class Task : public UniqueEntity {
   Collective* getCollective();
 
   private:
-  Vec2 position;
-  bool done = false;
-  Collective* collective;
+  Vec2 SERIAL(position);
+  bool SERIAL2(done, false);
+  Collective* SERIAL(collective);
 };
 
 #endif

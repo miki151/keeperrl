@@ -20,8 +20,6 @@ class ShortestPath {
       Vec2 target,
       Vec2 from,
       double mult = 0);
-  ShortestPath(ShortestPath&&) = default;
-  ShortestPath& operator=(ShortestPath&&) = default;
   bool isReachable(Vec2 pos) const;
   Vec2 getNextMove(Vec2 pos);
   Vec2 getTarget() const;
@@ -38,11 +36,11 @@ class ShortestPath {
   void setDistance(Vec2, double);
   double getDistance(Vec2 pos) const;
   void constructPath(Vec2 start, bool reversed = false);
-  vector<Vec2> path;
-  Vec2 target;
-  vector<Vec2> directions;
-  Rectangle bounds;
-  bool reversed;
+  vector<Vec2> SERIAL(path);
+  Vec2 SERIAL(target);
+  vector<Vec2> SERIAL(directions);
+  Rectangle SERIAL(bounds);
+  bool SERIAL(reversed);
 };
 
 #endif

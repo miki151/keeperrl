@@ -1175,7 +1175,7 @@ class SetCovered : public ForEachSquare {
 };
 
 
-class FlockAndLeader : public LevelMaker {
+/*class FlockAndLeader : public LevelMaker {
   public:
   FlockAndLeader(CreatureId _leader, CreatureId _flock, Tribe* _tribe, int _minFlock, int _maxFlock) :
       leaderId(_leader), flockId(_flock), tribe(_tribe), minFlock(_minFlock), maxFlock(_maxFlock) {
@@ -1201,7 +1201,7 @@ class FlockAndLeader : public LevelMaker {
   CreatureId leaderId, flockId;
   Tribe* tribe;
   int minFlock, maxFlock;
-};
+};*/
 
 class Stairs : public LevelMaker {
   public:
@@ -1748,12 +1748,12 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
     subSizes.emplace_back(10, 10);
     predicates.push_back(lowlandPred);
   }
-  int numSheepFlocks = 0;
+/*  int numSheepFlocks = 0;
   for (int i : Range(numSheepFlocks)) {
     subMakers.push_back(new FlockAndLeader(CreatureId::ELF, CreatureId::SHEEP, Tribes::get(TribeId::ELVEN), 5, 10));
     subSizes.emplace_back(15, 15);
     predicates.push_back(lowlandPred);
-  }
+  }*/
   int numStoneCircles = Random.getRandom(2, 7);
  /* for (int i : Range(numStoneCircles)) {
     subMakers.push_back(new Circle(ItemId::BOULDER));

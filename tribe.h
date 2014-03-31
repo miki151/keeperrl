@@ -40,18 +40,18 @@ class Tribe : public EventListener {
 
   private:
 
-  bool diplomatic;
+  bool SERIAL(diplomatic);
 
   void initStanding(const Creature*);
   double getMultiplier(const Creature* member);
 
-  unordered_map<const Creature*, double> standing;
-  vector<pair<const Creature*, const Creature*>> attacks;
-  const Creature* leader = nullptr;
-  vector<const Creature*> members;
-  unordered_set<Tribe*> enemyTribes;
-  string name;
-  int handicap = 0;
+  unordered_map<const Creature*, double> SERIAL(standing);
+  vector<pair<const Creature*, const Creature*>> SERIAL(attacks);
+  const Creature* SERIAL2(leader, nullptr);
+  vector<const Creature*> SERIAL(members);
+  unordered_set<Tribe*> SERIAL(enemyTribes);
+  string SERIAL(name);
+  int SERIAL2(handicap, 0);
 };
 
 typedef Singleton<Tribe, TribeId> Tribes;

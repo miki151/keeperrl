@@ -8,9 +8,10 @@
 
 template <class Archive> 
 void Quest::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(adventurers)
-    & BOOST_SERIALIZATION_NVP(location)
-    & BOOST_SERIALIZATION_NVP(startMessage);
+  ar& SVAR(adventurers)
+    & SVAR(location)
+    & SVAR(startMessage);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Quest);
@@ -45,17 +46,18 @@ class KillTribeQuest : public Quest, public EventListener {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Quest)
       & SUBCLASS(EventListener) 
-      & BOOST_SERIALIZATION_NVP(tribe)
-      & BOOST_SERIALIZATION_NVP(onlyImportant)
-      & BOOST_SERIALIZATION_NVP(notified);
+      & SVAR(tribe)
+      & SVAR(onlyImportant)
+      & SVAR(notified);
+    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(KillTribeQuest);
 
   private:
-  Tribe* tribe;
-  bool onlyImportant;
-  bool notified = false;
+  Tribe* SERIAL(tribe);
+  bool SERIAL(onlyImportant);
+  bool SERIAL2(notified, false);
 };
 
 template <class Archive>

@@ -16,16 +16,38 @@
 //   template void T::registerTypes(boost::archive::xml_oarchive&);
 
 #define REGISTER_TYPE(T, A)\
-  (T).register_type(static_cast<A*>(nullptr))
+(T).register_type(static_cast<A*>(nullptr))
+
+#ifndef RELEASE
+#define SERIALIZATION_DEBUG
+#endif
+
+#ifdef SERIALIZATION_DEBUG
+#define SERIAL_CHECKER SerialChecker serialChecker
+#define CHECK_SERIAL serialChecker.checkSerial();
+#define SERIAL(X) X; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker,#X)
+#define SERIAL2(X, Y) X = Y; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker,#X)
+#define SERIAL3(X) SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker,#X);
+#define SVAR(X) boost::serialization::make_nvp(#X, checkSerial(X, X##_Check))
+#else
+#define SERIAL_CHECKER
+#define CHECK_SERIAL
+#define SERIAL(X) X
+#define SERIAL2(X, Y) X = Y
+#define SERIAL3(X)
+#define SVAR(X) boost::serialization::make_nvp(#X, X)
+#endif
 
 #define SERIALIZATION_DECL(A) \
   friend boost::serialization::access; \
   A() {} \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version);
+  void serialize(Archive& ar, const unsigned int version); \
+  SerialChecker serialChecker
 
 #define SERIALIZATION_CONSTRUCTOR(A) \
-  A() {}
+  A() {} \
+  SerialChecker serialChecker
 
 class Serialization {
   public:
@@ -35,29 +57,34 @@ class Serialization {
 
 class SerialChecker {
   public:
-
+  SerialChecker() {}
+  SerialChecker(const SerialChecker&);
   void checkSerial();
+
+  SerialChecker& operator = (const SerialChecker&);
 
   class Check {
     public:
     Check(SerialChecker& checker, const string& name);
+    Check(const Check&);
+    Check& operator = (const Check&);
     void tick();
     void tickOff();
+    void setNewCopy(SerialChecker*);
 
     private:
     bool ticked = false;
     string name;
+    SerialChecker* newCopy = nullptr;
   };
 
-  friend class Check;
+  void addCheck(Check* c);
+
   private:
   vector<Check*> checks;
 };
 
-#define SERIAL_CHECKER SerialChecker serialChecker
-#define CHECK_SERIAL serialChecker.checkSerial()
-#define SERIAL(X) X; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker,#X)
-#define SERIAL2(X, Y) X = Y; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker,#X)
+
 
 template <class T>
 T& checkSerial(T& t, SerialChecker::Check& check) {
@@ -65,7 +92,6 @@ T& checkSerial(T& t, SerialChecker::Check& check) {
   return t;
 }
 
-#define SVAR(X) checkSerial(X, X##_Check)
 
 
 namespace boost { 
@@ -261,6 +287,31 @@ template<class Archive, class T, class Allocator>
 inline void serialize(Archive & ar, std::vector<T, Allocator> & t, unsigned int file_version){
   boost::serialization::split_free(ar, t, file_version);
 }
+
+#ifdef DEBUG_STL
+// stl debug dummies
+
+template<class Archive, class T>
+inline void serialize(Archive & ar, __gnu_debug::vector< T > &t, unsigned int file_version) {
+}
+
+template<class Archive>
+inline void serialize(Archive & ar, __gnu_debug::string &t, unsigned int file_version) {
+}
+
+template<class Archive, class T, class U>
+inline void serialize(Archive & ar, __gnu_debug::map< T, U > &t, unsigned int file_version) {
+}
+
+template<class Archive, class T>
+inline void serialize(Archive & ar, __gnu_debug::set< T > &t, unsigned int file_version) {
+}
+
+template<class Archive, class T>
+inline void serialize(Archive & ar, __gnu_debug::deque< T > &t, unsigned int file_version) {
+}
+
+#endif
 
 //tuple
 template<int N>

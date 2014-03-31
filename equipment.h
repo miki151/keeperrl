@@ -21,7 +21,7 @@ class Equipment : public Inventory {
   static map<EquipmentSlot, string> slotTitles;
 
   private:
-  map<EquipmentSlot, Item*> items;
+  map<EquipmentSlot, Item*> SERIAL(items);
 };
 
 #endif

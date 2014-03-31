@@ -5,7 +5,8 @@
 
 template <class Archive> 
 void MapMemory::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(table);
+  ar & SVAR(table);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(MapMemory);
