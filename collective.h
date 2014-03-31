@@ -149,6 +149,7 @@ class Collective : public CreatureView, public EventListener {
   private:
   Creature* addCreature(PCreature c, Vec2 v, MinionType);
   Creature* getCreature(UniqueId id);
+  void handleCreatureButton(Creature* c, View* view);
   void handleSurprise(Vec2 pos);
   bool knownPos(Vec2) const;
   void unpossess();

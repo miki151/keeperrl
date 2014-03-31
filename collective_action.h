@@ -6,7 +6,7 @@
 class CollectiveAction {
   public:
   enum Type { IDLE, BUILD, WORKSHOP, RECT_SELECTION, POSSESS, BUTTON_RELEASE, CREATURE_BUTTON,
-      GATHER_TEAM, CANCEL_TEAM, MARKET, TECHNOLOGY, DRAW_LEVEL_MAP, EXIT };
+      GATHER_TEAM, EDIT_TEAM, CANCEL_TEAM, MARKET, TECHNOLOGY, DRAW_LEVEL_MAP, EXIT };
 
   CollectiveAction(Type, Vec2 pos, int);
   CollectiveAction(Type, Vec2 pos);

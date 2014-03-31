@@ -501,7 +501,8 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
   for (auto elem : creatureMap){
     int height = lineStart + cnt * legendLineHeight;
     drawViewObject(elem.second.object, textX, height, currentTileLayout.sprites);
-    Color col = (elem.first == chosenCreature) ? green : white;
+    Color col = (elem.first == chosenCreature 
+        || (elem.second.count == 1 && contains(info.team, elem.second.any))) ? green : white;
     renderer.drawText(col, textX + 20, height,
         convertToString(elem.second.count) + "   " + elem.first);
     creatureGroupButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
@@ -513,19 +514,30 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
     ++cnt;
   }
   
-  if (info.gatheringTeam && !info.team.empty()) {
-    renderer.drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, 
+  if (!info.team.empty()) {
+    renderer.drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, "Team: " +
         getPlural("monster", "monsters", info.team.size()));
     ++cnt;
+    if (!info.gatheringTeam) {
+      int height = lineStart + (cnt + 1) * legendLineHeight;
+      renderer.drawText(white, textX, height, "[command]");
+      int but1Width = 10 + renderer.getTextLength("[command]");
+      teamButton = Rectangle(textX, height, textX + but1Width, height + legendLineHeight);
+      renderer.drawText(white, textX + but1Width, height, "[edit]");
+      int but2Width = 10 + renderer.getTextLength("[edit]");
+      editTeamButton = Rectangle(textX + but1Width, height, textX + but1Width + but2Width, height + legendLineHeight);
+      renderer.drawText(white, textX + but1Width + but2Width, height, "[disband]");
+      cancelTeamButton = Rectangle(textX + but1Width + but2Width, height, textX + 230, height + legendLineHeight);
+    }
   }
-  if (info.creatures.size() > 1 || info.gatheringTeam) {
+  if ((info.creatures.size() > 1 && info.team.empty()) || info.gatheringTeam) {
     int height = lineStart + (cnt + 1) * legendLineHeight;
     renderer.drawText((info.gatheringTeam && info.team.empty()) ? green : white, textX, height, 
-        info.team.empty() ? "[gather team]" : "[command team]");
+        info.team.empty() ? "[form team]" : "[done]");
     int butWidth = 150;
     teamButton = Rectangle(textX, height, textX + butWidth, height + legendLineHeight);
     if (info.gatheringTeam) {
-      renderer.drawText(white, textX + butWidth, height, "[disband]");
+      renderer.drawText(white, textX + butWidth, height, "[cancel]");
       cancelTeamButton = Rectangle(textX + butWidth, height, textX + 230, height + legendLineHeight);
     }
     cnt += 2;
@@ -564,7 +576,7 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
         if (c->getSpeciesName() != c->getName())
           line = c->getName() + " " + line;
         drawViewObject(c->getViewObject(), winX + 35, height, currentTileLayout.sprites);
-        renderer.drawText(contains(info.team, c) ? green : white, winX + 55, height, line);
+        renderer.drawText((info.gatheringTeam && contains(info.team, c)) ? green : white, winX + 55, height, line);
         creatureButtons.emplace_back(winX + 20, height, winX + width + 20, height + legendLineHeight);
         chosenCreatures.push_back(c);
         ++cnt;
@@ -1484,6 +1496,10 @@ CollectiveAction WindowView::getClick(double time) {
             if (teamButton && clickPos.inRectangle(*teamButton)) {
               chosenCreature = "";
               return CollectiveAction(CollectiveAction::GATHER_TEAM);
+            }
+            if (editTeamButton && clickPos.inRectangle(*editTeamButton)) {
+              chosenCreature = "";
+              return CollectiveAction(CollectiveAction::EDIT_TEAM);
             }
             if (cancelTeamButton && clickPos.inRectangle(*cancelTeamButton)) {
               chosenCreature = "";

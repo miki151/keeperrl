@@ -1114,6 +1114,9 @@ ViewObject Collective::getTrapObject(TrapType type) {
 
 ViewIndex Collective::getViewIndex(Vec2 pos) const {
   ViewIndex index = level->getSquare(pos)->getViewIndex(this);
+  if (Creature* c = level->getSquare(pos)->getCreature())
+    if (contains(team, c) && gatheringTeam)
+      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::TEAM_HIGHLIGHT);
   if (taskMap.isMarked(pos))
     index.setHighlight(HighlightType::BUILD);
   else if (rectSelectCorner && rectSelectCorner2 && pos.inRectangle(Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2})))
@@ -1322,12 +1325,32 @@ Creature* Collective::getCreature(UniqueId id) {
   return nullptr;
 }
 
+void Collective::handleCreatureButton(Creature* c, View* view) {
+  if (!gatheringTeam)
+    minionView(view, c);
+  else {
+    if (contains(team, c))
+      removeElement(team, c);
+    else
+      team.push_back(c);
+  }
+}
+
 void Collective::processInput(View* view, CollectiveAction action) {
   if (retired)
     return;
   switch (action.getType()) {
+    case CollectiveAction::EDIT_TEAM:
+        CHECK(!team.empty());
+        CHECK(!gatheringTeam);
+        gatheringTeam = true;
+      break;
     case CollectiveAction::GATHER_TEAM:
         if (gatheringTeam && !team.empty()) {
+          gatheringTeam = false;
+          break;
+        } 
+        if (!gatheringTeam && !team.empty()) {
           possess(team[0], view);
  //         gatheringTeam = false;
           for (Creature* c : team) {
@@ -1346,27 +1369,17 @@ void Collective::processInput(View* view, CollectiveAction action) {
         techInfo[action.getNum()].butFun(view);
         break;}
     case CollectiveAction::CREATURE_BUTTON: 
-        if (!gatheringTeam)
-          minionView(view, getCreature(action.getNum()));
-        else {
-          if (contains(team, getCreature(action.getNum())))
-            removeElement(team, getCreature(action.getNum()));
-          else
-            team.push_back(getCreature(action.getNum()));
-        }
+        handleCreatureButton(getCreature(action.getNum()), view);
         break;
     case CollectiveAction::POSSESS: {
         Vec2 pos = action.getPosition();
         if (!pos.inRectangle(level->getBounds()))
           return;
         if (Creature* c = level->getSquare(pos)->getCreature())
-          if (contains(minions, c)) {
-            minionView(view, c);
-//            possess(c, view);
-            break;
-          }
-        }
+          if (contains(minions, c))
+            handleCreatureButton(c, view);
         break;
+        }
     case CollectiveAction::RECT_SELECTION:
         if (rectSelectCorner) {
           rectSelectCorner2 = action.getPosition();

@@ -47,7 +47,13 @@ bool ViewIndex::isEmpty() const {
   return objects.empty() && !highlight;
 }
 
-ViewObject ViewIndex::getObject(ViewLayer l) const {
+const ViewObject& ViewIndex::getObject(ViewLayer l) const {
+  int ind = objIndex[int(l)];
+  CHECK(ind > -1) << "No object on layer " << int(l);
+  return objects[ind];
+}
+
+ViewObject& ViewIndex::getObject(ViewLayer l) {
   int ind = objIndex[int(l)];
   CHECK(ind > -1) << "No object on layer " << int(l);
   return objects[ind];

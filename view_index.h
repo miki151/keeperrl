@@ -9,7 +9,8 @@ class ViewIndex {
   void insert(const ViewObject& obj);
   bool hasObject(ViewLayer) const;
   void removeObject(ViewLayer);
-  ViewObject getObject(ViewLayer) const;
+  const ViewObject& getObject(ViewLayer) const;
+  ViewObject& getObject(ViewLayer);
   Optional<ViewObject> getTopObject(const vector<ViewLayer>&) const;
   bool isEmpty() const;
 

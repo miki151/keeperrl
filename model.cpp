@@ -393,12 +393,12 @@ vector<EnemyInfo> getEnemyInfo() {
 }
 
 static double getKilledCoeff() {
-  return Random.getDouble(0.1, 1);
+  return Random.getDouble(0.1, 1.2);
 };
 
 static double getPowerCoeff() {
   if (Options::getValue(OptionId::AGGRESSIVE_HEROES))
-    return Random.getDouble(0.1, 0.7);
+    return Random.getDouble(0.1, 0.4);
   else
     return 0.0;
 }

@@ -117,6 +117,9 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
     if (object.hasModifier(ViewObject::PLAYER)) {
       renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
     }
+    if (object.hasModifier(ViewObject::TEAM_HIGHLIGHT)) {
+      renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, darkGreen);
+    }
     Tile tile = Tile::getTile(object, spriteMode);
     Color color = getBleedingColor(object);
     if (object.hasModifier(ViewObject::INVISIBLE))
