@@ -149,6 +149,7 @@ class View {
         string count;
         string inactiveReason;
         string help;
+        char hotkey;
       };
       vector<Button> buildings;
       vector<Button> workshop;
@@ -169,6 +170,7 @@ class View {
       struct TechButton {
         ViewId viewId;
         string name;
+        char hotkey;
       };
       vector<TechButton> techButtons;
     } bandInfo;

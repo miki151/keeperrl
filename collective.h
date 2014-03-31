@@ -177,11 +177,12 @@ class Collective : public CreatureView, public EventListener {
 
     Optional<TechId> techId;
     string help;
+    char hotkey;
 
-    BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
-    BuildInfo(BuildType type, SquareInfo info, const string& h = "");
-    BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "");
-    BuildInfo(BuildType type, const string& h = "");
+    BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0);
+    BuildInfo(BuildType type, SquareInfo info, const string& h = "", char hotkey = 0);
+    BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0);
+    BuildInfo(BuildType type, const string& h = "", char hotkey = 0);
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
   vector<View::GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
@@ -298,6 +299,7 @@ class Collective : public CreatureView, public EventListener {
     Task* getTaskForImp(Creature*);
     void takeTask(const Creature*, Task*);
     void freeTask(Task*);
+    void freeTaskDelay(Task*, double delayTime);
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
@@ -311,6 +313,7 @@ class Collective : public CreatureView, public EventListener {
     map<const Creature*, Task*> SERIAL(taskMap);
     map<Task*, CostInfo> SERIAL(completionCost);
     set<pair<const Creature*, UniqueId>> SERIAL(lockedTasks);
+    map<UniqueId, double> SERIAL(delayedTasks);
   } SERIAL(taskMap);
 
   struct TrapInfo {

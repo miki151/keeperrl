@@ -54,6 +54,7 @@ class Renderer {
   void initialize(int width, int height, int color, string title);
   int getTextLength(string s);
   void drawText(FontId, int size, Color color, int x, int y, String s, bool center = false);
+  void drawTextWithHotkey(Color color, int x, int y, const string& text, char key);
   void drawText(Color color, int x, int y, string s, bool center = false, int size = textSize);
   void drawText(Color color, int x, int y, const char* c, bool center = false, int size = textSize);
   void drawImage(int px, int py, const Image& image, double scale = 1);

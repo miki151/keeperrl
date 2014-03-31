@@ -589,9 +589,10 @@ void WindowView::drawVillages(GameInfo::VillageInfo& info) {
 }
 
 void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active,
-    vector<Rectangle>& viewButtons, vector<string>& inactiveReasons) {
+    vector<Rectangle>& viewButtons, vector<string>& inactiveReasons, vector<char>& hotkeys) {
   viewButtons.clear();
   inactiveReasons.clear();
+  hotkeys.clear();
   int textX = renderer.getWidth() - rightBarText;
   for (int i : All(buttons)) {
     int height = legendStartHeight + i * legendLineHeight;
@@ -602,8 +603,9 @@ void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int act
     else if (!buttons[i].inactiveReason.empty())
       color = lightGray;
     inactiveReasons.push_back(buttons[i].inactiveReason);
+    hotkeys.push_back(buttons[i].hotkey);
     string text = buttons[i].name + " " + buttons[i].count;
-    renderer.drawText(color, textX + 30, height, text);
+    renderer.drawTextWithHotkey(color, textX + 30, height, text, buttons[i].hotkey);
     if (buttons[i].cost) {
       string costText = convertToString(buttons[i].cost->second);
       int posX = renderer.getWidth() - renderer.getTextLength(costText) - 10;
@@ -617,22 +619,24 @@ void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int act
 }
   
 void WindowView::drawBuildings(GameInfo::BandInfo& info) {
-  drawButtons(info.buildings, activeBuilding, buildingButtons, inactiveBuildingReasons);
+  drawButtons(info.buildings, activeBuilding, buildingButtons, inactiveBuildingReasons, buildingHotkeys);
+}
+
+void WindowView::drawWorkshop(GameInfo::BandInfo& info) {
+  drawButtons(info.workshop, activeWorkshop, workshopButtons, inactiveWorkshopReasons, workshopHotkeys);
 }
 
 void WindowView::drawTechnology(GameInfo::BandInfo& info) {
   int textX = renderer.getWidth() - rightBarText;
+  techHotkeys.clear();
   for (int i : All(info.techButtons)) {
     int height = legendStartHeight + i * legendLineHeight;
+    techHotkeys.push_back(info.techButtons[i].hotkey);
     drawViewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, ""),
         textX, height, currentTileLayout.sprites);
-    renderer.drawText(white, textX + 20, height, info.techButtons[i].name);
+    renderer.drawTextWithHotkey(white, textX + 20, height, info.techButtons[i].name, info.techButtons[i].hotkey);
     techButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
   }
-}
-
-void WindowView::drawWorkshop(GameInfo::BandInfo& info) {
-  drawButtons(info.workshop, activeWorkshop, workshopButtons, inactiveWorkshopReasons);
 }
 
 void WindowView::drawKeeperHelp() {
@@ -694,6 +698,10 @@ void WindowView::drawBandInfo() {
   uniqueCreatures.clear();
   if (collectiveOption != CollectiveOption::MINIONS)
     chosenCreature = "";
+  if (techHotkeys.size() != info.techButtons.size()) {  // reload hotkeys
+    drawTechnology(info);
+    drawWorkshop(info);
+  }
   switch (collectiveOption) {
     case CollectiveOption::MINIONS: drawMinions(info); break;
     case CollectiveOption::BUILDINGS: drawBuildings(info); break;
@@ -1378,6 +1386,32 @@ CollectiveAction WindowView::getClick(double time) {
   while (renderer.pollEvent(event)) {
     considerScrollEvent(event);
     switch (event.type) {
+      case Event::TextEntered:
+        if (event.text.unicode < 128) {
+          char key = event.text.unicode;
+          for (int i : All(buildingHotkeys))
+            if (key == buildingHotkeys[i]) {
+              chosenCreature = "";
+              if (inactiveBuildingReasons[i] == "" || inactiveBuildingReasons[i] == "inactive") {
+                activeBuilding = i;
+                collectiveOption = CollectiveOption::BUILDINGS;
+              } else
+                presentText("", inactiveBuildingReasons[i]);
+              break;
+            }
+          for (int i : All(workshopHotkeys))
+            if (key == workshopHotkeys[i]) {
+              if (inactiveWorkshopReasons[i] == "" || inactiveWorkshopReasons[i] == "inactive") {
+                activeWorkshop = i;
+                collectiveOption = CollectiveOption::WORKSHOP;
+              } else
+                presentText("", inactiveWorkshopReasons[i]);
+              break;
+            }
+          for (int i : All(techHotkeys))
+            if (key == techHotkeys[i])
+              return CollectiveAction(CollectiveAction::TECHNOLOGY, i);
+        }
       case Event::KeyPressed:
         switch (event.key.code) {
           case Keyboard::Up: center.y -= 2.5; break;

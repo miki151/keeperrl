@@ -85,6 +85,17 @@ void Renderer::drawText(Color color, int x, int y, const char* c, bool center, i
   drawText(TEXT_FONT, size, color, x, y, String(c), center);
 }
 
+void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text, char key) {
+  if (key) {
+    int ind = lowercase(text).find(key);
+    if (ind != string::npos) {
+      int pos = x + getTextLength(text.substr(0, ind));
+      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, colors::gray);
+    }
+  }
+  drawText(color, x, y, text);
+}
+
 void Renderer::drawImage(int px, int py, const Image& image, double scale) {
   drawImage(px, py, px + image.getSize().x * scale, py + image.getSize().y * scale, image, scale);
 }

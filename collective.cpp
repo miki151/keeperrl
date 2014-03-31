@@ -120,39 +120,40 @@ void Collective::PrisonerInfo::serialize(Archive& ar, const unsigned int version
 
 SERIALIZABLE(Collective::PrisonerInfo);
 
-Collective::BuildInfo::BuildInfo(SquareInfo info, Optional<TechId> id, const string& h)
-    : squareInfo(info), buildType(SQUARE), techId(id), help(h) {}
-Collective::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h)
-    : trapInfo(info), buildType(TRAP), techId(id), help(h) {}
-Collective::BuildInfo::BuildInfo(BuildType type, const string& h) : buildType(type), help(h) {
+Collective::BuildInfo::BuildInfo(SquareInfo info, Optional<TechId> id, const string& h, char key)
+    : squareInfo(info), buildType(SQUARE), techId(id), help(h), hotkey(key) {}
+Collective::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h, char key)
+    : trapInfo(info), buildType(TRAP), techId(id), help(h), hotkey(key) {}
+Collective::BuildInfo::BuildInfo(BuildType type, const string& h, char key) : buildType(type), help(h), hotkey(key) {
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH}, type));
 }
-Collective::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const string& h) 
-  : squareInfo(info), buildType(type), help(h) {
+Collective::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const string& h, char key) 
+  : squareInfo(info), buildType(type), help(h), hotkey(key) {
   CHECK(type == IMPALED_HEAD);
 }
 
 const vector<Collective::BuildInfo> Collective::buildInfo {
-    BuildInfo(BuildInfo::DIG),
-    BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Storage", true}),
-    BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}),
-    BuildInfo({SquareType::BED, {ResourceId::WOOD, 10}, "Bed"}),
-    BuildInfo({SquareType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}),
-    BuildInfo({SquareType::LIBRARY, {ResourceId::WOOD, 20}, "Library"}),
-    BuildInfo({SquareType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY),
-    BuildInfo({SquareType::WORKSHOP, {ResourceId::IRON, 15}, "Workshop"}, TechId::CRAFTING),
-    BuildInfo({SquareType::ANIMAL_TRAP, {ResourceId::WOOD, 12}, "Beast cage"}, Nothing(), "Place it in the forest."),
-    BuildInfo({SquareType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}),
-    BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}),
-    BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}),
-    BuildInfo(BuildInfo::DESTROY),
-    BuildInfo(BuildInfo::IMP),
-    BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion."),
-    BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon."),
+    BuildInfo(BuildInfo::DIG, "", 'd'),
+    BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Storage", true}, Nothing(), ""),
+    BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, Nothing(), "", 'c'),
+    BuildInfo({SquareType::BED, {ResourceId::WOOD, 10}, "Bed"}, Nothing(), "", 'b'),
+    BuildInfo({SquareType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
+    BuildInfo({SquareType::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
+    BuildInfo({SquareType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY, "", 'r'),
+    BuildInfo({SquareType::WORKSHOP, {ResourceId::IRON, 15}, "Workshop"}, TechId::CRAFTING, "", 'w'),
+    BuildInfo({SquareType::ANIMAL_TRAP, {ResourceId::WOOD, 12}, "Beast cage"}, Nothing(),
+        "Place it in the forest.", 'a'),
+    BuildInfo({SquareType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
+    BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 'p'),
+    BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u'),
+    BuildInfo(BuildInfo::DESTROY, "", 'e'),
+    BuildInfo(BuildInfo::IMP, "", 'i'),
+    BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'g'),
+    BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 'f'),
 };
 
 const vector<Collective::BuildInfo> Collective::workshopInfo {
-    BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING),
+    BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING, "", 'o'),
     BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS,
         "Summons all minions"),
     BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, TechId::TRAPS,
@@ -252,6 +253,19 @@ map<MinionTask, MinionTaskInfo> taskInfo {
 };
 
 Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
+  bool hotkeys[128] = {0};
+  for (BuildInfo info : concat(buildInfo, workshopInfo)) {
+    if (info.hotkey) {
+      CHECK(!hotkeys[int(info.hotkey)]);
+      hotkeys[int(info.hotkey)] = true;
+    }
+  }
+  for (TechInfo info : getTechInfo()) {
+    if (info.button.hotkey) {
+      CHECK(!hotkeys[int(info.button.hotkey)]);
+      hotkeys[int(info.button.hotkey)] = true;
+    }
+  }
   memory.reset(new map<const Level*, MapMemory>);
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
@@ -928,7 +942,7 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
       case BuildInfo::DIG: {
              buttons.push_back({
                  ViewObject(ViewId::DIG_ICON, ViewLayer::LARGE_ITEM, ""),
-                 "dig or cut tree", Nothing(), "", ""});
+                 "Dig or cut tree", Nothing(), "", ""});
            }
            break;
       case BuildInfo::IMPALED_HEAD: {
@@ -979,25 +993,26 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
       buttons.back().help = "Requires " + Technology::get(*button.techId)->getName();
     if (buttons.back().help.empty())
       buttons.back().help = button.help;
+    buttons.back().hotkey = button.hotkey;
   }
   return buttons;
 }
 
 vector<Collective::TechInfo> Collective::getTechInfo() const {
   vector<TechInfo> ret;
-  ret.push_back({{ViewId::BILE_DEMON, "Humanoids"},
+  ret.push_back({{ViewId::BILE_DEMON, "Humanoids", 'h'},
       [this](View* view) { handleHumanoidBreeding(view); }});
-  ret.push_back({{ViewId::BEAR, "Beasts"},
+  ret.push_back({{ViewId::BEAR, "Beasts", 's'},
       [this](View* view) { handleBeastTaming(view); }}); 
   if (hasTech(TechId::GOLEM))
-    ret.push_back({{ViewId::IRON_GOLEM, "Golems"},
+    ret.push_back({{ViewId::IRON_GOLEM, "Golems", 'm'},
       [this](View* view) { handleMatterAnimation(view); }});      
   if (hasTech(TechId::NECRO))
-    ret.push_back({{ViewId::VAMPIRE, "Necromancy"},
+    ret.push_back({{ViewId::VAMPIRE, "Necromancy", 'n'},
       [this](View* view) { handleNecromancy(view); }});
   ret.push_back({{ViewId::MANA, "Sorcery"}, [this](View* view) {handlePersonalSpells(view);}});
   ret.push_back({{ViewId::EMPTY, ""}, [](View*) {}});
-  ret.push_back({{ViewId::LIBRARY, "Library"},
+  ret.push_back({{ViewId::LIBRARY, "Library", 'l'},
       [this](View* view) { handleLibrary(view); }});
   ret.push_back({{ViewId::GOLD, "Black market"},
       [this](View* view) { handleMarket(view); }});
@@ -2143,8 +2158,10 @@ Task* Collective::TaskMap::getTaskForImp(Creature* c) {
     double dist = (task->getPosition() - c->getPosition()).length8();
     if ((!taken.count(task.get()) || (task->canTransfer() 
                                 && (task->getPosition() - taken.at(task.get())->getPosition()).length8() > dist))
-           && (!closest ||
-           dist < (closest->getPosition() - c->getPosition()).length8()) && !isLocked(c, task.get())) {
+        && (!closest ||
+           dist < (closest->getPosition() - c->getPosition()).length8())
+        && !isLocked(c, task.get())
+        && (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
       bool valid = task->getMove(c);
       if (valid)
         closest = task.get();
@@ -2334,6 +2351,11 @@ void Collective::TaskMap::freeTask(Task* task) {
   }
 }
 
+void Collective::TaskMap::freeTaskDelay(Task* t, double d) {
+  freeTask(t);
+  delayedTasks[t->getUniqueId()] = d;
+}
+
 void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim == keeper && !retired) {
     model->gameOver(keeper, kills.size(), "enemies", getDangerLevel() + points);
@@ -2357,7 +2379,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
         task->cancel();
         returnGold(taskMap.removeTask(task));
       } else
-        taskMap.freeTask(task);
+        taskMap.freeTaskDelay(task, getTime() + 50);
     }
     if (contains(minions, c))
       removeElement(minions, c);

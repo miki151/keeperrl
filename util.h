@@ -860,6 +860,13 @@ inline string capitalFirst(string s) {
   return s;
 }
 
+inline string lowercase(string s) {
+  for (int i : All(s))
+    if (isupper(s[i]))
+      s[i] = tolower(s[i]);
+  return s;
+}
+
 string combine(const vector<string>& adj);
 
 template<class T>
