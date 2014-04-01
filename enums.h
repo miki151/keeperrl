@@ -642,6 +642,7 @@ enum class SpellId {
   INVISIBILITY,
   WORD_OF_POWER,
   SUMMON_SPIRIT,
+  PORTAL,
 };
 
 enum class QuestId { DRAGON, CASTLE_CELLAR, BANDITS, GOBLINS, DWARVES };

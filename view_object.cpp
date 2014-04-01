@@ -93,6 +93,8 @@ string ViewObject::getDescription(bool stats) const {
   string attr;
   if (attack > -1 && stats)
     attr = " att: " + convertToString(attack) + " def: " + convertToString(defense) + " ";
+  if (level > -1 && stats)
+    attr += "level: " + convertToString(level);
   vector<string> mods;
   if (getBleeding() > 0) 
     mods.push_back("wounded");
@@ -116,18 +118,8 @@ void ViewObject::setDefense(int val) {
   defense = val;
 }
 
-Optional<int> ViewObject::getAttack() const {
-  if (attack > -1)
-    return attack;
-  else
-    return Nothing();
-}
-
-Optional<int> ViewObject::getDefense() const {
-  if (defense > -1)
-    return defense;
-  else
-    return Nothing();
+void ViewObject::setLevel(int val) {
+  level = val;
 }
 
 ViewLayer ViewObject::layer() const {

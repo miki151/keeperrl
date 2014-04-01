@@ -175,7 +175,7 @@ static void wordOfPower(Creature* c, EffectStrength strength) {
           other->you(MsgType::ARE, "pushed back");
         }
         other->addEffect(Creature::STUNNED, 2);
-        other->takeDamage(Attack(c, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 25, false));
+        other->takeDamage(Attack(c, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
       }
     }
     for (auto elem : Item::stackItems(c->getSquare(v)->getItems())) {

@@ -8,7 +8,7 @@ const unordered_map<OptionId, int> defaults {
   {OptionId::ASCII, 0},
   {OptionId::EASY_KEEPER, 1},
   {OptionId::AGGRESSIVE_HEROES, 1},
-  {OptionId::EASY_ADVENTURER, 0},
+  {OptionId::EASY_ADVENTURER, 1},
 };
 
 const map<OptionId, string> names {

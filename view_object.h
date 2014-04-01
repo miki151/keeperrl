@@ -33,9 +33,7 @@ class ViewObject {
 
   void setAttack(int);
   void setDefense(int);
-
-  Optional<int> getAttack() const;
-  Optional<int> getDefense() const;
+  void setLevel(int);
 
   ViewObject& setWaterDepth(double);
   double getWaterDepth() const;
@@ -63,6 +61,7 @@ class ViewObject {
   double SERIAL2(height, 0);
   int SERIAL2(attack, -1);
   int SERIAL2(defense, -1);
+  int SERIAL2(level, -1);
   double SERIAL2(waterDepth, -1);
 };
 

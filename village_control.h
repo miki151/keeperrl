@@ -15,7 +15,7 @@ class VillageControl : public EventListener {
   void tick(double time);
 
   bool isConquered() const;
-  vector<const Creature*> getAliveCreatures() const;
+  vector<Creature*> getAliveCreatures() const;
   bool currentlyAttacking() const;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
@@ -55,7 +55,7 @@ class VillageControl : public EventListener {
 
   protected:
   VillageControl(Collective* villain, const Level*, string name, AttackTrigger*);
-  vector<const Creature*> SERIAL(allCreatures);
+  vector<Creature*> SERIAL(allCreatures);
   Collective* SERIAL2(villain, nullptr);
   const Level* SERIAL2(level, nullptr);
   string SERIAL(name);

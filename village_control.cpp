@@ -47,7 +47,7 @@ void VillageControl::addCreature(Creature* c) {
   allCreatures.push_back(c);
 }
 
-vector<const Creature*> VillageControl::getAliveCreatures() const {
+vector<Creature*> VillageControl::getAliveCreatures() const {
   return filter(allCreatures, [](const Creature* c) { return !c->isDead(); });
 }
 
@@ -70,8 +70,15 @@ void VillageControl::AttackTrigger::setVillageControl(VillageControl* c) {
   control = c;
 }
 
+static int expLevelFun(double time) {
+  return time / 500;
+}
+
 void VillageControl::tick(double time) {
   attackTrigger->tick(time);
+  for (Creature* c : getAliveCreatures())
+    if (c->getExpLevel() < expLevelFun(time))
+      c->increaseExpLevel(1);
 }
 
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {

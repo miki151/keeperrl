@@ -660,13 +660,14 @@ vector<SpellLearningInfo> spellLearning {
     { SpellId::HEALING, TechId::SPELLS },
     { SpellId::SUMMON_INSECTS, TechId::SPELLS},
     { SpellId::DECEPTION, TechId::SPELLS},
-    { SpellId::SPEED_SELF, TechId::SPELLS_ADV},
+    { SpellId::SPEED_SELF, TechId::SPELLS},
     { SpellId::STR_BONUS, TechId::SPELLS_ADV},
     { SpellId::DEX_BONUS, TechId::SPELLS_ADV},
     { SpellId::FIRE_SPHERE_PET, TechId::SPELLS_ADV},
-    { SpellId::TELEPORT, TechId::SPELLS_MAS},
+    { SpellId::TELEPORT, TechId::SPELLS_ADV},
     { SpellId::INVISIBILITY, TechId::SPELLS_MAS},
     { SpellId::WORD_OF_POWER, TechId::SPELLS_MAS},
+    { SpellId::PORTAL, TechId::SPELLS_MAS},
 };
 
 vector<SpellInfo> Collective::getSpellLearning(const Technology* tech) {
@@ -2247,8 +2248,8 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
           {MinionTask::GRAVE, {{ MinionTask::TRAIN, 0.5}}},
           {MinionTask::TRAIN, {{ MinionTask::GRAVE, 0.005}}}});
     case MinionType::NORMAL: {
-      double workshopTime = (c->getName() == "gnome" ? 0.6 : 0.2);
-      double labTime = (c->getName() == "gnome" ? 0.3 : 0.1);
+      double workshopTime = (c->getName() == "gnome" ? 0.65 : 0.2);
+      double labTime = (c->getName() == "gnome" ? 0.35 : 0.1);
       double trainTime = 1 - workshopTime - labTime;
       double changeFreq = 0.01;
       return MarkovChain<MinionTask>(MinionTask::SLEEP, {

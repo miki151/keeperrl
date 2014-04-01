@@ -123,6 +123,7 @@ SpellInfo Creature::getSpell(SpellId id) {
     case SpellId::INVISIBILITY: return {id, "invisibility", EffectType::INVISIBLE, 0, 300};
     case SpellId::WORD_OF_POWER: return {id, "word of power", EffectType::WORD_OF_POWER, 0, 300};
     case SpellId::SUMMON_SPIRIT: return {id, "summon spirits", EffectType::SUMMON_SPIRIT, 0, 300};
+    case SpellId::PORTAL: return {id, "portal", EffectType::PORTAL, 0, 200};
   }
   FAIL << "wpeofk";
   return getSpell(SpellId::HEALING);
@@ -1205,7 +1206,7 @@ bool Creature::takeDamage(const Attack& attack) {
     }
   } else {
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.getType()));
-    if (attack.getAttacker()->harmlessApply)
+    if (attack.getEffect() && attack.getAttacker()->harmlessApply)
       Effect::applyToCreature(this, *attack.getEffect(), EffectStrength::NORMAL);
   }
   const Creature* c = attack.getAttacker();
@@ -1215,6 +1216,8 @@ bool Creature::takeDamage(const Attack& attack) {
 void Creature::updateViewObject() {
   viewObject.setDefense(getAttr(AttrType::DEFENSE));
   viewObject.setAttack(getAttr(AttrType::DAMAGE));
+  if (increaseExperience)
+    viewObject.setLevel(getExpLevel());
   if (const Creature* c = getLevel()->getPlayer()) {
     if (isEnemy(c))
       viewObject.setEnemyStatus(ViewObject::HOSTILE);

@@ -868,8 +868,8 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         c.viewId = humanoid ? ViewId::SPECIAL_HUMANOID : ViewId::SPECIAL_BEAST;
         c.speed = r.getRandom(70, 150);
         c.size = chooseRandom({CreatureSize::SMALL, CreatureSize::MEDIUM, CreatureSize::LARGE}, {1, 1, 1});
-        c.strength = r.getRandom(20, 28);
-        c.dexterity = r.getRandom(20, 28);
+        c.strength = r.getRandom(20, 26);
+        c.dexterity = r.getRandom(20, 26);
         c.barehandedDamage = r.getRandom(5, 15);
         c.humanoid = humanoid;
         c.weight = c.size == CreatureSize::LARGE ? r.getRandom(80,120) : 
@@ -990,10 +990,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::SPIRIT:
       return INHERIT(GHOST,
           c.viewId = ViewId::SPIRIT;
-          c.strength = 22;
+          c.strength = 24;
           c.speed = 100;
-          c.dexterity = 27;
-          c.barehandedDamage = 25;
+          c.dexterity = 30;
+          c.barehandedDamage = 30;
           c.name = "ancient spirit";);
     case CreatureId::DEVIL: 
       return CATTR(
@@ -1071,8 +1071,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::KNIGHT;
           c.speed = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 23;
-          c.dexterity = 11;
+          c.strength = 24;
+          c.dexterity = 15;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1088,7 +1088,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::AVATAR;
           c.strength += 6;
           c.dexterity += 6;
-          c.courage = 100;
+          c.courage = 3;
           c.barehandedDamage += 5;
           c.name = "Duke of " + NameGenerator::worldNames.getNext(););
     case CreatureId::WARRIOR:
@@ -1098,7 +1098,7 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::SHAMAN:
       return INHERIT(WARRIOR,
           c.viewId = ViewId::SHAMAN;
-          c.courage = 100;
+          c.courage = 3;
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
           c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
           c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
@@ -1414,7 +1414,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.strength += 6;
           c.dexterity += 5;
           c.speed += 10;
-          c.courage = 100;
+          c.courage = 3;
           c.weight = 120;
           c.name = "dwarf baron";);
     case CreatureId::LIZARDMAN: 
@@ -1439,8 +1439,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::LIZARDLORD;
           c.speed += 20;
           c.strength += 6;
-          c.dexterity += 6;
-          c.courage = 100;
+          c.dexterity += 10;
+          c.courage = 3;
           c.weight = 60;
           c.name = "lizardman chief";);
     case CreatureId::ELF: 
@@ -1589,9 +1589,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::BEAR;
           c.speed = 120;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 18;
-          c.dexterity = 15;
-          c.barehandedDamage = 5;
+          c.strength = 23;
+          c.dexterity = 18;
+          c.barehandedDamage = 14;
           c.weight = 250;
           c.humanoid = false;
           c.animal = true;
@@ -1694,9 +1694,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::WOLF;
           c.speed = 160;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 15;
+          c.strength = 18;
           c.dexterity = 17;
-          c.barehandedDamage = 10;
+          c.barehandedDamage = 12;
           c.humanoid = false;
           c.animal = true;
           c.weight = 35;
