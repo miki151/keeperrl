@@ -592,6 +592,7 @@ void Player::makeMove() {
     model->getView()->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
         "\n \nYou can turn these messages off in the options (press F2).");
     displayGreeting = false;
+    model->getView()->refreshView(creature);
   }
   for (const Creature* c : creature->getVisibleEnemies()) {
     if (c->isSpecialMonster() && !contains(specialCreatures, c)) {

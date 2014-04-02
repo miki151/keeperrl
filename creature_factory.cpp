@@ -21,7 +21,7 @@ class BoulderController : public Monster {
 
   virtual void makeMove() override {
     if (myTribe != nullptr && stopped) {
-      for (Vec2 v : Vec2::directions8(true)) {
+      for (Vec2 v : Vec2::directions4(true)) {
         int radius = 4;
         bool found = false;
         for (int i = 1; i <= radius; ++i) {

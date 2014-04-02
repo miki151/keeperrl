@@ -2000,30 +2000,26 @@ MoveInfo Collective::getBeastMove(Creature* c) {
 }
 
 MoveInfo Collective::getGuardPostMove(Creature* c) {
-  for (auto& elem : guardPosts) {
-    bool isTraining = contains({MinionTask::TRAIN, MinionTask::LABORATORY, MinionTask::WORKSHOP},
-        minionTasks.at(c->getUniqueId()).getState());
-    if (elem.second.attender == c) {
-      if (isTraining) {
-        minionTasks.at(c->getUniqueId()).update();
-        minionTaskStrings[c->getUniqueId()] = "guarding";
-        if (c->getPosition().dist8(elem.first) > 1) {
-          if (auto move = c->getMoveTowards(elem.first))
-            return {1.0, [=] {
-              c->move(*move);
-            }};
-        } else
-          return NoMove;
-      } else
-        elem.second.attender = nullptr;
+  if (contains({MinionType::BEAST, MinionType::PRISONER, MinionType::KEEPER}, getMinionType(c)))
+    return NoMove;
+  vector<Vec2> pos = getKeys(guardPosts);
+  for (Vec2 v : pos)
+    if (guardPosts.at(v).attender == c) {
+      pos = {v};
+      break;
     }
-  }
-  for (auto& elem : guardPosts) {
-    bool isTraining = contains({MinionTask::TRAIN}, minionTasks.at(c->getUniqueId()).getState());
-    if (elem.second.attender == nullptr && isTraining) {
-      elem.second.attender = c;
-      if (Task* t = taskMap.getTask(c))
-        taskMap.removeTask(t);
+  for (Vec2 v : pos) {
+    GuardPostInfo& info = guardPosts.at(v);
+    if (!info.attender || info.attender == c) {
+      info.attender = c;
+      minionTaskStrings[c->getUniqueId()] = "guarding";
+      if (c->getPosition().dist8(v) > 1) {
+        if (auto move = c->getMoveTowards(v))
+          return {1.0, [=] {
+            c->move(*move);
+          }};
+      }
+      break;
     }
   }
   return NoMove;
@@ -2357,7 +2353,7 @@ void Collective::handleSurprise(Vec2 pos) {
         for (Vec2 dest : pos.neighbors8(true))
           if (level->canMoveCreature(other, dest - v)) {
             level->moveCreature(other, dest - v);
-            other->privateMessage("Time for a welcoming committee");
+            other->privateMessage("Surprise!");
             if (!wasMsg) {
               c->privateMessage("Surprise!");
               wasMsg = true;
@@ -2406,9 +2402,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     if (getMinionType(victim) == MinionType::PRISONER && killer && contains(creatures, killer))
       ++executions;
     prisonerInfo.erase(c);
-    for (auto& elem : guardPosts)
-      if (elem.second.attender == c)
-        elem.second.attender = nullptr;
+    freeFromGuardPost(c);
     if (contains(team, c)) {
       removeElement(team, c);
       if (team.empty())
