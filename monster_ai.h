@@ -77,6 +77,7 @@ class MonsterAIFactory {
   static MonsterAIFactory stayInLocation(Location*, bool moveRandomly = true);
   static MonsterAIFactory guardSquare(Vec2 pos);
   static MonsterAIFactory wildlifeNonPredator();
+  static MonsterAIFactory doorEater();
   static MonsterAIFactory scavengerBird(Vec2 corpsePos);
   static MonsterAIFactory summoned(Creature*, int ttl);
   static MonsterAIFactory moveRandomly();

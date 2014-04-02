@@ -1881,6 +1881,8 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   queue->addMaker(new Margin(10, new RandomLocations(subMakers, subSizes, predicates, true, minDistances,
           maxDistances)));
   queue->addMaker(new Roads(SquareType::PATH));
+  queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::HUMAN), CreatureId::GOAT),
+        Random.getRandom(5, 15), MonsterAIFactory::doorEater()));
   queue->addMaker(new Items(ItemFactory::mushrooms(), SquareType::GRASS, 30, 60));
   return new BorderGuard(queue);
 }

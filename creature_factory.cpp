@@ -1535,6 +1535,11 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 150;
           c.animal = true;
           c.name = "pig";);
+    case CreatureId::GOAT:
+      return INHERIT(PIG,
+          c.viewId = ViewId::GOAT;
+          c.weight = 40;
+          c.name = "goat";);
     case CreatureId::JACKAL: 
       return CATTR(
           c.viewId = ViewId::JACKAL;

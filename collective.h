@@ -107,7 +107,7 @@ class Collective : public CreatureView, public EventListener {
     Optional<TechId> techId;
   };
 
-  enum class Warning { DIGGING, STORAGE, WOOD, IRON, STONE, GOLD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, GRAVES, CHESTS, MANA, NO_PRISON, LARGER_PRISON, TORTURE_ROOM, MORE_CHESTS };
+  enum class Warning { DIGGING, STORAGE, WOOD, IRON, STONE, GOLD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, NO_WEAPONS, GRAVES, CHESTS, NO_PRISON, LARGER_PRISON, TORTURE_ROOM, MORE_CHESTS, MANA};
 
   struct ResourceInfo {
     SquareType storageType;
@@ -130,15 +130,17 @@ class Collective : public CreatureView, public EventListener {
     "Build a training room for your minions.",
     "Build a workshop to produce equipment and traps.",
     "Build a laboratory to produce potions.",
+    "You need weapons for your minions.",
     "You need a graveyard to collect corpses",
     "You need to build a treasure room.",
-    "Kill some innocent beings for more mana.",
     "You need to build a prison.",
     "You need a larger prison.",
     "You need to build a torture room.",
-    "You need a larger treasure room."};
+    "You need a larger treasure room.",
+    "Kill some innocent beings for more mana.",
+  };
 
-  const static int numWarnings = 19;
+  const static int numWarnings = 20;
   bool warning[numWarnings] = {0};
 
   enum class MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, EXECUTE, LABOR, TRAINING,
@@ -248,6 +250,7 @@ class Collective : public CreatureView, public EventListener {
   void getEquipmentItem(View* view, ItemPredicate predicate);
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   Item* chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate, int* index = nullptr) const;
+  bool usesEquipment(const Creature* c) const;
   void autoEquipment(Creature* creature);
   MinionType getMinionType(const Creature*) const;
   void setMinionType(Creature*, MinionType type);

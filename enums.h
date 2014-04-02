@@ -161,6 +161,7 @@ enum class CreatureId {
     COW,
     SHEEP,
     PIG,
+    GOAT,
     
     GNOME, 
     LEPRECHAUN,
@@ -356,6 +357,7 @@ enum class ViewId {
   HORSE,
   COW,
   PIG,
+  GOAT,
   SHEEP,
   JACKAL,
   DEER,

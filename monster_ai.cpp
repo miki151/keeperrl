@@ -669,6 +669,39 @@ class Wait : public Behaviour {
   }
 };
 
+class DoorEater : public Behaviour {
+  public:
+  DoorEater(Creature* c) : Behaviour(c) {}
+
+  virtual MoveInfo getMove() override {
+    Optional<Vec2> closestDoor;
+    for (Vec2 v : Rectangle(-10, -10, 10, 10))
+      if (creature->getLevel()->inBounds(creature->getPosition() + v)
+          && creature->getSquare(v)->canLock() && creature->getSquare(v)->canDestroy(creature))
+        if (!closestDoor || v.length8() < closestDoor->length8())
+          closestDoor = v;
+    if (closestDoor) {
+      if (closestDoor->length8() == 1)
+        return {1.0, [this, closestDoor] () {
+          creature->globalMessage(creature->getTheName() + " eats the door.", "You hear chewing.");
+          creature->destroy(*closestDoor);
+        }};
+      else if (auto move = creature->getMoveTowards(creature->getPosition() + *closestDoor))
+        return {1.0, [this, move] () {
+          creature->move(*move);
+        }};
+    }
+    return NoMove;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(DoorEater);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+  }
+};
+
 class Summoned : public GuardTarget, public EventListener {
   public:
   Summoned(Creature* c, Creature* _target, double minDist, double maxDist, double ttl) 
@@ -880,6 +913,7 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, BirdFlyAway);
   REGISTER_TYPE(ar, GoldLust);
   REGISTER_TYPE(ar, Fighter);
+  REGISTER_TYPE(ar, DoorEater);
   REGISTER_TYPE(ar, GuardTarget);
   REGISTER_TYPE(ar, GuardArea);
   REGISTER_TYPE(ar, GuardSquare);
@@ -1009,6 +1043,16 @@ MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
           new Fighter(c, 1.2, false),
           new MoveRandomly(c, 3)},
           {5, 1});
+      });
+}
+
+MonsterAIFactory MonsterAIFactory::doorEater() {
+  return MonsterAIFactory([](Creature* c) {
+      return new MonsterAI(c, {
+          new Fighter(c, 1.2, false),
+          new DoorEater(c),
+          new MoveRandomly(c, 3)},
+          {5, 2, 1});
       });
 }
 

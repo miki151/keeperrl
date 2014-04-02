@@ -488,9 +488,11 @@ void Collective::minionView(View* view, Creature* creature, int prevIndex) {
   minionView(view, creature, *index);
 }
 
+bool Collective::usesEquipment(const Creature* c) const {
+  return c->isHumanoid() && getMinionType(c) != MinionType::PRISONER && c->getName() != "gnome";
+}
+
 void Collective::autoEquipment(Creature* creature) {
-  if (!creature->isHumanoid() || getMinionType(creature) == MinionType::PRISONER || creature->getName() == "gnome")
-    return;
   vector<EquipmentSlot> slots;
   for (auto slot : Equipment::slotTitles)
     slots.push_back(slot.first);
@@ -1768,6 +1770,14 @@ void Collective::tick() {
   for (auto elem : taskInfo)
     if (!mySquares.at(elem.second.square).empty())
       warning[int(elem.second.warning)] = false;
+  warning[int(Warning::NO_WEAPONS)] = false;
+  for (const Creature* c : minions) {
+    PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
+    if (usesEquipment(c) && c->canEquip(genWeapon.get()) && getAllItems([&](const Item* it) {
+          return minionEquipment.canTakeItem(c, it); }, false).empty())
+      warning[int(Warning::NO_WEAPONS)] = true;
+  }
+
   map<Vec2, int> extendedTiles;
   queue<Vec2> extendedQueue;
   vector<Vec2> enemyPos;
@@ -2128,7 +2138,8 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     } else
       return task->getMove(c);
   }
-  autoEquipment(c);
+  if (usesEquipment(c))
+    autoEquipment(c);
   if (c != keeper || !underAttack())
     for (Vec2 v : mySquares[SquareType::STOCKPILE])
       for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
