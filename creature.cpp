@@ -203,7 +203,7 @@ void Creature::spendTime(double t) {
 }
 
 bool Creature::canMove(Vec2 direction) const {
-  if (holding || isAffected(ENTANGLED)) {
+  if (holding) {
     privateMessage("You can't break free!");
     return false;
   }
@@ -214,6 +214,11 @@ void Creature::move(Vec2 direction) {
   stationary = false;
   Debug() << getTheName() << " moving " << direction;
   CHECK(canMove(direction));
+  if (isAffected(ENTANGLED)) {
+    privateMessage("You can't break free!");
+    spendTime(1);
+    return;
+  }
   if (level->canMoveCreature(this, direction))
     level->moveCreature(this, direction);
   else

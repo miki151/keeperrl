@@ -71,7 +71,7 @@ void VillageControl::AttackTrigger::setVillageControl(VillageControl* c) {
 }
 
 static int expLevelFun(double time) {
-  return time / 500;
+  return max(0.0, time - 1600) / 800;
 }
 
 void VillageControl::tick(double time) {
@@ -113,8 +113,8 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
   const int myAttacksDelay = 300;
 
   PowerTrigger(double _killedCoeff, double _powerCoeff) : killedCoeff(_killedCoeff), powerCoeff(_powerCoeff) {}
-  double getCurrentTrigger() {
-    double enemyPoints = killedCoeff * killedPoints + powerCoeff * control->villain->getDangerLevel();
+  double getCurrentTrigger(double time) {
+    double enemyPoints = killedCoeff * killedPoints + powerCoeff * control->villain->getDangerLevel() + time / 8;
     Debug() << "Village " << control->name << " enemy points " << enemyPoints;
     double currentTrigger = 0;
     for (double trigger : triggerAmounts)
@@ -159,7 +159,7 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
       if (fightingCreatures.count(c))
         lastAttackPoints += c->getDifficultyPoints();
     bool firstAttack = lastAttackPoints == 0;
-    double currentTrigger = getCurrentTrigger();
+    double currentTrigger = getCurrentTrigger(time);
     if (lastAttackPoints < currentTrigger) {
       lastMyAttack = time;
       int numCreatures = 0;

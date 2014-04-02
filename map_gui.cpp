@@ -215,7 +215,7 @@ void MapGui::render(Renderer& renderer) {
   renderer.drawFilledRectangle(getBounds(), almostBlack);
   Optional<ViewObject> highlighted;
   Optional<Vec2> highlightedPos = getHighlightedTile(renderer);
-  for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds())) {
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
     Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
     if (!spriteMode && wpos.inRectangle(levelBounds))
       renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);

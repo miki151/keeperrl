@@ -201,9 +201,9 @@ static Location* getVillageLocation() {
 
 static void setHandicap(Tribe* tribe, bool easy) {
   if (easy)
-    tribe->setHandicap(2);
+    tribe->setHandicap(4);
   else
-    tribe->setHandicap(-1);
+    tribe->setHandicap(1);
 }
 
 Model* Model::heroModel(View* view) {

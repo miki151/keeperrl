@@ -311,6 +311,8 @@ void Collective::render(View* view) {
     } else {
       view->setTimeMilli(possessed->getTime() * 300);
       view->clearMessages();
+      if (possessed->getLevel() != level)
+        view->resetCenter();
       unpossess();
     }
   }
@@ -1329,7 +1331,7 @@ Creature* Collective::getCreature(UniqueId id) {
 void Collective::handleCreatureButton(Creature* c, View* view) {
   if (!gatheringTeam)
     minionView(view, c);
-  else {
+  else if (contains(minions, c) && getMinionType(c) != MinionType::PRISONER) {
     if (contains(team, c))
       removeElement(team, c);
     else
