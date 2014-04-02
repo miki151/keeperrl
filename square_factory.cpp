@@ -761,12 +761,13 @@ Square* SquareFactory::get(SquareType s) {
             {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
             {SquareType::TRAINING_DUMMY, 10}, {SquareType::LIBRARY, 10}, {SquareType::STOCKPILE, 1},
             {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10}, {SquareType::PRISON, 10},
-            {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::IMPALED_HEAD, 5}});
+            {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::ANIMAL_TRAP, 10},
+            {SquareType::IMPALED_HEAD, 5}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR_BACKGROUND,"Rope bridge"), "rope bridge", true);
     case SquareType::GRASS:
         return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND, "Grass"), "grass", true, false, 0, 0,
-            {{SquareType::ANIMAL_TRAP, 10}, {SquareType::IMPALED_HEAD, 5}});
+            {{SquareType::IMPALED_HEAD, 5}});
     case SquareType::CROPS:
         return new Square(ViewObject(ViewId::CROPS, ViewLayer::FLOOR_BACKGROUND, "Potatoes"),
             "potatoes", true, false, 0, 0);

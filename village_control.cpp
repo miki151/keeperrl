@@ -114,7 +114,8 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
 
   PowerTrigger(double _killedCoeff, double _powerCoeff) : killedCoeff(_killedCoeff), powerCoeff(_powerCoeff) {}
   double getCurrentTrigger(double time) {
-    double enemyPoints = killedCoeff * killedPoints + powerCoeff * control->villain->getDangerLevel() + time / 8;
+    double enemyPoints = killedCoeff * killedPoints + powerCoeff * control->villain->getDangerLevel()
+      + max(0.0, (time - 1000) / 10);
     Debug() << "Village " << control->name << " enemy points " << enemyPoints;
     double currentTrigger = 0;
     for (double trigger : triggerAmounts)

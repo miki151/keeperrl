@@ -183,7 +183,7 @@ void Level::globalMessage(Vec2 position, const string& ifPlayerCanSee, const str
   if (player) {
     if (playerCanSee(position))
       player->privateMessage(ifPlayerCanSee);
-    else
+    else if (player->getPosition().dist8(position) < 30)
       player->privateMessage(cannot);
   }
 }

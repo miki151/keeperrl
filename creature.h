@@ -179,6 +179,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   Optional<Vec2> getMoveTowards(Vec2 pos, bool avoidEnemies = false);
   Optional<Vec2> getMoveAway(Vec2 pos, bool pathfinding = true);
+  Optional<Vec2> continueMoving();
   bool atTarget() const;
   void die(const Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
   void bleed(double severity);

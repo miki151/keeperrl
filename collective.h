@@ -278,6 +278,8 @@ class Collective : public CreatureView, public EventListener {
   void markItem(const Item*);
   void unmarkItem(UniqueId);
   bool tryLockingDoor(Vec2 pos);
+  void addKnownTile(Vec2 pos);
+
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
@@ -350,6 +352,7 @@ class Collective : public CreatureView, public EventListener {
   Creature* SERIAL2(keeper, nullptr);
   mutable unique_ptr<map<const Level*, MapMemory>> SERIAL(memory);
   Table<bool> SERIAL(knownTiles);
+  set<Vec2> SERIAL(borderTiles);
   bool SERIAL2(gatheringTeam, false);
   vector<Creature*> SERIAL(team);
   map<const Level*, Vec2> SERIAL(teamLevelChanges);

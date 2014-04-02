@@ -32,6 +32,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(keeper)
     & SVAR(memory)
     & SVAR(knownTiles)
+    & SVAR(borderTiles)
     & SVAR(gatheringTeam)
     & SVAR(team)
     & SVAR(teamLevelChanges)
@@ -141,8 +142,7 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo({SquareType::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
     BuildInfo({SquareType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY, "", 'r'),
     BuildInfo({SquareType::WORKSHOP, {ResourceId::IRON, 15}, "Workshop"}, TechId::CRAFTING, "", 'w'),
-    BuildInfo({SquareType::ANIMAL_TRAP, {ResourceId::WOOD, 12}, "Beast cage"}, Nothing(),
-        "Place it in the forest.", 'a'),
+    BuildInfo({SquareType::ANIMAL_TRAP, {ResourceId::WOOD, 12}, "Beast cage"}, Nothing(), "", 'a'),
     BuildInfo({SquareType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
     BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 'p'),
     BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u'),
@@ -1546,6 +1546,16 @@ bool Collective::tryLockingDoor(Vec2 pos) {
   return false;
 }
 
+void Collective::addKnownTile(Vec2 pos) {
+  if (!knownTiles[pos]) {
+    borderTiles.erase(pos);
+    knownTiles[pos] = true;
+    for (Vec2 v : pos.neighbors4())
+      if (level->inBounds(v) && !knownTiles[v])
+        borderTiles.insert(v);
+  }
+}
+
 void Collective::onConstructed(Vec2 pos, SquareType type) {
   if (!contains({SquareType::ANIMAL_TRAP, SquareType::TREE_TRUNK}, type))
     myTiles.insert(pos);
@@ -1682,7 +1692,7 @@ void Collective::update(Creature* c) {
   if (!contains(creatures, c) || c->getLevel() != level)
     return;
   for (Vec2 pos : level->getVisibleTiles(c))
-    knownTiles[pos] = true;
+    addKnownTile(pos);
 //    addToMemory(pos, c);
 }
 
@@ -1977,16 +1987,15 @@ void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
 }
 
 MoveInfo Collective::getBeastMove(Creature* c) {
+  if (!Random.roll(3) && !myTiles.count(c->getPosition()))
+    return NoMove;
+  if (auto move = c->continueMoving())
+    return {1.0, [c, move]() { return c->move(*move); }};
   if (!Random.roll(5))
     return NoMove;
-  Vec2 radius(7, 7);
-  for (Vec2 v : randomPermutation(Rectangle(c->getPosition() - radius, c->getPosition() + radius).getAllSquares()))
-    if (v.inRectangle(level->getBounds()) && !knownPos(v)) {
-      if (auto move = c->getMoveTowards(v))
-        return {1.0, [c, move]() { return c->move(*move); }};
-      else
-        return NoMove;
-    }
+  if (!borderTiles.empty())
+    if (auto move = c->getMoveTowards(chooseRandom(borderTiles)))
+      return {1.0, [c, move]() { return c->move(*move); }};
   return NoMove;
 }
 
@@ -2299,7 +2308,7 @@ void Collective::addCreature(Creature* c, MinionType type) {
           && level->getSquare(pos)->canEnterEmpty(Creature::getDefault()))
         for (Vec2 v : concat({pos}, pos.neighbors8()))
           if (v.inRectangle(level->getBounds()))
-            knownTiles[v] = true;
+            addKnownTile(v);
   }
   creatures.push_back(c);
   minionByType[type].push_back(c);

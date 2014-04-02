@@ -1813,6 +1813,16 @@ int Creature::getDifficultyPoints() const {
   return difficultyPoints;
 }
 
+Optional<Vec2> Creature::continueMoving() {
+  if (shortestPath && shortestPath->isReachable(getPosition())) {
+    Vec2 pos2 = shortestPath->getNextMove(getPosition());
+    if (canMove(pos2 - getPosition())) {
+      return pos2 - getPosition();
+    }
+  }
+  return Nothing();
+}
+
 Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool avoidEnemies) {
   return getMoveTowards(pos, false, avoidEnemies);
 }
