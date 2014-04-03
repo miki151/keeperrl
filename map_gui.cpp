@@ -58,10 +58,6 @@ void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
   renderer.drawText(color, pos.x + 10, pos.y + 1, text);
 }
 
-vector<Vec2> getConnectionDirs(ViewId id) {
-  return Vec2::directions4();
-}
-
 enum class ConnectionId {
   ROAD,
   WALL,
@@ -71,7 +67,6 @@ enum class ConnectionId {
 
 unordered_map<Vec2, ConnectionId> floorIds;
 set<Vec2> shadowed;
-
 
 Optional<ConnectionId> getConnectionId(ViewId id) {
   switch (id) {
@@ -91,8 +86,8 @@ Optional<ConnectionId> getConnectionId(ViewId id) {
   }
 }
 
-bool tileConnects(ViewId id, Vec2 pos) {
-  return floorIds.count(pos) && getConnectionId(id) == floorIds.at(pos);
+bool tileConnects(ConnectionId id, Vec2 pos) {
+  return floorIds.count(pos) && id == floorIds.at(pos);
 }
 
 void MapGui::onLeftClick(Vec2) {
@@ -142,9 +137,10 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
       int width = sizeX - 2 * off;
       int height = sizeY - 2 * off;
       set<Dir> dirs;
-      for (Vec2 dir : getConnectionDirs(object.id()))
-        if (tileConnects(object.id(), tilePos + dir))
-          dirs.insert(dir.getCardinalDir());
+      if (auto connectionId = getConnectionId(object.id()))
+        for (Vec2 dir : Vec2::directions4())
+          if (tileConnects(*connectionId, tilePos + dir))
+            dirs.insert(dir.getCardinalDir());
       Vec2 coord = tile.getSpriteCoord(dirs);
 
       if (object.hasModifier(ViewObject::MOVE_UP))

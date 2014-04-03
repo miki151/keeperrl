@@ -28,7 +28,7 @@ void Player::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Player);
 
-Player::Player(Creature* c, View* v, Model* m, bool greet, map<const Level*, MapMemory>* memory) :
+Player::Player(Creature* c, View* v, Model* m, bool greet, map<Level*, MapMemory>* memory) :
     creature(c), displayGreeting(greet), levelMemory(memory), model(m) {
 }
 
@@ -67,7 +67,7 @@ void Player::onAlarmEvent(const Level* l, Vec2 pos) {
         getCardinalName((pos - creature->getPosition()).getBearing().getCardinalDir()));
 }
 
-ControllerFactory Player::getFactory(View* f, Model *m, map<const Level*, MapMemory>* levelMemory) {
+ControllerFactory Player::getFactory(View* f, Model *m, map<Level*, MapMemory>* levelMemory) {
   return ControllerFactory([=](Creature* c) { return new Player(c, f, m, true, levelMemory);});
 }
 
@@ -551,10 +551,8 @@ void Player::spellAction() {
   creature->castSpell(*index);
 }
 
-const MapMemory& Player::getMemory(const Level* l) const {
-  if (l == nullptr) 
-    l = creature->getLevel();
-  return (*levelMemory)[l];
+const MapMemory& Player::getMemory() const {
+  return (*levelMemory)[creature->getLevel()];
 }
 
 void Player::remember(Vec2 pos, const ViewObject& object) {

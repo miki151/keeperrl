@@ -24,7 +24,7 @@ PController ControllerFactory::get(Creature* c) {
   return PController(fun(c));
 }
 
-const MapMemory& DoNothingController::getMemory(const Level* l) const {
+const MapMemory& DoNothingController::getMemory() const {
   return MapMemory::empty();
 }
 

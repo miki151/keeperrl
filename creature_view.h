@@ -8,7 +8,7 @@ class Tribe;
 
 class CreatureView {
   public:
-  virtual const MapMemory& getMemory(const Level* l) const = 0;
+  virtual const MapMemory& getMemory() const = 0;
   virtual ViewIndex getViewIndex(Vec2 pos) const = 0;
   virtual void refreshGameInfo(View::GameInfo&) const = 0;
   virtual Vec2 getPosition() const = 0;

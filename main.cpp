@@ -270,7 +270,7 @@ int main(int argc, char* argv[]) {
     int var = 0;
     try {
       while (1) {
-        if (model->isTurnBased() || input.is_open())
+        if (model->isTurnBased())
           model->update(var++);
         else
           model->update(double(view->getTimeMilli()) / 300);

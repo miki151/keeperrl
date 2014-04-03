@@ -28,8 +28,8 @@ class Technology;
 class Collective : public CreatureView, public EventListener {
   public:
   Collective(Model*, Tribe*);
-  virtual const MapMemory& getMemory(const Level* l) const override;
-  MapMemory& getMemory(const Level* l);
+  virtual const MapMemory& getMemory() const override;
+  MapMemory& getMemory(Level* l);
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
   virtual void refreshGameInfo(View::GameInfo&) const  override;
   virtual Vec2 getPosition() const  override;
@@ -76,7 +76,6 @@ class Collective : public CreatureView, public EventListener {
   const Creature* getKeeper() const;
   Vec2 getDungeonCenter() const;
   double getDangerLevel(bool includeExecutions = true) const;
-  void learnLocation(const Location* loc);
 
   void render(View*);
 
@@ -350,7 +349,7 @@ class Collective : public CreatureView, public EventListener {
   set<Vec2> SERIAL(myTiles);
   Level* SERIAL2(level, nullptr);
   Creature* SERIAL2(keeper, nullptr);
-  mutable unique_ptr<map<const Level*, MapMemory>> SERIAL(memory);
+  mutable unique_ptr<map<Level*, MapMemory>> SERIAL(memory);
   Table<bool> SERIAL(knownTiles);
   set<Vec2> SERIAL(borderTiles);
   bool SERIAL2(gatheringTeam, false);

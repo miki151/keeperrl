@@ -196,7 +196,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void you(const string& param) const;
   void privateMessage(const string& message) const;
   bool isPlayer() const;
-  const MapMemory& getMemory(const Level* l = nullptr) const;
+  const MapMemory& getMemory() const override;
   void grantIdentify(int numItems);
 
   Controller* getController();

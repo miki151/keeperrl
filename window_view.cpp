@@ -789,7 +789,7 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   movePos.y = max(movePos.y, 0);
   movePos.y = min(movePos.y, int(collective->getLevel()->getBounds().getKY() * mapLayout->squareHeight()));
   mapLayout->updatePlayerPos(movePos);
-  const MapMemory* memory = &collective->getMemory(level); 
+  const MapMemory* memory = &collective->getMemory(); 
   for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), maxLevelBounds)) 
     if (level->inBounds(pos)) {
       ViewIndex index = collective->getViewIndex(pos);
@@ -868,7 +868,7 @@ void WindowView::drawLevelMapPart(const Level* level, Rectangle levelPart, Recta
     putMapPixel(v, black);
   }
   for (Vec2 v : levelPart) {
-    if (!v.inRectangle(level->getBounds()) || (!creature->getMemory(level).hasViewIndex(v) && !creature->canSee(v)))
+    if (!v.inRectangle(level->getBounds()) || (!creature->getMemory().hasViewIndex(v) && !creature->canSee(v)))
       putMapPixel(v - levelPart.getTopLeft(), black);
     else {
       putMapPixel(v - levelPart.getTopLeft(), Tile::getColor(level->getSquare(v)->getViewObject()));
@@ -895,7 +895,7 @@ void WindowView::drawLevelMapPart(const Level* level, Rectangle levelPart, Recta
     for (const Location* loc : level->getAllLocations())
       if (loc->hasName())
         for (Vec2 v : loc->getBounds())
-          if (creature->getMemory(level).hasViewIndex(v) || creature->canSee(v)) {
+          if (creature->getMemory().hasViewIndex(v) || creature->canSee(v)) {
             string text = loc->getName();
             Vec2 pos = bounds.getTopLeft() + loc->getBounds().getBottomRight() * scale;
             renderer.drawFilledRectangle(pos.x, pos.y, pos.x + renderer.getTextLength(text) + 10, pos.y + 25,

@@ -1,40 +1,6 @@
 #ifndef _REPLAY_VIEW
 #define _REPLAY_VIEW
 
-class PushBackStream {
-  public:
-  PushBackStream(ifstream& in) : input(in) {}
-
-  template <class T>
-  PushBackStream& operator >> (T& elem) {
-    CHECK(pushed.empty());
-    input >> elem;
-    return *this;
-  }
-
-  PushBackStream& operator >> (string& elem) {
-    if (!pushed.empty()) {
-      elem = pushed;
-      pushed = "";
-    } else
-      input >> elem;
-    return *this;
-  }
-
-  void pushBack(const string& a) {
-    CHECK(pushed.empty());
-    pushed = a;
-  }
-
-  void close() {
-    input.close();
-  }
-
-  private:
-  string pushed;
-  ifstream& input;
-};
-
 template <class T>
 class ReplayView : public T {
   public:
@@ -46,7 +12,7 @@ class ReplayView : public T {
       T::close();
     }
 
-    virtual void drawLevelMap(const Level*, const CreatureView*) {
+    virtual void drawLevelMap(const CreatureView*) override {
       return;
     }
 
@@ -54,37 +20,34 @@ class ReplayView : public T {
       return fabs(a - b) < 0.001;
     }
 
+    virtual int getTimeMilli() override {
+      string method;
+      int time;
+      input >> method >> time;
+      CHECKEQ(method, "getTime");
+      return time;
+    }
+
+    virtual void presentText(const string& title, const string& text) override {
+      return;
+    }
+
     virtual CollectiveAction getClick(double time) override {
       T::getClick(time);
-      if (stackedAction) {
-        if (equal(time, stackedTime)) {
-          CollectiveAction ret = *stackedAction;
-          stackedAction = Nothing();
-          return ret;
-        }
-        CHECK(time < stackedTime);
-        return CollectiveAction::IDLE;
-      }
       string method;
-      double actionTime;
       CollectiveAction action;
-      input >> method;
-      if (method != "getClick") {
-        input.pushBack(method);
-        return CollectiveAction::IDLE;
-      }
-      input >> action >> actionTime;
-      Debug() << "get Click " << time << " " <<actionTime;
+      input >> method >> action;
       CHECKEQ(method, "getClick");
-      if (equal(time, actionTime))
-        return action;
-      else {
-        CHECK(actionTime > time);
-        CHECK(!stackedAction);
-        stackedAction = action;
-        stackedTime = actionTime;
-        return CollectiveAction::IDLE;
-      }
+      return action;
+    }
+
+    virtual bool isClockStopped() override {
+      T::isClockStopped();
+      string method;
+      bool ret;
+      input >> method >> ret;
+      CHECKEQ(method, "isClockStopped");
+      return ret;
     }
 
     virtual Action getAction() override {
@@ -144,7 +107,7 @@ class ReplayView : public T {
         return convertFromString<int>(action);
     }
   private:
-    PushBackStream input;
+    ifstream& input;
     Optional<CollectiveAction> stackedAction;
     double stackedTime = -1000;
 };

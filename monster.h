@@ -15,7 +15,7 @@ class Monster : public Controller {
   
   virtual void makeMove() override;
   virtual bool isPlayer() const;
-  virtual const MapMemory& getMemory(const Level* l = nullptr) const;
+  virtual const MapMemory& getMemory() const;
 
   virtual void onBump(Creature*);
 

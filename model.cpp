@@ -276,7 +276,7 @@ Model* Model::heroModel(View* view) {
 }
 
 PCreature Model::makePlayer() {
-  map<const Level*, MapMemory>* levelMemory = new map<const Level*, MapMemory>();
+  map<Level*, MapMemory>* levelMemory = new map<Level*, MapMemory>();
   PCreature player = CreatureFactory::addInventory(
       PCreature(new Creature(Tribes::get(TribeId::PLAYER),
       CATTR(

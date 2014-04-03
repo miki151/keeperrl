@@ -260,8 +260,8 @@ Controller* Creature::getController() {
   return controller.get();
 }
 
-const MapMemory& Creature::getMemory(const Level* l) const {
-  return controller->getMemory(l);
+const MapMemory& Creature::getMemory() const {
+  return controller->getMemory();
 }
 
 bool Creature::canSwapPosition(Vec2 direction) const {

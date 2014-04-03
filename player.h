@@ -8,7 +8,7 @@ class Model;
 
 class Player : public Controller, public EventListener {
   public:
-  Player(Creature*, View*, Model*, bool displayGreeting, map<const Level*, MapMemory>* levelMemory);
+  Player(Creature*, View*, Model*, bool displayGreeting, map<Level*, MapMemory>* levelMemory);
   virtual ~Player();
   virtual void grantIdentify(int numItems) override;
 
@@ -21,7 +21,7 @@ class Player : public Controller, public EventListener {
   virtual void onKilled(const Creature* attacker) override;
   virtual void onItemsAppeared(vector<Item*> items, const Creature* from) override;
 
-  virtual const MapMemory& getMemory(const Level* l = nullptr) const override;
+  virtual const MapMemory& getMemory() const override;
   virtual void learnLocation(const Location*) override;
 
   virtual void makeMove() override;
@@ -29,7 +29,7 @@ class Player : public Controller, public EventListener {
 
   virtual void onBump(Creature*);
 
-  static ControllerFactory getFactory(View*, Model*, map<const Level*, MapMemory>* levelMemory);
+  static ControllerFactory getFactory(View*, Model*, map<Level*, MapMemory>* levelMemory);
   
   virtual const Level* getListenerLevel() const override;
   virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) override;
@@ -69,7 +69,7 @@ class Player : public Controller, public EventListener {
   const Location* SERIAL2(lastLocation, nullptr);
   vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);
-  map<const Level*, MapMemory>* SERIAL(levelMemory);
+  map<Level*, MapMemory>* SERIAL(levelMemory);
   Model* SERIAL(model);
   bool SERIAL2(displayTravelInfo, true);
 };

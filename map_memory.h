@@ -7,6 +7,8 @@
 
 class MapMemory {
   public:
+  MapMemory();
+  MapMemory(const MapMemory&);
   void addObject(Vec2 pos, const ViewObject& obj);
   void clearSquare(Vec2 pos);
   bool hasViewIndex(Vec2 pos) const;
@@ -19,7 +21,7 @@ class MapMemory {
   SERIAL_CHECKER;
 
   private:
-  unordered_map<Vec2, ViewIndex> SERIAL(table);
+  Table<Optional<ViewIndex>> SERIAL(table);
 };
 
 #endif

@@ -266,7 +266,7 @@ Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
       hotkeys[int(info.button.hotkey)] = true;
     }
   }
-  memory.reset(new map<const Level*, MapMemory>);
+  memory.reset(new map<Level*, MapMemory>);
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
   mySquares[SquareType::IMPALED_HEAD].clear();
@@ -1100,11 +1100,11 @@ void Collective::updateMemory() {
       addToMemory(v);
 }
 
-const MapMemory& Collective::getMemory(const Level* l) const {
-  return (*memory.get())[l];
+const MapMemory& Collective::getMemory() const {
+  return (*memory.get())[level];
 }
 
-MapMemory& Collective::getMemory(const Level* l) {
+MapMemory& Collective::getMemory(Level* l) {
   return (*memory.get())[l];
 }
 
@@ -1658,11 +1658,6 @@ double Collective::getDangerLevel(bool includeExecutions) const {
   if (includeExecutions)
     ret += mySquares.at(SquareType::IMPALED_HEAD).size() * 150;
   return ret;
-}
-
-void Collective::learnLocation(const Location* loc) {
-  for (Vec2 pos : loc->getBounds())
-    getMemory(loc->getLevel()).addObject(pos, level->getSquare(pos)->getViewObject());
 }
 
 ItemPredicate Collective::unMarkedItems(ItemType type) const {

@@ -35,7 +35,7 @@ bool Monster::isPlayer() const {
   return false;
 }
 
-const MapMemory& Monster::getMemory(const Level* l) const {
+const MapMemory& Monster::getMemory() const {
   return MapMemory::empty();
 }
 

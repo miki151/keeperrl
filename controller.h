@@ -22,7 +22,7 @@ class Controller {
 
   virtual void onKilled(const Creature* attacker) {}
   virtual void onItemsAppeared(vector<Item*> items, const Creature* from) { }
-  virtual const MapMemory& getMemory(const Level* l = nullptr) const = 0;
+  virtual const MapMemory& getMemory() const = 0;
 
   virtual void learnLocation(const Location*) { }
 
@@ -46,7 +46,7 @@ class DoNothingController : public Controller {
   virtual bool isPlayer() const override;
   virtual void you(MsgType type, const string& param) const override;
   virtual void you(const string& param) const override;
-  virtual const MapMemory& getMemory(const Level* l = nullptr) const override;
+  virtual const MapMemory& getMemory() const override;
   virtual void makeMove() override;
   virtual void onBump(Creature*) override;
 
