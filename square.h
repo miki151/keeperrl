@@ -159,7 +159,7 @@ class Square {
   virtual bool isLocked() const { FAIL << "BAD"; return false; }
   virtual void lock() { FAIL << "BAD"; }
 
-  ViewObject getViewObject() const;
+  const ViewObject& getViewObject() const;
   Optional<ViewObject> getBackgroundObject() const;
   void setBackground(const Square*);
   ViewIndex getViewIndex(const CreatureView* c) const;

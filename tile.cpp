@@ -365,7 +365,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::HELL_WALL: return Tile('#', red);
     case ViewId::SECRETPASS: return Tile('#', lightGray);
     case ViewId::DUNGEON_ENTRANCE:
-    case ViewId::DUNGEON_ENTRANCE_MUD: Tile(0x2798, brown, true);
+    case ViewId::DUNGEON_ENTRANCE_MUD: return Tile(0x2798, brown, true);
     case ViewId::DOWN_STAIRCASE_CELLAR:
     case ViewId::DOWN_STAIRCASE: return Tile(0x2798, almostWhite, true);
     case ViewId::UP_STAIRCASE_CELLAR:

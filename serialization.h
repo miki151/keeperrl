@@ -43,11 +43,11 @@
   A() {} \
   template <class Archive> \
   void serialize(Archive& ar, const unsigned int version); \
-  SerialChecker serialChecker
+  SERIAL_CHECKER
 
 #define SERIALIZATION_CONSTRUCTOR(A) \
   A() {} \
-  SerialChecker serialChecker
+  SERIAL_CHECKER
 
 class Serialization {
   public:

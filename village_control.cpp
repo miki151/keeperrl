@@ -71,7 +71,7 @@ void VillageControl::AttackTrigger::setVillageControl(VillageControl* c) {
 }
 
 static int expLevelFun(double time) {
-  return max(0.0, time - 1600) / 800;
+  return max(0.0, time - 1000) / 500;
 }
 
 void VillageControl::tick(double time) {

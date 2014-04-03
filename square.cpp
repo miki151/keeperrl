@@ -263,7 +263,7 @@ bool Square::isBurning() const {
   return fire.isBurning();
 }
 
-ViewObject Square::getViewObject() const {
+const ViewObject& Square::getViewObject() const {
   return viewObject;
 }
 

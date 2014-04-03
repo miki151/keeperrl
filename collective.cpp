@@ -1117,6 +1117,15 @@ ViewObject Collective::getTrapObject(TrapType type) {
   return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM, "Unarmed trap");
 }
 
+static const ViewObject& getConstructionObject(SquareType type) {
+  static map<SquareType, ViewObject> objects;
+  if (!objects.count(type)) {
+    objects.insert(make_pair(type, SquareFactory::get(type)->getViewObject()));
+    objects.at(type).setModifier(ViewObject::PLANNED);
+  }
+  return objects.at(type);
+}
+
 ViewIndex Collective::getViewIndex(Vec2 pos) const {
   ViewIndex index = level->getSquare(pos)->getViewIndex(this);
   if (Creature* c = level->getSquare(pos)->getCreature())
@@ -1132,12 +1141,12 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
     if (guardPosts.count(pos))
       index.insert(ViewObject(ViewId::GUARD_POST, ViewLayer::LARGE_ITEM, "Guard post"));
     if (constructions.count(pos) && !constructions.at(pos).built)
-      index.insert(SquareFactory::get(constructions.at(pos).type)->getViewObject().setModifier(ViewObject::PLANNED));
+      index.insert(getConstructionObject(constructions.at(pos).type));
   }
-  if (const Location* loc = level->getLocation(pos)) {
+ /* if (const Location* loc = level->getLocation(pos)) {
     if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !knownPos(pos))
       index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
-  }
+  }*/
   return index;
 }
 
@@ -1939,6 +1948,11 @@ void Collective::onAlarmEvent(const Level* l, Vec2 pos) {
 }
 
 void Collective::onTechBookEvent(Technology* tech) {
+  if (retired) {
+    messageBuffer.addImportantMessage("The tome describes the knowledge of " + tech->getName()
+        + ", but you do not comprehend it.");
+    return;   
+  }
   vector<Technology*> nextTechs = Technology::getNextTechs(technologies);
   if (tech == nullptr) {
     if (!nextTechs.empty())
@@ -1973,7 +1987,7 @@ void Collective::onPickupEvent(const Creature* c, const vector<Item*>& items) {
 }
 
 void Collective::onSurrenderEvent(Creature* who, const Creature* to) {
-  if (contains(creatures, to) && !contains(creatures, who) && !prisonerInfo.count(who))
+  if (contains(creatures, to) && !contains(creatures, who) && !prisonerInfo.count(who) && !who->isAnimal())
     prisonerInfo[who] = {PrisonerInfo::SURRENDER, nullptr};
 }
 
