@@ -513,7 +513,6 @@ void WindowView::drawMinions(GameInfo::BandInfo& info) {
       uniqueCreatures.push_back(nullptr);
     ++cnt;
   }
-  
   if (!info.team.empty()) {
     renderer.drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, "Team: " +
         getPlural("monster", "monsters", info.team.size()));
@@ -722,6 +721,7 @@ void WindowView::drawBandInfo() {
   creatureGroupButtons.clear();
   creatureButtons.clear();
   creatureNames.clear();
+  editTeamButton = Nothing();
   teamButton = Nothing();
   cancelTeamButton = Nothing();
   chosenCreatures.clear();
@@ -1443,6 +1443,9 @@ CollectiveAction WindowView::getClick(double time) {
         }
       case Event::KeyPressed:
         switch (event.key.code) {
+#ifndef RELEASE
+          case Keyboard::F8: renderer.startMonkey(); break;
+#endif
           case Keyboard::Up: center.y -= 2.5; break;
           case Keyboard::Down: center.y += 2.5; break;
           case Keyboard::Left: center.x -= 2.5; break;
@@ -1458,7 +1461,8 @@ CollectiveAction WindowView::getClick(double time) {
               myClock.cont();
             return CollectiveAction(CollectiveAction::IDLE);
           case Keyboard::Escape:
-            return CollectiveAction(CollectiveAction::EXIT);
+            if (!renderer.isMonkey())
+              return CollectiveAction(CollectiveAction::EXIT);
           default:
             break;
         }

@@ -72,6 +72,10 @@ class Renderer {
   Vec2 getMousePos();
   void setMousePos(Vec2);
 
+  void startMonkey();
+  bool isMonkey();
+  Event getRandomEvent();
+
   static vector<Texture> tiles;
   const static vector<int> tileSize;
   const static int nominalSize;
@@ -81,6 +85,7 @@ class Renderer {
   sf::View* sfView;
   stack<Vec2> translations;
   Vec2 translation;
+  bool monkey = false;
 };
 
 #endif

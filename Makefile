@@ -74,9 +74,6 @@ $(NAME): $(OBJS) $(OBJDIR)/main.o
 test: $(OBJS) $(OBJDIR)/test.o
 	$(LD) $(CFLAGS) -o $@ $^ $(LIBS)
 
-monkey: $(OBJS) $(OBJDIR)/monkey_test.o
-	$(LD) $(CFLAGS) -o $@ $^ $(LIBS)
-
 clean:
 	$(RM) $(OBJDIR)/*.o
 	$(RM) $(OBJDIR)/*.d

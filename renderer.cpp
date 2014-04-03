@@ -161,15 +161,50 @@ void Renderer::initialize(int width, int height, int color, string title) {
   CHECK(symbolFont.loadFromFile("Symbola.ttf"));
 }
 
+Event Renderer::getRandomEvent() {
+  Event::EventType type = Event::EventType(Random.getRandom(int(Event::Count)));
+  Event ret;
+  ret.type = type;
+  int modProb = 5;
+  switch (type) {
+    case Event::KeyPressed:
+      ret.key = {Keyboard::Key(Random.getRandom(int(Keyboard::Key::KeyCount))), Random.roll(modProb),
+          Random.roll(modProb), Random.roll(modProb), Random.roll(modProb) };
+      break;
+    case Event::MouseButtonReleased:
+    case Event::MouseButtonPressed:
+      ret.mouseButton = { chooseRandom({Mouse::Left, Mouse::Right}), Random.getRandom(getWidth()),
+        Random.getRandom(getHeight()) };
+      break;
+    case Event::MouseMoved:
+      ret.mouseMove = { Random.getRandom(getWidth()), Random.getRandom(getHeight()) };
+      break;
+    default: return getRandomEvent();
+  }
+  return ret;
+}
+
 bool Renderer::pollEvent(Event& ev) {
-  return display->pollEvent(ev);
+  if (monkey) {
+    if (Random.roll(2))
+      return false;
+    ev = getRandomEvent();
+    return true;
+  } else
+    return display->pollEvent(ev);
 }
 
 void Renderer::waitEvent(Event& ev) {
-  display->waitEvent(ev);
+  if (monkey) {
+    ev = getRandomEvent();
+    return;
+  } else
+    display->waitEvent(ev);
 }
 
 Vec2 Renderer::getMousePos() {
+  if (monkey)
+    return Vec2(Random.getRandom(getWidth()), Random.getRandom(getHeight()));
   auto pos = Mouse::getPosition(*display);
   return Vec2(pos.x, pos.y);
 }
@@ -178,3 +213,10 @@ void Renderer::setMousePos(Vec2 pos) {
   Mouse::setPosition({pos.x, pos.y}, *display);
 }
 
+void Renderer::startMonkey() {
+  monkey = true;
+}
+  
+bool Renderer::isMonkey() {
+  return monkey;
+}
