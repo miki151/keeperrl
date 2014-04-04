@@ -1086,8 +1086,8 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::AVATAR: 
       return INHERIT(KNIGHT,
           c.viewId = ViewId::AVATAR;
-          c.strength += 6;
-          c.dexterity += 4;
+          c.strength += 5;
+          c.dexterity += 2;
           c.courage = 3;
           c.barehandedDamage += 5;
           c.name = "Duke of " + NameGenerator::worldNames.getNext(););
