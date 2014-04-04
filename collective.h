@@ -136,7 +136,7 @@ class Collective : public CreatureView, public EventListener {
     "You need a larger prison.",
     "You need to build a torture room.",
     "You need a larger treasure room.",
-    "Kill some innocent beings for more mana.",
+    "Kill or torture some innocent beings for more mana.",
   };
 
   const static int numWarnings = 20;

@@ -61,7 +61,7 @@ class BoulderController : public Monster {
     if (creature->isDead())
       return;
     double speed = creature->getSpeed();
-    double deceleration = 0.07;
+    double deceleration = 0.1;
     speed -= deceleration * 100 * 100 / speed;
     if (speed < 30) {
       if (myTribe) {
@@ -1086,8 +1086,8 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::AVATAR: 
       return INHERIT(KNIGHT,
           c.viewId = ViewId::AVATAR;
-          c.strength += 8;
-          c.dexterity += 8;
+          c.strength += 6;
+          c.dexterity += 4;
           c.courage = 3;
           c.barehandedDamage += 5;
           c.name = "Duke of " + NameGenerator::worldNames.getNext(););

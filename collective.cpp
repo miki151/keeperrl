@@ -512,7 +512,8 @@ void Collective::autoEquipment(Creature* creature) {
       minionEquipment.own(creature, it);
       if (it->canEquip())
         removeElement(slots, it->getEquipmentSlot());
-      break;
+      if (it->getType() != ItemType::AMMO)
+        break;
     }
   }
 }

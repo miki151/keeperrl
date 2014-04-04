@@ -651,6 +651,21 @@ class TrainingDummy : public Furniture {
   SERIALIZATION_CONSTRUCTOR(TrainingDummy);
 };
 
+class Library : public TrainingDummy {
+  public:
+  using TrainingDummy::TrainingDummy;
+
+  virtual void onApply(Creature* c) override {
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(TrainingDummy);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Library);
+};
+
 class Workshop : public Furniture {
   public:
   using Furniture::Furniture;
@@ -733,6 +748,7 @@ void SquareFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Altar);
   REGISTER_TYPE(ar, ConstructionDropItems);
   REGISTER_TYPE(ar, TrainingDummy);
+  REGISTER_TYPE(ar, Library);
   REGISTER_TYPE(ar, Workshop);
   REGISTER_TYPE(ar, Hatchery);
 }
@@ -854,7 +870,7 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::IMPALED_HEAD:
         return new Square(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head"), "impaled head", true);
     case SquareType::LIBRARY:
-        return new TrainingDummy(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
+        return new Library(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
             "book shelf");
     case SquareType::LABORATORY: return new Laboratory(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "cauldron"),
                                    "cauldron", 0);

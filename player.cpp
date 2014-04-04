@@ -599,6 +599,7 @@ void Player::makeMove() {
   for (const Creature* c : creature->getVisibleEnemies()) {
     if (c->isSpecialMonster() && !contains(specialCreatures, c)) {
       privateMessage(MessageBuffer::important(c->getDescription()));
+      model->getView()->refreshView(creature);
       specialCreatures.push_back(c);
     }
   }
