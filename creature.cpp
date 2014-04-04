@@ -450,50 +450,51 @@ void Creature::finishEquipChain() {
   numEquipActions = 0;
 }
 
-bool Creature::canEquipIfEmptySlot(const Item* item, bool msg) const {
+bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
   if (!isHumanoid())
     return false;
   if (numGoodArms() == 0) {
-    if (msg)
-      privateMessage("You don't have hands!");
+    if (reason)
+      *reason = "You don't have hands!";
     return false;
   }
   if (!hasSkill(Skill::twoHandedWeapon) && item->isWieldedTwoHanded()) {
-    if (msg)
-      privateMessage("You don't have the skill to use two-handed weapons.");
+    if (reason)
+      *reason = "You don't have the skill to use two-handed weapons.";
     return false;
   }
   if (!hasSkill(Skill::archery) && item->getType() == ItemType::RANGED_WEAPON) {
-    if (msg)
-      privateMessage("You don't have the skill to shoot a bow.");
+    if (reason)
+      *reason = "You don't have the skill to shoot a bow.";
     return false;
   }
   if (numGoodArms() == 1 && item->isWieldedTwoHanded()) {
-    if (msg)
-      privateMessage("You need two hands to wield " + item->getAName() + "!");
+    if (reason)
+      *reason = "You need two hands to wield " + item->getAName() + "!";
     return false;
   }
   return item->canEquip();
 }
 
-bool Creature::canEquip(const Item* item) const {
-  return canEquipIfEmptySlot(item, false) && equipment.getItem(item->getEquipmentSlot()) == nullptr;
+bool Creature::canEquip(const Item* item, string* reason) const {
+  return canEquipIfEmptySlot(item, reason) && equipment.getItem(item->getEquipmentSlot()) == nullptr;
 }
 
-bool Creature::canUnequip(const Item* item) const {
+bool Creature::canUnequip(const Item* item, string* reason) const {
   if (!equipment.isEquiped(item))
     return false;
   if (!isHumanoid())
     return false;
   if (numGoodArms() == 0) {
-    privateMessage("You don't have hands!");
+    if (reason)
+      *reason = "You don't have hands!";
     return false;
   } else
     return true;
 }
 
 void Creature::equip(Item* item) {
-  CHECK(canEquip(item));
+  CHECK(canEquip(item, nullptr));
   Debug() << getTheName() << " equip " << item->getName();
   EquipmentSlot slot = item->getEquipmentSlot();
   equipment.equip(item, slot);
@@ -506,7 +507,7 @@ void Creature::equip(Item* item) {
 }
 
 void Creature::unequip(Item* item) {
-  CHECK(canUnequip(item));
+  CHECK(canUnequip(item, nullptr));
   Debug() << getTheName() << " unequip";
   EquipmentSlot slot = item->getEquipmentSlot();
   CHECK(equipment.getItem(slot) == item) << "Item not equiped.";
@@ -1444,7 +1445,7 @@ void Creature::take(PItem item) {
     addSkill(Skill::archery);
   Item* ref = item.get();
   equipment.addItem(std::move(item));
-  if (canEquip(ref))
+  if (canEquip(ref, nullptr))
     equip(ref);
 }
 

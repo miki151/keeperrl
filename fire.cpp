@@ -45,3 +45,6 @@ bool Fire::isBurntOut() const {
   return burnt > 0.999 && size == 0;
 }
 
+double Fire::getFlamability() const {
+  return flamability;
+}

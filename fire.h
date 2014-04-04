@@ -12,6 +12,7 @@ class Fire {
   bool isBurning() const;
   double getSize() const;
   bool isBurntOut() const;
+  double getFlamability() const;
 
   SERIALIZATION_DECL(Fire);
 

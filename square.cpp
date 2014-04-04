@@ -111,15 +111,15 @@ bool Square::construct(SquareType type) {
 }
 
 void Square::destroy() {
- // CHECK(canDestroy());
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   EventListener::addSquareReplacedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareType::FLOOR)));
 }
 
 void Square::burnOut() {
-  if (canDestroy())
-    destroy();
+  getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
+  EventListener::addSquareReplacedEvent(getLevel(), getPosition());
+  getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareType::FLOOR)));
 }
 
 const vector<Vec2>& Square::getTravelDir() const {

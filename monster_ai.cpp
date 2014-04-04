@@ -488,7 +488,7 @@ class Fighter : public Behaviour, public EventListener {
     distance = enemyDir.length8();
     if (creature->isHumanoid() && !creature->getEquipment().getItem(EquipmentSlot::WEAPON)) {
       Item* weapon = getBestWeapon();
-      if (weapon != nullptr && creature->canEquip(weapon))
+      if (weapon != nullptr && creature->canEquip(weapon, nullptr))
         return {3.0 / (2.0 + distance), [this, weapon, other]() {
           EventListener::addCombatEvent(creature);
           EventListener::addCombatEvent(other);

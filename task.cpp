@@ -194,7 +194,7 @@ class EquipItem : public PickItem {
     if (!pickedUp)
       return PickItem::getMove(c);
     vector<Item*> it = c->getEquipment().getItems(items.containsPredicate());
-    if (!it.empty() && c->canEquip(getOnlyElement(it)))
+    if (!it.empty() && c->canEquip(getOnlyElement(it), nullptr))
       return {1.0, [=] {
         c->globalMessage(c->getTheName() + " equips " + getOnlyElement(it)->getAName());
         c->equip(getOnlyElement(it));

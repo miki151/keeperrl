@@ -338,9 +338,12 @@ void Player::equipmentAction() {
     }
     index = *newIndex;
     EquipmentSlot slot = slots[index];
+    string reason;
     if (Item* item = creature->getEquipment().getItem(slot)) {
-      if (creature->canUnequip(item))
+      if (creature->canUnequip(item, &reason))
         creature->unequip(item);
+      else
+        creature->privateMessage(reason);
     } else {
       vector<Item*> items = chooseItem("Choose an item to equip:", [=](const Item* item) {
           return item->canEquip()
@@ -349,9 +352,10 @@ void Player::equipmentAction() {
       if (items.size() == 0) {
         continue;
       }
-      if (creature->canEquip(items[0])) {
+      if (creature->canEquip(items[0], &reason)) {
         creature->equip(items[0]);
-      }
+      } else
+        creature->privateMessage(reason);
     }
   }
 }
@@ -391,13 +395,13 @@ void Player::displayInventory() {
     return;
   }
   vector<View::ListElem> options;
-  if (creature->canEquip(item[0])) {
+  if (creature->canEquip(item[0], nullptr)) {
     options.push_back("equip");
   }
   if (creature->canApplyItem(item[0])) {
     options.push_back("apply");
   }
-  if (creature->canUnequip(item[0]))
+  if (creature->canUnequip(item[0], nullptr))
     options.push_back("remove");
   else {
     options.push_back("throw");

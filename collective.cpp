@@ -577,9 +577,12 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
     Item* currentItem = creature->getEquipment().getItem(slots[index]);
     const Item* chosenItem = chooseEquipmentItem(view, currentItem, [&](const Item* it) {
         return minionEquipment.getOwner(it) != creature
-            && creature->canEquipIfEmptySlot(it) && it->getEquipmentSlot() == slots[index]; });
-    if (chosenItem)
+            && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slots[index]; });
+    if (chosenItem) {
+      if (Creature* c = const_cast<Creature*>(minionEquipment.getOwner(chosenItem)))
+        c->removeEffect(Creature::SLEEP);
       minionEquipment.own(creature, chosenItem);
+    }
   }
   handleEquipment(view, creature, index);
 }
@@ -1787,7 +1790,7 @@ void Collective::tick() {
   warning[int(Warning::NO_WEAPONS)] = false;
   for (const Creature* c : minions) {
     PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
-    if (usesEquipment(c) && c->canEquip(genWeapon.get()) && getAllItems([&](const Item* it) {
+    if (usesEquipment(c) && c->canEquip(genWeapon.get(), nullptr) && getAllItems([&](const Item* it) {
           return minionEquipment.canTakeItem(c, it); }, false).empty())
       warning[int(Warning::NO_WEAPONS)] = true;
   }
@@ -2158,7 +2161,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     for (Vec2 v : mySquares[SquareType::STOCKPILE])
       for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
             return minionEquipment.getOwner(it) == c; })) {
-        if (c->canEquip(it))
+        if (c->canEquip(it, nullptr))
           taskMap.addTask(Task::equipItem(this, v, it), c);
         else
           taskMap.addTask(Task::pickItem(this, v, {it}), c);

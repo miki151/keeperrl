@@ -141,9 +141,9 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void finishEquipChain();
   void equip(Item* item);
   void unequip(Item* item);
-  bool canEquip(const Item* item) const;
-  bool canEquipIfEmptySlot(const Item* item, bool msg = false) const;
-  bool canUnequip(const Item* item) const;
+  bool canEquip(const Item* item, string* reason) const;
+  bool canEquipIfEmptySlot(const Item* item, string* reason) const;
+  bool canUnequip(const Item* item, string* reason) const;
   bool canThrowItem(Item*);
   void throwItem(Item*, Vec2 direction);
   bool canHeal(Vec2 direction) const;

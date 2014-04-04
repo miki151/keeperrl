@@ -172,12 +172,12 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
   Level* c1 = buildLevel(
       Level::Builder(30, 20, "Crypt"),
       LevelMaker::cryptLevel(CreatureFactory::crypt(),{StairKey::CRYPT}, {}));
-  Level* p1 = buildLevel(
+ /* Level* p1 = buildLevel(
       Level::Builder(13, 13, "Pyramid Level 2"),
       LevelMaker::pyramidLevel(CreatureFactory::pyramid(1), {StairKey::PYRAMID},  {StairKey::PYRAMID}));
   Level* p2 = buildLevel(
       Level::Builder(11, 11, "Pyramid Level 3"),
-      LevelMaker::pyramidLevel(CreatureFactory::pyramid(2), {}, {StairKey::PYRAMID}));
+      LevelMaker::pyramidLevel(CreatureFactory::pyramid(2), {}, {StairKey::PYRAMID}));*/
   Level* cellar = buildLevel(
       Level::Builder(30, 20, "Cellar"),
       LevelMaker::cellarLevel(CreatureFactory::singleType(Tribes::get(TribeId::CASTLE_CELLAR), castleNem1.first),
@@ -187,8 +187,8 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
       LevelMaker::cavernLevel(CreatureFactory::singleType(Tribes::get(TribeId::DRAGON), castleNem2.first),
           SquareType::MUD_WALL, SquareType::MUD, StairLook::NORMAL, {StairKey::DRAGON}, {}));
   addLink(StairDirection::DOWN, StairKey::CRYPT, top, c1);
-  addLink(StairDirection::UP, StairKey::PYRAMID, top, p1);
-  addLink(StairDirection::UP, StairKey::PYRAMID, p1, p2);
+ // addLink(StairDirection::UP, StairKey::PYRAMID, top, p1);
+ // addLink(StairDirection::UP, StairKey::PYRAMID, p1, p2);
   addLink(StairDirection::DOWN, StairKey::CASTLE_CELLAR, top, cellar);
   addLink(StairDirection::DOWN, StairKey::DRAGON, top, dragon); 
 
@@ -201,9 +201,9 @@ static Location* getVillageLocation() {
 
 static void setHandicap(Tribe* tribe, bool easy) {
   if (easy)
-    tribe->setHandicap(4);
+    tribe->setHandicap(3);
   else
-    tribe->setHandicap(1);
+    tribe->setHandicap(-1);
 }
 
 Model* Model::heroModel(View* view) {

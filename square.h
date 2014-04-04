@@ -218,7 +218,7 @@ class SolidSquare : public Square {
   public:
   SolidSquare(const ViewObject& vo, const string& name, bool canSee, map<SquareType, int> constructions = {},
       bool alwaysVisible = false, double flamability = 0) :
-      Square(vo, name, canSee, false, 0, flamability, constructions) {
+      Square(vo, name, canSee, false, 299, flamability, constructions) {
   }
 
   SERIALIZATION_DECL(SolidSquare);
