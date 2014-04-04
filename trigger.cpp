@@ -81,7 +81,7 @@ class Portal : public Trigger {
   virtual void tick(double time) override {
     if (startTime == -1)
       startTime = time;
-    if (time - startTime >= 100) {
+    if (time - startTime >= 30) {
       level->globalMessage(position, "The portal disappears.");
       level->getSquare(position)->removeTrigger(this);
     }

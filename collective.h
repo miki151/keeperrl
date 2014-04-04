@@ -143,7 +143,7 @@ class Collective : public CreatureView, public EventListener {
   bool warning[numWarnings] = {0};
 
   enum class MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, EXECUTE, LABOR, TRAINING,
-    WORKSHOP, LAB };
+    WORKSHOP, LAB, STUDY };
 
   SERIALIZATION_DECL(Collective);
 

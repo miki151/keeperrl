@@ -394,6 +394,7 @@ vector<TaskOption> taskOptions {
   {MinionTask::TRAIN, Collective::MinionOption::TRAINING, "Training"},
   {MinionTask::WORKSHOP, Collective::MinionOption::WORKSHOP, "Workshop"},
   {MinionTask::LABORATORY, Collective::MinionOption::LAB, "Lab"},
+  {MinionTask::STUDY, Collective::MinionOption::STUDY, "Study"},
 };
 
 void Collective::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
@@ -712,14 +713,14 @@ void Collective::handlePersonalSpells(View* view) {
 vector<Collective::SpawnInfo> raisingInfo {
   {CreatureId::ZOMBIE, 30, TechId::NECRO},
   {CreatureId::MUMMY, 50, TechId::NECRO},
-  {CreatureId::VAMPIRE, 50, TechId::VAMPIRE},
-  {CreatureId::VAMPIRE_LORD, 100, TechId::VAMPIRE_ADV},
+  {CreatureId::VAMPIRE, 80, TechId::VAMPIRE},
+  {CreatureId::VAMPIRE_LORD, 150, TechId::VAMPIRE_ADV},
 };
 
 vector<Collective::SpawnInfo> animationInfo {
-  {CreatureId::STONE_GOLEM, 50, TechId::GOLEM},
-  {CreatureId::IRON_GOLEM, 50, TechId::GOLEM_ADV},
-  {CreatureId::LAVA_GOLEM, 100, TechId::GOLEM_MAS},
+  {CreatureId::STONE_GOLEM, 30, TechId::GOLEM},
+  {CreatureId::IRON_GOLEM, 80, TechId::GOLEM_ADV},
+  {CreatureId::LAVA_GOLEM, 150, TechId::GOLEM_MAS},
 };
 
 
@@ -1615,7 +1616,13 @@ set<TrapType> Collective::getNeededTraps() const {
 
 void Collective::onAppliedSquare(Vec2 pos) {
   if (mySquares.at(SquareType::LIBRARY).count(pos)) {
-    mana += 0.3 + max(0., 2 - (mana + double(getDangerLevel(false))) / 700);
+    Creature* c = NOTNULL(level->getSquare(pos)->getCreature());
+    if (c == keeper)
+      mana += 0.3 + max(0., 2 - (mana + double(getDangerLevel(false))) / 700);
+    else {
+      if (Random.roll(60))
+        c->addSpell(chooseRandom(keeper->getSpells()).id);
+    }
   }
   if (mySquares.at(SquareType::TRAINING_DUMMY).count(pos)) {
     if (hasTech(TechId::ARCHERY) && Random.roll(30))
@@ -1999,7 +2006,7 @@ void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
 }
 
 MoveInfo Collective::getBeastMove(Creature* c) {
-  if (!Random.roll(3) && !myTiles.count(c->getPosition()))
+  if (!Random.roll(2) && !myTiles.count(c->getPosition()))
     return NoMove;
   if (auto move = c->continueMoving())
     return {1.0, [c, move]() { return c->move(*move); }};
@@ -2274,9 +2281,15 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
     case MinionType::GOLEM:
       return MarkovChain<MinionTask>(MinionTask::TRAIN, {{MinionTask::TRAIN, {}}});
     case MinionType::UNDEAD:
-      return MarkovChain<MinionTask>(MinionTask::GRAVE, {
-          {MinionTask::GRAVE, {{ MinionTask::TRAIN, 0.5}}},
-          {MinionTask::TRAIN, {{ MinionTask::GRAVE, 0.005}}}});
+      if (c->getName() != "vampire lord")
+        return MarkovChain<MinionTask>(MinionTask::GRAVE, {
+            {MinionTask::GRAVE, {{ MinionTask::TRAIN, 0.5}}},
+            {MinionTask::TRAIN, {{ MinionTask::GRAVE, 0.005}}}});
+      else
+        return MarkovChain<MinionTask>(MinionTask::GRAVE, {
+            {MinionTask::GRAVE, {{ MinionTask::TRAIN, 0.5}, { MinionTask::STUDY, 0.1}}},
+            {MinionTask::STUDY, {{ MinionTask::GRAVE, 0.005}}},
+            {MinionTask::TRAIN, {{ MinionTask::GRAVE, 0.005}}}});
     case MinionType::NORMAL: {
       double workshopTime = (c->getName() == "gnome" ? 0.65 : 0.2);
       double labTime = (c->getName() == "gnome" ? 0.35 : 0.1);

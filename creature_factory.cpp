@@ -1071,8 +1071,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::KNIGHT;
           c.speed = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 25;
-          c.dexterity = 18;
+          c.strength = 26;
+          c.dexterity = 19;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1094,6 +1094,8 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::WARRIOR:
       return INHERIT(KNIGHT,
           c.viewId = ViewId::WARRIOR;
+          c.strength -= 3;
+          c.dexterity -= 3;
           c.name = "warrior";);
     case CreatureId::SHAMAN:
       return INHERIT(WARRIOR,
@@ -1109,8 +1111,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::ARCHER;
           c.speed = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 16;
-          c.dexterity = 20;
+          c.strength = 17;
+          c.dexterity = 22;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1247,7 +1249,7 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(VAMPIRE,
           c.viewId = ViewId::VAMPIRE_LORD;
           c.speed += 20;
-          c.strength += 3;
+          c.strength += 1;
           c.dexterity += 1;
           c.barehandedDamage += 4;
           c.flyer = true;

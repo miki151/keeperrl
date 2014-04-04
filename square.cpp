@@ -177,7 +177,7 @@ void Square::tick(double time) {
     for (Item* it : getItems())
       it->setOnFire(fire.getSize(), level, position);
   }
-  for (PTrigger& t : triggers)
+  for (Trigger* t : extractRefs(triggers))
     t->tick(time);
   tickSpecial(time);
 }

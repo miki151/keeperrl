@@ -35,7 +35,7 @@
 #include <boost/serialization/string.hpp>
 
 #ifndef RELEASE
-//#define DEBUG_STL
+#define DEBUG_STL
 #endif
 
 #ifdef DEBUG_STL

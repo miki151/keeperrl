@@ -682,6 +682,11 @@ class MustInitialize {
     return elem.front() += t;
   }
 
+  T& operator -= (const T& t) {
+    CHECK(!elem.empty()) << "Element not initialized";
+    return elem.front() -= t;
+  }
+
   T* operator -> () {
     CHECK(!elem.empty());
     return &elem.front();
