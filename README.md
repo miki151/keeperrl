@@ -6,7 +6,7 @@ Source code of KeeperRL
 Compiling
 =========
 
--Prerequisites
+*Prerequisites*
 
   * make essentials
   * git
