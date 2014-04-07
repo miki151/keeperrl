@@ -1631,6 +1631,8 @@ Action WindowView::getAction() {
       else
         return Action(ActionId::IDLE);
     }
+    if (event.type != BlockingEvent::KEY)
+      return Action(ActionId::IDLE);
     auto key = event.key;
     if (key->code == Keyboard::F1)
       key = getEventFromMenu();
