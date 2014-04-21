@@ -1,11 +1,14 @@
 #ifndef _WINDOW_VIEW
 #define _WINDOW_VIEW
 
+#include <SFML/Audio/Music.hpp>
+
 #include "util.h"
 #include "view.h"
-#include "action.h"
 #include "map_layout.h"
 #include "map_gui.h"
+#include "minimap_gui.h"
+#include "input_queue.h"
 
 class ViewIndex;
 
@@ -22,12 +25,14 @@ class WindowView: public View {
   virtual void addMessage(const string& message) override;
   virtual void addImportantMessage(const string& message) override;
   virtual void clearMessages() override;
+  virtual void retireMessages() override;
   virtual void refreshView(const CreatureView*) override;
   virtual void updateView(const CreatureView*) override;
   virtual void drawLevelMap(const CreatureView*) override;
   virtual void resetCenter() override;
   virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      Optional<ActionId> exitAction = Nothing()) override;
+      MenuType = View::NORMAL_MENU, double* scrollPos = nullptr,
+      Optional<UserInput::Type> exitAction = Nothing()) override;
   virtual Optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
@@ -35,11 +40,10 @@ class WindowView: public View {
 
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      Optional<ActionId> exitAction = Nothing()) override;
+      Optional<UserInput::Type> exitAction = Nothing()) override;
   virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
 
-  virtual Action getAction() override;
-  virtual CollectiveAction getClick(double time) override;
+  virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual int getTimeMilli() override;
   virtual void setTimeMilli(int) override;
@@ -51,39 +55,35 @@ class WindowView: public View {
 
   private:
 
-  void drawLevelMapPart(const Level* level, Rectangle levelPart, Rectangle bounds, const CreatureView* creature,
-      bool drawLocations = true);
-  Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index,
-      Optional<ActionId> exitAction, Optional<sf::Event::KeyEvent> exitKey, vector<sf::Event::KeyEvent> shortCuts);
-  Optional<ActionId> getSimpleActionId(sf::Event::KeyEvent key);
+  void updateMinimap(const CreatureView*);
+  Rectangle getMenuPosition(View::MenuType type);
+  Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index, MenuType,
+      double* scrollPos, Optional<UserInput::Type> exitAction, Optional<sf::Event::KeyEvent> exitKey,
+      vector<sf::Event::KeyEvent> shortCuts);
+  Optional<UserInput::Type> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
+  void rebuildGui();
   void drawMap();
-  void drawPlayerInfo();
-  void drawPlayerStats(GameInfo::PlayerInfo&);
-  void drawBandInfo();
-  void drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active, vector<Rectangle>& viewButtons);
-  void updateButtons(vector<GameInfo::BandInfo::Button> buttons, vector<string>& inactiveReasons,
-      vector<char>& hotkeys);
-  void drawBuildings(GameInfo::BandInfo& info);
-  void drawTechnology(GameInfo::BandInfo& info);
-  void drawWorkshop(GameInfo::BandInfo& info);
-  void updateBuildings(GameInfo::BandInfo& info);
-  void updateTechnology(GameInfo::BandInfo& info);
-  void updateWorkshop(GameInfo::BandInfo& info);
-  void drawVillages(GameInfo::VillageInfo& info);
-  void drawMinions(GameInfo::BandInfo& info);
-  void drawKeeperHelp();
+  PGuiElem drawBottomPlayerInfo(GameInfo::PlayerInfo&);
+  PGuiElem drawRightPlayerInfo(GameInfo::PlayerInfo&);
+  PGuiElem drawPlayerStats(GameInfo::PlayerInfo&);
+  PGuiElem drawBottomBandInfo(GameInfo::BandInfo& info);
+  PGuiElem drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo&);
+  PGuiElem drawBuildings(GameInfo::BandInfo& info);
+  PGuiElem  drawTechnology(GameInfo::BandInfo& info);
+  PGuiElem drawWorkshop(GameInfo::BandInfo& info);
+  PGuiElem drawVillages(GameInfo::VillageInfo& info);
+  PGuiElem drawMinions(GameInfo::BandInfo& info);
+  PGuiElem drawMinionWindow(GameInfo::BandInfo& info);
+  PGuiElem drawKeeperHelp();
   void drawHint(sf::Color color, const string& text);
-  struct BlockingEvent {
-    enum Type { IDLE, KEY, MOUSE_LEFT, MOUSE_MOVE, MOUSE_WHEEL, WHEEL_BUTTON, MINIMAP } type;
-    Optional<sf::Event::KeyEvent> key;
-    int wheelDiff;
-  };
-  BlockingEvent readkey();
   Optional<sf::Event::KeyEvent> getEventFromMenu();
+  void propagateEvent(const Event& event, vector<GuiElem*>);
+  void keyboardAction(Event::KeyEvent key);
 
   void showMessage(const string& message);
-  void retireMessages();
+  PGuiElem drawListGui(const string& title, const vector<ListElem>& options, int& height,
+      int* highlight = nullptr, int* choice = nullptr);
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void refreshText();
@@ -95,10 +95,11 @@ class WindowView: public View {
   void clearMessageBox();
   void unzoom();
   void switchTiles();
-  void resize(int, int);
+  void resize(int width, int height, vector<GuiElem*> gui);
   Rectangle getMapViewBounds() const;
 
   bool considerScrollEvent(sf::Event&);
+  bool considerResizeEvent(sf::Event&, vector<GuiElem*> gui);
 
   int messageInd = 0;
   const static unsigned int maxMsgLength = 90;
@@ -114,7 +115,8 @@ class WindowView: public View {
     KEY_MAPPING,
   };
   
-  CollectiveOption collectiveOption = CollectiveOption::BUILDINGS;
+  PGuiElem drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveOption option);
+  CollectiveOption collectiveOption = CollectiveOption::VILLAGES;
 
   enum class LegendOption {
     STATS,
@@ -125,6 +127,12 @@ class WindowView: public View {
 
   MapLayout* mapLayout;
   MapGui* mapGui;
+  MinimapGui* minimapGui;
+  PGuiElem mapGuiDecoration;
+  vector<PGuiElem> tempGuiElems;
+  vector<GuiElem*> getAllGuiElems();
+  vector<GuiElem*> getClickableGuiElems();
+  InputQueue inputQueue;
 
   bool gameReady = false;
 
@@ -137,28 +145,16 @@ class WindowView: public View {
   TileLayouts spriteLayouts;
   TileLayouts currentTileLayout;
 
-  vector<Rectangle> bottomKeyButtons;
-  vector<Rectangle> optionButtons;
-  vector<Rectangle> buildingButtons;
-  vector<string> inactiveBuildingReasons;
-  vector<char> buildingHotkeys;
-  vector<Rectangle> workshopButtons;
-  vector<string> inactiveWorkshopReasons;
-  vector<char> workshopHotkeys;
   int activeBuilding = 0;
   int activeWorkshop = -1;
-  vector<Rectangle> techButtons;
-  vector<char> techHotkeys;
-  vector<Rectangle> creatureGroupButtons;
-  vector<Rectangle> creatureButtons;
-  Optional<Rectangle> teamButton;
-  Optional<Rectangle> editTeamButton;
-  Optional<Rectangle> cancelTeamButton;
-  Optional<Rectangle> pauseButton;
-  vector<const Creature*> uniqueCreatures;
-  vector<string> creatureNames;
   string chosenCreature;
-  vector<const Creature*> chosenCreatures;
+
+  string hint;
+
+  function<void()> getHintCallback(const string&);
+  function<void()> getButtonCallback(UserInput);
+
+  sf::Music music;
 
   Vec2 lastMousePos;
   struct {

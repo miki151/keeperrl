@@ -114,7 +114,7 @@ static int summonCreatures(Creature* c, int radius, vector<PCreature> creatures)
   vector<Vec2> area = Rectangle(-radius, -radius, radius, radius).getAllSquares();
   for (int i : All(creatures))
     for (Vec2 v : randomPermutation(area))
-      if (c->getSquare(v)->canEnter(creatures[i].get())) {
+      if (c->getLevel()->inBounds(v + c->getPosition()) && c->getSquare(v)->canEnter(creatures[i].get())) {
         ++numCreated;
         c->getLevel()->addCreature(c->getPosition() + v, std::move(creatures[i]));
         break;

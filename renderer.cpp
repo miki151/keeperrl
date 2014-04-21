@@ -110,6 +110,10 @@ void Renderer::drawImage(int px, int py, int kx, int ky, const Image& image, dou
   display->draw(s);
 }
 
+void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, Optional<Color> color) {
+  drawSprite(pos.x, pos.y, spos.x, spos.y, size.x, size.y, t, -1, -1, color);
+}
+
 void Renderer::drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t, int dw, int dh,
     Optional<Color> color) {
   Sprite s(t, sf::IntRect(px, py, w, h));
@@ -136,15 +140,6 @@ void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, 
   drawFilledRectangle(Rectangle(px, py, kx, ky), color, outline);
 }
 
-void Renderer::drawAndClearBuffer() {
-  display->display();
-  display->clear(Color(0, 0, 0));
-}
-
-void Renderer::resize(int width, int height) {
-  display->setView(*(sfView = new sf::View(sf::FloatRect(0, 0, width, height))));
-}
-
 int Renderer::getWidth() {
   return display->getSize().x;
 }
@@ -153,70 +148,10 @@ int Renderer::getHeight() {
   return display->getSize().y;
 }
 
-void Renderer::initialize(int width, int height, int color, string title) {
-  display = new RenderWindow(VideoMode(1024, 600, 32), "KeeperRL");
-  sfView = new sf::View(display->getDefaultView());
+void Renderer::initialize(RenderTarget* d, int width, int height) {
+  display = d;
   CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(tileFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(symbolFont.loadFromFile("Symbola.ttf"));
 }
 
-Event Renderer::getRandomEvent() {
-  Event::EventType type = Event::EventType(Random.getRandom(int(Event::Count)));
-  Event ret;
-  ret.type = type;
-  int modProb = 5;
-  switch (type) {
-    case Event::KeyPressed:
-      ret.key = {Keyboard::Key(Random.getRandom(int(Keyboard::Key::KeyCount))), Random.roll(modProb),
-          Random.roll(modProb), Random.roll(modProb), Random.roll(modProb) };
-      break;
-    case Event::MouseButtonReleased:
-    case Event::MouseButtonPressed:
-      ret.mouseButton = { chooseRandom({Mouse::Left, Mouse::Right}), Random.getRandom(getWidth()),
-        Random.getRandom(getHeight()) };
-      break;
-    case Event::MouseMoved:
-      ret.mouseMove = { Random.getRandom(getWidth()), Random.getRandom(getHeight()) };
-      break;
-    default: return getRandomEvent();
-  }
-  return ret;
-}
-
-bool Renderer::pollEvent(Event& ev) {
-  if (monkey) {
-    if (Random.roll(2))
-      return false;
-    ev = getRandomEvent();
-    return true;
-  } else
-    return display->pollEvent(ev);
-}
-
-void Renderer::waitEvent(Event& ev) {
-  if (monkey) {
-    ev = getRandomEvent();
-    return;
-  } else
-    display->waitEvent(ev);
-}
-
-Vec2 Renderer::getMousePos() {
-  if (monkey)
-    return Vec2(Random.getRandom(getWidth()), Random.getRandom(getHeight()));
-  auto pos = Mouse::getPosition(*display);
-  return Vec2(pos.x, pos.y);
-}
-
-void Renderer::setMousePos(Vec2 pos) {
-  Mouse::setPosition({pos.x, pos.y}, *display);
-}
-
-void Renderer::startMonkey() {
-  monkey = true;
-}
-  
-bool Renderer::isMonkey() {
-  return monkey;
-}

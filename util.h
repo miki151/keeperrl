@@ -46,6 +46,9 @@ typedef unique_ptr<Level> PLevel;
 class VillageControl;
 typedef unique_ptr<VillageControl> PVillageControl;
 
+class GuiElem;
+typedef unique_ptr<GuiElem> PGuiElem;
+
 template<class T>
 vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
   vector<T*> ret;
@@ -561,6 +564,16 @@ function<bool(const T&)> andFun(function<bool(const T&)> x, const function<bool(
   return [x, y](T t) { return x(t) && y(t); };
 }
 
+class OnExit {
+  public:
+  OnExit(function<void()> f) : fun(f) {}
+
+  ~OnExit() { fun(); }
+
+  private:
+  function<void()> fun;
+};
+
 class Nothing {
 };
 
@@ -848,6 +861,22 @@ template<class T>
 T getOnlyElement(vector<T>&& v) {
   CHECK(v.size() == 1);
   return std::move(v[0]);
+}
+
+template <typename T>
+void emplaceBack(vector<T>&) {}
+
+template <typename T, typename First, typename... Args>
+void emplaceBack(vector<T>& v, First&& first, Args&&... args) {
+  v.emplace_back(std::move(std::forward<First>(first)));
+  emplaceBack(v, std::forward<Args>(args)...);
+}
+
+template <typename T, typename... Args>
+vector<T> makeVec(Args&&... args) {
+  vector<T> ret;
+  emplaceBack(ret, args...);
+  return ret;
 }
 
 inline string addAParticle(const string& s) {

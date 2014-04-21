@@ -6,6 +6,7 @@ string Options::filename;
 const unordered_map<OptionId, int> defaults {
   {OptionId::HINTS, 1},
   {OptionId::ASCII, 0},
+  {OptionId::MUSIC, 1},
   {OptionId::EASY_KEEPER, 1},
   {OptionId::AGGRESSIVE_HEROES, 1},
   {OptionId::EASY_ADVENTURER, 1},
@@ -14,16 +15,23 @@ const unordered_map<OptionId, int> defaults {
 const map<OptionId, string> names {
   {OptionId::HINTS, "In-game hints"},
   {OptionId::ASCII, "Unicode graphics"},
+  {OptionId::MUSIC, "Music"},
   {OptionId::EASY_KEEPER, "Game difficulty"},
   {OptionId::AGGRESSIVE_HEROES, "Aggressive enemies"},
   {OptionId::EASY_ADVENTURER, "Game difficulty"},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
-  {OptionSet::GENERAL, {OptionId::HINTS, OptionId::ASCII}},
+  {OptionSet::GENERAL, {OptionId::HINTS, OptionId::ASCII, OptionId::MUSIC}},
   {OptionSet::KEEPER, {OptionId::EASY_KEEPER, OptionId::AGGRESSIVE_HEROES}},
   {OptionSet::ADVENTURER, {OptionId::EASY_ADVENTURER}},
 };
+
+map<OptionId, Options::Trigger> triggers;
+
+void Options::addTrigger(OptionId id, Trigger trigger) {
+  triggers[id] = trigger;
+}
 
 void Options::init(const string& path) {
   filename = path;
@@ -40,12 +48,15 @@ int Options::getValue(OptionId id) {
 void Options::setValue(OptionId id, int value) {
   auto values = readValues(filename);
   values[id] = value;
+  if (triggers.count(id))
+    triggers.at(id)(value);
   writeValues(filename, values);
 }
 
 unordered_map<OptionId, vector<string>> valueNames {
   {OptionId::HINTS, { "off", "on" }},
   {OptionId::ASCII, { "off", "on" }},
+  {OptionId::MUSIC, { "off", "on" }},
   {OptionId::EASY_KEEPER, { "hard", "easy" }},
   {OptionId::AGGRESSIVE_HEROES, { "no", "yes" }},
   {OptionId::EASY_ADVENTURER, { "hard", "easy" }},

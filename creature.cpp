@@ -200,6 +200,7 @@ vector<const Creature*> Creature::getKills() const {
 void Creature::spendTime(double t) {
   time += 100.0 * t / (double) getAttr(AttrType::SPEED);
   hidden = false;
+  controller->onSpentTime();
 }
 
 bool Creature::canMove(Vec2 direction) const {

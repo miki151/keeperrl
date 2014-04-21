@@ -12,6 +12,7 @@ using sf::Image;
 using sf::Sprite;
 using sf::Texture;
 using sf::RenderWindow;
+using sf::RenderTarget;
 using sf::Event;
 
 namespace colors {
@@ -47,11 +48,20 @@ namespace colors {
   Color transparency(const Color& color, int trans);
 }
 
+enum class SpriteId {
+  BUILDINGS,
+  MINIONS,
+  LIBRARY,
+  WORKSHOP,
+  DIPLOMACY,
+  HELP,
+};
+
 class Renderer {
   public: 
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
-  void initialize(int width, int height, int color, string title);
+  void initialize(RenderTarget*, int width, int height);
   int getTextLength(string s);
   void drawText(FontId, int size, Color color, int x, int y, String s, bool center = false);
   void drawTextWithHotkey(Color color, int x, int y, const string& text, char key);
@@ -59,33 +69,21 @@ class Renderer {
   void drawText(Color color, int x, int y, const char* c, bool center = false, int size = textSize);
   void drawImage(int px, int py, const Image& image, double scale = 1);
   void drawImage(int px, int py, int kx, int ky, const Image& image, double scale = 1);
+  void drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, Optional<Color> color = Nothing());
   void drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t, int dw = -1, int dh = -1,
       Optional<Color> color = Nothing());
+  void drawSprite(int x, int y, SpriteId, Optional<Color> color = Nothing());
   void drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline = Nothing());
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline = Nothing());
-  void drawAndClearBuffer();
-  void resize(int width, int height);
   int getWidth();
   int getHeight();
-  bool pollEvent(Event&);
-  void waitEvent(Event&);
-  Vec2 getMousePos();
-  void setMousePos(Vec2);
-
-  void startMonkey();
-  bool isMonkey();
-  Event getRandomEvent();
 
   static vector<Texture> tiles;
   const static vector<int> tileSize;
   const static int nominalSize;
 
   private:
-  RenderWindow* display = nullptr;
-  sf::View* sfView;
-  stack<Vec2> translations;
-  Vec2 translation;
-  bool monkey = false;
+  RenderTarget* display = nullptr;
 };
 
 #endif

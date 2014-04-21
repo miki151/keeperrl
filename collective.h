@@ -55,7 +55,7 @@ class Collective : public CreatureView, public EventListener {
 
   void onConqueredLand(const string& name);
 
-  void processInput(View* view, CollectiveAction);
+  void processInput(View* view, UserInput);
   void tick();
   void update(Creature*);
   MoveInfo getMove(Creature* c);
@@ -248,7 +248,8 @@ class Collective : public CreatureView, public EventListener {
   void handleMarket(View*, int prevItem = 0);
   void getEquipmentItem(View* view, ItemPredicate predicate);
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
-  Item* chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate, int* index = nullptr) const;
+  Item* chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate,
+      int* index = nullptr, double* scrollPos = nullptr) const;
   bool usesEquipment(const Creature* c) const;
   void autoEquipment(Creature* creature);
   MinionType getMinionType(const Creature*) const;

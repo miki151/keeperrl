@@ -3,7 +3,6 @@
 
 #include "util.h"
 #include "level.h"
-#include "action.h"
 #include "level_generator.h"
 #include "square_factory.h"
 #include "monster.h"

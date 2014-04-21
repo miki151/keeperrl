@@ -20,13 +20,6 @@ class LoggingView : public T {
       return res;
     }
 
-    virtual CollectiveAction getClick(double time) override {
-      CollectiveAction res = T::getClick(time);
-      output << "getClick " << res << endl;
-      output.flush();
-      return res;
-    }
-
     virtual bool isClockStopped() override {
       bool res = T::isClockStopped();
       output << "isClockStopped " << res << endl;
@@ -34,16 +27,16 @@ class LoggingView : public T {
       return res;
     }
     
-    virtual Action getAction() override {
-      Action res = T::getAction();
+    virtual UserInput getAction() override {
+      UserInput res = T::getAction();
       output << "getAction " << res << endl;
       output.flush();
       return res;
     }
 
     virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        Optional<ActionId> action) override {
-      auto res = T::chooseFromList(title, options, index, action);
+        View::MenuType type, double* scrollPos, Optional<UserInput::Type> action) override {
+      auto res = T::chooseFromList(title, options, index, type, scrollPos, action);
       output << "chooseFromList ";
       if (res)
         output << *res << endl;

@@ -452,7 +452,7 @@ void Collective::minionView(View* view, Creature* creature, int prevIndex) {
   getMinionOptions(creature, mOpt, lOpt);
   auto index = view->chooseFromList(capitalFirst(creature->getNameAndTitle()) 
       + ", level: " + convertToString(creature->getExpLevel()) + ", kills: "
-      + convertToString(creature->getKills().size()), lOpt, prevIndex);
+      + convertToString(creature->getKills().size()), lOpt, prevIndex, View::MINION_MENU);
   if (!index)
     return;
   switch (mOpt[*index]) {
@@ -561,10 +561,11 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
   int index = *newIndex;
   if (index == slotItems.size() + consumables.size()) { // [Add item]
     int itIndex = 0;
+    double scrollPos = 0;
     while (1) {
       const Item* chosenItem = chooseEquipmentItem(view, nullptr, [&](const Item* it) {
           return minionEquipment.getOwner(it) != creature && !it->canEquip()
-              && minionEquipment.needs(creature, it); }, &itIndex);
+              && minionEquipment.needs(creature, it); }, &itIndex, &scrollPos);
       if (chosenItem)
         minionEquipment.own(creature, chosenItem);
       else break;
@@ -599,7 +600,8 @@ vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinio
   return allItems;
 }
 
-Item* Collective::chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate, int* prevIndex) const {
+Item* Collective::chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate,
+    int* prevIndex, double* scrollPos) const {
   vector<View::ListElem> options;
   vector<Item*> currentItemVec;
   if (currentItem) {
@@ -630,7 +632,8 @@ Item* Collective::chooseEquipmentItem(View* view, Item* currentItem, ItemPredica
     options.emplace_back(elem.first);
     allStacked.push_back(elem.second.front());
   }
-  auto index = view->chooseFromList("Choose an item to equip: ", options, prevIndex ? *prevIndex : 0);
+  auto index = view->chooseFromList("Choose an item to equip: ", options, prevIndex ? *prevIndex : 0,
+      View::NORMAL_MENU, scrollPos);
   if (!index)
     return nullptr;
   if (prevIndex)
@@ -1355,16 +1358,16 @@ void Collective::handleCreatureButton(Creature* c, View* view) {
   }
 }
 
-void Collective::processInput(View* view, CollectiveAction action) {
+void Collective::processInput(View* view, UserInput input) {
   if (retired)
     return;
-  switch (action.getType()) {
-    case CollectiveAction::EDIT_TEAM:
+  switch (input.type) {
+    case UserInput::EDIT_TEAM:
         CHECK(!team.empty());
         CHECK(!gatheringTeam);
         gatheringTeam = true;
       break;
-    case CollectiveAction::GATHER_TEAM:
+    case UserInput::GATHER_TEAM:
         if (gatheringTeam && !team.empty()) {
           gatheringTeam = false;
           break;
@@ -1380,18 +1383,18 @@ void Collective::processInput(View* view, CollectiveAction action) {
         } else
           gatheringTeam = true;
         break;
-    case CollectiveAction::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
-    case CollectiveAction::CANCEL_TEAM: gatheringTeam = false; team.clear(); break;
-    case CollectiveAction::MARKET: handleMarket(view); break;
-    case CollectiveAction::TECHNOLOGY: {
+    case UserInput::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
+    case UserInput::CANCEL_TEAM: gatheringTeam = false; team.clear(); break;
+    case UserInput::MARKET: handleMarket(view); break;
+    case UserInput::TECHNOLOGY: {
         vector<TechInfo> techInfo = getTechInfo();
-        techInfo[action.getNum()].butFun(view);
+        techInfo[input.getNum()].butFun(view);
         break;}
-    case CollectiveAction::CREATURE_BUTTON: 
-        handleCreatureButton(getCreature(action.getNum()), view);
+    case UserInput::CREATURE_BUTTON: 
+        handleCreatureButton(getCreature(input.getNum()), view);
         break;
-    case CollectiveAction::POSSESS: {
-        Vec2 pos = action.getPosition();
+    case UserInput::POSSESS: {
+        Vec2 pos = input.getPosition();
         if (!pos.inRectangle(level->getBounds()))
           return;
         if (Creature* c = level->getSquare(pos)->getCreature())
@@ -1399,31 +1402,32 @@ void Collective::processInput(View* view, CollectiveAction action) {
             handleCreatureButton(c, view);
         break;
         }
-    case CollectiveAction::RECT_SELECTION:
+    case UserInput::RECT_SELECTION:
         if (rectSelectCorner) {
-          rectSelectCorner2 = action.getPosition();
+          rectSelectCorner2 = input.getPosition();
         } else
-          rectSelectCorner = action.getPosition();
+          rectSelectCorner = input.getPosition();
         break;
-    case CollectiveAction::BUILD:
-        handleSelection(action.getPosition(), buildInfo[action.getNum()], false);
+    case UserInput::BUILD:
+        handleSelection(input.getPosition(), buildInfo[input.getNum()], false);
         break;
-    case CollectiveAction::WORKSHOP:
-        handleSelection(action.getPosition(), workshopInfo[action.getNum()], false);
+    case UserInput::WORKSHOP:
+        handleSelection(input.getPosition(), workshopInfo[input.getNum()], false);
         break;
-    case CollectiveAction::BUTTON_RELEASE:
+    case UserInput::BUTTON_RELEASE:
         selection = NONE;
         if (rectSelectCorner && rectSelectCorner2) {
-          handleSelection(*rectSelectCorner, buildInfo[action.getNum()], true);
+          handleSelection(*rectSelectCorner, buildInfo[input.getNum()], true);
           for (Vec2 v : Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2}))
-            handleSelection(v, buildInfo[action.getNum()], true);
+            handleSelection(v, buildInfo[input.getNum()], true);
         }
         rectSelectCorner = Nothing();
         rectSelectCorner2 = Nothing();
         selection = NONE;
         break;
-    case CollectiveAction::EXIT: model->exitAction(); break;
-    case CollectiveAction::IDLE: break;
+    case UserInput::EXIT: model->exitAction(); break;
+    case UserInput::IDLE: break;
+    default: break;
   }
 }
 

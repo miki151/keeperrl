@@ -2,10 +2,9 @@
 #define _VIEW_H
 
 #include "util.h"
-#include "action.h"
-#include "collective_action.h"
 #include "debug.h"
 #include "view_object.h"
+#include "user_input.h"
 
 class CreatureView;
 class Level;
@@ -50,17 +49,18 @@ class View {
   /** Clears the message box.*/
   virtual void clearMessages() = 0;
 
-  /** Reads the keyboard in a blocking manner. Used for turn-based game play.*/
-  virtual Action getAction() = 0;
+  /** Current messages are shown as old.*/
+  virtual void retireMessages() = 0;
 
   /** Reads input in a non-blocking manner.*/
-  virtual CollectiveAction getClick(double time) = 0;
+  virtual UserInput getAction() = 0;
 
   /** Returns whether a travel interrupt key is pressed at a given moment.*/
   virtual bool travelInterrupt() = 0;
 
   enum ElemMod {
     NORMAL,
+    TEXT,
     TITLE,
     INACTIVE,
   };
@@ -68,26 +68,32 @@ class View {
   class ListElem {
     public:
     ListElem(const char*, ElemMod mod = NORMAL,
-        Optional<ActionId> triggerAction = Nothing());
+        Optional<UserInput::Type> triggerAction = Nothing());
     ListElem(const string& text = "", ElemMod mod = NORMAL,
-        Optional<ActionId> triggerAction = Nothing());
+        Optional<UserInput::Type> triggerAction = Nothing());
 
     const string& getText() const;
     ElemMod getMod() const;
-    Optional<ActionId> getActionId() const;
+    Optional<UserInput::Type> getAction() const;
 
     private:
     string text;
     ElemMod mod;
-    Optional<ActionId> action;
+    Optional<UserInput::Type> action;
   };
 
   static vector<ListElem> getListElem(const vector<string>&);
 
+  enum MenuType {
+    NORMAL_MENU,
+    MAIN_MENU,
+    MINION_MENU,
+  };
+
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
       Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      Optional<ActionId> exitAction = Nothing()) = 0;
+      MenuType = NORMAL_MENU, double* scrollPos = nullptr, Optional<UserInput::Type> exitAction = Nothing()) = 0;
 
   /** Let's the player choose a direction from the main 8. Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<Vec2> chooseDirection(const string& message) = 0;
@@ -100,7 +106,7 @@ class View {
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      Optional<ActionId> exitAction = Nothing()) = 0;
+      Optional<UserInput::Type> exitAction = Nothing()) = 0;
 
   /** Let's the player choose a number. Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;

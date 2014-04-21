@@ -36,6 +36,8 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
     l->setLevel(this);
 }
 
+Rectangle Level::maxLevelBounds(600, 600);
+
 void Level::addCreature(Vec2 position, PCreature c) {
   Creature* ref = c.get();
   model->addCreature(std::move(c));

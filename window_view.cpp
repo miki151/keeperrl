@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+
 #include "window_view.h"
 #include "logging_view.h"
 #include "replay_view.h"
@@ -7,7 +8,7 @@
 #include "level.h"
 #include "options.h"
 #include "location.h"
-#include "renderer.h"
+#include "window_renderer.h"
 #include "tile.h"
 
 using sf::Color;
@@ -38,11 +39,6 @@ View* View::createLoggingView(ofstream& of) {
 View* View::createReplayView(ifstream& ifs) {
   return new ReplayView<WindowView>(ifs);
 }
-
-
-
-Rectangle maxLevelBounds(600, 600);
-Image mapBuffer;
 
 class Clock {
   public:
@@ -104,24 +100,29 @@ class TempClockPause {
 };
 
 
-int topBarHeight = 10;
-int rightBarWidth = 300;
+int rightBarWidth = 330;
 int rightBarText = rightBarWidth - 30;
 int bottomBarHeight = 75;
 
-Renderer renderer;
+WindowRenderer renderer;
 
 Rectangle WindowView::getMapViewBounds() const {
-  return Rectangle(0, topBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight() - bottomBarHeight);
+  return Rectangle(0, 0, renderer.getWidth() - rightBarWidth, renderer.getHeight() - bottomBarHeight);
 }
 
-Table<Optional<ViewIndex>> objects(maxLevelBounds.getW(), maxLevelBounds.getH());
+Table<Optional<ViewIndex>> objects(Level::maxLevelBounds.getW(), Level::maxLevelBounds.getH());
 
 bool tilesOk = true;
 
 void WindowView::initialize() {
-  renderer.initialize(1024, 600, 32, "KeeperRL");
-
+  renderer.initialize(1024, 600, "KeeperRL");
+  if (music.openFromFile("track2.ogg")) {
+    if (!Options::getValue(OptionId::MUSIC))
+      music.setVolume(0);
+    music.setLoop(true);
+    music.play();
+  }
+  Options::addTrigger(OptionId::MUSIC, [&](bool on) { music.setVolume(on ? 100 : 0); });
   Image tileImage;
   tilesOk &= tileImage.loadFromFile("tiles_int.png");
   Image tileImage2;
@@ -157,10 +158,33 @@ void WindowView::initialize() {
     currentTileLayout = spriteLayouts;
   else
     currentTileLayout = asciiLayouts;
-  mapGui = new MapGui(getMapViewBounds(), objects);}
+  mapGui = new MapGui(objects, [this](Vec2 pos) {
+      chosenCreature = "";
+      switch (gameInfo.infoType) {
+        case GameInfo::InfoType::PLAYER: inputQueue.push(UserInput(UserInput::MOVE_TO, pos)); break;
+        case GameInfo::InfoType::BAND:
+          if (!contains({CollectiveOption::WORKSHOP, CollectiveOption::BUILDINGS}, collectiveOption))
+            inputQueue.push(UserInput(UserInput::POSSESS, pos));
+          if (collectiveOption == CollectiveOption::WORKSHOP && activeWorkshop >= 0)
+            inputQueue.push(UserInput(UserInput::WORKSHOP, pos, activeWorkshop));
+          if (collectiveOption == CollectiveOption::BUILDINGS) {
+            if (Keyboard::isKeyPressed(Keyboard::LShift))
+              inputQueue.push(UserInput(UserInput::RECT_SELECTION, pos, activeBuilding));
+            else
+              inputQueue.push(UserInput(UserInput::BUILD, pos, activeBuilding));
+          }
+          break;
+      }});
+  mapGui->setBounds(getMapViewBounds());
+  MinimapGui::initialize();
+  minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP)); });
+  Rectangle minimapBounds(20, 70, 100, 150);
+  minimapGui->setBounds(minimapBounds);
+  mapGuiDecoration = GuiElem::border2(GuiElem::empty());
+  mapGuiDecoration->setBounds(getMapViewBounds().minusMargin(-6));
+}
 
 void WindowView::reset() {
-  mapBuffer.create(maxLevelBounds.getW(), maxLevelBounds.getH());
   mapLayout = &currentTileLayout.normalLayout;
   center = {0, 0};
   gameReady = false;
@@ -176,6 +200,19 @@ void displayMenuSplash2() {
   renderer.drawImage(renderer.getWidth() / 2 - 415, renderer.getHeight() - bottomMargin, splash);
   CHECK(splash.loadFromFile("splash2e.png"));
   renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2, 90 - splash.getSize().y, splash);
+  int x = 0;
+  int y =0;
+ /* renderer.drawFilledRectangle(0, 0, 1000, 36, white);
+  for (ViewId id : randomPermutation({ViewId::KEEPER, ViewId::IMP, ViewId::GOBLIN, ViewId::BILE_DEMON, ViewId::SPECIAL_HUMANOID, ViewId::STONE_GOLEM, ViewId::IRON_GOLEM, ViewId::LAVA_GOLEM, ViewId::SKELETON, ViewId::ZOMBIE, ViewId::VAMPIRE, ViewId::VAMPIRE_LORD, ViewId::RAVEN, ViewId::WOLF, ViewId::BEAR, ViewId::SPECIAL_BEAST})) {
+  for (ViewId id : randomPermutation({ViewId::AVATAR, ViewId::KNIGHT, ViewId::ARCHER, ViewId::SHAMAN, ViewId::WARRIOR, ViewId::LIZARDMAN, ViewId::LIZARDLORD, ViewId::ELF_LORD, ViewId::ELF_ARCHER, ViewId::DWARF, ViewId::DWARF_BARON, ViewId::GOAT, ViewId::PIG, ViewId::COW, ViewId::CHILD, ViewId::WITCH})) {
+    ViewObject obj(id, ViewLayer::CREATURE, "wpfok");
+    Tile tile = Tile::getTile(obj, true);
+    int sz = Renderer::tileSize[tile.getTexNum()];
+    int of = (Renderer::nominalSize - sz) / 2;
+    x += 24;
+    Vec2 coord = tile.getSpriteCoord();
+    renderer.drawSprite(x - sz / 2, y + of, coord.x * sz, coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()], sz * 2 / 3, sz * 2 /3);
+  }*/
 }
 
 void displayMenuSplash() {
@@ -238,99 +275,27 @@ void WindowView::displaySplash(View::SplashType type, bool& ready) {
     Event event;
     while (renderer.pollEvent(event)) {
       if (event.type == Event::Resized) {
-        resize(event.size.width, event.size.height);
+        resize(event.size.width, event.size.height, {});
       }
     }
   }
 }
 
-bool keypressed() {
-  Event event;
-  while (renderer.pollEvent(event))
-    if (event.type == Event::KeyPressed)
-      return true;
-  return false;
-}
-
-void WindowView::resize(int width, int height) {
+void WindowView::resize(int width, int height, vector<GuiElem*> gui) {
   renderer.resize(width, height);
+  refreshScreen(false);
+  mapGuiDecoration->setBounds(getMapViewBounds().minusMargin(-6));
   mapGui->setBounds(getMapViewBounds());
+  if (gameReady) {
+    rebuildGui();
+  }
 }
-
-Optional<Vec2> mousePos;
 
 struct KeyInfo {
   string keyDesc;
   string action;
   Event::KeyEvent event;
 };
-
-Rectangle minimapBounds(20, 70, 100, 150);
-
-vector<KeyInfo> bottomKeys;
-
-static bool leftMouseButtonPressed = false;
-
-WindowView::BlockingEvent WindowView::readkey() {
-  Event event;
-  while (1) {
-    renderer.waitEvent(event);
-    Debug() << "Event " << event.type;
-    bool mouseEv = false;
-    while (event.type == Event::MouseMoved && !Mouse::isButtonPressed(Mouse::Right)) {
-      mouseEv = true;
-      mousePos = Vec2(event.mouseMove.x, event.mouseMove.y);
-      if (!renderer.pollEvent(event))
-        return { BlockingEvent::MOUSE_MOVE };
-    }
-    if (event.type == sf::Event::MouseWheelMoved) {
-      return { BlockingEvent::MOUSE_WHEEL, Nothing(), event.mouseWheel.delta };
-    }
-    if (mouseEv && event.type == Event::MouseMoved)
-      return { BlockingEvent::MOUSE_MOVE };
-    if (event.type == Event::KeyPressed) {
-      Event::KeyEvent ret(event.key);
-      mousePos = Nothing();
-      while (renderer.pollEvent(event));
-      return { BlockingEvent::KEY, ret };
-    }
-    bool scrolled = false;
-    while (considerScrollEvent(event)) {
-      mousePos = Nothing();
-      if (!renderer.pollEvent(event))
-        return { BlockingEvent::IDLE };
-      scrolled = true;
-    }
-    if (scrolled)
-      return { BlockingEvent::IDLE };
-    if (event.type == Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Middle)
-      return { BlockingEvent::WHEEL_BUTTON };
-    if (event.type == Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-      Vec2 pos(event.mouseButton.x, event.mouseButton.y);
-      if (pos.inRectangle(minimapBounds))
-        return { BlockingEvent::MINIMAP };
-      for (int i : All(optionButtons))
-        if (pos.inRectangle(optionButtons[i])) {
-          legendOption = LegendOption(i);
-          return { BlockingEvent::IDLE };
-        }
-      for (int i : All(bottomKeyButtons))
-        if (pos.inRectangle(bottomKeyButtons[i])) {
-          return { BlockingEvent::KEY, bottomKeys[i].event };
-        }
-      return { BlockingEvent::MOUSE_LEFT };
-    }
-    if (event.type == Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
-      leftMouseButtonPressed = false;
-    }
-    if (event.type == Event::Resized) {
-      resize(event.size.width, event.size.height);
-      return { BlockingEvent::IDLE };
-    }
-    if (event.type == Event::GainedFocus)
-      return { BlockingEvent::IDLE };
-  }
-}
 
 void WindowView::close() {
 }
@@ -356,24 +321,17 @@ Color getSpeedColor(int value) {
     return Color(255, max(0, 255 + (value - 100) * 4), max(0, 255 + (value - 100) * 4));
 }
 
-void WindowView::drawPlayerInfo() {
-  GameInfo::PlayerInfo& info = gameInfo.playerInfo;
+PGuiElem WindowView::drawBottomPlayerInfo(GameInfo::PlayerInfo& info) {
   string title = info.title;
   if (!info.adjectives.empty() || !info.playerName.empty())
     title = " " + title;
   for (int i : All(info.adjectives))
     title = string(i <info.adjectives.size() - 1 ? ", " : " ") + info.adjectives[i] + title;
-  int line1 = renderer.getHeight() - bottomBarHeight + 10;
-  int line2 = line1 + 28;
-  renderer.drawFilledRectangle(0, renderer.getHeight() - bottomBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight(),
-      translucentBlack);
-  string playerLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title) +
-    "          T: " + convertToString<int>(info.time) + "            " + info.levelName;
-  renderer.drawText(white, 10, line1, playerLine);
-  int keySpacing = 50;
-  int startX = 10;
-  bottomKeyButtons.clear();
-  bottomKeys =  {
+  PGuiElem top = GuiElem::label(capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title) +
+    "          T: " + convertToString<int>(info.time) + "            " + info.levelName, white);
+  vector<PGuiElem> bottomLine;
+  vector<int> bottomWidths;
+  vector<KeyInfo> bottomKeys =  {
       { "Z", "Zoom", {Keyboard::Z}},
       { "I", "Inventory", {Keyboard::I}},
       { "E", "Equipment", {Keyboard::E}},
@@ -385,31 +343,34 @@ void WindowView::drawPlayerInfo() {
     bottomKeys = concat({{ "S", "Cast spell", {Keyboard::S}}}, bottomKeys);
   for (int i : All(bottomKeys)) {
     string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
-    int endX = startX + renderer.getTextLength(text) + keySpacing;
-    renderer.drawText(lightBlue, startX, line2, text);
-    bottomKeyButtons.emplace_back(startX, line2, endX, line2 + 25);
-    startX = endX;
+    Event::KeyEvent key = bottomKeys[i].event;
+    bottomLine.push_back(GuiElem::stack(
+          GuiElem::label(text, lightBlue),
+          GuiElem::button([this, key]() { keyboardAction(key);})));
+    bottomWidths.push_back(renderer.getTextLength(text));
   }
-  sf::Uint32 optionSyms[] = {0x1f718, L'i'};
-  optionButtons.clear();
-  for (int i = 0; i < 2; ++i) {
-    int w = 45;
-    int line = topBarHeight;
-    int h = 45;
-    int leftPos = renderer.getWidth() - rightBarText + 15;
-    renderer.drawText(i < 1 ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 35, i == int(legendOption) ? green : white,
-        leftPos + i * w, line, optionSyms[i], true);
-    optionButtons.emplace_back(leftPos + i * w - w / 2, line,
-        leftPos + (i + 1) * w - w / 2, line + h);
-  }
+  int keySpacing = 50;
+  return GuiElem::verticalList(makeVec<PGuiElem>(std::move(top),
+        GuiElem::horizontalList(std::move(bottomLine), bottomWidths, keySpacing)), 28, 0);
+}
+
+PGuiElem WindowView::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
+  vector<PGuiElem> buttons = makeVec<PGuiElem>(
+    GuiElem::label(0x1f718, legendOption == LegendOption::STATS ? green : white, 35, Renderer::SYMBOL_FONT),
+    GuiElem::label(L'i', legendOption == LegendOption::OBJECTS ? green : white, 35, Renderer::TEXT_FONT));
+  for (int i : All(buttons))
+    buttons[i] = GuiElem::stack(std::move(buttons[i]),
+        GuiElem::button([this, i]() { legendOption = LegendOption(i); }));
+  PGuiElem main;
   switch (legendOption) {
-    case LegendOption::STATS: drawPlayerStats(info); break;
-    case LegendOption::OBJECTS: break;
+    case LegendOption::OBJECTS:
+    case LegendOption::STATS: main = drawPlayerStats(info); break;
   }
+  return GuiElem::margin(GuiElem::horizontalList(std::move(buttons), 40, 7), std::move(main), 80, GuiElem::TOP);
 }
 
 const int legendLineHeight = 30;
-const int legendStartHeight = topBarHeight + 70;
+const int legendStartHeight = 70;
 
 static Color getBonusColor(int bonus) {
   switch (bonus) {
@@ -421,12 +382,8 @@ static Color getBonusColor(int bonus) {
   return white;
 }
 
-void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
-  int lineStart = legendStartHeight;
-  int lineX = renderer.getWidth() - rightBarText + 10;
-  int line2X = renderer.getWidth() - rightBarText + 110;
+PGuiElem WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   vector<string> lines {
-      info.weaponName != "" ? "wielding " + info.weaponName : "barehanded",
       "",
       "Attack: ",
       "Defense: ",
@@ -445,14 +402,20 @@ void WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
     {convertToString(info.speed), getBonusColor(info.speedBonus)},
     {"$" + convertToString(info.numGold), white},
   };
+  if (info.weaponName != "") {
+    lines = concat({"wielding:", info.weaponName}, lines);
+    lines2 = concat({{"", white}}, lines2);
+  } else lines = concat({"barehanded"}, lines);
+  vector<PGuiElem> elems;
   for (int i : All(lines)) {
-    renderer.drawText(lines2[i].second, lineX, lineStart + legendLineHeight * i, lines[i]);
-    renderer.drawText(lines2[i].second, line2X, lineStart + legendLineHeight * i, lines2[i].first);
+    elems.push_back(GuiElem::horizontalList(makeVec<PGuiElem>(
+        GuiElem::label(lines[i], white),
+        GuiElem::label(lines2[i].first, lines2[i].second)), 100, 1));
   }
-  int h = lineStart + legendLineHeight * lines.size();
-  for (auto effect : info.effects) {
-    renderer.drawText(effect.bad ? red : green, lineX, h += legendLineHeight, effect.name);
-  }
+  elems.push_back(GuiElem::empty());
+  for (auto effect : info.effects)
+    elems.push_back(GuiElem::label(effect.name, effect.bad ? red : green));
+  return GuiElem::verticalList(std::move(elems), legendLineHeight, 0);
 }
 
 string getPlural(const string& a, const string&b, int num) {
@@ -491,271 +454,306 @@ static void drawViewObject(const ViewObject& obj, int x, int y, bool sprite) {
       renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, Tile::getColor(obj), x, y, tile.text, true);
 }
 
-void WindowView::drawMinions(GameInfo::BandInfo& info) {
+PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
   map<string, CreatureMapElem> creatureMap = getCreatureMap(info.creatures);
   map<string, CreatureMapElem> enemyMap = getCreatureMap(info.enemies);
-  renderer.drawText(white, renderer.getWidth() - rightBarText, legendStartHeight, info.monsterHeader);
-  int cnt = 0;
-  int lineStart = legendStartHeight + 35;
-  int textX = renderer.getWidth() - rightBarText + 10;
+  vector<PGuiElem> list;
+  list.push_back(GuiElem::label(info.monsterHeader, white));
   for (auto elem : creatureMap){
-    int height = lineStart + cnt * legendLineHeight;
-    drawViewObject(elem.second.object, textX, height, currentTileLayout.sprites);
+    vector<PGuiElem> line;
+    vector<int> widths;
+    line.push_back(GuiElem::viewObject(elem.second.object));
+    widths.push_back(40);
     Color col = (elem.first == chosenCreature 
         || (elem.second.count == 1 && contains(info.team, elem.second.any))) ? green : white;
-    renderer.drawText(col, textX + 20, height,
-        convertToString(elem.second.count) + "   " + elem.first);
-    creatureGroupButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
-    creatureNames.push_back(elem.first);
+    line.push_back(GuiElem::label(convertToString(elem.second.count) + "   " + elem.first, col));
+    widths.push_back(200);
+    function<void()> action;
     if (elem.second.count == 1)
-      uniqueCreatures.push_back(elem.second.any);
+      action = [this, elem]() {
+        inputQueue.push(UserInput(UserInput::CREATURE_BUTTON, elem.second.any->getUniqueId()));
+      };
+    else if (chosenCreature == elem.first)
+      action = [this] () {
+        chosenCreature = "";
+      };
     else
-      uniqueCreatures.push_back(nullptr);
-    ++cnt;
+      action = [this, elem] () {
+        chosenCreature = elem.first;
+      };
+    list.push_back(GuiElem::margins(GuiElem::stack(GuiElem::button(action), GuiElem::horizontalList(std::move(line), widths, 0)), 20, 0, 0, 0));
   }
   if (!info.team.empty()) {
-    renderer.drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, "Team: " +
-        getPlural("monster", "monsters", info.team.size()));
-    ++cnt;
+    list.push_back(GuiElem::label("Team: " + getPlural("monster", "monsters", info.team.size()), white));
     if (!info.gatheringTeam) {
-      int height = lineStart + (cnt + 1) * legendLineHeight;
-      renderer.drawText(white, textX, height, "[command]");
-      int but1Width = 10 + renderer.getTextLength("[command]");
-      teamButton = Rectangle(textX, height, textX + but1Width, height + legendLineHeight);
-      renderer.drawText(white, textX + but1Width, height, "[edit]");
-      int but2Width = 10 + renderer.getTextLength("[edit]");
-      editTeamButton = Rectangle(textX + but1Width, height, textX + but1Width + but2Width, height + legendLineHeight);
-      renderer.drawText(white, textX + but1Width + but2Width, height, "[disband]");
-      cancelTeamButton = Rectangle(textX + but1Width + but2Width, height, textX + 230, height + legendLineHeight);
+      vector<PGuiElem> line;
+      vector<int> widths;
+      line.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInput::GATHER_TEAM)),
+          GuiElem::label("[command]", white)));
+      widths.push_back(10 + renderer.getTextLength("[command]"));
+      line.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInput::EDIT_TEAM)),
+          GuiElem::label("[edit]", white)));
+      widths.push_back(10 + renderer.getTextLength("[edit]"));
+      line.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInput::CANCEL_TEAM)),
+          GuiElem::label("[cancel]", white)));
+      widths.push_back(100);
+      list.push_back(GuiElem::horizontalList(std::move(line), widths, 0));
     }
+    
   }
   if ((info.creatures.size() > 1 && info.team.empty()) || info.gatheringTeam) {
-    int height = lineStart + (cnt + 1) * legendLineHeight;
-    renderer.drawText((info.gatheringTeam && info.team.empty()) ? green : white, textX, height, 
-        info.team.empty() ? "[form team]" : "[done]");
-    int butWidth = 150;
-    teamButton = Rectangle(textX, height, textX + butWidth, height + legendLineHeight);
+    vector<PGuiElem> line;
+    line.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInput::GATHER_TEAM)),
+        GuiElem::label(info.team.empty() ? "[form team]" : "[done]",
+            (info.gatheringTeam && info.team.empty()) ? green : white)));
     if (info.gatheringTeam) {
-      renderer.drawText(white, textX + butWidth, height, "[cancel]");
-      cancelTeamButton = Rectangle(textX + butWidth, height, textX + 230, height + legendLineHeight);
+      line.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInput::CANCEL_TEAM)),
+          GuiElem::label("[cancel]", white)));
     }
-    cnt += 2;
+    list.push_back(GuiElem::horizontalList(std::move(line), 150, 0));
   }
-  ++cnt;
-  renderer.drawText(lightBlue, textX, lineStart + (cnt + 1) * legendLineHeight, "Click on minion to possess.");
-  ++cnt;
-  ++cnt;
+  list.push_back(GuiElem::label("Click on minion to possess.", lightBlue));
+  list.push_back(GuiElem::empty());
   if (!enemyMap.empty()) {
-    renderer.drawText(white, textX, lineStart + (cnt + 1) * legendLineHeight, "Enemies:");
+    list.push_back(GuiElem::label("Enemies:", white));
     for (auto elem : enemyMap){
-      int height = lineStart + (cnt + 2) * legendLineHeight + 10;
-      drawViewObject(elem.second.object, textX, height, currentTileLayout.sprites);
-      renderer.drawText(white, textX + 20, height, convertToString(elem.second.count) + "   " + elem.first);
-      ++cnt;
+      vector<PGuiElem> line;
+      line.push_back(GuiElem::viewObject(elem.second.object));
+      line.push_back(GuiElem::label(convertToString(elem.second.count) + "   " + elem.first, white));
+      list.push_back(GuiElem::horizontalList(std::move(line), 20, 0));
     }
   }
+  if (!creatureMap.count(chosenCreature)) {
+    chosenCreature = "";
+  }
+  return GuiElem::verticalList(std::move(list), legendLineHeight, 0);
+}
+
+PGuiElem WindowView::drawMinionWindow(GameInfo::BandInfo& info) {
   if (chosenCreature != "") {
-    if (!creatureMap.count(chosenCreature)) {
-      chosenCreature = "";
-    } else {
-      int width = 220;
-      vector<const Creature*> chosen;
-      for (const Creature* c : info.creatures)
-        if (c->getSpeciesName() == chosenCreature)
-          chosen.push_back(c);
-      int winX = renderer.getWidth() - rightBarWidth - width - 20;
-      renderer.drawFilledRectangle(winX, lineStart - 15,
-          winX + width + 20, legendStartHeight + (chosen.size() + 3) * legendLineHeight, black);
-      renderer.drawText(lightBlue, winX + 10, lineStart, 
-          info.gatheringTeam ? "Click to add to team:" : "Click to control:");
-      int cnt = 1;
-      for (const Creature* c : chosen) {
-        int height = lineStart + cnt * legendLineHeight;
-        string line = "L: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c->getUniqueId()];
-        if (c->getSpeciesName() != c->getName())
-          line = c->getName() + " " + line;
-        drawViewObject(c->getViewObject(), winX + 35, height, currentTileLayout.sprites);
-        renderer.drawText((info.gatheringTeam && contains(info.team, c)) ? green : white, winX + 55, height, line);
-        creatureButtons.emplace_back(winX + 20, height, winX + width + 20, height + legendLineHeight);
-        chosenCreatures.push_back(c);
-        ++cnt;
-      }
+    vector<PGuiElem> lines;
+    vector<const Creature*> chosen;
+    for (const Creature* c : info.creatures)
+      if (c->getSpeciesName() == chosenCreature)
+        chosen.push_back(c);
+    lines.push_back(GuiElem::label(info.gatheringTeam ? "Click to add to team:" : "Click to control:", lightBlue));
+    for (const Creature* c : chosen) {
+      string text = "L: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c->getUniqueId()];
+      if (c->getSpeciesName() != c->getName())
+        text = c->getName() + " " + text;
+      vector<PGuiElem> line;
+      line.push_back(GuiElem::viewObject(c->getViewObject()));
+      line.push_back(GuiElem::label(text, (info.gatheringTeam && contains(info.team, c)) ? green : white));
+      lines.push_back(GuiElem::stack(GuiElem::button(
+              getButtonCallback(UserInput(UserInput::CREATURE_BUTTON, c->getUniqueId()))),
+            GuiElem::horizontalList(std::move(line), 40, 0)));
     }
-  }
+    return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
+  } else
+    return PGuiElem();
 }
 
-void WindowView::drawVillages(GameInfo::VillageInfo& info) {
-  int textX = renderer.getWidth() - rightBarText;
-  int height = legendStartHeight;
+
+PGuiElem WindowView::drawVillages(GameInfo::VillageInfo& info) {
+  vector<PGuiElem> lines;
   for (auto elem : info.villages) {
-    renderer.drawText(white, textX, height, capitalFirst(elem.name));
-    height += legendLineHeight;
-    renderer.drawText(white, textX + 40, height, "tribe: " + elem.tribeName);
-    height += legendLineHeight;
-    if (!elem.state.empty()) {
-      renderer.drawText(elem.state == "conquered" ? green : red, textX + 40, height, elem.state);
-      height += legendLineHeight;
-    }
+    lines.push_back(GuiElem::label(capitalFirst(elem.name), white));
+    lines.push_back(GuiElem::margins(GuiElem::label("tribe: " + elem.tribeName, white), 40, 0, 0, 0));
+    if (!elem.state.empty())
+      lines.push_back(GuiElem::margins(GuiElem::label(elem.state, elem.state == "conquered" ? green : red),
+            40, 0, 0, 0));
   }
+  return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }
 
-void WindowView::updateButtons(vector<GameInfo::BandInfo::Button> buttons, vector<string>& inactiveReasons,
-    vector<char>& hotkeys) {
-  inactiveReasons.clear();
-  hotkeys.clear();
+PGuiElem WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveOption option) {
+  vector<PGuiElem> elems;
   for (int i : All(buttons)) {
-    inactiveReasons.push_back(buttons[i].inactiveReason);
-    hotkeys.push_back(buttons[i].hotkey);
-  }
-}
- 
-void WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int active,
-    vector<Rectangle>& viewButtons) {
-  viewButtons.clear();
-  int textX = renderer.getWidth() - rightBarText;
-  for (int i : All(buttons)) {
-    int height = legendStartHeight + i * legendLineHeight;
-    drawViewObject(buttons[i].object, textX, height, currentTileLayout.sprites);
+    vector<PGuiElem> line;
+    line.push_back(GuiElem::viewObject(buttons[i].object));
+    vector<int> widths { 30 };
     Color color = white;
     if (i == active)
       color = green;
     else if (!buttons[i].inactiveReason.empty())
       color = lightGray;
-    string text = buttons[i].name + " " + buttons[i].count;
-    renderer.drawTextWithHotkey(color, textX + 30, height, text, buttons[i].hotkey);
+    line.push_back(GuiElem::label(buttons[i].name + " " + buttons[i].count, color, buttons[i].hotkey));
+    widths.push_back(100);
     if (buttons[i].cost) {
       string costText = convertToString(buttons[i].cost->second);
-      int posX = renderer.getWidth() - renderer.getTextLength(costText) - 10;
-      drawViewObject(buttons[i].cost->first, renderer.getWidth() - 45, height, currentTileLayout.sprites);
-      renderer.drawText(color, posX, height, costText);
+      line.push_back(GuiElem::label(costText, color));
+      widths.push_back(renderer.getTextLength(costText) + 8);
+      line.push_back(GuiElem::viewObject(buttons[i].cost->first));
+      widths.push_back(25);
     }
-    viewButtons.emplace_back(textX, height,textX + 150, height + legendLineHeight);
-    if (!buttons[i].help.empty() && mousePos && mousePos->inRectangle(viewButtons.back()))
-      mapGui->drawHint(renderer, white, buttons[i].help);
+    function<void()> buttonFun;
+    if (buttons[i].inactiveReason == "" || buttons[i].inactiveReason == "inactive")
+      buttonFun = [this, &active, i, option] () {
+        active = i;
+        collectiveOption = option;
+      };
+    else {
+      string s = buttons[i].inactiveReason;
+      buttonFun = [this, s] () {
+        presentText("", s);
+      };
+    }
+    elems.push_back(GuiElem::stack(
+          GuiElem::button(buttonFun, buttons[i].hotkey),
+          GuiElem::horizontalList(std::move(line), widths, 0, buttons[i].cost ? 2 : 0)));
   }
+  return GuiElem::verticalList(std::move(elems), legendLineHeight, 0);
 }
   
-void WindowView::drawBuildings(GameInfo::BandInfo& info) {
-  drawButtons(info.buildings, activeBuilding, buildingButtons);
+PGuiElem WindowView::drawBuildings(GameInfo::BandInfo& info) {
+  return drawButtons(info.buildings, activeBuilding, CollectiveOption::BUILDINGS);
 }
 
-void WindowView::updateBuildings(GameInfo::BandInfo& info) {
-  updateButtons(info.buildings, inactiveBuildingReasons, buildingHotkeys);
+PGuiElem WindowView::drawWorkshop(GameInfo::BandInfo& info) {
+  return drawButtons(info.workshop, activeWorkshop, CollectiveOption::WORKSHOP);
 }
 
-void WindowView::drawWorkshop(GameInfo::BandInfo& info) {
-  drawButtons(info.workshop, activeWorkshop, workshopButtons);
-}
-
-void WindowView::updateWorkshop(GameInfo::BandInfo& info) {
-  updateButtons(info.workshop, inactiveWorkshopReasons, workshopHotkeys);
-}
-
-void WindowView::updateTechnology(GameInfo::BandInfo& info) {
-  techHotkeys.clear();
-  for (int i : All(info.techButtons))
-    techHotkeys.push_back(info.techButtons[i].hotkey);
-}
-
-void WindowView::drawTechnology(GameInfo::BandInfo& info) {
-  int textX = renderer.getWidth() - rightBarText;
+PGuiElem WindowView::drawTechnology(GameInfo::BandInfo& info) {
+  vector<PGuiElem> lines;
   for (int i : All(info.techButtons)) {
-    int height = legendStartHeight + i * legendLineHeight;
-    drawViewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, ""),
-        textX, height, currentTileLayout.sprites);
-    renderer.drawTextWithHotkey(white, textX + 20, height, info.techButtons[i].name, info.techButtons[i].hotkey);
-    techButtons.emplace_back(textX, height, textX + 150, height + legendLineHeight);
+    vector<PGuiElem> line;
+    line.push_back(GuiElem::viewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, "")));
+    line.push_back(GuiElem::label(info.techButtons[i].name, white, info.techButtons[i].hotkey));
+    lines.push_back(GuiElem::stack(
+          GuiElem::button(getButtonCallback(UserInput(UserInput::TECHNOLOGY, i)), info.techButtons[i].hotkey),
+          GuiElem::horizontalList(std::move(line), 35, 0)));
   }
+  return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }
 
-void WindowView::drawKeeperHelp() {
+PGuiElem WindowView::drawKeeperHelp() {
   vector<string> helpText { "use mouse to dig and build", "shift selects rectangles", "", "scroll with arrows", "or right mouse button", "", "click on minion", "to possess",
     "", "your enemies ", "are in the west", "", "[space]  pause", "[z]  zoom", "", "follow the red hints :-)"};
-  int cnt = 0;
-  for (string line : helpText) {
-    int height = legendStartHeight + cnt * legendLineHeight;
-    renderer.drawText(lightBlue, renderer.getWidth() - rightBarText, height, line);
-    cnt ++;
-  }
+  vector<PGuiElem> lines;
+  for (string line : helpText)
+    lines.push_back(GuiElem::label(line, lightBlue));
+  return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }
 
-void WindowView::drawBandInfo() {
-  GameInfo::BandInfo& info = gameInfo.bandInfo;
-  int lineHeight = 28;
-  int line0 = renderer.getHeight() - 90;
-  int line1 = line0 + lineHeight;
-  int line2 = line1 + lineHeight;
-  renderer.drawFilledRectangle(0, line1 - 10, renderer.getWidth() - rightBarWidth, renderer.getHeight(), translucentBlack);
-  string playerLine = "T:" + convertToString<int>(info.time);
-  renderer.drawText(white, renderer.getWidth() - rightBarWidth - 60, line1, playerLine);
-  renderer.drawText(red, 120, line2, info.warning);
-  if (myClock.isPaused())
-    renderer.drawText(red, 10, line2, "PAUSED");
-  else
-    renderer.drawText(lightBlue, 10, line2, "PAUSE");
-  pauseButton = Rectangle(10, line2, 80, line2 + lineHeight);
-  string resources;
+PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info) {
+  vector<PGuiElem> topLine;
+  vector<int> topWidths;
   int resourceSpacing = 95;
-  int resourceX = 45;
   for (int i : All(info.numGold)) {
-    renderer.drawText(white, resourceX + resourceSpacing * i, line1, convertToString<int>(info.numGold[i].count));
-    drawViewObject(info.numGold[i].viewObject, resourceX - 12 + resourceSpacing * i, line1,currentTileLayout.sprites);
-    if (mousePos && mousePos->inRectangle(Rectangle(resourceX + resourceSpacing * i - 20, line1,
-            resourceX + resourceSpacing * (i + 1) - 20, line1 + 30)))
-      mapGui->drawHint(renderer, white, info.numGold[i].name);
+    vector<PGuiElem> res;
+    res.push_back(GuiElem::viewObject(info.numGold[i].viewObject));
+    res.push_back(GuiElem::label(convertToString<int>(info.numGold[i].count), white));
+    topWidths.push_back(resourceSpacing);
+    topLine.push_back(GuiElem::stack(GuiElem::mouseOverAction(getHintCallback(info.numGold[i].name)),
+            GuiElem::horizontalList(std::move(res), 30, 0)));
   }
-  sf::Uint32 optionSyms[] = {L'⌂', 0x1f718, 0x1f4d6, 0x2692, 0x2694, L'?'};
-  optionButtons.clear();
-  for (int i = 0; i < 6; ++i) {
-    int w = 50;
-    int line = topBarHeight;
-    int h = 45;
-    int leftPos = renderer.getWidth() - rightBarText - 5;
-    renderer.drawText(i < 5 ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 35, i == int(collectiveOption) ? green : white,
-        leftPos + i * w, line, optionSyms[i], true);
-    optionButtons.emplace_back(leftPos + i * w - w / 2, line,
-        leftPos + (i + 1) * w - w / 2, line + h);
- }
-  techButtons.clear();
-  int cnt = 0;
-  creatureGroupButtons.clear();
-  creatureButtons.clear();
-  creatureNames.clear();
-  editTeamButton = Nothing();
-  teamButton = Nothing();
-  cancelTeamButton = Nothing();
-  chosenCreatures.clear();
-  uniqueCreatures.clear();
+  topLine.push_back(GuiElem::label("T:" + convertToString<int>(info.time), white));
+  topWidths.push_back(50);
+  vector<PGuiElem> bottomLine;
+  if (myClock.isPaused())
+    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { myClock.cont(); }),
+        GuiElem::label("PAUSED", red)));
+  else
+    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { myClock.pause(); }),
+        GuiElem::label("PAUSE", lightBlue)));
+  bottomLine.push_back(GuiElem::label(info.warning, red));
+  return GuiElem::verticalList(makeVec<PGuiElem>(GuiElem::horizontalList(std::move(topLine), topWidths, 0),
+        GuiElem::horizontalList(std::move(bottomLine), 100, 0)), 28, 0);
+}
+
+PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo& villageInfo) {
+  vector<PGuiElem> buttons = makeVec<PGuiElem>(
+    GuiElem::label(L'⌂', collectiveOption == CollectiveOption::BUILDINGS ? green : white, 35, Renderer::SYMBOL_FONT),
+    GuiElem::label(0x1f718, collectiveOption == CollectiveOption::MINIONS ? green : white, 35, Renderer::SYMBOL_FONT),
+    GuiElem::label(0x1f4d6, collectiveOption == CollectiveOption::TECHNOLOGY ? green : white, 35,
+      Renderer::SYMBOL_FONT),
+    GuiElem::label(0x2692, collectiveOption == CollectiveOption::WORKSHOP ? green : white, 35, Renderer::SYMBOL_FONT),
+    GuiElem::label(0x2694, collectiveOption == CollectiveOption::VILLAGES ? green : white, 35, Renderer::SYMBOL_FONT),
+    GuiElem::label(L'?', collectiveOption == CollectiveOption::KEY_MAPPING ? green : white, 35, Renderer::TEXT_FONT));
+  for (int i : All(buttons))
+    buttons[i] = GuiElem::stack(std::move(buttons[i]),
+        GuiElem::button([this, i]() { collectiveOption = CollectiveOption(i); }));
   if (collectiveOption != CollectiveOption::MINIONS)
     chosenCreature = "";
-  updateTechnology(info);
-  updateWorkshop(info);
-  updateBuildings(info);
-  switch (collectiveOption) {
-    case CollectiveOption::MINIONS: drawMinions(info); break;
-    case CollectiveOption::BUILDINGS: drawBuildings(info); break;
-    case CollectiveOption::KEY_MAPPING: drawKeeperHelp(); break;
-    case CollectiveOption::TECHNOLOGY: drawTechnology(info); break;
-    case CollectiveOption::WORKSHOP: drawWorkshop(info); break;
-    case CollectiveOption::VILLAGES: drawVillages(gameInfo.villageInfo); break;
+  PGuiElem main;
+  vector<PGuiElem> invisible;
+  vector<pair<CollectiveOption, PGuiElem>> elems = makeVec<pair<CollectiveOption, PGuiElem>>(
+    make_pair(CollectiveOption::MINIONS, drawMinions(info)),
+    make_pair(CollectiveOption::BUILDINGS, drawBuildings(info)),
+    make_pair(CollectiveOption::KEY_MAPPING, drawKeeperHelp()),
+    make_pair(CollectiveOption::TECHNOLOGY, drawTechnology(info)),
+    make_pair(CollectiveOption::WORKSHOP, drawWorkshop(info)),
+    make_pair(CollectiveOption::VILLAGES, drawVillages(villageInfo)));
+  for (auto& elem : elems)
+    if (elem.first == collectiveOption)
+      main = std::move(elem.second);
+    else
+      invisible.push_back(GuiElem::invisible(std::move(elem.second)));
+  main = GuiElem::border2(GuiElem::margins(std::move(main), 20, 15, 15, 5));
+  return GuiElem::stack(GuiElem::stack(std::move(invisible)),
+      GuiElem::margin(GuiElem::horizontalList(std::move(buttons), 40, 7), std::move(main), 60, GuiElem::TOP));
+}
+
+const int minionWindowRightMargin = 20;
+const int minionWindowWidth = 280;
+const int minionWindowHeight = 400;
+
+void WindowView::rebuildGui() {
+  PGuiElem bottom, right, overMap;
+  switch (gameInfo.infoType) {
+    case GameInfo::InfoType::PLAYER:
+        right = drawRightPlayerInfo(gameInfo.playerInfo);
+        bottom = drawBottomPlayerInfo(gameInfo.playerInfo);
+        break;
+    case GameInfo::InfoType::BAND:
+        right = drawRightBandInfo(gameInfo.bandInfo, gameInfo.villageInfo);
+        overMap = drawMinionWindow(gameInfo.bandInfo);
+        bottom = drawBottomBandInfo(gameInfo.bandInfo);
+        break;
   }
+  tempGuiElems.clear();
+  tempGuiElems.push_back(GuiElem::stack(GuiElem::defaultBackground2(), 
+        GuiElem::margins(std::move(right), 20, 20, 20, 20)));
+  tempGuiElems.back()->setBounds(Rectangle(
+        renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight()));
+  if (overMap) {
+    tempGuiElems.push_back(GuiElem::window(GuiElem::stack(GuiElem::defaultBackground2(), 
+          GuiElem::margins(std::move(overMap), 20, 20, 20, 20))));
+    tempGuiElems.back()->setBounds(Rectangle(
+          renderer.getWidth() - rightBarWidth - minionWindowWidth - minionWindowRightMargin, 100,
+          renderer.getWidth() - rightBarWidth - minionWindowRightMargin, 100 + minionWindowHeight));
+  }
+  tempGuiElems.push_back(GuiElem::stack(GuiElem::defaultBackground2(),
+        GuiElem::margins(std::move(bottom), 40, 10, 0, 0)));
+  tempGuiElems.back()->setBounds(Rectangle(
+        0, renderer.getHeight() - bottomBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight()));
+}
+
+vector<GuiElem*> WindowView::getAllGuiElems() {
+  vector<GuiElem*> ret = extractRefs(tempGuiElems);
+  if (gameReady)
+    ret = concat(concat({mapGui}, ret), {mapGuiDecoration.get(), minimapGui});
+  return ret;
+}
+
+vector<GuiElem*> WindowView::getClickableGuiElems() {
+  vector<GuiElem*> ret = extractRefs(tempGuiElems);
+  ret.push_back(minimapGui);
+  ret.push_back(mapGui);
+  return ret;
 }
 
 void WindowView::refreshText() {
-  int lineHeight = 25;
+  int lineHeight = 20;
   int numMsg = 0;
   for (int i : All(currentMessage))
     if (!currentMessage[i].empty())
       numMsg = i + 1;
-  renderer.drawFilledRectangle(0, 0, renderer.getWidth(), max(topBarHeight, lineHeight * (numMsg + 1)), translucentBlack);
+  if (numMsg > 0)
+    renderer.drawFilledRectangle(0, 0, renderer.getWidth() - rightBarWidth, lineHeight * numMsg + 15,
+        transparency(black, 100));
   for (int i : All(currentMessage))
-    renderer.drawText(oldMessage ? gray : white, 10, 10 + lineHeight * i, currentMessage[i]);
-  switch (gameInfo.infoType) {
-    case GameInfo::InfoType::PLAYER:
-        drawPlayerInfo();
-        break;
-    case GameInfo::InfoType::BAND: drawBandInfo(); break;
-  }
+    renderer.drawText(oldMessage ? gray : white, 10, 5 + lineHeight * i, currentMessage[i]);
 }
 
 void WindowView::resetCenter() {
@@ -770,15 +768,35 @@ void WindowView::refreshView(const CreatureView* collective) {
   refreshViewInt(collective);
 }
 
-const CreatureView* lastCreatureView = nullptr;
+function<void()> WindowView::getHintCallback(const string& s) {
+  return [this, s]() { hint = s; };
+}
+
+function<void()> WindowView::getButtonCallback(UserInput input) {
+  return [this, input]() { inputQueue.push(input); };
+}
+
+void WindowView::drawLevelMap(const CreatureView* creature) {
+  TempClockPause pause;
+  minimapGui->presentMap(creature, getMapViewBounds(), renderer,
+      [this](double x, double y) { center = {x, y};});
+}
+
+void WindowView::updateMinimap(const CreatureView* creature) {
+  const Level* level = creature->getLevel();
+  Vec2 rad(40, 40);
+  Rectangle bounds(mapLayout->getPlayerPos() - rad, mapLayout->getPlayerPos() + rad);
+  if (level->getBounds().intersects(bounds))
+    minimapGui->update(level, bounds, creature);
+}
 
 void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer) {
-  lastCreatureView = collective;
+  updateMinimap(collective);
   gameReady = true;
   switchTiles();
   const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
-  for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), maxLevelBounds))
+  for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), Level::maxLevelBounds))
     objects[pos] = Nothing();
   if ((center.x == 0 && center.y == 0) || collective->staticPosition())
     center = {double(collective->getPosition().x), double(collective->getPosition().y)};
@@ -790,7 +808,7 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   movePos.y = min(movePos.y, int(collective->getLevel()->getBounds().getKY() * mapLayout->squareHeight()));
   mapLayout->updatePlayerPos(movePos);
   const MapMemory* memory = &collective->getMemory(); 
-  for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), maxLevelBounds)) 
+  for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), Level::maxLevelBounds)) 
     if (level->inBounds(pos)) {
       ViewIndex index = collective->getViewIndex(pos);
       if (!index.hasObject(ViewLayer::FLOOR) && !index.hasObject(ViewLayer::FLOOR_BACKGROUND) &&
@@ -809,6 +827,7 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   mapGui->setSpriteMode(currentTileLayout.sprites);
   mapGui->updateObjects(memory);
   mapGui->setLevelBounds(level->getBounds());
+  rebuildGui();
   refreshScreen(flipBuffer);
 }
 
@@ -854,77 +873,6 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
   refreshScreen(true);
 }
 
-static void putMapPixel(Vec2 pos, Color col) {
-  if (pos.inRectangle(maxLevelBounds))
-    mapBuffer.setPixel(pos.x, pos.y, col);
-}
-
-void WindowView::drawLevelMapPart(const Level* level, Rectangle levelPart, Rectangle bounds,
-    const CreatureView* creature, bool printLocations) {
-  vector<Vec2> roads;
-  double scale = min(double(bounds.getW()) / levelPart.getW(),
-      double(bounds.getH()) / levelPart.getH());
-  for (Vec2 v : Rectangle(bounds.getW() / scale, bounds.getH() / scale)) {
-    putMapPixel(v, black);
-  }
-  for (Vec2 v : levelPart) {
-    if (!v.inRectangle(level->getBounds()) || (!creature->getMemory().hasViewIndex(v) && !creature->canSee(v)))
-      putMapPixel(v - levelPart.getTopLeft(), black);
-    else {
-      putMapPixel(v - levelPart.getTopLeft(), Tile::getColor(level->getSquare(v)->getViewObject()));
-      if (level->getSquare(v)->getName() == "road")
-        roads.push_back(v - levelPart.getTopLeft());
-    }
-  }
-  renderer.drawImage(bounds.getPX(), bounds.getPY(), bounds.getKX(), bounds.getKY(), mapBuffer, scale);
-  for (Vec2 v : roads) {
-    Vec2 rrad(1, 1);
-    Vec2 pos = bounds.getTopLeft() + v * scale;
-    renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), brown);
-  }
-  Vec2 playerPos = bounds.getTopLeft() + (creature->getPosition() - levelPart.getTopLeft()) * scale;
-  Vec2 rad(3, 3);
-  if (playerPos.inRectangle(bounds.minusMargin(rad.x)))
-    renderer.drawFilledRectangle(Rectangle(playerPos - rad, playerPos + rad), blue);
-  for (const Creature* c : creature->getVisibleEnemies()) {
-    Vec2 pos = bounds.getTopLeft() + (c->getPosition() - levelPart.getTopLeft()) * scale;
-    if (pos.inRectangle(bounds.minusMargin(rad.x)))
-      renderer.drawFilledRectangle(Rectangle(pos - rad, pos + rad), red);
-  }
-  if (printLocations)
-    for (const Location* loc : level->getAllLocations())
-      if (loc->hasName())
-        for (Vec2 v : loc->getBounds())
-          if (creature->getMemory().hasViewIndex(v) || creature->canSee(v)) {
-            string text = loc->getName();
-            Vec2 pos = bounds.getTopLeft() + loc->getBounds().getBottomRight() * scale;
-            renderer.drawFilledRectangle(pos.x, pos.y, pos.x + renderer.getTextLength(text) + 10, pos.y + 25,
-                transparency(black, 130));
-            renderer.drawText(white, pos.x + 5, pos.y, text);
-            break;
-          }
-}
-
-void WindowView::drawLevelMap(const CreatureView* creature) {
-  const Level* level = creature->getLevel();
-  TempClockPause pause;
-  Rectangle bounds = getMapViewBounds();
-  double scale = min(double(bounds.getW()) / level->getBounds().getW(),
-      double(bounds.getH()) / level->getBounds().getH());
-  while (1) {
-    drawLevelMapPart(level, level->getBounds(), bounds, creature);
-    renderer.drawAndClearBuffer();
-    BlockingEvent ev = readkey();
-    if (ev.type == BlockingEvent::KEY)
-      return;
-    if (ev.type == BlockingEvent::MOUSE_LEFT) {
-      Vec2 pos = renderer.getMousePos() - bounds.getTopLeft();
-      center = {double(pos.x) / scale, double(pos.y) / scale};
-      return;
-    }
-  }
-}
-
 class FpsCounter {
   public:
 
@@ -953,15 +901,6 @@ class FpsCounter {
 
 
 void WindowView::drawMap() {
-  mapGui->render(renderer);
-  if (lastCreatureView) {
-    const Level* level = lastCreatureView->getLevel();
-    Vec2 rad(40, 40);
-    Rectangle bounds(mapLayout->getPlayerPos() - rad, mapLayout->getPlayerPos() + rad);
-    renderer.drawFilledRectangle(minimapBounds.minusMargin(-2), Color::Transparent, gray);
-    if (level->getBounds().intersects(bounds))
-      drawLevelMapPart(level, bounds, minimapBounds, lastCreatureView, false);
-  }
   map<string, ViewObject> objIndex;
   for (Vec2 wpos : mapLayout->getAllTiles(getMapViewBounds(), objects.getBounds())) 
     if (objects[wpos]) {
@@ -970,7 +909,6 @@ void WindowView::drawMap() {
         objIndex.insert(std::make_pair(topObject->getDescription(), *topObject));
     }
   int rightPos = renderer.getWidth() -rightBarText;
-  renderer.drawFilledRectangle(renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight(), translucentBlack);
   if (gameInfo.infoType == GameInfo::InfoType::PLAYER) {
     int cnt = 0;
     if (legendOption == LegendOption::OBJECTS) {
@@ -981,6 +919,8 @@ void WindowView::drawMap() {
       }
     }
   }
+  for (GuiElem* gui : getAllGuiElems())
+    gui->render(renderer);
   refreshText();
   fpsCounter.addTick();
   renderer.drawText(white, renderer.getWidth() - 70, renderer.getHeight() - 30, "FPS " + convertToString(fpsCounter.getFps()));
@@ -1020,12 +960,14 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
   refreshScreen();
   do {
     showMessage(message);
-    BlockingEvent event = readkey();
-    if (event.type == BlockingEvent::MOUSE_MOVE || event.type == BlockingEvent::MOUSE_LEFT) {
+    Event event;
+    renderer.waitEvent(event);
+    considerResizeEvent(event, getAllGuiElems());
+    if (event.type == Event::MouseMoved || event.type == Event::MouseButtonPressed) {
       if (auto pos = mapGui->getHighlightedTile(renderer)) {
         refreshScreen(false);
         int numArrow = 0;
-        Vec2 middle = mapLayout->getAllTiles(getMapViewBounds(), maxLevelBounds).middle();
+        Vec2 middle = mapLayout->getAllTiles(getMapViewBounds(), Level::maxLevelBounds).middle();
         if (pos == middle)
           continue;
         Vec2 dir = (*pos - middle).getBearing();
@@ -1042,13 +984,14 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
         Vec2 wpos = mapLayout->projectOnScreen(getMapViewBounds(), middle + dir);
         renderer.drawSprite(wpos.x, wpos.y, 16 * 36, (8 + numArrow) * 36, 36, 36, Renderer::tiles[4]);
         renderer.drawAndClearBuffer();
-        if (event.type == BlockingEvent::MOUSE_LEFT)
+        if (event.type == Event::MouseButtonPressed)
           return dir;
       }
+      renderer.flushEvents(Event::MouseMoved);
     } else
     refreshScreen();
-    if (event.type == BlockingEvent::KEY)
-      switch (event.key->code) {
+    if (event.type == Event::KeyPressed)
+      switch (event.key.code) {
         case Keyboard::Up:
         case Keyboard::Numpad8: showMessage(""); refreshScreen(); return Vec2(0, -1);
         case Keyboard::Numpad9: showMessage(""); refreshScreen(); return Vec2(1, -1);
@@ -1069,12 +1012,13 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
 
 bool WindowView::yesOrNoPrompt(const string& message) {
   TempClockPause pause;
-  showMessage(message + " (y/n)");
-  refreshScreen();
   do {
-    BlockingEvent event = readkey();
-    if (event.type == BlockingEvent::KEY)
-      switch (event.key->code) {
+    showMessage(message + " (y/n)");
+    refreshScreen();
+    Event event;
+    renderer.waitEvent(event);
+    if (event.type == Event::KeyPressed)
+      switch (event.key.code) {
         case Keyboard::Y: showMessage(""); refreshScreen(); return true;
         case Keyboard::Escape:
         case Keyboard::Space:
@@ -1099,23 +1043,42 @@ Optional<int> WindowView::getNumber(const string& title, int min, int max, int i
     return numbers[*res];
 }
 
-int getMaxLines();
-
-Optional<int> getIndex(const vector<View::ListElem>& options, bool hasTitle, Vec2 mousePos);
-
 Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
-    Optional<ActionId> exitAction) {
-  return chooseFromList(title, options, index, exitAction, Nothing(), {});
+    MenuType type, double* scrollPos, Optional<UserInput::Type> exitAction) {
+  return chooseFromList(title, options, index, type, scrollPos, exitAction, Nothing(), {});
+}
+
+
+double getScrollPos(int index, int count) {
+  return max(0., min(1., double(max(0, index - 2)) / max(1, (count - 4))));
+}
+
+Rectangle WindowView::getMenuPosition(View::MenuType type) {
+  int windowWidth = 800;
+  int ySpacing = 100;
+  int xSpacing = (renderer.getWidth() - windowWidth) / 2;
+  return Rectangle(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
+  switch (type) {
+    case View::MAIN_MENU:
+    case View::NORMAL_MENU:
+      return Rectangle(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
+    case View::MINION_MENU:
+      return Rectangle(renderer.getWidth() - rightBarWidth - 2 * minionWindowRightMargin - minionWindowWidth - 600,
+          100, renderer.getWidth() - rightBarWidth - 2 * minionWindowRightMargin - minionWindowWidth,
+        100 + minionWindowHeight);
+  }
+  FAIL << "ewf";
+  return Rectangle(1, 1);
 }
 
 Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
-    Optional<ActionId> exitAction, Optional<Event::KeyEvent> exitKey, vector<Event::KeyEvent> shortCuts) {
+    MenuType menuType, double* scrollPos, Optional<UserInput::Type> exitAction, Optional<Event::KeyEvent> exitKey,
+    vector<Event::KeyEvent> shortCuts) {
   TempClockPause pause;
-  if (options.size() == 0)
-    return Nothing();
-  vector<int> indexes(options.size());
-  int numLines = min((int) options.size(), getMaxLines());
+  int contentHeight;
+  int choice = -1;
   int count = 0;
+  vector<int> indexes(options.size());
   int elemCount = 0;
   for (int i : All(options)) {
     if (options[i].getMod() == View::NORMAL) {
@@ -1125,70 +1088,64 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
     if (options[i].getMod() != View::TITLE)
       ++elemCount;
   }
-  if (count == 0) {
-    presentList(title, options, false);
-    return Nothing();
-  }
-  index = min(index, count - 1);
-  int setMousePos = -1;
-  int cutoff = -1;
+  double localScrollPos = getScrollPos(indexes[index], count);
+  if (scrollPos == nullptr)
+    scrollPos = &localScrollPos;
+  PGuiElem list = drawListGui(title, options, contentHeight, &index, &choice);
+  PGuiElem dismissBut = GuiElem::stack(makeVec<PGuiElem>(
+        GuiElem::button([&](){ choice = -100; }),
+        GuiElem::mouseHighlight(GuiElem::defaultHighlight(), count, &index),
+        GuiElem::centerHoriz(GuiElem::label("Dismiss", white), renderer.getTextLength("Dismiss"))));
+  double scrollJump = 60. / contentHeight;
+  PGuiElem stuff = GuiElem::scrollable(std::move(list), contentHeight, scrollPos, scrollJump);
+  if (menuType != MAIN_MENU)
+    stuff = GuiElem::margin(GuiElem::centerHoriz(std::move(dismissBut), 200), std::move(stuff), 30, GuiElem::BOTTOM);
+  PGuiElem window = GuiElem::window(std::move(stuff));
   while (1) {
-    numLines = min((int) options.size(), getMaxLines());
-    int height = indexHeight(options, index);
-    int newCutoff = min(max(0, height - numLines / 2), (int) options.size() - numLines);
-    if (newCutoff != cutoff) {
-      cutoff = newCutoff;
-    } else
-      setMousePos = -1;
-    int itemsCutoff = 0;
-    for (int i : Range(cutoff))
-      if (options[i].getMod() == View::NORMAL)
-        ++itemsCutoff;
-    vector<ListElem> window = getPrefix(options, cutoff, numLines);
-    drawList(title, window, index - itemsCutoff, setMousePos);
-    setMousePos = -1;
-    BlockingEvent event = readkey();
-    if (event.type == BlockingEvent::KEY) {
-      if (exitAction && getSimpleActionId(*event.key) == *exitAction)
+/*    for (GuiElem* gui : getAllGuiElems())
+      gui->render(renderer);*/
+    refreshScreen(false);
+    window->setBounds(getMenuPosition(menuType));
+    window->render(renderer);
+    renderer.drawAndClearBuffer();
+    Event event;
+    while (renderer.pollEvent(event)) {
+      propagateEvent(event, {window.get()});
+      if (choice > -1)
+        return indexes[choice];
+      if (choice == -100)
         return Nothing();
-      switch (event.key->code) {
-        case Keyboard::PageDown: index += 10; if (index >= count) index = count - 1; break;
-        case Keyboard::PageUp: index -= 10; if (index < 0) index = 0; break;
-        case Keyboard::Numpad8:
-        case Keyboard::Up: index = (index - 1 + count) % count; height = indexHeight(options, index); break;
-        case Keyboard::Numpad2:
-        case Keyboard::Down: index = (index + 1 + count) % count; height = indexHeight(options, index); break;
-        case Keyboard::Numpad5:
-        case Keyboard::Return : clearMessageBox(); return indexes[index];
-        case Keyboard::Escape : clearMessageBox(); return Nothing();
-        default: break;
-      }
-      if (exitKey && exitKey->code == event.key->code && exitKey->shift == event.key->shift)
-        return Nothing();
-      for (int i : All(shortCuts))
-        if (shortCuts[i].code == event.key->code && shortCuts[i].shift == event.key->shift)
-          return i;
-    }
-    else if (event.type == BlockingEvent::MOUSE_MOVE && mousePos) {
-      if (Optional<int> mouseIndex = getIndex(window, !title.empty(), *mousePos)) {
-        int newIndex = *mouseIndex + itemsCutoff;
-        if (newIndex != index) {
-          setMousePos = (newIndex > index ? 0 : 1);
-          index = newIndex;
+      if (considerResizeEvent(event, concat({window.get()}, getAllGuiElems())))
+        continue;
+      if (event.type == Event::MouseWheelMoved)
+          *scrollPos = min(1., max(0., *scrollPos - double(event.mouseWheel.delta) * scrollJump));
+      if (event.type == Event::KeyPressed)
+        switch (event.key.code) {
+          case Keyboard::Numpad8:
+          case Keyboard::Up:
+            if (count > 0) {
+              index = (index - 1 + count) % count;
+              *scrollPos = getScrollPos(indexes[index], count);
+            } else
+              *scrollPos = max(0., *scrollPos - scrollJump);
+            break;
+          case Keyboard::Numpad2:
+          case Keyboard::Down:
+            if (count > 0) {
+              index = (index + 1 + count) % count;
+              *scrollPos = getScrollPos(indexes[index], count);
+            } else
+              *scrollPos = min(1., *scrollPos + scrollJump);
+            break;
+          case Keyboard::Numpad5:
+          case Keyboard::Return: if (count > 0 && index > -1) return indexes[index];
+          case Keyboard::Escape: return Nothing();
+                                 //       case Keyboard::Space : refreshScreen(); return;
+          default: break;
         }
-        Debug() << "Index " << index;
-      }
-    }
-    else if (event.type == BlockingEvent::MOUSE_LEFT) {
-      clearMessageBox();
-      if (mousePos && getIndex(window, !title.empty(), *mousePos))
-        return indexes[index];
-      else
-        return Nothing();
     }
   }
-  FAIL << "Very bad";
-  return 123;
+ // refreshScreen();
 }
 
 void WindowView::presentText(const string& title, const string& text) {
@@ -1207,87 +1164,46 @@ void WindowView::presentText(const string& title, const string& text) {
 }
 
 void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown,
-    Optional<ActionId> exitAction) {
-  TempClockPause pause;
-  int numLines = min((int) options.size(), getMaxLines());
-  if (numLines == 0)
-    return;
-  int index = scrollDown ? options.size() - numLines : 0;
-  while (1) {
-    numLines = min((int) options.size(), getMaxLines());
-    vector<ListElem> window = getPrefix(options, index, numLines);
-    drawList(title, window, -1);
-    BlockingEvent event = readkey();
-    if (event.type == BlockingEvent::KEY)
-      switch (event.key->code) {
-        case Keyboard::Numpad8:
-        case Keyboard::Up: if (index > 0) --index; break;
-        case Keyboard::Numpad2:
-        case Keyboard::Down: if (index < options.size() - numLines) ++index; break;
-        case Keyboard::Return:
-        case Keyboard::Escape: return;
- //       case Keyboard::Space : refreshScreen(); return;
-        default: break;
-      }
-    else
-      if (event.type == BlockingEvent::MOUSE_LEFT) {
-        return;
-      }
+    Optional<UserInput::Type> exitAction) {
+  vector<ListElem> conv;
+  for (ListElem e : options) {
+    View::ElemMod mod = e.getMod();
+    if (mod == View::NORMAL)
+      mod = View::TEXT;
+    conv.emplace_back(e.getText(), mod, e.getAction());
   }
- // refreshScreen();
+  double scrollPos = scrollDown ? 1 : 0;
+  chooseFromList(title, conv, -1, NORMAL_MENU, &scrollPos, exitAction);
 }
 
-static int yMargin = 10;
-static int itemYMargin = 20;
-static int itemSpacing = 25;
-static int ySpacing = 100;
-int windowWidth = 800;
-
-int getMaxLines() {
-  return (renderer.getHeight() - ySpacing - ySpacing - 2 * yMargin - itemSpacing - itemYMargin) / itemSpacing;
-}
-
-Optional<int> getIndex(const vector<View::ListElem>& options, bool hasTitle, Vec2 mousePos) {
-  int xSpacing = (renderer.getWidth() - windowWidth) / 2;
-  Rectangle window(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
-  if (!mousePos.inRectangle(window))
-    return Nothing();
-  return reverseIndexHeight(options,
-      (mousePos.y - ySpacing - yMargin + (hasTitle ? 0 : itemSpacing) - itemYMargin) / itemSpacing - 1);
-}
-
-void WindowView::drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos) {
-  int xMargin = 10;
-  int itemXMargin = 30;
-  int border = 2;
-  int h = -1;
-  int xSpacing = (renderer.getWidth() - windowWidth) / 2;
-  int topMargin = yMargin;
-  refreshScreen(false);
-  if (hightlight > -1) 
-    h = indexHeight(options, hightlight);
-  Rectangle window(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
-  renderer.drawFilledRectangle(window, translucentBlack, white);
+PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& options, int& height, int* highlight,
+    int* choice) {
+  vector<PGuiElem> lines;
   if (!title.empty())
-    renderer.drawText(white, xSpacing + xMargin, ySpacing + yMargin, title);
-  else
-    topMargin -= itemSpacing;
-  for (int i : All(options)) {  
-    int beginH = ySpacing + topMargin + (i + 1) * itemSpacing + itemYMargin;
-    if (options[i].getMod() == View::NORMAL) {
-      if (hightlight > -1 && h == i) {
-        renderer.drawFilledRectangle(xSpacing + xMargin, beginH, 
-            windowWidth + xSpacing - xMargin, beginH + itemSpacing - 1, darkGreen);
-        if (setMousePos > -1)
-          renderer.setMousePos(Vec2(renderer.getMousePos().x, beginH + 1 + (itemSpacing - 3) * setMousePos));
-      }
-      renderer.drawText(white, xSpacing + xMargin + itemXMargin, beginH, options[i].getText());
-    } else if (options[i].getMod() == View::TITLE)
-      renderer.drawText(yellow, xSpacing + xMargin, beginH, options[i].getText());
-    else if (options[i].getMod() == View::INACTIVE)
-      renderer.drawText(gray, xSpacing + xMargin + itemXMargin, beginH, options[i].getText());
+    lines.push_back(GuiElem::label(title, white));
+  lines.push_back(GuiElem::empty());
+  int numActive = 0;
+  for (int i : All(options)) {
+    Color color;
+    switch (options[i].getMod()) {
+      case View::TITLE: color = yellow; break;
+      case View::INACTIVE: color = gray; break;
+      case View::TEXT:
+      case View::NORMAL: color = white; break;
+    }
+    lines.push_back(GuiElem::margins(GuiElem::label(options[i].getText(), color), 10, 3, 0, 0));
+    if (highlight && options[i].getMod() == View::NORMAL) {
+      lines.back() = GuiElem::stack(makeVec<PGuiElem>(
+            GuiElem::button([=]() { *choice = numActive; }),
+            GuiElem::margins(
+              GuiElem::mouseHighlight(GuiElem::defaultHighlight(), numActive, highlight), 0, 0, 0, 0),
+            std::move(lines.back())));
+      ++numActive;
+    }
   }
-  renderer.drawAndClearBuffer();
+  int lineHeight = 30;
+  height = lineHeight * lines.size();
+  return GuiElem::verticalList(std::move(lines), 30, 0);
 }
 
 void WindowView::clearMessageBox() {
@@ -1319,6 +1235,7 @@ void WindowView::retireMessages() {
   showMessage(lastMsg);
   oldMessage = true;
 }
+
 void WindowView::addMessage(const string& message) {
   if (oldMessage)
     showMessage("");
@@ -1354,18 +1271,9 @@ void WindowView::switchTiles() {
 }
 
 bool WindowView::travelInterrupt() {
-  return keypressed();
+  Event event;
+  return renderer.pollEvent(event, Event::MouseButtonPressed) || renderer.pollEvent(event, Event::KeyPressed);
 }
-
-ActionId getDirActionId(const Event::KeyEvent& key) {
-  if (key.control)
-    return ActionId::TRAVEL;
-  if (key.alt)
-    return ActionId::FIRE;
-  else
-    return ActionId::MOVE;
-}
-
 
 int WindowView::getTimeMilli() {
   return myClock.getMillis();
@@ -1386,6 +1294,13 @@ void WindowView::continueClock() {
 bool WindowView::isClockStopped() {
   return myClock.isPaused();
 }
+bool WindowView::considerResizeEvent(sf::Event& event, vector<GuiElem*> gui) {
+  if (event.type == Event::Resized) {
+    resize(event.size.width, event.size.height, gui);
+    return true;
+  }
+  return false;
+}
 
 bool WindowView::considerScrollEvent(sf::Event& event) {
   static bool lastPressed = false;
@@ -1398,6 +1313,7 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
   if (!lastPressed && Mouse::isButtonPressed(Mouse::Right)) {
     lastMousePos = renderer.getMousePos();
     lastPressed = true;
+    chosenCreature = "";
     return true;
   }
 
@@ -1410,171 +1326,139 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
 }
 
 Vec2 lastGoTo(-1, -1);
-CollectiveAction WindowView::getClick(double time) {
+
+void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
+  switch (event.type) {
+    case Event::MouseButtonReleased :
+      for (GuiElem* elem : guiElems)
+        elem->onMouseRelease();
+      break;
+    case Event::MouseMoved:
+      for (GuiElem* elem : guiElems)
+        elem->onMouseMove(Vec2(event.mouseMove.x, event.mouseMove.y));
+      break;
+    case Event::MouseButtonPressed: {
+      Vec2 clickPos(event.mouseButton.x, event.mouseButton.y);
+      for (GuiElem* elem : guiElems) {
+        if (event.mouseButton.button == sf::Mouse::Right)
+          elem->onRightClick(clickPos);
+        if (event.mouseButton.button == sf::Mouse::Left)
+          elem->onLeftClick(clickPos);
+        if (clickPos.inRectangle(elem->getBounds()))
+          break;
+      }
+      }
+      break;
+    case Event::TextEntered:
+      if (event.text.unicode < 128) {
+        char key = event.text.unicode;
+        for (GuiElem* elem : guiElems)
+          elem->onKeyPressed(key);
+      }
+      break;
+    default: break;
+  }
+  for (GuiElem* elem : guiElems)
+    elem->onRefreshBounds();
+}
+
+UserInput::Type getDirActionId(const Event::KeyEvent& key) {
+  if (key.control)
+    return UserInput::TRAVEL;
+  if (key.alt)
+    return UserInput::FIRE;
+  else
+    return UserInput::MOVE;
+}
+
+void WindowView::keyboardAction(Event::KeyEvent key) {
+  switch (key.code) {
+#ifndef RELEASE
+    case Keyboard::F8: renderer.startMonkey(); break;
+#endif
+    case Keyboard::Z: unzoom(); break;
+    case Keyboard::F1:
+      if (auto ev = getEventFromMenu())
+        keyboardAction(*ev);
+      break;
+    case Keyboard::F2: Options::handle(this, OptionSet::GENERAL); refreshScreen(); break;
+    case Keyboard::Space:
+      if (!myClock.isPaused())
+        myClock.pause();
+      else
+        myClock.cont();
+      inputQueue.push(UserInput(UserInput::WAIT));
+      break;
+    case Keyboard::Escape:
+      if (!renderer.isMonkey())
+        inputQueue.push(UserInput(UserInput::EXIT));
+      break;
+    case Keyboard::Up:
+    case Keyboard::Numpad8: center.y -= 2.5; inputQueue.push(UserInput(getDirActionId(key), Vec2(0, -1))); break;
+    case Keyboard::Numpad9: inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1))); break;
+    case Keyboard::Right: 
+    case Keyboard::Numpad6: center.x += 2.5; inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0))); break;
+    case Keyboard::Numpad3: inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 1))); break;
+    case Keyboard::Down:
+    case Keyboard::Numpad2: center.y += 2.5; inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1))); break;
+    case Keyboard::Numpad1: inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1))); break;
+    case Keyboard::Left:
+    case Keyboard::Numpad4: center.x -= 2.5; inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0))); break;
+    case Keyboard::Numpad7: inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1))); break;
+    case Keyboard::Return:
+    case Keyboard::Numpad5: inputQueue.push(UserInput(UserInput::PICK_UP)); break;
+    case Keyboard::I: inputQueue.push(UserInput(UserInput::SHOW_INVENTORY)); break;
+    case Keyboard::D: inputQueue.push(UserInput(key.shift ? UserInput::EXT_DROP : UserInput::DROP)); break;
+    case Keyboard::A: inputQueue.push(UserInput(UserInput::APPLY_ITEM)); break;
+    case Keyboard::E: inputQueue.push(UserInput(UserInput::EQUIPMENT)); break;
+    case Keyboard::T: inputQueue.push(UserInput(UserInput::THROW)); break;
+    case Keyboard::M: inputQueue.push(UserInput(UserInput::SHOW_HISTORY)); break;
+    case Keyboard::H: inputQueue.push(UserInput(UserInput::HIDE)); break;
+    case Keyboard::P:
+      if (key.shift)
+        inputQueue.push(UserInput(UserInput::EXT_PICK_UP));
+      else
+        inputQueue.push(UserInput(UserInput::PAY_DEBT));
+      break;
+    case Keyboard::C: inputQueue.push(UserInput(UserInput::CHAT)); break;
+    case Keyboard::U: inputQueue.push(UserInput(UserInput::UNPOSSESS)); break;
+    case Keyboard::S: inputQueue.push(UserInput(UserInput::CAST_SPELL)); break;
+    default: break;
+  }
+}
+
+UserInput WindowView::getAction() {
   Event event;
   while (renderer.pollEvent(event)) {
     considerScrollEvent(event);
+    considerResizeEvent(event, getAllGuiElems());
+    propagateEvent(event, getClickableGuiElems());
+    UserInput input;
+    if (inputQueue.pop(input))
+      return input;
     switch (event.type) {
       case Event::TextEntered:
-        if (event.text.unicode < 128) {
+        /*if (event.text.unicode < 128) {
           char key = event.text.unicode;
-          for (int i : All(buildingHotkeys))
-            if (key == buildingHotkeys[i]) {
-              chosenCreature = "";
-              if (inactiveBuildingReasons[i] == "" || inactiveBuildingReasons[i] == "inactive") {
-                activeBuilding = i;
-                collectiveOption = CollectiveOption::BUILDINGS;
-              } else
-                presentText("", inactiveBuildingReasons[i]);
-              break;
-            }
-          for (int i : All(workshopHotkeys))
-            if (key == workshopHotkeys[i]) {
-              if (inactiveWorkshopReasons[i] == "" || inactiveWorkshopReasons[i] == "inactive") {
-                activeWorkshop = i;
-                collectiveOption = CollectiveOption::WORKSHOP;
-              } else
-                presentText("", inactiveWorkshopReasons[i]);
-              break;
-            }
           for (int i : All(techHotkeys))
             if (key == techHotkeys[i])
-              return CollectiveAction(CollectiveAction::TECHNOLOGY, i);
+              return UserInput(UserInput::TECHNOLOGY, i);
         }
+        break;*/
       case Event::KeyPressed:
-        switch (event.key.code) {
-#ifndef RELEASE
-          case Keyboard::F8: renderer.startMonkey(); break;
-#endif
-          case Keyboard::Up: center.y -= 2.5; break;
-          case Keyboard::Down: center.y += 2.5; break;
-          case Keyboard::Left: center.x -= 2.5; break;
-          case Keyboard::Right: center.x += 2.5; break;
-          case Keyboard::Z:
-            unzoom();
-            return CollectiveAction(CollectiveAction::IDLE);
-          case Keyboard::F2: Options::handle(this, OptionSet::GENERAL); refreshScreen(); break;
-          case Keyboard::Space:
-            if (!myClock.isPaused())
-              myClock.pause();
-            else
-              myClock.cont();
-            return CollectiveAction(CollectiveAction::IDLE);
-          case Keyboard::Escape:
-            if (!renderer.isMonkey())
-              return CollectiveAction(CollectiveAction::EXIT);
-          default:
-            break;
-        }
+        keyboardAction(event.key);
+        renderer.flushEvents(Event::KeyPressed);
         break;
       case Event::MouseButtonReleased :
           if (event.mouseButton.button == sf::Mouse::Left) {
-            leftMouseButtonPressed = false;
             if (collectiveOption == CollectiveOption::BUILDINGS)
-              return CollectiveAction(CollectiveAction::BUTTON_RELEASE, activeBuilding);
+              return UserInput(UserInput::BUTTON_RELEASE, activeBuilding);
           }
           break;
-      case Event::MouseMoved:
-          mousePos = Vec2(event.mouseMove.x, event.mouseMove.y);
-          if (leftMouseButtonPressed) {
-            Vec2 goTo = mapLayout->projectOnMap(getMapViewBounds(), *mousePos);
-            if (goTo != lastGoTo && mousePos->inRectangle(getMapViewBounds())) {
-              if (collectiveOption == CollectiveOption::BUILDINGS)
-                return CollectiveAction(Keyboard::isKeyPressed(Keyboard::LShift) ? CollectiveAction::RECT_SELECTION : 
-                    CollectiveAction::BUILD, goTo, activeBuilding);
-              lastGoTo = goTo;
-            } else
-              continue;
-          }
-          break;
-      case Event::MouseButtonPressed: {
-          Vec2 clickPos(event.mouseButton.x, event.mouseButton.y);
-          if (event.mouseButton.button == sf::Mouse::Right)
-            chosenCreature = "";
-          if (event.mouseButton.button == sf::Mouse::Left) {
-            if (clickPos.inRectangle(minimapBounds))
-              return CollectiveAction(CollectiveAction::DRAW_LEVEL_MAP);
-            for (int i : All(techButtons))
-              if (clickPos.inRectangle(techButtons[i]))
-                return CollectiveAction(CollectiveAction::TECHNOLOGY, i);
-            if (teamButton && clickPos.inRectangle(*teamButton)) {
-              chosenCreature = "";
-              return CollectiveAction(CollectiveAction::GATHER_TEAM);
-            }
-            if (editTeamButton && clickPos.inRectangle(*editTeamButton)) {
-              chosenCreature = "";
-              return CollectiveAction(CollectiveAction::EDIT_TEAM);
-            }
-            if (cancelTeamButton && clickPos.inRectangle(*cancelTeamButton)) {
-              chosenCreature = "";
-              return CollectiveAction(CollectiveAction::CANCEL_TEAM);
-            }
-            if (pauseButton && clickPos.inRectangle(*pauseButton)) {
-              if (!myClock.isPaused())
-                myClock.pause();
-              else
-                myClock.cont();
-            }
-            for (int i : All(optionButtons))
-              if (clickPos.inRectangle(optionButtons[i]))
-                  collectiveOption = (CollectiveOption) i;
-            if (collectiveOption == CollectiveOption::BUILDINGS)
-              for (int i : All(buildingButtons))
-                if (clickPos.inRectangle(buildingButtons[i])) {
-                  chosenCreature = "";
-                  if (inactiveBuildingReasons[i] == "" || inactiveBuildingReasons[i] == "inactive")
-                    activeBuilding = i;
-                  else
-                    presentText("", inactiveBuildingReasons[i]);
-                }
-            if (collectiveOption == CollectiveOption::WORKSHOP)
-            for (int i : All(workshopButtons))
-              if (clickPos.inRectangle(workshopButtons[i])) {
-                chosenCreature = "";
-                if (inactiveWorkshopReasons[i] == "" || inactiveWorkshopReasons[i] == "inactive")
-                  activeWorkshop = i;
-                else
-                  presentText("", inactiveWorkshopReasons[i]);
-              }
-            for (int i : All(creatureGroupButtons))
-              if (clickPos.inRectangle(creatureGroupButtons[i])) {
-                if (uniqueCreatures[i] != nullptr)
-                  return CollectiveAction(CollectiveAction::CREATURE_BUTTON, uniqueCreatures[i]->getUniqueId());
-                if (chosenCreature == creatureNames[i])
-                  chosenCreature = "";
-                else
-                  chosenCreature = creatureNames[i];
-                return CollectiveAction(CollectiveAction::IDLE);
-              }
-            for (int i : All(creatureButtons))
-              if (clickPos.inRectangle(creatureButtons[i])) {
-                return CollectiveAction(CollectiveAction::CREATURE_BUTTON, chosenCreatures[i]->getUniqueId());
-              }
-            leftMouseButtonPressed = true;
-            chosenCreature = "";
-            if (clickPos.inRectangle(getMapViewBounds())) {
-              Vec2 pos = mapLayout->projectOnMap(getMapViewBounds(), clickPos);
-              if (!contains({CollectiveOption::WORKSHOP, CollectiveOption::BUILDINGS}, collectiveOption))
-                return CollectiveAction(CollectiveAction::POSSESS, pos);
-              if (collectiveOption == CollectiveOption::WORKSHOP && activeWorkshop >= 0)
-                return CollectiveAction(CollectiveAction::WORKSHOP, pos, activeWorkshop);
-              if (collectiveOption == CollectiveOption::BUILDINGS) {
-                if (Keyboard::isKeyPressed(Keyboard::LShift))
-                  return CollectiveAction(CollectiveAction::RECT_SELECTION, pos, activeBuilding);
-                else
-                  return CollectiveAction(CollectiveAction::BUILD, pos, activeBuilding);
-              }
-            }
-          }
-          }
-          break;
-      case Event::Resized:
-          resize(event.size.width, event.size.height);
-          return CollectiveAction(CollectiveAction::IDLE);
       default: break;
     }
   }
-  return CollectiveAction(CollectiveAction::IDLE);
+  return UserInput(UserInput::IDLE);
 }
 
 vector<KeyInfo> keyInfo {
@@ -1611,78 +1495,10 @@ Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
   vector<Event::KeyEvent> shortCuts;
   for (KeyInfo key : keyInfo)
     shortCuts.push_back(key.event);
-  auto index = chooseFromList("", options, 0, Nothing(), Optional<Event::KeyEvent>({Keyboard::F1}), shortCuts);
+  auto index = chooseFromList("", options, 0, NORMAL_MENU, nullptr, Nothing(),
+      Optional<Event::KeyEvent>({Keyboard::F1}), shortCuts);
   if (!index)
     return Nothing();
   return keyInfo[*index].event;
-}
-
-Action WindowView::getAction() {
-  while (1) {
-    BlockingEvent event = readkey();
-    retireMessages();
-    if (event.type == BlockingEvent::IDLE || event.type == BlockingEvent::MOUSE_MOVE)
-      return Action(ActionId::IDLE);
-    if (event.type == BlockingEvent::MINIMAP)
-      return Action(ActionId::DRAW_LEVEL_MAP);
-    if (event.type == BlockingEvent::MOUSE_LEFT) {
-      if (auto pos = mapGui->getHighlightedTile(renderer))
-        return Action(ActionId::MOVE_TO, *pos);
-      else
-        return Action(ActionId::IDLE);
-    }
-    if (event.type != BlockingEvent::KEY)
-      return Action(ActionId::IDLE);
-    auto key = event.key;
-    if (key->code == Keyboard::F1)
-      key = getEventFromMenu();
-    if (!key)
-      return Action(ActionId::IDLE);
-    if (auto actionId = getSimpleActionId(*key))
-      return Action(*actionId);
-
-    switch (key->code) {
-      case Keyboard::Escape: return Action(ActionId::EXIT);
-      case Keyboard::Z: unzoom(); return Action(ActionId::IDLE);
-      case Keyboard::F1: legendOption = (LegendOption)(1 - (int)legendOption); return Action(ActionId::IDLE);
-      case Keyboard::F2: Options::handle(this, OptionSet::GENERAL); return Action(ActionId::IDLE);
-      case Keyboard::Up:
-      case Keyboard::Numpad8: return Action(getDirActionId(*key), Vec2(0, -1));
-      case Keyboard::Numpad9: return Action(getDirActionId(*key), Vec2(1, -1));
-      case Keyboard::Right: 
-      case Keyboard::Numpad6: return Action(getDirActionId(*key), Vec2(1, 0));
-      case Keyboard::Numpad3: return Action(getDirActionId(*key), Vec2(1, 1));
-      case Keyboard::Down:
-      case Keyboard::Numpad2: return Action(getDirActionId(*key), Vec2(0, 1));
-      case Keyboard::Numpad1: return Action(getDirActionId(*key), Vec2(-1, 1));
-      case Keyboard::Left:
-      case Keyboard::Numpad4: return Action(getDirActionId(*key), Vec2(-1, 0));
-      case Keyboard::Numpad7: return Action(getDirActionId(*key), Vec2(-1, -1));
-      default: break;
-    }
-  }
-}
-
-Optional<ActionId> WindowView::getSimpleActionId(sf::Event::KeyEvent key) {
-  switch (key.code) {
-    case Keyboard::Return:
-    case Keyboard::Numpad5: return ActionId::PICK_UP;
-    case Keyboard::I: return ActionId::SHOW_INVENTORY;
-    case Keyboard::D: return key.shift ? ActionId::EXT_DROP : ActionId::DROP;
-    case Keyboard::Space:
-    case Keyboard::Period: return ActionId::WAIT;
-    case Keyboard::A: return ActionId::APPLY_ITEM;
-    case Keyboard::E: return ActionId::EQUIPMENT;
-    case Keyboard::T: return ActionId::THROW;
-    case Keyboard::M: return ActionId::SHOW_HISTORY;
-    case Keyboard::H: return ActionId::HIDE;
-    case Keyboard::P: if (key.shift) return ActionId::EXT_PICK_UP;
-                        else return ActionId::PAY_DEBT;
-    case Keyboard::C: return ActionId::CHAT;
-    case Keyboard::U: return ActionId::UNPOSSESS;
-    case Keyboard::S: return ActionId::CAST_SPELL;
-    default: break;
-  }
-  return Nothing();
 }
 

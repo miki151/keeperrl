@@ -32,15 +32,6 @@ class ReplayView : public T {
       return;
     }
 
-    virtual CollectiveAction getClick(double time) override {
-      T::getClick(time);
-      string method;
-      CollectiveAction action;
-      input >> method >> action;
-      CHECKEQ(method, "getClick");
-      return action;
-    }
-
     virtual bool isClockStopped() override {
       T::isClockStopped();
       string method;
@@ -50,11 +41,11 @@ class ReplayView : public T {
       return ret;
     }
 
-    virtual Action getAction() override {
+    virtual UserInput getAction() override {
  //     T::getAction();
  //     usleep(300000);
       string method;
-      Action action;
+      UserInput action;
       input >> method >> action;
       if (method == "exit")
         exit(0);
@@ -63,7 +54,7 @@ class ReplayView : public T {
     }
 
     virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        Optional<ActionId> a) override {
+        View::MenuType, double* scrollPos, Optional<UserInput::Type> a) override {
       string method;
       string action;
       input >> method >> action;
@@ -108,8 +99,6 @@ class ReplayView : public T {
     }
   private:
     ifstream& input;
-    Optional<CollectiveAction> stackedAction;
-    double stackedTime = -1000;
 };
 
 #endif

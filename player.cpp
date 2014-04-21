@@ -118,22 +118,18 @@ static string getSquareQuestion(SquareApplyType type, string name) {
     case SquareApplyType::DRINK: return "Drink from the " + name;
     case SquareApplyType::PRAY: return "Pray at the " + name;
     case SquareApplyType::SLEEP: return "Go to sleep on the " + name;
-    default: FAIL << "Unhandled";
+    default: break;
   }
   return "";
-}
-
-static bool canUseSquare(SquareApplyType type) {
-  return !contains({SquareApplyType::TRAIN, SquareApplyType::WORKSHOP}, type);
 }
 
 void Player::pickUpAction(bool extended) {
   auto items = creature->getPickUpOptions();
   const Square* square = creature->getConstSquare();
-  if (square->getApplyType(creature) && canUseSquare(*square->getApplyType(creature)) &&
-      (items.empty() ||
-       model->getView()->yesOrNoPrompt(getSquareQuestion(*square->getApplyType(creature), square->getName())))) {
-    creature->applySquare();
+  if (square->getApplyType(creature)) {
+    string question = getSquareQuestion(*square->getApplyType(creature), square->getName());
+    if (!question.empty() && (items.empty() || model->getView()->yesOrNoPrompt(question)))
+      creature->applySquare();
     return;
   }
   vector<View::ListElem> names;
@@ -201,7 +197,7 @@ static string getText(ItemType type) {
 }
 
 
-vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Optional<ActionId> exitAction) {
+vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Optional<UserInput::Type> exitAction) {
   map<ItemType, vector<Item*> > typeGroups = groupBy<Item*, ItemType>(
       creature->getEquipment().getItems(), [](Item* const& item) { return item->getType();});
   vector<View::ListElem> names;
@@ -211,7 +207,7 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Op
       names.push_back(View::ListElem(getText(elem), View::TITLE));
       getItemNames(typeGroups[elem], names, groups, predicate);
     }
-  Optional<int> index = model->getView()->chooseFromList(text, names, 0, exitAction);
+  Optional<int> index = model->getView()->chooseFromList(text, names, 0, View::NORMAL_MENU, nullptr, exitAction);
   if (index)
     return groups[*index];
   return vector<Item*>();
@@ -219,7 +215,7 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Op
 
 void Player::dropAction(bool extended) {
   vector<Item*> items = chooseItem("Choose an item to drop:", [this](const Item* item) {
-      return !creature->getEquipment().isEquiped(item) || item->getType() == ItemType::WEAPON;}, ActionId::DROP);
+      return !creature->getEquipment().isEquiped(item) || item->getType() == ItemType::WEAPON;}, UserInput::DROP);
   int num = items.size();
   if (num < 1)
     return;
@@ -241,7 +237,7 @@ void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   vector<vector<Item*> > groups;
   getItemNames(items, names, groups);
   CHECK(!names.empty());
-  Optional<int> index = model->getView()->chooseFromList("Do you want to take it?", names);
+  Optional<int> index = model->getView()->chooseFromList("Do you want to take this item?", names);
   if (!index) {
     return;
   }
@@ -260,7 +256,7 @@ void Player::applyAction() {
     return;
   }
   vector<Item*> items = chooseItem("Choose an item to apply:", [this](const Item* item) {
-      return creature->canApplyItem(item);}, ActionId::APPLY_ITEM);
+      return creature->canApplyItem(item);}, UserInput::APPLY_ITEM);
   if (items.size() == 0)
     return;
   applyItem(items);
@@ -289,7 +285,7 @@ void Player::applyItem(vector<Item*> items) {
 
 void Player::throwAction(Optional<Vec2> dir) {
   vector<Item*> items = chooseItem("Choose an item to throw:", [this](const Item* item) {
-      return !creature->getEquipment().isEquiped(item);}, ActionId::THROW);
+      return !creature->getEquipment().isEquiped(item);}, UserInput::THROW);
   if (items.size() == 0)
     return;
   throwItem(items, dir);
@@ -331,7 +327,8 @@ void Player::equipmentAction() {
         list.push_back("[Nothing]");
     }
     model->getView()->updateView(creature);
-    Optional<int> newIndex = model->getView()->chooseFromList("Equipment", list, index, ActionId::EQUIPMENT);
+    Optional<int> newIndex = model->getView()->chooseFromList("Equipment", list, index, View::NORMAL_MENU, nullptr,
+        UserInput::Type::EQUIPMENT);
     if (!newIndex) {
       creature->finishEquipChain();
       return;
@@ -390,7 +387,7 @@ void Player::displayInventory() {
     model->getView()->presentText("", "Your inventory is empty.");
     return;
   }
-  vector<Item*> item = chooseItem("Inventory:", alwaysTrue<const Item*>(), ActionId::SHOW_INVENTORY);
+  vector<Item*> item = chooseItem("Inventory:", alwaysTrue<const Item*>(), UserInput::Type::SHOW_INVENTORY);
   if (item.size() == 0) {
     return;
   }
@@ -608,15 +605,17 @@ void Player::makeMove() {
   else if (target)
     targetAction();
   else {
-    Action action = model->getView()->getAction();
+    UserInput action = model->getView()->getAction();
   vector<Vec2> direction;
   bool travel = false;
-  switch (action.getId()) {
-    case ActionId::FIRE: fireAction(action.getDirection()); break;
-    case ActionId::TRAVEL: travel = true;
-    case ActionId::MOVE: direction.push_back(action.getDirection()); break;
-    case ActionId::MOVE_TO: if (action.getDirection().dist8(creature->getPosition()) == 1) {
-                              Vec2 dir = action.getDirection() - creature->getPosition();
+  if (action.type != UserInput::IDLE)
+    model->getView()->retireMessages();
+  switch (action.type) {
+    case UserInput::FIRE: fireAction(action.getPosition()); break;
+    case UserInput::TRAVEL: travel = true;
+    case UserInput::MOVE: direction.push_back(action.getPosition()); break;
+    case UserInput::MOVE_TO: if (action.getPosition().dist8(creature->getPosition()) == 1) {
+                              Vec2 dir = action.getPosition() - creature->getPosition();
                               if (const Creature* c = creature->getConstSquare(dir)->getCreature()) {
                                 if (!creature->isEnemy(c)) {
                                   chatAction(dir);
@@ -625,8 +624,8 @@ void Player::makeMove() {
                               }
                               direction.push_back(dir);
                             } else
-                            if (action.getDirection() != creature->getPosition()) {
-                              target = action.getDirection();
+                            if (action.getPosition() != creature->getPosition()) {
+                              target = action.getPosition();
                               target = Vec2(min(creature->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
                                   min(creature->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
                               // Just in case
@@ -636,28 +635,29 @@ void Player::makeMove() {
                             else
                               pickUpAction(false);
                             break;
-    case ActionId::SHOW_INVENTORY: displayInventory(); break;
-    case ActionId::PICK_UP: pickUpAction(false); break;
-    case ActionId::EXT_PICK_UP: pickUpAction(true); break;
-    case ActionId::DROP: dropAction(false); break;
-    case ActionId::EXT_DROP: dropAction(true); break;
-    case ActionId::WAIT: creature->wait(); break;
-    case ActionId::APPLY_ITEM: applyAction(); break; 
-    case ActionId::THROW: throwAction(); break;
-    case ActionId::THROW_DIR: throwAction(action.getDirection()); break;
-    case ActionId::EQUIPMENT: equipmentAction(); break;
-    case ActionId::HIDE: hideAction(); break;
-    case ActionId::PAY_DEBT: payDebtAction(); break;
-    case ActionId::CHAT: chatAction(); break;
-    case ActionId::SHOW_HISTORY: messageBuffer.showHistory(); break;
-    case ActionId::UNPOSSESS: if (creature->canPopController()) {
+    case UserInput::SHOW_INVENTORY: displayInventory(); break;
+    case UserInput::PICK_UP: pickUpAction(false); break;
+    case UserInput::EXT_PICK_UP: pickUpAction(true); break;
+    case UserInput::DROP: dropAction(false); break;
+    case UserInput::EXT_DROP: dropAction(true); break;
+    case UserInput::WAIT: creature->wait(); break;
+    case UserInput::APPLY_ITEM: applyAction(); break; 
+    case UserInput::THROW: throwAction(); break;
+    case UserInput::THROW_DIR: throwAction(action.getPosition()); break;
+    case UserInput::EQUIPMENT: equipmentAction(); break;
+    case UserInput::HIDE: hideAction(); break;
+    case UserInput::PAY_DEBT: payDebtAction(); break;
+    case UserInput::CHAT: chatAction(); break;
+    case UserInput::SHOW_HISTORY: messageBuffer.showHistory(); break;
+    case UserInput::UNPOSSESS: if (creature->canPopController()) {
                                 creature->popController();
                                 return;
                               } break;
-    case ActionId::CAST_SPELL: spellAction(); break;
-    case ActionId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature); break;
-    case ActionId::EXIT: model->exitAction(); break;
-    case ActionId::IDLE: break;
+    case UserInput::CAST_SPELL: spellAction(); break;
+    case UserInput::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature); break;
+    case UserInput::EXIT: model->exitAction(); break;
+    case UserInput::IDLE: break;
+    default: break;
   }
   if (creature->isAffected(Creature::SLEEP) && creature->canPopController()) {
     if (model->getView()->yesOrNoPrompt("You fell asleep. Do you want to leave your minion?"))

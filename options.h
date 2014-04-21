@@ -7,6 +7,7 @@
 enum class OptionId {
   HINTS,
   ASCII,
+  MUSIC,
 
   EASY_KEEPER,
   AGGRESSIVE_HEROES,
@@ -28,6 +29,8 @@ class Options {
   static int getValue(OptionId);
   static void handle(View*, OptionSet, int lastIndex = 0);
   static bool handleOrExit(View*, OptionSet, int lastIndex = -1);
+  typedef function<void(bool)> Trigger;
+  static void addTrigger(OptionId, Trigger trigger);
 
   private:
   static void setValue(OptionId, int);

@@ -17,6 +17,9 @@ class LevelMaker;
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level {
   public:
+
+  static Rectangle maxLevelBounds;
+
   /** Checks if the creature can move to \paramname{direction}. This ensures 
     * that a subsequent call to #moveCreature will not fail.*/
   bool canMoveCreature(const Creature*, Vec2 direction) const;

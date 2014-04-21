@@ -19,7 +19,7 @@
 #include "statistics.h"
 #include "options.h"
 #include "technology.h"
-
+#include "gui_elem.h"
 
 using namespace boost::iostreams;
 
@@ -139,6 +139,7 @@ int main(int argc, char* argv[]) {
   ofstream output;
   string lognamePref = "log";
   Debug::init();
+  Options::init("options.txt");
   int seed = time(0);
   int forceMode = -1;
   bool genExit = false;
@@ -176,6 +177,7 @@ int main(int argc, char* argv[]) {
   //Table<bool> splash = readSplashTable("splash.map");
   int lastIndex = 0;
   view->initialize();
+  GuiElem::initialize("frame.png");
   while (1) {
     Item::identifyEverything();
     Quests::clearAll();
@@ -186,7 +188,6 @@ int main(int argc, char* argv[]) {
     Tribe::init();
     Technology::init();
     Statistics::init();
-    Options::init("options.txt");
     NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
         "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt",
         "insults.txt");
@@ -196,7 +197,8 @@ int main(int argc, char* argv[]) {
     view->reset();
     auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
         View::ListElem("Choose your role:", View::TITLE), "Keeper", "Adventurer", "Adventurer vs. Keeper",
-        View::ListElem("Or simply:", View::TITLE), "Load a game", "Change settings", "View high scores", "Quit"}, lastIndex);
+        View::ListElem("Or simply:", View::TITLE), "Load a game", "Change settings", "View high scores", "Quit"},
+        lastIndex, View::MAIN_MENU);
     if (!choice)
       continue;
     lastIndex = *choice;

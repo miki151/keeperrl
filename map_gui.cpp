@@ -6,11 +6,11 @@
 #include "view_index.h"
 #include "tile.h"
 #include "window_view.h"
+#include "window_renderer.h"
 
 using namespace colors;
 
-MapGui::MapGui(Rectangle bounds, const Table<Optional<ViewIndex>>& o)
-  : GuiElem(bounds), objects(o) {
+MapGui::MapGui(const Table<Optional<ViewIndex>>& o, function<void(Vec2)> fun) : objects(o), leftClickFun(fun) {
 }
 
 void MapGui::setLayout(MapLayout* l) {
@@ -21,7 +21,7 @@ void MapGui::setSpriteMode(bool s) {
   spriteMode = s;
 }
 
-Optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
+Optional<Vec2> MapGui::getHighlightedTile(WindowRenderer& renderer) {
   Vec2 pos = renderer.getMousePos();
   if (!pos.inRectangle(getBounds()))
     return Nothing();
@@ -90,13 +90,32 @@ bool tileConnects(ConnectionId id, Vec2 pos) {
   return floorIds.count(pos) && id == floorIds.at(pos);
 }
 
-void MapGui::onLeftClick(Vec2) {
-}
-void MapGui::onRightClick(Vec2) {
-}
-void MapGui::onMouseMove(Vec2) {
+void MapGui::onLeftClick(Vec2 v) {
+  if (v.inRectangle(getBounds())) {
+    Vec2 pos = layout->projectOnMap(getBounds(), v);
+    leftClickFun(pos);
+    mouseHeldPos = pos;
+  }
 }
 
+void MapGui::onRightClick(Vec2) {
+}
+
+void MapGui::onMouseMove(Vec2 v) {
+  Vec2 pos = layout->projectOnMap(getBounds(), v);
+  if (pos.inRectangle(getBounds())) {
+    if (mouseHeldPos && *mouseHeldPos != pos) {
+      leftClickFun(pos);
+      mouseHeldPos = pos;
+    }
+    highlightedPos = pos;
+  } else
+    highlightedPos = Nothing();
+}
+
+void MapGui::onMouseRelease() {
+  mouseHeldPos = Nothing();
+}
 
 Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewIndex& index,
     int sizeX, int sizeY, Vec2 tilePos, bool highlighted) {
@@ -210,7 +229,6 @@ void MapGui::render(Renderer& renderer) {
   int sizeY = layout->squareHeight();
   renderer.drawFilledRectangle(getBounds(), almostBlack);
   Optional<ViewObject> highlighted;
-  Optional<Vec2> highlightedPos = getHighlightedTile(renderer);
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
     Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
     if (!spriteMode && wpos.inRectangle(levelBounds))
