@@ -219,9 +219,8 @@ Model* Model::heroModel(View* view) {
           Random.getRandom(5, 10), CreatureId::LIZARDLORD,
           getVillageLocation(), Tribes::get(TribeId::LIZARD), BuildingId::MUD, {}, Nothing(), Nothing(),
           ItemFactory::mushrooms()},
-      {SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.3), Random.getRandom(10, 20), CreatureId::ELF_LORD,
-          getVillageLocation(), Tribes::get(TribeId::ELVEN), BuildingId::WOOD, {}, Nothing(), Nothing(),
-          ItemFactory::villageShop()},
+      {SettlementType::VILLAGE2, CreatureFactory::elvenVillage(0.3), Random.getRandom(10, 20), CreatureId::ELF_LORD,
+          getVillageLocation(), Tribes::get(TribeId::ELVEN), BuildingId::WOOD, {}, Nothing(), Nothing()},
       {SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER), CreatureId::WITCH),
       1, Nothing(), new Location(), nullptr, BuildingId::WOOD, {}},
       {SettlementType::COTTAGE, CreatureFactory::singleType(Tribes::get(TribeId::BANDIT), CreatureId::BANDIT),
@@ -290,8 +289,9 @@ PCreature Model::makePlayer() {
           c.humanoid = true;
           c.name = "Adventurer";
           c.firstName = NameGenerator::firstNames.getNext();
-          c.skills.insert(Skill::archery);
-          c.skills.insert(Skill::twoHandedWeapon);), Player::getFactory(view, this, levelMemory))), {
+          c.skills.insert(Skill::get(SkillId::ARCHERY));
+          c.skills.insert(Skill::get(SkillId::AMBUSH));
+          c.skills.insert(Skill::get(SkillId::TWO_HANDED_WEAPON));), Player::getFactory(view, this, levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
@@ -367,6 +367,7 @@ void Model::onKillEvent(const Creature* victim, const Creature* killer) {
 struct EnemyInfo {
   SettlementInfo settlement;
   int heroCount;
+  bool noAttack;
   CreatureFactory factory;
 };
 
@@ -375,20 +376,20 @@ vector<EnemyInfo> getEnemyInfo() {
       {{SettlementType::CASTLE2, CreatureFactory::vikingTown(),
          Random.getRandom(2, 6), Nothing(), getVillageLocation(), Tribes::get(TribeId::HUMAN),
          BuildingId::WOOD_CASTLE, {}, CreatureId::WARRIOR, ItemId::BEAST_MUT_BOOK},
-      10, CreatureFactory::vikingAttackers()},
+      10, false, CreatureFactory::vikingAttackers()},
       {{SettlementType::VILLAGE, CreatureFactory::singleType(Tribes::get(TribeId::LIZARD), CreatureId::LIZARDMAN),
          Random.getRandom(2, 4), Nothing(), getVillageLocation(), Tribes::get(TribeId::LIZARD),
          BuildingId::MUD, {}, Nothing(), ItemId::HUMANOID_MUT_BOOK, ItemFactory::mushrooms()},
-      10, CreatureFactory::lizardAttackers()},
-      {{SettlementType::VILLAGE, CreatureFactory::elvenVillage(0.0), 7, Nothing(), getVillageLocation(),
+      10, false, CreatureFactory::lizardAttackers()},
+      {{SettlementType::VILLAGE2, CreatureFactory::elvenVillage(0.0), 7, Nothing(), getVillageLocation(),
          Tribes::get(TribeId::ELVEN), BuildingId::WOOD, {}, Nothing(), ItemId::SPELLS_MAS_BOOK,
          ItemFactory::villageShop()},
-      10, CreatureFactory::elfAttackers()},
+      10, true, CreatureFactory::elfAttackers()},
       {{SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), Random.getRandom(2, 6), Nothing(),
          getVillageLocation(),
          Tribes::get(TribeId::HUMAN), BuildingId::BRICK, {}, CreatureId::CASTLE_GUARD, Nothing(),
          ItemFactory::villageShop()},
-      20, CreatureFactory::castleAttackers()},
+      20, false, CreatureFactory::castleAttackers()},
   };
 }
 
@@ -453,9 +454,16 @@ Model* Model::collectiveModel(View* view) {
   }
   m->villageControls.push_back(std::move(dwarfControl));
   for (int i : All(enemyInfo)) {
+    VillageControl::AttackTrigger* trigger;
+    if (enemyInfo[i].noAttack)
+      trigger = VillageControl::getPowerTrigger(0, 0);
+    else if (i < enemyInfo.size() - 1)
+      trigger = VillageControl::getPowerTrigger(getKilledCoeff(), getPowerCoeff());
+    else
+      trigger = VillageControl::getFinalTrigger(extractRefs(m->villageControls));
+
     PVillageControl control = VillageControl::topLevelVillage(m->collective.get(), enemyInfo[i].settlement.location,
-        i < enemyInfo.size() - 1 ? VillageControl::getPowerTrigger(getKilledCoeff(), getPowerCoeff())
-        : VillageControl::getFinalTrigger(extractRefs(m->villageControls)));
+          trigger);
     for (int j : Range(enemyInfo[i].heroCount)) {
       PCreature c = enemyInfo[i].factory.random(MonsterAIFactory::villageControl(control.get(),
             enemyInfo[i].settlement.location));

@@ -760,15 +760,6 @@ class RandomLocations : public LevelMaker {
       }
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
- /*   if (onAttr) {
-          string out;
-          for (int i : Range(area.getPX(), area.getKX())) {
-            for (int j : Range(area.getPY(), area.getKY()))
-              out.append(!builder->hasAttrib(Vec2(i, j), *onAttr) ? "0" : "1");
-            Debug() << out;
-            out = "";
-          }
-    }*/
     makeCnt(builder, area, 100);
   }
 
@@ -1015,7 +1006,7 @@ class Mountains : public LevelMaker {
       }
       if (wys[v] > cutOffValSnow) {
         builder->putSquare(v, types[2]);
-        builder->putSquare(v, types[0], SquareAttrib::ROAD_CUT_THRU);
+        builder->putSquare(v, types[0], {SquareAttrib::GLACIER, SquareAttrib::ROAD_CUT_THRU});
         ++gCnt;
       }
       else if (wys[v] > cutOffVal) {
@@ -1106,9 +1097,9 @@ class StartingPos : public LevelMaker {
   StairKey stairKey;
 };
 
-class Vegetation : public LevelMaker {
+class Forrest : public LevelMaker {
   public:
-  Vegetation(double _ratio, double _density, SquareType _onType, vector<SquareType> _types, vector<double> _probs) 
+  Forrest(double _ratio, double _density, SquareType _onType, vector<SquareType> _types, vector<double> _probs) 
       : ratio(_ratio), density(_density), types(_types), probs(_probs), onType(_onType) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
@@ -1116,8 +1107,11 @@ class Vegetation : public LevelMaker {
     vector<double> values = sortedValues(wys);
     double cutoff = values[values.size() * ratio];
     for (Vec2 v : area)
-      if (builder->getType(v) == onType && wys[v] < cutoff && Random.getDouble() <= density)
-        builder->putSquare(v, chooseRandom(types, probs));
+      if (builder->getType(v) == onType && wys[v] < cutoff) {
+        if (Random.getDouble() <= density)
+          builder->putSquare(v, chooseRandom(types, probs));
+        builder->addAttrib(v, SquareAttrib::FORREST);
+      }
   }
 
   private:
@@ -1450,8 +1444,8 @@ static LevelMaker* underground(bool monsters) {
             queue->addMaker(new Shrine(deity, lakeType,
                   new TypePredicate(lakeType), SquareType::ROCK_WALL, nullptr));
             if (lakeType == SquareType::WATER) {
-              queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::MONSTER), CreatureId::KRAKEN), 1,
-                    MonsterAIFactory::monster(), SquareType::WATER));
+              queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::MONSTER),
+                    CreatureId::KRAKEN), 1, MonsterAIFactory::monster(), SquareType::WATER));
             }
             if (lakeType == SquareType::MAGMA) {
               queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::MONSTER),
@@ -1535,6 +1529,24 @@ MakerQueue* getElderRoom(SettlementInfo info) {
   if (info.elderLoot)
     elderRoom->addMaker(new Items(ItemFactory::singleType(*info.elderLoot), building.floorInside, 1, 2));
   return elderRoom;
+}
+
+MakerQueue* village2(SettlementInfo info) {
+  BuildingInfo building = get(info.buildingId);
+  MakerQueue* queue = new MakerQueue();
+  map<SquareType, pair<int, int> > featureCount { 
+      { SquareType::CHEST, make_pair(0, 3) },
+      { SquareType::BED, make_pair(0, 3) }};
+  queue->addMaker(new LocationMaker(info.location));
+  vector<LevelMaker*> insideMakers {
+      new DungeonFeatures(new TypePredicate(building.floorInside), featureCount),
+      getElderRoom(info)};
+  if (info.shopFactory)
+    insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));
+  queue->addMaker(new Buildings(6, 10, 3, 4, building, false, insideMakers, false));
+  queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::stayInLocation(info.location),
+        building.floorOutside));
+  return queue;
 }
 
 MakerQueue* village(SettlementInfo info) {
@@ -1671,12 +1683,21 @@ pair<int, int> getSize(SettlementType type) {
   switch (type) {
     case SettlementType::WITCH_HOUSE:
     case SettlementType::COTTAGE: return {Random.getRandom(8, 12), Random.getRandom(8, 12)};
+    case SettlementType::VILLAGE2: return {30, 20};
     case SettlementType::VILLAGE:
     case SettlementType::CASTLE: return {30, 20};
     case SettlementType::CASTLE2: return {15, 15};
   }
   FAIL << "fewf";
   return {0, 0};
+}
+
+SquarePredicate* getSettlementPredicate(SettlementType type) {
+  if (type == SettlementType::VILLAGE2)
+    return new AttribPredicate(SquareAttrib::FORREST);
+  else
+    return new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
+        new NoAttribPredicate(SquareAttrib::FOG));
 }
 
 LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
@@ -1704,6 +1725,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   for (SettlementInfo settlement : settlements) {
     MakerQueue* queue = nullptr;
     switch (settlement.type) {
+      case SettlementType::VILLAGE2: queue = village2(settlement); break;
       case SettlementType::VILLAGE: queue = village(settlement); break;
       case SettlementType::CASTLE:
           queue = castle(settlement);
@@ -1721,7 +1743,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
       bandits = queue;
     subMakers.push_back(queue);
     subSizes.push_back(getSize(settlement.type));
-    predicates.push_back(lowlandPred);
+    predicates.push_back(getSettlementPredicate(settlement.type));
   }
   maxDistances[{elvenVillage, bandits}] = 100;
   minDistances[{elvenVillage, bandits}] = 50;
@@ -1771,9 +1793,9 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   queue->addMaker(new Empty(SquareType::GRASS));
   queue->addMaker(new Mountains(0.5, 0.7, {1, 1, 1, 1, 0}));
  // queue->addMaker(new MountainRiver(30, '='));
-  queue->addMaker(new Vegetation(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
-  queue->addMaker(new Vegetation(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
-  queue->addMaker(new Vegetation(0.2, 0.3, SquareType::MOUNTAIN, vegetationHigh, probs));
+  queue->addMaker(new Forrest(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
+  queue->addMaker(new Forrest(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
+  queue->addMaker(new Forrest(0.2, 0.3, SquareType::MOUNTAIN, vegetationHigh, probs));
   queue->addMaker(new Margin(100, new RandomLocations(subMakers, subSizes, predicates, true,
       minDistances, maxDistances)));
   MakerQueue* tower = new MakerQueue();
@@ -1810,6 +1832,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
     MakerQueue* queue = nullptr;
     switch (settlement.type) {
       case SettlementType::VILLAGE: queue = village(settlement); break;
+      case SettlementType::VILLAGE2: queue = village2(settlement); break;
       case SettlementType::CASTLE:
           queue = castle(settlement);
           queue->addMaker(new StartingPos(new TypePredicate(SquareType::MUD), StairKey::HERO_SPAWN));
@@ -1825,8 +1848,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
     }
     minDistances[{startingPos, queue}] = 50;
     subMakers.push_back(queue);
-    predicates.push_back(new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
-          new NoAttribPredicate(SquareAttrib::FOG)));
+    predicates.push_back(getSettlementPredicate(settlement.type));
     subSizes.emplace_back(getSize(settlement.type));
   }
   for (LevelMaker* cottage : cottages)
@@ -1836,9 +1858,16 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
       maxDistances[{cottage, subMakers.back()}] = 13;
       predicates.push_back(new AttribPredicate(SquareAttrib::LOWLAND));
     }
-  subMakers.push_back(new Lake());
-  subSizes.emplace_back(20, 20);
-  predicates.push_back(new AttribPredicate(SquareAttrib::LOWLAND));
+  for (int i : Range(Random.getRandom(1, 4))) {
+    subMakers.push_back(new Lake());
+    subSizes.emplace_back(20, 20);
+    predicates.push_back(new AttribPredicate(SquareAttrib::LOWLAND));
+  }
+  for (int i : Range(Random.getRandom(2, 5))) {
+    subMakers.push_back(new UniformBlob(SquareType::WATER, Nothing(), SquareAttrib::LAKE));
+    subSizes.emplace_back(Random.getRandom(5, 30), Random.getRandom(5, 30));
+    predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
+  }
   int maxResourceDist = 50;
   int minGold = 1;
   int maxGold = 3;
@@ -1875,9 +1904,9 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   queue->addMaker(new Mountains(0.7, 0.4, {0, 1, 1, 0, 0}, false,
         {SquareType::MOUNTAIN2, SquareType::MOUNTAIN2, SquareType::HILL}));
   queue->addMaker(new SetCovered(new TypePredicate(SquareType::MOUNTAIN2)));
-  queue->addMaker(new Vegetation(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
-  queue->addMaker(new Vegetation(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
-  queue->addMaker(new Vegetation(0.2, 0.3, SquareType::MOUNTAIN, vegetationHigh, probs));
+  queue->addMaker(new Forrest(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
+  queue->addMaker(new Forrest(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
+  queue->addMaker(new Forrest(0.2, 0.3, SquareType::MOUNTAIN, vegetationHigh, probs));
   queue->addMaker(new Margin(10, new RandomLocations(subMakers, subSizes, predicates, true, minDistances,
           maxDistances)));
   queue->addMaker(new Roads(SquareType::PATH));
@@ -1986,6 +2015,6 @@ LevelMaker* LevelMaker::cavernLevel(CreatureFactory cfactory, SquareType wallTyp
 LevelMaker* LevelMaker::grassAndTrees() {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareType::GRASS));
-  queue->addMaker(new Vegetation(0.8, 0.5, SquareType::GRASS, {SquareType::CANIF_TREE}, {1}));
+  queue->addMaker(new Forrest(0.8, 0.5, SquareType::GRASS, {SquareType::CANIF_TREE}, {1}));
   return new BorderGuard(queue, SquareType::BLACK_WALL);
 }

@@ -116,7 +116,7 @@ class WindowView: public View {
   };
   
   PGuiElem drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveOption option);
-  CollectiveOption collectiveOption = CollectiveOption::VILLAGES;
+  CollectiveOption collectiveOption = CollectiveOption::BUILDINGS;
 
   enum class LegendOption {
     STATS,
@@ -128,7 +128,8 @@ class WindowView: public View {
   MapLayout* mapLayout;
   MapGui* mapGui;
   MinimapGui* minimapGui;
-  PGuiElem mapGuiDecoration;
+  PGuiElem mapDecoration;
+  PGuiElem minimapDecoration;
   vector<PGuiElem> tempGuiElems;
   vector<GuiElem*> getAllGuiElems();
   vector<GuiElem*> getClickableGuiElems();

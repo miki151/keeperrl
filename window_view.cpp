@@ -180,8 +180,10 @@ void WindowView::initialize() {
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP)); });
   Rectangle minimapBounds(20, 70, 100, 150);
   minimapGui->setBounds(minimapBounds);
-  mapGuiDecoration = GuiElem::border2(GuiElem::empty());
-  mapGuiDecoration->setBounds(getMapViewBounds().minusMargin(-6));
+  mapDecoration = GuiElem::border2(GuiElem::empty());
+  mapDecoration->setBounds(getMapViewBounds().minusMargin(-6));
+  minimapDecoration = GuiElem::border(GuiElem::empty());
+  minimapDecoration->setBounds(minimapBounds.minusMargin(-6));
 }
 
 void WindowView::reset() {
@@ -284,7 +286,7 @@ void WindowView::displaySplash(View::SplashType type, bool& ready) {
 void WindowView::resize(int width, int height, vector<GuiElem*> gui) {
   renderer.resize(width, height);
   refreshScreen(false);
-  mapGuiDecoration->setBounds(getMapViewBounds().minusMargin(-6));
+  mapDecoration->setBounds(getMapViewBounds().minusMargin(-6));
   mapGui->setBounds(getMapViewBounds());
   if (gameReady) {
     rebuildGui();
@@ -712,18 +714,18 @@ void WindowView::rebuildGui() {
         break;
   }
   tempGuiElems.clear();
-  tempGuiElems.push_back(GuiElem::stack(GuiElem::defaultBackground2(), 
+  tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2), 
         GuiElem::margins(std::move(right), 20, 20, 20, 20)));
   tempGuiElems.back()->setBounds(Rectangle(
         renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight()));
   if (overMap) {
-    tempGuiElems.push_back(GuiElem::window(GuiElem::stack(GuiElem::defaultBackground2(), 
+    tempGuiElems.push_back(GuiElem::window(GuiElem::stack(GuiElem::background(GuiElem::background2), 
           GuiElem::margins(std::move(overMap), 20, 20, 20, 20))));
     tempGuiElems.back()->setBounds(Rectangle(
           renderer.getWidth() - rightBarWidth - minionWindowWidth - minionWindowRightMargin, 100,
           renderer.getWidth() - rightBarWidth - minionWindowRightMargin, 100 + minionWindowHeight));
   }
-  tempGuiElems.push_back(GuiElem::stack(GuiElem::defaultBackground2(),
+  tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2),
         GuiElem::margins(std::move(bottom), 40, 10, 0, 0)));
   tempGuiElems.back()->setBounds(Rectangle(
         0, renderer.getHeight() - bottomBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight()));
@@ -732,7 +734,7 @@ void WindowView::rebuildGui() {
 vector<GuiElem*> WindowView::getAllGuiElems() {
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   if (gameReady)
-    ret = concat(concat({mapGui}, ret), {mapGuiDecoration.get(), minimapGui});
+    ret = concat(concat({mapGui}, ret), {mapDecoration.get(), minimapDecoration.get(), minimapGui});
   return ret;
 }
 
@@ -1094,7 +1096,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
   PGuiElem list = drawListGui(title, options, contentHeight, &index, &choice);
   PGuiElem dismissBut = GuiElem::stack(makeVec<PGuiElem>(
         GuiElem::button([&](){ choice = -100; }),
-        GuiElem::mouseHighlight(GuiElem::defaultHighlight(), count, &index),
+        GuiElem::mouseHighlight(GuiElem::highlight(GuiElem::foreground1), count, &index),
         GuiElem::centerHoriz(GuiElem::label("Dismiss", white), renderer.getTextLength("Dismiss"))));
   double scrollJump = 60. / contentHeight;
   PGuiElem stuff = GuiElem::scrollable(std::move(list), contentHeight, scrollPos, scrollJump);
@@ -1186,17 +1188,18 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
   for (int i : All(options)) {
     Color color;
     switch (options[i].getMod()) {
-      case View::TITLE: color = yellow; break;
-      case View::INACTIVE: color = gray; break;
+      case View::TITLE: color = GuiElem::titleText; break;
+      case View::INACTIVE: color = GuiElem::inactiveText; break;
       case View::TEXT:
-      case View::NORMAL: color = white; break;
+      case View::NORMAL: color = GuiElem::text; break;
     }
-    lines.push_back(GuiElem::margins(GuiElem::label(options[i].getText(), color), 10, 3, 0, 0));
+    PGuiElem label1 = GuiElem::label(options[i].getText(), color);
+    lines.push_back(GuiElem::margins(std::move(label1), 10, 3, 0, 0));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = GuiElem::stack(makeVec<PGuiElem>(
             GuiElem::button([=]() { *choice = numActive; }),
             GuiElem::margins(
-              GuiElem::mouseHighlight(GuiElem::defaultHighlight(), numActive, highlight), 0, 0, 0, 0),
+              GuiElem::mouseHighlight(GuiElem::highlight(GuiElem::foreground1), numActive, highlight), 0, 0, 0, 0),
             std::move(lines.back())));
       ++numActive;
     }
@@ -1443,8 +1446,8 @@ UserInput WindowView::getAction() {
           for (int i : All(techHotkeys))
             if (key == techHotkeys[i])
               return UserInput(UserInput::TECHNOLOGY, i);
-        }
-        break;*/
+        }*/
+        break;
       case Event::KeyPressed:
         keyboardAction(event.key);
         renderer.flushEvents(Event::KeyPressed);
@@ -1473,6 +1476,7 @@ vector<KeyInfo> keyInfo {
 //  { "S", "Cast spell", {Keyboard::S}},
   { "M", "Show message history", {Keyboard::M}},
   { "C", "Chat with someone", {Keyboard::C}},
+  { "H", "Hide", {Keyboard::H}},
   { "P", "Pay debt", {Keyboard::P}},
   //{ "U", "Unpossess", {Keyboard::U}},
   { "Space", "Wait", {Keyboard::Space}},

@@ -73,9 +73,13 @@ class CreatureAttributes {
   bool SERIAL2(invincible, false);
   double SERIAL2(damageMultiplier, 1);
   unordered_set<Skill*> SERIAL(skills);
-  map<int, Skill*> skillGain {{4, Skill::twoHandedWeapon}, {6, Skill::knifeThrowing}, {10, Skill::archery}};
+  map<int, Skill*> skillGain {
+    {4, Skill::get(SkillId::TWO_HANDED_WEAPON)},
+    {6, Skill::get(SkillId::KNIFE_THROWING)},
+    {10, Skill::get(SkillId::ARCHERY)}};
   SERIAL3(skillGain);
   vector<SpellInfo> SERIAL(spells);
+  VisionInfo SERIAL2(visionInfo, VisionInfo::NORMAL);
 };
 
 #endif

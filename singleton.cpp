@@ -38,6 +38,7 @@ void Singleton<T, E>::set(E id, T* q) {
   elems[id].reset(q);
 }
 
-template class Singleton<Quest, QuestId>;
 template class Singleton<Tribe, TribeId>;
 template class Singleton<Technology, TechId>;
+template class Singleton<Skill, SkillId>;
+template class Singleton<Quest, QuestId>;

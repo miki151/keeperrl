@@ -54,7 +54,7 @@ class Construction : public Task {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (!c->hasSkill(Skill::construction))
+    if (!c->hasSkill(Skill::get(SkillId::CONSTRUCTION)))
       return NoMove;
     Vec2 dir = getPosition() - c->getPosition();
     if (dir.length8() == 1) {

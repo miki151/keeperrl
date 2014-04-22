@@ -162,8 +162,8 @@ void Deity::onPrayer(Creature* c) {
       case Epithet::WAR:
           grantGift(c, chooseRandom(
           {ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}), name); break;
-      case Epithet::WISDOM: grantGift(c, 
-          chooseRandom({ItemId::MUSHROOM_BOOK, ItemId::POTION_BOOK, ItemId::AMULET_BOOK}), name); break;
+/*      case Epithet::WISDOM: grantGift(c, 
+          chooseRandom({ItemId::MUSHROOM_BOOK, ItemId::POTION_BOOK, ItemId::AMULET_BOOK}), name); break;*/
       case Epithet::DESTRUCTION: applyEffect(c, EffectType::DESTROY_EQUIPMENT, ""); break;
       case Epithet::SECRETS: grantGift(c, ItemId::INVISIBLE_POTION, name); break;
       case Epithet::LIGHTNING:

@@ -14,7 +14,7 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(triggers)
     & SVAR(viewObject)
     & SVAR(backgroundObject)
-    & SVAR(seeThru)
+    & SVAR(visionInfo)
     & SVAR(hide)
     & SVAR(strength)
     & SVAR(height)
@@ -38,9 +38,9 @@ void SolidSquare::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(SolidSquare);
 
-Square::Square(const ViewObject& vo, const string& n, bool see, bool canHide, int s, double f,
+Square::Square(const ViewObject& vo, const string& n, VisionInfo info, bool canHide, int s, double f,
     map<SquareType, int> construct, bool tick) 
-    : name(n), viewObject(vo), seeThru(see), hide(canHide), strength(s), fire(strength, f),
+    : name(n), viewObject(vo), visionInfo(info), hide(canHide), strength(s), fire(strength, f),
     constructions(construct), ticking(tick) {
 }
 
@@ -102,8 +102,10 @@ bool Square::canConstruct(SquareType type) const {
 
 bool Square::construct(SquareType type) {
   CHECK(canConstruct(type));
-  if (--constructions[type] == 0) {
+  if (--constructions[type] <= 0) {
     PSquare newSquare = PSquare(SquareFactory::get(type));
+    if (creature && !newSquare->canEnter(creature))
+      return false;
     level->replaceSquare(position, std::move(newSquare));
     return true;
   } else
@@ -200,11 +202,11 @@ bool Square::itemLands(vector<Item*> item, const Attack& attack) {
   return false;
 }
 
-bool Square::itemBounces(Item* item) const {
-  return !canEnterEmpty(Creature::getDefault());
+bool Square::itemBounces(Item* item, VisionInfo info) const {
+  return !canSeeThru(info);
 }
 
-void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir) {
+void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionInfo info) {
   if (creature) {
     item[0]->onHitCreature(creature, attack, item.size() > 1);
     if (!item[0]->isDiscarded())
@@ -213,7 +215,7 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
   }
   for (PTrigger& t : triggers)
     if (t->interceptsFlyingItem(item[0].get())) {
-      t->onInterceptFlyingItem(std::move(item), attack, remainingDist, dir);
+      t->onInterceptFlyingItem(std::move(item), attack, remainingDist, dir, info);
       return;
     }
 
@@ -377,12 +379,17 @@ bool SolidSquare::canEnterSpecial(const Creature*) const {
   return false;
 }
 
-bool Square::canSeeThru() const {
-  return seeThru;
+bool Square::canSeeThru(VisionInfo info) const {
+  if (info == VisionInfo::NORMAL)
+    return visionInfo == VisionInfo::NORMAL;
+  if (info == VisionInfo::ELF)
+    return visionInfo != VisionInfo::NONE;
+  FAIL << int(info);
+  return false;
 }
 
-void Square::setCanSeeThru(bool f) {
-  seeThru = f;
+void Square::setCanSeeThru(VisionInfo info) {
+  visionInfo = info;
 }
 
 bool Square::canHide() const {

@@ -8,13 +8,14 @@
 
 void Encyclopedia::present(View* view, int lastInd) {
   auto index = view->chooseFromList("Choose topic:",
-      {"Advances", "Workshop", "Deities"}, lastInd);
+      {"Advances", "Workshop", "Deities", "Skills"}, lastInd);
   if (!index)
     return;
   switch (*index) {
     case 0: advances(view); break;
     case 1: workshop(view); break;
     case 2: deities(view); break;
+    case 3: skills(view); break;
     default: FAIL << "wfepok";
   }
   present(view, *index);
@@ -57,6 +58,22 @@ void Encyclopedia::advances(View* view, int lastInd) {
     return;
   advance(view, techs[*index]);
   advances(view, *index);
+}
+
+void Encyclopedia::skills(View* view, int lastInd) {
+  vector<View::ListElem> options;
+  vector<Skill*> s = Skill::getAll();
+  for (Skill* skill : s)
+    options.push_back(skill->getName());
+  auto index = view->chooseFromList("Skills", options, lastInd);
+  if (!index)
+    return;
+  skill(view, s[*index]);
+  skills(view, *index);
+}
+
+void Encyclopedia::skill(View* view, const Skill* skill) {
+  view->presentText(capitalFirst(skill->getName()), skill->getHelpText());
 }
 
 void Encyclopedia::room(View* view, Collective::RoomInfo& info) {

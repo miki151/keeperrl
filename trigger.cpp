@@ -28,7 +28,7 @@ Optional<ViewObject> Trigger::getViewObject(const CreatureView*) const {
 void Trigger::onCreatureEnter(Creature* c) {}
 
 bool Trigger::interceptsFlyingItem(Item* it) const { return false; }
-void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir) {}
+void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionInfo) {}
 bool Trigger::isDangerous(const Creature* c) const { return false; }
 void Trigger::tick(double time) {}
 
@@ -72,10 +72,11 @@ class Portal : public Trigger {
     return other && !Random.roll(5);
   }
 
-  virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir) {
+  virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir,
+      VisionInfo info) {
     string name = it[0]->getTheName(it.size() > 1);
     level->globalMessage(position, name + " disappears in the portal.");
-    other->level->throwItem(std::move(it), a, remainingDist, other->position, dir);
+    other->level->throwItem(std::move(it), a, remainingDist, other->position, dir, info);
   }
 
   virtual void tick(double time) override {

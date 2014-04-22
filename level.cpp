@@ -24,7 +24,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Level);
 
 Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n) 
-    : squares(std::move(s)), locations(l), model(m), fieldOfView(squares), entryMessage(message), 
+    : squares(std::move(s)), locations(l), model(m), entryMessage(message), 
     name(n) {
   for (Vec2 pos : squares.getBounds()) {
     squares[pos]->setLevel(this);
@@ -34,6 +34,8 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
   }
   for (Location *l : locations)
     l->setLevel(this);
+  fieldOfView.emplace_back(squares, VisionInfo::ELF);
+  fieldOfView.emplace_back(squares, VisionInfo::NORMAL);
 }
 
 Rectangle Level::maxLevelBounds(600, 600);
@@ -141,19 +143,20 @@ Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
   return Vec2(0, 0);
 }
 
-void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction) {
+void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionInfo info) {
   vector<PItem> v;
   v.push_back(std::move(item));
-  throwItem(std::move(v), attack, maxDist, position, direction);
+  throwItem(std::move(v), attack, maxDist, position, direction, info);
 }
 
-void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction) {
+void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction,
+    VisionInfo visionInfo) {
   CHECK(!item.empty());
   int cnt = 1;
   vector<Vec2> trajectory;
   for (Vec2 v = position + direction;; v += direction) {
     trajectory.push_back(v);
-    if (getSquare(v)->itemBounces(item[0].get())) {
+    if (getSquare(v)->itemBounces(item[0].get(), visionInfo)) {
         item[0]->onHitSquareMessage(v, getSquare(v), item.size() > 1);
         trajectory.pop_back();
         EventListener::addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
@@ -163,7 +166,7 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
     }
     if (++cnt > maxDist || getSquare(v)->itemLands(extractRefs(item), attack)) {
       EventListener::addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
-      getSquare(v)->onItemLands(std::move(item), attack, maxDist - cnt - 1, direction);
+      getSquare(v)->onItemLands(std::move(item), attack, maxDist - cnt - 1, direction, visionInfo);
       return;
     }
   }
@@ -178,7 +181,8 @@ void Level::killCreature(Creature* creature) {
 }
 
 void Level::updateVisibility(Vec2 changedSquare) {
-  fieldOfView.squareChanged(changedSquare);
+  for (auto& elem : fieldOfView)
+    elem.squareChanged(changedSquare);
 }
 
 void Level::globalMessage(Vec2 position, const string& ifPlayerCanSee, const string& cannot) const {
@@ -218,8 +222,8 @@ vector<Creature*>& Level::getAllCreatures() {
   return creatures;
 }
 
-bool Level::canSee(Vec2 from, Vec2 to) const {
-  return fieldOfView.canSee(from, to);
+bool Level::canSee(const Creature* c, Vec2 pos) const {
+  return fieldOfView.at(int(c->getVisionInfo()) - 1).canSee(c->getPosition(), pos);
 }
 
 bool Level::playerCanSee(Vec2 pos) const {
@@ -268,7 +272,7 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
 vector<Vec2> Level::getVisibleTiles(const Creature* c) const {
   static vector<Vec2> emptyVec;
   if (!c->isBlind())
-    return fieldOfView.getVisibleTiles(c->getPosition());
+    return fieldOfView.at(int(c->getVisionInfo()) - 1).getVisibleTiles(c->getPosition());
   else
     return emptyVec;
 }

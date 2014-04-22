@@ -182,7 +182,8 @@ static void wordOfPower(Creature* c, EffectStrength strength) {
       l->throwItem(
         c->getSquare(v)->removeItems(elem.second),
         Attack(c, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
-        elem.second[0]->getAttackType(), 15, 15, false), wordOfPowerDist.at(strength), c->getPosition(), v);
+        elem.second[0]->getAttackType(), 15, 15, false), wordOfPowerDist.at(strength), c->getPosition(), v,
+        VisionInfo::NORMAL);
     }
   }
 }

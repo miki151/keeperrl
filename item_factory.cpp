@@ -1096,27 +1096,6 @@ PItem ItemFactory::fromId(ItemId id) {
             i.type = ItemType::BOOK;
             i.applyTime = 3;
             i.price = 300;)));
-    case ItemId::MUSHROOM_BOOK: return PItem(new SkillBook(
-        ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
-            i.name = "book of mushrooms";
-            i.weight = 0.5;
-            i.type = ItemType::BOOK;
-            i.applyTime = 3;
-            i.price = 100;), Skill::mushrooms));
-    case ItemId::POTION_BOOK: return PItem(new SkillBook(
-        ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
-            i.name = "book of potions";
-            i.weight = 0.5;
-            i.type = ItemType::BOOK;
-            i.applyTime = 3;
-            i.price = 100;), Skill::potions));
-    case ItemId::AMULET_BOOK: return PItem(new SkillBook(
-        ViewObject(ViewId::BOOK, ViewLayer::ITEM, "Book"), ITATTR(
-            i.name = "book of amulets";
-            i.weight = 0.5;
-            i.type = ItemType::BOOK;
-            i.applyTime = 3;
-            i.price = 100;), Skill::amulets));
     case ItemId::ROCK: return PItem(new Item(
          ViewObject(ViewId::ROCK, ViewLayer::ITEM, "Rock"), ITATTR(
             i.name = "rock";

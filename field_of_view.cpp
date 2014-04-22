@@ -5,7 +5,8 @@
 template <class Archive> 
 void FieldOfView::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(squares)
-     & SVAR(visibility);
+     & SVAR(visibility)
+     & SVAR(visionInfo);
   CHECK_SERIAL;
 }
 
@@ -22,21 +23,22 @@ void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int version)
 
 SERIALIZABLE(FieldOfView::Visibility);
 
-FieldOfView::FieldOfView(const Table<PSquare>& s) : squares(&s), visibility(s.getWidth(), s.getHeight()) {
+FieldOfView::FieldOfView(const Table<PSquare>& s, VisionInfo info) 
+  : squares(&s), visibility(s.getWidth(), s.getHeight()), visionInfo(info) {
 }
 
 bool FieldOfView::canSee(Vec2 from, Vec2 to) {
   if ((from - to).lengthD() > sightRange)
     return false;
   if (!visibility[from])
-    visibility[from] = Visibility(*squares, from.x, from.y);
+    visibility[from] = Visibility(*squares, visionInfo, from.x, from.y);
   return visibility[from]->checkVisible(to.x - from.x, to.y - from.y);
 }
   
 void FieldOfView::squareChanged(Vec2 pos) {
   vector<Vec2> updateList;
   if (!visibility[pos])
-    visibility[pos] = Visibility(*squares, pos.x, pos.y);
+    visibility[pos] = Visibility(*squares, visionInfo, pos.x, pos.y);
   vector<Vec2> visible = visibility[pos]->getVisibleTiles();
   for (Vec2 v : visible)
     if (visibility[v] && visibility[v]->checkVisible(pos.x - v.x, pos.y - v.y)) {
@@ -54,25 +56,25 @@ void FieldOfView::Visibility::setVisible(int x, int y) {
 static int totalIter = 0;
 static int numSamples = 0;
 
-FieldOfView::Visibility::Visibility(const Table<PSquare>& squares, int x, int y) : px(x), py(y) {
+FieldOfView::Visibility::Visibility(const Table<PSquare>& squares, VisionInfo info, int x, int y) : px(x), py(y) {
   memset(visible, 0, (2 * sightRange + 1) * (2 * sightRange + 1));
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
-      [&](int px, int py) { return !squares[x + px][y + py]->canSeeThru(); },
+      [&](int px, int py) { return !squares[x + px][y + py]->canSeeThru(info); },
       [&](int px, int py) { setVisible(px ,py); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
-      [&](int px, int py) { return !squares[x + py][y - px]->canSeeThru(); },
+      [&](int px, int py) { return !squares[x + py][y - px]->canSeeThru(info); },
       [&](int px, int py) { setVisible(py, -px); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
-      [&](int px, int py) { return !squares[x - px][y - py]->canSeeThru(); },
+      [&](int px, int py) { return !squares[x - px][y - py]->canSeeThru(info); },
       [&](int px, int py) { setVisible(-px, -py); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
-      [&](int px, int py) { return !squares[x - py][y + px]->canSeeThru(); },
+      [&](int px, int py) { return !squares[x - py][y + px]->canSeeThru(info); },
       [&](int px, int py) { setVisible(-py, px); });
   setVisible(0, 0);
-  ++numSamples;
+/*  ++numSamples;
   totalIter += visibleTiles.size();
   if (numSamples%100 == 0)
-    Debug() << numSamples << " iterations " << totalIter / numSamples << " avg";
+    Debug() << numSamples << " iterations " << totalIter / numSamples << " avg";*/
 }
 
 const vector<Vec2>& FieldOfView::Visibility::getVisibleTiles() const {
@@ -81,7 +83,7 @@ const vector<Vec2>& FieldOfView::Visibility::getVisibleTiles() const {
 
 const vector<Vec2>& FieldOfView::getVisibleTiles(Vec2 from) {
   if (!visibility[from]) {
-    visibility[from] = Visibility(*squares, from.x, from.y);
+    visibility[from] = Visibility(*squares, visionInfo, from.x, from.y);
   }
   return visibility[from]->getVisibleTiles();
 }

@@ -95,8 +95,8 @@ class Level {
   void changeLevel(Level* destination, Vec2 landing, Creature* c);
 
   /** Performs a throw of the item, with all consequences of the event.*/
-  void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction);
-  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction);
+  void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionInfo);
+  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionInfo);
 
   /** Sets the creature that is assumed to be the player.*/
   void setPlayer(Creature* player);
@@ -111,7 +111,7 @@ class Level {
   //@}
 
   /** Checks whether one square is visible from the other. This function is not guaranteed to be simmetrical.*/
-  bool canSee(Vec2 from, Vec2 to) const;
+  bool canSee(const Creature* c, Vec2 to) const;
 
   /** Returns all tiles visible by a creature.*/
   vector<Vec2> getVisibleTiles(const Creature*) const;
@@ -229,7 +229,7 @@ class Level {
   vector<Square*> SERIAL(tickingSquares);
   vector<Creature*> SERIAL(creatures);
   Model* SERIAL2(model, nullptr);
-  mutable FieldOfView SERIAL(fieldOfView);
+  mutable vector<FieldOfView> SERIAL(fieldOfView);
   string SERIAL(entryMessage);
   string SERIAL(name);
   Creature* SERIAL2(player, nullptr);

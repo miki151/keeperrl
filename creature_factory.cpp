@@ -519,7 +519,7 @@ class VillageElder : public Creature {
         who->addSkill(teachSkill);
         who->privateMessage("\"You are a friend of our tribe. I will share my knowledge with you.\"");
         who->privateMessage(getName() + " teaches you the " + teachSkill->getName());
-        if (teachSkill == Skill::archery) {
+        if (teachSkill == Skill::get(SkillId::ARCHERY)) {
           who->privateMessage(getName() + " hands you a bow and a quiver of arrows.");
           who->take(std::move(ItemFactory::fromId(ItemId::BOW)));
           who->take(ItemFactory::fromId(ItemId::ARROW, Random.getRandom(20, 36)));
@@ -909,7 +909,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
             c.undead = true;
         }
         if (r.roll(3))
-          c.skills.insert(Skill::swimming);
+          c.skills.insert(Skill::get(SkillId::SWIMMING));
         c.specialMonster = true;
         ), tribe, factory);
   if (c->isHumanoid()) {
@@ -1285,7 +1285,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 100;
           c.brain = false;
           c.undead = true;
-          c.skills.insert(Skill::twoHandedWeapon);
+          c.skills.insert(Skill::get(SkillId::TWO_HANDED_WEAPON));
           c.name = "mummy";);
     case CreatureId::MUMMY_LORD: 
       return INHERIT(MUMMY,
@@ -1306,7 +1306,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
-          c.skills.insert(Skill::twoHandedWeapon);
+          c.skills.insert(Skill::get(SkillId::TWO_HANDED_WEAPON));
           c.chatReactionFriendly = "curses all elves";
           c.chatReactionHostile = "\"Die!\"";
           c.name = "goblin";);
@@ -1342,7 +1342,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 30;
           c.courage = 0.1;
           c.carryAnything = true;
-          c.skills.insert(Skill::construction);
+          c.skills.insert(Skill::get(SkillId::CONSTRUCTION));
           c.chatReactionFriendly = "talks about digging";
           c.chatReactionHostile = "\"Die!\"";
           c.name = "imp";);
@@ -1390,7 +1390,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.weight = 35;
           c.courage = 20;
-          c.skills.insert(Skill::stealing);
+          c.skills.insert(Skill::get(SkillId::STEALING));
           c.chatReactionFriendly = "discusses the weather";
           c.chatReactionHostile = "discusses the weather";
           c.name = "leprechaun";);
@@ -1405,7 +1405,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 90;
-          c.skills.insert(Skill::twoHandedWeapon);
+          c.skills.insert(Skill::get(SkillId::TWO_HANDED_WEAPON));
           c.chatReactionFriendly = "curses all goblins";
           c.chatReactionHostile = "\"Die!\"";
           c.name = "dwarf";);
@@ -1450,8 +1450,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::ELF;
           c.speed = 100;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 15;
-          c.dexterity = 15;
+          c.strength = 11;
+          c.dexterity = 17;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 50;
@@ -1459,13 +1459,14 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
+          c.visionInfo = VisionInfo::ELF;
           c.name = "elf";);
     case CreatureId::ELF_ARCHER: 
       return INHERIT(ELF,
           c.viewId = ViewId::ELF_ARCHER;
           c.speed += 20;
           c.innocent = false;
-          c.skills.insert(Skill::archery);
+          c.skills.insert(Skill::get(SkillId::ARCHERY));
           c.name = "elven archer";);
     case CreatureId::ELF_CHILD: 
       return INHERIT(ELF,
@@ -1614,7 +1615,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.weight = 1;
           c.animal = true;
-          c.skills.insert(Skill::swimming);
+          c.skills.insert(Skill::get(SkillId::SWIMMING));
           c.name = "rat";);
     case CreatureId::SCORPION: 
       return CATTR(
@@ -1662,7 +1663,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 2;
           c.animal = true;
           c.attackEffect = EffectType::POISON;
-          c.skills.insert(Skill::swimming);
+          c.skills.insert(Skill::get(SkillId::SWIMMING));
           c.name = "snake";);
     case CreatureId::RAVEN: 
       return CATTR(
@@ -1740,7 +1741,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.arms = 0;
           c.legs = 0;
           c.heads = 0;
-          c.skills.insert(Skill::swimming);
+          c.skills.insert(Skill::get(SkillId::SWIMMING));
           c.weight = 100;
           c.name = "kraken";);
     case CreatureId::NIGHTMARE: /*

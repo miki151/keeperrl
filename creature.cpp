@@ -388,7 +388,11 @@ bool Creature::hasSkill(Skill* skill) const {
 }
 
 bool Creature::hasSkillToUseWeapon(const Item* it) const {
-  return !it->isWieldedTwoHanded() || hasSkill(Skill::twoHandedWeapon);
+  return !it->isWieldedTwoHanded() || hasSkill(Skill::get(SkillId::TWO_HANDED_WEAPON));
+}
+
+vector<Skill*> Creature::getSkills() const {
+  return vector<Skill*>(skills.begin(), skills.end());
 }
 
 vector<Item*> Creature::getPickUpOptions() const {
@@ -458,12 +462,12 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
       *reason = "You don't have hands!";
     return false;
   }
-  if (!hasSkill(Skill::twoHandedWeapon) && item->isWieldedTwoHanded()) {
+  if (!hasSkill(Skill::get(SkillId::TWO_HANDED_WEAPON)) && item->isWieldedTwoHanded()) {
     if (reason)
       *reason = "You don't have the skill to use two-handed weapons.";
     return false;
   }
-  if (!hasSkill(Skill::archery) && item->getType() == ItemType::RANGED_WEAPON) {
+  if (!hasSkill(Skill::get(SkillId::ARCHERY)) && item->getType() == ItemType::RANGED_WEAPON) {
     if (reason)
       *reason = "You don't have the skill to shoot a bow.";
     return false;
@@ -549,7 +553,7 @@ void Creature::applySquare() {
 }
 
 bool Creature::canHide() const {
-  return skills.count(Skill::ambush) && getConstSquare()->canHide();
+  return skills.count(Skill::get(SkillId::AMBUSH)) && getConstSquare()->canHide();
 }
 
 void Creature::hide() {
@@ -1440,9 +1444,9 @@ void Creature::take(PItem item) {
  /* item->identify();
   Debug() << (specialMonster ? "special monster " : "") + getTheName() << " takes " << item->getNameAndModifiers();*/
   if (item->isWieldedTwoHanded())
-    addSkill(Skill::twoHandedWeapon);
+    addSkill(Skill::get(SkillId::TWO_HANDED_WEAPON));
   if (item->getType() == ItemType::RANGED_WEAPON)
-    addSkill(Skill::archery);
+    addSkill(Skill::get(SkillId::ARCHERY));
   Item* ref = item.get();
   equipment.addItem(std::move(item));
   if (canEquip(ref, nullptr))
@@ -1510,7 +1514,7 @@ bool Creature::canFire(Vec2 direction) const {
   CHECK(direction.length8() == 1);
   if (!getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))
     return false;
-  if (!hasSkill(Skill::archery)) {
+  if (!hasSkill(Skill::get(SkillId::ARCHERY))) {
     privateMessage("You don't have the skill to shoot a bow.");
     return false;
   }
@@ -1552,7 +1556,7 @@ bool Creature::canConstruct(Vec2 direction, SquareType type) const {
 }
 
 bool Creature::canConstruct(SquareType type) const {
-  return hasSkill(Skill::construction);
+  return hasSkill(Skill::get(SkillId::CONSTRUCTION));
 }
 
 void Creature::eat(Item* item) {
@@ -1645,12 +1649,12 @@ void Creature::throwItem(Item* item, Vec2 direction) {
       getAttr(AttrType::THROWN_TO_HIT) + item->getModifier(AttrType::THROWN_TO_HIT);
   int damage = Random.getRandom(GET_ID(getUniqueId()), -attackVariance, attackVariance) +
       getAttr(AttrType::THROWN_DAMAGE) + item->getModifier(AttrType::THROWN_DAMAGE);
-  if (hasSkill(Skill::knifeThrowing) && item->getAttackType() == AttackType::STAB) {
+  if (hasSkill(Skill::get(SkillId::KNIFE_THROWING)) && item->getAttackType() == AttackType::STAB) {
     damage += 7;
     toHit += 4;
   }
   Attack attack(this, getRandomAttackLevel(), item->getAttackType(), toHit, damage, false, Nothing());
-  level->throwItem(equipment.removeItem(item), attack, dist, getPosition(), direction);
+  level->throwItem(equipment.removeItem(item), attack, dist, getPosition(), direction, visionInfo);
   spendTime(1);
 }
 
@@ -1668,12 +1672,12 @@ bool Creature::canSee(const Creature* c) const {
       return true;
   return !isBlind() && !c->isAffected(INVISIBLE) &&
          (!c->isHidden() || c->knowsHiding(this)) && 
-         getLevel()->canSee(position, c->getPosition());
+         getLevel()->canSee(this, c->getPosition());
 }
 
 bool Creature::canSee(Vec2 pos) const {
   return !isBlind() && 
-      getLevel()->canSee(position, pos);
+      getLevel()->canSee(this, pos);
 }
  
 bool Creature::isPlayer() const {
@@ -1740,7 +1744,7 @@ bool Creature::hasBrain() const {
 }
 
 bool Creature::canSwim() const {
-  return contains(skills, Skill::swimming);
+  return contains(skills, Skill::get(SkillId::SWIMMING));
 }
 
 bool Creature::canFly() const {
@@ -1981,6 +1985,58 @@ string Creature::getNameAndTitle() const {
     return getTheName();
 }
 
+VisionInfo Creature::getVisionInfo() const {
+  return visionInfo;
+}
+
+vector<string> Creature::getMainAdjectives() const {
+  vector<string> ret;
+  if (isBlind())
+    ret.push_back("blind");
+  if (isAffected(INVISIBLE))
+    ret.push_back("invisible");
+  if (numArms() == 1)
+    ret.push_back("one-armed");
+  if (numArms() == 0)
+    ret.push_back("armless");
+  if (numLegs() == 1)
+    ret.push_back("one-legged");
+  if (numLegs() == 0)
+    ret.push_back("legless");
+  if (isAffected(HALLU))
+    ret.push_back("tripped");
+  return ret;
+}
+
+vector<string> Creature::getAdjectives() const {
+  vector<string> ret = getMainAdjectives();
+  if (injuredArms == 1)
+    ret.push_back("injured arm");
+  if (injuredArms == 2)
+    ret.push_back("two injured arms");
+  if (injuredLegs == 1)
+    ret.push_back("injured leg");
+  if (injuredLegs == 2)
+    ret.push_back("two injured legs");
+  if (injuredWings == 1)
+    ret.push_back("injured wing");
+  if (injuredWings == 2)
+    ret.push_back("two injured wings");
+  if (lostArms == 1)
+    ret.push_back("lost arm");
+  if (lostArms == 2)
+    ret.push_back("two lost arms");
+  if (lostLegs == 1)
+    ret.push_back("lost leg");
+  if (lostLegs == 2)
+    ret.push_back("two lost legs");
+  if (lostWings == 1)
+    ret.push_back("lost wing");
+  if (lostWings == 2)
+    ret.push_back("two lost wings");
+  return ret;
+}
+
 void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
   gameInfo.infoType = View::GameInfo::InfoType::PLAYER;
   View::GameInfo::PlayerInfo& info = gameInfo.playerInfo;
@@ -1991,23 +2047,9 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     info.playerName = "";
     info.title = *name;
   }
-  info.adjectives.clear();
   info.possessed = canPopController();
   info.spellcaster = !spells.empty();
-  if (isBlind())
-    info.adjectives.push_back("blind");
-  if (isAffected(INVISIBLE))
-    info.adjectives.push_back("invisible");
-  if (numArms() == 1)
-    info.adjectives.push_back("one-armed");
-  if (numArms() == 0)
-    info.adjectives.push_back("armless");
-  if (numLegs() == 1)
-    info.adjectives.push_back("one-legged");
-  if (numLegs() == 0)
-    info.adjectives.push_back("legless");
-  if (isAffected(HALLU))
-    info.adjectives.push_back("tripped");
+  info.adjectives = getMainAdjectives();
   Item* weapon = getEquipment().getItem(EquipmentSlot::WEAPON);
   info.weaponName = weapon ? weapon->getAName() : "";
   const Location* location = getLevel()->getLocation(getPosition());
@@ -2037,29 +2079,7 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
         case ENTANGLED: info.effects.push_back({"entangled", true}); break;
         default: break;
       }
-  if (injuredArms == 1)
-    info.effects.push_back({"injured arm", true});
-  if (injuredArms == 2)
-    info.effects.push_back({"two injured arms", true});
-  if (injuredLegs == 1)
-    info.effects.push_back({"injured leg", true});
-  if (injuredLegs == 2)
-    info.effects.push_back({"two injured legs", true});
-  if (injuredWings == 1)
-    info.effects.push_back({"injured wing", true});
-  if (injuredWings == 2)
-    info.effects.push_back({"two injured wings", true});
-  if (lostArms == 1)
-    info.effects.push_back({"lost arm", true});
-  if (lostArms == 2)
-    info.effects.push_back({"two lost arms", true});
-  if (lostLegs == 1)
-    info.effects.push_back({"lost leg", true});
-  if (lostLegs == 2)
-    info.effects.push_back({"two lost legs", true});
-  if (lostWings == 1)
-    info.effects.push_back({"lost wing", true});
-  if (lostWings == 2)
-    info.effects.push_back({"two lost wings", true});
+  for (string s : getAdjectives())
+    info.effects.push_back({s, true});
 }
 

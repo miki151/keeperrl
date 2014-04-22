@@ -146,6 +146,7 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo({SquareType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
     BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 'p'),
     BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u'),
+    BuildInfo({SquareType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"}, Nothing(), ""),
     BuildInfo(BuildInfo::DESTROY, "", 'e'),
     BuildInfo(BuildInfo::IMP, "", 'i'),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'g'),
@@ -436,6 +437,23 @@ void Collective::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vecto
       }
       break;
   }
+  lOpt.emplace_back("", View::INACTIVE);
+  vector<Skill*> skills = c->getSkills();
+  if (!skills.empty()) {
+    lOpt.emplace_back("Skills:", View::TITLE);
+    for (Skill* skill : skills)
+      lOpt.emplace_back(skill->getName(), View::INACTIVE);
+    lOpt.emplace_back("", View::INACTIVE);
+  }
+  vector<SpellInfo> spells = c->getSpells();
+  if (!spells.empty()) {
+    lOpt.emplace_back("Spells:", View::TITLE);
+    for (SpellInfo elem : spells)
+      lOpt.emplace_back(elem.name, View::INACTIVE);
+    lOpt.emplace_back("", View::INACTIVE);
+  }
+  for (string s : c->getAdjectives())
+    lOpt.emplace_back(s, View::INACTIVE);
 }
 
 void Collective::setMinionTask(Creature* c, MinionTask task) {
@@ -1631,7 +1649,7 @@ void Collective::onAppliedSquare(Vec2 pos) {
   }
   if (mySquares.at(SquareType::TRAINING_DUMMY).count(pos)) {
     if (hasTech(TechId::ARCHERY) && Random.roll(30))
-      NOTNULL(level->getSquare(pos)->getCreature())->addSkill(Skill::archery);
+      NOTNULL(level->getSquare(pos)->getCreature())->addSkill(Skill::get(SkillId::ARCHERY));
   }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
     if (Random.roll(30)) {
@@ -1924,7 +1942,7 @@ bool Collective::knownPos(Vec2 position) const {
 
 void Collective::setLevel(Level* l) {
   for (Vec2 v : l->getBounds())
-    if (contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
+    if (contains({"water", "gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
       getMemory(l).addObject(v, l->getSquare(v)->getViewObject());
   level = l;
   knownTiles = Table<bool>(level->getBounds(), false);

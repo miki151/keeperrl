@@ -573,37 +573,37 @@ class Scrollable : public GuiElem {
   }
 
   void onRefreshBounds() override {
-    content->setBounds(Rectangle(0, 0, getBounds().getW(), contentHeight));
+    int offset = getScrollOffset();
+    content->setBounds(Rectangle(0, -offset, getBounds().getW(), contentHeight - offset));
     if (!textureRenderer || getBounds().getW() > textureRenderer->getWidth() 
-        || contentHeight > textureRenderer->getHeight()) {
+        || getBounds().getH() > textureRenderer->getHeight()) {
       textureRenderer.reset(new TextureRenderer());
-      textureRenderer->initialize(getBounds().getW(), contentHeight);
+      textureRenderer->initialize(getBounds().getW(), getBounds().getH());
     }
   }
 
   virtual void render(Renderer& r) override {
     textureRenderer->clear();
-    content->setBounds(Rectangle(0, 0, getBounds().getW(), contentHeight));
+    int offset = getScrollOffset();
     content->render(*textureRenderer.get());
     Vec2 pos = getBounds().getTopLeft();
-    int offset = getScrollOffset();
-    r.drawSprite(pos.x, pos.y, 0, offset, getBounds().getW(), min(contentHeight - offset, getBounds().getH()),
+    r.drawSprite(pos.x, pos.y, 0, 0, getBounds().getW(), min(contentHeight - offset, getBounds().getH()),
         textureRenderer->getTexture());
   }
 
   virtual void onLeftClick(Vec2 v) override {
     if (v.inRectangle(getBounds()))
-      content->onLeftClick(v - getBounds().getTopLeft() + Vec2(0, getScrollOffset()));
+      content->onLeftClick(v - getBounds().getTopLeft());
   }
 
   virtual void onRightClick(Vec2 v) override {
     if (v.inRectangle(getBounds()))
-      content->onRightClick(v - getBounds().getTopLeft() + Vec2(0, getScrollOffset()));
+      content->onRightClick(v - getBounds().getTopLeft());
   }
 
   virtual void onMouseMove(Vec2 v) override {
 //    if (v.inRectangle(getBounds()))
-      content->onMouseMove(v - getBounds().getTopLeft() + Vec2(0, getScrollOffset()));
+      content->onMouseMove(v - getBounds().getTopLeft());
   }
 
   virtual void onMouseRelease() override {
@@ -722,16 +722,19 @@ PGuiElem GuiElem::scrollable(PGuiElem content, int contentHeight, double* scroll
         margins(std::move(scrollable), hMargin, vMargin, hMargin, vMargin), scrollbarWidth, RIGHT);
 }
 
-PGuiElem GuiElem::defaultBackground() {
-  return stack(rectangle(Color(44, 31, 18)), repeatedPattern(backgroundPattern));
+const Color GuiElem::background1(0x8c, 0x50, 0x31);
+const Color GuiElem::background2(0x46, 0x37, 0x2f);
+const Color GuiElem::foreground1 = transparency(Color(0x20, 0x5c, 0x4a), 150);
+const Color GuiElem::text = white;
+const Color GuiElem::titleText = yellow;
+const Color GuiElem::inactiveText = lightGray;
+
+PGuiElem GuiElem::background(Color c) {
+  return stack(rectangle(c), repeatedPattern(backgroundPattern));
 }
 
-PGuiElem GuiElem::defaultBackground2() {
-  return stack(rectangle(Color(40, 40, 40)), repeatedPattern(backgroundPattern));
-}
-
-PGuiElem GuiElem::defaultHighlight() {
-  return rectangle(transparency(white, 100));
+PGuiElem GuiElem::highlight(Color c) {
+  return stack(rectangle(c), repeatedPattern(backgroundPattern));
 }
 
 PGuiElem GuiElem::mapWindow(PGuiElem content) {
@@ -755,15 +758,11 @@ PGuiElem GuiElem::border2(PGuiElem content) {
         sprite(border2BottomRight, Alignment::BOTTOM_RIGHT, false, false, border2Width, alpha)));
 }
 
-PGuiElem GuiElem::window(PGuiElem content) {
+PGuiElem GuiElem::insideBackground(PGuiElem content) {
   int cornerSide = backgroundTopCorner.getSize().x;
   int cornerDown = backgroundTopCorner.getSize().y;
-
-  PGuiElem inside = stack(defaultBackground(),
-    std::move(content));
-  inside =
-    stack(makeVec<PGuiElem>(
-        std::move(inside),
+  return stack(makeVec<PGuiElem>(
+        std::move(content),
         margins(sprite(backgroundTop, Alignment::TOP), cornerSide, 0, cornerSide, 0),
         margins(sprite(backgroundTop, Alignment::BOTTOM, true), cornerSide, 0, cornerSide, 0),
         margins(sprite(backgroundLeft, Alignment::LEFT), 0, cornerSide, 0, cornerSide),
@@ -772,10 +771,24 @@ PGuiElem GuiElem::window(PGuiElem content) {
         sprite(backgroundTopCorner, Alignment::TOP_RIGHT, false, true),
         sprite(backgroundBottomCorner, Alignment::BOTTOM_LEFT, true),
         sprite(backgroundBottomCorner, Alignment::BOTTOM_RIGHT, true, true)));
+}
 
+PGuiElem GuiElem::border(PGuiElem content) {
+  double alpha = 1;
+  return stack(makeVec<PGuiElem>(std::move(content),
+        sprite(border2Top, Alignment::BOTTOM, true, true, border2Width, alpha),
+        sprite(border2Bottom, Alignment::TOP, true, true, border2Width, alpha),
+        sprite(border2Left, Alignment::RIGHT, true, true, border2Width, alpha),
+        sprite(border2Right, Alignment::LEFT, true, true, border2Width, alpha),
+        sprite(border2TopLeft, Alignment::BOTTOM_RIGHT, true, true, border2Width, alpha),
+        sprite(border2TopRight, Alignment::BOTTOM_LEFT, true, true, border2Width, alpha),
+        sprite(border2BottomLeft, Alignment::TOP_RIGHT, true, true, border2Width, alpha),
+        sprite(border2BottomRight, Alignment::TOP_LEFT, true, true, border2Width, alpha)));
+}
+
+/*PGuiElem GuiElem::border(PGuiElem content) {
   return stack(makeVec<PGuiElem>(
-        rectangle(colors::black),
-        margins(std::move(inside), borderWidth, borderHeight, borderWidth, borderHeight),
+        std::move(content),
         sprite(borderTop, Alignment::TOP),
         sprite(borderTop, Alignment::BOTTOM, true),
         sprite(borderLeft, Alignment::LEFT),
@@ -784,5 +797,12 @@ PGuiElem GuiElem::window(PGuiElem content) {
         sprite(borderCorner, Alignment::TOP_RIGHT, false, true),
         sprite(borderCorner, Alignment::BOTTOM_LEFT, true),
         sprite(borderCorner, Alignment::BOTTOM_RIGHT, true, true)));
+}*/
+
+PGuiElem GuiElem::window(PGuiElem content) {
+  return border(stack(makeVec<PGuiElem>(
+        rectangle(colors::black),
+        insideBackground(stack(background(background1),
+        margins(std::move(content), borderWidth, borderHeight, borderWidth, borderHeight))))));
 }
 

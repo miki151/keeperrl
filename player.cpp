@@ -128,9 +128,10 @@ void Player::pickUpAction(bool extended) {
   const Square* square = creature->getConstSquare();
   if (square->getApplyType(creature)) {
     string question = getSquareQuestion(*square->getApplyType(creature), square->getName());
-    if (!question.empty() && (items.empty() || model->getView()->yesOrNoPrompt(question)))
+    if (!question.empty() && (items.empty() || model->getView()->yesOrNoPrompt(question))) {
       creature->applySquare();
-    return;
+      return;
+    }
   }
   vector<View::ListElem> names;
   vector<vector<Item*> > groups;
@@ -434,7 +435,7 @@ void Player::hideAction() {
     privateMessage("You hide behind the " + creature->getConstSquare()->getName());
     creature->hide();
   } else {
-    if (!creature->hasSkill(Skill::ambush))
+    if (!creature->hasSkill(Skill::get(SkillId::AMBUSH)))
       privateMessage("You don't have this skill.");
     else
       privateMessage("You can't hide here.");
@@ -606,6 +607,7 @@ void Player::makeMove() {
     targetAction();
   else {
     UserInput action = model->getView()->getAction();
+    Debug() << "Action " << int(action.type);
   vector<Vec2> direction;
   bool travel = false;
   if (action.type != UserInput::IDLE)

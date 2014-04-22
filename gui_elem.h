@@ -48,20 +48,28 @@ class GuiElem {
   static PGuiElem mouseOverAction(function<void()>);
   static PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
   static PGuiElem mouseHighlight2(PGuiElem highlight);
-  static PGuiElem scrollable(PGuiElem content, int contentHeight, double* scrollOverride, double scrollJump);
+  static PGuiElem scrollable(PGuiElem content, int contentHeight, double* scrollPos, double scrollJump);
   static PGuiElem getScrollButton();
   static PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT};
   static PGuiElem sprite(Texture& tex, Alignment align, bool vFlip = false, bool hFlip = false, int cornerOffset = 0,
       double alpha = 1);
   static PGuiElem repeatedPattern(Texture& tex);
-  static PGuiElem defaultBackground();
-  static PGuiElem defaultBackground2();
-  static PGuiElem defaultHighlight();
+  static PGuiElem background(Color);
+  static PGuiElem highlight(Color);
+  static PGuiElem insideBackground(PGuiElem content);
   static PGuiElem window(PGuiElem content);
   static PGuiElem mapWindow(PGuiElem content);
+  static PGuiElem border(PGuiElem content);
   static PGuiElem border2(PGuiElem content);
   static PGuiElem invisible(PGuiElem content);
+
+  const static Color background1;
+  const static Color background2;
+  const static Color foreground1;
+  const static Color text;
+  const static Color titleText;
+  const static Color inactiveText;
 };
 
 #endif

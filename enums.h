@@ -77,6 +77,7 @@ enum class TrapType { BOULDER, POISON_GAS, ALARM, WEB, SURPRISE, TERROR };
 
 enum class SquareAttrib {
   NO_DIG,
+  GLACIER,
   MOUNTAIN,
   HILL,
   LOWLAND,
@@ -90,6 +91,7 @@ enum class SquareAttrib {
   COLLECTIVE_STAIRS,
   EMPTY_ROOM,
   FOG,
+  FORREST,
 };
 
 ENUM_HASH(SquareAttrib);
@@ -250,9 +252,6 @@ enum class ItemId { KNIFE,
   GOLD_PIECE,
   WOOD_PLANK,
 
-  MUSHROOM_BOOK,
-  POTION_BOOK,
-  AMULET_BOOK,
   TECH_BOOK,
   IRON_WORKING_BOOK,
   ALCHEMY_ADV_BOOK,
@@ -296,6 +295,7 @@ enum class StairLook {
 
 enum class SettlementType {
   VILLAGE,
+  VILLAGE2,
   CASTLE,
   CASTLE2,
   COTTAGE,
@@ -428,6 +428,7 @@ enum class ViewId {
   MAGMA,
   ABYSS,
   DOOR,
+  BARRICADE,
   DIG_ICON,
   FOUNTAIN,
   CHEST,
@@ -572,6 +573,7 @@ enum class SquareType {
   IRON_BARS,
   DOOR,
   TRIBE_DOOR,
+  BARRICADE,
   DOWN_STAIRS,
   UP_STAIRS,
   BORDER_GUARD,
@@ -695,5 +697,22 @@ enum class TechId {
 };
 
 ENUM_HASH(TechId);
+
+enum class SkillId {
+  AMBUSH,
+  TWO_HANDED_WEAPON,
+  KNIFE_THROWING,
+  STEALING,
+  SWIMMING,
+  ARCHERY,
+  CONSTRUCTION,
+};
+
+ENUM_HASH(SkillId);
+
+enum class VisionInfo {
+  NONE, ELF, NORMAL
+};
+
 
 #endif

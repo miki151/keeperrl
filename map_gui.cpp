@@ -136,7 +136,7 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
     }
     Tile tile = Tile::getTile(object, spriteMode);
     Color color = getBleedingColor(object);
-    if (object.hasModifier(ViewObject::INVISIBLE))
+    if (object.hasModifier(ViewObject::INVISIBLE) || object.hasModifier(ViewObject::HIDDEN))
       color = transparency(color, 70);
     else
     if (tile.translucent > 0)

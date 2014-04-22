@@ -380,7 +380,7 @@ class Fighter : public Behaviour, public EventListener {
             EffectType::POISON, EffectType::TELEPORT, EffectType::STR_BONUS, EffectType::DEX_BONUS},
           item->getEffectType()))
       return 1;
-    if (item->getType() == ItemType::AMMO && creature->hasSkill(Skill::archery))
+    if (item->getType() == ItemType::AMMO && creature->hasSkill(Skill::get(SkillId::ARCHERY)))
       return 0.1;
     if (item->getType() != ItemType::WEAPON || !creature->hasSkillToUseWeapon(item))
       return 0;
@@ -763,7 +763,7 @@ class Thief : public Behaviour {
   Thief(Creature* c) : Behaviour(c) {}
  
   virtual MoveInfo getMove() override {
-    if (!creature->hasSkill(Skill::stealing))
+    if (!creature->hasSkill(Skill::get(SkillId::STEALING)))
       return {0, nullptr};
     for (const Creature* other : robbed) {
       if (creature->canSee(other)) {

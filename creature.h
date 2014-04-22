@@ -67,6 +67,9 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   Optional<string> getFirstName() const;
   int getAttr(AttrType) const;
   int getPoints() const;
+  vector<string> getMainAdjectives() const;
+  vector<string> getAdjectives() const;
+  VisionInfo getVisionInfo() const;
   void onKillEvent(const Creature* victim, const Creature* killer) override;
 
   virtual Tribe* getTribe() const override;
@@ -120,6 +123,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void addSkill(Skill* skill);
   bool hasSkill(Skill*) const;
   bool hasSkillToUseWeapon(const Item*) const;
+  vector<Skill*> getSkills() const;
 
   bool canMove(Vec2 direction) const;
   void move(Vec2 direction);
