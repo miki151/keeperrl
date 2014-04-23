@@ -25,7 +25,8 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(poisonGas)
     & SVAR(constructions)
     & SVAR(ticking)
-    & SVAR(fog);
+    & SVAR(fog)
+    & SVAR(numLight);
   CHECK_SERIAL;
 }
 
@@ -84,6 +85,22 @@ void Square::setCovered(bool c) {
 
 bool Square::isCovered() const {
   return covered;
+}
+
+double Square::getTotalLight() const {
+  return numLight;
+}
+
+double Square::getLight() const {
+  return max(0.0, min(1.0, numLight));
+}
+
+void Square::addLight(double num) {
+  numLight += num;
+}
+
+double Square::getLightEmission() const {
+  return 0;
 }
 
 void Square::setHeight(double h) {
@@ -298,7 +315,6 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
   }
   else if (creature && contains(c->getUnknownAttacker(), creature))
     ret.insert(addFire(ViewObject::unknownMonster(), fireSize));
-
   if (c->canSee(position)) {
     if (backgroundObject)
       ret.insert(*backgroundObject);
@@ -310,6 +326,7 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
       ret.insert(addFire(it->getViewObject(), fireSize));
   }
   if (c->canSee(position)) {
+    ret.setHighlight(HighlightType::NIGHT, 1.0 - getLight());
     if (poisonGas.getAmount() > 0)
       ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas.getAmount()));
     if (fog)

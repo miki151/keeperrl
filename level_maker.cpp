@@ -979,39 +979,32 @@ vector<double> sortedValues(const Table<double>& t) {
 
 class Mountains : public LevelMaker {
   public:
-  Mountains(double r, double varianceM, vector<int> _cornerLevels, bool _makeFog = true,
+  Mountains(double r, double varianceM, vector<int> _cornerLevels, bool _makeDark = true,
       vector<SquareType> _types = {SquareType::GLACIER, SquareType::MOUNTAIN, SquareType::HILL}) 
-      : ratio(r), cornerLevels(_cornerLevels), types(_types), makeFog(_makeFog), varianceMult(varianceM) {}
+      : ratio(r), cornerLevels(_cornerLevels), types(_types), makeDark(_makeDark), varianceMult(varianceM) {}
 
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
     Table<double> wys = genNoiseMap(area, cornerLevels, varianceMult);
-    Table<double> fog = genNoiseMap(area, {0, 0, 0, 0, 0}, 0.5);
-    for (Vec2 v : area)
-      fog[v] += wys[v] / 2;
     vector<double> values = sortedValues(wys);
-    vector<double> fogValues = sortedValues(fog);
     double cutOffValHill = values[(int)(ratio * double(values.size()))];
     double cutOffVal = values[(int)((0.5 + ratio) / 1.5 * double(values.size()))];
     double cutOffValSnow = values[(int)((3. + ratio) / 4. * double(values.size()))];
-    double cutOffValFogLow = fogValues[(int)(( ratio) / 1.0 * double(fogValues.size()))];
-    double cutOffValFogHigh = fogValues[(int)((1.0 + ratio) / 2.0 * double(fogValues.size()))];
     int gCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0, fCnt = 0;
     for (Vec2 v : area) {
       builder->setHeightMap(v, wys[v]);
-      if (makeFog && fog[v] > cutOffValFogLow) {
-        ++fCnt;
- //       builder->setFog(v, min(1.0, (fog[v] - cutOffValFogLow) / (cutOffValFogHigh - cutOffValFogLow)));
- //       builder->addAttrib(v, SquareAttrib::FOG);
-      }
       if (wys[v] > cutOffValSnow) {
         builder->putSquare(v, types[2]);
         builder->putSquare(v, types[0], {SquareAttrib::GLACIER, SquareAttrib::ROAD_CUT_THRU});
+        if (makeDark)
+          builder->setDark(v, 1.0);
         ++gCnt;
       }
       else if (wys[v] > cutOffVal) {
         builder->putSquare(v, types[2]);
         builder->putSquare(v, types[1], {SquareAttrib::MOUNTAIN, SquareAttrib::ROAD_CUT_THRU});
+        if (makeDark)
+          builder->setDark(v, (wys[v] - cutOffVal) / (cutOffValSnow - cutOffVal));
         ++mCnt;
       }
       else if (wys[v] > cutOffValHill) {
@@ -1030,7 +1023,7 @@ class Mountains : public LevelMaker {
   double ratio;
   vector<int> cornerLevels;
   vector<SquareType> types;
-  bool makeFog;
+  bool makeDark;
   double varianceMult;
 };
 
@@ -1152,22 +1145,21 @@ class ForEachSquare : public LevelMaker {
 
 class AddAttrib : public ForEachSquare {
   public:
-  AddAttrib(SquareAttrib attr, SquarePredicate* _onPred = nullptr) 
-      : ForEachSquare([attr](Level::Builder* b, Vec2 pos) { b->addAttrib(pos, attr); }) {}
+  AddAttrib(SquareAttrib attr, SquarePredicate* onPred = nullptr) 
+      : ForEachSquare([attr](Level::Builder* b, Vec2 pos) { b->addAttrib(pos, attr); }, onPred) {}
 };
 
 class RemoveAttrib : public ForEachSquare {
   public:
-  RemoveAttrib(SquareAttrib attr, SquarePredicate* _onPred = nullptr) 
-      : ForEachSquare([attr](Level::Builder* b, Vec2 pos) { b->removeAttrib(pos, attr); }) {}
+  RemoveAttrib(SquareAttrib attr, SquarePredicate* onPred = nullptr) 
+    : ForEachSquare([attr](Level::Builder* b, Vec2 pos) { b->removeAttrib(pos, attr); }, onPred) {}
 };
 
 class SetCovered : public ForEachSquare {
   public:
-  SetCovered(SquarePredicate* _onPred = nullptr) 
-      : ForEachSquare([](Level::Builder* b, Vec2 pos) { b->setCovered(pos); }) {}
+  SetCovered(SquarePredicate* onPred = nullptr)
+    : ForEachSquare([](Level::Builder* b, Vec2 pos) { b->setCovered(pos); }, onPred) {}
 };
-
 
 /*class FlockAndLeader : public LevelMaker {
   public:
@@ -1791,7 +1783,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   subSizes.emplace_back(1, 1);
   predicates.push_back(new TypePredicate(SquareType::MOUNTAIN));
   queue->addMaker(new Empty(SquareType::GRASS));
-  queue->addMaker(new Mountains(0.5, 0.7, {1, 1, 1, 1, 0}));
+  queue->addMaker(new Mountains(0.5, 0.7, {1, 1, 1, 1, 0}, false));
  // queue->addMaker(new MountainRiver(30, '='));
   queue->addMaker(new Forrest(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
   queue->addMaker(new Forrest(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
@@ -1901,7 +1893,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   predicates.push_back(new BorderPredicate(SquareType::MOUNTAIN2, SquareType::HILL));
   minDistances[{startingPos, subMakers.back()}] = 50;
   queue->addMaker(new Empty(SquareType::GRASS));
-  queue->addMaker(new Mountains(0.7, 0.4, {0, 1, 1, 0, 0}, false,
+  queue->addMaker(new Mountains(0.7, 0.4, {0, 1, 1, 0, 0}, true,
         {SquareType::MOUNTAIN2, SquareType::MOUNTAIN2, SquareType::HILL}));
   queue->addMaker(new SetCovered(new TypePredicate(SquareType::MOUNTAIN2)));
   queue->addMaker(new Forrest(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));

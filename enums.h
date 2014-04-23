@@ -435,7 +435,7 @@ enum class ViewId {
   OPENED_CHEST,
   COFFIN,
   OPENED_COFFIN,
-  THRONE,
+  TORCH,
   BED,
   STOCKPILE,
   PRISON,
@@ -552,6 +552,7 @@ enum class SquareType {
   CANIF_TREE,
   TREE_TRUNK,
   BUSH,
+  TORCH,
   BED,
   STOCKPILE,
   TORTURE_TABLE,
@@ -706,6 +707,7 @@ enum class SkillId {
   SWIMMING,
   ARCHERY,
   CONSTRUCTION,
+  ELF_VISION,
 };
 
 ENUM_HASH(SkillId);

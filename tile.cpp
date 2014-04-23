@@ -277,7 +277,7 @@ Tile getSprite(ViewId id) {
     case ViewId::STOCKPILE: return Tile(4, 1, 1);
     case ViewId::PRISON: return Tile(6, 2, 1);
     case ViewId::BED: return Tile(5, 4, 2, true);
-    case ViewId::THRONE: return Tile(7, 4, 2, true);
+    case ViewId::TORCH: return Tile(13, 1, 2, true).setTranslucent(0.35);
     case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
     case ViewId::ALTAR: return Tile(2, 7, 2, true);
     case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, true);
@@ -500,7 +500,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::PRISON: return Tile('.', blue);
     case ViewId::BED: return Tile('=', white);
     case ViewId::DUNGEON_HEART: return Tile(L'♥', white, true);
-    case ViewId::THRONE: return Tile(L'Ω', purple);
+    case ViewId::TORCH: return Tile('I', orange);
     case ViewId::ALTAR: return Tile(L'Ω', white);
     case ViewId::TORTURE_TABLE: return Tile('=', gray);
     case ViewId::IMPALED_HEAD: return Tile(L'𐌒', brown);

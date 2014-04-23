@@ -1654,7 +1654,7 @@ void Creature::throwItem(Item* item, Vec2 direction) {
     toHit += 4;
   }
   Attack attack(this, getRandomAttackLevel(), item->getAttackType(), toHit, damage, false, Nothing());
-  level->throwItem(equipment.removeItem(item), attack, dist, getPosition(), direction, visionInfo);
+  level->throwItem(equipment.removeItem(item), attack, dist, getPosition(), direction, getVisionInfo());
   spendTime(1);
 }
 
@@ -1986,7 +1986,10 @@ string Creature::getNameAndTitle() const {
 }
 
 VisionInfo Creature::getVisionInfo() const {
-  return visionInfo;
+  if (hasSkill(Skill::get(SkillId::ELF_VISION)))
+    return VisionInfo::ELF;
+  else
+    return VisionInfo::NORMAL; 
 }
 
 vector<string> Creature::getMainAdjectives() const {

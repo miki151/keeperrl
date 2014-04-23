@@ -115,6 +115,7 @@ class Level {
 
   /** Returns all tiles visible by a creature.*/
   vector<Vec2> getVisibleTiles(const Creature*) const;
+  vector<Vec2> getVisibleTiles(Vec2 pos, VisionInfo) const;
 
   /** Checks if the player can see a given square.*/
   bool playerCanSee(Vec2 pos) const;
@@ -184,14 +185,14 @@ class Level {
     /** Returns the height of the given square.*/
     double getHeightMap(Vec2 pos);
 
-    /** Adds fog to given square. The fog value is between 0 and 1.*/
-    void setFog(Vec2 pos, double value);
-
     /** Adds a location to the level and sets its coordinates.*/
     void addLocation(Location*, Rectangle area);
 
     /** Marks given square as covered. The value will remain if square is changed.*/
     void setCovered(Vec2);
+
+    /** Marks given square as dark. The value will remain if square is changed.*/
+    void setDark(Vec2, double);
     
     enum Rot { CW0, CW1, CW2, CW3};
 
@@ -206,7 +207,7 @@ class Level {
     Vec2 transform(Vec2);
     Table<PSquare> squares;
     Table<double> heightMap;
-    Table<double> fog;
+    Table<double> dark;
     vector<Location*> locations;
     unordered_set<Vec2> covered;
     Table<unordered_set<SquareAttrib>> attrib;
@@ -237,6 +238,10 @@ class Level {
   Vec2 SERIAL(backgroundOffset);
   
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name);
+
+  void addLightSource(Vec2 pos, double radius, int numLight);
+  bool isWithinVision(Vec2 from, Vec2 to) const;
+  vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionInfo vision) const;
 
   /** Notify relevant locations about creature position. */
   void notifyLocations(Creature*);

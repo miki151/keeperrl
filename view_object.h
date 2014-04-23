@@ -18,7 +18,7 @@ class ViewObject {
   bool isFriendly() const;
 
   enum Modifier { BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
-    ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT};
+    ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT, DARK};
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;

@@ -502,10 +502,12 @@ class Fighter : public Behaviour, public EventListener {
         if (MoveInfo move = tryToApplyItem(effect, 1))
           return move;
     if (distance > 1) {
-      if (MoveInfo move = getFireMove(enemyDir))
-        return move;
-      if (MoveInfo move = getThrowMove(enemyDir))
-        return move;
+      if (distance < 10) {
+        if (MoveInfo move = getFireMove(enemyDir))
+          return move;
+        if (MoveInfo move = getThrowMove(enemyDir))
+          return move;
+      }
       if (chase && other->getTribe() != Tribes::get(TribeId::WILDLIFE)) {
         Optional<Vec2> move = creature->getMoveTowards(creature->getPosition() + enemyDir);
         lastSeen = Nothing();

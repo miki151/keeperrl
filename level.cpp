@@ -62,6 +62,16 @@ void Level::notifyLocations(Creature* c) {
       l->onCreature(c);
 }
 
+void Level::addLightSource(Vec2 pos, double radius, int numLight) {
+  if (radius > 0) {
+    for (Vec2 v : getVisibleTilesNoDarkness(pos, VisionInfo::NORMAL)) {
+      double dist = (v - pos).lengthD();
+      if (dist <= radius)
+        squares[v]->addLight(min(1.0, 1 - (dist) / radius) * numLight);
+    }
+  }
+}
+
 void Level::replaceSquare(Vec2 pos, PSquare square) {
   if (contains(tickingSquares, getSquare(pos)))
     removeElement(tickingSquares, getSquare(pos));
@@ -69,7 +79,9 @@ void Level::replaceSquare(Vec2 pos, PSquare square) {
   for (Item* it : squares[pos]->getItems())
     square->dropItem(squares[pos]->removeItem(it));
   squares[pos]->onConstructNewSquare(square.get());
+  addLightSource(pos, squares[pos]->getLightEmission(), -1);
   square->setCovered(squares[pos]->isCovered());
+  square->addLight(squares[pos]->getTotalLight());
   square->setBackground(squares[pos].get());
   squares[pos] = std::move(square);
   squares[pos]->setPosition(pos);
@@ -77,7 +89,17 @@ void Level::replaceSquare(Vec2 pos, PSquare square) {
   if (c) {
     squares[pos]->putCreatureSilently(c);
   }
+  addLightSource(pos, squares[pos]->getLightEmission(), 1);
   updateVisibility(pos);
+}
+
+void Level::updateVisibility(Vec2 changedSquare) {
+  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionInfo::NORMAL))
+    addLightSource(pos, squares[pos]->getLightEmission(), -1);
+  for (auto& elem : fieldOfView)
+    elem.squareChanged(changedSquare);
+  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionInfo::NORMAL))
+    addLightSource(pos, squares[pos]->getLightEmission(), 1);
 }
 
 const Creature* Level::getPlayer() const {
@@ -180,11 +202,6 @@ void Level::killCreature(Creature* creature) {
     setPlayer(nullptr);
 }
 
-void Level::updateVisibility(Vec2 changedSquare) {
-  for (auto& elem : fieldOfView)
-    elem.squareChanged(changedSquare);
-}
-
 void Level::globalMessage(Vec2 position, const string& ifPlayerCanSee, const string& cannot) const {
   if (player) {
     if (playerCanSee(position))
@@ -222,8 +239,15 @@ vector<Creature*>& Level::getAllCreatures() {
   return creatures;
 }
 
+const int darkViewRadius = 5;
+
+bool Level::isWithinVision(Vec2 from, Vec2 to) const {
+  return from.distD(to) <= darkViewRadius || getSquare(to)->getLight() > 0.3;
+}
+
 bool Level::canSee(const Creature* c, Vec2 pos) const {
-  return fieldOfView.at(int(c->getVisionInfo()) - 1).canSee(c->getPosition(), pos);
+  return isWithinVision(c->getPosition(), pos) 
+    && fieldOfView.at(int(c->getVisionInfo()) - 1).canSee(c->getPosition(), pos);
 }
 
 bool Level::playerCanSee(Vec2 pos) const {
@@ -268,11 +292,19 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
   notifyLocations(c2);
 }
 
+vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionInfo vision) const {
+  return fieldOfView.at(int(vision) - 1).getVisibleTiles(pos);
+}
+
+vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionInfo vision) const {
+    return filter(fieldOfView.at(int(vision) - 1).getVisibleTiles(pos),
+        [this, pos](Vec2 v) { return isWithinVision(pos, v); });
+}
 
 vector<Vec2> Level::getVisibleTiles(const Creature* c) const {
   static vector<Vec2> emptyVec;
   if (!c->isBlind())
-    return fieldOfView.at(int(c->getVisionInfo()) - 1).getVisibleTiles(c->getPosition());
+    return getVisibleTiles(c->getPosition(), c->getVisionInfo());
   else
     return emptyVec;
 }
@@ -308,7 +340,7 @@ vector<Square*> Level::getTickingSquares() const {
 }
 
 Level::Builder::Builder(int width, int height, const string& n) : squares(width, height), heightMap(width, height, 0),
-    fog(width, height, 0), attrib(width, height), type(width, height, SquareType(0)), name(n) {
+    dark(width, height, 0), attrib(width, height), type(width, height, SquareType(0)), name(n) {
 }
 
 bool Level::Builder::hasAttrib(Vec2 posT, SquareAttrib attr) {
@@ -366,16 +398,16 @@ void Level::Builder::setHeightMap(Vec2 pos, double h) {
   heightMap[transform(pos)] = h;
 }
 
-void Level::Builder::setFog(Vec2 pos, double value) {
-  fog[transform(pos)] = value;
-}
-
 double Level::Builder::getHeightMap(Vec2 pos) {
   return heightMap[transform(pos)];
 }
 
 void Level::Builder::setCovered(Vec2 pos) {
   covered.insert(transform(pos));
+}
+
+void Level::Builder::setDark(Vec2 pos, double val) {
+  dark[pos] = val;
 }
 
 void Level::Builder::putCreature(Vec2 pos, PCreature creature) {
@@ -403,11 +435,10 @@ PLevel Level::Builder::build(Model* m, LevelMaker* maker, bool surface) {
   maker->make(this, squares.getBounds());
   for (Vec2 v : heightMap.getBounds()) {
     squares[v]->setHeight(heightMap[v]);
+    squares[v]->addLight(1 - dark[v]);
     if (covered.count(v) || !surface) {
-      Debug() << "Covered " << v;
       squares[v]->setCovered(true);
-    } else
-      squares[v]->setFog(fog[v]);
+    }
   }
   PLevel l(new Level(std::move(squares), m, locations, entryMessage, name));
   for (PCreature& c : creatures) {

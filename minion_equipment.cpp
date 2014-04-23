@@ -23,6 +23,17 @@ void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MinionEquipment);
 
+int MinionEquipment::getEquipmentLimit(EquipmentType type) {
+  switch (type) {
+    case MinionEquipment::ARMOR: return 1000;
+    case MinionEquipment::COMBAT_ITEM:
+    case MinionEquipment::HEALING: return 6;
+    case MinionEquipment::ARCHERY: return 40;
+  }
+  FAIL << "wfe";
+  return 0;
+}
+
 Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
   if (it->canEquip())
     return MinionEquipment::ARMOR;
@@ -40,13 +51,16 @@ bool MinionEquipment::isItemUseful(const Item* it) const {
 }
 
 bool MinionEquipment::needs(const Creature* c, const Item* it) {
-  if (Optional<EquipmentType> type = getEquipmentType(it))
+  if (Optional<EquipmentType> type = getEquipmentType(it)) {
+    int limit = getEquipmentLimit(*type);
+    if (c->getEquipment().getItems([&](const Item* it) { return getEquipmentType(it) == *type;}).size() >= limit)
+      return false;
     return c->canEquip(it, nullptr)
       || (type == ARCHERY && c->hasSkill(Skill::get(SkillId::ARCHERY)) && (c->canEquip(it, nullptr) ||
               (it->getType() == ItemType::AMMO && c->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))))
       || (type == HEALING && !c->isNotLiving()) 
       || type == COMBAT_ITEM;
-  else
+  } else
     return false;
 }
 
@@ -62,11 +76,7 @@ void MinionEquipment::discard(const Item* it) {
 }
 
 void MinionEquipment::own(const Creature* c, const Item* it) {
-  UniqueId id = it->getUniqueId();
- /* if (owners.count(id))
-    removeElement(equipment.at(owners.at(id)), id);*/
-  owners[id] = c;
-//  equipment[c].push_back(id);
+  owners[it->getUniqueId()] = c;
 }
 
 bool MinionEquipment::canTakeItem(const Creature* c, const Item* it) {

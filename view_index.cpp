@@ -67,6 +67,7 @@ Optional<ViewObject> ViewIndex::getTopObject(const vector<ViewLayer>& layers) co
 }
 
 void ViewIndex::setHighlight(HighlightType h, double amount) {
+  CHECK(amount >= 0 && amount <= 1);
   highlight = {h, amount};
 }
 

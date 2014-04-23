@@ -45,6 +45,18 @@ class Square {
   /** Checks if this square is covered, i.e. having a roof.*/
   bool isCovered() const;
 
+  /** Returns the amount of light in the square, capped within (0, 1).*/
+  double getLight() const;
+
+  /** Returns the amount of light in the square, uncapped.*/
+  double getTotalLight() const;
+
+  /** Increases or decreases the number of light sources that emit on this square.*/
+  void addLight(double amount);
+
+  /** Returns radius of emitted light (0 if none).*/
+  virtual double getLightEmission() const;
+
   /** Sets the height of the square.*/
   void setHeight(double height);
 
@@ -212,6 +224,7 @@ class Square {
   map<SquareType, int> SERIAL(constructions);
   bool SERIAL(ticking);
   double SERIAL2(fog, 0);
+  double SERIAL2(numLight, 0);
 };
 
 class SolidSquare : public Square {

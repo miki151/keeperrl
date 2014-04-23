@@ -676,6 +676,22 @@ class TrainingDummy : public Furniture {
   SERIALIZATION_CONSTRUCTOR(TrainingDummy);
 };
 
+class Torch : public Furniture {
+  public:
+  Torch(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Furniture);
+  }
+
+  double getLightEmission() const override {
+    return 8.2;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Torch);
+};
+
 class Library : public TrainingDummy {
   public:
   using TrainingDummy::TrainingDummy;
@@ -770,6 +786,7 @@ void SquareFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Furniture);
   REGISTER_TYPE(ar, Bed);
   REGISTER_TYPE(ar, Barricade);
+  REGISTER_TYPE(ar, Torch);
   REGISTER_TYPE(ar, DestroyableSquare);
   REGISTER_TYPE(ar, Grave);
   REGISTER_TYPE(ar, Altar);
@@ -792,7 +809,7 @@ Square* SquareFactory::get(SquareType s) {
             {SquareType::TRAINING_DUMMY, 10}, {SquareType::LIBRARY, 10}, {SquareType::STOCKPILE, 1},
             {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10}, {SquareType::PRISON, 10},
             {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::ANIMAL_TRAP, 10},
-            {SquareType::IMPALED_HEAD, 5}, {SquareType::BARRICADE, 20}});
+            {SquareType::IMPALED_HEAD, 5}, {SquareType::BARRICADE, 20}, {SquareType::TORCH, 5}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR_BACKGROUND,"Rope bridge"), "rope bridge",
             VisionInfo::NORMAL);
@@ -881,6 +898,7 @@ Square* SquareFactory::get(SquareType s) {
     case SquareType::TREE_TRUNK: return new Furniture(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
                                    "tree trunk", 0);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
+    case SquareType::TORCH: return new Torch(ViewObject(ViewId::TORCH, ViewLayer::FLOOR, "Torch"), "torch");
     case SquareType::STOCKPILE:
         return new DestroyableSquare(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Storage"),
             "floor", VisionInfo::NORMAL);

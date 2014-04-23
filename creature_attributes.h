@@ -79,7 +79,6 @@ class CreatureAttributes {
     {10, Skill::get(SkillId::ARCHERY)}};
   SERIAL3(skillGain);
   vector<SpellInfo> SERIAL(spells);
-  VisionInfo SERIAL2(visionInfo, VisionInfo::NORMAL);
 };
 
 #endif

@@ -148,6 +148,7 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 'p'),
     BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u'),
     BuildInfo({SquareType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"}, Nothing(), ""),
+    BuildInfo({SquareType::TORCH, {ResourceId::WOOD, 1}, "Torch"}, Nothing(), ""),
     BuildInfo(BuildInfo::DESTROY, "", 'e'),
     BuildInfo(BuildInfo::IMP, "", 'i'),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'g'),

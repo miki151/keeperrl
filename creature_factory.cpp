@@ -1459,7 +1459,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
-          c.visionInfo = VisionInfo::ELF;
+          c.skills.insert(Skill::get(SkillId::ELF_VISION));
           c.name = "elf";);
     case CreatureId::ELF_ARCHER: 
       return INHERIT(ELF,

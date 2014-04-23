@@ -44,7 +44,7 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
     case HighlightType::FOG: return transparency(white, 120 * info.amount);
     case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
     case HighlightType::MEMORY: return transparency(black, 80);
-    case HighlightType::NIGHT: return transparency(nightBlue, 80);
+    case HighlightType::NIGHT: return transparency(nightBlue, info.amount * 120);
   }
   FAIL << "pokpok";
   return black;
@@ -143,7 +143,7 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
       color = transparency(color, 255 * (1 - tile.translucent));
     else if (object.hasModifier(ViewObject::ILLUSION))
       color = transparency(color, 150);
-    else if (object.hasModifier(ViewObject::PLANNED))
+    if (object.hasModifier(ViewObject::PLANNED))
       color = transparency(color, 100);
     if (object.getWaterDepth() > 0) {
       int val = max(0.0, 255.0 - min(2.0, object.getWaterDepth()) * 60);
