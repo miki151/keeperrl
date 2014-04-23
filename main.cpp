@@ -20,6 +20,7 @@
 #include "options.h"
 #include "technology.h"
 #include "gui_elem.h"
+#include "music.h"
 
 using namespace boost::iostreams;
 
@@ -177,6 +178,7 @@ int main(int argc, char* argv[]) {
   //Table<bool> splash = readSplashTable("splash.map");
   int lastIndex = 0;
   view->initialize();
+  jukebox.initialize("intro.ogg", "peaceful.ogg", "battle.ogg");
   GuiElem::initialize("frame.png");
   while (1) {
     Item::identifyEverything();

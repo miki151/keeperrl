@@ -116,13 +116,6 @@ bool tilesOk = true;
 
 void WindowView::initialize() {
   renderer.initialize(1024, 600, "KeeperRL");
-  if (music.openFromFile("track2.ogg")) {
-    if (!Options::getValue(OptionId::MUSIC))
-      music.setVolume(0);
-    music.setLoop(true);
-    music.play();
-  }
-  Options::addTrigger(OptionId::MUSIC, [&](bool on) { music.setVolume(on ? 100 : 0); });
   Image tileImage;
   tilesOk &= tileImage.loadFromFile("tiles_int.png");
   Image tileImage2;
@@ -1076,6 +1069,8 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
 Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
     MenuType menuType, double* scrollPos, Optional<UserInput::Type> exitAction, Optional<Event::KeyEvent> exitKey,
     vector<Event::KeyEvent> shortCuts) {
+  if (options.size() == 0)
+    return Nothing();
   TempClockPause pause;
   int contentHeight;
   int choice = -1;

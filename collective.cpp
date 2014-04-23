@@ -9,6 +9,7 @@
 #include "statistics.h"
 #include "options.h"
 #include "technology.h"
+#include "music.h"
 
 template <class Archive> 
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -1065,6 +1066,10 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
     if (c->currentlyAttacking())
       attacking = true;
   }
+  if (attacking)
+    jukebox.setCurrent(Jukebox::BATTLE);
+  else
+    jukebox.setCurrent(Jukebox::PEACEFUL);
   gameInfo.infoType = View::GameInfo::InfoType::BAND;
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.buildings = fillButtons(buildInfo);
@@ -1803,6 +1808,7 @@ bool Collective::isDelayed(Vec2 pos) {
 }
 
 void Collective::tick() {
+  jukebox.update();
   if (retired) {
     if (const Creature* c = level->getPlayer())
       if (Random.roll(30) && !myTiles.count(c->getPosition()))
@@ -1942,7 +1948,7 @@ bool Collective::knownPos(Vec2 position) const {
 
 void Collective::setLevel(Level* l) {
   for (Vec2 v : l->getBounds())
-    if (contains({"water", "gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
+    if (contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
       getMemory(l).addObject(v, l->getSquare(v)->getViewObject());
   level = l;
   knownTiles = Table<bool>(level->getBounds(), false);

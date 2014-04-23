@@ -1,8 +1,6 @@
 #ifndef _WINDOW_VIEW
 #define _WINDOW_VIEW
 
-#include <SFML/Audio/Music.hpp>
-
 #include "util.h"
 #include "view.h"
 #include "map_layout.h"
@@ -154,8 +152,6 @@ class WindowView: public View {
 
   function<void()> getHintCallback(const string&);
   function<void()> getButtonCallback(UserInput);
-
-  sf::Music music;
 
   Vec2 lastMousePos;
   struct {
