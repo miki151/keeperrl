@@ -13,7 +13,7 @@ class ViewIndex;
 /** See view.h for documentation.*/
 class WindowView: public View {
   public:
-  
+  WindowView(); 
   virtual void initialize() override;
   virtual void reset() override;
   virtual void displaySplash(View::SplashType, bool& ready) override;
@@ -122,6 +122,8 @@ class WindowView: public View {
   };
   
   LegendOption legendOption = LegendOption::STATS;
+
+  Table<Optional<ViewIndex>> objects;
 
   MapLayout* mapLayout;
   MapGui* mapGui;

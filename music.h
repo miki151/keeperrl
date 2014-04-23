@@ -14,7 +14,7 @@ class Jukebox {
 
   private:
   sf::Music& get(Type);
-  sf::Music music[3];
+  unique_ptr<sf::Music[]> music;
   Type current = INTRO;
   Type currentPlaying;
   bool on = true;

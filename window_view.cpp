@@ -110,7 +110,7 @@ Rectangle WindowView::getMapViewBounds() const {
   return Rectangle(0, 0, renderer.getWidth() - rightBarWidth, renderer.getHeight() - bottomBarHeight);
 }
 
-Table<Optional<ViewIndex>> objects(Level::maxLevelBounds.getW(), Level::maxLevelBounds.getH());
+WindowView::WindowView() : objects(Level::maxLevelBounds.getW(), Level::maxLevelBounds.getH()) {}
 
 bool tilesOk = true;
 
