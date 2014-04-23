@@ -1992,6 +1992,10 @@ VisionInfo Creature::getVisionInfo() const {
     return VisionInfo::NORMAL; 
 }
 
+string Creature::getRemainingString(LastingEffect effect) const {
+  return "[" + convertToString<int>(lastingEffects.at(effect) - time) + "]";
+}
+
 vector<string> Creature::getMainAdjectives() const {
   vector<string> ret;
   if (isBlind())
@@ -2012,7 +2016,7 @@ vector<string> Creature::getMainAdjectives() const {
 }
 
 vector<string> Creature::getAdjectives() const {
-  vector<string> ret = getMainAdjectives();
+  vector<string> ret;
   if (injuredArms == 1)
     ret.push_back("injured arm");
   if (injuredArms == 2)
@@ -2037,6 +2041,26 @@ vector<string> Creature::getAdjectives() const {
     ret.push_back("lost wing");
   if (lostWings == 2)
     ret.push_back("two lost wings");
+  for (LastingEffect effect : getKeys(lastingEffects))
+    if (isAffected(effect)) {
+      switch (effect) {
+        case POISON: ret.push_back("poisoned"); break;
+        case SLEEP: ret.push_back("sleeping"); break;
+        case ENTANGLED: ret.push_back("entangled"); break;
+        case INVISIBLE: ret.push_back("invisible"); break;
+        case PANIC: ret.push_back("panic"); break;
+        case RAGE: ret.push_back("enraged"); break;
+        case HALLU: ret.push_back("hallucinating"); break;
+        case STR_BONUS: ret.push_back("strength bonus"); break;
+        case DEX_BONUS: ret.push_back("dexterity bonus"); break;
+        case SPEED: ret.push_back("speed bonus"); break;
+        case SLOWED: ret.push_back("slowed"); break;
+        default: break;
+      }
+      ret.back() += "  " + getRemainingString(effect);
+    }
+  if (isBlind())
+    ret.push_back("blind" + isAffected(BLIND) ? (" " + getRemainingString(BLIND)) : "");
   return ret;
 }
 
@@ -2074,14 +2098,6 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.dwarfStanding = Tribes::get(TribeId::DWARVEN)->getStanding(this);
   info.goblinStanding = Tribes::get(TribeId::GOBLIN)->getStanding(this);
   info.effects.clear();
-  for (LastingEffect effect : getKeys(lastingEffects))
-    if (isAffected(effect))
-      switch (effect) {
-        case POISON: info.effects.push_back({"poisoned", true}); break;
-        case SLEEP: info.effects.push_back({"sleeping", true}); break;
-        case ENTANGLED: info.effects.push_back({"entangled", true}); break;
-        default: break;
-      }
   for (string s : getAdjectives())
     info.effects.push_back({s, true});
 }

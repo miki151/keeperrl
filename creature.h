@@ -248,6 +248,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void onAffected(LastingEffect effect, bool msg);
   void onRemoved(Creature::LastingEffect effect, bool msg);
   void onTimedOut(Creature::LastingEffect effect, bool msg);
+  string getRemainingString(LastingEffect effect) const;
   static PCreature defaultCreature;
   Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool avoidEnemies);
   double getInventoryWeight() const;
