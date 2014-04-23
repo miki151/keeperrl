@@ -64,12 +64,12 @@ class GuiElem {
   static PGuiElem border2(PGuiElem content);
   static PGuiElem invisible(PGuiElem content);
 
-  const static Color background1;
-  const static Color background2;
-  const static Color foreground1;
-  const static Color text;
-  const static Color titleText;
-  const static Color inactiveText;
+  static Color background1;
+  static Color background2;
+  static Color foreground1;
+  static Color text;
+  static Color titleText;
+  static Color inactiveText;
 };
 
 #endif

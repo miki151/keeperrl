@@ -647,6 +647,13 @@ const int borderWidth = 8;
 const int borderHeight = 11;
 const int backgroundSize = 128;
 
+Color GuiElem::background1;
+Color GuiElem::background2;
+Color GuiElem::foreground1;
+Color GuiElem::text;
+Color GuiElem::titleText;
+Color GuiElem::inactiveText;
+
 void GuiElem::initialize(const string& texturePath) {
     borderCorner.loadFromFile("frame.png", sf::IntRect(0, 0, 128, 128));
     borderLeft.loadFromFile("frame.png", sf::IntRect(0, 127, borderWidth, 1));
@@ -676,6 +683,12 @@ void GuiElem::initialize(const string& texturePath) {
     backgroundTop.setRepeated(true);
     backgroundPattern.setRepeated(true);
     scrollbarCut.setRepeated(true);
+    background1 = Color(0x8c, 0x50, 0x31);
+    background2 = Color(0x46, 0x37, 0x2f);
+    foreground1 = transparency(Color(0x20, 0x5c, 0x4a), 150);
+    text = white;
+    titleText = yellow;
+    inactiveText = lightGray;
 }
 
 static PGuiElem getScrollbar() {
@@ -721,13 +734,6 @@ PGuiElem GuiElem::scrollable(PGuiElem content, int contentHeight, double* scroll
         margins(std::move(bar), 0, scrollbarWidth, 0, scrollbarWidth)),
         margins(std::move(scrollable), hMargin, vMargin, hMargin, vMargin), scrollbarWidth, RIGHT);
 }
-
-const Color GuiElem::background1(0x8c, 0x50, 0x31);
-const Color GuiElem::background2(0x46, 0x37, 0x2f);
-const Color GuiElem::foreground1 = transparency(Color(0x20, 0x5c, 0x4a), 150);
-const Color GuiElem::text = white;
-const Color GuiElem::titleText = yellow;
-const Color GuiElem::inactiveText = lightGray;
 
 PGuiElem GuiElem::background(Color c) {
   return stack(rectangle(c), repeatedPattern(backgroundPattern));
