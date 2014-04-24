@@ -4,6 +4,7 @@
 vector<UserInput::Type> vectorIntTypes {
   UserInput::BUILD,
   UserInput::WORKSHOP,
+  UserInput::LIBRARY,
   UserInput::RECT_SELECTION };
 
 vector<UserInput::Type> vectorTypes {

@@ -159,6 +159,8 @@ class View {
       };
       vector<Button> buildings;
       vector<Button> workshop;
+      vector<Button> minionButtons;
+      vector<Button> libraryButtons;
       string monsterHeader;
       vector<const Creature*> creatures;
       vector<const Creature*> enemies;

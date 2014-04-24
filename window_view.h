@@ -113,7 +113,7 @@ class WindowView: public View {
     KEY_MAPPING,
   };
   
-  PGuiElem drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveOption option);
+  vector<PGuiElem> drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveOption option);
   CollectiveOption collectiveOption = CollectiveOption::BUILDINGS;
 
   enum class LegendOption {
@@ -148,6 +148,7 @@ class WindowView: public View {
 
   int activeBuilding = 0;
   int activeWorkshop = -1;
+  int activeLibrary = -1;
   string chosenCreature;
 
   string hint;

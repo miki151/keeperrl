@@ -190,6 +190,8 @@ class Collective : public CreatureView, public EventListener {
   vector<View::GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   const static vector<BuildInfo> buildInfo;
   const static vector<BuildInfo> workshopInfo;
+  const static vector<BuildInfo> libraryInfo;
+  const static vector<BuildInfo> minionsInfo;
 
   const static map<ResourceId, ResourceInfo> resourceInfo;
 

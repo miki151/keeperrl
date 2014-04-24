@@ -147,16 +147,16 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo({SquareType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
     BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 'p'),
     BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u'),
-    BuildInfo({SquareType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"}, Nothing(), ""),
-    BuildInfo({SquareType::TORCH, {ResourceId::WOOD, 1}, "Torch"}, Nothing(), ""),
+    BuildInfo({SquareType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
     BuildInfo(BuildInfo::DESTROY, "", 'e'),
-    BuildInfo(BuildInfo::IMP, "", 'i'),
-    BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'g'),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 'f'),
+    BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'g'),
 };
 
 const vector<Collective::BuildInfo> Collective::workshopInfo {
     BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING, "", 'o'),
+    BuildInfo({SquareType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, ""),
+    BuildInfo({SquareType::TORCH, {ResourceId::WOOD, 1}, "Torch"}, TechId::CRAFTING, ""),
     BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS,
         "Summons all minions"),
     BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, TechId::TRAPS,
@@ -171,6 +171,13 @@ const vector<Collective::BuildInfo> Collective::workshopInfo {
         "Teleports nearby minions to deal with the trespasser."),
     BuildInfo(BuildInfo::IMPALED_HEAD, {SquareType::IMPALED_HEAD, {ResourceId::GOLD, 0}, "Prisoner head"},
         "Impaled head of an executed prisoner. Aggravates enemies."),
+};
+
+const vector<Collective::BuildInfo> Collective::libraryInfo {
+  BuildInfo(BuildInfo::IMP, "", 'i'),
+};
+
+const vector<Collective::BuildInfo> Collective::minionsInfo {
 };
 
 vector<Collective::RoomInfo> Collective::getRoomInfo() {
@@ -275,7 +282,7 @@ Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
   mySquares[SquareType::IMPALED_HEAD].clear();
   mySquares[SquareType::FLOOR].clear();
   mySquares[SquareType::TRIBE_DOOR].clear();
-  for (BuildInfo info : buildInfo)
+  for (BuildInfo info : concat(buildInfo, workshopInfo))
     if (info.buildType == BuildInfo::SQUARE)
       mySquares[info.squareInfo.type].clear();
   credit = {
@@ -1011,7 +1018,7 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
            pair<ViewObject, int> cost = {ViewObject::mana(), getImpCost()};
            buttons.push_back({
                ViewObject(ViewId::IMP, ViewLayer::CREATURE, ""),
-               "Imp",
+               "Spawn imp",
                cost,
                "[" + convertToString(minionByType.at(MinionType::IMP).size()) + "]",
                getImpCost() <= mana ? "" : "inactive"});
@@ -1075,6 +1082,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.buildings = fillButtons(buildInfo);
   info.workshop = fillButtons(workshopInfo);
+  info.libraryButtons = fillButtons(libraryInfo);
   info.tasks = minionTaskStrings;
   for (Creature* c : minions)
     if (isInCombat(c))
@@ -1437,6 +1445,9 @@ void Collective::processInput(View* view, UserInput input) {
         break;
     case UserInput::WORKSHOP:
         handleSelection(input.getPosition(), workshopInfo[input.getNum()], false);
+        break;
+    case UserInput::LIBRARY:
+        handleSelection(input.getPosition(), libraryInfo[input.getNum()], false);
         break;
     case UserInput::BUTTON_RELEASE:
         selection = NONE;

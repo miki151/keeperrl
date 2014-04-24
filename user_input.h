@@ -12,6 +12,7 @@ struct UserInput {
 // real-time actions
     BUILD,
     WORKSHOP,
+    LIBRARY,
     RECT_SELECTION,
     POSSESS,
     BUTTON_RELEASE,

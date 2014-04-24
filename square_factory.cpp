@@ -815,7 +815,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::ANIMAL_TRAP, 10},
             {SquareType::IMPALED_HEAD, 5}, {SquareType::BARRICADE, 20}, {SquareType::TORCH, 5}});
     case SquareType::BRIDGE:
-        return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR_BACKGROUND,"Rope bridge"), "rope bridge",
+        return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Rope bridge"), "rope bridge",
             VisionInfo::NORMAL);
     case SquareType::GRASS:
         return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND, "Grass"), "grass",

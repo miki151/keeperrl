@@ -156,10 +156,13 @@ void WindowView::initialize() {
       switch (gameInfo.infoType) {
         case GameInfo::InfoType::PLAYER: inputQueue.push(UserInput(UserInput::MOVE_TO, pos)); break;
         case GameInfo::InfoType::BAND:
-          if (!contains({CollectiveOption::WORKSHOP, CollectiveOption::BUILDINGS}, collectiveOption))
+          if (!contains({CollectiveOption::WORKSHOP, CollectiveOption::BUILDINGS, CollectiveOption::TECHNOLOGY},
+              collectiveOption))
             inputQueue.push(UserInput(UserInput::POSSESS, pos));
           if (collectiveOption == CollectiveOption::WORKSHOP && activeWorkshop >= 0)
             inputQueue.push(UserInput(UserInput::WORKSHOP, pos, activeWorkshop));
+          if (collectiveOption == CollectiveOption::TECHNOLOGY && activeLibrary >= 0)
+            inputQueue.push(UserInput(UserInput::LIBRARY, pos, activeLibrary));
           if (collectiveOption == CollectiveOption::BUILDINGS) {
             if (Keyboard::isKeyPressed(Keyboard::LShift))
               inputQueue.push(UserInput(UserInput::RECT_SELECTION, pos, activeBuilding));
@@ -561,12 +564,13 @@ PGuiElem WindowView::drawVillages(GameInfo::VillageInfo& info) {
   return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }
 
-PGuiElem WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveOption option) {
+vector<PGuiElem> WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active,
+    CollectiveOption option) {
   vector<PGuiElem> elems;
   for (int i : All(buttons)) {
     vector<PGuiElem> line;
     line.push_back(GuiElem::viewObject(buttons[i].object));
-    vector<int> widths { 30 };
+    vector<int> widths { 35 };
     Color color = white;
     if (i == active)
       color = green;
@@ -597,19 +601,21 @@ PGuiElem WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int
           GuiElem::button(buttonFun, buttons[i].hotkey),
           GuiElem::horizontalList(std::move(line), widths, 0, buttons[i].cost ? 2 : 0)));
   }
-  return GuiElem::verticalList(std::move(elems), legendLineHeight, 0);
+  return elems;
 }
   
 PGuiElem WindowView::drawBuildings(GameInfo::BandInfo& info) {
-  return drawButtons(info.buildings, activeBuilding, CollectiveOption::BUILDINGS);
+  return GuiElem::verticalList(drawButtons(info.buildings, activeBuilding, CollectiveOption::BUILDINGS),
+      legendLineHeight, 0);
 }
 
 PGuiElem WindowView::drawWorkshop(GameInfo::BandInfo& info) {
-  return drawButtons(info.workshop, activeWorkshop, CollectiveOption::WORKSHOP);
+  return GuiElem::verticalList(drawButtons(info.workshop, activeWorkshop, CollectiveOption::WORKSHOP),
+      legendLineHeight, 0);
 }
 
 PGuiElem WindowView::drawTechnology(GameInfo::BandInfo& info) {
-  vector<PGuiElem> lines;
+  vector<PGuiElem> lines = drawButtons(info.libraryButtons, activeLibrary, CollectiveOption::TECHNOLOGY);
   for (int i : All(info.techButtons)) {
     vector<PGuiElem> line;
     line.push_back(GuiElem::viewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, "")));
@@ -684,7 +690,7 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       main = std::move(elem.second);
     else
       invisible.push_back(GuiElem::invisible(std::move(elem.second)));
-  main = GuiElem::border2(GuiElem::margins(std::move(main), 20, 15, 15, 5));
+  main = GuiElem::border2(GuiElem::margins(std::move(main), 15, 15, 15, 5));
   return GuiElem::stack(GuiElem::stack(std::move(invisible)),
       GuiElem::margin(GuiElem::horizontalList(std::move(buttons), 40, 7), std::move(main), 60, GuiElem::TOP));
 }
@@ -1449,8 +1455,7 @@ UserInput WindowView::getAction() {
         break;
       case Event::MouseButtonReleased :
           if (event.mouseButton.button == sf::Mouse::Left) {
-            if (collectiveOption == CollectiveOption::BUILDINGS)
-              return UserInput(UserInput::BUTTON_RELEASE, activeBuilding);
+            return UserInput(UserInput::BUTTON_RELEASE, activeBuilding);
           }
           break;
       default: break;
