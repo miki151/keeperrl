@@ -766,8 +766,8 @@ class Laboratory : public Workshop {
   }
 };
 
-Square* SquareFactory::getAltar(Deity* deity) {
-  return new Altar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity);
+PSquare SquareFactory::getAltar(Deity* deity) {
+  return PSquare(new Altar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity));
 }
 
 template <class Archive>
@@ -799,7 +799,11 @@ void SquareFactory::registerTypes(Archive& ar) {
 
 REGISTER_TYPES(SquareFactory);
 
-Square* SquareFactory::get(SquareType s) {
+PSquare SquareFactory::get(SquareType s) {
+  return PSquare(getPtr(s));
+}
+
+Square* SquareFactory::getPtr(SquareType s) {
   switch (s) {
     case SquareType::PATH:
     case SquareType::FLOOR:
@@ -959,7 +963,7 @@ Square* SquareFactory::get(SquareType s) {
   return 0;
 }
 
-Square* SquareFactory::getStairs(StairDirection direction, StairKey key, StairLook look) {
+PSquare SquareFactory::getStairs(StairDirection direction, StairKey key, StairLook look) {
   ViewId id1 = ViewId(0), id2 = ViewId(0);
   switch (look) {
     case StairLook::NORMAL: id1 = ViewId::UP_STAIRCASE; id2 = ViewId::DOWN_STAIRCASE; break;
@@ -971,16 +975,16 @@ Square* SquareFactory::getStairs(StairDirection direction, StairKey key, StairLo
   }
   switch (direction) {
     case StairDirection::UP:
-        return new Staircase(ViewObject(id1, ViewLayer::FLOOR, "Stairs leading up"),
-            "stairs leading up", direction, key);
+        return PSquare(new Staircase(ViewObject(id1, ViewLayer::FLOOR, "Stairs leading up"),
+            "stairs leading up", direction, key));
     case StairDirection::DOWN:
-        return new Staircase(ViewObject(id2, ViewLayer::FLOOR, "Stairs leading down"),
-            "stairs leading down", direction, key);
+        return PSquare(new Staircase(ViewObject(id2, ViewLayer::FLOOR, "Stairs leading down"),
+            "stairs leading down", direction, key));
   }
   return nullptr;
 }
   
-Square* SquareFactory::getWater(double depth) {
-  return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR, "Water"), "water",
-      "sinks in the water", "You hear a splash", depth);
+PSquare SquareFactory::getWater(double depth) {
+  return PSquare(new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR, "Water"), "water",
+      "sinks in the water", "You hear a splash", depth));
 }

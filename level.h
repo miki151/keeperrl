@@ -163,8 +163,8 @@ class Level {
     /** Puts a square on given position. Sets optional attributes of the square. The attributes remain if the square is changed.*/
     void putSquare(Vec2, SquareType, Optional<SquareAttrib> = Nothing());
     void putSquare(Vec2, SquareType, vector<SquareAttrib> attribs);
-    void putSquare(Vec2, Square*, SquareType, Optional<SquareAttrib> = Nothing());
-    void putSquare(Vec2, Square*, SquareType, vector<SquareAttrib> attribs);
+    void putSquare(Vec2, PSquare, SquareType, Optional<SquareAttrib> = Nothing());
+    void putSquare(Vec2, PSquare, SquareType, vector<SquareAttrib> attribs);
     //@}
 
     /** Returns the square type.*/

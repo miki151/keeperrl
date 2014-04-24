@@ -373,17 +373,17 @@ void Level::Builder::putSquare(Vec2 pos, SquareType t, vector<SquareAttrib> at) 
   putSquare(pos, SquareFactory::get(t), t, at);
 }
 
-void Level::Builder::putSquare(Vec2 pos, Square* square, SquareType t, Optional<SquareAttrib> attr) {
-  putSquare(pos, square, t, attr ? vector<SquareAttrib>({*attr}) : vector<SquareAttrib>());
+void Level::Builder::putSquare(Vec2 pos, PSquare square, SquareType t, Optional<SquareAttrib> attr) {
+  putSquare(pos, std::move(square), t, attr ? vector<SquareAttrib>({*attr}) : vector<SquareAttrib>());
 }
 
-void Level::Builder::putSquare(Vec2 posT, Square* square, SquareType t, vector<SquareAttrib> attr) {
+void Level::Builder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<SquareAttrib> attr) {
   Vec2 pos = transform(posT);
   CHECK(!contains({SquareType::UP_STAIRS, SquareType::DOWN_STAIRS}, type[pos])) << "Attempted to overwrite stairs";
   square->setPosition(pos);
   if (squares[pos])
     square->setBackground(squares[pos].get());
-  squares[pos].reset(std::move(square));
+  squares[pos] = std::move(square);
   for (SquareAttrib at : attr)
     attrib[pos].insert(at);
   type[pos] = t;

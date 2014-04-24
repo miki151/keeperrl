@@ -16,15 +16,16 @@ inline StairDirection opposite(StairDirection d) {
 
 class SquareFactory {
   public:
-  static Square* get(SquareType);
-  static Square* getStairs(StairDirection, StairKey, StairLook = StairLook::NORMAL);
-  static Square* getAltar(Deity*);
-  static Square* getWater(double depth);
+  static PSquare get(SquareType);
+  static PSquare getStairs(StairDirection, StairKey, StairLook = StairLook::NORMAL);
+  static PSquare getAltar(Deity*);
+  static PSquare getWater(double depth);
 
   template <class Archive>
   static void registerTypes(Archive& ar);
 
   private:
+  static Square* getPtr(SquareType s);
 };
 
 #endif
