@@ -72,6 +72,7 @@ class CreatureAttributes {
   bool SERIAL2(permanentlyBlind, false);
   bool SERIAL2(invincible, false);
   double SERIAL2(damageMultiplier, 1);
+  double SERIAL2(attributeGain, 0.5);
   unordered_set<Skill*> SERIAL(skills);
   map<int, Skill*> skillGain {
     {4, Skill::get(SkillId::TWO_HANDED_WEAPON)},

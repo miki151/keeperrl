@@ -958,6 +958,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.name = "Keeper";
           c.firstName = NameGenerator::firstNames.getNext();
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
+          c.attributeGain = 1;
           c.skillGain.clear(););
     case CreatureId::BANDIT: 
       return CATTR(

@@ -730,8 +730,8 @@ bool Creature::isBlind() const {
 int Creature::getAttrVal(AttrType type) const {
   switch (type) {
     case AttrType::SPEED: return *speed + getExpLevel() * 3;
-    case AttrType::DEXTERITY: return *dexterity + getExpLevel() / 2;
-    case AttrType::STRENGTH: return *strength + (getExpLevel() - 1) / 2;
+    case AttrType::DEXTERITY: return *dexterity + (double(getExpLevel()) * attributeGain);
+    case AttrType::STRENGTH: return *strength + (double(getExpLevel() - 1) * attributeGain);
     default: return 0;
   }
 }
@@ -1073,16 +1073,18 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
 
 void Creature::attack(const Creature* c1, bool spend) {
   Creature* c = const_cast<Creature*>(c1);
-  int toHitVariance = 9;
-  int damageVariance = 9;
   CHECK((c->getPosition() - getPosition()).length8() == 1)
       << "Bad attack direction " << c->getPosition() - getPosition();
   CHECK(canAttack(c));
   Debug() << getTheName() << " attacking " << c->getName();
+  int toHit =  getAttr(AttrType::TO_HIT);
+  int damage = getAttr(AttrType::DAMAGE);
+  int toHitVariance = toHit / 3;
+  int damageVariance = damage / 3;
   auto rToHit = [=] () { return Random.getRandom(GET_ID(getUniqueId()), -toHitVariance, toHitVariance); };
   auto rDamage = [=] () { return Random.getRandom(GET_ID(getUniqueId()), -damageVariance, damageVariance); };
-  int toHit = rToHit() + rToHit() + getAttr(AttrType::TO_HIT);
-  int damage = rDamage() + rDamage() + getAttr(AttrType::DAMAGE);
+  toHit += rToHit() + rToHit();
+  damage += rDamage() + rDamage();
   bool backstab = false;
   string enemyName = getLevel()->playerCanSee(c) ? c->getTheName() : "something";
   if (c->isPlayer())

@@ -51,6 +51,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(permanentlyBlind)
     & SVAR(invincible)
     & SVAR(damageMultiplier)
+    & SVAR(attributeGain)
     & SVAR(skills)
     & SVAR(skillGain)
     & SVAR(spells);
