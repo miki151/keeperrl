@@ -291,7 +291,7 @@ class TopLevelVillageControl : public VillageControl {
       }};
     else {
       for (Vec2 v : Vec2::directions8(true))
-        if (c->canDestroy(v) && c->getSquare(v)->getName() == "door")
+        if (c->canDestroy(v))
           return {1.0, [this, v, c] () {
             c->destroy(v);
           }};

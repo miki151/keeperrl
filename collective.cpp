@@ -54,7 +54,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(tribe)
     & SVAR(alarmInfo)
     & SVAR(prisonerInfo)
-    & SVAR(executions);
+    & SVAR(executions)
+    & SVAR(sectors); 
   CHECK_SERIAL;
 }
 
@@ -262,7 +263,8 @@ map<MinionTask, MinionTaskInfo> taskInfo {
     {MinionTask::TORTURE, {SquareType::TORTURE_TABLE, "tortured", Collective::Warning::TORTURE_ROOM}},
 };
 
-Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
+Collective::Collective(Model* m, Level* l, Tribe* t) : level(l), mana(200), model(m), tribe(t),
+    sectors(new Sectors(l->getBounds())) {
   bool hotkeys[128] = {0};
   for (BuildInfo info : concat(buildInfo, workshopInfo)) {
     if (info.hotkey) {
@@ -293,8 +295,14 @@ Collective::Collective(Model* m, Tribe* t) : mana(200), model(m), tribe(t) {
   };
   for (MinionType t : minionTypes)
     minionByType[t].clear();
+  for (Vec2 v : l->getBounds()) {
+    if (l->getSquare(v)->canEnterEmpty(Creature::getDefault()))
+      sectors->add(v);
+    if (contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
+      getMemory(l).addObject(v, l->getSquare(v)->getViewObject());
+  }
+  knownTiles = Table<bool>(level->getBounds(), false);
 }
-
 
 const int basicImpCost = 20;
 const int minionLimit = 40;
@@ -1018,7 +1026,7 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
            pair<ViewObject, int> cost = {ViewObject::mana(), getImpCost()};
            buttons.push_back({
                ViewObject(ViewId::IMP, ViewLayer::CREATURE, ""),
-               "Spawn imp",
+               "Summon imp",
                cost,
                "[" + convertToString(minionByType.at(MinionType::IMP).size()) + "]",
                getImpCost() <= mana ? "" : "inactive"});
@@ -1173,7 +1181,8 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::TEAM_HIGHLIGHT);
   if (taskMap.isMarked(pos))
     index.setHighlight(HighlightType::BUILD);
-  else if (rectSelectCorner && rectSelectCorner2 && pos.inRectangle(Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2})))
+  else if (rectSelectCorner && rectSelectCorner2
+      && pos.inRectangle(Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2})))
     index.setHighlight(HighlightType::RECT_SELECTION);
   if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
     if (traps.count(pos))
@@ -1623,6 +1632,10 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     constructions.at(pos).marked = 0;
     constructions.at(pos).task = -1;
   }
+  if (level->getSquare(pos)->canEnterEmpty(keeper))
+    sectors->add(pos);
+  else
+    sectors->remove(pos);
 }
 
 void Collective::onPickedUp(Vec2 pos, EntitySet items) {
@@ -1958,14 +1971,6 @@ bool Collective::knownPos(Vec2 position) const {
   return knownTiles[position];
 }
 
-void Collective::setLevel(Level* l) {
-  for (Vec2 v : l->getBounds())
-    if (contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
-      getMemory(l).addObject(v, l->getSquare(v)->getViewObject());
-  level = l;
-  knownTiles = Table<bool>(level->getBounds(), false);
-}
-
 vector<const Creature*> Collective::getUnknownAttacker() const {
   return {};
 }
@@ -2209,11 +2214,15 @@ MoveInfo Collective::getMinionMove(Creature* c) {
     for (Vec2 v : mySquares[SquareType::STOCKPILE])
       for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
             return minionEquipment.getOwner(it) == c; })) {
+        PTask t;
         if (c->canEquip(it, nullptr))
-          taskMap.addTask(Task::equipItem(this, v, it), c);
+          t = Task::equipItem(this, v, it);
         else
-          taskMap.addTask(Task::pickItem(this, v, {it}), c);
-        return taskMap.getTask(c)->getMove(c);
+          t = Task::pickItem(this, v, {it});
+        if (t->getMove(c)) {
+          taskMap.addTask(std::move(t), c);
+          return taskMap.getTask(c)->getMove(c);
+        }
       }
   minionTasks.at(c->getUniqueId()).update();
   if (c->getHealth() < 1 && c->canSleep())
@@ -2372,6 +2381,7 @@ void Collective::addCreature(Creature* c, MinionType type) {
           if (v.inRectangle(level->getBounds()))
             addKnownTile(v);
   }
+  c->addSectors(sectors.get());
   creatures.push_back(c);
   minionByType[type].push_back(c);
   if (!contains({MinionType::IMP}, type))
@@ -2384,6 +2394,7 @@ void Collective::addCreature(Creature* c, MinionType type) {
     prisonerInfo[c] = {PrisonerInfo::PRISON, nullptr};
 }
 
+// actually only called when square is destroyed
 void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
   if (l == level) {
     for (auto& elem : mySquares)
@@ -2396,6 +2407,7 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
       info.built = false;
       info.task = -1;
     }
+    sectors->add(pos);
   }
 }
 

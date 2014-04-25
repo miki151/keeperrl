@@ -67,7 +67,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(visions)
     & SVAR(kills)
     & SVAR(difficultyPoints)
-    & SVAR(points);
+    & SVAR(points)
+    & SVAR(sectors);
   CHECK_SERIAL;
 }
 
@@ -1824,6 +1825,11 @@ int Creature::getDifficultyPoints() const {
   return difficultyPoints;
 }
 
+void Creature::addSectors(Sectors* s) {
+  CHECK(!sectors);
+  sectors = s;
+}
+
 Optional<Vec2> Creature::continueMoving() {
   if (shortestPath && shortestPath->isReachable(getPosition())) {
     Vec2 pos2 = shortestPath->getNextMove(getPosition());
@@ -1834,11 +1840,23 @@ Optional<Vec2> Creature::continueMoving() {
   return Nothing();
 }
 
-Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool avoidEnemies) {
-  return getMoveTowards(pos, false, avoidEnemies);
+Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool stepOnTile) {
+  return getMoveTowards(pos, false, stepOnTile);
 }
 
-Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool away, bool avoidEnemies) {
+Optional<Vec2> Creature::getMoveTowards(Vec2 pos, bool away, bool stepOnTile) {
+  if (stepOnTile && !level->getSquare(pos)->canEnterEmpty(this))
+    return Nothing();
+  if (!away && sectors) {
+    bool sectorOk = false;
+    for (Vec2 v : pos.neighbors8())
+      if (v.inRectangle(level->getBounds()) && sectors->same(getPosition(), v)) {
+        sectorOk = true;
+        break;
+      }
+    if (!sectorOk)
+      return Nothing();
+  }
   Debug() << "" << getPosition() << (away ? "Moving away from" : " Moving toward ") << pos;
   bool newPath = false;
   bool targetChanged = shortestPath && shortestPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10;

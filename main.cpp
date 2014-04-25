@@ -21,6 +21,7 @@
 #include "technology.h"
 #include "gui_elem.h"
 #include "music.h"
+#include "test.h"
 
 using namespace boost::iostreams;
 
@@ -135,6 +136,10 @@ static void saveExceptionLine(const string& path, const string& line) {
 }
 
 int main(int argc, char* argv[]) {
+  if (argc == 2 && !strcmp(argv[1], "test")) {
+    testAll();
+    return 0;
+  }
   View* view;
   ifstream input;
   ofstream output;

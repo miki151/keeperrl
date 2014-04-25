@@ -9,6 +9,7 @@
 #include "minion_equipment.h"
 #include "task.h"
 #include "entity_set.h"
+#include "sectors.h"
 
 enum class MinionType {
   IMP,
@@ -27,7 +28,7 @@ class Technology;
 
 class Collective : public CreatureView, public EventListener {
   public:
-  Collective(Model*, Tribe*);
+  Collective(Model*, Level*, Tribe*);
   virtual const MapMemory& getMemory() const override;
   MapMemory& getMemory(Level* l);
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
@@ -60,7 +61,6 @@ class Collective : public CreatureView, public EventListener {
   void update(Creature*);
   MoveInfo getMove(Creature* c);
   void addCreature(Creature* c, MinionType);
-  void setLevel(Level* l);
 
   virtual const Level* getLevel() const;
 
@@ -350,7 +350,7 @@ class Collective : public CreatureView, public EventListener {
   map<UniqueId, string> SERIAL(minionTaskStrings);
   map<SquareType, set<Vec2>> SERIAL(mySquares);
   set<Vec2> SERIAL(myTiles);
-  Level* SERIAL2(level, nullptr);
+  Level* SERIAL(level);
   Creature* SERIAL2(keeper, nullptr);
   mutable unique_ptr<map<Level*, MapMemory>> SERIAL(memory);
   Table<bool> SERIAL(knownTiles);
@@ -393,6 +393,7 @@ class Collective : public CreatureView, public EventListener {
   };
   map<Creature*, PrisonerInfo> SERIAL(prisonerInfo);
   int SERIAL2(executions, 0);
+  unique_ptr<Sectors> SERIAL(sectors);
 };
 
 #endif

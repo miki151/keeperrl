@@ -14,6 +14,7 @@
 #include "controller.h"
 #include "unique_entity.h"
 #include "event.h"
+#include "sectors.h"
 
 class Level;
 class Tribe;
@@ -181,9 +182,11 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   Item* getWeapon() const;
 
-  Optional<Vec2> getMoveTowards(Vec2 pos, bool avoidEnemies = false);
+  Optional<Vec2> getMoveTowards(Vec2 pos, bool stepOnTile = false);
   Optional<Vec2> getMoveAway(Vec2 pos, bool pathfinding = true);
   Optional<Vec2> continueMoving();
+  void addSectors(Sectors*);
+
   bool atTarget() const;
   void die(const Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
   void bleed(double severity);
@@ -250,7 +253,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void onTimedOut(Creature::LastingEffect effect, bool msg);
   string getRemainingString(LastingEffect effect) const;
   static PCreature defaultCreature;
-  Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool avoidEnemies);
+  Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool stepOnTile);
   double getInventoryWeight() const;
   Item* getAmmo() const;
   void updateViewObject();
@@ -306,6 +309,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   mutable vector<const Creature*> SERIAL(kills);
   mutable double SERIAL2(difficultyPoints, 0);
   int SERIAL2(points, 0);
+  Sectors* SERIAL2(sectors, nullptr);
 };
 
 struct SpellInfo {

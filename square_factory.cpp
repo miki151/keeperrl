@@ -953,8 +953,8 @@ Square* SquareFactory::getPtr(SquareType s) {
                                .setModifier(ViewObject::CASTS_SHADOW));
     case SquareType::TRIBE_DOOR: return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
                                      .setModifier(ViewObject::CASTS_SHADOW), 100);
-    case SquareType::BARRICADE: return new Barricade(ViewObject(ViewId::BARRICADE, ViewLayer::FLOOR, "Barricade")
-                                     .setModifier(ViewObject::CASTS_SHADOW), 100);
+    case SquareType::BARRICADE: return new Barricade(ViewObject(ViewId::BARRICADE, ViewLayer::FLOOR, "Barricade"),
+                                    200);
     case SquareType::BORDER_GUARD:
         return new SolidSquare(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "Wall"), "wall");
     case SquareType::DOWN_STAIRS:

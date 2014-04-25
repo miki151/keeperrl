@@ -35,7 +35,7 @@ class Task : public UniqueEntity {
   protected:
   void setDone();
   void setPosition(Vec2);
-  MoveInfo getMoveToPosition(Creature*);
+  MoveInfo getMoveToPosition(Creature*, bool stepOnTile = false);
   Collective* getCollective();
 
   private:

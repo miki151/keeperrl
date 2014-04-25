@@ -129,7 +129,7 @@ class Level {
   /** Returns the player creature.*/
   const Creature* getPlayer() const;
 
-  /** Returns name of the given location. Returns nullptr if none. **/
+  /** Returns name of the given location. Returns nullptr if none. */
   const Location* getLocation(Vec2) const;
 
   const vector<Location*> getAllLocations() const;

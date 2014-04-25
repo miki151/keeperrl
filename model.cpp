@@ -427,8 +427,7 @@ Model* Model::collectiveModel(View* view) {
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(CreatureFactory::dwarfTownPeaceful(), {StairKey::DWARF}, {}));
   m->addLink(StairDirection::DOWN, StairKey::DWARF, top, d1);
-  m->collective.reset(new Collective(m, Tribes::get(TribeId::KEEPER)));
-  m->collective->setLevel(top);
+  m->collective.reset(new Collective(m, top, Tribes::get(TribeId::KEEPER)));
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribes::get(TribeId::KEEPER),
       MonsterAIFactory::collective(m->collective.get()));
   Creature* ref = c.get();
@@ -482,8 +481,7 @@ Model* Model::splashModel(View* view, const Table<bool>& bitmap) {
       Level::Builder(bitmap.getWidth(), bitmap.getHeight(), "Wilderness"),
       LevelMaker::grassAndTrees(), true);
   CreatureFactory factory = CreatureFactory::splash();
-  m->collective.reset(new Collective(m, Tribes::get(TribeId::KEEPER)));
-  m->collective->setLevel(top);
+  m->collective.reset(new Collective(m, top, Tribes::get(TribeId::KEEPER)));
   for (Vec2 v : bitmap.getBounds())
     if (bitmap[v]) {
       PCreature c = factory.random(MonsterAIFactory::guardSquare(v));

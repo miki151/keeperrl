@@ -92,8 +92,8 @@ PTask Task::construction(Collective* col, Vec2 target, SquareType type) {
   return PTask(new Construction(col, target, type));
 }
   
-MoveInfo Task::getMoveToPosition(Creature *c) {
-  Optional<Vec2> move = c->getMoveTowards(position, true);
+MoveInfo Task::getMoveToPosition(Creature *c, bool stepOnTile) {
+  Optional<Vec2> move = c->getMoveTowards(position, stepOnTile);
   if (move)
     return {1.0, [=] {
       c->move(*move);
@@ -150,9 +150,9 @@ class PickItem : public Task {
         return NoMove;
       }
     }
-    if (MoveInfo move = getMoveToPosition(c))
+    if (MoveInfo move = getMoveToPosition(c, true))
       return move;
-    else if (c->getPosition().dist8(getPosition()) == 1) {
+    else if (--tries == 0) {
       getCollective()->onCantPickItem(items);
       setDone();
     }
@@ -172,6 +172,7 @@ class PickItem : public Task {
   protected:
   EntitySet SERIAL(items);
   bool SERIAL2(pickedUp, false);
+  int tries = 10;
 };
 
 PTask Task::pickItem(Collective* col, Vec2 position, vector<Item*> items) {

@@ -17,15 +17,14 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     & SVAR(name)
     & SVAR(player)
     & SVAR(backgroundLevel)
-    & SVAR(backgroundOffset); 
+    & SVAR(backgroundOffset)
   CHECK_SERIAL;
 }  
 
 SERIALIZABLE(Level);
 
 Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n) 
-    : squares(std::move(s)), locations(l), model(m), entryMessage(message), 
-    name(n) {
+    : squares(std::move(s)), locations(l), model(m), entryMessage(message), name(n) {
   for (Vec2 pos : squares.getBounds()) {
     squares[pos]->setLevel(this);
     Optional<pair<StairDirection, StairKey>> link = squares[pos]->getLandingLink();
