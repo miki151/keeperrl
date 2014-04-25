@@ -188,11 +188,11 @@ static void wordOfPower(Creature* c, EffectStrength strength) {
   }
 }
 
-static void emitPoisonGas(Creature* c, EffectStrength strength) {
-  for (Vec2 v : Vec2::directions8())
-    c->getSquare(v)->addPoisonGas(gasAmount.at(strength) / 2);
-  c->getSquare()->addPoisonGas(gasAmount.at(strength));
-  c->globalMessage("A cloud of gas is released", "You hear a hissing sound");
+static void emitPoisonGas(Level* level, Vec2 pos, EffectStrength strength) {
+  for (Vec2 v : pos.neighbors8())
+    level->getSquare(v)->addPoisonGas(gasAmount.at(strength) / 2);
+  level->getSquare(pos)->addPoisonGas(gasAmount.at(strength));
+  level->globalMessage(pos, "A cloud of gas is released", "You hear a hissing sound");
 }
 
 static void guardingBuilder(Creature* c) {
@@ -384,7 +384,6 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::DECEPTION: deception(c); break;
     case EffectType::WORD_OF_POWER: wordOfPower(c, strength); break;
     case EffectType::POISON: c->addEffect(Creature::POISON, poisonTime.at(strength)); break;
-    case EffectType::EMIT_POISON_GAS: emitPoisonGas(c, strength); break;
     case EffectType::GUARDING_BOULDER: guardingBuilder(c); break;
     case EffectType::FIRE_SPHERE_PET: summon(c, CreatureId::FIRE_SPHERE, 1, 30); break;
     case EffectType::ENHANCE_ARMOR: enhanceArmor(c); break;
@@ -409,6 +408,14 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::TELEPORT: teleport(c); break;
     case EffectType::ROLLING_BOULDER: rollingBoulder(c); break;
     case EffectType::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.getRandom(2, 5), 100); break;
+    default: applyToPosition(c->getLevel(), c->getPosition(), type, strength);
+  }
+}
+
+void Effect::applyToPosition(Level* level, Vec2 pos, EffectType type, EffectStrength strength) {
+  switch (type) {
+    case EffectType::EMIT_POISON_GAS: emitPoisonGas(level, pos, strength); break;
+    default: FAIL << "Can't apply to position " << int(type);
   }
 }
 

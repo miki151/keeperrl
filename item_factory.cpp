@@ -224,7 +224,11 @@ class Corpse : public Item {
       setName(rottenName);
       viewObject = object2;
       corpseInfo.isSkeleton = true;
-    } else if (getWeight() > 10 && !corpseInfo.isSkeleton && 
+    } else {
+      if (!rotten && level->getSquare(position)->getName() != "grave" && getWeight() > 10
+          && Random.roll(20 + (rottenTime - time) / 10))
+        Effect::applyToPosition(level, position, EffectType::EMIT_POISON_GAS, EffectStrength::WEAK);
+      if (getWeight() > 10 && !corpseInfo.isSkeleton && 
         !level->getSquare(position)->isCovered() && Random.roll(35)) {
       for (Vec2 v : position.neighbors8(true))
         if (level->inBounds(v)) {
@@ -237,6 +241,7 @@ class Corpse : public Item {
             break;
           }
         }
+      }
     }
   }
 

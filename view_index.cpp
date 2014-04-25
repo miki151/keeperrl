@@ -44,7 +44,7 @@ void ViewIndex::removeObject(ViewLayer l) {
 }
 
 bool ViewIndex::isEmpty() const {
-  return objects.empty() && !highlight;
+  return objects.empty() && highlight.empty();
 }
 
 const ViewObject& ViewIndex::getObject(ViewLayer l) const {
@@ -66,12 +66,17 @@ Optional<ViewObject> ViewIndex::getTopObject(const vector<ViewLayer>& layers) co
   return Nothing();
 }
 
-void ViewIndex::setHighlight(HighlightType h, double amount) {
+void ViewIndex::addHighlight(HighlightType h, double amount) {
   CHECK(amount >= 0 && amount <= 1);
-  highlight = {h, amount};
+  for (auto& elem : highlight)
+    if (elem.type == h) {
+      elem.amount = max(elem.amount, amount);
+      return;
+    }
+  highlight.push_back({h, amount});
 }
 
-Optional<ViewIndex::HighlightInfo> ViewIndex::getHighlight() const {
+vector<ViewIndex::HighlightInfo> ViewIndex::getHighlight() const {
   return highlight;
 }
 

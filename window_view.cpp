@@ -58,7 +58,7 @@ class Clock {
   }
 
   void pause() {
-    if (lastPause == -1)
+    if (lastPause < 0)
       lastPause = clock.getElapsedTime().asMilliseconds();
   }
 

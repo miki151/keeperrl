@@ -1084,8 +1084,6 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   }
   if (attacking)
     jukebox.setCurrent(Jukebox::BATTLE);
-  else
-    jukebox.setCurrent(Jukebox::PEACEFUL);
   gameInfo.infoType = View::GameInfo::InfoType::BAND;
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.buildings = fillButtons(buildInfo);
@@ -1180,10 +1178,10 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
     if (contains(team, c) && gatheringTeam)
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::TEAM_HIGHLIGHT);
   if (taskMap.isMarked(pos))
-    index.setHighlight(HighlightType::BUILD);
+    index.addHighlight(HighlightType::BUILD);
   else if (rectSelectCorner && rectSelectCorner2
       && pos.inRectangle(Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2})))
-    index.setHighlight(HighlightType::RECT_SELECTION);
+    index.addHighlight(HighlightType::RECT_SELECTION);
   if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
     if (traps.count(pos))
       index.insert(getTrapObject(traps.at(pos).type));

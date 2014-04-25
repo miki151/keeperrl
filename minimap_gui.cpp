@@ -26,7 +26,7 @@ void MinimapGui::onLeftClick(Vec2 v) {
 
 void MinimapGui::initialize() {
   mapBuffer.create(Level::maxLevelBounds.getW(), Level::maxLevelBounds.getH());
-  renderer.initialize(Level::maxLevelBounds.getW(), Level::maxLevelBounds.getH());
+  renderer.initialize(min(2048u, Texture::getMaximumSize()), min(2048u, Texture::getMaximumSize()));
 }
 
 static void putMapPixel(Vec2 pos, Color col) {

@@ -778,6 +778,12 @@ int Creature::getAttr(AttrType type) const {
                (injuredWings + lostWings) * dexPenNoWing;
         break;
     case AttrType::THROWN_DAMAGE: 
+        def += getAttr(AttrType::DEXTERITY);
+        if (isAffected(PANIC))
+          def -= attrBonus;
+        if (isAffected(RAGE))
+          def += attrBonus;
+        break;
     case AttrType::DAMAGE: 
         def += getAttr(AttrType::STRENGTH);
         if (!getWeapon())

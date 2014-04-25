@@ -44,7 +44,7 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
     case HighlightType::FOG: return transparency(white, 120 * info.amount);
     case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
     case HighlightType::MEMORY: return transparency(black, 80);
-    case HighlightType::NIGHT: return transparency(nightBlue, info.amount * 120);
+    case HighlightType::NIGHT: return transparency(nightBlue, info.amount * 160);
   }
   FAIL << "pokpok";
   return black;
@@ -249,8 +249,8 @@ void MapGui::render(Renderer& renderer) {
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
     Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
     const ViewIndex& index = *objects[wpos];
-    if (auto highlight = index.getHighlight())
-      renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, getHighlightColor(*highlight));
+    for (ViewIndex::HighlightInfo highlight : index.getHighlight())
+      renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, getHighlightColor(highlight));
   }
   if (highlightedPos && highlighted) {
     Color col = white;
