@@ -13,6 +13,7 @@ class Jukebox {
   void update();
 
   private:
+  bool turnedOff();
   sf::Music& get(Type);
   unique_ptr<sf::Music[]> music;
   Type current = INTRO;

@@ -194,8 +194,6 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
   if (highlighted) {
     renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
   }
-  if (auto highlight = index.getHighlight())
-    renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, getHighlightColor(*highlight));
   if (!objects.empty())
     return objects.back();
   else
@@ -247,6 +245,12 @@ void MapGui::render(Renderer& renderer) {
       if (isHighlighted)
         highlighted = *topObject;
     }
+  }
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
+    Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
+    const ViewIndex& index = *objects[wpos];
+    if (auto highlight = index.getHighlight())
+      renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, getHighlightColor(*highlight));
   }
   if (highlightedPos && highlighted) {
     Color col = white;

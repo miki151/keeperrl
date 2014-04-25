@@ -14,11 +14,15 @@ void Jukebox::initialize(const string& introPath, const string& peacefulPath, co
   music[1].setLoop(true);
   music[2].setLoop(true);
   currentPlaying = current;
-  get(current).play();
-  if (!Options::getValue(OptionId::MUSIC))
-    toggle();
+  if (!turnedOff())
+    get(current).play();
+  else
+    on = false;
   Options::addTrigger(OptionId::MUSIC, [this](bool turnOn) { if (turnOn != on) toggle(); });
+}
 
+bool Jukebox::turnedOff() {
+  return !Options::getValue(OptionId::MUSIC);
 }
 
 sf::Music& Jukebox::get(Type type) {
@@ -41,6 +45,8 @@ void Jukebox::setCurrent(Type c) {
 const int volumeDec = 20;
 
 void Jukebox::update() {
+  if (turnedOff())
+    return;
   if (currentPlaying == INTRO && music[0].getStatus() == sf::SoundSource::Stopped) {
     currentPlaying = current = PEACEFUL;
     get(current).play();
