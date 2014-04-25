@@ -121,8 +121,8 @@ bool Square::construct(SquareType type) {
   CHECK(canConstruct(type));
   if (--constructions[type] <= 0) {
     PSquare newSquare = PSquare(SquareFactory::get(type));
-    if (creature && !newSquare->canEnter(creature))
-      return false;
+/*    if (creature && !newSquare->canEnter(creature))
+      return false;*/
     level->replaceSquare(position, std::move(newSquare));
     return true;
   } else
@@ -146,7 +146,6 @@ const vector<Vec2>& Square::getTravelDir() const {
 }
 
 void Square::putCreatureSilently(Creature* c) {
-  CHECK(canEnter(c));
   creature = c;
 }
 
