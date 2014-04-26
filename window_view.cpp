@@ -711,7 +711,7 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
 }
 
 const int minionWindowRightMargin = 20;
-const int minionWindowWidth = 280;
+const int minionWindowWidth = 340;
 const int minionWindowHeight = 600;
 
 void WindowView::rebuildGui() {
@@ -1106,7 +1106,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
     if (options[i].getMod() != View::TITLE)
       ++elemCount;
   }
-  double localScrollPos = getScrollPos(indexes[index], count);
+  double localScrollPos = index >= 0 ? getScrollPos(indexes[index], count) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
   PGuiElem list = drawListGui(title, options, contentHeight, &index, &choice);

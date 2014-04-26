@@ -40,9 +40,9 @@
 #ifdef SERIALIZATION_DEBUG
 #define SERIAL_CHECKER SerialChecker serialChecker
 #define CHECK_SERIAL serialChecker.checkSerial();
-#define SERIAL(X) X; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker,#X)
-#define SERIAL2(X, Y) X = Y; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker,#X)
-#define SERIAL3(X) SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker,#X);
+#define SERIAL(X) X; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker)
+#define SERIAL2(X, Y) X = Y; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker)
+#define SERIAL3(X) SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker);
 #define SVAR(X) boost::serialization::make_nvp(#X, checkSerial(X, X##_Check))
 #else
 #define SERIAL_CHECKER
@@ -80,7 +80,7 @@ class SerialChecker {
 
   class Check {
     public:
-    Check(SerialChecker& checker, const string& name);
+    Check(SerialChecker& checker);
     Check(const Check&);
     Check& operator = (const Check&);
     void tick();
@@ -89,7 +89,6 @@ class SerialChecker {
 
     private:
     bool ticked = false;
-    string name;
     SerialChecker* newCopy = nullptr;
   };
 

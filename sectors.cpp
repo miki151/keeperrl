@@ -68,11 +68,19 @@ int Sectors::getNewSector() {
   return sizes.size() - 1;
 }
 
-void Sectors::join(Vec2 pos, int sector) {
-  setSector(pos, sector);
-  for (Vec2 v : pos.neighbors8())
-    if (v.inRectangle(bounds) && sectors[v] > -1 && sectors[v] != sectors[pos])
-      join(v, sectors[pos]);
+void Sectors::join(Vec2 pos1, int sector) {
+  queue<Vec2> q;
+  q.push(pos1);
+  setSector(pos1, sector);
+  while (!q.empty()) {
+    Vec2 pos = q.front();
+    q.pop();
+    for (Vec2 v : pos.neighbors8())
+      if (v.inRectangle(bounds) && sectors[v] > -1 && sectors[v] != sector) {
+        setSector(v, sector);
+        q.push(v);
+      }
+  }
 }
 
 void Sectors::remove(Vec2 pos) {

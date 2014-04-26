@@ -59,30 +59,28 @@ void SerialChecker::checkSerial() {
     c->tickOff();
 }
 
-SerialChecker::Check::Check(SerialChecker& checker, const string& n) : name(n) {
+SerialChecker::Check::Check(SerialChecker& checker) {
   checker.addCheck(this);
 }
 
 void SerialChecker::Check::tick() {
-  CHECK(!ticked) << name;
+  CHECK(!ticked);
   ticked = true;
 }
 
 void SerialChecker::Check::tickOff() {
-  CHECK(ticked) << name;
+  CHECK(ticked);
   ticked = false;
 }
 
 SerialChecker::Check::Check(const Check& other) {
   CHECK(other.newCopy);
   other.newCopy->addCheck(this);
-  name = other.name;
 }
 
 SerialChecker::Check& SerialChecker::Check::operator = (const Check& other) {
   CHECK(other.newCopy);
   other.newCopy->addCheck(this);
-  name = other.name;
   return *this;
 }
 

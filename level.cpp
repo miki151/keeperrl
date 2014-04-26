@@ -32,7 +32,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     & SVAR(name)
     & SVAR(player)
     & SVAR(backgroundLevel)
-    & SVAR(backgroundOffset)
+    & SVAR(backgroundOffset);
   CHECK_SERIAL;
 }  
 

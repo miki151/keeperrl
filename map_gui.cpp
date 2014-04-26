@@ -193,7 +193,7 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
             Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[2], width, height);
       }
       if (object.hasModifier(ViewObject::LOCKED))
-        renderer.drawSprite(x + (Renderer::nominalSize - Renderer::tileSize[3]) / 2, y, 5 * Renderer::tileSize[3], 6 * Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tiles[3]);
+        renderer.drawSprite(x + (Renderer::nominalSize - Renderer::tileSize[3]) / 2, y, 5 * Renderer::tileSize[3], 6 * Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tiles[3], width / 2, height / 2);
     } else {
       renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, sizeY, Tile::getColor(object),
           x + sizeX / 2, y - 3, tile.text, true);
@@ -261,12 +261,12 @@ void MapGui::render(Renderer& renderer) {
         highlighted = *topObject;
     }
   }
-  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
-    Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
-    const ViewIndex& index = *objects[wpos];
-    for (ViewIndex::HighlightInfo highlight : index.getHighlight())
-      renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, getHighlightColor(highlight));
-  }
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
+    if (auto index = objects[wpos]) {
+      Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
+      for (ViewIndex::HighlightInfo highlight : index->getHighlight())
+        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, getHighlightColor(highlight));
+    }
   if (highlightedPos && highlighted) {
     Color col = white;
     if (highlighted->isHostile())
