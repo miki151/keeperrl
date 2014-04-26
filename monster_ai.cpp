@@ -91,12 +91,10 @@ class Heal : public Behaviour {
       }
     if (!creature->isHumanoid() || creature->getHealth() == 1)
       return {0, nullptr};
-    MoveInfo move = tryToApplyItem(EffectType::HEAL, 1);
-    if (move.move)
-      return { min(1.0, 1.5 - creature->getHealth()), move.move };
-    move = tryToApplyItem(EffectType::HEAL, 3);
-    if (move.move)
-      return { 0.3 * min(1.0, 1.5 - creature->getHealth()), move.move };
+    if (MoveInfo move = tryToApplyItem(EffectType::HEAL, 1))
+      return move.setValue(min(1.0, 1.5 - creature->getHealth()));
+    if (MoveInfo move = tryToApplyItem(EffectType::HEAL, 3))
+      return move.setValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
     if (creature->getConstSquare()->getApplyType(creature) == SquareApplyType::SLEEP)
       return { 0.4 * min(1.0, 1.5 - creature->getHealth()), [this] {
         creature->applySquare();

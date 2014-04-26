@@ -297,7 +297,7 @@ class Collective : public CreatureView, public EventListener {
     Task* getTask(const Creature*) const;
     void markSquare(Vec2 pos, PTask);
     void unmarkSquare(Vec2 pos);
-    bool isMarked(Vec2 pos) const;
+    Task* getMarked(Vec2 pos) const;
     CostInfo removeTask(Task*);
     CostInfo removeTask(UniqueId);
     bool isLocked(const Creature*, const Task*) const;
@@ -394,6 +394,7 @@ class Collective : public CreatureView, public EventListener {
   map<Creature*, PrisonerInfo> SERIAL(prisonerInfo);
   int SERIAL2(executions, 0);
   unique_ptr<Sectors> SERIAL(sectors);
+  unique_ptr<Sectors> SERIAL(flyingSectors);
 };
 
 #endif

@@ -919,8 +919,8 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new TrainingDummy(ViewObject(ViewId::TRAINING_DUMMY, ViewLayer::FLOOR, "Training post"), 
             "training post");
     case SquareType::IMPALED_HEAD:
-        return new Square(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head"), "impaled head",
-            VisionInfo::NORMAL);
+        return new Square(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head")
+            .setModifier(ViewObject::ROUND_SHADOW), "impaled head", VisionInfo::NORMAL);
     case SquareType::LIBRARY:
         return new Library(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
             "book shelf");
@@ -951,10 +951,10 @@ Square* SquareFactory::getPtr(SquareType s) {
         FAIL << "Unimplemented";
     case SquareType::DOOR: return new Door(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
                                .setModifier(ViewObject::CASTS_SHADOW));
-    case SquareType::TRIBE_DOOR: return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
-                                     .setModifier(ViewObject::CASTS_SHADOW), 100);
-    case SquareType::BARRICADE: return new Barricade(ViewObject(ViewId::BARRICADE, ViewLayer::FLOOR, "Barricade"),
-                                    200);
+    case SquareType::TRIBE_DOOR: return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR,
+                                       "Door - click to lock.").setModifier(ViewObject::CASTS_SHADOW), 100);
+    case SquareType::BARRICADE: return new Barricade(ViewObject(ViewId::BARRICADE, ViewLayer::FLOOR, "Barricade")
+                                    .setModifier(ViewObject::ROUND_SHADOW), 200);
     case SquareType::BORDER_GUARD:
         return new SolidSquare(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "Wall"), "wall");
     case SquareType::DOWN_STAIRS:

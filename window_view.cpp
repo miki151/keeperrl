@@ -697,7 +697,7 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
 
 const int minionWindowRightMargin = 20;
 const int minionWindowWidth = 280;
-const int minionWindowHeight = 400;
+const int minionWindowHeight = 600;
 
 void WindowView::rebuildGui() {
   PGuiElem bottom, right, overMap;
@@ -717,6 +717,10 @@ void WindowView::rebuildGui() {
         GuiElem::margins(std::move(right), 20, 20, 20, 20)));
   tempGuiElems.back()->setBounds(Rectangle(
         renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight()));
+  tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2),
+        GuiElem::margins(std::move(bottom), 40, 10, 0, 0)));
+  tempGuiElems.back()->setBounds(Rectangle(
+        0, renderer.getHeight() - bottomBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight()));
   if (overMap) {
     tempGuiElems.push_back(GuiElem::window(GuiElem::stack(GuiElem::background(GuiElem::background2), 
           GuiElem::margins(std::move(overMap), 20, 20, 20, 20))));
@@ -724,10 +728,6 @@ void WindowView::rebuildGui() {
           renderer.getWidth() - rightBarWidth - minionWindowWidth - minionWindowRightMargin, 100,
           renderer.getWidth() - rightBarWidth - minionWindowRightMargin, 100 + minionWindowHeight));
   }
-  tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2),
-        GuiElem::margins(std::move(bottom), 40, 10, 0, 0)));
-  tempGuiElems.back()->setBounds(Rectangle(
-        0, renderer.getHeight() - bottomBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight()));
 }
 
 vector<GuiElem*> WindowView::getAllGuiElems() {

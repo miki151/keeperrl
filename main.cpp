@@ -205,8 +205,10 @@ int main(int argc, char* argv[]) {
     messageBuffer.initialize(view);
     view->reset();
     auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
-        View::ListElem("Choose your role:", View::TITLE), "Keeper", "Adventurer", "Adventurer vs. Keeper",
-        View::ListElem("Or simply:", View::TITLE), "Load a game", "Change settings", "View high scores", "Quit"},
+        View::ListElem("Choose your role:", View::TITLE),
+          "Keeper", "Adventurer", "Adventurer vs. Keeper",
+        View::ListElem("Or simply:", View::TITLE),
+          "Load a game", "Change settings", "View high scores", "View credits", "Quit"},
         lastIndex, View::MAIN_MENU);
     if (!choice)
       continue;
@@ -244,7 +246,12 @@ int main(int argc, char* argv[]) {
       m->showHighscore();
       continue;
     }
-    if (choice == 6)
+    if (choice == 6) {
+      unique_ptr<Model> m(new Model(view));
+      m->showCredits();
+      continue;
+    }
+    if (choice == 7)
       exit(0);
     unique_ptr<Model> model;
     string ex;

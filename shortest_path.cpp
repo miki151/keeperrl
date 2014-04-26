@@ -28,15 +28,13 @@ int counter = 1;
 
 const int margin = 15;
 
-ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to, Vec2 from, double mult,
-    bool avoidEnemies) : target(to), directions(Vec2::directions8()), bounds(level->getBounds()) {
+ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to, Vec2 from, double mult)
+    : target(to), directions(Vec2::directions8()), bounds(level->getBounds()) {
   CHECK(level->getBounds().getKX() <= maxSize && level->getBounds().getKY() <= maxSize);
   auto entryFun = [=](Vec2 pos) { 
       if (level->getSquare(pos)->canEnter(creature) || creature->getPosition() == pos) 
         return 1.0;
-      if ((level->getSquare(pos)->canEnterEmpty(creature) || level->getSquare(pos)->canDestroy(creature))
-          && (!avoidEnemies || !level->getSquare(pos)->getCreature() 
-              || !level->getSquare(pos)->getCreature()->isEnemy(creature)))
+      if ((level->getSquare(pos)->canEnterEmpty(creature) || level->getSquare(pos)->canDestroy(creature)))
         return 5.0;
       return infinity;};
   CHECK(to.inRectangle(level->getBounds()));

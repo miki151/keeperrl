@@ -27,6 +27,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   virtual ~Creature();
 
   static Creature* getDefault();
+  static Creature* getDefaultMinion();
+  static Creature* getDefaultMinionFlyer();
   static void noExperienceLevels();
   static void initialize();
 
@@ -237,6 +239,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   template <class Archive>
   static void serializeAll(Archive& ar) {
     ar & defaultCreature;
+    ar & defaultFlyer;
+    ar & defaultMinion;
   }
 
   enum LastingEffect {
@@ -253,6 +257,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void onTimedOut(Creature::LastingEffect effect, bool msg);
   string getRemainingString(LastingEffect effect) const;
   static PCreature defaultCreature;
+  static PCreature defaultFlyer;
+  static PCreature defaultMinion;
   Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool stepOnTile);
   double getInventoryWeight() const;
   Item* getAmmo() const;
@@ -310,6 +316,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   mutable double SERIAL2(difficultyPoints, 0);
   int SERIAL2(points, 0);
   Sectors* SERIAL2(sectors, nullptr);
+  int SERIAL2(numAttacksThisTurn, 0);
 };
 
 struct SpellInfo {

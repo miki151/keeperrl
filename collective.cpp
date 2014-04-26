@@ -55,7 +55,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(alarmInfo)
     & SVAR(prisonerInfo)
     & SVAR(executions)
-    & SVAR(sectors); 
+    & SVAR(flyingSectors)
+    & SVAR(sectors);
   CHECK_SERIAL;
 }
 
@@ -137,8 +138,8 @@ Collective::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const string& 
 
 const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo(BuildInfo::DIG, "", 'd'),
-    BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Storage", true}, Nothing(), ""),
-    BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, Nothing(), "", 'c'),
+    BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Storage", true}, Nothing(), "", 's'),
+    BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, Nothing(), ""),
     BuildInfo({SquareType::BED, {ResourceId::WOOD, 10}, "Bed"}, Nothing(), "", 'b'),
     BuildInfo({SquareType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
     BuildInfo({SquareType::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
@@ -155,7 +156,8 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
 };
 
 const vector<Collective::BuildInfo> Collective::workshopInfo {
-    BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING, "", 'o'),
+    BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
+        "Click on a built door to lock it.", 'o'),
     BuildInfo({SquareType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, ""),
     BuildInfo({SquareType::TORCH, {ResourceId::WOOD, 1}, "Torch"}, TechId::CRAFTING, ""),
     BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS,
@@ -264,7 +266,7 @@ map<MinionTask, MinionTaskInfo> taskInfo {
 };
 
 Collective::Collective(Model* m, Level* l, Tribe* t) : level(l), mana(200), model(m), tribe(t),
-    sectors(new Sectors(l->getBounds())) {
+    sectors(new Sectors(l->getBounds())), flyingSectors(new Sectors(l->getBounds())) {
   bool hotkeys[128] = {0};
   for (BuildInfo info : concat(buildInfo, workshopInfo)) {
     if (info.hotkey) {
@@ -296,8 +298,10 @@ Collective::Collective(Model* m, Level* l, Tribe* t) : level(l), mana(200), mode
   for (MinionType t : minionTypes)
     minionByType[t].clear();
   for (Vec2 v : l->getBounds()) {
-    if (l->getSquare(v)->canEnterEmpty(Creature::getDefault()))
+    if (l->getSquare(v)->canEnterEmpty(Creature::getDefaultMinion()))
       sectors->add(v);
+    if (l->getSquare(v)->canEnterEmpty(Creature::getDefaultMinionFlyer()))
+      flyingSectors->add(v);
     if (contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
       getMemory(l).addObject(v, l->getSquare(v)->getViewObject());
   }
@@ -440,14 +444,12 @@ void Collective::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vecto
     default:
       mOpt = {MinionOption::POSSESS, MinionOption::EQUIPMENT, MinionOption::INFO };
       lOpt = {"Possess", "Equipment", "Description" };
-      if (c != keeper) {
-        lOpt.emplace_back("Order task:", View::TITLE);
-        for (auto elem : taskOptions)
-          if (minionTasks.at(c->getUniqueId()).containsState(elem.task)) {
-            lOpt.push_back(elem.description);
-            mOpt.push_back(elem.option);
-          }
-      }
+      lOpt.emplace_back("Order task:", View::TITLE);
+      for (auto elem : taskOptions)
+        if (minionTasks.at(c->getUniqueId()).containsState(elem.task)) {
+          lOpt.push_back(elem.description);
+          mOpt.push_back(elem.option);
+        }
       if (c->isAffected(Creature::SLEEP)) {
         mOpt.push_back(MinionOption::WAKE_UP);
         lOpt.push_back("Wake up");
@@ -1054,13 +1056,13 @@ vector<Collective::TechInfo> Collective::getTechInfo() const {
   vector<TechInfo> ret;
   ret.push_back({{ViewId::BILE_DEMON, "Humanoids", 'h'},
       [this](View* view) { handleHumanoidBreeding(view); }});
-  ret.push_back({{ViewId::BEAR, "Beasts", 's'},
+  ret.push_back({{ViewId::BEAR, "Beasts", 'n'},
       [this](View* view) { handleBeastTaming(view); }}); 
   if (hasTech(TechId::GOLEM))
     ret.push_back({{ViewId::IRON_GOLEM, "Golems", 'm'},
       [this](View* view) { handleMatterAnimation(view); }});      
   if (hasTech(TechId::NECRO))
-    ret.push_back({{ViewId::VAMPIRE, "Necromancy", 'n'},
+    ret.push_back({{ViewId::VAMPIRE, "Necromancy", 'c'},
       [this](View* view) { handleNecromancy(view); }});
   ret.push_back({{ViewId::MANA, "Sorcery"}, [this](View* view) {handlePersonalSpells(view);}});
   ret.push_back({{ViewId::EMPTY, ""}, [](View*) {}});
@@ -1177,7 +1179,7 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
   if (Creature* c = level->getSquare(pos)->getCreature())
     if (contains(team, c) && gatheringTeam)
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::TEAM_HIGHLIGHT);
-  if (taskMap.isMarked(pos))
+  if (taskMap.getMarked(pos))
     index.addHighlight(HighlightType::BUILD);
   else if (rectSelectCorner && rectSelectCorner2
       && pos.inRectangle(Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2})))
@@ -1269,8 +1271,11 @@ void Collective::TaskMap::clearAllLocked() {
   lockedTasks.clear();
 }
 
-bool Collective::TaskMap::isMarked(Vec2 pos) const {
-  return marked.count(pos);
+Task* Collective::TaskMap::getMarked(Vec2 pos) const {
+  if (marked.count(pos))
+    return marked.at(pos);
+  else
+    return nullptr;
 }
 
 void Collective::TaskMap::markSquare(Vec2 pos, PTask task) {
@@ -1532,11 +1537,11 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         break;
     case BuildInfo::DIG:
         if (!tryLockingDoor(pos)) {
-          if (taskMap.isMarked(pos) && selection != SELECT) {
+          if (taskMap.getMarked(pos) && selection != SELECT) {
             taskMap.unmarkSquare(pos);
             selection = DESELECT;
           } else
-            if (!taskMap.isMarked(pos) && selection != DESELECT) {
+            if (!taskMap.getMarked(pos) && selection != DESELECT) {
               if (level->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
                 taskMap.markSquare(pos, Task::construction(this, pos, SquareType::TREE_TRUNK));
                 selection = SELECT;
@@ -1589,15 +1594,18 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
 }
 
 bool Collective::tryLockingDoor(Vec2 pos) {
-  return false;
   if (constructions.count(pos)) {
     Square* square = level->getSquare(pos);
     if (square->canLock()) {
       if (selection != DESELECT && !square->isLocked()) {
         square->lock();
+        sectors->remove(pos);
+        flyingSectors->remove(pos);
         selection = SELECT;
       } else if (selection != SELECT && square->isLocked()) {
         square->lock();
+        sectors->add(pos);
+        flyingSectors->add(pos);
         selection = DESELECT;
       }
       return true;
@@ -1613,6 +1621,9 @@ void Collective::addKnownTile(Vec2 pos) {
     for (Vec2 v : pos.neighbors4())
       if (level->inBounds(v) && !knownTiles[v])
         borderTiles.insert(v);
+    if (Task* task = taskMap.getMarked(pos))
+      if (task->isImpossible(level))
+        taskMap.removeTask(task);
   }
 }
 
@@ -1623,17 +1634,21 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   mySquares[type].insert(pos);
   if (contains({SquareType::FLOOR, SquareType::BRIDGE}, type))
     taskMap.clearAllLocked();
-  if (taskMap.isMarked(pos))
+  if (taskMap.getMarked(pos))
     taskMap.unmarkSquare(pos);
   if (constructions.count(pos)) {
     constructions.at(pos).built = true;
     constructions.at(pos).marked = 0;
     constructions.at(pos).task = -1;
   }
-  if (level->getSquare(pos)->canEnterEmpty(keeper))
+  if (level->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinion()))
     sectors->add(pos);
   else
     sectors->remove(pos);
+  if (level->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinionFlyer()))
+    flyingSectors->add(pos);
+  else
+    flyingSectors->remove(pos);
 }
 
 void Collective::onPickedUp(Vec2 pos, EntitySet items) {
@@ -1862,8 +1877,6 @@ void Collective::tick() {
       if (c->getTribe() != tribe)
         enemyPos.push_back(c->getPosition());
     }
- /*   if (taskMap.isMarked(pos) && marked.at(pos)->isImpossible(level) && !taken.count(marked.at(pos)))
-      removeTask(marked.at(pos));*/
     for (Vec2 v : pos.neighbors8())
       if (v.inRectangle(level->getBounds()) && !myTiles.count(v) && !extendedTiles.count(v) 
           && level->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
@@ -2320,6 +2333,7 @@ MarkovChain<MinionTask> Collective::getTasksForMinion(Creature* c) {
   switch (getMinionType(c)) {
     case MinionType::KEEPER:
       return MarkovChain<MinionTask>(MinionTask::STUDY, {
+          {MinionTask::LABORATORY, {}},
           {MinionTask::STUDY, {}},
           {MinionTask::SLEEP, {{ MinionTask::STUDY, 1}}}});
     case MinionType::PRISONER:
@@ -2379,7 +2393,10 @@ void Collective::addCreature(Creature* c, MinionType type) {
           if (v.inRectangle(level->getBounds()))
             addKnownTile(v);
   }
-  c->addSectors(sectors.get());
+  if (!c->canFly())
+    c->addSectors(sectors.get());
+  else
+    c->addSectors(flyingSectors.get());
   creatures.push_back(c);
   minionByType[type].push_back(c);
   if (!contains({MinionType::IMP}, type))
@@ -2406,6 +2423,7 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
       info.task = -1;
     }
     sectors->add(pos);
+    flyingSectors->add(pos);
   }
 }
 

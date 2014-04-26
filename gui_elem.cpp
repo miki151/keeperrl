@@ -723,9 +723,11 @@ PGuiElem GuiElem::scrollable(PGuiElem content, int contentHeight, double* scroll
   PGuiElem bar(new ScrollBar(std::move(getScrollButton()), scrollButtonSize, scrollPos, contentHeight));
   PGuiElem barButtons = GuiElem::stack(makeVec<PGuiElem>(std::move(getScrollbar()),
     GuiElem::margin(GuiElem::empty(),
-      GuiElem::button([scrollPos, scrollJump](){*scrollPos += scrollJump; }), scrollbarWidth, TOP),
+      GuiElem::button([scrollPos, scrollJump](){*scrollPos = min(1.0, *scrollPos + scrollJump); }),
+      scrollbarWidth, TOP),
     GuiElem::margin(GuiElem::empty(),
-      GuiElem::button([scrollPos, scrollJump](){*scrollPos -= scrollJump; }), scrollbarWidth, BOTTOM)));
+      GuiElem::button([scrollPos, scrollJump](){*scrollPos = max(0.0, *scrollPos - scrollJump); }),
+      scrollbarWidth, BOTTOM)));
   int hMargin = 30;
   int vMargin = 15;
   barButtons = conditional(std::move(barButtons), [=] (GuiElem* e) {

@@ -68,16 +68,21 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(kills)
     & SVAR(difficultyPoints)
     & SVAR(points)
-    & SVAR(sectors);
+    & SVAR(sectors)
+    & SVAR(numAttacksThisTurn);
   CHECK_SERIAL;
 }
 
 SERIALIZABLE(Creature);
 
 PCreature Creature::defaultCreature;
+PCreature Creature::defaultFlyer;
+PCreature Creature::defaultMinion;
 
 void Creature::initialize() {
   defaultCreature.reset();
+  defaultFlyer.reset();
+  defaultMinion.reset();
 }
 
 Creature* Creature::getDefault() {
@@ -85,6 +90,20 @@ Creature* Creature::getDefault() {
     defaultCreature = CreatureFactory::fromId(CreatureId::GNOME, Tribes::get(TribeId::MONSTER),
         MonsterAIFactory::idle());
   return defaultCreature.get();
+}
+
+Creature* Creature::getDefaultMinion() {
+  if (!defaultMinion)
+    defaultMinion = CreatureFactory::fromId(CreatureId::GNOME, Tribes::get(TribeId::KEEPER),
+        MonsterAIFactory::idle());
+  return defaultMinion.get();
+}
+
+Creature* Creature::getDefaultMinionFlyer() {
+  if (!defaultFlyer)
+    defaultFlyer = CreatureFactory::fromId(CreatureId::RAVEN, Tribes::get(TribeId::KEEPER),
+        MonsterAIFactory::idle());
+  return defaultFlyer.get();
 }
 
 bool increaseExperience = true;
@@ -287,6 +306,7 @@ void Creature::swapPosition(Vec2 direction) {
 }
 
 void Creature::makeMove() {
+  numAttacksThisTurn = 0;
   CHECK(!isDead());
   if (holding && holding->isDead())
     holding = nullptr;
@@ -747,6 +767,11 @@ int strPenNoArm = 2;
 int strPenNoLeg = 5;
 int strPenNoWing = 2;
 
+// penalty to strength and dexterity per extra attacker in a single turn
+int simulAttackPen(int attackers) {
+  return max(0, (attackers - 1) * 2);
+}
+
 int Creature::getAttr(AttrType type) const {
   int def = getAttrVal(type);
   for (Item* item : equipment.getItems())
@@ -764,6 +789,7 @@ int Creature::getAttr(AttrType type) const {
         def -= (injuredArms + lostArms) * strPenNoArm + 
                (injuredLegs + lostLegs) * strPenNoLeg +
                (injuredWings + lostWings) * strPenNoWing;
+        def -= simulAttackPen(numAttacksThisTurn);
         break;
     case AttrType::DEXTERITY:
         def += tribe->getHandicap();
@@ -776,6 +802,7 @@ int Creature::getAttr(AttrType type) const {
         def -= (injuredArms + lostArms) * dexPenNoArm + 
                (injuredLegs + lostLegs) * dexPenNoLeg +
                (injuredWings + lostWings) * dexPenNoWing;
+        def -= simulAttackPen(numAttacksThisTurn);
         break;
     case AttrType::THROWN_DAMAGE: 
         def += getAttr(AttrType::DEXTERITY);
@@ -1088,8 +1115,8 @@ void Creature::attack(const Creature* c1, bool spend) {
   int damage = getAttr(AttrType::DAMAGE);
   int toHitVariance = toHit / 3;
   int damageVariance = damage / 3;
-  auto rToHit = [=] () { return Random.getRandom(GET_ID(getUniqueId()), -toHitVariance, toHitVariance); };
-  auto rDamage = [=] () { return Random.getRandom(GET_ID(getUniqueId()), -damageVariance, damageVariance); };
+  auto rToHit = [=] () { return Random.getRandom(-toHitVariance, toHitVariance); };
+  auto rDamage = [=] () { return Random.getRandom(-damageVariance, damageVariance); };
   toHit += rToHit() + rToHit();
   damage += rDamage() + rDamage();
   bool backstab = false;
@@ -1124,6 +1151,7 @@ void Creature::attack(const Creature* c1, bool spend) {
 }
 
 bool Creature::dodgeAttack(const Attack& attack) {
+  ++numAttacksThisTurn;
   Debug() << getTheName() << " dodging " << attack.getAttacker()->getName() << " to hit " << attack.getToHit() << " dodge " << getAttr(AttrType::TO_HIT);
   if (const Creature* c = attack.getAttacker()) {
     if (!canSee(c))
@@ -1654,9 +1682,9 @@ void Creature::throwItem(Item* item, Vec2 direction) {
     dist = 2 * str / 15;
   else 
     FAIL << "Item too heavy.";
-  int toHit = Random.getRandom(GET_ID(getUniqueId()), -toHitVariance, toHitVariance) +
+  int toHit = Random.getRandom(-toHitVariance, toHitVariance) +
       getAttr(AttrType::THROWN_TO_HIT) + item->getModifier(AttrType::THROWN_TO_HIT);
-  int damage = Random.getRandom(GET_ID(getUniqueId()), -attackVariance, attackVariance) +
+  int damage = Random.getRandom(-attackVariance, attackVariance) +
       getAttr(AttrType::THROWN_DAMAGE) + item->getModifier(AttrType::THROWN_DAMAGE);
   if (hasSkill(Skill::get(SkillId::KNIFE_THROWING)) && item->getAttackType() == AttackType::STAB) {
     damage += 7;
@@ -1670,10 +1698,6 @@ void Creature::throwItem(Item* item, Vec2 direction) {
 const ViewObject& Creature::getViewObject() const {
   return viewObject;
 }
-
-/*void Creature::setViewObject(const ViewObject& obj) {
-  viewObject = obj;
-}*/
 
 bool Creature::canSee(const Creature* c) const {
   for (Vision* v : visions)

@@ -21,8 +21,7 @@ void Player::serialize(Archive& ar, const unsigned int version) {
     & SVAR(specialCreatures)
     & SVAR(displayGreeting)
     & SVAR(levelMemory)
-    & SVAR(model)
-    & SVAR(displayTravelInfo);
+    & SVAR(model);
   CHECK_SERIAL;
 }
 
@@ -570,6 +569,8 @@ void Player::sleeping() {
       model->getView()->refreshView(creature),
       "level render time");
 }
+
+static bool displayTravelInfo = true;
 
 void Player::makeMove() {
   vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();

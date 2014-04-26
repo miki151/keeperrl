@@ -71,7 +71,6 @@ class Player : public Controller, public EventListener {
   bool SERIAL(displayGreeting);
   map<Level*, MapMemory>* SERIAL(levelMemory);
   Model* SERIAL(model);
-  bool SERIAL2(displayTravelInfo, true);
 };
 
 #endif

@@ -62,6 +62,7 @@ class Model : public EventListener {
   void killedKeeper(const string& title, const string& keeper, const string& land,
     vector<const Creature*> kills, int points);
   void showHighscore(bool highlightLast = false);
+  void showCredits();
   void retireCollective();
 
   SERIALIZATION_DECL(Model);

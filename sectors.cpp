@@ -36,6 +36,8 @@ void Sectors::add(Vec2 pos) {
         largest = elem;
     join(pos, largest);
   }
+  Debug() << "Sectors " << vector<int>(neighbors.begin(), neighbors.end())
+    << " joined " << sectors[pos] << " size " << sizes[sectors[pos]];
 }
 
 void Sectors::setSector(Vec2 pos, int sector) {
@@ -61,12 +63,26 @@ void Sectors::join(Vec2 pos, int sector) {
 void Sectors::remove(Vec2 pos) {
   if (sectors[pos] == -1)
     return;
+  int curNumber = sizes[sectors[pos]];
   --sizes[sectors[pos]];
   sectors[pos] = -1;
   int maxSector = sizes.size() - 1;
+  vector<int> newSizes;
   for (Vec2 v : pos.neighbors8())
     if (v.inRectangle(bounds) && sectors[v] > -1 && sectors[v] <= maxSector) {
       join(v, getNewSector());
+      newSizes.push_back(sizes[sectors[v]]);
     }
+  Debug() << "Sectors size " << curNumber << " split into " << newSizes;
 }
 
+using namespace std;
+
+void Sectors::dump() {
+  for (int i : Range(bounds.getH())) {
+    for (int j : Range(bounds.getW()))
+      cout << sectors[j][i] << " ";
+    cout << endl;
+  }
+  cout << endl;
+}

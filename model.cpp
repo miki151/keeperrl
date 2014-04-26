@@ -303,8 +303,8 @@ PCreature Model::makePlayer() {
 }
 
 void Model::exitAction() {
-  enum Action { SAVE, RETIRE, ABANDON, CANCEL };
-  vector<View::ListElem> options { "Save the game", "Retire", "Abandon the game", "Cancel" };
+  enum Action { SAVE, RETIRE, ABANDON, OPTIONS, CANCEL };
+  vector<View::ListElem> options { "Save the game", "Retire", "Abandon the game", "Change options", "Cancel" };
   auto ind = view->chooseFromList("Would you like to:", options);
   if (!ind)
     return;
@@ -328,6 +328,7 @@ void Model::exitAction() {
       else
         throw SaveGameException(GameType::KEEPER);
     case ABANDON: throw GameOverException();
+    case OPTIONS: Options::handle(view, OptionSet::GENERAL); break;
     default: break;
   }
 }
@@ -577,6 +578,23 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
   if (view->yesOrNoPrompt("Would you like to see the last messages?"))
     messageBuffer.showHistory();
   throw GameOverException();
+}
+
+void Model::showCredits() {
+  ifstream in("credits.txt");
+  vector<View::ListElem> lines;
+  while (1) {
+    char buf[100];
+    in.getline(buf, 100);
+    if (!in)
+      break;
+    string s(buf);
+    if (s.back() == ':')
+      lines.emplace_back(s, View::TITLE);
+    else
+      lines.emplace_back(s, View::NORMAL);
+  }
+  view->presentList("Credits", lines);
 }
 
 void Model::showHighscore(bool highlightLast) {

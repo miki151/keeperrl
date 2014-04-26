@@ -10,6 +10,7 @@ class Sectors {
   bool same(Vec2, Vec2) const;
   void add(Vec2);
   void remove(Vec2);
+  void dump();
 
   SERIALIZATION_DECL(Sectors);
 
