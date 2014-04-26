@@ -1696,6 +1696,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.wings = 2;
           c.animal = true;
           c.flyer = true;
+          c.skills.insert(Skill::get(SkillId::ELF_VISION));
           c.name = "raven";);
     case CreatureId::VULTURE: 
       return CATTR(

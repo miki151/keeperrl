@@ -1128,8 +1128,8 @@ void Creature::attack(const Creature* c1, bool spend) {
   Debug() << getTheName() << " attacking " << c->getName();
   int toHit =  getAttr(AttrType::TO_HIT);
   int damage = getAttr(AttrType::DAMAGE);
-  int toHitVariance = toHit / 3;
-  int damageVariance = damage / 3;
+  int toHitVariance = 1 + toHit / 3;
+  int damageVariance = 1 + damage / 3;
   auto rToHit = [=] () { return Random.getRandom(-toHitVariance, toHitVariance); };
   auto rDamage = [=] () { return Random.getRandom(-damageVariance, damageVariance); };
   toHit += rToHit() + rToHit();

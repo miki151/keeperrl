@@ -105,7 +105,7 @@ void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Wind
   double scale = min(double(bounds.getW()) / level->getBounds().getW(),
       double(bounds.getH()) / level->getBounds().getH());
   while (1) {
-    update(level, level->getBounds(), Rectangle(bounds.getW(), bounds.getH()), creature);
+    update(level, level->getBounds(), Rectangle(bounds.getW(), bounds.getH()), creature, true);
     r.drawSprite(
       bounds.getTopLeft(), Vec2(0, 0), Vec2(bounds.getW(), bounds.getH()), renderer.getTexture());
     r.drawAndClearBuffer();
