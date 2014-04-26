@@ -2093,6 +2093,7 @@ vector<string> Creature::getAdjectives() const {
     ret.push_back("two lost wings");
   for (LastingEffect effect : getKeys(lastingEffects))
     if (isAffected(effect)) {
+      bool addCount = true;
       switch (effect) {
         case POISON: ret.push_back("poisoned"); break;
         case SLEEP: ret.push_back("sleeping"); break;
@@ -2105,9 +2106,10 @@ vector<string> Creature::getAdjectives() const {
         case DEX_BONUS: ret.push_back("dexterity bonus"); break;
         case SPEED: ret.push_back("speed bonus"); break;
         case SLOWED: ret.push_back("slowed"); break;
-        default: break;
+        default: addCount = false; break;
       }
-      ret.back() += "  " + getRemainingString(effect);
+      if (addCount)
+        ret.back() += "  " + getRemainingString(effect);
     }
   if (isBlind())
     ret.push_back("blind" + isAffected(BLIND) ? (" " + getRemainingString(BLIND)) : "");

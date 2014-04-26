@@ -188,11 +188,12 @@ static void wordOfPower(Creature* c, EffectStrength strength) {
   }
 }
 
-static void emitPoisonGas(Level* level, Vec2 pos, EffectStrength strength) {
+static void emitPoisonGas(Level* level, Vec2 pos, EffectStrength strength, bool msg) {
   for (Vec2 v : pos.neighbors8())
     level->getSquare(v)->addPoisonGas(gasAmount.at(strength) / 2);
   level->getSquare(pos)->addPoisonGas(gasAmount.at(strength));
-  level->globalMessage(pos, "A cloud of gas is released", "You hear a hissing sound");
+  if (msg)
+    level->globalMessage(pos, "A cloud of gas is released", "You hear a hissing sound");
 }
 
 static void guardingBuilder(Creature* c) {
@@ -408,13 +409,13 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::TELEPORT: teleport(c); break;
     case EffectType::ROLLING_BOULDER: rollingBoulder(c); break;
     case EffectType::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.getRandom(2, 5), 100); break;
-    default: applyToPosition(c->getLevel(), c->getPosition(), type, strength);
+    case EffectType::EMIT_POISON_GAS: emitPoisonGas(c->getLevel(), c->getPosition(), strength, true); break;
   }
 }
 
 void Effect::applyToPosition(Level* level, Vec2 pos, EffectType type, EffectStrength strength) {
   switch (type) {
-    case EffectType::EMIT_POISON_GAS: emitPoisonGas(level, pos, strength); break;
+    case EffectType::EMIT_POISON_GAS: emitPoisonGas(level, pos, strength, false); break;
     default: FAIL << "Can't apply to position " << int(type);
   }
 }

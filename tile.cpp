@@ -221,7 +221,7 @@ Tile getSprite(ViewId id) {
     case ViewId::MAGMA: return getWaterTile(11);
     case ViewId::ABYSS: return Tile('~', darkGray);
     case ViewId::DOOR: return Tile(4, 2, 2, true);
-    case ViewId::BARRICADE: return Tile(13, 10, 2);
+    case ViewId::BARRICADE: return Tile(13, 10, 2, true);
     case ViewId::DIG_ICON: return Tile(8, 10, 2);
     case ViewId::SWORD: return Tile(12, 9, 3);
     case ViewId::SPEAR: return Tile(5, 8, 3);
