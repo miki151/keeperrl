@@ -681,16 +681,20 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info) {
 
 PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo& villageInfo) {
   vector<PGuiElem> buttons = makeVec<PGuiElem>(
-    GuiElem::label(L'⌂', collectiveOption == CollectiveOption::BUILDINGS ? green : white, 35, Renderer::SYMBOL_FONT),
-    GuiElem::label(0x1f718, collectiveOption == CollectiveOption::MINIONS ? green : white, 35, Renderer::SYMBOL_FONT),
-    GuiElem::label(0x1f4d6, collectiveOption == CollectiveOption::TECHNOLOGY ? green : white, 35,
-      Renderer::SYMBOL_FONT),
-    GuiElem::label(0x2692, collectiveOption == CollectiveOption::WORKSHOP ? green : white, 35, Renderer::SYMBOL_FONT),
-    GuiElem::label(0x2694, collectiveOption == CollectiveOption::VILLAGES ? green : white, 35, Renderer::SYMBOL_FONT),
-    GuiElem::label(L'?', collectiveOption == CollectiveOption::KEY_MAPPING ? green : white, 35, Renderer::TEXT_FONT));
-  for (int i : All(buttons))
+    GuiElem::icon(GuiElem::BUILDING),
+    GuiElem::icon(GuiElem::MINION),
+    GuiElem::icon(GuiElem::LIBRARY),
+    GuiElem::icon(GuiElem::WORKSHOP),
+    GuiElem::icon(GuiElem::DIPLOMACY),
+    GuiElem::icon(GuiElem::HELP));
+  for (int i : All(buttons)) {
+    if (int(collectiveOption) == i)
+      buttons[i] = GuiElem::border2(std::move(buttons[i]));
+    else
+      buttons[i] = GuiElem::margins(std::move(buttons[i]), 6, 6, 6, 6);
     buttons[i] = GuiElem::stack(std::move(buttons[i]),
         GuiElem::button([this, i]() { collectiveOption = CollectiveOption(i); }));
+  }
   if (collectiveOption != CollectiveOption::MINIONS)
     chosenCreature = "";
   PGuiElem main;
@@ -708,8 +712,9 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
     else
       invisible.push_back(GuiElem::invisible(std::move(elem.second)));
   main = GuiElem::border2(GuiElem::margins(std::move(main), 15, 15, 15, 5));
+  PGuiElem butGui = GuiElem::margins(GuiElem::horizontalList(std::move(buttons), 50, 0), 0, 0, 0, 5);
   return GuiElem::stack(GuiElem::stack(std::move(invisible)),
-      GuiElem::margin(GuiElem::horizontalList(std::move(buttons), 40, 7), std::move(main), 60, GuiElem::TOP));
+      GuiElem::margin(std::move(butGui), std::move(main), 55, GuiElem::TOP));
 }
 
 const int minionWindowRightMargin = 20;
@@ -735,7 +740,7 @@ void WindowView::rebuildGui() {
   mapGui->setBounds(getMapViewBounds());
   tempGuiElems.clear();
   tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2), 
-        GuiElem::margins(std::move(right), 20, 20, 20, 20)));
+        GuiElem::margins(std::move(right), 20, 20, 10, 20)));
   tempGuiElems.back()->setBounds(Rectangle(
         renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight()));
   tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2),

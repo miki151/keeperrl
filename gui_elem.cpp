@@ -131,6 +131,9 @@ PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, 
             case Alignment::BOTTOM_LEFT:
               pos = bounds.getBottomLeft() - Vec2(0, size.y);
               break;
+            case Alignment::CENTER:
+              pos = bounds.middle() - Vec2(size.x / 2, size.y / 2);
+              break;
           }
           if (vFlip) {
             size = Vec2(size.x, -size.y);
@@ -654,6 +657,7 @@ static Texture border2Top;
 static Texture border2Right;
 static Texture border2Bottom;
 static Texture border2Left;
+static Texture icons[6];
 const int border2Width = 6;
 
 const int scrollButtonSize = 16;
@@ -661,6 +665,7 @@ const int scrollbarWidth = 22;
 const int borderWidth = 8;
 const int borderHeight = 11;
 const int backgroundSize = 128;
+const int iconWidth = 42;
 
 Color GuiElem::background1;
 Color GuiElem::background2;
@@ -691,6 +696,8 @@ void GuiElem::initialize(const string& texturePath) {
     border2Right.loadFromFile("frame.png", sf::IntRect(166 + 1 + border2Width, border2Width, border2Width, 1));
     border2Bottom.loadFromFile("frame.png", sf::IntRect(166 + border2Width, border2Width + 1, 1, border2Width));
     border2Left.loadFromFile("frame.png", sf::IntRect(166, border2Width, border2Width, 1));
+    for (int i = 0; i < 6; ++i)
+      icons[i].loadFromFile("icons.png", sf::IntRect(0, i * iconWidth, iconWidth, iconWidth));
     backgroundPattern.loadFromFile("tekstuur_1.png");
     borderLeft.setRepeated(true);
     borderTop.setRepeated(true);
@@ -829,3 +836,6 @@ PGuiElem GuiElem::window(PGuiElem content) {
         margins(std::move(content), borderWidth, borderHeight, borderWidth, borderHeight))))));
 }
 
+PGuiElem GuiElem::icon(IconId id) {
+  return sprite(icons[int(id)], Alignment::CENTER);
+}

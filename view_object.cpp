@@ -29,6 +29,7 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
     & SVAR(modifiers)
     & SVAR(attack)
     & SVAR(defense)
+    & SVAR(level)
     & SVAR(waterDepth);
   CHECK_SERIAL;
 }

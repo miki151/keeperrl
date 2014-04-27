@@ -66,7 +66,7 @@ class GuiElem {
   static PGuiElem scrollable(PGuiElem content, int contentHeight, double* scrollPos, double scrollJump);
   static PGuiElem getScrollButton();
   static PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
-  enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT};
+  enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER};
   static PGuiElem sprite(Texture& tex, Alignment align, bool vFlip = false, bool hFlip = false, int cornerOffset = 0,
       double alpha = 1);
   static PGuiElem repeatedPattern(Texture& tex);
@@ -85,6 +85,17 @@ class GuiElem {
   static Color text;
   static Color titleText;
   static Color inactiveText;
+
+  enum IconId {
+    BUILDING = 5,
+    MINION = 4,
+    LIBRARY = 1,
+    WORKSHOP = 0,
+    DIPLOMACY = 2,
+    HELP = 3,
+  };
+
+  static PGuiElem icon(IconId);
 };
 
 #endif
