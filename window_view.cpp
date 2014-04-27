@@ -1034,6 +1034,7 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
 
 bool WindowView::yesOrNoPrompt(const string& message) {
   TempClockPause pause;
+  OnExit onExit([&]() { renderer.flushAllEvents(); });
   do {
     showMessage(message + " (y/n)");
     refreshScreen();

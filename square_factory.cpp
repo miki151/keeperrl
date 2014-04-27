@@ -924,6 +924,12 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::PRISON:
         return new DestroyableSquare(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"),
             "floor", VisionInfo::NORMAL);
+    case SquareType::WELL:
+        return new Furniture(ViewObject(ViewId::WELL, ViewLayer::FLOOR, "Well"), 
+            "well", 0);
+    case SquareType::STATUE:
+        return new Furniture(
+            ViewObject(chooseRandom({ViewId::STATUE1, ViewId::STATUE2}), ViewLayer::FLOOR, "Statue"), "statue", 0);
     case SquareType::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
             "torture table", 0.3, SquareApplyType::TORTURE);

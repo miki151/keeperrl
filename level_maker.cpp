@@ -1621,6 +1621,9 @@ MakerQueue* castle(SettlementInfo info) {
   queue->addMaker(new Margin(insideMargin, new CastleExit(info.tribe, building, *info.guardId)));
   queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::stayInLocation(info.location),
         building.floorOutside));
+  inside->addMaker(new DungeonFeatures(new TypePredicate(SquareType::MUD), {{ SquareType::WELL, make_pair(1, 2) }}));
+  inside->addMaker(new DungeonFeatures(new TypePredicate(SquareType::FLOOR),{
+        { SquareType::FOUNTAIN, make_pair(2, 4)}}));
   return queue;
 }
 

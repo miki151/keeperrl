@@ -168,6 +168,9 @@ Tile getSprite(ViewId id) {
     case ViewId::UP_STAIRCASE_HELL: return Tile(7, 22, 1, true);
     case ViewId::DOWN_STAIRCASE_PYR: return Tile(8, 8, 1, true);
     case ViewId::UP_STAIRCASE_PYR: return Tile(7, 8, 1, true);
+    case ViewId::WELL: return Tile(5, 8, 2, true);
+    case ViewId::STATUE1: return Tile(6, 5, 2, true);
+    case ViewId::STATUE2: return Tile(7, 5, 2, true);
     case ViewId::GREAT_GOBLIN: return Tile(6, 14);
     case ViewId::GOBLIN: return Tile(5, 14);
     case ViewId::BANDIT: return Tile(0, 2);
@@ -390,6 +393,9 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::UP_STAIRCASE_HELL: return Tile(0x279a, red, true);
     case ViewId::DOWN_STAIRCASE_PYR: return Tile(0x2798, yellow, true);
     case ViewId::UP_STAIRCASE_PYR: return Tile(0x279a, yellow, true);
+    case ViewId::WELL: return Tile('0', blue);
+    case ViewId::STATUE1:
+    case ViewId::STATUE2: return Tile('&', lightGray);
     case ViewId::GREAT_GOBLIN: return Tile('O', purple);
     case ViewId::GOBLIN: return Tile('o', darkBlue);
     case ViewId::BANDIT: return Tile('@', darkBlue);

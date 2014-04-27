@@ -875,7 +875,7 @@ void Collective::handleSpawning(View* view, SquareType spawnSquare, const string
     PCreature& creature = creatures[*index].first;
     mana -= creatures[*index].second;
     for (Vec2 v : concat({pos}, pos.neighbors8(true)))
-      if (level->getSquare(v)->canEnter(creature.get())) {
+      if (level->inBounds(v) && level->getSquare(v)->canEnter(creature.get())) {
         addCreature(std::move(creature), v, minionType);
         break;
       }
@@ -932,7 +932,7 @@ void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
   PCreature& creature = creatures[*index].first;
   mana -= creatures[*index].second;
   for (Vec2 v : concat({elem.first}, elem.first.neighbors8(true)))
-    if (level->getSquare(v)->canEnter(creature.get())) {
+    if (level->inBounds(v) && level->getSquare(v)->canEnter(creature.get())) {
       level->getSquare(elem.first)->removeItems({elem.second});
       addCreature(std::move(creature), v, MinionType::UNDEAD);
       break;
@@ -2467,21 +2467,22 @@ void Collective::handleSurprise(Vec2 pos) {
   bool wasMsg = false;
   Creature* c = NOTNULL(level->getSquare(pos)->getCreature());
   for (Vec2 v : randomPermutation(Rectangle(pos - rad, pos + rad).getAllSquares()))
-    if (Creature* other = level->getSquare(v)->getCreature())
-      if (contains(minions, other)
-          && !contains({MinionType::IMP, MinionType::KEEPER, MinionType::PRISONER}, getMinionType(other))
-          && v.dist8(pos) > 1) {
-        for (Vec2 dest : pos.neighbors8(true))
-          if (level->canMoveCreature(other, dest - v)) {
-            level->moveCreature(other, dest - v);
-            other->privateMessage("Surprise!");
-            if (!wasMsg) {
-              c->privateMessage("Surprise!");
-              wasMsg = true;
+    if (level->inBounds(v))
+      if (Creature* other = level->getSquare(v)->getCreature())
+        if (contains(minions, other)
+            && !contains({MinionType::IMP, MinionType::KEEPER, MinionType::PRISONER}, getMinionType(other))
+            && v.dist8(pos) > 1) {
+          for (Vec2 dest : pos.neighbors8(true))
+            if (level->canMoveCreature(other, dest - v)) {
+              level->moveCreature(other, dest - v);
+              other->privateMessage("Surprise!");
+              if (!wasMsg) {
+                c->privateMessage("Surprise!");
+                wasMsg = true;
+              }
+              break;
             }
-            break;
-          }
-      }
+        }
 }
 
 void Collective::onConqueredLand(const string& name) {

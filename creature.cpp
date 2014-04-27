@@ -560,6 +560,8 @@ void Creature::unequip(Item* item) {
 }
 
 bool Creature::canHeal(Vec2 direction) const {
+  if (!level->inBounds(position + direction))
+    return false;
   Creature* other = level->getSquare(position + direction)->getCreature();
   return healer && other && other->getHealth() < 1;
 }
@@ -573,7 +575,7 @@ void Creature::heal(Vec2 direction) {
 }
 
 bool Creature::canBumpInto(Vec2 direction) const {
-  return level->getSquare(getPosition() + direction)->getCreature();
+  return level->inBounds(position + direction) && level->getSquare(getPosition() + direction)->getCreature();
 }
 
 void Creature::bumpInto(Vec2 direction) {
@@ -1064,7 +1066,7 @@ void Creature::injureArm(bool dropArm) {
   string itemName = isPlayer() ? ("your arm") : (*name + " arm");
   if (getWeapon()) {
     you(MsgType::DROP_WEAPON, getWeapon()->getName());
-    level->getSquare(getPosition())->dropItem(equipment.removeItem(getWeapon()));
+    getSquare()->dropItem(equipment.removeItem(getWeapon()));
   }
   if (dropArm)
     getSquare()->dropItem(ItemFactory::corpse(*name + " arm", "bone", *weight / 12,
@@ -1517,7 +1519,7 @@ void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
     attacker->kills.push_back(this);
   if (dropInventory)
     for (PItem& item : equipment.removeAllItems()) {
-      level->getSquare(position)->dropItem(std::move(item));
+      getSquare()->dropItem(std::move(item));
     }
   dead = true;
   if (dropInventory && dCorpse && !noBody)
