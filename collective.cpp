@@ -642,6 +642,11 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
   handleEquipment(view, creature, index);
 }
 
+static int getItemValue(const Item* it) {
+  return it->getModifier(AttrType::TO_HIT) + it->getModifier(AttrType::DAMAGE)
+    + it->getModifier(AttrType::DEFENSE);
+}
+
 vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
   vector<Item*> allItems;
   for (Vec2 v : myTiles)
@@ -649,6 +654,13 @@ vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinio
   if (includeMinions)
     for (Creature* c : creatures)
       append(allItems, c->getEquipment().getItems(predicate));
+  sort(allItems.begin(), allItems.end(), [](const Item* it1, const Item* it2) {
+      int diff = getItemValue(it1) - getItemValue(it2);
+      if (diff == 0)
+        return it1->getUniqueId() < it2->getUniqueId();
+      else
+        return diff > 0;
+    });
   return allItems;
 }
 

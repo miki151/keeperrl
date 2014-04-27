@@ -399,8 +399,7 @@ vector<EnemyInfo> getEnemyInfo() {
          BuildingId::MUD, {}, Nothing(), ItemId::HUMANOID_MUT_BOOK, ItemFactory::mushrooms()},
       10, false, CreatureFactory::lizardAttackers()},
       {{SettlementType::VILLAGE2, CreatureFactory::elvenVillage(0.0), 7, Nothing(), getVillageLocation(),
-         Tribes::get(TribeId::ELVEN), BuildingId::WOOD, {}, Nothing(), ItemId::SPELLS_MAS_BOOK,
-         ItemFactory::villageShop()},
+         Tribes::get(TribeId::ELVEN), BuildingId::WOOD, {}, Nothing(), ItemId::SPELLS_MAS_BOOK},
       10, true, CreatureFactory::elfAttackers()},
       {{SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), Random.getRandom(2, 6), Nothing(),
          getVillageLocation(),
@@ -590,8 +589,8 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "killed by a " + killer << "," << points << std::endl;
   showHighscore(true);
-  if (view->yesOrNoPrompt("Would you like to see the last messages?"))
-    messageBuffer.showHistory();
+/*  if (view->yesOrNoPrompt("Would you like to see the last messages?"))
+    messageBuffer.showHistory();*/
   throw GameOverException();
 }
 

@@ -34,7 +34,7 @@
 (T).register_type(static_cast<A*>(nullptr))
 
 #ifndef RELEASE
-//#define SERIALIZATION_DEBUG
+#define SERIALIZATION_DEBUG
 #endif
 
 #ifdef SERIALIZATION_DEBUG

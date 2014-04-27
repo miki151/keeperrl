@@ -29,7 +29,9 @@ EventListener::~EventListener() {
 }
 
 void EventListener::initialize() {
+#ifndef RELEASE // for some reason this sometimes fails on windows
   CHECK(listeners.empty());
+#endif
 }
 
 void EventListener::addPickupEvent(const Creature* c, const vector<Item*>& items) {

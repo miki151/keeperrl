@@ -114,9 +114,9 @@ class TempClockPause {
   bool cont = false;
 };
 
-
-int rightBarWidth = 330;
-int rightBarText = rightBarWidth - 30;
+int rightBarWidthCollective = 330;
+int rightBarWidthPlayer = 220;
+int rightBarWidth = rightBarWidthCollective;
 int bottomBarHeight = 75;
 
 WindowRenderer renderer;
@@ -201,6 +201,7 @@ void WindowView::reset() {
   mapLayout = &currentTileLayout.normalLayout;
   center = {0, 0};
   gameReady = false;
+  clearMessageBox();
 }
 
 static vector<Vec2> splashPositions;
@@ -297,8 +298,6 @@ void WindowView::displaySplash(View::SplashType type, bool& ready) {
 void WindowView::resize(int width, int height, vector<GuiElem*> gui) {
   renderer.resize(width, height);
   refreshScreen(false);
-  mapDecoration->setBounds(getMapViewBounds().minusMargin(-6));
-  mapGui->setBounds(getMapViewBounds());
   if (gameReady) {
     rebuildGui();
   }
@@ -368,7 +367,8 @@ PGuiElem WindowView::drawBottomPlayerInfo(GameInfo::PlayerInfo& info) {
 }
 
 PGuiElem WindowView::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
-  vector<PGuiElem> buttons = makeVec<PGuiElem>(
+  return drawPlayerStats(info);
+/*  vector<PGuiElem> buttons = makeVec<PGuiElem>(
     GuiElem::label(0x1f718, legendOption == LegendOption::STATS ? green : white, 35, Renderer::SYMBOL_FONT),
     GuiElem::label(L'i', legendOption == LegendOption::OBJECTS ? green : white, 35, Renderer::TEXT_FONT));
   for (int i : All(buttons))
@@ -379,7 +379,7 @@ PGuiElem WindowView::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
     case LegendOption::OBJECTS:
     case LegendOption::STATS: main = drawPlayerStats(info); break;
   }
-  return GuiElem::margin(GuiElem::horizontalList(std::move(buttons), 40, 7), std::move(main), 80, GuiElem::TOP);
+  return GuiElem::margin(GuiElem::horizontalList(std::move(buttons), 40, 7), std::move(main), 80, GuiElem::TOP);*/
 }
 
 const int legendLineHeight = 30;
@@ -456,7 +456,7 @@ static map<string, CreatureMapElem> getCreatureMap(vector<const Creature*> creat
   return creatureMap;
 }
 
-static void drawViewObject(const ViewObject& obj, int x, int y, bool sprite) {
+/*static void drawViewObject(const ViewObject& obj, int x, int y, bool sprite) {
     Tile tile = Tile::getTile(obj, sprite);
     if (tile.hasSpriteCoord()) {
       int sz = Renderer::tileSize[tile.getTexNum()];
@@ -465,7 +465,7 @@ static void drawViewObject(const ViewObject& obj, int x, int y, bool sprite) {
       renderer.drawSprite(x - sz / 2, y + of, coord.x * sz, coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()], sz * 2 / 3, sz * 2 /3);
     } else
       renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, Tile::getColor(obj), x, y, tile.text, true);
-}
+}*/
 
 PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
   map<string, CreatureMapElem> creatureMap = getCreatureMap(info.creatures);
@@ -672,9 +672,11 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info) {
   else
     bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { myClock.pause(); }),
         GuiElem::label("PAUSE", lightBlue)));
+  bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { unzoom(); }),
+        GuiElem::label("ZOOM", lightBlue)));
   bottomLine.push_back(GuiElem::label(info.warning, red));
   return GuiElem::verticalList(makeVec<PGuiElem>(GuiElem::horizontalList(std::move(topLine), topWidths, 0),
-        GuiElem::horizontalList(std::move(bottomLine), 100, 0)), 28, 0);
+        GuiElem::horizontalList(std::move(bottomLine), 85, 0)), 28, 0);
 }
 
 PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo& villageInfo) {
@@ -720,20 +722,24 @@ void WindowView::rebuildGui() {
     case GameInfo::InfoType::PLAYER:
         right = drawRightPlayerInfo(gameInfo.playerInfo);
         bottom = drawBottomPlayerInfo(gameInfo.playerInfo);
+        rightBarWidth = rightBarWidthPlayer;
         break;
     case GameInfo::InfoType::BAND:
         right = drawRightBandInfo(gameInfo.bandInfo, gameInfo.villageInfo);
         overMap = drawMinionWindow(gameInfo.bandInfo);
         bottom = drawBottomBandInfo(gameInfo.bandInfo);
+        rightBarWidth = rightBarWidthCollective;
         break;
   }
+  mapDecoration->setBounds(getMapViewBounds().minusMargin(-6));
+  mapGui->setBounds(getMapViewBounds());
   tempGuiElems.clear();
   tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2), 
         GuiElem::margins(std::move(right), 20, 20, 20, 20)));
   tempGuiElems.back()->setBounds(Rectangle(
         renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight()));
   tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2),
-        GuiElem::margins(std::move(bottom), 40, 10, 0, 0)));
+        GuiElem::margins(std::move(bottom), 10, 10, 0, 0)));
   tempGuiElems.back()->setBounds(Rectangle(
         0, renderer.getHeight() - bottomBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight()));
   if (overMap) {
@@ -924,7 +930,7 @@ void WindowView::drawMap() {
       if (auto topObject = index.getTopObject(mapLayout->getLayers()))
         objIndex.insert(std::make_pair(topObject->getDescription(), *topObject));
     }
-  int rightPos = renderer.getWidth() -rightBarText;
+/*  int rightPos = renderer.getWidth() -rightBarText;
   if (gameInfo.infoType == GameInfo::InfoType::PLAYER) {
     int cnt = 0;
     if (legendOption == LegendOption::OBJECTS) {
@@ -934,7 +940,7 @@ void WindowView::drawMap() {
         ++cnt;
       }
     }
-  }
+  }*/
   for (GuiElem* gui : getAllGuiElems())
     gui->render(renderer);
   refreshText();
@@ -1037,7 +1043,7 @@ bool WindowView::yesOrNoPrompt(const string& message) {
       switch (event.key.code) {
         case Keyboard::Y: showMessage(""); refreshScreen(); return true;
         case Keyboard::Escape:
-        case Keyboard::Space:
+ //       case Keyboard::Space:
         case Keyboard::N: showMessage(""); refreshScreen(); return false;
         default: break;
       }
@@ -1074,7 +1080,7 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
   int ySpacing = 100;
   int xSpacing = (renderer.getWidth() - windowWidth) / 2;
   return Rectangle(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
-  switch (type) {
+/*  switch (type) {
     case View::MAIN_MENU:
     case View::NORMAL_MENU:
       return Rectangle(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
@@ -1084,7 +1090,7 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
         100 + minionWindowHeight);
   }
   FAIL << "ewf";
-  return Rectangle(1, 1);
+  return Rectangle(1, 1);*/
 }
 
 Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,

@@ -786,8 +786,11 @@ void Player::you(MsgType type, const string& param) const {
 
 
 void Player::onKilled(const Creature* attacker) {
+  if (model->getView()->yesOrNoPrompt("Would you like to see the last messages?"))
+    messageBuffer.showHistory();
   if (!creature->canPopController()) {
     model->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
-  } else
+  } else {
     creature->popController();
+  }
 }

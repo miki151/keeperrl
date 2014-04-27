@@ -2145,7 +2145,7 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.spellcaster = !spells.empty();
   info.adjectives = getMainAdjectives();
   Item* weapon = getEquipment().getItem(EquipmentSlot::WEAPON);
-  info.weaponName = weapon ? weapon->getAName() : "";
+  info.weaponName = weapon ? weapon->getName() : "";
   const Location* location = getLevel()->getLocation(getPosition());
   info.levelName = location && location->hasName() 
     ? capitalFirst(location->getName()) : getLevel()->getName();
