@@ -40,3 +40,12 @@ vector<View::ListElem> View::getListElem(const vector<string>& v) {
   function<ListElem(const string&)> fun = [](const string& s) -> ListElem { return ListElem(s); };
   return transform2<ListElem>(v, fun);
 }
+
+void View::setJukebox(Jukebox* j) {
+  jukebox = j;
+}
+
+Jukebox* View::getJukebox() {
+  return NOTNULL(jukebox);
+}
+

@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
     testAll();
     return 0;
   }
-  View* view;
+  unique_ptr<View> view;
   ifstream input;
   ofstream output;
   string lognamePref = "log";
@@ -185,7 +185,7 @@ int main(int argc, char* argv[]) {
     output.open(fname);
     CHECK(output.is_open());
     Debug() << "Writing to " << fname;
-    view = View::createLoggingView(output);
+    view.reset(View::createLoggingView(output));
   } else {
     string fname = argv[1];
     Debug() << "Reading from " << fname;
@@ -193,12 +193,13 @@ int main(int argc, char* argv[]) {
     Random.init(seed);
     input.open(fname);
     CHECK(input.is_open());
-    view = View::createReplayView(input);
+    view.reset(View::createReplayView(input));
   }
   //Table<bool> splash = readSplashTable("splash.map");
   int lastIndex = 0;
   view->initialize();
-  jukebox.initialize("intro.ogg", "peaceful.ogg", "battle.ogg");
+  Jukebox jukebox("intro.ogg", "peaceful.ogg", "battle.ogg");
+  view->setJukebox(&jukebox);
   GuiElem::initialize("frame.png");
   while (1) {
     Item::identifyEverything();
@@ -217,7 +218,7 @@ int main(int argc, char* argv[]) {
         "insults.txt");
     ItemFactory::init();
     bool modelReady = false;
-    messageBuffer.initialize(view);
+    messageBuffer.initialize(view.get());
     view->reset();
     auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
         View::ListElem("Choose your role:", View::TITLE),
@@ -232,7 +233,7 @@ int main(int argc, char* argv[]) {
     if (choice == 2) {
       savedGame = chooseSaveFile({
           {GameType::RETIRED_KEEPER, "Retired keeper games:"}},
-          "No retired games found.", view);
+          "No retired games found.", view.get());
       if (!savedGame)
         continue;
     }
@@ -240,29 +241,29 @@ int main(int argc, char* argv[]) {
       savedGame = chooseSaveFile({
           {GameType::KEEPER, "Keeper games:"},
           {GameType::ADVENTURER, "Adventurer games:"}},
-          "No save files found.", view);
+          "No save files found.", view.get());
       if (!savedGame)
         continue;
     }
     if (choice == 4) {
-      Options::handle(view, OptionSet::GENERAL);
+      Options::handle(view.get(), OptionSet::GENERAL);
       continue;
     }
     if (choice == 0) {
-      if (!Options::handleOrExit(view, OptionSet::KEEPER, -1))
+      if (!Options::handleOrExit(view.get(), OptionSet::KEEPER, -1))
         continue;
     } 
     if (choice == 1) {
-      if (!Options::handleOrExit(view, OptionSet::ADVENTURER, -1))
+      if (!Options::handleOrExit(view.get(), OptionSet::ADVENTURER, -1))
         continue;
     } 
     if (choice == 5) {
-      unique_ptr<Model> m(new Model(view));
+      unique_ptr<Model> m(new Model(view.get()));
       m->showHighscore();
       continue;
     }
     if (choice == 6) {
-      unique_ptr<Model> m(new Model(view));
+      unique_ptr<Model> m(new Model(view.get()));
       m->showCredits();
       continue;
     }
@@ -277,10 +278,10 @@ int main(int argc, char* argv[]) {
             model = loadGame(*savedGame, choice == 3);
           }
           else if (choice == 1)
-            model.reset(Model::heroModel(view));
+            model.reset(Model::heroModel(view.get()));
           else {
             CHECK(choice == 0);
-            model.reset(Model::collectiveModel(view));
+            model.reset(Model::collectiveModel(view.get()));
           }
           break;
         } catch (string s) {
@@ -291,7 +292,7 @@ int main(int argc, char* argv[]) {
     });
     view->displaySplash(savedGame ? View::LOADING : View::CREATING, modelReady);
     t.join();
-    model->setView(view);
+    model->setView(view.get());
     if (genExit)
       break;
     if (!model) {

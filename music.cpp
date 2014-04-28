@@ -19,9 +19,7 @@
 
 using sf::Music;
 
-Jukebox jukebox;
-
-void Jukebox::initialize(const string& introPath, const string& peacefulPath, const string& warPath) {
+Jukebox::Jukebox(const string& introPath, const string& peacefulPath, const string& warPath) {
   music.reset(new Music[3]);
   music[0].openFromFile(introPath);
   music[1].openFromFile(peacefulPath);

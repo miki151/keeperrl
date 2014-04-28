@@ -1112,7 +1112,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
       attacking = true;
   }
   if (attacking)
-    jukebox.setCurrent(Jukebox::BATTLE);
+    model->getView()->getJukebox()->setCurrent(Jukebox::BATTLE);
   gameInfo.infoType = View::GameInfo::InfoType::BAND;
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.buildings = fillButtons(buildInfo);
@@ -1873,7 +1873,7 @@ bool Collective::isDelayed(Vec2 pos) {
 }
 
 void Collective::tick() {
-  jukebox.update();
+  model->getView()->getJukebox()->update();
   if (retired) {
     if (const Creature* c = level->getPlayer())
       if (Random.roll(30) && !myTiles.count(c->getPosition()))

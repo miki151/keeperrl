@@ -23,6 +23,7 @@
 
 class CreatureView;
 class Level;
+class Jukebox;
 
 class View {
   public:
@@ -149,6 +150,9 @@ class View {
   /** Returns whether the real time clock is currently stopped.*/
   virtual bool isClockStopped() = 0;
 
+  void setJukebox(Jukebox*);
+  Jukebox* getJukebox();
+
   /** Returns a default View that additionally logs all player actions into a file.*/
   static View* createLoggingView(ofstream& of);
 
@@ -239,6 +243,9 @@ class View {
       vector<Village> villages;
     } villageInfo;
   } gameInfo;
+
+  private:
+  Jukebox* jukebox = nullptr;
 };
 
 #endif
