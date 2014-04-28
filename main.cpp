@@ -267,7 +267,7 @@ int main(int argc, char* argv[]) {
       continue;
     }
     if (choice == 7)
-      exit(0);
+      return 0;
     unique_ptr<Model> model;
     string ex;
     thread t([&] {
