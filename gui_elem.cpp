@@ -420,10 +420,10 @@ PGuiElem GuiElem::empty() {
 
 class ViewObjectGui : public GuiElem {
   public:
-  ViewObjectGui(const ViewObject& obj) : object(obj) {}
+  ViewObjectGui(const ViewObject& obj, bool sprites) : object(obj), useSprites(sprites) {}
   
   virtual void render(Renderer& renderer) override {
-    Tile tile = Tile::getTile(object, true);
+    Tile tile = Tile::getTile(object, useSprites);
     int x = getBounds().getTopLeft().x;
     int y = getBounds().getTopLeft().y;
     if (tile.hasSpriteCoord()) {
@@ -439,10 +439,11 @@ class ViewObjectGui : public GuiElem {
 
   private:
   ViewObject object;
+  bool useSprites;
 };
 
-PGuiElem GuiElem::viewObject(const ViewObject& object) {
-  return PGuiElem(new ViewObjectGui(object));
+PGuiElem GuiElem::viewObject(const ViewObject& object, bool useSprites) {
+  return PGuiElem(new ViewObjectGui(object, useSprites));
 }
 
 class TranslateGui : public GuiLayout {

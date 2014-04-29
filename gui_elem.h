@@ -56,7 +56,7 @@ class GuiElem {
   static PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
   static PGuiElem label(const string&, Color, char hotkey = 0);
   static PGuiElem label(sf::Uint32, Color, int size, Renderer::FontId);
-  static PGuiElem viewObject(const ViewObject& object);
+  static PGuiElem viewObject(const ViewObject& object, bool useSprites);
   static PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);
   static PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
   static PGuiElem centerHoriz(PGuiElem, int width);

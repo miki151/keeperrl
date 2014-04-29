@@ -475,7 +475,7 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
   for (auto elem : creatureMap){
     vector<PGuiElem> line;
     vector<int> widths;
-    line.push_back(GuiElem::viewObject(elem.second.object));
+    line.push_back(GuiElem::viewObject(elem.second.object, tilesOk));
     widths.push_back(40);
     Color col = (elem.first == chosenCreature 
         || (elem.second.count == 1 && contains(info.team, elem.second.any))) ? green : white;
@@ -531,7 +531,7 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
     list.push_back(GuiElem::label("Enemies:", white));
     for (auto elem : enemyMap){
       vector<PGuiElem> line;
-      line.push_back(GuiElem::viewObject(elem.second.object));
+      line.push_back(GuiElem::viewObject(elem.second.object, tilesOk));
       line.push_back(GuiElem::label(convertToString(elem.second.count) + "   " + elem.first, white));
       list.push_back(GuiElem::horizontalList(std::move(line), 20, 0));
     }
@@ -555,7 +555,7 @@ PGuiElem WindowView::drawMinionWindow(GameInfo::BandInfo& info) {
       if (c->getSpeciesName() != c->getName())
         text = c->getName() + " " + text;
       vector<PGuiElem> line;
-      line.push_back(GuiElem::viewObject(c->getViewObject()));
+      line.push_back(GuiElem::viewObject(c->getViewObject(), tilesOk));
       line.push_back(GuiElem::label(text, (info.gatheringTeam && contains(info.team, c)) ? green : white));
       lines.push_back(GuiElem::stack(GuiElem::button(
               getButtonCallback(UserInput(UserInput::CREATURE_BUTTON, c->getUniqueId()))),
@@ -584,7 +584,7 @@ vector<PGuiElem> WindowView::drawButtons(vector<GameInfo::BandInfo::Button> butt
   vector<PGuiElem> elems;
   for (int i : All(buttons)) {
     vector<PGuiElem> line;
-    line.push_back(GuiElem::viewObject(buttons[i].object));
+    line.push_back(GuiElem::viewObject(buttons[i].object, tilesOk));
     vector<int> widths { 35 };
     Color color = white;
     if (i == active)
@@ -597,7 +597,7 @@ vector<PGuiElem> WindowView::drawButtons(vector<GameInfo::BandInfo::Button> butt
       string costText = convertToString(buttons[i].cost->second);
       line.push_back(GuiElem::label(costText, color));
       widths.push_back(renderer.getTextLength(costText) + 8);
-      line.push_back(GuiElem::viewObject(buttons[i].cost->first));
+      line.push_back(GuiElem::viewObject(buttons[i].cost->first, tilesOk));
       widths.push_back(25);
     }
     function<void()> buttonFun;
@@ -633,7 +633,7 @@ PGuiElem WindowView::drawTechnology(GameInfo::BandInfo& info) {
   vector<PGuiElem> lines = drawButtons(info.libraryButtons, activeLibrary, CollectiveOption::TECHNOLOGY);
   for (int i : All(info.techButtons)) {
     vector<PGuiElem> line;
-    line.push_back(GuiElem::viewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, "")));
+    line.push_back(GuiElem::viewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, ""), tilesOk));
     line.push_back(GuiElem::label(info.techButtons[i].name, white, info.techButtons[i].hotkey));
     lines.push_back(GuiElem::stack(
           GuiElem::button(getButtonCallback(UserInput(UserInput::TECHNOLOGY, i)), info.techButtons[i].hotkey),
@@ -657,7 +657,7 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info) {
   int resourceSpacing = 95;
   for (int i : All(info.numGold)) {
     vector<PGuiElem> res;
-    res.push_back(GuiElem::viewObject(info.numGold[i].viewObject));
+    res.push_back(GuiElem::viewObject(info.numGold[i].viewObject, tilesOk));
     res.push_back(GuiElem::label(convertToString<int>(info.numGold[i].count), white));
     topWidths.push_back(resourceSpacing);
     topLine.push_back(GuiElem::stack(GuiElem::mouseOverAction(getHintCallback(info.numGold[i].name)),
