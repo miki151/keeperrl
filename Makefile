@@ -13,7 +13,7 @@ endif
 ifdef OPT
 GFLAG = -O3 -DRELEASE
 else
-GFLAG = -g -O3
+GFLAG = -g
 endif
 
 ifndef OPTFLAGS
