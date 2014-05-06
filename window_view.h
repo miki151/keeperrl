@@ -70,7 +70,7 @@ class WindowView: public View {
 
   void updateMinimap(const CreatureView*);
   Rectangle getMenuPosition(View::MenuType type);
-  Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index, MenuType,
+  Optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
       double* scrollPos, Optional<UserInput::Type> exitAction, Optional<sf::Event::KeyEvent> exitKey,
       vector<sf::Event::KeyEvent> shortCuts);
   Optional<UserInput::Type> getSimpleInput(sf::Event::KeyEvent key);

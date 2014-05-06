@@ -1073,7 +1073,7 @@ Optional<int> WindowView::getNumber(const string& title, int min, int max, int i
 
 Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
     MenuType type, double* scrollPos, Optional<UserInput::Type> exitAction) {
-  return chooseFromList(title, options, index, type, scrollPos, exitAction, Nothing(), {});
+  return chooseFromListInternal(title, options, index, type, scrollPos, exitAction, Nothing(), {});
 }
 
 
@@ -1099,7 +1099,7 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
   return Rectangle(1, 1);*/
 }
 
-Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
+Optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index,
     MenuType menuType, double* scrollPos, Optional<UserInput::Type> exitAction, Optional<Event::KeyEvent> exitKey,
     vector<Event::KeyEvent> shortCuts) {
   if (options.size() == 0)
@@ -1203,7 +1203,7 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
     conv.emplace_back(e.getText(), mod, e.getAction());
   }
   double scrollPos = scrollDown ? 1 : 0;
-  chooseFromList(title, conv, -1, NORMAL_MENU, &scrollPos, exitAction);
+  chooseFromListInternal(title, conv, -1, NORMAL_MENU, &scrollPos, exitAction, Nothing(), {});
 }
 
 PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& options, int& height, int* highlight,
@@ -1526,7 +1526,7 @@ Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
   vector<Event::KeyEvent> shortCuts;
   for (KeyInfo key : keyInfo)
     shortCuts.push_back(key.event);
-  auto index = chooseFromList("", options, 0, NORMAL_MENU, nullptr, Nothing(),
+  auto index = chooseFromListInternal("", options, 0, NORMAL_MENU, nullptr, Nothing(),
       Optional<Event::KeyEvent>({Keyboard::F1}), shortCuts);
   if (!index)
     return Nothing();
