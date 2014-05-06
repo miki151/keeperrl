@@ -549,7 +549,8 @@ void Collective::autoEquipment(Creature* creature) {
   vector<EquipmentSlot> slots;
   for (auto slot : Equipment::slotTitles)
     slots.push_back(slot.first);
-  vector<Item*> myItems = getAllItems([&](const Item* it) {
+  vector<Item*> allItems = getAllItems([](const Item*) { return true;});
+  vector<Item*> myItems = filter(allItems, [&](const Item* it) {
       return minionEquipment.getOwner(it) == creature && it->canEquip(); });
   for (Item* it : myItems) {
     if (contains(slots, it->getEquipmentSlot()))
@@ -558,8 +559,8 @@ void Collective::autoEquipment(Creature* creature) {
           //should happen only when an item leaves the fortress and then is braught back
       minionEquipment.discard(it);
   }
-  for (Item* it : getAllItems([&](const Item* it) {
-      return minionEquipment.canTakeItem(creature, it); }, false)) {
+  for (Item* it : filter(allItems, [&](const Item* it) {
+      return minionEquipment.canTakeItem(creature, it); })) {
     if (!it->canEquip() || contains(slots, it->getEquipmentSlot())) {
       minionEquipment.own(creature, it);
       if (it->canEquip())
