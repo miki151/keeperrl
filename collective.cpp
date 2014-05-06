@@ -1890,11 +1890,10 @@ void Collective::tick() {
     if (!mySquares.at(elem.second.square).empty())
       warning[int(elem.second.warning)] = false;
   warning[int(Warning::NO_WEAPONS)] = false;
-  vector<Item*> allItems = getAllItems([](const Item*) { return true;}, false);
   for (const Creature* c : minions) {
     PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
-    if (usesEquipment(c) && c->canEquip(genWeapon.get(), nullptr) && filter(allItems, [&](const Item* it) {
-          return minionEquipment.canTakeItem(c, it); }).empty())
+    if (usesEquipment(c) && c->canEquip(genWeapon.get(), nullptr) && getAllItems([&](const Item* it) {
+          return minionEquipment.canTakeItem(c, it); }, false).empty())
       warning[int(Warning::NO_WEAPONS)] = true;
   }
 
