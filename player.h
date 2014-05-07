@@ -54,7 +54,6 @@ class Player : public Controller, public EventListener {
   SERIALIZATION_DECL(Player);
 
   private:
-  void remember(Vec2 pos, const ViewObject& object);
   void pickUpAction(bool extended);
   void itemsMessage();
   void dropAction(bool extended);

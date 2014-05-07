@@ -30,6 +30,7 @@
 #include "unique_entity.h"
 #include "event.h"
 #include "sectors.h"
+#include "vision.h"
 
 class Level;
 class Tribe;
@@ -87,7 +88,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   int getPoints() const;
   vector<string> getMainAdjectives() const;
   vector<string> getAdjectives() const;
-  VisionInfo getVisionInfo() const;
+  Vision* getVision() const;
   void onKillEvent(const Creature* victim, const Creature* killer) override;
 
   virtual Tribe* getTribe() const override;
@@ -231,17 +232,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   double getSpeed() const;
   CreatureSize getSize() const;
 
-  class Vision {
-    public:
-    virtual bool canSee(const Creature*, const Creature*) = 0;
-    virtual ~Vision() {}
-
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version);
-  };
-
-  void addVision(Vision*);
-  void removeVision(Vision*);
+  void addCreatureVision(CreatureVision*);
+  void removeCreatureVision(CreatureVision*);
 
   void addSpell(SpellId);
   const vector<SpellInfo>& getSpells() const;
@@ -326,7 +318,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   const Creature* SERIAL2(holding, nullptr);
   PController SERIAL(controller);
   vector<PController> SERIAL(controllerStack);
-  vector<Vision*> SERIAL(visions);
+  vector<CreatureVision*> SERIAL(creatureVisions);
   mutable vector<const Creature*> SERIAL(kills);
   mutable double SERIAL2(difficultyPoints, 0);
   int SERIAL2(points, 0);

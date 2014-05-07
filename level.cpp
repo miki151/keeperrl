@@ -48,8 +48,9 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
   }
   for (Location *l : locations)
     l->setLevel(this);
-  fieldOfView.emplace_back(squares, VisionInfo::ELF);
-  fieldOfView.emplace_back(squares, VisionInfo::NORMAL);
+  for (Vision* vision : Vision::getAll())
+    if (!vision->getInheritedFov())
+      fieldOfView.emplace(vision, FieldOfView(squares, vision));
 }
 
 Rectangle Level::maxLevelBounds(600, 600);
@@ -78,7 +79,7 @@ void Level::notifyLocations(Creature* c) {
 
 void Level::addLightSource(Vec2 pos, double radius, int numLight) {
   if (radius > 0) {
-    for (Vec2 v : getVisibleTilesNoDarkness(pos, VisionInfo::NORMAL)) {
+    for (Vec2 v : getVisibleTilesNoDarkness(pos, Vision::get(VisionId::NORMAL))) {
       double dist = (v - pos).lengthD();
       if (dist <= radius)
         squares[v]->addLight(min(1.0, 1 - (dist) / radius) * numLight);
@@ -108,11 +109,11 @@ void Level::replaceSquare(Vec2 pos, PSquare square) {
 }
 
 void Level::updateVisibility(Vec2 changedSquare) {
-  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionInfo::NORMAL))
+  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, Vision::get(VisionId::NORMAL)))
     addLightSource(pos, squares[pos]->getLightEmission(), -1);
   for (auto& elem : fieldOfView)
-    elem.squareChanged(changedSquare);
-  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionInfo::NORMAL))
+    elem.second.squareChanged(changedSquare);
+  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, Vision::get(VisionId::NORMAL)))
     addLightSource(pos, squares[pos]->getLightEmission(), 1);
 }
 
@@ -179,20 +180,20 @@ Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
   return Vec2(0, 0);
 }
 
-void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionInfo info) {
+void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, Vision* vision) {
   vector<PItem> v;
   v.push_back(std::move(item));
-  throwItem(std::move(v), attack, maxDist, position, direction, info);
+  throwItem(std::move(v), attack, maxDist, position, direction, vision);
 }
 
 void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction,
-    VisionInfo visionInfo) {
+    Vision* vision) {
   CHECK(!item.empty());
   int cnt = 1;
   vector<Vec2> trajectory;
   for (Vec2 v = position + direction;; v += direction) {
     trajectory.push_back(v);
-    if (getSquare(v)->itemBounces(item[0].get(), visionInfo)) {
+    if (getSquare(v)->itemBounces(item[0].get(), vision)) {
         item[0]->onHitSquareMessage(v, getSquare(v), item.size() > 1);
         trajectory.pop_back();
         EventListener::addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
@@ -202,7 +203,7 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
     }
     if (++cnt > maxDist || getSquare(v)->itemLands(extractRefs(item), attack)) {
       EventListener::addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
-      getSquare(v)->onItemLands(std::move(item), attack, maxDist - cnt - 1, direction, visionInfo);
+      getSquare(v)->onItemLands(std::move(item), attack, maxDist - cnt - 1, direction, vision);
       return;
     }
   }
@@ -255,13 +256,19 @@ vector<Creature*>& Level::getAllCreatures() {
 
 const int darkViewRadius = 5;
 
-bool Level::isWithinVision(Vec2 from, Vec2 to) const {
-  return from.distD(to) <= darkViewRadius || getSquare(to)->getLight() > 0.3;
+bool Level::isWithinVision(Vec2 from, Vec2 to, Vision* v) const {
+  return v->isNightVision() || from.distD(to) <= darkViewRadius || getSquare(to)->getLight() > 0.3;
+}
+
+FieldOfView& Level::getFieldOfView(Vision* vision) const {
+  if (vision->getInheritedFov())
+    vision = vision->getInheritedFov();
+  return fieldOfView.at(vision);
 }
 
 bool Level::canSee(const Creature* c, Vec2 pos) const {
-  return isWithinVision(c->getPosition(), pos) 
-    && fieldOfView.at(int(c->getVisionInfo()) - 1).canSee(c->getPosition(), pos);
+  return isWithinVision(c->getPosition(), pos, c->getVision())
+    && getFieldOfView(c->getVision()).canSee(c->getPosition(), pos);
 }
 
 bool Level::playerCanSee(Vec2 pos) const {
@@ -306,19 +313,19 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
   notifyLocations(c2);
 }
 
-vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionInfo vision) const {
-  return fieldOfView.at(int(vision) - 1).getVisibleTiles(pos);
+vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, Vision* vision) const {
+  return getFieldOfView(vision).getVisibleTiles(pos);
 }
 
-vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionInfo vision) const {
-    return filter(fieldOfView.at(int(vision) - 1).getVisibleTiles(pos),
-        [this, pos](Vec2 v) { return isWithinVision(pos, v); });
+vector<Vec2> Level::getVisibleTiles(Vec2 pos, Vision* vision) const {
+  return filter(getFieldOfView(vision).getVisibleTiles(pos),
+      [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 
 vector<Vec2> Level::getVisibleTiles(const Creature* c) const {
   static vector<Vec2> emptyVec;
   if (!c->isBlind())
-    return getVisibleTiles(c->getPosition(), c->getVisionInfo());
+    return getVisibleTiles(c->getPosition(), c->getVision());
   else
     return emptyVec;
 }

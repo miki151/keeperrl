@@ -63,7 +63,7 @@ void Player::onThrowEvent(const Creature* thrower, const Item* item, const vecto
 
 void Player::learnLocation(const Location* loc) {
   for (Vec2 v : loc->getBounds())
-    remember(v, creature->getLevel()->getSquare(v)->getViewObject());
+    (*levelMemory)[creature->getLevel()].addObject(v, creature->getLevel()->getSquare(v)->getViewObject());
 }
 
 void Player::onExplosionEvent(const Level* level, Vec2 pos) {
@@ -571,10 +571,6 @@ const MapMemory& Player::getMemory() const {
   return (*levelMemory)[creature->getLevel()];
 }
 
-void Player::remember(Vec2 pos, const ViewObject& object) {
-  (*levelMemory)[creature->getLevel()].addObject(pos, object);
-}
-
 void Player::sleeping() {
   if (creature->isAffected(Creature::HALLU))
     ViewObject::setHallu(true);
@@ -710,11 +706,7 @@ void Player::makeMove() {
     }
   }
   for (Vec2 pos : creature->getLevel()->getVisibleTiles(creature)) {
-    ViewIndex index = creature->getLevel()->getSquare(pos)->getViewIndex(creature);
-    (*levelMemory)[creature->getLevel()].clearSquare(pos);
-    for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
-      if (index.hasObject(l))
-        remember(pos, index.getObject(l));
+    (*levelMemory)[creature->getLevel()].update(pos, creature->getLevel()->getSquare(pos)->getViewIndex(creature));
   }
 }
 

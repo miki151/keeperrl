@@ -29,7 +29,7 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(triggers)
     & SVAR(viewObject)
     & SVAR(backgroundObject)
-    & SVAR(visionInfo)
+    & SVAR(vision)
     & SVAR(hide)
     & SVAR(strength)
     & SVAR(height)
@@ -54,9 +54,9 @@ void SolidSquare::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(SolidSquare);
 
-Square::Square(const ViewObject& vo, const string& n, VisionInfo info, bool canHide, int s, double f,
+Square::Square(const ViewObject& vo, const string& n, Vision* v, bool canHide, int s, double f,
     map<SquareType, int> construct, bool tick) 
-    : name(n), viewObject(vo), visionInfo(info), hide(canHide), strength(s), fire(strength, f),
+    : name(n), viewObject(vo), vision(v), hide(canHide), strength(s), fire(strength, f),
     constructions(construct), ticking(tick) {
 }
 
@@ -233,11 +233,11 @@ bool Square::itemLands(vector<Item*> item, const Attack& attack) {
   return false;
 }
 
-bool Square::itemBounces(Item* item, VisionInfo info) const {
-  return !canSeeThru(info);
+bool Square::itemBounces(Item* item, Vision* v) const {
+  return !canSeeThru(v);
 }
 
-void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionInfo info) {
+void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, Vision* vision) {
   if (creature) {
     item[0]->onHitCreature(creature, attack, item.size() > 1);
     if (!item[0]->isDiscarded())
@@ -246,7 +246,7 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
   }
   for (PTrigger& t : triggers)
     if (t->interceptsFlyingItem(item[0].get())) {
-      t->onInterceptFlyingItem(std::move(item), attack, remainingDist, dir, info);
+      t->onInterceptFlyingItem(std::move(item), attack, remainingDist, dir, vision);
       return;
     }
 
@@ -410,17 +410,12 @@ bool SolidSquare::canEnterSpecial(const Creature*) const {
   return false;
 }
 
-bool Square::canSeeThru(VisionInfo info) const {
-  if (info == VisionInfo::NORMAL)
-    return visionInfo == VisionInfo::NORMAL;
-  if (info == VisionInfo::ELF)
-    return visionInfo != VisionInfo::NONE;
-  FAIL << int(info);
-  return false;
+bool Square::canSeeThru(Vision* v) const {
+  return vision && (v == vision || v->getInheritedFov() == vision);
 }
 
-void Square::setCanSeeThru(VisionInfo info) {
-  visionInfo = info;
+void Square::setVision(Vision* v) {
+  vision = v;
 }
 
 bool Square::canHide() const {

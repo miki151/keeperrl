@@ -29,8 +29,6 @@ class ViewIndex {
   Optional<ViewObject> getTopObject(const vector<ViewLayer>&) const;
   bool isEmpty() const;
 
-  void addHighlight(HighlightType, double amount = 1);
-
   struct HighlightInfo {
     HighlightType type;
     double amount;
@@ -38,6 +36,9 @@ class ViewIndex {
     template <class Archive> 
     void serialize(Archive& ar, const unsigned int version);
   };
+
+  void addHighlight(HighlightType, double amount = 1);
+  void addHighlight(HighlightInfo);
 
   vector<HighlightInfo> getHighlight() const;
 

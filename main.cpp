@@ -208,11 +208,13 @@ int main(int argc, char* argv[]) {
     Tribes::clearAll();
     Technology::clearAll();
     Skill::clearAll();
+    Vision::clearAll();
     EventListener::initialize();
     Tribe::init();
     Technology::init();
     Skill::init();
     Statistics::init();
+    Vision::init();
     NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
         "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt",
         "insults.txt");

@@ -25,6 +25,7 @@ class MapMemory {
   MapMemory();
   MapMemory(const MapMemory&);
   void addObject(Vec2 pos, const ViewObject& obj);
+  void update(Vec2, const ViewIndex&);
   void clearSquare(Vec2 pos);
   bool hasViewIndex(Vec2 pos) const;
   ViewIndex getViewIndex(Vec2 pos) const;

@@ -173,7 +173,7 @@ class AmuletOfEnemyCheck : public Item {
   EnemyCheck* SERIAL(check);
 };
 
-class Telepathy : public Creature::Vision {
+class Telepathy : public CreatureVision {
   public:
   virtual bool canSee(const Creature* c1, const Creature* c2) override {
     return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->hasBrain();
@@ -181,21 +181,21 @@ class Telepathy : public Creature::Vision {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Creature::Vision);
+    ar & SUBCLASS(CreatureVision);
   }
 };
 
 class ItemOfCreatureVision : public Item {
   public:
-  ItemOfCreatureVision(const ViewObject& obj, const ItemAttributes& attr, Creature::Vision* v)
+  ItemOfCreatureVision(const ViewObject& obj, const ItemAttributes& attr, CreatureVision* v)
       : Item(obj, attr), vision(v) {}
 
   virtual void onEquipSpecial(Creature* c) {
-    c->addVision(vision.get());
+    c->addCreatureVision(vision.get());
   }
 
   virtual void onUnequipSpecial(Creature* c) {
-    c->removeVision(vision.get());
+    c->removeCreatureVision(vision.get());
   }
 
   template <class Archive> 
@@ -208,7 +208,7 @@ class ItemOfCreatureVision : public Item {
   SERIALIZATION_CONSTRUCTOR(ItemOfCreatureVision);
 
   private:
-  unique_ptr<Creature::Vision> SERIAL(vision);
+  unique_ptr<CreatureVision> SERIAL(vision);
 };
 
 class Corpse : public Item {

@@ -1176,6 +1176,12 @@ class SetCovered : public ForEachSquare {
     : ForEachSquare([](Level::Builder* b, Vec2 pos) { b->setCovered(pos); }, onPred) {}
 };
 
+class SetDark : public ForEachSquare {
+  public:
+  SetDark(SquarePredicate* onPred = nullptr)
+    : ForEachSquare([](Level::Builder* b, Vec2 pos) { b->setDark(pos, 1.0); }, onPred) {}
+};
+
 /*class FlockAndLeader : public LevelMaker {
   public:
   FlockAndLeader(CreatureId _leader, CreatureId _flock, Tribe* _tribe, int _minFlock, int _maxFlock) :
@@ -1464,6 +1470,7 @@ static LevelMaker* underground(bool monsters) {
           }
     default: break;
   }
+  queue->addMaker(new SetDark());
   return queue;
 }
 
@@ -1500,6 +1507,7 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up,
     queue->addMaker(new Stairs(StairDirection::UP, key, new TypePredicate(SquareType::FLOOR)));
   queue->addMaker(new Creatures(cfactory, Random.getRandom(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareType::FLOOR, 5, 10));
+  queue->addMaker(new SetDark());
   return new BorderGuard(queue, SquareType::BLACK_WALL);
 }
 
@@ -1517,6 +1525,7 @@ LevelMaker* LevelMaker::cryptLevel(CreatureFactory cfactory, vector<StairKey> up
     queue->addMaker(new Stairs(StairDirection::UP, key, new TypePredicate(SquareType::FLOOR)));
   queue->addMaker(new Creatures(cfactory, Random.getRandom(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareType::FLOOR, 5, 10));
+  queue->addMaker(new SetDark());
   return new BorderGuard(queue, SquareType::BLACK_WALL);
 }
 
@@ -2001,6 +2010,7 @@ LevelMaker* LevelMaker::cellarLevel(CreatureFactory cfactory, SquareType wallTyp
     queue->addMaker(new Stairs(StairDirection::UP, key, new TypePredicate(SquareType::FLOOR), Nothing(), stairLook));
   queue->addMaker(new Creatures(cfactory, Random.getRandom(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareType::FLOOR, 5, 10));
+  queue->addMaker(new SetDark());
   return new BorderGuard(queue, wallType);
 }
 
@@ -2019,6 +2029,7 @@ LevelMaker* LevelMaker::cavernLevel(CreatureFactory cfactory, SquareType wallTyp
     queue->addMaker(new Stairs(StairDirection::UP, key, new TypePredicate(floorType), Nothing(), stairLook));
   queue->addMaker(new Creatures(cfactory, 1, MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), floorType, 10, 15));
+  queue->addMaker(new SetDark());
   return new BorderGuard(queue, wallType);
 }
 

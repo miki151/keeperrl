@@ -24,12 +24,6 @@
 #include "options.h"
 
 template <class Archive> 
-void Creature::Vision::serialize(Archive& ar, const unsigned int version) {
-}
-
-SERIALIZABLE(Creature::Vision);
-
-template <class Archive> 
 void SpellInfo::serialize(Archive& ar, const unsigned int version) {
   ar& BOOST_SERIALIZATION_NVP(id)
     & BOOST_SERIALIZATION_NVP(name)
@@ -79,7 +73,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(holding)
     & SVAR(controller)
     & SVAR(controllerStack)
-    & SVAR(visions)
+    & SVAR(creatureVisions)
     & SVAR(kills)
     & SVAR(difficultyPoints)
     & SVAR(points)
@@ -192,12 +186,12 @@ void Creature::castSpell(int index) {
   spendTime(1);
 }
 
-void Creature::addVision(Vision* vision) {
-  visions.push_back(vision);
+void Creature::addCreatureVision(CreatureVision* creatureVision) {
+  creatureVisions.push_back(creatureVision);
 }
 
-void Creature::removeVision(Vision* vision) {
-  removeElement(visions, vision);
+void Creature::removeCreatureVision(CreatureVision* vision) {
+  removeElement(creatureVisions, vision);
 }
 
 void Creature::pushController(Controller* ctrl) {
@@ -1708,7 +1702,7 @@ void Creature::throwItem(Item* item, Vec2 direction) {
     toHit += 4;
   }
   Attack attack(this, getRandomAttackLevel(), item->getAttackType(), toHit, damage, false, Nothing());
-  level->throwItem(equipment.removeItem(item), attack, dist, getPosition(), direction, getVisionInfo());
+  level->throwItem(equipment.removeItem(item), attack, dist, getPosition(), direction, getVision());
   spendTime(1);
 }
 
@@ -1717,7 +1711,7 @@ const ViewObject& Creature::getViewObject() const {
 }
 
 bool Creature::canSee(const Creature* c) const {
-  for (Vision* v : visions)
+  for (CreatureVision* v : creatureVisions)
     if (v->canSee(this, c))
       return true;
   return !isBlind() && !c->isAffected(INVISIBLE) &&
@@ -2052,11 +2046,13 @@ string Creature::getNameAndTitle() const {
     return getTheName();
 }
 
-VisionInfo Creature::getVisionInfo() const {
+Vision* Creature::getVision() const {
   if (hasSkill(Skill::get(SkillId::ELF_VISION)))
-    return VisionInfo::ELF;
+    return Vision::get(VisionId::ELF);
+  if (hasSkill(Skill::get(SkillId::NIGHT_VISION)))
+    return Vision::get(VisionId::NIGHT);
   else
-    return VisionInfo::NORMAL; 
+    return Vision::get(VisionId::NORMAL); 
 }
 
 string Creature::getRemainingString(LastingEffect effect) const {

@@ -1778,11 +1778,7 @@ ItemPredicate Collective::unMarkedItems(ItemType type) const {
 }
 
 void Collective::addToMemory(Vec2 pos) {
-  ViewIndex index = level->getSquare(pos)->getViewIndex(this);
-  getMemory(level).clearSquare(pos);
-  for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
-    if (index.hasObject(l))
-      getMemory(level).addObject(pos, index.getObject(l));
+  getMemory(level).update(pos, level->getSquare(pos)->getViewIndex(this));
 }
 
 void Collective::update(Creature* c) {
@@ -1800,7 +1796,6 @@ void Collective::update(Creature* c) {
     return;
   for (Vec2 pos : level->getVisibleTiles(c))
     addKnownTile(pos);
-//    addToMemory(pos, c);
 }
 
 bool Collective::isDownstairsVisible() const {

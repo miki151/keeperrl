@@ -728,13 +728,15 @@ enum class SkillId {
   ARCHERY,
   CONSTRUCTION,
   ELF_VISION,
+  NIGHT_VISION,
 };
 
 ENUM_HASH(SkillId);
 
-enum class VisionInfo {
-  NONE, ELF, NORMAL
+enum class VisionId {
+  ELF, NIGHT, NORMAL
 };
 
+ENUM_HASH(VisionId);
 
 #endif

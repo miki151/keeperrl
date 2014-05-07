@@ -25,7 +25,7 @@
 class Staircase : public Square {
   public:
   Staircase(const ViewObject& obj, const string& name, StairDirection dir, StairKey key)
-      : Square(obj, name, VisionInfo::NORMAL, true, 10000) {
+      : Square(obj, name, Vision::get(VisionId::NORMAL), true, 10000) {
     setLandingLink(dir, key);
   }
 
@@ -58,14 +58,14 @@ class Staircase : public Square {
 class SecretPassage : public Square {
   public:
   SecretPassage(const ViewObject& obj, const ViewObject& sec)
-    : Square(obj, "secret door", VisionInfo::NONE), secondary(sec), uncovered(false) {
+    : Square(obj, "secret door", nullptr), secondary(sec), uncovered(false) {
   }
 
   void uncover(Vec2 pos) {
     uncovered = true;
     setName("floor");
     viewObject = secondary;
-    setCanSeeThru(VisionInfo::NORMAL);
+    setVision(Vision::get(VisionId::NORMAL));
     getLevel()->updateVisibility(pos);
   }
 
@@ -113,7 +113,7 @@ class SecretPassage : public Square {
 class Magma : public Square {
   public:
   Magma(const ViewObject& object, const string& name, const string& itemMsg, const string& noSee)
-      : Square(object, name, VisionInfo::NORMAL, false, 0, 0, {{SquareType::BRIDGE, 20}}),
+      : Square(object, name, Vision::get(VisionId::NORMAL), false, 0, 0, {{SquareType::BRIDGE, 20}}),
     itemMessage(itemMsg), noSeeMsg(noSee) {}
 
   virtual bool canEnterSpecial(const Creature* c) const override {
@@ -149,7 +149,7 @@ class Magma : public Square {
 class Water : public Square {
   public:
   Water(ViewObject object, const string& name, const string& itemMsg, const string& noSee, double _depth)
-      : Square(object.setWaterDepth(_depth), name, VisionInfo::NORMAL, false, 0, 0, {{SquareType::BRIDGE, 20}}),
+      : Square(object.setWaterDepth(_depth), name, Vision::get(VisionId::NORMAL), false, 0, 0, {{SquareType::BRIDGE, 20}}),
         itemMessage(itemMsg), noSeeMsg(noSee), depth(_depth) {}
 
   bool canWalk(const Creature* c) const {
@@ -202,7 +202,7 @@ class Chest : public Square {
   Chest(const ViewObject& object, const ViewObject& opened, const string& name, CreatureId id, int minC, int maxC,
         const string& _msgItem, const string& _msgMonster, const string& _msgGold,
         ItemFactory _itemFactory) : 
-      Square(object, name, VisionInfo::NORMAL, true, 30, 0.5), creatureId(id), minCreatures(minC), maxCreatures(maxC), msgItem(_msgItem), msgMonster(_msgMonster), msgGold(_msgGold), itemFactory(_itemFactory), openedObject(opened) {}
+      Square(object, name, Vision::get(VisionId::NORMAL), true, 30, 0.5), creatureId(id), minCreatures(minC), maxCreatures(maxC), msgItem(_msgItem), msgMonster(_msgMonster), msgGold(_msgGold), itemFactory(_itemFactory), openedObject(opened) {}
 
   virtual void onEnterSpecial(Creature* c) override {
     c->privateMessage(string("There is a ") + (opened ? " opened " : "") + getName() + " here");
@@ -287,7 +287,7 @@ class Chest : public Square {
 
 class Fountain : public Square {
   public:
-  Fountain(const ViewObject& object) : Square(object, "fountain", VisionInfo::NORMAL, true, 100) {}
+  Fountain(const ViewObject& object) : Square(object, "fountain", Vision::get(VisionId::NORMAL), true, 100) {}
 
   virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
     return SquareApplyType::DRINK;
@@ -322,9 +322,9 @@ class Fountain : public Square {
 
 class Tree : public Square {
   public:
-  Tree(const ViewObject& object, const string& name, VisionInfo visionInfo, int _numWood,
+  Tree(const ViewObject& object, const string& name, Vision* vision, int _numWood,
       map<SquareType, int> construct)
-      : Square(object, name, visionInfo, true, 100, 0.5, construct), numWood(_numWood) {}
+      : Square(object, name, vision, true, 100, 0.5, construct), numWood(_numWood) {}
 
   virtual bool canDestroy() const override {
     return true;
@@ -335,7 +335,7 @@ class Tree : public Square {
       return;
     getLevel()->globalMessage(getPosition(), "The tree falls.");
     destroyed = true;
-    setCanSeeThru(VisionInfo::NORMAL);
+    setVision(Vision::get(VisionId::NORMAL));
     getLevel()->updateVisibility(getPosition());
     viewObject = ViewObject(ViewId::FALLEN_TREE, ViewLayer::FLOOR, "Fallen tree");
   }
@@ -345,7 +345,7 @@ class Tree : public Square {
   }
 
   virtual void burnOut() override {
-    setCanSeeThru(VisionInfo::NORMAL);
+    setVision(Vision::get(VisionId::NORMAL));
     getLevel()->updateVisibility(getPosition());
     viewObject = ViewObject(ViewId::BURNT_TREE, ViewLayer::FLOOR, "Burnt tree");
   }
@@ -372,7 +372,7 @@ class Tree : public Square {
 
 class TrapSquare : public Square {
   public:
-  TrapSquare(const ViewObject& object, EffectType e) : Square(object, "floor", VisionInfo::NORMAL), effect(e) {
+  TrapSquare(const ViewObject& object, EffectType e) : Square(object, "floor", Vision::get(VisionId::NORMAL)), effect(e) {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -400,7 +400,7 @@ class TrapSquare : public Square {
 
 class Door : public Square {
   public:
-  Door(const ViewObject& object) : Square(object, "door", VisionInfo::NONE, true, 100, 1) {}
+  Door(const ViewObject& object) : Square(object, "door", nullptr, true, 100, 1) {}
 
   virtual bool canDestroy() const override {
     return true;
@@ -473,7 +473,7 @@ class TribeDoor : public Door {
 class Barricade : public SolidSquare {
   public:
   Barricade(const ViewObject& object, int destStrength)
-    : SolidSquare(object, "barricade", VisionInfo::NORMAL, {}, false, 0.5),
+    : SolidSquare(object, "barricade", Vision::get(VisionId::NORMAL), {}, false, 0.5),
     destructionStrength(destStrength) {
   }
 
@@ -510,7 +510,7 @@ class Furniture : public Square {
   public:
   Furniture(ViewObject object, const string& name, double flamability,
       Optional<SquareApplyType> _applyType = Nothing()) 
-      : Square(object.setModifier(ViewObject::ROUND_SHADOW), name, VisionInfo::NORMAL , true, 100, flamability),
+      : Square(object.setModifier(ViewObject::ROUND_SHADOW), name, Vision::get(VisionId::NORMAL) , true, 100, flamability),
       applyType(_applyType) {}
 
   virtual bool canDestroy() const override {
@@ -607,7 +607,7 @@ class Grave : public Bed {
 class Altar : public Square {
   public:
   Altar(const ViewObject& object, Deity* d)
-      : Square(object, "shrine to " + d->getName(), VisionInfo::NORMAL , true, 100, 0), deity(d) {
+      : Square(object, "shrine to " + d->getName(), Vision::get(VisionId::NORMAL) , true, 100, 0), deity(d) {
   }
 
   virtual bool canDestroy() const override {
@@ -650,7 +650,7 @@ class ConstructionDropItems : public SolidSquare {
   public:
   ConstructionDropItems(const ViewObject& object, const string& name,
       map<SquareType, int> constructions, vector<PItem> _items)
-      : SolidSquare(object, name, VisionInfo::NONE, constructions), items(std::move(_items)) {}
+      : SolidSquare(object, name, nullptr, constructions), items(std::move(_items)) {}
 
   virtual void onConstructNewSquare(Square* s) override {
     s->dropItems(std::move(items));
@@ -742,7 +742,7 @@ class Workshop : public Furniture {
 class Hatchery : public Square {
   public:
   Hatchery(const ViewObject& object, const string& name)
-    : Square(object, name, VisionInfo::NORMAL, false, 0, 0, {}, true) {}
+    : Square(object, name, Vision::get(VisionId::NORMAL), false, 0, 0, {}, true) {}
 
   virtual void tickSpecial(double time) override {
     if (getCreature() || !Random.roll(10))
@@ -822,7 +822,7 @@ Square* SquareFactory::getPtr(SquareType s) {
   switch (s) {
     case SquareType::PATH:
     case SquareType::FLOOR:
-        return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", VisionInfo::NORMAL,
+        return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", Vision::get(VisionId::NORMAL),
             false, 0, 0, 
             {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
             {SquareType::TRAINING_DUMMY, 10}, {SquareType::LIBRARY, 10}, {SquareType::STOCKPILE, 1},
@@ -831,20 +831,20 @@ Square* SquareFactory::getPtr(SquareType s) {
             {SquareType::IMPALED_HEAD, 5}, {SquareType::BARRICADE, 20}, {SquareType::TORCH, 5}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Rope bridge"), "rope bridge",
-            VisionInfo::NORMAL);
+            Vision::get(VisionId::NORMAL));
     case SquareType::GRASS:
         return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND, "Grass"), "grass",
-            VisionInfo::NORMAL, false, 0, 0, {{SquareType::IMPALED_HEAD, 5}});
+            Vision::get(VisionId::NORMAL), false, 0, 0, {{SquareType::IMPALED_HEAD, 5}});
     case SquareType::CROPS:
         return new Square(ViewObject(ViewId::CROPS, ViewLayer::FLOOR_BACKGROUND, "Potatoes"),
-            "potatoes", VisionInfo::NORMAL, false, 0, 0);
+            "potatoes", Vision::get(VisionId::NORMAL), false, 0, 0);
     case SquareType::MUD:
-        return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Mud"), "mud", VisionInfo::NORMAL);
+        return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Mud"), "mud", Vision::get(VisionId::NORMAL));
     case SquareType::ROAD:
-        return new Square(ViewObject(ViewId::ROAD, ViewLayer::FLOOR, "Road"), "road", VisionInfo::NORMAL);
+        return new Square(ViewObject(ViewId::ROAD, ViewLayer::FLOOR, "Road"), "road", Vision::get(VisionId::NORMAL));
     case SquareType::ROCK_WALL:
         return new SolidSquare(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Wall")
-            .setModifier(ViewObject::CASTS_SHADOW), "wall", VisionInfo::NONE,
+            .setModifier(ViewObject::CASTS_SHADOW), "wall", nullptr,
             {{SquareType::FLOOR, Random.getRandom(3, 8)}});
     case SquareType::GOLD_ORE:
         return new ConstructionDropItems(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR, "Gold ore")
@@ -866,7 +866,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::CASTS_SHADOW), "wall");
     case SquareType::WOOD_WALL:
         return new SolidSquare(ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR, "Wooden wall")
-            .setModifier(ViewObject::CASTS_SHADOW), "wall", VisionInfo::NONE,{}, false, 0.4);
+            .setModifier(ViewObject::CASTS_SHADOW), "wall", nullptr,{}, false, 0.4);
     case SquareType::BLACK_WALL:
         return new SolidSquare(ViewObject(ViewId::BLACK_WALL, ViewLayer::FLOOR, "Wall")
             .setModifier(ViewObject::CASTS_SHADOW), "wall");
@@ -884,15 +884,15 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::CASTS_SHADOW), "wall");
     case SquareType::MOUNTAIN:
         return new SolidSquare(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain"), "mountain",
-            VisionInfo::NORMAL);
+            Vision::get(VisionId::NORMAL));
     case SquareType::MOUNTAIN2:
-        return new SolidSquare(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain").setModifier(ViewObject::CASTS_SHADOW), "mountain", VisionInfo::NONE,
+        return new SolidSquare(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain").setModifier(ViewObject::CASTS_SHADOW), "mountain", nullptr,
             {{SquareType::FLOOR, Random.getRandom(3, 8)}});
     case SquareType::GLACIER:
         return new SolidSquare(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"), "mountain");
     case SquareType::HILL:
         return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND, "Hill"), "hill",
-            VisionInfo::NORMAL, false, 0, 0, { {SquareType::IMPALED_HEAD, 5}});
+            Vision::get(VisionId::NORMAL), false, 0, 0, { {SquareType::IMPALED_HEAD, 5}});
     case SquareType::SECRET_PASS:
         return new SecretPassage(ViewObject(ViewId::SECRETPASS, ViewLayer::FLOOR, "Wall"),
                                  ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "Floor"));
@@ -905,25 +905,25 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::ABYSS: 
         FAIL << "Unimplemented";
     case SquareType::SAND: return new Square(ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND, "Sand"),
-                               "sand", VisionInfo::NORMAL);
+                               "sand", Vision::get(VisionId::NORMAL));
     case SquareType::CANIF_TREE: return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree")
-                                     .setModifier(ViewObject::ROUND_SHADOW), "tree", VisionInfo::ELF,
+                                     .setModifier(ViewObject::ROUND_SHADOW), "tree", Vision::get(VisionId::ELF),
                                      Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
     case SquareType::DECID_TREE: return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree")
                                      .setModifier(ViewObject::ROUND_SHADOW), "tree",
-                                     VisionInfo::ELF, Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
+                                     Vision::get(VisionId::ELF), Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
     case SquareType::BUSH: return new Tree(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush",
-                                     VisionInfo::NORMAL, Random.getRandom(5, 10), {{SquareType::TREE_TRUNK, 10}});
+                                     Vision::get(VisionId::NORMAL), Random.getRandom(5, 10), {{SquareType::TREE_TRUNK, 10}});
     case SquareType::TREE_TRUNK: return new Furniture(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
                                    "tree trunk", 0);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::TORCH: return new Torch(ViewObject(ViewId::TORCH, ViewLayer::FLOOR, "Torch"), "torch");
     case SquareType::STOCKPILE:
         return new DestroyableSquare(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Storage"),
-            "floor", VisionInfo::NORMAL);
+            "floor", Vision::get(VisionId::NORMAL));
     case SquareType::PRISON:
         return new DestroyableSquare(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"),
-            "floor", VisionInfo::NORMAL);
+            "floor", Vision::get(VisionId::NORMAL));
     case SquareType::WELL:
         return new Furniture(ViewObject(ViewId::WELL, ViewLayer::FLOOR, "Well"), 
             "well", 0);
@@ -941,7 +941,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             "training post");
     case SquareType::IMPALED_HEAD:
         return new Square(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head")
-            .setModifier(ViewObject::ROUND_SHADOW), "impaled head", VisionInfo::NORMAL);
+            .setModifier(ViewObject::ROUND_SHADOW), "impaled head", Vision::get(VisionId::NORMAL));
     case SquareType::LIBRARY:
         return new Library(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
             "book shelf");

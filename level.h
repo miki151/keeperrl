@@ -22,6 +22,7 @@
 #include "view.h"
 #include "field_of_view.h"
 #include "square_factory.h"
+#include "vision.h"
 
 class Model;
 class Square;
@@ -110,8 +111,8 @@ class Level {
   void changeLevel(Level* destination, Vec2 landing, Creature* c);
 
   /** Performs a throw of the item, with all consequences of the event.*/
-  void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionInfo);
-  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionInfo);
+  void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, Vision*);
+  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, Vision*);
 
   /** Sets the creature that is assumed to be the player.*/
   void setPlayer(Creature* player);
@@ -130,7 +131,7 @@ class Level {
 
   /** Returns all tiles visible by a creature.*/
   vector<Vec2> getVisibleTiles(const Creature*) const;
-  vector<Vec2> getVisibleTiles(Vec2 pos, VisionInfo) const;
+  vector<Vec2> getVisibleTiles(Vec2 pos, Vision*) const;
 
   /** Checks if the player can see a given square.*/
   bool playerCanSee(Vec2 pos) const;
@@ -245,7 +246,7 @@ class Level {
   vector<Square*> SERIAL(tickingSquares);
   vector<Creature*> SERIAL(creatures);
   Model* SERIAL2(model, nullptr);
-  mutable vector<FieldOfView> SERIAL(fieldOfView);
+  mutable unordered_map<Vision*, FieldOfView> SERIAL(fieldOfView);
   string SERIAL(entryMessage);
   string SERIAL(name);
   Creature* SERIAL2(player, nullptr);
@@ -255,8 +256,9 @@ class Level {
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
-  bool isWithinVision(Vec2 from, Vec2 to) const;
-  vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionInfo vision) const;
+  bool isWithinVision(Vec2 from, Vec2 to, Vision*) const;
+  FieldOfView& getFieldOfView(Vision* vision) const;
+  vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, Vision* vision) const;
 
   /** Notify relevant locations about creature position. */
   void notifyLocations(Creature*);

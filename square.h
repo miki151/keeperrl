@@ -24,17 +24,18 @@
 #include "trigger.h"
 #include "view_index.h"
 #include "poison_gas.h"
+#include "vision.h"
 
 class Level;
 
 class Square {
   public:
   /** Constructs a square object.
-    * \param noObstruct true if the square doesn't obstruct view
     * \param canHide true if the player can hide at this square
     * \param strength square resistance to demolition
+    * \param vision defines who/what can see through the square. Can be null for opaque.
     */
-  Square(const ViewObject& vo, const string& name, VisionInfo, bool canHide = false,
+  Square(const ViewObject& vo, const string& name, Vision* vision, bool canHide = false,
       int strength = 0, double flamability = 0, map<SquareType, int> constructions = {}, bool ticking = false);
 
   /** Returns the square name. */
@@ -95,10 +96,10 @@ class Square {
   bool canEnterEmpty(const Creature*) const;
 
   /** Checks if this square obstructs view.*/
-  bool canSeeThru(VisionInfo = VisionInfo::NORMAL) const;
+  bool canSeeThru(Vision* = Vision::get(VisionId::NORMAL)) const;
 
   /** Sets if this square obstructs view.*/
-  void setCanSeeThru(VisionInfo);
+  void setVision(Vision*);
 
   /** Checks if the player can hide behind this square.*/
   bool canHide() const;
@@ -192,8 +193,8 @@ class Square {
   ViewIndex getViewIndex(const CreatureView* c) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack);
-  virtual bool itemBounces(Item* item, VisionInfo info) const;
-  void onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionInfo);
+  virtual bool itemBounces(Item* item, Vision*) const;
+  void onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, Vision*);
   vector<Item*> getItems(function<bool (Item*)> predicate = alwaysTrue<Item*>());
   PItem removeItem(Item*);
   vector<PItem> removeItems(vector<Item*>);
@@ -227,7 +228,7 @@ class Square {
   Creature* SERIAL2(creature, nullptr);
   vector<PTrigger> SERIAL(triggers);
   Optional<ViewObject> SERIAL(backgroundObject);
-  VisionInfo SERIAL(visionInfo);
+  Vision* SERIAL(vision);
   bool SERIAL(hide);
   int SERIAL(strength);
   double SERIAL(height);
@@ -244,10 +245,10 @@ class Square {
 
 class SolidSquare : public Square {
   public:
-  SolidSquare(const ViewObject& vo, const string& name, VisionInfo visionInfo = VisionInfo::NONE,
+  SolidSquare(const ViewObject& vo, const string& name, Vision* vision = nullptr,
       map<SquareType, int> constructions = {},
       bool alwaysVisible = false, double flamability = 0) :
-      Square(vo, name, visionInfo, false, 299, flamability, constructions) {
+      Square(vo, name, vision, false, 299, flamability, constructions) {
   }
 
   SERIALIZATION_DECL(SolidSquare);

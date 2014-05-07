@@ -1260,6 +1260,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.undead = true;
           c.chatReactionFriendly = "curses all humans";
           c.chatReactionHostile = "\"Die!\"";
+          c.skills.insert(Skill::get(SkillId::NIGHT_VISION));
           c.name = "vampire";);
     case CreatureId::VAMPIRE_LORD: 
       return INHERIT(VAMPIRE,

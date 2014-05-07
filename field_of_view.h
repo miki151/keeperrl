@@ -21,7 +21,7 @@
 
 class FieldOfView {
   public:
-  FieldOfView(const Table<PSquare>& squares, VisionInfo);
+  FieldOfView(const Table<PSquare>& squares, Vision*);
   bool canSee(Vec2 from, Vec2 to);
   const vector<Vec2>& getVisibleTiles(Vec2 from);
   void squareChanged(Vec2 pos);
@@ -38,7 +38,7 @@ class FieldOfView {
     bool checkVisible(int x,int y) const;
     const vector<Vec2>& getVisibleTiles() const;
 
-    Visibility(const Table<PSquare>& squares, VisionInfo, int x, int y);
+    Visibility(const Table<PSquare>& squares, Vision*, int x, int y);
     Visibility(Visibility&&) = default;
     Visibility& operator = (Visibility&&) = default;
 
@@ -59,7 +59,7 @@ class FieldOfView {
   
   const Table<PSquare>* SERIAL(squares);
   Table<Optional<Visibility>> SERIAL(visibility);
-  VisionInfo SERIAL(visionInfo);
+  Vision* SERIAL(vision);
 };
 
 #endif

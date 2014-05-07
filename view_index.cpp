@@ -81,6 +81,10 @@ Optional<ViewObject> ViewIndex::getTopObject(const vector<ViewLayer>& layers) co
   return Nothing();
 }
 
+void ViewIndex::addHighlight(HighlightInfo info) {
+  addHighlight(info.type, info.amount);
+}
+
 void ViewIndex::addHighlight(HighlightType h, double amount) {
   CHECK(amount >= 0 && amount <= 1);
   for (auto& elem : highlight)

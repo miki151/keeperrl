@@ -20,6 +20,7 @@
 #include "quest.h"
 #include "tribe.h"
 #include "technology.h"
+#include "vision.h"
 
 template<class T, class E>
 unordered_map<E, unique_ptr<T>> Singleton<T, E>::elems;
@@ -57,3 +58,4 @@ template class Singleton<Tribe, TribeId>;
 template class Singleton<Technology, TechId>;
 template class Singleton<Skill, SkillId>;
 template class Singleton<Quest, QuestId>;
+template class Singleton<Vision, VisionId>;
