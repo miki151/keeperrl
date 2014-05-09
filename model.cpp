@@ -54,6 +54,20 @@ bool Model::isTurnBased() {
   return !collective || collective->isTurnBased();
 }
 
+const double dayLength = 2000;
+
+static double sqr(double x) {
+  return x * x;
+}
+
+const double steepness = 10;
+
+double Model::getSunlight() const {
+  // the curve looks like steepened sin that goes between 0 and 1
+  return (atan((sqr(cos(currentTime * M_PI / dayLength)) * 2 * steepness - steepness)) - atan(-steepness)) 
+    / (atan(steepness) - atan(-steepness));
+}
+
 const vector<VillageControl*> Model::getVillageControls() const {
   return extractRefs(villageControls);
 }
@@ -78,7 +92,7 @@ void Model::update(double totalTime) {
     Creature* creature = timeQueue.getNextCreature();
     CHECK(creature) << "No more creatures";
     Debug() << creature->getTheName() << " moving now " << creature->getTime();
-    double time = creature->getTime();
+    currentTime = creature->getTime();
     if (collective && !collective->isTurnBased()) {
       while (1) {
         UserInput input = view->getAction();
@@ -87,10 +101,10 @@ void Model::update(double totalTime) {
         collective->processInput(view, input);
       }
     }
-    if (time > totalTime)
+    if (currentTime > totalTime)
       return;
-    if (time >= lastTick + 1) {
-      MEASURE({ tick(time); }, "ticking time");
+    if (currentTime >= lastTick + 1) {
+      MEASURE({ tick(currentTime); }, "ticking time");
     }
     bool unpossessed = false;
     if (!creature->isDead()) {
@@ -144,9 +158,9 @@ void Model::removeCreature(Creature* c) {
   deadCreatures.push_back(timeQueue.removeCreature(c));
 }
 
-Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker, bool surface) {
+Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker) {
   Level::Builder builder(std::move(b));
-  levels.push_back(builder.build(this, maker, surface));
+  levels.push_back(builder.build(this, maker));
   return levels.back().get();
 }
 
@@ -158,9 +172,8 @@ Model::~Model() {
 
 Level* Model::prepareTopLevel2(vector<SettlementInfo> settlements) {
   Level* top = buildLevel(
-      Level::Builder(200, 200, "Wilderness"),
-      LevelMaker::topLevel2(CreatureFactory::forrest(), settlements),
-      true);
+      Level::Builder(200, 200, "Wilderness", false),
+      LevelMaker::topLevel2(CreatureFactory::forrest(), settlements));
   return top;
 }
 
@@ -182,9 +195,8 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
         "The goblin den is located deep under the earth. "
       "Slay the great goblin. I will reward you.", true));
   Level* top = buildLevel(
-      Level::Builder(600, 600, "Wilderness"),
-      LevelMaker::topLevel(CreatureFactory::forrest(), settlements),
-      true);
+      Level::Builder(600, 600, "Wilderness", false),
+      LevelMaker::topLevel(CreatureFactory::forrest(), settlements));
   Level* c1 = buildLevel(
       Level::Builder(30, 20, "Crypt"),
       LevelMaker::cryptLevel(CreatureFactory::crypt(),{StairKey::CRYPT}, {}));
@@ -494,8 +506,7 @@ Model* Model::collectiveModel(View* view) {
 Model* Model::splashModel(View* view, const Table<bool>& bitmap) {
   Model* m = new Model(view);
   Level* top = m->buildLevel(
-      Level::Builder(bitmap.getWidth(), bitmap.getHeight(), "Wilderness"),
-      LevelMaker::grassAndTrees(), true);
+      Level::Builder(bitmap.getWidth(), bitmap.getHeight(), "Wilderness", false), LevelMaker::grassAndTrees());
   CreatureFactory factory = CreatureFactory::splash();
   m->collective.reset(new Collective(m, top, Tribes::get(TribeId::KEEPER)));
   for (Vec2 v : bitmap.getBounds())

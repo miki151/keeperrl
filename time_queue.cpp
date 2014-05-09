@@ -85,11 +85,6 @@ Creature* TimeQueue::getMinCreature() {
     CHECK(queue.top().creature->getTime() == queue.top().time);
     return queue.top().creature;
   }
-  /*for (PCreature& c : creatures)
-    if (c->getTime() < min || (c->getTime() == min && c->getUniqueId() < res->getUniqueId())) {
-      res = c.get();
-      min = c->getTime();
-    }*/
 }
 
 Creature* TimeQueue::getNextCreature() {

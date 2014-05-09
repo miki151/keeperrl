@@ -32,14 +32,26 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     & SVAR(name)
     & SVAR(player)
     & SVAR(backgroundLevel)
-    & SVAR(backgroundOffset);
+    & SVAR(backgroundOffset)
+    & SVAR(coverInfo)
+    & SVAR(lightAmount);
   CHECK_SERIAL;
 }  
 
 SERIALIZABLE(Level);
 
-Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n) 
-    : squares(std::move(s)), locations(l), model(m), entryMessage(message), name(n) {
+template <class Archive>
+void Level::CoverInfo::serialize(Archive& ar, const unsigned int version) {
+   ar& BOOST_SERIALIZATION_NVP(covered)
+     & BOOST_SERIALIZATION_NVP(sunlight);
+}
+
+SERIALIZABLE(Level::CoverInfo);
+
+Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n,
+    Table<CoverInfo> covers) 
+    : squares(std::move(s)), locations(l), model(m), entryMessage(message), name(n), coverInfo(std::move(covers)),
+      lightAmount(squares.getBounds(), 0) {
   for (Vec2 pos : squares.getBounds()) {
     squares[pos]->setLevel(this);
     Optional<pair<StairDirection, StairKey>> link = squares[pos]->getLandingLink();
@@ -49,8 +61,9 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
   for (Location *l : locations)
     l->setLevel(this);
   for (Vision* vision : Vision::getAll())
-    if (!vision->getInheritedFov())
-      fieldOfView.emplace(vision, FieldOfView(squares, vision));
+    fieldOfView.emplace(vision, FieldOfView(squares, vision));
+  for (Vec2 pos : squares.getBounds())
+    addLightSource(pos, squares[pos]->getLightEmission(), 1);
 }
 
 Rectangle Level::maxLevelBounds(600, 600);
@@ -82,7 +95,7 @@ void Level::addLightSource(Vec2 pos, double radius, int numLight) {
     for (Vec2 v : getVisibleTilesNoDarkness(pos, Vision::get(VisionId::NORMAL))) {
       double dist = (v - pos).lengthD();
       if (dist <= radius)
-        squares[v]->addLight(min(1.0, 1 - (dist) / radius) * numLight);
+        addLight(v, min(1.0, 1 - (dist) / radius) * numLight);
     }
   }
 }
@@ -95,8 +108,6 @@ void Level::replaceSquare(Vec2 pos, PSquare square) {
     square->dropItem(squares[pos]->removeItem(it));
   squares[pos]->onConstructNewSquare(square.get());
   addLightSource(pos, squares[pos]->getLightEmission(), -1);
-  square->setCovered(squares[pos]->isCovered());
-  square->addLight(squares[pos]->getTotalLight());
   square->setBackground(squares[pos].get());
   squares[pos] = std::move(square);
   squares[pos]->setPosition(pos);
@@ -130,6 +141,26 @@ const Location* Level::getLocation(Vec2 pos) const {
 
 const vector<Location*> Level::getAllLocations() const {
   return locations;
+}
+
+Level::CoverInfo Level::getCoverInfo(Vec2 pos) const {
+  return coverInfo[pos];
+}
+
+double Level::getSunlight(Vec2 pos) const {
+  return coverInfo[pos].sunlight * model->getSunlight();
+}
+
+double Level::getTotalLight(Vec2 pos) const {
+  return lightAmount[pos] + getSunlight(pos);
+}
+
+double Level::getLight(Vec2 pos) const {
+  return max(0.0, min(1.0, getTotalLight(pos)));
+}
+
+void Level::addLight(Vec2 pos, double num) {
+  lightAmount[pos] += num;
 }
 
 vector<Vec2> Level::getLandingSquares(StairDirection dir, StairKey key) const {
@@ -257,12 +288,10 @@ vector<Creature*>& Level::getAllCreatures() {
 const int darkViewRadius = 5;
 
 bool Level::isWithinVision(Vec2 from, Vec2 to, Vision* v) const {
-  return v->isNightVision() || from.distD(to) <= darkViewRadius || getSquare(to)->getLight() > 0.3;
+  return v->isNightVision() || from.distD(to) <= darkViewRadius || getLight(to) > 0.3;
 }
 
 FieldOfView& Level::getFieldOfView(Vision* vision) const {
-  if (vision->getInheritedFov())
-    vision = vision->getInheritedFov();
   return fieldOfView.at(vision);
 }
 
@@ -360,8 +389,10 @@ vector<Square*> Level::getTickingSquares() const {
   return tickingSquares;
 }
 
-Level::Builder::Builder(int width, int height, const string& n) : squares(width, height), heightMap(width, height, 0),
-    dark(width, height, 0), attrib(width, height), type(width, height, SquareType(0)), name(n) {
+Level::Builder::Builder(int width, int height, const string& n, bool covered)
+  : squares(width, height), heightMap(width, height, 0),
+    coverInfo(width, height, {covered, covered ? 0.0 : 1.0}), attrib(width, height),
+    type(width, height, SquareType(0)), name(n) {
 }
 
 bool Level::Builder::hasAttrib(Vec2 posT, SquareAttrib attr) {
@@ -423,14 +454,6 @@ double Level::Builder::getHeightMap(Vec2 pos) {
   return heightMap[transform(pos)];
 }
 
-void Level::Builder::setCovered(Vec2 pos) {
-  covered.insert(transform(pos));
-}
-
-void Level::Builder::setDark(Vec2 pos, double val) {
-  dark[pos] = val;
-}
-
 void Level::Builder::putCreature(Vec2 pos, PCreature creature) {
   creature->setPosition(transform(pos));
   creatures.push_back(NOTNULL(std::move(creature)));
@@ -451,17 +474,12 @@ void Level::Builder::setMessage(const string& message) {
   entryMessage = message;
 }
 
-PLevel Level::Builder::build(Model* m, LevelMaker* maker, bool surface) {
+PLevel Level::Builder::build(Model* m, LevelMaker* maker) {
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
-  for (Vec2 v : heightMap.getBounds()) {
+  for (Vec2 v : heightMap.getBounds())
     squares[v]->setHeight(heightMap[v]);
-    squares[v]->addLight(1 - dark[v]);
-    if (covered.count(v) || !surface) {
-      squares[v]->setCovered(true);
-    }
-  }
-  PLevel l(new Level(std::move(squares), m, locations, entryMessage, name));
+  PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo)));
   for (PCreature& c : creatures) {
     Vec2 pos = c->getPosition();
     l->addCreature(pos, std::move(c));
@@ -513,6 +531,10 @@ Vec2 Level::Builder::transform(Vec2 v) {
   return v;
 }
 
+void Level::Builder::setCoverInfo(Vec2 pos, CoverInfo info) {
+  coverInfo[pos] = info;
+}
+
 bool Level::inBounds(Vec2 pos) const {
   return pos.inRectangle(getBounds());
 }
@@ -528,7 +550,6 @@ int Level::getWidth() const {
 int Level::getHeight() const {
   return squares.getHeight();
 }
-
 const string& Level::getName() const {
   return name;
 }

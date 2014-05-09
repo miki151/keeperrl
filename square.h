@@ -55,21 +55,6 @@ class Square {
   /** Returns the entry point details. Returns nothing if square is not entry point. See setLandingLink().*/
   Optional<pair<StairDirection, StairKey>> getLandingLink() const;
 
-  /** Marks this square as covered, i.e. having a roof.*/
-  void setCovered(bool);
-
-  /** Checks if this square is covered, i.e. having a roof.*/
-  bool isCovered() const;
-
-  /** Returns the amount of light in the square, capped within (0, 1).*/
-  double getLight() const;
-
-  /** Returns the amount of light in the square, uncapped.*/
-  double getTotalLight() const;
-
-  /** Increases or decreases the number of light sources that emit on this square.*/
-  void addLight(double amount);
-
   /** Returns radius of emitted light (0 if none).*/
   virtual double getLightEmission() const;
 
@@ -233,14 +218,12 @@ class Square {
   int SERIAL(strength);
   double SERIAL(height);
   vector<Vec2> SERIAL(travelDir);
-  bool SERIAL2(covered, false);
   Optional<pair<StairDirection, StairKey>> SERIAL(landingLink);
   Fire SERIAL(fire);
   PoisonGas SERIAL(poisonGas);
   map<SquareType, int> SERIAL(constructions);
   bool SERIAL(ticking);
   double SERIAL2(fog, 0);
-  double SERIAL2(numLight, 0);
 };
 
 class SolidSquare : public Square {

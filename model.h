@@ -80,6 +80,8 @@ class Model : public EventListener {
   void showCredits();
   void retireCollective();
 
+  double getSunlight() const;
+
   SERIALIZATION_DECL(Model);
 
   Encyclopedia keeperopedia;
@@ -88,7 +90,7 @@ class Model : public EventListener {
   PCreature makePlayer();
   const Creature* getPlayer() const;
   void landHeroPlayer();
-  Level* buildLevel(Level::Builder&& b, LevelMaker*, bool surface = false);
+  Level* buildLevel(Level::Builder&& b, LevelMaker*);
   void addLink(StairDirection, StairKey, Level*, Level*);
   Level* prepareTopLevel(vector<SettlementInfo> settlements);
   Level* prepareTopLevel2(vector<SettlementInfo> settlements);
@@ -104,6 +106,7 @@ class Model : public EventListener {
   bool SERIAL2(won, false);
   bool SERIAL2(addHero, false);
   bool SERIAL2(adventurer, false);
+  double SERIAL2(currentTime, 0);
 };
 
 #endif

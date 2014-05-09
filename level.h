@@ -150,11 +150,33 @@ class Level {
 
   const vector<Location*> getAllLocations() const;
 
+  struct CoverInfo {
+    bool covered;
+    double sunlight;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+  };
+
+ // void setCoverInfo(Vec2, CoverInfo);
+  CoverInfo getCoverInfo(Vec2) const;
+
+  /** Returns the amount of light in the square, capped within (0, 1).*/
+  double getLight(Vec2) const;
+
+  /** Returns the amount of sunlight in the square, capped within (0, 1).*/
+  double getSunlight(Vec2) const;
+
+  /** Returns the amount of light in the square, uncapped.*/
+  double getTotalLight(Vec2) const;
+
+  /** Increases or decreases the number of light sources that emit on this square.*/
+  void addLight(Vec2, double amount);
+
   /** Class used to initialize a level object.*/
   class Builder {
     public:
     /** Constructs a builder with given size and name. */
-    Builder(int width, int height, const string& name);
+    Builder(int width, int height, const string& name, bool covered = true);
     
     /** Move constructor.*/
     Builder(Builder&&) = default;
@@ -173,7 +195,7 @@ class Level {
 
     /** Builds the level. The level will keep reference to the model.
         \paramname{surface} tells if this level is on the Earth surface.*/
-    PLevel build(Model*, LevelMaker*, bool surface);
+    PLevel build(Model*, LevelMaker*);
 
     //@{
     /** Puts a square on given position. Sets optional attributes of the square. The attributes remain if the square is changed.*/
@@ -204,12 +226,9 @@ class Level {
     /** Adds a location to the level and sets its coordinates.*/
     void addLocation(Location*, Rectangle area);
 
-    /** Marks given square as covered. The value will remain if square is changed.*/
-    void setCovered(Vec2);
-
-    /** Marks given square as dark. The value will remain if square is changed.*/
-    void setDark(Vec2, double);
-    
+    /** Sets the cover of the square. The value will remain if square is changed.*/
+    void setCoverInfo(Vec2, CoverInfo);
+   
     enum Rot { CW0, CW1, CW2, CW3};
 
     void pushMap(Rectangle bounds, Rot);
@@ -225,7 +244,7 @@ class Level {
     Table<double> heightMap;
     Table<double> dark;
     vector<Location*> locations;
-    unordered_set<Vec2> covered;
+    Table<CoverInfo> coverInfo;
     Table<unordered_set<SquareAttrib>> attrib;
     Table<SquareType> type;
     vector<PCreature> creatures;
@@ -252,8 +271,11 @@ class Level {
   Creature* SERIAL2(player, nullptr);
   const Level* SERIAL2(backgroundLevel, nullptr);
   Vec2 SERIAL(backgroundOffset);
+  Table<CoverInfo> SERIAL(coverInfo);
+  Table<double> SERIAL(lightAmount);
   
-  Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name);
+  Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name,
+      Table<CoverInfo> coverInfo);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   bool isWithinVision(Vec2 from, Vec2 to, Vision*) const;

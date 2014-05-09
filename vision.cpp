@@ -28,8 +28,8 @@ bool Vision::isNightVision() const {
 }
 
 void Vision::init() {
-  Vision::set(VisionId::ELF, new Vision(nullptr, false));
   Vision::set(VisionId::NORMAL, new Vision(nullptr, false));
+  Vision::set(VisionId::ELF, new Vision(Vision::get(VisionId::NORMAL), false));
   Vision::set(VisionId::NIGHT, new Vision(Vision::get(VisionId::NORMAL), true));
 }
 

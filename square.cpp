@@ -34,14 +34,12 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(strength)
     & SVAR(height)
     & SVAR(travelDir)
-    & SVAR(covered)
     & SVAR(landingLink)
     & SVAR(fire)
     & SVAR(poisonGas)
     & SVAR(constructions)
     & SVAR(ticking)
-    & SVAR(fog)
-    & SVAR(numLight);
+    & SVAR(fog);
   CHECK_SERIAL;
 }
 
@@ -92,26 +90,6 @@ bool Square::isLandingSquare(StairDirection direction, StairKey key) {
 
 Optional<pair<StairDirection, StairKey>> Square::getLandingLink() const {
   return landingLink;
-}
-
-void Square::setCovered(bool c) {
-  covered = c;
-}
-
-bool Square::isCovered() const {
-  return covered;
-}
-
-double Square::getTotalLight() const {
-  return numLight;
-}
-
-double Square::getLight() const {
-  return max(0.0, min(1.0, numLight));
-}
-
-void Square::addLight(double num) {
-  numLight += num;
 }
 
 double Square::getLightEmission() const {
@@ -340,7 +318,7 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
       ret.insert(addFire(it->getViewObject(), fireSize));
   }
   if (c->canSee(position)) {
-    ret.addHighlight(HighlightType::NIGHT, 1.0 - getLight());
+    ret.addHighlight(HighlightType::NIGHT, 1.0 - level->getLight(position));
     if (poisonGas.getAmount() > 0)
       ret.addHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas.getAmount()));
     if (fog)

@@ -338,7 +338,7 @@ void Creature::makeMove() {
   unknownAttacker.clear();
   if (fireCreature && Random.roll(5))
     getSquare()->setOnFire(1);
-  if (!getSquare()->isCovered())
+  if (level->getSunlight(position) > 0.99 )
     shineLight();
 }
 
@@ -1526,7 +1526,7 @@ void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
 }
 
 bool Creature::canFlyAway() const {
-  return canFly() && !getConstSquare()->isCovered();
+  return canFly() && !level->getCoverInfo(position).covered;
 }
 
 void Creature::flyAway() {
@@ -1711,6 +1711,8 @@ const ViewObject& Creature::getViewObject() const {
 }
 
 bool Creature::canSee(const Creature* c) const {
+  if (c->getLevel() != level)
+    return false;
   for (CreatureVision* v : creatureVisions)
     if (v->canSee(this, c))
       return true;
