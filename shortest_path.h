@@ -47,14 +47,24 @@ class ShortestPath {
   void init(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, Vec2 target, Optional<Vec2> from,
       Optional<int> limit = Nothing());
   void reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, double mult, Vec2 from, int limit);
-  void setDistance(Vec2, double);
-  double getDistance(Vec2 pos) const;
   void constructPath(Vec2 start, bool reversed = false);
   vector<Vec2> SERIAL(path);
   Vec2 SERIAL(target);
   vector<Vec2> SERIAL(directions);
   Rectangle SERIAL(bounds);
   bool SERIAL(reversed);
+};
+
+class Dijkstra {
+  public:
+  Dijkstra(Rectangle bounds, Vec2 from, int maxDist, function<double(Vec2)> entryFun,
+      vector<Vec2> directions = Vec2::directions8());
+  bool isReachable(Vec2) const;
+  double getDist(Vec2) const;
+  const map<Vec2, double>& getAllReachable() const;
+  
+  private:
+  map<Vec2, double> reachable;
 };
 
 #endif

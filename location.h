@@ -22,9 +22,8 @@ class Level;
 
 class Location {
   public:
-  Location(const string& name, const string& description);
-  Location();
-  Location(bool surprise);
+  Location(const string& name, const string& description, bool surprise = false);
+  Location(bool surprise = false);
   string getName() const;
   string getDescription() const;
   bool hasName() const;

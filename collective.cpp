@@ -1106,11 +1106,12 @@ vector<Collective::TechInfo> Collective::getTechInfo() const {
 void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   gameInfo.villageInfo.villages.clear();
   bool attacking = false;
-  for (VillageControl* c : model->getVillageControls()) {
-    gameInfo.villageInfo.villages.push_back(c->getVillageInfo());
-    if (c->currentlyAttacking())
-      attacking = true;
-  }
+  for (VillageControl* c : model->getVillageControls())
+    if (!c->isAnonymous()) {
+      gameInfo.villageInfo.villages.push_back(c->getVillageInfo());
+      if (c->currentlyAttacking())
+        attacking = true;
+    }
   if (attacking)
     model->getView()->getJukebox()->setCurrent(Jukebox::BATTLE);
   gameInfo.infoType = View::GameInfo::InfoType::BAND;
@@ -1219,10 +1220,10 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
     if (constructions.count(pos) && !constructions.at(pos).built)
       index.insert(getConstructionObject(constructions.at(pos).type));
   }
- /* if (const Location* loc = level->getLocation(pos)) {
+  if (const Location* loc = level->getLocation(pos)) {
     if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !knownPos(pos))
       index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
-  }*/
+  }
   return index;
 }
 
@@ -2402,15 +2403,20 @@ Creature* Collective::addCreature(PCreature creature, Vec2 v, MinionType type) {
   return ret;
 }
 
+const bool seeTerrain = false;
+
 void Collective::addCreature(Creature* c, MinionType type) {
   if (keeper == nullptr) {
     keeper = c;
     type = MinionType::KEEPER;
     minionByType[type].push_back(c);
-    Vec2 radius(30, 30);
+    Vec2 radius = seeTerrain ? Vec2(400, 400) : Vec2(30, 30);
+    auto pred = [&](Vec2 pos) {
+      return level->getSquare(pos)->canEnterEmpty(Creature::getDefault())
+            || (seeTerrain && level->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinionFlyer()));
+    };
     for (Vec2 pos : Rectangle(c->getPosition() - radius, c->getPosition() + radius))
-      if (pos.distD(c->getPosition()) <= radius.x && pos.inRectangle(level->getBounds()) 
-          && level->getSquare(pos)->canEnterEmpty(Creature::getDefault()))
+      if (pos.distD(c->getPosition()) <= radius.x && pos.inRectangle(level->getBounds()) && pred(pos))
         for (Vec2 v : concat({pos}, pos.neighbors8()))
           if (v.inRectangle(level->getBounds()))
             addKnownTile(v);

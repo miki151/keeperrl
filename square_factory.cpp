@@ -886,7 +886,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new SolidSquare(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain"), "mountain",
             Vision::get(VisionId::NORMAL));
     case SquareType::MOUNTAIN2:
-        return new SolidSquare(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain").setModifier(ViewObject::CASTS_SHADOW), "mountain", nullptr,
+        return new SolidSquare(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Mountain").setModifier(ViewObject::CASTS_SHADOW), "mountain", nullptr,
             {{SquareType::FLOOR, Random.getRandom(3, 8)}});
     case SquareType::GLACIER:
         return new SolidSquare(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"), "mountain",

@@ -20,16 +20,20 @@
 #include "monster_ai.h"
 #include "view.h"
 
+class AttackTrigger;
+typedef unique_ptr<AttackTrigger> PAttackTrigger;
+
 class VillageControl : public EventListener {
   public:
   virtual ~VillageControl();
-  void addCreature(Creature* c);
+  void initialize(vector<Creature*>);
 
   virtual MoveInfo getMove(Creature* c) = 0;
 
   void tick(double time);
 
   bool isConquered() const;
+  bool isAnonymous() const;
   vector<Creature*> getAliveCreatures() const;
   bool currentlyAttacking() const;
 
@@ -37,39 +41,31 @@ class VillageControl : public EventListener {
 
   View::GameInfo::VillageInfo::Village getVillageInfo() const;
 
-  class AttackTrigger {
-    public:
-    virtual void tick(double time) = 0;
-    bool startedAttack(const Creature*);
-    void setVillageControl(VillageControl*);
-
-    virtual ~AttackTrigger() {}
-
-    SERIALIZATION_DECL(AttackTrigger);
-
-    protected:
-    set<const Creature*> SERIAL(fightingCreatures);
-    VillageControl* SERIAL2(control, nullptr);
-  };
-
-  static AttackTrigger* getPowerTrigger(double killedCoeff, double powerCoeff);
-  static AttackTrigger* getFinalTrigger(vector<VillageControl*> otherControls);
+  void setPowerTrigger(double killedCoeff, double powerCoeff);
+  void setFinalTrigger(vector<VillageControl*> otherControls);
+  void setOnFirstContact();
 
   friend class AttackTrigger;
   friend class PowerTrigger;
   friend class FinalTrigger;
+  friend class FirstContact;
 
-  static PVillageControl topLevelVillage(Collective* villain, const Location* villageLocation, AttackTrigger*);
-  static PVillageControl dwarfVillage(Collective* villain, const Level*, 
-      StairDirection dir, StairKey key, AttackTrigger*);
+  static PVillageControl topLevelVillage(Collective* villain, const Location* villageLocation);
+  static PVillageControl dwarfVillage(Collective* villain, const Level*, StairDirection dir, StairKey key);
+  static PVillageControl topLevelAnonymous(Collective* villain);
 
-  SERIALIZATION_DECL(VillageControl);
+  void setTrigger(unique_ptr<AttackTrigger>);
+
+  VillageControl();
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
 
   template <class Archive>
   static void registerTypes(Archive& ar);
 
   protected:
-  VillageControl(Collective* villain, const Level*, string name, AttackTrigger*);
+  VillageControl(Collective* villain, const Level*, string name);
+  VillageControl(Collective* villain, const Level*);
   vector<Creature*> SERIAL(allCreatures);
   Collective* SERIAL2(villain, nullptr);
   const Level* SERIAL2(level, nullptr);

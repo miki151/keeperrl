@@ -20,7 +20,7 @@
 #include "level.h"
 #include "creature_factory.h"
 
-enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE };
+enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
 
 struct SettlementInfo {
   SettlementType type;
@@ -31,6 +31,7 @@ struct SettlementInfo {
   Tribe* tribe;
   BuildingId buildingId;
   vector<StairKey> downStairs;
+  vector<StairKey> upStairs;
   Optional<CreatureId> guardId;
   Optional<ItemId> elderLoot;
   Optional<ItemFactory> shopFactory;
@@ -48,8 +49,7 @@ class LevelMaker {
       StairLook stairLook, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* topLevel(CreatureFactory forrest, vector<SettlementInfo> village);
   static LevelMaker* topLevel2(CreatureFactory forrest, vector<SettlementInfo> village);
-  static LevelMaker* mineTownLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* goblinTownLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down);
+  static LevelMaker* mineTownLevel(SettlementInfo);
 
   static LevelMaker* pyramidLevel(Optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* towerLevel(Optional<StairKey> down, Optional<StairKey> up);

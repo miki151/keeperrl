@@ -246,6 +246,7 @@ class Connector : public LevelMaker {
             case SquareType::MAGMA:
               newType = SquareType::BRIDGE;
               break;
+            case SquareType::MOUNTAIN2:
             case SquareType::BLACK_WALL:
               newType = SquareType::PATH;
               break;
@@ -280,18 +281,15 @@ class Connector : public LevelMaker {
       } while (!builder->getSquare(p2)->canEnter(Creature::getDefault()) && !Random.roll(dead_end));
       connect(builder, p1, p2, area);
     }
-    ShortestPath connections(area,
-        [builder](Vec2 pos)->double {
-            if (builder->getSquare(pos)->canEnter(Creature::getDefault()))
-              return 1;
-            else
-            return ShortestPath::infinity;},
-        [] (Vec2 v) { return v.length4(); },
-        Vec2::directions8(), p1, p2);
-    for (Vec2 v : area) 
-      if (builder->getSquare(v)->canEnter(Creature::getDefault()) && !connections.isReachable(v)) {
+    Dijkstra dijkstra(area, p1, 10000, [&] (Vec2 pos) {
+        if (builder->getSquare(pos)->canEnterEmpty(Creature::getDefault()))
+          return 1.;
+        else
+          return ShortestPath::infinity;});
+    for (Vec2 v : area)
+      if (builder->getSquare(v)->canEnter(Creature::getDefault()) && 
+          !dijkstra.isReachable(v))
         connect(builder, p1, v, area);
-      }
   }
   
   private:
@@ -604,6 +602,7 @@ BuildingInfo woodBuilding { SquareType::WOOD_WALL, SquareType::FLOOR, SquareType
 BuildingInfo woodCastleBuilding { SquareType::WOOD_WALL, SquareType::FLOOR, SquareType::MUD, SquareType::DOOR};
 BuildingInfo mudBuilding { SquareType::MUD_WALL, SquareType::MUD, SquareType::MUD, SquareType::MUD};
 BuildingInfo brickBuilding { SquareType::CASTLE_WALL, SquareType::FLOOR, SquareType::MUD, SquareType::DOOR};
+BuildingInfo dungeonBuilding { SquareType::MOUNTAIN2, SquareType::FLOOR, SquareType::PATH, SquareType::DOOR};
 
 static BuildingInfo get(BuildingId id) {
   switch (id) {
@@ -611,6 +610,7 @@ static BuildingInfo get(BuildingId id) {
     case BuildingId::WOOD_CASTLE: return woodCastleBuilding;
     case BuildingId::MUD: return mudBuilding;
     case BuildingId::BRICK: return brickBuilding;
+    case BuildingId::DUNGEON: return dungeonBuilding;
   }
   FAIL << "ref";
   return woodBuilding;
@@ -1005,48 +1005,67 @@ vector<double> sortedValues(const Table<double>& t) {
 
 class Mountains : public LevelMaker {
   public:
-  Mountains(double r, double varianceM, vector<int> _cornerLevels, bool _makeDark = true,
-      vector<SquareType> _types = {SquareType::GLACIER, SquareType::MOUNTAIN, SquareType::HILL}) 
-      : ratio(r), cornerLevels(_cornerLevels), types(_types), makeDark(_makeDark), varianceMult(varianceM) {}
+  Mountains(vector<double> r, double varianceM, vector<int> _cornerLevels, bool _makeDark = true,
+      vector<SquareType> _types = {SquareType::GLACIER, SquareType::MOUNTAIN, SquareType::HILL, SquareType::GRASS,
+      SquareType::SAND}) 
+      : ratio(r), cornerLevels(_cornerLevels), types(_types), makeDark(_makeDark), varianceMult(varianceM) {
+    CHECK(r.size() == 5);
+  }
 
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
     Table<double> wys = genNoiseMap(area, cornerLevels, varianceMult);
     vector<double> values = sortedValues(wys);
-    double cutOffValHill = values[(int)(ratio * double(values.size()))];
-    double cutOffVal = values[(int)((0.5 + ratio) / 1.5 * double(values.size()))];
-    double cutOffValSnow = values[(int)((3. + ratio) / 4. * double(values.size()))];
-    int gCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0, fCnt = 0;
+    double cutOffValSand = values[(int)(ratio[0] * double(values.size()))];
+    double cutOffValLand = values[(int)(ratio[1] * double(values.size()))];
+    double cutOffValHill = values[(int)(ratio[2] * double(values.size()))];
+    double cutOffVal = values[(int)(ratio[3] * double(values.size()))];
+    double cutOffValSnow = values[(int)(ratio[4] * double(values.size()))];
+    int gCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0, sCnt = 0, wCnt = 0;
     for (Vec2 v : area) {
       builder->setHeightMap(v, wys[v]);
       if (wys[v] > cutOffValSnow) {
         builder->putSquare(v, types[2]);
-        builder->putSquare(v, types[0], {SquareAttrib::GLACIER, SquareAttrib::ROAD_CUT_THRU});
+        builder->putSquare(v, types[0], SquareAttrib::GLACIER);
         if (makeDark)
           builder->setCoverInfo(v, {true, 0.0});
+        else
+          builder->addAttrib(v, SquareAttrib::ROAD_CUT_THRU);
         ++gCnt;
       }
       else if (wys[v] > cutOffVal) {
         builder->putSquare(v, types[2]);
-        builder->putSquare(v, types[1], {SquareAttrib::MOUNTAIN, SquareAttrib::ROAD_CUT_THRU});
+        builder->putSquare(v, types[1], SquareAttrib::MOUNTAIN);
         if (makeDark)
           builder->setCoverInfo(v, {true, 1. - (wys[v] - cutOffVal) / (cutOffValSnow - cutOffVal)});
+        else
+          builder->addAttrib(v, SquareAttrib::ROAD_CUT_THRU);
         ++mCnt;
       }
       else if (wys[v] > cutOffValHill) {
         builder->putSquare(v, types[2], SquareAttrib::HILL);
         ++hCnt;
       }
-      else {
+      else if (wys[v] > cutOffValLand) {
+        builder->putSquare(v, types[3]);
         builder->addAttrib(v, SquareAttrib::LOWLAND);
         ++lCnt;
       }
+      else if (wys[v] > cutOffValSand) {
+        builder->putSquare(v, types[4]);
+        builder->addAttrib(v, SquareAttrib::LOWLAND);
+        ++sCnt;
+      }
+      else {
+        builder->addAttrib(v, SquareAttrib::LAKE);
+        ++wCnt;
+      }
     }
-    Debug() << "Terrain distribution " << gCnt << " glacier, " << mCnt << " mountain, " << hCnt << " hill, " << lCnt << " lowland, " << fCnt << " fog";
+    Debug() << "Terrain distribution " << gCnt << " glacier, " << mCnt << " mountain, " << hCnt << " hill, " << lCnt << " lowland, " << wCnt << " water, " << sCnt << " sand";
   }
 
   private:
-  double ratio;
+  vector<double> ratio;
   vector<int> cornerLevels;
   vector<SquareType> types;
   bool makeDark;
@@ -1716,17 +1735,74 @@ pair<int, int> getSize(SettlementType type) {
     case SettlementType::VILLAGE:
     case SettlementType::CASTLE: return {30, 20};
     case SettlementType::CASTLE2: return {15, 15};
+    case SettlementType::MINETOWN: return {30, 20};
+    case SettlementType::CAVE: return {10, 10};
   }
   FAIL << "fewf";
   return {0, 0};
 }
 
 SquarePredicate* getSettlementPredicate(SettlementType type) {
-  if (type == SettlementType::VILLAGE2)
-    return new AttribPredicate(SquareAttrib::FORREST);
-  else
-    return new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
-        new NoAttribPredicate(SquareAttrib::FOG));
+  switch (type) {
+    case SettlementType::VILLAGE2: return new AttribPredicate(SquareAttrib::FORREST);
+    case SettlementType::CAVE:
+    case SettlementType::MINETOWN: return new TypePredicate(SquareType::MOUNTAIN2);
+    default: return new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
+                 new NoAttribPredicate(SquareAttrib::FOG));
+  }
+  FAIL << "Wef";
+  return nullptr;
+}
+
+static MakerQueue* mineTownMaker(SettlementInfo info) {
+  int numCavern = 10;
+  int maxCavernSize = 12;
+  int minRooms = 5;
+  int maxRooms = 7;
+  MakerQueue* queue = new MakerQueue();
+  map<SquareType, pair<int, int> > featureCount {
+      { SquareType::CHEST, make_pair(4, 8) },
+      { SquareType::BED, make_pair(4, 8) }};
+  LevelMaker* cavern = new UniformBlob(SquareType::PATH);
+  vector<LevelMaker*> vCavern;
+  vector<pair<int, int>> sizes;
+  for (int i : Range(numCavern)) {
+    sizes.push_back(make_pair(Random.getRandom(5, maxCavernSize), Random.getRandom(5, maxCavernSize)));
+    vCavern.push_back(cavern);
+  }
+  queue->addMaker(new RandomLocations(vCavern, sizes, new AlwaysTrue(), false));
+  LevelMaker* shopMaker = nullptr;
+  if (info.shopFactory)
+    shopMaker= new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), get(info.buildingId));
+  queue->addMaker(new RoomMaker(minRooms, maxRooms, 4, 7, SquareType::ROCK_WALL, Nothing(), shopMaker, false));
+  queue->addMaker(new Connector({1, 0, 0}));
+  SquarePredicate* featurePred = new AndPredicates(new AttribPredicate(SquareAttrib::EMPTY_ROOM),
+      new TypePredicate(SquareType::FLOOR));
+  for (StairKey key : info.downStairs)
+    queue->addMaker(new Stairs(StairDirection::DOWN, key, featurePred));
+  for (StairKey key : info.upStairs)
+    queue->addMaker(new Stairs(StairDirection::UP, key, featurePred));
+  queue->addMaker(new DungeonFeatures(featurePred, featureCount));
+  queue->addMaker(new DungeonFeatures(new OrPredicates(new TypePredicate(SquareType::FLOOR),
+          new TypePredicate(SquareType::PATH)), {{SquareType::TORCH, make_pair(10, 16)}}));
+  queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::monster()));
+  queue->addMaker(new LocationMaker(info.location));
+  return queue;
+}
+
+static MakerQueue* caveMaker(SettlementInfo info) {
+  MakerQueue* queue = new MakerQueue();
+  queue->addMaker(new UniformBlob(SquareType::FLOOR));
+  queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::monster()));
+  queue->addMaker(new LocationMaker(info.location));
+  return queue;
+}
+
+LevelMaker* LevelMaker::mineTownLevel(SettlementInfo info) {
+  MakerQueue* queue = new MakerQueue();
+  queue->addMaker(new Empty(SquareType::ROCK_WALL));
+  queue->addMaker(mineTownMaker(info));
+  return new BorderGuard(queue, SquareType::BLACK_WALL);
 }
 
 LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
@@ -1765,7 +1841,13 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
       case SettlementType::COTTAGE: queue = cottage(settlement); break;
       case SettlementType::WITCH_HOUSE:
           queue = cottage(settlement, {{ SquareType::LABORATORY, {2, 5}}}); break;
-    }
+      case SettlementType::MINETOWN:
+          queue = mineTownMaker(settlement); break;
+          break;
+      case SettlementType::CAVE:
+          queue = caveMaker(settlement); break;
+          break;
+  }
     if (settlement.tribe == Tribes::get(TribeId::ELVEN))
       elvenVillage = queue;
     if (settlement.tribe == Tribes::get(TribeId::BANDIT))
@@ -1819,8 +1901,8 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   subMakers.push_back(dungeonEntrance(StairKey::DWARF, SquareType::MOUNTAIN, "Our enemies the dwarves are living there."));
   subSizes.emplace_back(1, 1);
   predicates.push_back(new TypePredicate(SquareType::MOUNTAIN));
-  queue->addMaker(new Empty(SquareType::GRASS));
-  queue->addMaker(new Mountains(0.5, 0.7, {1, 1, 1, 1, 0}, false));
+  queue->addMaker(new Empty(SquareType::WATER));
+  queue->addMaker(new Mountains({0.0, 0.0, 0.5, 0.75, 0.88}, 0.4, {0, 0, 1, 1, 0}, false));
  // queue->addMaker(new MountainRiver(30, '='));
   queue->addMaker(new Forrest(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
   queue->addMaker(new Forrest(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
@@ -1841,6 +1923,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   queue->addMaker(new Items(ItemFactory::mushrooms(), SquareType::GRASS, 30, 60));
   return new BorderGuard(queue);
 }
+
 
 LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
   MakerQueue* queue = new MakerQueue();
@@ -1874,6 +1957,12 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
       case SettlementType::WITCH_HOUSE:
           queue = cottage(settlement, {{ SquareType::LABORATORY, {2, 5}}}); break;
           break;
+      case SettlementType::MINETOWN:
+          queue = mineTownMaker(settlement); break;
+          break;
+      case SettlementType::CAVE:
+          queue = caveMaker(settlement); break;
+          break;
     }
     minDistances[{startingPos, queue}] = 50;
     subMakers.push_back(queue);
@@ -1905,85 +1994,44 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   int minIron = 7;
   int maxIron = 12;
   for (int i : Range(Random.getRandom(minGold, maxGold))) {
-    subMakers.push_back(new UniformBlob(SquareType::GOLD_ORE));
+    subMakers.push_back(new UniformBlob(SquareType::GOLD_ORE, Nothing(), SquareAttrib::NO_DIG));
     subSizes.emplace_back(Random.getRandom(5, 6), Random.getRandom(5, 6)); 
     predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
     if (i < minGold)
       maxDistances[{startingPos, subMakers.back()}] = maxResourceDist;
   }
   for (int i : Range(Random.getRandom(minStone, maxStone))) {
-    subMakers.push_back(new UniformBlob(SquareType::STONE));
+    subMakers.push_back(new UniformBlob(SquareType::STONE, Nothing(), SquareAttrib::NO_DIG));
     subSizes.emplace_back(Random.getRandom(5, 10), Random.getRandom(5, 10)); 
     predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
     if (i < minStone)
       maxDistances[{startingPos, subMakers.back()}] = maxResourceDist;
   }
   for (int i : Range(Random.getRandom(minIron, maxIron))) {
-    subMakers.push_back(new UniformBlob(SquareType::IRON_ORE));
+    subMakers.push_back(new UniformBlob(SquareType::IRON_ORE, Nothing(), SquareAttrib::NO_DIG));
     subSizes.emplace_back(Random.getRandom(5, 10), Random.getRandom(5, 10)); 
     predicates.push_back(new TypePredicate(SquareType::MOUNTAIN2));
     if (i < minIron)
       maxDistances[{startingPos, subMakers.back()}] = maxResourceDist;
   }
-  subMakers.push_back(dungeonEntrance(StairKey::DWARF, SquareType::MOUNTAIN2, "dwarven halls"));
-  subSizes.emplace_back(1, 1);
-  predicates.push_back(new BorderPredicate(SquareType::MOUNTAIN2, SquareType::HILL));
-  minDistances[{startingPos, subMakers.back()}] = 50;
-  queue->addMaker(new Empty(SquareType::GRASS));
-  queue->addMaker(new Mountains(0.7, 0.4, {0, 1, 1, 0, 0}, true,
-        {SquareType::MOUNTAIN2, SquareType::MOUNTAIN2, SquareType::HILL}));
+ // subMakers.push_back(dungeonEntrance(StairKey::DWARF, SquareType::MOUNTAIN2, "dwarven halls"));
+//  subSizes.emplace_back(1, 1);
+//  predicates.push_back(new BorderPredicate(SquareType::MOUNTAIN2, SquareType::HILL));
+//  minDistances[{startingPos, subMakers.back()}] = 50;
+  queue->addMaker(new Empty(SquareType::WATER));
+  queue->addMaker(new Mountains({0.0, 0.0, 0.5, 0.66, 0.9}, 0.5, {0, 1, 1, 0, 0}, true,
+        {SquareType::MOUNTAIN2, SquareType::MOUNTAIN2, SquareType::HILL, SquareType::GRASS, SquareType::SAND}));
   queue->addMaker(new Forrest(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));
   queue->addMaker(new Forrest(0.4, 0.5, SquareType::HILL, vegetationHigh, probs));
   queue->addMaker(new Forrest(0.2, 0.3, SquareType::MOUNTAIN, vegetationHigh, probs));
   queue->addMaker(new Margin(10, new RandomLocations(subMakers, subSizes, predicates, true, minDistances,
           maxDistances)));
   queue->addMaker(new Roads(SquareType::PATH));
+  queue->addMaker(new Connector({5, 0, 0}));
   queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::HUMAN), CreatureId::GOAT),
         Random.getRandom(3, 6), MonsterAIFactory::doorEater()));
   queue->addMaker(new Items(ItemFactory::mushrooms(), SquareType::GRASS, 30, 60));
   return new BorderGuard(queue);
-}
-
-static LevelMaker* townLevel(CreatureFactory cfactory, int numCreatures, vector<StairKey> up, vector<StairKey> down,
-    SquareType furniture, int numCavern, int maxCavernSize, int minRooms, int maxRooms, ItemFactory shopFactory,
-    Tribe* shopTribe) {
-  MakerQueue* queue = new MakerQueue();
-  map<SquareType, pair<int, int> > featureCount {
-      { SquareType::CHEST, make_pair(4, 8) },
-      { furniture, make_pair(4, 8) }};
-  queue->addMaker(new Empty(SquareType::ROCK_WALL));
-  LevelMaker* cavern = new UniformBlob(SquareType::PATH);
-  vector<LevelMaker*> vCavern;
-  vector<pair<int, int>> sizes;
-  for (int i : Range(numCavern)) {
-    sizes.push_back(make_pair(Random.getRandom(5, maxCavernSize), Random.getRandom(5, maxCavernSize)));
-    vCavern.push_back(cavern);
-  }
-  queue->addMaker(new RandomLocations(vCavern, sizes, new AlwaysTrue(), false));
-  queue->addMaker(new RoomMaker(minRooms, maxRooms, 4, 7, SquareType::ROCK_WALL, Nothing(),
-        new ShopMaker(shopFactory, shopTribe, Random.getRandom(8, 16), brickBuilding), false));
-  queue->addMaker(new Connector({1, 0, 0}));
-  SquarePredicate* featurePred = new AndPredicates(new AttribPredicate(SquareAttrib::EMPTY_ROOM),
-      new TypePredicate(SquareType::FLOOR));
-  for (StairKey key : down)
-    queue->addMaker(new Stairs(StairDirection::DOWN, key, featurePred));
-  for (StairKey key : up)
-    queue->addMaker(new Stairs(StairDirection::UP, key, featurePred));
-  queue->addMaker(new DungeonFeatures(featurePred, featureCount));
-  queue->addMaker(new DungeonFeatures(new OrPredicates(new TypePredicate(SquareType::FLOOR),
-          new TypePredicate(SquareType::PATH)), {{SquareType::TORCH, make_pair(10, 16)}}));
-  queue->addMaker(new Creatures(cfactory, numCreatures, MonsterAIFactory::monster()));
-  return new BorderGuard(queue, SquareType::BLACK_WALL);
-}
-
-LevelMaker* LevelMaker::mineTownLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down) {
-  return townLevel(cfactory, Random.getRandom(10, 20), up, down, SquareType::BED, 20, 25, 6, 12,
-      ItemFactory::dwarfShop(), Tribes::get(TribeId::DWARVEN));
-}
-
-LevelMaker* LevelMaker::goblinTownLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down) {
-  return townLevel(cfactory, Random.getRandom(10, 20), up, down, SquareType::TORTURE_TABLE, 40, 10, 5, 8,
-      ItemFactory::goblinShop(), Tribes::get(TribeId::GOBLIN));
 }
 
 LevelMaker* LevelMaker::pyramidLevel(Optional<CreatureFactory> cfactory, vector<StairKey> up, vector<StairKey> down) {

@@ -31,10 +31,9 @@ void Location::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Location);
 
-Location::Location(const string& _name, const string& desc) : name(_name), description(desc), bounds(-1, -1, 1, 1) {
+Location::Location(const string& _name, const string& desc, bool sup)
+    : name(_name), description(desc), bounds(-1, -1, 1, 1), surprise(sup) {
 }
-
-Location::Location() : bounds(-1, -1, 1, 1) {}
 
 Location::Location(bool s) : bounds(-1, -1, 1, 1), surprise(s) {}
 

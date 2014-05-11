@@ -37,29 +37,51 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(VillageControl);
 
-template <class Archive>
-void VillageControl::AttackTrigger::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(control)
-    & SVAR(fightingCreatures);
-  CHECK_SERIAL;
+
+VillageControl::VillageControl(Collective* c, const Level* l, string n) : villain(c), level(l), name(n) {
 }
 
-SERIALIZABLE(VillageControl::AttackTrigger);
+VillageControl::VillageControl(Collective* c, const Level* l) : villain(c), level(l) {
+}
 
-VillageControl::VillageControl(Collective* c, const Level* l, string n, AttackTrigger* trigger) 
-    : villain(c), level(l), name(n), attackTrigger(trigger) {
-  attackTrigger->setVillageControl(this);
+VillageControl::VillageControl() {
 }
 
 VillageControl::~VillageControl() {
 }
 
-void VillageControl::addCreature(Creature* c) {
-  if (tribe == nullptr) {
-    tribe = c->getTribe();
+bool VillageControl::isAnonymous() const {
+  return name.empty();
+}
+
+class AttackTrigger {
+  public:
+  AttackTrigger(VillageControl* c) : control(c) {
   }
-  CHECK(c->getTribe() == tribe);
-  allCreatures.push_back(c);
+
+  virtual void tick(double time) {};
+  virtual bool startedAttack(const Creature*) = 0;
+  virtual void init() {}
+
+  virtual ~AttackTrigger() {}
+
+  SERIALIZATION_CONSTRUCTOR(AttackTrigger);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SVAR(control);
+    CHECK_SERIAL;
+  }
+
+  protected:
+  VillageControl* SERIAL(control);
+};
+
+void VillageControl::initialize(vector<Creature*> c) {
+  CHECK(!c.empty());
+  tribe = c[0]->getTribe();
+  allCreatures = c;
+  attackTrigger->init();
 }
 
 vector<Creature*> VillageControl::getAliveCreatures() const {
@@ -75,14 +97,6 @@ bool VillageControl::currentlyAttacking() const {
 
 bool VillageControl::isConquered() const {
   return getAliveCreatures().empty();
-}
-
-bool VillageControl::AttackTrigger::startedAttack(const Creature* creature) {
-  return fightingCreatures.count(creature);
-}
-
-void VillageControl::AttackTrigger::setVillageControl(VillageControl* c) {
-  control = c;
 }
 
 static int expLevelFun(double time) {
@@ -101,7 +115,7 @@ void VillageControl::onKillEvent(const Creature* victim, const Creature* killer)
       || (victim->getTribe() == Tribes::get(TribeId::KEEPER) && killer && killer->getTribe() == tribe))
     atWar = true;
   if (contains(allCreatures, victim)) {
-    if (getAliveCreatures().empty()) {
+    if (!isAnonymous() && getAliveCreatures().empty()) {
       messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
     } else {
  /*     if (fightingCreatures.count(victim) && lastAttackLaunched
@@ -119,7 +133,27 @@ void VillageControl::onKillEvent(const Creature* victim, const Creature* killer)
   }
 }
 
-class PowerTrigger : public VillageControl::AttackTrigger, public EventListener {
+class AttackTriggerSet : public AttackTrigger {
+  public:
+  using AttackTrigger::AttackTrigger;
+
+  virtual bool startedAttack(const Creature* c) override {
+    return fightingCreatures.count(c);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(AttackTriggerSet);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(AttackTrigger)
+      & SVAR(fightingCreatures);
+  }
+
+  protected:
+  set<const Creature*> SERIAL(fightingCreatures);
+};
+
+class PowerTrigger : public AttackTriggerSet, public EventListener {
   public:
   // How long to wait between being attacked and attacking
   const int attackDelay = 100;
@@ -127,7 +161,9 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
   // How long to wait between consecutive attacks from the same village
   const int myAttacksDelay = 300;
 
-  PowerTrigger(double _killedCoeff, double _powerCoeff) : killedCoeff(_killedCoeff), powerCoeff(_powerCoeff) {}
+  PowerTrigger(VillageControl* c, double _killedCoeff, double _powerCoeff)
+      : AttackTriggerSet(c), killedCoeff(_killedCoeff), powerCoeff(_powerCoeff) {}
+
   double getCurrentTrigger(double time) {
     double enemyPoints = killedCoeff * killedPoints + powerCoeff * control->villain->getDangerLevel()
       + max(0.0, (time - 1000) / 10);
@@ -141,7 +177,7 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
     return currentTrigger;
   }
 
-  void calculateAttacks() {
+  virtual void init() override {
     // If there is a leader then he is added first, so put him at the end
     std::swap(control->allCreatures[0], control->allCreatures.back());
     double myPower = 0;
@@ -162,10 +198,7 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
     }
   }
 
-
   virtual void tick(double time) override {
-    if (triggerAmounts.empty())
-      calculateAttacks();
     if (control->getAliveCreatures().empty())
       return;
     if (lastAttack >= time - attackDelay || lastMyAttack >= time - myAttacksDelay)
@@ -212,7 +245,7 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(VillageControl::AttackTrigger)
+    ar& SUBCLASS(AttackTriggerSet)
       & SVAR(killedPoints)
       & SVAR(killedCoeff)
       & SVAR(powerCoeff)
@@ -233,8 +266,40 @@ class PowerTrigger : public VillageControl::AttackTrigger, public EventListener 
   set<double> SERIAL(triggerAmounts);
 };
 
-VillageControl::AttackTrigger* VillageControl::getPowerTrigger(double killedCoeff, double powerCoeff) {
-  return new PowerTrigger(killedCoeff, powerCoeff);
+void VillageControl::setPowerTrigger(double killedCoeff, double powerCoeff) {
+  attackTrigger.reset(new PowerTrigger(this, killedCoeff, powerCoeff));
+}
+
+class FirstContact : public AttackTrigger, public EventListener {
+  public:
+  FirstContact(VillageControl* c, PAttackTrigger o) : AttackTrigger(c), other(std::move(o)) {}
+
+  virtual bool startedAttack(const Creature* c) {
+    return madeContact && other->startedAttack(c);
+  }
+
+  virtual void tick(double time) override {
+    if (madeContact)
+      other->tick(time);
+  }
+
+  virtual void init() override {
+    other->init();
+  }
+
+  virtual void onCombatEvent(const Creature* c) override {
+    CHECK(c != nullptr);
+    if (contains(control->allCreatures, c))
+      madeContact = true;
+  }
+
+  private:
+  PAttackTrigger other;
+  bool madeContact = false;
+};
+
+void VillageControl::setOnFirstContact() {
+  attackTrigger.reset(new FirstContact(this, std::move(attackTrigger)));
 }
 
 View::GameInfo::VillageInfo::Village VillageControl::getVillageInfo() const {
@@ -250,9 +315,9 @@ View::GameInfo::VillageInfo::Village VillageControl::getVillageInfo() const {
   return info;
 }
 
-class FinalTrigger : public VillageControl::AttackTrigger {
+class FinalTrigger : public AttackTriggerSet {
   public:
-  FinalTrigger(vector<VillageControl*> _controls) : controls(_controls) {}
+  FinalTrigger(VillageControl* c, vector<VillageControl*> _controls) : AttackTriggerSet(c), controls(_controls) {}
 
   virtual void tick(double time) {
     if (totalWar < 0)
@@ -275,7 +340,7 @@ class FinalTrigger : public VillageControl::AttackTrigger {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(VillageControl::AttackTrigger)
+    ar& SUBCLASS(AttackTriggerSet)
       & SVAR(controls)
       & SVAR(totalWar);
     CHECK_SERIAL;
@@ -286,14 +351,17 @@ class FinalTrigger : public VillageControl::AttackTrigger {
   double SERIAL2(totalWar, 100000);
 };
 
-VillageControl::AttackTrigger* VillageControl::getFinalTrigger(vector<VillageControl*> otherControls) {
-  return new FinalTrigger(otherControls);
+void VillageControl::setFinalTrigger(vector<VillageControl*> otherControls) {
+  attackTrigger.reset(new FinalTrigger(this, otherControls));
 }
 
 class TopLevelVillageControl : public VillageControl {
   public:
-  TopLevelVillageControl(Collective* villain, const Location* location, AttackTrigger* t) 
-      : VillageControl(villain, location->getLevel(), location->getName(), t), villageLocation(location) {}
+  TopLevelVillageControl(Collective* villain, const Location* location) 
+      : VillageControl(villain, location->getLevel(), location->getName()) {}
+
+  TopLevelVillageControl(Collective* villain) 
+      : VillageControl(villain, villain->getLevel()) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (!attackTrigger->startedAttack(c))
@@ -321,24 +389,25 @@ class TopLevelVillageControl : public VillageControl {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(VillageControl)
-      & SVAR(visited)
-      & SVAR(villageLocation);
+      & SVAR(visited);
     CHECK_SERIAL;
   }
 
   unordered_set<Vec2> SERIAL(visited);
-  const Location* SERIAL(villageLocation);
 };
 
-PVillageControl VillageControl::topLevelVillage(Collective* villain, const Location* location, AttackTrigger* t) {
-  return PVillageControl(new TopLevelVillageControl(villain, location, t));
+PVillageControl VillageControl::topLevelVillage(Collective* villain, const Location* location) {
+  return PVillageControl(new TopLevelVillageControl(villain, location));
 }
 
+PVillageControl VillageControl::topLevelAnonymous(Collective* villain) {
+  return PVillageControl(new TopLevelVillageControl(villain));
+}
 
 class DwarfVillageControl : public VillageControl {
   public:
-  DwarfVillageControl(Collective* villain, const Level* level, StairDirection dir, StairKey key, AttackTrigger* t)
-      : VillageControl(villain, level, "the Dwarven Halls", t), direction(dir), stairKey(key) {}
+  DwarfVillageControl(Collective* villain, const Level* level, StairDirection dir, StairKey key)
+      : VillageControl(villain, level, "the Dwarven Halls"), direction(dir), stairKey(key) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (!attackTrigger->startedAttack(c))
@@ -394,7 +463,7 @@ void VillageControl::registerTypes(Archive& ar) {
 REGISTER_TYPES(VillageControl);
 
 PVillageControl VillageControl::dwarfVillage(Collective* villain, const Level* level,
-    StairDirection dir, StairKey key, AttackTrigger* t) {
-  return PVillageControl(new DwarfVillageControl(villain, level, dir, key, t));
+    StairDirection dir, StairKey key) {
+  return PVillageControl(new DwarfVillageControl(villain, level, dir, key));
 }
 

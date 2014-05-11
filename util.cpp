@@ -503,6 +503,10 @@ bool Rectangle::intersects(const Rectangle& other) const {
   return max(px, other.px) < min(kx, other.kx) && max(py, other.py) < min(ky, other.ky);
 }
 
+bool Rectangle::contains(const Rectangle& other) const {
+  return px <= other.px && py <= other.py && kx >= other.kx && ky >= other.ky;
+}
+
 Rectangle Rectangle::intersection(const Rectangle& other) const {
   return Rectangle(max(px, other.px), max(py, other.py), min(kx, other.kx), min(ky, other.ky));
 }

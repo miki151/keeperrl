@@ -16,8 +16,9 @@
 #include "stdafx.h"
 
 #include "map_memory.h"
+#include "level.h"
 
-MapMemory::MapMemory() : table(600, 600) {
+MapMemory::MapMemory() : table(Level::maxLevelBounds) {
 }
 
 MapMemory::MapMemory(const MapMemory& other) : table(other.table.getWidth(), other.table.getHeight()) {

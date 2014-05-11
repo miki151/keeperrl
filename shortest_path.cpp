@@ -35,17 +35,35 @@ const double ShortestPath::infinity = 1000000000;
 
 const int revShortestLimit = 15;
 
-const int maxSize = 600;
+class DistanceTable {
+  public:
+  DistanceTable(Rectangle bounds) : ddist(bounds), dirty(bounds, 0) {} 
 
-Table<double> ddist(maxSize, maxSize);
-Table<int> dirty(maxSize, maxSize, 0);
-int counter = 1;
+  double getDistance(Vec2 v) const {
+    return dirty[v] < counter ? ShortestPath::infinity : ddist[v];
+  }
+
+  void setDistance(Vec2 v, double d) {
+    ddist[v] = d;
+    dirty[v] = counter;
+  }
+
+  void clear() {
+    ++counter;
+  }
+
+  private:
+  Table<double> ddist;
+  Table<int> dirty;
+  int counter = 1;
+};
+
+static DistanceTable distanceTable(Level::maxLevelBounds);
 
 const int margin = 15;
 
 ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to, Vec2 from, double mult)
     : target(to), directions(Vec2::directions8()), bounds(level->getBounds()) {
-  CHECK(level->getBounds().getKX() <= maxSize && level->getBounds().getKY() <= maxSize);
   auto entryFun = [=](Vec2 pos) { 
       if (level->getSquare(pos)->canEnter(creature) || creature->getPosition() == pos) 
         return 1.0;
@@ -62,51 +80,46 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
     bounds = bounds.intersection(Rectangle(min(to.x, from.x) - margin, min(to.y, from.y) - margin,
         max(to.x, from.x) + margin, max(to.y, from.y) + margin));
     init(entryFun, lengthFun, target, Nothing(), revShortestLimit);
-    setDistance(target, infinity);
+    distanceTable.setDistance(target, infinity);
     reverse(entryFun, lengthFun, mult, from, revShortestLimit);
   }
 }
 
 ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun,
     vector<Vec2> dir, Vec2 to, Vec2 from, double mult) : target(to), directions(dir), bounds(a) {
-  CHECK(a.getKX() <= maxSize && a.getKY() <= maxSize && a.getPX() >= 0 && a.getPY() >= 0);
+  CHECK(Level::maxLevelBounds.contains(a));
   if (mult == 0)
     init(entryFun, lengthFun, target, from);
   else {
     init(entryFun, lengthFun, target, Nothing(), revShortestLimit);
-    setDistance(target, infinity);
+    distanceTable.setDistance(target, infinity);
     reverse(entryFun, lengthFun, mult, from, revShortestLimit);
   }
-}
-
-double ShortestPath::getDistance(Vec2 v) const {
-  return dirty[v] < counter ? infinity : ddist[v];
-}
-void ShortestPath::setDistance(Vec2 v, double d) {
-  ddist[v] = d;
-  dirty[v] = counter;
 }
 
 void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, Vec2 target,
     Optional<Vec2> from, Optional<int> limit) {
   reversed = false;
-  ++counter;
+  distanceTable.clear();
   function<bool(Vec2, Vec2)> comparator;
   if (from)
-    comparator = [=](Vec2 pos1, Vec2 pos2) {
-      return this->getDistance(pos1) + lengthFun(*from - pos1) > this->getDistance(pos2) + lengthFun(*from - pos2); };
+    comparator = [&](Vec2 pos1, Vec2 pos2) {
+      return distanceTable.getDistance(pos1) + lengthFun(*from - pos1) > 
+          distanceTable.getDistance(pos2) + lengthFun(*from - pos2); };
   else
-    comparator = [this](Vec2 pos1, Vec2 pos2) { return this->getDistance(pos1) > this->getDistance(pos2); };
+    comparator = [this](Vec2 pos1, Vec2 pos2) {
+      return distanceTable.getDistance(pos1) > distanceTable.getDistance(pos2); };
   priority_queue<Vec2, vector<Vec2>, decltype(comparator)> q(comparator) ;
-  setDistance(target, 0);
+  distanceTable.setDistance(target, 0);
   q.push(target);
   int numPopped = 0;
   while (!q.empty()) {
     ++numPopped;
     Vec2 pos = q.top();
    // Debug() << "Popping " << pos << " " << distance[pos]  << " " << (from ? (*from - pos).length4() : 0);
-    if (from == pos || (limit && getDistance(pos) >= *limit)) {
-      Debug() << "Shortest path from " << (from ? *from : Vec2(-1, -1)) << " to " << target << " " << numPopped << " visited distance " << getDistance(pos);
+    if (from == pos || (limit && distanceTable.getDistance(pos) >= *limit)) {
+      Debug() << "Shortest path from " << (from ? *from : Vec2(-1, -1)) << " to " << target << " " << numPopped
+        << " visited distance " << distanceTable.getDistance(pos);
       constructPath(pos);
       return;
     }
@@ -114,13 +127,13 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> 
     for (Vec2 dir : directions) {
       Vec2 next = pos + dir;
       if (next.inRectangle(bounds)) {
-        double cdist = getDistance(pos);
-        double ndist = getDistance(next);
+        double cdist = distanceTable.getDistance(pos);
+        double ndist = distanceTable.getDistance(next);
         if (cdist < ndist) {
           double dist = cdist + entryFun(next);
           CHECK(dist > cdist) << "Entry fun non positive " << dist - cdist;
           if (dist < ndist) {
-            setDistance(next, dist);
+            distanceTable.setDistance(next, dist);
             q.push(next);
           }
         }
@@ -134,13 +147,14 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2
     int limit) {
   reversed = true;
   function<bool(Vec2, Vec2)> comparator = [=](Vec2 pos1, Vec2 pos2) {
-    return this->getDistance(pos1) + lengthFun(from - pos1) > this->getDistance(pos2) + lengthFun(from - pos2); };
+    return distanceTable.getDistance(pos1) + lengthFun(from - pos1) 
+      > distanceTable.getDistance(pos2) + lengthFun(from - pos2); };
 
   priority_queue<Vec2, vector<Vec2>, decltype(comparator)> q(comparator) ;
   for (Vec2 v : bounds) {
-    double dist = getDistance(v);
+    double dist = distanceTable.getDistance(v);
     if (dist <= limit) {
-      setDistance(v, mult * dist);
+      distanceTable.setDistance(v, mult * dist);
       q.push(v);
     }
   }
@@ -156,8 +170,9 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2
     q.pop();
     for (Vec2 dir : directions)
       if ((pos + dir).inRectangle(bounds)) {
-        if (getDistance(pos + dir) > getDistance(pos) + entryFun(pos + dir) && getDistance(pos + dir) < 0) {
-          setDistance(pos + dir, getDistance(pos) + entryFun(pos + dir));
+        if (distanceTable.getDistance(pos + dir) > distanceTable.getDistance(pos) + entryFun(pos + dir) && 
+            distanceTable.getDistance(pos + dir) < 0) {
+          distanceTable.setDistance(pos + dir, distanceTable.getDistance(pos) + entryFun(pos + dir));
           q.push(pos + dir);
         }
       }
@@ -169,16 +184,16 @@ void ShortestPath::constructPath(Vec2 pos, bool reversed) {
   vector<Vec2> ret;
   while (pos != target) {
     Vec2 next;
-    double lowest = getDistance(pos);
+    double lowest = distanceTable.getDistance(pos);
     CHECK(lowest < infinity);
     for (Vec2 dir : directions) {
       double dist;
-      if ((pos + dir).inRectangle(bounds) && (dist = getDistance(pos + dir)) < lowest) {
+      if ((pos + dir).inRectangle(bounds) && (dist = distanceTable.getDistance(pos + dir)) < lowest) {
         lowest = dist;
         next = pos + dir;
       }
     }
-    if (lowest >= getDistance(pos)) {
+    if (lowest >= distanceTable.getDistance(pos)) {
       if (reversed)
         break;
       else
@@ -210,3 +225,51 @@ Vec2 ShortestPath::getNextMove(Vec2 pos) {
 Vec2 ShortestPath::getTarget() const {
   return target;
 }
+
+Dijkstra::Dijkstra(Rectangle bounds, Vec2 from, int maxDist, function<double(Vec2)> entryFun,
+      vector<Vec2> directions) {
+  distanceTable.clear();
+  function<bool(Vec2, Vec2)> comparator = [&] (Vec2 pos1, Vec2 pos2) {
+    return distanceTable.getDistance(pos1) > distanceTable.getDistance(pos2); };
+  priority_queue<Vec2, vector<Vec2>, decltype(comparator)> q(comparator) ;
+  distanceTable.setDistance(from, 0);
+  q.push(from);
+  int numPopped = 0;
+  while (!q.empty()) {
+    ++numPopped;
+    Vec2 pos = q.top();
+    double cdist = distanceTable.getDistance(pos);
+    if (cdist > maxDist)
+      return;
+    q.pop();
+    reachable[pos] = cdist;
+    for (Vec2 dir : directions) {
+      Vec2 next = pos + dir;
+      if (next.inRectangle(bounds)) {
+        double ndist = distanceTable.getDistance(next);
+        if (cdist < ndist) {
+          double dist = cdist + entryFun(next);
+          CHECK(dist > cdist) << "Entry fun non positive " << dist - cdist;
+          if (dist < ndist) {
+            distanceTable.setDistance(next, dist);
+            q.push(next);
+          }
+        }
+      }
+    }
+  }
+ 
+}
+
+bool Dijkstra::isReachable(Vec2 pos) const {
+  return reachable.count(pos);
+}
+
+double Dijkstra::getDist(Vec2 v) const {
+  return reachable.at(v);
+}
+
+const map<Vec2, double>& Dijkstra::getAllReachable() const {
+  return reachable;
+}
+
