@@ -35,8 +35,9 @@ class CreatureView {
   virtual Tribe* getTribe() const = 0;
   virtual bool isEnemy(const Creature*) const = 0;
 
-  void updateVisibleEnemies();
+  void updateVisibleCreatures();
   vector<const Creature*> getVisibleEnemies() const;
+  vector<const Creature*> getVisibleFriends() const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
@@ -47,6 +48,7 @@ class CreatureView {
 
   private:
   vector<const Creature*> SERIAL(visibleEnemies);
+  vector<const Creature*> SERIAL(visibleFriends);
 };
 
 #endif

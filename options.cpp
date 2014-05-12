@@ -22,6 +22,7 @@ const unordered_map<OptionId, int> defaults {
   {OptionId::HINTS, 1},
   {OptionId::ASCII, 0},
   {OptionId::MUSIC, 1},
+  {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::EASY_KEEPER, 1},
   {OptionId::AGGRESSIVE_HEROES, 1},
   {OptionId::EASY_ADVENTURER, 1},
@@ -31,13 +32,14 @@ const map<OptionId, string> names {
   {OptionId::HINTS, "In-game hints"},
   {OptionId::ASCII, "Unicode graphics"},
   {OptionId::MUSIC, "Music"},
+  {OptionId::KEEP_SAVEFILES, "Keep save files (for debugging only :-)"},
   {OptionId::EASY_KEEPER, "Game difficulty"},
   {OptionId::AGGRESSIVE_HEROES, "Aggressive enemies"},
   {OptionId::EASY_ADVENTURER, "Game difficulty"},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
-  {OptionSet::GENERAL, {OptionId::HINTS, OptionId::ASCII, OptionId::MUSIC}},
+  {OptionSet::GENERAL, {OptionId::HINTS, OptionId::ASCII, OptionId::MUSIC, OptionId::KEEP_SAVEFILES}},
   {OptionSet::KEEPER, {OptionId::EASY_KEEPER, OptionId::AGGRESSIVE_HEROES}},
   {OptionSet::ADVENTURER, {OptionId::EASY_ADVENTURER}},
 };
@@ -72,6 +74,7 @@ unordered_map<OptionId, vector<string>> valueNames {
   {OptionId::HINTS, { "off", "on" }},
   {OptionId::ASCII, { "off", "on" }},
   {OptionId::MUSIC, { "off", "on" }},
+  {OptionId::KEEP_SAVEFILES, { "no", "yes" }},
   {OptionId::EASY_KEEPER, { "hard", "easy" }},
   {OptionId::AGGRESSIVE_HEROES, { "no", "yes" }},
   {OptionId::EASY_ADVENTURER, { "hard", "easy" }},

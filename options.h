@@ -23,6 +23,7 @@ enum class OptionId {
   HINTS,
   ASCII,
   MUSIC,
+  KEEP_SAVEFILES,
 
   EASY_KEEPER,
   AGGRESSIVE_HEROES,

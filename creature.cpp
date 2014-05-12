@@ -328,7 +328,7 @@ void Creature::makeMove() {
     spendTime(1);
     return;
   }
-  updateVisibleEnemies();
+  updateVisibleCreatures();
   if (swapPositionCooldown)
     --swapPositionCooldown;
   MEASURE(controller->makeMove(), "creature move time");

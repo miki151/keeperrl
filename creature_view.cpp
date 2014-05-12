@@ -25,11 +25,15 @@ void CreatureView::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(CreatureView);
 
-void CreatureView::updateVisibleEnemies() {
+void CreatureView::updateVisibleCreatures() {
   visibleEnemies.clear();
-  for (const Creature* c : getLevel()->getAllCreatures(Rectangle(-30, -30, 30, 30).translate(getPosition()))) 
-    if (isEnemy(c) && (canSee(c)))
-      visibleEnemies.push_back(c);
+  for (const Creature* c : getLevel()->getAllCreatures()) 
+    if (canSee(c)) {
+      if (isEnemy(c))
+        visibleEnemies.push_back(c);
+      else if (c->getTribe() == getTribe())
+        visibleFriends.push_back(c);
+    }
   for (const Creature* c : getUnknownAttacker())
     if (!contains(visibleEnemies, c))
       visibleEnemies.push_back(c);
@@ -37,5 +41,9 @@ void CreatureView::updateVisibleEnemies() {
 
 vector<const Creature*> CreatureView::getVisibleEnemies() const {
   return visibleEnemies;
+}
+
+vector<const Creature*> CreatureView::getVisibleFriends() const {
+  return visibleFriends;
 }
 

@@ -1878,7 +1878,7 @@ void Collective::tick() {
         c->privateMessage("You sense horrible evil in the " + 
             getCardinalName((keeper->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
   }
-  updateVisibleEnemies();
+  updateVisibleCreatures();
   warning[int(Warning::MANA)] = mana < 100;
   warning[int(Warning::WOOD)] = numGold(ResourceId::WOOD) == 0;
   warning[int(Warning::DIGGING)] = mySquares.at(SquareType::FLOOR).empty();
@@ -1908,6 +1908,11 @@ void Collective::tick() {
         extendedTiles[v] = 1;
         extendedQueue.push(v);
       }
+  }
+  for (const Creature* c1 : getVisibleFriends()) {
+    Creature* c = const_cast<Creature*>(c1);
+    if (c->getName() != "boulder" && !contains(creatures, c))
+      addCreature(c, MinionType::NORMAL);
   }
   const int maxRadius = 10;
   while (!extendedQueue.empty()) {

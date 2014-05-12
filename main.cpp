@@ -119,7 +119,7 @@ static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
     ia >> BOOST_SERIALIZATION_NVP(model);
   }
 #ifdef RELEASE
-  if (eraseFile)
+  if (eraseFile && !Options::getValue(OptionId::KEEP_SAVEFILES))
     CHECK(!remove(filename.c_str()));
 #endif
   return model;

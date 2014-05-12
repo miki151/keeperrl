@@ -547,6 +547,14 @@ ItemFactory ItemFactory::goblinShop() {
       {ItemId::DEXTERITY_MUSHROOM, 1} });
 }
 
+ItemFactory ItemFactory::dragonCave() {
+  return ItemFactory({
+      {ItemId::GOLD_PIECE, 10, 30, 100 },
+      {ItemId::SPECIAL_SWORD, 1 },
+      {ItemId::SPECIAL_BATTLE_AXE, 1 },
+      {ItemId::SPECIAL_WAR_HAMMER, 1 }});
+}
+
 ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
   ItemFactory factory({{ItemId::FIRST_AID_KIT, 2}});
   if (contains(techs, Technology::get(TechId::TRAPS))) {
