@@ -40,20 +40,22 @@ ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
     : resource_id(id), viewLayer(l), description(d) {
   if (islower(description[0]))
     description[0] = toupper(description[0]);
+  for (int i : Range(numModifiers))
+    modifiers[i] = false;
 }
 
 ViewObject& ViewObject::setModifier(Modifier mod) {
-  modifiers.insert(mod);
+  modifiers[int(mod)] = true;
   return *this;
 }
 
 ViewObject& ViewObject::removeModifier(Modifier mod) {
-  modifiers.erase(mod);
+  modifiers[int(mod)] = false;
   return *this;
 }
 
 bool ViewObject::hasModifier(Modifier mod) const {
-  return modifiers.count(mod);
+  return modifiers[int(mod)];
 }
 
 ViewObject& ViewObject::setWaterDepth(double depth) {

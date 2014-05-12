@@ -928,13 +928,13 @@ class FpsCounter {
 
 
 void WindowView::drawMap() {
-  map<string, ViewObject> objIndex;
+/*  map<string, ViewObject> objIndex;
   for (Vec2 wpos : mapLayout->getAllTiles(getMapViewBounds(), objects.getBounds())) 
     if (objects[wpos]) {
       const ViewIndex& index = *objects[wpos];
       if (auto topObject = index.getTopObject(mapLayout->getLayers()))
         objIndex.insert(std::make_pair(topObject->getDescription(), *topObject));
-    }
+    }*/
 /*  int rightPos = renderer.getWidth() -rightBarText;
   if (gameInfo.infoType == GameInfo::InfoType::PLAYER) {
     int cnt = 0;

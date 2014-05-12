@@ -71,7 +71,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(prisonerInfo)
     & SVAR(executions)
     & SVAR(flyingSectors)
-    & SVAR(sectors);
+    & SVAR(sectors)
+    & SVAR(surprises);
   CHECK_SERIAL;
 }
 
@@ -320,6 +321,9 @@ Collective::Collective(Model* m, Level* l, Tribe* t) : level(l), mana(200), mode
     if (contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
       getMemory(l).addObject(v, l->getSquare(v)->getViewObject());
   }
+  for(const Location* loc : level->getAllLocations())
+    if (loc->isMarkedAsSurprise())
+      surprises.insert(loc->getBounds().middle());
   knownTiles = Table<bool>(level->getBounds(), false);
 }
 
@@ -1220,10 +1224,8 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
     if (constructions.count(pos) && !constructions.at(pos).built)
       index.insert(getConstructionObject(constructions.at(pos).type));
   }
-  if (const Location* loc = level->getLocation(pos)) {
-    if (loc->isMarkedAsSurprise() && loc->getBounds().middle() == pos && !knownPos(pos))
-      index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
-  }
+  if (surprises.count(pos) && !knownPos(pos))
+    index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
   return index;
 }
 

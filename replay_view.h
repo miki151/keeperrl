@@ -57,7 +57,7 @@ class ReplayView : public T {
     }
 
     virtual UserInput getAction() override {
- //     T::getAction();
+      T::getAction();
  //     usleep(300000);
       string method;
       UserInput action;

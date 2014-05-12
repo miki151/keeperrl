@@ -329,12 +329,19 @@ Tile getSprite(ViewId id) {
   return Tile(' ', white);
 }
 
+static vector<Optional<Tile>> tileCache;
+
 Tile getSpriteTile(const ViewObject& obj) {
   if (obj.id() == ViewId::SPECIAL_BEAST)
     return getSpecialCreatureSprite(obj, false);
   if (obj.id() == ViewId::SPECIAL_HUMANOID)
     return getSpecialCreatureSprite(obj, true);
-  return getSprite(obj.id());
+  int numId = int(obj.id());
+  if (numId >= tileCache.size())
+    tileCache.resize(numId + 1);
+  if (!tileCache[numId])
+    tileCache[numId] = getSprite(obj.id());
+  return *tileCache[numId];
 }
 
 Tile getAsciiTile(const ViewObject& obj) {

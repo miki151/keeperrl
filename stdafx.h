@@ -48,6 +48,7 @@
 #include <boost/serialization/deque.hpp>
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/string.hpp>
+#include <boost/serialization/array.hpp>
 
 #ifndef RELEASE
 //#define DEBUG_STL

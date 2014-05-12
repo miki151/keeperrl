@@ -410,6 +410,7 @@ class Collective : public CreatureView, public EventListener {
   int SERIAL2(executions, 0);
   unique_ptr<Sectors> SERIAL(sectors);
   unique_ptr<Sectors> SERIAL(flyingSectors);
+  unordered_set<Vec2> SERIAL(surprises);
 };
 
 #endif

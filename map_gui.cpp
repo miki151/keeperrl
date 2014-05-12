@@ -224,7 +224,7 @@ void MapGui::updateObjects(const MapMemory* mem) {
   floorIds.clear();
   shadowed.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds()))
-    if (auto index = objects[wpos])
+    if (auto& index = objects[wpos])
       if (index->hasObject(ViewLayer::FLOOR)) {
         ViewObject object = index->getObject(ViewLayer::FLOOR);
         if (object.hasModifier(ViewObject::CASTS_SHADOW)) {

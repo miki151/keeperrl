@@ -34,6 +34,8 @@ class ViewObject {
 
   enum Modifier { BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
     ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT, DARK};
+  static const int numModifiers = 13;
+
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;
@@ -68,7 +70,8 @@ class ViewObject {
   private:
   double SERIAL2(bleeding, 0);
   EnemyStatus SERIAL2(enemyStatus, UNKNOWN);
-  set<Modifier> SERIAL(modifiers);
+  bool modifiers[numModifiers];
+  SERIAL3(modifiers);
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
   string SERIAL(description);

@@ -285,6 +285,14 @@ vector<Creature*>& Level::getAllCreatures() {
   return creatures;
 }
 
+vector<Creature*> Level::getAllCreatures(Rectangle bounds) const {
+  vector<Creature*> ret;
+  for (Creature* c : creatures)
+    if (c->getPosition().inRectangle(bounds))
+      ret.push_back(c);
+  return ret;
+}
+
 const int darkViewRadius = 5;
 
 bool Level::isWithinVision(Vec2 from, Vec2 to, Vision* v) const {

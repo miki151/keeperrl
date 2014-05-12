@@ -124,6 +124,7 @@ class Level {
   /** Returns all creatures on this level. */
   const vector<Creature*>& getAllCreatures() const;
   vector<Creature*>& getAllCreatures();
+  vector<Creature*> getAllCreatures(Rectangle bounds) const;
   //@}
 
   /** Checks whether one square is visible from the other. This function is not guaranteed to be simmetrical.*/

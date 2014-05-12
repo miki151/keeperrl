@@ -27,7 +27,7 @@ SERIALIZABLE(CreatureView);
 
 void CreatureView::updateVisibleEnemies() {
   visibleEnemies.clear();
-  for (const Creature* c : getLevel()->getAllCreatures()) 
+  for (const Creature* c : getLevel()->getAllCreatures(Rectangle(-30, -30, 30, 30).translate(getPosition()))) 
     if (isEnemy(c) && (canSee(c)))
       visibleEnemies.push_back(c);
   for (const Creature* c : getUnknownAttacker())
