@@ -245,7 +245,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(AttackTriggerSet)
+    ar& SUBCLASS(AttackTriggerSet) & SUBCLASS(EventListener)
       & SVAR(killedPoints)
       & SVAR(killedCoeff)
       & SVAR(powerCoeff)
@@ -291,6 +291,16 @@ class FirstContact : public AttackTrigger, public EventListener {
     CHECK(c != nullptr);
     if (contains(control->allCreatures, c))
       madeContact = true;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(FirstContact);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(AttackTrigger) & SUBCLASS(EventListener)
+      & SVAR(other)
+      & SVAR(madeContact);
+    CHECK_SERIAL;
   }
 
   private:
@@ -457,6 +467,8 @@ void VillageControl::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, TopLevelVillageControl);
   REGISTER_TYPE(ar, DwarfVillageControl);
   REGISTER_TYPE(ar, PowerTrigger);
+  REGISTER_TYPE(ar, AttackTriggerSet);
+  REGISTER_TYPE(ar, FirstContact);
   REGISTER_TYPE(ar, FinalTrigger);
 }
 
