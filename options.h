@@ -25,6 +25,8 @@ enum class OptionId {
   MUSIC,
   KEEP_SAVEFILES,
 
+  SHOW_MAP,
+
   EASY_KEEPER,
   AGGRESSIVE_HEROES,
 

@@ -27,6 +27,7 @@ SERIALIZABLE(CreatureView);
 
 void CreatureView::updateVisibleCreatures() {
   visibleEnemies.clear();
+  visibleFriends.clear();
   for (const Creature* c : getLevel()->getAllCreatures()) 
     if (canSee(c)) {
       if (isEnemy(c))

@@ -232,6 +232,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
                     messageBuffer.addMessage(MessageBuffer::important("The " + tribe->getName() + 
                     " of " + name + " are sending another small group of scouts. How cute is that?"));
                     } else*/
+        if (!control->isAnonymous())
           messageBuffer.addMessage(MessageBuffer::important("The " + control->tribe->getName() + 
                 " of " + control->name + " are attacking!"));
 //        } else

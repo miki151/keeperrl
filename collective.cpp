@@ -2410,13 +2410,12 @@ Creature* Collective::addCreature(PCreature creature, Vec2 v, MinionType type) {
   return ret;
 }
 
-const bool seeTerrain = false;
-
 void Collective::addCreature(Creature* c, MinionType type) {
   if (keeper == nullptr) {
     keeper = c;
     type = MinionType::KEEPER;
     minionByType[type].push_back(c);
+    bool seeTerrain = Options::getValue(OptionId::SHOW_MAP); 
     Vec2 radius = seeTerrain ? Vec2(400, 400) : Vec2(30, 30);
     auto pred = [&](Vec2 pos) {
       return level->getSquare(pos)->canEnterEmpty(Creature::getDefault())

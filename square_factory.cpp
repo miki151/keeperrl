@@ -850,7 +850,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new ConstructionDropItems(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR, "Gold ore")
             .setModifier(ViewObject::CASTS_SHADOW), "gold ore",
             {{SquareType::FLOOR, Random.getRandom(30, 80)}},
-            ItemFactory::fromId(ItemId::GOLD_PIECE, Random.getRandom(30, 60)));
+            ItemFactory::fromId(ItemId::GOLD_PIECE, Random.getRandom(15, 30)));
     case SquareType::IRON_ORE:
         return new ConstructionDropItems(ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR, "Iron ore")
             .setModifier(ViewObject::CASTS_SHADOW), "iron ore",

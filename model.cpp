@@ -257,7 +257,7 @@ Model* Model::heroModel(View* view) {
   Quests::get(QuestId::BANDITS)->setLocation(banditLocation);
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
-      LevelMaker::mineTownLevel({SettlementType::MINETOWN, CreatureFactory::dwarfTownPeaceful(),
+      LevelMaker::mineTownLevel({SettlementType::MINETOWN, CreatureFactory::dwarfTown(),
           Random.getRandom(10, 20), Nothing(), getVillageLocation(), Tribes::get(TribeId::DWARVEN),
           BuildingId::BRICK, {StairKey::DWARF}, {StairKey::DWARF}, Nothing(), Nothing(), ItemFactory::dwarfShop()}));
   Level* g1 = m->buildLevel(

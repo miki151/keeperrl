@@ -147,23 +147,54 @@ ViewLayer ViewObject::layer() const {
 
 static vector<ViewId> creatureIds {
   ViewId::PLAYER,
+  ViewId::KEEPER,
   ViewId::ELF,
+  ViewId::ELF_ARCHER,
   ViewId::ELF_CHILD,
   ViewId::ELF_LORD,
   ViewId::ELVEN_SHOPKEEPER,
+  ViewId::LIZARDMAN,
+  ViewId::LIZARDLORD,
   ViewId::DWARF,
   ViewId::DWARF_BARON,
   ViewId::DWARVEN_SHOPKEEPER,
+  ViewId::IMP,
+  ViewId::PRISONER,
+  ViewId::BILE_DEMON,
+  ViewId::CHICKEN,
+  ViewId::DARK_KNIGHT,
+  ViewId::GREEN_DRAGON,
+  ViewId::RED_DRAGON,
+  ViewId::CYCLOPS,
+  ViewId::WITCH,
+  ViewId::GHOST,
+  ViewId::SPIRIT,
+  ViewId::DEVIL,
+  ViewId::KNIGHT,
+  ViewId::CASTLE_GUARD,
+  ViewId::AVATAR,
+  ViewId::ARCHER,
+  ViewId::PESEANT,
+  ViewId::CHILD,
+  ViewId::SHAMAN,
+  ViewId::WARRIOR,
   ViewId::GREAT_GOBLIN,
   ViewId::GOBLIN,
   ViewId::BANDIT,
+  ViewId::CLAY_GOLEM,
+  ViewId::STONE_GOLEM,
+  ViewId::IRON_GOLEM,
+  ViewId::LAVA_GOLEM,
   ViewId::ZOMBIE,
+  ViewId::SKELETON,
   ViewId::VAMPIRE,
+  ViewId::VAMPIRE_LORD,
   ViewId::MUMMY,
   ViewId::MUMMY_LORD,
   ViewId::HORSE,
   ViewId::COW,
   ViewId::PIG,
+  ViewId::GOAT,
   ViewId::SHEEP,
   ViewId::JACKAL,
   ViewId::DEER,
@@ -173,8 +204,13 @@ static vector<ViewId> creatureIds {
   ViewId::WOLF,
   ViewId::BAT,
   ViewId::RAT,
+  ViewId::SPIDER,
+  ViewId::FLY,
+  ViewId::ACID_MOUND,
+  ViewId::SCORPION,
   ViewId::SNAKE,
   ViewId::VULTURE,
+  ViewId::RAVEN,
   ViewId::GNOME,
   ViewId::VODNIK,
   ViewId::LEPRECHAUN,
@@ -192,11 +228,15 @@ static vector<ViewId> creatureIds {
 static vector<ViewId> itemIds {
   ViewId::BODY_PART,
   ViewId::BONE,
+  ViewId::SPEAR,
   ViewId::SWORD,
+  ViewId::SPECIAL_SWORD,
   ViewId::ELVEN_SWORD,
   ViewId::KNIFE,
   ViewId::WAR_HAMMER,
+  ViewId::SPECIAL_WAR_HAMMER,
   ViewId::BATTLE_AXE,
+  ViewId::SPECIAL_BATTLE_AXE,
   ViewId::BOW,
   ViewId::ARROW,
   ViewId::SCROLL,
@@ -218,30 +258,50 @@ static vector<ViewId> itemIds {
   ViewId::GOLD,
   ViewId::LEATHER_ARMOR,
   ViewId::LEATHER_HELM,
+  ViewId::TELEPATHY_HELM,
   ViewId::CHAIN_ARMOR,
   ViewId::IRON_HELM,
+  ViewId::LEATHER_BOOTS,
+  ViewId::IRON_BOOTS,
+  ViewId::SPEED_BOOTS,
   ViewId::BOULDER,
+  ViewId::PORTAL,
+  ViewId::TRAP,
+  ViewId::GAS_TRAP,
+  ViewId::ALARM_TRAP,
+  ViewId::WEB_TRAP,
+  ViewId::SURPRISE_TRAP,
+  ViewId::TERROR_TRAP,
   ViewId::ROCK,
+  ViewId::IRON_ROCK,
+  ViewId::WOOD_PLANK,
   ViewId::SLIMY_MUSHROOM, 
   ViewId::PINK_MUSHROOM, 
   ViewId::DOTTED_MUSHROOM, 
   ViewId::GLOWING_MUSHROOM, 
   ViewId::GREEN_MUSHROOM, 
-  ViewId::BLACK_MUSHROOM
+  ViewId::BLACK_MUSHROOM,
 };
 
 static bool hallu = false;
 
+vector<ViewId> shuffledCreatures;
+vector<ViewId> shuffledItems;
+
 void ViewObject::setHallu(bool b) {
+  if (!hallu && b) {
+    shuffledCreatures = randomPermutation(creatureIds);
+    shuffledItems = randomPermutation(itemIds);
+  }
   hallu = b;
 }
 
 ViewId ViewObject::id() const {
   if (hallu) {
-    if (contains(creatureIds, resource_id))
-      return creatureIds[Random.getRandom(creatureIds.size())];
-    if (contains(itemIds, resource_id))
-      return itemIds[Random.getRandom(itemIds.size())];
+    if (auto elem = findElement(creatureIds, resource_id))
+      return shuffledCreatures[*elem];
+    if (auto elem = findElement(itemIds, resource_id))
+      return shuffledItems[*elem];
   }
   return resource_id;
 }
