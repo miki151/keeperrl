@@ -41,7 +41,7 @@ ENUM_HASH(MinionType);
 class Model;
 class Technology;
 
-class Collective : public CreatureView, public EventListener {
+class Collective : public CreatureView, public EventListener, public Task::Callback {
   public:
   Collective(Model*, Level*, Tribe*);
   virtual const MapMemory& getMemory() const override;
@@ -79,13 +79,13 @@ class Collective : public CreatureView, public EventListener {
 
   virtual const Level* getLevel() const;
 
-  void onConstructed(Vec2 pos, SquareType);
-  void onBrought(Vec2 pos, vector<Item*> items);
-  void onAppliedItem(Vec2 pos, Item* item);
-  void onAppliedSquare(Vec2 pos);
-  void onAppliedItemCancel(Vec2 pos);
-  void onPickedUp(Vec2 pos, EntitySet);
-  void onCantPickItem(EntitySet items);
+  virtual void onConstructed(Vec2 pos, SquareType) override;
+  virtual void onBrought(Vec2 pos, vector<Item*> items) override;
+  virtual void onAppliedItem(Vec2 pos, Item* item) override;
+  virtual void onAppliedSquare(Vec2 pos) override;
+  virtual void onAppliedItemCancel(Vec2 pos) override;
+  virtual void onPickedUp(Vec2 pos, EntitySet) override;
+  virtual void onCantPickItem(EntitySet items) override;
 
   bool isRetired() const;
   const Creature* getKeeper() const;
@@ -305,23 +305,18 @@ class Collective : public CreatureView, public EventListener {
   unordered_map<MinionType, vector<Creature*>> SERIAL(minionByType);
   EntitySet SERIAL(markedItems);
 
-  class TaskMap {
+  class TaskMap : public Task::Mapping {
     public:
-    Task* addTask(PTask, CostInfo = {ResourceId::GOLD, 0});
-    Task* addTask(PTask, const Creature*);
-    Task* getTask(const Creature*) const;
+    Task* addTaskCost(PTask, CostInfo);
     void markSquare(Vec2 pos, PTask);
     void unmarkSquare(Vec2 pos);
     Task* getMarked(Vec2 pos) const;
-    CostInfo removeTask(Task*);
-    CostInfo removeTask(UniqueId);
+    CostInfo removeTaskCost(Task*);
+    CostInfo removeTaskCost(UniqueId);
     bool isLocked(const Creature*, const Task*) const;
     void lock(const Creature*, const Task*);
     void clearAllLocked();
-    vector<Task*> getTasks();
     Task* getTaskForImp(Creature*);
-    void takeTask(const Creature*, Task*);
-    void freeTask(Task*);
     void freeTaskDelay(Task*, double delayTime);
 
     template <class Archive>
@@ -330,10 +325,7 @@ class Collective : public CreatureView, public EventListener {
     SERIAL_CHECKER;
 
     private:
-    vector<PTask> SERIAL(tasks);
     map<Vec2, Task*> SERIAL(marked);
-    map<Task*, const Creature*> SERIAL(taken);
-    map<const Creature*, Task*> SERIAL(taskMap);
     map<Task*, CostInfo> SERIAL(completionCost);
     set<pair<const Creature*, UniqueId>> SERIAL(lockedTasks);
     map<UniqueId, double> SERIAL(delayedTasks);

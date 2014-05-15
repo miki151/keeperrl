@@ -2126,7 +2126,7 @@ vector<string> Creature::getAdjectives() const {
 void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
   gameInfo.infoType = View::GameInfo::InfoType::PLAYER;
   Model::SunlightInfo sunlightInfo = level->getModel()->getSunlightInfo();
-  gameInfo.sunlightInfo.description = sunlightInfo.description;
+  gameInfo.sunlightInfo.description = sunlightInfo.getText();
   gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
   View::GameInfo::PlayerInfo& info = gameInfo.playerInfo;
   if (firstName) {

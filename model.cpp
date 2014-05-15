@@ -70,25 +70,34 @@ void Model::updateSunlightInfo() {
   while (1) {
     d += dayLength;
     if (d > currentTime) {
-      sunlightInfo = {1, d - currentTime, "day"};
+      sunlightInfo = {1, d - currentTime, SunlightInfo::DAY};
       return;
     }
     d += duskLength;
     if (d > currentTime) {
-      sunlightInfo = {(d - currentTime) / duskLength, d + nightLength - duskLength - currentTime, "night"};
+      sunlightInfo = {(d - currentTime) / duskLength, d + nightLength - duskLength - currentTime,
+        SunlightInfo::NIGHT};
       return;
     }
     d += nightLength - 2 * duskLength;
     if (d > currentTime) {
-      sunlightInfo = {0, d - currentTime, "night"};
+      sunlightInfo = {0, d - currentTime, SunlightInfo::NIGHT};
       return;
     }
     d += duskLength;
     if (d > currentTime) {
-      sunlightInfo = {1 - (d - currentTime) / duskLength, d - currentTime, "night"};
+      sunlightInfo = {1 - (d - currentTime) / duskLength, d - currentTime, SunlightInfo::NIGHT};
       return;
     }
   }
+}
+
+const char* Model::SunlightInfo::getText() {
+  switch (state) {
+    case NIGHT: return "night";
+    case DAY: return "day";
+  }
+  return "";
 }
 
 const vector<VillageControl*> Model::getVillageControls() const {
@@ -514,7 +523,7 @@ Model* Model::collectiveModel(View* view) {
     if (!enemyInfo[i].anonymous)
       control = VillageControl::topLevelVillage(m->collective.get(), enemyInfo[i].settlement.location);
     else
-      control = VillageControl::topLevelAnonymous(m->collective.get());
+      control = VillageControl::topLevelAnonymous(m->collective.get(), enemyInfo[i].settlement.location);
     if (enemyInfo[i].noAttack)
       control->setPowerTrigger(0, 0);
     else if (i < enemyInfo.size() - 1)

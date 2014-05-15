@@ -83,7 +83,8 @@ class Model : public EventListener {
   struct SunlightInfo {
     double lightAmount;
     double timeRemaining;
-    string description;
+    enum State { DAY, NIGHT } state;
+    const char* getText();
   };
   const SunlightInfo& getSunlightInfo() const;
 

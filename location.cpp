@@ -37,6 +37,9 @@ Location::Location(const string& _name, const string& desc, bool sup)
 
 Location::Location(bool s) : bounds(-1, -1, 1, 1), surprise(s) {}
 
+Location::Location(Level* l, Rectangle b) : level(l), bounds(b) {
+}
+
 bool Location::isMarkedAsSurprise() const {
   return surprise;
 }

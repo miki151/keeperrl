@@ -80,10 +80,8 @@ SERIALIZABLE(Collective);
 
 template <class Archive>
 void Collective::TaskMap::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(tasks)
+  ar& SUBCLASS(Task::Mapping)
     & BOOST_SERIALIZATION_NVP(marked)
-    & BOOST_SERIALIZATION_NVP(taken)
-    & BOOST_SERIALIZATION_NVP(taskMap)
     & BOOST_SERIALIZATION_NVP(lockedTasks)
     & BOOST_SERIALIZATION_NVP(completionCost);
 }
@@ -1119,7 +1117,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   if (attacking)
     model->getView()->getJukebox()->setCurrent(Jukebox::BATTLE);
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
-  gameInfo.sunlightInfo = { sunlightInfo.description, (int)sunlightInfo.timeRemaining };
+  gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
   gameInfo.infoType = View::GameInfo::InfoType::BAND;
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.buildings = fillButtons(buildInfo);
@@ -1241,30 +1239,12 @@ Vec2 Collective::getPosition() const {
 
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
-vector<Task*> Collective::TaskMap::getTasks() {
-  return transform2<Task*>(tasks, [](PTask& t) { return t.get(); });
+Task* Collective::TaskMap::addTaskCost(PTask task, CostInfo cost) {
+  completionCost[task.get()] = cost;
+  return Task::Mapping::addTask(std::move(task));
 }
 
-Task* Collective::TaskMap::getTask(const Creature* c) const {
-  if (taskMap.count(c))
-    return taskMap.at(c);
-  else
-    return nullptr;
-}
-
-Task* Collective::TaskMap::addTask(PTask task, const Creature* c) {
-  taken[task.get()] = c;
-  taskMap[c] = task.get();
-  return addTask(std::move(task));
-}
-
-Task* Collective::TaskMap::addTask(PTask task, CostInfo cost) {
-  tasks.push_back(std::move(task));
-  completionCost[tasks.back().get()] = cost;
-  return tasks.back().get();
-}
-
-Collective::CostInfo Collective::TaskMap::removeTask(Task* task) {
+Collective::CostInfo Collective::TaskMap::removeTaskCost(Task* task) {
   CostInfo cost {ResourceId::GOLD, 0};
   if (completionCost.count(task)) {
     cost = completionCost.at(task);
@@ -1272,25 +1252,18 @@ Collective::CostInfo Collective::TaskMap::removeTask(Task* task) {
   }
   if (marked.count(task->getPosition()))
     marked.erase(task->getPosition());
-  for (int i : All(tasks))
-    if (tasks[i].get() == task) {
-      removeIndex(tasks, i);
-      break;
-    }
-  if (taken.count(task)) {
-    taskMap.erase(taken.at(task));
-    taken.erase(task);
-  }
+  removeTask(task);
   return cost;
 }
 
-Collective::CostInfo Collective::TaskMap::removeTask(UniqueId id) {
+Collective::CostInfo Collective::TaskMap::removeTaskCost(UniqueId id) {
   for (PTask& task : tasks)
     if (task->getUniqueId() == id) {
-      return removeTask(task.get());
+      return removeTaskCost(task.get());
     }
   return {ResourceId::GOLD, 0};
 }
+
 bool Collective::TaskMap::isLocked(const Creature* c, const Task* t) const {
   return lockedTasks.count({c, t->getUniqueId()});
 }
@@ -1553,7 +1526,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
           traps.erase(pos);
         }
         if (constructions.count(pos)) {
-          returnGold(taskMap.removeTask(constructions.at(pos).task));
+          returnGold(taskMap.removeTaskCost(constructions.at(pos).task));
           constructions.erase(pos);
         }
         break;
@@ -1594,7 +1567,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         if (!tryLockingDoor(pos)) {
           if (constructions.count(pos)) {
             if (selection != SELECT) {
-              returnGold(taskMap.removeTask(constructions.at(pos).task));
+              returnGold(taskMap.removeTaskCost(constructions.at(pos).task));
               if (constructions.at(pos).type == SquareType::IMPALED_HEAD)
                 ++executions;
               constructions.erase(pos);
@@ -1833,7 +1806,7 @@ void Collective::updateConstructions() {
       if ((warning[int(resourceInfo.at(elem.second.cost.id).warning)]
           = (numGold(elem.second.cost.id) < elem.second.cost.value)))
         continue;
-      elem.second.task = taskMap.addTask(Task::construction(this, elem.first, elem.second.type),
+      elem.second.task = taskMap.addTaskCost(Task::construction(this, elem.first, elem.second.type),
           elem.second.cost)->getUniqueId();
       elem.second.marked = getTime() + timeToBuild;
       takeGold(elem.second.cost);
@@ -2320,12 +2293,6 @@ Task* Collective::TaskMap::getTaskForImp(Creature* c) {
   return closest;
 }
 
-void Collective::TaskMap::takeTask(const Creature* c, Task* task) {
-  freeTask(task);
-  taskMap[c] = task;
-  taken[task] = c;
-}
-
 MoveInfo Collective::getMove(Creature* c) {
   CHECK(contains(creatures, c));
   if (!contains(minionByType.at(MinionType::IMP), c)) {
@@ -2511,13 +2478,6 @@ bool Collective::isInCombat(const Creature* c) const {
   return lastCombat.count(c) && lastCombat.at(c) > c->getTime() -5;
 }
 
-void Collective::TaskMap::freeTask(Task* task) {
-  if (taken.count(task)) {
-    taskMap.erase(taken.at(task));
-    taken.erase(task);
-  }
-}
-
 void Collective::TaskMap::freeTaskDelay(Task* t, double d) {
   freeTask(t);
   delayedTasks[t->getUniqueId()] = d;
@@ -2542,7 +2502,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     if (Task* task = taskMap.getTask(c)) {
       if (!task->canTransfer()) {
         task->cancel();
-        returnGold(taskMap.removeTask(task));
+        returnGold(taskMap.removeTaskCost(task));
       } else
         taskMap.freeTaskDelay(task, getTime() + 50);
     }

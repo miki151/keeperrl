@@ -17,7 +17,6 @@
 
 #include "task.h"
 #include "level.h"
-#include "collective.h"
 #include "entity_set.h"
 
 template <class Archive> 
@@ -25,13 +24,29 @@ void Task::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(UniqueEntity)
     & SVAR(position)
     & SVAR(done)
-    & SVAR(collective);
+    & SVAR(callback);
   CHECK_SERIAL;
 }
 
 SERIALIZABLE(Task);
 
-Task::Task(Collective* col, Vec2 pos) : position(pos), collective(col) {}
+template <class Archive> 
+void Task::Callback::serialize(Archive& ar, const unsigned int version) {
+}
+
+SERIALIZABLE(Task::Callback);
+
+template <class Archive>
+
+void Task::Mapping::serialize(Archive& ar, const unsigned int version) {
+  ar& BOOST_SERIALIZATION_NVP(tasks)
+    & BOOST_SERIALIZATION_NVP(taken)
+    & BOOST_SERIALIZATION_NVP(taskMap);
+}
+
+SERIALIZABLE(Task::Mapping);
+
+Task::Task(Callback* call, Vec2 pos) : position(pos), callback(call) {}
 
 Task::~Task() {
 }
@@ -40,8 +55,8 @@ Vec2 Task::getPosition() {
   return position;
 }
 
-Collective* Task::getCollective() {
-  return collective;
+Task::Callback* Task::getCallback() {
+  return callback;
 }
 
 bool Task::isDone() {
@@ -56,9 +71,57 @@ void Task::setPosition(Vec2 pos) {
   position = pos;
 }
 
+void Task::Mapping::removeTask(Task* task) {
+  for (int i : All(tasks))
+    if (tasks[i].get() == task) {
+      removeIndex(tasks, i);
+      break;
+    }
+  if (taken.count(task)) {
+    taskMap.erase(taken.at(task));
+    taken.erase(task);
+  }
+}
+
+void Task::Mapping::removeTask(UniqueId id) {
+  for (PTask& task : tasks)
+    if (task->getUniqueId() == id) {
+      removeTask(task.get());
+    }
+}
+
+Task* Task::Mapping::getTask(const Creature* c) const {
+  if (taskMap.count(c))
+    return taskMap.at(c);
+  else
+    return nullptr;
+}
+
+Task* Task::Mapping::addTask(PTask task, const Creature* c) {
+  if (c) {
+    taken[task.get()] = c;
+    taskMap[c] = task.get();
+  }
+  tasks.push_back(std::move(task));
+  return tasks.back().get();
+}
+
+void Task::Mapping::takeTask(const Creature* c, Task* task) {
+  freeTask(task);
+  taskMap[c] = task;
+  taken[task] = c;
+}
+
+void Task::Mapping::freeTask(Task* task) {
+  if (taken.count(task)) {
+    taskMap.erase(taken.at(task));
+    taken.erase(task);
+  }
+}
+
 class Construction : public Task {
   public:
-  Construction(Collective* col, Vec2 position, SquareType _type) : Task(col, position), type(_type) {}
+  Construction(Callback* col, Vec2 position, SquareType _type) : Task(col, position), type(_type) {}
 
   virtual bool isImpossible(const Level* level) {
     return !level->getSquare(getPosition())->canConstruct(type);
@@ -78,7 +141,7 @@ class Construction : public Task {
           c->construct(dir, type);
           if (!c->canConstruct(dir, type)) {
             setDone();
-            getCollective()->onConstructed(getPosition(), type);
+            getCallback()->onConstructed(getPosition(), type);
           }
         }};
       else {
@@ -103,7 +166,7 @@ class Construction : public Task {
 };
 
 
-PTask Task::construction(Collective* col, Vec2 target, SquareType type) {
+PTask Task::construction(Callback* col, Vec2 target, SquareType type) {
   return PTask(new Construction(col, target, type));
 }
   
@@ -119,7 +182,7 @@ MoveInfo Task::getMoveToPosition(Creature *c, bool stepOnTile) {
 
 class PickItem : public Task {
   public:
-  PickItem(Collective* col, Vec2 position, vector<Item*> _items) 
+  PickItem(Callback* col, Vec2 position, vector<Item*> _items) 
       : Task(col, position), items(_items) {
   }
 
@@ -144,7 +207,7 @@ class PickItem : public Task {
           hereItems.push_back(it);
           items.erase(it);
         }
-      getCollective()->onCantPickItem(items);
+      getCallback()->onCantPickItem(items);
       if (hereItems.empty()) {
         setDone();
         return NoMove;
@@ -157,10 +220,10 @@ class PickItem : public Task {
           c->pickUp(hereItems);
           pickedUp = true;
           onPickedUp();
-          getCollective()->onPickedUp(getPosition(), hereItems);
+          getCallback()->onPickedUp(getPosition(), hereItems);
         }}; 
       else {
-        getCollective()->onCantPickItem(items);
+        getCallback()->onCantPickItem(items);
         setDone();
         return NoMove;
       }
@@ -168,7 +231,7 @@ class PickItem : public Task {
     if (MoveInfo move = getMoveToPosition(c, true))
       return move;
     else if (--tries == 0) {
-      getCollective()->onCantPickItem(items);
+      getCallback()->onCantPickItem(items);
       setDone();
     }
     return NoMove;
@@ -190,13 +253,13 @@ class PickItem : public Task {
   int tries = 10;
 };
 
-PTask Task::pickItem(Collective* col, Vec2 position, vector<Item*> items) {
+PTask Task::pickItem(Callback* col, Vec2 position, vector<Item*> items) {
   return PTask(new PickItem(col, position, items));
 }
 
 class EquipItem : public PickItem {
   public:
-  EquipItem(Collective* col, Vec2 position, vector<Item*> _items) : PickItem(col, position, _items) {
+  EquipItem(Callback* col, Vec2 position, vector<Item*> _items) : PickItem(col, position, _items) {
   }
 
   virtual void onPickedUp() override {
@@ -230,17 +293,17 @@ class EquipItem : public PickItem {
   SERIALIZATION_CONSTRUCTOR(EquipItem);
 };
 
-PTask Task::equipItem(Collective* col, Vec2 position, Item* items) {
+PTask Task::equipItem(Callback* col, Vec2 position, Item* items) {
   return PTask(new EquipItem(col, position, {items}));
 }
 
 class BringItem : public PickItem {
   public:
-  BringItem(Collective* col, Vec2 position, vector<Item*> items, Vec2 _target)
+  BringItem(Callback* col, Vec2 position, vector<Item*> items, Vec2 _target)
       : PickItem(col, position, items), target(_target) {}
 
   virtual void onBroughtItem(Creature* c, vector<Item*> it) {
-    //getCollective()->onBrought(c->getPosition(), it);
+    //getCallback()->onBrought(c->getPosition(), it);
     for (auto elem : Item::stackItems(it))
       c->globalMessage(c->getTheName() + " drops " + elem.first);
     c->drop(it);
@@ -291,17 +354,17 @@ class BringItem : public PickItem {
 
 };
 
-PTask Task::bringItem(Collective* col, Vec2 position, vector<Item*> items, Vec2 target) {
+PTask Task::bringItem(Callback* col, Vec2 position, vector<Item*> items, Vec2 target) {
   return PTask(new BringItem(col, position, items, target));
 }
 
 class ApplyItem : public BringItem {
   public:
-  ApplyItem(Collective* col, Vec2 position, vector<Item*> items, Vec2 _target) 
+  ApplyItem(Callback* col, Vec2 position, vector<Item*> items, Vec2 _target) 
       : BringItem(col, position, items, _target) {}
 
   virtual void cancel() override {
-    getCollective()->onAppliedItemCancel(target);
+    getCallback()->onAppliedItemCancel(target);
   }
 
   virtual string getInfo() override {
@@ -311,7 +374,7 @@ class ApplyItem : public BringItem {
 
   virtual void onBroughtItem(Creature* c, vector<Item*> it) override {
     Item* item = getOnlyElement(it);
-    getCollective()->onAppliedItem(c->getPosition(), item);
+    getCallback()->onAppliedItem(c->getPosition(), item);
     c->globalMessage(c->getTheName() + " " + item->getApplyMsgThirdPerson(),
         item->getNoSeeApplyMsg());
     c->applyItem(item);
@@ -325,13 +388,13 @@ class ApplyItem : public BringItem {
   SERIALIZATION_CONSTRUCTOR(ApplyItem);
 };
 
-PTask Task::applyItem(Collective* col, Vec2 position, Item* item, Vec2 target) {
+PTask Task::applyItem(Callback* col, Vec2 position, Item* item, Vec2 target) {
   return PTask(new ApplyItem(col, position, {item}, target));
 }
 
 class ApplySquare : public Task {
   public:
-  ApplySquare(Collective* col, set<Vec2> pos) : Task(col, Vec2(-1, 1)), positions(pos) {}
+  ApplySquare(Callback* col, set<Vec2> pos) : Task(col, Vec2(-1, 1)), positions(pos) {}
 
   virtual bool canTransfer() override {
     return false;
@@ -361,7 +424,7 @@ class ApplySquare : public Task {
         return {1.0, [this, c] {
           c->applySquare();
           setDone();
-          getCollective()->onAppliedSquare(c->getPosition());
+          getCallback()->onAppliedSquare(c->getPosition());
         }};
       else {
         setDone();
@@ -399,7 +462,7 @@ class ApplySquare : public Task {
   int SERIAL2(invalidCount, 5);
 };
 
-PTask Task::applySquare(Collective* col, set<Vec2> position) {
+PTask Task::applySquare(Callback* col, set<Vec2> position) {
   CHECK(position.size() > 0);
   return PTask(new ApplySquare(col, position));
 }

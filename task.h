@@ -18,10 +18,48 @@
 
 #include "monster_ai.h"
 #include "unique_entity.h"
+#include "entity_set.h"
 
 class Task : public UniqueEntity {
   public:
-  Task(Collective*, Vec2 position);
+
+  class Callback {
+    public:
+    virtual void onConstructed(Vec2 pos, SquareType) {}
+    virtual void onBrought(Vec2 pos, vector<Item*> items) {}
+    virtual void onAppliedItem(Vec2 pos, Item* item) {}
+    virtual void onAppliedSquare(Vec2 pos) {}
+    virtual void onAppliedItemCancel(Vec2 pos) {}
+    virtual void onPickedUp(Vec2 pos, EntitySet) {}
+    virtual void onCantPickItem(EntitySet items) {}
+
+    SERIALIZATION_DECL(Callback);
+
+    template <class Archive>
+    static void registerTypes(Archive& ar);
+  };
+
+  class Mapping {
+    public:
+    Task* addTask(PTask, const Creature* = nullptr);
+    Task* getTask(const Creature*) const;
+    void removeTask(Task*);
+    void removeTask(UniqueId);
+    void takeTask(const Creature*, Task*);
+    void freeTask(Task*);
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
+    SERIAL_CHECKER;
+
+    protected:
+    map<Task*, const Creature*> SERIAL(taken);
+    map<const Creature*, Task*> SERIAL(taskMap);
+    vector<PTask> SERIAL(tasks);
+  };
+
+  Task(Callback*, Vec2 position);
   virtual ~Task();
 
   virtual MoveInfo getMove(Creature*) = 0;
@@ -33,14 +71,14 @@ class Task : public UniqueEntity {
 
   Vec2 getPosition();
 
-  static PTask construction(Collective*, Vec2 target, SquareType);
-  static PTask bringItem(Collective*, Vec2 position, vector<Item*>, Vec2 target);
-  static PTask applyItem(Collective* col, Vec2 position, Item* item, Vec2 target);
-  static PTask applySquare(Collective*, set<Vec2> squares);
-  static PTask eat(Collective*, set<Vec2> hatcherySquares);
-  static PTask equipItem(Collective* col, Vec2 position, Item* item);
-  static PTask unEquipItem(Collective* col, Vec2 position, Item* item);
-  static PTask pickItem(Collective* col, Vec2 position, vector<Item*> items);
+  static PTask construction(Callback*, Vec2 target, SquareType);
+  static PTask bringItem(Callback*, Vec2 position, vector<Item*>, Vec2 target);
+  static PTask applyItem(Callback* col, Vec2 position, Item* item, Vec2 target);
+  static PTask applySquare(Callback*, set<Vec2> squares);
+  static PTask eat(Callback*, set<Vec2> hatcherySquares);
+  static PTask equipItem(Callback* col, Vec2 position, Item* item);
+  static PTask unEquipItem(Callback* col, Vec2 position, Item* item);
+  static PTask pickItem(Callback* col, Vec2 position, vector<Item*> items);
 
   SERIALIZATION_DECL(Task);
 
@@ -51,12 +89,12 @@ class Task : public UniqueEntity {
   void setDone();
   void setPosition(Vec2);
   MoveInfo getMoveToPosition(Creature*, bool stepOnTile = false);
-  Collective* getCollective();
+  Callback* getCallback();
 
   private:
   Vec2 SERIAL(position);
   bool SERIAL2(done, false);
-  Collective* SERIAL(collective);
+  Callback* SERIAL(callback);
 };
 
 #endif

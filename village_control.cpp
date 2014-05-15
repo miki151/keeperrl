@@ -21,27 +21,31 @@
 #include "square.h"
 #include "level.h"
 #include "name_generator.h"
+#include "model.h"
 
 template <class Archive>
 void VillageControl::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(EventListener)
+  ar& SUBCLASS(EventListener) & SUBCLASS(Task::Callback)
     & SVAR(allCreatures)
     & SVAR(villain)
     & SVAR(level)
     & SVAR(name)
     & SVAR(tribe)
     & SVAR(attackTrigger)
-    & SVAR(atWar);
+    & SVAR(atWar)
+    & SVAR(taskMap)
+    & SVAR(beds);
   CHECK_SERIAL;
 }
 
 SERIALIZABLE(VillageControl);
 
 
-VillageControl::VillageControl(Collective* c, const Level* l, string n) : villain(c), level(l), name(n) {
-}
-
-VillageControl::VillageControl(Collective* c, const Level* l) : villain(c), level(l) {
+VillageControl::VillageControl(Collective* c, const Location* loc)
+    : villain(c), level(NOTNULL(loc->getLevel())), name(loc->hasName() ? loc->getName() : "") {
+  for (Vec2 v : loc->getBounds())
+    if (level->getSquare(v)->getApplyType(Creature::getDefault()) == SquareApplyType::SLEEP)
+      beds.push_back(v);
 }
 
 VillageControl::VillageControl() {
@@ -368,15 +372,27 @@ void VillageControl::setFinalTrigger(vector<VillageControl*> otherControls) {
 
 class TopLevelVillageControl : public VillageControl {
   public:
-  TopLevelVillageControl(Collective* villain, const Location* location) 
-      : VillageControl(villain, location->getLevel(), location->getName()) {}
+  TopLevelVillageControl(Collective* villain, const Location* location) : VillageControl(villain, location) {}
 
-  TopLevelVillageControl(Collective* villain) 
-      : VillageControl(villain, villain->getLevel()) {}
+  MoveInfo getPeacefulMove(Creature* c) {
+    if (Task* task = taskMap.getTask(c)) {
+      if (task->isDone()) {
+        taskMap.removeTask(task);
+      } else
+        return task->getMove(c);
+    }
+    if (c->getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::NIGHT 
+        && !c->isAffected(Creature::SLEEP)) {
+      for (Vec2 v : beds)
+        if (level->getSquare(v)->canEnter(c))
+          return taskMap.addTask(Task::applySquare(this, {v}), c)->getMove(c);
+    }
+    return NoMove;
+  }
 
   virtual MoveInfo getMove(Creature* c) override {
     if (!attackTrigger->startedAttack(c))
-      return NoMove;
+      return getPeacefulMove(c);
     if (c->getLevel() != villain->getLevel())
       return NoMove;
     if (Optional<Vec2> move = c->getMoveTowards(villain->getKeeper()->getPosition())) 
@@ -411,14 +427,15 @@ PVillageControl VillageControl::topLevelVillage(Collective* villain, const Locat
   return PVillageControl(new TopLevelVillageControl(villain, location));
 }
 
-PVillageControl VillageControl::topLevelAnonymous(Collective* villain) {
-  return PVillageControl(new TopLevelVillageControl(villain));
+PVillageControl VillageControl::topLevelAnonymous(Collective* villain, const Location* location) {
+  return PVillageControl(new TopLevelVillageControl(villain, location));
 }
+
 
 class DwarfVillageControl : public VillageControl {
   public:
-  DwarfVillageControl(Collective* villain, const Level* level, StairDirection dir, StairKey key)
-      : VillageControl(villain, level, "the Dwarven Halls"), direction(dir), stairKey(key) {}
+  DwarfVillageControl(Collective* villain, Level* level, StairDirection dir, StairKey key)
+      : VillageControl(villain, new Location(level, level->getBounds())), direction(dir), stairKey(key) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (!attackTrigger->startedAttack(c))
@@ -475,7 +492,7 @@ void VillageControl::registerTypes(Archive& ar) {
 
 REGISTER_TYPES(VillageControl);
 
-PVillageControl VillageControl::dwarfVillage(Collective* villain, const Level* level,
+PVillageControl VillageControl::dwarfVillage(Collective* villain, Level* level,
     StairDirection dir, StairKey key) {
   return PVillageControl(new DwarfVillageControl(villain, level, dir, key));
 }

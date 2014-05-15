@@ -19,11 +19,12 @@
 #include "event.h"
 #include "monster_ai.h"
 #include "view.h"
+#include "task.h"
 
 class AttackTrigger;
 typedef unique_ptr<AttackTrigger> PAttackTrigger;
 
-class VillageControl : public EventListener {
+class VillageControl : public EventListener, public Task::Callback {
   public:
   virtual ~VillageControl();
   void initialize(vector<Creature*>);
@@ -50,9 +51,9 @@ class VillageControl : public EventListener {
   friend class FinalTrigger;
   friend class FirstContact;
 
-  static PVillageControl topLevelVillage(Collective* villain, const Location* villageLocation);
-  static PVillageControl dwarfVillage(Collective* villain, const Level*, StairDirection dir, StairKey key);
-  static PVillageControl topLevelAnonymous(Collective* villain);
+  static PVillageControl topLevelVillage(Collective* villain, const Location* location);
+  static PVillageControl dwarfVillage(Collective* villain, Level*, StairDirection dir, StairKey key);
+  static PVillageControl topLevelAnonymous(Collective* villain, const Location* location);
 
   void setTrigger(unique_ptr<AttackTrigger>);
 
@@ -64,8 +65,7 @@ class VillageControl : public EventListener {
   static void registerTypes(Archive& ar);
 
   protected:
-  VillageControl(Collective* villain, const Level*, string name);
-  VillageControl(Collective* villain, const Level*);
+  VillageControl(Collective* villain, const Location*);
   vector<Creature*> SERIAL(allCreatures);
   Collective* SERIAL2(villain, nullptr);
   const Level* SERIAL2(level, nullptr);
@@ -73,6 +73,8 @@ class VillageControl : public EventListener {
   Tribe* SERIAL2(tribe, nullptr);
   unique_ptr<AttackTrigger> SERIAL(attackTrigger);
   bool SERIAL2(atWar, false);
+  Task::Mapping SERIAL(taskMap);
+  vector<Vec2> SERIAL(beds);
 };
 
 #endif
