@@ -333,14 +333,31 @@ Color getSpeedColor(int value) {
     return Color(255, max(0, 255 + (value - 100) * 4), max(0, 255 + (value - 100) * 4));
 }
 
-PGuiElem WindowView::drawBottomPlayerInfo(GameInfo::PlayerInfo& info) {
+PGuiElem WindowView::getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo) {
+  vector<PGuiElem> line;
+  Color color = sunlightInfo.description == "day" ? white : lightBlue;
+  line.push_back(GuiElem::label(sunlightInfo.description, color));
+  line.push_back(GuiElem::label("[" + convertToString(sunlightInfo.timeRemaining) + "]", color));
+  return GuiElem::horizontalList(std::move(line), renderer.getTextLength(sunlightInfo.description) + 5, 0);
+}
+
+PGuiElem WindowView::drawBottomPlayerInfo(GameInfo::PlayerInfo& info, GameInfo::SunlightInfo& sunlightInfo) {
   string title = info.title;
   if (!info.adjectives.empty() || !info.playerName.empty())
     title = " " + title;
   for (int i : All(info.adjectives))
     title = string(i <info.adjectives.size() - 1 ? ", " : " ") + info.adjectives[i] + title;
-  PGuiElem top = GuiElem::label(capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title) +
-    "          T: " + convertToString<int>(info.time) + "            " + info.levelName, white);
+  vector<PGuiElem> topLine;
+  vector<int> topWidths;
+  string nameLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title);
+  topLine.push_back(GuiElem::label(nameLine, white));
+  topWidths.push_back(renderer.getTextLength(nameLine) + 50);
+  topLine.push_back(GuiElem::label(info.levelName, white));
+  topWidths.push_back(200);
+  topLine.push_back(GuiElem::label("T: " + convertToString<int>(info.time), white));
+  topWidths.push_back(100);
+  topLine.push_back(getSunlightInfoGui(sunlightInfo));
+  topWidths.push_back(100);
   vector<PGuiElem> bottomLine;
   vector<int> bottomWidths;
   vector<KeyInfo> bottomKeys =  {
@@ -362,7 +379,7 @@ PGuiElem WindowView::drawBottomPlayerInfo(GameInfo::PlayerInfo& info) {
     bottomWidths.push_back(renderer.getTextLength(text));
   }
   int keySpacing = 50;
-  return GuiElem::verticalList(makeVec<PGuiElem>(std::move(top),
+  return GuiElem::verticalList(makeVec<PGuiElem>(GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2),
         GuiElem::horizontalList(std::move(bottomLine), bottomWidths, keySpacing)), 28, 0);
 }
 
@@ -651,7 +668,7 @@ PGuiElem WindowView::drawKeeperHelp() {
   return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }
 
-PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info) {
+PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info, GameInfo::SunlightInfo& sunlightInfo) {
   vector<PGuiElem> topLine;
   vector<int> topWidths;
   int resourceSpacing = 95;
@@ -664,7 +681,9 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info) {
             GuiElem::horizontalList(std::move(res), 30, 0)));
   }
   topLine.push_back(GuiElem::label("T:" + convertToString<int>(info.time), white));
-  topWidths.push_back(50);
+  topWidths.push_back(100);
+  topLine.push_back(getSunlightInfoGui(sunlightInfo));
+  topWidths.push_back(100);
   vector<PGuiElem> bottomLine;
   if (myClock.isPaused())
     bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { myClock.cont(); }),
@@ -675,7 +694,7 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info) {
   bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { unzoom(); }),
         GuiElem::label("ZOOM", lightBlue)));
   bottomLine.push_back(GuiElem::label(info.warning, red));
-  return GuiElem::verticalList(makeVec<PGuiElem>(GuiElem::horizontalList(std::move(topLine), topWidths, 0),
+  return GuiElem::verticalList(makeVec<PGuiElem>(GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2),
         GuiElem::horizontalList(std::move(bottomLine), 85, 0)), 28, 0);
 }
 
@@ -726,13 +745,13 @@ void WindowView::rebuildGui() {
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::PLAYER:
         right = drawRightPlayerInfo(gameInfo.playerInfo);
-        bottom = drawBottomPlayerInfo(gameInfo.playerInfo);
+        bottom = drawBottomPlayerInfo(gameInfo.playerInfo, gameInfo.sunlightInfo);
         rightBarWidth = rightBarWidthPlayer;
         break;
     case GameInfo::InfoType::BAND:
         right = drawRightBandInfo(gameInfo.bandInfo, gameInfo.villageInfo);
         overMap = drawMinionWindow(gameInfo.bandInfo);
-        bottom = drawBottomBandInfo(gameInfo.bandInfo);
+        bottom = drawBottomBandInfo(gameInfo.bandInfo, gameInfo.sunlightInfo);
         rightBarWidth = rightBarWidthCollective;
         break;
   }

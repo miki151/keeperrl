@@ -63,8 +63,23 @@ class BoulderController : public Monster {
       creature->wait();
       return;
     }
-    if (creature->getConstSquare(direction)->getStrength() < 300)
-      creature->squash(direction);
+    if (creature->getConstSquare(direction)->getStrength() < 300) {
+      if (Creature* c = creature->getSquare(direction)->getCreature()) {
+        if (c->getSize() != CreatureSize::HUGE) {
+          c->you(MsgType::KILLED_BY, creature->getTheName());
+          c->die(creature);
+        } else {
+          creature->getLevel()->globalMessage(creature->getPosition() + direction,
+              creature->getTheName() + " crashes on the " + c->getTheName(),
+              "You hear a crash");
+          creature->die();
+          c->bleed(Random.getDouble(0.1, 0.3));
+          return;
+        }
+      }
+      if (creature->canDestroy(direction))
+        creature->getSquare(direction)->destroy(creature);
+    }
     if (creature->canMove(direction))
       creature->move(direction);
     else {
@@ -72,9 +87,8 @@ class BoulderController : public Monster {
           creature->getTheName() + " crashes on the " + creature->getConstSquare(direction)->getName(),
               "You hear a crash");
       creature->die();
-    }
-    if (creature->isDead())
       return;
+    }
     double speed = creature->getSpeed();
     double deceleration = 0.1;
     speed -= deceleration * 100 * 100 / speed;
@@ -1067,7 +1081,7 @@ CreatureAttributes getAttributes(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
           c.speed = 100;
-          c.size = CreatureSize::LARGE;
+          c.size = CreatureSize::HUGE;
           c.strength = 35;
           c.dexterity = 15;
           c.barehandedDamage = 5;

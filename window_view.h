@@ -77,10 +77,11 @@ class WindowView: public View {
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   void rebuildGui();
   void drawMap();
-  PGuiElem drawBottomPlayerInfo(GameInfo::PlayerInfo&);
+  PGuiElem getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo);
+  PGuiElem drawBottomPlayerInfo(GameInfo::PlayerInfo&, GameInfo::SunlightInfo&);
   PGuiElem drawRightPlayerInfo(GameInfo::PlayerInfo&);
   PGuiElem drawPlayerStats(GameInfo::PlayerInfo&);
-  PGuiElem drawBottomBandInfo(GameInfo::BandInfo& info);
+  PGuiElem drawBottomBandInfo(GameInfo::BandInfo& info, GameInfo::SunlightInfo&);
   PGuiElem drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo&);
   PGuiElem drawBuildings(GameInfo::BandInfo& info);
   PGuiElem  drawTechnology(GameInfo::BandInfo& info);

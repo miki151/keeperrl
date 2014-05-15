@@ -80,7 +80,13 @@ class Model : public EventListener {
   void showCredits();
   void retireCollective();
 
-  double getSunlight() const;
+  struct SunlightInfo {
+    double lightAmount;
+    double timeRemaining;
+    string description;
+  };
+  const SunlightInfo& getSunlightInfo() const;
+  void updateSunlightInfo();
 
   SERIALIZATION_DECL(Model);
 
@@ -107,6 +113,7 @@ class Model : public EventListener {
   bool SERIAL2(addHero, false);
   bool SERIAL2(adventurer, false);
   double SERIAL2(currentTime, 0);
+  SunlightInfo sunlightInfo;
 };
 
 #endif

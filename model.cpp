@@ -54,18 +54,39 @@ bool Model::isTurnBased() {
   return !collective || collective->isTurnBased();
 }
 
-const double dayLength = 3000;
+const double dayLength = 1500;
+const double nightLength = 1500;
 
-static double sqr(double x) {
-  return x * x;
+const double duskLength  = 300;
+
+const Model::SunlightInfo& Model::getSunlightInfo() const {
+  return sunlightInfo;
 }
 
-const double steepness = 10;
-
-double Model::getSunlight() const {
-  // the curve looks like steepened sin that goes between 0 and 1
-  return (atan((sqr(cos(currentTime * M_PI / dayLength)) * 2 * steepness - steepness)) - atan(-steepness)) 
-    / (atan(steepness) - atan(-steepness));
+void Model::updateSunlightInfo() {
+  double d = 0;
+  while (1) {
+    d += dayLength;
+    if (d > currentTime) {
+      sunlightInfo = {1, d - currentTime, "day"};
+      return;
+    }
+    d += duskLength;
+    if (d > currentTime) {
+      sunlightInfo = {(d - currentTime) / duskLength, d + nightLength - duskLength - currentTime, "night"};
+      return;
+    }
+    d += nightLength - 2 * duskLength;
+    if (d > currentTime) {
+      sunlightInfo = {0, d - currentTime, "night"};
+      return;
+    }
+    d += duskLength;
+    if (d > currentTime) {
+      sunlightInfo = {1 - (d - currentTime) / duskLength, d - currentTime, "night"};
+      return;
+    }
+  }
 }
 
 const vector<VillageControl*> Model::getVillageControls() const {
@@ -125,6 +146,7 @@ void Model::update(double totalTime) {
 }
 
 void Model::tick(double time) {
+  updateSunlightInfo();
   Debug() << "Turn " << time;
   for (Creature* c : timeQueue.getAllCreatures()) {
     c->tick(time);
@@ -165,6 +187,7 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker) {
 }
 
 Model::Model(View* v) : view(v) {
+  updateSunlightInfo();
 }
 
 Model::~Model() {

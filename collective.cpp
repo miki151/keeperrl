@@ -1118,6 +1118,8 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
     }
   if (attacking)
     model->getView()->getJukebox()->setCurrent(Jukebox::BATTLE);
+  Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
+  gameInfo.sunlightInfo = { sunlightInfo.description, (int)sunlightInfo.timeRemaining };
   gameInfo.infoType = View::GameInfo::InfoType::BAND;
   View::GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.buildings = fillButtons(buildInfo);
@@ -1140,8 +1142,8 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   for (auto elem : resourceInfo)
     info.numGold.push_back({getResourceViewObject(elem.first), numGold(elem.first), elem.second.name});
   info.numGold.push_back({ViewObject::mana(), int(mana), "mana"});
-  info.numGold.push_back({ViewObject(ViewId::DANGER, ViewLayer::CREATURE, ""), int(getDangerLevel()) + points,
-      "points"});
+ /* info.numGold.push_back({ViewObject(ViewId::DANGER, ViewLayer::CREATURE, ""), int(getDangerLevel()) + points,
+      "points"});*/
   if (attacking) {
     if (info.warning.empty())
       info.warning = NameGenerator::insults.getNext();

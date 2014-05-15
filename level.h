@@ -158,8 +158,9 @@ class Level {
     void serialize(Archive& ar, const unsigned int version);
   };
 
- // void setCoverInfo(Vec2, CoverInfo);
   CoverInfo getCoverInfo(Vec2) const;
+
+  const Model* getModel() const;
 
   /** Returns the amount of light in the square, capped within (0, 1).*/
   double getLight(Vec2) const;

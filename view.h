@@ -242,6 +242,13 @@ class View {
       };
       vector<Village> villages;
     } villageInfo;
+    
+    class SunlightInfo {
+      public:
+      string description;
+      int timeRemaining;
+    } sunlightInfo;
+
   } gameInfo;
 
   private:

@@ -86,17 +86,26 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
       renderer.drawFilledRectangle(Rectangle(pos - rad, pos + rad), red);
   }
   if (printLocations)
-    for (const Location* loc : level->getAllLocations())
-      if (loc->hasName())
-        for (Vec2 v : loc->getBounds())
-          if (creature->getMemory().hasViewIndex(v) || creature->canSee(v)) {
-            string text = loc->getName();
-            Vec2 pos = bounds.getTopLeft() + loc->getBounds().getBottomRight() * scale;
-            renderer.drawFilledRectangle(pos.x, pos.y, pos.x + renderer.getTextLength(text) + 10, pos.y + 25,
-                transparency(black, 130));
-            renderer.drawText(white, pos.x + 5, pos.y, text);
-            break;
-          }
+    for (const Location* loc : level->getAllLocations()) {
+      bool seen = false;
+      for (Vec2 v : loc->getBounds())
+        if (creature->getMemory().hasViewIndex(v) || creature->canSee(v)) {
+          seen = true;
+          break;
+        }
+      if (loc->isMarkedAsSurprise() && !seen) {
+        Vec2 pos = bounds.getTopLeft() + loc->getBounds().middle() * scale;
+        renderer.drawText(lightGreen, pos.x + 5, pos.y, "?");
+      }
+      if (loc->hasName() && seen) {
+        string text = loc->getName();
+        Vec2 pos = bounds.getTopLeft() + loc->getBounds().getBottomRight() * scale;
+        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + renderer.getTextLength(text) + 10, pos.y + 25,
+            transparency(black, 130));
+        renderer.drawText(white, pos.x + 5, pos.y, text);
+        break;
+      }
+    }
 }
 
 void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, WindowRenderer& r,

@@ -186,7 +186,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void give(const Creature* whom, vector<Item*> items);
   bool canFire(Vec2 direction) const;
   void fire(Vec2 direction);
-  void squash(Vec2 direction);
   void construct(Vec2 direction, SquareType);
   bool canConstruct(Vec2 direction, SquareType) const;
   bool canConstruct(SquareType) const;

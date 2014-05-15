@@ -22,6 +22,7 @@
 #include "ranged_weapon.h"
 #include "statistics.h"
 #include "options.h"
+#include "model.h"
 
 template <class Archive> 
 void SpellInfo::serialize(Archive& ar, const unsigned int version) {
@@ -1585,15 +1586,6 @@ void Creature::fire(Vec2 direction) {
   spendTime(1);
 }
 
-void Creature::squash(Vec2 direction) {
-  if (canDestroy(direction))
-    getSquare(direction)->destroy(this);
-  if (Creature* c = getSquare(direction)->getCreature()) {
-    c->you(MsgType::KILLED_BY, getTheName());
-    c->die(this);
-  }
-}
-
 void Creature::construct(Vec2 direction, SquareType type) {
   getSquare(direction)->construct(type);
   spendTime(1);
@@ -2133,6 +2125,9 @@ vector<string> Creature::getAdjectives() const {
 
 void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
   gameInfo.infoType = View::GameInfo::InfoType::PLAYER;
+  Model::SunlightInfo sunlightInfo = level->getModel()->getSunlightInfo();
+  gameInfo.sunlightInfo.description = sunlightInfo.description;
+  gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
   View::GameInfo::PlayerInfo& info = gameInfo.playerInfo;
   if (firstName) {
     info.playerName = *firstName;
