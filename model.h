@@ -86,13 +86,13 @@ class Model : public EventListener {
     string description;
   };
   const SunlightInfo& getSunlightInfo() const;
-  void updateSunlightInfo();
 
   SERIALIZATION_DECL(Model);
 
   Encyclopedia keeperopedia;
 
   private:
+  void updateSunlightInfo();
   PCreature makePlayer();
   const Creature* getPlayer() const;
   void landHeroPlayer();

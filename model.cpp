@@ -45,7 +45,9 @@ void Model::serialize(Archive& ar, const unsigned int version) {
   Tribes::serializeAll(ar);
   Creature::serializeAll(ar);
   Technology::serializeAll(ar);
+  Vision::serializeAll(ar);
   Statistics::serialize(ar, version);
+  updateSunlightInfo();
 }
 
 SERIALIZABLE(Model);
@@ -57,7 +59,7 @@ bool Model::isTurnBased() {
 const double dayLength = 1500;
 const double nightLength = 1500;
 
-const double duskLength  = 300;
+const double duskLength  = 180;
 
 const Model::SunlightInfo& Model::getSunlightInfo() const {
   return sunlightInfo;

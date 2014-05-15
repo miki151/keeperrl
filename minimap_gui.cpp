@@ -103,7 +103,6 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + renderer.getTextLength(text) + 10, pos.y + 25,
             transparency(black, 130));
         renderer.drawText(white, pos.x + 5, pos.y, text);
-        break;
       }
     }
 }
