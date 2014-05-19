@@ -382,7 +382,7 @@ class TopLevelVillageControl : public VillageControl {
         return task->getMove(c);
     }
     if (c->getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::NIGHT 
-        && !c->isAffected(Creature::SLEEP)) {
+        && !c->isAffected(Creature::SLEEP) && c->isHumanoid()) {
       for (Vec2 v : beds)
         if (level->getSquare(v)->canEnter(c))
           return taskMap.addTask(Task::applySquare(this, {v}), c)->getMove(c);

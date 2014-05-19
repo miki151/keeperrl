@@ -24,6 +24,7 @@ const unordered_map<OptionId, int> defaults {
   {OptionId::MUSIC, 1},
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
+  {OptionId::START_WITH_NIGHT, 0},
   {OptionId::EASY_KEEPER, 1},
   {OptionId::AGGRESSIVE_HEROES, 1},
   {OptionId::EASY_ADVENTURER, 1},
@@ -35,6 +36,7 @@ const map<OptionId, string> names {
   {OptionId::MUSIC, "Music"},
   {OptionId::KEEP_SAVEFILES, "Keep save files"},
   {OptionId::SHOW_MAP, "Show map"},
+  {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::EASY_KEEPER, "Game difficulty"},
   {OptionId::AGGRESSIVE_HEROES, "Aggressive enemies"},
   {OptionId::EASY_ADVENTURER, "Game difficulty"},
@@ -52,6 +54,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::AGGRESSIVE_HEROES,
 #ifndef RELEASE
       OptionId::SHOW_MAP,
+      OptionId::START_WITH_NIGHT,
 #endif
   }},
   {OptionSet::ADVENTURER, {OptionId::EASY_ADVENTURER}},
@@ -89,6 +92,7 @@ unordered_map<OptionId, vector<string>> valueNames {
   {OptionId::MUSIC, { "off", "on" }},
   {OptionId::KEEP_SAVEFILES, { "no", "yes" }},
   {OptionId::SHOW_MAP, { "no", "yes" }},
+  {OptionId::START_WITH_NIGHT, { "no", "yes" }},
   {OptionId::EASY_KEEPER, { "hard", "easy" }},
   {OptionId::AGGRESSIVE_HEROES, { "no", "yes" }},
   {OptionId::EASY_ADVENTURER, { "hard", "easy" }},

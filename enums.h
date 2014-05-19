@@ -191,6 +191,7 @@ enum class CreatureId {
     RAVEN,
     VULTURE,
     WOLF,
+    DOG,
 
     DEATH,
     NIGHTMARE,
@@ -383,6 +384,7 @@ enum class ViewId {
   FOX,
   BEAR,
   WOLF,
+  DOG,
   BAT,
   RAT,
   SPIDER,

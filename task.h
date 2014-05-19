@@ -34,9 +34,6 @@ class Task : public UniqueEntity {
     virtual void onCantPickItem(EntitySet items) {}
 
     SERIALIZATION_DECL(Callback);
-
-    template <class Archive>
-    static void registerTypes(Archive& ar);
   };
 
   class Mapping {

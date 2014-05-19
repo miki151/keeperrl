@@ -211,6 +211,7 @@ Tile getSprite(ViewId id) {
     case ViewId::BOAR: return Tile(18, 6);
     case ViewId::FOX: return Tile(13, 12);
     case ViewId::WOLF: return Tile(14, 12);
+    case ViewId::DOG: return Tile(18, 10);
     case ViewId::VODNIK: return Tile('f', green);
     case ViewId::KRAKEN: return Tile(7, 19);
     case ViewId::DEATH: return Tile(9, 16);
@@ -443,6 +444,7 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::BOAR: return Tile('b', lightBrown);
     case ViewId::FOX: return Tile('d', orangeBrown);
     case ViewId::WOLF: return Tile('d', darkBlue);
+    case ViewId::DOG: return Tile('d', brown);
     case ViewId::VODNIK: return Tile('f', green);
     case ViewId::KRAKEN: return Tile('S', darkGreen);
     case ViewId::DEATH: return Tile('D', darkGray);

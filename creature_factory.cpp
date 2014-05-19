@@ -743,8 +743,8 @@ CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const ve
 CreatureFactory CreatureFactory::humanVillage(double armedRatio) {
   CHECK(armedRatio < 0.999 && armedRatio >= 0);
   CreatureFactory ret(Tribes::get(TribeId::HUMAN), { CreatureId::PESEANT,
-      CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG },
-      { 2, 1, 1, 1, 1}, {});
+      CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
+      { 2, 1, 1, 1, 1, 3}, {});
   if (armedRatio == 0)
     return ret;
   double sum = 0;
@@ -757,8 +757,9 @@ CreatureFactory CreatureFactory::humanVillage(double armedRatio) {
 
 CreatureFactory CreatureFactory::elvenVillage(double armedRatio) {
   CHECK(armedRatio < 0.999 && armedRatio >= 0);
-  CreatureFactory ret(Tribes::get(TribeId::ELVEN), { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW },
-      { 2, 2, 1, 1}, {});
+  CreatureFactory ret(Tribes::get(TribeId::ELVEN), { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
+      CreatureId::COW, CreatureId::DOG },
+      { 2, 2, 1, 1, 3}, {});
   if (armedRatio == 0)
     return ret;
   double sum = 0;
@@ -1741,6 +1742,13 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.animal = true;
           c.weight = 35;
           c.name = "wolf";);
+    case CreatureId::DOG: 
+      return INHERIT(WOLF,
+          c.viewId = ViewId::DOG;
+          c.strength -= 3;
+          c.dexterity -= 3;
+          c.weight -= 10;
+          c.name = "dog";);
     case CreatureId::FIRE_SPHERE: 
       return CATTR(
           c.viewId = ViewId::FIRE_SPHERE;

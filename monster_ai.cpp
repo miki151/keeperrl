@@ -182,6 +182,8 @@ class MoveRandomly : public Behaviour {
       updateMem(creature->getPosition());
     Vec2 direction(0, 0);
     double val = 0.0001;
+    if (Random.roll(2))
+      return {val, [this]() { creature->wait(); }};
     Vec2 pos = creature->getPosition();
     for (Vec2 dir : Vec2::directions8(true))
       if (!visited(pos + dir) && creature->canMove(dir)) {

@@ -67,6 +67,8 @@ const Model::SunlightInfo& Model::getSunlightInfo() const {
 
 void Model::updateSunlightInfo() {
   double d = 0;
+  if (Options::getValue(OptionId::START_WITH_NIGHT))
+    d = -dayLength;
   while (1) {
     d += dayLength;
     if (d > currentTime) {
@@ -442,7 +444,19 @@ struct EnemyInfo {
 };
 
 vector<EnemyInfo> getEnemyInfo() {
-  return {
+  vector<EnemyInfo> ret;
+  vector<CreatureFactory> cottageF {
+    CreatureFactory::humanVillage(0),
+    CreatureFactory::elvenVillage(0),
+  };
+  vector<Tribe*> cottageT { Tribes::get(TribeId::HUMAN), Tribes::get(TribeId::ELVEN) };
+  for (int i : Range(6, 12)) {
+    ret.push_back({
+        {SettlementType::COTTAGE, cottageF[i % 2], 0, Nothing(), new Location(),
+            cottageT[i % 2], BuildingId::WOOD, {}},
+        Random.getRandom(3, 7), true, false, true, cottageF[i % 2]});
+  }
+  append(ret, {
       {{SettlementType::CASTLE2, CreatureFactory::vikingTown(),
          Random.getRandom(2, 6), Nothing(), getVillageLocation(), Tribes::get(TribeId::HUMAN),
          BuildingId::WOOD_CASTLE, {}, {}, CreatureId::WARRIOR, ItemId::BEAST_MUT_BOOK},
@@ -467,10 +481,11 @@ vector<EnemyInfo> getEnemyInfo() {
           BuildingId::DUNGEON, {}, {}, Nothing(), Nothing()},
       1, false, true, true, CreatureFactory::singleType(Tribes::get(TribeId::KEEPER), CreatureId::SPECIAL_HUMANOID)},
       {{SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), Random.getRandom(2, 6), Nothing(),
-         getVillageLocation(),
-         Tribes::get(TribeId::HUMAN), BuildingId::BRICK, {}, {}, CreatureId::CASTLE_GUARD, Nothing(), Nothing()},
+         getVillageLocation(), Tribes::get(TribeId::HUMAN), BuildingId::BRICK, {}, {}, CreatureId::CASTLE_GUARD,
+         Nothing(), ItemFactory::villageShop()},
       20, false, false, false, CreatureFactory::castleAttackers()},
-  };
+  });
+  return ret;
 }
 
 static double getKilledCoeff() {
@@ -493,15 +508,6 @@ Model* Model::collectiveModel(View* view) {
   vector<EnemyInfo> enemyInfo = getEnemyInfo();
   for (auto& elem : enemyInfo)
     settlements.push_back(elem.settlement);
-  vector<CreatureFactory> cottageF {
-    CreatureFactory::humanVillage(0),
-    CreatureFactory::elvenVillage(0),
-  };
-  vector<Tribe*> cottageT { Tribes::get(TribeId::HUMAN), Tribes::get(TribeId::ELVEN) };
-  for (int i : Range(6, 12))
-    settlements.push_back(
-       {SettlementType::COTTAGE, cottageF[i % 2], Random.getRandom(3, 7), Nothing(), new Location(), cottageT[i % 2],
-       BuildingId::WOOD, {}});
   Level* top = m->prepareTopLevel2(settlements);
   m->collective.reset(new Collective(m, top, Tribes::get(TribeId::KEEPER)));
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribes::get(TribeId::KEEPER),
