@@ -311,8 +311,8 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
     void markSquare(Vec2 pos, PTask);
     void unmarkSquare(Vec2 pos);
     Task* getMarked(Vec2 pos) const;
-    CostInfo removeTaskCost(Task*);
-    CostInfo removeTaskCost(UniqueId);
+    CostInfo removeTask(Task*);
+    CostInfo removeTask(UniqueId);
     bool isLocked(const Creature*, const Task*) const;
     void lock(const Creature*, const Task*);
     void clearAllLocked();

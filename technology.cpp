@@ -16,13 +16,15 @@
 #include "stdafx.h"
 #include "technology.h"
 #include "util.h"
+#include "skill.h"
 
 template <class Archive> 
 void Technology::serialize(Archive& ar, const unsigned int version) {
   ar& BOOST_SERIALIZATION_NVP(name)
     & BOOST_SERIALIZATION_NVP(cost)
     & BOOST_SERIALIZATION_NVP(prerequisites)
-    & BOOST_SERIALIZATION_NVP(research);
+    & BOOST_SERIALIZATION_NVP(research)
+    & BOOST_SERIALIZATION_NVP(skill);
 }
 
 SERIALIZABLE(Technology);
@@ -41,9 +43,11 @@ void Technology::init() {
   Technology::set(TechId::BEAST_MUT, new Technology("beast mutation", base, {TechId::BEAST}, false));
   Technology::set(TechId::CRAFTING, new Technology("crafting", base, {}));
   Technology::set(TechId::IRON_WORKING, new Technology("iron working", base, {TechId::CRAFTING}));
-  Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", base, {TechId::IRON_WORKING}));
+  Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", base, {TechId::IRON_WORKING}, true,
+        Skill::get(SkillId::TWO_HANDED_WEAPON)));
   Technology::set(TechId::TRAPS, new Technology("traps", base, {TechId::CRAFTING}));
-  Technology::set(TechId::ARCHERY, new Technology("archery", base, {TechId::CRAFTING}));
+  Technology::set(TechId::ARCHERY, new Technology("archery", base, {TechId::CRAFTING}, true,
+        Skill::get(SkillId::ARCHERY)));
   Technology::set(TechId::SPELLS, new Technology("sorcery", base, {}));
   Technology::set(TechId::SPELLS_ADV, new Technology("advanced sorcery", base, {TechId::SPELLS}));
   Technology::set(TechId::SPELLS_MAS, new Technology("master sorcery", base, {TechId::SPELLS_ADV}, false));
@@ -61,6 +65,10 @@ int Technology::getCost() const {
   return cost;
 }
 
+Skill* Technology::getSkill() const {
+  return skill;
+}
+
 vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current) {
   vector<Technology*> ret;
   for (Technology* t : Technology::getAll())
@@ -69,8 +77,8 @@ vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current)
   return ret;
 }
 
-Technology::Technology(const string& n, int c, const vector<TechId>& pre, bool canR)
-    : name(n), cost(c), research(canR) {
+Technology::Technology(const string& n, int c, const vector<TechId>& pre, bool canR, Skill* s)
+    : name(n), cost(c), research(canR), skill(s) {
   for (TechId id : pre)
     prerequisites.push_back(Technology::get(id));
 }

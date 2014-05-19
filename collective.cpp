@@ -1000,6 +1000,9 @@ void Collective::acquireTech(Technology* tech, bool free) {
   for (auto elem : spellLearning)
     if (Technology::get(elem.techId) == tech)
       keeper->addSpell(elem.id);
+  if (Skill* skill = tech->getSkill())
+    for (Creature* c : minions)
+      c->addSkill(skill);
 }
 
 typedef View::GameInfo::BandInfo::Button Button;
@@ -1244,7 +1247,7 @@ Task* Collective::TaskMap::addTaskCost(PTask task, CostInfo cost) {
   return Task::Mapping::addTask(std::move(task));
 }
 
-Collective::CostInfo Collective::TaskMap::removeTaskCost(Task* task) {
+Collective::CostInfo Collective::TaskMap::removeTask(Task* task) {
   CostInfo cost {ResourceId::GOLD, 0};
   if (completionCost.count(task)) {
     cost = completionCost.at(task);
@@ -1252,14 +1255,14 @@ Collective::CostInfo Collective::TaskMap::removeTaskCost(Task* task) {
   }
   if (marked.count(task->getPosition()))
     marked.erase(task->getPosition());
-  removeTask(task);
+  Task::Mapping::removeTask(task);
   return cost;
 }
 
-Collective::CostInfo Collective::TaskMap::removeTaskCost(UniqueId id) {
+Collective::CostInfo Collective::TaskMap::removeTask(UniqueId id) {
   for (PTask& task : tasks)
     if (task->getUniqueId() == id) {
-      return removeTaskCost(task.get());
+      return removeTask(task.get());
     }
   return {ResourceId::GOLD, 0};
 }
@@ -1526,7 +1529,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
           traps.erase(pos);
         }
         if (constructions.count(pos)) {
-          returnGold(taskMap.removeTaskCost(constructions.at(pos).task));
+          returnGold(taskMap.removeTask(constructions.at(pos).task));
           constructions.erase(pos);
         }
         break;
@@ -1567,7 +1570,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         if (!tryLockingDoor(pos)) {
           if (constructions.count(pos)) {
             if (selection != SELECT) {
-              returnGold(taskMap.removeTaskCost(constructions.at(pos).task));
+              returnGold(taskMap.removeTask(constructions.at(pos).task));
               if (constructions.at(pos).type == SquareType::IMPALED_HEAD)
                 ++executions;
               constructions.erase(pos);
@@ -1694,10 +1697,6 @@ void Collective::onAppliedSquare(Vec2 pos) {
       if (Random.roll(60))
         c->addSpell(chooseRandom(keeper->getSpells()).id);
     }
-  }
-  if (mySquares.at(SquareType::TRAINING_DUMMY).count(pos)) {
-    if (hasTech(TechId::ARCHERY) && Random.roll(30))
-      NOTNULL(level->getSquare(pos)->getCreature())->addSkill(Skill::get(SkillId::ARCHERY));
   }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
     if (Random.roll(30)) {
@@ -2502,7 +2501,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     if (Task* task = taskMap.getTask(c)) {
       if (!task->canTransfer()) {
         task->cancel();
-        returnGold(taskMap.removeTaskCost(task));
+        returnGold(taskMap.removeTask(task));
       } else
         taskMap.freeTaskDelay(task, getTime() + 50);
     }

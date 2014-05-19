@@ -90,9 +90,7 @@ class CreatureAttributes {
   double SERIAL2(attributeGain, 0.5);
   unordered_set<Skill*> SERIAL(skills);
   map<int, Skill*> skillGain {
-    {4, Skill::get(SkillId::TWO_HANDED_WEAPON)},
-    {6, Skill::get(SkillId::KNIFE_THROWING)},
-    {10, Skill::get(SkillId::ARCHERY)}};
+    {6, Skill::get(SkillId::KNIFE_THROWING)}};
   SERIAL3(skillGain);
   vector<SpellInfo> SERIAL(spells);
 };

@@ -19,12 +19,16 @@
 #include "singleton.h"
 #include "enums.h"
 
+class Skill;
+
 class Technology : public Singleton<Technology, TechId> {
   public:
-  Technology(const string& name, int cost, const vector<TechId>& prerequisites, bool canResearch = true);
+  Technology(const string& name, int cost, const vector<TechId>& prerequisites, bool canResearch = true,
+      Skill* = nullptr);
   const string& getName() const;
   int getCost() const;
   bool canResearch() const;
+  Skill* getSkill() const;
   static vector<Technology*> getSorted();
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
@@ -41,6 +45,7 @@ class Technology : public Singleton<Technology, TechId> {
   int cost;
   vector<Technology*> prerequisites;
   bool research;
+  Skill* skill;
 };
 
 #endif
