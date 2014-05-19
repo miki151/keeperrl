@@ -118,7 +118,7 @@ void MapGui::onRightClick(Vec2) {
 
 void MapGui::onMouseMove(Vec2 v) {
   Vec2 pos = layout->projectOnMap(getBounds(), v);
-  if (pos.inRectangle(getBounds())) {
+  if (v.inRectangle(getBounds())) {
     if (mouseHeldPos && *mouseHeldPos != pos) {
       leftClickFun(pos);
       mouseHeldPos = pos;
@@ -267,6 +267,9 @@ void MapGui::render(Renderer& renderer) {
       for (ViewIndex::HighlightInfo highlight : index->getHighlight())
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, getHighlightColor(highlight));
     }
+  if (!hint.empty())
+    drawHint(renderer, white, hint);
+  else
   if (highlightedPos && highlighted) {
     Color col = white;
     if (highlighted->isHostile())
@@ -277,4 +280,10 @@ void MapGui::render(Renderer& renderer) {
   }
 }
 
+void MapGui::resetHint() {
+  hint.clear();
+}
 
+PGuiElem MapGui::getHintCallback(const string& s) {
+  return GuiElem::mouseOverAction([this, s]() { hint = s; });
+}

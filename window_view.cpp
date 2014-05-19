@@ -338,7 +338,15 @@ PGuiElem WindowView::getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo) {
   Color color = sunlightInfo.description == "day" ? white : lightBlue;
   line.push_back(GuiElem::label(sunlightInfo.description, color));
   line.push_back(GuiElem::label("[" + convertToString(sunlightInfo.timeRemaining) + "]", color));
-  return GuiElem::horizontalList(std::move(line), renderer.getTextLength(sunlightInfo.description) + 5, 0);
+  return GuiElem::stack(
+    mapGui->getHintCallback(sunlightInfo.description == "day"
+      ? "Time remaining till nightfall." : "Time remaining till day."),
+    GuiElem::horizontalList(std::move(line), renderer.getTextLength(sunlightInfo.description) + 5, 0));
+}
+
+PGuiElem WindowView::getTurnInfoGui(int turn) {
+  return GuiElem::stack(mapGui->getHintCallback("Current turn"),
+      GuiElem::label("T: " + convertToString(turn), white));
 }
 
 PGuiElem WindowView::drawBottomPlayerInfo(GameInfo::PlayerInfo& info, GameInfo::SunlightInfo& sunlightInfo) {
@@ -354,7 +362,7 @@ PGuiElem WindowView::drawBottomPlayerInfo(GameInfo::PlayerInfo& info, GameInfo::
   topWidths.push_back(renderer.getTextLength(nameLine) + 50);
   topLine.push_back(GuiElem::label(info.levelName, white));
   topWidths.push_back(200);
-  topLine.push_back(GuiElem::label("T: " + convertToString<int>(info.time), white));
+  topLine.push_back(getTurnInfoGui(info.time));;
   topWidths.push_back(100);
   topLine.push_back(getSunlightInfoGui(sunlightInfo));
   topWidths.push_back(100);
@@ -630,6 +638,7 @@ vector<PGuiElem> WindowView::drawButtons(vector<GameInfo::BandInfo::Button> butt
       };
     }
     elems.push_back(GuiElem::stack(
+          mapGui->getHintCallback(buttons[i].help),
           GuiElem::button(buttonFun, buttons[i].hotkey),
           GuiElem::horizontalList(std::move(line), widths, 0, buttons[i].cost ? 2 : 0)));
   }
@@ -677,10 +686,10 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info, GameInfo::Sunl
     res.push_back(GuiElem::viewObject(info.numGold[i].viewObject, tilesOk));
     res.push_back(GuiElem::label(convertToString<int>(info.numGold[i].count), white));
     topWidths.push_back(resourceSpacing);
-    topLine.push_back(GuiElem::stack(GuiElem::mouseOverAction(getHintCallback(info.numGold[i].name)),
+    topLine.push_back(GuiElem::stack(mapGui->getHintCallback(info.numGold[i].name),
             GuiElem::horizontalList(std::move(res), 30, 0)));
   }
-  topLine.push_back(GuiElem::label("T:" + convertToString<int>(info.time), white));
+  topLine.push_back(getTurnInfoGui(info.time));
   topWidths.push_back(100);
   topLine.push_back(getSunlightInfoGui(sunlightInfo));
   topWidths.push_back(100);
@@ -812,10 +821,6 @@ void WindowView::updateView(const CreatureView* collective) {
 
 void WindowView::refreshView(const CreatureView* collective) {
   refreshViewInt(collective);
-}
-
-function<void()> WindowView::getHintCallback(const string& s) {
-  return [this, s]() { hint = s; };
 }
 
 function<void()> WindowView::getButtonCallback(UserInput input) {
@@ -1378,6 +1383,7 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
 Vec2 lastGoTo(-1, -1);
 
 void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
+  mapGui->resetHint();
   switch (event.type) {
     case Event::MouseButtonReleased :
       for (GuiElem* elem : guiElems)

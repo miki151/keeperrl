@@ -227,6 +227,10 @@ PGuiElem GuiElem::stack(PGuiElem g1, PGuiElem g2) {
   return stack(makeVec<PGuiElem>(std::move(g1), std::move(g2)));
 }
 
+PGuiElem GuiElem::stack(PGuiElem g1, PGuiElem g2, PGuiElem g3) {
+  return stack(makeVec<PGuiElem>(std::move(g1), std::move(g2), std::move(g3)));
+}
+
 class VerticalList : public GuiLayout {
   public:
   VerticalList(vector<PGuiElem> e, vector<int> h, int space, int alignBack = 0)

@@ -78,6 +78,7 @@ class WindowView: public View {
   void rebuildGui();
   void drawMap();
   PGuiElem getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo);
+  PGuiElem getTurnInfoGui(int turn);
   PGuiElem drawBottomPlayerInfo(GameInfo::PlayerInfo&, GameInfo::SunlightInfo&);
   PGuiElem drawRightPlayerInfo(GameInfo::PlayerInfo&);
   PGuiElem drawPlayerStats(GameInfo::PlayerInfo&);
@@ -90,7 +91,6 @@ class WindowView: public View {
   PGuiElem drawMinions(GameInfo::BandInfo& info);
   PGuiElem drawMinionWindow(GameInfo::BandInfo& info);
   PGuiElem drawKeeperHelp();
-  void drawHint(sf::Color color, const string& text);
   Optional<sf::Event::KeyEvent> getEventFromMenu();
   void propagateEvent(const Event& event, vector<GuiElem*>);
   void keyboardAction(Event::KeyEvent key);
@@ -167,9 +167,6 @@ class WindowView: public View {
   int activeLibrary = -1;
   string chosenCreature;
 
-  string hint;
-
-  function<void()> getHintCallback(const string&);
   function<void()> getButtonCallback(UserInput);
 
   Vec2 lastMousePos;

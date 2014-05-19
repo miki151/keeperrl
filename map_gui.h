@@ -41,11 +41,13 @@ class MapGui : public GuiElem {
   void setLayout(MapLayout*);
   void setSpriteMode(bool);
   Optional<Vec2> getHighlightedTile(WindowRenderer& renderer);
-  void drawHint(Renderer& renderer, Color color, const string& text);
+  PGuiElem getHintCallback(const string&);
+  void resetHint();
 
   private:
   Optional<ViewObject> drawObjectAbs(Renderer& renderer, int x, int y, const ViewIndex& index, int sizeX, int sizeY,
       Vec2 tilePos, bool highlighted);
+  void drawHint(Renderer& renderer, Color color, const string& text);
   MapLayout* layout;
   const Table<Optional<ViewIndex>>& objects;
   const MapMemory* lastMemory = nullptr;
@@ -54,6 +56,7 @@ class MapGui : public GuiElem {
   function<void(Vec2)> leftClickFun;
   Optional<Vec2> mouseHeldPos;
   Optional<Vec2> highlightedPos;
+  string hint;
 };
 
 #endif

@@ -43,6 +43,7 @@ class GuiElem {
   static PGuiElem button(function<void()> fun, Event::KeyEvent);
   static PGuiElem stack(vector<PGuiElem>);
   static PGuiElem stack(PGuiElem, PGuiElem);
+  static PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
   static PGuiElem rectangle(sf::Color color, Optional<sf::Color> borderColor = Nothing());
   static PGuiElem verticalList(vector<PGuiElem>, int elemHeight, int spacing);
   static PGuiElem verticalList(vector<PGuiElem>, vector<int> elemHeight, int spacing);
