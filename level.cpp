@@ -499,24 +499,24 @@ PLevel Level::Builder::build(Model* m, LevelMaker* maker) {
   return l;
 }
 
-Vec2::LinearMap Level::Builder::identity() {
+static Vec2::LinearMap identity() {
   return [](Vec2 v) { return v; };
 }
 
-Vec2::LinearMap Level::Builder::deg90(Rectangle bounds) {
+static Vec2::LinearMap deg90(Rectangle bounds) {
   return [bounds](Vec2 v) {
     v -= bounds.getTopLeft();
     return bounds.getTopLeft() + Vec2(v.y, v.x);
   };
 }
 
-Vec2::LinearMap Level::Builder::deg180(Rectangle bounds) {
+static Vec2::LinearMap deg180(Rectangle bounds) {
   return [bounds](Vec2 v) {
     return bounds.getTopLeft() - v + bounds.getBottomRight() - Vec2(1, 1);
   };
 }
 
-Vec2::LinearMap Level::Builder::deg270(Rectangle bounds) {
+static Vec2::LinearMap deg270(Rectangle bounds) {
   return [bounds](Vec2 v) {
     v -= bounds.getTopRight() - Vec2(1, 0);
     return bounds.getTopLeft() + Vec2(v.y, -v.x);
@@ -537,7 +537,7 @@ void Level::Builder::popMap() {
 }
 
 Vec2 Level::Builder::transform(Vec2 v) {
-  for (auto m : mapStack) {
+  for (auto m : reverse2(mapStack)) {
     v = m(v);
   }
   return v;

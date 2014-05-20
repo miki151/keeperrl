@@ -386,6 +386,24 @@ void testSectors2() {
   CHECK(!s.same(Vec2(0, 3), Vec2(3, 2)));
 }
 
+void testReverse() {
+  vector<int> v1 {1, 2, 3, 4};
+  vector<int> v2 {4, 3, 2, 1};
+  CHECKEQ(reverse2(v1), v2);
+}
+
+void testReverse2() {
+  vector<int> v1 {1};
+  vector<int> v2 {1};
+  CHECKEQ(reverse2(v1), v2);
+}
+
+void testReverse3() {
+  vector<int> v1;
+  vector<int> v2;
+  CHECKEQ(reverse2(v1), v2);
+}
+
 int testAll() {
   Debug::init();
   testStringConvertion();
@@ -416,6 +434,9 @@ int testAll() {
   testVec2Box2();
   testSectors1();
   testSectors2();
+  testReverse();
+  testReverse2();
+  testReverse3();
   Debug() << "-----===== OK =====-----";
   return 0;
 }

@@ -208,7 +208,7 @@ Model::~Model() {
 
 Level* Model::prepareTopLevel2(vector<SettlementInfo> settlements) {
   Level* top = buildLevel(
-      Level::Builder(200, 200, "Wilderness", false),
+      Level::Builder(250, 250, "Wilderness", false),
       LevelMaker::topLevel2(CreatureFactory::forrest(), settlements));
   return top;
 }
@@ -629,7 +629,7 @@ void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
 void Model::conquered(const string& title, const string& land, vector<const Creature*> kills, int points) {
   string text= "You have conquered this land. You killed " + convertToString(kills.size()) +
       " innocent beings and scored " + convertToString(points) +
-      " points. Thank you for playing KeeperRL alpha.\n \nIf you like the game, consider donating to support its development.\n \n";
+      " points. Thank you for playing KeeperRL alpha.\n \n";
   for (string stat : Statistics::getText())
     text += stat + "\n";
   view->presentText("Victory", text);
@@ -643,7 +643,7 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
   string text= "You have freed this land from the bloody reign of " + keeper + 
       ". You killed " + convertToString(kills.size()) +
       " enemies and scored " + convertToString(points) +
-      " points. Thank you for playing KeeperRL alpha. If you like the game, consider donating to support its development.\n \n";
+      " points. Thank you for playing KeeperRL alpha.\n \n";
   for (string stat : Statistics::getText())
     text += stat + "\n";
   view->presentText("Victory", text);

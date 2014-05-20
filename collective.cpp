@@ -30,6 +30,7 @@ template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CreatureView)
     & SUBCLASS(EventListener)
+    & SUBCLASS(Task::Callback)
     & SVAR(credit)
     & SVAR(technologies)
     & SVAR(numFreeTech)
@@ -2401,8 +2402,12 @@ void Collective::addCreature(Creature* c, MinionType type) {
     c->addSectors(flyingSectors.get());
   creatures.push_back(c);
   minionByType[type].push_back(c);
-  if (!contains({MinionType::IMP}, type))
+  if (!contains({MinionType::IMP}, type)) {
     minions.push_back(c);
+    for (Technology* t : technologies)
+      if (Skill* skill = t->getSkill())
+        c->addSkill(skill);
+  }
   if (!contains({MinionType::BEAST, MinionType::IMP}, type))
     minionTasks.insert(make_pair(c->getUniqueId(), getTasksForMinion(c)));
   for (const Item* item : c->getEquipment().getItems())

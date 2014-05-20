@@ -526,6 +526,12 @@ vector<T> transform2(vector<U>& u, Fun fun) {
   return ret;
 }
 
+template <typename T>
+vector<T> reverse2(vector<T> v) {
+  reverse(v.begin(), v.end());
+  return v;
+}
+
 template <typename T, typename Predicate>
 vector<T> filter(const vector<T>& v, Predicate predicate) {
   vector<T> ret;

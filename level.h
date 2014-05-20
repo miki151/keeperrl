@@ -237,10 +237,6 @@ class Level {
     void popMap();
     
     private:
-    Vec2::LinearMap identity();
-    Vec2::LinearMap deg90(Rectangle);
-    Vec2::LinearMap deg180(Rectangle);
-    Vec2::LinearMap deg270(Rectangle);
     Vec2 transform(Vec2);
     Table<PSquare> squares;
     Table<double> heightMap;
