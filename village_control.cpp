@@ -169,8 +169,8 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
       : AttackTriggerSet(c), killedCoeff(_killedCoeff), powerCoeff(_powerCoeff) {}
 
   double getCurrentTrigger(double time) {
-    double enemyPoints = killedCoeff * killedPoints + powerCoeff * control->villain->getDangerLevel()
-      + max(0.0, (time - 1000) / 10);
+    double enemyPoints = killedCoeff * killedPoints + powerCoeff * (control->villain->getDangerLevel()
+      + max(0.0, (time - 1000) / 2));
     Debug() << "Village " << control->name << " enemy points " << enemyPoints;
     double currentTrigger = 0;
     for (double trigger : triggerAmounts)

@@ -52,6 +52,7 @@ class CreatureFactory {
   static CreatureFactory splash();
   static CreatureFactory singleType(Tribe*, CreatureId);
   static CreatureFactory pyramid(int level);
+  static CreatureFactory insects(Tribe* tribe);
   PCreature random(MonsterAIFactory = MonsterAIFactory::monster());
 
   static PCreature getShopkeeper(Location* shopArea, Tribe*);

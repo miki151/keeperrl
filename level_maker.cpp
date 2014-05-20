@@ -1768,7 +1768,7 @@ Vec2 getSize(SettlementType type) {
     case SettlementType::CASTLE: return {30, 20};
     case SettlementType::CASTLE2: return {15, 15};
     case SettlementType::MINETOWN: return {30, 20};
-    case SettlementType::CAVE: return {10, 10};
+    case SettlementType::VAULT: return {10, 10};
   }
   FAIL << "fewf";
   return {0, 0};
@@ -1777,7 +1777,7 @@ Vec2 getSize(SettlementType type) {
 SquarePredicate* getSettlementPredicate(SettlementType type) {
   switch (type) {
     case SettlementType::VILLAGE2: return new AttribPredicate(SquareAttrib::FORREST);
-    case SettlementType::CAVE:
+    case SettlementType::VAULT:
     case SettlementType::MINETOWN: return new TypePredicate(SquareType::MOUNTAIN2);
     default: return new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
                  new NoAttribPredicate(SquareAttrib::FOG));
@@ -1871,7 +1871,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
       case SettlementType::MINETOWN:
           queue = mineTownMaker(settlement); break;
           break;
-      case SettlementType::CAVE:
+      case SettlementType::VAULT:
           queue = caveMaker(settlement); break;
           break;
   }
@@ -1930,12 +1930,17 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
 }
 
 static void addResources(RandomLocations* locations, int count, int countHere, int minSize, int maxSize, int maxDist,
-    SquareType type, LevelMaker* hereMaker, LevelMaker* minetownMaker) {
+    int maxDist2, SquareType type, LevelMaker* hereMaker, LevelMaker* minetownMaker) {
   for (int i : Range(count)) {
     locations->add(new UniformBlob(type, Nothing(), SquareAttrib::NO_DIG),
         {Random.getRandom(minSize, maxSize), Random.getRandom(minSize, maxSize)}, 
         new TypePredicate(SquareType::MOUNTAIN2));
-    locations->setMaxDistanceLast(i < countHere ? hereMaker : minetownMaker, maxDist);
+    if (i < countHere)
+      locations->setMaxDistanceLast(hereMaker, maxDist);
+    else {
+      locations->setMaxDistanceLast(hereMaker, maxDist2);
+      locations->setMaxDistanceLast(minetownMaker, maxDist);
+    }
   }
 }
 
@@ -1970,7 +1975,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
           queue = mineTownMaker(settlement);
           mineTown = queue;
           break;
-      case SettlementType::CAVE:
+      case SettlementType::VAULT:
           queue = caveMaker(settlement);
           break;
     }
@@ -1988,10 +1993,14 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   for (int i : Range(Random.getRandom(2, 5)))
     locations->add(new UniformBlob(SquareType::WATER, Nothing(), SquareAttrib::LAKE), 
         {Random.getRandom(5, 30), Random.getRandom(5, 30)}, new TypePredicate(SquareType::MOUNTAIN2));
-  int maxDist = 50;
-  addResources(locations, Random.getRandom(1, 3), 0, 5, 10, maxDist, SquareType::GOLD_ORE, startingPos, mineTown);
-  addResources(locations, Random.getRandom(3, 6), 2, 5, 10, maxDist, SquareType::STONE, startingPos, mineTown);
-  addResources(locations, Random.getRandom(7, 12), 4, 5, 10, maxDist, SquareType::IRON_ORE, startingPos, mineTown);
+  int maxDist = 30;
+  int maxDist2 = 60;
+  addResources(locations, Random.getRandom(1, 3), 0, 5, 10, maxDist, maxDist2, SquareType::GOLD_ORE,
+      startingPos, mineTown);
+  addResources(locations, Random.getRandom(3, 6), 2, 5, 10, maxDist, maxDist2, SquareType::STONE,
+      startingPos, mineTown);
+  addResources(locations, Random.getRandom(7, 12), 4, 5, 10, maxDist, maxDist2, SquareType::IRON_ORE,
+      startingPos, mineTown);
  // subMakers.push_back(dungeonEntrance(StairKey::DWARF, SquareType::MOUNTAIN2, "dwarven halls"));
 //  subSizes.emplace_back(1, 1);
 //  predicates.push_back(new BorderPredicate(SquareType::MOUNTAIN2, SquareType::HILL));

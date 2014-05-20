@@ -843,6 +843,10 @@ CreatureFactory CreatureFactory::pyramid(int level) {
     return CreatureFactory(Tribes::get(TribeId::MONSTER), { CreatureId::MUMMY }, {1}, { });
 }
 
+CreatureFactory CreatureFactory::insects(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::SPIDER, CreatureId::SCORPION }, {1, 1}, { });
+}
+
 CreatureFactory CreatureFactory::level(int num) {
   int maxLevel = 8;
   CHECK(num <= maxLevel && num > 0);

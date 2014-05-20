@@ -116,12 +116,6 @@ Creature* Creature::getDefaultMinionFlyer() {
   return defaultFlyer.get();
 }
 
-bool increaseExperience = true;
-
-void Creature::noExperienceLevels() {
-  increaseExperience = false;
-}
-
 Creature::Creature(ViewObject object, Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
     : CreatureAttributes(attr), viewObject(object), tribe(t), controller(f.get(this)) {
   tribe->addMember(this);
@@ -1279,8 +1273,7 @@ bool Creature::takeDamage(const Attack& attack) {
 void Creature::updateViewObject() {
   viewObject.setDefense(getAttr(AttrType::DEFENSE));
   viewObject.setAttack(getAttr(AttrType::DAMAGE));
-  if (increaseExperience)
-    viewObject.setLevel(getExpLevel());
+  viewObject.setLevel(getExpLevel());
   if (const Creature* c = getLevel()->getPlayer()) {
     if (isEnemy(c))
       viewObject.setEnemyStatus(ViewObject::HOSTILE);
@@ -1838,14 +1831,11 @@ Gender Creature::getGender() const {
 }
 
 void Creature::increaseExpLevel(double amount) {
-  if (increaseExperience) {
-    expLevel = min<double>(maxLevel, amount + expLevel);
- //   viewObject.setSizeIncrease(0.3);
-    if (skillGain.count(getExpLevel()) && isHumanoid()) {
-      you(MsgType::ARE, "more experienced");
-      addSkill(skillGain.at(getExpLevel()));
-      skillGain.erase(getExpLevel());
-    }
+  expLevel = min<double>(maxLevel, amount + expLevel);
+  if (skillGain.count(getExpLevel()) && isHumanoid()) {
+    you(MsgType::ARE, "more experienced");
+    addSkill(skillGain.at(getExpLevel()));
+    skillGain.erase(getExpLevel());
   }
 }
 

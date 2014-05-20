@@ -214,9 +214,11 @@ Level* Model::prepareTopLevel2(vector<SettlementInfo> settlements) {
 }
 
 Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
-  pair<CreatureId, string> castleNem1 = chooseRandom<pair<CreatureId, string>>(
-      {{CreatureId::GHOST, "The castle cellar is haunted. Go and kill the evil that is lurking there."},
-      {CreatureId::SPIDER, "The castle cellar is infested by vermin. Go and clean it up."}}, {1, 1});
+  pair<CreatureFactory, string> castleNem1 = chooseRandom<pair<CreatureFactory, string>>(
+      {{CreatureFactory::singleType(Tribes::get(TribeId::CASTLE_CELLAR), CreatureId::GHOST),
+          "The castle cellar is haunted. Go and kill the evil that is lurking there."},
+      {CreatureFactory::insects(Tribes::get(TribeId::CASTLE_CELLAR)),
+          "The castle cellar is infested by vermin. Go and clean it up."}}, {1, 1});
   pair<CreatureId, string> castleNem2 = chooseRandom<pair<CreatureId, string>>(
       {{CreatureId::RED_DRAGON, "dragon"}, {CreatureId::GREEN_DRAGON, "dragon"}, {CreatureId::CYCLOPS, "cyclops"}},
       {1, 1,1});
@@ -244,7 +246,7 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
       LevelMaker::pyramidLevel(CreatureFactory::pyramid(2), {}, {StairKey::PYRAMID}));*/
   Level* cellar = buildLevel(
       Level::Builder(30, 20, "Cellar"),
-      LevelMaker::cellarLevel(CreatureFactory::singleType(Tribes::get(TribeId::CASTLE_CELLAR), castleNem1.first),
+      LevelMaker::cellarLevel(castleNem1.first,
           SquareType::LOW_ROCK_WALL, StairLook::CELLAR, {StairKey::CASTLE_CELLAR}, {}));
   Level* dragon = buildLevel(
       Level::Builder(40, 30, capitalFirst(castleNem2.second) + "'s Cave"),
@@ -271,7 +273,6 @@ static void setHandicap(Tribe* tribe, bool easy) {
 }
 
 Model* Model::heroModel(View* view) {
-  Creature::noExperienceLevels();
   Model* m = new Model(view);
   m->adventurer = true;
   Location* banditLocation = new Location("bandit hideout", "The bandits have robbed many travelers and townsfolk.");
@@ -357,6 +358,7 @@ PCreature Model::makePlayer() {
           c.humanoid = true;
           c.name = "Adventurer";
           c.firstName = NameGenerator::firstNames.getNext();
+          c.maxLevel = 1;
           c.skills.insert(Skill::get(SkillId::ARCHERY));
           c.skills.insert(Skill::get(SkillId::AMBUSH));
           c.skills.insert(Skill::get(SkillId::NIGHT_VISION));
@@ -443,6 +445,30 @@ struct EnemyInfo {
   CreatureFactory factory;
 };
 
+static EnemyInfo getVault(CreatureFactory factory, Tribe* tribe, int num,
+    Optional<ItemFactory> itemFactory = Nothing()) {
+  return {{SettlementType::VAULT, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER), CreatureId::RAT),
+          Random.getRandom(3, 6), Nothing(), new Location(true), tribe,
+          BuildingId::DUNGEON, {}, {}, Nothing(), Nothing(), itemFactory},
+      num, false, true, true, factory};
+}
+
+static EnemyInfo getVault(CreatureId id, Tribe* tribe, int num, Optional<ItemFactory> itemFactory = Nothing()) {
+  return getVault(CreatureFactory::singleType(tribe, id), tribe, num, itemFactory);
+}
+
+static vector<EnemyInfo> getVaults() {
+  return {
+    getVault(CreatureId::RED_DRAGON, Tribes::get(TribeId::DRAGON), 1, ItemFactory::dragonCave()),
+    getVault(CreatureId::GREEN_DRAGON, Tribes::get(TribeId::DRAGON), 1, ItemFactory::dragonCave()),
+    getVault(CreatureFactory::insects(Tribes::get(TribeId::DRAGON)), Tribes::get(TribeId::DRAGON),
+        Random.getRandom(6, 12)),
+    getVault(CreatureId::SPECIAL_HUMANOID, Tribes::get(TribeId::KEEPER), 1),
+    getVault(CreatureId::GOBLIN, Tribes::get(TribeId::KEEPER), Random.getRandom(3, 8)),
+    getVault(CreatureId::GOBLIN, Tribes::get(TribeId::KEEPER), 0, ItemFactory::armory())
+  };
+}
+
 vector<EnemyInfo> getEnemyInfo() {
   vector<EnemyInfo> ret;
   vector<CreatureFactory> cottageF {
@@ -456,6 +482,9 @@ vector<EnemyInfo> getEnemyInfo() {
             cottageT[i % 2], BuildingId::WOOD, {}},
         Random.getRandom(3, 7), true, false, true, cottageF[i % 2]});
   }
+  int numVaults = Random.getRandom(3, 7);
+  for (int i : Range(numVaults))
+    ret.push_back(chooseRandom(getVaults()));
   append(ret, {
       {{SettlementType::CASTLE2, CreatureFactory::vikingTown(),
          Random.getRandom(2, 6), Nothing(), getVillageLocation(), Tribes::get(TribeId::HUMAN),
@@ -472,14 +501,6 @@ vector<EnemyInfo> getEnemyInfo() {
           Random.getRandom(3, 6), Nothing(), getVillageLocation(true), Tribes::get(TribeId::DWARVEN),
           BuildingId::DUNGEON, {}, {}, Nothing(), Nothing(), ItemFactory::dwarfShop()},
       10, false, true, false, CreatureFactory::dwarfTown()},
-      {{SettlementType::CAVE, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER), CreatureId::RAT),
-          Random.getRandom(3, 6), Nothing(), new Location(true), Tribes::get(TribeId::DWARVEN),
-          BuildingId::DUNGEON, {}, {}, Nothing(), Nothing(), ItemFactory::dragonCave()},
-      1, false, true, true, CreatureFactory::singleType(Tribes::get(TribeId::DRAGON), CreatureId::RED_DRAGON)},
-      {{SettlementType::CAVE, CreatureFactory::singleType(Tribes::get(TribeId::KEEPER), CreatureId::RAT),
-          0, Nothing(), new Location(true), Tribes::get(TribeId::DWARVEN),
-          BuildingId::DUNGEON, {}, {}, Nothing(), Nothing()},
-      1, false, true, true, CreatureFactory::singleType(Tribes::get(TribeId::KEEPER), CreatureId::SPECIAL_HUMANOID)},
       {{SettlementType::CASTLE, CreatureFactory::humanVillage(0.0), Random.getRandom(2, 6), Nothing(),
          getVillageLocation(), Tribes::get(TribeId::HUMAN), BuildingId::BRICK, {}, {}, CreatureId::CASTLE_GUARD,
          Nothing(), ItemFactory::villageShop()},
@@ -525,6 +546,8 @@ Model* Model::collectiveModel(View* view) {
     m->addCreature(std::move(c));
   }
   for (int i : All(enemyInfo)) {
+    if (enemyInfo[i].heroCount == 0 || enemyInfo[i].settlement.tribe == Tribes::get(TribeId::KEEPER))
+      continue;
     PVillageControl control;
     if (!enemyInfo[i].anonymous)
       control = VillageControl::topLevelVillage(m->collective.get(), enemyInfo[i].settlement.location);
