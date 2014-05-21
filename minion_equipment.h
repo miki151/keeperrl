@@ -27,7 +27,7 @@ class MinionEquipment {
   bool canTakeItem(const Creature*, const Item*);
 
   bool isItemUseful(const Item*) const;
-  bool needs(const Creature* c, const Item* it);
+  bool needs(const Creature* c, const Item* it, bool noLimit = false);
   const Creature* getOwner(const Item*) const;
   void own(const Creature*, const Item*);
   void discard(const Item*);

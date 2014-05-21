@@ -670,7 +670,7 @@ PGuiElem WindowView::drawTechnology(GameInfo::BandInfo& info) {
 
 PGuiElem WindowView::drawKeeperHelp() {
   vector<string> helpText { "use mouse to dig and build", "shift selects rectangles", "", "scroll with arrows", "or right mouse button", "", "click on minion", "to possess",
-    "", "your enemies ", "are in the west", "", "[space]  pause", "[z]  zoom", "", "follow the red hints :-)"};
+   "", "[space]  pause", "[z]  zoom", "", "follow the red hints :-)"};
   vector<PGuiElem> lines;
   for (string line : helpText)
     lines.push_back(GuiElem::label(line, lightBlue));

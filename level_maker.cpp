@@ -1977,6 +1977,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
           break;
       case SettlementType::VAULT:
           queue = caveMaker(settlement);
+          locations->setMaxDistance(startingPos, queue, 100);
           break;
     }
     locations->setMinDistance(startingPos, queue, 70);
@@ -2006,7 +2007,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
 //  predicates.push_back(new BorderPredicate(SquareType::MOUNTAIN2, SquareType::HILL));
 //  minDistances[{startingPos, subMakers.back()}] = 50;
   queue->addMaker(new Empty(SquareType::WATER));
-  queue->addMaker(new Mountains({0.0, 0.0, 0.5, 0.66, 0.9}, 0.5, {0, 1, 1, 0, 0}, true,
+  queue->addMaker(new Mountains({0.0, 0.0, 0.5, 0.66, 0.9}, 0.5, {0, 1, 0, 0, 0}, true,
         {SquareType::MOUNTAIN2, SquareType::MOUNTAIN2, SquareType::HILL, SquareType::GRASS, SquareType::SAND}));
   queue->addMaker(new AddAttrib(SquareAttrib::CONNECT_CORRIDOR, new AttribPredicate(SquareAttrib::LOWLAND)));
   queue->addMaker(new Forrest(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));

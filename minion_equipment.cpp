@@ -65,9 +65,9 @@ bool MinionEquipment::isItemUseful(const Item* it) const {
   return getEquipmentType(it) || contains({ItemType::POTION, ItemType::SCROLL}, it->getType());
 }
 
-bool MinionEquipment::needs(const Creature* c, const Item* it) {
+bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit) {
   if (Optional<EquipmentType> type = getEquipmentType(it)) {
-    int limit = getEquipmentLimit(*type);
+    int limit = noLimit ? 10000 : getEquipmentLimit(*type);
     if (c->getEquipment().getItems([&](const Item* it) { return getEquipmentType(it) == *type;}).size() >= limit)
       return false;
     return c->canEquip(it, nullptr)

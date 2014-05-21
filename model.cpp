@@ -446,15 +446,16 @@ struct EnemyInfo {
 };
 
 static EnemyInfo getVault(CreatureFactory factory, Tribe* tribe, int num,
-    Optional<ItemFactory> itemFactory = Nothing()) {
+    Optional<ItemFactory> itemFactory = Nothing(), bool noAttack = false) {
   return {{SettlementType::VAULT, CreatureFactory::singleType(Tribes::get(TribeId::MONSTER), CreatureId::RAT),
           Random.getRandom(3, 6), Nothing(), new Location(true), tribe,
           BuildingId::DUNGEON, {}, {}, Nothing(), Nothing(), itemFactory},
-      num, false, true, true, factory};
+      num, noAttack, true, true, factory};
 }
 
-static EnemyInfo getVault(CreatureId id, Tribe* tribe, int num, Optional<ItemFactory> itemFactory = Nothing()) {
-  return getVault(CreatureFactory::singleType(tribe, id), tribe, num, itemFactory);
+static EnemyInfo getVault(CreatureId id, Tribe* tribe, int num, Optional<ItemFactory> itemFactory = Nothing(),
+    bool noAttack = false) {
+  return getVault(CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, noAttack);
 }
 
 static vector<EnemyInfo> getVaults() {
@@ -463,8 +464,8 @@ static vector<EnemyInfo> getVaults() {
     getVault(CreatureId::GREEN_DRAGON, Tribes::get(TribeId::DRAGON), 1, ItemFactory::dragonCave()),
     getVault(CreatureFactory::insects(Tribes::get(TribeId::DRAGON)), Tribes::get(TribeId::DRAGON),
         Random.getRandom(6, 12)),
-    getVault(CreatureId::SPECIAL_HUMANOID, Tribes::get(TribeId::KEEPER), 1),
-    getVault(CreatureId::GOBLIN, Tribes::get(TribeId::KEEPER), Random.getRandom(3, 8)),
+    getVault(CreatureId::SPECIAL_HUMANOID, Tribes::get(TribeId::KEEPER), 1, Nothing(), true),
+    getVault(CreatureId::GOBLIN, Tribes::get(TribeId::KEEPER), Random.getRandom(3, 8), Nothing(), true),
     getVault(CreatureId::GOBLIN, Tribes::get(TribeId::KEEPER), 0, ItemFactory::armory())
   };
 }
@@ -546,7 +547,7 @@ Model* Model::collectiveModel(View* view) {
     m->addCreature(std::move(c));
   }
   for (int i : All(enemyInfo)) {
-    if (enemyInfo[i].heroCount == 0 || enemyInfo[i].settlement.tribe == Tribes::get(TribeId::KEEPER))
+    if (enemyInfo[i].heroCount == 0)
       continue;
     PVillageControl control;
     if (!enemyInfo[i].anonymous)

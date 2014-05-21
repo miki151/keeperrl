@@ -621,7 +621,7 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
     while (1) {
       const Item* chosenItem = chooseEquipmentItem(view, nullptr, [&](const Item* it) {
           return minionEquipment.getOwner(it) != creature && !it->canEquip()
-              && minionEquipment.needs(creature, it); }, &itIndex, &scrollPos);
+              && minionEquipment.needs(creature, it, true); }, &itIndex, &scrollPos);
       if (chosenItem)
         minionEquipment.own(creature, chosenItem);
       else break;
@@ -2242,7 +2242,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         }
       }
   minionTasks.at(c->getUniqueId()).update();
-  if (c->getHealth() < 1 && c->canSleep())
+  if (c->getHealth() < 1 && c->canSleep() && !c->isAffected(Creature::POISON))
     for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE})
       if (minionTasks.at(c->getUniqueId()).containsState(t)) {
         minionTasks.at(c->getUniqueId()).setState(t);

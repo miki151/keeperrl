@@ -392,12 +392,7 @@ Vec2 Creature::getPosition() const {
 }
 
 void Creature::globalMessage(const string& playerCanSee, const string& cant) const {
-  if (const Creature* player = level->getPlayer()) {
-    if (player->canSee(this))
-      player->privateMessage(playerCanSee);
-    else
-      player->privateMessage(cant);
-  }
+  level->globalMessage(position, playerCanSee, cant);
 }
 
 void Creature::addSkill(Skill* skill) {

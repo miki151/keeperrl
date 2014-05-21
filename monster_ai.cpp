@@ -88,7 +88,7 @@ MoveInfo Behaviour::tryToApplyItem(EffectType type, double maxTurns) {
 
 class Heal : public Behaviour {
   public:
-  Heal(Creature* c) : Behaviour(c) {}
+  Heal(Creature* c, bool _useBeds = true) : Behaviour(c), useBeds(_useBeds) {}
 
   virtual double itemValue(const Item* item) {
     if (item->getEffectType() == EffectType::HEAL) {
@@ -116,7 +116,7 @@ class Heal : public Behaviour {
       }};
     Vec2 bedRadius(10, 10);
     Level* l = creature->getLevel();
-    if (creature->canSleep()) {
+    if (useBeds && creature->canSleep() && !creature->isAffected(Creature::POISON)) {
       if (!hasBed || hasBed->level != creature->getLevel()) {
         for (Vec2 v : Rectangle(creature->getPosition() - bedRadius, creature->getPosition() + bedRadius))
           if (l->inBounds(v) && l->getSquare(v)->getApplyType(creature) == SquareApplyType::SLEEP)
@@ -137,7 +137,7 @@ class Heal : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(hasBed);
+    ar & SUBCLASS(Behaviour) & SVAR(hasBed) & SVAR(useBeds);
     CHECK_SERIAL;
   }
 
@@ -154,6 +154,7 @@ class Heal : public Behaviour {
     }
   };
   Optional<BedInfo> SERIAL(hasBed);
+  bool SERIAL(useBeds);
 };
 
 class Rest : public Behaviour {
@@ -359,7 +360,7 @@ class Fighter : public Behaviour, public EventListener {
       if (weight >= 0.5) {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
-          if (dist == 1)
+          if (dist == 1 && creature->isHumanoid())
             EventListener::addSurrenderEvent(creature, other);
           if (MoveInfo move = getPanicMove(other, weight))
             return move;
@@ -1009,7 +1010,7 @@ MonsterAIFactory MonsterAIFactory::monster() {
 MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
-        new Heal(c),
+        new Heal(c, false),
         new Fighter(c, 0.6, true),
         new ByCollective(c, col),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
