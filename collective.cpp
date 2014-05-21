@@ -536,6 +536,7 @@ void Collective::minionView(View* view, Creature* creature, int prevIndex) {
       for (auto elem : taskOptions)
         if (mOpt[*index] == elem.option) {
           setMinionTask(creature, elem.task);
+          creature->removeEffect(Creature::SLEEP);
           return;
         }
       FAIL << "Unknown option " << int(mOpt[*index]);

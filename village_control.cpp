@@ -339,7 +339,7 @@ class FinalTrigger : public AttackTriggerSet {
       return;
     bool allConquered = true;
     for (VillageControl* c : controls)
-      allConquered &= c->isConquered();
+      allConquered &= (c->isConquered() || c->isAnonymous());
     if (allConquered && !control->isConquered() && totalWar == 100000)
       totalWar = time + Random.getRandom(80, 200);
     if (totalWar < time) {

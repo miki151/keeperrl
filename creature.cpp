@@ -2076,6 +2076,10 @@ vector<string> Creature::getAdjectives() const {
     ret.push_back("injured wing");
   if (injuredWings == 2)
     ret.push_back("two injured wings");
+  if (injuredHeads == 1)
+    ret.push_back("injured head");
+  if (injuredHeads == 2)
+    ret.push_back("two injured heads");
   if (lostArms == 1)
     ret.push_back("lost arm");
   if (lostArms == 2)
@@ -2088,6 +2092,10 @@ vector<string> Creature::getAdjectives() const {
     ret.push_back("lost wing");
   if (lostWings == 2)
     ret.push_back("two lost wings");
+  if (lostHeads == 1)
+    ret.push_back("lost head");
+  if (lostHeads == 2)
+    ret.push_back("two lost heads");
   for (LastingEffect effect : getKeys(lastingEffects))
     if (isAffected(effect)) {
       bool addCount = true;
