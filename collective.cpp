@@ -363,7 +363,7 @@ void Collective::render(View* view) {
   if (showWelcomeMsg && Options::getValue(OptionId::HINTS)) {
     view->refreshView(this);
     showWelcomeMsg = false;
-    view->presentText("Welcome", "In short: you are a warlock who has been banished from the lawful world for practicing black magic. You are going to claim the land of " + NameGenerator::worldNames.getNext() + " and make it your domain. Best way to achieve this is to kill everyone.\n \n"
+    view->presentText("Welcome", "In short: you are a warlock who has been banished from the lawful world for practicing black magic. You are going to claim the land of " + NameGenerator::worldNames.getNext() + " and make it your domain. The best way to achieve this is to kill everyone.\n \n"
 "Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the options (press F2).");
   }
 }

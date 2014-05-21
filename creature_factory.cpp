@@ -744,7 +744,7 @@ CreatureFactory CreatureFactory::humanVillage(double armedRatio) {
   CHECK(armedRatio < 0.999 && armedRatio >= 0);
   CreatureFactory ret(Tribes::get(TribeId::HUMAN), { CreatureId::PESEANT,
       CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
-      { 2, 1, 1, 1, 1, 3}, {});
+      { 2, 1, 1, 1, 1, 0}, {});
   if (armedRatio == 0)
     return ret;
   double sum = 0;
@@ -759,7 +759,7 @@ CreatureFactory CreatureFactory::elvenVillage(double armedRatio) {
   CHECK(armedRatio < 0.999 && armedRatio >= 0);
   CreatureFactory ret(Tribes::get(TribeId::ELVEN), { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
       CreatureId::COW, CreatureId::DOG },
-      { 2, 2, 1, 1, 3}, {});
+      { 2, 2, 1, 1, 0}, {});
   if (armedRatio == 0)
     return ret;
   double sum = 0;
