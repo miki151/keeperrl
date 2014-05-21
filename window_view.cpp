@@ -125,7 +125,7 @@ Rectangle WindowView::getMapViewBounds() const {
   return Rectangle(0, 0, renderer.getWidth() - rightBarWidth, renderer.getHeight() - bottomBarHeight);
 }
 
-WindowView::WindowView() : objects(Level::maxLevelBounds.getW(), Level::maxLevelBounds.getH()) {}
+WindowView::WindowView() : objects(Level::getMaxBounds()) {}
 
 bool tilesOk = true;
 
@@ -847,7 +847,7 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   switchTiles();
   const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
-  for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), Level::maxLevelBounds))
+  for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), Level::getMaxBounds()))
     objects[pos] = Nothing();
   if ((center.x == 0 && center.y == 0) || collective->staticPosition())
     center = {double(collective->getPosition().x), double(collective->getPosition().y)};
@@ -859,7 +859,7 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   movePos.y = min(movePos.y, int(collective->getLevel()->getBounds().getKY() * mapLayout->squareHeight()));
   mapLayout->updatePlayerPos(movePos);
   const MapMemory* memory = &collective->getMemory(); 
-  for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), Level::maxLevelBounds)) 
+  for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), Level::getMaxBounds())) 
     if (level->inBounds(pos)) {
       ViewIndex index = collective->getViewIndex(pos);
       if (!index.hasObject(ViewLayer::FLOOR) && !index.hasObject(ViewLayer::FLOOR_BACKGROUND) &&
@@ -1018,7 +1018,7 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
       if (auto pos = mapGui->getHighlightedTile(renderer)) {
         refreshScreen(false);
         int numArrow = 0;
-        Vec2 middle = mapLayout->getAllTiles(getMapViewBounds(), Level::maxLevelBounds).middle();
+        Vec2 middle = mapLayout->getAllTiles(getMapViewBounds(), Level::getMaxBounds()).middle();
         if (pos == middle)
           continue;
         Vec2 dir = (*pos - middle).getBearing();

@@ -66,7 +66,9 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
     addLightSource(pos, squares[pos]->getLightEmission(), 1);
 }
 
-Rectangle Level::maxLevelBounds(800, 800);
+Rectangle Level::getMaxBounds() {
+  return Rectangle(800, 800);
+}
 
 void Level::addCreature(Vec2 position, PCreature c) {
   Creature* ref = c.get();

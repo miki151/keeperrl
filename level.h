@@ -34,7 +34,7 @@ class LevelMaker;
 class Level {
   public:
 
-  static Rectangle maxLevelBounds;
+  static Rectangle getMaxBounds();
 
   /** Checks if the creature can move to \paramname{direction}. This ensures 
     * that a subsequent call to #moveCreature will not fail.*/
