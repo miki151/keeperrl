@@ -2295,7 +2295,8 @@ Task* Collective::TaskMap::getTaskForImp(Creature* c) {
 }
 
 MoveInfo Collective::getMove(Creature* c) {
-  CHECK(contains(creatures, c));
+  if (!contains(creatures, c))  // this is a creature from a vault that wasn't discovered yet
+    return NoMove;
   if (!contains(minionByType.at(MinionType::IMP), c)) {
     CHECK(contains(minions, c));
     return getMinionMove(c);
