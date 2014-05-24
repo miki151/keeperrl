@@ -30,7 +30,7 @@ class Staircase : public Square {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    c->privateMessage("There are " + getName() + " here.");
+    c->playerMessage("There are " + getName() + " here.");
   }
 
   virtual Optional<SquareApplyType> getApplyType(const Creature*) const override {
@@ -86,7 +86,7 @@ class SecretPassage : public Square {
     if (uncovered)
       return;
     if (c->isPlayer()) {
-      c->privateMessage("You found a secret passage!");
+      c->playerMessage("You found a secret passage!");
       uncover(c->getPosition());
     } else 
     if (getLevel()->playerCanSee(c->getPosition())) {
@@ -165,7 +165,7 @@ class Water : public Square {
   virtual bool canEnterSpecial(const Creature* c) const override {
     bool can = canWalk(c) || c->canSwim() || c->canFly() || c->isBlind() || c->isHeld();
  /*   if (!can)
-      c->privateMessage("The water is too deep.");*/
+      c->playerMessage("The water is too deep.");*/
     return can;
   }
 
@@ -205,7 +205,7 @@ class Chest : public Square {
       Square(object, name, Vision::get(VisionId::NORMAL), true, 30, 0.5), creatureId(id), minCreatures(minC), maxCreatures(maxC), msgItem(_msgItem), msgMonster(_msgMonster), msgGold(_msgGold), itemFactory(_itemFactory), openedObject(opened) {}
 
   virtual void onEnterSpecial(Creature* c) override {
-    c->privateMessage(string("There is a ") + (opened ? " opened " : "") + getName() + " here");
+    c->playerMessage(string("There is a ") + (opened ? " opened " : "") + getName() + " here");
   }
 
   virtual bool canDestroy() const override {
@@ -234,16 +234,16 @@ class Chest : public Square {
 
   virtual void onApply(Creature* c) override {
     CHECK(!opened);
-    c->privateMessage("You open the " + getName());
+    c->playerMessage("You open the " + getName());
     opened = true;
     viewObject = openedObject;
     if (!Random.roll(5)) {
-      c->privateMessage(msgItem);
+      c->playerMessage(msgItem);
       vector<PItem> items = itemFactory.random();
       EventListener::addItemsAppearedEvent(getLevel(), getPosition(), extractRefs(items));
       c->takeItems(std::move(items), nullptr);
     } else {
-      c->privateMessage(msgMonster);
+      c->playerMessage(msgMonster);
       int numR = Random.getRandom(minCreatures, maxCreatures);
       for (Vec2 v : getPosition().neighbors8(true)) {
         PCreature rat = CreatureFactory::fromId(creatureId,  Tribes::get(TribeId::PEST));
@@ -298,11 +298,11 @@ class Fountain : public Square {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    c->privateMessage("There is a " + getName() + " here");
+    c->playerMessage("There is a " + getName() + " here");
   }
 
   virtual void onApply(Creature* c) override {
-    c->privateMessage("You drink from the fountain.");
+    c->playerMessage("You drink from the fountain.");
     PItem potion = getOnlyElement(ItemFactory::potions().random(seed));
     potion->apply(c, getLevel());
   }
@@ -351,7 +351,7 @@ class Tree : public Square {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
- /*   c->privateMessage(isBurnt() ? "There is a burnt tree here." : 
+ /*   c->playerMessage(isBurnt() ? "There is a burnt tree here." : 
         destroyed ? "There is fallen tree here." : "You pass beneath a tree");*/
   }
 
@@ -407,7 +407,7 @@ class Door : public Square {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    c->privateMessage("You open the door.");
+    c->playerMessage("You open the door.");
   }
 
   template <class Archive> 
@@ -524,7 +524,7 @@ class Furniture : public Square {
   virtual void onApply(Creature* c) {}
 
   virtual void onEnterSpecial(Creature* c) override {
-   // c->privateMessage("There is a " + getName() + " here.");
+   // c->playerMessage("There is a " + getName() + " here.");
   }
 
   template <class Archive> 
@@ -615,9 +615,9 @@ class Altar : public Square {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    c->privateMessage("This is a shrine to " + deity->getName());
-    c->privateMessage(deity->getGender().he() + " lives in " + deity->getHabitatString());
-    c->privateMessage(deity->getGender().he() + " is the " + deity->getGender().god() + " of "
+    c->playerMessage("This is a shrine to " + deity->getName());
+    c->playerMessage(deity->getGender().he() + " lives in " + deity->getHabitatString());
+    c->playerMessage(deity->getGender().he() + " is the " + deity->getGender().god() + " of "
         + deity->getEpithets());
   }
 
@@ -629,7 +629,7 @@ class Altar : public Square {
   }
 
   virtual void onApply(Creature* c) override {
-    c->privateMessage("You pray to " + deity->getName());
+    c->playerMessage("You pray to " + deity->getName());
     deity->onPrayer(c);
   }
 
@@ -772,7 +772,7 @@ class Laboratory : public Workshop {
   using Workshop::Workshop;
 
   virtual void onApply(Creature* c) override {
-    c->privateMessage("You mix the concoction.");
+    c->playerMessage("You mix the concoction.");
   }
 
   template <class Archive> 

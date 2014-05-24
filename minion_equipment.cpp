@@ -70,8 +70,8 @@ bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit) {
     int limit = noLimit ? 10000 : getEquipmentLimit(*type);
     if (c->getEquipment().getItems([&](const Item* it) { return getEquipmentType(it) == *type;}).size() >= limit)
       return false;
-    return c->canEquip(it, nullptr)
-      || (type == ARCHERY && c->hasSkill(Skill::get(SkillId::ARCHERY)) && (c->canEquip(it, nullptr) ||
+    return c->canEquip(it)
+      || (type == ARCHERY && c->hasSkill(Skill::get(SkillId::ARCHERY)) && (c->canEquip(it) ||
               (it->getType() == ItemType::AMMO && c->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))))
       || (type == HEALING && !c->isNotLiving()) 
       || type == COMBAT_ITEM;

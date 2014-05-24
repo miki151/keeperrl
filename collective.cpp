@@ -1851,7 +1851,7 @@ void Collective::tick() {
   if (retired) {
     if (const Creature* c = level->getPlayer())
       if (Random.roll(30) && !myTiles.count(c->getPosition()))
-        c->privateMessage("You sense horrible evil in the " + 
+        c->playerMessage("You sense horrible evil in the " + 
             getCardinalName((keeper->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
   }
   updateVisibleCreatures();
@@ -1863,9 +1863,9 @@ void Collective::tick() {
     if (!mySquares.at(elem.second.square).empty())
       warning[int(elem.second.warning)] = false;
   warning[int(Warning::NO_WEAPONS)] = false;
-  for (const Creature* c : minions) {
+  for (Creature* c : minions) {
     PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
-    if (usesEquipment(c) && c->canEquip(genWeapon.get(), nullptr) && getAllItems([&](const Item* it) {
+    if (usesEquipment(c) && c->equip(genWeapon.get()) && getAllItems([&](const Item* it) {
           return minionEquipment.canTakeItem(c, it); }, false).empty())
       warning[int(Warning::NO_WEAPONS)] = true;
   }
@@ -2071,13 +2071,13 @@ void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
 MoveInfo Collective::getBeastMove(Creature* c) {
   if (!Random.roll(2) && !myTiles.count(c->getPosition()))
     return NoMove;
-  if (auto move = c->continueMoving())
-    return {1.0, [c, move]() { return c->move(*move); }};
+  if (auto action = c->continueMoving())
+    return {1.0, action};
   if (!Random.roll(5))
     return NoMove;
   if (!borderTiles.empty())
-    if (auto move = c->getMoveTowards(chooseRandom(borderTiles)))
-      return {1.0, [c, move]() { return c->move(*move); }};
+    if (auto action = c->moveTowards(chooseRandom(borderTiles)))
+      return {1.0, action};
   return NoMove;
 }
 
@@ -2095,12 +2095,9 @@ MoveInfo Collective::getGuardPostMove(Creature* c) {
     if (!info.attender || info.attender == c) {
       info.attender = c;
       minionTaskStrings[c->getUniqueId()] = "guarding";
-      if (c->getPosition().dist8(v) > 1) {
-        if (auto move = c->getMoveTowards(v))
-          return {1.0, [=] {
-            c->move(*move);
-          }};
-      }
+      if (c->getPosition().dist8(v) > 1)
+        if (auto action = c->moveTowards(v))
+          return {1.0, action};
       break;
     }
   }
@@ -2112,18 +2109,14 @@ MoveInfo Collective::getPossessedMove(Creature* c) {
   if (possessed->getLevel() != c->getLevel()) {
     if (teamLevelChanges.count(c->getLevel())) {
       v = teamLevelChanges.at(c->getLevel());
-      if (v == c->getPosition())
-        return {1.0, [=] {
-          c->applySquare();
-        }};
+      if (v == c->getPosition() && c->applySquare())
+        return {1.0, c->applySquare()};
     }
   } else 
     v = possessed->getPosition();
   if (v)
-    if (auto move = c->getMoveTowards(*v))
-      return {1.0, [=] {
-        c->move(*move);
-      }};
+    if (auto action = c->moveTowards(*v))
+      return {1.0, action};
   return NoMove;
 }
 
@@ -2131,24 +2124,18 @@ MoveInfo Collective::getBacktrackMove(Creature* c) {
   if (!levelChangeHistory.count(c->getLevel()))
     return NoMove;
   Vec2 target = levelChangeHistory.at(c->getLevel());
-  if (c->getPosition() == target)
-    return {1.0, [=] {
-      c->applySquare();
-    }};
-  else if (auto move = c->getMoveTowards(target))
-    return {1.0, [=] {
-      c->move(*move);
-    }};
+  if (c->getPosition() == target && c->applySquare())
+    return {1.0, c->applySquare()};
+  else if (auto action = c->moveTowards(target))
+    return {1.0, action};
   else
     return NoMove;
 }
 
 MoveInfo Collective::getAlarmMove(Creature* c) {
   if (alarmInfo.finishTime > c->getTime())
-    if (auto move = c->getMoveTowards(alarmInfo.position))
-      return {1.0, [=] {
-        c->move(*move);
-      }};
+    if (auto action = c->moveTowards(alarmInfo.position))
+      return {1.0, action};
   return NoMove;
 }
 
@@ -2156,10 +2143,8 @@ MoveInfo Collective::getDropItems(Creature *c) {
   if (myTiles.count(c->getPosition())) {
     vector<Item*> items = c->getEquipment().getItems([this, c](const Item* item) {
         return minionEquipment.isItemUseful(item) && minionEquipment.getOwner(item) != c; });
-    if (!items.empty())
-      return {1.0, [=] {
-        c->drop(items);
-      }};
+    if (!items.empty() && c->drop(items))
+      return {1.0, c->drop(items)};
   }
   return NoMove;   
 }
@@ -2172,30 +2157,19 @@ MoveInfo Collective::getExecutionMove(Creature* c) {
         && (elem.second.attender == c || !elem.second.attender || elem.second.attender->isDead())) {
       if (elem.second.state == PrisonerInfo::EXECUTE) {
         elem.second.attender = c;
-        if (elem.first->getPosition().dist8(c->getPosition()) == 1)
-          return {1.0, [=] () {
-            c->attack(elem.first);
-            c->globalMessage(c->getTheName() + " executes " + elem.first->getTheName());
-          }};
-        else if (auto move = c->getMoveTowards(elem.first->getPosition()))
-          return {1.0, [=] () {
-            c->move(*move);
-          }};
+        if (auto action = c->attack(elem.first))
+          return {1.0, action};
+        else if (auto action = c->moveTowards(elem.first->getPosition()))
+          return {1.0, action};
         else
           return NoMove;
       }
       if (getMinionTask(elem.first) == MinionTask::TORTURE) {
         elem.second.attender = c;
-        if (elem.first->getPosition().dist8(c->getPosition()) == 1
-            && elem.first->getSquare()->getApplyType(elem.first) == SquareApplyType::TORTURE)
-          return {1.0, [=] () {
-            c->torture(elem.first);
-            c->globalMessage(c->getTheName() + " tortures " + elem.first->getTheName());
-          }};
-        else if (auto move = c->getMoveTowards(elem.first->getPosition()))
-          return {1.0, [=] () {
-            c->move(*move);
-          }};
+        if (auto action = c->torture(elem.first))
+          return {1.0, action};
+        else if (auto action = c->moveTowards(elem.first->getPosition()))
+          return {1.0, action};
         else
           return NoMove;
       }
@@ -2232,7 +2206,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
       for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
             return minionEquipment.getOwner(it) == c; })) {
         PTask t;
-        if (c->canEquip(it, nullptr))
+        if (c->equip(it))
           t = Task::equipItem(this, v, it);
         else
           t = Task::pickItem(this, v, {it});
@@ -2248,12 +2222,9 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         minionTasks.at(c->getUniqueId()).setState(t);
         break;
       }
-  if (c == keeper && !myTiles.empty() && !myTiles.count(c->getPosition())) {
-    if (auto move = c->getMoveTowards(chooseRandom(myTiles)))
-      return {1.0, [=] {
-        c->move(*move);
-      }};
-  }
+  if (c == keeper && !myTiles.empty() && !myTiles.count(c->getPosition()))
+    if (auto action = c->moveTowards(chooseRandom(myTiles)))
+      return {1.0, action};
   MinionTaskInfo info = taskInfo.at(minionTasks.at(c->getUniqueId()).getState());
   if (mySquares[info.square].empty()) {
     minionTasks.at(c->getUniqueId()).updateToNext();
@@ -2318,10 +2289,8 @@ MoveInfo Collective::getMove(Creature* c) {
       Vec2 keeperPos = keeper->getPosition();
       if (keeperPos.dist8(c->getPosition()) < 3)
         return NoMove;
-      if (auto move = c->getMoveTowards(keeperPos))
-        return {1.0, [=] {
-          c->move(*move);
-        }};
+      if (auto action = c->moveTowards(keeperPos))
+        return {1.0, action};
       else
         return NoMove;
     } else
@@ -2456,9 +2425,9 @@ void Collective::handleSurprise(Vec2 pos) {
           for (Vec2 dest : pos.neighbors8(true))
             if (level->canMoveCreature(other, dest - v)) {
               level->moveCreature(other, dest - v);
-              other->privateMessage("Surprise!");
+              other->playerMessage("Surprise!");
               if (!wasMsg) {
-                c->privateMessage("Surprise!");
+                c->playerMessage("Surprise!");
                 wasMsg = true;
               }
               break;

@@ -659,9 +659,9 @@ class Optional {
     return !elem.empty() && elem.front() == t;
   }
 
- /* bool operator != (const T& t) const {
-    return !elem.empty() || elem.get() != t;
-  }*/
+  bool operator != (const T& t) const {
+    return elem.empty() || elem.front() != t;
+  }
 
   operator bool() const {
     return !elem.empty();

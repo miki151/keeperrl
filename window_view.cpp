@@ -1450,16 +1450,25 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
         inputQueue.push(UserInput(UserInput::EXIT));
       break;
     case Keyboard::Up:
-    case Keyboard::Numpad8: center.y -= 2.5; inputQueue.push(UserInput(getDirActionId(key), Vec2(0, -1))); break;
+    case Keyboard::Numpad8:
+      center.y -= key.shift ? 10 : 2.5;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(0, -1)));
+      break;
     case Keyboard::Numpad9: inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1))); break;
     case Keyboard::Right: 
-    case Keyboard::Numpad6: center.x += 2.5; inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0))); break;
+    case Keyboard::Numpad6:
+      center.x += key.shift ? 10 : 2.5;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0))); break;
     case Keyboard::Numpad3: inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 1))); break;
     case Keyboard::Down:
-    case Keyboard::Numpad2: center.y += 2.5; inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1))); break;
+    case Keyboard::Numpad2:
+      center.y += key.shift ? 10 : 2.5;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1))); break;
     case Keyboard::Numpad1: inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1))); break;
     case Keyboard::Left:
-    case Keyboard::Numpad4: center.x -= 2.5; inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0))); break;
+    case Keyboard::Numpad4:
+      center.x -= key.shift ? 10 : 2.5;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0))); break;
     case Keyboard::Numpad7: inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1))); break;
     case Keyboard::Return:
     case Keyboard::Numpad5: inputQueue.push(UserInput(UserInput::PICK_UP)); break;

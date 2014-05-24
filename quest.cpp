@@ -52,7 +52,7 @@ class KillTribeQuest : public Quest, public EventListener {
     if (isFinished() && !notified) {
       notified = true;
       for (auto c : adventurers) {
-        c->privateMessage(MessageBuffer::important("Your quest is finished."));
+        c->playerMessage(MessageBuffer::important("Your quest is finished."));
       }
     }
   }
@@ -94,7 +94,7 @@ void Quest::addAdventurer(Creature* c) {
       " to find it.";
     c->learnLocation(location);
   }
-  c->privateMessage(text);
+  c->playerMessage(text);
   adventurers.insert(c);
 }
 

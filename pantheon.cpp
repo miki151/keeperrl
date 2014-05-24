@@ -147,12 +147,12 @@ string Deity::getHabitatString() const {
 }
 
 static void grantGift(Creature* c, ItemId id, string deity, int num = 1) {
-  c->privateMessage(deity + " grants you a gift.");
+  c->playerMessage(deity + " grants you a gift.");
   c->takeItems(ItemFactory::fromId(id, num), nullptr);
 }
 
 static void applyEffect(Creature* c, EffectType effect, string msg) {
-  c->privateMessage(msg);
+  c->playerMessage(msg);
   Effect::applyToCreature(c, effect, EffectStrength::STRONG);
 }
 
@@ -167,7 +167,7 @@ void Deity::onPrayer(Creature* c) {
           PCreature death = CreatureFactory::fromId(CreatureId::DEATH, Tribes::get(TribeId::KILL_EVERYONE));
           for (Vec2 v : c->getPosition().neighbors8(true))
             if (c->getLevel()->inBounds(v) && c->getLevel()->getSquare(v)->canEnter(death.get())) {
-              c->privateMessage("Death appears before you.");
+              c->playerMessage("Death appears before you.");
               c->getLevel()->addCreature(v, std::move(death));
               break;
             }
@@ -199,7 +199,7 @@ void Deity::onPrayer(Creature* c) {
               if (c->getLevel()->inBounds(v) && c->getLevel()->getSquare(v)->canEnter(snake.get())) {
                 c->getLevel()->addCreature(v, std::move(snake));
                 c->steal({c->getEquipment().getItem(EquipmentSlot::WEAPON)});
-                c->privateMessage("Ouch!");
+                c->playerMessage("Ouch!");
                 c->you(MsgType::YOUR, "weapon turns into a snake!");
                 break;
               }
@@ -208,19 +208,19 @@ void Deity::onPrayer(Creature* c) {
           }
           for (Item* it : randomPermutation(c->getEquipment().getItems())) {
             if (it->getType() == ItemType::POTION) {
-              c->privateMessage("Your " + it->getName() + " changes color!");
+              c->playerMessage("Your " + it->getName() + " changes color!");
               c->steal({it});
               c->take(ItemFactory::potions().random());
               break;
             }
             if (it->getType() == ItemType::SCROLL) {
-              c->privateMessage("Your " + it->getName() + " changes label!");
+              c->playerMessage("Your " + it->getName() + " changes label!");
               c->steal({it});
               c->take(ItemFactory::scrolls().random());
               break;
             }
             if (it->getType() == ItemType::AMULET) {
-              c->privateMessage("Your " + it->getName() + " changes shape!");
+              c->playerMessage("Your " + it->getName() + " changes shape!");
               c->steal({it});
               c->take(ItemFactory::amulets().random());
               break;
@@ -254,7 +254,7 @@ void Deity::onPrayer(Creature* c) {
     }
   }
   if (!prayerAnswered)
-    c->privateMessage("Your prayer is not answered.");
+    c->playerMessage("Your prayer is not answered.");
 }
 
 vector<Deity*> generateDeities() {

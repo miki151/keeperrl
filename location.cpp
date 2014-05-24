@@ -83,8 +83,8 @@ class TowerTopLocation : public Location {
  /*     for (Vec2 v : c->getLevel()->getBounds())
         if ((v - c->getPosition()).lengthD() < 300 && !c->getLevel()->getSquare(v)->isCovered())
           c->remember(v, c->getLevel()->getSquare(v)->getViewObject());*/
-      c->privateMessage("You stand at the top of a very tall stone tower.");
-      c->privateMessage("You see distant land in all directions.");
+      c->playerMessage("You stand at the top of a very tall stone tower.");
+      c->playerMessage("You see distant land in all directions.");
       entered.insert(c);
     }
   }

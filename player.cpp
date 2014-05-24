@@ -70,7 +70,7 @@ void Player::onExplosionEvent(const Level* level, Vec2 pos) {
   if (creature->canSee(pos))
     model->getView()->animation(pos, AnimationId::EXPLOSION);
   else
-    creature->privateMessage("BOOM!");
+    privateMessage("BOOM!");
 }
 
 void Player::onAlarmEvent(const Level* l, Vec2 pos) {
@@ -117,13 +117,6 @@ void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, ve
   }
 }
 
-string Player::getPluralName(Item* item, int num) {
-  if (num == 1)
-    return item->getTheName(false, creature->isBlind());
-  else
-    return convertToString(num) + " " + item->getTheName(true, creature->isBlind());
-}
-
 static string getSquareQuestion(SquareApplyType type, string name) {
   switch (type) {
     case SquareApplyType::DESCEND: return "Descend the " + name;
@@ -143,7 +136,7 @@ void Player::pickUpAction(bool extended) {
   if (square->getApplyType(creature)) {
     string question = getSquareQuestion(*square->getApplyType(creature), square->getName());
     if (!question.empty() && (items.empty() || model->getView()->yesOrNoPrompt(question))) {
-      creature->applySquare();
+      creature->applySquare().perform();
       return;
     }
   }
@@ -171,10 +164,14 @@ void Player::pickUpAction(bool extended) {
     num = *res;
   }
   vector<Item*> pickUpItems = getPrefix(groups[index], 0, num);
-  if (creature->canPickUp(pickUpItems)) {
-    creature->privateMessage("You pick up " + getPluralName(groups[index][0], num));
-    creature->pickUp(pickUpItems);
-  }
+  tryToPerform(creature->pickUp(pickUpItems));
+}
+
+void Player::tryToPerform(Creature::Action action) {
+  if (action)
+    action.perform();
+  else
+    creature->playerMessage(action.getFailedReason());
 }
 
 void Player::itemsMessage() {
@@ -241,12 +238,11 @@ void Player::dropAction(bool extended) {
       return;
     num = *res;
   }
-  creature->privateMessage("You drop " + getPluralName(items[0], num));
-  creature->drop(getPrefix(items, 0, num));
+  tryToPerform(creature->drop(getPrefix(items, 0, num)));
 }
 
 void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
-  if (!creature->canPickUp(items))
+  if (!creature->pickUp(items))
     return;
   vector<View::ListElem> names;
   vector<vector<Item*> > groups;
@@ -259,19 +255,13 @@ void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   int num = groups[*index].size(); //groups[index].size() == 1 ? 1 : howMany(model->getView(), groups[index].size());
   if (num < 1)
     return;
-  creature->privateMessage("You take " + getPluralName(groups[*index][0], num));
-  creature->pickUp(getPrefix(groups[*index], 0, num), false);
+  privateMessage("You take " + creature->getPluralName(groups[*index][0], num));
+  tryToPerform(creature->pickUp(getPrefix(groups[*index], 0, num), false));
 }
 
 void Player::applyAction() {
-  if (!creature->isHumanoid())
-    return;
-  if (creature->numGoodArms() == 0) {
-    privateMessage("You don't have hands!");
-    return;
-  }
   vector<Item*> items = chooseItem("Choose an item to apply:", [this](const Item* item) {
-      return creature->canApplyItem(item);}, UserInput::APPLY_ITEM);
+      return creature->applyItem(const_cast<Item*>(item));}, UserInput::APPLY_ITEM);
   if (items.size() == 0)
     return;
   applyItem(items);
@@ -292,10 +282,7 @@ void Player::applyItem(vector<Item*> items) {
           break;
       }
   }
-  if (creature->canApplyItem(items[0])) {
-    privateMessage("You " + items[0]->getApplyMsgFirstPerson());
-    creature->applyItem(items[0]);
-  }
+  tryToPerform(creature->applyItem(items[0]));
 }
 
 void Player::throwAction(Optional<Vec2> dir) {
@@ -315,15 +302,12 @@ void Player::throwItem(vector<Item*> items, Optional<Vec2> dir) {
       return;
     dir = *cDir;
   }
-  if (creature->canThrowItem(items[0])) {
-    creature->privateMessage("You throw " + items[0]->getAName(false, creature->isBlind()));
-    creature->throwItem(items[0], *dir);
-  }
+  tryToPerform(creature->throwItem(items[0], *dir));
 }
 
 void Player::equipmentAction() {
   if (!creature->isHumanoid()) {
-    creature->privateMessage("You can't use any equipment.");
+    privateMessage("You can't use any equipment.");
     return;
   }
   vector<EquipmentSlot> slots;
@@ -352,10 +336,7 @@ void Player::equipmentAction() {
     EquipmentSlot slot = slots[index];
     string reason;
     if (Item* item = creature->getEquipment().getItem(slot)) {
-      if (creature->canUnequip(item, &reason))
-        creature->unequip(item);
-      else
-        creature->privateMessage(reason);
+      tryToPerform(creature->unequip(item));
     } else {
       vector<Item*> items = chooseItem("Choose an item to equip:", [=](const Item* item) {
           return item->canEquip()
@@ -364,10 +345,7 @@ void Player::equipmentAction() {
       if (items.size() == 0) {
         continue;
       }
-      if (creature->canEquip(items[0], &reason)) {
-        creature->equip(items[0]);
-      } else
-        creature->privateMessage(reason);
+      tryToPerform(creature->equip(items[0]));
     }
   }
 }
@@ -407,53 +385,38 @@ void Player::displayInventory() {
     return;
   }
   vector<View::ListElem> options;
-  if (creature->canEquip(item[0], nullptr)) {
+  if (creature->equip(item[0])) {
     options.push_back("equip");
   }
-  if (creature->canApplyItem(item[0])) {
+  if (creature->applyItem(item[0])) {
     options.push_back("apply");
   }
-  if (creature->canUnequip(item[0], nullptr))
+  if (creature->unequip(item[0]))
     options.push_back("remove");
   else {
     options.push_back("throw");
     options.push_back("drop");
   }
-  auto index = model->getView()->chooseFromList("What to do with " + getPluralName(item[0], item.size()) + "?", options);
+  auto index = model->getView()->chooseFromList("What to do with "
+      + creature->getPluralName(item[0], item.size()) + "?", options);
   if (!index) {
     displayInventory();
     return;
   }
-  if (options[*index].getText() == "drop") {
-    creature->privateMessage("You drop " + getPluralName(item[0], item.size()));
-    creature->drop(item);
-  }
-  if (options[*index].getText() == "throw") {
+  if (options[*index].getText() == "drop")
+    tryToPerform(creature->drop(item));
+  if (options[*index].getText() == "throw")
     throwItem(item);
-  }
-  if (options[*index].getText() == "apply") {
+  if (options[*index].getText() == "apply")
     applyItem(item);
-  }
-  if (options[*index].getText() == "remove") {
-    creature->privateMessage("You remove " + getPluralName(item[0], item.size()));
-    creature->unequip(getOnlyElement(item));
-  }
-  if (options[*index].getText() == "equip") {
-    creature->privateMessage("You equip " + getPluralName(item[0], item.size()));
-    creature->equip(item[0]);
-  }
+  if (options[*index].getText() == "remove")
+    tryToPerform(creature->unequip(getOnlyElement(item)));
+  if (options[*index].getText() == "equip")
+    tryToPerform(creature->equip(item[0]));
 }
 
 void Player::hideAction() {
-  if (creature->canHide()) {
-    privateMessage("You hide behind the " + creature->getConstSquare()->getName());
-    creature->hide();
-  } else {
-    if (!creature->hasSkill(Skill::get(SkillId::AMBUSH)))
-      privateMessage("You don't have this skill.");
-    else
-      privateMessage("You can't hide here.");
-  }
+  tryToPerform(creature->hide());
 }
 
 bool Player::interruptedByEnemy() {
@@ -471,11 +434,11 @@ bool Player::interruptedByEnemy() {
 }
 
 void Player::travelAction() {
-  if (!creature->canMove(travelDir) || model->getView()->travelInterrupt() || interruptedByEnemy()) {
+  if (!creature->move(travelDir) || model->getView()->travelInterrupt() || interruptedByEnemy()) {
     travelling = false;
     return;
   }
-  creature->move(travelDir);
+  tryToPerform(creature->move(travelDir));
   itemsMessage();
   const Location* currentLocation = creature->getLevel()->getLocation(creature->getPosition());
   if (lastLocation != currentLocation && currentLocation != nullptr && currentLocation->hasName()) {
@@ -500,9 +463,8 @@ void Player::targetAction() {
     target = Nothing();
     return;
   }
-  Optional<Vec2> move = creature->getMoveTowards(*target);
-  if (move)
-    creature->move(*move);
+  if (auto action = creature->moveTowards(*target))
+    action.perform();
   else
     target = Nothing();
   itemsMessage();
@@ -533,38 +495,32 @@ void Player::chatAction(Optional<Vec2> dir) {
     if (const Creature* c = creature->getConstSquare(v)->getCreature())
       creatures.push_back(c);
   if (creatures.size() == 1 && !dir) {
-    privateMessage("You chat with " + creatures[0]->getTheName());
-    creature->chatTo(creatures[0]->getPosition() - creature->getPosition());
+    tryToPerform(creature->chatTo(creatures[0]->getPosition() - creature->getPosition()));
   } else
   if (creatures.size() > 1 || dir) {
     if (!dir)
       dir = model->getView()->chooseDirection("Which direction?");
     if (!dir)
       return;
-    if (const Creature* c = creature->getConstSquare(*dir)->getCreature()) {
-      privateMessage("You chat with " + c->getTheName());
-      creature->chatTo(*dir);
-    }
+    tryToPerform(creature->chatTo(*dir));
   }
 }
 
 void Player::fireAction(Vec2 dir) {
-  if (creature->canFire(dir))
-    creature->fire(dir);
+  tryToPerform(creature->fire(dir));
 }
 
 void Player::spellAction() {
   vector<View::ListElem> list;
   auto spells = creature->getSpells();
   for (int i : All(spells))
-    list.push_back(View::ListElem(spells[i].name + " " + (!creature->canCastSpell(i) ? "(ready in " +
+    list.push_back(View::ListElem(spells[i].name + " " + (!creature->castSpell(i) ? "(ready in " +
           convertToString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""),
-          creature->canCastSpell(i) ? View::NORMAL : View::INACTIVE));
+          creature->castSpell(i) ? View::NORMAL : View::INACTIVE));
   auto index = model->getView()->chooseFromList("Cast a spell:", list);
   if (!index)
     return;
-  creature->privateMessage("You cast " + spells[*index].name);
-  creature->castSpell(*index);
+  tryToPerform(creature->castSpell(*index));
 }
 
 const MapMemory& Player::getMemory() const {
@@ -688,19 +644,18 @@ void Player::makeMove() {
         travelAction();
       }
     } else
-    if (creature->canMove(dir)) {
-      creature->move(dir);
+    if (auto action = creature->move(dir)) {
+      action.perform();
       itemsMessage();
       break;
     } else {
       const Creature *c = creature->getConstSquare(dir)->getCreature();
-      if (creature->canBumpInto(dir)) {
-        creature->bumpInto(dir);
+      if (auto action = creature->bumpInto(dir)) {
+        action.perform();
         break;
       } else 
-      if (creature->canDestroy(dir)) {
-        privateMessage("You bash the " + creature->getSquare(dir)->getName());
-        creature->destroy(dir);
+      if (auto action = creature->destroy(dir, Creature::BASH)) {
+        action.perform();
         break;
       }
     }

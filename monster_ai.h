@@ -21,10 +21,10 @@
 
 struct MoveInfo {
   double value;
-  function<void ()> move;
+  Creature::Action move;
 
   operator bool() const {
-    return move != nullptr;
+    return move;
   }
 
   MoveInfo setValue(double v) {
@@ -34,7 +34,7 @@ struct MoveInfo {
   }
 };
 
-const MoveInfo NoMove = {0.0, nullptr};
+const MoveInfo NoMove = {0.0, Creature::Action("")};
 
 enum MonsterAIType { 
   MONSTER,
@@ -46,7 +46,7 @@ enum MonsterAIType {
 class Behaviour {
   public:
   Behaviour(Creature*);
-  virtual MoveInfo getMove() { return {0, nullptr}; }
+  virtual MoveInfo getMove() { return NoMove; }
   virtual void onAttacked(const Creature* attacker) {}
   virtual double itemValue(const Item*) { return 0; }
   Item* getBestWeapon();

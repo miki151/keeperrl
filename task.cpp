@@ -136,14 +136,13 @@ class Construction : public Task {
       return NoMove;
     Vec2 dir = getPosition() - c->getPosition();
     if (dir.length8() == 1) {
-      if (c->canConstruct(dir, type))
-        return {1.0, [this, c, dir] {
-          c->construct(dir, type);
-          if (!c->canConstruct(dir, type)) {
+      if (auto action = c->construct(dir, type))
+        return {1.0, action.append([=] {
+          if (!c->construct(dir, type)) {
             setDone();
             getCallback()->onConstructed(getPosition(), type);
           }
-        }};
+        })};
       else {
         setDone();
         return NoMove;
@@ -171,11 +170,8 @@ PTask Task::construction(Callback* col, Vec2 target, SquareType type) {
 }
   
 MoveInfo Task::getMoveToPosition(Creature *c, bool stepOnTile) {
-  Optional<Vec2> move = c->getMoveTowards(position, stepOnTile);
-  if (move)
-    return {1.0, [=] {
-      c->move(*move);
-    }};
+  if (auto action = c->moveTowards(position, stepOnTile))
+    return {1.0, action};
   else
     return NoMove;
 }
@@ -213,15 +209,12 @@ class PickItem : public Task {
         return NoMove;
       }
       items = hereItems;
-      if (c->canPickUp(hereItems))
-        return {1.0, [=] {
-          for (auto elem : Item::stackItems(hereItems))
-            c->globalMessage(c->getTheName() + " picks up " + elem.first, "");
-          c->pickUp(hereItems);
+      if (auto action = c->pickUp(hereItems))
+        return {1.0, action.append([=] {
           pickedUp = true;
           onPickedUp();
           getCallback()->onPickedUp(getPosition(), hereItems);
-        }}; 
+        })}; 
       else {
         getCallback()->onCantPickItem(items);
         setDone();
@@ -273,12 +266,11 @@ class EquipItem : public PickItem {
     if (!pickedUp)
       return PickItem::getMove(c);
     vector<Item*> it = c->getEquipment().getItems(items.containsPredicate());
-    if (!it.empty() && c->canEquip(getOnlyElement(it), nullptr))
-      return {1.0, [=] {
-        c->globalMessage(c->getTheName() + " equips " + getOnlyElement(it)->getAName());
-        c->equip(getOnlyElement(it));
+    if (!it.empty())
+      if (auto action = c->equip(getOnlyElement(it)))
+      return {1.0, action.append([=] {
         setDone();
-      }};
+      })};
     else {
       setDone();
       return NoMove;
@@ -302,11 +294,8 @@ class BringItem : public PickItem {
   BringItem(Callback* col, Vec2 position, vector<Item*> items, Vec2 _target)
       : PickItem(col, position, items), target(_target) {}
 
-  virtual void onBroughtItem(Creature* c, vector<Item*> it) {
-    //getCallback()->onBrought(c->getPosition(), it);
-    for (auto elem : Item::stackItems(it))
-      c->globalMessage(c->getTheName() + " drops " + elem.first);
-    c->drop(it);
+  virtual Creature::Action getBroughtAction(Creature* c, vector<Item*> it) {
+    return c->drop(it);
   }
 
   virtual string getInfo() override {
@@ -323,10 +312,12 @@ class BringItem : public PickItem {
     setPosition(target);
     if (c->getPosition() == target) {
       vector<Item*> myItems = c->getEquipment().getItems(items.containsPredicate());
-      return {1.0, [=] {
-        onBroughtItem(c, myItems);
+      if (auto action = getBroughtAction(c, myItems))
+        return {1.0, action.append([=] {setDone();})};
+      else {
         setDone();
-      }};
+        return NoMove;
+      }
     } else {
       if (c->getPosition().dist8(target) == 1)
         if (Creature* other = c->getLevel()->getSquare(target)->getCreature())
@@ -372,12 +363,11 @@ class ApplyItem : public BringItem {
       " to " + convertToString(target);
   }
 
-  virtual void onBroughtItem(Creature* c, vector<Item*> it) override {
+  virtual Creature::Action getBroughtAction(Creature* c, vector<Item*> it) override {
     Item* item = getOnlyElement(it);
-    getCallback()->onAppliedItem(c->getPosition(), item);
-    c->globalMessage(c->getTheName() + " " + item->getApplyMsgThirdPerson(),
-        item->getNoSeeApplyMsg());
-    c->applyItem(item);
+    return c->applyItem(item).append([=] {
+        getCallback()->onAppliedItem(c->getPosition(), item);
+    });
   }
 
   template <class Archive> 
@@ -420,12 +410,11 @@ class ApplySquare : public Task {
       setPosition(pos);
     }
     if (c->getPosition() == getPosition()) {
-      if (c->getSquare()->getApplyType(c))
-        return {1.0, [this, c] {
-          c->applySquare();
-          setDone();
-          getCallback()->onAppliedSquare(c->getPosition());
-        }};
+      if (auto action = c->applySquare())
+        return {1.0, action.append([=] {
+            setDone();
+            getCallback()->onAppliedSquare(c->getPosition());
+        })};
       else {
         setDone();
         return NoMove;

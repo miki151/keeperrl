@@ -196,7 +196,7 @@ Vec2 Level::landCreature(vector<Vec2> landing, PCreature creature) {
 Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
   CHECK(creature);
   if (entryMessage != "") {
-    creature->privateMessage(entryMessage);
+    creature->playerMessage(entryMessage);
     entryMessage = "";
   }
   queue<pair<Vec2, Vec2>> q;
@@ -257,9 +257,9 @@ void Level::killCreature(Creature* creature) {
 void Level::globalMessage(Vec2 position, const string& ifPlayerCanSee, const string& cannot) const {
   if (player) {
     if (playerCanSee(position))
-      player->privateMessage(ifPlayerCanSee);
+      player->playerMessage(ifPlayerCanSee);
     else if (player->getPosition().dist8(position) < 30)
-      player->privateMessage(cannot);
+      player->playerMessage(cannot);
   }
 }
 
