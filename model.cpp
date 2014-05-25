@@ -572,8 +572,10 @@ Model* Model::collectiveModel(View* view) {
       control->setOnFirstContact();
     vector<Creature*> members;
     for (int j : Range(enemyInfo[i].heroCount)) {
-      PCreature c = enemyInfo[i].factory.random(MonsterAIFactory::villageControl(control.get(),
-            enemyInfo[i].settlement.location));
+      MonsterAIFactory ai = (enemyInfo[i].settlement.tribe == Tribes::get(TribeId::KEEPER))
+        ? MonsterAIFactory::collective(m->collective.get())
+        : MonsterAIFactory::villageControl(control.get(), enemyInfo[i].settlement.location);
+      PCreature c = enemyInfo[i].factory.random(ai);
       members.push_back(c.get());
       top->landCreature(enemyInfo[i].settlement.location->getBounds().getAllSquares(), std::move(c));
     }
