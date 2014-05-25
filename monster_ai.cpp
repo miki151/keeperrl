@@ -442,7 +442,7 @@ class Fighter : public Behaviour, public EventListener {
       return NoMove;
     if (auto action = creature->fire(dir.shorten()))
       return {1.0, action.append([=] {
-          EventListener::addCombatEvent(creature));
+          EventListener::addCombatEvent(creature);
       })};
     return NoMove;
   }
@@ -465,7 +465,7 @@ class Fighter : public Behaviour, public EventListener {
         })};
       }
     if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()) < 4)
-      if (auto action = creature->moveAway(lastSeen->pos, chase)) {
+      if (auto action = creature->moveAway(lastSeen->pos, chase))
         return {0.5, action.append([=] {
             EventListener::addCombatEvent(creature);
         })};

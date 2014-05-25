@@ -268,13 +268,11 @@ class EquipItem : public PickItem {
     vector<Item*> it = c->getEquipment().getItems(items.containsPredicate());
     if (!it.empty())
       if (auto action = c->equip(getOnlyElement(it)))
-      return {1.0, action.append([=] {
-        setDone();
-      })};
-    else {
-      setDone();
-      return NoMove;
-    }
+        return {1.0, action.append([=] {
+          setDone();
+        })};
+    setDone();
+    return NoMove;
   }
 
   template <class Archive> 
