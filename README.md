@@ -9,6 +9,7 @@ Compiling
 *Prerequisites*
 
   * make essentials
+  * gcc-4.8.2
   * git
   * libboost 1.5+ with libboost-serialize
   * libsfml-dev 2+ (Ubuntu ppa that contains libsfml 2: http://www.playdeb.net/updates/Ubuntu/13.10#how_to_install )
