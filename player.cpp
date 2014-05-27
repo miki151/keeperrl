@@ -539,6 +539,19 @@ void Player::sleeping() {
 
 static bool displayTravelInfo = true;
 
+void Player::attackAction(Creature* other) {
+  vector<View::ListElem> elems;
+  vector<AttackLevel> levels = creature->getAttackLevels();
+  for (auto level : levels)
+    switch (level) {
+      case AttackLevel::LOW: elems.push_back("Low"); break;
+      case AttackLevel::MIDDLE: elems.push_back("Middle"); break;
+      case AttackLevel::HIGH: elems.push_back("High"); break;
+    }
+  if (auto ind = model->getView()->chooseFromList("Choose level of the attack:", elems))
+    creature->attack(other, levels[*ind]).perform();;
+}
+
 void Player::makeMove() {
   vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
   const vector<Creature*>& creatures = creature->getLevel()->getAllCreatures();
@@ -584,27 +597,28 @@ void Player::makeMove() {
     case UserInput::FIRE: fireAction(action.getPosition()); break;
     case UserInput::TRAVEL: travel = true;
     case UserInput::MOVE: direction.push_back(action.getPosition()); break;
-    case UserInput::MOVE_TO: if (action.getPosition().dist8(creature->getPosition()) == 1) {
-                              Vec2 dir = action.getPosition() - creature->getPosition();
-                              if (const Creature* c = creature->getConstSquare(dir)->getCreature()) {
-                                if (!creature->isEnemy(c)) {
-                                  chatAction(dir);
-                                  break;
-                                }
-                              }
-                              direction.push_back(dir);
-                            } else
-                            if (action.getPosition() != creature->getPosition()) {
-                              target = action.getPosition();
-                              target = Vec2(min(creature->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
-                                  min(creature->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
-                              // Just in case
-                              if (!target->inRectangle(creature->getLevel()->getBounds()))
-                                target = Nothing();
-                            }
-                            else
-                              pickUpAction(false);
-                            break;
+    case UserInput::MOVE_TO: 
+      if (action.getPosition().dist8(creature->getPosition()) == 1) {
+        Vec2 dir = action.getPosition() - creature->getPosition();
+        if (const Creature* c = creature->getConstSquare(dir)->getCreature()) {
+          if (!creature->isEnemy(c)) {
+            chatAction(dir);
+            break;
+          }
+        }
+        direction.push_back(dir);
+      } else
+        if (action.getPosition() != creature->getPosition()) {
+          target = action.getPosition();
+          target = Vec2(min(creature->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
+              min(creature->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
+          // Just in case
+          if (!target->inRectangle(creature->getLevel()->getBounds()))
+            target = Nothing();
+        }
+        else
+          pickUpAction(false);
+      break;
     case UserInput::SHOW_INVENTORY: displayInventory(); break;
     case UserInput::PICK_UP: pickUpAction(false); break;
     case UserInput::EXT_PICK_UP: pickUpAction(true); break;
@@ -619,10 +633,11 @@ void Player::makeMove() {
     case UserInput::PAY_DEBT: payDebtAction(); break;
     case UserInput::CHAT: chatAction(); break;
     case UserInput::SHOW_HISTORY: messageBuffer.showHistory(); break;
-    case UserInput::UNPOSSESS: if (creature->canPopController()) {
-                                creature->popController();
-                                return;
-                              } break;
+    case UserInput::UNPOSSESS:
+      if (creature->canPopController()) {
+        creature->popController();
+        return;
+      } break;
     case UserInput::CAST_SPELL: spellAction(); break;
     case UserInput::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature); break;
     case UserInput::EXIT: model->exitAction(); break;
@@ -636,12 +651,16 @@ void Player::makeMove() {
   }
   for (Vec2 dir : direction)
     if (travel) {
-      vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
-      if (findElement(squareDirs, dir)) {
-        travelDir = dir;
-        lastLocation = creature->getLevel()->getLocation(creature->getPosition());
-        travelling = true;
-        travelAction();
+      if (Creature* other = creature->getSquare(dir)->getCreature())
+        attackAction(other);
+      else {
+        vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
+        if (findElement(squareDirs, dir)) {
+          travelDir = dir;
+          lastLocation = creature->getLevel()->getLocation(creature->getPosition());
+          travelling = true;
+          travelAction();
+        }
       }
     } else
     if (auto action = creature->move(dir)) {

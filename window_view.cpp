@@ -1564,6 +1564,7 @@ vector<KeyInfo> keyInfo {
 Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
   vector<View::ListElem> options {
       View::ListElem("Move around with the number pad.", View::TITLE),
+      View::ListElem("Extended attack with ctrl + arrow.", View::TITLE),
       View::ListElem("Fast travel with ctrl + arrow.", View::TITLE),
       View::ListElem("Fire arrows with alt + arrow.", View::TITLE),
       View::ListElem("Choose action:", View::TITLE) };

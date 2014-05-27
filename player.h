@@ -55,6 +55,7 @@ class Player : public Controller, public EventListener {
 
   private:
   void tryToPerform(Creature::Action);
+  void attackAction(Creature* other);
   void pickUpAction(bool extended);
   void itemsMessage();
   void dropAction(bool extended);

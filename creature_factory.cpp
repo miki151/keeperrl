@@ -249,7 +249,7 @@ class KrakenController : public Monster {
   virtual void makeMove() override {
     int radius = 10;
     if (waitNow) {
-      creature->wait();
+      creature->wait().perform();
       waitNow = false;
       return;
     }

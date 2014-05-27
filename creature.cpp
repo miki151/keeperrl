@@ -1197,10 +1197,12 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
   return MsgType(0);
 }
 
-Creature::Action Creature::attack(const Creature* c1, bool spend) {
+Creature::Action Creature::attack(const Creature* c1, Optional<AttackLevel> attackLevel1, bool spend) {
   Creature* c = const_cast<Creature*>(c1);
   if (c->getPosition().dist8(position) != 1)
     return Action("");
+  if (attackLevel1 && !contains(getAttackLevels(), *attackLevel1))
+    return Action("Invalid attack level.");
   return Action([=] () {
   Debug() << getTheName() << " attacking " << c->getName();
   int toHit =  getAttr(AttrType::TO_HIT);
@@ -1222,7 +1224,8 @@ Creature::Action Creature::attack(const Creature* c1, bool spend) {
  //   }
     you(MsgType::ATTACK_SURPRISE, enemyName);
   }
-  Attack attack(this, getRandomAttackLevel(), getAttackType(), toHit, damage, backstab, attackEffect);
+  AttackLevel attackLevel = attackLevel1 ? (*attackLevel1) : getRandomAttackLevel();
+  Attack attack(this, attackLevel, getAttackType(), toHit, damage, backstab, attackEffect);
   if (!c->dodgeAttack(attack)) {
     if (getWeapon()) {
       you(getAttackMsg(attack.getType(), true, attack.getLevel()), getWeapon()->getName());
@@ -1706,16 +1709,21 @@ Creature::Action Creature::destroy(Vec2 direction, DestroyAction dAction) {
     return Action("");
 }
 
-AttackLevel Creature::getRandomAttackLevel() const {
+vector<AttackLevel> Creature::getAttackLevels() const {
   if (isHumanoid() && injuredArms == arms)
-    return AttackLevel::LOW;
+    return {AttackLevel::LOW};
   switch (*size) {
-    case CreatureSize::SMALL: return AttackLevel::LOW;
-    case CreatureSize::MEDIUM: return chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE}, {1,1});
-    case CreatureSize::LARGE: return chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH},{1,2,2});
-    case CreatureSize::HUGE: return chooseRandom({AttackLevel::MIDDLE, AttackLevel::HIGH}, {1,3});
+    case CreatureSize::SMALL: return {AttackLevel::LOW};
+    case CreatureSize::MEDIUM: return {AttackLevel::LOW, AttackLevel::MIDDLE};
+    case CreatureSize::LARGE: return {AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH};
+    case CreatureSize::HUGE: return {AttackLevel::MIDDLE, AttackLevel::HIGH};
   }
-  return AttackLevel::LOW;
+  FAIL << "ewf";
+  return {};
+}
+
+AttackLevel Creature::getRandomAttackLevel() const {
+  return chooseRandom(getAttackLevels());
 }
 
 Item* Creature::getWeapon() const {

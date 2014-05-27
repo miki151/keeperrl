@@ -180,7 +180,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   Action pickUp(const vector<Item*>& item, bool spendTime = true);
   Action drop(const vector<Item*>& item);
   void drop(vector<PItem> item);
-  Action attack(const Creature*, bool spendTime = true);
+  Action attack(const Creature*, Optional<AttackLevel> = Nothing(), bool spendTime = true);
   Action bumpInto(Vec2 direction);
   Action applyItem(Item* item);
   void startEquipChain();
@@ -268,6 +268,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void addEffect(LastingEffect, double time, bool msg = true);
   void removeEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
+
+  vector<AttackLevel> getAttackLevels() const;
 
   private:
   bool affects(LastingEffect effect) const;
