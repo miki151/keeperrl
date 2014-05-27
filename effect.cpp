@@ -88,7 +88,7 @@ class IllusionController : public DoNothingController {
   IllusionController(Creature* c, double deathT) : DoNothingController(c), creature(c), deathTime(deathT) {}
 
   void kill() {
-    creature->globalMessage("The illusion disappears.");
+    creature->monsterMessage("The illusion disappears.");
     creature->die();
   }
 
@@ -214,7 +214,7 @@ static void emitPoisonGas(Level* level, Vec2 pos, EffectStrength strength, bool 
 static void guardingBuilder(Creature* c) {
   Optional<Vec2> dest;
   for (Vec2 v : Vec2::directions8(true))
-    if (c->canMove(v) && !c->getSquare(v)->getCreature()) {
+    if (c->move(v) && !c->getSquare(v)->getCreature()) {
       dest = v;
       break;
     }
@@ -270,7 +270,7 @@ static void heal(Creature* c, EffectStrength strength) {
   if (c->getHealth() < 1 || (strength == EffectStrength::STRONG && c->lostLimbs()))
     c->heal(1, strength == EffectStrength::STRONG);
   else
-    c->privateMessage("You feel refreshed.");
+    c->playerMessage("You feel refreshed.");
 }
 
 static void sleep(Creature* c, EffectStrength strength) {
@@ -328,7 +328,7 @@ static void teleport(Creature* c) {
     }
   }
   if (maxW < 2)
-    c->privateMessage("The spell didn't work.");
+    c->playerMessage("The spell didn't work.");
   CHECK(!good.empty());
   c->you(MsgType::TELE_DISAPPEAR, "");
   l->moveCreature(c, chooseRandom(good) - pos);

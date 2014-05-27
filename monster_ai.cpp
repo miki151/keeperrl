@@ -47,7 +47,8 @@ const Creature* Behaviour::getClosestEnemy() {
   int dist = 1000000000;
   const Creature* result = nullptr;
   for (const Creature* other : creature->getVisibleEnemies()) {
-    if ((other->getPosition() - creature->getPosition()).length8() < dist && other->getTribe() != Tribes::get(TribeId::PEST)) {
+    if ((other->getPosition() - creature->getPosition()).length8() < dist
+        && other->getTribe() != Tribes::get(TribeId::PEST)) {
       result = other;
       dist = (other->getPosition() - creature->getPosition()).length8();
     }
@@ -68,22 +69,16 @@ Item* Behaviour::getBestWeapon() {
 
 MoveInfo Behaviour::tryToApplyItem(EffectType type, double maxTurns) {
   for (int i : All(creature->getSpells())) {
-    SpellInfo spell = creature->getSpells()[i];
-    if (spell.type == type && creature->canCastSpell(i))
-      return { 1, [=]() {
-        creature->globalMessage(creature->getTheName() + " casts a spell.");
-        creature->castSpell(i);
-      }};
+    if (creature->getSpells()[i].type == type)
+      if (auto action = creature->castSpell(i))
+        return { 1, action };
   }
   auto items = creature->getEquipment().getItems(Item::effectPredicate(type)); 
   for (Item* item : items)
-    if (creature->canApplyItem(item) && item->getApplyTime() <= maxTurns)
-      return { 1, [=]() {
-        creature->globalMessage(creature->getTheName() + " " + item->getApplyMsgThirdPerson(),
-            item->getNoSeeApplyMsg());
-        creature->applyItem(item);
-    }};
-  return {0, nullptr};
+    if (item->getApplyTime() <= maxTurns)
+      if (auto action = creature->applyItem(item))
+        return { 1, action};
+  return NoMove;
 }
 
 class Heal : public Behaviour {
@@ -100,39 +95,34 @@ class Heal : public Behaviour {
 
   virtual MoveInfo getMove() {
     for (Vec2 v : Vec2::directions8())
-      if (creature->canHeal(v) && creature->isFriend(creature->getConstSquare(v)->getCreature())) {
-        creature->getConstSquare(v)->getCreature()->privateMessage("\"Let me help you my friend.\"");
-        creature->heal(v);
-      }
+      if (const Creature* other = creature->getConstSquare(v)->getCreature())
+        if (creature->isFriend(other))
+          if (auto action = creature->heal(v))
+            return {0.5, action};
     if (!creature->isHumanoid() || creature->getHealth() == 1)
-      return {0, nullptr};
+      return NoMove;
     if (MoveInfo move = tryToApplyItem(EffectType::HEAL, 1))
       return move.setValue(min(1.0, 1.5 - creature->getHealth()));
     if (MoveInfo move = tryToApplyItem(EffectType::HEAL, 3))
       return move.setValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
     if (creature->getConstSquare()->getApplyType(creature) == SquareApplyType::SLEEP)
-      return { 0.4 * min(1.0, 1.5 - creature->getHealth()), [this] {
-        creature->applySquare();
-      }};
+      return { 0.4 * min(1.0, 1.5 - creature->getHealth()), creature->applySquare()};
     Vec2 bedRadius(10, 10);
     Level* l = creature->getLevel();
     if (useBeds && creature->canSleep() && !creature->isAffected(Creature::POISON)) {
       if (!hasBed || hasBed->level != creature->getLevel()) {
         for (Vec2 v : Rectangle(creature->getPosition() - bedRadius, creature->getPosition() + bedRadius))
           if (l->inBounds(v) && l->getSquare(v)->getApplyType(creature) == SquareApplyType::SLEEP)
-            if (Optional<Vec2> move = creature->getMoveTowards(v))
-              return { 0.4 * min(1.0, 1.5 - creature->getHealth()), [=] {
-                creature->move(*move);
-                hasBed = {v, creature->getLevel() };
-              }};
+            if (auto action = creature->moveTowards(v)) {
+              hasBed = {v, creature->getLevel() };
+              return { 0.4 * min(1.0, 1.5 - creature->getHealth()), action};
+            }
       } else 
-        if (Optional<Vec2> move = creature->getMoveTowards(hasBed->pos))
-          return { 0.4 * min(1.0, 1.5 - creature->getHealth()), [=] {
-            creature->move(*move);
-          }};
+        if (auto action = creature->moveTowards(hasBed->pos))
+          return { 0.4 * min(1.0, 1.5 - creature->getHealth()), action};
     }
 
-    return {0, nullptr};
+    return NoMove;
   }
 
   template <class Archive>
@@ -162,7 +152,7 @@ class Rest : public Behaviour {
   Rest(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() {
-    return {0.1, [=] { creature->wait(); }};
+    return {0.1, creature->wait() };
   }
 
   SERIALIZATION_CONSTRUCTOR(Rest);
@@ -184,23 +174,25 @@ class MoveRandomly : public Behaviour {
     Vec2 direction(0, 0);
     double val = 0.0001;
     if (Random.roll(2))
-      return {val, [this]() { creature->wait(); }};
+      return {val, creature->wait()};
     Vec2 pos = creature->getPosition();
     for (Vec2 dir : Vec2::directions8(true))
-      if (!visited(pos + dir) && creature->canMove(dir)) {
+      if (!visited(pos + dir) && creature->move(dir)) {
         direction = dir;
         break;
       }
     if (direction == Vec2(0, 0))
       for (Vec2 dir : Vec2::directions8(true))
-        if (creature->canMove(dir)) {
+        if (creature->move(dir)) {
           direction = dir;
           break;
         }
     if (direction == Vec2(0, 0))
-      return {val, [this]() { creature->wait(); }};
+      return {val, creature->wait() };
     else
-      return {val, [this, direction]() { creature->move(direction); updateMem(creature->getPosition());}};
+      return {val, creature->move(direction).append([=] {
+          updateMem(creature->getPosition());
+      })};
   }
 
   void updateMem(Vec2 pos) {
@@ -242,10 +234,8 @@ class AttackPest : public Behaviour {
         }
     if (!other)
       return NoMove;
-    if (creature->canAttack(other))
-      return {1.0, [this, other]() {
-        creature->attack(other);
-      }};
+    if (Creature::Action action = creature->attack(other))
+      return {1.0, action};
     else
       return NoMove;
   }
@@ -264,13 +254,10 @@ class BirdFlyAway : public Behaviour {
 
   virtual MoveInfo getMove() override {
     const Creature* enemy = getClosestEnemy();
-    bool fly = Random.roll(15) || ( enemy && (enemy->getPosition() - creature->getPosition()).lengthD() < maxDist);
-    if (creature->canFlyAway() && fly)
-      return {1.0, [this] () {
-        creature->flyAway();
-      }};
-    else
-      return NoMove;
+    if (Random.roll(15) || ( enemy && (enemy->getPosition() - creature->getPosition()).lengthD() < maxDist))
+      if (auto action = creature->flyAway())
+        return {1.0, action};
+    return NoMove;
   }
 
   SERIALIZATION_CONSTRUCTOR(BirdFlyAway);
@@ -380,13 +367,12 @@ class Fighter : public Behaviour, public EventListener {
     if (other->getPosition().dist8(creature->getPosition()) > 3)
       if (auto move = getFireMove(other->getPosition() - creature->getPosition()))
         return {weight, move.move};
-    if (auto move = creature->getMoveAway(other->getPosition(), chase))
-      return {weight, [this, move, other] () {
+    if (auto action = creature->moveAway(other->getPosition(), chase))
+      return {weight, action.prepend([=] {
         EventListener::addCombatEvent(creature);
         EventListener::addCombatEvent(other);
         lastSeen = {creature->getPosition(), creature->getTime(), creature->getLevel(), LastSeen::PANIC, other};
-        creature->move(*move);
-      }};
+      })};
     else
       return NoMove;
   }
@@ -428,9 +414,9 @@ class Fighter : public Behaviour, public EventListener {
 
   MoveInfo getThrowMove(Vec2 enemyDir) {
     if (enemyDir.x != 0 && enemyDir.y != 0 && abs(enemyDir.x) != abs(enemyDir.y))
-      return {0, nullptr};
+      return NoMove;
     if (checkFriendlyFire(enemyDir))
-      return {0, nullptr};
+      return NoMove;
     Vec2 dir = enemyDir.shorten();
     Item* best = nullptr;
     int damage = 0;
@@ -441,27 +427,23 @@ class Fighter : public Behaviour, public EventListener {
         damage = getThrowValue(item);
         best = item;
       }
-    if (best && creature->canThrowItem(best))
-      return {1.0, [this, dir, best]() {
+    if (best)
+      if (auto action = creature->throwItem(best, dir)) {
         EventListener::addCombatEvent(creature);
-        creature->globalMessage(creature->getTheName() + " throws " + best->getAName());
-        creature->throwItem(best, dir);
-      }};
-    else
-      return NoMove;
+        return {1.0, action };
+      }
+    return NoMove;
   }
 
   MoveInfo getFireMove(Vec2 dir) {
     if (dir.x != 0 && dir.y != 0 && abs(dir.x) != abs(dir.y))
-      return {0, nullptr};
+      return NoMove;
     if (checkFriendlyFire(dir))
-      return {0, nullptr};
-    if (creature->canFire(dir.shorten()))
-      return {1.0, [this, dir]() {
-        EventListener::addCombatEvent(creature);
-        creature->globalMessage(creature->getTheName() + " fires an arrow ");
-        creature->fire(dir.shorten());
-      }};
+      return NoMove;
+    if (auto action = creature->fire(dir.shorten()))
+      return {1.0, action.append([=] {
+          EventListener::addCombatEvent(creature);
+      })};
     return NoMove;
   }
 
@@ -477,19 +459,16 @@ class Fighter : public Behaviour, public EventListener {
       return NoMove;
     }
     if (chase && lastSeen->type == LastSeen::ATTACK)
-      if (Optional<Vec2> move = creature->getMoveTowards(lastSeen->pos))
-        return {0.5, [this, move]() { 
-          EventListener::addCombatEvent(creature);
-          Debug() << creature->getTheName() << " moving to last seen " << (lastSeen->pos - creature->getPosition());
-          creature->move(*move);
-        }};
+      if (auto action = creature->moveTowards(lastSeen->pos)) {
+        return {0.5, action.append([=] {
+            EventListener::addCombatEvent(creature);
+        })};
+      }
     if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()) < 4)
-      if (Optional<Vec2> move = creature->getMoveAway(lastSeen->pos, chase))
-        return {0.5, [this, move]() { 
-          EventListener::addCombatEvent(creature);
-          Debug() << creature->getTheName() << " escaping last seen " << (lastSeen->pos - creature->getPosition());
-          creature->move(*move);
-        }};
+      if (auto action = creature->moveAway(lastSeen->pos, chase))
+        return {0.5, action.append([=] {
+            EventListener::addCombatEvent(creature);
+        })};
     return NoMove;
   }
 
@@ -503,14 +482,13 @@ class Fighter : public Behaviour, public EventListener {
     Vec2 enemyDir = (other->getPosition() - creature->getPosition());
     distance = enemyDir.length8();
     if (creature->isHumanoid() && !creature->getEquipment().getItem(EquipmentSlot::WEAPON)) {
-      Item* weapon = getBestWeapon();
-      if (weapon != nullptr && creature->canEquip(weapon, nullptr))
-        return {3.0 / (2.0 + distance), [this, weapon, other]() {
-          EventListener::addCombatEvent(creature);
-          EventListener::addCombatEvent(other);
-          creature->globalMessage(creature->getTheName() + " draws " + weapon->getAName());
-          creature->equip(weapon);
-        }};
+      if (Item* weapon = getBestWeapon())
+        if (auto action = creature->equip(weapon))
+          return {3.0 / (2.0 + distance), action.prepend([=] {
+            EventListener::addCombatEvent(creature);
+            EventListener::addCombatEvent(other);
+            creature->globalMessage(creature->getTheName() + " draws " + weapon->getAName());
+        })};
     }
     if (distance <= 5)
       for (EffectType effect : {EffectType::INVISIBLE, EffectType::STR_BONUS, EffectType::DEX_BONUS,
@@ -525,26 +503,22 @@ class Fighter : public Behaviour, public EventListener {
           return move;
       }
       if (chase && other->getTribe() != Tribes::get(TribeId::WILDLIFE)) {
-        Optional<Vec2> move = creature->getMoveTowards(creature->getPosition() + enemyDir);
         lastSeen = Nothing();
-        if (move)
-          return {max(0., 1.0 - double(distance) / 10), [this, enemyDir, move, other]() {
+        if (auto action = creature->moveTowards(creature->getPosition() + enemyDir))
+          return {max(0., 1.0 - double(distance) / 10), action.prepend([=] {
             EventListener::addCombatEvent(creature);
             EventListener::addCombatEvent(other);
             lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel(),
                 LastSeen::ATTACK, other};
-            creature->move(*move);
-          }};
+          })};
       }
     }
-    if (distance == 1) {
-      if (creature->canAttack(other))
-        return {1.0, [this, other]() {
-          EventListener::addCombatEvent(creature);
-          EventListener::addCombatEvent(other);
-          creature->attack(other);
-        }};
-    }
+    if (distance == 1)
+      if (auto action = creature->attack(other))
+        return {1.0, action.prepend([=] {
+            EventListener::addCombatEvent(creature);
+            EventListener::addCombatEvent(other);
+        })};
     return NoMove;
   }
 
@@ -599,11 +573,8 @@ class GuardTarget : public Behaviour {
       return NoMove;
     double exp = 1.5;
     double weight = pow((dist - minDist) / (maxDist - minDist), exp);
-    Optional<Vec2> move = creature->getMoveTowards(target);
-    if (move)
-      return {weight, [this, move] () {
-        creature->move(*move);
-      }};
+    if (auto action = creature->moveTowards(target))
+      return {weight, action};
     else
       return NoMove;
   }
@@ -622,16 +593,12 @@ class GuardArea : public Behaviour {
       return NoMove;
     if (!creature->getPosition().inRectangle(area)) {
       for (Vec2 v : Vec2::directions8())
-        if ((creature->getPosition() + v).inRectangle(area) && creature->canMove(v))
-          return {1.0, [this, v] () {
-            creature->move(v);
-          }};
-      Optional<Vec2> move = creature->getMoveTowards(
-          Vec2((area.getPX() + area.getKX()) / 2, (area.getPY() + area.getKY()) / 2));
-      if (move)
-        return {1.0, [this, move] () {
-          creature->move(*move);
-        }};
+        if ((creature->getPosition() + v).inRectangle(area))
+          if (auto action = creature->move(v))
+            return {1.0, action};
+      if (auto action = creature->moveTowards(
+          Vec2((area.getPX() + area.getKX()) / 2, (area.getPY() + area.getKY()) / 2)))
+        return {1.0, action};
     }
     return NoMove;
   }
@@ -674,9 +641,7 @@ class Wait : public Behaviour {
   Wait(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    return {1.0, [this] () {
-      creature->wait();
-    }};
+    return {1.0, creature->wait()};
   }
 
   SERIALIZATION_CONSTRUCTOR(Wait);
@@ -699,15 +664,10 @@ class DoorEater : public Behaviour {
         if (!closestDoor || v.length8() < closestDoor->length8())
           closestDoor = v;
     if (closestDoor) {
-      if (closestDoor->length8() == 1)
-        return {1.0, [this, closestDoor] () {
-          creature->globalMessage(creature->getTheName() + " eats the door.", "You hear chewing.");
-          creature->destroy(*closestDoor);
-        }};
-      else if (auto move = creature->getMoveTowards(creature->getPosition() + *closestDoor))
-        return {1.0, [this, move] () {
-          creature->move(*move);
-        }};
+      if (auto action = creature->destroy(*closestDoor, Creature::EAT))
+        return {1.0, action};
+      else if (auto action = creature->moveTowards(creature->getPosition() + *closestDoor))
+        return {1.0, action};
     }
     return NoMove;
   }
@@ -737,9 +697,9 @@ class Summoned : public GuardTarget, public EventListener {
 
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getTime() > dieTime) {
-      return {1.0, [=] {
+      return {1.0, Creature::Action([=] {
         creature->die(nullptr);
-      }};
+      })};
     }
     if (target->getLevel() == creature->getLevel()) {
       if (MoveInfo move = getMoveTowards(target->getPosition()))
@@ -751,9 +711,7 @@ class Summoned : public GuardTarget, public EventListener {
       return NoMove;
     Vec2 stairs = levelChanges.at(creature->getLevel());
     if (stairs == creature->getPosition() && creature->getSquare()->getApplyType(creature))
-      return {0.5, [=] {
-        creature->applySquare();
-      }};
+      return {0.5, creature->applySquare()};
     else
       return getMoveTowards(stairs);
   }
@@ -782,18 +740,13 @@ class Thief : public Behaviour {
  
   virtual MoveInfo getMove() override {
     if (!creature->hasSkill(Skill::get(SkillId::STEALING)))
-      return {0, nullptr};
+      return NoMove;
     for (const Creature* other : robbed) {
       if (creature->canSee(other)) {
-        MoveInfo teleMove = tryToApplyItem(EffectType::TELEPORT, 1);
-        Debug() << "Gotta get out";
-        if (teleMove.move != nullptr)
+        if (MoveInfo teleMove = tryToApplyItem(EffectType::TELEPORT, 1))
           return teleMove;
-        Optional<Vec2> move = creature->getMoveAway(other->getPosition());
-        if (move)
-        return {1.0, [this, move] () {
-          creature->move(*move);
-        }};
+        if (auto action = creature->moveAway(other->getPosition()))
+        return {1.0, action};
       }
     }
     for (Vec2 dir : Vec2::directions8(true)) {
@@ -804,14 +757,14 @@ class Thief : public Behaviour {
           if (it->getType() == ItemType::GOLD)
             allGold.push_back(it);
         if (allGold.size() > 0)
-          return {1.0, [=]() {
-            creature->stealFrom(dir, allGold);
-            other->privateMessage(creature->getTheName() + " steals all your gold!");
+          if (auto action = creature->stealFrom(dir, allGold))
+          return {1.0, action.append([=] {
+            other->playerMessage(creature->getTheName() + " steals all your gold!");
             robbed.push_back(other);
-          }};
+          })};
       }
     }
-    return {0, nullptr};
+    return NoMove;
   }
 
   SERIALIZATION_CONSTRUCTOR(Thief);
@@ -872,10 +825,8 @@ class GoToHeart : public Behaviour {
   GoToHeart(Creature* c, Vec2 _heartPos) : Behaviour(c), heartPos(_heartPos) {}
 
   virtual MoveInfo getMove() override {
-    if (Optional<Vec2> move = creature->getMoveTowards(heartPos)) 
-      return {1.0, [this, move] () {
-        creature->move(*move);
-      }};
+    if (auto action = creature->moveTowards(heartPos)) 
+      return {1.0, action};
     else
       return NoMove;
   };
@@ -962,13 +913,10 @@ void MonsterAI::makeMove() {
     if (pickItems) {
       for (auto elem : Item::stackItems(creature->getPickUpOptions())) {
         Item* item = elem.second[0];
-        if (!item->getShopkeeper() && creature->canPickUp(elem.second)) {
-          MoveInfo pickupMove { behaviours[i]->itemValue(item) * weights[i], [=]() {
-            creature->globalMessage(creature->getTheName() + " picks up " + elem.first, "");
-            creature->pickUp(elem.second);
-          }};
-          moves.emplace_back(pickupMove, weights[i]);
-        }
+        if (!item->getShopkeeper() && creature->pickUp(elem.second))
+          moves.emplace_back(
+              MoveInfo({ behaviours[i]->itemValue(item) * weights[i], creature->pickUp(elem.second)}),
+              weights[i]);
       }
     }
   }
@@ -980,11 +928,10 @@ void MonsterAI::makeMove() {
         useless = false;
     if (useless)
       moves.push_back({ 0.01, [=]() {
-        creature->globalMessage(creature->getTheName() + " drops " + item->getAName(), "");
         creature->drop({item});
       }});
   }*/
-  MoveInfo winner {0, nullptr};
+  MoveInfo winner = NoMove;
   for (int i : All(moves)) {
     MoveInfo& move = moves[i].first;
     if (move.value > winner.value)
@@ -993,7 +940,7 @@ void MonsterAI::makeMove() {
       break;
   }
   CHECK(winner.value > 0);
-  winner.move();
+  winner.move.perform();
 }
 
 PMonsterAI MonsterAIFactory::getMonsterAI(Creature* c) {

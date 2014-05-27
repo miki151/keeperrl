@@ -104,9 +104,11 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   virtual void dropCorpse();
   
+  void monsterMessage(const string& playerCanSee, const string& cant = "") const;
   void globalMessage(const string& playerCanSee, const string& cant = "") const;
 
   bool isDead() const;
+  bool isBlind() const;
   const Creature* getLastAttacker() const;
   vector<const Creature*> getKills() const;
   bool isHumanoid() const;
@@ -144,54 +146,66 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   bool hasSkillToUseWeapon(const Item*) const;
   vector<Skill*> getSkills() const;
 
-  bool canMove(Vec2 direction) const;
-  void move(Vec2 direction);
-  bool canSwapPosition(Vec2 direction) const;
-  void swapPosition(Vec2 direction);
-  void wait();
+  class Action {
+    public:
+    Action(function<void()>);
+    Action(const string& failedReason);
+#ifndef RELEASE
+    // This stuff is so that you don't forget to perform() an action or check if it failed
+    static void checkUsage(bool);
+    Action(const Action&);
+    ~Action();
+#endif
+    Action prepend(function<void()>);
+    Action append(function<void()>);
+    void perform();
+    string getFailedReason() const;
+    operator bool() const;
+
+    private:
+    function<void()> action;
+    function<void()> before;
+    function<void()> after;
+    string failedMessage;
+#ifndef RELEASE
+    mutable bool wasUsed = false;
+#endif
+  };
+
+  string getPluralName(Item* item, int num);
+  Action move(Vec2 direction);
+  Action swapPosition(Vec2 direction);
+  Action wait();
   vector<Item*> getPickUpOptions() const;
-  bool canPickUp(const vector<Item*>& item) const;
-  void pickUp(const vector<Item*>& item, bool spendTime = true);
-  void drop(const vector<Item*>& item);
+  Action pickUp(const vector<Item*>& item, bool spendTime = true);
+  Action drop(const vector<Item*>& item);
   void drop(vector<PItem> item);
-  bool canAttack(const Creature*) const;
-  void attack(const Creature*, bool spendTime = true);
-  bool canBumpInto(Vec2 direction) const;
-  void bumpInto(Vec2 direction);
-  void applyItem(Item* item);
-  bool canApplyItem(const Item* item) const;
+  Action attack(const Creature*, bool spendTime = true);
+  Action bumpInto(Vec2 direction);
+  Action applyItem(Item* item);
   void startEquipChain();
   void finishEquipChain();
-  void equip(Item* item);
-  void unequip(Item* item);
-  bool canEquip(const Item* item, string* reason) const;
+  Action equip(Item* item);
+  Action unequip(Item* item);
   bool canEquipIfEmptySlot(const Item* item, string* reason) const;
-  bool canUnequip(const Item* item, string* reason) const;
-  bool canThrowItem(Item*);
-  void throwItem(Item*, Vec2 direction);
-  bool canHeal(Vec2 direction) const;
-  void heal(Vec2 direction);
-  void applySquare();
-  bool canHide() const;
-  void hide();
+  bool canEquip(const Item* item) const;
+  Action throwItem(Item*, Vec2 direction);
+  Action heal(Vec2 direction);
+  Action applySquare();
+  Action hide();
   bool isHidden() const;
   bool knowsHiding(const Creature*) const;
-  bool isBlind() const;
-  bool canFlyAway() const;
-  void flyAway();
-  void torture(Creature*);
-  bool canChatTo(Vec2 direction) const;
-  void chatTo(Vec2 direction);
-  void stealFrom(Vec2 direction, const vector<Item*>&);
+  Action flyAway();
+  Action torture(Creature*);
+  Action chatTo(Vec2 direction);
+  Action stealFrom(Vec2 direction, const vector<Item*>&);
   void give(const Creature* whom, vector<Item*> items);
-  bool canFire(Vec2 direction) const;
-  void fire(Vec2 direction);
-  void construct(Vec2 direction, SquareType);
-  bool canConstruct(Vec2 direction, SquareType) const;
+  Action fire(Vec2 direction);
+  Action construct(Vec2 direction, SquareType);
   bool canConstruct(SquareType) const;
-  void eat(Item*);
-  bool canDestroy(Vec2 direction) const;
-  void destroy(Vec2 direction);
+  Action eat(Item*);
+  enum DestroyAction { BASH, EAT, DESTROY };
+  Action destroy(Vec2 direction, DestroyAction);
   
   virtual void onChat(Creature*);
 
@@ -199,9 +213,9 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   Item* getWeapon() const;
 
-  Optional<Vec2> getMoveTowards(Vec2 pos, bool stepOnTile = false);
-  Optional<Vec2> getMoveAway(Vec2 pos, bool pathfinding = true);
-  Optional<Vec2> continueMoving();
+  Action moveTowards(Vec2 pos, bool stepOnTile = false);
+  Action moveAway(Vec2 pos, bool pathfinding = true);
+  Action continueMoving();
   void addSectors(Sectors*);
 
   bool atTarget() const;
@@ -218,7 +232,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   
   void you(MsgType type, const string& param) const;
   void you(const string& param) const;
-  void privateMessage(const string& message) const;
+  void playerMessage(const string& message) const;
   bool isPlayer() const;
   const MapMemory& getMemory() const override;
   void grantIdentify(int numItems);
@@ -236,8 +250,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   void addSpell(SpellId);
   const vector<SpellInfo>& getSpells() const;
-  bool canCastSpell(int index) const;
-  void castSpell(int index);
+  Action castSpell(int index);
   static SpellInfo getSpell(SpellId);
 
   SERIALIZATION_DECL(Creature);
@@ -265,7 +278,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   static PCreature defaultCreature;
   static PCreature defaultFlyer;
   static PCreature defaultMinion;
-  Optional<Vec2> getMoveTowards(Vec2 pos, bool away, bool stepOnTile);
+  Action moveTowards(Vec2 pos, bool away, bool stepOnTile);
   double getInventoryWeight() const;
   Item* getAmmo() const;
   void updateViewObject();

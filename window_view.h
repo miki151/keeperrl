@@ -85,7 +85,7 @@ class WindowView: public View {
   PGuiElem drawBottomBandInfo(GameInfo::BandInfo& info, GameInfo::SunlightInfo&);
   PGuiElem drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo&);
   PGuiElem drawBuildings(GameInfo::BandInfo& info);
-  PGuiElem  drawTechnology(GameInfo::BandInfo& info);
+  PGuiElem drawTechnology(GameInfo::BandInfo& info);
   PGuiElem drawWorkshop(GameInfo::BandInfo& info);
   PGuiElem drawVillages(GameInfo::VillageInfo& info);
   PGuiElem drawMinions(GameInfo::BandInfo& info);

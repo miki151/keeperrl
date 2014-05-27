@@ -80,7 +80,7 @@ class Portal : public Trigger {
       } else
         level->changeLevel(other->level, other->position, c);
     } else 
-      c->privateMessage("The portal is not working.");
+      c->playerMessage("The portal is not working.");
   }
 
   virtual bool interceptsFlyingItem(Item* it) const override {

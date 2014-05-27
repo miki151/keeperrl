@@ -143,7 +143,15 @@ void Model::update(double totalTime) {
     bool unpossessed = false;
     if (!creature->isDead()) {
       bool wasPlayer = creature->isPlayer();
+#ifndef RELEASE
+      if (!wasPlayer)
+        Creature::Action::checkUsage(true);
+#endif
       creature->makeMove();
+#ifndef RELEASE
+      if (!wasPlayer)
+        Creature::Action::checkUsage(false);
+#endif
       if (wasPlayer && !creature->isPlayer())
         unpossessed = true;
     }

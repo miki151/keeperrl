@@ -56,9 +56,9 @@ const MapMemory& Monster::getMemory() const {
 
 void Monster::onBump(Creature* c) {
   if (c->isEnemy(creature))
-    c->attack(creature, false);
-  else if (c->canMove(creature->getPosition() - c->getPosition()))
-    c->move(creature->getPosition() - c->getPosition());
+    c->attack(creature, false).perform();
+  else if (auto action = c->move(creature->getPosition() - c->getPosition()))
+    action.perform();
 }
 
 void Monster::you(MsgType type, const string& param) const {
@@ -116,10 +116,10 @@ void Monster::you(MsgType type, const string& param) const {
     default: break;
   }
   if (!msg.empty())
-    creature->globalMessage(msg, msgNoSee);
+    creature->monsterMessage(msg, msgNoSee);
 }
   
 void Monster::you(const string& param) const {
-  creature->globalMessage(creature->getTheName() + " " + param);
+  creature->monsterMessage(creature->getTheName() + " " + param);
 }
 

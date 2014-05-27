@@ -395,19 +395,13 @@ class TopLevelVillageControl : public VillageControl {
       return getPeacefulMove(c);
     if (c->getLevel() != villain->getLevel())
       return NoMove;
-    if (Optional<Vec2> move = c->getMoveTowards(villain->getKeeper()->getPosition())) 
-      return {1.0, [this, move, c] () {
-        c->move(*move);
-      }};
+    if (auto action = c->moveTowards(villain->getKeeper()->getPosition())) 
+      return {1.0, action};
     else {
       for (Vec2 v : Vec2::directions8(true))
-        if (c->canDestroy(v))
-          return {1.0, [this, v, c] () {
-            c->destroy(v);
-          }};
-      return {1.0, [c] () {
-        c->wait();
-      }};
+        if (auto action = c->destroy(v, Creature::BASH))
+          return {1.0, action};
+      return {1.0, c->wait()};
     }
   }
 
@@ -441,30 +435,22 @@ class DwarfVillageControl : public VillageControl {
     if (!attackTrigger->startedAttack(c))
       return NoMove;
     if (c->getLevel() == villain->getLevel()) {
-      if (Optional<Vec2> move = c->getMoveTowards(villain->getKeeper()->getPosition())) 
-        return {1.0, [this, move, c] () {
-          c->move(*move);
-        }};
+      if (auto action = c->moveTowards(villain->getKeeper()->getPosition())) 
+        return {1.0, action};
       else {
         for (Vec2 v : Vec2::directions8(true))
-          if (c->canDestroy(v))
-            return {1.0, [this, v, c] () {
-              c->destroy(v);
-            }};
+          if (auto action = c->destroy(v, Creature::BASH))
+            return {1.0, action};
         return NoMove;
       }
     } else {
       Vec2 stairs = getOnlyElement(c->getLevel()->getLandingSquares(direction, stairKey));
-      if (c->getPosition() == stairs)
-        return {1.0, [this, c] () {
-          c->applySquare();
-        }};
-      if (Optional<Vec2> move = c->getMoveTowards(stairs)) 
-          return {1.0, [=] () {
-            c->move(*move);
-          }};
-        else
-          return NoMove;
+      if (c->getPosition() == stairs && c->applySquare())
+        return {1.0, c->applySquare()};
+      if (auto action = c->moveTowards(stairs)) 
+        return {1.0, action};
+      else
+        return NoMove;
     }
   }
 

@@ -228,7 +228,7 @@ void Item::apply(Creature* c, Level* l) {
   if (uses > -1 && --uses == 0) {
     discarded = true;
     if (usedUpMsg)
-      c->privateMessage(getTheName() + " is used up.");
+      c->playerMessage(getTheName() + " is used up.");
   }
 }
 

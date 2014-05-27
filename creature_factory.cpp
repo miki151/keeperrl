@@ -48,7 +48,7 @@ class BoulderController : public Monster {
               stopped = false;
               found = true;
               EventListener::addTriggerEvent(creature->getLevel(), creature->getPosition());
-              creature->globalMessage(MessageBuffer::important("The boulder starts rolling."),
+              creature->monsterMessage(MessageBuffer::important("The boulder starts rolling."),
                   MessageBuffer::important("You hear a heavy boulder rolling."));
               break;
             }
@@ -77,11 +77,11 @@ class BoulderController : public Monster {
           return;
         }
       }
-      if (creature->canDestroy(direction))
-        creature->getSquare(direction)->destroy(creature);
+      if (auto action = creature->destroy(direction, Creature::DESTROY))
+        action.perform();
     }
-    if (creature->canMove(direction))
-      creature->move(direction);
+    if (auto action = creature->move(direction))
+      action.perform();
     else {
       creature->getLevel()->globalMessage(creature->getPosition() + direction,
           creature->getTheName() + " crashes on the " + creature->getConstSquare(direction)->getName(),
@@ -116,7 +116,7 @@ class BoulderController : public Monster {
       default: break;
     }
     if (!msg.empty())
-      creature->globalMessage(msg, msgNoSee);
+      creature->monsterMessage(msg, msgNoSee);
   }
 
   virtual void onBump(Creature* c) override {
@@ -125,11 +125,11 @@ class BoulderController : public Monster {
     Vec2 dir = creature->getPosition() - c->getPosition();
     string it = c->canSee(creature) ? creature->getTheName() : "it";
     string something = c->canSee(creature) ? creature->getTheName() : "something";
-    if (!creature->canMove(dir)) {
-      c->privateMessage(it + " won't move in this direction");
+    if (!creature->move(dir)) {
+      c->playerMessage(it + " won't move in this direction");
       return;
     }
-    c->privateMessage("You push " + something);
+    c->playerMessage("You push " + something);
     if (stopped || dir == direction) {
       direction = dir;
       creature->setSpeed(100 * c->getAttr(AttrType::STRENGTH) / 30);
@@ -228,7 +228,7 @@ class KrakenController : public Monster {
   
   virtual void onKilled(const Creature* attacker) override {
     if (attacker)
-      attacker->privateMessage("You cut the kraken's tentacle");
+      attacker->playerMessage("You cut the kraken's tentacle");
     for (Creature* c : spawns)
       if (!c->isDead())
         c->die(nullptr);
@@ -243,7 +243,7 @@ class KrakenController : public Monster {
       default: Monster::you(type, param); break;
     }
     if (!msg.empty())
-      creature->globalMessage(msg, msgNoSee);
+      creature->monsterMessage(msg, msgNoSee);
   }
 
   virtual void makeMove() override {
@@ -310,7 +310,7 @@ class KrakenController : public Monster {
             unReady();
           break;
         }
-    creature->wait();
+    creature->wait().perform();
   }
 
   template <class Archive>
@@ -372,7 +372,7 @@ class KamikazeController : public Monster {
       if (creature->getLevel()->inBounds(creature->getPosition() + v))
         if (Creature* c = creature->getSquare(v)->getCreature())
           if (creature->isEnemy(c) && creature->canSee(c)) {
-            creature->globalMessage(creature->getTheName() + " explodes!");
+            creature->monsterMessage(creature->getTheName() + " explodes!");
             for (Vec2 v : Vec2::directions8())
               c->getSquare(v)->setOnFire(1);
             c->getSquare()->setOnFire(1);
@@ -414,9 +414,9 @@ class ShopkeeperController : public Monster, public EventListener {
         creatures.push_back(c);
         if (!prevCreatures.count(c) && !thieves.count(c) && !creature->isEnemy(c)) {
           if (!debt.count(c))
-            c->privateMessage("\"Welcome to " + *creature->getFirstName() + "'s shop!\"");
+            c->playerMessage("\"Welcome to " + *creature->getFirstName() + "'s shop!\"");
           else {
-            c->privateMessage("\"Pay your debt or... !\"");
+            c->playerMessage("\"Pay your debt or... !\"");
             thiefCount.erase(c);
           }
         }
@@ -424,9 +424,9 @@ class ShopkeeperController : public Monster, public EventListener {
     for (auto elem : debt) {
       const Creature* c = elem.first;
       if (!contains(creatures, c)) {
-        c->privateMessage("\"Come back, you owe me " + convertToString(elem.second) + " zorkmids!\"");
+        c->playerMessage("\"Come back, you owe me " + convertToString(elem.second) + " zorkmids!\"");
         if (++thiefCount[c] == 4) {
-          c->privateMessage("\"Thief! Thief!\"");
+          c->playerMessage("\"Thief! Thief!\"");
           creature->getTribe()->onItemsStolen(c);
           thiefCount.erase(c);
           debt.erase(c);
@@ -448,7 +448,7 @@ class ShopkeeperController : public Monster, public EventListener {
       CHECK(item->getType() == ItemType::GOLD);
       --debt[from];
     }
-    creature->pickUp(items, false);
+    creature->pickUp(items, false).perform();
     CHECK(debt[from] == 0) << "Bad debt " << debt[from];
     debt.erase(from);
     for (Item* it : from->getEquipment().getItems())
@@ -546,10 +546,10 @@ class VillageElder : public Creature {
       if (!who->hasSkill(elem.first) && getTribe()->getStanding(who) >= elem.second) {
         Skill* teachSkill = elem.first;
         who->addSkill(teachSkill);
-        who->privateMessage("\"You are a friend of our tribe. I will share my knowledge with you.\"");
-        who->privateMessage(getName() + " teaches you the " + teachSkill->getName());
+        who->playerMessage("\"You are a friend of our tribe. I will share my knowledge with you.\"");
+        who->playerMessage(getName() + " teaches you the " + teachSkill->getName());
         if (teachSkill == Skill::get(SkillId::ARCHERY)) {
-          who->privateMessage(getName() + " hands you a bow and a quiver of arrows.");
+          who->playerMessage(getName() + " hands you a bow and a quiver of arrows.");
           who->take(std::move(ItemFactory::fromId(ItemId::BOW)));
           who->take(ItemFactory::fromId(ItemId::ARROW, Random.getRandom(20, 36)));
         }
@@ -561,7 +561,7 @@ class VillageElder : public Creature {
   bool tribeQuest(Creature* who) {
     for (pair<Quest*, int> q : quests) {
       if (q.first->isFinished()) {  
-        who->privateMessage("\"" + (*who->getFirstName()) +
+        who->playerMessage("\"" + (*who->getFirstName()) +
             ", you have fulfilled your quest. Here is your payment.\"");
         who->takeItems(ItemFactory::fromId(ItemId::GOLD_PIECE, q.second), this);
         removeElement(quests, q);
@@ -595,8 +595,8 @@ class VillageElder : public Creature {
           Vec2 dir = l->getBounds().middle() - getPosition();
           string dist = dir.lengthD() > 150 ? "far" : "close";
           string bearing = getCardinalName(dir.getBearing().getCardinalDir());
-          who->privateMessage("\"There is a " + l->getName() + " " + dist + " in the " + bearing + "\"");
-          who->privateMessage("\"" + l->getDescription() + "\"");
+          who->playerMessage("\"There is a " + l->getName() + " " + dist + " in the " + bearing + "\"");
+          who->playerMessage("\"" + l->getDescription() + "\"");
           return;
         }
       }
