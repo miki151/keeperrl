@@ -10,10 +10,14 @@ ifdef DATA_DIR
 	CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"
 endif
 
-ifdef OPT
+ifdef RELEASE
 GFLAG = -O3 -DRELEASE
 else
 GFLAG = -g
+endif
+
+ifdef OPT
+GFLAG += -O3
 endif
 
 ifndef OPTFLAGS

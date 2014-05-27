@@ -35,25 +35,25 @@ void Deity::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Deity);
 
 static map<DeityHabitat, vector<Epithet>> epithetsMap {
-  { DeityHabitat::FIRE,
+  { DeityHabitat::FIRE,   // fire elemental
       { Epithet::WAR, Epithet::DEATH, Epithet::DESTRUCTION, Epithet::WEALTH,
         Epithet::FEAR, Epithet::CRAFTS, Epithet::LIGHT, Epithet::DARKNESS }},
-  { DeityHabitat::EARTH,
+  { DeityHabitat::EARTH, // earth elemental
       { Epithet::HEALTH, Epithet::NATURE, Epithet::WINTER, Epithet::LOVE,
         Epithet::WEALTH, Epithet::MIND, Epithet::CHANGE, Epithet::DEFENSE, Epithet::DARKNESS }},
-  { DeityHabitat::TREES,
+  { DeityHabitat::TREES, // ent?
       { Epithet::HEALTH, Epithet::NATURE, Epithet::LOVE, Epithet::LIGHT,
         Epithet::CHANGE, Epithet::CRAFTS, Epithet::HUNTING, Epithet::FORTUNE, Epithet::SECRETS,  }},
-  { DeityHabitat::STONE,
+  { DeityHabitat::STONE, // ?
       { Epithet::WISDOM, Epithet::WEALTH, Epithet::DEFENSE, Epithet::SECRETS, Epithet::DEATH,
         Epithet::WINTER, }},
-  { DeityHabitat::WATER,
+  { DeityHabitat::WATER, // water elemental
       { Epithet::NATURE, Epithet::WISDOM, Epithet::WEALTH, Epithet::MIND, Epithet::DESTRUCTION,
         Epithet::CHANGE, Epithet::DEFENSE, Epithet::FEAR, Epithet::COURAGE, Epithet::HEALTH,  }},
-  { DeityHabitat::AIR,
+  { DeityHabitat::AIR, // air elemental
       { Epithet::MIND, Epithet::LIGHTNING, Epithet::LIGHT, Epithet::CHANGE,
         Epithet::FORTUNE, Epithet::FEAR, Epithet::COURAGE,  }},
-  { DeityHabitat::STARS,
+  { DeityHabitat::STARS, // ?
       { Epithet::DEATH, Epithet::WAR, Epithet::WINTER, Epithet::WISDOM, Epithet::LOVE,
         Epithet::DARKNESS, Epithet::FORTUNE, Epithet::SECRETS,  }}
 

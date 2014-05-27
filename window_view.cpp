@@ -669,8 +669,8 @@ PGuiElem WindowView::drawTechnology(GameInfo::BandInfo& info) {
 }
 
 PGuiElem WindowView::drawKeeperHelp() {
-  vector<string> helpText { "use mouse to dig and build", "shift selects rectangles", "", "scroll with arrows", "or right mouse button", "", "click on minion", "to possess",
-   "", "[space]  pause", "[z]  zoom", "", "follow the red hints :-)"};
+  vector<string> helpText { "use mouse to dig and build", "shift selects rectangles", "", "scroll with arrows", "or right mouse button", "shift with arros scrolls faster", "", "click on minion", "to possess",
+   "", "[space] pause", "[z] or mouse wheel: zoom", "press mouse wheel: level map", "", "follow the red hints :-)"};
   vector<PGuiElem> lines;
   for (string line : helpText)
     lines.push_back(GuiElem::label(line, lightBlue));
@@ -700,7 +700,7 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info, GameInfo::Sunl
   else
     bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { myClock.pause(); }),
         GuiElem::label("PAUSE", lightBlue)));
-  bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { unzoom(); }),
+  bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { switchZoom(); }),
         GuiElem::label("ZOOM", lightBlue)));
   bottomLine.push_back(GuiElem::label(info.warning, red));
   return GuiElem::verticalList(makeVec<PGuiElem>(GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2),
@@ -1306,10 +1306,17 @@ void WindowView::addMessage(const string& message) {
     refreshScreen();
 }
 
-void WindowView::unzoom() {
+void WindowView::switchZoom() {
   if (mapLayout != &currentTileLayout.normalLayout)
     mapLayout = &currentTileLayout.normalLayout;
   else
+    mapLayout = &currentTileLayout.unzoomLayout;
+}
+
+void WindowView::zoom(bool out) {
+  if (mapLayout != &currentTileLayout.normalLayout && !out)
+    mapLayout = &currentTileLayout.normalLayout;
+  else if (out)
     mapLayout = &currentTileLayout.unzoomLayout;
 }
 
@@ -1432,7 +1439,7 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
 #ifndef RELEASE
     case Keyboard::F8: renderer.startMonkey(); break;
 #endif
-    case Keyboard::Z: unzoom(); break;
+    case Keyboard::Z: switchZoom(); break;
     case Keyboard::F1:
       if (auto ev = getEventFromMenu())
         keyboardAction(*ev);
@@ -1505,6 +1512,13 @@ UserInput WindowView::getAction() {
         keyboardAction(event.key);
         renderer.flushEvents(Event::KeyPressed);
         break;
+      case Event::MouseWheelMoved:
+          zoom(event.mouseWheel.delta < 0);
+      case Event::MouseButtonPressed :
+          if (event.mouseButton.button == sf::Mouse::Middle) {
+            return UserInput(UserInput::DRAW_LEVEL_MAP);
+          }
+          break;
       case Event::MouseButtonReleased :
           if (event.mouseButton.button == sf::Mouse::Left) {
             return UserInput(UserInput::BUTTON_RELEASE, activeBuilding);

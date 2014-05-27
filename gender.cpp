@@ -30,7 +30,7 @@ string Gender::he() const {
 }
 
 string Gender::god() const {
-  return fem ? "goddes" : "god";
+  return fem ? "goddess" : "god";
 }
 
 template <class Archive>

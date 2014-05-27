@@ -107,7 +107,8 @@ class WindowView: public View {
   Optional<ViewObject> drawObjectAbs(int x, int y, const ViewIndex&, int sizeX, int sizeY, Vec2 tilePos);
   void darkenObjectAbs(int x, int y);
   void clearMessageBox();
-  void unzoom();
+  void switchZoom();
+  void zoom(bool out);
   void switchTiles();
   void resize(int width, int height, vector<GuiElem*> gui);
   Rectangle getMapViewBounds() const;
