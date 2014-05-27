@@ -349,19 +349,20 @@ const MapMemory& Creature::getMemory() const {
   return controller->getMemory();
 }
 
-Creature::Action Creature::swapPosition(Vec2 direction) {
+Creature::Action Creature::swapPosition(Vec2 direction, bool force) {
   Creature* c = getSquare(direction)->getCreature();
   if (!c)
     return Action("");
-  if (c->isAffected(SLEEP))
+  if (c->isAffected(SLEEP) && !force)
     return Action(c->getTheName() + " is sleeping.");
   if ((swapPositionCooldown && !isPlayer()) || c->stationary || c->invincible ||
-      direction.length8() != 1 || c->isPlayer() || c->isEnemy(this) ||
+      direction.length8() != 1 || (c->isPlayer() && !force) || (c->isEnemy(this) && !force) ||
       !getConstSquare(direction)->canEnterEmpty(this) || !getConstSquare()->canEnterEmpty(c))
     return Action("");
   return Action([=]() {
     swapPositionCooldown = 4;
-    getConstSquare(direction)->getCreature()->playerMessage("Excuse me!");
+    if (!force)
+      getConstSquare(direction)->getCreature()->playerMessage("Excuse me!");
     playerMessage("Excuse me!");
     level->swapCreatures(this, getSquare(direction)->getCreature());
   });
@@ -730,7 +731,7 @@ bool Creature::affects(LastingEffect effect) const {
     case PANIC: return !isAffected(SLEEP);
     case BLIND: return !permanentlyBlind;
     case POISON: return !poisonResistant && !isNotLiving();
-    case ENTANGLED: return !noBody;
+    case ENTANGLED: return !uncorporal;
     default: return true;
   }
 }
@@ -1280,7 +1281,7 @@ bool Creature::takeDamage(const Attack& attack) {
     dam *= damageMultiplier;
     if (!isNotLiving())
       bleed(dam);
-    if (!noBody) {
+    if (!uncorporal) {
       if (attack.getType() != AttackType::SPELL) {
         BodyPart part = attack.inTheBack() ? BodyPart::BACK : getBodyPart(attack.getLevel());
         switch (part) {
@@ -1333,7 +1334,7 @@ bool Creature::takeDamage(const Attack& attack) {
         }
       }
     } else {
-      you(MsgType::TURN, "whisp of smoke");
+      you(MsgType::TURN, "wisp of smoke");
       die(attack.getAttacker());
       return true;
     }
@@ -1391,13 +1392,13 @@ string sizeStr(CreatureSize s) {
   return 0;
 }
 
-static string adjectives(CreatureSize s, bool undead, bool notLiving, bool noBody) {
+static string adjectives(CreatureSize s, bool undead, bool notLiving, bool uncorporal) {
   vector<string> ret {sizeStr(s)};
   if (notLiving)
     ret.push_back("non-living");
   if (undead)
     ret.push_back("undead");
-  if (noBody)
+  if (uncorporal)
     ret.push_back("body-less");
   return combine(ret);
 }
@@ -1459,7 +1460,7 @@ string Creature::getDescription() const {
     }
     attack = " It has a " + attack + " attack.";
   }
-  return getTheName() + " is a " + adjectives(*size, undead, notLiving, noBody) +
+  return getTheName() + " is a " + adjectives(*size, undead, notLiving, uncorporal) +
       (isHumanoid() ? " humanoid creature" : " beast") +
       (!isHumanoid() ? limbsStr(arms, legs, wings) : (wings ? " with wings" : "")) + ". " +
      "It is " + attrStr(*strength > 16, *dexterity > 16, *speed > 100) + "." + weapon + attack;
@@ -1600,7 +1601,7 @@ void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
       getSquare()->dropItem(std::move(item));
     }
   dead = true;
-  if (dropInventory && dCorpse && !noBody)
+  if (dropInventory && dCorpse && !uncorporal)
     dropCorpse();
   level->killCreature(this);
   EventListener::addKillEvent(this, attacker);
@@ -1867,7 +1868,11 @@ bool Creature::isUndead() const {
 }
 
 bool Creature::isNotLiving() const {
-  return undead || notLiving || noBody;
+  return undead || notLiving || uncorporal;
+}
+
+bool Creature::isCorporal() const {
+  return !uncorporal;
 }
 
 bool Creature::hasBrain() const {

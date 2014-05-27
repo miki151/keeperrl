@@ -162,7 +162,7 @@ static void deception(Creature* c) {
           c.noSleep = true;
           c.flyer = true;
           c.breathing = false;
-          c.noBody = true;
+          c.uncorporal = true;
           c.humanoid = true;
           c.name = "illusion";),
         ControllerFactory([c] (Creature* o) { return new IllusionController(o, c->getTime()

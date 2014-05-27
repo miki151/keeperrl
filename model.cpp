@@ -144,13 +144,19 @@ void Model::update(double totalTime) {
     if (!creature->isDead()) {
       bool wasPlayer = creature->isPlayer();
 #ifndef RELEASE
-      if (!wasPlayer)
-        Creature::Action::checkUsage(true);
+      Creature::Action::checkUsage(true);
+      try {
 #endif
       creature->makeMove();
 #ifndef RELEASE
-      if (!wasPlayer)
+      } catch (GameOverException ex) {
         Creature::Action::checkUsage(false);
+        throw ex;
+      } catch (SaveGameException ex) {
+        Creature::Action::checkUsage(false);
+        throw ex;
+      }
+      Creature::Action::checkUsage(false);
 #endif
       if (wasPlayer && !creature->isPlayer())
         unpossessed = true;
@@ -367,6 +373,7 @@ PCreature Model::makePlayer() {
           c.name = "Adventurer";
           c.firstName = NameGenerator::firstNames.getNext();
           c.maxLevel = 1;
+          c.uncorporal = true;
           c.skills.insert(Skill::get(SkillId::ARCHERY));
           c.skills.insert(Skill::get(SkillId::AMBUSH));
           c.skills.insert(Skill::get(SkillId::NIGHT_VISION));

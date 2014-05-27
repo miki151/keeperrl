@@ -44,7 +44,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(wings)
     & SVAR(heads)
     & SVAR(innocent)
-    & SVAR(noBody)
+    & SVAR(uncorporal)
     & SVAR(fireResistant)
     & SVAR(poisonResistant)
     & SVAR(fireCreature)

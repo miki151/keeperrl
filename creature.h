@@ -119,6 +119,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   bool isUndead() const;
   bool hasBrain() const;
   bool isNotLiving() const;
+  bool isCorporal() const;
   bool canSwim() const;
   bool canFly() const;
   bool canWalk() const;
@@ -174,7 +175,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   string getPluralName(Item* item, int num);
   Action move(Vec2 direction);
-  Action swapPosition(Vec2 direction);
+  Action swapPosition(Vec2 direction, bool force = false);
   Action wait();
   vector<Item*> getPickUpOptions() const;
   Action pickUp(const vector<Item*>& item, bool spendTime = true);

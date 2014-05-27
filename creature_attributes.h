@@ -65,7 +65,7 @@ class CreatureAttributes {
   int SERIAL2(wings, 0);
   int SERIAL2(heads, 1);
   bool SERIAL2(innocent, false);
-  bool SERIAL2(noBody, false);
+  bool SERIAL2(uncorporal, false);
   bool SERIAL2(fireResistant, false);
   bool SERIAL2(poisonResistant, false);
   bool SERIAL2(fireCreature, false);

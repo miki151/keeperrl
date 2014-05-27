@@ -624,7 +624,7 @@ void Player::makeMove() {
     case UserInput::EXT_PICK_UP: pickUpAction(true); break;
     case UserInput::DROP: dropAction(false); break;
     case UserInput::EXT_DROP: dropAction(true); break;
-    case UserInput::WAIT: creature->wait(); break;
+    case UserInput::WAIT: creature->wait().perform(); break;
     case UserInput::APPLY_ITEM: applyAction(); break; 
     case UserInput::THROW: throwAction(); break;
     case UserInput::THROW_DIR: throwAction(action.getPosition()); break;

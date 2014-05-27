@@ -65,16 +65,19 @@ class BoulderController : public Monster {
     }
     if (creature->getConstSquare(direction)->getStrength() < 300) {
       if (Creature* c = creature->getSquare(direction)->getCreature()) {
-        if (c->getSize() != CreatureSize::HUGE) {
-          c->you(MsgType::KILLED_BY, creature->getTheName());
-          c->die(creature);
-        } else {
+        if (c->getSize() == CreatureSize::HUGE) {
           creature->getLevel()->globalMessage(creature->getPosition() + direction,
               creature->getTheName() + " crashes on the " + c->getTheName(),
               "You hear a crash");
           creature->die();
           c->bleed(Random.getDouble(0.1, 0.3));
           return;
+        } else if (!c->isCorporal()) {
+          if (auto action = creature->swapPosition(direction, true))
+            action.perform();
+        } else {
+          c->you(MsgType::KILLED_BY, creature->getTheName());
+          c->die(creature);
         }
       }
       if (auto action = creature->destroy(direction, Creature::DESTROY))
@@ -918,7 +921,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         c.name = name;
         c.speciesName = humanoid ? "legendary humanoid" : "legendary beast";
         if (!(*c.humanoid) && Random.roll(10)) {
-          c.noBody = true;
+          c.uncorporal = true;
           c.wings = c.arms = c.legs = 0;
           *c.strength -= 5;
           *c.dexterity += 10;
@@ -1017,7 +1020,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.barehandedAttack = AttackType::HIT;
           c.humanoid = false;
-          c.noBody = true;
+          c.uncorporal = true;
           c.weight = 10;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
           c.chatReactionHostile = "\"Wouuuouuu!!!\"";
@@ -1765,7 +1768,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.arms = 0;
           c.legs = 0;
           c.heads = 0;
-          c.noBody = true;
+          c.uncorporal = true;
           c.breathing = false;
           c.brain = false;
           c.fireCreature = true;
