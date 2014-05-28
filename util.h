@@ -902,29 +902,16 @@ vector<T> makeVec(Args&&... args) {
   return ret;
 }
 
-inline string addAParticle(const string& s) {
-  if (isupper(s[0]))
-    return s;
-  if (contains({'a', 'e', 'u', 'i', 'o'}, s[0]))
-    return string("an ") + s;
-  else
-    return string("a ") + s;
-}
+string addAParticle(const string& s);
 
-inline string capitalFirst(string s) {
-  if (islower(s[0]))
-    s[0] = toupper(s[0]);
-  return s;
-}
+string capitalFirst(string s);
 
-inline string lowercase(string s) {
-  for (int i : All(s))
-    if (isupper(s[i]))
-      s[i] = tolower(s[i]);
-  return s;
-}
+string lowercase(string s);
 
 string combine(const vector<string>& adj);
+
+string getPlural(const string& singular, const string& plural, int num);
+string getPlural(const string&, int num);
 
 template<class T>
 string combine(const vector<T*>& v) {

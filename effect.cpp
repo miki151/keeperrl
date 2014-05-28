@@ -267,7 +267,7 @@ static void destroyEquipment(Creature* c) {
 }
 
 static void heal(Creature* c, EffectStrength strength) {
-  if (c->getHealth() < 1 || (strength == EffectStrength::STRONG && c->lostLimbs()))
+  if (c->getHealth() < 1 || (strength == EffectStrength::STRONG && c->lostOrInjuredBodyParts()))
     c->heal(1, strength == EffectStrength::STRONG);
   else
     c->playerMessage("You feel refreshed.");

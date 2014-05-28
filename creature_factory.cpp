@@ -922,17 +922,18 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         c.speciesName = humanoid ? "legendary humanoid" : "legendary beast";
         if (!(*c.humanoid) && Random.roll(10)) {
           c.uncorporal = true;
-          c.wings = c.arms = c.legs = 0;
+          c.bodyParts.clear();
           *c.strength -= 5;
           *c.dexterity += 10;
           c.barehandedDamage += 10;
         } else {
-          c.wings = r.roll(4) ? 2 : 0;
-          if (c.wings)
+          if (r.roll(4)) {
+            c.bodyParts[BodyPart::WING] = 2;
             c.flyer = true;
+          }
           if (*c.humanoid == false) {
-            c.arms = r.roll(2) ? 2 : 0;
-            c.legs = r.getRandom(3) * 2;
+            c.bodyParts[BodyPart::ARM] = r.roll(2) ? 2 : 0;
+            c.bodyParts[BodyPart::LEG] = r.getRandom(3) * 2;
             *c.strength += 5;
             *c.dexterity += 5;
             c.barehandedDamage += 5;
@@ -1095,7 +1096,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 5;
           c.humanoid = false;
           c.weight = 1000;
-          c.wings = 2;
+          c.bodyParts[BodyPart::WING] = 2;
+          c.flyer = true;
           c.poisonResistant = true;
           c.firstName = NameGenerator::demonNames.getNext();
           c.name = "dragon";);
@@ -1234,9 +1236,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 1;
           c.humanoid = false;
           c.passiveAttack = EffectType::ACID;
-          c.legs = 0;
-          c.arms = 0;
-          c.heads = 0;
+          c.bodyParts.clear();
           c.brain = false;
           c.noSleep = true;
           c.stationary = true;
@@ -1667,8 +1667,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attackEffect = EffectType::POISON;
           c.humanoid = false;
           c.weight = 0.3;
-          c.legs = 8;
-          c.arms = 0;
+          c.bodyParts[BodyPart::ARM] = 0;
+          c.bodyParts[BodyPart::LEG] = 8;
           c.animal = true;
           c.name = "scorpion";);
     case CreatureId::SPIDER: 
@@ -1685,8 +1685,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 10;
           c.humanoid = false;
           c.weight = 0.1;
-          c.legs = 6;
-          c.arms = 0;
+          c.bodyParts[BodyPart::ARM] = 0;
+          c.bodyParts[BodyPart::LEG] = 6;
+          c.bodyParts[BodyPart::WING] = 2;
           c.courage = 100;
           c.animal = true;
           c.name = "fly";);
@@ -1714,28 +1715,17 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 0;
           c.humanoid = false;
           c.weight = 0.5;
-          c.arms = 0;
-          c.legs = 0;
-          c.wings = 2;
+          c.bodyParts[BodyPart::LEG] = 2;
+          c.bodyParts[BodyPart::WING] = 2;
           c.animal = true;
           c.flyer = true;
           c.skills.insert(Skill::get(SkillId::ELF_VISION));
           c.name = "raven";);
     case CreatureId::VULTURE: 
-      return CATTR(
+      return INHERIT(RAVEN,
           c.viewId = ViewId::VULTURE;
           c.speed = 80;
-          c.size = CreatureSize::SMALL;
-          c.strength = 2;
-          c.dexterity = 12;
-          c.barehandedDamage = 2;
-          c.humanoid = false;
           c.weight = 5;
-          c.arms = 0;
-          c.legs = 0;
-          c.wings = 2;
-          c.animal = true;
-          c.flyer = true;
           c.name = "vulture";);
     case CreatureId::WOLF: 
       return CATTR(
@@ -1765,9 +1755,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity = 15;
           c.barehandedDamage = 10;
           c.humanoid = false;
-          c.arms = 0;
-          c.legs = 0;
-          c.heads = 0;
+          c.bodyParts.clear();
           c.uncorporal = true;
           c.breathing = false;
           c.brain = false;
@@ -1785,9 +1773,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity = 15;
           c.barehandedDamage = 10;
           c.humanoid = false;
-          c.arms = 0;
-          c.legs = 0;
-          c.heads = 0;
+          c.bodyParts.clear();
           c.skills.insert(Skill::get(SkillId::SWIMMING));
           c.weight = 100;
           c.name = "kraken";);
@@ -1816,20 +1802,13 @@ CreatureAttributes getAttributes(CreatureId id) {
                                    CreatureId::SPECIAL_MONSTER,
                                    }));*/
     case CreatureId::BAT: 
-      return CATTR(
+      return INHERIT(RAVEN,
           c.viewId = ViewId::BAT;
           c.speed = 150;
-          c.size = CreatureSize::SMALL;
           c.strength = 3;
           c.dexterity = 16;
           c.barehandedDamage = 12;
-          c.humanoid = false;
-          c.legs = 0;
-          c.arms = 0;
-          c.wings = 2;
           c.weight = 1;
-          c.flyer = true;
-          c.animal = true;
           c.name = "bat";);
     case CreatureId::DEATH: 
       return CATTR(

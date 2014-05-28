@@ -20,6 +20,10 @@ ifdef OPT
 GFLAG += -O3
 endif
 
+ifdef DEBUG_STL
+GFLAG += -DDEBUG_STL
+endif
+
 ifndef OPTFLAGS
 	OPTFLAGS = -static-libstdc++ ${GFLAG}
 endif

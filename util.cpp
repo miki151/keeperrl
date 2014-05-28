@@ -585,3 +585,39 @@ string combine(const vector<string>& adj) {
   return res;
 }
 
+string addAParticle(const string& s) {
+  if (isupper(s[0]))
+    return s;
+  if (contains({'a', 'e', 'u', 'i', 'o'}, s[0]))
+    return string("an ") + s;
+  else
+    return string("a ") + s;
+}
+
+string capitalFirst(string s) {
+  if (islower(s[0]))
+    s[0] = toupper(s[0]);
+  return s;
+}
+
+string lowercase(string s) {
+  for (int i : All(s))
+    if (isupper(s[i]))
+      s[i] = tolower(s[i]);
+  return s;
+}
+
+string getPlural(const string& a, const string&b, int num) {
+  if (num == 1)
+    return "1 " + a;
+  else
+    return convertToString(num) + " " + b;
+}
+
+string getPlural(const string& a, int num) {
+  if (num == 1)
+    return "1 " + a;
+  else
+    return convertToString(num) + " " + a + "s";
+}
+

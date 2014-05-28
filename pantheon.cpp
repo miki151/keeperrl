@@ -228,7 +228,7 @@ void Deity::onPrayer(Creature* c) {
           }
           break;
       case Epithet::HEALTH:
-          if (c->getHealth() < 1 || c->lostLimbs())
+          if (c->getHealth() < 1 || c->lostOrInjuredBodyParts())
             applyEffect(c, EffectType::HEAL, "You feel a healing power overcoming you");
           else {
             if (Random.roll(4))

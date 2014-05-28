@@ -56,14 +56,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(dead)
     & SVAR(lastTick)
     & SVAR(collapsed)
-    & SVAR(injuredArms)
-    & SVAR(injuredLegs)
-    & SVAR(injuredWings)
-    & SVAR(injuredHeads)
-    & SVAR(lostArms)
-    & SVAR(lostLegs)
-    & SVAR(lostWings)
-    & SVAR(lostHeads)
+    & SVAR(injuredBodyParts)
+    & SVAR(lostBodyParts)
     & SVAR(hidden)
     & SVAR(lastAttacker)
     & SVAR(swapPositionCooldown)
@@ -560,7 +554,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
       *reason = "You can't equip items!";
     return false;
   }
-  if (numGoodArms() == 0) {
+  if (numGood(BodyPart::ARM) == 0) {
     if (reason)
       *reason = "You have no healthy arms!";
     return false;
@@ -575,7 +569,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
       *reason = "You don't have the skill to shoot a bow.";
     return false;
   }
-  if (numGoodArms() == 1 && item->isWieldedTwoHanded()) {
+  if (numGood(BodyPart::ARM) == 1 && item->isWieldedTwoHanded()) {
     if (reason)
       *reason = "You need two hands to wield " + item->getAName() + "!";
     return false;
@@ -611,7 +605,7 @@ Creature::Action Creature::unequip(Item* item) {
     return Action("This item is not equiped.");
   if (!isHumanoid())
     return Action("You can't remove this item!");
-  if (numGoodArms() == 0)
+  if (numGood(BodyPart::ARM) == 0)
     return Action("You have no healthy arms!");
   return Action([=]() {
     Debug() << getTheName() << " unequip";
@@ -838,7 +832,8 @@ bool Creature::isAffected(LastingEffect effect) const {
 }
 
 bool Creature::isBlind() const {
-  return isAffected(BLIND) || permanentlyBlind || (lostHeads > 0 && heads == 0);
+  return isAffected(BLIND) || permanentlyBlind || 
+    (numLost(BodyPart::HEAD) > 0 && numBodyParts(BodyPart::HEAD) == 0);
 }
 
 int Creature::getAttrVal(AttrType type) const {
@@ -852,13 +847,17 @@ int Creature::getAttrVal(AttrType type) const {
 
 int attrBonus = 3;
 
-int dexPenNoArm = 2;
-int dexPenNoLeg = 10;
-int dexPenNoWing = 3;
+map<BodyPart, int> dexPenalty {
+  {BodyPart::ARM, 2},
+  {BodyPart::LEG, 10},
+  {BodyPart::WING, 3},
+  {BodyPart::HEAD, 3}};
 
-int strPenNoArm = 2;
-int strPenNoLeg = 5;
-int strPenNoWing = 2;
+map<BodyPart, int> strPenalty {
+  {BodyPart::ARM, 2},
+  {BodyPart::LEG, 5},
+  {BodyPart::WING, 2},
+  {BodyPart::HEAD, 3}};
 
 // penalty to strength and dexterity per extra attacker in a single turn
 int simulAttackPen(int attackers) {
@@ -879,9 +878,8 @@ int Creature::getAttr(AttrType type) const {
           def *= 0.66;
         if (isAffected(STR_BONUS))
           def += attrBonus;
-        def -= (injuredArms + lostArms) * strPenNoArm + 
-               (injuredLegs + lostLegs) * strPenNoLeg +
-               (injuredWings + lostWings) * strPenNoWing;
+        for (auto elem : strPenalty)
+          def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         def -= simulAttackPen(numAttacksThisTurn);
         break;
     case AttrType::DEXTERITY:
@@ -892,9 +890,8 @@ int Creature::getAttr(AttrType type) const {
           def = 0;
         if (isAffected(DEX_BONUS))
           def += attrBonus;
-        def -= (injuredArms + lostArms) * dexPenNoArm + 
-               (injuredLegs + lostLegs) * dexPenNoLeg +
-               (injuredWings + lostWings) * dexPenNoWing;
+        for (auto elem : dexPenalty)
+          def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         def -= simulAttackPen(numAttacksThisTurn);
         break;
     case AttrType::THROWN_DAMAGE: 
@@ -1048,7 +1045,7 @@ void Creature::tick(double realTime) {
   double delta = realTime - lastTick;
   lastTick = realTime;
   updateViewObject();
-  if (isNotLiving() && numLostOrInjuredBodyParts() >= 4) {
+  if (isNotLiving() && lostOrInjuredBodyParts() >= 4) {
     you(MsgType::FALL_APART, "");
     die(lastAttacker);
     return;
@@ -1065,9 +1062,9 @@ void Creature::tick(double realTime) {
 }
 
 BodyPart Creature::armOrWing() const {
-  if (arms == 0)
+  if (numGood(BodyPart::ARM) == 0)
     return BodyPart::WING;
-  if (wings == 0)
+  if (numGood(BodyPart::WING) == 0)
     return BodyPart::ARM;
   return chooseRandom({ BodyPart::WING, BodyPart::ARM }, {1, 1});
 }
@@ -1108,82 +1105,71 @@ static string getAttackParam(AttackType type) {
   return "";
 }
 
-void Creature::injureLeg(bool drop) {
-  if (legs == 0)
+static string getBodyPartName(BodyPart part) {
+  switch (part) {
+    case BodyPart::LEG: return "leg";
+    case BodyPart::ARM: return "arm";
+    case BodyPart::WING: return "wing";
+    case BodyPart::HEAD: return "head";
+    case BodyPart::TORSO: return "torso";
+    case BodyPart::BACK: return "back";
+  }
+  FAIL <<"Wf";
+  return "";
+}
+
+static string getBodyPartBone(BodyPart part) {
+  switch (part) {
+    case BodyPart::HEAD: return "skull";
+    default: return "bone";
+  }
+  FAIL <<"Wf";
+  return "";
+}
+
+void Creature::injureBodyPart(BodyPart part, bool drop) {
+  if (bodyParts[part] == 0)
     return;
   if (drop) {
-    Statistics::add(StatId::CHOPPED_LIMB);
-    --legs;
-    ++lostLegs;
-    if (injuredLegs > legs)
-      --injuredLegs;
+    if (contains({BodyPart::LEG, BodyPart::ARM, BodyPart::WING}, part))
+      Statistics::add(StatId::CHOPPED_LIMB);
+    else if (part == BodyPart::HEAD)
+      Statistics::add(StatId::CHOPPED_HEAD);
+    --bodyParts[part];
+    ++lostBodyParts[part];
+    if (injuredBodyParts[part] > bodyParts[part])
+      --injuredBodyParts[part];
   }
-  else if (injuredLegs < legs)
-    ++injuredLegs;
-  if (!collapsed)
-    you(MsgType::COLLAPSE, "");
-  collapsed = true;
-  if (drop) {
-    getSquare()->dropItem(ItemFactory::corpse(*name + " leg", "bone", *weight / 8,
-          isFood ? ItemType::FOOD : ItemType::CORPSE));
+  else if (injuredBodyParts[part] < bodyParts[part])
+    ++injuredBodyParts[part];
+  switch (part) {
+    case BodyPart::LEG:
+      if (!collapsed) {
+        you(MsgType::COLLAPSE, "");
+        collapsed = true;
+      }
+      break;
+    case BodyPart::ARM:
+      if (getWeapon()) {
+        you(MsgType::DROP_WEAPON, getWeapon()->getName());
+        getSquare()->dropItem(equipment.removeItem(getWeapon()));
+      }
+      break;
+    case BodyPart::WING:
+      if (flyer) {
+        you(MsgType::FALL, getSquare()->getName());
+        flyer = false;
+      }
+      if ((numBodyParts(BodyPart::LEG) < 2 || numInjured(BodyPart::LEG) > 0) && !collapsed) {
+        collapsed = true;
+      }
+      break;
+    default: break;
   }
-}
-
-void Creature::injureArm(bool dropArm) {
-  if (dropArm) {
-    Statistics::add(StatId::CHOPPED_LIMB);
-    --arms;
-    ++lostArms;
-    if (injuredArms > arms)
-      --injuredArms;
-  }
-  else if (injuredArms < arms)
-    ++injuredArms;
-  string itemName = isPlayer() ? ("your arm") : (*name + " arm");
-  if (getWeapon()) {
-    you(MsgType::DROP_WEAPON, getWeapon()->getName());
-    getSquare()->dropItem(equipment.removeItem(getWeapon()));
-  }
-  if (dropArm)
-    getSquare()->dropItem(ItemFactory::corpse(*name + " arm", "bone", *weight / 12,
-          isFood ? ItemType::FOOD : ItemType::CORPSE));
-}
-
-void Creature::injureWing(bool drop) {
-  if (drop) {
-    Statistics::add(StatId::CHOPPED_LIMB);
-    --wings;
-    ++lostWings;
-    if (injuredWings > wings)
-      --injuredWings;
-  }
-  else if (injuredWings < wings)
-    ++injuredWings;
-  if (flyer) {
-    you(MsgType::FALL, getSquare()->getName());
-    flyer = false;
-  }
-  if ((legs < 2 || injuredLegs > 0) && !collapsed) {
-    collapsed = true;
-  }
-  string itemName = isPlayer() ? ("your wing") : (*name + " wing");
   if (drop)
-    getSquare()->dropItem(ItemFactory::corpse(*name + " wing", "bone", *weight / 12,
-          isFood ? ItemType::FOOD : ItemType::CORPSE));
-}
-
-void Creature::injureHead(bool drop) {
-  if (drop) {
-    Statistics::add(StatId::CHOPPED_HEAD);
-    --heads;
-    if (injuredHeads > heads)
-      --injuredHeads;
-  }
-  else if (injuredHeads < heads)
-    ++injuredHeads;
-  if (drop)
-    getSquare()->dropItem(ItemFactory::corpse(*name +" head", *name + " skull", *weight / 12,
-          isFood ? ItemType::FOOD : ItemType::CORPSE));
+    getSquare()->dropItem(ItemFactory::corpse(*name + " " + getBodyPartName(part),
+        *name + " " + getBodyPartBone(part),
+        *weight / 8, isFood ? ItemType::FOOD : ItemType::CORPSE));
 }
 
 static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
@@ -1260,6 +1246,25 @@ bool Creature::dodgeAttack(const Attack& attack) {
   return canSee(attack.getAttacker()) && attack.getToHit() <= getAttr(AttrType::TO_HIT);
 }
 
+double Creature::getMinDamage(BodyPart part) const {
+  map<BodyPart, double> damage {
+    {BodyPart::WING, 0.3},
+    {BodyPart::ARM, 0.6},
+    {BodyPart::LEG, 0.8},
+    {BodyPart::HEAD, 0.8},
+    {BodyPart::TORSO, 1.5},
+    {BodyPart::BACK, 1.5}};
+  if (isUndead())
+    return damage.at(part) / 2;
+  else
+    return damage.at(part);
+}
+
+bool Creature::isCritical(BodyPart part) const {
+  return contains({BodyPart::TORSO, BodyPart::BACK}, part)
+    || (part == BodyPart::HEAD && numGood(part) == 1 && !isUndead());
+}
+
 bool Creature::takeDamage(const Attack& attack) {
   if (isAffected(SLEEP))
     removeEffect(SLEEP);
@@ -1284,53 +1289,17 @@ bool Creature::takeDamage(const Attack& attack) {
     if (!uncorporal) {
       if (attack.getType() != AttackType::SPELL) {
         BodyPart part = attack.inTheBack() ? BodyPart::BACK : getBodyPart(attack.getLevel());
-        switch (part) {
-          case BodyPart::BACK:
-            youHit(part, attack.getType());
-            break;
-          case BodyPart::WING:
-            if (dam >= 0.3 && wings > injuredWings) {
-              youHit(BodyPart::WING, attack.getType()); 
-              injureWing(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
-              if (health <= 0)
-                health = 0.01;
-              return false;
-            }
-          case BodyPart::ARM:
-            if (dam >= 0.5 && arms > injuredArms) {
-              youHit(BodyPart::ARM, attack.getType()); 
-              injureArm(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
-              if (health <= 0)
-                health = 0.01;
-              return false;
-            }
-          case BodyPart::LEG:
-            if (dam >= 0.8 && legs > injuredLegs) {
-              youHit(BodyPart::LEG, attack.getType()); 
-              injureLeg(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
-              if (health <= 0)
-                health = 0.01;
-              return false;
-            }
-          case BodyPart::HEAD:
-            if (dam >= 0.8 && heads > injuredHeads) {
-              youHit(BodyPart::HEAD, attack.getType()); 
-              injureHead(attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
-              if (!isNotLiving()) {
-                you(MsgType::DIE, "");
-                die(attack.getAttacker());
-              }
-              return true;
-            }
-          case BodyPart::TORSO:
-            if (dam >= 1.5) {
-              youHit(BodyPart::TORSO, attack.getType());
-              if (!isNotLiving())
-                you(MsgType::DIE, "");
-              die(attack.getAttacker());
-              return true;
-            }
-            break;
+        if (dam >= getMinDamage(part) && numGood(part) > 0) {
+          youHit(part, attack.getType()); 
+          injureBodyPart(part, attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
+          if (isCritical(part)) {
+            you(MsgType::DIE, "");
+            die(attack.getAttacker());
+            return true;
+          }
+          if (health <= 0)
+            health = 0.01;
+          return false;
         }
       }
     } else {
@@ -1403,14 +1372,12 @@ static string adjectives(CreatureSize s, bool undead, bool notLiving, bool uncor
   return combine(ret);
 }
 
-string limbsStr(int arms, int legs, int wings) {
+string Creature::bodyDescription() const {
   vector<string> ret;
-  if (arms)
-    ret.push_back("arms");
-  if (legs)
-    ret.push_back("legs");
-  if (wings)
-    ret.push_back("wings");
+  for (BodyPart part : {BodyPart::ARM, BodyPart::LEG, BodyPart::WING})
+    ret.push_back(getPlural(getBodyPartName(part), numBodyParts(part)));
+  if (isHumanoid() && numBodyParts(BodyPart::HEAD) == 0)
+    ret.push_back("no head");
   if (ret.size() > 0)
     return " with " + combine(ret);
   else
@@ -1461,8 +1428,7 @@ string Creature::getDescription() const {
     attack = " It has a " + attack + " attack.";
   }
   return getTheName() + " is a " + adjectives(*size, undead, notLiving, uncorporal) +
-      (isHumanoid() ? " humanoid creature" : " beast") +
-      (!isHumanoid() ? limbsStr(arms, legs, wings) : (wings ? " with wings" : "")) + ". " +
+      (isHumanoid() ? " humanoid creature" : " beast") + bodyDescription() + ". " +
      "It is " + attrStr(*strength > 16, *dexterity > 16, *speed > 100) + "." + weapon + attack;
 }
 
@@ -1483,38 +1449,26 @@ void Creature::heal(double amount, bool replaceLimbs) {
   if (health < 1) {
     health = min(1., health + amount);
     if (health >= 0.5) {
-      if (injuredArms > 0) {
-        you(MsgType::YOUR, string(injuredArms > 1 ? "arms are" : "arm is") + " in better shape");
-        injuredArms = 0;
-      }
-      if (lostArms > 0 && replaceLimbs) {
-        you(MsgType::YOUR, string(lostArms > 1 ? "arms grow back!" : "arm grows back!"));
-        arms += lostArms;
-        lostArms = 0;
-      }
-      if (injuredWings > 0) {
-        you(MsgType::YOUR, string(injuredArms > 1 ? "wings are" : "wing is") + " in better shape");
-        injuredWings = 0;
-      }
-      if (lostWings > 0 && replaceLimbs) {
-        you(MsgType::YOUR, string(lostArms > 1 ? "wings grow back!" : "wing grows back!"));
-        wings += lostWings;
-        lostWings = 0;
-        flyer = true;
-      }
-     if (injuredLegs > 0) {
-        you(MsgType::YOUR, string(injuredLegs > 1 ? "legs are" : "leg is") + " in better shape");
-        injuredLegs = 0;
-        if (legs == 2 && collapsed) {
-          collapsed = false;
-          you(MsgType::STAND_UP, "");
+      for (auto& elem : injuredBodyParts)
+        if (elem.second > 0) {
+          you(MsgType::YOUR, getBodyPartName(elem.first) + (elem.second > 1 ? "s are" : " is") + " in better shape");
+          if (elem.first == BodyPart::LEG && !lostBodyParts[BodyPart::LEG] && collapsed) {
+            collapsed = false;
+            you(MsgType::STAND_UP, "");
+          }
+          elem.second = 0;
         }
-      }
-      if (lostLegs > 0 && replaceLimbs) {
-        you(MsgType::YOUR, string(lostLegs > 1 ? "legs grow back!" : "leg grows back!"));
-        legs += lostLegs;
-        lostLegs = 0;
-      }
+      if (replaceLimbs)
+        for (auto& elem : lostBodyParts)
+          if (elem.second > 0) {
+            you(MsgType::YOUR, getBodyPartName(elem.first) + (elem.second > 1 ? "s grow back!" : " grows back!"));
+            if (elem.first == BodyPart::LEG && collapsed) {
+              collapsed = false;
+              you(MsgType::STAND_UP, "");
+            }
+            if (elem.first == BodyPart::WING)
+              flyer = true;
+          }
     }
     if (health == 1) {
       you(MsgType::BLEEDING_STOPS, "");
@@ -1588,7 +1542,7 @@ void Creature::take(PItem item) {
 
 void Creature::dropCorpse() {
   getSquare()->dropItem(ItemFactory::corpse(*name + " corpse", *name + " skeleton", *weight,
-        isFood ? ItemType::FOOD : ItemType::CORPSE, {true, heads > 0, false}));
+        isFood ? ItemType::FOOD : ItemType::CORPSE, {true, numBodyParts(BodyPart::HEAD) > 0, false}));
 }
 
 void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
@@ -1653,7 +1607,7 @@ Creature::Action Creature::fire(Vec2 direction) {
     return Action("You need a ranged weapon.");
   if (!hasSkill(Skill::get(SkillId::ARCHERY)))
     return Action("You don't have this skill.");
-  if (numGoodArms() < 2)
+  if (numGood(BodyPart::ARM) < 2)
     return Action("You need two hands to shoot a bow.");
   if (!getAmmo())
     return Action("Out of ammunition");
@@ -1711,7 +1665,7 @@ Creature::Action Creature::destroy(Vec2 direction, DestroyAction dAction) {
 }
 
 vector<AttackLevel> Creature::getAttackLevels() const {
-  if (isHumanoid() && injuredArms == arms)
+  if (isHumanoid() && !numGood(BodyPart::ARM))
     return {AttackLevel::LOW};
   switch (*size) {
     case CreatureSize::SMALL: return {AttackLevel::LOW};
@@ -1744,7 +1698,7 @@ Creature::Action Creature::applyItem(Item* item) {
   if (!contains({ItemType::TOOL, ItemType::POTION, ItemType::FOOD, ItemType::BOOK, ItemType::SCROLL},
       item->getType()) || !isHumanoid())
     return Action("You can't apply this item");
-  if (numGoodArms() == 0)
+  if (numGood(BodyPart::ARM) == 0)
     return Action("You have no healthy arms!");
   return Action([=] () {
       double time = item->getApplyTime();
@@ -1759,7 +1713,7 @@ Creature::Action Creature::applyItem(Item* item) {
 }
 
 Creature::Action Creature::throwItem(Item* item, Vec2 direction) {
-  if (injuredArms == arms || !isHumanoid())
+  if (!numGood(BodyPart::ARM) || !isHumanoid())
     return Action("You can't throw anything!");
   else if (item->getWeight() > 20)
     return Action(item->getTheName() + " is too heavy!");
@@ -1891,40 +1845,41 @@ bool Creature::canWalk() const {
   return walker;
 }
 
-int Creature::numArms() const {
-  return arms;
+int Creature::numBodyParts(BodyPart part) const {
+  try {
+    return bodyParts.at(part);
+  } catch (std::out_of_range) {
+    return 0;
+  }
 }
 
-int Creature::numLegs() const {
-  return legs;
+int Creature::numLost(BodyPart part) const {
+  try {
+    return lostBodyParts.at(part);
+  } catch (std::out_of_range) {
+    return 0;
+  }
 }
 
-int Creature::numWings() const {
-  return wings;
+int Creature::lostOrInjuredBodyParts() const {
+  int ret = 0;
+  for (auto elem : injuredBodyParts)
+    ret += elem.second;
+  for (auto elem : lostBodyParts)
+    ret += elem.second;
+  return ret;
 }
 
-int Creature::numHeads() const {
-  return heads;
+int Creature::numInjured(BodyPart part) const {
+  try {
+    return injuredBodyParts.at(part);
+  } catch (std::out_of_range) {
+    return 0;
+  }
 }
 
-bool Creature::lostLimbs() const {
-  return lostWings > 0 || lostArms > 0 || lostLegs > 0;
-}
-
-int Creature::numLostOrInjuredBodyParts() const {
-  return lostWings + injuredWings + lostArms + injuredArms + lostLegs + injuredLegs + lostHeads + injuredHeads;
-}
-
-int Creature::numGoodArms() const {
-  return arms - injuredArms;
-}
-
-int Creature::numGoodLegs() const {
-  return legs - injuredLegs;
-}
-
-int Creature::numGoodHeads() const {
-  return heads - injuredHeads;
+int Creature::numGood(BodyPart part) const {
+  return numBodyParts(part) - numInjured(part);
 }
 
 double Creature::getCourage() const {
@@ -2146,13 +2101,13 @@ vector<string> Creature::getMainAdjectives() const {
     ret.push_back("blind");
   if (isAffected(INVISIBLE))
     ret.push_back("invisible");
-  if (numArms() == 1)
+  if (numBodyParts(BodyPart::ARM) == 1)
     ret.push_back("one-armed");
-  if (numArms() == 0)
+  if (numBodyParts(BodyPart::ARM) == 0)
     ret.push_back("armless");
-  if (numLegs() == 1)
+  if (numBodyParts(BodyPart::LEG) == 1)
     ret.push_back("one-legged");
-  if (numLegs() == 0)
+  if (numBodyParts(BodyPart::LEG) == 0)
     ret.push_back("legless");
   if (isAffected(HALLU))
     ret.push_back("tripped");
@@ -2161,38 +2116,16 @@ vector<string> Creature::getMainAdjectives() const {
 
 vector<string> Creature::getAdjectives() const {
   vector<string> ret;
-  if (injuredArms == 1)
-    ret.push_back("injured arm");
-  if (injuredArms == 2)
-    ret.push_back("two injured arms");
-  if (injuredLegs == 1)
-    ret.push_back("injured leg");
-  if (injuredLegs == 2)
-    ret.push_back("two injured legs");
-  if (injuredWings == 1)
-    ret.push_back("injured wing");
-  if (injuredWings == 2)
-    ret.push_back("two injured wings");
-  if (injuredHeads == 1)
-    ret.push_back("injured head");
-  if (injuredHeads == 2)
-    ret.push_back("two injured heads");
-  if (lostArms == 1)
-    ret.push_back("lost arm");
-  if (lostArms == 2)
-    ret.push_back("two lost arms");
-  if (lostLegs == 1)
-    ret.push_back("lost leg");
-  if (lostLegs == 2)
-    ret.push_back("two lost legs");
-  if (lostWings == 1)
-    ret.push_back("lost wing");
-  if (lostWings == 2)
-    ret.push_back("two lost wings");
-  if (lostHeads == 1)
-    ret.push_back("lost head");
-  if (lostHeads == 2)
-    ret.push_back("two lost heads");
+  for (auto elem : injuredBodyParts)
+    if (elem.second == 1)
+      ret.push_back("injured " + getBodyPartName(elem.first));
+  else if (elem.second == 2)
+      ret.push_back("two injured " + getBodyPartName(elem.first) + "s");
+  for (auto elem : lostBodyParts)
+    if (elem.second == 1)
+      ret.push_back("lost " + getBodyPartName(elem.first));
+  else if (elem.second == 2)
+      ret.push_back("two lost " + getBodyPartName(elem.first) + "s");
   for (LastingEffect effect : getKeys(lastingEffects))
     if (isAffected(effect)) {
       bool addCount = true;

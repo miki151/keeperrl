@@ -456,13 +456,6 @@ PGuiElem WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   return GuiElem::verticalList(std::move(elems), legendLineHeight, 0);
 }
 
-string getPlural(const string& a, const string&b, int num) {
-  if (num == 1)
-    return "1 " + a;
-  else
-    return convertToString(num) + " " + b;
-}
-
 struct CreatureMapElem {
   ViewObject object;
   int count;

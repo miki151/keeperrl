@@ -60,10 +60,11 @@ class CreatureAttributes {
   bool SERIAL2(harmlessApply, false); // apply the attack effect even if attack was harmless
   Optional<EffectType> SERIAL(passiveAttack);
   Gender SERIAL2(gender, Gender::male);
-  int SERIAL2(legs, 2);
-  int SERIAL2(arms, 2);
-  int SERIAL2(wings, 0);
-  int SERIAL2(heads, 1);
+  map<BodyPart, int> bodyParts { 
+    { BodyPart::ARM, 2},
+    { BodyPart::LEG, 2},
+    { BodyPart::HEAD, 1}};
+  SERIAL3(bodyParts);
   bool SERIAL2(innocent, false);
   bool SERIAL2(uncorporal, false);
   bool SERIAL2(fireResistant, false);

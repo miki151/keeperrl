@@ -123,15 +123,17 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   bool canSwim() const;
   bool canFly() const;
   bool canWalk() const;
-  int numArms() const;
-  int numLegs() const;
-  int numWings() const;
-  int numHeads() const;
-  bool lostLimbs() const;
-  int numLostOrInjuredBodyParts() const;
-  int numGoodArms() const;
-  int numGoodLegs() const;
-  int numGoodHeads() const;
+
+  int numBodyParts(BodyPart) const;
+  int numLost(BodyPart) const;
+  int numInjured(BodyPart) const;
+  int lostOrInjuredBodyParts() const;
+  int numGood(BodyPart) const;
+  void injureBodyPart(BodyPart part, bool drop);
+  bool isCritical(BodyPart part) const;
+  double getMinDamage(BodyPart part) const;
+  string bodyDescription() const;
+
   double getCourage() const;
   Gender getGender() const;
 
@@ -290,10 +292,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   int getToHit() const;
   BodyPart getBodyPart(AttackLevel attack) const;
   bool isFireResistant() const;
-  void injureLeg(bool drop);
-  void injureArm(bool drop);
-  void injureWing(bool drop);
-  void injureHead(bool drop);
+  void injure(BodyPart, bool drop);
   AttackLevel getRandomAttackLevel() const;
   AttackType getAttackType() const;
   void spendTime(double time);
@@ -313,14 +312,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   bool SERIAL2(dead, false);
   double SERIAL2(lastTick, 0);
   bool SERIAL2(collapsed, false);
-  int SERIAL2(injuredArms, 0);
-  int SERIAL2(injuredLegs, 0);
-  int SERIAL2(injuredWings, 0);
-  int SERIAL2(injuredHeads, 0);
-  int SERIAL2(lostArms, 0);
-  int SERIAL2(lostLegs, 0);
-  int SERIAL2(lostWings, 0);
-  int SERIAL2(lostHeads, 0);
+  map<BodyPart, int> SERIAL(injuredBodyParts);
+  map<BodyPart, int> SERIAL(lostBodyParts);
   bool SERIAL2(hidden, false);
   bool inEquipChain = false;
   int numEquipActions = 0;
