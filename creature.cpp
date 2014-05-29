@@ -247,24 +247,24 @@ void Creature::removeCreatureVision(CreatureVision* vision) {
   removeElement(creatureVisions, vision);
 }
 
-void Creature::pushController(Controller* ctrl) {
-  viewObject.setModifier(ViewObject::PLAYER);
+void Creature::pushController(PController ctrl) {
+  if (ctrl->isPlayer())
+    viewObject.setModifier(ViewObject::PLAYER);
   controllerStack.push_back(std::move(controller));
-  controller.reset(ctrl);
+  controller = std::move(ctrl);
+  if (controller->isPlayer())
+    level->setPlayer(this);
 }
 
 void Creature::popController() {
-  viewObject.removeModifier(ViewObject::PLAYER);
-  CHECK(canPopController());
+  if (controller->isPlayer())
+    viewObject.removeModifier(ViewObject::PLAYER);
+  CHECK(!controllerStack.empty());
   bool wasPlayer = controller->isPlayer();
   controller = std::move(controllerStack.back());
   controllerStack.pop_back();
   if (wasPlayer && !controller->isPlayer())
     level->setPlayer(nullptr);
-}
-
-bool Creature::canPopController() const {
-  return !controllerStack.empty();
 }
 
 bool Creature::isDead() const {
@@ -2151,7 +2151,7 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
     info.playerName = "";
     info.title = *name;
   }
-  info.possessed = canPopController();
+  info.possessed = !controllerStack.empty();
   info.spellcaster = !spells.empty();
   info.adjectives = getMainAdjectives();
   Item* weapon = getEquipment().getItem(EquipmentSlot::WEAPON);

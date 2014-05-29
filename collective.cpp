@@ -1356,6 +1356,38 @@ int Collective::getImpCost() const {
   return basicImpCost * pow(2, double(numImps - startImpNum) / 5);
 }
 
+class MinionController : public Player {
+  public:
+  MinionController(Creature* c, Model* m, map<Level*, MapMemory>* memory) : Player(c, m, false, memory) {}
+
+  virtual void onKilled(const Creature* attacker) override {
+    if (model->getView()->yesOrNoPrompt("Would you like to see the last messages?"))
+      messageBuffer.showHistory();
+    creature->popController();
+  }
+
+  virtual bool unpossess() override {
+    return true;
+  }
+
+  virtual void onFellAsleep() {
+    if (model->getView()->yesOrNoPrompt("You fell asleep. Do you want to leave your minion?"))
+      creature->popController();
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Player)
+      & SVAR(model)
+    CHECK_SERIAL;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(MinionController);
+
+  private:
+  Model* SERIAL(model);
+};
+
 void Collective::possess(const Creature* cr, View* view) {
   view->stopClock();
   CHECK(contains(creatures, cr));
@@ -1365,9 +1397,8 @@ void Collective::possess(const Creature* cr, View* view) {
     c->removeEffect(Creature::SLEEP);
   freeFromGuardPost(c);
   updateMemory();
-  c->pushController(new Player(c, view, model, false, memory.get()));
+  c->pushController(PController(new MinionController(c, model, memory.get())));
   possessed = c;
-  c->getLevel()->setPlayer(c);
 }
 
 bool Collective::canBuildDoor(Vec2 pos) const {
@@ -2497,3 +2528,11 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
 const Level* Collective::getLevel() const {
   return level;
 }
+
+template <class Archive>
+void Collective::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, MinionController);
+}
+
+REGISTER_TYPES(Collective);
+

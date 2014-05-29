@@ -29,15 +29,26 @@ SERIALIZABLE(DoNothingController);
 
 template <class Archive> 
 void Controller::serialize(Archive& ar, const unsigned int version) {
+  ar & SVAR(creature);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Controller);
+
+Controller::Controller(Creature* c) : creature(c) {
+}
+
+Controller* Controller::getPossessedController(Creature* c) {
+  return new DoNothingController(c);
+}
 
 ControllerFactory::ControllerFactory(function<Controller* (Creature*)> f) : fun(f) {}
 
 PController ControllerFactory::get(Creature* c) {
   return PController(fun(c));
 }
+
+DoNothingController::DoNothingController(Creature* c) : Controller(c) {}
 
 const MapMemory& DoNothingController::getMemory() const {
   return MapMemory::empty();
@@ -54,7 +65,7 @@ void DoNothingController::you(const string& param) const {
 }
 
 void DoNothingController::makeMove() {
-  creature->wait();
+  creature->wait().perform();
 }
 
 void DoNothingController::onBump(Creature* c) {

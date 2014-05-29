@@ -1099,6 +1099,8 @@ PItem ItemFactory::fromId(ItemId id) {
                                       "Creates optical illusions of the spellcaster to decept enemies.");
     case ItemId::SUMMON_INSECTS_SCROLL: return getScroll("vocet insecta", EffectType::SUMMON_INSECTS, 60,
                                       "Summon insects to confuse enemies.");
+    case ItemId::LEAVE_BODY_SCROLL: return getScroll("incorporalis", EffectType::LEAVE_BODY, 60,
+                                      "Frees the reader's spirit from his body.");
     case ItemId::FIRE_SCROLL: return PItem(new FireScroll(
          ViewObject(ViewId::SCROLL, ViewLayer::ITEM, "Scroll"), ITATTR(
             i.name = "scroll labelled combustio";

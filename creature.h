@@ -241,9 +241,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void grantIdentify(int numItems);
 
   Controller* getController();
-  void pushController(Controller*);
+  void pushController(PController);
   void popController();
-  bool canPopController() const;
   void setSpeed(double);
   double getSpeed() const;
   CreatureSize getSize() const;

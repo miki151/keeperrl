@@ -42,8 +42,8 @@ void Player::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Player);
 
-Player::Player(Creature* c, View* v, Model* m, bool greet, map<Level*, MapMemory>* memory) :
-    creature(c), displayGreeting(greet), levelMemory(memory), model(m) {
+Player::Player(Creature* c, Model* m, bool greet, map<Level*, MapMemory>* memory) :
+    Controller(c), displayGreeting(greet), levelMemory(memory), model(m) {
 }
 
 Player::~Player() {
@@ -81,8 +81,8 @@ void Player::onAlarmEvent(const Level* l, Vec2 pos) {
         getCardinalName((pos - creature->getPosition()).getBearing().getCardinalDir()));
 }
 
-ControllerFactory Player::getFactory(View* f, Model *m, map<Level*, MapMemory>* levelMemory) {
-  return ControllerFactory([=](Creature* c) { return new Player(c, f, m, true, levelMemory);});
+ControllerFactory Player::getFactory(Model *m, map<Level*, MapMemory>* levelMemory) {
+  return ControllerFactory([=](Creature* c) { return new Player(c, m, true, levelMemory);});
 }
 
 map<EquipmentSlot, string> slotSuffixes = {
@@ -634,19 +634,19 @@ void Player::makeMove() {
     case UserInput::CHAT: chatAction(); break;
     case UserInput::SHOW_HISTORY: messageBuffer.showHistory(); break;
     case UserInput::UNPOSSESS:
-      if (creature->canPopController()) {
+      if (unpossess()) {
         creature->popController();
         return;
-      } break;
+      }
+      break;
     case UserInput::CAST_SPELL: spellAction(); break;
     case UserInput::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature); break;
     case UserInput::EXIT: model->exitAction(); break;
     case UserInput::IDLE: break;
     default: break;
   }
-  if (creature->isAffected(Creature::SLEEP) && creature->canPopController()) {
-    if (model->getView()->yesOrNoPrompt("You fell asleep. Do you want to leave your minion?"))
-      creature->popController();
+  if (creature->isAffected(Creature::SLEEP)) {
+    onFellAsleep();
     return;
   }
   for (Vec2 dir : direction)
@@ -754,9 +754,62 @@ void Player::you(MsgType type, const string& param) const {
 void Player::onKilled(const Creature* attacker) {
   if (model->getView()->yesOrNoPrompt("Would you like to see the last messages?"))
     messageBuffer.showHistory();
-  if (!creature->canPopController()) {
-    model->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
-  } else {
-    creature->popController();
-  }
+  model->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
 }
+
+bool Player::unpossess() {
+  return false;
+}
+
+void Player::onFellAsleep() {
+}
+
+class PossessedController : public Player {
+  public:
+  PossessedController(Creature* c, Creature* _owner, Model* m, map<Level*, MapMemory>* memory)
+    : Player(c, m, false, memory), owner(_owner) {}
+
+  void onKilled(const Creature* attacker) override {
+    owner->popController();
+  }
+
+  void onAttackEvent(const Creature* victim, const Creature* attacker) override {
+    if (victim == owner)
+      creature->die();
+  }
+
+  bool unpossess() override {
+    creature->die();
+    return false;
+  }
+
+  void onFellAsleep() override {
+    creature->die();
+    owner->popController();
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Player)
+      & SVAR(owner)
+    CHECK_SERIAL;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(PossessedController);
+
+  private:
+  Creature* SERIAL(owner);
+};
+
+Controller* Player::getPossessedController(Creature* c) {
+  creature->pushController(PController(new DoNothingController(creature)));
+  return new PossessedController(c, creature, model, levelMemory);
+}
+
+template <class Archive>
+void Player::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, PossessedController);
+}
+
+REGISTER_TYPES(Player);
+

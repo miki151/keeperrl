@@ -677,6 +677,13 @@ class Optional {
     return elem.front();
   }
 
+  T getOr(const T& other) {
+    if (!elem.empty())
+      return elem.front();
+    else
+      return other;
+  }
+
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar & BOOST_SERIALIZATION_NVP(elem);

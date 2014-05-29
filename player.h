@@ -23,7 +23,7 @@ class Model;
 
 class Player : public Controller, public EventListener {
   public:
-  Player(Creature*, View*, Model*, bool displayGreeting, map<Level*, MapMemory>* levelMemory);
+  Player(Creature*, Model*, bool displayGreeting, map<Level*, MapMemory>* levelMemory);
   virtual ~Player();
   virtual void grantIdentify(int numItems) override;
 
@@ -34,6 +34,9 @@ class Player : public Controller, public EventListener {
   virtual void privateMessage(const string& message) const override;
 
   virtual void onKilled(const Creature* attacker) override;
+  virtual bool unpossess();
+  virtual void onFellAsleep();
+
   virtual void onItemsAppeared(vector<Item*> items, const Creature* from) override;
 
   virtual const MapMemory& getMemory() const override;
@@ -44,14 +47,19 @@ class Player : public Controller, public EventListener {
 
   virtual void onBump(Creature*);
 
-  static ControllerFactory getFactory(View*, Model*, map<Level*, MapMemory>* levelMemory);
+  static ControllerFactory getFactory(Model*, map<Level*, MapMemory>* levelMemory);
   
+  virtual Controller* getPossessedController(Creature* c) override;
+
   virtual const Level* getListenerLevel() const override;
   virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) override;
   virtual void onExplosionEvent(const Level* level, Vec2 pos) override;
   virtual void onAlarmEvent(const Level*, Vec2 pos) override;
 
   SERIALIZATION_DECL(Player);
+
+  template <class Archive>
+  static void registerTypes(Archive& ar);
 
   private:
   void tryToPerform(Creature::Action);
@@ -78,7 +86,6 @@ class Player : public Controller, public EventListener {
   void getItemNames(vector<Item*> it, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());
   string getPluralName(Item* item, int num);
-  Creature* SERIAL(creature);
   bool SERIAL2(travelling, false);
   Vec2 SERIAL(travelDir);
   Optional<Vec2> SERIAL(target);

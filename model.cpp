@@ -377,10 +377,11 @@ PCreature Model::makePlayer() {
           c.skills.insert(Skill::get(SkillId::ARCHERY));
           c.skills.insert(Skill::get(SkillId::AMBUSH));
           c.skills.insert(Skill::get(SkillId::NIGHT_VISION));
-          c.skills.insert(Skill::get(SkillId::TWO_HANDED_WEAPON));), Player::getFactory(view, this, levelMemory))), {
+          c.skills.insert(Skill::get(SkillId::TWO_HANDED_WEAPON));), Player::getFactory(this, levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
+      ItemId::LEAVE_BODY_SCROLL,
       ItemId::LEATHER_ARMOR, ItemId::LEATHER_HELM});
   for (int i : Range(Random.getRandom(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));

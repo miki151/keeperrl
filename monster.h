@@ -38,9 +38,6 @@ class Monster : public Controller {
 
   SERIALIZATION_DECL(Monster);
 
-  protected:
-  Creature* SERIAL(creature);
-
   private:
   PMonsterAI SERIAL(actor);
   vector<const Creature*> SERIAL(enemies);

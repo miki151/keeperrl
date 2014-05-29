@@ -162,6 +162,9 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
 
   SERIALIZATION_DECL(Collective);
 
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
   private:
   Creature* addCreature(PCreature c, Vec2 v, MinionType);
   Creature* getCreature(UniqueId id);

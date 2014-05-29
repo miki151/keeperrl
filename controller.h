@@ -27,6 +27,7 @@ class Level;
 
 class Controller {
   public:
+  Controller(Creature*);
   virtual void grantIdentify(int numItems) {};
 
   virtual bool isPlayer() const = 0;
@@ -48,15 +49,19 @@ class Controller {
 
   virtual void onBump(Creature*) = 0;
 
+  virtual Controller* getPossessedController(Creature*);
+
   virtual ~Controller() {}
 
-  protected:
   SERIALIZATION_DECL(Controller);
+
+  protected:
+  Creature* SERIAL(creature);
 };
 
 class DoNothingController : public Controller {
   public:
-  DoNothingController(Creature* c) : creature(c) {}
+  DoNothingController(Creature*);
 
   virtual bool isPlayer() const override;
   virtual void you(MsgType type, const string& param) const override;
@@ -67,9 +72,6 @@ class DoNothingController : public Controller {
 
   protected:
   SERIALIZATION_DECL(DoNothingController);
-
-  private:
-  Creature* creature;
 };
 
 class ControllerFactory {

@@ -171,6 +171,24 @@ static void deception(Creature* c) {
   summonCreatures(c, 2, std::move(creatures));
 }
 
+static void leaveBody(Creature* creature) {
+  PCreature spirit(new Creature(creature->getTribe(), CATTR(
+          c.viewId = creature->getViewObject().id();
+          c.speed = 100;
+          c.weight = 1;
+          c.size = CreatureSize::LARGE;
+          c.strength = 1;
+          c.dexterity = 1;
+          c.noSleep = true;
+          c.flyer = true;
+          c.breathing = false;
+          c.uncorporal = true;
+          c.humanoid = true;
+          c.name = creature->getFirstName().getOr(creature->getName()) + "'s spirit";),
+        ControllerFactory([creature] (Creature* o) { return creature->getController()->getPossessedController(o);})));
+  summonCreatures(creature, 1, makeVec<PCreature>(std::move(spirit)));
+}
+
 static void wordOfPower(Creature* c, EffectStrength strength) {
   Level* l = c->getLevel();
   EventListener::addExplosionEvent(c->getLevel(), c->getPosition());
@@ -392,6 +410,7 @@ double entangledTime(int strength) {
 
 void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strength) {
   switch (type) {
+    case EffectType::LEAVE_BODY: leaveBody(c); break;
     case EffectType::WEB: c->addEffect(Creature::ENTANGLED, entangledTime(c->getAttr(AttrType::STRENGTH))); break;
     case EffectType::TELE_ENEMIES: teleEnemies(c); break;
     case EffectType::ALARM: alarm(c); break;
