@@ -20,6 +20,10 @@ ifdef OPT
 GFLAG += -O3
 endif
 
+ifdef PROF
+GFLAG += -pg
+endif
+
 ifdef DEBUG_STL
 GFLAG += -DDEBUG_STL
 endif
