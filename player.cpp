@@ -528,7 +528,7 @@ const MapMemory& Player::getMemory() const {
 }
 
 void Player::sleeping() {
-  if (creature->isAffected(Creature::HALLU))
+  if (creature->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
   else
     ViewObject::setHallu(false);
@@ -555,7 +555,7 @@ void Player::attackAction(Creature* other) {
 void Player::makeMove() {
   vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
   const vector<Creature*>& creatures = creature->getLevel()->getAllCreatures();
-  if (creature->isAffected(Creature::HALLU))
+  if (creature->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
   else
     ViewObject::setHallu(false);
@@ -645,7 +645,7 @@ void Player::makeMove() {
     case UserInput::IDLE: break;
     default: break;
   }
-  if (creature->isAffected(Creature::SLEEP)) {
+  if (creature->isAffected(LastingEffect::SLEEP)) {
     onFellAsleep();
     return;
   }
@@ -727,9 +727,9 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::BITE: msg = "You bite " + param; break;
     case MsgType::PUNCH: msg = "You punch " + param; break;
     case MsgType::PANIC:
-          msg = !creature->isAffected(Creature::HALLU) ? "You are suddenly very afraid" : "You freak out completely"; break;
+          msg = !creature->isAffected(LastingEffect::HALLU) ? "You are suddenly very afraid" : "You freak out completely"; break;
     case MsgType::RAGE:
-          msg = !creature->isAffected(Creature::HALLU) ?"You are suddenly very angry" : "This will be a very long trip."; break;
+          msg = !creature->isAffected(LastingEffect::HALLU) ?"You are suddenly very angry" : "This will be a very long trip."; break;
     case MsgType::CRAWL: msg = "You are crawling"; break;
     case MsgType::STAND_UP: msg = "You are back on your feet"; break;
     case MsgType::CAN_SEE_HIDING: msg = param + " can see you hiding"; break;

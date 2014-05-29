@@ -67,8 +67,6 @@ class CreatureAttributes {
   SERIAL3(bodyParts);
   bool SERIAL2(innocent, false);
   bool SERIAL2(uncorporal, false);
-  bool SERIAL2(fireResistant, false);
-  bool SERIAL2(poisonResistant, false);
   bool SERIAL2(fireCreature, false);
   bool SERIAL2(breathing, true);
   MustInitialize<bool> SERIAL(humanoid);
@@ -85,7 +83,6 @@ class CreatureAttributes {
   double SERIAL2(courage, 1);
   int SERIAL2(maxLevel, 10);
   bool SERIAL2(carryAnything, false);
-  bool SERIAL2(permanentlyBlind, false);
   bool SERIAL2(invincible, false);
   double SERIAL2(damageMultiplier, 1);
   double SERIAL2(attributeGain, 0.5);
@@ -94,6 +91,7 @@ class CreatureAttributes {
     {6, Skill::get(SkillId::KNIFE_THROWING)}};
   SERIAL3(skillGain);
   vector<SpellInfo> SERIAL(spells);
+  EnumMap<LastingEffect, double> SERIAL(lastingEffects);
 };
 
 #endif

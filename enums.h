@@ -749,4 +749,26 @@ enum class VisionId {
 
 ENUM_HASH(VisionId);
 
+enum LastingEffect {
+    SLEEP,
+    PANIC,
+    RAGE,
+    SLOWED,
+    SPEED,
+    STR_BONUS,
+    DEX_BONUS,
+    HALLU,
+    BLIND,
+    INVISIBLE,
+    POISON,
+    ENTANGLED,
+    STUNNED,
+    POISON_RESISTANT,
+    FIRE_RESISTANT,
+
+    ENUM_END
+};
+
+const static double permanentEffect = 100000000;
+
 #endif

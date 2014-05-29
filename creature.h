@@ -264,9 +264,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
     ar & defaultMinion;
   }
 
-  enum LastingEffect {
-    SLEEP, PANIC, RAGE, SLOWED, SPEED, STR_BONUS, DEX_BONUS, HALLU, BLIND, INVISIBLE, POISON, ENTANGLED, STUNNED };
-
   void addEffect(LastingEffect, double time, bool msg = true);
   void removeEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
@@ -276,8 +273,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   private:
   bool affects(LastingEffect effect) const;
   void onAffected(LastingEffect effect, bool msg);
-  void onRemoved(Creature::LastingEffect effect, bool msg);
-  void onTimedOut(Creature::LastingEffect effect, bool msg);
+  void onRemoved(LastingEffect effect, bool msg);
+  void onTimedOut(LastingEffect effect, bool msg);
   string getRemainingString(LastingEffect effect) const;
   static PCreature defaultCreature;
   static PCreature defaultFlyer;
@@ -301,7 +298,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   ViewObject SERIAL(viewObject);
   Level* SERIAL2(level, nullptr);
   Vec2 SERIAL(position);
-  double SERIAL2(time, 0);
+  double SERIAL2(time, 1);
   Equipment SERIAL(equipment);
   Optional<ShortestPath> SERIAL(shortestPath);
   unordered_set<const Creature*> SERIAL(knownHiding);
@@ -318,7 +315,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   int numEquipActions = 0;
   const Creature* SERIAL2(lastAttacker, nullptr);
   int SERIAL2(swapPositionCooldown, 0);
-  map<LastingEffect, double> SERIAL(lastingEffects);
   double SERIAL2(expLevel, 1);
   vector<const Creature*> SERIAL(unknownAttacker);
   vector<const Creature*> SERIAL(privateEnemies);

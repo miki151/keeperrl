@@ -188,7 +188,7 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
             c.humanoid = false;
             c.size = CreatureSize::LARGE;
             c.speed = 200;
-            c.permanentlyBlind = true;
+            c.lastingEffects[LastingEffect::BLIND] = permanentEffect;
             c.stationary = true;
             c.noSleep = true;
             c.invincible = true;
@@ -206,7 +206,7 @@ PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
             c.humanoid = false;
             c.size = CreatureSize::LARGE;
             c.speed = 140;
-            c.permanentlyBlind = true;
+            c.lastingEffects[LastingEffect::BLIND] = permanentEffect;
             c.noSleep = true;
             c.stationary = true;
             c.invincible = true;
@@ -1098,14 +1098,14 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 1000;
           c.bodyParts[BodyPart::WING] = 2;
           c.flyer = true;
-          c.poisonResistant = true;
+          c.lastingEffects[LastingEffect::POISON_RESISTANT] = permanentEffect;
           c.firstName = NameGenerator::demonNames.getNext();
           c.name = "dragon";);
     case CreatureId::RED_DRAGON:
       return INHERIT(GREEN_DRAGON,
           c.viewId = ViewId::RED_DRAGON;
           c.fireCreature = true;
-          c.poisonResistant = false;);
+          c.lastingEffects[LastingEffect::POISON_RESISTANT] = 0;);
     case CreatureId::KNIGHT: 
       return CATTR(
           c.viewId = ViewId::KNIGHT;
@@ -1224,7 +1224,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity += 2;
           c.barehandedDamage += 2;
           c.attackEffect = EffectType::FIRE;
-          c.fireResistant = true;
+          c.lastingEffects[LastingEffect::FIRE_RESISTANT] = permanentEffect;
           c.name = "lava golem";);
     case CreatureId::ACID_MOUND: 
       return CATTR(
@@ -1469,7 +1469,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType::POISON;
           c.harmlessApply = true;
-          c.poisonResistant = true;
+          c.lastingEffects[LastingEffect::POISON_RESISTANT] = permanentEffect;
           c.humanoid = true;
           c.weight = 50;
           c.chatReactionFriendly = "curses all humans";

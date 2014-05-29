@@ -211,7 +211,7 @@ SpellInfo Creature::getSpell(SpellId id) {
 }
 
 bool Creature::isFireResistant() const {
-  return fireCreature || fireResistant;
+  return fireCreature || isAffected(LastingEffect::FIRE_RESISTANT);
 }
 
 void Creature::addSpell(SpellId id) {
@@ -723,8 +723,7 @@ bool Creature::affects(LastingEffect effect) const {
   switch (effect) {
     case RAGE:
     case PANIC: return !isAffected(SLEEP);
-    case BLIND: return !permanentlyBlind;
-    case POISON: return !poisonResistant && !isNotLiving();
+    case POISON: return !isAffected(LastingEffect::POISON_RESISTANT) && !isNotLiving();
     case ENTANGLED: return !uncorporal;
     default: return true;
   }
@@ -771,6 +770,9 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       break;
     case ENTANGLED: if (msg) you(MsgType::ARE, "entangled in a web"); break;
     case SLEEP: if (msg) you(MsgType::FALL_ASLEEP, ""); break;
+    case POISON_RESISTANT: if (msg) you(MsgType::ARE, "now poison resistant"); break;
+    case FIRE_RESISTANT: if (msg) you(MsgType::ARE, "now fire resistant"); break;
+    END_CASE(LastingEffect);
   }
 }
 
@@ -812,28 +814,30 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
         you(MsgType::ARE, "no longer poisoned");
       viewObject.removeModifier(ViewObject::POISONED);
       break;
+    case POISON_RESISTANT: if (msg) you(MsgType::ARE, "no longer resistant"); break;
+    case FIRE_RESISTANT: if (msg) you(MsgType::ARE, "no longer resistant"); break;
+    END_CASE(LastingEffect);
   } 
 }
 
 void Creature::addEffect(LastingEffect effect, double time, bool msg) {
-  if (affects(effect)) {
+  if (lastingEffects[effect] < getTime() + time && affects(effect)) {
     lastingEffects[effect] = getTime() + time;
     onAffected(effect, msg);
   }
 }
 
 void Creature::removeEffect(LastingEffect effect, bool msg) {
-  lastingEffects.erase(effect);
+  lastingEffects[effect] = 0;
   onRemoved(effect, msg);
 }
 
 bool Creature::isAffected(LastingEffect effect) const {
-  return lastingEffects.count(effect) && lastingEffects.at(effect) >= getTime();
+  return lastingEffects[effect] >= getTime();
 }
 
 bool Creature::isBlind() const {
-  return isAffected(BLIND) || permanentlyBlind || 
-    (numLost(BodyPart::HEAD) > 0 && numBodyParts(BodyPart::HEAD) == 0);
+  return isAffected(BLIND) || (numLost(BodyPart::HEAD) > 0 && numBodyParts(BodyPart::HEAD) == 0);
 }
 
 int Creature::getAttrVal(AttrType type) const {
@@ -1033,10 +1037,10 @@ void Creature::tick(double realTime) {
     if (item->isDiscarded())
       equipment.removeItem(item);
   }
-  for (auto elem : copyThis(lastingEffects))
-    if (elem.second < realTime) {
-      lastingEffects.erase(elem.first);
-      onTimedOut(elem.first, true);
+  for (LastingEffect effect : ENUM_ALL(LastingEffect))
+    if (lastingEffects[effect] > 0 && lastingEffects[effect] < realTime) {
+      lastingEffects[effect] = 0;
+      onTimedOut(effect, true);
     }
   else if (isAffected(POISON)) {
     bleed(1.0 / 60);
@@ -1496,7 +1500,7 @@ void Creature::setOnFire(double amount) {
 }
 
 void Creature::poisonWithGas(double amount) {
-  if (!poisonResistant && breathing && !isNotLiving()) {
+  if (!isAffected(LastingEffect::POISON_RESISTANT) && breathing && !isNotLiving()) {
     you(MsgType::ARE, "poisoned by the gas");
     bleed(amount / double(getAttr(AttrType::STRENGTH)));
   }
@@ -2083,7 +2087,7 @@ Vision* Creature::getVision() const {
 }
 
 string Creature::getRemainingString(LastingEffect effect) const {
-  return "[" + convertToString<int>(lastingEffects.at(effect) - time) + "]";
+  return "[" + convertToString<int>(lastingEffects[effect] - time) + "]";
 }
 
 vector<string> Creature::getMainAdjectives() const {
@@ -2113,7 +2117,7 @@ vector<string> Creature::getAdjectives() const {
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = lostBodyParts[part])
       ret.push_back(getPlural("lost " + getBodyPartName(part), num));
-  for (LastingEffect effect : getKeys(lastingEffects))
+  for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect)) {
       bool addCount = true;
       switch (effect) {

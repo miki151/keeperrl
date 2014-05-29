@@ -158,7 +158,7 @@ static void deception(Creature* c) {
           c.dexterity = 1;
           c.barehandedDamage = 20; // just so it's not ignored by creatures
           c.stationary = true;
-          c.permanentlyBlind = true;
+          c.lastingEffects[LastingEffect::BLIND] = permanentEffect;
           c.noSleep = true;
           c.flyer = true;
           c.breathing = false;
@@ -207,7 +207,7 @@ static void wordOfPower(Creature* c, EffectStrength strength) {
           l->moveCreature(other, v * dist);
           other->you(MsgType::ARE, "pushed back");
         }
-        other->addEffect(Creature::STUNNED, 2);
+        other->addEffect(LastingEffect::STUNNED, 2);
         other->takeDamage(Attack(c, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
       }
     }
@@ -294,7 +294,7 @@ static void heal(Creature* c, EffectStrength strength) {
 static void sleep(Creature* c, EffectStrength strength) {
   Square *square = c->getLevel()->getSquare(c->getPosition());
   c->you(MsgType::FALL_ASLEEP, square->getName());
-  c->addEffect(Creature::SLEEP, Random.getRandom(sleepTime[strength]));
+  c->addEffect(LastingEffect::SLEEP, Random.getRandom(sleepTime[strength]));
 }
 
 static void portal(Creature* c) {
@@ -411,14 +411,15 @@ double entangledTime(int strength) {
 void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strength) {
   switch (type) {
     case EffectType::LEAVE_BODY: leaveBody(c); break;
-    case EffectType::WEB: c->addEffect(Creature::ENTANGLED, entangledTime(c->getAttr(AttrType::STRENGTH))); break;
+    case EffectType::WEB:
+      c->addEffect(LastingEffect::ENTANGLED, entangledTime(c->getAttr(AttrType::STRENGTH))); break;
     case EffectType::TELE_ENEMIES: teleEnemies(c); break;
     case EffectType::ALARM: alarm(c); break;
     case EffectType::ACID: acid(c); break;
     case EffectType::SUMMON_INSECTS: insects(c); break;
     case EffectType::DECEPTION: deception(c); break;
     case EffectType::WORD_OF_POWER: wordOfPower(c, strength); break;
-    case EffectType::POISON: c->addEffect(Creature::POISON, poisonTime.at(strength)); break;
+    case EffectType::POISON: c->addEffect(LastingEffect::POISON, poisonTime.at(strength)); break;
     case EffectType::GUARDING_BOULDER: guardingBuilder(c); break;
     case EffectType::FIRE_SPHERE_PET: summon(c, CreatureId::FIRE_SPHERE, 1, 30); break;
     case EffectType::ENHANCE_ARMOR: enhanceArmor(c); break;
@@ -429,15 +430,15 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::IDENTIFY: c->grantIdentify(identifyNum[strength]); break;
     case EffectType::TERROR: c->globalMessage("You hear maniacal laughter close by",
                                  "You hear maniacal laughter in the distance");
-    case EffectType::PANIC: c->addEffect(Creature::PANIC, panicTime[strength]); break;
-    case EffectType::RAGE: c->addEffect(Creature::RAGE, panicTime[strength]); break;
-    case EffectType::HALLU: c->addEffect(Creature::HALLU, panicTime[strength]); break;
-    case EffectType::STR_BONUS: c->addEffect(Creature::STR_BONUS, attrBonusTime[strength]); break;
-    case EffectType::DEX_BONUS: c->addEffect(Creature::DEX_BONUS, attrBonusTime[strength]); break;
-    case EffectType::SLOW: c->addEffect(Creature::SLOWED, panicTime[strength]); break;
-    case EffectType::SPEED: c->addEffect(Creature::SPEED, panicTime[strength]); break;
-    case EffectType::BLINDNESS: c->addEffect(Creature::BLIND, blindTime[strength]); break;
-    case EffectType::INVISIBLE: c->addEffect(Creature::INVISIBLE, invisibleTime[strength]); break;
+    case EffectType::PANIC: c->addEffect(LastingEffect::PANIC, panicTime[strength]); break;
+    case EffectType::RAGE: c->addEffect(LastingEffect::RAGE, panicTime[strength]); break;
+    case EffectType::HALLU: c->addEffect(LastingEffect::HALLU, panicTime[strength]); break;
+    case EffectType::STR_BONUS: c->addEffect(LastingEffect::STR_BONUS, attrBonusTime[strength]); break;
+    case EffectType::DEX_BONUS: c->addEffect(LastingEffect::DEX_BONUS, attrBonusTime[strength]); break;
+    case EffectType::SLOW: c->addEffect(LastingEffect::SLOWED, panicTime[strength]); break;
+    case EffectType::SPEED: c->addEffect(LastingEffect::SPEED, panicTime[strength]); break;
+    case EffectType::BLINDNESS: c->addEffect(LastingEffect::BLIND, blindTime[strength]); break;
+    case EffectType::INVISIBLE: c->addEffect(LastingEffect::INVISIBLE, invisibleTime[strength]); break;
     case EffectType::FIRE: c->getSquare()->setOnFire(fireAmount[strength]); break;
     case EffectType::PORTAL: portal(c); break;
     case EffectType::TELEPORT: teleport(c); break;

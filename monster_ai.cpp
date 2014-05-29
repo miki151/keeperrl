@@ -109,7 +109,7 @@ class Heal : public Behaviour {
       return { 0.4 * min(1.0, 1.5 - creature->getHealth()), creature->applySquare()};
     Vec2 bedRadius(10, 10);
     Level* l = creature->getLevel();
-    if (useBeds && creature->canSleep() && !creature->isAffected(Creature::POISON)) {
+    if (useBeds && creature->canSleep() && !creature->isAffected(LastingEffect::POISON)) {
       if (!hasBed || hasBed->level != creature->getLevel()) {
         for (Vec2 v : Rectangle(creature->getPosition() - bedRadius, creature->getPosition() + bedRadius))
           if (l->inBounds(v) && l->getSquare(v)->getApplyType(creature) == SquareApplyType::SLEEP)
@@ -316,7 +316,7 @@ class Fighter : public Behaviour, public EventListener {
           && item->getName().size() > name.size() && item->getName().substr(0, name.size()) == name) {
       creature->globalMessage(creature->getTheName() + " screams in terror!", "You hear a scream of terror.");
       if (Random.roll(2))
-        creature->addEffect(Creature::RAGE, (30));
+        creature->addEffect(LastingEffect::RAGE, (30));
       else
         courage -= 0.5;
     }
@@ -339,9 +339,9 @@ class Fighter : public Behaviour, public EventListener {
       if (powerRatio < maxPowerRatio)
         weight += 2 - powerRatio * 2;
       weight = min(1.0, max(0.0, weight));
-      if (creature->isAffected(Creature::PANIC))
+      if (creature->isAffected(LastingEffect::PANIC))
         weight = 1;
-      if (other->isAffected(Creature::SLEEP) || other->isStationary())
+      if (other->isAffected(LastingEffect::SLEEP) || other->isStationary())
         weight = 0;
       Debug() << creature->getName() << " panic weight " << weight;
       if (weight >= 0.5) {

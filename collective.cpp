@@ -346,7 +346,7 @@ void Collective::render(View* view) {
   if (possessed && (!possessed->isPlayer() || possessed->isDead())) {
  /*   if (contains(team, possessed))
       removeElement(team, possessed);*/
-    if ((possessed->isDead() || possessed->isAffected(Creature::SLEEP)) && !team.empty()) {
+    if ((possessed->isDead() || possessed->isAffected(LastingEffect::SLEEP)) && !team.empty()) {
       possess(team.front(), view);
     } else {
       view->setTimeMilli(possessed->getTime() * 300);
@@ -468,7 +468,7 @@ void Collective::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vecto
           lOpt.push_back(elem.description);
           mOpt.push_back(elem.option);
         }
-      if (c->isAffected(Creature::SLEEP)) {
+      if (c->isAffected(LastingEffect::SLEEP)) {
         mOpt.push_back(MinionOption::WAKE_UP);
         lOpt.push_back("Wake up");
       }
@@ -514,7 +514,7 @@ void Collective::minionView(View* view, Creature* creature, int prevIndex) {
     case MinionOption::POSSESS: possess(creature, view); return;
     case MinionOption::EQUIPMENT: handleEquipment(view, creature); break;
     case MinionOption::INFO: messageBuffer.addMessage(MessageBuffer::important(creature->getDescription())); break;
-    case MinionOption::WAKE_UP: creature->removeEffect(Creature::SLEEP); return;
+    case MinionOption::WAKE_UP: creature->removeEffect(LastingEffect::SLEEP); return;
     case MinionOption::PRISON:
       setMinionTask(creature, MinionTask::PRISON);
       setMinionType(creature, MinionType::PRISONER);
@@ -536,7 +536,7 @@ void Collective::minionView(View* view, Creature* creature, int prevIndex) {
       for (auto elem : taskOptions)
         if (mOpt[*index] == elem.option) {
           setMinionTask(creature, elem.task);
-          creature->removeEffect(Creature::SLEEP);
+          creature->removeEffect(LastingEffect::SLEEP);
           return;
         }
       FAIL << "Unknown option " << int(mOpt[*index]);
@@ -639,7 +639,7 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
             && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slots[index]; });
     if (chosenItem) {
       if (Creature* c = const_cast<Creature*>(minionEquipment.getOwner(chosenItem)))
-        c->removeEffect(Creature::SLEEP);
+        c->removeEffect(LastingEffect::SLEEP);
       minionEquipment.own(creature, chosenItem);
     }
   }
@@ -1393,8 +1393,8 @@ void Collective::possess(const Creature* cr, View* view) {
   CHECK(contains(creatures, cr));
   CHECK(!cr->isDead());
   Creature* c = const_cast<Creature*>(cr);
-  if (c->isAffected(Creature::SLEEP))
-    c->removeEffect(Creature::SLEEP);
+  if (c->isAffected(LastingEffect::SLEEP))
+    c->removeEffect(LastingEffect::SLEEP);
   freeFromGuardPost(c);
   updateMemory();
   c->pushController(PController(new MinionController(c, model, memory.get())));
@@ -1462,8 +1462,8 @@ void Collective::processInput(View* view, UserInput input) {
  //         gatheringTeam = false;
           for (Creature* c : team) {
             freeFromGuardPost(c);
-            if (c->isAffected(Creature::SLEEP))
-              c->removeEffect(Creature::SLEEP);
+            if (c->isAffected(LastingEffect::SLEEP))
+              c->removeEffect(LastingEffect::SLEEP);
           }
         } else
           gatheringTeam = true;
@@ -2046,8 +2046,8 @@ void Collective::onAlarmEvent(const Level* l, Vec2 pos) {
     alarmInfo.finishTime = getTime() + alarmTime;
     alarmInfo.position = pos;
     for (Creature* c : minions)
-      if (c->isAffected(Creature::SLEEP))
-        c->removeEffect(Creature::SLEEP);
+      if (c->isAffected(LastingEffect::SLEEP))
+        c->removeEffect(LastingEffect::SLEEP);
   }
 }
 
@@ -2247,7 +2247,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
         }
       }
   minionTasks.at(c->getUniqueId()).update();
-  if (c->getHealth() < 1 && c->canSleep() && !c->isAffected(Creature::POISON))
+  if (c->getHealth() < 1 && c->canSleep() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE})
       if (minionTasks.at(c->getUniqueId()).containsState(t)) {
         minionTasks.at(c->getUniqueId()).setState(t);

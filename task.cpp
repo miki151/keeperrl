@@ -319,8 +319,8 @@ class BringItem : public PickItem {
     } else {
       if (c->getPosition().dist8(target) == 1)
         if (Creature* other = c->getLevel()->getSquare(target)->getCreature())
-          if (other->isAffected(Creature::SLEEP))
-            other->removeEffect(Creature::SLEEP);
+          if (other->isAffected(LastingEffect::SLEEP))
+            other->removeEffect(LastingEffect::SLEEP);
       return getMoveToPosition(c);
     }
   }

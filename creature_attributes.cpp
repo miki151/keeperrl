@@ -42,8 +42,6 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(bodyParts)
     & SVAR(innocent)
     & SVAR(uncorporal)
-    & SVAR(fireResistant)
-    & SVAR(poisonResistant)
     & SVAR(fireCreature)
     & SVAR(breathing)
     & SVAR(humanoid)
@@ -60,13 +58,13 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(courage)
     & SVAR(maxLevel)
     & SVAR(carryAnything)
-    & SVAR(permanentlyBlind)
     & SVAR(invincible)
     & SVAR(damageMultiplier)
     & SVAR(attributeGain)
     & SVAR(skills)
     & SVAR(skillGain)
-    & SVAR(spells);
+    & SVAR(spells)
+    & SVAR(lastingEffects);
   CHECK_SERIAL;
 }
 
