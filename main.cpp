@@ -203,9 +203,9 @@ int main(int argc, char* argv[]) {
   GuiElem::initialize("frame.png");
   while (1) {
     Item::identifyEverything();
-    Quests::clearAll();
+    Quest::clearAll();
     Creature::initialize();
-    Tribes::clearAll();
+    Tribe::clearAll();
     Technology::clearAll();
     Skill::clearAll();
     Vision::clearAll();

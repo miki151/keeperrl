@@ -115,8 +115,8 @@ void VillageControl::tick(double time) {
 }
 
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
-  if ((victim->getTribe() == tribe && (!killer ||  killer->getTribe() == Tribes::get(TribeId::KEEPER)))
-      || (victim->getTribe() == Tribes::get(TribeId::KEEPER) && killer && killer->getTribe() == tribe))
+  if ((victim->getTribe() == tribe && (!killer ||  killer->getTribe() == Tribe::get(TribeId::KEEPER)))
+      || (victim->getTribe() == Tribe::get(TribeId::KEEPER) && killer && killer->getTribe() == tribe))
     atWar = true;
   if (contains(allCreatures, victim)) {
     if (!isAnonymous() && getAliveCreatures().empty()) {
@@ -196,7 +196,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
   }
 
   void onKillEvent(const Creature* victim, const Creature* killer) override {
-    if (victim->getTribe() == control->tribe && (!killer ||  killer->getTribe() == Tribes::get(TribeId::KEEPER))) {
+    if (victim->getTribe() == control->tribe && (!killer ||  killer->getTribe() == Tribe::get(TribeId::KEEPER))) {
       killedPoints += victim->getDifficultyPoints();
       lastAttack = victim->getTime();
     }

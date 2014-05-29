@@ -1513,11 +1513,11 @@ static LevelMaker* underground(bool monsters) {
             queue->addMaker(new Shrine(deity, lakeType,
                   new TypePredicate(lakeType), SquareType::ROCK_WALL, nullptr));
             if (lakeType == SquareType::WATER) {
-              queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::MONSTER),
+              queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::get(TribeId::MONSTER),
                     CreatureId::KRAKEN), 1, MonsterAIFactory::monster(), SquareType::WATER));
             }
             if (lakeType == SquareType::MAGMA) {
-              queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::MONSTER),
+              queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::get(TribeId::MONSTER),
                     CreatureId::FIRE_SPHERE), Random.getRandom(1, 4),
                     MonsterAIFactory::monster(), SquareType::MAGMA));
             }
@@ -1544,7 +1544,7 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up,
             ItemFactory::villageShop(),
             ItemFactory::dwarfShop(),
             ItemFactory::goblinShop()}),
-          Tribes::get(TribeId::HUMAN), Random.getRandom(8, 16), brickBuilding);
+          Tribe::get(TribeId::HUMAN), Random.getRandom(8, 16), brickBuilding);
   }
   queue->addMaker(new RoomMaker(Random.getRandom(8, 15), 4, 7, SquareType::ROCK_WALL, SquareType::BLACK_WALL,
         new Empty(SquareType::FLOOR), shopMaker));
@@ -1630,7 +1630,7 @@ MakerQueue* village(SettlementInfo info) {
   queue->addMaker(new LocationMaker(info.location));
   queue->addMaker(new UniformBlob(building.floorOutside, Nothing(), Nothing(), 0.6));
   vector<LevelMaker*> insideMakers {
-      hatchery(CreatureFactory::singleType(Tribes::get(TribeId::ELVEN), CreatureId::PIG), Random.getRandom(2, 5)),
+      hatchery(CreatureFactory::singleType(Tribe::get(TribeId::ELVEN), CreatureId::PIG), Random.getRandom(2, 5)),
       getElderRoom(info)};
   if (info.shopFactory)
     insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));
@@ -1875,9 +1875,9 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
           queue = caveMaker(settlement); break;
           break;
   }
-    if (settlement.tribe == Tribes::get(TribeId::ELVEN))
+    if (settlement.tribe == Tribe::get(TribeId::ELVEN))
       elvenVillage = queue;
-    if (settlement.tribe == Tribes::get(TribeId::BANDIT))
+    if (settlement.tribe == Tribe::get(TribeId::BANDIT))
       bandits = queue;
     locations->add(queue, getSize(settlement.type), getSettlementPredicate(settlement.type));
   }
@@ -1890,7 +1890,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
         lowlandPred);
     locations->setMaxDistanceLast(elvenVillage, 18);
   }
-  locations->add(makeDragonSwamp(StairKey::DRAGON, Quests::get(QuestId::DRAGON)), {10, 10}, lowlandPred);
+  locations->add(makeDragonSwamp(StairKey::DRAGON, Quest::get(QuestId::DRAGON)), {10, 10}, lowlandPred);
   locations->setMaxDistanceLast(castleMaker, 50);
   int numCemeteries = 1;
   for (int i : Range(numCemeteries)) {
@@ -2017,7 +2017,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   queue->addMaker(new Roads(SquareType::PATH));
   queue->addMaker(new Connector({5, 0, 0}, 5, new AndPredicates(new DefaultCanEnter(),
           new AttribPredicate(SquareAttrib::CONNECT_CORRIDOR))));
-  queue->addMaker(new Creatures(CreatureFactory::singleType(Tribes::get(TribeId::HUMAN), CreatureId::GOAT),
+  queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::get(TribeId::HUMAN), CreatureId::GOAT),
         Random.getRandom(3, 6), MonsterAIFactory::doorEater()));
   queue->addMaker(new Items(ItemFactory::mushrooms(), SquareType::GRASS, 30, 60));
   return new BorderGuard(queue);

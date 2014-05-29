@@ -91,21 +91,21 @@ void Creature::initialize() {
 
 Creature* Creature::getDefault() {
   if (!defaultCreature)
-    defaultCreature = CreatureFactory::fromId(CreatureId::GNOME, Tribes::get(TribeId::MONSTER),
+    defaultCreature = CreatureFactory::fromId(CreatureId::GNOME, Tribe::get(TribeId::MONSTER),
         MonsterAIFactory::idle());
   return defaultCreature.get();
 }
 
 Creature* Creature::getDefaultMinion() {
   if (!defaultMinion)
-    defaultMinion = CreatureFactory::fromId(CreatureId::GNOME, Tribes::get(TribeId::KEEPER),
+    defaultMinion = CreatureFactory::fromId(CreatureId::GNOME, Tribe::get(TribeId::KEEPER),
         MonsterAIFactory::idle());
   return defaultMinion.get();
 }
 
 Creature* Creature::getDefaultMinionFlyer() {
   if (!defaultFlyer)
-    defaultFlyer = CreatureFactory::fromId(CreatureId::RAVEN, Tribes::get(TribeId::KEEPER),
+    defaultFlyer = CreatureFactory::fromId(CreatureId::RAVEN, Tribe::get(TribeId::KEEPER),
         MonsterAIFactory::idle());
   return defaultFlyer.get();
 }
@@ -2175,9 +2175,9 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.dexBonus = isAffected(DEX_BONUS);
   info.time = getTime();
   info.numGold = getGold(100000000).size();
-  info.elfStanding = Tribes::get(TribeId::ELVEN)->getStanding(this);
-  info.dwarfStanding = Tribes::get(TribeId::DWARVEN)->getStanding(this);
-  info.goblinStanding = Tribes::get(TribeId::GOBLIN)->getStanding(this);
+  info.elfStanding = Tribe::get(TribeId::ELVEN)->getStanding(this);
+  info.dwarfStanding = Tribe::get(TribeId::DWARVEN)->getStanding(this);
+  info.goblinStanding = Tribe::get(TribeId::GOBLIN)->getStanding(this);
   info.effects.clear();
   for (string s : getAdjectives())
     info.effects.push_back({s, true});

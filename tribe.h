@@ -24,7 +24,7 @@
 #include "event.h"
 #include "singleton.h"
 
-class Tribe : public EventListener {
+class Tribe : public EventListener, public Singleton<Tribe, TribeId> {
   public:
   virtual double getStanding(const Creature*) const;
 
@@ -68,7 +68,5 @@ class Tribe : public EventListener {
   string SERIAL(name);
   int SERIAL2(handicap, 0);
 };
-
-typedef Singleton<Tribe, TribeId> Tribes;
 
 #endif

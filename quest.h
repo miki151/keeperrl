@@ -25,7 +25,7 @@
 class Location;
 class Tribe;
 
-class Quest {
+class Quest : public Singleton<Quest, QuestId> {
   public:
   virtual ~Quest() {}
   virtual bool isFinished() const = 0;
@@ -46,7 +46,5 @@ class Quest {
   const Location* SERIAL2(location, nullptr);
   string SERIAL(startMessage);
 };
-
-typedef Singleton<Quest, QuestId> Quests;
 
 #endif

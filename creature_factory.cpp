@@ -160,7 +160,7 @@ class BoulderController : public Monster {
 class Boulder : public Creature {
   public:
   Boulder(const CreatureAttributes& attr, Vec2 dir) : 
-    Creature(Tribes::get(TribeId::KILL_EVERYONE), attr, ControllerFactory([dir](Creature* c) { 
+    Creature(Tribe::get(TribeId::KILL_EVERYONE), attr, ControllerFactory([dir](Creature* c) { 
             return new BoulderController(c, dir); })) {}
 
   Boulder(const CreatureAttributes& attr, Tribe* myTribe) : 
@@ -540,8 +540,8 @@ class VillageElder : public Creature {
       Creature(t, attr, factory), teachSkills(_teachSkills) {
     getTribe()->setLeader(this);
     for (auto elem : _quests)
-      if (Quests::exists(elem.first))
-        quests.emplace_back(Quests::get(elem.first), elem.second);
+      if (Quest::exists(elem.first))
+        quests.emplace_back(Quest::get(elem.first), elem.second);
   }
 
   bool teach(Creature* who) {
@@ -698,7 +698,7 @@ PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemId>& items
 PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
   PCreature ret(new Creature(tribe,
       CATTR(
-        c.viewId = tribe == Tribes::get(TribeId::DWARVEN) ? ViewId::DWARVEN_SHOPKEEPER : ViewId::ELVEN_SHOPKEEPER;
+        c.viewId = tribe == Tribe::get(TribeId::DWARVEN) ? ViewId::DWARVEN_SHOPKEEPER : ViewId::ELVEN_SHOPKEEPER;
         c.speed = 100;
         c.size = CreatureSize::LARGE;
         c.strength = 17;
@@ -745,7 +745,7 @@ CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const ve
 
 CreatureFactory CreatureFactory::humanVillage(double armedRatio) {
   CHECK(armedRatio < 0.999 && armedRatio >= 0);
-  CreatureFactory ret(Tribes::get(TribeId::HUMAN), { CreatureId::PESEANT,
+  CreatureFactory ret(Tribe::get(TribeId::HUMAN), { CreatureId::PESEANT,
       CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
       { 2, 1, 1, 1, 1, 0}, {});
   if (armedRatio == 0)
@@ -760,7 +760,7 @@ CreatureFactory CreatureFactory::humanVillage(double armedRatio) {
 
 CreatureFactory CreatureFactory::elvenVillage(double armedRatio) {
   CHECK(armedRatio < 0.999 && armedRatio >= 0);
-  CreatureFactory ret(Tribes::get(TribeId::ELVEN), { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
+  CreatureFactory ret(Tribe::get(TribeId::ELVEN), { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
       CreatureId::COW, CreatureId::DOG },
       { 2, 2, 1, 1, 0}, {});
   if (armedRatio == 0)
@@ -774,49 +774,49 @@ CreatureFactory CreatureFactory::elvenVillage(double armedRatio) {
 }
 
 CreatureFactory CreatureFactory::forrest() {
-  return CreatureFactory(Tribes::get(TribeId::WILDLIFE),
+  return CreatureFactory(Tribe::get(TribeId::WILDLIFE),
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR, CreatureId::LEPRECHAUN },
       { 4, 2, 2, 1}, {});
 }
 
 CreatureFactory CreatureFactory::crypt() {
-  return CreatureFactory(Tribes::get(TribeId::MONSTER), { CreatureId::ZOMBIE}, { 1}, {});
+  return CreatureFactory(Tribe::get(TribeId::MONSTER), { CreatureId::ZOMBIE}, { 1}, {});
 }
 
 CreatureFactory CreatureFactory::hellLevel() {
-  return CreatureFactory(Tribes::get(TribeId::MONSTER), { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
+  return CreatureFactory(Tribe::get(TribeId::MONSTER), { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
 }
 
 CreatureFactory CreatureFactory::vikingTown() {
-  return CreatureFactory(Tribes::get(TribeId::HUMAN), { CreatureId::WARRIOR}, { 1}, {});
+  return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::WARRIOR}, { 1}, {});
 }
 
 CreatureFactory CreatureFactory::vikingAttackers() {
-  return CreatureFactory(Tribes::get(TribeId::HUMAN), { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
+  return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
 }
 
 CreatureFactory CreatureFactory::castleAttackers() {
-  return CreatureFactory(Tribes::get(TribeId::HUMAN), { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {CreatureId::AVATAR});
+  return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {CreatureId::AVATAR});
 }
 
 CreatureFactory CreatureFactory::elfAttackers() {
-  return CreatureFactory(Tribes::get(TribeId::ELVEN), { CreatureId::ELF_ARCHER, }, { 1}, {CreatureId::ELF_LORD});
+  return CreatureFactory(Tribe::get(TribeId::ELVEN), { CreatureId::ELF_ARCHER, }, { 1}, {CreatureId::ELF_LORD});
 }
 
 CreatureFactory CreatureFactory::lizardAttackers() {
-  return CreatureFactory(Tribes::get(TribeId::LIZARD), { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
+  return CreatureFactory(Tribe::get(TribeId::LIZARD), { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
 }
 
 CreatureFactory CreatureFactory::dwarfTownPeaceful() {
-  return CreatureFactory(Tribes::get(TribeId::DWARVEN), { CreatureId::RAT}, { 1}, {});
+  return CreatureFactory(Tribe::get(TribeId::DWARVEN), { CreatureId::RAT}, { 1}, {});
 }
 
 CreatureFactory CreatureFactory::dwarfTown() {
-  return CreatureFactory(Tribes::get(TribeId::DWARVEN), { CreatureId::DWARF}, { 1}, { CreatureId::DWARF_BARON});
+  return CreatureFactory(Tribe::get(TribeId::DWARVEN), { CreatureId::DWARF}, { 1}, { CreatureId::DWARF_BARON});
 }
 
 CreatureFactory CreatureFactory::splash() {
-  return CreatureFactory(Tribes::get(TribeId::KEEPER), { CreatureId::IMP}, { 1}, { CreatureId::KEEPER });
+  return CreatureFactory(Tribe::get(TribeId::KEEPER), { CreatureId::IMP}, { 1}, { CreatureId::KEEPER });
 }
 
 CreatureFactory CreatureFactory::goblinTown(int num) {
@@ -836,14 +836,14 @@ CreatureFactory CreatureFactory::goblinTown(int num) {
     ids.push_back(elem.first);
     freq.push_back(elem.second[num - 1]);
   }
-  return CreatureFactory(Tribes::get(TribeId::MONSTER), ids, freq, uniqueMonsters[num - 1]);
+  return CreatureFactory(Tribe::get(TribeId::MONSTER), ids, freq, uniqueMonsters[num - 1]);
 }
 
 CreatureFactory CreatureFactory::pyramid(int level) {
   if (level == 2)
-    return CreatureFactory(Tribes::get(TribeId::MONSTER), { CreatureId::MUMMY }, {1}, { CreatureId::MUMMY_LORD });
+    return CreatureFactory(Tribe::get(TribeId::MONSTER), { CreatureId::MUMMY }, {1}, { CreatureId::MUMMY_LORD });
   else
-    return CreatureFactory(Tribes::get(TribeId::MONSTER), { CreatureId::MUMMY }, {1}, { });
+    return CreatureFactory(Tribe::get(TribeId::MONSTER), { CreatureId::MUMMY }, {1}, { });
 }
 
 CreatureFactory CreatureFactory::insects(Tribe* tribe) {
@@ -882,7 +882,7 @@ CreatureFactory CreatureFactory::level(int num) {
     freq.push_back(elem.second[num - 1]);
   }
 
-  return CreatureFactory(Tribes::get(TribeId::MONSTER), ids, freq, uniqueMonsters[num - 1]);
+  return CreatureFactory(Tribe::get(TribeId::MONSTER), ids, freq, uniqueMonsters[num - 1]);
 }
 
 CreatureFactory CreatureFactory::singleType(Tribe* tribe, CreatureId id) {
@@ -1780,7 +1780,7 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::NIGHTMARE: /*
                                    return PCreature(new Shapechanger(
                                    ViewObject(ViewId::NIGHTMARE, ViewLayer::CREATURE, "nightmare"),
-                                   Tribes::get(TribeId::MONSTER),
+                                   Tribe::get(TribeId::MONSTER),
                                    CATTR(
                                    c.speed = 100;
                                    c.size = CreatureSize::LARGE;
@@ -1831,17 +1831,17 @@ CreatureAttributes getAttributes(CreatureId id) {
 
 Tribe* getTribe(CreatureId id, Tribe* normalTribe) {
   switch (id) {
-    case CreatureId::DEATH: return Tribes::get(TribeId::KILL_EVERYONE);
+    case CreatureId::DEATH: return Tribe::get(TribeId::KILL_EVERYONE);
     case CreatureId::RAT:
     case CreatureId::SNAKE:
-    case CreatureId::VULTURE: return Tribes::get(TribeId::PEST);
+    case CreatureId::VULTURE: return Tribe::get(TribeId::PEST);
     case CreatureId::ELF_CHILD:
     case CreatureId::ELF:
     case CreatureId::ELF_LORD:
-    case CreatureId::ELF_ARCHER: return Tribes::get(TribeId::ELVEN);
+    case CreatureId::ELF_ARCHER: return Tribe::get(TribeId::ELVEN);
     case CreatureId::DWARF:
-    case CreatureId::DWARF_BARON: return Tribes::get(TribeId::DWARVEN);
-    case CreatureId::GREAT_GOBLIN: return Tribes::get(TribeId::GOBLIN);
+    case CreatureId::DWARF_BARON: return Tribe::get(TribeId::DWARVEN);
+    case CreatureId::GREAT_GOBLIN: return Tribe::get(TribeId::GOBLIN);
     default: return normalTribe;
   }
 }

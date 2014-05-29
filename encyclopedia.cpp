@@ -55,7 +55,7 @@ void Encyclopedia::advance(View* view, const Technology* tech) {
   if (!rooms.empty())
     text += "Unlocks rooms: " + combine(rooms) + "\n";
   vector<string> minions = transform2<string>(Collective::getSpawnInfo(tech),
-      [](CreatureId id) { return CreatureFactory::fromId(id, Tribes::get(TribeId::MONSTER))->getSpeciesName();});
+      [](CreatureId id) { return CreatureFactory::fromId(id, Tribe::get(TribeId::MONSTER))->getSpeciesName();});
   if (!minions.empty())
     text += "Unlocks minions: " + combine(minions) + "\n";
   if (!tech->canResearch())

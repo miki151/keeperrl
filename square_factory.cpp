@@ -246,7 +246,7 @@ class Chest : public Square {
       c->playerMessage(msgMonster);
       int numR = Random.getRandom(minCreatures, maxCreatures);
       for (Vec2 v : getPosition().neighbors8(true)) {
-        PCreature rat = CreatureFactory::fromId(creatureId,  Tribes::get(TribeId::PEST));
+        PCreature rat = CreatureFactory::fromId(creatureId,  Tribe::get(TribeId::PEST));
         if (getLevel()->getSquare(v)->canEnter(rat.get())) {
           getLevel()->addCreature(v, std::move(rat));
           if (--numR == 0)
@@ -431,12 +431,12 @@ class TribeDoor : public Door {
   }
 
   virtual bool canDestroy(const Creature* c) const override {
-    return c->getTribe() != Tribes::get(TribeId::KEEPER)
+    return c->getTribe() != Tribe::get(TribeId::KEEPER)
       || c->isInvincible(); // hack to make boulders destroy doors
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return !locked && c->canWalk() && c->getTribe() == Tribes::get(TribeId::KEEPER);
+    return !locked && c->canWalk() && c->getTribe() == Tribe::get(TribeId::KEEPER);
   }
 
   virtual bool canLock() const {
@@ -485,7 +485,7 @@ class Barricade : public SolidSquare {
   }
 
   virtual bool canDestroy(const Creature* c) const override {
-    return c->getTribe() != Tribes::get(TribeId::KEEPER)
+    return c->getTribe() != Tribe::get(TribeId::KEEPER)
       || c->isInvincible(); // hack to make boulders destroy doors
   }
 
@@ -752,7 +752,7 @@ class Hatchery : public Square {
         if (c->getName() == "chicken")
           return;
     getLevel()->addCreature(getPosition(), CreatureFactory::fromId(CreatureId::CHICKEN,
-          Tribes::get(TribeId::PEACEFUL), MonsterAIFactory::moveRandomly()));
+          Tribe::get(TribeId::PEACEFUL), MonsterAIFactory::moveRandomly()));
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {
