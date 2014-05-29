@@ -374,10 +374,10 @@ PCreature Model::makePlayer() {
           c.firstName = NameGenerator::firstNames.getNext();
           c.maxLevel = 1;
           c.uncorporal = true;
-          c.skills.insert(Skill::get(SkillId::ARCHERY));
-          c.skills.insert(Skill::get(SkillId::AMBUSH));
-          c.skills.insert(Skill::get(SkillId::NIGHT_VISION));
-          c.skills.insert(Skill::get(SkillId::TWO_HANDED_WEAPON));), Player::getFactory(this, levelMemory))), {
+          c.skills.insert(SkillId::ARCHERY);
+          c.skills.insert(SkillId::AMBUSH);
+          c.skills.insert(SkillId::NIGHT_VISION);
+          c.skills.insert(SkillId::TWO_HANDED_WEAPON);), Player::getFactory(this, levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,

@@ -967,6 +967,52 @@ class EnumMap {
   U elems[int(T::ENUM_END)];
 };
 
+template<class T>
+class EnumSet : public EnumMap<T, bool> {
+  public:
+  void insert(T elem) {
+    (*this)[elem] = true;
+  }
+
+  class Iter {
+    public:
+    Iter(const EnumSet& s, int num) : set(s), ind(num) {
+      goForward();
+    }
+
+    void goForward() {
+      while (ind < int(T::ENUM_END) && !set[T(ind)])
+        ++ind;
+    }
+
+    T operator* () const {
+      return T(ind);
+    }
+
+    bool operator != (const Iter& other) const {
+      return ind != other.ind;
+    }
+
+    const Iter& operator++ () {
+      ++ind;
+      goForward();
+      return *this;
+    }
+
+    private:
+    const EnumSet& set;
+    int ind;
+  };
+
+  Iter begin() const {
+    return Iter(*this, 0);
+  }
+
+  Iter end() const {
+    return Iter(*this, int(T::ENUM_END));
+  }
+};
+
 template <class T>
 class EnumAll {
   public:

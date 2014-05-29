@@ -52,6 +52,12 @@ template<class T, class E>
 void Singleton<T, E>::set(E id, T* q) {
   CHECK(!elems[id]);
   elems[id].reset(q);
+  q->id = id;
+}
+
+template<class T, class E>
+E Singleton<T, E>::getId() const {
+  return id;
 }
 
 template class Singleton<Tribe, TribeId>;

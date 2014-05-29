@@ -113,8 +113,8 @@ Creature* Creature::getDefaultMinionFlyer() {
 Creature::Creature(ViewObject object, Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
     : CreatureAttributes(attr), viewObject(object), tribe(t), controller(f.get(this)) {
   tribe->addMember(this);
-  for (Skill* skill : skills)
-    skill->onTeach(this);
+  for (SkillId skill : skills)
+    Skill::get(skill)->onTeach(this);
 }
 
 Creature::Creature(Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
@@ -456,15 +456,15 @@ void Creature::monsterMessage(const string& playerCanSee, const string& cant) co
 }
 
 void Creature::addSkill(Skill* skill) {
-  if (!skills.count(skill)) {
-    skills.insert(skill);
+  if (!skills[skill->getId()]) {
+    skills.insert(skill->getId());
     skill->onTeach(this);
     playerMessage(skill->getHelpText());
   }
 }
 
 bool Creature::hasSkill(Skill* skill) const {
-  return skills.count(skill);
+  return skills[skill->getId()];
 }
 
 bool Creature::hasSkillToUseWeapon(const Item* it) const {
@@ -472,7 +472,10 @@ bool Creature::hasSkillToUseWeapon(const Item* it) const {
 }
 
 vector<Skill*> Creature::getSkills() const {
-  return vector<Skill*>(skills.begin(), skills.end());
+  vector<Skill*> ret;
+  for (SkillId id : skills)
+    ret.push_back(Skill::get(id));
+  return ret;
 }
 
 vector<Item*> Creature::getPickUpOptions() const {
@@ -655,7 +658,7 @@ Creature::Action Creature::applySquare() {
 }
 
 Creature::Action Creature::hide() {
-  if (!skills.count(Skill::get(SkillId::AMBUSH)))
+  if (!skills[SkillId::AMBUSH])
     return Action("You don't have this skill.");
   if (!getConstSquare()->canHide())
     return Action("You can't hide here.");
@@ -1840,7 +1843,7 @@ bool Creature::hasBrain() const {
 }
 
 bool Creature::canSwim() const {
-  return contains(skills, Skill::get(SkillId::SWIMMING));
+  return skills[SkillId::SWIMMING];
 }
 
 bool Creature::canFly() const {

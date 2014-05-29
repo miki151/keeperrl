@@ -32,9 +32,11 @@ class Singleton {
     ar & elems;
   }
 
+  E getId() const;
+
   private:
   static EnumMap<E, unique_ptr<T>> elems;
-
+  E id;
 };
 
 #endif

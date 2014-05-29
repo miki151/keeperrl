@@ -86,7 +86,7 @@ class CreatureAttributes {
   bool SERIAL2(invincible, false);
   double SERIAL2(damageMultiplier, 1);
   double SERIAL2(attributeGain, 0.5);
-  unordered_set<Skill*> SERIAL(skills);
+  EnumSet<SkillId> SERIAL(skills);
   map<int, Skill*> skillGain {
     {6, Skill::get(SkillId::KNIFE_THROWING)}};
   SERIAL3(skillGain);
