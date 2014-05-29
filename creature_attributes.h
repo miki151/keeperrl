@@ -60,7 +60,7 @@ class CreatureAttributes {
   bool SERIAL2(harmlessApply, false); // apply the attack effect even if attack was harmless
   Optional<EffectType> SERIAL(passiveAttack);
   Gender SERIAL2(gender, Gender::male);
-  map<BodyPart, int> bodyParts { 
+  EnumMap<BodyPart, int> bodyParts { 
     { BodyPart::ARM, 2},
     { BodyPart::LEG, 2},
     { BodyPart::HEAD, 1}};

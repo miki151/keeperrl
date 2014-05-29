@@ -925,4 +925,75 @@ string combine(const vector<T>& v) {
       transform2<string>(v, [](const T& e) { return e.name; }));
 }
 
+template<class T, class U>
+class EnumMap {
+  public:
+  EnumMap() {
+    clear();
+  }
+
+  void clear() {
+    for (int i = 0; i < int(T::ENUM_END); ++i)
+      elems[i] = U();
+  }
+
+  EnumMap(initializer_list<pair<T, U>> il) {
+    clear();
+    for (auto elem : il)
+      elems[int(elem.first)] = elem.second;
+  }
+
+  const U& operator[](T elem) const {
+    return elems[int(elem)];
+  }
+
+  U& operator[](T elem) {
+    return elems[int(elem)];
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & boost::serialization::make_array(elems, int(T::ENUM_END));
+  }
+
+  private:
+  U elems[int(T::ENUM_END)];
+};
+
+template <class T>
+class EnumAll {
+  public:
+  class Iter {
+    public:
+    Iter(int num) : ind(num) {
+    }
+
+    T operator* () const {
+      return T(ind);
+    }
+
+    bool operator != (const Iter& other) const {
+      return ind != other.ind;
+    }
+
+    const Iter& operator++ () {
+      ++ind;
+      return *this;
+    }
+
+    private:
+    int ind;
+  };
+
+  Iter begin() {
+    return Iter(0);
+  }
+
+  Iter end() {
+    return Iter(int(T::ENUM_END));
+  }
+};
+
+#define ENUM_ALL(X) EnumAll<X>()
+
 #endif

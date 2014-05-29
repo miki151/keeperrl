@@ -1113,6 +1113,7 @@ static string getBodyPartName(BodyPart part) {
     case BodyPart::HEAD: return "head";
     case BodyPart::TORSO: return "torso";
     case BodyPart::BACK: return "back";
+    END_CASE(BodyPart);
   }
   FAIL <<"Wf";
   return "";
@@ -1449,25 +1450,26 @@ void Creature::heal(double amount, bool replaceLimbs) {
   if (health < 1) {
     health = min(1., health + amount);
     if (health >= 0.5) {
-      for (auto& elem : injuredBodyParts)
-        if (elem.second > 0) {
-          you(MsgType::YOUR, getBodyPartName(elem.first) + (elem.second > 1 ? "s are" : " is") + " in better shape");
-          if (elem.first == BodyPart::LEG && !lostBodyParts[BodyPart::LEG] && collapsed) {
+      for (BodyPart part : ENUM_ALL(BodyPart))
+        if (int numInjured = injuredBodyParts[part]) {
+          you(MsgType::YOUR, getBodyPartName(part) + (numInjured > 1 ? "s are" : " is") + " in better shape");
+          if (part == BodyPart::LEG && !lostBodyParts[BodyPart::LEG] && collapsed) {
             collapsed = false;
             you(MsgType::STAND_UP, "");
           }
-          elem.second = 0;
+          injuredBodyParts[part] = 0;
         }
       if (replaceLimbs)
-        for (auto& elem : lostBodyParts)
-          if (elem.second > 0) {
-            you(MsgType::YOUR, getBodyPartName(elem.first) + (elem.second > 1 ? "s grow back!" : " grows back!"));
-            if (elem.first == BodyPart::LEG && collapsed) {
+      for (BodyPart part : ENUM_ALL(BodyPart))
+        if (int numInjured = lostBodyParts[part]) {
+            you(MsgType::YOUR, getBodyPartName(part) + (numInjured > 1 ? "s grow back!" : " grows back!"));
+            if (part == BodyPart::LEG && collapsed) {
               collapsed = false;
               you(MsgType::STAND_UP, "");
             }
-            if (elem.first == BodyPart::WING)
+            if (part == BodyPart::WING)
               flyer = true;
+            lostBodyParts[part] = 0;
           }
     }
     if (health == 1) {
@@ -1846,36 +1848,24 @@ bool Creature::canWalk() const {
 }
 
 int Creature::numBodyParts(BodyPart part) const {
-  try {
-    return bodyParts.at(part);
-  } catch (std::out_of_range) {
-    return 0;
-  }
+  return bodyParts[part];
 }
 
 int Creature::numLost(BodyPart part) const {
-  try {
-    return lostBodyParts.at(part);
-  } catch (std::out_of_range) {
-    return 0;
-  }
+  return lostBodyParts[part];
 }
 
 int Creature::lostOrInjuredBodyParts() const {
   int ret = 0;
-  for (auto elem : injuredBodyParts)
-    ret += elem.second;
-  for (auto elem : lostBodyParts)
-    ret += elem.second;
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    ret += injuredBodyParts[part];
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    ret += lostBodyParts[part];
   return ret;
 }
 
 int Creature::numInjured(BodyPart part) const {
-  try {
-    return injuredBodyParts.at(part);
-  } catch (std::out_of_range) {
-    return 0;
-  }
+  return injuredBodyParts[part];
 }
 
 int Creature::numGood(BodyPart part) const {
@@ -2068,6 +2058,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
+    END_CASE(BodyPart);
   }
 }
 
@@ -2116,16 +2107,12 @@ vector<string> Creature::getMainAdjectives() const {
 
 vector<string> Creature::getAdjectives() const {
   vector<string> ret;
-  for (auto elem : injuredBodyParts)
-    if (elem.second == 1)
-      ret.push_back("injured " + getBodyPartName(elem.first));
-  else if (elem.second == 2)
-      ret.push_back("two injured " + getBodyPartName(elem.first) + "s");
-  for (auto elem : lostBodyParts)
-    if (elem.second == 1)
-      ret.push_back("lost " + getBodyPartName(elem.first));
-  else if (elem.second == 2)
-      ret.push_back("two lost " + getBodyPartName(elem.first) + "s");
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    if (int num = injuredBodyParts[part])
+      ret.push_back(getPlural("injured " + getBodyPartName(part), num));
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    if (int num = lostBodyParts[part])
+      ret.push_back(getPlural("lost " + getBodyPartName(part), num));
   for (LastingEffect effect : getKeys(lastingEffects))
     if (isAffected(effect)) {
       bool addCount = true;

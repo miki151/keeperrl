@@ -27,6 +27,8 @@ namespace std { \
   }; \
 }
 
+#define END_CASE(X) case X::ENUM_END: FAIL << "enum end"; break;
+
 typedef int UniqueId;
 
 enum class MsgType {
@@ -76,7 +78,8 @@ enum class MsgType {
     KILLED_BY,
     BREAK_FREE,
     MISS_ATTACK}; //
-enum class BodyPart { HEAD, TORSO, ARM, WING, LEG, BACK};
+enum class BodyPart { HEAD, TORSO, ARM, WING, LEG, BACK,
+  ENUM_END};
 enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, HIT, SHOOT, SPELL};
 enum class AttackLevel { LOW, MIDDLE, HIGH };
 enum class AttrType { STRENGTH, DAMAGE, TO_HIT, THROWN_DAMAGE, THROWN_TO_HIT, DEXTERITY, DEFENSE, SPEED, INV_LIMIT};

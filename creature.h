@@ -312,8 +312,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   bool SERIAL2(dead, false);
   double SERIAL2(lastTick, 0);
   bool SERIAL2(collapsed, false);
-  map<BodyPart, int> SERIAL(injuredBodyParts);
-  map<BodyPart, int> SERIAL(lostBodyParts);
+  EnumMap<BodyPart, int> SERIAL(injuredBodyParts);
+  EnumMap<BodyPart, int> SERIAL(lostBodyParts);
   bool SERIAL2(hidden, false);
   bool inEquipChain = false;
   int numEquipActions = 0;
