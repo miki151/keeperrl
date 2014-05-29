@@ -23,7 +23,7 @@
 #include "vision.h"
 
 template<class T, class E>
-unordered_map<E, unique_ptr<T>> Singleton<T, E>::elems;
+EnumMap<E, unique_ptr<T>> Singleton<T, E>::elems;
 
 template<class T, class E>
 void Singleton<T, E>::clearAll() {
@@ -32,25 +32,25 @@ void Singleton<T, E>::clearAll() {
 
 template<class T, class E>
 T* Singleton<T, E>::get(E id) {
-  TRY(return elems.at(id).get(), "Bad id " << int(id));
+  return elems[id].get();
 }
 
 template<class T, class E>
 vector<T*> Singleton<T, E>::getAll() {
   vector<T*> ret;
-  for (auto& elem : elems)
-    ret.push_back(elem.second.get());
+  for (E elem : EnumAll<E>())
+    ret.push_back(elems[elem].get());
   return ret;
 }
 
 template<class T, class E>
 bool Singleton<T, E>::exists(E id) {
-  return elems.count(id);
+  return elems[id] != nullptr;
 }
 
 template<class T, class E>
 void Singleton<T, E>::set(E id, T* q) {
-  CHECK(!elems.count(id));
+  CHECK(!elems[id]);
   elems[id].reset(q);
 }
 

@@ -680,8 +680,8 @@ enum class SpellId {
   PORTAL,
 };
 
-enum class QuestId { DRAGON, CASTLE_CELLAR, BANDITS, GOBLINS, DWARVES };
-ENUM_HASH(QuestId);
+enum class QuestId { DRAGON, CASTLE_CELLAR, BANDITS, GOBLINS, DWARVES,
+  ENUM_END};
 
 enum class TribeId {
   MONSTER,
@@ -699,9 +699,9 @@ enum class TribeId {
   PEACEFUL,
   KEEPER,
   LIZARD,
-};
 
-ENUM_HASH(TribeId);
+  ENUM_END
+};
 
 enum class TechId {
   ALCHEMY,
@@ -725,9 +725,9 @@ enum class TechId {
   SPELLS,
   SPELLS_ADV,
   SPELLS_MAS,
-};
 
-ENUM_HASH(TechId);
+  ENUM_END
+};
 
 enum class SkillId {
   AMBUSH,
@@ -739,15 +739,14 @@ enum class SkillId {
   CONSTRUCTION,
   ELF_VISION,
   NIGHT_VISION,
-};
 
-ENUM_HASH(SkillId);
+  ENUM_END
+};
 
 enum class VisionId {
-  ELF, NIGHT, NORMAL
+  ELF, NIGHT, NORMAL,
+  ENUM_END
 };
-
-ENUM_HASH(VisionId);
 
 enum LastingEffect {
     SLEEP,

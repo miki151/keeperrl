@@ -16,6 +16,8 @@
 #ifndef _SINGLETON_H
 #define _SINGLETON_H
 
+#include "util.h"
+
 template<class T, class E>
 class Singleton {
   public:
@@ -31,7 +33,7 @@ class Singleton {
   }
 
   private:
-  static unordered_map<E, unique_ptr<T>> elems;
+  static EnumMap<E, unique_ptr<T>> elems;
 
 };
 
