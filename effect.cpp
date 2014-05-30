@@ -181,6 +181,7 @@ static void leaveBody(Creature* creature) {
           c.weight = 1;
           c.size = CreatureSize::LARGE;
           c.strength = 1;
+          c.barehandedDamage = 20; // just so it's not ignored by creatures
           c.dexterity = 1;
           c.noSleep = true;
           c.flyer = true;

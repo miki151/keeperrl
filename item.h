@@ -92,6 +92,7 @@ class Item : private ItemAttributes, public UniqueEntity {
 
   AttackType getAttackType() const;
   bool isWieldedTwoHanded() const;
+  int getMinStrength() const;
 
   static ItemPredicate effectPredicate(EffectType);
   static ItemPredicate typePredicate(ItemType);

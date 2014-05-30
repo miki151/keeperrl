@@ -411,12 +411,10 @@ const int legendLineHeight = 30;
 const int legendStartHeight = 70;
 
 static Color getBonusColor(int bonus) {
-  switch (bonus) {
-    case -1: return red;
-    case 0: return white;
-    case 1: return green;
-  }
-  FAIL << "Bad bonus number" << bonus;
+  if (bonus < 0)
+    return red;
+  if (bonus > 0)
+    return green;
   return white;
 }
 
@@ -424,6 +422,7 @@ PGuiElem WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   vector<string> lines {
       "",
       "Attack: ",
+      "Accuracy: ",
       "Defense: ",
       "Strength: ",
       "Dexterity: ",
@@ -434,6 +433,7 @@ PGuiElem WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
     {"", white},
     {"", white},
     {convertToString(info.attack), getBonusColor(info.attBonus)},
+    {convertToString(info.toHit), getBonusColor(info.toHitBonus)},
     {convertToString(info.defense), getBonusColor(info.defBonus)},
     {convertToString(info.strength), getBonusColor(info.strBonus)},
     {convertToString(info.dexterity), getBonusColor(info.dexBonus)},
@@ -1055,22 +1055,7 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
 }
 
 bool WindowView::yesOrNoPrompt(const string& message) {
-  TempClockPause pause;
-  OnExit onExit([&]() { renderer.flushAllEvents(); });
-  do {
-    showMessage(message + " (y/n)");
-    refreshScreen();
-    Event event;
-    renderer.waitEvent(event);
-    if (event.type == Event::KeyPressed)
-      switch (event.key.code) {
-        case Keyboard::Y: showMessage(""); refreshScreen(); return true;
-        case Keyboard::Escape:
- //       case Keyboard::Space:
-        case Keyboard::N: showMessage(""); refreshScreen(); return false;
-        default: break;
-      }
-  } while (1);
+  return chooseFromList("", {ListElem(message, TITLE), "Yes", "No"}) == 0;
 }
 
 Optional<int> WindowView::getNumber(const string& title, int min, int max, int increments) {
@@ -1195,8 +1180,9 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
  // refreshScreen();
 }
 
-void WindowView::presentText(const string& title, const string& text) {
-  TempClockPause pause;
+static vector<string> breakText(const string& text) {
+  if (text.empty())
+    return {""};
   int maxWidth = 80;
   vector<string> rows;
   for (string line : split(text, '\n')) {
@@ -1207,7 +1193,12 @@ void WindowView::presentText(const string& title, const string& text) {
       else
         rows.push_back(word);
   }
-  presentList(title, View::getListElem(rows), false);
+  return rows;
+}
+
+void WindowView::presentText(const string& title, const string& text) {
+  TempClockPause pause;
+  presentList(title, View::getListElem(breakText(text)), false);
 }
 
 void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown,
@@ -1223,12 +1214,21 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
   chooseFromListInternal(title, conv, -1, NORMAL_MENU, &scrollPos, exitAction, Nothing(), {});
 }
 
+static vector<PGuiElem> getMultiLine(const string& text, Color color) {
+  vector<PGuiElem> ret;
+  for (const string& s : breakText(text))
+    ret.push_back(GuiElem::label(s, color));
+  return ret;
+}
+
 PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& options, int& height, int* highlight,
     int* choice) {
   vector<PGuiElem> lines;
+  int lineHeight = 30;
   if (!title.empty())
-    lines.push_back(GuiElem::label(title, white));
+    lines.push_back(GuiElem::label(capitalFirst(title), white));
   lines.push_back(GuiElem::empty());
+  vector<int> heights(lines.size(), lineHeight);
   int numActive = 0;
   for (int i : All(options)) {
     Color color;
@@ -1238,8 +1238,9 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       case View::TEXT:
       case View::NORMAL: color = GuiElem::text; break;
     }
-    PGuiElem label1 = GuiElem::label(options[i].getText(), color);
-    lines.push_back(GuiElem::margins(std::move(label1), 10, 3, 0, 0));
+    vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color);
+    heights.push_back(label1.size() * lineHeight);
+    lines.push_back(GuiElem::margins(GuiElem::verticalList(std::move(label1), lineHeight, 0), 10, 3, 0, 0));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = GuiElem::stack(makeVec<PGuiElem>(
             GuiElem::button([=]() { *choice = numActive; }),
@@ -1249,9 +1250,8 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       ++numActive;
     }
   }
-  int lineHeight = 30;
-  height = lineHeight * lines.size();
-  return GuiElem::verticalList(std::move(lines), 30, 0);
+  height = accumulate(heights.begin(), heights.end(), 0);
+  return GuiElem::verticalList(std::move(lines), heights, 0);
 }
 
 void WindowView::clearMessageBox() {

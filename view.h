@@ -209,6 +209,8 @@ class View {
       int defense;
       int defBonus;
       int attack;
+      int toHit;
+      int toHitBonus;
       int attBonus;
       int strength;
       int strBonus;

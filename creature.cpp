@@ -869,6 +869,13 @@ int simulAttackPen(int attackers) {
   return max(0, (attackers - 1) * 2);
 }
 
+int Creature::toHitBonus() const {
+  if (Item* weapon = getWeapon())
+    return -max(0, weapon->getMinStrength() - getAttr(AttrType::STRENGTH));
+  else
+    return 0;
+}
+
 int Creature::getAttr(AttrType type) const {
   int def = getAttrVal(type);
   for (Item* item : equipment.getItems())
@@ -923,7 +930,10 @@ int Creature::getAttr(AttrType type) const {
           def -= attrBonus;
         break;
     case AttrType::THROWN_TO_HIT: 
+        def += getAttr(AttrType::DEXTERITY);
+        break;
     case AttrType::TO_HIT: 
+        def += toHitBonus();
         def += getAttr(AttrType::DEXTERITY);
         break;
     case AttrType::SPEED: {
@@ -2169,6 +2179,8 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.defense = getAttr(AttrType::DEFENSE);
   info.defBonus = isAffected(RAGE) ? -1 : isAffected(PANIC) ? 1 : 0;
   info.attack = getAttr(AttrType::DAMAGE);
+  info.toHit = getAttr(AttrType::TO_HIT);
+  info.toHitBonus = toHitBonus();
   info.attBonus = isAffected(RAGE) ? 1 : isAffected(PANIC) ? -1 : 0;
   info.strength = getAttr(AttrType::STRENGTH);
   info.strBonus = isAffected(STR_BONUS);

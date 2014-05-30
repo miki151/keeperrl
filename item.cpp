@@ -431,3 +431,8 @@ AttackType Item::getAttackType() const {
 bool Item::isWieldedTwoHanded() const {
   return twoHanded;
 }
+
+int Item::getMinStrength() const {
+  return 10 + *weight;
+}
+

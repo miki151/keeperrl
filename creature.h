@@ -291,6 +291,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   void injure(BodyPart, bool drop);
   AttackLevel getRandomAttackLevel() const;
   AttackType getAttackType() const;
+  int toHitBonus() const;
   void spendTime(double time);
   BodyPart armOrWing() const;
   pair<double, double> getStanding(const Creature* c) const;

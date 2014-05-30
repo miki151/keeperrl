@@ -334,7 +334,6 @@ void Player::equipmentAction() {
     }
     index = *newIndex;
     EquipmentSlot slot = slots[index];
-    string reason;
     if (Item* item = creature->getEquipment().getItem(slot)) {
       tryToPerform(creature->unequip(item));
     } else {
@@ -344,6 +343,11 @@ void Player::equipmentAction() {
           && item->getEquipmentSlot() == slot;});
       if (items.size() == 0) {
         continue;
+      }
+      if (slot == EquipmentSlot::WEAPON && creature->getAttr(AttrType::STRENGTH) < items[0]->getMinStrength()
+          && !model->getView()->yesOrNoPrompt(items[0]->getTheName() + " is too heavy for you, and you will get an accuracy penaulty.\n Do you want to equip it?")) {
+        creature->finishEquipChain();
+        return;
       }
       tryToPerform(creature->equip(items[0]));
     }
