@@ -43,8 +43,6 @@ Tile getSpecialCreatureSprite(const ViewObject& obj, bool humanoid) {
     return Tile(r.getRandom(7, 10), 10);
 }
 
-Tile getSprite(ViewId id);
-
 Tile getRoadTile(int pathSet) {
   return Tile(0, pathSet, 5)
     .addConnection({Dir::E, Dir::W}, 2, pathSet)
@@ -102,14 +100,12 @@ Tile getWaterTile(int leftX) {
     .addConnection({Dir::E, Dir::W}, leftX, 11);
 }
 
-Tile getSprite(ViewId id) {
+static Tile getSprite(ViewId id) {
   switch (id) {
     case ViewId::EMPTY: return Tile(' ', black);
     case ViewId::PLAYER: return Tile(1, 0);
     case ViewId::KEEPER: return Tile(3, 0);
     case ViewId::UNKNOWN_MONSTER: return Tile('?', lightGreen);
-    case ViewId::SPECIAL_BEAST: return Tile(7, 10);
-    case ViewId::SPECIAL_HUMANOID: return Tile(6, 10);
     case ViewId::ELF: return Tile(10, 6);
     case ViewId::ELF_ARCHER: return Tile(12, 6);
     case ViewId::ELF_CHILD: return Tile(14, 6);
@@ -325,6 +321,7 @@ Tile getSprite(ViewId id) {
     case ViewId::MANA: return Tile(5, 10, 2);
     case ViewId::DANGER: return Tile(12, 9, 2);
     case ViewId::FETCH_ICON: return Tile(15, 11, 3);
+    default: FAIL << "Not handled " << int(id);
   }
   FAIL << "unhandled view id " << (int)id;
   return Tile(' ', white);
@@ -345,14 +342,12 @@ Tile getSpriteTile(const ViewObject& obj) {
   return *tileCache[numId];
 }
 
-Tile getAsciiTile(const ViewObject& obj) {
-  switch (obj.id()) {
+static Tile getAscii(ViewId id) {
+  switch (id) {
     case ViewId::EMPTY: return Tile(' ', black);
     case ViewId::PLAYER: return Tile('@', white);
     case ViewId::KEEPER: return Tile('@', purple);
     case ViewId::UNKNOWN_MONSTER: return Tile('?', lightGreen);
-    case ViewId::SPECIAL_BEAST: return getSpecialCreature(obj, false);
-    case ViewId::SPECIAL_HUMANOID: return getSpecialCreature(obj, true);
     case ViewId::ELF: return Tile('@', lightGreen);
     case ViewId::ELF_ARCHER: return Tile('@', green);
     case ViewId::ELF_CHILD: return Tile('@', lightGreen);
@@ -558,9 +553,25 @@ Tile getAsciiTile(const ViewObject& obj) {
     case ViewId::MANA: return Tile('*', blue);
     case ViewId::DANGER: return Tile('*', red);
     case ViewId::FETCH_ICON: return Tile(0x1f44b, lightBrown);
+    default: FAIL << "Not handled " << int(id);
   }
-  FAIL << "unhandled view id " << (int)obj.id();
+  FAIL << "unhandled view id " << (int)id;
   return Tile(' ', white);
+}
+
+static vector<Optional<Tile>> tileCache2;
+
+Tile getAsciiTile(const ViewObject& obj) {
+  if (obj.id() == ViewId::SPECIAL_BEAST)
+    return getSpecialCreature(obj, false);
+  if (obj.id() == ViewId::SPECIAL_HUMANOID)
+    return getSpecialCreature(obj, true);
+  int numId = int(obj.id());
+  if (numId >= tileCache2.size())
+    tileCache2.resize(numId + 1);
+  if (!tileCache2[numId])
+    tileCache2[numId] = getAscii(obj.id());
+  return *tileCache2[numId];
 }
 
 Tile Tile::getTile(const ViewObject& obj, bool sprite) {
