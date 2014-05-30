@@ -1389,6 +1389,8 @@ class MinionController : public Player {
 };
 
 void Collective::possess(const Creature* cr, View* view) {
+  if (possessed && possessed != cr)
+    possessed->popController();
   view->stopClock();
   CHECK(contains(creatures, cr));
   CHECK(!cr->isDead());
@@ -1792,14 +1794,20 @@ void Collective::addToMemory(Vec2 pos) {
 }
 
 void Collective::update(Creature* c) {
-  if (!retired && possessed != keeper && (isInCombat(keeper) || keeper->getHealth() < 1)
-      && lastControlKeeperQuestion < getTime() - 50) {
-    lastControlKeeperQuestion = getTime();
-    if (model->getView()->yesOrNoPrompt("The keeper is engaged in combat. Do you want to control him?")) {
-      if (possessed && possessed != keeper)
-        possessed->popController();
-      possess(keeper, model->getView());
-      return;
+  if (!retired && possessed != keeper) { 
+    if ((isInCombat(keeper) || keeper->getHealth() < 1) && lastControlKeeperQuestion < getTime() - 50) {
+      lastControlKeeperQuestion = getTime();
+      if (model->getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
+        possess(keeper, model->getView());
+        return;
+      }
+    }
+    if (keeper->isAffected(LastingEffect::POISON) && lastControlKeeperQuestion < getTime() - 5) {
+      lastControlKeeperQuestion = getTime();
+      if (model->getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
+        possess(keeper, model->getView());
+        return;
+      }
     }
   }
   if (!contains(creatures, c) || c->getLevel() != level)

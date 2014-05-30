@@ -1043,7 +1043,7 @@ void Creature::tick(double realTime) {
       lastingEffects[effect] = 0;
       onTimedOut(effect, true);
     }
-  else if (isAffected(POISON)) {
+  if (isAffected(POISON)) {
     bleed(1.0 / 60);
     playerMessage("You feel poison flowing in your veins.");
   }

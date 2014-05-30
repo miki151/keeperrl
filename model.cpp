@@ -379,10 +379,6 @@ PCreature Model::makePlayer() {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
-      ItemId::LEAVE_BODY_SCROLL,
-      ItemId::LEAVE_BODY_SCROLL,
-      ItemId::LEAVE_BODY_SCROLL,
-      ItemId::LEAVE_BODY_SCROLL,
       ItemId::LEATHER_ARMOR, ItemId::LEATHER_HELM});
   for (int i : Range(Random.getRandom(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
