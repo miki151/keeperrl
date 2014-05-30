@@ -172,8 +172,11 @@ static void deception(Creature* c) {
 }
 
 static void leaveBody(Creature* creature) {
-  PCreature spirit(new Creature(creature->getTribe(), CATTR(
-          c.viewId = creature->getViewObject().id();
+  string spiritName = creature->getFirstName().getOr(creature->getName()) + "'s spirit";
+  ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, spiritName);
+  viewObject.setModifier(ViewObject::ILLUSION);
+  PCreature spirit(new Creature(viewObject, creature->getTribe(), CATTR(
+          c.viewId = ViewId::ROCK; //overriden anyway
           c.speed = 100;
           c.weight = 1;
           c.size = CreatureSize::LARGE;
@@ -183,8 +186,8 @@ static void leaveBody(Creature* creature) {
           c.flyer = true;
           c.breathing = false;
           c.uncorporal = true;
-          c.humanoid = true;
-          c.name = creature->getFirstName().getOr(creature->getName()) + "'s spirit";),
+          c.humanoid = false;
+          c.name = spiritName;),
         ControllerFactory([creature] (Creature* o) { return creature->getController()->getPossessedController(o);})));
   summonCreatures(creature, 1, makeVec<PCreature>(std::move(spirit)));
 }

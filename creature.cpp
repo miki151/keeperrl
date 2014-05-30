@@ -252,8 +252,7 @@ void Creature::pushController(PController ctrl) {
     viewObject.setModifier(ViewObject::PLAYER);
   controllerStack.push_back(std::move(controller));
   controller = std::move(ctrl);
-  if (controller->isPlayer())
-    level->setPlayer(this);
+  level->updatePlayer();
 }
 
 void Creature::popController() {
@@ -263,8 +262,7 @@ void Creature::popController() {
   bool wasPlayer = controller->isPlayer();
   controller = std::move(controllerStack.back());
   controllerStack.pop_back();
-  if (wasPlayer && !controller->isPlayer())
-    level->setPlayer(nullptr);
+  level->updatePlayer();
 }
 
 bool Creature::isDead() const {

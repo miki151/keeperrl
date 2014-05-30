@@ -43,7 +43,7 @@ void Player::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Player);
 
 Player::Player(Creature* c, Model* m, bool greet, map<Level*, MapMemory>* memory) :
-    Controller(c), displayGreeting(greet), levelMemory(memory), model(m) {
+    Controller(c), levelMemory(memory), model(m), displayGreeting(greet) {
 }
 
 Player::~Player() {
@@ -662,25 +662,25 @@ void Player::makeMove() {
           travelAction();
         }
       }
-    } else
-    if (auto action = creature->move(dir)) {
-      action.perform();
-      itemsMessage();
-      break;
     } else {
-      const Creature *c = creature->getConstSquare(dir)->getCreature();
-      if (auto action = creature->bumpInto(dir)) {
-        action.perform();
-        break;
-      } else 
-      if (auto action = creature->destroy(dir, Creature::BASH)) {
-        action.perform();
-        break;
-      }
+      moveAction(dir);
+      break;
     }
   }
   for (Vec2 pos : creature->getLevel()->getVisibleTiles(creature)) {
     (*levelMemory)[creature->getLevel()].update(pos, creature->getLevel()->getSquare(pos)->getViewIndex(creature));
+  }
+}
+
+void Player::moveAction(Vec2 dir) {
+  if (auto action = creature->move(dir)) {
+    action.perform();
+    itemsMessage();
+  } else if (const Creature *c = creature->getConstSquare(dir)->getCreature()) {
+    if (auto action = creature->bumpInto(dir))
+      action.perform();
+    else if (auto action = creature->destroy(dir, Creature::BASH))
+      action.perform();
   }
 }
 
@@ -766,21 +766,40 @@ void Player::onFellAsleep() {
 
 class PossessedController : public Player {
   public:
-  PossessedController(Creature* c, Creature* _owner, Model* m, map<Level*, MapMemory>* memory)
-    : Player(c, m, false, memory), owner(_owner) {}
+  PossessedController(Creature* c, Creature* _owner, Model* m, map<Level*, MapMemory>* memory, bool ghost)
+    : Player(c, m, false, memory), owner(_owner), isGhost(ghost) {}
 
   void onKilled(const Creature* attacker) override {
-    owner->popController();
+    if (attacker)
+      owner->popController();
   }
 
   void onAttackEvent(const Creature* victim, const Creature* attacker) override {
-    if (victim == owner)
-      creature->die();
+    if (!creature->isDead() && victim == owner)
+      unpossess();
   }
 
   bool unpossess() override {
-    creature->die();
-    return false;
+    owner->popController();
+    if (isGhost) {
+      creature->die();
+      return false;
+    } else
+      return true;
+  }
+
+  void moveAction(Vec2 dir) override {
+    if (!isGhost) {
+      Player::moveAction(dir);
+      return;
+    }
+    if (Creature *c = creature->getSquare(dir)->getCreature()) {
+      if (c == owner)
+        owner->popController();
+      else
+        c->pushController(PController(new PossessedController(c, owner, model, levelMemory, false)));
+      creature->die();
+    } else Player::moveAction(dir);
   }
 
   void onFellAsleep() override {
@@ -799,11 +818,12 @@ class PossessedController : public Player {
 
   private:
   Creature* SERIAL(owner);
+  bool SERIAL(isGhost);
 };
 
 Controller* Player::getPossessedController(Creature* c) {
   creature->pushController(PController(new DoNothingController(creature)));
-  return new PossessedController(c, creature, model, levelMemory);
+  return new PossessedController(c, creature, model, levelMemory, true);
 }
 
 template <class Archive>

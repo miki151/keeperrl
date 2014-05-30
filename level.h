@@ -115,7 +115,7 @@ class Level {
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, Vision*);
 
   /** Sets the creature that is assumed to be the player.*/
-  void setPlayer(Creature* player);
+  void updatePlayer();
 
   /** Sets the level to be rendered in the background with given offset.*/
   void setBackgroundLevel(const Level*, Vec2 offset);

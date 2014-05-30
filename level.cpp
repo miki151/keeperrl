@@ -195,6 +195,8 @@ Vec2 Level::landCreature(vector<Vec2> landing, PCreature creature) {
 
 Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
   CHECK(creature);
+  if (creature->isPlayer())
+    player = creature;
   if (entryMessage != "") {
     creature->playerMessage(entryMessage);
     entryMessage = "";
@@ -251,7 +253,7 @@ void Level::killCreature(Creature* creature) {
   getSquare(creature->getPosition())->removeCreature();
   model->removeCreature(creature);
   if (creature->isPlayer())
-    setPlayer(nullptr);
+    updatePlayer();
 }
 
 void Level::globalMessage(Vec2 position, const string& ifPlayerCanSee, const string& cannot) const {
@@ -279,8 +281,11 @@ void Level::changeLevel(Level* destination, Vec2 landing, Creature* c) {
   EventListener::addChangeLevelEvent(c, this, fromPosition, destination, landing);
 }
 
-void Level::setPlayer(Creature* player) {
-  this->player = player;
+void Level::updatePlayer() {
+  player = nullptr;
+  for (Creature* c : creatures)
+    if (c->isPlayer())
+      player = c;
 }
 
 const vector<Creature*>& Level::getAllCreatures() const {

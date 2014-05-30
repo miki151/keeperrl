@@ -61,6 +61,12 @@ class Player : public Controller, public EventListener {
   template <class Archive>
   static void registerTypes(Archive& ar);
 
+  protected:
+  virtual void moveAction(Vec2 direction);
+
+  map<Level*, MapMemory>* SERIAL(levelMemory);
+  Model* SERIAL(model);
+
   private:
   void tryToPerform(Creature::Action);
   void attackAction(Creature* other);
@@ -92,8 +98,6 @@ class Player : public Controller, public EventListener {
   const Location* SERIAL2(lastLocation, nullptr);
   vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);
-  map<Level*, MapMemory>* SERIAL(levelMemory);
-  Model* SERIAL(model);
 };
 
 #endif

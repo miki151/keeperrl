@@ -351,7 +351,6 @@ Model* Model::heroModel(View* view) {
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
   Tribe::get(TribeId::GOBLIN)->makeSlightEnemy(player.get());
   Level* start = top;
-  start->setPlayer(player.get());
   start->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(player));
   setHandicap(Tribe::get(TribeId::PLAYER), Options::getValue(OptionId::EASY_ADVENTURER));
   return m;
@@ -373,7 +372,6 @@ PCreature Model::makePlayer() {
           c.name = "Adventurer";
           c.firstName = NameGenerator::firstNames.getNext();
           c.maxLevel = 1;
-          c.uncorporal = true;
           c.skills.insert(SkillId::ARCHERY);
           c.skills.insert(SkillId::AMBUSH);
           c.skills.insert(SkillId::NIGHT_VISION);
@@ -381,6 +379,9 @@ PCreature Model::makePlayer() {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
+      ItemId::LEAVE_BODY_SCROLL,
+      ItemId::LEAVE_BODY_SCROLL,
+      ItemId::LEAVE_BODY_SCROLL,
       ItemId::LEAVE_BODY_SCROLL,
       ItemId::LEATHER_ARMOR, ItemId::LEATHER_HELM});
   for (int i : Range(Random.getRandom(70, 131)))
@@ -430,7 +431,6 @@ void Model::retireCollective() {
 
 void Model::landHeroPlayer() {
   PCreature player = makePlayer();
-  levels[0]->setPlayer(player.get());
   levels[0]->landCreature(StairDirection::UP, StairKey::HERO_SPAWN, std::move(player));
   auto handicap = view->getNumber("Choose handicap (strength and dexterity increase)", 0, 20, 5);
   if (handicap)
@@ -630,8 +630,8 @@ Vec2 Model::changeLevel(StairDirection dir, StairKey key, Creature* c) {
   Level* target = levelLinks[make_tuple(dir, key, current)];
   Vec2 newPos = target->landCreature(opposite(dir), key, c);
   if (c->isPlayer()) {
-    current->setPlayer(nullptr);
-    target->setPlayer(c);
+    current->updatePlayer();
+    target->updatePlayer();
   }
   return newPos;
 }
@@ -640,8 +640,8 @@ void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
   Level* current = c->getLevel();
   target->landCreature({position}, c);
   if (c->isPlayer()) {
-    current->setPlayer(nullptr);
-    target->setPlayer(c);
+    current->updatePlayer();
+    target->updatePlayer();
   }
 }
   
