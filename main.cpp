@@ -117,6 +117,9 @@ static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
     boost::archive::binary_iarchive ia(in);
     Serialization::registerTypes(ia);
     ia >> BOOST_SERIALIZATION_NVP(model);
+
+    Skill::clearAll();
+    Skill::init();
   }
 #ifdef RELEASE
   if (eraseFile && !Options::getValue(OptionId::KEEP_SAVEFILES))

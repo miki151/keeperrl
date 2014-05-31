@@ -579,7 +579,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
 }
 
 bool Creature::canEquip(const Item* item) const {
-  return !equipment.getItem(item->getEquipmentSlot()) && canEquipIfEmptySlot(item, nullptr);
+  return canEquipIfEmptySlot(item, nullptr) && !equipment.getItem(item->getEquipmentSlot());
 }
 
 Creature::Action Creature::equip(Item* item) {
