@@ -1324,7 +1324,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 100;
           c.brain = false;
           c.undead = true;
-          c.skills.insert(SkillId::TWO_HANDED_WEAPON);
           c.name = "mummy";);
     case CreatureId::MUMMY_LORD: 
       return INHERIT(MUMMY,
@@ -1345,7 +1344,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
-          c.skills.insert(SkillId::TWO_HANDED_WEAPON);
           c.chatReactionFriendly = "curses all elves";
           c.chatReactionHostile = "\"Die!\"";
           c.name = "goblin";);
@@ -1444,7 +1442,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 90;
-          c.skills.insert(SkillId::TWO_HANDED_WEAPON);
           c.chatReactionFriendly = "curses all goblins";
           c.chatReactionHostile = "\"Die!\"";
           c.name = "dwarf";);

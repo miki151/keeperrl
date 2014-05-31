@@ -146,7 +146,6 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   void addSkill(Skill* skill);
   bool hasSkill(Skill*) const;
-  bool hasSkillToUseWeapon(const Item*) const;
   vector<Skill*> getSkills() const;
 
   class Action {

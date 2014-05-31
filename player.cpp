@@ -345,7 +345,7 @@ void Player::equipmentAction() {
         continue;
       }
       if (slot == EquipmentSlot::WEAPON && creature->getAttr(AttrType::STRENGTH) < items[0]->getMinStrength()
-          && !model->getView()->yesOrNoPrompt(items[0]->getTheName() + " is too heavy for you, and you will get an accuracy penaulty.\n Do you want to equip it?")) {
+          && !model->getView()->yesOrNoPrompt(items[0]->getTheName() + " is too heavy, and will incur an accuracy penaulty.\n Do you want to continue?")) {
         creature->finishEquipChain();
         return;
       }

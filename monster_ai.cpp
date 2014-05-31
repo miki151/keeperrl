@@ -384,7 +384,7 @@ class Fighter : public Behaviour, public EventListener {
       return 1;
     if (item->getType() == ItemType::AMMO && creature->hasSkill(Skill::get(SkillId::ARCHERY)))
       return 0.1;
-    if (item->getType() != ItemType::WEAPON || !creature->hasSkillToUseWeapon(item))
+    if (item->getType() != ItemType::WEAPON || creature->getAttr(AttrType::STRENGTH) < item->getMinStrength())
       return 0;
     if (item->getModifier(AttrType::THROWN_DAMAGE) > 0)
       return (double)item->getModifier(AttrType::THROWN_DAMAGE) / 50;

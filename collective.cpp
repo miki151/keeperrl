@@ -622,8 +622,14 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
       const Item* chosenItem = chooseEquipmentItem(view, nullptr, [&](const Item* it) {
           return minionEquipment.getOwner(it) != creature && !it->canEquip()
               && minionEquipment.needs(creature, it, true); }, &itIndex, &scrollPos);
-      if (chosenItem)
+      if (chosenItem) {
+        if (chosenItem->getEquipmentSlot() == EquipmentSlot::WEAPON
+            && chosenItem->getMinStrength() > creature->getAttr(AttrType::STRENGTH)
+            && !view->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " + creature->getTheName() 
+              + ", and will incur an accuracy penaulty.\n Do you want to continue?"))
+          break;
         minionEquipment.own(creature, chosenItem);
+      }
       else break;
     }
   } else

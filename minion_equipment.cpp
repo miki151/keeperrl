@@ -94,6 +94,10 @@ void MinionEquipment::own(const Creature* c, const Item* it) {
   owners[it->getUniqueId()] = c;
 }
 
+bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) {
+  return it->getType() != ItemType::WEAPON || c->getAttr(AttrType::STRENGTH) >= it->getMinStrength();
+}
+
 bool MinionEquipment::canTakeItem(const Creature* c, const Item* it) {
   if (const Creature* owner = getOwner(it)) {
     if (c == owner) {
@@ -108,7 +112,7 @@ bool MinionEquipment::canTakeItem(const Creature* c, const Item* it) {
     else
       return false;
   }
-  if (!getEquipmentType(it) || !c->isHumanoid())
+  if (!getEquipmentType(it) || !c->isHumanoid() || !isItemAppropriate(c, it))
     return false;
   return needs(c, it);
 }

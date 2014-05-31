@@ -23,65 +23,19 @@
 #include "creature_factory.h"
 #include "message_buffer.h"
 
-map<EffectStrength, int> healingPoints { 
-    {EffectStrength::WEAK, 5},
-    {EffectStrength::NORMAL, 15},
-    {EffectStrength::STRONG, 40}};
-
-map<EffectStrength, int> sleepTime { 
-    {EffectStrength::WEAK, 15},
-    {EffectStrength::NORMAL, 80},
-    {EffectStrength::STRONG, 200}};
-
-map<EffectStrength, int> panicTime { 
-    {EffectStrength::WEAK, 5},
-    {EffectStrength::NORMAL, 15},
-    {EffectStrength::STRONG, 40}};
-
-map<EffectStrength, int> halluTime { 
-    {EffectStrength::WEAK, 30},
-    {EffectStrength::NORMAL, 100},
-    {EffectStrength::STRONG, 250}};
-
-map<EffectStrength, int> blindTime { 
-    {EffectStrength::WEAK, 5},
-    {EffectStrength::NORMAL, 15},
-    {EffectStrength::STRONG, 45}};
-
-map<EffectStrength, int> invisibleTime { 
-    {EffectStrength::WEAK, 5},
-    {EffectStrength::NORMAL, 15},
-    {EffectStrength::STRONG, 45}};
-
-map<EffectStrength, int> fireAmount { 
-    {EffectStrength::WEAK, 0.5},
-    {EffectStrength::NORMAL, 1},
-    {EffectStrength::STRONG, 1}};
-
-map<EffectStrength, int> attrBonusTime { 
-    {EffectStrength::WEAK, 10},
-    {EffectStrength::NORMAL, 40},
-    {EffectStrength::STRONG, 150}};
-
-map<EffectStrength, int> identifyNum { 
-    {EffectStrength::WEAK, 1},
-    {EffectStrength::NORMAL, 1},
-    {EffectStrength::STRONG, 400}};
-
-map<EffectStrength, int> poisonTime { 
-    {EffectStrength::WEAK, 200},
-    {EffectStrength::NORMAL, 60},
-    {EffectStrength::STRONG, 20}};
-
-map<EffectStrength, double> gasAmount { 
-    {EffectStrength::WEAK, 0.3},
-    {EffectStrength::NORMAL, 0.8},
-    {EffectStrength::STRONG, 3}};
-
-map<EffectStrength, double> wordOfPowerDist { 
-    {EffectStrength::WEAK, 1},
-    {EffectStrength::NORMAL, 3},
-    {EffectStrength::STRONG, 10}};
+vector<int> healingPoints { 5, 15, 40};
+vector<int> sleepTime { 15, 80, 200};
+vector<int> panicTime { 5, 15, 40};
+vector<int> halluTime { 30, 100, 250};
+vector<int> blindTime { 5, 15, 45};
+vector<int> invisibleTime { 5, 15, 45};
+vector<double> fireAmount { 0.5, 1, 1};
+vector<int> attrBonusTime { 10, 40, 150};
+vector<int> identifyNum { 1, 1, 400};
+vector<int> poisonTime { 200, 60, 20};
+vector<int> stunTime { 200, 60, 20};
+vector<double> gasAmount { 0.3, 0.8, 3};
+vector<double> wordOfPowerDist { 1, 3, 10};
 
 class IllusionController : public DoNothingController {
   public:
@@ -193,7 +147,7 @@ static void leaveBody(Creature* creature) {
   summonCreatures(creature, 1, makeVec<PCreature>(std::move(spirit)));
 }
 
-static void wordOfPower(Creature* c, EffectStrength strength) {
+static void wordOfPower(Creature* c, int strength) {
   Level* l = c->getLevel();
   EventListener::addExplosionEvent(c->getLevel(), c->getPosition());
   for (Vec2 v : Vec2::directions8(true)) {
@@ -202,7 +156,7 @@ static void wordOfPower(Creature* c, EffectStrength strength) {
         continue;
       if (!other->isDead()) {
         int dist = 0;
-        for (int i : Range(1, wordOfPowerDist.at(strength)))
+        for (int i : Range(1, wordOfPowerDist[strength]))
           if (l->canMoveCreature(other, v * i))
             dist = i;
           else
@@ -219,16 +173,16 @@ static void wordOfPower(Creature* c, EffectStrength strength) {
       l->throwItem(
         c->getSquare(v)->removeItems(elem.second),
         Attack(c, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
-        elem.second[0]->getAttackType(), 15, 15, false), wordOfPowerDist.at(strength), c->getPosition(), v,
+        elem.second[0]->getAttackType(), 15, 15, false), wordOfPowerDist[strength], c->getPosition(), v,
         Vision::get(VisionId::NORMAL));
     }
   }
 }
 
-static void emitPoisonGas(Level* level, Vec2 pos, EffectStrength strength, bool msg) {
+static void emitPoisonGas(Level* level, Vec2 pos, int strength, bool msg) {
   for (Vec2 v : pos.neighbors8())
-    level->getSquare(v)->addPoisonGas(gasAmount.at(strength) / 2);
-  level->getSquare(pos)->addPoisonGas(gasAmount.at(strength));
+    level->getSquare(v)->addPoisonGas(gasAmount[strength] / 2);
+  level->getSquare(pos)->addPoisonGas(gasAmount[strength]);
   if (msg)
     level->globalMessage(pos, "A cloud of gas is released", "You hear a hissing sound");
 }
@@ -288,14 +242,14 @@ static void destroyEquipment(Creature* c) {
   return;
 }
 
-static void heal(Creature* c, EffectStrength strength) {
-  if (c->getHealth() < 1 || (strength == EffectStrength::STRONG && c->lostOrInjuredBodyParts()))
-    c->heal(1, strength == EffectStrength::STRONG);
+static void heal(Creature* c, int strength) {
+  if (c->getHealth() < 1 || (strength == int(EffectStrength::STRONG) && c->lostOrInjuredBodyParts()))
+    c->heal(1, strength == int(EffectStrength::STRONG));
   else
     c->playerMessage("You feel refreshed.");
 }
 
-static void sleep(Creature* c, EffectStrength strength) {
+static void sleep(Creature* c, int strength) {
   Square *square = c->getLevel()->getSquare(c->getPosition());
   c->you(MsgType::FALL_ASLEEP, square->getName());
   c->addEffect(LastingEffect::SLEEP, Random.getRandom(sleepTime[strength]));
@@ -412,7 +366,8 @@ double entangledTime(int strength) {
   return max(5, 30 - strength / 2);
 }
 
-void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strength) {
+void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strengthEnum) {
+  int strength = int(strengthEnum);
   switch (type) {
     case EffectType::LEAVE_BODY: leaveBody(c); break;
     case EffectType::WEB:
@@ -423,7 +378,7 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::SUMMON_INSECTS: insects(c); break;
     case EffectType::DECEPTION: deception(c); break;
     case EffectType::WORD_OF_POWER: wordOfPower(c, strength); break;
-    case EffectType::POISON: c->addEffect(LastingEffect::POISON, poisonTime.at(strength)); break;
+    case EffectType::POISON: c->addEffect(LastingEffect::POISON, poisonTime[strength]); break;
     case EffectType::GUARDING_BOULDER: guardingBuilder(c); break;
     case EffectType::FIRE_SPHERE_PET: summon(c, CreatureId::FIRE_SPHERE, 1, 30); break;
     case EffectType::ENHANCE_ARMOR: enhanceArmor(c); break;
@@ -449,12 +404,13 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::ROLLING_BOULDER: rollingBoulder(c); break;
     case EffectType::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.getRandom(2, 5), 100); break;
     case EffectType::EMIT_POISON_GAS: emitPoisonGas(c->getLevel(), c->getPosition(), strength, true); break;
+    case EffectType::STUN: c->addEffect(LastingEffect::STUNNED, stunTime[strength]); break;
   }
 }
 
 void Effect::applyToPosition(Level* level, Vec2 pos, EffectType type, EffectStrength strength) {
   switch (type) {
-    case EffectType::EMIT_POISON_GAS: emitPoisonGas(level, pos, strength, false); break;
+    case EffectType::EMIT_POISON_GAS: emitPoisonGas(level, pos, int(strength), false); break;
     default: FAIL << "Can't apply to position " << int(type);
   }
 }

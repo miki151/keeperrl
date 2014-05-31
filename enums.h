@@ -659,6 +659,7 @@ enum class EffectType {
     TERROR,
     SUMMON_SPIRIT,
     LEAVE_BODY,
+    STUN,
 };
 
 enum class AnimationId {
@@ -731,7 +732,6 @@ enum class TechId {
 
 enum class SkillId {
   AMBUSH,
-  TWO_HANDED_WEAPON,
   KNIFE_THROWING,
   STEALING,
   SWIMMING,

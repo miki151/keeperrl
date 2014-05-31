@@ -70,8 +70,6 @@ REGISTER_TYPES(Skill);
 void Skill::init() {
   Skill::set(SkillId::AMBUSH, new Skill("ambush",
         "Hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it."));
-  Skill::set(SkillId::TWO_HANDED_WEAPON, new Skill("two-handed weapons", "Fight with "
-        "warhammers and battle axes."));
   Skill::set(SkillId::KNIFE_THROWING, new Skill("knife throwing", "Throw knives with deadly precision."));
   Skill::set(SkillId::STEALING, new Skill("stealing", "Steal from other monsters. Not available for player ATM."));
   Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning."));

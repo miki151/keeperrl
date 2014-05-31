@@ -465,10 +465,6 @@ bool Creature::hasSkill(Skill* skill) const {
   return skills[skill->getId()];
 }
 
-bool Creature::hasSkillToUseWeapon(const Item* it) const {
-  return !it->isWieldedTwoHanded() || hasSkill(Skill::get(SkillId::TWO_HANDED_WEAPON));
-}
-
 vector<Skill*> Creature::getSkills() const {
   vector<Skill*> ret;
   for (SkillId id : skills)
@@ -558,11 +554,6 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
   if (numGood(BodyPart::ARM) == 0) {
     if (reason)
       *reason = "You have no healthy arms!";
-    return false;
-  }
-  if (!hasSkill(Skill::get(SkillId::TWO_HANDED_WEAPON)) && item->isWieldedTwoHanded()) {
-    if (reason)
-      *reason = "You don't have the skill to use two-handed weapons.";
     return false;
   }
   if (!hasSkill(Skill::get(SkillId::ARCHERY)) && item->getType() == ItemType::RANGED_WEAPON) {
@@ -734,6 +725,7 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
   switch (effect) {
     case STUNNED:
       if (msg) you(MsgType::ARE, "stunned");
+      break;
     case PANIC:
       removeEffect(RAGE, false);
       if (msg) you(MsgType::PANIC, "");
@@ -1547,8 +1539,6 @@ void Creature::take(vector<PItem> items) {
 void Creature::take(PItem item) {
  /* item->identify();
   Debug() << (specialMonster ? "special monster " : "") + getTheName() << " takes " << item->getNameAndModifiers();*/
-  if (item->isWieldedTwoHanded())
-    addSkill(Skill::get(SkillId::TWO_HANDED_WEAPON));
   if (item->getType() == ItemType::RANGED_WEAPON)
     addSkill(Skill::get(SkillId::ARCHERY));
   Item* ref = item.get();

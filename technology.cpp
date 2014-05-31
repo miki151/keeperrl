@@ -43,8 +43,7 @@ void Technology::init() {
   Technology::set(TechId::BEAST_MUT, new Technology("beast mutation", base, {TechId::BEAST}, false));
   Technology::set(TechId::CRAFTING, new Technology("crafting", base, {}));
   Technology::set(TechId::IRON_WORKING, new Technology("iron working", base, {TechId::CRAFTING}));
-  Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", base, {TechId::IRON_WORKING}, true,
-        Skill::get(SkillId::TWO_HANDED_WEAPON)));
+  Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", base, {TechId::IRON_WORKING}, true));
   Technology::set(TechId::TRAPS, new Technology("traps", base, {TechId::CRAFTING}));
   Technology::set(TechId::ARCHERY, new Technology("archery", base, {TechId::CRAFTING}, true,
         Skill::get(SkillId::ARCHERY)));
