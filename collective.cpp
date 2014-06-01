@@ -1384,14 +1384,10 @@ class MinionController : public Player {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Player)
-      & SVAR(model)
     CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(MinionController);
-
-  private:
-  Model* SERIAL(model);
 };
 
 void Collective::possess(const Creature* cr, View* view) {

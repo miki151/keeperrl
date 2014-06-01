@@ -570,7 +570,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
 }
 
 bool Creature::canEquip(const Item* item) const {
-  return !equipment.getItem(item->getEquipmentSlot()) && canEquipIfEmptySlot(item, nullptr);
+  return canEquipIfEmptySlot(item, nullptr) && !equipment.getItem(item->getEquipmentSlot());
 }
 
 Creature::Action Creature::equip(Item* item) {
@@ -1270,7 +1270,7 @@ double Creature::getMinDamage(BodyPart part) const {
 
 bool Creature::isCritical(BodyPart part) const {
   return contains({BodyPart::TORSO, BodyPart::BACK}, part)
-    || (part == BodyPart::HEAD && numGood(part) == 1 && !isUndead());
+    || (part == BodyPart::HEAD && numGood(part) == 0 && !isUndead());
 }
 
 bool Creature::takeDamage(const Attack& attack) {
@@ -1383,7 +1383,8 @@ static string adjectives(CreatureSize s, bool undead, bool notLiving, bool uncor
 string Creature::bodyDescription() const {
   vector<string> ret;
   for (BodyPart part : {BodyPart::ARM, BodyPart::LEG, BodyPart::WING})
-    ret.push_back(getPlural(getBodyPartName(part), numBodyParts(part)));
+    if (int num = numBodyParts(part))
+      ret.push_back(getPlural(getBodyPartName(part), num));
   if (isHumanoid() && numBodyParts(BodyPart::HEAD) == 0)
     ret.push_back("no head");
   if (ret.size() > 0)

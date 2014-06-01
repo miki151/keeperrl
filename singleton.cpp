@@ -26,6 +26,13 @@ template<class T, class E>
 EnumMap<E, unique_ptr<T>> Singleton<T, E>::elems;
 
 template<class T, class E>
+template<class Archive>
+void Singleton<T, E>::serialize(Archive& ar, const unsigned int version) {
+  ar & SVAR(id);
+  CHECK_SERIAL;
+}
+
+template<class T, class E>
 void Singleton<T, E>::clearAll() {
   elems.clear();
 }

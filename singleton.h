@@ -28,6 +28,9 @@ class Singleton {
   static void clearAll();
 
   template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+
+  template <class Archive>
   static void serializeAll(Archive& ar) {
     ar & elems;
   }
@@ -36,7 +39,7 @@ class Singleton {
 
   private:
   static EnumMap<E, unique_ptr<T>> elems;
-  E id;
+  E SERIAL(id);
 };
 
 #endif

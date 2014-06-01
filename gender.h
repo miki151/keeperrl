@@ -20,7 +20,6 @@ class Gender {
   public:
   const static Gender male;
   const static Gender female;
-  Gender(bool female);
   static void initialize();
 
   string his() const;
@@ -30,6 +29,7 @@ class Gender {
   SERIALIZATION_DECL(Gender);
 
   private:
+  Gender(bool female);
   bool SERIAL(fem);
 };
 
