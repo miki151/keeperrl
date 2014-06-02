@@ -11,9 +11,13 @@ ifdef DATA_DIR
 endif
 
 ifdef RELEASE
-GFLAG = -O3 -DRELEASE
+GFLAG = -DRELEASE
 else
 GFLAG = -g
+endif
+
+ifdef DBG
+GFLAG += -g
 endif
 
 ifdef OPT
