@@ -53,7 +53,7 @@ class IllusionController : public DoNothingController {
   virtual void makeMove() override {
     if (creature->getTime() >= deathTime)
       kill();
-    creature->wait();
+    creature->wait().perform();
   }
 
   template <class Archive>

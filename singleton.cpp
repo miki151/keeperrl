@@ -68,7 +68,17 @@ E Singleton<T, E>::getId() const {
 }
 
 template class Singleton<Tribe, TribeId>;
+template void Singleton<Tribe, TribeId>::serialize(boost::archive::binary_iarchive&, unsigned);
+template void Singleton<Tribe, TribeId>::serialize(boost::archive::binary_oarchive&, unsigned);
 template class Singleton<Technology, TechId>;
+template void Singleton<Technology, TechId>::serialize(boost::archive::binary_iarchive&, unsigned);
+template void Singleton<Technology, TechId>::serialize(boost::archive::binary_oarchive&, unsigned);
 template class Singleton<Skill, SkillId>;
+template void Singleton<Skill, SkillId>::serialize(boost::archive::binary_iarchive&, unsigned);
+template void Singleton<Skill, SkillId>::serialize(boost::archive::binary_oarchive&, unsigned);
 template class Singleton<Quest, QuestId>;
+template void Singleton<Quest, QuestId>::serialize(boost::archive::binary_iarchive&, unsigned);
+template void Singleton<Quest, QuestId>::serialize(boost::archive::binary_oarchive&, unsigned);
 template class Singleton<Vision, VisionId>;
+template void Singleton<Vision, VisionId>::serialize(boost::archive::binary_iarchive&, unsigned);
+template void Singleton<Vision, VisionId>::serialize(boost::archive::binary_oarchive&, unsigned);

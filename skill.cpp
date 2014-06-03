@@ -21,7 +21,8 @@
 
 template <class Archive> 
 void Skill::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(name)
+  ar& SUBCLASS(Singleton)
+    & SVAR(name)
     & SVAR(helpText);
   CHECK_SERIAL;
 }

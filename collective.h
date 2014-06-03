@@ -124,7 +124,7 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
   enum class Warning { DIGGING, STORAGE, WOOD, IRON, STONE, GOLD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, NO_WEAPONS, GRAVES, CHESTS, NO_PRISON, LARGER_PRISON, TORTURE_ROOM, MORE_CHESTS, MANA};
 
   struct ResourceInfo {
-    SquareType storageType;
+    vector<SquareType> storageType;
     ItemPredicate predicate;
     ItemId itemId;
     string name;
@@ -185,7 +185,10 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
       CostInfo cost;
       string name;
       bool buildImmediatly;
-    } squareInfo;
+    };
+
+    vector<SquareInfo> squareInfo;
+    string groupName;
 
     struct TrapInfo {
       TrapType type;
@@ -199,12 +202,16 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
     string help;
     char hotkey;
 
+    string optionsTitle;
+
     BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0);
+    BuildInfo(const string& groupName, const string& title, vector<SquareInfo> info, Optional<TechId> techId = Nothing(),
+        const string& h = "", char hotkey = 0);
     BuildInfo(BuildType type, SquareInfo info, const string& h = "", char hotkey = 0);
     BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0);
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0);
   };
-  void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
+  void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, int option = 0);
   vector<View::GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   const static vector<BuildInfo> buildInfo;
   const static vector<BuildInfo> workshopInfo;
@@ -215,11 +222,13 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
 
   ViewObject getResourceViewObject(ResourceId id) const;
 
+  vector<Vec2> getAllSquares(const vector<SquareType>&) const;
+
   map<ResourceId, int> SERIAL(credit);
 
   struct ItemFetchInfo {
     ItemPredicate predicate;
-    SquareType destination;
+    vector<SquareType> destination;
     bool oneAtATime;
     vector<SquareType> additionalPos;
     Warning warning;
@@ -257,10 +266,9 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
   bool isDelayed(Vec2 pos);
   double getTime() const;
   unordered_map<Vec2, double> SERIAL(delayedPos);
-  int numGold(ResourceId) const;
-  bool hasGold(CostInfo) const;
-  void takeGold(CostInfo);
-  void returnGold(CostInfo);
+  int numResource(ResourceId) const;
+  void takeResource(CostInfo);
+  void returnResource(CostInfo);
   int getImpCost() const;
   bool canBuildDoor(Vec2 pos) const;
   bool canPlacePost(Vec2 pos) const;

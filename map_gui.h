@@ -43,6 +43,8 @@ class MapGui : public GuiElem {
   Optional<Vec2> getHighlightedTile(WindowRenderer& renderer);
   PGuiElem getHintCallback(const string&);
   void resetHint();
+  void setOptions(const string& title, vector<PGuiElem>);
+  void clearOptions();
 
   private:
   Optional<ViewObject> drawObjectAbs(Renderer& renderer, int x, int y, const ViewIndex& index, int sizeX, int sizeY,
@@ -57,6 +59,8 @@ class MapGui : public GuiElem {
   Optional<Vec2> mouseHeldPos;
   Optional<Vec2> highlightedPos;
   string hint;
+  PGuiElem optionsGui;
+  int optionsHeight;
 };
 
 #endif

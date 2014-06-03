@@ -825,7 +825,8 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", Vision::get(VisionId::NORMAL),
             false, 0, 0, 
             {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
-            {SquareType::TRAINING_DUMMY, 10}, {SquareType::LIBRARY, 10}, {SquareType::STOCKPILE, 1},
+            {SquareType::TRAINING_DUMMY, 10}, {SquareType::LIBRARY, 10},
+            {SquareType::STOCKPILE, 1}, {SquareType::STOCKPILE_EQUIP, 1}, {SquareType::STOCKPILE_RES, 1},
             {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10}, {SquareType::PRISON, 10},
             {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::ANIMAL_TRAP, 10},
             {SquareType::IMPALED_HEAD, 5}, {SquareType::BARRICADE, 20}, {SquareType::TORCH, 5}});
@@ -920,7 +921,13 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::TORCH: return new Torch(ViewObject(ViewId::TORCH, ViewLayer::FLOOR, "Torch"), "torch");
     case SquareType::STOCKPILE:
-        return new DestroyableSquare(ViewObject(ViewId::STOCKPILE, ViewLayer::FLOOR_BACKGROUND, "Storage"),
+        return new DestroyableSquare(ViewObject(ViewId::STOCKPILE1, ViewLayer::FLOOR_BACKGROUND, "Storage (all)"),
+            "floor", Vision::get(VisionId::NORMAL));
+    case SquareType::STOCKPILE_EQUIP:
+        return new DestroyableSquare(ViewObject(ViewId::STOCKPILE2, ViewLayer::FLOOR_BACKGROUND, "Storage (equipment)"),
+            "floor", Vision::get(VisionId::NORMAL));
+    case SquareType::STOCKPILE_RES:
+        return new DestroyableSquare(ViewObject(ViewId::STOCKPILE3, ViewLayer::FLOOR_BACKGROUND, "Storage (resources)"),
             "floor", Vision::get(VisionId::NORMAL));
     case SquareType::PRISON:
         return new DestroyableSquare(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"),

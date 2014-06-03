@@ -67,6 +67,7 @@ class GuiElem {
   static PGuiElem scrollable(PGuiElem content, int contentHeight, double* scrollPos, double scrollJump);
   static PGuiElem getScrollButton();
   static PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
+  static PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER};
   static PGuiElem sprite(Texture& tex, Alignment align, bool vFlip = false, bool hFlip = false, int cornerOffset = 0,
       double alpha = 1);

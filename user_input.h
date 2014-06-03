@@ -60,19 +60,26 @@ struct UserInput {
     CAST_SPELL,
   } type;
 
+  struct BuildInfo {
+    int building;
+    int option;
+  };
+
   UserInput();
   UserInput(Type);
-  UserInput(Type, Vec2, int);
+  UserInput(Type, Vec2, BuildInfo);
   UserInput(Type, int);
   UserInput(Type, Vec2);
 
   Vec2 getPosition();
   int getNum();
+  BuildInfo getBuildInfo();
 
   private:
 
   Vec2 position;
   int num;
+  BuildInfo buildInfo;
 };
 
 std::ostream& operator << (std::ostream&, UserInput);

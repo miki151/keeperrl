@@ -745,6 +745,11 @@ PGuiElem GuiElem::conditional(PGuiElem elem, function<bool(GuiElem*)> f) {
   return PGuiElem(new Conditional(std::move(elem), f));
 }
 
+PGuiElem GuiElem::conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> f) {
+  return stack(PGuiElem(new Conditional(std::move(elem), f)),
+      PGuiElem(new Conditional(std::move(alter), [=] (GuiElem* e) { return !f(e);})));
+}
+
 PGuiElem GuiElem::scrollable(PGuiElem content, int contentHeight, double* scrollPos, double scrollJump) {
   PGuiElem scrollable(new Scrollable(std::move(content), contentHeight, scrollPos));
   PGuiElem bar(new ScrollBar(std::move(getScrollButton()), scrollButtonSize, scrollPos, contentHeight));

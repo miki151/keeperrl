@@ -566,6 +566,12 @@ void append(vector<T>& v, vector<T>&& w) {
     v.push_back(std::move(elem));
 }
 
+template <typename T, typename U>
+void append(vector<T>& v, const U& u) {
+  for (T elem : u)
+    v.push_back(elem);
+}
+
 template <typename T>
 vector<T> concat(vector<T> v, const vector<T>& w) {
   append(v, w);

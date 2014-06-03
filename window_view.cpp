@@ -171,18 +171,18 @@ void WindowView::initialize() {
       switch (gameInfo.infoType) {
         case GameInfo::InfoType::PLAYER: inputQueue.push(UserInput(UserInput::MOVE_TO, pos)); break;
         case GameInfo::InfoType::BAND:
-          if (!contains({CollectiveOption::WORKSHOP, CollectiveOption::BUILDINGS, CollectiveOption::TECHNOLOGY},
-              collectiveOption))
+          if (!contains({CollectiveTab::WORKSHOP, CollectiveTab::BUILDINGS, CollectiveTab::TECHNOLOGY},
+              collectiveTab))
             inputQueue.push(UserInput(UserInput::POSSESS, pos));
-          if (collectiveOption == CollectiveOption::WORKSHOP && activeWorkshop >= 0)
-            inputQueue.push(UserInput(UserInput::WORKSHOP, pos, activeWorkshop));
-          if (collectiveOption == CollectiveOption::TECHNOLOGY && activeLibrary >= 0)
-            inputQueue.push(UserInput(UserInput::LIBRARY, pos, activeLibrary));
-          if (collectiveOption == CollectiveOption::BUILDINGS) {
+          if (collectiveTab == CollectiveTab::WORKSHOP && activeWorkshop >= 0)
+            inputQueue.push(UserInput(UserInput::WORKSHOP, pos, {activeWorkshop, activeOption}));
+          if (collectiveTab == CollectiveTab::TECHNOLOGY && activeLibrary >= 0)
+            inputQueue.push(UserInput(UserInput::LIBRARY, pos, {activeLibrary, activeOption}));
+          if (collectiveTab == CollectiveTab::BUILDINGS) {
             if (Keyboard::isKeyPressed(Keyboard::LShift))
-              inputQueue.push(UserInput(UserInput::RECT_SELECTION, pos, activeBuilding));
+              inputQueue.push(UserInput(UserInput::RECT_SELECTION, pos));
             else
-              inputQueue.push(UserInput(UserInput::BUILD, pos, activeBuilding));
+              inputQueue.push(UserInput(UserInput::BUILD, pos, {activeBuilding, activeOption}));
           }
           break;
       }});
@@ -597,8 +597,32 @@ PGuiElem WindowView::drawVillages(GameInfo::VillageInfo& info) {
   return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }
 
+void WindowView::setOptionsMenu(const string& title, const vector<GameInfo::BandInfo::Button::Option>& options) {
+  if (options.empty()) {
+    mapGui->clearOptions();
+    return;
+  }
+  vector<PGuiElem> elems;
+  for (int i : All(options)) {
+    elems.push_back(GuiElem::stack(
+        GuiElem::button([=] { activeOption = i; }),
+        GuiElem::conditional(
+          GuiElem::label(options[i].text, green),
+          GuiElem::label(options[i].text, white),
+          [=] (GuiElem*) { return activeOption == i; })));
+  }
+  mapGui->setOptions(title, std::move(elems));
+}
+
+void WindowView::setCollectiveTab(CollectiveTab t) {
+  if (collectiveTab != t) {
+    collectiveTab = t;
+    mapGui->clearOptions();
+  }
+}
+
 vector<PGuiElem> WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active,
-    CollectiveOption option) {
+    CollectiveTab tab) {
   vector<PGuiElem> elems;
   for (int i : All(buttons)) {
     vector<PGuiElem> line;
@@ -619,11 +643,16 @@ vector<PGuiElem> WindowView::drawButtons(vector<GameInfo::BandInfo::Button> butt
       widths.push_back(25);
     }
     function<void()> buttonFun;
-    if (buttons[i].inactiveReason == "" || buttons[i].inactiveReason == "inactive")
-      buttonFun = [this, &active, i, option] () {
+    if (buttons[i].inactiveReason == "" || buttons[i].inactiveReason == "inactive") {
+      vector<GameInfo::BandInfo::Button::Option> options = buttons[i].options;
+      string optionsTitle = buttons[i].optionsTitle;
+      buttonFun = [this, &active, i, tab, options, optionsTitle] () {
         active = i;
-        collectiveOption = option;
+        setCollectiveTab(tab);
+        activeOption = 0;
+        setOptionsMenu(optionsTitle, options);
       };
+    }
     else {
       string s = buttons[i].inactiveReason;
       buttonFun = [this, s] () {
@@ -639,17 +668,17 @@ vector<PGuiElem> WindowView::drawButtons(vector<GameInfo::BandInfo::Button> butt
 }
   
 PGuiElem WindowView::drawBuildings(GameInfo::BandInfo& info) {
-  return GuiElem::verticalList(drawButtons(info.buildings, activeBuilding, CollectiveOption::BUILDINGS),
+  return GuiElem::verticalList(drawButtons(info.buildings, activeBuilding, CollectiveTab::BUILDINGS),
       legendLineHeight, 0);
 }
 
 PGuiElem WindowView::drawWorkshop(GameInfo::BandInfo& info) {
-  return GuiElem::verticalList(drawButtons(info.workshop, activeWorkshop, CollectiveOption::WORKSHOP),
+  return GuiElem::verticalList(drawButtons(info.workshop, activeWorkshop, CollectiveTab::WORKSHOP),
       legendLineHeight, 0);
 }
 
 PGuiElem WindowView::drawTechnology(GameInfo::BandInfo& info) {
-  vector<PGuiElem> lines = drawButtons(info.libraryButtons, activeLibrary, CollectiveOption::TECHNOLOGY);
+  vector<PGuiElem> lines = drawButtons(info.libraryButtons, activeLibrary, CollectiveTab::TECHNOLOGY);
   for (int i : All(info.techButtons)) {
     vector<PGuiElem> line;
     line.push_back(GuiElem::viewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, ""), tilesOk));
@@ -674,12 +703,12 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info, GameInfo::Sunl
   vector<PGuiElem> topLine;
   vector<int> topWidths;
   int resourceSpacing = 95;
-  for (int i : All(info.numGold)) {
+  for (int i : All(info.numResource)) {
     vector<PGuiElem> res;
-    res.push_back(GuiElem::viewObject(info.numGold[i].viewObject, tilesOk));
-    res.push_back(GuiElem::label(convertToString<int>(info.numGold[i].count), white));
+    res.push_back(GuiElem::viewObject(info.numResource[i].viewObject, tilesOk));
+    res.push_back(GuiElem::label(convertToString<int>(info.numResource[i].count), white));
     topWidths.push_back(resourceSpacing);
-    topLine.push_back(GuiElem::stack(mapGui->getHintCallback(info.numGold[i].name),
+    topLine.push_back(GuiElem::stack(mapGui->getHintCallback(info.numResource[i].name),
             GuiElem::horizontalList(std::move(res), 30, 0)));
   }
   topLine.push_back(getTurnInfoGui(info.time));
@@ -709,26 +738,26 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
     GuiElem::icon(GuiElem::DIPLOMACY),
     GuiElem::icon(GuiElem::HELP));
   for (int i : All(buttons)) {
-    if (int(collectiveOption) == i)
+    if (int(collectiveTab) == i)
       buttons[i] = GuiElem::border2(std::move(buttons[i]));
     else
       buttons[i] = GuiElem::margins(std::move(buttons[i]), 6, 6, 6, 6);
     buttons[i] = GuiElem::stack(std::move(buttons[i]),
-        GuiElem::button([this, i]() { collectiveOption = CollectiveOption(i); }));
+        GuiElem::button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
   }
-  if (collectiveOption != CollectiveOption::MINIONS)
+  if (collectiveTab != CollectiveTab::MINIONS)
     chosenCreature = "";
   PGuiElem main;
   vector<PGuiElem> invisible;
-  vector<pair<CollectiveOption, PGuiElem>> elems = makeVec<pair<CollectiveOption, PGuiElem>>(
-    make_pair(CollectiveOption::MINIONS, drawMinions(info)),
-    make_pair(CollectiveOption::BUILDINGS, drawBuildings(info)),
-    make_pair(CollectiveOption::KEY_MAPPING, drawKeeperHelp()),
-    make_pair(CollectiveOption::TECHNOLOGY, drawTechnology(info)),
-    make_pair(CollectiveOption::WORKSHOP, drawWorkshop(info)),
-    make_pair(CollectiveOption::VILLAGES, drawVillages(villageInfo)));
+  vector<pair<CollectiveTab, PGuiElem>> elems = makeVec<pair<CollectiveTab, PGuiElem>>(
+    make_pair(CollectiveTab::MINIONS, drawMinions(info)),
+    make_pair(CollectiveTab::BUILDINGS, drawBuildings(info)),
+    make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
+    make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(info)),
+    make_pair(CollectiveTab::WORKSHOP, drawWorkshop(info)),
+    make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
   for (auto& elem : elems)
-    if (elem.first == collectiveOption)
+    if (elem.first == collectiveTab)
       main = std::move(elem.second);
     else
       invisible.push_back(GuiElem::invisible(std::move(elem.second)));
@@ -1523,7 +1552,7 @@ UserInput WindowView::getAction() {
           break;
       case Event::MouseButtonReleased :
           if (event.mouseButton.button == sf::Mouse::Left) {
-            return UserInput(UserInput::BUTTON_RELEASE, activeBuilding);
+            return UserInput(UserInput::BUTTON_RELEASE, Vec2(0, 0), {activeBuilding, activeOption});
           }
           break;
       default: break;

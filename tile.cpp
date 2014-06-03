@@ -289,7 +289,9 @@ static Tile getSprite(ViewId id) {
     case ViewId::ROCK: return Tile(6, 1, 3);
     case ViewId::IRON_ROCK: return Tile(10, 1, 3);
     case ViewId::WOOD_PLANK: return Tile(7, 10, 2);
-    case ViewId::STOCKPILE: return Tile(4, 1, 1);
+    case ViewId::STOCKPILE1: return Tile(2, 17, 1);
+    case ViewId::STOCKPILE2: return Tile(3, 17, 1);
+    case ViewId::STOCKPILE3: return Tile(4, 17, 1);
     case ViewId::PRISON: return Tile(6, 2, 1);
     case ViewId::BED: return Tile(5, 4, 2, true);
     case ViewId::TORCH: return Tile(13, 1, 2, true).setTranslucent(0.35);
@@ -521,7 +523,9 @@ static Tile getAscii(ViewId id) {
     case ViewId::ROCK: return Tile('*', lightGray);
     case ViewId::IRON_ROCK: return Tile('*', orange);
     case ViewId::WOOD_PLANK: return Tile('\\', brown);
-    case ViewId::STOCKPILE: return Tile('.', yellow);
+    case ViewId::STOCKPILE1: return Tile('.', yellow);
+    case ViewId::STOCKPILE2: return Tile('.', lightGreen);
+    case ViewId::STOCKPILE3: return Tile('.', lightBlue);
     case ViewId::PRISON: return Tile('.', blue);
     case ViewId::BED: return Tile('=', white);
     case ViewId::DUNGEON_HEART: return Tile(L'♥', white, true);

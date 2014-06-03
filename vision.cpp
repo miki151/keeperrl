@@ -10,7 +10,9 @@ SERIALIZABLE(CreatureVision);
 
 template <class Archive> 
 void Vision::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(inheritedFov) & SVAR(nightVision);
+  ar& SUBCLASS(Singleton) 
+    & SVAR(inheritedFov)
+    & SVAR(nightVision);
   CHECK_SERIAL;
 }
 

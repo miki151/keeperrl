@@ -65,14 +65,6 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
   return black;
 }
 
-void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
-  int height = 30;
-  int width = renderer.getTextLength(text) + 30;
-  Vec2 pos(getBounds().getKX() - width, getBounds().getKY() - height);
-  renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(black, 190));
-  renderer.drawText(color, pos.x + 10, pos.y + 1, text);
-}
-
 enum class ConnectionId {
   ROAD,
   WALL,
@@ -106,6 +98,8 @@ bool tileConnects(ConnectionId id, Vec2 pos) {
 }
 
 void MapGui::onLeftClick(Vec2 v) {
+  if (optionsGui && v.inRectangle(optionsGui->getBounds()))
+    optionsGui->onLeftClick(v);
   if (v.inRectangle(getBounds())) {
     Vec2 pos = layout->projectOnMap(getBounds(), v);
     leftClickFun(pos);
@@ -118,7 +112,7 @@ void MapGui::onRightClick(Vec2) {
 
 void MapGui::onMouseMove(Vec2 v) {
   Vec2 pos = layout->projectOnMap(getBounds(), v);
-  if (v.inRectangle(getBounds())) {
+  if (v.inRectangle(getBounds()) && (!optionsGui || !v.inRectangle(optionsGui->getBounds()))) {
     if (mouseHeldPos && *mouseHeldPos != pos) {
       leftClickFun(pos);
       mouseHeldPos = pos;
@@ -236,6 +230,15 @@ void MapGui::updateObjects(const MapMemory* mem) {
       }
 }
 
+const int bgTransparency = 180;
+
+void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
+  int height = 30;
+  int width = renderer.getTextLength(text) + 30;
+  Vec2 pos(getBounds().getKX() - width, getBounds().getKY() - height);
+  renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(black, bgTransparency));
+  renderer.drawText(color, pos.x + 10, pos.y + 1, text);
+}
 
 void MapGui::render(Renderer& renderer) {
   int sizeX = layout->squareWidth();
@@ -278,6 +281,11 @@ void MapGui::render(Renderer& renderer) {
       col = green;
     drawHint(renderer, col, highlighted->getDescription(true));
   }
+  if (optionsGui) {
+    int margin = 10;
+    optionsGui->setBounds(Rectangle(margin, getBounds().getKY() - optionsHeight - margin, 250, getBounds().getKY() - margin));
+    optionsGui->render(renderer);
+  }
 }
 
 void MapGui::resetHint() {
@@ -287,3 +295,22 @@ void MapGui::resetHint() {
 PGuiElem MapGui::getHintCallback(const string& s) {
   return GuiElem::mouseOverAction([this, s]() { hint = s; });
 }
+
+void MapGui::setOptions(const string& title, vector<PGuiElem> options) {
+  int margin = 10;
+  vector<PGuiElem> lines = makeVec<PGuiElem>(GuiElem::label(title, white));
+  vector<int> heights {40};
+  for (auto& elem : options) {
+    lines.push_back(GuiElem::margins(std::move(elem), 15, 0, 0, 0));
+    heights.push_back(30);
+  }
+  optionsHeight = 30 * options.size() + 40 + 2 * margin;
+  optionsGui = GuiElem::stack(
+      GuiElem::rectangle(transparency(black, bgTransparency)),
+      GuiElem::margins(GuiElem::verticalList(std::move(lines), heights, 0), margin, margin, margin, margin));
+}
+
+void MapGui::clearOptions() {
+  optionsGui.reset();
+}
+

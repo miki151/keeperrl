@@ -175,6 +175,13 @@ class View {
         string inactiveReason;
         string help;
         char hotkey;
+
+        struct Option {
+          Optional<ViewObject> object;
+          string text;
+        };
+        vector<Option> options;
+        string optionsTitle;
       };
       vector<Button> buildings;
       vector<Button> workshop;
@@ -189,7 +196,7 @@ class View {
         int count;
         string name;
       };
-      vector<Resource> numGold;
+      vector<Resource> numResource;
       double time;
       bool gatheringTeam = false;
       vector<const Creature*> team;

@@ -121,7 +121,7 @@ class WindowView: public View {
   std::deque<string> currentMessage = std::deque<string>(3, "");
   bool oldMessage = false;
 
-  enum class CollectiveOption {
+  enum class CollectiveTab {
     BUILDINGS,
     MINIONS,
     TECHNOLOGY,
@@ -130,8 +130,10 @@ class WindowView: public View {
     KEY_MAPPING,
   };
   
-  vector<PGuiElem> drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveOption option);
-  CollectiveOption collectiveOption = CollectiveOption::BUILDINGS;
+  vector<PGuiElem> drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveTab);
+  void setCollectiveTab(CollectiveTab t);
+  void setOptionsMenu(const string& title, const vector<GameInfo::BandInfo::Button::Option>&);
+  CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
 
   enum class LegendOption {
     STATS,
@@ -166,6 +168,7 @@ class WindowView: public View {
   int activeBuilding = 0;
   int activeWorkshop = -1;
   int activeLibrary = -1;
+  int activeOption = 0;
   string chosenCreature;
 
   function<void()> getButtonCallback(UserInput);

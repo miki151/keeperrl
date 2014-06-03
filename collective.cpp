@@ -140,20 +140,26 @@ void Collective::PrisonerInfo::serialize(Archive& ar, const unsigned int version
 SERIALIZABLE(Collective::PrisonerInfo);
 
 Collective::BuildInfo::BuildInfo(SquareInfo info, Optional<TechId> id, const string& h, char key)
-    : squareInfo(info), buildType(SQUARE), techId(id), help(h), hotkey(key) {}
+    : squareInfo(1, info), buildType(SQUARE), techId(id), help(h), hotkey(key) {}
+Collective::BuildInfo::BuildInfo(const string& group, const string& title, vector<SquareInfo> info, Optional<TechId> id,
+    const string& h, char key)
+    : squareInfo(info), groupName(group), buildType(SQUARE), techId(id), help(h), hotkey(key), optionsTitle(title) {}
 Collective::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h, char key)
     : trapInfo(info), buildType(TRAP), techId(id), help(h), hotkey(key) {}
 Collective::BuildInfo::BuildInfo(BuildType type, const string& h, char key) : buildType(type), help(h), hotkey(key) {
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH}, type));
 }
 Collective::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const string& h, char key) 
-  : squareInfo(info), buildType(type), help(h), hotkey(key) {
+  : squareInfo(1, info), buildType(type), help(h), hotkey(key) {
   CHECK(type == IMPALED_HEAD);
 }
 
 const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo(BuildInfo::DIG, "", 'd'),
-    BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Storage", true}, Nothing(), "", 's'),
+    BuildInfo("Storage", "Choose storage type:", {{SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true},
+        {SquareType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true},
+        {SquareType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}},
+        Nothing(), "", 's'),
     BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, Nothing(), ""),
     BuildInfo({SquareType::BED, {ResourceId::WOOD, 10}, "Bed"}, Nothing(), "", 'b'),
     BuildInfo({SquareType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
@@ -202,8 +208,8 @@ vector<Collective::RoomInfo> Collective::getRoomInfo() {
   vector<RoomInfo> ret;
   for (BuildInfo bInfo : buildInfo)
     if (bInfo.buildType == BuildInfo::SQUARE) {
-      BuildInfo::SquareInfo info = bInfo.squareInfo;
-      ret.push_back({info.name, bInfo.help, bInfo.techId});
+      for (BuildInfo::SquareInfo info : bInfo.squareInfo)
+        ret.push_back({info.name, bInfo.help, bInfo.techId});
     }
   return ret;
 }
@@ -234,33 +240,34 @@ Collective::ResourceInfo info;
 
 constexpr const char* const Collective::warningText[numWarnings];
 
+const static vector<SquareType> resourceStorage {SquareType::STOCKPILE, SquareType::STOCKPILE_RES};
+const static vector<SquareType> equipmentStorage {SquareType::STOCKPILE, SquareType::STOCKPILE_EQUIP};
+
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
-  {ResourceId::GOLD, { SquareType::TREASURE_CHEST, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE, "gold",
+  {ResourceId::GOLD, { {SquareType::TREASURE_CHEST}, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE, "gold",
                        Collective::Warning::GOLD}},
-  {ResourceId::WOOD, { SquareType::STOCKPILE, Item::namePredicate("wood plank"), ItemId::WOOD_PLANK, "wood",
-                       Collective::Warning::WOOD}},
-  {ResourceId::IRON, { SquareType::STOCKPILE, Item::namePredicate("iron ore"), ItemId::IRON_ORE, "iron",
-                       Collective::Warning::IRON}},
-  {ResourceId::STONE, { SquareType::STOCKPILE, Item::namePredicate("rock"), ItemId::ROCK, "stone",
+  {ResourceId::WOOD, { resourceStorage, Item::namePredicate("wood plank"),
+                       ItemId::WOOD_PLANK, "wood", Collective::Warning::WOOD}},
+  {ResourceId::IRON, { resourceStorage, Item::namePredicate("iron ore"),
+                       ItemId::IRON_ORE, "iron", Collective::Warning::IRON}},
+  {ResourceId::STONE, { resourceStorage, Item::namePredicate("rock"), ItemId::ROCK, "stone",
                        Collective::Warning::STONE}},
 };
 
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   return {
-    {unMarkedItems(ItemType::CORPSE), SquareType::GRAVE, true, {}, Warning::GRAVES},
-    {unMarkedItems(ItemType::GOLD), SquareType::TREASURE_CHEST, false, {}, Warning::CHESTS},
+    {unMarkedItems(ItemType::CORPSE), {SquareType::GRAVE}, true, {}, Warning::GRAVES},
+    {unMarkedItems(ItemType::GOLD), {SquareType::TREASURE_CHEST}, false, {}, Warning::CHESTS},
     {[this](const Item* it) {
         return minionEquipment.isItemUseful(it) && !isItemMarked(it);
-      }, SquareType::STOCKPILE, false, {}, Warning::STORAGE},
+      }, equipmentStorage, false, {}, Warning::STORAGE},
     {[this](const Item* it) {
         return it->getName() == "wood plank" && !isItemMarked(it); },
-      SquareType::STOCKPILE, false, {SquareType::TREE_TRUNK}, Warning::STORAGE},
+    resourceStorage, false, {SquareType::TREE_TRUNK}, Warning::STORAGE},
     {[this](const Item* it) {
-        return it->getName() == "iron ore" && !isItemMarked(it); },
-      SquareType::STOCKPILE, false, {}, Warning::STORAGE},
+        return it->getName() == "iron ore" && !isItemMarked(it); }, resourceStorage, false, {}, Warning::STORAGE},
     {[this](const Item* it) {
-        return it->getName() == "rock" && !isItemMarked(it); },
-      SquareType::STOCKPILE, false, {}, Warning::STORAGE},
+        return it->getName() == "rock" && !isItemMarked(it); }, resourceStorage, false, {}, Warning::STORAGE},
   };
 }
 
@@ -303,7 +310,8 @@ Collective::Collective(Model* m, Level* l, Tribe* t) : level(l), mana(200), mode
   mySquares[SquareType::TRIBE_DOOR].clear();
   for (BuildInfo info : concat(buildInfo, workshopInfo))
     if (info.buildType == BuildInfo::SQUARE)
-      mySquares[info.squareInfo.type].clear();
+      for (auto s : info.squareInfo)
+        mySquares[s.type].clear();
   credit = {
     {ResourceId::GOLD, 0},
     {ResourceId::WOOD, 0},
@@ -715,8 +723,16 @@ Item* Collective::chooseEquipmentItem(View* view, Item* currentItem, ItemPredica
   return concat(currentItemVec, allStacked)[*index];
 }
 
+vector<Vec2> Collective::getAllSquares(const vector<SquareType>& types) const {
+  vector<Vec2> ret;
+  for (SquareType type : types)
+    append(ret, mySquares.at(type));
+  return ret;
+}
+
 void Collective::handleMarket(View* view, int prevItem) {
-  if (mySquares[SquareType::STOCKPILE].empty()) {
+  vector<Vec2> storage = getAllSquares(equipmentStorage);
+  if (storage.empty()) {
     view->presentText("Information", "You need a storage room to use the market.");
     return;
   }
@@ -725,13 +741,13 @@ void Collective::handleMarket(View* view, int prevItem) {
   for (ItemId id : marketItems) {
     items.push_back(ItemFactory::fromId(id));
     options.emplace_back(items.back()->getName() + "    $" + convertToString(items.back()->getPrice()),
-        items.back()->getPrice() > numGold(ResourceId::GOLD) ? View::INACTIVE : View::NORMAL);
+        items.back()->getPrice() > numResource(ResourceId::GOLD) ? View::INACTIVE : View::NORMAL);
   }
   auto index = view->chooseFromList("Buy items", options, prevItem);
   if (!index)
     return;
-  Vec2 dest = chooseRandom(mySquares[SquareType::STOCKPILE]);
-  takeGold({ResourceId::GOLD, items[*index]->getPrice()});
+  Vec2 dest = chooseRandom(storage);
+  takeResource({ResourceId::GOLD, items[*index]->getPrice()});
   level->getSquare(dest)->dropItem(std::move(items[*index]));
   view->updateView(this);
   handleMarket(view, *index);
@@ -1021,16 +1037,29 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
     bool isTech = (!button.techId || hasTech(*button.techId));
     switch (button.buildType) {
       case BuildInfo::SQUARE: {
-            BuildInfo::SquareInfo& elem = button.squareInfo;
-            Optional<pair<ViewObject, int>> cost;
-            if (elem.cost.value > 0)
-              cost = {getResourceViewObject(elem.cost.id), elem.cost.value};
-            buttons.push_back({
-                SquareFactory::get(elem.type)->getViewObject(),
-                elem.name,
-                cost,
-                (elem.cost.value > 0 ? "[" + convertToString(mySquares.at(elem.type).size()) + "]" : ""),
-                isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
+           if (button.squareInfo.size() == 1) {
+             BuildInfo::SquareInfo& elem = button.squareInfo[0];
+             Optional<pair<ViewObject, int>> cost;
+             if (elem.cost.value > 0)
+               cost = {getResourceViewObject(elem.cost.id), elem.cost.value};
+             buttons.push_back({
+                 SquareFactory::get(elem.type)->getViewObject(),
+                 elem.name,
+                 cost,
+                 (elem.cost.value > 0 ? "[" + convertToString(mySquares.at(elem.type).size()) + "]" : ""),
+                 isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
+           } else {
+             buttons.push_back({
+                 SquareFactory::get(button.squareInfo[0].type)->getViewObject(),
+                 button.groupName,
+                 Nothing(),
+                 "",
+                 isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
+             for (auto& info : button.squareInfo)
+               buttons.back().options.push_back({
+                   SquareFactory::get(info.type)->getViewObject(), info.name});
+             buttons.back().optionsTitle = button.optionsTitle;
+           }
            }
            break;
       case BuildInfo::DIG: {
@@ -1040,7 +1069,7 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
            }
            break;
       case BuildInfo::IMPALED_HEAD: {
-           BuildInfo::SquareInfo& elem = button.squareInfo;
+           BuildInfo::SquareInfo elem = getOnlyElement(button.squareInfo);
              buttons.push_back({
                  ViewObject(ViewId::IMPALED_HEAD, ViewLayer::LARGE_ITEM, ""),
                  elem.name, Nothing(), "(" + convertToString(executions) + " ready)",
@@ -1147,11 +1176,11 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
     if (Creature* c = level->getSquare(v)->getCreature())
       if (c->getTribe() != tribe)
         info.enemies.push_back(c);
-  info.numGold.clear();
+  info.numResource.clear();
   for (auto elem : resourceInfo)
-    info.numGold.push_back({getResourceViewObject(elem.first), numGold(elem.first), elem.second.name});
-  info.numGold.push_back({ViewObject::mana(), int(mana), "mana"});
- /* info.numGold.push_back({ViewObject(ViewId::DANGER, ViewLayer::CREATURE, ""), int(getDangerLevel()) + points,
+    info.numResource.push_back({getResourceViewObject(elem.first), numResource(elem.first), elem.second.name});
+  info.numResource.push_back({ViewObject::mana(), int(mana), "mana"});
+ /* info.numResource.push_back({ViewObject(ViewId::DANGER, ViewLayer::CREATURE, ""), int(getDangerLevel()) + points,
       "points"});*/
   if (attacking) {
     if (info.warning.empty())
@@ -1305,18 +1334,15 @@ void Collective::TaskMap::unmarkSquare(Vec2 pos) {
   marked.erase(pos);
 }
 
-bool Collective::hasGold(CostInfo cost) const {
-  return numGold(cost.id) >= cost.value;
-}
-
-int Collective::numGold(ResourceId id) const {
+int Collective::numResource(ResourceId id) const {
   int ret = credit.at(id);
-  for (Vec2 pos : mySquares.at(resourceInfo.at(id).storageType))
-    ret += level->getSquare(pos)->getItems(resourceInfo.at(id).predicate).size();
+  for (SquareType type : resourceInfo.at(id).storageType)
+    for (Vec2 pos : mySquares.at(type))
+      ret += level->getSquare(pos)->getItems(resourceInfo.at(id).predicate).size();
   return ret;
 }
 
-void Collective::takeGold(CostInfo cost) {
+void Collective::takeResource(CostInfo cost) {
   int num = cost.value;
   if (num == 0)
     return;
@@ -1330,7 +1356,7 @@ void Collective::takeGold(CostInfo cost) {
       credit[cost.id] = 0;
     }
   }
-  for (Vec2 pos : randomPermutation(mySquares[resourceInfo.at(cost.id).storageType])) {
+  for (Vec2 pos : randomPermutation(getAllSquares(resourceInfo.at(cost.id).storageType))) {
     vector<Item*> goldHere = level->getSquare(pos)->getItems(resourceInfo.at(cost.id).predicate);
     for (Item* it : goldHere) {
       level->getSquare(pos)->removeItem(it);
@@ -1341,15 +1367,16 @@ void Collective::takeGold(CostInfo cost) {
   FAIL << "Didn't have enough gold";
 }
 
-void Collective::returnGold(CostInfo amount) {
+void Collective::returnResource(CostInfo amount) {
   if (amount.value == 0)
     return;
   CHECK(amount.value > 0);
-  if (mySquares[resourceInfo.at(amount.id).storageType].empty()) {
-    credit[amount.id] += amount.value;
+  vector<Vec2> destination = getAllSquares(resourceInfo.at(amount.id).storageType);
+  if (!destination.empty()) {
+    level->getSquare(chooseRandom(destination))->
+      dropItems(ItemFactory::fromId(resourceInfo.at(amount.id).itemId, amount.value));
   } else
-    level->getSquare(chooseRandom(mySquares[resourceInfo.at(amount.id).storageType]))->
-        dropItems(ItemFactory::fromId(resourceInfo.at(amount.id).itemId, amount.value));
+    credit[amount.id] += amount.value;
 }
 
 int Collective::getImpCost() const {
@@ -1498,20 +1525,20 @@ void Collective::processInput(View* view, UserInput input) {
           rectSelectCorner = input.getPosition();
         break;
     case UserInput::BUILD:
-        handleSelection(input.getPosition(), buildInfo[input.getNum()], false);
+        handleSelection(input.getPosition(), buildInfo[input.getBuildInfo().building], false, input.getBuildInfo().option);
         break;
     case UserInput::WORKSHOP:
-        handleSelection(input.getPosition(), workshopInfo[input.getNum()], false);
+        handleSelection(input.getPosition(), workshopInfo[input.getBuildInfo().building], false, input.getBuildInfo().option);
         break;
     case UserInput::LIBRARY:
-        handleSelection(input.getPosition(), libraryInfo[input.getNum()], false);
+        handleSelection(input.getPosition(), libraryInfo[input.getBuildInfo().building], false, input.getBuildInfo().option);
         break;
     case UserInput::BUTTON_RELEASE:
         selection = NONE;
         if (rectSelectCorner && rectSelectCorner2) {
-          handleSelection(*rectSelectCorner, buildInfo[input.getNum()], true);
+          handleSelection(*rectSelectCorner, buildInfo[input.getBuildInfo().building], true, input.getBuildInfo().option);
           for (Vec2 v : Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2}))
-            handleSelection(v, buildInfo[input.getNum()], true);
+            handleSelection(v, buildInfo[input.getBuildInfo().building], true, input.getBuildInfo().option);
         }
         rectSelectCorner = Nothing();
         rectSelectCorner2 = Nothing();
@@ -1523,7 +1550,7 @@ void Collective::processInput(View* view, UserInput input) {
   }
 }
 
-void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle) {
+void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle, int option) {
   if (building.techId && !hasTech(*building.techId))
     return;
   if (!pos.inRectangle(level->getBounds()))
@@ -1566,7 +1593,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
           traps.erase(pos);
         }
         if (constructions.count(pos)) {
-          returnGold(taskMap.removeTask(constructions.at(pos).task));
+          returnResource(taskMap.removeTask(constructions.at(pos).task));
           constructions.erase(pos);
         }
         break;
@@ -1607,14 +1634,14 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         if (!tryLockingDoor(pos)) {
           if (constructions.count(pos)) {
             if (selection != SELECT) {
-              returnGold(taskMap.removeTask(constructions.at(pos).task));
+              returnResource(taskMap.removeTask(constructions.at(pos).task));
               if (constructions.at(pos).type == SquareType::IMPALED_HEAD)
                 ++executions;
               constructions.erase(pos);
               selection = DESELECT;
             }
           } else {
-            BuildInfo::SquareInfo info = building.squareInfo;
+            BuildInfo::SquareInfo info = building.squareInfo[option];
             if (knownPos(pos) && level->getSquare(pos)->canConstruct(info.type) && !traps.count(pos)
                 && (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
               if (info.buildImmediatly) {
@@ -1846,12 +1873,12 @@ void Collective::updateConstructions() {
   for (auto& elem : constructions)
     if (!isDelayed(elem.first) && elem.second.marked <= getTime() && !elem.second.built) {
       if ((warning[int(resourceInfo.at(elem.second.cost.id).warning)]
-          = (numGold(elem.second.cost.id) < elem.second.cost.value)))
+          = (numResource(elem.second.cost.id) < elem.second.cost.value)))
         continue;
       elem.second.task = taskMap.addTaskCost(Task::construction(this, elem.first, elem.second.type),
           elem.second.cost)->getUniqueId();
       elem.second.marked = getTime() + timeToBuild;
-      takeGold(elem.second.cost);
+      takeResource(elem.second.cost);
     }
 }
 
@@ -1897,7 +1924,7 @@ void Collective::tick() {
   }
   updateVisibleCreatures();
   warning[int(Warning::MANA)] = mana < 100;
-  warning[int(Warning::WOOD)] = numGold(ResourceId::WOOD) == 0;
+  warning[int(Warning::WOOD)] = numResource(ResourceId::WOOD) == 0;
   warning[int(Warning::DIGGING)] = mySquares.at(SquareType::FLOOR).empty();
   warning[int(Warning::MINIONS)] = getNumMinions() <= 1;
   for (auto elem : taskInfo)
@@ -1981,7 +2008,7 @@ void Collective::tick() {
   }
 }
 
-static Vec2 chooseRandomClose(Vec2 start, const set<Vec2>& squares) {
+static Vec2 chooseRandomClose(Vec2 start, const vector<Vec2>& squares) {
   int minD = 10000;
   int margin = 5;
   int a;
@@ -1999,21 +2026,22 @@ static Vec2 chooseRandomClose(Vec2 start, const set<Vec2>& squares) {
 void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
   if (isDelayed(pos) || (traps.count(pos) && traps.at(pos).type == TrapType::BOULDER && traps.at(pos).armed == true))
     return;
+  for (SquareType type : elem.destination)
+    if (mySquares[type].count(pos))
+      return;
   vector<Item*> equipment = level->getSquare(pos)->getItems(elem.predicate);
-  if (mySquares[elem.destination].count(pos))
-    return;
   if (!equipment.empty()) {
-    if (mySquares[elem.destination].empty())
-      warning[int(elem.warning)] = true;
-    else {
+    vector<Vec2> destination = getAllSquares(elem.destination);
+    if (!destination.empty()) {
       warning[int(elem.warning)] = false;
       if (elem.oneAtATime)
         equipment = {equipment[0]};
-      Vec2 target = chooseRandomClose(pos, mySquares[elem.destination]);
+      Vec2 target = chooseRandomClose(pos, destination);
       taskMap.addTask(Task::bringItem(this, pos, equipment, target));
       for (Item* it : equipment)
         markItem(it);
-    }
+    } else
+      warning[int(elem.warning)] = true;
   }
 }
 
@@ -2243,7 +2271,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
   if (usesEquipment(c))
     autoEquipment(c);
   if (c != keeper || !underAttack())
-    for (Vec2 v : mySquares[SquareType::STOCKPILE])
+    for (Vec2 v : getAllSquares(equipmentStorage))
       for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
             return minionEquipment.getOwner(it) == c; })) {
         PTask t;
@@ -2518,7 +2546,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     if (Task* task = taskMap.getTask(c)) {
       if (!task->canTransfer()) {
         task->cancel();
-        returnGold(taskMap.removeTask(task));
+        returnResource(taskMap.removeTask(task));
       } else
         taskMap.freeTaskDelay(task, getTime() + 50);
     }

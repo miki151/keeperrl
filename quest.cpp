@@ -23,7 +23,8 @@
 
 template <class Archive> 
 void Quest::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(adventurers)
+  ar& SUBCLASS(Singleton)
+    & SVAR(adventurers)
     & SVAR(location)
     & SVAR(startMessage);
   CHECK_SERIAL;

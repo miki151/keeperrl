@@ -16,11 +16,12 @@
 #include "stdafx.h"
 #include "user_input.h"
 
-vector<UserInput::Type> vectorIntTypes {
+vector<UserInput::Type> buildTypes {
   UserInput::BUILD,
   UserInput::WORKSHOP,
   UserInput::LIBRARY,
-  UserInput::RECT_SELECTION };
+  UserInput::BUTTON_RELEASE,
+};
 
 vector<UserInput::Type> vectorTypes {
   UserInput::POSSESS,
@@ -29,19 +30,19 @@ vector<UserInput::Type> vectorTypes {
   UserInput::TRAVEL, 
   UserInput::FIRE,
   UserInput::THROW_DIR,
+  UserInput::RECT_SELECTION,
 };
 
 vector<UserInput::Type> intTypes {
   UserInput::TECHNOLOGY,
-  UserInput::BUTTON_RELEASE,
-  UserInput::CREATURE_BUTTON
+  UserInput::CREATURE_BUTTON,
 };
 
 UserInput::UserInput() {
 }
 
-UserInput::UserInput(Type t, Vec2 p, int n) : type(t), position(p), num(n) {
-  CHECK(contains(vectorIntTypes, t));
+UserInput::UserInput(Type t, Vec2 p, BuildInfo info) : type(t), position(p), buildInfo(info) {
+  CHECK(contains(buildTypes, t));
 }
 
 UserInput::UserInput(Type t, Vec2 p) : type(t), position(p) {
@@ -53,23 +54,28 @@ UserInput::UserInput(Type t, int n) : type(t), num(n) {
 }
 
 UserInput::UserInput(Type t) : type(t) {
-  CHECK(!contains(vectorIntTypes, t) && !contains(intTypes, t) && !contains(vectorTypes, t));
+  CHECK(!contains(buildTypes, t) && !contains(intTypes, t) && !contains(vectorTypes, t));
 }
 
 Vec2 UserInput::getPosition() {
-  CHECK(contains(vectorTypes, type) || contains(vectorIntTypes, type));
+  CHECK(contains(vectorTypes, type) || contains(buildTypes, type));
   return position;
 }
 
 int UserInput::getNum() {
-  CHECK(contains(vectorIntTypes, type) || contains(intTypes, type));
+  CHECK(contains(intTypes, type));
   return num;
+}
+
+UserInput::BuildInfo UserInput::getBuildInfo() {
+  CHECK(contains(buildTypes, type));
+  return buildInfo;
 }
 
 std::ostream& operator << (std::ostream& o, UserInput a) {
   o << (int) a.type;
-  if (contains(vectorIntTypes, a.type))
-    o << " " << a.getPosition() << " " << a.getNum();
+  if (contains(buildTypes, a.type))
+    o << " " << a.getPosition() << " " << a.getBuildInfo().building << " " << a.getBuildInfo().option;
   if (contains(vectorTypes, a.type))
     o << " " << a.getPosition();
   if (contains(intTypes, a.type))
@@ -86,11 +92,11 @@ std::istream& operator >> (std::istream& in, UserInput& a) {
     in >> v;
     a = UserInput(id, v);
   } else
-  if (contains(vectorIntTypes, id)) {
+  if (contains(buildTypes, id)) {
     Vec2 v;
-    int n;
-    in >> v >> n;
-    a = UserInput(id, v, n);
+    int n, m;
+    in >> v >> n >> m;
+    a = UserInput(id, v, {n, m});
   } else
   if (contains(intTypes, id)) {
     int n;

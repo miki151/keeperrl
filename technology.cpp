@@ -20,11 +20,13 @@
 
 template <class Archive> 
 void Technology::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(name)
-    & BOOST_SERIALIZATION_NVP(cost)
-    & BOOST_SERIALIZATION_NVP(prerequisites)
-    & BOOST_SERIALIZATION_NVP(research)
-    & BOOST_SERIALIZATION_NVP(skill);
+  ar& SUBCLASS(Singleton)
+    & SVAR(name)
+    & SVAR(cost)
+    & SVAR(prerequisites)
+    & SVAR(research)
+    & SVAR(skill);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Technology);

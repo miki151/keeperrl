@@ -41,11 +41,11 @@ class Technology : public Singleton<Technology, TechId> {
 
   private:
   bool canLearnFrom(const vector<Technology*>&) const;
-  string name;
-  int cost;
-  vector<Technology*> prerequisites;
-  bool research;
-  Skill* skill;
+  string SERIAL(name);
+  int SERIAL(cost);
+  vector<Technology*> SERIAL(prerequisites);
+  bool SERIAL(research);
+  Skill* SERIAL(skill);
 };
 
 #endif
