@@ -557,25 +557,26 @@ bool Collective::usesEquipment(const Creature* c) const {
   return c->isHumanoid() && getMinionType(c) != MinionType::PRISONER && c->getName() != "gnome";
 }
 
-void Collective::autoEquipment(Creature* creature) {
-  vector<EquipmentSlot> slots;
-  for (auto slot : Equipment::slotTitles)
-    slots.push_back(slot.first);
+void Collective::autoEquipment(Creature* creature, bool replace) {
+  map<EquipmentSlot, Item*> slots;
   vector<Item*> myItems = getAllItems([&](const Item* it) {
       return minionEquipment.getOwner(it) == creature && it->canEquip(); });
   for (Item* it : myItems) {
-    if (contains(slots, it->getEquipmentSlot()))
-      removeElement(slots, it->getEquipmentSlot());
-    else  // a rare occurence that minion owns 2 items of the same slot,
+    if (!slots.count(it->getEquipmentSlot())) {
+      slots[it->getEquipmentSlot()] = it;
+    } else  // a rare occurence that minion owns 2 items of the same slot,
           //should happen only when an item leaves the fortress and then is braught back
       minionEquipment.discard(it);
   }
   for (Item* it : getAllItems([&](const Item* it) {
-      return minionEquipment.canTakeItem(creature, it); }, false)) {
-    if (!it->canEquip() || contains(slots, it->getEquipmentSlot())) {
+      return minionEquipment.needs(creature, it, false, replace) && !minionEquipment.getOwner(it); }, false)) {
+    if (!it->canEquip() || !slots.count(it->getEquipmentSlot())
+        || minionEquipment.getItemValue(slots.at(it->getEquipmentSlot())) < minionEquipment.getItemValue(it)) {
       minionEquipment.own(creature, it);
+      if (it->canEquip() && slots.count(it->getEquipmentSlot()))
+        minionEquipment.discard(slots.at(it->getEquipmentSlot()));
       if (it->canEquip())
-        removeElement(slots, it->getEquipmentSlot());
+        slots[it->getEquipmentSlot()] = it;
       if (it->getType() != ItemType::AMMO)
         break;
     }
@@ -630,23 +631,18 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
       const Item* chosenItem = chooseEquipmentItem(view, nullptr, [&](const Item* it) {
           return minionEquipment.getOwner(it) != creature && !it->canEquip()
               && minionEquipment.needs(creature, it, true); }, &itIndex, &scrollPos);
-      if (chosenItem) {
-        if (chosenItem->getEquipmentSlot() == EquipmentSlot::WEAPON
-            && chosenItem->getMinStrength() > creature->getAttr(AttrType::STRENGTH)
-            && !view->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " + creature->getTheName() 
-              + ", and will incur an accuracy penaulty.\n Do you want to continue?"))
-          break;
+      if (chosenItem)
         minionEquipment.own(creature, chosenItem);
-      }
-      else break;
+      else
+        break;
     }
   } else
-  if (index >= slotItems.size()) {  // a consumable item
+  if (index >= slotItems.size()) {  // discard a consumable item
     minionEquipment.discard(consumables[index - slotItems.size()].second[0]);
   } else
-  if (Item* item = slotItems[index])
+  if (Item* item = slotItems[index])  // discard equipment
     minionEquipment.discard(item);
-  else {
+  else { // add new equipment
     Item* currentItem = creature->getEquipment().getItem(slots[index]);
     const Item* chosenItem = chooseEquipmentItem(view, currentItem, [&](const Item* it) {
         return minionEquipment.getOwner(it) != creature
@@ -654,15 +650,14 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
     if (chosenItem) {
       if (Creature* c = const_cast<Creature*>(minionEquipment.getOwner(chosenItem)))
         c->removeEffect(LastingEffect::SLEEP);
-      minionEquipment.own(creature, chosenItem);
+      if (chosenItem->getEquipmentSlot() != EquipmentSlot::WEAPON
+          || chosenItem->getMinStrength() <= creature->getAttr(AttrType::STRENGTH)
+          || view->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " + creature->getTheName() 
+            + ", and will incur an accuracy penaulty.\n Do you want to continue?"))
+        minionEquipment.own(creature, chosenItem);
     }
   }
   handleEquipment(view, creature, index);
-}
-
-static int getItemValue(const Item* it) {
-  return it->getModifier(AttrType::TO_HIT) + it->getModifier(AttrType::DAMAGE)
-    + it->getModifier(AttrType::DEFENSE);
 }
 
 vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
@@ -672,8 +667,8 @@ vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinio
   if (includeMinions)
     for (Creature* c : creatures)
       append(allItems, c->getEquipment().getItems(predicate));
-  sort(allItems.begin(), allItems.end(), [](const Item* it1, const Item* it2) {
-      int diff = getItemValue(it1) - getItemValue(it2);
+  sort(allItems.begin(), allItems.end(), [this](const Item* it1, const Item* it2) {
+      int diff = minionEquipment.getItemValue(it1) - minionEquipment.getItemValue(it2);
       if (diff == 0)
         return it1->getUniqueId() < it2->getUniqueId();
       else
@@ -1931,11 +1926,16 @@ void Collective::tick() {
     if (!mySquares.at(elem.second.square).empty())
       warning[int(elem.second.warning)] = false;
   warning[int(Warning::NO_WEAPONS)] = false;
+  PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
+  vector<Item*> freeWeapons = getAllItems([&](const Item* it) {
+      return it->getType() == ItemType::WEAPON && !minionEquipment.getOwner(it);
+    }, false);
   for (Creature* c : minions) {
-    PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
-    if (usesEquipment(c) && c->equip(genWeapon.get()) && getAllItems([&](const Item* it) {
-          return minionEquipment.canTakeItem(c, it); }, false).empty())
+    if (usesEquipment(c) && c->equip(genWeapon.get()) 
+        && filter(freeWeapons, [&] (const Item* it) { return minionEquipment.needs(c, it); }).empty()) {
       warning[int(Warning::NO_WEAPONS)] = true;
+      break;
+    }
   }
 
   map<Vec2, int> extendedTiles;
@@ -2269,7 +2269,7 @@ MoveInfo Collective::getMinionMove(Creature* c) {
       return task->getMove(c);
   }
   if (usesEquipment(c))
-    autoEquipment(c);
+    autoEquipment(c, Random.roll(10));
   if (c != keeper || !underAttack())
     for (Vec2 v : getAllSquares(equipmentStorage))
       for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {

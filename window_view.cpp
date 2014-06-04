@@ -121,8 +121,21 @@ int bottomBarHeight = 75;
 
 WindowRenderer renderer;
 
-Rectangle WindowView::getMapViewBounds() const {
+Rectangle WindowView::getMapGuiBounds() const {
   return Rectangle(0, 0, renderer.getWidth() - rightBarWidth, renderer.getHeight() - bottomBarHeight);
+}
+
+Rectangle WindowView::getMinimapBounds() const {
+  int x = 20;
+  int y = 70;
+  return Rectangle(x, y, x + renderer.getWidth() / 12, y + renderer.getWidth() / 12);
+}
+
+void WindowView::resetMapBounds() {
+  mapGui->setBounds(getMapGuiBounds());
+  minimapGui->setBounds(getMinimapBounds());
+  mapDecoration->setBounds(getMapGuiBounds().minusMargin(-6));
+  minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
 }
 
 WindowView::WindowView() : objects(Level::getMaxBounds()) {}
@@ -186,15 +199,11 @@ void WindowView::initialize() {
           }
           break;
       }});
-  mapGui->setBounds(getMapViewBounds());
   MinimapGui::initialize();
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP)); });
-  Rectangle minimapBounds(20, 70, 100, 150);
-  minimapGui->setBounds(minimapBounds);
   mapDecoration = GuiElem::border2(GuiElem::empty());
-  mapDecoration->setBounds(getMapViewBounds().minusMargin(-6));
   minimapDecoration = GuiElem::border(GuiElem::empty());
-  minimapDecoration->setBounds(minimapBounds.minusMargin(-6));
+  resetMapBounds();
 }
 
 void WindowView::reset() {
@@ -786,8 +795,7 @@ void WindowView::rebuildGui() {
         rightBarWidth = rightBarWidthCollective;
         break;
   }
-  mapDecoration->setBounds(getMapViewBounds().minusMargin(-6));
-  mapGui->setBounds(getMapViewBounds());
+  resetMapBounds();
   tempGuiElems.clear();
   tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2), 
         GuiElem::margins(std::move(right), 20, 20, 10, 20)));
@@ -851,7 +859,7 @@ function<void()> WindowView::getButtonCallback(UserInput input) {
 
 void WindowView::drawLevelMap(const CreatureView* creature) {
   TempClockPause pause;
-  minimapGui->presentMap(creature, getMapViewBounds(), renderer,
+  minimapGui->presentMap(creature, getMapGuiBounds(), renderer,
       [this](double x, double y) { center = {x, y};});
 }
 
@@ -869,7 +877,7 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   switchTiles();
   const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
-  for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), Level::getMaxBounds()))
+  for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds()))
     objects[pos] = Nothing();
   if ((center.x == 0 && center.y == 0) || collective->staticPosition())
     center = {double(collective->getPosition().x), double(collective->getPosition().y)};
@@ -881,7 +889,7 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   movePos.y = min(movePos.y, int(collective->getLevel()->getBounds().getKY() * mapLayout->squareHeight()));
   mapLayout->updatePlayerPos(movePos);
   const MapMemory* memory = &collective->getMemory(); 
-  for (Vec2 pos : mapLayout->getAllTiles(getMapViewBounds(), Level::getMaxBounds())) 
+  for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds())) 
     if (level->inBounds(pos)) {
       ViewIndex index = collective->getViewIndex(pos);
       if (!index.hasObject(ViewLayer::FLOOR) && !index.hasObject(ViewLayer::FLOOR_BACKGROUND) &&
@@ -930,7 +938,7 @@ void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
 
 void WindowView::animation(Vec2 pos, AnimationId id) {
   CHECK(id == AnimationId::EXPLOSION);
-  Vec2 wpos = mapLayout->projectOnScreen(getMapViewBounds(), pos);
+  Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), pos);
   refreshScreen(false);
   renderer.drawSprite(wpos.x, wpos.y, 510, 628, 36, 36, Renderer::tiles[6]);
   renderer.drawAndClearBuffer();
@@ -975,7 +983,7 @@ class FpsCounter {
 
 void WindowView::drawMap() {
 /*  map<string, ViewObject> objIndex;
-  for (Vec2 wpos : mapLayout->getAllTiles(getMapViewBounds(), objects.getBounds())) 
+  for (Vec2 wpos : mapLayout->getAllTiles(getMapGuiBounds(), objects.getBounds())) 
     if (objects[wpos]) {
       const ViewIndex& index = *objects[wpos];
       if (auto topObject = index.getTopObject(mapLayout->getLayers()))
@@ -1040,7 +1048,7 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
       if (auto pos = mapGui->getHighlightedTile(renderer)) {
         refreshScreen(false);
         int numArrow = 0;
-        Vec2 middle = mapLayout->getAllTiles(getMapViewBounds(), Level::getMaxBounds()).middle();
+        Vec2 middle = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds()).middle();
         if (pos == middle)
           continue;
         Vec2 dir = (*pos - middle).getBearing();
@@ -1054,7 +1062,7 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
           case Dir::SE: numArrow = 5; break;
           case Dir::SW: numArrow = 7; break;
         }
-        Vec2 wpos = mapLayout->projectOnScreen(getMapViewBounds(), middle + dir);
+        Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), middle + dir);
         renderer.drawSprite(wpos.x, wpos.y, 16 * 36, (8 + numArrow) * 36, 36, 36, Renderer::tiles[4]);
         renderer.drawAndClearBuffer();
         if (event.type == Event::MouseButtonPressed)

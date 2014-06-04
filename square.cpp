@@ -187,6 +187,8 @@ void Square::tick(double time) {
       creature->setOnFire(fire.getSize());
     for (Item* it : getItems())
       it->setOnFire(fire.getSize(), level, position);
+    for (Trigger* t : extractRefs(triggers))
+      t->setOnFire(fire.getSize());
   }
   for (Trigger* t : extractRefs(triggers))
     t->tick(time);

@@ -42,6 +42,8 @@ Optional<ViewObject> Trigger::getViewObject(const CreatureView*) const {
 
 void Trigger::onCreatureEnter(Creature* c) {}
 
+void Trigger::setOnFire(double size) {}
+
 bool Trigger::interceptsFlyingItem(Item* it) const { return false; }
 void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, Vision*) {}
 bool Trigger::isDangerous(const Creature* c) const { return false; }

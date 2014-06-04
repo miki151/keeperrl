@@ -38,7 +38,7 @@ void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MinionEquipment);
 
-int MinionEquipment::getEquipmentLimit(EquipmentType type) {
+int MinionEquipment::getEquipmentLimit(EquipmentType type) const {
   switch (type) {
     case MinionEquipment::ARMOR: return 1000;
     case MinionEquipment::COMBAT_ITEM:
@@ -65,12 +65,12 @@ bool MinionEquipment::isItemUseful(const Item* it) const {
   return getEquipmentType(it) || contains({ItemType::POTION, ItemType::SCROLL}, it->getType());
 }
 
-bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit) {
+bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, bool replacement) const {
   if (Optional<EquipmentType> type = getEquipmentType(it)) {
     int limit = noLimit ? 10000 : getEquipmentLimit(*type);
     if (c->getEquipment().getItems([&](const Item* it) { return getEquipmentType(it) == *type;}).size() >= limit)
       return false;
-    return c->canEquip(it)
+    return ((c->canEquip(it) || (replacement && c->canEquipIfEmptySlot(it))) && (isItemAppropriate(c, it) || noLimit))
       || (type == ARCHERY && c->hasSkill(Skill::get(SkillId::ARCHERY)) && (c->canEquip(it) ||
               (it->getType() == ItemType::AMMO && c->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))))
       || (type == HEALING && !c->isNotLiving()) 
@@ -80,10 +80,12 @@ bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit) {
 }
 
 const Creature* MinionEquipment::getOwner(const Item* it) const {
-  if (owners.count(it->getUniqueId()))
-    return owners.at(it->getUniqueId());
-  else
-    return nullptr;
+  if (owners.count(it->getUniqueId())) {
+    const Creature* c = owners.at(it->getUniqueId());
+    if (!c->isDead() && needs(c, it, true, true))
+      return c;
+  }
+  return nullptr;
 }
 
 void MinionEquipment::discard(const Item* it) {
@@ -94,26 +96,12 @@ void MinionEquipment::own(const Creature* c, const Item* it) {
   owners[it->getUniqueId()] = c;
 }
 
-bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) {
+bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) const {
   return it->getType() != ItemType::WEAPON || c->getAttr(AttrType::STRENGTH) >= it->getMinStrength();
 }
 
-bool MinionEquipment::canTakeItem(const Creature* c, const Item* it) {
-  if (const Creature* owner = getOwner(it)) {
-    if (c == owner) {
-      if (!needs(c, it)) {
-        discard(it);
-        return false;
-      }
-      return true;
-    }
-    if (owner->isDead())
-      discard(it);
-    else
-      return false;
-  }
-  if (!getEquipmentType(it) || !c->isHumanoid() || !isItemAppropriate(c, it))
-    return false;
-  return needs(c, it);
+int MinionEquipment::getItemValue(const Item* it) const {
+  return it->getModifier(AttrType::TO_HIT) + it->getModifier(AttrType::DAMAGE)
+    + it->getModifier(AttrType::DEFENSE);
 }
 

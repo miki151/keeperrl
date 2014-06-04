@@ -31,6 +31,7 @@ class Trigger {
 
   virtual bool isDangerous(const Creature* c) const;
   virtual void tick(double time);
+  virtual void setOnFire(double size);
 
   static PTrigger getPortal(const ViewObject& obj, Level*, Vec2 position);
   static PTrigger getTrap(const ViewObject& obj, Level* l, Vec2 position, EffectType effect, Tribe* tribe);

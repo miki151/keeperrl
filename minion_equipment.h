@@ -24,10 +24,9 @@ class Item;
 
 class MinionEquipment {
   public:
-  bool canTakeItem(const Creature*, const Item*);
 
   bool isItemUseful(const Item*) const;
-  bool needs(const Creature* c, const Item* it, bool noLimit = false);
+  bool needs(const Creature* c, const Item* it, bool noLimit = false, bool replacement = false) const;
   const Creature* getOwner(const Item*) const;
   void own(const Creature*, const Item*);
   void discard(const Item*);
@@ -37,12 +36,14 @@ class MinionEquipment {
 
   SERIAL_CHECKER;
 
+  int getItemValue(const Item*) const;
+
   private:
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
 
   static Optional<EquipmentType> getEquipmentType(const Item* it);
-  int getEquipmentLimit(EquipmentType type);
-  bool isItemAppropriate(const Creature*, const Item*);
+  int getEquipmentLimit(EquipmentType type) const;
+  bool isItemAppropriate(const Creature*, const Item*) const;
 
   map<UniqueId, const Creature*> SERIAL(owners);
 };

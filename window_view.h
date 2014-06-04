@@ -111,7 +111,9 @@ class WindowView: public View {
   void zoom(bool out);
   void switchTiles();
   void resize(int width, int height, vector<GuiElem*> gui);
-  Rectangle getMapViewBounds() const;
+  Rectangle getMapGuiBounds() const;
+  Rectangle getMinimapBounds() const;
+  void resetMapBounds();
 
   bool considerScrollEvent(sf::Event&);
   bool considerResizeEvent(sf::Event&, vector<GuiElem*> gui);

@@ -878,8 +878,6 @@ int Creature::getAttr(AttrType type) const {
         def += tribe->getHandicap();
         if (health < 1)
           def *= 0.666 + health / 3;
-        if (isAffected(SLEEP))
-          def *= 0.66;
         if (isAffected(STR_BONUS))
           def += attrBonus;
         for (auto elem : strPenalty)
@@ -890,8 +888,6 @@ int Creature::getAttr(AttrType type) const {
         def += tribe->getHandicap();
         if (health < 1)
           def *= 0.666 + health / 3;
-        if (isAffected(SLEEP))
-          def = 0;
         if (isAffected(DEX_BONUS))
           def += attrBonus;
         for (auto elem : dexPenalty)
@@ -920,6 +916,8 @@ int Creature::getAttr(AttrType type) const {
           def += attrBonus;
         if (isAffected(RAGE))
           def -= attrBonus;
+        if (isAffected(SLEEP))
+          def *= 0.66;
         break;
     case AttrType::THROWN_TO_HIT: 
         def += getAttr(AttrType::DEXTERITY);
@@ -927,15 +925,17 @@ int Creature::getAttr(AttrType type) const {
     case AttrType::TO_HIT: 
         def += toHitBonus();
         def += getAttr(AttrType::DEXTERITY);
+        if (isAffected(SLEEP))
+          def = 0;
         break;
     case AttrType::SPEED: {
         double totWeight = getInventoryWeight();
         if (!carryAnything && totWeight > getAttr(AttrType::STRENGTH))
           def -= 20.0 * totWeight / def;
         if (isAffected(SLOWED))
-          def /= 2;
+          def /= 1.5;
         if (isAffected(SPEED))
-          def *= 2;
+          def *= 1.5;
         break;}
     case AttrType::INV_LIMIT:
         if (carryAnything)

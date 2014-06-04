@@ -279,7 +279,7 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
   Item* chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate,
       int* index = nullptr, double* scrollPos = nullptr) const;
   bool usesEquipment(const Creature* c) const;
-  void autoEquipment(Creature* creature);
+  void autoEquipment(Creature* creature, bool replace);
   MinionType getMinionType(const Creature*) const;
   void setMinionType(Creature*, MinionType type);
 
