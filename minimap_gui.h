@@ -41,6 +41,20 @@ class MinimapGui : public GuiElem {
   static void initialize();
 
   private:
+
+  struct MinimapInfo {
+    Rectangle bounds;
+    vector<Vec2> roads;
+    vector<Vec2> enemies;
+    Vec2 player;
+    double scale;
+    struct Location {
+      Vec2 pos;
+      string text;
+    };
+    vector<Location> locations;
+  } info;
+
   bool initialized = false;
   function<void()> clickFun;
 };

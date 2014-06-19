@@ -27,8 +27,27 @@ static Image mapBuffer;
 static TextureRenderer renderer;
 
 void MinimapGui::render(Renderer& r) {
+  renderer.drawImage(info.bounds.getPX(), info.bounds.getPY(), info.bounds.getKX(), info.bounds.getKY(), mapBuffer, info.scale);
+  for (Vec2 v : info.roads) {
+    Vec2 rrad(1, 1);
+    Vec2 pos = info.bounds.getTopLeft() + v * info.scale;
+    renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), brown);
+  }
+  Vec2 rad(3, 3);
+  if (info.player.inRectangle(info.bounds.minusMargin(rad.x)))
+    renderer.drawFilledRectangle(Rectangle(info.player - rad, info.player + rad), blue);
+  for (Vec2 pos : info.enemies)
+    renderer.drawFilledRectangle(Rectangle(pos - rad, pos + rad), red);
   r.drawSprite(
       getBounds().getTopLeft(), Vec2(0, 0), Vec2(getBounds().getW(), getBounds().getH()), renderer.getTexture());
+  for (auto loc : info.locations)
+    if (loc.text.empty())
+      renderer.drawText(lightGreen, loc.pos.x + 5, loc.pos.y, "?");
+    else {
+      renderer.drawFilledRectangle(loc.pos.x, loc.pos.y, loc.pos.x + renderer.getTextLength(loc.text) + 10, loc.pos.y + 25,
+          transparency(black, 130));
+      renderer.drawText(white, loc.pos.x + 5, loc.pos.y, loc.text);
+    }
 }
 
 MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
@@ -44,7 +63,7 @@ void MinimapGui::initialize() {
   renderer.initialize(min(2048u, Texture::getMaximumSize()), min(2048u, Texture::getMaximumSize()));
 }
 
-static void putMapPixel(Vec2 pos, Color col) {
+void putMapPixel(Vec2 pos, Color col) {
   if (pos.inRectangle(Level::getMaxBounds()))
     mapBuffer.setPixel(pos.x, pos.y, col);
 }
@@ -55,9 +74,12 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, const CreatureV
 
 void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bounds, const CreatureView* creature,
     bool printLocations) {
-  vector<Vec2> roads;
   double scale = min(double(bounds.getW()) / levelPart.getW(),
       double(bounds.getH()) / levelPart.getH());
+  info.bounds = bounds;
+  info.scale = scale;
+  info.roads.clear();
+  info.enemies.clear();
   for (Vec2 v : Rectangle(bounds.getW() / scale, bounds.getH() / scale)) {
     putMapPixel(v, black);
   }
@@ -67,23 +89,14 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
     else {
       putMapPixel(v - levelPart.getTopLeft(), Tile::getColor(level->getSquare(v)->getViewObject()));
       if (level->getSquare(v)->getName() == "road")
-        roads.push_back(v - levelPart.getTopLeft());
+        info.roads.push_back(v - levelPart.getTopLeft());
     }
   }
-  renderer.drawImage(bounds.getPX(), bounds.getPY(), bounds.getKX(), bounds.getKY(), mapBuffer, scale);
-  for (Vec2 v : roads) {
-    Vec2 rrad(1, 1);
-    Vec2 pos = bounds.getTopLeft() + v * scale;
-    renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), brown);
-  }
-  Vec2 playerPos = bounds.getTopLeft() + (creature->getPosition() - levelPart.getTopLeft()) * scale;
-  Vec2 rad(3, 3);
-  if (playerPos.inRectangle(bounds.minusMargin(rad.x)))
-    renderer.drawFilledRectangle(Rectangle(playerPos - rad, playerPos + rad), blue);
+  info.player = bounds.getTopLeft() + (creature->getPosition() - levelPart.getTopLeft()) * scale;
   for (const Creature* c : creature->getVisibleEnemies()) {
     Vec2 pos = bounds.getTopLeft() + (c->getPosition() - levelPart.getTopLeft()) * scale;
-    if (pos.inRectangle(bounds.minusMargin(rad.x)))
-      renderer.drawFilledRectangle(Rectangle(pos - rad, pos + rad), red);
+    if (pos.inRectangle(bounds))
+      info.enemies.push_back(pos);
   }
   if (printLocations)
     for (const Location* loc : level->getAllLocations()) {
@@ -95,14 +108,11 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
         }
       if (loc->isMarkedAsSurprise() && !seen) {
         Vec2 pos = bounds.getTopLeft() + loc->getBounds().middle() * scale;
-        renderer.drawText(lightGreen, pos.x + 5, pos.y, "?");
+        info.locations.push_back({pos, ""});
       }
       if (loc->hasName() && seen) {
-        string text = loc->getName();
         Vec2 pos = bounds.getTopLeft() + loc->getBounds().getBottomRight() * scale;
-        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + renderer.getTextLength(text) + 10, pos.y + 25,
-            transparency(black, 130));
-        renderer.drawText(white, pos.x + 5, pos.y, text);
+        info.locations.push_back({pos, loc->getName()});
       }
     }
 }

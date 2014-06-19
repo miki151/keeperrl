@@ -365,11 +365,11 @@ void Collective::render(View* view) {
     }
   }
   if (!possessed) {
-    view->refreshView(this);
+    view->updateView(this);
   } else
     view->stopClock();
   if (showWelcomeMsg && Options::getValue(OptionId::HINTS)) {
-    view->refreshView(this);
+    view->updateView(this);
     showWelcomeMsg = false;
     view->presentText("Welcome", "In short: you are a warlock who has been banished from the lawful world for practicing black magic. You are going to claim the land of " + NameGenerator::worldNames.getNext() + " and make it your domain. The best way to achieve this is to kill everyone.\n \n"
 "Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the options (press F2).");
@@ -1191,7 +1191,7 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.gatheringTeam = gatheringTeam;
   info.team.clear();
   for (Creature* c : team)
-    info.team.push_back(c);
+    info.team.push_back(c->getUniqueId());
   info.techButtons.clear();
   for (TechInfo tech : getTechInfo())
     info.techButtons.push_back(tech.button);

@@ -39,7 +39,7 @@ class WindowView: public View {
   virtual void addImportantMessage(const string& message) override;
   virtual void clearMessages() override;
   virtual void retireMessages() override;
-  virtual void refreshView(const CreatureView*) override;
+  virtual void refreshView() override;
   virtual void updateView(const CreatureView*) override;
   virtual void drawLevelMap(const CreatureView*) override;
   virtual void resetCenter() override;
@@ -68,6 +68,7 @@ class WindowView: public View {
 
   private:
 
+  void processEvents();
   void updateMinimap(const CreatureView*);
   Rectangle getMenuPosition(View::MenuType type);
   Optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
@@ -154,7 +155,7 @@ class WindowView: public View {
   vector<PGuiElem> tempGuiElems;
   vector<GuiElem*> getAllGuiElems();
   vector<GuiElem*> getClickableGuiElems();
-  InputQueue inputQueue;
+  SyncQueue<UserInput> inputQueue;
 
   bool gameReady = false;
 
@@ -180,6 +181,19 @@ class WindowView: public View {
     double x;
     double y;
   } mouseOffset, center;
+  std::recursive_mutex renderMutex;
+
+  bool lockKeyboard = false;
+
+  function<void()> renderDialog;
+
+  template <class T>
+  void addReturnDialog(SyncQueue<T>& q, function<T()> fun) {
+    renderDialog = [&q, fun, this] {
+      q.push(fun());
+      renderDialog = nullptr;
+    };
+  }
 };
 
 

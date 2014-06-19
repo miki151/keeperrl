@@ -429,7 +429,7 @@ bool Player::interruptedByEnemy() {
   if (enemies.size() > 0) {
     for (const Creature* c : enemies)
       if (!contains(ignoreCreatures, c->getAName())) {
-        model->getView()->refreshView(creature);
+        model->getView()->updateView(creature);
         privateMessage("You notice " + c->getAName());
         return true;
       }
@@ -537,7 +537,7 @@ void Player::sleeping() {
   else
     ViewObject::setHallu(false);
   MEASURE(
-      model->getView()->refreshView(creature),
+      model->getView()->updateView(creature),
       "level render time");
 }
 
@@ -564,7 +564,7 @@ void Player::makeMove() {
   else
     ViewObject::setHallu(false);
   MEASURE(
-      model->getView()->refreshView(creature),
+      model->getView()->updateView(creature),
       "level render time");
   if (Options::getValue(OptionId::HINTS) && displayTravelInfo && creature->getConstSquare()->getName() == "road") {
     model->getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
@@ -577,12 +577,11 @@ void Player::makeMove() {
     model->getView()->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
         "\n \nYou can turn these messages off in the options (press F2).");
     displayGreeting = false;
-    model->getView()->refreshView(creature);
+    model->getView()->updateView(creature);
   }
   for (const Creature* c : creature->getVisibleEnemies()) {
     if (c->isSpecialMonster() && !contains(specialCreatures, c)) {
       privateMessage(MessageBuffer::important(c->getDescription()));
-      model->getView()->refreshView(creature);
       specialCreatures.push_back(c);
     }
   }

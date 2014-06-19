@@ -621,3 +621,20 @@ string getPlural(const string& a, int num) {
     return convertToString(num) + " " + a + "s";
 }
 
+Semaphore::Semaphore(int v) : value(v) {}
+
+void Semaphore::p() {
+  std::unique_lock<std::mutex> lock(mut);
+  while (!value) {
+    cond.wait(lock);
+  }
+  --value;
+}
+
+void Semaphore::v() {
+  std::unique_lock<std::mutex> lock(mut);
+  ++value;
+  lock.unlock();
+  cond.notify_one();
+}
+

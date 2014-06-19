@@ -27,7 +27,8 @@ class Jukebox;
 
 class View {
   public:
-  virtual ~View() {}
+  View();
+  virtual ~View();
 
   /** Does all the library specific init.*/
   virtual void initialize() = 0;
@@ -44,7 +45,7 @@ class View {
   virtual void close() = 0;
 
   /** Reads the game state from \paramname{creatureView} and refreshes the display.*/
-  virtual void refreshView(const CreatureView* creatureView) = 0;
+  virtual void refreshView() = 0;
 
   /** Reads the game state from \paramname{creatureView} and only updates internal data, doesn't refresh.*/
   virtual void updateView(const CreatureView* creatureView) = 0;
@@ -164,6 +165,15 @@ class View {
     public:
     enum class InfoType { PLAYER, BAND} infoType;
 
+    struct CreatureInfo {
+      CreatureInfo(const Creature* c);
+      ViewObject viewObject;
+      UniqueId uniqueId;
+      string name;
+      string speciesName;
+      int expLevel;
+    };
+
     class BandInfo {
       public:
       string warning;
@@ -188,8 +198,8 @@ class View {
       vector<Button> minionButtons;
       vector<Button> libraryButtons;
       string monsterHeader;
-      vector<const Creature*> creatures;
-      vector<const Creature*> enemies;
+      vector<CreatureInfo> creatures;
+      vector<CreatureInfo> enemies;
       map<UniqueId, string> tasks;
       struct Resource {
         ViewObject viewObject;
@@ -199,7 +209,7 @@ class View {
       vector<Resource> numResource;
       double time;
       bool gatheringTeam = false;
-      vector<const Creature*> team;
+      vector<UniqueId> team;
 
       struct TechButton {
         ViewId viewId;

@@ -16,6 +16,7 @@
 #include "stdafx.h"
 
 #include "view.h"
+#include "creature.h"
 
 
 View::ListElem::ListElem(const string& t, ElemMod m, Optional<UserInput::Type> a) : text(t), mod(m), action(a) {
@@ -49,3 +50,17 @@ Jukebox* View::getJukebox() {
   return NOTNULL(jukebox);
 }
 
+View::View() {
+
+}
+
+View::~View() {
+}
+
+View::GameInfo::CreatureInfo::CreatureInfo(const Creature* c) 
+    : viewObject(c->getViewObject()),
+      uniqueId(c->getUniqueId()),
+      name(c->getName()),
+      speciesName(c->getSpeciesName()),
+      expLevel(c->getExpLevel()) {
+}

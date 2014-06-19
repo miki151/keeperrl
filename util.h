@@ -1053,6 +1053,55 @@ class EnumAll {
   }
 };
 
+class Semaphore {
+  public:
+  Semaphore(int val);
+
+  void p();
+  void v();
+
+  private:
+  int value;
+  std::mutex mut;
+  std::condition_variable cond;
+};
+
+template <class T>
+class SyncQueue {
+  public:
+  T pop() {
+    std::unique_lock<std::mutex> lock(mut);
+    while (q.empty()) {
+      cond.wait(lock);
+    }
+    T ret = q.front();
+    q.pop();
+    return ret;
+  }
+
+  Optional<T> popAsync() {
+    std::unique_lock<std::mutex> lock(mut);
+    if (q.empty())
+      return Nothing();
+    else {
+      OnExit o([=] { q.pop(); });
+      return q.front();
+    }
+  }
+
+  void push(const T& t) {
+    std::unique_lock<std::mutex> lock(mut);
+    q.push(t);
+    lock.unlock();
+    cond.notify_one();
+  }
+
+  private:
+  queue<T> q;
+  std::mutex mut;
+  std::condition_variable cond;
+};
+
 #define ENUM_ALL(X) EnumAll<X>()
 
 #endif

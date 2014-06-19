@@ -150,6 +150,27 @@ static void saveExceptionLine(const string& path, const string& line) {
   of << line << std::endl;
 }
 
+void clearAndInitialize() {
+  Item::identifyEverything();
+  Quest::clearAll();
+  Creature::initialize();
+  Tribe::clearAll();
+  Technology::clearAll();
+  Skill::clearAll();
+  Vision::clearAll();
+  EventListener::initialize();
+  Tribe::init();
+  Skill::init();
+  Technology::init();
+  Statistics::init();
+  Vision::init();
+  NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
+      "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt",
+      "insults.txt");
+  ItemFactory::init();
+
+}
+
 int main(int argc, char* argv[]) {
   if (argc == 2 && !strcmp(argv[1], "test")) {
     testAll();
@@ -197,31 +218,22 @@ int main(int argc, char* argv[]) {
   }
   //Table<bool> splash = readSplashTable("splash.map");
   int lastIndex = 0;
-  view->initialize();
+  bool exitGame = false;
+  thread renderingThread([&] {
+    view->initialize();
+    while (!exitGame) {
+      view->refreshView();
+      sf::sleep(sf::milliseconds(1));
+    }
+  });
   Jukebox jukebox("intro.ogg", "peaceful.ogg", "battle.ogg");
   view->setJukebox(&jukebox);
   GuiElem::initialize("frame.png");
   while (1) {
-    Item::identifyEverything();
-    Quest::clearAll();
-    Creature::initialize();
-    Tribe::clearAll();
-    Technology::clearAll();
-    Skill::clearAll();
-    Vision::clearAll();
-    EventListener::initialize();
-    Tribe::init();
-    Skill::init();
-    Technology::init();
-    Statistics::init();
-    Vision::init();
-    NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
-        "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt",
-        "insults.txt");
-    ItemFactory::init();
     bool modelReady = false;
     messageBuffer.initialize(view.get());
     view->reset();
+    clearAndInitialize();
     auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
         View::ListElem("Choose your role:", View::TITLE),
           "Keeper", "Adventurer", "Adventurer vs. Keeper",
@@ -269,31 +281,32 @@ int main(int argc, char* argv[]) {
       m->showCredits();
       continue;
     }
-    if (choice == 7)
+    if (choice == 7) {
+      exitGame = true;
+      renderingThread.join();
       return 0;
+    }
     unique_ptr<Model> model;
     string ex;
-    thread t([&] {
-      for (int i : Range(5)) {
-        try {
-          if (savedGame) {
-            model = loadGame(*savedGame, choice == 3);
-          }
-          else if (choice == 1)
-            model.reset(Model::heroModel(view.get()));
-          else {
-            CHECK(choice == 0);
-            model.reset(Model::collectiveModel(view.get()));
-          }
-          break;
-        } catch (string s) {
-          ex = s;
+    bool ready = false;
+    view->displaySplash(savedGame ? View::LOADING : View::CREATING, ready);
+    for (int i : Range(5)) {
+      try {
+        if (savedGame) {
+          model = loadGame(*savedGame, choice == 3);
         }
+        else if (choice == 1)
+          model.reset(Model::heroModel(view.get()));
+        else {
+          CHECK(choice == 0);
+          model.reset(Model::collectiveModel(view.get()));
+        }
+        break;
+      } catch (string s) {
+        ex = s;
       }
-      modelReady = true;
-    });
-    view->displaySplash(savedGame ? View::LOADING : View::CREATING, modelReady);
-    t.join();
+    }
+    ready = true;
     model->setView(view.get());
     if (genExit)
       break;
@@ -311,15 +324,7 @@ int main(int argc, char* argv[]) {
         else
           model->update(double(view->getTimeMilli()) / 300);
       }
-    } catch (GameOverException ex) {
-    } catch (SaveGameException ex) {
-      bool ready = false;
-      thread t([&] {
-        saveGame(std::move(model), model->getGameIdentifier() + getSaveSuffix(ex.type));
-        ready = true; });
-      view->displaySplash(View::SAVING, ready);
-      t.join();
-    }
+    } 
 #ifdef RELEASE
     catch (string ex) {
       view->presentText("Sorry!", "The game has crashed with the following error:\n \n" + ex +
@@ -328,6 +333,15 @@ int main(int argc, char* argv[]) {
       saveExceptionLine("crash.log", ex);
     }
 #endif
+    catch (GameOverException ex) {
+    }
+    catch (SaveGameException ex) {
+      bool ready = false;
+      view->displaySplash(View::SAVING, ready);
+      string id = model->getGameIdentifier() + getSaveSuffix(ex.type);
+      saveGame(std::move(model), id);
+      ready = true;
+    }
   }
   return 0;
 }

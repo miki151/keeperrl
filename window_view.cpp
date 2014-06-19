@@ -19,7 +19,6 @@
 #include "window_view.h"
 #include "logging_view.h"
 #include "replay_view.h"
-#include "creature.h"
 #include "level.h"
 #include "options.h"
 #include "location.h"
@@ -206,7 +205,10 @@ void WindowView::initialize() {
   resetMapBounds();
 }
 
+typedef std::unique_lock<std::recursive_mutex> RenderLock;
+
 void WindowView::reset() {
+  RenderLock lock(renderMutex);
   mapLayout = &currentTileLayout.normalLayout;
   center = {0, 0};
   gameReady = false;
@@ -225,17 +227,6 @@ void displayMenuSplash2() {
   renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2, 90 - splash.getSize().y, splash);
   int x = 0;
   int y =0;
- /* renderer.drawFilledRectangle(0, 0, 1000, 36, white);
-  for (ViewId id : randomPermutation({ViewId::KEEPER, ViewId::IMP, ViewId::GOBLIN, ViewId::BILE_DEMON, ViewId::SPECIAL_HUMANOID, ViewId::STONE_GOLEM, ViewId::IRON_GOLEM, ViewId::LAVA_GOLEM, ViewId::SKELETON, ViewId::ZOMBIE, ViewId::VAMPIRE, ViewId::VAMPIRE_LORD, ViewId::RAVEN, ViewId::WOLF, ViewId::BEAR, ViewId::SPECIAL_BEAST})) {
-  for (ViewId id : randomPermutation({ViewId::AVATAR, ViewId::KNIGHT, ViewId::ARCHER, ViewId::SHAMAN, ViewId::WARRIOR, ViewId::LIZARDMAN, ViewId::LIZARDLORD, ViewId::ELF_LORD, ViewId::ELF_ARCHER, ViewId::DWARF, ViewId::DWARF_BARON, ViewId::GOAT, ViewId::PIG, ViewId::COW, ViewId::CHILD, ViewId::WITCH})) {
-    ViewObject obj(id, ViewLayer::CREATURE, "wpfok");
-    Tile tile = Tile::getTile(obj, true);
-    int sz = Renderer::tileSize[tile.getTexNum()];
-    int of = (Renderer::nominalSize - sz) / 2;
-    x += 24;
-    Vec2 coord = tile.getSpriteCoord();
-    renderer.drawSprite(x - sz / 2, y + of, coord.x * sz, coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()], sz * 2 / 3, sz * 2 /3);
-  }*/
 }
 
 void displayMenuSplash() {
@@ -282,6 +273,7 @@ void displayMenuSplash() {
 }
 
 void WindowView::displaySplash(View::SplashType type, bool& ready) {
+  RenderLock lock(renderMutex);
   string text;
   switch (type) {
     case View::CREATING: text = "Creating a new world, just for you..."; break;
@@ -290,26 +282,25 @@ void WindowView::displaySplash(View::SplashType type, bool& ready) {
   }
   Image splash;
   CHECK(splash.loadFromFile(splashPaths[Random.getRandom(1, splashPaths.size())]));
-  while (!ready) {
-    renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2, (renderer.getHeight() - splash.getSize().y) / 2, splash);
-    renderer.drawText(white, renderer.getWidth() / 2, renderer.getHeight() - 60, text, true);
-    renderer.drawAndClearBuffer();
-    sf::sleep(sf::milliseconds(30));
-    Event event;
-    while (renderer.pollEvent(event)) {
-      if (event.type == Event::Resized) {
-        resize(event.size.width, event.size.height, {});
+  renderDialog = [=, &ready] {
+    while (!ready) {
+      renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2, (renderer.getHeight() - splash.getSize().y) / 2, splash);
+      renderer.drawText(white, renderer.getWidth() / 2, renderer.getHeight() - 60, text, true);
+      renderer.drawAndClearBuffer();
+      sf::sleep(sf::milliseconds(30));
+      Event event;
+      while (renderer.pollEvent(event)) {
+        if (event.type == Event::Resized) {
+          resize(event.size.width, event.size.height, {});
+        }
       }
     }
-  }
+    renderDialog = nullptr;
+  };
 }
 
 void WindowView::resize(int width, int height, vector<GuiElem*> gui) {
   renderer.resize(width, height);
-  refreshScreen(false);
-  if (gameReady) {
-    rebuildGui();
-  }
 }
 
 struct KeyInfo {
@@ -465,20 +456,22 @@ PGuiElem WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   return GuiElem::verticalList(std::move(elems), legendLineHeight, 0);
 }
 
+typedef View::GameInfo::CreatureInfo CreatureInfo;
+
 struct CreatureMapElem {
   ViewObject object;
   int count;
-  const Creature* any;
+  CreatureInfo any;
 };
 
-static map<string, CreatureMapElem> getCreatureMap(vector<const Creature*> creatures) {
+static map<string, CreatureMapElem> getCreatureMap(vector<CreatureInfo>& creatures) {
   map<string, CreatureMapElem> creatureMap;
   for (int i : All(creatures)) {
     auto elem = creatures[i];
-    if (!creatureMap.count(elem->getSpeciesName())) {
-      creatureMap.insert(make_pair(elem->getSpeciesName(), CreatureMapElem({elem->getViewObject(), 1, elem})));
+    if (!creatureMap.count(elem.speciesName)) {
+      creatureMap.insert(make_pair(elem.speciesName, CreatureMapElem({elem.viewObject, 1, elem})));
     } else
-      ++creatureMap[elem->getSpeciesName()].count;
+      ++creatureMap.at(elem.speciesName).count;
   }
   return creatureMap;
 }
@@ -505,13 +498,13 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
     line.push_back(GuiElem::viewObject(elem.second.object, tilesOk));
     widths.push_back(40);
     Color col = (elem.first == chosenCreature 
-        || (elem.second.count == 1 && contains(info.team, elem.second.any))) ? green : white;
+        || (elem.second.count == 1 && contains(info.team, elem.second.any.uniqueId))) ? green : white;
     line.push_back(GuiElem::label(convertToString(elem.second.count) + "   " + elem.first, col));
     widths.push_back(200);
     function<void()> action;
     if (elem.second.count == 1)
       action = [this, elem]() {
-        inputQueue.push(UserInput(UserInput::CREATURE_BUTTON, elem.second.any->getUniqueId()));
+        inputQueue.push(UserInput(UserInput::CREATURE_BUTTON, elem.second.any.uniqueId));
       };
     else if (chosenCreature == elem.first)
       action = [this] () {
@@ -572,20 +565,20 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
 PGuiElem WindowView::drawMinionWindow(GameInfo::BandInfo& info) {
   if (chosenCreature != "") {
     vector<PGuiElem> lines;
-    vector<const Creature*> chosen;
-    for (const Creature* c : info.creatures)
-      if (c->getSpeciesName() == chosenCreature)
+    vector<CreatureInfo> chosen;
+    for (auto& c : info.creatures)
+      if (c.speciesName == chosenCreature)
         chosen.push_back(c);
     lines.push_back(GuiElem::label(info.gatheringTeam ? "Click to add to team:" : "Click to control:", lightBlue));
-    for (const Creature* c : chosen) {
-      string text = "L: " + convertToString(c->getExpLevel()) + "    " + info.tasks[c->getUniqueId()];
-      if (c->getSpeciesName() != c->getName())
-        text = c->getName() + " " + text;
+    for (auto& c : chosen) {
+      string text = "L: " + convertToString(c.expLevel) + "    " + info.tasks[c.uniqueId];
+      if (c.speciesName != c.name)
+        text = c.name + " " + text;
       vector<PGuiElem> line;
-      line.push_back(GuiElem::viewObject(c->getViewObject(), tilesOk));
-      line.push_back(GuiElem::label(text, (info.gatheringTeam && contains(info.team, c)) ? green : white));
+      line.push_back(GuiElem::viewObject(c.viewObject, tilesOk));
+      line.push_back(GuiElem::label(text, (info.gatheringTeam && contains(info.team, c.uniqueId)) ? green : white));
       lines.push_back(GuiElem::stack(GuiElem::button(
-              getButtonCallback(UserInput(UserInput::CREATURE_BUTTON, c->getUniqueId()))),
+              getButtonCallback(UserInput(UserInput::CREATURE_BUTTON, c.uniqueId))),
             GuiElem::horizontalList(std::move(line), 40, 0)));
     }
     return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
@@ -823,8 +816,10 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
 
 vector<GuiElem*> WindowView::getClickableGuiElems() {
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
-  ret.push_back(minimapGui);
-  ret.push_back(mapGui);
+  if (gameReady) {
+    ret.push_back(minimapGui);
+    ret.push_back(mapGui);
+  }
   return ret;
 }
 
@@ -845,14 +840,6 @@ void WindowView::resetCenter() {
   center = {0, 0};
 }
 
-void WindowView::updateView(const CreatureView* collective) {
-  refreshViewInt(collective, false);
-}
-
-void WindowView::refreshView(const CreatureView* collective) {
-  refreshViewInt(collective);
-}
-
 function<void()> WindowView::getButtonCallback(UserInput input) {
   return [this, input]() { inputQueue.push(input); };
 }
@@ -871,7 +858,8 @@ void WindowView::updateMinimap(const CreatureView* creature) {
     minimapGui->update(level, bounds, creature);
 }
 
-void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer) {
+void WindowView::updateView(const CreatureView* collective) {
+  RenderLock lock(renderMutex);
   updateMinimap(collective);
   gameReady = true;
   switchTiles();
@@ -908,12 +896,19 @@ void WindowView::refreshViewInt(const CreatureView* collective, bool flipBuffer)
   mapGui->setSpriteMode(currentTileLayout.sprites);
   mapGui->updateObjects(memory);
   mapGui->setLevelBounds(level->getBounds());
-  rebuildGui();
-  refreshScreen(flipBuffer);
+}
+
+void WindowView::refreshView() {
+  RenderLock lock(renderMutex);
+  processEvents();
+  if (renderDialog) {
+    renderDialog();
+  } else
+    refreshScreen(true);
 }
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
-  for (Vec2 pos : trajectory) {
+ /* for (Vec2 pos : trajectory) {
     if (!objects[pos])
       continue;
     ViewIndex& index = *objects[pos];
@@ -933,7 +928,7 @@ void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
     if (index.hasObject(object.layer()))
       index.removeObject(object.layer());
     index.insert(object);
-  }
+  }*/
 }
 
 void WindowView::animation(Vec2 pos, AnimationId id) {
@@ -1000,6 +995,7 @@ void WindowView::drawMap() {
       }
     }
   }*/
+  rebuildGui();
   for (GuiElem* gui : getAllGuiElems())
     gui->render(renderer);
   refreshText();
@@ -1037,6 +1033,10 @@ Optional<int> reverseIndexHeight(const vector<View::ListElem>& options, int heig
 }
 
 Optional<Vec2> WindowView::chooseDirection(const string& message) {
+  RenderLock lock(renderMutex);
+  TempClockPause pause;
+  SyncQueue<Optional<Vec2>> returnQueue;
+  addReturnDialog<Optional<Vec2>>(returnQueue, [=] ()-> Optional<Vec2> {
   showMessage(message);
   refreshScreen();
   do {
@@ -1089,6 +1089,9 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
         default: break;
       }
   } while (1);
+  });
+  lock.unlock();
+  return returnQueue.pop();
 }
 
 bool WindowView::yesOrNoPrompt(const string& message) {
@@ -1138,15 +1141,20 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
   return Rectangle(1, 1);*/
 }
 
-Optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index,
-    MenuType menuType, double* scrollPos, Optional<UserInput::Type> exitAction, Optional<Event::KeyEvent> exitKey,
+Optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
+    MenuType menuType, double* scrollPos1, Optional<UserInput::Type> exitAction, Optional<Event::KeyEvent> exitKey,
     vector<Event::KeyEvent> shortCuts) {
   if (options.size() == 0)
     return Nothing();
+  RenderLock lock(renderMutex);
   TempClockPause pause;
+  SyncQueue<Optional<int>> returnQueue;
+  addReturnDialog<Optional<int>>(returnQueue, [=] ()-> Optional<int> {
   int contentHeight;
   int choice = -1;
   int count = 0;
+  double* scrollPos = scrollPos1;
+  int index = index1;
   vector<int> indexes(options.size());
   int elemCount = 0;
   for (int i : All(options)) {
@@ -1214,7 +1222,9 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
         }
     }
   }
- // refreshScreen();
+  });
+  lock.unlock();
+  return returnQueue.pop();
 }
 
 static vector<string> breakText(const string& text) {
@@ -1330,10 +1340,9 @@ void WindowView::addMessage(const string& message) {
     currentMessage.pop_front();
     currentMessage.push_back("");
   }
-    if (currentMessage[messageInd].size() + message.size() + 1 > maxMsgLength)
-      ++messageInd;
-    currentMessage[messageInd] += (currentMessage[messageInd].size() > 0 ? " " : "") + message;
-    refreshScreen();
+  if (currentMessage[messageInd].size() + message.size() + 1 > maxMsgLength)
+    ++messageInd;
+  currentMessage[messageInd] += (currentMessage[messageInd].size() > 0 ? " " : "") + message;
 }
 
 void WindowView::switchZoom() {
@@ -1363,8 +1372,7 @@ void WindowView::switchTiles() {
 }
 
 bool WindowView::travelInterrupt() {
-  Event event;
-  return renderer.pollEvent(event, Event::MouseButtonPressed) || renderer.pollEvent(event, Event::KeyPressed);
+  return lockKeyboard;
 }
 
 int WindowView::getTimeMilli() {
@@ -1419,8 +1427,43 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
 
 Vec2 lastGoTo(-1, -1);
 
+void WindowView::processEvents() {
+  Event event;
+  while (renderer.pollEvent(event)) {
+    considerScrollEvent(event);
+    considerResizeEvent(event, getAllGuiElems());
+    propagateEvent(event, getClickableGuiElems());
+    switch (event.type) {
+      case Event::TextEntered:
+        /*if (event.text.unicode < 128) {
+          char key = event.text.unicode;
+          for (int i : All(techHotkeys))
+            if (key == techHotkeys[i])
+              return UserInput(UserInput::TECHNOLOGY, i);
+        }*/
+        break;
+      case Event::KeyPressed:
+        keyboardAction(event.key);
+        renderer.flushEvents(Event::KeyPressed);
+        break;
+      case Event::MouseWheelMoved:
+          zoom(event.mouseWheel.delta < 0);
+      case Event::MouseButtonPressed :
+          if (event.mouseButton.button == sf::Mouse::Middle)
+            inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP));
+          break;
+      case Event::MouseButtonReleased :
+          if (event.mouseButton.button == sf::Mouse::Left)
+            inputQueue.push(UserInput(UserInput::BUTTON_RELEASE, Vec2(0, 0), {activeBuilding, activeOption}));
+          break;
+      default: break;
+    }
+  }
+}
+
 void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
-  mapGui->resetHint();
+  if (gameReady)
+    mapGui->resetHint();
   switch (event.type) {
     case Event::MouseButtonReleased :
       for (GuiElem* elem : guiElems)
@@ -1451,8 +1494,9 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       break;
     default: break;
   }
-  for (GuiElem* elem : guiElems)
-    elem->onRefreshBounds();
+  if (gameReady)
+    for (GuiElem* elem : guiElems)
+      elem->onRefreshBounds();
 }
 
 UserInput::Type getDirActionId(const Event::KeyEvent& key) {
@@ -1465,6 +1509,9 @@ UserInput::Type getDirActionId(const Event::KeyEvent& key) {
 }
 
 void WindowView::keyboardAction(Event::KeyEvent key) {
+  if (lockKeyboard)
+    return;
+  lockKeyboard = true;
   switch (key.code) {
 #ifndef RELEASE
     case Keyboard::F8: renderer.startMonkey(); break;
@@ -1530,42 +1577,11 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
 }
 
 UserInput WindowView::getAction() {
-  Event event;
-  while (renderer.pollEvent(event)) {
-    considerScrollEvent(event);
-    considerResizeEvent(event, getAllGuiElems());
-    propagateEvent(event, getClickableGuiElems());
-    UserInput input;
-    if (inputQueue.pop(input))
-      return input;
-    switch (event.type) {
-      case Event::TextEntered:
-        /*if (event.text.unicode < 128) {
-          char key = event.text.unicode;
-          for (int i : All(techHotkeys))
-            if (key == techHotkeys[i])
-              return UserInput(UserInput::TECHNOLOGY, i);
-        }*/
-        break;
-      case Event::KeyPressed:
-        keyboardAction(event.key);
-        renderer.flushEvents(Event::KeyPressed);
-        break;
-      case Event::MouseWheelMoved:
-          zoom(event.mouseWheel.delta < 0);
-      case Event::MouseButtonPressed :
-          if (event.mouseButton.button == sf::Mouse::Middle) {
-            return UserInput(UserInput::DRAW_LEVEL_MAP);
-          }
-          break;
-      case Event::MouseButtonReleased :
-          if (event.mouseButton.button == sf::Mouse::Left) {
-            return UserInput(UserInput::BUTTON_RELEASE, Vec2(0, 0), {activeBuilding, activeOption});
-          }
-          break;
-      default: break;
-    }
-  }
+  lockKeyboard = false;
+  if (auto input = inputQueue.popAsync())
+    return *input;
+  else
+    return UserInput(UserInput::IDLE);
   return UserInput(UserInput::IDLE);
 }
 
