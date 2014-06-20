@@ -221,30 +221,26 @@ class View {
 
     class PlayerInfo {
       public:
-      int speed;
-      int speedBonus;
-      int defense;
-      int defBonus;
-      int attack;
-      int toHit;
-      int toHitBonus;
-      int attBonus;
-      int strength;
-      int strBonus;
-      int dexterity;
-      int dexBonus;
+      struct AttributeInfo {
+        string name;
+        int value;
+        int bonus;
+        string help;
+      };
+      vector<AttributeInfo> attributes;
+      struct SkillInfo {
+        string name;
+        string help;
+      };
+      vector<SkillInfo> skills;
       bool possessed;
       bool spellcaster;
       double time;
-      int numGold;
       string playerName;
       vector<string> adjectives;
       string title;
       string levelName;
       string weaponName;
-      double elfStanding;
-      double dwarfStanding;
-      double goblinStanding;
       struct Effect {
         string name;
         bool bad;

@@ -381,36 +381,24 @@ static Color getBonusColor(int bonus) {
 }
 
 PGuiElem WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
-  vector<string> lines {
-      "",
-      "Attack: ",
-      "Accuracy: ",
-      "Defense: ",
-      "Strength: ",
-      "Dexterity: ",
-      "Speed: ",
-      "Gold:",
-  };
-  vector<pair<string, Color>> lines2 {
-    {"", white},
-    {"", white},
-    {convertToString(info.attack), getBonusColor(info.attBonus)},
-    {convertToString(info.toHit), getBonusColor(info.toHitBonus)},
-    {convertToString(info.defense), getBonusColor(info.defBonus)},
-    {convertToString(info.strength), getBonusColor(info.strBonus)},
-    {convertToString(info.dexterity), getBonusColor(info.dexBonus)},
-    {convertToString(info.speed), getBonusColor(info.speedBonus)},
-    {"$" + convertToString(info.numGold), white},
-  };
-  if (info.weaponName != "") {
-    lines = concat({"wielding:", info.weaponName}, lines);
-    lines2 = concat({{"", white}}, lines2);
-  } else lines = concat({"barehanded"}, lines);
   vector<PGuiElem> elems;
-  for (int i : All(lines)) {
-    elems.push_back(GuiElem::horizontalList(makeVec<PGuiElem>(
-        GuiElem::label(lines[i], white),
-        GuiElem::label(lines2[i].first, lines2[i].second)), 100, 1));
+  if (info.weaponName != "") {
+    elems.push_back(GuiElem::label("Wielding:", white));
+    elems.push_back(GuiElem::label(info.weaponName, white));
+  } else
+    elems.push_back(GuiElem::label("barehanded", red));
+  elems.push_back(GuiElem::empty());
+  for (auto& elem : info.attributes) {
+    elems.push_back(GuiElem::stack(mapGui->getHintCallback(elem.help),
+        GuiElem::horizontalList(makeVec<PGuiElem>(
+          GuiElem::label(capitalFirst(elem.name + ":"), white),
+          GuiElem::label(convertToString(elem.value), getBonusColor(elem.bonus))), 100, 1)));
+  }
+  elems.push_back(GuiElem::empty());
+  elems.push_back(GuiElem::label("Skills:", white));
+  for (auto& elem : info.skills) {
+    elems.push_back(GuiElem::stack(mapGui->getHintCallback(elem.help),
+          GuiElem::label(capitalFirst(elem.name), white)));
   }
   elems.push_back(GuiElem::empty());
   for (auto effect : info.effects)

@@ -2165,23 +2165,39 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
   const Location* location = getLevel()->getLocation(getPosition());
   info.levelName = location && location->hasName() 
     ? capitalFirst(location->getName()) : getLevel()->getName();
-  info.speed = getAttr(AttrType::SPEED);
-  info.speedBonus = isAffected(SPEED) ? 1 : isAffected(SLOWED) ? -1 : 0;
-  info.defense = getAttr(AttrType::DEFENSE);
-  info.defBonus = isAffected(RAGE) ? -1 : isAffected(PANIC) ? 1 : 0;
-  info.attack = getAttr(AttrType::DAMAGE);
-  info.toHit = getAttr(AttrType::TO_HIT);
-  info.toHitBonus = toHitBonus();
-  info.attBonus = isAffected(RAGE) ? 1 : isAffected(PANIC) ? -1 : 0;
-  info.strength = getAttr(AttrType::STRENGTH);
-  info.strBonus = isAffected(STR_BONUS);
-  info.dexterity = getAttr(AttrType::DEXTERITY);
-  info.dexBonus = isAffected(DEX_BONUS);
+  info.attributes = {
+    {"attack",
+      getAttr(AttrType::DAMAGE),
+      isAffected(RAGE) ? 1 : isAffected(PANIC) ? -1 : 0,
+      "Affects if and how much damage is dealt in combat."},
+    {"defense",
+      getAttr(AttrType::DEFENSE),
+      isAffected(RAGE) ? -1 : isAffected(PANIC) ? 1 : 0,
+      "Affects if and how much damage is taken in combat."},
+    {"accuracy",
+      getAttr(AttrType::TO_HIT),
+      toHitBonus(),
+      "Defines the chance of a successful melee attack and dodging."},
+    {"strength",
+      getAttr(AttrType::STRENGTH),
+      isAffected(STR_BONUS),
+      "Affects the values of attack, defense and carrying capacity."},
+    {"dexterity",
+      getAttr(AttrType::DEXTERITY),
+      isAffected(DEX_BONUS),
+      "Affects the values of melee and ranged accuracy, and ranged damage."},
+    {"speed",
+      getAttr(AttrType::SPEED),
+      isAffected(SPEED) ? 1 : isAffected(SLOWED) ? -1 : 0,
+      "Affects how much time every action takes."}};
+  info.skills.clear();
+  for (auto skill : getSkills())
+    info.skills.push_back({skill->getName(), skill->getHelpText()});
+  info.attributes.push_back({"gold", int(getGold(100000000).size()), 0, ""});
   info.time = getTime();
-  info.numGold = getGold(100000000).size();
-  info.elfStanding = Tribe::get(TribeId::ELVEN)->getStanding(this);
+ /* info.elfStanding = Tribe::get(TribeId::ELVEN)->getStanding(this);
   info.dwarfStanding = Tribe::get(TribeId::DWARVEN)->getStanding(this);
-  info.goblinStanding = Tribe::get(TribeId::GOBLIN)->getStanding(this);
+  info.goblinStanding = Tribe::get(TribeId::GOBLIN)->getStanding(this);*/
   info.effects.clear();
   for (string s : getAdjectives())
     info.effects.push_back({s, true});

@@ -645,7 +645,6 @@ void Player::makeMove() {
     case UserInput::CAST_SPELL: spellAction(); break;
     case UserInput::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature); break;
     case UserInput::EXIT: model->exitAction(); break;
-    case UserInput::IDLE: break;
     default: break;
   }
   if (creature->isAffected(LastingEffect::SLEEP)) {
