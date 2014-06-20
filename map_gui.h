@@ -45,6 +45,7 @@ class MapGui : public GuiElem {
   void resetHint();
   void setOptions(const string& title, vector<PGuiElem>);
   void clearOptions();
+  void addAnimation(PAnimation animation, Vec2 position);
 
   private:
   Optional<ViewObject> drawObjectAbs(Renderer& renderer, int x, int y, const ViewIndex& index, int sizeX, int sizeY,
@@ -61,6 +62,11 @@ class MapGui : public GuiElem {
   string hint;
   PGuiElem optionsGui;
   int optionsHeight;
+  struct AnimationInfo {
+    PAnimation animation;
+    Vec2 position;
+  };
+  vector<AnimationInfo> animations;
 };
 
 #endif

@@ -24,6 +24,7 @@
 #include "location.h"
 #include "window_renderer.h"
 #include "tile.h"
+#include "clock.h"
 
 using sf::Color;
 using sf::String;
@@ -54,59 +55,18 @@ View* View::createReplayView(ifstream& ifs) {
   return new ReplayView<WindowView>(ifs);
 }
 
-class Clock {
-  public:
-  
-  int getMillis() {
-    if (lastPause > -1)
-      return lastPause - pausedTime;
-    else
-      return clock.getElapsedTime().asMilliseconds() - pausedTime;
-  }
-
-  void setMillis(int time) {
-    if (lastPause > -1)
-      pausedTime = lastPause - time;
-    else
-      pausedTime = clock.getElapsedTime().asMilliseconds() - time;
-  }
-
-  void pause() {
-    if (lastPause < 0)
-      lastPause = clock.getElapsedTime().asMilliseconds();
-  }
-
-  void cont() {
-    if (lastPause > -1) {
-      pausedTime += clock.getElapsedTime().asMilliseconds() - lastPause;
-      lastPause = -1;
-    }
-  }
-
-  bool isPaused() {
-    return lastPause > -1;
-  }
-
-  private:
-  int pausedTime = 0;
-  int lastPause = -1;
-  sf::Clock clock;
-};
-
-static Clock myClock;
-
 class TempClockPause {
   public:
   TempClockPause() {
-    if (!myClock.isPaused()) {
-      myClock.pause();
+    if (!Clock::get().isPaused()) {
+      Clock::get().pause();
       cont = true;
     }
   }
 
   ~TempClockPause() {
     if (cont)
-      myClock.cont();
+      Clock::get().cont();
   }
 
   private:
@@ -143,6 +103,7 @@ bool tilesOk = true;
 
 void WindowView::initialize() {
   renderer.initialize(1024, 600, "KeeperRL");
+  Clock::set(new Clock());
   Image tileImage;
   tilesOk &= tileImage.loadFromFile("tiles_int.png");
   Image tileImage2;
@@ -718,11 +679,11 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info, GameInfo::Sunl
   topLine.push_back(getSunlightInfoGui(sunlightInfo));
   topWidths.push_back(100);
   vector<PGuiElem> bottomLine;
-  if (myClock.isPaused())
-    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { myClock.cont(); }),
+  if (Clock::get().isPaused())
+    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().cont(); }),
         GuiElem::label("PAUSED", red)));
   else
-    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { myClock.pause(); }),
+    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().pause(); }),
         GuiElem::label("PAUSE", lightBlue)));
   bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { switchZoom(); }),
         GuiElem::label("ZOOM", lightBlue)));
@@ -908,45 +869,20 @@ void WindowView::refreshView() {
 }
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
- /* for (Vec2 pos : trajectory) {
-    if (!objects[pos])
-      continue;
-    ViewIndex& index = *objects[pos];
-    Optional<ViewObject> prev;
-    if (index.hasObject(object.layer()))
-      prev = index.getObject(object.layer());
-    index.removeObject(object.layer());
-    index.insert(object);
-    refreshScreen();
-    // sf::sleep(sf::milliseconds(30));
-    index.removeObject(object.layer());
-    if (prev)
-      index.insert(*prev);
-  }
-  if (objects[trajectory.back()]) {
-    ViewIndex& index = *objects[trajectory.back()];
-    if (index.hasObject(object.layer()))
-      index.removeObject(object.layer());
-    index.insert(object);
-  }*/
+  RenderLock lock(renderMutex);
+  if (trajectory.size() >= 2)
+    mapGui->addAnimation(
+        Animation::thrownObject(
+          (trajectory.back() - trajectory.front())
+              .mult(Vec2(mapLayout->squareWidth(), mapLayout->squareHeight())),
+          object,
+          currentTileLayout.sprites),
+        trajectory.front());
 }
 
 void WindowView::animation(Vec2 pos, AnimationId id) {
-  CHECK(id == AnimationId::EXPLOSION);
-  Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), pos);
-  refreshScreen(false);
-  renderer.drawSprite(wpos.x, wpos.y, 510, 628, 36, 36, Renderer::tiles[6]);
-  renderer.drawAndClearBuffer();
-  sf::sleep(sf::milliseconds(50));
-  refreshScreen(false);
-  renderer.drawSprite(wpos.x - 17, wpos.y - 17, 683, 611, 70, 70, Renderer::tiles[6]);
-  renderer.drawAndClearBuffer();
-  sf::sleep(sf::milliseconds(50));
-  refreshScreen(false);
-  renderer.drawSprite(wpos.x - 29, wpos.y - 29, 577, 598, 94, 94, Renderer::tiles[6]);
-  renderer.drawAndClearBuffer();
-  sf::sleep(sf::milliseconds(50));
-  refreshScreen(true);
+  RenderLock lock(renderMutex);
+  mapGui->addAnimation(Animation::fromId(id), pos);
 }
 
 class FpsCounter {
@@ -1376,23 +1312,23 @@ bool WindowView::travelInterrupt() {
 }
 
 int WindowView::getTimeMilli() {
-  return myClock.getMillis();
+  return Clock::get().getMillis();
 }
 
 void WindowView::setTimeMilli(int time) {
-  myClock.setMillis(time);
+  Clock::get().setMillis(time);
 }
 
 void WindowView::stopClock() {
-  myClock.pause();
+  Clock::get().pause();
 }
 
 void WindowView::continueClock() {
-  myClock.cont();
+  Clock::get().cont();
 }
 
 bool WindowView::isClockStopped() {
-  return myClock.isPaused();
+  return Clock::get().isPaused();
 }
 bool WindowView::considerResizeEvent(sf::Event& event, vector<GuiElem*> gui) {
   if (event.type == Event::Resized) {
@@ -1523,10 +1459,10 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
       break;
     case Keyboard::F2: Options::handle(this, OptionSet::GENERAL); refreshScreen(); break;
     case Keyboard::Space:
-      if (!myClock.isPaused())
-        myClock.pause();
+      if (!Clock::get().isPaused())
+        Clock::get().pause();
       else
-        myClock.cont();
+        Clock::get().cont();
       inputQueue.push(UserInput(UserInput::WAIT));
       break;
     case Keyboard::Escape:

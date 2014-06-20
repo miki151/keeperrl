@@ -72,6 +72,8 @@ enum class SpriteId {
   HELP,
 };
 
+class ViewObject;
+
 class Renderer {
   public: 
   const static int textSize = 19;
@@ -90,6 +92,7 @@ class Renderer {
   void drawSprite(int x, int y, SpriteId, Optional<Color> color = Nothing());
   void drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline = Nothing());
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline = Nothing());
+  void drawViewObject(int x, int y, const ViewObject&, bool useSprite, double scale = 1);
   int getWidth();
   int getHeight();
 

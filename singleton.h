@@ -42,4 +42,15 @@ class Singleton {
   E SERIAL(id);
 };
 
+template<class T>
+class Singleton1 {
+  public:
+  static T& get();
+  static void set(T*);
+
+  private:
+  static T* elem;
+};
+
+
 #endif

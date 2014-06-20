@@ -15,6 +15,8 @@
 
 #include "stdafx.h"
 #include "renderer.h"
+#include "view_object.h"
+#include "tile.h"
 
 using namespace sf;
 
@@ -168,5 +170,18 @@ void Renderer::initialize(RenderTarget* d, int width, int height) {
   CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(tileFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(symbolFont.loadFromFile("Symbola.ttf"));
+}
+
+void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSprite, double scale) {
+  Tile tile = Tile::getTile(object, useSprite);
+  if (tile.hasSpriteCoord()) {
+    int sz = Renderer::tileSize[tile.getTexNum()];
+    int of = (Renderer::nominalSize - sz) / 2;
+    Vec2 coord = tile.getSpriteCoord();
+    drawSprite(x, y + of, coord.x * sz, coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()],
+        sz * scale, sz * scale);
+  } else
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale,
+        Tile::getColor(object), x, y, tile.text);
 }
 

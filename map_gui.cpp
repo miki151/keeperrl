@@ -22,6 +22,7 @@
 #include "tile.h"
 #include "window_view.h"
 #include "window_renderer.h"
+#include "clock.h"
 
 using namespace colors;
 
@@ -35,6 +36,12 @@ void MapGui::setLayout(MapLayout* l) {
 void MapGui::setSpriteMode(bool s) {
   spriteMode = s;
 }
+
+void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
+  animation->setBegin(Clock::get().getRealMillis());
+  animations.push_back({std::move(animation), pos});
+}
+
 
 Optional<Vec2> MapGui::getHighlightedTile(WindowRenderer& renderer) {
   Vec2 pos = renderer.getMousePos();
@@ -270,6 +277,14 @@ void MapGui::render(Renderer& renderer) {
       for (ViewIndex::HighlightInfo highlight : index->getHighlight())
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, getHighlightColor(highlight));
     }
+  animations = filter(std::move(animations), [](const AnimationInfo& elem) 
+      { return !elem.animation->isDone(Clock::get().getRealMillis());});
+  for (auto& elem : animations)
+    elem.animation->render(
+        renderer,
+        getBounds(),
+        layout->projectOnScreen(getBounds(), elem.position),
+        Clock::get().getRealMillis());
   if (!hint.empty())
     drawHint(renderer, white, hint);
   else

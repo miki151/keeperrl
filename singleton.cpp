@@ -21,9 +21,13 @@
 #include "tribe.h"
 #include "technology.h"
 #include "vision.h"
+#include "clock.h"
 
 template<class T, class E>
 EnumMap<E, unique_ptr<T>> Singleton<T, E>::elems;
+
+template<class T>
+T* Singleton1<T>::elem = nullptr;
 
 template<class T, class E>
 template<class Archive>
@@ -82,3 +86,18 @@ template void Singleton<Quest, QuestId>::serialize(boost::archive::binary_oarchi
 template class Singleton<Vision, VisionId>;
 template void Singleton<Vision, VisionId>::serialize(boost::archive::binary_iarchive&, unsigned);
 template void Singleton<Vision, VisionId>::serialize(boost::archive::binary_oarchive&, unsigned);
+
+
+template<class T>
+T& Singleton1<T>::get() {
+  CHECK(elem);
+  return *elem;
+}
+
+template<class T>
+void Singleton1<T>::set(T* q) {
+  CHECK(!elem);
+  elem = q;
+}
+
+template class Singleton1<Clock>;

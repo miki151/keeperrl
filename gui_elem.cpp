@@ -427,18 +427,9 @@ class ViewObjectGui : public GuiElem {
   ViewObjectGui(const ViewObject& obj, bool sprites) : object(obj), useSprites(sprites) {}
   
   virtual void render(Renderer& renderer) override {
-    Tile tile = Tile::getTile(object, useSprites);
     int x = getBounds().getTopLeft().x;
     int y = getBounds().getTopLeft().y;
-    if (tile.hasSpriteCoord()) {
-      int sz = Renderer::tileSize[tile.getTexNum()];
-      int of = (Renderer::nominalSize - sz) / 2;
-      Vec2 coord = tile.getSpriteCoord();
-      renderer.drawSprite(x, y + of, coord.x * sz, coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()],
-          sz * 2 / 3, sz * 2 /3);
-    } else
-      renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, Tile::getColor(object), x, y,
-          tile.text);
+    renderer.drawViewObject(x, y, object, useSprites, 0.6666);
   }
 
   private:

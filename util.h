@@ -28,41 +28,22 @@ string convertToString(const T& t);
 template <class T>
 T convertFromString(const string& s);
 
-class Item;
-typedef unique_ptr<Item> PItem;
+#define DEF_UNIQUE_PTR(T) class T;\
+  typedef unique_ptr<T> P##T;
 
-class Creature;
-typedef unique_ptr<Creature> PCreature;
-
-class Square;
-typedef unique_ptr<Square> PSquare;
-
-class MonsterAI;
-typedef unique_ptr<MonsterAI> PMonsterAI;
-
-class Behaviour;
-typedef unique_ptr<Behaviour> PBehaviour;
-
-class Obstacle;
-typedef unique_ptr<Obstacle> PObstacle;
-
-class Task;
-typedef unique_ptr<Task> PTask;
-
-class Controller;
-typedef unique_ptr<Controller> PController;
-
-class Trigger;
-typedef unique_ptr<Trigger> PTrigger;
-
-class Level;
-typedef unique_ptr<Level> PLevel;
-
-class VillageControl;
-typedef unique_ptr<VillageControl> PVillageControl;
-
-class GuiElem;
-typedef unique_ptr<GuiElem> PGuiElem;
+DEF_UNIQUE_PTR(Item);
+DEF_UNIQUE_PTR(Creature);
+DEF_UNIQUE_PTR(Square);
+DEF_UNIQUE_PTR(MonsterAI);
+DEF_UNIQUE_PTR(Behaviour);
+DEF_UNIQUE_PTR(Obstacle);
+DEF_UNIQUE_PTR(Task);
+DEF_UNIQUE_PTR(Controller);
+DEF_UNIQUE_PTR(Trigger);
+DEF_UNIQUE_PTR(Level);
+DEF_UNIQUE_PTR(VillageControl);
+DEF_UNIQUE_PTR(GuiElem);
+DEF_UNIQUE_PTR(Animation);
 
 template<class T>
 vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
@@ -538,6 +519,15 @@ vector<T> filter(const vector<T>& v, Predicate predicate) {
   for (const T& t : v)
     if (predicate(t))
       ret.push_back(t);
+  return ret;
+}
+
+template <typename T, typename Predicate>
+vector<T> filter(vector<T>&& v, Predicate predicate) {
+  vector<T> ret;
+  for (T& t : v)
+    if (predicate(t))
+      ret.push_back(std::move(t));
   return ret;
 }
 

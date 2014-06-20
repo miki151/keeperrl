@@ -22,6 +22,7 @@
 #include "map_gui.h"
 #include "minimap_gui.h"
 #include "input_queue.h"
+#include "animation.h"
 
 class ViewIndex;
 
