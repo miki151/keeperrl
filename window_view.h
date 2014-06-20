@@ -186,6 +186,7 @@ class WindowView: public View {
 
   bool lockKeyboard = false;
 
+  thread::id renderThreadId;
   function<void()> renderDialog;
 
   template <class T>
@@ -194,6 +195,8 @@ class WindowView: public View {
       q.push(fun());
       renderDialog = nullptr;
     };
+    if (std::this_thread::get_id() == renderThreadId)
+      renderDialog();
   }
 };
 

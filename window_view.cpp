@@ -104,6 +104,7 @@ bool tilesOk = true;
 void WindowView::initialize() {
   renderer.initialize(1024, 600, "KeeperRL");
   Clock::set(new Clock());
+  renderThreadId = std::this_thread::get_id();
   Image tileImage;
   tilesOk &= tileImage.loadFromFile("tiles_int.png");
   Image tileImage2;
@@ -1454,9 +1455,10 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
 #endif
     case Keyboard::Z: switchZoom(); break;
     case Keyboard::F1:
-      if (auto ev = getEventFromMenu())
+      if (auto ev = getEventFromMenu()) {
+        lockKeyboard = false;
         keyboardAction(*ev);
-      break;
+      } break;
     case Keyboard::F2: Options::handle(this, OptionSet::GENERAL); refreshScreen(); break;
     case Keyboard::Space:
       if (!Clock::get().isPaused())
