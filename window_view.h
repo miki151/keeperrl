@@ -189,6 +189,8 @@ class WindowView: public View {
   thread::id renderThreadId;
   function<void()> renderDialog;
 
+  void addVoidDialog(function<void()>);
+
   template <class T>
   void addReturnDialog(SyncQueue<T>& q, function<T()> fun) {
     renderDialog = [&q, fun, this] {

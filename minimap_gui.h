@@ -42,6 +42,8 @@ class MinimapGui : public GuiElem {
 
   private:
 
+  void renderMap();
+
   struct MinimapInfo {
     Rectangle bounds;
     vector<Vec2> roads;

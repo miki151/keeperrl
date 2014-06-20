@@ -26,8 +26,8 @@ using namespace colors;
 static Image mapBuffer;
 static TextureRenderer renderer;
 
-void MinimapGui::render(Renderer& r) {
-  renderer.drawImage(info.bounds.getPX(), info.bounds.getPY(), info.bounds.getKX(), info.bounds.getKY(), mapBuffer, info.scale);
+void MinimapGui::renderMap() {
+  renderer.drawImage(info.bounds, mapBuffer, info.scale);
   for (Vec2 v : info.roads) {
     Vec2 rrad(1, 1);
     Vec2 pos = info.bounds.getTopLeft() + v * info.scale;
@@ -38,16 +38,21 @@ void MinimapGui::render(Renderer& r) {
     renderer.drawFilledRectangle(Rectangle(info.player - rad, info.player + rad), blue);
   for (Vec2 pos : info.enemies)
     renderer.drawFilledRectangle(Rectangle(pos - rad, pos + rad), red);
-  r.drawSprite(
-      getBounds().getTopLeft(), Vec2(0, 0), Vec2(getBounds().getW(), getBounds().getH()), renderer.getTexture());
   for (auto loc : info.locations)
     if (loc.text.empty())
       renderer.drawText(lightGreen, loc.pos.x + 5, loc.pos.y, "?");
     else {
-      renderer.drawFilledRectangle(loc.pos.x, loc.pos.y, loc.pos.x + renderer.getTextLength(loc.text) + 10, loc.pos.y + 25,
+      renderer.drawFilledRectangle(loc.pos.x, loc.pos.y,
+          loc.pos.x + renderer.getTextLength(loc.text) + 10, loc.pos.y + 25,
           transparency(black, 130));
       renderer.drawText(white, loc.pos.x + 5, loc.pos.y, loc.text);
     }
+}
+
+void MinimapGui::render(Renderer& r) {
+  renderMap();
+  r.drawSprite(
+      getBounds().getTopLeft(), Vec2(0, 0), Vec2(getBounds().getW(), getBounds().getH()), renderer.getTexture());
 }
 
 MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
@@ -80,6 +85,7 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
   info.scale = scale;
   info.roads.clear();
   info.enemies.clear();
+  info.locations.clear();
   for (Vec2 v : Rectangle(bounds.getW() / scale, bounds.getH() / scale)) {
     putMapPixel(v, black);
   }
@@ -124,6 +130,7 @@ void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Wind
       double(bounds.getH()) / level->getBounds().getH());
   while (1) {
     update(level, level->getBounds(), Rectangle(bounds.getW(), bounds.getH()), creature, true);
+    renderMap();
     r.drawSprite(
       bounds.getTopLeft(), Vec2(0, 0), Vec2(bounds.getW(), bounds.getH()), renderer.getTexture());
     r.drawAndClearBuffer();

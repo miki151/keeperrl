@@ -794,10 +794,25 @@ function<void()> WindowView::getButtonCallback(UserInput input) {
   return [this, input]() { inputQueue.push(input); };
 }
 
+void WindowView::addVoidDialog(function<void()> fun) {
+  RenderLock lock(renderMutex);
+  Semaphore sem;
+  renderDialog = [this, &sem, fun] {
+    fun();
+    sem.v();
+    renderDialog = nullptr;
+  };
+  if (std::this_thread::get_id() == renderThreadId)
+    renderDialog();
+  lock.unlock();
+  sem.p();
+}
+
 void WindowView::drawLevelMap(const CreatureView* creature) {
   TempClockPause pause;
-  minimapGui->presentMap(creature, getMapGuiBounds(), renderer,
-      [this](double x, double y) { center = {x, y};});
+  addVoidDialog([=] {
+    minimapGui->presentMap(creature, getMapGuiBounds(), renderer,
+        [this](double x, double y) { center = {x, y};}); });
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {

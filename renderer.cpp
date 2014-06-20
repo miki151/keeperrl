@@ -117,6 +117,10 @@ void Renderer::drawImage(int px, int py, const Image& image, double scale) {
   drawImage(px, py, px + image.getSize().x * scale, py + image.getSize().y * scale, image, scale);
 }
 
+void Renderer::drawImage(Rectangle r, const Image& image, double scale) {
+  drawImage(r.getPX(), r.getPY(), r.getKX(), r.getKY(), image, scale);
+}
+
 void Renderer::drawImage(int px, int py, int kx, int ky, const Image& image, double scale) {
   Texture t;
   t.loadFromImage(image);

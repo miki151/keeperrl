@@ -1045,7 +1045,7 @@ class EnumAll {
 
 class Semaphore {
   public:
-  Semaphore(int val);
+  Semaphore(int val = 0);
 
   void p();
   void v();
