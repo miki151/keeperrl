@@ -73,6 +73,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(executions)
     & SVAR(flyingSectors)
     & SVAR(sectors)
+    & SVAR(squareEfficiency)
     & SVAR(surprises);
   CHECK_SERIAL;
 }
@@ -1227,7 +1228,7 @@ ViewObject Collective::getTrapObject(TrapType type) {
   for (const Collective::BuildInfo& info : workshopInfo)
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type)
       return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed trap")
-        .setModifier(ViewObject::PLANNED);
+        .setModifier(ViewObject::Modifier::PLANNED);
   FAIL << "trap not found" << int(type);
   return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM, "Unarmed trap");
 }
@@ -1236,7 +1237,7 @@ static const ViewObject& getConstructionObject(SquareType type) {
   static map<SquareType, ViewObject> objects;
   if (!objects.count(type)) {
     objects.insert(make_pair(type, SquareFactory::get(type)->getViewObject()));
-    objects.at(type).setModifier(ViewObject::PLANNED);
+    objects.at(type).setModifier(ViewObject::Modifier::PLANNED);
   }
   return objects.at(type);
 }
@@ -1245,7 +1246,7 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
   ViewIndex index = level->getSquare(pos)->getViewIndex(this);
   if (Creature* c = level->getSquare(pos)->getCreature())
     if (contains(team, c) && gatheringTeam)
-      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::TEAM_HIGHLIGHT);
+      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (taskMap.getMarked(pos))
     index.addHighlight(HighlightType::BUILD);
   else if (rectSelectCorner && rectSelectCorner2
@@ -1261,6 +1262,11 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
   }
   if (surprises.count(pos) && !knownPos(pos))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
+  if (hasEfficiency(pos)) {
+    double efficiency = getEfficiency(pos);
+    index.addHighlight(HighlightType::EFFICIENCY, efficiency);
+    index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY, efficiency);
+  }
   return index;
 }
 
@@ -1694,11 +1700,20 @@ void Collective::addKnownTile(Vec2 pos) {
   }
 }
 
+const static set<SquareType> efficiencySquares {
+  SquareType::TRAINING_DUMMY,
+  SquareType::WORKSHOP,
+  SquareType::LIBRARY,
+  SquareType::LABORATORY,
+};
+
 void Collective::onConstructed(Vec2 pos, SquareType type) {
   if (!contains({SquareType::ANIMAL_TRAP, SquareType::TREE_TRUNK}, type))
     myTiles.insert(pos);
   CHECK(!mySquares[type].count(pos));
   mySquares[type].insert(pos);
+  if (efficiencySquares.count(type))
+    updateEfficiency(pos, type);
   if (contains({SquareType::FLOOR, SquareType::BRIDGE}, type))
     taskMap.clearAllLocked();
   if (taskMap.getMarked(pos))
@@ -1748,22 +1763,27 @@ set<TrapType> Collective::getNeededTraps() const {
 }
 
 void Collective::onAppliedSquare(Vec2 pos) {
+  Creature* c = NOTNULL(level->getSquare(pos)->getCreature());
   if (mySquares.at(SquareType::LIBRARY).count(pos)) {
-    Creature* c = NOTNULL(level->getSquare(pos)->getCreature());
     if (c == keeper)
-      mana += 0.3 + max(0., 2 - (mana + double(getDangerLevel(false))) / 700);
+      mana += getEfficiency(pos) * (0.3 + max(0., 2 - (mana + double(getDangerLevel(false))) / 700));
     else {
-      if (Random.roll(60))
+      if (Random.roll(60 / getEfficiency(pos)))
         c->addSpell(chooseRandom(keeper->getSpells()).id);
     }
   }
+  if (mySquares.at(SquareType::TRAINING_DUMMY).count(pos)) {
+    double lev1 = 0.03;
+    double lev10 = 0.01;
+    c->increaseExpLevel(getEfficiency(pos) * (lev1 - double(c->getExpLevel() - 1) * (lev1 - lev10) / 9.0  ));
+  }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
-    if (Random.roll(30)) {
+    if (Random.roll(30 / getEfficiency(pos))) {
       level->getSquare(pos)->dropItems(ItemFactory::laboratory(technologies).random());
       Statistics::add(StatId::POTION_PRODUCED);
     }
   if (mySquares.at(SquareType::WORKSHOP).count(pos))
-    if (Random.roll(40)) {
+    if (Random.roll(40 / getEfficiency(pos))) {
       set<TrapType> neededTraps = getNeededTraps();
       vector<PItem> items;
       for (int i : Range(10)) {
@@ -1985,7 +2005,7 @@ void Collective::tick() {
       break;
     }
   if (allSurrender) {
-    for (auto elem : copyThis(prisonerInfo))
+    for (auto elem : copyOf(prisonerInfo))
       if (elem.second.state == PrisonerInfo::SURRENDER) {
         Creature* c = elem.first;
         Vec2 pos = c->getPosition();
@@ -2462,6 +2482,8 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
     for (auto& elem : mySquares)
       if (elem.second.count(pos)) {
         elem.second.erase(pos);
+        if (efficiencySquares.count(elem.first))
+          updateEfficiency(pos, elem.first);
       }
     if (constructions.count(pos)) {
       ConstructionInfo& info = constructions.at(pos);
@@ -2565,6 +2587,39 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   
 const Level* Collective::getLevel() const {
   return level;
+}
+
+bool Collective::hasEfficiency(Vec2 pos) const {
+  return squareEfficiency.count(pos);
+}
+
+const double lightBase = 0.5;
+const double flattenVal = 0.8;
+
+double Collective::getEfficiency(Vec2 pos) const {
+  return min(1.0, squareEfficiency.at(pos) * (lightBase + level->getLight(pos) * (1 - lightBase)) / flattenVal);
+}
+
+const double sizeBase = 0.5;
+
+void Collective::updateEfficiency(Vec2 pos, SquareType type) {
+  if (mySquares.at(type).count(pos)) {
+    squareEfficiency[pos] = sizeBase;
+    for (Vec2 v : pos.neighbors8())
+      if (mySquares.at(type).count(v)) {
+        squareEfficiency[pos] += (1 - sizeBase) / 8;
+        squareEfficiency[v] += (1 - sizeBase) / 8;
+        CHECK(squareEfficiency[v] >=0 && squareEfficiency[v] <= 1);
+        CHECK(squareEfficiency[pos] >=0 && squareEfficiency[pos] <= 1);
+      }
+  } else {
+    squareEfficiency.erase(pos);
+    for (Vec2 v : pos.neighbors8())
+      if (mySquares.at(type).count(v)) {
+        squareEfficiency[v] -= (1 - sizeBase) / 8;
+        CHECK(squareEfficiency[v] >=0 && squareEfficiency[v] <= 1);
+      }
+  }
 }
 
 template <class Archive>

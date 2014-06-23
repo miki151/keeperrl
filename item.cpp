@@ -131,7 +131,7 @@ void Item::setOnFire(double amount, const Level* level, Vec2 position) {
   fire.set(amount);
   if (!burning && fire.isBurning()) {
     level->globalMessage(position, noBurningName + " catches fire.");
-    viewObject.setBurning(fire.getSize());
+    viewObject.setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
   }
 }
 
@@ -143,7 +143,7 @@ void Item::tick(double time, Level* level, Vec2 position) {
   if (fire.isBurning()) {
     Debug() << getName() << " burning " << fire.getSize();
     level->getSquare(position)->setOnFire(fire.getSize());
-    viewObject.setBurning(fire.getSize());
+    viewObject.setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
     fire.tick(level, position);
     if (!fire.isBurning()) {
       level->globalMessage(position, getTheName() + " burns out");

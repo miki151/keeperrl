@@ -19,18 +19,12 @@
 
 template <class Archive> 
 void ViewObject::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(bleeding)
-    & SVAR(enemyStatus)
+  ar& SVAR(enemyStatus)
     & SVAR(resource_id)
     & SVAR(viewLayer)
     & SVAR(description)
-    & SVAR(burning)
-    & SVAR(height)
     & SVAR(modifiers)
-    & SVAR(attack)
-    & SVAR(defense)
-    & SVAR(level)
-    & SVAR(waterDepth);
+    & SVAR(attributes);
   CHECK_SERIAL;
 }
 
@@ -40,35 +34,36 @@ ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
     : resource_id(id), viewLayer(l), description(d) {
   if (islower(description[0]))
     description[0] = toupper(description[0]);
-  for (int i : Range(numModifiers))
-    modifiers[i] = false;
+  for (Attribute attr : {
+      Attribute::ATTACK,
+      Attribute::DEFENSE,
+      Attribute::LEVEL,
+      Attribute::WATER_DEPTH,
+      Attribute::EFFICIENCY})
+    setAttribute(attr, -1);
 }
 
 ViewObject& ViewObject::setModifier(Modifier mod) {
-  modifiers[int(mod)] = true;
+  modifiers[mod] = true;
   return *this;
 }
 
 ViewObject& ViewObject::removeModifier(Modifier mod) {
-  modifiers[int(mod)] = false;
+  modifiers[mod] = false;
   return *this;
 }
 
 bool ViewObject::hasModifier(Modifier mod) const {
-  return modifiers[int(mod)];
+  return modifiers[mod];
 }
 
-ViewObject& ViewObject::setWaterDepth(double depth) {
-  waterDepth = depth;
+ViewObject& ViewObject::setAttribute(Attribute attr, double d) {
+  attributes[attr] = d;
   return *this;
 }
 
-double ViewObject::getWaterDepth() const {
-  return waterDepth;
-}
-
-void ViewObject::setBleeding(double b) {
-  bleeding = b;
+double ViewObject::getAttribute(Attribute attr) const {
+  return attributes[attr];
 }
 
 void ViewObject::setEnemyStatus(EnemyStatus s) {
@@ -83,61 +78,41 @@ bool ViewObject::isFriendly() const {
   return enemyStatus == FRIENDLY;
 }
 
-void ViewObject::setBurning(double s) {
-  burning = s;
-}
-
-double ViewObject::getBurning() const {
-  return burning;
-}
-
-double ViewObject::getBleeding() const {
-  return bleeding;
-}
-
-void ViewObject::setHeight(double h) {
-  height = h;
-}
-
-double ViewObject::getHeight() const {
-  return height;
-}
-
 string ViewObject::getBareDescription() const {
   return description;
 }
 
+string ViewObject::getAttributeString(Attribute attr) const {
+  if (attr == Attribute::EFFICIENCY)
+    return convertToString<int>(100 * getAttribute(attr)) + "%";
+  else
+    return convertToString(getAttribute(attr));
+}
+
 string ViewObject::getDescription(bool stats) const {
+  EnumMap<Attribute, string> namedAttr {
+      { Attribute::ATTACK, "attack"},
+      { Attribute::DEFENSE, "defense"},
+      { Attribute::LEVEL, "level"},
+      { Attribute::EFFICIENCY, "efficiency"}};
   string attr;
-  if (attack > -1 && stats)
-    attr = " att: " + convertToString(attack) + " def: " + convertToString(defense) + " ";
-  if (level > -1 && stats)
-    attr += "level: " + convertToString(level);
+  if (stats)
+    for (Attribute a : ENUM_ALL(Attribute))
+      if (!namedAttr[a].empty() && getAttribute(a) > -1)
+        attr += " " + namedAttr[a] + ": " + getAttributeString(a);
   vector<string> mods;
-  if (getBleeding() > 0) 
+  if (getAttribute(Attribute::BLEEDING) > 0) 
     mods.push_back("wounded");
-  if (hasModifier(BLIND))
+  if (hasModifier(Modifier::BLIND))
     mods.push_back("blind");
-  if (hasModifier(POISONED))
+  if (hasModifier(Modifier::POISONED))
     mods.push_back("poisoned");
-  if (hasModifier(PLANNED))
+  if (hasModifier(Modifier::PLANNED))
     mods.push_back("planned");
   if (mods.size() > 0)
     return description + attr + "(" + combine(mods) + ")";
   else
     return description + attr;
-}
-
-void ViewObject::setAttack(int val) {
-  attack = val;
-}
-
-void ViewObject::setDefense(int val) {
-  defense = val;
-}
-
-void ViewObject::setLevel(int val) {
-  level = val;
 }
 
 ViewLayer ViewObject::layer() const {

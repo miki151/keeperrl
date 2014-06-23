@@ -51,7 +51,7 @@ Optional<Vec2> MapGui::getHighlightedTile(WindowRenderer& renderer) {
 }
 
 static Color getBleedingColor(const ViewObject& object) {
-  double bleeding = object.getBleeding();
+  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING);
  /* if (object.isPoisoned())
     return Color(0, 255, 0);*/
   if (bleeding > 0)
@@ -67,6 +67,7 @@ Color getHighlightColor(ViewIndex::HighlightInfo info) {
     case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
     case HighlightType::MEMORY: return transparency(black, 80);
     case HighlightType::NIGHT: return transparency(nightBlue, info.amount * 160);
+    case HighlightType::EFFICIENCY: return transparency(Color(255, 0, 0) , 120 * (1 - info.amount));
   }
   FAIL << "pokpok";
   return black;
@@ -144,25 +145,26 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
     if (auto object = index.getTopObject(layout->getLayers()))
       objects.push_back(*object);
   for (ViewObject& object : objects) {
-    if (object.hasModifier(ViewObject::PLAYER)) {
+    if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
       renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
     }
-    if (object.hasModifier(ViewObject::TEAM_HIGHLIGHT)) {
+    if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
       renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, darkGreen);
     }
     Tile tile = Tile::getTile(object, spriteMode);
     Color color = getBleedingColor(object);
-    if (object.hasModifier(ViewObject::INVISIBLE) || object.hasModifier(ViewObject::HIDDEN))
+    if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
       color = transparency(color, 70);
     else
     if (tile.translucent > 0)
       color = transparency(color, 255 * (1 - tile.translucent));
-    else if (object.hasModifier(ViewObject::ILLUSION))
+    else if (object.hasModifier(ViewObject::Modifier::ILLUSION))
       color = transparency(color, 150);
-    if (object.hasModifier(ViewObject::PLANNED))
+    if (object.hasModifier(ViewObject::Modifier::PLANNED))
       color = transparency(color, 100);
-    if (object.getWaterDepth() > 0) {
-      int val = max(0.0, 255.0 - min(2.0, object.getWaterDepth()) * 60);
+    double waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH);
+    if (waterDepth > 0) {
+      int val = max(0.0, 255.0 - min(2.0, waterDepth) * 60);
       color = Color(val, val, val);
     }
     if (tile.hasSpriteCoord()) {
@@ -178,9 +180,9 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
             dirs.insert(dir.getCardinalDir());
       Vec2 coord = tile.getSpriteCoord(dirs);
 
-      if (object.hasModifier(ViewObject::MOVE_UP))
+      if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
         moveY = -6;
-      if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::ROUND_SHADOW)) {
+      if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
         renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize, 22 * Renderer::nominalSize, Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[0], width, height);
         moveY = -6;
       }
@@ -189,19 +191,20 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
       if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
           shadowed.count(tilePos) && !tile.stickingOut)
         renderer.drawSprite(x, y, 1 * Renderer::nominalSize, 21 * Renderer::nominalSize, Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[5], width, height);
-      if (object.getBurning() > 0) {
+      if (object.getAttribute(ViewObject::Attribute::BURNING) > 0) {
         renderer.drawSprite(x, y, Random.getRandom(10, 12) * Renderer::nominalSize, 0 * Renderer::nominalSize,
             Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[2], width, height);
       }
-      if (object.hasModifier(ViewObject::LOCKED))
+      if (object.hasModifier(ViewObject::Modifier::LOCKED))
         renderer.drawSprite(x + (Renderer::nominalSize - Renderer::tileSize[3]) / 2, y, 5 * Renderer::tileSize[3], 6 * Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tiles[3], width / 2, height / 2);
     } else {
       renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, sizeY, Tile::getColor(object),
           x + sizeX / 2, y - 3, tile.text, true);
-      if (object.getBurning() > 0) {
+      double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
+      if (burningVal > 0) {
         renderer.drawText(Renderer::SYMBOL_FONT, sizeY, WindowView::getFireColor(),
             x + sizeX / 2, y - 3, L'ѡ', true);
-        if (object.getBurning() > 0.5)
+        if (burningVal > 0.5)
           renderer.drawText(Renderer::SYMBOL_FONT, sizeY, WindowView::getFireColor(),
               x + sizeX / 2, y - 3, L'Ѡ', true);
       }
@@ -228,7 +231,7 @@ void MapGui::updateObjects(const MapMemory* mem) {
     if (auto& index = objects[wpos])
       if (index->hasObject(ViewLayer::FLOOR)) {
         ViewObject object = index->getObject(ViewLayer::FLOOR);
-        if (object.hasModifier(ViewObject::CASTS_SHADOW)) {
+        if (object.hasModifier(ViewObject::Modifier::CASTS_SHADOW)) {
           shadowed.erase(wpos);
           shadowed.insert(wpos + Vec2(0, 1));
         }

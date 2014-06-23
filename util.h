@@ -472,7 +472,7 @@ vector<T> getKeys(const map<T, V>& m) {
 }
 
 template <typename T>
-T copyThis(const T& t) {
+T copyOf(const T& t) {
   return t;
 }
 
@@ -1043,6 +1043,8 @@ class EnumAll {
   }
 };
 
+#define ENUM_ALL(X) EnumAll<X>()
+
 class Semaphore {
   public:
   Semaphore(int val = 0);
@@ -1091,7 +1093,5 @@ class SyncQueue {
   std::mutex mut;
   std::condition_variable cond;
 };
-
-#define ENUM_ALL(X) EnumAll<X>()
 
 #endif

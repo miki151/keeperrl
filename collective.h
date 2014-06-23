@@ -367,6 +367,10 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
   map<UniqueId, MarkovChain<MinionTask>> SERIAL(minionTasks);
   map<UniqueId, string> SERIAL(minionTaskStrings);
   map<SquareType, set<Vec2>> SERIAL(mySquares);
+  map<Vec2, double> SERIAL(squareEfficiency);
+  void updateEfficiency(Vec2, SquareType);
+  double getEfficiency(Vec2) const;
+  bool hasEfficiency(Vec2) const;
   set<Vec2> SERIAL(myTiles);
   Level* SERIAL(level);
   Creature* SERIAL2(keeper, nullptr);

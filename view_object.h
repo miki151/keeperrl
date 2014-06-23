@@ -24,36 +24,24 @@ class ViewObject {
   public:
   ViewObject(ViewId id, ViewLayer l, const string& description);
 
-  void setBleeding(double);
-  double getBleeding() const;
-
   enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
   void setEnemyStatus(EnemyStatus);
   bool isHostile() const;
   bool isFriendly() const;
 
-  enum Modifier { BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
-    ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT, DARK};
-  static const int numModifiers = 13;
+  enum class Modifier { BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
+    ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT, DARK, ENUM_END};
 
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;
 
+  enum class Attribute { BLEEDING, BURNING, HEIGHT, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, ENUM_END };
+
   static void setHallu(bool);
 
-  void setBurning(double);
-  double getBurning() const;
-
-  void setHeight(double);
-  double getHeight() const;
-
-  void setAttack(int);
-  void setDefense(int);
-  void setLevel(int);
-
-  ViewObject& setWaterDepth(double);
-  double getWaterDepth() const;
+  ViewObject& setAttribute(Attribute, double);
+  double getAttribute(Attribute) const;
 
   string getDescription(bool stats = false) const;
   string getBareDescription() const;
@@ -68,19 +56,13 @@ class ViewObject {
   SERIALIZATION_DECL(ViewObject);
 
   private:
-  double SERIAL2(bleeding, 0);
+  string getAttributeString(Attribute) const;
   EnemyStatus SERIAL2(enemyStatus, UNKNOWN);
-  bool modifiers[numModifiers];
-  SERIAL3(modifiers);
+  EnumSet<Modifier> SERIAL(modifiers);
+  EnumMap<Attribute, double> SERIAL(attributes);
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
   string SERIAL(description);
-  double SERIAL2(burning, false);
-  double SERIAL2(height, 0);
-  int SERIAL2(attack, -1);
-  int SERIAL2(defense, -1);
-  int SERIAL2(level, -1);
-  double SERIAL2(waterDepth, -1);
 };
 
 

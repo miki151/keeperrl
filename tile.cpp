@@ -586,11 +586,11 @@ Tile Tile::getTile(const ViewObject& obj, bool sprite) {
 }
 
 Color Tile::getColor(const ViewObject& object) {
-  if (object.hasModifier(ViewObject::INVISIBLE))
+  if (object.hasModifier(ViewObject::Modifier::INVISIBLE))
     return darkGray;
-  if (object.hasModifier(ViewObject::HIDDEN))
+  if (object.hasModifier(ViewObject::Modifier::HIDDEN))
     return lightGray;
-  double bleeding = object.getBleeding();
+  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING);
   if (bleeding > 0)
     bleeding = 0.5 + bleeding / 2;
   bleeding = min(1., bleeding);

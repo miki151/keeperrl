@@ -249,7 +249,7 @@ void Creature::removeCreatureVision(CreatureVision* vision) {
 
 void Creature::pushController(PController ctrl) {
   if (ctrl->isPlayer())
-    viewObject.setModifier(ViewObject::PLAYER);
+    viewObject.setModifier(ViewObject::Modifier::PLAYER);
   controllerStack.push_back(std::move(controller));
   controller = std::move(ctrl);
   level->updatePlayer();
@@ -257,7 +257,7 @@ void Creature::pushController(PController ctrl) {
 
 void Creature::popController() {
   if (controller->isPlayer())
-    viewObject.removeModifier(ViewObject::PLAYER);
+    viewObject.removeModifier(ViewObject::Modifier::PLAYER);
   CHECK(!controllerStack.empty());
   bool wasPlayer = controller->isPlayer();
   controller = std::move(controllerStack.back());
@@ -380,7 +380,7 @@ void Creature::makeMove() {
   MEASURE(controller->makeMove(), "creature move time");
   CHECK(!inEquipChain) << "Someone forgot to finishEquipChain()";
   if (!hidden)
-    viewObject.removeModifier(ViewObject::HIDDEN);
+    viewObject.removeModifier(ViewObject::Modifier::HIDDEN);
   unknownAttacker.clear();
   if (fireCreature && Random.roll(5))
     getSquare()->setOnFire(1);
@@ -654,7 +654,7 @@ Creature::Action Creature::hide() {
   return Action([=]() {
     playerMessage("You hide behind the " + getConstSquare()->getName());
     knownHiding.clear();
-    viewObject.setModifier(ViewObject::HIDDEN);
+    viewObject.setModifier(ViewObject::Modifier::HIDDEN);
     for (const Creature* c : getLevel()->getAllCreatures())
       if (c->canSee(this) && c->isEnemy(this)) {
         knownHiding.insert(c);
@@ -740,16 +740,16 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       break;
     case BLIND:
       if (msg) you(MsgType::ARE, "blind!");
-      viewObject.setModifier(ViewObject::BLIND);
+      viewObject.setModifier(ViewObject::Modifier::BLIND);
       break;
     case INVISIBLE:
       if (!isBlind() && msg)
         you(MsgType::TURN_INVISIBLE, "");
-      viewObject.setModifier(ViewObject::INVISIBLE);
+      viewObject.setModifier(ViewObject::Modifier::INVISIBLE);
       break;
     case POISON:
       if (msg) you(MsgType::ARE, "poisoned");
-      viewObject.setModifier(ViewObject::POISONED);
+      viewObject.setModifier(ViewObject::Modifier::POISONED);
       break;
     case STR_BONUS: if (msg) you(MsgType::FEEL, "stronger"); break;
     case DEX_BONUS: if (msg) you(MsgType::FEEL, "more agile"); break;
@@ -774,7 +774,7 @@ void Creature::onRemoved(LastingEffect effect, bool msg) {
     case POISON:
       if (msg)
         you(MsgType::ARE, "cured from poisoning");
-      viewObject.removeModifier(ViewObject::POISONED);
+      viewObject.removeModifier(ViewObject::Modifier::POISONED);
       break;
     default: onTimedOut(effect, msg); break;
   }
@@ -795,17 +795,17 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
     case BLIND:
       if (msg) 
         you("can see again");
-      viewObject.removeModifier(ViewObject::BLIND);
+      viewObject.removeModifier(ViewObject::Modifier::BLIND);
       break;
     case INVISIBLE:
       if (msg)
         you(MsgType::TURN_VISIBLE, "");
-      viewObject.removeModifier(ViewObject::INVISIBLE);
+      viewObject.removeModifier(ViewObject::Modifier::INVISIBLE);
       break;
     case POISON:
       if (msg)
         you(MsgType::ARE, "no longer poisoned");
-      viewObject.removeModifier(ViewObject::POISONED);
+      viewObject.removeModifier(ViewObject::Modifier::POISONED);
       break;
     case POISON_RESISTANT: if (msg) you(MsgType::ARE, "no longer resistant"); break;
     case FIRE_RESISTANT: if (msg) you(MsgType::ARE, "no longer resistant"); break;
@@ -1339,16 +1339,16 @@ bool Creature::takeDamage(const Attack& attack) {
 }
 
 void Creature::updateViewObject() {
-  viewObject.setDefense(getAttr(AttrType::DEFENSE));
-  viewObject.setAttack(getAttr(AttrType::DAMAGE));
-  viewObject.setLevel(getExpLevel());
+  viewObject.setAttribute(ViewObject::Attribute::DEFENSE, getAttr(AttrType::DEFENSE));
+  viewObject.setAttribute(ViewObject::Attribute::ATTACK, getAttr(AttrType::DAMAGE));
+  viewObject.setAttribute(ViewObject::Attribute::LEVEL, getExpLevel());
   if (const Creature* c = getLevel()->getPlayer()) {
     if (isEnemy(c))
       viewObject.setEnemyStatus(ViewObject::HOSTILE);
     else
       viewObject.setEnemyStatus(ViewObject::FRIENDLY);
   }
-  viewObject.setBleeding(1 - health);
+  viewObject.setAttribute(ViewObject::Attribute::BLEEDING, 1 - health);
 }
 
 double Creature::getHealth() const {

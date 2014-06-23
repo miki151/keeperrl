@@ -102,7 +102,7 @@ static void deception(Creature* c) {
   vector<PCreature> creatures;
   for (int i : Range(Random.getRandom(3, 7))) {
     ViewObject viewObject(c->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
-    viewObject.setModifier(ViewObject::ILLUSION);
+    viewObject.setModifier(ViewObject::Modifier::ILLUSION);
     creatures.push_back(PCreature(new Creature(viewObject, c->getTribe(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
           c.speed = 100;
@@ -128,7 +128,7 @@ static void deception(Creature* c) {
 static void leaveBody(Creature* creature) {
   string spiritName = creature->getFirstName().getOr(creature->getName()) + "'s spirit";
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, spiritName);
-  viewObject.setModifier(ViewObject::ILLUSION);
+  viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   PCreature spirit(new Creature(viewObject, creature->getTribe(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
           c.speed = 100;

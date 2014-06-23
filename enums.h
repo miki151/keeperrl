@@ -303,6 +303,7 @@ enum class HighlightType {
   FOG,
   MEMORY,
   NIGHT,
+  EFFICIENCY,
 };
 
 enum class StairLook {

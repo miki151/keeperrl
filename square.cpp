@@ -97,7 +97,7 @@ double Square::getLightEmission() const {
 }
 
 void Square::setHeight(double h) {
-  viewObject.setHeight(h);
+  viewObject.setAttribute(ViewObject::Attribute::HEIGHT, h);
   height = h;
 }
 
@@ -172,7 +172,7 @@ void Square::tick(double time) {
     creature->poisonWithGas(min(1.0, poisonGas.getAmount()));
   }
   if (fire.isBurning()) {
-    viewObject.setBurning(fire.getSize());
+    viewObject.setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
     Debug() << getName() << " burning " << fire.getSize();
     for (Vec2 v : position.neighbors8(true))
       if (fire.getSize() > Random.getDouble() * 40)
@@ -253,7 +253,7 @@ void Square::setOnFire(double amount) {
   if (!burning && fire.isBurning()) {
     level->addTickingSquare(position);
     level->globalMessage(position, "The " + getName() + " catches fire.");
-    viewObject.setBurning(fire.getSize());
+    viewObject.setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
   }
   if (creature)
     creature->setOnFire(amount);
@@ -292,12 +292,6 @@ void Square::setBackground(const Square* square) {
   }
 }
 
-static ViewObject addFire(const ViewObject& obj, double fire) {
-  ViewObject r(obj);
-  r.setBurning(fire);
-  return r;
-}
-
 ViewIndex Square::getViewIndex(const CreatureView* c) const {
   double fireSize = 0;
   for (Item* it : inventory.getItems())
@@ -305,19 +299,20 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
   fireSize = max(fireSize, fire.getSize());
   ViewIndex ret;
   if (creature && (c->canSee(creature) || creature->isPlayer())) {
-    ret.insert(addFire(creature->getViewObject(), fireSize));
+    ret.insert(copyOf(creature->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   }
   else if (creature && contains(c->getUnknownAttacker(), creature))
-    ret.insert(addFire(ViewObject::unknownMonster(), fireSize));
+    ret.insert(copyOf(ViewObject::unknownMonster()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (c->canSee(position)) {
     if (backgroundObject)
       ret.insert(*backgroundObject);
     ret.insert(getViewObject());
     for (const PTrigger& t : triggers)
       if (auto obj = t->getViewObject(c))
-        ret.insert(addFire(*obj, fireSize));
+        ret.insert(copyOf(*obj).setAttribute(ViewObject::Attribute::BURNING, fireSize));
     if (Item* it = getTopItem())
-      ret.insert(addFire(it->getViewObject(), fireSize));
+      ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
+
   }
   if (c->canSee(position)) {
     ret.addHighlight(HighlightType::NIGHT, 1.0 - level->getLight(position));

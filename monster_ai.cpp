@@ -20,7 +20,6 @@
 #include "level.h"
 #include "collective.h"
 #include "village_control.h"
-#include "task.h"
 
 template <class Archive> 
 void MonsterAI::serialize(Archive& ar, const unsigned int version) {
