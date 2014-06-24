@@ -339,6 +339,8 @@ const int basicImpCost = 20;
 const int minionLimit = 40;
 
 void Collective::unpossess() {
+  if (possessed == keeper)
+    lastControlKeeperQuestion = getTime();
   CHECK(possessed);
   if (possessed->isPlayer())
     possessed->popController();
@@ -410,6 +412,7 @@ static vector<ItemId> marketItems {
   ItemId::BLINDNESS_POTION,
   ItemId::INVISIBLE_POTION,
   ItemId::POISON_POTION,
+  ItemId::POISON_RESIST_POTION,
   ItemId::SLOW_POTION,
   ItemId::SPEED_POTION,
   ItemId::WARNING_AMULET,

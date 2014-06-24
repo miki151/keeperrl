@@ -255,6 +255,7 @@ enum class ItemId { KNIFE,
   POISON_POTION,
   SLOW_POTION,
   SPEED_POTION,
+  POISON_RESIST_POTION,
 
   PANIC_MUSHROOM,
   RAGE_MUSHROOM,
@@ -665,6 +666,8 @@ enum class EffectType {
     SUMMON_SPIRIT,
     LEAVE_BODY,
     STUN,
+    POISON_RESISTANCE,
+    FIRE_RESISTANCE,
 };
 
 enum class AnimationId {

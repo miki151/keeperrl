@@ -597,6 +597,7 @@ ItemFactory ItemFactory::laboratory(const vector<Technology*>& techs) {
   if (contains(techs, Technology::get(TechId::ALCHEMY_ADV))) {
     factory.addItem({ItemId::BLINDNESS_POTION, 1 });
     factory.addItem({ItemId::INVISIBLE_POTION, 1 });
+    factory.addItem({ItemId::POISON_RESIST_POTION, 1 });
     factory.addItem({ItemId::POISON_POTION, 1 });
     factory.addItem({ItemId::SPEED_POTION, 1 });
   }
@@ -611,6 +612,7 @@ ItemFactory ItemFactory::potions() {
       {ItemId::BLINDNESS_POTION, 1 },
       {ItemId::INVISIBLE_POTION, 1 },
       {ItemId::POISON_POTION, 1 },
+      {ItemId::POISON_RESIST_POTION, 1 },
       {ItemId::SPEED_POTION, 1 }});
 }
 
@@ -676,6 +678,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::BLINDNESS_POTION, 30 },
       {ItemId::INVISIBLE_POTION, 10 },
       {ItemId::POISON_POTION, 20 },
+      {ItemId::POISON_RESIST_POTION, 20 },
       {ItemId::FIRST_AID_KIT, 30 }});
 }
 
@@ -1064,7 +1067,9 @@ PItem ItemFactory::fromId(ItemId id) {
                                        "Makes you blind for some time.");
     case ItemId::INVISIBLE_POTION: return getPotion(5, "invisibility", EffectType::INVISIBLE, 120,
                                        "Makes you and your belongings invisible for a short time.");
-    case ItemId::POISON_POTION: return getPotion(0, "poison", EffectType::POISON, 100, "Poisons.");
+    case ItemId::POISON_POTION: return getPotion(6, "poison", EffectType::POISON, 100, "Poisons.");
+    case ItemId::POISON_RESIST_POTION: return getPotion(7, "poison resistance", EffectType::POISON_RESISTANCE, 100,
+                                           "Makes one resistant to all poisons.");
     case ItemId::PANIC_MUSHROOM: return getMushroom("panic", EffectType::PANIC,
                                      "Makes the one who ate it favor defensive actions over offensive.");
     case ItemId::RAGE_MUSHROOM: return getMushroom("rage", EffectType::RAGE,

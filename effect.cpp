@@ -405,6 +405,8 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.getRandom(2, 5), 100); break;
     case EffectType::EMIT_POISON_GAS: emitPoisonGas(c->getLevel(), c->getPosition(), strength, true); break;
     case EffectType::STUN: c->addEffect(LastingEffect::STUNNED, stunTime[strength]); break;
+    case EffectType::POISON_RESISTANCE: c->addEffect(LastingEffect::POISON_RESISTANT, stunTime[strength]); break;
+    case EffectType::FIRE_RESISTANCE: c->addEffect(LastingEffect::FIRE_RESISTANT, stunTime[strength]); break;
   }
 }
 

@@ -763,7 +763,10 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       break;
     case ENTANGLED: if (msg) you(MsgType::ARE, "entangled in a web"); break;
     case SLEEP: if (msg) you(MsgType::FALL_ASLEEP, ""); break;
-    case POISON_RESISTANT: if (msg) you(MsgType::ARE, "now poison resistant"); break;
+    case POISON_RESISTANT:
+      if (msg) you(MsgType::ARE, "now poison resistant");
+      removeEffect(POISON, true);
+      break;
     case FIRE_RESISTANT: if (msg) you(MsgType::ARE, "now fire resistant"); break;
     END_CASE(LastingEffect);
   }
@@ -2134,6 +2137,7 @@ vector<string> Creature::getAdjectives() const {
         case DEX_BONUS: ret.push_back("dexterity bonus"); break;
         case SPEED: ret.push_back("speed bonus"); break;
         case SLOWED: ret.push_back("slowed"); break;
+        case POISON_RESISTANT: ret.push_back("poison resistant"); break;
         default: addCount = false; break;
       }
       if (addCount)
