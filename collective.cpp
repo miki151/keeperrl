@@ -1419,7 +1419,7 @@ class MinionController : public Player {
 };
 
 void Collective::possess(const Creature* cr, View* view) {
-  if (possessed && possessed != cr)
+  if (possessed && possessed != cr && possessed->isPlayer())
     possessed->popController();
   view->stopClock();
   CHECK(contains(creatures, cr));

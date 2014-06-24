@@ -29,7 +29,7 @@ SERIALIZABLE(PoisonGas);
 
 void PoisonGas::addAmount(double a) {
   CHECK(a > 0);
-  amount = min(3., a + amount);
+  amount = min(1., a + amount);
 }
 
 const double decrease = 0.001;

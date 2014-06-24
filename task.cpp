@@ -363,7 +363,7 @@ class ApplyItem : public BringItem {
 
   virtual Creature::Action getBroughtAction(Creature* c, vector<Item*> it) override {
     Item* item = getOnlyElement(it);
-    return c->applyItem(item).append([=] {
+    return c->applyItem(item).prepend([=] {
         getCallback()->onAppliedItem(c->getPosition(), item);
     });
   }

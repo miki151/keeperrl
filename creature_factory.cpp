@@ -34,6 +34,15 @@ class BoulderController : public Monster {
   BoulderController(Creature* c, Tribe* _myTribe) : Monster(c, MonsterAIFactory::idle()),
       stopped(true), myTribe(_myTribe) {}
 
+  void decreaseHealth(CreatureSize size) {
+    switch (size) {
+      case CreatureSize::HUGE: health = -1; break;
+      case CreatureSize::LARGE: health -= 0.3; break;
+      case CreatureSize::MEDIUM: health -= 0.15; break;
+      case CreatureSize::SMALL: break;
+    }
+  }
+
   virtual void makeMove() override {
     if (myTribe != nullptr && stopped) {
       for (Vec2 v : Vec2::directions4(true)) {
@@ -60,24 +69,27 @@ class BoulderController : public Monster {
       }
     }
     if (stopped) {
-      creature->wait();
+      creature->wait().perform();
       return;
     }
     if (creature->getConstSquare(direction)->getStrength() < 300) {
       if (Creature* c = creature->getSquare(direction)->getCreature()) {
-        if (c->getSize() == CreatureSize::HUGE) {
-          creature->getLevel()->globalMessage(creature->getPosition() + direction,
-              creature->getTheName() + " crashes on the " + c->getTheName(),
-              "You hear a crash");
-          creature->die();
-          c->bleed(Random.getDouble(0.1, 0.3));
-          return;
-        } else if (!c->isCorporal()) {
+        if (!c->isCorporal()) {
           if (auto action = creature->swapPosition(direction, true))
             action.perform();
         } else {
-          c->you(MsgType::KILLED_BY, creature->getTheName());
-          c->die(creature);
+          decreaseHealth(c->getSize());
+          if (health < 0) {
+            creature->getLevel()->globalMessage(creature->getPosition() + direction,
+                creature->getTheName() + " crashes on the " + c->getTheName(),
+                "You hear a crash");
+            creature->die();
+            c->bleed(Random.getDouble(0.1, 0.3));
+            return;
+          } else {
+            c->you(MsgType::KILLED_BY, creature->getTheName());
+            c->die(creature);
+          }
         }
       }
       if (auto action = creature->destroy(direction, Creature::DESTROY))
@@ -155,6 +167,7 @@ class BoulderController : public Monster {
   Vec2 SERIAL(direction);
   bool SERIAL2(stopped, false);
   Tribe* SERIAL2(myTribe, nullptr);
+  double health = 1;
 };
 
 class Boulder : public Creature {
