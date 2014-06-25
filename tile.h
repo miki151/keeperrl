@@ -52,7 +52,7 @@ class Tile {
     return *tileCoord;
   }
 
-  Vec2 getSpriteCoord(set<Dir> c) {
+  Vec2 getSpriteCoord(const set<Dir>& c) {
     if (connections.count(c))
       return connections.at(c);
     else return *tileCoord;
@@ -62,6 +62,8 @@ class Tile {
     CHECK(tileCoord) << "Not a sprite tile";
     return texNum;
   }
+
+  const static set<Dir> allDirs;
 
   private:
   Optional<Vec2> tileCoord;

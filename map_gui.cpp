@@ -78,13 +78,18 @@ enum class ConnectionId {
   WALL,
   WATER,
   MOUNTAIN2,
+  LIBRARY,
+  TRAINING_POST,
+  WORKSHOP,
 };
 
 unordered_map<Vec2, ConnectionId> floorIds;
 set<Vec2> shadowed;
 
-Optional<ConnectionId> getConnectionId(ViewId id) {
-  switch (id) {
+Optional<ConnectionId> getConnectionId(const ViewObject& object) {
+  if (object.hasModifier(ViewObject::Modifier::PLANNED))
+    return Nothing();
+  switch (object.id()) {
     case ViewId::ROAD: return ConnectionId::ROAD;
     case ViewId::BLACK_WALL:
     case ViewId::YELLOW_WALL:
@@ -97,7 +102,19 @@ Optional<ConnectionId> getConnectionId(ViewId id) {
     case ViewId::MAGMA:
     case ViewId::WATER: return ConnectionId::WATER;
     case ViewId::MOUNTAIN2: return ConnectionId::MOUNTAIN2;
+    case ViewId::LIBRARY: return ConnectionId::LIBRARY;
+    case ViewId::TRAINING_POST: return ConnectionId::TRAINING_POST;
     default: return Nothing();
+  }
+}
+
+vector<Vec2>& getConnectionDirs(ViewId id) {
+  static vector<Vec2> v4 = Vec2::directions4();
+  static vector<Vec2> v8 = Vec2::directions8();
+  switch (id) {
+    case ViewId::LIBRARY:
+    case ViewId::TRAINING_DUMMY: return v8;
+    default: return v4;
   }
 }
 
@@ -174,12 +191,12 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
       int width = sizeX - 2 * off;
       int height = sizeY - 2 * off;
       set<Dir> dirs;
-      if (auto connectionId = getConnectionId(object.id()))
-        for (Vec2 dir : Vec2::directions4())
-          if (tileConnects(*connectionId, tilePos + dir))
-            dirs.insert(dir.getCardinalDir());
+      if (!object.hasModifier(ViewObject::Modifier::PLANNED))
+        if (auto connectionId = getConnectionId(object))
+          for (Vec2 dir : getConnectionDirs(object.id()))
+            if (tileConnects(*connectionId, tilePos + dir))
+              dirs.insert(dir.getCardinalDir());
       Vec2 coord = tile.getSpriteCoord(dirs);
-
       if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
         moveY = -6;
       if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
@@ -235,7 +252,7 @@ void MapGui::updateObjects(const MapMemory* mem) {
           shadowed.erase(wpos);
           shadowed.insert(wpos + Vec2(0, 1));
         }
-        if (auto id = getConnectionId(object.id()))
+        if (auto id = getConnectionId(object))
           floorIds.insert(make_pair(wpos, *id));
       }
 }

@@ -18,6 +18,8 @@
 
 using namespace colors;
 
+const set<Dir> Tile::allDirs {Dir::N, Dir::E, Dir::S, Dir::W, Dir::NE, Dir::SE, Dir::SW, Dir::NW};
+
 Tile getSpecialCreature(const ViewObject& obj, bool humanoid) {
   RandomGen r;
   r.init(hash<string>()(obj.getBareDescription()));
@@ -131,16 +133,6 @@ static Tile getSprite(ViewId id) {
     case ViewId::WALL: return getWallTile(2);
     case ViewId::MOUNTAIN: return Tile(17, 2, 2, true);
     case ViewId::MOUNTAIN2: return getWallTile(19);
- /*                                 .addConnection({Dir::N, Dir::E, Dir::S, Dir::W, 
-                                        Dir::NE, Dir::SE, Dir::SW, Dir::NW}, 19, 10)
-                                  .addConnection({Dir::E, Dir::S, Dir::W, Dir::SE, Dir::SW}, 19, 9)
-                                  .addConnection({Dir::N, Dir::E, Dir::W, Dir::NW, Dir::NE}, 19, 11)
-                                  .addConnection({Dir::N, Dir::S, Dir::W, Dir::NW, Dir::SW}, 20, 10)
-                                  .addConnection({Dir::N, Dir::E, Dir::S, Dir::NE, Dir::SE}, 18, 10)
-                                  .addConnection({Dir::S, Dir::W, Dir::SW}, 20, 9)
-                                  .addConnection({Dir::E, Dir::S, Dir::SE}, 18, 9)
-                                  .addConnection({Dir::N, Dir::W, Dir::NW}, 20, 11)
-                                  .addConnection({Dir::N, Dir::E, Dir::NE}, 18, 11);*/
     case ViewId::GOLD_ORE: return Tile(9, 0, 7);
     case ViewId::IRON_ORE: return Tile(9, 1, 7);
     case ViewId::STONE: return Tile(11, 0, 7);
@@ -274,7 +266,7 @@ static Tile getSprite(ViewId id) {
     case ViewId::SLIMY_MUSHROOM: return Tile(5, 4, 3);
     case ViewId::FOUNTAIN: return Tile(0, 7, 2, true);
     case ViewId::GOLD: return Tile(8, 3, 3, true);
-    case ViewId::CHEST: return Tile(3, 0, 7, true);
+    case ViewId::CHEST: return Tile(1, 1, 7, true);
     case ViewId::OPENED_CHEST: return Tile(6, 3, 2, true);
     case ViewId::COFFIN: return Tile(7, 3, 2, true);
     case ViewId::OPENED_COFFIN: return Tile(8, 3, 2, true);
@@ -290,21 +282,21 @@ static Tile getSprite(ViewId id) {
     case ViewId::IRON_ROCK: return Tile(10, 1, 3);
     case ViewId::WOOD_PLANK: return Tile(7, 10, 2);
     case ViewId::STOCKPILE1: return Tile(1, 0, 7);
-    case ViewId::STOCKPILE2: return Tile(1, 0, 7);
-    case ViewId::STOCKPILE3: return Tile(1, 0, 7);
+    case ViewId::STOCKPILE2: return Tile(2, 0, 7);
+    case ViewId::STOCKPILE3: return Tile(3, 0, 7);
     case ViewId::PRISON: return Tile(6, 2, 1);
-    case ViewId::BED: return Tile(1, 2, 7, true);
+    case ViewId::BED: return Tile(1, 4, 7, true);
     case ViewId::TORCH: return Tile(13, 1, 2, true).setTranslucent(0.35);
     case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
     case ViewId::ALTAR: return Tile(2, 7, 2, true);
     case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, true);
     case ViewId::IMPALED_HEAD: return Tile(10, 10, 2, true);
-    case ViewId::TRAINING_DUMMY: return Tile(3, 3, 7, true);
-    case ViewId::LIBRARY: return Tile(3, 2, 7, true);
-    case ViewId::LABORATORY: return Tile(3, 1, 7, true);
-    case ViewId::ANIMAL_TRAP: return Tile(3, 8, 2, true);
-    case ViewId::WORKSHOP: return Tile(9, 4, 2, true);
-    case ViewId::GRAVE: return Tile(1, 1, 7, true);
+    case ViewId::TRAINING_DUMMY: return Tile(2, 4, 7, true).addConnection(Tile::allDirs, 3, 4);
+    case ViewId::LIBRARY: return Tile(0, 3, 7, true).addConnection(Tile::allDirs, 1, 3);
+    case ViewId::LABORATORY: return Tile(1, 2, 7, true);
+    case ViewId::ANIMAL_TRAP: return Tile(3, 2, 7, true);
+    case ViewId::WORKSHOP: return Tile(1, 5, 7, true);
+    case ViewId::GRAVE: return Tile(3, 1, 7, true);
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
     case ViewId::BORDER_GUARD: return Tile(' ', white);
     case ViewId::LEATHER_ARMOR: return Tile(0, 12, 3);

@@ -181,7 +181,7 @@ void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSp
   if (tile.hasSpriteCoord()) {
     int sz = Renderer::tileSize[tile.getTexNum()];
     int of = (Renderer::nominalSize - sz) / 2;
-    Vec2 coord = tile.getSpriteCoord();
+    Vec2 coord = tile.getSpriteCoord(Tile::allDirs);
     drawSprite(x, y + of, coord.x * sz, coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()],
         sz * scale, sz * scale);
   } else
