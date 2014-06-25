@@ -192,6 +192,9 @@ class Level {
     /** Puts a creatue on a given square. If the square is later changed to something else, the creature remains.*/
     void putCreature(Vec2, PCreature);
 
+    /** Puts items on a given square. If the square is later changed to something else, the items remain.*/
+    void putItems(Vec2, vector<PItem> items);
+
     /** Sets the message displayed when the player first enters the level.*/
     void setMessage(const string& message);
 
@@ -246,6 +249,7 @@ class Level {
     Table<unordered_set<SquareAttrib>> attrib;
     Table<SquareType> type;
     vector<PCreature> creatures;
+    Table<vector<PItem>> items;
     string entryMessage;
     string name;
     vector<Vec2::LinearMap> mapStack;

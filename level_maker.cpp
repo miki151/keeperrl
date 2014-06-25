@@ -395,7 +395,7 @@ class Items : public LevelMaker {
       do {
         pos = Vec2(Random.getRandom(area.getPX(), area.getKX()), Random.getRandom(area.getPY(), area.getKY()));
       } while (builder->getType(pos) != onType);
-      builder->getSquare(pos)->dropItems(factory.random());
+      builder->putItems(pos, factory.random());
     }
   }
 

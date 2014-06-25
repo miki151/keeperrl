@@ -411,7 +411,7 @@ vector<Square*> Level::getTickingSquares() const {
 Level::Builder::Builder(int width, int height, const string& n, bool covered)
   : squares(width, height), heightMap(width, height, 0),
     coverInfo(width, height, {covered, covered ? 0.0 : 1.0}), attrib(width, height),
-    type(width, height, SquareType(0)), name(n) {
+    type(width, height, SquareType(0)), items(width, height), name(n) {
 }
 
 bool Level::Builder::hasAttrib(Vec2 posT, SquareAttrib attr) {
@@ -478,6 +478,12 @@ void Level::Builder::putCreature(Vec2 pos, PCreature creature) {
   creatures.push_back(NOTNULL(std::move(creature)));
 }
 
+void Level::Builder::putItems(Vec2 posT, vector<PItem> it) {
+  Vec2 pos = transform(posT);
+  CHECK(squares[pos]->canEnterEmpty(Creature::getDefault()));
+  append(items[pos], std::move(it));
+}
+
 bool Level::Builder::canPutCreature(Vec2 posT, Creature* c) {
   Vec2 pos = transform(posT);
   if (!squares[pos]->canEnter(c))
@@ -496,8 +502,10 @@ void Level::Builder::setMessage(const string& message) {
 PLevel Level::Builder::build(Model* m, LevelMaker* maker) {
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
-  for (Vec2 v : heightMap.getBounds())
+  for (Vec2 v : heightMap.getBounds()) {
     squares[v]->setHeight(heightMap[v]);
+    squares[v]->dropItems(std::move(items[v]));
+  }
   PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo)));
   for (PCreature& c : creatures) {
     Vec2 pos = c->getPosition();
