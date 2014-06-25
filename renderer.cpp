@@ -60,7 +60,7 @@ namespace colors {
 }
 
 vector<Texture> Renderer::tiles;
-const vector<int> Renderer::tileSize { 36, 36, 36, 24, 36, 36 };
+const vector<int> Renderer::tileSize { 36, 36, 36, 24, 36, 36, 36, 36 };
 const int Renderer::nominalSize = 36;
 
 int Renderer::getTextLength(string s) {

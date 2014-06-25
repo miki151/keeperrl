@@ -116,7 +116,7 @@ static Tile getSprite(ViewId id) {
     case ViewId::IMP: return Tile(18, 19);
     case ViewId::PRISONER: return Tile(18, 8);
     case ViewId::BILE_DEMON: return Tile(8, 14);
-    case ViewId::CHICKEN: return Tile(18, 1);
+    case ViewId::CHICKEN: return Tile(4, 0, 7);
     case ViewId::DWARF: return Tile(2, 6);
     case ViewId::DWARF_BARON: return Tile(3, 6);
     case ViewId::DWARVEN_SHOPKEEPER: return Tile(4, 2);
@@ -141,9 +141,9 @@ static Tile getSprite(ViewId id) {
                                   .addConnection({Dir::E, Dir::S, Dir::SE}, 18, 9)
                                   .addConnection({Dir::N, Dir::W, Dir::NW}, 20, 11)
                                   .addConnection({Dir::N, Dir::E, Dir::NE}, 18, 11);*/
-    case ViewId::GOLD_ORE: return Tile(0, 16, 1);
-    case ViewId::IRON_ORE: return Tile(0, 17, 1);
-    case ViewId::STONE: return Tile(1, 17, 1);
+    case ViewId::GOLD_ORE: return Tile(9, 0, 7);
+    case ViewId::IRON_ORE: return Tile(9, 1, 7);
+    case ViewId::STONE: return Tile(11, 0, 7);
     case ViewId::SNOW: return Tile(16, 2, 2, true);
     case ViewId::HILL: return Tile(3, 13, 2);
     case ViewId::WOOD_WALL: return getWallTile(4);
@@ -168,7 +168,7 @@ static Tile getSprite(ViewId id) {
     case ViewId::STATUE1: return Tile(6, 5, 2, true);
     case ViewId::STATUE2: return Tile(7, 5, 2, true);
     case ViewId::GREAT_GOBLIN: return Tile(6, 14);
-    case ViewId::GOBLIN: return Tile(5, 14);
+    case ViewId::GOBLIN: return Tile(4, 2, 7);
     case ViewId::BANDIT: return Tile(0, 2);
     case ViewId::GHOST: return Tile(6, 16).setTranslucent(0.5);
     case ViewId::SPIRIT: return Tile(17, 14);
@@ -198,16 +198,16 @@ static Tile getSprite(ViewId id) {
     case ViewId::MUMMY_LORD: return Tile(8, 16);
     case ViewId::ACID_MOUND: return Tile(1, 12);
     case ViewId::JACKAL: return Tile(12, 12);
-    case ViewId::DEER: return Tile(18, 4);
-    case ViewId::HORSE: return Tile(18, 2);
-    case ViewId::COW: return Tile(18, 3);
+    case ViewId::DEER: return Tile(6, 0, 7);
+    case ViewId::HORSE: return Tile(5, 1, 7);
+    case ViewId::COW: return Tile(5, 0, 7);
     case ViewId::SHEEP: return Tile('s', white);
-    case ViewId::PIG: return Tile(18, 5);
-    case ViewId::GOAT: return Tile(18, 9);
+    case ViewId::PIG: return Tile(6, 1, 7);
+    case ViewId::GOAT: return Tile(4, 1, 7);
     case ViewId::BOAR: return Tile(18, 6);
     case ViewId::FOX: return Tile(13, 12);
     case ViewId::WOLF: return Tile(14, 12);
-    case ViewId::DOG: return Tile(18, 10);
+    case ViewId::DOG: return Tile(7, 0, 7);
     case ViewId::VODNIK: return Tile('f', green);
     case ViewId::KRAKEN: return Tile(7, 19);
     case ViewId::DEATH: return Tile(9, 16);
@@ -216,7 +216,7 @@ static Tile getSprite(ViewId id) {
     case ViewId::FIRE_SPHERE: return Tile(16, 20);
     case ViewId::BEAR: return Tile(8, 18);
     case ViewId::BAT: return Tile(2, 12);
-    case ViewId::GNOME: return Tile(13, 8);
+    case ViewId::GNOME: return Tile(7, 1, 7);
     case ViewId::LEPRECHAUN: return Tile(16, 8);
     case ViewId::RAT: return Tile(7, 12);
     case ViewId::SPIDER: return Tile(6, 12);
@@ -274,7 +274,7 @@ static Tile getSprite(ViewId id) {
     case ViewId::SLIMY_MUSHROOM: return Tile(5, 4, 3);
     case ViewId::FOUNTAIN: return Tile(0, 7, 2, true);
     case ViewId::GOLD: return Tile(8, 3, 3, true);
-    case ViewId::CHEST: return Tile(3, 3, 2, true);
+    case ViewId::CHEST: return Tile(3, 0, 7, true);
     case ViewId::OPENED_CHEST: return Tile(6, 3, 2, true);
     case ViewId::COFFIN: return Tile(7, 3, 2, true);
     case ViewId::OPENED_COFFIN: return Tile(8, 3, 2, true);
@@ -289,22 +289,22 @@ static Tile getSprite(ViewId id) {
     case ViewId::ROCK: return Tile(6, 1, 3);
     case ViewId::IRON_ROCK: return Tile(10, 1, 3);
     case ViewId::WOOD_PLANK: return Tile(7, 10, 2);
-    case ViewId::STOCKPILE1: return Tile(2, 17, 1);
-    case ViewId::STOCKPILE2: return Tile(3, 17, 1);
-    case ViewId::STOCKPILE3: return Tile(4, 17, 1);
+    case ViewId::STOCKPILE1: return Tile(1, 0, 7);
+    case ViewId::STOCKPILE2: return Tile(1, 0, 7);
+    case ViewId::STOCKPILE3: return Tile(1, 0, 7);
     case ViewId::PRISON: return Tile(6, 2, 1);
-    case ViewId::BED: return Tile(5, 4, 2, true);
+    case ViewId::BED: return Tile(1, 2, 7, true);
     case ViewId::TORCH: return Tile(13, 1, 2, true).setTranslucent(0.35);
     case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
     case ViewId::ALTAR: return Tile(2, 7, 2, true);
     case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, true);
     case ViewId::IMPALED_HEAD: return Tile(10, 10, 2, true);
-    case ViewId::TRAINING_DUMMY: return Tile(0, 5, 2, true);
-    case ViewId::LIBRARY: return Tile(2, 4, 2, true);
-    case ViewId::LABORATORY: return Tile(2, 5, 2, true);
+    case ViewId::TRAINING_DUMMY: return Tile(3, 3, 7, true);
+    case ViewId::LIBRARY: return Tile(3, 2, 7, true);
+    case ViewId::LABORATORY: return Tile(3, 1, 7, true);
     case ViewId::ANIMAL_TRAP: return Tile(3, 8, 2, true);
     case ViewId::WORKSHOP: return Tile(9, 4, 2, true);
-    case ViewId::GRAVE: return Tile(0, 0, 2, true);
+    case ViewId::GRAVE: return Tile(1, 1, 7, true);
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
     case ViewId::BORDER_GUARD: return Tile(' ', white);
     case ViewId::LEATHER_ARMOR: return Tile(0, 12, 3);
@@ -318,7 +318,7 @@ static Tile getSprite(ViewId id) {
     case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
     case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
     case ViewId::FALLEN_TREE: return Tile(26, 3, 2, true);
-    case ViewId::GUARD_POST: return Tile(L'⚐', yellow, true);
+    case ViewId::GUARD_POST: return Tile(0, 0, 7);
     case ViewId::DESTROY_BUTTON: return Tile('X', red);
     case ViewId::MANA: return Tile(5, 10, 2);
     case ViewId::DANGER: return Tile(12, 9, 2);

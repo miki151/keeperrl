@@ -105,30 +105,15 @@ void WindowView::initialize() {
   renderer.initialize(1024, 600, "KeeperRL");
   Clock::set(new Clock());
   renderThreadId = std::this_thread::get_id();
-  Image tileImage;
-  tilesOk &= tileImage.loadFromFile("tiles_int.png");
-  Image tileImage2;
-  tilesOk &= tileImage2.loadFromFile("tiles2_int.png");
-  Image tileImage3;
-  tilesOk &= tileImage3.loadFromFile("tiles3_int.png");
-  Image tileImage4;
-  tilesOk &= tileImage4.loadFromFile("tiles4_int.png");
-  Image tileImage5;
-  tilesOk &= tileImage5.loadFromFile("tiles5_int.png");
-  Image tileImage6;
-  tilesOk &= tileImage6.loadFromFile("tiles6_int.png");
-  Image tileImage7;
-  tilesOk &= tileImage7.loadFromFile("tiles7_int.png");
-  if (tilesOk) {
-    Renderer::tiles.resize(7);
-    Renderer::tiles[0].loadFromImage(tileImage);
-    Renderer::tiles[1].loadFromImage(tileImage2);
-    Renderer::tiles[2].loadFromImage(tileImage3);
-    Renderer::tiles[3].loadFromImage(tileImage4);
-    Renderer::tiles[4].loadFromImage(tileImage5);
-    Renderer::tiles[5].loadFromImage(tileImage6);
-    Renderer::tiles[6].loadFromImage(tileImage7);
-  }
+  Renderer::tiles.resize(8);
+  tilesOk &= Renderer::tiles[0].loadFromFile("tiles_int.png");
+  tilesOk &= Renderer::tiles[1].loadFromFile("tiles2_int.png");
+  tilesOk &= Renderer::tiles[2].loadFromFile("tiles3_int.png");
+  tilesOk &= Renderer::tiles[3].loadFromFile("tiles4_int.png");
+  tilesOk &= Renderer::tiles[4].loadFromFile("tiles5_int.png");
+  tilesOk &= Renderer::tiles[5].loadFromFile("tiles6_int.png");
+  tilesOk &= Renderer::tiles[6].loadFromFile("tiles7_int.png");
+  tilesOk &= Renderer::tiles[7].loadFromFile("shroom.png");
   asciiLayouts = {
     MapLayout(16, 20, allLayers),
     MapLayout(8, 10,
