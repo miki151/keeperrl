@@ -163,7 +163,7 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
         Nothing(), "", 's'),
     BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, Nothing(), ""),
     BuildInfo({SquareType::BED, {ResourceId::WOOD, 10}, "Bed"}, Nothing(), "", 'b'),
-    BuildInfo({SquareType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
+    BuildInfo({SquareType::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
     BuildInfo({SquareType::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
     BuildInfo({SquareType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY, "", 'r'),
     BuildInfo({SquareType::WORKSHOP, {ResourceId::IRON, 15}, "Workshop"}, TechId::CRAFTING, "", 'w'),
@@ -279,7 +279,7 @@ struct MinionTaskInfo {
 };
 map<MinionTask, MinionTaskInfo> taskInfo {
     {MinionTask::LABORATORY, {SquareType::LABORATORY, "lab", Collective::Warning::LABORATORY}},
-    {MinionTask::TRAIN, {SquareType::TRAINING_DUMMY, "training", Collective::Warning::TRAINING}},
+    {MinionTask::TRAIN, {SquareType::TRAINING_ROOM, "training", Collective::Warning::TRAINING}},
     {MinionTask::WORKSHOP, {SquareType::WORKSHOP, "crafting", Collective::Warning::WORKSHOP}},
     {MinionTask::SLEEP, {SquareType::BED, "sleeping", Collective::Warning::BEDS}},
     {MinionTask::GRAVE, {SquareType::GRAVE, "sleeping", Collective::Warning::GRAVES}},
@@ -1267,7 +1267,7 @@ ViewIndex Collective::getViewIndex(Vec2 pos) const {
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
   if (hasEfficiency(pos)) {
     double efficiency = getEfficiency(pos);
-    index.addHighlight(HighlightType::EFFICIENCY, efficiency);
+    //index.addHighlight(HighlightType::EFFICIENCY, efficiency);
     index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY, efficiency);
   }
   return index;
@@ -1704,7 +1704,7 @@ void Collective::addKnownTile(Vec2 pos) {
 }
 
 const static set<SquareType> efficiencySquares {
-  SquareType::TRAINING_DUMMY,
+  SquareType::TRAINING_ROOM,
   SquareType::WORKSHOP,
   SquareType::LIBRARY,
   SquareType::LABORATORY,
@@ -1771,22 +1771,22 @@ void Collective::onAppliedSquare(Vec2 pos) {
     if (c == keeper)
       mana += getEfficiency(pos) * (0.3 + max(0., 2 - (mana + double(getDangerLevel(false))) / 700));
     else {
-      if (Random.roll(60 / getEfficiency(pos)))
+      if (Random.rollD(60.0 / getEfficiency(pos)))
         c->addSpell(chooseRandom(keeper->getSpells()).id);
     }
   }
-  if (mySquares.at(SquareType::TRAINING_DUMMY).count(pos)) {
+  if (mySquares.at(SquareType::TRAINING_ROOM).count(pos)) {
     double lev1 = 0.03;
     double lev10 = 0.01;
     c->increaseExpLevel(getEfficiency(pos) * (lev1 - double(c->getExpLevel() - 1) * (lev1 - lev10) / 9.0  ));
   }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
-    if (Random.roll(30 / getEfficiency(pos))) {
+    if (Random.rollD(30.0 / getEfficiency(pos))) {
       level->getSquare(pos)->dropItems(ItemFactory::laboratory(technologies).random());
       Statistics::add(StatId::POTION_PRODUCED);
     }
   if (mySquares.at(SquareType::WORKSHOP).count(pos))
-    if (Random.roll(40 / getEfficiency(pos))) {
+    if (Random.rollD(40.0 / getEfficiency(pos))) {
       set<TrapType> neededTraps = getNeededTraps();
       vector<PItem> items;
       for (int i : Range(10)) {
@@ -2601,27 +2601,30 @@ const double lightBase = 0.5;
 const double flattenVal = 0.8;
 
 double Collective::getEfficiency(Vec2 pos) const {
-  return min(1.0, squareEfficiency.at(pos) * (lightBase + level->getLight(pos) * (1 - lightBase)) / flattenVal);
+  if (squareEfficiency.at(pos) == 8)
+    return min(1.0, (lightBase + level->getLight(pos) * (1 - lightBase)) / flattenVal);
+  else
+    return 0;
 }
 
 const double sizeBase = 0.5;
 
 void Collective::updateEfficiency(Vec2 pos, SquareType type) {
   if (mySquares.at(type).count(pos)) {
-    squareEfficiency[pos] = sizeBase;
+    squareEfficiency[pos] = 0;
     for (Vec2 v : pos.neighbors8())
       if (mySquares.at(type).count(v)) {
-        squareEfficiency[pos] += (1 - sizeBase) / 8;
-        squareEfficiency[v] += (1 - sizeBase) / 8;
-        CHECK(squareEfficiency[v] >=0 && squareEfficiency[v] <= 1);
-        CHECK(squareEfficiency[pos] >=0 && squareEfficiency[pos] <= 1);
+        ++squareEfficiency[pos];
+        ++squareEfficiency[v];
+        CHECK(squareEfficiency[v] <= 8);
+        CHECK(squareEfficiency[pos] <= 8);
       }
   } else {
     squareEfficiency.erase(pos);
     for (Vec2 v : pos.neighbors8())
       if (mySquares.at(type).count(v)) {
-        squareEfficiency[v] -= (1 - sizeBase) / 8;
-        CHECK(squareEfficiency[v] >=0 && squareEfficiency[v] <= 1);
+        --squareEfficiency[v];
+        CHECK(squareEfficiency[v] >=0);
       }
   }
 }

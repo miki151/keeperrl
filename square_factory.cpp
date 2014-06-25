@@ -807,7 +807,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", Vision::get(VisionId::NORMAL),
             false, 0, 0, 
             {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
-            {SquareType::TRAINING_DUMMY, 10}, {SquareType::LIBRARY, 10},
+            {SquareType::TRAINING_ROOM, 10}, {SquareType::LIBRARY, 10},
             {SquareType::STOCKPILE, 1}, {SquareType::STOCKPILE_EQUIP, 1}, {SquareType::STOCKPILE_RES, 1},
             {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10}, {SquareType::PRISON, 10},
             {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::ANIMAL_TRAP, 10},
@@ -932,8 +932,8 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::ANIMAL_TRAP:
         return new Furniture(ViewObject(ViewId::ANIMAL_TRAP, ViewLayer::FLOOR, "Animal cage"), 
             "animal trap", 0.3);
-    case SquareType::TRAINING_DUMMY:
-        return new TrainingDummy(ViewObject(ViewId::TRAINING_DUMMY, ViewLayer::FLOOR, "Training post"), 
+    case SquareType::TRAINING_ROOM:
+        return new TrainingDummy(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training post"), 
             "training post");
     case SquareType::IMPALED_HEAD:
         return new Square(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head")

@@ -90,6 +90,10 @@ bool RandomGen::roll(int chance) {
   return getRandom(chance) == 0;
 }
 
+bool RandomGen::rollD(double chance) {
+  return getDouble(0, chance) <= 1;
+}
+
 double RandomGen::getDouble() {
   return defaultDist(generator);
 }

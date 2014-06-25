@@ -28,45 +28,32 @@ class Tile {
   String text;
   bool symFont = false;
   double translucent = 0;
-  bool stickingOut = false;
-  Tile(sf::Uint32 ch, Color col, bool sym = false) : color(col), text(ch), symFont(sym) {
-  }
-  Tile(int x, int y, int num = 0, bool _stickingOut = false) : stickingOut(_stickingOut),tileCoord(Vec2(x, y)), 
-      texNum(num) {}
+  bool noShadow = false;
+  Tile(sf::Uint32 ch, Color col, bool sym = false);
+  
+  Tile(int x, int y, int num = 0, bool noShadow = false);
 
-  Tile& addConnection(set<Dir> c, int x, int y) {
-    connections.insert({c, Vec2(x, y)});
-    return *this;
-  }
+  Tile& addConnection(set<Dir> c, int x, int y);
 
-  Tile& setTranslucent(double v) {
-    translucent = v;
-    return *this;
-  }
+  Tile& addBackground(int x, int y);
 
-  bool hasSpriteCoord() {
-    return tileCoord;
-  }
+  Tile& setTranslucent(double v);
 
-  Vec2 getSpriteCoord() {
-    return *tileCoord;
-  }
+  bool hasSpriteCoord();
 
-  Vec2 getSpriteCoord(const set<Dir>& c) {
-    if (connections.count(c))
-      return connections.at(c);
-    else return *tileCoord;
-  }
+  Vec2 getSpriteCoord();
 
-  int getTexNum() {
-    CHECK(tileCoord) << "Not a sprite tile";
-    return texNum;
-  }
+  Optional<Vec2> getBackgroundCoord();
+
+  Vec2 getSpriteCoord(const set<Dir>& c);
+
+  int getTexNum();
 
   const static set<Dir> allDirs;
 
   private:
   Optional<Vec2> tileCoord;
+  Optional<Vec2> backgroundCoord;
   int texNum = 0;
   unordered_map<set<Dir>, Vec2> connections;
 };

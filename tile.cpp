@@ -20,6 +20,50 @@ using namespace colors;
 
 const set<Dir> Tile::allDirs {Dir::N, Dir::E, Dir::S, Dir::W, Dir::NE, Dir::SE, Dir::SW, Dir::NW};
 
+Tile::Tile(sf::Uint32 ch, Color col, bool sym) : color(col), text(ch), symFont(sym) {
+}
+
+Tile::Tile(int x, int y, int num, bool _noShadow)
+    : noShadow(_noShadow),tileCoord(Vec2(x, y)), texNum(num) {}
+
+Tile& Tile::addConnection(set<Dir> c, int x, int y) {
+  connections.insert({c, Vec2(x, y)});
+  return *this;
+}
+
+Tile& Tile::addBackground(int x, int y) {
+  backgroundCoord = Vec2(x, y);
+  return *this;
+}
+
+Tile& Tile::setTranslucent(double v) {
+  translucent = v;
+  return *this;
+}
+
+bool Tile::hasSpriteCoord() {
+  return tileCoord;
+}
+
+Vec2 Tile::getSpriteCoord() {
+  return *tileCoord;
+}
+
+Optional<Vec2> Tile::getBackgroundCoord() {
+  return backgroundCoord;
+}
+
+Vec2 Tile::getSpriteCoord(const set<Dir>& c) {
+  if (connections.count(c))
+    return connections.at(c);
+  else return *tileCoord;
+}
+
+int Tile::getTexNum() {
+  CHECK(tileCoord) << "Not a sprite tile";
+  return texNum;
+}
+
 Tile getSpecialCreature(const ViewObject& obj, bool humanoid) {
   RandomGen r;
   r.init(hash<string>()(obj.getBareDescription()));
@@ -291,11 +335,11 @@ static Tile getSprite(ViewId id) {
     case ViewId::ALTAR: return Tile(2, 7, 2, true);
     case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, true);
     case ViewId::IMPALED_HEAD: return Tile(10, 10, 2, true);
-    case ViewId::TRAINING_DUMMY: return Tile(2, 4, 7, true).addConnection(Tile::allDirs, 3, 4);
-    case ViewId::LIBRARY: return Tile(0, 3, 7, true).addConnection(Tile::allDirs, 1, 3);
-    case ViewId::LABORATORY: return Tile(1, 2, 7, true);
+    case ViewId::TRAINING_ROOM: return Tile(10, 1, 7, true).addConnection(Tile::allDirs, 3, 4).addBackground(2, 4);
+    case ViewId::LIBRARY: return Tile(10, 1, 7, true).addConnection(Tile::allDirs, 1, 3).addBackground(0, 3);
+    case ViewId::LABORATORY: return Tile(10, 1, 7, true).addConnection(Tile::allDirs, 1, 2).addBackground(0, 2);
     case ViewId::ANIMAL_TRAP: return Tile(3, 2, 7, true);
-    case ViewId::WORKSHOP: return Tile(1, 5, 7, true);
+    case ViewId::WORKSHOP: return Tile(10, 1, 7, true).addConnection(Tile::allDirs, 1, 5).addBackground(0, 5);
     case ViewId::GRAVE: return Tile(3, 1, 7, true);
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
     case ViewId::BORDER_GUARD: return Tile(' ', white);
@@ -525,7 +569,7 @@ static Tile getAscii(ViewId id) {
     case ViewId::ALTAR: return Tile(L'Ω', white);
     case ViewId::TORTURE_TABLE: return Tile('=', gray);
     case ViewId::IMPALED_HEAD: return Tile(L'𐌒', brown);
-    case ViewId::TRAINING_DUMMY: return Tile(L'‡', brown, true);
+    case ViewId::TRAINING_ROOM: return Tile(L'‡', brown, true);
     case ViewId::LIBRARY: return Tile(L'▤', brown, true);
     case ViewId::LABORATORY: return Tile(L'ω', purple, true);
     case ViewId::ANIMAL_TRAP: return Tile(L'▥', lightGray, true);

@@ -79,8 +79,9 @@ enum class ConnectionId {
   WATER,
   MOUNTAIN2,
   LIBRARY,
-  TRAINING_POST,
+  TRAINING_ROOM,
   WORKSHOP,
+  LABORATORY,
 };
 
 unordered_map<Vec2, ConnectionId> floorIds;
@@ -103,7 +104,9 @@ Optional<ConnectionId> getConnectionId(const ViewObject& object) {
     case ViewId::WATER: return ConnectionId::WATER;
     case ViewId::MOUNTAIN2: return ConnectionId::MOUNTAIN2;
     case ViewId::LIBRARY: return ConnectionId::LIBRARY;
-    case ViewId::TRAINING_POST: return ConnectionId::TRAINING_POST;
+    case ViewId::TRAINING_ROOM: return ConnectionId::TRAINING_ROOM;
+    case ViewId::WORKSHOP: return ConnectionId::WORKSHOP;
+    case ViewId::LABORATORY: return ConnectionId::LABORATORY;
     default: return Nothing();
   }
 }
@@ -113,7 +116,9 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
   static vector<Vec2> v8 = Vec2::directions8();
   switch (id) {
     case ViewId::LIBRARY:
-    case ViewId::TRAINING_DUMMY: return v8;
+    case ViewId::WORKSHOP:
+    case ViewId::LABORATORY:
+    case ViewId::TRAINING_ROOM: return v8;
     default: return v4;
   }
 }
@@ -203,10 +208,13 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
         renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize, 22 * Renderer::nominalSize, Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[0], width, height);
         moveY = -6;
       }
+      if (auto background = tile.getBackgroundCoord())
+        renderer.drawSprite(x + off, y + off, background->x * sz,
+            background->y * sz, sz, sz, Renderer::tiles[tile.getTexNum()], width, height, color);
       renderer.drawSprite(x + off, y + moveY + off, coord.x * sz,
           coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()], width, height, color);
       if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
-          shadowed.count(tilePos) && !tile.stickingOut)
+          shadowed.count(tilePos) && !tile.noShadow)
         renderer.drawSprite(x, y, 1 * Renderer::nominalSize, 21 * Renderer::nominalSize, Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[5], width, height);
       if (object.getAttribute(ViewObject::Attribute::BURNING) > 0) {
         renderer.drawSprite(x, y, Random.getRandom(10, 12) * Renderer::nominalSize, 0 * Renderer::nominalSize,

@@ -264,6 +264,7 @@ class RandomGen {
   double getDouble();
   double getDouble(double a, double b);
   bool roll(int chance);
+  bool rollD(double chance);
 
   private:
   void makeShuffle(string id, int min, int max);
