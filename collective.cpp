@@ -1631,7 +1631,7 @@ void Collective::handleSelection(Vec2 pos, const BuildInfo& building, bool recta
         break;
     case BuildInfo::FETCH:
         for (ItemFetchInfo elem : getFetchInfo())
-          fetchItems(pos, elem);
+          fetchItems(pos, elem, true);
         break;
     case BuildInfo::IMPALED_HEAD:
     case BuildInfo::SQUARE:
@@ -2046,8 +2046,9 @@ static Vec2 chooseRandomClose(Vec2 start, const vector<Vec2>& squares) {
   return chooseRandom(close);
 }
 
-void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem) {
-  if (isDelayed(pos) || (traps.count(pos) && traps.at(pos).type == TrapType::BOULDER && traps.at(pos).armed == true))
+void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed) {
+  if ((isDelayed(pos) && !ignoreDelayed) 
+      || (traps.count(pos) && traps.at(pos).type == TrapType::BOULDER && traps.at(pos).armed == true))
     return;
   for (SquareType type : elem.destination)
     if (mySquares[type].count(pos))

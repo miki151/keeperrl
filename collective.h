@@ -235,7 +235,7 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
   };
 
   vector<ItemFetchInfo> getFetchInfo() const;
-  void fetchItems(Vec2 pos, ItemFetchInfo);
+  void fetchItems(Vec2 pos, ItemFetchInfo, bool ignoreDelayed = false);
 
   vector<Technology*> SERIAL(technologies);
   bool hasTech(TechId id) const;
