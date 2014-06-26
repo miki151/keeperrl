@@ -217,11 +217,11 @@ class LastingEffectItem : public Item {
       : Item(obj, attr), effect(e) {}
 
   virtual void onEquipSpecial(Creature* c) {
-    c->addEffect(effect, 1000000);
+    c->addPermanentEffect(effect);
   }
 
   virtual void onUnequipSpecial(Creature* c) {
-    c->removeEffect(effect, 1000000);
+    c->removePermanentEffect(effect);
   }
 
   template <class Archive> 
@@ -624,11 +624,12 @@ ItemFactory ItemFactory::laboratory(const vector<Technology*>& techs) {
   ItemFactory factory({
       {ItemId::HEALING_POTION, 1 },
       {ItemId::SLEEP_POTION, 1 },
-      {ItemId::SLOW_POTION, 1 }});
+      {ItemId::SLOW_POTION, 1 },
+      {ItemId::POISON_RESIST_POTION, 1 }});
   if (contains(techs, Technology::get(TechId::ALCHEMY_ADV))) {
     factory.addItem({ItemId::BLINDNESS_POTION, 1 });
     factory.addItem({ItemId::INVISIBLE_POTION, 1 });
-    factory.addItem({ItemId::POISON_RESIST_POTION, 1 });
+    factory.addItem({ItemId::LEVITATION_POTION, 1 });
     factory.addItem({ItemId::POISON_POTION, 1 });
     factory.addItem({ItemId::SPEED_POTION, 1 });
   }
@@ -644,6 +645,7 @@ ItemFactory ItemFactory::potions() {
       {ItemId::INVISIBLE_POTION, 1 },
       {ItemId::POISON_POTION, 1 },
       {ItemId::POISON_RESIST_POTION, 1 },
+      {ItemId::LEVITATION_POTION, 1 },
       {ItemId::SPEED_POTION, 1 }});
 }
 
@@ -711,6 +713,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::INVISIBLE_POTION, 10 },
       {ItemId::POISON_POTION, 20 },
       {ItemId::POISON_RESIST_POTION, 20 },
+      {ItemId::LEVITATION_POTION, 20 },
       {ItemId::FIRST_AID_KIT, 30 }});
 }
 
@@ -1111,6 +1114,8 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::POISON_POTION: return getPotion(6, "poison", EffectType::POISON, 100, "Poisons.");
     case ItemId::POISON_RESIST_POTION: return getPotion(7, "poison resistance", EffectType::POISON_RESISTANCE, 100,
                                            "Makes one resistant to all poisons.");
+    case ItemId::LEVITATION_POTION: return getPotion(0, "levitation", EffectType::LEVITATION, 130,
+                                        "Makes one levitate for some time.");
     case ItemId::PANIC_MUSHROOM: return getMushroom("panic", EffectType::PANIC,
                                      "Makes the one who ate it favor defensive actions over offensive.");
     case ItemId::RAGE_MUSHROOM: return getMushroom("rage", EffectType::RAGE,

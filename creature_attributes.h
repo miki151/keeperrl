@@ -90,8 +90,7 @@ class CreatureAttributes {
     {6, Skill::get(SkillId::KNIFE_THROWING)}};
   SERIAL3(skillGain);
   vector<SpellInfo> SERIAL(spells);
-  EnumMap<LastingEffect, double> SERIAL(lastingEffects);
-  void addPermanentEffect(LastingEffect);
+  EnumMap<LastingEffect, int> SERIAL(permanentEffects);
 };
 
 #endif

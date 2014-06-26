@@ -63,12 +63,9 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(skills)
     & SVAR(skillGain)
     & SVAR(spells)
-    & SVAR(lastingEffects);
+    & SVAR(permanentEffects);
   CHECK_SERIAL;
 }
 
 SERIALIZABLE(CreatureAttributes);
 
-void CreatureAttributes::addPermanentEffect(LastingEffect eff) {
-  lastingEffects[eff] = 1000000;
-}

@@ -98,7 +98,12 @@ class Heal : public Behaviour {
         if (creature->isFriend(other))
           if (auto action = creature->heal(v))
             return {0.5, action};
-    if (!creature->isHumanoid() || creature->getHealth() == 1)
+    if (!creature->isHumanoid())
+      return NoMove;
+    if (creature->isAffected(LastingEffect::POISON))
+      if (MoveInfo move = tryToApplyItem(EffectType::POISON_RESISTANCE, 1))
+        return move;
+    if (creature->getHealth() == 1)
       return NoMove;
     if (MoveInfo move = tryToApplyItem(EffectType::HEAL, 1))
       return move.setValue(min(1.0, 1.5 - creature->getHealth()));

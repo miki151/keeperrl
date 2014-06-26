@@ -413,6 +413,7 @@ static vector<ItemId> marketItems {
   ItemId::INVISIBLE_POTION,
   ItemId::POISON_POTION,
   ItemId::POISON_RESIST_POTION,
+  ItemId::LEVITATION_POTION,
   ItemId::SLOW_POTION,
   ItemId::SPEED_POTION,
   ItemId::WARNING_AMULET,

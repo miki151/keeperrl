@@ -265,7 +265,10 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   void addEffect(LastingEffect, double time, bool msg = true);
   void removeEffect(LastingEffect, bool msg = true);
+  void addPermanentEffect(LastingEffect, bool msg = true);
+  void removePermanentEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
+  bool isAffectedPermanently(LastingEffect) const;
 
   vector<AttackLevel> getAttackLevels() const;
 
@@ -327,6 +330,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   int SERIAL2(points, 0);
   Sectors* SERIAL2(sectors, nullptr);
   int SERIAL2(numAttacksThisTurn, 0);
+  EnumMap<LastingEffect, double> SERIAL(lastingEffects);
 };
 
 struct SpellInfo {

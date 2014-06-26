@@ -73,7 +73,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(difficultyPoints)
     & SVAR(points)
     & SVAR(sectors)
-    & SVAR(numAttacksThisTurn);
+    & SVAR(numAttacksThisTurn)
+    & SVAR(lastingEffects);
   CHECK_SERIAL;
 }
 
@@ -825,18 +826,36 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
 
 void Creature::addEffect(LastingEffect effect, double time, bool msg) {
   if (lastingEffects[effect] < getTime() + time && affects(effect)) {
+    if (!isAffected(effect))
+      onAffected(effect, msg);
     lastingEffects[effect] = getTime() + time;
-    onAffected(effect, msg);
   }
 }
 
 void Creature::removeEffect(LastingEffect effect, bool msg) {
   lastingEffects[effect] = 0;
-  onRemoved(effect, msg);
+  if (!isAffected(effect))
+    onRemoved(effect, msg);
+}
+
+void Creature::addPermanentEffect(LastingEffect effect, bool msg) {
+  if (!isAffected(effect))
+    onAffected(effect, msg);
+  ++permanentEffects[effect];
+}
+
+void Creature::removePermanentEffect(LastingEffect effect, bool msg) {
+  --permanentEffects[effect];
+  if (!isAffected(effect))
+    onRemoved(effect, msg);
 }
 
 bool Creature::isAffected(LastingEffect effect) const {
-  return lastingEffects[effect] >= getTime();
+  return lastingEffects[effect] >= getTime() || permanentEffects[effect] > 0;
+}
+
+bool Creature::isAffectedPermanently(LastingEffect effect) const {
+  return permanentEffects[effect] > 0;
 }
 
 bool Creature::isBlind() const {
@@ -1053,7 +1072,8 @@ void Creature::tick(double realTime) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (lastingEffects[effect] > 0 && lastingEffects[effect] < realTime) {
       lastingEffects[effect] = 0;
-      onTimedOut(effect, true);
+      if (!isAffected(effect))
+        onTimedOut(effect, true);
     }
   if (isAffected(LastingEffect::POISON)) {
     bleed(1.0 / 60);
@@ -1485,7 +1505,7 @@ void Creature::heal(double amount, bool replaceLimbs) {
               you(MsgType::STAND_UP, "");
             }
             if (part == BodyPart::WING)
-              addEffect(LastingEffect::FLYING, 1000000);
+              addPermanentEffect(LastingEffect::FLYING);
             lostBodyParts[part] = 0;
           }
     }
@@ -2143,7 +2163,7 @@ vector<string> Creature::getAdjectives() const {
         case LastingEffect::FLYING: ret.push_back("flying"); break;
         default: addCount = false; break;
       }
-      if (addCount)
+      if (addCount && !isAffectedPermanently(effect))
         ret.back() += "  " + getRemainingString(effect);
     }
   if (isBlind())

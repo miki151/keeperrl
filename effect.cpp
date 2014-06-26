@@ -34,6 +34,8 @@ vector<int> attrBonusTime { 10, 40, 150};
 vector<int> identifyNum { 1, 1, 400};
 vector<int> poisonTime { 200, 60, 20};
 vector<int> stunTime { 200, 60, 20};
+vector<int> resistantTime { 200, 60, 20};
+vector<int> levitateTime { 200, 60, 20};
 vector<double> gasAmount { 0.3, 0.8, 3};
 vector<double> wordOfPowerDist { 1, 3, 10};
 
@@ -112,8 +114,8 @@ static void deception(Creature* c) {
           c.dexterity = 1;
           c.barehandedDamage = 20; // just so it's not ignored by creatures
           c.stationary = true;
-          c.addPermanentEffect(LastingEffect::BLIND);
-          c.addPermanentEffect(LastingEffect::FLYING);
+          c.permanentEffects[LastingEffect::BLIND] = 1;
+          c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noSleep = true;
           c.breathing = false;
           c.uncorporal = true;
@@ -138,7 +140,7 @@ static void leaveBody(Creature* creature) {
           c.barehandedDamage = 20; // just so it's not ignored by creatures
           c.dexterity = 1;
           c.noSleep = true;
-          c.addPermanentEffect(LastingEffect::FLYING);
+          c.permanentEffects[LastingEffect::FLYING] = 1;
           c.breathing = false;
           c.uncorporal = true;
           c.humanoid = false;
@@ -405,8 +407,9 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.getRandom(2, 5), 100); break;
     case EffectType::EMIT_POISON_GAS: emitPoisonGas(c->getLevel(), c->getPosition(), strength, true); break;
     case EffectType::STUN: c->addEffect(LastingEffect::STUNNED, stunTime[strength]); break;
-    case EffectType::POISON_RESISTANCE: c->addEffect(LastingEffect::POISON_RESISTANT, stunTime[strength]); break;
-    case EffectType::FIRE_RESISTANCE: c->addEffect(LastingEffect::FIRE_RESISTANT, stunTime[strength]); break;
+    case EffectType::POISON_RESISTANCE: c->addEffect(LastingEffect::POISON_RESISTANT, resistantTime[strength]); break;
+    case EffectType::FIRE_RESISTANCE: c->addEffect(LastingEffect::FIRE_RESISTANT, resistantTime[strength]); break;
+    case EffectType::LEVITATION: c->addEffect(LastingEffect::FLYING, levitateTime[strength]); break;
   }
 }
 
