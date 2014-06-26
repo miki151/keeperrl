@@ -554,6 +554,9 @@ ItemFactory ItemFactory::armory() {
       {ItemId::LEATHER_BOOTS, 2 },
       {ItemId::SPEED_BOOTS, 0.5 },
       {ItemId::LEVITATION_BOOTS, 0.5 },
+      {ItemId::LEATHER_GLOVES, 2 },
+      {ItemId::STRENGTH_GLOVES, 0.5 },
+      {ItemId::DEXTERITY_GLOVES, 0.5 },
       {ItemId::IRON_BOOTS, 1} });
 }
 
@@ -572,6 +575,9 @@ ItemFactory ItemFactory::goblinShop() {
       {ItemId::IRON_BOOTS, 1 },
       {ItemId::SPEED_BOOTS, 0.3 },
       {ItemId::LEVITATION_BOOTS, 0.3 },
+      {ItemId::LEATHER_GLOVES, 2 },
+      {ItemId::STRENGTH_GLOVES, 0.5 },
+      {ItemId::DEXTERITY_GLOVES, 0.5 },
       {ItemId::PANIC_MUSHROOM, 1 },
       {ItemId::RAGE_MUSHROOM, 1 },
       {ItemId::STRENGTH_MUSHROOM, 1 },
@@ -616,6 +622,7 @@ ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
     factory.addItem({ItemId::LEATHER_ARMOR, 4 });
     factory.addItem({ItemId::LEATHER_HELM, 2 });
     factory.addItem({ItemId::LEATHER_BOOTS, 2 });
+    factory.addItem({ItemId::LEATHER_GLOVES, 2 });
   }
   return factory;
 }
@@ -697,6 +704,9 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::IRON_BOOTS, 7 },
       {ItemId::SPEED_BOOTS, 3 },
       {ItemId::LEVITATION_BOOTS, 3 },
+      {ItemId::LEATHER_GLOVES, 30 },
+      {ItemId::DEXTERITY_GLOVES, 3 },
+      {ItemId::STRENGTH_GLOVES, 3 },
       {ItemId::TELE_SCROLL, 30 },
       {ItemId::PORTAL_SCROLL, 10 },
       {ItemId::IDENTIFY_SCROLL, 30 },
@@ -845,6 +855,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.name = "knife";
             i.plural = "knives";
             i.type = ItemType::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 0.3;
             i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
             i.modifiers[AttrType::TO_HIT] = maybePlusMinusOne(4);
@@ -857,6 +868,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::SPEAR, ViewLayer::ITEM, "Spear"), ITATTR(
             i.name = "spear";
             i.type = ItemType::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1.5;
             i.modifiers[AttrType::DAMAGE] = 10 + maybePlusMinusOne(4);
             i.modifiers[AttrType::TO_HIT] = 2 + maybePlusMinusOne(4);
@@ -867,6 +879,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(artifact ? ViewId::SPECIAL_SWORD : ViewId::SWORD, ViewLayer::ITEM, "Sword"), ITATTR(
             i.name = "sword";
             i.type = ItemType::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1.5;
             i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
             i.modifiers[AttrType::TO_HIT] = 3 + maybePlusMinusOne(4);
@@ -880,6 +893,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::ELVEN_SWORD, ViewLayer::ITEM, "Elven sword"), ITATTR(
             i.name = "elven sword";
             i.type = ItemType::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1;
             i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
             i.modifiers[AttrType::TO_HIT] = 5 + maybePlusMinusOne(4);
@@ -893,6 +907,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(artifact ? ViewId::SPECIAL_BATTLE_AXE : ViewId::BATTLE_AXE, ViewLayer::ITEM, "Battle axe"), ITATTR(
             i.name = "battle axe";
             i.type = ItemType::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 8;
             i.modifiers[AttrType::DAMAGE] = 14 + maybePlusMinusOne(4);
             i.modifiers[AttrType::TO_HIT] = 2 + maybePlusMinusOne(4);
@@ -908,6 +923,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(artifact ? ViewId::SPECIAL_WAR_HAMMER : ViewId::WAR_HAMMER, ViewLayer::ITEM, "War hammer"), ITATTR(
             i.name = "war hammer";
             i.type = ItemType::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 8;
             i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
             i.modifiers[AttrType::TO_HIT] = 2 + maybePlusMinusOne(4);
@@ -922,10 +938,10 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::SWORD, ViewLayer::ITEM, "Scythe"), ITATTR(
             i.name = "scythe";
             i.type = ItemType::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 5;
             i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
             i.modifiers[AttrType::TO_HIT] = 0 + maybePlusMinusOne(4);
-            i.attackTime = 1;
             i.twoHanded = true;
             i.price = 100;
             i.attackType = AttackType::CUT;)));
@@ -933,6 +949,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::BOW, ViewLayer::ITEM, "Short bow"), ITATTR(
             i.name = "short bow";
             i.type = ItemType::RANGED_WEAPON;
+            i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
             i.weight = 1;
             i.rangedWeaponAccuracy = 10 + maybePlusMinusOne(4);
             i.price = 60;)));
@@ -948,41 +965,67 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::ROBE, ViewLayer::ITEM, "Robe"), ITATTR(
             i.name = "robe";
             i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 2;
-            i.armorType = ArmorType::BODY_ARMOR;
             i.price = 50;
-            i.modifiers[AttrType::WILLPOWER] = 2;
+            i.modifiers[AttrType::WILLPOWER] = 2 + maybePlusMinusOne(4);;
+            i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);)));
+    case ItemId::LEATHER_GLOVES: return PItem(new Item(
+        ViewObject(ViewId::LEATHER_GLOVES, ViewLayer::ITEM, "Gloves"), ITATTR(
+            i.name = "leather gloves";
+            i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::GLOVES;
+            i.weight = 0.3;
+            i.price = 10;
+            i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);)));
+    case ItemId::DEXTERITY_GLOVES: return PItem(new Item(
+        ViewObject(ViewId::DEXTERITY_GLOVES, ViewLayer::ITEM, "Gloves"), ITATTR(
+            i.name = "gloves of dexterity";
+            i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::GLOVES;
+            i.weight = 0.3;
+            i.price = 120;
+            i.modifiers[AttrType::DEXTERITY] = 2 + maybePlusMinusOne(4);;
+            i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);)));
+    case ItemId::STRENGTH_GLOVES: return PItem(new Item(
+        ViewObject(ViewId::STRENGTH_GLOVES, ViewLayer::ITEM, "Gloves"), ITATTR(
+            i.name = "gauntlets of strength";
+            i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::GLOVES;
+            i.weight = 0.3;
+            i.price = 120;
+            i.modifiers[AttrType::STRENGTH] = 2 + maybePlusMinusOne(4);;
             i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);)));
     case ItemId::LEATHER_ARMOR: return PItem(new Item(
         ViewObject(ViewId::LEATHER_ARMOR, ViewLayer::ITEM, "Armor"), ITATTR(
             i.name = "leather armor";
             i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 7;
-            i.armorType = ArmorType::BODY_ARMOR;
             i.price = 20;
             i.modifiers[AttrType::DEFENSE] = 3 + maybePlusMinusOne(4);)));
     case ItemId::LEATHER_HELM: return PItem(new Item(
         ViewObject(ViewId::LEATHER_HELM, ViewLayer::ITEM, "Helmet"), ITATTR(
             i.name = "leather helm";
             i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::HELMET;
             i.weight = 1.5;
-            i.armorType = ArmorType::HELMET;
             i.price = 5;
             i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);)));
     case ItemId::CHAIN_ARMOR: return PItem(new Item(
         ViewObject(ViewId::CHAIN_ARMOR, ViewLayer::ITEM, "Armor"), ITATTR(
             i.name = "chain armor";
             i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 15;
-            i.armorType = ArmorType::BODY_ARMOR;
             i.price = 130;
             i.modifiers[AttrType::DEFENSE] = 5 + maybePlusMinusOne(4);)));
     case ItemId::IRON_HELM: return PItem(new Item(
         ViewObject(ViewId::IRON_HELM, ViewLayer::ITEM, "Helmet"), ITATTR(
             i.name = "iron helm";
             i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::HELMET;
             i.weight = 4;
-            i.armorType = ArmorType::HELMET;
             i.price = 40;
             i.modifiers[AttrType::DEFENSE]= 2 + maybePlusMinusOne(4);)));
     case ItemId::TELEPATHY_HELM: return PItem(new ItemOfCreatureVision(
@@ -990,8 +1033,8 @@ PItem ItemFactory::fromId(ItemId id) {
             i.name = "helm of telepathy";
             i.plural = "helms of telepathy";
             i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::HELMET;
             i.weight = 1.5;
-            i.armorType = ArmorType::HELMET;
             i.price = 340;
             i.modifiers[AttrType::DEFENSE]= 1 + maybePlusMinusOne(4);),
                 new Telepathy() ));
@@ -1000,8 +1043,8 @@ PItem ItemFactory::fromId(ItemId id) {
             i.name = "leather boots";
             i.plural = "pairs of leather boots";
             i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
-            i.armorType = ArmorType::BOOTS;
             i.price = 10;
             i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);)));
     case ItemId::IRON_BOOTS: return PItem(new Item(
@@ -1009,8 +1052,8 @@ PItem ItemFactory::fromId(ItemId id) {
             i.name = "iron boots";
             i.plural = "pairs of iron boots";
             i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 4;
-            i.armorType = ArmorType::BOOTS;
             i.price = 40;
             i.modifiers[AttrType::DEFENSE] = 2 + maybePlusMinusOne(4);)));
     case ItemId::SPEED_BOOTS: return PItem(new Item(
@@ -1018,8 +1061,8 @@ PItem ItemFactory::fromId(ItemId id) {
             i.name = "boots of speed";
             i.plural = "pairs of boots of speed";
             i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
-            i.armorType = ArmorType::BOOTS;
             i.price = 360;
             i.modifiers[AttrType::SPEED] = 30;
             i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);)));
@@ -1028,8 +1071,8 @@ PItem ItemFactory::fromId(ItemId id) {
             i.name = "boots of levitation";
             i.plural = "pairs of boots of levitation";
             i.type = ItemType::ARMOR;
+            i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
-            i.armorType = ArmorType::BOOTS;
             i.price = 360;
             i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);), LastingEffect::FLYING));
     case ItemId::WARNING_AMULET: return PItem(

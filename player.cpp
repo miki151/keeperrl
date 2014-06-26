@@ -87,6 +87,7 @@ ControllerFactory Player::getFactory(Model *m, map<Level*, MapMemory>* levelMemo
 
 map<EquipmentSlot, string> slotSuffixes = {
     {EquipmentSlot::WEAPON, "(weapon ready)"},
+    {EquipmentSlot::GLOVES, "(being worn)"},
     {EquipmentSlot::RANGED_WEAPON, "(ranged weapon ready)"},
     {EquipmentSlot::BODY_ARMOR, "(being worn)"},
     {EquipmentSlot::HELMET, "(being worn)"},

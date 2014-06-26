@@ -20,6 +20,7 @@
 
 map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::WEAPON, "Weapon"},
+  {EquipmentSlot::GLOVES, "Gloves"},
   {EquipmentSlot::RANGED_WEAPON, "Ranged weapon"},
   {EquipmentSlot::HELMET, "Helmet"},
   {EquipmentSlot::BODY_ARMOR, "Body armor"},

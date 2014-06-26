@@ -216,14 +216,14 @@ static void summon(Creature* c, CreatureId id, int num, int ttl) {
 }
 
 static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improved") {
-  for (EquipmentSlot slot : randomPermutation({
-        EquipmentSlot::BODY_ARMOR, EquipmentSlot::HELMET, EquipmentSlot::BOOTS}))
-    if (Item* item = c->getEquipment().getItem(slot)) {
-      c->you(MsgType::YOUR, item->getName() + " " + msg);
-      if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
-        item->addModifier(AttrType::DEFENSE, mod);
-      return;
-    }
+  for (EquipmentSlot slot : randomPermutation(getKeys(Equipment::slotTitles)))
+    if (Item* item = c->getEquipment().getItem(slot))
+      if (item->getType() == ItemType::ARMOR) {
+        c->you(MsgType::YOUR, item->getName() + " " + msg);
+        if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
+          item->addModifier(AttrType::DEFENSE, mod);
+        return;
+      }
 }
 
 static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is improved") {

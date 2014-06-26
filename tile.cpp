@@ -344,6 +344,9 @@ static Tile getSprite(ViewId id) {
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
     case ViewId::BORDER_GUARD: return Tile(' ', white);
     case ViewId::ROBE: return Tile(7, 11, 3);
+    case ViewId::LEATHER_GLOVES: return Tile(15, 11, 3);
+    case ViewId::DEXTERITY_GLOVES: return Tile(19, 11, 3);
+    case ViewId::STRENGTH_GLOVES: return Tile(20, 11, 3);
     case ViewId::LEATHER_ARMOR: return Tile(0, 12, 3);
     case ViewId::LEATHER_HELM: return Tile(10, 12, 3);
     case ViewId::TELEPATHY_HELM: return Tile(17, 12, 3);
@@ -580,6 +583,9 @@ static Tile getAscii(ViewId id) {
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
     case ViewId::BORDER_GUARD: return Tile(' ', white);
     case ViewId::ROBE: return Tile('[', lightBrown);
+    case ViewId::LEATHER_GLOVES: return Tile('[', brown);
+    case ViewId::STRENGTH_GLOVES: return Tile('[', red);
+    case ViewId::DEXTERITY_GLOVES: return Tile('[', lightBlue);
     case ViewId::LEATHER_ARMOR: return Tile('[', brown);
     case ViewId::LEATHER_HELM: return Tile('[', brown);
     case ViewId::TELEPATHY_HELM: return Tile('[', lightGreen);

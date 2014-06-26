@@ -54,7 +54,7 @@ class ItemAttributes {
   bool SERIAL2(twoHanded, false);
   AttackType SERIAL2(attackType, AttackType::HIT);
   double SERIAL2(attackTime, 1);
-  Optional<ArmorType> SERIAL(armorType);
+  Optional<EquipmentSlot> SERIAL(equipmentSlot);
   double SERIAL2(applyTime, 1);
   bool SERIAL2(fragile, false);
   Optional<EffectType> SERIAL(effect);

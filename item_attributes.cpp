@@ -37,7 +37,7 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(rangedWeaponAccuracy)
     & SVAR(attackType)
     & SVAR(attackTime)
-    & SVAR(armorType)
+    & SVAR(equipmentSlot)
     & SVAR(applyTime)
     & SVAR(fragile)
     & SVAR(effect)

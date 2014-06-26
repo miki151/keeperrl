@@ -381,28 +381,12 @@ Optional<EffectType> Item::getEffectType() const {
 }
 
 bool Item::canEquip() const {
-  return getType() == ItemType::WEAPON 
-      || getType() == ItemType::RANGED_WEAPON
-      || getType() == ItemType::ARMOR
-      || getType() == ItemType::AMULET;
+  return equipmentSlot;
 }
 
 EquipmentSlot Item::getEquipmentSlot() const {
   CHECK(canEquip());
-  if (getType() == ItemType::WEAPON)
-    return EquipmentSlot::WEAPON;
-  if (getType() == ItemType::RANGED_WEAPON)
-    return EquipmentSlot::RANGED_WEAPON;
-  if (getType() == ItemType::AMULET)
-    return EquipmentSlot::AMULET;
-  if (armorType == ArmorType::BODY_ARMOR)
-    return EquipmentSlot::BODY_ARMOR;
-  if (armorType == ArmorType::HELMET)
-    return EquipmentSlot::HELMET;
-  if (armorType == ArmorType::BOOTS)
-    return EquipmentSlot::BOOTS;
-  FAIL << "other equipment slot";
-  return EquipmentSlot::HELMET;
+  return *equipmentSlot;
 }
 
 int Item::getAccuracy() const {
