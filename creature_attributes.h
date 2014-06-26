@@ -48,6 +48,7 @@ class CreatureAttributes {
   MustInitialize<CreatureSize> SERIAL(size);
   MustInitialize<int> SERIAL(strength);
   MustInitialize<int> SERIAL(dexterity);
+  int SERIAL2(willpower, 12);
   MustInitialize<int> SERIAL(weight);
   Optional<string> SERIAL(chatReactionFriendly);
   Optional<string> SERIAL(chatReactionHostile);

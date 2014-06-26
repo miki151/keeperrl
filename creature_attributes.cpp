@@ -27,6 +27,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(size)
     & SVAR(strength)
     & SVAR(dexterity)
+    & SVAR(willpower)
     & SVAR(weight)
     & SVAR(chatReactionFriendly)
     & SVAR(chatReactionHostile)

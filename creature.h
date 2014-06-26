@@ -85,6 +85,8 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   string getNameAndTitle() const;
   Optional<string> getFirstName() const;
   int getAttr(AttrType) const;
+  static string getAttrName(AttrType attr);
+
   int getPoints() const;
   vector<string> getMainAdjectives() const;
   vector<string> getAdjectives() const;

@@ -324,16 +324,32 @@ string Item::getArtifactName() const {
 string Item::getNameAndModifiers(bool getPlural, bool blind) const {
   if (inspected) {
     string artStr = artifactName ? " named " + *artifactName : "";
-    if (getType() == ItemType::WEAPON)
-      return getName(getPlural, blind) + artStr + 
-          " (" + withSign(toHit) + " accuracy, " + withSign(damage) + " damage)";
-    if (getType() == ItemType::RANGED_WEAPON)
-      return getName(getPlural, blind) + artStr + 
-          " (" + withSign(rangedWeaponAccuracy) + " accuracy)";
-    if (getType() == ItemType::ARMOR)
-      return getName(getPlural, blind) + artStr + " (" + withSign(defense) + " defense)";
-  }
-  return getName(getPlural, blind);
+    EnumSet<AttrType> printAttr;
+    string attrString;
+    switch (getType()) {
+      case ItemType::WEAPON:
+        printAttr.insert(AttrType::TO_HIT);
+        printAttr.insert(AttrType::DAMAGE);
+        break;
+      case ItemType::ARMOR:
+        printAttr.insert(AttrType::DEFENSE);
+        break;
+      case ItemType::RANGED_WEAPON:
+        attrString = withSign(rangedWeaponAccuracy) + " accuracy)";
+        break;
+      default: break;
+    }
+    for (auto attr : ENUM_ALL(AttrType))
+      if (modifiers[attr] != 0)
+        printAttr.insert(attr);
+    for (auto attr : printAttr) {
+      if (!attrString.empty())
+        attrString += ", ";
+      attrString += withSign(modifiers[attr]) + " " + Creature::getAttrName(attr);
+    }
+    return getName(getPlural, blind) + artStr + " (" + attrString + ")";
+  } else
+    return getName(getPlural, blind);
 }
 
 string Item::getRealName(bool getPlural) const {
@@ -394,34 +410,11 @@ int Item::getAccuracy() const {
 }
 
 void Item::addModifier(AttrType attributeType, int value) {
-  switch (attributeType) {
-    case AttrType::TO_HIT: toHit += value; break;
-    case AttrType::THROWN_TO_HIT: thrownToHit += value; break;
-    case AttrType::DEFENSE: defense += value; break;
-    case AttrType::DAMAGE: damage += value; break;
-    case AttrType::THROWN_DAMAGE: thrownDamage += value; break;
-    case AttrType::STRENGTH: strength += value; break;
-    case AttrType::DEXTERITY: dexterity += value; break;
-    case AttrType::SPEED: speed += value; break;
-    case AttrType::INV_LIMIT: break;
-    default: FAIL << "Attribute not handled";
-  }
+  modifiers[attributeType] = value;
 }
 
 int Item::getModifier(AttrType attributeType) const {
-  switch (attributeType) {
-    case AttrType::TO_HIT: return toHit;
-    case AttrType::THROWN_TO_HIT: return thrownToHit;
-    case AttrType::DEFENSE: return defense;
-    case AttrType::DAMAGE: return damage;
-    case AttrType::THROWN_DAMAGE: return thrownDamage;
-    case AttrType::STRENGTH: return strength;
-    case AttrType::DEXTERITY: return dexterity;
-    case AttrType::SPEED: return speed;
-    case AttrType::INV_LIMIT: return 0;
-    default: FAIL << "Attribute not handled";
-  }
-  return 0;
+  return modifiers[attributeType];
 }
   
 AttackType Item::getAttackType() const {

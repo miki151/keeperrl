@@ -1969,6 +1969,9 @@ class ItemList {
 
 vector<ItemId> getInventory(CreatureId id) {
   switch (id) {
+    case CreatureId::KEEPER: 
+      return ItemList()
+        .add(ItemId::ROBE);
     case CreatureId::DEATH: 
       return ItemList()
         .add(ItemId::SCYTHE);

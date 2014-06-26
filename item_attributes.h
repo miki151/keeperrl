@@ -49,15 +49,8 @@ class ItemAttributes {
   double SERIAL2(flamability, 0);
   int SERIAL2(price, 0);
   bool SERIAL2(noArticle, false);
-  int SERIAL2(damage, 0);
-  int SERIAL2(toHit, 0);
-  int SERIAL2(thrownDamage, 0);
-  int SERIAL2(thrownToHit, 0);
   int SERIAL2(rangedWeaponAccuracy, 0);
-  int SERIAL2(defense, 0);
-  int SERIAL2(strength, 0);
-  int SERIAL2(dexterity, 0);
-  int SERIAL2(speed, 0);
+  EnumMap<AttrType, int> SERIAL(modifiers);
   bool SERIAL2(twoHanded, false);
   AttackType SERIAL2(attackType, AttackType::HIT);
   double SERIAL2(attackTime, 1);

@@ -226,6 +226,12 @@ const vector<SpellInfo>& Creature::getSpells() const {
   return spells;
 }
 
+static double getWillpowerMult(double willpower) {
+  const int base = Creature::getDefault()->getAttr(AttrType::WILLPOWER);
+  CHECK(base == 12);
+  return pow(0.5, (willpower - base) / 3); 
+}
+
 Creature::Action Creature::castSpell(int index) {
   CHECK(index >= 0 && index < spells.size());
   if (spells[index].ready > getTime())
@@ -235,7 +241,7 @@ Creature::Action Creature::castSpell(int index) {
     playerMessage("You cast " + spells[index].name);
     Effect::applyToCreature(this, spells[index].type, EffectStrength::NORMAL);
     Statistics::add(StatId::SPELL_CAST);
-    spells[index].ready = getTime() + spells[index].difficulty;
+    spells[index].ready = getTime() + spells[index].difficulty * getWillpowerMult(getAttr(AttrType::WILLPOWER));
     spendTime(1);
   });
 }
@@ -867,6 +873,7 @@ int Creature::getAttrVal(AttrType type) const {
     case AttrType::SPEED: return *speed + getExpLevel() * 3;
     case AttrType::DEXTERITY: return *dexterity + (double(getExpLevel()) * attributeGain);
     case AttrType::STRENGTH: return *strength + (double(getExpLevel() - 1) * attributeGain);
+    case AttrType::WILLPOWER: return willpower + (double(getExpLevel()) * attributeGain / 2);
     default: return 0;
   }
 }
@@ -966,12 +973,13 @@ int Creature::getAttr(AttrType type) const {
         if (isAffected(LastingEffect::SPEED))
           def *= 1.5;
         break;}
+    case AttrType::WILLPOWER:
+        break;
     case AttrType::INV_LIMIT:
         if (carryAnything)
           return 1000000;
         return getAttr(AttrType::STRENGTH) * 2;
- //   default:
- //       break;
+    END_CASE(AttrType);
   }
   return max(0, def);
 }
@@ -1153,6 +1161,23 @@ static string getBodyPartName(BodyPart part) {
     END_CASE(BodyPart);
   }
   FAIL <<"Wf";
+  return "";
+}
+
+string Creature::getAttrName(AttrType attr) {
+  switch (attr) {
+    case AttrType::STRENGTH: return "strength";
+    case AttrType::DAMAGE: return "damage";
+    case AttrType::TO_HIT: return "accurace";
+    case AttrType::THROWN_DAMAGE: return "thrown damage";
+    case AttrType::THROWN_TO_HIT: return "thrown accuracy";
+    case AttrType::DEXTERITY: return "dexterity";
+    case AttrType::DEFENSE: return "defense";
+    case AttrType::SPEED: return "speed";
+    case AttrType::INV_LIMIT: return "carry capacity";
+    case AttrType::WILLPOWER: return "willpower";
+    END_CASE(AttrType);
+  }
   return "";
 }
 
@@ -2213,6 +2238,10 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
       getAttr(AttrType::DEXTERITY),
       isAffected(LastingEffect::DEX_BONUS),
       "Affects the values of melee and ranged accuracy, and ranged damage."},
+    {"willpower",
+      getAttr(AttrType::WILLPOWER),
+      0,
+      "Affects the spellcasting timeouts."},
     {"speed",
       getAttr(AttrType::SPEED),
       isAffected(LastingEffect::SPEED) ? 1 : isAffected(LastingEffect::SLOWED) ? -1 : 0,

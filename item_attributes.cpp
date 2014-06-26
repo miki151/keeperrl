@@ -33,16 +33,8 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(flamability)
     & SVAR(price)
     & SVAR(noArticle)
-    & SVAR(damage)
-    & SVAR(toHit)
-    & SVAR(thrownDamage)
-    & SVAR(thrownToHit)
-    & SVAR(rangedWeaponAccuracy)
-    & SVAR(defense)
-    & SVAR(strength)
-    & SVAR(dexterity)
-    & SVAR(speed)
     & SVAR(twoHanded)
+    & SVAR(rangedWeaponAccuracy)
     & SVAR(attackType)
     & SVAR(attackTime)
     & SVAR(armorType)
@@ -54,7 +46,8 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(displayUses)
     & SVAR(identifyOnApply)
     & SVAR(identifiable)
-    & SVAR(identifyOnEquip);
+    & SVAR(identifyOnEquip)
+    & SVAR(modifiers);
   CHECK_SERIAL;
 }
 
