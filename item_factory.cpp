@@ -211,6 +211,32 @@ class ItemOfCreatureVision : public Item {
   unique_ptr<CreatureVision> SERIAL(vision);
 };
 
+class LastingEffectItem : public Item {
+  public:
+  LastingEffectItem(const ViewObject& obj, const ItemAttributes& attr, LastingEffect e)
+      : Item(obj, attr), effect(e) {}
+
+  virtual void onEquipSpecial(Creature* c) {
+    c->addEffect(effect, 1000000);
+  }
+
+  virtual void onUnequipSpecial(Creature* c) {
+    c->removeEffect(effect, 1000000);
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Item)
+      & SVAR(effect);
+    CHECK_SERIAL;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(LastingEffectItem);
+
+  private:
+  LastingEffect effect;
+};
+
 class Corpse : public Item {
   public:
   Corpse(const ViewObject& obj, const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN, 
@@ -502,7 +528,10 @@ ItemFactory ItemFactory::villageShop() {
       {ItemId::WARNING_AMULET, 1 },
       {ItemId::HEALING_AMULET, 1 },
       {ItemId::DEFENSE_AMULET, 1 },
-      {ItemId::FIRST_AID_KIT, 5} }, { ItemId::SPEED_BOOTS, ItemId::TELEPATHY_HELM});
+      {ItemId::FIRST_AID_KIT, 5},
+      {ItemId::SPEED_BOOTS, 2},
+      {ItemId::LEVITATION_BOOTS, 2},
+      {ItemId::TELEPATHY_HELM, 2}});
 }
 
 ItemFactory ItemFactory::dwarfShop() {
@@ -524,6 +553,7 @@ ItemFactory ItemFactory::armory() {
       {ItemId::IRON_HELM, 1},
       {ItemId::LEATHER_BOOTS, 2 },
       {ItemId::SPEED_BOOTS, 0.5 },
+      {ItemId::LEVITATION_BOOTS, 0.5 },
       {ItemId::IRON_BOOTS, 1} });
 }
 
@@ -541,6 +571,7 @@ ItemFactory ItemFactory::goblinShop() {
       {ItemId::LEATHER_BOOTS, 2 },
       {ItemId::IRON_BOOTS, 1 },
       {ItemId::SPEED_BOOTS, 0.3 },
+      {ItemId::LEVITATION_BOOTS, 0.3 },
       {ItemId::PANIC_MUSHROOM, 1 },
       {ItemId::RAGE_MUSHROOM, 1 },
       {ItemId::STRENGTH_MUSHROOM, 1 },
@@ -663,6 +694,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::LEATHER_BOOTS, 20 },
       {ItemId::IRON_BOOTS, 7 },
       {ItemId::SPEED_BOOTS, 3 },
+      {ItemId::LEVITATION_BOOTS, 3 },
       {ItemId::TELE_SCROLL, 30 },
       {ItemId::PORTAL_SCROLL, 10 },
       {ItemId::IDENTIFY_SCROLL, 30 },
@@ -979,6 +1011,15 @@ PItem ItemFactory::fromId(ItemId id) {
             i.price = 360;
             i.speed = 30;
             i.defense = 1 + maybePlusMinusOne(4);)));
+    case ItemId::LEVITATION_BOOTS: return PItem(new LastingEffectItem(
+        ViewObject(ViewId::LEVITATION_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
+            i.name = "boots of levitation";
+            i.plural = "pairs of boots of levitation";
+            i.type = ItemType::ARMOR;
+            i.weight = 2;
+            i.armorType = ArmorType::BOOTS;
+            i.price = 360;
+            i.defense = 1 + maybePlusMinusOne(4);), LastingEffect::FLYING));
     case ItemId::WARNING_AMULET: return PItem(
         new AmuletOfWarning(ViewObject(amulet_ids[0], ViewLayer::ITEM, "Amulet"), 
           ITATTR(

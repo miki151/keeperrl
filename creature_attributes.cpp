@@ -47,7 +47,6 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(humanoid)
     & SVAR(animal)
     & SVAR(healer)
-    & SVAR(flyer)
     & SVAR(undead)
     & SVAR(notLiving)
     & SVAR(brain)
@@ -69,3 +68,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(CreatureAttributes);
+
+void CreatureAttributes::addPermanentEffect(LastingEffect eff) {
+  lastingEffects[eff] = 1000000;
+}

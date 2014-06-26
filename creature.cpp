@@ -290,7 +290,7 @@ Creature::Action Creature::move(Vec2 direction) {
   return Action([=]() {
     stationary = false;
     Debug() << getTheName() << " moving " << direction;
-    if (isAffected(ENTANGLED)) {
+    if (isAffected(LastingEffect::ENTANGLED)) {
       playerMessage("You can't break free!");
       spendTime(1);
       return;
@@ -345,7 +345,7 @@ Creature::Action Creature::swapPosition(Vec2 direction, bool force) {
   Creature* c = getSquare(direction)->getCreature();
   if (!c)
     return Action("");
-  if (c->isAffected(SLEEP) && !force)
+  if (c->isAffected(LastingEffect::SLEEP) && !force)
     return Action(c->getTheName() + " is sleeping.");
   if ((swapPositionCooldown && !isPlayer()) || c->stationary || c->invincible ||
       direction.length8() != 1 || (c->isPlayer() && !force) || (c->isEnemy(this) && !force) ||
@@ -365,12 +365,12 @@ void Creature::makeMove() {
   CHECK(!isDead());
   if (holding && holding->isDead())
     holding = nullptr;
-  if (isAffected(SLEEP)) {
+  if (isAffected(LastingEffect::SLEEP)) {
     controller->sleeping();
     spendTime(1);
     return;
   }
-  if (isAffected(STUNNED)) {
+  if (isAffected(LastingEffect::STUNNED)) {
     spendTime(1);
     return;
   }
@@ -713,68 +713,71 @@ bool Creature::knowsHiding(const Creature* c) const {
 
 bool Creature::affects(LastingEffect effect) const {
   switch (effect) {
-    case RAGE:
-    case PANIC: return !isAffected(SLEEP);
-    case POISON: return !isAffected(LastingEffect::POISON_RESISTANT) && !isNotLiving();
-    case ENTANGLED: return !uncorporal;
+    case LastingEffect::RAGE:
+    case LastingEffect::PANIC: return !isAffected(LastingEffect::SLEEP);
+    case LastingEffect::POISON: return !isAffected(LastingEffect::POISON_RESISTANT) && !isNotLiving();
+    case LastingEffect::ENTANGLED: return !uncorporal;
     default: return true;
   }
 }
 
 void Creature::onAffected(LastingEffect effect, bool msg) {
   switch (effect) {
-    case STUNNED:
+    case LastingEffect::FLYING:
+      if (msg) you(MsgType::ARE, "flying!");
+      break;
+    case LastingEffect::STUNNED:
       if (msg) you(MsgType::ARE, "stunned");
       break;
-    case PANIC:
-      removeEffect(RAGE, false);
+    case LastingEffect::PANIC:
+      removeEffect(LastingEffect::RAGE, false);
       if (msg) you(MsgType::PANIC, "");
       break;
-    case RAGE:
-      removeEffect(PANIC, false);
+    case LastingEffect::RAGE:
+      removeEffect(LastingEffect::PANIC, false);
       if (msg) you(MsgType::RAGE, "");
       break;
-    case HALLU: 
+    case LastingEffect::HALLU: 
       if (!isBlind() && msg)
         playerMessage("The world explodes into colors!");
       break;
-    case BLIND:
+    case LastingEffect::BLIND:
       if (msg) you(MsgType::ARE, "blind!");
       viewObject.setModifier(ViewObject::Modifier::BLIND);
       break;
-    case INVISIBLE:
+    case LastingEffect::INVISIBLE:
       if (!isBlind() && msg)
         you(MsgType::TURN_INVISIBLE, "");
       viewObject.setModifier(ViewObject::Modifier::INVISIBLE);
       break;
-    case POISON:
+    case LastingEffect::POISON:
       if (msg) you(MsgType::ARE, "poisoned");
       viewObject.setModifier(ViewObject::Modifier::POISONED);
       break;
-    case STR_BONUS: if (msg) you(MsgType::FEEL, "stronger"); break;
-    case DEX_BONUS: if (msg) you(MsgType::FEEL, "more agile"); break;
-    case SPEED: 
+    case LastingEffect::STR_BONUS: if (msg) you(MsgType::FEEL, "stronger"); break;
+    case LastingEffect::DEX_BONUS: if (msg) you(MsgType::FEEL, "more agile"); break;
+    case LastingEffect::SPEED: 
       if (msg) you(MsgType::ARE, "moving faster");
-      removeEffect(SLOWED, false);
+      removeEffect(LastingEffect::SLOWED, false);
       break;
-    case SLOWED: 
+    case LastingEffect::SLOWED: 
       if (msg) you(MsgType::ARE, "moving more slowly");
-      removeEffect(SPEED, false);
+      removeEffect(LastingEffect::SPEED, false);
       break;
-    case ENTANGLED: if (msg) you(MsgType::ARE, "entangled in a web"); break;
-    case SLEEP: if (msg) you(MsgType::FALL_ASLEEP, ""); break;
-    case POISON_RESISTANT:
+    case LastingEffect::ENTANGLED: if (msg) you(MsgType::ARE, "entangled in a web"); break;
+    case LastingEffect::SLEEP: if (msg) you(MsgType::FALL_ASLEEP, ""); break;
+    case LastingEffect::POISON_RESISTANT:
       if (msg) you(MsgType::ARE, "now poison resistant");
-      removeEffect(POISON, true);
+      removeEffect(LastingEffect::POISON, true);
       break;
-    case FIRE_RESISTANT: if (msg) you(MsgType::ARE, "now fire resistant"); break;
+    case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "now fire resistant"); break;
     END_CASE(LastingEffect);
   }
 }
 
 void Creature::onRemoved(LastingEffect effect, bool msg) {
   switch (effect) {
-    case POISON:
+    case LastingEffect::POISON:
       if (msg)
         you(MsgType::ARE, "cured from poisoning");
       viewObject.removeModifier(ViewObject::Modifier::POISONED);
@@ -785,33 +788,37 @@ void Creature::onRemoved(LastingEffect effect, bool msg) {
 
 void Creature::onTimedOut(LastingEffect effect, bool msg) {
   switch (effect) {
-    case STUNNED: break;
-    case SLOWED: if (msg) you(MsgType::ARE, "moving faster again"); break;
-    case SLEEP: if (msg) you(MsgType::WAKE_UP, ""); break;
-    case SPEED: if (msg) you(MsgType::ARE, "moving more slowly again"); break;
-    case STR_BONUS: if (msg) you(MsgType::ARE, "weaker again"); break;
-    case DEX_BONUS: if (msg) you(MsgType::ARE, "less agile again"); break;
-    case PANIC:
-    case RAGE:
-    case HALLU: if (msg) playerMessage("Your mind is clear again"); break;
-    case ENTANGLED: if (msg) you(MsgType::BREAK_FREE, "the web"); break;
-    case BLIND:
+    case LastingEffect::STUNNED: break;
+    case LastingEffect::SLOWED: if (msg) you(MsgType::ARE, "moving faster again"); break;
+    case LastingEffect::SLEEP: if (msg) you(MsgType::WAKE_UP, ""); break;
+    case LastingEffect::SPEED: if (msg) you(MsgType::ARE, "moving more slowly again"); break;
+    case LastingEffect::STR_BONUS: if (msg) you(MsgType::ARE, "weaker again"); break;
+    case LastingEffect::DEX_BONUS: if (msg) you(MsgType::ARE, "less agile again"); break;
+    case LastingEffect::PANIC:
+    case LastingEffect::RAGE:
+    case LastingEffect::HALLU: if (msg) playerMessage("Your mind is clear again"); break;
+    case LastingEffect::ENTANGLED: if (msg) you(MsgType::BREAK_FREE, "the web"); break;
+    case LastingEffect::BLIND:
       if (msg) 
         you("can see again");
       viewObject.removeModifier(ViewObject::Modifier::BLIND);
       break;
-    case INVISIBLE:
+    case LastingEffect::INVISIBLE:
       if (msg)
         you(MsgType::TURN_VISIBLE, "");
       viewObject.removeModifier(ViewObject::Modifier::INVISIBLE);
       break;
-    case POISON:
+    case LastingEffect::POISON:
       if (msg)
         you(MsgType::ARE, "no longer poisoned");
       viewObject.removeModifier(ViewObject::Modifier::POISONED);
       break;
-    case POISON_RESISTANT: if (msg) you(MsgType::ARE, "no longer resistant"); break;
-    case FIRE_RESISTANT: if (msg) you(MsgType::ARE, "no longer resistant"); break;
+    case LastingEffect::POISON_RESISTANT: if (msg) you(MsgType::ARE, "no longer resistant"); break;
+    case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "no longer resistant"); break;
+    case LastingEffect::FLYING:
+      if (msg) you(MsgType::FALL, getSquare()->getName());
+      bleed(0.1);
+      break;
     END_CASE(LastingEffect);
   } 
 }
@@ -833,7 +840,7 @@ bool Creature::isAffected(LastingEffect effect) const {
 }
 
 bool Creature::isBlind() const {
-  return isAffected(BLIND) || (numLost(BodyPart::HEAD) > 0 && numBodyParts(BodyPart::HEAD) == 0);
+  return isAffected(LastingEffect::BLIND) || (numLost(BodyPart::HEAD) > 0 && numBodyParts(BodyPart::HEAD) == 0);
 }
 
 int Creature::getAttrVal(AttrType type) const {
@@ -881,7 +888,7 @@ int Creature::getAttr(AttrType type) const {
         def += tribe->getHandicap();
         if (health < 1)
           def *= 0.666 + health / 3;
-        if (isAffected(STR_BONUS))
+        if (isAffected(LastingEffect::STR_BONUS))
           def += attrBonus;
         for (auto elem : strPenalty)
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
@@ -891,7 +898,7 @@ int Creature::getAttr(AttrType type) const {
         def += tribe->getHandicap();
         if (health < 1)
           def *= 0.666 + health / 3;
-        if (isAffected(DEX_BONUS))
+        if (isAffected(LastingEffect::DEX_BONUS))
           def += attrBonus;
         for (auto elem : dexPenalty)
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
@@ -899,27 +906,27 @@ int Creature::getAttr(AttrType type) const {
         break;
     case AttrType::THROWN_DAMAGE: 
         def += getAttr(AttrType::DEXTERITY);
-        if (isAffected(PANIC))
+        if (isAffected(LastingEffect::PANIC))
           def -= attrBonus;
-        if (isAffected(RAGE))
+        if (isAffected(LastingEffect::RAGE))
           def += attrBonus;
         break;
     case AttrType::DAMAGE: 
         def += getAttr(AttrType::STRENGTH);
         if (!getWeapon())
           def += barehandedDamage;
-        if (isAffected(PANIC))
+        if (isAffected(LastingEffect::PANIC))
           def -= attrBonus;
-        if (isAffected(RAGE))
+        if (isAffected(LastingEffect::RAGE))
           def += attrBonus;
         break;
     case AttrType::DEFENSE: 
         def += getAttr(AttrType::STRENGTH);
-        if (isAffected(PANIC))
+        if (isAffected(LastingEffect::PANIC))
           def += attrBonus;
-        if (isAffected(RAGE))
+        if (isAffected(LastingEffect::RAGE))
           def -= attrBonus;
-        if (isAffected(SLEEP))
+        if (isAffected(LastingEffect::SLEEP))
           def *= 0.66;
         break;
     case AttrType::THROWN_TO_HIT: 
@@ -928,16 +935,16 @@ int Creature::getAttr(AttrType type) const {
     case AttrType::TO_HIT: 
         def += toHitBonus();
         def += getAttr(AttrType::DEXTERITY);
-        if (isAffected(SLEEP))
+        if (isAffected(LastingEffect::SLEEP))
           def = 0;
         break;
     case AttrType::SPEED: {
         double totWeight = getInventoryWeight();
         if (!carryAnything && totWeight > getAttr(AttrType::STRENGTH))
           def -= 20.0 * totWeight / def;
-        if (isAffected(SLOWED))
+        if (isAffected(LastingEffect::SLOWED))
           def /= 1.5;
-        if (isAffected(SPEED))
+        if (isAffected(LastingEffect::SPEED))
           def *= 1.5;
         break;}
     case AttrType::INV_LIMIT:
@@ -1048,7 +1055,7 @@ void Creature::tick(double realTime) {
       lastingEffects[effect] = 0;
       onTimedOut(effect, true);
     }
-  if (isAffected(POISON)) {
+  if (isAffected(LastingEffect::POISON)) {
     bleed(1.0 / 60);
     playerMessage("You feel poison flowing in your veins.");
   }
@@ -1065,7 +1072,7 @@ void Creature::tick(double realTime) {
     playerMessage("You are bleeding.");
   }
   if (health <= 0) {
-    you(MsgType::DIE_OF, isAffected(POISON) ? "poisoning" : "bleeding");
+    you(MsgType::DIE_OF, isAffected(LastingEffect::POISON) ? "poisoning" : "bleeding");
     die(lastAttacker);
   }
 
@@ -1080,7 +1087,7 @@ BodyPart Creature::armOrWing() const {
 }
 
 BodyPart Creature::getBodyPart(AttackLevel attack) const {
-  if (flyer)
+  if (isAffected(LastingEffect::FLYING))
     return chooseRandom({BodyPart::TORSO, BodyPart::HEAD, BodyPart::LEG, BodyPart::WING, BodyPart::ARM}, {1, 1, 1, 2, 1});
   switch (attack) {
     case AttackLevel::HIGH: 
@@ -1167,9 +1174,8 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
       }
       break;
     case BodyPart::WING:
-      if (flyer) {
-        you(MsgType::FALL, getSquare()->getName());
-        flyer = false;
+      if (isAffected(LastingEffect::FLYING)) {
+        removeEffect(LastingEffect::FLYING);
       }
       if ((numBodyParts(BodyPart::LEG) < 2 || numInjured(BodyPart::LEG) > 0) && !collapsed) {
         collapsed = true;
@@ -1277,8 +1283,8 @@ bool Creature::isCritical(BodyPart part) const {
 }
 
 bool Creature::takeDamage(const Attack& attack) {
-  if (isAffected(SLEEP))
-    removeEffect(SLEEP);
+  if (isAffected(LastingEffect::SLEEP))
+    removeEffect(LastingEffect::SLEEP);
   if (const Creature* c = attack.getAttacker())
     if (!contains(privateEnemies, c) && c->getTribe() != tribe)
       privateEnemies.push_back(c);
@@ -1479,7 +1485,7 @@ void Creature::heal(double amount, bool replaceLimbs) {
               you(MsgType::STAND_UP, "");
             }
             if (part == BodyPart::WING)
-              flyer = true;
+              addEffect(LastingEffect::FLYING, 1000000);
             lostBodyParts[part] = 0;
           }
     }
@@ -1576,7 +1582,7 @@ void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
 }
 
 Creature::Action Creature::flyAway() {
-  if (!canFly() || level->getCoverInfo(position).covered)
+  if (!isAffected(LastingEffect::FLYING) || level->getCoverInfo(position).covered)
     return Action("");
   return Action([=]() {
     Debug() << getTheName() << " fly away";
@@ -1595,7 +1601,7 @@ Creature::Action Creature::torture(Creature* c) {
     playerMessage("You torture " + c->getTheName());
     if (Random.roll(4))
       c->monsterMessage(c->getTheName() + " screams!", "You hear a terrifying scream");
-    c->addEffect(STUNNED, 3, false);
+    c->addEffect(LastingEffect::STUNNED, 3, false);
     c->bleed(0.1);
     if (c->health < 0.3) {
       if (!Random.roll(15))
@@ -1767,7 +1773,7 @@ bool Creature::canSee(const Creature* c) const {
   for (CreatureVision* v : creatureVisions)
     if (v->canSee(this, c))
       return true;
-  return !isBlind() && !c->isAffected(INVISIBLE) &&
+  return !isBlind() && !c->isAffected(LastingEffect::INVISIBLE) &&
          (!c->isHidden() || c->knowsHiding(this)) && 
          getLevel()->canSee(this, c->getPosition());
 }
@@ -1846,10 +1852,6 @@ bool Creature::hasBrain() const {
 
 bool Creature::canSwim() const {
   return skills[SkillId::SWIMMING];
-}
-
-bool Creature::canFly() const {
-  return flyer;
 }
 
 bool Creature::canWalk() const {
@@ -2099,7 +2101,7 @@ vector<string> Creature::getMainAdjectives() const {
   vector<string> ret;
   if (isBlind())
     ret.push_back("blind");
-  if (isAffected(INVISIBLE))
+  if (isAffected(LastingEffect::INVISIBLE))
     ret.push_back("invisible");
   if (numBodyParts(BodyPart::ARM) == 1)
     ret.push_back("one-armed");
@@ -2109,7 +2111,7 @@ vector<string> Creature::getMainAdjectives() const {
     ret.push_back("one-legged");
   if (numBodyParts(BodyPart::LEG) == 0)
     ret.push_back("legless");
-  if (isAffected(HALLU))
+  if (isAffected(LastingEffect::HALLU))
     ret.push_back("tripped");
   return ret;
 }
@@ -2126,25 +2128,26 @@ vector<string> Creature::getAdjectives() const {
     if (isAffected(effect)) {
       bool addCount = true;
       switch (effect) {
-        case POISON: ret.push_back("poisoned"); break;
-        case SLEEP: ret.push_back("sleeping"); break;
-        case ENTANGLED: ret.push_back("entangled"); break;
-        case INVISIBLE: ret.push_back("invisible"); break;
-        case PANIC: ret.push_back("panic"); break;
-        case RAGE: ret.push_back("enraged"); break;
-        case HALLU: ret.push_back("hallucinating"); break;
-        case STR_BONUS: ret.push_back("strength bonus"); break;
-        case DEX_BONUS: ret.push_back("dexterity bonus"); break;
-        case SPEED: ret.push_back("speed bonus"); break;
-        case SLOWED: ret.push_back("slowed"); break;
-        case POISON_RESISTANT: ret.push_back("poison resistant"); break;
+        case LastingEffect::POISON: ret.push_back("poisoned"); break;
+        case LastingEffect::SLEEP: ret.push_back("sleeping"); break;
+        case LastingEffect::ENTANGLED: ret.push_back("entangled"); break;
+        case LastingEffect::INVISIBLE: ret.push_back("invisible"); break;
+        case LastingEffect::PANIC: ret.push_back("panic"); break;
+        case LastingEffect::RAGE: ret.push_back("enraged"); break;
+        case LastingEffect::HALLU: ret.push_back("hallucinating"); break;
+        case LastingEffect::STR_BONUS: ret.push_back("strength bonus"); break;
+        case LastingEffect::DEX_BONUS: ret.push_back("dexterity bonus"); break;
+        case LastingEffect::SPEED: ret.push_back("speed bonus"); break;
+        case LastingEffect::SLOWED: ret.push_back("slowed"); break;
+        case LastingEffect::POISON_RESISTANT: ret.push_back("poison resistant"); break;
+        case LastingEffect::FLYING: ret.push_back("flying"); break;
         default: addCount = false; break;
       }
       if (addCount)
         ret.back() += "  " + getRemainingString(effect);
     }
   if (isBlind())
-    ret.push_back("blind" + isAffected(BLIND) ? (" " + getRemainingString(BLIND)) : "");
+    ret.push_back("blind" + isAffected(LastingEffect::BLIND) ? (" " + getRemainingString(LastingEffect::BLIND)) : "");
   return ret;
 }
 
@@ -2172,11 +2175,11 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.attributes = {
     {"attack",
       getAttr(AttrType::DAMAGE),
-      isAffected(RAGE) ? 1 : isAffected(PANIC) ? -1 : 0,
+      isAffected(LastingEffect::RAGE) ? 1 : isAffected(LastingEffect::PANIC) ? -1 : 0,
       "Affects if and how much damage is dealt in combat."},
     {"defense",
       getAttr(AttrType::DEFENSE),
-      isAffected(RAGE) ? -1 : isAffected(PANIC) ? 1 : 0,
+      isAffected(LastingEffect::RAGE) ? -1 : isAffected(LastingEffect::PANIC) ? 1 : 0,
       "Affects if and how much damage is taken in combat."},
     {"accuracy",
       getAttr(AttrType::TO_HIT),
@@ -2184,15 +2187,15 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
       "Defines the chance of a successful melee attack and dodging."},
     {"strength",
       getAttr(AttrType::STRENGTH),
-      isAffected(STR_BONUS),
+      isAffected(LastingEffect::STR_BONUS),
       "Affects the values of attack, defense and carrying capacity."},
     {"dexterity",
       getAttr(AttrType::DEXTERITY),
-      isAffected(DEX_BONUS),
+      isAffected(LastingEffect::DEX_BONUS),
       "Affects the values of melee and ranged accuracy, and ranged damage."},
     {"speed",
       getAttr(AttrType::SPEED),
-      isAffected(SPEED) ? 1 : isAffected(SLOWED) ? -1 : 0,
+      isAffected(LastingEffect::SPEED) ? 1 : isAffected(LastingEffect::SLOWED) ? -1 : 0,
       "Affects how much time every action takes."}};
   info.skills.clear();
   for (auto skill : getSkills())

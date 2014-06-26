@@ -112,9 +112,9 @@ static void deception(Creature* c) {
           c.dexterity = 1;
           c.barehandedDamage = 20; // just so it's not ignored by creatures
           c.stationary = true;
-          c.lastingEffects[LastingEffect::BLIND] = permanentEffect;
+          c.addPermanentEffect(LastingEffect::BLIND);
+          c.addPermanentEffect(LastingEffect::FLYING);
           c.noSleep = true;
-          c.flyer = true;
           c.breathing = false;
           c.uncorporal = true;
           c.humanoid = true;
@@ -138,7 +138,7 @@ static void leaveBody(Creature* creature) {
           c.barehandedDamage = 20; // just so it's not ignored by creatures
           c.dexterity = 1;
           c.noSleep = true;
-          c.flyer = true;
+          c.addPermanentEffect(LastingEffect::FLYING);
           c.breathing = false;
           c.uncorporal = true;
           c.humanoid = false;

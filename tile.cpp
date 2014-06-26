@@ -351,6 +351,7 @@ static Tile getSprite(ViewId id) {
     case ViewId::LEATHER_BOOTS: return Tile(0, 13, 3);
     case ViewId::IRON_BOOTS: return Tile(6, 13, 3);
     case ViewId::SPEED_BOOTS: return Tile(3, 13, 3);
+    case ViewId::LEVITATION_BOOTS: return Tile(2, 13, 3);
     case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
     case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
     case ViewId::FALLEN_TREE: return Tile(26, 3, 2, true);
@@ -585,6 +586,7 @@ static Tile getAscii(ViewId id) {
     case ViewId::LEATHER_BOOTS: return Tile('[', brown);
     case ViewId::IRON_BOOTS: return Tile('[', lightGray);
     case ViewId::SPEED_BOOTS: return Tile('[', lightBlue);
+    case ViewId::LEVITATION_BOOTS: return Tile('[', lightGreen);
     case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
     case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
     case ViewId::FALLEN_TREE: return Tile('*', green);

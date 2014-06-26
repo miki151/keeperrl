@@ -203,10 +203,10 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
               dirs.insert(dir.getCardinalDir());
       Vec2 coord = tile.getSpriteCoord(dirs);
       if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
-        moveY = -6;
+        moveY = -4;
       if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
         renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize, 22 * Renderer::nominalSize, Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[0], width, height);
-        moveY = -6;
+        moveY = -4;
       }
       if (auto background = tile.getBackgroundCoord())
         renderer.drawSprite(x + off, y + off, background->x * sz,

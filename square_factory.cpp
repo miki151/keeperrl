@@ -117,11 +117,11 @@ class Magma : public Square {
     itemMessage(itemMsg), noSeeMsg(noSee) {}
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return c->canFly() || c->isBlind() || c->isHeld();
+    return c->isAffected(LastingEffect::FLYING) || c->isBlind() || c->isHeld();
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (!c->canFly()) {
+    if (!c->isAffected(LastingEffect::FLYING)) {
       c->you(MsgType::BURN, getName());
       c->die(nullptr, false);
     }
@@ -164,14 +164,14 @@ class Water : public Square {
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    bool can = canWalk(c) || c->canSwim() || c->canFly() || c->isBlind() || c->isHeld();
+    bool can = canWalk(c) || c->canSwim() || c->isAffected(LastingEffect::FLYING) || c->isBlind() || c->isHeld();
  /*   if (!can)
       c->playerMessage("The water is too deep.");*/
     return can;
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (!c->canFly() && !c->canSwim() && !canWalk(c)) {
+    if (!c->isAffected(LastingEffect::FLYING) && !c->canSwim() && !canWalk(c)) {
       c->you(MsgType::DROWN, getName());
       c->die(nullptr, false);
     }

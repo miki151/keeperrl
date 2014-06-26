@@ -201,7 +201,7 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
             c.humanoid = false;
             c.size = CreatureSize::LARGE;
             c.speed = 200;
-            c.lastingEffects[LastingEffect::BLIND] = permanentEffect;
+            c.addPermanentEffect(LastingEffect::BLIND);
             c.stationary = true;
             c.noSleep = true;
             c.invincible = true;
@@ -219,7 +219,7 @@ PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
             c.humanoid = false;
             c.size = CreatureSize::LARGE;
             c.speed = 140;
-            c.lastingEffects[LastingEffect::BLIND] = permanentEffect;
+            c.addPermanentEffect(LastingEffect::BLIND);
             c.noSleep = true;
             c.stationary = true;
             c.invincible = true;
@@ -942,7 +942,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         } else {
           if (r.roll(4)) {
             c.bodyParts[BodyPart::WING] = 2;
-            c.flyer = true;
+            c.addPermanentEffect(LastingEffect::FLYING);
           }
           if (*c.humanoid == false) {
             c.bodyParts[BodyPart::ARM] = r.roll(2) ? 2 : 0;
@@ -1110,8 +1110,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.weight = 1000;
           c.bodyParts[BodyPart::WING] = 2;
-          c.flyer = true;
-          c.lastingEffects[LastingEffect::POISON_RESISTANT] = permanentEffect;
+          c.addPermanentEffect(LastingEffect::POISON_RESISTANT);
+          c.addPermanentEffect(LastingEffect::FLYING);
           c.firstName = NameGenerator::demonNames.getNext();
           c.name = "dragon";);
     case CreatureId::RED_DRAGON:
@@ -1237,7 +1237,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity += 2;
           c.barehandedDamage += 2;
           c.attackEffect = EffectType::FIRE;
-          c.lastingEffects[LastingEffect::FIRE_RESISTANT] = permanentEffect;
+          c.addPermanentEffect(LastingEffect::FIRE_RESISTANT);
           c.name = "lava golem";);
     case CreatureId::ACID_MOUND: 
       return CATTR(
@@ -1304,7 +1304,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.strength += 1;
           c.dexterity += 1;
           c.barehandedDamage += 4;
-          c.flyer = true;
+          c.addPermanentEffect(LastingEffect::FLYING);
           c.name = "vampire lord";);
       /*   case CreatureId::VAMPIRE_BAT: 
            return PCreature(new Shapechanger(
@@ -1479,7 +1479,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType::POISON;
           c.harmlessApply = true;
-          c.lastingEffects[LastingEffect::POISON_RESISTANT] = permanentEffect;
+          c.addPermanentEffect(LastingEffect::POISON_RESISTANT);
           c.humanoid = true;
           c.weight = 50;
           c.chatReactionFriendly = "curses all humans";
@@ -1728,7 +1728,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::LEG] = 2;
           c.bodyParts[BodyPart::WING] = 2;
           c.animal = true;
-          c.flyer = true;
+          c.addPermanentEffect(LastingEffect::FLYING);
           c.skills.insert(SkillId::ELF_VISION);
           c.name = "raven";);
     case CreatureId::VULTURE: 
@@ -1770,7 +1770,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.breathing = false;
           c.brain = false;
           c.fireCreature = true;
-          c.flyer = true;
+          c.addPermanentEffect(LastingEffect::FLYING);
           c.weight = 10;
           c.courage = 100;
           c.name = "fire sphere";);

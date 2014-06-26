@@ -2460,7 +2460,7 @@ void Collective::addCreature(Creature* c, MinionType type) {
           if (v.inRectangle(level->getBounds()))
             addKnownTile(v);
   }
-  if (!c->canFly())
+  if (!c->isAffected(LastingEffect::FLYING))
     c->addSectors(sectors.get());
   else
     c->addSectors(flyingSectors.get());

@@ -232,6 +232,7 @@ enum class ItemId { KNIFE,
   LEATHER_BOOTS,
   IRON_BOOTS,
   SPEED_BOOTS,
+  LEVITATION_BOOTS,
 
   TELE_SCROLL,
   PORTAL_SCROLL,
@@ -525,6 +526,7 @@ enum class ViewId {
   LEATHER_BOOTS,
   IRON_BOOTS,
   SPEED_BOOTS,
+  LEVITATION_BOOTS,
   BOULDER,
   PORTAL,
   TRAP,
@@ -756,7 +758,7 @@ enum class VisionId {
   ENUM_END
 };
 
-enum LastingEffect {
+enum class LastingEffect {
     SLEEP,
     PANIC,
     RAGE,
@@ -772,10 +774,9 @@ enum LastingEffect {
     STUNNED,
     POISON_RESISTANT,
     FIRE_RESISTANT,
+    FLYING,
 
     ENUM_END
 };
-
-const static double permanentEffect = 100000000;
 
 #endif
