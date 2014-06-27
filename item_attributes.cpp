@@ -41,6 +41,7 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(applyTime)
     & SVAR(fragile)
     & SVAR(effect)
+    & SVAR(attackEffect)
     & SVAR(uses)
     & SVAR(usedUpMsg)
     & SVAR(displayUses)

@@ -52,6 +52,7 @@ class Item : private ItemAttributes, public UniqueEntity {
   string getArtifactName() const;
 
   virtual Optional<EffectType> getEffectType() const;
+  Optional<EffectType> getAttackEffect() const;
   ItemType getType() const;
   
   int getPrice() const;

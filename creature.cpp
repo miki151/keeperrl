@@ -1278,7 +1278,8 @@ Creature::Action Creature::attack(const Creature* c1, Optional<AttackLevel> atta
     you(MsgType::ATTACK_SURPRISE, enemyName);
   }
   AttackLevel attackLevel = attackLevel1 ? (*attackLevel1) : getRandomAttackLevel();
-  Attack attack(this, attackLevel, getAttackType(), toHit, damage, backstab, attackEffect);
+  Attack attack(this, attackLevel, getAttackType(), toHit, damage, backstab,
+      getWeapon() ? getWeapon()->getAttackEffect() : attackEffect);
   if (!c->dodgeAttack(attack)) {
     if (getWeapon()) {
       you(getAttackMsg(attack.getType(), true, attack.getLevel()), getWeapon()->getName());
@@ -1345,8 +1346,6 @@ bool Creature::takeDamage(const Attack& attack) {
     other->lastAttacker = this;
   }
   if (attack.getStrength() > defense) {
-    if (auto effect = attack.getEffect())
-      Effect::applyToCreature(this, *effect, EffectStrength::NORMAL);
     lastAttacker = attack.getAttacker();
     double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
     dam *= damageMultiplier;
@@ -1384,9 +1383,11 @@ bool Creature::takeDamage(const Attack& attack) {
     else {
       if (!isNotLiving())
         you(MsgType::ARE, "wounded");
-      else
+      else if (!attack.getEffect())
         you(MsgType::ARE, "not hurt");
     }
+    if (auto effect = attack.getEffect())
+      Effect::applyToCreature(this, *effect, EffectStrength::NORMAL);
   } else {
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.getType()));
     if (attack.getEffect() && attack.getAttacker()->harmlessApply)

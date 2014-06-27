@@ -704,6 +704,7 @@ enum class EffectType {
     POISON_RESISTANCE,
     FIRE_RESISTANCE,
     LEVITATION,
+    SILVER_DAMAGE,
 };
 
 enum class AnimationId {

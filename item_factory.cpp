@@ -870,6 +870,33 @@ void makeArtifact(ItemAttributes& i) {
   i.price *= 15;
 }
 
+enum class WeaponPrefix { SILVER, FLAMING, POISONOUS };
+
+void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
+  switch (prefix) {
+    case WeaponPrefix::SILVER:
+      i.name = "silver " + *i.name;
+      if (i.plural)
+        i.plural = "silver " + *i.plural;
+      i.attackEffect = EffectType::SILVER_DAMAGE;
+      break;
+    case WeaponPrefix::FLAMING:
+      i.name = "flaming " + *i.name;
+      if (i.plural)
+        i.plural = "flaming " + *i.plural;
+      i.attackEffect = EffectType::FIRE;
+      break;
+    case WeaponPrefix::POISONOUS:
+      i.name = "poisonous " + *i.name;
+      if (i.plural)
+        i.plural = "poisonous " + *i.plural;
+      i.attackEffect = EffectType::POISON;
+      break;
+  }
+}
+
+int prefixChance = 30;
+
 PItem ItemFactory::fromId(ItemId id) {
   bool artifact = false;
   switch (id) {
@@ -883,10 +910,13 @@ PItem ItemFactory::fromId(ItemId id) {
             i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
             i.modifiers[AttrType::TO_HIT] = maybePlusMinusOne(4);
             i.attackTime = 0.7;
-            i.modifiers[AttrType::THROWN_DAMAGE] = 3;
-            i.modifiers[AttrType::THROWN_TO_HIT] = 3;
+            i.modifiers[AttrType::THROWN_DAMAGE] = 3 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::THROWN_TO_HIT] = 3 + maybePlusMinusOne(4);
             i.price = 5;
-            i.attackType = AttackType::STAB;)));
+            i.attackType = AttackType::STAB;
+            if (Random.roll(prefixChance))
+              addPrefix(i, WeaponPrefix::POISONOUS);
+            )));
     case ItemId::SPEAR: return PItem(new Item(
         ViewObject(ViewId::SPEAR, ViewLayer::ITEM, "Spear"), ITATTR(
             i.name = "spear";
@@ -909,7 +939,9 @@ PItem ItemFactory::fromId(ItemId id) {
             i.price = 20;
             if (artifact) {
               makeArtifact(i);
-            }
+            } else
+            if (Random.roll(prefixChance))
+              addPrefix(i, WeaponPrefix::FLAMING);
             i.attackType = AttackType::CUT;)));
     case ItemId::SPECIAL_ELVEN_SWORD: artifact = true;
     case ItemId::ELVEN_SWORD: return PItem(new Item(
@@ -923,7 +955,9 @@ PItem ItemFactory::fromId(ItemId id) {
             i.price = 120;
             if (artifact) {
               makeArtifact(i);
-            }
+            } else
+            if (Random.roll(prefixChance))
+              addPrefix(i, WeaponPrefix::SILVER);
             i.attackType = AttackType::CUT;)));
     case ItemId::SPECIAL_BATTLE_AXE: artifact = true;
     case ItemId::BATTLE_AXE: return PItem(new Item(

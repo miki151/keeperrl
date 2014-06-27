@@ -58,6 +58,7 @@ class ItemAttributes {
   double SERIAL2(applyTime, 1);
   bool SERIAL2(fragile, false);
   Optional<EffectType> SERIAL(effect);
+  Optional<EffectType> SERIAL(attackEffect);
   int SERIAL2(uses, -1);
   bool SERIAL2(usedUpMsg, false);
   bool SERIAL2(displayUses, false);

@@ -383,6 +383,10 @@ Optional<EffectType> Item::getEffectType() const {
   return effect;
 }
 
+Optional<EffectType> Item::getAttackEffect() const {
+  return attackEffect;
+}
+
 bool Item::canEquip() const {
   return equipmentSlot;
 }

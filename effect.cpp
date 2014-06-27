@@ -368,6 +368,13 @@ double entangledTime(int strength) {
   return max(5, 30 - strength / 2);
 }
 
+void silverDamage(Creature* c) {
+  if (c->isUndead()) {
+    c->you(MsgType::ARE, "hurt by the silver");
+    c->bleed(Random.getDouble(0.0, 0.15));
+  }
+}
+
 void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strengthEnum) {
   int strength = int(strengthEnum);
   switch (type) {
@@ -410,6 +417,7 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectType::POISON_RESISTANCE: c->addEffect(LastingEffect::POISON_RESISTANT, resistantTime[strength]); break;
     case EffectType::FIRE_RESISTANCE: c->addEffect(LastingEffect::FIRE_RESISTANT, resistantTime[strength]); break;
     case EffectType::LEVITATION: c->addEffect(LastingEffect::FLYING, levitateTime[strength]); break;
+    case EffectType::SILVER_DAMAGE: silverDamage(c); break;
   }
 }
 
