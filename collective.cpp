@@ -25,6 +25,7 @@
 #include "options.h"
 #include "technology.h"
 #include "music.h"
+#include "village_control.h"
 
 template <class Archive> 
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -79,6 +80,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Collective);
+
+SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
 
 template <class Archive>
 void Collective::TaskMap::serialize(Archive& ar, const unsigned int version) {
@@ -420,6 +423,8 @@ static vector<ItemId> marketItems {
   ItemId::HEALING_AMULET,
   ItemId::DEFENSE_AMULET,
   ItemId::FRIENDLY_ANIMALS_AMULET,
+  ItemId::FIRE_RESIST_RING,
+  ItemId::POISON_RESIST_RING,
 };
 
 MinionType Collective::getMinionType(const Creature* c) const {
@@ -562,26 +567,41 @@ bool Collective::usesEquipment(const Creature* c) const {
   return c->isHumanoid() && getMinionType(c) != MinionType::PRISONER && c->getName() != "gnome";
 }
 
+Item* Collective::getWorstItem(vector<Item*> items) const {
+  Item* ret = nullptr;
+  for (Item* it : items)
+    if (ret == nullptr || minionEquipment.getItemValue(it) < minionEquipment.getItemValue(ret))
+      ret = it;
+  return ret;
+}
+
 void Collective::autoEquipment(Creature* creature, bool replace) {
-  map<EquipmentSlot, Item*> slots;
+  map<EquipmentSlot, vector<Item*>> slots;
   vector<Item*> myItems = getAllItems([&](const Item* it) {
       return minionEquipment.getOwner(it) == creature && it->canEquip(); });
   for (Item* it : myItems) {
-    if (!slots.count(it->getEquipmentSlot())) {
-      slots[it->getEquipmentSlot()] = it;
-    } else  // a rare occurence that minion owns 2 items of the same slot,
+    EquipmentSlot slot = it->getEquipmentSlot();
+    if (slots[slot].size() < creature->getEquipment().getMaxItems(slot)) {
+      slots[slot].push_back(it);
+    } else  // a rare occurence that minion owns too many items of the same slot,
           //should happen only when an item leaves the fortress and then is braught back
       minionEquipment.discard(it);
   }
   for (Item* it : getAllItems([&](const Item* it) {
       return minionEquipment.needs(creature, it, false, replace) && !minionEquipment.getOwner(it); }, false)) {
-    if (!it->canEquip() || !slots.count(it->getEquipmentSlot())
-        || minionEquipment.getItemValue(slots.at(it->getEquipmentSlot())) < minionEquipment.getItemValue(it)) {
+    if (!it->canEquip()
+        || slots[it->getEquipmentSlot()].size() < creature->getEquipment().getMaxItems(it->getEquipmentSlot())
+        || minionEquipment.getItemValue(getWorstItem(slots[it->getEquipmentSlot()]))
+            < minionEquipment.getItemValue(it)) {
       minionEquipment.own(creature, it);
-      if (it->canEquip() && slots.count(it->getEquipmentSlot()))
-        minionEquipment.discard(slots.at(it->getEquipmentSlot()));
+      if (it->canEquip()
+        && slots[it->getEquipmentSlot()].size() == creature->getEquipment().getMaxItems(it->getEquipmentSlot())) {
+        Item* removed = getWorstItem(slots[it->getEquipmentSlot()]);
+        minionEquipment.discard(removed);
+        removeElement(slots[it->getEquipmentSlot()], removed); 
+      }
       if (it->canEquip())
-        slots[it->getEquipmentSlot()] = it;
+        slots[it->getEquipmentSlot()].push_back(it);
       if (it->getType() != ItemType::AMMO)
         break;
     }
@@ -600,24 +620,29 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
   vector<Item*> ownedItems = getAllItems([this, creature](const Item* it) {
       return minionEquipment.getOwner(it) == creature; });
   vector<Item*> slotItems;
+  vector<EquipmentSlot> slotIndex;
   for (auto slot : slots) {
     list.emplace_back(Equipment::slotTitles.at(slot), View::TITLE);
-    Item* item = nullptr;
+    vector<Item*> items;
     for (Item* it : ownedItems)
-      if (it->canEquip() && it->getEquipmentSlot() == slot) {
-        if (item) // a rare occurence that minion owns 2 items of the same slot,
-                  //should happen only when an item leaves the fortress and then is braught back
-          minionEquipment.discard(it);
-        else
-          item = it;
-      }
-    slotItems.push_back(item);
-    if (item) {
+      if (it->canEquip() && it->getEquipmentSlot() == slot)
+        items.push_back(it);
+    for (int i = creature->getEquipment().getMaxItems(slot); i < items.size(); ++i)
+      // a rare occurence that minion owns too many items of the same slot,
+      //should happen only when an item leaves the fortress and then is braught back
+      minionEquipment.discard(items[i]);
+    append(slotItems, items);
+    append(slotIndex, vector<EquipmentSlot>(items.size(), slot));
+    for (Item* item : items) {
       removeElement(ownedItems, item);
       list.push_back(item->getNameAndModifiers() + (creature->getEquipment().isEquiped(item) 
             ? " (equiped)" : " (pending)"));
-    } else
-      list.push_back("[Nothing]");
+    }
+    if (creature->getEquipment().getMaxItems(slot) > items.size()) {
+      list.push_back("[Equip item]");
+      slotIndex.push_back(slot);
+      slotItems.push_back(nullptr);
+    }
   }
   list.emplace_back(View::ListElem("Consumables", View::TITLE));
   vector<pair<string, vector<Item*>>> consumables = Item::stackItems(ownedItems,
@@ -633,7 +658,7 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
     int itIndex = 0;
     double scrollPos = 0;
     while (1) {
-      const Item* chosenItem = chooseEquipmentItem(view, nullptr, [&](const Item* it) {
+      const Item* chosenItem = chooseEquipmentItem(view, {}, [&](const Item* it) {
           return minionEquipment.getOwner(it) != creature && !it->canEquip()
               && minionEquipment.needs(creature, it, true); }, &itIndex, &scrollPos);
       if (chosenItem)
@@ -648,10 +673,10 @@ void Collective::handleEquipment(View* view, Creature* creature, int prevItem) {
   if (Item* item = slotItems[index])  // discard equipment
     minionEquipment.discard(item);
   else { // add new equipment
-    Item* currentItem = creature->getEquipment().getItem(slots[index]);
-    const Item* chosenItem = chooseEquipmentItem(view, currentItem, [&](const Item* it) {
+    vector<Item*> currentItems = creature->getEquipment().getItem(slotIndex[index]);
+    const Item* chosenItem = chooseEquipmentItem(view, currentItems, [&](const Item* it) {
         return minionEquipment.getOwner(it) != creature
-            && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slots[index]; });
+            && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slotIndex[index]; });
     if (chosenItem) {
       if (Creature* c = const_cast<Creature*>(minionEquipment.getOwner(chosenItem)))
         c->removeEffect(LastingEffect::SLEEP);
@@ -682,26 +707,27 @@ vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinio
   return allItems;
 }
 
-Item* Collective::chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate,
+Item* Collective::chooseEquipmentItem(View* view, vector<Item*> currentItems, ItemPredicate predicate,
     int* prevIndex, double* scrollPos) const {
   vector<View::ListElem> options;
   vector<Item*> currentItemVec;
-  if (currentItem) {
-    currentItemVec.push_back(currentItem);
+  if (!currentItems.empty())
     options.push_back(View::ListElem("Currently equiped: ", View::TITLE));
-    options.push_back(currentItem->getNameAndModifiers());
+  for (Item* it : currentItems) {
+    currentItemVec.push_back(it);
+    options.push_back(it->getNameAndModifiers());
   }
   options.emplace_back("Free:", View::TITLE);
   vector<Item*> availableItems;
   vector<Item*> usedItems;
   for (Item* item : getAllItems(predicate))
-    if (item != currentItem) {
+    if (!contains(currentItems, item)) {
       if (minionEquipment.getOwner(item))
         usedItems.push_back(item);
       else
         availableItems.push_back(item);
     }
-  if (!currentItem && availableItems.empty() && usedItems.empty())
+  if (currentItems.empty() && availableItems.empty() && usedItems.empty())
     return nullptr;
   vector<pair<string, vector<Item*>>> usedStacks = Item::stackItems(usedItems,
       [&](const Item* it) {
@@ -2599,7 +2625,7 @@ bool Collective::hasEfficiency(Vec2 pos) const {
 }
 
 const double lightBase = 0.5;
-const double flattenVal = 0.8;
+const double flattenVal = 0.9;
 
 double Collective::getEfficiency(Vec2 pos) const {
   if (squareEfficiency.at(pos) == 8)

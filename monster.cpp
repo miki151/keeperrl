@@ -28,6 +28,8 @@ void Monster::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Monster);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Monster);
+
 Monster::Monster(Creature* c, MonsterAIFactory f) : Controller(c), actor(f.getMonsterAI(c)) {}
 
 ControllerFactory Monster::getFactory(MonsterAIFactory f) {

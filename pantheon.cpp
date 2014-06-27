@@ -34,6 +34,8 @@ void Deity::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Deity);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Deity);
+
 static map<DeityHabitat, vector<Epithet>> epithetsMap {
   { DeityHabitat::FIRE,   // fire elemental
       { Epithet::WAR, Epithet::DEATH, Epithet::DESTRUCTION, Epithet::WEALTH,
@@ -193,7 +195,7 @@ void Deity::onPrayer(Creature* c) {
             applyEffect(c, EffectType::HALLU, "");
           break;
       case Epithet::CHANGE:
-          if (Random.roll(2) && c->getEquipment().getItem(EquipmentSlot::WEAPON)) {
+          if (Random.roll(2) && c->getWeapon()) {
             PCreature snake = CreatureFactory::fromId(CreatureId::SNAKE, Tribe::get(TribeId::PEST));
             for (Vec2 v : c->getPosition().neighbors8(true))
               if (c->getLevel()->inBounds(v) && c->getLevel()->getSquare(v)->canEnter(snake.get())) {

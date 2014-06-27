@@ -34,6 +34,8 @@ void Tribe::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Tribe);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Tribe);
+
 class Constant : public Tribe {
   public:
   Constant() {}

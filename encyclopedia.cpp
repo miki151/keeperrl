@@ -21,25 +21,10 @@
 #include "technology.h"
 #include "creature_factory.h"
 
-void Encyclopedia::present(View* view, int lastInd) {
-  auto index = view->chooseFromList("Choose topic:",
-      {"Advances", "Workshop", "Deities", "Skills"}, lastInd);
-  if (!index)
-    return;
-  switch (*index) {
-    case 0: advances(view); break;
-    case 1: workshop(view); break;
-    case 2: deities(view); break;
-    case 3: skills(view); break;
-    default: FAIL << "wfepok";
-  }
-  present(view, *index);
+void bestiary(View* view, int lastInd) {
 }
 
-void Encyclopedia::bestiary(View* view, int lastInd) {
-}
-
-void Encyclopedia::advance(View* view, const Technology* tech) {
+void advance(View* view, const Technology* tech) {
   string text;
   const vector<Technology*>& prerequisites = tech->getPrerequisites();
   const vector<Technology*>& allowed = tech->getAllowed();
@@ -63,7 +48,7 @@ void Encyclopedia::advance(View* view, const Technology* tech) {
   view->presentText(capitalFirst(tech->getName()), text);
 }
 
-void Encyclopedia::advances(View* view, int lastInd) {
+void advances(View* view, int lastInd = 0) {
   vector<View::ListElem> options;
   vector<Technology*> techs = Technology::getSorted();
   for (Technology* tech : techs)
@@ -75,7 +60,11 @@ void Encyclopedia::advances(View* view, int lastInd) {
   advances(view, *index);
 }
 
-void Encyclopedia::skills(View* view, int lastInd) {
+void skill(View* view, const Skill* skill) {
+  view->presentText(capitalFirst(skill->getName()), skill->getHelpText());
+}
+
+void skills(View* view, int lastInd = 0) {
   vector<View::ListElem> options;
   vector<Skill*> s = Skill::getAll();
   for (Skill* skill : s)
@@ -87,18 +76,14 @@ void Encyclopedia::skills(View* view, int lastInd) {
   skills(view, *index);
 }
 
-void Encyclopedia::skill(View* view, const Skill* skill) {
-  view->presentText(capitalFirst(skill->getName()), skill->getHelpText());
-}
-
-void Encyclopedia::room(View* view, Collective::RoomInfo& info) {
+void room(View* view, Collective::RoomInfo& info) {
   string text = info.description;
   if (info.techId)
     text += "\n \nRequires: " + Technology::get(*info.techId)->getName();
   view->presentText(info.name, text);
 }
 
-void Encyclopedia::rooms(View* view, int lastInd) {
+void rooms(View* view, int lastInd = 0) {
   vector<View::ListElem> options;
   vector<Collective::RoomInfo> roomList = Collective::getRoomInfo();
   for (auto& elem : roomList)
@@ -110,7 +95,7 @@ void Encyclopedia::rooms(View* view, int lastInd) {
   rooms(view, *index);
 }
 
-void Encyclopedia::workshop(View* view, int lastInd) {
+void workshop(View* view, int lastInd = 0) {
   vector<View::ListElem> options;
   vector<Collective::RoomInfo> roomList = Collective::getWorkshopInfo();
   for (auto& elem : roomList)
@@ -122,16 +107,16 @@ void Encyclopedia::workshop(View* view, int lastInd) {
   workshop(view, *index);
 }
 
-void Encyclopedia::tribes(View* view, int lastInd) {
+void tribes(View* view, int lastInd = 0) {
 }
 
-void Encyclopedia::deity(View* view, const Deity* deity) {
+void deity(View* view, const Deity* deity) {
   view->presentText(deity->getName(),
       "Lives in " + deity->getHabitatString() + " and is the " + deity->getGender().god() + " of "
       + deity->getEpithets() + ".");
 }
 
-void Encyclopedia::deities(View* view, int lastInd) {
+void deities(View* view, int lastInd = 0) {
   vector<View::ListElem> options;
   for (Deity* deity : Deity::getDeities())
     options.push_back(deity->getName());
@@ -140,6 +125,21 @@ void Encyclopedia::deities(View* view, int lastInd) {
     return;
   deity(view, Deity::getDeities()[*index]);
   deities(view, *index);
+}
+
+void Encyclopedia::present(View* view, int lastInd) {
+  auto index = view->chooseFromList("Choose topic:",
+      {"Advances", "Workshop", "Deities", "Skills"}, lastInd);
+  if (!index)
+    return;
+  switch (*index) {
+    case 0: advances(view); break;
+    case 1: workshop(view); break;
+    case 2: deities(view); break;
+    case 3: skills(view); break;
+    default: FAIL << "wfepok";
+  }
+  present(view, *index);
 }
 
 

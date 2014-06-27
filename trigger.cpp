@@ -28,6 +28,8 @@ void Trigger::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Trigger);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Trigger);
+
 Trigger::Trigger(Level* l, Vec2 p) : level(l), position(p) {
 }
 

@@ -52,6 +52,10 @@ void SolidSquare::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(SolidSquare);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Square);
+
+SERIALIZATION_CONSTRUCTOR_IMPL(SolidSquare);
+
 Square::Square(const ViewObject& vo, const string& n, Vision* v, bool canHide, int s, double f,
     map<SquareType, int> construct, bool tick) 
     : name(n), viewObject(vo), vision(v), hide(canHide), strength(s), fire(strength, f),

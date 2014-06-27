@@ -30,6 +30,9 @@ void MarkovChain<T>::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MarkovChain<MinionTask>);
 
+template <class T>
+SERIALIZATION_CONSTRUCTOR_IMPL2(MarkovChain<T>, MarkovChain);
+
 template<class T>
 MarkovChain<T>::MarkovChain(T s, map<T, vector<pair<T, double>>> t) : state(s), transitions(t) {
   for (auto elem : transitions) {

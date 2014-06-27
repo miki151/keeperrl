@@ -26,6 +26,8 @@ void Inventory::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Inventory);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Inventory);
+
 void Inventory::addItem(PItem item) {
   itemsCache.push_back(item.get());
   items.push_back(move(item));

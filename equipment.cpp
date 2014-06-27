@@ -25,6 +25,7 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::HELMET, "Helmet"},
   {EquipmentSlot::BODY_ARMOR, "Body armor"},
   {EquipmentSlot::BOOTS, "Boots"},
+  {EquipmentSlot::RINGS, "Rings"},
   {EquipmentSlot::AMULET, "Amulet"}};
 
 template <class Archive> 
@@ -34,45 +35,50 @@ void Equipment::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Equipment);
+SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
 
-class Item;
-Item* Equipment::getItem(EquipmentSlot slot) const {
+vector<Item*> Equipment::getItem(EquipmentSlot slot) const {
   if (items.count(slot) > 0)
     return items.at(slot);
   else
-    return nullptr;
+    return {};
 }
 
 bool Equipment::isEquiped(const Item* item) const {
-  for (auto elem : items)
-    if (elem.second == item) {
-      return true;
-    }
-  return false;
+  if (!item->canEquip())
+    return false;
+  EquipmentSlot slot = item->getEquipmentSlot();
+  return items.count(slot) && contains(items.at(slot), item);
 }
 
-EquipmentSlot Equipment::getSlot(const Item* item) const {
-  for (auto elem : items)
-    if (elem.second == item) {
-      return elem.first;
-    }
-  FAIL << "Item not in any slot " << item->getAName();
-  return EquipmentSlot::WEAPON;
+int Equipment::getMaxItems(EquipmentSlot slot) const {
+  switch (slot) {
+    case EquipmentSlot::RINGS: return 2;
+    default: return 1;
+  }
+}
+
+bool Equipment::canEquip(const Item* item) const {
+  if (!item->canEquip())
+    return false;
+  EquipmentSlot slot = item->getEquipmentSlot();
+  return !items.count(slot) || items.at(slot).size() < getMaxItems(slot);
 }
 
 void Equipment::equip(Item* item, EquipmentSlot slot) {
-  items[slot] = item;
+  items[slot].push_back(item);
   CHECK(hasItem(item));
 }
 
-void Equipment::unequip(EquipmentSlot slot) {
-  CHECK(items.count(slot) > 0);
-  items.erase(slot);
+void Equipment::unequip(const Item* item) {
+  EquipmentSlot slot = item->getEquipmentSlot();
+  CHECK(items.count(slot));
+  removeElement(items.at(slot), item);
 }
 
 PItem Equipment::removeItem(Item* item) {
   if (isEquiped(item))
-    unequip(getSlot(item));
+    unequip(item);
   return Inventory::removeItem(item);
 }
   

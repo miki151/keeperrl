@@ -29,12 +29,14 @@ void Task::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Task);
+SERIALIZATION_CONSTRUCTOR_IMPL(Task);
 
 template <class Archive> 
 void Task::Callback::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Task::Callback);
+SERIALIZATION_CONSTRUCTOR_IMPL2(Task, Callback);
 
 template <class Archive>
 

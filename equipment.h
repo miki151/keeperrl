@@ -22,12 +22,13 @@
 
 class Equipment : public Inventory {
   public:
-  Item* getItem(EquipmentSlot slot) const;
+  vector<Item*> getItem(EquipmentSlot slot) const;
   bool isEquiped(const Item*) const;
-  EquipmentSlot getSlot(const Item*) const;
+  bool canEquip(const Item*) const;
   void equip(Item*, EquipmentSlot);
-  void unequip(EquipmentSlot slot);
+  void unequip(const Item*);
   PItem removeItem(Item*);
+  int getMaxItems(EquipmentSlot) const;
   vector<PItem> removeItems(const vector<Item*>&);
   vector<PItem> removeAllItems();
 
@@ -36,7 +37,7 @@ class Equipment : public Inventory {
   static map<EquipmentSlot, string> slotTitles;
 
   private:
-  map<EquipmentSlot, Item*> SERIAL(items);
+  map<EquipmentSlot, vector<Item*>> SERIAL(items);
 };
 
 #endif

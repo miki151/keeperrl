@@ -19,6 +19,8 @@
 const Gender Gender::male(false);
 const Gender Gender::female(true);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Gender);
+
 Gender::Gender(bool f) : fem(f) {}
 
 string Gender::his() const {

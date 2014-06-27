@@ -55,10 +55,16 @@
 
 #define SERIALIZATION_DECL(A) \
   friend boost::serialization::access; \
-  A() {} \
+  A(); \
   template <class Archive> \
   void serialize(Archive& ar, const unsigned int version); \
   SERIAL_CHECKER
+
+#define SERIALIZATION_CONSTRUCTOR_IMPL(A) \
+  A::A() {}
+
+#define SERIALIZATION_CONSTRUCTOR_IMPL2(A, B) \
+  A::B::B() {}
 
 #define SERIALIZATION_CONSTRUCTOR(A) \
   A() {} \

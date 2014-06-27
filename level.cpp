@@ -48,6 +48,8 @@ void Level::CoverInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Level::CoverInfo);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Level);
+
 Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n,
     Table<CoverInfo> covers) 
     : squares(std::move(s)), locations(l), model(m), entryMessage(message), name(n), coverInfo(std::move(covers)),

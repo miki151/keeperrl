@@ -178,8 +178,8 @@ static Tile getSprite(ViewId id) {
     case ViewId::MOUNTAIN: return Tile(17, 2, 2, true);
     case ViewId::MOUNTAIN2: return getWallTile(19);
     case ViewId::GOLD_ORE: return Tile(9, 0, 7);
-    case ViewId::IRON_ORE: return Tile(9, 1, 7);
-    case ViewId::STONE: return Tile(11, 0, 7);
+    case ViewId::IRON_ORE: return Tile(11, 0, 7);
+    case ViewId::STONE: return Tile(9, 1, 7);
     case ViewId::SNOW: return Tile(16, 2, 2, true);
     case ViewId::HILL: return Tile(3, 13, 2);
     case ViewId::WOOD_WALL: return getWallTile(4);
@@ -291,6 +291,8 @@ static Tile getSprite(ViewId id) {
     case ViewId::CRYSTAL_AMULET: return Tile(4, 1, 3);
     case ViewId::WOODEN_AMULET: return Tile(0, 1, 3);
     case ViewId::AMBER_AMULET: return Tile(3, 1, 3);
+    case ViewId::FIRE_RESIST_RING: return Tile(11, 3, 3);
+    case ViewId::POISON_RESIST_RING: return Tile(16, 3, 3);
     case ViewId::BOOK: return Tile(0, 3, 3);
     case ViewId::FIRST_AID: return Tile(12, 2, 3);
     case ViewId::TRAP_ITEM: return Tile(12, 4, 3);
@@ -335,11 +337,11 @@ static Tile getSprite(ViewId id) {
     case ViewId::ALTAR: return Tile(2, 7, 2, true);
     case ViewId::TORTURE_TABLE: return Tile(1, 5, 2, true);
     case ViewId::IMPALED_HEAD: return Tile(10, 10, 2, true);
-    case ViewId::TRAINING_ROOM: return Tile(10, 1, 7, true).addConnection(Tile::allDirs, 3, 4).addBackground(2, 4);
-    case ViewId::LIBRARY: return Tile(10, 1, 7, true).addConnection(Tile::allDirs, 1, 3).addBackground(0, 3);
-    case ViewId::LABORATORY: return Tile(10, 1, 7, true).addConnection(Tile::allDirs, 1, 2).addBackground(0, 2);
+    case ViewId::TRAINING_ROOM: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 3, 4).addBackground(2, 4);
+    case ViewId::LIBRARY: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 1, 3).addBackground(0, 3);
+    case ViewId::LABORATORY: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 1, 2).addBackground(0, 2);
     case ViewId::ANIMAL_TRAP: return Tile(3, 2, 7, true);
-    case ViewId::WORKSHOP: return Tile(10, 1, 7, true).addConnection(Tile::allDirs, 1, 5).addBackground(0, 5);
+    case ViewId::WORKSHOP: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 1, 5).addBackground(0, 5);
     case ViewId::GRAVE: return Tile(3, 1, 7, true);
     case ViewId::BARS: return Tile(L'⧻', lightBlue);
     case ViewId::BORDER_GUARD: return Tile(' ', white);
@@ -530,6 +532,8 @@ static Tile getAscii(ViewId id) {
     case ViewId::CRYSTAL_AMULET: return Tile('\"', yellow);
     case ViewId::WOODEN_AMULET: return Tile('\"', yellow);
     case ViewId::AMBER_AMULET: return Tile('\"', yellow);
+    case ViewId::FIRE_RESIST_RING: return Tile('=', red);
+    case ViewId::POISON_RESIST_RING: return Tile('=', green);
     case ViewId::BOOK: return Tile('+', yellow);
     case ViewId::FIRST_AID: return Tile('+', red);
     case ViewId::TRAP_ITEM: return Tile('+', yellow);

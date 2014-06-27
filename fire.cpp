@@ -29,6 +29,8 @@ void Fire::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Fire);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Fire);
+
 Fire::Fire(double objectWeight, double objectFlamability) : weight(objectWeight), flamability(objectFlamability) {}
 
 double epsilon = 0.001;

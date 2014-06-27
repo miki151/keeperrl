@@ -217,7 +217,7 @@ static void summon(Creature* c, CreatureId id, int num, int ttl) {
 
 static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improved") {
   for (EquipmentSlot slot : randomPermutation(getKeys(Equipment::slotTitles)))
-    if (Item* item = c->getEquipment().getItem(slot))
+    for (Item* item : c->getEquipment().getItem(slot))
       if (item->getType() == ItemType::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
         if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
@@ -227,7 +227,7 @@ static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improv
 }
 
 static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is improved") {
-  if (Item* item = c->getEquipment().getItem(EquipmentSlot::WEAPON)) {
+  if (Item* item = c->getWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
     item->addModifier(chooseRandom({AttrType::TO_HIT, AttrType::DAMAGE}), mod);
   }

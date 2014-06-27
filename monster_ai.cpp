@@ -32,6 +32,8 @@ void MonsterAI::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MonsterAI);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(MonsterAI);
+
 template <class Archive> 
 void Behaviour::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(creature);
@@ -41,6 +43,8 @@ void Behaviour::serialize(Archive& ar, const unsigned int version) {
 
 Behaviour::Behaviour(Creature* c) : creature(c) {
 }
+
+SERIALIZATION_CONSTRUCTOR_IMPL(Behaviour);
 
 const Creature* Behaviour::getClosestEnemy() {
   int dist = 1000000000;
@@ -485,7 +489,7 @@ class Fighter : public Behaviour, public EventListener {
     Debug() << creature->getName() << " enemy " << other->getName();
     Vec2 enemyDir = (other->getPosition() - creature->getPosition());
     distance = enemyDir.length8();
-    if (creature->isHumanoid() && !creature->getEquipment().getItem(EquipmentSlot::WEAPON)) {
+    if (creature->isHumanoid() && !creature->getWeapon()) {
       if (Item* weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=] {

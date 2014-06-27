@@ -31,6 +31,8 @@ void Technology::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Technology);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Technology);
+
 void Technology::init() {
   int base = 100;
   Technology::set(TechId::ALCHEMY, new Technology("alchemy", base, {}));

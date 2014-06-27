@@ -276,10 +276,11 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
   void handleMarket(View*, int prevItem = 0);
   void getEquipmentItem(View* view, ItemPredicate predicate);
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
-  Item* chooseEquipmentItem(View* view, Item* currentItem, ItemPredicate predicate,
+  Item* chooseEquipmentItem(View* view, vector<Item*> currentItems, ItemPredicate predicate,
       int* index = nullptr, double* scrollPos = nullptr) const;
   bool usesEquipment(const Creature* c) const;
   void autoEquipment(Creature* creature, bool replace);
+  Item* getWorstItem(vector<Item*> items) const;
   MinionType getMinionType(const Creature*) const;
   void setMinionType(Creature*, MinionType type);
 

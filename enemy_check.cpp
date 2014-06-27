@@ -25,6 +25,8 @@ void EnemyCheck::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(EnemyCheck);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(EnemyCheck);
+
 EnemyCheck::EnemyCheck(double w) : weight(w){}
 
 double EnemyCheck::getWeight() const {

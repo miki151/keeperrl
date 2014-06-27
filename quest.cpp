@@ -31,6 +31,7 @@ void Quest::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Quest);
+SERIALIZATION_CONSTRUCTOR_IMPL(Quest);
 
 Quest::Quest(const string& message) : startMessage(message) {}
 

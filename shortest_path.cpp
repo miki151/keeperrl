@@ -30,6 +30,7 @@ void ShortestPath::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(ShortestPath);
+SERIALIZATION_CONSTRUCTOR_IMPL(ShortestPath);
 
 const double ShortestPath::infinity = 1000000000;
 

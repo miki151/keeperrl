@@ -30,6 +30,8 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(ViewObject);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
+
 ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
     : resource_id(id), viewLayer(l), description(d) {
   if (islower(description[0]))

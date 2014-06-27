@@ -33,6 +33,7 @@ void Item::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Item);
+SERIALIZATION_CONSTRUCTOR_IMPL(Item);
 
 template <class Archive> 
 void Item::CorpseInfo::serialize(Archive& ar, const unsigned int version) {
@@ -347,7 +348,9 @@ string Item::getNameAndModifiers(bool getPlural, bool blind) const {
         attrString += ", ";
       attrString += withSign(modifiers[attr]) + " " + Creature::getAttrName(attr);
     }
-    return getName(getPlural, blind) + artStr + " (" + attrString + ")";
+    if (!attrString.empty())
+      attrString = " (" + attrString + ")";
+    return getName(getPlural, blind) + artStr + attrString;
   } else
     return getName(getPlural, blind);
 }

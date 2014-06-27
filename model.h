@@ -22,8 +22,6 @@
 #include "square_factory.h"
 #include "monster.h"
 #include "level_maker.h"
-#include "village_control.h"
-#include "collective.h"
 #include "encyclopedia.h"
 
 class Collective;

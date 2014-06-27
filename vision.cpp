@@ -18,6 +18,7 @@ void Vision::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Vision);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Vision);
 
 Vision::Vision(Vision* inherited, bool night) : inheritedFov(inherited), nightVision(night) {}
 

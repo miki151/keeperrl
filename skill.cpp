@@ -29,6 +29,8 @@ void Skill::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Skill);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Skill);
+
 string Skill::getName() const {
   return name;
 }

@@ -52,3 +52,4 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(ItemAttributes);
+SERIALIZATION_CONSTRUCTOR_IMPL(ItemAttributes);

@@ -35,6 +35,8 @@ void ItemFactory::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(ItemFactory);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(ItemFactory);
+
 class FireScroll : public Item {
   public:
   FireScroll(const ViewObject& obj, const ItemAttributes& attr) : Item(obj, attr) {}
@@ -249,7 +251,7 @@ class Corpse : public Item {
   }
 
   virtual void apply(Creature* c, Level* l) override {
-    Item* it = c->getEquipment().getItem(EquipmentSlot::WEAPON);
+    Item* it = c->getWeapon();
     if (it && it->getAttackType() == AttackType::CUT) {
       c->you(MsgType::DECAPITATE, getTheName());
       setName("decapitated " + getName());
@@ -451,6 +453,7 @@ void ItemFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Telepathy);
   REGISTER_TYPE(ar, ItemOfCreatureVision);
   REGISTER_TYPE(ar, Corpse);
+  REGISTER_TYPE(ar, LastingEffectItem);
 }
 
 REGISTER_TYPES(ItemFactory);
@@ -525,9 +528,12 @@ ItemFactory ItemFactory::villageShop() {
       {ItemId::SPEED_POTION,5 },
       {ItemId::BLINDNESS_POTION, 5 },
       {ItemId::INVISIBLE_POTION, 2 },
-      {ItemId::WARNING_AMULET, 1 },
-      {ItemId::HEALING_AMULET, 1 },
-      {ItemId::DEFENSE_AMULET, 1 },
+      {ItemId::WARNING_AMULET, 0.5 },
+      {ItemId::HEALING_AMULET, 0.5 },
+      {ItemId::DEFENSE_AMULET, 0.5 },
+      {ItemId::FRIENDLY_ANIMALS_AMULET, 0.5},
+      {ItemId::POISON_RESIST_RING, 0.5},
+      {ItemId::FIRE_RESIST_RING, 0.5},
       {ItemId::FIRST_AID_KIT, 5},
       {ItemId::SPEED_BOOTS, 2},
       {ItemId::LEVITATION_BOOTS, 2},
@@ -724,6 +730,12 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::POISON_POTION, 20 },
       {ItemId::POISON_RESIST_POTION, 20 },
       {ItemId::LEVITATION_POTION, 20 },
+      {ItemId::WARNING_AMULET, 3 },
+      {ItemId::HEALING_AMULET, 3 },
+      {ItemId::DEFENSE_AMULET, 3 },
+      {ItemId::FRIENDLY_ANIMALS_AMULET, 3},
+      {ItemId::POISON_RESIST_RING, 3},
+      {ItemId::FIRE_RESIST_RING, 3},
       {ItemId::FIRST_AID_KIT, 30 }});
 }
 
@@ -815,6 +827,17 @@ PItem getTechBook(TechId tech) {
             i.type = ItemType::BOOK;
             i.applyTime = 3;
             i.price = 1000;), Technology::get(tech)));
+}
+
+PItem getRing(LastingEffect effect, string name, ViewId viewId) {
+  return PItem(new LastingEffectItem(
+      ViewObject(viewId, ViewLayer::ITEM, "Ring"), ITATTR(
+            i.name = "ring of " + name;
+            i.plural = "rings of " + name;
+            i.weight = 0.05;
+            i.equipmentSlot = EquipmentSlot::RINGS;
+            i.type = ItemType::RING;
+            i.price = 200;), effect));
 }
 
 static int maybePlusMinusOne(int prob) {
@@ -1075,6 +1098,10 @@ PItem ItemFactory::fromId(ItemId id) {
             i.weight = 2;
             i.price = 360;
             i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);), LastingEffect::FLYING));
+    case ItemId::FIRE_RESIST_RING:
+      return getRing(LastingEffect::FIRE_RESISTANT, "fire resistance", ViewId::FIRE_RESIST_RING);
+    case ItemId::POISON_RESIST_RING:
+      return getRing(LastingEffect::POISON_RESISTANT, "poison resistance", ViewId::POISON_RESIST_RING);
     case ItemId::WARNING_AMULET: return PItem(
         new AmuletOfWarning(ViewObject(amulet_ids[0], ViewLayer::ITEM, "Amulet"), 
           ITATTR(

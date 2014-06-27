@@ -42,6 +42,8 @@ void Player::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Player);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Player);
+
 Player::Player(Creature* c, Model* m, bool greet, map<Level*, MapMemory>* memory) :
     Controller(c), levelMemory(memory), model(m), displayGreeting(greet) {
 }
@@ -85,14 +87,13 @@ ControllerFactory Player::getFactory(Model *m, map<Level*, MapMemory>* levelMemo
   return ControllerFactory([=](Creature* c) { return new Player(c, m, true, levelMemory);});
 }
 
-map<EquipmentSlot, string> slotSuffixes = {
-    {EquipmentSlot::WEAPON, "(weapon ready)"},
-    {EquipmentSlot::GLOVES, "(being worn)"},
-    {EquipmentSlot::RANGED_WEAPON, "(ranged weapon ready)"},
-    {EquipmentSlot::BODY_ARMOR, "(being worn)"},
-    {EquipmentSlot::HELMET, "(being worn)"},
-    {EquipmentSlot::BOOTS, "(being worn)"},
-    {EquipmentSlot::AMULET, "(being worn)"}};
+static string getSlotSuffix(EquipmentSlot slot) {
+  switch (slot) {
+    case EquipmentSlot::WEAPON: return "(weapon ready)";
+    case EquipmentSlot::RANGED_WEAPON: return "(ranged weapon ready)";
+    default: return "(being worn)";
+  }
+}
 
 void Player::onBump(Creature*) {
   FAIL << "Shouldn't call onBump on a player";
@@ -104,7 +105,7 @@ void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, ve
       [this] (Item* const& item) { 
         if (creature->getEquipment().isEquiped(item))
           return item->getNameAndModifiers(false, creature->isBlind()) + " " 
-              + slotSuffixes[creature->getEquipment().getSlot(item)];
+              + getSlotSuffix(item->getEquipmentSlot());
         else
           return item->getNameAndModifiers(false, creature->isBlind());});
   for (auto elem : ret) {
@@ -187,7 +188,22 @@ void Player::itemsMessage() {
             names[0].getText()));
 }
 
-ItemType typeDisplayOrder[] { ItemType::WEAPON, ItemType::RANGED_WEAPON, ItemType::AMMO, ItemType::ARMOR, ItemType::POTION, ItemType::SCROLL, ItemType::FOOD, ItemType::BOOK, ItemType::AMULET, ItemType::TOOL, ItemType::CORPSE, ItemType::OTHER, ItemType::GOLD };
+ItemType typeDisplayOrder[] {
+  ItemType::WEAPON,
+    ItemType::RANGED_WEAPON,
+    ItemType::AMMO,
+    ItemType::ARMOR,
+    ItemType::POTION,
+    ItemType::SCROLL,
+    ItemType::FOOD,
+    ItemType::BOOK,
+    ItemType::AMULET,
+    ItemType::RING,
+    ItemType::TOOL,
+    ItemType::CORPSE,
+    ItemType::OTHER,
+    ItemType::GOLD
+};
 
 static string getText(ItemType type) {
   switch (type) {
@@ -195,6 +211,7 @@ static string getText(ItemType type) {
     case ItemType::RANGED_WEAPON: return "Ranged weapons";
     case ItemType::AMMO: return "Projectiles";
     case ItemType::AMULET: return "Amulets";
+    case ItemType::RING: return "Rings";
     case ItemType::ARMOR: return "Armor";
     case ItemType::SCROLL: return "Scrolls";
     case ItemType::POTION: return "Potions";
@@ -318,13 +335,21 @@ void Player::equipmentAction() {
   creature->startEquipChain();
   while (1) {
     vector<View::ListElem> list;
+    vector<Item*> itemsChoice;
+    vector<EquipmentSlot> slotsChoice;
     for (auto slot : slots) {
       list.push_back(View::ListElem(Equipment::slotTitles.at(slot), View::TITLE));
-      Item* item = creature->getEquipment().getItem(slot);
-      if (item)
+      vector<Item*> items = creature->getEquipment().getItem(slot);
+      for (Item* item : items) {
         list.push_back(item->getNameAndModifiers());
-      else
-        list.push_back("[Nothing]");
+        itemsChoice.push_back(item);
+        slotsChoice.push_back(EquipmentSlot::WEAPON); // anything
+      }
+      if (items.size() < creature->getEquipment().getMaxItems(slot)) {
+        list.push_back("[Equip]");
+        slotsChoice.push_back(slot);
+        itemsChoice.push_back(nullptr);
+      }
     }
     model->getView()->updateView(creature);
     Optional<int> newIndex = model->getView()->chooseFromList("Equipment", list, index, View::NORMAL_MENU, nullptr,
@@ -334,8 +359,8 @@ void Player::equipmentAction() {
       return;
     }
     index = *newIndex;
-    EquipmentSlot slot = slots[index];
-    if (Item* item = creature->getEquipment().getItem(slot)) {
+    EquipmentSlot slot = slotsChoice[index];
+    if (Item* item = itemsChoice[index]) {
       tryToPerform(creature->unequip(item));
     } else {
       vector<Item*> items = chooseItem("Choose an item to equip:", [=](const Item* item) {

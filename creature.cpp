@@ -84,6 +84,8 @@ PCreature Creature::defaultCreature;
 PCreature Creature::defaultFlyer;
 PCreature Creature::defaultMinion;
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Creature);
+
 void Creature::initialize() {
   defaultCreature.reset();
   defaultFlyer.reset();
@@ -577,14 +579,14 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
 }
 
 bool Creature::canEquip(const Item* item) const {
-  return canEquipIfEmptySlot(item, nullptr) && !equipment.getItem(item->getEquipmentSlot());
+  return canEquipIfEmptySlot(item, nullptr) && equipment.canEquip(item);
 }
 
 Creature::Action Creature::equip(Item* item) {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return Action(reason);
-  if (equipment.getItem(item->getEquipmentSlot()))
+  if (!equipment.canEquip(item))
     return Action("This slot is already equiped.");
   return Action([=]() {
     Debug() << getTheName() << " equip " << item->getName();
@@ -609,8 +611,8 @@ Creature::Action Creature::unequip(Item* item) {
   return Action([=]() {
     Debug() << getTheName() << " unequip";
     EquipmentSlot slot = item->getEquipmentSlot();
-    CHECK(equipment.getItem(slot) == item) << "Item not equiped.";
-    equipment.unequip(slot);
+    CHECK(equipment.isEquiped(item)) << "Item not equiped.";
+    equipment.unequip(item);
     item->onUnequip(this);
     if (!inEquipChain)
       spendTime(1);
@@ -820,8 +822,8 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
         you(MsgType::ARE, "no longer poisoned");
       viewObject.removeModifier(ViewObject::Modifier::POISONED);
       break;
-    case LastingEffect::POISON_RESISTANT: if (msg) you(MsgType::ARE, "no longer resistant"); break;
-    case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "no longer resistant"); break;
+    case LastingEffect::POISON_RESISTANT: if (msg) you(MsgType::ARE, "no longer poison resistant"); break;
+    case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "no longer fire resistant"); break;
     case LastingEffect::FLYING:
       if (msg) you(MsgType::FALL, getSquare()->getName());
       bleed(0.1);
@@ -839,6 +841,8 @@ void Creature::addEffect(LastingEffect effect, double time, bool msg) {
 }
 
 void Creature::removeEffect(LastingEffect effect, bool msg) {
+  if (!isAffected(effect))
+    return;
   lastingEffects[effect] = 0;
   if (!isAffected(effect))
     onRemoved(effect, msg);
@@ -1665,7 +1669,7 @@ void Creature::give(const Creature* whom, vector<Item*> items) {
 
 Creature::Action Creature::fire(Vec2 direction) {
   CHECK(direction.length8() == 1);
-  if (!getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))
+  if (getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())
     return Action("You need a ranged weapon.");
   if (!hasSkill(Skill::get(SkillId::ARCHERY)))
     return Action("You don't have this skill.");
@@ -1675,7 +1679,8 @@ Creature::Action Creature::fire(Vec2 direction) {
     return Action("Out of ammunition");
   return Action([=]() {
     PItem ammo = equipment.removeItem(NOTNULL(getAmmo()));
-    RangedWeapon* weapon = NOTNULL(dynamic_cast<RangedWeapon*>(getEquipment().getItem(EquipmentSlot::RANGED_WEAPON)));
+    RangedWeapon* weapon = NOTNULL(dynamic_cast<RangedWeapon*>(
+        getOnlyElement(getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))));
     weapon->fire(this, level, std::move(ammo), direction);
     spendTime(1);
   });
@@ -1744,7 +1749,11 @@ AttackLevel Creature::getRandomAttackLevel() const {
 }
 
 Item* Creature::getWeapon() const {
-  return equipment.getItem(EquipmentSlot::WEAPON);
+  vector<Item*> it = equipment.getItem(EquipmentSlot::WEAPON);
+  if (it.empty())
+    return nullptr;
+  else
+    return getOnlyElement(it);
 }
 
 AttackType Creature::getAttackType() const {
@@ -2212,7 +2221,7 @@ void Creature::refreshGameInfo(View::GameInfo& gameInfo) const {
   info.possessed = !controllerStack.empty();
   info.spellcaster = !spells.empty();
   info.adjectives = getMainAdjectives();
-  Item* weapon = getEquipment().getItem(EquipmentSlot::WEAPON);
+  Item* weapon = getWeapon();
   info.weaponName = weapon ? weapon->getName() : "";
   const Location* location = getLevel()->getLocation(getPosition());
   info.levelName = location && location->hasName() 

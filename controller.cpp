@@ -26,6 +26,7 @@ void DoNothingController::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(DoNothingController);
+SERIALIZATION_CONSTRUCTOR_IMPL(DoNothingController);
 
 template <class Archive> 
 void Controller::serialize(Archive& ar, const unsigned int version) {
@@ -34,6 +35,8 @@ void Controller::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Controller);
+
+SERIALIZATION_CONSTRUCTOR_IMPL(Controller);
 
 Controller::Controller(Creature* c) : creature(c) {
 }

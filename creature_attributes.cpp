@@ -70,3 +70,4 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(CreatureAttributes);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(CreatureAttributes);

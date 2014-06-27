@@ -276,6 +276,7 @@ void Rectangle::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Rectangle);
+SERIALIZATION_CONSTRUCTOR_IMPL(Rectangle);
 
 Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {
   int infinity = 1000000;

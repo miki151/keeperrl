@@ -25,6 +25,7 @@ void Sectors::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Sectors);
+SERIALIZATION_CONSTRUCTOR_IMPL(Sectors);
 
 Sectors::Sectors(Rectangle b) : bounds(b), sectors(bounds, -1) {
 }
