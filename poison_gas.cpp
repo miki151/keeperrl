@@ -32,7 +32,7 @@ void PoisonGas::addAmount(double a) {
   amount = min(1., a + amount);
 }
 
-const double decrease = 0.001;
+const double decrease = 0.98;
 const double spread = 0.10;
 
 void PoisonGas::tick(Level* level, Vec2 pos) {
@@ -50,7 +50,7 @@ void PoisonGas::tick(Level* level, Vec2 pos) {
       level->getSquare(v + pos)->addPoisonGas(transfer);
     }
   }
-  amount = max(0.0, amount - decrease);
+  amount = max(0.0, amount * decrease);
 }
 
 double PoisonGas::getAmount() const {

@@ -58,6 +58,7 @@ class NoDebug {
   NoDebug& operator <<(const int msg) {return *this;}
   NoDebug& operator <<(const char msg) {return *this;}
   NoDebug& operator <<(const double msg) {return *this;}
+  NoDebug& operator <<(void*) {return *this;}
   template<class T>
   NoDebug& operator<<(const vector<T>& container) {return *this;}
   template<class T>
@@ -72,6 +73,7 @@ class Debug {
   Debug& operator <<(const int msg);
   Debug& operator <<(const char msg);
   Debug& operator <<(const double msg);
+  Debug& operator <<(void*);
   template<class T>
   Debug& operator<<(const vector<T>& container);
   template<class T>

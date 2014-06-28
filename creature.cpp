@@ -2195,6 +2195,7 @@ vector<string> Creature::getAdjectives() const {
         case LastingEffect::SPEED: ret.push_back("speed bonus"); break;
         case LastingEffect::SLOWED: ret.push_back("slowed"); break;
         case LastingEffect::POISON_RESISTANT: ret.push_back("poison resistant"); break;
+        case LastingEffect::FIRE_RESISTANT: ret.push_back("fire resistant"); break;
         case LastingEffect::FLYING: ret.push_back("flying"); break;
         default: addCount = false; break;
       }

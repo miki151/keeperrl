@@ -806,11 +806,11 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::FLOOR:
         return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", Vision::get(VisionId::NORMAL),
             false, 0, 0, 
-            {{SquareType::TREASURE_CHEST, 10}, {SquareType::BED, 10}, {SquareType::TRIBE_DOOR, 10},
+            {{SquareType::TREASURE_CHEST, 10}, {SquareType::DORM, 10}, {SquareType::TRIBE_DOOR, 10},
             {SquareType::TRAINING_ROOM, 10}, {SquareType::LIBRARY, 10},
             {SquareType::STOCKPILE, 1}, {SquareType::STOCKPILE_EQUIP, 1}, {SquareType::STOCKPILE_RES, 1},
-            {SquareType::GRAVE, 10}, {SquareType::WORKSHOP, 10}, {SquareType::PRISON, 10},
-            {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::ANIMAL_TRAP, 10},
+            {SquareType::CEMETERY, 10}, {SquareType::WORKSHOP, 10}, {SquareType::PRISON, 10},
+            {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::BEAST_LAIR, 10},
             {SquareType::IMPALED_HEAD, 5}, {SquareType::BARRICADE, 20}, {SquareType::TORCH, 5}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Rope bridge"), "rope bridge",
@@ -907,16 +907,18 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Furniture(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
             "tree trunk", 0);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
+    case SquareType::DORM: return new DestroyableSquare(ViewObject(ViewId::DORM, ViewLayer::FLOOR_BACKGROUND,
+                              "Dormitory"), "floor", Vision::get(VisionId::NORMAL));
     case SquareType::TORCH: return new Torch(ViewObject(ViewId::TORCH, ViewLayer::FLOOR, "Torch"), "torch");
     case SquareType::STOCKPILE:
         return new DestroyableSquare(ViewObject(ViewId::STOCKPILE1, ViewLayer::FLOOR_BACKGROUND, "Storage (all)"),
             "floor", Vision::get(VisionId::NORMAL));
     case SquareType::STOCKPILE_EQUIP:
-        return new DestroyableSquare(ViewObject(ViewId::STOCKPILE2, ViewLayer::FLOOR_BACKGROUND, "Storage (equipment)"),
-            "floor", Vision::get(VisionId::NORMAL));
+        return new DestroyableSquare(ViewObject(ViewId::STOCKPILE2, ViewLayer::FLOOR_BACKGROUND,
+              "Storage (equipment)"), "floor", Vision::get(VisionId::NORMAL));
     case SquareType::STOCKPILE_RES:
-        return new DestroyableSquare(ViewObject(ViewId::STOCKPILE3, ViewLayer::FLOOR_BACKGROUND, "Storage (resources)"),
-            "floor", Vision::get(VisionId::NORMAL));
+        return new DestroyableSquare(ViewObject(ViewId::STOCKPILE3, ViewLayer::FLOOR_BACKGROUND,
+              "Storage (resources)"), "floor", Vision::get(VisionId::NORMAL));
     case SquareType::PRISON:
         return new DestroyableSquare(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"),
             "floor", Vision::get(VisionId::NORMAL));
@@ -929,9 +931,10 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
             "torture table", 0.3, SquareApplyType::TORTURE);
-    case SquareType::ANIMAL_TRAP:
-        return new Furniture(ViewObject(ViewId::ANIMAL_TRAP, ViewLayer::FLOOR, "Animal cage"), 
-            "animal trap", 0.3);
+    case SquareType::BEAST_CAGE:
+        return new Furniture(ViewObject(ViewId::BEAST_CAGE, ViewLayer::FLOOR, "Beast cage"), "beast cage", 0.3);
+    case SquareType::BEAST_LAIR: return new DestroyableSquare(ViewObject(ViewId::BEAST_LAIR,
+                              ViewLayer::FLOOR_BACKGROUND, "Beast lair"), "floor", Vision::get(VisionId::NORMAL));
     case SquareType::TRAINING_ROOM:
         return new TrainingDummy(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training post"), 
             "training post");
@@ -962,6 +965,8 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Furniture(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);
     case SquareType::COFFIN:
         return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"), ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin", CreatureId::VAMPIRE, 1, 2, "There is a rotting corpse inside. You find an item.", "There is a rotting corpse inside. The corpse is alive!", "There is a rotting corpse inside. You find some gold.", ItemFactory::chest());
+    case SquareType::CEMETERY: return new DestroyableSquare(ViewObject(ViewId::CEMETERY, ViewLayer::FLOOR_BACKGROUND,
+                              "Cemetery"), "floor", Vision::get(VisionId::NORMAL));
     case SquareType::GRAVE:
         return new Grave(ViewObject(ViewId::GRAVE, ViewLayer::FLOOR, "Grave"), "grave");
     case SquareType::IRON_BARS:

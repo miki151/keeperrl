@@ -268,8 +268,7 @@ class Corpse : public Item {
       viewObject = object2;
       corpseInfo.isSkeleton = true;
     } else {
-      if (!rotten && level->getSquare(position)->getName() != "grave" && getWeight() > 10
-          && Random.roll(20 + (rottenTime - time) / 10))
+      if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
         Effect::applyToPosition(level, position, EffectType::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
         !level->getCoverInfo(position).covered && Random.roll(35)) {
@@ -873,6 +872,7 @@ void makeArtifact(ItemAttributes& i) {
 enum class WeaponPrefix { SILVER, FLAMING, POISONOUS };
 
 void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
+  i.price *= 7;
   switch (prefix) {
     case WeaponPrefix::SILVER:
       i.name = "silver " + *i.name;
@@ -952,7 +952,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.weight = 1;
             i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
             i.modifiers[AttrType::TO_HIT] = 5 + maybePlusMinusOne(4);
-            i.price = 120;
+            i.price = 40;
             if (artifact) {
               makeArtifact(i);
             } else

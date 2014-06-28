@@ -65,6 +65,12 @@ Debug& Debug::operator <<(const double msg) {
   add(convertToString(msg));
   return *this;
 }
+Debug& Debug::operator <<(void* msg) {
+  std::stringstream ss;
+  ss << msg;
+  add(ss.str());
+  return *this;
+}
 template<class T>
 Debug& Debug::operator<<(const vector<T>& container){
   (*this) << "{";

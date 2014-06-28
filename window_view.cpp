@@ -724,6 +724,10 @@ void WindowView::rebuildGui() {
         break;
   }
   resetMapBounds();
+  if (tempGuiElems.size() == 2) {
+    Debug() << "Clearing tempGuiElems " << tempGuiElems[0].get() << " " << tempGuiElems[1].get();
+  }
+  CHECK(std::this_thread::get_id() == renderThreadId);
   tempGuiElems.clear();
   tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2), 
         GuiElem::margins(std::move(right), 20, 20, 10, 20)));
@@ -902,24 +906,6 @@ class FpsCounter {
 
 
 void WindowView::drawMap() {
-/*  map<string, ViewObject> objIndex;
-  for (Vec2 wpos : mapLayout->getAllTiles(getMapGuiBounds(), objects.getBounds())) 
-    if (objects[wpos]) {
-      const ViewIndex& index = *objects[wpos];
-      if (auto topObject = index.getTopObject(mapLayout->getLayers()))
-        objIndex.insert(std::make_pair(topObject->getDescription(), *topObject));
-    }*/
-/*  int rightPos = renderer.getWidth() -rightBarText;
-  if (gameInfo.infoType == GameInfo::InfoType::PLAYER) {
-    int cnt = 0;
-    if (legendOption == LegendOption::OBJECTS) {
-      for (auto elem : objIndex) {
-        drawViewObject(elem.second, rightPos, legendStartHeight + cnt * 25, currentTileLayout.sprites);
-        renderer.drawText(white, rightPos + 30, legendStartHeight + cnt * 25, elem.first);
-        ++cnt;
-      }
-    }
-  }*/
   rebuildGui();
   for (GuiElem* gui : getAllGuiElems())
     gui->render(renderer);
@@ -1387,6 +1373,7 @@ void WindowView::processEvents() {
 }
 
 void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
+  CHECK(std::this_thread::get_id() == renderThreadId);
   if (gameReady)
     mapGui->resetHint();
   switch (event.type) {

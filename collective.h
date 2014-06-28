@@ -289,12 +289,13 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
   int getNumMinions() const;
   void minionView(View* view, Creature* creature, int prevItem = 0);
   void handleEquipment(View* view, Creature* creature, int prevItem = 0);
-  void handleNecromancy(View*, int prevItem = 0, bool firstTime = true);
+  void handleNecromancy(View*);
   void handleMatterAnimation(View*);
   void handleBeastTaming(View*);
   void handleHumanoidBreeding(View*);
   void handleSpawning(View* view, SquareType spawnSquare, const string& info1, 
-      const string& info2, const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo);
+      const string& info2, const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo,
+      Optional<vector<pair<Vec2, Item*>>> genItems = Nothing(), string genItemsInfo = "", string info3 = "");
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   void updateConstructions();

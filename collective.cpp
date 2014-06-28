@@ -165,13 +165,13 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
         {SquareType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}},
         Nothing(), "", 's'),
     BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, Nothing(), ""),
-    BuildInfo({SquareType::BED, {ResourceId::WOOD, 10}, "Bed"}, Nothing(), "", 'b'),
+    BuildInfo({SquareType::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, Nothing(), "", 'b'),
     BuildInfo({SquareType::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
     BuildInfo({SquareType::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
     BuildInfo({SquareType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY, "", 'r'),
     BuildInfo({SquareType::WORKSHOP, {ResourceId::IRON, 15}, "Workshop"}, TechId::CRAFTING, "", 'w'),
-    BuildInfo({SquareType::ANIMAL_TRAP, {ResourceId::WOOD, 12}, "Beast cage"}, Nothing(), "", 'a'),
-    BuildInfo({SquareType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
+    BuildInfo({SquareType::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, Nothing(), "", 'a'),
+    BuildInfo({SquareType::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
     BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 'p'),
     BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u'),
     BuildInfo({SquareType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
@@ -200,6 +200,15 @@ const vector<Collective::BuildInfo> Collective::workshopInfo {
     BuildInfo(BuildInfo::IMPALED_HEAD, {SquareType::IMPALED_HEAD, {ResourceId::GOLD, 0}, "Prisoner head"},
         "Impaled head of an executed prisoner. Aggravates enemies."),
 };
+
+Optional<SquareType> getSecondarySquare(SquareType type) {
+  switch (type) {
+    case SquareType::DORM: return SquareType::BED;
+    case SquareType::BEAST_LAIR: return SquareType::BEAST_CAGE;
+    case SquareType::CEMETERY: return SquareType::GRAVE;
+    default: return Nothing();
+  }
+}
 
 const vector<Collective::BuildInfo> Collective::libraryInfo {
   BuildInfo(BuildInfo::IMP, "", 'i'),
@@ -260,7 +269,7 @@ const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resource
 
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   return {
-    {unMarkedItems(ItemType::CORPSE), {SquareType::GRAVE}, true, {}, Warning::GRAVES},
+    {unMarkedItems(ItemType::CORPSE), {SquareType::CEMETERY}, true, {}, Warning::GRAVES},
     {unMarkedItems(ItemType::GOLD), {SquareType::TREASURE_CHEST}, false, {}, Warning::CHESTS},
     {[this](const Item* it) {
         return minionEquipment.isItemUseful(it) && !isItemMarked(it);
@@ -314,8 +323,11 @@ Collective::Collective(Model* m, Level* l, Tribe* t) : level(l), mana(200), mode
   mySquares[SquareType::TRIBE_DOOR].clear();
   for (BuildInfo info : concat(buildInfo, workshopInfo))
     if (info.buildType == BuildInfo::SQUARE)
-      for (auto s : info.squareInfo)
+      for (auto s : info.squareInfo) {
         mySquares[s.type].clear();
+        if (auto t = getSecondarySquare(s.type))
+          mySquares[*t].clear();
+      }
   credit = {
     {ResourceId::GOLD, 0},
     {ResourceId::WOOD, 0},
@@ -830,13 +842,6 @@ void Collective::handlePersonalSpells(View* view) {
   view->presentList("Sorcery", options);
 }
 
-vector<Collective::SpawnInfo> raisingInfo {
-  {CreatureId::ZOMBIE, 30, TechId::NECRO},
-  {CreatureId::MUMMY, 50, TechId::NECRO},
-  {CreatureId::VAMPIRE, 80, TechId::VAMPIRE},
-  {CreatureId::VAMPIRE_LORD, 150, TechId::VAMPIRE_ADV},
-};
-
 vector<Collective::SpawnInfo> animationInfo {
   {CreatureId::STONE_GOLEM, 30, TechId::GOLEM},
   {CreatureId::IRON_GOLEM, 80, TechId::GOLEM_ADV},
@@ -858,8 +863,8 @@ vector<Collective::SpawnInfo> tamingInfo {
 };
 
 void Collective::handleBeastTaming(View* view) {
-  handleSpawning(view, SquareType::ANIMAL_TRAP,
-      "You need to build cages to trap beasts.", "You need more cages.", "Beast taming",
+  handleSpawning(view, SquareType::BEAST_LAIR,
+      "You need to build a beast lair to trap beasts.", "You need a larger lair.", "Beast taming",
       MinionType::BEAST, tamingInfo);
 }
 
@@ -871,9 +876,28 @@ vector<Collective::SpawnInfo> breedingInfo {
 };
 
 void Collective::handleHumanoidBreeding(View* view) {
-  handleSpawning(view, SquareType::BED,
-      "You need to build beds to breed humanoids.", "You need more beds.", "Humanoid breeding",
+  handleSpawning(view, SquareType::DORM,
+      "You need to build a dormitory to breed humanoids.", "You need a larger dormitory.", "Humanoid breeding",
       MinionType::NORMAL, breedingInfo);
+}
+
+vector<Collective::SpawnInfo> raisingInfo {
+  {CreatureId::ZOMBIE, 30, TechId::NECRO},
+  {CreatureId::MUMMY, 50, TechId::NECRO},
+  {CreatureId::VAMPIRE, 80, TechId::VAMPIRE},
+  {CreatureId::VAMPIRE_LORD, 150, TechId::VAMPIRE_ADV},
+};
+
+void Collective::handleNecromancy(View* view) {
+  vector<pair<Vec2, Item*>> corpses;
+  for (Vec2 pos : mySquares.at(SquareType::CEMETERY)) {
+    for (Item* it : level->getSquare(pos)->getItems([](const Item* it) {
+        return it->getType() == ItemType::CORPSE && it->getCorpseInfo()->canBeRevived; }))
+      corpses.push_back({pos, it});
+  }
+  handleSpawning(view, SquareType::CEMETERY, "You need to build a graveyard and collect corpses to raise undead.",
+      "You need a larger graveyard", "Necromancy ", MinionType::UNDEAD, raisingInfo,
+      corpses, "corpses available", "You need to collect some corpses to raise undead.");
 }
 
 vector<CreatureId> Collective::getSpawnInfo(const Technology* tech) {
@@ -888,26 +912,65 @@ int Collective::getNumMinions() const {
   return minions.size() - minionByType.at(MinionType::PRISONER).size();
 }
 
+static int countNeighbor(Vec2 pos, const set<Vec2>& squares) {
+  int num = 0;
+  for (Vec2 v : pos.neighbors8())
+    num += squares.count(v);
+  return num;
+}
+
+static Optional<Vec2> chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds) {
+  vector<Vec2> res;
+  for (Vec2 v : lair) {
+    if (countNeighbor(v, beds) > 2)
+      continue;
+    bool bad = false;
+    for (Vec2 n : v.neighbors8())
+      if (beds.count(n) && countNeighbor(n, beds) >= 2) {
+        bad = true;
+        break;
+      }
+    if (!bad)
+      res.push_back(v);
+  }
+  if (!res.empty())
+    return chooseRandom(res);
+  else
+    return Nothing();
+}
+
 void Collective::handleSpawning(View* view, SquareType spawnSquare, const string& info1, const string& info2,
-    const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo) {
-  set<Vec2> cages = mySquares.at(spawnSquare);
+    const string& titleBase, MinionType minionType, vector<SpawnInfo> spawnInfo,
+    Optional<vector<pair<Vec2, Item*>>> genItems, string genItemsInfo, string info3) {
+  Optional<SquareType> replacement = getSecondarySquare(spawnSquare);
   int prevItem = 0;
   bool allInactive = false;
   while (1) {
+    set<Vec2> lairSquares = mySquares.at(spawnSquare);
     vector<View::ListElem> options;
+    Optional<Vec2> bedPos;
+    if (!replacement && !lairSquares.empty())
+      bedPos = chooseRandom(lairSquares);
+    else if (minionByType.at(minionType).size() < mySquares.at(*replacement).size())
+      bedPos = chooseRandom(mySquares.at(*replacement));
+    else
+      bedPos = chooseBedPos(lairSquares, mySquares.at(*replacement));
     if (getNumMinions() >= minionLimit) {
       allInactive = true;
       options.emplace_back("You have reached the limit of the number of minions.", View::TITLE);
     } else
-    if (cages.empty()) {
+    if (lairSquares.empty()) {
       allInactive = true;
       options.emplace_back(info1, View::TITLE);
     } else
-    if (cages.size() <= minionByType.at(minionType).size()) {
+    if (!bedPos) {
       allInactive = true;
       options.emplace_back(info2, View::TITLE);
+    } else
+    if (genItems && genItems->empty()) {
+      options.emplace_back(info3, View::TITLE);
+      allInactive = true;
     }
-
     vector<pair<PCreature, int>> creatures;
     for (SpawnInfo info : spawnInfo) {
       creatures.push_back({CreatureFactory::fromId(info.id, tribe, MonsterAIFactory::collective(this)),
@@ -920,81 +983,36 @@ void Collective::handleSpawning(View* view, SquareType spawnSquare, const string
           + "  mana: " + convertToString(info.manaCost) + suf,
           allInactive || !isTech || info.manaCost > mana ? View::INACTIVE : View::NORMAL);
     }
+    string title = titleBase;
+    if (genItems)
+      title += convertToString(genItems->size()) + " " + genItemsInfo;
     auto index = view->chooseFromList(title, options, prevItem);
     if (!index)
       return;
-    Vec2 pos = chooseRandom(cages);
+    Vec2 pos = *bedPos;
     PCreature& creature = creatures[*index].first;
     mana -= creatures[*index].second;
     for (Vec2 v : concat({pos}, pos.neighbors8(true)))
       if (level->inBounds(v) && level->getSquare(v)->canEnter(creature.get())) {
+        if (genItems) {
+          pair<Vec2, Item*> item = chooseRandom(*genItems);
+          level->getSquare(item.first)->removeItems({item.second});
+          removeElement(*genItems, item);
+        }
         addCreature(std::move(creature), v, minionType);
         break;
       }
     if (creature)
       messageBuffer.addMessage(MessageBuffer::important("The spell failed."));
+    else if (replacement) {
+      level->replaceSquare(pos, SquareFactory::get(*replacement));
+      mySquares.at(spawnSquare).erase(pos);
+      mySquares.at(*replacement).insert(pos);
+    }
     view->updateView(this);
     prevItem = *index;
   }
 }
-
-void Collective::handleNecromancy(View* view, int prevItem, bool firstTime) {
-  set<Vec2> graves = mySquares.at(SquareType::GRAVE);
-  vector<View::ListElem> options;
-  bool allInactive = false;
-  if (getNumMinions() >= minionLimit) {
-    allInactive = true;
-    options.emplace_back("You have reached the limit of the number of minions.", View::TITLE);
-  } else
-  if (graves.empty()) {
-    allInactive = true;
-    options.emplace_back("You need to build a graveyard and collect corpses to raise undead.", View::TITLE);
-  } else
-  if (graves.size() <= minionByType.at(MinionType::UNDEAD).size()) {
-    allInactive = true;
-    options.emplace_back("You need to build more graves for your undead to sleep in.", View::TITLE);
-  }
-  vector<pair<Vec2, Item*>> corpses;
-  for (Vec2 pos : graves) {
-    for (Item* it : level->getSquare(pos)->getItems([](const Item* it) {
-        return it->getType() == ItemType::CORPSE && it->getCorpseInfo()->canBeRevived; }))
-      corpses.push_back({pos, it});
-  }
-  if (!allInactive && corpses.empty()) {
-    options.emplace_back("You need to collect some corpses to raise undead.", View::TITLE);
-    allInactive = true;
-  }
-  vector<pair<PCreature, int>> creatures;
-  for (SpawnInfo info : raisingInfo) {
-    creatures.push_back({CreatureFactory::fromId(info.id, tribe, MonsterAIFactory::collective(this)),
-        info.manaCost});
-    string suf;
-    bool isTech = !info.techId || hasTech(*info.techId);
-    if (!isTech)
-      suf = requires(*info.techId);
-    options.emplace_back(creatures.back().first->getName() + "  mana: " + convertToString(info.manaCost) + suf,
-          allInactive || !isTech || info.manaCost > mana ? View::INACTIVE : View::NORMAL);
-  }
-  auto index = view->chooseFromList("Raise undead: " + convertToString(corpses.size()) + " bodies available",
-    options, prevItem);
-  if (!index)
-    return;
-  // TODO: try many corpses before failing
-  auto elem = chooseRandom(corpses);
-  PCreature& creature = creatures[*index].first;
-  mana -= creatures[*index].second;
-  for (Vec2 v : concat({elem.first}, elem.first.neighbors8(true)))
-    if (level->inBounds(v) && level->getSquare(v)->canEnter(creature.get())) {
-      level->getSquare(elem.first)->removeItems({elem.second});
-      addCreature(std::move(creature), v, MinionType::UNDEAD);
-      break;
-    }
-  if (creature)
-    messageBuffer.addMessage(MessageBuffer::important("You have failed to reanimate the corpse."));
-  view->updateView(this);
-  handleNecromancy(view, *index, false);
-}
-
 
 bool Collective::hasTech(TechId id) const {
   return contains(technologies, Technology::get(id));
@@ -1068,8 +1086,11 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
              Optional<pair<ViewObject, int>> cost;
              if (elem.cost.value > 0)
                cost = {getResourceViewObject(elem.cost.id), elem.cost.value};
+             ViewObject viewObj(SquareFactory::get(elem.type)->getViewObject());
+             if (getSecondarySquare(elem.type))
+               viewObj = SquareFactory::get(*getSecondarySquare(elem.type))->getViewObject();
              buttons.push_back({
-                 SquareFactory::get(elem.type)->getViewObject(),
+                 viewObj,
                  elem.name,
                  cost,
                  (elem.cost.value > 0 ? "[" + convertToString(mySquares.at(elem.type).size()) + "]" : ""),
@@ -1738,7 +1759,7 @@ const static set<SquareType> efficiencySquares {
 };
 
 void Collective::onConstructed(Vec2 pos, SquareType type) {
-  if (!contains({SquareType::ANIMAL_TRAP, SquareType::TREE_TRUNK}, type))
+  if (!contains({SquareType::TREE_TRUNK}, type))
     myTiles.insert(pos);
   CHECK(!mySquares[type].count(pos));
   mySquares[type].insert(pos);
@@ -2606,7 +2627,7 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
     if (contains(minions, c))
       removeElement(minions, c);
     removeElement(minionByType.at(getMinionType(c)), c);
-  } else if (victim->getTribe() != tribe && (!killer || killer->getTribe() == tribe)) {
+  } else if (victim->getTribe() != tribe && (!killer || contains(creatures, killer))) {
     double incMana = victim->getDifficultyPoints() / 3;
     mana += incMana;
     kills.push_back(victim);
@@ -2628,10 +2649,8 @@ const double lightBase = 0.5;
 const double flattenVal = 0.9;
 
 double Collective::getEfficiency(Vec2 pos) const {
-  if (squareEfficiency.at(pos) == 8)
-    return min(1.0, (lightBase + level->getLight(pos) * (1 - lightBase)) / flattenVal);
-  else
-    return 0;
+  double base = squareEfficiency.at(pos) == 8 ? 1 : 0.5;
+  return base * min(1.0, (lightBase + level->getLight(pos) * (1 - lightBase)) / flattenVal);
 }
 
 const double sizeBase = 0.5;
