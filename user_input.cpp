@@ -75,7 +75,7 @@ UserInput::BuildInfo UserInput::getBuildInfo() {
 std::ostream& operator << (std::ostream& o, UserInput a) {
   o << (int) a.type;
   if (contains(buildTypes, a.type))
-    o << " " << a.getPosition() << " " << a.getBuildInfo().building << " " << a.getBuildInfo().option;
+    o << " " << a.getPosition() << " " << a.getBuildInfo().building;
   if (contains(vectorTypes, a.type))
     o << " " << a.getPosition();
   if (contains(intTypes, a.type))
@@ -94,9 +94,9 @@ std::istream& operator >> (std::istream& in, UserInput& a) {
   } else
   if (contains(buildTypes, id)) {
     Vec2 v;
-    int n, m;
-    in >> v >> n >> m;
-    a = UserInput(id, v, {n, m});
+    int n;
+    in >> v >> n;
+    a = UserInput(id, v, {n});
   } else
   if (contains(intTypes, id)) {
     int n;

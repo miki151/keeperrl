@@ -135,8 +135,10 @@ class WindowView: public View {
   };
   
   vector<PGuiElem> drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveTab);
+  PGuiElem getButtonLine(GameInfo::BandInfo::Button, function<void()>, int num, int& active, CollectiveTab);
   void setCollectiveTab(CollectiveTab t);
-  void setOptionsMenu(const string& title, const vector<GameInfo::BandInfo::Button::Option>&);
+  void setOptionsMenu(const string& title, const vector<GameInfo::BandInfo::Button>& buttons, int offset,
+    int& active, CollectiveTab tab);
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
 
   enum class LegendOption {
@@ -172,7 +174,6 @@ class WindowView: public View {
   int activeBuilding = 0;
   int activeWorkshop = -1;
   int activeLibrary = -1;
-  int activeOption = 0;
   string chosenCreature;
 
   function<void()> getButtonCallback(UserInput);

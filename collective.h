@@ -185,10 +185,7 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
       CostInfo cost;
       string name;
       bool buildImmediatly;
-    };
-
-    vector<SquareInfo> squareInfo;
-    string groupName;
+    } squareInfo;
 
     struct TrapInfo {
       TrapType type;
@@ -201,17 +198,15 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
     Optional<TechId> techId;
     string help;
     char hotkey;
+    string groupName;
 
-    string optionsTitle;
-
-    BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0);
-    BuildInfo(const string& groupName, const string& title, vector<SquareInfo> info, Optional<TechId> techId = Nothing(),
-        const string& h = "", char hotkey = 0);
+    BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0,
+        string group = "");
     BuildInfo(BuildType type, SquareInfo info, const string& h = "", char hotkey = 0);
     BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0);
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0);
   };
-  void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, int option = 0);
+  void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
   vector<View::GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   const static vector<BuildInfo> buildInfo;
   const static vector<BuildInfo> workshopInfo;

@@ -185,13 +185,7 @@ class View {
         string inactiveReason;
         string help;
         char hotkey;
-
-        struct Option {
-          Optional<ViewObject> object;
-          string text;
-        };
-        vector<Option> options;
-        string optionsTitle;
+        string groupName;
       };
       vector<Button> buildings;
       vector<Button> workshop;

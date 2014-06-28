@@ -134,14 +134,14 @@ void WindowView::initialize() {
               collectiveTab))
             inputQueue.push(UserInput(UserInput::POSSESS, pos));
           if (collectiveTab == CollectiveTab::WORKSHOP && activeWorkshop >= 0)
-            inputQueue.push(UserInput(UserInput::WORKSHOP, pos, {activeWorkshop, activeOption}));
+            inputQueue.push(UserInput(UserInput::WORKSHOP, pos, {activeWorkshop}));
           if (collectiveTab == CollectiveTab::TECHNOLOGY && activeLibrary >= 0)
-            inputQueue.push(UserInput(UserInput::LIBRARY, pos, {activeLibrary, activeOption}));
+            inputQueue.push(UserInput(UserInput::LIBRARY, pos, {activeLibrary}));
           if (collectiveTab == CollectiveTab::BUILDINGS) {
             if (Keyboard::isKeyPressed(Keyboard::LShift))
               inputQueue.push(UserInput(UserInput::RECT_SELECTION, pos));
             else
-              inputQueue.push(UserInput(UserInput::BUILD, pos, {activeBuilding, activeOption}));
+              inputQueue.push(UserInput(UserInput::BUILD, pos, {activeBuilding}));
           }
           break;
       }});
@@ -534,19 +534,11 @@ PGuiElem WindowView::drawVillages(GameInfo::VillageInfo& info) {
   return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }
 
-void WindowView::setOptionsMenu(const string& title, const vector<GameInfo::BandInfo::Button::Option>& options) {
-  if (options.empty()) {
-    mapGui->clearOptions();
-    return;
-  }
+void WindowView::setOptionsMenu(const string& title, const vector<GameInfo::BandInfo::Button>& buttons, int offset,
+    int& active, CollectiveTab tab) {
   vector<PGuiElem> elems;
-  for (int i : All(options)) {
-    elems.push_back(GuiElem::stack(
-        GuiElem::button([=] { activeOption = i; }),
-        GuiElem::conditional(
-          GuiElem::label(options[i].text, green),
-          GuiElem::label(options[i].text, white),
-          [=] (GuiElem*) { return activeOption == i; })));
+  for (int i : All(buttons)) {
+    elems.push_back(getButtonLine(buttons[i], [=] {}, offset + i, active, tab));
   }
   mapGui->setOptions(title, std::move(elems));
 }
@@ -558,49 +550,76 @@ void WindowView::setCollectiveTab(CollectiveTab t) {
   }
 }
 
+PGuiElem WindowView::getButtonLine(GameInfo::BandInfo::Button button, function<void()> fun, int num, int& active,
+    CollectiveTab tab) {
+  vector<PGuiElem> line;
+  line.push_back(GuiElem::viewObject(button.object, tilesOk));
+  vector<int> widths { 35 };
+  if (!button.inactiveReason.empty())
+    line.push_back(GuiElem::label(button.name + " " + button.count, gray, button.hotkey));
+  else
+    line.push_back(GuiElem::conditional(
+          GuiElem::label(button.name + " " + button.count, green, button.hotkey),
+          GuiElem::label(button.name + " " + button.count, white, button.hotkey),
+          [=, &active] (GuiElem*) { return active == num; }));
+  widths.push_back(100);
+  if (button.cost) {
+    string costText = convertToString(button.cost->second);
+    line.push_back(GuiElem::label(costText, white));
+    widths.push_back(renderer.getTextLength(costText) + 8);
+    line.push_back(GuiElem::viewObject(button.cost->first, tilesOk));
+    widths.push_back(25);
+  }
+  function<void()> buttonFun;
+  if (button.inactiveReason == "" || button.inactiveReason == "inactive")
+    buttonFun = [this, &active, num, tab, fun] {
+      active = num;
+      setCollectiveTab(tab);
+      fun();
+    };
+  else {
+    string s = button.inactiveReason;
+    buttonFun = [this, s] {
+      presentText("", s);
+    };
+  }
+  return GuiElem::stack(
+      mapGui->getHintCallback(button.help),
+      GuiElem::button(buttonFun, button.hotkey),
+      GuiElem::horizontalList(std::move(line), widths, 0, button.cost ? 2 : 0));
+}
+
 vector<PGuiElem> WindowView::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active,
     CollectiveTab tab) {
   vector<PGuiElem> elems;
+  vector<PGuiElem> invisible;
+  vector<GameInfo::BandInfo::Button> groupedButtons;
   for (int i : All(buttons)) {
-    vector<PGuiElem> line;
-    line.push_back(GuiElem::viewObject(buttons[i].object, tilesOk));
-    vector<int> widths { 35 };
-    Color color = white;
-    if (i == active)
-      color = green;
-    else if (!buttons[i].inactiveReason.empty())
-      color = lightGray;
-    line.push_back(GuiElem::label(buttons[i].name + " " + buttons[i].count, color, buttons[i].hotkey));
-    widths.push_back(100);
-    if (buttons[i].cost) {
-      string costText = convertToString(buttons[i].cost->second);
-      line.push_back(GuiElem::label(costText, color));
-      widths.push_back(renderer.getTextLength(costText) + 8);
-      line.push_back(GuiElem::viewObject(buttons[i].cost->first, tilesOk));
-      widths.push_back(25);
-    }
-    function<void()> buttonFun;
-    if (buttons[i].inactiveReason == "" || buttons[i].inactiveReason == "inactive") {
-      vector<GameInfo::BandInfo::Button::Option> options = buttons[i].options;
-      string optionsTitle = buttons[i].optionsTitle;
-      buttonFun = [this, &active, i, tab, options, optionsTitle] () {
-        active = i;
-        setCollectiveTab(tab);
-        activeOption = 0;
-        setOptionsMenu(optionsTitle, options);
+    if (!groupedButtons.empty() && buttons[i].groupName != groupedButtons.front().groupName) {
+      GameInfo::BandInfo::Button button1 = groupedButtons.front();
+      function<void()> buttonFun = [=, &active] {
+        setOptionsMenu(button1.groupName, groupedButtons, i - groupedButtons.size(), active, tab);
+        active = i - groupedButtons.size();
       };
+      vector<PGuiElem> line;
+      line.push_back(GuiElem::viewObject(button1.object, tilesOk));
+      line.push_back(GuiElem::label(groupedButtons.front().groupName,
+            active < i && active >= i - groupedButtons.size() ? green : white));
+      elems.push_back(GuiElem::stack(
+            GuiElem::button(buttonFun),
+            GuiElem::horizontalList(std::move(line), 35, 0)));
+      for (int groupedInd : All(groupedButtons))
+        invisible.push_back(getButtonLine(groupedButtons[groupedInd], [=, &active] {
+            setOptionsMenu(button1.groupName, groupedButtons, i - groupedButtons.size(), active, tab);},
+            i - groupedButtons.size() + groupedInd, active, tab));
+      groupedButtons.clear();
     }
-    else {
-      string s = buttons[i].inactiveReason;
-      buttonFun = [this, s] () {
-        presentText("", s);
-      };
-    }
-    elems.push_back(GuiElem::stack(
-          mapGui->getHintCallback(buttons[i].help),
-          GuiElem::button(buttonFun, buttons[i].hotkey),
-          GuiElem::horizontalList(std::move(line), widths, 0, buttons[i].cost ? 2 : 0)));
+    if (!buttons[i].groupName.empty())
+      groupedButtons.push_back(buttons[i]);
+    else
+      elems.push_back(getButtonLine(buttons[i], [=] { mapGui->clearOptions(); }, i, active, tab));
   }
+  elems.push_back(GuiElem::invisible(GuiElem::stack(std::move(invisible))));
   return elems;
 }
   
@@ -1365,7 +1384,7 @@ void WindowView::processEvents() {
           break;
       case Event::MouseButtonReleased :
           if (event.mouseButton.button == sf::Mouse::Left)
-            inputQueue.push(UserInput(UserInput::BUTTON_RELEASE, Vec2(0, 0), {activeBuilding, activeOption}));
+            inputQueue.push(UserInput(UserInput::BUTTON_RELEASE, Vec2(0, 0), {activeBuilding}));
           break;
       default: break;
     }

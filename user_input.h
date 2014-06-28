@@ -62,7 +62,6 @@ struct UserInput {
 
   struct BuildInfo {
     int building;
-    int option;
   };
 
   UserInput();
