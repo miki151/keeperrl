@@ -160,6 +160,10 @@ void WindowView::reset() {
   center = {0, 0};
   gameReady = false;
   clearMessageBox();
+  mapGui->clearOptions();
+  activeBuilding = 0;
+  activeWorkshop = -1;
+  activeLibrary = -1;
 }
 
 static vector<Vec2> splashPositions;
@@ -746,7 +750,7 @@ void WindowView::rebuildGui() {
   if (tempGuiElems.size() == 2) {
     Debug() << "Clearing tempGuiElems " << tempGuiElems[0].get() << " " << tempGuiElems[1].get();
   }
-  CHECK(std::this_thread::get_id() == renderThreadId);
+  CHECK(std::this_thread::get_id() != renderThreadId);
   tempGuiElems.clear();
   tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2), 
         GuiElem::margins(std::move(right), 20, 20, 10, 20)));
@@ -766,6 +770,7 @@ void WindowView::rebuildGui() {
 }
 
 vector<GuiElem*> WindowView::getAllGuiElems() {
+  CHECK(std::this_thread::get_id() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   if (gameReady)
     ret = concat(concat({mapGui}, ret), {mapDecoration.get(), minimapDecoration.get(), minimapGui});
@@ -773,6 +778,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
 }
 
 vector<GuiElem*> WindowView::getClickableGuiElems() {
+  CHECK(std::this_thread::get_id() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   if (gameReady) {
     ret.push_back(minimapGui);
@@ -869,10 +875,12 @@ void WindowView::updateView(const CreatureView* collective) {
   mapGui->setSpriteMode(currentTileLayout.sprites);
   mapGui->updateObjects(memory);
   mapGui->setLevelBounds(level->getBounds());
+  rebuildGui();
 }
 
 void WindowView::refreshView() {
   RenderLock lock(renderMutex);
+  CHECK(std::this_thread::get_id() == renderThreadId);
   processEvents();
   if (renderDialog) {
     renderDialog();
@@ -925,7 +933,6 @@ class FpsCounter {
 
 
 void WindowView::drawMap() {
-  rebuildGui();
   for (GuiElem* gui : getAllGuiElems())
     gui->render(renderer);
   refreshText();

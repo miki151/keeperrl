@@ -219,13 +219,16 @@ int main(int argc, char* argv[]) {
   //Table<bool> splash = readSplashTable("splash.map");
   int lastIndex = 0;
   bool exitGame = false;
+  bool viewInitialized = false;
   thread renderingThread([&] {
     view->initialize();
+    viewInitialized = true;
     while (!exitGame) {
       view->refreshView();
       sf::sleep(sf::milliseconds(1));
     }
   });
+  while (!viewInitialized);
   Jukebox jukebox("intro.ogg", "peaceful.ogg", "battle.ogg");
   view->setJukebox(&jukebox);
   GuiElem::initialize("frame.png");
