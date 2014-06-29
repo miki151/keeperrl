@@ -193,7 +193,7 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
       ViewId viewId;
     } trapInfo;
 
-    enum BuildType { DIG, SQUARE, IMP, TRAP, GUARD_POST, DESTROY, IMPALED_HEAD, FETCH} buildType;
+    enum BuildType { DIG, SQUARE, IMP, TRAP, GUARD_POST, DESTROY, IMPALED_HEAD, FETCH } buildType;
 
     Optional<TechId> techId;
     string help;
@@ -204,18 +204,21 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
         string group = "");
     BuildInfo(BuildType type, SquareInfo info, const string& h = "", char hotkey = 0);
     BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0);
+    BuildInfo(DeityHabitat, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0);
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
   vector<View::GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
-  const static vector<BuildInfo> buildInfo;
-  const static vector<BuildInfo> workshopInfo;
-  const static vector<BuildInfo> libraryInfo;
-  const static vector<BuildInfo> minionsInfo;
+  static vector<BuildInfo> buildInfo;
+  static void initBuildInfo();
+  static vector<BuildInfo> workshopInfo;
+  static vector<BuildInfo> libraryInfo;
+  static vector<BuildInfo> minionsInfo;
 
   const static map<ResourceId, ResourceInfo> resourceInfo;
 
   ViewObject getResourceViewObject(ResourceId id) const;
+  Optional<pair<ViewObject, int>> getCostObj(CostInfo) const;
 
   vector<Vec2> getAllSquares(const vector<SquareType>&) const;
 
@@ -363,7 +366,7 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
   map<Vec2, ConstructionInfo> SERIAL(constructions);
   map<UniqueId, MarkovChain<MinionTask>> SERIAL(minionTasks);
   map<UniqueId, string> SERIAL(minionTaskStrings);
-  map<SquareType, set<Vec2>> SERIAL(mySquares);
+  unordered_map<SquareType, set<Vec2>> SERIAL(mySquares);
   map<Vec2, int> SERIAL(squareEfficiency);
   void updateEfficiency(Vec2, SquareType);
   double getEfficiency(Vec2) const;

@@ -36,7 +36,7 @@ class Square {
     * \param vision defines who/what can see through the square. Can be null for opaque.
     */
   Square(const ViewObject& vo, const string& name, Vision* vision, bool canHide = false,
-      int strength = 0, double flamability = 0, map<SquareType, int> constructions = {}, bool ticking = false);
+      int strength = 0, double flamability = 0, map<SquareType::Id, int> constructions = {}, bool ticking = false);
 
   /** Returns the square name. */
   string getName() const;
@@ -221,7 +221,7 @@ class Square {
   Optional<pair<StairDirection, StairKey>> SERIAL(landingLink);
   Fire SERIAL(fire);
   PoisonGas SERIAL(poisonGas);
-  map<SquareType, int> SERIAL(constructions);
+  map<SquareType::Id, int> SERIAL(constructions);
   bool SERIAL(ticking);
   double SERIAL2(fog, 0);
 };
@@ -229,7 +229,7 @@ class Square {
 class SolidSquare : public Square {
   public:
   SolidSquare(const ViewObject& vo, const string& name, Vision* vision = nullptr,
-      map<SquareType, int> constructions = {},
+      map<SquareType::Id, int> constructions = {},
       bool alwaysVisible = false, double flamability = 0) :
       Square(vo, name, vision, false, 299, flamability, constructions) {
   }

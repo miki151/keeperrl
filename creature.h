@@ -31,6 +31,7 @@
 #include "event.h"
 #include "sectors.h"
 #include "vision.h"
+#include "square_type.h"
 
 class Level;
 class Tribe;

@@ -17,6 +17,7 @@
 #define _SQUARE_FACTORY
 
 #include "pantheon.h"
+#include "square_type.h"
 
 class Square;
 

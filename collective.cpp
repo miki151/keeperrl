@@ -147,6 +147,9 @@ Collective::BuildInfo::BuildInfo(SquareInfo info, Optional<TechId> id, const str
     : squareInfo(info), buildType(SQUARE), techId(id), help(h), hotkey(key), groupName(group) {}
 Collective::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h, char key)
     : trapInfo(info), buildType(TRAP), techId(id), help(h), hotkey(key) {}
+Collective::BuildInfo::BuildInfo(DeityHabitat habitat, CostInfo cost, const string& group, const string& h, char key)
+    : squareInfo({SquareType({habitat}), cost, "To " + Deity::getDeity(habitat)->getName(), false}),
+    buildType(SQUARE), help(h), hotkey(key), groupName(group) {}
 Collective::BuildInfo::BuildInfo(BuildType type, const string& h, char key) : buildType(type), help(h), hotkey(key) {
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH}, type));
 }
@@ -155,7 +158,10 @@ Collective::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const string& 
   CHECK(type == IMPALED_HEAD);
 }
 
-const vector<Collective::BuildInfo> Collective::buildInfo {
+vector<Collective::BuildInfo> Collective::buildInfo;
+
+void Collective::initBuildInfo() {
+  Collective::buildInfo = {
     BuildInfo(BuildInfo::DIG, "", 'd'),
     BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, Nothing(), "", 's', "Storage"),
     BuildInfo({SquareType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, Nothing(), "", 0, "Storage"),
@@ -170,13 +176,17 @@ const vector<Collective::BuildInfo> Collective::buildInfo {
     BuildInfo({SquareType::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
     BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 'p'),
     BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u'),
+    BuildInfo(DeityHabitat::EARTH, {ResourceId::STONE, 100}, "Shrines", "", 0),
+    BuildInfo(DeityHabitat::FIRE, {ResourceId::STONE, 100}, "Shrines", "", 0),
+    BuildInfo(DeityHabitat::AIR, {ResourceId::STONE, 100}, "Shrines", "", 0),
     BuildInfo({SquareType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
     BuildInfo(BuildInfo::DESTROY, "", 'e'),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 'c'),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'g'),
-};
+  };
+}
 
-const vector<Collective::BuildInfo> Collective::workshopInfo {
+vector<Collective::BuildInfo> Collective::workshopInfo {
     BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
         "Click on a built door to lock it.", 'o'),
     BuildInfo({SquareType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, ""),
@@ -198,19 +208,19 @@ const vector<Collective::BuildInfo> Collective::workshopInfo {
 };
 
 Optional<SquareType> getSecondarySquare(SquareType type) {
-  switch (type) {
-    case SquareType::DORM: return SquareType::BED;
-    case SquareType::BEAST_LAIR: return SquareType::BEAST_CAGE;
-    case SquareType::CEMETERY: return SquareType::GRAVE;
+  switch (type.id) {
+    case SquareType::DORM: return SquareType(SquareType::BED);
+    case SquareType::BEAST_LAIR: return SquareType(SquareType::BEAST_CAGE);
+    case SquareType::CEMETERY: return SquareType(SquareType::GRAVE);
     default: return Nothing();
   }
 }
 
-const vector<Collective::BuildInfo> Collective::libraryInfo {
+vector<Collective::BuildInfo> Collective::libraryInfo {
   BuildInfo(BuildInfo::IMP, "", 'i'),
 };
 
-const vector<Collective::BuildInfo> Collective::minionsInfo {
+vector<Collective::BuildInfo> Collective::minionsInfo {
 };
 
 vector<Collective::RoomInfo> Collective::getRoomInfo() {
@@ -297,6 +307,7 @@ map<MinionTask, MinionTaskInfo> taskInfo {
 Collective::Collective(Model* m, Level* l, Tribe* t) : level(l), mana(200), model(m), tribe(t),
     sectors(new Sectors(l->getBounds())), flyingSectors(new Sectors(l->getBounds())) {
   bool hotkeys[128] = {0};
+  initBuildInfo();
   for (BuildInfo info : concat(buildInfo, workshopInfo)) {
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
@@ -1068,6 +1079,13 @@ void Collective::acquireTech(Technology* tech, bool free) {
 
 typedef View::GameInfo::BandInfo::Button Button;
 
+Optional<pair<ViewObject, int>> Collective::getCostObj(CostInfo cost) const {
+  if (cost.value > 0)
+    return make_pair(getResourceViewObject(cost.id), cost.value);
+  else
+    return Nothing();
+}
+
 vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const {
   vector<Button> buttons;
   for (BuildInfo button : buildInfo) {
@@ -1075,16 +1093,13 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
     switch (button.buildType) {
       case BuildInfo::SQUARE: {
            BuildInfo::SquareInfo& elem = button.squareInfo;
-           Optional<pair<ViewObject, int>> cost;
-           if (elem.cost.value > 0)
-             cost = {getResourceViewObject(elem.cost.id), elem.cost.value};
            ViewObject viewObj(SquareFactory::get(elem.type)->getViewObject());
            if (getSecondarySquare(elem.type))
              viewObj = SquareFactory::get(*getSecondarySquare(elem.type))->getViewObject();
            buttons.push_back({
                viewObj,
                elem.name,
-               cost,
+               getCostObj(elem.cost),
                (elem.cost.value > 0 ? "[" + convertToString(mySquares.at(elem.type).size()) + "]" : ""),
                isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
            }
@@ -1266,7 +1281,7 @@ ViewObject Collective::getTrapObject(TrapType type) {
 }
 
 static const ViewObject& getConstructionObject(SquareType type) {
-  static map<SquareType, ViewObject> objects;
+  static unordered_map<SquareType, ViewObject> objects;
   if (!objects.count(type)) {
     objects.insert(make_pair(type, SquareFactory::get(type)->getViewObject()));
     objects.at(type).setModifier(ViewObject::Modifier::PLANNED);
@@ -1732,7 +1747,7 @@ void Collective::addKnownTile(Vec2 pos) {
   }
 }
 
-const static set<SquareType> efficiencySquares {
+const static unordered_set<SquareType> efficiencySquares {
   SquareType::TRAINING_ROOM,
   SquareType::WORKSHOP,
   SquareType::LIBRARY,

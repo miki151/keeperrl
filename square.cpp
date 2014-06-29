@@ -57,7 +57,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 SERIALIZATION_CONSTRUCTOR_IMPL(SolidSquare);
 
 Square::Square(const ViewObject& vo, const string& n, Vision* v, bool canHide, int s, double f,
-    map<SquareType, int> construct, bool tick) 
+    map<SquareType::Id, int> construct, bool tick) 
     : name(n), viewObject(vo), vision(v), hide(canHide), strength(s), fire(strength, f),
     constructions(construct), ticking(tick) {
 }
@@ -111,12 +111,12 @@ void Square::addTravelDir(Vec2 dir) {
 }
 
 bool Square::canConstruct(SquareType type) const {
-  return constructions.count(type);
+  return constructions.count(type.id);
 }
 
 bool Square::construct(SquareType type) {
   CHECK(canConstruct(type));
-  if (--constructions[type] <= 0) {
+  if (--constructions[type.id] <= 0) {
     PSquare newSquare = PSquare(SquareFactory::get(type));
 /*    if (creature && !newSquare->canEnter(creature))
       return false;*/

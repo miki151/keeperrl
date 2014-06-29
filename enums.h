@@ -589,88 +589,6 @@ enum class ViewId {
   FETCH_ICON,
 };
 
-enum class SquareType {
-  FLOOR,
-  BRIDGE,
-  PATH,
-  ROAD,
-  GRASS,
-  CROPS,
-  MUD,
-  HELL_WALL,
-  ROCK_WALL,
-  LOW_ROCK_WALL,
-  WOOD_WALL,
-  BLACK_WALL,
-  YELLOW_WALL,
-  CASTLE_WALL,
-  WELL,
-  STATUE,
-  MUD_WALL,
-  MOUNTAIN,
-  MOUNTAIN2,
-  GLACIER,
-  HILL,
-  SECRET_PASS,
-  WATER,
-  MAGMA,
-  GOLD_ORE,
-  IRON_ORE,
-  STONE,
-  ABYSS,
-  SAND,
-  DECID_TREE,
-  CANIF_TREE,
-  TREE_TRUNK,
-  BUSH,
-  TORCH,
-  DORM,
-  BED,
-  STOCKPILE,
-  STOCKPILE_EQUIP,
-  STOCKPILE_RES,
-  TORTURE_TABLE,
-  IMPALED_HEAD,
-  TRAINING_ROOM,
-  LIBRARY,
-  LABORATORY,
-  BEAST_LAIR,
-  BEAST_CAGE,
-  WORKSHOP,
-  HATCHERY,
-  PRISON,
-  CEMETERY,
-  GRAVE,
-  ROLLING_BOULDER,
-  POISON_GAS,
-  FOUNTAIN,
-  CHEST,
-  TREASURE_CHEST,
-  COFFIN,
-  IRON_BARS,
-  DOOR,
-  TRIBE_DOOR,
-  BARRICADE,
-  DOWN_STAIRS,
-  UP_STAIRS,
-  BORDER_GUARD,
-  ALTAR,
-};
-
-inline bool isWall(SquareType type) {
-  switch (type) {
-    case SquareType::HELL_WALL:
-    case SquareType::LOW_ROCK_WALL:
-    case SquareType::ROCK_WALL:
-    case SquareType::BLACK_WALL:
-    case SquareType::YELLOW_WALL:
-    case SquareType::WOOD_WALL:
-    case SquareType::MUD_WALL:
-    case SquareType::CASTLE_WALL: return true;
-    default: return false;
-  }
-}
-
 enum class EffectStrength { WEAK, NORMAL, STRONG };
 enum class EffectType { 
     TELEPORT,
@@ -819,5 +737,7 @@ enum class LastingEffect {
 
     ENUM_END
 };
+
+enum class DeityHabitat;
 
 #endif

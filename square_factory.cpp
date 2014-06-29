@@ -324,7 +324,7 @@ class Fountain : public Square {
 class Tree : public Square {
   public:
   Tree(const ViewObject& object, const string& name, Vision* vision, int _numWood,
-      map<SquareType, int> construct)
+      map<SquareType::Id, int> construct)
       : Square(object, name, vision, true, 100, 0.5, construct), numWood(_numWood) {}
 
   virtual bool canDestroy() const override {
@@ -650,7 +650,7 @@ class Altar : public Square {
 class ConstructionDropItems : public SolidSquare {
   public:
   ConstructionDropItems(const ViewObject& object, const string& name,
-      map<SquareType, int> constructions, vector<PItem> _items)
+      map<SquareType::Id, int> constructions, vector<PItem> _items)
       : SolidSquare(object, name, nullptr, constructions), items(std::move(_items)) {}
 
   virtual void onConstructNewSquare(Square* s) override {
@@ -801,7 +801,7 @@ PSquare SquareFactory::get(SquareType s) {
 }
 
 Square* SquareFactory::getPtr(SquareType s) {
-  switch (s) {
+  switch (s.id) {
     case SquareType::PATH:
     case SquareType::FLOOR:
         return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR_BACKGROUND, "Floor"), "floor", Vision::get(VisionId::NORMAL),
@@ -811,7 +811,8 @@ Square* SquareFactory::getPtr(SquareType s) {
             {SquareType::STOCKPILE, 1}, {SquareType::STOCKPILE_EQUIP, 1}, {SquareType::STOCKPILE_RES, 1},
             {SquareType::CEMETERY, 10}, {SquareType::WORKSHOP, 10}, {SquareType::PRISON, 10},
             {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::BEAST_LAIR, 10},
-            {SquareType::IMPALED_HEAD, 5}, {SquareType::BARRICADE, 20}, {SquareType::TORCH, 5}});
+            {SquareType::IMPALED_HEAD, 5}, {SquareType::BARRICADE, 20}, {SquareType::TORCH, 5},
+            {SquareType::ALTAR, 35}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Rope bridge"), "rope bridge",
             Vision::get(VisionId::NORMAL));
@@ -952,7 +953,8 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery");
     case SquareType::ALTAR:
-        FAIL << "Altars are not handled by this method.";
+        return new Altar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
+              Deity::getDeity(s.altarInfo.habitat));
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
                                           EffectType::ROLLING_BOULDER);
     case SquareType::POISON_GAS: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
