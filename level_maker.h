@@ -33,6 +33,7 @@ enum class SettlementType {
   WITCH_HOUSE,
   MINETOWN,
   VAULT,
+  CAVE,
 };
 
 struct SettlementInfo {
@@ -48,6 +49,7 @@ struct SettlementInfo {
   Optional<CreatureId> guardId;
   Optional<ItemId> elderLoot;
   Optional<ItemFactory> shopFactory;
+  Deity* deity;
 };
 
 class LevelMaker {

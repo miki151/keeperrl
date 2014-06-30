@@ -564,7 +564,7 @@ Vec2 Level::Builder::transform(Vec2 v) {
 }
 
 void Level::Builder::setCoverInfo(Vec2 pos, CoverInfo info) {
-  coverInfo[pos] = info;
+  coverInfo[transform(pos)] = info;
 }
 
 bool Level::inBounds(Vec2 pos) const {

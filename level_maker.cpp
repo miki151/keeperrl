@@ -806,24 +806,51 @@ class RandomLocations : public LevelMaker {
   RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
       SquarePredicate* pred, bool _separate = true, map<pair<LevelMaker*, LevelMaker*>, double> _minDistance = {},
       map<pair<LevelMaker*, LevelMaker*>, double> _maxDistance = {})
-      : insideMakers(_insideMakers), sizes(_sizes), predicate(sizes.size(), pred), separate(_separate),
+      : insideMakers(_insideMakers), sizes(_sizes), predicate(sizes.size(), {pred}), separate(_separate),
         minDistance(_minDistance), maxDistance(_maxDistance) {
         CHECK(insideMakers.size() == sizes.size());
       }
 
   RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
-      const vector<SquarePredicate*> pred, bool _separate = true,
+      const vector<SquarePredicate*>& pred, bool _separate = true,
       map<pair<LevelMaker*, LevelMaker*>, double> _minDistance = {},
       map<pair<LevelMaker*, LevelMaker*>, double> _maxDistance = {})
-      : insideMakers(_insideMakers), sizes(_sizes), predicate(pred), separate(_separate), minDistance(_minDistance),
-        maxDistance(_maxDistance) {
-        CHECK(insideMakers.size() == sizes.size());
-        CHECK(pred.size() == sizes.size());
+      : insideMakers(_insideMakers), sizes(_sizes), predicate(pred.begin(), pred.end()), separate(_separate),
+        minDistance(_minDistance), maxDistance(_maxDistance) {
+    CHECK(insideMakers.size() == sizes.size());
+    CHECK(pred.size() == sizes.size());
+  }
+
+  class Predicate {
+    public:
+    Predicate(vector<SquarePredicate*> p, vector<int> c) : predicates(p), counts(c) {
+      int sum = 0;
+      for (int i : counts)
+        sum += i;
+      CHECK(sum == 4);
+    }
+    Predicate(SquarePredicate* p) : predicates({p}), counts(1, 4) {}
+
+    bool apply(Level::Builder* builder, vector<Vec2> points) {
+      for (int i : All(predicates)) {
+        int cnt = 0;
+        for (Vec2 v : points)
+          if (predicates[i]->apply(builder, v))
+            ++cnt;
+        if (cnt != counts[i])
+          return false;
       }
+      return true;
+    }
+
+    private:
+    vector<SquarePredicate*> predicates;
+    vector<int> counts;
+  };
 
   RandomLocations(bool _separate = true) : separate(_separate) {}
 
-  void add(LevelMaker* maker, Vec2 size, SquarePredicate* pred) {
+  void add(LevelMaker* maker, Vec2 size, Predicate pred) {
     insideMakers.push_back(maker);
     sizes.push_back({size.x, size.y});
     predicate.push_back(pred);
@@ -879,18 +906,19 @@ class RandomLocations : public LevelMaker {
             ok = false;
             break;
           }
-        if (!predicate[i]->apply(builder, Vec2(px, py)) ||
-            !predicate[i]->apply(builder, Vec2(px + width - 1, py)) || 
-            !predicate[i]->apply(builder, Vec2(px + width - 1, py + height - 1)) || 
-            !predicate[i]->apply(builder, Vec2(px, py + height - 1))) 
+        if (!predicate[i].apply(builder, {
+              Vec2(px, py),
+              Vec2(px + width - 1, py),
+              Vec2(px + width - 1, py + height - 1),
+              Vec2(px, py + height - 1)}))
           ok = false;
         else
-        if (separate)
-        for (Rectangle r : occupied)
-          if (r.intersects(Rectangle(px, py, px + width, py + height))) {
-            ok = false;
-            break;
-          }
+          if (separate)
+            for (Rectangle r : occupied)
+              if (r.intersects(Rectangle(px, py, px + width, py + height))) {
+                ok = false;
+                break;
+              }
       } while (!ok && --cnt > 0);
       if (cnt == 0) {
         if (tries > 0) {
@@ -915,7 +943,7 @@ class RandomLocations : public LevelMaker {
   private:
   vector<LevelMaker*> insideMakers;
   vector<pair<int, int>> sizes;
-  vector<SquarePredicate*> predicate;
+  vector<Predicate> predicate;
   bool separate;
   map<pair<LevelMaker*, LevelMaker*>, double> minDistance;
   map<pair<LevelMaker*, LevelMaker*>, double> maxDistance;
@@ -1503,6 +1531,25 @@ class CastleExit : public LevelMaker {
   CreatureId guardId;
 };
 
+class SingleSquare : public LevelMaker {
+  public:
+  SingleSquare(PSquare s, SquareType t, SquarePredicate* pred) : square(std::move(s)), type(t), predicate(pred) {}
+
+  virtual void make(Level::Builder* builder, Rectangle area) override {
+    for (Vec2 v : randomPermutation(area.getAllSquares()))
+      if (predicate->apply(builder, v)) {
+        builder->putSquare(v, std::move(square), type);
+        return;
+      }
+    FAIL << "Failed to find good square";
+  }
+
+  private:
+  PSquare square;
+  SquareType type;
+  SquarePredicate* predicate;
+};
+
 static LevelMaker* underground(bool monsters) {
   MakerQueue* queue = new MakerQueue();
   if (Random.roll(1)) {
@@ -1798,15 +1845,18 @@ Vec2 getSize(SettlementType type) {
     case SettlementType::CASTLE: return {30, 20};
     case SettlementType::CASTLE2: return {15, 15};
     case SettlementType::MINETOWN: return {30, 20};
+    case SettlementType::CAVE: return {12, 12};
     case SettlementType::VAULT: return {10, 10};
   }
   FAIL << "fewf";
   return {0, 0};
 }
 
-SquarePredicate* getSettlementPredicate(SettlementType type) {
+RandomLocations::Predicate getSettlementPredicate(SettlementType type) {
   switch (type) {
     case SettlementType::VILLAGE2: return new AttribPredicate(SquareAttrib::FORREST);
+    case SettlementType::CAVE: return RandomLocations::Predicate(
+      {new TypePredicate(SquareType::MOUNTAIN2), new TypePredicate(SquareType::HILL)}, {3, 1});
     case SettlementType::VAULT:
     case SettlementType::MINETOWN: return new TypePredicate(SquareType::MOUNTAIN2);
     default: return new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
@@ -1852,14 +1902,24 @@ static MakerQueue* mineTownMaker(SettlementInfo info) {
   return queue;
 }
 
-static MakerQueue* caveMaker(SettlementInfo info) {
+static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
   MakerQueue* queue = new MakerQueue();
   BuildingInfo building = get(info.buildingId);
-  queue->addMaker(new UniformBlob(building.floorOutside));
+  if (connection)
+    queue->addMaker(new UniformBlob(building.floorOutside, Nothing(), SquareAttrib::CONNECT_CORRIDOR));
+  else
+    queue->addMaker(new UniformBlob(building.floorOutside));
   queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::monster()));
   if (info.shopFactory)
     queue->addMaker(new Items(*info.shopFactory, building.floorOutside, 16, 20));
   queue->addMaker(new LocationMaker(info.location));
+  return queue;
+}
+
+static MakerQueue* dragonCaveMaker(SettlementInfo info) {
+  MakerQueue* queue = vaultMaker(info, true);
+  queue->addMaker(new SingleSquare(SquareFactory::getAltar(info.deity), SquareType::HILL,
+      new TypePredicate(SquareType::HILL)));
   return queue;
 }
 
@@ -1902,7 +1962,10 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
           queue = mineTownMaker(settlement); break;
           break;
       case SettlementType::VAULT:
-          queue = caveMaker(settlement); break;
+          queue = vaultMaker(settlement, false); break;
+          break;
+      case SettlementType::CAVE:
+          queue = dragonCaveMaker(settlement); break;
           break;
   }
     if (settlement.tribe == Tribe::get(TribeId::ELVEN))
@@ -2006,8 +2069,11 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
           mineTown = queue;
           break;
       case SettlementType::VAULT:
-          queue = caveMaker(settlement);
+          queue = vaultMaker(settlement, false);
           locations->setMaxDistance(startingPos, queue, 100);
+          break;
+      case SettlementType::CAVE:
+          queue = dragonCaveMaker(settlement); break;
           break;
     }
     locations->setMinDistance(startingPos, queue, 70);

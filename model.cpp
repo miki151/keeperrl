@@ -463,28 +463,31 @@ struct EnemyInfo {
   CreatureFactory factory;
 };
 
-static EnemyInfo getVault(CreatureFactory factory, Tribe* tribe, int num,
-    Optional<ItemFactory> itemFactory = Nothing(), bool noAttack = false) {
-  return {{SettlementType::VAULT, CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::RAT),
+static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* tribe, int num,
+    Optional<ItemFactory> itemFactory = Nothing(), bool noAttack = false, Deity* deity = nullptr) {
+  return {{type, CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::RAT),
           Random.getRandom(3, 6), Nothing(), new Location(true), tribe,
-          BuildingId::DUNGEON, {}, {}, Nothing(), Nothing(), itemFactory},
+          BuildingId::DUNGEON, {}, {}, Nothing(), Nothing(), itemFactory, deity},
       num, noAttack, true, true, factory};
 }
 
-static EnemyInfo getVault(CreatureId id, Tribe* tribe, int num, Optional<ItemFactory> itemFactory = Nothing(),
-    bool noAttack = false) {
-  return getVault(CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, noAttack);
+static EnemyInfo getVault(SettlementType type, CreatureId id, Tribe* tribe, int num,
+    Optional<ItemFactory> itemFactory = Nothing(), bool noAttack = false, Deity* deity = nullptr) {
+  return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, noAttack, deity);
 }
 
 static vector<EnemyInfo> getVaults() {
   return {
-    getVault(CreatureId::RED_DRAGON, Tribe::get(TribeId::DRAGON), 1, ItemFactory::dragonCave()),
-    getVault(CreatureId::GREEN_DRAGON, Tribe::get(TribeId::DRAGON), 1, ItemFactory::dragonCave()),
-    getVault(CreatureFactory::insects(Tribe::get(TribeId::DRAGON)), Tribe::get(TribeId::DRAGON),
-        Random.getRandom(6, 12)),
-    getVault(CreatureId::SPECIAL_HUMANOID, Tribe::get(TribeId::KEEPER), 1, Nothing(), true),
-    getVault(CreatureId::GOBLIN, Tribe::get(TribeId::KEEPER), Random.getRandom(3, 8), Nothing(), true),
-    getVault(CreatureId::GOBLIN, Tribe::get(TribeId::KEEPER), 0, ItemFactory::armory())
+    getVault(SettlementType::CAVE, CreatureId::RED_DRAGON, Tribe::get(TribeId::DRAGON), 1,
+        ItemFactory::dragonCave(), false, Deity::getDeity(DeityHabitat::STARS)),
+    getVault(SettlementType::CAVE, CreatureId::GREEN_DRAGON, Tribe::get(TribeId::DRAGON), 1,
+        ItemFactory::dragonCave(), false, Deity::getDeity(DeityHabitat::EARTH)),
+    getVault(SettlementType::VAULT, CreatureFactory::insects(Tribe::get(TribeId::DRAGON)),
+        Tribe::get(TribeId::DRAGON), Random.getRandom(6, 12)),
+    getVault(SettlementType::VAULT, CreatureId::SPECIAL_HUMANOID, Tribe::get(TribeId::KEEPER), 1, Nothing(), true),
+    getVault(SettlementType::VAULT, CreatureId::GOBLIN, Tribe::get(TribeId::KEEPER), Random.getRandom(3, 8),
+        Nothing(), true),
+    getVault(SettlementType::VAULT, CreatureId::GOBLIN, Tribe::get(TribeId::KEEPER), 0, ItemFactory::armory())
   };
 }
 
