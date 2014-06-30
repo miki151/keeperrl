@@ -16,12 +16,14 @@
 #ifndef _ACTOR_H
 #define _ACTOR_H
 
-#include "creature.h"
 #include "location.h"
+#include "creature_action.h"
+
+class Creature;
 
 struct MoveInfo {
   double value;
-  Creature::Action move;
+  CreatureAction move;
 
   operator bool() const {
     return move;
@@ -34,7 +36,7 @@ struct MoveInfo {
   }
 };
 
-const MoveInfo NoMove = {0.0, Creature::Action("")};
+const MoveInfo NoMove = {0.0, CreatureAction("")};
 
 enum MonsterAIType { 
   MONSTER,

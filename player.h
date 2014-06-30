@@ -16,10 +16,16 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
-#include "creature.h"
+#include "creature_action.h"
+#include "event.h"
+#include "controller.h"
+#include "item.h"
+#include "user_input.h"
+#include "view.h"
 
 class View;
 class Model;
+class Creature;
 
 class Player : public Controller, public EventListener {
   public:
@@ -68,7 +74,7 @@ class Player : public Controller, public EventListener {
   Model* SERIAL(model);
 
   private:
-  void tryToPerform(Creature::Action);
+  void tryToPerform(CreatureAction);
   void attackAction(Creature* other);
   void pickUpAction(bool extended);
   void itemsMessage();

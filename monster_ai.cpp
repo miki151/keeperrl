@@ -242,7 +242,7 @@ class AttackPest : public Behaviour {
         }
     if (!other)
       return NoMove;
-    if (Creature::Action action = creature->attack(other))
+    if (CreatureAction action = creature->attack(other))
       return {1.0, action};
     else
       return NoMove;
@@ -705,7 +705,7 @@ class Summoned : public GuardTarget, public EventListener {
 
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getTime() > dieTime) {
-      return {1.0, Creature::Action([=] {
+      return {1.0, CreatureAction([=] {
         creature->die(nullptr);
       })};
     }

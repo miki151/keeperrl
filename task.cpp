@@ -294,7 +294,7 @@ class BringItem : public PickItem {
   BringItem(Callback* col, Vec2 position, vector<Item*> items, Vec2 _target)
       : PickItem(col, position, items), target(_target) {}
 
-  virtual Creature::Action getBroughtAction(Creature* c, vector<Item*> it) {
+  virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) {
     return c->drop(it);
   }
 
@@ -363,7 +363,7 @@ class ApplyItem : public BringItem {
       " to " + convertToString(target);
   }
 
-  virtual Creature::Action getBroughtAction(Creature* c, vector<Item*> it) override {
+  virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) override {
     Item* item = getOnlyElement(it);
     return c->applyItem(item).prepend([=] {
         getCallback()->onAppliedItem(c->getPosition(), item);

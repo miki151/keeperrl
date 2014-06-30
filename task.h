@@ -19,6 +19,7 @@
 #include "monster_ai.h"
 #include "unique_entity.h"
 #include "entity_set.h"
+#include "square_type.h"
 
 class Task : public UniqueEntity {
   public:

@@ -24,6 +24,8 @@
 class AttackTrigger;
 typedef unique_ptr<AttackTrigger> PAttackTrigger;
 
+class Tribe;
+
 class VillageControl : public EventListener, public Task::Callback {
   public:
   virtual ~VillageControl();

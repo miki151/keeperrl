@@ -25,6 +25,8 @@
 #include "task.h"
 #include "entity_set.h"
 #include "sectors.h"
+#include "event.h"
+#include "creature.h"
 
 enum class MinionType {
   IMP,

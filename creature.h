@@ -32,6 +32,7 @@
 #include "sectors.h"
 #include "vision.h"
 #include "square_type.h"
+#include "creature_action.h"
 
 class Level;
 class Tribe;
@@ -151,66 +152,40 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   bool hasSkill(Skill*) const;
   vector<Skill*> getSkills() const;
 
-  class Action {
-    public:
-    Action(function<void()>);
-    Action(const string& failedReason);
-#ifndef RELEASE
-    // This stuff is so that you don't forget to perform() an action or check if it failed
-    static void checkUsage(bool);
-    Action(const Action&);
-    ~Action();
-#endif
-    Action prepend(function<void()>);
-    Action append(function<void()>);
-    void perform();
-    string getFailedReason() const;
-    operator bool() const;
-
-    private:
-    function<void()> action;
-    function<void()> before;
-    function<void()> after;
-    string failedMessage;
-#ifndef RELEASE
-    mutable bool wasUsed = false;
-#endif
-  };
-
   string getPluralName(Item* item, int num);
-  Action move(Vec2 direction);
-  Action swapPosition(Vec2 direction, bool force = false);
-  Action wait();
+  CreatureAction move(Vec2 direction);
+  CreatureAction swapPosition(Vec2 direction, bool force = false);
+  CreatureAction wait();
   vector<Item*> getPickUpOptions() const;
-  Action pickUp(const vector<Item*>& item, bool spendTime = true);
-  Action drop(const vector<Item*>& item);
+  CreatureAction pickUp(const vector<Item*>& item, bool spendTime = true);
+  CreatureAction drop(const vector<Item*>& item);
   void drop(vector<PItem> item);
-  Action attack(const Creature*, Optional<AttackLevel> = Nothing(), bool spendTime = true);
-  Action bumpInto(Vec2 direction);
-  Action applyItem(Item* item);
+  CreatureAction attack(const Creature*, Optional<AttackLevel> = Nothing(), bool spendTime = true);
+  CreatureAction bumpInto(Vec2 direction);
+  CreatureAction applyItem(Item* item);
   void startEquipChain();
   void finishEquipChain();
-  Action equip(Item* item);
-  Action unequip(Item* item);
+  CreatureAction equip(Item* item);
+  CreatureAction unequip(Item* item);
   bool canEquipIfEmptySlot(const Item* item, string* reason = nullptr) const;
   bool canEquip(const Item* item) const;
-  Action throwItem(Item*, Vec2 direction);
-  Action heal(Vec2 direction);
-  Action applySquare();
-  Action hide();
+  CreatureAction throwItem(Item*, Vec2 direction);
+  CreatureAction heal(Vec2 direction);
+  CreatureAction applySquare();
+  CreatureAction hide();
   bool isHidden() const;
   bool knowsHiding(const Creature*) const;
-  Action flyAway();
-  Action torture(Creature*);
-  Action chatTo(Vec2 direction);
-  Action stealFrom(Vec2 direction, const vector<Item*>&);
+  CreatureAction flyAway();
+  CreatureAction torture(Creature*);
+  CreatureAction chatTo(Vec2 direction);
+  CreatureAction stealFrom(Vec2 direction, const vector<Item*>&);
   void give(const Creature* whom, vector<Item*> items);
-  Action fire(Vec2 direction);
-  Action construct(Vec2 direction, SquareType);
+  CreatureAction fire(Vec2 direction);
+  CreatureAction construct(Vec2 direction, SquareType);
   bool canConstruct(SquareType) const;
-  Action eat(Item*);
+  CreatureAction eat(Item*);
   enum DestroyAction { BASH, EAT, DESTROY };
-  Action destroy(Vec2 direction, DestroyAction);
+  CreatureAction destroy(Vec2 direction, DestroyAction);
   
   virtual void onChat(Creature*);
 
@@ -218,9 +193,9 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   Item* getWeapon() const;
 
-  Action moveTowards(Vec2 pos, bool stepOnTile = false);
-  Action moveAway(Vec2 pos, bool pathfinding = true);
-  Action continueMoving();
+  CreatureAction moveTowards(Vec2 pos, bool stepOnTile = false);
+  CreatureAction moveAway(Vec2 pos, bool pathfinding = true);
+  CreatureAction continueMoving();
   void addSectors(Sectors*);
 
   bool atTarget() const;
@@ -254,7 +229,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
 
   void addSpell(SpellId);
   const vector<SpellInfo>& getSpells() const;
-  Action castSpell(int index);
+  CreatureAction castSpell(int index);
   static SpellInfo getSpell(SpellId);
 
   SERIALIZATION_DECL(Creature);
@@ -284,7 +259,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   static PCreature defaultCreature;
   static PCreature defaultFlyer;
   static PCreature defaultMinion;
-  Action moveTowards(Vec2 pos, bool away, bool stepOnTile);
+  CreatureAction moveTowards(Vec2 pos, bool away, bool stepOnTile);
   double getInventoryWeight() const;
   Item* getAmmo() const;
   void updateViewObject();

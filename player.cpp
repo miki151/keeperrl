@@ -169,7 +169,7 @@ void Player::pickUpAction(bool extended) {
   tryToPerform(creature->pickUp(pickUpItems));
 }
 
-void Player::tryToPerform(Creature::Action action) {
+void Player::tryToPerform(CreatureAction action) {
   if (action)
     action.perform();
   else

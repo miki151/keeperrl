@@ -144,19 +144,19 @@ void Model::update(double totalTime) {
     if (!creature->isDead()) {
       bool wasPlayer = creature->isPlayer();
 #ifndef RELEASE
-      Creature::Action::checkUsage(true);
+      CreatureAction::checkUsage(true);
       try {
 #endif
       creature->makeMove();
 #ifndef RELEASE
       } catch (GameOverException ex) {
-        Creature::Action::checkUsage(false);
+        CreatureAction::checkUsage(false);
         throw ex;
       } catch (SaveGameException ex) {
-        Creature::Action::checkUsage(false);
+        CreatureAction::checkUsage(false);
         throw ex;
       }
-      Creature::Action::checkUsage(false);
+      CreatureAction::checkUsage(false);
 #endif
       if (wasPlayer && !creature->isPlayer())
         unpossessed = true;
