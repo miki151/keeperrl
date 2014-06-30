@@ -26,7 +26,41 @@
 // WTF is this defined
 #undef HUGE
 
-enum class CreatureSize { SMALL, MEDIUM, LARGE, HUGE };
+enum class CreatureSize {
+  SMALL,
+  MEDIUM,
+  LARGE,
+  HUGE
+};
+enum class BodyPart {
+  HEAD,
+  TORSO,
+  ARM,
+  WING,
+  LEG,
+  BACK,
+
+  ENUM_END};
+
+enum class LastingEffect {
+    SLEEP,
+    PANIC,
+    RAGE,
+    SLOWED,
+    SPEED,
+    STR_BONUS,
+    DEX_BONUS,
+    HALLU,
+    BLIND,
+    INVISIBLE,
+    POISON,
+    ENTANGLED,
+    STUNNED,
+    POISON_RESISTANT,
+    FIRE_RESISTANT,
+    FLYING,
+
+    ENUM_END};
 
 #define CATTR(X) CreatureAttributes([&](CreatureAttributes& c) { X })
 

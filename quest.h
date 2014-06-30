@@ -25,6 +25,15 @@
 class Location;
 class Tribe;
 
+enum class QuestId {
+  DRAGON,
+  CASTLE_CELLAR,
+  BANDITS,
+  GOBLINS,
+  DWARVES,
+
+  ENUM_END};
+
 class Quest : public Singleton<Quest, QuestId> {
   public:
   virtual ~Quest() {}

@@ -23,6 +23,26 @@
 #include "event.h"
 #include "singleton.h"
 
+enum class TribeId {
+  MONSTER,
+  PEST,
+  WILDLIFE,
+  HUMAN,
+  ELVEN,
+  DWARVEN,
+  GOBLIN,
+  PLAYER,
+  DRAGON,
+  CASTLE_CELLAR,
+  BANDIT,
+  KILL_EVERYONE,
+  PEACEFUL,
+  KEEPER,
+  LIZARD,
+
+  ENUM_END
+};
+
 class Creature;
 
 class Tribe : public EventListener, public Singleton<Tribe, TribeId> {

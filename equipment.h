@@ -19,6 +19,16 @@
 #include "inventory.h"
 #include "enums.h"
 
+enum class EquipmentSlot {
+  WEAPON,
+  RANGED_WEAPON,
+  HELMET,
+  GLOVES,
+  BODY_ARMOR,
+  BOOTS,
+  AMULET,
+  RINGS,
+};
 
 class Equipment : public Inventory {
   public:

@@ -1,8 +1,8 @@
 
 
-ifdef CMP
-CC = $(CMP)
-LD = $(CMP)
+ifdef CLANG
+CC = clang++
+LD = clang++
 else
 CC = g++
 LD = g++
@@ -86,7 +86,7 @@ stdafx.h.gch: stdafx.h
 
 ifndef OPT
 PCH = stdafx.h.gch
-ifdef CMP
+ifdef CLANG
 PCHINC = -include-pch stdafx.h.gch
 endif
 endif

@@ -25,6 +25,31 @@
 class Level;
 class Attack;
 
+enum class TrapType {
+  BOULDER,
+  POISON_GAS,
+  ALARM,
+  WEB,
+  SURPRISE,
+  TERROR
+};
+
+enum class ItemType {
+  WEAPON,
+  RANGED_WEAPON,
+  AMMO,
+  ARMOR,
+  SCROLL,
+  POTION,
+  BOOK,
+  AMULET,
+  RING,
+  TOOL,
+  OTHER,
+  GOLD,
+  FOOD,
+  CORPSE };
+
 class Item : private ItemAttributes, public UniqueEntity {
   public:
   typedef ItemAttributes ItemAttributes;

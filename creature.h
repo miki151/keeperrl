@@ -313,4 +313,54 @@ class Creature : private CreatureAttributes, public CreatureView, public UniqueE
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
 };
 
+enum class AttackLevel { LOW, MIDDLE, HIGH };
+
+enum class MsgType {
+    FEEL, // better
+    BLEEDING_STOPS,
+    COLLAPSE,
+    FALL,
+    PANIC,
+    RAGE,
+    DIE_OF,
+    ARE, // bleeding
+    YOUR, // your head is cut off
+    FALL_ASLEEP, //
+    WAKE_UP,
+    DIE, //
+    FALL_APART,
+    TELE_APPEAR,
+    TELE_DISAPPEAR,
+    ATTACK_SURPRISE,
+    CAN_SEE_HIDING,
+    SWING_WEAPON,
+    THRUST_WEAPON,
+    KICK,
+    PUNCH,
+    BITE,
+    HIT,
+    CRAWL,
+    TRIGGER_TRAP,
+    DROP_WEAPON,
+    GET_HIT_NODAMAGE, // body part
+    HIT_THROWN_ITEM,
+    HIT_THROWN_ITEM_PLURAL,
+    MISS_THROWN_ITEM,
+    MISS_THROWN_ITEM_PLURAL,
+    ITEM_CRASHES,
+    ITEM_CRASHES_PLURAL,
+    STAND_UP,
+    TURN_INVISIBLE,
+    TURN_VISIBLE,
+    ENTER_PORTAL,
+    HAPPENS_TO,
+    BURN,
+    DROWN,
+    SET_UP_TRAP,
+    DECAPITATE,
+    TURN,
+    KILLED_BY,
+    BREAK_FREE,
+    MISS_ATTACK}; //
+
 #endif

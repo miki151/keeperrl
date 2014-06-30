@@ -39,6 +39,16 @@ enum class MinionType {
 
 ENUM_HASH(MinionType);
 
+enum class MinionTask { SLEEP,
+  GRAVE,
+  TRAIN,
+  WORKSHOP,
+  STUDY,
+  LABORATORY,
+  PRISON,
+  TORTURE
+};
+
 class Model;
 class Technology;
 class View;

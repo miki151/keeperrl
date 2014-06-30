@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "vision.h"
-#include "creature.h"
 
 template <class Archive> 
 void CreatureVision::serialize(Archive& ar, const unsigned int version) {

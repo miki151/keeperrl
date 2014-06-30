@@ -26,6 +26,22 @@
 
 class EnemyCheck;
 
+enum class AttrType {
+  STRENGTH,
+  DAMAGE,
+  TO_HIT,
+  THROWN_DAMAGE,
+  THROWN_TO_HIT,
+  DEXTERITY,
+  DEFENSE,
+  SPEED,
+  INV_LIMIT,
+  WILLPOWER,
+
+  ENUM_END};
+
+enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, HIT, SHOOT, SPELL};
+
 class ItemAttributes {
   public:
   ItemAttributes(function<void(ItemAttributes&)> fun) {

@@ -21,6 +21,32 @@
 
 class Skill;
 
+enum class TechId {
+  ALCHEMY,
+  ALCHEMY_ADV,
+  GOLEM,
+  GOLEM_ADV,
+  GOLEM_MAS,
+  GOBLIN,
+  OGRE,
+  HUMANOID_MUT,
+  BEAST,
+  BEAST_MUT,
+  NECRO,
+  VAMPIRE,
+  VAMPIRE_ADV,
+  CRAFTING,
+  IRON_WORKING,
+  TWO_H_WEAP,
+  TRAPS,
+  ARCHERY,
+  SPELLS,
+  SPELLS_ADV,
+  SPELLS_MAS,
+
+  ENUM_END
+};
+
 class Technology : public Singleton<Technology, TechId> {
   public:
   Technology(const string& name, int cost, const vector<TechId>& prerequisites, bool canResearch = true,

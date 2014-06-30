@@ -30,6 +30,8 @@ class Level;
 class Creature;
 class Item;
 
+enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP, TORTURE };
+
 class Square {
   public:
   /** Constructs a square object.

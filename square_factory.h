@@ -22,13 +22,34 @@
 class Square;
 class Deity;
 
+enum class StairLook {
+  NORMAL,
+  HELL,
+  CELLAR,
+  PYRAMID,
+  DUNGEON_ENTRANCE,
+  DUNGEON_ENTRANCE_MUD,
+};
+
+enum class StairKey {
+  DWARF,
+  CRYPT,
+  GOBLIN,
+  PLAYER_SPAWN,
+  HERO_SPAWN,
+  PYRAMID,
+  TOWER,
+  CASTLE_CELLAR,
+  DRAGON
+};
+
+enum class StairDirection { UP, DOWN };
 
 inline StairDirection opposite(StairDirection d) {
   switch (d) {
     case StairDirection::DOWN: return StairDirection::UP;
     case StairDirection::UP: return StairDirection::DOWN;
   }
-  return StairDirection::DOWN;
 }
 
 class SquareFactory {

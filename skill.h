@@ -21,6 +21,19 @@
 #include "singleton.h"
 #include "enums.h"
 
+enum class SkillId {
+  AMBUSH,
+  KNIFE_THROWING,
+  STEALING,
+  SWIMMING,
+  ARCHERY,
+  CONSTRUCTION,
+  ELF_VISION,
+  NIGHT_VISION,
+
+  ENUM_END
+};
+
 class Creature;
 class Skill : public Singleton<Skill, SkillId> {
   public:

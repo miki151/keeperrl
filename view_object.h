@@ -20,6 +20,19 @@
 #include "enums.h"
 #include "util.h"
 
+enum class ViewLayer {
+  CREATURE,
+  LARGE_ITEM,
+  ITEM,
+  FLOOR,
+  FLOOR_BACKGROUND,
+};
+
+const static vector<ViewLayer> allLayers =
+    {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::ITEM, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE};
+
+ENUM_HASH(ViewLayer);
+
 class ViewObject {
   public:
   ViewObject(ViewId id, ViewLayer l, const string& description);

@@ -4,6 +4,21 @@
 #include "enums.h"
 #include "util.h"
 
+enum class SpellId {
+  HEALING,
+  SUMMON_INSECTS,
+  DECEPTION,
+  SPEED_SELF,
+  STR_BONUS,
+  DEX_BONUS,
+  FIRE_SPHERE_PET,
+  TELEPORT,
+  INVISIBILITY,
+  WORD_OF_POWER,
+  SUMMON_SPIRIT,
+  PORTAL,
+};
+
 struct SpellInfo {
   SpellId id;
   string name;

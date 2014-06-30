@@ -19,6 +19,14 @@
 #include "singleton.h"
 #include "enums.h"
 
+enum class VisionId {
+  ELF,
+  NIGHT,
+  NORMAL,
+
+  ENUM_END
+};
+
 class Vision : public Singleton<Vision, VisionId> {
   public:
   Vision(Vision* inheritedFov, bool nightVision);

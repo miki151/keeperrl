@@ -167,4 +167,8 @@ class View {
   Jukebox* jukebox = nullptr;
 };
 
+enum class AnimationId {
+  EXPLOSION,
+};
+
 #endif
