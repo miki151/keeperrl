@@ -18,6 +18,7 @@
 #include "minion_equipment.h"
 #include "item.h"
 #include "creature.h"
+#include "effect.h"
 
 static vector<EffectType> combatConsumables {
     EffectType::SPEED,

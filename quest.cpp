@@ -20,6 +20,7 @@
 #include "tribe.h"
 #include "message_buffer.h"
 #include "location.h"
+#include "creature.h"
 
 template <class Archive> 
 void Quest::serialize(Archive& ar, const unsigned int version) {

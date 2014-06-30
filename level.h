@@ -17,18 +17,17 @@
 #define _LEVEL_H
 
 #include "util.h"
-#include "time_queue.h"
 #include "debug.h"
-#include "view.h"
 #include "field_of_view.h"
 #include "square_factory.h"
 #include "vision.h"
 
 class Model;
 class Square;
-class View;
 class Player;
 class LevelMaker;
+class Location;
+class Attack;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level {

@@ -17,7 +17,7 @@
 #define _ENTITY_SET_H
 
 #include "unique_entity.h"
-#include "item.h"
+#include "util.h"
 
 class EntitySet {
   public:

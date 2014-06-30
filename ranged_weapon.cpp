@@ -28,7 +28,7 @@ SERIALIZABLE(RangedWeapon);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon);
 
-RangedWeapon::RangedWeapon(ViewObject o, const ItemAttributes& attr) : Item(o, attr) {}
+RangedWeapon::RangedWeapon(const ViewObject& o, const ItemAttributes& attr) : Item(o, attr) {}
 
 void RangedWeapon::fire(Creature* c, Level* l, PItem ammo, Vec2 dir) {
   int toHitVariance = 10;

@@ -25,6 +25,7 @@
 #include "window_renderer.h"
 #include "tile.h"
 #include "clock.h"
+#include "creature_view.h"
 
 using sf::Color;
 using sf::String;
@@ -395,7 +396,7 @@ PGuiElem WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
   return GuiElem::verticalList(std::move(elems), legendLineHeight, 0);
 }
 
-typedef View::GameInfo::CreatureInfo CreatureInfo;
+typedef GameInfo::CreatureInfo CreatureInfo;
 
 struct CreatureMapElem {
   ViewObject object;

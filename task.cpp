@@ -18,6 +18,9 @@
 #include "task.h"
 #include "level.h"
 #include "entity_set.h"
+#include "item.h"
+#include "creature.h"
+#include "square.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {

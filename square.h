@@ -17,16 +17,18 @@
 #define _SQUARE_H
 
 #include "util.h"
-#include "item.h"
-#include "creature.h"
 #include "debug.h"
 #include "inventory.h"
 #include "trigger.h"
 #include "view_index.h"
 #include "poison_gas.h"
 #include "vision.h"
+#include "fire.h"
+#include "square_type.h"
 
 class Level;
+class Creature;
+class Item;
 
 class Square {
   public:
@@ -189,7 +191,7 @@ class Square {
  
   const Level* getConstLevel() const;
 
-  virtual ~Square() {};
+  virtual ~Square();
 
   void setFog(double val);
 
@@ -203,9 +205,11 @@ class Square {
   Level* getLevel();
   Inventory SERIAL(inventory);
   string SERIAL(name);
-  ViewObject SERIAL(viewObject);
+  void setViewObject(const ViewObject&);
+  ViewObject& getViewObjectMod();
 
   private:
+  PViewObject SERIAL(viewObject);
   Item* getTopItem() const;
 
   Level* SERIAL2(level, nullptr);

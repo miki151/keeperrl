@@ -20,6 +20,8 @@
 #include "tile.h"
 #include "location.h"
 #include "window_renderer.h"
+#include "creature.h"
+#include "square.h"
 
 using namespace colors;
 

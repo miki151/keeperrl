@@ -18,6 +18,9 @@
 #include "square.h"
 #include "square_factory.h"
 #include "level.h"
+#include "creature.h"
+#include "item.h"
+#include "view_object.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -58,8 +61,15 @@ SERIALIZATION_CONSTRUCTOR_IMPL(SolidSquare);
 
 Square::Square(const ViewObject& vo, const string& n, Vision* v, bool canHide, int s, double f,
     map<SquareType::Id, int> construct, bool tick) 
-    : name(n), viewObject(vo), vision(v), hide(canHide), strength(s), fire(strength, f),
+    : name(n), viewObject(new ViewObject(vo)), vision(v), hide(canHide), strength(s), fire(strength, f),
     constructions(construct), ticking(tick) {
+}
+
+Square::~Square() {
+}
+
+void Square::setViewObject(const ViewObject& obj) {
+  viewObject.reset(new ViewObject(obj));
 }
 
 void Square::putCreature(Creature* c) {
@@ -101,7 +111,7 @@ double Square::getLightEmission() const {
 }
 
 void Square::setHeight(double h) {
-  viewObject.setAttribute(ViewObject::Attribute::HEIGHT, h);
+  viewObject->setAttribute(ViewObject::Attribute::HEIGHT, h);
   height = h;
 }
 
@@ -176,7 +186,7 @@ void Square::tick(double time) {
     creature->poisonWithGas(min(1.0, poisonGas.getAmount()));
   }
   if (fire.isBurning()) {
-    viewObject.setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
+    viewObject->setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
     Debug() << getName() << " burning " << fire.getSize();
     for (Vec2 v : position.neighbors8(true))
       if (fire.getSize() > Random.getDouble() * 40)
@@ -257,7 +267,7 @@ void Square::setOnFire(double amount) {
   if (!burning && fire.isBurning()) {
     level->addTickingSquare(position);
     level->globalMessage(position, "The " + getName() + " catches fire.");
-    viewObject.setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
+    viewObject->setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
   }
   if (creature)
     creature->setOnFire(amount);
@@ -281,7 +291,11 @@ bool Square::isBurning() const {
 }
 
 const ViewObject& Square::getViewObject() const {
-  return viewObject;
+  return *viewObject.get();
+}
+
+ViewObject& Square::getViewObjectMod() {
+  return *viewObject.get();
 }
 
 Optional<ViewObject> Square::getBackgroundObject() const {
@@ -289,8 +303,8 @@ Optional<ViewObject> Square::getBackgroundObject() const {
 }
 
 void Square::setBackground(const Square* square) {
-  if (viewObject.layer() != ViewLayer::FLOOR_BACKGROUND) {
-    const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject) : square->viewObject;
+  if (viewObject->layer() != ViewLayer::FLOOR_BACKGROUND) {
+    const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject) : square->getViewObject();
     if (obj.layer() == ViewLayer::FLOOR_BACKGROUND)
       backgroundObject = obj;
   }

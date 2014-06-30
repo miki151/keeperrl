@@ -16,6 +16,7 @@
 #include "stdafx.h"
 
 #include "message_buffer.h"
+#include "view.h"
 
 template <class Archive> 
 void MessageBuffer::serialize(Archive& ar, const unsigned int version) { 

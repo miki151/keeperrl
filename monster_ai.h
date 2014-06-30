@@ -21,6 +21,8 @@
 
 class Creature;
 
+class Creature;
+
 struct MoveInfo {
   double value;
   CreatureAction move;

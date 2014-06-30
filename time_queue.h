@@ -17,7 +17,8 @@
 #define _TIME_QUEUE_H
 
 #include "util.h"
-#include "creature.h"
+
+class Creature;
 
 class TimeQueue {
   public:

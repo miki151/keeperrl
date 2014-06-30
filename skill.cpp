@@ -16,7 +16,6 @@
 #include "stdafx.h"
 
 #include "skill.h"
-#include "item_factory.h"
 #include "enums.h"
 
 template <class Archive> 
@@ -38,37 +37,6 @@ string Skill::getName() const {
 string Skill::getHelpText() const {
   return helpText;
 }
-
-class IdentifySkill : public Skill {
-  public:
-  IdentifySkill(string name, string helpText, ItemFactory f) : Skill(name, helpText), factory(f) {}
-
-  virtual void onTeach(Creature* c) override {
-    string message;
-    for (PItem& it : factory.getAll()) {
-      Item::identify(it->getName());
-      message.append(it->getName() + ": " + it->getDescription() + "\n");
-    }
- //   c->privateMessage(MessageBuffer::important(message));
-  }
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Skill) & SVAR(factory);
-    CHECK_SERIAL;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(IdentifySkill);
-  private:
-  ItemFactory SERIAL(factory);
-};
-
-template <class Archive>
-void Skill::registerTypes(Archive& ar) {
-  REGISTER_TYPE(ar, IdentifySkill);
-}
-
-REGISTER_TYPES(Skill);
 
 void Skill::init() {
   Skill::set(SkillId::AMBUSH, new Skill("ambush",

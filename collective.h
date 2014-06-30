@@ -17,8 +17,6 @@
 #define _COLLECTIVE_H
 
 #include "map_memory.h"
-#include "view.h"
-#include "monster_ai.h"
 #include "creature_view.h"
 #include "markov_chain.h"
 #include "minion_equipment.h"
@@ -26,7 +24,8 @@
 #include "entity_set.h"
 #include "sectors.h"
 #include "event.h"
-#include "creature.h"
+#include "spell_info.h"
+#include "view.h"
 
 enum class MinionType {
   IMP,
@@ -42,6 +41,7 @@ ENUM_HASH(MinionType);
 
 class Model;
 class Technology;
+class View;
 
 class Collective : public CreatureView, public EventListener, public Task::Callback {
   public:
@@ -49,7 +49,7 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
   virtual const MapMemory& getMemory() const override;
   MapMemory& getMemory(Level* l);
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
-  virtual void refreshGameInfo(View::GameInfo&) const  override;
+  virtual void refreshGameInfo(GameInfo&) const  override;
   virtual Vec2 getPosition() const  override;
   virtual bool canSee(const Creature*) const  override;
   virtual bool canSee(Vec2 position) const  override;
@@ -210,7 +210,7 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0);
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
-  vector<View::GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
+  vector<GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   static vector<BuildInfo> buildInfo;
   static void initBuildInfo();
   static vector<BuildInfo> workshopInfo;
@@ -244,7 +244,7 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
   double getTechCost();
   int SERIAL2(numFreeTech, 0);
 
-  typedef View::GameInfo::BandInfo::TechButton TechButton;
+  typedef GameInfo::BandInfo::TechButton TechButton;
 
   struct TechInfo {
     TechButton button;

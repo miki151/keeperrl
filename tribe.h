@@ -20,9 +20,10 @@
 #include <set>
 
 #include "enums.h"
-#include "creature.h"
 #include "event.h"
 #include "singleton.h"
+
+class Creature;
 
 class Tribe : public EventListener, public Singleton<Tribe, TribeId> {
   public:

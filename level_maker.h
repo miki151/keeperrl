@@ -22,6 +22,8 @@
 
 enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
 
+class ItemFactory;
+
 struct SettlementInfo {
   SettlementType type;
   CreatureFactory factory;

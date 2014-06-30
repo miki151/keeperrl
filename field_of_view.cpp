@@ -16,6 +16,7 @@
 #include "stdafx.h"
 
 #include "field_of_view.h"
+#include "square.h"
 
 template <class Archive> 
 void FieldOfView::serialize(Archive& ar, const unsigned int version) {

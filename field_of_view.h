@@ -17,7 +17,9 @@
 #define _FIELD_OF_VIEW_H
 
 #include "util.h"
-#include "square.h"
+
+class Square;
+class Vision;
 
 class FieldOfView {
   public:

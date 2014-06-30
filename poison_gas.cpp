@@ -17,6 +17,7 @@
 
 #include "poison_gas.h"
 #include "level.h"
+#include "square.h"
 
 
 template <class Archive> 

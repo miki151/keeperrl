@@ -17,7 +17,30 @@
 
 #include "level_maker.h"
 #include "quest.h"
+#include "pantheon.h"
+#include "item_factory.h"
+#include "creature.h"
+#include "square.h"
 
+enum class SquareAttrib {
+  NO_DIG,
+  GLACIER,
+  MOUNTAIN,
+  HILL,
+  LOWLAND,
+  CONNECT_ROAD, 
+  CONNECT_CORRIDOR,
+  LAKE,
+  RIVER,
+  ROAD_CUT_THRU,
+  NO_ROAD,
+  ROOM,
+  COLLECTIVE_START,
+  COLLECTIVE_STAIRS,
+  EMPTY_ROOM,
+  FOG,
+  FORREST,
+};
 
 class SquarePredicate {
   public:

@@ -22,6 +22,7 @@
 #include "technology.h"
 #include "vision.h"
 #include "clock.h"
+#include "skill.h"
 
 template<class T, class E>
 EnumMap<E, unique_ptr<T>> Singleton<T, E>::elems;

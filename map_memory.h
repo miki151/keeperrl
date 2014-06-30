@@ -16,9 +16,10 @@
 #ifndef _MEMORY_H
 #define _MEMORY_H
 
-#include "view_object.h"
 #include "view_index.h"
 #include "util.h"
+
+class ViewObject;
 
 class MapMemory {
   public:

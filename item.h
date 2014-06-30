@@ -17,23 +17,18 @@
 #define _ITEM_H
 
 #include "util.h"
-#include "view_object.h"
 #include "item_attributes.h"
-#include "effect.h"
 #include "enums.h"
-#include "attack.h"
 #include "fire.h"
 #include "unique_entity.h"
 
 class Level;
-
-class Item;
-typedef function<bool(const Item*)> ItemPredicate;
+class Attack;
 
 class Item : private ItemAttributes, public UniqueEntity {
   public:
   typedef ItemAttributes ItemAttributes;
-  Item(ViewObject o, const ItemAttributes&);
+  Item(const ViewObject& o, const ItemAttributes&);
   virtual ~Item();
 
   static void identifyEverything();
@@ -119,12 +114,13 @@ class Item : private ItemAttributes, public UniqueEntity {
   protected:
   virtual void specialTick(double time, Level*, Vec2 position) {}
   void setName(const string& name);
-  ViewObject SERIAL(viewObject);
+  void setViewObject(const ViewObject&);
   bool SERIAL2(discarded, false);
   bool SERIAL(inspected);
   static bool everythingIdentified;
 
   private:
+  PViewObject SERIAL(viewObject);
   static bool isIdentified(const string& name);
   string getVisibleName(bool plural) const;
   string getRealName(bool plural) const;

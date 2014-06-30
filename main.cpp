@@ -36,6 +36,10 @@
 #include "technology.h"
 #include "gui_elem.h"
 #include "music.h"
+#include "item.h"
+#include "name_generator.h"
+#include "item_factory.h"
+#include "creature.h"
 #include "test.h"
 
 using namespace boost::iostreams;

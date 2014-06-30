@@ -18,8 +18,8 @@
 
 #include "event.h"
 #include "monster_ai.h"
-#include "view.h"
 #include "task.h"
+#include "game_info.h"
 
 class AttackTrigger;
 typedef unique_ptr<AttackTrigger> PAttackTrigger;
@@ -42,7 +42,7 @@ class VillageControl : public EventListener, public Task::Callback {
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
 
-  View::GameInfo::VillageInfo::Village getVillageInfo() const;
+  GameInfo::VillageInfo::Village getVillageInfo() const;
 
   void setPowerTrigger(double killedCoeff, double powerCoeff);
   void setFinalTrigger(vector<VillageControl*> otherControls);

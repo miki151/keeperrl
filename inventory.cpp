@@ -16,6 +16,7 @@
 #include "stdafx.h"
 
 #include "inventory.h"
+#include "item.h"
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {
@@ -23,6 +24,8 @@ void Inventory::serialize(Archive& ar, const unsigned int version) {
     & SVAR(itemsCache);
   CHECK_SERIAL;
 }
+
+Inventory::~Inventory() {}
 
 SERIALIZABLE(Inventory);
 

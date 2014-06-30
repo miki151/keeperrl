@@ -44,6 +44,10 @@ DEF_UNIQUE_PTR(Level);
 DEF_UNIQUE_PTR(VillageControl);
 DEF_UNIQUE_PTR(GuiElem);
 DEF_UNIQUE_PTR(Animation);
+DEF_UNIQUE_PTR(ViewObject);
+
+class Item;
+typedef function<bool(const Item*)> ItemPredicate;
 
 template<class T>
 vector<T*> extractRefs(vector<unique_ptr<T>>& v) {

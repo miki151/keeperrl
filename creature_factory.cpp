@@ -21,6 +21,11 @@
 #include "quest.h"
 #include "message_buffer.h"
 #include "entity_set.h"
+#include "effect.h"
+#include "item_factory.h"
+#include "creature_attributes.h"
+#include "square.h"
+#include "view_object.h"
 
 static map<string, function<PCreature ()> > creatureMap;
 static map<string, vector<string> > inventoryMap;

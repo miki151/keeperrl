@@ -20,7 +20,7 @@
 
 class RangedWeapon : public Item {
   public:
-  RangedWeapon(ViewObject, const ItemAttributes&);
+  RangedWeapon(const ViewObject&, const ItemAttributes&);
 
   virtual void fire(Creature*, Level*, PItem ammo, Vec2 dir);
 

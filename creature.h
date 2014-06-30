@@ -17,7 +17,6 @@
 #define _CREATURE_H
 
 #include "creature_attributes.h"
-#include "view_object.h"
 #include "equipment.h"
 #include "enums.h"
 #include "attack.h"
@@ -33,15 +32,18 @@
 #include "vision.h"
 #include "square_type.h"
 #include "creature_action.h"
+#include "spell_info.h"
 
 class Level;
 class Tribe;
+class EnemyCheck;
+class ViewObject;
 
-class Creature : public CreatureAttributes, public CreatureView, public UniqueEntity, public EventListener {
+class Creature : private CreatureAttributes, public CreatureView, public UniqueEntity, public EventListener {
   public:
   typedef CreatureAttributes CreatureAttributes;
   Creature(Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
-  Creature(ViewObject, Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
+  Creature(const ViewObject&, Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
   virtual ~Creature();
 
   static Creature* getDefault();
@@ -208,7 +210,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   bool isHeld() const;
 
   virtual vector<const Creature*> getUnknownAttacker() const override;
-  virtual void refreshGameInfo(View::GameInfo&) const override;
+  virtual void refreshGameInfo(GameInfo&) const override;
   
   void you(MsgType type, const string& param) const;
   void you(const string& param) const;
@@ -276,7 +278,7 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   BodyPart armOrWing() const;
   pair<double, double> getStanding(const Creature* c) const;
 
-  ViewObject SERIAL(viewObject);
+  PViewObject SERIAL(viewObject);
   Level* SERIAL2(level, nullptr);
   Vec2 SERIAL(position);
   double SERIAL2(time, 1);
@@ -310,18 +312,5 @@ class Creature : public CreatureAttributes, public CreatureView, public UniqueEn
   int SERIAL2(numAttacksThisTurn, 0);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
 };
-
-struct SpellInfo {
-  SpellId id;
-  string name;
-  EffectType type;
-  double ready;
-  int difficulty;
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
-};
-
-
 
 #endif

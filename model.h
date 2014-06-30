@@ -17,14 +17,12 @@
 #define _MODEL_H
 
 #include "util.h"
-#include "level.h"
-#include "level_generator.h"
-#include "square_factory.h"
-#include "monster.h"
-#include "level_maker.h"
 #include "encyclopedia.h"
+#include "time_queue.h"
+#include "level_maker.h"
 
 class Collective;
+class Level;
 
 /**
   * Main class that holds all game logic.
@@ -95,7 +93,7 @@ class Model : public EventListener {
   PCreature makePlayer();
   const Creature* getPlayer() const;
   void landHeroPlayer();
-  Level* buildLevel(Level::Builder&& b, LevelMaker*);
+  Level* buildLevel(Level::Builder&&, LevelMaker*);
   void addLink(StairDirection, StairKey, Level*, Level*);
   Level* prepareTopLevel(vector<SettlementInfo> settlements);
   Level* prepareTopLevel2(vector<SettlementInfo> settlements);

@@ -32,6 +32,7 @@
 #include "village_control.h"
 #include "task.h"
 #include "collective.h"
+#include "item_factory.h"
 
 template <class Archive>
 void Serialization::registerTypes(Archive& ar) {
@@ -45,7 +46,6 @@ void Serialization::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Monster);
   REGISTER_TYPE(ar, RangedWeapon);
   Quest::registerTypes(ar);
-  Skill::registerTypes(ar);
   REGISTER_TYPE(ar, SolidSquare);
   Tribe::registerTypes(ar);
   Trigger::registerTypes(ar);

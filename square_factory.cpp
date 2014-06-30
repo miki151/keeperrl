@@ -21,6 +21,9 @@
 #include "level.h"
 #include "item_factory.h"
 #include "creature_factory.h"
+#include "pantheon.h"
+#include "effect.h"
+#include "view_object.h"
 
 class Staircase : public Square {
   public:
@@ -64,7 +67,7 @@ class SecretPassage : public Square {
   void uncover(Vec2 pos) {
     uncovered = true;
     setName("floor");
-    viewObject = secondary;
+    setViewObject(secondary);
     setVision(Vision::get(VisionId::NORMAL));
     getLevel()->updateVisibility(pos);
   }
@@ -237,7 +240,7 @@ class Chest : public Square {
     CHECK(!opened);
     c->playerMessage("You open the " + getName());
     opened = true;
-    viewObject = openedObject;
+    setViewObject(openedObject);
     if (!Random.roll(5)) {
       c->playerMessage(msgItem);
       vector<PItem> items = itemFactory.random();
@@ -338,7 +341,7 @@ class Tree : public Square {
     destroyed = true;
     setVision(Vision::get(VisionId::NORMAL));
     getLevel()->updateVisibility(getPosition());
-    viewObject = ViewObject(ViewId::FALLEN_TREE, ViewLayer::FLOOR, "Fallen tree");
+    setViewObject(ViewObject(ViewId::FALLEN_TREE, ViewLayer::FLOOR, "Fallen tree"));
   }
 
   virtual void onConstructNewSquare(Square* s) override {
@@ -348,7 +351,7 @@ class Tree : public Square {
   virtual void burnOut() override {
     setVision(Vision::get(VisionId::NORMAL));
     getLevel()->updateVisibility(getPosition());
-    viewObject = ViewObject(ViewId::BURNT_TREE, ViewLayer::FLOOR, "Burnt tree");
+    setViewObject(ViewObject(ViewId::BURNT_TREE, ViewLayer::FLOOR, "Burnt tree"));
   }
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -451,9 +454,9 @@ class TribeDoor : public Door {
   virtual void lock() {
     locked = !locked;
     if (locked)
-      viewObject.setModifier(ViewObject::Modifier::LOCKED);
+      getViewObjectMod().setModifier(ViewObject::Modifier::LOCKED);
     else
-      viewObject.removeModifier(ViewObject::Modifier::LOCKED);
+      getViewObjectMod().removeModifier(ViewObject::Modifier::LOCKED);
   }
 
   template <class Archive> 

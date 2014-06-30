@@ -22,6 +22,8 @@
 #include "level.h"
 #include "creature_factory.h"
 #include "message_buffer.h"
+#include "item.h"
+#include "view_object.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};

@@ -16,6 +16,7 @@
 #include "stdafx.h"
 
 #include "view_index.h"
+#include "view_object.h"
 
 
 template <class Archive> 
@@ -40,6 +41,10 @@ SERIALIZABLE(ViewIndex::HighlightInfo);
 ViewIndex::ViewIndex() {
   objIndex = vector<int>(allLayers.size(), -1);
 }
+
+ViewIndex::~ViewIndex() {
+}
+
 void ViewIndex::insert(const ViewObject& obj) {
   int ind = objIndex[int(obj.layer())];
   if (ind > -1)

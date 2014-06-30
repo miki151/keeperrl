@@ -16,9 +16,14 @@
 #ifndef _TRIGGER_H
 #define _TRIGGER_H
 
-#include "view_object.h"
 #include "util.h"
-#include "creature.h"
+
+class Creature;
+class CreatureView;
+class Attack;
+class Vision;
+class Tribe;
+class ViewObject;
 
 class Trigger {
   public:

@@ -22,6 +22,9 @@
 #include "ranged_weapon.h"
 #include "enemy_check.h"
 #include "technology.h"
+#include "effect.h"
+#include "square.h"
+#include "view_object.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -265,7 +268,7 @@ class Corpse : public Item {
       rottenTime = time + rottingTime;
     if (time >= rottenTime && !rotten) {
       setName(rottenName);
-      viewObject = object2;
+      setViewObject(object2);
       corpseInfo.isSkeleton = true;
     } else {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))

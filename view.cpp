@@ -57,7 +57,7 @@ View::View() {
 View::~View() {
 }
 
-View::GameInfo::CreatureInfo::CreatureInfo(const Creature* c) 
+GameInfo::CreatureInfo::CreatureInfo(const Creature* c) 
     : viewObject(c->getViewObject()),
       uniqueId(c->getUniqueId()),
       name(c->getName()),

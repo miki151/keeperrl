@@ -21,14 +21,10 @@
 #include <functional>
 
 #include "util.h"
-#include "creature_attributes.h"
 #include "tribe.h"
-#include "view_object.h"
-#include "item_factory.h"
 #include "monster_ai.h"
 
 class Creature;
-class ItemFactory;
 
 
 class CreatureFactory {
@@ -74,5 +70,93 @@ class CreatureFactory {
   vector<double> weights;
   vector<CreatureId> unique;
 };
+
+enum class CreatureId {
+    KEEPER,
+
+    GOBLIN,
+    GREAT_GOBLIN,
+    BANDIT,
+
+    SPECIAL_MONSTER,
+    SPECIAL_MONSTER_KEEPER,
+    SPECIAL_HUMANOID,
+
+    GHOST,
+    SPIRIT,
+    DEVIL,
+    DARK_KNIGHT,
+    GREEN_DRAGON,
+    RED_DRAGON,
+    CYCLOPS,
+    WITCH,
+
+    CLAY_GOLEM,
+    STONE_GOLEM,
+    IRON_GOLEM,
+    LAVA_GOLEM,
+
+    ZOMBIE,
+    VAMPIRE,
+    VAMPIRE_LORD,
+    VAMPIRE_BAT,
+    MUMMY,
+    MUMMY_LORD,
+    SKELETON,
+    
+    DWARF,
+    DWARF_BARON,
+
+    IMP,
+    PRISONER,
+    BILE_DEMON,
+    CHICKEN,
+
+    KNIGHT,
+    AVATAR,
+    CASTLE_GUARD,
+    ARCHER,
+    PESEANT,
+    CHILD,
+    SHAMAN,
+    WARRIOR,
+
+    LIZARDMAN,
+    LIZARDLORD,
+    
+    ELF,
+    ELF_ARCHER,
+    ELF_CHILD,
+    ELF_LORD,
+    HORSE,
+    COW,
+    SHEEP,
+    PIG,
+    GOAT,
+    
+    GNOME, 
+    LEPRECHAUN,
+    
+    JACKAL,
+    DEER,
+    BOAR,
+    FOX,
+    RAVEN,
+    VULTURE,
+    WOLF,
+    DOG,
+
+    DEATH,
+    NIGHTMARE,
+    FIRE_SPHERE,
+    KRAKEN,
+    BAT,
+    SNAKE,
+    CAVE_BEAR,
+    ACID_MOUND,
+    SPIDER,
+    SCORPION,
+    FLY,
+    RAT};
 
 #endif

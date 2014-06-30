@@ -16,7 +16,10 @@
 #ifndef _VIEW_INDEX
 #define _VIEW_INDEX
 
-#include "view_object.h"
+#include "enums.h"
+#include "util.h"
+
+class ViewObject;
 
 class ViewIndex {
   public:
@@ -28,6 +31,7 @@ class ViewIndex {
   ViewObject& getObject(ViewLayer);
   Optional<ViewObject> getTopObject(const vector<ViewLayer>&) const;
   bool isEmpty() const;
+  ~ViewIndex();
 
   struct HighlightInfo {
     HighlightType type;

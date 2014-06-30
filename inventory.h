@@ -19,7 +19,8 @@
 #include <functional>
 
 #include "util.h"
-#include "item.h"
+
+class Item;
 
 class Inventory {
   public:
@@ -36,6 +37,8 @@ class Inventory {
   int size() const;
 
   bool isEmpty() const;
+
+  ~Inventory();
 
   SERIALIZATION_DECL(Inventory);
 

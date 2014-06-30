@@ -17,7 +17,8 @@
 #define _MESSAGE_BUFFER_H
 
 #include "util.h"
-#include "view.h"
+
+class View;
 
 class MessageBuffer {
   public:

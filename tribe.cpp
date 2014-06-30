@@ -16,6 +16,7 @@
 #include "stdafx.h"
 
 #include "tribe.h"
+#include "creature.h"
 
 template <class Archive> 
 void Tribe::serialize(Archive& ar, const unsigned int version) {

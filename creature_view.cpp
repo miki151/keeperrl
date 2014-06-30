@@ -16,6 +16,7 @@
 #include "stdafx.h"
 #include "creature_view.h"
 #include "level.h"
+#include "creature.h"
 
 template <class Archive> 
 void CreatureView::serialize(Archive& ar, const unsigned int version) { 

@@ -20,6 +20,7 @@
 #include "pantheon.h"
 #include "technology.h"
 #include "creature_factory.h"
+#include "creature.h"
 
 void bestiary(View* view, int lastInd) {
 }

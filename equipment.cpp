@@ -16,7 +16,7 @@
 #include "stdafx.h"
 
 #include "equipment.h"
-
+#include "item.h"
 
 map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::WEAPON, "Weapon"},

@@ -17,6 +17,11 @@
 
 #include "trigger.h"
 #include "level.h"
+#include "effect.h"
+#include "item.h"
+#include "creature.h"
+#include "square.h"
+#include "view_object.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {

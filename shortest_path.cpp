@@ -18,6 +18,7 @@
 #include "shortest_path.h"
 #include "level.h"
 #include "creature.h"
+#include "square.h"
 
 template <class Archive> 
 void ShortestPath::serialize(Archive& ar, const unsigned int version) {

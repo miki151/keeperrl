@@ -20,7 +20,6 @@
 #include <functional>
 
 #include "util.h"
-#include "effect.h"
 #include "enums.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })

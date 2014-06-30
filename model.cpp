@@ -24,6 +24,12 @@
 #include "statistics.h"
 #include "options.h"
 #include "technology.h"
+#include "level.h"
+#include "pantheon.h"
+#include "name_generator.h"
+#include "item_factory.h"
+#include "creature.h"
+#include "square.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 

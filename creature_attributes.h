@@ -20,7 +20,6 @@
 #include <functional>
 
 #include "util.h"
-#include "effect.h"
 #include "skill.h"
 #include "gender.h"
 

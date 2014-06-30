@@ -19,6 +19,9 @@
 #include "creature.h"
 #include "level.h"
 #include "statistics.h"
+#include "effect.h"
+#include "square.h"
+#include "view_object.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -45,8 +48,8 @@ void Item::CorpseInfo::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Item::CorpseInfo);
 
 
-Item::Item(ViewObject o, const ItemAttributes& attr)
-    : ItemAttributes(attr), viewObject(o), inspected(everythingIdentified), fire(*weight, flamability) {
+Item::Item(const ViewObject& o, const ItemAttributes& attr) : ItemAttributes(attr),
+    inspected(everythingIdentified), viewObject(new ViewObject(o)), fire(*weight, flamability) {
 }
 
 Item::~Item() {
@@ -81,6 +84,10 @@ ItemPredicate Item::typePredicate(vector<ItemType> type) {
 
 ItemPredicate Item::namePredicate(const string& name) {
   return [name](const Item* item) { return item->getName() == name; };
+}
+
+void Item::setViewObject(const ViewObject& obj) {
+  viewObject.reset(new ViewObject(obj));
 }
 
 vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, function<string(const Item*)> suffix) {
@@ -132,7 +139,7 @@ void Item::setOnFire(double amount, const Level* level, Vec2 position) {
   fire.set(amount);
   if (!burning && fire.isBurning()) {
     level->globalMessage(position, noBurningName + " catches fire.");
-    viewObject.setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
+    viewObject->setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
   }
 }
 
@@ -144,7 +151,7 @@ void Item::tick(double time, Level* level, Vec2 position) {
   if (fire.isBurning()) {
     Debug() << getName() << " burning " << fire.getSize();
     level->getSquare(position)->setOnFire(fire.getSize());
-    viewObject.setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
+    viewObject->setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
     fire.tick(level, position);
     if (!fire.isBurning()) {
       level->globalMessage(position, getTheName() + " burns out");
@@ -193,7 +200,7 @@ string Item::getDescription() const {
 }
 
 const ViewObject& Item::getViewObject() const {
-  return viewObject;
+  return *viewObject.get();
 }
 
 ItemType Item::getType() const {

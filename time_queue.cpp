@@ -16,7 +16,7 @@
 #include "stdafx.h"
 
 #include "time_queue.h"
-
+#include "creature.h"
 
 template <class Archive> 
 void TimeQueue::serialize(Archive& ar, const unsigned int version) { 

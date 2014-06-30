@@ -17,6 +17,7 @@
 
 #include "map_memory.h"
 #include "level.h"
+#include "view_object.h"
 
 MapMemory::MapMemory() : table(Level::getMaxBounds()) {
 }

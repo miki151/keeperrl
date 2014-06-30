@@ -15,6 +15,7 @@
 
 #include "stdafx.h"
 #include "entity_set.h"
+#include "item.h"
 
 
 EntitySet::EntitySet() {

@@ -22,6 +22,7 @@
 #include "level.h"
 #include "name_generator.h"
 #include "model.h"
+#include "creature.h"
 
 template <class Archive>
 void VillageControl::serialize(Archive& ar, const unsigned int version) {
@@ -317,8 +318,8 @@ void VillageControl::setOnFirstContact() {
   attackTrigger.reset(new FirstContact(this, std::move(attackTrigger)));
 }
 
-View::GameInfo::VillageInfo::Village VillageControl::getVillageInfo() const {
-  View::GameInfo::VillageInfo::Village info;
+GameInfo::VillageInfo::Village VillageControl::getVillageInfo() const {
+  GameInfo::VillageInfo::Village info;
   info.name = name;
   info.tribeName = tribe->getName();
   if (currentlyAttacking())

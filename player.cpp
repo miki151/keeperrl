@@ -23,6 +23,8 @@
 #include "name_generator.h"
 #include "model.h"
 #include "options.h"
+#include "creature.h"
+#include "square.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {

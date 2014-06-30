@@ -20,7 +20,8 @@
 #include "item_factory.h"
 #include "creature_factory.h"
 #include "level.h"
-
+#include "effect.h"
+#include "square.h"
 
 template <class Archive> 
 void Deity::serialize(Archive& ar, const unsigned int version) {

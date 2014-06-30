@@ -26,6 +26,11 @@
 #include "technology.h"
 #include "music.h"
 #include "village_control.h"
+#include "pantheon.h"
+#include "item.h"
+#include "item_factory.h"
+#include "creature.h"
+#include "square.h"
 
 template <class Archive> 
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -1077,7 +1082,7 @@ void Collective::acquireTech(Technology* tech, bool free) {
       c->addSkill(skill);
 }
 
-typedef View::GameInfo::BandInfo::Button Button;
+typedef GameInfo::BandInfo::Button Button;
 
 Optional<pair<ViewObject, int>> Collective::getCostObj(CostInfo cost) const {
   if (cost.value > 0)
@@ -1188,7 +1193,7 @@ vector<Collective::TechInfo> Collective::getTechInfo() const {
   return ret;
 }
 
-void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
+void Collective::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.villageInfo.villages.clear();
   bool attacking = false;
   for (VillageControl* c : model->getVillageControls())
@@ -1201,8 +1206,8 @@ void Collective::refreshGameInfo(View::GameInfo& gameInfo) const {
     model->getView()->getJukebox()->setCurrent(Jukebox::BATTLE);
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
-  gameInfo.infoType = View::GameInfo::InfoType::BAND;
-  View::GameInfo::BandInfo& info = gameInfo.bandInfo;
+  gameInfo.infoType = GameInfo::InfoType::BAND;
+  GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.buildings = fillButtons(buildInfo);
   info.workshop = fillButtons(workshopInfo);
   info.libraryButtons = fillButtons(libraryInfo);

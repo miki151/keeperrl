@@ -18,6 +18,9 @@
 #include "level.h"
 #include "location.h"
 #include "model.h"
+#include "item.h"
+#include "creature.h"
+#include "square.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) { 

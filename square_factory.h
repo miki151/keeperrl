@@ -16,10 +16,11 @@
 #ifndef _SQUARE_FACTORY
 #define _SQUARE_FACTORY
 
-#include "pantheon.h"
+#include "util.h"
 #include "square_type.h"
 
 class Square;
+class Deity;
 
 
 inline StairDirection opposite(StairDirection d) {
