@@ -9,7 +9,7 @@ Compiling
 *Prerequisites*
 
   * make essentials
-  * gcc-4.8.2
+  * gcc-4.8.2 OR clang-3.3
   * git
   * libboost 1.5+ with libboost-serialize
   * libsfml-dev 2+ (Ubuntu ppa that contains libsfml 2: http://www.playdeb.net/updates/Ubuntu/13.10#how_to_install )
@@ -24,5 +24,6 @@ In terminal:
   cd keeperrl
   make -j 8 # for slow & debug mode or
   make -j 8 OPT=true # for release
+  # add CLANG=true to compile with clang.
   ./keeper
   ```
