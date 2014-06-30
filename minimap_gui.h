@@ -57,7 +57,6 @@ class MinimapGui : public GuiElem {
     vector<Location> locations;
   } info;
 
-  bool initialized = false;
   function<void()> clickFun;
 };
 

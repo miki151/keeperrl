@@ -95,7 +95,7 @@ class Square {
   int getStrength() const;
 
   /** Checks if this square can be destroyed.*/
-  virtual bool canDestroy(const Creature* c) const { return canDestroy(); }
+  virtual bool canDestroyBy(const Creature* c) const { return canDestroy(); }
   virtual bool canDestroy() const { return false; }
 
   /** Called when something destroyed this square.*/

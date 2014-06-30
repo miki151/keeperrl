@@ -1650,7 +1650,7 @@ CreatureAction Creature::eat(Item* item) {
 }
 
 CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) {
-  if (direction.length8() == 1 && getConstSquare(direction)->canDestroy(this))
+  if (direction.length8() == 1 && getConstSquare(direction)->canDestroyBy(this))
     return CreatureAction([=]() {
       switch (dAction) {
         case BASH: 
@@ -2144,7 +2144,8 @@ vector<string> Creature::getAdjectives() const {
         ret.back() += "  " + getRemainingString(effect);
     }
   if (isBlind())
-    ret.push_back("blind" + isAffected(LastingEffect::BLIND) ? (" " + getRemainingString(LastingEffect::BLIND)) : "");
+    ret.push_back("blind"
+        + (isAffected(LastingEffect::BLIND) ? (" " + getRemainingString(LastingEffect::BLIND)) : ""));
   return ret;
 }
 

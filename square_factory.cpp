@@ -435,7 +435,7 @@ class TribeDoor : public Door {
     }
   }
 
-  virtual bool canDestroy(const Creature* c) const override {
+  virtual bool canDestroyBy(const Creature* c) const override {
     return c->getTribe() != Tribe::get(TribeId::KEEPER)
       || c->isInvincible(); // hack to make boulders destroy doors
   }
@@ -489,7 +489,7 @@ class Barricade : public SolidSquare {
     }
   }
 
-  virtual bool canDestroy(const Creature* c) const override {
+  virtual bool canDestroyBy(const Creature* c) const override {
     return c->getTribe() != Tribe::get(TribeId::KEEPER)
       || c->isInvincible(); // hack to make boulders destroy doors
   }

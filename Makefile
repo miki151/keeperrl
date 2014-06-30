@@ -1,8 +1,15 @@
 
 
+ifdef CMP
+CC = $(CMP)
+LD = $(CMP)
+else
 CC = g++
 LD = g++
-CFLAGS = -Werror -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wl,-rpath=. -Wfatal-errors
+endif
+
+CFLAGS = -Werror -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wfatal-errors
+LDFLAGS = -Wl,-rpath=. -static-libstdc++
 
 CMD:=$(shell rm -f zagadka)
 
@@ -33,7 +40,7 @@ GFLAG += -DDEBUG_STL
 endif
 
 ifndef OPTFLAGS
-	OPTFLAGS = -static-libstdc++ ${GFLAG}
+	OPTFLAGS = ${GFLAG}
 endif
 
 ifdef OPT
@@ -75,14 +82,17 @@ $(OBJDIR):
 	mkdir $(OBJDIR)
 
 stdafx.h.gch: stdafx.h
-	$(CC) -MMD $(CFLAGS) -c $< -o $@
+	$(CC) -x c++-header $< -MMD $(CFLAGS) -o $@
 
 ifndef OPT
 PCH = stdafx.h.gch
+ifdef CMP
+PCHINC = -include-pch stdafx.h.gch
+endif
 endif
 
 $(OBJDIR)/%.o: %.cpp ${PCH}
-	$(CC) -MMD $(CFLAGS) -c $< -o $@
+	$(CC) -MMD $(CFLAGS) $(PCHINC) -c $< -o $@
 
 $(NAME): $(OBJS) $(OBJDIR)/main.o
 	$(LD) $(CFLAGS) -o $@ $^ $(LIBS)

@@ -248,7 +248,7 @@ class Collective : public CreatureView, public EventListener, public Task::Callb
 
   struct TechInfo {
     TechButton button;
-    function<void(View*)> butFun;
+    function<void(Collective*, View*)> butFun;
   };
   vector<TechInfo> getTechInfo() const;
 

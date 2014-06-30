@@ -48,7 +48,7 @@ class SpriteAnim : public Animation {
     Vec2 offset;
   };
   SpriteAnim(double frame, int tile, vector<FrameInfo> f)
-      : Animation(frame * f.size()), frameTime(frame), frames(f), tileNum(tile) {}
+      : Animation(frame * f.size()), frames(f), tileNum(tile) {}
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
     FrameInfo current = frames[min<int>(frames.size() - 1, max(0, int(state * frames.size())))];
@@ -60,7 +60,6 @@ class SpriteAnim : public Animation {
   }
 
   private:
-  double frameTime;
   vector<FrameInfo> frames;
   int tileNum;
 };

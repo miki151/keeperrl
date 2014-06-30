@@ -30,7 +30,7 @@ enum class CreatureSize { SMALL, MEDIUM, LARGE, HUGE };
 
 #define CATTR(X) CreatureAttributes([&](CreatureAttributes& c) { X })
 
-class SpellInfo;
+struct SpellInfo;
 
 class CreatureAttributes {
   public:
@@ -48,7 +48,7 @@ class CreatureAttributes {
   MustInitialize<int> SERIAL(strength);
   MustInitialize<int> SERIAL(dexterity);
   int SERIAL2(willpower, 12);
-  MustInitialize<int> SERIAL(weight);
+  MustInitialize<double> SERIAL(weight);
   Optional<string> SERIAL(chatReactionFriendly);
   Optional<string> SERIAL(chatReactionHostile);
   Optional<string> SERIAL(firstName);

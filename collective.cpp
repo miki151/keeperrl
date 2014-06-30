@@ -1173,24 +1173,24 @@ vector<Button> Collective::fillButtons(const vector<BuildInfo>& buildInfo) const
 vector<Collective::TechInfo> Collective::getTechInfo() const {
   vector<TechInfo> ret;
   ret.push_back({{ViewId::BILE_DEMON, "Humanoids", 'h'},
-      [this](View* view) { handleHumanoidBreeding(view); }});
+      [this](Collective* c, View* view) { c->handleHumanoidBreeding(view); }});
   ret.push_back({{ViewId::BEAR, "Beasts", 'n'},
-      [this](View* view) { handleBeastTaming(view); }}); 
+      [this](Collective* c, View* view) { c->handleBeastTaming(view); }}); 
   if (hasTech(TechId::GOLEM))
     ret.push_back({{ViewId::IRON_GOLEM, "Golems", 'm'},
-      [this](View* view) { handleMatterAnimation(view); }});      
+      [this](Collective* c, View* view) { c->handleMatterAnimation(view); }});      
   if (hasTech(TechId::NECRO))
     ret.push_back({{ViewId::VAMPIRE, "Necromancy", 'c'},
-      [this](View* view) { handleNecromancy(view); }});
-  ret.push_back({{ViewId::MANA, "Sorcery"}, [this](View* view) {handlePersonalSpells(view);}});
-  ret.push_back({{ViewId::EMPTY, ""}, [](View*) {}});
+      [this](Collective* c, View* view) { c->handleNecromancy(view); }});
+  ret.push_back({{ViewId::MANA, "Sorcery"}, [this](Collective* c, View* view) {c->handlePersonalSpells(view);}});
+  ret.push_back({{ViewId::EMPTY, ""}, [](Collective* c, View*) {}});
   ret.push_back({{ViewId::LIBRARY, "Library", 'l'},
-      [this](View* view) { handleLibrary(view); }});
+      [this](Collective* c, View* view) { c->handleLibrary(view); }});
   ret.push_back({{ViewId::GOLD, "Black market"},
-      [this](View* view) { handleMarket(view); }});
-  ret.push_back({{ViewId::EMPTY, ""}, [](View*) {}});
+      [this](Collective* c, View* view) { c->handleMarket(view); }});
+  ret.push_back({{ViewId::EMPTY, ""}, [](Collective* c, View*) {}});
   ret.push_back({{ViewId::BOOK, "Keeperopedia"},
-      [this](View* view) { model->keeperopedia.present(view); }});
+      [this](Collective* c, View* view) { model->keeperopedia.present(view); }});
   return ret;
 }
 
@@ -1558,7 +1558,7 @@ void Collective::processInput(View* view, UserInput input) {
     case UserInput::MARKET: handleMarket(view); break;
     case UserInput::TECHNOLOGY: {
         vector<TechInfo> techInfo = getTechInfo();
-        techInfo[input.getNum()].butFun(view);
+        techInfo[input.getNum()].butFun(this, view);
         break;}
     case UserInput::CREATURE_BUTTON: 
         handleCreatureButton(getCreature(input.getNum()), view);

@@ -671,7 +671,7 @@ class DoorEater : public Behaviour {
     Optional<Vec2> closestDoor;
     for (Vec2 v : Rectangle(-10, -10, 10, 10))
       if (creature->getLevel()->inBounds(creature->getPosition() + v)
-          && creature->getSquare(v)->canLock() && creature->getSquare(v)->canDestroy(creature))
+          && creature->getSquare(v)->canLock() && creature->getSquare(v)->canDestroyBy(creature))
         if (!closestDoor || v.length8() < closestDoor->length8())
           closestDoor = v;
     if (closestDoor) {
