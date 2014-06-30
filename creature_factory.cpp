@@ -26,6 +26,7 @@
 #include "creature_attributes.h"
 #include "square.h"
 #include "view_object.h"
+#include "view_id.h"
 
 static map<string, function<PCreature ()> > creatureMap;
 static map<string, vector<string> > inventoryMap;

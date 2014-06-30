@@ -15,6 +15,7 @@
 
 #include "stdafx.h"
 #include "tile.h"
+#include "view_id.h"
 
 using namespace colors;
 

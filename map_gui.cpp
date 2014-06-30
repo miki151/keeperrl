@@ -23,6 +23,7 @@
 #include "window_view.h"
 #include "window_renderer.h"
 #include "clock.h"
+#include "view_id.h"
 
 using namespace colors;
 

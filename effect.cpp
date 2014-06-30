@@ -24,6 +24,7 @@
 #include "message_buffer.h"
 #include "item.h"
 #include "view_object.h"
+#include "view_id.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};

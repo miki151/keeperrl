@@ -25,6 +25,7 @@
 #include "effect.h"
 #include "square.h"
 #include "view_object.h"
+#include "view_id.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {

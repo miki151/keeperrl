@@ -24,6 +24,7 @@
 #include "pantheon.h"
 #include "effect.h"
 #include "view_object.h"
+#include "view_id.h"
 
 class Staircase : public Square {
   public:

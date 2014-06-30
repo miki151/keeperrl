@@ -16,6 +16,7 @@
 #include "stdafx.h"
 
 #include "view_object.h"
+#include "view_id.h"
 
 template <class Archive> 
 void ViewObject::serialize(Archive& ar, const unsigned int version) {
