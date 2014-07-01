@@ -57,6 +57,7 @@ class SquareFactory {
   static PSquare get(SquareType);
   static PSquare getStairs(StairDirection, StairKey, StairLook = StairLook::NORMAL);
   static PSquare getAltar(Deity*);
+  static PSquare getAltar(Creature*);
   static PSquare getWater(double depth);
 
   template <class Archive>

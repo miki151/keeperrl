@@ -609,21 +609,14 @@ class Grave : public Bed {
   SERIALIZATION_CONSTRUCTOR(Grave);
 };
 
-class Altar : public Square, EventListener {
+class Altar : public Square, public EventListener {
   public:
-  Altar(const ViewObject& object, Deity* d)
-      : Square(object, "shrine to " + d->getName(), Vision::get(VisionId::NORMAL) , true, 100, 0), deity(d) {
+  Altar(const ViewObject& object)
+      : Square(object, "shrine", Vision::get(VisionId::NORMAL) , true, 100, 0) {
   }
 
   virtual bool canDestroy() const override {
     return true;
-  }
-
-  virtual void onEnterSpecial(Creature* c) override {
-    c->playerMessage("This is a shrine to " + deity->getName());
-    c->playerMessage(deity->getGender().he() + " lives in " + deity->getHabitatString());
-    c->playerMessage(deity->getGender().he() + " is the " + deity->getGender().god() + " of "
-        + deity->getEpithets());
   }
 
   virtual Optional<SquareApplyType> getApplyType(const Creature* c) const override { 
@@ -645,35 +638,114 @@ class Altar : public Square, EventListener {
     }
   }
 
+  virtual void onPrayer(Creature* c) = 0;
+  virtual void onSacrifice(Creature* c) = 0;
+  virtual string getName() = 0;
+
   virtual void onApply(Creature* c) override {
     if (c == recentKiller && recentVictim && killTime >= c->getTime() - sacrificeTimeout)
       for (Item* it : getItems(Item::typePredicate(ItemType::CORPSE)))
         if (it->getCorpseInfo()->victim == recentVictim->getUniqueId()) {
-          c->you(MsgType::SACRIFICE, deity->getName());
+          c->you(MsgType::SACRIFICE, getName());
           c->globalMessage(it->getTheName() + " is consumed in a flash of light!");
           removeItem(it);
-          EventListener::addSacrificeEvent(c, deity);
+          onSacrifice(c);
           return;
         }
-    c->playerMessage("You pray to " + deity->getName());
-    deity->onPrayer(c);
+    c->playerMessage("You pray to " + getName());
+    onPrayer(c);
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & SVAR(deity);
+      & SVAR(recentKiller)
+      & SVAR(recentVictim)
+      & SVAR(killTime);
     CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Altar);
 
   private:
-  Deity* SERIAL(deity);
-  const Creature* recentKiller = nullptr;
-  const Creature* recentVictim = nullptr;
-  double killTime = -100;
+  const Creature* SERIAL2(recentKiller, nullptr);
+  const Creature* SERIAL2(recentVictim, nullptr);
+  double SERIAL2(killTime, -100);
   const double sacrificeTimeout = 5;
+};
+
+class DeityAltar : public Altar {
+  public:
+  DeityAltar(const ViewObject& object, Deity* d) : Altar(object), deity(d) {
+  }
+
+  virtual void onEnterSpecial(Creature* c) override {
+    if (c->isHumanoid()) {
+      c->playerMessage("This is a shrine to " + deity->getName());
+      c->playerMessage(deity->getGender().he() + " lives in " + deity->getHabitatString());
+      c->playerMessage(deity->getGender().he() + " is the " + deity->getGender().god() + " of "
+          + deity->getEpithets());
+    }
+  }
+
+  virtual string getName() override {
+    return deity->getName();
+  }
+
+  virtual void onPrayer(Creature* c) override {
+    deity->onPrayer(c);
+  }
+
+  virtual void onSacrifice(Creature* c) override {
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Altar)
+      & SVAR(deity);
+    CHECK_SERIAL;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(DeityAltar);
+
+  private:
+  Deity* SERIAL(deity);
+};
+
+class CreatureAltar : public Altar {
+  public:
+  CreatureAltar(const ViewObject& object, Creature* c) : Altar(object), creature(c) {
+  }
+
+  virtual void onEnterSpecial(Creature* c) override {
+    if (c->isHumanoid()) {
+      c->playerMessage("This is a shrine to " + creature->getName());
+      c->playerMessage(creature->getDescription());
+    }
+  }
+
+  virtual string getName() override {
+    return creature->getName();
+  }
+
+  virtual void onPrayer(Creature* c) override {
+  }
+
+  virtual void onSacrifice(Creature* c) override {
+    EventListener::addSacrificeEvent(c, creature);
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Altar)
+      & SVAR(creature);
+    CHECK_SERIAL;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(CreatureAltar);
+
+  private:
+  Creature* SERIAL(creature);
 };
 
 class ConstructionDropItems : public SolidSquare {
@@ -794,7 +866,11 @@ class Laboratory : public Workshop {
 };
 
 PSquare SquareFactory::getAltar(Deity* deity) {
-  return PSquare(new Altar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity));
+  return PSquare(new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity));
+}
+
+PSquare SquareFactory::getAltar(Creature* creature) {
+  return PSquare(new CreatureAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), creature));
 }
 
 template <class Archive>
@@ -816,7 +892,8 @@ void SquareFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Torch);
   REGISTER_TYPE(ar, DestroyableSquare);
   REGISTER_TYPE(ar, Grave);
-  REGISTER_TYPE(ar, Altar);
+  REGISTER_TYPE(ar, DeityAltar);
+  REGISTER_TYPE(ar, CreatureAltar);
   REGISTER_TYPE(ar, ConstructionDropItems);
   REGISTER_TYPE(ar, TrainingDummy);
   REGISTER_TYPE(ar, Workshop);
@@ -982,7 +1059,7 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery");
     case SquareType::ALTAR:
-        return new Altar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
+        return new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
               Deity::getDeity(s.altarInfo.habitat));
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
                                           EffectType::ROLLING_BOULDER);
