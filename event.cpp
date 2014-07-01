@@ -130,4 +130,10 @@ void EventListener::addTortureEvent(Creature* c, const Creature* torturer) {
     if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
       l->onTortureEvent(c, torturer);
 }
+  
+void EventListener::addSacrificeEvent(const Creature* c, const Deity* deity) {
+  for (EventListener* l : listeners)
+    if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
+      l->onSacrificeEvent(c, deity);
+}
 

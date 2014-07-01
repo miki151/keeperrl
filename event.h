@@ -23,6 +23,7 @@ class Creature;
 class Item;
 class Quest;
 class Technology;
+class Deity;
 
 class EventListener {
   public:
@@ -43,6 +44,7 @@ class EventListener {
   virtual void onEquipEvent(const Creature*, const Item*) {}
   virtual void onSurrenderEvent(Creature* who, const Creature* to) {}
   virtual void onTortureEvent(Creature* who, const Creature* torturer) {}
+  virtual void onSacrificeEvent(const Creature* who, const Deity* deity) {}
 
   static void addPickupEvent(const Creature*, const vector<Item*>& items);
   static void addDropEvent(const Creature*, const vector<Item*>& items);
@@ -60,6 +62,7 @@ class EventListener {
   static void addEquipEvent(const Creature*, const Item*);
   static void addSurrenderEvent(Creature* who, const Creature* to);
   static void addTortureEvent(Creature* who, const Creature* torturer);
+  static void addSacrificeEvent(const Creature* who, const Deity* deity);
 
   virtual const Level* getListenerLevel() const { return nullptr; }
   static void initialize();

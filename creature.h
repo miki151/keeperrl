@@ -361,6 +361,8 @@ enum class MsgType {
     TURN,
     KILLED_BY,
     BREAK_FREE,
-    MISS_ATTACK}; //
+    MISS_ATTACK,
+    PRAY,
+    SACRIFICE};
 
 #endif

@@ -205,6 +205,7 @@ class Square {
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(double time) {}
   Level* getLevel();
+  const Level* getLevel() const;
   Inventory SERIAL(inventory);
   string SERIAL(name);
   void setViewObject(const ViewObject&);

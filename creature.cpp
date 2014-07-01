@@ -1550,7 +1550,7 @@ void Creature::take(PItem item) {
 
 void Creature::dropCorpse() {
   getSquare()->dropItem(ItemFactory::corpse(*name + " corpse", *name + " skeleton", *weight,
-        isFood ? ItemType::FOOD : ItemType::CORPSE, {true, numBodyParts(BodyPart::HEAD) > 0, false}));
+        isFood ? ItemType::FOOD : ItemType::CORPSE, {getUniqueId(), true, numBodyParts(BodyPart::HEAD) > 0, false}));
 }
 
 void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {

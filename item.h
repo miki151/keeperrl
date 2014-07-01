@@ -124,6 +124,7 @@ class Item : private ItemAttributes, public UniqueEntity {
       function<string(const Item*)> addSuffix = [](const Item*) { return ""; });
 
   struct CorpseInfo {
+    UniqueId victim;
     bool canBeRevived;
     bool hasHead;
     bool isSkeleton;

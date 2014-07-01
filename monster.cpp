@@ -113,6 +113,8 @@ void Monster::you(MsgType type, const string& param) const {
     case MsgType::KILLED_BY: msg = creature->getTheName() + " is killed by " + param; break;
     case MsgType::TURN: msg = creature->getTheName() + " turns into " + param; break;
     case MsgType::BREAK_FREE: msg = creature->getTheName() + " breaks free from " + param; break;
+    case MsgType::PRAY: msg = creature->getTheName() + " prays to " + param; break;
+    case MsgType::SACRIFICE: msg = creature->getTheName() + " makes a sacrifice to " + param; break;
     case MsgType::HIT: msg = creature->getTheName() + addName(" hits", param); break;
     default: break;
   }

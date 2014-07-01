@@ -609,7 +609,7 @@ class Grave : public Bed {
   SERIALIZATION_CONSTRUCTOR(Grave);
 };
 
-class Altar : public Square {
+class Altar : public Square, EventListener {
   public:
   Altar(const ViewObject& object, Deity* d)
       : Square(object, "shrine to " + d->getName(), Vision::get(VisionId::NORMAL) , true, 100, 0), deity(d) {
@@ -633,7 +633,28 @@ class Altar : public Square {
       return Nothing();
   }
 
+  virtual const Level* getListenerLevel() const override {
+    return getLevel();
+  }
+
+  virtual void onKillEvent(const Creature* victim, const Creature* killer) override {
+    if (victim->getPosition() == getPosition()) {
+      recentKiller = killer;
+      recentVictim = victim;
+      killTime = killer->getTime();
+    }
+  }
+
   virtual void onApply(Creature* c) override {
+    if (c == recentKiller && recentVictim && killTime >= c->getTime() - sacrificeTimeout)
+      for (Item* it : getItems(Item::typePredicate(ItemType::CORPSE)))
+        if (it->getCorpseInfo()->victim == recentVictim->getUniqueId()) {
+          c->you(MsgType::SACRIFICE, deity->getName());
+          c->globalMessage(it->getTheName() + " is consumed in a flash of light!");
+          removeItem(it);
+          EventListener::addSacrificeEvent(c, deity);
+          return;
+        }
     c->playerMessage("You pray to " + deity->getName());
     deity->onPrayer(c);
   }
@@ -649,6 +670,10 @@ class Altar : public Square {
 
   private:
   Deity* SERIAL(deity);
+  const Creature* recentKiller = nullptr;
+  const Creature* recentVictim = nullptr;
+  double killTime = -100;
+  const double sacrificeTimeout = 5;
 };
 
 class ConstructionDropItems : public SolidSquare {

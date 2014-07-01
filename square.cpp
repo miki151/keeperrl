@@ -170,6 +170,10 @@ Level* Square::getLevel() {
   return level;
 }
 
+const Level* Square::getLevel() const {
+  return level;
+}
+
 void Square::setFog(double val) {
   fog = val;
 }
