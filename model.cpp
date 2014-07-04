@@ -200,7 +200,7 @@ void Model::tick(double time) {
       for (VillageControl* control : villageControls)
         conquered &= (control->isAnonymous() || control->isConquered());
       if (conquered && !won) {
-        playerControl->onConqueredLand(NameGenerator::worldNames.getNext());
+        playerControl->onConqueredLand(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
         won = true;
       }
     }
@@ -285,7 +285,7 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
 }
 
 static Location* getVillageLocation(bool markSurprise = false) {
-  return new Location(NameGenerator::townNames.getNext(), "", markSurprise);
+  return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext(), "", markSurprise);
 }
 
 static void setHandicap(Tribe* tribe, bool easy) {
@@ -382,7 +382,7 @@ PCreature Model::makePlayer() {
           c.barehandedDamage = 5;
           c.humanoid = true;
           c.name = "Adventurer";
-          c.firstName = NameGenerator::firstNames.getNext();
+          c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
           c.maxLevel = 1;
           c.skills.insert(SkillId::ARCHERY);
           c.skills.insert(SkillId::AMBUSH);), Player::getFactory(this, levelMemory))), {
@@ -455,7 +455,7 @@ string Model::getGameIdentifier() const {
 void Model::onKillEvent(const Creature* victim, const Creature* killer) {
   if (playerControl && playerControl->isRetired() && victim == playerControl->getKeeper()) {
     const Creature* c = getPlayer();
-    killedKeeper(c->getNameAndTitle(), playerControl->getKeeper()->getNameAndTitle(), NameGenerator::worldNames.getNext(), c->getKills(), c->getPoints());
+    killedKeeper(c->getNameAndTitle(), playerControl->getKeeper()->getNameAndTitle(), NameGenerator::get(NameGeneratorId::WORLD)->getNext(), c->getKills(), c->getPoints());
   }
 }
 

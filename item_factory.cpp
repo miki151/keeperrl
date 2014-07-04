@@ -752,7 +752,7 @@ ItemFactory ItemFactory::singleType(ItemId id) {
 
 void ItemFactory::init() {
   for (int i : Range(100))
-    scroll_looks.push_back(toUpper(NameGenerator::scrolls.getNext()));
+    scroll_looks.push_back(toUpper(NameGenerator::get(NameGeneratorId::SCROLL)->getNext()));
   random_shuffle(potion_looks.begin(), potion_looks.end(),[](int a) { return Random.getRandom(a);});
   random_shuffle(amulet_looks.begin(), amulet_looks.end(),[](int a) { return Random.getRandom(a);});
 }
@@ -858,7 +858,7 @@ void makeArtifact(ItemAttributes& i) {
   bool good;
   do {
     good = true;
-    i.artifactName = NameGenerator::weaponNames.getNext();
+    i.artifactName = NameGenerator::get(NameGeneratorId::WEAPON)->getNext();
     for (auto elem : badArtifactNames)
       for (auto pattern : elem.second)
         if (contains(toLower(*i.artifactName), pattern) && contains(*i.name, elem.first)) {

@@ -81,4 +81,6 @@ enum class LastingEffect;
 
 enum class DeityHabitat;
 
+enum class NameGeneratorId;
+
 #endif

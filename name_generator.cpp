@@ -18,19 +18,6 @@
 #include "name_generator.h"
 #include "util.h"
 
-NameGenerator NameGenerator::scrolls;
-NameGenerator NameGenerator::firstNames;
-NameGenerator NameGenerator::aztecNames;
-NameGenerator NameGenerator::creatureNames;
-NameGenerator NameGenerator::weaponNames;
-NameGenerator NameGenerator::worldNames;
-NameGenerator NameGenerator::townNames;
-NameGenerator NameGenerator::dwarfNames;
-NameGenerator NameGenerator::deityNames;
-NameGenerator NameGenerator::demonNames;
-NameGenerator NameGenerator::dogNames;
-NameGenerator NameGenerator::insults;
-
 string getSyllable() {
   string vowels = "aeyuio";
   string consonants = "qwrtplkjhgfdszxcvbnm";
@@ -82,10 +69,7 @@ vector<string> combined(const string& path) {
   return ret;
 }
 
-void NameGenerator::init(const string& firstNamesPath, const string& aztecNamesPath,
-      const string& creatureNamesPath, const string& weaponNamesPath, const string& worldsPath,
-      const string& townsPath, const string& dwarfsPath, const string& deitiesPath, const string& demonsPath,
-      const string& dogsPath, const string& insultsPath) {
+void NameGenerator::init() {
   vector<string> input;
   for (int i : Range(1000)) {
     string ret;
@@ -95,18 +79,19 @@ void NameGenerator::init(const string& firstNamesPath, const string& aztecNamesP
     trim(ret);
     input.push_back(ret);
   }
-  scrolls = NameGenerator(input);
-
-  firstNames = NameGenerator(readLines(firstNamesPath));
-  aztecNames = NameGenerator(readLines(aztecNamesPath));
-  creatureNames = NameGenerator(readLines(creatureNamesPath));
-  weaponNames = NameGenerator(readLines(weaponNamesPath));
-  worldNames = NameGenerator(readLines(worldsPath), true);
-  townNames = NameGenerator(readLines(townsPath));
-  deityNames = NameGenerator(readLines(deitiesPath));
-  dwarfNames = NameGenerator(readLines(dwarfsPath));
-  demonNames = NameGenerator(readLines(demonsPath));
-  insults = NameGenerator(combined(insultsPath));
+  set(NameGeneratorId::SCROLL, new NameGenerator(input));
+  set(NameGeneratorId::INSULTS, new NameGenerator(combined("insults.txt")));
+  set(NameGeneratorId::FIRST, new NameGenerator(readLines("first_names.txt")));
+  set(NameGeneratorId::AZTEC, new NameGenerator(readLines("aztec_names.txt")));
+  set(NameGeneratorId::CREATURE, new NameGenerator(readLines("creatures.txt")));
+  set(NameGeneratorId::WEAPON, new NameGenerator(readLines("artifacts.txt")));
+  set(NameGeneratorId::WORLD, new NameGenerator(readLines("world.txt"), true));
+  set(NameGeneratorId::TOWN, new NameGenerator(readLines("town_names.txt")));
+  set(NameGeneratorId::DEITY, new NameGenerator(readLines("gods.txt")));
+  set(NameGeneratorId::DWARF, new NameGenerator(readLines("dwarfs.txt")));
+  set(NameGeneratorId::DEMON, new NameGenerator(readLines("demons.txt")));
+  set(NameGeneratorId::DOG, new NameGenerator(readLines("dogs.txt")));
+  set(NameGeneratorId::DRAGON, new NameGenerator(readLines("dragons.txt")));
 }
 
 

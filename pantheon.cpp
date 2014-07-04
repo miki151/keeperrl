@@ -264,7 +264,7 @@ vector<Deity*> generateDeities() {
   set<Epithet> used;
   vector<Deity*> ret;
   for (auto elem : epithetsMap) {
-    string deity = NameGenerator::deityNames.getNext();
+    string deity = NameGenerator::get(NameGeneratorId::DEITY)->getNext();
     Gender gend = Gender::male;
     if ((deity.back() == 'a' || deity.back() == 'i') && !Random.roll(4))
       gend = Gender::female;

@@ -728,7 +728,7 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
         c.chatReactionFriendly = "complains about high import tax";
         c.chatReactionHostile = "\"Die!\"";
         c.name = "shopkeeper";
-        c.firstName = NameGenerator::firstNames.getNext();),
+        c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();),
       ControllerFactory([shopArea](Creature* c) { 
           return new ShopkeeperController(c, shopArea); })));
   vector<ItemId> inventory(Random.getRandom(100, 300), ItemId::GOLD_PIECE);
@@ -1005,7 +1005,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 5;
           c.humanoid = true;
           c.name = "Keeper";
-          c.firstName = NameGenerator::firstNames.getNext();
+          c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
           c.attributeGain = 1;
           c.skillGain.clear(););
@@ -1095,7 +1095,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 10;
           c.humanoid = true;
           c.weight = 150;
-          c.firstName = NameGenerator::demonNames.getNext();
+          c.firstName = NameGenerator::get(NameGeneratorId::DEMON)->getNext();
           c.name = "cyclops";);
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
@@ -1110,8 +1110,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::WING] = 2;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.firstName = NameGenerator::demonNames.getNext();
-          c.name = "dragon";);
+          c.name = NameGenerator::get(NameGeneratorId::DRAGON)->getNext();
+          );
     case CreatureId::RED_DRAGON:
       return INHERIT(GREEN_DRAGON,
           c.viewId = ViewId::RED_DRAGON;
@@ -1141,7 +1141,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity += 2;
           c.courage = 3;
           c.barehandedDamage += 5;
-          c.name = "Duke of " + NameGenerator::worldNames.getNext(););
+          c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext(););
     case CreatureId::WARRIOR:
       return INHERIT(KNIGHT,
           c.viewId = ViewId::WARRIOR;
@@ -1344,7 +1344,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 120;
           c.chatReactionFriendly = "curses all gravediggers";
           c.chatReactionHostile = "\"Die!\"";
-          c.name = NameGenerator::aztecNames.getNext(););
+          c.name = NameGenerator::get(NameGeneratorId::AZTEC)->getNext(););
     case CreatureId::GOBLIN: 
       return CATTR(
           c.viewId = ViewId::GOBLIN;
@@ -1412,7 +1412,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 6;
           c.humanoid = true;
           c.weight = 140;
-          c.firstName = NameGenerator::demonNames.getNext();
+          c.firstName = NameGenerator::get(NameGeneratorId::DEMON)->getNext();
           c.name = "ogre";);
     case CreatureId::CHICKEN: 
       return CATTR(
@@ -1447,7 +1447,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::DWARF;
           c.speed = 80;
           c.size = CreatureSize::MEDIUM;
-          // c.firstName = NameGenerator::dwarfNames.getNext();
+          c.firstName = NameGenerator::get(NameGeneratorId::DWARF)->getNext();
           c.strength = 21;
           c.dexterity = 16;
           c.barehandedDamage = 3;
@@ -1459,7 +1459,6 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DWARF_BARON: 
       return INHERIT(DWARF,
           c.viewId = ViewId::DWARF_BARON;
-          //  c.firstName = NameGenerator::dwarfNames.getNext();
           c.strength += 6;
           c.dexterity += 5;
           c.speed += 10;
@@ -1886,13 +1885,13 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
   switch (id) {
     case CreatureId::SPECIAL_MONSTER:
-      return getSpecial(NameGenerator::creatureNames.getNext(),
+      return getSpecial(NameGenerator::get(NameGeneratorId::CREATURE)->getNext(),
           tribe, false, factory, false);
     case CreatureId::SPECIAL_MONSTER_KEEPER:
-      return getSpecial(NameGenerator::creatureNames.getNext(),
+      return getSpecial(NameGenerator::get(NameGeneratorId::CREATURE)->getNext(),
           tribe, false, factory, true);
     case CreatureId::SPECIAL_HUMANOID:
-      return getSpecial(NameGenerator::creatureNames.getNext(),
+      return getSpecial(NameGenerator::get(NameGeneratorId::CREATURE)->getNext(),
           tribe, true, factory, false);
     case CreatureId::ELF_LORD:
       return PCreature(new VillageElder({},

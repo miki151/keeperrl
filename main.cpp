@@ -162,15 +162,14 @@ void clearAndInitialize() {
   Technology::clearAll();
   Skill::clearAll();
   Vision::clearAll();
+  NameGenerator::clearAll();
   EventListener::initialize();
   Tribe::init();
   Skill::init();
   Technology::init();
   Statistics::init();
   Vision::init();
-  NameGenerator::init("first_names.txt", "aztec_names.txt", "creatures.txt",
-      "artifacts.txt", "world.txt", "town_names.txt", "dwarfs.txt", "gods.txt", "demons.txt", "dogs.txt",
-      "insults.txt");
+  NameGenerator::init();
   ItemFactory::init();
 
 }
