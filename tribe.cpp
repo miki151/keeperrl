@@ -81,7 +81,7 @@ void Tribe::removeMember(const Creature* c) {
   removeElement(members, c);
 }
 
-const string& Tribe::getName() {
+const string& Tribe::getName() const {
   return name;
 }
 
@@ -103,6 +103,12 @@ void Tribe::addEnemy(Tribe* t) {
   CHECK(t != this);
   enemyTribes.insert(t);
   t->enemyTribes.insert(this);
+}
+
+void Tribe::addFriend(Tribe* t) {
+  CHECK(t != this);
+  enemyTribes.erase(t);
+  t->enemyTribes.erase(this);
 }
 
 void Tribe::makeSlightEnemy(const Creature* c) {

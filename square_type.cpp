@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "util.h"
 #include "square_type.h"
+#include "creature.h"
 
 bool SquareType::isWall() const {
   switch (id) {
@@ -17,16 +18,26 @@ bool SquareType::isWall() const {
 }
 
 SquareType::SquareType(Id _id) : id(_id) {
-  CHECK(id != ALTAR);
+  CHECK(id != ALTAR && id != CREATURE_ALTAR);
 }
  
 SquareType::SquareType(AltarInfo info) : id(ALTAR), altarInfo(info) {
 }
- 
+
+SquareType::SquareType(CreatureAltarInfo info) : id(CREATURE_ALTAR), creatureAltarInfo(info) {
+}
+
+
 SquareType::SquareType() : id(SquareType::Id(0)) {}
 
 bool SquareType::operator==(const SquareType& other) const {
-  return id == other.id && (id != ALTAR || altarInfo.habitat == other.altarInfo.habitat);
+  if (id != other.id)
+    return false;
+  switch (id) {
+    case ALTAR: return altarInfo.habitat == other.altarInfo.habitat;
+    case CREATURE_ALTAR: return creatureAltarInfo.creature == other.creatureAltarInfo.creature;
+    default: return true;
+  }
 }
 
 bool SquareType::operator==(SquareType::Id id1) const {
@@ -44,7 +55,12 @@ bool SquareType::operator!=(const SquareType& other) const {
 
 template <class Archive>
 void SquareType::serialize(Archive& ar, const unsigned int version) {
-  ar & id & altarInfo;
+  ar & id;
+  switch (id) {
+    case ALTAR: ar & altarInfo.habitat; break;
+    case CREATURE_ALTAR: ar & creatureAltarInfo.creature; break;
+    default: break;
+  }
 }
 
 SERIALIZABLE(SquareType);
@@ -55,3 +71,10 @@ void SquareType::AltarInfo::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(SquareType::AltarInfo);
+
+template <class Archive>
+void SquareType::CreatureAltarInfo::serialize(Archive& ar, const unsigned int version) {
+  ar & creature;
+}
+
+SERIALIZABLE(SquareType::CreatureAltarInfo);

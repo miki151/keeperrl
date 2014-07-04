@@ -198,9 +198,13 @@ void Creature::removeCreatureVision(CreatureVision* vision) {
 }
 
 void Creature::pushController(PController ctrl) {
+  controllerStack.push_back(std::move(controller));
+  setController(std::move(ctrl));
+}
+
+void Creature::setController(PController ctrl) {
   if (ctrl->isPlayer())
     viewObject->setModifier(ViewObject::Modifier::PLAYER);
-  controllerStack.push_back(std::move(controller));
   controller = std::move(ctrl);
   level->updatePlayer();
 }
@@ -209,7 +213,6 @@ void Creature::popController() {
   if (controller->isPlayer())
     viewObject->removeModifier(ViewObject::Modifier::PLAYER);
   CHECK(!controllerStack.empty());
-  bool wasPlayer = controller->isPlayer();
   controller = std::move(controllerStack.back());
   controllerStack.pop_back();
   level->updatePlayer();
@@ -236,7 +239,7 @@ CreatureAction Creature::move(Vec2 direction) {
   if (holding)
     return CreatureAction("You can't break free!");
   if ((direction.length8() != 1 || !level->canMoveCreature(this, direction)) && !swapPosition(direction))
-    return CreatureAction("");
+    return CreatureAction();
   return CreatureAction([=]() {
     stationary = false;
     Debug() << getTheName() << " moving " << direction;
@@ -294,13 +297,13 @@ const MapMemory& Creature::getMemory() const {
 CreatureAction Creature::swapPosition(Vec2 direction, bool force) {
   Creature* c = getSquare(direction)->getCreature();
   if (!c)
-    return CreatureAction("");
+    return CreatureAction();
   if (c->isAffected(LastingEffect::SLEEP) && !force)
     return CreatureAction(c->getTheName() + " is sleeping.");
   if ((swapPositionCooldown && !isPlayer()) || c->stationary || c->invincible ||
       direction.length8() != 1 || (c->isPlayer() && !force) || (c->isEnemy(this) && !force) ||
       !getConstSquare(direction)->canEnterEmpty(this) || !getConstSquare()->canEnterEmpty(c))
-    return CreatureAction("");
+    return CreatureAction();
   return CreatureAction([=]() {
     swapPositionCooldown = 4;
     if (!force)
@@ -565,7 +568,7 @@ CreatureAction Creature::unequip(Item* item) {
 CreatureAction Creature::heal(Vec2 direction) {
   Creature* other = level->getSquare(position + direction)->getCreature();
   if (!healer || !other || other->getHealth() >= 0.9999)
-    return CreatureAction("");
+    return CreatureAction();
   return CreatureAction([=]() {
     Creature* other = level->getSquare(position + direction)->getCreature();
     other->playerMessage("\"Let me help you my friend.\"");
@@ -582,7 +585,7 @@ CreatureAction Creature::bumpInto(Vec2 direction) {
       spendTime(1);
     });
   else
-    return CreatureAction("");
+    return CreatureAction();
 }
 
 CreatureAction Creature::applySquare() {
@@ -593,7 +596,7 @@ CreatureAction Creature::applySquare() {
       spendTime(1);
     });
   else
-    return CreatureAction("");
+    return CreatureAction();
 }
 
 CreatureAction Creature::hide() {
@@ -624,7 +627,7 @@ CreatureAction Creature::chatTo(Vec2 direction) {
       spendTime(1);
     });
   else
-    return CreatureAction("");
+    return CreatureAction();
 }
 
 void Creature::onChat(Creature* from) {
@@ -1113,7 +1116,7 @@ string Creature::getAttrName(AttrType attr) {
   switch (attr) {
     case AttrType::STRENGTH: return "strength";
     case AttrType::DAMAGE: return "damage";
-    case AttrType::TO_HIT: return "accurace";
+    case AttrType::TO_HIT: return "accuracy";
     case AttrType::THROWN_DAMAGE: return "thrown damage";
     case AttrType::THROWN_TO_HIT: return "thrown accuracy";
     case AttrType::DEXTERITY: return "dexterity";
@@ -1194,7 +1197,7 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
 CreatureAction Creature::attack(const Creature* c1, Optional<AttackLevel> attackLevel1, bool spend) {
   Creature* c = const_cast<Creature*>(c1);
   if (c->getPosition().dist8(position) != 1)
-    return CreatureAction("");
+    return CreatureAction();
   if (attackLevel1 && !contains(getAttackLevels(), *attackLevel1))
     return CreatureAction("Invalid attack level.");
   return CreatureAction([=] () {
@@ -1572,9 +1575,13 @@ void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
   Statistics::add(StatId::DEATH);
 }
 
+bool Creature::isInnocent() const {
+  return innocent;
+}
+
 CreatureAction Creature::flyAway() {
   if (!isAffected(LastingEffect::FLYING) || level->getCoverInfo(position).covered)
-    return CreatureAction("");
+    return CreatureAction();
   return CreatureAction([=]() {
     Debug() << getTheName() << " fly away";
     monsterMessage(getTheName() + " flies away.");
@@ -1586,12 +1593,12 @@ CreatureAction Creature::flyAway() {
 CreatureAction Creature::torture(Creature* c) {
   if (c->getSquare()->getApplyType(this) != SquareApplyType::TORTURE
       || c->getPosition().dist8(getPosition()) != 1)
-    return CreatureAction("");
+    return CreatureAction();
   return CreatureAction([=]() {
     monsterMessage(getTheName() + " tortures " + c->getTheName());
     playerMessage("You torture " + c->getTheName());
     if (Random.roll(4))
-      c->monsterMessage(c->getTheName() + " screams!", "You hear a terrifying scream");
+      c->monsterMessage(c->getTheName() + " screams!", "You hear a horrible scream");
     c->addEffect(LastingEffect::STUNNED, 3, false);
     c->bleed(0.1);
     if (c->health < 0.3) {
@@ -1635,7 +1642,7 @@ CreatureAction Creature::construct(Vec2 direction, SquareType type) {
       spendTime(1);
     });
   else
-    return CreatureAction("");
+    return CreatureAction();
 }
 
 bool Creature::canConstruct(SquareType type) const {
@@ -1670,7 +1677,7 @@ CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) {
       spendTime(1);
     });
   else
-    return CreatureAction("");
+    return CreatureAction();
 }
 
 vector<AttackLevel> Creature::getAttackLevels() const {
@@ -1917,7 +1924,21 @@ CreatureAction Creature::continueMoving() {
     Vec2 pos2 = shortestPath->getNextMove(getPosition());
     return move(pos2 - getPosition());
   }
-  return CreatureAction("");
+  return CreatureAction();
+}
+
+CreatureAction Creature::stayIn(const Location* location) {
+  Rectangle area = location->getBounds();
+  if (getLevel() != location->getLevel())
+    return CreatureAction();
+  if (!getPosition().inRectangle(area)) {
+    for (Vec2 v : Vec2::directions8())
+      if ((getPosition() + v).inRectangle(area))
+        if (auto action = move(v))
+          return action;
+    return moveTowards(Vec2((area.getPX() + area.getKX()) / 2, (area.getPY() + area.getKY()) / 2));
+  }
+  return CreatureAction();
 }
 
 CreatureAction Creature::moveTowards(Vec2 pos, bool stepOnTile) {
@@ -1926,7 +1947,7 @@ CreatureAction Creature::moveTowards(Vec2 pos, bool stepOnTile) {
 
 CreatureAction Creature::moveTowards(Vec2 pos, bool away, bool stepOnTile) {
   if (stepOnTile && !level->getSquare(pos)->canEnterEmpty(this))
-    return CreatureAction("");
+    return CreatureAction();
   if (!away && sectors) {
     bool sectorOk = false;
     for (Vec2 v : pos.neighbors8())
@@ -1935,7 +1956,7 @@ CreatureAction Creature::moveTowards(Vec2 pos, bool away, bool stepOnTile) {
         break;
       }
     if (!sectorOk)
-      return CreatureAction("");
+      return CreatureAction();
   }
   Debug() << "" << getPosition() << (away ? "Moving away from" : " Moving toward ") << pos;
   bool newPath = false;
@@ -1954,7 +1975,7 @@ CreatureAction Creature::moveTowards(Vec2 pos, bool away, bool stepOnTile) {
       return action;
   }
   if (newPath)
-    return CreatureAction("");
+    return CreatureAction();
   Debug() << "Reconstructing shortest path.";
   if (!away)
     shortestPath = ShortestPath(getLevel(), this, pos, getPosition());
@@ -1965,7 +1986,7 @@ CreatureAction Creature::moveTowards(Vec2 pos, bool away, bool stepOnTile) {
     return move(pos2 - getPosition());
   } else {
     Debug() << "Cannot move toward " << pos;
-    return CreatureAction("");
+    return CreatureAction();
   }
 }
 
@@ -1981,7 +2002,7 @@ CreatureAction Creature::moveAway(Vec2 pos, bool pathfinding) {
     moves.push_back(action);
   if (moves.size() > 0)
     return moves[Random.getRandom(moves.size())];
-  return CreatureAction("");
+  return CreatureAction();
 }
 
 bool Creature::atTarget() const {

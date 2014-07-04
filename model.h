@@ -21,7 +21,7 @@
 #include "time_queue.h"
 #include "level_maker.h"
 
-class Collective;
+class PlayerControl;
 class Level;
 
 /**
@@ -99,13 +99,14 @@ class Model : public EventListener {
   Level* prepareTopLevel2(vector<SettlementInfo> settlements);
 
   vector<PLevel> SERIAL(levels);
-  vector<PVillageControl> SERIAL(villageControls);
+  vector<PCollective> SERIAL(villageCollectives);
+  vector<VillageControl*> SERIAL(villageControls);
   View* view;
   TimeQueue SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL2(lastTick, -1000);
   map<tuple<StairDirection, StairKey, Level*>, Level*> SERIAL(levelLinks);
-  unique_ptr<Collective> SERIAL(collective);
+  unique_ptr<PlayerControl> SERIAL(playerControl);
   bool SERIAL2(won, false);
   bool SERIAL2(addHero, false);
   bool SERIAL2(adventurer, false);

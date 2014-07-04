@@ -31,8 +31,9 @@
 #include "square.h"
 #include "village_control.h"
 #include "task.h"
-#include "collective.h"
+#include "player_control.h"
 #include "item_factory.h"
+#include "collective_control.h"
 
 template <class Archive>
 void Serialization::registerTypes(Archive& ar) {
@@ -52,7 +53,8 @@ void Serialization::registerTypes(Archive& ar) {
   VillageControl::registerTypes(ar);
   Task::registerTypes(ar);
   Player::registerTypes(ar);
-  Collective::registerTypes(ar);
+  PlayerControl::registerTypes(ar);
+  CollectiveControl::registerTypes(ar);
 }
 
 REGISTER_TYPES(Serialization);

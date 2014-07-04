@@ -17,28 +17,28 @@
 #define _VILLAGE_CONTROL_H
 
 #include "event.h"
-#include "monster_ai.h"
 #include "task.h"
 #include "game_info.h"
-
-class AttackTrigger;
-typedef unique_ptr<AttackTrigger> PAttackTrigger;
+#include "collective_control.h"
 
 class Tribe;
 
-class VillageControl : public EventListener, public Task::Callback {
+struct VillageControlInfo {
+  enum Id { PEACEFUL, POWER_BASED, POWER_BASED_DISCOVER, FINAL_ATTACK, DRAGON } id;
+  double killedCoeff;
+  double powerCoeff;
+};
+
+class VillageControl : public EventListener, public Task::Callback, public CollectiveControl {
   public:
+  VillageControl(Collective*, PlayerControl* villain, const Location*);
   virtual ~VillageControl();
-  void initialize(vector<Creature*>);
-
-  virtual MoveInfo getMove(Creature* c) = 0;
-
-  void tick(double time);
 
   bool isConquered() const;
   bool isAnonymous() const;
   vector<Creature*> getAliveCreatures() const;
-  bool currentlyAttacking() const;
+  virtual bool currentlyAttacking() const;
+  virtual void tick(double time) override;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
 
@@ -48,35 +48,29 @@ class VillageControl : public EventListener, public Task::Callback {
   void setFinalTrigger(vector<VillageControl*> otherControls);
   void setOnFirstContact();
 
-  friend class AttackTrigger;
-  friend class PowerTrigger;
-  friend class FinalTrigger;
-  friend class FirstContact;
+  static PVillageControl get(VillageControlInfo, Collective*, PlayerControl* villain, const Location* location);
+  static PVillageControl getFinalAttack(Collective*, PlayerControl* villain, const Location* location,
+      vector<VillageControl*> otherControls);
 
-  static PVillageControl topLevelVillage(Collective* villain, const Location* location);
-  static PVillageControl dwarfVillage(Collective* villain, Level*, StairDirection dir, StairKey key);
-  static PVillageControl topLevelAnonymous(Collective* villain, const Location* location);
-
-  void setTrigger(unique_ptr<AttackTrigger>);
-
-  VillageControl();
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZATION_DECL(VillageControl);
 
   template <class Archive>
   static void registerTypes(Archive& ar);
 
+  vector<Creature*>& getCreatures();
+  Tribe* getTribe();
+  const Tribe* getTribe() const;
+  const string& getName() const;
+  const PlayerControl* getVillain() const;
+
   protected:
-  VillageControl(Collective* villain, const Location*);
-  vector<Creature*> SERIAL(allCreatures);
-  Collective* SERIAL2(villain, nullptr);
-  const Level* SERIAL2(level, nullptr);
+  const vector<Creature*>& getCreatures() const;
+  VillageControl(PlayerControl* villain, const Location*);
+  PlayerControl* SERIAL2(villain, nullptr);
+  const Location* SERIAL2(location, nullptr);
   string SERIAL(name);
-  Tribe* SERIAL2(tribe, nullptr);
-  unique_ptr<AttackTrigger> SERIAL(attackTrigger);
   bool SERIAL2(atWar, false);
   Task::Mapping SERIAL(taskMap);
-  vector<Vec2> SERIAL(beds);
 };
 
 #endif

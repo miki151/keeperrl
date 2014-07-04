@@ -714,7 +714,7 @@ class DeityAltar : public Altar {
 
 class CreatureAltar : public Altar {
   public:
-  CreatureAltar(const ViewObject& object, Creature* c) : Altar(object), creature(c) {
+  CreatureAltar(const ViewObject& object, const Creature* c) : Altar(object), creature(c) {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -745,7 +745,7 @@ class CreatureAltar : public Altar {
   SERIALIZATION_CONSTRUCTOR(CreatureAltar);
 
   private:
-  Creature* SERIAL(creature);
+  const Creature* SERIAL(creature);
 };
 
 class ConstructionDropItems : public SolidSquare {
@@ -1061,6 +1061,9 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::ALTAR:
         return new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
               Deity::getDeity(s.altarInfo.habitat));
+    case SquareType::CREATURE_ALTAR:
+        return new CreatureAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
+              s.creatureAltarInfo.creature);
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
                                           EffectType::ROLLING_BOULDER);
     case SquareType::POISON_GAS: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),

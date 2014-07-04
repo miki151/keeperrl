@@ -24,6 +24,9 @@ class Creature;
 class Creature;
 
 struct MoveInfo {
+  MoveInfo(double val, CreatureAction m) : value(m ? val : 0), move(m) {}
+  MoveInfo(CreatureAction m) : MoveInfo(1.0, m) {}
+
   double value;
   CreatureAction move;
 
@@ -38,7 +41,7 @@ struct MoveInfo {
   }
 };
 
-const MoveInfo NoMove = {0.0, CreatureAction("")};
+const MoveInfo NoMove = {0.0, CreatureAction()};
 
 enum MonsterAIType { 
   MONSTER,
@@ -84,14 +87,14 @@ class MonsterAI {
 };
 
 class Collective;
-class VillageControl;
+class PlayerControl;
 
 class MonsterAIFactory {
   public:
   PMonsterAI getMonsterAI(Creature* c);
 
   static MonsterAIFactory collective(Collective*);
-  static MonsterAIFactory villageControl(VillageControl*, Location*);
+  static MonsterAIFactory playerControl(PlayerControl*);
   static MonsterAIFactory monster();
   static MonsterAIFactory stayInLocation(Location*, bool moveRandomly = true);
   static MonsterAIFactory guardSquare(Vec2 pos);

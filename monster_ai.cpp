@@ -18,8 +18,8 @@
 #include "monster_ai.h"
 #include "square.h"
 #include "level.h"
+#include "player_control.h"
 #include "collective.h"
-#include "village_control.h"
 #include "effect.h"
 #include "item.h"
 #include "creature.h"
@@ -597,34 +597,25 @@ class GuardTarget : public Behaviour {
 
 class GuardArea : public Behaviour {
   public:
-  GuardArea(Creature* c, const Location* l) : Behaviour(c), location(l), area(l->getBounds()) {}
+  GuardArea(Creature* c, const Location* l) : Behaviour(c), location(l) {}
 
   virtual MoveInfo getMove() override {
-    if (creature->getLevel() != location->getLevel())
+    if (auto action = creature->stayIn(location))
+      return {1.0, action};
+    else
       return NoMove;
-    if (!creature->getPosition().inRectangle(area)) {
-      for (Vec2 v : Vec2::directions8())
-        if ((creature->getPosition() + v).inRectangle(area))
-          if (auto action = creature->move(v))
-            return {1.0, action};
-      if (auto action = creature->moveTowards(
-          Vec2((area.getPX() + area.getKX()) / 2, (area.getPY() + area.getKY()) / 2)))
-        return {1.0, action};
-    }
-    return NoMove;
   }
 
   SERIALIZATION_CONSTRUCTOR(GuardArea);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(location) & SVAR(area);
+    ar & SUBCLASS(Behaviour) & SVAR(location);
     CHECK_SERIAL;
   }
 
   private:
   const Location* SERIAL(location);
-  Rectangle SERIAL(area);
 };
 
 class GuardSquare : public GuardTarget {
@@ -810,6 +801,26 @@ class ByCollective : public Behaviour {
   Collective* SERIAL(collective);
 };
 
+class ByPlayerControl : public Behaviour {
+  public:
+  ByPlayerControl(Creature* c, PlayerControl* col) : Behaviour(c), collective(col) {}
+
+  virtual MoveInfo getMove() override {
+    return collective->getMove(creature);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(ByPlayerControl);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & SVAR(collective);
+    CHECK_SERIAL;
+  }
+
+  private:
+  PlayerControl* SERIAL(collective);
+};
+
 class ChooseRandom : public Behaviour {
   public:
   ChooseRandom(Creature* c, vector<Behaviour*> beh, vector<double> w) : Behaviour(c), behaviours(beh), weights(w) {}
@@ -854,36 +865,6 @@ class GoToHeart : public Behaviour {
   Vec2 SERIAL(heartPos);
 };
 
-class ByVillageControl : public Behaviour {
-  public:
-  ByVillageControl(Creature* c, VillageControl* control, Location* l) : 
-      Behaviour(c), villageControl(control) {
-    if (l)
-      guardArea.reset(new GuardArea(c, l));
-  }
-
-  virtual MoveInfo getMove() override {
-    if (MoveInfo move = villageControl->getMove(creature))
-      return move;
-    else if (guardArea)
-      return guardArea->getMove();
-    else
-      return NoMove;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(ByVillageControl);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(villageControl) & SVAR(guardArea);
-    CHECK_SERIAL;
-  }
-
-  private:
-  VillageControl* SERIAL(villageControl);
-  PBehaviour SERIAL(guardArea);
-};
-
 template <class Archive>
 void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Heal);
@@ -903,7 +884,7 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, ByCollective);
   REGISTER_TYPE(ar, ChooseRandom);
   REGISTER_TYPE(ar, GoToHeart);
-  REGISTER_TYPE(ar, ByVillageControl);
+  REGISTER_TYPE(ar, ByPlayerControl);
 }
 
 REGISTER_TYPES(MonsterAI);
@@ -977,15 +958,15 @@ MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::villageControl(VillageControl* col, Location* l) {
+MonsterAIFactory MonsterAIFactory::playerControl(PlayerControl* col) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
-        new Heal(c),
+        new Heal(c, false),
         new Fighter(c, 0.6, true),
-        new GoldLust(c),
-        new ByVillageControl(c, col, l),
-        new MoveRandomly(c, 3)},
-        { 6, 5, 3, 2, 1 });
+        new ByPlayerControl(c, col),
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
+        new AttackPest(c)},
+        { 6, 5, 2, 1, 1}, false);
       });
 }
 

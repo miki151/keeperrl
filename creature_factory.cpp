@@ -762,33 +762,37 @@ CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const ve
     : tribe(t), creatures(c), weights(w), unique(u) {
 }
 
-CreatureFactory CreatureFactory::humanVillage(double armedRatio) {
-  CHECK(armedRatio < 0.999 && armedRatio >= 0);
+CreatureFactory CreatureFactory::humanVillage() {
+  return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::PESEANT,
+      CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
+      { 2, 1, 1, 1, 1, 0}, {});
+}
+
+CreatureFactory CreatureFactory::humanCastle() {
+  double armedRatio = 0.7;
   CreatureFactory ret(Tribe::get(TribeId::HUMAN), { CreatureId::PESEANT,
       CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
       { 2, 1, 1, 1, 1, 0}, {});
-  if (armedRatio == 0)
-    return ret;
   double sum = 0;
   for (double w : ret.weights)
     sum += w;
   ret.weights.push_back(sum * armedRatio / (1 - armedRatio));
   ret.creatures.push_back(CreatureId::KNIGHT);
+  ret.unique.push_back(CreatureId::AVATAR);
   return ret;
 }
 
-CreatureFactory CreatureFactory::elvenVillage(double armedRatio) {
-  CHECK(armedRatio < 0.999 && armedRatio >= 0);
+CreatureFactory CreatureFactory::elvenVillage() {
+  double armedRatio = 0.4;
   CreatureFactory ret(Tribe::get(TribeId::ELVEN), { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
       CreatureId::COW, CreatureId::DOG },
       { 2, 2, 1, 1, 0}, {});
-  if (armedRatio == 0)
-    return ret;
   double sum = 0;
   for (double w : ret.weights)
     sum += w;
   ret.weights.push_back(sum * armedRatio / (1 - armedRatio));
   ret.creatures.push_back(CreatureId::ELF_ARCHER);
+  ret.unique.push_back(CreatureId::ELF_LORD);
   return ret;
 }
 
@@ -807,10 +811,6 @@ CreatureFactory CreatureFactory::hellLevel() {
 }
 
 CreatureFactory CreatureFactory::vikingTown() {
-  return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::WARRIOR}, { 1}, {});
-}
-
-CreatureFactory CreatureFactory::vikingAttackers() {
   return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
 }
 
@@ -818,16 +818,8 @@ CreatureFactory CreatureFactory::castleAttackers() {
   return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {CreatureId::AVATAR});
 }
 
-CreatureFactory CreatureFactory::elfAttackers() {
-  return CreatureFactory(Tribe::get(TribeId::ELVEN), { CreatureId::ELF_ARCHER, }, { 1}, {CreatureId::ELF_LORD});
-}
-
-CreatureFactory CreatureFactory::lizardAttackers() {
+CreatureFactory CreatureFactory::lizardTown() {
   return CreatureFactory(Tribe::get(TribeId::LIZARD), { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
-}
-
-CreatureFactory CreatureFactory::dwarfTownPeaceful() {
-  return CreatureFactory(Tribe::get(TribeId::DWARVEN), { CreatureId::RAT}, { 1}, {});
 }
 
 CreatureFactory CreatureFactory::dwarfTown() {

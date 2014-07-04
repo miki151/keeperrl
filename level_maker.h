@@ -40,7 +40,6 @@ struct SettlementInfo {
   SettlementType type;
   CreatureFactory factory;
   int numCreatures;
-  Optional<CreatureId> elder;
   Location* location;
   Tribe* tribe;
   BuildingId buildingId;
@@ -49,7 +48,7 @@ struct SettlementInfo {
   Optional<CreatureId> guardId;
   Optional<ItemId> elderLoot;
   Optional<ItemFactory> shopFactory;
-  Deity* deity;
+  Collective* collective;
 };
 
 class LevelMaker {

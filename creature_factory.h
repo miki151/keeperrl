@@ -31,18 +31,17 @@ class CreatureFactory {
   public:
   static PCreature fromId(CreatureId, Tribe*, MonsterAIFactory = MonsterAIFactory::monster());
   static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
-  static CreatureFactory humanVillage(double armedPercent);
-  static CreatureFactory elvenVillage(double armedPercent);
+  static CreatureFactory humanVillage();
+  static CreatureFactory humanCastle();
+  static CreatureFactory elvenVillage();
   static CreatureFactory forrest();
   static CreatureFactory crypt();
   static CreatureFactory hellLevel();
   static CreatureFactory dwarfTown();
-  static CreatureFactory dwarfTownPeaceful();
   static CreatureFactory vikingTown();
-  static CreatureFactory vikingAttackers();
   static CreatureFactory castleAttackers();
   static CreatureFactory elfAttackers();
-  static CreatureFactory lizardAttackers();
+  static CreatureFactory lizardTown();
   static CreatureFactory goblinTown(int num);
   static CreatureFactory level(int num);
   static CreatureFactory splash();

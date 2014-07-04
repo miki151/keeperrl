@@ -45,6 +45,8 @@ DEF_UNIQUE_PTR(VillageControl);
 DEF_UNIQUE_PTR(GuiElem);
 DEF_UNIQUE_PTR(Animation);
 DEF_UNIQUE_PTR(ViewObject);
+DEF_UNIQUE_PTR(Collective);
+DEF_UNIQUE_PTR(CollectiveControl);
 
 class Item;
 typedef function<bool(const Item*)> ItemPredicate;

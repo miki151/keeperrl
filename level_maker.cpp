@@ -21,6 +21,7 @@
 #include "item_factory.h"
 #include "creature.h"
 #include "square.h"
+#include "collective.h"
 
 enum class SquareAttrib {
   NO_DIG,
@@ -389,6 +390,10 @@ class Creatures : public LevelMaker {
   Creatures(CreatureFactory cf, int numC, MonsterAIFactory actorF, Optional<SquareType> type = Nothing()) :
       cfactory(cf), numCreature(numC), actorFactory(actorF), squareType(type) {}
 
+  Creatures(CreatureFactory cf, int numC, Collective* col, Optional<SquareType> type = Nothing()) :
+      cfactory(cf), numCreature(numC), actorFactory(MonsterAIFactory::collective(col)), squareType(type),
+      collective(col) {}
+
   virtual void make(Level::Builder* builder, Rectangle area) override {
     Table<char> taken(area.getKX(), area.getKY());
     for (int i : Range(numCreature)) {
@@ -400,6 +405,8 @@ class Creatures : public LevelMaker {
       } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get())
           || (squareType && builder->getType(pos) != *squareType)));
       CHECK(numTries > 0) << "Failed to find square for creature";
+      if (collective)
+        collective->addCreature(creature.get());
       builder->putCreature(pos, std::move(creature));
       taken[pos] = 1;
     }
@@ -410,6 +417,7 @@ class Creatures : public LevelMaker {
   int numCreature;
   MonsterAIFactory actorFactory;
   Optional<SquareType> squareType;
+  Collective* collective = nullptr;
 };
 
 class Items : public LevelMaker {
@@ -806,9 +814,10 @@ class RandomLocations : public LevelMaker {
   RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
       SquarePredicate* pred, bool _separate = true, map<pair<LevelMaker*, LevelMaker*>, double> _minDistance = {},
       map<pair<LevelMaker*, LevelMaker*>, double> _maxDistance = {})
-      : insideMakers(_insideMakers), sizes(_sizes), predicate(sizes.size(), {pred}), separate(_separate),
+      : insideMakers(_insideMakers), sizes(_sizes), predicate(sizes.size(), pred), separate(_separate),
         minDistance(_minDistance), maxDistance(_maxDistance) {
         CHECK(insideMakers.size() == sizes.size());
+        CHECK(predicate.size() == sizes.size());
       }
 
   RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
@@ -971,7 +980,7 @@ class Margin : public LevelMaker {
 
 class Shrine : public LevelMaker {
   public:
-  Shrine(Deity* _deity, SquareType _floorType, SquarePredicate* wallPred,
+  Shrine(DeityHabitat _deity, SquareType _floorType, SquarePredicate* wallPred,
       SquareType _newWall, LevelMaker* _locationMaker) : deity(_deity), floorType(_floorType),
       wallPredicate(wallPred), newWall(_newWall), locationMaker(_locationMaker) {}
 
@@ -992,20 +1001,20 @@ class Shrine : public LevelMaker {
         continue;
       }
       builder->putSquare(pos, floorType);
-      builder->putSquare(pos, SquareFactory::getAltar(deity), SquareType::ALTAR);
+      builder->putSquare(pos, SquareType({deity}));
       for (Vec2 fl : pos.neighbors8())
         if (wallPredicate->apply(builder, fl))
           builder->putSquare(fl, newWall);
       if (locationMaker)
         locationMaker->make(builder, Rectangle(pos - Vec2(1, 1), pos + Vec2(2, 2)));
-      Debug() << "Created a shrine of " << deity->getHabitatString();
+      Debug() << "Created a shrine of " << int(deity);
       return;
     }
-    Debug() << "Didn't find a good place for the shrine of " << deity->getHabitatString();
+    Debug() << "Didn't find a good place for the shrine of " << int(deity);
   }
 
   private:
-  Deity* deity;
+  DeityHabitat deity;
   SquareType floorType;
   SquarePredicate* wallPredicate;
   SquareType newWall;
@@ -1531,23 +1540,17 @@ class CastleExit : public LevelMaker {
   CreatureId guardId;
 };
 
-class SingleSquare : public LevelMaker {
+class CreatureAltarMaker : public LevelMaker {
   public:
-  SingleSquare(PSquare s, SquareType t, SquarePredicate* pred) : square(std::move(s)), type(t), predicate(pred) {}
+  CreatureAltarMaker(Collective* col) : collective(col) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
-    for (Vec2 v : randomPermutation(area.getAllSquares()))
-      if (predicate->apply(builder, v)) {
-        builder->putSquare(v, std::move(square), type);
-        return;
-      }
-    FAIL << "Failed to find good square";
+    CHECK(area.getW() == 1 && area.getH() == 1);
+    builder->putSquare(area.getTopLeft(), SquareType({getOnlyElement(collective->getCreatures())}));
   }
 
   private:
-  PSquare square;
-  SquareType type;
-  SquarePredicate* predicate;
+  Collective* collective;
 };
 
 static LevelMaker* underground(bool monsters) {
@@ -1584,8 +1587,7 @@ static LevelMaker* underground(bool monsters) {
           vector<LevelMaker*>(numLakes, new UniformBlob(lakeType, Nothing(), SquareAttrib::LAKE)),
           sizes, new AlwaysTrue(), false));
           if (monsters) {
-            Deity* deity = Deity::getDeity(
-                (lakeType == SquareType::MAGMA) ? DeityHabitat::FIRE : DeityHabitat::WATER);
+            DeityHabitat deity = (lakeType == SquareType::MAGMA) ? DeityHabitat::FIRE : DeityHabitat::WATER;
             queue->addMaker(new Shrine(deity, lakeType,
                   new TypePredicate(lakeType), SquareType::ROCK_WALL, nullptr));
             if (lakeType == SquareType::WATER) {
@@ -1626,7 +1628,7 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up,
         SquareType(SquareType::BLACK_WALL), new Empty(SquareType::FLOOR), shopMaker));
   queue->addMaker(new Connector({5, 3, 0}));
   if (Random.roll(3)) {
-    Deity* deity = Deity::getDeity(chooseRandom({DeityHabitat::STONE, DeityHabitat::EARTH}));
+    DeityHabitat deity = chooseRandom({DeityHabitat::STONE, DeityHabitat::EARTH});
     queue->addMaker(new Shrine(deity, SquareType::FLOOR,
         new TypePredicate({SquareType::ROCK_WALL, SquareType::BLACK_WALL}), SquareType::ROCK_WALL, nullptr));
   }
@@ -1671,9 +1673,6 @@ LevelMaker* hatchery(CreatureFactory factory, int numCreatures) {
 MakerQueue* getElderRoom(SettlementInfo info) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* elderRoom = new MakerQueue();
-  if (info.elder)
-    elderRoom->addMaker(new Creatures(CreatureFactory::singleType(info.tribe, *info.elder), 1,
-          MonsterAIFactory::stayInLocation(info.location, false), building.floorInside));
   if (info.elderLoot)
     elderRoom->addMaker(new Items(ItemFactory::singleType(*info.elderLoot), building.floorInside, 1, 2));
   return elderRoom;
@@ -1692,8 +1691,7 @@ MakerQueue* village2(SettlementInfo info) {
     insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));
   queue->addMaker(new Buildings(6, 10, 3, 4, building, false, insideMakers));
   queue->addMaker(new DungeonFeatures(new AttribPredicate(SquareAttrib::ROOM), featureCount));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::stayInLocation(info.location),
-        building.floorOutside));
+  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective, building.floorOutside));
   return queue;
 }
 
@@ -1715,8 +1713,7 @@ MakerQueue* village(SettlementInfo info) {
   queue->addMaker(new DungeonFeatures(new AttribPredicate(SquareAttrib::ROOM), featureCount));
   queue->addMaker(new DungeonFeatures(new TypePredicate(building.floorOutside),
         {{SquareType::TORCH, 1, 3 }}));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::stayInLocation(info.location),
-        building.floorOutside));
+  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective, building.floorOutside));
   return queue;
 }
 
@@ -1729,8 +1726,7 @@ MakerQueue* cottage(SettlementInfo info, const vector<FeatureInfo>& featureCount
   room->addMaker(new DungeonFeatures(new TypePredicate(building.floorInside), featureCount));
   queue->addMaker(new Buildings(1, 2, 5, 7, building, false, {room}, false));
   queue->addMaker(new LocationMaker(info.location));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::stayInLocation(info.location),
-        building.floorOutside));
+  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective, building.floorOutside));
   return queue;
 }
 
@@ -1763,8 +1759,7 @@ MakerQueue* castle(SettlementInfo info) {
   queue->addMaker(new AreaCorners(new BorderGuard(new Empty(building.floorInside), building.wall), Vec2(5, 5)));
   queue->addMaker(new Margin(insideMargin, new Connector({0, 1, 0}, 18)));
   queue->addMaker(new Margin(insideMargin, new CastleExit(info.tribe, building, *info.guardId)));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::stayInLocation(info.location),
-        building.floorOutside));
+  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective, building.floorOutside));
   inside->addMaker(new DungeonFeatures(new TypePredicate(building.floorOutside),
         {{ SquareType::WELL, 1, 2 }, { SquareType::TORCH, 2, 5 }}));
   inside->addMaker(new DungeonFeatures(new TypePredicate(building.floorInside),{
@@ -1787,8 +1782,7 @@ MakerQueue* castle2(SettlementInfo info) {
   queue->addMaker(new Margin(insideMargin, new CastleExit(info.tribe, building, *info.guardId)));
   queue->addMaker(new DungeonFeatures(new TypePredicate(building.floorOutside),
         {{ SquareType::WELL, 1, 2 }, { SquareType::TORCH, 2, 5 }}));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::stayInLocation(info.location),
-        building.floorOutside));
+  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective, building.floorOutside));
   return queue;
 }
 
@@ -1897,7 +1891,7 @@ static MakerQueue* mineTownMaker(SettlementInfo info) {
   queue->addMaker(new DungeonFeatures(featurePred, featureCount));
   queue->addMaker(new DungeonFeatures(new OrPredicates(new TypePredicate(SquareType::FLOOR),
           new TypePredicate(SquareType::PATH)), {{SquareType::TORCH, 10, 16}}));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::monster()));
+  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective));
   queue->addMaker(new LocationMaker(info.location));
   return queue;
 }
@@ -1909,7 +1903,7 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
     queue->addMaker(new UniformBlob(building.floorOutside, Nothing(), SquareAttrib::CONNECT_CORRIDOR));
   else
     queue->addMaker(new UniformBlob(building.floorOutside));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, MonsterAIFactory::monster()));
+  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective));
   if (info.shopFactory)
     queue->addMaker(new Items(*info.shopFactory, building.floorOutside, 16, 20));
   queue->addMaker(new LocationMaker(info.location));
@@ -1918,8 +1912,8 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
 
 static MakerQueue* dragonCaveMaker(SettlementInfo info) {
   MakerQueue* queue = vaultMaker(info, true);
-  queue->addMaker(new SingleSquare(SquareFactory::getAltar(info.deity), SquareType::HILL,
-      new TypePredicate(SquareType::HILL)));
+  queue->addMaker(new RandomLocations({new CreatureAltarMaker(info.collective)}, {{1, 1}},
+      {new TypePredicate(SquareType::HILL)}));
   return queue;
 }
 

@@ -343,7 +343,7 @@ string Item::getNameAndModifiers(bool getPlural, bool blind) const {
         printAttr.insert(AttrType::DEFENSE);
         break;
       case ItemType::RANGED_WEAPON:
-        attrString = withSign(rangedWeaponAccuracy) + " accuracy)";
+        attrString = withSign(rangedWeaponAccuracy) + " accuracy";
         break;
       default: break;
     }

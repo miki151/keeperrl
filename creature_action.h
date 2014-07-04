@@ -6,7 +6,7 @@
 class CreatureAction {
   public:
   CreatureAction(function<void()>);
-  CreatureAction(const string& failedReason);
+  CreatureAction(const string& failedReason = "");
 #ifndef RELEASE
   // This stuff is so that you don't forget to perform() an action or check if it failed
   static void checkUsage(bool);

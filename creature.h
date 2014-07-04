@@ -149,6 +149,7 @@ class Creature : private CreatureAttributes, public CreatureView, public UniqueE
 
   string getDescription() const;
   bool isSpecialMonster() const;
+  bool isInnocent() const;
 
   void addSkill(Skill* skill);
   bool hasSkill(Skill*) const;
@@ -198,6 +199,7 @@ class Creature : private CreatureAttributes, public CreatureView, public UniqueE
   CreatureAction moveTowards(Vec2 pos, bool stepOnTile = false);
   CreatureAction moveAway(Vec2 pos, bool pathfinding = true);
   CreatureAction continueMoving();
+  CreatureAction stayIn(const Location*);
   void addSectors(Sectors*);
 
   bool atTarget() const;
@@ -221,6 +223,7 @@ class Creature : private CreatureAttributes, public CreatureView, public UniqueE
 
   Controller* getController();
   void pushController(PController);
+  void setController(PController);
   void popController();
   void setSpeed(double);
   double getSpeed() const;

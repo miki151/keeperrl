@@ -16,7 +16,7 @@
 #include "stdafx.h"
 #include "encyclopedia.h"
 #include "view.h"
-#include "collective.h"
+#include "player_control.h"
 #include "pantheon.h"
 #include "technology.h"
 #include "creature_factory.h"
@@ -33,14 +33,14 @@ void advance(View* view, const Technology* tech) {
     text += "Requires: " + combine(prerequisites) + "\n";
   if (!allowed.empty())
     text += "Allows research: " + combine(allowed) + "\n";
-  const vector<SpellInfo>& spells = Collective::getSpellLearning(tech);
+  const vector<SpellInfo>& spells = PlayerControl::getSpellLearning(tech);
   if (!spells.empty())
     text += "Teaches spells: " + combine(spells) + "\n";
-  const vector<Collective::RoomInfo>& rooms = filter(Collective::getRoomInfo(), 
-      [tech] (const Collective::RoomInfo& info) { return info.techId && Technology::get(*info.techId) == tech;});
+  const vector<PlayerControl::RoomInfo>& rooms = filter(PlayerControl::getRoomInfo(), 
+      [tech] (const PlayerControl::RoomInfo& info) { return info.techId && Technology::get(*info.techId) == tech;});
   if (!rooms.empty())
     text += "Unlocks rooms: " + combine(rooms) + "\n";
-  vector<string> minions = transform2<string>(Collective::getSpawnInfo(tech),
+  vector<string> minions = transform2<string>(PlayerControl::getSpawnInfo(tech),
       [](CreatureId id) { return CreatureFactory::fromId(id, Tribe::get(TribeId::MONSTER))->getSpeciesName();});
   if (!minions.empty())
     text += "Unlocks minions: " + combine(minions) + "\n";
@@ -77,7 +77,7 @@ void skills(View* view, int lastInd = 0) {
   skills(view, *index);
 }
 
-void room(View* view, Collective::RoomInfo& info) {
+void room(View* view, PlayerControl::RoomInfo& info) {
   string text = info.description;
   if (info.techId)
     text += "\n \nRequires: " + Technology::get(*info.techId)->getName();
@@ -86,7 +86,7 @@ void room(View* view, Collective::RoomInfo& info) {
 
 void rooms(View* view, int lastInd = 0) {
   vector<View::ListElem> options;
-  vector<Collective::RoomInfo> roomList = Collective::getRoomInfo();
+  vector<PlayerControl::RoomInfo> roomList = PlayerControl::getRoomInfo();
   for (auto& elem : roomList)
     options.push_back(elem.name);
   auto index = view->chooseFromList("Rooms", options, lastInd);
@@ -98,7 +98,7 @@ void rooms(View* view, int lastInd = 0) {
 
 void workshop(View* view, int lastInd = 0) {
   vector<View::ListElem> options;
-  vector<Collective::RoomInfo> roomList = Collective::getWorkshopInfo();
+  vector<PlayerControl::RoomInfo> roomList = PlayerControl::getWorkshopInfo();
   for (auto& elem : roomList)
     options.push_back(elem.name);
   auto index = view->chooseFromList("Workshop", options, lastInd);

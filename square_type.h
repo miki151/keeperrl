@@ -70,6 +70,7 @@ struct SquareType {
     UP_STAIRS,
     BORDER_GUARD,
     ALTAR,
+    CREATURE_ALTAR,
   } id;
 
   SquareType(Id);
@@ -85,9 +86,22 @@ struct SquareType {
     DeityHabitat habitat;
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
-  } altarInfo;
+  };
 
   SquareType(AltarInfo);
+
+  struct CreatureAltarInfo {
+    const Creature* creature;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+  };
+
+  SquareType(CreatureAltarInfo);
+
+  union {
+    AltarInfo altarInfo;
+    CreatureAltarInfo creatureAltarInfo;
+  };
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
