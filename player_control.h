@@ -40,15 +40,7 @@ enum class MinionType {
 
 ENUM_HASH(MinionType);
 
-enum class MinionTask { SLEEP,
-  GRAVE,
-  TRAIN,
-  WORKSHOP,
-  STUDY,
-  LABORATORY,
-  PRISON,
-  TORTURE
-};
+enum class MinionTask;
 
 class Model;
 class Technology;
@@ -169,6 +161,7 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
 
   const static int numWarnings = 20;
   bool warning[numWarnings] = {0};
+  void setWarning(Warning w, bool state = true);
 
   enum class MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, EXECUTE, LABOR, TRAINING,
     WORKSHOP, LAB, STUDY };
@@ -327,6 +320,14 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   ItemPredicate unMarkedItems(ItemType) const;
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
+
+  struct MinionTaskInfo {
+    vector<SquareType> squares;
+    string desc;
+    Optional<Warning> warning;
+  };
+
+  map<MinionTask, MinionTaskInfo> getTaskInfo() const;
   vector<Creature*> SERIAL(creatures);
   vector<Creature*> SERIAL(minions);
   unordered_map<MinionType, vector<Creature*>> SERIAL(minionByType);
@@ -383,6 +384,7 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   map<UniqueId, MarkovChain<MinionTask>> SERIAL(minionTasks);
   map<UniqueId, string> SERIAL(minionTaskStrings);
   unordered_map<SquareType, set<Vec2>> SERIAL(mySquares);
+  set<Vec2> getMySquares(const vector<SquareType>& types) const;
   map<Vec2, int> SERIAL(squareEfficiency);
   void updateEfficiency(Vec2, SquareType);
   double getEfficiency(Vec2) const;

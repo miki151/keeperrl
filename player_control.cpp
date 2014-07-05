@@ -34,6 +34,18 @@
 #include "view_id.h"
 #include "monster.h"
 
+enum class MinionTask { SLEEP,
+  GRAVE,
+  TRAIN,
+  WORKSHOP,
+  STUDY,
+  LABORATORY,
+  PRISON,
+  TORTURE,
+  WORSHIP,
+};
+
+
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CreatureView)
@@ -193,10 +205,9 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level)
     BuildInfo(DeityHabitat::FIRE, altarCost, "Shrines", "", 0),
     BuildInfo(DeityHabitat::AIR, altarCost, "Shrines", "", 0)};
   if (level)
-    for (Vec2 v : level->getBounds())
-      if (const Creature* c = level->getSquare(v)->getCreature())
-        if (c->isWorshipped())
-          buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", "", 0));
+    for (const Creature* c : level->getAllCreatures())
+      if (c->isWorshipped())
+        buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", "", 0));
   append(buildInfo, {
     BuildInfo({SquareType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
     BuildInfo(BuildInfo::DESTROY, "", 'e'),
@@ -308,20 +319,21 @@ vector<PlayerControl::ItemFetchInfo> PlayerControl::getFetchInfo() const {
   };
 }
 
-struct MinionTaskInfo {
-  SquareType square;
-  string desc;
-  PlayerControl::Warning warning;
-};
-map<MinionTask, MinionTaskInfo> taskInfo {
-    {MinionTask::LABORATORY, {SquareType::LABORATORY, "lab", PlayerControl::Warning::LABORATORY}},
-    {MinionTask::TRAIN, {SquareType::TRAINING_ROOM, "training", PlayerControl::Warning::TRAINING}},
-    {MinionTask::WORKSHOP, {SquareType::WORKSHOP, "crafting", PlayerControl::Warning::WORKSHOP}},
-    {MinionTask::SLEEP, {SquareType::BED, "sleeping", PlayerControl::Warning::BEDS}},
-    {MinionTask::GRAVE, {SquareType::GRAVE, "sleeping", PlayerControl::Warning::GRAVES}},
-    {MinionTask::STUDY, {SquareType::LIBRARY, "studying", PlayerControl::Warning::LIBRARY}},
-    {MinionTask::PRISON, {SquareType::PRISON, "prison", PlayerControl::Warning::NO_PRISON}},
-    {MinionTask::TORTURE, {SquareType::TORTURE_TABLE, "tortured", PlayerControl::Warning::TORTURE_ROOM}},
+map<MinionTask, PlayerControl::MinionTaskInfo> PlayerControl::getTaskInfo() const {
+  map<MinionTask, MinionTaskInfo> ret {
+    {MinionTask::LABORATORY, {{SquareType::LABORATORY}, "lab", PlayerControl::Warning::LABORATORY}},
+    {MinionTask::TRAIN, {{SquareType::TRAINING_ROOM}, "training", PlayerControl::Warning::TRAINING}},
+    {MinionTask::WORKSHOP, {{SquareType::WORKSHOP}, "crafting", PlayerControl::Warning::WORKSHOP}},
+    {MinionTask::SLEEP, {{SquareType::BED}, "sleeping", PlayerControl::Warning::BEDS}},
+    {MinionTask::GRAVE, {{SquareType::GRAVE}, "sleeping", PlayerControl::Warning::GRAVES}},
+    {MinionTask::STUDY, {{SquareType::LIBRARY}, "studying", PlayerControl::Warning::LIBRARY}},
+    {MinionTask::PRISON, {{SquareType::PRISON}, "prison", PlayerControl::Warning::NO_PRISON}},
+    {MinionTask::TORTURE, {{SquareType::TORTURE_TABLE}, "tortured", PlayerControl::Warning::TORTURE_ROOM}},
+    {MinionTask::WORSHIP, {{}, "worship", Nothing()}}};
+  for (auto elem : mySquares)
+    if (contains({SquareType::ALTAR, SquareType::CREATURE_ALTAR}, elem.first.id) && !elem.second.empty())
+      ret[MinionTask::WORSHIP].squares.push_back(elem.first);
+  return ret;
 };
 
 PlayerControl::PlayerControl(Model* m, Level* l, Tribe* t) : level(l), mana(200), model(m), tribe(t),
@@ -488,6 +500,7 @@ vector<TaskOption> taskOptions {
   {MinionTask::WORKSHOP, PlayerControl::MinionOption::WORKSHOP, "Workshop"},
   {MinionTask::LABORATORY, PlayerControl::MinionOption::LAB, "Lab"},
   {MinionTask::STUDY, PlayerControl::MinionOption::STUDY, "Study"},
+  {MinionTask::WORSHIP, PlayerControl::MinionOption::STUDY, "Worship"},
 };
 
 void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
@@ -1995,6 +2008,19 @@ bool PlayerControl::isDelayed(Vec2 pos) {
   return delayedPos.count(pos) && delayedPos.at(pos) > getTime();
 }
 
+set<Vec2> PlayerControl::getMySquares(const vector<SquareType>& types) const {
+  set<Vec2> ret;
+  for (SquareType t : types) {
+    const set<Vec2>& s = mySquares.at(t);
+    ret.insert(s.begin(), s.end());
+  }
+  return ret;
+}
+
+void PlayerControl::setWarning(Warning w, bool state) {
+  warning[int(w)] = state;
+}
+
 void PlayerControl::tick(double time) {
   model->getView()->getJukebox()->update();
   if (retired) {
@@ -2004,14 +2030,14 @@ void PlayerControl::tick(double time) {
             getCardinalName((keeper->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
   }
   updateVisibleCreatures();
-  warning[int(Warning::MANA)] = mana < 100;
-  warning[int(Warning::WOOD)] = numResource(ResourceId::WOOD) == 0;
-  warning[int(Warning::DIGGING)] = mySquares.at(SquareType::FLOOR).empty();
-  warning[int(Warning::MINIONS)] = getNumMinions() <= 1;
-  for (auto elem : taskInfo)
-    if (!mySquares.at(elem.second.square).empty())
-      warning[int(elem.second.warning)] = false;
-  warning[int(Warning::NO_WEAPONS)] = false;
+  setWarning(Warning::MANA, mana < 100);
+  setWarning(Warning::WOOD, numResource(ResourceId::WOOD) == 0);
+  setWarning(Warning::DIGGING, mySquares.at(SquareType::FLOOR).empty());
+  setWarning(Warning::MINIONS, getNumMinions() <= 1);
+  for (auto elem : getTaskInfo())
+    if (!getMySquares(elem.second.squares).empty() && elem.second.warning)
+      setWarning(*elem.second.warning, false);
+  setWarning(Warning::NO_WEAPONS, false);
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
   vector<Item*> freeWeapons = getAllItems([&](const Item* it) {
       return it->getType() == ItemType::WEAPON && !minionEquipment.getOwner(it);
@@ -2019,7 +2045,7 @@ void PlayerControl::tick(double time) {
   for (Creature* c : minions) {
     if (usesEquipment(c) && c->equip(genWeapon.get()) 
         && filter(freeWeapons, [&] (const Item* it) { return minionEquipment.needs(c, it); }).empty()) {
-      warning[int(Warning::NO_WEAPONS)] = true;
+      setWarning(Warning::NO_WEAPONS, true);
       break;
     }
   }
@@ -2120,7 +2146,7 @@ void PlayerControl::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed)
   if (!equipment.empty()) {
     vector<Vec2> destination = getAllSquares(elem.destination);
     if (!destination.empty()) {
-      warning[int(elem.warning)] = false;
+      setWarning(elem.warning, false);
       if (elem.oneAtATime)
         equipment = {equipment[0]};
       Vec2 target = chooseRandomClose(pos, destination);
@@ -2128,7 +2154,7 @@ void PlayerControl::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed)
       for (Item* it : equipment)
         markItem(it);
     } else
-      warning[int(elem.warning)] = true;
+      setWarning(elem.warning, true);
   }
 }
 
@@ -2381,14 +2407,16 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
   if (c == keeper && !myTiles.empty() && !myTiles.count(c->getPosition()))
     if (auto action = c->moveTowards(chooseRandom(myTiles)))
       return {1.0, action};
-  MinionTaskInfo info = taskInfo.at(minionTasks.at(c->getUniqueId()).getState());
-  if (mySquares[info.square].empty()) {
+  MinionTaskInfo info = getTaskInfo().at(minionTasks.at(c->getUniqueId()).getState());
+  if (getMySquares(info.squares).empty()) {
     minionTasks.at(c->getUniqueId()).updateToNext();
-    warning[int(info.warning)] = true;
+    if (info.warning)
+      setWarning(*info.warning, true);
     return NoMove;
   }
-  warning[int(info.warning)] = false;
-  taskMap.addTask(Task::applySquare(this, mySquares[info.square]), c);
+  if (info.warning)
+    setWarning(*info.warning, false);
+  taskMap.addTask(Task::applySquare(this, getMySquares(info.squares)), c);
   minionTaskStrings[c->getUniqueId()] = info.desc;
   return taskMap.getTask(c)->getMove(c);
 }
@@ -2456,10 +2484,12 @@ MoveInfo PlayerControl::getMove(Creature* c) {
 }
 
 MarkovChain<MinionTask> PlayerControl::getTasksForMinion(Creature* c) {
+  const double changeFreq = 0.01;
   switch (getMinionType(c)) {
     case MinionType::KEEPER:
       return MarkovChain<MinionTask>(MinionTask::STUDY, {
           {MinionTask::LABORATORY, {}},
+          {MinionTask::WORSHIP, {{MinionTask::STUDY, changeFreq}}},
           {MinionTask::STUDY, {}},
           {MinionTask::SLEEP, {{ MinionTask::STUDY, 1}}}});
     case MinionType::PRISONER:
@@ -2477,15 +2507,20 @@ MarkovChain<MinionTask> PlayerControl::getTasksForMinion(Creature* c) {
         return MarkovChain<MinionTask>(MinionTask::GRAVE, {
             {MinionTask::GRAVE, {{ MinionTask::TRAIN, 0.5}, { MinionTask::STUDY, 0.1}}},
             {MinionTask::STUDY, {{ MinionTask::GRAVE, 0.005}}},
+            {MinionTask::WORSHIP, {{MinionTask::GRAVE, changeFreq}}},
             {MinionTask::TRAIN, {{ MinionTask::GRAVE, 0.005}}}});
     case MinionType::NORMAL: {
-      double workshopTime = (c->getName() == "gnome" ? 0.65 : 0.2);
-      double labTime = (c->getName() == "gnome" ? 0.35 : 0.1);
-      double trainTime = 1 - workshopTime - labTime;
-      double changeFreq = 0.01;
+      double worshipTime = 0.05;
+      double workshopTime = (c->getName() == "gnome" ? 0.60 : 0.2);
+      double labTime = (c->getName() == "gnome" ? 0.30 : 0.1);
+      double trainTime = 1 - workshopTime - labTime - worshipTime;
       return MarkovChain<MinionTask>(MinionTask::SLEEP, {
-          {MinionTask::SLEEP, {{ MinionTask::TRAIN, trainTime}, { MinionTask::WORKSHOP, workshopTime},
-          {MinionTask::LABORATORY, labTime}}},
+          {MinionTask::SLEEP, {
+              { MinionTask::TRAIN, trainTime},
+              { MinionTask::WORKSHOP, workshopTime},
+              { MinionTask::WORSHIP, worshipTime},
+              { MinionTask::LABORATORY, labTime}}},
+          {MinionTask::WORSHIP, {{MinionTask::SLEEP, changeFreq}}},
           {MinionTask::WORKSHOP, {{ MinionTask::SLEEP, changeFreq}}},
           {MinionTask::LABORATORY, {{ MinionTask::SLEEP, changeFreq}}},
           {MinionTask::TRAIN, {{ MinionTask::SLEEP, changeFreq}}}});

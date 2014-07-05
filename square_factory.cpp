@@ -918,7 +918,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             {SquareType::CEMETERY, 10}, {SquareType::WORKSHOP, 10}, {SquareType::PRISON, 10},
             {SquareType::TORTURE_TABLE, 10}, {SquareType::LABORATORY, 10}, {SquareType::BEAST_LAIR, 10},
             {SquareType::IMPALED_HEAD, 5}, {SquareType::BARRICADE, 20}, {SquareType::TORCH, 5},
-            {SquareType::ALTAR, 35}});
+            {SquareType::ALTAR, 35}, {SquareType::CREATURE_ALTAR, 35}});
     case SquareType::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Rope bridge"), "rope bridge",
             Vision::get(VisionId::NORMAL));
