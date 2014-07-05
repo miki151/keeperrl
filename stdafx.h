@@ -40,6 +40,7 @@
 #include <typeinfo>
 #include <tuple>
 #include <mutex>
+#include <atomic>
 #include <condition_variable>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -105,6 +106,7 @@ using std::make_tuple;
 using std::get;
 using std::hash;
 using std::thread;
+using std::atomic;
 
 #include "serialization.h"
 #endif

@@ -32,7 +32,7 @@ class WindowView: public View {
   WindowView(); 
   virtual void initialize() override;
   virtual void reset() override;
-  virtual void displaySplash(View::SplashType, bool& ready) override;
+  virtual void displaySplash(View::SplashType, atomic<bool>& ready) override;
 
   virtual void close() override;
 

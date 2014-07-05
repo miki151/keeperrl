@@ -224,7 +224,7 @@ void displayMenuSplash() {
  // drawAndClearBuffer();
 }
 
-void WindowView::displaySplash(View::SplashType type, bool& ready) {
+void WindowView::displaySplash(View::SplashType type, atomic<bool>& ready) {
   RenderLock lock(renderMutex);
   string text;
   switch (type) {

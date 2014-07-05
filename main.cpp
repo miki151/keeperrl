@@ -222,7 +222,7 @@ int main(int argc, char* argv[]) {
   //Table<bool> splash = readSplashTable("splash.map");
   int lastIndex = 0;
   bool exitGame = false;
-  bool viewInitialized = false;
+  std::atomic<bool> viewInitialized(false);
   thread renderingThread([&] {
     view->initialize();
     viewInitialized = true;
@@ -236,7 +236,6 @@ int main(int argc, char* argv[]) {
   view->setJukebox(&jukebox);
   GuiElem::initialize("frame.png");
   while (1) {
-    bool modelReady = false;
     messageBuffer.initialize(view.get());
     view->reset();
     clearAndInitialize();
@@ -294,7 +293,7 @@ int main(int argc, char* argv[]) {
     }
     unique_ptr<Model> model;
     string ex;
-    bool ready = false;
+    atomic<bool> ready(false);
     view->displaySplash(savedGame ? View::LOADING : View::CREATING, ready);
     for (int i : Range(5)) {
       try {
@@ -342,7 +341,7 @@ int main(int argc, char* argv[]) {
     catch (GameOverException ex) {
     }
     catch (SaveGameException ex) {
-      bool ready = false;
+      atomic<bool> ready(false);
       view->displaySplash(View::SAVING, ready);
       string id = model->getGameIdentifier() + getSaveSuffix(ex.type);
       saveGame(std::move(model), id);
