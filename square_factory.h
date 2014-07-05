@@ -50,6 +50,7 @@ inline StairDirection opposite(StairDirection d) {
     case StairDirection::DOWN: return StairDirection::UP;
     case StairDirection::UP: return StairDirection::DOWN;
   }
+  return StairDirection(0);
 }
 
 class SquareFactory {
