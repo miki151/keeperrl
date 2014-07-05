@@ -8,8 +8,12 @@ ifdef DATA_DIR
 	CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"
 endif
 
+ifdef DBG
+GFLAG = -g
+endif
+
 ifndef OPTFLAGS
-	OPTFLAGS = -Winvalid-pch -static-libstdc++ -static -DSFML_STATIC -DWINDOWS -DRELEASE -O3
+	OPTFLAGS = -Winvalid-pch -static-libstdc++ -static -DSFML_STATIC -DWINDOWS -DRELEASE -O3 $(GFLAG)
 endif
 
 OBJDIR = obj
