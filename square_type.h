@@ -80,6 +80,8 @@ struct SquareType {
   bool operator==(SquareType::Id) const;
   bool operator!=(const SquareType&) const;
 
+  size_t getHash() const;
+
   bool isWall() const;
 
   struct AltarInfo {

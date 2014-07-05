@@ -126,6 +126,7 @@ class Creature : private CreatureAttributes, public CreatureView, public UniqueE
   bool hasBrain() const;
   bool isNotLiving() const;
   bool isCorporal() const;
+  bool isWorshipped() const;
   bool canSwim() const;
   bool canFly() const;
   bool canWalk() const;

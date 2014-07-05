@@ -84,7 +84,6 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(squareEfficiency)
     & SVAR(surprises);
   CHECK_SERIAL;
-  initBuildInfo();
 }
 
 SERIALIZABLE(PlayerControl);
@@ -155,8 +154,11 @@ PlayerControl::BuildInfo::BuildInfo(SquareInfo info, Optional<TechId> id, const 
     : squareInfo(info), buildType(SQUARE), techId(id), help(h), hotkey(key), groupName(group) {}
 PlayerControl::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h, char key)
     : trapInfo(info), buildType(TRAP), techId(id), help(h), hotkey(key) {}
-PlayerControl::BuildInfo::BuildInfo(DeityHabitat habitat, CostInfo cost, const string& group, const string& h, char key)
-    : squareInfo({SquareType({habitat}), cost, "To " + Deity::getDeity(habitat)->getName(), false}),
+PlayerControl::BuildInfo::BuildInfo(DeityHabitat habitat, CostInfo cost, const string& group, const string& h,
+    char key) : squareInfo({SquareType({habitat}), cost, "To " + Deity::getDeity(habitat)->getName(), false}),
+    buildType(SQUARE), help(h), hotkey(key), groupName(group) {}
+PlayerControl::BuildInfo::BuildInfo(const Creature* c, CostInfo cost, const string& group, const string& h, char key)
+    : squareInfo({SquareType({c}), cost, "To " + c->getName(), false}),
     buildType(SQUARE), help(h), hotkey(key), groupName(group) {}
 PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key) : buildType(type), help(h), hotkey(key) {
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH}, type));
@@ -166,10 +168,13 @@ PlayerControl::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const strin
   CHECK(type == IMPALED_HEAD);
 }
 
-vector<PlayerControl::BuildInfo> PlayerControl::buildInfo;
+vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
+  return getBuildInfo(level);
+}
 
-void PlayerControl::initBuildInfo() {
-  PlayerControl::buildInfo = {
+vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level) {
+  const CostInfo altarCost {ResourceId::STONE, 100};
+  vector<BuildInfo> buildInfo {
     BuildInfo(BuildInfo::DIG, "", 'd'),
     BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, Nothing(), "", 's', "Storage"),
     BuildInfo({SquareType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, Nothing(), "", 0, "Storage"),
@@ -184,14 +189,21 @@ void PlayerControl::initBuildInfo() {
     BuildInfo({SquareType::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
     BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 'p'),
     BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u'),
-    BuildInfo(DeityHabitat::EARTH, {ResourceId::STONE, 100}, "Shrines", "", 0),
-    BuildInfo(DeityHabitat::FIRE, {ResourceId::STONE, 100}, "Shrines", "", 0),
-    BuildInfo(DeityHabitat::AIR, {ResourceId::STONE, 100}, "Shrines", "", 0),
+    BuildInfo(DeityHabitat::EARTH, altarCost, "Shrines", "", 0),
+    BuildInfo(DeityHabitat::FIRE, altarCost, "Shrines", "", 0),
+    BuildInfo(DeityHabitat::AIR, altarCost, "Shrines", "", 0)};
+  if (level)
+    for (Vec2 v : level->getBounds())
+      if (const Creature* c = level->getSquare(v)->getCreature())
+        if (c->isWorshipped())
+          buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", "", 0));
+  append(buildInfo, {
     BuildInfo({SquareType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
     BuildInfo(BuildInfo::DESTROY, "", 'e'),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 'c'),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'g'),
-  };
+  });
+  return buildInfo;
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::workshopInfo {
@@ -233,7 +245,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
 
 vector<PlayerControl::RoomInfo> PlayerControl::getRoomInfo() {
   vector<RoomInfo> ret;
-  for (BuildInfo bInfo : buildInfo)
+  for (BuildInfo bInfo : getBuildInfo(nullptr))
     if (bInfo.buildType == BuildInfo::SQUARE)
       ret.push_back({bInfo.squareInfo.name, bInfo.help, bInfo.techId});
   return ret;
@@ -315,8 +327,7 @@ map<MinionTask, MinionTaskInfo> taskInfo {
 PlayerControl::PlayerControl(Model* m, Level* l, Tribe* t) : level(l), mana(200), model(m), tribe(t),
     sectors(new Sectors(l->getBounds())), flyingSectors(new Sectors(l->getBounds())) {
   bool hotkeys[128] = {0};
-  initBuildInfo();
-  for (BuildInfo info : concat(buildInfo, workshopInfo)) {
+  for (BuildInfo info : concat(getBuildInfo(), workshopInfo)) {
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
       hotkeys[int(info.hotkey)] = true;
@@ -334,7 +345,7 @@ PlayerControl::PlayerControl(Model* m, Level* l, Tribe* t) : level(l), mana(200)
   mySquares[SquareType::IMPALED_HEAD].clear();
   mySquares[SquareType::FLOOR].clear();
   mySquares[SquareType::TRIBE_DOOR].clear();
-  for (BuildInfo info : concat(buildInfo, workshopInfo))
+  for (BuildInfo info : concat(getBuildInfo(), workshopInfo))
     if (info.buildType == BuildInfo::SQUARE) {
       mySquares[info.squareInfo.type].clear();
       if (auto t = getSecondarySquare(info.squareInfo.type))
@@ -1211,7 +1222,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
   gameInfo.infoType = GameInfo::InfoType::BAND;
   GameInfo::BandInfo& info = gameInfo.bandInfo;
-  info.buildings = fillButtons(buildInfo);
+  info.buildings = fillButtons(getBuildInfo());
   info.workshop = fillButtons(workshopInfo);
   info.libraryButtons = fillButtons(libraryInfo);
   info.tasks = minionTaskStrings;
@@ -1581,7 +1592,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           rectSelectCorner = input.getPosition();
         break;
     case UserInput::BUILD:
-        handleSelection(input.getPosition(), buildInfo[input.getBuildInfo().building], false);
+        handleSelection(input.getPosition(), getBuildInfo()[input.getBuildInfo().building], false);
         break;
     case UserInput::WORKSHOP:
         handleSelection(input.getPosition(), workshopInfo[input.getBuildInfo().building], false);
@@ -1592,9 +1603,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInput::BUTTON_RELEASE:
         selection = NONE;
         if (rectSelectCorner && rectSelectCorner2) {
-          handleSelection(*rectSelectCorner, buildInfo[input.getBuildInfo().building], true);
+          handleSelection(*rectSelectCorner, getBuildInfo()[input.getBuildInfo().building], true);
           for (Vec2 v : Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2}))
-            handleSelection(v, buildInfo[input.getBuildInfo().building], true);
+            handleSelection(v, getBuildInfo()[input.getBuildInfo().building], true);
         }
         rectSelectCorner = Nothing();
         rectSelectCorner2 = Nothing();

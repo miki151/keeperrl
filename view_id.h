@@ -150,6 +150,7 @@ enum class ViewId {
   WORKSHOP,
   DUNGEON_HEART,
   ALTAR,
+  CREATURE_ALTAR,
   CEMETERY,
   GRAVE,
   BARS,

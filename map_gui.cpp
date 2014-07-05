@@ -330,7 +330,7 @@ void MapGui::render(Renderer& renderer) {
   }
   if (optionsGui) {
     int margin = 10;
-    optionsGui->setBounds(Rectangle(margin, getBounds().getKY() - optionsHeight - margin, 320, getBounds().getKY() - margin));
+    optionsGui->setBounds(Rectangle(margin, getBounds().getKY() - optionsHeight - margin, 380, getBounds().getKY() - margin));
     optionsGui->render(renderer);
   }
 }

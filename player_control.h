@@ -219,12 +219,14 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
     BuildInfo(BuildType type, SquareInfo info, const string& h = "", char hotkey = 0);
     BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0);
     BuildInfo(DeityHabitat, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
+    BuildInfo(const Creature*, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0);
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
   vector<GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   static vector<BuildInfo> buildInfo;
-  static void initBuildInfo();
+  vector<BuildInfo> getBuildInfo() const;
+  static vector<BuildInfo> getBuildInfo(const Level*);
   static vector<BuildInfo> workshopInfo;
   static vector<BuildInfo> libraryInfo;
   static vector<BuildInfo> minionsInfo;

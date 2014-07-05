@@ -1107,6 +1107,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 5;
           c.humanoid = false;
           c.weight = 1000;
+          c.worshipped = true;
           c.bodyParts[BodyPart::WING] = 2;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;

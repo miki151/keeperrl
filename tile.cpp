@@ -337,6 +337,7 @@ static Tile getSprite(ViewId id) {
     case ViewId::TORCH: return Tile(13, 1, 2, true).setTranslucent(0.35);
     case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
     case ViewId::ALTAR: return Tile(2, 7, 2, true);
+    case ViewId::CREATURE_ALTAR: return Tile(3, 7, 2, true);
     case ViewId::TORTURE_TABLE: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 3, 5).addBackground(2, 5);
     case ViewId::IMPALED_HEAD: return Tile(10, 10, 2, true);
     case ViewId::TRAINING_ROOM: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 3, 4).addBackground(2, 4);

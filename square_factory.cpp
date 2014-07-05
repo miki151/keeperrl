@@ -561,7 +561,7 @@ class DestroyableSquare : public Square {
 
 class Bed : public Furniture {
   public:
-  Bed(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
+  Bed(const ViewObject& object, const string& name, double flamability = 1) : Furniture(object, name, flamability) {}
 
   virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
     return SquareApplyType::SLEEP;
@@ -587,7 +587,7 @@ class Bed : public Furniture {
 
 class Grave : public Bed {
   public:
-  Grave(const ViewObject& object, const string& name) : Bed(object, name) {}
+  Grave(const ViewObject& object, const string& name) : Bed(object, name, 0) {}
 
   virtual Optional<SquareApplyType> getApplyType(const Creature* c) const override { 
     if (c->isUndead())
@@ -1062,7 +1062,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
               Deity::getDeity(s.altarInfo.habitat));
     case SquareType::CREATURE_ALTAR:
-        return new CreatureAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
+        return new CreatureAltar(ViewObject(ViewId::CREATURE_ALTAR, ViewLayer::FLOOR, "Shrine"),
               s.creatureAltarInfo.creature);
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
                                           EffectType::ROLLING_BOULDER);

@@ -63,6 +63,14 @@ void SquareType::serialize(Archive& ar, const unsigned int version) {
   }
 }
 
+size_t SquareType::getHash() const {
+  switch (id) {
+    case ALTAR: return 123456 * size_t(altarInfo.habitat); break;
+    case CREATURE_ALTAR: return 654321 * size_t(creatureAltarInfo.creature->getUniqueId()); break;
+    default: return size_t(id);
+  }
+}
+
 SERIALIZABLE(SquareType);
 
 template <class Archive>

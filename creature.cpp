@@ -1849,6 +1849,10 @@ bool Creature::isCorporal() const {
   return !uncorporal;
 }
 
+bool Creature::isWorshipped() const {
+  return worshipped;
+}
+
 bool Creature::hasBrain() const {
   return brain;
 }
