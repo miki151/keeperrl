@@ -41,6 +41,7 @@ struct SquareType {
     TORCH,
     DORM,
     BED,
+    KEEPER_BED,
     STOCKPILE,
     STOCKPILE_EQUIP,
     STOCKPILE_RES,

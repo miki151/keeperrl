@@ -1016,6 +1016,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Furniture(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
             "tree trunk", 0);
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
+    case SquareType::KEEPER_BED: return new Bed(ViewObject(ViewId::KEEPER_BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::DORM: return new DestroyableSquare(ViewObject(ViewId::DORM, ViewLayer::FLOOR_BACKGROUND,
                               "Dormitory"), "floor", Vision::get(VisionId::NORMAL));
     case SquareType::TORCH: return new Torch(ViewObject(ViewId::TORCH, ViewLayer::FLOOR, "Torch"), "torch");
@@ -1075,7 +1076,7 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::CHEST:
         return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"), ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest", CreatureId::RAT, 3, 6, "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::chest());
     case SquareType::TREASURE_CHEST:
-        return new Furniture(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);
+        return new Furniture(ViewObject(ViewId::TREASURE_CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);
     case SquareType::COFFIN:
         return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"), ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin", CreatureId::VAMPIRE, 1, 2, "There is a rotting corpse inside. You find an item.", "There is a rotting corpse inside. The corpse is alive!", "There is a rotting corpse inside. You find some gold.", ItemFactory::chest());
     case SquareType::CEMETERY: return new DestroyableSquare(ViewObject(ViewId::CEMETERY, ViewLayer::FLOOR_BACKGROUND,

@@ -313,7 +313,8 @@ static Tile getSprite(ViewId id) {
     case ViewId::SLIMY_MUSHROOM: return Tile(5, 4, 3);
     case ViewId::FOUNTAIN: return Tile(0, 7, 2, true);
     case ViewId::GOLD: return Tile(8, 3, 3, true);
-    case ViewId::CHEST: return Tile(1, 1, 7, true);
+    case ViewId::TREASURE_CHEST: return Tile(1, 1, 7, true).addBackground(0, 1);
+    case ViewId::CHEST: return Tile(3, 3, 2, true);
     case ViewId::OPENED_CHEST: return Tile(6, 3, 2, true);
     case ViewId::COFFIN: return Tile(7, 3, 2, true);
     case ViewId::OPENED_COFFIN: return Tile(8, 3, 2, true);
@@ -332,7 +333,8 @@ static Tile getSprite(ViewId id) {
     case ViewId::STOCKPILE2: return Tile(2, 0, 7);
     case ViewId::STOCKPILE3: return Tile(3, 0, 7);
     case ViewId::PRISON: return Tile(6, 2, 1);
-    case ViewId::BED: return Tile(1, 4, 7, true).addBackground(0, 4);
+    case ViewId::BED: return Tile(1, 4, 7, true);
+    case ViewId::KEEPER_BED: return Tile(1, 4, 7, true).addBackground(0, 4);
     case ViewId::DORM: return Tile(0, 4, 7);
     case ViewId::TORCH: return Tile(13, 1, 2, true).setTranslucent(0.35);
     case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
@@ -558,6 +560,7 @@ static Tile getAscii(ViewId id) {
     case ViewId::BLACK_MUSHROOM: return Tile(0x22c6, darkGray, true);
     case ViewId::FOUNTAIN: return Tile('0', lightBlue);
     case ViewId::GOLD: return Tile('$', yellow);
+    case ViewId::TREASURE_CHEST:
     case ViewId::OPENED_CHEST:
     case ViewId::CHEST: return Tile('=', brown);
     case ViewId::OPENED_COFFIN:
@@ -578,10 +581,12 @@ static Tile getAscii(ViewId id) {
     case ViewId::STOCKPILE3: return Tile('.', lightBlue);
     case ViewId::PRISON: return Tile('.', blue);
     case ViewId::DORM: return Tile('.', brown);
+    case ViewId::KEEPER_BED:
     case ViewId::BED: return Tile('=', white);
     case ViewId::DUNGEON_HEART: return Tile(L'♥', white, true);
     case ViewId::TORCH: return Tile('I', orange);
     case ViewId::ALTAR: return Tile(L'Ω', white);
+    case ViewId::CREATURE_ALTAR: return Tile(L'Ω', yellow);
     case ViewId::TORTURE_TABLE: return Tile('=', gray);
     case ViewId::IMPALED_HEAD: return Tile(L'𐌒', brown);
     case ViewId::TRAINING_ROOM: return Tile(L'‡', brown, true);

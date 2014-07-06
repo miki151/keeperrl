@@ -243,7 +243,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::workshopInfo {
 
 Optional<SquareType> getSecondarySquare(SquareType type) {
   switch (type.id) {
-    case SquareType::DORM: return SquareType(SquareType::BED);
+    case SquareType::DORM: return SquareType(SquareType::KEEPER_BED);
     case SquareType::BEAST_LAIR: return SquareType(SquareType::BEAST_CAGE);
     case SquareType::CEMETERY: return SquareType(SquareType::GRAVE);
     default: return Nothing();
@@ -327,7 +327,7 @@ map<MinionTask, PlayerControl::MinionTaskInfo> PlayerControl::getTaskInfo() cons
     {MinionTask::LABORATORY, {{SquareType::LABORATORY}, "lab", PlayerControl::Warning::LABORATORY}},
     {MinionTask::TRAIN, {{SquareType::TRAINING_ROOM}, "training", PlayerControl::Warning::TRAINING}},
     {MinionTask::WORKSHOP, {{SquareType::WORKSHOP}, "crafting", PlayerControl::Warning::WORKSHOP}},
-    {MinionTask::SLEEP, {{SquareType::BED}, "sleeping", PlayerControl::Warning::BEDS}},
+    {MinionTask::SLEEP, {{SquareType::KEEPER_BED}, "sleeping", PlayerControl::Warning::BEDS}},
     {MinionTask::GRAVE, {{SquareType::GRAVE}, "sleeping", PlayerControl::Warning::GRAVES}},
     {MinionTask::STUDY, {{SquareType::LIBRARY}, "studying", PlayerControl::Warning::LIBRARY}},
     {MinionTask::PRISON, {{SquareType::PRISON}, "prison", PlayerControl::Warning::NO_PRISON}},
