@@ -915,6 +915,7 @@ vector<T> makeVec(Args&&... args) {
 string addAParticle(const string& s);
 
 string capitalFirst(string s);
+string makeSentence(string s);
 
 string lowercase(string s);
 

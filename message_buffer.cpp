@@ -28,15 +28,6 @@ SERIALIZABLE(MessageBuffer);
 
 MessageBuffer messageBuffer;
 
-void correct(string& msg) {
-  if (islower(msg[0]))
-    msg[0] = toupper(msg[0]);
-  if (msg.size() > 1 && msg[0] == '\"' && islower(msg[1]))
-    msg[1] = toupper(msg[1]);
-  if (msg.back() != '.' && msg.back() != '?' && msg.back() != '!' && msg.back() != '\"')
-    msg.append(".");
-}
-
 void MessageBuffer::addMessage(string msg) {
   Debug() << "MSG " << msg;
   CHECK(view != nullptr) << "Message buffer not initialized.";
@@ -45,7 +36,7 @@ void MessageBuffer::addMessage(string msg) {
   bool imp = isImportant(msg);
   if (imp)
     removeImportant(msg);
-  correct(msg);
+  msg = makeSentence(msg);
   if (imp)
     view->addImportantMessage(msg);
   else {

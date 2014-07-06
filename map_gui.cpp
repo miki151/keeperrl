@@ -145,6 +145,8 @@ void MapGui::onRightClick(Vec2) {
 }
 
 void MapGui::onMouseMove(Vec2 v) {
+  if (optionsGui)
+    optionsGui->onMouseMove(v);
   Vec2 pos = layout->projectOnMap(getBounds(), v);
   if (v.inRectangle(getBounds()) && (!optionsGui || !v.inRectangle(optionsGui->getBounds()))) {
     if (mouseHeldPos && *mouseHeldPos != pos) {

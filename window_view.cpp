@@ -589,7 +589,7 @@ PGuiElem WindowView::getButtonLine(GameInfo::BandInfo::Button button, function<v
     };
   }
   return GuiElem::stack(
-      mapGui->getHintCallback(button.help),
+      mapGui->getHintCallback(capitalFirst(button.help)),
       GuiElem::button(buttonFun, button.hotkey),
       GuiElem::horizontalList(std::move(line), widths, 0, button.cost ? 2 : 0));
 }
@@ -748,9 +748,6 @@ void WindowView::rebuildGui() {
         break;
   }
   resetMapBounds();
-  if (tempGuiElems.size() == 2) {
-    Debug() << "Clearing tempGuiElems " << tempGuiElems[0].get() << " " << tempGuiElems[1].get();
-  }
   CHECK(std::this_thread::get_id() != renderThreadId);
   tempGuiElems.clear();
   tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2), 

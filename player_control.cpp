@@ -203,14 +203,14 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level)
     BuildInfo({SquareType::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, Nothing(), "", 'a'),
     BuildInfo({SquareType::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
     BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 'p'),
-    BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u'),
-    BuildInfo(DeityHabitat::EARTH, altarCost, "Shrines", "", 0),
-    BuildInfo(DeityHabitat::FIRE, altarCost, "Shrines", "", 0),
-    BuildInfo(DeityHabitat::AIR, altarCost, "Shrines", "", 0)};
+    BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u')};
+  for (Deity* deity : Deity::getDeities())
+    buildInfo.push_back(BuildInfo(deity->getHabitat(), altarCost, "Shrines",
+          deity->getGender().god() + " of " + deity->getEpithetsString(), 0));
   if (level)
     for (const Creature* c : level->getAllCreatures())
       if (c->isWorshipped())
-        buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", "", 0));
+        buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", c->getSpeciesName(), 0));
   append(buildInfo, {
     BuildInfo({SquareType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
     BuildInfo(BuildInfo::DESTROY, "", 'e'),

@@ -1112,12 +1112,15 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.name = NameGenerator::get(NameGeneratorId::DRAGON)->getNext();
+          c.speciesName = "green dragon";
           );
     case CreatureId::RED_DRAGON:
       return INHERIT(GREEN_DRAGON,
           c.viewId = ViewId::RED_DRAGON;
           c.fireCreature = true;
-          c.permanentEffects[LastingEffect::POISON_RESISTANT] = 0;);
+          c.permanentEffects[LastingEffect::POISON_RESISTANT] = 0;
+          c.speciesName = "red dragon";
+          );
     case CreatureId::KNIGHT: 
       return CATTR(
           c.viewId = ViewId::KNIGHT;

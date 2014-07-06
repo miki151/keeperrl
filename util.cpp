@@ -600,8 +600,17 @@ string addAParticle(const string& s) {
 }
 
 string capitalFirst(string s) {
-  if (islower(s[0]))
+  if (!s.empty() && islower(s[0]))
     s[0] = toupper(s[0]);
+  return s;
+}
+
+string makeSentence(string s) {
+  s = capitalFirst(s);
+  if (s.size() > 1 && s[0] == '\"' && islower(s[1]))
+    s[1] = toupper(s[1]);
+  if (s.back() != '.' && s.back() != '?' && s.back() != '!' && s.back() != '\"')
+    s.append(".");
   return s;
 }
 
