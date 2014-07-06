@@ -41,6 +41,7 @@
 #include "item_factory.h"
 #include "creature.h"
 #include "test.h"
+#include "pantheon.h"
 
 using namespace boost::iostreams;
 
@@ -162,6 +163,7 @@ void clearAndInitialize() {
   Technology::clearAll();
   Skill::clearAll();
   Vision::clearAll();
+  Epithet::clearAll();
   NameGenerator::clearAll();
   EventListener::initialize();
   Tribe::init();
@@ -171,7 +173,7 @@ void clearAndInitialize() {
   Vision::init();
   NameGenerator::init();
   ItemFactory::init();
-
+  Epithet::init();
 }
 
 int main(int argc, char* argv[]) {

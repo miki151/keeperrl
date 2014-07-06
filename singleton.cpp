@@ -24,6 +24,7 @@
 #include "clock.h"
 #include "skill.h"
 #include "name_generator.h"
+#include "pantheon.h"
 
 template<class T, class E>
 EnumMap<E, unique_ptr<T>> Singleton<T, E>::elems;
@@ -91,6 +92,9 @@ template void Singleton<Vision, VisionId>::serialize(boost::archive::binary_oarc
 template class Singleton<NameGenerator, NameGeneratorId>;
 template void Singleton<NameGenerator, NameGeneratorId>::serialize(boost::archive::binary_iarchive&, unsigned);
 template void Singleton<NameGenerator, NameGeneratorId>::serialize(boost::archive::binary_oarchive&, unsigned);
+template class Singleton<Epithet, EpithetId>;
+template void Singleton<Epithet, EpithetId>::serialize(boost::archive::binary_iarchive&, unsigned);
+template void Singleton<Epithet, EpithetId>::serialize(boost::archive::binary_oarchive&, unsigned);
 
 
 template<class T>

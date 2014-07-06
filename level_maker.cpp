@@ -242,7 +242,7 @@ class RoomMaker : public LevelMaker {
 
 class Connector : public LevelMaker {
   public:
-  Connector(initializer_list<double> door, double _diggingCost = 3, SquarePredicate* pred = new DefaultCanEnter())
+  Connector(vector<double> door, double _diggingCost = 3, SquarePredicate* pred = new DefaultCanEnter())
       : doorProb(door), diggingCost(_diggingCost), connectPred(pred) {
     CHECKEQ((int) door.size(), 3);
   }
@@ -282,7 +282,7 @@ class Connector : public LevelMaker {
         SquareType newType;
         SquareType oldType = builder->getType(v);
         if (oldType.isWall() && oldType != SquareType::BLACK_WALL)
-          newType = chooseRandom({
+          newType = chooseRandom<SquareType>({
               SquareType::PATH,
               SquareType::DOOR,
               SquareType::SECRET_PASS}, doorProb);
@@ -338,7 +338,7 @@ class Connector : public LevelMaker {
   }
   
   private:
-  initializer_list<double> doorProb;
+  vector<double> doorProb;
   double diggingCost;
   SquarePredicate* connectPred;
 };

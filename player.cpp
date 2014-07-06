@@ -25,6 +25,9 @@
 #include "options.h"
 #include "creature.h"
 #include "square.h"
+#include "pantheon.h"
+#include "item_factory.h"
+#include "effect.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -38,6 +41,7 @@ void Player::serialize(Archive& ar, const unsigned int version) {
     & SVAR(specialCreatures)
     & SVAR(displayGreeting)
     & SVAR(levelMemory)
+    & SVAR(usedEpithets)
     & SVAR(model);
   CHECK_SERIAL;
 }
@@ -46,8 +50,8 @@ SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(Creature* c, Model* m, bool greet, map<Level*, MapMemory>* memory) :
-    Controller(c), levelMemory(memory), model(m), displayGreeting(greet) {
+Player::Player(Creature* c, Model* m, bool adventure, map<Level*, MapMemory>* memory) :
+    Controller(c), levelMemory(memory), model(m), displayGreeting(adventure), adventureMode(adventure) {
 }
 
 Player::~Player() {
@@ -857,6 +861,122 @@ Controller* Player::getPossessedController(Creature* c) {
   creature->pushController(PController(new DoNothingController(creature)));
   return new PossessedController(c, creature, model, levelMemory, true);
 }
+
+static void grantGift(Creature* c, ItemId id, string deity, int num = 1) {
+  c->playerMessage(deity + " grants you a gift.");
+  c->takeItems(ItemFactory::fromId(id, num), nullptr);
+}
+
+static void applyEffect(Creature* c, EffectType effect, string msg) {
+  c->playerMessage(msg);
+  Effect::applyToCreature(c, effect, EffectStrength::STRONG);
+}
+
+void Player::onWorshipEvent(const Creature* who, const Deity* to, WorshipType type) {
+  if (who != creature)
+    return;
+  bool prayerAnswered = false;
+  for (EpithetId epithet : randomPermutation(to->getEpithets())) {
+    if (contains(usedEpithets, epithet))
+      continue;
+    bool noEffect = false;
+    switch (epithet) {
+      case EpithetId::DEATH: {
+          PCreature death = CreatureFactory::fromId(CreatureId::DEATH, Tribe::get(TribeId::KILL_EVERYONE));
+          for (Vec2 v : creature->getPosition().neighbors8(true))
+            if (creature->getLevel()->inBounds(v) && creature->getLevel()->getSquare(v)->canEnter(death.get())) {
+              creature->playerMessage("Death appears before you.");
+              creature->getLevel()->addCreature(v, std::move(death));
+              break;
+            }
+          if (death)
+            noEffect = true;
+          break; }
+      case EpithetId::WAR:
+          grantGift(creature, chooseRandom(
+          {ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}), to->getName()); break;
+/*      case EpithetId::WISDOM: grantGift(c, 
+          chooseRandom({ItemId::MUSHROOM_BOOK, ItemId::POTION_BOOK, ItemId::AMULET_BOOK}), name); break;*/
+      case EpithetId::DESTRUCTION: applyEffect(creature, EffectType::DESTROY_EQUIPMENT, ""); break;
+      case EpithetId::SECRETS: grantGift(creature, ItemId::INVISIBLE_POTION, to->getName()); break;
+      case EpithetId::LIGHTNING:
+          creature->bleed(0.9);
+          creature->you(MsgType::ARE, "struck by a lightning bolt!");
+          break;
+      case EpithetId::FEAR:
+          applyEffect(creature, EffectType::PANIC, to->getName() + " puts fear in your heart"); break;
+      case EpithetId::MIND: 
+          if (Random.roll(2))
+            applyEffect(creature, EffectType::RAGE, to->getName() + " fills your head with anger");
+          else
+            applyEffect(creature, EffectType::HALLU, "");
+          break;
+      case EpithetId::CHANGE:
+          if (Random.roll(2) && creature->getWeapon()) {
+            PCreature snake = CreatureFactory::fromId(CreatureId::SNAKE, Tribe::get(TribeId::PEST));
+            for (Vec2 v : creature->getPosition().neighbors8(true))
+              if (creature->getLevel()->inBounds(v) && creature->getLevel()->getSquare(v)->canEnter(snake.get())) {
+                creature->getLevel()->addCreature(v, std::move(snake));
+                creature->steal({creature->getEquipment().getItem(EquipmentSlot::WEAPON)});
+                creature->playerMessage("Ouch!");
+                creature->you(MsgType::YOUR, "weapon turns into a snake!");
+                break;
+              }
+            if (!snake)
+              break;
+          }
+          for (Item* it : randomPermutation(creature->getEquipment().getItems())) {
+            if (it->getType() == ItemType::POTION) {
+              creature->playerMessage("Your " + it->getName() + " changes color!");
+              creature->steal({it});
+              creature->take(ItemFactory::potions().random());
+              break;
+            }
+            if (it->getType() == ItemType::SCROLL) {
+              creature->playerMessage("Your " + it->getName() + " changes label!");
+              creature->steal({it});
+              creature->take(ItemFactory::scrolls().random());
+              break;
+            }
+            if (it->getType() == ItemType::AMULET) {
+              creature->playerMessage("Your " + it->getName() + " changes shape!");
+              creature->steal({it});
+              creature->take(ItemFactory::amulets().random());
+              break;
+            }
+          }
+          break;
+      case EpithetId::HEALTH:
+          if (creature->getHealth() < 1 || creature->lostOrInjuredBodyParts())
+            applyEffect(creature, EffectType::HEAL, "You feel a healing power overcoming you");
+          else {
+            if (Random.roll(4))
+              grantGift(creature, ItemId::HEALING_AMULET, to->getName());
+            else
+              grantGift(creature, ItemId::HEALING_POTION, to->getName(), Random.getRandom(1, 4));
+          }
+          break;
+      case EpithetId::NATURE: grantGift(creature, ItemId::FRIENDLY_ANIMALS_AMULET, to->getName()); break;
+//      case EpithetId::LOVE: grantGift(c, ItemId::PANIC_MUSHROOM, name); break;
+      case EpithetId::WEALTH:
+        grantGift(creature, ItemId::GOLD_PIECE, to->getName(), Random.getRandom(100, 200)); break;
+      case EpithetId::DEFENSE: grantGift(creature, ItemId::DEFENSE_AMULET, to->getName()); break;
+      case EpithetId::DARKNESS: applyEffect(creature, EffectType::BLINDNESS, ""); break;
+      case EpithetId::CRAFTS: applyEffect(creature,
+          chooseRandom({EffectType::ENHANCE_ARMOR, EffectType::ENHANCE_WEAPON}), ""); break;
+//      case EpithetId::HUNTING: grantGift(c, ItemId::PANIC_MUSHROOM, name); break;
+      default: noEffect = true;
+    }
+    usedEpithets.push_back(epithet);
+    if (!noEffect) {
+      prayerAnswered = true;
+      break;
+    }
+  }
+  if (!prayerAnswered)
+    creature->playerMessage("Your prayer is not answered.");
+}
+
 
 template <class Archive>
 void Player::registerTypes(Archive& ar) {

@@ -94,7 +94,10 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(flyingSectors)
     & SVAR(sectors)
     & SVAR(squareEfficiency)
-    & SVAR(surprises);
+    & SVAR(surprises)
+    & SVAR(techCostMultiplier)
+    & SVAR(warMultiplier)
+    & SVAR(craftingMultiplier);
   CHECK_SERIAL;
 }
 
@@ -1061,7 +1064,7 @@ int PlayerControl::getMinLibrarySize() const {
 double PlayerControl::getTechCost() {
   int numTech = technologies.size() - numFreeTech;
   int numDouble = 4;
-  return pow(2, double(numTech) / numDouble);
+  return techCostMultiplier * pow(2, double(numTech) / numDouble);
 }
 
 void PlayerControl::handleLibrary(View* view) {
@@ -1255,8 +1258,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto elem : resourceInfo)
     info.numResource.push_back({getResourceViewObject(elem.first), numResource(elem.first), elem.second.name});
   info.numResource.push_back({ViewObject::mana(), int(mana), "mana"});
- /* info.numResource.push_back({ViewObject(ViewId::DANGER, ViewLayer::CREATURE, ""), int(getDangerLevel()) + points,
-      "points"});*/
   if (attacking) {
     if (info.warning.empty())
       info.warning = NameGenerator::get(NameGeneratorId::INSULTS)->getNext();
@@ -1857,12 +1858,12 @@ void PlayerControl::onAppliedSquare(Vec2 pos) {
     c->increaseExpLevel(getEfficiency(pos) * (lev1 - double(c->getExpLevel() - 1) * (lev1 - lev10) / 9.0  ));
   }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
-    if (Random.rollD(30.0 / getEfficiency(pos))) {
+    if (craftingMultiplier * Random.rollD(30.0 / getEfficiency(pos))) {
       level->getSquare(pos)->dropItems(ItemFactory::laboratory(technologies).random());
       Statistics::add(StatId::POTION_PRODUCED);
     }
   if (mySquares.at(SquareType::WORKSHOP).count(pos))
-    if (Random.rollD(40.0 / getEfficiency(pos))) {
+    if (craftingMultiplier * Random.rollD(40.0 / getEfficiency(pos))) {
       set<TrapType> neededTraps = getNeededTraps();
       vector<PItem> items;
       for (int i : Range(10)) {
@@ -1896,6 +1897,14 @@ Vec2 PlayerControl::getDungeonCenter() const {
     return Vec2::getCenterOfWeight(vector<Vec2>(myTiles.begin(), myTiles.end()));
   else
     return keeper->getPosition();
+}
+
+double PlayerControl::getWarLevel() const {
+  double ret = 0;
+  for (const Creature* c : minions)
+    ret += c->getDifficultyPoints();
+  ret += mySquares.at(SquareType::IMPALED_HEAD).size() * 150;
+  return ret * warMultiplier;
 }
 
 double PlayerControl::getDangerLevel(bool includeExecutions) const {
@@ -2728,6 +2737,24 @@ void PlayerControl::updateEfficiency(Vec2 pos, SquareType type) {
         CHECK(squareEfficiency[v] >=0);
       }
   }
+}
+
+void PlayerControl::onWorshipEvent(const Creature* who, const Deity* to, WorshipType type) {
+  if (!contains(creatures, who))
+    return;
+  double multiplierBase;
+  switch (type) {
+    case WorshipType::PRAYER: multiplierBase = 0.999; break;
+    case WorshipType::SACRIFICE: multiplierBase = 0.95; break;
+  }
+  for (EpithetId id : to->getEpithets())
+    switch (id) {
+      case EpithetId::WISDOM: techCostMultiplier *= multiplierBase; break;
+      case EpithetId::WAR: warMultiplier /= multiplierBase; break;
+      case EpithetId::LOVE: warMultiplier *= multiplierBase; break;
+      case EpithetId::CRAFTS: craftingMultiplier /= multiplierBase; break;
+      default: break;
+    }
 }
 
 template <class Archive>

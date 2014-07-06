@@ -684,7 +684,7 @@ class DeityAltar : public Altar {
       c->playerMessage("This is a shrine to " + deity->getName());
       c->playerMessage(deity->getGender().he() + " lives in " + deity->getHabitatString());
       c->playerMessage(deity->getGender().he() + " is the " + deity->getGender().god() + " of "
-          + deity->getEpithets());
+          + deity->getEpithetsString());
     }
   }
 
@@ -693,10 +693,11 @@ class DeityAltar : public Altar {
   }
 
   virtual void onPrayer(Creature* c) override {
-    deity->onPrayer(c);
+    EventListener::addWorshipEvent(c, deity, WorshipType::PRAYER);
   }
 
   virtual void onSacrifice(Creature* c) override {
+    EventListener::addWorshipEvent(c, deity, WorshipType::SACRIFICE);
   }
 
   template <class Archive> 
@@ -729,10 +730,11 @@ class CreatureAltar : public Altar {
   }
 
   virtual void onPrayer(Creature* c) override {
+    EventListener::addWorshipCreatureEvent(c, creature, WorshipType::PRAYER);
   }
 
   virtual void onSacrifice(Creature* c) override {
-    EventListener::addSacrificeEvent(c, creature);
+    EventListener::addWorshipCreatureEvent(c, creature, WorshipType::SACRIFICE);
   }
 
   template <class Archive> 

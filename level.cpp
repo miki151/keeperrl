@@ -270,6 +270,15 @@ void Level::globalMessage(Vec2 position, const string& ifPlayerCanSee, const str
   }
 }
 
+void Level::globalMessage(const Creature* c, const string& ifPlayerCanSee, const string& cannot) const {
+  if (player) {
+    if (player->canSee(c))
+      globalMessage(c->getPosition(), ifPlayerCanSee, cannot);
+    else
+      globalMessage(c->getPosition(), cannot, "");
+  }
+}
+
 void Level::changeLevel(StairDirection dir, StairKey key, Creature* c) {
   Vec2 fromPosition = c->getPosition();
   removeElement(creatures, c);

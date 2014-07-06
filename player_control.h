@@ -70,9 +70,10 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   virtual void onAlarmEvent(const Level*, Vec2 pos) override;
   virtual void onTechBookEvent(Technology*) override;
   virtual void onEquipEvent(const Creature*, const Item*) override;
-  virtual void onPickupEvent(const Creature* c, const vector<Item*>& items);
-  virtual void onSurrenderEvent(Creature* who, const Creature* to);
-  virtual void onTortureEvent(Creature* who, const Creature* torturer);
+  virtual void onPickupEvent(const Creature* c, const vector<Item*>& items) override;
+  virtual void onSurrenderEvent(Creature* who, const Creature* to) override;
+  virtual void onTortureEvent(Creature* who, const Creature* torturer) override;
+  virtual void onWorshipEvent(const Creature* who, const Deity* to, WorshipType) override;
 
   void onConqueredLand(const string& name);
 
@@ -95,7 +96,7 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   bool isRetired() const;
   const Creature* getKeeper() const;
   Vec2 getDungeonCenter() const;
-  double getDangerLevel(bool includeExecutions = true) const;
+  double getWarLevel() const;
 
   void render(View*);
 
@@ -172,6 +173,8 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   static void registerTypes(Archive& ar);
 
   private:
+  double getDangerLevel(bool includeExecutions = true) const;
+  void onWorshipEpithet(EpithetId);
   Creature* addCreature(PCreature c, Vec2 v, MinionType);
   void importCreature(Creature* c, MinionType);
   Creature* getCreature(UniqueId id);
@@ -249,7 +252,9 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   int getMinLibrarySize() const;
   void acquireTech(Technology*, bool free = false);
   double getTechCost();
+  double SERIAL2(techCostMultiplier, 1);
   int SERIAL2(numFreeTech, 0);
+  double SERIAL2(craftingMultiplier, 1);
 
   typedef GameInfo::BandInfo::TechButton TechButton;
 
@@ -409,6 +414,7 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   map<Vec2, GuardPostInfo> SERIAL(guardPosts);
   double SERIAL(mana);
   int SERIAL2(points, 0);
+  double SERIAL2(warMultiplier, 1);
   Model* SERIAL(model);
   vector<const Creature*> SERIAL(kills);
   bool SERIAL2(showWelcomeMsg, true);

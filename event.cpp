@@ -131,9 +131,15 @@ void EventListener::addTortureEvent(Creature* c, const Creature* torturer) {
       l->onTortureEvent(c, torturer);
 }
   
-void EventListener::addSacrificeEvent(const Creature* c, const Creature* to) {
+void EventListener::addWorshipCreatureEvent(const Creature* c, const Creature* to, WorshipType type) {
   for (EventListener* l : listeners)
     if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
-      l->onSacrificeEvent(c, to);
+      l->onWorshipCreatureEvent(c, to, type);
+}
+
+void EventListener::addWorshipEvent(const Creature* c, const Deity* to, WorshipType type) {
+  for (EventListener* l : listeners)
+    if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
+      l->onWorshipEvent(c, to, type);
 }
 

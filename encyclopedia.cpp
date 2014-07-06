@@ -114,7 +114,7 @@ void tribes(View* view, int lastInd = 0) {
 void deity(View* view, const Deity* deity) {
   view->presentText(deity->getName(),
       "Lives in " + deity->getHabitatString() + " and is the " + deity->getGender().god() + " of "
-      + deity->getEpithets() + ".");
+      + deity->getEpithetsString() + ".");
 }
 
 void deities(View* view, int lastInd = 0) {

@@ -18,6 +18,7 @@
 
 #include "util.h"
 #include "gender.h"
+#include "singleton.h"
 
 enum class DeityHabitat {
   EARTH,
@@ -28,7 +29,7 @@ enum class DeityHabitat {
   WATER,
   STARS };
 
-enum class Epithet {
+enum class EpithetId {
   CHANGE,
   COURAGE,
   CRAFTS,
@@ -50,17 +51,37 @@ enum class Epithet {
   WEALTH,
   WINTER,
   WISDOM,
+
+  ENUM_END,
+};
+
+enum class WorshipType {
+  PRAYER,
+  SACRIFICE,
+};
+
+class Epithet : public Singleton<Epithet, EpithetId> {
+  public:
+  const string& getName() const;
+  const string& getDescription() const;
+
+  static void init();
+
+  private:
+  Epithet(const string& name, const string& description);
+  string name;
+  string description;
 };
 
 class Deity {
   public:
-  Deity(const string& name, Gender gender, const vector<Epithet>& epithets, DeityHabitat habitat);
-  string getName() const;
+  Deity(const string& name, Gender gender, const vector<EpithetId>& epithets, DeityHabitat habitat);
+  const string& getName() const;
   Gender getGender() const;
-  string getEpithets() const;
+  vector<EpithetId> getEpithets() const;
+  string getEpithetsString() const;
   string getHabitatString() const;
   DeityHabitat getHabitat() const;
-  void onPrayer(Creature* c);
 
   static Deity* getDeity(DeityHabitat);
   static vector<Deity*> getDeities();
@@ -77,8 +98,7 @@ class Deity {
   Deity(Deity&) {}
   string SERIAL(name);
   Gender SERIAL(gender);
-  vector<Epithet> SERIAL(epithets);
-  vector<Epithet> SERIAL(usedEpithets);
+  vector<EpithetId> SERIAL(epithets);
   DeityHabitat SERIAL(habitat);
 };
 

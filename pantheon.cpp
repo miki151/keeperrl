@@ -17,18 +17,15 @@
 
 #include "pantheon.h"
 #include "creature.h"
-#include "item_factory.h"
-#include "creature_factory.h"
 #include "level.h"
-#include "effect.h"
 #include "square.h"
+#include "name_generator.h"
 
 template <class Archive> 
 void Deity::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(name)
     & SVAR(gender)
     & SVAR(epithets)
-    & SVAR(usedEpithets)
     & SVAR(habitat);
   CHECK_SERIAL;
 }
@@ -37,28 +34,28 @@ SERIALIZABLE(Deity);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Deity);
 
-static map<DeityHabitat, vector<Epithet>> epithetsMap {
+static map<DeityHabitat, vector<EpithetId>> epithetsMap {
   { DeityHabitat::FIRE,   // fire elemental
-      { Epithet::WAR, Epithet::DEATH, Epithet::DESTRUCTION, Epithet::WEALTH,
-        Epithet::FEAR, Epithet::CRAFTS, Epithet::LIGHT, Epithet::DARKNESS }},
+      { EpithetId::WAR, EpithetId::DEATH, EpithetId::DESTRUCTION, EpithetId::WEALTH,
+        EpithetId::FEAR, EpithetId::CRAFTS, EpithetId::LIGHT, EpithetId::DARKNESS }},
   { DeityHabitat::EARTH, // earth elemental
-      { Epithet::HEALTH, Epithet::NATURE, Epithet::WINTER, Epithet::LOVE,
-        Epithet::WEALTH, Epithet::MIND, Epithet::CHANGE, Epithet::DEFENSE, Epithet::DARKNESS }},
+      { EpithetId::HEALTH, EpithetId::NATURE, EpithetId::WINTER, EpithetId::LOVE,
+        EpithetId::WEALTH, EpithetId::MIND, EpithetId::CHANGE, EpithetId::DEFENSE, EpithetId::DARKNESS }},
   { DeityHabitat::TREES, // ent?
-      { Epithet::HEALTH, Epithet::NATURE, Epithet::LOVE, Epithet::LIGHT,
-        Epithet::CHANGE, Epithet::CRAFTS, Epithet::HUNTING, Epithet::FORTUNE, Epithet::SECRETS,  }},
+      { EpithetId::HEALTH, EpithetId::NATURE, EpithetId::LOVE, EpithetId::LIGHT,
+        EpithetId::CHANGE, EpithetId::CRAFTS, EpithetId::HUNTING, EpithetId::FORTUNE, EpithetId::SECRETS,  }},
   { DeityHabitat::STONE, // ?
-      { Epithet::WISDOM, Epithet::WEALTH, Epithet::DEFENSE, Epithet::SECRETS, Epithet::DEATH,
-        Epithet::WINTER, }},
+      { EpithetId::WISDOM, EpithetId::WEALTH, EpithetId::DEFENSE, EpithetId::SECRETS, EpithetId::DEATH,
+        EpithetId::WINTER, }},
   { DeityHabitat::WATER, // water elemental
-      { Epithet::NATURE, Epithet::WISDOM, Epithet::WEALTH, Epithet::MIND, Epithet::DESTRUCTION,
-        Epithet::CHANGE, Epithet::DEFENSE, Epithet::FEAR, Epithet::COURAGE, Epithet::HEALTH,  }},
+      { EpithetId::NATURE, EpithetId::WISDOM, EpithetId::WEALTH, EpithetId::MIND, EpithetId::DESTRUCTION,
+        EpithetId::CHANGE, EpithetId::DEFENSE, EpithetId::FEAR, EpithetId::COURAGE, EpithetId::HEALTH,  }},
   { DeityHabitat::AIR, // air elemental
-      { Epithet::MIND, Epithet::LIGHTNING, Epithet::LIGHT, Epithet::CHANGE,
-        Epithet::FORTUNE, Epithet::FEAR, Epithet::COURAGE,  }},
+      { EpithetId::MIND, EpithetId::LIGHTNING, EpithetId::LIGHT, EpithetId::CHANGE,
+        EpithetId::FORTUNE, EpithetId::FEAR, EpithetId::COURAGE,  }},
   { DeityHabitat::STARS, // ?
-      { Epithet::DEATH, Epithet::WAR, Epithet::WINTER, Epithet::WISDOM, Epithet::LOVE,
-        Epithet::DARKNESS, Epithet::FORTUNE, Epithet::SECRETS,  }}
+      { EpithetId::DEATH, EpithetId::WAR, EpithetId::WINTER, EpithetId::WISDOM, EpithetId::LOVE,
+        EpithetId::DARKNESS, EpithetId::FORTUNE, EpithetId::SECRETS,  }}
 
 };
 
@@ -86,34 +83,42 @@ static map<DeityHabitat, vector<Epithet>> epithetsMap {
     WISDOM stars, water, stone
 */
 
-static string getEpithetString(Epithet epithet) {
-  switch (epithet) {
-    case Epithet::CHANGE: return "change";
-    case Epithet::COURAGE: return "courage"; // ?
-    case Epithet::CRAFTS: return "crafts";
-    case Epithet::DARKNESS: return "darkness";
-    case Epithet::DEATH: return "death";
-    case Epithet::DEFENSE: return "defense";
-    case Epithet::DESTRUCTION: return "destruction";
-    case Epithet::FEAR: return "fear";
-    case Epithet::FORTUNE: return "fortune"; // ?
-    case Epithet::HEALTH: return "health";
-    case Epithet::HUNTING: return "hunting"; // cos do polowania
-    case Epithet::LIGHT: return "light"; // ?
-    case Epithet::LIGHTNING: return "lightning";
-    case Epithet::LOVE: return "love"; // potion of love
-    case Epithet::MIND: return "mind";
-    case Epithet::NATURE: return "nature";
-    case Epithet::SECRETS: return "secrets";
-    case Epithet::WAR: return "war";
-    case Epithet::WEALTH: return "wealth";
-    case Epithet::WINTER: return "winter"; // zamarza level
-    case Epithet::WISDOM: return "wisdom";
-  }
-  return "";
+Epithet::Epithet(const string& n, const string& d) : name(n), description(d) {
 }
 
-string Deity::getName() const {
+void Epithet::init() {
+  set(EpithetId::CHANGE, new Epithet("change", ""));
+  set(EpithetId::COURAGE, new Epithet("courage", "")); // ?
+  set(EpithetId::CRAFTS, new Epithet("crafts", ""));
+  set(EpithetId::DARKNESS, new Epithet("darkness", ""));
+  set(EpithetId::DEATH, new Epithet("death", ""));
+  set(EpithetId::DEFENSE, new Epithet("defense", ""));
+  set(EpithetId::DESTRUCTION, new Epithet("destruction", ""));
+  set(EpithetId::FEAR, new Epithet("fear", ""));
+  set(EpithetId::FORTUNE, new Epithet("fortune", "")); // ?
+  set(EpithetId::HEALTH, new Epithet("health", ""));
+  set(EpithetId::HUNTING, new Epithet("hunting", "")); // cos do polowania
+  set(EpithetId::LIGHT, new Epithet("light", "")); // ?
+  set(EpithetId::LIGHTNING, new Epithet("lightning", ""));
+  set(EpithetId::LOVE, new Epithet("love", "")); // potion of love
+  set(EpithetId::MIND, new Epithet("mind", ""));
+  set(EpithetId::NATURE, new Epithet("nature", ""));
+  set(EpithetId::SECRETS, new Epithet("secrets", ""));
+  set(EpithetId::WAR, new Epithet("war", ""));
+  set(EpithetId::WEALTH, new Epithet("wealth", ""));
+  set(EpithetId::WINTER, new Epithet("winter", "")); // zamarza level
+  set(EpithetId::WISDOM, new Epithet("wisdom", ""));
+}
+
+const string& Epithet::getName() const {
+  return name;
+}
+
+const string& Epithet::getDescription() const {
+  return description;
+}
+
+const string& Deity::getName() const {
   return name;
 }
 
@@ -121,10 +126,14 @@ Gender Deity::getGender() const {
   return gender;
 }
 
-string Deity::getEpithets() const {
+vector<EpithetId> Deity::getEpithets() const {
+  return epithets;
+}
+
+string Deity::getEpithetsString() const {
   vector<string> v;
-  for (Epithet e : epithets)
-    v.push_back(getEpithetString(e));
+  for (EpithetId e : epithets)
+    v.push_back(Epithet::get(e)->getName());
   return combine(v);
 }
 
@@ -149,128 +158,17 @@ string Deity::getHabitatString() const {
   return toString(habitat);
 }
 
-static void grantGift(Creature* c, ItemId id, string deity, int num = 1) {
-  c->playerMessage(deity + " grants you a gift.");
-  c->takeItems(ItemFactory::fromId(id, num), nullptr);
-}
-
-static void applyEffect(Creature* c, EffectType effect, string msg) {
-  c->playerMessage(msg);
-  Effect::applyToCreature(c, effect, EffectStrength::STRONG);
-}
-
-void Deity::onPrayer(Creature* c) {
-  bool prayerAnswered = false;
-  for (Epithet epithet : randomPermutation(epithets)) {
-    if (contains(usedEpithets, epithet))
-      continue;
-    bool noEffect = false;
-    switch (epithet) {
-      case Epithet::DEATH: {
-          PCreature death = CreatureFactory::fromId(CreatureId::DEATH, Tribe::get(TribeId::KILL_EVERYONE));
-          for (Vec2 v : c->getPosition().neighbors8(true))
-            if (c->getLevel()->inBounds(v) && c->getLevel()->getSquare(v)->canEnter(death.get())) {
-              c->playerMessage("Death appears before you.");
-              c->getLevel()->addCreature(v, std::move(death));
-              break;
-            }
-          if (death)
-            noEffect = true;
-          break; }
-      case Epithet::WAR:
-          grantGift(c, chooseRandom(
-          {ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}), name); break;
-/*      case Epithet::WISDOM: grantGift(c, 
-          chooseRandom({ItemId::MUSHROOM_BOOK, ItemId::POTION_BOOK, ItemId::AMULET_BOOK}), name); break;*/
-      case Epithet::DESTRUCTION: applyEffect(c, EffectType::DESTROY_EQUIPMENT, ""); break;
-      case Epithet::SECRETS: grantGift(c, ItemId::INVISIBLE_POTION, name); break;
-      case Epithet::LIGHTNING:
-          c->bleed(0.9);
-          c->you(MsgType::ARE, "struck by a lightning bolt!");
-          break;
-      case Epithet::FEAR: applyEffect(c, EffectType::PANIC, name + " puts fear in your heart"); break;
-      case Epithet::MIND: 
-          if (Random.roll(2))
-            applyEffect(c, EffectType::RAGE, name + " fills your head with anger");
-          else
-            applyEffect(c, EffectType::HALLU, "");
-          break;
-      case Epithet::CHANGE:
-          if (Random.roll(2) && c->getWeapon()) {
-            PCreature snake = CreatureFactory::fromId(CreatureId::SNAKE, Tribe::get(TribeId::PEST));
-            for (Vec2 v : c->getPosition().neighbors8(true))
-              if (c->getLevel()->inBounds(v) && c->getLevel()->getSquare(v)->canEnter(snake.get())) {
-                c->getLevel()->addCreature(v, std::move(snake));
-                c->steal({c->getEquipment().getItem(EquipmentSlot::WEAPON)});
-                c->playerMessage("Ouch!");
-                c->you(MsgType::YOUR, "weapon turns into a snake!");
-                break;
-              }
-            if (!snake)
-              break;
-          }
-          for (Item* it : randomPermutation(c->getEquipment().getItems())) {
-            if (it->getType() == ItemType::POTION) {
-              c->playerMessage("Your " + it->getName() + " changes color!");
-              c->steal({it});
-              c->take(ItemFactory::potions().random());
-              break;
-            }
-            if (it->getType() == ItemType::SCROLL) {
-              c->playerMessage("Your " + it->getName() + " changes label!");
-              c->steal({it});
-              c->take(ItemFactory::scrolls().random());
-              break;
-            }
-            if (it->getType() == ItemType::AMULET) {
-              c->playerMessage("Your " + it->getName() + " changes shape!");
-              c->steal({it});
-              c->take(ItemFactory::amulets().random());
-              break;
-            }
-          }
-          break;
-      case Epithet::HEALTH:
-          if (c->getHealth() < 1 || c->lostOrInjuredBodyParts())
-            applyEffect(c, EffectType::HEAL, "You feel a healing power overcoming you");
-          else {
-            if (Random.roll(4))
-              grantGift(c, ItemId::HEALING_AMULET, name);
-            else
-              grantGift(c, ItemId::HEALING_POTION, name, Random.getRandom(1, 4));
-          }
-          break;
-      case Epithet::NATURE: grantGift(c, ItemId::FRIENDLY_ANIMALS_AMULET, name); break;
-//      case Epithet::LOVE: grantGift(c, ItemId::PANIC_MUSHROOM, name); break;
-      case Epithet::WEALTH: grantGift(c, ItemId::GOLD_PIECE, name, Random.getRandom(100, 200)); break;
-      case Epithet::DEFENSE: grantGift(c, ItemId::DEFENSE_AMULET, name); break;
-      case Epithet::DARKNESS: applyEffect(c, EffectType::BLINDNESS, ""); break;
-      case Epithet::CRAFTS: applyEffect(c,
-          chooseRandom({EffectType::ENHANCE_ARMOR, EffectType::ENHANCE_WEAPON}), ""); break;
-//      case Epithet::HUNTING: grantGift(c, ItemId::PANIC_MUSHROOM, name); break;
-      default: noEffect = true;
-    }
-    usedEpithets.push_back(epithet);
-    if (!noEffect) {
-      prayerAnswered = true;
-      break;
-    }
-  }
-  if (!prayerAnswered)
-    c->playerMessage("Your prayer is not answered.");
-}
-
 vector<Deity*> generateDeities() {
-  set<Epithet> used;
+  set<EpithetId> used;
   vector<Deity*> ret;
   for (auto elem : epithetsMap) {
     string deity = NameGenerator::get(NameGeneratorId::DEITY)->getNext();
     Gender gend = Gender::male;
     if ((deity.back() == 'a' || deity.back() == 'i') && !Random.roll(4))
       gend = Gender::female;
-    vector<Epithet> ep;
+    vector<EpithetId> ep;
     for (int i : Range(Random.getRandom(1, 4))) {
-      Epithet epithet;
+      EpithetId epithet;
       int cnt = 100;
       do {
         epithet = chooseRandom(elem.second);
@@ -302,7 +200,7 @@ Deity* Deity::getDeity(DeityHabitat h) {
 }
  
 vector<Deity*> Deity::deities;
-Deity::Deity(const string& n, Gender g, const vector<Epithet>& e, DeityHabitat h) :
+Deity::Deity(const string& n, Gender g, const vector<EpithetId>& e, DeityHabitat h) :
     name(n), gender(g), epithets(e), habitat(h) {
 }
 

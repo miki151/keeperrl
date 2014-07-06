@@ -398,12 +398,12 @@ Vec2 Creature::getPosition() const {
 }
 
 void Creature::globalMessage(const string& playerCanSee, const string& cant) const {
-  level->globalMessage(position, playerCanSee, cant);
+  level->globalMessage(this, playerCanSee, cant);
 }
 
 void Creature::monsterMessage(const string& playerCanSee, const string& cant) const {
   if (!isPlayer())
-    level->globalMessage(position, playerCanSee, cant);
+    level->globalMessage(this, playerCanSee, cant);
 }
 
 void Creature::addSkill(Skill* skill) {

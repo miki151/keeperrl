@@ -139,8 +139,13 @@ class Level {
   /** Checks if the player can see a given creature.*/
   bool playerCanSee(const Creature*) const;
 
-  /** Displays \paramname{playerCanSee} message if the player can see position \paramname{pos}, and \paramname{cannot} otherwise.*/
+  /** Displays \paramname{playerCanSee} message if the player can see position \paramname{pos},
+    and \paramname{cannot} otherwise.*/
   void globalMessage(Vec2 position, const string& playerCanSee, const string& cannot = "") const;
+
+  /** Displays \paramname{playerCanSee} message if the player can see the creature, 
+    and \paramname{cannot} otherwise.*/
+  void globalMessage(const Creature*, const string& ifPlayerCanSee, const string& cannot) const;
 
   /** Returns the player creature.*/
   const Creature* getPlayer() const;

@@ -29,7 +29,7 @@ class Creature;
 
 class Player : public Controller, public EventListener {
   public:
-  Player(Creature*, Model*, bool displayGreeting, map<Level*, MapMemory>* levelMemory);
+  Player(Creature*, Model*, bool adventureMode, map<Level*, MapMemory>* levelMemory);
   virtual ~Player();
   virtual void grantIdentify(int numItems) override;
 
@@ -61,6 +61,7 @@ class Player : public Controller, public EventListener {
   virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) override;
   virtual void onExplosionEvent(const Level* level, Vec2 pos) override;
   virtual void onAlarmEvent(const Level*, Vec2 pos) override;
+  virtual void onWorshipEvent(const Creature* who, const Deity* to, WorshipType) override;
 
   SERIALIZATION_DECL(Player);
 
@@ -104,6 +105,8 @@ class Player : public Controller, public EventListener {
   const Location* SERIAL2(lastLocation, nullptr);
   vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);
+  bool SERIAL(adventureMode);
+  vector<EpithetId> SERIAL(usedEpithets);
 };
 
 #endif

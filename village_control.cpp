@@ -24,6 +24,7 @@
 #include "model.h"
 #include "creature.h"
 #include "collective.h"
+#include "pantheon.h"
 
 template <class Archive>
 void VillageControl::serialize(Archive& ar, const unsigned int version) {
@@ -171,7 +172,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
   }
 
   double getCurrentTrigger(double time) {
-    double enemyPoints = killedCoeff * killedPoints + powerCoeff * (control->getVillain()->getDangerLevel()
+    double enemyPoints = killedCoeff * killedPoints + powerCoeff * (control->getVillain()->getWarLevel()
       + max(0.0, (time - 1000) / 2));
     Debug() << "Village " << control->getName() << " enemy points " << enemyPoints;
     double currentTrigger = 0;
@@ -489,9 +490,12 @@ class DragonControl : public VillageControl {
     VillageControl::onKillEvent(victim, killer);
   }
 
-  virtual void onSacrificeEvent(const Creature* who, const Creature* to) {
+  virtual void onWorshipCreatureEvent(const Creature* who, const Creature* to, WorshipType type) {
     if (to == getOnlyElement(getCollective()->getCreatures()))
-      pleased += 1;
+      switch (type) {
+        case WorshipType::PRAYER: pleased += 0.01;
+        case WorshipType::SACRIFICE: pleased += 1;
+      }
   }
 
   SERIALIZATION_CONSTRUCTOR(DragonControl);
