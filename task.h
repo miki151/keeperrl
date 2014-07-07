@@ -70,9 +70,9 @@ class Task : public UniqueEntity {
   Vec2 getPosition();
 
   static PTask construction(Callback*, Vec2 target, SquareType);
-  static PTask bringItem(Callback*, Vec2 position, vector<Item*>, Vec2 target);
+  static PTask bringItem(Callback*, Vec2 position, vector<Item*>, vector<Vec2> target);
   static PTask applyItem(Callback* col, Vec2 position, Item* item, Vec2 target);
-  static PTask applySquare(Callback*, set<Vec2> squares);
+  static PTask applySquare(Callback*, vector<Vec2> squares);
   static PTask eat(Callback*, set<Vec2> hatcherySquares);
   static PTask equipItem(Callback* col, Vec2 position, Item* item);
   static PTask unEquipItem(Callback* col, Vec2 position, Item* item);

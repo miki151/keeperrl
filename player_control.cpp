@@ -503,7 +503,7 @@ vector<TaskOption> taskOptions {
   {MinionTask::WORKSHOP, PlayerControl::MinionOption::WORKSHOP, "Workshop"},
   {MinionTask::LABORATORY, PlayerControl::MinionOption::LAB, "Lab"},
   {MinionTask::STUDY, PlayerControl::MinionOption::STUDY, "Study"},
-  {MinionTask::WORSHIP, PlayerControl::MinionOption::STUDY, "Worship"},
+  {MinionTask::WORSHIP, PlayerControl::MinionOption::WORSHIP, "Worship"},
 };
 
 void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
@@ -2017,15 +2017,6 @@ bool PlayerControl::isDelayed(Vec2 pos) {
   return delayedPos.count(pos) && delayedPos.at(pos) > getTime();
 }
 
-set<Vec2> PlayerControl::getMySquares(const vector<SquareType>& types) const {
-  set<Vec2> ret;
-  for (SquareType t : types) {
-    const set<Vec2>& s = mySquares.at(t);
-    ret.insert(s.begin(), s.end());
-  }
-  return ret;
-}
-
 void PlayerControl::setWarning(Warning w, bool state) {
   warning[int(w)] = state;
 }
@@ -2044,7 +2035,7 @@ void PlayerControl::tick(double time) {
   setWarning(Warning::DIGGING, mySquares.at(SquareType::FLOOR).empty());
   setWarning(Warning::MINIONS, getNumMinions() <= 1);
   for (auto elem : getTaskInfo())
-    if (!getMySquares(elem.second.squares).empty() && elem.second.warning)
+    if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
       setWarning(*elem.second.warning, false);
   setWarning(Warning::NO_WEAPONS, false);
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
@@ -2129,21 +2120,6 @@ void PlayerControl::tick(double time) {
   }
 }
 
-static Vec2 chooseRandomClose(Vec2 start, const vector<Vec2>& squares) {
-  int minD = 10000;
-  int margin = 5;
-  int a;
-  vector<Vec2> close;
-  for (Vec2 v : squares)
-    if ((a = v.dist8(start)) < minD)
-      minD = a;
-  for (Vec2 v : squares)
-    if (v.dist8(start) < minD + margin)
-      close.push_back(v);
-  CHECK(!close.empty());
-  return chooseRandom(close);
-}
-
 void PlayerControl::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed) {
   if ((isDelayed(pos) && !ignoreDelayed) 
       || (traps.count(pos) && traps.at(pos).type == TrapType::BOULDER && traps.at(pos).armed == true))
@@ -2158,8 +2134,7 @@ void PlayerControl::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed)
       setWarning(elem.warning, false);
       if (elem.oneAtATime)
         equipment = {equipment[0]};
-      Vec2 target = chooseRandomClose(pos, destination);
-      taskMap.addTask(Task::bringItem(this, pos, equipment, target));
+      taskMap.addTask(Task::bringItem(this, pos, equipment, destination));
       for (Item* it : equipment)
         markItem(it);
     } else
@@ -2417,7 +2392,7 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
     if (auto action = c->moveTowards(chooseRandom(myTiles)))
       return {1.0, action};
   MinionTaskInfo info = getTaskInfo().at(minionTasks.at(c->getUniqueId()).getState());
-  if (getMySquares(info.squares).empty()) {
+  if (getAllSquares(info.squares).empty()) {
     minionTasks.at(c->getUniqueId()).updateToNext();
     if (info.warning)
       setWarning(*info.warning, true);
@@ -2425,7 +2400,7 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
   }
   if (info.warning)
     setWarning(*info.warning, false);
-  taskMap.addTask(Task::applySquare(this, getMySquares(info.squares)), c);
+  taskMap.addTask(Task::applySquare(this, getAllSquares(info.squares)), c);
   minionTaskStrings[c->getUniqueId()] = info.desc;
   return taskMap.getTask(c)->getMove(c);
 }

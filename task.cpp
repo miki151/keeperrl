@@ -292,10 +292,25 @@ PTask Task::equipItem(Callback* col, Vec2 position, Item* items) {
   return PTask(new EquipItem(col, position, {items}));
 }
 
+static Vec2 chooseRandomClose(Vec2 start, const vector<Vec2>& squares) {
+  int minD = 10000;
+  int margin = 5;
+  int a;
+  vector<Vec2> close;
+  for (Vec2 v : squares)
+    if ((a = v.dist8(start)) < minD)
+      minD = a;
+  for (Vec2 v : squares)
+    if (v.dist8(start) < minD + margin)
+      close.push_back(v);
+  CHECK(!close.empty());
+  return chooseRandom(close);
+}
+
 class BringItem : public PickItem {
   public:
-  BringItem(Callback* col, Vec2 position, vector<Item*> items, Vec2 _target)
-      : PickItem(col, position, items), target(_target) {}
+  BringItem(Callback* col, Vec2 position, vector<Item*> items, vector<Vec2> _target)
+      : PickItem(col, position, items), target(chooseRandomClose(position, _target)) {}
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) {
     return c->drop(it);
@@ -348,14 +363,14 @@ class BringItem : public PickItem {
 
 };
 
-PTask Task::bringItem(Callback* col, Vec2 position, vector<Item*> items, Vec2 target) {
+PTask Task::bringItem(Callback* col, Vec2 position, vector<Item*> items, vector<Vec2> target) {
   return PTask(new BringItem(col, position, items, target));
 }
 
 class ApplyItem : public BringItem {
   public:
   ApplyItem(Callback* col, Vec2 position, vector<Item*> items, Vec2 _target) 
-      : BringItem(col, position, items, _target) {}
+      : BringItem(col, position, items, {_target}) {}
 
   virtual void cancel() override {
     getCallback()->onAppliedItemCancel(target);
@@ -387,7 +402,7 @@ PTask Task::applyItem(Callback* col, Vec2 position, Item* item, Vec2 target) {
 
 class ApplySquare : public Task {
   public:
-  ApplySquare(Callback* col, set<Vec2> pos) : Task(col, Vec2(-1, 1)), positions(pos) {}
+  ApplySquare(Callback* col, vector<Vec2> pos) : Task(col, Vec2(-1, 1)), positions(pos) {}
 
   virtual bool canTransfer() override {
     return false;
@@ -400,17 +415,13 @@ class ApplySquare : public Task {
   virtual MoveInfo getMove(Creature* c) override {
     Vec2 pos = getPosition();
     if (pos.x == -1) {
-      pos = Vec2(-10000, -10000);
-      for (Vec2 v : randomPermutation(positions))
-        if (!rejectedPosition.count(v) &&
-            (pos - c->getPosition()).length8() > (v - c->getPosition()).length8() &&
-            !c->getLevel()->getSquare(v)->getCreature())
-          pos = v;
-      if (pos.x == -10000) {
+      vector<Vec2> candidates = filter(positions, [&](Vec2 v) { return !rejectedPosition.count(v); });
+      if (!candidates.empty())
+        setPosition(chooseRandomClose(c->getPosition(), candidates));
+      else {
         setDone();
         return NoMove;
       }
-      setPosition(pos);
     }
     if (c->getPosition() == getPosition()) {
       if (auto action = c->applySquare())
@@ -424,7 +435,8 @@ class ApplySquare : public Task {
       }
     } else {
       MoveInfo move = getMoveToPosition(c);
-      if (!move || ((getPosition() - c->getPosition()).length8() == 1 && c->getLevel()->getSquare(getPosition())->getCreature())) {
+      if (!move || ((getPosition() - c->getPosition()).length8() == 1
+            && c->getLevel()->getSquare(getPosition())->getCreature())) {
         rejectedPosition.insert(getPosition());
         setPosition(Vec2(-1, -1));
         if (--invalidCount == 0) {
@@ -449,12 +461,12 @@ class ApplySquare : public Task {
   SERIALIZATION_CONSTRUCTOR(ApplySquare);
 
   private:
-  set<Vec2> SERIAL(positions);
+  vector<Vec2> SERIAL(positions);
   set<Vec2> SERIAL(rejectedPosition);
   int SERIAL2(invalidCount, 5);
 };
 
-PTask Task::applySquare(Callback* col, set<Vec2> position) {
+PTask Task::applySquare(Callback* col, vector<Vec2> position) {
   CHECK(position.size() > 0);
   return PTask(new ApplySquare(col, position));
 }

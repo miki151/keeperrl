@@ -165,7 +165,7 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   void setWarning(Warning w, bool state = true);
 
   enum class MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, EXECUTE, LABOR, TRAINING,
-    WORKSHOP, LAB, STUDY };
+    WORKSHOP, LAB, STUDY, WORSHIP };
 
   SERIALIZATION_DECL(PlayerControl);
 
@@ -389,7 +389,6 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   map<UniqueId, MarkovChain<MinionTask>> SERIAL(minionTasks);
   map<UniqueId, string> SERIAL(minionTaskStrings);
   unordered_map<SquareType, set<Vec2>> SERIAL(mySquares);
-  set<Vec2> getMySquares(const vector<SquareType>& types) const;
   map<Vec2, int> SERIAL(squareEfficiency);
   void updateEfficiency(Vec2, SquareType);
   double getEfficiency(Vec2) const;
