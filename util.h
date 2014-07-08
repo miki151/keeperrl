@@ -1053,6 +1053,66 @@ class EnumAll {
 
 #define ENUM_ALL(X) EnumAll<X>()
 
+template <typename U, typename V>
+class BiMap {
+  public:
+  bool contains(const U& u) const {
+    return m1.count(u);
+  }
+
+  bool contains(const V& v) const {
+    return m2.count(v);
+  }
+
+  void insert(const U& u, const V& v) {
+    CHECK(!m1.count(u));
+    CHECK(!m2.count(v));
+    m1[u] = v;
+    m2[v] = u;
+  }
+
+  void erase(const U& u) {
+    CHECK(m1.count(u));
+    m2.erase(m1.at(u));
+    m1.erase(u);
+  }
+
+  void erase(const V& v) {
+    CHECK(m2.count(v));
+    m1.erase(m2.at(v));
+    m2.erase(v);
+  }
+
+  V& get(const U& u) {
+    CHECK(m1.count(u));
+    return m1.at(u);
+  }
+
+  U& get(const V& v) {
+    CHECK(m2.count(v));
+    return m2.at(v);
+  }
+
+  const V& get(const U& u) const {
+    CHECK(m1.count(u));
+    return m1.at(u);
+  }
+
+  const U& get(const V& v) const {
+    CHECK(m2.count(v));
+    return m2.at(v);
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(m1) & SVAR(m2);
+  }
+
+  private:
+  map<U, V> m1;
+  map<V, U> m2;
+};
+
 class Semaphore {
   public:
   Semaphore(int val = 0);

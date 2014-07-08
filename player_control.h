@@ -341,7 +341,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   class TaskMap : public Task::Mapping {
     public:
-    Task* addTaskCost(PTask, CostInfo);
+    Task* addTaskCost(PTask, Vec2 pos, CostInfo);
     void markSquare(Vec2 pos, PTask);
     void unmarkSquare(Vec2 pos);
     Task* getMarked(Vec2 pos) const;

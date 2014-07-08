@@ -25,7 +25,6 @@
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(UniqueEntity)
-    & SVAR(position)
     & SVAR(done)
     & SVAR(callback);
   CHECK_SERIAL;
@@ -45,19 +44,15 @@ template <class Archive>
 
 void Task::Mapping::serialize(Archive& ar, const unsigned int version) {
   ar& BOOST_SERIALIZATION_NVP(tasks)
-    & BOOST_SERIALIZATION_NVP(taken)
-    & BOOST_SERIALIZATION_NVP(taskMap);
+    & BOOST_SERIALIZATION_NVP(positionMap)
+    & BOOST_SERIALIZATION_NVP(creatureMap);
 }
 
 SERIALIZABLE(Task::Mapping);
 
-Task::Task(Callback* call, Vec2 pos) : position(pos), callback(call) {}
+Task::Task(Callback* call) : callback(call) {}
 
 Task::~Task() {
-}
-
-Vec2 Task::getPosition() {
-  return position;
 }
 
 Task::Callback* Task::getCallback() {
@@ -80,76 +75,87 @@ void Task::setDone() {
   done = true;
 }
 
-void Task::setPosition(Vec2 pos) {
-  position = pos;
-}
-
 void Task::Mapping::removeTask(Task* task) {
   for (int i : All(tasks))
     if (tasks[i].get() == task) {
       removeIndex(tasks, i);
       break;
     }
-  if (taken.count(task)) {
-    taskMap.erase(taken.at(task));
-    taken.erase(task);
-  }
+  if (creatureMap.contains(task))
+    creatureMap.erase(task);
+  if (positionMap.count(task))
+    positionMap.erase(task);
 }
 
 void Task::Mapping::removeTask(UniqueId id) {
   for (PTask& task : tasks)
     if (task->getUniqueId() == id) {
       removeTask(task.get());
+      break;
     }
 }
 
 Task* Task::Mapping::getTask(const Creature* c) const {
-  if (taskMap.count(c))
-    return taskMap.at(c);
+  if (creatureMap.contains(c))
+    return creatureMap.get(c);
   else
     return nullptr;
 }
 
 Task* Task::Mapping::addTask(PTask task, const Creature* c) {
-  if (c) {
-    taken[task.get()] = c;
-    taskMap[c] = task.get();
-  }
+  creatureMap.insert(c, task.get());
+  tasks.push_back(std::move(task));
+  return tasks.back().get();
+}
+
+Task* Task::Mapping::addTask(PTask task, Vec2 position) {
+  positionMap[task.get()] = position;
   tasks.push_back(std::move(task));
   return tasks.back().get();
 }
 
 void Task::Mapping::takeTask(const Creature* c, Task* task) {
   freeTask(task);
-  taskMap[c] = task;
-  taken[task] = c;
+  creatureMap.insert(c, task);
+}
+
+Optional<Vec2> Task::Mapping::getPosition(Task* task) const {
+  if (positionMap.count(task))
+    return positionMap.at(task);
+  else
+    return Nothing();
+}
+
+const Creature* Task::Mapping::getOwner(Task* task) const {
+  if (creatureMap.contains(task))
+    return creatureMap.get(task);
+  else
+    return nullptr;
 }
 
 void Task::Mapping::freeTask(Task* task) {
-  if (taken.count(task)) {
-    taskMap.erase(taken.at(task));
-    taken.erase(task);
-  }
+  if (creatureMap.contains(task))
+    creatureMap.erase(task);
 }
 
 class Construction : public Task {
   public:
-  Construction(Callback* col, Vec2 position, SquareType _type) : Task(col, position), type(_type) {}
+  Construction(Callback* col, Vec2 pos, SquareType _type) : Task(col), type(_type), position(pos) {}
 
   virtual bool isImpossible(const Level* level) {
-    return !level->getSquare(getPosition())->canConstruct(type);
+    return !level->getSquare(position)->canConstruct(type);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
     if (!c->hasSkill(Skill::get(SkillId::CONSTRUCTION)))
       return NoMove;
-    Vec2 dir = getPosition() - c->getPosition();
+    Vec2 dir = position - c->getPosition();
     if (dir.length8() == 1) {
       if (auto action = c->construct(dir, type))
         return {1.0, action.append([=] {
           if (!c->construct(dir, type)) {
             setDone();
-            getCallback()->onConstructed(getPosition(), type);
+            getCallback()->onConstructed(position, type);
           }
         })};
       else {
@@ -157,12 +163,13 @@ class Construction : public Task {
         return NoMove;
       }
     } else
-        return getMoveToPosition(c);
+        return c->moveTowards(position);
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Task)
+      & SVAR(position)
       & SVAR(type);
     CHECK_SERIAL;
   }
@@ -171,6 +178,7 @@ class Construction : public Task {
 
   private:
   SquareType SERIAL(type);
+  Vec2 SERIAL(position);
 };
 
 
@@ -178,18 +186,9 @@ PTask Task::construction(Callback* col, Vec2 target, SquareType type) {
   return PTask(new Construction(col, target, type));
 }
   
-MoveInfo Task::getMoveToPosition(Creature *c, bool stepOnTile) {
-  if (auto action = c->moveTowards(position, stepOnTile))
-    return {1.0, action};
-  else
-    return NoMove;
-}
-
 class PickItem : public Task {
   public:
-  PickItem(Callback* col, Vec2 position, vector<Item*> _items) 
-      : Task(col, position), items(_items) {
-  }
+  PickItem(Callback* col, Vec2 pos, vector<Item*> _items) : Task(col), items(_items), position(pos) {}
 
   virtual void onPickedUp() {
     setDone();
@@ -199,9 +198,13 @@ class PickItem : public Task {
     return false;
   }
 
+  Vec2 getPosition() {
+    return position;
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(!pickedUp);
-    if (c->getPosition() == getPosition()) {
+    if (c->getPosition() == position) {
       vector<Item*> hereItems;
       for (Item* it : c->getPickUpOptions())
         if (items.contains(it)) {
@@ -218,7 +221,7 @@ class PickItem : public Task {
         return {1.0, action.append([=] {
           pickedUp = true;
           onPickedUp();
-          getCallback()->onPickedUp(getPosition(), hereItems);
+          getCallback()->onPickedUp(position, hereItems);
         })}; 
       else {
         getCallback()->onCantPickItem(items);
@@ -226,8 +229,8 @@ class PickItem : public Task {
         return NoMove;
       }
     }
-    if (MoveInfo move = getMoveToPosition(c, true))
-      return move;
+    if (auto action = c->moveTowards(position, true))
+      return action;
     else if (--tries == 0) {
       getCallback()->onCantPickItem(items);
       setDone();
@@ -239,7 +242,9 @@ class PickItem : public Task {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Task)
       & SVAR(items)
-      & SVAR(pickedUp);
+      & SVAR(pickedUp)
+      & SVAR(position)
+      & SVAR(tries);
     CHECK_SERIAL;
   }
   
@@ -248,7 +253,8 @@ class PickItem : public Task {
   protected:
   EntitySet SERIAL(items);
   bool SERIAL2(pickedUp, false);
-  int tries = 10;
+  Vec2 SERIAL(position);
+  int SERIAL2(tries, 10);
 };
 
 PTask Task::pickItem(Callback* col, Vec2 position, vector<Item*> items) {
@@ -318,7 +324,6 @@ class BringItem : public PickItem {
   virtual MoveInfo getMove(Creature* c) override {
     if (!pickedUp)
       return PickItem::getMove(c);
-    setPosition(target);
     if (c->getPosition() == target) {
       vector<Item*> myItems = c->getEquipment().getItems(items.containsPredicate());
       if (auto action = getBroughtAction(c, myItems))
@@ -332,7 +337,7 @@ class BringItem : public PickItem {
         if (Creature* other = c->getLevel()->getSquare(target)->getCreature())
           if (other->isAffected(LastingEffect::SLEEP))
             other->removeEffect(LastingEffect::SLEEP);
-      return getMoveToPosition(c);
+      return c->moveTowards(target);
     }
   }
 
@@ -351,7 +356,6 @@ class BringItem : public PickItem {
 
   protected:
   Vec2 SERIAL(target);
-
 };
 
 PTask Task::bringItem(Callback* col, Vec2 position, vector<Item*> items, vector<Vec2> target) {
@@ -388,24 +392,23 @@ PTask Task::applyItem(Callback* col, Vec2 position, Item* item, Vec2 target) {
 
 class ApplySquare : public Task {
   public:
-  ApplySquare(Callback* col, vector<Vec2> pos) : Task(col, Vec2(-1, 1)), positions(pos) {}
+  ApplySquare(Callback* col, vector<Vec2> pos) : Task(col), positions(pos) {}
 
   virtual bool canTransfer() override {
     return false;
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    Vec2 pos = getPosition();
-    if (pos.x == -1) {
+    if (position.x == -1) {
       vector<Vec2> candidates = filter(positions, [&](Vec2 v) { return !rejectedPosition.count(v); });
       if (!candidates.empty())
-        setPosition(chooseRandomClose(c->getPosition(), candidates));
+        position = chooseRandomClose(c->getPosition(), candidates);
       else {
         setDone();
         return NoMove;
       }
     }
-    if (c->getPosition() == getPosition()) {
+    if (c->getPosition() == position) {
       if (auto action = c->applySquare())
         return {1.0, action.append([=] {
             setDone();
@@ -416,11 +419,11 @@ class ApplySquare : public Task {
         return NoMove;
       }
     } else {
-      MoveInfo move = getMoveToPosition(c);
-      if (!move || ((getPosition() - c->getPosition()).length8() == 1
-            && c->getLevel()->getSquare(getPosition())->getCreature())) {
-        rejectedPosition.insert(getPosition());
-        setPosition(Vec2(-1, -1));
+      MoveInfo move(c->moveTowards(position));
+      if (!move || (position.dist8(c->getPosition()) == 1
+            && c->getLevel()->getSquare(position)->getCreature())) {
+        rejectedPosition.insert(position);
+        position = Vec2(-1, -1);
         if (--invalidCount == 0) {
           setDone();
         }
@@ -436,7 +439,8 @@ class ApplySquare : public Task {
     ar& SUBCLASS(Task)
       & SVAR(positions)
       & SVAR(rejectedPosition)
-      & SVAR(invalidCount);
+      & SVAR(invalidCount)
+      & SVAR(position)
     CHECK_SERIAL;
   }
   
@@ -446,6 +450,7 @@ class ApplySquare : public Task {
   vector<Vec2> SERIAL(positions);
   set<Vec2> SERIAL(rejectedPosition);
   int SERIAL2(invalidCount, 5);
+  Vec2 SERIAL2(position, Vec2(-1, -1));
 };
 
 PTask Task::applySquare(Callback* col, vector<Vec2> position) {
@@ -458,7 +463,7 @@ namespace {
 class Kill : public Task {
   public:
   enum Type { ATTACK, TORTURE };
-  Kill(Callback* callback, Creature* c, Type t) : Task(callback, Vec2(-1, -1)), creature(c), type(t) {}
+  Kill(Callback* callback, Creature* c, Type t) : Task(callback), creature(c), type(t) {}
 
   CreatureAction getAction(Creature* c) {
     switch (type) {

@@ -40,8 +40,12 @@ class Task : public UniqueEntity {
 
   class Mapping {
     public:
-    Task* addTask(PTask, const Creature* = nullptr);
+    Task* addTask(PTask, const Creature*);
+    Task* addTask(PTask, Vec2);
     Task* getTask(const Creature*) const;
+    Task* getTask(Vec2) const;
+    const Creature* getOwner(Task*) const;
+    Optional<Vec2> getPosition(Task*) const;
     void removeTask(Task*);
     void removeTask(UniqueId);
     void takeTask(const Creature*, Task*);
@@ -53,12 +57,12 @@ class Task : public UniqueEntity {
     SERIAL_CHECKER;
 
     protected:
-    map<Task*, const Creature*> SERIAL(taken);
-    map<const Creature*, Task*> SERIAL(taskMap);
+    BiMap<const Creature*, Task*> SERIAL(creatureMap);
+    map<Task*, Vec2> SERIAL(positionMap);
     vector<PTask> SERIAL(tasks);
   };
 
-  Task(Callback*, Vec2 position);
+  Task(Callback*);
   virtual ~Task();
 
   virtual MoveInfo getMove(Creature*) = 0;
@@ -66,8 +70,6 @@ class Task : public UniqueEntity {
   virtual bool canTransfer();
   virtual void cancel() {}
   bool isDone();
-
-  Vec2 getPosition();
 
   static PTask construction(Callback*, Vec2 target, SquareType);
   static PTask bringItem(Callback*, Vec2 position, vector<Item*>, vector<Vec2> target);
@@ -87,12 +89,9 @@ class Task : public UniqueEntity {
 
   protected:
   void setDone();
-  void setPosition(Vec2);
-  MoveInfo getMoveToPosition(Creature*, bool stepOnTile = false);
   Callback* getCallback();
 
   private:
-  Vec2 SERIAL(position);
   bool SERIAL2(done, false);
   Callback* SERIAL(callback);
 };

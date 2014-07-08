@@ -1362,9 +1362,9 @@ Vec2 PlayerControl::getPosition() const {
 
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
-Task* PlayerControl::TaskMap::addTaskCost(PTask task, CostInfo cost) {
+Task* PlayerControl::TaskMap::addTaskCost(PTask task, Vec2 position, CostInfo cost) {
   completionCost[task.get()] = cost;
-  return Task::Mapping::addTask(std::move(task));
+  return Task::Mapping::addTask(std::move(task), position);
 }
 
 PlayerControl::CostInfo PlayerControl::TaskMap::removeTask(Task* task) {
@@ -1373,8 +1373,9 @@ PlayerControl::CostInfo PlayerControl::TaskMap::removeTask(Task* task) {
     cost = completionCost.at(task);
     completionCost.erase(task);
   }
-  if (marked.count(task->getPosition()))
-    marked.erase(task->getPosition());
+  if (auto pos = getPosition(task))
+    if (marked.count(*pos))
+      marked.erase(*pos);
   Task::Mapping::removeTask(task);
   return cost;
 }
@@ -1407,14 +1408,14 @@ Task* PlayerControl::TaskMap::getMarked(Vec2 pos) const {
 }
 
 void PlayerControl::TaskMap::markSquare(Vec2 pos, PTask task) {
-  addTask(std::move(task));
-  marked[pos] = tasks.back().get();
+  marked[pos] = task.get();
+  addTask(std::move(task), pos);
 }
 
 void PlayerControl::TaskMap::unmarkSquare(Vec2 pos) {
-  Task* t = marked.at(pos);
-  removeTask(t);
+  Task* task = marked.at(pos);
   marked.erase(pos);
+  removeTask(task);
 }
 
 int PlayerControl::numResource(ResourceId id) const {
@@ -1968,7 +1969,8 @@ void PlayerControl::updateConstructions() {
       vector<pair<Item*, Vec2>>& items = trapItems.at(elem.second.type);
       if (!items.empty()) {
         if (!elem.second.armed && elem.second.marked <= getTime()) {
-          taskMap.addTask(Task::applyItem(this, items.back().second, items.back().first, elem.first));
+          Vec2 pos = items.back().second;
+          taskMap.addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
           markItem(items.back().first);
           items.pop_back();
           traps[elem.first].marked = getTime() + timeToBuild;
@@ -1980,7 +1982,7 @@ void PlayerControl::updateConstructions() {
       if ((warning[int(resourceInfo.at(elem.second.cost.id).warning)]
           = (numResource(elem.second.cost.id) < elem.second.cost.value)))
         continue;
-      elem.second.task = taskMap.addTaskCost(Task::construction(this, elem.first, elem.second.type),
+      elem.second.task = taskMap.addTaskCost(Task::construction(this, elem.first, elem.second.type), elem.first,
           elem.second.cost)->getUniqueId();
       elem.second.marked = getTime() + timeToBuild;
       takeResource(elem.second.cost);
@@ -2136,7 +2138,7 @@ void PlayerControl::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed)
       setWarning(elem.warning, false);
       if (elem.oneAtATime)
         equipment = {equipment[0]};
-      taskMap.addTask(Task::bringItem(this, pos, equipment, destination));
+      taskMap.addTask(Task::bringItem(this, pos, equipment, destination), pos);
       for (Item* it : equipment)
         markItem(it);
     } else
@@ -2414,18 +2416,19 @@ bool PlayerControl::underAttack() const {
 Task* PlayerControl::TaskMap::getTaskForImp(Creature* c) {
   Task* closest = nullptr;
   for (PTask& task : tasks) {
-    double dist = (task->getPosition() - c->getPosition()).length8();
-    if ((!taken.count(task.get()) || (task->canTransfer() 
-                                && (task->getPosition() - taken.at(task.get())->getPosition()).length8() > dist))
-        && (!closest ||
-           dist < (closest->getPosition() - c->getPosition()).length8())
-        && !isLocked(c, task.get())
-        && (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
-      bool valid = task->getMove(c);
-      if (valid)
-        closest = task.get();
-      else
-        lock(c, task.get());
+    if (auto pos = getPosition(task.get())) {
+      double dist = (*pos - c->getPosition()).length8();
+      const Creature* owner = getOwner(task.get());
+      if ((!owner || (task->canTransfer() && (*pos - owner->getPosition()).length8() > dist))
+          && (!closest || dist < (*getPosition(closest) - c->getPosition()).length8())
+          && !isLocked(c, task.get())
+          && (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
+        bool valid = task->getMove(c);
+        if (valid)
+          closest = task.get();
+        else
+          lock(c, task.get());
+      }
     }
   }
   return closest;
