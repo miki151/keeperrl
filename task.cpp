@@ -64,6 +64,14 @@ Task::Callback* Task::getCallback() {
   return callback;
 }
 
+bool Task::isImpossible(const Level*) {
+  return false;
+}
+
+bool Task::canTransfer() {
+  return true;
+}
+
 bool Task::isDone() {
   return done;
 }
@@ -132,10 +140,6 @@ class Construction : public Task {
     return !level->getSquare(getPosition())->canConstruct(type);
   }
 
-  virtual string getInfo() override {
-    return string("construct ") + typeid(type).name() + " " + convertToString(getPosition());
-  }
-
   virtual MoveInfo getMove(Creature* c) override {
     if (!c->hasSkill(Skill::get(SkillId::CONSTRUCTION)))
       return NoMove;
@@ -193,10 +197,6 @@ class PickItem : public Task {
 
   virtual bool canTransfer() override {
     return false;
-  }
-
-  virtual string getInfo() override {
-    return "pick item " + convertToString(getPosition());
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -263,10 +263,6 @@ class EquipItem : public PickItem {
   virtual void onPickedUp() override {
   }
 
-  virtual string getInfo() override {
-    return "equip item " + convertToString(getPosition());
-  }
-
   virtual MoveInfo getMove(Creature* c) override {
     if (!pickedUp)
       return PickItem::getMove(c);
@@ -314,11 +310,6 @@ class BringItem : public PickItem {
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) {
     return c->drop(it);
-  }
-
-  virtual string getInfo() override {
-    return "bring item from " + convertToString(getPosition())
-      + " to " + convertToString(target);
   }
 
   virtual void onPickedUp() override {
@@ -376,11 +367,6 @@ class ApplyItem : public BringItem {
     getCallback()->onAppliedItemCancel(target);
   }
 
-  virtual string getInfo() override {
-    return "apply item from " + convertToString(getPosition()) +
-      " to " + convertToString(target);
-  }
-
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) override {
     Item* item = getOnlyElement(it);
     return c->applyItem(item).prepend([=] {
@@ -406,10 +392,6 @@ class ApplySquare : public Task {
 
   virtual bool canTransfer() override {
     return false;
-  }
-
-  virtual string getInfo() override {
-    return "apply square ";
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -469,6 +451,59 @@ class ApplySquare : public Task {
 PTask Task::applySquare(Callback* col, vector<Vec2> position) {
   CHECK(position.size() > 0);
   return PTask(new ApplySquare(col, position));
+}
+
+namespace {
+
+class Kill : public Task {
+  public:
+  enum Type { ATTACK, TORTURE };
+  Kill(Callback* callback, Creature* c, Type t) : Task(callback, Vec2(-1, -1)), creature(c), type(t) {}
+
+  CreatureAction getAction(Creature* c) {
+    switch (type) {
+      case ATTACK: return c->attack(creature);
+      case TORTURE: return c->torture(creature);
+    }
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (auto action = getAction(c))
+      return action.append([=] { if (creature->isDead()) setDone(); });
+    else
+      return c->moveTowards(creature->getPosition());
+  }
+
+  virtual void cancel() override {
+    getCallback()->onKillCancelled(creature);
+  }
+
+  virtual bool canTransfer() override {
+    return false;
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Task)
+      & SVAR(creature);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Kill);
+
+  private:
+  Creature* SERIAL(creature);
+  Type SERIAL(type);
+};
+
+}
+
+PTask Task::kill(Callback* callback, Creature* creature) {
+  return PTask(new Kill(callback, creature, Kill::ATTACK));
+}
+
+PTask Task::torture(Callback* callback, Creature* creature) {
+  return PTask(new Kill(callback, creature, Kill::TORTURE));
 }
 
 template <class Archive>

@@ -160,7 +160,7 @@ SERIALIZABLE(PlayerControl::CostInfo);
 template <class Archive>
 void PlayerControl::PrisonerInfo::serialize(Archive& ar, const unsigned int version) {
   ar& BOOST_SERIALIZATION_NVP(state)
-    & BOOST_SERIALIZATION_NVP(attender);
+    & BOOST_SERIALIZATION_NVP(marked);
 }
 
 SERIALIZABLE(PlayerControl::PrisonerInfo);
@@ -517,6 +517,7 @@ void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, ve
         case PrisonerInfo::EXECUTE:
           lOpt = {View::ListElem("Execution ordered", View::TITLE)};
           break;
+        case PrisonerInfo::TORTURE:
         case PrisonerInfo::PRISON:
           mOpt = {MinionOption::PRISON, MinionOption::TORTURE, MinionOption::EXECUTE, MinionOption::LABOR };
           lOpt = {"Send to prison", "Torture", "Execute", "Send to labor" };
@@ -590,11 +591,12 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
       return;
     case MinionOption::TORTURE:
       setMinionType(creature, MinionType::PRISONER);
+      prisonerInfo.at(creature) = {PrisonerInfo::TORTURE, false};
       setMinionTask(creature, MinionTask::TORTURE);
       return;
     case MinionOption::EXECUTE:
       setMinionType(creature, MinionType::PRISONER);
-      prisonerInfo.at(creature) = {PrisonerInfo::EXECUTE, nullptr};
+      prisonerInfo.at(creature) = {PrisonerInfo::EXECUTE, false};
       minionTaskStrings[creature->getUniqueId()] = "execution";
       break;
     case MinionOption::LABOR:
@@ -2231,7 +2233,7 @@ void PlayerControl::onPickupEvent(const Creature* c, const vector<Item*>& items)
 
 void PlayerControl::onSurrenderEvent(Creature* who, const Creature* to) {
   if (contains(getCreatures(), to) && !contains(getCreatures(), who) && !prisonerInfo.count(who) && !who->isAnimal())
-    prisonerInfo[who] = {PrisonerInfo::SURRENDER, nullptr};
+    prisonerInfo[who] = {PrisonerInfo::SURRENDER, false};
 }
 
 void PlayerControl::onTortureEvent(Creature* who, const Creature* torturer) {
@@ -2319,32 +2321,17 @@ MoveInfo PlayerControl::getDropItems(Creature *c) {
   return NoMove;   
 }
 
-MoveInfo PlayerControl::getExecutionMove(Creature* c) {
-  if (contains({MinionType::BEAST, MinionType::PRISONER, MinionType::KEEPER}, getMinionType(c)))
-    return NoMove;
-  for (auto& elem : prisonerInfo)
-    if (contains(getCreatures(), elem.first) 
-        && (elem.second.attender == c || !elem.second.attender || elem.second.attender->isDead())) {
-      if (elem.second.state == PrisonerInfo::EXECUTE) {
-        elem.second.attender = c;
-        if (auto action = c->attack(elem.first))
-          return {1.0, action};
-        else if (auto action = c->moveTowards(elem.first->getPosition()))
-          return {1.0, action};
-        else
-          return NoMove;
-      }
-      if (getMinionTask(elem.first) == MinionTask::TORTURE) {
-        elem.second.attender = c;
-        if (auto action = c->torture(elem.first))
-          return {1.0, action};
-        else if (auto action = c->moveTowards(elem.first->getPosition()))
-          return {1.0, action};
-        else
-          return NoMove;
-      }
-    }
-  return NoMove;
+PTask PlayerControl::getPrisonerTask(Creature* prisoner) {
+  switch (prisonerInfo.at(prisoner).state) {
+    case PrisonerInfo::EXECUTE: return Task::kill(this, prisoner);
+    case PrisonerInfo::TORTURE: return Task::torture(this, prisoner);
+    default: return nullptr;
+  }
+}
+
+void PlayerControl::onKillCancelled(Creature* c) {
+  if (prisonerInfo.count(c))
+    prisonerInfo.at(c).marked = false;
 }
 
 MoveInfo PlayerControl::getMinionMove(Creature* c) {
@@ -2359,8 +2346,6 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
     return dropMove;
   if (contains(minionByType.at(MinionType::BEAST), c))
     return getBeastMove(c);
-  if (MoveInfo execMove = getExecutionMove(c))
-    return execMove;
   if (MoveInfo guardPostMove = getGuardPostMove(c))
     return guardPostMove;
   if (Task* task = taskMap.getTask(c)) {
@@ -2382,6 +2367,15 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
           t = Task::pickItem(this, v, {it});
         if (t->getMove(c)) {
           taskMap.addTask(std::move(t), c);
+          return taskMap.getTask(c)->getMove(c);
+        }
+      }
+  if (!contains({MinionType::BEAST, MinionType::PRISONER, MinionType::KEEPER}, getMinionType(c)))
+    for (auto& elem : prisonerInfo)
+      if (!elem.second.marked) {
+        if (PTask t = getPrisonerTask(elem.first)) {
+          taskMap.addTask(std::move(t), c);
+          elem.second.marked = true;
           return taskMap.getTask(c)->getMove(c);
         }
       }
@@ -2568,7 +2562,7 @@ void PlayerControl::addCreature(Creature* c, MinionType type) {
   for (const Item* item : c->getEquipment().getItems())
     minionEquipment.own(c, item);
   if (type == MinionType::PRISONER)
-    prisonerInfo[c] = {PrisonerInfo::PRISON, nullptr};
+    prisonerInfo[c] = {PrisonerInfo::PRISON, false};
 }
 
 // actually only called when square is destroyed

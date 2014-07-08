@@ -1199,6 +1199,7 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
 }
 
 CreatureAction Creature::attack(const Creature* c1, Optional<AttackLevel> attackLevel1, bool spend) {
+  CHECK(!c1->isDead());
   Creature* c = const_cast<Creature*>(c1);
   if (c->getPosition().dist8(position) != 1)
     return CreatureAction();

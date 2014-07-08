@@ -33,6 +33,7 @@ class Task : public UniqueEntity {
     virtual void onAppliedItemCancel(Vec2 pos) {}
     virtual void onPickedUp(Vec2 pos, EntitySet) {}
     virtual void onCantPickItem(EntitySet items) {}
+    virtual void onKillCancelled(Creature*) {}
 
     SERIALIZATION_DECL(Callback);
   };
@@ -61,9 +62,8 @@ class Task : public UniqueEntity {
   virtual ~Task();
 
   virtual MoveInfo getMove(Creature*) = 0;
-  virtual string getInfo() = 0;
-  virtual bool isImpossible(const Level*) { return false; }
-  virtual bool canTransfer() { return true; }
+  virtual bool isImpossible(const Level*);
+  virtual bool canTransfer();
   virtual void cancel() {}
   bool isDone();
 
@@ -71,12 +71,14 @@ class Task : public UniqueEntity {
 
   static PTask construction(Callback*, Vec2 target, SquareType);
   static PTask bringItem(Callback*, Vec2 position, vector<Item*>, vector<Vec2> target);
-  static PTask applyItem(Callback* col, Vec2 position, Item* item, Vec2 target);
+  static PTask applyItem(Callback*, Vec2 position, Item* item, Vec2 target);
   static PTask applySquare(Callback*, vector<Vec2> squares);
   static PTask eat(Callback*, set<Vec2> hatcherySquares);
-  static PTask equipItem(Callback* col, Vec2 position, Item* item);
-  static PTask unEquipItem(Callback* col, Vec2 position, Item* item);
-  static PTask pickItem(Callback* col, Vec2 position, vector<Item*> items);
+  static PTask equipItem(Callback*, Vec2 position, Item* item);
+  static PTask unEquipItem(Callback*, Vec2 position, Item* item);
+  static PTask pickItem(Callback*, Vec2 position, vector<Item*> items);
+  static PTask kill(Callback*, Creature*);
+  static PTask torture(Callback*, Creature*);
 
   SERIALIZATION_DECL(Task);
 

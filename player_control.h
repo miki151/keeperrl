@@ -94,6 +94,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void onAppliedItemCancel(Vec2 pos) override;
   virtual void onPickedUp(Vec2 pos, EntitySet) override;
   virtual void onCantPickItem(EntitySet items) override;
+  virtual void onKillCancelled(Creature*) override;
 
   bool isRetired() const;
   const Creature* getKeeper() const;
@@ -269,7 +270,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   MoveInfo getBeastMove(Creature* c);
   MoveInfo getMinionMove(Creature* c);
   MoveInfo getGuardPostMove(Creature* c);
-  MoveInfo getExecutionMove(Creature* c);
   MoveInfo getPossessedMove(Creature* c);
   MoveInfo getBacktrackMove(Creature* c);
   MoveInfo getAlarmMove(Creature* c);
@@ -431,11 +431,12 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
     void serialize(Archive& ar, const unsigned int version);
   } SERIAL(alarmInfo);
   struct PrisonerInfo {
-    enum State { SURRENDER, PRISON, EXECUTE } state;
-    const Creature* attender;
+    enum State { SURRENDER, PRISON, EXECUTE, TORTURE } state;
+    bool marked;
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
   };
+  PTask getPrisonerTask(Creature* prisoner);
   map<Creature*, PrisonerInfo> SERIAL(prisonerInfo);
   int SERIAL2(executions, 0);
   unique_ptr<Sectors> SERIAL(sectors);
