@@ -294,6 +294,11 @@ static void setHandicap(Tribe* tribe, bool easy) {
     tribe->setHandicap(0);
 }
 
+Collective* Model::getNewCollective() {
+  collectives.push_back(PCollective(new Collective()));
+  return collectives.back().get();
+}
+
 Model* Model::heroModel(View* view) {
   Model* m = new Model(view);
   m->adventurer = true;
@@ -301,18 +306,18 @@ Model* Model::heroModel(View* view) {
   Level* top = m->prepareTopLevel({
       {SettlementType::CASTLE, CreatureFactory::humanCastle(), Random.getRandom(10, 20),
         getVillageLocation(), Tribe::get(TribeId::HUMAN), BuildingId::BRICK, {StairKey::CASTLE_CELLAR}, {},
-          CreatureId::CASTLE_GUARD, Nothing(), ItemFactory::villageShop(), new Collective()},
+          CreatureId::CASTLE_GUARD, Nothing(), ItemFactory::villageShop(), m->getNewCollective()},
       {SettlementType::VILLAGE, CreatureFactory::lizardTown(), Random.getRandom(5, 10),
           getVillageLocation(), Tribe::get(TribeId::LIZARD), BuildingId::MUD, {}, {}, Nothing(), Nothing(),
-          ItemFactory::mushrooms(), new Collective()},
+          ItemFactory::mushrooms(), m->getNewCollective()},
       {SettlementType::VILLAGE2, CreatureFactory::elvenVillage(), Random.getRandom(10, 20),
           getVillageLocation(), Tribe::get(TribeId::ELVEN), BuildingId::WOOD, {}, {}, Nothing(), Nothing(), Nothing(),
-          new Collective()},
+          m->getNewCollective()},
       {SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::WITCH),
-      1, new Location(), nullptr, BuildingId::WOOD, {}, {}, Nothing(), Nothing(), Nothing(), new Collective()},
+      1, new Location(), nullptr, BuildingId::WOOD, {}, {}, Nothing(), Nothing(), Nothing(), m->getNewCollective()},
       {SettlementType::COTTAGE, CreatureFactory::singleType(Tribe::get(TribeId::BANDIT), CreatureId::BANDIT),
       Random.getRandom(4, 7), banditLocation, Tribe::get(TribeId::BANDIT), BuildingId::WOOD, {}, {}, Nothing(),
-      Nothing(), Nothing(), new Collective()}
+      Nothing(), Nothing(), m->getNewCollective()}
       });
   Quest::get(QuestId::BANDITS)->setLocation(banditLocation);
   Level* d1 = m->buildLevel(
@@ -320,13 +325,13 @@ Model* Model::heroModel(View* view) {
       LevelMaker::mineTownLevel({SettlementType::MINETOWN, CreatureFactory::dwarfTown(),
           Random.getRandom(10, 20), getVillageLocation(), Tribe::get(TribeId::DWARVEN),
           BuildingId::BRICK, {StairKey::DWARF}, {StairKey::DWARF}, Nothing(), Nothing(), ItemFactory::dwarfShop(),
-          new Collective()}));
+          m->getNewCollective()}));
   Level* g1 = m->buildLevel(
       Level::Builder(60, 35, "Goblin Den"),
       LevelMaker::mineTownLevel({SettlementType::MINETOWN, CreatureFactory::goblinTown(1),
           Random.getRandom(10, 20), getVillageLocation(), Tribe::get(TribeId::GOBLIN),
           BuildingId::BRICK, {}, {StairKey::DWARF}, Nothing(), Nothing(), ItemFactory::goblinShop(),
-          new Collective()}));
+          m->getNewCollective()}));
   vector<Level*> gnomish;
   int numGnomLevels = 8;
  // int towerLinkIndex = Random.getRandom(1, numGnomLevels - 1);

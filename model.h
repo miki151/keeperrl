@@ -89,6 +89,7 @@ class Model : public EventListener {
   Encyclopedia keeperopedia;
 
   private:
+  Collective* getNewCollective();  
   void updateSunlightInfo();
   PCreature makePlayer();
   const Creature* getPlayer() const;
