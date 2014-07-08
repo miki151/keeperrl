@@ -97,7 +97,8 @@ class Creature : private CreatureAttributes, public CreatureView, public UniqueE
   Vision* getVision() const;
   void onKillEvent(const Creature* victim, const Creature* killer) override;
 
-  virtual Tribe* getTribe() const override;
+  virtual const Tribe* getTribe() const override;
+  Tribe* getTribe();
   bool isFriend(const Creature*) const;
   void addEnemyCheck(EnemyCheck*);
   void removeEnemyCheck(EnemyCheck*);

@@ -57,7 +57,7 @@ class Tribe : public EventListener, public Singleton<Tribe, TribeId> {
   void addMember(const Creature*);
   void removeMember(const Creature*);
   void setLeader(const Creature*);
-  const Creature* getLeader();
+  const Creature* getLeader() const;
   vector<const Creature*> getMembers(bool includeDead = false);
   const string& getName() const;
   void addEnemy(Tribe*);

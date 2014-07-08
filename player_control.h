@@ -46,9 +46,9 @@ class Model;
 class Technology;
 class View;
 
-class PlayerControl : public CreatureView, public EventListener, public Task::Callback {
+class PlayerControl : public CreatureView, public CollectiveControl, public EventListener, public Task::Callback {
   public:
-  PlayerControl(Model*, Level*, Tribe*);
+  PlayerControl(Collective*, Model*, Level*);
   virtual const MapMemory& getMemory() const override;
   MapMemory& getMemory(Level* l);
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
@@ -57,7 +57,8 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   virtual bool canSee(const Creature*) const  override;
   virtual bool canSee(Vec2 position) const  override;
   virtual vector<const Creature*> getUnknownAttacker() const override;
-  virtual Tribe* getTribe() const override;
+  virtual const Tribe* getTribe() const override;
+  Tribe* getTribe();
   virtual bool isEnemy(const Creature*) const override;
 
   virtual bool staticPosition() const override;
@@ -76,6 +77,7 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   virtual void onWorshipEvent(const Creature* who, const Deity* to, WorshipType) override;
 
   void onConqueredLand(const string& name);
+  void onCreatureKilled(const Creature* victim, const Creature* killer) override;
 
   void processInput(View* view, UserInput);
   void tick(double);
@@ -333,7 +335,6 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   };
 
   map<MinionTask, MinionTaskInfo> getTaskInfo() const;
-  vector<Creature*> SERIAL(creatures);
   vector<Creature*> SERIAL(minions);
   unordered_map<MinionType, vector<Creature*>> SERIAL(minionByType);
   EntitySet SERIAL(markedItems);
@@ -423,7 +424,6 @@ class PlayerControl : public CreatureView, public EventListener, public Task::Ca
   double SERIAL2(lastControlKeeperQuestion, -100);
   int SERIAL2(startImpNum, -1);
   bool SERIAL2(retired, false);
-  Tribe* SERIAL2(tribe, nullptr);
   struct AlarmInfo {
     double finishTime = -1000;
     Vec2 position;

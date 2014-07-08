@@ -33,7 +33,6 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(location)
     & SVAR(name)
     & SVAR(atWar)
-    & SVAR(taskMap)
   CHECK_SERIAL;
 }
 
@@ -50,16 +49,6 @@ SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
 VillageControl::~VillageControl() {
 }
 
-Tribe* VillageControl::getTribe() {
-  CHECK(!getCreatures().empty());
-  return getCreatures()[0]->getTribe();
-}
-
-const Tribe* VillageControl::getTribe() const {
-  CHECK(!getCreatures().empty());
-  return getCreatures()[0]->getTribe();
-}
-
 const string& VillageControl::getName() const {
   return name;
 }
@@ -73,14 +62,6 @@ bool VillageControl::isAnonymous() const {
 }
 
 void VillageControl::tick(double time) {
-}
-
-vector<Creature*>& VillageControl::getCreatures() {
-  return getCollective()->getCreatures();
-}
-
-const vector<Creature*>& VillageControl::getCreatures() const {
-  return getCollective()->getCreatures();
 }
 
 class AttackTrigger {
@@ -105,27 +86,32 @@ class AttackTrigger {
   VillageControl* SERIAL(control);
 };
 
-vector<Creature*> VillageControl::getAliveCreatures() const {
-  return filter(getCreatures(), [](const Creature* c) { return !c->isDead(); });
-}
-
 bool VillageControl::currentlyAttacking() const {
   return false;
 }
 
 bool VillageControl::isConquered() const {
-  return getAliveCreatures().empty();
+  return getCreatures().empty();
 }
+
+Tribe* VillageControl::getTribe() {
+  return getCollective()->getTribe();
+}
+
+const Tribe* VillageControl::getTribe() const {
+  return getCollective()->getTribe();
+}
+
 
 static int expLevelFun(double time) {
   return max(0.0, time - 1000) / 500;
 }
 
-void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
+void VillageControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
   if ((victim->getTribe() == getTribe() && (!killer ||  killer->getTribe() == Tribe::get(TribeId::KEEPER)))
       || (victim->getTribe() == Tribe::get(TribeId::KEEPER) && killer && killer->getTribe() == getTribe()))
     atWar = true;
-  if (contains(getCreatures(), victim) && !isAnonymous() && getAliveCreatures().empty())
+  if (!isAnonymous() && getCreatures().empty())
       messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
 }
 
@@ -203,7 +189,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
   }
 
   virtual void tick(double time) override {
-    if (control->getAliveCreatures().empty())
+    if (control->getCreatures().empty())
       return;
     if (lastAttack >= time - attackDelay || lastMyAttack >= time - myAttacksDelay)
       return;
@@ -216,7 +202,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
     if (lastAttackPoints < currentTrigger) {
       lastMyAttack = time;
       int numCreatures = 0;
-      for (const Creature* c : getSorted(getSorted(getFighting())))
+      for (const Creature* c : getSorted(getFighting()))
         if (!fightingCreatures.count(c) && !c->isDead()) {
           ++numCreatures;
           fightingCreatures.insert(c);
@@ -351,19 +337,17 @@ class PeacefulControl : public VillageControl {
         beds.push_back(v);
   }
 
-  virtual MoveInfo getMove(Creature* c) override {
-    if (Task* task = taskMap.getTask(c)) {
-      if (task->isDone()) {
-        taskMap.removeTask(task);
-      } else
-        return task->getMove(c);
-    }
+  virtual PTask getNewTask(Creature* c) override {
     if (c->getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::NIGHT 
         && !c->isAffected(LastingEffect::SLEEP) && c->isHumanoid()) {
       for (Vec2 v : beds)
         if (c->getLevel()->getSquare(v)->canEnter(c))
-          return taskMap.addTask(Task::applySquare(this, {v}), c)->getMove(c);
+          return Task::applySquare(this, {v});
     }
+    return nullptr;
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
     if (auto action = c->stayIn(location))
       return {1.0, action};
     else
@@ -405,7 +389,7 @@ class TopLevelVillageControl : public PeacefulControl {
 
   virtual void tick(double time) override {
     attackTrigger->tick(time);
-    for (Creature* c : getAliveCreatures())
+    for (Creature* c : getCreatures())
       if (c->getExpLevel() < expLevelFun(time))
         c->increaseExpLevel(1);
   }
@@ -423,7 +407,7 @@ class TopLevelVillageControl : public PeacefulControl {
   }
 
   virtual bool currentlyAttacking() const override {
-    for (const Creature* c : getAliveCreatures())
+    for (const Creature* c : getCreatures())
       if (attackTrigger->startedAttack(c))
         return true;
     return false;
@@ -485,13 +469,13 @@ class DragonControl : public VillageControl {
   }
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override {
-    if (killer == getOnlyElement(getCollective()->getCreatures()))
+    if (contains(getCollective()->getCreatures(), killer))
       pleased += 1;
     VillageControl::onKillEvent(victim, killer);
   }
 
   virtual void onWorshipCreatureEvent(const Creature* who, const Creature* to, WorshipType type) {
-    if (to == getOnlyElement(getCollective()->getCreatures()))
+    if (contains(getCollective()->getCreatures(), to))
       switch (type) {
         case WorshipType::PRAYER: pleased += 0.01;
         case WorshipType::SACRIFICE: pleased += 1;

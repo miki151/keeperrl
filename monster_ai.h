@@ -87,14 +87,12 @@ class MonsterAI {
 };
 
 class Collective;
-class PlayerControl;
 
 class MonsterAIFactory {
   public:
   PMonsterAI getMonsterAI(Creature* c);
 
   static MonsterAIFactory collective(Collective*);
-  static MonsterAIFactory playerControl(PlayerControl*);
   static MonsterAIFactory monster();
   static MonsterAIFactory stayInLocation(Location*, bool moveRandomly = true);
   static MonsterAIFactory guardSquare(Vec2 pos);

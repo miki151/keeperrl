@@ -21,6 +21,21 @@ const Collective* CollectiveControl::getCollective() const {
   return NOTNULL(collective);
 }
 
+PTask CollectiveControl::getNewTask(Creature*) {
+  return nullptr;
+}
+
+vector<Creature*>& CollectiveControl::getCreatures() {
+  return getCollective()->getCreatures();
+}
+
+const vector<Creature*>& CollectiveControl::getCreatures() const {
+  return getCollective()->getCreatures();
+}
+
+void CollectiveControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
+}
+
 CollectiveControl::~CollectiveControl() {
 }
 

@@ -22,6 +22,7 @@
 #include "collective_control.h"
 
 class Tribe;
+class PlayerControl;
 
 struct VillageControlInfo {
   enum Id { PEACEFUL, POWER_BASED, POWER_BASED_DISCOVER, FINAL_ATTACK, DRAGON } id;
@@ -40,7 +41,7 @@ class VillageControl : public EventListener, public Task::Callback, public Colle
   virtual bool currentlyAttacking() const;
   virtual void tick(double time) override;
 
-  virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
+  virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
 
   GameInfo::VillageInfo::Village getVillageInfo() const;
 
@@ -57,20 +58,18 @@ class VillageControl : public EventListener, public Task::Callback, public Colle
   template <class Archive>
   static void registerTypes(Archive& ar);
 
-  vector<Creature*>& getCreatures();
-  Tribe* getTribe();
-  const Tribe* getTribe() const;
   const string& getName() const;
   const PlayerControl* getVillain() const;
 
+  Tribe* getTribe();
+  const Tribe* getTribe() const;
+
   protected:
-  const vector<Creature*>& getCreatures() const;
   VillageControl(PlayerControl* villain, const Location*);
   PlayerControl* SERIAL2(villain, nullptr);
   const Location* SERIAL2(location, nullptr);
   string SERIAL(name);
   bool SERIAL2(atWar, false);
-  Task::Mapping SERIAL(taskMap);
 };
 
 #endif

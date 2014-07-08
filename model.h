@@ -99,14 +99,14 @@ class Model : public EventListener {
   Level* prepareTopLevel2(vector<SettlementInfo> settlements);
 
   vector<PLevel> SERIAL(levels);
-  vector<PCollective> SERIAL(villageCollectives);
+  vector<PCollective> SERIAL(collectives);
   vector<VillageControl*> SERIAL(villageControls);
   View* view;
   TimeQueue SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL2(lastTick, -1000);
   map<tuple<StairDirection, StairKey, Level*>, Level*> SERIAL(levelLinks);
-  unique_ptr<PlayerControl> SERIAL(playerControl);
+  PlayerControl* SERIAL(playerControl);
   bool SERIAL2(won, false);
   bool SERIAL2(addHero, false);
   bool SERIAL2(adventurer, false);

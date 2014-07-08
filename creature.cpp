@@ -948,7 +948,11 @@ double Creature::getInventoryWeight() const {
   return ret;
 }
 
-Tribe* Creature::getTribe() const {
+Tribe* Creature::getTribe() {
+  return tribe;
+}
+
+const Tribe* Creature::getTribe() const {
   return tribe;
 }
 

@@ -36,7 +36,7 @@
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
   ar& SVAR(levels)
-    & SVAR(villageCollectives)
+    & SVAR(collectives)
     & SVAR(villageControls)
     & SVAR(timeQueue)
     & SVAR(deadCreatures)
@@ -192,9 +192,8 @@ void Model::tick(double time) {
       square->tick(time);
   lastTick = time;
   if (playerControl) {
-    playerControl->tick(time);
     if (!playerControl->isRetired()) {
-      for (PCollective& col : villageCollectives)
+      for (PCollective& col : collectives)
         col->tick(time);
       bool conquered = true;
       for (VillageControl* control : villageControls)
@@ -447,7 +446,7 @@ void Model::landHeroPlayer() {
 
 string Model::getGameIdentifier() const {
   if (!adventurer)
-    return *NOTNULL(playerControl.get())->getKeeper()->getFirstName();
+    return *NOTNULL(playerControl)->getKeeper()->getFirstName();
   else
     return *NOTNULL(getPlayer())->getFirstName();
 }
@@ -548,16 +547,19 @@ Model* Model::collectiveModel(View* view) {
   for (auto& elem : enemyInfo)
     settlements.push_back(elem.settlement);
   Level* top = m->prepareTopLevel2(settlements);
-  m->playerControl.reset(new PlayerControl(m, top, Tribe::get(TribeId::KEEPER)));
+  m->collectives.push_back(PCollective(new Collective()));
+  Collective* keeperCollective = m->collectives.back().get();
+  m->playerControl = new PlayerControl(keeperCollective, m, top);
+  keeperCollective->setControl(PCollectiveControl(m->playerControl));
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::get(TribeId::KEEPER),
-      MonsterAIFactory::playerControl(m->playerControl.get()));
+      MonsterAIFactory::collective(keeperCollective));
   Creature* ref = c.get();
   top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
   m->addCreature(std::move(c));
   m->playerControl->addCreature(ref, MinionType::NORMAL);
   for (int i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, Tribe::get(TribeId::KEEPER),
-        MonsterAIFactory::playerControl(m->playerControl.get()));
+        MonsterAIFactory::collective(keeperCollective));
     top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
     m->playerControl->addCreature(c.get(), MinionType::IMP);
     m->addCreature(std::move(c));
@@ -566,14 +568,14 @@ Model* Model::collectiveModel(View* view) {
     Collective* collective = enemyInfo[i].settlement.collective;
     PVillageControl control;
     if (enemyInfo[i].controlInfo.id != VillageControlInfo::FINAL_ATTACK)
-      control = VillageControl::get(enemyInfo[i].controlInfo, collective, m->playerControl.get(),
+      control = VillageControl::get(enemyInfo[i].controlInfo, collective, m->playerControl,
           enemyInfo[i].settlement.location);
     else
-      control = VillageControl::getFinalAttack(collective, m->playerControl.get(), enemyInfo[i].settlement.location,
+      control = VillageControl::getFinalAttack(collective, m->playerControl, enemyInfo[i].settlement.location,
           m->villageControls);
     m->villageControls.push_back(control.get());
     enemyInfo[i].settlement.collective->setControl(std::move(control));
-    m->villageCollectives.push_back(PCollective(collective));
+    m->collectives.push_back(PCollective(collective));
   }
   setHandicap(Tribe::get(TribeId::KEEPER), Options::getValue(OptionId::EASY_KEEPER));
   return m;
@@ -584,7 +586,8 @@ Model* Model::splashModel(View* view, const Table<bool>& bitmap) {
   Level* top = m->buildLevel(
       Level::Builder(bitmap.getWidth(), bitmap.getHeight(), "Wilderness", false), LevelMaker::grassAndTrees());
   CreatureFactory factory = CreatureFactory::splash();
-  m->playerControl.reset(new PlayerControl(m, top, Tribe::get(TribeId::KEEPER)));
+  Collective* collective = new Collective();
+  m->playerControl = new PlayerControl(collective, m, top);
   for (Vec2 v : bitmap.getBounds())
     if (bitmap[v]) {
       PCreature c = factory.random(MonsterAIFactory::guardSquare(v));

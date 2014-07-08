@@ -5,12 +5,15 @@
 
 class Creature;
 class Collective;
+class Tribe;
 
 class CollectiveControl {
   public:
   CollectiveControl(Collective*);
   virtual MoveInfo getMove(Creature*) = 0;
+  virtual PTask getNewTask(Creature*);
   virtual void tick(double time) = 0;
+  virtual void onCreatureKilled(const Creature* victim, const Creature* killer);
 
   SERIALIZATION_DECL(CollectiveControl);
 
@@ -20,6 +23,9 @@ class CollectiveControl {
 
   template <class Archive>
   static void registerTypes(Archive& ar);
+
+  const vector<Creature*>& getCreatures() const;
+  vector<Creature*>& getCreatures();
 
   protected:
   Collective* getCollective();

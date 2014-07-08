@@ -18,7 +18,6 @@
 #include "monster_ai.h"
 #include "square.h"
 #include "level.h"
-#include "player_control.h"
 #include "collective.h"
 #include "effect.h"
 #include "item.h"
@@ -801,26 +800,6 @@ class ByCollective : public Behaviour {
   Collective* SERIAL(collective);
 };
 
-class ByPlayerControl : public Behaviour {
-  public:
-  ByPlayerControl(Creature* c, PlayerControl* col) : Behaviour(c), collective(col) {}
-
-  virtual MoveInfo getMove() override {
-    return collective->getMove(creature);
-  }
-
-  SERIALIZATION_CONSTRUCTOR(ByPlayerControl);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(collective);
-    CHECK_SERIAL;
-  }
-
-  private:
-  PlayerControl* SERIAL(collective);
-};
-
 class ChooseRandom : public Behaviour {
   public:
   ChooseRandom(Creature* c, vector<Behaviour*> beh, vector<double> w) : Behaviour(c), behaviours(beh), weights(w) {}
@@ -884,7 +863,6 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, ByCollective);
   REGISTER_TYPE(ar, ChooseRandom);
   REGISTER_TYPE(ar, GoToHeart);
-  REGISTER_TYPE(ar, ByPlayerControl);
 }
 
 REGISTER_TYPES(MonsterAI);
@@ -952,18 +930,6 @@ MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
         new Heal(c, false),
         new Fighter(c, 0.6, true),
         new ByCollective(c, col),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
-        new AttackPest(c)},
-        { 6, 5, 2, 1, 1}, false);
-      });
-}
-
-MonsterAIFactory MonsterAIFactory::playerControl(PlayerControl* col) {
-  return MonsterAIFactory([=](Creature* c) {
-      return new MonsterAI(c, {
-        new Heal(c, false),
-        new Fighter(c, 0.6, true),
-        new ByPlayerControl(c, col),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
         new AttackPest(c)},
         { 6, 5, 2, 1, 1}, false);

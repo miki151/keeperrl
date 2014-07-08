@@ -90,7 +90,7 @@ double Tribe::getStanding(const Creature* c) const {
     return 1;
   if (standing.count(c)) 
     return standing.at(c);
-  if (enemyTribes.count(c->getTribe()))
+  if (enemyTribes.count(const_cast<Tribe*>(c->getTribe())))
     return -1;
   return 0;
 }
@@ -162,7 +162,7 @@ void Tribe::setLeader(const Creature* c) {
   leader = c;
 }
 
-const Creature* Tribe::getLeader() {
+const Creature* Tribe::getLeader() const {
   return leader;
 }
 
