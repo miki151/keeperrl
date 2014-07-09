@@ -169,6 +169,11 @@ Tile getWaterTile(int leftX) {
     .addConnection({Dir::E, Dir::W}, leftX, 11);
 }
 
+struct TileOverride {
+  string viewId;
+  string name;
+};
+
 static Tile getSprite(ViewId id) {
   static map<ViewId, Tile> tiles {
     { ViewId::EMPTY, Tile(' ', black)},
@@ -287,10 +292,10 @@ static Tile getSprite(ViewId id) {
     { ViewId::BODY_PART, Tile(9, 4, 3)},
     { ViewId::BONE, Tile(3, 0, 2)},
     { ViewId::BUSH, Tile(17, 0, 2, true)},
-    { ViewId::DECID_TREE, Tile(21, 3, 2, true)},
-    { ViewId::CANIF_TREE, Tile(20, 3, 2, true)},
-    { ViewId::TREE_TRUNK, Tile(26, 3, 2, true)},
-    { ViewId::BURNT_TREE, Tile(25, 3, 2, true)},
+    { ViewId::DECID_TREE, Tile("tree", true)},
+    { ViewId::CANIF_TREE, Tile("tree", true)},
+    { ViewId::TREE_TRUNK, Tile("treecut", true)},
+    { ViewId::BURNT_TREE, Tile("treeburnt", true)},
     { ViewId::WATER, getWaterTile(5)},
     { ViewId::MAGMA, getWaterTile(11)},
     { ViewId::ABYSS, Tile('~', darkGray)},
@@ -384,7 +389,7 @@ static Tile getSprite(ViewId id) {
     { ViewId::LEVITATION_BOOTS, Tile(2, 13, 3)},
     { ViewId::DESTROYED_FURNITURE, Tile('*', brown)},
     { ViewId::BURNT_FURNITURE, Tile('*', darkGray)},
-    { ViewId::FALLEN_TREE, Tile(26, 3, 2, true)},
+    { ViewId::FALLEN_TREE, Tile("treecut", true)},
     { ViewId::GUARD_POST, Tile("guardroom")},
     { ViewId::DESTROY_BUTTON, Tile('X', red)},
     { ViewId::MANA, Tile(5, 10, 2)},

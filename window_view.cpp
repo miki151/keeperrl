@@ -115,6 +115,7 @@ void WindowView::initialize() {
   tilesOk &= Renderer::loadTilesFromFile("tiles6_int.png", Vec2(36, 36));
   tilesOk &= Renderer::loadTilesFromFile("tiles7_int.png", Vec2(36, 36));
   tilesOk &= Renderer::loadTilesFromDir("shroom36", Vec2(36, 36));
+  tilesOk &= Renderer::loadTilesFromDir("shroom_high", Vec2(36, 45));
   asciiLayouts = {
     MapLayout(16, 20, allLayers),
     MapLayout(8, 10,

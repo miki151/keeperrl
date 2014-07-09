@@ -201,6 +201,8 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
       Vec2 off = (Renderer::nominalSize -  sz) / 2;
       int width = sizeX - 2 * off.x;
       int height = sizeY - 2 * off.y;
+      if (sz.y > Renderer::nominalSize.y)
+        off.y = Renderer::nominalSize.y -  sz.y;
       set<Dir> dirs;
       if (!object.hasModifier(ViewObject::Modifier::PLANNED))
         if (auto connectionId = getConnectionId(object))

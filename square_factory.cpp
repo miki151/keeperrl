@@ -1002,13 +1002,12 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND, "Sand"),
             "sand", Vision::get(VisionId::NORMAL));
     case SquareType::CANIF_TREE:
-        return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree")
-            .setModifier(ViewObject::Modifier::ROUND_SHADOW), "tree", Vision::get(VisionId::ELF),
+        return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"),
+            "tree", Vision::get(VisionId::ELF),
             Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
     case SquareType::DECID_TREE:
-        return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree")
-            .setModifier(ViewObject::Modifier::ROUND_SHADOW), "tree",
-            Vision::get(VisionId::ELF), Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
+        return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"),
+            "tree", Vision::get(VisionId::ELF), Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
     case SquareType::BUSH:
         return new Tree(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush",
             Vision::get(VisionId::NORMAL), Random.getRandom(5, 10), {{SquareType::TREE_TRUNK, 10}});
