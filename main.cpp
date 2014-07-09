@@ -57,7 +57,7 @@ static vector<SaveFileInfo> getSaveFiles(const string& suffix) {
   CHECK(dir) << "Couldn't open current directory";
   while (dirent* ent = readdir(dir)) {
     string name(ent->d_name);
-    if (name.size() > suffix.size() && name.substr(name.size() - suffix.size()) == suffix) {
+    if (endsWith(name, suffix)) {
       struct stat buf;
       stat(name.c_str(), &buf);
       ret.push_back({name, buf.st_mtime});

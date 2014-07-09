@@ -197,10 +197,10 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
     }
     if (tile.hasSpriteCoord()) {
       int moveY = 0;
-      int off = (Renderer::nominalSize -  Renderer::tileSize[tile.getTexNum()]) / 2;
-      int sz = Renderer::tileSize[tile.getTexNum()];
-      int width = sizeX - 2 * off;
-      int height = sizeY - 2 * off;
+      Vec2 sz = Renderer::tileSize[tile.getTexNum()];
+      Vec2 off = (Renderer::nominalSize -  sz) / 2;
+      int width = sizeX - 2 * off.x;
+      int height = sizeY - 2 * off.y;
       set<Dir> dirs;
       if (!object.hasModifier(ViewObject::Modifier::PLANNED))
         if (auto connectionId = getConnectionId(object))
@@ -211,23 +211,33 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
       if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
         moveY = -4;
       if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
-        renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize, 22 * Renderer::nominalSize, Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[0], width, height);
+        renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize.x, 22 * Renderer::nominalSize.y,
+            Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[0], width, height);
         moveY = -4;
       }
-      if (auto background = tile.getBackgroundCoord())
-        renderer.drawSprite(x + off, y + off, background->x * sz,
-            background->y * sz, sz, sz, Renderer::tiles[tile.getTexNum()], width, height, color);
-      renderer.drawSprite(x + off, y + moveY + off, coord.x * sz,
-          coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()], width, height, color);
+      if (auto background = tile.getBackgroundCoord()) {
+        renderer.drawSprite(x + off.x, y + off.y, background->x * sz.x,
+            background->y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
+        if (shadowed.count(tilePos))
+          renderer.drawSprite(x, y, 1 * Renderer::nominalSize.x, 21 * Renderer::nominalSize.y,
+              Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[5], width, height);
+      }
+      if (coord.x < 0)
+        continue;
+      renderer.drawSprite(x + off.x, y + moveY + off.y, coord.x * sz.x,
+          coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
       if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
           shadowed.count(tilePos) && !tile.noShadow)
-        renderer.drawSprite(x, y, 1 * Renderer::nominalSize, 21 * Renderer::nominalSize, Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[5], width, height);
+        renderer.drawSprite(x, y, 1 * Renderer::nominalSize.x, 21 * Renderer::nominalSize.y,
+            Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[5], width, height);
       if (object.getAttribute(ViewObject::Attribute::BURNING) > 0) {
-        renderer.drawSprite(x, y, Random.getRandom(10, 12) * Renderer::nominalSize, 0 * Renderer::nominalSize,
-            Renderer::nominalSize, Renderer::nominalSize, Renderer::tiles[2], width, height);
+        renderer.drawSprite(x, y, Random.getRandom(10, 12) * Renderer::nominalSize.x, 0 * Renderer::nominalSize.y,
+            Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[2], width, height);
       }
       if (object.hasModifier(ViewObject::Modifier::LOCKED))
-        renderer.drawSprite(x + (Renderer::nominalSize - Renderer::tileSize[3]) / 2, y, 5 * Renderer::tileSize[3], 6 * Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tileSize[3], Renderer::tiles[3], width / 2, height / 2);
+        renderer.drawSprite(x + (Renderer::nominalSize.x - Renderer::tileSize[3].x) / 2, y,
+            5 * Renderer::tileSize[3].x, 6 * Renderer::tileSize[3].y,
+            Renderer::tileSize[3].x, Renderer::tileSize[3].y, Renderer::tiles[3], width / 2, height / 2);
     } else {
       renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, sizeY, Tile::getColor(object),
           x + sizeX / 2, y - 3, tile.text, true);

@@ -17,6 +17,7 @@
 #include "renderer.h"
 #include "view_object.h"
 #include "tile.h"
+#include "dirent.h"
 
 using namespace sf;
 
@@ -60,8 +61,9 @@ namespace colors {
 }
 
 vector<Texture> Renderer::tiles;
-const vector<int> Renderer::tileSize { 36, 36, 36, 24, 36, 36, 36, 36 };
-const int Renderer::nominalSize = 36;
+vector<Vec2> Renderer::tileSize;
+Vec2 Renderer::nominalSize;
+map<string, Renderer::TileCoords> Renderer::tileCoords;
 
 int Renderer::getTextLength(string s) {
   Text t(s, textFont, textSize);
@@ -179,13 +181,62 @@ void Renderer::initialize(RenderTarget* d, int width, int height) {
 void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSprite, double scale) {
   Tile tile = Tile::getTile(object, useSprite);
   if (tile.hasSpriteCoord()) {
-    int sz = Renderer::tileSize[tile.getTexNum()];
-    int of = (Renderer::nominalSize - sz) / 2;
+    Vec2 sz = Renderer::tileSize[tile.getTexNum()];
+    Vec2 of = (Renderer::nominalSize - sz) / 2;
     Vec2 coord = tile.getSpriteCoord(Tile::allDirs);
-    drawSprite(x, y + of, coord.x * sz, coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()],
-        sz * scale, sz * scale);
+    drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()],
+        sz.x * scale, sz.y * scale);
   } else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale,
         Tile::getColor(object), x, y, tile.text);
+}
+
+const static string imageSuf = ".png";
+
+bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
+  tileSize.push_back(size);
+  struct dirent *ent;
+  DIR* dir = opendir(path.c_str());
+  if (!dir)
+    return false;
+  vector<string> files;
+  while (dirent* ent = readdir(dir)) {
+    string name(ent->d_name);
+    Debug() << "Found " << name;
+    if (endsWith(name, imageSuf))
+      files.push_back(name);
+  }
+  int imageWidth = 720;
+  int rowLength = imageWidth / size.x;
+  Image image;
+  image.create(imageWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
+  for (int i : All(files)) {
+    Image im;
+    CHECK(im.loadFromFile((path + "/" + files[i]).c_str())) << "Failed to load " << files[i];
+    CHECK(im.getSize().x == size.x && im.getSize().y == size.y)
+        << files[i] << " has wrong size " << int(im.getSize().x) << " " << int(im.getSize().y);
+    image.copy(im, size.x * (i % rowLength), size.y * (i / rowLength));
+    CHECK(!tileCoords.count(files[i])) << "Duplicate name " << files[i];
+    tileCoords[files[i].substr(0, files[i].size() - imageSuf.size())] =
+        {{i % rowLength, i / rowLength}, int(tiles.size())};
+  }
+  tiles.emplace_back();
+  tiles.back().loadFromImage(image);
+  return true;
+}
+
+Renderer::TileCoords Renderer::getTileCoords(const string& name) {
+  CHECK(tileCoords.count(name)) << "Tile not found " << name;
+  return tileCoords.at(name);
+}
+
+bool Renderer::loadTilesFromFile(const string& path, Vec2 size) {
+  tileSize.push_back(size);
+  tiles.emplace_back();
+  return tiles.back().loadFromFile(path.c_str());
+}
+
+void Renderer::setNominalSize(Vec2 sz) {
+  nominalSize = sz;
 }
 

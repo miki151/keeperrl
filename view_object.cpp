@@ -253,12 +253,7 @@ static vector<ViewId> itemIds {
   ViewId::ROCK,
   ViewId::IRON_ROCK,
   ViewId::WOOD_PLANK,
-  ViewId::SLIMY_MUSHROOM, 
-  ViewId::PINK_MUSHROOM, 
-  ViewId::DOTTED_MUSHROOM, 
-  ViewId::GLOWING_MUSHROOM, 
-  ViewId::GREEN_MUSHROOM, 
-  ViewId::BLACK_MUSHROOM,
+  ViewId::MUSHROOM, 
 };
 
 static bool hallu = false;

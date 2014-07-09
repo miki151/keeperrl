@@ -464,9 +464,6 @@ REGISTER_TYPES(ItemFactory);
 static vector<string> amulet_looks = { "steel", "copper", "crystal", "wooden", "amber"};
 static vector<ViewId> amulet_ids = { ViewId::STEEL_AMULET, ViewId::COPPER_AMULET, ViewId::CRYSTAL_AMULET, ViewId::WOODEN_AMULET, ViewId::AMBER_AMULET};
 
-static vector<string> mushroom_looks = { "slimy", "pink", "dotted", "glowing", "green", "black"};
-static vector<ViewId> mushroom_ids = {ViewId::PINK_MUSHROOM, ViewId::DOTTED_MUSHROOM, ViewId::GLOWING_MUSHROOM, ViewId::GREEN_MUSHROOM, ViewId::BLACK_MUSHROOM, ViewId::SLIMY_MUSHROOM};
-
 static vector<string> potion_looks = { "effervescent", "murky", "swirly", "violet", "puce", "smoky", "fizzy", "milky" };
 static vector<ViewId> potion_ids = { ViewId::EFFERVESCENT_POTION, ViewId::MURKY_POTION, ViewId::SWIRLY_POTION, ViewId::VIOLET_POTION, ViewId::PUCE_POTION, ViewId::SMOKY_POTION, ViewId::FIZZY_POTION, ViewId::MILKY_POTION};
 static vector<string> scroll_looks;
@@ -795,7 +792,7 @@ PItem getScroll(string name, EffectType effect, int price, string description) {
 
 PItem getMushroom(string name, EffectType effect, string description) {
   return PItem(new Item(
-         ViewObject(mushroom_ids[0], ViewLayer::ITEM, "Mushroom"), ITATTR(
+         ViewObject(ViewId::MUSHROOM, ViewLayer::ITEM, "Mushroom"), ITATTR(
             i.name = "mushroom";
             i.realName = name + " mushroom";
             i.description = description;

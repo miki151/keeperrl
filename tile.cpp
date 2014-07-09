@@ -27,14 +27,36 @@ Tile::Tile(sf::Uint32 ch, Color col, bool sym) : color(col), text(ch), symFont(s
 Tile::Tile(int x, int y, int num, bool _noShadow)
     : noShadow(_noShadow),tileCoord(Vec2(x, y)), texNum(num) {}
 
+Tile::Tile(const string& s, bool noShadow) : Tile(Renderer::getTileCoords(s), noShadow) {
+}
+
+Tile Tile::empty() {
+  return Tile(-1, -1, -1);
+}
+
+Tile::Tile(Renderer::TileCoords coords, bool noShadow)
+    : Tile(coords.pos.x, coords.pos.y, coords.texNum, noShadow) {}
+
 Tile& Tile::addConnection(set<Dir> c, int x, int y) {
   connections.insert({c, Vec2(x, y)});
   return *this;
 }
 
+Tile& Tile::addConnection(set<Dir> c, const string& name) {
+  Renderer::TileCoords coords = Renderer::getTileCoords(name);
+  texNum = coords.texNum;
+  return addConnection(c, coords.pos.x, coords.pos.y);
+}
+
 Tile& Tile::addBackground(int x, int y) {
   backgroundCoord = Vec2(x, y);
   return *this;
+}
+
+Tile& Tile::addBackground(const string& name) {
+  Renderer::TileCoords coords = Renderer::getTileCoords(name);
+  texNum = coords.texNum;
+  return addBackground(coords.pos.x, coords.pos.y);
 }
 
 Tile& Tile::setTranslucent(double v) {
@@ -148,234 +170,230 @@ Tile getWaterTile(int leftX) {
 }
 
 static Tile getSprite(ViewId id) {
-  switch (id) {
-    case ViewId::EMPTY: return Tile(' ', black);
-    case ViewId::PLAYER: return Tile(1, 0);
-    case ViewId::KEEPER: return Tile(3, 0);
-    case ViewId::UNKNOWN_MONSTER: return Tile('?', lightGreen);
-    case ViewId::ELF: return Tile(10, 6);
-    case ViewId::ELF_ARCHER: return Tile(12, 6);
-    case ViewId::ELF_CHILD: return Tile(14, 6);
-    case ViewId::ELF_LORD: return Tile(13, 6);
-    case ViewId::ELVEN_SHOPKEEPER: return Tile(4, 2);
-    case ViewId::LIZARDMAN: return Tile(8, 8);
-    case ViewId::LIZARDLORD: return Tile(11, 8);
-    case ViewId::IMP: return Tile(18, 19);
-    case ViewId::PRISONER: return Tile(6, 2, 7);
-    case ViewId::BILE_DEMON: return Tile(8, 14);
-    case ViewId::CHICKEN: return Tile(4, 0, 7);
-    case ViewId::DWARF: return Tile(2, 6);
-    case ViewId::DWARF_BARON: return Tile(3, 6);
-    case ViewId::DWARVEN_SHOPKEEPER: return Tile(4, 2);
-    case ViewId::BRIDGE: return Tile(24, 0, 4);
-    case ViewId::ROAD: return getRoadTile(7);
-    case ViewId::PATH:
-    case ViewId::FLOOR: return Tile(3, 14, 1);
-    case ViewId::SAND: return Tile(7, 12, 2);
-    case ViewId::MUD: return Tile(3, 12, 2);
-    case ViewId::GRASS: return Tile(0, 13, 2);
-    case ViewId::CROPS: return Tile(9, 12, 2);
-    case ViewId::WALL: return getWallTile(2);
-    case ViewId::MOUNTAIN: return Tile(17, 2, 2, true);
-    case ViewId::MOUNTAIN2: return getWallTile(19);
-    case ViewId::GOLD_ORE: return Tile(9, 0, 7);
-    case ViewId::IRON_ORE: return Tile(11, 0, 7);
-    case ViewId::STONE: return Tile(9, 1, 7);
-    case ViewId::SNOW: return Tile(16, 2, 2, true);
-    case ViewId::HILL: return Tile(3, 13, 2);
-    case ViewId::WOOD_WALL: return getWallTile(4);
-    case ViewId::BLACK_WALL: return getWallTile(2);
-    case ViewId::YELLOW_WALL: return getWallTile(8);
-    case ViewId::LOW_ROCK_WALL: return getWallTile(21);
-    case ViewId::HELL_WALL: return getWallTile(22);
-    case ViewId::CASTLE_WALL: return getWallTile(5);
-    case ViewId::MUD_WALL: return getWallTile(13);
-    case ViewId::SECRETPASS: return Tile(0, 15, 1);
-    case ViewId::DUNGEON_ENTRANCE: return Tile(15, 2, 2, true);
-    case ViewId::DUNGEON_ENTRANCE_MUD: return Tile(19, 2, 2, true);
-    case ViewId::DOWN_STAIRCASE: return Tile(8, 0, 1, true);
-    case ViewId::UP_STAIRCASE: return Tile(7, 0, 1, true);
-    case ViewId::DOWN_STAIRCASE_CELLAR: return Tile(8, 21, 1, true);
-    case ViewId::UP_STAIRCASE_CELLAR: return Tile(7, 21, 1, true);
-    case ViewId::DOWN_STAIRCASE_HELL: return Tile(8, 1, 1, true);
-    case ViewId::UP_STAIRCASE_HELL: return Tile(7, 22, 1, true);
-    case ViewId::DOWN_STAIRCASE_PYR: return Tile(8, 8, 1, true);
-    case ViewId::UP_STAIRCASE_PYR: return Tile(7, 8, 1, true);
-    case ViewId::WELL: return Tile(5, 8, 2, true);
-    case ViewId::STATUE1: return Tile(6, 5, 2, true);
-    case ViewId::STATUE2: return Tile(7, 5, 2, true);
-    case ViewId::GREAT_GOBLIN: return Tile(6, 14);
-    case ViewId::GOBLIN: return Tile(5, 2, 7);
-    case ViewId::BANDIT: return Tile(0, 2);
-    case ViewId::GHOST: return Tile(6, 16).setTranslucent(0.5);
-    case ViewId::SPIRIT: return Tile(17, 14);
-    case ViewId::DEVIL: return Tile(17, 18);
-    case ViewId::DARK_KNIGHT: return Tile(12, 14);
-    case ViewId::GREEN_DRAGON: return Tile(3, 18);
-    case ViewId::RED_DRAGON: return Tile(0, 18);
-    case ViewId::CYCLOPS: return Tile(10, 14);
-    case ViewId::WITCH: return Tile(15, 16);
-    case ViewId::KNIGHT: return Tile(0, 0);
-    case ViewId::WARRIOR: return Tile(6, 0);
-    case ViewId::SHAMAN: return Tile(5, 0);
-    case ViewId::CASTLE_GUARD: return Tile(15, 2);
-    case ViewId::AVATAR: return Tile(9, 0);
-    case ViewId::ARCHER: return Tile(2, 0);
-    case ViewId::PESEANT: return Tile(1, 2);
-    case ViewId::CHILD: return Tile(2, 2);
-    case ViewId::CLAY_GOLEM: return Tile(12, 11);
-    case ViewId::STONE_GOLEM: return Tile(10, 10);
-    case ViewId::IRON_GOLEM: return Tile(12, 10);
-    case ViewId::LAVA_GOLEM: return Tile(13, 10);
-    case ViewId::ZOMBIE: return Tile(0, 16);
-    case ViewId::SKELETON: return Tile(2, 16);
-    case ViewId::VAMPIRE: return Tile(4, 3, 7);
-    case ViewId::VAMPIRE_LORD: return Tile(13, 16);
-    case ViewId::MUMMY: return Tile(7, 16);
-    case ViewId::MUMMY_LORD: return Tile(8, 16);
-    case ViewId::ACID_MOUND: return Tile(1, 12);
-    case ViewId::JACKAL: return Tile(12, 12);
-    case ViewId::DEER: return Tile(6, 0, 7);
-    case ViewId::HORSE: return Tile(5, 1, 7);
-    case ViewId::COW: return Tile(5, 0, 7);
-    case ViewId::SHEEP: return Tile('s', white);
-    case ViewId::PIG: return Tile(6, 1, 7);
-    case ViewId::GOAT: return Tile(4, 1, 7);
-    case ViewId::BOAR: return Tile(18, 6);
-    case ViewId::FOX: return Tile(13, 12);
-    case ViewId::WOLF: return Tile(14, 12);
-    case ViewId::DOG: return Tile(7, 0, 7);
-    case ViewId::VODNIK: return Tile('f', green);
-    case ViewId::KRAKEN: return Tile(7, 19);
-    case ViewId::DEATH: return Tile(9, 16);
-    case ViewId::KRAKEN2: return Tile(7, 19);
-    case ViewId::NIGHTMARE: return Tile(9, 16);
-    case ViewId::FIRE_SPHERE: return Tile(16, 20);
-    case ViewId::BEAR: return Tile(8, 18);
-    case ViewId::BAT: return Tile(2, 12);
-    case ViewId::GNOME: return Tile(4, 2, 7);
-    case ViewId::LEPRECHAUN: return Tile(16, 8);
-    case ViewId::RAT: return Tile(7, 2, 7);
-    case ViewId::SPIDER: return Tile(6, 12);
-    case ViewId::FLY: return Tile(10, 12);
-    case ViewId::SCORPION: return Tile(11, 18);
-    case ViewId::SNAKE: return Tile(9, 12);
-    case ViewId::VULTURE: return Tile(17, 12);
-    case ViewId::RAVEN: return Tile(17, 12);
-    case ViewId::BODY_PART: return Tile(9, 4, 3);
-    case ViewId::BONE: return Tile(3, 0, 2);
-    case ViewId::BUSH: return Tile(17, 0, 2, true);
-    case ViewId::DECID_TREE: return Tile(21, 3, 2, true);
-    case ViewId::CANIF_TREE: return Tile(20, 3, 2, true);
-    case ViewId::TREE_TRUNK: return Tile(26, 3, 2, true);
-    case ViewId::BURNT_TREE: return Tile(25, 3, 2, true);
-    case ViewId::WATER: return getWaterTile(5);
-    case ViewId::MAGMA: return getWaterTile(11);
-    case ViewId::ABYSS: return Tile('~', darkGray);
-    case ViewId::DOOR: return Tile(4, 2, 2, true);
-    case ViewId::BARRICADE: return Tile(13, 10, 2, true);
-    case ViewId::DIG_ICON: return Tile(8, 10, 2);
-    case ViewId::SWORD: return Tile(12, 9, 3);
-    case ViewId::SPEAR: return Tile(5, 8, 3);
-    case ViewId::SPECIAL_SWORD: return Tile(13, 9, 3);
-    case ViewId::ELVEN_SWORD: return Tile(14, 9, 3);
-    case ViewId::KNIFE: return Tile(20, 9, 3);
-    case ViewId::WAR_HAMMER: return Tile(10, 7, 3);
-    case ViewId::SPECIAL_WAR_HAMMER: return Tile(11, 7, 3);
-    case ViewId::BATTLE_AXE: return Tile(13, 7, 3);
-    case ViewId::SPECIAL_BATTLE_AXE: return Tile(21, 7, 3);
-    case ViewId::BOW: return Tile(14, 8, 3);
-    case ViewId::ARROW: return Tile(5, 8, 3);
-    case ViewId::SCROLL: return Tile(3, 6, 3);
-    case ViewId::STEEL_AMULET: return Tile(1, 1, 3);
-    case ViewId::COPPER_AMULET: return Tile(2, 1, 3);
-    case ViewId::CRYSTAL_AMULET: return Tile(4, 1, 3);
-    case ViewId::WOODEN_AMULET: return Tile(0, 1, 3);
-    case ViewId::AMBER_AMULET: return Tile(3, 1, 3);
-    case ViewId::FIRE_RESIST_RING: return Tile(11, 3, 3);
-    case ViewId::POISON_RESIST_RING: return Tile(16, 3, 3);
-    case ViewId::BOOK: return Tile(0, 3, 3);
-    case ViewId::FIRST_AID: return Tile(12, 2, 3);
-    case ViewId::TRAP_ITEM: return Tile(12, 4, 3);
-    case ViewId::EFFERVESCENT_POTION: return Tile(6, 0, 3);
-    case ViewId::MURKY_POTION: return Tile(10, 0, 3);
-    case ViewId::SWIRLY_POTION: return Tile(9, 0, 3);
-    case ViewId::VIOLET_POTION: return Tile(7, 0, 3);
-    case ViewId::PUCE_POTION: return Tile(8, 0, 3);
-    case ViewId::SMOKY_POTION: return Tile(11, 0, 3);
-    case ViewId::FIZZY_POTION: return Tile(9, 0, 3);
-    case ViewId::MILKY_POTION: return Tile(11, 0, 3);
-    case ViewId::PINK_MUSHROOM:
-    case ViewId::DOTTED_MUSHROOM:
-    case ViewId::GLOWING_MUSHROOM:
-    case ViewId::GREEN_MUSHROOM:
-    case ViewId::BLACK_MUSHROOM:
-    case ViewId::SLIMY_MUSHROOM: return Tile(5, 4, 3);
-    case ViewId::FOUNTAIN: return Tile(0, 7, 2, true);
-    case ViewId::GOLD: return Tile(8, 3, 3, true);
-    case ViewId::TREASURE_CHEST: return Tile(1, 1, 7, true).addBackground(0, 1);
-    case ViewId::CHEST: return Tile(3, 3, 2, true);
-    case ViewId::OPENED_CHEST: return Tile(6, 3, 2, true);
-    case ViewId::COFFIN: return Tile(7, 3, 2, true);
-    case ViewId::OPENED_COFFIN: return Tile(8, 3, 2, true);
-    case ViewId::BOULDER: return Tile(12, 0, 7);
-    case ViewId::PORTAL: return Tile(13, 0, 7);
-    case ViewId::TRAP: return Tile(L'➹', yellow, true);
-    case ViewId::GAS_TRAP: return Tile(2, 6, 3);
-    case ViewId::ALARM_TRAP: return Tile(16, 5, 3);
-    case ViewId::WEB_TRAP: return Tile(4, 1, 2);
-    case ViewId::SURPRISE_TRAP: return Tile(9, 10, 2);
-    case ViewId::TERROR_TRAP: return Tile(1, 6, 3);
-    case ViewId::ROCK: return Tile(8, 1, 7);
-    case ViewId::IRON_ROCK: return Tile(10, 0, 7);
-    case ViewId::WOOD_PLANK: return Tile(10, 1, 7);
-    case ViewId::STOCKPILE1: return Tile(1, 0, 7);
-    case ViewId::STOCKPILE2: return Tile(2, 0, 7);
-    case ViewId::STOCKPILE3: return Tile(3, 0, 7);
-    case ViewId::PRISON: return Tile(6, 2, 1);
-    case ViewId::BED: return Tile(1, 4, 7, true);
-    case ViewId::KEEPER_BED: return Tile(1, 4, 7, true).addBackground(0, 4);
-    case ViewId::DORM: return Tile(0, 4, 7);
-    case ViewId::TORCH: return Tile(13, 1, 2, true).setTranslucent(0.35);
-    case ViewId::DUNGEON_HEART: return Tile(6, 10, 2);
-    case ViewId::ALTAR: return Tile(2, 7, 2, true);
-    case ViewId::CREATURE_ALTAR: return Tile(3, 7, 2, true);
-    case ViewId::TORTURE_TABLE: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 3, 5).addBackground(2, 5);
-    case ViewId::IMPALED_HEAD: return Tile(10, 10, 2, true);
-    case ViewId::TRAINING_ROOM: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 3, 4).addBackground(2, 4);
-    case ViewId::LIBRARY: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 1, 3).addBackground(0, 3);
-    case ViewId::LABORATORY: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 1, 2).addBackground(0, 2);
-    case ViewId::BEAST_LAIR: return Tile(2, 2, 7);
-    case ViewId::BEAST_CAGE: return Tile(3, 2, 7, true).addBackground(2, 2);
-    case ViewId::WORKSHOP: return Tile(10, 5, 7, true).addConnection(Tile::allDirs, 1, 5).addBackground(0, 5);
-    case ViewId::CEMETERY: return Tile(2, 1, 7);
-    case ViewId::GRAVE: return Tile(3, 1, 7, true).addBackground(2, 1);
-    case ViewId::BARS: return Tile(L'⧻', lightBlue);
-    case ViewId::BORDER_GUARD: return Tile(' ', white);
-    case ViewId::ROBE: return Tile(7, 11, 3);
-    case ViewId::LEATHER_GLOVES: return Tile(15, 11, 3);
-    case ViewId::DEXTERITY_GLOVES: return Tile(19, 11, 3);
-    case ViewId::STRENGTH_GLOVES: return Tile(20, 11, 3);
-    case ViewId::LEATHER_ARMOR: return Tile(0, 12, 3);
-    case ViewId::LEATHER_HELM: return Tile(10, 12, 3);
-    case ViewId::TELEPATHY_HELM: return Tile(17, 12, 3);
-    case ViewId::CHAIN_ARMOR: return Tile(1, 12, 3);
-    case ViewId::IRON_HELM: return Tile(14, 12, 3);
-    case ViewId::LEATHER_BOOTS: return Tile(0, 13, 3);
-    case ViewId::IRON_BOOTS: return Tile(6, 13, 3);
-    case ViewId::SPEED_BOOTS: return Tile(3, 13, 3);
-    case ViewId::LEVITATION_BOOTS: return Tile(2, 13, 3);
-    case ViewId::DESTROYED_FURNITURE: return Tile('*', brown);
-    case ViewId::BURNT_FURNITURE: return Tile('*', darkGray);
-    case ViewId::FALLEN_TREE: return Tile(26, 3, 2, true);
-    case ViewId::GUARD_POST: return Tile(0, 0, 7);
-    case ViewId::DESTROY_BUTTON: return Tile('X', red);
-    case ViewId::MANA: return Tile(5, 10, 2);
-    case ViewId::DANGER: return Tile(12, 9, 2);
-    case ViewId::FETCH_ICON: return Tile(15, 11, 3);
-    default: FAIL << "Not handled " << int(id);
-  }
-  FAIL << "unhandled view id " << (int)id;
+  static map<ViewId, Tile> tiles {
+    { ViewId::EMPTY, Tile(' ', black)},
+    { ViewId::PLAYER, Tile(1, 0)},
+    { ViewId::KEEPER, Tile(3, 0)},
+    { ViewId::UNKNOWN_MONSTER, Tile('?', lightGreen)},
+    { ViewId::ELF, Tile(10, 6)},
+    { ViewId::ELF_ARCHER, Tile(12, 6)},
+    { ViewId::ELF_CHILD, Tile(14, 6)},
+    { ViewId::ELF_LORD, Tile(13, 6)},
+    { ViewId::ELVEN_SHOPKEEPER, Tile(4, 2)},
+    { ViewId::LIZARDMAN, Tile(8, 8)},
+    { ViewId::LIZARDLORD, Tile(11, 8)},
+    { ViewId::IMP, Tile(18, 19)},
+    { ViewId::PRISONER, Tile("prisoner")},
+    { ViewId::BILE_DEMON, Tile(8, 14)},
+    { ViewId::CHICKEN, Tile("chicken")},
+    { ViewId::DWARF, Tile(2, 6)},
+    { ViewId::DWARF_BARON, Tile(3, 6)},
+    { ViewId::DWARVEN_SHOPKEEPER, Tile(4, 2)},
+    { ViewId::BRIDGE, Tile(24, 0, 4)},
+    { ViewId::ROAD, getRoadTile(7)},
+    { ViewId::PATH, Tile(3, 14, 1)},
+    { ViewId::FLOOR, Tile(3, 14, 1)},
+    { ViewId::SAND, Tile(7, 12, 2)},
+    { ViewId::MUD, Tile(3, 12, 2)},
+    { ViewId::GRASS, Tile(0, 13, 2)},
+    { ViewId::CROPS, Tile(9, 12, 2)},
+    { ViewId::WALL, getWallTile(2)},
+    { ViewId::MOUNTAIN, Tile(17, 2, 2, true)},
+    { ViewId::MOUNTAIN2, getWallTile(19)},
+    { ViewId::GOLD_ORE, Tile("gold")},
+    { ViewId::IRON_ORE, Tile("iron2")},
+    { ViewId::STONE, Tile("stone")},
+    { ViewId::SNOW, Tile(16, 2, 2, true)},
+    { ViewId::HILL, Tile(3, 13, 2)},
+    { ViewId::WOOD_WALL, getWallTile(4)},
+    { ViewId::BLACK_WALL, getWallTile(2)},
+    { ViewId::YELLOW_WALL, getWallTile(8)},
+    { ViewId::LOW_ROCK_WALL, getWallTile(21)},
+    { ViewId::HELL_WALL, getWallTile(22)},
+    { ViewId::CASTLE_WALL, getWallTile(5)},
+    { ViewId::MUD_WALL, getWallTile(13)},
+    { ViewId::SECRETPASS, Tile(0, 15, 1)},
+    { ViewId::DUNGEON_ENTRANCE, Tile(15, 2, 2, true)},
+    { ViewId::DUNGEON_ENTRANCE_MUD, Tile(19, 2, 2, true)},
+    { ViewId::DOWN_STAIRCASE, Tile(8, 0, 1, true)},
+    { ViewId::UP_STAIRCASE, Tile(7, 0, 1, true)},
+    { ViewId::DOWN_STAIRCASE_CELLAR, Tile(8, 21, 1, true)},
+    { ViewId::UP_STAIRCASE_CELLAR, Tile(7, 21, 1, true)},
+    { ViewId::DOWN_STAIRCASE_HELL, Tile(8, 1, 1, true)},
+    { ViewId::UP_STAIRCASE_HELL, Tile(7, 22, 1, true)},
+    { ViewId::DOWN_STAIRCASE_PYR, Tile(8, 8, 1, true)},
+    { ViewId::UP_STAIRCASE_PYR, Tile(7, 8, 1, true)},
+    { ViewId::WELL, Tile(5, 8, 2, true)},
+    { ViewId::STATUE1, Tile(6, 5, 2, true)},
+    { ViewId::STATUE2, Tile(7, 5, 2, true)},
+    { ViewId::GREAT_GOBLIN, Tile(6, 14)},
+    { ViewId::GOBLIN, Tile("orc")},
+    { ViewId::BANDIT, Tile(0, 2)},
+    { ViewId::GHOST, Tile(6, 16).setTranslucent(0.5)},
+    { ViewId::SPIRIT, Tile(17, 14)},
+    { ViewId::DEVIL, Tile(17, 18)},
+    { ViewId::DARK_KNIGHT, Tile(12, 14)},
+    { ViewId::GREEN_DRAGON, Tile(3, 18)},
+    { ViewId::RED_DRAGON, Tile(0, 18)},
+    { ViewId::CYCLOPS, Tile(10, 14)},
+    { ViewId::WITCH, Tile(15, 16)},
+    { ViewId::KNIGHT, Tile(0, 0)},
+    { ViewId::WARRIOR, Tile(6, 0)},
+    { ViewId::SHAMAN, Tile(5, 0)},
+    { ViewId::CASTLE_GUARD, Tile(15, 2)},
+    { ViewId::AVATAR, Tile(9, 0)},
+    { ViewId::ARCHER, Tile(2, 0)},
+    { ViewId::PESEANT, Tile(1, 2)},
+    { ViewId::CHILD, Tile(2, 2)},
+    { ViewId::CLAY_GOLEM, Tile(12, 11)},
+    { ViewId::STONE_GOLEM, Tile(10, 10)},
+    { ViewId::IRON_GOLEM, Tile(12, 10)},
+    { ViewId::LAVA_GOLEM, Tile(13, 10)},
+    { ViewId::ZOMBIE, Tile(0, 16)},
+    { ViewId::SKELETON, Tile(2, 16)},
+    { ViewId::VAMPIRE, Tile("vampire3")},
+    { ViewId::VAMPIRE_LORD, Tile(13, 16)},
+    { ViewId::MUMMY, Tile(7, 16)},
+    { ViewId::MUMMY_LORD, Tile(8, 16)},
+    { ViewId::ACID_MOUND, Tile(1, 12)},
+    { ViewId::JACKAL, Tile(12, 12)},
+    { ViewId::DEER, Tile("deer")},
+    { ViewId::HORSE, Tile("horse")},
+    { ViewId::COW, Tile("cow")},
+    { ViewId::SHEEP, Tile('s', white)},
+    { ViewId::PIG, Tile("pig")},
+    { ViewId::GOAT, Tile("goat")},
+    { ViewId::BOAR, Tile(18, 6)},
+    { ViewId::FOX, Tile(13, 12)},
+    { ViewId::WOLF, Tile(14, 12)},
+    { ViewId::DOG, Tile("dog")},
+    { ViewId::VODNIK, Tile('f', green)},
+    { ViewId::KRAKEN, Tile(7, 19)},
+    { ViewId::DEATH, Tile(9, 16)},
+    { ViewId::KRAKEN2, Tile(7, 19)},
+    { ViewId::NIGHTMARE, Tile(9, 16)},
+    { ViewId::FIRE_SPHERE, Tile(16, 20)},
+    { ViewId::BEAR, Tile(8, 18)},
+    { ViewId::BAT, Tile(2, 12)},
+    { ViewId::GNOME, Tile("goblin")},
+    { ViewId::LEPRECHAUN, Tile(16, 8)},
+    { ViewId::RAT, Tile("rat")},
+    { ViewId::SPIDER, Tile(6, 12)},
+    { ViewId::FLY, Tile(10, 12)},
+    { ViewId::SCORPION, Tile(11, 18)},
+    { ViewId::SNAKE, Tile(9, 12)},
+    { ViewId::VULTURE, Tile(17, 12)},
+    { ViewId::RAVEN, Tile(17, 12)},
+    { ViewId::BODY_PART, Tile(9, 4, 3)},
+    { ViewId::BONE, Tile(3, 0, 2)},
+    { ViewId::BUSH, Tile(17, 0, 2, true)},
+    { ViewId::DECID_TREE, Tile(21, 3, 2, true)},
+    { ViewId::CANIF_TREE, Tile(20, 3, 2, true)},
+    { ViewId::TREE_TRUNK, Tile(26, 3, 2, true)},
+    { ViewId::BURNT_TREE, Tile(25, 3, 2, true)},
+    { ViewId::WATER, getWaterTile(5)},
+    { ViewId::MAGMA, getWaterTile(11)},
+    { ViewId::ABYSS, Tile('~', darkGray)},
+    { ViewId::DOOR, Tile(4, 2, 2, true)},
+    { ViewId::BARRICADE, Tile(13, 10, 2, true)},
+    { ViewId::DIG_ICON, Tile(8, 10, 2)},
+    { ViewId::SWORD, Tile(12, 9, 3)},
+    { ViewId::SPEAR, Tile(5, 8, 3)},
+    { ViewId::SPECIAL_SWORD, Tile(13, 9, 3)},
+    { ViewId::ELVEN_SWORD, Tile(14, 9, 3)},
+    { ViewId::KNIFE, Tile(20, 9, 3)},
+    { ViewId::WAR_HAMMER, Tile(10, 7, 3)},
+    { ViewId::SPECIAL_WAR_HAMMER, Tile(11, 7, 3)},
+    { ViewId::BATTLE_AXE, Tile(13, 7, 3)},
+    { ViewId::SPECIAL_BATTLE_AXE, Tile(21, 7, 3)},
+    { ViewId::BOW, Tile(14, 8, 3)},
+    { ViewId::ARROW, Tile(5, 8, 3)},
+    { ViewId::SCROLL, Tile(3, 6, 3)},
+    { ViewId::STEEL_AMULET, Tile(1, 1, 3)},
+    { ViewId::COPPER_AMULET, Tile(2, 1, 3)},
+    { ViewId::CRYSTAL_AMULET, Tile(4, 1, 3)},
+    { ViewId::WOODEN_AMULET, Tile(0, 1, 3)},
+    { ViewId::AMBER_AMULET, Tile(3, 1, 3)},
+    { ViewId::FIRE_RESIST_RING, Tile(11, 3, 3)},
+    { ViewId::POISON_RESIST_RING, Tile(16, 3, 3)},
+    { ViewId::BOOK, Tile(0, 3, 3)},
+    { ViewId::FIRST_AID, Tile(12, 2, 3)},
+    { ViewId::TRAP_ITEM, Tile(12, 4, 3)},
+    { ViewId::EFFERVESCENT_POTION, Tile(6, 0, 3)},
+    { ViewId::MURKY_POTION, Tile(10, 0, 3)},
+    { ViewId::SWIRLY_POTION, Tile(9, 0, 3)},
+    { ViewId::VIOLET_POTION, Tile(7, 0, 3)},
+    { ViewId::PUCE_POTION, Tile(8, 0, 3)},
+    { ViewId::SMOKY_POTION, Tile(11, 0, 3)},
+    { ViewId::FIZZY_POTION, Tile(9, 0, 3)},
+    { ViewId::MILKY_POTION, Tile(11, 0, 3)},
+    { ViewId::MUSHROOM, Tile(5, 4, 3)},
+    { ViewId::FOUNTAIN, Tile(0, 7, 2, true)},
+    { ViewId::GOLD, Tile(8, 3, 3, true)},
+    { ViewId::TREASURE_CHEST, Tile("treasurydeco", true).addBackground("treasury")},
+    { ViewId::CHEST, Tile(3, 3, 2, true)},
+    { ViewId::OPENED_CHEST, Tile(6, 3, 2, true)},
+    { ViewId::COFFIN, Tile(7, 3, 2, true)},
+    { ViewId::OPENED_COFFIN, Tile(8, 3, 2, true)},
+    { ViewId::BOULDER, Tile("boulder")},
+    { ViewId::PORTAL, Tile("surprise")},
+    { ViewId::TRAP, Tile(L'➹', yellow, true)},
+    { ViewId::GAS_TRAP, Tile(2, 6, 3)},
+    { ViewId::ALARM_TRAP, Tile(16, 5, 3)},
+    { ViewId::WEB_TRAP, Tile(4, 1, 2)},
+    { ViewId::SURPRISE_TRAP, Tile(9, 10, 2)},
+    { ViewId::TERROR_TRAP, Tile(1, 6, 3)},
+    { ViewId::ROCK, Tile("stonepile")},
+    { ViewId::IRON_ROCK, Tile("ironpile2")},
+    { ViewId::WOOD_PLANK, Tile("wood2")},
+    { ViewId::STOCKPILE1, Tile("storage1")},
+    { ViewId::STOCKPILE2, Tile("storage2")},
+    { ViewId::STOCKPILE3, Tile("storage3")},
+    { ViewId::PRISON, Tile(6, 2, 1)},
+    { ViewId::BED, Tile("sleepdeco", true)},
+    { ViewId::KEEPER_BED, Tile("sleepdeco", true).addBackground("sleep")},
+    { ViewId::DORM, Tile("sleep")},
+    { ViewId::TORCH, Tile(13, 1, 2, true).setTranslucent(0.35)},
+    { ViewId::DUNGEON_HEART, Tile(6, 10, 2)},
+    { ViewId::ALTAR, Tile(2, 7, 2, true)},
+    { ViewId::CREATURE_ALTAR, Tile(3, 7, 2, true)},
+    { ViewId::TORTURE_TABLE, Tile::empty().addConnection(Tile::allDirs, "torturedeco").addBackground("torture")},
+    { ViewId::IMPALED_HEAD, Tile(10, 10, 2, true)},
+    { ViewId::TRAINING_ROOM, Tile::empty().addConnection(Tile::allDirs, "traindeco").addBackground("train")},
+    { ViewId::LIBRARY, Tile::empty().addConnection(Tile::allDirs, "libdeco").addBackground("lib")},
+    { ViewId::LABORATORY, Tile::empty().addConnection(Tile::allDirs, "labdeco").addBackground("lab")},
+    { ViewId::BEAST_LAIR, Tile("lair")},
+    { ViewId::BEAST_CAGE, Tile("lairdeco", true).addBackground("lair")},
+    { ViewId::WORKSHOP, Tile::empty().addConnection(Tile::allDirs, "workshopdeco").addBackground("workshop")},
+    { ViewId::CEMETERY, Tile("graveyard")},
+    { ViewId::GRAVE, Tile("gravedeco", true).addBackground("graveyard")},
+    { ViewId::BARS, Tile(L'⧻', lightBlue)},
+    { ViewId::BORDER_GUARD, Tile(' ', white)},
+    { ViewId::ROBE, Tile(7, 11, 3)},
+    { ViewId::LEATHER_GLOVES, Tile(15, 11, 3)},
+    { ViewId::DEXTERITY_GLOVES, Tile(19, 11, 3)},
+    { ViewId::STRENGTH_GLOVES, Tile(20, 11, 3)},
+    { ViewId::LEATHER_ARMOR, Tile(0, 12, 3)},
+    { ViewId::LEATHER_HELM, Tile(10, 12, 3)},
+    { ViewId::TELEPATHY_HELM, Tile(17, 12, 3)},
+    { ViewId::CHAIN_ARMOR, Tile(1, 12, 3)},
+    { ViewId::IRON_HELM, Tile(14, 12, 3)},
+    { ViewId::LEATHER_BOOTS, Tile(0, 13, 3)},
+    { ViewId::IRON_BOOTS, Tile(6, 13, 3)},
+    { ViewId::SPEED_BOOTS, Tile(3, 13, 3)},
+    { ViewId::LEVITATION_BOOTS, Tile(2, 13, 3)},
+    { ViewId::DESTROYED_FURNITURE, Tile('*', brown)},
+    { ViewId::BURNT_FURNITURE, Tile('*', darkGray)},
+    { ViewId::FALLEN_TREE, Tile(26, 3, 2, true)},
+    { ViewId::GUARD_POST, Tile("guardroom")},
+    { ViewId::DESTROY_BUTTON, Tile('X', red)},
+    { ViewId::MANA, Tile(5, 10, 2)},
+    { ViewId::DANGER, Tile(12, 9, 2)},
+    { ViewId::FETCH_ICON, Tile(15, 11, 3)}};
+  if (tiles.count(id))
+    return tiles.at(id);
+  else
+    FAIL << "unhatndled view id " << (int)id;
   return Tile(' ', white);
 }
 
@@ -552,12 +570,7 @@ static Tile getAscii(ViewId id) {
     case ViewId::SMOKY_POTION: return Tile('!', lightGray);
     case ViewId::FIZZY_POTION: return Tile('!', lightBlue);
     case ViewId::MILKY_POTION: return Tile('!', white);
-    case ViewId::SLIMY_MUSHROOM: return Tile(0x22c6, darkGray, true);
-    case ViewId::PINK_MUSHROOM: return Tile(0x22c6, pink, true);
-    case ViewId::DOTTED_MUSHROOM: return Tile(0x22c6, green, true);
-    case ViewId::GLOWING_MUSHROOM: return Tile(0x22c6, lightBlue, true);
-    case ViewId::GREEN_MUSHROOM: return Tile(0x22c6, green, true);
-    case ViewId::BLACK_MUSHROOM: return Tile(0x22c6, darkGray, true);
+    case ViewId::MUSHROOM: return Tile(0x22c6, pink, true);
     case ViewId::FOUNTAIN: return Tile('0', lightBlue);
     case ViewId::GOLD: return Tile('$', yellow);
     case ViewId::TREASURE_CHEST:

@@ -157,6 +157,10 @@ string toLower(const string& s) {
   return ret;
 }
 
+bool endsWith(const string& s, const string& suffix) {
+  return s.size() >= suffix.size() && s.substr(s.size() - suffix.size()) == suffix;
+}
+
 vector<string> split(const string& s, char delim) {
   int begin = 0;
   vector<string> ret;

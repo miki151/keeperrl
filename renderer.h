@@ -96,12 +96,23 @@ class Renderer {
   void drawViewObject(int x, int y, const ViewObject&, bool useSprite, double scale = 1);
   int getWidth();
   int getHeight();
+  static bool loadTilesFromDir(const string& path, Vec2 size);
+  static bool loadTilesFromFile(const string& path, Vec2 size);
+  static void setNominalSize(Vec2);
+
+  struct TileCoords {
+    Vec2 pos;
+    int texNum;
+  };
+
+  static TileCoords getTileCoords(const string&);
 
   static vector<Texture> tiles;
-  const static vector<int> tileSize;
-  const static int nominalSize;
+  static vector<Vec2> tileSize;
+  static Vec2 nominalSize;
 
   private:
+  static map<string, TileCoords> tileCoords;
   RenderTarget* display = nullptr;
 };
 

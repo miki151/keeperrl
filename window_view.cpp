@@ -106,15 +106,15 @@ void WindowView::initialize() {
   renderer.initialize(1024, 600, "KeeperRL");
   Clock::set(new Clock());
   renderThreadId = std::this_thread::get_id();
-  Renderer::tiles.resize(8);
-  tilesOk &= Renderer::tiles[0].loadFromFile("tiles_int.png");
-  tilesOk &= Renderer::tiles[1].loadFromFile("tiles2_int.png");
-  tilesOk &= Renderer::tiles[2].loadFromFile("tiles3_int.png");
-  tilesOk &= Renderer::tiles[3].loadFromFile("tiles4_int.png");
-  tilesOk &= Renderer::tiles[4].loadFromFile("tiles5_int.png");
-  tilesOk &= Renderer::tiles[5].loadFromFile("tiles6_int.png");
-  tilesOk &= Renderer::tiles[6].loadFromFile("tiles7_int.png");
-  tilesOk &= Renderer::tiles[7].loadFromFile("shroom.png");
+  Renderer::setNominalSize(Vec2(36, 36));
+  tilesOk &= Renderer::loadTilesFromFile("tiles_int.png", Vec2(36, 36));
+  tilesOk &= Renderer::loadTilesFromFile("tiles2_int.png", Vec2(36, 36));
+  tilesOk &= Renderer::loadTilesFromFile("tiles3_int.png", Vec2(36, 36));
+  tilesOk &= Renderer::loadTilesFromFile("tiles4_int.png", Vec2(24, 24));
+  tilesOk &= Renderer::loadTilesFromFile("tiles5_int.png", Vec2(36, 36));
+  tilesOk &= Renderer::loadTilesFromFile("tiles6_int.png", Vec2(36, 36));
+  tilesOk &= Renderer::loadTilesFromFile("tiles7_int.png", Vec2(36, 36));
+  tilesOk &= Renderer::loadTilesFromDir("shroom36", Vec2(36, 36));
   asciiLayouts = {
     MapLayout(16, 20, allLayers),
     MapLayout(8, 10,

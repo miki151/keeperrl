@@ -82,6 +82,8 @@ void trim(string& s);
 string toUpper(const string& s);
 string toLower(const string& s);
 
+bool endsWith(const string&, const string& suffix);
+
 vector<string> split(const string& s, char delim);
 
 class Rectangle;

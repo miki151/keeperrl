@@ -24,6 +24,8 @@ class Tile {
   static Tile getTile(const ViewObject& obj, bool sprite);
   static Color getColor(const ViewObject& object);
 
+  static Tile empty();
+
   Color color;
   String text;
   bool symFont = false;
@@ -32,10 +34,13 @@ class Tile {
   Tile(sf::Uint32 ch, Color col, bool sym = false);
   
   Tile(int x, int y, int num = 0, bool noShadow = false);
+  Tile(const string&, bool noShadow = false);
 
   Tile& addConnection(set<Dir> c, int x, int y);
+  Tile& addConnection(set<Dir> c, const string&);
 
   Tile& addBackground(int x, int y);
+  Tile& addBackground(const string&);
 
   Tile& setTranslucent(double v);
 
@@ -52,6 +57,7 @@ class Tile {
   const static set<Dir> allDirs;
 
   private:
+  Tile(Renderer::TileCoords, bool noShadow = false);
   Optional<Vec2> tileCoord;
   Optional<Vec2> backgroundCoord;
   int texNum = 0;
