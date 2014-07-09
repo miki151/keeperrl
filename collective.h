@@ -9,11 +9,9 @@ class Creature;
 class CollectiveControl;
 class Tribe;
 
-enum class MinionTrait {
+RICH_ENUM(MinionTrait,
   FIGHTER,
-  
-  ENUM_END
-};
+);
 
 class Collective : public EventListener {
   public:

@@ -161,11 +161,11 @@ bool endsWith(const string& s, const string& suffix) {
   return s.size() >= suffix.size() && s.substr(s.size() - suffix.size()) == suffix;
 }
 
-vector<string> split(const string& s, char delim) {
+vector<string> split(const string& s, const set<char>& delim) {
   int begin = 0;
   vector<string> ret;
   for (int i : Range(s.size() + 1))
-    if (i == s.size() || s[i] == delim) {
+    if (i == s.size() || delim.count(s[i])) {
       string tmp = s.substr(begin, i - begin);
       if (!tmp.empty())
         ret.push_back(tmp);

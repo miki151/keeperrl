@@ -26,7 +26,7 @@
 
 class EnemyCheck;
 
-enum class AttrType {
+RICH_ENUM(AttrType,
   STRENGTH,
   DAMAGE,
   TO_HIT,
@@ -37,8 +37,7 @@ enum class AttrType {
   SPEED,
   INV_LIMIT,
   WILLPOWER,
-
-  ENUM_END};
+);
 
 enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, HIT, SHOOT, SPELL};
 

@@ -721,7 +721,7 @@ void Model::showHighscore(bool highlightLast) {
     in.getline(buf, 100);
     if (!in)
       break;
-    vector<string> p = split(string(buf), ',');
+    vector<string> p = split(string(buf), {','});
     CHECK(p.size() == 3) << "Input error " << p;
     Elem e;
     e.name = p[0];

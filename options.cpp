@@ -139,7 +139,7 @@ unordered_map<OptionId, int> Options::readValues(const string& path) {
     in.getline(buf, 100);
     if (!in)
       break;
-    vector<string> p = split(string(buf), ',');
+    vector<string> p = split(string(buf), {','});
     CHECK(p.size() == 2) << "Input error " << p;
     ret[OptionId(convertFromString<int>(p[0]))] = convertFromString<int>(p[1]);
   }

@@ -84,7 +84,7 @@ string toLower(const string& s);
 
 bool endsWith(const string&, const string& suffix);
 
-vector<string> split(const string& s, char delim);
+vector<string> split(const string& s, const set<char>& delim);
 
 class Rectangle;
 
@@ -791,7 +791,7 @@ inline T& operator <<(T& d, Vec2 msg) {
 inline std::istream& operator >>(std::istream& d, Vec2& msg) {
   string in;
   d >> in;
-  vector<string> s = split(in.substr(1, in.size() - 2), ',');
+  vector<string> s = split(in.substr(1, in.size() - 2), {','});
   CHECKEQ((int)s.size(), 2);
   msg = Vec2(convertFromString<int>(s[0]), convertFromString<int>(s[1]));
   return d;
@@ -938,20 +938,41 @@ string combine(const vector<T>& v) {
       transform2<string>(v, [](const T& e) { return e.name; }));
 }
 
+template<typename T>
+class EnumInfo {
+  public:
+  static string getName(T);
+  static int getSize();
+};
+
+#define RICH_ENUM(Name, ...) \
+enum class Name { __VA_ARGS__ };\
+template<> \
+class EnumInfo<Name> { \
+  public:\
+  static string getName(Name e) {\
+    static vector<string> names = split(#__VA_ARGS__, {' ', ','});\
+    return names[int(e)];\
+  }\
+  static int getSize() {\
+    static int size = split(#__VA_ARGS__, {' ', ','}).size();\
+    return size;\
+  }\
+}
+
 template<class T, class U>
 class EnumMap {
   public:
-  EnumMap() {
+  EnumMap() : elems(EnumInfo<T>::getSize()) {
     clear();
   }
 
   void clear() {
-    for (int i = 0; i < int(T::ENUM_END); ++i)
+    for (int i = 0; i < EnumInfo<T>::getSize(); ++i)
       elems[i] = U();
   }
 
-  EnumMap(initializer_list<pair<T, U>> il) {
-    clear();
+  EnumMap(initializer_list<pair<T, U>> il) : EnumMap() {
     for (auto elem : il)
       elems[int(elem.first)] = elem.second;
   }
@@ -966,18 +987,18 @@ class EnumMap {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & boost::serialization::make_array(elems, int(T::ENUM_END));
+    ar & SVAR(elems);
   }
 
   private:
-  U elems[int(T::ENUM_END)];
+  vector<U> elems;
 };
 
 template<class T>
-class EnumSet : public EnumMap<T, bool> {
+class EnumSet : public EnumMap<T, char> {
   public:
   void insert(T elem) {
-    (*this)[elem] = true;
+    (*this)[elem] = 1;
   }
 
   class Iter {
@@ -987,7 +1008,7 @@ class EnumSet : public EnumMap<T, bool> {
     }
 
     void goForward() {
-      while (ind < int(T::ENUM_END) && !set[T(ind)])
+      while (ind < EnumInfo<T>::getSize() && !set[T(ind)])
         ++ind;
     }
 
@@ -1015,7 +1036,7 @@ class EnumSet : public EnumMap<T, bool> {
   }
 
   Iter end() const {
-    return Iter(*this, int(T::ENUM_END));
+    return Iter(*this, EnumInfo<T>::getSize());
   }
 };
 
@@ -1049,7 +1070,7 @@ class EnumAll {
   }
 
   Iter end() {
-    return Iter(int(T::ENUM_END));
+    return Iter(EnumInfo<T>::getSize());
   }
 };
 

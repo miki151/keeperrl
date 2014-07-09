@@ -29,7 +29,7 @@ enum class DeityHabitat {
   WATER,
   STARS };
 
-enum class EpithetId {
+RICH_ENUM(EpithetId,
   CHANGE,
   COURAGE,
   CRAFTS,
@@ -51,9 +51,7 @@ enum class EpithetId {
   WEALTH,
   WINTER,
   WISDOM,
-
-  ENUM_END,
-};
+);
 
 enum class WorshipType {
   PRAYER,

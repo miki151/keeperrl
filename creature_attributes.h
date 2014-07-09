@@ -32,17 +32,16 @@ enum class CreatureSize {
   LARGE,
   HUGE
 };
-enum class BodyPart {
+RICH_ENUM(BodyPart,
   HEAD,
   TORSO,
   ARM,
   WING,
   LEG,
   BACK,
+);
 
-  ENUM_END};
-
-enum class LastingEffect {
+RICH_ENUM(LastingEffect,
     SLEEP,
     PANIC,
     RAGE,
@@ -58,9 +57,9 @@ enum class LastingEffect {
     STUNNED,
     POISON_RESISTANT,
     FIRE_RESISTANT,
-    FLYING,
+    FLYING
+);
 
-    ENUM_END};
 
 #define CATTR(X) CreatureAttributes([&](CreatureAttributes& c) { X })
 

@@ -23,7 +23,7 @@
 #include "event.h"
 #include "singleton.h"
 
-enum class TribeId {
+RICH_ENUM(TribeId,
   MONSTER,
   PEST,
   WILDLIFE,
@@ -39,9 +39,7 @@ enum class TribeId {
   PEACEFUL,
   KEEPER,
   LIZARD,
-
-  ENUM_END
-};
+);
 
 class Creature;
 

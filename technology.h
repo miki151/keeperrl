@@ -21,7 +21,7 @@
 
 class Skill;
 
-enum class TechId {
+RICH_ENUM(TechId,
   ALCHEMY,
   ALCHEMY_ADV,
   GOLEM,
@@ -43,9 +43,7 @@ enum class TechId {
   SPELLS,
   SPELLS_ADV,
   SPELLS_MAS,
-
-  ENUM_END
-};
+);
 
 class Technology : public Singleton<Technology, TechId> {
   public:

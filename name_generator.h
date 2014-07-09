@@ -18,7 +18,7 @@
 
 #include "singleton.h"
 
-enum class NameGeneratorId {
+RICH_ENUM(NameGeneratorId,
   FIRST,
   SCROLL,
   AZTEC,
@@ -32,9 +32,7 @@ enum class NameGeneratorId {
   DOG,
   INSULTS,
   DRAGON,
-
-  ENUM_END
-};
+);
 
 class NameGenerator : public Singleton<NameGenerator, NameGeneratorId> {
   public:

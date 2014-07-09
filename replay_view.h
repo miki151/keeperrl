@@ -88,7 +88,7 @@ class ReplayView : public T {
       if (action == "nothing")
         return Nothing();
       else {
-        vector<string> s = split(action, ',');
+        vector<string> s = split(action, {','});
         CHECKEQ((int)s.size(), 2);
         return Vec2(convertFromString<int>(s[0]), convertFromString<int>(s[1]));
       }

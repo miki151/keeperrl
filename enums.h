@@ -27,8 +27,6 @@ namespace std { \
   }; \
 }
 
-#define END_CASE(X) case X::ENUM_END: FAIL << "enum end"; break;
-
 typedef int UniqueId;
 
 enum class MsgType;

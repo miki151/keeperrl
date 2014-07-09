@@ -19,13 +19,11 @@
 #include "singleton.h"
 #include "enums.h"
 
-enum class VisionId {
+RICH_ENUM(VisionId,
   ELF,
   NIGHT,
   NORMAL,
-
-  ENUM_END
-};
+);
 
 class Vision : public Singleton<Vision, VisionId> {
   public:

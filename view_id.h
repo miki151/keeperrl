@@ -1,7 +1,8 @@
 #ifndef _VIEW_ID_H
 #define _VIEW_ID_H
 
-enum class ViewId { 
+
+RICH_ENUM(ViewId,
   EMPTY,
   PLAYER,
   KEEPER,
@@ -226,6 +227,6 @@ enum class ViewId {
   MANA,
   DANGER,
   FETCH_ICON,
-};
+);
 
 #endif

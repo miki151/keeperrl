@@ -21,7 +21,7 @@
 #include "singleton.h"
 #include "enums.h"
 
-enum class SkillId {
+RICH_ENUM(SkillId,
   AMBUSH,
   KNIFE_THROWING,
   STEALING,
@@ -30,9 +30,7 @@ enum class SkillId {
   CONSTRUCTION,
   ELF_VISION,
   NIGHT_VISION,
-
-  ENUM_END
-};
+);
 
 class Creature;
 class Skill : public Singleton<Skill, SkillId> {

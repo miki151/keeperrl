@@ -724,7 +724,6 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       removeEffect(LastingEffect::POISON, true);
       break;
     case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "now fire resistant"); break;
-    END_CASE(LastingEffect);
   }
 }
 
@@ -772,7 +771,6 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
       if (msg) you(MsgType::FALL, getSquare()->getName());
       bleed(0.1);
       break;
-    END_CASE(LastingEffect);
   } 
 }
 
@@ -927,7 +925,6 @@ int Creature::getAttr(AttrType type) const {
         if (carryAnything)
           return 1000000;
         return getAttr(AttrType::STRENGTH) * 2;
-    END_CASE(AttrType);
   }
   return max(0, def);
 }
@@ -1110,7 +1107,6 @@ static string getBodyPartName(BodyPart part) {
     case BodyPart::HEAD: return "head";
     case BodyPart::TORSO: return "torso";
     case BodyPart::BACK: return "back";
-    END_CASE(BodyPart);
   }
   FAIL <<"Wf";
   return "";
@@ -1128,7 +1124,6 @@ string Creature::getAttrName(AttrType attr) {
     case AttrType::SPEED: return "speed";
     case AttrType::INV_LIMIT: return "carry capacity";
     case AttrType::WILLPOWER: return "willpower";
-    END_CASE(AttrType);
   }
   return "";
 }
@@ -2095,7 +2090,6 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
-    END_CASE(BodyPart);
   }
 }
 

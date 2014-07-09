@@ -25,14 +25,13 @@
 class Location;
 class Tribe;
 
-enum class QuestId {
+RICH_ENUM(QuestId,
   DRAGON,
   CASTLE_CELLAR,
   BANDITS,
   GOBLINS,
   DWARVES,
-
-  ENUM_END};
+);
 
 class Quest : public Singleton<Quest, QuestId> {
   public:

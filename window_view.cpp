@@ -1167,9 +1167,9 @@ static vector<string> breakText(const string& text) {
     return {""};
   int maxWidth = 80;
   vector<string> rows;
-  for (string line : split(text, '\n')) {
+  for (string line : split(text, {'\n'})) {
     rows.push_back("");
-    for (string word : split(line, ' '))
+    for (string word : split(line, {' '}))
       if (rows.back().size() + word.size() + 1 <= maxWidth)
         rows.back().append((rows.back().size() > 0 ? " " : "") + word);
       else

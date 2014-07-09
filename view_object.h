@@ -42,14 +42,13 @@ class ViewObject {
   bool isHostile() const;
   bool isFriendly() const;
 
-  enum class Modifier { BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
-    ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT, DARK, ENUM_END};
+  enum class Modifier;
 
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;
 
-  enum class Attribute { BLEEDING, BURNING, HEIGHT, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, ENUM_END };
+  enum class Attribute;
 
   static void setHallu(bool);
 
@@ -77,5 +76,9 @@ class ViewObject {
   ViewLayer SERIAL(viewLayer);
   string SERIAL(description);
 };
+
+RICH_ENUM(ViewObject::Modifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
+    ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT, DARK);
+RICH_ENUM(ViewObject::Attribute, BLEEDING, BURNING, HEIGHT, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY);
 
 #endif
