@@ -882,7 +882,7 @@ class RandomLocations : public LevelMaker {
   }
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
-    makeCnt(builder, area, 100);
+    makeCnt(builder, area, 3000);
   }
 
   void makeCnt(Level::Builder* builder, Rectangle area, int tries) {
@@ -1912,8 +1912,8 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
 
 static MakerQueue* dragonCaveMaker(SettlementInfo info) {
   MakerQueue* queue = vaultMaker(info, true);
-  queue->addMaker(new RandomLocations({new CreatureAltarMaker(info.collective)}, {{1, 1}},
-      {new TypePredicate(SquareType::HILL)}));
+/*  queue->addMaker(new RandomLocations({new CreatureAltarMaker(info.collective)}, {{1, 1}},
+      {new TypePredicate(SquareType::HILL)}));*/
   return queue;
 }
 
@@ -2097,7 +2097,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
 //  predicates.push_back(new BorderPredicate(SquareType::MOUNTAIN2, SquareType::HILL));
 //  minDistances[{startingPos, subMakers.back()}] = 50;
   queue->addMaker(new Empty(SquareType::WATER));
-  queue->addMaker(new Mountains({0.0, 0.0, 0.5, 0.66, 0.9}, 0.5, {0, 1, 0, 0, 0}, true,
+  queue->addMaker(new Mountains({0.0, 0.0, 0.7, 0.75, 0.95}, 0.5, {0, 1, 0, 0, 0}, true,
         {SquareType::MOUNTAIN2, SquareType::MOUNTAIN2, SquareType::HILL, SquareType::GRASS, SquareType::SAND}));
   queue->addMaker(new AddAttrib(SquareAttrib::CONNECT_CORRIDOR, new AttribPredicate(SquareAttrib::LOWLAND)));
   queue->addMaker(new Forrest(0.7, 0.5, SquareType::GRASS, vegetationLow, probs));

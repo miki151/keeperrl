@@ -270,11 +270,11 @@ int main(int argc, char* argv[]) {
       Options::handle(view.get(), OptionSet::GENERAL);
       continue;
     }
-    if (choice == 0) {
+    if (choice == 0 && forceMode == -1) {
       if (!Options::handleOrExit(view.get(), OptionSet::KEEPER, -1))
         continue;
     } 
-    if (choice == 1) {
+    if (choice == 1 && forceMode == -1) {
       if (!Options::handleOrExit(view.get(), OptionSet::ADVENTURER, -1))
         continue;
     } 
@@ -313,15 +313,20 @@ int main(int argc, char* argv[]) {
         ex = s;
       }
     }
-    ready = true;
-    model->setView(view.get());
-    if (genExit)
-      break;
     if (!model) {
       view->presentText("Sorry!", "World generation permanently failed with the following error:\n \n" + ex +
           "\n \nIf you would be so kind, please send the file \'crash.log\'"
           " to rusolis@poczta.fm Thanks!");
       saveExceptionLine("crash.log", ex);
+    }
+    ready = true;
+    model->setView(view.get());
+    if (genExit) {
+      model.reset();
+      clearAndInitialize();
+      exitGame = true;
+      renderingThread.join();
+      return 0;
     }
     int var = 0;
     try {
