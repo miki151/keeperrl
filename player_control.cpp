@@ -243,7 +243,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::workshopInfo {
 
 Optional<SquareType> getSecondarySquare(SquareType type) {
   switch (type.id) {
-    case SquareType::DORM: return SquareType(SquareType::KEEPER_BED);
+    case SquareType::DORM: return SquareType(SquareType::BED);
     case SquareType::BEAST_LAIR: return SquareType(SquareType::BEAST_CAGE);
     case SquareType::CEMETERY: return SquareType(SquareType::GRAVE);
     default: return Nothing();
@@ -327,7 +327,7 @@ map<MinionTask, PlayerControl::MinionTaskInfo> PlayerControl::getTaskInfo() cons
     {MinionTask::LABORATORY, {{SquareType::LABORATORY}, "lab", PlayerControl::Warning::LABORATORY}},
     {MinionTask::TRAIN, {{SquareType::TRAINING_ROOM}, "training", PlayerControl::Warning::TRAINING}},
     {MinionTask::WORKSHOP, {{SquareType::WORKSHOP}, "crafting", PlayerControl::Warning::WORKSHOP}},
-    {MinionTask::SLEEP, {{SquareType::KEEPER_BED}, "sleeping", PlayerControl::Warning::BEDS}},
+    {MinionTask::SLEEP, {{SquareType::BED}, "sleeping", PlayerControl::Warning::BEDS}},
     {MinionTask::GRAVE, {{SquareType::GRAVE}, "sleeping", PlayerControl::Warning::GRAVES}},
     {MinionTask::STUDY, {{SquareType::LIBRARY}, "studying", PlayerControl::Warning::LIBRARY}},
     {MinionTask::PRISON, {{SquareType::PRISON}, "prison", PlayerControl::Warning::NO_PRISON}},
@@ -912,7 +912,7 @@ void PlayerControl::handleBeastTaming(View* view) {
 vector<PlayerControl::SpawnInfo> breedingInfo {
   {CreatureId::GNOME, 30, Nothing()},
   {CreatureId::GOBLIN, 50, TechId::GOBLIN},
-  {CreatureId::BILE_DEMON, 80, TechId::OGRE},
+  {CreatureId::OGRE, 80, TechId::OGRE},
   {CreatureId::SPECIAL_HUMANOID, 150, TechId::HUMANOID_MUT},
 };
 
@@ -1203,7 +1203,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
 
 vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   vector<TechInfo> ret;
-  ret.push_back({{ViewId::BILE_DEMON, "Humanoids", 'h'},
+  ret.push_back({{ViewId::OGRE, "Humanoids", 'h'},
       [this](PlayerControl* c, View* view) { c->handleHumanoidBreeding(view); }});
   ret.push_back({{ViewId::BEAR, "Beasts", 'n'},
       [this](PlayerControl* c, View* view) { c->handleBeastTaming(view); }}); 

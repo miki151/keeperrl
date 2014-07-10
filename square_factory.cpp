@@ -1012,10 +1012,9 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Tree(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush",
             Vision::get(VisionId::NORMAL), Random.getRandom(5, 10), {{SquareType::TREE_TRUNK, 10}});
     case SquareType::TREE_TRUNK:
-        return new Furniture(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
-            "tree trunk", 0);
+        return new Square(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
+            "tree trunk", Vision::get(VisionId::NORMAL));
     case SquareType::BED: return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
-    case SquareType::KEEPER_BED: return new Bed(ViewObject(ViewId::KEEPER_BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareType::DORM: return new DestroyableSquare(ViewObject(ViewId::DORM, ViewLayer::FLOOR_BACKGROUND,
                               "Dormitory"), "floor", Vision::get(VisionId::NORMAL));
     case SquareType::TORCH: return new Torch(ViewObject(ViewId::TORCH, ViewLayer::FLOOR, "Torch"), "torch");

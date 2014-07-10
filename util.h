@@ -950,13 +950,20 @@ enum class Name { __VA_ARGS__ };\
 template<> \
 class EnumInfo<Name> { \
   public:\
-  static string getName(Name e) {\
+  static string getString(Name e) {\
     static vector<string> names = split(#__VA_ARGS__, {' ', ','});\
     return names[int(e)];\
   }\
   static int getSize() {\
     static int size = split(#__VA_ARGS__, {' ', ','}).size();\
     return size;\
+  }\
+  static Name fromString(const string& s) {\
+    for (int i : Range(getSize())) \
+      if (getString(Name(i)) == s) \
+        return Name(i); \
+    FAIL << #Name << " value not found " << s;\
+    return Name(0);\
   }\
 }
 

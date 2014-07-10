@@ -870,7 +870,7 @@ CreatureFactory CreatureFactory::level(int num) {
       { CreatureId::GNOME, { 400, 200, 100, 100, 100, 100, 100, 100, 100, 100}},
       { CreatureId::LEPRECHAUN, { 20, 20, 20, 20, 20, 20, 20, 20}},
       { CreatureId::GOBLIN, { 20, 20, 30, 50, 50, 100, 200, 400 }},
-      { CreatureId::BILE_DEMON, { 0, 0, 100, 100, 200, 200, 200, 200, 200, 200 }},
+      { CreatureId::OGRE, { 0, 0, 100, 100, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::JACKAL, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
       { CreatureId::ACID_MOUND, { 50, 50, 50, 50, 50, 50, 50, 50, 50, 50 }},
       { CreatureId::SPIDER, { 200, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
@@ -1406,9 +1406,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 60;
           c.chatReactionFriendly = "talks about escape plans";
           c.name = "prisoner";);
-    case CreatureId::BILE_DEMON: 
+    case CreatureId::OGRE: 
       return CATTR(
-          c.viewId = ViewId::BILE_DEMON;
+          c.viewId = ViewId::OGRE;
           c.speed = 80;
           c.size = CreatureSize::LARGE;
           c.strength = 20;
@@ -2023,7 +2023,7 @@ vector<ItemId> getInventory(CreatureId id) {
         .add(ItemId::IRON_BOOTS)
         .add(ItemId::HEALING_POTION, Random.getRandom(1, 4))
         .add(ItemId::GOLD_PIECE, Random.getRandom(200, 300));
-    case CreatureId::BILE_DEMON: 
+    case CreatureId::OGRE: 
       return ItemList().add(ItemId::WAR_HAMMER);
     case CreatureId::BANDIT:
     case CreatureId::GOBLIN: 

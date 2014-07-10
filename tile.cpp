@@ -189,7 +189,7 @@ static Tile getSprite(ViewId id) {
     { ViewId::LIZARDLORD, Tile(11, 8)},
     { ViewId::IMP, Tile(18, 19)},
     { ViewId::PRISONER, Tile("prisoner")},
-    { ViewId::BILE_DEMON, Tile(8, 14)},
+    { ViewId::OGRE, Tile(8, 14)},
     { ViewId::CHICKEN, Tile("chicken")},
     { ViewId::DWARF, Tile(2, 6)},
     { ViewId::DWARF_BARON, Tile(3, 6)},
@@ -356,7 +356,6 @@ static Tile getSprite(ViewId id) {
     { ViewId::STOCKPILE3, Tile("storage3")},
     { ViewId::PRISON, Tile(6, 2, 1)},
     { ViewId::BED, Tile("sleepdeco", true)},
-    { ViewId::KEEPER_BED, Tile("sleepdeco", true).addBackground("sleep")},
     { ViewId::DORM, Tile("sleep")},
     { ViewId::TORCH, Tile(13, 1, 2, true).setTranslucent(0.35)},
     { ViewId::DUNGEON_HEART, Tile(6, 10, 2)},
@@ -432,7 +431,7 @@ static Tile getAscii(ViewId id) {
     case ViewId::LIZARDLORD: return Tile('@', brown);
     case ViewId::IMP: return Tile('i', lightBrown);
     case ViewId::PRISONER: return Tile('@', lightBrown);
-    case ViewId::BILE_DEMON: return Tile('O', green);
+    case ViewId::OGRE: return Tile('O', green);
     case ViewId::CHICKEN: return Tile('c', yellow);
     case ViewId::DWARF: return Tile('h', blue);
     case ViewId::DWARF_BARON: return Tile('h', darkBlue);
@@ -599,7 +598,6 @@ static Tile getAscii(ViewId id) {
     case ViewId::STOCKPILE3: return Tile('.', lightBlue);
     case ViewId::PRISON: return Tile('.', blue);
     case ViewId::DORM: return Tile('.', brown);
-    case ViewId::KEEPER_BED:
     case ViewId::BED: return Tile('=', white);
     case ViewId::DUNGEON_HEART: return Tile(L'♥', white, true);
     case ViewId::TORCH: return Tile('I', orange);

@@ -108,7 +108,7 @@ enum class CreatureId {
 
     IMP,
     PRISONER,
-    BILE_DEMON,
+    OGRE,
     CHICKEN,
 
     KNIGHT,

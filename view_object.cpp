@@ -138,7 +138,7 @@ static vector<ViewId> creatureIds {
   ViewId::DWARVEN_SHOPKEEPER,
   ViewId::IMP,
   ViewId::PRISONER,
-  ViewId::BILE_DEMON,
+  ViewId::OGRE,
   ViewId::CHICKEN,
   ViewId::DARK_KNIGHT,
   ViewId::GREEN_DRAGON,
