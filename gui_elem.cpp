@@ -22,8 +22,6 @@
 
 using sf::Color;
 
-using namespace colors;
-
 Rectangle GuiElem::getBounds() {
   return bounds;
 }
@@ -150,7 +148,7 @@ PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, 
 PGuiElem GuiElem::label(const string& s, Color c, char hotkey) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawTextWithHotkey(transparency(black, 100),
+          r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
             bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, 0);
           r.drawTextWithHotkey(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, hotkey);
         }));
@@ -704,9 +702,9 @@ void GuiElem::initialize(const string& texturePath) {
     background1 = Color(0x8c, 0x50, 0x31);
     background2 = Color(0x46, 0x37, 0x2f);
     foreground1 = transparency(Color(0x20, 0x5c, 0x4a), 150);
-    text = white;
-    titleText = yellow;
-    inactiveText = lightGray;
+    text = colors[ColorId::WHITE];
+    titleText = colors[ColorId::YELLOW];
+    inactiveText = colors[ColorId::LIGHT_GRAY];
 }
 
 static PGuiElem getScrollbar() {
@@ -832,7 +830,7 @@ PGuiElem GuiElem::border(PGuiElem content) {
 
 PGuiElem GuiElem::window(PGuiElem content) {
   return border(stack(makeVec<PGuiElem>(
-        rectangle(colors::black),
+        rectangle(colors[ColorId::BLACK]),
         insideBackground(stack(background(background1),
         margins(std::move(content), borderWidth, borderHeight, borderWidth, borderHeight))))));
 }

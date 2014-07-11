@@ -46,8 +46,7 @@ enum class SquareAttrib;
 
 ENUM_HASH(SquareAttrib);
 
-enum class Dir { N, S, E, W, NE, NW, SE, SW };
-ENUM_HASH(Dir);
+enum class Dir;
 
 enum class StairKey;
 enum class StairDirection;

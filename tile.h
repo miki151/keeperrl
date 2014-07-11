@@ -25,24 +25,28 @@ class Tile {
   static Color getColor(const ViewObject& object);
 
   static Tile empty();
+  static Tile unicode(sf::Uint32 ch, ColorId, bool sym = false);
+  static Tile fromString(const string&, ColorId, bool symbol = false);
+  static Tile byCoord(int x, int y, int num = 0, bool noShadow = false);
+  static Tile byName(const string&, bool noShadow = false);
+
+  static void initialize();
 
   Color color;
   String text;
   bool symFont = false;
   double translucent = 0;
   bool noShadow = false;
-  Tile(sf::Uint32 ch, Color col, bool sym = false);
-  
-  Tile(int x, int y, int num = 0, bool noShadow = false);
-  Tile(const string&, bool noShadow = false);
 
-  Tile& addConnection(set<Dir> c, int x, int y);
-  Tile& addConnection(set<Dir> c, const string&);
+  Tile setNoShadow();
 
-  Tile& addBackground(int x, int y);
-  Tile& addBackground(const string&);
+  Tile addConnection(EnumSet<Dir> c, int x, int y);
+  Tile addConnection(EnumSet<Dir> c, const string&);
 
-  Tile& setTranslucent(double v);
+  Tile addBackground(int x, int y);
+  Tile addBackground(const string&);
+
+  Tile setTranslucent(double v);
 
   bool hasSpriteCoord();
 
@@ -50,18 +54,18 @@ class Tile {
 
   Optional<Vec2> getBackgroundCoord();
 
-  Vec2 getSpriteCoord(const set<Dir>& c);
+  Vec2 getSpriteCoord(const EnumSet<Dir>& c);
 
   int getTexNum();
 
-  const static set<Dir> allDirs;
-
   private:
-  Tile(Renderer::TileCoords, bool noShadow = false);
+  Tile();
+  Tile(int x, int y, int num = 0, bool noShadow = false);
+  Tile(Renderer::TileCoords coords, bool noShadow);
   Optional<Vec2> tileCoord;
   Optional<Vec2> backgroundCoord;
   int texNum = 0;
-  unordered_map<set<Dir>, Vec2> connections;
+  unordered_map<EnumSet<Dir>, Vec2> connections;
 };
 
 

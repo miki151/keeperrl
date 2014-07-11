@@ -42,6 +42,8 @@
 #include "creature.h"
 #include "test.h"
 #include "pantheon.h"
+#include "script_context.h"
+#include "tile.h"
 
 using namespace boost::iostreams;
 
@@ -165,6 +167,8 @@ void clearAndInitialize() {
   Vision::clearAll();
   Epithet::clearAll();
   NameGenerator::clearAll();
+  ScriptContext::init();
+  Tile::initialize();
   EventListener::initialize();
   Tribe::init();
   Skill::init();

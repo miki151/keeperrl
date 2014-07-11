@@ -23,8 +23,6 @@
 #include "creature.h"
 #include "square.h"
 
-using namespace colors;
-
 static Image mapBuffer;
 static TextureRenderer renderer;
 
@@ -33,21 +31,21 @@ void MinimapGui::renderMap() {
   for (Vec2 v : info.roads) {
     Vec2 rrad(1, 1);
     Vec2 pos = info.bounds.getTopLeft() + v * info.scale;
-    renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), brown);
+    renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), colors[ColorId::BROWN]);
   }
   Vec2 rad(3, 3);
   if (info.player.inRectangle(info.bounds.minusMargin(rad.x)))
-    renderer.drawFilledRectangle(Rectangle(info.player - rad, info.player + rad), blue);
+    renderer.drawFilledRectangle(Rectangle(info.player - rad, info.player + rad), colors[ColorId::BLUE]);
   for (Vec2 pos : info.enemies)
-    renderer.drawFilledRectangle(Rectangle(pos - rad, pos + rad), red);
+    renderer.drawFilledRectangle(Rectangle(pos - rad, pos + rad), colors[ColorId::RED]);
   for (auto loc : info.locations)
     if (loc.text.empty())
-      renderer.drawText(lightGreen, loc.pos.x + 5, loc.pos.y, "?");
+      renderer.drawText(colors[ColorId::LIGHT_GREEN], loc.pos.x + 5, loc.pos.y, "?");
     else {
       renderer.drawFilledRectangle(loc.pos.x, loc.pos.y,
           loc.pos.x + renderer.getTextLength(loc.text) + 10, loc.pos.y + 25,
-          transparency(black, 130));
-      renderer.drawText(white, loc.pos.x + 5, loc.pos.y, loc.text);
+          transparency(colors[ColorId::BLACK], 130));
+      renderer.drawText(colors[ColorId::WHITE], loc.pos.x + 5, loc.pos.y, loc.text);
     }
 }
 
@@ -89,11 +87,11 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
   info.enemies.clear();
   info.locations.clear();
   for (Vec2 v : Rectangle(bounds.getW() / scale, bounds.getH() / scale)) {
-    putMapPixel(v, black);
+    putMapPixel(v, colors[ColorId::BLACK]);
   }
   for (Vec2 v : levelPart) {
     if (!v.inRectangle(level->getBounds()) || (!creature->getMemory().hasViewIndex(v) && !creature->canSee(v)))
-      putMapPixel(v - levelPart.getTopLeft(), black);
+      putMapPixel(v - levelPart.getTopLeft(), colors[ColorId::BLACK]);
     else {
       putMapPixel(v - levelPart.getTopLeft(), Tile::getColor(level->getSquare(v)->getViewObject()));
       if (level->getSquare(v)->getName() == "road")

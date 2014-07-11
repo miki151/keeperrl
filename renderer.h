@@ -30,38 +30,40 @@ using sf::RenderWindow;
 using sf::RenderTarget;
 using sf::Event;
 
-namespace colors {
-  extern const Color white;
-  extern const Color yellow;
-  extern const Color lightBrown;
-  extern const Color orangeBrown;
-  extern const Color brown;
-  extern const Color darkBrown;
-  extern const Color lightGray;
-  extern const Color gray;
-  extern const Color almostGray;
-  extern const Color darkGray;
-  extern const Color almostBlack;
-  extern const Color almostDarkGray;
-  extern const Color black;
-  extern const Color almostWhite;
-  extern const Color green;
-  extern const Color lightGreen;
-  extern const Color darkGreen;
-  extern const Color red;
-  extern const Color lightRed;
-  extern const Color pink;
-  extern const Color orange;
-  extern const Color blue;
-  extern const Color darkBlue;
-  extern const Color nightBlue;
-  extern const Color lightBlue;
-  extern const Color purple;
-  extern const Color violet;
-  extern const Color translucentBlack;
+RICH_ENUM(ColorId,
+  WHITE,
+  YELLOW,
+  LIGHT_BROWN,
+  ORANGE_BROWN,
+  BROWN,
+  DARK_BROWN,
+  LIGHT_GRAY,
+  GRAY,
+  ALMOST_GRAY,
+  DARK_GRAY,
+  ALMOST_BLACK,
+  ALMOST_DARK_GRAY,
+  BLACK,
+  ALMOST_WHITE,
+  GREEN,
+  LIGHT_GREEN,
+  DARK_GREEN,
+  RED,
+  LIGHT_RED,
+  PINK,
+  ORANGE,
+  BLUE,
+  DARK_BLUE,
+  NIGHT_BLUE,
+  LIGHT_BLUE,
+  PURPLE,
+  VIOLET,
+  TRANSLUCENT_BLACK,
+);
 
-  Color transparency(const Color& color, int trans);
-}
+Color transparency(const Color& color, int trans);
+
+extern EnumMap<ColorId, Color> colors;
 
 enum class SpriteId {
   BUILDINGS,

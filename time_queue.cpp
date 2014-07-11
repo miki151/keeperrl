@@ -39,7 +39,8 @@ SERIALIZABLE(TimeQueue::QElem);
 
 TimeQueue::TimeQueue() : queue([](QElem e1, QElem e2) {
     return e1.time > e2.time || (e1.time == e2.time && e1.creature->getUniqueId() > e2.creature->getUniqueId());
-}) {}
+}) {
+}
 
 void TimeQueue::addCreature(PCreature c) {
   queue.push({c.get(), c->getTime()});

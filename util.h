@@ -166,6 +166,7 @@ template <class T> struct hash<std::set<T>> {
 
 }
 
+
 class Rectangle {
   public:
   friend class Vec2;
@@ -941,12 +942,20 @@ string combine(const vector<T>& v) {
 template<typename T>
 class EnumInfo {
   public:
-  static string getName(T);
+  static string getString(T);
   static int getSize();
 };
 
 #define RICH_ENUM(Name, ...) \
 enum class Name { __VA_ARGS__ };\
+namespace std {\
+template <>\
+struct hash<Name> {\
+  size_t operator()(Name obj) const {\
+    return int(obj);\
+  }\
+};\
+}\
 template<> \
 class EnumInfo<Name> { \
   public:\
@@ -967,11 +976,22 @@ class EnumInfo<Name> { \
   }\
 }
 
+RICH_ENUM(Dir, N, S, E, W, NE, NW, SE, SW );
+
 template<class T, class U>
 class EnumMap {
   public:
   EnumMap() : elems(EnumInfo<T>::getSize()) {
     clear();
+  }
+
+  bool operator == (const EnumMap<T, U>& other) const {
+    return elems == other.elems;
+  }
+
+  void clear(U value) {
+    for (int i = 0; i < EnumInfo<T>::getSize(); ++i)
+      elems[i] = value;
   }
 
   void clear() {
@@ -1004,8 +1024,21 @@ class EnumMap {
 template<class T>
 class EnumSet : public EnumMap<T, char> {
   public:
+  EnumSet() {}
+
+  EnumSet(initializer_list<T> il) {
+    for (auto elem : il)
+      insert(elem);
+  }
+
   void insert(T elem) {
     (*this)[elem] = 1;
+  }
+
+  static EnumSet<T> fullSet() {
+    EnumSet<T> ret;
+    ret.clear(1);
+    return ret;
   }
 
   class Iter {
@@ -1046,6 +1079,20 @@ class EnumSet : public EnumMap<T, char> {
     return Iter(*this, EnumInfo<T>::getSize());
   }
 };
+
+namespace std {
+
+template <typename T>
+struct hash<EnumSet<T>> {
+  size_t operator()(const EnumSet<T>& obj) const {
+    size_t ret = 0;
+    for (const T& elem : obj) {
+      ret = ret * 79146198 + hash<T>()(elem);
+    }
+    return ret;
+  }
+};
+}
 
 template <class T>
 class EnumAll {

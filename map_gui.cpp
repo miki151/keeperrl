@@ -25,7 +25,6 @@
 #include "clock.h"
 #include "view_id.h"
 
-using namespace colors;
 
 MapGui::MapGui(const Table<Optional<ViewIndex>>& o, function<void(Vec2)> fun) : objects(o), leftClickFun(fun) {
 }
@@ -62,16 +61,16 @@ static Color getBleedingColor(const ViewObject& object) {
 
 Color getHighlightColor(ViewIndex::HighlightInfo info) {
   switch (info.type) {
-    case HighlightType::BUILD: return transparency(yellow, 170);
-    case HighlightType::RECT_SELECTION: return transparency(yellow, 90);
-    case HighlightType::FOG: return transparency(white, 120 * info.amount);
+    case HighlightType::BUILD: return transparency(colors[ColorId::YELLOW], 170);
+    case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);
+    case HighlightType::FOG: return transparency(colors[ColorId::WHITE], 120 * info.amount);
     case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
-    case HighlightType::MEMORY: return transparency(black, 80);
-    case HighlightType::NIGHT: return transparency(nightBlue, info.amount * 160);
+    case HighlightType::MEMORY: return transparency(colors[ColorId::BLACK], 80);
+    case HighlightType::NIGHT: return transparency(colors[ColorId::NIGHT_BLUE], info.amount * 160);
     case HighlightType::EFFICIENCY: return transparency(Color(255, 0, 0) , 120 * (1 - info.amount));
   }
   FAIL << "pokpok";
-  return black;
+  return Color();
 }
 
 enum class ConnectionId {
@@ -174,10 +173,10 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
       objects.push_back(*object);
   for (ViewObject& object : objects) {
     if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
-      renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
+      renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
     }
     if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
-      renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, darkGreen);
+      renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::DARK_GREEN]);
     }
     Tile tile = Tile::getTile(object, spriteMode);
     Color color = getBleedingColor(object);
@@ -203,7 +202,7 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
       int height = sizeY - 2 * off.y;
       if (sz.y > Renderer::nominalSize.y)
         off.y = Renderer::nominalSize.y -  sz.y;
-      set<Dir> dirs;
+      EnumSet<Dir> dirs;
       if (!object.hasModifier(ViewObject::Modifier::PLANNED))
         if (auto connectionId = getConnectionId(object))
           for (Vec2 dir : getConnectionDirs(object.id()))
@@ -254,7 +253,7 @@ Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, con
     }
   }
   if (highlighted) {
-    renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, lightGray);
+    renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
   if (!objects.empty())
     return objects.back();
@@ -289,24 +288,26 @@ void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
   int height = 30;
   int width = renderer.getTextLength(text) + 30;
   Vec2 pos(getBounds().getKX() - width, getBounds().getKY() - height);
-  renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(black, bgTransparency));
+  renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(colors[ColorId::BLACK],
+        bgTransparency));
   renderer.drawText(color, pos.x + 10, pos.y + 1, text);
 }
 
 void MapGui::render(Renderer& renderer) {
   int sizeX = layout->squareWidth();
   int sizeY = layout->squareHeight();
-  renderer.drawFilledRectangle(getBounds(), almostBlack);
+  renderer.drawFilledRectangle(getBounds(), colors[ColorId::ALMOST_BLACK]);
   Optional<ViewObject> highlighted;
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
     Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
     if (!spriteMode && wpos.inRectangle(levelBounds))
-      renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);
+      renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
     if (!objects[wpos] || objects[wpos]->isEmpty()) {
       if (wpos.inRectangle(levelBounds))
-        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, black);
+        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
       if (highlightedPos == wpos) {
-        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent, lightGray);
+        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
+            colors[ColorId::LIGHT_GRAY]);
       }
       continue;
     }
@@ -332,14 +333,14 @@ void MapGui::render(Renderer& renderer) {
         layout->projectOnScreen(getBounds(), elem.position),
         Clock::get().getRealMillis());
   if (!hint.empty())
-    drawHint(renderer, white, hint);
+    drawHint(renderer, colors[ColorId::WHITE], hint);
   else
   if (highlightedPos && highlighted) {
-    Color col = white;
+    Color col = colors[ColorId::WHITE];
     if (highlighted->isHostile())
-      col = red;
+      col = colors[ColorId::RED];
     else if (highlighted->isFriendly())
-      col = green;
+      col = colors[ColorId::GREEN];
     drawHint(renderer, col, highlighted->getDescription(true));
   }
   if (optionsGui) {
@@ -359,7 +360,7 @@ PGuiElem MapGui::getHintCallback(const string& s) {
 
 void MapGui::setOptions(const string& title, vector<PGuiElem> options) {
   int margin = 10;
-  vector<PGuiElem> lines = makeVec<PGuiElem>(GuiElem::label(title, white));
+  vector<PGuiElem> lines = makeVec<PGuiElem>(GuiElem::label(title, colors[ColorId::WHITE]));
   vector<int> heights {40};
   for (auto& elem : options) {
     lines.push_back(GuiElem::margins(std::move(elem), 15, 0, 0, 0));
@@ -367,7 +368,7 @@ void MapGui::setOptions(const string& title, vector<PGuiElem> options) {
   }
   optionsHeight = 30 * options.size() + 40 + 2 * margin;
   optionsGui = GuiElem::stack(
-      GuiElem::rectangle(transparency(black, bgTransparency)),
+      GuiElem::rectangle(transparency(colors[ColorId::BLACK], bgTransparency)),
       GuiElem::margins(GuiElem::verticalList(std::move(lines), heights, 0), margin, margin, margin, margin));
 }
 

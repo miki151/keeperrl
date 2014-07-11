@@ -25,39 +25,10 @@ Font textFont;
 Font tileFont;
 Font symbolFont;
 
-namespace colors {
-  const Color white(255, 255, 255);
-  const Color yellow(250, 255, 0);
-  const Color lightBrown(210, 150, 0);
-  const Color orangeBrown(250, 150, 0);
-  const Color brown(240, 130, 0);
-  const Color darkBrown(100, 60, 0);
-  const Color lightGray(150, 150, 150);
-  const Color gray(100, 100, 100);
-  const Color almostGray(102, 102, 102);
-  const Color darkGray(50, 50, 50);
-  const Color almostBlack(20, 20, 20);
-  const Color almostDarkGray(60, 60, 60);
-  const Color black(0, 0, 0);
-  const Color almostWhite(200, 200, 200);
-  const Color green(0, 255, 0);
-  const Color lightGreen(100, 255, 100);
-  const Color darkGreen(0, 150, 0);
-  const Color red(255, 0, 0);
-  const Color lightRed(255, 100, 100);
-  const Color pink(255, 20, 147);
-  const Color orange(255, 165, 0);
-  const Color blue(0, 0, 255);
-  const Color nightBlue(0, 0, 20);
-  const Color darkBlue(50, 50, 200);
-  const Color lightBlue(100, 100, 255);
-  const Color purple(160, 32, 240);
-  const Color violet(120, 0, 255);
-  const Color translucentBlack(0, 0, 0);
+EnumMap<ColorId, Color> colors;
 
-  Color transparency(const Color& color, int trans) {
-    return Color(color.r, color.g, color.b, trans);
-  }
+Color transparency(const Color& color, int trans) {
+  return Color(color.r, color.g, color.b, trans);
 }
 
 vector<Texture> Renderer::tiles;
@@ -109,7 +80,7 @@ void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text,
     int ind = lowercase(text).find(key);
     if (ind != string::npos) {
       int pos = x + getTextLength(text.substr(0, ind));
-      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, colors::gray);
+      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, colors[ColorId::GRAY]);
     }
   }
   drawText(color, x, y, text);
@@ -176,6 +147,35 @@ void Renderer::initialize(RenderTarget* d, int width, int height) {
   CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(tileFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(symbolFont.loadFromFile("Symbola.ttf"));
+  colors[ColorId::WHITE] = Color(255, 255, 255);
+  colors[ColorId::YELLOW] = Color(250, 255, 0);
+  colors[ColorId::LIGHT_BROWN] = Color(210, 150, 0);
+  colors[ColorId::ORANGE_BROWN] = Color(250, 150, 0);
+  colors[ColorId::BROWN] = Color(240, 130, 0);
+  colors[ColorId::DARK_BROWN] = Color(100, 60, 0);
+  colors[ColorId::LIGHT_GRAY] = Color(150, 150, 150);
+  colors[ColorId::GRAY] = Color(100, 100, 100);
+  colors[ColorId::ALMOST_GRAY] = Color(102, 102, 102);
+  colors[ColorId::DARK_GRAY] = Color(50, 50, 50);
+  colors[ColorId::ALMOST_BLACK] = Color(20, 20, 20);
+  colors[ColorId::ALMOST_DARK_GRAY] = Color(60, 60, 60);
+  colors[ColorId::BLACK] = Color(0, 0, 0);
+  colors[ColorId::ALMOST_WHITE] = Color(200, 200, 200);
+  colors[ColorId::GREEN] = Color(0, 255, 0);
+  colors[ColorId::LIGHT_GREEN] = Color(100, 255, 100);
+  colors[ColorId::DARK_GREEN] = Color(0, 150, 0);
+  colors[ColorId::RED] = Color(255, 0, 0);
+  colors[ColorId::LIGHT_RED] = Color(255, 100, 100);
+  colors[ColorId::PINK] = Color(255, 20, 147);
+  colors[ColorId::ORANGE] = Color(255, 165, 0);
+  colors[ColorId::BLUE] = Color(0, 0, 255);
+  colors[ColorId::NIGHT_BLUE] = Color(0, 0, 20);
+  colors[ColorId::DARK_BLUE] = Color(50, 50, 200);
+  colors[ColorId::LIGHT_BLUE] = Color(100, 100, 255);
+  colors[ColorId::PURPLE] = Color(160, 32, 240);
+  colors[ColorId::VIOLET] = Color(120, 0, 255);
+  colors[ColorId::TRANSLUCENT_BLACK] = Color(0, 0, 0);
+
 }
 
 void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSprite, double scale) {
@@ -183,7 +183,7 @@ void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSp
   if (tile.hasSpriteCoord()) {
     Vec2 sz = Renderer::tileSize[tile.getTexNum()];
     Vec2 of = (Renderer::nominalSize - sz) / 2;
-    Vec2 coord = tile.getSpriteCoord(Tile::allDirs);
+    Vec2 coord = tile.getSpriteCoord(EnumSet<Dir>::fullSet());
     drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()],
         sz.x * scale, sz.y * scale);
   } else
