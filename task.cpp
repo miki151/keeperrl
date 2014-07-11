@@ -470,6 +470,7 @@ class Kill : public Task {
       case ATTACK: return c->attack(creature);
       case TORTURE: return c->torture(creature);
     }
+    return CreatureAction();
   }
 
   virtual MoveInfo getMove(Creature* c) override {

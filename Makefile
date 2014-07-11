@@ -76,10 +76,11 @@ DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
 ##############################################################################
 
 
-all: $(OBJDIR) $(NAME)
+all: $(OBJDIR) $(OBJDIR)/extern $(NAME)
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
+$(OBJDIR)/extern:
 	mkdir $(OBJDIR)/extern
 
 stdafx.h.gch: stdafx.h

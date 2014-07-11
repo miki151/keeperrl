@@ -2719,7 +2719,7 @@ void PlayerControl::updateEfficiency(Vec2 pos, SquareType type) {
 void PlayerControl::onWorshipEvent(const Creature* who, const Deity* to, WorshipType type) {
   if (!contains(getCreatures(), who))
     return;
-  double multiplierBase;
+  double multiplierBase = 1;
   switch (type) {
     case WorshipType::PRAYER: multiplierBase = 0.999; break;
     case WorshipType::SACRIFICE: multiplierBase = 0.95; break;
