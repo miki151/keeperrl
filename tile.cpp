@@ -194,7 +194,13 @@ void Tile::initialize() {
       (SetOfDir, int, int), Tile);
   ADD_SCRIPT_METHOD_OVERLOAD(Tile, addConnection, "Tile addConnection(SetOfDir c, const string& in)",
       (SetOfDir, const string&), Tile);
+}
+
+void Tile::loadTiles() {
   ScriptContext::execute("tiles.as", "void genTiles()");
+}
+
+void Tile::loadUnicode() {
   ScriptContext::execute("tiles.as", "void genSymbols()");
 }
 

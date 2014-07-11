@@ -31,6 +31,8 @@ class Tile {
   static Tile byName(const string&, bool noShadow = false);
 
   static void initialize();
+  static void loadTiles();
+  static void loadUnicode();
 
   Color color;
   String text;

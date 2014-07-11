@@ -167,8 +167,6 @@ void clearAndInitialize() {
   Vision::clearAll();
   Epithet::clearAll();
   NameGenerator::clearAll();
-  ScriptContext::init();
-  Tile::initialize();
   EventListener::initialize();
   Tribe::init();
   Skill::init();
@@ -229,6 +227,8 @@ int main(int argc, char* argv[]) {
   int lastIndex = 0;
   bool exitGame = false;
   std::atomic<bool> viewInitialized(false);
+  ScriptContext::init();
+  Tile::initialize();
   thread renderingThread([&] {
     view->initialize();
     viewInitialized = true;

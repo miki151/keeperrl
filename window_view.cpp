@@ -121,9 +121,11 @@ void WindowView::initialize() {
   spriteLayouts = {
     MapLayout(36, 36, allLayers),
     MapLayout(18, 18, allLayers), true};
-  if (tilesOk)
+  Tile::loadUnicode();
+  if (tilesOk) {
     currentTileLayout = spriteLayouts;
-  else
+    Tile::loadTiles();
+  } else
     currentTileLayout = asciiLayouts;
   mapGui = new MapGui(objects, [this](Vec2 pos) {
       chosenCreature = "";
