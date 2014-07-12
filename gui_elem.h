@@ -95,6 +95,7 @@ class GuiElem {
     WORKSHOP = 0,
     DIPLOMACY = 2,
     HELP = 3,
+    DEITIES = 6,
   };
 
   static PGuiElem icon(IconId);

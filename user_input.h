@@ -28,6 +28,7 @@ struct UserInput {
     BUILD,
     WORKSHOP,
     LIBRARY,
+    DEITIES,
     RECT_SELECTION,
     POSSESS,
     BUTTON_RELEASE,

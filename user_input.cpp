@@ -35,6 +35,7 @@ vector<UserInput::Type> vectorTypes {
 
 vector<UserInput::Type> intTypes {
   UserInput::TECHNOLOGY,
+  UserInput::DEITIES,
   UserInput::CREATURE_BUTTON,
 };
 

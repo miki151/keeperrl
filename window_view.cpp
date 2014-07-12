@@ -588,26 +588,30 @@ vector<PGuiElem> WindowView::drawButtons(vector<GameInfo::BandInfo::Button> butt
   vector<PGuiElem> elems;
   vector<PGuiElem> invisible;
   vector<GameInfo::BandInfo::Button> groupedButtons;
-  for (int i : All(buttons)) {
-    if (!groupedButtons.empty() && buttons[i].groupName != groupedButtons.front().groupName) {
+  for (int i = 0; i <= buttons.size(); ++i) {
+    if (!groupedButtons.empty() && (i == buttons.size() || buttons[i].groupName != groupedButtons[0].groupName)) {
+      int firstItem = i - groupedButtons.size();
+      int lastItem = i - 1;
       GameInfo::BandInfo::Button button1 = groupedButtons.front();
       function<void()> buttonFun = [=, &active] {
-        setOptionsMenu(button1.groupName, groupedButtons, i - groupedButtons.size(), active, tab);
-        active = i - groupedButtons.size();
+        setOptionsMenu(button1.groupName, groupedButtons, firstItem, active, tab);
+        active = firstItem;
       };
       vector<PGuiElem> line;
       line.push_back(GuiElem::viewObject(button1.object, tilesOk));
       line.push_back(GuiElem::label(groupedButtons.front().groupName,
-            active < i && active >= i - groupedButtons.size() ? colors[ColorId::GREEN] : colors[ColorId::WHITE]));
+            active <= lastItem && active >= firstItem ? colors[ColorId::GREEN] : colors[ColorId::WHITE]));
       elems.push_back(GuiElem::stack(
             GuiElem::button(buttonFun),
             GuiElem::horizontalList(std::move(line), 35, 0)));
       for (int groupedInd : All(groupedButtons))
         invisible.push_back(getButtonLine(groupedButtons[groupedInd], [=, &active] {
-            setOptionsMenu(button1.groupName, groupedButtons, i - groupedButtons.size(), active, tab);},
-            i - groupedButtons.size() + groupedInd, active, tab));
+            setOptionsMenu(button1.groupName, groupedButtons, firstItem, active, tab);},
+            firstItem + groupedInd, active, tab));
       groupedButtons.clear();
     }
+    if (i == buttons.size())
+      break;
     if (!buttons[i].groupName.empty())
       groupedButtons.push_back(buttons[i]);
     else
@@ -620,6 +624,28 @@ vector<PGuiElem> WindowView::drawButtons(vector<GameInfo::BandInfo::Button> butt
 PGuiElem WindowView::drawBuildings(GameInfo::BandInfo& info) {
   return GuiElem::verticalList(drawButtons(info.buildings, activeBuilding, CollectiveTab::BUILDINGS),
       legendLineHeight, 0);
+}
+
+static PGuiElem getStandingGui(GameInfo::BandInfo::Deity::Standing s) {
+  switch (s) {
+    case GameInfo::BandInfo::Deity::GOOD: return GuiElem::label("good", colors[ColorId::GREEN]);
+    case GameInfo::BandInfo::Deity::NEUTRAL: return GuiElem::label("neutral", colors[ColorId::WHITE]);
+    case GameInfo::BandInfo::Deity::BAD: return GuiElem::label("bad", colors[ColorId::RED]);
+  }
+  return nullptr;
+}
+
+PGuiElem WindowView::drawDeities(GameInfo::BandInfo& info) {
+  vector<PGuiElem> lines;
+  for (int i : All(info.deities)) {
+    lines.push_back(GuiElem::stack(
+          GuiElem::button(getButtonCallback(UserInput(UserInput::DEITIES, i))),
+          GuiElem::label(capitalFirst(info.deities[i].name), colors[ColorId::WHITE])));
+    lines.push_back(GuiElem::margins(GuiElem::horizontalList(makeVec<PGuiElem>(
+              GuiElem::label("standing: ", colors[ColorId::WHITE]),
+              getStandingGui(info.deities[i].standing)), 85, 0), 40, 0, 0, 0));
+  }
+  return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }
 
 PGuiElem WindowView::drawWorkshop(GameInfo::BandInfo& info) {
@@ -684,7 +710,7 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
     GuiElem::icon(GuiElem::BUILDING),
     GuiElem::icon(GuiElem::MINION),
     GuiElem::icon(GuiElem::LIBRARY),
-    GuiElem::icon(GuiElem::WORKSHOP),
+    GuiElem::icon(GuiElem::DEITIES),
     GuiElem::icon(GuiElem::DIPLOMACY),
     GuiElem::icon(GuiElem::HELP));
   for (int i : All(buttons)) {
@@ -704,7 +730,7 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
     make_pair(CollectiveTab::BUILDINGS, drawBuildings(info)),
     make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
     make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(info)),
-    make_pair(CollectiveTab::WORKSHOP, drawWorkshop(info)),
+    make_pair(CollectiveTab::WORKSHOP, drawDeities(info)),
     make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
   for (auto& elem : elems)
     if (elem.first == collectiveTab)

@@ -215,11 +215,12 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
     BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0,
         string group = "");
-    BuildInfo(BuildType type, SquareInfo info, const string& h = "", char hotkey = 0);
-    BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0);
+    BuildInfo(BuildType type, SquareInfo info, const string& h = "", char hotkey = 0, string group = "");
+    BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0,
+        string group = "");
     BuildInfo(DeityHabitat, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
     BuildInfo(const Creature*, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
-    BuildInfo(BuildType type, const string& h = "", char hotkey = 0);
+    BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
   vector<GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;

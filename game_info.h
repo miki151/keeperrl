@@ -54,6 +54,12 @@ class GameInfo {
       char hotkey;
     };
     vector<TechButton> techButtons;
+
+    struct Deity {
+      string name;
+      enum Standing { BAD, NEUTRAL, GOOD} standing;
+    };
+    vector<Deity> deities;
   } bandInfo;
 
   class PlayerInfo {

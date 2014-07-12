@@ -127,6 +127,10 @@ void deity(View* view, const Deity* d, int lastInd = 0) {
   deity(view, d, *index);
 }
 
+void Encyclopedia::deity(View* view, const Deity* d) {
+  ::deity(view, d);
+}
+
 void deities(View* view, int lastInd = 0) {
   vector<View::ListElem> options;
   for (Deity* deity : Deity::getDeities())

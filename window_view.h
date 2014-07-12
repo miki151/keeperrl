@@ -90,6 +90,7 @@ class WindowView: public View {
   PGuiElem drawTechnology(GameInfo::BandInfo& info);
   PGuiElem drawWorkshop(GameInfo::BandInfo& info);
   PGuiElem drawVillages(GameInfo::VillageInfo& info);
+  PGuiElem drawDeities(GameInfo::BandInfo& info);
   PGuiElem drawMinions(GameInfo::BandInfo& info);
   PGuiElem drawMinionWindow(GameInfo::BandInfo& info);
   PGuiElem drawKeeperHelp();

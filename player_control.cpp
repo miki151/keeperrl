@@ -170,19 +170,25 @@ SERIALIZABLE(PlayerControl::PrisonerInfo);
 
 PlayerControl::BuildInfo::BuildInfo(SquareInfo info, Optional<TechId> id, const string& h, char key, string group)
     : squareInfo(info), buildType(SQUARE), techId(id), help(h), hotkey(key), groupName(group) {}
-PlayerControl::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h, char key)
-    : trapInfo(info), buildType(TRAP), techId(id), help(h), hotkey(key) {}
+
+PlayerControl::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h, char key, string group)
+    : trapInfo(info), buildType(TRAP), techId(id), help(h), hotkey(key), groupName(group) {}
+
 PlayerControl::BuildInfo::BuildInfo(DeityHabitat habitat, CostInfo cost, const string& group, const string& h,
     char key) : squareInfo({SquareType({habitat}), cost, "To " + Deity::getDeity(habitat)->getName(), false}),
     buildType(SQUARE), help(h), hotkey(key), groupName(group) {}
+
 PlayerControl::BuildInfo::BuildInfo(const Creature* c, CostInfo cost, const string& group, const string& h, char key)
     : squareInfo({SquareType({c}), cost, "To " + c->getName(), false}),
     buildType(SQUARE), help(h), hotkey(key), groupName(group) {}
-PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key) : buildType(type), help(h), hotkey(key) {
+
+PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, string group)
+    : buildType(type), help(h), hotkey(key), groupName(group) {
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH}, type));
 }
-PlayerControl::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const string& h, char key) 
-  : squareInfo(info), buildType(type), help(h), hotkey(key) {
+
+PlayerControl::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const string& h, char key, string group) 
+  : squareInfo(info), buildType(type), help(h), hotkey(key), groupName(group) {
   CHECK(type == IMPALED_HEAD);
 }
 
@@ -198,12 +204,12 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level)
     BuildInfo({SquareType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, Nothing(), "", 0, "Storage"),
     BuildInfo({SquareType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, Nothing(), "", 0, "Storage"),
     BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, Nothing(), ""),
-    BuildInfo({SquareType::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, Nothing(), "", 'b'),
+    BuildInfo({SquareType::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, Nothing(), "", 'm'),
     BuildInfo({SquareType::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
     BuildInfo({SquareType::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
     BuildInfo({SquareType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY, "", 'r', "Workshops"),
     BuildInfo({SquareType::WORKSHOP, {ResourceId::IRON, 15}, "Forge"}, TechId::CRAFTING, "", 'f', "Workshops"),
-    BuildInfo({SquareType::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, Nothing(), "", 'a'),
+    BuildInfo({SquareType::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, Nothing(), ""),
     BuildInfo({SquareType::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
     BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 'p'),
     BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u')};
@@ -216,32 +222,32 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level)
         buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", c->getSpeciesName(), 0));
   append(buildInfo, {
     BuildInfo({SquareType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
-    BuildInfo(BuildInfo::DESTROY, "", 'e'),
-    BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 'c'),
-    BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'g'),
+    BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 0, "Orders"),
+    BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
+    BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
+    BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
+        "Click on a built door to lock it.", 'o', "Installations"),
+    BuildInfo({SquareType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, "", 0, "Installations"),
+    BuildInfo({SquareType::TORCH, {ResourceId::WOOD, 1}, "Torch"}, TechId::CRAFTING, "", 'c', "Installations"),
+    BuildInfo(BuildInfo::IMPALED_HEAD, {SquareType::IMPALED_HEAD, {ResourceId::GOLD, 0}, "Prisoner head"},
+        "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
+    BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, TechId::TRAPS,
+        "Causes the trespasser to panic.", 0, "Traps"),
+    BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, TechId::TRAPS,
+        "Releases a cloud of poisonous gas.", 0, "Traps"),
+    BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS,
+        "Summons all minions", 0, "Traps"),
+    BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, TechId::TRAPS,
+        "Immobilises the trespasser for some time.", 0, "Traps"),
+    BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, TechId::TRAPS,
+        "Causes a huge boulder to roll towards the enemy.", 0, "Traps"),
+    BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP}, TechId::TRAPS,
+        "Teleports nearby minions to deal with the trespasser.", 0, "Traps"),
   });
   return buildInfo;
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::workshopInfo {
-    BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
-        "Click on a built door to lock it.", 'o'),
-    BuildInfo({SquareType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, ""),
-    BuildInfo({SquareType::TORCH, {ResourceId::WOOD, 1}, "Torch"}, TechId::CRAFTING, ""),
-    BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, TechId::TRAPS,
-        "Summons all minions"),
-    BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, TechId::TRAPS,
-        "Immobilises the trespasser for some time."),
-    BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, TechId::TRAPS,
-        "Releases a cloud of poisonous gas."),
-    BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, TechId::TRAPS,
-        "Causes the trespasser to panic."),
-    BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, TechId::TRAPS,
-        "Causes a huge boulder to roll towards the enemy."),
-    BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP}, TechId::TRAPS,
-        "Teleports nearby minions to deal with the trespasser."),
-    BuildInfo(BuildInfo::IMPALED_HEAD, {SquareType::IMPALED_HEAD, {ResourceId::GOLD, 0}, "Prisoner head"},
-        "Impaled head of an executed prisoner. Aggravates enemies."),
 };
 
 Optional<SquareType> getSecondarySquare(SquareType type) {
@@ -1224,13 +1230,13 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   vector<TechInfo> ret;
   ret.push_back({{ViewId::OGRE, "Humanoids", 'h'},
       [this](PlayerControl* c, View* view) { c->handleHumanoidBreeding(view); }});
-  ret.push_back({{ViewId::BEAR, "Beasts", 'n'},
+  ret.push_back({{ViewId::BEAR, "Beasts", 'b'},
       [this](PlayerControl* c, View* view) { c->handleBeastTaming(view); }}); 
   if (hasTech(TechId::GOLEM))
-    ret.push_back({{ViewId::IRON_GOLEM, "Golems", 'm'},
+    ret.push_back({{ViewId::IRON_GOLEM, "Golems", 'g'},
       [this](PlayerControl* c, View* view) { c->handleMatterAnimation(view); }});      
   if (hasTech(TechId::NECRO))
-    ret.push_back({{ViewId::VAMPIRE, "Necromancy", 'c'},
+    ret.push_back({{ViewId::VAMPIRE, "Necromancy", 'n'},
       [this](PlayerControl* c, View* view) { c->handleNecromancy(view); }});
   ret.push_back({{ViewId::MANA, "Sorcery"}, [this](PlayerControl* c, View* view) {c->handlePersonalSpells(view);}});
   ret.push_back({{ViewId::EMPTY, ""}, [](PlayerControl* c, View*) {}});
@@ -1245,6 +1251,9 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
+  gameInfo.bandInfo.deities.clear();
+  for (Deity* deity : Deity::getDeities())
+    gameInfo.bandInfo.deities.push_back({deity->getName(), GameInfo::BandInfo::Deity::GOOD});
   gameInfo.villageInfo.villages.clear();
   bool attacking = false;
   for (VillageControl* c : model->getVillageControls())
@@ -1605,6 +1614,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInput::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInput::CANCEL_TEAM: gatheringTeam = false; team.clear(); break;
     case UserInput::MARKET: handleMarket(view); break;
+    case UserInput::DEITIES: model->keeperopedia.deity(view, Deity::getDeities()[input.getNum()]); break;
     case UserInput::TECHNOLOGY: {
         vector<TechInfo> techInfo = getTechInfo();
         techInfo[input.getNum()].butFun(this, view);

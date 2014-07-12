@@ -690,7 +690,7 @@ void GuiElem::initialize(const string& texturePath) {
     border2Right.loadFromFile("frame.png", sf::IntRect(166 + 1 + border2Width, border2Width, border2Width, 1));
     border2Bottom.loadFromFile("frame.png", sf::IntRect(166 + border2Width, border2Width + 1, 1, border2Width));
     border2Left.loadFromFile("frame.png", sf::IntRect(166, border2Width, border2Width, 1));
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 7; ++i)
       icons[i].loadFromFile("icons.png", sf::IntRect(0, i * iconWidth, iconWidth, iconWidth));
     backgroundPattern.loadFromFile("tekstuur_1.png");
     borderLeft.setRepeated(true);
