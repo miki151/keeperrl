@@ -102,7 +102,7 @@ void Level::addLightSource(Vec2 pos, double radius, int numLight) {
     for (Vec2 v : getVisibleTilesNoDarkness(pos, Vision::get(VisionId::NORMAL))) {
       double dist = (v - pos).lengthD();
       if (dist <= radius)
-        lightAmount[pos] += min(1.0, 1 - (dist) / radius) * numLight;
+        lightAmount[v] += min(1.0, 1 - (dist) / radius) * numLight;
     }
   }
 }
