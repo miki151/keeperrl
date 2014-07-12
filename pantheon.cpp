@@ -39,14 +39,13 @@ static map<DeityHabitat, vector<EpithetId>> epithetsMap {
       { EpithetId::WAR, EpithetId::DEATH, EpithetId::DESTRUCTION, EpithetId::WEALTH,
         EpithetId::FEAR, EpithetId::CRAFTS, EpithetId::LIGHT, EpithetId::DARKNESS }},
   { DeityHabitat::EARTH, // earth elemental
-      { EpithetId::HEALTH, EpithetId::NATURE, EpithetId::WINTER, EpithetId::LOVE,
+      { EpithetId::HEALTH, EpithetId::NATURE, EpithetId::LOVE,
         EpithetId::WEALTH, EpithetId::MIND, EpithetId::CHANGE, EpithetId::DEFENSE, EpithetId::DARKNESS }},
   { DeityHabitat::TREES, // ent?
       { EpithetId::HEALTH, EpithetId::NATURE, EpithetId::LOVE, EpithetId::LIGHT,
-        EpithetId::CHANGE, EpithetId::CRAFTS, EpithetId::HUNTING, EpithetId::FORTUNE, EpithetId::SECRETS,  }},
+        EpithetId::CHANGE, EpithetId::CRAFTS, EpithetId::FORTUNE, EpithetId::SECRETS,  }},
   { DeityHabitat::STONE, // ?
-      { EpithetId::WISDOM, EpithetId::WEALTH, EpithetId::DEFENSE, EpithetId::SECRETS, EpithetId::DEATH,
-        EpithetId::WINTER, }},
+      { EpithetId::WISDOM, EpithetId::WEALTH, EpithetId::DEFENSE, EpithetId::SECRETS, EpithetId::DEATH}},
   { DeityHabitat::WATER, // water elemental
       { EpithetId::NATURE, EpithetId::WISDOM, EpithetId::WEALTH, EpithetId::MIND, EpithetId::DESTRUCTION,
         EpithetId::CHANGE, EpithetId::DEFENSE, EpithetId::FEAR, EpithetId::COURAGE, EpithetId::HEALTH,  }},
@@ -54,7 +53,7 @@ static map<DeityHabitat, vector<EpithetId>> epithetsMap {
       { EpithetId::MIND, EpithetId::LIGHTNING, EpithetId::LIGHT, EpithetId::CHANGE,
         EpithetId::FORTUNE, EpithetId::FEAR, EpithetId::COURAGE,  }},
   { DeityHabitat::STARS, // ?
-      { EpithetId::DEATH, EpithetId::WAR, EpithetId::WINTER, EpithetId::WISDOM, EpithetId::LOVE,
+      { EpithetId::DEATH, EpithetId::WAR, EpithetId::WISDOM, EpithetId::LOVE,
         EpithetId::DARKNESS, EpithetId::FORTUNE, EpithetId::SECRETS,  }}
 
 };
@@ -70,7 +69,6 @@ static map<DeityHabitat, vector<EpithetId>> epithetsMap {
     FEAR air, water, fire
     FORTUNE stars, air, trees
     HEALTH water, trees, earth
-    HUNTING trees
     LIGHT air, trees, fire
     LIGHTNING air
     LOVE stars, air, trees
@@ -79,7 +77,6 @@ static map<DeityHabitat, vector<EpithetId>> epithetsMap {
     SECRETS stars, stone, trees
     WAR stars, fire
     WEALTH water, stone, earth, fire
-    WINTER stars, stone, earth
     WISDOM stars, water, stone
 */
 
@@ -88,26 +85,25 @@ Epithet::Epithet(const string& n, const string& d) : name(n), description(d) {
 
 void Epithet::init() {
   set(EpithetId::CHANGE, new Epithet("change", ""));
-  set(EpithetId::COURAGE, new Epithet("courage", "")); // ?
-  set(EpithetId::CRAFTS, new Epithet("crafts", ""));
-  set(EpithetId::DARKNESS, new Epithet("darkness", ""));
-  set(EpithetId::DEATH, new Epithet("death", ""));
+  set(EpithetId::COURAGE, new Epithet("courage", "Increases the morale of your minions.")); // ?
+  set(EpithetId::CRAFTS, new Epithet("crafts", "Your minions work more effectively in the workshops."));
+  set(EpithetId::DARKNESS, new Epithet("darkness", "Makes the night last longer."));
+  set(EpithetId::DEATH, new Epithet("death",
+    "Decreases the cost of raising undead, and sometimes turns the Keeper or other minions into zombies."));
   set(EpithetId::DEFENSE, new Epithet("defense", ""));
   set(EpithetId::DESTRUCTION, new Epithet("destruction", ""));
-  set(EpithetId::FEAR, new Epithet("fear", ""));
+  set(EpithetId::FEAR, new Epithet("fear", "Decreases the morale of your minions."));
   set(EpithetId::FORTUNE, new Epithet("fortune", "")); // ?
   set(EpithetId::HEALTH, new Epithet("health", ""));
-  set(EpithetId::HUNTING, new Epithet("hunting", "")); // cos do polowania
-  set(EpithetId::LIGHT, new Epithet("light", "")); // ?
+  set(EpithetId::LIGHT, new Epithet("light", "Makes the day last longer.")); // ?
   set(EpithetId::LIGHTNING, new Epithet("lightning", ""));
-  set(EpithetId::LOVE, new Epithet("love", "")); // potion of love
+  set(EpithetId::LOVE, new Epithet("love", "Makes your enemies less inclined to attack you.")); // potion of love
   set(EpithetId::MIND, new Epithet("mind", ""));
-  set(EpithetId::NATURE, new Epithet("nature", ""));
-  set(EpithetId::SECRETS, new Epithet("secrets", ""));
-  set(EpithetId::WAR, new Epithet("war", ""));
+  set(EpithetId::NATURE, new Epithet("nature", "Decreases the cost of taming beasts."));
+  set(EpithetId::SECRETS, new Epithet("secrets", "Has a chance of revealing a piece land."));
+  set(EpithetId::WAR, new Epithet("war", "Makes your enemies hate you more."));
   set(EpithetId::WEALTH, new Epithet("wealth", ""));
-  set(EpithetId::WINTER, new Epithet("winter", "")); // zamarza level
-  set(EpithetId::WISDOM, new Epithet("wisdom", ""));
+  set(EpithetId::WISDOM, new Epithet("wisdom", "Decreases the cost of research."));
 }
 
 const string& Epithet::getName() const {

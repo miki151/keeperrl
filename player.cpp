@@ -964,7 +964,6 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
       case EpithetId::DARKNESS: applyEffect(creature, EffectType::BLINDNESS, ""); break;
       case EpithetId::CRAFTS: applyEffect(creature,
           chooseRandom({EffectType::ENHANCE_ARMOR, EffectType::ENHANCE_WEAPON}), ""); break;
-//      case EpithetId::HUNTING: grantGift(c, ItemId::PANIC_MUSHROOM, name); break;
       default: noEffect = true;
     }
     usedEpithets.push_back(epithet);

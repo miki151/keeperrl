@@ -111,10 +111,20 @@ void workshop(View* view, int lastInd = 0) {
 void tribes(View* view, int lastInd = 0) {
 }
 
-void deity(View* view, const Deity* deity) {
-  view->presentText(deity->getName(),
-      "Lives in " + deity->getHabitatString() + " and is the " + deity->getGender().god() + " of "
-      + deity->getEpithetsString() + ".");
+void epithet(View* view, const Epithet* epithet) {
+  view->presentText(epithet->getName(), epithet->getDescription());
+}
+
+void deity(View* view, const Deity* d, int lastInd = 0) {
+  vector<View::ListElem> options { {"Lives in " + d->getHabitatString() +
+      " and is the " + d->getGender().god() + " of:", View::TITLE}};
+  for (EpithetId id : d->getEpithets())
+    options.push_back(Epithet::get(id)->getName());
+  auto index = view->chooseFromList(d->getName(), options, lastInd);
+  if (!index)
+    return;
+  epithet(view, Epithet::get(d->getEpithets()[*index]));
+  deity(view, d, *index);
 }
 
 void deities(View* view, int lastInd = 0) {
