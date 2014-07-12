@@ -131,6 +131,7 @@ class Creature : private CreatureAttributes, public CreatureView, public UniqueE
   bool canSwim() const;
   bool canFly() const;
   bool canWalk() const;
+  bool canBeMinion() const;
 
   int numBodyParts(BodyPart) const;
   int numLost(BodyPart) const;

@@ -213,6 +213,7 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
             c.invincible = true;
             c.breathing = false;
             c.brain = false;
+            c.canBeMinion = false;
             c.name = "boulder";), direction));
 }
 
@@ -230,6 +231,7 @@ PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
             c.stationary = true;
             c.invincible = true;
             c.breathing = false;
+            c.canBeMinion = false;
             c.brain = false;
             c.name = "boulder";), tribe));
 }
@@ -1680,6 +1682,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 0.3;
           c.bodyParts[BodyPart::ARM] = 0;
           c.bodyParts[BodyPart::LEG] = 8;
+          c.canBeMinion = false;
           c.animal = true;
           c.name = "scorpion";);
     case CreatureId::SPIDER: 
@@ -1700,6 +1703,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::LEG] = 6;
           c.bodyParts[BodyPart::WING] = 2;
           c.courage = 100;
+          c.canBeMinion = false;
           c.animal = true;
           c.name = "fly";);
     case CreatureId::SNAKE: 
@@ -1713,6 +1717,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.weight = 2;
           c.animal = true;
+          c.canBeMinion = false;
           c.attackEffect = EffectType::POISON;
           c.skills.insert(SkillId::SWIMMING);
           c.name = "snake";);
@@ -1771,6 +1776,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.breathing = false;
           c.brain = false;
           c.fireCreature = true;
+          c.canBeMinion = false;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
           c.courage = 100;

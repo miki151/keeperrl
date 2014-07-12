@@ -98,6 +98,7 @@ class CreatureAttributes {
     { BodyPart::LEG, 2},
     { BodyPart::HEAD, 1}};
   SERIAL3(bodyParts);
+  bool SERIAL2(canBeMinion, true);
   bool SERIAL2(innocent, false);
   bool SERIAL2(uncorporal, false);
   bool SERIAL2(fireCreature, false);

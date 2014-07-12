@@ -1865,6 +1865,10 @@ bool Creature::canWalk() const {
   return walker;
 }
 
+bool Creature::canBeMinion() const {
+  return CreatureAttributes::canBeMinion;
+}
+
 int Creature::numBodyParts(BodyPart part) const {
   return bodyParts[part];
 }

@@ -123,6 +123,7 @@ static void deception(Creature* c) {
           c.breathing = false;
           c.uncorporal = true;
           c.humanoid = true;
+          c.canBeMinion = false;
           c.name = "illusion";),
         ControllerFactory([c] (Creature* o) { return new IllusionController(o, c->getTime()
             + Random.getRandom(5, 10));}))));

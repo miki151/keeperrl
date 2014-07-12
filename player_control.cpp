@@ -2071,7 +2071,7 @@ void PlayerControl::tick(double time) {
   }
   for (const Creature* c1 : getVisibleFriends()) {
     Creature* c = const_cast<Creature*>(c1);
-    if (c->getName() != "boulder" && !contains(getCreatures(), c))
+    if (c->canBeMinion() && !contains(getCreatures(), c))
       importCreature(c, MinionType::NORMAL);
   }
   const int maxRadius = 10;
