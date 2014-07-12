@@ -172,12 +172,6 @@ class Level {
   /** Returns the amount of sunlight in the square, capped within (0, 1).*/
   double getSunlight(Vec2) const;
 
-  /** Returns the amount of light in the square, uncapped.*/
-  double getTotalLight(Vec2) const;
-
-  /** Increases or decreases the number of light sources that emit on this square.*/
-  void addLight(Vec2, double amount);
-
   /** Class used to initialize a level object.*/
   class Builder {
     public:

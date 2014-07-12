@@ -102,7 +102,7 @@ void Level::addLightSource(Vec2 pos, double radius, int numLight) {
     for (Vec2 v : getVisibleTilesNoDarkness(pos, Vision::get(VisionId::NORMAL))) {
       double dist = (v - pos).lengthD();
       if (dist <= radius)
-        addLight(v, min(1.0, 1 - (dist) / radius) * numLight);
+        lightAmount[pos] += min(1.0, 1 - (dist) / radius) * numLight;
     }
   }
 }
@@ -162,16 +162,8 @@ double Level::getSunlight(Vec2 pos) const {
   return coverInfo[pos].sunlight * model->getSunlightInfo().lightAmount;
 }
 
-double Level::getTotalLight(Vec2 pos) const {
-  return lightAmount[pos] + getSunlight(pos);
-}
-
 double Level::getLight(Vec2 pos) const {
-  return max(0.0, min(1.0, getTotalLight(pos)));
-}
-
-void Level::addLight(Vec2 pos, double num) {
-  lightAmount[pos] += num;
+  return max(0.0, min(1.0, lightAmount[pos] + getSunlight(pos)));
 }
 
 vector<Vec2> Level::getLandingSquares(StairDirection dir, StairKey key) const {
