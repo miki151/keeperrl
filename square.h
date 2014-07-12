@@ -25,6 +25,7 @@
 #include "vision.h"
 #include "fire.h"
 #include "square_type.h"
+#include "renderable.h"
 
 class Level;
 class Creature;
@@ -32,7 +33,7 @@ class Item;
 
 enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP, TORTURE };
 
-class Square {
+class Square : public Renderable {
   public:
   /** Constructs a square object.
     * \param canHide true if the player can hide at this square
@@ -176,7 +177,6 @@ class Square {
   virtual bool isLocked() const { FAIL << "BAD"; return false; }
   virtual void lock() { FAIL << "BAD"; }
 
-  const ViewObject& getViewObject() const;
   Optional<ViewObject> getBackgroundObject() const;
   void setBackground(const Square*);
   ViewIndex getViewIndex(const CreatureView* c) const;
@@ -208,11 +208,8 @@ class Square {
   const Level* getLevel() const;
   Inventory SERIAL(inventory);
   string SERIAL(name);
-  void setViewObject(const ViewObject&);
-  ViewObject& getViewObjectMod();
 
   private:
-  PViewObject SERIAL(viewObject);
   Item* getTopItem() const;
 
   Level* SERIAL2(level, nullptr);

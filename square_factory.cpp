@@ -455,9 +455,9 @@ class TribeDoor : public Door {
   virtual void lock() {
     locked = !locked;
     if (locked)
-      getViewObjectMod().setModifier(ViewObject::Modifier::LOCKED);
+      modViewObject().setModifier(ViewObject::Modifier::LOCKED);
     else
-      getViewObjectMod().removeModifier(ViewObject::Modifier::LOCKED);
+      modViewObject().removeModifier(ViewObject::Modifier::LOCKED);
   }
 
   template <class Archive> 

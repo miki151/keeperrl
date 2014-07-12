@@ -21,6 +21,7 @@
 #include "enums.h"
 #include "fire.h"
 #include "unique_entity.h"
+#include "renderable.h"
 
 class Level;
 class Attack;
@@ -50,7 +51,7 @@ enum class ItemType {
   FOOD,
   CORPSE };
 
-class Item : private ItemAttributes, public UniqueEntity {
+class Item : private ItemAttributes, public Renderable, public UniqueEntity {
   public:
   typedef ItemAttributes ItemAttributes;
   Item(const ViewObject& o, const ItemAttributes&);
@@ -62,8 +63,6 @@ class Item : private ItemAttributes, public UniqueEntity {
   virtual void apply(Creature*, Level*);
 
   bool isDiscarded();
-
-  const ViewObject& getViewObject() const;
 
   string getName(bool plural = false, bool blind = false) const;
   string getTheName(bool plural = false, bool blind = false) const;
@@ -140,13 +139,11 @@ class Item : private ItemAttributes, public UniqueEntity {
   protected:
   virtual void specialTick(double time, Level*, Vec2 position) {}
   void setName(const string& name);
-  void setViewObject(const ViewObject&);
   bool SERIAL2(discarded, false);
   bool SERIAL(inspected);
   static bool everythingIdentified;
 
   private:
-  PViewObject SERIAL(viewObject);
   static bool isIdentified(const string& name);
   string getVisibleName(bool plural) const;
   string getRealName(bool plural) const;

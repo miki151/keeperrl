@@ -44,10 +44,10 @@ template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) { 
   ar
     & SUBCLASS(CreatureAttributes)
+    & SUBCLASS(Renderable)
     & SUBCLASS(CreatureView)
     & SUBCLASS(UniqueEntity)
     & SUBCLASS(EventListener)
-    & SVAR(viewObject)
     & SVAR(level)
     & SVAR(position)
     & SVAR(time)
@@ -118,7 +118,7 @@ Creature* Creature::getDefaultMinionFlyer() {
 }
 
 Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
-    : CreatureAttributes(attr), viewObject(new ViewObject(object)), tribe(t), controller(f.get(this)) {
+    : CreatureAttributes(attr), Renderable(object), tribe(t), controller(f.get(this)) {
   tribe->addMember(this);
   for (SkillId skill : skills)
     Skill::get(skill)->onTeach(this);
@@ -204,14 +204,14 @@ void Creature::pushController(PController ctrl) {
 
 void Creature::setController(PController ctrl) {
   if (ctrl->isPlayer())
-    viewObject->setModifier(ViewObject::Modifier::PLAYER);
+    modViewObject().setModifier(ViewObject::Modifier::PLAYER);
   controller = std::move(ctrl);
   level->updatePlayer();
 }
 
 void Creature::popController() {
   if (controller->isPlayer())
-    viewObject->removeModifier(ViewObject::Modifier::PLAYER);
+    modViewObject().removeModifier(ViewObject::Modifier::PLAYER);
   CHECK(!controllerStack.empty());
   controller = std::move(controllerStack.back());
   controllerStack.pop_back();
@@ -333,7 +333,7 @@ void Creature::makeMove() {
   MEASURE(controller->makeMove(), "creature move time");
   CHECK(!inEquipChain) << "Someone forgot to finishEquipChain()";
   if (!hidden)
-    viewObject->removeModifier(ViewObject::Modifier::HIDDEN);
+    modViewObject().removeModifier(ViewObject::Modifier::HIDDEN);
   unknownAttacker.clear();
   if (fireCreature && Random.roll(5))
     getSquare()->setOnFire(1);
@@ -607,7 +607,7 @@ CreatureAction Creature::hide() {
   return CreatureAction([=]() {
     playerMessage("You hide behind the " + getConstSquare()->getName());
     knownHiding.clear();
-    viewObject->setModifier(ViewObject::Modifier::HIDDEN);
+    modViewObject().setModifier(ViewObject::Modifier::HIDDEN);
     for (const Creature* c : getLevel()->getAllCreatures())
       if (c->canSee(this) && c->isEnemy(this)) {
         knownHiding.insert(c);
@@ -696,16 +696,16 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       break;
     case LastingEffect::BLIND:
       if (msg) you(MsgType::ARE, "blind!");
-      viewObject->setModifier(ViewObject::Modifier::BLIND);
+      modViewObject().setModifier(ViewObject::Modifier::BLIND);
       break;
     case LastingEffect::INVISIBLE:
       if (!isBlind() && msg)
         you(MsgType::TURN_INVISIBLE, "");
-      viewObject->setModifier(ViewObject::Modifier::INVISIBLE);
+      modViewObject().setModifier(ViewObject::Modifier::INVISIBLE);
       break;
     case LastingEffect::POISON:
       if (msg) you(MsgType::ARE, "poisoned");
-      viewObject->setModifier(ViewObject::Modifier::POISONED);
+      modViewObject().setModifier(ViewObject::Modifier::POISONED);
       break;
     case LastingEffect::STR_BONUS: if (msg) you(MsgType::FEEL, "stronger"); break;
     case LastingEffect::DEX_BONUS: if (msg) you(MsgType::FEEL, "more agile"); break;
@@ -732,7 +732,7 @@ void Creature::onRemoved(LastingEffect effect, bool msg) {
     case LastingEffect::POISON:
       if (msg)
         you(MsgType::ARE, "cured from poisoning");
-      viewObject->removeModifier(ViewObject::Modifier::POISONED);
+      modViewObject().removeModifier(ViewObject::Modifier::POISONED);
       break;
     default: onTimedOut(effect, msg); break;
   }
@@ -753,17 +753,17 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
     case LastingEffect::BLIND:
       if (msg) 
         you("can see again");
-      viewObject->removeModifier(ViewObject::Modifier::BLIND);
+      modViewObject().removeModifier(ViewObject::Modifier::BLIND);
       break;
     case LastingEffect::INVISIBLE:
       if (msg)
         you(MsgType::TURN_VISIBLE, "");
-      viewObject->removeModifier(ViewObject::Modifier::INVISIBLE);
+      modViewObject().removeModifier(ViewObject::Modifier::INVISIBLE);
       break;
     case LastingEffect::POISON:
       if (msg)
         you(MsgType::ARE, "no longer poisoned");
-      viewObject->removeModifier(ViewObject::Modifier::POISONED);
+      modViewObject().removeModifier(ViewObject::Modifier::POISONED);
       break;
     case LastingEffect::POISON_RESISTANT: if (msg) you(MsgType::ARE, "no longer poison resistant"); break;
     case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "no longer fire resistant"); break;
@@ -1342,16 +1342,16 @@ bool Creature::takeDamage(const Attack& attack) {
 }
 
 void Creature::updateViewObject() {
-  viewObject->setAttribute(ViewObject::Attribute::DEFENSE, getAttr(AttrType::DEFENSE));
-  viewObject->setAttribute(ViewObject::Attribute::ATTACK, getAttr(AttrType::DAMAGE));
-  viewObject->setAttribute(ViewObject::Attribute::LEVEL, getExpLevel());
+  modViewObject().setAttribute(ViewObject::Attribute::DEFENSE, getAttr(AttrType::DEFENSE));
+  modViewObject().setAttribute(ViewObject::Attribute::ATTACK, getAttr(AttrType::DAMAGE));
+  modViewObject().setAttribute(ViewObject::Attribute::LEVEL, getExpLevel());
   if (const Creature* c = getLevel()->getPlayer()) {
     if (isEnemy(c))
-      viewObject->setEnemyStatus(ViewObject::HOSTILE);
+      modViewObject().setEnemyStatus(ViewObject::HOSTILE);
     else
-      viewObject->setEnemyStatus(ViewObject::FRIENDLY);
+      modViewObject().setEnemyStatus(ViewObject::FRIENDLY);
   }
-  viewObject->setAttribute(ViewObject::Attribute::BLEEDING, 1 - health);
+  modViewObject().setAttribute(ViewObject::Attribute::BLEEDING, 1 - health);
 }
 
 double Creature::getHealth() const {
@@ -1764,10 +1764,6 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) {
     level->throwItem(equipment.removeItem(item), attack, dist, getPosition(), direction, getVision());
     spendTime(1);
   });
-}
-
-const ViewObject& Creature::getViewObject() const {
-  return *viewObject.get();
 }
 
 bool Creature::canSee(const Creature* c) const {

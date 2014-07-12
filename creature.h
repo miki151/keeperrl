@@ -33,13 +33,15 @@
 #include "square_type.h"
 #include "creature_action.h"
 #include "spell_info.h"
+#include "renderable.h"
 
 class Level;
 class Tribe;
 class EnemyCheck;
 class ViewObject;
 
-class Creature : private CreatureAttributes, public CreatureView, public UniqueEntity, public EventListener {
+class Creature : private CreatureAttributes, public Renderable, public CreatureView, public UniqueEntity,
+    public EventListener {
   public:
   typedef CreatureAttributes CreatureAttributes;
   Creature(Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
@@ -52,7 +54,6 @@ class Creature : private CreatureAttributes, public CreatureView, public UniqueE
   static void noExperienceLevels();
   static void initialize();
 
-  const ViewObject& getViewObject() const;
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
   void makeMove();
   double getTime() const;
@@ -284,7 +285,6 @@ class Creature : private CreatureAttributes, public CreatureView, public UniqueE
   BodyPart armOrWing() const;
   pair<double, double> getStanding(const Creature* c) const;
 
-  PViewObject SERIAL(viewObject);
   Level* SERIAL2(level, nullptr);
   Vec2 SERIAL(position);
   double SERIAL2(time, 1);
