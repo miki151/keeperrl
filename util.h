@@ -123,6 +123,7 @@ class Vec2 {
   static Vec2 getCenterOfWeight(vector<Vec2>);
 
   vector<Vec2> box(int radius, bool shuffle = false);
+  vector<Vec2> circle(double radius, bool shuffle = false);
   static vector<Vec2> directions8(bool shuffle = false);
   vector<Vec2> neighbors8(bool shuffle = false) const;
   static vector<Vec2> directions4(bool shuffle = false);

@@ -45,8 +45,8 @@ class EventListener {
   virtual void onEquipEvent(const Creature*, const Item*) {}
   virtual void onSurrenderEvent(Creature* who, const Creature* to) {}
   virtual void onTortureEvent(Creature* who, const Creature* torturer) {}
-  virtual void onWorshipCreatureEvent(const Creature* who, const Creature* to, WorshipType) {}
-  virtual void onWorshipEvent(const Creature* who, const Deity* to, WorshipType) {}
+  virtual void onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType) {}
+  virtual void onWorshipEvent(Creature* who, const Deity* to, WorshipType) {}
 
   static void addPickupEvent(const Creature*, const vector<Item*>& items);
   static void addDropEvent(const Creature*, const vector<Item*>& items);
@@ -64,8 +64,8 @@ class EventListener {
   static void addEquipEvent(const Creature*, const Item*);
   static void addSurrenderEvent(Creature* who, const Creature* to);
   static void addTortureEvent(Creature* who, const Creature* torturer);
-  static void addWorshipCreatureEvent(const Creature* who, const Creature* to, WorshipType);
-  static void addWorshipEvent(const Creature* who, const Deity* to, WorshipType);
+  static void addWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType);
+  static void addWorshipEvent(Creature* who, const Deity* to, WorshipType);
 
   virtual const Level* getListenerLevel() const { return nullptr; }
   static void initialize();

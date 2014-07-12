@@ -97,6 +97,8 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(surprises)
     & SVAR(techCostMultiplier)
     & SVAR(warMultiplier)
+    & SVAR(beastMultiplier)
+    & SVAR(undeadMultiplier)
     & SVAR(craftingMultiplier);
   CHECK_SERIAL;
 }
@@ -893,20 +895,20 @@ vector<PlayerControl::SpawnInfo> animationInfo {
 void PlayerControl::handleMatterAnimation(View* view) {
   handleSpawning(view, SquareType::LABORATORY,
       "You need to build a laboratory to animate golems.", "You need a larger laboratory.", "Golem animation",
-      MinionType::GOLEM, animationInfo);
+      MinionType::GOLEM, animationInfo, 1);
 }
 
 vector<PlayerControl::SpawnInfo> tamingInfo {
-  {CreatureId::RAVEN, 5, Nothing()},
-  {CreatureId::WOLF, 30, TechId::BEAST},
-  {CreatureId::CAVE_BEAR, 50, TechId::BEAST},
+  {CreatureId::RAVEN, 20, Nothing()},
+  {CreatureId::WOLF, 40, TechId::BEAST},
+  {CreatureId::CAVE_BEAR, 80, TechId::BEAST},
   {CreatureId::SPECIAL_MONSTER_KEEPER, 150, TechId::BEAST_MUT},
 };
 
 void PlayerControl::handleBeastTaming(View* view) {
   handleSpawning(view, SquareType::BEAST_LAIR,
       "You need to build a beast lair to trap beasts.", "You need a larger lair.", "Beast taming",
-      MinionType::BEAST, tamingInfo);
+      MinionType::BEAST, tamingInfo, beastMultiplier);
 }
 
 vector<PlayerControl::SpawnInfo> breedingInfo {
@@ -919,7 +921,7 @@ vector<PlayerControl::SpawnInfo> breedingInfo {
 void PlayerControl::handleHumanoidBreeding(View* view) {
   handleSpawning(view, SquareType::DORM,
       "You need to build a dormitory to breed humanoids.", "You need a larger dormitory.", "Humanoid breeding",
-      MinionType::NORMAL, breedingInfo);
+      MinionType::NORMAL, breedingInfo, 1);
 }
 
 vector<PlayerControl::SpawnInfo> raisingInfo {
@@ -937,7 +939,7 @@ void PlayerControl::handleNecromancy(View* view) {
       corpses.push_back({pos, it});
   }
   handleSpawning(view, SquareType::CEMETERY, "You need to build a graveyard and collect corpses to raise undead.",
-      "You need a larger graveyard", "Necromancy ", MinionType::UNDEAD, raisingInfo,
+      "You need a larger graveyard", "Necromancy ", MinionType::UNDEAD, raisingInfo, undeadMultiplier,
       corpses, "corpses available", "You need to collect some corpses to raise undead.");
 }
 
@@ -981,7 +983,7 @@ static Optional<Vec2> chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds)
 }
 
 void PlayerControl::handleSpawning(View* view, SquareType spawnSquare, const string& info1, const string& info2,
-    const string& titleBase, MinionType minionType, vector<SpawnInfo> spawnInfo,
+    const string& titleBase, MinionType minionType, vector<SpawnInfo> spawnInfo, double multiplier,
     Optional<vector<pair<Vec2, Item*>>> genItems, string genItemsInfo, string info3) {
   Optional<SquareType> replacement = getSecondarySquare(spawnSquare);
   int prevItem = 0;
@@ -1014,15 +1016,16 @@ void PlayerControl::handleSpawning(View* view, SquareType spawnSquare, const str
     }
     vector<pair<PCreature, int>> availableCreatures;
     for (SpawnInfo info : spawnInfo) {
+      int cost = multiplier * info.manaCost;
       availableCreatures.push_back({CreatureFactory::fromId(info.id, getTribe(),
-            MonsterAIFactory::collective(getCollective())), info.manaCost});
+            MonsterAIFactory::collective(getCollective())), cost});
       bool isTech = !info.techId || hasTech(*info.techId);
       string suf;
       if (!isTech)
         suf = requires(*info.techId);
       options.emplace_back(availableCreatures.back().first->getSpeciesName()
-          + "  mana: " + convertToString(info.manaCost) + suf,
-          allInactive || !isTech || info.manaCost > mana ? View::INACTIVE : View::NORMAL);
+          + "  mana: " + convertToString(cost) + suf,
+          allInactive || !isTech || cost > mana ? View::INACTIVE : View::NORMAL);
     }
     string title = titleBase;
     if (genItems)
@@ -2716,13 +2719,27 @@ void PlayerControl::updateEfficiency(Vec2 pos, SquareType type) {
   }
 }
 
-void PlayerControl::onWorshipEvent(const Creature* who, const Deity* to, WorshipType type) {
+void PlayerControl::uncoverRandomLocation() {
+  const Location* location = nullptr;
+  for (auto loc : randomPermutation(level->getAllLocations()))
+    if (!knownPos(loc->getBounds().middle())) {
+      location = loc;
+      break;
+    }
+  double radius = 8.5;
+  if (location)
+    for (Vec2 v : location->getBounds().middle().circle(radius))
+      if (level->inBounds(v))
+        addKnownTile(v);
+}
+
+void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
   if (!contains(getCreatures(), who))
     return;
   double multiplierBase = 1;
   switch (type) {
     case WorshipType::PRAYER: multiplierBase = 0.999; break;
-    case WorshipType::SACRIFICE: multiplierBase = 0.95; break;
+    case WorshipType::SACRIFICE: multiplierBase = 0.90; break;
   }
   for (EpithetId id : to->getEpithets())
     switch (id) {
@@ -2730,6 +2747,18 @@ void PlayerControl::onWorshipEvent(const Creature* who, const Deity* to, Worship
       case EpithetId::WAR: warMultiplier /= multiplierBase; break;
       case EpithetId::LOVE: warMultiplier *= multiplierBase; break;
       case EpithetId::CRAFTS: craftingMultiplier /= multiplierBase; break;
+      case EpithetId::DEATH:
+        undeadMultiplier *= multiplierBase;
+        if (!who->isUndead() && Random.rollD(0.5 / (1 - multiplierBase)))
+          who->makeUndead();
+        if (who == keeper && type == WorshipType::SACRIFICE && Random.roll(5))
+          keeper->makeUndead();
+        break;
+      case EpithetId::NATURE: beastMultiplier *= multiplierBase;
+      case EpithetId::SECRETS:
+        if (Random.rollD(0.5 / (1 - multiplierBase)))
+          uncoverRandomLocation();
+        break;
       default: break;
     }
 }

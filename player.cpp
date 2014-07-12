@@ -872,8 +872,8 @@ static void applyEffect(Creature* c, EffectType effect, string msg) {
   Effect::applyToCreature(c, effect, EffectStrength::STRONG);
 }
 
-void Player::onWorshipEvent(const Creature* who, const Deity* to, WorshipType type) {
-  if (who != creature)
+void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
+  if (who != creature || adventureMode)
     return;
   bool prayerAnswered = false;
   for (EpithetId epithet : randomPermutation(to->getEpithets())) {

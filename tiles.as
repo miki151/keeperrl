@@ -77,6 +77,7 @@ void genTiles() {
   addTile(BURNT_TREE, sprite("treeburnt").setNoShadow());
   addTile(PLAYER, sprite(1, 0));
   addTile(KEEPER, sprite(3, 0));
+  addTile(UNDEAD_KEEPER, sprite(9, 16));
   addTile(ELF, sprite(10, 6));
   addTile(ELF_ARCHER, sprite(12, 6));
   addTile(ELF_CHILD, sprite(14, 6));
@@ -282,6 +283,7 @@ void genSymbols() {
   addSymbol(EMPTY, symbol(" ", BLACK));
   addSymbol(PLAYER, symbol("@", WHITE));
   addSymbol(KEEPER, symbol("@", PURPLE));
+  addSymbol(UNDEAD_KEEPER, symbol("@", DARK_GRAY));
   addSymbol(UNKNOWN_MONSTER, symbol("?", LIGHT_GREEN));
   addSymbol(ELF, symbol("@", LIGHT_GREEN));
   addSymbol(ELF_ARCHER, symbol("@", GREEN));

@@ -75,7 +75,9 @@ class CreatureAttributes {
   SERIALIZATION_DECL(CreatureAttributes);
 
   MustInitialize<ViewId> SERIAL(viewId);
+  Optional<ViewId> SERIAL(undeadViewId);
   MustInitialize<string> SERIAL(name);
+  Optional<string> SERIAL(undeadName);
   MustInitialize<int> SERIAL(speed);
   MustInitialize<CreatureSize> SERIAL(size);
   MustInitialize<int> SERIAL(strength);

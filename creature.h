@@ -125,6 +125,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void setStationary();
   bool isInvincible() const;
   bool isUndead() const;
+  void makeUndead();
   bool hasBrain() const;
   bool isNotLiving() const;
   bool isCorporal() const;

@@ -74,7 +74,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void onPickupEvent(const Creature* c, const vector<Item*>& items) override;
   virtual void onSurrenderEvent(Creature* who, const Creature* to) override;
   virtual void onTortureEvent(Creature* who, const Creature* torturer) override;
-  virtual void onWorshipEvent(const Creature* who, const Deity* to, WorshipType) override;
+  virtual void onWorshipEvent(Creature* who, const Deity* to, WorshipType) override;
 
   void onConqueredLand(const string& name);
   void onCreatureKilled(const Creature* victim, const Creature* killer) override;
@@ -308,7 +308,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleBeastTaming(View*);
   void handleHumanoidBreeding(View*);
   void handleSpawning(View* view, SquareType spawnSquare, const string& info1, 
-      const string& info2, const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo,
+      const string& info2, const string& title, MinionType minionType, vector<SpawnInfo> spawnInfo, double multiplier,
       Optional<vector<pair<Vec2, Item*>>> genItems = Nothing(), string genItemsInfo = "", string info3 = "");
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
@@ -323,6 +323,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void unmarkItem(UniqueId);
   bool tryLockingDoor(Vec2 pos);
   void addKnownTile(Vec2 pos);
+  void uncoverRandomLocation();
 
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
   ItemPredicate unMarkedItems(ItemType) const;
@@ -415,6 +416,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   double SERIAL(mana);
   int SERIAL2(points, 0);
   double SERIAL2(warMultiplier, 1);
+  double SERIAL2(beastMultiplier, 1);
+  double SERIAL2(undeadMultiplier, 1);
   Model* SERIAL(model);
   vector<const Creature*> SERIAL(kills);
   bool SERIAL2(showWelcomeMsg, true);

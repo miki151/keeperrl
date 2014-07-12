@@ -956,8 +956,10 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
               default: break;
             }
           }
-          if (Random.roll(10))
+          if (Random.roll(10)) {
             c.undead = true;
+            c.name = "undead " + *c.name;
+          }
         }
         if (r.roll(3))
           c.skills.insert(SkillId::SWIMMING);
@@ -999,6 +1001,8 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::KEEPER: 
       return CATTR(
           c.viewId = ViewId::KEEPER;
+          c.undeadViewId = ViewId::UNDEAD_KEEPER;
+          c.undeadName = "Lich";
           c.speed = 100;
           c.weight = 90;
           c.size = CreatureSize::LARGE;

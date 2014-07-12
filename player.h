@@ -61,7 +61,7 @@ class Player : public Controller, public EventListener {
   virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) override;
   virtual void onExplosionEvent(const Level* level, Vec2 pos) override;
   virtual void onAlarmEvent(const Level*, Vec2 pos) override;
-  virtual void onWorshipEvent(const Creature* who, const Deity* to, WorshipType) override;
+  virtual void onWorshipEvent(Creature* who, const Deity* to, WorshipType) override;
 
   SERIALIZATION_DECL(Player);
 

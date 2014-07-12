@@ -474,7 +474,7 @@ class DragonControl : public VillageControl {
     VillageControl::onKillEvent(victim, killer);
   }
 
-  virtual void onWorshipCreatureEvent(const Creature* who, const Creature* to, WorshipType type) {
+  virtual void onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType type) {
     if (contains(getCollective()->getCreatures(), to))
       switch (type) {
         case WorshipType::PRAYER: pleased += 0.01;

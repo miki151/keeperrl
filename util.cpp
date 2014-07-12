@@ -218,6 +218,11 @@ vector<Vec2> Vec2::box(int radius, bool shuffle) {
   return v;
 }
 
+vector<Vec2> Vec2::circle(double radius, bool shuffle) {
+  return filter(Rectangle(*this - Vec2(radius, radius), *this + Vec2(radius, radius)).getAllSquares(),
+      [&](const Vec2& pos) { return distD(pos) <= radius; });
+}
+
 vector<Vec2> Vec2::directions8(bool shuffle) {
   return Vec2(0, 0).neighbors8(shuffle);
 }

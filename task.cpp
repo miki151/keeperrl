@@ -296,7 +296,7 @@ PTask Task::equipItem(Callback* col, Vec2 position, Item* items) {
 
 static Vec2 chooseRandomClose(Vec2 start, const vector<Vec2>& squares) {
   int minD = 10000;
-  int margin = 5;
+  int margin = 3;
   int a;
   vector<Vec2> close;
   for (Vec2 v : squares)

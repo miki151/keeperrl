@@ -1515,11 +1515,11 @@ void Creature::poisonWithGas(double amount) {
 
 void Creature::shineLight() {
   if (undead) {
+    you(MsgType::ARE, "burnt by the sun");
     if (Random.roll(10)) {
       you(MsgType::YOUR, "body crumbles to dust");
       die(nullptr);
-    } else
-      you(MsgType::ARE, "burnt by the sun");
+    }
   }
 }
 
@@ -1835,6 +1835,17 @@ bool Creature::isInvincible() const {
 
 bool Creature::isUndead() const {
   return undead;
+}
+
+void Creature::makeUndead() {
+  CHECK(!undead);
+  undead = true;
+  if (undeadName)
+    *name = *undeadName;
+  else
+    *name = "undead " + *name;
+  if (undeadViewId)
+    setViewObject(ViewObject(*undeadViewId, getViewObject().layer(), getViewObject().getBareDescription()));
 }
 
 bool Creature::isNotLiving() const {
