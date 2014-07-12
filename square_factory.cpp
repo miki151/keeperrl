@@ -671,7 +671,7 @@ class Altar : public Square, public EventListener {
   const Creature* SERIAL2(recentKiller, nullptr);
   const Creature* SERIAL2(recentVictim, nullptr);
   double SERIAL2(killTime, -100);
-  const double sacrificeTimeout = 5;
+  const double sacrificeTimeout = 50;
 };
 
 class DeityAltar : public Altar {

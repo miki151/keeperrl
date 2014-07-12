@@ -130,7 +130,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
     Optional<TechId> techId;
   };
 
-  enum class Warning { DIGGING, STORAGE, WOOD, IRON, STONE, GOLD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, NO_WEAPONS, GRAVES, CHESTS, NO_PRISON, LARGER_PRISON, TORTURE_ROOM, MORE_CHESTS, MANA};
+  enum class Warning { DIGGING, STORAGE, WOOD, IRON, STONE, GOLD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, NO_WEAPONS, GRAVES, CHESTS, NO_PRISON, LARGER_PRISON, TORTURE_ROOM, ALTAR, MORE_CHESTS, MANA};
 
   struct ResourceInfo {
     vector<SquareType> storageType;
@@ -159,16 +159,16 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
     "You need to build a prison.",
     "You need a larger prison.",
     "You need to build a torture room.",
+    "You need to build a shrine to sacrifice.",
     "You need a larger treasure room.",
     "Kill or torture some innocent beings for more mana.",
   };
 
-  const static int numWarnings = 20;
+  const static int numWarnings = 21;
   bool warning[numWarnings] = {0};
   void setWarning(Warning w, bool state = true);
 
-  enum class MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, EXECUTE, LABOR, TRAINING,
-    WORKSHOP, LAB, STUDY, WORSHIP };
+  enum class MinionOption;
 
   SERIALIZATION_DECL(PlayerControl);
 
@@ -434,7 +434,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
     void serialize(Archive& ar, const unsigned int version);
   } SERIAL(alarmInfo);
   struct PrisonerInfo {
-    enum State { SURRENDER, PRISON, EXECUTE, TORTURE } state;
+    enum State { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE } state;
     bool marked;
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);

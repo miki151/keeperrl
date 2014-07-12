@@ -491,7 +491,8 @@ class Kill : public Task {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Task)
-      & SVAR(creature);
+      & SVAR(creature)
+      & SVAR(type);
     CHECK_SERIAL;
   }
   
@@ -512,6 +513,62 @@ PTask Task::torture(Callback* callback, Creature* creature) {
   return PTask(new Kill(callback, creature, Kill::TORTURE));
 }
 
+namespace {
+
+class Sacrifice : public Task {
+  public:
+  Sacrifice(Callback* callback, Creature* c) : Task(callback), creature(c) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (creature->isDead()) {
+      if (sacrificePos) {
+        if (sacrificePos == c->getPosition())
+          return c->applySquare();
+        else
+          return c->moveTowards(*sacrificePos);
+      } else {
+        setDone();
+        return NoMove;
+      }
+    }
+    if (creature->getSquare()->getApplyType(creature) == SquareApplyType::PRAY)
+      if (auto action = c->attack(creature)) {
+        Vec2 pos = creature->getPosition();
+        return action.append([=] { if (creature->isDead()) sacrificePos = pos; });
+      }
+    return c->moveTowards(creature->getPosition());
+  }
+
+  virtual void cancel() override {
+    getCallback()->onKillCancelled(creature);
+  }
+
+  virtual bool canTransfer() override {
+    return false;
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Task)
+      & SVAR(creature)
+      & SVAR(sacrificePos);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Sacrifice);
+
+  private:
+  Creature* SERIAL(creature);
+  Optional<Vec2> SERIAL(sacrificePos);
+};
+
+}
+
+PTask Task::sacrifice(Callback* callback, Creature* creature) {
+  return PTask(new Sacrifice(callback, creature));
+}
+
+
 template <class Archive>
 void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Construction);
@@ -520,6 +577,8 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, BringItem);
   REGISTER_TYPE(ar, ApplyItem);
   REGISTER_TYPE(ar, ApplySquare);
+  REGISTER_TYPE(ar, Kill);
+  REGISTER_TYPE(ar, Sacrifice);
 }
 
 REGISTER_TYPES(Task);

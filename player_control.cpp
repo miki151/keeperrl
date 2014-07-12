@@ -43,6 +43,7 @@ enum class MinionTask { SLEEP,
   LABORATORY,
   PRISON,
   TORTURE,
+  SACRIFICE,
   WORSHIP,
 };
 
@@ -334,10 +335,13 @@ map<MinionTask, PlayerControl::MinionTaskInfo> PlayerControl::getTaskInfo() cons
     {MinionTask::STUDY, {{SquareType::LIBRARY}, "studying", PlayerControl::Warning::LIBRARY}},
     {MinionTask::PRISON, {{SquareType::PRISON}, "prison", PlayerControl::Warning::NO_PRISON}},
     {MinionTask::TORTURE, {{SquareType::TORTURE_TABLE}, "tortured", PlayerControl::Warning::TORTURE_ROOM}},
+    {MinionTask::TORTURE, {{}, "sacrificed", PlayerControl::Warning::ALTAR}},
     {MinionTask::WORSHIP, {{}, "worship", Nothing()}}};
   for (auto elem : mySquares)
-    if (contains({SquareType::ALTAR, SquareType::CREATURE_ALTAR}, elem.first.id) && !elem.second.empty())
+    if (contains({SquareType::ALTAR, SquareType::CREATURE_ALTAR}, elem.first.id) && !elem.second.empty()) {
       ret[MinionTask::WORSHIP].squares.push_back(elem.first);
+      ret[MinionTask::SACRIFICE].squares.push_back(elem.first);
+    }
   return ret;
 };
 
@@ -494,6 +498,9 @@ void PlayerControl::setMinionType(Creature* c, MinionType type) {
     minionTasks.at(c->getUniqueId()) = getTasksForMinion(c);
 }
 
+enum class PlayerControl::MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, SACRIFICE, EXECUTE,
+  LABOR, TRAINING, WORKSHOP, LAB, STUDY, WORSHIP };
+
 struct TaskOption {
   MinionTask task;
   PlayerControl::MinionOption option;
@@ -511,18 +518,22 @@ vector<TaskOption> taskOptions {
 void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
   switch (getMinionType(c)) {
     case MinionType::IMP:
-      mOpt = {MinionOption::PRISON, MinionOption::TORTURE, MinionOption::EXECUTE};
-      lOpt = {"Send to prison", "Torture", "Execute"};
+      mOpt = {MinionOption::PRISON, MinionOption::TORTURE, MinionOption::SACRIFICE, MinionOption::EXECUTE};
+      lOpt = {"Send to prison", "Torture", "Sacrifice", "Execute"};
       break;
     case MinionType::PRISONER:
       switch (prisonerInfo.at(c).state) {
         case PrisonerInfo::EXECUTE:
           lOpt = {View::ListElem("Execution ordered", View::TITLE)};
           break;
+        case PrisonerInfo::SACRIFICE:
+          lOpt = {View::ListElem("Sacrifice ordered", View::TITLE)};
+          break;
         case PrisonerInfo::TORTURE:
         case PrisonerInfo::PRISON:
-          mOpt = {MinionOption::PRISON, MinionOption::TORTURE, MinionOption::EXECUTE, MinionOption::LABOR };
-          lOpt = {"Send to prison", "Torture", "Execute", "Send to labor" };
+          mOpt = {MinionOption::PRISON, MinionOption::TORTURE, MinionOption::EXECUTE, MinionOption::SACRIFICE,
+            MinionOption::LABOR };
+          lOpt = {"Send to prison", "Torture", "Execute", "Sacrifice", "Send to labor" };
           break;
         case PrisonerInfo::SURRENDER: FAIL << "state not handled: " << int(prisonerInfo.at(c).state);
       }
@@ -595,6 +606,11 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
       setMinionType(creature, MinionType::PRISONER);
       prisonerInfo.at(creature) = {PrisonerInfo::TORTURE, false};
       setMinionTask(creature, MinionTask::TORTURE);
+      return;
+    case MinionOption::SACRIFICE:
+      setMinionType(creature, MinionType::PRISONER);
+      prisonerInfo.at(creature) = {PrisonerInfo::SACRIFICE, false};
+      setMinionTask(creature, MinionTask::SACRIFICE);
       return;
     case MinionOption::EXECUTE:
       setMinionType(creature, MinionType::PRISONER);
@@ -899,7 +915,7 @@ void PlayerControl::handleMatterAnimation(View* view) {
 }
 
 vector<PlayerControl::SpawnInfo> tamingInfo {
-  {CreatureId::RAVEN, 20, Nothing()},
+  {CreatureId::PRISONER, 20, Nothing()},
   {CreatureId::WOLF, 40, TechId::BEAST},
   {CreatureId::CAVE_BEAR, 80, TechId::BEAST},
   {CreatureId::SPECIAL_MONSTER_KEEPER, 150, TechId::BEAST_MUT},
@@ -908,7 +924,7 @@ vector<PlayerControl::SpawnInfo> tamingInfo {
 void PlayerControl::handleBeastTaming(View* view) {
   handleSpawning(view, SquareType::BEAST_LAIR,
       "You need to build a beast lair to trap beasts.", "You need a larger lair.", "Beast taming",
-      MinionType::BEAST, tamingInfo, beastMultiplier);
+      MinionType::PRISONER, tamingInfo, beastMultiplier);
 }
 
 vector<PlayerControl::SpawnInfo> breedingInfo {
@@ -2330,6 +2346,7 @@ PTask PlayerControl::getPrisonerTask(Creature* prisoner) {
   switch (prisonerInfo.at(prisoner).state) {
     case PrisonerInfo::EXECUTE: return Task::kill(this, prisoner);
     case PrisonerInfo::TORTURE: return Task::torture(this, prisoner);
+    case PrisonerInfo::SACRIFICE: return Task::sacrifice(this, prisoner);
     default: return nullptr;
   }
 }
@@ -2483,6 +2500,7 @@ MarkovChain<MinionTask> PlayerControl::getTasksForMinion(Creature* c) {
     case MinionType::PRISONER:
       return MarkovChain<MinionTask>(MinionTask::PRISON, {
           {MinionTask::PRISON, {}},
+          {MinionTask::SACRIFICE, {}},
           {MinionTask::TORTURE, {{ MinionTask::PRISON, 0.001}}}});
     case MinionType::GOLEM:
       return MarkovChain<MinionTask>(MinionTask::TRAIN, {{MinionTask::TRAIN, {}}});
@@ -2738,7 +2756,7 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
     return;
   double multiplierBase = 1;
   switch (type) {
-    case WorshipType::PRAYER: multiplierBase = 0.999; break;
+    case WorshipType::PRAYER: multiplierBase = 0.9995; break;
     case WorshipType::SACRIFICE: multiplierBase = 0.90; break;
   }
   for (EpithetId id : to->getEpithets())
