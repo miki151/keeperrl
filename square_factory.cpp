@@ -676,7 +676,8 @@ class Altar : public Square, public EventListener {
 
 class DeityAltar : public Altar {
   public:
-  DeityAltar(const ViewObject& object, Deity* d) : Altar(object), deity(d) {
+  DeityAltar(const ViewObject& object, Deity* d) : Altar(ViewObject(object.id(), object.layer(),
+        "Shrine to " + d->getName())), deity(d) {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -715,7 +716,8 @@ class DeityAltar : public Altar {
 
 class CreatureAltar : public Altar {
   public:
-  CreatureAltar(const ViewObject& object, const Creature* c) : Altar(object), creature(c) {
+  CreatureAltar(const ViewObject& object, const Creature* c) : Altar(ViewObject(object.id(), object.layer(),
+        "Shrine to " + c->getName())), creature(c) {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -1040,7 +1042,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
             "torture table", 0.3, SquareApplyType::TORTURE);
     case SquareType::BEAST_CAGE:
-        return new Furniture(ViewObject(ViewId::BEAST_CAGE, ViewLayer::FLOOR, "Beast cage"), "beast cage", 0.3);
+        return new Bed(ViewObject(ViewId::BEAST_CAGE, ViewLayer::FLOOR, "Beast cage"), "beast cage");
     case SquareType::BEAST_LAIR: return new DestroyableSquare(ViewObject(ViewId::BEAST_LAIR,
                               ViewLayer::FLOOR_BACKGROUND, "Beast lair"), "floor", Vision::get(VisionId::NORMAL));
     case SquareType::TRAINING_ROOM:

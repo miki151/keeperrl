@@ -666,6 +666,43 @@ PTask Task::chain(Callback* call, PTask t1, PTask t2) {
   return PTask(new Chain(call, makeVec<PTask>(std::move(t1), std::move(t2))));
 }
 
+namespace {
+
+class Explore : public NonTransferable {
+  public:
+  Explore(Callback* callback, Vec2 pos) : NonTransferable(callback), position(pos) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (!Random.roll(3))
+      return NoMove;
+    if (auto action = c->moveTowards(position))
+      return action.append([=] {
+          if (c->getPosition().dist8(position) < 5)
+            setDone();
+      });
+    if (Random.roll(3))
+      setDone();
+    return NoMove;
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(position);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Explore);
+
+  private:
+  Vec2 SERIAL(position);
+};
+
+}
+
+PTask Task::explore(Callback* call, Vec2 pos) {
+  return PTask(new Explore(call, pos));
+}
 
 template <class Archive>
 void Task::registerTypes(Archive& ar) {
@@ -680,6 +717,7 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, DestroySquare);
   REGISTER_TYPE(ar, Disappear);
   REGISTER_TYPE(ar, Chain);
+  REGISTER_TYPE(ar, Explore);
 }
 
 REGISTER_TYPES(Task);

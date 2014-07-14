@@ -476,10 +476,10 @@ void genSymbols() {
   addSymbol(BED, symbol("=", WHITE));
   addSymbol(DUNGEON_HEART, symbol("♥", WHITE, true));
   addSymbol(TORCH, symbol("I", ORANGE));
-  addSymbol(ALTAR, symbol("Ω", WHITE));
-  addSymbol(CREATURE_ALTAR, symbol("Ω", YELLOW));
+  addSymbol(ALTAR, symbol("Ω", WHITE, true));
+  addSymbol(CREATURE_ALTAR, symbol("Ω", YELLOW, true));
   addSymbol(TORTURE_TABLE, symbol("=", GRAY));
-  addSymbol(IMPALED_HEAD, symbol("𐌒", BROWN));
+  addSymbol(IMPALED_HEAD, symbol("𐌒", BROWN, true));
   addSymbol(TRAINING_ROOM, symbol("‡", BROWN, true));
   addSymbol(LIBRARY, symbol("▤", BROWN, true));
   addSymbol(LABORATORY, symbol("ω", PURPLE, true));
@@ -510,5 +510,5 @@ void genSymbols() {
   addSymbol(DESTROY_BUTTON, symbol("X", RED));
   addSymbol(MANA, symbol("*", BLUE));
   addSymbol(DANGER, symbol("*", RED));
-  addSymbol(FETCH_ICON, symbol(0x1f44b, LIGHT_BROWN));
+  addSymbol(FETCH_ICON, symbol(0x1f44b, LIGHT_BROWN, true));
 }

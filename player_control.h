@@ -300,8 +300,11 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   MarkovChain<MinionTask> getTasksForMinion(Creature* c);
 
   struct MinionTaskInfo {
+    enum Type { APPLY_SQUARE, EXPLORE } type;
+    MinionTaskInfo(vector<SquareType>, const string& description, Optional<Warning> = Nothing());
+    MinionTaskInfo(Type, const string&);
     vector<SquareType> squares;
-    string desc;
+    string description;
     Optional<Warning> warning;
   };
 

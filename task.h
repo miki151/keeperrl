@@ -85,6 +85,7 @@ class Task : public UniqueEntity {
   static PTask destroySquare(Callback*, Vec2 position);
   static PTask disappear(Callback*);
   static PTask chain(Callback*, PTask, PTask);
+  static PTask explore(Callback*, Vec2);
 
   SERIALIZATION_DECL(Task);
 

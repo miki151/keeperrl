@@ -45,6 +45,8 @@ enum class MinionTask { SLEEP,
   TORTURE,
   SACRIFICE,
   WORSHIP,
+  LAIR,
+  EXPLORE,
 };
 
 RICH_ENUM(MinionType,
@@ -370,6 +372,14 @@ vector<PlayerControl::ItemFetchInfo> PlayerControl::getFetchInfo() const {
   };
 }
 
+PlayerControl::MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, Optional<Warning> w) 
+    : type(APPLY_SQUARE), squares(s), description(desc), warning(w) {
+}
+
+PlayerControl::MinionTaskInfo::MinionTaskInfo(Type t, const string& desc) : type(t), description(desc) {
+  CHECK(type == EXPLORE);
+}
+
 map<MinionTask, PlayerControl::MinionTaskInfo> PlayerControl::getTaskInfo() const {
   map<MinionTask, MinionTaskInfo> ret {
     {MinionTask::LABORATORY, {{SquareType::LABORATORY}, "lab", PlayerControl::Warning::LABORATORY}},
@@ -377,15 +387,17 @@ map<MinionTask, PlayerControl::MinionTaskInfo> PlayerControl::getTaskInfo() cons
     {MinionTask::WORKSHOP, {{SquareType::WORKSHOP}, "crafting", PlayerControl::Warning::WORKSHOP}},
     {MinionTask::SLEEP, {{SquareType::BED}, "sleeping", PlayerControl::Warning::BEDS}},
     {MinionTask::GRAVE, {{SquareType::GRAVE}, "sleeping", PlayerControl::Warning::GRAVES}},
+    {MinionTask::LAIR, {{SquareType::BEAST_CAGE}, "sleeping"}},
     {MinionTask::STUDY, {{SquareType::LIBRARY}, "studying", PlayerControl::Warning::LIBRARY}},
     {MinionTask::PRISON, {{SquareType::PRISON}, "prison", PlayerControl::Warning::NO_PRISON}},
     {MinionTask::TORTURE, {{SquareType::TORTURE_TABLE}, "tortured", PlayerControl::Warning::TORTURE_ROOM}},
-    {MinionTask::TORTURE, {{}, "sacrificed", PlayerControl::Warning::ALTAR}},
+    {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "exploring"}},
+    {MinionTask::SACRIFICE, {{}, "sacrificed", PlayerControl::Warning::ALTAR}},
     {MinionTask::WORSHIP, {{}, "worship", Nothing()}}};
   for (auto elem : mySquares)
     if (contains({SquareType::ALTAR, SquareType::CREATURE_ALTAR}, elem.first.id) && !elem.second.empty()) {
-      ret[MinionTask::WORSHIP].squares.push_back(elem.first);
-      ret[MinionTask::SACRIFICE].squares.push_back(elem.first);
+      ret.at(MinionTask::WORSHIP).squares.push_back(elem.first);
+      ret.at(MinionTask::SACRIFICE).squares.push_back(elem.first);
     }
   return ret;
 };
@@ -539,7 +551,7 @@ MinionType PlayerControl::getMinionType(const Creature* c) const {
 void PlayerControl::setMinionType(Creature* c, MinionType type) {
   removeElement(minionByType[getMinionType(c)], c);
   minionByType[type].push_back(c);
-  if (!contains({MinionType::IMP, MinionType::BEAST}, type))
+  if (!contains({MinionType::IMP}, type))
     minionTasks.at(c->getUniqueId()) = getTasksForMinion(c);
 }
 
@@ -960,7 +972,7 @@ void PlayerControl::handleMatterAnimation(View* view) {
 }
 
 vector<PlayerControl::SpawnInfo> tamingInfo {
-  {CreatureId::PRISONER, 20, Nothing()},
+  {CreatureId::RAVEN, 20, Nothing()},
   {CreatureId::WOLF, 40, TechId::BEAST},
   {CreatureId::CAVE_BEAR, 80, TechId::BEAST},
   {CreatureId::SPECIAL_MONSTER_KEEPER, 150, TechId::BEAST_MUT},
@@ -969,7 +981,7 @@ vector<PlayerControl::SpawnInfo> tamingInfo {
 void PlayerControl::handleBeastTaming(View* view) {
   handleSpawning(view, SquareType::BEAST_LAIR,
       "You need to build a beast lair to trap beasts.", "You need a larger lair.", "Beast taming",
-      MinionType::PRISONER, tamingInfo, beastMultiplier);
+      MinionType::BEAST, tamingInfo, beastMultiplier);
 }
 
 vector<PlayerControl::SpawnInfo> breedingInfo {
@@ -2341,19 +2353,6 @@ void PlayerControl::onTortureEvent(Creature* who, const Creature* torturer) {
   mana += 1;
 }
 
-MoveInfo PlayerControl::getBeastMove(Creature* c) {
-  if (!Random.roll(2) && !myTiles.count(c->getPosition()))
-    return NoMove;
-  if (auto action = c->continueMoving())
-    return {1.0, action};
-  if (!Random.roll(5))
-    return NoMove;
-  if (!borderTiles.empty())
-    if (auto action = c->moveTowards(chooseRandom(borderTiles)))
-      return {1.0, action};
-  return NoMove;
-}
-
 MoveInfo PlayerControl::getGuardPostMove(Creature* c) {
   if (contains({MinionType::BEAST, MinionType::PRISONER, MinionType::KEEPER}, getMinionType(c)))
     return NoMove;
@@ -2446,8 +2445,6 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
       return alarmMove;
   if (MoveInfo dropMove = getDropItems(c))
     return dropMove;
-  if (contains(minionByType[MinionType::BEAST], c))
-    return getBeastMove(c);
   if (MoveInfo guardPostMove = getGuardPostMove(c))
     return guardPostMove;
   if (Task* task = taskMap.getTask(c)) {
@@ -2483,7 +2480,7 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
       }
   minionTasks.at(c->getUniqueId()).update();
   if (c->getHealth() < 1 && c->canSleep() && !c->isAffected(LastingEffect::POISON))
-    for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE})
+    for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR})
       if (minionTasks.at(c->getUniqueId()).containsState(t)) {
         minionTasks.at(c->getUniqueId()).setState(t);
         break;
@@ -2492,16 +2489,23 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
     if (auto action = c->moveTowards(chooseRandom(myTiles)))
       return {1.0, action};
   MinionTaskInfo info = getTaskInfo().at(minionTasks.at(c->getUniqueId()).getState());
-  if (getAllSquares(info.squares).empty()) {
-    minionTasks.at(c->getUniqueId()).updateToNext();
-    if (info.warning)
-      setWarning(*info.warning, true);
-    return NoMove;
+  switch (info.type) {
+    case MinionTaskInfo::APPLY_SQUARE:
+      if (getAllSquares(info.squares).empty()) {
+        minionTasks.at(c->getUniqueId()).updateToNext();
+        if (info.warning)
+          setWarning(*info.warning, true);
+        return NoMove;
+      }
+      taskMap.addTask(Task::applySquare(this, getAllSquares(info.squares)), c);
+      break;
+    case MinionTaskInfo::EXPLORE:
+      taskMap.addTask(Task::explore(this, chooseRandom(borderTiles)), c);
+      break;
   }
   if (info.warning)
     setWarning(*info.warning, false);
-  taskMap.addTask(Task::applySquare(this, getAllSquares(info.squares)), c);
-  minionTaskStrings[c->getUniqueId()] = info.desc;
+  minionTaskStrings[c->getUniqueId()] = info.description;
   return taskMap.getTask(c)->getMove(c);
 }
 
@@ -2584,7 +2588,11 @@ MarkovChain<MinionTask> PlayerControl::getTasksForMinion(Creature* c) {
           {MinionTask::TORTURE, {{ MinionTask::PRISON, 0.001}}}});
     case MinionType::GOLEM:
       return MarkovChain<MinionTask>(MinionTask::TRAIN, {{MinionTask::TRAIN, {}}});
-    case MinionType::UNDEAD:
+    case MinionType::BEAST:
+        return MarkovChain<MinionTask>(MinionTask::LAIR, {
+            {MinionTask::LAIR, {{ MinionTask::EXPLORE, 0.5}}},
+            {MinionTask::EXPLORE, {{ MinionTask::LAIR, 0.05}}}});
+   case MinionType::UNDEAD:
       if (c->getName() != "vampire lord")
         return MarkovChain<MinionTask>(MinionTask::GRAVE, {
             {MinionTask::GRAVE, {{ MinionTask::TRAIN, 0.5}}},
@@ -2611,7 +2619,6 @@ MarkovChain<MinionTask> PlayerControl::getTasksForMinion(Creature* c) {
           {MinionTask::LABORATORY, {{ MinionTask::SLEEP, changeFreq}}},
           {MinionTask::TRAIN, {{ MinionTask::SLEEP, changeFreq}}}});
       }
-    case MinionType::BEAST:
     case MinionType::IMP: FAIL << "Not handled by this method";
   }
   FAIL <<"pokewf";
@@ -2668,7 +2675,7 @@ void PlayerControl::addCreature(Creature* c, MinionType type) {
       if (Skill* skill = t->getSkill())
         c->addSkill(skill);
   }
-  if (!contains({MinionType::BEAST, MinionType::IMP}, type))
+  if (!contains({MinionType::IMP}, type))
     minionTasks.insert(make_pair(c->getUniqueId(), getTasksForMinion(c)));
   for (const Item* item : c->getEquipment().getItems())
     minionEquipment.own(c, item);
