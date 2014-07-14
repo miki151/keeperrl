@@ -19,10 +19,10 @@
 #include "util.h"
 #include "gender.h"
 #include "singleton.h"
+#include "creature_factory.h"
 
 enum class DeityHabitat {
   EARTH,
-  STONE,
   FIRE,
   AIR,
   TREES,
@@ -78,6 +78,7 @@ class Deity {
   string getEpithetsString() const;
   string getHabitatString() const;
   DeityHabitat getHabitat() const;
+  CreatureFactory getServant() const;
 
   static Deity* getDeity(DeityHabitat);
   static vector<Deity*> getDeities();
@@ -91,7 +92,6 @@ class Deity {
 
   private:
   static vector<Deity*> deities;
-  Deity(Deity&) {}
   string SERIAL(name);
   Gender SERIAL(gender);
   vector<EpithetId> SERIAL(epithets);

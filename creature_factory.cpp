@@ -1783,8 +1783,42 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.canBeMinion = false;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
-          c.courage = 100;
           c.name = "fire sphere";);
+    case CreatureId::FIRE_ELEMENTAL:
+      return INHERIT(FIRE_SPHERE,
+          c.viewId = ViewId::FIRE_ELEMENTAL;
+          c.speed = 120;
+          c.strength = 20;
+          c.dexterity = 20;
+          c.name = "fire elemental";);
+    case CreatureId::AIR_ELEMENTAL:
+      return INHERIT(FIRE_ELEMENTAL,
+          c.viewId = ViewId::AIR_ELEMENTAL;
+          c.fireCreature = false;
+          c.speed = 160;
+          c.name = "air elemental";);
+    case CreatureId::EARTH_ELEMENTAL:
+      return INHERIT(AIR_ELEMENTAL,
+          c.viewId = ViewId::EARTH_ELEMENTAL;
+          c.speed = 80;
+          c.uncorporal = false;
+          c.strength = 30;
+          c.name = "earth elemental";);
+    case CreatureId::WATER_ELEMENTAL:
+      return INHERIT(EARTH_ELEMENTAL,
+          c.viewId = ViewId::WATER_ELEMENTAL;
+          c.skills.insert(SkillId::SWIMMING);
+          c.name = "water elemental";);
+    case CreatureId::ENT:
+      return INHERIT(EARTH_ELEMENTAL,
+          c.viewId = ViewId::ENT;
+          c.skills.insert(SkillId::ELF_VISION);
+          c.name = "ent";);
+    case CreatureId::ANGEL:
+      return INHERIT(KNIGHT,
+          c.viewId = ViewId::ANGEL;
+          c.uncorporal = true;
+          c.name = "angel";);
     case CreatureId::KRAKEN: 
       return CATTR(
           c.viewId = ViewId::KRAKEN;
@@ -1980,6 +2014,8 @@ class ItemList {
 
 vector<ItemId> getInventory(CreatureId id) {
   switch (id) {
+    case CreatureId::ANGEL:
+      return ItemList().add(ItemId::SWORD);
     case CreatureId::KEEPER: 
       return ItemList()
         .add(ItemId::ROBE);

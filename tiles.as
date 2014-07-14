@@ -152,6 +152,12 @@ void genTiles() {
   addTile(STONE_GOLEM, sprite(10, 10));
   addTile(IRON_GOLEM, sprite(12, 10));
   addTile(LAVA_GOLEM, sprite(13, 10));
+  addTile(AIR_ELEMENTAL, sprite(15, 10));
+  addTile(FIRE_ELEMENTAL, sprite("fireelement"));
+  addTile(WATER_ELEMENTAL, sprite("waterelement"));
+  addTile(EARTH_ELEMENTAL, sprite(12, 20));
+  addTile(ENT, sprite(17, 16));
+  addTile(ANGEL, sprite(16, 19));
   addTile(ZOMBIE, sprite(0, 16));
   addTile(SKELETON, sprite(2, 16));
   addTile(VAMPIRE_LORD, sprite(13, 16));
@@ -359,6 +365,12 @@ void genSymbols() {
   addSymbol(STONE_GOLEM, symbol("Y", LIGHT_GRAY));
   addSymbol(IRON_GOLEM, symbol("Y", ORANGE));
   addSymbol(LAVA_GOLEM, symbol("Y", PURPLE));
+  addSymbol(AIR_ELEMENTAL, symbol("E", LIGHT_BLUE));
+  addSymbol(FIRE_ELEMENTAL, symbol("E", RED));
+  addSymbol(WATER_ELEMENTAL, symbol("E", BLUE));
+  addSymbol(EARTH_ELEMENTAL, symbol("E", GRAY));
+  addSymbol(ENT, symbol("E", LIGHT_BROWN));
+  addSymbol(ANGEL, symbol("A", LIGHT_BLUE));
   addSymbol(ZOMBIE, symbol("Z", GREEN));
   addSymbol(SKELETON, symbol("Z", WHITE));
   addSymbol(VAMPIRE, symbol("V", DARK_GRAY));

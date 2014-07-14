@@ -5,6 +5,8 @@
 
 class CreatureAction {
   public:
+  typedef function<void()> ActionFun;
+
   CreatureAction(function<void()>);
   CreatureAction(const string& failedReason = "");
 #ifndef RELEASE
@@ -13,16 +15,14 @@ class CreatureAction {
   CreatureAction(const CreatureAction&);
   ~CreatureAction();
 #endif
-  CreatureAction prepend(function<void()>);
-  CreatureAction append(function<void()>);
+  CreatureAction prepend(ActionFun);
+  CreatureAction append(ActionFun);
   void perform();
   string getFailedReason() const;
   operator bool() const;
 
   private:
-  function<void()> action;
-  function<void()> before;
-  function<void()> after;
+  ActionFun action;
   string failedMessage;
 #ifndef RELEASE
   mutable bool wasUsed = false;

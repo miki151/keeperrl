@@ -561,12 +561,12 @@ Model* Model::collectiveModel(View* view) {
   Creature* ref = c.get();
   top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
   m->addCreature(std::move(c));
-  m->playerControl->addCreature(ref, MinionType::NORMAL);
+  m->playerControl->addCreature(ref);
   for (int i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, Tribe::get(TribeId::KEEPER),
         MonsterAIFactory::collective(keeperCollective));
     top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
-    m->playerControl->addCreature(c.get(), MinionType::IMP);
+    m->playerControl->addCreature(c.get());
     m->addCreature(std::move(c));
   }
   for (int i : All(enemyInfo)) {
@@ -598,7 +598,7 @@ Model* Model::splashModel(View* view, const Table<bool>& bitmap) {
       PCreature c = factory.random(MonsterAIFactory::guardSquare(v));
       Creature* ref = c.get();
       top->landCreature({bitmap.getBounds().randomVec2()}, std::move(c));
-      m->playerControl->addCreature(ref, MinionType::NORMAL);
+      m->playerControl->addCreature(ref);
     }
   return m;
 }

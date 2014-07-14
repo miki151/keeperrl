@@ -82,6 +82,9 @@ class Task : public UniqueEntity {
   static PTask kill(Callback*, Creature*);
   static PTask torture(Callback*, Creature*);
   static PTask sacrifice(Callback*, Creature*);
+  static PTask destroySquare(Callback*, Vec2 position);
+  static PTask disappear(Callback*);
+  static PTask chain(Callback*, PTask, PTask);
 
   SERIALIZATION_DECL(Task);
 

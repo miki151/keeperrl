@@ -1628,7 +1628,7 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up,
         SquareType(SquareType::BLACK_WALL), new Empty(SquareType::FLOOR), shopMaker));
   queue->addMaker(new Connector({5, 3, 0}));
   if (Random.roll(3)) {
-    DeityHabitat deity = chooseRandom({DeityHabitat::STONE, DeityHabitat::EARTH});
+    DeityHabitat deity = chooseRandom({DeityHabitat::EARTH});
     queue->addMaker(new Shrine(deity, SquareType::FLOOR,
         new TypePredicate({SquareType::ROCK_WALL, SquareType::BLACK_WALL}), SquareType::ROCK_WALL, nullptr));
   }

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "creature_action.h"
 
-CreatureAction::CreatureAction(function<void()> f) : action(f) {
+CreatureAction::CreatureAction(ActionFun f) : action(f) {
 }
 
 CreatureAction::CreatureAction(const string& msg)
@@ -19,37 +19,31 @@ void CreatureAction::checkUsage(bool b) {
   usageCheck = b;
 }
 
-CreatureAction::CreatureAction(const CreatureAction& a) : action(a.action), before(a.before), after(a.after),
-  failedMessage(a.failedMessage), wasUsed(true) {
+CreatureAction::CreatureAction(const CreatureAction& a) 
+    : action(a.action), failedMessage(a.failedMessage), wasUsed(true) {
   a.wasUsed = true;
 }
 #endif
 
 void CreatureAction::perform() {
-  if (before)
-    before();
   CHECK(action);
   action();
-  if (after)
-    after();
 #ifndef RELEASE
   wasUsed = true;
 #endif
 }
 
-CreatureAction CreatureAction::prepend(function<void()> f) {
-  if (!before)
-    before = f;
-  else
-    before = [=] { f(); before(); };
+CreatureAction CreatureAction::prepend(ActionFun f) {
+  CHECK(action);
+  ActionFun tmp = action;
+  action = [=] { f(); tmp(); };
   return *this;
 }
 
-CreatureAction CreatureAction::append(function<void()> f) {
-  if (!after)
-    after = f;
-  else
-    after = [=] { after(); f(); };
+CreatureAction CreatureAction::append(ActionFun f) {
+  CHECK(action);
+  ActionFun tmp = action;
+  action = [=] { tmp(); f(); };
   return *this;
 }
 

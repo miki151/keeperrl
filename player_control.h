@@ -28,17 +28,7 @@
 #include "view.h"
 #include "collective_control.h"
 
-enum class MinionType {
-  IMP,
-  NORMAL,
-  UNDEAD,
-  GOLEM,
-  BEAST,
-  KEEPER,
-  PRISONER,
-};
-
-ENUM_HASH(MinionType);
+enum class MinionType;
 
 enum class MinionTask;
 
@@ -83,7 +73,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void tick(double);
   void update(Creature*);
   MoveInfo getMove(Creature* c);
-  void addCreature(Creature* c, MinionType);
+  void addCreature(Creature* c);
 
   virtual const Level* getLevel() const;
 
@@ -98,7 +88,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   bool isRetired() const;
   const Creature* getKeeper() const;
-  Vec2 getDungeonCenter() const;
   double getWarLevel() const;
 
   void render(View*);
@@ -130,7 +119,14 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
     Optional<TechId> techId;
   };
 
-  enum class Warning { DIGGING, STORAGE, WOOD, IRON, STONE, GOLD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, NO_WEAPONS, GRAVES, CHESTS, NO_PRISON, LARGER_PRISON, TORTURE_ROOM, ALTAR, MORE_CHESTS, MANA};
+  enum class MinionOption;
+
+  SERIALIZATION_DECL(PlayerControl);
+
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
+  enum class Warning;
 
   struct ResourceInfo {
     vector<SquareType> storageType;
@@ -140,44 +136,17 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
     Warning warning;
   };
 
-  static constexpr const char* const warningText[] {
-    "Start digging into the mountain to build a dungeon.",
-    "You need to build a storage room.",
-    "Cut down some trees for wood.",
-    "You need to mine more iron.",
-    "You need to mine more stone.",
-    "You need to mine more gold.",
-    "Build a library to start research.",
-    "Use the library tab in the top-right to summon some minions.",
-    "You need to build beds for your minions.",
-    "Build a training room for your minions.",
-    "Build a workshop to produce equipment and traps.",
-    "Build a laboratory to produce potions.",
-    "You need weapons for your minions.",
-    "You need a graveyard to collect corpses",
-    "You need to build a treasure room.",
-    "You need to build a prison.",
-    "You need a larger prison.",
-    "You need to build a torture room.",
-    "You need to build a shrine to sacrifice.",
-    "You need a larger treasure room.",
-    "Kill or torture some innocent beings for more mana.",
-  };
+  private:
+  void considerDeityFight();
+  void addDeityServant(Deity*, Vec2 deityPos, Vec2 victimPos);
+  static string getWarningText(Warning);
 
-  const static int numWarnings = 21;
-  bool warning[numWarnings] = {0};
+  EnumSet<Warning> warnings;
   void setWarning(Warning w, bool state = true);
 
-  enum class MinionOption;
-
-  SERIALIZATION_DECL(PlayerControl);
-
-  template <class Archive>
-  static void registerTypes(Archive& ar);
-
-  private:
   double getDangerLevel(bool includeExecutions = true) const;
   void onWorshipEpithet(EpithetId);
+  void addCreature(Creature* c, MinionType);
   Creature* addCreature(PCreature c, Vec2 v, MinionType);
   void importCreature(Creature* c, MinionType);
   Creature* getCreature(UniqueId id);
@@ -338,7 +307,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   map<MinionTask, MinionTaskInfo> getTaskInfo() const;
   vector<Creature*> SERIAL(minions);
-  unordered_map<MinionType, vector<Creature*>> SERIAL(minionByType);
+  EnumMap<MinionType, vector<Creature*>> SERIAL(minionByType);
   EntitySet SERIAL(markedItems);
 
   class TaskMap : public Task::Mapping {

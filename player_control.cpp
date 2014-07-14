@@ -47,6 +47,15 @@ enum class MinionTask { SLEEP,
   WORSHIP,
 };
 
+RICH_ENUM(MinionType,
+  IMP,
+  NORMAL,
+  UNDEAD,
+  GOLEM,
+  BEAST,
+  KEEPER,
+  PRISONER,
+);
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -296,9 +305,39 @@ vector<MinionType> minionTypes {
   MinionType::PRISONER,
 };
 
-PlayerControl::ResourceInfo info;
 
-constexpr const char* const PlayerControl::warningText[numWarnings];
+RICH_ENUM(PlayerControl::Warning, DIGGING, STORAGE, WOOD, IRON, STONE, GOLD, LIBRARY, MINIONS, BEDS, TRAINING, WORKSHOP, LABORATORY, NO_WEAPONS, GRAVES, CHESTS, NO_PRISON, LARGER_PRISON, TORTURE_ROOM, ALTAR, MORE_CHESTS, MANA);
+
+string PlayerControl::getWarningText(Warning w) {
+  switch (w) {
+    case Warning::DIGGING: return "Start digging into the mountain to build a dungeon.";
+    case Warning::STORAGE: return "You need to build a storage room.";
+    case Warning::WOOD: return "Cut down some trees for wood.";
+    case Warning::IRON: return "You need to mine more iron.";
+    case Warning::STONE: return "You need to mine more stone.";
+    case Warning::GOLD: return "You need to mine more gold.";
+    case Warning::LIBRARY: return "Build a library to start research.";
+    case Warning::MINIONS: return "Use the library tab in the top-right to summon some minions.";
+    case Warning::BEDS: return "You need to build beds for your minions.";
+    case Warning::TRAINING: return "Build a training room for your minions.";
+    case Warning::WORKSHOP: return "Build a workshop to produce equipment and traps.";
+    case Warning::LABORATORY: return "Build a laboratory to produce potions.";
+    case Warning::NO_WEAPONS: return "You need weapons for your minions.";
+    case Warning::GRAVES: return "You need a graveyard to collect corpses";
+    case Warning::CHESTS: return "You need to build a treasure room.";
+    case Warning::NO_PRISON: return "You need to build a prison.";
+    case Warning::LARGER_PRISON: return "You need a larger prison.";
+    case Warning::TORTURE_ROOM: return "You need to build a torture room.";
+    case Warning::ALTAR: return "You need to build a shrine to sacrifice.";
+    case Warning::MORE_CHESTS: return "You need a larger treasure room.";
+    case Warning::MANA: return "Kill or torture some innocent beings for more mana.";
+  }
+  return "";
+}
+
+void PlayerControl::setWarning(Warning w, bool state) {
+  warnings[w] = state;
+}
 
 const static vector<SquareType> resourceStorage {SquareType::STOCKPILE, SquareType::STOCKPILE_RES};
 const static vector<SquareType> equipmentStorage {SquareType::STOCKPILE, SquareType::STOCKPILE_EQUIP};
@@ -491,15 +530,15 @@ static vector<ItemId> marketItems {
 
 MinionType PlayerControl::getMinionType(const Creature* c) const {
   for (auto elem : minionTypes)
-    if (contains(minionByType.at(elem), c))
+    if (contains(minionByType[elem], c))
       return elem;
   FAIL << "Minion type not found " << c->getName();
   return MinionType(0);
 }
 
 void PlayerControl::setMinionType(Creature* c, MinionType type) {
-  removeElement(minionByType.at(getMinionType(c)), c);
-  minionByType.at(type).push_back(c);
+  removeElement(minionByType[getMinionType(c)], c);
+  minionByType[type].push_back(c);
   if (!contains({MinionType::IMP, MinionType::BEAST}, type))
     minionTasks.at(c->getUniqueId()) = getTasksForMinion(c);
 }
@@ -974,7 +1013,7 @@ vector<CreatureId> PlayerControl::getSpawnInfo(const Technology* tech) {
 }
 
 int PlayerControl::getNumMinions() const {
-  return minions.size() - minionByType.at(MinionType::PRISONER).size();
+  return minions.size() - minionByType[MinionType::PRISONER].size();
 }
 
 static int countNeighbor(Vec2 pos, const set<Vec2>& squares) {
@@ -1016,7 +1055,7 @@ void PlayerControl::handleSpawning(View* view, SquareType spawnSquare, const str
     Optional<Vec2> bedPos;
     if (!replacement && !lairSquares.empty())
       bedPos = chooseRandom(lairSquares);
-    else if (minionByType.at(minionType).size() < mySquares.at(*replacement).size())
+    else if (minionByType[minionType].size() < mySquares.at(*replacement).size())
       bedPos = chooseRandom(mySquares.at(*replacement));
     else
       bedPos = chooseBedPos(lairSquares, mySquares.at(*replacement));
@@ -1203,7 +1242,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                ViewObject(ViewId::IMP, ViewLayer::CREATURE, ""),
                "Summon imp",
                cost,
-               "[" + convertToString(minionByType.at(MinionType::IMP).size()) + "]",
+               "[" + convertToString(minionByType[MinionType::IMP].size()) + "]",
                getImpCost() <= mana ? "" : "inactive"});
            break; }
       case BuildInfo::DESTROY:
@@ -1293,9 +1332,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       info.warning = NameGenerator::get(NameGeneratorId::INSULTS)->getNext();
   } else
     info.warning = "";
-  for (int i : Range(numWarnings))
-    if (warning[i]) {
-      info.warning = warningText[i];
+  for (Warning w : ENUM_ALL(Warning))
+    if (warnings[w]) {
+      info.warning = getWarningText(w);
       break;
     }
   info.time = getTime();
@@ -1493,7 +1532,7 @@ void PlayerControl::returnResource(CostInfo amount) {
 
 int PlayerControl::getImpCost() const {
   int numImps = 0;
-  for (Creature* c : minionByType.at(MinionType::IMP))
+  for (Creature* c : minionByType[MinionType::IMP])
     if (!contains(minions, c)) // see if it's not a prisoner
       ++numImps;
   if (numImps < startImpNum)
@@ -1924,13 +1963,6 @@ const Creature* PlayerControl::getKeeper() const {
   return keeper;
 }
 
-Vec2 PlayerControl::getDungeonCenter() const {
-  if (!myTiles.empty())
-    return Vec2::getCenterOfWeight(vector<Vec2>(myTiles.begin(), myTiles.end()));
-  else
-    return keeper->getPosition();
-}
-
 double PlayerControl::getWarLevel() const {
   double ret = 0;
   for (const Creature* c : minions)
@@ -2008,7 +2040,7 @@ void PlayerControl::updateConstructions() {
     }
   for (auto& elem : constructions)
     if (!isDelayed(elem.first) && elem.second.marked <= getTime() && !elem.second.built) {
-      if ((warning[int(resourceInfo.at(elem.second.cost.id).warning)]
+      if ((warnings[resourceInfo.at(elem.second.cost.id).warning]
           = (numResource(elem.second.cost.id) < elem.second.cost.value)))
         continue;
       elem.second.task = taskMap.addTaskCost(Task::construction(this, elem.first, elem.second.type), elem.first,
@@ -2050,11 +2082,49 @@ bool PlayerControl::isDelayed(Vec2 pos) {
   return delayedPos.count(pos) && delayedPos.at(pos) > getTime();
 }
 
-void PlayerControl::setWarning(Warning w, bool state) {
-  warning[int(w)] = state;
+void PlayerControl::addDeityServant(Deity* deity, Vec2 deityPos, Vec2 victimPos) {
+  PTask task = Task::chain(this,
+      Task::destroySquare(this, victimPos),
+      Task::disappear(this));
+  PCreature creature = deity->getServant().random(MonsterAIFactory::singleTask(task));
+  for (Vec2 v : concat({deityPos}, deityPos.neighbors8(true)))
+    if (level->getSquare(v)->canEnter(creature.get())) {
+      level->addCreature(v, std::move(creature));
+      break;
+    }
+}
+
+void PlayerControl::considerDeityFight() {
+  vector<pair<Vec2, SquareType>> altars;
+  vector<pair<Vec2, SquareType>> deityAltars;
+  vector<SquareType> altarTypes;
+  for (auto& elem : mySquares) 
+    if (!elem.second.empty() && contains({SquareType::ALTAR, SquareType::CREATURE_ALTAR}, elem.first.id)) {
+      altarTypes.push_back(elem.first);
+      for (Vec2 v : elem.second) {
+        altars.push_back({v, elem.first});
+        if (elem.first.id == SquareType::ALTAR)
+          deityAltars.push_back({v, elem.first});
+      }
+    }
+  if (altarTypes.size() < 2 || deityAltars.size() == 0)
+    return;
+  double fightChance = 10000.0 / pow(5, altars.size() - 2);
+  if (Random.rollD(fightChance)) {
+    pair<Vec2, SquareType> attacking = chooseRandom(deityAltars);
+    pair<Vec2, SquareType> victim;
+    do {
+      victim = chooseRandom(altars);
+    } while (victim.second.id == SquareType::ALTAR &&
+        victim.second.altarInfo.habitat == attacking.second.altarInfo.habitat);
+    addDeityServant(Deity::getDeity(attacking.second.altarInfo.habitat), attacking.first, victim.first);
+    if (victim.second.id == SquareType::ALTAR)
+      addDeityServant(Deity::getDeity(victim.second.altarInfo.habitat), victim.first, attacking.first);
+  }
 }
 
 void PlayerControl::tick(double time) {
+  considerDeityFight();
   model->getView()->getJukebox()->update();
   if (retired) {
     if (const Creature* c = level->getPlayer())
@@ -2376,7 +2446,7 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
       return alarmMove;
   if (MoveInfo dropMove = getDropItems(c))
     return dropMove;
-  if (contains(minionByType.at(MinionType::BEAST), c))
+  if (contains(minionByType[MinionType::BEAST], c))
     return getBeastMove(c);
   if (MoveInfo guardPostMove = getGuardPostMove(c))
     return guardPostMove;
@@ -2467,14 +2537,14 @@ Task* PlayerControl::TaskMap::getTaskForImp(Creature* c) {
 MoveInfo PlayerControl::getMove(Creature* c) {
   if (!contains(getCreatures(), c))  // this is a creature from a vault that wasn't discovered yet
     return NoMove;
-  if (!contains(minionByType.at(MinionType::IMP), c)) {
+  if (!contains(minionByType[MinionType::IMP], c)) {
     CHECK(contains(minions, c));
     return getMinionMove(c);
   }
   if (c->getLevel() != level)
     return NoMove;
   if (startImpNum == -1)
-    startImpNum = minionByType.at(MinionType::IMP).size();
+    startImpNum = minionByType[MinionType::IMP].size();
   if (Task* task = taskMap.getTask(c)) {
     if (task->isDone()) {
       taskMap.removeTask(task);
@@ -2560,6 +2630,13 @@ Creature* PlayerControl::addCreature(PCreature creature, Vec2 v, MinionType type
   Creature* ret = creature.get();
   level->addCreature(v, std::move(creature));
   return ret;
+}
+
+void PlayerControl::addCreature(Creature* c) {
+  if (c->hasSkill(Skill::get(SkillId::CONSTRUCTION)))
+    addCreature(c, MinionType::IMP);
+  else
+    addCreature(c, MinionType::NORMAL);
 }
 
 void PlayerControl::addCreature(Creature* c, MinionType type) {
@@ -2695,7 +2772,7 @@ void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* kil
   }
   if (contains(minions, c))
     removeElement(minions, c);
-  removeElement(minionByType.at(getMinionType(c)), c);
+  removeElement(minionByType[getMinionType(c)], c);
 }
 
 void PlayerControl::onKillEvent(const Creature* victim, const Creature* killer) {

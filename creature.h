@@ -184,6 +184,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   bool isHidden() const;
   bool knowsHiding(const Creature*) const;
   CreatureAction flyAway();
+  CreatureAction disappear();
   CreatureAction torture(Creature*);
   CreatureAction chatTo(Vec2 direction);
   CreatureAction stealFrom(Vec2 direction, const vector<Item*>&);

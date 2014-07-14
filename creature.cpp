@@ -1590,6 +1590,15 @@ CreatureAction Creature::flyAway() {
   });
 }
 
+CreatureAction Creature::disappear() {
+  return CreatureAction([=]() {
+    Debug() << getTheName() << " disappears";
+    monsterMessage(getTheName() + " disappears.");
+    dead = true;
+    level->killCreature(this);
+  });
+}
+
 CreatureAction Creature::torture(Creature* c) {
   if (c->getSquare()->getApplyType(this) != SquareApplyType::TORTURE
       || c->getPosition().dist8(getPosition()) != 1)
@@ -1902,6 +1911,8 @@ int Creature::numGood(BodyPart part) const {
 }
 
 double Creature::getCourage() const {
+  if (!hasBrain())
+    return 1000;
   return courage;
 }
 

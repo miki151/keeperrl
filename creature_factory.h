@@ -95,6 +95,13 @@ enum class CreatureId {
     IRON_GOLEM,
     LAVA_GOLEM,
 
+    FIRE_ELEMENTAL,
+    WATER_ELEMENTAL,
+    EARTH_ELEMENTAL,
+    AIR_ELEMENTAL,
+    ENT,
+    ANGEL,
+
     ZOMBIE,
     VAMPIRE,
     VAMPIRE_LORD,

@@ -44,8 +44,6 @@ static map<DeityHabitat, vector<EpithetId>> epithetsMap {
   { DeityHabitat::TREES, // ent?
       { EpithetId::HEALTH, EpithetId::NATURE, EpithetId::LOVE, EpithetId::LIGHT,
         EpithetId::CHANGE, EpithetId::CRAFTS, EpithetId::FORTUNE, EpithetId::SECRETS,  }},
-  { DeityHabitat::STONE, // ?
-      { EpithetId::WISDOM, EpithetId::WEALTH, EpithetId::DEFENSE, EpithetId::SECRETS, EpithetId::DEATH}},
   { DeityHabitat::WATER, // water elemental
       { EpithetId::NATURE, EpithetId::WISDOM, EpithetId::WEALTH, EpithetId::MIND, EpithetId::DESTRUCTION,
         EpithetId::CHANGE, EpithetId::DEFENSE, EpithetId::FEAR, EpithetId::COURAGE, EpithetId::HEALTH,  }},
@@ -63,8 +61,8 @@ static map<DeityHabitat, vector<EpithetId>> epithetsMap {
     COURAGE air, water
     CRAFTS trees, fire
     DARKNESS stars, earth, fire
-    DEATH stars, fire, stone
-    DEFENSE water, stone, earth
+    DEATH stars, fire
+    DEFENSE water, earth
     DESTRUCTION water, fire
     FEAR air, water, fire
     FORTUNE stars, air, trees
@@ -74,10 +72,10 @@ static map<DeityHabitat, vector<EpithetId>> epithetsMap {
     LOVE stars, air, trees
     MIND air, water, earth
     NATURE water, trees, earth
-    SECRETS stars, stone, trees
+    SECRETS stars, trees
     WAR stars, fire
-    WEALTH water, stone, earth, fire
-    WISDOM stars, water, stone
+    WEALTH water, earth, fire
+    WISDOM stars, water
 */
 
 Epithet::Epithet(const string& n, const string& d) : name(n), description(d) {
@@ -136,7 +134,6 @@ string Deity::getEpithetsString() const {
 static string toString(DeityHabitat h) {
   switch (h) {
     case DeityHabitat::EARTH: return "the earth";
-    case DeityHabitat::STONE: return "stone";
     case DeityHabitat::FIRE: return "fire";
     case DeityHabitat::AIR: return "the air";
     case DeityHabitat::TREES: return "the trees";
@@ -200,3 +197,15 @@ Deity::Deity(const string& n, Gender g, const vector<EpithetId>& e, DeityHabitat
     name(n), gender(g), epithets(e), habitat(h) {
 }
 
+CreatureFactory Deity::getServant() const {
+  CreatureId id;
+  switch (habitat) {
+    case DeityHabitat::AIR: id = CreatureId::AIR_ELEMENTAL; break;
+    case DeityHabitat::FIRE: id = CreatureId::FIRE_ELEMENTAL; break;
+    case DeityHabitat::WATER: id = CreatureId::WATER_ELEMENTAL; break;
+    case DeityHabitat::EARTH: id = CreatureId::EARTH_ELEMENTAL; break;
+    case DeityHabitat::TREES: id = CreatureId::ENT; break;
+    case DeityHabitat::STARS: id = CreatureId::ANGEL; break;
+  }
+  return CreatureFactory::singleType(Tribe::get(TribeId::KILL_EVERYONE), id);
+}

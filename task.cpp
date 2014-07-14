@@ -181,21 +181,33 @@ class Construction : public Task {
   Vec2 SERIAL(position);
 };
 
+namespace {
+
+class NonTransferable : public Task {
+  public:
+  using Task::Task;
+
+  virtual bool canTransfer() override {
+    return false;
+  }
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Task);
+  }
+};
+
+}
 
 PTask Task::construction(Callback* col, Vec2 target, SquareType type) {
   return PTask(new Construction(col, target, type));
 }
-  
-class PickItem : public Task {
+
+class PickItem : public NonTransferable {
   public:
-  PickItem(Callback* col, Vec2 pos, vector<Item*> _items) : Task(col), items(_items), position(pos) {}
+  PickItem(Callback* col, Vec2 pos, vector<Item*> _items) : NonTransferable(col), items(_items), position(pos) {}
 
   virtual void onPickedUp() {
     setDone();
-  }
-
-  virtual bool canTransfer() override {
-    return false;
   }
 
   Vec2 getPosition() {
@@ -240,7 +252,7 @@ class PickItem : public Task {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Task)
+    ar& SUBCLASS(NonTransferable)
       & SVAR(items)
       & SVAR(pickedUp)
       & SVAR(position)
@@ -390,13 +402,9 @@ PTask Task::applyItem(Callback* col, Vec2 position, Item* item, Vec2 target) {
   return PTask(new ApplyItem(col, position, {item}, target));
 }
 
-class ApplySquare : public Task {
+class ApplySquare : public NonTransferable {
   public:
-  ApplySquare(Callback* col, vector<Vec2> pos) : Task(col), positions(pos) {}
-
-  virtual bool canTransfer() override {
-    return false;
-  }
+  ApplySquare(Callback* col, vector<Vec2> pos) : NonTransferable(col), positions(pos) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (position.x == -1) {
@@ -436,7 +444,7 @@ class ApplySquare : public Task {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Task)
+    ar& SUBCLASS(NonTransferable)
       & SVAR(positions)
       & SVAR(rejectedPosition)
       & SVAR(invalidCount)
@@ -460,10 +468,10 @@ PTask Task::applySquare(Callback* col, vector<Vec2> position) {
 
 namespace {
 
-class Kill : public Task {
+class Kill : public NonTransferable {
   public:
   enum Type { ATTACK, TORTURE };
-  Kill(Callback* callback, Creature* c, Type t) : Task(callback), creature(c), type(t) {}
+  Kill(Callback* callback, Creature* c, Type t) : NonTransferable(callback), creature(c), type(t) {}
 
   CreatureAction getAction(Creature* c) {
     switch (type) {
@@ -484,13 +492,9 @@ class Kill : public Task {
     getCallback()->onKillCancelled(creature);
   }
 
-  virtual bool canTransfer() override {
-    return false;
-  }
-
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Task)
+    ar& SUBCLASS(NonTransferable)
       & SVAR(creature)
       & SVAR(type);
     CHECK_SERIAL;
@@ -515,9 +519,9 @@ PTask Task::torture(Callback* callback, Creature* creature) {
 
 namespace {
 
-class Sacrifice : public Task {
+class Sacrifice : public NonTransferable {
   public:
-  Sacrifice(Callback* callback, Creature* c) : Task(callback), creature(c) {}
+  Sacrifice(Callback* callback, Creature* c) : NonTransferable(callback), creature(c) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (creature->isDead()) {
@@ -543,13 +547,9 @@ class Sacrifice : public Task {
     getCallback()->onKillCancelled(creature);
   }
 
-  virtual bool canTransfer() override {
-    return false;
-  }
-
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Task)
+    ar& SUBCLASS(NonTransferable)
       & SVAR(creature)
       & SVAR(sacrificePos);
     CHECK_SERIAL;
@@ -568,6 +568,104 @@ PTask Task::sacrifice(Callback* callback, Creature* creature) {
   return PTask(new Sacrifice(callback, creature));
 }
 
+namespace {
+
+class DestroySquare : public NonTransferable {
+  public:
+  DestroySquare(Callback* callback, Vec2 pos) : NonTransferable(callback), position(pos) {
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (c->getPosition().dist8(position) == 1)
+      if (auto action = c->destroy(position - c->getPosition(), Creature::DESTROY))
+        return action.append([=] { 
+          if (!c->getLevel()->getSquare(position)->canDestroyBy(c))
+            setDone();
+          });
+    return c->moveTowards(position);
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(position);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(DestroySquare);
+
+  private:
+  Vec2 SERIAL(position);
+};
+
+}
+
+PTask Task::destroySquare(Callback* callback, Vec2 position) {
+  return PTask(new DestroySquare(callback, position));
+}
+
+namespace {
+
+class Disappear : public NonTransferable {
+  public:
+  using NonTransferable::NonTransferable;
+
+  virtual MoveInfo getMove(Creature* c) override {
+    return c->disappear();
+  }
+};
+
+}
+
+PTask Task::disappear(Callback* callback) {
+  return PTask(new Disappear(callback));
+}
+
+namespace {
+
+class Chain : public Task {
+  public:
+  Chain(Callback* callback, vector<PTask> t) : Task(callback), tasks(std::move(t)) {
+    CHECK(!tasks.empty());
+  }
+
+  virtual bool canTransfer() override {
+    return tasks[current]->canTransfer();
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    MoveInfo ret = tasks[current]->getMove(c);
+    if (ret)
+      ret.move.append([=] { 
+          if (tasks[current]->isDone())
+            ++current;
+          if (current >= tasks.size())
+            setDone();
+          });
+    return ret;
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Task)
+      & SVAR(tasks)
+      & SVAR(current);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Chain);
+
+  private:
+  vector<PTask> SERIAL(tasks);
+  int SERIAL2(current, 0);
+};
+
+}
+
+PTask Task::chain(Callback* call, PTask t1, PTask t2) {
+  return PTask(new Chain(call, makeVec<PTask>(std::move(t1), std::move(t2))));
+}
+
 
 template <class Archive>
 void Task::registerTypes(Archive& ar) {
@@ -579,6 +677,9 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, ApplySquare);
   REGISTER_TYPE(ar, Kill);
   REGISTER_TYPE(ar, Sacrifice);
+  REGISTER_TYPE(ar, DestroySquare);
+  REGISTER_TYPE(ar, Disappear);
+  REGISTER_TYPE(ar, Chain);
 }
 
 REGISTER_TYPES(Task);

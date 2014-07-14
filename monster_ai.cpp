@@ -821,27 +821,24 @@ class ChooseRandom : public Behaviour {
   vector<double> SERIAL(weights);
 };
 
-class GoToHeart : public Behaviour {
+class SingleTask : public Behaviour {
   public:
-  GoToHeart(Creature* c, Vec2 _heartPos) : Behaviour(c), heartPos(_heartPos) {}
+  SingleTask(Creature* c, PTask t) : Behaviour(c), task(std::move(t)) {}
 
   virtual MoveInfo getMove() override {
-    if (auto action = creature->moveTowards(heartPos)) 
-      return {1.0, action};
-    else
-      return NoMove;
+    return task->getMove(creature);
   };
 
-  SERIALIZATION_CONSTRUCTOR(GoToHeart);
+  SERIALIZATION_CONSTRUCTOR(SingleTask);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(heartPos);
+    ar & SUBCLASS(Behaviour) & SVAR(task);
     CHECK_SERIAL;
   }
 
   private:
-  Vec2 SERIAL(heartPos);
+  PTask SERIAL(task);
 };
 
 template <class Archive>
@@ -862,7 +859,7 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Thief);
   REGISTER_TYPE(ar, ByCollective);
   REGISTER_TYPE(ar, ChooseRandom);
-  REGISTER_TYPE(ar, GoToHeart);
+  REGISTER_TYPE(ar, SingleTask);
 }
 
 REGISTER_TYPES(MonsterAI);
@@ -958,6 +955,17 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l, bool moveRandomly
       }
       return new MonsterAI(c, actors, weights);
   });
+}
+
+MonsterAIFactory MonsterAIFactory::singleTask(PTask& task) {
+  return MonsterAIFactory([=, &task](Creature* c) {
+      return new MonsterAI(c, {
+        new Heal(c, false),
+        new Fighter(c, 0.6, false),
+        new SingleTask(c, std::move(task)),
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
+        { 6, 5, 2, 1}, true);
+      });
 }
 
 MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
