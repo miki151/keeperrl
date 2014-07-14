@@ -2,13 +2,15 @@
 #include "collective.h"
 #include "collective_control.h"
 #include "creature.h"
+#include "pantheon.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(creatures)
     & SVAR(taskMap)
     & SVAR(tribe)
-    & SVAR(control);
+    & SVAR(control)
+    & SVAR(deityStanding);
   CHECK_SERIAL;
 }
 
@@ -90,3 +92,50 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
   }
 }
 
+double Collective::getStanding(const Deity* d) const {
+  if (deityStanding.count(d))
+    return deityStanding.at(d);
+  else
+    return 0;
+}
+
+double Collective::getStanding(EpithetId id) const {
+  if (Deity* d = Deity::getDeity(id))
+    return getStanding(d);
+  else
+    return 0;
+}
+
+static double standingFun(double standing) {
+  const double maxMult = 2.0;
+  return pow(maxMult, standing);
+}
+
+double Collective::getTechCostMultiplier() const {
+  return 1.0 / standingFun(getStanding(EpithetId::WISDOM));
+}
+
+double Collective::getCraftingMultiplier() const {
+  return standingFun(getStanding(EpithetId::CRAFTS));
+}
+
+double Collective::getWarMultiplier() const {
+  return standingFun(getStanding(EpithetId::WAR)) / standingFun(getStanding(EpithetId::LOVE));
+}
+
+double Collective::getBeastMultiplier() const {
+  return 1.0 / standingFun(getStanding(EpithetId::NATURE));
+}
+
+double Collective::getUndeadMultiplier() const {
+  return 1.0 / standingFun(getStanding(EpithetId::DEATH));
+}
+
+void Collective::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
+  double increase;
+  switch (type) {
+    case WorshipType::PRAYER: increase = 1.0 / 4000; break;
+    case WorshipType::SACRIFICE: increase = 1.0 / 20; break;
+  }
+  deityStanding[to] = min(1.0, deityStanding[to] + increase);
+}

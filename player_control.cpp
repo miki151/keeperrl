@@ -107,11 +107,6 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(sectors)
     & SVAR(squareEfficiency)
     & SVAR(surprises)
-    & SVAR(techCostMultiplier)
-    & SVAR(warMultiplier)
-    & SVAR(beastMultiplier)
-    & SVAR(undeadMultiplier)
-    & SVAR(craftingMultiplier);
   CHECK_SERIAL;
 }
 
@@ -981,7 +976,7 @@ vector<PlayerControl::SpawnInfo> tamingInfo {
 void PlayerControl::handleBeastTaming(View* view) {
   handleSpawning(view, SquareType::BEAST_LAIR,
       "You need to build a beast lair to trap beasts.", "You need a larger lair.", "Beast taming",
-      MinionType::BEAST, tamingInfo, beastMultiplier);
+      MinionType::BEAST, tamingInfo, getCollective()->getBeastMultiplier());
 }
 
 vector<PlayerControl::SpawnInfo> breedingInfo {
@@ -1012,8 +1007,9 @@ void PlayerControl::handleNecromancy(View* view) {
       corpses.push_back({pos, it});
   }
   handleSpawning(view, SquareType::CEMETERY, "You need to build a graveyard and collect corpses to raise undead.",
-      "You need a larger graveyard", "Necromancy ", MinionType::UNDEAD, raisingInfo, undeadMultiplier,
-      corpses, "corpses available", "You need to collect some corpses to raise undead.");
+      "You need a larger graveyard", "Necromancy ", MinionType::UNDEAD, raisingInfo,
+      getCollective()->getUndeadMultiplier(), corpses, "corpses available",
+      "You need to collect some corpses to raise undead.");
 }
 
 vector<CreatureId> PlayerControl::getSpawnInfo(const Technology* tech) {
@@ -1142,7 +1138,7 @@ int PlayerControl::getMinLibrarySize() const {
 double PlayerControl::getTechCost() {
   int numTech = technologies.size() - numFreeTech;
   int numDouble = 4;
-  return techCostMultiplier * pow(2, double(numTech) / numDouble);
+  return getCollective()->getTechCostMultiplier() * pow(2, double(numTech) / numDouble);
 }
 
 void PlayerControl::handleLibrary(View* view) {
@@ -1301,10 +1297,18 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   return ret;
 }
 
+static GameInfo::BandInfo::Deity::Standing getDeityStanding(double d) {
+  if (d < -0.333)
+    return GameInfo::BandInfo::Deity::BAD;
+  if (d > 0.333)
+    return GameInfo::BandInfo::Deity::GOOD;
+  return GameInfo::BandInfo::Deity::NEUTRAL;
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.bandInfo.deities.clear();
   for (Deity* deity : Deity::getDeities())
-    gameInfo.bandInfo.deities.push_back({deity->getName(), GameInfo::BandInfo::Deity::GOOD});
+    gameInfo.bandInfo.deities.push_back({deity->getName(), getDeityStanding(getCollective()->getStanding(deity))});
   gameInfo.villageInfo.villages.clear();
   bool attacking = false;
   for (VillageControl* c : model->getVillageControls())
@@ -1941,12 +1945,12 @@ void PlayerControl::onAppliedSquare(Vec2 pos) {
     c->increaseExpLevel(getEfficiency(pos) * (lev1 - double(c->getExpLevel() - 1) * (lev1 - lev10) / 9.0  ));
   }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
-    if (craftingMultiplier * Random.rollD(30.0 / getEfficiency(pos))) {
+    if (getCollective()->getCraftingMultiplier() * Random.rollD(30.0 / getEfficiency(pos))) {
       level->getSquare(pos)->dropItems(ItemFactory::laboratory(technologies).random());
       Statistics::add(StatId::POTION_PRODUCED);
     }
   if (mySquares.at(SquareType::WORKSHOP).count(pos))
-    if (craftingMultiplier * Random.rollD(40.0 / getEfficiency(pos))) {
+    if (getCollective()->getCraftingMultiplier() * Random.rollD(40.0 / getEfficiency(pos))) {
       set<TrapType> neededTraps = getNeededTraps();
       vector<PItem> items;
       for (int i : Range(10)) {
@@ -1980,7 +1984,7 @@ double PlayerControl::getWarLevel() const {
   for (const Creature* c : minions)
     ret += c->getDifficultyPoints();
   ret += mySquares.at(SquareType::IMPALED_HEAD).size() * 150;
-  return ret * warMultiplier;
+  return ret * getCollective()->getWarMultiplier();
 }
 
 double PlayerControl::getDangerLevel(bool includeExecutions) const {
@@ -2848,27 +2852,16 @@ void PlayerControl::uncoverRandomLocation() {
 void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
   if (!contains(getCreatures(), who))
     return;
-  double multiplierBase = 1;
-  switch (type) {
-    case WorshipType::PRAYER: multiplierBase = 0.9995; break;
-    case WorshipType::SACRIFICE: multiplierBase = 0.90; break;
-  }
   for (EpithetId id : to->getEpithets())
     switch (id) {
-      case EpithetId::WISDOM: techCostMultiplier *= multiplierBase; break;
-      case EpithetId::WAR: warMultiplier /= multiplierBase; break;
-      case EpithetId::LOVE: warMultiplier *= multiplierBase; break;
-      case EpithetId::CRAFTS: craftingMultiplier /= multiplierBase; break;
       case EpithetId::DEATH:
-        undeadMultiplier *= multiplierBase;
-        if (!who->isUndead() && Random.rollD(0.5 / (1 - multiplierBase)))
+        if (!who->isUndead() && Random.roll(1000))
           who->makeUndead();
-        if (who == keeper && type == WorshipType::SACRIFICE && Random.roll(5))
+        if (type == WorshipType::SACRIFICE && Random.roll(10))
           keeper->makeUndead();
         break;
-      case EpithetId::NATURE: beastMultiplier *= multiplierBase;
       case EpithetId::SECRETS:
-        if (Random.rollD(0.5 / (1 - multiplierBase)))
+        if (Random.roll(400) || type == WorshipType::SACRIFICE)
           uncoverRandomLocation();
         break;
       default: break;

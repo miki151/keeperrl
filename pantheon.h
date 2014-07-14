@@ -81,17 +81,19 @@ class Deity {
   CreatureFactory getServant() const;
 
   static Deity* getDeity(DeityHabitat);
+  static Deity* getDeity(EpithetId);
   static vector<Deity*> getDeities();
 
   SERIALIZATION_DECL(Deity);
 
   template <class Archive>
   static void serializeAll(Archive& ar) {
-    ar & deities;
+    ar & deities & byEpithet;
   }
 
   private:
   static vector<Deity*> deities;
+  static EnumMap<EpithetId, Deity*> byEpithet;
   string SERIAL(name);
   Gender SERIAL(gender);
   vector<EpithetId> SERIAL(epithets);

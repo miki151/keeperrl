@@ -179,9 +179,17 @@ vector<Deity*> generateDeities() {
 }
 
 vector<Deity*> Deity::getDeities() {
-  if (deities.empty())
+  if (deities.empty()) {
     deities = generateDeities();
+    for (Deity* d : deities)
+      for (EpithetId id : d->getEpithets())
+        byEpithet[id] = d;
+  }
   return deities;
+}
+
+Deity* Deity::getDeity(EpithetId id) {
+  return byEpithet[id];
 }
 
 Deity* Deity::getDeity(DeityHabitat h) {
@@ -193,6 +201,8 @@ Deity* Deity::getDeity(DeityHabitat h) {
 }
  
 vector<Deity*> Deity::deities;
+EnumMap<EpithetId, Deity*> Deity::byEpithet;
+
 Deity::Deity(const string& n, Gender g, const vector<EpithetId>& e, DeityHabitat h) :
     name(n), gender(g), epithets(e), habitat(h) {
 }

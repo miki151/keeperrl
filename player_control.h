@@ -225,9 +225,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   int getMinLibrarySize() const;
   void acquireTech(Technology*, bool free = false);
   double getTechCost();
-  double SERIAL2(techCostMultiplier, 1);
   int SERIAL2(numFreeTech, 0);
-  double SERIAL2(craftingMultiplier, 1);
 
   typedef GameInfo::BandInfo::TechButton TechButton;
 
@@ -388,9 +386,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   map<Vec2, GuardPostInfo> SERIAL(guardPosts);
   double SERIAL(mana);
   int SERIAL2(points, 0);
-  double SERIAL2(warMultiplier, 1);
-  double SERIAL2(beastMultiplier, 1);
-  double SERIAL2(undeadMultiplier, 1);
   Model* SERIAL(model);
   vector<const Creature*> SERIAL(kills);
   bool SERIAL2(showWelcomeMsg, true);
