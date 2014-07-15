@@ -1239,6 +1239,7 @@ CreatureAction Creature::attack(const Creature* c1, Optional<AttackLevel> attack
   }
   else
     you(MsgType::MISS_ATTACK, enemyName);
+  EventListener::addAttackEvent(c, this);
   if (spend)
     spendTime(1);
   });
@@ -1250,7 +1251,6 @@ bool Creature::dodgeAttack(const Attack& attack) {
   if (const Creature* c = attack.getAttacker()) {
     if (!canSee(c))
       unknownAttacker.push_back(c);
-    EventListener::addAttackEvent(this, c);
     if (!contains(privateEnemies, c) && c->getTribe() != tribe)
       privateEnemies.push_back(c);
   }

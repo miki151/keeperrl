@@ -58,7 +58,7 @@ void EventListener::addKillEvent(const Creature* victim, const Creature* killer)
       l->onKillEvent(victim, killer);
 }
   
-void EventListener::addAttackEvent(const Creature* victim, const Creature* attacker) {
+void EventListener::addAttackEvent(Creature* victim, Creature* attacker) {
   for (EventListener* l : listeners)
     if (l->getListenerLevel() == victim->getLevel() || l->getListenerLevel() == nullptr)
       l->onAttackEvent(victim, attacker);

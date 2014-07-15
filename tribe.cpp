@@ -143,7 +143,7 @@ void Tribe::onKillEvent(const Creature* member, const Creature* attacker) {
   }
 }
 
-void Tribe::onAttackEvent(const Creature* member, const Creature* attacker) {
+void Tribe::onAttackEvent(Creature* member, Creature* attacker) {
   if (member->getTribe() != this)
     return;
   if (contains(attacks, make_pair(member, attacker)))

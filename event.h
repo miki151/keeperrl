@@ -32,7 +32,7 @@ class EventListener {
   virtual void onDropEvent(const Creature*, const vector<Item*>& items) {}
   virtual void onItemsAppearedEvent(Vec2 position, const vector<Item*>& items) {}
   virtual void onKillEvent(const Creature* victim, const Creature* killer) {}
-  virtual void onAttackEvent(const Creature* victim, const Creature* attacker) {}
+  virtual void onAttackEvent(Creature* victim, Creature* attacker) {}
   // triggered when the monster AI is either attacking, chasing or fleeing
   virtual void onCombatEvent(const Creature*) {}
   virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) {}
@@ -52,7 +52,7 @@ class EventListener {
   static void addDropEvent(const Creature*, const vector<Item*>& items);
   static void addItemsAppearedEvent(const Level*, Vec2 position, const vector<Item*>& items);
   static void addKillEvent(const Creature* victim, const Creature* killer);
-  static void addAttackEvent(const Creature* victim, const Creature* attacker);
+  static void addAttackEvent(Creature* victim, Creature* attacker);
   static void addCombatEvent(const Creature*);
   static void addThrowEvent(const Level*, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory);
   static void addExplosionEvent(const Level* level, Vec2 pos);

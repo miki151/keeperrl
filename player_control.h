@@ -88,6 +88,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   bool isRetired() const;
   const Creature* getKeeper() const;
+  Creature* getKeeper();
   double getWarLevel() const;
 
   void render(View*);
@@ -368,7 +369,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool hasEfficiency(Vec2) const;
   set<Vec2> SERIAL(myTiles);
   Level* SERIAL(level);
-  Creature* SERIAL2(keeper, nullptr);
   mutable unique_ptr<map<Level*, MapMemory>> SERIAL(memory);
   Table<bool> SERIAL(knownTiles);
   set<Vec2> SERIAL(borderTiles);

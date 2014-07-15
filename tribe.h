@@ -48,7 +48,7 @@ class Tribe : public EventListener, public Singleton<Tribe, TribeId> {
   virtual double getStanding(const Creature*) const;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
-  virtual void onAttackEvent(const Creature* victim, const Creature* attacker) override;
+  virtual void onAttackEvent(Creature* victim, Creature* attacker) override;
 
   void onItemsStolen(const Creature* thief);
   void makeSlightEnemy(const Creature*);
@@ -81,7 +81,7 @@ class Tribe : public EventListener, public Singleton<Tribe, TribeId> {
   double getMultiplier(const Creature* member);
 
   unordered_map<const Creature*, double> SERIAL(standing);
-  vector<pair<const Creature*, const Creature*>> SERIAL(attacks);
+  vector<pair<Creature*, Creature*>> SERIAL(attacks);
   const Creature* SERIAL2(leader, nullptr);
   vector<const Creature*> SERIAL(members);
   unordered_set<Tribe*> SERIAL(enemyTribes);

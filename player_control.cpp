@@ -79,7 +79,6 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(mySquares)
     & SVAR(myTiles)
     & SVAR(level)
-    & SVAR(keeper)
     & SVAR(memory)
     & SVAR(knownTiles)
     & SVAR(borderTiles)
@@ -450,7 +449,7 @@ const int basicImpCost = 20;
 const int minionLimit = 40;
 
 void PlayerControl::unpossess() {
-  if (possessed == keeper)
+  if (possessed == getKeeper())
     lastControlKeeperQuestion = getTime();
   CHECK(possessed);
   if (possessed->isPlayer())
@@ -567,6 +566,14 @@ vector<TaskOption> taskOptions {
   {MinionTask::WORSHIP, PlayerControl::MinionOption::WORSHIP, "Worship"},
 };
 
+static string getMoraleString(double morale) {
+  if (morale < -0.33)
+    return "low";
+  if (morale > 0.33)
+    return "high";
+  return "normal";
+}
+
 void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
   switch (getMinionType(c)) {
     case MinionType::IMP:
@@ -642,7 +649,9 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
   getMinionOptions(creature, mOpt, lOpt);
   auto index = view->chooseFromList(capitalFirst(creature->getNameAndTitle()) 
       + ", level: " + convertToString(creature->getExpLevel()) + ", kills: "
-      + convertToString(creature->getKills().size()), lOpt, prevIndex, View::MINION_MENU);
+      + convertToString(creature->getKills().size())
+      + ", morale: " + getMoraleString(getCollective()->getMorale(creature)),
+      lOpt, prevIndex, View::MINION_MENU);
   if (!index)
     return;
   switch (mOpt[*index]) {
@@ -938,7 +947,7 @@ void PlayerControl::handlePersonalSpells(View* view) {
       View::ListElem("The Keeper can learn spells for use in combat and other situations. ", View::TITLE),
       View::ListElem("You can cast them with 's' when you are in control of the Keeper.", View::TITLE)};
   vector<SpellId> knownSpells;
-  for (SpellInfo spell : keeper->getSpells())
+  for (SpellInfo spell : getKeeper()->getSpells())
     knownSpells.push_back(spell.id);
   for (auto elem : spellLearning) {
     SpellInfo spell = Creature::getSpell(elem.id);
@@ -1180,7 +1189,7 @@ void PlayerControl::acquireTech(Technology* tech, bool free) {
     ++numFreeTech;
   for (auto elem : spellLearning)
     if (Technology::get(elem.techId) == tech)
-      keeper->addSpell(elem.id);
+      getKeeper()->addSpell(elem.id);
   if (Skill* skill = tech->getSkill())
     for (Creature* c : minions)
       c->addSkill(skill);
@@ -1440,7 +1449,7 @@ bool PlayerControl::staticPosition() const {
 }
 
 Vec2 PlayerControl::getPosition() const {
-  return keeper->getPosition();
+  return getKeeper()->getPosition();
 }
 
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
@@ -1931,26 +1940,28 @@ set<TrapType> PlayerControl::getNeededTraps() const {
 
 void PlayerControl::onAppliedSquare(Vec2 pos) {
   Creature* c = NOTNULL(level->getSquare(pos)->getCreature());
+  double efficiency = getCollective()->getEfficiency(c);
   if (mySquares.at(SquareType::LIBRARY).count(pos)) {
-    if (c == keeper)
-      mana += getEfficiency(pos) * (0.3 + max(0., 2 - (mana + double(getDangerLevel(false))) / 700));
+    if (c == getKeeper())
+      mana += efficiency * getEfficiency(pos) * (0.3 + max(0., 2 - (mana + double(getDangerLevel(false))) / 700));
     else {
-      if (Random.rollD(60.0 / getEfficiency(pos)))
-        c->addSpell(chooseRandom(keeper->getSpells()).id);
+      if (Random.rollD(60.0 / (getEfficiency(pos) * efficiency)))
+        c->addSpell(chooseRandom(getKeeper()->getSpells()).id);
     }
   }
   if (mySquares.at(SquareType::TRAINING_ROOM).count(pos)) {
     double lev1 = 0.03;
     double lev10 = 0.01;
-    c->increaseExpLevel(getEfficiency(pos) * (lev1 - double(c->getExpLevel() - 1) * (lev1 - lev10) / 9.0  ));
+    c->increaseExpLevel(
+        efficiency * getEfficiency(pos) * (lev1 - double(c->getExpLevel() - 1) * (lev1 - lev10) / 9.0  ));
   }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
-    if (getCollective()->getCraftingMultiplier() * Random.rollD(30.0 / getEfficiency(pos))) {
+    if (Random.rollD(30.0 / (getCollective()->getCraftingMultiplier() * getEfficiency(pos) * efficiency))) {
       level->getSquare(pos)->dropItems(ItemFactory::laboratory(technologies).random());
       Statistics::add(StatId::POTION_PRODUCED);
     }
   if (mySquares.at(SquareType::WORKSHOP).count(pos))
-    if (getCollective()->getCraftingMultiplier() * Random.rollD(40.0 / getEfficiency(pos))) {
+    if (Random.rollD(40.0 / (getCollective()->getCraftingMultiplier() * getEfficiency(pos) * efficiency))) {
       set<TrapType> neededTraps = getNeededTraps();
       vector<PItem> items;
       for (int i : Range(10)) {
@@ -1976,7 +1987,11 @@ bool PlayerControl::isRetired() const {
 }
 
 const Creature* PlayerControl::getKeeper() const {
-  return keeper;
+  return getCollective()->getLeader();
+}
+
+Creature* PlayerControl::getKeeper() {
+  return getCollective()->getLeader();
 }
 
 double PlayerControl::getWarLevel() const {
@@ -2006,18 +2021,18 @@ void PlayerControl::addToMemory(Vec2 pos) {
 }
 
 void PlayerControl::update(Creature* c) {
-  if (!retired && possessed != keeper) { 
-    if ((isInCombat(keeper) || keeper->getHealth() < 1) && lastControlKeeperQuestion < getTime() - 50) {
+  if (!retired && possessed != getKeeper()) { 
+    if ((isInCombat(getKeeper()) || getKeeper()->getHealth() < 1) && lastControlKeeperQuestion < getTime() - 50) {
       lastControlKeeperQuestion = getTime();
       if (model->getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
-        possess(keeper, model->getView());
+        possess(getKeeper(), model->getView());
         return;
       }
     }
-    if (keeper->isAffected(LastingEffect::POISON) && lastControlKeeperQuestion < getTime() - 5) {
+    if (getKeeper()->isAffected(LastingEffect::POISON) && lastControlKeeperQuestion < getTime() - 5) {
       lastControlKeeperQuestion = getTime();
       if (model->getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
-        possess(keeper, model->getView());
+        possess(getKeeper(), model->getView());
         return;
       }
     }
@@ -2067,7 +2082,7 @@ void PlayerControl::updateConstructions() {
 }
 
 double PlayerControl::getTime() const {
-  return keeper->getTime();
+  return getKeeper()->getTime();
 }
 
 void PlayerControl::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime) {
@@ -2146,7 +2161,7 @@ void PlayerControl::tick(double time) {
     if (const Creature* c = level->getPlayer())
       if (Random.roll(30) && !myTiles.count(c->getPosition()))
         c->playerMessage("You sense horrible evil in the " + 
-            getCardinalName((keeper->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
+            getCardinalName((getKeeper()->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
   }
   updateVisibleCreatures();
   setWarning(Warning::MANA, mana < 100);
@@ -2286,7 +2301,7 @@ Tribe* PlayerControl::getTribe() {
 }
 
 bool PlayerControl::isEnemy(const Creature* c) const {
-  return keeper->isEnemy(c);
+  return getKeeper()->isEnemy(c);
 }
 
 void PlayerControl::onChangeLevelEvent(const Creature* c, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) {
@@ -2422,7 +2437,7 @@ MoveInfo PlayerControl::getDropItems(Creature *c) {
     if (!items.empty() && c->drop(items))
       return {1.0, c->drop(items)};
   }
-  return NoMove;   
+  return NoMove;
 }
 
 PTask PlayerControl::getPrisonerTask(Creature* prisoner) {
@@ -2459,7 +2474,7 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
   }
   if (usesEquipment(c))
     autoEquipment(c, Random.roll(10));
-  if (c != keeper || !underAttack())
+  if (c != getKeeper() || !underAttack())
     for (Vec2 v : getAllSquares(equipmentStorage))
       for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
             return minionEquipment.getOwner(it) == c; })) {
@@ -2489,7 +2504,7 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
         minionTasks.at(c->getUniqueId()).setState(t);
         break;
       }
-  if (c == keeper && !myTiles.empty() && !myTiles.count(c->getPosition()))
+  if (c == getKeeper() && !myTiles.empty() && !myTiles.count(c->getPosition()))
     if (auto action = c->moveTowards(chooseRandom(myTiles)))
       return {1.0, action};
   MinionTaskInfo info = getTaskInfo().at(minionTasks.at(c->getUniqueId()).getState());
@@ -2543,8 +2558,7 @@ Task* PlayerControl::TaskMap::getTaskForImp(Creature* c) {
 }
 
 MoveInfo PlayerControl::getMove(Creature* c) {
-  if (!contains(getCreatures(), c))  // this is a creature from a vault that wasn't discovered yet
-    return NoMove;
+  CHECK(contains(getCreatures(), c));
   if (!contains(minionByType[MinionType::IMP], c)) {
     CHECK(contains(minions, c));
     return getMinionMove(c);
@@ -2563,8 +2577,8 @@ MoveInfo PlayerControl::getMove(Creature* c) {
     taskMap.takeTask(c, closest);
     return closest->getMove(c);
   } else {
-    if (!myTiles.count(c->getPosition()) && keeper->getLevel() == c->getLevel()) {
-      Vec2 keeperPos = keeper->getPosition();
+    if (!myTiles.count(c->getPosition()) && getKeeper()->getLevel() == c->getLevel()) {
+      Vec2 keeperPos = getKeeper()->getPosition();
       if (keeperPos.dist8(c->getPosition()) < 3)
         return NoMove;
       if (auto action = c->moveTowards(keeperPos))
@@ -2651,8 +2665,8 @@ void PlayerControl::addCreature(Creature* c) {
 }
 
 void PlayerControl::addCreature(Creature* c, MinionType type) {
-  if (keeper == nullptr) {
-    keeper = c;
+  if (!getKeeper()) {
+    getCollective()->setLeader(c);
     type = MinionType::KEEPER;
     minionByType[type].push_back(c);
     bool seeTerrain = Options::getValue(OptionId::SHOW_MAP); 
@@ -2741,7 +2755,7 @@ void PlayerControl::handleSurprise(Vec2 pos) {
 void PlayerControl::onConqueredLand(const string& name) {
   if (retired)
     return;
-  model->conquered(*keeper->getFirstName() + " the Keeper", name, kills, getDangerLevel() + points);
+  model->conquered(*getKeeper()->getFirstName() + " the Keeper", name, kills, getDangerLevel() + points);
 }
 
 void PlayerControl::onCombatEvent(const Creature* c) {
@@ -2761,8 +2775,8 @@ void PlayerControl::TaskMap::freeTaskDelay(Task* t, double d) {
 }
 
 void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
-  if (victim == keeper && !retired) {
-    model->gameOver(keeper, kills.size(), "enemies", getDangerLevel() + points);
+  if (victim == getKeeper() && !retired) {
+    model->gameOver(getKeeper(), kills.size(), "enemies", getDangerLevel() + points);
   }
   Creature* c = const_cast<Creature*>(victim);
   if (getMinionType(victim) == MinionType::PRISONER && killer && contains(getCreatures(), killer))
@@ -2793,7 +2807,7 @@ void PlayerControl::onKillEvent(const Creature* victim, const Creature* killer) 
     kills.push_back(victim);
     points += victim->getDifficultyPoints();
     Debug() << "Mana increase " << incMana << " from " << victim->getName();
-    keeper->increaseExpLevel(double(victim->getDifficultyPoints()) / 200);
+    getKeeper()->increaseExpLevel(double(victim->getDifficultyPoints()) / 200);
   }
 }
   
@@ -2858,7 +2872,7 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
         if (!who->isUndead() && Random.roll(500))
           who->makeUndead();
         if (type == WorshipType::SACRIFICE && Random.roll(10))
-          keeper->makeUndead();
+          getKeeper()->makeUndead();
         break;
       case EpithetId::SECRETS:
         if (Random.roll(200) || type == WorshipType::SACRIFICE)

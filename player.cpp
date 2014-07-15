@@ -810,7 +810,7 @@ class PossessedController : public Player {
       owner->popController();
   }
 
-  void onAttackEvent(const Creature* victim, const Creature* attacker) override {
+  void onAttackEvent(Creature* victim, Creature* attacker) override {
     if (!creature->isDead() && victim == owner)
       unpossess();
   }
