@@ -1145,6 +1145,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.realPlural = "amulets of warning";
             i.description = "Warns about dangerous beasts and enemies.";
             i.type = ItemType::AMULET;
+            i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 220;
             i.identifiable = true;
             i.weight = 0.3;), 5));
@@ -1156,6 +1157,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.realPlural = "amulets of healing";
             i.description = "Slowly heals all wounds.";
             i.type = ItemType::AMULET;
+            i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 300;
             i.identifiable = true;
             i.weight = 0.3;)));
@@ -1167,6 +1169,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.realPlural = "amulets of defense";
             i.description = "Increases the toughness of your skin and flesh, making you harder to wound.";
             i.type = ItemType::AMULET;
+            i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 300;
             i.identifiable = true;
             i.modifiers[AttrType::DEFENSE] = 3 + maybePlusMinusOne(4); 
@@ -1179,6 +1182,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.realName = "amulets of nature affinity";
             i.description = "Makes all animals peaceful.";
             i.type = ItemType::AMULET;
+            i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 120;
             i.identifiable = true;
             i.weight = 0.3;), EnemyCheck::friendlyAnimals(0.5)));

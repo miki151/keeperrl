@@ -2855,13 +2855,13 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
   for (EpithetId id : to->getEpithets())
     switch (id) {
       case EpithetId::DEATH:
-        if (!who->isUndead() && Random.roll(1000))
+        if (!who->isUndead() && Random.roll(500))
           who->makeUndead();
         if (type == WorshipType::SACRIFICE && Random.roll(10))
           keeper->makeUndead();
         break;
       case EpithetId::SECRETS:
-        if (Random.roll(400) || type == WorshipType::SACRIFICE)
+        if (Random.roll(200) || type == WorshipType::SACRIFICE)
           uncoverRandomLocation();
         break;
       default: break;

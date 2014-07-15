@@ -482,6 +482,10 @@ class Kill : public NonTransferable {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
+    if (creature->isDead()) {
+      setDone();
+      return NoMove;
+    }
     if (auto action = getAction(c))
       return action.append([=] { if (creature->isDead()) setDone(); });
     else
@@ -527,7 +531,7 @@ class Sacrifice : public NonTransferable {
     if (creature->isDead()) {
       if (sacrificePos) {
         if (sacrificePos == c->getPosition())
-          return c->applySquare();
+          return c->applySquare().append([=] { setDone(); });
         else
           return c->moveTowards(*sacrificePos);
       } else {
@@ -582,7 +586,12 @@ class DestroySquare : public NonTransferable {
           if (!c->getLevel()->getSquare(position)->canDestroyBy(c))
             setDone();
           });
-    return c->moveTowards(position);
+    if (auto action = c->moveTowards(position))
+      return action;
+    for (Vec2 v : Vec2::directions8(true))
+      if (auto action = c->destroy(v, Creature::DESTROY))
+        return action;
+    return NoMove;
   }
 
   template <class Archive> 
