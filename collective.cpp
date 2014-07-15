@@ -3,6 +3,7 @@
 #include "collective_control.h"
 #include "creature.h"
 #include "pantheon.h"
+#include "effect.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -89,13 +90,21 @@ void Collective::considerHealingLeader() {
 }
 
 void Collective::onAttackEvent(Creature* victim, Creature* attacker) {
-  if (victim == leader)
+  if (victim == leader) {
     if (Deity* deity = Deity::getDeity(EpithetId::LIGHTNING))
       if (getStanding(deity) > 0)
         if (Random.rollD(5 / getStanding(deity))) {
           attacker->you(MsgType::ARE, " struck by lightning!");
           attacker->bleed(Random.getDouble(0.2, 0.5));
         }
+    if (Deity* deity = Deity::getDeity(EpithetId::DEFENSE))
+      if (getStanding(deity) > 0)
+        if (Random.rollD(10 / getStanding(deity))) {
+          victim->globalMessage(
+              deity->getName() + " sends " + deity->getGender().his() + " servant with help.");
+          Effect::summon(leader, deity->getServant(), 1, 30);
+        }
+  }
 }
 
 void Collective::tick(double time) {
@@ -129,7 +138,8 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
       c->addMorale(0.03);
   }
   if (contains(creatures, killer))
-    const_cast<Creature*>(killer)->addMorale(0.25);
+    for (Creature* c : creatures)
+      c->addMorale(c == killer ? 0.25 : 0.03);
 }
 
 double Collective::getStanding(const Deity* d) const {

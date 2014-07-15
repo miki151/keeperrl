@@ -28,6 +28,8 @@ class Effect {
   static void applyToCreature(Creature*, EffectType, EffectStrength);
   static void applyToPosition(Level*, Vec2, EffectType, EffectStrength);
 
+  static void summon(Creature*, CreatureId, int num, int ttl);
+
   template <class Archive>
   static void registerTypes(Archive& ar);
 };

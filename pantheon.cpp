@@ -88,13 +88,13 @@ void Epithet::init() {
   set(EpithetId::DARKNESS, new Epithet("darkness", "Makes the night last longer."));
   set(EpithetId::DEATH, new Epithet("death",
     "Decreases the cost of raising undead, and sometimes turns the Keeper or other minions into zombies."));
-  set(EpithetId::DEFENSE, new Epithet("defense", ""));
+  set(EpithetId::DEFENSE, new Epithet("defense", "Sends servants when the Keeper is in danger."));
   set(EpithetId::DESTRUCTION, new Epithet("destruction", ""));
   set(EpithetId::FEAR, new Epithet("fear", "Decreases the morale of your minions."));
   set(EpithetId::FORTUNE, new Epithet("fortune", "")); // ?
-  set(EpithetId::HEALTH, new Epithet("health", ""));
+  set(EpithetId::HEALTH, new Epithet("health", "Heals the Keeper when he is in dire need."));
   set(EpithetId::LIGHT, new Epithet("light", "Makes the day last longer.")); // ?
-  set(EpithetId::LIGHTNING, new Epithet("lightning", ""));
+  set(EpithetId::LIGHTNING, new Epithet("lightning", "Protects the Keeper by striking lightings at attackers."));
   set(EpithetId::LOVE, new Epithet("love", "Makes your enemies less inclined to attack you.")); // potion of love
   set(EpithetId::MIND, new Epithet("mind", ""));
   set(EpithetId::NATURE, new Epithet("nature", "Decreases the cost of taming beasts."));
@@ -175,6 +175,10 @@ vector<Deity*> generateDeities() {
       return generateDeities();
     ret.push_back(new Deity(deity, gend, ep, elem.first)); 
   }
+  for (Deity* deity : ret)
+    Debug() << deity->getName() + " lives in " + deity->getHabitatString() + ". " 
+      << makeSentence(deity->getGender().he() + " is the " + deity->getGender().god() 
+          + " of " + deity->getEpithetsString());
   return ret;
 }
 
@@ -207,7 +211,7 @@ Deity::Deity(const string& n, Gender g, const vector<EpithetId>& e, DeityHabitat
     name(n), gender(g), epithets(e), habitat(h) {
 }
 
-CreatureFactory Deity::getServant() const {
+CreatureId Deity::getServant() const {
   CreatureId id;
   switch (habitat) {
     case DeityHabitat::AIR: id = CreatureId::AIR_ELEMENTAL; break;
@@ -217,5 +221,5 @@ CreatureFactory Deity::getServant() const {
     case DeityHabitat::TREES: id = CreatureId::ENT; break;
     case DeityHabitat::STARS: id = CreatureId::ANGEL; break;
   }
-  return CreatureFactory::singleType(Tribe::get(TribeId::KILL_EVERYONE), id);
+  return id;
 }

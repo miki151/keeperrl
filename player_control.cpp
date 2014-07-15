@@ -567,11 +567,12 @@ vector<TaskOption> taskOptions {
 };
 
 static string getMoraleString(double morale) {
-  if (morale < -0.33)
+  return convertToString(morale);
+ /* if (morale < -0.33)
     return "low";
   if (morale > 0.33)
     return "high";
-  return "normal";
+  return "normal";*/
 }
 
 void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
@@ -2117,7 +2118,8 @@ void PlayerControl::addDeityServant(Deity* deity, Vec2 deityPos, Vec2 victimPos)
   PTask task = Task::chain(this,
       Task::destroySquare(this, victimPos),
       Task::disappear(this));
-  PCreature creature = deity->getServant().random(MonsterAIFactory::singleTask(task));
+  PCreature creature = CreatureFactory::fromId(deity->getServant(), Tribe::get(TribeId::KILL_EVERYONE),
+      MonsterAIFactory::singleTask(task));
   for (Vec2 v : concat({deityPos}, deityPos.neighbors8(true)))
     if (level->getSquare(v)->canEnter(creature.get())) {
       level->addCreature(v, std::move(creature));

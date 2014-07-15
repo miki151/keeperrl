@@ -212,7 +212,7 @@ static void guardingBuilder(Creature* c) {
   }
 }
 
-static void summon(Creature* c, CreatureId id, int num, int ttl) {
+void Effect::summon(Creature* c, CreatureId id, int num, int ttl) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(CreatureFactory::fromId(id, c->getTribe(), MonsterAIFactory::summoned(c, ttl)));

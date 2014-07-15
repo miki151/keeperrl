@@ -78,7 +78,7 @@ class Deity {
   string getEpithetsString() const;
   string getHabitatString() const;
   DeityHabitat getHabitat() const;
-  CreatureFactory getServant() const;
+  CreatureId getServant() const;
 
   static Deity* getDeity(DeityHabitat);
   static Deity* getDeity(EpithetId);

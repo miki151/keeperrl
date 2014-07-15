@@ -1790,6 +1790,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.speed = 120;
           c.strength = 20;
           c.dexterity = 20;
+          c.barehandedAttack = AttackType::HIT;
           c.name = "fire elemental";);
     case CreatureId::AIR_ELEMENTAL:
       return INHERIT(FIRE_ELEMENTAL,
