@@ -304,7 +304,6 @@ class GoldLust : public Behaviour {
 class Fighter : public Behaviour, public EventListener {
   public:
   Fighter(Creature* c, double powerR, bool _chase) : Behaviour(c), maxPowerRatio(powerR), chase(_chase) {
-    courage = c->getCourage();
   }
 
   virtual ~Fighter() {
@@ -312,7 +311,7 @@ class Fighter : public Behaviour, public EventListener {
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override {
     if (victim != creature && victim->getName() == creature->getName() && creature->canSee(victim)) {
-      courage -= 0.1;
+      creature->addMorale(-0.1);
     }
     if (lastSeen && victim == lastSeen->creature)
       lastSeen = Nothing();
@@ -328,7 +327,7 @@ class Fighter : public Behaviour, public EventListener {
       if (Random.roll(2))
         creature->addEffect(LastingEffect::RAGE, (30));
       else
-        courage -= 0.5;
+        creature->addMorale(-0.5);
     }
   }
 
@@ -336,6 +335,10 @@ class Fighter : public Behaviour, public EventListener {
     return creature->getLevel();
   }
  
+  double getMoraleBonus() {
+    return pow(2.0, creature->getMorale());
+  }
+
   virtual MoveInfo getMove() override {
     const Creature* other = getClosestEnemy();
     if (other != nullptr) {
@@ -343,7 +346,7 @@ class Fighter : public Behaviour, public EventListener {
       Item* weapon = getBestWeapon();
       if (!creature->getWeapon() && weapon)
         myDamage += weapon->getModifier(AttrType::DAMAGE);
-      double powerRatio = courage * myDamage / other->getAttr(AttrType::DAMAGE);
+      double powerRatio = getMoraleBonus() * myDamage / other->getAttr(AttrType::DAMAGE);
       bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
       double weight = 1. - creature->getHealth() * 0.9;
       if (powerRatio < maxPowerRatio)
@@ -536,14 +539,15 @@ class Fighter : public Behaviour, public EventListener {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(maxPowerRatio) & SVAR(courage) 
-      & SVAR(chase) & SVAR(lastSeen);
+    ar& SUBCLASS(Behaviour)
+      & SVAR(maxPowerRatio)
+      & SVAR(chase)
+      & SVAR(lastSeen);
     CHECK_SERIAL;
   }
 
   private:
   double SERIAL(maxPowerRatio);
-  double SERIAL(courage);
   bool SERIAL(chase);
   struct LastSeen {
     Vec2 pos;

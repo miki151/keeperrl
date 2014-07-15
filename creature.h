@@ -71,6 +71,18 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);
   double getHealth() const;
+  double getMorale() const;
+  void addMorale(double);
+  class MoraleOverride {
+    public:
+    virtual Optional<double> getMorale() = 0;
+    virtual ~MoraleOverride() {}
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version);
+  };
+  DEF_UNIQUE_PTR(MoraleOverride);
+  void addMoraleOverride(PMoraleOverride);
+
   double getWeight() const;
   bool canSleep() const;
   void take(PItem item);
@@ -296,6 +308,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   Tribe* SERIAL(tribe);
   vector<EnemyCheck*> SERIAL(enemyChecks);
   double SERIAL2(health, 1);
+  double SERIAL2(morale, 0);
   bool SERIAL2(dead, false);
   double SERIAL2(lastTick, 0);
   bool SERIAL2(collapsed, false);
@@ -319,6 +332,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   Sectors* SERIAL2(sectors, nullptr);
   int SERIAL2(numAttacksThisTurn, 0);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
+  vector<PMoraleOverride> SERIAL(moraleOverrides);
 };
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };

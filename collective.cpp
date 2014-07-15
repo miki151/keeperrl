@@ -11,8 +11,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(taskMap)
     & SVAR(tribe)
     & SVAR(control)
-    & SVAR(deityStanding)
-    & SVAR(morale);
+    & SVAR(deityStanding);
   CHECK_SERIAL;
 }
 
@@ -127,10 +126,10 @@ void Collective::onKillEvent(const Creature* victim, const Creature* killer) {
       if (contains(byTrait[t], victim))
         removeElement(byTrait[t], victim);
     for (Creature* c : creatures)
-      addMorale(c, -0.03);
+      c->addMorale(0.03);
   }
   if (contains(creatures, killer))
-    addMorale(killer, 0.25);
+    const_cast<Creature*>(killer)->addMorale(0.25);
 }
 
 double Collective::getStanding(const Deity* d) const {
@@ -179,8 +178,8 @@ void Collective::onEpithetWorship(Creature* who, WorshipType type, EpithetId id)
     case WorshipType::SACRIFICE: increase = 1.0 / 2; break;
   }
   switch (id) {
-    case EpithetId::COURAGE: addMorale(who, increase); break;
-    case EpithetId::FEAR: addMorale(who, -increase); break;
+    case EpithetId::COURAGE: who->addMorale(increase); break;
+    case EpithetId::FEAR: who->addMorale(-increase); break;
     default: break;
   }
 }
@@ -196,18 +195,7 @@ void Collective::onWorshipEvent(Creature* who, const Deity* to, WorshipType type
     onEpithetWorship(who, type, id);
 }
 
-void Collective::addMorale(const Creature* c, double val) {
-  morale[c] = min(1.0, max(-1.0, morale[c] + val));
-}
-
-double Collective::getMorale(const Creature* c) const {
-  if (morale.count(c))
-    return morale.at(c);
-  else
-    return 0;
-}
-
 double Collective::getEfficiency(const Creature* c) const {
-  return pow(2.0, getMorale(c));
+  return pow(2.0, c->getMorale());
 }
 

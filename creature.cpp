@@ -39,6 +39,11 @@ void SpellInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(SpellInfo);
 
+template <class Archive> 
+void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
+}
+
+SERIALIZABLE(Creature::MoraleOverride);
 
 template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
@@ -57,6 +62,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(tribe)
     & SVAR(enemyChecks)
     & SVAR(health)
+    & SVAR(morale)
     & SVAR(dead)
     & SVAR(lastTick)
     & SVAR(collapsed)
@@ -78,7 +84,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(points)
     & SVAR(sectors)
     & SVAR(numAttacksThisTurn)
-    & SVAR(lastingEffects);
+    & SVAR(lastingEffects)
+    & SVAR(moraleOverrides);
   CHECK_SERIAL;
 }
 
@@ -331,6 +338,7 @@ void Creature::makeMove() {
   if (swapPositionCooldown)
     --swapPositionCooldown;
   MEASURE(controller->makeMove(), "creature move time");
+  Debug() << getName() << " morale " << getMorale();
   CHECK(!inEquipChain) << "Someone forgot to finishEquipChain()";
   if (!hidden)
     modViewObject().removeModifier(ViewObject::Modifier::HIDDEN);
@@ -1356,6 +1364,21 @@ void Creature::updateViewObject() {
 
 double Creature::getHealth() const {
   return health;
+}
+
+double Creature::getMorale() const {
+  for (auto& elem : moraleOverrides)
+    if (auto ret = elem->getMorale())
+      return *ret;
+  return morale;
+}
+
+void Creature::addMorale(double val) {
+  morale = min(1.0, max(-1.0, morale + val));
+}
+
+void Creature::addMoraleOverride(PMoraleOverride mod) {
+  moraleOverrides.push_back(std::move(mod));
 }
 
 double Creature::getWeight() const {

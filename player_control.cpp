@@ -650,7 +650,7 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
   auto index = view->chooseFromList(capitalFirst(creature->getNameAndTitle()) 
       + ", level: " + convertToString(creature->getExpLevel()) + ", kills: "
       + convertToString(creature->getKills().size())
-      + ", morale: " + getMoraleString(getCollective()->getMorale(creature)),
+      + ", morale: " + getMoraleString(creature->getMorale()),
       lOpt, prevIndex, View::MINION_MENU);
   if (!index)
     return;
@@ -2664,6 +2664,29 @@ void PlayerControl::addCreature(Creature* c) {
     addCreature(c, MinionType::NORMAL);
 }
 
+class KeeperControlOverride : public Creature::MoraleOverride {
+  public:
+  KeeperControlOverride(PlayerControl* ctrl, Creature* c) : control(ctrl), creature(c) {}
+  virtual Optional<double> getMorale() override {
+    if (contains(control->team, creature) && control->possessed == control->getKeeper())
+      return 1;
+    else
+      return Nothing();
+  }
+
+  SERIALIZATION_CONSTRUCTOR(KeeperControlOverride);
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Creature::MoraleOverride) & SVAR(control) & SVAR(creature);
+    CHECK_SERIAL;
+  }
+
+  private:
+  PlayerControl* SERIAL(control);
+  Creature* (creature);
+};
+
 void PlayerControl::addCreature(Creature* c, MinionType type) {
   if (!getKeeper()) {
     getCollective()->setLeader(c);
@@ -2689,6 +2712,7 @@ void PlayerControl::addCreature(Creature* c, MinionType type) {
   minionByType[type].push_back(c);
   if (!contains({MinionType::IMP}, type)) {
     minions.push_back(c);
+    c->addMoraleOverride(Creature::PMoraleOverride(new KeeperControlOverride(this, c)));
     for (Technology* t : technologies)
       if (Skill* skill = t->getSkill())
         c->addSkill(skill);
@@ -2885,6 +2909,7 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
 template <class Archive>
 void PlayerControl::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, MinionController);
+  REGISTER_TYPE(ar, KeeperControlOverride);
 }
 
 REGISTER_TYPES(PlayerControl);

@@ -45,8 +45,6 @@ class Collective : public EventListener {
   double getBeastMultiplier() const;
   double getUndeadMultiplier() const;
 
-  double getMorale(const Creature*) const;
-  void addMorale(const Creature*, double);
   double getEfficiency(const Creature*) const;
   const Creature* getLeader() const;
   Creature* getLeader();
@@ -65,7 +63,6 @@ class Collective : public EventListener {
   Task::Mapping SERIAL(taskMap);
   Tribe* SERIAL2(tribe, nullptr);
   map<const Deity*, double> SERIAL(deityStanding);
-  map<const Creature*, double> SERIAL(morale);
 };
 
 #endif

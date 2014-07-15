@@ -138,6 +138,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
 
   private:
+  friend class KeeperControlOverride;
+
   void considerDeityFight();
   void addDeityServant(Deity*, Vec2 deityPos, Vec2 victimPos);
   static string getWarningText(Warning);
