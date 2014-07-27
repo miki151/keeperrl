@@ -161,104 +161,87 @@ void MapGui::onMouseRelease() {
   mouseHeldPos = Nothing();
 }
 
-Optional<ViewObject> MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewIndex& index,
-    int sizeX, int sizeY, Vec2 tilePos, bool highlighted) {
-  vector<ViewObject> objects;
-  if (spriteMode) {
-    for (ViewLayer layer : layout->getLayers())
-      if (index.hasObject(layer))
-        objects.push_back(index.getObject(layer));
-  } else
-    if (auto object = index.getTopObject(layout->getLayers()))
-      objects.push_back(*object);
-  for (ViewObject& object : objects) {
-    if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
-      renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
-    }
-    if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
-      renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::DARK_GREEN]);
-    }
-    Tile tile = Tile::getTile(object, spriteMode);
-    Color color = getBleedingColor(object);
-    if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
-      color = transparency(color, 70);
-    else
+void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& object,
+    int sizeX, int sizeY, Vec2 tilePos) {
+  if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
+    renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
+  }
+  if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
+    renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::DARK_GREEN]);
+  }
+  Tile tile = Tile::getTile(object, spriteMode);
+  Color color = getBleedingColor(object);
+  if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
+    color = transparency(color, 70);
+  else
     if (tile.translucent > 0)
       color = transparency(color, 255 * (1 - tile.translucent));
     else if (object.hasModifier(ViewObject::Modifier::ILLUSION))
       color = transparency(color, 150);
-    if (object.hasModifier(ViewObject::Modifier::PLANNED))
-      color = transparency(color, 100);
-    double waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH);
-    if (waterDepth > 0) {
-      int val = max(0.0, 255.0 - min(2.0, waterDepth) * 60);
-      color = Color(val, val, val);
+  if (object.hasModifier(ViewObject::Modifier::PLANNED))
+    color = transparency(color, 100);
+  double waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH);
+  if (waterDepth > 0) {
+    int val = max(0.0, 255.0 - min(2.0, waterDepth) * 60);
+    color = Color(val, val, val);
+  }
+  if (tile.hasSpriteCoord()) {
+    int moveY = 0;
+    Vec2 sz = Renderer::tileSize[tile.getTexNum()];
+    Vec2 off = (Renderer::nominalSize -  sz) / 2;
+    int width = sizeX - 2 * off.x;
+    int height = sizeY - 2 * off.y;
+    if (sz.y > Renderer::nominalSize.y)
+      off.y = Renderer::nominalSize.y -  sz.y;
+    EnumSet<Dir> dirs;
+    if (!object.hasModifier(ViewObject::Modifier::PLANNED))
+      if (auto connectionId = getConnectionId(object))
+        for (Vec2 dir : getConnectionDirs(object.id()))
+          if (tileConnects(*connectionId, tilePos + dir))
+            dirs.insert(dir.getCardinalDir());
+    Vec2 coord = tile.getSpriteCoord(dirs);
+    if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
+      moveY = -4;
+    if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
+      renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize.x, 22 * Renderer::nominalSize.y,
+          Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[0]);
+      moveY = -4;
     }
-    if (tile.hasSpriteCoord()) {
-      int moveY = 0;
-      Vec2 sz = Renderer::tileSize[tile.getTexNum()];
-      Vec2 off = (Renderer::nominalSize -  sz) / 2;
-      int width = sizeX - 2 * off.x;
-      int height = sizeY - 2 * off.y;
-      if (sz.y > Renderer::nominalSize.y)
-        off.y = Renderer::nominalSize.y -  sz.y;
-      EnumSet<Dir> dirs;
-      if (!object.hasModifier(ViewObject::Modifier::PLANNED))
-        if (auto connectionId = getConnectionId(object))
-          for (Vec2 dir : getConnectionDirs(object.id()))
-            if (tileConnects(*connectionId, tilePos + dir))
-              dirs.insert(dir.getCardinalDir());
-      Vec2 coord = tile.getSpriteCoord(dirs);
-      if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
-        moveY = -4;
-      if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
-        renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize.x, 22 * Renderer::nominalSize.y,
-            Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[0], width, height);
-        moveY = -4;
-      }
-      if (auto background = tile.getBackgroundCoord()) {
-        renderer.drawSprite(x + off.x, y + off.y, background->x * sz.x,
-            background->y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
-        if (shadowed.count(tilePos))
-          renderer.drawSprite(x, y, 1 * Renderer::nominalSize.x, 21 * Renderer::nominalSize.y,
-              Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[5], width, height);
-      }
-      if (coord.x < 0)
-        continue;
-      renderer.drawSprite(x + off.x, y + moveY + off.y, coord.x * sz.x,
-          coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
-      if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
-          shadowed.count(tilePos) && !tile.noShadow)
+    if (auto background = tile.getBackgroundCoord()) {
+      renderer.drawSprite(x + off.x, y + off.y, background->x * sz.x,
+          background->y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
+      if (shadowed.count(tilePos))
         renderer.drawSprite(x, y, 1 * Renderer::nominalSize.x, 21 * Renderer::nominalSize.y,
             Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[5], width, height);
-      if (object.getAttribute(ViewObject::Attribute::BURNING) > 0) {
-        renderer.drawSprite(x, y, Random.getRandom(10, 12) * Renderer::nominalSize.x, 0 * Renderer::nominalSize.y,
-            Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[2], width, height);
-      }
-      if (object.hasModifier(ViewObject::Modifier::LOCKED))
-        renderer.drawSprite(x + (Renderer::nominalSize.x - Renderer::tileSize[3].x) / 2, y,
-            5 * Renderer::tileSize[3].x, 6 * Renderer::tileSize[3].y,
-            Renderer::tileSize[3].x, Renderer::tileSize[3].y, Renderer::tiles[3], width / 2, height / 2);
-    } else {
-      renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, sizeY, Tile::getColor(object),
-          x + sizeX / 2, y - 3, tile.text, true);
-      double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
-      if (burningVal > 0) {
+    }
+    if (coord.x < 0)
+      return;
+    renderer.drawSprite(x + off.x, y + moveY + off.y, coord.x * sz.x,
+        coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
+    if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
+        shadowed.count(tilePos) && !tile.noShadow)
+      renderer.drawSprite(x, y, 1 * Renderer::nominalSize.x, 21 * Renderer::nominalSize.y,
+          Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[5], width, height);
+    if (object.getAttribute(ViewObject::Attribute::BURNING) > 0) {
+      renderer.drawSprite(x, y, Random.getRandom(10, 12) * Renderer::nominalSize.x, 0 * Renderer::nominalSize.y,
+          Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[2], width, height);
+    }
+    if (object.hasModifier(ViewObject::Modifier::LOCKED))
+      renderer.drawSprite(x + (Renderer::nominalSize.x - Renderer::tileSize[3].x) / 2, y,
+          5 * Renderer::tileSize[3].x, 6 * Renderer::tileSize[3].y,
+          Renderer::tileSize[3].x, Renderer::tileSize[3].y, Renderer::tiles[3], width / 2, height / 2);
+  } else {
+    renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, sizeY, Tile::getColor(object),
+        x + sizeX / 2, y - 3, tile.text, true);
+    double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
+    if (burningVal > 0) {
+      renderer.drawText(Renderer::SYMBOL_FONT, sizeY, WindowView::getFireColor(),
+          x + sizeX / 2, y - 3, L'ѡ', true);
+      if (burningVal > 0.5)
         renderer.drawText(Renderer::SYMBOL_FONT, sizeY, WindowView::getFireColor(),
-            x + sizeX / 2, y - 3, L'ѡ', true);
-        if (burningVal > 0.5)
-          renderer.drawText(Renderer::SYMBOL_FONT, sizeY, WindowView::getFireColor(),
-              x + sizeX / 2, y - 3, L'Ѡ', true);
-      }
+            x + sizeX / 2, y - 3, L'Ѡ', true);
     }
   }
-  if (highlighted) {
-    renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
-  }
-  if (!objects.empty())
-    return objects.back();
-  else
-    return Nothing();
 }
 
 void MapGui::setLevelBounds(Rectangle b) {
@@ -298,25 +281,39 @@ void MapGui::render(Renderer& renderer) {
   int sizeY = layout->squareHeight();
   renderer.drawFilledRectangle(getBounds(), colors[ColorId::ALMOST_BLACK]);
   Optional<ViewObject> highlighted;
-  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
-    Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
-    if (!spriteMode && wpos.inRectangle(levelBounds))
-      renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
-    if (!objects[wpos] || objects[wpos]->isEmpty()) {
-      if (wpos.inRectangle(levelBounds))
+  for (ViewLayer layer : layout->getLayers()) {
+    for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
+      Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
+      if (!spriteMode && wpos.inRectangle(levelBounds))
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
-      if (highlightedPos == wpos) {
+      if (!objects[wpos] || objects[wpos]->isEmpty()) {
+        if (wpos.inRectangle(levelBounds))
+          renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
+        if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, layer) && highlightedPos == wpos) {
+          renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
+              colors[ColorId::LIGHT_GRAY]);
+        }
+        continue;
+      }
+      const ViewIndex& index = *objects[wpos];
+      const ViewObject* object = nullptr;
+      if (spriteMode) {
+        if (index.hasObject(layer))
+          object = &index.getObject(layer);
+      } else
+        object = index.getTopObject(layout->getLayers());
+      if (object) {
+        drawObjectAbs(renderer, pos.x, pos.y, *object, sizeX, sizeY, wpos);
+        if (highlightedPos == wpos)
+          highlighted = *object;
+      }
+      if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, layer) && highlightedPos == wpos) {
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
             colors[ColorId::LIGHT_GRAY]);
       }
-      continue;
     }
-    const ViewIndex& index = *objects[wpos];
-    bool isHighlighted = highlightedPos == wpos;
-    if (auto topObject = drawObjectAbs(renderer, pos.x, pos.y, index, sizeX, sizeY, wpos, isHighlighted)) {
-      if (isHighlighted)
-        highlighted = *topObject;
-    }
+    if (!spriteMode)
+      break;
   }
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
     if (auto index = objects[wpos]) {

@@ -48,8 +48,7 @@ class MapGui : public GuiElem {
   void addAnimation(PAnimation animation, Vec2 position);
 
   private:
-  Optional<ViewObject> drawObjectAbs(Renderer& renderer, int x, int y, const ViewIndex& index, int sizeX, int sizeY,
-      Vec2 tilePos, bool highlighted);
+  void drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject&, int sizeX, int sizeY, Vec2 tilePos);
   void drawHint(Renderer& renderer, Color color, const string& text);
   MapLayout* layout;
   const Table<Optional<ViewIndex>>& objects;

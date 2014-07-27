@@ -39,7 +39,7 @@ class ViewIndex {
   void removeObject(ViewLayer);
   const ViewObject& getObject(ViewLayer) const;
   ViewObject& getObject(ViewLayer);
-  Optional<ViewObject> getTopObject(const vector<ViewLayer>&) const;
+  const ViewObject* getTopObject(const vector<ViewLayer>&) const;
   bool isEmpty() const;
   ~ViewIndex();
 

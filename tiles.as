@@ -71,8 +71,8 @@ void genTiles() {
   addTile(BORDER_GUARD, empty());
   addTile(VAMPIRE, sprite("vampire3"));
   addTile(FALLEN_TREE, sprite("treecut").setNoShadow());
-  addTile(DECID_TREE, sprite("tree").setNoShadow());
-  addTile(CANIF_TREE, sprite("tree").setNoShadow());
+  addTile(DECID_TREE, sprite("tree2").setNoShadow());
+  addTile(CANIF_TREE, sprite("tree3").setNoShadow());
   addTile(TREE_TRUNK, sprite("treecut").setNoShadow());
   addTile(BURNT_TREE, sprite("treeburnt").setNoShadow());
   addTile(PLAYER, sprite(1, 0));

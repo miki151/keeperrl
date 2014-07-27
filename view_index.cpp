@@ -79,11 +79,11 @@ ViewObject& ViewIndex::getObject(ViewLayer l) {
   return objects[ind];
 }
 
-Optional<ViewObject> ViewIndex::getTopObject(const vector<ViewLayer>& layers) const {
+const ViewObject* ViewIndex::getTopObject(const vector<ViewLayer>& layers) const {
   for (int i = layers.size() - 1; i >= 0; --i)
     if (hasObject(layers[i]))
-      return getObject(layers[i]);
-  return Nothing();
+      return &getObject(layers[i]);
+  return nullptr;
 }
 
 void ViewIndex::addHighlight(HighlightInfo info) {
