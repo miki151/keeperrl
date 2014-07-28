@@ -43,7 +43,7 @@ class Task : public UniqueEntity {
     Task* addTask(PTask, const Creature*);
     Task* addTask(PTask, Vec2);
     Task* getTask(const Creature*) const;
-    Task* getTask(Vec2) const;
+    vector<Task*> getTasks(Vec2) const;
     const Creature* getOwner(Task*) const;
     Optional<Vec2> getPosition(Task*) const;
     void removeTask(Task*);

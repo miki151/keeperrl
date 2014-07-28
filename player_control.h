@@ -178,7 +178,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
       ViewId viewId;
     } trapInfo;
 
-    enum BuildType { DIG, SQUARE, IMP, TRAP, GUARD_POST, DESTROY, IMPALED_HEAD, FETCH } buildType;
+    enum BuildType { DIG, SQUARE, IMP, TRAP, GUARD_POST, DESTROY, IMPALED_HEAD, FETCH, DISPATCH } buildType;
 
     Optional<TechId> techId;
     string help;
@@ -327,6 +327,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
     void clearAllLocked();
     Task* getTaskForImp(Creature*);
     void freeTaskDelay(Task*, double delayTime);
+    void setPriorityTasks(Vec2 pos);
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
@@ -338,6 +339,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
     map<Task*, CostInfo> SERIAL(completionCost);
     set<pair<const Creature*, UniqueId>> SERIAL(lockedTasks);
     map<UniqueId, double> SERIAL(delayedTasks);
+    EntitySet SERIAL(priorityTasks);
   } SERIAL(taskMap);
 
   struct TrapInfo {

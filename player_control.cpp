@@ -117,7 +117,9 @@ void PlayerControl::TaskMap::serialize(Archive& ar, const unsigned int version) 
   ar& SUBCLASS(Task::Mapping)
     & BOOST_SERIALIZATION_NVP(marked)
     & BOOST_SERIALIZATION_NVP(lockedTasks)
-    & BOOST_SERIALIZATION_NVP(completionCost);
+    & BOOST_SERIALIZATION_NVP(completionCost)
+    & BOOST_SERIALIZATION_NVP(priorityTasks)
+    & BOOST_SERIALIZATION_NVP(delayedTasks);
 }
 
 SERIALIZABLE(PlayerControl::TaskMap);
@@ -188,7 +190,7 @@ PlayerControl::BuildInfo::BuildInfo(const Creature* c, CostInfo cost, const stri
 
 PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, string group)
     : buildType(type), help(h), hotkey(key), groupName(group) {
-  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH}, type));
+  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH, DISPATCH}, type));
 }
 
 PlayerControl::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const string& h, char key, string group) 
@@ -228,6 +230,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level)
     BuildInfo({SquareType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 0, "Orders"),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
+    BuildInfo(BuildInfo::DISPATCH, "Order imps to prioritize the tasks at location.", 0, "Orders"),
     BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
     BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
         "Click on a built door to lock it.", 'o', "Installations"),
@@ -1242,6 +1245,12 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                  "Fetch items", Nothing(), "", ""});
            }
            break;
+      case BuildInfo::DISPATCH: {
+             buttons.push_back({
+                 ViewObject(ViewId::IMP, ViewLayer::LARGE_ITEM, ""),
+                 "Dispatch imp", Nothing(), "", ""});
+           }
+           break;
       case BuildInfo::TRAP: {
              BuildInfo::TrapInfo& elem = button.trapInfo;
              int numTraps = getTrapItems(elem.type).size();
@@ -1805,6 +1814,9 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     case BuildInfo::FETCH:
         for (ItemFetchInfo elem : getFetchInfo())
           fetchItems(pos, elem, true);
+        break;
+    case BuildInfo::DISPATCH:
+        taskMap.setPriorityTasks(pos);
         break;
     case BuildInfo::IMPALED_HEAD:
     case BuildInfo::SQUARE:
@@ -2546,7 +2558,8 @@ Task* PlayerControl::TaskMap::getTaskForImp(Creature* c) {
       double dist = (*pos - c->getPosition()).length8();
       const Creature* owner = getOwner(task.get());
       if ((!owner || (task->canTransfer() && (*pos - owner->getPosition()).length8() > dist))
-          && (!closest || dist < (*getPosition(closest) - c->getPosition()).length8())
+          && (!closest || dist < (*getPosition(closest) - c->getPosition()).length8()
+              || priorityTasks.contains(task.get()))
           && !isLocked(c, task.get())
           && (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
         bool valid = task->getMove(c);
@@ -2799,6 +2812,11 @@ bool PlayerControl::isInCombat(const Creature* c) const {
 void PlayerControl::TaskMap::freeTaskDelay(Task* t, double d) {
   freeTask(t);
   delayedTasks[t->getUniqueId()] = d;
+}
+
+void PlayerControl::TaskMap::setPriorityTasks(Vec2 pos) {
+  for (Task* t : getTasks(pos))
+    priorityTasks.insert(t);
 }
 
 void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* killer) {

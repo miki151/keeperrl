@@ -103,6 +103,14 @@ Task* Task::Mapping::getTask(const Creature* c) const {
     return nullptr;
 }
 
+vector<Task*> Task::Mapping::getTasks(Vec2 pos) const {
+  vector<Task*> ret;
+  for (const PTask& task : tasks)
+    if (getPosition(task.get()) == pos)
+      ret.push_back(task.get());
+  return ret;
+}
+
 Task* Task::Mapping::addTask(PTask task, const Creature* c) {
   creatureMap.insert(c, task.get());
   tasks.push_back(std::move(task));
