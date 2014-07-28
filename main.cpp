@@ -225,18 +225,18 @@ int main(int argc, char* argv[]) {
   }
   //Table<bool> splash = readSplashTable("splash.map");
   int lastIndex = 0;
-  bool exitGame = false;
   std::atomic<bool> viewInitialized(false);
   ScriptContext::init();
   Tile::initialize();
-  thread renderingThread([&] {
-    view->initialize();
-    viewInitialized = true;
-    while (!exitGame) {
+  AsyncLoop renderingThread([&] {
+      view->initialize();
+      viewInitialized = true;
+    },
+    [&] {
       view->refreshView();
       sf::sleep(sf::milliseconds(1));
     }
-  });
+  );
   while (!viewInitialized);
   Jukebox jukebox("intro.ogg", "peaceful.ogg", "battle.ogg");
   view->setJukebox(&jukebox);
@@ -293,8 +293,6 @@ int main(int argc, char* argv[]) {
       continue;
     }
     if (choice == 7) {
-      exitGame = true;
-      renderingThread.join();
       return 0;
     }
     unique_ptr<Model> model;
@@ -328,8 +326,6 @@ int main(int argc, char* argv[]) {
     if (genExit) {
       model.reset();
       clearAndInitialize();
-      exitGame = true;
-      renderingThread.join();
       return 0;
     }
     int var = 0;

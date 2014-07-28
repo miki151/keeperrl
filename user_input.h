@@ -22,6 +22,7 @@ struct UserInput {
   enum Type {
 // common
     IDLE,
+    REFRESH,
     DRAW_LEVEL_MAP,
     EXIT,
 // real-time actions

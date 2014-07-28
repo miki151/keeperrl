@@ -661,3 +661,15 @@ void Semaphore::v() {
   cond.notify_one();
 }
 
+AsyncLoop::AsyncLoop(function<void()> f) : AsyncLoop([]{}, f) {
+}
+
+AsyncLoop::AsyncLoop(function<void()> init, function<void()> loop) : t([=] { init(); while (!done) { loop(); }}) {
+}
+
+AsyncLoop::~AsyncLoop() {
+  done = true;
+  t.join();
+}
+
+

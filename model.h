@@ -113,6 +113,7 @@ class Model : public EventListener {
   bool SERIAL2(adventurer, false);
   double SERIAL2(currentTime, 0);
   SunlightInfo sunlightInfo;
+  double lastUpdate = -10;
 };
 
 #endif

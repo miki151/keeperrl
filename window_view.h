@@ -162,6 +162,9 @@ class WindowView: public View {
   SyncQueue<UserInput> inputQueue;
 
   bool gameReady = false;
+  std::atomic<bool> refreshInput;
+
+  typedef std::unique_lock<std::recursive_mutex> RenderLock;
 
   struct TileLayouts {
     MapLayout normalLayout;

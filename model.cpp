@@ -129,7 +129,10 @@ void Model::update(double totalTime) {
     addHero = false;
   }
   if (playerControl) {
-    playerControl->render(view);
+    if (totalTime - lastUpdate > 0.2) {
+      playerControl->render(view);
+      lastUpdate = totalTime;
+    }
   }
   do {
     Creature* creature = timeQueue.getNextCreature();
@@ -141,6 +144,8 @@ void Model::update(double totalTime) {
         UserInput input = view->getAction();
         if (input.type == UserInput::IDLE)
           break;
+        else
+          lastUpdate = -10;
         playerControl->processInput(view, input);
       }
     }

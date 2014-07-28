@@ -107,6 +107,7 @@ class Player : public Controller, public EventListener {
   bool SERIAL(displayGreeting);
   bool SERIAL(adventureMode);
   vector<EpithetId> SERIAL(usedEpithets);
+  bool updateView = true;
 };
 
 #endif

@@ -595,9 +595,12 @@ void Player::makeMove() {
     ViewObject::setHallu(true);
   else
     ViewObject::setHallu(false);
-  MEASURE(
-      model->getView()->updateView(creature),
-      "level render time");
+  if (updateView) {
+    updateView = false;
+    MEASURE(
+        model->getView()->updateView(creature),
+        "level render time");
+  }
   if (Options::getValue(OptionId::HINTS) && displayTravelInfo && creature->getConstSquare()->getName() == "road") {
     model->getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
@@ -626,8 +629,10 @@ void Player::makeMove() {
     Debug() << "Action " << int(action.type);
   vector<Vec2> direction;
   bool travel = false;
-  if (action.type != UserInput::IDLE)
+  if (action.type != UserInput::IDLE) {
     model->getView()->retireMessages();
+    updateView = true;
+  }
   switch (action.type) {
     case UserInput::FIRE: fireAction(action.getPosition()); break;
     case UserInput::TRAVEL: travel = true;

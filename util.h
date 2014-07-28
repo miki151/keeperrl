@@ -1212,9 +1212,8 @@ class SyncQueue {
     while (q.empty()) {
       cond.wait(lock);
     }
-    T ret = q.front();
-    q.pop();
-    return ret;
+    OnExit o([=] { q.pop(); });
+    return q.front();
   }
 
   Optional<T> popAsync() {
@@ -1235,9 +1234,20 @@ class SyncQueue {
   }
 
   private:
-  queue<T> q;
   std::mutex mut;
   std::condition_variable cond;
+  queue<T> q;
+};
+
+class AsyncLoop {
+  public:
+  AsyncLoop(function<void()> init, function<void()> loop);
+  AsyncLoop(function<void()>);
+  ~AsyncLoop();
+
+  private:
+  thread t;
+  std::atomic<bool> done;
 };
 
 #endif

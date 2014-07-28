@@ -154,8 +154,6 @@ void WindowView::initialize() {
   resetMapBounds();
 }
 
-typedef std::unique_lock<std::recursive_mutex> RenderLock;
-
 void WindowView::reset() {
   RenderLock lock(renderMutex);
   mapLayout = &currentTileLayout.normalLayout;
@@ -254,6 +252,7 @@ void WindowView::displaySplash(View::SplashType type, atomic<bool>& ready) {
 
 void WindowView::resize(int width, int height, vector<GuiElem*> gui) {
   renderer.resize(width, height);
+  refreshInput = true;
 }
 
 struct KeyInfo {
@@ -1358,7 +1357,8 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
   if (lastPressed && !Mouse::isButtonPressed(Mouse::Right)) {
     center = {center.x - mouseOffset.x, center.y - mouseOffset.y};
     mouseOffset = {0.0, 0.0};
-    lastPressed = false;
+    lastPressed = false;  
+    refreshInput = true;
     return true;
   }
   if (!lastPressed && Mouse::isButtonPressed(Mouse::Right)) {
@@ -1367,10 +1367,10 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
     chosenCreature = "";
     return true;
   }
-
   if (event.type == Event::MouseMoved && lastPressed) {
     mouseOffset = {double(event.mouseMove.x - lastMousePos.x) / mapLayout->squareWidth(),
       double(event.mouseMove.y - lastMousePos.y) / mapLayout->squareHeight() };
+    refreshInput = true;
     return true;
   }
   return false;
@@ -1531,6 +1531,10 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
 
 UserInput WindowView::getAction() {
   lockKeyboard = false;
+  if (refreshInput) {
+    refreshInput = false;
+    return UserInput::REFRESH;
+  }
   if (auto input = inputQueue.popAsync())
     return *input;
   else
