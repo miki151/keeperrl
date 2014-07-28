@@ -1109,8 +1109,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.speed = 100;
           c.size = CreatureSize::HUGE;
           c.strength = 35;
-          c.dexterity = 15;
+          c.dexterity = 25;
           c.barehandedDamage = 5;
+          c.barehandedAttack = AttackType::EAT;
           c.humanoid = false;
           c.weight = 1000;
           c.worshipped = true;

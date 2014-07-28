@@ -39,7 +39,7 @@ RICH_ENUM(AttrType,
   WILLPOWER,
 );
 
-enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, HIT, SHOOT, SPELL};
+enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, EAT, HIT, SHOOT, SPELL};
 
 class ItemAttributes {
   public:

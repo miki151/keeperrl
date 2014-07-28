@@ -1103,6 +1103,7 @@ static string getAttackParam(AttackType type) {
     case AttackType::STAB: return "stab";
     case AttackType::CRUSH: return "crush";
     case AttackType::PUNCH: return "punch";
+    case AttackType::EAT:
     case AttackType::BITE: return "bite";
     case AttackType::HIT: return "hit";
     case AttackType::SHOOT: return "shot";
@@ -1197,6 +1198,7 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
   if (weapon)
     return type == AttackType::STAB ? MsgType::THRUST_WEAPON : MsgType::SWING_WEAPON;
   switch (type) {
+    case AttackType::EAT:
     case AttackType::BITE: return MsgType::BITE;
     case AttackType::PUNCH: return level == AttackLevel::LOW ? MsgType::KICK : MsgType::PUNCH;
     case AttackType::HIT: return MsgType::HIT;
@@ -1291,17 +1293,22 @@ bool Creature::isCritical(BodyPart part) const {
 bool Creature::takeDamage(const Attack& attack) {
   if (isAffected(LastingEffect::SLEEP))
     removeEffect(LastingEffect::SLEEP);
-  if (const Creature* c = attack.getAttacker())
-    if (!contains(privateEnemies, c) && c->getTribe() != tribe)
-      privateEnemies.push_back(c);
+  Creature* other = const_cast<Creature*>(attack.getAttacker());
+  if (other)
+    if (!contains(privateEnemies, other) && other->getTribe() != tribe)
+      privateEnemies.push_back(other);
   int defense = getAttr(AttrType::DEFENSE);
-  Debug() << getTheName() << " attacked by " << attack.getAttacker()->getName() << " damage " << attack.getStrength() << " defense " << defense;
-  if (passiveAttack && attack.getAttacker() && attack.getAttacker()->getPosition().dist8(position) == 1) {
-    Creature* other = const_cast<Creature*>(attack.getAttacker());
+  Debug() << getTheName() << " attacked by " << other->getName() << " damage " << attack.getStrength() << " defense " << defense;
+  if (passiveAttack && other && other->getPosition().dist8(position) == 1) {
     Effect::applyToCreature(other, *passiveAttack, EffectStrength::NORMAL);
     other->lastAttacker = this;
   }
   if (attack.getStrength() > defense) {
+    if (attack.getType() == AttackType::EAT && isLarger(*other->size, *size) && Random.roll(3)) {
+      you(MsgType::ARE, "devoured by " + other->getName());
+      die(other, false, false);
+      return true;
+    }
     lastAttacker = attack.getAttacker();
     double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
     dam *= damageMultiplier;
@@ -1584,6 +1591,7 @@ void Creature::dropCorpse() {
 }
 
 void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
+  lastAttacker = attacker;
   Debug() << getTheName() << " dies. Killed by " << (attacker ? attacker->getName() : "");
   controller->onKilled(attacker);
   if (attacker)

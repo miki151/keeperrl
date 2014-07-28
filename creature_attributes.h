@@ -32,6 +32,11 @@ enum class CreatureSize {
   LARGE,
   HUGE
 };
+
+inline bool isLarger(CreatureSize s1, CreatureSize s2) {
+  return int(s1) > int(s2);
+}
+
 RICH_ENUM(BodyPart,
   HEAD,
   TORSO,
