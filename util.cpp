@@ -128,6 +128,11 @@ string convertToString(const Vec2& t){
   return ss.str();
 }
 
+template <>
+string convertToString(const bool& t){
+  return t ? "true" : "false";
+}
+
 template <class T>
 T convertFromString(const string& s){
   std::stringstream ss(s);

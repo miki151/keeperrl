@@ -9,6 +9,7 @@ class Creature;
 class CollectiveControl;
 class Tribe;
 class Deity;
+class Level;
 
 RICH_ENUM(MinionTrait,
   FIGHTER,
@@ -24,6 +25,9 @@ class Collective : public EventListener {
   const Tribe* getTribe() const;
   Tribe* getTribe();
   double getStanding(const Deity*) const;
+  double getWarLevel() const;
+  Level* getLevel();
+  const Level* getLevel() const;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
   virtual void onWorshipEvent(Creature* who, const Deity*, WorshipType) override;
@@ -63,6 +67,7 @@ class Collective : public EventListener {
   Task::Mapping SERIAL(taskMap);
   Tribe* SERIAL2(tribe, nullptr);
   map<const Deity*, double> SERIAL(deityStanding);
+  Level* SERIAL2(level, nullptr);
 };
 
 #endif

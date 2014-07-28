@@ -21,6 +21,7 @@
 #include "item.h"
 #include "creature.h"
 #include "square.h"
+#include "collective.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -713,6 +714,45 @@ PTask Task::explore(Callback* call, Vec2 pos) {
   return PTask(new Explore(call, pos));
 }
 
+namespace {
+
+class AttackCollective : public NonTransferable {
+  public:
+  AttackCollective(Callback* callback, Collective* col) : NonTransferable(callback), collective(col) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (c->getLevel() != collective->getLevel())
+      return NoMove;
+    if (auto action = c->moveTowards(collective->getLeader()->getPosition())) 
+      return action;
+    else {
+      for (Vec2 v : Vec2::directions8(true))
+        if (auto action = c->destroy(v, Creature::BASH))
+          return action;
+      return c->wait();
+    }
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(collective);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(AttackCollective);
+
+  private:
+  Collective* SERIAL(collective);
+};
+
+}
+
+PTask Task::attackCollective(Callback* call, Collective* col) {
+  return PTask(new AttackCollective(call, col));
+}
+
+
 template <class Archive>
 void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Construction);
@@ -727,6 +767,7 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Disappear);
   REGISTER_TYPE(ar, Chain);
   REGISTER_TYPE(ar, Explore);
+  REGISTER_TYPE(ar, AttackCollective);
 }
 
 REGISTER_TYPES(Task);

@@ -17,6 +17,18 @@ Collective* CollectiveControl::getCollective() {
   return NOTNULL(collective);
 }
 
+double CollectiveControl::getWarLevel() const {
+  return 0;
+}
+
+Level* CollectiveControl::getLevel() {
+  return getCollective()->getLevel();
+}
+
+const Level* CollectiveControl::getLevel() const {
+  return getCollective()->getLevel();
+}
+
 const Collective* CollectiveControl::getCollective() const {
   return NOTNULL(collective);
 }

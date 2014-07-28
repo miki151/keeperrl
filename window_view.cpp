@@ -843,7 +843,7 @@ void WindowView::drawLevelMap(const CreatureView* creature) {
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
-  const Level* level = creature->getLevel();
+  const Level* level = creature->getViewLevel();
   Vec2 rad(40, 40);
   Rectangle bounds(mapLayout->getPlayerPos() - rad, mapLayout->getPlayerPos() + rad);
   if (level->getBounds().intersects(bounds))
@@ -855,7 +855,7 @@ void WindowView::updateView(const CreatureView* collective) {
   updateMinimap(collective);
   gameReady = true;
   switchTiles();
-  const Level* level = collective->getLevel();
+  const Level* level = collective->getViewLevel();
   collective->refreshGameInfo(gameInfo);
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds()))
     objects[pos] = Nothing();
@@ -864,9 +864,9 @@ void WindowView::updateView(const CreatureView* collective) {
   Vec2 movePos = Vec2((center.x - mouseOffset.x) * mapLayout->squareWidth(),
       (center.y - mouseOffset.y) * mapLayout->squareHeight());
   movePos.x = max(movePos.x, 0);
-  movePos.x = min(movePos.x, int(collective->getLevel()->getBounds().getKX() * mapLayout->squareWidth()));
+  movePos.x = min(movePos.x, int(collective->getViewLevel()->getBounds().getKX() * mapLayout->squareWidth()));
   movePos.y = max(movePos.y, 0);
-  movePos.y = min(movePos.y, int(collective->getLevel()->getBounds().getKY() * mapLayout->squareHeight()));
+  movePos.y = min(movePos.y, int(collective->getViewLevel()->getBounds().getKY() * mapLayout->squareHeight()));
   mapLayout->updatePlayerPos(movePos);
   const MapMemory* memory = &collective->getMemory(); 
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds())) 
@@ -1399,6 +1399,8 @@ void WindowView::processEvents() {
         break;
       case Event::MouseWheelMoved:
           zoom(event.mouseWheel.delta < 0);
+          refreshInput = true;
+          break;
       case Event::MouseButtonPressed :
           if (event.mouseButton.button == sf::Mouse::Middle)
             inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP));

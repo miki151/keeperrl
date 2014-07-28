@@ -204,7 +204,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
       moveY = -4;
     if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
       renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize.x, 22 * Renderer::nominalSize.y,
-          Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[0]);
+          Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[0],
+          min(Renderer::nominalSize.x, width), min(Renderer::nominalSize.y, height));
       moveY = -4;
     }
     if (auto background = tile.getBackgroundCoord()) {
@@ -287,11 +288,13 @@ void MapGui::render(Renderer& renderer) {
       if (!spriteMode && wpos.inRectangle(levelBounds))
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
       if (!objects[wpos] || objects[wpos]->isEmpty()) {
-        if (wpos.inRectangle(levelBounds))
-          renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
-        if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, layer) && highlightedPos == wpos) {
-          renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
-              colors[ColorId::LIGHT_GRAY]);
+        if (contains({ViewLayer::FLOOR}, layer)) {
+          if (wpos.inRectangle(levelBounds))
+            renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
+          if (highlightedPos == wpos) {
+            renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
+                colors[ColorId::LIGHT_GRAY]);
+          }
         }
         continue;
       }

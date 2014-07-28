@@ -422,7 +422,7 @@ Item* Square::getTopItem() const {
   return last;
 }
 
-vector<Item*> Square::getItems(function<bool (Item*)> predicate) {
+vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {
   return inventory.getItems(predicate);
 }
 

@@ -125,7 +125,7 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
 
 void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, WindowRenderer& r,
     function<void(double, double)> clickFun) {
-  const Level* level = creature->getLevel();
+  const Level* level = creature->getViewLevel();
   double scale = min(double(bounds.getW()) / level->getBounds().getW(),
       double(bounds.getH()) / level->getBounds().getH());
   while (1) {

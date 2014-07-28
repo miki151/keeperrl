@@ -59,8 +59,9 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   double getTime() const;
   void setTime(double t);
   void setLevel(Level* l);
-  virtual const Level* getLevel() const;
+  virtual const Level* getViewLevel() const override;
   Level* getLevel();
+  const Level* getLevel() const;
   const Square* getConstSquare() const;
   const Square* getConstSquare(Vec2 direction) const;
   Square* getSquare();

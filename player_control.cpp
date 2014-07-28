@@ -78,7 +78,6 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(minionTaskStrings)
     & SVAR(mySquares)
     & SVAR(myTiles)
-    & SVAR(level)
     & SVAR(memory)
     & SVAR(knownTiles)
     & SVAR(borderTiles)
@@ -198,7 +197,7 @@ PlayerControl::BuildInfo::BuildInfo(BuildType type, SquareInfo info, const strin
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
-  return getBuildInfo(level);
+  return getBuildInfo(getLevel());
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level) {
@@ -233,7 +232,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level)
     BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
         "Click on a built door to lock it.", 'o', "Installations"),
     BuildInfo({SquareType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, "", 0, "Installations"),
-    BuildInfo({SquareType::TORCH, {ResourceId::WOOD, 1}, "Torch"}, TechId::CRAFTING, "", 'c', "Installations"),
+    BuildInfo({SquareType::TORCH, {ResourceId::WOOD, 1}, "Torch"}, Nothing(), "", 'c', "Installations"),
     BuildInfo(BuildInfo::IMPALED_HEAD, {SquareType::IMPALED_HEAD, {ResourceId::GOLD, 0}, "Prisoner head"},
         "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
     BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, TechId::TRAPS,
@@ -396,10 +395,10 @@ map<MinionTask, PlayerControl::MinionTaskInfo> PlayerControl::getTaskInfo() cons
   return ret;
 };
 
-PlayerControl::PlayerControl(Collective* col, Model* m, Level* l) : CollectiveControl(col), level(l),
-  mana(200), model(m), sectors(new Sectors(l->getBounds())), flyingSectors(new Sectors(l->getBounds())) {
+PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : CollectiveControl(col),
+  mana(200), model(m), sectors(new Sectors(level->getBounds())), flyingSectors(new Sectors(level->getBounds())) {
   bool hotkeys[128] = {0};
-  for (BuildInfo info : concat(getBuildInfo(), workshopInfo)) {
+  for (BuildInfo info : concat(getBuildInfo(level), workshopInfo)) {
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
       hotkeys[int(info.hotkey)] = true;
@@ -411,13 +410,13 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* l) : CollectiveCo
       hotkeys[int(info.button.hotkey)] = true;
     }
   }
-  memory.reset(new map<Level*, MapMemory>);
+  memory.reset(new map<UniqueId, MapMemory>);
   // init the map so the values can be safely read with .at()
   mySquares[SquareType::TREE_TRUNK].clear();
   mySquares[SquareType::IMPALED_HEAD].clear();
   mySquares[SquareType::FLOOR].clear();
   mySquares[SquareType::TRIBE_DOOR].clear();
-  for (BuildInfo info : concat(getBuildInfo(), workshopInfo))
+  for (BuildInfo info : concat(getBuildInfo(level), workshopInfo))
     if (info.buildType == BuildInfo::SQUARE) {
       mySquares[info.squareInfo.type].clear();
       if (auto t = getSecondarySquare(info.squareInfo.type))
@@ -431,13 +430,13 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* l) : CollectiveCo
   };
   for (MinionType t : minionTypes)
     minionByType[t].clear();
-  for (Vec2 v : l->getBounds()) {
-    if (l->getSquare(v)->canEnterEmpty(Creature::getDefaultMinion()))
+  for (Vec2 v : level->getBounds()) {
+    if (level->getSquare(v)->canEnterEmpty(Creature::getDefaultMinion()))
       sectors->add(v);
-    if (l->getSquare(v)->canEnterEmpty(Creature::getDefaultMinionFlyer()))
+    if (level->getSquare(v)->canEnterEmpty(Creature::getDefaultMinionFlyer()))
       flyingSectors->add(v);
-    if (contains({"gold ore", "iron ore", "stone"}, l->getSquare(v)->getName()))
-      getMemory(l).addObject(v, l->getSquare(v)->getViewObject());
+    if (contains({"gold ore", "iron ore", "stone"}, level->getSquare(v)->getName()))
+      getMemory(level).addObject(v, level->getSquare(v)->getViewObject());
   }
   for(const Location* loc : level->getAllLocations())
     if (loc->isMarkedAsSurprise())
@@ -472,7 +471,7 @@ void PlayerControl::render(View* view) {
     } else {
       view->setTimeMilli(possessed->getTime() * 300);
       view->clearMessages();
-      if (possessed->getLevel() != level)
+      if (possessed->getLevel() != getLevel())
         view->resetCenter();
       unpossess();
     }
@@ -504,7 +503,7 @@ vector<pair<Item*, Vec2>> PlayerControl::getTrapItems(TrapType type, set<Vec2> s
   if (squares.empty())
     squares = mySquares.at(SquareType::WORKSHOP);
   for (Vec2 pos : squares) {
-    vector<Item*> v = level->getSquare(pos)->getItems([type, this](Item* it) {
+    vector<Item*> v = getLevel()->getSquare(pos)->getItems([type, this](Item* it) {
         return it->getTrapType() == type && !isItemMarked(it); });
     for (Item* it : v)
       ret.emplace_back(it, pos);
@@ -826,7 +825,7 @@ void PlayerControl::handleEquipment(View* view, Creature* creature, int prevItem
 vector<Item*> PlayerControl::getAllItems(ItemPredicate predicate, bool includeMinions) const {
   vector<Item*> allItems;
   for (Vec2 v : myTiles)
-    append(allItems, level->getSquare(v)->getItems(predicate));
+    append(allItems, getLevel()->getSquare(v)->getItems(predicate));
   if (includeMinions)
     for (Creature* c : getCreatures())
       append(allItems, c->getEquipment().getItems(predicate));
@@ -907,7 +906,7 @@ void PlayerControl::handleMarket(View* view, int prevItem) {
     return;
   Vec2 dest = chooseRandom(storage);
   takeResource({ResourceId::GOLD, items[*index]->getPrice()});
-  level->getSquare(dest)->dropItem(std::move(items[*index]));
+  getLevel()->getSquare(dest)->dropItem(std::move(items[*index]));
   view->updateView(this);
   handleMarket(view, *index);
 }
@@ -1012,7 +1011,7 @@ vector<PlayerControl::SpawnInfo> raisingInfo {
 void PlayerControl::handleNecromancy(View* view) {
   vector<pair<Vec2, Item*>> corpses;
   for (Vec2 pos : mySquares.at(SquareType::CEMETERY)) {
-    for (Item* it : level->getSquare(pos)->getItems([](const Item* it) {
+    for (Item* it : getLevel()->getSquare(pos)->getItems([](const Item* it) {
         return it->getType() == ItemType::CORPSE && it->getCorpseInfo()->canBeRevived; }))
       corpses.push_back({pos, it});
   }
@@ -1116,10 +1115,10 @@ void PlayerControl::handleSpawning(View* view, SquareType spawnSquare, const str
     PCreature& creature = availableCreatures[*index].first;
     mana -= availableCreatures[*index].second;
     for (Vec2 v : concat({pos}, pos.neighbors8(true)))
-      if (level->inBounds(v) && level->getSquare(v)->canEnter(creature.get())) {
+      if (getLevel()->inBounds(v) && getLevel()->getSquare(v)->canEnter(creature.get())) {
         if (genItems) {
           pair<Vec2, Item*> item = chooseRandom(*genItems);
-          level->getSquare(item.first)->removeItems({item.second});
+          getLevel()->getSquare(item.first)->removeItems({item.second});
           removeElement(*genItems, item);
         }
         addCreature(std::move(creature), v, minionType);
@@ -1128,7 +1127,7 @@ void PlayerControl::handleSpawning(View* view, SquareType spawnSquare, const str
     if (creature)
       messageBuffer.addMessage(MessageBuffer::important("The spell failed."));
     else if (replacement) {
-      level->replaceSquare(pos, SquareFactory::get(*replacement));
+      getLevel()->replaceSquare(pos, SquareFactory::get(*replacement));
       mySquares.at(spawnSquare).erase(pos);
       mySquares.at(*replacement).insert(pos);
     }
@@ -1346,7 +1345,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.creatures.push_back(c);
   info.enemies.clear();
   for (Vec2 v : myTiles)
-    if (Creature* c = level->getSquare(v)->getCreature())
+    if (const Creature* c = getLevel()->getSquare(v)->getCreature())
       if (c->getTribe() != getTribe())
         info.enemies.push_back(c);
   info.numResource.clear();
@@ -1386,17 +1385,17 @@ void PlayerControl::unmarkItem(UniqueId id) {
 }
 
 void PlayerControl::updateMemory() {
-  for (Vec2 v : level->getBounds())
+  for (Vec2 v : getLevel()->getBounds())
     if (knownTiles[v])
       addToMemory(v);
 }
 
 const MapMemory& PlayerControl::getMemory() const {
-  return (*memory.get())[level];
+  return (*memory.get())[getLevel()->getUniqueId()];
 }
 
 MapMemory& PlayerControl::getMemory(Level* l) {
-  return (*memory.get())[l];
+  return (*memory.get())[l->getUniqueId()];
 }
 
 ViewObject PlayerControl::getTrapObject(TrapType type) {
@@ -1418,8 +1417,8 @@ static const ViewObject& getConstructionObject(SquareType type) {
 }
 
 ViewIndex PlayerControl::getViewIndex(Vec2 pos) const {
-  ViewIndex index = level->getSquare(pos)->getViewIndex(this);
-  if (Creature* c = level->getSquare(pos)->getCreature())
+  ViewIndex index = getLevel()->getSquare(pos)->getViewIndex(this);
+  if (const Creature* c = getLevel()->getSquare(pos)->getCreature())
     if (contains(team, c) && gatheringTeam)
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (taskMap.getMarked(pos))
@@ -1515,7 +1514,7 @@ int PlayerControl::numResource(ResourceId id) const {
   int ret = credit.at(id);
   for (SquareType type : resourceInfo.at(id).storageType)
     for (Vec2 pos : mySquares.at(type))
-      ret += level->getSquare(pos)->getItems(resourceInfo.at(id).predicate).size();
+      ret += getLevel()->getSquare(pos)->getItems(resourceInfo.at(id).predicate).size();
   return ret;
 }
 
@@ -1534,9 +1533,9 @@ void PlayerControl::takeResource(CostInfo cost) {
     }
   }
   for (Vec2 pos : randomPermutation(getAllSquares(resourceInfo.at(cost.id).storageType))) {
-    vector<Item*> goldHere = level->getSquare(pos)->getItems(resourceInfo.at(cost.id).predicate);
+    vector<Item*> goldHere = getLevel()->getSquare(pos)->getItems(resourceInfo.at(cost.id).predicate);
     for (Item* it : goldHere) {
-      level->getSquare(pos)->removeItem(it);
+      getLevel()->getSquare(pos)->removeItem(it);
       if (--num == 0)
         return;
     }
@@ -1550,7 +1549,7 @@ void PlayerControl::returnResource(CostInfo amount) {
   CHECK(amount.value > 0);
   vector<Vec2> destination = getAllSquares(resourceInfo.at(amount.id).storageType);
   if (!destination.empty()) {
-    level->getSquare(chooseRandom(destination))->
+    getLevel()->getSquare(chooseRandom(destination))->
       dropItems(ItemFactory::fromId(resourceInfo.at(amount.id).itemId, amount.value));
   } else
     credit[amount.id] += amount.value;
@@ -1568,7 +1567,7 @@ int PlayerControl::getImpCost() const {
 
 class MinionController : public Player {
   public:
-  MinionController(Creature* c, Model* m, map<Level*, MapMemory>* memory) : Player(c, m, false, memory) {}
+  MinionController(Creature* c, Model* m, map<UniqueId, MapMemory>* memory) : Player(c, m, false, memory) {}
 
   virtual void onKilled(const Creature* attacker) override {
     if (model->getView()->yesOrNoPrompt("Would you like to see the last messages?"))
@@ -1610,11 +1609,11 @@ void PlayerControl::possess(const Creature* cr, View* view) {
 }
 
 bool PlayerControl::canBuildDoor(Vec2 pos) const {
-  if (!level->getSquare(pos)->canConstruct(SquareType::TRIBE_DOOR))
+  if (!getLevel()->getSquare(pos)->canConstruct(SquareType::TRIBE_DOOR))
     return false;
-  Rectangle innerRect = level->getBounds().minusMargin(1);
+  Rectangle innerRect = getLevel()->getBounds().minusMargin(1);
   auto wallFun = [=](Vec2 pos) {
-      return level->getSquare(pos)->canConstruct(SquareType::FLOOR) ||
+      return getLevel()->getSquare(pos)->canConstruct(SquareType::FLOOR) ||
           !pos.inRectangle(innerRect); };
   return !traps.count(pos) && pos.inRectangle(innerRect) && 
       ((wallFun(pos - Vec2(0, 1)) && wallFun(pos - Vec2(0, -1))) ||
@@ -1623,7 +1622,7 @@ bool PlayerControl::canBuildDoor(Vec2 pos) const {
 
 bool PlayerControl::canPlacePost(Vec2 pos) const {
   return !guardPosts.count(pos) && !traps.count(pos) &&
-      level->getSquare(pos)->canEnterEmpty(Creature::getDefault()) && knownPos(pos);
+      getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefault()) && knownPos(pos);
 }
   
 void PlayerControl::freeFromGuardPost(const Creature* c) {
@@ -1689,9 +1688,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInput::POSSESS: {
         Vec2 pos = input.getPosition();
-        if (!pos.inRectangle(level->getBounds()))
+        if (!pos.inRectangle(getLevel()->getBounds()))
           return;
-        if (Creature* c = level->getSquare(pos)->getCreature())
+        if (Creature* c = getLevel()->getSquare(pos)->getCreature())
           if (contains(minions, c))
             handleCreatureButton(c, view);
         break;
@@ -1731,7 +1730,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
 void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle) {
   if (building.techId && !hasTech(*building.techId))
     return;
-  if (!pos.inRectangle(level->getBounds()))
+  if (!pos.inRectangle(getLevel()->getBounds()))
     return;
   switch (building.buildType) {
     case BuildInfo::IMP:
@@ -1740,7 +1739,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribe(),
               MonsterAIFactory::collective(getCollective()));
           for (Vec2 v : pos.neighbors8(true))
-            if (v.inRectangle(level->getBounds()) && level->getSquare(v)->canEnter(imp.get()) 
+            if (v.inRectangle(getLevel()->getBounds()) && getLevel()->getSquare(v)->canEnter(imp.get()) 
                 && canSee(v)) {
               mana -= getImpCost();
               addCreature(std::move(imp), v, MinionType::IMP);
@@ -1761,10 +1760,10 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       break;
     case BuildInfo::DESTROY:
         selection = SELECT;
-        if (level->getSquare(pos)->canDestroy() && myTiles.count(pos))
-          level->getSquare(pos)->destroy();
-        level->getSquare(pos)->removeTriggers();
-        if (Creature* c = level->getSquare(pos)->getCreature())
+        if (getLevel()->getSquare(pos)->canDestroy() && myTiles.count(pos))
+          getLevel()->getSquare(pos)->destroy();
+        getLevel()->getSquare(pos)->removeTriggers();
+        if (Creature* c = getLevel()->getSquare(pos)->getCreature())
           if (c->getName() == "boulder")
             c->die(nullptr, false);
         if (traps.count(pos)) {
@@ -1792,11 +1791,11 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             selection = DESELECT;
           } else
             if (!taskMap.getMarked(pos) && selection != DESELECT) {
-              if (level->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
+              if (getLevel()->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
                 taskMap.markSquare(pos, Task::construction(this, pos, SquareType::TREE_TRUNK));
                 selection = SELECT;
               } else
-                if (level->getSquare(pos)->canConstruct(SquareType::FLOOR) || !knownPos(pos)) {
+                if (getLevel()->getSquare(pos)->canConstruct(SquareType::FLOOR) || !knownPos(pos)) {
                   taskMap.markSquare(pos, Task::construction(this, pos, SquareType::FLOOR));
                   selection = SELECT;
                 }
@@ -1820,10 +1819,10 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             }
           } else {
             BuildInfo::SquareInfo info = building.squareInfo;
-            if (knownPos(pos) && level->getSquare(pos)->canConstruct(info.type) && !traps.count(pos)
+            if (knownPos(pos) && getLevel()->getSquare(pos)->canConstruct(info.type) && !traps.count(pos)
                 && (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
               if (info.buildImmediatly) {
-                while (!level->getSquare(pos)->construct(info.type)) {}
+                while (!getLevel()->getSquare(pos)->construct(info.type)) {}
                 onConstructed(pos, info.type);
               } else {
                 if (info.type == SquareType::IMPALED_HEAD) {
@@ -1845,7 +1844,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
 
 bool PlayerControl::tryLockingDoor(Vec2 pos) {
   if (constructions.count(pos)) {
-    Square* square = level->getSquare(pos);
+    Square* square = getLevel()->getSquare(pos);
     if (square->canLock()) {
       if (selection != DESELECT && !square->isLocked()) {
         square->lock();
@@ -1869,10 +1868,10 @@ void PlayerControl::addKnownTile(Vec2 pos) {
     borderTiles.erase(pos);
     knownTiles[pos] = true;
     for (Vec2 v : pos.neighbors4())
-      if (level->inBounds(v) && !knownTiles[v])
+      if (getLevel()->inBounds(v) && !knownTiles[v])
         borderTiles.insert(v);
     if (Task* task = taskMap.getMarked(pos))
-      if (task->isImpossible(level))
+      if (task->isImpossible(getLevel()))
         taskMap.removeTask(task);
   }
 }
@@ -1900,11 +1899,11 @@ void PlayerControl::onConstructed(Vec2 pos, SquareType type) {
     constructions.at(pos).marked = 0;
     constructions.at(pos).task = -1;
   }
-  if (level->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinion()))
+  if (getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinion()))
     sectors->add(pos);
   else
     sectors->remove(pos);
-  if (level->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinionFlyer()))
+  if (getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinionFlyer()))
     flyingSectors->add(pos);
   else
     flyingSectors->remove(pos);
@@ -1940,7 +1939,7 @@ set<TrapType> PlayerControl::getNeededTraps() const {
 }
 
 void PlayerControl::onAppliedSquare(Vec2 pos) {
-  Creature* c = NOTNULL(level->getSquare(pos)->getCreature());
+  Creature* c = NOTNULL(getLevel()->getSquare(pos)->getCreature());
   double efficiency = getCollective()->getEfficiency(c);
   if (mySquares.at(SquareType::LIBRARY).count(pos)) {
     if (c == getKeeper())
@@ -1958,7 +1957,7 @@ void PlayerControl::onAppliedSquare(Vec2 pos) {
   }
   if (mySquares.at(SquareType::LABORATORY).count(pos))
     if (Random.rollD(30.0 / (getCollective()->getCraftingMultiplier() * getEfficiency(pos) * efficiency))) {
-      level->getSquare(pos)->dropItems(ItemFactory::laboratory(technologies).random());
+      getLevel()->getSquare(pos)->dropItems(ItemFactory::laboratory(technologies).random());
       Statistics::add(StatId::POTION_PRODUCED);
     }
   if (mySquares.at(SquareType::WORKSHOP).count(pos))
@@ -1974,7 +1973,7 @@ void PlayerControl::onAppliedSquare(Vec2 pos) {
         Statistics::add(StatId::WEAPON_PRODUCED);
       if (items[0]->getType() == ItemType::ARMOR)
         Statistics::add(StatId::ARMOR_PRODUCED);
-      level->getSquare(pos)->dropItems(std::move(items));
+      getLevel()->getSquare(pos)->dropItems(std::move(items));
     }
 }
 
@@ -2018,7 +2017,7 @@ ItemPredicate PlayerControl::unMarkedItems(ItemType type) const {
 }
 
 void PlayerControl::addToMemory(Vec2 pos) {
-  getMemory(level).update(pos, level->getSquare(pos)->getViewIndex(this));
+  getMemory(getLevel()).update(pos, getLevel()->getSquare(pos)->getViewIndex(this));
 }
 
 void PlayerControl::update(Creature* c) {
@@ -2038,14 +2037,14 @@ void PlayerControl::update(Creature* c) {
       }
     }
   }
-  if (!contains(getCreatures(), c) || c->getLevel() != level)
+  if (!contains(getCreatures(), c) || c->getLevel() != getLevel())
     return;
-  for (Vec2 pos : level->getVisibleTiles(c))
+  for (Vec2 pos : getLevel()->getVisibleTiles(c))
     addKnownTile(pos);
 }
 
 bool PlayerControl::isDownstairsVisible() const {
-  vector<Vec2> v = level->getLandingSquares(StairDirection::DOWN, StairKey::DWARF);
+  vector<Vec2> v = getLevel()->getLandingSquares(StairDirection::DOWN, StairKey::DWARF);
   return v.size() == 1 && knownPos(v[0]);
 }
 
@@ -2089,7 +2088,9 @@ double PlayerControl::getTime() const {
 void PlayerControl::delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime) {
   int infinity = 1000000;
   int radius = 10;
-  Table<int> dist(Rectangle::boundingBox(enemyPos).minusMargin(-radius).intersection(level->getBounds()), infinity);
+  Table<int> dist(Rectangle::boundingBox(enemyPos)
+      .minusMargin(-radius)
+      .intersection(getLevel()->getBounds()), infinity);
   queue<Vec2> q;
   for (Vec2 v : enemyPos) {
     dist[v] = 0;
@@ -2121,8 +2122,8 @@ void PlayerControl::addDeityServant(Deity* deity, Vec2 deityPos, Vec2 victimPos)
   PCreature creature = CreatureFactory::fromId(deity->getServant(), Tribe::get(TribeId::KILL_EVERYONE),
       MonsterAIFactory::singleTask(task));
   for (Vec2 v : concat({deityPos}, deityPos.neighbors8(true)))
-    if (level->getSquare(v)->canEnter(creature.get())) {
-      level->addCreature(v, std::move(creature));
+    if (getLevel()->getSquare(v)->canEnter(creature.get())) {
+      getLevel()->addCreature(v, std::move(creature));
       break;
     }
 }
@@ -2160,7 +2161,7 @@ void PlayerControl::tick(double time) {
   considerDeityFight();
   model->getView()->getJukebox()->update();
   if (retired) {
-    if (const Creature* c = level->getPlayer())
+    if (const Creature* c = getLevel()->getPlayer())
       if (Random.roll(30) && !myTiles.count(c->getPosition()))
         c->playerMessage("You sense horrible evil in the " + 
             getCardinalName((getKeeper()->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
@@ -2190,13 +2191,13 @@ void PlayerControl::tick(double time) {
   queue<Vec2> extendedQueue;
   vector<Vec2> enemyPos;
   for (Vec2 pos : myTiles) {
-    if (Creature* c = level->getSquare(pos)->getCreature()) {
+    if (Creature* c = getLevel()->getSquare(pos)->getCreature()) {
       if (c->getTribe() != getTribe())
         enemyPos.push_back(c->getPosition());
     }
     for (Vec2 v : pos.neighbors8())
-      if (v.inRectangle(level->getBounds()) && !myTiles.count(v) && !extendedTiles.count(v) 
-          && level->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
+      if (v.inRectangle(getLevel()->getBounds()) && !myTiles.count(v) && !extendedTiles.count(v) 
+          && getLevel()->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
         extendedTiles[v] = 1;
         extendedQueue.push(v);
       }
@@ -2210,12 +2211,12 @@ void PlayerControl::tick(double time) {
   while (!extendedQueue.empty()) {
     Vec2 pos = extendedQueue.front();
     extendedQueue.pop();
-    if (Creature* c = level->getSquare(pos)->getCreature())
+    if (Creature* c = getLevel()->getSquare(pos)->getCreature())
       if (c->getTribe() != getTribe())
         enemyPos.push_back(c->getPosition());
     for (Vec2 v : pos.neighbors8())
-      if (v.inRectangle(level->getBounds()) && !myTiles.count(v) && !extendedTiles.count(v) 
-          && level->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
+      if (v.inRectangle(getLevel()->getBounds()) && !myTiles.count(v) && !extendedTiles.count(v) 
+          && getLevel()->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
         int a = extendedTiles[v] = extendedTiles[pos] + 1;
         if (a < maxRadius)
           extendedQueue.push(v);
@@ -2228,7 +2229,7 @@ void PlayerControl::tick(double time) {
     alarmInfo.finishTime = -1000;
   bool allSurrender = !retired;
   for (Vec2 v : enemyPos)
-    if (!prisonerInfo.count(NOTNULL(level->getSquare(v)->getCreature()))) {
+    if (!prisonerInfo.count(NOTNULL(getLevel()->getSquare(v)->getCreature()))) {
       allSurrender = false;
       break;
     }
@@ -2238,7 +2239,7 @@ void PlayerControl::tick(double time) {
         Creature* c = elem.first;
         Vec2 pos = c->getPosition();
         if (myTiles.count(pos) && !c->isDead()) {
-          level->globalMessage(pos, c->getTheName() + " surrenders.");
+          getLevel()->globalMessage(pos, c->getTheName() + " surrenders.");
           c->die(nullptr, true, false);
           addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
                 MonsterAIFactory::collective(getCollective())), pos, MinionType::PRISONER);
@@ -2263,7 +2264,7 @@ void PlayerControl::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed)
   for (SquareType type : elem.destination)
     if (mySquares[type].count(pos))
       return;
-  vector<Item*> equipment = level->getSquare(pos)->getItems(elem.predicate);
+  vector<Item*> equipment = getLevel()->getSquare(pos)->getItems(elem.predicate);
   if (!equipment.empty()) {
     vector<Vec2> destination = getAllSquares(elem.destination);
     if (!destination.empty()) {
@@ -2317,7 +2318,7 @@ void PlayerControl::onChangeLevelEvent(const Creature* c, const Level* from, Vec
 static const int alarmTime = 100;
 
 void PlayerControl::onAlarmEvent(const Level* l, Vec2 pos) {
-  if (l == level) {
+  if (l == getLevel()) {
     alarmInfo.finishTime = getTime() + alarmTime;
     alarmInfo.position = pos;
     for (Creature* c : minions)
@@ -2459,7 +2460,7 @@ void PlayerControl::onKillCancelled(Creature* c) {
 MoveInfo PlayerControl::getMinionMove(Creature* c) {
   if (possessed && contains(team, c))
     return getPossessedMove(c);
-  if (c->getLevel() != level)
+  if (c->getLevel() != getLevel())
     return getBacktrackMove(c);
   if (!contains({MinionType::KEEPER, MinionType::PRISONER}, getMinionType(c)))
     if (MoveInfo alarmMove = getAlarmMove(c))
@@ -2478,7 +2479,7 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
     autoEquipment(c, Random.roll(10));
   if (c != getKeeper() || !underAttack())
     for (Vec2 v : getAllSquares(equipmentStorage))
-      for (Item* it : level->getSquare(v)->getItems([this, c] (const Item* it) {
+      for (Item* it : getLevel()->getSquare(v)->getItems([this, c] (const Item* it) {
             return minionEquipment.getOwner(it) == c; })) {
         PTask t;
         if (c->equip(it))
@@ -2532,7 +2533,7 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
 
 bool PlayerControl::underAttack() const {
   for (Vec2 v : myTiles)
-    if (const Creature* c = level->getSquare(v)->getCreature())
+    if (const Creature* c = getLevel()->getSquare(v)->getCreature())
       if (c->getTribe() != getTribe())
         return true;
   return false;
@@ -2565,7 +2566,7 @@ MoveInfo PlayerControl::getMove(Creature* c) {
     CHECK(contains(minions, c));
     return getMinionMove(c);
   }
-  if (c->getLevel() != level)
+  if (c->getLevel() != getLevel())
     return NoMove;
   if (startImpNum == -1)
     startImpNum = minionByType[MinionType::IMP].size();
@@ -2655,7 +2656,7 @@ Creature* PlayerControl::addCreature(PCreature creature, Vec2 v, MinionType type
   creature->getEquipment().removeAllItems();
   addCreature(creature.get(), type);
   Creature* ret = creature.get();
-  level->addCreature(v, std::move(creature));
+  getLevel()->addCreature(v, std::move(creature));
   return ret;
 }
 
@@ -2690,6 +2691,7 @@ class KeeperControlOverride : public Creature::MoraleOverride {
 };
 
 void PlayerControl::addCreature(Creature* c, MinionType type) {
+  getCollective()->addCreature(c);
   if (!getKeeper()) {
     getCollective()->setLeader(c);
     type = MinionType::KEEPER;
@@ -2697,20 +2699,19 @@ void PlayerControl::addCreature(Creature* c, MinionType type) {
     bool seeTerrain = Options::getValue(OptionId::SHOW_MAP); 
     Vec2 radius = seeTerrain ? Vec2(400, 400) : Vec2(30, 30);
     auto pred = [&](Vec2 pos) {
-      return level->getSquare(pos)->canEnterEmpty(Creature::getDefault())
-            || (seeTerrain && level->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinionFlyer()));
+      return getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefault())
+            || (seeTerrain && getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinionFlyer()));
     };
     for (Vec2 pos : Rectangle(c->getPosition() - radius, c->getPosition() + radius))
-      if (pos.distD(c->getPosition()) <= radius.x && pos.inRectangle(level->getBounds()) && pred(pos))
+      if (pos.distD(c->getPosition()) <= radius.x && pos.inRectangle(getLevel()->getBounds()) && pred(pos))
         for (Vec2 v : concat({pos}, pos.neighbors8()))
-          if (v.inRectangle(level->getBounds()))
+          if (v.inRectangle(getLevel()->getBounds()))
             addKnownTile(v);
   }
   if (!c->isAffected(LastingEffect::FLYING))
     c->addSectors(sectors.get());
   else
     c->addSectors(flyingSectors.get());
-  getCollective()->addCreature(c);
   minionByType[type].push_back(c);
   if (!contains({MinionType::IMP}, type)) {
     minions.push_back(c);
@@ -2729,7 +2730,7 @@ void PlayerControl::addCreature(Creature* c, MinionType type) {
 
 // actually only called when square is destroyed
 void PlayerControl::onSquareReplacedEvent(const Level* l, Vec2 pos) {
-  if (l == level) {
+  if (l == getLevel()) {
     for (auto& elem : mySquares)
       if (elem.second.count(pos)) {
         elem.second.erase(pos);
@@ -2748,7 +2749,7 @@ void PlayerControl::onSquareReplacedEvent(const Level* l, Vec2 pos) {
 }
 
 void PlayerControl::onTriggerEvent(const Level* l, Vec2 pos) {
-  if (traps.count(pos) && l == level) {
+  if (traps.count(pos) && l == getLevel()) {
     traps.at(pos).armed = false;
     if (traps.at(pos).type == TrapType::SURPRISE)
       handleSurprise(pos);
@@ -2758,16 +2759,16 @@ void PlayerControl::onTriggerEvent(const Level* l, Vec2 pos) {
 void PlayerControl::handleSurprise(Vec2 pos) {
   Vec2 rad(8, 8);
   bool wasMsg = false;
-  Creature* c = NOTNULL(level->getSquare(pos)->getCreature());
+  Creature* c = NOTNULL(getLevel()->getSquare(pos)->getCreature());
   for (Vec2 v : randomPermutation(Rectangle(pos - rad, pos + rad).getAllSquares()))
-    if (level->inBounds(v))
-      if (Creature* other = level->getSquare(v)->getCreature())
+    if (getLevel()->inBounds(v))
+      if (Creature* other = getLevel()->getSquare(v)->getCreature())
         if (contains(minions, other)
             && !contains({MinionType::IMP, MinionType::KEEPER, MinionType::PRISONER}, getMinionType(other))
             && v.dist8(pos) > 1) {
           for (Vec2 dest : pos.neighbors8(true))
-            if (level->canMoveCreature(other, dest - v)) {
-              level->moveCreature(other, dest - v);
+            if (getLevel()->canMoveCreature(other, dest - v)) {
+              getLevel()->moveCreature(other, dest - v);
               other->playerMessage("Surprise!");
               if (!wasMsg) {
                 c->playerMessage("Surprise!");
@@ -2837,8 +2838,8 @@ void PlayerControl::onKillEvent(const Creature* victim, const Creature* killer) 
   }
 }
   
-const Level* PlayerControl::getLevel() const {
-  return level;
+const Level* PlayerControl::getViewLevel() const {
+  return getLevel();
 }
 
 bool PlayerControl::hasEfficiency(Vec2 pos) const {
@@ -2850,7 +2851,7 @@ const double flattenVal = 0.9;
 
 double PlayerControl::getEfficiency(Vec2 pos) const {
   double base = squareEfficiency.at(pos) == 8 ? 1 : 0.5;
-  return base * min(1.0, (lightBase + level->getLight(pos) * (1 - lightBase)) / flattenVal);
+  return base * min(1.0, (lightBase + getLevel()->getLight(pos) * (1 - lightBase)) / flattenVal);
 }
 
 const double sizeBase = 0.5;
@@ -2877,7 +2878,7 @@ void PlayerControl::updateEfficiency(Vec2 pos, SquareType type) {
 
 void PlayerControl::uncoverRandomLocation() {
   const Location* location = nullptr;
-  for (auto loc : randomPermutation(level->getAllLocations()))
+  for (auto loc : randomPermutation(getLevel()->getAllLocations()))
     if (!knownPos(loc->getBounds().middle())) {
       location = loc;
       break;
@@ -2885,7 +2886,7 @@ void PlayerControl::uncoverRandomLocation() {
   double radius = 8.5;
   if (location)
     for (Vec2 v : location->getBounds().middle().circle(radius))
-      if (level->inBounds(v))
+      if (getLevel()->inBounds(v))
         addKnownTile(v);
 }
 

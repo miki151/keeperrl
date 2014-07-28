@@ -75,7 +75,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   MoveInfo getMove(Creature* c);
   void addCreature(Creature* c);
 
-  virtual const Level* getLevel() const;
+  virtual const Level* getViewLevel() const;
 
   virtual void onConstructed(Vec2 pos, SquareType) override;
   virtual void onBrought(Vec2 pos, vector<Item*> items) override;
@@ -89,7 +89,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool isRetired() const;
   const Creature* getKeeper() const;
   Creature* getKeeper();
-  double getWarLevel() const;
+  virtual double getWarLevel() const override;
 
   void render(View*);
 
@@ -370,8 +370,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   double getEfficiency(Vec2) const;
   bool hasEfficiency(Vec2) const;
   set<Vec2> SERIAL(myTiles);
-  Level* SERIAL(level);
-  mutable unique_ptr<map<Level*, MapMemory>> SERIAL(memory);
+  mutable unique_ptr<map<UniqueId, MapMemory>> SERIAL(memory);
   Table<bool> SERIAL(knownTiles);
   set<Vec2> SERIAL(borderTiles);
   bool SERIAL2(gatheringTeam, false);

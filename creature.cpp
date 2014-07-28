@@ -393,11 +393,15 @@ Item* Creature::getAmmo() const {
   return nullptr;
 }
 
-const Level* Creature::getLevel() const {
+const Level* Creature::getViewLevel() const {
   return level;
 }
 
 Level* Creature::getLevel() {
+  return level;
+}
+
+const Level* Creature::getLevel() const {
   return level;
 }
 

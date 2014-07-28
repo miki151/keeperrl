@@ -21,6 +21,7 @@
 #include "field_of_view.h"
 #include "square_factory.h"
 #include "vision.h"
+#include "unique_entity.h"
 
 class Model;
 class Square;
@@ -30,7 +31,7 @@ class Location;
 class Attack;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
-class Level {
+class Level : public UniqueEntity {
   public:
 
   static Rectangle getMaxBounds();

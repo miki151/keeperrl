@@ -50,7 +50,7 @@ SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(Creature* c, Model* m, bool adventure, map<Level*, MapMemory>* memory) :
+Player::Player(Creature* c, Model* m, bool adventure, map<UniqueId, MapMemory>* memory) :
     Controller(c), levelMemory(memory), model(m), displayGreeting(adventure), adventureMode(adventure) {
 }
 
@@ -71,7 +71,8 @@ void Player::onThrowEvent(const Creature* thrower, const Item* item, const vecto
 
 void Player::learnLocation(const Location* loc) {
   for (Vec2 v : loc->getBounds())
-    (*levelMemory)[creature->getLevel()].addObject(v, creature->getLevel()->getSquare(v)->getViewObject());
+    (*levelMemory)[creature->getLevel()->getUniqueId()]
+        .addObject(v, creature->getLevel()->getSquare(v)->getViewObject());
 }
 
 void Player::onExplosionEvent(const Level* level, Vec2 pos) {
@@ -89,7 +90,7 @@ void Player::onAlarmEvent(const Level* l, Vec2 pos) {
         getCardinalName((pos - creature->getPosition()).getBearing().getCardinalDir()));
 }
 
-ControllerFactory Player::getFactory(Model *m, map<Level*, MapMemory>* levelMemory) {
+ControllerFactory Player::getFactory(Model *m, map<UniqueId, MapMemory>* levelMemory) {
   return ControllerFactory([=](Creature* c) { return new Player(c, m, true, levelMemory);});
 }
 
@@ -560,7 +561,7 @@ void Player::spellAction() {
 }
 
 const MapMemory& Player::getMemory() const {
-  return (*levelMemory)[creature->getLevel()];
+  return (*levelMemory)[creature->getLevel()->getUniqueId()];
 }
 
 void Player::sleeping() {
@@ -707,7 +708,8 @@ void Player::makeMove() {
     }
   }
   for (Vec2 pos : creature->getLevel()->getVisibleTiles(creature)) {
-    (*levelMemory)[creature->getLevel()].update(pos, creature->getLevel()->getSquare(pos)->getViewIndex(creature));
+    (*levelMemory)[creature->getLevel()->getUniqueId()]
+        .update(pos, creature->getLevel()->getSquare(pos)->getViewIndex(creature));
   }
 }
 
@@ -807,7 +809,7 @@ void Player::onFellAsleep() {
 
 class PossessedController : public Player {
   public:
-  PossessedController(Creature* c, Creature* _owner, Model* m, map<Level*, MapMemory>* memory, bool ghost)
+  PossessedController(Creature* c, Creature* _owner, Model* m, map<UniqueId, MapMemory>* memory, bool ghost)
     : Player(c, m, false, memory), owner(_owner), isGhost(ghost) {}
 
   void onKilled(const Creature* attacker) override {

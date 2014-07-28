@@ -69,7 +69,7 @@ void genTiles() {
   addTile(DESTROY_BUTTON, symbol("X", RED));
   addTile(EMPTY, empty());
   addTile(BORDER_GUARD, empty());
-  addTile(VAMPIRE, sprite("vampire3"));
+  addTile(VAMPIRE, sprite("vampire"));
   addTile(FALLEN_TREE, sprite("treecut").setNoShadow());
   addTile(DECID_TREE, sprite("tree2").setNoShadow());
   addTile(CANIF_TREE, sprite("tree3").setNoShadow());
@@ -160,7 +160,7 @@ void genTiles() {
   addTile(ANGEL, sprite("angel"));
   addTile(ZOMBIE, sprite(0, 16));
   addTile(SKELETON, sprite("skeleton"));
-  addTile(VAMPIRE_LORD, sprite(13, 16));
+  addTile(VAMPIRE_LORD, sprite("vampirelord"));
   addTile(MUMMY, sprite(7, 16));
   addTile(MUMMY_LORD, sprite(8, 16));
   addTile(ACID_MOUND, sprite(1, 12));

@@ -29,7 +29,7 @@ class Creature;
 
 class Player : public Controller, public EventListener {
   public:
-  Player(Creature*, Model*, bool adventureMode, map<Level*, MapMemory>* levelMemory);
+  Player(Creature*, Model*, bool adventureMode, map<UniqueId, MapMemory>* levelMemory);
   virtual ~Player();
   virtual void grantIdentify(int numItems) override;
 
@@ -53,7 +53,7 @@ class Player : public Controller, public EventListener {
 
   virtual void onBump(Creature*);
 
-  static ControllerFactory getFactory(Model*, map<Level*, MapMemory>* levelMemory);
+  static ControllerFactory getFactory(Model*, map<UniqueId, MapMemory>* levelMemory);
   
   virtual Controller* getPossessedController(Creature* c) override;
 
@@ -71,7 +71,7 @@ class Player : public Controller, public EventListener {
   protected:
   virtual void moveAction(Vec2 direction);
 
-  map<Level*, MapMemory>* SERIAL(levelMemory);
+  map<UniqueId, MapMemory>* SERIAL(levelMemory);
   Model* SERIAL(model);
 
   private:

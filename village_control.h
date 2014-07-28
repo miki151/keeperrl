@@ -22,7 +22,6 @@
 #include "collective_control.h"
 
 class Tribe;
-class PlayerControl;
 
 struct VillageControlInfo {
   enum Id { PEACEFUL, POWER_BASED, POWER_BASED_DISCOVER, FINAL_ATTACK, DRAGON } id;
@@ -32,7 +31,7 @@ struct VillageControlInfo {
 
 class VillageControl : public EventListener, public Task::Callback, public CollectiveControl {
   public:
-  VillageControl(Collective*, PlayerControl* villain, const Location*);
+  VillageControl(Collective*, Collective* villain, const Location*);
   virtual ~VillageControl();
 
   bool isConquered() const;
@@ -49,8 +48,8 @@ class VillageControl : public EventListener, public Task::Callback, public Colle
   void setFinalTrigger(vector<VillageControl*> otherControls);
   void setOnFirstContact();
 
-  static PVillageControl get(VillageControlInfo, Collective*, PlayerControl* villain, const Location* location);
-  static PVillageControl getFinalAttack(Collective*, PlayerControl* villain, const Location* location,
+  static PVillageControl get(VillageControlInfo, Collective*, Collective* villain, const Location* location);
+  static PVillageControl getFinalAttack(Collective*, Collective* villain, const Location* location,
       vector<VillageControl*> otherControls);
 
   SERIALIZATION_DECL(VillageControl);
@@ -59,14 +58,14 @@ class VillageControl : public EventListener, public Task::Callback, public Colle
   static void registerTypes(Archive& ar);
 
   const string& getName() const;
-  const PlayerControl* getVillain() const;
+  const Collective* getVillain() const;
 
   Tribe* getTribe();
   const Tribe* getTribe() const;
 
   protected:
-  VillageControl(PlayerControl* villain, const Location*);
-  PlayerControl* SERIAL2(villain, nullptr);
+  VillageControl(Collective* villain, const Location*);
+  Collective* SERIAL2(villain, nullptr);
   const Location* SERIAL2(location, nullptr);
   string SERIAL(name);
   bool SERIAL2(atWar, false);

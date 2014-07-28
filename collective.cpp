@@ -4,6 +4,8 @@
 #include "creature.h"
 #include "pantheon.h"
 #include "effect.h"
+#include "level.h"
+#include "square.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -12,7 +14,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(taskMap)
     & SVAR(tribe)
     & SVAR(control)
-    & SVAR(deityStanding);
+    & SVAR(deityStanding)
+    & SVAR(level);
   CHECK_SERIAL;
 }
 
@@ -27,6 +30,8 @@ Collective::~Collective() {
 void Collective::addCreature(Creature* c) {
   if (!tribe)
     tribe = c->getTribe();
+  if (!level)
+    level = c->getLevel();
   creatures.push_back(c);
 }
 
@@ -40,6 +45,14 @@ const Creature* Collective::getLeader() const {
 
 Creature* Collective::getLeader() {
   return leader;
+}
+
+Level* Collective::getLevel() {
+  return NOTNULL(level);
+}
+
+const Level* Collective::getLevel() const {
+  return NOTNULL(level);
 }
 
 void Collective::setLeader(Creature* c) {
@@ -56,6 +69,10 @@ Tribe* Collective::getTribe() {
 
 const vector<Creature*>& Collective::getCreatures() const {
   return creatures;
+}
+
+double Collective::getWarLevel() const {
+  return control->getWarLevel();
 }
 
 MoveInfo Collective::getMove(Creature* c) {

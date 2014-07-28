@@ -378,7 +378,7 @@ Model* Model::heroModel(View* view) {
 }
 
 PCreature Model::makePlayer() {
-  map<Level*, MapMemory>* levelMemory = new map<Level*, MapMemory>();
+  map<UniqueId, MapMemory>* levelMemory = new map<UniqueId, MapMemory>();
   PCreature player = CreatureFactory::addInventory(
       PCreature(new Creature(Tribe::get(TribeId::PLAYER),
       CATTR(
@@ -578,10 +578,10 @@ Model* Model::collectiveModel(View* view) {
     Collective* collective = enemyInfo[i].settlement.collective;
     PVillageControl control;
     if (enemyInfo[i].controlInfo.id != VillageControlInfo::FINAL_ATTACK)
-      control = VillageControl::get(enemyInfo[i].controlInfo, collective, m->playerControl,
+      control = VillageControl::get(enemyInfo[i].controlInfo, collective, keeperCollective,
           enemyInfo[i].settlement.location);
     else
-      control = VillageControl::getFinalAttack(collective, m->playerControl, enemyInfo[i].settlement.location,
+      control = VillageControl::getFinalAttack(collective, keeperCollective, enemyInfo[i].settlement.location,
           m->villageControls);
     m->villageControls.push_back(control.get());
     enemyInfo[i].settlement.collective->setControl(std::move(control));

@@ -17,7 +17,6 @@
 
 #include "village_control.h"
 #include "message_buffer.h"
-#include "player_control.h"
 #include "square.h"
 #include "level.h"
 #include "name_generator.h"
@@ -39,7 +38,7 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(VillageControl);
 
 
-VillageControl::VillageControl(Collective* col, PlayerControl* c, const Location* loc)
+VillageControl::VillageControl(Collective* col, Collective* c, const Location* loc)
     : CollectiveControl(col), villain(c), location(loc), name(loc->hasName() ? loc->getName() : "") {
   CHECK(!getCreatures().empty());
 }
@@ -53,7 +52,7 @@ const string& VillageControl::getName() const {
   return name;
 }
 
-const PlayerControl* VillageControl::getVillain() const {
+const Collective* VillageControl::getVillain() const {
   return villain;
 }
 
@@ -261,7 +260,7 @@ class FirstContact : public AttackTrigger, public EventListener {
 
   virtual void onCombatEvent(const Creature* c) override {
     if (contains(control->getCreatures(), NOTNULL(c)))
-      madeContact = c->getTime() + 50;
+      madeContact = min(madeContact, c->getTime() + 50);
   }
 
   SERIALIZATION_CONSTRUCTOR(FirstContact);
@@ -330,7 +329,7 @@ class FinalTrigger : public AttackTriggerSet {
 
 class PeacefulControl : public VillageControl {
   public:
-  PeacefulControl(Collective* col, PlayerControl* villain, const Location* loc)
+  PeacefulControl(Collective* col, Collective* villain, const Location* loc)
     : VillageControl(col, villain, loc) {
     for (Vec2 v : location->getBounds())
       if (loc->getLevel()->getSquare(v)->getApplyType(Creature::getDefault()) == SquareApplyType::SLEEP)
@@ -369,22 +368,14 @@ class PeacefulControl : public VillageControl {
 
 class TopLevelVillageControl : public PeacefulControl {
   public:
-  TopLevelVillageControl(Collective* col, PlayerControl* villain, const Location* location)
+  TopLevelVillageControl(Collective* col, Collective* villain, const Location* location)
       : PeacefulControl(col, villain, location) {}
 
-  virtual MoveInfo getMove(Creature* c) override {
-    if (!attackTrigger->startedAttack(c))
-      return PeacefulControl::getMove(c);
-    if (c->getLevel() != villain->getLevel())
-      return NoMove;
-    if (auto action = c->moveTowards(villain->getKeeper()->getPosition())) 
-      return action;
-    else {
-      for (Vec2 v : Vec2::directions8(true))
-        if (auto action = c->destroy(v, Creature::BASH))
-          return action;
-      return c->wait();
-    }
+  virtual PTask getNewTask(Creature* c) override {
+    if (attackTrigger->startedAttack(c))
+      return Task::attackCollective(this, villain);
+    else
+      return PeacefulControl::getNewTask(c);
   }
 
   virtual void tick(double time) override {
@@ -431,7 +422,7 @@ namespace {
 
 class DragonControl : public VillageControl {
   public:
-  DragonControl(Collective* col, PlayerControl* villain, const Location* location)
+  DragonControl(Collective* col, Collective* villain, const Location* location)
       : VillageControl(col, villain, location) {}
 
   const int waitTurns = 1500;
@@ -448,7 +439,7 @@ class DragonControl : public VillageControl {
     if (pleased < -5) {
       Debug() << "Village dragon attacking " << pleased;
       getTribe()->addEnemy(villain->getTribe());
-      if (auto action = c->moveTowards(villain->getKeeper()->getPosition())) 
+      if (auto action = c->moveTowards(villain->getLeader()->getPosition())) 
         return action;
     }
     else {
@@ -496,7 +487,7 @@ class DragonControl : public VillageControl {
 
 }
 
-PVillageControl VillageControl::get(VillageControlInfo info, Collective* col, PlayerControl* villain,
+PVillageControl VillageControl::get(VillageControlInfo info, Collective* col, Collective* villain,
     const Location* location) {
   switch (info.id) {
     case VillageControlInfo::DRAGON: return PVillageControl(new DragonControl(col, villain, location));
@@ -513,7 +504,7 @@ PVillageControl VillageControl::get(VillageControlInfo info, Collective* col, Pl
   }
 }
 
-PVillageControl VillageControl::getFinalAttack(Collective* col, PlayerControl* villain, const Location* location,
+PVillageControl VillageControl::getFinalAttack(Collective* col, Collective* villain, const Location* location,
       vector<VillageControl*> otherControls) {
   TopLevelVillageControl* ret = new TopLevelVillageControl(col, villain, location);
   ret->setFinalTrigger(otherControls);

@@ -14,6 +14,9 @@ class CollectiveControl {
   virtual PTask getNewTask(Creature*);
   virtual void tick(double time) = 0;
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer);
+  virtual double getWarLevel() const;
+  Level* getLevel();
+  const Level* getLevel() const;
 
   SERIALIZATION_DECL(CollectiveControl);
 
