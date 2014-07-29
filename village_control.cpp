@@ -438,6 +438,12 @@ class DragonControl : public VillageControl {
       getTribe()->addFriend(villain->getTribe());
     if (pleased < -5) {
       Debug() << "Village dragon attacking " << pleased;
+      if (firstAttackMsg) {
+        firstAttackMsg = false;
+        messageBuffer.addImportantMessage(c->getName() + " the " + c->getSpeciesName() + " is very "
+            "angry (or hungry?) and is going to pay you a visit. Feed him some weak minions and maybe he'll go away. "
+            "Building a shrine to keep him happy might be a good idea in the future.");
+      }
       getTribe()->addEnemy(villain->getTribe());
       if (auto action = c->moveTowards(villain->getLeader()->getPosition())) 
         return action;
@@ -479,11 +485,13 @@ class DragonControl : public VillageControl {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(VillageControl)
+      & SVAR(firstAttackMsg)
       & SVAR(pleased);
   }
 
   private:
   double SERIAL2(pleased, 0);
+  bool SERIAL2(firstAttackMsg, true);
 };
 
 }
