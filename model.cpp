@@ -484,21 +484,40 @@ static EnemyInfo getVault(SettlementType type, CreatureId id, Tribe* tribe, int 
   return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, controlInfo);
 }
 
+struct FriendlyVault {
+  CreatureId id;
+  int min;
+  int max;
+};
+
+static vector<FriendlyVault> friendlyVaults {
+  {CreatureId::SPECIAL_HUMANOID, 1, 2},
+  {CreatureId::GOBLIN, 3, 8},
+  {CreatureId::CAVE_BEAR, 2, 5},
+  {CreatureId::OGRE, 2, 5},
+  {CreatureId::IRON_GOLEM, 2, 5},
+  {CreatureId::VAMPIRE, 2, 5},
+};
+
 static vector<EnemyInfo> getVaults() {
-  return {
+  vector<EnemyInfo> ret {
     getVault(SettlementType::CAVE, chooseRandom({CreatureId::RED_DRAGON, CreatureId::GREEN_DRAGON}),
         Tribe::get(TribeId::DRAGON), 1, ItemFactory::dragonCave(), {VillageControlInfo::DRAGON}),
  /*   getVault(SettlementType::CAVE, CreatureId::GREEN_DRAGON, Tribe::get(TribeId::DRAGON), 1,
         ItemFactory::dragonCave(), {VillageControlInfo::DRAGON}),*/
-    getVault(SettlementType::VAULT, CreatureFactory::insects(Tribe::get(TribeId::DRAGON)),
+    getVault(SettlementType::VAULT, CreatureFactory::insects(Tribe::get(TribeId::MONSTER)),
         Tribe::get(TribeId::DRAGON), Random.getRandom(6, 12), Nothing(), {VillageControlInfo::PEACEFUL}),
-    getVault(SettlementType::VAULT, CreatureId::SPECIAL_HUMANOID, Tribe::get(TribeId::KEEPER), 1, Nothing(),
-        {VillageControlInfo::PEACEFUL}),
     getVault(SettlementType::VAULT, CreatureId::GOBLIN, Tribe::get(TribeId::KEEPER), Random.getRandom(3, 8),
         Nothing(), {VillageControlInfo::PEACEFUL}),
     getVault(SettlementType::VAULT, CreatureId::RAT, Tribe::get(TribeId::MONSTER), Random.getRandom(3, 8),
         ItemFactory::armory(), {VillageControlInfo::PEACEFUL})
   };
+  for (int i : Range(Random.getRandom(1, 3))) {
+    FriendlyVault v = chooseRandom(friendlyVaults);
+    ret.push_back(getVault(SettlementType::VAULT, v.id, Tribe::get(TribeId::KEEPER), Random.getRandom(v.min, v.max),
+          Nothing(), {VillageControlInfo::PEACEFUL}));
+  }
+  return ret;
 }
 
 static double getKilledCoeff() {
