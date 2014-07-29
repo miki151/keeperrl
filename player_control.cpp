@@ -203,7 +203,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level) {
-  const CostInfo altarCost {ResourceId::STONE, 100};
+  const CostInfo altarCost {ResourceId::STONE, 30};
   vector<BuildInfo> buildInfo {
     BuildInfo(BuildInfo::DIG, "", 'd'),
     BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, Nothing(), "", 's', "Storage"),
@@ -2909,6 +2909,8 @@ void PlayerControl::uncoverRandomLocation() {
 }
 
 void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
+  if (type == WorshipType::DESTROY_ALTAR)
+    return;
   if (!contains(getCreatures(), who))
     return;
   for (EpithetId id : to->getEpithets())

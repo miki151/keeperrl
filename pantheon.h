@@ -54,6 +54,7 @@ RICH_ENUM(EpithetId,
 enum class WorshipType {
   PRAYER,
   SACRIFICE,
+  DESTROY_ALTAR,
 };
 
 class Epithet : public Singleton<Epithet, EpithetId> {

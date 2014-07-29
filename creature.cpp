@@ -1293,6 +1293,7 @@ bool Creature::isCritical(BodyPart part) const {
 bool Creature::takeDamage(const Attack& attack) {
   if (isAffected(LastingEffect::SLEEP))
     removeEffect(LastingEffect::SLEEP);
+  AttackType attackType = attack.getType();
   Creature* other = const_cast<Creature*>(attack.getAttacker());
   if (other)
     if (!contains(privateEnemies, other) && other->getTribe() != tribe)
@@ -1304,10 +1305,13 @@ bool Creature::takeDamage(const Attack& attack) {
     other->lastAttacker = this;
   }
   if (attack.getStrength() > defense) {
-    if (attack.getType() == AttackType::EAT && isLarger(*other->size, *size) && Random.roll(3)) {
-      you(MsgType::ARE, "devoured by " + other->getName());
-      die(other, false, false);
-      return true;
+    if (attackType == AttackType::EAT) {
+      if (isLarger(*other->size, *size) && Random.roll(3)) {
+        you(MsgType::ARE, "devoured by " + other->getName());
+        die(other, false, false);
+        return true;
+      } else
+        attackType = AttackType::BITE;
     }
     lastAttacker = attack.getAttacker();
     double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
@@ -1315,11 +1319,11 @@ bool Creature::takeDamage(const Attack& attack) {
     if (!isNotLiving())
       bleed(dam);
     if (!uncorporal) {
-      if (attack.getType() != AttackType::SPELL) {
+      if (attackType != AttackType::SPELL) {
         BodyPart part = attack.inTheBack() ? BodyPart::BACK : getBodyPart(attack.getLevel());
         if (dam >= getMinDamage(part) && numGood(part) > 0) {
-          youHit(part, attack.getType()); 
-          injureBodyPart(part, attack.getType() == AttackType::CUT || attack.getType() == AttackType::BITE);
+          youHit(part, attackType); 
+          injureBodyPart(part, contains({AttackType::CUT, AttackType::BITE}, attackType));
           if (isCritical(part)) {
             you(MsgType::DIE, "");
             die(attack.getAttacker());
@@ -1352,7 +1356,7 @@ bool Creature::takeDamage(const Attack& attack) {
     if (auto effect = attack.getEffect())
       Effect::applyToCreature(this, *effect, EffectStrength::NORMAL);
   } else {
-    you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.getType()));
+    you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attackType));
     if (attack.getEffect() && attack.getAttacker()->harmlessApply)
       Effect::applyToCreature(this, *attack.getEffect(), EffectStrength::NORMAL);
   }
@@ -1717,7 +1721,7 @@ CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) {
           monsterMessage(getTheName() + " destroys the " + getSquare(direction)->getName(), "You hear a crash");
           break;
       }
-      getSquare(direction)->destroy(this);
+      getSquare(direction)->destroyBy(this);
       spendTime(1);
     });
   else

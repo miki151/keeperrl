@@ -428,10 +428,10 @@ class TribeDoor : public Door {
   TribeDoor(const ViewObject& object, int destStrength) : Door(object), destructionStrength(destStrength) {
   }
 
-  virtual void destroy(const Creature* c) override {
+  virtual void destroyBy(Creature* c) override {
     destructionStrength -= c->getAttr(AttrType::STRENGTH);
     if (destructionStrength <= 0) {
-      Door::destroy(c);
+      Door::destroyBy(c);
     }
   }
 
@@ -482,10 +482,10 @@ class Barricade : public SolidSquare {
     destructionStrength(destStrength) {
   }
 
-  virtual void destroy(const Creature* c) override {
+  virtual void destroyBy(Creature* c) override {
     destructionStrength -= c->getAttr(AttrType::STRENGTH);
     if (destructionStrength <= 0) {
-      SolidSquare::destroy(c);
+      SolidSquare::destroyBy(c);
     }
   }
 
@@ -693,6 +693,11 @@ class DeityAltar : public Altar {
     return deity->getName();
   }
 
+  virtual void destroyBy(Creature* c) override {
+    EventListener::addWorshipEvent(c, deity, WorshipType::DESTROY_ALTAR);
+    Altar::destroyBy(c);
+  }
+
   virtual void onPrayer(Creature* c) override {
     EventListener::addWorshipEvent(c, deity, WorshipType::PRAYER);
   }
@@ -725,6 +730,11 @@ class CreatureAltar : public Altar {
       c->playerMessage("This is a shrine to " + creature->getName());
       c->playerMessage(creature->getDescription());
     }
+  }
+
+  virtual void destroyBy(Creature* c) override {
+    EventListener::addWorshipCreatureEvent(c, creature, WorshipType::DESTROY_ALTAR);
+    Altar::destroyBy(c);
   }
 
   virtual string getName() override {

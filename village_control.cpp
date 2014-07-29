@@ -470,6 +470,7 @@ class DragonControl : public VillageControl {
       switch (type) {
         case WorshipType::PRAYER: pleased += 0.01;
         case WorshipType::SACRIFICE: pleased += 1;
+        case WorshipType::DESTROY_ALTAR: pleased = -10;
       }
   }
 
