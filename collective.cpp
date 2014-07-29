@@ -217,8 +217,8 @@ void Collective::onEpithetWorship(Creature* who, WorshipType type, EpithetId id)
 void Collective::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
   double increase;
   switch (type) {
-    case WorshipType::PRAYER: increase = 1.0 / 4000; break;
-    case WorshipType::SACRIFICE: increase = 1.0 / 20; break;
+    case WorshipType::PRAYER: increase = 1.0 / 2000; break;
+    case WorshipType::SACRIFICE: increase = 1.0 / 5; break;
     case WorshipType::DESTROY_ALTAR: deityStanding[to] = -1; return;
   }
   deityStanding[to] = min(1.0, deityStanding[to] + increase);

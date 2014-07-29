@@ -625,13 +625,15 @@ PGuiElem WindowView::drawBuildings(GameInfo::BandInfo& info) {
       legendLineHeight, 0);
 }
 
-static PGuiElem getStandingGui(GameInfo::BandInfo::Deity::Standing s) {
-  switch (s) {
-    case GameInfo::BandInfo::Deity::GOOD: return GuiElem::label("good", colors[ColorId::GREEN]);
-    case GameInfo::BandInfo::Deity::NEUTRAL: return GuiElem::label("neutral", colors[ColorId::WHITE]);
-    case GameInfo::BandInfo::Deity::BAD: return GuiElem::label("bad", colors[ColorId::RED]);
-  }
-  return nullptr;
+static PGuiElem getStandingGui(double standing) {
+  sf::Color color = standing >= 0 ? sf::Color((1. - standing) * 255, 255, (1. - standing) * 255)
+      : sf::Color(255, (1. + standing) * 255, (1. + standing) * 255);
+  if (standing < -0.33)
+    return GuiElem::label("bad", color);
+  if (standing < 0.33)
+    return GuiElem::label("neutral", color);
+  else
+    return GuiElem::label("good", color);
 }
 
 PGuiElem WindowView::drawDeities(GameInfo::BandInfo& info) {

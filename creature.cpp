@@ -1291,8 +1291,6 @@ bool Creature::isCritical(BodyPart part) const {
 }
 
 bool Creature::takeDamage(const Attack& attack) {
-  if (isAffected(LastingEffect::SLEEP))
-    removeEffect(LastingEffect::SLEEP);
   AttackType attackType = attack.getType();
   Creature* other = const_cast<Creature*>(attack.getAttacker());
   if (other)
@@ -1360,7 +1358,8 @@ bool Creature::takeDamage(const Attack& attack) {
     if (attack.getEffect() && attack.getAttacker()->harmlessApply)
       Effect::applyToCreature(this, *attack.getEffect(), EffectStrength::NORMAL);
   }
-  const Creature* c = attack.getAttacker();
+  if (isAffected(LastingEffect::SLEEP))
+    removeEffect(LastingEffect::SLEEP);
   return false;
 }
 

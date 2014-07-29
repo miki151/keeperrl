@@ -57,7 +57,7 @@ class GameInfo {
 
     struct Deity {
       string name;
-      enum Standing { BAD, NEUTRAL, GOOD} standing;
+      double standing;
     };
     vector<Deity> deities;
   } bandInfo;

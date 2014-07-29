@@ -1315,18 +1315,10 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   return ret;
 }
 
-static GameInfo::BandInfo::Deity::Standing getDeityStanding(double d) {
-  if (d < -0.333)
-    return GameInfo::BandInfo::Deity::BAD;
-  if (d > 0.333)
-    return GameInfo::BandInfo::Deity::GOOD;
-  return GameInfo::BandInfo::Deity::NEUTRAL;
-}
-
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.bandInfo.deities.clear();
   for (Deity* deity : Deity::getDeities())
-    gameInfo.bandInfo.deities.push_back({deity->getName(), getDeityStanding(getCollective()->getStanding(deity))});
+    gameInfo.bandInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});
   gameInfo.villageInfo.villages.clear();
   bool attacking = false;
   for (VillageControl* c : model->getVillageControls())

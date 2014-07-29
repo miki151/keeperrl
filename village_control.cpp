@@ -474,9 +474,9 @@ class DragonControl : public VillageControl {
   virtual void onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType type) {
     if (contains(getCollective()->getCreatures(), to))
       switch (type) {
-        case WorshipType::PRAYER: pleased += 0.01;
-        case WorshipType::SACRIFICE: pleased += 1;
-        case WorshipType::DESTROY_ALTAR: pleased = -10;
+        case WorshipType::PRAYER: pleased += 0.01; break;
+        case WorshipType::SACRIFICE: pleased += 1; break;
+        case WorshipType::DESTROY_ALTAR: pleased = -10; break;
       }
   }
 
