@@ -674,12 +674,12 @@ ItemFactory ItemFactory::scrolls() {
       {ItemId::PORTAL_SCROLL, 1 }});
 }
 
-ItemFactory ItemFactory::mushrooms() {
+ItemFactory ItemFactory::mushrooms(bool onlyGood) {
   return ItemFactory({
       {ItemId::STRENGTH_MUSHROOM, 1 },
       {ItemId::DEXTERITY_MUSHROOM, 1 },
       {ItemId::PANIC_MUSHROOM, 1 },
-      {ItemId::HALLU_MUSHROOM, 8 },
+      {ItemId::HALLU_MUSHROOM, onlyGood ? 0.1 : 8. },
       {ItemId::RAGE_MUSHROOM, 1 }});
 }
 

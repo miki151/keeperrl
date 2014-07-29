@@ -37,7 +37,7 @@ class ItemFactory {
   static ItemFactory armory();
   static ItemFactory potions();
   static ItemFactory scrolls();
-  static ItemFactory mushrooms();
+  static ItemFactory mushrooms(bool onlyGood = false);
   static ItemFactory amulets();
   static ItemFactory villageShop();
   static ItemFactory dwarfShop();

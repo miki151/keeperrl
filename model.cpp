@@ -509,6 +509,8 @@ static vector<EnemyInfo> getVaults() {
         Tribe::get(TribeId::DRAGON), Random.getRandom(6, 12), Nothing(), {VillageControlInfo::PEACEFUL}),
     getVault(SettlementType::VAULT, CreatureId::GOBLIN, Tribe::get(TribeId::KEEPER), Random.getRandom(3, 8),
         Nothing(), {VillageControlInfo::PEACEFUL}),
+    getVault(SettlementType::VAULT, CreatureId::CYCLOPS, Tribe::get(TribeId::MONSTER), 1,
+        ItemFactory::mushrooms(true), {VillageControlInfo::PEACEFUL}),
     getVault(SettlementType::VAULT, CreatureId::RAT, Tribe::get(TribeId::MONSTER), Random.getRandom(3, 8),
         ItemFactory::armory(), {VillageControlInfo::PEACEFUL})
   };
