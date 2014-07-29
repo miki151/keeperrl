@@ -66,6 +66,7 @@ class WindowView: public View {
   virtual void continueClock() override;
   
   static Color getFireColor();
+  static bool areTilesOk();
 
   private:
 

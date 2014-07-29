@@ -98,22 +98,30 @@ void WindowView::resetMapBounds() {
 
 WindowView::WindowView() : objects(Level::getMaxBounds()) {}
 
-bool tilesOk = true;
+static bool tilesOk = true;
+
+bool WindowView::areTilesOk() {
+  return tilesOk;
+}
 
 void WindowView::initialize() {
   renderer.initialize(1024, 600, "KeeperRL");
   Clock::set(new Clock());
   renderThreadId = std::this_thread::get_id();
   Renderer::setNominalSize(Vec2(36, 36));
-  tilesOk &= Renderer::loadTilesFromFile("tiles_int.png", Vec2(36, 36));
-  tilesOk &= Renderer::loadTilesFromFile("tiles2_int.png", Vec2(36, 36));
-  tilesOk &= Renderer::loadTilesFromFile("tiles3_int.png", Vec2(36, 36));
-  tilesOk &= Renderer::loadTilesFromFile("tiles4_int.png", Vec2(24, 24));
-  tilesOk &= Renderer::loadTilesFromFile("tiles5_int.png", Vec2(36, 36));
-  tilesOk &= Renderer::loadTilesFromFile("tiles6_int.png", Vec2(36, 36));
-  tilesOk &= Renderer::loadTilesFromFile("tiles7_int.png", Vec2(36, 36));
-  tilesOk &= Renderer::loadTilesFromDir("shroom36", Vec2(36, 36));
-  tilesOk &= Renderer::loadTilesFromDir("shroom46", Vec2(46, 46));
+  if (!ifstream("tiles_int.png")) {
+    tilesOk = false;
+  } else {
+    Renderer::loadTilesFromFile("tiles_int.png", Vec2(36, 36));
+    Renderer::loadTilesFromFile("tiles2_int.png", Vec2(36, 36));
+    Renderer::loadTilesFromFile("tiles3_int.png", Vec2(36, 36));
+    Renderer::loadTilesFromFile("tiles4_int.png", Vec2(24, 24));
+    Renderer::loadTilesFromFile("tiles5_int.png", Vec2(36, 36));
+    Renderer::loadTilesFromFile("tiles6_int.png", Vec2(36, 36));
+    Renderer::loadTilesFromFile("tiles7_int.png", Vec2(36, 36));
+    Renderer::loadTilesFromDir("shroom36", Vec2(36, 36));
+    Renderer::loadTilesFromDir("shroom46", Vec2(46, 46));
+  }
   asciiLayouts = {
     MapLayout(16, 20, allLayers),
     MapLayout(8, 10,
@@ -262,12 +270,6 @@ struct KeyInfo {
 };
 
 void WindowView::close() {
-}
-
-int fireVar = 50;
-
-Color WindowView::getFireColor() {
-  return Color(200 + Random.getRandom(-fireVar, fireVar), Random.getRandom(fireVar), Random.getRandom(fireVar), 150);
 }
 
 void printStanding(int x, int y, double standing, const string& tribeName) {

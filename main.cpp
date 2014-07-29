@@ -44,6 +44,7 @@
 #include "pantheon.h"
 #include "script_context.h"
 #include "tile.h"
+#include "window_view.h"
 
 using namespace boost::iostreams;
 
@@ -241,6 +242,10 @@ int main(int argc, char* argv[]) {
   Jukebox jukebox("intro.ogg", "peaceful.ogg", "battle.ogg");
   view->setJukebox(&jukebox);
   GuiElem::initialize("frame.png");
+  if (!WindowView::areTilesOk())
+    view->presentText("", "You are playing a version of KeeperRL without graphical tiles. Besides graphics, this "
+        "is the same exact game as the full version. If you'd like to buy the full version, "
+        "please visit keeperrl.com");
   while (1) {
     messageBuffer.initialize(view.get());
     view->reset();

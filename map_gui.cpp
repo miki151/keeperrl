@@ -29,6 +29,13 @@
 MapGui::MapGui(const Table<Optional<ViewIndex>>& o, function<void(Vec2)> fun) : objects(o), leftClickFun(fun) {
 }
 
+static int fireVar = 50;
+
+static Color getFireColor() {
+  return Color(200 + Random.getRandom(-fireVar, fireVar), Random.getRandom(fireVar), Random.getRandom(fireVar), 150);
+}
+
+
 void MapGui::setLayout(MapLayout* l) {
   layout = l;
 }
@@ -236,11 +243,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
         x + sizeX / 2, y - 3, tile.text, true);
     double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
     if (burningVal > 0) {
-      renderer.drawText(Renderer::SYMBOL_FONT, sizeY, WindowView::getFireColor(),
-          x + sizeX / 2, y - 3, L'ѡ', true);
+      renderer.drawText(Renderer::SYMBOL_FONT, sizeY, getFireColor(), x + sizeX / 2, y - 3, L'ѡ', true);
       if (burningVal > 0.5)
-        renderer.drawText(Renderer::SYMBOL_FONT, sizeY, WindowView::getFireColor(),
-            x + sizeX / 2, y - 3, L'Ѡ', true);
+        renderer.drawText(Renderer::SYMBOL_FONT, sizeY, getFireColor(), x + sizeX / 2, y - 3, L'Ѡ', true);
     }
   }
 }
