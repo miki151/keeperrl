@@ -1951,7 +1951,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
       case SettlementType::CASTLE2: queue = castle2(settlement); break;
       case SettlementType::COTTAGE: queue = cottage(settlement); break;
       case SettlementType::WITCH_HOUSE:
-          queue = cottage(settlement, {{ SquareType::LABORATORY, 2, 5}}); break;
+          queue = cottage(settlement, {{ SquareType::CAULDRON, 2, 5}}); break;
       case SettlementType::MINETOWN:
           queue = mineTownMaker(settlement); break;
           break;
@@ -2056,7 +2056,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
           cottages.push_back(queue);
           break;
       case SettlementType::WITCH_HOUSE:
-          queue = cottage(settlement, {{ SquareType::LABORATORY, 2, 5}});
+          queue = cottage(settlement, {{ SquareType::CAULDRON, 2, 5}});
           break;
       case SettlementType::MINETOWN:
           queue = mineTownMaker(settlement);

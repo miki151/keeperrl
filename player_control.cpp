@@ -1408,7 +1408,7 @@ MapMemory& PlayerControl::getMemory(Level* l) {
 }
 
 ViewObject PlayerControl::getTrapObject(TrapType type) {
-  for (const PlayerControl::BuildInfo& info : workshopInfo)
+  for (const PlayerControl::BuildInfo& info : concat(workshopInfo, getBuildInfo(nullptr)))
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type)
       return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed trap")
         .setModifier(ViewObject::Modifier::PLANNED);
@@ -2065,7 +2065,7 @@ const static int timeToBuild = 50;
 
 void PlayerControl::updateConstructions() {
   map<TrapType, vector<pair<Item*, Vec2>>> trapItems;
-  for (const BuildInfo& info : workshopInfo)
+  for (const BuildInfo& info : concat(workshopInfo, getBuildInfo()))
     if (info.buildType == BuildInfo::TRAP)
       trapItems[info.trapInfo.type] = getTrapItems(info.trapInfo.type, myTiles);
   for (auto elem : traps)

@@ -196,7 +196,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
   vector<GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
-  static vector<BuildInfo> buildInfo;
   vector<BuildInfo> getBuildInfo() const;
   static vector<BuildInfo> getBuildInfo(const Level*);
   static vector<BuildInfo> workshopInfo;

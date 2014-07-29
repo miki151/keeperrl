@@ -49,6 +49,7 @@ struct SquareType {
     TRAINING_ROOM,
     LIBRARY,
     LABORATORY,
+    CAULDRON,
     BEAST_LAIR,
     BEAST_CAGE,
     WORKSHOP,

@@ -1056,6 +1056,8 @@ Square* SquareFactory::getPtr(SquareType s) {
             "book shelf");
     case SquareType::LABORATORY: return new Laboratory(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "cauldron"),
                                    "cauldron", 0);
+    case SquareType::CAULDRON: return new Laboratory(ViewObject(ViewId::CAULDRON, ViewLayer::FLOOR, "cauldron"),
+                                   "cauldron", 0);
     case SquareType::WORKSHOP:
         return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), 
             "workshop stand", 1);

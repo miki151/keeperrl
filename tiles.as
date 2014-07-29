@@ -261,6 +261,7 @@ void genTiles() {
   addTile(TRAINING_ROOM, empty().addConnection(setOfAllDirs(), "traindeco").addBackground("train"));
   addTile(LIBRARY, empty().addConnection(setOfAllDirs(), "libdeco").addBackground("lib"));
   addTile(LABORATORY, empty().addConnection(setOfAllDirs(), "labdeco").addBackground("lab"));
+  addTile(CAULDRON, sprite("labdeco").setNoShadow());
   addTile(BEAST_LAIR, sprite("lair"));
   addTile(BEAST_CAGE, sprite("lairdeco").setNoShadow().addBackground("lair"));
   addTile(WORKSHOP, empty().addConnection(setOfAllDirs(), "workshopdeco").addBackground("workshop"));
@@ -483,6 +484,7 @@ void genSymbols() {
   addSymbol(TRAINING_ROOM, symbol("‡", BROWN, true));
   addSymbol(LIBRARY, symbol("▤", BROWN, true));
   addSymbol(LABORATORY, symbol("ω", PURPLE, true));
+  addSymbol(CAULDRON, symbol("ω", PURPLE, true));
   addSymbol(BEAST_LAIR, symbol(".", YELLOW));
   addSymbol(BEAST_CAGE, symbol("▥", LIGHT_GRAY, true));
   addSymbol(WORKSHOP, symbol("&", LIGHT_BLUE));
