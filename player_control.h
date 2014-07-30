@@ -207,7 +207,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewObject getResourceViewObject(ResourceId id) const;
   Optional<pair<ViewObject, int>> getCostObj(CostInfo) const;
 
-  vector<Vec2> getAllSquares(const vector<SquareType>&) const;
+  vector<Vec2> getAllSquares(const vector<SquareType>&, bool centerOnly = false) const;
 
   map<ResourceId, int> SERIAL(credit);
 
@@ -301,11 +301,13 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   struct MinionTaskInfo {
     enum Type { APPLY_SQUARE, EXPLORE } type;
-    MinionTaskInfo(vector<SquareType>, const string& description, Optional<Warning> = Nothing());
+    MinionTaskInfo(vector<SquareType>, const string& description, Optional<Warning> = Nothing(),
+        bool centerOnly = false);
     MinionTaskInfo(Type, const string&);
     vector<SquareType> squares;
     string description;
     Optional<Warning> warning;
+    bool centerOnly;
   };
 
   map<MinionTask, MinionTaskInfo> getTaskInfo() const;

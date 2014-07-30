@@ -368,8 +368,8 @@ vector<PlayerControl::ItemFetchInfo> PlayerControl::getFetchInfo() const {
   };
 }
 
-PlayerControl::MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, Optional<Warning> w) 
-    : type(APPLY_SQUARE), squares(s), description(desc), warning(w) {
+PlayerControl::MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, Optional<Warning> w, bool c) 
+    : type(APPLY_SQUARE), squares(s), description(desc), warning(w), centerOnly(c) {
 }
 
 PlayerControl::MinionTaskInfo::MinionTaskInfo(Type t, const string& desc) : type(t), description(desc) {
@@ -386,7 +386,7 @@ map<MinionTask, PlayerControl::MinionTaskInfo> PlayerControl::getTaskInfo() cons
     {MinionTask::LAIR, {{SquareType::BEAST_CAGE}, "sleeping"}},
     {MinionTask::STUDY, {{SquareType::LIBRARY}, "studying", PlayerControl::Warning::LIBRARY}},
     {MinionTask::PRISON, {{SquareType::PRISON}, "prison", PlayerControl::Warning::NO_PRISON}},
-    {MinionTask::TORTURE, {{SquareType::TORTURE_TABLE}, "tortured", PlayerControl::Warning::TORTURE_ROOM}},
+    {MinionTask::TORTURE, {{SquareType::TORTURE_TABLE}, "tortured", PlayerControl::Warning::TORTURE_ROOM, true}},
     {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "exploring"}},
     {MinionTask::SACRIFICE, {{}, "sacrificed", PlayerControl::Warning::ALTAR}},
     {MinionTask::WORSHIP, {{}, "worship", Nothing()}}};
@@ -884,10 +884,12 @@ Item* PlayerControl::chooseEquipmentItem(View* view, vector<Item*> currentItems,
   return concat(currentItemVec, allStacked)[*index];
 }
 
-vector<Vec2> PlayerControl::getAllSquares(const vector<SquareType>& types) const {
+vector<Vec2> PlayerControl::getAllSquares(const vector<SquareType>& types, bool centerOnly) const {
   vector<Vec2> ret;
   for (SquareType type : types)
     append(ret, mySquares.at(type));
+  if (centerOnly)
+    ret = filter(ret, [this] (Vec2 pos) { return squareEfficiency.count(pos) && squareEfficiency.at(pos) == 8;});
   return ret;
 }
 
@@ -2517,13 +2519,13 @@ MoveInfo PlayerControl::getMinionMove(Creature* c) {
   MinionTaskInfo info = getTaskInfo().at(minionTasks.at(c->getUniqueId()).getState());
   switch (info.type) {
     case MinionTaskInfo::APPLY_SQUARE:
-      if (getAllSquares(info.squares).empty()) {
+      if (getAllSquares(info.squares, info.centerOnly).empty()) {
         minionTasks.at(c->getUniqueId()).updateToNext();
         if (info.warning)
           setWarning(*info.warning, true);
         return NoMove;
       }
-      taskMap.addTask(Task::applySquare(this, getAllSquares(info.squares)), c);
+      taskMap.addTask(Task::applySquare(this, getAllSquares(info.squares, info.centerOnly)), c);
       break;
     case MinionTaskInfo::EXPLORE:
       taskMap.addTask(Task::explore(this, chooseRandom(borderTiles)), c);
