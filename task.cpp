@@ -631,6 +631,12 @@ class Disappear : public NonTransferable {
   virtual MoveInfo getMove(Creature* c) override {
     return c->disappear();
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+    CHECK_SERIAL;
+  }
 };
 
 }

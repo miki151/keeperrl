@@ -181,8 +181,10 @@ void Model::update(double totalTime) {
       Level* level = creature->getLevel();
       CHECK(level->getSquare(creature->getPosition())->getCreature() == creature);
     }
-    if (unpossessed)
+    if (unpossessed) {
+      lastUpdate = -10;
       break;
+    }
   } while (1);
 }
 

@@ -62,5 +62,6 @@ GameInfo::CreatureInfo::CreatureInfo(const Creature* c)
       uniqueId(c->getUniqueId()),
       name(c->getName()),
       speciesName(c->getSpeciesName()),
-      expLevel(c->getExpLevel()) {
+      expLevel(c->getExpLevel()),
+      morale(c->getMorale()) {
 }

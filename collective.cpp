@@ -201,7 +201,7 @@ double Collective::getUndeadMultiplier() const {
 void Collective::onEpithetWorship(Creature* who, WorshipType type, EpithetId id) {
   if (type == WorshipType::DESTROY_ALTAR)
     return;
-  double increase;
+  double increase = 0;
   switch (type) {
     case WorshipType::PRAYER: increase = 1.0 / 400; break;
     case WorshipType::SACRIFICE: increase = 1.0 / 2; break;
@@ -215,7 +215,7 @@ void Collective::onEpithetWorship(Creature* who, WorshipType type, EpithetId id)
 }
 
 void Collective::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
-  double increase;
+  double increase = 0;
   switch (type) {
     case WorshipType::PRAYER: increase = 1.0 / 2000; break;
     case WorshipType::SACRIFICE: increase = 1.0 / 5; break;

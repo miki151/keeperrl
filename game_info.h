@@ -15,6 +15,7 @@ class GameInfo {
     string name;
     string speciesName;
     int expLevel;
+    double morale;
   };
 
   class BandInfo {

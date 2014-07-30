@@ -93,18 +93,18 @@ const T& valueCheck(const T& e, const V& v, const string& msg) {
 }
 
 template <class T>
-T* notNullCheck(T* e, const string& msg) {
-  if (e == nullptr) Debug(FATAL) << msg;
+T* notNullCheck(T* e, const char* file, int line, const char* exp) {
+  if (e == nullptr) Debug(FATAL) << file << ": " << line << ": " << exp << " is null";
   return e;
 }
 
 template <class T>
-unique_ptr<T> notNullCheck(unique_ptr<T> e, const string& msg) {
-  if (e.get() == nullptr) Debug(FATAL) << msg;
+unique_ptr<T> notNullCheck(unique_ptr<T> e, const char* file, int line, const char* exp) {
+  if (e.get() == nullptr) Debug(FATAL) << file << ": " << line << ": " << exp << " is null";
   return e;
 }
 
-#define NOTNULL(e) notNullCheck(e, string(__FILE__) + ":" + convertToString(__LINE__) + ": " + #e + " is null.")
+#define NOTNULL(e) notNullCheck(e, __FILE__, __LINE__, #e)
 #define CHECKEQ(e, v) valueCheck(e, v, string(__FILE__) + ":" + convertToString(__LINE__) + ": " + #e + " != " + #v + " ")
 #define CHECKEQ2(e, v, msg) valueCheck(e, v, string(__FILE__) + ":" + convertToString(__LINE__) + ": " + #e + " != " + #v + " " + msg)
 
