@@ -92,7 +92,7 @@ void Model::updateSunlightInfo() {
     }
     d += nightLength - 2 * duskLength;
     if (d > currentTime) {
-      sunlightInfo = {0, d - currentTime, SunlightInfo::NIGHT};
+      sunlightInfo = {0, d + duskLength - currentTime, SunlightInfo::NIGHT};
       return;
     }
     d += duskLength;
