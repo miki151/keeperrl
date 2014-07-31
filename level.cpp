@@ -37,6 +37,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     & SVAR(backgroundLevel)
     & SVAR(backgroundOffset)
     & SVAR(coverInfo)
+    & SVAR(bucketMap)
     & SVAR(lightAmount);
   CHECK_SERIAL;
 }  
@@ -56,6 +57,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n,
     Table<CoverInfo> covers) 
     : squares(std::move(s)), locations(l), model(m), entryMessage(message), name(n), coverInfo(std::move(covers)),
+      bucketMap(squares.getBounds().getW(), squares.getBounds().getH(), FieldOfView::sightRange),
       lightAmount(squares.getBounds(), 0) {
   for (Vec2 pos : squares.getBounds()) {
     squares[pos]->setLevel(this);
@@ -88,6 +90,7 @@ void Level::putCreature(Vec2 position, Creature* c) {
   c->setPosition(position);
   //getSquare(position)->putCreatureSilently(c);
   getSquare(position)->putCreature(c);
+  bucketMap.addElement(position, c);
   notifyLocations(c);
 }
   
@@ -249,15 +252,18 @@ void Level::killCreature(Creature* creature) {
   removeElement(creatures, creature);
   getSquare(creature->getPosition())->removeCreature();
   model->removeCreature(creature);
+  bucketMap.removeElement(creature->getPosition(), creature);
   if (creature->isPlayer())
     updatePlayer();
 }
+
+const static int hearingRange = 30;
 
 void Level::globalMessage(Vec2 position, const string& ifPlayerCanSee, const string& cannot) const {
   if (player) {
     if (playerCanSee(position))
       player->playerMessage(ifPlayerCanSee);
-    else if (player->getPosition().dist8(position) < 30)
+    else if (player->getPosition().dist8(position) < hearingRange)
       player->playerMessage(cannot);
   }
 }
@@ -275,6 +281,7 @@ void Level::changeLevel(StairDirection dir, StairKey key, Creature* c) {
   Vec2 fromPosition = c->getPosition();
   removeElement(creatures, c);
   getSquare(c->getPosition())->removeCreature();
+  bucketMap.removeElement(c->getPosition(), c);
   Vec2 toPosition = model->changeLevel(dir, key, c);
   EventListener::addChangeLevelEvent(c, this, fromPosition, c->getLevel(), toPosition);
 }
@@ -283,6 +290,7 @@ void Level::changeLevel(Level* destination, Vec2 landing, Creature* c) {
   Vec2 fromPosition = c->getPosition();
   removeElement(creatures, c);
   getSquare(c->getPosition())->removeCreature();
+  bucketMap.removeElement(c->getPosition(), c);
   model->changeLevel(destination, landing, c);
   EventListener::addChangeLevelEvent(c, this, fromPosition, destination, landing);
 }
@@ -303,11 +311,7 @@ vector<Creature*>& Level::getAllCreatures() {
 }
 
 vector<Creature*> Level::getAllCreatures(Rectangle bounds) const {
-  vector<Creature*> ret;
-  for (Creature* c : creatures)
-    if (c->getPosition().inRectangle(bounds))
-      ret.push_back(c);
-  return ret;
+  return bucketMap.getElements(bounds);
 }
 
 const int darkViewRadius = 5;
@@ -350,6 +354,7 @@ void Level::moveCreature(Creature* creature, Vec2 direction) {
   creature->setPosition(position + direction);
   nextSquare->putCreature(creature);
   notifyLocations(creature);
+  bucketMap.moveElement(position, position + direction, creature);
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {
@@ -365,6 +370,8 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
   square2->putCreature(c1);
   notifyLocations(c1);
   notifyLocations(c2);
+  bucketMap.moveElement(position1, position2, c1);
+  bucketMap.moveElement(position2, position1, c2);
 }
 
 vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, Vision* vision) const {

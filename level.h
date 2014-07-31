@@ -22,6 +22,7 @@
 #include "square_factory.h"
 #include "vision.h"
 #include "unique_entity.h"
+#include "bucket_map.h"
 
 class Model;
 class Square;
@@ -273,6 +274,7 @@ class Level : public UniqueEntity {
   const Level* SERIAL2(backgroundLevel, nullptr);
   Vec2 SERIAL(backgroundOffset);
   Table<CoverInfo> SERIAL(coverInfo);
+  BucketMap<Creature*> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name,

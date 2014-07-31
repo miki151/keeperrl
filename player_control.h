@@ -52,6 +52,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual bool isEnemy(const Creature*) const override;
 
   virtual bool staticPosition() const override;
+  virtual int getMaxSightRange() const override;
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
   virtual void onCombatEvent(const Creature*) override;

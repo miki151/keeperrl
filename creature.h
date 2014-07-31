@@ -60,6 +60,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void setTime(double t);
   void setLevel(Level* l);
   virtual const Level* getViewLevel() const override;
+  virtual int getMaxSightRange() const override;
   Level* getLevel();
   const Level* getLevel() const;
   const Square* getConstSquare() const;

@@ -30,9 +30,10 @@ class FieldOfView {
 
   SERIALIZATION_DECL(FieldOfView);
 
+  const static int sightRange = 30;
+
   private:
 
-  const static int sightRange = 30;
 
   class Visibility {
     public:

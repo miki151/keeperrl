@@ -1408,6 +1408,10 @@ bool PlayerControl::staticPosition() const {
   return false;
 }
 
+int PlayerControl::getMaxSightRange() const {
+  return 100000;
+}
+
 Vec2 PlayerControl::getPosition() const {
   return getKeeper()->getPosition();
 }

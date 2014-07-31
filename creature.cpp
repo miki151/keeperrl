@@ -397,6 +397,10 @@ const Level* Creature::getViewLevel() const {
   return level;
 }
 
+int Creature::getMaxSightRange() const {
+  return FieldOfView::sightRange;
+}
+
 Level* Creature::getLevel() {
   return level;
 }

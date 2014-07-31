@@ -471,6 +471,7 @@ bool Player::interruptedByEnemy() {
 }
 
 void Player::travelAction() {
+  updateView = true;
   if (!creature->move(travelDir) || model->getView()->travelInterrupt() || interruptedByEnemy()) {
     travelling = false;
     return;
@@ -495,6 +496,7 @@ void Player::travelAction() {
 }
 
 void Player::targetAction() {
+  updateView = true;
   CHECK(target);
   if (creature->getPosition() == *target || model->getView()->travelInterrupt()) {
     target = Nothing();

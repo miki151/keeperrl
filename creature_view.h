@@ -34,6 +34,7 @@ class CreatureView {
   virtual vector<const Creature*> getUnknownAttacker() const = 0;
   virtual const Tribe* getTribe() const = 0;
   virtual bool isEnemy(const Creature*) const = 0;
+  virtual int getMaxSightRange() const = 0;
 
   void updateVisibleCreatures();
   vector<const Creature*> getVisibleEnemies() const;
