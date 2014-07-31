@@ -582,6 +582,7 @@ Model* Model::collectiveModel(View* view) {
   Level* top = m->prepareTopLevel2(settlements);
   m->collectives.push_back(PCollective(new Collective()));
   Collective* keeperCollective = m->collectives.back().get();
+  keeperCollective->setLevel(top);
   m->playerControl = new PlayerControl(keeperCollective, m, top);
   keeperCollective->setControl(PCollectiveControl(m->playerControl));
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::get(TribeId::KEEPER),
@@ -599,6 +600,7 @@ Model* Model::collectiveModel(View* view) {
   }
   for (int i : All(enemyInfo)) {
     Collective* collective = enemyInfo[i].settlement.collective;
+    collective->setLevel(top);
     PVillageControl control;
     if (enemyInfo[i].controlInfo.id != VillageControlInfo::FINAL_ATTACK)
       control = VillageControl::get(enemyInfo[i].controlInfo, collective, keeperCollective,

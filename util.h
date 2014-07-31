@@ -482,6 +482,14 @@ vector<T> getKeys(const map<T, V>& m) {
   return ret;
 }
 
+template <typename T, typename V>
+vector<T> getKeys(const unordered_map<T, V>& m) {
+  vector<T> ret;
+  for (auto elem : m)
+    ret.push_back(elem.first);
+  return ret;
+}
+
 template <typename T>
 T copyOf(const T& t) {
   return t;

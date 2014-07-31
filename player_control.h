@@ -58,7 +58,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void onTriggerEvent(const Level*, Vec2 pos) override;
   virtual void onSquareReplacedEvent(const Level*, Vec2 pos) override;
   virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) override;
-  virtual void onAlarmEvent(const Level*, Vec2 pos) override;
   virtual void onTechBookEvent(Technology*) override;
   virtual void onEquipEvent(const Creature*, const Item*) override;
   virtual void onPickupEvent(const Creature* c, const vector<Item*>& items) override;
@@ -207,8 +206,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewObject getResourceViewObject(ResourceId id) const;
   Optional<pair<ViewObject, int>> getCostObj(CostInfo) const;
 
-  vector<Vec2> getAllSquares(const vector<SquareType>&, bool centerOnly = false) const;
-
   map<ResourceId, int> SERIAL(credit);
 
   struct ItemFetchInfo {
@@ -239,16 +236,13 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   MoveInfo getBeastMove(Creature* c);
   MoveInfo getMinionMove(Creature* c);
-  MoveInfo getGuardPostMove(Creature* c);
   MoveInfo getPossessedMove(Creature* c);
   MoveInfo getBacktrackMove(Creature* c);
-  MoveInfo getAlarmMove(Creature* c);
   MoveInfo getDropItems(Creature *c);
 
   bool isDownstairsVisible() const;
   void delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime);
   bool isDelayed(Vec2 pos);
-  double getTime() const;
   unordered_map<Vec2, double> SERIAL(delayedPos);
   int numResource(ResourceId) const;
   void takeResource(CostInfo);
@@ -367,12 +361,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   map<Vec2, ConstructionInfo> SERIAL(constructions);
   map<UniqueId, MarkovChain<MinionTask>> SERIAL(minionTasks);
   map<UniqueId, string> SERIAL(minionTaskStrings);
-  unordered_map<SquareType, set<Vec2>> SERIAL(mySquares);
-  map<Vec2, int> SERIAL(squareEfficiency);
-  void updateEfficiency(Vec2, SquareType);
-  double getEfficiency(Vec2) const;
-  bool hasEfficiency(Vec2) const;
-  set<Vec2> SERIAL(myTiles);
   mutable unique_ptr<map<UniqueId, MapMemory>> SERIAL(memory);
   Table<bool> SERIAL(knownTiles);
   set<Vec2> SERIAL(borderTiles);
@@ -382,12 +370,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   map<const Level*, Vec2> SERIAL(levelChangeHistory);
   Creature* SERIAL2(possessed, nullptr);
   MinionEquipment SERIAL(minionEquipment);
-  struct GuardPostInfo {
-    const Creature* attender;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-  };
-  map<Vec2, GuardPostInfo> SERIAL(guardPosts);
   double SERIAL(mana);
   int SERIAL2(points, 0);
   Model* SERIAL(model);
@@ -399,12 +381,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   double SERIAL2(lastControlKeeperQuestion, -100);
   int SERIAL2(startImpNum, -1);
   bool SERIAL2(retired, false);
-  struct AlarmInfo {
-    double finishTime = -1000;
-    Vec2 position;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-  } SERIAL(alarmInfo);
   struct PrisonerInfo {
     enum State { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE } state;
     bool marked;
