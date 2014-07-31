@@ -422,7 +422,7 @@ void Model::exitAction() {
           canRetire = false;
           break;
         }
-      if (canRetire) {
+      if (canRetire && view->yesOrNoPrompt("Are you sure you want to retire your dungeon?")) {
         retireCollective();
         throw SaveGameException(GameType::RETIRED_KEEPER);
       }
@@ -432,7 +432,9 @@ void Model::exitAction() {
         throw SaveGameException(GameType::ADVENTURER);
       else
         throw SaveGameException(GameType::KEEPER);
-    case ABANDON: throw GameOverException();
+    case ABANDON:
+      if (view->yesOrNoPrompt("Are you sure you want to abandon your game?"))
+        throw GameOverException();
     case OPTIONS: Options::handle(view, OptionSet::GENERAL); break;
     default: break;
   }

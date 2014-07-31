@@ -40,6 +40,7 @@ enum class EquipmentSlot;
 enum class SquareApplyType;
 
 enum class MinionTask;
+enum class MinionTrait;
 enum class TrapType;
 
 enum class SquareAttrib;

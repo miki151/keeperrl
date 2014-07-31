@@ -631,7 +631,7 @@ class Altar : public Square, public EventListener {
   }
 
   virtual void onKillEvent(const Creature* victim, const Creature* killer) override {
-    if (victim->getPosition() == getPosition()) {
+    if (victim->getPosition() == getPosition() && killer) {
       recentKiller = killer;
       recentVictim = victim;
       killTime = killer->getTime();

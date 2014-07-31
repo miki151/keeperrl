@@ -36,7 +36,8 @@ class VillageControl : public EventListener, public Task::Callback, public Colle
 
   bool isConquered() const;
   bool isAnonymous() const;
-  vector<Creature*> getAliveCreatures() const;
+  vector<Creature*> getCreatures(MinionTrait) const;
+  vector<Creature*> getCreatures() const;
   virtual bool currentlyAttacking() const;
   virtual void tick(double time) override;
 

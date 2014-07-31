@@ -40,7 +40,7 @@ SERIALIZABLE(VillageControl);
 
 VillageControl::VillageControl(Collective* col, Collective* c, const Location* loc)
     : CollectiveControl(col), villain(c), location(loc), name(loc->hasName() ? loc->getName() : "") {
-  CHECK(!getCreatures().empty());
+  CHECK(!getCollective()->getCreatures().empty());
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
@@ -61,6 +61,14 @@ bool VillageControl::isAnonymous() const {
 }
 
 void VillageControl::tick(double time) {
+}
+
+vector<Creature*> VillageControl::getCreatures(MinionTrait trait) const {
+  return getCollective()->getCreatures({trait});
+}
+
+vector<Creature*> VillageControl::getCreatures() const {
+  return getCollective()->getCreatures();
 }
 
 class AttackTrigger {
@@ -90,7 +98,7 @@ bool VillageControl::currentlyAttacking() const {
 }
 
 bool VillageControl::isConquered() const {
-  return getCreatures().empty();
+  return getCreatures(MinionTrait::FIGHTER).empty();
 }
 
 Tribe* VillageControl::getTribe() {
@@ -110,7 +118,7 @@ void VillageControl::onCreatureKilled(const Creature* victim, const Creature* ki
   if ((victim->getTribe() == getTribe() && (!killer ||  killer->getTribe() == Tribe::get(TribeId::KEEPER)))
       || (victim->getTribe() == Tribe::get(TribeId::KEEPER) && killer && killer->getTribe() == getTribe()))
     atWar = true;
-  if (!isAnonymous() && getCreatures().empty())
+  if (!isAnonymous() && getCreatures(MinionTrait::FIGHTER).empty())
       messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
 }
 
@@ -146,7 +154,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
   PowerTrigger(VillageControl* c, double _killedCoeff, double _powerCoeff)
       : AttackTriggerSet(c), killedCoeff(_killedCoeff), powerCoeff(_powerCoeff) {
     double myPower = 0;
-    for (const Creature* c : control->getCreatures())
+    for (const Creature* c : control->getCreatures(MinionTrait::FIGHTER))
       myPower += c->getDifficultyPoints();
     Debug() << "Village " << control->getName() << " power " << myPower;
     for (int i : Range(Random.getRandom(1, 3))) {
@@ -183,17 +191,13 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
     return ret;
   }
 
-  vector<Creature*> getFighting() {
-    return filter(control->getCreatures(), [](const Creature* c) { return !c->isInnocent();});
-  }
-
   virtual void tick(double time) override {
-    if (control->getCreatures().empty())
+    if (control->getCreatures(MinionTrait::FIGHTER).empty())
       return;
     if (lastAttack >= time - attackDelay || lastMyAttack >= time - myAttacksDelay)
       return;
     double lastAttackPoints = 0;
-    for (const Creature* c : control->getCreatures())
+    for (const Creature* c : control->getCreatures(MinionTrait::FIGHTER))
       if (fightingCreatures.count(c))
         lastAttackPoints += c->getDifficultyPoints();
     bool firstAttack = lastAttackPoints == 0;
@@ -201,7 +205,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
     if (lastAttackPoints < currentTrigger) {
       lastMyAttack = time;
       int numCreatures = 0;
-      for (const Creature* c : getSorted(getFighting()))
+      for (const Creature* c : getSorted(control->getCreatures(MinionTrait::FIGHTER)))
         if (!fightingCreatures.count(c) && !c->isDead()) {
           ++numCreatures;
           fightingCreatures.insert(c);
@@ -307,7 +311,7 @@ class FinalTrigger : public AttackTriggerSet {
       messageBuffer.addMessage(MessageBuffer::important(control->getTribe()->getLeader()->getTheName() + 
             " and his army have undertaken a final, desperate attack!"));
       totalWar = -1;
-      for (const Creature* c : control->getCreatures())
+      for (const Creature* c : control->getCreatures(MinionTrait::FIGHTER))
         fightingCreatures.insert(c);
     }
   }
