@@ -13,13 +13,14 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(taskMap)
     & SVAR(tribe)
     & SVAR(control)
+    & SVAR(byTrait)
     & SVAR(deityStanding)
     & SVAR(mySquares)
     & SVAR(allSquares)
     & SVAR(squareEfficiency)
     & SVAR(alarmInfo)
-    & SVAR(enemyPos)
     & SVAR(guardPosts)
+    & SVAR(enemyPos)
     & SVAR(level);
   CHECK_SERIAL;
 }

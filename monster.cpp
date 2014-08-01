@@ -20,7 +20,6 @@
 template <class Archive> 
 void Monster::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(Controller)
-     & SVAR(creature)
      & SVAR(actor)
      & SVAR(enemies);
   CHECK_SERIAL;

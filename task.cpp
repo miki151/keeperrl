@@ -457,7 +457,7 @@ class ApplySquare : public NonTransferable {
       & SVAR(positions)
       & SVAR(rejectedPosition)
       & SVAR(invalidCount)
-      & SVAR(position)
+      & SVAR(position);
     CHECK_SERIAL;
   }
   
@@ -634,7 +634,7 @@ class Disappear : public NonTransferable {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
+    ar& SUBCLASS(NonTransferable);
     CHECK_SERIAL;
   }
 };

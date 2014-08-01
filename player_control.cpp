@@ -99,7 +99,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(executions)
     & SVAR(flyingSectors)
     & SVAR(sectors)
-    & SVAR(surprises)
+    & SVAR(surprises);
   CHECK_SERIAL;
 }
 
@@ -1550,8 +1550,7 @@ class MinionController : public Player {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Player)
-    CHECK_SERIAL;
+    ar& SUBCLASS(Player);
   }
 
   SERIALIZATION_CONSTRUCTOR(MinionController);
@@ -2552,7 +2551,7 @@ class KeeperControlOverride : public Creature::MoraleOverride {
 
   private:
   PlayerControl* SERIAL(control);
-  Creature* (creature);
+  Creature* SERIAL(creature);
 };
 
 void PlayerControl::addCreature(Creature* c, MinionType type) {

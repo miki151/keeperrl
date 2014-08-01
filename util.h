@@ -1023,7 +1023,7 @@ class EnumMap {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(elems);
+    ar & elems;
   }
 
   private:
@@ -1191,7 +1191,7 @@ class BiMap {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(m1) & SVAR(m2);
+    ar & m1 & m2;
   }
 
   private:

@@ -37,6 +37,8 @@ class Singleton {
 
   E getId() const;
 
+  SERIAL_CHECKER;
+
   private:
   static EnumMap<E, unique_ptr<T>> elems;
   E SERIAL(id);

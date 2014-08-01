@@ -84,7 +84,6 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(points)
     & SVAR(sectors)
     & SVAR(numAttacksThisTurn)
-    & SVAR(lastingEffects)
     & SVAR(moraleOverrides);
   CHECK_SERIAL;
 }

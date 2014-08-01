@@ -62,6 +62,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(maxLevel)
     & SVAR(carryAnything)
     & SVAR(invincible)
+    & SVAR(worshipped)
     & SVAR(damageMultiplier)
     & SVAR(attributeGain)
     & SVAR(skills)

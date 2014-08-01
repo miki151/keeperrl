@@ -45,7 +45,8 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(playerControl)
     & SVAR(won)
     & SVAR(addHero)
-    & SVAR(adventurer);
+    & SVAR(adventurer)
+    & SVAR(currentTime);
   CHECK_SERIAL;
   Skill::serializeAll(ar);
   Deity::serializeAll(ar);
@@ -427,6 +428,7 @@ void Model::exitAction() {
         throw SaveGameException(GameType::RETIRED_KEEPER);
       }
       }
+      break;
     case SAVE:
       if (!playerControl || playerControl->isRetired())
         throw SaveGameException(GameType::ADVENTURER);
@@ -435,6 +437,7 @@ void Model::exitAction() {
     case ABANDON:
       if (view->yesOrNoPrompt("Are you sure you want to abandon your game?"))
         throw GameOverException();
+      break;
     case OPTIONS: Options::handle(view, OptionSet::GENERAL); break;
     default: break;
   }

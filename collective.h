@@ -84,6 +84,7 @@ class Collective : public EventListener {
   ~Collective();
 
   private:
+  SERIAL_CHECKER;
   double getStanding(EpithetId id) const;
   void onEpithetWorship(Creature*, WorshipType, EpithetId);
   void considerHealingLeader();

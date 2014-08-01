@@ -5,6 +5,7 @@
 template <class Archive>
 void CollectiveControl::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(collective);
+  CHECK_SERIAL;
 }
 
 SERIALIZABLE(CollectiveControl);

@@ -31,7 +31,7 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(villain)
     & SVAR(location)
     & SVAR(name)
-    & SVAR(atWar)
+    & SVAR(atWar);
   CHECK_SERIAL;
 }
 
@@ -124,7 +124,7 @@ void VillageControl::onCreatureKilled(const Creature* victim, const Creature* ki
 
 class AttackTriggerSet : public AttackTrigger {
   public:
-  using AttackTrigger::AttackTrigger;
+  AttackTriggerSet(VillageControl* c) : AttackTrigger(c) {}
 
   virtual bool startedAttack(const Creature* c) override {
     return fightingCreatures.count(c);
@@ -278,8 +278,8 @@ class FirstContact : public AttackTrigger, public EventListener {
   }
 
   private:
-  PAttackTrigger other;
-  double madeContact = 1000000;
+  PAttackTrigger SERIAL(other);
+  double SERIAL2(madeContact, 1000000);
 };
 
 GameInfo::VillageInfo::Village VillageControl::getVillageInfo() const {
@@ -491,6 +491,7 @@ class DragonControl : public VillageControl {
     ar& SUBCLASS(VillageControl)
       & SVAR(firstAttackMsg)
       & SVAR(pleased);
+    CHECK_SERIAL;
   }
 
   private:

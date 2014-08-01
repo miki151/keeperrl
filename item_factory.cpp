@@ -240,7 +240,7 @@ class LastingEffectItem : public Item {
   SERIALIZATION_CONSTRUCTOR(LastingEffectItem);
 
   private:
-  LastingEffect effect;
+  LastingEffect SERIAL(effect);
 };
 
 class Corpse : public Item {

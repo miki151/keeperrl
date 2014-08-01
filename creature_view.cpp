@@ -20,7 +20,8 @@
 
 template <class Archive> 
 void CreatureView::serialize(Archive& ar, const unsigned int version) { 
-  ar& SVAR(visibleEnemies);
+  ar& SVAR(visibleEnemies)
+    & SVAR(visibleFriends);
   CHECK_SERIAL;
 }
 

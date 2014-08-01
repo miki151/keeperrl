@@ -855,7 +855,7 @@ class PossessedController : public Player {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Player)
-      & SVAR(owner)
+      & SVAR(owner);
     CHECK_SERIAL;
   }
 

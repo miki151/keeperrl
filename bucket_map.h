@@ -16,8 +16,8 @@ class BucketMap {
   SERIALIZATION_DECL(BucketMap);
 
   private:
-  int bucketSize;
-  Table<unordered_set<T>> buckets;
+  int SERIAL(bucketSize);
+  Table<unordered_set<T>> SERIAL(buckets);
 };
 
 #endif

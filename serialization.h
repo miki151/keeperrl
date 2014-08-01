@@ -33,10 +33,6 @@
 #define REGISTER_TYPE(T, A)\
 (T).register_type(static_cast<A*>(nullptr))
 
-#ifndef RELEASE
-//#define SERIALIZATION_DEBUG
-#endif
-
 #ifdef SERIALIZATION_DEBUG
 #define SERIAL_CHECKER SerialChecker serialChecker
 #define CHECK_SERIAL serialChecker.checkSerial();
