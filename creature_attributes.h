@@ -65,6 +65,7 @@ RICH_ENUM(LastingEffect,
     FLYING
 );
 
+enum class MinionTask;
 
 #define CATTR(X) CreatureAttributes([&](CreatureAttributes& c) { X })
 
@@ -133,6 +134,7 @@ class CreatureAttributes {
   SERIAL3(skillGain);
   vector<SpellInfo> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
+  EnumMap<MinionTask, double> SERIAL(minionTasks);
 };
 
 #endif

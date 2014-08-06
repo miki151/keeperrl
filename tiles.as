@@ -92,7 +92,7 @@ void genTiles() {
   addTile(DWARF, sprite(2, 6));
   addTile(DWARF_BARON, sprite(3, 6));
   addTile(DWARVEN_SHOPKEEPER, sprite(4, 2));
-  addTile(BRIDGE, sprite(24, 0, 4));
+  addTile(BRIDGE, sprite("bridge"));
   addTile(ROAD, getRoadTile(7));
   addTile(PATH, sprite(3, 14, 1));
   addTile(FLOOR, sprite(3, 14, 1));

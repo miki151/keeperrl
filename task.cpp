@@ -41,16 +41,6 @@ void Task::Callback::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Task::Callback);
 SERIALIZATION_CONSTRUCTOR_IMPL2(Task, Callback);
 
-template <class Archive>
-
-void Task::Mapping::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(tasks)
-    & BOOST_SERIALIZATION_NVP(positionMap)
-    & BOOST_SERIALIZATION_NVP(creatureMap);
-}
-
-SERIALIZABLE(Task::Mapping);
-
 Task::Task(Callback* call) : callback(call) {}
 
 Task::~Task() {
@@ -74,77 +64,6 @@ bool Task::isDone() {
 
 void Task::setDone() {
   done = true;
-}
-
-void Task::Mapping::removeTask(Task* task) {
-  for (int i : All(tasks))
-    if (tasks[i].get() == task) {
-      removeIndex(tasks, i);
-      break;
-    }
-  if (creatureMap.contains(task))
-    creatureMap.erase(task);
-  if (positionMap.count(task))
-    positionMap.erase(task);
-}
-
-void Task::Mapping::removeTask(UniqueId id) {
-  for (PTask& task : tasks)
-    if (task->getUniqueId() == id) {
-      removeTask(task.get());
-      break;
-    }
-}
-
-Task* Task::Mapping::getTask(const Creature* c) const {
-  if (creatureMap.contains(c))
-    return creatureMap.get(c);
-  else
-    return nullptr;
-}
-
-vector<Task*> Task::Mapping::getTasks(Vec2 pos) const {
-  vector<Task*> ret;
-  for (const PTask& task : tasks)
-    if (getPosition(task.get()) == pos)
-      ret.push_back(task.get());
-  return ret;
-}
-
-Task* Task::Mapping::addTask(PTask task, const Creature* c) {
-  creatureMap.insert(c, task.get());
-  tasks.push_back(std::move(task));
-  return tasks.back().get();
-}
-
-Task* Task::Mapping::addTask(PTask task, Vec2 position) {
-  positionMap[task.get()] = position;
-  tasks.push_back(std::move(task));
-  return tasks.back().get();
-}
-
-void Task::Mapping::takeTask(const Creature* c, Task* task) {
-  freeTask(task);
-  creatureMap.insert(c, task);
-}
-
-Optional<Vec2> Task::Mapping::getPosition(Task* task) const {
-  if (positionMap.count(task))
-    return positionMap.at(task);
-  else
-    return Nothing();
-}
-
-const Creature* Task::Mapping::getOwner(Task* task) const {
-  if (creatureMap.contains(task))
-    return creatureMap.get(task);
-  else
-    return nullptr;
-}
-
-void Task::Mapping::freeTask(Task* task) {
-  if (creatureMap.contains(task))
-    creatureMap.erase(task);
 }
 
 class Construction : public Task {
@@ -635,7 +554,6 @@ class Disappear : public NonTransferable {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable);
-    CHECK_SERIAL;
   }
 };
 

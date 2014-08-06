@@ -82,4 +82,5 @@ enum class DeityHabitat;
 enum class NameGeneratorId;
 enum class EpithetId;
 
+enum class CollectiveWarning;
 #endif

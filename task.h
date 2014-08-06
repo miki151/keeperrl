@@ -38,30 +38,6 @@ class Task : public UniqueEntity {
     SERIALIZATION_DECL(Callback);
   };
 
-  class Mapping {
-    public:
-    Task* addTask(PTask, const Creature*);
-    Task* addTask(PTask, Vec2);
-    Task* getTask(const Creature*) const;
-    vector<Task*> getTasks(Vec2) const;
-    const Creature* getOwner(Task*) const;
-    Optional<Vec2> getPosition(Task*) const;
-    void removeTask(Task*);
-    void removeTask(UniqueId);
-    void takeTask(const Creature*, Task*);
-    void freeTask(Task*);
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-
-    SERIAL_CHECKER;
-
-    protected:
-    BiMap<const Creature*, Task*> SERIAL(creatureMap);
-    map<Task*, Vec2> SERIAL(positionMap);
-    vector<PTask> SERIAL(tasks);
-  };
-
   Task(Callback*);
   virtual ~Task();
 
@@ -87,6 +63,7 @@ class Task : public UniqueEntity {
   static PTask chain(Callback*, PTask, PTask);
   static PTask explore(Callback*, Vec2);
   static PTask attackCollective(Callback*, Collective*);
+  static PTask continousTask(Callback*, PTask, double finishTime);
 
   SERIALIZATION_DECL(Task);
 

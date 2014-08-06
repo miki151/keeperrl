@@ -24,7 +24,8 @@
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) { 
-  ar& SVAR(squares)
+  ar& SUBCLASS(UniqueEntity)
+    & SVAR(squares)
     & SVAR(landingSquares)
     & SVAR(locations)
     & SVAR(tickingSquares)

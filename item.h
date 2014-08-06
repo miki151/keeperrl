@@ -26,14 +26,14 @@
 class Level;
 class Attack;
 
-enum class TrapType {
+RICH_ENUM(TrapType,
   BOULDER,
   POISON_GAS,
   ALARM,
   WEB,
   SURPRISE,
   TERROR
-};
+);
 
 enum class ItemType {
   WEAPON,

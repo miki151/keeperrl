@@ -406,8 +406,8 @@ class Creatures : public LevelMaker {
           || (squareType && builder->getType(pos) != *squareType)));
       CHECK(numTries > 0) << "Failed to find square for creature";
       if (collective) {
-        vector<MinionTrait> trait { creature->isInnocent() ? MinionTrait::WORKER : MinionTrait::FIGHTER };
-        collective->addCreature(creature.get(), trait);
+        collective->addCreature(creature.get(),
+            { creature->isInnocent() ? MinionTrait::WORKER : MinionTrait::FIGHTER });
       }
       builder->putCreature(pos, std::move(creature));
       taken[pos] = 1;

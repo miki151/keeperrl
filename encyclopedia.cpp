@@ -17,6 +17,7 @@
 #include "encyclopedia.h"
 #include "view.h"
 #include "player_control.h"
+#include "collective.h"
 #include "pantheon.h"
 #include "technology.h"
 #include "creature_factory.h"
@@ -33,7 +34,7 @@ void advance(View* view, const Technology* tech) {
     text += "Requires: " + combine(prerequisites) + "\n";
   if (!allowed.empty())
     text += "Allows research: " + combine(allowed) + "\n";
-  const vector<SpellInfo>& spells = PlayerControl::getSpellLearning(tech);
+  const vector<SpellInfo>& spells = Collective::getSpellLearning(tech);
   if (!spells.empty())
     text += "Teaches spells: " + combine(spells) + "\n";
   const vector<PlayerControl::RoomInfo>& rooms = filter(PlayerControl::getRoomInfo(), 

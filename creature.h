@@ -275,6 +275,8 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
 
   vector<AttackLevel> getAttackLevels() const;
 
+  const EnumMap<MinionTask, double>& getMinionTasks() const;
+
   private:
   bool affects(LastingEffect effect) const;
   void onAffected(LastingEffect effect, bool msg);

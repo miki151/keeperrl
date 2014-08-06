@@ -1013,6 +1013,11 @@ class EnumMap {
       elems[int(elem.first)] = elem.second;
   }
 
+  void operator = (initializer_list<pair<T, U>> il) {
+    for (auto elem : il)
+      elems[int(elem.first)] = elem.second;
+  }
+
   const U& operator[](T elem) const {
     return elems[int(elem)];
   }
@@ -1042,6 +1047,13 @@ class EnumSet : public EnumMap<T, char> {
 
   void insert(T elem) {
     (*this)[elem] = 1;
+  }
+
+  EnumSet sum(const EnumSet& other) {
+    EnumSet ret(other);
+    for (T elem : *this)
+      ret.insert(elem);
+    return ret;
   }
 
   static EnumSet<T> fullSet() {
@@ -1138,6 +1150,17 @@ class EnumAll {
 };
 
 #define ENUM_ALL(X) EnumAll<X>()
+
+template <typename T>
+T chooseRandom(EnumMap<T, double> vi, double r = -1) {
+  vector<T> v;
+  vector<double> p;
+  for (T elem : ENUM_ALL(T)) {
+    v.push_back(elem);
+    p.push_back(vi[elem]);
+  }
+  return chooseRandom(v, p);
+}
 
 template <typename U, typename V>
 class BiMap {

@@ -382,6 +382,13 @@ class TopLevelVillageControl : public PeacefulControl {
       return PeacefulControl::getNewTask(c);
   }
 
+  virtual MoveInfo getMove(Creature* c) override {
+    if (!attackTrigger->startedAttack(c))
+      return PeacefulControl::getMove(c);
+    else
+      return NoMove;
+  }
+
   virtual void tick(double time) override {
     attackTrigger->tick(time);
     for (Creature* c : getCreatures())

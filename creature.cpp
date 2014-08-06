@@ -2299,3 +2299,6 @@ void Creature::refreshGameInfo(GameInfo& gameInfo) const {
     info.effects.push_back({s, true});
 }
 
+const EnumMap<MinionTask, double>& Creature::getMinionTasks() const {
+  return minionTasks;
+}

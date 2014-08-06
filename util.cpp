@@ -75,6 +75,7 @@ int RandomGen::getRandom(const vector<double>& weights, double r) {
   double sum = 0;
   for (double elem : weights)
     sum += elem;
+  CHECK(sum > 0);
   if (r == -1)
     r = Random.getDouble(0, sum);
   sum = 0;
@@ -669,7 +670,8 @@ void Semaphore::v() {
 AsyncLoop::AsyncLoop(function<void()> f) : AsyncLoop([]{}, f) {
 }
 
-AsyncLoop::AsyncLoop(function<void()> init, function<void()> loop) : t([=] { init(); while (!done) { loop(); }}) {
+AsyncLoop::AsyncLoop(function<void()> init, function<void()> loop)
+    : t([=] { init(); while (!done) { loop(); }}), done(false) {
 }
 
 AsyncLoop::~AsyncLoop() {
