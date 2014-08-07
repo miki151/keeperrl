@@ -637,7 +637,7 @@ vector<PlayerControl::SpawnInfo> breedingInfo {
 
 void PlayerControl::handleHumanoidBreeding(View* view) {
   handleSpawning(view, SquareType::DORM,
-      "You need to build a dormitory to breed humanoids.", "You need a larger dormitory.", "Humanoid breeding",
+      "You need to build a dormitory to breed humanoids.", "You need a larger dormitory.", "Greenskin breeding",
       MinionTrait::SPAWN_HUMANOID, breedingInfo, 1);
 }
 
@@ -818,7 +818,7 @@ void PlayerControl::handleLibrary(View* view) {
 typedef GameInfo::BandInfo::Button Button;
 
 Optional<pair<ViewObject, int>> PlayerControl::getCostObj(CostInfo cost) const {
-  if (cost.value > 0)
+  if (cost.value > 0 && !Collective::resourceInfo.at(cost.id).dontDisplay)
     return make_pair(getResourceViewObject(cost.id), cost.value);
   else
     return Nothing();
@@ -832,14 +832,20 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
       case BuildInfo::SQUARE: {
            BuildInfo::SquareInfo& elem = button.squareInfo;
            ViewObject viewObj(SquareFactory::get(elem.type)->getViewObject());
+           string description;
+           if (elem.cost.value > 0)
+             description = "[" + convertToString(getCollective()->getSquares(elem.type).size()) + "]";
+           int availableNow = !elem.cost.value ? 1 : getCollective()->numResource(elem.cost.id) / elem.cost.value;
+           if (Collective::resourceInfo.at(elem.cost.id).dontDisplay && availableNow)
+             description += " (" + convertToString(availableNow) + " available)";
            if (getSecondarySquare(elem.type))
              viewObj = SquareFactory::get(*getSecondarySquare(elem.type))->getViewObject();
            buttons.push_back({
                viewObj,
                elem.name,
                getCostObj(elem.cost),
-               (elem.cost.value > 0 ? "[" + convertToString(getCollective()->getSquares(elem.type).size()) + "]" : ""),
-               isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
+               description,
+               (elem.noCredit && !availableNow) ? "inactive" : isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
            }
            break;
       case BuildInfo::DIG: {

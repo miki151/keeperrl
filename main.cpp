@@ -243,7 +243,8 @@ int main(int argc, char* argv[]) {
   view->setJukebox(&jukebox);
   GuiElem::initialize("frame.png");
   if (!WindowView::areTilesOk())
-    view->presentText("", "You are playing a version of KeeperRL without graphical tiles. Besides graphics, this "
+    view->presentText("", "You are playing a version of KeeperRL without graphical tiles. "
+        "Besides lack of graphics and music, this "
         "is the same exact game as the full version. If you'd like to buy the full version, "
         "please visit keeperrl.com");
   while (1) {

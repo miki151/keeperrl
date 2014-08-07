@@ -347,6 +347,7 @@ class Tree : public Square {
 
   virtual void onConstructNewSquare(Square* s) override {
     s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
+    ++numCut;
   }
 
   virtual void burnOut() override {
@@ -373,7 +374,10 @@ class Tree : public Square {
   private:
   bool SERIAL2(destroyed, false);
   int SERIAL(numWood);
+  static int numCut;
 };
+
+int Tree::numCut = 0;
 
 class TrapSquare : public Square {
   public:

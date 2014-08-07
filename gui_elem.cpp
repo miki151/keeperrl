@@ -651,7 +651,7 @@ static Texture border2Top;
 static Texture border2Right;
 static Texture border2Bottom;
 static Texture border2Left;
-static Texture icons[6];
+static Texture icons[7];
 const int border2Width = 6;
 
 const int scrollButtonSize = 16;
