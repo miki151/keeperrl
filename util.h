@@ -94,6 +94,7 @@ class Vec2 {
   int x, y;
   Vec2() : x(0), y(0) {}
   Vec2(int x, int y);
+  Vec2(Dir);
   bool inRectangle(int px, int py, int kx, int ky) const;
   bool inRectangle(const Rectangle&) const;
   bool operator == (const Vec2& v) const;
@@ -404,6 +405,31 @@ class Table {
   private:
   Rectangle bounds;
   unique_ptr<T[]> mem;
+};
+
+template<typename T>
+class DirtyTable {
+  public:
+  DirtyTable(Rectangle bounds, T dirty) : val(bounds), dirty(bounds, 0), dirtyVal(dirty) {} 
+
+  double getValue(Vec2 v) const {
+    return dirty[v] < counter ? dirtyVal : val[v];
+  }
+
+  void setValue(Vec2 v, const T& d) {
+    val[v] = d;
+    dirty[v] = counter;
+  }
+
+  void clear() {
+    ++counter;
+  }
+
+  private:
+  Table<T> val;
+  Table<int> dirty;
+  T dirtyVal;
+  int counter = 1;
 };
 
 template <typename T>
@@ -1045,6 +1071,13 @@ class EnumSet : public EnumMap<T, char> {
       insert(elem);
   }
 
+  EnumSet(initializer_list<char> il) {
+    CHECK(il.size() == EnumInfo<T>::getSize());
+    int cnt = 0;
+    for (int i : il)
+      (*this)[T(cnt++)] = i;
+  }
+
   void insert(T elem) {
     (*this)[elem] = 1;
   }
@@ -1053,6 +1086,14 @@ class EnumSet : public EnumMap<T, char> {
     EnumSet ret(other);
     for (T elem : *this)
       ret.insert(elem);
+    return ret;
+  }
+
+  EnumSet intersection(const EnumSet& other) {
+    EnumSet ret;
+    for (T elem : *this)
+      if (other[elem])
+        ret.insert(elem);
     return ret;
   }
 

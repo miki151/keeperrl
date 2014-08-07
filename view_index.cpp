@@ -67,6 +67,10 @@ bool ViewIndex::isEmpty() const {
   return objects.empty() && highlight.empty();
 }
 
+bool ViewIndex::noObjects() const {
+  return objects.empty();
+}
+
 const ViewObject& ViewIndex::getObject(ViewLayer l) const {
   int ind = objIndex[int(l)];
   CHECK(ind > -1) << "No object on layer " << int(l);

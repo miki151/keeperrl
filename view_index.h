@@ -41,6 +41,7 @@ class ViewIndex {
   ViewObject& getObject(ViewLayer);
   const ViewObject* getTopObject(const vector<ViewLayer>&) const;
   bool isEmpty() const;
+  bool noObjects() const;
   ~ViewIndex();
 
   struct HighlightInfo {

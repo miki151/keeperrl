@@ -87,11 +87,11 @@ void Level::addCreature(Vec2 position, PCreature c) {
 void Level::putCreature(Vec2 position, Creature* c) {
   creatures.push_back(c);
   CHECK(getSquare(position)->getCreature() == nullptr);
+  bucketMap.addElement(position, c);
   c->setLevel(this);
   c->setPosition(position);
   //getSquare(position)->putCreatureSilently(c);
   getSquare(position)->putCreature(c);
-  bucketMap.addElement(position, c);
   notifyLocations(c);
 }
   
@@ -250,10 +250,10 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
 }
 
 void Level::killCreature(Creature* creature) {
+  bucketMap.removeElement(creature->getPosition(), creature);
   removeElement(creatures, creature);
   getSquare(creature->getPosition())->removeCreature();
   model->removeCreature(creature);
-  bucketMap.removeElement(creature->getPosition(), creature);
   if (creature->isPlayer())
     updatePlayer();
 }
@@ -349,18 +349,20 @@ bool Level::canMoveCreature(const Creature* creature, Vec2 direction) const {
 void Level::moveCreature(Creature* creature, Vec2 direction) {
   CHECK(canMoveCreature(creature, direction));
   Vec2 position = creature->getPosition();
+  bucketMap.moveElement(position, position + direction, creature);
   Square* nextSquare = getSquare(position + direction);
   Square* thisSquare = getSquare(position);
   thisSquare->removeCreature();
   creature->setPosition(position + direction);
   nextSquare->putCreature(creature);
   notifyLocations(creature);
-  bucketMap.moveElement(position, position + direction, creature);
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {
   Vec2 position1 = c1->getPosition();
   Vec2 position2 = c2->getPosition();
+  bucketMap.moveElement(position1, position2, c1);
+  bucketMap.moveElement(position2, position1, c2);
   Square* square1 = getSquare(position1);
   Square* square2 = getSquare(position2);
   square1->removeCreature();
@@ -371,8 +373,6 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
   square2->putCreature(c1);
   notifyLocations(c1);
   notifyLocations(c2);
-  bucketMap.moveElement(position1, position2, c1);
-  bucketMap.moveElement(position2, position1, c2);
 }
 
 vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, Vision* vision) const {

@@ -70,6 +70,13 @@ Tile Tile::addConnection(EnumSet<Dir> c, const string& name) {
   return addConnection(c, coords.pos.x, coords.pos.y);
 }
 
+Tile Tile::addOption(Dir d, const string& name) {
+  Renderer::TileCoords coords = Renderer::getTileCoords(name);
+  texNum = coords.texNum;
+  connectionOption = {d, coords.pos};
+  return *this;
+}
+
 Tile Tile::addBackground(int x, int y) {
   backgroundCoord = Vec2(x, y);
   return *this;
@@ -99,6 +106,13 @@ Optional<Vec2> Tile::getBackgroundCoord() {
 }
 
 Vec2 Tile::getSpriteCoord(const EnumSet<Dir>& c) {
+  if (connectionOption) {
+    CHECK(connections.empty()) << "Can't have connections and options at the same time";
+    if (c[connectionOption->first])
+      return connectionOption->second;
+    else
+      return *tileCoord;
+  }
   if (connections.count(c))
     return connections.at(c);
   else return *tileCoord;
@@ -194,6 +208,8 @@ void Tile::initialize() {
       (SetOfDir, int, int), Tile);
   ADD_SCRIPT_METHOD_OVERLOAD(Tile, addConnection, "Tile addConnection(SetOfDir c, const string& in)",
       (SetOfDir, const string&), Tile);
+  ADD_SCRIPT_METHOD_OVERLOAD(Tile, addOption, "Tile addOption(Dir, const string& in)",
+      (Dir, const string&), Tile);
 }
 
 void Tile::loadTiles() {
@@ -202,6 +218,11 @@ void Tile::loadTiles() {
 
 void Tile::loadUnicode() {
   ScriptContext::execute("tiles.as", "void genSymbols()");
+}
+
+Tile Tile::fromViewId(ViewId id) {
+  CHECK(tiles.count(id));
+  return tiles.at(id);
 }
 
 Tile getSpriteTile(const ViewObject& obj) {

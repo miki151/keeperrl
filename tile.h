@@ -22,6 +22,7 @@
 class Tile {
   public:
   static Tile getTile(const ViewObject& obj, bool sprite);
+  static Tile fromViewId(ViewId);
   static Color getColor(const ViewObject& object);
 
   static Tile empty();
@@ -44,6 +45,7 @@ class Tile {
 
   Tile addConnection(EnumSet<Dir> c, int x, int y);
   Tile addConnection(EnumSet<Dir> c, const string&);
+  Tile addOption(Dir, const string&);
 
   Tile addBackground(int x, int y);
   Tile addBackground(const string&);
@@ -68,6 +70,7 @@ class Tile {
   Optional<Vec2> backgroundCoord;
   int texNum = 0;
   unordered_map<EnumSet<Dir>, Vec2> connections;
+  Optional<pair<Dir, Vec2>> connectionOption;
 };
 
 

@@ -24,9 +24,11 @@
 #include "window_renderer.h"
 #include "clock.h"
 #include "view_id.h"
+#include "level.h"
 
 
-MapGui::MapGui(const Table<Optional<ViewIndex>>& o, function<void(Vec2)> fun) : objects(o), leftClickFun(fun) {
+MapGui::MapGui(const Table<Optional<ViewIndex>>& o, function<void(Vec2)> fun)
+    : objects(o), leftClickFun(fun), fogOfWar(Level::getMaxBounds(), false) {
 }
 
 static int fireVar = 50;
@@ -90,6 +92,7 @@ enum class ConnectionId {
   TORTURE_ROOM,
   WORKSHOP,
   LABORATORY,
+  BRIDGE,
 };
 
 unordered_map<Vec2, ConnectionId> floorIds;
@@ -116,6 +119,7 @@ Optional<ConnectionId> getConnectionId(const ViewObject& object) {
     case ViewId::TORTURE_TABLE: return ConnectionId::TORTURE_ROOM;
     case ViewId::WORKSHOP: return ConnectionId::WORKSHOP;
     case ViewId::LABORATORY: return ConnectionId::LABORATORY;
+    case ViewId::BRIDGE: return ConnectionId::BRIDGE;
     default: return Nothing();
   }
 }
@@ -282,25 +286,48 @@ void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
   renderer.drawText(color, pos.x + 10, pos.y + 1, text);
 }
 
+void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs) {
+  Tile tile = Tile::fromViewId(ViewId::FOG_OF_WAR); 
+  Tile tile2 = Tile::fromViewId(ViewId::FOG_OF_WAR_CORNER); 
+  Vec2 coord = tile.getSpriteCoord(dirs.intersection({Dir::N, Dir::S, Dir::E, Dir::W}));
+  Vec2 sz = Renderer::tileSize[tile.getTexNum()];
+  renderer.drawSprite(pos.x, pos.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y,
+      Renderer::tiles[tile.getTexNum()], sizeX, sizeY);
+  for (Dir dir : dirs.intersection({Dir::NE, Dir::SE, Dir::NW, Dir::SW})) {
+    switch (dir) {
+      case Dir::NE: if (!dirs[Dir::N] || !dirs[Dir::E]) continue;
+      case Dir::SE: if (!dirs[Dir::S] || !dirs[Dir::E]) continue;
+      case Dir::NW: if (!dirs[Dir::N] || !dirs[Dir::W]) continue;
+      case Dir::SW: if (!dirs[Dir::S] || !dirs[Dir::W]) continue;
+      default: break;
+    }
+    Vec2 coord = tile2.getSpriteCoord({dir});
+    renderer.drawSprite(pos.x, pos.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y,
+        Renderer::tiles[tile2.getTexNum()], sizeX, sizeY);
+  }
+}
+
+bool MapGui::isFoW(Vec2 pos) const {
+  return !pos.inRectangle(Level::getMaxBounds()) || fogOfWar.getValue(pos);
+}
+
 void MapGui::render(Renderer& renderer) {
   int sizeX = layout->squareWidth();
   int sizeY = layout->squareHeight();
   renderer.drawFilledRectangle(getBounds(), colors[ColorId::ALMOST_BLACK]);
   Optional<ViewObject> highlighted;
+  fogOfWar.clear();
   for (ViewLayer layer : layout->getLayers()) {
     for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
       Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
       if (!spriteMode && wpos.inRectangle(levelBounds))
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
-      if (!objects[wpos] || objects[wpos]->isEmpty()) {
-        if (contains({ViewLayer::FLOOR}, layer)) {
+      if (!objects[wpos] || objects[wpos]->noObjects()) {
+        if (layer == layout->getLayers().back()) {
           if (wpos.inRectangle(levelBounds))
             renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
-          if (highlightedPos == wpos) {
-            renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
-                colors[ColorId::LIGHT_GRAY]);
-          }
         }
+        fogOfWar.setValue(wpos, true);
         continue;
       }
       const ViewIndex& index = *objects[wpos];
@@ -319,6 +346,17 @@ void MapGui::render(Renderer& renderer) {
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
             colors[ColorId::LIGHT_GRAY]);
       }
+      if (layer == layout->getLayers().back())
+        if (!isFoW(wpos))
+          drawFoWSprite(renderer, pos, sizeX, sizeY, {
+              !isFoW(wpos + Vec2(Dir::N)),
+              !isFoW(wpos + Vec2(Dir::S)),
+              !isFoW(wpos + Vec2(Dir::E)),
+              !isFoW(wpos + Vec2(Dir::W)),
+              isFoW(wpos + Vec2(Dir::NE)),
+              isFoW(wpos + Vec2(Dir::NW)),
+              isFoW(wpos + Vec2(Dir::SE)),
+              isFoW(wpos + Vec2(Dir::SW))});
     }
     if (!spriteMode)
       break;
@@ -328,6 +366,10 @@ void MapGui::render(Renderer& renderer) {
       Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
       for (ViewIndex::HighlightInfo highlight : index->getHighlight())
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, getHighlightColor(highlight));
+      if (highlightedPos == wpos) {
+        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
+            colors[ColorId::LIGHT_GRAY]);
+      }
     }
   animations = filter(std::move(animations), [](const AnimationInfo& elem) 
       { return !elem.animation->isDone(Clock::get().getRealMillis());});

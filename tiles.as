@@ -53,7 +53,7 @@ Tile getWaterTile(int leftX) {
     .addConnection(dirs(W), leftX + 1, 7)
     .addConnection(dirs(E), leftX + 1, 8)
     .addConnection(dirs(N, S), leftX + 1, 12)
-    .addConnection(dirs(E, W), leftX, 11);
+    .addConnection(dirs(E, W), leftX + 1, 11);
 }
 
 
@@ -92,7 +92,7 @@ void genTiles() {
   addTile(DWARF, sprite(2, 6));
   addTile(DWARF_BARON, sprite(3, 6));
   addTile(DWARVEN_SHOPKEEPER, sprite(4, 2));
-  addTile(BRIDGE, sprite("bridge"));
+  addTile(BRIDGE, sprite("bridge").addOption(S, "bridge2"));
   addTile(ROAD, getRoadTile(7));
   addTile(PATH, sprite(3, 14, 1));
   addTile(FLOOR, sprite(3, 14, 1));
@@ -284,6 +284,12 @@ void genTiles() {
   addTile(MANA, sprite(5, 10, 2));
   addTile(DANGER, sprite(12, 9, 2));
   addTile(FETCH_ICON, sprite(15, 11, 3));
+  addTile(FOG_OF_WAR, getWaterTile(14));
+  addTile(FOG_OF_WAR_CORNER, sprite(14, 5, 4)
+      .addConnection(dirs(NE), 14, 11)
+      .addConnection(dirs(NW), 13, 11)
+      .addConnection(dirs(SE), 14, 12)
+      .addConnection(dirs(SW), 13, 12));
 }
 
 void genSymbols() {

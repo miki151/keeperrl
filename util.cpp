@@ -195,6 +195,19 @@ SERIALIZABLE(Vec2);
 Vec2::Vec2(int _x, int _y) : x(_x), y(_y) {
 }
 
+Vec2::Vec2(Dir dir) {
+  switch (dir) {
+    case Dir::N: x = 0; y = -1; break;
+    case Dir::S: x = 0; y = 1; break;
+    case Dir::E: x = 1; y = 0; break;
+    case Dir::W: x = -1; y = 0; break;
+    case Dir::NE: x = 1; y = -1; break;
+    case Dir::SE: x = 1; y = 1; break;
+    case Dir::NW: x = -1; y = -1; break;
+    case Dir::SW: x = -1; y = 1; break;
+  }
+}
+
 Vec2 Vec2::mult(const Vec2& v) const {
   return Vec2(x * v.x, y * v.y);
 }

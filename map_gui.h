@@ -50,6 +50,7 @@ class MapGui : public GuiElem {
   private:
   void drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject&, int sizeX, int sizeY, Vec2 tilePos);
   void drawHint(Renderer& renderer, Color color, const string& text);
+  void drawFoWSprite(Renderer&, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs);
   MapLayout* layout;
   const Table<Optional<ViewIndex>>& objects;
   const MapMemory* lastMemory = nullptr;
@@ -66,6 +67,8 @@ class MapGui : public GuiElem {
     Vec2 position;
   };
   vector<AnimationInfo> animations;
+  DirtyTable<bool> fogOfWar;
+  bool isFoW(Vec2 pos) const;
 };
 
 #endif
