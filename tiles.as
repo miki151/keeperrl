@@ -472,8 +472,8 @@ void genSymbols() {
   addSymbol(WEB_TRAP, symbol("#", WHITE, true));
   addSymbol(SURPRISE_TRAP, symbol("^", BLUE, true));
   addSymbol(TERROR_TRAP, symbol("^", WHITE, true));
-  addSymbol(ROCK, symbol("*", LIGHT_GRAY));
-  addSymbol(IRON_ROCK, symbol("*", ORANGE));
+  addSymbol(ROCK, symbol("✱", LIGHT_GRAY, true));
+  addSymbol(IRON_ROCK, symbol("✱", ORANGE, true));
   addSymbol(WOOD_PLANK, symbol("\\", BROWN));
   addSymbol(STOCKPILE1, symbol(".", YELLOW));
   addSymbol(STOCKPILE2, symbol(".", LIGHT_GREEN));
@@ -486,7 +486,7 @@ void genSymbols() {
   addSymbol(ALTAR, symbol("Ω", WHITE, true));
   addSymbol(CREATURE_ALTAR, symbol("Ω", YELLOW, true));
   addSymbol(TORTURE_TABLE, symbol("=", GRAY));
-  addSymbol(IMPALED_HEAD, symbol("𐌒", BROWN, true));
+  addSymbol(IMPALED_HEAD, symbol("⚲", BROWN, true));
   addSymbol(TRAINING_ROOM, symbol("‡", BROWN, true));
   addSymbol(LIBRARY, symbol("▤", BROWN, true));
   addSymbol(LABORATORY, symbol("ω", PURPLE, true));
@@ -516,7 +516,7 @@ void genSymbols() {
   addSymbol(FALLEN_TREE, symbol("*", GREEN));
   addSymbol(GUARD_POST, symbol("⚐", YELLOW, true));
   addSymbol(DESTROY_BUTTON, symbol("X", RED));
-  addSymbol(MANA, symbol("*", BLUE));
+  addSymbol(MANA, symbol("✱", BLUE, true));
   addSymbol(DANGER, symbol("*", RED));
   addSymbol(FETCH_ICON, symbol(0x1f44b, LIGHT_BROWN, true));
 }

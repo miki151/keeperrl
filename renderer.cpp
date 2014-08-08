@@ -188,7 +188,7 @@ void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSp
     drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles.at(tile.getTexNum()),
         sz.x * scale, sz.y * scale);
   } else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale,
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20,
         Tile::getColor(object), x, y, tile.text);
 }
 

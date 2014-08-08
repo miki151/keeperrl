@@ -347,7 +347,8 @@ class Tree : public Square {
 
   virtual void onConstructNewSquare(Square* s) override {
     s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
-    if ((numCut += numWood) > 750 && Random.roll(max(10, (2000 - numCut) / 25)))
+    numCut += numWood;
+    if (numCut > 1000 && Random.roll(max(30, (3000 - numCut) / 20)))
       Effect::summon(getLevel(), Deity::getDeity(DeityHabitat::TREES)->getServant(), getPosition(),
           Tribe::get(TribeId::MONSTER), 1, Random.getRandom(30, 60));
   }
