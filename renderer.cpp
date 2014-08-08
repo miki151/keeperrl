@@ -181,10 +181,11 @@ void Renderer::initialize(RenderTarget* d, int width, int height) {
 void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSprite, double scale) {
   Tile tile = Tile::getTile(object, useSprite);
   if (tile.hasSpriteCoord()) {
+    CHECK(tile.getTexNum() >= 0 && tile.getTexNum() < Renderer::tiles.size());
     Vec2 sz = Renderer::tileSize[tile.getTexNum()];
     Vec2 of = (Renderer::nominalSize - sz) / 2;
     Vec2 coord = tile.getSpriteCoord(EnumSet<Dir>::fullSet());
-    drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()],
+    drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles.at(tile.getTexNum()),
         sz.x * scale, sz.y * scale);
   } else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale,

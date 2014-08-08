@@ -53,7 +53,7 @@ Tile Tile::byName(const string& s, bool noShadow) {
 }
 
 Tile Tile::empty() {
-  return Tile::byCoord(-1, -1, -1);
+  return byName("empty");
 }
 
 Tile::Tile(Renderer::TileCoords coords, bool noShadow)
