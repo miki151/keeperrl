@@ -22,6 +22,7 @@
 class Level;
 class Creature;
 class Item;
+class Tribe;
 
 class Effect {
   public:
@@ -29,6 +30,7 @@ class Effect {
   static void applyToPosition(Level*, Vec2, EffectType, EffectStrength);
 
   static void summon(Creature*, CreatureId, int num, int ttl);
+  static void summon(Level*, CreatureId, Vec2 pos, Tribe*, int num, int ttl);
 
   template <class Archive>
   static void registerTypes(Archive& ar);

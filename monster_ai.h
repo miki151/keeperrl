@@ -101,6 +101,7 @@ class MonsterAIFactory {
   static MonsterAIFactory doorEater();
   static MonsterAIFactory scavengerBird(Vec2 corpsePos);
   static MonsterAIFactory summoned(Creature*, int ttl);
+  static MonsterAIFactory dieTime(double time);
   static MonsterAIFactory moveRandomly();
   static MonsterAIFactory idle();
 

@@ -408,6 +408,10 @@ PCreature Model::makePlayer() {
   return player;
 }
 
+double Model::getTime() const {
+  return currentTime;
+}
+
 void Model::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON, CANCEL };
   vector<View::ListElem> options { "Save the game", "Retire", "Change options", "Abandon the game", "Cancel" };

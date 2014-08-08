@@ -62,6 +62,7 @@ class Model : public EventListener {
 
   string getGameIdentifier() const;
   void exitAction();
+  double getTime() const;
 
   View* getView();
   void setView(View*);

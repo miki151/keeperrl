@@ -25,6 +25,7 @@
 #include "item.h"
 #include "view_object.h"
 #include "view_id.h"
+#include "model.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};
@@ -83,17 +84,21 @@ void Effect::registerTypes(Archive& ar) {
 
 REGISTER_TYPES(Effect);
 
-static int summonCreatures(Creature* c, int radius, vector<PCreature> creatures) {
+static int summonCreatures(Level* level, Vec2 pos, int radius, vector<PCreature> creatures) {
   int numCreated = 0;
   vector<Vec2> area = Rectangle(-radius, -radius, radius, radius).getAllSquares();
   for (int i : All(creatures))
     for (Vec2 v : randomPermutation(area))
-      if (c->getLevel()->inBounds(v + c->getPosition()) && c->getSquare(v)->canEnter(creatures[i].get())) {
+      if (level->inBounds(v + pos) && level->getSquare(v + pos)->canEnter(creatures[i].get())) {
         ++numCreated;
-        c->getLevel()->addCreature(c->getPosition() + v, std::move(creatures[i]));
+        level->addCreature(pos + v, std::move(creatures[i]));
         break;
   }
   return numCreated;
+}
+
+static int summonCreatures(Creature* c, int radius, vector<PCreature> creatures) {
+  return summonCreatures(c->getLevel(), c->getPosition(), radius, std::move(creatures));
 }
 
 static void insects(Creature* c) {
@@ -217,6 +222,14 @@ void Effect::summon(Creature* c, CreatureId id, int num, int ttl) {
   for (int i : Range(num))
     creatures.push_back(CreatureFactory::fromId(id, c->getTribe(), MonsterAIFactory::summoned(c, ttl)));
   summonCreatures(c, 2, std::move(creatures));
+}
+
+void Effect::summon(Level* level, CreatureId id, Vec2 pos, Tribe* tribe, int num, int ttl) {
+  vector<PCreature> creatures;
+  for (int i : Range(num))
+    creatures.push_back(CreatureFactory::fromId(id, tribe,
+          MonsterAIFactory::dieTime(level->getModel()->getTime() + ttl)));
+  summonCreatures(level, pos, 2, std::move(creatures));
 }
 
 static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improved") {

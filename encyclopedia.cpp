@@ -145,14 +145,14 @@ void deities(View* view, int lastInd = 0) {
 
 void Encyclopedia::present(View* view, int lastInd) {
   auto index = view->chooseFromList("Choose topic:",
-      {"Advances", "Workshop", "Deities", "Skills"}, lastInd);
+      {"Advances", /*"Workshop",*/ "Deities", "Skills"}, lastInd);
   if (!index)
     return;
   switch (*index) {
     case 0: advances(view); break;
-    case 1: workshop(view); break;
-    case 2: deities(view); break;
-    case 3: skills(view); break;
+//    case 1: workshop(view); break;
+    case 1: deities(view); break;
+    case 2: skills(view); break;
     default: FAIL << "wfepok";
   }
   present(view, *index);

@@ -685,6 +685,32 @@ class DoorEater : public Behaviour {
   }
 };
 
+class DieTime : public Behaviour {
+  public:
+  DieTime(Creature* c, double t) : Behaviour(c), dieTime(t) {}
+
+  virtual MoveInfo getMove() override {
+    if (creature->getTime() > dieTime) {
+      return {1.0, CreatureAction([=] {
+        creature->die(nullptr, false, false);
+      })};
+    }
+    return NoMove;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(DieTime);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Behaviour)
+      & SVAR(dieTime);
+    CHECK_SERIAL;
+  }
+
+  private:
+  double SERIAL(dieTime);
+};
+
 class Summoned : public GuardTarget, public EventListener {
   public:
   Summoned(Creature* c, Creature* _target, double minDist, double maxDist, double ttl) 
@@ -703,7 +729,7 @@ class Summoned : public GuardTarget, public EventListener {
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getTime() > dieTime) {
       return {1.0, CreatureAction([=] {
-        creature->die(nullptr);
+        creature->die(nullptr, false, false);
       })};
     }
     if (target->getLevel() == creature->getLevel()) {
@@ -1030,6 +1056,18 @@ MonsterAIFactory MonsterAIFactory::summoned(Creature* leader, int ttl) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
           new Summoned(c, leader, 1, 3, ttl),
+          new Heal(c),
+          new Fighter(c, 0.6, true),
+          new MoveRandomly(c, 3),
+          new GoldLust(c)},
+          { 5, 4, 3, 1, 1 });
+      });
+}
+
+MonsterAIFactory MonsterAIFactory::dieTime(double dieTime) {
+  return MonsterAIFactory([=](Creature* c) {
+      return new MonsterAI(c, {
+          new DieTime(c, dieTime),
           new Heal(c),
           new Fighter(c, 0.6, true),
           new MoveRandomly(c, 3),
