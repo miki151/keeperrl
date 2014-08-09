@@ -213,12 +213,13 @@ class EquipItem : public PickItem {
     if (!pickedUp)
       return PickItem::getMove(c);
     vector<Item*> it = c->getEquipment().getItems(items.containsPredicate());
-    if (!it.empty())
+    if (!it.empty()) {
       if (auto action = c->equip(getOnlyElement(it)))
         return {1.0, action.append([=] {
           setDone();
         })};
-    setDone();
+    } else
+      setDone();
     return NoMove;
   }
 

@@ -325,11 +325,12 @@ class Collective : public EventListener, public Task::Callback {
   map<Vec2, TrapInfo> SERIAL(traps);
   struct PrisonerInfo {
     enum State { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE } state;
-    bool marked;
+    UniqueId task;
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
   };
   PTask getPrisonerTask(Creature* prisoner);
+  void clearPrisonerTask(Creature* prisoner);
   map<Creature*, PrisonerInfo> SERIAL(prisonerInfo);
   void updateConstructions();
   void delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime);

@@ -885,6 +885,7 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, GuardArea);
   REGISTER_TYPE(ar, GuardSquare);
   REGISTER_TYPE(ar, Summoned);
+  REGISTER_TYPE(ar, DieTime);
   REGISTER_TYPE(ar, Wait);
   REGISTER_TYPE(ar, Thief);
   REGISTER_TYPE(ar, ByCollective);

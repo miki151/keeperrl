@@ -114,10 +114,10 @@ void Level::addLightSource(Vec2 pos, double radius, int numLight) {
 void Level::replaceSquare(Vec2 pos, PSquare square) {
   if (contains(tickingSquares, getSquare(pos)))
     removeElement(tickingSquares, getSquare(pos));
+  squares[pos]->onConstructNewSquare(square.get());
   Creature* c = squares[pos]->getCreature();
   for (Item* it : squares[pos]->getItems())
     square->dropItem(squares[pos]->removeItem(it));
-  squares[pos]->onConstructNewSquare(square.get());
   addLightSource(pos, squares[pos]->getLightEmission(), -1);
   square->setBackground(squares[pos].get());
   squares[pos] = std::move(square);

@@ -102,7 +102,7 @@ SERIALIZABLE(Collective::TrapInfo);
 template <class Archive>
 void Collective::PrisonerInfo::serialize(Archive& ar, const unsigned int version) {
   ar& BOOST_SERIALIZATION_NVP(state)
-    & BOOST_SERIALIZATION_NVP(marked);
+    & BOOST_SERIALIZATION_NVP(task);
 }
 
 SERIALIZABLE(Collective::PrisonerInfo);
@@ -181,7 +181,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::TORTURE, {{SquareType::TORTURE_TABLE}, "torture ordered", Collective::Warning::TORTURE_ROOM, true}},
     {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "exploring"}},
     {MinionTask::SACRIFICE, {{}, "sacrifice ordered", Collective::Warning::ALTAR}},
-    {MinionTask::EXECUTE, {{}, "execution ordered", Nothing()}},
+    {MinionTask::EXECUTE, {{SquareType::PRISON}, "execution ordered", Collective::Warning::NO_PRISON}},
     {MinionTask::WORSHIP, {{}, "worship", Nothing()}}};
   for (SquareType t : getSquareTypes())
     if (contains({SquareType::ALTAR, SquareType::CREATURE_ALTAR}, t.id) && !getSquares(t).empty()) {
@@ -239,7 +239,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     if (Skill* skill = t->getSkill())
       c->addSkill(skill);
   if (traits[MinionTrait::PRISONER])
-    prisonerInfo[c] = {PrisonerInfo::PRISON, false};
+    prisonerInfo[c] = {PrisonerInfo::PRISON, 0};
 }
 
 vector<Creature*>& Collective::getCreatures() {
@@ -297,7 +297,7 @@ MoveInfo Collective::getDropItems(Creature *c) {
 PTask Collective::getPrisonerTask(Creature* c) {
   if (hasTrait(c, MinionTrait::FIGHTER))
     for (auto& elem : prisonerInfo)
-      if (!elem.second.marked) {
+      if (!elem.second.task) {
         Creature* prisoner = elem.first;
         PTask t;
         switch (elem.second.state) {
@@ -307,7 +307,7 @@ PTask Collective::getPrisonerTask(Creature* c) {
           default: return nullptr;
         }
         if (t)
-          elem.second.marked = true;
+          elem.second.task = t->getUniqueId();
         return t;
       }
   return nullptr;
@@ -315,7 +315,7 @@ PTask Collective::getPrisonerTask(Creature* c) {
 
 void Collective::onKillCancelled(Creature* c) {
   if (prisonerInfo.count(c))
-    prisonerInfo.at(c).marked = false;
+    prisonerInfo.at(c).task = 0;
 }
 
 MoveInfo Collective::getWorkerMove(Creature* c) {
@@ -412,8 +412,11 @@ PTask Collective::getEquipmentTask(Creature* c) {
 PTask Collective::getHealingTask(Creature* c) {
   if (c->getHealth() < 1 && c->canSleep() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR})
-      if (c->getMinionTasks()[t] > 0)
-        return Task::applySquare(this, getAllSquares(getTaskInfo().at(t).squares));
+      if (c->getMinionTasks()[t] > 0) {
+        vector<Vec2> positions = getAllSquares(getTaskInfo().at(t).squares);
+        if (!positions.empty())
+          return Task::applySquare(this, positions);
+      }
   return nullptr;
 }
 
@@ -796,6 +799,7 @@ void Collective::update(Creature* c) {
 
 const static unordered_set<SquareType> efficiencySquares {
   SquareType::TRAINING_ROOM,
+  SquareType::TORTURE_TABLE,
   SquareType::WORKSHOP,
   SquareType::LIBRARY,
   SquareType::LABORATORY,
@@ -961,7 +965,7 @@ vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squa
 }
 
 bool Collective::usesEquipment(const Creature* c) const {
-  return c->isHumanoid() && !hasTrait(c, MinionTrait::NO_EQUIPMENT);
+  return c->isHumanoid() && !hasTrait(c, MinionTrait::NO_EQUIPMENT) && !hasTrait(c, MinionTrait::PRISONER);
 }
 
 Item* Collective::getWorstItem(vector<Item*> items) const {
@@ -1022,18 +1026,34 @@ vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinio
   return allItems;
 }
 
+void Collective::clearPrisonerTask(Creature* prisoner) {
+  if (prisonerInfo.at(prisoner).task) {
+    taskMap.removeTask(prisonerInfo.at(prisoner).task);
+    prisonerInfo.at(prisoner).task = 0;
+  }
+}
+
 void Collective::orderExecution(Creature* c) {
-  prisonerInfo.at(c) = {PrisonerInfo::EXECUTE, false};
+  if (prisonerInfo.at(c).state == PrisonerInfo::EXECUTE)
+    return;
+  clearPrisonerTask(c);
+  prisonerInfo.at(c) = {PrisonerInfo::EXECUTE, 0};
   setMinionTask(c, MinionTask::EXECUTE);
 }
 
 void Collective::orderTorture(Creature* c) {
-  prisonerInfo.at(c) = {PrisonerInfo::TORTURE, false};
+  if (prisonerInfo.at(c).state == PrisonerInfo::TORTURE)
+    return;
+  clearPrisonerTask(c);
+  prisonerInfo.at(c) = {PrisonerInfo::TORTURE, 0};
   setMinionTask(c, MinionTask::TORTURE);
 }
 
 void Collective::orderSacrifice(Creature* c) {
-  prisonerInfo.at(c) = {PrisonerInfo::SACRIFICE, false};
+  if (prisonerInfo.at(c).state == PrisonerInfo::SACRIFICE)
+    return;
+  clearPrisonerTask(c);
+  prisonerInfo.at(c) = {PrisonerInfo::SACRIFICE, 0};
   setMinionTask(c, MinionTask::SACRIFICE);
 }
 
@@ -1232,7 +1252,7 @@ void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed) {
 
 void Collective::onSurrenderEvent(Creature* who, const Creature* to) {
   if (contains(getCreatures(), to) && !contains(getCreatures(), who) && !prisonerInfo.count(who) && !who->isAnimal())
-    prisonerInfo[who] = {PrisonerInfo::SURRENDER, false};
+    prisonerInfo[who] = {PrisonerInfo::SURRENDER, 0};
 }
 
 // actually only called when square is destroyed

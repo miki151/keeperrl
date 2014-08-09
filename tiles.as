@@ -79,7 +79,7 @@ void genTiles() {
   addTile(KEEPER, sprite(3, 0));
   addTile(UNDEAD_KEEPER, sprite(9, 16));
   addTile(ELF, sprite(10, 6));
-  addTile(ELF_ARCHER, sprite("elfarcher"));
+  addTile(ELF_ARCHER, sprite(12, 6));
   addTile(ELF_CHILD, sprite(14, 6));
   addTile(ELF_LORD, sprite(13, 6));
   addTile(ELVEN_SHOPKEEPER, sprite(4, 2));

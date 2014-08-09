@@ -900,6 +900,7 @@ int prefixChance = 30;
 
 PItem ItemFactory::fromId(ItemId id) {
   bool artifact = false;
+  bool flaming = false;
   switch (id) {
     case ItemId::KNIFE: return PItem(new Item(
         ViewObject(ViewId::KNIFE, ViewLayer::ITEM, "Knife"), ITATTR(
@@ -929,6 +930,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.price = 20;
             i.attackType = AttackType::STAB;)));
     case ItemId::SPECIAL_SWORD: artifact = true;
+    case ItemId::FLAMING_SWORD: flaming = true;
     case ItemId::SWORD: return PItem(new Item(
         ViewObject(artifact ? ViewId::SPECIAL_SWORD : ViewId::SWORD, ViewLayer::ITEM, "Sword"), ITATTR(
             i.name = "sword";
@@ -941,7 +943,7 @@ PItem ItemFactory::fromId(ItemId id) {
             if (artifact) {
               makeArtifact(i);
             } else
-            if (Random.roll(prefixChance))
+            if (flaming || Random.roll(prefixChance))
               addPrefix(i, WeaponPrefix::FLAMING);
             i.attackType = AttackType::CUT;)));
     case ItemId::SPECIAL_ELVEN_SWORD: artifact = true;

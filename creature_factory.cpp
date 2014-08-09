@@ -2051,7 +2051,7 @@ class ItemList {
 vector<ItemId> getInventory(CreatureId id) {
   switch (id) {
     case CreatureId::ANGEL:
-      return ItemList().add(ItemId::SWORD);
+      return ItemList().add(ItemId::FLAMING_SWORD);
     case CreatureId::KEEPER: 
       return ItemList()
         .add(ItemId::ROBE);

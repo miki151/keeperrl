@@ -86,6 +86,7 @@ class ItemFactory {
 enum class ItemId { KNIFE,
   SPEAR,
   SWORD,
+  FLAMING_SWORD,
   SPECIAL_SWORD,
   ELVEN_SWORD,
   SPECIAL_ELVEN_SWORD,

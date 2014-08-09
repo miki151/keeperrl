@@ -416,7 +416,7 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
     case MinionOption::EXECUTE:
       getCollective()->setTrait(creature, MinionTrait::PRISONER);
       getCollective()->orderExecution(creature);
-      break;
+      return;
     case MinionOption::LABOR:
       getCollective()->setTrait(creature, MinionTrait::WORKER);
       break;
@@ -1193,7 +1193,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         if (!pos.inRectangle(getLevel()->getBounds()))
           return;
         if (Creature* c = getLevel()->getSquare(pos)->getCreature())
-          if (getCollective()->hasAnyTrait(c, {MinionTrait::FIGHTER, MinionTrait::LEADER}))
+          if (getCollective()->hasAnyTrait(c, {MinionTrait::PRISONER, MinionTrait::FIGHTER, MinionTrait::LEADER}))
             handleCreatureButton(c, view);
         break;
         }
@@ -1667,8 +1667,10 @@ void PlayerControl::uncoverRandomLocation() {
 }
 
 void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
-  if (type == WorshipType::DESTROY_ALTAR)
+  if (type == WorshipType::DESTROY_ALTAR) {
+    model->getView()->presentText("", "A shrine to " + to->getName() + " has been devastated by " + who->getAName() + ".");
     return;
+  }
   if (!contains(getCreatures(), who))
     return;
   for (EpithetId id : to->getEpithets())
@@ -1685,6 +1687,13 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
         break;
       default: break;
     }
+}
+
+void PlayerControl::onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType type) {
+  if (type == WorshipType::DESTROY_ALTAR) {
+    model->getView()->presentText("", "Shrine to " + to->getName() + " has been devastated by " + who->getAName());
+    return;
+  }
 }
 
 template <class Archive>

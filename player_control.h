@@ -53,6 +53,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) override;
   virtual void onTechBookEvent(Technology*) override;
   virtual void onWorshipEvent(Creature* who, const Deity* to, WorshipType) override;
+  virtual void onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType) override;
 
   void onConqueredLand(const string& name);
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
