@@ -722,9 +722,9 @@ void Player::moveAction(Vec2 dir) {
   } else if (const Creature *c = creature->getConstSquare(dir)->getCreature()) {
     if (auto action = creature->bumpInto(dir))
       action.perform();
-    else if (auto action = creature->destroy(dir, Creature::BASH))
-      action.perform();
   }
+  else if (auto action = creature->destroy(dir, Creature::BASH))
+    action.perform();
 }
 
 bool Player::isPlayer() const {
