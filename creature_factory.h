@@ -39,8 +39,6 @@ class CreatureFactory {
   static CreatureFactory hellLevel();
   static CreatureFactory dwarfTown();
   static CreatureFactory vikingTown();
-  static CreatureFactory castleAttackers();
-  static CreatureFactory elfAttackers();
   static CreatureFactory lizardTown();
   static CreatureFactory goblinTown(int num);
   static CreatureFactory level(int num);

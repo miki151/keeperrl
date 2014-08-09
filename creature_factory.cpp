@@ -772,17 +772,9 @@ CreatureFactory CreatureFactory::humanVillage() {
 }
 
 CreatureFactory CreatureFactory::humanCastle() {
-  double armedRatio = 0.7;
-  CreatureFactory ret(Tribe::get(TribeId::HUMAN), { CreatureId::PESEANT,
-      CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
-      { 2, 1, 1, 1, 1, 0}, {});
-  double sum = 0;
-  for (double w : ret.weights)
-    sum += w;
-  ret.weights.push_back(sum * armedRatio / (1 - armedRatio));
-  ret.creatures.push_back(CreatureId::KNIGHT);
-  ret.unique.push_back(CreatureId::AVATAR);
-  return ret;
+  return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::KNIGHT, CreatureId::ARCHER,
+      CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
+      { 10, 6, 2, 1, 1, 1, 1, 1}, {CreatureId::AVATAR});
 }
 
 CreatureFactory CreatureFactory::elvenVillage() {
@@ -815,10 +807,6 @@ CreatureFactory CreatureFactory::hellLevel() {
 
 CreatureFactory CreatureFactory::vikingTown() {
   return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
-}
-
-CreatureFactory CreatureFactory::castleAttackers() {
-  return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {CreatureId::AVATAR});
 }
 
 CreatureFactory CreatureFactory::lizardTown() {
@@ -2069,14 +2057,16 @@ vector<ItemId> getInventory(CreatureId id) {
     case CreatureId::WARRIOR: 
       return ItemList()
         .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::SWORD);
+        .add(ItemId::SWORD)
+        .add(ItemId::GOLD_PIECE, Random.getRandom(10, 20));
     case CreatureId::SHAMAN: 
       return ItemList()
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::SWORD);
     case CreatureId::LIZARDLORD: 
     case CreatureId::LIZARDMAN: 
-      return ItemList().add(ItemId::LEATHER_ARMOR);
+      return ItemList().add(ItemId::LEATHER_ARMOR)
+        .add(ItemId::GOLD_PIECE, Random.getRandom(10, 20));
     case CreatureId::ARCHER: 
       return ItemList()
         .add(ItemId::BOW).add(ItemId::ARROW, Random.getRandom(20, 36))
@@ -2129,14 +2119,15 @@ vector<ItemId> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .maybe(0.5, ItemId::IRON_HELM)
         .maybe(0.3, ItemId::IRON_BOOTS)
-        .maybe(0.2, ItemId::GOLD_PIECE, Random.getRandom(10, 30));
+        .add(ItemId::GOLD_PIECE, Random.getRandom(10, 30));
     case CreatureId::DWARF_BARON: 
       return ItemList()
         .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
         .add(randomBackup())
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_BOOTS)
-        .add(ItemId::IRON_HELM);
+        .add(ItemId::IRON_HELM)
+        .add(ItemId::GOLD_PIECE, Random.getRandom(100, 200));
     case CreatureId::ELF_LORD: 
       return ItemList()
         .add(ItemId::SPECIAL_ELVEN_SWORD)

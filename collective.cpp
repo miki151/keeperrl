@@ -179,7 +179,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::RESEARCH, {{SquareType::LIBRARY}, "research", Collective::Warning::LIBRARY}},
     {MinionTask::PRISON, {{SquareType::PRISON}, "prison", Collective::Warning::NO_PRISON}},
     {MinionTask::TORTURE, {{SquareType::TORTURE_TABLE}, "torture ordered", Collective::Warning::TORTURE_ROOM, true}},
-    {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "exploring"}},
+    {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "spying"}},
     {MinionTask::SACRIFICE, {{}, "sacrifice ordered", Collective::Warning::ALTAR}},
     {MinionTask::EXECUTE, {{SquareType::PRISON}, "execution ordered", Collective::Warning::NO_PRISON}},
     {MinionTask::WORSHIP, {{}, "worship", Nothing()}}};

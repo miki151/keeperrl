@@ -570,14 +570,14 @@ vector<EnemyInfo> getEnemyInfo() {
           Random.getRandom(9, 14),getVillageLocation(true), Tribe::get(TribeId::DWARVEN),
           BuildingId::DUNGEON, {}, {}, Nothing(), Nothing(), ItemFactory::dwarfShop(), new Collective()},
       {VillageControlInfo::POWER_BASED_DISCOVER, getKilledCoeff(), getPowerCoeff()}},
-      {{SettlementType::CASTLE, CreatureFactory::humanCastle(), Random.getRandom(15, 26),
+      {{SettlementType::CASTLE, CreatureFactory::humanCastle(), Random.getRandom(20, 26),
          getVillageLocation(), Tribe::get(TribeId::HUMAN), BuildingId::BRICK, {}, {}, CreatureId::CASTLE_GUARD,
          Nothing(), ItemFactory::villageShop(), new Collective()},
       {VillageControlInfo::FINAL_ATTACK}},
       {{SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::WITCH), 1,
       new Location(), nullptr, BuildingId::WOOD, {}, {}, Nothing(), ItemId::ALCHEMY_ADV_BOOK, Nothing(),
       new Collective()},
-      {VillageControlInfo::FINAL_ATTACK}},
+      {VillageControlInfo::PEACEFUL}},
   });
   return ret;
 }

@@ -144,7 +144,7 @@ bool tileConnects(ConnectionId id, Vec2 pos) {
 void MapGui::onLeftClick(Vec2 v) {
   if (optionsGui && v.inRectangle(optionsGui->getBounds()))
     optionsGui->onLeftClick(v);
-  if (v.inRectangle(getBounds())) {
+  else if (v.inRectangle(getBounds())) {
     Vec2 pos = layout->projectOnMap(getBounds(), v);
     leftClickFun(pos);
     mouseHeldPos = pos;
