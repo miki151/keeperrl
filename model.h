@@ -108,7 +108,7 @@ class Model : public EventListener {
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL2(lastTick, -1000);
   map<tuple<StairDirection, StairKey, Level*>, Level*> SERIAL(levelLinks);
-  PlayerControl* SERIAL(playerControl);
+  PlayerControl* SERIAL2(playerControl, nullptr);
   bool SERIAL2(won, false);
   bool SERIAL2(addHero, false);
   bool SERIAL2(adventurer, false);
