@@ -712,10 +712,12 @@ void PlayerControl::handleSpawning(View* view, SquareType spawnSquare, const str
     Optional<Vec2> bedPos;
     if (!replacement && !lairSquares.empty())
       bedPos = chooseRandom(lairSquares);
-    else if (getCollective()->getCreatures(spawnType).size() < getCollective()->getSquares(*replacement).size())
-      bedPos = chooseRandom(getCollective()->getSquares(*replacement));
-    else
-      bedPos = chooseBedPos(lairSquares, getCollective()->getSquares(*replacement));
+    else if (replacement) {
+      if (getCollective()->getCreatures(spawnType).size() < getCollective()->getSquares(*replacement).size())
+        bedPos = chooseRandom(getCollective()->getSquares(*replacement));
+      else
+        bedPos = chooseBedPos(lairSquares, getCollective()->getSquares(*replacement));
+    }
     if (getNumMinions() >= minionLimit) {
       allInactive = true;
       options.emplace_back("You have reached the limit of the number of minions.", View::TITLE);

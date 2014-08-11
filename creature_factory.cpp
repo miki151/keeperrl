@@ -1788,6 +1788,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.strength -= 3;
           c.dexterity -= 3;
           c.weight -= 10;
+          c.innocent = true;
           c.name = "dog";);
     case CreatureId::FIRE_SPHERE: 
       return CATTR(
