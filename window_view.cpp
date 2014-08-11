@@ -919,7 +919,8 @@ void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
 
 void WindowView::animation(Vec2 pos, AnimationId id) {
   RenderLock lock(renderMutex);
-  mapGui->addAnimation(Animation::fromId(id), pos);
+  if (currentTileLayout.sprites)
+    mapGui->addAnimation(Animation::fromId(id), pos);
 }
 
 class FpsCounter {
@@ -1300,6 +1301,7 @@ void WindowView::addMessage(const string& message) {
 }
 
 void WindowView::switchZoom() {
+  refreshInput = true;
   if (mapLayout != &currentTileLayout.normalLayout)
     mapLayout = &currentTileLayout.normalLayout;
   else
@@ -1307,6 +1309,7 @@ void WindowView::switchZoom() {
 }
 
 void WindowView::zoom(bool out) {
+  refreshInput = true;
   if (mapLayout != &currentTileLayout.normalLayout && !out)
     mapLayout = &currentTileLayout.normalLayout;
   else if (out)
@@ -1403,7 +1406,6 @@ void WindowView::processEvents() {
         break;
       case Event::MouseWheelMoved:
           zoom(event.mouseWheel.delta < 0);
-          refreshInput = true;
           break;
       case Event::MouseButtonPressed :
           if (event.mouseButton.button == sf::Mouse::Middle)

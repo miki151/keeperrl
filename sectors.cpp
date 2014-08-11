@@ -53,8 +53,6 @@ void Sectors::add(Vec2 pos) {
         largest = elem;
     join(pos, largest);
   }
-  Debug() << "Sectors " << vector<int>(neighbors.begin(), neighbors.end())
-    << " joined " << sectors[pos] << " size " << sizes[sectors[pos]];
 }
 
 void Sectors::setSector(Vec2 pos, int sector) {
