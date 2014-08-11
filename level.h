@@ -231,6 +231,9 @@ class Level : public UniqueEntity {
     /** Adds a location to the level and sets its coordinates.*/
     void addLocation(Location*, Rectangle area);
 
+    /** Adds a collective to the level and initializes it.*/
+    void addCollective(Collective*);
+
     /** Sets the cover of the square. The value will remain if square is changed.*/
     void setCoverInfo(Vec2, CoverInfo);
    
@@ -245,6 +248,7 @@ class Level : public UniqueEntity {
     Table<double> heightMap;
     Table<double> dark;
     vector<Location*> locations;
+    vector<Collective*> collectives;
     Table<CoverInfo> coverInfo;
     Table<unordered_set<SquareAttrib>> attrib;
     Table<SquareType> type;

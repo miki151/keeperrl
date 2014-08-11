@@ -1271,6 +1271,18 @@ class LocationMaker : public LevelMaker {
   Location* location;
 };
 
+class CollectiveMaker : public LevelMaker {
+  public:
+  CollectiveMaker(Collective* col) : collective(col) {}
+
+  virtual void make(Level::Builder* builder, Rectangle area) override {
+    builder->addCollective(collective);
+  }
+  
+  private:
+  Collective* collective;
+};
+
 class ForEachSquare : public LevelMaker {
   public:
   ForEachSquare(function<void(Level::Builder*, Vec2 pos)> f,
@@ -1923,6 +1935,8 @@ LevelMaker* LevelMaker::mineTownLevel(SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareType::ROCK_WALL));
   queue->addMaker(mineTownMaker(info));
+  if (info.collective)
+    queue->addMaker(new CollectiveMaker(info.collective));
   return new BorderGuard(queue, SquareType::BLACK_WALL);
 }
 
@@ -1963,11 +1977,13 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
       case SettlementType::CAVE:
           queue = dragonCaveMaker(settlement); break;
           break;
-  }
+    }
     if (settlement.tribe == Tribe::get(TribeId::ELVEN))
       elvenVillage = queue;
     if (settlement.tribe == Tribe::get(TribeId::BANDIT))
       bandits = queue;
+    if (settlement.collective)
+      queue->addMaker(new CollectiveMaker(settlement.collective));
     locations->add(queue, getSize(settlement.type), getSettlementPredicate(settlement.type));
   }
   locations->setMaxDistance(elvenVillage, bandits, 100);
@@ -2072,6 +2088,8 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
           queue = dragonCaveMaker(settlement); break;
           break;
     }
+    if (settlement.collective)
+      queue->addMaker(new CollectiveMaker(settlement.collective));
     locations->setMinDistance(startingPos, queue, 70);
     locations->add(queue, getSize(settlement.type), getSettlementPredicate(settlement.type));
   }

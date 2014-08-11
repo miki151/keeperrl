@@ -210,7 +210,8 @@ void Model::tick(double time) {
         playerControl->onConqueredLand(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
         won = true;
       }
-    }
+    } else // temp fix to the player gets the location message
+      playerControl->tick(time);
   }
 }
 
@@ -609,7 +610,6 @@ Model* Model::collectiveModel(View* view) {
   }
   for (int i : All(enemyInfo)) {
     Collective* collective = enemyInfo[i].settlement.collective;
-    collective->setLevel(top);
     PVillageControl control;
     if (enemyInfo[i].controlInfo.id != VillageControlInfo::FINAL_ATTACK)
       control = VillageControl::get(enemyInfo[i].controlInfo, collective, keeperCollective,
