@@ -1018,7 +1018,13 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
           case Dir::SW: numArrow = 7; break;
         }
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), middle + dir);
-        renderer.drawSprite(wpos.x, wpos.y, 16 * 36, (8 + numArrow) * 36, 36, 36, Renderer::tiles[4]);
+        if (currentTileLayout.sprites)
+          renderer.drawSprite(wpos.x, wpos.y, 16 * 36, (8 + numArrow) * 36, 36, 36, Renderer::tiles[4]);
+        else {
+          static sf::Uint32 arrows[] = { L'⇐', L'⇖', L'⇑', L'⇗', L'⇒', L'⇘', L'⇓', L'⇙'};
+          renderer.drawText(Renderer::SYMBOL_FONT, 20, colors[ColorId::WHITE], wpos.x + mapLayout->squareWidth() / 2, wpos.y,
+              arrows[numArrow], true);
+        }
         renderer.drawAndClearBuffer();
         if (event.type == Event::MouseButtonPressed)
           return dir;
