@@ -382,7 +382,7 @@ PTask Collective::getStandardTask(Creature* c) {
       ret = Task::applySquare(this, getAllSquares(info.squares, info.centerOnly));
       break;
     case MinionTaskInfo::EXPLORE:
-      ret = Task::explore(this, chooseRandom(borderTiles));
+      ret = Task::explore(chooseRandom(borderTiles));
       break;
   }
   if (ret && info.warning)

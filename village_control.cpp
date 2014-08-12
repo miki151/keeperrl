@@ -377,7 +377,7 @@ class TopLevelVillageControl : public PeacefulControl {
 
   virtual PTask getNewTask(Creature* c) override {
     if (attackTrigger->startedAttack(c))
-      return Task::attackCollective(this, villain);
+      return Task::attackCollective(villain);
     else
       return PeacefulControl::getNewTask(c);
   }

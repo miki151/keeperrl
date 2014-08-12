@@ -27,7 +27,6 @@ class Task : public UniqueEntity {
   class Callback {
     public:
     virtual void onConstructed(Vec2 pos, SquareType) {}
-    virtual void onBrought(Vec2 pos, vector<Item*> items) {}
     virtual void onAppliedItem(Vec2 pos, Item* item) {}
     virtual void onAppliedSquare(Vec2 pos) {}
     virtual void onAppliedItemCancel(Vec2 pos) {}
@@ -38,7 +37,7 @@ class Task : public UniqueEntity {
     SERIALIZATION_DECL(Callback);
   };
 
-  Task(Callback*);
+  Task();
   virtual ~Task();
 
   virtual MoveInfo getMove(Creature*) = 0;
@@ -51,32 +50,29 @@ class Task : public UniqueEntity {
   static PTask bringItem(Callback*, Vec2 position, vector<Item*>, vector<Vec2> target);
   static PTask applyItem(Callback*, Vec2 position, Item* item, Vec2 target);
   static PTask applySquare(Callback*, vector<Vec2> squares);
-  static PTask eat(Callback*, set<Vec2> hatcherySquares);
   static PTask equipItem(Callback*, Vec2 position, Item* item);
-  static PTask unEquipItem(Callback*, Vec2 position, Item* item);
   static PTask pickItem(Callback*, Vec2 position, vector<Item*> items);
   static PTask kill(Callback*, Creature*);
   static PTask torture(Callback*, Creature*);
   static PTask sacrifice(Callback*, Creature*);
-  static PTask destroySquare(Callback*, Vec2 position);
-  static PTask disappear(Callback*);
-  static PTask chain(Callback*, PTask, PTask);
-  static PTask explore(Callback*, Vec2);
-  static PTask attackCollective(Callback*, Collective*);
-  static PTask continousTask(Callback*, PTask, double finishTime);
+  static PTask destroySquare(Vec2 position);
+  static PTask disappear();
+  static PTask chain(PTask, PTask);
+  static PTask explore(Vec2);
+  static PTask attackCollective(Collective*);
 
-  SERIALIZATION_DECL(Task);
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
 
   template <class Archive>
   static void registerTypes(Archive& ar);
 
   protected:
   void setDone();
-  Callback* getCallback();
 
   private:
+  SERIAL_CHECKER;
   bool SERIAL2(done, false);
-  Callback* SERIAL(callback);
 };
 
 #endif
