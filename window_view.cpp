@@ -44,7 +44,9 @@ using sf::Texture;
 using sf::Keyboard;
 using sf::Mouse;
 
-
+View* View::createDefaultView() {
+  return new WindowView();
+}
 
 View* View::createLoggingView(ofstream& of) {
   return new LoggingView<WindowView>(of);

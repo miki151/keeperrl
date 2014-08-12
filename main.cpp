@@ -208,6 +208,7 @@ int main(int argc, char* argv[]) {
     argc = 1;
   }
   if (argc == 1 || forceMode > -1) {
+#ifndef RELEASE
     Random.init(seed);
     string fname(lognamePref);
     fname += convertToString(seed);
@@ -215,6 +216,10 @@ int main(int argc, char* argv[]) {
     CHECK(output.is_open());
     Debug() << "Writing to " << fname;
     view.reset(View::createLoggingView(output));
+#else
+    view.reset(View::createDefaultView());
+    ofstream("seeds.txt", std::ios_base::app) << seed << endl;
+#endif
   } else {
     string fname = argv[1];
     Debug() << "Reading from " << fname;

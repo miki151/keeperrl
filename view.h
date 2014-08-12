@@ -158,6 +158,9 @@ class View {
   void setJukebox(Jukebox*);
   Jukebox* getJukebox();
 
+  /** Returns a default View.*/
+  static View* createDefaultView();
+
   /** Returns a default View that additionally logs all player actions into a file.*/
   static View* createLoggingView(ofstream& of);
 
