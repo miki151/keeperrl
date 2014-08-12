@@ -1186,7 +1186,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Heeelp!\"";
-          c.name = "peaseant";);
+          c.name = "peasant";);
     case CreatureId::CHILD: 
       return INHERIT(PESEANT,
           c.viewId = ViewId::CHILD;

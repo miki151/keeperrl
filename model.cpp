@@ -129,10 +129,11 @@ void Model::update(double totalTime) {
     landHeroPlayer();
     addHero = false;
   }
+  int absoluteTime = view->getTimeMilliAbsolute();
   if (playerControl) {
-    if (totalTime - lastUpdate > 0.2) {
+    if (absoluteTime - lastUpdate > 50) {
       playerControl->render(view);
-      lastUpdate = totalTime;
+      lastUpdate = absoluteTime;
     }
   }
   do {

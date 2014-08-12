@@ -60,6 +60,7 @@ class WindowView: public View {
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual int getTimeMilli() override;
+  virtual int getTimeMilliAbsolute() override;
   virtual void setTimeMilli(int) override;
   virtual void stopClock() override;
   virtual bool isClockStopped() override;

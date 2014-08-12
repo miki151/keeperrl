@@ -139,6 +139,9 @@ class View {
       so it can be used to sync game time in real-time mode.*/
   virtual int getTimeMilli() = 0;
 
+  /** Returns the absolute time, doesn't take pausing into account.*/
+  virtual int getTimeMilliAbsolute() = 0;
+
   /** Stops the real time clock.*/
   virtual void stopClock() = 0;
 

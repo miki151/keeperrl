@@ -1342,6 +1342,10 @@ int WindowView::getTimeMilli() {
   return Clock::get().getMillis();
 }
 
+int WindowView::getTimeMilliAbsolute() {
+  return Clock::get().getRealMillis();
+}
+
 void WindowView::setTimeMilli(int time) {
   Clock::get().setMillis(time);
 }
