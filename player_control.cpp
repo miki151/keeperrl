@@ -1494,14 +1494,6 @@ bool PlayerControl::isEnemy(const Creature* c) const {
   return getKeeper()->isEnemy(c);
 }
 
-void PlayerControl::onChangeLevelEvent(const Creature* c, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) {
-  if (c == possessed) { 
-    teamLevelChanges[from] = pos;
-    if (!levelChangeHistory.count(to))
-      levelChangeHistory[to] = toPos;
-  }
-}
-
 void PlayerControl::onTechBookEvent(Technology* tech) {
   if (retired) {
     messageBuffer.addImportantMessage("The tome describes the knowledge of " + tech->getName()
@@ -1549,6 +1541,7 @@ MoveInfo PlayerControl::getMove(Creature* c) {
   if (possessed && contains(team, c))
     return getPossessedMove(c);
   if (c == getKeeper() && !getCollective()->getAllSquares().empty()
+      && getCollective()->getSquares(SquareType::LIBRARY).empty() // after library is built let him wander
       && !getCollective()->containsSquare(c->getPosition()))
     return c->moveTowards(chooseRandom(getCollective()->getAllSquares()));
   else
