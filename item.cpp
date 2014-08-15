@@ -400,7 +400,7 @@ int Item::getAccuracy() const {
 }
 
 void Item::addModifier(AttrType attributeType, int value) {
-  modifiers[attributeType] = value;
+  modifiers[attributeType] += value;
 }
 
 int Item::getModifier(AttrType attributeType) const {

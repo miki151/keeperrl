@@ -1322,4 +1322,17 @@ class AsyncLoop {
   std::atomic<bool> done;
 };
 
+template <typename T, typename... Args>
+function<void(Args...)> bindMethod(void (T::*ptr) (Args...), T* t) {
+  return [=](Args... a) { (t->*ptr)(a...);};
+}
+
+struct ConstructorFunction {
+  ConstructorFunction(function<void()> inConstructor, function<void()> inDestructor = nullptr);
+  ~ConstructorFunction();
+
+  private:
+  function<void()> destFun;
+};
+
 #endif

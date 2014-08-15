@@ -29,6 +29,7 @@ static vector<EffectType> combatConsumables {
     EffectType::INVISIBLE,
     EffectType::STR_BONUS,
     EffectType::DEX_BONUS,
+    EffectType::POISON_RESISTANCE,
 };
 
 template <class Archive>

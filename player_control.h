@@ -50,7 +50,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual int getMaxSightRange() const override;
 
   virtual void onSquareReplacedEvent(const Level*, Vec2 pos) override;
-  virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) override;
   virtual void onTechBookEvent(Technology*) override;
   virtual void onWorshipEvent(Creature* who, const Deity* to, WorshipType) override;
   virtual void onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType) override;
@@ -205,8 +204,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   mutable unique_ptr<map<UniqueId, MapMemory>> SERIAL(memory);
   bool SERIAL2(gatheringTeam, false);
   vector<Creature*> SERIAL(team);
-  map<const Level*, Vec2> SERIAL(teamLevelChanges);
-  map<const Level*, Vec2> SERIAL(levelChangeHistory);
   Creature* SERIAL2(possessed, nullptr);
   Model* SERIAL(model);
   bool SERIAL2(showWelcomeMsg, true);

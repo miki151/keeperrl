@@ -917,6 +917,10 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         if (*c.humanoid) {
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
           c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
+          c.minionTasks[MinionTask::WORKSHOP] = 1;
+          c.minionTasks[MinionTask::TRAIN] = 4; 
+          c.minionTasks[MinionTask::WORSHIP] = 0.5; 
+          c.minionTasks[MinionTask::SLEEP] = 1;
         } else {
           c.chatReactionFriendly = c.chatReactionHostile = "The " + name + " snarls.";
         }

@@ -692,4 +692,12 @@ AsyncLoop::~AsyncLoop() {
   t.join();
 }
 
+ConstructorFunction::ConstructorFunction(function<void()> fun, function<void()> dest) : destFun(dest) {
+  fun();
+}
+
+ConstructorFunction::~ConstructorFunction() {
+  if (destFun)
+    destFun();
+}
 
