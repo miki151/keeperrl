@@ -34,6 +34,23 @@ static map<string, vector<string> > inventoryMap;
 static vector<string> keys;
 static map<string, pair<int, int> > levelRange;
 
+template <class Archive> 
+void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
+  ar& SVAR(tribe)
+    & SVAR(creatures)
+    & SVAR(weights)
+    & SVAR(unique);
+  CHECK_SERIAL;
+}
+
+SERIALIZABLE(CreatureFactory);
+
+SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);
+
+bool CreatureFactory::operator == (const CreatureFactory& o) const {
+  return tribe == o.tribe && creatures == o.creatures && weights == o.weights && unique == o.unique;
+}
+
 class BoulderController : public Monster {
   public:
   BoulderController(Creature* c, Vec2 dir) : Monster(c, MonsterAIFactory::idle()), direction(dir) {}
@@ -187,8 +204,8 @@ class Boulder : public Creature {
     Creature(myTribe, attr, ControllerFactory([myTribe](Creature* c) { 
             return new BoulderController(c, myTribe); })) {}
 
-  virtual void dropCorpse() override {
-    drop(ItemFactory::fromId(ItemId::ROCK, Random.getRandom(10, 20)));
+  virtual vector<PItem> getCorpse() override {
+    return ItemFactory::fromId(ItemId::ROCK, Random.getRandom(10, 20));
   }
 
   template <class Archive>
@@ -765,21 +782,21 @@ CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const ve
     : tribe(t), creatures(c), weights(w), unique(u) {
 }
 
-CreatureFactory CreatureFactory::humanVillage() {
-  return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::PESEANT,
+CreatureFactory CreatureFactory::humanVillage(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::PESEANT,
       CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
       { 2, 1, 1, 1, 1, 0}, {});
 }
 
-CreatureFactory CreatureFactory::humanCastle() {
-  return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::KNIGHT, CreatureId::ARCHER,
+CreatureFactory CreatureFactory::humanCastle(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
       CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
       { 10, 6, 2, 1, 1, 1, 1, 1}, {CreatureId::AVATAR});
 }
 
-CreatureFactory CreatureFactory::elvenVillage() {
+CreatureFactory CreatureFactory::elvenVillage(Tribe* tribe) {
   double armedRatio = 0.4;
-  CreatureFactory ret(Tribe::get(TribeId::ELVEN), { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
+  CreatureFactory ret(tribe, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
       CreatureId::COW, CreatureId::DOG },
       { 2, 2, 1, 1, 0}, {});
   double sum = 0;
@@ -791,54 +808,38 @@ CreatureFactory CreatureFactory::elvenVillage() {
   return ret;
 }
 
-CreatureFactory CreatureFactory::forrest() {
-  return CreatureFactory(Tribe::get(TribeId::WILDLIFE),
+CreatureFactory CreatureFactory::forrest(Tribe* tribe) {
+  return CreatureFactory(tribe,
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR, CreatureId::LEPRECHAUN },
       { 4, 2, 2, 1}, {});
 }
 
-CreatureFactory CreatureFactory::crypt() {
-  return CreatureFactory(Tribe::get(TribeId::MONSTER), { CreatureId::ZOMBIE}, { 1}, {});
+CreatureFactory CreatureFactory::crypt(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::ZOMBIE}, { 1}, {});
 }
 
-CreatureFactory CreatureFactory::hellLevel() {
-  return CreatureFactory(Tribe::get(TribeId::MONSTER), { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
+CreatureFactory CreatureFactory::hellLevel(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
 }
 
-CreatureFactory CreatureFactory::vikingTown() {
-  return CreatureFactory(Tribe::get(TribeId::HUMAN), { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
+CreatureFactory CreatureFactory::vikingTown(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
 }
 
-CreatureFactory CreatureFactory::lizardTown() {
-  return CreatureFactory(Tribe::get(TribeId::LIZARD), { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
+CreatureFactory CreatureFactory::lizardTown(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
 }
 
-CreatureFactory CreatureFactory::dwarfTown() {
-  return CreatureFactory(Tribe::get(TribeId::DWARVEN), { CreatureId::DWARF}, { 1}, { CreatureId::DWARF_BARON});
+CreatureFactory CreatureFactory::dwarfTown(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::DWARF}, { 1}, { CreatureId::DWARF_BARON});
 }
 
-CreatureFactory CreatureFactory::splash() {
-  return CreatureFactory(Tribe::get(TribeId::KEEPER), { CreatureId::IMP}, { 1}, { CreatureId::KEEPER });
+CreatureFactory CreatureFactory::splash(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::IMP}, { 1}, { CreatureId::KEEPER });
 }
 
-CreatureFactory CreatureFactory::goblinTown(int num) {
-  int maxLevel = 3;
-  CHECK(num <= maxLevel && num > 0);
-  map<CreatureId, vector<int>> frequencies {
-      { CreatureId::GNOME, { 0, 1, 1}},
-      { CreatureId::JACKAL, { 0, 1, 1 }},
-      { CreatureId::RAT, { 1, 1, 1}},
-      { CreatureId::BAT, { 0, 1, 1 }},
-      { CreatureId::GOBLIN, { 2, 1, 1 }}};
-  vector<vector<CreatureId>> uniqueMonsters(maxLevel);
-  uniqueMonsters[0].push_back(CreatureId::GREAT_GOBLIN);
-  vector<CreatureId> ids;
-  vector<double> freq;
-  for (auto elem : frequencies) {
-    ids.push_back(elem.first);
-    freq.push_back(elem.second[num - 1]);
-  }
-  return CreatureFactory(Tribe::get(TribeId::MONSTER), ids, freq, uniqueMonsters[num - 1]);
+CreatureFactory CreatureFactory::goblinTown(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::GOBLIN, CreatureId::RAT}, {2, 1}, {CreatureId::GREAT_GOBLIN});
 }
 
 CreatureFactory CreatureFactory::pyramid(int level) {
@@ -1460,7 +1461,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 5;
           c.humanoid = false;
           c.weight = 3;
-          c.walker = false;
+          c.hatcheryAnimal = true;
           c.isFood = true;
           c.name = "chicken";);
     case CreatureId::LEPRECHAUN: 

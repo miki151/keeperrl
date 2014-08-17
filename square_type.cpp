@@ -17,72 +17,63 @@ bool SquareType::isWall() const {
   }
 }
 
+const static vector<SquareType::Id> creatureFactorySquares {
+  SquareType::CHEST,
+  SquareType::COFFIN,
+  SquareType::HATCHERY,
+  SquareType::DECID_TREE,
+  SquareType::CANIF_TREE,
+  SquareType::BUSH
+};
+
+const static vector<SquareType::Id> tribeSquares { SquareType::TRIBE_DOOR, SquareType::BARRICADE};
+
 SquareType::SquareType(Id _id) : id(_id) {
-  CHECK(id != ALTAR && id != CREATURE_ALTAR);
+  CHECK(!contains({ALTAR, CREATURE_ALTAR}, id)
+      && !contains(creatureFactorySquares, id)
+      && !contains(tribeSquares, id));
 }
  
-SquareType::SquareType(AltarInfo info) : id(ALTAR), altarInfo(info) {
+SquareType::SquareType(AltarInfo info) : id(ALTAR), values(info) {
 }
 
-SquareType::SquareType(CreatureAltarInfo info) : id(CREATURE_ALTAR), creatureAltarInfo(info) {
+SquareType::SquareType(CreatureAltarInfo info) : id(CREATURE_ALTAR), values(info) {
 }
 
+SquareType::SquareType(Id i, CreatureFactory info) : id(i), values(info) {
+  CHECK(contains(creatureFactorySquares, id));
+}
+
+SquareType::SquareType(Id i, TribeInfo info) : id(i), values(info) {
+  CHECK(contains(tribeSquares, id));
+}
 
 SquareType::SquareType() : id(SquareType::Id(0)) {}
 
-bool SquareType::operator==(const SquareType& other) const {
-  if (id != other.id)
-    return false;
-  switch (id) {
-    case ALTAR: return altarInfo.habitat == other.altarInfo.habitat;
-    case CREATURE_ALTAR: return creatureAltarInfo.creature == other.creatureAltarInfo.creature;
-    default: return true;
-  }
-}
-
 bool SquareType::operator==(SquareType::Id id1) const {
   return id == id1;
+}
+
+bool SquareType::operator!=(SquareType::Id id1) const {
+  return !(*this == id1);
+}
+
+bool SquareType::operator==(const SquareType& o) const {
+  return id == o.id && values == o.values;
+}
+
+bool SquareType::operator!=(const SquareType& o) const {
+  return !(*this == o);
 }
 
 bool operator==(SquareType::Id id1, const SquareType& t) {
   return t.id == id1;
 }
 
-
-bool SquareType::operator!=(const SquareType& other) const {
-  return !(*this == other);
-}
-
 template <class Archive>
 void SquareType::serialize(Archive& ar, const unsigned int version) {
-  ar & id;
-  switch (id) {
-    case ALTAR: ar & altarInfo.habitat; break;
-    case CREATURE_ALTAR: ar & creatureAltarInfo.creature; break;
-    default: break;
-  }
-}
-
-size_t SquareType::getHash() const {
-  switch (id) {
-    case ALTAR: return 123456 * size_t(altarInfo.habitat); break;
-    case CREATURE_ALTAR: return 654321 * size_t(creatureAltarInfo.creature->getUniqueId()); break;
-    default: return size_t(id);
-  }
+  ar & id & values;
 }
 
 SERIALIZABLE(SquareType);
 
-template <class Archive>
-void SquareType::AltarInfo::serialize(Archive& ar, const unsigned int version) {
-  ar & habitat;
-}
-
-SERIALIZABLE(SquareType::AltarInfo);
-
-template <class Archive>
-void SquareType::CreatureAltarInfo::serialize(Archive& ar, const unsigned int version) {
-  ar & creature;
-}
-
-SERIALIZABLE(SquareType::CreatureAltarInfo);

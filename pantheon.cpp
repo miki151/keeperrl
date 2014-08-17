@@ -211,7 +211,7 @@ Deity::Deity(const string& n, Gender g, const vector<EpithetId>& e, DeityHabitat
     name(n), gender(g), epithets(e), habitat(h) {
 }
 
-CreatureId Deity::getServant() const {
+CreatureFactory Deity::getServant(Tribe* tribe) const {
   CreatureId id = CreatureId(0);
   switch (habitat) {
     case DeityHabitat::AIR: id = CreatureId::AIR_ELEMENTAL; break;
@@ -221,5 +221,5 @@ CreatureId Deity::getServant() const {
     case DeityHabitat::TREES: id = CreatureId::ENT; break;
     case DeityHabitat::STARS: id = CreatureId::ANGEL; break;
   }
-  return id;
+  return CreatureFactory::singleType(tribe, id);
 }

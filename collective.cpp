@@ -49,65 +49,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Collective);
 
-template <class Archive>
-void Collective::ConstructionInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(cost)
-    & BOOST_SERIALIZATION_NVP(built)
-    & BOOST_SERIALIZATION_NVP(marked)
-    & BOOST_SERIALIZATION_NVP(type)
-    & BOOST_SERIALIZATION_NVP(task);
-}
-
-SERIALIZABLE(Collective::ConstructionInfo);
-
-template <class Archive>
-void Collective::CurrentTaskInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(task)
-    & BOOST_SERIALIZATION_NVP(finishTime);
-}
-
-SERIALIZABLE(Collective::CurrentTaskInfo);
-
-template <class Archive>
-void Collective::CostInfo::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(id) & BOOST_SERIALIZATION_NVP(value);
-}
-
-SERIALIZABLE(Collective::CostInfo);
-
-template <class Archive>
-void Collective::AlarmInfo::serialize(Archive& ar, const unsigned int version) {
-   ar& BOOST_SERIALIZATION_NVP(finishTime)
-     & BOOST_SERIALIZATION_NVP(position);
-}
-
-SERIALIZABLE(Collective::AlarmInfo);
-
-template <class Archive>
-void Collective::GuardPostInfo::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(attender);
-}
-
-SERIALIZABLE(Collective::GuardPostInfo);
-
-template <class Archive>
-void Collective::TrapInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(type)
-    & BOOST_SERIALIZATION_NVP(armed)
-    & BOOST_SERIALIZATION_NVP(marked);
-}
-
-SERIALIZABLE(Collective::TrapInfo);
-
-template <class Archive>
-void Collective::PrisonerInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(state)
-    & BOOST_SERIALIZATION_NVP(task);
-}
-
-SERIALIZABLE(Collective::PrisonerInfo);
-
-
 void Collective::setWarning(Warning w, bool state) {
   warnings[w] = state;
 }
@@ -191,12 +132,6 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   return ret;
 };
 
-Collective::CostInfo::CostInfo(ResourceId i, int v) : id(i), value(v) {
-}
-
-Collective::CostInfo::CostInfo() : id(ResourceId::GOLD), value(0) {
-}
-
 Collective::Collective() : control(CollectiveControl::idle(this)) {
   credit = {
     {ResourceId::GOLD, 0},
@@ -239,7 +174,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     if (Skill* skill = t->getSkill())
       c->addSkill(skill);
   if (traits[MinionTrait::PRISONER])
-    prisonerInfo[c] = {PrisonerInfo::PRISON, 0};
+    prisonerInfo[c] = {PrisonerState::PRISON, 0};
 }
 
 vector<Creature*>& Collective::getCreatures() {
@@ -297,17 +232,17 @@ MoveInfo Collective::getDropItems(Creature *c) {
 PTask Collective::getPrisonerTask(Creature* c) {
   if (hasTrait(c, MinionTrait::FIGHTER))
     for (auto& elem : prisonerInfo)
-      if (!elem.second.task) {
+      if (!elem.second.task()) {
         Creature* prisoner = elem.first;
         PTask t;
-        switch (elem.second.state) {
-          case PrisonerInfo::EXECUTE: t = Task::kill(this, prisoner); break;
-          case PrisonerInfo::TORTURE: t = Task::torture(this, prisoner); break;
-          case PrisonerInfo::SACRIFICE: t = Task::sacrifice(this, prisoner); break;
+        switch (elem.second.state()) {
+          case PrisonerState::EXECUTE: t = Task::kill(this, prisoner); break;
+          case PrisonerState::TORTURE: t = Task::torture(this, prisoner); break;
+          case PrisonerState::SACRIFICE: t = Task::sacrifice(this, prisoner); break;
           default: return nullptr;
         }
         if (t)
-          elem.second.task = t->getUniqueId();
+          elem.second.task() = t->getUniqueId();
         return t;
       }
   return nullptr;
@@ -315,7 +250,7 @@ PTask Collective::getPrisonerTask(Creature* c) {
 
 void Collective::onKillCancelled(Creature* c) {
   if (prisonerInfo.count(c))
-    prisonerInfo.at(c).task = 0;
+    prisonerInfo.at(c).task() = 0;
 }
 
 MoveInfo Collective::getWorkerMove(Creature* c) {
@@ -367,9 +302,9 @@ static double getSum(EnumMap<MinionTask, double> m) {
 PTask Collective::getStandardTask(Creature* c) {
   if (getSum(c->getMinionTasks()) == 0)
     return nullptr;
-  if (!currentTasks.count(c->getUniqueId()) || currentTasks.at(c->getUniqueId()).finishTime < c->getTime())
+  if (!currentTasks.count(c->getUniqueId()) || currentTasks.at(c->getUniqueId()).finishTime() < c->getTime())
     setMinionTask(c, chooseRandom(c->getMinionTasks()));
-  MinionTaskInfo info = getTaskInfo().at(currentTasks[c->getUniqueId()].task);
+  MinionTaskInfo info = getTaskInfo().at(currentTasks[c->getUniqueId()].task());
   PTask ret;
   switch (info.type) {
     case MinionTaskInfo::APPLY_SQUARE:
@@ -491,7 +426,7 @@ void Collective::onAttackEvent(Creature* victim, Creature* attacker) {
         if (Random.rollD(10 / getStanding(deity))) {
           victim->globalMessage(
               deity->getName() + " sends " + deity->getGender().his() + " servant with help.");
-          Effect::summon(leader, deity->getServant(), 1, 30);
+          Effect::summon(getLevel(), deity->getServant(getTribe()), leader->getPosition(), 1, 30);
         }
   }
 }
@@ -555,7 +490,7 @@ void Collective::tick(double time) {
   if (!enemyPos.empty())
     delayDangerousTasks(enemyPos, getTime() + 20);
   else
-    alarmInfo.finishTime = -1000;
+    alarmInfo.finishTime() = -1000;
   bool allSurrender = true;
   for (Vec2 v : enemyPos)
     if (!prisonerInfo.count(NOTNULL(getLevel()->getSquare(v)->getCreature()))) {
@@ -564,7 +499,7 @@ void Collective::tick(double time) {
     }
   if (allSurrender) {
     for (auto elem : copyOf(prisonerInfo))
-      if (elem.second.state == PrisonerInfo::SURRENDER) {
+      if (elem.second.state() == PrisonerState::SURRENDER) {
         Creature* c = elem.first;
         Vec2 pos = c->getPosition();
         if (containsSquare(pos) && !c->isDead()) {
@@ -651,7 +586,7 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     Creature* victim = const_cast<Creature*>(victim1);
     control->onCreatureKilled(victim, killer);
     if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer)
-      && prisonerInfo.at(victim).state == PrisonerInfo::EXECUTE)
+      && prisonerInfo.at(victim).state() == PrisonerState::EXECUTE)
       returnResource({ResourceId::PRISONER_HEAD, 1});
     prisonerInfo.erase(victim);
     freeFromGuardPost(victim);
@@ -843,8 +778,8 @@ static const int alarmTime = 100;
 
 void Collective::onAlarmEvent(const Level* l, Vec2 pos) {
   if (l == getLevel() && containsSquare(pos)) {
-    alarmInfo.finishTime = getTime() + alarmTime;
-    alarmInfo.position = pos;
+    alarmInfo.finishTime() = getTime() + alarmTime;
+    alarmInfo.position() = pos;
     for (Creature* c : byTrait[MinionTrait::FIGHTER])
       if (c->isAffected(LastingEffect::SLEEP))
         c->removeEffect(LastingEffect::SLEEP);
@@ -852,8 +787,8 @@ void Collective::onAlarmEvent(const Level* l, Vec2 pos) {
 }
 
 MoveInfo Collective::getAlarmMove(Creature* c) {
-  if (alarmInfo.finishTime > c->getTime())
-    if (auto action = c->moveTowards(alarmInfo.position))
+  if (alarmInfo.finishTime() > c->getTime())
+    if (auto action = c->moveTowards(alarmInfo.position()))
       return {1.0, action};
   return NoMove;
 }
@@ -861,14 +796,14 @@ MoveInfo Collective::getAlarmMove(Creature* c) {
 MoveInfo Collective::getGuardPostMove(Creature* c) {
   vector<Vec2> pos = getKeys(guardPosts);
   for (Vec2 v : pos)
-    if (guardPosts.at(v).attender == c) {
+    if (guardPosts.at(v).attender() == c) {
       pos = {v};
       break;
     }
   for (Vec2 v : pos) {
     GuardPostInfo& info = guardPosts.at(v);
-    if (!info.attender || info.attender == c) {
-      info.attender = c;
+    if (!info.attender() || info.attender() == c) {
+      info.attender() = c;
       minionTaskStrings[c->getUniqueId()] = "guarding";
       if (c->getPosition().dist8(v) > 1)
         if (auto action = c->moveTowards(v))
@@ -881,8 +816,8 @@ MoveInfo Collective::getGuardPostMove(Creature* c) {
 
 void Collective::freeFromGuardPost(const Creature* c) {
   for (auto& elem : guardPosts)
-    if (elem.second.attender == c)
-      elem.second.attender = nullptr;
+    if (elem.second.attender() == c)
+      elem.second.attender() = nullptr;
 }
 
 double Collective::getTime() const {
@@ -911,44 +846,44 @@ int Collective::numResource(ResourceId id) const {
 }
 
 bool Collective::hasResource(CostInfo cost) const {
-  return numResource(cost.id) >= cost.value;
+  return numResource(cost.id()) >= cost.value();
 }
 
 void Collective::takeResource(CostInfo cost) {
-  int num = cost.value;
+  int num = cost.value();
   if (num == 0)
     return;
   CHECK(num > 0);
-  if (credit.at(cost.id)) {
-    if (credit.at(cost.id) >= num) {
-      credit[cost.id] -= num;
+  if (credit.at(cost.id())) {
+    if (credit.at(cost.id()) >= num) {
+      credit[cost.id()] -= num;
       return;
     } else {
-      num -= credit.at(cost.id);
-      credit[cost.id] = 0;
+      num -= credit.at(cost.id());
+      credit[cost.id()] = 0;
     }
   }
-  for (Vec2 pos : randomPermutation(getAllSquares(resourceInfo.at(cost.id).storageType))) {
-    vector<Item*> goldHere = getLevel()->getSquare(pos)->getItems(resourceInfo.at(cost.id).predicate);
+  for (Vec2 pos : randomPermutation(getAllSquares(resourceInfo.at(cost.id()).storageType))) {
+    vector<Item*> goldHere = getLevel()->getSquare(pos)->getItems(resourceInfo.at(cost.id()).predicate);
     for (Item* it : goldHere) {
       getLevel()->getSquare(pos)->removeItem(it);
       if (--num == 0)
         return;
     }
   }
-  FAIL << "Not enough " << resourceInfo.at(cost.id).name;
+  FAIL << "Not enough " << resourceInfo.at(cost.id()).name;
 }
 
 void Collective::returnResource(CostInfo amount) {
-  if (amount.value == 0)
+  if (amount.value() == 0)
     return;
-  CHECK(amount.value > 0);
-  vector<Vec2> destination = getAllSquares(resourceInfo.at(amount.id).storageType);
+  CHECK(amount.value() > 0);
+  vector<Vec2> destination = getAllSquares(resourceInfo.at(amount.id()).storageType);
   if (!destination.empty()) {
     getLevel()->getSquare(chooseRandom(destination))->
-      dropItems(ItemFactory::fromId(resourceInfo.at(amount.id).itemId, amount.value));
+      dropItems(ItemFactory::fromId(resourceInfo.at(amount.id()).itemId, amount.value()));
   } else
-    credit[amount.id] += amount.value;
+    credit[amount.id()] += amount.value();
 }
 
 vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squares) const {
@@ -1027,33 +962,33 @@ vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinio
 }
 
 void Collective::clearPrisonerTask(Creature* prisoner) {
-  if (prisonerInfo.at(prisoner).task) {
-    taskMap.removeTask(prisonerInfo.at(prisoner).task);
-    prisonerInfo.at(prisoner).task = 0;
+  if (prisonerInfo.at(prisoner).task()) {
+    taskMap.removeTask(prisonerInfo.at(prisoner).task());
+    prisonerInfo.at(prisoner).task() = 0;
   }
 }
 
 void Collective::orderExecution(Creature* c) {
-  if (prisonerInfo.at(c).state == PrisonerInfo::EXECUTE)
+  if (prisonerInfo.at(c).state() == PrisonerState::EXECUTE)
     return;
   clearPrisonerTask(c);
-  prisonerInfo.at(c) = {PrisonerInfo::EXECUTE, 0};
+  prisonerInfo.at(c) = {PrisonerState::EXECUTE, 0};
   setMinionTask(c, MinionTask::EXECUTE);
 }
 
 void Collective::orderTorture(Creature* c) {
-  if (prisonerInfo.at(c).state == PrisonerInfo::TORTURE)
+  if (prisonerInfo.at(c).state() == PrisonerState::TORTURE)
     return;
   clearPrisonerTask(c);
-  prisonerInfo.at(c) = {PrisonerInfo::TORTURE, 0};
+  prisonerInfo.at(c) = {PrisonerState::TORTURE, 0};
   setMinionTask(c, MinionTask::TORTURE);
 }
 
 void Collective::orderSacrifice(Creature* c) {
-  if (prisonerInfo.at(c).state == PrisonerInfo::SACRIFICE)
+  if (prisonerInfo.at(c).state() == PrisonerState::SACRIFICE)
     return;
   clearPrisonerTask(c);
-  prisonerInfo.at(c) = {PrisonerInfo::SACRIFICE, 0};
+  prisonerInfo.at(c) = {PrisonerState::SACRIFICE, 0};
   setMinionTask(c, MinionTask::SACRIFICE);
 }
 
@@ -1078,7 +1013,7 @@ void Collective::removeTrap(Vec2 pos) {
 }
 
 void Collective::removeConstruction(Vec2 pos) {
-  returnResource(taskMap.removeTask(constructions.at(pos).task));
+  returnResource(taskMap.removeTask(constructions.at(pos).task()));
   constructions.erase(pos);
 }
 
@@ -1119,8 +1054,8 @@ void Collective::cutTree(Vec2 pos) {
 set<TrapType> Collective::getNeededTraps() const {
   set<TrapType> ret;
   for (auto elem : traps)
-    if (!elem.second.marked && !elem.second.armed)
-      ret.insert(elem.second.type);
+    if (!elem.second.marked() && !elem.second.armed())
+      ret.insert(elem.second.type());
   return ret;
 }
 
@@ -1132,14 +1067,14 @@ void Collective::addTrap(Vec2 pos, TrapType type) {
 void Collective::onAppliedItem(Vec2 pos, Item* item) {
   CHECK(item->getTrapType());
   if (traps.count(pos)) {
-    traps[pos].marked = 0;
-    traps[pos].armed = true;
+    traps[pos].marked() = 0;
+    traps[pos].armed() = true;
   }
 }
 
 void Collective::onAppliedItemCancel(Vec2 pos) {
   if (traps.count(pos))
-    traps.at(pos).marked = 0;
+    traps.at(pos).marked() = 0;
 }
 
 void Collective::onConstructed(Vec2 pos, SquareType type) {
@@ -1154,9 +1089,9 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   if (taskMap.getMarked(pos))
     taskMap.unmarkSquare(pos);
   if (constructions.count(pos)) {
-    constructions.at(pos).built = true;
-    constructions.at(pos).marked = 0;
-    constructions.at(pos).task = -1;
+    constructions.at(pos).built() = true;
+    constructions.at(pos).marked() = 0;
+    constructions.at(pos).task() = -1;
   }
   control->onConstructedSquare(pos, type);
 }
@@ -1170,27 +1105,27 @@ void Collective::updateConstructions() {
     trapItems[type] = getTrapItems(type, getAllSquares());
   for (auto elem : traps)
     if (!isDelayed(elem.first)) {
-      vector<pair<Item*, Vec2>>& items = trapItems.at(elem.second.type);
+      vector<pair<Item*, Vec2>>& items = trapItems.at(elem.second.type());
       if (!items.empty()) {
-        if (!elem.second.armed && elem.second.marked <= getTime()) {
+        if (!elem.second.armed() && elem.second.marked() <= getTime()) {
           Vec2 pos = items.back().second;
           taskMap.addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
           markItem(items.back().first);
           items.pop_back();
-          traps[elem.first].marked = getTime() + timeToBuild;
+          traps[elem.first].marked() = getTime() + timeToBuild;
         }
       }
     }
   for (auto& elem : constructions)
-    if (!isDelayed(elem.first) && elem.second.marked <= getTime() && !elem.second.built) {
-      if (auto warning = resourceInfo.at(elem.second.cost.id).warning)
-        setWarning(*warning, !hasResource(elem.second.cost));
-      if (!hasResource(elem.second.cost))
+    if (!isDelayed(elem.first) && elem.second.marked() <= getTime() && !elem.second.built()) {
+      if (auto warning = resourceInfo.at(elem.second.cost().id()).warning)
+        setWarning(*warning, !hasResource(elem.second.cost()));
+      if (!hasResource(elem.second.cost()))
         continue;
-      elem.second.task = taskMap.addTaskCost(Task::construction(this, elem.first, elem.second.type), elem.first,
-          elem.second.cost)->getUniqueId();
-      elem.second.marked = getTime() + timeToBuild;
-      takeResource(elem.second.cost);
+      elem.second.task() = taskMap.addTaskCost(Task::construction(this, elem.first, elem.second.type()), elem.first,
+          elem.second.cost())->getUniqueId();
+      elem.second.marked() = getTime() + timeToBuild;
+      takeResource(elem.second.cost());
     }
 }
 
@@ -1230,7 +1165,7 @@ void Collective::fetchAllItems(Vec2 pos) {
 
 void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed) {
   if ((isDelayed(pos) && !ignoreDelayed) 
-      || (traps.count(pos) && traps.at(pos).type == TrapType::BOULDER && traps.at(pos).armed == true))
+      || (traps.count(pos) && traps.at(pos).type() == TrapType::BOULDER && traps.at(pos).armed() == true))
     return;
   for (SquareType type : elem.destination)
     if (getSquares(type).count(pos))
@@ -1252,7 +1187,7 @@ void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed) {
 
 void Collective::onSurrenderEvent(Creature* who, const Creature* to) {
   if (contains(getCreatures(), to) && !contains(getCreatures(), who) && !prisonerInfo.count(who) && !who->isAnimal())
-    prisonerInfo[who] = {PrisonerInfo::SURRENDER, 0};
+    prisonerInfo[who] = {PrisonerState::SURRENDER, 0};
 }
 
 // actually only called when square is destroyed
@@ -1266,17 +1201,17 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
       }
     if (constructions.count(pos)) {
       ConstructionInfo& info = constructions.at(pos);
-      info.marked = getTime() + 10; // wait a little before considering rebuilding
-      info.built = false;
-      info.task = -1;
+      info.marked() = getTime() + 10; // wait a little before considering rebuilding
+      info.built() = false;
+      info.task() = -1;
     }
   }
 }
 
 void Collective::onTriggerEvent(const Level* l, Vec2 pos) {
   if (traps.count(pos) && l == getLevel()) {
-    traps.at(pos).armed = false;
-    if (traps.at(pos).type == TrapType::SURPRISE)
+    traps.at(pos).armed() = false;
+    if (traps.at(pos).type() == TrapType::SURPRISE)
       handleSurprise(pos);
   }
 }
@@ -1335,7 +1270,7 @@ void Collective::addMana(double value) {
 void Collective::onAppliedSquare(Vec2 pos) {
   Creature* c = NOTNULL(getLevel()->getSquare(pos)->getCreature());
   if (getSquares(SquareType::LIBRARY).count(pos)) {
-    switch (currentTasks.at(c->getUniqueId()).task) {
+    switch (currentTasks.at(c->getUniqueId()).task()) {
       case MinionTask::RESEARCH:
         addMana(getEfficiency(pos) * (0.3 + max(0., 2 
                 - (numResource(ResourceId::MANA) + double(getDangerLevel(false))) / 700)));

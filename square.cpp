@@ -258,7 +258,7 @@ bool Square::canEnterEmpty(const Creature* c) const {
 }
 
 bool Square::canEnterSpecial(const Creature* c) const {
-  return c->canWalk();
+  return true;
 }
 
 void Square::setOnFire(double amount) {

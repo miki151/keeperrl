@@ -224,11 +224,10 @@ void Effect::summon(Creature* c, CreatureId id, int num, int ttl) {
   summonCreatures(c, 2, std::move(creatures));
 }
 
-void Effect::summon(Level* level, CreatureId id, Vec2 pos, Tribe* tribe, int num, int ttl) {
+void Effect::summon(Level* level, CreatureFactory factory, Vec2 pos, int num, int ttl) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(CreatureFactory::fromId(id, tribe,
-          MonsterAIFactory::dieTime(level->getModel()->getTime() + ttl)));
+    creatures.push_back(factory.random(MonsterAIFactory::dieTime(level->getModel()->getTime() + ttl)));
   summonCreatures(level, pos, 2, std::move(creatures));
 }
 

@@ -31,18 +31,18 @@ class CreatureFactory {
   public:
   static PCreature fromId(CreatureId, Tribe*, MonsterAIFactory = MonsterAIFactory::monster());
   static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
-  static CreatureFactory humanVillage();
-  static CreatureFactory humanCastle();
-  static CreatureFactory elvenVillage();
-  static CreatureFactory forrest();
-  static CreatureFactory crypt();
-  static CreatureFactory hellLevel();
-  static CreatureFactory dwarfTown();
-  static CreatureFactory vikingTown();
-  static CreatureFactory lizardTown();
-  static CreatureFactory goblinTown(int num);
+  static CreatureFactory humanVillage(Tribe*);
+  static CreatureFactory humanCastle(Tribe*);
+  static CreatureFactory elvenVillage(Tribe*);
+  static CreatureFactory forrest(Tribe*);
+  static CreatureFactory crypt(Tribe*);
+  static CreatureFactory hellLevel(Tribe*);
+  static CreatureFactory dwarfTown(Tribe*);
+  static CreatureFactory vikingTown(Tribe*);
+  static CreatureFactory lizardTown(Tribe*);
+  static CreatureFactory goblinTown(Tribe*);
   static CreatureFactory level(int num);
-  static CreatureFactory splash();
+  static CreatureFactory splash(Tribe*);
   static CreatureFactory singleType(Tribe*, CreatureId);
   static CreatureFactory pyramid(int level);
   static CreatureFactory insects(Tribe* tribe);
@@ -55,9 +55,13 @@ class CreatureFactory {
   static PCreature addInventory(PCreature c, const vector<ItemId>& items);
 
   static void init();
+
+  bool operator == (const CreatureFactory&) const;
  
   template <class Archive>
   static void registerTypes(Archive& ar);
+
+  SERIALIZATION_DECL(CreatureFactory);
 
   private:
   CreatureFactory(Tribe* tribe, const vector<CreatureId>& creatures, const vector<double>& weights,

@@ -52,6 +52,8 @@
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/array.hpp>
+#include <boost/serialization/variant.hpp>
+#include <boost/variant.hpp>
 
 #ifdef DEBUG_STL
 
@@ -107,6 +109,7 @@ using std::get;
 using std::hash;
 using std::thread;
 using std::atomic;
+using boost::variant;
 
 #include "serialization.h"
 #endif

@@ -145,13 +145,10 @@ class Collective : public EventListener, public Task::Callback {
     PRISONER_HEAD,
   };
 
-  struct CostInfo {
-    ResourceId id;
-    int value;
-    CostInfo(ResourceId, int);
-    CostInfo();
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
+  struct CostInfo : public NamedTupleBase<ResourceId, int> {
+    NAMED_TUPLE_STUFF(CostInfo);
+    NAME_ELEM(0, id);
+    NAME_ELEM(1, value);
   };
 
   struct ResourceInfo {
@@ -195,14 +192,13 @@ class Collective : public EventListener, public Task::Callback {
   vector<ItemFetchInfo> getFetchInfo() const;
   void fetchItems(Vec2 pos, ItemFetchInfo, bool ignoreDelayed = false);
 
-  struct ConstructionInfo {
-    CostInfo cost;
-    bool built;
-    double marked;
-    SquareType type;
-    UniqueId task;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
+  struct ConstructionInfo : public NamedTupleBase<CostInfo, bool, double, SquareType, UniqueId> {
+    NAMED_TUPLE_STUFF(ConstructionInfo);
+    NAME_ELEM(0, cost);
+    NAME_ELEM(1, built);
+    NAME_ELEM(2, marked);
+    NAME_ELEM(3, type);
+    NAME_ELEM(4, task);
   };
   const map<Vec2, ConstructionInfo>& getConstructions() const;
 
@@ -221,12 +217,11 @@ class Collective : public EventListener, public Task::Callback {
 
   const map<UniqueId, string>& getMinionTaskStrings() const;
 
-  struct TrapInfo {
-    TrapType type;
-    bool armed;
-    double marked;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
+  struct TrapInfo : public NamedTupleBase<TrapType, bool, double> {
+    NAMED_TUPLE_STUFF(TrapInfo);
+    NAME_ELEM(0, type);
+    NAME_ELEM(1, armed);
+    NAME_ELEM(2, marked);
   };
   const map<Vec2, TrapInfo>& getTraps() const;
   void addTrap(Vec2, TrapType);
@@ -273,11 +268,10 @@ class Collective : public EventListener, public Task::Callback {
   Table<bool> SERIAL(knownTiles);
   set<Vec2> SERIAL(borderTiles);
 
-  struct CurrentTaskInfo {
-    MinionTask task;
-    double finishTime;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
+  struct CurrentTaskInfo : NamedTupleBase<MinionTask, double> {
+    NAMED_TUPLE_STUFF(CurrentTaskInfo);
+    NAME_ELEM(0, task);
+    NAME_ELEM(1, finishTime);
   };
   map<UniqueId, CurrentTaskInfo> SERIAL(currentTasks);
   PTask getStandardTask(Creature* c);
@@ -305,17 +299,15 @@ class Collective : public EventListener, public Task::Callback {
   unordered_map<SquareType, set<Vec2>> SERIAL(mySquares);
   map<Vec2, int> SERIAL(squareEfficiency);
   set<Vec2> SERIAL(allSquares);
-  struct AlarmInfo {
-    double finishTime = -1000;
-    Vec2 position;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
+  struct AlarmInfo : NamedTupleBase<double, Vec2> {
+    NAMED_TUPLE_STUFF(AlarmInfo);
+    AlarmInfo() { finishTime() = -1000; }
+    NAME_ELEM(0, finishTime);
+    NAME_ELEM(1, position);
   } SERIAL(alarmInfo);
   MoveInfo getAlarmMove(Creature* c);
-  struct GuardPostInfo {
-    const Creature* attender;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
+  struct GuardPostInfo : public NamedTupleBase<const Creature*> {
+    NAME_ELEM(0, attender);
   };
   map<Vec2, GuardPostInfo> SERIAL(guardPosts);
   MoveInfo getGuardPostMove(Creature* c);
@@ -323,11 +315,11 @@ class Collective : public EventListener, public Task::Callback {
   EntitySet SERIAL(markedItems);
   ItemPredicate unMarkedItems(ItemType) const;
   map<Vec2, TrapInfo> SERIAL(traps);
-  struct PrisonerInfo {
-    enum State { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE } state;
-    UniqueId task;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
+  enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };
+  struct PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueId> {
+    NAMED_TUPLE_STUFF(PrisonerInfo);
+    NAME_ELEM(0, state);
+    NAME_ELEM(1, task);
   };
   PTask getPrisonerTask(Creature* prisoner);
   void clearPrisonerTask(Creature* prisoner);

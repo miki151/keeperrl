@@ -54,7 +54,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(undead)
     & SVAR(notLiving)
     & SVAR(brain)
-    & SVAR(walker)
+    & SVAR(hatcheryAnimal)
     & SVAR(isFood)
     & SVAR(stationary)
     & SVAR(noSleep)

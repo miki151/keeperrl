@@ -117,7 +117,7 @@ class CreatureAttributes {
   bool SERIAL2(undead, false);
   bool SERIAL2(notLiving, false);
   bool SERIAL2(brain, true);
-  bool SERIAL2(walker, true);
+  bool SERIAL2(hatcheryAnimal, false);
   bool SERIAL2(isFood, false);
   bool SERIAL2(stationary, false);
   bool SERIAL2(noSleep, false);

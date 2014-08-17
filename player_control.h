@@ -149,7 +149,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
   vector<GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   vector<BuildInfo> getBuildInfo() const;
-  static vector<BuildInfo> getBuildInfo(const Level*);
+  static vector<BuildInfo> getBuildInfo(const Level*, const Tribe*);
   static vector<BuildInfo> workshopInfo;
   static vector<BuildInfo> libraryInfo;
   static vector<BuildInfo> minionsInfo;

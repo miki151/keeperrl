@@ -115,8 +115,8 @@ static int expLevelFun(double time) {
 }
 
 void VillageControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
-  if ((victim->getTribe() == getTribe() && (!killer ||  killer->getTribe() == Tribe::get(TribeId::KEEPER)))
-      || (victim->getTribe() == Tribe::get(TribeId::KEEPER) && killer && killer->getTribe() == getTribe()))
+  if ((victim->getTribe() == getTribe() && (!killer ||  contains(villain->getCreatures(), killer)))
+      || (contains(villain->getCreatures(), victim) && killer && killer->getTribe() == getTribe()))
     atWar = true;
   if (!isAnonymous() && getCreatures(MinionTrait::FIGHTER).empty())
       messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
@@ -178,7 +178,8 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
   }
 
   void onKillEvent(const Creature* victim, const Creature* killer) override {
-    if (victim->getTribe() == control->getTribe() && (!killer || killer->getTribe() == Tribe::get(TribeId::KEEPER))) {
+    if (victim->getTribe() == control->getTribe() 
+        && (!killer || contains(control->getVillain()->getCreatures(), killer))) {
       killedPoints += victim->getDifficultyPoints();
       lastAttack = victim->getTime();
     }

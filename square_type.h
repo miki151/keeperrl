@@ -2,6 +2,7 @@
 #define _SQUARE_TYPE_H
 
 #include "enums.h"
+#include "creature_factory.h"
 
 struct SquareType {
   enum Id {
@@ -78,33 +79,28 @@ struct SquareType {
   SquareType();
 
   bool operator==(const SquareType&) const;
-  bool operator==(SquareType::Id) const;
   bool operator!=(const SquareType&) const;
-
-  size_t getHash() const;
+  bool operator==(SquareType::Id) const;
+  bool operator!=(SquareType::Id) const;
 
   bool isWall() const;
 
-  struct AltarInfo {
-    DeityHabitat habitat;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-  };
-
+  typedef DeityHabitat AltarInfo;
   SquareType(AltarInfo);
 
-  struct CreatureAltarInfo {
-    const Creature* creature;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-  };
-
+  typedef const Creature* CreatureAltarInfo;
   SquareType(CreatureAltarInfo);
 
-  union {
-    AltarInfo altarInfo;
-    CreatureAltarInfo creatureAltarInfo;
-  };
+  SquareType(Id, CreatureFactory);
+
+  typedef const Tribe* TribeInfo;
+  SquareType(Id, TribeInfo);
+
+  variant<AltarInfo, CreatureAltarInfo, CreatureFactory, TribeInfo> values;
+  AltarInfo& getAltarInfo() { return boost::get<AltarInfo>(values); }
+  CreatureAltarInfo& getCreatureAltarInfo() { return boost::get<CreatureAltarInfo>(values); }
+  CreatureFactory& getCreatureFactory() { return boost::get<CreatureFactory>(values); }
+  TribeInfo& getTribeInfo() { return boost::get<TribeInfo>(values); }
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

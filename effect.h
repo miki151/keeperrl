@@ -18,6 +18,7 @@
 
 #include "util.h"
 #include "enums.h"
+#include "creature_factory.h"
 
 class Level;
 class Creature;
@@ -30,7 +31,7 @@ class Effect {
   static void applyToPosition(Level*, Vec2, EffectType, EffectStrength);
 
   static void summon(Creature*, CreatureId, int num, int ttl);
-  static void summon(Level*, CreatureId, Vec2 pos, Tribe*, int num, int ttl);
+  static void summon(Level*, CreatureFactory, Vec2 pos, int num, int ttl);
 
   template <class Archive>
   static void registerTypes(Archive& ar);

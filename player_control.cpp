@@ -43,8 +43,6 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(memory)
     & SVAR(gatheringTeam)
     & SVAR(team)
-    & SVAR(teamLevelChanges)
-    & SVAR(levelChangeHistory)
     & SVAR(possessed)
     & SVAR(model)
     & SVAR(showWelcomeMsg)
@@ -85,10 +83,10 @@ PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, s
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
-  return getBuildInfo(getLevel());
+  return getBuildInfo(getLevel(), getTribe());
 }
 
-vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level) {
+vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level, const Tribe* tribe) {
   const CostInfo altarCost {ResourceId::STONE, 30};
   vector<BuildInfo> buildInfo {
     BuildInfo(BuildInfo::DIG, "", 'd'),
@@ -118,9 +116,10 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level)
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
     BuildInfo(BuildInfo::DISPATCH, "Order imps to perform the tasks at location now.", 'a', "Orders"),
     BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
-    BuildInfo({SquareType::TRIBE_DOOR, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
+    BuildInfo({{SquareType::TRIBE_DOOR, tribe}, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
         "Click on a built door to lock it.", 'o', "Installations"),
-    BuildInfo({SquareType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, "", 0, "Installations"),
+    BuildInfo({{SquareType::BARRICADE, tribe}, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, "", 0,
+      "Installations"),
     BuildInfo({SquareType::TORCH, {ResourceId::WOOD, 1}, "Torch"}, Nothing(), "", 'c', "Installations"),
     BuildInfo({SquareType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, Nothing(),
         "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
@@ -161,7 +160,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
 
 vector<PlayerControl::RoomInfo> PlayerControl::getRoomInfo() {
   vector<RoomInfo> ret;
-  for (BuildInfo bInfo : getBuildInfo(nullptr))
+  for (BuildInfo bInfo : getBuildInfo(nullptr, nullptr))
     if (bInfo.buildType == BuildInfo::SQUARE)
       ret.push_back({bInfo.squareInfo.name, bInfo.help, bInfo.techId});
   return ret;
@@ -209,7 +208,7 @@ string PlayerControl::getWarningText(Collective::Warning w) {
 PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : CollectiveControl(col),
   model(m), sectors(new Sectors(level->getBounds())), flyingSectors(new Sectors(level->getBounds())) {
   bool hotkeys[128] = {0};
-  for (BuildInfo info : concat(getBuildInfo(level), workshopInfo)) {
+  for (BuildInfo info : concat(getBuildInfo(level, nullptr), workshopInfo)) {
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
       hotkeys[int(info.hotkey)] = true;
@@ -250,7 +249,6 @@ void PlayerControl::unpossess() {
   possessed = nullptr;
  /* team.clear();
   gatheringTeam = false;*/
-  teamLevelChanges.clear();
 }
 
 void PlayerControl::render(View* view) {
@@ -820,8 +818,8 @@ void PlayerControl::handleLibrary(View* view) {
 typedef GameInfo::BandInfo::Button Button;
 
 Optional<pair<ViewObject, int>> PlayerControl::getCostObj(CostInfo cost) const {
-  if (cost.value > 0 && !Collective::resourceInfo.at(cost.id).dontDisplay)
-    return make_pair(getResourceViewObject(cost.id), cost.value);
+  if (cost.value() > 0 && !Collective::resourceInfo.at(cost.id()).dontDisplay)
+    return make_pair(getResourceViewObject(cost.id()), cost.value());
   else
     return Nothing();
 }
@@ -835,10 +833,10 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            BuildInfo::SquareInfo& elem = button.squareInfo;
            ViewObject viewObj(SquareFactory::get(elem.type)->getViewObject());
            string description;
-           if (elem.cost.value > 0)
+           if (elem.cost.value() > 0)
              description = "[" + convertToString(getCollective()->getSquares(elem.type).size()) + "]";
-           int availableNow = !elem.cost.value ? 1 : getCollective()->numResource(elem.cost.id) / elem.cost.value;
-           if (Collective::resourceInfo.at(elem.cost.id).dontDisplay && availableNow)
+           int availableNow = !elem.cost.value() ? 1 : getCollective()->numResource(elem.cost.id()) / elem.cost.value();
+           if (Collective::resourceInfo.at(elem.cost.id()).dontDisplay && availableNow)
              description += " (" + convertToString(availableNow) + " available)";
            if (getSecondarySquare(elem.type))
              viewObj = SquareFactory::get(*getSecondarySquare(elem.type))->getViewObject();
@@ -1008,7 +1006,7 @@ MapMemory& PlayerControl::getMemory(Level* l) {
 }
 
 ViewObject PlayerControl::getTrapObject(TrapType type) {
-  for (const PlayerControl::BuildInfo& info : concat(workshopInfo, getBuildInfo(nullptr)))
+  for (const PlayerControl::BuildInfo& info : concat(workshopInfo, getBuildInfo(nullptr, nullptr)))
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type)
       return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed trap")
         .setModifier(ViewObject::Modifier::PLANNED);
@@ -1039,11 +1037,11 @@ ViewIndex PlayerControl::getViewIndex(Vec2 pos) const {
   const map<Vec2, Collective::ConstructionInfo>& constructions = getCollective()->getConstructions();
   if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
     if (traps.count(pos))
-      index.insert(getTrapObject(traps.at(pos).type));
+      index.insert(getTrapObject(traps.at(pos).type()));
     if (getCollective()->isGuardPost(pos))
       index.insert(ViewObject(ViewId::GUARD_POST, ViewLayer::LARGE_ITEM, "Guard post"));
-    if (constructions.count(pos) && !constructions.at(pos).built)
-      index.insert(getConstructionObject(constructions.at(pos).type));
+    if (constructions.count(pos) && !constructions.at(pos).built())
+      index.insert(getConstructionObject(constructions.at(pos).type()));
   }
   if (surprises.count(pos) && !getCollective()->isKnownSquare(pos))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
@@ -1119,7 +1117,7 @@ void PlayerControl::possess(const Creature* cr, View* view) {
 }
 
 bool PlayerControl::canBuildDoor(Vec2 pos) const {
-  if (!getLevel()->getSquare(pos)->canConstruct(SquareType::TRIBE_DOOR))
+  if (!getLevel()->getSquare(pos)->canConstruct({SquareType::TRIBE_DOOR, getTribe()}))
     return false;
   Rectangle innerRect = getLevel()->getBounds().minusMargin(1);
   auto wallFun = [=](Vec2 pos) {
@@ -1387,7 +1385,7 @@ void PlayerControl::addToMemory(Vec2 pos) {
 
 void PlayerControl::addDeityServant(Deity* deity, Vec2 deityPos, Vec2 victimPos) {
   PTask task = Task::chain(Task::destroySquare(victimPos), Task::disappear());
-  PCreature creature = CreatureFactory::fromId(deity->getServant(), Tribe::get(TribeId::KILL_EVERYONE),
+  PCreature creature = deity->getServant(Tribe::get(TribeId::KILL_EVERYONE)).random(
       MonsterAIFactory::singleTask(task));
   for (Vec2 v : concat({deityPos}, deityPos.neighbors8(true)))
     if (getLevel()->getSquare(v)->canEnter(creature.get())) {
@@ -1420,10 +1418,10 @@ void PlayerControl::considerDeityFight() {
     do {
       victim = chooseRandom(altars);
     } while (victim.second.id == SquareType::ALTAR &&
-        victim.second.altarInfo.habitat == attacking.second.altarInfo.habitat);
-    addDeityServant(Deity::getDeity(attacking.second.altarInfo.habitat), attacking.first, victim.first);
+        victim.second.getAltarInfo() == attacking.second.getAltarInfo());
+    addDeityServant(Deity::getDeity(attacking.second.getAltarInfo()), attacking.first, victim.first);
     if (victim.second.id == SquareType::ALTAR)
-      addDeityServant(Deity::getDeity(victim.second.altarInfo.habitat), victim.first, attacking.first);
+      addDeityServant(Deity::getDeity(victim.second.getAltarInfo()), victim.first, attacking.first);
   }
 }
 
@@ -1520,17 +1518,8 @@ void PlayerControl::onTechBookEvent(Technology* tech) {
 }
 
 MoveInfo PlayerControl::getPossessedMove(Creature* c) {
-  Optional<Vec2> v;
-  if (possessed->getLevel() != c->getLevel()) {
-    if (teamLevelChanges.count(c->getLevel())) {
-      v = teamLevelChanges.at(c->getLevel());
-      if (v == c->getPosition() && c->applySquare())
-        return {1.0, c->applySquare()};
-    }
-  } else 
-    v = possessed->getPosition();
-  if (v)
-    if (auto action = c->moveTowards(*v))
+  if (possessed->getLevel() == c->getLevel()) 
+    if (auto action = c->moveTowards(possessed->getPosition()))
       return {1.0, action};
   return NoMove;
 }

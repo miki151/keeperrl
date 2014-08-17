@@ -124,7 +124,8 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
 
   void youHit(BodyPart part, AttackType type) const;
 
-  virtual void dropCorpse();
+  void dropCorpse();
+  virtual vector<PItem> getCorpse();
   
   void monsterMessage(const string& playerCanSee, const string& cant = "") const;
   void globalMessage(const string& playerCanSee, const string& cant = "") const;
@@ -146,7 +147,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   bool isWorshipped() const;
   bool canSwim() const;
   bool canFly() const;
-  bool canWalk() const;
+  bool isHatcheryAnimal() const;
   bool canBeMinion() const;
 
   int numBodyParts(BodyPart) const;

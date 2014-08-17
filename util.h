@@ -1335,4 +1335,24 @@ struct ConstructorFunction {
   function<void()> destFun;
 };
 
+template<typename... Args>
+struct NamedTupleBase : public tuple<Args...> {
+  typedef tuple<Args...> BaseTuple;
+  NamedTupleBase(Args... a) : BaseTuple(a...) {}
+  NamedTupleBase() {}
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    boost::serialization::serialize<Archive, Args...>(ar, *this, version);
+  }
+};
+
+#define NAMED_TUPLE_STUFF(name)\
+  using NamedTupleBase::NamedTupleBase;\
+ // name& operator = (const name& a) { NamedTupleBase::operator = (a); return *this; }
+
+#define NAME_ELEM(num, name)\
+  std::tuple_element<num, BaseTuple>::type& name() { return get<num>(*this); }\
+  const std::tuple_element<num, BaseTuple>::type& name() const { return get<num>(*this); }
+
+
 #endif

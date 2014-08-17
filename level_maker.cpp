@@ -394,10 +394,18 @@ class Creatures : public LevelMaker {
       cfactory(cf), numCreature(numC), actorFactory(MonsterAIFactory::collective(col)), squareType(type),
       collective(col) {}
 
+  Creatures(CreatureFactory cf, int numC, Optional<SquareType> type = Nothing()) :
+      cfactory(cf), numCreature(numC), squareType(type) {}
+
   virtual void make(Level::Builder* builder, Rectangle area) override {
+    if (!actorFactory) {
+      Location* loc = new Location();
+      builder->addLocation(loc, area);
+      actorFactory = MonsterAIFactory::stayInLocation(loc);
+    }
     Table<char> taken(area.getKX(), area.getKY());
     for (int i : Range(numCreature)) {
-      PCreature creature = cfactory.random(actorFactory);
+      PCreature creature = cfactory.random(*actorFactory);
       Vec2 pos;
       int numTries = 100;
       do {
@@ -417,7 +425,7 @@ class Creatures : public LevelMaker {
   private:
   CreatureFactory cfactory;
   int numCreature;
-  MonsterAIFactory actorFactory;
+  Optional<MonsterAIFactory> actorFactory;
   Optional<SquareType> squareType;
   Collective* collective = nullptr;
 };
@@ -1621,10 +1629,18 @@ static LevelMaker* underground(bool monsters) {
   return queue;
 }
 
+CreatureFactory getChestFactory() {
+  return CreatureFactory::singleType(Tribe::get(TribeId::PEST), CreatureId::RAT);
+}
+
+SquareType getTreesType(SquareType::Id id) {
+  return {id, CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::ENT)};
+}
+
 LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down) {
   vector<FeatureInfo> featureCount { 
       { SquareType::FOUNTAIN, 0, 3 },
-      { SquareType::CHEST, 3, 7},
+      { {SquareType::CHEST, getChestFactory()}, 3, 7},
       { SquareType::TORCH, 5, 10},
       { SquareType::TORTURE_TABLE, 2, 3}};
   MakerQueue* queue = new MakerQueue();
@@ -1662,7 +1678,7 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up,
 LevelMaker* LevelMaker::cryptLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
-      { SquareType::COFFIN, 3, 7}};
+      { {SquareType::COFFIN, CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::VAMPIRE)}, 3, 7}};
   queue->addMaker(new Empty(SquareType::BLACK_WALL));
   queue->addMaker(new RoomMaker(Random.getRandom(8, 15), 3, 5, SquareType::ROCK_WALL,
         SquareType(SquareType::BLACK_WALL)));
@@ -1679,8 +1695,8 @@ LevelMaker* LevelMaker::cryptLevel(CreatureFactory cfactory, vector<StairKey> up
 
 LevelMaker* hatchery(CreatureFactory factory, int numCreatures) {
   MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new Empty(SquareType::HATCHERY));
-  queue->addMaker(new Creatures(factory, numCreatures, MonsterAIFactory::monster()));
+  queue->addMaker(new Empty(SquareType::MUD));
+  queue->addMaker(new Creatures(factory, numCreatures));
   return queue;
 }
 
@@ -1696,7 +1712,7 @@ MakerQueue* village2(SettlementInfo info) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
-      { SquareType::CHEST, 1, 4 },
+      { {SquareType::CHEST, getChestFactory()}, 1, 4 },
       { SquareType::TORCH, 2, 5 },
       { SquareType::BED, 4, 7 }};
   queue->addMaker(new LocationMaker(info.location));
@@ -1713,7 +1729,7 @@ MakerQueue* village(SettlementInfo info) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
-      { SquareType::CHEST, 1, 4 },
+      { {SquareType::CHEST, getChestFactory()}, 1, 4 },
       { SquareType::TORCH, 2, 5 },
       { SquareType::BED, 6, 7 }};
   queue->addMaker(new LocationMaker(info.location));
@@ -1732,7 +1748,7 @@ MakerQueue* village(SettlementInfo info) {
 }
 
 MakerQueue* cottage(SettlementInfo info, const vector<FeatureInfo>& featureCount =
-    {{ SquareType::CHEST, 4, 9 }, { SquareType::BED, 2, 4 }}) {
+    {{ {SquareType::CHEST, getChestFactory()}, 4, 9 }, { SquareType::BED, 2, 4 }}) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(building.floorOutside));
@@ -1751,7 +1767,7 @@ MakerQueue* castle(SettlementInfo info) {
   leftSide->addMaker(new Division(true, Random.getDouble(0.5, 0.5),
       new Margin(1, -1, -1, 1, castleRoom), new Margin(1, 1, -1, -1, castleRoom)));
   vector<FeatureInfo> featureCount { 
-      { SquareType::CHEST, 3, 8 },
+      { {SquareType::CHEST, getChestFactory()}, 3, 8 },
       { SquareType::BED, 5, 8 }};
   leftSide->addMaker(new DungeonFeatures(new AttribPredicate(SquareAttrib::EMPTY_ROOM), featureCount));
   for (StairKey key : info.downStairs)
@@ -1880,7 +1896,7 @@ static MakerQueue* mineTownMaker(SettlementInfo info) {
   int numRooms = Random.getRandom(5, 7);
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount {
-      { SquareType::CHEST, 4, 8 },
+      { {SquareType::CHEST, getChestFactory()}, 4, 8 },
       { SquareType::BED, 4, 8 }};
   LevelMaker* cavern = new UniformBlob(SquareType::PATH);
   vector<LevelMaker*> vCavern;
@@ -1942,8 +1958,10 @@ LevelMaker* LevelMaker::mineTownLevel(SettlementInfo info) {
 
 LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
   MakerQueue* queue = new MakerQueue();
-  vector<SquareType> vegetationLow { SquareType::CANIF_TREE, SquareType::BUSH };
-  vector<SquareType> vegetationHigh { SquareType::DECID_TREE, SquareType::BUSH };
+  vector<SquareType> vegetationLow { 
+    getTreesType(SquareType::CANIF_TREE), getTreesType(SquareType::BUSH) };
+  vector<SquareType> vegetationHigh {
+    getTreesType(SquareType::DECID_TREE), getTreesType(SquareType::BUSH) };
   vector<double> probs { 2, 1 };
   RandomLocations* locations = new RandomLocations();
   SquarePredicate* lowlandPred = new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
@@ -2051,8 +2069,9 @@ static void addResources(RandomLocations* locations, int count, int countHere, i
 
 LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
   MakerQueue* queue = new MakerQueue();
-  vector<SquareType> vegetationLow { SquareType::CANIF_TREE, SquareType::BUSH };
-  vector<SquareType> vegetationHigh { SquareType::DECID_TREE, SquareType::BUSH };
+  vector<SquareType> vegetationLow {
+      getTreesType(SquareType::CANIF_TREE), getTreesType(SquareType::BUSH) };
+  vector<SquareType> vegetationHigh { getTreesType(SquareType::DECID_TREE), getTreesType(SquareType::BUSH) };
   vector<double> probs { 2, 1 };
   RandomLocations* locations = new RandomLocations();
   LevelMaker* startingPos = new StartingPos(new TypePredicate(SquareType::HILL), StairKey::PLAYER_SPAWN);
@@ -2156,7 +2175,7 @@ LevelMaker* LevelMaker::cellarLevel(CreatureFactory cfactory, SquareType wallTyp
     vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount {
-      { SquareType::CHEST, 3, 7}};
+      { {SquareType::CHEST, getChestFactory()}, 3, 7}};
   queue->addMaker(new Empty(SquareType::FLOOR));
   queue->addMaker(new Empty(wallType));
   queue->addMaker(new RoomMaker(Random.getRandom(8, 15), 3, 5, wallType, wallType));
@@ -2176,7 +2195,7 @@ LevelMaker* LevelMaker::cavernLevel(CreatureFactory cfactory, SquareType wallTyp
     StairLook stairLook, vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
-      { SquareType::CHEST, 10, 14}};
+      { {SquareType::CHEST, getChestFactory()}, 10, 14}};
   queue->addMaker(new Empty(wallType));
   queue->addMaker(new UniformBlob(floorType));
   queue->addMaker(new DungeonFeatures(new TypePredicate(floorType), featureCount));
@@ -2193,6 +2212,6 @@ LevelMaker* LevelMaker::cavernLevel(CreatureFactory cfactory, SquareType wallTyp
 LevelMaker* LevelMaker::grassAndTrees() {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareType::GRASS));
-  queue->addMaker(new Forrest(0.8, 0.5, SquareType::GRASS, {SquareType::CANIF_TREE}, {1}));
+  queue->addMaker(new Forrest(0.8, 0.5, SquareType::GRASS, {getTreesType(SquareType::CANIF_TREE)}, {1}));
   return new BorderGuard(queue, SquareType::BLACK_WALL);
 }

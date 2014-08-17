@@ -1592,7 +1592,11 @@ void Creature::take(PItem item) {
 }
 
 void Creature::dropCorpse() {
-  getSquare()->dropItem(ItemFactory::corpse(*name + " corpse", *name + " skeleton", *weight,
+  getSquare()->dropItems(getCorpse());
+}
+
+vector<PItem> Creature::getCorpse() {
+  return makeVec<PItem>(ItemFactory::corpse(*name + " corpse", *name + " skeleton", *weight,
         isFood ? ItemType::FOOD : ItemType::CORPSE, {getUniqueId(), true, numBodyParts(BodyPart::HEAD) > 0, false}));
 }
 
@@ -1918,8 +1922,8 @@ bool Creature::canSwim() const {
   return skills[SkillId::SWIMMING];
 }
 
-bool Creature::canWalk() const {
-  return walker;
+bool Creature::isHatcheryAnimal() const {
+  return hatcheryAnimal;
 }
 
 bool Creature::canBeMinion() const {

@@ -204,10 +204,10 @@ class Water : public Square {
 
 class Chest : public Square {
   public:
-  Chest(const ViewObject& object, const ViewObject& opened, const string& name, CreatureId id, int minC, int maxC,
-        const string& _msgItem, const string& _msgMonster, const string& _msgGold,
-        ItemFactory _itemFactory) : 
-      Square(object, name, Vision::get(VisionId::NORMAL), true, 30, 0.5), creatureId(id), minCreatures(minC), maxCreatures(maxC), msgItem(_msgItem), msgMonster(_msgMonster), msgGold(_msgGold), itemFactory(_itemFactory), openedObject(opened) {}
+  Chest(const ViewObject& object, const ViewObject& opened, const string& name, CreatureFactory f,
+      int numC, const string& _msgItem, const string& _msgMonster, const string& _msgGold, ItemFactory _itemFactory)
+    : Square(object, name, Vision::get(VisionId::NORMAL), true, 30, 0.5), creatureFactory(f), numCreatures(numC),
+    msgItem(_msgItem), msgMonster(_msgMonster), msgGold(_msgGold), itemFactory(_itemFactory), openedObject(opened) {}
 
   virtual void onEnterSpecial(Creature* c) override {
     c->playerMessage(string("There is a ") + (opened ? " opened " : "") + getName() + " here");
@@ -224,8 +224,8 @@ class Chest : public Square {
     if (!Random.roll(10))
       append(item, itemFactory.random());
     else {
-      for (int i : Range(Random.getRandom(minCreatures, maxCreatures)))
-        item.push_back(ItemFactory::corpse(creatureId));
+      for (int i : Range(numCreatures))
+        append(item, creatureFactory.random()->getCorpse());
     }
     s->dropItems(std::move(item));
   }
@@ -249,9 +249,9 @@ class Chest : public Square {
       c->takeItems(std::move(items), nullptr);
     } else {
       c->playerMessage(msgMonster);
-      int numR = Random.getRandom(minCreatures, maxCreatures);
+      int numR = numCreatures;
       for (Vec2 v : getPosition().neighbors8(true)) {
-        PCreature rat = CreatureFactory::fromId(creatureId,  Tribe::get(TribeId::PEST));
+        PCreature rat = creatureFactory.random();
         if (getLevel()->getSquare(v)->canEnter(rat.get())) {
           getLevel()->addCreature(v, std::move(rat));
           if (--numR == 0)
@@ -264,9 +264,8 @@ class Chest : public Square {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & SVAR(creatureId)
-      & SVAR(minCreatures)
-      & SVAR(maxCreatures) 
+      & SVAR(creatureFactory)
+      & SVAR(numCreatures) 
       & SVAR(msgItem)
       & SVAR(msgMonster)
       & SVAR(msgGold)
@@ -279,9 +278,8 @@ class Chest : public Square {
   SERIALIZATION_CONSTRUCTOR(Chest);
 
   private:
-  CreatureId SERIAL(creatureId);
-  int SERIAL(minCreatures);
-  int SERIAL(maxCreatures);
+  CreatureFactory SERIAL(creatureFactory);
+  int SERIAL(numCreatures);
   string SERIAL(msgItem);
   string SERIAL(msgMonster);
   string SERIAL(msgGold);
@@ -328,8 +326,8 @@ class Fountain : public Square {
 class Tree : public Square {
   public:
   Tree(const ViewObject& object, const string& name, Vision* vision, int _numWood,
-      map<SquareType::Id, int> construct)
-      : Square(object, name, vision, true, 100, 0.5, construct), numWood(_numWood) {}
+      map<SquareType::Id, int> construct, CreatureFactory f)
+      : Square(object, name, vision, true, 100, 0.5, construct), numWood(_numWood), factory(f) {}
 
   virtual bool canDestroy() const override {
     return true;
@@ -349,8 +347,8 @@ class Tree : public Square {
     s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
     numCut += numWood;
     if (numCut > 1000 && Random.roll(max(30, (3000 - numCut) / 20)))
-      Effect::summon(getLevel(), Deity::getDeity(DeityHabitat::TREES)->getServant(), getPosition(),
-          Tribe::get(TribeId::MONSTER), 1, Random.getRandom(30, 60));
+      Effect::summon(getLevel(), factory, getPosition(), 1,
+          Random.getRandom(30, 60));
   }
 
   virtual void burnOut() override {
@@ -377,6 +375,7 @@ class Tree : public Square {
   private:
   bool SERIAL2(destroyed, false);
   int SERIAL(numWood);
+  CreatureFactory SERIAL(factory);
   static int numCut;
 };
 
@@ -432,8 +431,8 @@ class Door : public Square {
 
 class TribeDoor : public Door {
   public:
-  TribeDoor(const ViewObject& object, int destStrength) : Door(object), destructionStrength(destStrength) {
-  }
+  TribeDoor(const ViewObject& object, const Tribe* t, int destStrength)
+      : Door(object), tribe(t), destructionStrength(destStrength) { }
 
   virtual void destroyBy(Creature* c) override {
     destructionStrength -= c->getAttr(AttrType::STRENGTH);
@@ -443,12 +442,12 @@ class TribeDoor : public Door {
   }
 
   virtual bool canDestroyBy(const Creature* c) const override {
-    return c->getTribe() != Tribe::get(TribeId::KEEPER)
+    return c->getTribe() != tribe
       || c->isInvincible(); // hack to make boulders destroy doors
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return !locked && c->canWalk() && c->getTribe() == Tribe::get(TribeId::KEEPER);
+    return !locked && c->getTribe() == tribe;
   }
 
   virtual bool canLock() const {
@@ -470,6 +469,7 @@ class TribeDoor : public Door {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Door)
+      & SVAR(tribe)
       & SVAR(destructionStrength)
       & SVAR(locked);
     CHECK_SERIAL;
@@ -478,15 +478,16 @@ class TribeDoor : public Door {
   SERIALIZATION_CONSTRUCTOR(TribeDoor);
 
   private:
+  const Tribe* SERIAL(tribe);
   int SERIAL(destructionStrength);
   bool SERIAL2(locked, false);
 };
 
 class Barricade : public SolidSquare {
   public:
-  Barricade(const ViewObject& object, int destStrength)
+  Barricade(const ViewObject& object, const Tribe* t, int destStrength)
     : SolidSquare(object, "barricade", Vision::get(VisionId::NORMAL), {}, false, 0.5),
-    destructionStrength(destStrength) {
+    tribe(t), destructionStrength(destStrength) {
   }
 
   virtual void destroyBy(Creature* c) override {
@@ -497,8 +498,8 @@ class Barricade : public SolidSquare {
   }
 
   virtual bool canDestroyBy(const Creature* c) const override {
-    return c->getTribe() != Tribe::get(TribeId::KEEPER)
-      || c->isInvincible(); // hack to make boulders destroy doors
+    return c->getTribe() != tribe
+      || c->isInvincible(); // hack to make boulders destroy barricade
   }
 
   virtual bool canDestroy() const override {
@@ -508,6 +509,7 @@ class Barricade : public SolidSquare {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(SolidSquare)
+      & SVAR(tribe)
       & SVAR(destructionStrength);
     CHECK_SERIAL;
   }
@@ -515,6 +517,7 @@ class Barricade : public SolidSquare {
   SERIALIZATION_CONSTRUCTOR(Barricade);
 
   private:
+  const Tribe* SERIAL(tribe);
   int SERIAL(destructionStrength);
 };
 
@@ -846,30 +849,33 @@ class Workshop : public Furniture {
 
 class Hatchery : public Square {
   public:
-  Hatchery(const ViewObject& object, const string& name)
-    : Square(object, name, Vision::get(VisionId::NORMAL), false, 0, 0, {}, true) {}
+  Hatchery(const ViewObject& object, const string& name, CreatureFactory f)
+    : Square(object, name, Vision::get(VisionId::NORMAL), false, 0, 0, {}, true), factory(f) {}
 
   virtual void tickSpecial(double time) override {
     if (getCreature() || !Random.roll(10))
       return;
     for (Vec2 v : getPosition().neighbors8())
       if (Creature* c = getLevel()->getSquare(v)->getCreature())
-        if (c->getName() == "chicken")
+        if (c->isHatcheryAnimal())
           return;
-    getLevel()->addCreature(getPosition(), CreatureFactory::fromId(CreatureId::CHICKEN,
-          Tribe::get(TribeId::PEACEFUL), MonsterAIFactory::moveRandomly()));
+    getLevel()->addCreature(getPosition(), factory.random(MonsterAIFactory::moveRandomly()));
   }
 
   virtual bool canEnterSpecial(const Creature* c) const override {
-    return c->canWalk() || c->getName() == "chicken" || c->getName() == "pig";
+    return true;
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Square);
+    ar& SUBCLASS(Square)
+      & SVAR(factory);
   }
   
   SERIALIZATION_CONSTRUCTOR(Hatchery);
+
+  private:
+  CreatureFactory SERIAL(factory);
 };
 
 class Laboratory : public Workshop {
@@ -1023,13 +1029,15 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::CANIF_TREE:
         return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"),
             "tree", Vision::get(VisionId::ELF),
-            Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
+            Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}}, s.getCreatureFactory());
     case SquareType::DECID_TREE:
         return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"),
-            "tree", Vision::get(VisionId::ELF), Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}});
+            "tree", Vision::get(VisionId::ELF), Random.getRandom(15, 30), {{SquareType::TREE_TRUNK, 20}},
+            s.getCreatureFactory());
     case SquareType::BUSH:
         return new Tree(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush",
-            Vision::get(VisionId::NORMAL), Random.getRandom(5, 10), {{SquareType::TREE_TRUNK, 10}});
+            Vision::get(VisionId::NORMAL), Random.getRandom(5, 10), {{SquareType::TREE_TRUNK, 10}},
+            s.getCreatureFactory());
     case SquareType::TREE_TRUNK:
         return new Square(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
             "tree trunk", Vision::get(VisionId::NORMAL));
@@ -1079,13 +1087,14 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), 
             "workshop stand", 1);
     case SquareType::HATCHERY:
-        return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery");
+        return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery",
+            s.getCreatureFactory());
     case SquareType::ALTAR:
         return new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
-              Deity::getDeity(s.altarInfo.habitat));
+              Deity::getDeity(s.getAltarInfo()));
     case SquareType::CREATURE_ALTAR:
         return new CreatureAltar(ViewObject(ViewId::CREATURE_ALTAR, ViewLayer::FLOOR, "Shrine"),
-              s.creatureAltarInfo.creature);
+              s.getCreatureAltarInfo());
     case SquareType::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
                                           EffectType::ROLLING_BOULDER);
     case SquareType::POISON_GAS: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
@@ -1093,23 +1102,35 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareType::FOUNTAIN:
         return new Fountain(ViewObject(ViewId::FOUNTAIN, ViewLayer::FLOOR, "Fountain"));
     case SquareType::CHEST:
-        return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"), ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest", CreatureId::RAT, 3, 6, "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::chest());
+        return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"),
+            ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest",
+            s.getCreatureFactory(), Random.getRandom(3, 6),
+            "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::chest());
     case SquareType::TREASURE_CHEST:
         return new Furniture(ViewObject(ViewId::TREASURE_CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);
     case SquareType::COFFIN:
-        return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"), ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin", CreatureId::VAMPIRE, 1, 2, "There is a rotting corpse inside. You find an item.", "There is a rotting corpse inside. The corpse is alive!", "There is a rotting corpse inside. You find some gold.", ItemFactory::chest());
-    case SquareType::CEMETERY: return new DestroyableSquare(ViewObject(ViewId::CEMETERY, ViewLayer::FLOOR_BACKGROUND,
-                              "Cemetery"), "floor", Vision::get(VisionId::NORMAL));
+        return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"),
+            ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin",
+            s.getCreatureFactory(), 1,
+            "There is a rotting corpse inside. You find an item.",
+            "There is a rotting corpse inside. The corpse is alive!",
+            "There is a rotting corpse inside. You find some gold.", ItemFactory::chest());
+    case SquareType::CEMETERY:
+        return new DestroyableSquare(ViewObject(ViewId::CEMETERY, ViewLayer::FLOOR_BACKGROUND,
+              "Cemetery"), "floor", Vision::get(VisionId::NORMAL));
     case SquareType::GRAVE:
         return new Grave(ViewObject(ViewId::GRAVE, ViewLayer::FLOOR, "Grave"), "grave");
     case SquareType::IRON_BARS:
         FAIL << "Unimplemented";
-    case SquareType::DOOR: return new Door(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
-                               .setModifier(ViewObject::Modifier::CASTS_SHADOW));
-    case SquareType::TRIBE_DOOR: return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR,
-                                       "Door - click to lock.").setModifier(ViewObject::Modifier::CASTS_SHADOW), 100);
-    case SquareType::BARRICADE: return new Barricade(ViewObject(ViewId::BARRICADE, ViewLayer::FLOOR, "Barricade")
-                                    .setModifier(ViewObject::Modifier::ROUND_SHADOW), 200);
+    case SquareType::DOOR:
+        return new Door(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
+            .setModifier(ViewObject::Modifier::CASTS_SHADOW));
+    case SquareType::TRIBE_DOOR:
+        return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door - click to lock.")
+            .setModifier(ViewObject::Modifier::CASTS_SHADOW), s.getTribeInfo(), 100);
+    case SquareType::BARRICADE:
+        return new Barricade(ViewObject(ViewId::BARRICADE, ViewLayer::FLOOR, "Barricade")
+            .setModifier(ViewObject::Modifier::ROUND_SHADOW), s.getTribeInfo(), 200);
     case SquareType::BORDER_GUARD:
         return new SolidSquare(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "Wall"), "wall");
     case SquareType::DOWN_STAIRS:
