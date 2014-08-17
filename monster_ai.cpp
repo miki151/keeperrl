@@ -382,8 +382,8 @@ class Fighter : public Behaviour, public EventListener {
         return {weight, move.move};
     if (auto action = creature->moveAway(other->getPosition(), chase))
       return {weight, action.prepend([=] {
-        EventListener::addCombatEvent(creature);
-        EventListener::addCombatEvent(other);
+        GlobalEvents.addCombatEvent(creature);
+        GlobalEvents.addCombatEvent(other);
         lastSeen = {creature->getPosition(), creature->getTime(), creature->getLevel(), LastSeen::PANIC, other};
       })};
     else
@@ -442,7 +442,7 @@ class Fighter : public Behaviour, public EventListener {
       }
     if (best)
       if (auto action = creature->throwItem(best, dir)) {
-        EventListener::addCombatEvent(creature);
+        GlobalEvents.addCombatEvent(creature);
         return {1.0, action };
       }
     return NoMove;
@@ -455,7 +455,7 @@ class Fighter : public Behaviour, public EventListener {
       return NoMove;
     if (auto action = creature->fire(dir.shorten()))
       return {1.0, action.append([=] {
-          EventListener::addCombatEvent(creature);
+          GlobalEvents.addCombatEvent(creature);
       })};
     return NoMove;
   }
@@ -474,13 +474,13 @@ class Fighter : public Behaviour, public EventListener {
     if (chase && lastSeen->type == LastSeen::ATTACK)
       if (auto action = creature->moveTowards(lastSeen->pos)) {
         return {0.5, action.append([=] {
-            EventListener::addCombatEvent(creature);
+            GlobalEvents.addCombatEvent(creature);
         })};
       }
     if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()) < 4)
       if (auto action = creature->moveAway(lastSeen->pos, chase))
         return {0.5, action.append([=] {
-            EventListener::addCombatEvent(creature);
+            GlobalEvents.addCombatEvent(creature);
         })};
     return NoMove;
   }
@@ -498,8 +498,8 @@ class Fighter : public Behaviour, public EventListener {
       if (Item* weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=] {
-            EventListener::addCombatEvent(creature);
-            EventListener::addCombatEvent(other);
+            GlobalEvents.addCombatEvent(creature);
+            GlobalEvents.addCombatEvent(other);
             creature->globalMessage(creature->getTheName() + " draws " + weapon->getAName());
         })};
     }
@@ -519,8 +519,8 @@ class Fighter : public Behaviour, public EventListener {
         lastSeen = Nothing();
         if (auto action = creature->moveTowards(creature->getPosition() + enemyDir))
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=] {
-            EventListener::addCombatEvent(creature);
-            EventListener::addCombatEvent(other);
+            GlobalEvents.addCombatEvent(creature);
+            GlobalEvents.addCombatEvent(other);
             lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel(),
                 LastSeen::ATTACK, other};
           })};
@@ -529,8 +529,8 @@ class Fighter : public Behaviour, public EventListener {
     if (distance == 1)
       if (auto action = creature->attack(other))
         return {1.0, action.prepend([=] {
-            EventListener::addCombatEvent(creature);
-            EventListener::addCombatEvent(other);
+            GlobalEvents.addCombatEvent(creature);
+            GlobalEvents.addCombatEvent(other);
         })};
     return NoMove;
   }

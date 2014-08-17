@@ -73,7 +73,6 @@ class Collective : public EventListener, public Task::Callback {
   virtual void onSquareReplacedEvent(const Level*, Vec2 pos) override;
   virtual void onAlarmEvent(const Level*, Vec2 pos) override;
   virtual void onSurrenderEvent(Creature* who, const Creature* to) override;
-  virtual void onCombatEvent(const Creature*) override;
   virtual void onTriggerEvent(const Level*, Vec2 pos) override;
   virtual void onEquipEvent(const Creature*, const Item*) override;
   virtual void onPickupEvent(const Creature* c, const vector<Item*>& items) override;
@@ -255,6 +254,9 @@ class Collective : public EventListener, public Task::Callback {
 
   private:
   SERIAL_CHECKER;
+  void onCombatEvent(const Creature*);
+  REGISTER_HANDLER(CombatEvent, Collective, onCombatEvent);
+
   MinionEquipment SERIAL(minionEquipment);
   map<ResourceId, int> SERIAL(credit);
   EnumSet<CollectiveConfig> SERIAL(config);

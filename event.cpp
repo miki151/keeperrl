@@ -20,6 +20,8 @@
 
 vector<EventListener*> EventListener::listeners;
 
+EventListener2 GlobalEvents;
+
 EventListener::EventListener() {
   listeners.push_back(this);
 }
@@ -96,12 +98,6 @@ void EventListener::addChangeLevelEvent(const Creature* c, const Level* level, V
       l->onChangeLevelEvent(c, level, pos, to, toPos);
 }
   
-void EventListener::addCombatEvent(const Creature* c) {
-  for (EventListener* l : listeners)
-    if (l->getListenerLevel() == c->getLevel() || l->getListenerLevel() == nullptr)
-      l->onCombatEvent(c);
-}
-
 void EventListener::addAlarmEvent(const Level* level, Vec2 pos) {
   for (EventListener* l : listeners)
     if (l->getListenerLevel() == level || l->getListenerLevel() == nullptr)

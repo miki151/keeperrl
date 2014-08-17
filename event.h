@@ -33,8 +33,6 @@ class EventListener {
   virtual void onItemsAppearedEvent(Vec2 position, const vector<Item*>& items) {}
   virtual void onKillEvent(const Creature* victim, const Creature* killer) {}
   virtual void onAttackEvent(Creature* victim, Creature* attacker) {}
-  // triggered when the monster AI is either attacking, chasing or fleeing
-  virtual void onCombatEvent(const Creature*) {}
   virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) {}
   virtual void onExplosionEvent(const Level* level, Vec2 pos) {}
   virtual void onTriggerEvent(const Level*, Vec2 pos) {}
@@ -53,7 +51,6 @@ class EventListener {
   static void addItemsAppearedEvent(const Level*, Vec2 position, const vector<Item*>& items);
   static void addKillEvent(const Creature* victim, const Creature* killer);
   static void addAttackEvent(Creature* victim, Creature* attacker);
-  static void addCombatEvent(const Creature*);
   static void addThrowEvent(const Level*, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory);
   static void addExplosionEvent(const Level* level, Vec2 pos);
   static void addTriggerEvent(const Level*, Vec2 pos);
@@ -80,5 +77,36 @@ class EventListener {
   private:
   static vector<EventListener*> listeners;
 };
+
+#define EVENT(Name, ...)\
+template<typename... Ts>\
+void add##Name(Ts... ts) {\
+  for (auto elem : funs##Name)\
+    elem.second(ts...);\
+}\
+typedef function<void(__VA_ARGS__)> Fun##Name;\
+unordered_map<void*, Fun##Name> funs##Name;\
+void link##Name(void* obj, Fun##Name fun) {\
+  funs##Name[obj] = fun;\
+}\
+void unlink##Name(void* obj) {\
+  funs##Name.erase(obj);\
+}
+
+class EventListener2 {
+  public:
+  // triggered when the monster AI is either attacking, chasing or fleeing
+  EVENT(CombatEvent, const Creature*);
+};
+
+extern EventListener2 GlobalEvents;
+
+#define REGISTER_HANDLER(Event, Class, Name)\
+  ConstructorFunction __LINE__##Name##Runner123 = ConstructorFunction([=] {\
+      GlobalEvents.link##Event(this, bindMethod(&Class::Name, this));\
+  }, [=] {\
+      GlobalEvents.unlink##Event(this);\
+  })
+
 
 #endif

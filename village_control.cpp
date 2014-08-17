@@ -263,10 +263,12 @@ class FirstContact : public AttackTrigger, public EventListener {
       other->tick(time);
   }
 
-  virtual void onCombatEvent(const Creature* c) override {
+  void onCombatEvent(const Creature* c) {
     if (contains(control->getCreatures(), NOTNULL(c)))
       madeContact = min(madeContact, c->getTime() + 50);
   }
+
+  REGISTER_HANDLER(CombatEvent, FirstContact, onCombatEvent);
 
   SERIALIZATION_CONSTRUCTOR(FirstContact);
 
