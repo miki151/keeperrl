@@ -301,7 +301,7 @@ class GoldLust : public Behaviour {
   }
 };
 
-class Fighter : public Behaviour, public EventListener {
+class Fighter : public Behaviour {
   public:
   Fighter(Creature* c, double powerR, bool _chase) : Behaviour(c), maxPowerRatio(powerR), chase(_chase) {
   }
@@ -309,7 +309,7 @@ class Fighter : public Behaviour, public EventListener {
   virtual ~Fighter() {
   }
 
-  virtual void onKillEvent(const Creature* victim, const Creature* killer) override {
+  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
     if (victim != creature && victim->getName() == creature->getName() && creature->canSee(victim)) {
       creature->addMorale(-0.1);
     }
@@ -317,11 +317,11 @@ class Fighter : public Behaviour, public EventListener {
       lastSeen = Nothing();
   }
 
-  virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) override {
-    if (!creature->isHumanoid())
+  REGISTER_HANDLER(ThrowEvent, const Level* l, const Creature* thrower, const Item* item, const vector<Vec2>& traj) {
+    if (!creature->isHumanoid() || l != creature->getLevel())
       return;
     string name = creature->getName();
-    if (contains(trajectory, creature->getPosition())
+    if (contains(traj, creature->getPosition())
           && item->getName().size() > name.size() && item->getName().substr(0, name.size()) == name) {
       creature->globalMessage(creature->getTheName() + " screams in terror!", "You hear a scream of terror.");
       if (Random.roll(2))
@@ -331,10 +331,6 @@ class Fighter : public Behaviour, public EventListener {
     }
   }
 
-  virtual const Level* getListenerLevel() const override {
-    return creature->getLevel();
-  }
- 
   double getMoraleBonus() {
     return pow(2.0, creature->getMorale());
   }
@@ -361,7 +357,7 @@ class Fighter : public Behaviour, public EventListener {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
           if (dist == 1 && creature->isHumanoid())
-            EventListener::addSurrenderEvent(creature, other);
+            GlobalEvents.addSurrenderEvent(creature, other);
           if (MoveInfo move = getPanicMove(other, weight))
             return move;
           else
@@ -711,7 +707,7 @@ class DieTime : public Behaviour {
   double SERIAL(dieTime);
 };
 
-class Summoned : public GuardTarget, public EventListener {
+class Summoned : public GuardTarget {
   public:
   Summoned(Creature* c, Creature* _target, double minDist, double maxDist, double ttl) 
       : GuardTarget(c, minDist, maxDist), target(_target), dieTime(target->getTime() + ttl) {
@@ -720,8 +716,7 @@ class Summoned : public GuardTarget, public EventListener {
   virtual ~Summoned() {
   }
 
-  virtual void onChangeLevelEvent(const Creature* c, const Level* from,
-      Vec2 pos, const Level* to, Vec2 toPos) override {
+  REGISTER_HANDLER(ChangeLevelEvent, const Creature* c, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) {
     if (c == target)
       levelChanges[from] = pos;
   }
@@ -752,7 +747,6 @@ class Summoned : public GuardTarget, public EventListener {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(GuardTarget)
-      & SUBCLASS(EventListener)
       & SVAR(target) 
       & SVAR(levelChanges)
       & SVAR(dieTime);

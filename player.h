@@ -27,7 +27,7 @@ class View;
 class Model;
 class Creature;
 
-class Player : public Controller, public EventListener {
+class Player : public Controller {
   public:
   Player(Creature*, Model*, bool adventureMode, map<UniqueId, MapMemory>* levelMemory);
   virtual ~Player();
@@ -57,12 +57,6 @@ class Player : public Controller, public EventListener {
   
   virtual Controller* getPossessedController(Creature* c) override;
 
-  virtual const Level* getListenerLevel() const override;
-  virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) override;
-  virtual void onExplosionEvent(const Level* level, Vec2 pos) override;
-  virtual void onAlarmEvent(const Level*, Vec2 pos) override;
-  virtual void onWorshipEvent(Creature* who, const Deity* to, WorshipType) override;
-
   SERIALIZATION_DECL(Player);
 
   template <class Archive>
@@ -75,6 +69,11 @@ class Player : public Controller, public EventListener {
   Model* SERIAL(model);
 
   private:
+  REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);
+  REGISTER_HANDLER(ExplosionEvent, const Level*, Vec2);
+  REGISTER_HANDLER(AlarmEvent, const Level*, Vec2);
+  REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity* to, WorshipType);
+
   void tryToPerform(CreatureAction);
   void attackAction(Creature* other);
   void pickUpAction(bool extended);

@@ -21,7 +21,6 @@
 template <class Archive> 
 void Tribe::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Singleton)
-    & SUBCLASS(EventListener)
     & SVAR(diplomatic)
     & SVAR(standing)
     & SVAR(attacks)

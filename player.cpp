@@ -32,7 +32,6 @@
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Controller)
-    & SUBCLASS(EventListener) 
     & SVAR(creature)
     & SVAR(travelling)
     & SVAR(travelDir)
@@ -57,16 +56,13 @@ Player::Player(Creature* c, Model* m, bool adventure, map<UniqueId, MapMemory>* 
 Player::~Player() {
 }
 
-const Level* Player::getListenerLevel() const {
-  return creature->getLevel();
-}
-
-void Player::onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) {
-  for (Vec2 v : trajectory)
-    if (creature->canSee(v)) {
-      model->getView()->animateObject(trajectory, item->getViewObject());
-      return;
-    }
+void Player::onThrowEvent(const Level* l, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) {
+  if (l == creature->getLevel())
+    for (Vec2 v : trajectory)
+      if (creature->canSee(v)) {
+        model->getView()->animateObject(trajectory, item->getViewObject());
+        return;
+      }
 }
 
 void Player::learnLocation(const Location* loc) {
@@ -76,18 +72,22 @@ void Player::learnLocation(const Location* loc) {
 }
 
 void Player::onExplosionEvent(const Level* level, Vec2 pos) {
-  if (creature->canSee(pos))
-    model->getView()->animation(pos, AnimationId::EXPLOSION);
-  else
-    privateMessage("BOOM!");
+  if (level == creature->getLevel()) {
+    if (creature->canSee(pos))
+      model->getView()->animation(pos, AnimationId::EXPLOSION);
+    else
+      privateMessage("BOOM!");
+  }
 }
 
 void Player::onAlarmEvent(const Level* l, Vec2 pos) {
-  if (pos == creature->getPosition())
-    privateMessage("An alarm sounds near you.");
-  else
-    privateMessage("An alarm sounds in the " + 
-        getCardinalName((pos - creature->getPosition()).getBearing().getCardinalDir()));
+  if (l == creature->getLevel()) {
+    if (pos == creature->getPosition())
+      privateMessage("An alarm sounds near you.");
+    else
+      privateMessage("An alarm sounds in the " + 
+          getCardinalName((pos - creature->getPosition()).getBearing().getCardinalDir()));
+  }
 }
 
 ControllerFactory Player::getFactory(Model *m, map<UniqueId, MapMemory>* levelMemory) {
@@ -819,7 +819,7 @@ class PossessedController : public Player {
       owner->popController();
   }
 
-  void onAttackEvent(Creature* victim, Creature* attacker) override {
+  REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker) {
     if (!creature->isDead() && victim == owner)
       unpossess();
   }

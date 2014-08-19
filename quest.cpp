@@ -36,7 +36,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Quest);
 
 Quest::Quest(const string& message) : startMessage(message) {}
 
-class KillTribeQuest : public Quest, public EventListener {
+class KillTribeQuest : public Quest {
   public:
   KillTribeQuest(Tribe* _tribe, string msg, bool onlyImp = false)
       : Quest(msg), tribe(_tribe), onlyImportant(onlyImp) {
@@ -51,7 +51,7 @@ class KillTribeQuest : public Quest, public EventListener {
     return true;
   }
 
-  virtual void onKillEvent(const Creature* member, const Creature* attacker) {
+  REGISTER_HANDLER(KillEvent,const Creature* member, const Creature* attacker) {
     if (isFinished() && !notified) {
       notified = true;
       for (auto c : adventurers) {
@@ -63,7 +63,6 @@ class KillTribeQuest : public Quest, public EventListener {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Quest)
-      & SUBCLASS(EventListener) 
       & SVAR(tribe)
       & SVAR(onlyImportant)
       & SVAR(notified);

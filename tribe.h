@@ -43,12 +43,9 @@ RICH_ENUM(TribeId,
 
 class Creature;
 
-class Tribe : public EventListener, public Singleton<Tribe, TribeId> {
+class Tribe : public Singleton<Tribe, TribeId> {
   public:
   virtual double getStanding(const Creature*) const;
-
-  virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
-  virtual void onAttackEvent(Creature* victim, Creature* attacker) override;
 
   void onItemsStolen(const Creature* thief);
   void makeSlightEnemy(const Creature*);
@@ -74,6 +71,8 @@ class Tribe : public EventListener, public Singleton<Tribe, TribeId> {
   Tribe(const string& name, bool diplomatic);
 
   private:
+  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
+  REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker);
 
   bool SERIAL(diplomatic);
 

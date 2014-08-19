@@ -245,7 +245,7 @@ class Chest : public Square {
     if (!Random.roll(5)) {
       c->playerMessage(msgItem);
       vector<PItem> items = itemFactory.random();
-      EventListener::addItemsAppearedEvent(getLevel(), getPosition(), extractRefs(items));
+      GlobalEvents.addItemsAppearedEvent(getLevel(), getPosition(), extractRefs(items));
       c->takeItems(std::move(items), nullptr);
     } else {
       c->playerMessage(msgMonster);
@@ -619,7 +619,7 @@ class Grave : public Bed {
   SERIALIZATION_CONSTRUCTOR(Grave);
 };
 
-class Altar : public Square, public EventListener {
+class Altar : public Square {
   public:
   Altar(const ViewObject& object)
       : Square(object, "shrine", Vision::get(VisionId::NORMAL) , true, 100, 0) {
@@ -636,12 +636,8 @@ class Altar : public Square, public EventListener {
       return Nothing();
   }
 
-  virtual const Level* getListenerLevel() const override {
-    return getLevel();
-  }
-
-  virtual void onKillEvent(const Creature* victim, const Creature* killer) override {
-    if (victim->getPosition() == getPosition() && killer) {
+  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
+    if (victim->getLevel() == getLevel() && victim->getPosition() == getPosition() && killer) {
       recentKiller = killer;
       recentVictim = victim;
       killTime = killer->getTime();
@@ -704,16 +700,16 @@ class DeityAltar : public Altar {
   }
 
   virtual void destroyBy(Creature* c) override {
-    EventListener::addWorshipEvent(c, deity, WorshipType::DESTROY_ALTAR);
+    GlobalEvents.addWorshipEvent(c, deity, WorshipType::DESTROY_ALTAR);
     Altar::destroyBy(c);
   }
 
   virtual void onPrayer(Creature* c) override {
-    EventListener::addWorshipEvent(c, deity, WorshipType::PRAYER);
+    GlobalEvents.addWorshipEvent(c, deity, WorshipType::PRAYER);
   }
 
   virtual void onSacrifice(Creature* c) override {
-    EventListener::addWorshipEvent(c, deity, WorshipType::SACRIFICE);
+    GlobalEvents.addWorshipEvent(c, deity, WorshipType::SACRIFICE);
   }
 
   template <class Archive> 
@@ -743,7 +739,7 @@ class CreatureAltar : public Altar {
   }
 
   virtual void destroyBy(Creature* c) override {
-    EventListener::addWorshipCreatureEvent(c, creature, WorshipType::DESTROY_ALTAR);
+    GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::DESTROY_ALTAR);
     Altar::destroyBy(c);
   }
 
@@ -752,11 +748,11 @@ class CreatureAltar : public Altar {
   }
 
   virtual void onPrayer(Creature* c) override {
-    EventListener::addWorshipCreatureEvent(c, creature, WorshipType::PRAYER);
+    GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::PRAYER);
   }
 
   virtual void onSacrifice(Creature* c) override {
-    EventListener::addWorshipCreatureEvent(c, creature, WorshipType::SACRIFICE);
+    GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::SACRIFICE);
   }
 
   template <class Archive> 

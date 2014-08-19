@@ -27,7 +27,7 @@ class Level;
 /**
   * Main class that holds all game logic.
   */
-class Model : public EventListener {
+class Model {
   public:
   Model(View* view);
   ~Model();
@@ -68,7 +68,6 @@ class Model : public EventListener {
   void setView(View*);
 
   void tick(double time);
-  void onKillEvent(const Creature* victim, const Creature* killer) override;
   void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, const string& land, vector<const Creature*> kills, int points);
   void killedKeeper(const string& title, const string& keeper, const string& land,
@@ -90,6 +89,8 @@ class Model : public EventListener {
   Encyclopedia keeperopedia;
 
   private:
+  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
+
   Collective* getNewCollective();  
   void updateSunlightInfo();
   PCreature makePlayer();

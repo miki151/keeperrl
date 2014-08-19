@@ -168,7 +168,6 @@ void clearAndInitialize() {
   Vision::clearAll();
   Epithet::clearAll();
   NameGenerator::clearAll();
-  EventListener::initialize();
   Tribe::init();
   Skill::init();
   Technology::init();

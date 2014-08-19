@@ -27,7 +27,7 @@
 
 template <class Archive>
 void VillageControl::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(EventListener) & SUBCLASS(Task::Callback) & SUBCLASS(CollectiveControl)
+  ar& SUBCLASS(Task::Callback) & SUBCLASS(CollectiveControl)
     & SVAR(villain)
     & SVAR(location)
     & SVAR(name)
@@ -143,7 +143,7 @@ class AttackTriggerSet : public AttackTrigger {
   set<const Creature*> SERIAL(fightingCreatures);
 };
 
-class PowerTrigger : public AttackTriggerSet, public EventListener {
+class PowerTrigger : public AttackTriggerSet {
   public:
   // How long to wait between being attacked and attacking
   const int attackDelay = 100;
@@ -177,7 +177,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
     return currentTrigger;
   }
 
-  void onKillEvent(const Creature* victim, const Creature* killer) override {
+  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
     if (victim->getTribe() == control->getTribe() 
         && (!killer || contains(control->getVillain()->getCreatures(), killer))) {
       killedPoints += victim->getDifficultyPoints();
@@ -227,7 +227,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(AttackTriggerSet) & SUBCLASS(EventListener)
+    ar& SUBCLASS(AttackTriggerSet)
       & SVAR(killedPoints)
       & SVAR(killedCoeff)
       & SVAR(powerCoeff)
@@ -250,7 +250,7 @@ class PowerTrigger : public AttackTriggerSet, public EventListener {
 
 DEF_UNIQUE_PTR(AttackTrigger);
 
-class FirstContact : public AttackTrigger, public EventListener {
+class FirstContact : public AttackTrigger {
   public:
   FirstContact(VillageControl* c, PAttackTrigger o) : AttackTrigger(c), other(std::move(o)) {}
 
@@ -263,18 +263,16 @@ class FirstContact : public AttackTrigger, public EventListener {
       other->tick(time);
   }
 
-  void onCombatEvent(const Creature* c) {
+  REGISTER_HANDLER(CombatEvent, const Creature* c) {
     if (contains(control->getCreatures(), NOTNULL(c)))
       madeContact = min(madeContact, c->getTime() + 50);
   }
-
-  REGISTER_HANDLER(CombatEvent, FirstContact, onCombatEvent);
 
   SERIALIZATION_CONSTRUCTOR(FirstContact);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(AttackTrigger) & SUBCLASS(EventListener)
+    ar& SUBCLASS(AttackTrigger)
       & SVAR(other)
       & SVAR(madeContact);
     CHECK_SERIAL;
@@ -479,10 +477,9 @@ class DragonControl : public VillageControl {
       pleased -= angryVictims / angryTurns;
   }
 
-  virtual void onKillEvent(const Creature* victim, const Creature* killer) override {
+  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
     if (contains(getCollective()->getCreatures(), killer))
       pleased += 1;
-    VillageControl::onKillEvent(victim, killer);
   }
 
   virtual void onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType type) {

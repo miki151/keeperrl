@@ -80,7 +80,7 @@ class BoulderController : public Monster {
               direction = v;
               stopped = false;
               found = true;
-              EventListener::addTriggerEvent(creature->getLevel(), creature->getPosition());
+              GlobalEvents.addTriggerEvent(creature->getLevel(), creature->getPosition());
               creature->monsterMessage(MessageBuffer::important("The boulder starts rolling."),
                   MessageBuffer::important("You hear a heavy boulder rolling."));
               break;
@@ -432,7 +432,7 @@ class KamikazeController : public Monster {
   SERIALIZATION_CONSTRUCTOR(KamikazeController);
 };
 
-class ShopkeeperController : public Monster, public EventListener {
+class ShopkeeperController : public Monster {
   public:
   ShopkeeperController(Creature* c, Location* area) : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
   }
@@ -501,17 +501,18 @@ class ShopkeeperController : public Monster, public EventListener {
     unpaidItems.erase(from);
   }
   
-  virtual void onItemsAppearedEvent(Vec2 position, const vector<Item*>& items) override {
-    if (position.inRectangle(shopArea->getBounds())) {
-      for (Item* it : items) {
-        it->setShopkeeper(creature);
-        myItems.insert(it);
+  REGISTER_HANDLER(ItemsAppearedEvent, const Level* l, Vec2 position, const vector<Item*>& items) {
+    if (l == creature->getLevel())
+      if (position.inRectangle(shopArea->getBounds())) {
+        for (Item* it : items) {
+          it->setShopkeeper(creature);
+          myItems.insert(it);
+        }
       }
-    }
   }
 
-  virtual void onPickupEvent(const Creature* c, const vector<Item*>& items) override {
-    if (c->getPosition().inRectangle(shopArea->getBounds())) {
+  REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items) {
+    if (c->getLevel() == creature->getLevel() && c->getPosition().inRectangle(shopArea->getBounds())) {
       for (const Item* item : items)
         if (myItems.contains(item)) {
           debt[c] += item->getPrice();
@@ -520,8 +521,8 @@ class ShopkeeperController : public Monster, public EventListener {
     }
   }
 
-  virtual void onDropEvent(const Creature* c, const vector<Item*>& items) override {
-    if (c->getPosition().inRectangle(shopArea->getBounds())) {
+  REGISTER_HANDLER(DropEvent, const Creature* c, const vector<Item*>& items) {
+    if (c->getLevel() == creature->getLevel() && c->getPosition().inRectangle(shopArea->getBounds())) {
       for (const Item* item : items)
         if (myItems.contains(item)) {
           if ((debt[c] -= item->getPrice()) <= 0)
@@ -529,10 +530,6 @@ class ShopkeeperController : public Monster, public EventListener {
           unpaidItems[c].erase(item);
         }
     }
-  }
-
-  virtual const Level* getListenerLevel() const override {
-    return creature->getLevel();
   }
 
   virtual int getDebt(const Creature* debtor) const override {
@@ -546,8 +543,7 @@ class ShopkeeperController : public Monster, public EventListener {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(EventListener)
-      & SUBCLASS(Monster)
+    ar& SUBCLASS(Monster)
       & SVAR(prevCreatures)
       & SVAR(debt)
       & SVAR(thiefCount)

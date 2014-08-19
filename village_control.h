@@ -29,7 +29,7 @@ struct VillageControlInfo {
   double powerCoeff;
 };
 
-class VillageControl : public EventListener, public Task::Callback, public CollectiveControl {
+class VillageControl : public Task::Callback, public CollectiveControl {
   public:
   VillageControl(Collective*, Collective* villain, const Location*);
   virtual ~VillageControl();

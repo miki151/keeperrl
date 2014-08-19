@@ -48,7 +48,7 @@ RICH_ENUM(CollectiveConfig,
   WORKER_FOLLOW_LEADER,
 );
 
-class Collective : public EventListener, public Task::Callback {
+class Collective : public Task::Callback {
   public:
   Collective();
   void addCreature(Creature*, EnumSet<MinionTrait>);
@@ -66,17 +66,6 @@ class Collective : public EventListener, public Task::Callback {
   double getTime() const;
   void update(Creature*);
   void setConfig(CollectiveConfig);
-
-  virtual void onKillEvent(const Creature* victim, const Creature* killer) override;
-  virtual void onWorshipEvent(Creature* who, const Deity*, WorshipType) override;
-  virtual void onAttackEvent(Creature* victim, Creature* attacker) override;
-  virtual void onSquareReplacedEvent(const Level*, Vec2 pos) override;
-  virtual void onAlarmEvent(const Level*, Vec2 pos) override;
-  virtual void onSurrenderEvent(Creature* who, const Creature* to) override;
-  virtual void onTriggerEvent(const Level*, Vec2 pos) override;
-  virtual void onEquipEvent(const Creature*, const Item*) override;
-  virtual void onPickupEvent(const Creature* c, const vector<Item*>& items) override;
-  virtual void onTortureEvent(Creature* who, const Creature* torturer) override;
 
   virtual void onAppliedItem(Vec2 pos, Item* item) override;
   virtual void onAppliedItemCancel(Vec2 pos) override;
@@ -254,8 +243,18 @@ class Collective : public EventListener, public Task::Callback {
 
   private:
   SERIAL_CHECKER;
-  void onCombatEvent(const Creature*);
-  REGISTER_HANDLER(CombatEvent, Collective, onCombatEvent);
+
+  REGISTER_HANDLER(CombatEvent, const Creature*);
+  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
+  REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity*, WorshipType);
+  REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker);
+  REGISTER_HANDLER(SquareReplacedEvent, const Level*, Vec2 pos);
+  REGISTER_HANDLER(AlarmEvent, const Level*, Vec2 pos);
+  REGISTER_HANDLER(SurrenderEvent, Creature* who, const Creature* to);
+  REGISTER_HANDLER(TriggerEvent, const Level*, Vec2 pos);
+  REGISTER_HANDLER(EquipEvent, const Creature*, const Item*);
+  REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
+  REGISTER_HANDLER(TortureEvent, Creature* who, const Creature* torturer);
 
   MinionEquipment SERIAL(minionEquipment);
   map<ResourceId, int> SERIAL(credit);

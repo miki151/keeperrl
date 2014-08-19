@@ -396,7 +396,7 @@ class TechBook : public Item {
 
   virtual void apply(Creature* c, Level* l) override {
     if (!read || tech != nullptr) {
-      EventListener::addTechBookEvent(tech);
+      GlobalEvents.addTechBookEvent(tech);
       read = true;
     }
   }

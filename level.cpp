@@ -237,13 +237,13 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
     if (getSquare(v)->itemBounces(item[0].get(), vision)) {
         item[0]->onHitSquareMessage(v, getSquare(v), item.size() > 1);
         trajectory.pop_back();
-        EventListener::addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
+        GlobalEvents.addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
         if (!item[0]->isDiscarded())
           getSquare(v - direction)->dropItems(std::move(item));
         return;
     }
     if (++cnt > maxDist || getSquare(v)->itemLands(extractRefs(item), attack)) {
-      EventListener::addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
+      GlobalEvents.addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
       getSquare(v)->onItemLands(std::move(item), attack, maxDist - cnt - 1, direction, vision);
       return;
     }
@@ -285,7 +285,7 @@ void Level::changeLevel(StairDirection dir, StairKey key, Creature* c) {
   getSquare(c->getPosition())->removeCreature();
   bucketMap.removeElement(c->getPosition(), c);
   Vec2 toPosition = model->changeLevel(dir, key, c);
-  EventListener::addChangeLevelEvent(c, this, fromPosition, c->getLevel(), toPosition);
+  GlobalEvents.addChangeLevelEvent(c, this, fromPosition, c->getLevel(), toPosition);
 }
 
 void Level::changeLevel(Level* destination, Vec2 landing, Creature* c) {
@@ -294,7 +294,7 @@ void Level::changeLevel(Level* destination, Vec2 landing, Creature* c) {
   getSquare(c->getPosition())->removeCreature();
   bucketMap.removeElement(c->getPosition(), c);
   model->changeLevel(destination, landing, c);
-  EventListener::addChangeLevelEvent(c, this, fromPosition, destination, landing);
+  GlobalEvents.addChangeLevelEvent(c, this, fromPosition, destination, landing);
 }
 
 void Level::updatePlayer() {

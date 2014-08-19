@@ -40,8 +40,7 @@ class Tribe;
 class EnemyCheck;
 class ViewObject;
 
-class Creature : private CreatureAttributes, public Renderable, public CreatureView, public UniqueEntity,
-    public EventListener {
+class Creature : private CreatureAttributes, public Renderable, public CreatureView, public UniqueEntity {
   public:
   typedef CreatureAttributes CreatureAttributes;
   Creature(Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
@@ -110,7 +109,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   vector<string> getMainAdjectives() const;
   vector<string> getAdjectives() const;
   Vision* getVision() const;
-  void onKillEvent(const Creature* victim, const Creature* killer) override;
 
   virtual const Tribe* getTribe() const override;
   Tribe* getTribe();
@@ -279,6 +277,8 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   const EnumMap<MinionTask, double>& getMinionTasks() const;
 
   private:
+  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
+
   bool affects(LastingEffect effect) const;
   void onAffected(LastingEffect effect, bool msg);
   void onRemoved(LastingEffect effect, bool msg);

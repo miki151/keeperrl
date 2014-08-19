@@ -13,8 +13,7 @@
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(EventListener)
-    & SUBCLASS(Task::Callback)
+  ar& SUBCLASS(Task::Callback)
     & SVAR(creatures)
     & SVAR(taskMap)
     & SVAR(tribe)

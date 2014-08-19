@@ -26,12 +26,13 @@
 #include "view.h"
 #include "collective_control.h"
 #include "collective.h"
+#include "event.h"
 
 class Model;
 class Technology;
 class View;
 
-class PlayerControl : public CreatureView, public CollectiveControl, public EventListener {
+class PlayerControl : public CreatureView, public CollectiveControl {
   public:
   PlayerControl(Collective*, Model*, Level*);
   virtual const MapMemory& getMemory() const override;
@@ -48,11 +49,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   virtual bool staticPosition() const override;
   virtual int getMaxSightRange() const override;
-
-  virtual void onSquareReplacedEvent(const Level*, Vec2 pos) override;
-  virtual void onTechBookEvent(Technology*) override;
-  virtual void onWorshipEvent(Creature* who, const Deity* to, WorshipType) override;
-  virtual void onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType) override;
 
   void onConqueredLand(const string& name);
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
@@ -101,6 +97,12 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   static void registerTypes(Archive& ar);
 
   private:
+
+  REGISTER_HANDLER(SquareReplacedEvent, const Level*, Vec2 pos);
+  REGISTER_HANDLER(TechBookEvent, Technology*);
+  REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity* to, WorshipType);
+  REGISTER_HANDLER(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
+
   friend class KeeperControlOverride;
 
   void considerDeityFight();

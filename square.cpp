@@ -134,13 +134,13 @@ bool Square::construct(SquareType type) {
 
 void Square::destroy() {
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
-  EventListener::addSquareReplacedEvent(getLevel(), getPosition());
+  GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareType::FLOOR)));
 }
 
 void Square::burnOut() {
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
-  EventListener::addSquareReplacedEvent(getLevel(), getPosition());
+  GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareType::FLOOR)));
 }
 

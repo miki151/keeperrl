@@ -26,58 +26,6 @@ class Technology;
 class Deity;
 enum class WorshipType;
 
-class EventListener {
-  public:
-  virtual void onPickupEvent(const Creature*, const vector<Item*>& items) {}
-  virtual void onDropEvent(const Creature*, const vector<Item*>& items) {}
-  virtual void onItemsAppearedEvent(Vec2 position, const vector<Item*>& items) {}
-  virtual void onKillEvent(const Creature* victim, const Creature* killer) {}
-  virtual void onAttackEvent(Creature* victim, Creature* attacker) {}
-  virtual void onThrowEvent(const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) {}
-  virtual void onExplosionEvent(const Level* level, Vec2 pos) {}
-  virtual void onTriggerEvent(const Level*, Vec2 pos) {}
-  virtual void onSquareReplacedEvent(const Level*, Vec2 pos) {}
-  virtual void onChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) {}
-  virtual void onAlarmEvent(const Level*, Vec2 pos) {}
-  virtual void onTechBookEvent(Technology*) {}
-  virtual void onEquipEvent(const Creature*, const Item*) {}
-  virtual void onSurrenderEvent(Creature* who, const Creature* to) {}
-  virtual void onTortureEvent(Creature* who, const Creature* torturer) {}
-  virtual void onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType) {}
-  virtual void onWorshipEvent(Creature* who, const Deity* to, WorshipType) {}
-
-  static void addPickupEvent(const Creature*, const vector<Item*>& items);
-  static void addDropEvent(const Creature*, const vector<Item*>& items);
-  static void addItemsAppearedEvent(const Level*, Vec2 position, const vector<Item*>& items);
-  static void addKillEvent(const Creature* victim, const Creature* killer);
-  static void addAttackEvent(Creature* victim, Creature* attacker);
-  static void addThrowEvent(const Level*, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory);
-  static void addExplosionEvent(const Level* level, Vec2 pos);
-  static void addTriggerEvent(const Level*, Vec2 pos);
-  static void addSquareReplacedEvent(const Level*, Vec2 pos);
-  static void addChangeLevelEvent(const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos);
-  static void addAlarmEvent(const Level*, Vec2 pos);
-  static void addTechBookEvent(Technology*);
-  static void addEquipEvent(const Creature*, const Item*);
-  static void addSurrenderEvent(Creature* who, const Creature* to);
-  static void addTortureEvent(Creature* who, const Creature* torturer);
-  static void addWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType);
-  static void addWorshipEvent(Creature* who, const Deity* to, WorshipType);
-
-  virtual const Level* getListenerLevel() const { return nullptr; }
-  static void initialize();
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-  }
-
-  EventListener();
-  virtual ~EventListener();
-
-  private:
-  static vector<EventListener*> listeners;
-};
-
 #define EVENT(Name, ...)\
 template<typename... Ts>\
 void add##Name(Ts... ts) {\
@@ -93,20 +41,38 @@ void unlink##Name(void* obj) {\
   funs##Name.erase(obj);\
 }
 
-class EventListener2 {
+class EventListener {
   public:
   // triggered when the monster AI is either attacking, chasing or fleeing
   EVENT(CombatEvent, const Creature*);
+  EVENT(PickupEvent, const Creature*, const vector<Item*>& items);
+  EVENT(DropEvent, const Creature*, const vector<Item*>& items);
+  EVENT(ItemsAppearedEvent, const Level*, Vec2 position, const vector<Item*>& items);
+  EVENT(KillEvent, const Creature* victim, const Creature* killer);
+  EVENT(AttackEvent, Creature* victim, Creature* attacker);
+  EVENT(ThrowEvent, const Level*, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory);
+  EVENT(ExplosionEvent, const Level* level, Vec2 pos);
+  EVENT(TriggerEvent, const Level*, Vec2 pos);
+  EVENT(SquareReplacedEvent, const Level*, Vec2 pos);
+  EVENT(ChangeLevelEvent, const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos);
+  EVENT(AlarmEvent, const Level*, Vec2 pos);
+  EVENT(TechBookEvent, Technology*);
+  EVENT(EquipEvent, const Creature*, const Item*);
+  EVENT(SurrenderEvent, Creature* who, const Creature* to);
+  EVENT(TortureEvent, Creature* who, const Creature* torturer);
+  EVENT(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
+  EVENT(WorshipEvent, Creature* who, const Deity* to, WorshipType);
 };
 
-extern EventListener2 GlobalEvents;
+extern EventListener GlobalEvents;
 
-#define REGISTER_HANDLER(Event, Class, Name)\
-  ConstructorFunction __LINE__##Name##Runner123 = ConstructorFunction([=] {\
-      GlobalEvents.link##Event(this, bindMethod(&Class::Name, this));\
+#define REGISTER_HANDLER(Event, ...)\
+  ConstructorFunction __LINE__##Event##Runner123 = ConstructorFunction([=] {\
+      GlobalEvents.link##Event(this, bindMethod(&std::remove_reference<decltype(*this)>::type::on##Event, this));\
   }, [=] {\
       GlobalEvents.unlink##Event(this);\
-  })
+  });\
+  void on##Event(__VA_ARGS__)
 
 
 #endif

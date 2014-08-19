@@ -160,7 +160,7 @@ static void leaveBody(Creature* creature) {
 
 static void wordOfPower(Creature* c, int strength) {
   Level* l = c->getLevel();
-  EventListener::addExplosionEvent(c->getLevel(), c->getPosition());
+  GlobalEvents.addExplosionEvent(c->getLevel(), c->getPosition());
   for (Vec2 v : Vec2::directions8(true)) {
     if (Creature* other = c->getSquare(v)->getCreature()) {
       if (other->isStationary())
@@ -374,7 +374,7 @@ static void acid(Creature* c) {
 }
 
 static void alarm(Creature* c) {
-  EventListener::addAlarmEvent(c->getLevel(), c->getPosition());
+  GlobalEvents.addAlarmEvent(c->getLevel(), c->getPosition());
 }
 
 static void teleEnemies(Creature* c) { // handled by Collective

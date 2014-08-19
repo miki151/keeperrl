@@ -52,7 +52,6 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SUBCLASS(Renderable)
     & SUBCLASS(CreatureView)
     & SUBCLASS(UniqueEntity)
-    & SUBCLASS(EventListener)
     & SVAR(level)
     & SVAR(position)
     & SVAR(time)
@@ -475,7 +474,7 @@ CreatureAction Creature::pickUp(const vector<Item*>& items, bool spendT) {
     }
     if (getInventoryWeight() > getAttr(AttrType::INV_LIMIT))
       playerMessage("You are overloaded.");
-    EventListener::addPickupEvent(this, items);
+    GlobalEvents.addPickupEvent(this, items);
     if (spendT)
       spendTime(1);
   });
@@ -493,7 +492,7 @@ CreatureAction Creature::drop(const vector<Item*>& items) {
     for (auto item : items) {
       level->getSquare(getPosition())->dropItem(equipment.removeItem(item));
     }
-    EventListener::addDropEvent(this, items);
+    GlobalEvents.addDropEvent(this, items);
     spendTime(1);
   });
 }
@@ -552,7 +551,7 @@ CreatureAction Creature::equip(Item* item) {
     EquipmentSlot slot = item->getEquipmentSlot();
     equipment.equip(item, slot);
     item->onEquip(this);
-    EventListener::addEquipEvent(this, item);
+    GlobalEvents.addEquipEvent(this, item);
     if (!inEquipChain)
       spendTime(1);
     else
@@ -1256,7 +1255,7 @@ CreatureAction Creature::attack(const Creature* c1, Optional<AttackLevel> attack
   }
   else
     you(MsgType::MISS_ATTACK, enemyName);
-  EventListener::addAttackEvent(c, this);
+  GlobalEvents.addAttackEvent(c, this);
   if (spend)
     spendTime(1);
   });
@@ -1614,7 +1613,7 @@ void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
   if (dropInventory && dCorpse && !uncorporal)
     dropCorpse();
   level->killCreature(this);
-  EventListener::addKillEvent(this, attacker);
+  GlobalEvents.addKillEvent(this, attacker);
   if (innocent)
     Statistics::add(StatId::INNOCENT_KILLED);
   Statistics::add(StatId::DEATH);
@@ -1661,7 +1660,7 @@ CreatureAction Creature::torture(Creature* c) {
       else
       c->bleed(1);
     }
-    EventListener::addTortureEvent(c, this);
+    GlobalEvents.addTortureEvent(c, this);
     spendTime(1);
   });
 }

@@ -158,7 +158,7 @@ class Trap : public Trigger {
     if (c->getTribe() != tribe) {
       c->you(MsgType::TRIGGER_TRAP, "");
       Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
-      EventListener::addTriggerEvent(c->getLevel(), c->getPosition());
+      GlobalEvents.addTriggerEvent(c->getLevel(), c->getPosition());
       c->getSquare()->removeTrigger(this);
     }
   }

@@ -38,7 +38,6 @@
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CreatureView)
-    & SUBCLASS(EventListener)
     & SUBCLASS(CollectiveControl)
     & SVAR(memory)
     & SVAR(gatheringTeam)
