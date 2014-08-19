@@ -114,7 +114,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void addCreature(Creature* c, EnumSet<MinionTrait>);
   Creature* addCreature(PCreature c, Vec2 v, EnumSet<MinionTrait>);
   void importCreature(Creature* c, EnumSet<MinionTrait> traits);
-  Creature* getCreature(UniqueId id);
+  Creature* getCreature(UniqueEntity<Creature>::Id id);
   void handleCreatureButton(Creature* c, View* view);
   void unpossess();
   void possess(const Creature*, View*);
@@ -203,7 +203,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool tryLockingDoor(Vec2 pos);
   void uncoverRandomLocation();
 
-  mutable unique_ptr<map<UniqueId, MapMemory>> SERIAL(memory);
+  mutable unique_ptr<map<UniqueEntity<Level>::Id, MapMemory>> SERIAL(memory);
   bool SERIAL2(gatheringTeam, false);
   vector<Creature*> SERIAL(team);
   Creature* SERIAL2(possessed, nullptr);

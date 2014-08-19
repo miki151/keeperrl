@@ -24,7 +24,7 @@ class TaskMap {
   void unmarkSquare(Vec2 pos);
   Task* getMarked(Vec2 pos) const;
   CostInfo removeTask(Task*);
-  CostInfo removeTask(UniqueId);
+  CostInfo removeTask(UniqueEntity<Task>::Id);
   bool isLocked(const Creature*, const Task*) const;
   void lock(const Creature*, const Task*);
   void clearAllLocked();
@@ -43,9 +43,9 @@ class TaskMap {
   vector<PTask> SERIAL(tasks);
   map<Vec2, Task*> SERIAL(marked);
   map<Task*, CostInfo> SERIAL(completionCost);
-  set<pair<const Creature*, UniqueId>> SERIAL(lockedTasks);
-  map<UniqueId, double> SERIAL(delayedTasks);
-  EntitySet SERIAL(priorityTasks);
+  set<pair<const Creature*, UniqueEntity<Creature>::Id>> SERIAL(lockedTasks);
+  map<UniqueEntity<Creature>::Id, double> SERIAL(delayedTasks);
+  EntitySet<Task> SERIAL(priorityTasks);
 };
 
 #endif

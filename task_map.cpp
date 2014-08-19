@@ -84,7 +84,7 @@ CostInfo TaskMap<CostInfo>::removeTask(Task* task) {
 }
 
 template <class CostInfo>
-CostInfo TaskMap<CostInfo>::removeTask(UniqueId id) {
+CostInfo TaskMap<CostInfo>::removeTask(UniqueEntity<Task>::Id id) {
   for (PTask& task : tasks)
     if (task->getUniqueId() == id) {
       return removeTask(task.get());

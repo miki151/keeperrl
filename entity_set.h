@@ -19,25 +19,27 @@
 #include "unique_entity.h"
 #include "util.h"
 
+template <typename T>
 class EntitySet {
   public:
-  EntitySet();
+  EntitySet() {}
   template <class Container>
   EntitySet(const Container&);
   EntitySet& operator = (const EntitySet&) = default;
-  void insert(const UniqueEntity*);
-  void erase(const UniqueEntity*);
-  bool contains(const UniqueEntity*) const;
-  void insert(UniqueId);
-  void erase(UniqueId);
-  bool contains(UniqueId) const;
+  void insert(const T*);
+  void erase(const T*);
+  bool contains(const T*) const;
+
+  void insert(typename UniqueEntity<T>::Id);
+  void erase(typename UniqueEntity<T>::Id);
+  bool contains(typename UniqueEntity<T>::Id) const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   ItemPredicate containsPredicate() const;
 
-  typedef set<UniqueId>::const_iterator Iter;
+  typedef typename set<typename UniqueEntity<T>::Id>::const_iterator Iter;
 
   Iter begin() const;
   Iter end() const;
@@ -45,7 +47,7 @@ class EntitySet {
   SERIAL_CHECKER;
 
   private:
-  set<UniqueId> SERIAL(elems);
+  set<typename UniqueEntity<T>::Id> SERIAL(elems);
 };
 
 #endif

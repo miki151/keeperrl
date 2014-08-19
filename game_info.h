@@ -2,6 +2,7 @@
 #define _GAME_INFO_H
 
 #include "view_object.h"
+#include "unique_entity.h"
 
 /** Represents all the game information displayed around the map window.*/
 class GameInfo {
@@ -11,7 +12,7 @@ class GameInfo {
   struct CreatureInfo {
     CreatureInfo(const Creature* c);
     ViewObject viewObject;
-    UniqueId uniqueId;
+    UniqueEntity<Creature>::Id uniqueId;
     string name;
     string speciesName;
     int expLevel;
@@ -38,7 +39,7 @@ class GameInfo {
     string monsterHeader;
     vector<CreatureInfo> creatures;
     vector<CreatureInfo> enemies;
-    map<UniqueId, string> tasks;
+    map<UniqueEntity<Creature>::Id, string> tasks;
     struct Resource {
       ViewObject viewObject;
       int count;
@@ -47,7 +48,7 @@ class GameInfo {
     vector<Resource> numResource;
     double time;
     bool gatheringTeam = false;
-    vector<UniqueId> team;
+    vector<UniqueEntity<Creature>::Id> team;
 
     struct TechButton {
       ViewId viewId;

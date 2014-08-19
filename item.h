@@ -51,7 +51,7 @@ enum class ItemType {
   FOOD,
   CORPSE };
 
-class Item : private ItemAttributes, public Renderable, public UniqueEntity {
+class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item> {
   public:
   typedef ItemAttributes ItemAttributes;
   Item(const ViewObject& o, const ItemAttributes&);
@@ -123,7 +123,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity {
       function<string(const Item*)> addSuffix = [](const Item*) { return ""; });
 
   struct CorpseInfo {
-    UniqueId victim;
+    UniqueEntity<Creature>::Id victim;
     bool canBeRevived;
     bool hasHead;
     bool isSkeleton;

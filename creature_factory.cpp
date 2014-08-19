@@ -562,9 +562,9 @@ class ShopkeeperController : public Monster {
   unordered_map<const Creature*, int> SERIAL(debt);
   unordered_map<const Creature*, int> SERIAL(thiefCount);
   unordered_set<const Creature*> SERIAL(thieves);
-  unordered_map<const Creature*, EntitySet> SERIAL(unpaidItems);
+  unordered_map<const Creature*, EntitySet<Item>> SERIAL(unpaidItems);
   Location* SERIAL(shopArea);
-  EntitySet SERIAL(myItems);
+  EntitySet<Item> SERIAL(myItems);
   bool SERIAL2(firstMove, true);
 };
 

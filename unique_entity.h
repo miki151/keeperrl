@@ -18,16 +18,18 @@
 
 #include "enums.h"
 
+template<typename T>
 class UniqueEntity {
   public:
+  typedef int Id;
   UniqueEntity();
-  UniqueId getUniqueId() const;
+  Id getUniqueId() const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  UniqueId id;
+  Id id;
 };
 
 #endif

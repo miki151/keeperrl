@@ -219,7 +219,7 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
       hotkeys[int(info.button.hotkey)] = true;
     }
   }
-  memory.reset(new map<UniqueId, MapMemory>);
+  memory.reset(new map<UniqueEntity<Level>::Id, MapMemory>);
   for (Vec2 v : level->getBounds()) {
     if (level->getSquare(v)->canEnterEmpty(Creature::getDefaultMinion()))
       sectors->add(v);
@@ -1075,7 +1075,8 @@ int PlayerControl::getImpCost() const {
 
 class MinionController : public Player {
   public:
-  MinionController(Creature* c, Model* m, map<UniqueId, MapMemory>* memory) : Player(c, m, false, memory) {}
+  MinionController(Creature* c, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory)
+    : Player(c, m, false, memory) {}
 
   virtual void onKilled(const Creature* attacker) override {
     if (model->getView()->yesOrNoPrompt("Would you like to see the last messages?"))
@@ -1132,7 +1133,7 @@ bool PlayerControl::canPlacePost(Vec2 pos) const {
       getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefault()) && getCollective()->isKnownSquare(pos);
 }
   
-Creature* PlayerControl::getCreature(UniqueId id) {
+Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) {
   for (Creature* c : getCreatures())
     if (c->getUniqueId() == id)
       return c;

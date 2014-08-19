@@ -1689,7 +1689,7 @@ LevelMaker* LevelMaker::cryptLevel(CreatureFactory roomFactory, CreatureFactory 
     queue->addMaker(new Stairs(StairDirection::DOWN, key, new TypePredicate(SquareType::FLOOR)));
   for (StairKey key : up)
     queue->addMaker(new Stairs(StairDirection::UP, key, new TypePredicate(SquareType::FLOOR)));
-  queue->addMaker(new Creatures(cfactory, Random.getRandom(10, 15), MonsterAIFactory::monster()));
+  queue->addMaker(new Creatures(roomFactory, Random.getRandom(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareType::FLOOR, 5, 10));
   return new BorderGuard(queue, SquareType::BLACK_WALL);
 }

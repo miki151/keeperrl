@@ -189,7 +189,7 @@ class PickItem : public NonTransferable {
   SERIALIZATION_CONSTRUCTOR(PickItem);
 
   protected:
-  EntitySet SERIAL(items);
+  EntitySet<Item> SERIAL(items);
   bool SERIAL2(pickedUp, false);
   Vec2 SERIAL(position);
   int SERIAL2(tries, 10);

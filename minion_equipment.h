@@ -45,7 +45,7 @@ class MinionEquipment {
   int getEquipmentLimit(EquipmentType type) const;
   bool isItemAppropriate(const Creature*, const Item*) const;
 
-  map<UniqueId, const Creature*> SERIAL(owners);
+  map<UniqueEntity<Creature>::Id, const Creature*> SERIAL(owners);
 };
 
 #endif

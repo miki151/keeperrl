@@ -992,14 +992,14 @@ void Collective::orderSacrifice(Creature* c) {
 }
 
 bool Collective::isItemMarked(const Item* it) const {
-  return markedItems.contains(it->getUniqueId());
+  return markedItems.contains(it);
 }
 
 void Collective::markItem(const Item* it) {
-  markedItems.insert(it->getUniqueId());
+  markedItems.insert(it);
 }
 
-void Collective::unmarkItem(UniqueId id) {
+void Collective::unmarkItem(UniqueEntity<Item>::Id id) {
   markedItems.erase(id);
 }
 
@@ -1236,13 +1236,13 @@ void Collective::handleSurprise(Vec2 pos) {
         }
 }
 
-void Collective::onPickedUp(Vec2 pos, EntitySet items) {
-  for (UniqueId id : items)
+void Collective::onPickedUp(Vec2 pos, EntitySet<Item> items) {
+  for (auto id : items)
     unmarkItem(id);
 }
   
-void Collective::onCantPickItem(EntitySet items) {
-  for (UniqueId id : items)
+void Collective::onCantPickItem(EntitySet<Item> items) {
+  for (auto id : items)
     unmarkItem(id);
 }
 
@@ -1413,7 +1413,7 @@ int Collective::getPoints() const {
   return points;
 }
 
-const map<UniqueId, string>& Collective::getMinionTaskStrings() const {
+const map<UniqueEntity<Creature>::Id, string>& Collective::getMinionTaskStrings() const {
   return minionTaskStrings;
 }
 

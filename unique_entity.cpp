@@ -15,22 +15,32 @@
 
 #include "stdafx.h"
 #include "unique_entity.h"
+#include "level.h"
+#include "item.h"
+#include "creature.h"
+#include "task.h"
 
 static int idCounter = 1;
 
-UniqueEntity::UniqueEntity() {
+template<typename T>
+UniqueEntity<T>::UniqueEntity() {
   id = ++idCounter;
 }
 
-UniqueId UniqueEntity::getUniqueId() const {
+template<typename T>
+auto UniqueEntity<T>::getUniqueId() const -> Id {
   return id;
 }
 
+template<typename T>
 template <class Archive> 
-void UniqueEntity::serialize(Archive& ar, const unsigned int version) {
+void UniqueEntity<T>::serialize(Archive& ar, const unsigned int version) {
   ar & BOOST_SERIALIZATION_NVP(id);
   if (id > idCounter)
     idCounter = id;
 }
 
-SERIALIZABLE(UniqueEntity);
+SERIALIZABLE_TMPL(UniqueEntity, Level);
+SERIALIZABLE_TMPL(UniqueEntity, Item);
+SERIALIZABLE_TMPL(UniqueEntity, Creature);
+SERIALIZABLE_TMPL(UniqueEntity, Task);

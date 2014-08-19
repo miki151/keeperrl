@@ -27,8 +27,6 @@ namespace std { \
   }; \
 }
 
-typedef int UniqueId;
-
 enum class MsgType;
 enum class BodyPart;
 enum class AttackType;

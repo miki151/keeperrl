@@ -74,27 +74,13 @@ E Singleton<T, E>::getId() const {
   return id;
 }
 
-template class Singleton<Tribe, TribeId>;
-template void Singleton<Tribe, TribeId>::serialize(boost::archive::binary_iarchive&, unsigned);
-template void Singleton<Tribe, TribeId>::serialize(boost::archive::binary_oarchive&, unsigned);
-template class Singleton<Technology, TechId>;
-template void Singleton<Technology, TechId>::serialize(boost::archive::binary_iarchive&, unsigned);
-template void Singleton<Technology, TechId>::serialize(boost::archive::binary_oarchive&, unsigned);
-template class Singleton<Skill, SkillId>;
-template void Singleton<Skill, SkillId>::serialize(boost::archive::binary_iarchive&, unsigned);
-template void Singleton<Skill, SkillId>::serialize(boost::archive::binary_oarchive&, unsigned);
-template class Singleton<Quest, QuestId>;
-template void Singleton<Quest, QuestId>::serialize(boost::archive::binary_iarchive&, unsigned);
-template void Singleton<Quest, QuestId>::serialize(boost::archive::binary_oarchive&, unsigned);
-template class Singleton<Vision, VisionId>;
-template void Singleton<Vision, VisionId>::serialize(boost::archive::binary_iarchive&, unsigned);
-template void Singleton<Vision, VisionId>::serialize(boost::archive::binary_oarchive&, unsigned);
-template class Singleton<NameGenerator, NameGeneratorId>;
-template void Singleton<NameGenerator, NameGeneratorId>::serialize(boost::archive::binary_iarchive&, unsigned);
-template void Singleton<NameGenerator, NameGeneratorId>::serialize(boost::archive::binary_oarchive&, unsigned);
-template class Singleton<Epithet, EpithetId>;
-template void Singleton<Epithet, EpithetId>::serialize(boost::archive::binary_iarchive&, unsigned);
-template void Singleton<Epithet, EpithetId>::serialize(boost::archive::binary_oarchive&, unsigned);
+SERIALIZABLE_TMPL(Singleton, Tribe, TribeId);
+SERIALIZABLE_TMPL(Singleton, Technology, TechId);
+SERIALIZABLE_TMPL(Singleton, Skill, SkillId);
+SERIALIZABLE_TMPL(Singleton, Quest, QuestId);
+SERIALIZABLE_TMPL(Singleton, Vision, VisionId);
+SERIALIZABLE_TMPL(Singleton, NameGenerator, NameGeneratorId);
+SERIALIZABLE_TMPL(Singleton, Epithet, EpithetId);
 
 
 template<class T>

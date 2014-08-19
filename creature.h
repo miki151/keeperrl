@@ -40,7 +40,7 @@ class Tribe;
 class EnemyCheck;
 class ViewObject;
 
-class Creature : private CreatureAttributes, public Renderable, public CreatureView, public UniqueEntity {
+class Creature : private CreatureAttributes, public Renderable, public CreatureView, public UniqueEntity<Creature> {
   public:
   typedef CreatureAttributes CreatureAttributes;
   Creature(Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);

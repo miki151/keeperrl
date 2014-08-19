@@ -21,7 +21,7 @@
 #include "entity_set.h"
 #include "square_type.h"
 
-class Task : public UniqueEntity {
+class Task : public UniqueEntity<Task> {
   public:
 
   class Callback {
@@ -30,8 +30,8 @@ class Task : public UniqueEntity {
     virtual void onAppliedItem(Vec2 pos, Item* item) {}
     virtual void onAppliedSquare(Vec2 pos) {}
     virtual void onAppliedItemCancel(Vec2 pos) {}
-    virtual void onPickedUp(Vec2 pos, EntitySet) {}
-    virtual void onCantPickItem(EntitySet items) {}
+    virtual void onPickedUp(Vec2 pos, EntitySet<Item>) {}
+    virtual void onCantPickItem(EntitySet<Item> items) {}
     virtual void onKillCancelled(Creature*) {}
 
     SERIALIZATION_DECL(Callback);

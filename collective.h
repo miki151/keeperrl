@@ -69,8 +69,8 @@ class Collective : public Task::Callback {
 
   virtual void onAppliedItem(Vec2 pos, Item* item) override;
   virtual void onAppliedItemCancel(Vec2 pos) override;
-  virtual void onPickedUp(Vec2 pos, EntitySet) override;
-  virtual void onCantPickItem(EntitySet items) override;
+  virtual void onPickedUp(Vec2 pos, EntitySet<Item>) override;
+  virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Vec2, SquareType) override;
   virtual void onAppliedSquare(Vec2 pos) override;
   virtual void onKillCancelled(Creature*) override;
@@ -180,7 +180,7 @@ class Collective : public Task::Callback {
   vector<ItemFetchInfo> getFetchInfo() const;
   void fetchItems(Vec2 pos, ItemFetchInfo, bool ignoreDelayed = false);
 
-  struct ConstructionInfo : public NamedTupleBase<CostInfo, bool, double, SquareType, UniqueId> {
+  struct ConstructionInfo : public NamedTupleBase<CostInfo, bool, double, SquareType, UniqueEntity<Task>::Id> {
     NAMED_TUPLE_STUFF(ConstructionInfo);
     NAME_ELEM(0, cost);
     NAME_ELEM(1, built);
@@ -203,7 +203,7 @@ class Collective : public Task::Callback {
   void orderSacrifice(Creature*);
   void orderTorture(Creature*);
 
-  const map<UniqueId, string>& getMinionTaskStrings() const;
+  const map<UniqueEntity<Creature>::Id, string>& getMinionTaskStrings() const;
 
   struct TrapInfo : public NamedTupleBase<TrapType, bool, double> {
     NAMED_TUPLE_STUFF(TrapInfo);
@@ -264,7 +264,7 @@ class Collective : public Task::Callback {
   int SERIAL2(numFreeTech, 0);
   bool isItemMarked(const Item*) const;
   void markItem(const Item*);
-  void unmarkItem(UniqueId);
+  void unmarkItem(UniqueEntity<Item>::Id);
 
   Table<bool> SERIAL(knownTiles);
   set<Vec2> SERIAL(borderTiles);
@@ -274,7 +274,7 @@ class Collective : public Task::Callback {
     NAME_ELEM(0, task);
     NAME_ELEM(1, finishTime);
   };
-  map<UniqueId, CurrentTaskInfo> SERIAL(currentTasks);
+  map<UniqueEntity<Creature>::Id, CurrentTaskInfo> SERIAL(currentTasks);
   PTask getStandardTask(Creature* c);
   PTask getEquipmentTask(Creature* c);
   PTask getHealingTask(Creature* c);
@@ -287,7 +287,7 @@ class Collective : public Task::Callback {
   void autoEquipment(Creature* creature, bool replace);
   Item* getWorstItem(vector<Item*> items) const;
   int getTaskDuration(Creature*, MinionTask) const;
-  map<UniqueId, string> SERIAL(minionTaskStrings);
+  map<UniqueEntity<Creature>::Id, string> SERIAL(minionTaskStrings);
   double getStanding(EpithetId id) const;
   void onEpithetWorship(Creature*, WorshipType, EpithetId);
   void considerHealingLeader();
@@ -313,11 +313,11 @@ class Collective : public Task::Callback {
   map<Vec2, GuardPostInfo> SERIAL(guardPosts);
   MoveInfo getGuardPostMove(Creature* c);
   map<Vec2, ConstructionInfo> SERIAL(constructions);
-  EntitySet SERIAL(markedItems);
+  EntitySet<Item> SERIAL(markedItems);
   ItemPredicate unMarkedItems(ItemType) const;
   map<Vec2, TrapInfo> SERIAL(traps);
   enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };
-  struct PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueId> {
+  struct PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueEntity<Task>::Id> {
     NAMED_TUPLE_STUFF(PrisonerInfo);
     NAME_ELEM(0, state);
     NAME_ELEM(1, task);

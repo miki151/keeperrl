@@ -49,7 +49,7 @@ SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(Creature* c, Model* m, bool adventure, map<UniqueId, MapMemory>* memory) :
+Player::Player(Creature* c, Model* m, bool adventure, map<UniqueEntity<Level>::Id, MapMemory>* memory) :
     Controller(c), levelMemory(memory), model(m), displayGreeting(adventure), adventureMode(adventure) {
 }
 
@@ -90,7 +90,7 @@ void Player::onAlarmEvent(const Level* l, Vec2 pos) {
   }
 }
 
-ControllerFactory Player::getFactory(Model *m, map<UniqueId, MapMemory>* levelMemory) {
+ControllerFactory Player::getFactory(Model *m, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory) {
   return ControllerFactory([=](Creature* c) { return new Player(c, m, true, levelMemory);});
 }
 
@@ -811,7 +811,8 @@ void Player::onFellAsleep() {
 
 class PossessedController : public Player {
   public:
-  PossessedController(Creature* c, Creature* _owner, Model* m, map<UniqueId, MapMemory>* memory, bool ghost)
+  PossessedController(Creature* c, Creature* _owner, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory,
+      bool ghost)
     : Player(c, m, false, memory), owner(_owner), isGhost(ghost) {}
 
   void onKilled(const Creature* attacker) override {

@@ -16,59 +16,72 @@
 #include "stdafx.h"
 #include "entity_set.h"
 #include "item.h"
+#include "task.h"
+#include "creature.h"
+#include "level.h"
 
-
-EntitySet::EntitySet() {
-}
-
-template <class Container>
-EntitySet::EntitySet(const Container& v) {
-  for (UniqueEntity* e : v)
+template<>
+template<>
+EntitySet<Item>::EntitySet(const vector<Item*>& v) {
+  for (const Item* e : v)
     insert(e);
 }
 
-template EntitySet::EntitySet(const vector<Item*>&);
-
-void EntitySet::insert(const UniqueEntity* e) {
-  insert(e->getUniqueId());
+template <class T>
+void EntitySet<T>::insert(const T* e) {
+  elems.insert(e->getUniqueId());
 }
 
-void EntitySet::erase(const UniqueEntity* e) {
-  erase(e->getUniqueId());
+template <class T>
+void EntitySet<T>::erase(const T* e) {
+  elems.erase(e->getUniqueId());
 }
 
-bool EntitySet::contains(const UniqueEntity* e) const {
-  return contains(e->getUniqueId());
+template <class T>
+bool EntitySet<T>::contains(const T* e) const {
+  return elems.count(e->getUniqueId());
 }
 
-void EntitySet::insert(UniqueId id) {
-  elems.insert(id);
+template <class T>
+void EntitySet<T>::insert(typename UniqueEntity<T>::Id e) {
+  elems.insert(e);
 }
 
-void EntitySet::erase(UniqueId id) {
-  elems.erase(id);
+template <class T>
+void EntitySet<T>::erase(typename UniqueEntity<T>::Id e) {
+  elems.erase(e);
 }
 
-bool EntitySet::contains(UniqueId id) const {
-  return elems.count(id);
+template <class T>
+bool EntitySet<T>::contains(typename UniqueEntity<T>::Id e) const {
+  return elems.count(e);
 }
 
+template <class T>
 template <class Archive> 
-void EntitySet::serialize(Archive& ar, const unsigned int version) {
+void EntitySet<T>::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(elems);
   CHECK_SERIAL;
 }
 
-SERIALIZABLE(EntitySet);
-
-EntitySet::Iter EntitySet::begin() const {
+template <class T>
+typename EntitySet<T>::Iter EntitySet<T>::begin() const {
   return elems.begin();
 }
 
-EntitySet::Iter EntitySet::end() const {
+template <class T>
+typename EntitySet<T>::Iter EntitySet<T>::end() const {
   return elems.end();
 }
 
-ItemPredicate EntitySet::containsPredicate() const {
+template <>
+ItemPredicate EntitySet<Item>::containsPredicate() const {
   return [this](const Item* it) { return contains(it); };
 }
+
+SERIALIZABLE_TMPL(EntitySet, Item);
+SERIALIZABLE_TMPL(EntitySet, Task);
+SERIALIZABLE_TMPL(EntitySet, Creature);
+SERIALIZABLE_TMPL(EntitySet, Level);
+
+

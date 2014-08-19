@@ -32,7 +32,7 @@ class Location;
 class Attack;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
-class Level : public UniqueEntity {
+class Level : public UniqueEntity<Level> {
   public:
 
   static Rectangle getMaxBounds();
