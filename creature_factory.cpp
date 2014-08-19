@@ -814,6 +814,10 @@ CreatureFactory CreatureFactory::crypt(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::ZOMBIE}, { 1}, {});
 }
 
+CreatureFactory CreatureFactory::coffins(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::VAMPIRE}, { 1}, {});
+}
+
 CreatureFactory CreatureFactory::hellLevel(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
 }
@@ -847,6 +851,14 @@ CreatureFactory CreatureFactory::pyramid(int level) {
 
 CreatureFactory CreatureFactory::insects(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::SPIDER, CreatureId::SCORPION }, {1, 1}, { });
+}
+
+CreatureFactory CreatureFactory::waterCreatures(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::KRAKEN }, {1}, { });
+}
+
+CreatureFactory CreatureFactory::lavaCreatures(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::FIRE_SPHERE }, {1}, { });
 }
 
 CreatureFactory CreatureFactory::level(int num) {

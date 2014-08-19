@@ -55,8 +55,10 @@ class LevelMaker {
   public:
   virtual void make(Level::Builder* builder, Rectangle area) = 0;
 
-  static LevelMaker* roomLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* cryptLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down);
+  static LevelMaker* roomLevel(CreatureFactory roomFactory, CreatureFactory waterFactory,
+    CreatureFactory fireFactory, vector<StairKey> up, vector<StairKey> down);
+  static LevelMaker* cryptLevel(CreatureFactory roomFactory, CreatureFactory coffinFactory,
+      vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* cellarLevel(CreatureFactory cfactory, SquareType wallType, StairLook stairLook,
       vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* cavernLevel(CreatureFactory cfactory, SquareType wallType, SquareType floorType,

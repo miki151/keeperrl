@@ -1575,7 +1575,7 @@ class CreatureAltarMaker : public LevelMaker {
   Collective* collective;
 };
 
-static LevelMaker* underground(bool monsters) {
+static LevelMaker* underground(bool monsters, CreatureFactory waterFactory, CreatureFactory lavaFactory) {
   MakerQueue* queue = new MakerQueue();
   if (Random.roll(1)) {
     LevelMaker* cavern = new UniformBlob(SquareType::PATH);
@@ -1613,12 +1613,11 @@ static LevelMaker* underground(bool monsters) {
             queue->addMaker(new Shrine(deity, lakeType,
                   new TypePredicate(lakeType), SquareType::ROCK_WALL, nullptr));
             if (lakeType == SquareType::WATER) {
-              queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::get(TribeId::MONSTER),
-                    CreatureId::KRAKEN), 1, MonsterAIFactory::monster(), SquareType(SquareType::WATER)));
+              queue->addMaker(new Creatures(waterFactory, 1, MonsterAIFactory::monster(),
+                    SquareType(SquareType::WATER)));
             }
             if (lakeType == SquareType::MAGMA) {
-              queue->addMaker(new Creatures(CreatureFactory::singleType(Tribe::get(TribeId::MONSTER),
-                    CreatureId::FIRE_SPHERE), Random.getRandom(1, 4),
+              queue->addMaker(new Creatures(lavaFactory, Random.getRandom(1, 4),
                     MonsterAIFactory::monster(), SquareType(SquareType::MAGMA)));
             }
           }
@@ -1637,7 +1636,8 @@ SquareType getTreesType(SquareType::Id id) {
   return {id, CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::ENT)};
 }
 
-LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down) {
+LevelMaker* LevelMaker::roomLevel(CreatureFactory roomFactory, CreatureFactory waterFactory,
+    CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down) {
   vector<FeatureInfo> featureCount { 
       { SquareType::FOUNTAIN, 0, 3 },
       { {SquareType::CHEST, getChestFactory()}, 3, 7},
@@ -1645,7 +1645,7 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up,
       { SquareType::TORTURE_TABLE, 2, 3}};
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareType::BLACK_WALL));
-  queue->addMaker(underground(true));
+  queue->addMaker(underground(true, waterFactory, lavaFactory));
   LevelMaker* shopMaker = nullptr;
   if (Random.roll(3)) {
       shopMaker = new ShopMaker(chooseRandom({
@@ -1670,15 +1670,16 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory cfactory, vector<StairKey> up,
     queue->addMaker(new Stairs(StairDirection::DOWN, key, new TypePredicate(SquareType::FLOOR)));
   for (StairKey key : up)
     queue->addMaker(new Stairs(StairDirection::UP, key, new TypePredicate(SquareType::FLOOR)));
-  queue->addMaker(new Creatures(cfactory, Random.getRandom(10, 15), MonsterAIFactory::monster()));
+  queue->addMaker(new Creatures(roomFactory, Random.getRandom(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareType::FLOOR, 5, 10));
   return new BorderGuard(queue, SquareType::BLACK_WALL);
 }
 
-LevelMaker* LevelMaker::cryptLevel(CreatureFactory cfactory, vector<StairKey> up, vector<StairKey> down) {
+LevelMaker* LevelMaker::cryptLevel(CreatureFactory roomFactory, CreatureFactory coffinFactory,
+    vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
-      { {SquareType::COFFIN, CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::VAMPIRE)}, 3, 7}};
+      { {SquareType::COFFIN, coffinFactory}, 3, 7}};
   queue->addMaker(new Empty(SquareType::BLACK_WALL));
   queue->addMaker(new RoomMaker(Random.getRandom(8, 15), 3, 5, SquareType::ROCK_WALL,
         SquareType(SquareType::BLACK_WALL)));
@@ -1735,7 +1736,7 @@ MakerQueue* village(SettlementInfo info) {
   queue->addMaker(new LocationMaker(info.location));
   queue->addMaker(new UniformBlob(building.floorOutside, Nothing(), Nothing(), 0.6));
   vector<LevelMaker*> insideMakers {
-      hatchery(CreatureFactory::singleType(Tribe::get(TribeId::ELVEN), CreatureId::PIG), Random.getRandom(2, 5)),
+      hatchery(CreatureFactory::singleType(info.tribe, CreatureId::PIG), Random.getRandom(2, 5)),
       getElderRoom(info)};
   if (info.shopFactory)
     insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));

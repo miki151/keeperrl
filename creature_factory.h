@@ -36,6 +36,7 @@ class CreatureFactory {
   static CreatureFactory elvenVillage(Tribe*);
   static CreatureFactory forrest(Tribe*);
   static CreatureFactory crypt(Tribe*);
+  static CreatureFactory coffins(Tribe*);
   static CreatureFactory hellLevel(Tribe*);
   static CreatureFactory dwarfTown(Tribe*);
   static CreatureFactory vikingTown(Tribe*);
@@ -46,6 +47,9 @@ class CreatureFactory {
   static CreatureFactory singleType(Tribe*, CreatureId);
   static CreatureFactory pyramid(int level);
   static CreatureFactory insects(Tribe* tribe);
+  static CreatureFactory lavaCreatures(Tribe* tribe);
+  static CreatureFactory waterCreatures(Tribe* tribe);
+  
   PCreature random(MonsterAIFactory = MonsterAIFactory::monster());
 
   static PCreature getShopkeeper(Location* shopArea, Tribe*);

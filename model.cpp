@@ -269,7 +269,10 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
       LevelMaker::topLevel(CreatureFactory::forrest(Tribe::get(TribeId::WILDLIFE)), settlements));
   Level* c1 = buildLevel(
       Level::Builder(30, 20, "Crypt"),
-      LevelMaker::cryptLevel(CreatureFactory::crypt(Tribe::get(TribeId::MONSTER)), {StairKey::CRYPT}, {}));
+      LevelMaker::cryptLevel(
+        CreatureFactory::crypt(Tribe::get(TribeId::MONSTER)),
+        CreatureFactory::coffins(Tribe::get(TribeId::MONSTER)),
+        {StairKey::CRYPT}, {}));
  /* Level* p1 = buildLevel(
       Level::Builder(13, 13, "Pyramid Level 2"),
       LevelMaker::pyramidLevel(CreatureFactory::pyramid(1), {StairKey::PYRAMID},  {StairKey::PYRAMID}));
@@ -351,7 +354,9 @@ Model* Model::heroModel(View* view) {
       upKeys.push_back(StairKey::TOWER);*/
     gnomish.push_back(m->buildLevel(
           Level::Builder(60, 35, "Gnomish Mines Level " + convertToString(i + 1)),
-          LevelMaker::roomLevel(CreatureFactory::level(i + 1), upKeys, {StairKey::DWARF})));
+          LevelMaker::roomLevel(CreatureFactory::level(i + 1),
+            CreatureFactory::waterCreatures(Tribe::get(TribeId::MONSTER)),
+            CreatureFactory::lavaCreatures(Tribe::get(TribeId::MONSTER)), upKeys, {StairKey::DWARF})));
   }
  /* vector<Level*> tower;
   int numTowerLevels = 5;

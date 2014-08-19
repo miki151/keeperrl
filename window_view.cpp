@@ -1480,6 +1480,9 @@ UserInput::Type getDirActionId(const Event::KeyEvent& key) {
     return UserInput::MOVE;
 }
 
+const double shiftScroll = 10;
+const double normalScroll = 2.5;
+
 void WindowView::keyboardAction(Event::KeyEvent key) {
   if (lockKeyboard)
     return;
@@ -1508,25 +1511,40 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
       break;
     case Keyboard::Up:
     case Keyboard::Numpad8:
-      center.y -= key.shift ? 10 : 2.5;
+      center.y -= key.shift ? shiftScroll : normalScroll;
       inputQueue.push(UserInput(getDirActionId(key), Vec2(0, -1)));
       break;
-    case Keyboard::Numpad9: inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1))); break;
+    case Keyboard::Numpad9:
+      center.y -= key.shift ? shiftScroll : normalScroll;
+      center.x += key.shift ? shiftScroll : normalScroll;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1)));
+      break;
     case Keyboard::Right: 
     case Keyboard::Numpad6:
-      center.x += key.shift ? 10 : 2.5;
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0))); break;
-    case Keyboard::Numpad3: inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 1))); break;
+      center.x += key.shift ? shiftScroll : normalScroll;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0)));
+      break;
+    case Keyboard::Numpad3:
+      center.x += key.shift ? shiftScroll : normalScroll;
+      center.y += key.shift ? shiftScroll : normalScroll;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 1)));
+      break;
     case Keyboard::Down:
     case Keyboard::Numpad2:
-      center.y += key.shift ? 10 : 2.5;
+      center.y += key.shift ? shiftScroll : normalScroll;
       inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1))); break;
-    case Keyboard::Numpad1: inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1))); break;
+    case Keyboard::Numpad1:
+      center.x -= key.shift ? shiftScroll : normalScroll;
+      center.y += key.shift ? shiftScroll : normalScroll;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1))); break;
     case Keyboard::Left:
     case Keyboard::Numpad4:
-      center.x -= key.shift ? 10 : 2.5;
+      center.x -= key.shift ? shiftScroll : normalScroll;
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0))); break;
-    case Keyboard::Numpad7: inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1))); break;
+    case Keyboard::Numpad7:
+      center.x -= key.shift ? shiftScroll : normalScroll;
+      center.y -= key.shift ? shiftScroll : normalScroll;     
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1))); break;
     case Keyboard::Return:
     case Keyboard::Numpad5: inputQueue.push(UserInput(UserInput::PICK_UP)); break;
     case Keyboard::I: inputQueue.push(UserInput(UserInput::SHOW_INVENTORY)); break;
