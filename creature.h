@@ -368,6 +368,7 @@ enum class MsgType {
     HIT,
     CRAWL,
     TRIGGER_TRAP,
+    DISARM_TRAP,
     DROP_WEAPON,
     GET_HIT_NODAMAGE, // body part
     HIT_THROWN_ITEM,

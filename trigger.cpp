@@ -156,9 +156,14 @@ class Trap : public Trigger {
 
   virtual void onCreatureEnter(Creature* c) override {
     if (c->getTribe() != tribe) {
-      c->you(MsgType::TRIGGER_TRAP, "");
-      Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
-      GlobalEvents.addTriggerEvent(c->getLevel(), c->getPosition());
+      if (!c->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
+        c->you(MsgType::TRIGGER_TRAP, "");
+        Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
+        GlobalEvents.addTrapTriggerEvent(c->getLevel(), c->getPosition());
+      } else {
+        c->you(MsgType::DISARM_TRAP, "");
+        GlobalEvents.addTrapDisarmEvent(c->getLevel(), c->getPosition());
+      }
       c->getSquare()->removeTrigger(this);
     }
   }

@@ -48,6 +48,7 @@ void Skill::init() {
   Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms."));
   Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees."));
   Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark."));
+  Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them."));
 }
 
 Skill::Skill(string _name, string _helpText) : name(_name), helpText(_helpText) {}

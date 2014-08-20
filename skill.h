@@ -30,6 +30,7 @@ RICH_ENUM(SkillId,
   CONSTRUCTION,
   ELF_VISION,
   NIGHT_VISION,
+  DISARM_TRAPS,
 );
 
 class Creature;

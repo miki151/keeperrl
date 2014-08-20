@@ -1207,12 +1207,17 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
   }
 }
 
-void Collective::onTriggerEvent(const Level* l, Vec2 pos) {
+void Collective::onTrapTriggerEvent(const Level* l, Vec2 pos) {
   if (traps.count(pos) && l == getLevel()) {
     traps.at(pos).armed() = false;
     if (traps.at(pos).type() == TrapType::SURPRISE)
       handleSurprise(pos);
   }
+}
+
+void Collective::onTrapDisarmEvent(const Level* l, Vec2 pos) {
+  if (traps.count(pos) && l == getLevel())
+    traps.at(pos).armed() = false;
 }
 
 void Collective::handleSurprise(Vec2 pos) {

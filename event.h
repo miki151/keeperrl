@@ -52,7 +52,8 @@ class EventListener {
   EVENT(AttackEvent, Creature* victim, Creature* attacker);
   EVENT(ThrowEvent, const Level*, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory);
   EVENT(ExplosionEvent, const Level* level, Vec2 pos);
-  EVENT(TriggerEvent, const Level*, Vec2 pos);
+  EVENT(TrapTriggerEvent, const Level*, Vec2 pos);
+  EVENT(TrapDisarmEvent, const Level*, Vec2 pos);
   EVENT(SquareReplacedEvent, const Level*, Vec2 pos);
   EVENT(ChangeLevelEvent, const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos);
   EVENT(AlarmEvent, const Level*, Vec2 pos);

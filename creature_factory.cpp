@@ -77,13 +77,18 @@ class BoulderController : public Monster {
             break;
           if (Creature* other = creature->getSquare(v * i)->getCreature())
             if (other->getTribe() != myTribe) {
-              direction = v;
-              stopped = false;
-              found = true;
-              GlobalEvents.addTriggerEvent(creature->getLevel(), creature->getPosition());
-              creature->monsterMessage(MessageBuffer::important("The boulder starts rolling."),
-                  MessageBuffer::important("You hear a heavy boulder rolling."));
-              break;
+              if (!other->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
+                direction = v;
+                stopped = false;
+                found = true;
+                GlobalEvents.addTrapTriggerEvent(creature->getLevel(), creature->getPosition());
+                creature->monsterMessage(MessageBuffer::important("The boulder starts rolling."),
+                    MessageBuffer::important("You hear a heavy boulder rolling."));
+                break;
+              } else {
+                other->you(MsgType::DISARM_TRAP, "");
+                creature->die();
+              }
             }
           if (!creature->getSquare(v * i)->canEnterEmpty(creature))
             break;
@@ -1032,6 +1037,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 100;
           c.chatReactionFriendly = "curses all law enforcement";
           c.chatReactionHostile = "\"Die!\"";
+          c.skills.insert(SkillId::DISARM_TRAPS);
           c.name = "bandit";);
     case CreatureId::GHOST: 
       return CATTR(
@@ -1414,6 +1420,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
           c.minionTasks[MinionTask::LABORATORY] = 2; 
           c.minionTasks[MinionTask::SLEEP] = 1;
+          c.skills.insert(SkillId::DISARM_TRAPS);
           c.name = "gnome";);
     case CreatureId::IMP: 
       return CATTR(

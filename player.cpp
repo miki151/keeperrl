@@ -763,6 +763,7 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::GET_HIT_NODAMAGE: msg = "The " + param + " is harmless."; break;
     case MsgType::COLLAPSE: msg = "You collapse."; break;
     case MsgType::TRIGGER_TRAP: msg = "You trigger something."; break;
+    case MsgType::DISARM_TRAP: msg = "You disarm the trap."; break;
     case MsgType::SWING_WEAPON: msg = "You swing your " + param; break;
     case MsgType::THRUST_WEAPON: msg = "You thrust your " + param; break;
     case MsgType::ATTACK_SURPRISE: msg = "You sneak attack " + param; break;
