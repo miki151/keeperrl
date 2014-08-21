@@ -19,29 +19,35 @@
 #include "util.h"
 #include "debug.h"
 #include "inventory.h"
-#include "trigger.h"
 #include "view_index.h"
 #include "poison_gas.h"
 #include "vision.h"
 #include "fire.h"
 #include "square_type.h"
 #include "renderable.h"
+#include "movement_type.h"
 
 class Level;
 class Creature;
 class Item;
+class CreatureView;
+class Attack;
 
 enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP, TORTURE };
 
 class Square : public Renderable {
   public:
-  /** Constructs a square object.
-    * \param canHide true if the player can hide at this square
-    * \param strength square resistance to demolition
-    * \param vision defines who/what can see through the square. Can be null for opaque.
-    */
-  Square(const ViewObject& vo, const string& name, Vision* vision, bool canHide = false,
-      int strength = 0, double flamability = 0, map<SquareType::Id, int> constructions = {}, bool ticking = false);
+  struct Params {
+    string name;
+    Vision* vision;
+    bool canHide;
+    int strength;
+    double flamability;
+    map<SquareType::Id, int> constructions;
+    bool ticking;
+    MovementType movementType;
+  };
+  Square(const ViewObject&, Params);
 
   /** Returns the square name. */
   string getName() const;
@@ -78,12 +84,18 @@ class Square : public Renderable {
   /** Returns the square's position on the level.*/
   Vec2 getPosition() const;
 
+  //@{
   /** Checks if this creature can enter the square at the moment. Takes account other creatures on the square.*/
   bool canEnter(const Creature*) const;
+  bool canEnter(MovementType) const;
+  //@}
 
+  //@{
   /** Checks if this square is can be entered by the creature. Doesn't take into account other 
     * creatures on the square.*/
   bool canEnterEmpty(const Creature*) const;
+  bool canEnterEmpty(MovementType) const;
+  //@}
 
   /** Checks if this square obstructs view.*/
   bool canSeeThru(Vision* = Vision::get(VisionId::NORMAL)) const;
@@ -208,6 +220,7 @@ class Square : public Renderable {
   const Level* getLevel() const;
   Inventory SERIAL(inventory);
   string SERIAL(name);
+  const MovementType& getMovementType() const;
 
   private:
   Item* getTopItem() const;
@@ -228,24 +241,7 @@ class Square : public Renderable {
   map<SquareType::Id, int> SERIAL(constructions);
   bool SERIAL(ticking);
   double SERIAL2(fog, 0);
-};
-
-class SolidSquare : public Square {
-  public:
-  SolidSquare(const ViewObject& vo, const string& name, Vision* vision = nullptr,
-      map<SquareType::Id, int> constructions = {},
-      bool alwaysVisible = false, double flamability = 0) :
-      Square(vo, name, vision, false, 299, flamability, constructions) {
-  }
-
-  SERIALIZATION_DECL(SolidSquare);
-
-  protected:
-  virtual bool canEnterSpecial(const Creature*) const;
-
-  virtual void onEnterSpecial(Creature* c) {
-    Debug(FATAL) << "Creature entered solid square";
-  }
+  MovementType SERIAL(movementType);
 };
 
 #endif

@@ -221,9 +221,9 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
   }
   memory.reset(new map<UniqueEntity<Level>::Id, MapMemory>);
   for (Vec2 v : level->getBounds()) {
-    if (level->getSquare(v)->canEnterEmpty(Creature::getDefaultMinion()))
+    if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK}))
       sectors->add(v);
-    if (level->getSquare(v)->canEnterEmpty(Creature::getDefaultMinionFlyer()))
+    if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::FLY}))
       flyingSectors->add(v);
     if (contains({"gold ore", "iron ore", "stone"}, level->getSquare(v)->getName()))
       getMemory(level).addObject(v, level->getSquare(v)->getViewObject());
@@ -1130,7 +1130,7 @@ bool PlayerControl::canBuildDoor(Vec2 pos) const {
 
 bool PlayerControl::canPlacePost(Vec2 pos) const {
   return !getCollective()->isGuardPost(pos) && !getCollective()->getTraps().count(pos) &&
-      getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefault()) && getCollective()->isKnownSquare(pos);
+      getLevel()->getSquare(pos)->canEnterEmpty({MovementTrait::WALK}) && getCollective()->isKnownSquare(pos);
 }
   
 Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) {
@@ -1349,11 +1349,11 @@ bool PlayerControl::tryLockingDoor(Vec2 pos) {
 }
 
 void PlayerControl::onConstructedSquare(Vec2 pos, SquareType type) {
-  if (getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinion()))
+  if (getLevel()->getSquare(pos)->canEnterEmpty(MovementType(getTribe(), {MovementTrait::WALK})))
     sectors->add(pos);
   else
     sectors->remove(pos);
-  if (getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinionFlyer()))
+  if (getLevel()->getSquare(pos)->canEnterEmpty(MovementType(getTribe(), {MovementTrait::FLY})))
     flyingSectors->add(pos);
   else
     flyingSectors->remove(pos);
@@ -1585,8 +1585,8 @@ void PlayerControl::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     bool seeTerrain = Options::getValue(OptionId::SHOW_MAP); 
     Vec2 radius = seeTerrain ? Vec2(400, 400) : Vec2(30, 30);
     auto pred = [&](Vec2 pos) {
-      return getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefault())
-            || (seeTerrain && getLevel()->getSquare(pos)->canEnterEmpty(Creature::getDefaultMinionFlyer()));
+      return getLevel()->getSquare(pos)->canEnterEmpty({MovementTrait::WALK})
+            || (seeTerrain && getLevel()->getSquare(pos)->canEnterEmpty({MovementTrait::FLY}));
     };
     for (Vec2 pos : Rectangle(c->getPosition() - radius, c->getPosition() + radius))
       if (pos.distD(c->getPosition()) <= radius.x && pos.inRectangle(getLevel()->getBounds()) && pred(pos))

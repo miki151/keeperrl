@@ -1931,7 +1931,6 @@ CreatureAttributes getAttributes(CreatureId id) {
 
 Tribe* getTribe(CreatureId id, Tribe* normalTribe) {
   switch (id) {
-    case CreatureId::DEATH: return Tribe::get(TribeId::KILL_EVERYONE);
     case CreatureId::RAT:
     case CreatureId::SNAKE:
     case CreatureId::VULTURE: return Tribe::get(TribeId::PEST);

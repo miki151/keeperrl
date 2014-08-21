@@ -21,6 +21,7 @@
 #include "creature.h"
 #include "item.h"
 #include "view_object.h"
+#include "trigger.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -42,27 +43,19 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(poisonGas)
     & SVAR(constructions)
     & SVAR(ticking)
-    & SVAR(fog);
+    & SVAR(fog)
+    & SVAR(movementType);
   CHECK_SERIAL;
 }
 
 SERIALIZABLE(Square);
 
-template <class Archive> 
-void SolidSquare::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(Square);
-}
-
-SERIALIZABLE(SolidSquare);
-
 SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 
-SERIALIZATION_CONSTRUCTOR_IMPL(SolidSquare);
-
-Square::Square(const ViewObject& vo, const string& n, Vision* v, bool canHide, int s, double f,
-    map<SquareType::Id, int> construct, bool tick)
-  : Renderable(vo), name(n), vision(v), hide(canHide), strength(s), fire(strength, f),
-    constructions(construct), ticking(tick) {
+Square::Square(const ViewObject& obj, Params p)
+  : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
+  fire(p.strength, p.flamability),
+    constructions(p.constructions), ticking(p.ticking), movementType(p.movementType) {
 }
 
 Square::~Square() {
@@ -249,16 +242,28 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
     dropItems(std::move(item));
 }
 
+bool Square::canEnter(MovementType movement) const {
+  return creature == nullptr && canEnterEmpty(movement);
+}
+
+bool Square::canEnterEmpty(MovementType movement) const {
+  return movementType.canEnter(movement);
+}
+
+const MovementType& Square::getMovementType() const {
+  return movementType;
+}
+
 bool Square::canEnter(const Creature* c) const {
-  return creature == nullptr && canEnterSpecial(c);
+  return creature == nullptr && canEnterEmpty(c);
 }
 
 bool Square::canEnterEmpty(const Creature* c) const {
-  return canEnterSpecial(c);
+  return c->canEnter(movementType) || canEnterSpecial(c);
 }
 
 bool Square::canEnterSpecial(const Creature* c) const {
-  return true;
+  return false;
 }
 
 void Square::setOnFire(double amount) {
@@ -389,10 +394,6 @@ const Creature* Square::getCreature() const {
 void Square::removeCreature() {
   CHECK(creature);
   creature = 0;
-}
-
-bool SolidSquare::canEnterSpecial(const Creature*) const {
-  return false;
 }
 
 bool Square::canSeeThru(Vision* v) const {

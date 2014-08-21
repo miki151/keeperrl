@@ -19,9 +19,10 @@
 #include "quest.h"
 #include "pantheon.h"
 #include "item_factory.h"
-#include "creature.h"
 #include "square.h"
 #include "collective.h"
+#include "shortest_path.h"
+#include "creature.h"
 
 enum class SquareAttrib {
   NO_DIG,
@@ -137,7 +138,7 @@ class OrPredicates : public SquarePredicate {
 class DefaultCanEnter : public SquarePredicate {
   public:
   virtual bool apply(Level::Builder* builder, Vec2 pos) override {
-    return builder->getSquare(pos)->canEnter(Creature::getDefault());
+    return builder->getSquare(pos)->canEnter({MovementTrait::WALK});
   }
 };
 
@@ -247,7 +248,7 @@ class Connector : public LevelMaker {
     CHECKEQ((int) door.size(), 3);
   }
   double getValue(Level::Builder* builder, Vec2 pos, Rectangle area) {
-    if (builder->getSquare(pos)->canEnter(Creature::getDefault()))
+    if (builder->getSquare(pos)->canEnter({MovementTrait::WALK}))
       return 1;
     if (builder->hasAttrib(pos, SquareAttrib::LAKE))
       return 15;
@@ -258,7 +259,7 @@ class Connector : public LevelMaker {
     int numCorners = 0;
     int numTotal = 0;
     for (Vec2 v : Vec2::directions8())
-      if ((pos + v).inRectangle(area) && builder->getSquare(pos + v)->canEnter(Creature::getDefault())) {
+      if ((pos + v).inRectangle(area) && builder->getSquare(pos + v)->canEnter({MovementTrait::WALK})) {
         if (abs(v.x) == abs(v.y))
           ++numCorners;
         ++numTotal;
@@ -277,7 +278,7 @@ class Connector : public LevelMaker {
         Vec2::directions4(true), p1 ,p2);
     Vec2 prev(-100, -100);
     for (Vec2 v = p2; v != p1; v = path.getNextMove(v)) {
-      if (!builder->getSquare(v)->canEnter(Creature::getDefault())) {
+      if (!builder->getSquare(v)->canEnter({MovementTrait::WALK})) {
         char sym;
         SquareType newType;
         SquareType oldType = builder->getType(v);
@@ -285,7 +286,7 @@ class Connector : public LevelMaker {
           newType = chooseRandom<SquareType>({
               SquareType::PATH,
               SquareType::DOOR,
-              SquareType::SECRET_PASS}, doorProb);
+              SquareType::DOOR}, doorProb);
         else
           switch (oldType.id) {
             case SquareType::ABYSS:
@@ -306,8 +307,7 @@ class Connector : public LevelMaker {
       }
       if (builder->getType(v) == SquareType::PATH || 
           builder->getType(v) == SquareType::BRIDGE || 
-          builder->getType(v) == SquareType::DOOR || 
-          builder->getType(v) == SquareType::SECRET_PASS) {
+          builder->getType(v) == SquareType::DOOR) {
         builder->getSquare(v)->addTravelDir(path.getNextMove(v) - v);
         if (prev.x > -100)
           builder->getSquare(v)->addTravelDir(prev - v);
@@ -328,7 +328,7 @@ class Connector : public LevelMaker {
         connect(builder, p1, p2, area);
     }
     Dijkstra dijkstra(area, p1, 10000, [&] (Vec2 pos) {
-        if (builder->getSquare(pos)->canEnterEmpty(Creature::getDefault()))
+        if (builder->getSquare(pos)->canEnterEmpty({MovementTrait::WALK}))
           return 1.;
         else
           return ShortestPath::infinity;});
@@ -1184,7 +1184,7 @@ class Roads : public LevelMaker {
   Roads(SquareType roadSquare) : square(roadSquare) {}
 
   double getValue(Level::Builder* builder, Vec2 pos) {
-    if ((!builder->getSquare(pos)->canEnter(Creature::getDefault()) && 
+    if ((!builder->getSquare(pos)->canEnter({MovementTrait::WALK}) && 
          !builder->hasAttrib(pos, SquareAttrib::ROAD_CUT_THRU)) ||
         builder->hasAttrib(pos, SquareAttrib::NO_ROAD))
       return ShortestPath::infinity;

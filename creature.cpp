@@ -89,38 +89,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Creature);
 
-PCreature Creature::defaultCreature;
-PCreature Creature::defaultFlyer;
-PCreature Creature::defaultMinion;
-
 SERIALIZATION_CONSTRUCTOR_IMPL(Creature);
-
-void Creature::initialize() {
-  defaultCreature.reset();
-  defaultFlyer.reset();
-  defaultMinion.reset();
-}
-
-Creature* Creature::getDefault() {
-  if (!defaultCreature)
-    defaultCreature = CreatureFactory::fromId(CreatureId::GNOME, Tribe::get(TribeId::MONSTER),
-        MonsterAIFactory::idle());
-  return defaultCreature.get();
-}
-
-Creature* Creature::getDefaultMinion() {
-  if (!defaultMinion)
-    defaultMinion = CreatureFactory::fromId(CreatureId::GNOME, Tribe::get(TribeId::KEEPER),
-        MonsterAIFactory::idle());
-  return defaultMinion.get();
-}
-
-Creature* Creature::getDefaultMinionFlyer() {
-  if (!defaultFlyer)
-    defaultFlyer = CreatureFactory::fromId(CreatureId::RAVEN, Tribe::get(TribeId::KEEPER),
-        MonsterAIFactory::idle());
-  return defaultFlyer.get();
-}
 
 Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
     : CreatureAttributes(attr), Renderable(object), tribe(t), controller(f.get(this)) {
@@ -175,8 +144,7 @@ const vector<SpellInfo>& Creature::getSpells() const {
 }
 
 static double getWillpowerMult(double willpower) {
-  const int base = Creature::getDefault()->getAttr(AttrType::WILLPOWER);
-  CHECK(base == 12);
+  const int base = 12;
   return pow(0.5, (willpower - base) / 3); 
 }
 
@@ -1917,16 +1885,24 @@ bool Creature::hasBrain() const {
   return brain;
 }
 
-bool Creature::canSwim() const {
-  return skills[SkillId::SWIMMING];
-}
-
 bool Creature::isHatcheryAnimal() const {
   return hatcheryAnimal;
 }
 
 bool Creature::canBeMinion() const {
   return CreatureAttributes::canBeMinion;
+}
+
+bool Creature::canEnter(const MovementType& movement) const {
+  return movement.canEnter(MovementType(getTribe(), {
+      true,
+      isAffected(LastingEffect::FLYING),
+      skills[SkillId::SWIMMING],
+      contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size)}));
+ /* return movement.hasTrait(MovementTrait::WALK)
+    || (skills[SkillId::SWIMMING] && movement.hasTrait(MovementTrait::SWIM))
+    || (contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size) && movement.hasTrait(MovementTrait::WADE))
+    || (isAffected(LastingEffect::FLYING) && movement.hasTrait(MovementTrait::FLY));*/
 }
 
 int Creature::numBodyParts(BodyPart part) const {

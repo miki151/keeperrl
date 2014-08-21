@@ -499,7 +499,7 @@ void Level::Builder::putCreature(Vec2 pos, PCreature creature) {
 
 void Level::Builder::putItems(Vec2 posT, vector<PItem> it) {
   Vec2 pos = transform(posT);
-  CHECK(squares[pos]->canEnterEmpty(Creature::getDefault()));
+  CHECK(squares[pos]->canEnterEmpty({MovementTrait::WALK}));
   append(items[pos], std::move(it));
 }
 

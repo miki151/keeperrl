@@ -48,6 +48,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Collective);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
+
 void Collective::setWarning(Warning w, bool state) {
   warnings[w] = state;
 }
@@ -131,7 +133,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   return ret;
 };
 
-Collective::Collective() : control(CollectiveControl::idle(this)) {
+Collective::Collective(Tribe* t) : control(CollectiveControl::idle(this)), tribe(t) {
   credit = {
     {ResourceId::GOLD, 0},
     {ResourceId::WOOD, 0},
@@ -162,8 +164,7 @@ void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (creatures.empty())
     traits.insert(MinionTrait::LEADER);
-  if (!tribe)
-    tribe = c->getTribe();
+  CHECK(c->getTribe() == tribe);
   creatures.push_back(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
@@ -441,7 +442,7 @@ vector<Vec2> Collective::getEnemyPositions() const {
     }
     for (Vec2 v : pos.neighbors8())
       if (v.inRectangle(getLevel()->getBounds()) && !containsSquare(v) && !extendedTiles.count(v) 
-          && getLevel()->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
+          && getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK})) {
         extendedTiles[v] = 1;
         extendedQueue.push(v);
       }
@@ -455,7 +456,7 @@ vector<Vec2> Collective::getEnemyPositions() const {
         enemyPos.push_back(c->getPosition());
     for (Vec2 v : pos.neighbors8())
       if (v.inRectangle(getLevel()->getBounds()) && !containsSquare(v) && !extendedTiles.count(v) 
-          && getLevel()->getSquare(v)->canEnterEmpty(Creature::getDefault())) {
+          && getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK})) {
         int a = extendedTiles[v] = extendedTiles[pos] + 1;
         if (a < maxRadius)
           extendedQueue.push(v);

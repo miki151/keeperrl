@@ -91,7 +91,6 @@ class Model {
   private:
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
 
-  Collective* getNewCollective();  
   void updateSunlightInfo();
   PCreature makePlayer();
   const Creature* getPlayer() const;

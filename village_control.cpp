@@ -337,7 +337,7 @@ class PeacefulControl : public VillageControl {
   PeacefulControl(Collective* col, Collective* villain, const Location* loc)
     : VillageControl(col, villain, loc) {
     for (Vec2 v : location->getBounds())
-      if (loc->getLevel()->getSquare(v)->getApplyType(Creature::getDefault()) == SquareApplyType::SLEEP)
+      if (loc->getLevel()->getSquare(v)->getName() == "bed")
         beds.push_back(v);
   }
 

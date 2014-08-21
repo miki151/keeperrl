@@ -50,7 +50,7 @@ RICH_ENUM(CollectiveConfig,
 
 class Collective : public Task::Callback {
   public:
-  Collective();
+  Collective(Tribe*);
   void addCreature(Creature*, EnumSet<MinionTrait>);
   void addCreature(PCreature, Vec2, EnumSet<MinionTrait>);
   MoveInfo getMove(Creature*);
@@ -75,8 +75,7 @@ class Collective : public Task::Callback {
   virtual void onAppliedSquare(Vec2 pos) override;
   virtual void onKillCancelled(Creature*) override;
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZATION_DECL(Collective);
 
   vector<Creature*>& getCreatures();
   const vector<Creature*>& getCreatures() const;

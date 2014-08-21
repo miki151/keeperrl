@@ -26,6 +26,7 @@
 #include "view_object.h"
 #include "view_id.h"
 #include "model.h"
+#include "trigger.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};
@@ -304,7 +305,7 @@ static void teleport(Creature* c) {
     Vec2 v = q.front();
     q.pop();
     for (Vec2 w : v.neighbors8())
-      if (w.inRectangle(area) && l->getSquare(w)->canEnterEmpty(Creature::getDefault()) && weight[w] == infinity) {
+      if (w.inRectangle(area) && l->getSquare(w)->canEnterEmpty({MovementTrait::WALK}) && weight[w] == infinity) {
         weight[w] = weight[v] + 1;
         q.push(w);
       }
@@ -339,7 +340,7 @@ static void rollingBoulder(Creature* c) {
     for (Vec2 dir : Vec2::directions8()) {
       bool good = true;
       for (int i : Range(1, dist + 1))
-        if (!l->getSquare(pos + dir * i)->canEnterEmpty(Creature::getDefault())) {
+        if (!l->getSquare(pos + dir * i)->canEnterEmpty({MovementTrait::WALK})) {
           good = false;
           break;
         }

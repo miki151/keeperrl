@@ -34,6 +34,7 @@
 #include "creature_action.h"
 #include "spell_info.h"
 #include "renderable.h"
+#include "movement_type.h"
 
 class Level;
 class Tribe;
@@ -47,11 +48,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   Creature(const ViewObject&, Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
   virtual ~Creature();
 
-  static Creature* getDefault();
-  static Creature* getDefaultMinion();
-  static Creature* getDefaultMinionFlyer();
   static void noExperienceLevels();
-  static void initialize();
 
   virtual ViewIndex getViewIndex(Vec2 pos) const override;
   void makeMove();
@@ -143,10 +140,9 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   bool isNotLiving() const;
   bool isCorporal() const;
   bool isWorshipped() const;
-  bool canSwim() const;
-  bool canFly() const;
   bool isHatcheryAnimal() const;
   bool canBeMinion() const;
+  bool canEnter(const MovementType&) const;
 
   int numBodyParts(BodyPart) const;
   int numLost(BodyPart) const;
@@ -257,13 +253,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   static SpellInfo getSpell(SpellId);
 
   SERIALIZATION_DECL(Creature);
-
-  template <class Archive>
-  static void serializeAll(Archive& ar) {
-    ar & defaultCreature;
-    ar & defaultFlyer;
-    ar & defaultMinion;
-  }
 
   void addEffect(LastingEffect, double time, bool msg = true);
   void removeEffect(LastingEffect, bool msg = true);

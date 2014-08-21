@@ -27,7 +27,6 @@ struct SquareType {
     MOUNTAIN2,
     GLACIER,
     HILL,
-    SECRET_PASS,
     WATER,
     MAGMA,
     GOLD_ORE,

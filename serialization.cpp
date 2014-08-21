@@ -47,7 +47,6 @@ void Serialization::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Monster);
   REGISTER_TYPE(ar, RangedWeapon);
   Quest::registerTypes(ar);
-  REGISTER_TYPE(ar, SolidSquare);
   Tribe::registerTypes(ar);
   Trigger::registerTypes(ar);
   VillageControl::registerTypes(ar);

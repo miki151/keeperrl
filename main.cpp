@@ -161,7 +161,6 @@ static void saveExceptionLine(const string& path, const string& line) {
 void clearAndInitialize() {
   Item::identifyEverything();
   Quest::clearAll();
-  Creature::initialize();
   Tribe::clearAll();
   Technology::clearAll();
   Skill::clearAll();
