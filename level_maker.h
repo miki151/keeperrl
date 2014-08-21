@@ -38,8 +38,9 @@ enum class SettlementType {
 
 struct SettlementInfo {
   SettlementType type;
-  CreatureFactory factory;
+  CreatureFactory creatures;
   int numCreatures;
+  Optional<pair<CreatureFactory, int>> neutralCreatures;
   Location* location;
   Tribe* tribe;
   BuildingId buildingId;

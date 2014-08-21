@@ -39,7 +39,8 @@ void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(tribe)
     & SVAR(creatures)
     & SVAR(weights)
-    & SVAR(unique);
+    & SVAR(unique)
+    & SVAR(tribeOverrides);
   CHECK_SERIAL;
 }
 
@@ -738,7 +739,7 @@ PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemId>& items
 PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
   PCreature ret(new Creature(tribe,
       CATTR(
-        c.viewId = tribe == Tribe::get(TribeId::DWARVEN) ? ViewId::DWARVEN_SHOPKEEPER : ViewId::ELVEN_SHOPKEEPER;
+        c.viewId = ViewId::SHOPKEEPER;
         c.speed = 100;
         c.size = CreatureSize::LARGE;
         c.strength = 17;
@@ -761,14 +762,21 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
   return addInventory(std::move(ret), inventory);
 }
 
+Tribe* CreatureFactory::getTribeFor(CreatureId id) {
+  if (Tribe* t = tribeOverrides[id])
+    return t;
+  else
+    return tribe;
+}
 
 PCreature CreatureFactory::random(MonsterAIFactory actorFactory) {
+  CreatureId id;
   if (unique.size() > 0) {
-    CreatureId id = unique.back();
+    id = unique.back();
     unique.pop_back();
-    return fromId(id, tribe, actorFactory);
-  }
-  return fromId(chooseRandom(creatures, weights), tribe, actorFactory);
+  } else
+    id = chooseRandom(creatures, weights);
+  return fromId(id, getTribeFor(id), actorFactory);
 }
 
 PCreature get(
@@ -779,8 +787,8 @@ PCreature get(
 }
 
 CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const vector<double>& w,
-    const vector<CreatureId>& u)
-    : tribe(t), creatures(c), weights(w), unique(u) {
+    const vector<CreatureId>& u, EnumMap<CreatureId, Tribe*> overrides)
+    : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides) {
 }
 
 CreatureFactory CreatureFactory::humanVillage(Tribe* tribe) {
@@ -847,11 +855,11 @@ CreatureFactory CreatureFactory::goblinTown(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::GOBLIN, CreatureId::RAT}, {2, 1}, {CreatureId::GREAT_GOBLIN});
 }
 
-CreatureFactory CreatureFactory::pyramid(int level) {
+CreatureFactory CreatureFactory::pyramid(Tribe* tribe, int level) {
   if (level == 2)
-    return CreatureFactory(Tribe::get(TribeId::MONSTER), { CreatureId::MUMMY }, {1}, { CreatureId::MUMMY_LORD });
+    return CreatureFactory(tribe, { CreatureId::MUMMY }, {1}, { CreatureId::MUMMY_LORD });
   else
-    return CreatureFactory(Tribe::get(TribeId::MONSTER), { CreatureId::MUMMY }, {1}, { });
+    return CreatureFactory(tribe, { CreatureId::MUMMY }, {1}, { });
 }
 
 CreatureFactory CreatureFactory::insects(Tribe* tribe) {
@@ -866,7 +874,7 @@ CreatureFactory CreatureFactory::lavaCreatures(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::FIRE_SPHERE }, {1}, { });
 }
 
-CreatureFactory CreatureFactory::level(int num) {
+CreatureFactory CreatureFactory::level(int num, Tribe* allTribe, Tribe* dwarfTribe, Tribe* pestTribe) {
   int maxLevel = 8;
   CHECK(num <= maxLevel && num > 0);
   map<CreatureId, vector<int>> frequencies {
@@ -897,8 +905,8 @@ CreatureFactory CreatureFactory::level(int num) {
     ids.push_back(elem.first);
     freq.push_back(elem.second[num - 1]);
   }
-
-  return CreatureFactory(Tribe::get(TribeId::MONSTER), ids, freq, uniqueMonsters[num - 1]);
+  return CreatureFactory(allTribe, ids, freq, uniqueMonsters[num - 1], 
+      {{CreatureId::DWARF, dwarfTribe}, {CreatureId::RAT, pestTribe}});
 }
 
 CreatureFactory CreatureFactory::singleType(Tribe* tribe, CreatureId id) {
@@ -1437,6 +1445,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.skills.insert(SkillId::CONSTRUCTION);
           c.chatReactionFriendly = "talks about digging";
           c.chatReactionHostile = "\"Die!\"";
+          c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.name = "imp";);
     case CreatureId::PRISONER:
       return INHERIT(IMP,
@@ -1929,22 +1938,6 @@ CreatureAttributes getAttributes(CreatureId id) {
   return CreatureAttributes([](CreatureAttributes&) {});
 }
 
-Tribe* getTribe(CreatureId id, Tribe* normalTribe) {
-  switch (id) {
-    case CreatureId::RAT:
-    case CreatureId::SNAKE:
-    case CreatureId::VULTURE: return Tribe::get(TribeId::PEST);
-    case CreatureId::ELF_CHILD:
-    case CreatureId::ELF:
-    case CreatureId::ELF_LORD:
-    case CreatureId::ELF_ARCHER: return Tribe::get(TribeId::ELVEN);
-    case CreatureId::DWARF:
-    case CreatureId::DWARF_BARON: return Tribe::get(TribeId::DWARVEN);
-    case CreatureId::GREAT_GOBLIN: return Tribe::get(TribeId::GOBLIN);
-    default: return normalTribe;
-  }
-}
-
 ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
   switch (id) {
     case CreatureId::KRAKEN:
@@ -1988,24 +1981,24 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
     case CreatureId::ELF_LORD:
       return PCreature(new VillageElder({},
             {{QuestId::BANDITS, Random.getRandom(80, 120)}},
-            getTribe(id, tribe), getAttributes(id), factory));
+            tribe, getAttributes(id), factory));
     case CreatureId::DWARF_BARON:
       return PCreature(new VillageElder({},
             {{QuestId::GOBLINS, Random.getRandom(300, 400)}},
-            getTribe(id, tribe), getAttributes(id), factory));
+            tribe, getAttributes(id), factory));
     case CreatureId::GREAT_GOBLIN:
       return PCreature(new VillageElder({},
             {{QuestId::DWARVES, Random.getRandom(300, 400)}},
-            getTribe(id, tribe), getAttributes(id), factory));
+            tribe, getAttributes(id), factory));
     case CreatureId::AVATAR:
       return PCreature(new VillageElder({},
             {{QuestId::CASTLE_CELLAR, Random.getRandom(80, 120)},
             {QuestId::DRAGON, Random.getRandom(180, 320)}},
-            getTribe(id, tribe), getAttributes(id), factory));
+            tribe, getAttributes(id), factory));
     case CreatureId::LIZARDLORD:
       return PCreature(new VillageElder({}, {},
-            getTribe(id, tribe), getAttributes(id), factory));
-    default: return get(getAttributes(id), getTribe(id, tribe), getController(id, aiFactory));
+            tribe, getAttributes(id), factory));
+    default: return get(getAttributes(id), tribe, getController(id, aiFactory));
   }
 }
 

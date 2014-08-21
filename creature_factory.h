@@ -42,10 +42,10 @@ class CreatureFactory {
   static CreatureFactory vikingTown(Tribe*);
   static CreatureFactory lizardTown(Tribe*);
   static CreatureFactory goblinTown(Tribe*);
-  static CreatureFactory level(int num);
+  static CreatureFactory level(int num, Tribe* allTribe, Tribe* dwarfTribe, Tribe* pestTribe);
   static CreatureFactory splash(Tribe*);
   static CreatureFactory singleType(Tribe*, CreatureId);
-  static CreatureFactory pyramid(int level);
+  static CreatureFactory pyramid(Tribe*, int level);
   static CreatureFactory insects(Tribe* tribe);
   static CreatureFactory lavaCreatures(Tribe* tribe);
   static CreatureFactory waterCreatures(Tribe* tribe);
@@ -69,14 +69,17 @@ class CreatureFactory {
 
   private:
   CreatureFactory(Tribe* tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
-      const vector<CreatureId>& unique);
-  Tribe* tribe;
-  vector<CreatureId> creatures;
-  vector<double> weights;
-  vector<CreatureId> unique;
+      const vector<CreatureId>& unique, EnumMap<CreatureId, Tribe*> overrides = {});
+  Tribe* getTribeFor(CreatureId);
+  SERIAL_CHECKER;
+  Tribe* SERIAL(tribe);
+  vector<CreatureId> SERIAL(creatures);
+  vector<double> SERIAL(weights);
+  vector<CreatureId> SERIAL(unique);
+  EnumMap<CreatureId, Tribe*> SERIAL(tribeOverrides);
 };
 
-enum class CreatureId {
+RICH_ENUM(CreatureId,
     KEEPER,
 
     GOBLIN,
@@ -169,6 +172,7 @@ enum class CreatureId {
     SPIDER,
     SCORPION,
     FLY,
-    RAT};
+    RAT
+);
 
 #endif

@@ -584,7 +584,6 @@ bool Collective::underAttack() const {
 void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
   if (contains(creatures, victim1)) {
     Creature* victim = const_cast<Creature*>(victim1);
-    control->onCreatureKilled(victim, killer);
     if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer)
       && prisonerInfo.at(victim).state() == PrisonerState::EXECUTE)
       returnResource({ResourceId::PRISONER_HEAD, 1});
@@ -602,7 +601,8 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
       if (contains(byTrait[t], victim))
         removeElement(byTrait[t], victim);
     for (Creature* c : creatures)
-      c->addMorale(0.03);
+      c->addMorale(-0.03);
+    control->onCreatureKilled(victim, killer);
   }
   if (victim1->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
     for (Creature* c : creatures)

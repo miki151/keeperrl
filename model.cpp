@@ -311,19 +311,40 @@ Model* Model::heroModel(View* view) {
   m->adventurer = true;
   Location* banditLocation = new Location("bandit hideout", "The bandits have robbed many travelers and townsfolk.");
   vector<SettlementInfo> settlements {
-    {SettlementType::CASTLE, CreatureFactory::humanCastle(Tribe::get(TribeId::HUMAN)), Random.getRandom(10, 20),
-      getVillageLocation(), Tribe::get(TribeId::HUMAN), BuildingId::BRICK, {StairKey::CASTLE_CELLAR}, {},
-      CreatureId::CASTLE_GUARD, Nothing(), ItemFactory::villageShop()},
-    {SettlementType::VILLAGE, CreatureFactory::lizardTown(Tribe::get(TribeId::LIZARD)), Random.getRandom(5, 10),
-      getVillageLocation(), Tribe::get(TribeId::LIZARD), BuildingId::MUD, {}, {}, Nothing(), Nothing(),
-      ItemFactory::mushrooms()},
-    {SettlementType::VILLAGE2, CreatureFactory::elvenVillage(Tribe::get(TribeId::ELVEN)), Random.getRandom(10, 20),
-      getVillageLocation(), Tribe::get(TribeId::ELVEN), BuildingId::WOOD, {}, {}, Nothing(), Nothing(), Nothing()},
-    {SettlementType::WITCH_HOUSE, CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::WITCH),
-      1, new Location(), nullptr, BuildingId::WOOD, {}, {}, Nothing(), Nothing(), Nothing()},
-    {SettlementType::COTTAGE, CreatureFactory::singleType(Tribe::get(TribeId::BANDIT), CreatureId::BANDIT),
-      Random.getRandom(4, 7), banditLocation, Tribe::get(TribeId::BANDIT), BuildingId::WOOD, {}, {}, Nothing(),
-      Nothing(), Nothing()}};
+    {.type = SettlementType::CASTLE,
+     .creatures = CreatureFactory::humanCastle(Tribe::get(TribeId::HUMAN)),
+     .numCreatures = Random.getRandom(10, 20),
+     .location = getVillageLocation(),
+     .tribe = Tribe::get(TribeId::HUMAN),
+     .buildingId = BuildingId::BRICK,
+     .downStairs = {StairKey::CASTLE_CELLAR},
+     .guardId = CreatureId::CASTLE_GUARD,
+     .shopFactory = ItemFactory::villageShop()},
+    {.type = SettlementType::VILLAGE,
+     .creatures = CreatureFactory::lizardTown(Tribe::get(TribeId::LIZARD)),
+     .numCreatures = Random.getRandom(5, 10),
+     .location = getVillageLocation(),
+     .tribe = Tribe::get(TribeId::LIZARD),
+     .buildingId = BuildingId::MUD,
+     .shopFactory = ItemFactory::mushrooms()},
+    {.type = SettlementType::VILLAGE2,
+     .creatures = CreatureFactory::elvenVillage(Tribe::get(TribeId::ELVEN)),
+     .numCreatures = Random.getRandom(10, 20),
+     .location = getVillageLocation(),
+     .tribe = Tribe::get(TribeId::ELVEN),
+     .buildingId = BuildingId::WOOD},
+    {.type = SettlementType::WITCH_HOUSE,
+     .creatures = CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::WITCH),
+     .numCreatures = 1,
+     .location = new Location(),
+     .tribe = Tribe::get(TribeId::MONSTER),
+     .buildingId = BuildingId::WOOD},
+    {.type = SettlementType::COTTAGE,
+     .creatures = CreatureFactory::singleType(Tribe::get(TribeId::BANDIT), CreatureId::BANDIT),
+     .numCreatures = Random.getRandom(4, 7),
+     .location = banditLocation,
+     .tribe = Tribe::get(TribeId::BANDIT),
+     .buildingId = BuildingId::WOOD}};
   for (auto& elem : settlements) {
     elem.collective = new Collective(elem.tribe);
     m->collectives.push_back(PCollective(elem.collective));
@@ -331,18 +352,29 @@ Model* Model::heroModel(View* view) {
   Level* top = m->prepareTopLevel(settlements);
   Quest::get(QuestId::BANDITS)->setLocation(banditLocation);
   SettlementInfo dwarfSettlement {
-    SettlementType::MINETOWN, CreatureFactory::dwarfTown(Tribe::get(TribeId::DWARVEN)),
-      Random.getRandom(10, 20), getVillageLocation(), Tribe::get(TribeId::DWARVEN),
-      BuildingId::BRICK, {StairKey::DWARF}, {StairKey::DWARF}, Nothing(), Nothing(), ItemFactory::dwarfShop()};
+    .type = SettlementType::MINETOWN,
+    .creatures = CreatureFactory::dwarfTown(Tribe::get(TribeId::DWARVEN)),
+    .numCreatures = Random.getRandom(10, 20),
+    .location = getVillageLocation(),
+    .tribe = Tribe::get(TribeId::DWARVEN),
+    .buildingId = BuildingId::BRICK,
+    .upStairs = {StairKey::DWARF},
+    .downStairs = {StairKey::DWARF}, 
+    .shopFactory = ItemFactory::dwarfShop()};
   dwarfSettlement.collective = new Collective(dwarfSettlement.tribe);
   m->collectives.push_back(PCollective(dwarfSettlement.collective));
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(dwarfSettlement));
   SettlementInfo goblinSettlement {
-    SettlementType::MINETOWN, CreatureFactory::goblinTown(Tribe::get(TribeId::GOBLIN)),
-      Random.getRandom(10, 20), getVillageLocation(), Tribe::get(TribeId::GOBLIN),
-      BuildingId::BRICK, {}, {StairKey::DWARF}, Nothing(), Nothing(), ItemFactory::goblinShop()};
+     .type = SettlementType::MINETOWN,
+     .creatures = CreatureFactory::goblinTown(Tribe::get(TribeId::GOBLIN)),
+     .numCreatures = Random.getRandom(10, 20),
+     .location = getVillageLocation(),
+     .tribe = Tribe::get(TribeId::GOBLIN),
+     .buildingId = BuildingId::BRICK,
+     .upStairs = {StairKey::DWARF},
+     .shopFactory = ItemFactory::goblinShop()};
   goblinSettlement.collective = new Collective(goblinSettlement.tribe);
   m->collectives.push_back(PCollective(goblinSettlement.collective));
   Level* g1 = m->buildLevel(
@@ -357,7 +389,8 @@ Model* Model::heroModel(View* view) {
       upKeys.push_back(StairKey::TOWER);*/
     gnomish.push_back(m->buildLevel(
           Level::Builder(60, 35, "Gnomish Mines Level " + convertToString(i + 1)),
-          LevelMaker::roomLevel(CreatureFactory::level(i + 1),
+          LevelMaker::roomLevel(CreatureFactory::level(i + 1,
+              Tribe::get(TribeId::MONSTER), Tribe::get(TribeId::DWARVEN), Tribe::get(TribeId::PEST)),
             CreatureFactory::waterCreatures(Tribe::get(TribeId::MONSTER)),
             CreatureFactory::lavaCreatures(Tribe::get(TribeId::MONSTER)), upKeys, {StairKey::DWARF})));
   }
@@ -496,8 +529,14 @@ struct EnemyInfo {
 
 static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* tribe, int num,
     Optional<ItemFactory> itemFactory, VillageControlInfo controlInfo) {
-  return {{type, factory, num, new Location(true), tribe,
-          BuildingId::DUNGEON, {}, {}, Nothing(), Nothing(), itemFactory}, controlInfo};
+  return {{
+    .type = type,
+    .creatures = factory,
+    .numCreatures = num,
+    .location = new Location(true),
+    .tribe = tribe,
+    .buildingId = BuildingId::DUNGEON,
+    .shopFactory = itemFactory}, controlInfo};
 }
 
 static EnemyInfo getVault(SettlementType type, CreatureId id, Tribe* tribe, int num,
@@ -557,16 +596,19 @@ static double getPowerCoeff() {
 vector<EnemyInfo> getEnemyInfo() {
   vector<EnemyInfo> ret;
   for (int i : Range(6, 12)) {
-    ret.push_back({
-        {SettlementType::COTTAGE, CreatureFactory::humanVillage(Tribe::get(TribeId::HUMAN)),
-        Random.getRandom(3, 7), new Location(),
-            Tribe::get(TribeId::HUMAN), BuildingId::WOOD, {}, {}, Nothing(), Nothing(), Nothing()},
+    ret.push_back({{
+        .type = SettlementType::COTTAGE,
+        .creatures = CreatureFactory::humanVillage(Tribe::get(TribeId::HUMAN)),
+        .numCreatures = Random.getRandom(3, 7),
+        .location = new Location(),
+        .tribe = Tribe::get(TribeId::HUMAN),
+        .buildingId = BuildingId::WOOD},
         {VillageControlInfo::PEACEFUL}});
   }
   append(ret, getVaults());
   append(ret, {
       {{.type = SettlementType::CASTLE2,
-        .factory = CreatureFactory::vikingTown(Tribe::get(TribeId::HUMAN)),
+        .creatures = CreatureFactory::vikingTown(Tribe::get(TribeId::HUMAN)),
         .numCreatures = Random.getRandom(12, 16),
         .location = getVillageLocation(),
         .tribe = Tribe::get(TribeId::HUMAN),
@@ -575,7 +617,7 @@ vector<EnemyInfo> getEnemyInfo() {
         .elderLoot = ItemId::BEAST_MUT_BOOK},
         {VillageControlInfo::POWER_BASED, getKilledCoeff(), getPowerCoeff()}},
       {{.type = SettlementType::VILLAGE,
-        .factory = CreatureFactory::lizardTown(Tribe::get(TribeId::LIZARD)),
+        .creatures = CreatureFactory::lizardTown(Tribe::get(TribeId::LIZARD)),
         .numCreatures = Random.getRandom(8, 14),
         .location = getVillageLocation(),
         .tribe = Tribe::get(TribeId::LIZARD),
@@ -584,7 +626,7 @@ vector<EnemyInfo> getEnemyInfo() {
         .shopFactory = ItemFactory::mushrooms()},
         {VillageControlInfo::POWER_BASED, getKilledCoeff(), getPowerCoeff()}},
       {{.type = SettlementType::VILLAGE2,
-        .factory = CreatureFactory::elvenVillage(Tribe::get(TribeId::ELVEN)),
+        .creatures = CreatureFactory::elvenVillage(Tribe::get(TribeId::ELVEN)),
         .numCreatures = Random.getRandom(11, 18),
         .location = getVillageLocation(),
         .tribe = Tribe::get(TribeId::ELVEN),
@@ -592,7 +634,7 @@ vector<EnemyInfo> getEnemyInfo() {
         .elderLoot = ItemId::SPELLS_MAS_BOOK},
         {VillageControlInfo::PEACEFUL}},
       {{.type = SettlementType::MINETOWN,
-        .factory = CreatureFactory::dwarfTown(Tribe::get(TribeId::DWARVEN)),
+        .creatures = CreatureFactory::dwarfTown(Tribe::get(TribeId::DWARVEN)),
         .numCreatures = Random.getRandom(9, 14),
         .location = getVillageLocation(true),
         .tribe = Tribe::get(TribeId::DWARVEN),
@@ -600,7 +642,7 @@ vector<EnemyInfo> getEnemyInfo() {
         .shopFactory = ItemFactory::dwarfShop()},
         {VillageControlInfo::POWER_BASED_DISCOVER, getKilledCoeff(), getPowerCoeff()}},
       {{.type = SettlementType::CASTLE,
-        .factory = CreatureFactory::humanCastle(Tribe::get(TribeId::HUMAN)),
+        .creatures = CreatureFactory::humanCastle(Tribe::get(TribeId::HUMAN)),
         .numCreatures = Random.getRandom(20, 26),
         .location = getVillageLocation(),
         .tribe = Tribe::get(TribeId::HUMAN),
@@ -609,7 +651,7 @@ vector<EnemyInfo> getEnemyInfo() {
         .shopFactory = ItemFactory::villageShop()},
         {VillageControlInfo::FINAL_ATTACK}},
       {{.type = SettlementType::WITCH_HOUSE,
-        .factory = CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::WITCH),
+        .creatures = CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::WITCH),
         .numCreatures = 1,
         .location = new Location(),
         .tribe = Tribe::get(TribeId::MONSTER),
@@ -617,7 +659,7 @@ vector<EnemyInfo> getEnemyInfo() {
         .elderLoot = ItemId::ALCHEMY_ADV_BOOK},
         {VillageControlInfo::PEACEFUL}},
       {{.type = SettlementType::CAVE,
-        .factory = CreatureFactory::singleType(Tribe::get(TribeId::HUMAN), CreatureId::BANDIT),
+        .creatures = CreatureFactory::singleType(Tribe::get(TribeId::HUMAN), CreatureId::BANDIT),
         .numCreatures = Random.getRandom(4, 9),
         .location = new Location(),
         .tribe = Tribe::get(TribeId::HUMAN),

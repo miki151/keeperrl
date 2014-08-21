@@ -31,7 +31,6 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(villain)
     & SVAR(location)
     & SVAR(name)
-    & SVAR(atWar);
   CHECK_SERIAL;
 }
 
@@ -115,9 +114,6 @@ static int expLevelFun(double time) {
 }
 
 void VillageControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
-  if ((victim->getTribe() == getTribe() && (!killer ||  contains(villain->getCreatures(), killer)))
-      || (contains(villain->getCreatures(), victim) && killer && killer->getTribe() == getTribe()))
-    atWar = true;
   if (!isAnonymous() && getCreatures(MinionTrait::FIGHTER).empty())
       messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
 }
@@ -291,8 +287,6 @@ GameInfo::VillageInfo::Village VillageControl::getVillageInfo() const {
     info.state = "attacking!";
   else if (isConquered())
     info.state = "conquered";
-  else if (atWar)
-    info.state = "war";
   return info;
 }
 

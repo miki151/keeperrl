@@ -1722,7 +1722,10 @@ MakerQueue* village2(SettlementInfo info) {
     insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));
   queue->addMaker(new Buildings(6, 10, 3, 4, building, false, insideMakers));
   queue->addMaker(new DungeonFeatures(new AttribPredicate(SquareAttrib::ROOM), featureCount));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective, building.floorOutside));
+  queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective, building.floorOutside));
+  if (info.neutralCreatures)
+    queue->addMaker(
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
   return queue;
 }
 
@@ -1744,7 +1747,10 @@ MakerQueue* village(SettlementInfo info) {
   queue->addMaker(new DungeonFeatures(new AttribPredicate(SquareAttrib::ROOM), featureCount));
   queue->addMaker(new DungeonFeatures(new TypePredicate(building.floorOutside),
         {{SquareType::TORCH, 1, 3 }}));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective, building.floorOutside));
+  queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective, building.floorOutside));
+  if (info.neutralCreatures)
+    queue->addMaker(
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
   return queue;
 }
 
@@ -1757,8 +1763,11 @@ MakerQueue* cottage(SettlementInfo info, const vector<FeatureInfo>& featureCount
   room->addMaker(new DungeonFeatures(new TypePredicate(building.floorInside), featureCount));
   queue->addMaker(new Buildings(1, 2, 5, 7, building, false, {room}, false));
   queue->addMaker(new LocationMaker(info.location));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective, building.floorOutside));
-  return queue;
+  queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective, building.floorOutside));
+  if (info.neutralCreatures)
+    queue->addMaker(
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+   return queue;
 }
 
 MakerQueue* castle(SettlementInfo info) {
@@ -1790,8 +1799,11 @@ MakerQueue* castle(SettlementInfo info) {
   queue->addMaker(new AreaCorners(new BorderGuard(new Empty(building.floorInside), building.wall), Vec2(5, 5)));
   queue->addMaker(new Margin(insideMargin, new Connector({0, 1, 0}, 18)));
   queue->addMaker(new Margin(insideMargin, new CastleExit(info.tribe, building, *info.guardId)));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective, building.floorOutside));
-  inside->addMaker(new DungeonFeatures(new TypePredicate(building.floorOutside),
+  queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective, building.floorOutside));
+  if (info.neutralCreatures)
+    queue->addMaker(
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+   inside->addMaker(new DungeonFeatures(new TypePredicate(building.floorOutside),
         {{ SquareType::WELL, 1, 2 }, { SquareType::TORCH, 2, 5 }}));
   inside->addMaker(new DungeonFeatures(new TypePredicate(building.floorInside),{
         { SquareType::FOUNTAIN, 2, 4}, { SquareType::TORCH, 2, 5 }}));
@@ -1813,8 +1825,11 @@ MakerQueue* castle2(SettlementInfo info) {
   queue->addMaker(new Margin(insideMargin, new CastleExit(info.tribe, building, *info.guardId)));
   queue->addMaker(new DungeonFeatures(new TypePredicate(building.floorOutside),
         {{ SquareType::WELL, 1, 2 }, { SquareType::TORCH, 2, 5 }}));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective, building.floorOutside));
-  return queue;
+  queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective, building.floorOutside));
+  if (info.neutralCreatures)
+    queue->addMaker(
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+   return queue;
 }
 
 LevelMaker* dungeonEntrance(StairKey key, SquareType onType, const string& dungeonDesc) {
@@ -1895,6 +1910,7 @@ static MakerQueue* mineTownMaker(SettlementInfo info) {
   int numCavern = 10;
   int maxCavernSize = 12;
   int numRooms = Random.getRandom(5, 7);
+  BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount {
       { {SquareType::CHEST, getChestFactory()}, 4, 8 },
@@ -1909,7 +1925,7 @@ static MakerQueue* mineTownMaker(SettlementInfo info) {
   queue->addMaker(new RandomLocations(vCavern, sizes, new AlwaysTrue(), false));
   LevelMaker* shopMaker = nullptr;
   if (info.shopFactory)
-    shopMaker= new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), get(info.buildingId));
+    shopMaker= new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building);
   queue->addMaker(new RoomMaker(numRooms, 4, 7, SquareType::ROCK_WALL, Nothing(),
       new Empty(SquareType::FLOOR, SquareAttrib::CONNECT_CORRIDOR), shopMaker));
   queue->addMaker(new Connector({1, 0, 0}));
@@ -1922,8 +1938,11 @@ static MakerQueue* mineTownMaker(SettlementInfo info) {
   queue->addMaker(new DungeonFeatures(featurePred, featureCount));
   queue->addMaker(new DungeonFeatures(new OrPredicates(new TypePredicate(SquareType::FLOOR),
           new TypePredicate(SquareType::PATH)), {{SquareType::TORCH, 10, 16}}));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective));
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective));
+  if (info.neutralCreatures)
+    queue->addMaker(
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+   queue->addMaker(new LocationMaker(info.location));
   return queue;
 }
 
@@ -1934,10 +1953,13 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
     queue->addMaker(new UniformBlob(building.floorOutside, Nothing(), SquareAttrib::CONNECT_CORRIDOR));
   else
     queue->addMaker(new UniformBlob(building.floorOutside));
-  queue->addMaker(new Creatures(info.factory, info.numCreatures, info.collective));
+  queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective));
   if (info.shopFactory)
     queue->addMaker(new Items(*info.shopFactory, building.floorOutside, 16, 20));
-  queue->addMaker(new LocationMaker(info.location));
+  if (info.neutralCreatures)
+    queue->addMaker(
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+   queue->addMaker(new LocationMaker(info.location));
   return queue;
 }
 

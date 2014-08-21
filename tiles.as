@@ -82,7 +82,6 @@ void genTiles() {
   addTile(ELF_ARCHER, sprite(12, 6));
   addTile(ELF_CHILD, sprite(14, 6));
   addTile(ELF_LORD, sprite(13, 6));
-  addTile(ELVEN_SHOPKEEPER, sprite(4, 2));
   addTile(LIZARDMAN, sprite(8, 8));
   addTile(LIZARDLORD, sprite(11, 8));
   addTile(IMP, sprite(18, 19));
@@ -91,7 +90,7 @@ void genTiles() {
   addTile(CHICKEN, sprite("chicken"));
   addTile(DWARF, sprite(2, 6));
   addTile(DWARF_BARON, sprite(3, 6));
-  addTile(DWARVEN_SHOPKEEPER, sprite(4, 2));
+  addTile(SHOPKEEPER, sprite(4, 2));
   addTile(BRIDGE, sprite("bridge").addOption(S, "bridge2"));
   addTile(ROAD, getRoadTile(7));
   addTile(PATH, sprite(3, 14, 1));
@@ -302,7 +301,7 @@ void genSymbols() {
   addSymbol(ELF_ARCHER, symbol("@", GREEN));
   addSymbol(ELF_CHILD, symbol("@", LIGHT_GREEN));
   addSymbol(ELF_LORD, symbol("@", DARK_GREEN));
-  addSymbol(ELVEN_SHOPKEEPER, symbol("@", LIGHT_BLUE));
+  addSymbol(SHOPKEEPER, symbol("@", LIGHT_BLUE));
   addSymbol(LIZARDMAN, symbol("@", LIGHT_BROWN));
   addSymbol(LIZARDLORD, symbol("@", BROWN));
   addSymbol(IMP, symbol("i", LIGHT_BROWN));
@@ -311,7 +310,6 @@ void genSymbols() {
   addSymbol(CHICKEN, symbol("c", YELLOW));
   addSymbol(DWARF, symbol("h", BLUE));
   addSymbol(DWARF_BARON, symbol("h", DARK_BLUE));
-  addSymbol(DWARVEN_SHOPKEEPER, symbol("h", LIGHT_BLUE));
   addSymbol(FLOOR, symbol(".", WHITE));
   addSymbol(BRIDGE, symbol("_", BROWN));
   addSymbol(ROAD, symbol(".", LIGHT_GRAY));
