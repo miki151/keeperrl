@@ -1182,7 +1182,7 @@ PItem ItemFactory::fromId(ItemId id) {
           ITATTR(
             i.name = amulet_looks[3] + " amulet";
             i.realName = "amulet of nature affinity";
-            i.realName = "amulets of nature affinity";
+            i.realPlural = "amulets of nature affinity";
             i.description = "Makes all animals peaceful.";
             i.type = ItemType::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;

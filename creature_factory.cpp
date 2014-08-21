@@ -128,11 +128,19 @@ class BoulderController : public Monster {
     if (auto action = creature->move(direction))
       action.perform();
     else {
-      creature->getLevel()->globalMessage(creature->getPosition() + direction,
-          creature->getTheName() + " crashes on the " + creature->getConstSquare(direction)->getName(),
-              "You hear a crash");
-      creature->die();
-      return;
+      if (health >= 0.9 && creature->getConstSquare(direction)->canConstruct(SquareType::FLOOR)) {
+        creature->globalMessage("The " + creature->getConstSquare(direction)->getName() + " is destroyed!");
+        while (!creature->getSquare(direction)->construct(SquareType::FLOOR)) {}
+        if (auto action = creature->move(direction))
+          action.perform();
+        health = 0.1;
+      } else {
+        creature->getLevel()->globalMessage(creature->getPosition() + direction,
+            creature->getTheName() + " crashes on the " + creature->getConstSquare(direction)->getName(),
+            "You hear a crash");
+        creature->die();
+        return;
+      }
     }
     double speed = creature->getSpeed();
     double deceleration = 0.1;
