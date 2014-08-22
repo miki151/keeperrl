@@ -71,8 +71,8 @@ ItemPredicate Collective::unMarkedItems(ItemType type) const {
       return it->getType() == type && !isItemMarked(it); };
 }
 
-const static vector<SquareType> resourceStorage {SquareType::STOCKPILE, SquareType::STOCKPILE_RES};
-const static vector<SquareType> equipmentStorage {SquareType::STOCKPILE, SquareType::STOCKPILE_EQUIP};
+const static vector<SquareType> resourceStorage {SquareId::STOCKPILE, SquareId::STOCKPILE_RES};
+const static vector<SquareType> equipmentStorage {SquareId::STOCKPILE, SquareId::STOCKPILE_EQUIP};
 
 vector<SquareType> Collective::getEquipmentStorageSquares() {
   return equipmentStorage;
@@ -80,14 +80,14 @@ vector<SquareType> Collective::getEquipmentStorageSquares() {
 
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   return {
-    {unMarkedItems(ItemType::CORPSE), {SquareType::CEMETERY}, true, {}, Warning::GRAVES},
-    {unMarkedItems(ItemType::GOLD), {SquareType::TREASURE_CHEST}, false, {}, Warning::CHESTS},
+    {unMarkedItems(ItemType::CORPSE), {SquareId::CEMETERY}, true, {}, Warning::GRAVES},
+    {unMarkedItems(ItemType::GOLD), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
     {[this](const Item* it) {
         return minionEquipment.isItemUseful(it) && !isItemMarked(it);
       }, equipmentStorage, false, {}, Warning::STORAGE},
     {[this](const Item* it) {
         return it->getName() == "wood plank" && !isItemMarked(it); },
-    resourceStorage, false, {SquareType::TREE_TRUNK}, Warning::STORAGE},
+    resourceStorage, false, {SquareId::TREE_TRUNK}, Warning::STORAGE},
     {[this](const Item* it) {
         return it->getName() == "iron ore" && !isItemMarked(it); }, resourceStorage, false, {}, Warning::STORAGE},
     {[this](const Item* it) {
@@ -99,7 +99,7 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
   {ResourceId::MANA, { {}, nullptr, ItemId::GOLD_PIECE, "mana", Collective::Warning::MANA}},
   {ResourceId::PRISONER_HEAD, { {}, nullptr, ItemId::GOLD_PIECE, "", Nothing(), true}},
-  {ResourceId::GOLD, { {SquareType::TREASURE_CHEST}, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE, "gold",
+  {ResourceId::GOLD, { {SquareId::TREASURE_CHEST}, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE, "gold",
                        Collective::Warning::GOLD}},
   {ResourceId::WOOD, { resourceStorage, Item::namePredicate("wood plank"),
                        ItemId::WOOD_PLANK, "wood", Collective::Warning::WOOD}},
@@ -111,22 +111,22 @@ const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resource
 
 map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   map<MinionTask, MinionTaskInfo> ret {
-    {MinionTask::LABORATORY, {{SquareType::LABORATORY}, "lab", Collective::Warning::LABORATORY}},
-    {MinionTask::TRAIN, {{SquareType::TRAINING_ROOM}, "training", Collective::Warning::TRAINING}},
-    {MinionTask::WORKSHOP, {{SquareType::WORKSHOP}, "crafting", Collective::Warning::WORKSHOP}},
-    {MinionTask::SLEEP, {{SquareType::BED}, "sleeping", Collective::Warning::BEDS}},
-    {MinionTask::GRAVE, {{SquareType::GRAVE}, "sleeping", Collective::Warning::GRAVES}},
-    {MinionTask::LAIR, {{SquareType::BEAST_CAGE}, "sleeping"}},
-    {MinionTask::STUDY, {{SquareType::LIBRARY}, "studying", Collective::Warning::LIBRARY}},
-    {MinionTask::RESEARCH, {{SquareType::LIBRARY}, "research", Collective::Warning::LIBRARY}},
-    {MinionTask::PRISON, {{SquareType::PRISON}, "prison", Collective::Warning::NO_PRISON}},
-    {MinionTask::TORTURE, {{SquareType::TORTURE_TABLE}, "torture ordered", Collective::Warning::TORTURE_ROOM, true}},
+    {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", Collective::Warning::LABORATORY}},
+    {MinionTask::TRAIN, {{SquareId::TRAINING_ROOM}, "training", Collective::Warning::TRAINING}},
+    {MinionTask::WORKSHOP, {{SquareId::WORKSHOP}, "crafting", Collective::Warning::WORKSHOP}},
+    {MinionTask::SLEEP, {{SquareId::BED}, "sleeping", Collective::Warning::BEDS}},
+    {MinionTask::GRAVE, {{SquareId::GRAVE}, "sleeping", Collective::Warning::GRAVES}},
+    {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
+    {MinionTask::STUDY, {{SquareId::LIBRARY}, "studying", Collective::Warning::LIBRARY}},
+    {MinionTask::RESEARCH, {{SquareId::LIBRARY}, "research", Collective::Warning::LIBRARY}},
+    {MinionTask::PRISON, {{SquareId::PRISON}, "prison", Collective::Warning::NO_PRISON}},
+    {MinionTask::TORTURE, {{SquareId::TORTURE_TABLE}, "torture ordered", Collective::Warning::TORTURE_ROOM, true}},
     {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "spying"}},
     {MinionTask::SACRIFICE, {{}, "sacrifice ordered", Collective::Warning::ALTAR}},
-    {MinionTask::EXECUTE, {{SquareType::PRISON}, "execution ordered", Collective::Warning::NO_PRISON}},
+    {MinionTask::EXECUTE, {{SquareId::PRISON}, "execution ordered", Collective::Warning::NO_PRISON}},
     {MinionTask::WORSHIP, {{}, "worship", Nothing()}}};
   for (SquareType t : getSquareTypes())
-    if (contains({SquareType::ALTAR, SquareType::CREATURE_ALTAR}, t.id) && !getSquares(t).empty()) {
+    if (contains({SquareId::ALTAR, SquareId::CREATURE_ALTAR}, t.getId()) && !getSquares(t).empty()) {
       ret.at(MinionTask::WORSHIP).squares.push_back(t);
       ret.at(MinionTask::SACRIFICE).squares.push_back(t);
     }
@@ -470,7 +470,7 @@ void Collective::tick(double time) {
   considerHealingLeader();
   setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
   setWarning(Warning::WOOD, numResource(ResourceId::WOOD) == 0);
-  setWarning(Warning::DIGGING, getSquares(SquareType::FLOOR).empty());
+  setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
   setWarning(Warning::MINIONS, getCreatures(MinionTrait::FIGHTER).size() == 0);
   for (auto elem : getTaskInfo())
     if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
@@ -733,11 +733,11 @@ void Collective::update(Creature* c) {
 }
 
 const static unordered_set<SquareType> efficiencySquares {
-  SquareType::TRAINING_ROOM,
-  SquareType::TORTURE_TABLE,
-  SquareType::WORKSHOP,
-  SquareType::LIBRARY,
-  SquareType::LABORATORY,
+  SquareId::TRAINING_ROOM,
+  SquareId::TORTURE_TABLE,
+  SquareId::WORKSHOP,
+  SquareId::LIBRARY,
+  SquareId::LABORATORY,
 };
 
 bool Collective::hasEfficiency(Vec2 pos) const {
@@ -889,7 +889,7 @@ void Collective::returnResource(CostInfo amount) {
 vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squares) const {
   vector<pair<Item*, Vec2>> ret;
   if (squares.empty())
-    squares = getSquares(SquareType::WORKSHOP);
+    squares = getSquares(SquareId::WORKSHOP);
   for (Vec2 pos : squares) {
     vector<Item*> v = getLevel()->getSquare(pos)->getItems([type, this](Item* it) {
         return it->getTrapType() == type && !isItemMarked(it); });
@@ -1032,7 +1032,7 @@ const map<Vec2, Collective::ConstructionInfo>& Collective::getConstructions() co
 }
 
 void Collective::dig(Vec2 pos) {
-  taskMap.markSquare(pos, Task::construction(this, pos, SquareType::FLOOR));
+  taskMap.markSquare(pos, Task::construction(this, pos, SquareId::FLOOR));
 }
 
 void Collective::dontDig(Vec2 pos) {
@@ -1048,7 +1048,7 @@ void Collective::setPriorityTasks(Vec2 pos) {
 }
 
 void Collective::cutTree(Vec2 pos) {
-  taskMap.markSquare(pos, Task::construction(this, pos, SquareType::TREE_TRUNK));
+  taskMap.markSquare(pos, Task::construction(this, pos, SquareId::TREE_TRUNK));
 }
 
 set<TrapType> Collective::getNeededTraps() const {
@@ -1078,13 +1078,13 @@ void Collective::onAppliedItemCancel(Vec2 pos) {
 }
 
 void Collective::onConstructed(Vec2 pos, SquareType type) {
-  if (!contains({SquareType::TREE_TRUNK}, type))
+  if (!contains({SquareId::TREE_TRUNK}, type.getId()))
     allSquares.insert(pos);
   CHECK(!getSquares(type).count(pos));
   mySquares[type].insert(pos);
   if (efficiencySquares.count(type))
     updateEfficiency(pos, type);
- if (contains({SquareType::FLOOR, SquareType::BRIDGE}, type))
+ if (contains({SquareId::FLOOR, SquareId::BRIDGE}, type.getId()))
     taskMap.clearAllLocked();
   if (taskMap.getMarked(pos))
     taskMap.unmarkSquare(pos);
@@ -1274,7 +1274,7 @@ void Collective::addMana(double value) {
 
 void Collective::onAppliedSquare(Vec2 pos) {
   Creature* c = NOTNULL(getLevel()->getSquare(pos)->getCreature());
-  if (getSquares(SquareType::LIBRARY).count(pos)) {
+  if (getSquares(SquareId::LIBRARY).count(pos)) {
     switch (currentTasks.at(c->getUniqueId()).task()) {
       case MinionTask::RESEARCH:
         addMana(getEfficiency(pos) * (0.3 + max(0., 2 
@@ -1287,17 +1287,17 @@ void Collective::onAppliedSquare(Vec2 pos) {
         break;
     }
   }
-  if (getSquares(SquareType::TRAINING_ROOM).count(pos)) {
+  if (getSquares(SquareId::TRAINING_ROOM).count(pos)) {
     double lev1 = 0.03;
     double lev10 = 0.01;
     c->increaseExpLevel(getEfficiency(pos) * (lev1 - double(c->getExpLevel() - 1) * (lev1 - lev10) / 9.0  ));
   }
-  if (getSquares(SquareType::LABORATORY).count(pos))
+  if (getSquares(SquareId::LABORATORY).count(pos))
     if (Random.rollD(30.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
       getLevel()->getSquare(pos)->dropItems(ItemFactory::laboratory(technologies).random());
       Statistics::add(StatId::POTION_PRODUCED);
     }
-  if (getSquares(SquareType::WORKSHOP).count(pos))
+  if (getSquares(SquareId::WORKSHOP).count(pos))
     if (Random.rollD(40.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
       set<TrapType> neededTraps = getNeededTraps();
       vector<PItem> items;
@@ -1369,7 +1369,7 @@ double Collective::getDangerLevel(bool includeExecutions) const {
   for (const Creature* c : getCreatures({MinionTrait::FIGHTER}))
     ret += c->getDifficultyPoints();
   if (includeExecutions)
-    ret += getSquares(SquareType::IMPALED_HEAD).size() * 150;
+    ret += getSquares(SquareId::IMPALED_HEAD).size() * 150;
   return ret;
 }
 

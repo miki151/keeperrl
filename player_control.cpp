@@ -69,11 +69,11 @@ PlayerControl::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const st
     : trapInfo(info), buildType(TRAP), techId(id), help(h), hotkey(key), groupName(group) {}
 
 PlayerControl::BuildInfo::BuildInfo(DeityHabitat habitat, CostInfo cost, const string& group, const string& h,
-    char key) : squareInfo({SquareType({habitat}), cost, "To " + Deity::getDeity(habitat)->getName(), false}),
+    char key) : squareInfo({SquareType(SquareId::ALTAR, habitat), cost, "To " + Deity::getDeity(habitat)->getName(), false}),
     buildType(SQUARE), help(h), hotkey(key), groupName(group) {}
 
 PlayerControl::BuildInfo::BuildInfo(const Creature* c, CostInfo cost, const string& group, const string& h, char key)
-    : squareInfo({SquareType({c}), cost, "To " + c->getName(), false}),
+    : squareInfo({SquareType(SquareId::CREATURE_ALTAR, c), cost, "To " + c->getName(), false}),
     buildType(SQUARE), help(h), hotkey(key), groupName(group) {}
 
 PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, string group)
@@ -89,19 +89,19 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
   const CostInfo altarCost {ResourceId::STONE, 30};
   vector<BuildInfo> buildInfo {
     BuildInfo(BuildInfo::DIG, "", 'd'),
-    BuildInfo({SquareType::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, Nothing(), "", 's', "Storage"),
-    BuildInfo({SquareType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, Nothing(), "", 0, "Storage"),
-    BuildInfo({SquareType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, Nothing(), "", 0, "Storage"),
-    BuildInfo({SquareType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, Nothing(), ""),
-    BuildInfo({SquareType::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, Nothing(), "", 'm'),
-    BuildInfo({SquareType::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
-    BuildInfo({SquareType::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
-    BuildInfo({SquareType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY, "", 'r', "Workshops"),
-    BuildInfo({SquareType::WORKSHOP, {ResourceId::IRON, 15}, "Forge"}, TechId::CRAFTING, "", 'f', "Workshops"),
-    BuildInfo({SquareType::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, Nothing(), ""),
-    BuildInfo({SquareType::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
-    BuildInfo({SquareType::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 0),
-    BuildInfo({SquareType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u')};
+    BuildInfo({SquareId::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, Nothing(), "", 's', "Storage"),
+    BuildInfo({SquareId::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, Nothing(), "", 0, "Storage"),
+    BuildInfo({SquareId::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, Nothing(), "", 0, "Storage"),
+    BuildInfo({SquareId::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, Nothing(), ""),
+    BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, Nothing(), "", 'm'),
+    BuildInfo({SquareId::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
+    BuildInfo({SquareId::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
+    BuildInfo({SquareId::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY, "", 'r', "Workshops"),
+    BuildInfo({SquareId::WORKSHOP, {ResourceId::IRON, 15}, "Forge"}, TechId::CRAFTING, "", 'f', "Workshops"),
+    BuildInfo({SquareId::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, Nothing(), ""),
+    BuildInfo({SquareId::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
+    BuildInfo({SquareId::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 0),
+    BuildInfo({SquareId::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u')};
   for (Deity* deity : Deity::getDeities())
     buildInfo.push_back(BuildInfo(deity->getHabitat(), altarCost, "Shrines",
           deity->getGender().god() + " of " + deity->getEpithetsString(), 0));
@@ -110,17 +110,17 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
       if (c->isWorshipped())
         buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", c->getSpeciesName(), 0));
   append(buildInfo, {
-    BuildInfo({SquareType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
+    BuildInfo({SquareId::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'p', "Orders"),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
     BuildInfo(BuildInfo::DISPATCH, "Order imps to perform the tasks at location now.", 'a', "Orders"),
     BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
-    BuildInfo({{SquareType::TRIBE_DOOR, tribe}, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
+    BuildInfo({{SquareId::TRIBE_DOOR, tribe}, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
         "Click on a built door to lock it.", 'o', "Installations"),
-    BuildInfo({{SquareType::BARRICADE, tribe}, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, "", 0,
+    BuildInfo({{SquareId::BARRICADE, tribe}, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, "", 0,
       "Installations"),
-    BuildInfo({SquareType::TORCH, {ResourceId::WOOD, 1}, "Torch"}, Nothing(), "", 'c', "Installations"),
-    BuildInfo({SquareType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, Nothing(),
+    BuildInfo({SquareId::TORCH, {ResourceId::WOOD, 1}, "Torch"}, Nothing(), "", 'c', "Installations"),
+    BuildInfo({SquareId::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, Nothing(),
         "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
     BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, TechId::TRAPS,
         "Causes the trespasser to panic.", 0, "Traps"),
@@ -142,10 +142,10 @@ vector<PlayerControl::BuildInfo> PlayerControl::workshopInfo {
 };
 
 Optional<SquareType> getSecondarySquare(SquareType type) {
-  switch (type.id) {
-    case SquareType::DORM: return SquareType(SquareType::BED);
-    case SquareType::BEAST_LAIR: return SquareType(SquareType::BEAST_CAGE);
-    case SquareType::CEMETERY: return SquareType(SquareType::GRAVE);
+  switch (type.getId()) {
+    case SquareId::DORM: return SquareType(SquareId::BED);
+    case SquareId::BEAST_LAIR: return SquareType(SquareId::BEAST_CAGE);
+    case SquareId::CEMETERY: return SquareType(SquareId::GRAVE);
     default: return Nothing();
   }
 }
@@ -607,7 +607,7 @@ vector<PlayerControl::SpawnInfo> animationInfo {
 
 
 void PlayerControl::handleMatterAnimation(View* view) {
-  handleSpawning(view, SquareType::LABORATORY,
+  handleSpawning(view, SquareId::LABORATORY,
       "You need to build a laboratory to animate golems.", "You need a larger laboratory.", "Golem animation",
       MinionTrait::SPAWN_GOLEM, animationInfo, 1);
 }
@@ -620,7 +620,7 @@ vector<PlayerControl::SpawnInfo> tamingInfo {
 };
 
 void PlayerControl::handleBeastTaming(View* view) {
-  handleSpawning(view, SquareType::BEAST_LAIR,
+  handleSpawning(view, SquareId::BEAST_LAIR,
       "You need to build a beast lair to trap beasts.", "You need a larger lair.", "Beast taming",
       MinionTrait::SPAWN_BEAST, tamingInfo, getCollective()->getBeastMultiplier());
 }
@@ -633,7 +633,7 @@ vector<PlayerControl::SpawnInfo> breedingInfo {
 };
 
 void PlayerControl::handleHumanoidBreeding(View* view) {
-  handleSpawning(view, SquareType::DORM,
+  handleSpawning(view, SquareId::DORM,
       "You need to build a dormitory to breed humanoids.", "You need a larger dormitory.", "Greenskin breeding",
       MinionTrait::SPAWN_HUMANOID, breedingInfo, 1);
 }
@@ -647,12 +647,12 @@ vector<PlayerControl::SpawnInfo> raisingInfo {
 
 void PlayerControl::handleNecromancy(View* view) {
   vector<pair<Vec2, Item*>> corpses;
-  for (Vec2 pos : getCollective()->getSquares(SquareType::CEMETERY)) {
+  for (Vec2 pos : getCollective()->getSquares(SquareId::CEMETERY)) {
     for (Item* it : getLevel()->getSquare(pos)->getItems([](const Item* it) {
         return it->getType() == ItemType::CORPSE && it->getCorpseInfo()->canBeRevived; }))
       corpses.push_back({pos, it});
   }
-  handleSpawning(view, SquareType::CEMETERY, "You need to build a graveyard and collect corpses to raise undead.",
+  handleSpawning(view, SquareId::CEMETERY, "You need to build a graveyard and collect corpses to raise undead.",
       "You need a larger graveyard", "Necromancy ", MinionTrait::SPAWN_UNDEAD, raisingInfo,
       getCollective()->getUndeadMultiplier(), corpses, "corpses available",
       "You need to collect some corpses to raise undead.");
@@ -780,13 +780,13 @@ int PlayerControl::getMinLibrarySize() const {
 }
 
 void PlayerControl::handleLibrary(View* view) {
-  if (getCollective()->getSquares(SquareType::LIBRARY).empty()) {
+  if (getCollective()->getSquares(SquareId::LIBRARY).empty()) {
     view->presentText("", "You need to build a library to start research.");
     return;
   }
   vector<View::ListElem> options;
   bool allInactive = false;
-  if (getCollective()->getSquares(SquareType::LIBRARY).size() <= getMinLibrarySize()) {
+  if (getCollective()->getSquares(SquareId::LIBRARY).size() <= getMinLibrarySize()) {
     allInactive = true;
     options.emplace_back("You need a larger library to continue research.", View::TITLE);
   }
@@ -1117,11 +1117,11 @@ void PlayerControl::possess(const Creature* cr, View* view) {
 }
 
 bool PlayerControl::canBuildDoor(Vec2 pos) const {
-  if (!getLevel()->getSquare(pos)->canConstruct({SquareType::TRIBE_DOOR, getTribe()}))
+  if (!getLevel()->getSquare(pos)->canConstruct({SquareId::TRIBE_DOOR, getTribe()}))
     return false;
   Rectangle innerRect = getLevel()->getBounds().minusMargin(1);
   auto wallFun = [=](Vec2 pos) {
-      return getLevel()->getSquare(pos)->canConstruct(SquareType::FLOOR) ||
+      return getLevel()->getSquare(pos)->canConstruct(SquareId::FLOOR) ||
           !pos.inRectangle(innerRect); };
   return !getCollective()->getTraps().count(pos) && pos.inRectangle(innerRect) && 
       ((wallFun(pos - Vec2(0, 1)) && wallFun(pos - Vec2(0, -1))) ||
@@ -1288,11 +1288,11 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             selection = DESELECT;
           } else
             if (!getCollective()->isMarkedToDig(pos) && selection != DESELECT) {
-              if (getLevel()->getSquare(pos)->canConstruct(SquareType::TREE_TRUNK)) {
+              if (getLevel()->getSquare(pos)->canConstruct(SquareId::TREE_TRUNK)) {
                 getCollective()->cutTree(pos);
                 selection = SELECT;
               } else
-                if (getLevel()->getSquare(pos)->canConstruct(SquareType::FLOOR)
+                if (getLevel()->getSquare(pos)->canConstruct(SquareId::FLOOR)
                     || !getCollective()->isKnownSquare(pos)) {
                   getCollective()->dig(pos);
                   selection = SELECT;
@@ -1317,7 +1317,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             BuildInfo::SquareInfo info = building.squareInfo;
             if (getCollective()->isKnownSquare(pos) && getLevel()->getSquare(pos)->canConstruct(info.type) 
                 && !getCollective()->getTraps().count(pos)
-                && (info.type != SquareType::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
+                && (info.type.getId() != SquareId::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
               getCollective()->addConstruction(pos, info.type, info.cost, info.buildImmediatly, info.noCredit);
               selection = SELECT;
             }
@@ -1375,7 +1375,7 @@ double PlayerControl::getWarLevel() const {
   double ret = 0;
   for (const Creature* c : getCollective()->getCreatures({MinionTrait::FIGHTER}))
     ret += c->getDifficultyPoints();
-  ret += getCollective()->getSquares(SquareType::IMPALED_HEAD).size() * 150;
+  ret += getCollective()->getSquares(SquareId::IMPALED_HEAD).size() * 150;
   return ret * getCollective()->getWarMultiplier();
 }
 
@@ -1400,11 +1400,11 @@ void PlayerControl::considerDeityFight() {
   vector<SquareType> altarTypes;
   for (SquareType squareType : getCollective()->getSquareTypes()) {
     const set<Vec2>& squares = getCollective()->getSquares(squareType);
-    if (!squares.empty() && contains({SquareType::ALTAR, SquareType::CREATURE_ALTAR}, squareType.id)) {
+    if (!squares.empty() && contains({SquareId::ALTAR, SquareId::CREATURE_ALTAR}, squareType.getId())) {
       altarTypes.push_back(squareType);
       for (Vec2 v : squares) {
         altars.push_back({v, squareType});
-        if (squareType.id == SquareType::ALTAR)
+        if (squareType.getId() == SquareId::ALTAR)
           deityAltars.push_back({v, squareType});
       }
     }
@@ -1417,11 +1417,11 @@ void PlayerControl::considerDeityFight() {
     pair<Vec2, SquareType> victim;
     do {
       victim = chooseRandom(altars);
-    } while (victim.second.id == SquareType::ALTAR &&
-        victim.second.getAltarInfo() == attacking.second.getAltarInfo());
-    addDeityServant(Deity::getDeity(attacking.second.getAltarInfo()), attacking.first, victim.first);
-    if (victim.second.id == SquareType::ALTAR)
-      addDeityServant(Deity::getDeity(victim.second.getAltarInfo()), victim.first, attacking.first);
+    } while (victim.second.getId() == SquareId::ALTAR &&
+        victim.second == attacking.second);
+    addDeityServant(Deity::getDeity(attacking.second.get<DeityHabitat>()), attacking.first, victim.first);
+    if (victim.second.getId() == SquareId::ALTAR)
+      addDeityServant(Deity::getDeity(victim.second.get<DeityHabitat>()), victim.first, attacking.first);
   }
 }
 
@@ -1528,7 +1528,7 @@ MoveInfo PlayerControl::getMove(Creature* c) {
   if (possessed && contains(team, c))
     return getPossessedMove(c);
   if (c == getKeeper() && !getCollective()->getAllSquares().empty()
-      && getCollective()->getSquares(SquareType::LIBRARY).empty() // after library is built let him wander
+      && getCollective()->getSquares(SquareId::LIBRARY).empty() // after library is built let him wander
       && !getCollective()->containsSquare(c->getPosition()))
     return c->moveTowards(chooseRandom(getCollective()->getAllSquares()));
   else

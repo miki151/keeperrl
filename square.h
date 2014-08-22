@@ -43,7 +43,7 @@ class Square : public Renderable {
     bool canHide;
     int strength;
     double flamability;
-    map<SquareType::Id, int> constructions;
+    map<SquareId, int> constructions;
     bool ticking;
     MovementType movementType;
   };
@@ -238,7 +238,7 @@ class Square : public Renderable {
   Optional<pair<StairDirection, StairKey>> SERIAL(landingLink);
   Fire SERIAL(fire);
   PoisonGas SERIAL(poisonGas);
-  map<SquareType::Id, int> SERIAL(constructions);
+  map<SquareId, int> SERIAL(constructions);
   bool SERIAL(ticking);
   double SERIAL2(fog, 0);
   MovementType SERIAL(movementType);

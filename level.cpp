@@ -426,7 +426,7 @@ vector<Square*> Level::getTickingSquares() const {
 Level::Builder::Builder(int width, int height, const string& n, bool covered)
   : squares(width, height), heightMap(width, height, 0),
     coverInfo(width, height, {covered, covered ? 0.0 : 1.0}), attrib(width, height),
-    type(width, height, SquareType()), items(width, height), name(n) {
+    type(width, height, SquareType(SquareId(0))), items(width, height), name(n) {
 }
 
 bool Level::Builder::hasAttrib(Vec2 posT, SquareAttrib attr) {
@@ -465,7 +465,7 @@ void Level::Builder::putSquare(Vec2 pos, PSquare square, SquareType t, Optional<
 
 void Level::Builder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<SquareAttrib> attr) {
   Vec2 pos = transform(posT);
-  CHECK(!contains({SquareType::UP_STAIRS, SquareType::DOWN_STAIRS}, type[pos].id)) << "Attempted to overwrite stairs";
+  CHECK(!contains({SquareId::UP_STAIRS, SquareId::DOWN_STAIRS}, type[pos].getId())) << "Attempted to overwrite stairs";
   square->setPosition(pos);
   if (squares[pos])
     square->setBackground(squares[pos].get());

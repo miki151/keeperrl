@@ -128,9 +128,9 @@ class BoulderController : public Monster {
     if (auto action = creature->move(direction))
       action.perform();
     else {
-      if (health >= 0.9 && creature->getConstSquare(direction)->canConstruct(SquareType::FLOOR)) {
+      if (health >= 0.9 && creature->getConstSquare(direction)->canConstruct(SquareId::FLOOR)) {
         creature->globalMessage("The " + creature->getConstSquare(direction)->getName() + " is destroyed!");
-        while (!creature->getSquare(direction)->construct(SquareType::FLOOR)) {}
+        while (!creature->getSquare(direction)->construct(SquareId::FLOOR)) {}
         if (auto action = creature->move(direction))
           action.perform();
         health = 0.1;

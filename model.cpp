@@ -281,11 +281,11 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
   Level* cellar = buildLevel(
       Level::Builder(30, 20, "Cellar"),
       LevelMaker::cellarLevel(castleNem1.first,
-          SquareType::LOW_ROCK_WALL, StairLook::CELLAR, {StairKey::CASTLE_CELLAR}, {}));
+          SquareId::LOW_ROCK_WALL, StairLook::CELLAR, {StairKey::CASTLE_CELLAR}, {}));
   Level* dragon = buildLevel(
       Level::Builder(40, 30, capitalFirst(castleNem2.second) + "'s Cave"),
       LevelMaker::cavernLevel(CreatureFactory::singleType(Tribe::get(TribeId::DRAGON), castleNem2.first),
-          SquareType::MUD_WALL, SquareType::MUD, StairLook::NORMAL, {StairKey::DRAGON}, {}));
+          SquareId::MUD_WALL, SquareId::MUD, StairLook::NORMAL, {StairKey::DRAGON}, {}));
   addLink(StairDirection::DOWN, StairKey::CRYPT, top, c1);
  // addLink(StairDirection::UP, StairKey::PYRAMID, top, p1);
  // addLink(StairDirection::UP, StairKey::PYRAMID, p1, p2);

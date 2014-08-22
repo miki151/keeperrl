@@ -110,12 +110,12 @@ void Square::addTravelDir(Vec2 dir) {
 }
 
 bool Square::canConstruct(SquareType type) const {
-  return constructions.count(type.id);
+  return constructions.count(type.getId());
 }
 
 bool Square::construct(SquareType type) {
   CHECK(canConstruct(type));
-  if (--constructions[type.id] <= 0) {
+  if (--constructions[type.getId()] <= 0) {
     PSquare newSquare = PSquare(SquareFactory::get(type));
 /*    if (creature && !newSquare->canEnter(creature))
       return false;*/
@@ -128,13 +128,13 @@ bool Square::construct(SquareType type) {
 void Square::destroy() {
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
-  getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareType::FLOOR)));
+  getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
 void Square::burnOut() {
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
   GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
-  getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareType::FLOOR)));
+  getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
 const vector<Vec2>& Square::getTravelDir() const {
