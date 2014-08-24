@@ -48,7 +48,8 @@ void Item::CorpseInfo::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Item::CorpseInfo);
 
 
-Item::Item(const ViewObject& o, const ItemAttributes& attr) : ItemAttributes(attr), Renderable(o),
+Item::Item(const ItemAttributes& attr) : ItemAttributes(attr),
+  Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)),
     inspected(everythingIdentified), fire(*weight, flamability) {
 }
 

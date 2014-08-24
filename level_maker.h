@@ -47,7 +47,7 @@ struct SettlementInfo {
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
   Optional<CreatureId> guardId;
-  Optional<ItemId> elderLoot;
+  Optional<ItemType> elderLoot;
   Optional<ItemFactory> shopFactory;
   Collective* collective;
 };

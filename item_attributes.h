@@ -49,6 +49,7 @@ class ItemAttributes {
 
   SERIALIZATION_DECL(ItemAttributes);
 
+  MustInitialize<ViewId> SERIAL(viewId);
   MustInitialize<string> SERIAL(name);
   string SERIAL(description);
   MustInitialize<double> SERIAL(weight);

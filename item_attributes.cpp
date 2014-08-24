@@ -20,6 +20,7 @@
 template <class Archive> 
 void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(name)
+    & SVAR(viewId)
     & SVAR(description)
     & SVAR(weight)
     & SVAR(itemClass)

@@ -3,10 +3,11 @@
 
 #include "enum_variant.h"
 
-enum class ItemId { KNIFE,
+enum class ItemId {
+  SPECIAL_KNIFE,
+  KNIFE,
   SPEAR,
   SWORD,
-  FLAMING_SWORD,
   SPECIAL_SWORD,
   ELVEN_SWORD,
   SPECIAL_ELVEN_SWORD,
@@ -42,8 +43,7 @@ enum class ItemId { KNIFE,
   DEFENSE_AMULET,
   FRIENDLY_ANIMALS_AMULET,
 
-  FIRE_RESIST_RING,
-  POISON_RESIST_RING,
+  RING,
 
   FIRST_AID_KIT,
   ROCK,
@@ -51,22 +51,23 @@ enum class ItemId { KNIFE,
   GOLD_PIECE,
   WOOD_PLANK,
 
+  RANDOM_TECH_BOOK,
   TECH_BOOK,
-  IRON_WORKING_BOOK,
-  ALCHEMY_ADV_BOOK,
-  SPELLS_MAS_BOOK,
-  HUMANOID_MUT_BOOK,
-  BEAST_MUT_BOOK,
 
+  TRAP_ITEM,
   BOULDER_TRAP_ITEM,
-  GAS_TRAP_ITEM,
-  ALARM_TRAP_ITEM,
-  WEB_TRAP_ITEM,
-  SURPRISE_TRAP_ITEM,
-  TERROR_TRAP_ITEM,
+};
+
+struct TrapInfo : public NamedTupleBase<TrapType, EffectType> {
+  NAMED_TUPLE_STUFF(TrapInfo);
+  NAME_ELEM(0, trapType);
+  NAME_ELEM(1, effectType);
 };
 
 typedef EnumVariant<ItemId,
-        ASSIGN(EffectType, ItemId::SCROLL, ItemId::POTION, ItemId::MUSHROOM)> ItemType;
+        ASSIGN(EffectType, ItemId::SCROLL, ItemId::POTION, ItemId::MUSHROOM),
+        ASSIGN(TrapInfo, ItemId::TRAP_ITEM),
+        ASSIGN(LastingEffect, ItemId::RING),
+        ASSIGN(TechId, ItemId::TECH_BOOK)> ItemType;
 
 #endif

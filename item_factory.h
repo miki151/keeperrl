@@ -46,7 +46,7 @@ class ItemFactory {
   static ItemFactory dragonCave();
   static ItemFactory workshop(const vector<Technology*>& techs);
   static ItemFactory laboratory(const vector<Technology*>& techs);
-  static ItemFactory singleType(ItemId);
+  static ItemFactory singleType(ItemType);
 
   static PItem fromId(ItemType);
   static vector<PItem> fromId(ItemType, int num);
@@ -75,6 +75,7 @@ class ItemFactory {
     int maxCount = 2;
   };
   ItemFactory(const vector<ItemInfo>&, const vector<ItemType>& unique = vector<ItemType>());
+  static ItemAttributes getAttributes(ItemType);
   ItemFactory& addItem(ItemInfo);
   ItemFactory& addUniqueItem(ItemType);
   vector<ItemType> SERIAL(items);

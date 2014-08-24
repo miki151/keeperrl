@@ -54,7 +54,7 @@ enum class ItemClass {
 class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item> {
   public:
   typedef ItemAttributes ItemAttributes;
-  Item(const ViewObject& o, const ItemAttributes&);
+  Item(const ItemAttributes&);
   virtual ~Item();
 
   static void identifyEverything();

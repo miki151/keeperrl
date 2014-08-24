@@ -310,8 +310,8 @@ static vector<ItemType> marketItems {
   ItemId::HEALING_AMULET,
   ItemId::DEFENSE_AMULET,
   ItemId::FRIENDLY_ANIMALS_AMULET,
-  ItemId::FIRE_RESIST_RING,
-  ItemId::POISON_RESIST_RING,
+  {ItemId::RING, LastingEffect::FIRE_RESISTANT},
+  {ItemId::RING, LastingEffect::POISON_RESISTANT},
 };
 
 enum class PlayerControl::MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, SACRIFICE, EXECUTE,
