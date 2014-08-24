@@ -74,12 +74,12 @@ ItemPredicate Item::effectPredicate(EffectType type) {
   return [type](const Item* item) { return item->getEffectType() == type; };
 }
 
-ItemPredicate Item::typePredicate(ItemType type) {
-  return [type](const Item* item) { return item->getType() == type; };
+ItemPredicate Item::classPredicate(ItemClass cl) {
+  return [cl](const Item* item) { return item->getClass() == cl; };
 }
 
-ItemPredicate Item::typePredicate(vector<ItemType> type) {
-  return [&type](const Item* item) { return contains(type, item->getType()); };
+ItemPredicate Item::classPredicate(vector<ItemClass> cl) {
+  return [cl](const Item* item) { return contains(cl, item->getClass()); };
 }
 
 ItemPredicate Item::namePredicate(const string& name) {
@@ -176,7 +176,7 @@ void Item::onHitCreature(Creature* c, const Attack& attack, bool plural) {
     c->you(plural ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getTheName(plural));
   if (c->takeDamage(attack))
     return;
-  if (effect && getType() == ItemType::POTION) {
+  if (effect && getClass() == ItemClass::POTION) {
     Effect::applyToCreature(c, *effect, EffectStrength::NORMAL);
     if (c->getLevel()->playerCanSee(c->getPosition()))
       identify();
@@ -195,8 +195,8 @@ string Item::getDescription() const {
   return description;
 }
 
-ItemType Item::getType() const {
-  return *type;
+ItemClass Item::getClass() const {
+  return *itemClass;
 }
 
 int Item::getPrice() const {
@@ -219,7 +219,7 @@ Optional<TrapType> Item::getTrapType() const {
 }
 
 void Item::apply(Creature* c, Level* l) {
-  if (type == ItemType::SCROLL)
+  if (itemClass == ItemClass::SCROLL)
     Statistics::add(StatId::SCROLL_READ);
   if (identifyOnApply && l->playerCanSee(c->getPosition()))
     identify(*name);
@@ -233,37 +233,37 @@ void Item::apply(Creature* c, Level* l) {
 }
 
 string Item::getApplyMsgThirdPerson() const {
-  switch (getType()) {
-    case ItemType::SCROLL: return "reads " + getAName();
-    case ItemType::POTION: return "drinks " + getAName();
-    case ItemType::BOOK: return "reads " + getAName();
-    case ItemType::TOOL: return "applies " + getAName();
-    case ItemType::FOOD: return "eats " + getAName();
-    default: FAIL << "Bad type for applying " << (int)getType();
+  switch (getClass()) {
+    case ItemClass::SCROLL: return "reads " + getAName();
+    case ItemClass::POTION: return "drinks " + getAName();
+    case ItemClass::BOOK: return "reads " + getAName();
+    case ItemClass::TOOL: return "applies " + getAName();
+    case ItemClass::FOOD: return "eats " + getAName();
+    default: FAIL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
 
 string Item::getApplyMsgFirstPerson() const {
-  switch (getType()) {
-    case ItemType::SCROLL: return "read " + getAName();
-    case ItemType::POTION: return "drink " + getAName();
-    case ItemType::BOOK: return "read " + getAName();
-    case ItemType::TOOL: return "apply " + getAName();
-    case ItemType::FOOD: return "eat " + getAName();
-    default: FAIL << "Bad type for applying " << (int)getType();
+  switch (getClass()) {
+    case ItemClass::SCROLL: return "read " + getAName();
+    case ItemClass::POTION: return "drink " + getAName();
+    case ItemClass::BOOK: return "read " + getAName();
+    case ItemClass::TOOL: return "apply " + getAName();
+    case ItemClass::FOOD: return "eat " + getAName();
+    default: FAIL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
 
 string Item::getNoSeeApplyMsg() const {
-  switch (getType()) {
-    case ItemType::SCROLL: return "You hear someone reading";
-    case ItemType::POTION: return "";
-    case ItemType::BOOK: return "You hear someone reading ";
-    case ItemType::TOOL: return "";
-    case ItemType::FOOD: return "";
-    default: FAIL << "Bad type for applying " << (int)getType();
+  switch (getClass()) {
+    case ItemClass::SCROLL: return "You hear someone reading";
+    case ItemClass::POTION: return "";
+    case ItemClass::BOOK: return "You hear someone reading ";
+    case ItemClass::TOOL: return "";
+    case ItemClass::FOOD: return "";
+    default: FAIL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
@@ -326,15 +326,15 @@ string Item::getNameAndModifiers(bool getPlural, bool blind) const {
     string artStr = artifactName ? " named " + *artifactName : "";
     EnumSet<AttrType> printAttr;
     string attrString;
-    switch (getType()) {
-      case ItemType::WEAPON:
+    switch (getClass()) {
+      case ItemClass::WEAPON:
         printAttr.insert(AttrType::TO_HIT);
         printAttr.insert(AttrType::DAMAGE);
         break;
-      case ItemType::ARMOR:
+      case ItemClass::ARMOR:
         printAttr.insert(AttrType::DEFENSE);
         break;
-      case ItemType::RANGED_WEAPON:
+      case ItemClass::RANGED_WEAPON:
         attrString = withSign(rangedWeaponAccuracy) + " accuracy";
         break;
       default: break;

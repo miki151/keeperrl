@@ -235,7 +235,7 @@ void Effect::summon(Level* level, CreatureFactory factory, Vec2 pos, int num, in
 static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improved") {
   for (EquipmentSlot slot : randomPermutation(getKeys(Equipment::slotTitles)))
     for (Item* item : c->getEquipment().getItem(slot))
-      if (item->getType() == ItemType::ARMOR) {
+      if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
         if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
           item->addModifier(AttrType::DEFENSE, mod);

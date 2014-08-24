@@ -501,7 +501,7 @@ class ShopkeeperController : public Monster {
 
   virtual void onItemsAppeared(vector<Item*> items, const Creature* from) {
     for (Item* item : items) {
-      CHECK(item->getType() == ItemType::GOLD);
+      CHECK(item->getClass() == ItemClass::GOLD);
       --debt[from];
     }
     creature->pickUp(items, false).perform();
@@ -735,8 +735,8 @@ void CreatureFactory::registerTypes(Archive& ar) {
 
 REGISTER_TYPES(CreatureFactory);
 
-PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemId>& items) {
-  for (ItemId item : items) {
+PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& items) {
+  for (ItemType item : items) {
     PItem it = ItemFactory::fromId(item);
     Item* ref = it.get();
     c->take(std::move(it));
@@ -761,12 +761,12 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
         c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();),
       ControllerFactory([shopArea](Creature* c) { 
           return new ShopkeeperController(c, shopArea); })));
-  vector<ItemId> inventory(Random.getRandom(100, 300), ItemId::GOLD_PIECE);
+  vector<ItemType> inventory(Random.getRandom(100, 300), ItemId::GOLD_PIECE);
   inventory.push_back(ItemId::SWORD);
   inventory.push_back(ItemId::LEATHER_ARMOR);
   inventory.push_back(ItemId::LEATHER_BOOTS);
-  inventory.push_back(ItemId::HEALING_POTION);
-  inventory.push_back(ItemId::HEALING_POTION);
+  inventory.push_back({ItemId::POTION, EffectType::HEAL});
+  inventory.push_back({ItemId::POTION, EffectType::HEAL});
   return addInventory(std::move(ret), inventory);
 }
 
@@ -1002,11 +1002,12 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
               chooseRandom({ItemId::WARNING_AMULET, ItemId::HEALING_AMULET, ItemId::DEFENSE_AMULET})));
         break;
       case 1:
-        c->take(ItemFactory::fromId(ItemId::INVISIBLE_POTION, Random.getRandom(3, 6)));
+        c->take(ItemFactory::fromId({ItemId::POTION, EffectType::INVISIBLE}, Random.getRandom(3, 6)));
         break;
       case 2:
-        c->take(ItemFactory::fromId(
-              chooseRandom({ItemId::STRENGTH_MUSHROOM, ItemId::DEXTERITY_MUSHROOM}), Random.getRandom(3, 6)));
+        c->take(ItemFactory::fromId(chooseRandom<ItemType>({
+                {ItemId::MUSHROOM, EffectType::STR_BONUS},
+                {ItemId::MUSHROOM, EffectType::DEX_BONUS}}), Random.getRandom(3, 6)));
         break;
       default:
         FAIL << "Unhandled case value";
@@ -2010,54 +2011,54 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
   }
 }
 
-ItemId randomHealing() {
-  return chooseRandom({ItemId::HEALING_POTION, ItemId::FIRST_AID_KIT});
+ItemType randomHealing() {
+  return chooseRandom({ItemType(ItemId::POTION, EffectType::HEAL), {ItemId::FIRST_AID_KIT}});
 }
 
-ItemId randomBackup() {
-  return chooseRandom({ItemId::TELE_SCROLL, randomHealing()}, {1, 4});
+ItemType randomBackup() {
+  return chooseRandom({{ItemId::SCROLL, EffectType::TELEPORT}, randomHealing()}, {1, 4});
 }
 
-ItemId randomArmor() {
+ItemType randomArmor() {
   return chooseRandom({ItemId::LEATHER_ARMOR, ItemId::CHAIN_ARMOR}, {4, 1});
 }
 
 class ItemList {
   public:
-  ItemList& maybe(double chance, ItemId id, int num = 1) {
+  ItemList& maybe(double chance, ItemType id, int num = 1) {
     if (Random.getDouble() <= chance)
       add(id, num);
     return *this;
   }
 
-  ItemList& maybe(double chance, const vector<ItemId>& ids) {
+  ItemList& maybe(double chance, const vector<ItemType>& ids) {
     if (Random.getDouble() <= chance)
-      for (ItemId id : ids)
+      for (ItemType id : ids)
         add(id);
     return *this;
   }
 
-  ItemList& add(ItemId id, int num = 1) {
+  ItemList& add(ItemType id, int num = 1) {
     for (int i : Range(num))
       ret.push_back(id);
     return *this;
   }
 
-  ItemList& add(vector<ItemId> ids) {
-    for (ItemId id : ids)
+  ItemList& add(vector<ItemType> ids) {
+    for (ItemType id : ids)
       ret.push_back(id);
     return *this;
   }
 
-  operator vector<ItemId>() {
+  operator vector<ItemType>() {
     return ret;
   }
 
   private:
-  vector<ItemId> ret;
+  vector<ItemType> ret;
 };
 
-vector<ItemId> getInventory(CreatureId id) {
+vector<ItemType> getInventory(CreatureId id) {
   switch (id) {
     case CreatureId::ANGEL:
       return ItemList().add(ItemId::FLAMING_SWORD);
@@ -2069,7 +2070,7 @@ vector<ItemId> getInventory(CreatureId id) {
         .add(ItemId::SCYTHE);
     case CreatureId::LEPRECHAUN: 
       return ItemList()
-        .add(ItemId::TELE_SCROLL, Random.getRandom(1, 4));
+        .add({ItemId::SCROLL, EffectType::TELEPORT}, Random.getRandom(1, 4));
     case CreatureId::GNOME: 
       return ItemList()
         .add(chooseRandom({ItemId::KNIFE}))
@@ -2105,8 +2106,10 @@ vector<ItemId> getInventory(CreatureId id) {
         .add(randomHealing())
         .add(ItemId::GOLD_PIECE, Random.getRandom(30, 80));
     case CreatureId::DEVIL: 
-      return ItemList()
-        .add(chooseRandom({ItemId::BLINDNESS_POTION, ItemId::SLEEP_POTION, ItemId::SLOW_POTION}));
+      return ItemList().add(chooseRandom<ItemType>({
+              {ItemId::POTION, EffectType::BLINDNESS},
+              {ItemId::POTION, EffectType::SLEEP},
+              {ItemId::POTION, EffectType::SLOW}}));
     case CreatureId::DARK_KNIGHT:
     case CreatureId::AVATAR: 
       return ItemList()
@@ -2114,7 +2117,7 @@ vector<ItemId> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_HELM)
         .add(ItemId::IRON_BOOTS)
-        .add(ItemId::HEALING_POTION, Random.getRandom(1, 4))
+        .add({ItemId::POTION, EffectType::HEAL}, Random.getRandom(1, 4))
         .add(ItemId::GOLD_PIECE, Random.getRandom(200, 300));
     case CreatureId::OGRE: 
       return ItemList().add(ItemId::WAR_HAMMER);
@@ -2170,8 +2173,14 @@ vector<ItemId> getInventory(CreatureId id) {
     case CreatureId::WITCH: 
       return ItemList()
         .add(ItemId::KNIFE)
-        .add({ItemId::HEALING_POTION, ItemId::SLEEP_POTION, ItemId::SLOW_POTION, ItemId::BLINDNESS_POTION,
-            ItemId::INVISIBLE_POTION, ItemId::POISON_POTION, ItemId::SPEED_POTION});
+        .add({
+            {ItemId::POTION, EffectType::HEAL},
+            {ItemId::POTION, EffectType::SLEEP},
+            {ItemId::POTION, EffectType::SLOW},
+            {ItemId::POTION, EffectType::BLINDNESS},
+            {ItemId::POTION, EffectType::INVISIBLE},
+            {ItemId::POTION, EffectType::POISON},
+            {ItemId::POTION, EffectType::SPEED}});
     default: return {};
   }
 }

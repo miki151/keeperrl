@@ -864,7 +864,7 @@ void removeIndex(vector<T>& v, int index) {
 }
 
 template<class T>
-Optional<int> findElement(vector<T>& v, const T& element) {
+Optional<int> findElement(const vector<T>& v, const T& element) {
   for (int i : All(v))
     if (v[i] == element)
       return i;

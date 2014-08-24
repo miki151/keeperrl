@@ -34,6 +34,7 @@
 #include "view_id.h"
 #include "monster.h"
 #include "collective.h"
+#include "effect.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -295,16 +296,16 @@ ViewObject PlayerControl::getResourceViewObject(ResourceId id) const {
   }
 }
 
-static vector<ItemId> marketItems {
-  ItemId::HEALING_POTION,
-  ItemId::SLEEP_POTION,
-  ItemId::BLINDNESS_POTION,
-  ItemId::INVISIBLE_POTION,
-  ItemId::POISON_POTION,
-  ItemId::POISON_RESIST_POTION,
-  ItemId::LEVITATION_POTION,
-  ItemId::SLOW_POTION,
-  ItemId::SPEED_POTION,
+static vector<ItemType> marketItems {
+  {ItemId::POTION, EffectType::HEAL},
+  {ItemId::POTION, EffectType::SLEEP},
+  {ItemId::POTION, EffectType::BLINDNESS},
+  {ItemId::POTION, EffectType::INVISIBLE},
+  {ItemId::POTION, EffectType::POISON},
+  {ItemId::POTION, EffectType::POISON_RESISTANCE},
+  {ItemId::POTION, EffectType::LEVITATION},
+  {ItemId::POTION, EffectType::SLOW},
+  {ItemId::POTION, EffectType::SPEED},
   ItemId::WARNING_AMULET,
   ItemId::HEALING_AMULET,
   ItemId::DEFENSE_AMULET,
@@ -562,7 +563,7 @@ void PlayerControl::handleMarket(View* view, int prevItem) {
   }
   vector<View::ListElem> options;
   vector<PItem> items;
-  for (ItemId id : marketItems) {
+  for (ItemType id : marketItems) {
     items.push_back(ItemFactory::fromId(id));
     options.emplace_back(items.back()->getName() + "    $" + convertToString(items.back()->getPrice()),
         items.back()->getPrice() > getCollective()->numResource(ResourceId::GOLD) ? View::INACTIVE : View::NORMAL);
@@ -649,7 +650,7 @@ void PlayerControl::handleNecromancy(View* view) {
   vector<pair<Vec2, Item*>> corpses;
   for (Vec2 pos : getCollective()->getSquares(SquareId::CEMETERY)) {
     for (Item* it : getLevel()->getSquare(pos)->getItems([](const Item* it) {
-        return it->getType() == ItemType::CORPSE && it->getCorpseInfo()->canBeRevived; }))
+        return it->getClass() == ItemClass::CORPSE && it->getCorpseInfo()->canBeRevived; }))
       corpses.push_back({pos, it});
   }
   handleSpawning(view, SquareId::CEMETERY, "You need to build a graveyard and collect corpses to raise undead.",

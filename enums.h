@@ -32,7 +32,7 @@ enum class BodyPart;
 enum class AttackType;
 enum class AttackLevel;
 enum class AttrType;
-enum class ItemType;
+enum class ItemClass;
 enum class EquipmentSlot;
 
 enum class SquareApplyType;

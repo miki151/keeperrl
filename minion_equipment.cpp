@@ -54,7 +54,7 @@ int MinionEquipment::getEquipmentLimit(EquipmentType type) const {
 Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
   if (it->canEquip())
     return MinionEquipment::ARMOR;
-  if (contains({ItemType::RANGED_WEAPON, ItemType::AMMO}, it->getType()))
+  if (contains({ItemClass::RANGED_WEAPON, ItemClass::AMMO}, it->getClass()))
     return MinionEquipment::ARCHERY;
   if (it->getEffectType() == EffectType::HEAL)
     return MinionEquipment::HEALING;
@@ -64,7 +64,7 @@ Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
 }
 
 bool MinionEquipment::isItemUseful(const Item* it) const {
-  return getEquipmentType(it) || contains({ItemType::POTION, ItemType::SCROLL}, it->getType());
+  return getEquipmentType(it) || contains({ItemClass::POTION, ItemClass::SCROLL}, it->getClass());
 }
 
 bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, bool replacement) const {
@@ -74,7 +74,7 @@ bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, boo
       return false;
     return ((c->canEquip(it) || (replacement && c->canEquipIfEmptySlot(it))) && (isItemAppropriate(c, it) || noLimit))
       || (type == ARCHERY && c->hasSkill(Skill::get(SkillId::ARCHERY)) && (c->canEquip(it) ||
-        (it->getType() == ItemType::AMMO && !c->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())))
+        (it->getClass() == ItemClass::AMMO && !c->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())))
       || (type == HEALING && !c->isNotLiving()) 
       || type == COMBAT_ITEM;
   } else
@@ -99,7 +99,7 @@ void MinionEquipment::own(const Creature* c, const Item* it) {
 }
 
 bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) const {
-  return it->getType() != ItemType::WEAPON || c->getAttr(AttrType::STRENGTH) >= it->getMinStrength();
+  return it->getClass() != ItemClass::WEAPON || c->getAttr(AttrType::STRENGTH) >= it->getMinStrength();
 }
 
 int MinionEquipment::getItemValue(const Item* it) const {

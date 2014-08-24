@@ -35,7 +35,7 @@ RICH_ENUM(TrapType,
   TERROR
 );
 
-enum class ItemType {
+enum class ItemClass {
   WEAPON,
   RANGED_WEAPON,
   AMMO,
@@ -72,7 +72,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
 
   virtual Optional<EffectType> getEffectType() const;
   Optional<EffectType> getAttackEffect() const;
-  ItemType getType() const;
+  ItemClass getClass() const;
   
   int getPrice() const;
   void setShopkeeper(const Creature* shopkeeper);
@@ -115,8 +115,8 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   int getMinStrength() const;
 
   static ItemPredicate effectPredicate(EffectType);
-  static ItemPredicate typePredicate(ItemType);
-  static ItemPredicate typePredicate(vector<ItemType>);
+  static ItemPredicate classPredicate(ItemClass);
+  static ItemPredicate classPredicate(vector<ItemClass>);
   static ItemPredicate namePredicate(const string& name);
 
   static vector<pair<string, vector<Item*>>> stackItems(vector<Item*>,

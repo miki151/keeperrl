@@ -314,7 +314,7 @@ class Collective : public Task::Callback {
   MoveInfo getGuardPostMove(Creature* c);
   map<Vec2, ConstructionInfo> SERIAL(constructions);
   EntitySet<Item> SERIAL(markedItems);
-  ItemPredicate unMarkedItems(ItemType) const;
+  ItemPredicate unMarkedItems(ItemClass) const;
   map<Vec2, TrapInfo> SERIAL(traps);
   enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };
   struct PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueEntity<Task>::Id> {

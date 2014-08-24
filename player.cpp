@@ -195,39 +195,39 @@ void Player::itemsMessage() {
             names[0].getText()));
 }
 
-ItemType typeDisplayOrder[] {
-  ItemType::WEAPON,
-    ItemType::RANGED_WEAPON,
-    ItemType::AMMO,
-    ItemType::ARMOR,
-    ItemType::POTION,
-    ItemType::SCROLL,
-    ItemType::FOOD,
-    ItemType::BOOK,
-    ItemType::AMULET,
-    ItemType::RING,
-    ItemType::TOOL,
-    ItemType::CORPSE,
-    ItemType::OTHER,
-    ItemType::GOLD
+ItemClass typeDisplayOrder[] {
+  ItemClass::WEAPON,
+    ItemClass::RANGED_WEAPON,
+    ItemClass::AMMO,
+    ItemClass::ARMOR,
+    ItemClass::POTION,
+    ItemClass::SCROLL,
+    ItemClass::FOOD,
+    ItemClass::BOOK,
+    ItemClass::AMULET,
+    ItemClass::RING,
+    ItemClass::TOOL,
+    ItemClass::CORPSE,
+    ItemClass::OTHER,
+    ItemClass::GOLD
 };
 
-static string getText(ItemType type) {
+static string getText(ItemClass type) {
   switch (type) {
-    case ItemType::WEAPON: return "Weapons";
-    case ItemType::RANGED_WEAPON: return "Ranged weapons";
-    case ItemType::AMMO: return "Projectiles";
-    case ItemType::AMULET: return "Amulets";
-    case ItemType::RING: return "Rings";
-    case ItemType::ARMOR: return "Armor";
-    case ItemType::SCROLL: return "Scrolls";
-    case ItemType::POTION: return "Potions";
-    case ItemType::FOOD: return "Comestibles";
-    case ItemType::BOOK: return "Books";
-    case ItemType::TOOL: return "Tools";
-    case ItemType::CORPSE: return "Corpses";
-    case ItemType::OTHER: return "Other";
-    case ItemType::GOLD: return "Gold";
+    case ItemClass::WEAPON: return "Weapons";
+    case ItemClass::RANGED_WEAPON: return "Ranged weapons";
+    case ItemClass::AMMO: return "Projectiles";
+    case ItemClass::AMULET: return "Amulets";
+    case ItemClass::RING: return "Rings";
+    case ItemClass::ARMOR: return "Armor";
+    case ItemClass::SCROLL: return "Scrolls";
+    case ItemClass::POTION: return "Potions";
+    case ItemClass::FOOD: return "Comestibles";
+    case ItemClass::BOOK: return "Books";
+    case ItemClass::TOOL: return "Tools";
+    case ItemClass::CORPSE: return "Corpses";
+    case ItemClass::OTHER: return "Other";
+    case ItemClass::GOLD: return "Gold";
   }
   FAIL << int(type);
   return "";
@@ -235,8 +235,8 @@ static string getText(ItemType type) {
 
 
 vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Optional<UserInput::Type> exitAction) {
-  map<ItemType, vector<Item*> > typeGroups = groupBy<Item*, ItemType>(
-      creature->getEquipment().getItems(), [](Item* const& item) { return item->getType();});
+  map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
+      creature->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
   vector<View::ListElem> names;
   vector<vector<Item*> > groups;
   for (auto elem : typeDisplayOrder) 
@@ -252,7 +252,7 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Op
 
 void Player::dropAction(bool extended) {
   vector<Item*> items = chooseItem("Choose an item to drop:", [this](const Item* item) {
-      return !creature->getEquipment().isEquiped(item) || item->getType() == ItemType::WEAPON;}, UserInput::DROP);
+      return !creature->getEquipment().isEquiped(item) || item->getClass() == ItemClass::WEAPON;}, UserInput::DROP);
   int num = items.size();
   if (num < 1)
     return;
@@ -293,7 +293,7 @@ void Player::applyAction() {
 }
 
 void Player::applyItem(vector<Item*> items) {
-  if (creature->isBlind() && contains({ItemType::SCROLL, ItemType::BOOK}, items[0]->getType())) {
+  if (creature->isBlind() && contains({ItemClass::SCROLL, ItemClass::BOOK}, items[0]->getClass())) {
     privateMessage("You can't read while blind!");
     return;
   }
@@ -319,7 +319,7 @@ void Player::throwAction(Optional<Vec2> dir) {
 }
 
 void Player::throwItem(vector<Item*> items, Optional<Vec2> dir) {
-  if (items[0]->getType() == ItemType::AMMO && Options::getValue(OptionId::HINTS))
+  if (items[0]->getClass() == ItemClass::AMMO && Options::getValue(OptionId::HINTS))
     privateMessage(MessageBuffer::important("To fire arrows equip a bow and use alt + direction key"));
   if (!dir) {
     auto cDir = model->getView()->chooseDirection("Which direction do you want to throw?");
@@ -873,9 +873,9 @@ Controller* Player::getPossessedController(Creature* c) {
   return new PossessedController(c, creature, model, levelMemory, true);
 }
 
-static void grantGift(Creature* c, ItemId id, string deity, int num = 1) {
+static void grantGift(Creature* c, ItemType type, string deity, int num = 1) {
   c->playerMessage(deity + " grants you a gift.");
-  c->takeItems(ItemFactory::fromId(id, num), nullptr);
+  c->takeItems(ItemFactory::fromId(type, num), nullptr);
 }
 
 static void applyEffect(Creature* c, EffectType effect, string msg) {
@@ -909,7 +909,7 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
 /*      case EpithetId::WISDOM: grantGift(c, 
           chooseRandom({ItemId::MUSHROOM_BOOK, ItemId::POTION_BOOK, ItemId::AMULET_BOOK}), name); break;*/
       case EpithetId::DESTRUCTION: applyEffect(creature, EffectType::DESTROY_EQUIPMENT, ""); break;
-      case EpithetId::SECRETS: grantGift(creature, ItemId::INVISIBLE_POTION, to->getName()); break;
+      case EpithetId::SECRETS: grantGift(creature, {ItemId::POTION, EffectType::INVISIBLE}, to->getName()); break;
       case EpithetId::LIGHTNING:
           creature->bleed(0.9);
           creature->you(MsgType::ARE, "struck by a lightning bolt!");
@@ -937,19 +937,19 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
               break;
           }
           for (Item* it : randomPermutation(creature->getEquipment().getItems())) {
-            if (it->getType() == ItemType::POTION) {
+            if (it->getClass() == ItemClass::POTION) {
               creature->playerMessage("Your " + it->getName() + " changes color!");
               creature->steal({it});
               creature->take(ItemFactory::potions().random());
               break;
             }
-            if (it->getType() == ItemType::SCROLL) {
+            if (it->getClass() == ItemClass::SCROLL) {
               creature->playerMessage("Your " + it->getName() + " changes label!");
               creature->steal({it});
               creature->take(ItemFactory::scrolls().random());
               break;
             }
-            if (it->getType() == ItemType::AMULET) {
+            if (it->getClass() == ItemClass::AMULET) {
               creature->playerMessage("Your " + it->getName() + " changes shape!");
               creature->steal({it});
               creature->take(ItemFactory::amulets().random());
@@ -964,7 +964,7 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
             if (Random.roll(4))
               grantGift(creature, ItemId::HEALING_AMULET, to->getName());
             else
-              grantGift(creature, ItemId::HEALING_POTION, to->getName(), Random.getRandom(1, 4));
+              grantGift(creature, {ItemId::POTION, EffectType::HEAL}, to->getName(), Random.getRandom(1, 4));
           }
           break;
       case EpithetId::NATURE: grantGift(creature, ItemId::FRIENDLY_ANIMALS_AMULET, to->getName()); break;

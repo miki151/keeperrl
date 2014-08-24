@@ -52,7 +52,7 @@ class ItemAttributes {
   MustInitialize<string> SERIAL(name);
   string SERIAL(description);
   MustInitialize<double> SERIAL(weight);
-  MustInitialize<ItemType> SERIAL(type);
+  MustInitialize<ItemClass> SERIAL(itemClass);
   Optional<string> SERIAL(realName);
   Optional<string> SERIAL(realPlural);
   Optional<string> SERIAL(plural);

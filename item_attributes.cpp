@@ -22,7 +22,7 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(name)
     & SVAR(description)
     & SVAR(weight)
-    & SVAR(type)
+    & SVAR(itemClass)
     & SVAR(realName)
     & SVAR(realPlural)
     & SVAR(plural)

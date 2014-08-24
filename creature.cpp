@@ -354,7 +354,7 @@ vector<PItem> Creature::steal(const vector<Item*> items) {
 
 Item* Creature::getAmmo() const {
   for (Item* item : equipment.getItems())
-    if (item->getType() == ItemType::AMMO)
+    if (item->getClass() == ItemClass::AMMO)
       return item;
   return nullptr;
 }
@@ -491,7 +491,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
       *reason = "You have no healthy arms!";
     return false;
   }
-  if (!hasSkill(Skill::get(SkillId::ARCHERY)) && item->getType() == ItemType::RANGED_WEAPON) {
+  if (!hasSkill(Skill::get(SkillId::ARCHERY)) && item->getClass() == ItemClass::RANGED_WEAPON) {
     if (reason)
       *reason = "You don't have the skill to shoot a bow.";
     return false;
@@ -977,7 +977,7 @@ bool Creature::isEnemy(const Creature* c) const {
 
 vector<Item*> Creature::getGold(int num) const {
   vector<Item*> ret;
-  for (Item* item : equipment.getItems([](Item* it) { return it->getType() == ItemType::GOLD; })) {
+  for (Item* item : equipment.getItems([](Item* it) { return it->getClass() == ItemClass::GOLD; })) {
     ret.push_back(item);
     if (ret.size() == num)
       return ret;
@@ -1161,7 +1161,7 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
   if (drop)
     getSquare()->dropItem(ItemFactory::corpse(*name + " " + getBodyPartName(part),
         *name + " " + getBodyPartBone(part),
-        *weight / 8, isFood ? ItemType::FOOD : ItemType::CORPSE));
+        *weight / 8, isFood ? ItemClass::FOOD : ItemClass::CORPSE));
 }
 
 static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
@@ -1550,7 +1550,7 @@ void Creature::take(vector<PItem> items) {
 void Creature::take(PItem item) {
  /* item->identify();
   Debug() << (specialMonster ? "special monster " : "") + getTheName() << " takes " << item->getNameAndModifiers();*/
-  if (item->getType() == ItemType::RANGED_WEAPON)
+  if (item->getClass() == ItemClass::RANGED_WEAPON)
     addSkill(Skill::get(SkillId::ARCHERY));
   Item* ref = item.get();
   equipment.addItem(std::move(item));
@@ -1564,7 +1564,7 @@ void Creature::dropCorpse() {
 
 vector<PItem> Creature::getCorpse() {
   return makeVec<PItem>(ItemFactory::corpse(*name + " corpse", *name + " skeleton", *weight,
-        isFood ? ItemType::FOOD : ItemType::CORPSE, {getUniqueId(), true, numBodyParts(BodyPart::HEAD) > 0, false}));
+        isFood ? ItemClass::FOOD : ItemClass::CORPSE, {getUniqueId(), true, numBodyParts(BodyPart::HEAD) > 0, false}));
 }
 
 void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
@@ -1736,8 +1736,8 @@ AttackType Creature::getAttackType() const {
 }
 
 CreatureAction Creature::applyItem(Item* item) {
-  if (!contains({ItemType::TOOL, ItemType::POTION, ItemType::FOOD, ItemType::BOOK, ItemType::SCROLL},
-      item->getType()) || !isHumanoid())
+  if (!contains({ItemClass::TOOL, ItemClass::POTION, ItemClass::FOOD, ItemClass::BOOK, ItemClass::SCROLL},
+      item->getClass()) || !isHumanoid())
     return CreatureAction("You can't apply this item");
   if (numGood(BodyPart::ARM) == 0)
     return CreatureAction("You have no healthy arms!");

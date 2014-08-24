@@ -66,9 +66,9 @@ Collective::MinionTaskInfo::MinionTaskInfo(Type t, const string& desc) : type(t)
   CHECK(type == EXPLORE);
 }
 
-ItemPredicate Collective::unMarkedItems(ItemType type) const {
+ItemPredicate Collective::unMarkedItems(ItemClass type) const {
   return [this, type](const Item* it) {
-      return it->getType() == type && !isItemMarked(it); };
+      return it->getClass() == type && !isItemMarked(it); };
 }
 
 const static vector<SquareType> resourceStorage {SquareId::STOCKPILE, SquareId::STOCKPILE_RES};
@@ -80,8 +80,8 @@ vector<SquareType> Collective::getEquipmentStorageSquares() {
 
 vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
   return {
-    {unMarkedItems(ItemType::CORPSE), {SquareId::CEMETERY}, true, {}, Warning::GRAVES},
-    {unMarkedItems(ItemType::GOLD), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
+    {unMarkedItems(ItemClass::CORPSE), {SquareId::CEMETERY}, true, {}, Warning::GRAVES},
+    {unMarkedItems(ItemClass::GOLD), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
     {[this](const Item* it) {
         return minionEquipment.isItemUseful(it) && !isItemMarked(it);
       }, equipmentStorage, false, {}, Warning::STORAGE},
@@ -99,7 +99,7 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
   {ResourceId::MANA, { {}, nullptr, ItemId::GOLD_PIECE, "mana", Collective::Warning::MANA}},
   {ResourceId::PRISONER_HEAD, { {}, nullptr, ItemId::GOLD_PIECE, "", Nothing(), true}},
-  {ResourceId::GOLD, { {SquareId::TREASURE_CHEST}, Item::typePredicate(ItemType::GOLD), ItemId::GOLD_PIECE, "gold",
+  {ResourceId::GOLD, { {SquareId::TREASURE_CHEST}, Item::classPredicate(ItemClass::GOLD), ItemId::GOLD_PIECE, "gold",
                        Collective::Warning::GOLD}},
   {ResourceId::WOOD, { resourceStorage, Item::namePredicate("wood plank"),
                        ItemId::WOOD_PLANK, "wood", Collective::Warning::WOOD}},
@@ -478,7 +478,7 @@ void Collective::tick(double time) {
   setWarning(Warning::NO_WEAPONS, false);
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
   vector<Item*> freeWeapons = getAllItems([&](const Item* it) {
-      return it->getType() == ItemType::WEAPON && minionEquipment.getOwner(it); }, false);
+      return it->getClass() == ItemClass::WEAPON && minionEquipment.getOwner(it); }, false);
   for (Creature* c : getCreatures({MinionTrait::FIGHTER}, {MinionTrait::NO_EQUIPMENT})) {
     if (usesEquipment(c) && c->equip(genWeapon.get()) && filter(freeWeapons,
           [&] (const Item* it) { return minionEquipment.needs(c, it); }).empty()) {
@@ -938,7 +938,7 @@ void Collective::autoEquipment(Creature* creature, bool replace) {
       }
       if (it->canEquip())
         slots[it->getEquipmentSlot()].push_back(it);
-      if (it->getType() != ItemType::AMMO)
+      if (it->getClass() != ItemClass::AMMO)
         break;
     }
   }
@@ -1306,9 +1306,9 @@ void Collective::onAppliedSquare(Vec2 pos) {
         if (neededTraps.empty() || (items[0]->getTrapType() && neededTraps.count(*items[0]->getTrapType())))
           break;
       }
-      if (items[0]->getType() == ItemType::WEAPON)
+      if (items[0]->getClass() == ItemClass::WEAPON)
         Statistics::add(StatId::WEAPON_PRODUCED);
-      if (items[0]->getType() == ItemType::ARMOR)
+      if (items[0]->getClass() == ItemClass::ARMOR)
         Statistics::add(StatId::ARMOR_PRODUCED);
       getLevel()->getSquare(pos)->dropItems(std::move(items));
     }

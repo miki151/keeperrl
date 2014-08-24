@@ -23,6 +23,7 @@
 #include "util.h"
 #include "name_generator.h"
 #include "item.h"
+#include "item_type.h"
 
 class Item;
 class Technology;
@@ -47,11 +48,11 @@ class ItemFactory {
   static ItemFactory laboratory(const vector<Technology*>& techs);
   static ItemFactory singleType(ItemId);
 
-  static PItem fromId(ItemId);
-  static vector<PItem> fromId(ItemId, int num);
-  static PItem corpse(const string& name, const string& rottenName, double weight, ItemType = ItemType::CORPSE,
+  static PItem fromId(ItemType);
+  static vector<PItem> fromId(ItemType, int num);
+  static PItem corpse(const string& name, const string& rottenName, double weight, ItemClass = ItemClass::CORPSE,
       Item::CorpseInfo corpseInfo = {0, false, false, false});
-  static PItem corpse(CreatureId, ItemType type = ItemType::CORPSE,
+  static PItem corpse(CreatureId, ItemClass type = ItemClass::CORPSE,
       Item::CorpseInfo corpseInfo = {0, false, false, false});
   static PItem trapItem(PTrigger trigger, string trapName);
 
@@ -64,112 +65,23 @@ class ItemFactory {
 
   private:
   struct ItemInfo {
-    ItemInfo(ItemId _id, double _weight) : id(_id), weight(_weight) {}
-    ItemInfo(ItemId _id, double _weight, int minC, int maxC)
+    ItemInfo(ItemType _id, double _weight) : id(_id), weight(_weight) {}
+    ItemInfo(ItemType _id, double _weight, int minC, int maxC)
         : id(_id), weight(_weight), minCount(minC), maxCount(maxC) {}
 
-    ItemId id;
+    ItemType id;
     double weight;
     int minCount = 1;
     int maxCount = 2;
   };
-  ItemFactory(const vector<ItemInfo>&, const vector<ItemId>& unique = vector<ItemId>());
+  ItemFactory(const vector<ItemInfo>&, const vector<ItemType>& unique = vector<ItemType>());
   ItemFactory& addItem(ItemInfo);
-  ItemFactory& addUniqueItem(ItemId);
-  vector<ItemId> SERIAL(items);
+  ItemFactory& addUniqueItem(ItemType);
+  vector<ItemType> SERIAL(items);
   vector<double> SERIAL(weights);
   vector<int> SERIAL(minCount);
   vector<int> SERIAL(maxCount);
-  vector<ItemId> SERIAL(unique);
-};
-
-enum class ItemId { KNIFE,
-  SPEAR,
-  SWORD,
-  FLAMING_SWORD,
-  SPECIAL_SWORD,
-  ELVEN_SWORD,
-  SPECIAL_ELVEN_SWORD,
-  BATTLE_AXE,
-  SPECIAL_BATTLE_AXE,
-  WAR_HAMMER,
-  SPECIAL_WAR_HAMMER,
-  SCYTHE,
-  BOW,
-  ARROW,
-
-  LEATHER_ARMOR,
-  LEATHER_HELM,
-  TELEPATHY_HELM,
-  CHAIN_ARMOR,
-  IRON_HELM,
-  LEATHER_BOOTS,
-  IRON_BOOTS,
-  SPEED_BOOTS,
-  LEVITATION_BOOTS,
-  LEATHER_GLOVES,
-  DEXTERITY_GLOVES,
-  STRENGTH_GLOVES,
-  ROBE,
-
-  TELE_SCROLL,
-  PORTAL_SCROLL,
-  IDENTIFY_SCROLL,
-  BOULDER_SCROLL,
-  FIRE_SCROLL,
-  POISON_GAS_SCROLL,
-  DESTROY_EQ_SCROLL,
-  ENHANCE_A_SCROLL,
-  ENHANCE_W_SCROLL,
-  FIRE_SPHERE_SCROLL,
-  WORD_OF_POWER_SCROLL,
-  DECEPTION_SCROLL,
-  SUMMON_INSECTS_SCROLL,
-  LEAVE_BODY_SCROLL,
-
-  HEALING_POTION,
-  SLEEP_POTION,
-  BLINDNESS_POTION,
-  INVISIBLE_POTION,
-  POISON_POTION,
-  SLOW_POTION,
-  SPEED_POTION,
-  POISON_RESIST_POTION,
-  LEVITATION_POTION,
-
-  PANIC_MUSHROOM,
-  RAGE_MUSHROOM,
-  STRENGTH_MUSHROOM,
-  DEXTERITY_MUSHROOM,
-  HALLU_MUSHROOM,
-
-  WARNING_AMULET,
-  HEALING_AMULET,
-  DEFENSE_AMULET,
-  FRIENDLY_ANIMALS_AMULET,
-
-  FIRE_RESIST_RING,
-  POISON_RESIST_RING,
-
-  FIRST_AID_KIT,
-  ROCK,
-  IRON_ORE,
-  GOLD_PIECE,
-  WOOD_PLANK,
-
-  TECH_BOOK,
-  IRON_WORKING_BOOK,
-  ALCHEMY_ADV_BOOK,
-  SPELLS_MAS_BOOK,
-  HUMANOID_MUT_BOOK,
-  BEAST_MUT_BOOK,
-
-  BOULDER_TRAP_ITEM,
-  GAS_TRAP_ITEM,
-  ALARM_TRAP_ITEM,
-  WEB_TRAP_ITEM,
-  SURPRISE_TRAP_ITEM,
-  TERROR_TRAP_ITEM,
+  vector<ItemType> SERIAL(unique);
 };
 
 #endif

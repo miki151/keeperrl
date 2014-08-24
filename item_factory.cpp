@@ -319,12 +319,12 @@ class Corpse : public Item {
   CorpseInfo SERIAL(corpseInfo);
 };
 
-PItem ItemFactory::corpse(CreatureId id, ItemType type, Item::CorpseInfo corpseInfo) {
+PItem ItemFactory::corpse(CreatureId id, ItemClass type, Item::CorpseInfo corpseInfo) {
   PCreature c = CreatureFactory::fromId(id, Tribe::get(TribeId::MONSTER));
   return corpse(c->getName() + " corpse", c->getName() + " skeleton", c->getWeight(), type, corpseInfo);
 }
 
-PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemType type,
+PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemClass itemClass,
     Item::CorpseInfo corpseInfo) {
   const double rotTime = 300;
   return PItem(new Corpse(
@@ -332,7 +332,7 @@ PItem ItemFactory::corpse(const string& name, const string& rottenName, double w
         ViewObject(ViewId::BONE, ViewLayer::ITEM, rottenName),
         ITATTR(
           i.name = name;
-          i.type = type;
+          i.itemClass = itemClass;
           i.weight = weight;),
         rottenName,
         rotTime,
@@ -470,7 +470,7 @@ static vector<ViewId> potion_ids = { ViewId::EFFERVESCENT_POTION, ViewId::MURKY_
 static vector<string> scroll_looks;
 
 ItemFactory::ItemFactory(const vector<ItemInfo>& _items,
-      const vector<ItemId>& _unique) : unique(_unique) {
+      const vector<ItemType>& _unique) : unique(_unique) {
   for (auto elem : _items)
     addItem(elem);
 }
@@ -483,14 +483,14 @@ ItemFactory& ItemFactory::addItem(ItemInfo elem) {
   return *this;
 }
 
-ItemFactory& ItemFactory::addUniqueItem(ItemId id) {
+ItemFactory& ItemFactory::addUniqueItem(ItemType id) {
   unique.push_back(id);
   return *this;
 }
 
 vector<PItem> ItemFactory::random(Optional<int> seed) {
   if (unique.size() > 0) {
-    ItemId id = unique.back();
+    ItemType id = unique.back();
     unique.pop_back();
     return fromId(id, 1);
   }
@@ -506,29 +506,29 @@ vector<PItem> ItemFactory::random(Optional<int> seed) {
 
 vector<PItem> ItemFactory::getAll() {
   vector<PItem> ret;
-  for (ItemId id : unique)
+  for (ItemType id : unique)
     ret.push_back(fromId(id));
-  for (ItemId id : items)
+  for (ItemType id : items)
     ret.push_back(fromId(id));
   return ret;
 }
 
 ItemFactory ItemFactory::villageShop() {
   return ItemFactory({
-      {ItemId::TELE_SCROLL, 5 },
-      {ItemId::PORTAL_SCROLL, 5 },
-      {ItemId::IDENTIFY_SCROLL, 5 },
+      {{ItemId::SCROLL, EffectType::TELEPORT}, 5 },
+      {{ItemId::SCROLL, EffectType::PORTAL}, 5 },
+      {{ItemId::SCROLL, EffectType::IDENTIFY}, 5 },
       {ItemId::FIRE_SCROLL, 5 },
-      {ItemId::FIRE_SPHERE_SCROLL, 5 },
-      {ItemId::WORD_OF_POWER_SCROLL, 1 },
-      {ItemId::DECEPTION_SCROLL, 2 },
-      {ItemId::SUMMON_INSECTS_SCROLL, 5 },
-      {ItemId::HEALING_POTION, 7 },
-      {ItemId::SLEEP_POTION, 5 },
-      {ItemId::SLOW_POTION, 5 },
-      {ItemId::SPEED_POTION,5 },
-      {ItemId::BLINDNESS_POTION, 5 },
-      {ItemId::INVISIBLE_POTION, 2 },
+      {{ItemId::SCROLL, EffectType::FIRE_SPHERE_PET}, 5 },
+      {{ItemId::SCROLL, EffectType::WORD_OF_POWER}, 1 },
+      {{ItemId::SCROLL, EffectType::DECEPTION}, 2 },
+      {{ItemId::SCROLL, EffectType::SUMMON_INSECTS}, 5 },
+      {{ItemId::POTION, EffectType::HEAL}, 7 },
+      {{ItemId::POTION, EffectType::SLEEP}, 5 },
+      {{ItemId::POTION, EffectType::SLOW}, 5 },
+      {{ItemId::POTION, EffectType::SPEED},5 },
+      {{ItemId::POTION, EffectType::BLINDNESS}, 5 },
+      {{ItemId::POTION, EffectType::INVISIBLE}, 2 },
       {ItemId::WARNING_AMULET, 0.5 },
       {ItemId::HEALING_AMULET, 0.5 },
       {ItemId::DEFENSE_AMULET, 0.5 },
@@ -542,7 +542,7 @@ ItemFactory ItemFactory::villageShop() {
 }
 
 ItemFactory ItemFactory::dwarfShop() {
-  return armory().addUniqueItem(ItemId::PORTAL_SCROLL);
+  return armory().addUniqueItem({ItemId::SCROLL, EffectType::PORTAL});
 }
 
 ItemFactory ItemFactory::armory() {
@@ -585,10 +585,10 @@ ItemFactory ItemFactory::goblinShop() {
       {ItemId::LEATHER_GLOVES, 2 },
       {ItemId::STRENGTH_GLOVES, 0.5 },
       {ItemId::DEXTERITY_GLOVES, 0.5 },
-      {ItemId::PANIC_MUSHROOM, 1 },
-      {ItemId::RAGE_MUSHROOM, 1 },
-      {ItemId::STRENGTH_MUSHROOM, 1 },
-      {ItemId::DEXTERITY_MUSHROOM, 1} });
+      {{ItemId::MUSHROOM, EffectType::PANIC}, 1 },
+      {{ItemId::MUSHROOM, EffectType::RAGE}, 1 },
+      {{ItemId::MUSHROOM, EffectType::STR_BONUS}, 1 },
+      {{ItemId::MUSHROOM, EffectType::DEX_BONUS}, 1} });
 }
 
 ItemFactory ItemFactory::dragonCave() {
@@ -636,52 +636,52 @@ ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
 
 ItemFactory ItemFactory::laboratory(const vector<Technology*>& techs) {
   ItemFactory factory({
-      {ItemId::HEALING_POTION, 1 },
-      {ItemId::SLEEP_POTION, 1 },
-      {ItemId::SLOW_POTION, 1 },
-      {ItemId::POISON_RESIST_POTION, 1 }});
+      {{ItemId::POTION, EffectType::HEAL}, 1 },
+      {{ItemId::POTION, EffectType::SLEEP}, 1 },
+      {{ItemId::POTION, EffectType::SLOW}, 1 },
+      {{ItemId::POTION, EffectType::POISON_RESISTANCE}, 1 }});
   if (contains(techs, Technology::get(TechId::ALCHEMY_ADV))) {
-    factory.addItem({ItemId::BLINDNESS_POTION, 1 });
-    factory.addItem({ItemId::INVISIBLE_POTION, 1 });
-    factory.addItem({ItemId::LEVITATION_POTION, 1 });
-    factory.addItem({ItemId::POISON_POTION, 1 });
-    factory.addItem({ItemId::SPEED_POTION, 1 });
+    factory.addItem({{ItemId::POTION, EffectType::BLINDNESS}, 1 });
+    factory.addItem({{ItemId::POTION, EffectType::INVISIBLE}, 1 });
+    factory.addItem({{ItemId::POTION, EffectType::LEVITATION}, 1 });
+    factory.addItem({{ItemId::POTION, EffectType::POISON}, 1 });
+    factory.addItem({{ItemId::POTION, EffectType::SPEED}, 1 });
   }
   return factory;
 }
 
 ItemFactory ItemFactory::potions() {
   return ItemFactory({
-      {ItemId::HEALING_POTION, 1 },
-      {ItemId::SLEEP_POTION, 1 },
-      {ItemId::SLOW_POTION, 1 },
-      {ItemId::BLINDNESS_POTION, 1 },
-      {ItemId::INVISIBLE_POTION, 1 },
-      {ItemId::POISON_POTION, 1 },
-      {ItemId::POISON_RESIST_POTION, 1 },
-      {ItemId::LEVITATION_POTION, 1 },
-      {ItemId::SPEED_POTION, 1 }});
+      {{ItemId::POTION, EffectType::HEAL}, 1 },
+      {{ItemId::POTION, EffectType::SLEEP}, 1 },
+      {{ItemId::POTION, EffectType::SLOW}, 1 },
+      {{ItemId::POTION, EffectType::BLINDNESS}, 1 },
+      {{ItemId::POTION, EffectType::INVISIBLE}, 1 },
+      {{ItemId::POTION, EffectType::POISON}, 1 },
+      {{ItemId::POTION, EffectType::POISON_RESISTANCE}, 1 },
+      {{ItemId::POTION, EffectType::LEVITATION}, 1 },
+      {{ItemId::POTION, EffectType::SPEED}, 1 }});
 }
 
 ItemFactory ItemFactory::scrolls() {
   return ItemFactory({
-      {ItemId::TELE_SCROLL, 1 },
-      {ItemId::IDENTIFY_SCROLL, 1 },
+      {{ItemId::SCROLL, EffectType::TELEPORT}, 1 },
+      {{ItemId::SCROLL, EffectType::IDENTIFY}, 1 },
       {ItemId::FIRE_SCROLL, 1 },
-      {ItemId::FIRE_SPHERE_SCROLL, 1 },
-      {ItemId::WORD_OF_POWER_SCROLL, 1 },
-      {ItemId::DECEPTION_SCROLL, 1 },
-      {ItemId::SUMMON_INSECTS_SCROLL, 1 },
-      {ItemId::PORTAL_SCROLL, 1 }});
+      {{ItemId::SCROLL, EffectType::FIRE_SPHERE_PET}, 1 },
+      {{ItemId::SCROLL, EffectType::WORD_OF_POWER}, 1 },
+      {{ItemId::SCROLL, EffectType::DECEPTION}, 1 },
+      {{ItemId::SCROLL, EffectType::SUMMON_INSECTS}, 1 },
+      {{ItemId::SCROLL, EffectType::PORTAL}, 1 }});
 }
 
 ItemFactory ItemFactory::mushrooms(bool onlyGood) {
   return ItemFactory({
-      {ItemId::STRENGTH_MUSHROOM, 1 },
-      {ItemId::DEXTERITY_MUSHROOM, 1 },
-      {ItemId::PANIC_MUSHROOM, 1 },
-      {ItemId::HALLU_MUSHROOM, onlyGood ? 0.1 : 8. },
-      {ItemId::RAGE_MUSHROOM, 1 }});
+      {{ItemId::MUSHROOM, EffectType::STR_BONUS}, 1 },
+      {{ItemId::MUSHROOM, EffectType::DEX_BONUS}, 1 },
+      {{ItemId::MUSHROOM, EffectType::PANIC}, 1 },
+      {{ItemId::MUSHROOM, EffectType::HALLU}, onlyGood ? 0.1 : 8. },
+      {{ItemId::MUSHROOM, EffectType::RAGE}, 1 }});
 }
 
 ItemFactory ItemFactory::amulets() {
@@ -714,23 +714,23 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::LEATHER_GLOVES, 30 },
       {ItemId::DEXTERITY_GLOVES, 3 },
       {ItemId::STRENGTH_GLOVES, 3 },
-      {ItemId::TELE_SCROLL, 30 },
-      {ItemId::PORTAL_SCROLL, 10 },
-      {ItemId::IDENTIFY_SCROLL, 30 },
+      {{ItemId::SCROLL, EffectType::TELEPORT}, 30 },
+      {{ItemId::SCROLL, EffectType::PORTAL}, 10 },
+      {{ItemId::SCROLL, EffectType::IDENTIFY}, 30 },
       {ItemId::FIRE_SCROLL, 30 },
-      {ItemId::FIRE_SPHERE_SCROLL, 30 },
-      {ItemId::WORD_OF_POWER_SCROLL, 5 },
-      {ItemId::DECEPTION_SCROLL, 10 },
-      {ItemId::SUMMON_INSECTS_SCROLL, 30 },
-      {ItemId::HEALING_POTION, 50 },
-      {ItemId::SLEEP_POTION, 50 },
-      {ItemId::SLOW_POTION, 50 },
-      {ItemId::SPEED_POTION, 50 },
-      {ItemId::BLINDNESS_POTION, 30 },
-      {ItemId::INVISIBLE_POTION, 10 },
-      {ItemId::POISON_POTION, 20 },
-      {ItemId::POISON_RESIST_POTION, 20 },
-      {ItemId::LEVITATION_POTION, 20 },
+      {{ItemId::SCROLL, EffectType::FIRE_SPHERE_PET}, 30 },
+      {{ItemId::SCROLL, EffectType::WORD_OF_POWER}, 5 },
+      {{ItemId::SCROLL, EffectType::DECEPTION}, 10 },
+      {{ItemId::SCROLL, EffectType::SUMMON_INSECTS}, 30 },
+      {{ItemId::POTION, EffectType::HEAL}, 50 },
+      {{ItemId::POTION, EffectType::SLEEP}, 50 },
+      {{ItemId::POTION, EffectType::SLOW}, 50 },
+      {{ItemId::POTION, EffectType::SPEED}, 50 },
+      {{ItemId::POTION, EffectType::BLINDNESS}, 30 },
+      {{ItemId::POTION, EffectType::INVISIBLE}, 10 },
+      {{ItemId::POTION, EffectType::POISON}, 20 },
+      {{ItemId::POTION, EffectType::POISON_RESISTANCE}, 20 },
+      {{ItemId::POTION, EffectType::LEVITATION}, 20 },
       {ItemId::WARNING_AMULET, 3 },
       {ItemId::HEALING_AMULET, 3 },
       {ItemId::DEFENSE_AMULET, 3 },
@@ -755,53 +755,139 @@ void ItemFactory::init() {
   random_shuffle(amulet_looks.begin(), amulet_looks.end(),[](int a) { return Random.getRandom(a);});
 }
 
-PItem getPotion(int numLooks, string name, EffectType effect, int price, string description) {
+string getEffectName(EffectType type) {
+  switch (type) {
+    case EffectType::HEAL: return "healing";
+    case EffectType::SLEEP: return "sleep";
+    case EffectType::SLOW: return "slowness";
+    case EffectType::SPEED: return "speed";
+    case EffectType::BLINDNESS: return "blindness";
+    case EffectType::INVISIBLE: return "invisibility";
+    case EffectType::POISON: return "poison";
+    case EffectType::POISON_RESISTANCE: return "poison resistance";
+    case EffectType::LEVITATION: return "levitation";
+    case EffectType::PANIC: return "panic";
+    case EffectType::RAGE: return "rage";
+    case EffectType::HALLU: return "magic";
+    case EffectType::STR_BONUS: return "strength";
+    case EffectType::DEX_BONUS: return "dexterity";
+    default: FAIL << "Effect item not implemented " << int(type);
+  }
+  return "";
+}
+
+string getScrollName(EffectType type) {
+  switch (type) {
+    case EffectType::TELEPORT: return "effugium";
+    case EffectType::PORTAL: return "ianuae magicae";
+    case EffectType::IDENTIFY: return "rium propositum";
+    case EffectType::ROLLING_BOULDER: return "rolling boulder";
+    case EffectType::EMIT_POISON_GAS: return "poison gas";
+    case EffectType::DESTROY_EQUIPMENT: return "destruction";
+    case EffectType::ENHANCE_WEAPON: return "melius telum";
+    case EffectType::ENHANCE_ARMOR: return "melius armatus";
+    case EffectType::FIRE_SPHERE_PET: return "sphaera ignis";
+    case EffectType::WORD_OF_POWER: return "verbum potentiae";
+    case EffectType::DECEPTION: return "deceptio";
+    case EffectType::SUMMON_INSECTS: return "vocet insecta";
+    case EffectType::LEAVE_BODY: return "incorporalis";
+    default: FAIL << "Scroll effect not implemented " << int(type);
+  }
+  return "";
+}
+
+int getEffectPrice(EffectType type) {
+  switch (type) {
+    case EffectType::HALLU:
+    case EffectType::IDENTIFY: return 15;
+    case EffectType::HEAL: return 40;
+    case EffectType::TELEPORT:
+    case EffectType::PORTAL: return 50;
+    case EffectType::ROLLING_BOULDER:
+    case EffectType::DESTROY_EQUIPMENT:
+    case EffectType::ENHANCE_WEAPON:
+    case EffectType::ENHANCE_ARMOR:
+    case EffectType::FIRE_SPHERE_PET:
+    case EffectType::SPEED:
+    case EffectType::PANIC:
+    case EffectType::RAGE:
+    case EffectType::SUMMON_INSECTS: return 60;
+    case EffectType::BLINDNESS: return 80;
+    case EffectType::STR_BONUS:
+    case EffectType::DEX_BONUS:
+    case EffectType::EMIT_POISON_GAS:  return 100;
+    case EffectType::DECEPTION: 
+    case EffectType::LEAVE_BODY: 
+    case EffectType::WORD_OF_POWER: return 150;
+    case EffectType::SLEEP:
+    case EffectType::SLOW:
+    case EffectType::POISON_RESISTANCE:
+    case EffectType::POISON: return 100;
+    case EffectType::INVISIBLE: return 120;
+    case EffectType::LEVITATION: return 130;
+    default: FAIL << "effect item not implemented " << int(type);
+  }
+  return -1;
+}
+
+const static vector<EffectType> potionEffects {
+   EffectType::SLEEP,
+   EffectType::SLOW,
+   EffectType::HEAL,
+   EffectType::SPEED,
+   EffectType::BLINDNESS,
+   EffectType::POISON_RESISTANCE,
+   EffectType::POISON,
+   EffectType::INVISIBLE,
+   EffectType::LEVITATION,
+};
+
+PItem getPotion(EffectType effect) {
+  int numLooks = *findElement(potionEffects, effect);
   return PItem(new Potion(
         ViewObject(potion_ids[numLooks], ViewLayer::ITEM, "Potion"), ITATTR(
             i.name = potion_looks[numLooks] + " potion";
-            i.realName = "potion of " + name;
-            i.realPlural = "potions of " + name;
-            i.description = description;
+            i.realName = "potion of " + getEffectName(effect);
+            i.realPlural = "potions of " + getEffectName(effect);
             i.blindName = "potion";
-            i.type = ItemType::POTION;
+            i.itemClass = ItemClass::POTION;
             i.fragile = true;
             i.modifiers[AttrType::THROWN_TO_HIT] = 6;
             i.weight = 0.3;
             i.effect = effect;
-            i.price = price;
+            i.price = getEffectPrice(effect);
             i.flamability = 0.3;
             i.identifiable = true;
             i.uses = 1;)));
 }
 
-PItem getScroll(string name, EffectType effect, int price, string description) {
+PItem getScroll(EffectType effect) {
+  if (effect == EffectType::IDENTIFY && Item::isEverythingIdentified())
+    return getScroll(chooseRandom({EffectType::ENHANCE_WEAPON, EffectType::ENHANCE_ARMOR}));
   return PItem(new Item(
          ViewObject(ViewId::SCROLL, ViewLayer::ITEM, "Scroll"), ITATTR(
-            i.name = "scroll labelled " + name;
-            i.plural= "scrolls labelled " + name;
-            i.description = description;
+            i.name = "scroll labelled " + getScrollName(effect);
+            i.plural= "scrolls labelled " + getScrollName(effect);
             i.blindName = "scroll";
-            i.type= ItemType::SCROLL;
+            i.itemClass = ItemClass::SCROLL;
             i.weight = 0.1;
             i.modifiers[AttrType::THROWN_DAMAGE] = -10;
             i.effect = effect;
-            i.price = price;
+            i.price = getEffectPrice(effect);
             i.flamability = 1;
-//            i.identifiable = true;
             i.uses = 1;)));
 }
 
-PItem getMushroom(string name, EffectType effect, string description) {
+PItem getMushroom(EffectType effect) {
   return PItem(new Item(
          ViewObject(ViewId::MUSHROOM, ViewLayer::ITEM, "Mushroom"), ITATTR(
             i.name = "mushroom";
-            i.realName = name + " mushroom";
-            i.description = description;
-            i.type= ItemType::FOOD;
+            i.realName = getEffectName(effect) + " mushroom";
+            i.itemClass= ItemClass::FOOD;
             i.weight = 0.1;
             i.modifiers[AttrType::THROWN_DAMAGE] = -15;
             i.effect = effect;
-            i.price = 80;
+            i.price = getEffectPrice(effect);
             i.identifyOnApply = false;
             i.uses = 1;)));
 }
@@ -811,7 +897,7 @@ PItem getTrap(string name, ViewId viewId, TrapType trapType, EffectType effectTy
         ViewObject(viewId, ViewLayer::LARGE_ITEM, capitalFirst(name) + " trap"),ITATTR(
             i.name = name + " trap";
             i.weight = 0.5;
-            i.type = ItemType::TOOL;
+            i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
             i.uses = 1;
             i.usedUpMsg = true;
@@ -825,7 +911,7 @@ PItem getTechBook(TechId tech) {
             i.name = "book of " + Technology::get(tech)->getName();
             i.plural = "books of " + Technology::get(tech)->getName();
             i.weight = 1;
-            i.type = ItemType::BOOK;
+            i.itemClass = ItemClass::BOOK;
             i.applyTime = 3;
             i.price = 1000;), Technology::get(tech)));
 }
@@ -837,7 +923,7 @@ PItem getRing(LastingEffect effect, string name, ViewId viewId) {
             i.plural = "rings of " + name;
             i.weight = 0.05;
             i.equipmentSlot = EquipmentSlot::RINGS;
-            i.type = ItemType::RING;
+            i.itemClass = ItemClass::RING;
             i.price = 200;), effect));
 }
 
@@ -899,15 +985,17 @@ void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
 
 int prefixChance = 30;
 
-PItem ItemFactory::fromId(ItemId id) {
+#define INHERIT(ID, X) ItemAttributes([&](ItemAttributes& i) { i = getAttributes(ItemId::ID); X })
+
+PItem ItemFactory::fromId(ItemType item) {
   bool artifact = false;
   bool flaming = false;
-  switch (id) {
+  switch (item.getId()) {
     case ItemId::KNIFE: return PItem(new Item(
         ViewObject(ViewId::KNIFE, ViewLayer::ITEM, "Knife"), ITATTR(
             i.name = "knife";
             i.plural = "knives";
-            i.type = ItemType::WEAPON;
+            i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 0.3;
             i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
@@ -923,7 +1011,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::SPEAR: return PItem(new Item(
         ViewObject(ViewId::SPEAR, ViewLayer::ITEM, "Spear"), ITATTR(
             i.name = "spear";
-            i.type = ItemType::WEAPON;
+            i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1.5;
             i.modifiers[AttrType::DAMAGE] = 10 + maybePlusMinusOne(4);
@@ -935,7 +1023,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::SWORD: return PItem(new Item(
         ViewObject(artifact ? ViewId::SPECIAL_SWORD : ViewId::SWORD, ViewLayer::ITEM, "Sword"), ITATTR(
             i.name = "sword";
-            i.type = ItemType::WEAPON;
+            i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1.5;
             i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
@@ -951,7 +1039,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::ELVEN_SWORD: return PItem(new Item(
         ViewObject(ViewId::ELVEN_SWORD, ViewLayer::ITEM, "Elven sword"), ITATTR(
             i.name = "elven sword";
-            i.type = ItemType::WEAPON;
+            i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1;
             i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
@@ -967,7 +1055,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::BATTLE_AXE: return PItem(new Item(
         ViewObject(artifact ? ViewId::SPECIAL_BATTLE_AXE : ViewId::BATTLE_AXE, ViewLayer::ITEM, "Battle axe"), ITATTR(
             i.name = "battle axe";
-            i.type = ItemType::WEAPON;
+            i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 8;
             i.modifiers[AttrType::DAMAGE] = 14 + maybePlusMinusOne(4);
@@ -983,7 +1071,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::WAR_HAMMER: return PItem(new Item(
         ViewObject(artifact ? ViewId::SPECIAL_WAR_HAMMER : ViewId::WAR_HAMMER, ViewLayer::ITEM, "War hammer"), ITATTR(
             i.name = "war hammer";
-            i.type = ItemType::WEAPON;
+            i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 8;
             i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
@@ -998,7 +1086,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::SCYTHE: return PItem(new Item(
         ViewObject(ViewId::SWORD, ViewLayer::ITEM, "Scythe"), ITATTR(
             i.name = "scythe";
-            i.type = ItemType::WEAPON;
+            i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 5;
             i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
@@ -1009,7 +1097,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::BOW: return PItem(new RangedWeapon(
         ViewObject(ViewId::BOW, ViewLayer::ITEM, "Short bow"), ITATTR(
             i.name = "short bow";
-            i.type = ItemType::RANGED_WEAPON;
+            i.itemClass = ItemClass::RANGED_WEAPON;
             i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
             i.weight = 1;
             i.rangedWeaponAccuracy = 10 + maybePlusMinusOne(4);
@@ -1017,7 +1105,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::ARROW: return PItem(new Item(
         ViewObject(ViewId::ARROW, ViewLayer::ITEM, "Arrow"), ITATTR(
             i.name = "arrow";
-            i.type = ItemType::AMMO;
+            i.itemClass = ItemClass::AMMO;
             i.weight = 0.1;
             i.modifiers[AttrType::THROWN_DAMAGE] = 5;
             i.modifiers[AttrType::THROWN_TO_HIT] = -5;
@@ -1025,7 +1113,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::ROBE: return PItem(new Item(
         ViewObject(ViewId::ROBE, ViewLayer::ITEM, "Robe"), ITATTR(
             i.name = "robe";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 2;
             i.price = 50;
@@ -1034,7 +1122,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::LEATHER_GLOVES: return PItem(new Item(
         ViewObject(ViewId::LEATHER_GLOVES, ViewLayer::ITEM, "Gloves"), ITATTR(
             i.name = "leather gloves";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::GLOVES;
             i.weight = 0.3;
             i.price = 10;
@@ -1042,7 +1130,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::DEXTERITY_GLOVES: return PItem(new Item(
         ViewObject(ViewId::DEXTERITY_GLOVES, ViewLayer::ITEM, "Gloves"), ITATTR(
             i.name = "gloves of dexterity";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::GLOVES;
             i.weight = 0.3;
             i.price = 120;
@@ -1051,7 +1139,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::STRENGTH_GLOVES: return PItem(new Item(
         ViewObject(ViewId::STRENGTH_GLOVES, ViewLayer::ITEM, "Gloves"), ITATTR(
             i.name = "gauntlets of strength";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::GLOVES;
             i.weight = 0.3;
             i.price = 120;
@@ -1060,7 +1148,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::LEATHER_ARMOR: return PItem(new Item(
         ViewObject(ViewId::LEATHER_ARMOR, ViewLayer::ITEM, "Armor"), ITATTR(
             i.name = "leather armor";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 7;
             i.price = 20;
@@ -1068,7 +1156,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::LEATHER_HELM: return PItem(new Item(
         ViewObject(ViewId::LEATHER_HELM, ViewLayer::ITEM, "Helmet"), ITATTR(
             i.name = "leather helm";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::HELMET;
             i.weight = 1.5;
             i.price = 5;
@@ -1076,7 +1164,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::CHAIN_ARMOR: return PItem(new Item(
         ViewObject(ViewId::CHAIN_ARMOR, ViewLayer::ITEM, "Armor"), ITATTR(
             i.name = "chain armor";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 15;
             i.price = 130;
@@ -1084,7 +1172,7 @@ PItem ItemFactory::fromId(ItemId id) {
     case ItemId::IRON_HELM: return PItem(new Item(
         ViewObject(ViewId::IRON_HELM, ViewLayer::ITEM, "Helmet"), ITATTR(
             i.name = "iron helm";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::HELMET;
             i.weight = 4;
             i.price = 40;
@@ -1093,7 +1181,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::TELEPATHY_HELM, ViewLayer::ITEM, "Helmet"), ITATTR(
             i.name = "helm of telepathy";
             i.plural = "helms of telepathy";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::HELMET;
             i.weight = 1.5;
             i.price = 340;
@@ -1103,7 +1191,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::LEATHER_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
             i.name = "leather boots";
             i.plural = "pairs of leather boots";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
             i.price = 10;
@@ -1112,7 +1200,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::IRON_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
             i.name = "iron boots";
             i.plural = "pairs of iron boots";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 4;
             i.price = 40;
@@ -1121,7 +1209,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::SPEED_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
             i.name = "boots of speed";
             i.plural = "pairs of boots of speed";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
             i.price = 360;
@@ -1131,7 +1219,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::LEVITATION_BOOTS, ViewLayer::ITEM, "Boots"), ITATTR(
             i.name = "boots of levitation";
             i.plural = "pairs of boots of levitation";
-            i.type = ItemType::ARMOR;
+            i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
             i.price = 360;
@@ -1147,7 +1235,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.realName = "amulet of warning";
             i.realPlural = "amulets of warning";
             i.description = "Warns about dangerous beasts and enemies.";
-            i.type = ItemType::AMULET;
+            i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 220;
             i.identifiable = true;
@@ -1159,7 +1247,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.realName = "amulet of healing";
             i.realPlural = "amulets of healing";
             i.description = "Slowly heals all wounds.";
-            i.type = ItemType::AMULET;
+            i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 300;
             i.identifiable = true;
@@ -1171,7 +1259,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.realName = "amulet of defense";
             i.realPlural = "amulets of defense";
             i.description = "Increases the toughness of your skin and flesh, making you harder to wound.";
-            i.type = ItemType::AMULET;
+            i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 300;
             i.identifiable = true;
@@ -1184,7 +1272,7 @@ PItem ItemFactory::fromId(ItemId id) {
             i.realName = "amulet of nature affinity";
             i.realPlural = "amulets of nature affinity";
             i.description = "Makes all animals peaceful.";
-            i.type = ItemType::AMULET;
+            i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 120;
             i.identifiable = true;
@@ -1193,7 +1281,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::FIRST_AID, ViewLayer::ITEM, "First aid kit"), ITATTR(
             i.name = "first aid kit";
             i.weight = 0.5;
-            i.type = ItemType::TOOL;
+            i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
             i.uses = Random.getRandom(3, 6);
             i.usedUpMsg = true;
@@ -1204,7 +1292,7 @@ PItem ItemFactory::fromId(ItemId id) {
         ViewObject(ViewId::TRAP_ITEM, ViewLayer::ITEM, "Unarmed boulder trap"), ITATTR(
             i.name = "boulder trap";
             i.weight = 0.5;
-            i.type = ItemType::TOOL;
+            i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
             i.uses = 1;
             i.usedUpMsg = true;
@@ -1221,65 +1309,16 @@ PItem ItemFactory::fromId(ItemId id) {
         return getTrap("surprise", ViewId::SURPRISE_TRAP, TrapType::SURPRISE, EffectType::TELE_ENEMIES);
     case ItemId::TERROR_TRAP_ITEM:
         return getTrap("terror", ViewId::TERROR_TRAP, TrapType::TERROR, EffectType::TERROR);
-    case ItemId::HEALING_POTION: return getPotion(0, "healing", EffectType::HEAL, 40, "Heals all your wounds.");
-    case ItemId::SLEEP_POTION: return getPotion(1, "sleep", EffectType::SLEEP, 40,
-                                   "Puts anyone to sleep immediately.");
-    case ItemId::SLOW_POTION: return getPotion(2, "slowness", EffectType::SLOW, 40,
-                                  "Makes all your moves very sluggish");
-    case ItemId::SPEED_POTION: return getPotion(3, "speed", EffectType::SPEED, 60,
-                                  "Makes all your moves very swift");
-    case ItemId::BLINDNESS_POTION: return getPotion(4, "blindness", EffectType::BLINDNESS, 80,
-                                       "Makes you blind for some time.");
-    case ItemId::INVISIBLE_POTION: return getPotion(5, "invisibility", EffectType::INVISIBLE, 120,
-                                       "Makes you and your belongings invisible for a short time.");
-    case ItemId::POISON_POTION: return getPotion(6, "poison", EffectType::POISON, 100, "Poisons.");
-    case ItemId::POISON_RESIST_POTION: return getPotion(7, "poison resistance", EffectType::POISON_RESISTANCE, 100,
-                                           "Makes one resistant to all poisons.");
-    case ItemId::LEVITATION_POTION: return getPotion(0, "levitation", EffectType::LEVITATION, 130,
-                                        "Makes one levitate for some time.");
-    case ItemId::PANIC_MUSHROOM: return getMushroom("panic", EffectType::PANIC,
-                                     "Makes the one who ate it favor defensive actions over offensive.");
-    case ItemId::RAGE_MUSHROOM: return getMushroom("rage", EffectType::RAGE,
-                                     "Makes the one who ate it favor offensive actions over defensive.");
-    case ItemId::HALLU_MUSHROOM: return getMushroom("magic", EffectType::HALLU,
-                                     "Has a strong hallucinogenic effect.");
-    case ItemId::STRENGTH_MUSHROOM: return getMushroom("strength", EffectType::STR_BONUS,
-                                     "Gives you extra strength for a while.");
-    case ItemId::DEXTERITY_MUSHROOM: return getMushroom("dexterity", EffectType::DEX_BONUS,
-                                     "Gives you extra dexterity for a while.");
-    case ItemId::TELE_SCROLL: return getScroll("effugium", EffectType::TELEPORT, 50,
-                                  "Teleports the reader away by a short distance");
-    case ItemId::PORTAL_SCROLL: return getScroll("ianuae magicae", EffectType::PORTAL, 50, "Creates a magical portal. Two of such portals allow instant travel between them.");
-    case ItemId::IDENTIFY_SCROLL: if (!Item::isEverythingIdentified()) 
-                                    return getScroll("rium propositum", EffectType::IDENTIFY, 15,
-                                        "Identifies a hidden or magical use of a chosen item.");
-                                  else
-                                    return fromId(chooseRandom({ItemId::ENHANCE_W_SCROLL, ItemId::ENHANCE_A_SCROLL}));
-    case ItemId::BOULDER_SCROLL: return getScroll("rolling boulder", EffectType::ROLLING_BOULDER, 100, "");
-    case ItemId::POISON_GAS_SCROLL: return getScroll("poison gas", EffectType::EMIT_POISON_GAS, 100, "");
-    case ItemId::DESTROY_EQ_SCROLL: return getScroll("destruction", EffectType::DESTROY_EQUIPMENT, 100,
-                                      "Destroys a piece of equipment of the reader.");
-    case ItemId::ENHANCE_W_SCROLL: return getScroll("melius telum", EffectType::ENHANCE_WEAPON, 100,
-                                      "Increases the damage or accuracy of a weapon.");
-    case ItemId::ENHANCE_A_SCROLL: return getScroll("melius armatus", EffectType::ENHANCE_ARMOR, 100,
-                                      "Increases the defense value of a piece of armor.");
-    case ItemId::FIRE_SPHERE_SCROLL: return getScroll("sphaera ignis", EffectType::FIRE_SPHERE_PET, 100,
-                                      "Creates a sphere of fire.");
-    case ItemId::WORD_OF_POWER_SCROLL: return getScroll("verbum potentiae", EffectType::WORD_OF_POWER, 150,
-                                      "Causes an explosion of energy that throws back all sorrounding creatures.");
-    case ItemId::DECEPTION_SCROLL: return getScroll("deceptio", EffectType::DECEPTION, 150,
-                                      "Creates optical illusions of the spellcaster to decept enemies.");
-    case ItemId::SUMMON_INSECTS_SCROLL: return getScroll("vocet insecta", EffectType::SUMMON_INSECTS, 60,
-                                      "Summon insects to confuse enemies.");
-    case ItemId::LEAVE_BODY_SCROLL: return getScroll("incorporalis", EffectType::LEAVE_BODY, 60,
-                                      "Frees the reader's spirit from his body.");
+    case ItemId::POTION: return getPotion(item.get<EffectType>());
+    case ItemId::MUSHROOM: return getMushroom(item.get<EffectType>());
+    case ItemId::SCROLL: return getScroll(item.get<EffectType>());
     case ItemId::FIRE_SCROLL: return PItem(new FireScroll(
          ViewObject(ViewId::SCROLL, ViewLayer::ITEM, "Scroll"), ITATTR(
             i.name = "scroll labelled combustio";
             i.plural= "scrolls labelled combustio";
             i.description = "Sets itself on fire.";
             i.blindName = "scroll";
-            i.type= ItemType::SCROLL;
+            i.itemClass= ItemClass::SCROLL;
             i.weight = 0.1;
             i.modifiers[AttrType::THROWN_DAMAGE] = -10;
             i.price = 15;
@@ -1295,39 +1334,39 @@ PItem ItemFactory::fromId(ItemId id) {
             i.name = "book of knowledge";
             i.plural = "bookss of knowledge";
             i.weight = 0.5;
-            i.type = ItemType::BOOK;
+            i.itemClass = ItemClass::BOOK;
             i.applyTime = 3;
             i.price = 300;)));
     case ItemId::ROCK: return PItem(new Item(
          ViewObject(ViewId::ROCK, ViewLayer::ITEM, "Rock"), ITATTR(
             i.name = "rock";
-            i.type = ItemType::OTHER;
+            i.itemClass = ItemClass::OTHER;
             i.price = 0;
             i.weight = 0.3;)));
     case ItemId::IRON_ORE: return PItem(new Item(
          ViewObject(ViewId::IRON_ROCK, ViewLayer::ITEM, "Iron ore"), ITATTR(
             i.name = "iron ore";
-            i.type = ItemType::OTHER;
+            i.itemClass = ItemClass::OTHER;
             i.price = 0;
             i.weight = 0.5;)));
     case ItemId::WOOD_PLANK: return PItem(new Item(
          ViewObject(ViewId::WOOD_PLANK, ViewLayer::ITEM, "Wood plank"), ITATTR(
             i.name = "wood plank";
-            i.type = ItemType::OTHER;
+            i.itemClass = ItemClass::OTHER;
             i.price = 0;
             i.weight = 5;)));
     case ItemId::GOLD_PIECE: return PItem(new Item(
          ViewObject(ViewId::GOLD, ViewLayer::ITEM, "Gold"), ITATTR(
             i.name = "gold piece";
-            i.type = ItemType::GOLD;
+            i.itemClass = ItemClass::GOLD;
             i.price = 1;
             i.weight = 0.01;)));
   }
-  FAIL << "unhandled item " << (int) id;
+  FAIL << "unhandled item " << (int) item.getId();
   return PItem(nullptr);
 }
   
-vector<PItem> ItemFactory::fromId(ItemId id, int num) {
+vector<PItem> ItemFactory::fromId(ItemType id, int num) {
   vector<PItem> ret;
   for (int i : Range(num))
     ret.push_back(fromId(id));

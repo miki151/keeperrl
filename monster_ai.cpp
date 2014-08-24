@@ -64,7 +64,7 @@ const Creature* Behaviour::getClosestEnemy() {
 Item* Behaviour::getBestWeapon() {
   Item* best = nullptr;
   int damage = -1;
-  for (Item* item : creature->getEquipment().getItems(Item::typePredicate(ItemType::WEAPON))) 
+  for (Item* item : creature->getEquipment().getItems(Item::classPredicate(ItemClass::WEAPON))) 
     if (item->getModifier(AttrType::DAMAGE) > damage) {
       damage = item->getModifier(AttrType::DAMAGE);
       best = item;
@@ -287,7 +287,7 @@ class GoldLust : public Behaviour {
   GoldLust(Creature* c) : Behaviour(c) {}
 
   virtual double itemValue(const Item* item) {
-    if (item->getType() == ItemType::GOLD)
+    if (item->getClass() == ItemClass::GOLD)
       return 1;
     else
       return 0;
@@ -391,9 +391,9 @@ class Fighter : public Behaviour {
             EffectType::POISON, EffectType::TELEPORT, EffectType::STR_BONUS, EffectType::DEX_BONUS},
           item->getEffectType()))
       return 1;
-    if (item->getType() == ItemType::AMMO && creature->hasSkill(Skill::get(SkillId::ARCHERY)))
+    if (item->getClass() == ItemClass::AMMO && creature->hasSkill(Skill::get(SkillId::ARCHERY)))
       return 0.1;
-    if (item->getType() != ItemType::WEAPON || creature->getAttr(AttrType::STRENGTH) < item->getMinStrength())
+    if (item->getClass() != ItemClass::WEAPON || creature->getAttr(AttrType::STRENGTH) < item->getMinStrength())
       return 0;
     if (item->getModifier(AttrType::THROWN_DAMAGE) > 0)
       return (double)item->getModifier(AttrType::THROWN_DAMAGE) / 50;
@@ -779,7 +779,7 @@ class Thief : public Behaviour {
       if (other && !contains(robbed, other)) {
         vector<Item*> allGold;
         for (Item* it : other->getEquipment().getItems())
-          if (it->getType() == ItemType::GOLD)
+          if (it->getClass() == ItemClass::GOLD)
             allGold.push_back(it);
         if (allGold.size() > 0)
           if (auto action = creature->stealFrom(dir, allGold))

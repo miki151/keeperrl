@@ -23,6 +23,7 @@
 #include "util.h"
 #include "tribe.h"
 #include "monster_ai.h"
+#include "item_type.h"
 
 class Creature;
 
@@ -56,7 +57,7 @@ class CreatureFactory {
   static PCreature getRollingBoulder(Vec2 direction);
   static PCreature getGuardingBoulder(Tribe* tribe);
 
-  static PCreature addInventory(PCreature c, const vector<ItemId>& items);
+  static PCreature addInventory(PCreature c, const vector<ItemType>& items);
 
   static void init();
 

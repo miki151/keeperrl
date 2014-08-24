@@ -635,7 +635,7 @@ class Altar : public Square {
 
   virtual void onApply(Creature* c) override {
     if (c == recentKiller && recentVictim && killTime >= c->getTime() - sacrificeTimeout)
-      for (Item* it : getItems(Item::typePredicate(ItemType::CORPSE)))
+      for (Item* it : getItems(Item::classPredicate(ItemClass::CORPSE)))
         if (it->getCorpseInfo()->victim == recentVictim->getUniqueId()) {
           c->you(MsgType::SACRIFICE, getName());
           c->globalMessage(it->getTheName() + " is consumed in a flash of light!");
