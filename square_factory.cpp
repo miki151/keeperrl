@@ -1145,6 +1145,7 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::CEMETERY:
         return new DestroyableSquare(ViewObject(ViewId::CEMETERY, ViewLayer::FLOOR_BACKGROUND, "Cemetery"), {
             .name = "floor",
+            .movementType = {MovementTrait::WALK},
             .vision = Vision::get(VisionId::NORMAL)});
     case SquareId::GRAVE:
         return new Grave(ViewObject(ViewId::GRAVE, ViewLayer::FLOOR, "Grave"), "grave");
