@@ -89,9 +89,10 @@ class EnumVariant {
   Variant values;
 };
 
+#define FIRST(first, ...) first
 #define TYPES(...) boost::variant<EmptyThing, __VA_ARGS__>
 #define ASSIGN(T, ...)\
-TypeAssign<T, decltype(__VA_ARGS__), __VA_ARGS__>
+TypeAssign<T, decltype(FIRST(__VA_ARGS__)), __VA_ARGS__>
 
 
 
