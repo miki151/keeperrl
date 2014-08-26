@@ -2,6 +2,7 @@
 #define _ITEM_TYPE_H
 
 #include "enum_variant.h"
+#include "effect_type.h"
 
 enum class ItemId {
   SPECIAL_KNIFE,
@@ -64,7 +65,7 @@ struct TrapInfo : public NamedTupleBase<TrapType, EffectType> {
   NAME_ELEM(1, effectType);
 };
 
-typedef EnumVariant<ItemId,
+typedef EnumVariant<ItemId, TYPES(EffectType, TrapInfo, LastingEffect, TechId),
         ASSIGN(EffectType, ItemId::SCROLL, ItemId::POTION, ItemId::MUSHROOM),
         ASSIGN(TrapInfo, ItemId::TRAP_ITEM),
         ASSIGN(LastingEffect, ItemId::RING),

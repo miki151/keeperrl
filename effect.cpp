@@ -210,7 +210,7 @@ static void guardingBuilder(Creature* c) {
   if (dest)
     c->getLevel()->moveCreature(c, *dest);
   else {
-    Effect::applyToCreature(c, EffectType::TELEPORT, EffectStrength::NORMAL);
+    Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
   }
   if (c->getPosition() != pos) {
     PCreature boulder = CreatureFactory::getGuardingBoulder(c->getTribe());
@@ -266,12 +266,6 @@ static void heal(Creature* c, int strength) {
     c->heal(1, strength == int(EffectStrength::STRONG));
   else
     c->playerMessage("You feel refreshed.");
-}
-
-static void sleep(Creature* c, int strength) {
-  Square *square = c->getLevel()->getSquare(c->getPosition());
-  c->you(MsgType::FALL_ASLEEP, square->getName());
-  c->addEffect(LastingEffect::SLEEP, Random.getRandom(sleepTime[strength]));
 }
 
 static void portal(Creature* c) {
@@ -392,56 +386,107 @@ void silverDamage(Creature* c) {
   }
 }
 
+double getDuration(const Creature* c, LastingEffect e, int strength) {
+  switch (e) {
+    case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::STRENGTH)));
+    case LastingEffect::HALLU:
+    case LastingEffect::SLOWED:
+    case LastingEffect::SPEED:
+    case LastingEffect::RAGE:
+    case LastingEffect::PANIC: return panicTime[strength];
+    case LastingEffect::POISON: return poisonTime[strength];
+    case LastingEffect::DEX_BONUS:
+    case LastingEffect::STR_BONUS: return attrBonusTime[strength];
+    case LastingEffect::BLIND: return blindTime[strength];
+    case LastingEffect::INVISIBLE: return invisibleTime[strength];
+    case LastingEffect::STUNNED: return stunTime[strength];
+    case LastingEffect::FIRE_RESISTANT:
+    case LastingEffect::POISON_RESISTANT: return resistantTime[strength];
+    case LastingEffect::FLYING: return levitateTime[strength];
+    case LastingEffect::SLEEP: return sleepTime[strength];
+  }
+  return 0;
+}
+
 void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strengthEnum) {
   int strength = int(strengthEnum);
-  switch (type) {
-    case EffectType::LEAVE_BODY: leaveBody(c); break;
-    case EffectType::WEB:
-      c->addEffect(LastingEffect::ENTANGLED, entangledTime(c->getAttr(AttrType::STRENGTH))); break;
-    case EffectType::TELE_ENEMIES: teleEnemies(c); break;
-    case EffectType::ALARM: alarm(c); break;
-    case EffectType::ACID: acid(c); break;
-    case EffectType::SUMMON_INSECTS: insects(c); break;
-    case EffectType::DECEPTION: deception(c); break;
-    case EffectType::WORD_OF_POWER: wordOfPower(c, strength); break;
-    case EffectType::POISON: c->addEffect(LastingEffect::POISON, poisonTime[strength]); break;
-    case EffectType::GUARDING_BOULDER: guardingBuilder(c); break;
-    case EffectType::FIRE_SPHERE_PET: summon(c, CreatureId::FIRE_SPHERE, 1, 30); break;
-    case EffectType::ENHANCE_ARMOR: enhanceArmor(c); break;
-    case EffectType::ENHANCE_WEAPON: enhanceWeapon(c); break;
-    case EffectType::DESTROY_EQUIPMENT: destroyEquipment(c); break;
-    case EffectType::HEAL: heal(c, strength); break;
-    case EffectType::SLEEP: sleep(c, strength); break;
-    case EffectType::IDENTIFY: c->grantIdentify(identifyNum[strength]); break;
-    case EffectType::TERROR: c->globalMessage("You hear maniacal laughter close by",
-                                 "You hear maniacal laughter in the distance");
-    case EffectType::PANIC: c->addEffect(LastingEffect::PANIC, panicTime[strength]); break;
-    case EffectType::RAGE: c->addEffect(LastingEffect::RAGE, panicTime[strength]); break;
-    case EffectType::HALLU: c->addEffect(LastingEffect::HALLU, panicTime[strength]); break;
-    case EffectType::STR_BONUS: c->addEffect(LastingEffect::STR_BONUS, attrBonusTime[strength]); break;
-    case EffectType::DEX_BONUS: c->addEffect(LastingEffect::DEX_BONUS, attrBonusTime[strength]); break;
-    case EffectType::SLOW: c->addEffect(LastingEffect::SLOWED, panicTime[strength]); break;
-    case EffectType::SPEED: c->addEffect(LastingEffect::SPEED, panicTime[strength]); break;
-    case EffectType::BLINDNESS: c->addEffect(LastingEffect::BLIND, blindTime[strength]); break;
-    case EffectType::INVISIBLE: c->addEffect(LastingEffect::INVISIBLE, invisibleTime[strength]); break;
-    case EffectType::FIRE: c->getSquare()->setOnFire(fireAmount[strength]); break;
-    case EffectType::PORTAL: portal(c); break;
-    case EffectType::TELEPORT: teleport(c); break;
-    case EffectType::ROLLING_BOULDER: rollingBoulder(c); break;
-    case EffectType::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.getRandom(2, 5), 100); break;
-    case EffectType::EMIT_POISON_GAS: emitPoisonGas(c->getLevel(), c->getPosition(), strength, true); break;
-    case EffectType::STUN: c->addEffect(LastingEffect::STUNNED, stunTime[strength]); break;
-    case EffectType::POISON_RESISTANCE: c->addEffect(LastingEffect::POISON_RESISTANT, resistantTime[strength]); break;
-    case EffectType::FIRE_RESISTANCE: c->addEffect(LastingEffect::FIRE_RESISTANT, resistantTime[strength]); break;
-    case EffectType::LEVITATION: c->addEffect(LastingEffect::FLYING, levitateTime[strength]); break;
-    case EffectType::SILVER_DAMAGE: silverDamage(c); break;
+  switch (type.getId()) {
+    case EffectId::LEAVE_BODY: leaveBody(c); break;
+    case EffectId::LASTING:
+        c->addEffect(type.get<LastingEffect>(), getDuration(c, type.get<LastingEffect>(), strength)); break;
+    case EffectId::TELE_ENEMIES: teleEnemies(c); break;
+    case EffectId::ALARM: alarm(c); break;
+    case EffectId::ACID: acid(c); break;
+    case EffectId::SUMMON_INSECTS: insects(c); break;
+    case EffectId::DECEPTION: deception(c); break;
+    case EffectId::WORD_OF_POWER: wordOfPower(c, strength); break;
+    case EffectId::GUARDING_BOULDER: guardingBuilder(c); break;
+    case EffectId::FIRE_SPHERE_PET: summon(c, CreatureId::FIRE_SPHERE, 1, 30); break;
+    case EffectId::ENHANCE_ARMOR: enhanceArmor(c); break;
+    case EffectId::ENHANCE_WEAPON: enhanceWeapon(c); break;
+    case EffectId::DESTROY_EQUIPMENT: destroyEquipment(c); break;
+    case EffectId::HEAL: heal(c, strength); break;
+    case EffectId::IDENTIFY: c->grantIdentify(identifyNum[strength]); break;
+    case EffectId::FIRE: c->getSquare()->setOnFire(fireAmount[strength]); break;
+    case EffectId::PORTAL: portal(c); break;
+    case EffectId::TELEPORT: teleport(c); break;
+    case EffectId::ROLLING_BOULDER: rollingBoulder(c); break;
+    case EffectId::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.getRandom(2, 5), 100); break;
+    case EffectId::EMIT_POISON_GAS: emitPoisonGas(c->getLevel(), c->getPosition(), strength, true); break;
+    case EffectId::SILVER_DAMAGE: silverDamage(c); break;
   }
 }
 
 void Effect::applyToPosition(Level* level, Vec2 pos, EffectType type, EffectStrength strength) {
-  switch (type) {
-    case EffectType::EMIT_POISON_GAS: emitPoisonGas(level, pos, int(strength), false); break;
-    default: FAIL << "Can't apply to position " << int(type);
+  switch (type.getId()) {
+    case EffectId::EMIT_POISON_GAS: emitPoisonGas(level, pos, int(strength), false); break;
+    default: FAIL << "Can't apply to position " << int(type.getId());
   }
+}
+
+string Effect::getName(EffectType type) {
+  switch (type.getId()) {
+    case EffectId::HEAL: return "healing";
+    case EffectId::TELEPORT: return "teleport";
+    case EffectId::IDENTIFY: return "identify";
+    case EffectId::ROLLING_BOULDER: return "rolling boulder";
+    case EffectId::PORTAL: return "magic portal";
+    case EffectId::EMIT_POISON_GAS: return "poison gas";
+    case EffectId::DESTROY_EQUIPMENT: return "destruction";
+    case EffectId::ENHANCE_WEAPON: return "weapon enchantement";
+    case EffectId::ENHANCE_ARMOR: return "armor enchantement";
+    case EffectId::FIRE_SPHERE_PET: return "fire sphere";
+    case EffectId::WORD_OF_POWER: return "power";
+    case EffectId::DECEPTION: return "deception";
+    case EffectId::SUMMON_INSECTS: return "insect summoning";
+    case EffectId::LEAVE_BODY: return "possesion";
+    case EffectId::FIRE: return "fire";
+    case EffectId::ACID: return "acid";
+    case EffectId::GUARDING_BOULDER: return "boulder";
+    case EffectId::ALARM: return "alarm";
+    case EffectId::TELE_ENEMIES: return "surprise";
+    case EffectId::SUMMON_SPIRIT: return "spirit summoning";
+    case EffectId::SILVER_DAMAGE: return "silver";
+    case EffectId::LASTING:
+        switch (type.get<LastingEffect>()) {
+          case LastingEffect::SLOWED: return "slowness";
+          case LastingEffect::SPEED: return "speed";
+          case LastingEffect::BLIND: return "blindness";
+          case LastingEffect::INVISIBLE: return "invisibility";
+          case LastingEffect::POISON: return "poison";
+          case LastingEffect::POISON_RESISTANT: return "poison resistance";
+          case LastingEffect::FLYING: return "levitation";
+          case LastingEffect::PANIC: return "panic";
+          case LastingEffect::RAGE: return "rage";
+          case LastingEffect::HALLU: return "magic";
+          case LastingEffect::STR_BONUS: return "strength";
+          case LastingEffect::DEX_BONUS: return "dexterity";
+          case LastingEffect::SLEEP: return "sleep";
+          case LastingEffect::ENTANGLED: return "web";
+          case LastingEffect::STUNNED: return "stunning";
+          case LastingEffect::FIRE_RESISTANT: return "fire resistance";
+        }
+  }
+  return "";
 }
 

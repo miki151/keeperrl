@@ -21,15 +21,15 @@
 #include "effect.h"
 
 static vector<EffectType> combatConsumables {
-    EffectType::SPEED,
-    EffectType::SLOW,
-    EffectType::SLEEP,
-    EffectType::POISON,
-    EffectType::BLINDNESS,
-    EffectType::INVISIBLE,
-    EffectType::STR_BONUS,
-    EffectType::DEX_BONUS,
-    EffectType::POISON_RESISTANCE,
+    EffectType(EffectId::LASTING, LastingEffect::SPEED),
+    EffectType(EffectId::LASTING, LastingEffect::SLOWED),
+    EffectType(EffectId::LASTING, LastingEffect::SLEEP),
+    EffectType(EffectId::LASTING, LastingEffect::POISON),
+    EffectType(EffectId::LASTING, LastingEffect::BLIND),
+    EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
+    EffectType(EffectId::LASTING, LastingEffect::STR_BONUS),
+    EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS),
+    EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT),
 };
 
 template <class Archive>
@@ -56,7 +56,7 @@ Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
     return MinionEquipment::ARMOR;
   if (contains({ItemClass::RANGED_WEAPON, ItemClass::AMMO}, it->getClass()))
     return MinionEquipment::ARCHERY;
-  if (it->getEffectType() == EffectType::HEAL)
+  if (it->getEffectType() == EffectId::HEAL)
     return MinionEquipment::HEALING;
   if (contains(combatConsumables, it->getEffectType()))
     return MinionEquipment::COMBAT_ITEM;

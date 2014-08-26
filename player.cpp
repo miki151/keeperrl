@@ -904,23 +904,30 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
             noEffect = true;
           break; }
       case EpithetId::WAR:
-          grantGift(creature, chooseRandom(
-          {ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}), to->getName()); break;
+          grantGift(creature, chooseRandom({
+                ItemId::SPECIAL_SWORD,
+                ItemId::SPECIAL_BATTLE_AXE,
+                ItemId::SPECIAL_WAR_HAMMER}), to->getName()); break;
 /*      case EpithetId::WISDOM: grantGift(c, 
           chooseRandom({ItemId::MUSHROOM_BOOK, ItemId::POTION_BOOK, ItemId::AMULET_BOOK}), name); break;*/
-      case EpithetId::DESTRUCTION: applyEffect(creature, EffectType::DESTROY_EQUIPMENT, ""); break;
-      case EpithetId::SECRETS: grantGift(creature, {ItemId::POTION, EffectType::INVISIBLE}, to->getName()); break;
+      case EpithetId::DESTRUCTION: applyEffect(creature, EffectId::DESTROY_EQUIPMENT, ""); break;
+      case EpithetId::SECRETS:
+          grantGift(creature, {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::INVISIBLE)},
+              to->getName());
+          break;
       case EpithetId::LIGHTNING:
           creature->bleed(0.9);
           creature->you(MsgType::ARE, "struck by a lightning bolt!");
           break;
       case EpithetId::FEAR:
-          applyEffect(creature, EffectType::PANIC, to->getName() + " puts fear in your heart"); break;
+          applyEffect(creature, EffectType(EffectId::LASTING, LastingEffect::PANIC),
+              to->getName() + " puts fear in your heart"); break;
       case EpithetId::MIND: 
           if (Random.roll(2))
-            applyEffect(creature, EffectType::RAGE, to->getName() + " fills your head with anger");
+            applyEffect(creature, EffectType(EffectId::LASTING, LastingEffect::RAGE),
+                to->getName() + " fills your head with anger");
           else
-            applyEffect(creature, EffectType::HALLU, "");
+            applyEffect(creature, EffectType(EffectId::LASTING, LastingEffect::HALLU), "");
           break;
       case EpithetId::CHANGE:
           if (Random.roll(2) && creature->getWeapon()) {
@@ -959,12 +966,13 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
           break;
       case EpithetId::HEALTH:
           if (creature->getHealth() < 1 || creature->lostOrInjuredBodyParts())
-            applyEffect(creature, EffectType::HEAL, "You feel a healing power overcoming you");
+            applyEffect(creature, EffectId::HEAL, "You feel a healing power overcoming you");
           else {
             if (Random.roll(4))
               grantGift(creature, ItemId::HEALING_AMULET, to->getName());
             else
-              grantGift(creature, {ItemId::POTION, EffectType::HEAL}, to->getName(), Random.getRandom(1, 4));
+              grantGift(creature, {ItemId::POTION, EffectId::HEAL}, to->getName(),
+                  Random.getRandom(1, 4));
           }
           break;
       case EpithetId::NATURE: grantGift(creature, ItemId::FRIENDLY_ANIMALS_AMULET, to->getName()); break;
@@ -972,9 +980,9 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
       case EpithetId::WEALTH:
         grantGift(creature, ItemId::GOLD_PIECE, to->getName(), Random.getRandom(100, 200)); break;
       case EpithetId::DEFENSE: grantGift(creature, ItemId::DEFENSE_AMULET, to->getName()); break;
-      case EpithetId::DARKNESS: applyEffect(creature, EffectType::BLINDNESS, ""); break;
+      case EpithetId::DARKNESS: applyEffect(creature, EffectType(EffectId::LASTING, LastingEffect::BLIND), ""); break;
       case EpithetId::CRAFTS: applyEffect(creature,
-          chooseRandom({EffectType::ENHANCE_ARMOR, EffectType::ENHANCE_WEAPON}), ""); break;
+          chooseRandom({EffectId::ENHANCE_ARMOR, EffectId::ENHANCE_WEAPON}), ""); break;
       default: noEffect = true;
     }
     usedEpithets.push_back(epithet);

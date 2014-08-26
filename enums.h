@@ -62,7 +62,7 @@ enum class SettlementType;
 enum class ViewId;
 
 enum class EffectStrength;
-enum class EffectType;
+enum class EffectId;
 
 enum class AnimationId;
 

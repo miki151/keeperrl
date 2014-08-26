@@ -50,24 +50,7 @@ enum MonsterAIType {
   FOLLOWER,
 };
 
-class Behaviour {
-  public:
-  Behaviour(Creature*);
-  virtual MoveInfo getMove() { return NoMove; }
-  virtual void onAttacked(const Creature* attacker) {}
-  virtual double itemValue(const Item*) { return 0; }
-  Item* getBestWeapon();
-  const Creature* getClosestEnemy();
-  MoveInfo tryToApplyItem(EffectType, double maxTurns);
-
-  virtual ~Behaviour() {}
-
-  SERIALIZATION_DECL(Behaviour);
-
-  protected:
-  Creature* SERIAL(creature);
-};
-
+class Behavior;
 class MonsterAI {
   public:
   void makeMove();
@@ -76,6 +59,8 @@ class MonsterAI {
 
   template <class Archive>
   static void registerTypes(Archive& ar);
+
+  ~MonsterAI();
 
   private:
   friend class MonsterAIFactory;

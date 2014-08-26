@@ -19,6 +19,7 @@
 #include "util.h"
 #include "enums.h"
 #include "creature_factory.h"
+#include "effect_type.h"
 
 class Level;
 class Creature;
@@ -32,6 +33,7 @@ class Effect {
 
   static void summon(Creature*, CreatureId, int num, int ttl);
   static void summon(Level*, CreatureFactory, Vec2 pos, int num, int ttl);
+  static string getName(EffectType);
 
   template <class Archive>
   static void registerTypes(Archive& ar);
@@ -39,45 +41,5 @@ class Effect {
 
 enum class EffectStrength { WEAK, NORMAL, STRONG };
 
-enum class EffectType { 
-    TELEPORT,
-    HEAL,
-    SLEEP,
-    IDENTIFY,
-    PANIC,
-    RAGE,
-    ROLLING_BOULDER,
-    FIRE,
-    SLOW,
-    SPEED,
-    HALLU,
-    STR_BONUS,
-    DEX_BONUS,
-    BLINDNESS,
-    INVISIBLE,
-    PORTAL,
-    DESTROY_EQUIPMENT,
-    ENHANCE_ARMOR,
-    ENHANCE_WEAPON,
-    FIRE_SPHERE_PET,
-    GUARDING_BOULDER,
-    EMIT_POISON_GAS,
-    POISON,
-    WORD_OF_POWER,
-    DECEPTION,
-    SUMMON_INSECTS,
-    ACID,
-    ALARM,
-    TELE_ENEMIES,
-    WEB,
-    TERROR,
-    SUMMON_SPIRIT,
-    LEAVE_BODY,
-    STUN,
-    POISON_RESISTANCE,
-    FIRE_RESISTANCE,
-    LEVITATION,
-    SILVER_DAMAGE,
-};
 
 #endif

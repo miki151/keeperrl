@@ -285,7 +285,7 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
   Level* dragon = buildLevel(
       Level::Builder(40, 30, capitalFirst(castleNem2.second) + "'s Cave"),
       LevelMaker::cavernLevel(CreatureFactory::singleType(Tribe::get(TribeId::DRAGON), castleNem2.first),
-          SquareId::MUD_WALL, SquareId::MUD, StairLook::NORMAL, {StairKey::DRAGON}, {}));
+          SquareId::MUD_WALL, SquareType(SquareId::MUD), StairLook::NORMAL, {StairKey::DRAGON}, {}));
   addLink(StairDirection::DOWN, StairKey::CRYPT, top, c1);
  // addLink(StairDirection::UP, StairKey::PYRAMID, top, p1);
  // addLink(StairDirection::UP, StairKey::PYRAMID, p1, p2);
@@ -443,14 +443,10 @@ PCreature Model::makePlayer() {
           c.skills.insert(SkillId::AMBUSH);), Player::getFactory(this, levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
-      ItemId::SPECIAL_SWORD,
-      ItemId::SPECIAL_SWORD,
-      ItemId::SPECIAL_BATTLE_AXE,
-      ItemId::SPECIAL_WAR_HAMMER,
-      ItemId::SPECIAL_KNIFE,
       ItemId::KNIFE,
       ItemId::LEATHER_GLOVES,
-      ItemId::LEATHER_ARMOR, ItemId::LEATHER_HELM});
+      ItemId::LEATHER_ARMOR,
+      ItemId::LEATHER_HELM});
   for (int i : Range(Random.getRandom(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
   return player;

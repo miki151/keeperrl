@@ -111,18 +111,18 @@ ViewIndex Creature::getViewIndex(Vec2 pos) const {
 
 SpellInfo Creature::getSpell(SpellId id) {
   switch (id) {
-    case SpellId::HEALING: return {id, "healing", EffectType::HEAL, 0, 30};
-    case SpellId::SUMMON_INSECTS: return {id, "summon insects", EffectType::SUMMON_INSECTS, 0, 30};
-    case SpellId::DECEPTION: return {id, "deception", EffectType::DECEPTION, 0, 60};
-    case SpellId::SPEED_SELF: return {id, "haste self", EffectType::SPEED, 0, 60};
-    case SpellId::STR_BONUS: return {id, "strength", EffectType::STR_BONUS, 0, 90};
-    case SpellId::DEX_BONUS: return {id, "dexterity", EffectType::DEX_BONUS, 0, 90};
-    case SpellId::FIRE_SPHERE_PET: return {id, "fire sphere", EffectType::FIRE_SPHERE_PET, 0, 20};
-    case SpellId::TELEPORT: return {id, "escape", EffectType::TELEPORT, 0, 120};
-    case SpellId::INVISIBILITY: return {id, "invisibility", EffectType::INVISIBLE, 0, 300};
-    case SpellId::WORD_OF_POWER: return {id, "word of power", EffectType::WORD_OF_POWER, 0, 300};
-    case SpellId::SUMMON_SPIRIT: return {id, "summon spirits", EffectType::SUMMON_SPIRIT, 0, 300};
-    case SpellId::PORTAL: return {id, "portal", EffectType::PORTAL, 0, 200};
+    case SpellId::HEALING: return {id, "healing", EffectId::HEAL, 0, 30};
+    case SpellId::SUMMON_INSECTS: return {id, "summon insects", EffectId::SUMMON_INSECTS, 0, 30};
+    case SpellId::DECEPTION: return {id, "deception", EffectId::DECEPTION, 0, 60};
+    case SpellId::SPEED_SELF: return {id, "haste self", {EffectId::LASTING, LastingEffect::SPEED}, 0, 60};
+    case SpellId::STR_BONUS: return {id, "strength", {EffectId::LASTING, LastingEffect::STR_BONUS}, 0, 90};
+    case SpellId::DEX_BONUS: return {id, "dexterity", {EffectId::LASTING, LastingEffect::DEX_BONUS}, 0, 90};
+    case SpellId::FIRE_SPHERE_PET: return {id, "fire sphere", EffectId::FIRE_SPHERE_PET, 0, 20};
+    case SpellId::TELEPORT: return {id, "escape", EffectId::TELEPORT, 0, 120};
+    case SpellId::INVISIBILITY: return {id, "invisibility", {EffectId::LASTING, LastingEffect::INVISIBLE}, 0, 300};
+    case SpellId::WORD_OF_POWER: return {id, "word of power", EffectId::WORD_OF_POWER, 0, 300};
+    case SpellId::SUMMON_SPIRIT: return {id, "summon spirits", EffectId::SUMMON_SPIRIT, 0, 300};
+    case SpellId::PORTAL: return {id, "portal", EffectId::PORTAL, 0, 200};
   }
   FAIL << "wpeofk";
   return getSpell(SpellId::HEALING);
@@ -1438,14 +1438,8 @@ string Creature::getDescription() const {
   if (Item* item = getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))
     weapon = " It's wielding " + item->getAName() + ".";*/
   string attack;
-  if (attackEffect) {
-    switch (*attackEffect) {
-      case EffectType::POISON: attack = "poison"; break;
-      case EffectType::FIRE: attack = "fire"; break;
-      default: FAIL << "Unhandled monster attack " << int(*attackEffect);
-    }
-    attack = " It has a " + attack + " attack.";
-  }
+  if (attackEffect)
+    attack = " It has a " + Effect::getName(*attackEffect) + " attack.";
   return getTheName() + " is a " + adjectives(*size, undead, notLiving, uncorporal) +
       (isHumanoid() ? " humanoid creature" : " beast") + bodyDescription() + ". " +
      "It is " + attrStr(*strength > 16, *dexterity > 16, *speed > 100) + "." + weapon + attack;

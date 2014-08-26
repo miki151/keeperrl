@@ -23,9 +23,29 @@
 #include "item.h"
 #include "creature.h"
 
+class Behaviour {
+  public:
+  Behaviour(Creature*);
+  virtual MoveInfo getMove() { return NoMove; }
+  virtual void onAttacked(const Creature* attacker) {}
+  virtual double itemValue(const Item*) { return 0; }
+  Item* getBestWeapon();
+  const Creature* getClosestEnemy();
+  MoveInfo tryToApplyItem(EffectType, double maxTurns);
+
+  virtual ~Behaviour() {}
+
+  SERIALIZATION_DECL(Behaviour);
+
+  protected:
+  Creature* SERIAL(creature);
+};
+
+MonsterAI::~MonsterAI() {}
+
 template <class Archive> 
 void MonsterAI::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(behaviours)
+   ar & SVAR(behaviours)
     & SVAR(weights)
     & SVAR(creature)
     & SVAR(pickItems);
@@ -91,7 +111,7 @@ class Heal : public Behaviour {
   Heal(Creature* c, bool _useBeds = true) : Behaviour(c), useBeds(_useBeds) {}
 
   virtual double itemValue(const Item* item) {
-    if (item->getEffectType() == EffectType::HEAL) {
+    if (item->getEffectType() == EffectId::HEAL) {
       return 0.5;
     }
     else
@@ -107,13 +127,13 @@ class Heal : public Behaviour {
     if (!creature->isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON))
-      if (MoveInfo move = tryToApplyItem(EffectType::POISON_RESISTANCE, 1))
+      if (MoveInfo move = tryToApplyItem(EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT), 1))
         return move;
     if (creature->getHealth() == 1)
       return NoMove;
-    if (MoveInfo move = tryToApplyItem(EffectType::HEAL, 1))
+    if (MoveInfo move = tryToApplyItem(EffectId::HEAL, 1))
       return move.setValue(min(1.0, 1.5 - creature->getHealth()));
-    if (MoveInfo move = tryToApplyItem(EffectType::HEAL, 3))
+    if (MoveInfo move = tryToApplyItem(EffectId::HEAL, 3))
       return move.setValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
     if (creature->getConstSquare()->getApplyType(creature) == SquareApplyType::SLEEP)
       return { 0.4 * min(1.0, 1.5 - creature->getHealth()), creature->applySquare()};
@@ -371,7 +391,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getPanicMove(const Creature* other, double weight) {
-    if (auto teleMove = tryToApplyItem(EffectType::TELEPORT, 1))
+    if (auto teleMove = tryToApplyItem(EffectId::TELEPORT, 1))
       return {weight, teleMove.move};
     if (other->getPosition().dist8(creature->getPosition()) > 3)
       if (auto move = getFireMove(other->getPosition() - creature->getPosition()))
@@ -387,8 +407,15 @@ class Fighter : public Behaviour {
   }
 
   virtual double itemValue(const Item* item) {
-    if (contains({EffectType::INVISIBLE, EffectType::SLOW, EffectType::BLINDNESS, EffectType::SLEEP,
-            EffectType::POISON, EffectType::TELEPORT, EffectType::STR_BONUS, EffectType::DEX_BONUS},
+    if (contains<EffectType>({
+          EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
+          EffectType(EffectId::LASTING, LastingEffect::SLOWED),
+          EffectType(EffectId::LASTING, LastingEffect::BLIND),
+          EffectType(EffectId::LASTING, LastingEffect::SLEEP),
+          EffectType(EffectId::LASTING, LastingEffect::POISON),
+          EffectId::TELEPORT,
+          EffectType(EffectId::LASTING, LastingEffect::STR_BONUS),
+          EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)},
           item->getEffectType()))
       return 1;
     if (item->getClass() == ItemClass::AMMO && creature->hasSkill(Skill::get(SkillId::ARCHERY)))
@@ -415,7 +442,11 @@ class Fighter : public Behaviour {
   }
 
   double getThrowValue(Item* it) {
-    if (contains({EffectType::POISON, EffectType::SLOW, EffectType::BLINDNESS, EffectType::SLEEP},
+    if (contains<EffectType>({
+          EffectType(EffectId::LASTING, LastingEffect::POISON),
+          EffectType(EffectId::LASTING, LastingEffect::SLOWED),
+          EffectType(EffectId::LASTING, LastingEffect::BLIND),
+          EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
           it->getEffectType()))
       return 100;
     return it->getModifier(AttrType::THROWN_DAMAGE);
@@ -500,8 +531,12 @@ class Fighter : public Behaviour {
         })};
     }
     if (distance <= 5)
-      for (EffectType effect : {EffectType::INVISIBLE, EffectType::STR_BONUS, EffectType::DEX_BONUS,
-          EffectType::SPEED, EffectType::SUMMON_SPIRIT})
+      for (EffectType effect : {
+          EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
+          EffectType(EffectId::LASTING, LastingEffect::STR_BONUS),
+          EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS),
+          EffectType(EffectId::LASTING, LastingEffect::SPEED),
+          EffectType(EffectId::SUMMON_SPIRIT)})
         if (MoveInfo move = tryToApplyItem(effect, 1))
           return move;
     if (distance > 1) {
@@ -768,7 +803,7 @@ class Thief : public Behaviour {
       return NoMove;
     for (const Creature* other : robbed) {
       if (creature->canSee(other)) {
-        if (MoveInfo teleMove = tryToApplyItem(EffectType::TELEPORT, 1))
+        if (MoveInfo teleMove = tryToApplyItem(EffectId::TELEPORT, 1))
           return teleMove;
         if (auto action = creature->moveAway(other->getPosition()))
         return {1.0, action};

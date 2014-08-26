@@ -678,11 +678,11 @@ class GreenDragonController : public Monster {
   using Monster::Monster;
 
   virtual void sleeping() override {
-    Effect::applyToCreature(creature, EffectType::EMIT_POISON_GAS, EffectStrength::WEAK);
+    Effect::applyToCreature(creature, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
   }
 
   virtual void makeMove() override {
-    Effect::applyToCreature(creature, EffectType::EMIT_POISON_GAS, EffectStrength::WEAK);
+    Effect::applyToCreature(creature, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
     Monster::makeMove();
   }
 
@@ -702,7 +702,7 @@ class RedDragonController : public Monster {
         if (creature->getLevel()->inBounds(creature->getPosition() + v))
           if (const Creature* c = creature->getSquare(v)->getCreature())
             if (creature->isEnemy(c)) {
-              Effect::applyToCreature(creature, EffectType::FIRE_SPHERE_PET, EffectStrength::NORMAL);
+              Effect::applyToCreature(creature, EffectId::FIRE_SPHERE_PET, EffectStrength::NORMAL);
               lastSpawn = creature->getTime();
             }
     Monster::makeMove();
@@ -765,8 +765,8 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
   inventory.push_back(ItemId::SWORD);
   inventory.push_back(ItemId::LEATHER_ARMOR);
   inventory.push_back(ItemId::LEATHER_BOOTS);
-  inventory.push_back({ItemId::POTION, EffectType::HEAL});
-  inventory.push_back({ItemId::POTION, EffectType::HEAL});
+  inventory.push_back({ItemId::POTION, EffectId::HEAL});
+  inventory.push_back({ItemId::POTION, EffectId::HEAL});
   return addInventory(std::move(ret), inventory);
 }
 
@@ -974,8 +974,8 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
             *c.dexterity += 5;
             c.barehandedDamage += 5;
             switch (Random.getRandom(8)) {
-              case 0: c.attackEffect = EffectType::POISON; break;
-              case 1: c.attackEffect = EffectType::FIRE; c.barehandedAttack = AttackType::HIT; break;
+              case 0: c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON); break;
+              case 1: c.attackEffect = EffectId::FIRE; c.barehandedAttack = AttackType::HIT; break;
               default: break;
             }
           }
@@ -1002,12 +1002,14 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
               chooseRandom({ItemId::WARNING_AMULET, ItemId::HEALING_AMULET, ItemId::DEFENSE_AMULET})));
         break;
       case 1:
-        c->take(ItemFactory::fromId({ItemId::POTION, EffectType::INVISIBLE}, Random.getRandom(3, 6)));
+        c->take(ItemFactory::fromId({ItemId::POTION,
+              EffectType(EffectId::LASTING, LastingEffect::INVISIBLE)},
+              Random.getRandom(3, 6)));
         break;
       case 2:
         c->take(ItemFactory::fromId(chooseRandom<ItemType>({
-                {ItemId::MUSHROOM, EffectType::STR_BONUS},
-                {ItemId::MUSHROOM, EffectType::DEX_BONUS}}), Random.getRandom(3, 6)));
+              {ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::STR_BONUS)},
+              {ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)}}), Random.getRandom(3, 6)));
         break;
       default:
         FAIL << "Unhandled case value";
@@ -1274,7 +1276,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.strength += 2;
           c.dexterity += 2;
           c.barehandedDamage += 2;
-          c.attackEffect = EffectType::FIRE;
+          c.attackEffect = EffectId::FIRE;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.name = "lava golem";);
     case CreatureId::ACID_MOUND: 
@@ -1286,7 +1288,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity = 5;
           c.barehandedDamage = 1;
           c.humanoid = false;
-          c.passiveAttack = EffectType::ACID;
+          c.passiveAttack = EffectId::ACID;
           c.bodyParts.clear();
           c.brain = false;
           c.noSleep = true;
@@ -1544,7 +1546,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity = 18;
           c.barehandedDamage = 7;
           c.barehandedAttack = AttackType::BITE;
-          c.attackEffect = EffectType::POISON;
+          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.harmlessApply = true;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.humanoid = true;
@@ -1741,7 +1743,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.strength = 9;
           c.dexterity = 13;
           c.barehandedDamage = 10;
-          c.attackEffect = EffectType::POISON;
+          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.humanoid = false;
           c.weight = 0.3;
           c.bodyParts[BodyPart::ARM] = 0;
@@ -1782,7 +1784,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 2;
           c.animal = true;
           c.canBeMinion = false;
-          c.attackEffect = EffectType::POISON;
+          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.skills.insert(SkillId::SWIMMING);
           c.name = "snake";);
     case CreatureId::RAVEN: 
@@ -2012,11 +2014,11 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
 }
 
 ItemType randomHealing() {
-  return chooseRandom({ItemType(ItemId::POTION, EffectType::HEAL), {ItemId::FIRST_AID_KIT}});
+  return chooseRandom({ItemType(ItemId::POTION, EffectId::HEAL), {ItemId::FIRST_AID_KIT}});
 }
 
 ItemType randomBackup() {
-  return chooseRandom({{ItemId::SCROLL, EffectType::TELEPORT}, randomHealing()}, {1, 4});
+  return chooseRandom({{ItemId::SCROLL, EffectId::TELEPORT}, randomHealing()}, {1, 4});
 }
 
 ItemType randomArmor() {
@@ -2070,7 +2072,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::SCYTHE);
     case CreatureId::LEPRECHAUN: 
       return ItemList()
-        .add({ItemId::SCROLL, EffectType::TELEPORT}, Random.getRandom(1, 4));
+        .add({ItemId::SCROLL, EffectId::TELEPORT}, Random.getRandom(1, 4));
     case CreatureId::GNOME: 
       return ItemList()
         .add(chooseRandom({ItemId::KNIFE}))
@@ -2107,9 +2109,9 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::GOLD_PIECE, Random.getRandom(30, 80));
     case CreatureId::DEVIL: 
       return ItemList().add(chooseRandom<ItemType>({
-              {ItemId::POTION, EffectType::BLINDNESS},
-              {ItemId::POTION, EffectType::SLEEP},
-              {ItemId::POTION, EffectType::SLOW}}));
+              {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::BLIND)},
+              {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
+              {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)}}));
     case CreatureId::DARK_KNIGHT:
     case CreatureId::AVATAR: 
       return ItemList()
@@ -2117,7 +2119,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_HELM)
         .add(ItemId::IRON_BOOTS)
-        .add({ItemId::POTION, EffectType::HEAL}, Random.getRandom(1, 4))
+        .add({ItemId::POTION, EffectId::HEAL}, Random.getRandom(1, 4))
         .add(ItemId::GOLD_PIECE, Random.getRandom(200, 300));
     case CreatureId::OGRE: 
       return ItemList().add(ItemId::WAR_HAMMER);
@@ -2174,13 +2176,13 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::KNIFE)
         .add({
-            {ItemId::POTION, EffectType::HEAL},
-            {ItemId::POTION, EffectType::SLEEP},
-            {ItemId::POTION, EffectType::SLOW},
-            {ItemId::POTION, EffectType::BLINDNESS},
-            {ItemId::POTION, EffectType::INVISIBLE},
-            {ItemId::POTION, EffectType::POISON},
-            {ItemId::POTION, EffectType::SPEED}});
+            {ItemId::POTION, EffectType(EffectId::HEAL)},
+            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
+            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)},
+            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::BLIND)},
+            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::INVISIBLE)},
+            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::POISON)},
+            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SPEED)}});
     default: return {};
   }
 }

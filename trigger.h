@@ -17,6 +17,7 @@
 #define _TRIGGER_H
 
 #include "util.h"
+#include "effect_type.h"
 
 class Creature;
 class CreatureView;

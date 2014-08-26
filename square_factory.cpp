@@ -559,7 +559,7 @@ class Bed : public Furniture {
   }
 
   virtual void onApply(Creature* c) override {
-    Effect::applyToCreature(c, EffectType::SLEEP, EffectStrength::STRONG);
+    Effect::applyToCreature(c, {EffectId::LASTING, LastingEffect::SLEEP}, EffectStrength::STRONG);
     getLevel()->addTickingSquare(getPosition());
   }
 
@@ -1122,10 +1122,10 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::CREATURE_ALTAR:
         return new CreatureAltar(ViewObject(ViewId::CREATURE_ALTAR, ViewLayer::FLOOR, "Shrine"),
               s.get<const Creature*>());
-    case SquareId::ROLLING_BOULDER: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
-                                          EffectType::ROLLING_BOULDER);
-    case SquareId::POISON_GAS: return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"),
-                                          EffectType::EMIT_POISON_GAS);
+    case SquareId::ROLLING_BOULDER:
+        return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"), EffectId::ROLLING_BOULDER);
+    case SquareId::POISON_GAS:
+        return new TrapSquare(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR, "floor"), EffectId::EMIT_POISON_GAS);
     case SquareId::FOUNTAIN:
         return new Fountain(ViewObject(ViewId::FOUNTAIN, ViewLayer::FLOOR, "Fountain"));
     case SquareId::CHEST:

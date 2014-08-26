@@ -3,67 +3,47 @@
 
 #include "serialization.h"
 
-template<typename U, typename Id, Id...ids>
+template<typename U, typename Id, Id...value>
 struct TypeAssign {
-  TypeAssign() {}
-
-  TypeAssign(Id id) {
-    CHECK(!containsId(id));
+  TypeAssign(const U& u, Id id) {
+    assert(hasValue(id));
   }
 
-  template<class V>
-  TypeAssign<V>(V v, Id id) {
-    CHECK(!containsId(id));
+  template <typename V>
+  TypeAssign(const V& u, Id id) {
+    assert(!hasValue(id));
   }
 
-  TypeAssign(U u, Id id) {
-    CHECK(containsId(id));
-  }
-
-  TypeAssign(const boost::any& a1, const boost::any& a2, function<void()> eqFun) {
-    if (a1.type() == typeid(U) && a2.type() == typeid(U) && boost::any_cast<U>(a1) == boost::any_cast<U>(a2)) {
-      eqFun();
-    }
-  }
-
-  TypeAssign(boost::archive::binary_oarchive& ar, Id, boost::any& a) {
-    if (a.type() == typeid(U))
-      ar & (*boost::any_cast<U>(&a));
-  }
-
-  TypeAssign(boost::archive::binary_iarchive& ar, Id id, boost::any& a) {
-    if (containsId(id)) {
-      a = U();
-      ar & (*boost::any_cast<U>(&a));
-    }
-  }
-
-  static bool containsId(Id id) {
-    return contains({ids...}, id);
+  bool hasValue(Id id) {
+    for (Id i : {value...})
+      if (i == id)
+        return true;
+    return false;
   }
 };
 
-template<typename... Assigns>
-struct AnyCompare : public Assigns... {
-  AnyCompare(const boost::any& a1, const boost::any& a2, function<void()> eqFun) : Assigns(a1, a2, eqFun)... {}
+struct EmptyThing {
+  bool operator == (const EmptyThing& other) const {
+    return true;
+  }
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+  }
 };
 
-template<typename Archive, typename Id, typename... Assigns>
-struct AnySerialize : public Assigns... {
-  AnySerialize(Archive& ar, Id id, boost::any& value) : Assigns(ar, id, value)... {}
-};
-
-template<typename Id, typename... Assigns>
-class EnumVariant : public Assigns... {
+template<typename Id, typename Variant, typename... Assigns>
+class EnumVariant {
   public:
   EnumVariant() {}
-  EnumVariant(Id i) : Assigns(i)..., id(i) {
+  EnumVariant(Id i) : id(i) {
+    boost::apply_visitor(CheckVisitor(id), values);
   }
 
   EnumVariant(const EnumVariant& other) = default;
 
   template<typename U>
-  EnumVariant(Id i, U u) : Assigns(u, i)..., id(i), value(u) {
+  EnumVariant(Id i, U u) : id(i), values(u) {
+    boost::apply_visitor(CheckVisitor(id), values);
   }
 
   Id getId() const {
@@ -71,18 +51,12 @@ class EnumVariant : public Assigns... {
   }
 
   template<typename U>
-  U get() {
-    return boost::any_cast<U>(value);
+  const U& get() const {
+    return boost::get<U>(values);
   }
 
   bool operator == (const EnumVariant& other) const {
-    if (id != other.id)
-      return false;
-    if (value.empty() && other.value.empty())
-      return true;
-    bool yes = false;
-    AnyCompare<Assigns...>(value, other.value, [&]() { yes = true;});
-    return yes;
+    return id == other.id && values == other.values;
   }
 
   bool operator != (const EnumVariant& other) {
@@ -91,15 +65,31 @@ class EnumVariant : public Assigns... {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & id;
-    AnySerialize<Archive, Id, Assigns...>(ar, id, value);
+    ar & id & values;
   }
 
   private:
+  template<typename T>
+  struct CheckId : public Assigns... {
+    CheckId(Id id, const T& u) : Assigns(u, id)... {
+    }
+  };
+
+  struct CheckVisitor : public boost::static_visitor<> {
+    public:
+    CheckVisitor(Id i) : id(i) {}
+    template<typename T>
+    void operator() (const T& t) const {
+       CheckId<T> tmp(id, t);
+    }
+    Id id;
+  };
+
   Id id;
-  boost::any value;
+  Variant values;
 };
 
+#define TYPES(...) boost::variant<EmptyThing, __VA_ARGS__>
 #define ASSIGN(T, ...)\
 TypeAssign<T, decltype(__VA_ARGS__), __VA_ARGS__>
 

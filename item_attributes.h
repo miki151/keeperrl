@@ -21,6 +21,7 @@
 
 #include "util.h"
 #include "enums.h"
+#include "effect_type.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 

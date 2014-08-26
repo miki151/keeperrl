@@ -22,6 +22,7 @@
 #include "util.h"
 #include "skill.h"
 #include "gender.h"
+#include "effect.h"
 
 // WTF is this defined
 #undef HUGE
