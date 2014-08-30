@@ -346,7 +346,7 @@ Model* Model::heroModel(View* view) {
      .tribe = Tribe::get(TribeId::BANDIT),
      .buildingId = BuildingId::WOOD}};
   for (auto& elem : settlements) {
-    elem.collective = new Collective(elem.tribe);
+    elem.collective = new Collective(Collective::ConfigId::VILLAGE, elem.tribe);
     m->collectives.push_back(PCollective(elem.collective));
   }
   Level* top = m->prepareTopLevel(settlements);
@@ -361,7 +361,7 @@ Model* Model::heroModel(View* view) {
     .upStairs = {StairKey::DWARF},
     .downStairs = {StairKey::DWARF}, 
     .shopFactory = ItemFactory::dwarfShop()};
-  dwarfSettlement.collective = new Collective(dwarfSettlement.tribe);
+  dwarfSettlement.collective = new Collective(Collective::ConfigId::VILLAGE, dwarfSettlement.tribe);
   m->collectives.push_back(PCollective(dwarfSettlement.collective));
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
@@ -375,7 +375,7 @@ Model* Model::heroModel(View* view) {
      .buildingId = BuildingId::BRICK,
      .upStairs = {StairKey::DWARF},
      .shopFactory = ItemFactory::goblinShop()};
-  goblinSettlement.collective = new Collective(goblinSettlement.tribe);
+  goblinSettlement.collective = new Collective(Collective::ConfigId::VILLAGE, goblinSettlement.tribe);
   m->collectives.push_back(PCollective(goblinSettlement.collective));
   Level* g1 = m->buildLevel(
       Level::Builder(60, 35, "Goblin Den"),
@@ -664,7 +664,7 @@ vector<EnemyInfo> getEnemyInfo() {
         .numCreatures = Random.getRandom(4, 9),
         .location = new Location(),
         .tribe = Tribe::get(TribeId::HUMAN),
-        .buildingId = BuildingId::WOOD},
+        .buildingId = BuildingId::DUNGEON},
         {VillageControlInfo::POWER_BASED, getKilledCoeff(), getPowerCoeff()}},
   });
   return ret;
@@ -675,12 +675,12 @@ Model* Model::collectiveModel(View* view) {
   vector<EnemyInfo> enemyInfo = getEnemyInfo();
   vector<SettlementInfo> settlements;
   for (auto& elem : enemyInfo) {
-    elem.settlement.collective = new Collective(elem.settlement.tribe);
+    elem.settlement.collective = new Collective(Collective::ConfigId::VILLAGE, elem.settlement.tribe);
     m->collectives.push_back(PCollective(elem.settlement.collective));
     settlements.push_back(elem.settlement);
   }
   Level* top = m->prepareTopLevel2(settlements);
-  m->collectives.push_back(PCollective(new Collective(Tribe::get(TribeId::KEEPER))));
+  m->collectives.push_back(PCollective(new Collective(Collective::ConfigId::KEEPER, Tribe::get(TribeId::KEEPER))));
   Collective* keeperCollective = m->collectives.back().get();
   keeperCollective->setLevel(top);
   m->playerControl = new PlayerControl(keeperCollective, m, top);
@@ -719,7 +719,7 @@ Model* Model::splashModel(View* view, const Table<bool>& bitmap) {
   Level* top = m->buildLevel(
       Level::Builder(bitmap.getWidth(), bitmap.getHeight(), "Wilderness", false), LevelMaker::grassAndTrees());
   CreatureFactory factory = CreatureFactory::splash(Tribe::get(TribeId::KEEPER));
-  Collective* collective = new Collective(Tribe::get(TribeId::KEEPER));
+  Collective* collective = new Collective(Collective::ConfigId::VILLAGE, Tribe::get(TribeId::KEEPER));
   m->playerControl = new PlayerControl(collective, m, top);
   for (Vec2 v : bitmap.getBounds())
     if (bitmap[v]) {

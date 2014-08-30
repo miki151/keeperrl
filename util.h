@@ -1082,14 +1082,14 @@ class EnumSet : public EnumMap<T, char> {
     (*this)[elem] = 1;
   }
 
-  EnumSet sum(const EnumSet& other) {
+  EnumSet sum(const EnumSet& other) const {
     EnumSet ret(other);
     for (T elem : *this)
       ret.insert(elem);
     return ret;
   }
 
-  EnumSet intersection(const EnumSet& other) {
+  EnumSet intersection(const EnumSet& other) const {
     EnumSet ret;
     for (T elem : *this)
       if (other[elem])
@@ -1348,7 +1348,7 @@ struct NamedTupleBase : public tuple<Args...> {
 
 #define NAMED_TUPLE_STUFF(name)\
   using NamedTupleBase::NamedTupleBase;\
- // name& operator = (const name& a) { NamedTupleBase::operator = (a); return *this; }
+  name& operator = (const name& a) { NamedTupleBase::operator = (a); return *this; }
 
 #define NAME_ELEM(num, name)\
   std::tuple_element<num, BaseTuple>::type& name() { return get<num>(*this); }\

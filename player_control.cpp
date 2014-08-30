@@ -142,15 +142,6 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
 vector<PlayerControl::BuildInfo> PlayerControl::workshopInfo {
 };
 
-Optional<SquareType> getSecondarySquare(SquareType type) {
-  switch (type.getId()) {
-    case SquareId::DORM: return SquareType(SquareId::BED);
-    case SquareId::BEAST_LAIR: return SquareType(SquareId::BEAST_CAGE);
-    case SquareId::CEMETERY: return SquareType(SquareId::GRAVE);
-    default: return Nothing();
-  }
-}
-
 vector<PlayerControl::BuildInfo> PlayerControl::libraryInfo {
   BuildInfo(BuildInfo::IMP, "", 'i'),
 };
@@ -232,8 +223,6 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
   for(const Location* loc : level->getAllLocations())
     if (loc->isMarkedAsSurprise())
       surprises.insert(loc->getBounds().middle());
-  getCollective()->setConfig(CollectiveConfig::MANAGE_EQUIPMENT);
-  getCollective()->setConfig(CollectiveConfig::WORKER_FOLLOW_LEADER);
 }
 
 const int basicImpCost = 20;
@@ -671,37 +660,10 @@ int PlayerControl::getNumMinions() const {
   return getCollective()->getCreatures(MinionTrait::FIGHTER).size();
 }
 
-static int countNeighbor(Vec2 pos, const set<Vec2>& squares) {
-  int num = 0;
-  for (Vec2 v : pos.neighbors8())
-    num += squares.count(v);
-  return num;
-}
-
-static Optional<Vec2> chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds) {
-  vector<Vec2> res;
-  for (Vec2 v : lair) {
-    if (countNeighbor(v, beds) > 2)
-      continue;
-    bool bad = false;
-    for (Vec2 n : v.neighbors8())
-      if (beds.count(n) && countNeighbor(n, beds) >= 2) {
-        bad = true;
-        break;
-      }
-    if (!bad)
-      res.push_back(v);
-  }
-  if (!res.empty())
-    return chooseRandom(res);
-  else
-    return Nothing();
-}
-
 void PlayerControl::handleSpawning(View* view, SquareType spawnSquare, const string& info1, const string& info2,
     const string& titleBase, MinionTrait spawnType, vector<SpawnInfo> spawnInfo,
     double multiplier, Optional<vector<pair<Vec2, Item*>>> genItems, string genItemsInfo, string info3) {
-  Optional<SquareType> replacement = getSecondarySquare(spawnSquare);
+  Optional<SquareType> replacement = Collective::getSecondarySquare(spawnSquare);
   int prevItem = 0;
   bool allInactive = false;
   while (1) {
@@ -714,7 +676,7 @@ void PlayerControl::handleSpawning(View* view, SquareType spawnSquare, const str
       if (getCollective()->getCreatures(spawnType).size() < getCollective()->getSquares(*replacement).size())
         bedPos = chooseRandom(getCollective()->getSquares(*replacement));
       else
-        bedPos = chooseBedPos(lairSquares, getCollective()->getSquares(*replacement));
+        bedPos = Collective::chooseBedPos(lairSquares, getCollective()->getSquares(*replacement));
     }
     if (getNumMinions() >= minionLimit) {
       allInactive = true;
@@ -838,8 +800,8 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            int availableNow = !elem.cost.value() ? 1 : getCollective()->numResource(elem.cost.id()) / elem.cost.value();
            if (Collective::resourceInfo.at(elem.cost.id()).dontDisplay && availableNow)
              description += " (" + convertToString(availableNow) + " available)";
-           if (getSecondarySquare(elem.type))
-             viewObj = SquareFactory::get(*getSecondarySquare(elem.type))->getViewObject();
+           if (Collective::getSecondarySquare(elem.type))
+             viewObj = SquareFactory::get(*Collective::getSecondarySquare(elem.type))->getViewObject();
            buttons.push_back({
                viewObj,
                elem.name,
@@ -954,18 +916,20 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.libraryButtons = fillButtons(libraryInfo);
   info.tasks = getCollective()->getMinionTaskStrings();
   info.creatures.clear();
+  info.payoutTimeRemaining = getCollective()->getNextPayoutTime() - getCollective()->getTime();
+  info.nextPayout = getCollective()->getNextSalaries();
   for (Creature* c : getCollective()->getCreaturesAnyOf(
         {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER})) {
     if (getCollective()->isInCombat(c))
       info.tasks[c->getUniqueId()] = "fighting";
-    info.creatures.push_back(c);
+    info.creatures.push_back({getCollective(), c});
   }
   info.monsterHeader = "Monsters: " + convertToString(getNumMinions()) + " / " + convertToString(minionLimit);
   info.enemies.clear();
   for (Vec2 v : getCollective()->getAllSquares())
     if (const Creature* c = getLevel()->getSquare(v)->getCreature())
       if (c->getTribe() != getTribe())
-        info.enemies.push_back(c);
+        info.enemies.push_back({nullptr, c});
   info.numResource.clear();
   for (auto elem : getCollective()->resourceInfo)
     if (!elem.second.dontDisplay)
@@ -1462,8 +1426,8 @@ void PlayerControl::tick(double time) {
   updateVisibleCreatures();
   for (const Creature* c1 : getVisibleFriends()) {
     Creature* c = const_cast<Creature*>(c1);
-    if (c->canBeMinion() && !contains(getCreatures(), c))
-      importCreature(c, {MinionTrait::FIGHTER});
+    if (c->getSpawnType() && !contains(getCreatures(), c))
+      importCreature(c, {MinionTrait::FIGHTER, *c->getSpawnType()});
   }
 }
 

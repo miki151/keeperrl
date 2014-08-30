@@ -110,10 +110,10 @@ Optional<ConnectionId> getConnectionId(const ViewObject& object) {
     case ViewId::WOOD_WALL:
     case ViewId::CASTLE_WALL:
     case ViewId::MUD_WALL:
+    case ViewId::MOUNTAIN2:
     case ViewId::WALL: return ConnectionId::WALL;
     case ViewId::MAGMA:
     case ViewId::WATER: return ConnectionId::WATER;
-    case ViewId::MOUNTAIN2: return ConnectionId::MOUNTAIN2;
     case ViewId::LIBRARY: return ConnectionId::LIBRARY;
     case ViewId::TRAINING_ROOM: return ConnectionId::TRAINING_ROOM;
     case ViewId::TORTURE_TABLE: return ConnectionId::TORTURE_ROOM;

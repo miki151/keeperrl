@@ -33,6 +33,7 @@ class Task : public UniqueEntity<Task> {
     virtual void onPickedUp(Vec2 pos, EntitySet<Item>) {}
     virtual void onCantPickItem(EntitySet<Item> items) {}
     virtual void onKillCancelled(Creature*) {}
+    virtual void onBedCreated(Vec2 pos, SquareType fromType, SquareType toType) {}
 
     SERIALIZATION_DECL(Callback);
   };
@@ -58,8 +59,12 @@ class Task : public UniqueEntity<Task> {
   static PTask destroySquare(Vec2 position);
   static PTask disappear();
   static PTask chain(PTask, PTask);
+  static PTask chain(vector<PTask>);
   static PTask explore(Vec2);
   static PTask attackCollective(Collective*);
+  static PTask createBed(Callback*, Vec2, SquareType fromType, SquareType toType);
+  static PTask consumeItem(Callback*, vector<Item*> items);
+
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

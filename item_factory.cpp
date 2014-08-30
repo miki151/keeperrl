@@ -926,6 +926,7 @@ int prefixChance = 30;
 PItem ItemFactory::fromId(ItemType item) {
   switch (item.getId()) {
     case ItemId::WARNING_AMULET: return PItem(new AmuletOfWarning(getAttributes(item), 5));
+    case ItemId::BOW: return PItem(new RangedWeapon(getAttributes(item)));
     case ItemId::TELEPATHY_HELM: return PItem(new ItemOfCreatureVision(getAttributes(item), new Telepathy()));
     case ItemId::LEVITATION_BOOTS: return PItem(new LastingEffectItem(getAttributes(item), LastingEffect::FLYING));
     case ItemId::HEALING_AMULET: return PItem(new AmuletOfHealing(getAttributes(item)));

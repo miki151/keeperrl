@@ -10,13 +10,15 @@ class GameInfo {
   enum class InfoType { PLAYER, BAND} infoType;
 
   struct CreatureInfo {
-    CreatureInfo(const Creature* c);
+    CreatureInfo(const Collective*, const Creature*);
     ViewObject viewObject;
     UniqueEntity<Creature>::Id uniqueId;
     string name;
     string speciesName;
     int expLevel;
     double morale;
+    double salary;
+    double credit;
   };
 
   class BandInfo {
@@ -49,6 +51,9 @@ class GameInfo {
     double time;
     bool gatheringTeam = false;
     vector<UniqueEntity<Creature>::Id> team;
+
+    int nextPayout;
+    int payoutTimeRemaining;
 
     struct TechButton {
       ViewId viewId;

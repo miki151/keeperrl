@@ -618,6 +618,10 @@ PTask Task::chain(PTask t1, PTask t2) {
   return PTask(new Chain(makeVec<PTask>(std::move(t1), std::move(t2))));
 }
 
+PTask Task::chain(vector<PTask> v) {
+  return PTask(new Chain(std::move(v)));
+}
+
 namespace {
 
 class Explore : public NonTransferable {
@@ -695,6 +699,81 @@ PTask Task::attackCollective(Collective* col) {
 }
 
 
+namespace {
+
+class CreateBed : public NonTransferable {
+  public:
+  CreateBed(Callback* call, Vec2 pos, SquareType from, SquareType to)
+    : callback(call), position(pos), fromType(from), toType(to) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (c->getPosition() != position)
+      return c->moveTowards(position);
+    else
+      return c->wait().append([=] {
+        if (c->getPosition() == position) {
+          c->getLevel()->replaceSquare(position, SquareFactory::get(toType));
+          callback->onBedCreated(position, fromType, toType);
+          setDone();
+        }
+      });
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(position)
+      & SVAR(fromType)
+      & SVAR(toType)
+      & SVAR(callback);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(CreateBed);
+
+  private:
+  Callback* SERIAL(callback);
+  Vec2 SERIAL(position);
+  SquareType SERIAL(fromType);
+  SquareType SERIAL(toType);
+};
+
+}
+
+PTask Task::createBed(Callback* call, Vec2 pos, SquareType from, SquareType to) {
+  return PTask(new CreateBed(call, pos, from, to));
+}
+
+namespace {
+class ConsumeItem : public NonTransferable {
+  public:
+  ConsumeItem(Callback* c, vector<Item*> _items) : items(_items), callback(c) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    return c->wait().append([=] {
+        c->getEquipment().removeItems(c->getEquipment().getItems(items.containsPredicate())); });
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(items)
+      & SVAR(callback);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(ConsumeItem);
+
+  protected:
+  EntitySet<Item> SERIAL(items);
+  Callback* SERIAL(callback);
+};
+}
+
+PTask Task::consumeItem(Callback* c, vector<Item*> items) {
+  return PTask(new ConsumeItem(c, items));
+}
+
 template <class Archive>
 void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Construction);
@@ -710,6 +789,8 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Chain);
   REGISTER_TYPE(ar, Explore);
   REGISTER_TYPE(ar, AttackCollective);
+  REGISTER_TYPE(ar, CreateBed);
+  REGISTER_TYPE(ar, ConsumeItem);
 }
 
 REGISTER_TYPES(Task);

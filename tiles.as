@@ -98,10 +98,11 @@ void genTiles() {
   addTile(SAND, sprite(7, 12, 2));
   addTile(MUD, sprite(3, 12, 2));
   addTile(GRASS, sprite(0, 13, 2));
-  addTile(CROPS, sprite(9, 12, 2));
+  addTile(CROPS, sprite("wheatfield1"));
+  addTile(CROPS2, sprite("wheatfield2"));
+  addTile(MOUNTAIN2, getWallTile(17));
   addTile(WALL, getWallTile(2));
   addTile(MOUNTAIN, sprite(17, 2, 2).setNoShadow());
-  addTile(MOUNTAIN2, getWallTile(19));
   addTile(GOLD_ORE, sprite("gold"));
   addTile(IRON_ORE, sprite("iron2"));
   addTile(STONE, sprite("stone"));
@@ -145,8 +146,9 @@ void genTiles() {
   addTile(CASTLE_GUARD, sprite(15, 2));
   addTile(AVATAR, sprite(9, 0));
   addTile(ARCHER, sprite(2, 0));
-  addTile(PESEANT, sprite(1, 2));
-  addTile(CHILD, sprite(2, 2));
+  addTile(PESEANT, sprite("peasant"));
+  addTile(PESEANT_WOMAN, sprite("peasantgirl"));
+  addTile(CHILD, sprite("peasantkid"));
   addTile(CLAY_GOLEM, sprite(12, 11));
   addTile(STONE_GOLEM, sprite(10, 10));
   addTile(IRON_GOLEM, sprite(12, 10));
@@ -169,8 +171,8 @@ void genTiles() {
   addTile(COW, sprite("cow"));
   addTile(PIG, sprite("pig"));
   addTile(GOAT, sprite("goat"));
-  addTile(BOAR, sprite(18, 6));
-  addTile(FOX, sprite(13, 12));
+  addTile(BOAR, sprite("boar"));
+  addTile(FOX, sprite("fox"));
   addTile(WOLF, sprite(14, 12));
   addTile(DOG, sprite("dog"));
   addTile(KRAKEN, sprite(7, 19));
@@ -181,13 +183,13 @@ void genTiles() {
   addTile(BEAR, sprite(8, 18));
   addTile(BAT, sprite(2, 12));
   addTile(GNOME, sprite("goblin"));
-  addTile(LEPRECHAUN, sprite(16, 8));
+  addTile(LEPRECHAUN, sprite("leprechaun"));
   addTile(RAT, sprite("rat"));
   addTile(SPIDER, sprite(6, 12));
   addTile(FLY, sprite(10, 12));
   addTile(SCORPION, sprite(11, 18));
   addTile(SNAKE, sprite(9, 12));
-  addTile(VULTURE, sprite(17, 12));
+  addTile(VULTURE, sprite("vulture"));
   addTile(RAVEN, sprite(17, 12));
   addTile(BODY_PART, sprite(9, 4, 3));
   addTile(BONE, sprite(3, 0, 2));
@@ -217,8 +219,8 @@ void genTiles() {
   addTile(FIRE_RESIST_RING, sprite(11, 3, 3));
   addTile(POISON_RESIST_RING, sprite(16, 3, 3));
   addTile(BOOK, sprite(0, 3, 3));
-  addTile(FIRST_AID, sprite(12, 2, 3));
-  addTile(TRAP_ITEM, sprite(12, 4, 3));
+  addTile(FIRST_AID, sprite("medkit2"));
+  addTile(TRAP_ITEM, sprite("trapbox"));
   addTile(EFFERVESCENT_POTION, sprite(6, 0, 3));
   addTile(MURKY_POTION, sprite(10, 0, 3));
   addTile(SWIRLY_POTION, sprite(9, 0, 3));
@@ -240,7 +242,7 @@ void genTiles() {
   addTile(GAS_TRAP, sprite(2, 6, 3));
   addTile(ALARM_TRAP, sprite(16, 5, 3));
   addTile(WEB_TRAP, sprite(4, 1, 2));
-  addTile(SURPRISE_TRAP, sprite(9, 10, 2));
+  addTile(SURPRISE_TRAP, sprite("surprisetrap"));
   addTile(TERROR_TRAP, sprite(1, 6, 3));
   addTile(ROCK, sprite("stonepile"));
   addTile(IRON_ROCK, sprite("ironpile2"));
@@ -318,6 +320,7 @@ void genSymbols() {
   addSymbol(MUD, symbol(0x1d0f0, BROWN, true));
   addSymbol(GRASS, symbol(0x1d0f0, GREEN, true));
   addSymbol(CROPS, symbol(0x1d0f0, YELLOW, true));
+  addSymbol(CROPS2, symbol(0x1d0f0, YELLOW, true));
   addSymbol(CASTLE_WALL, symbol("#", LIGHT_GRAY));
   addSymbol(MUD_WALL, symbol("#", LIGHT_BROWN));
   addSymbol(WALL, symbol("#", LIGHT_GRAY));
@@ -365,6 +368,7 @@ void genSymbols() {
   addSymbol(AVATAR, symbol("@", BLUE));
   addSymbol(ARCHER, symbol("@", BROWN));
   addSymbol(PESEANT, symbol("@", GREEN));
+  addSymbol(PESEANT_WOMAN, symbol("@", GREEN));
   addSymbol(CHILD, symbol("@", LIGHT_GREEN));
   addSymbol(CLAY_GOLEM, symbol("Y", YELLOW));
   addSymbol(STONE_GOLEM, symbol("Y", LIGHT_GRAY));

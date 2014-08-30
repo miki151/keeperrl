@@ -40,9 +40,11 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(kills)
     & SVAR(points)
     & SVAR(currentTasks)
-    & SVAR(config)
+    & SVAR(configId)
     & SVAR(credit)
-    & SVAR(level);
+    & SVAR(level)
+    & SVAR(minionPayment)
+    & SVAR(nextPayoutTime);
   CHECK_SERIAL;
 }
 
@@ -58,8 +60,9 @@ bool Collective::isWarning(Warning w) const {
   return warnings[w];
 }
 
-Collective::MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, Optional<Warning> w, bool c) 
-    : type(APPLY_SQUARE), squares(s), description(desc), warning(w), centerOnly(c) {
+Collective::MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, Optional<Warning> w,
+    double _cost, bool center) 
+    : type(APPLY_SQUARE), squares(s), description(desc), warning(w), cost(_cost), centerOnly(center) {
 }
 
 Collective::MinionTaskInfo::MinionTaskInfo(Type t, const string& desc) : type(t), description(desc) {
@@ -111,20 +114,20 @@ const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resource
 
 map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   map<MinionTask, MinionTaskInfo> ret {
-    {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", Collective::Warning::LABORATORY}},
-    {MinionTask::TRAIN, {{SquareId::TRAINING_ROOM}, "training", Collective::Warning::TRAINING}},
-    {MinionTask::WORKSHOP, {{SquareId::WORKSHOP}, "crafting", Collective::Warning::WORKSHOP}},
+    {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", Collective::Warning::LABORATORY, 1}},
+    {MinionTask::TRAIN, {{SquareId::TRAINING_ROOM}, "training", Collective::Warning::TRAINING, 1}},
+    {MinionTask::WORKSHOP, {{SquareId::WORKSHOP}, "crafting", Collective::Warning::WORKSHOP, 1}},
     {MinionTask::SLEEP, {{SquareId::BED}, "sleeping", Collective::Warning::BEDS}},
     {MinionTask::GRAVE, {{SquareId::GRAVE}, "sleeping", Collective::Warning::GRAVES}},
     {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
-    {MinionTask::STUDY, {{SquareId::LIBRARY}, "studying", Collective::Warning::LIBRARY}},
-    {MinionTask::RESEARCH, {{SquareId::LIBRARY}, "research", Collective::Warning::LIBRARY}},
+    {MinionTask::STUDY, {{SquareId::LIBRARY}, "studying", Collective::Warning::LIBRARY, 1}},
+    {MinionTask::RESEARCH, {{SquareId::LIBRARY}, "research", Collective::Warning::LIBRARY, 1}},
     {MinionTask::PRISON, {{SquareId::PRISON}, "prison", Collective::Warning::NO_PRISON}},
-    {MinionTask::TORTURE, {{SquareId::TORTURE_TABLE}, "torture ordered", Collective::Warning::TORTURE_ROOM, true}},
+    {MinionTask::TORTURE, {{SquareId::TORTURE_TABLE}, "torture ordered", Collective::Warning::TORTURE_ROOM, 0, true}},
     {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "spying"}},
     {MinionTask::SACRIFICE, {{}, "sacrifice ordered", Collective::Warning::ALTAR}},
     {MinionTask::EXECUTE, {{SquareId::PRISON}, "execution ordered", Collective::Warning::NO_PRISON}},
-    {MinionTask::WORSHIP, {{}, "worship", Nothing()}}};
+    {MinionTask::WORSHIP, {{}, "worship", Nothing(), 1}}};
   for (SquareType t : getSquareTypes())
     if (contains({SquareId::ALTAR, SquareId::CREATURE_ALTAR}, t.getId()) && !getSquares(t).empty()) {
       ret.at(MinionTask::WORSHIP).squares.push_back(t);
@@ -133,7 +136,31 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   return ret;
 };
 
-Collective::Collective(Tribe* t) : control(CollectiveControl::idle(this)), tribe(t) {
+struct Collective::ImmigrantInfo {
+  CreatureId id;
+  double frequency;
+  struct RoomRequirement {
+    SquareType type;
+    int number;
+  };
+  vector<RoomRequirement> requirements;
+  EnumSet<MinionTrait> traits;
+  vector<SquareType> spawnSquares;
+  int salary;
+  SquareType dormSquare;
+};
+
+struct CollectiveConfig {
+  bool manageEquipment;
+  bool workerFollowLeader;
+  double immigrantFrequency;
+  int payoutTime;
+  double payoutMultiplier;
+  vector<Collective::ImmigrantInfo> immigrantInfo;
+};
+
+Collective::Collective(ConfigId cfg, Tribe* t) : configId(cfg), control(CollectiveControl::idle(this)), tribe(t),
+    nextPayoutTime(getConfig().payoutTime) {
   credit = {
     {ResourceId::GOLD, 0},
     {ResourceId::WOOD, 0},
@@ -144,8 +171,39 @@ Collective::Collective(Tribe* t) : control(CollectiveControl::idle(this)), tribe
   };
 }
 
-void Collective::setConfig(CollectiveConfig cfg) {
-  config.insert(cfg);
+const CollectiveConfig& Collective::getConfig() const {
+
+  static EnumMap<ConfigId, CollectiveConfig> collectiveConfigs {
+    {ConfigId::KEEPER, {
+       .manageEquipment = true,
+       .workerFollowLeader = true,
+       .immigrantFrequency = 0.01,
+       .payoutTime = 500,
+       .payoutMultiplier = 4,
+       .immigrantInfo = {
+         { .id = CreatureId::GNOME,
+           .frequency = 1,
+           .requirements = {{SquareId::WORKSHOP, 12}},
+           .traits = {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT},
+           .salary = 10,
+           .dormSquare = SquareId::DORM},
+         { .id = CreatureId::GOBLIN,
+           .frequency = 0.8,
+           .requirements = {{SquareId::TRAINING_ROOM, 12}},
+           .traits = {MinionTrait::FIGHTER},
+           .salary = 20,
+           .dormSquare = SquareId::DORM},
+         { .id = CreatureId::OGRE,
+           .frequency = 0.3,
+           .requirements = {{SquareId::TRAINING_ROOM, 25}},
+           .traits = {MinionTrait::FIGHTER},
+           .salary = 40,
+           .dormSquare = SquareId::DORM},
+       },
+    }},
+    {ConfigId::VILLAGE, {}},
+  };
+  return collectiveConfigs[configId];
 }
 
 void Collective::setLevel(Level* l) {
@@ -253,6 +311,10 @@ void Collective::onKillCancelled(Creature* c) {
     prisonerInfo.at(c).task() = 0;
 }
 
+void Collective::onBedCreated(Vec2 pos, SquareType fromType, SquareType toType) {
+  changeSquareType(pos, fromType, toType);
+}
+
 MoveInfo Collective::getWorkerMove(Creature* c) {
   if (Task* task = taskMap.getTask(c)) {
     if (task->isDone()) {
@@ -267,7 +329,7 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
     taskMap.takeTask(c, closest);
     return closest->getMove(c);
   } else {
-    if (config[CollectiveConfig::WORKER_FOLLOW_LEADER] && getLeader() && !containsSquare(c->getPosition())
+    if (getConfig().workerFollowLeader && getLeader() && !containsSquare(c->getPosition())
         && getLeader()->getLevel() == c->getLevel()) {
       Vec2 leaderPos = getLeader()->getPosition();
       if (leaderPos.dist8(c->getPosition()) < 3)
@@ -299,9 +361,20 @@ static double getSum(EnumMap<MinionTask, double> m) {
   return ret;
 }
 
+MinionTask Collective::chooseRandomFreeTask(const Creature* c) {
+  vector<MinionTask> freeTasks;
+  for (MinionTask t : ENUM_ALL(MinionTask))
+    if (c->getMinionTasks()[t] > 0 && getTaskInfo().at(t).cost == 0)
+      freeTasks.push_back(t);
+  return chooseRandom(freeTasks);
+}
+
 PTask Collective::getStandardTask(Creature* c) {
   if (getSum(c->getMinionTasks()) == 0)
     return nullptr;
+  if (minionPayment.count(c) && minionPayment.at(c).debt() > 0) {
+    setMinionTask(c, chooseRandomFreeTask(c));
+  } else
   if (!currentTasks.count(c->getUniqueId()) || currentTasks.at(c->getUniqueId()).finishTime() < c->getTime())
     setMinionTask(c, chooseRandom(c->getMinionTasks()));
   MinionTaskInfo info = getTaskInfo().at(currentTasks[c->getUniqueId()].task());
@@ -327,7 +400,7 @@ PTask Collective::getStandardTask(Creature* c) {
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
-  if (!config[CollectiveConfig::MANAGE_EQUIPMENT])
+  if (!getConfig().manageEquipment)
     return nullptr;
   if (usesEquipment(c))
     autoEquipment(c, Random.roll(10));
@@ -431,43 +504,193 @@ void Collective::onAttackEvent(Creature* victim, Creature* attacker) {
   }
 }
 
-vector<Vec2> Collective::getEnemyPositions() const {
-  vector<Vec2> enemyPos;
+vector<Vec2> Collective::getExtendedTiles(int maxRadius, int minRadius) const {
   map<Vec2, int> extendedTiles;
-  queue<Vec2> extendedQueue;
+  vector<Vec2> extendedQueue;
   for (Vec2 pos : getAllSquares()) {
-    if (const Creature* c = getLevel()->getSquare(pos)->getCreature()) {
-      if (c->getTribe() != getTribe())
-        enemyPos.push_back(c->getPosition());
-    }
     for (Vec2 v : pos.neighbors8())
       if (v.inRectangle(getLevel()->getBounds()) && !containsSquare(v) && !extendedTiles.count(v) 
           && getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK})) {
         extendedTiles[v] = 1;
-        extendedQueue.push(v);
+        extendedQueue.push_back(v);
       }
   }
-  const int maxRadius = 10;
-  while (!extendedQueue.empty()) {
-    Vec2 pos = extendedQueue.front();
-    extendedQueue.pop();
-    if (const Creature* c = getLevel()->getSquare(pos)->getCreature())
-      if (c->getTribe() != getTribe())
-        enemyPos.push_back(c->getPosition());
+  for (int i = 0; i < extendedQueue.size(); ++i) {
+    Vec2 pos = extendedQueue[i];
     for (Vec2 v : pos.neighbors8())
       if (v.inRectangle(getLevel()->getBounds()) && !containsSquare(v) && !extendedTiles.count(v) 
           && getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK})) {
         int a = extendedTiles[v] = extendedTiles[pos] + 1;
         if (a < maxRadius)
-          extendedQueue.push(v);
+          extendedQueue.push_back(v);
       }
   }
+  if (minRadius > 0)
+    return filter(extendedQueue, [&] (const Vec2& v) { return extendedTiles.at(v) >= minRadius; });
+  return extendedQueue;
+}
+
+vector<Vec2> Collective::getEnemyPositions() const {
+  vector<Vec2> enemyPos;
+  for (Vec2 pos : getExtendedTiles(10))
+    if (const Creature* c = getLevel()->getSquare(pos)->getCreature())
+      if (c->getTribe() != getTribe())
+        enemyPos.push_back(c->getPosition());
   return enemyPos;
+}
+
+static int countNeighbor(Vec2 pos, const set<Vec2>& squares) {
+  int num = 0;
+  for (Vec2 v : pos.neighbors8())
+    num += squares.count(v);
+  return num;
+}
+
+Optional<Vec2> Collective::chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds) {
+  vector<Vec2> res;
+  for (Vec2 v : lair) {
+    if (countNeighbor(v, beds) > 2)
+      continue;
+    bool bad = false;
+    for (Vec2 n : v.neighbors8())
+      if (beds.count(n) && countNeighbor(n, beds) >= 2) {
+        bad = true;
+        break;
+      }
+    if (!bad)
+      res.push_back(v);
+  }
+  if (!res.empty())
+    return chooseRandom(res);
+  else
+    return Nothing();
+}
+
+Optional<SquareType> Collective::getSecondarySquare(SquareType type) {
+  switch (type.getId()) {
+    case SquareId::DORM: return SquareType(SquareId::BED);
+    case SquareId::BEAST_LAIR: return SquareType(SquareId::BEAST_CAGE);
+    case SquareId::CEMETERY: return SquareType(SquareId::GRAVE);
+    default: return Nothing();
+  }
+}
+
+
+bool Collective::considerImmigrant(const ImmigrantInfo& info) {
+  for (auto elem : info.requirements)
+    if (getSquares(elem.type).size() < elem.number)
+      return false;
+  const set<Vec2>& dormSquares = getSquares(info.dormSquare);
+  Optional<Vec2> bedPos;
+  Optional<SquareType> replacement = getSecondarySquare(info.dormSquare);
+  PCreature creature = CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this));
+  MinionTrait spawnType = *creature->getSpawnType();
+  if (!replacement && !dormSquares.empty())
+    bedPos = chooseRandom(dormSquares);
+  else if (replacement) {
+    if (getCreatures(spawnType).size() < getSquares(*replacement).size())
+      bedPos = chooseRandom(getSquares(*replacement));
+    else
+      bedPos = chooseBedPos(dormSquares, getSquares(*replacement));
+  }
+  if (!bedPos)
+    return false;
+  Vec2 spawnPos;
+  vector<Vec2> extendedTiles = getExtendedTiles(20, 10);
+  if (extendedTiles.empty())
+    return false;
+  int cnt = 100;
+  do {
+    spawnPos = chooseRandom(extendedTiles);
+  } while (!getLevel()->getSquare(spawnPos)->canEnter(creature.get()) && --cnt > 0);
+  if (cnt == 0) {
+    Debug() << "Couldn't spawn immigrant " << creature->getName();
+    return false;
+  }
+  Creature* c = creature.get();
+  addCreature(std::move(creature), spawnPos, info.traits.sum({spawnType}));
+  if (replacement)
+    taskMap.addTask(Task::createBed(this, *bedPos, info.dormSquare, *replacement), c);
+  minionPayment[c] = {info.salary, 0.0, 0};
+  return true;
+}
+
+void Collective::considerImmigration() {
+  vector<double> weights = transform2<double>(
+      getConfig().immigrantInfo,
+      [] (const ImmigrantInfo& i) { return i.frequency;});
+  for (int i : Range(10))
+    if (considerImmigrant(chooseRandom(getConfig().immigrantInfo, weights)))
+      break;
+}
+
+const Collective::ResourceId paymentResource = Collective::ResourceId::GOLD;
+
+int Collective::getPaymentAmount(const Creature* c) const {
+  if (!minionPayment.count(c))
+    return 0;
+  else
+    return getConfig().payoutMultiplier *
+      minionPayment.at(c).salary() * minionPayment.at(c).workAmount() / getConfig().payoutTime;
+}
+
+int Collective::getNextSalaries() const {
+  int ret = 0;
+  for (Creature* c : creatures)
+    if (minionPayment.count(c))
+      ret += getPaymentAmount(c) + minionPayment.at(c).debt();
+  return ret;
+}
+
+void Collective::makePayouts() {
+  for (Creature* c : creatures)
+    if (minionPayment.count(c)) {
+      minionPayment.at(c).debt() += getPaymentAmount(c);
+      minionPayment.at(c).workAmount() = 0;
+    }
+}
+
+void Collective::cashPayouts() {
+  int numGold = numResource(paymentResource);
+  bool isDebt = false;
+  for (Creature* c : creatures)
+    if (minionPayment.count(c))
+      if (int payment = minionPayment.at(c).debt()) {
+        if (payment < numGold) {
+          takeResource({paymentResource, payment});
+          numGold -= payment;
+          minionPayment.at(c).debt() = 0;
+        } else 
+          isDebt = true;
+      }
+  setWarning(Warning::GOLD, isDebt);
+ /*     vector<PTask> tasks;
+      for (SquareType type : resourceInfo.at(paymentResource).storageType) {
+        for (Vec2 pos : getSquares(type)) {
+          vector<Item*> items = getLevel()->getSquare(pos)->getItems(resourceInfo.at(paymentResource).predicate);
+          if (items.size() >= payment)
+            items.resize(payment);
+          tasks.push_back(Task::chain(Task::pickItem(this, pos, items), Task::consumeItem(this, items)));
+          payment -= items.size();
+          if (payment == 0)
+            break;
+        }
+        if (payment == 0)
+          break;
+      }
+      taskMap.addTask(Task::chain(std::move(tasks)), c);*/
 }
 
 void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
+  if (Random.rollD(1.0 / getConfig().immigrantFrequency))
+    considerImmigration();
+  if (time > nextPayoutTime) {
+    nextPayoutTime += getConfig().payoutTime;
+    makePayouts();
+  }
+  cashPayouts();
   setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
   setWarning(Warning::WOOD, numResource(ResourceId::WOOD) == 0);
   setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
@@ -835,7 +1058,6 @@ void Collective::removeGuardPost(Vec2 pos) {
 bool Collective::isGuardPost(Vec2 pos) const {
   return guardPosts.count(pos);
 }
-
 
 int Collective::numResource(ResourceId id) const {
   int ret = credit.at(id);
@@ -1274,8 +1496,10 @@ void Collective::addMana(double value) {
 
 void Collective::onAppliedSquare(Vec2 pos) {
   Creature* c = NOTNULL(getLevel()->getSquare(pos)->getCreature());
+  MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
+  minionPayment[c].workAmount() += getTaskInfo().at(currentTask).cost;
   if (getSquares(SquareId::LIBRARY).count(pos)) {
-    switch (currentTasks.at(c->getUniqueId()).task()) {
+    switch (currentTask) {
       case MinionTask::RESEARCH:
         addMana(getEfficiency(pos) * (0.3 + max(0., 2 
                 - (numResource(ResourceId::MANA) + double(getDangerLevel(false))) / 700)));
@@ -1448,3 +1672,13 @@ const MinionEquipment& Collective::getMinionEquipment() const {
   return minionEquipment;
 }
 
+int Collective::getSalary(const Creature* c) const {
+  if (minionPayment.count(c))
+    return minionPayment.at(c).salary();
+  else
+    return 0;
+}
+
+int Collective::getNextPayoutTime() const {
+  return nextPayoutTime;
+}

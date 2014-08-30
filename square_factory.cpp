@@ -942,7 +942,8 @@ Square* SquareFactory::getPtr(SquareType s) {
             .vision = Vision::get(VisionId::NORMAL),
             .constructions = {{SquareId::IMPALED_HEAD, 5}}});
     case SquareId::CROPS:
-        return new Square(ViewObject(ViewId::CROPS, ViewLayer::FLOOR_BACKGROUND, "Potatoes"), {
+        return new Square(ViewObject(chooseRandom({ViewId::CROPS, ViewId::CROPS2}),
+                ViewLayer::FLOOR_BACKGROUND, "Wheat"), {
             .name = "potatoes",
             .vision = Vision::get(VisionId::NORMAL),
             .movementType = {MovementTrait::WALK}});
@@ -1004,7 +1005,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             .name = "mountain",
             .vision = Vision::get(VisionId::NORMAL)});
     case SquareId::MOUNTAIN2:
-        return new Square(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Mountain")
+        return new Square(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), {
             .name = "mountain",
             .constructions = {{SquareId::FLOOR, Random.getRandom(3, 8)}}});

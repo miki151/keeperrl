@@ -43,14 +43,12 @@ RICH_ENUM(MinionTask,
   EXPLORE,
 );
 
-RICH_ENUM(CollectiveConfig,
-  MANAGE_EQUIPMENT,
-  WORKER_FOLLOW_LEADER,
-);
+struct CollectiveConfig;
 
 class Collective : public Task::Callback {
   public:
-  Collective(Tribe*);
+  enum class ConfigId;
+  Collective(ConfigId, Tribe*);
   void addCreature(Creature*, EnumSet<MinionTrait>);
   void addCreature(PCreature, Vec2, EnumSet<MinionTrait>);
   MoveInfo getMove(Creature*);
@@ -65,7 +63,6 @@ class Collective : public Task::Callback {
   const Level* getLevel() const;
   double getTime() const;
   void update(Creature*);
-  void setConfig(CollectiveConfig);
 
   virtual void onAppliedItem(Vec2 pos, Item* item) override;
   virtual void onAppliedItemCancel(Vec2 pos) override;
@@ -74,6 +71,7 @@ class Collective : public Task::Callback {
   virtual void onConstructed(Vec2, SquareType) override;
   virtual void onAppliedSquare(Vec2 pos) override;
   virtual void onKillCancelled(Creature*) override;
+  virtual void onBedCreated(Vec2, SquareType fromType, SquareType toType) override;
 
   SERIALIZATION_DECL(Collective);
 
@@ -149,13 +147,14 @@ class Collective : public Task::Callback {
 
   struct MinionTaskInfo {
     enum Type { APPLY_SQUARE, EXPLORE } type;
-    MinionTaskInfo(vector<SquareType>, const string& description, Optional<Warning> = Nothing(),
+    MinionTaskInfo(vector<SquareType>, const string& description, Optional<Warning> = Nothing(), double cost = 0,
         bool centerOnly = false);
     MinionTaskInfo(Type, const string&);
     vector<SquareType> squares;
     string description;
     Optional<Warning> warning;
-    bool centerOnly;
+    double cost = 0;
+    bool centerOnly = false;
   };
 
   map<MinionTask, MinionTaskInfo> getTaskInfo() const;
@@ -240,9 +239,30 @@ class Collective : public Task::Callback {
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
 
-  private:
-  SERIAL_CHECKER;
+  vector<Vec2> getExtendedTiles(int maxRadius, int minRadius = 0) const;
 
+  struct ImmigrantInfo;
+
+  static Optional<SquareType> getSecondarySquare(SquareType);
+  static Optional<Vec2> chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds);
+
+  struct MinionPaymentInfo : public NamedTupleBase<int, double, int> {
+    NAMED_TUPLE_STUFF(MinionPaymentInfo);
+    NAME_ELEM(0, salary);
+    NAME_ELEM(1, workAmount);
+    NAME_ELEM(2, debt);
+  };
+
+  int getNextPayoutTime() const;
+  int getSalary(const Creature*) const;
+  int getNextSalaries() const;
+
+  private:
+  int getPaymentAmount(const Creature*) const;
+  void makePayouts();
+  void cashPayouts();
+
+  SERIAL_CHECKER;
   REGISTER_HANDLER(CombatEvent, const Creature*);
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity*, WorshipType);
@@ -256,9 +276,10 @@ class Collective : public Task::Callback {
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
   REGISTER_HANDLER(TortureEvent, Creature* who, const Creature* torturer);
 
+  ConfigId SERIAL(configId);
+  const CollectiveConfig& getConfig() const;
   MinionEquipment SERIAL(minionEquipment);
   map<ResourceId, int> SERIAL(credit);
-  EnumSet<CollectiveConfig> SERIAL(config);
   TaskMap<CostInfo> SERIAL(taskMap);
   vector<Technology*> SERIAL(technologies);
   int SERIAL2(numFreeTech, 0);
@@ -278,6 +299,7 @@ class Collective : public Task::Callback {
   PTask getStandardTask(Creature* c);
   PTask getEquipmentTask(Creature* c);
   PTask getHealingTask(Creature* c);
+  MinionTask chooseRandomFreeTask(const Creature*);
 
   void handleSurprise(Vec2 pos);
   EnumSet<Warning> warnings;
@@ -291,6 +313,8 @@ class Collective : public Task::Callback {
   double getStanding(EpithetId id) const;
   void onEpithetWorship(Creature*, WorshipType, EpithetId);
   void considerHealingLeader();
+  bool considerImmigrant(const ImmigrantInfo&);
+  void considerImmigration();
   vector<Creature*> SERIAL(creatures);
   EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   PCollectiveControl SERIAL(control);
@@ -335,6 +359,8 @@ class Collective : public Task::Callback {
   unordered_map<const Creature*, double> SERIAL(lastCombat);
   vector<const Creature*> SERIAL(kills);
   int SERIAL2(points, 0);
+  unordered_map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);
+  int SERIAL(nextPayoutTime);
 };
 
 RICH_ENUM(Collective::Warning,
@@ -358,6 +384,11 @@ RICH_ENUM(Collective::Warning,
     ALTAR,
     MORE_CHESTS,
     MANA
+);
+
+RICH_ENUM(Collective::ConfigId,
+    KEEPER,
+    VILLAGE,
 );
 
 

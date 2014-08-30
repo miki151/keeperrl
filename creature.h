@@ -142,6 +142,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   bool isWorshipped() const;
   bool isHatcheryAnimal() const;
   bool canBeMinion() const;
+  Optional<MinionTrait> getSpawnType() const;
   bool canEnter(const MovementType&) const;
 
   int numBodyParts(BodyPart) const;

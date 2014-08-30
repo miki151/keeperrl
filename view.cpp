@@ -17,6 +17,7 @@
 
 #include "view.h"
 #include "creature.h"
+#include "collective.h"
 
 
 View::ListElem::ListElem(const string& t, ElemMod m, Optional<UserInput::Type> a) : text(t), mod(m), action(a) {
@@ -57,11 +58,13 @@ View::View() {
 View::~View() {
 }
 
-GameInfo::CreatureInfo::CreatureInfo(const Creature* c) 
+GameInfo::CreatureInfo::CreatureInfo(const Collective* col, const Creature* c) 
     : viewObject(c->getViewObject()),
       uniqueId(c->getUniqueId()),
       name(c->getName()),
       speciesName(c->getSpeciesName()),
       expLevel(c->getExpLevel()),
-      morale(c->getMorale()) {
+      morale(c->getMorale()),
+      salary(col ? col->getSalary(c) : 0),
+      credit(col ? 0 : 0) {
 }

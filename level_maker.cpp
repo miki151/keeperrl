@@ -2060,8 +2060,8 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   locations->setMinDistance(elvenVillage, bandits, 50);
 
   for (int i : Range(Random.getRandom(2, 5))) {
-    locations->add(new Empty(SquareId::CROPS),
-        {Random.getRandom(5, 15), Random.getRandom(5, 15)},
+    locations->add(new UniformBlob(SquareId::CROPS),
+        {Random.getRandom(7, 12), Random.getRandom(7, 12)},
         lowlandPred);
     locations->setMaxDistanceLast(elvenVillage, 18);
   }
@@ -2166,7 +2166,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   }
   for (LevelMaker* cottage : cottages)
     for (int i : Range(Random.getRandom(1, 3))) {
-      locations->add(new Empty(SquareId::CROPS), {Random.getRandom(5, 15), Random.getRandom(5, 15)},
+      locations->add(new UniformBlob(SquareId::CROPS), {Random.getRandom(7, 12), Random.getRandom(7, 12)},
           new AttribPredicate(SquareAttrib::LOWLAND));
       locations->setMaxDistanceLast(cottage, 13);
     }

@@ -121,6 +121,7 @@ void WindowView::initialize() {
     Renderer::loadTilesFromFile("tiles5_int.png", Vec2(36, 36));
     Renderer::loadTilesFromFile("tiles6_int.png", Vec2(36, 36));
     Renderer::loadTilesFromFile("tiles7_int.png", Vec2(36, 36));
+    Renderer::loadTilesFromDir("shroom24", Vec2(24, 24));
     Renderer::loadTilesFromDir("shroom36", Vec2(36, 36));
     Renderer::loadTilesFromDir("shroom46", Vec2(46, 46));
   }
@@ -478,6 +479,13 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
     list.push_back(GuiElem::horizontalList(std::move(line), 150, 0));
   }
   list.push_back(GuiElem::label("Click on minion to possess.", colors[ColorId::LIGHT_BLUE]));
+  list.push_back(GuiElem::empty());
+  vector<PGuiElem> res;
+  res.push_back(GuiElem::label("Next payout [" + convertToString(info.payoutTimeRemaining) + "]:",
+        colors[ColorId::WHITE]));
+  res.push_back(GuiElem::viewObject(info.numResource[0].viewObject, tilesOk));
+  res.push_back(GuiElem::label(convertToString<int>(info.nextPayout), colors[ColorId::WHITE]));
+  list.push_back(GuiElem::horizontalList(std::move(res), {170, 30, 1}, 0));
   list.push_back(GuiElem::empty());
   if (!enemyMap.empty()) {
     list.push_back(GuiElem::label("Enemies:", colors[ColorId::WHITE]));

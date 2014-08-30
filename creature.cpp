@@ -1883,8 +1883,8 @@ bool Creature::isHatcheryAnimal() const {
   return hatcheryAnimal;
 }
 
-bool Creature::canBeMinion() const {
-  return CreatureAttributes::canBeMinion;
+Optional<MinionTrait> Creature::getSpawnType() const {
+  return spawnType;
 }
 
 bool Creature::canEnter(const MovementType& movement) const {
