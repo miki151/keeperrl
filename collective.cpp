@@ -136,6 +136,12 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   return ret;
 };
 
+struct Collective::AttractionInfo {
+  MinionAttraction attraction;
+  double amountClaimed;
+  double minAmount;
+};
+
 struct Collective::ImmigrantInfo {
   CreatureId id;
   double frequency;
@@ -143,7 +149,7 @@ struct Collective::ImmigrantInfo {
     SquareType type;
     int number;
   };
-  vector<RoomRequirement> requirements;
+  vector<AttractionInfo> attractions;
   EnumSet<MinionTrait> traits;
   vector<SquareType> spawnSquares;
   int salary;
@@ -183,19 +189,25 @@ const CollectiveConfig& Collective::getConfig() const {
        .immigrantInfo = {
          { .id = CreatureId::GNOME,
            .frequency = 1,
-           .requirements = {{SquareId::WORKSHOP, 12}},
+           .attractions = {
+             {{AttractionId::SQUARE, SquareId::WORKSHOP}, 1.0, 12.0},
+            },
            .traits = {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT},
            .salary = 10,
            .dormSquare = SquareId::DORM},
          { .id = CreatureId::GOBLIN,
            .frequency = 0.8,
-           .requirements = {{SquareId::TRAINING_ROOM, 12}},
+           .attractions = {
+             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 1.0, 12.0},
+            },
            .traits = {MinionTrait::FIGHTER},
            .salary = 20,
            .dormSquare = SquareId::DORM},
          { .id = CreatureId::OGRE,
            .frequency = 0.3,
-           .requirements = {{SquareId::TRAINING_ROOM, 25}},
+           .attractions = {
+             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+            },
            .traits = {MinionTrait::FIGHTER},
            .salary = 40,
            .dormSquare = SquareId::DORM},
@@ -212,6 +224,22 @@ void Collective::setLevel(Level* l) {
 }
 
 Collective::~Collective() {
+}
+
+double Collective::getAttractionOccupation(MinionAttraction attraction) {
+  double res = 0;
+  for (auto& elem : minionAttraction)
+    for (auto& info : elem.second)
+      if (info.attraction == attraction)
+        res += info.amountClaimed;
+  return res;
+}
+
+double Collective::getAttractionValue(MinionAttraction attraction) {
+  switch (attraction.getId()) {
+    case AttractionId::SQUARE: 
+      return getSquares(attraction.get<SquareType>()).size();
+  }
 }
 
 void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> traits) {
@@ -575,11 +603,7 @@ Optional<SquareType> Collective::getSecondarySquare(SquareType type) {
   }
 }
 
-
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
-  for (auto elem : info.requirements)
-    if (getSquares(elem.type).size() < elem.number)
-      return false;
   const set<Vec2>& dormSquares = getSquares(info.dormSquare);
   Optional<Vec2> bedPos;
   Optional<SquareType> replacement = getSecondarySquare(info.dormSquare);
@@ -612,13 +636,30 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   if (replacement)
     taskMap.addTask(Task::createBed(this, *bedPos, info.dormSquare, *replacement), c);
   minionPayment[c] = {info.salary, 0.0, 0};
+  minionAttraction[c] = info.attractions;
   return true;
 }
 
+double Collective::getImmigrantChance(const ImmigrantInfo& info) {
+  double result = 0;
+  for (auto& attraction : info.attractions) {
+    result += max(0.0, getAttractionValue(attraction.attraction) 
+      - getAttractionOccupation(attraction.attraction)
+      - attraction.minAmount);
+  }
+  return result;
+}
+
 void Collective::considerImmigration() {
-  vector<double> weights = transform2<double>(
-      getConfig().immigrantInfo,
-      [] (const ImmigrantInfo& i) { return i.frequency;});
+  vector<double> weights;
+  bool ok = false;
+  for (auto& elem : getConfig().immigrantInfo) {
+    weights.push_back(getImmigrantChance(elem));
+    if (weights.back() > 0)
+      ok = true;
+  }
+  if (!ok)
+    return;
   for (int i : Range(10))
     if (considerImmigrant(chooseRandom(getConfig().immigrantInfo, weights)))
       break;
@@ -813,6 +854,7 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     prisonerInfo.erase(victim);
     freeFromGuardPost(victim);
     removeElement(creatures, victim);
+    minionAttraction.erase(victim);
     if (Task* task = taskMap.getTask(victim)) {
       if (!task->canTransfer()) {
         task->cancel();

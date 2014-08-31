@@ -7,6 +7,7 @@
 #include "minion_equipment.h"
 #include "spell_info.h"
 #include "task_map.h"
+#include "minion_attraction.h"
 
 class Creature;
 class CollectiveControl;
@@ -262,6 +263,9 @@ class Collective : public Task::Callback {
   void makePayouts();
   void cashPayouts();
 
+  double getAttractionValue(MinionAttraction);
+  double getImmigrantChance(const ImmigrantInfo&);
+
   SERIAL_CHECKER;
   REGISTER_HANDLER(CombatEvent, const Creature*);
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
@@ -361,6 +365,9 @@ class Collective : public Task::Callback {
   int SERIAL2(points, 0);
   unordered_map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);
   int SERIAL(nextPayoutTime);
+  struct AttractionInfo;
+  unordered_map<const Creature*, vector<AttractionInfo>> SERIAL(minionAttraction);
+  double getAttractionOccupation(MinionAttraction);
 };
 
 RICH_ENUM(Collective::Warning,

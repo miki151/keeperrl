@@ -563,7 +563,9 @@ static vector<FriendlyVault> friendlyVaults {
 static vector<EnemyInfo> getVaults() {
   vector<EnemyInfo> ret {
     getVault(SettlementType::CAVE, chooseRandom({CreatureId::RED_DRAGON, CreatureId::GREEN_DRAGON}),
-        Tribe::get(TribeId::DRAGON), 1, ItemFactory::dragonCave(), {VillageControlInfo::DRAGON}),
+        Tribe::get(TribeId::DRAGON), 1, ItemFactory::dragonCave(), {
+        Options::getValue(OptionId::AGGRESSIVE_HEROES) ? VillageControlInfo::DRAGON
+        : VillageControlInfo::PEACEFUL}),
  /*   getVault(SettlementType::CAVE, CreatureId::GREEN_DRAGON, Tribe::get(TribeId::DRAGON), 1,
         ItemFactory::dragonCave(), {VillageControlInfo::DRAGON}),*/
     getVault(SettlementType::VAULT, CreatureFactory::insects(Tribe::get(TribeId::MONSTER)),
