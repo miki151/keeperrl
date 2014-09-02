@@ -1353,7 +1353,11 @@ double PlayerControl::getWarLevel() const {
 }
 
 void PlayerControl::addToMemory(Vec2 pos) {
-  getMemory(getLevel()).update(pos, getLevel()->getSquare(pos)->getViewIndex(this));
+  Square* square = getLevel()->getSquare(pos);
+  if (!square->isDirty())
+    return;
+  square->setNonDirty();
+  getMemory(getLevel()).update(pos, square->getViewIndex(this));
 }
 
 void PlayerControl::addDeityServant(Deity* deity, Vec2 deityPos, Vec2 victimPos) {

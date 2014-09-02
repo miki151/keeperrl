@@ -193,7 +193,7 @@ class Square : public Renderable {
   void setBackground(const Square*);
   ViewIndex getViewIndex(const CreatureView* c) const;
 
-  bool itemLands(vector<Item*> item, const Attack& attack);
+  bool itemLands(vector<Item*> item, const Attack& attack) const;
   virtual bool itemBounces(Item* item, Vision*) const;
   void onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, Vision*);
   vector<Item*> getItems(function<bool (Item*)> predicate = alwaysTrue<Item*>()) const;
@@ -208,6 +208,9 @@ class Square : public Renderable {
   virtual ~Square();
 
   void setFog(double val);
+
+  bool isDirty() const;
+  void setNonDirty();
 
   SERIALIZATION_DECL(Square);
 
@@ -242,6 +245,7 @@ class Square : public Renderable {
   bool SERIAL(ticking);
   double SERIAL2(fog, 0);
   MovementType SERIAL(movementType);
+  bool SERIAL2(dirty, true);
 };
 
 #endif

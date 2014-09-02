@@ -44,7 +44,8 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(constructions)
     & SVAR(ticking)
     & SVAR(fog)
-    & SVAR(movementType);
+    & SVAR(movementType)
+    & SVAR(dirty);
   CHECK_SERIAL;
 }
 
@@ -80,6 +81,7 @@ string Square::getName() const {
 }
 
 void Square::setName(const string& s) {
+  dirty = true;
   name = s;
 }
 
@@ -114,6 +116,7 @@ bool Square::canConstruct(SquareType type) const {
 }
 
 bool Square::construct(SquareType type) {
+  dirty = true;
   CHECK(canConstruct(type));
   if (--constructions[type.getId()] <= 0) {
     PSquare newSquare = PSquare(SquareFactory::get(type));
@@ -126,12 +129,14 @@ bool Square::construct(SquareType type) {
 }
 
 void Square::destroy() {
+  dirty = true;
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
 void Square::burnOut() {
+  dirty = true;
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
   GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
@@ -164,10 +169,12 @@ const Level* Square::getLevel() const {
 }
 
 void Square::setFog(double val) {
+  dirty = true;
   fog = val;
 }
 
 void Square::tick(double time) {
+  dirty = true;
   if (!inventory.isEmpty())
     for (Item* item : inventory.getItems()) {
       item->tick(time, level, position);
@@ -202,7 +209,7 @@ void Square::tick(double time) {
   tickSpecial(time);
 }
 
-bool Square::itemLands(vector<Item*> item, const Attack& attack) {
+bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
   if (creature) {
     if (!creature->dodgeAttack(attack))
       return true;
@@ -214,7 +221,7 @@ bool Square::itemLands(vector<Item*> item, const Attack& attack) {
       return false;
     }
   }
-  for (PTrigger& t : triggers)
+  for (const PTrigger& t : triggers)
     if (t->interceptsFlyingItem(item[0]))
       return true;
   return false;
@@ -225,6 +232,7 @@ bool Square::itemBounces(Item* item, Vision* v) const {
 }
 
 void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, Vision* vision) {
+  dirty = true;
   if (creature) {
     item[0]->onHitCreature(creature, attack, item.size() > 1);
     if (!item[0]->isDiscarded())
@@ -267,6 +275,7 @@ bool Square::canEnterSpecial(const Creature* c) const {
 }
 
 void Square::setOnFire(double amount) {
+  dirty = true;
   bool burning = fire.isBurning();
   fire.set(amount);
   if (!burning && fire.isBurning()) {
@@ -281,6 +290,7 @@ void Square::setOnFire(double amount) {
 }
 
 void Square::addPoisonGas(double amount) {
+  dirty = true;
   if (canSeeThru()) {
     poisonGas.addAmount(amount);
     level->addTickingSquare(position);
@@ -300,6 +310,7 @@ Optional<ViewObject> Square::getBackgroundObject() const {
 }
 
 void Square::setBackground(const Square* square) {
+  dirty = true;
   if (getViewObject().layer() != ViewLayer::FLOOR_BACKGROUND) {
     const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject) : square->getViewObject();
     if (obj.layer() == ViewLayer::FLOOR_BACKGROUND)
@@ -340,12 +351,14 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
 }
 
 void Square::onEnter(Creature* c) {
+  dirty = true;
   for (Trigger* t : extractRefs(triggers))
     t->onCreatureEnter(c);
   onEnterSpecial(c);
 }
 
 void Square::dropItem(PItem item) {
+  dirty = true;
   if (level)  // if level == null, then it's being constructed, square will be added later
     level->addTickingSquare(getPosition());
   inventory.addItem(std::move(item));
@@ -365,6 +378,7 @@ Creature* Square::getCreature() {
 }
 
 void Square::addTrigger(PTrigger t) {
+  dirty = true;
   level->addTickingSquare(position);
   triggers.push_back(std::move(t));
 }
@@ -374,6 +388,7 @@ const vector<Trigger*> Square::getTriggers() const {
 }
 
 PTrigger Square::removeTrigger(Trigger* trigger) {
+  dirty = true;
   for (PTrigger& t : triggers)
     if (t.get() == trigger) {
       PTrigger ret = std::move(t);
@@ -384,6 +399,7 @@ PTrigger Square::removeTrigger(Trigger* trigger) {
 }
 
 void Square::removeTriggers() {
+  dirty = true;
   triggers.clear();
 }
 
@@ -392,6 +408,7 @@ const Creature* Square::getCreature() const {
 }
 
 void Square::removeCreature() {
+  dirty = true;
   CHECK(creature);
   creature = 0;
 }
@@ -428,10 +445,19 @@ vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {
 }
 
 PItem Square::removeItem(Item* it) {
+  dirty = true;
   return inventory.removeItem(it);
 }
 
 vector<PItem> Square::removeItems(vector<Item*> it) {
+  dirty = true;
   return inventory.removeItems(it);
 }
 
+void Square::setNonDirty() {
+  dirty = false;
+}
+
+bool Square::isDirty() const {
+  return dirty;
+}
