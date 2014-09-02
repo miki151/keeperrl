@@ -1017,7 +1017,7 @@ ViewIndex PlayerControl::getViewIndex(Vec2 pos) const {
   }
   if (surprises.count(pos) && !getCollective()->isKnownSquare(pos))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
-  if (getCollective()->hasEfficiency(pos))
+  if (getCollective()->hasEfficiency(pos) && index.hasObject(ViewLayer::FLOOR))
     index.getObject(ViewLayer::FLOOR).setAttribute(
         ViewObject::Attribute::EFFICIENCY, getCollective()->getEfficiency(pos));
   return index;
