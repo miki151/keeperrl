@@ -22,6 +22,9 @@ double CollectiveControl::getWarLevel() const {
   return 0;
 }
 
+void CollectiveControl::update(Creature*) {
+}
+
 Level* CollectiveControl::getLevel() {
   return getCollective()->getLevel();
 }

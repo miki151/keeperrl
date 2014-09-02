@@ -956,9 +956,17 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
 }
 
 void PlayerControl::updateMemory() {
-  for (Vec2 v : getLevel()->getBounds())
+/*  for (Vec2 v : getLevel()->getBounds())
     if (getCollective()->isKnownSquare(v))
-      addToMemory(v);
+      addToMemory(v);*/
+}
+
+void PlayerControl::update(Creature* c) {
+  if (contains(getCollective()->getCreatures(), c))
+    for (Vec2 pos : getCollective()->getLevel()->getVisibleTiles(c)) {
+      getCollective()->addKnownTile(pos);
+      addToMemory(pos);
+    }
 }
 
 const MapMemory& PlayerControl::getMemory() const {
@@ -1416,6 +1424,7 @@ void PlayerControl::tick(double time) {
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   considerDeityFight();
   checkKeeperDanger();
+  updateMemory();
   model->getView()->getJukebox()->update();
   if (retired) {
     if (const Creature* c = getLevel()->getPlayer())
@@ -1436,7 +1445,10 @@ bool PlayerControl::canSee(const Creature* c) const {
 }
 
 bool PlayerControl::canSee(Vec2 position) const {
-  return getCollective()->isKnownSquare(position);
+  for (Creature* c : getCollective()->getCreatures())
+    if (c->canSee(position))
+      return true;
+  return false;
 }
 
 vector<const Creature*> PlayerControl::getUnknownAttacker() const {

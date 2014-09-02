@@ -17,6 +17,7 @@ class CollectiveControl {
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer);
   virtual void onConstructedSquare(Vec2 pos, SquareType);
   virtual double getWarLevel() const;
+  virtual void update(Creature*);
   Level* getLevel();
   const Level* getLevel() const;
 

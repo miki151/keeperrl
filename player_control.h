@@ -46,6 +46,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual const Tribe* getTribe() const override;
   Tribe* getTribe();
   virtual bool isEnemy(const Creature*) const override;
+  virtual void update(Creature*) override;
 
   virtual bool staticPosition() const override;
   virtual int getMaxSightRange() const override;

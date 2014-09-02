@@ -992,9 +992,7 @@ bool Collective::isKnownSquare(Vec2 pos) const {
 }
 
 void Collective::update(Creature* c) {
-  if (contains(getCreatures(), c))
-    for (Vec2 pos : getLevel()->getVisibleTiles(c))
-      addKnownTile(pos);
+  control->update(c);
 }
 
 const static unordered_set<SquareType> efficiencySquares {
