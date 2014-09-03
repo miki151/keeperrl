@@ -199,11 +199,11 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
   if (tile.hasSpriteCoord()) {
     int moveY = 0;
     Vec2 sz = Renderer::tileSize[tile.getTexNum()];
-    Vec2 off = (Renderer::nominalSize -  sz) / 2;
-    int width = sizeX - 2 * off.x;
-    int height = sizeY - 2 * off.y;
+    Vec2 off = (Renderer::nominalSize -  sz).mult(Vec2(sizeX, sizeY)).div(Renderer::nominalSize * 2);
+    int width = sz.x * sizeX / Renderer::nominalSize.x;
+    int height = sz.y* sizeY / Renderer::nominalSize.y;
     if (sz.y > Renderer::nominalSize.y)
-      off.y = Renderer::nominalSize.y -  sz.y;
+      off.y *= 2;
     EnumSet<Dir> dirs;
     if (!object.hasModifier(ViewObject::Modifier::PLANNED))
       if (auto connectionId = getConnectionId(object))
@@ -212,12 +212,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
             dirs.insert(dir.getCardinalDir());
     Vec2 coord = tile.getSpriteCoord(dirs);
     if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
-      moveY = -4;
+      moveY = -4* sizeY / Renderer::nominalSize.y;
     if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
       renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize.x, 22 * Renderer::nominalSize.y,
           Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[0],
           min(Renderer::nominalSize.x, width), min(Renderer::nominalSize.y, height));
-      moveY = -4;
+      moveY = -4* sizeY / Renderer::nominalSize.y;
     }
     if (auto background = tile.getBackgroundCoord()) {
       renderer.drawSprite(x + off.x, y + off.y, background->x * sz.x,
