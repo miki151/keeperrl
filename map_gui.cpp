@@ -287,8 +287,8 @@ void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
 }
 
 void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs) {
-  Tile tile = Tile::fromViewId(ViewId::FOG_OF_WAR); 
-  Tile tile2 = Tile::fromViewId(ViewId::FOG_OF_WAR_CORNER); 
+  const Tile& tile = Tile::fromViewId(ViewId::FOG_OF_WAR); 
+  const Tile& tile2 = Tile::fromViewId(ViewId::FOG_OF_WAR_CORNER); 
   Vec2 coord = tile.getSpriteCoord(dirs.intersection({Dir::N, Dir::S, Dir::E, Dir::W}));
   Vec2 sz = Renderer::tileSize[tile.getTexNum()];
   renderer.drawSprite(pos.x, pos.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y,

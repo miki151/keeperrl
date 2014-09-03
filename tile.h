@@ -22,7 +22,7 @@
 class Tile {
   public:
   static Tile getTile(const ViewObject& obj, bool sprite);
-  static Tile fromViewId(ViewId);
+  static const Tile& fromViewId(ViewId);
   static Color getColor(const ViewObject& object);
 
   static Tile empty();
@@ -52,15 +52,15 @@ class Tile {
 
   Tile setTranslucent(double v);
 
-  bool hasSpriteCoord();
+  bool hasSpriteCoord() const;
 
-  Vec2 getSpriteCoord();
+  Vec2 getSpriteCoord() const;
 
-  Optional<Vec2> getBackgroundCoord();
+  Optional<Vec2> getBackgroundCoord() const;
 
-  Vec2 getSpriteCoord(const EnumSet<Dir>& c);
+  Vec2 getSpriteCoord(const EnumSet<Dir>& c) const;
 
-  int getTexNum();
+  int getTexNum() const;
 
   private:
   Tile();

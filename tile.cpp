@@ -93,19 +93,19 @@ Tile Tile::setTranslucent(double v) {
   return *this;
 }
 
-bool Tile::hasSpriteCoord() {
+bool Tile::hasSpriteCoord() const {
   return tileCoord;
 }
 
-Vec2 Tile::getSpriteCoord() {
+Vec2 Tile::getSpriteCoord() const {
   return *tileCoord;
 }
 
-Optional<Vec2> Tile::getBackgroundCoord() {
+Optional<Vec2> Tile::getBackgroundCoord() const {
   return backgroundCoord;
 }
 
-Vec2 Tile::getSpriteCoord(const EnumSet<Dir>& c) {
+Vec2 Tile::getSpriteCoord(const EnumSet<Dir>& c) const {
   if (connectionOption) {
     CHECK(connections.empty()) << "Can't have connections and options at the same time";
     if (c[connectionOption->first])
@@ -118,7 +118,7 @@ Vec2 Tile::getSpriteCoord(const EnumSet<Dir>& c) {
   else return *tileCoord;
 }
 
-int Tile::getTexNum() {
+int Tile::getTexNum() const {
   CHECK(tileCoord) << "Not a sprite tile";
   return texNum;
 }
@@ -220,7 +220,7 @@ void Tile::loadUnicode() {
   ScriptContext::execute("tiles.as", "void genSymbols()");
 }
 
-Tile Tile::fromViewId(ViewId id) {
+const Tile& Tile::fromViewId(ViewId id) {
   CHECK(tiles.count(id));
   return tiles.at(id);
 }
