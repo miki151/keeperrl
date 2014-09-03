@@ -69,7 +69,7 @@ class ReplayView : public T {
     }
 
     virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        View::MenuType, double* scrollPos, Optional<UserInput::Type> a) override {
+        View::MenuType, int* scrollPos, Optional<UserInput::Type> a) override {
       string method;
       string action;
       input >> method >> action;

@@ -50,7 +50,7 @@ class LoggingView : public T {
     }
 
     virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        View::MenuType type, double* scrollPos, Optional<UserInput::Type> action) override {
+        View::MenuType type, int* scrollPos, Optional<UserInput::Type> action) override {
       auto res = T::chooseFromList(title, options, index, type, scrollPos, action);
       output << "chooseFromList ";
       if (res)

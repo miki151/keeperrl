@@ -64,7 +64,7 @@ class GuiElem {
   static PGuiElem mouseOverAction(function<void()>);
   static PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
   static PGuiElem mouseHighlight2(PGuiElem highlight);
-  static PGuiElem scrollable(PGuiElem content, int contentHeight, double* scrollPos, double scrollJump);
+  static PGuiElem scrollable(PGuiElem content, int contentHeight, int* scrollPos);
   static PGuiElem getScrollButton();
   static PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   static PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);

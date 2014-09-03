@@ -111,7 +111,7 @@ class View {
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
       Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = NORMAL_MENU, double* scrollPos = nullptr, Optional<UserInput::Type> exitAction = Nothing()) = 0;
+      MenuType = NORMAL_MENU, int* scrollPos = nullptr, Optional<UserInput::Type> exitAction = Nothing()) = 0;
 
   /** Let's the player choose a direction from the main 8. Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<Vec2> chooseDirection(const string& message) = 0;

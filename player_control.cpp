@@ -468,7 +468,7 @@ void PlayerControl::handleEquipment(View* view, Creature* creature, int prevItem
   int index = *newIndex;
   if (index == slotItems.size() + consumables.size()) { // [Add item]
     int itIndex = 0;
-    double scrollPos = 0;
+    int scrollPos = 0;
     while (1) {
       const Item* chosenItem = chooseEquipmentItem(view, {}, [&](const Item* it) {
           return getCollective()->getMinionEquipment().getOwner(it) != creature && !it->canEquip()
@@ -503,7 +503,7 @@ void PlayerControl::handleEquipment(View* view, Creature* creature, int prevItem
 }
 
 Item* PlayerControl::chooseEquipmentItem(View* view, vector<Item*> currentItems, ItemPredicate predicate,
-    int* prevIndex, double* scrollPos) const {
+    int* prevIndex, int* scrollPos) const {
   vector<View::ListElem> options;
   vector<Item*> currentItemVec;
   if (!currentItems.empty())
