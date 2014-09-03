@@ -91,7 +91,7 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
   }
   const MapMemory& memory = creature->getMemory();
   for (Vec2 v : levelPart) {
-    if (!v.inRectangle(level->getBounds()) || (!memory.hasViewIndex(v) && !creature->canSee(v)))
+    if (!v.inRectangle(level->getBounds()) || !memory.hasViewIndex(v))
       putMapPixel(v - levelPart.getTopLeft(), colors[ColorId::BLACK]);
     else {
       putMapPixel(v - levelPart.getTopLeft(), Tile::getColor(level->getSquare(v)->getViewObject()));
@@ -109,7 +109,7 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
     for (const Location* loc : level->getAllLocations()) {
       bool seen = false;
       for (Vec2 v : loc->getBounds())
-        if (memory.hasViewIndex(v) || creature->canSee(v)) {
+        if (memory.hasViewIndex(v)) {
           seen = true;
           break;
         }
