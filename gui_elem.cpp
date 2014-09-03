@@ -262,11 +262,13 @@ class VerticalList : public GuiLayout {
     }
   }
 
-  int getLastTopElem() {
+  int getLastTopElem(int myHeight) {
     int totHeight = 0;
     for (int i = heights.size() - 1; i >= 0; --i) {
-      if (totHeight + heights[i] > getBounds().getH())
-        return i;
+      if (totHeight + heights[i] > myHeight) {
+        CHECK( i < heights.size() - 1) << "Couldn't fit list element in window";
+        return i + 1;
+      }
       totHeight += heights[i];
     }
     return 0;
@@ -576,7 +578,7 @@ class ScrollBar : public GuiLayout {
 
   int calcButHeight() {
     return getBounds().getPY() + *scrollPos * double(getBounds().getH() - buttonHeight)
-      / double(content->getLastTopElem());
+      / double(content->getLastTopElem(getBounds().getH()));
   }
 
   virtual void onLeftClick(Vec2 v) override {
@@ -620,7 +622,7 @@ class Scrollable : public GuiElem {
   }
 
   void onRefreshBounds() override {
-    int lastTopElem = content->getLastTopElem();
+    int lastTopElem = content->getLastTopElem(getBounds().getH());
     if (*scrollPos > lastTopElem)
       *scrollPos = lastTopElem;
     int offset = getScrollOffset();

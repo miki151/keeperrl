@@ -1127,16 +1127,18 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int* scrollPos = scrollPos1;
   int index = index1;
   vector<int> indexes(options.size());
+  vector<int> optionIndexes;
   int elemCount = 0;
   for (int i : All(options)) {
     if (options[i].getMod() == View::NORMAL) {
       indexes[count] = elemCount;
+      optionIndexes.push_back(i);
       ++count;
     }
     if (options[i].getMod() != View::TITLE)
       ++elemCount;
   }
-  int localScrollPos = index >= 0 ? getScrollPos(indexes[index], count) : 0;
+  int localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
   PGuiElem list = drawListGui(title, options, contentHeight, &index, &choice);
@@ -1172,7 +1174,7 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
           case Keyboard::Up:
             if (count > 0) {
               index = (index - 1 + count) % count;
-              *scrollPos = getScrollPos(indexes[index], count);
+              *scrollPos = getScrollPos(optionIndexes[index], options.size());
             } else
               *scrollPos = max(0, *scrollPos - 1);
             break;
@@ -1180,7 +1182,7 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
           case Keyboard::Down:
             if (count > 0) {
               index = (index + 1 + count) % count;
-              *scrollPos = getScrollPos(indexes[index], count);
+              *scrollPos = getScrollPos(optionIndexes[index], options.size());
             } else
               *scrollPos = min<int>(options.size() - 1, *scrollPos + 1);
             break;
