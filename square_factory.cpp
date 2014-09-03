@@ -929,7 +929,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               {SquareId::CEMETERY, 10}, {SquareId::WORKSHOP, 10}, {SquareId::PRISON, 10},
               {SquareId::TORTURE_TABLE, 10}, {SquareId::LABORATORY, 10}, {SquareId::BEAST_LAIR, 10},
               {SquareId::IMPALED_HEAD, 5}, {SquareId::BARRICADE, 20}, {SquareId::TORCH, 5},
-              {SquareId::ALTAR, 35}, {SquareId::CREATURE_ALTAR, 35}}});
+              {SquareId::ALTAR, 35}, {SquareId::EYEBALL, 5}, {SquareId::CREATURE_ALTAR, 35}}});
     case SquareId::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Rope bridge"), {
             .name = "rope bridge",
@@ -940,7 +940,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             .name = "grass",
             .movementType = {MovementTrait::WALK},
             .vision = Vision::get(VisionId::NORMAL),
-            .constructions = {{SquareId::IMPALED_HEAD, 5}}});
+            .constructions = {{SquareId::EYEBALL, 5}, {SquareId::IMPALED_HEAD, 5}}});
     case SquareId::CROPS:
         return new Square(ViewObject(chooseRandom({ViewId::CROPS, ViewId::CROPS2}),
                 ViewLayer::FLOOR_BACKGROUND, "Wheat"), {
@@ -1017,7 +1017,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND, "Hill"), {
             .name = "hill",
             .vision = Vision::get(VisionId::NORMAL),
-            .constructions ={ {SquareId::IMPALED_HEAD, 5}},
+            .constructions ={ {SquareId::EYEBALL, 5}, {SquareId::IMPALED_HEAD, 5}},
             .movementType = {MovementTrait::WALK}});
     case SquareId::WATER:
         return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR, "Water"), "water",
@@ -1102,6 +1102,12 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head")
             .setModifier(ViewObject::Modifier::ROUND_SHADOW), {
             .name = "impaled head",
+            .movementType = {MovementTrait::WALK},
+            .vision = Vision::get(VisionId::NORMAL)});
+    case SquareId::EYEBALL:
+        return new Square(ViewObject(ViewId::EYEBALL, ViewLayer::FLOOR, "Eyeball")
+            .setModifier(ViewObject::Modifier::ROUND_SHADOW), {
+            .name = "eyeball",
             .movementType = {MovementTrait::WALK},
             .vision = Vision::get(VisionId::NORMAL)});
     case SquareId::LIBRARY:

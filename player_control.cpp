@@ -121,6 +121,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({{SquareId::BARRICADE, tribe}, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, "", 0,
       "Installations"),
     BuildInfo({SquareId::TORCH, {ResourceId::WOOD, 1}, "Torch"}, Nothing(), "", 'c', "Installations"),
+    BuildInfo({SquareId::EYEBALL, {ResourceId::MANA, 10}, "Eyeball"}, Nothing(), "", 0, "Installations"),
     BuildInfo({SquareId::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, Nothing(),
         "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
     BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, TechId::TRAPS,
@@ -1451,6 +1452,9 @@ bool PlayerControl::canSee(const Creature* c) const {
 bool PlayerControl::canSee(Vec2 position) const {
   for (Creature* c : getCollective()->getCreatures())
     if (c->canSee(position))
+      return true;
+  for (Vec2 pos : getCollective()->getSquares(SquareId::EYEBALL))
+    if (getLevel()->canSee(pos, position, Vision::get(VisionId::NORMAL)))
       return true;
   return false;
 }

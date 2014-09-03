@@ -326,9 +326,12 @@ FieldOfView& Level::getFieldOfView(Vision* vision) const {
   return fieldOfView.at(vision);
 }
 
+bool Level::canSee(Vec2 from, Vec2 to, Vision* vision) const {
+  return isWithinVision(from, to, vision) && getFieldOfView(vision).canSee(from, to);
+}
+
 bool Level::canSee(const Creature* c, Vec2 pos) const {
-  return isWithinVision(c->getPosition(), pos, c->getVision())
-    && getFieldOfView(c->getVision()).canSee(c->getPosition(), pos);
+  return canSee(c->getPosition(), pos, c->getVision());
 }
 
 bool Level::playerCanSee(Vec2 pos) const {

@@ -72,6 +72,7 @@ enum class SquareId {
   BORDER_GUARD,
   ALTAR,
   CREATURE_ALTAR,
+  EYEBALL,
 };
 
 typedef EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureFactory, const Tribe*),

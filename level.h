@@ -128,8 +128,11 @@ class Level : public UniqueEntity<Level> {
   vector<Creature*> getAllCreatures(Rectangle bounds) const;
   //@}
 
-  /** Checks whether one square is visible from the other. This function is not guaranteed to be simmetrical.*/
+  /** Checks whether the creature can see the square.*/
   bool canSee(const Creature* c, Vec2 to) const;
+
+  /** Returns if it's possible to see the given square.*/
+  bool canSee(Vec2 from, Vec2 to, Vision*) const;
 
   /** Returns all tiles visible by a creature.*/
   vector<Vec2> getVisibleTiles(const Creature*) const;
@@ -285,9 +288,9 @@ class Level : public UniqueEntity<Level> {
       Table<CoverInfo> coverInfo);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
-  bool isWithinVision(Vec2 from, Vec2 to, Vision*) const;
   FieldOfView& getFieldOfView(Vision* vision) const;
   vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, Vision* vision) const;
+  bool isWithinVision(Vec2 from, Vec2 to, Vision*) const;
 
   /** Notify relevant locations about creature position. */
   void notifyLocations(Creature*);

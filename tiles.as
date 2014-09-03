@@ -285,6 +285,7 @@ void genTiles() {
   addTile(MANA, sprite(5, 10, 2));
   addTile(DANGER, sprite(12, 9, 2));
   addTile(FETCH_ICON, sprite(15, 11, 3));
+  addTile(EYEBALL, sprite("eyeball2"));
   addTile(FOG_OF_WAR, getWaterTile(14));
   addTile(FOG_OF_WAR_CORNER, sprite(14, 5, 4)
       .addConnection(dirs(NE), 14, 11)
@@ -519,6 +520,7 @@ void genSymbols() {
   addSymbol(GUARD_POST, symbol("⚐", YELLOW, true));
   addSymbol(DESTROY_BUTTON, symbol("X", RED));
   addSymbol(MANA, symbol("✱", BLUE, true));
+  addSymbol(EYEBALL, symbol("e", BLUE));
   addSymbol(DANGER, symbol("*", RED));
   addSymbol(FETCH_ICON, symbol(0x1f44b, LIGHT_BROWN, true));
 }
