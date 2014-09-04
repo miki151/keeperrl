@@ -1138,6 +1138,8 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     if (options[i].getMod() != View::TITLE)
       ++elemCount;
   }
+  if (optionIndexes.empty())
+    optionIndexes.push_back(0);
   int localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
