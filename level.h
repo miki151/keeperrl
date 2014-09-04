@@ -30,6 +30,7 @@ class Player;
 class LevelMaker;
 class Location;
 class Attack;
+class CollectiveBuilder;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level : public UniqueEntity<Level> {
@@ -235,7 +236,7 @@ class Level : public UniqueEntity<Level> {
     void addLocation(Location*, Rectangle area);
 
     /** Adds a collective to the level and initializes it.*/
-    void addCollective(Collective*);
+    void addCollective(CollectiveBuilder*);
 
     /** Sets the cover of the square. The value will remain if square is changed.*/
     void setCoverInfo(Vec2, CoverInfo);
@@ -251,7 +252,7 @@ class Level : public UniqueEntity<Level> {
     Table<double> heightMap;
     Table<double> dark;
     vector<Location*> locations;
-    vector<Collective*> collectives;
+    vector<CollectiveBuilder*> collectives;
     Table<CoverInfo> coverInfo;
     Table<unordered_set<SquareAttrib>> attrib;
     Table<SquareType> type;

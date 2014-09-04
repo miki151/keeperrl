@@ -32,6 +32,7 @@
 #include "square.h"
 #include "view_id.h"
 #include "collective.h"
+#include "collective_builder.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -345,11 +346,11 @@ Model* Model::heroModel(View* view) {
      .location = banditLocation,
      .tribe = Tribe::get(TribeId::BANDIT),
      .buildingId = BuildingId::WOOD}};
-  for (auto& elem : settlements) {
-    elem.collective = new Collective(Collective::ConfigId::VILLAGE, elem.tribe);
-    m->collectives.push_back(PCollective(elem.collective));
-  }
+  for (auto& elem : settlements)
+    elem.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, elem.tribe);
   Level* top = m->prepareTopLevel(settlements);
+  for (auto& elem : settlements)
+    m->collectives.push_back(elem.collective->build());
   Quest::get(QuestId::BANDITS)->setLocation(banditLocation);
   SettlementInfo dwarfSettlement {
     .type = SettlementType::MINETOWN,
@@ -361,11 +362,11 @@ Model* Model::heroModel(View* view) {
     .upStairs = {StairKey::DWARF},
     .downStairs = {StairKey::DWARF}, 
     .shopFactory = ItemFactory::dwarfShop()};
-  dwarfSettlement.collective = new Collective(Collective::ConfigId::VILLAGE, dwarfSettlement.tribe);
-  m->collectives.push_back(PCollective(dwarfSettlement.collective));
+  dwarfSettlement.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, dwarfSettlement.tribe);
   Level* d1 = m->buildLevel(
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(dwarfSettlement));
+  m->collectives.push_back(dwarfSettlement.collective->build());
   SettlementInfo goblinSettlement {
      .type = SettlementType::MINETOWN,
      .creatures = CreatureFactory::goblinTown(Tribe::get(TribeId::GOBLIN)),
@@ -375,11 +376,11 @@ Model* Model::heroModel(View* view) {
      .buildingId = BuildingId::BRICK,
      .upStairs = {StairKey::DWARF},
      .shopFactory = ItemFactory::goblinShop()};
-  goblinSettlement.collective = new Collective(Collective::ConfigId::VILLAGE, goblinSettlement.tribe);
-  m->collectives.push_back(PCollective(goblinSettlement.collective));
+  goblinSettlement.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, goblinSettlement.tribe);
   Level* g1 = m->buildLevel(
       Level::Builder(60, 35, "Goblin Den"),
       LevelMaker::mineTownLevel(goblinSettlement));
+  m->collectives.push_back(goblinSettlement.collective->build());
   vector<Level*> gnomish;
   int numGnomLevels = 8;
  // int towerLinkIndex = Random.getRandom(1, numGnomLevels - 1);
@@ -677,14 +678,13 @@ Model* Model::collectiveModel(View* view) {
   vector<EnemyInfo> enemyInfo = getEnemyInfo();
   vector<SettlementInfo> settlements;
   for (auto& elem : enemyInfo) {
-    elem.settlement.collective = new Collective(Collective::ConfigId::VILLAGE, elem.settlement.tribe);
-    m->collectives.push_back(PCollective(elem.settlement.collective));
+    elem.settlement.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, elem.settlement.tribe);
     settlements.push_back(elem.settlement);
   }
   Level* top = m->prepareTopLevel2(settlements);
-  m->collectives.push_back(PCollective(new Collective(Collective::ConfigId::KEEPER, Tribe::get(TribeId::KEEPER))));
+  m->collectives.push_back(PCollective(
+        new Collective(top, CollectiveConfigId::KEEPER, Tribe::get(TribeId::KEEPER))));
   Collective* keeperCollective = m->collectives.back().get();
-  keeperCollective->setLevel(top);
   m->playerControl = new PlayerControl(keeperCollective, m, top);
   keeperCollective->setControl(PCollectiveControl(m->playerControl));
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::get(TribeId::KEEPER),
@@ -701,35 +701,19 @@ Model* Model::collectiveModel(View* view) {
     m->addCreature(std::move(c));
   }
   for (int i : All(enemyInfo)) {
-    Collective* collective = enemyInfo[i].settlement.collective;
+    PCollective collective = enemyInfo[i].settlement.collective->build();
     PVillageControl control;
     if (enemyInfo[i].controlInfo.id != VillageControlInfo::FINAL_ATTACK)
-      control = VillageControl::get(enemyInfo[i].controlInfo, collective, keeperCollective,
+      control = VillageControl::get(enemyInfo[i].controlInfo, collective.get(), keeperCollective,
           enemyInfo[i].settlement.location);
     else
-      control = VillageControl::getFinalAttack(collective, keeperCollective, enemyInfo[i].settlement.location,
+      control = VillageControl::getFinalAttack(collective.get(), keeperCollective, enemyInfo[i].settlement.location,
           m->villageControls);
     m->villageControls.push_back(control.get());
-    enemyInfo[i].settlement.collective->setControl(std::move(control));
+    collective->setControl(std::move(control));
+    m->collectives.push_back(std::move(collective));
   }
   setHandicap(Tribe::get(TribeId::KEEPER), Options::getValue(OptionId::EASY_KEEPER));
-  return m;
-}
-
-Model* Model::splashModel(View* view, const Table<bool>& bitmap) {
-  Model* m = new Model(view);
-  Level* top = m->buildLevel(
-      Level::Builder(bitmap.getWidth(), bitmap.getHeight(), "Wilderness", false), LevelMaker::grassAndTrees());
-  CreatureFactory factory = CreatureFactory::splash(Tribe::get(TribeId::KEEPER));
-  Collective* collective = new Collective(Collective::ConfigId::VILLAGE, Tribe::get(TribeId::KEEPER));
-  m->playerControl = new PlayerControl(collective, m, top);
-  for (Vec2 v : bitmap.getBounds())
-    if (bitmap[v]) {
-      PCreature c = factory.random(MonsterAIFactory::guardSquare(v));
-      Creature* ref = c.get();
-      top->landCreature({bitmap.getBounds().randomVec2()}, std::move(c));
-      m->playerControl->addImp(ref);
-    }
   return m;
 }
 

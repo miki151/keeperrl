@@ -20,6 +20,7 @@
 #include "pantheon.h"
 #include "item_factory.h"
 #include "square.h"
+#include "collective_builder.h"
 #include "collective.h"
 #include "shortest_path.h"
 #include "creature.h"
@@ -390,8 +391,8 @@ class Creatures : public LevelMaker {
   Creatures(CreatureFactory cf, int numC, MonsterAIFactory actorF, Optional<SquareType> type = Nothing()) :
       cfactory(cf), numCreature(numC), actorFactory(actorF), squareType(type) {}
 
-  Creatures(CreatureFactory cf, int numC, Collective* col, Optional<SquareType> type = Nothing()) :
-      cfactory(cf), numCreature(numC), actorFactory(MonsterAIFactory::collective(col)), squareType(type),
+  Creatures(CreatureFactory cf, int numC, CollectiveBuilder* col, Optional<SquareType> type = Nothing()) :
+      cfactory(cf), numCreature(numC), actorFactory(MonsterAIFactory::monster()), squareType(type),
       collective(col) {}
 
   Creatures(CreatureFactory cf, int numC, Optional<SquareType> type = Nothing()) :
@@ -427,7 +428,7 @@ class Creatures : public LevelMaker {
   int numCreature;
   Optional<MonsterAIFactory> actorFactory;
   Optional<SquareType> squareType;
-  Collective* collective = nullptr;
+  CollectiveBuilder* collective = nullptr;
 };
 
 class Items : public LevelMaker {
@@ -1310,14 +1311,14 @@ class LocationMaker : public LevelMaker {
 
 class CollectiveMaker : public LevelMaker {
   public:
-  CollectiveMaker(Collective* col) : collective(col) {}
+  CollectiveMaker(CollectiveBuilder* col) : collective(col) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
     builder->addCollective(collective);
   }
   
   private:
-  Collective* collective;
+  CollectiveBuilder* collective;
 };
 
 class ForEachSquare : public LevelMaker {
@@ -1589,19 +1590,6 @@ class CastleExit : public LevelMaker {
   Tribe* guardTribe;
   BuildingInfo building;
   CreatureId guardId;
-};
-
-class CreatureAltarMaker : public LevelMaker {
-  public:
-  CreatureAltarMaker(Collective* col) : collective(col) {}
-
-  virtual void make(Level::Builder* builder, Rectangle area) override {
-    CHECK(area.getW() == 1 && area.getH() == 1);
-    builder->putSquare(area.getTopLeft(), SquareType(SquareId::CREATURE_ALTAR, getOnlyElement(collective->getCreatures())));
-  }
-
-  private:
-  Collective* collective;
 };
 
 static LevelMaker* underground(bool monsters, CreatureFactory waterFactory, CreatureFactory lavaFactory) {

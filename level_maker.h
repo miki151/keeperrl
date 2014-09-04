@@ -23,6 +23,7 @@
 enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
 
 class ItemFactory;
+class CollectiveBuilder;
 
 enum class SettlementType {
   VILLAGE,
@@ -49,7 +50,7 @@ struct SettlementInfo {
   Optional<CreatureId> guardId;
   Optional<ItemType> elderLoot;
   Optional<ItemFactory> shopFactory;
-  Collective* collective;
+  CollectiveBuilder* collective;
 };
 
 class LevelMaker {

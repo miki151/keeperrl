@@ -31,6 +31,7 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(villain)
     & SVAR(location)
     & SVAR(name)
+    & SVAR(conquered);
   CHECK_SERIAL;
 }
 
@@ -114,8 +115,10 @@ static int expLevelFun(double time) {
 }
 
 void VillageControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
-  if (!isAnonymous() && getCreatures(MinionTrait::FIGHTER).empty())
-      messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
+  if (!isAnonymous() && getCreatures(MinionTrait::FIGHTER).empty() && !conquered) {
+    messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
+    conquered = true;
+  }
 }
 
 class AttackTriggerSet : public AttackTrigger {

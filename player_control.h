@@ -20,7 +20,6 @@
 #include "creature_view.h"
 #include "task.h"
 #include "entity_set.h"
-#include "sectors.h"
 #include "event.h"
 #include "spell_info.h"
 #include "view.h"
@@ -53,8 +52,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   void onConqueredLand(const string& name);
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
-
-  virtual void onConstructedSquare(Vec2 pos, SquareType) override;
 
   void processInput(View* view, UserInput);
   void tick(double);
@@ -99,7 +96,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   private:
 
-  REGISTER_HANDLER(SquareReplacedEvent, const Level*, Vec2 pos);
   REGISTER_HANDLER(TechBookEvent, Technology*);
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity* to, WorshipType);
   REGISTER_HANDLER(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
@@ -112,9 +108,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static string getWarningText(Collective::Warning);
 
   void onWorshipEpithet(EpithetId);
-  void addCreature(Creature* c, EnumSet<MinionTrait>);
-  Creature* addCreature(PCreature c, Vec2 v, EnumSet<MinionTrait>);
-  void importCreature(Creature* c, EnumSet<MinionTrait> traits);
   Creature* getCreature(UniqueEntity<Creature>::Id id);
   void handleCreatureButton(Creature* c, View* view);
   void unpossess();
@@ -216,8 +209,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   int SERIAL2(startImpNum, -1);
   bool SERIAL2(retired, false);
   int SERIAL2(executions, 0);
-  unique_ptr<Sectors> SERIAL(sectors);
-  unique_ptr<Sectors> SERIAL(flyingSectors);
   unordered_set<Vec2> SERIAL(surprises);
 };
 

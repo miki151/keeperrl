@@ -8,6 +8,7 @@
 #include "spell_info.h"
 #include "task_map.h"
 #include "minion_attraction.h"
+#include "sectors.h"
 
 class Creature;
 class CollectiveControl;
@@ -46,15 +47,18 @@ RICH_ENUM(MinionTask,
 
 struct CollectiveConfig;
 
+RICH_ENUM(CollectiveConfigId,
+  KEEPER,
+  VILLAGE,
+);
+
 class Collective : public Task::Callback {
   public:
-  enum class ConfigId;
-  Collective(ConfigId, Tribe*);
+  Collective(Level*, CollectiveConfigId, Tribe*);
   void addCreature(Creature*, EnumSet<MinionTrait>);
   void addCreature(PCreature, Vec2, EnumSet<MinionTrait>);
   MoveInfo getMove(Creature*);
   void setControl(PCollectiveControl);
-  void setLevel(Level*);
   void tick(double time);
   const Tribe* getTribe() const;
   Tribe* getTribe();
@@ -258,6 +262,8 @@ class Collective : public Task::Callback {
   int getSalary(const Creature*) const;
   int getNextSalaries() const;
 
+  void updateSectors(Vec2);
+
   private:
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
@@ -280,7 +286,7 @@ class Collective : public Task::Callback {
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
   REGISTER_HANDLER(TortureEvent, Creature* who, const Creature* torturer);
 
-  ConfigId SERIAL(configId);
+  CollectiveConfigId SERIAL(configId);
   const CollectiveConfig& getConfig() const;
   MinionEquipment SERIAL(minionEquipment);
   map<ResourceId, int> SERIAL(credit);
@@ -368,6 +374,8 @@ class Collective : public Task::Callback {
   struct AttractionInfo;
   unordered_map<const Creature*, vector<AttractionInfo>> SERIAL(minionAttraction);
   double getAttractionOccupation(MinionAttraction);
+  unique_ptr<Sectors> SERIAL(sectors);
+  unique_ptr<Sectors> SERIAL(flyingSectors);
 };
 
 RICH_ENUM(Collective::Warning,
@@ -392,11 +400,5 @@ RICH_ENUM(Collective::Warning,
     MORE_CHESTS,
     MANA
 );
-
-RICH_ENUM(Collective::ConfigId,
-    KEEPER,
-    VILLAGE,
-);
-
 
 #endif

@@ -32,7 +32,6 @@
 #include "creature.h"
 #include "square.h"
 #include "view_id.h"
-#include "monster.h"
 #include "collective.h"
 #include "effect.h"
 
@@ -50,8 +49,6 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(startImpNum)
     & SVAR(retired)
     & SVAR(executions)
-    & SVAR(flyingSectors)
-    & SVAR(sectors)
     & SVAR(surprises);
   CHECK_SERIAL;
 }
@@ -197,8 +194,7 @@ string PlayerControl::getWarningText(Collective::Warning w) {
   return "";
 }
 
-PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : CollectiveControl(col),
-  model(m), sectors(new Sectors(level->getBounds())), flyingSectors(new Sectors(level->getBounds())) {
+PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : CollectiveControl(col), model(m) {
   bool hotkeys[128] = {0};
   for (BuildInfo info : concat(getBuildInfo(level, nullptr), workshopInfo)) {
     if (info.hotkey) {
@@ -213,14 +209,9 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
     }
   }
   memory.reset(new map<UniqueEntity<Level>::Id, MapMemory>);
-  for (Vec2 v : level->getBounds()) {
-    if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK}))
-      sectors->add(v);
-    if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::FLY}))
-      flyingSectors->add(v);
+  for (Vec2 v : level->getBounds())
     if (contains({"gold ore", "iron ore", "stone"}, level->getSquare(v)->getName()))
       getMemory(level).addObject(v, level->getSquare(v)->getViewObject());
-  }
   for(const Location* loc : level->getAllLocations())
     if (loc->isMarkedAsSurprise())
       surprises.insert(loc->getBounds().middle());
@@ -725,7 +716,7 @@ void PlayerControl::handleSpawning(View* view, SquareType spawnSquare, const str
           getLevel()->getSquare(item.first)->removeItems({item.second});
           removeElement(*genItems, item);
         }
-        addCreature(std::move(creature), v, spawnInfo[*index].traits.sum({spawnType}));
+        getCollective()->addCreature(std::move(creature), v, spawnInfo[*index].traits.sum({spawnType}));
         break;
       }
     if (creature)
@@ -1218,7 +1209,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             if (v.inRectangle(getLevel()->getBounds()) && getLevel()->getSquare(v)->canEnter(imp.get()) 
                 && canSee(v)) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
-              addCreature(std::move(imp), v, {MinionTrait::WORKER});
+              getCollective()->addCreature(std::move(imp), v, {MinionTrait::WORKER});
               break;
             }
         }
@@ -1305,32 +1296,18 @@ bool PlayerControl::tryLockingDoor(Vec2 pos) {
   if (getCollective()->getConstructions().count(pos)) {
     Square* square = getLevel()->getSquare(pos);
     if (square->canLock()) {
+      getCollective()->updateSectors(pos);
       if (selection != DESELECT && !square->isLocked()) {
         square->lock();
-        sectors->remove(pos);
-        flyingSectors->remove(pos);
         selection = SELECT;
       } else if (selection != SELECT && square->isLocked()) {
         square->lock();
-        sectors->add(pos);
-        flyingSectors->add(pos);
         selection = DESELECT;
       }
       return true;
     }
   }
   return false;
-}
-
-void PlayerControl::onConstructedSquare(Vec2 pos, SquareType type) {
-  if (getLevel()->getSquare(pos)->canEnterEmpty(MovementType(getTribe(), {MovementTrait::WALK})))
-    sectors->add(pos);
-  else
-    sectors->remove(pos);
-  if (getLevel()->getSquare(pos)->canEnterEmpty(MovementType(getTribe(), {MovementTrait::FLY})))
-    flyingSectors->add(pos);
-  else
-    flyingSectors->remove(pos);
 }
 
 bool PlayerControl::isRetired() const {
@@ -1441,7 +1418,7 @@ void PlayerControl::tick(double time) {
   for (const Creature* c1 : getVisibleFriends()) {
     Creature* c = const_cast<Creature*>(c1);
     if (c->getSpawnType() && !contains(getCreatures(), c))
-      importCreature(c, {MinionTrait::FIGHTER, *c->getSpawnType()});
+      getCollective()->addCreature(c, {MinionTrait::FIGHTER, *c->getSpawnType()});
   }
 }
 
@@ -1520,79 +1497,12 @@ MoveInfo PlayerControl::getMove(Creature* c) {
     return NoMove;
 }
 
-void PlayerControl::importCreature(Creature* c, EnumSet<MinionTrait> traits) {
-  c->setController(PController(new Monster(c, MonsterAIFactory::collective(getCollective()))));
-  addCreature(c, traits);
-}
-
-Creature* PlayerControl::addCreature(PCreature creature, Vec2 v, EnumSet<MinionTrait> traits) {
-  // strip all spawned minions
-  creature->getEquipment().removeAllItems();
-  addCreature(creature.get(), traits);
-  Creature* ret = creature.get();
-  getLevel()->addCreature(v, std::move(creature));
-  return ret;
-}
-
-class KeeperControlOverride : public Creature::MoraleOverride {
-  public:
-  KeeperControlOverride(PlayerControl* ctrl, Creature* c) : control(ctrl), creature(c) {}
-  virtual Optional<double> getMorale() override {
-    if (contains(control->team, creature) && control->possessed == control->getKeeper())
-      return 1;
-    else
-      return Nothing();
-  }
-
-  SERIALIZATION_CONSTRUCTOR(KeeperControlOverride);
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Creature::MoraleOverride) & SVAR(control) & SVAR(creature);
-    CHECK_SERIAL;
-  }
-
-  private:
-  PlayerControl* SERIAL(control);
-  Creature* SERIAL(creature);
-};
-
 void PlayerControl::addKeeper(Creature* c) {
-  addCreature(c, {MinionTrait::LEADER});
+  getCollective()->addCreature(c, {MinionTrait::LEADER});
 }
 
 void PlayerControl::addImp(Creature* c) {
-  addCreature(c, {MinionTrait::WORKER, MinionTrait::NO_EQUIPMENT});
-}
-
-void PlayerControl::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
-  if (!getKeeper()) {
-    bool seeTerrain = Options::getValue(OptionId::SHOW_MAP); 
-    Vec2 radius = seeTerrain ? Vec2(400, 400) : Vec2(30, 30);
-    auto pred = [&](Vec2 pos) {
-      return getLevel()->getSquare(pos)->canEnterEmpty({MovementTrait::WALK})
-            || (seeTerrain && getLevel()->getSquare(pos)->canEnterEmpty({MovementTrait::FLY}));
-    };
-    for (Vec2 pos : Rectangle(c->getPosition() - radius, c->getPosition() + radius))
-      if (pos.distD(c->getPosition()) <= radius.x && pos.inRectangle(getLevel()->getBounds()) && pred(pos))
-        for (Vec2 v : concat({pos}, pos.neighbors8()))
-          if (v.inRectangle(getLevel()->getBounds()))
-            getCollective()->addKnownTile(v);
-  }
-  if (!c->isAffected(LastingEffect::FLYING))
-    c->addSectors(sectors.get());
-  else
-    c->addSectors(flyingSectors.get());
-  if (!traits[MinionTrait::WORKER]) {
-    c->addMoraleOverride(Creature::PMoraleOverride(new KeeperControlOverride(this, c)));
-  }
-  getCollective()->addCreature(c, traits);
-}
-
-// actually only called when square is destroyed
-void PlayerControl::onSquareReplacedEvent(const Level* l, Vec2 pos) {
-  sectors->add(pos);
-  flyingSectors->add(pos);
+  getCollective()->addCreature(c, {MinionTrait::WORKER, MinionTrait::NO_EQUIPMENT});
 }
 
 void PlayerControl::onConqueredLand(const string& name) {
@@ -1603,7 +1513,7 @@ void PlayerControl::onConqueredLand(const string& name) {
 }
 
 void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
-  if (victim == getKeeper() && !retired) {
+  if (!getKeeper() && !retired) {
     model->gameOver(getKeeper(), getCollective()->getKills().size(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());
   }
@@ -1666,7 +1576,6 @@ void PlayerControl::onWorshipCreatureEvent(Creature* who, const Creature* to, Wo
 template <class Archive>
 void PlayerControl::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, MinionController);
-  REGISTER_TYPE(ar, KeeperControlOverride);
 }
 
 REGISTER_TYPES(PlayerControl);

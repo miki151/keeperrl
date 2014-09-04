@@ -69,6 +69,7 @@ class VillageControl : public Task::Callback, public CollectiveControl {
   Collective* SERIAL2(villain, nullptr);
   const Location* SERIAL2(location, nullptr);
   string SERIAL(name);
+  bool SERIAL2(conquered, false);
 };
 
 #endif

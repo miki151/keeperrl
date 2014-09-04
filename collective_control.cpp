@@ -52,9 +52,6 @@ const vector<Creature*>& CollectiveControl::getCreatures() const {
 void CollectiveControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
 }
 
-void CollectiveControl::onConstructedSquare(Vec2 pos, SquareType) {
-}
-
 CollectiveControl::~CollectiveControl() {
 }
 

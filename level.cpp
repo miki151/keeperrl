@@ -21,7 +21,7 @@
 #include "item.h"
 #include "creature.h"
 #include "square.h"
-#include "collective.h"
+#include "collective_builder.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) { 
@@ -483,7 +483,7 @@ void Level::Builder::addLocation(Location* l, Rectangle area) {
   locations.push_back(l);
 }
 
-void Level::Builder::addCollective(Collective* col) {
+void Level::Builder::addCollective(CollectiveBuilder* col) {
   collectives.push_back(col);
 }
 
@@ -533,7 +533,7 @@ PLevel Level::Builder::build(Model* m, LevelMaker* maker) {
     Vec2 pos = c->getPosition();
     l->addCreature(pos, std::move(c));
   }
-  for (Collective* c : collectives)
+  for (CollectiveBuilder* c : collectives)
     c->setLevel(l.get());
   return l;
 }

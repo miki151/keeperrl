@@ -38,8 +38,6 @@ class Model {
   /** Generates levels and all game entities for a collective game. */
   static Model* collectiveModel(View* view);
 
-  static Model* splashModel(View* view, const Table<bool>& bitmap);
-
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
   void update(double totalTime);

@@ -15,7 +15,6 @@ class CollectiveControl {
   virtual PTask getNewTask(Creature*);
   virtual void tick(double time) = 0;
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer);
-  virtual void onConstructedSquare(Vec2 pos, SquareType);
   virtual double getWarLevel() const;
   virtual void update(Creature*);
   Level* getLevel();

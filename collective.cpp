@@ -10,6 +10,7 @@
 #include "item_factory.h"
 #include "statistics.h"
 #include "technology.h"
+#include "monster.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -44,6 +45,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(credit)
     & SVAR(level)
     & SVAR(minionPayment)
+    & SVAR(flyingSectors)
+    & SVAR(sectors)
     & SVAR(nextPayoutTime);
   CHECK_SERIAL;
 }
@@ -162,11 +165,15 @@ struct CollectiveConfig {
   double immigrantFrequency;
   int payoutTime;
   double payoutMultiplier;
+  bool stripSpawns;
+  bool keepSectors;
   vector<Collective::ImmigrantInfo> immigrantInfo;
 };
 
-Collective::Collective(ConfigId cfg, Tribe* t) : configId(cfg), control(CollectiveControl::idle(this)), tribe(t),
-    nextPayoutTime(getConfig().payoutTime) {
+Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t) : configId(cfg),
+  knownTiles(l->getBounds(), false), control(CollectiveControl::idle(this)),
+  tribe(t), level(l), nextPayoutTime(getConfig().payoutTime), sectors(new Sectors(level->getBounds())),
+    flyingSectors(new Sectors(level->getBounds())) {
   credit = {
     {ResourceId::GOLD, 0},
     {ResourceId::WOOD, 0},
@@ -175,17 +182,26 @@ Collective::Collective(ConfigId cfg, Tribe* t) : configId(cfg), control(Collecti
     {ResourceId::PRISONER_HEAD, 0},
     {ResourceId::MANA, 200},
   };
+  if (getConfig().keepSectors)
+    for (Vec2 v : level->getBounds()) {
+      if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK}))
+        sectors->add(v);
+      if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::FLY}))
+        flyingSectors->add(v);
+    }
 }
 
 const CollectiveConfig& Collective::getConfig() const {
 
-  static EnumMap<ConfigId, CollectiveConfig> collectiveConfigs {
-    {ConfigId::KEEPER, {
+  static EnumMap<CollectiveConfigId, CollectiveConfig> collectiveConfigs {
+    {CollectiveConfigId::KEEPER, {
        .manageEquipment = true,
        .workerFollowLeader = true,
        .immigrantFrequency = 0.01,
        .payoutTime = 500,
        .payoutMultiplier = 4,
+       .stripSpawns = true,
+       .keepSectors = true,
        .immigrantInfo = {
          { .id = CreatureId::GNOME,
            .frequency = 1,
@@ -213,14 +229,9 @@ const CollectiveConfig& Collective::getConfig() const {
            .dormSquare = SquareId::DORM},
        },
     }},
-    {ConfigId::VILLAGE, {}},
+    {CollectiveConfigId::VILLAGE, {}},
   };
   return collectiveConfigs[configId];
-}
-
-void Collective::setLevel(Level* l) {
-  level = l;
-  knownTiles = Table<bool>(level->getBounds(), false);
 }
 
 Collective::~Collective() {
@@ -243,11 +254,15 @@ double Collective::getAttractionValue(MinionAttraction attraction) {
 }
 
 void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> traits) {
-  addCreature(creature.get(), traits);
+  if (getConfig().stripSpawns)
+    creature->getEquipment().removeAllItems();
+  Creature* c = creature.get();
   getLevel()->addCreature(pos, std::move(creature));
+  addCreature(c, traits);
 }
 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
+  c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
   if (creatures.empty())
     traits.insert(MinionTrait::LEADER);
   CHECK(c->getTribe() == tribe);
@@ -261,6 +276,12 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
       c->addSkill(skill);
   if (traits[MinionTrait::PRISONER])
     prisonerInfo[c] = {PrisonerState::PRISON, 0};
+  if (getConfig().keepSectors) {
+    if (!c->isAffected(LastingEffect::FLYING))
+      c->addSectors(sectors.get());
+    else
+      c->addSectors(flyingSectors.get());
+  }
 }
 
 vector<Creature*>& Collective::getCreatures() {
@@ -1355,7 +1376,18 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     constructions.at(pos).marked() = 0;
     constructions.at(pos).task() = -1;
   }
-  control->onConstructedSquare(pos, type);
+  updateSectors(pos);
+}
+
+void Collective::updateSectors(Vec2 pos) {
+  if (getLevel()->getSquare(pos)->canEnterEmpty(MovementType(getTribe(), {MovementTrait::WALK})))
+    sectors->add(pos);
+  else
+    sectors->remove(pos);
+  if (getLevel()->getSquare(pos)->canEnterEmpty(MovementType(getTribe(), {MovementTrait::WALK, MovementTrait::FLY})))
+    flyingSectors->add(pos);
+  else
+    flyingSectors->remove(pos);
 }
 
 // after this time applying trap or building door is rescheduled (imp death, etc).
@@ -1466,6 +1498,10 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
       info.marked() = getTime() + 10; // wait a little before considering rebuilding
       info.built() = false;
       info.task() = -1;
+    }
+    if (getConfig().keepSectors) {
+      sectors->add(pos);
+      flyingSectors->add(pos);
     }
   }
 }
