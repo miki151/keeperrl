@@ -176,7 +176,6 @@ string PlayerControl::getWarningText(Collective::Warning w) {
     case Warning::STONE: return "You need to mine more stone.";
     case Warning::GOLD: return "You need to mine more gold.";
     case Warning::LIBRARY: return "Build a library to start research.";
-    case Warning::MINIONS: return "Use the library tab in the top-right to summon some minions.";
     case Warning::BEDS: return "You need to build beds for your minions.";
     case Warning::TRAINING: return "Build a training room for your minions.";
     case Warning::WORKSHOP: return "Build a workshop to produce equipment and traps.";
@@ -1262,7 +1261,7 @@ void PlayerControl::tick(double time) {
   for (const Creature* c1 : getVisibleFriends()) {
     Creature* c = const_cast<Creature*>(c1);
     if (c->getSpawnType() && !contains(getCreatures(), c))
-      getCollective()->addCreature(c, {MinionTrait::FIGHTER, *c->getSpawnType()});
+      getCollective()->addCreature(c, {MinionTrait::FIGHTER});
   }
 }
 
@@ -1368,7 +1367,7 @@ void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* kil
       gatheringTeam = false;
   }
 }
-  
+
 const Level* PlayerControl::getViewLevel() const {
   return getLevel();
 }

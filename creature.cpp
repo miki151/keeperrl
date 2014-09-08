@@ -1883,7 +1883,7 @@ bool Creature::isHatcheryAnimal() const {
   return hatcheryAnimal;
 }
 
-Optional<MinionTrait> Creature::getSpawnType() const {
+Optional<SpawnType> Creature::getSpawnType() const {
   return spawnType;
 }
 

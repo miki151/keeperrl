@@ -67,7 +67,7 @@ RICH_ENUM(LastingEffect,
 );
 
 enum class MinionTask;
-enum class MinionTrait;
+enum class SpawnType;
 
 #define CATTR(X) CreatureAttributes([&](CreatureAttributes& c) { X })
 
@@ -108,7 +108,7 @@ class CreatureAttributes {
     { BodyPart::LEG, 2},
     { BodyPart::HEAD, 1}};
   SERIAL3(bodyParts);
-  Optional<MinionTrait> SERIAL(spawnType);
+  Optional<SpawnType> SERIAL(spawnType);
   bool SERIAL2(innocent, false);
   bool SERIAL2(uncorporal, false);
   bool SERIAL2(fireCreature, false);

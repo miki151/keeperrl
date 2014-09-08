@@ -939,7 +939,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         c.dexterity = r.getRandom(20, 26);
         c.barehandedDamage = r.getRandom(5, 15);
         c.humanoid = humanoid;
-        c.spawnType = humanoid ? MinionTrait::SPAWN_HUMANOID : MinionTrait::SPAWN_BEAST;
+        c.spawnType = humanoid ? SpawnType::HUMANOID : SpawnType::BEAST;
         c.weight = c.size == CreatureSize::LARGE ? r.getRandom(80,120) : 
                    c.size == CreatureSize::MEDIUM ? r.getRandom(40, 60) :
                    r.getRandom(5, 20);
@@ -1249,7 +1249,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.brain = false;
           c.notLiving = true;
           c.weight = 100;
-          c.spawnType = MinionTrait::SPAWN_GOLEM;
           c.minionTasks[MinionTask::TRAIN] = 1;
           c.name = "clay golem";);
     case CreatureId::STONE_GOLEM: 
@@ -1307,7 +1306,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.brain = false;
           c.weight = 100;
           c.undead = true;
-          c.spawnType = MinionTrait::SPAWN_UNDEAD;
+          c.spawnType = SpawnType::UNDEAD;
           c.minionTasks[MinionTask::TRAIN] = 4; 
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
           c.minionTasks[MinionTask::GRAVE] = 1;
@@ -1339,7 +1338,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.undead = true;
           c.chatReactionFriendly = "curses all humans";
           c.chatReactionHostile = "\"Die!\"";
-          c.spawnType = MinionTrait::SPAWN_UNDEAD;
+          c.spawnType = SpawnType::UNDEAD;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.minionTasks[MinionTask::TRAIN] = 4; 
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
@@ -1386,7 +1385,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 100;
           c.brain = false;
           c.undead = true;
-          c.spawnType = MinionTrait::SPAWN_UNDEAD;
+          c.spawnType = SpawnType::UNDEAD;
           c.minionTasks[MinionTask::TRAIN] = 4; 
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
           c.minionTasks[MinionTask::GRAVE] = 1;
@@ -1410,7 +1409,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
-          c.spawnType = MinionTrait::SPAWN_HUMANOID;
+          c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "curses all elves";
           c.chatReactionHostile = "\"Die!\"";
           c.minionTasks[MinionTask::WORKSHOP] = 1;
@@ -1436,7 +1435,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 45;
-          c.spawnType = MinionTrait::SPAWN_HUMANOID;
+          c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "talks about digging";
           c.chatReactionHostile = "\"Die!\"";
           c.minionTasks[MinionTask::WORKSHOP] = 4;
@@ -1486,7 +1485,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.weight = 140;
           c.firstName = NameGenerator::get(NameGeneratorId::DEMON)->getNext();
-          c.spawnType = MinionTrait::SPAWN_HUMANOID;
+          c.spawnType = SpawnType::HUMANOID;
           c.minionTasks[MinionTask::WORKSHOP] = 1;
           c.minionTasks[MinionTask::TRAIN] = 4; 
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
@@ -1727,7 +1726,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 250;
           c.humanoid = false;
           c.animal = true;
-          c.spawnType = MinionTrait::SPAWN_BEAST;
+          c.spawnType = SpawnType::BEAST;
           c.name = "cave bear";);
     case CreatureId::RAT: 
       return CATTR(
@@ -1804,7 +1803,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::LEG] = 2;
           c.bodyParts[BodyPart::WING] = 2;
           c.animal = true;
-          c.spawnType = MinionTrait::SPAWN_BEAST;
+          c.spawnType = SpawnType::BEAST;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks[MinionTask::EXPLORE] = 1;
@@ -1826,7 +1825,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.animal = true;
           c.weight = 35;
-          c.spawnType = MinionTrait::SPAWN_BEAST;
+          c.spawnType = SpawnType::BEAST;
           c.name = "wolf";);
     case CreatureId::DOG: 
       return INHERIT(WOLF,

@@ -16,16 +16,18 @@ class Tribe;
 class Deity;
 class Level;
 
+RICH_ENUM(SpawnType,
+  HUMANOID,
+  UNDEAD,
+  BEAST,
+);
+
 RICH_ENUM(MinionTrait,
   LEADER,
   FIGHTER,
   WORKER,
   PRISONER,
   NO_EQUIPMENT,
-  SPAWN_HUMANOID,
-  SPAWN_GOLEM,
-  SPAWN_UNDEAD,
-  SPAWN_BEAST,
 );
 
 RICH_ENUM(MinionTask,
@@ -82,9 +84,9 @@ class Collective : public Task::Callback {
   vector<Creature*>& getCreatures();
   const vector<Creature*>& getCreatures() const;
 
-  vector<Creature*>& getCreatures(MinionTrait);
-  vector<Creature*> getCreaturesAnyOf(EnumSet<MinionTrait>) const;
+  const vector<Creature*>& getCreatures(SpawnType) const;
   const vector<Creature*>& getCreatures(MinionTrait) const;
+  vector<Creature*> getCreaturesAnyOf(EnumSet<MinionTrait>) const;
   vector<Creature*> getCreatures(EnumSet<MinionTrait> with, EnumSet<MinionTrait> without = {}) const;
   bool hasTrait(const Creature*, MinionTrait) const;
   bool hasAnyTrait(const Creature*, EnumSet<MinionTrait>) const;
@@ -240,6 +242,8 @@ class Collective : public Task::Callback {
 
   struct ImmigrantInfo;
 
+  struct DormInfo;
+  static const EnumMap<SpawnType, DormInfo>& getDormInfo();
   static Optional<SquareType> getSecondarySquare(SquareType);
   static Optional<Vec2> chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds);
 
@@ -319,6 +323,7 @@ class Collective : public Task::Callback {
   void considerImmigration();
   vector<Creature*> SERIAL(creatures);
   EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
+  EnumMap<SpawnType, vector<Creature*>> SERIAL(bySpawnType);
   PCollectiveControl SERIAL(control);
   Tribe* SERIAL2(tribe, nullptr);
   map<const Deity*, double> SERIAL(deityStanding);
@@ -377,7 +382,6 @@ RICH_ENUM(Collective::Warning,
     STONE,
     GOLD,
     LIBRARY,
-    MINIONS,
     BEDS,
     TRAINING,
     WORKSHOP,

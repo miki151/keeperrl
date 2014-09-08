@@ -20,6 +20,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(tribe)
     & SVAR(control)
     & SVAR(byTrait)
+    & SVAR(bySpawnType)
     & SVAR(deityStanding)
     & SVAR(mySquares)
     & SVAR(allSquares)
@@ -155,10 +156,8 @@ struct Collective::ImmigrantInfo {
   double frequency;
   vector<AttractionInfo> attractions;
   EnumSet<MinionTrait> traits;
-  vector<SquareType> spawnSquares;
   bool spawnAtDorm;
   int salary;
-  SquareType dormSquare;
   Optional<CostInfo> cost;
 };
 
@@ -207,37 +206,32 @@ const CollectiveConfig& Collective::getConfig() const {
              {{AttractionId::SQUARE, SquareId::WORKSHOP}, 1.0, 12.0},
             },
            .traits = {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT},
-           .salary = 10,
-           .dormSquare = SquareId::DORM},
+           .salary = 10},
          { .id = CreatureId::GOBLIN,
            .frequency = 0.8,
            .attractions = {
              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 1.0, 12.0},
             },
            .traits = {MinionTrait::FIGHTER},
-           .salary = 20,
-           .dormSquare = SquareId::DORM},
+           .salary = 20},
          { .id = CreatureId::OGRE,
            .frequency = 0.3,
            .attractions = {
              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
             },
            .traits = {MinionTrait::FIGHTER},
-           .salary = 40,
-           .dormSquare = SquareId::DORM},
+           .salary = 40},
          { .id = CreatureId::ZOMBIE,
            .frequency = 0.5,
            .traits = {MinionTrait::FIGHTER},
            .salary = 10,
            .spawnAtDorm = true,
-           .dormSquare = SquareId::CEMETERY,
            .cost = CostInfo(ResourceId::CORPSE, 1)},
          { .id = CreatureId::VAMPIRE,
            .frequency = 0.3,
            .traits = {MinionTrait::FIGHTER},
            .salary = 40,
            .spawnAtDorm = true,
-           .dormSquare = SquareId::CEMETERY,
            .attractions = {
              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 2.0, 12.0},
             },
@@ -284,6 +278,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   creatures.push_back(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
+  if (auto spawnType = c->getSpawnType())
+    bySpawnType[*spawnType].push_back(c);
   for (const Item* item : c->getEquipment().getItems())
     minionEquipment.own(c, item);
   for (Technology* t : technologies)
@@ -630,6 +626,21 @@ Optional<Vec2> Collective::chooseBedPos(const set<Vec2>& lair, const set<Vec2>& 
     return Nothing();
 }
 
+struct Collective::DormInfo {
+  SquareType dormType;
+  SquareType bedType;
+  Optional<Collective::Warning> warning;
+};
+
+const EnumMap<SpawnType, Collective::DormInfo>& Collective::getDormInfo() {
+  static EnumMap<SpawnType, DormInfo> dormInfo {
+    {SpawnType::HUMANOID, {SquareId::DORM, SquareId::BED, Warning::BEDS}},
+    {SpawnType::UNDEAD, {SquareId::CEMETERY, SquareId::GRAVE}},
+    {SpawnType::BEAST, {SquareId::BEAST_LAIR, SquareId::BEAST_CAGE}},
+  };
+  return dormInfo;
+}
+
 Optional<SquareType> Collective::getSecondarySquare(SquareType type) {
   switch (type.getId()) {
     case SquareId::DORM: return SquareType(SquareId::BED);
@@ -640,21 +651,17 @@ Optional<SquareType> Collective::getSecondarySquare(SquareType type) {
 }
 
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
-  const set<Vec2>& dormSquares = getSquares(info.dormSquare);
-  Optional<Vec2> bedPos;
-  Optional<SquareType> replacement = getSecondarySquare(info.dormSquare);
   PCreature creature = CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this));
-  MinionTrait spawnType = *creature->getSpawnType();
+  SpawnType spawnType = *creature->getSpawnType();
+  SquareType dormType = getDormInfo()[spawnType].dormType;
+  SquareType bedType = getDormInfo()[spawnType].bedType;
   bool good = false;
+  Optional<Vec2> bedPos;
   for (int i : Range(10)) {
-    if (!replacement && !dormSquares.empty())
-      bedPos = chooseRandom(dormSquares);
-    else if (replacement) {
-      if (getCreatures(spawnType).size() < getSquares(*replacement).size())
-        bedPos = chooseRandom(getSquares(*replacement));
-      else
-        bedPos = chooseBedPos(dormSquares, getSquares(*replacement));
-    }
+    if (getCreatures(spawnType).size() < getSquares(bedType).size())
+      bedPos = chooseRandom(getSquares(bedType));
+    else
+      bedPos = chooseBedPos(getSquares(dormType), getSquares(bedType));
     if (!info.spawnAtDorm || (bedPos && level->getSquare(*bedPos)->canEnter(creature.get()))) {
       good = true;
       break;
@@ -679,9 +686,8 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     }
   }
   Creature* c = creature.get();
-  addCreature(std::move(creature), spawnPos, info.traits.sum({spawnType}));
-  if (replacement)
-    taskMap.addTask(Task::createBed(this, *bedPos, info.dormSquare, *replacement), c);
+  addCreature(std::move(creature), spawnPos, info.traits);
+  taskMap.addTask(Task::createBed(this, *bedPos, dormType, bedType), c);
   minionPayment[c] = {info.salary, 0.0, 0};
   minionAttraction[c] = info.attractions;
   if (info.cost)
@@ -788,7 +794,11 @@ void Collective::tick(double time) {
   setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
   setWarning(Warning::WOOD, numResource(ResourceId::WOOD) == 0);
   setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
-  setWarning(Warning::MINIONS, getCreatures(MinionTrait::FIGHTER).size() == 0);
+  for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
+    DormInfo info = getDormInfo()[spawnType];
+    if (info.warning)
+      setWarning(*info.warning, chooseBedPos(getSquares(info.dormType), getSquares(info.bedType)));
+  }
   for (auto elem : getTaskInfo())
     if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
       setWarning(*elem.second.warning, false);
@@ -838,8 +848,12 @@ void Collective::tick(double time) {
   }
 }
 
-vector<Creature*>& Collective::getCreatures(MinionTrait trait) {
+const vector<Creature*>& Collective::getCreatures(MinionTrait trait) const {
   return byTrait[trait];
+}
+
+const vector<Creature*>& Collective::getCreatures(SpawnType type) const {
+  return bySpawnType[type];
 }
 
 bool Collective::hasTrait(const Creature* c, MinionTrait t) const {
@@ -856,10 +870,6 @@ bool Collective::hasAnyTrait(const Creature* c, EnumSet<MinionTrait> traits) con
 void Collective::setTrait(Creature* c, MinionTrait t) {
   if (!hasTrait(c, t))
     byTrait[t].push_back(c);
-}
-
-const vector<Creature*>& Collective::getCreatures(MinionTrait trait) const {
-  return byTrait[trait];
 }
 
 vector<Creature*> Collective::getCreaturesAnyOf(EnumSet<MinionTrait> trait) const {
@@ -918,6 +928,8 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     for (MinionTrait t : ENUM_ALL(MinionTrait))
       if (contains(byTrait[t], victim))
         removeElement(byTrait[t], victim);
+    if (auto spawnType = victim->getSpawnType())
+      removeElement(bySpawnType[*spawnType], victim);
     for (Creature* c : creatures)
       c->addMorale(-0.03);
     control->onCreatureKilled(victim, killer);
@@ -1609,7 +1621,7 @@ void Collective::onAppliedSquare(Vec2 pos) {
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     switch (currentTask) {
       case MinionTask::STUDY:
-        if (Random.rollD(60.0 / (getEfficiency(pos))))  
+        if (Random.rollD(60.0 / (getEfficiency(pos))) && !getAvailableSpells().empty())
           c->addSpell(chooseRandom(getAvailableSpells()));
       default:
         break;
