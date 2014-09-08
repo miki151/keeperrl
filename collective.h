@@ -126,14 +126,7 @@ class Collective : public Task::Callback {
   void setWarning(Warning, bool state = true);
   bool isWarning(Warning) const;
 
-  enum class ResourceId {
-    GOLD,
-    WOOD,
-    IRON,
-    STONE,
-    MANA,
-    PRISONER_HEAD,
-  };
+  enum class ResourceId;
 
   struct CostInfo : public NamedTupleBase<ResourceId, int> {
     NAMED_TUPLE_STUFF(CostInfo);
@@ -289,7 +282,7 @@ class Collective : public Task::Callback {
   CollectiveConfigId SERIAL(configId);
   const CollectiveConfig& getConfig() const;
   MinionEquipment SERIAL(minionEquipment);
-  map<ResourceId, int> SERIAL(credit);
+  EnumMap<ResourceId, int> SERIAL(credit);
   TaskMap<CostInfo> SERIAL(taskMap);
   vector<Technology*> SERIAL(technologies);
   int SERIAL2(numFreeTech, 0);
@@ -399,6 +392,16 @@ RICH_ENUM(Collective::Warning,
     ALTAR,
     MORE_CHESTS,
     MANA
+);
+
+RICH_ENUM(Collective::ResourceId,
+    GOLD,
+    WOOD,
+    IRON,
+    STONE,
+    MANA,
+    PRISONER_HEAD,
+    CORPSE,
 );
 
 #endif

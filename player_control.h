@@ -78,14 +78,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   };
   static vector<RoomInfo> getRoomInfo();
   static vector<RoomInfo> getWorkshopInfo();
-  static vector<CreatureId> getSpawnInfo(const Technology*);
-
-  struct SpawnInfo {
-    CreatureId id;
-    int manaCost;
-    Optional<TechId> techId;
-    EnumSet<MinionTrait> traits;
-  };
 
   enum class MinionOption;
 
@@ -181,13 +173,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void minionView(View* view, Creature* creature, int prevItem = 0);
   void handleEquipment(View* view, Creature* creature, int prevItem = 0);
   void handleNecromancy(View*);
-  void handleMatterAnimation(View*);
-  void handleBeastTaming(View*);
-  void handleHumanoidBreeding(View*);
-  void handleSpawning(View* view, SquareType spawnSquare, const string& info1, 
-      const string& info2, const string& title, MinionTrait spawnTrait, vector<SpawnInfo> spawnInfo,
-      double multiplier, Optional<vector<pair<Vec2, Item*>>> genItems = Nothing(), string genItemsInfo = "",
-      string info3 = "");
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   static ViewObject getTrapObject(TrapType type);

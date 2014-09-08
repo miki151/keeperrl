@@ -113,6 +113,12 @@ const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resource
                        ItemId::IRON_ORE, "iron", Collective::Warning::IRON}},
   {ResourceId::STONE, { resourceStorage, Item::namePredicate("rock"), ItemId::ROCK, "stone",
                        Collective::Warning::STONE}},
+  {ResourceId::CORPSE, {
+      {SquareId::CEMETERY},
+      [](const Item* it) {
+          return it->getClass() == ItemClass::CORPSE && it->getCorpseInfo()->canBeRevived; },
+      ItemId::GOLD_PIECE,
+      "corpses", Nothing(), true}},
 };
 
 map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
@@ -148,15 +154,13 @@ struct Collective::AttractionInfo {
 struct Collective::ImmigrantInfo {
   CreatureId id;
   double frequency;
-  struct RoomRequirement {
-    SquareType type;
-    int number;
-  };
   vector<AttractionInfo> attractions;
   EnumSet<MinionTrait> traits;
   vector<SquareType> spawnSquares;
+  bool spawnAtDorm;
   int salary;
   SquareType dormSquare;
+  Optional<CostInfo> cost;
 };
 
 struct CollectiveConfig {
@@ -175,11 +179,6 @@ Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t) : configId(cf
   tribe(t), level(l), nextPayoutTime(getConfig().payoutTime), sectors(new Sectors(level->getBounds())),
     flyingSectors(new Sectors(level->getBounds())) {
   credit = {
-    {ResourceId::GOLD, 0},
-    {ResourceId::WOOD, 0},
-    {ResourceId::IRON, 0},
-    {ResourceId::STONE, 0},
-    {ResourceId::PRISONER_HEAD, 0},
     {ResourceId::MANA, 200},
   };
   if (getConfig().keepSectors)
@@ -227,6 +226,23 @@ const CollectiveConfig& Collective::getConfig() const {
            .traits = {MinionTrait::FIGHTER},
            .salary = 40,
            .dormSquare = SquareId::DORM},
+         { .id = CreatureId::ZOMBIE,
+           .frequency = 0.5,
+           .traits = {MinionTrait::FIGHTER},
+           .salary = 10,
+           .spawnAtDorm = true,
+           .dormSquare = SquareId::CEMETERY,
+           .cost = CostInfo(ResourceId::CORPSE, 1)},
+         { .id = CreatureId::VAMPIRE,
+           .frequency = 0.3,
+           .traits = {MinionTrait::FIGHTER},
+           .salary = 40,
+           .spawnAtDorm = true,
+           .dormSquare = SquareId::CEMETERY,
+           .attractions = {
+             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 2.0, 12.0},
+            },
+           .cost = CostInfo(ResourceId::CORPSE, 1)},
        },
     }},
     {CollectiveConfigId::VILLAGE, {}},
@@ -630,27 +646,38 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   Optional<SquareType> replacement = getSecondarySquare(info.dormSquare);
   PCreature creature = CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this));
   MinionTrait spawnType = *creature->getSpawnType();
-  if (!replacement && !dormSquares.empty())
-    bedPos = chooseRandom(dormSquares);
-  else if (replacement) {
-    if (getCreatures(spawnType).size() < getSquares(*replacement).size())
-      bedPos = chooseRandom(getSquares(*replacement));
-    else
-      bedPos = chooseBedPos(dormSquares, getSquares(*replacement));
+  bool good = false;
+  for (int i : Range(10)) {
+    if (!replacement && !dormSquares.empty())
+      bedPos = chooseRandom(dormSquares);
+    else if (replacement) {
+      if (getCreatures(spawnType).size() < getSquares(*replacement).size())
+        bedPos = chooseRandom(getSquares(*replacement));
+      else
+        bedPos = chooseBedPos(dormSquares, getSquares(*replacement));
+    }
+    if (!info.spawnAtDorm || (bedPos && level->getSquare(*bedPos)->canEnter(creature.get()))) {
+      good = true;
+      break;
+    }
   }
-  if (!bedPos)
+  if (!bedPos || !good)
     return false;
   Vec2 spawnPos;
-  vector<Vec2> extendedTiles = getExtendedTiles(20, 10);
-  if (extendedTiles.empty())
-    return false;
-  int cnt = 100;
-  do {
-    spawnPos = chooseRandom(extendedTiles);
-  } while (!getLevel()->getSquare(spawnPos)->canEnter(creature.get()) && --cnt > 0);
-  if (cnt == 0) {
-    Debug() << "Couldn't spawn immigrant " << creature->getName();
-    return false;
+  if (info.spawnAtDorm)
+    spawnPos = *bedPos;
+  else {
+    vector<Vec2> extendedTiles = getExtendedTiles(20, 10);
+    if (extendedTiles.empty())
+      return false;
+    int cnt = 100;
+    do {
+      spawnPos = chooseRandom(extendedTiles);
+    } while (!getLevel()->getSquare(spawnPos)->canEnter(creature.get()) && --cnt > 0);
+    if (cnt == 0) {
+      Debug() << "Couldn't spawn immigrant " << creature->getName();
+      return false;
+    }
   }
   Creature* c = creature.get();
   addCreature(std::move(creature), spawnPos, info.traits.sum({spawnType}));
@@ -658,17 +685,23 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     taskMap.addTask(Task::createBed(this, *bedPos, info.dormSquare, *replacement), c);
   minionPayment[c] = {info.salary, 0.0, 0};
   minionAttraction[c] = info.attractions;
+  if (info.cost)
+    takeResource(*info.cost);
   return true;
 }
 
 double Collective::getImmigrantChance(const ImmigrantInfo& info) {
   double result = 0;
+  if (info.cost && !hasResource(*info.cost))
+    return 0;
   for (auto& attraction : info.attractions) {
     result += max(0.0, getAttractionValue(attraction.attraction) 
       - getAttractionOccupation(attraction.attraction)
       - attraction.minAmount);
   }
-  return result;
+  if (result == 0)
+    result = 1;
+  return result * info.frequency;
 }
 
 void Collective::considerImmigration() {
@@ -1121,7 +1154,7 @@ bool Collective::isGuardPost(Vec2 pos) const {
 }
 
 int Collective::numResource(ResourceId id) const {
-  int ret = credit.at(id);
+  int ret = credit[id];
   for (SquareType type : resourceInfo.at(id).storageType)
     for (Vec2 pos : getSquares(type))
       ret += getLevel()->getSquare(pos)->getItems(resourceInfo.at(id).predicate).size();
@@ -1137,12 +1170,12 @@ void Collective::takeResource(CostInfo cost) {
   if (num == 0)
     return;
   CHECK(num > 0);
-  if (credit.at(cost.id())) {
-    if (credit.at(cost.id()) >= num) {
+  if (credit[cost.id()]) {
+    if (credit[cost.id()] >= num) {
       credit[cost.id()] -= num;
       return;
     } else {
-      num -= credit.at(cost.id());
+      num -= credit[cost.id()];
       credit[cost.id()] = 0;
     }
   }

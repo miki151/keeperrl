@@ -41,10 +41,6 @@ void advance(View* view, const Technology* tech) {
       [tech] (const PlayerControl::RoomInfo& info) { return info.techId && Technology::get(*info.techId) == tech;});
   if (!rooms.empty())
     text += "Unlocks rooms: " + combine(rooms) + "\n";
-  vector<string> minions = transform2<string>(PlayerControl::getSpawnInfo(tech),
-      [](CreatureId id) { return CreatureFactory::fromId(id, Tribe::get(TribeId::MONSTER))->getSpeciesName();});
-  if (!minions.empty())
-    text += "Unlocks minions: " + combine(minions) + "\n";
   if (!tech->canResearch())
     text += " \nCan only be acquired by special means.";
   view->presentText(capitalFirst(tech->getName()), text);
