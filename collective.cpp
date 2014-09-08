@@ -704,7 +704,7 @@ double Collective::getImmigrantChance(const ImmigrantInfo& info) {
       - getAttractionOccupation(attraction.attraction)
       - attraction.minAmount);
   }
-  if (result == 0)
+  if (info.attractions.empty())
     result = 1;
   return result * info.frequency;
 }
