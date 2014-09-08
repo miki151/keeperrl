@@ -130,7 +130,6 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::GRAVE, {{SquareId::GRAVE}, "sleeping", Collective::Warning::GRAVES}},
     {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
     {MinionTask::STUDY, {{SquareId::LIBRARY}, "studying", Collective::Warning::LIBRARY, 1}},
-    {MinionTask::RESEARCH, {{SquareId::LIBRARY}, "research", Collective::Warning::LIBRARY, 1}},
     {MinionTask::PRISON, {{SquareId::PRISON}, "prison", Collective::Warning::NO_PRISON}},
     {MinionTask::TORTURE, {{SquareId::TORTURE_TABLE}, "torture ordered", Collective::Warning::TORTURE_ROOM, 0, true}},
     {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "spying"}},
@@ -1609,10 +1608,6 @@ void Collective::onAppliedSquare(Vec2 pos) {
   minionPayment[c].workAmount() += getTaskInfo().at(currentTask).cost;
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     switch (currentTask) {
-      case MinionTask::RESEARCH:
-        addMana(getEfficiency(pos) * (0.3 + max(0., 2 
-                - (numResource(ResourceId::MANA) + double(getDangerLevel(false))) / 700)));
-        break;
       case MinionTask::STUDY:
         if (Random.rollD(60.0 / (getEfficiency(pos))))  
           c->addSpell(chooseRandom(getAvailableSpells()));

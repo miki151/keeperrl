@@ -296,7 +296,7 @@ static vector<ItemType> marketItems {
 };
 
 enum class PlayerControl::MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, SACRIFICE, EXECUTE,
-  LABOR, TRAINING, WORKSHOP, LAB, STUDY, RESEARCH, WORSHIP };
+  LABOR, TRAINING, WORKSHOP, LAB, STUDY, WORSHIP };
 
 struct TaskOption {
   MinionTask task;
@@ -309,7 +309,6 @@ vector<TaskOption> taskOptions {
   {MinionTask::WORKSHOP, PlayerControl::MinionOption::WORKSHOP, "Workshop"},
   {MinionTask::LABORATORY, PlayerControl::MinionOption::LAB, "Lab"},
   {MinionTask::STUDY, PlayerControl::MinionOption::STUDY, "Study"},
-  {MinionTask::RESEARCH, PlayerControl::MinionOption::RESEARCH, "Research"},
   {MinionTask::WORSHIP, PlayerControl::MinionOption::WORSHIP, "Worship"},
 };
 
@@ -1359,7 +1358,7 @@ void PlayerControl::onConqueredLand(const string& name) {
 
 void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
   if (!getKeeper() && !retired) {
-    model->gameOver(getKeeper(), getCollective()->getKills().size(), "enemies",
+    model->gameOver(victim, getCollective()->getKills().size(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());
   }
   Creature* c = const_cast<Creature*>(victim);

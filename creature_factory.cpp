@@ -1039,7 +1039,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
           c.attributeGain = 1;
-          c.minionTasks[MinionTask::RESEARCH] = 1;
+          c.minionTasks[MinionTask::STUDY] = 1;
           c.minionTasks[MinionTask::LABORATORY] = 0.0001; 
           c.minionTasks[MinionTask::WORSHIP] = 0.0001;
           c.skillGain.clear(););
