@@ -193,6 +193,8 @@ string PlayerControl::getWarningText(Collective::Warning w) {
   return "";
 }
 
+static bool seeEverything = false;
+
 PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : CollectiveControl(col), model(m) {
   bool hotkeys[128] = {0};
   for (BuildInfo info : concat(getBuildInfo(level, nullptr), workshopInfo)) {
@@ -214,6 +216,7 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
   for(const Location* loc : level->getAllLocations())
     if (loc->isMarkedAsSurprise())
       surprises.insert(loc->getBounds().middle());
+  Options::addTrigger(OptionId::SHOW_MAP, [&] (bool val) { seeEverything = val; });
 }
 
 const int basicImpCost = 20;
@@ -836,10 +839,10 @@ ViewIndex PlayerControl::getViewIndex(Vec2 pos) const {
     if (contains(team, c) && gatheringTeam)
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (getCollective()->isMarkedToDig(pos))
-    index.addHighlight(HighlightType::BUILD);
+    index.setHighlight(HighlightType::BUILD);
   else if (rectSelectCorner && rectSelectCorner2
       && pos.inRectangle(Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2})))
-    index.addHighlight(HighlightType::RECT_SELECTION);
+    index.setHighlight(HighlightType::RECT_SELECTION);
   const map<Vec2, Collective::TrapInfo>& traps = getCollective()->getTraps();
   const map<Vec2, Collective::ConstructionInfo>& constructions = getCollective()->getConstructions();
   if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
@@ -1270,6 +1273,8 @@ bool PlayerControl::canSee(const Creature* c) const {
 }
 
 bool PlayerControl::canSee(Vec2 position) const {
+  if (seeEverything)
+    return true;
   for (Creature* c : getCollective()->getCreatures())
     if (c->canSee(position))
       return true;

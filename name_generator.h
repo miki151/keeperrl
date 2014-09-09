@@ -31,7 +31,7 @@ RICH_ENUM(NameGeneratorId,
   DEMON,
   DOG,
   INSULTS,
-  DRAGON,
+  DRAGON
 );
 
 class NameGenerator : public Singleton<NameGenerator, NameGeneratorId> {

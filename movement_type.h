@@ -7,7 +7,7 @@ RICH_ENUM(MovementTrait,
   WALK,
   FLY,
   SWIM,
-  WADE,
+  WADE
 );
 
 class Tribe;

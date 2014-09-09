@@ -37,7 +37,7 @@ RICH_ENUM(AttrType,
   DEFENSE,
   SPEED,
   INV_LIMIT,
-  WILLPOWER,
+  WILLPOWER
 );
 
 enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, EAT, HIT, SHOOT, SPELL};

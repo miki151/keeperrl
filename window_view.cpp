@@ -896,6 +896,7 @@ void WindowView::updateView(const CreatureView* collective) {
       }
       if (index.isEmpty() && memory->hasViewIndex(pos))
         index = memory->getViewIndex(pos);
+      index.setHighlight(HighlightType::NIGHT, 1.0 - collective->getViewLevel()->getLight(pos));
       objects[pos] = index;
     }
   mapGui->setLayout(mapLayout);

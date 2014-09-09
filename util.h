@@ -978,7 +978,7 @@ template<typename T>
 class EnumInfo {
   public:
   static string getString(T);
-  static int getSize();
+  static constexpr int getSize() { return 0;}
 };
 
 #define RICH_ENUM(Name, ...) \
@@ -998,9 +998,9 @@ class EnumInfo<Name> { \
     static vector<string> names = split(#__VA_ARGS__, {' ', ','});\
     return names[int(e)];\
   }\
-  static int getSize() {\
-    static int size = split(#__VA_ARGS__, {' ', ','}).size();\
-    return size;\
+  enum class Tmp { __VA_ARGS__, END_TMP};\
+  static constexpr int getSize() {\
+    return (int)Tmp::END_TMP;\
   }\
   static Name fromString(const string& s) {\
     for (int i : Range(getSize())) \
@@ -1016,9 +1016,10 @@ RICH_ENUM(Dir, N, S, E, W, NE, NW, SE, SW );
 template<class T, class U>
 class EnumMap {
   public:
-  EnumMap() : elems(EnumInfo<T>::getSize()) {
-    clear();
+  EnumMap() : elems() {
   }
+
+  EnumMap(const EnumMap& o) : elems(o.elems) {}
 
   bool operator == (const EnumMap<T, U>& other) const {
     return elems == other.elems;
@@ -1044,6 +1045,10 @@ class EnumMap {
       elems[int(elem.first)] = elem.second;
   }
 
+  void operator = (const EnumMap& other) {
+    elems = other.elems;
+  }
+
   const U& operator[](T elem) const {
     return elems[int(elem)];
   }
@@ -1058,7 +1063,7 @@ class EnumMap {
   }
 
   private:
-  vector<U> elems;
+  std::array<U, EnumInfo<T>::getSize()> elems;
 };
 
 template<class T>

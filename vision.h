@@ -22,7 +22,7 @@
 RICH_ENUM(VisionId,
   ELF,
   NIGHT,
-  NORMAL,
+  NORMAL
 );
 
 class Vision : public Singleton<Vision, VisionId> {

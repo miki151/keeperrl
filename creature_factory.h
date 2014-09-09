@@ -27,59 +27,6 @@
 
 class Creature;
 
-
-class CreatureFactory {
-  public:
-  static PCreature fromId(CreatureId, Tribe*, MonsterAIFactory = MonsterAIFactory::monster());
-  static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
-  static CreatureFactory humanVillage(Tribe*);
-  static CreatureFactory humanCastle(Tribe*);
-  static CreatureFactory elvenVillage(Tribe*);
-  static CreatureFactory forrest(Tribe*);
-  static CreatureFactory crypt(Tribe*);
-  static CreatureFactory coffins(Tribe*);
-  static CreatureFactory hellLevel(Tribe*);
-  static CreatureFactory dwarfTown(Tribe*);
-  static CreatureFactory vikingTown(Tribe*);
-  static CreatureFactory lizardTown(Tribe*);
-  static CreatureFactory goblinTown(Tribe*);
-  static CreatureFactory level(int num, Tribe* allTribe, Tribe* dwarfTribe, Tribe* pestTribe);
-  static CreatureFactory splash(Tribe*);
-  static CreatureFactory singleType(Tribe*, CreatureId);
-  static CreatureFactory pyramid(Tribe*, int level);
-  static CreatureFactory insects(Tribe* tribe);
-  static CreatureFactory lavaCreatures(Tribe* tribe);
-  static CreatureFactory waterCreatures(Tribe* tribe);
-  
-  PCreature random(MonsterAIFactory = MonsterAIFactory::monster());
-
-  static PCreature getShopkeeper(Location* shopArea, Tribe*);
-  static PCreature getRollingBoulder(Vec2 direction);
-  static PCreature getGuardingBoulder(Tribe* tribe);
-
-  static PCreature addInventory(PCreature c, const vector<ItemType>& items);
-
-  static void init();
-
-  bool operator == (const CreatureFactory&) const;
- 
-  template <class Archive>
-  static void registerTypes(Archive& ar);
-
-  SERIALIZATION_DECL(CreatureFactory);
-
-  private:
-  CreatureFactory(Tribe* tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
-      const vector<CreatureId>& unique, EnumMap<CreatureId, Tribe*> overrides = {});
-  Tribe* getTribeFor(CreatureId);
-  SERIAL_CHECKER;
-  Tribe* SERIAL(tribe);
-  vector<CreatureId> SERIAL(creatures);
-  vector<double> SERIAL(weights);
-  vector<CreatureId> SERIAL(unique);
-  EnumMap<CreatureId, Tribe*> SERIAL(tribeOverrides);
-};
-
 RICH_ENUM(CreatureId,
     KEEPER,
 
@@ -175,5 +122,58 @@ RICH_ENUM(CreatureId,
     FLY,
     RAT
 );
+
+class CreatureFactory {
+  public:
+  static PCreature fromId(CreatureId, Tribe*, MonsterAIFactory = MonsterAIFactory::monster());
+  static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
+  static CreatureFactory humanVillage(Tribe*);
+  static CreatureFactory humanCastle(Tribe*);
+  static CreatureFactory elvenVillage(Tribe*);
+  static CreatureFactory forrest(Tribe*);
+  static CreatureFactory crypt(Tribe*);
+  static CreatureFactory coffins(Tribe*);
+  static CreatureFactory hellLevel(Tribe*);
+  static CreatureFactory dwarfTown(Tribe*);
+  static CreatureFactory vikingTown(Tribe*);
+  static CreatureFactory lizardTown(Tribe*);
+  static CreatureFactory goblinTown(Tribe*);
+  static CreatureFactory level(int num, Tribe* allTribe, Tribe* dwarfTribe, Tribe* pestTribe);
+  static CreatureFactory splash(Tribe*);
+  static CreatureFactory singleType(Tribe*, CreatureId);
+  static CreatureFactory pyramid(Tribe*, int level);
+  static CreatureFactory insects(Tribe* tribe);
+  static CreatureFactory lavaCreatures(Tribe* tribe);
+  static CreatureFactory waterCreatures(Tribe* tribe);
+  
+  PCreature random(MonsterAIFactory = MonsterAIFactory::monster());
+
+  static PCreature getShopkeeper(Location* shopArea, Tribe*);
+  static PCreature getRollingBoulder(Vec2 direction);
+  static PCreature getGuardingBoulder(Tribe* tribe);
+
+  static PCreature addInventory(PCreature c, const vector<ItemType>& items);
+
+  static void init();
+
+  bool operator == (const CreatureFactory&) const;
+ 
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
+  SERIALIZATION_DECL(CreatureFactory);
+
+  private:
+  CreatureFactory(Tribe* tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
+      const vector<CreatureId>& unique, EnumMap<CreatureId, Tribe*> overrides = {});
+  Tribe* getTribeFor(CreatureId);
+  SERIAL_CHECKER;
+  Tribe* SERIAL(tribe);
+  vector<CreatureId> SERIAL(creatures);
+  vector<double> SERIAL(weights);
+  vector<CreatureId> SERIAL(unique);
+  EnumMap<CreatureId, Tribe*> SERIAL(tribeOverrides);
+};
+
 
 #endif

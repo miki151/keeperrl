@@ -9,6 +9,7 @@
 #include "task_map.h"
 #include "minion_attraction.h"
 #include "sectors.h"
+#include "minion_task.h"
 
 class Creature;
 class CollectiveControl;
@@ -19,39 +20,48 @@ class Level;
 RICH_ENUM(SpawnType,
   HUMANOID,
   UNDEAD,
-  BEAST,
-);
-
-RICH_ENUM(MinionTrait,
-  LEADER,
-  FIGHTER,
-  WORKER,
-  PRISONER,
-  NO_EQUIPMENT,
-);
-
-RICH_ENUM(MinionTask,
-  SLEEP,
-  GRAVE,
-  TRAIN,
-  WORKSHOP,
-  STUDY,
-  LABORATORY,
-  PRISON,
-  TORTURE,
-  SACRIFICE,
-  EXECUTE,
-  WORSHIP,
-  LAIR,
-  EXPLORE,
+  BEAST
 );
 
 struct CollectiveConfig;
 
 RICH_ENUM(CollectiveConfigId,
   KEEPER,
-  VILLAGE,
+  VILLAGE
 );
+
+RICH_ENUM(CollectiveWarning,
+    DIGGING,
+    STORAGE,WOOD,
+    IRON,
+    STONE,
+    GOLD,
+    LIBRARY,
+    BEDS,
+    TRAINING,
+    WORKSHOP,
+    LABORATORY,
+    NO_WEAPONS,
+    GRAVES,
+    CHESTS,
+    NO_PRISON,
+    LARGER_PRISON,
+    TORTURE_ROOM,
+    ALTAR,
+    MORE_CHESTS,
+    MANA
+);
+
+RICH_ENUM(CollectiveResourceId,
+    GOLD,
+    WOOD,
+    IRON,
+    STONE,
+    MANA,
+    PRISONER_HEAD,
+    CORPSE
+);
+
 
 class Collective : public Task::Callback {
   public:
@@ -70,6 +80,8 @@ class Collective : public Task::Callback {
   double getTime() const;
   void update(Creature*);
 
+  typedef CollectiveWarning Warning;
+  typedef CollectiveResourceId ResourceId;
   virtual void onAppliedItem(Vec2 pos, Item* item) override;
   virtual void onAppliedItemCancel(Vec2 pos) override;
   virtual void onPickedUp(Vec2 pos, EntitySet<Item>) override;
@@ -123,11 +135,8 @@ class Collective : public Task::Callback {
 
   ~Collective();
 
-  enum class Warning;
   void setWarning(Warning, bool state = true);
   bool isWarning(Warning) const;
-
-  enum class ResourceId;
 
   struct CostInfo : public NamedTupleBase<ResourceId, int> {
     NAMED_TUPLE_STUFF(CostInfo);
@@ -374,37 +383,5 @@ class Collective : public Task::Callback {
   unique_ptr<Sectors> SERIAL(sectors);
   unique_ptr<Sectors> SERIAL(flyingSectors);
 };
-
-RICH_ENUM(Collective::Warning,
-    DIGGING,
-    STORAGE,WOOD,
-    IRON,
-    STONE,
-    GOLD,
-    LIBRARY,
-    BEDS,
-    TRAINING,
-    WORKSHOP,
-    LABORATORY,
-    NO_WEAPONS,
-    GRAVES,
-    CHESTS,
-    NO_PRISON,
-    LARGER_PRISON,
-    TORTURE_ROOM,
-    ALTAR,
-    MORE_CHESTS,
-    MANA
-);
-
-RICH_ENUM(Collective::ResourceId,
-    GOLD,
-    WOOD,
-    IRON,
-    STONE,
-    MANA,
-    PRISONER_HEAD,
-    CORPSE,
-);
 
 #endif

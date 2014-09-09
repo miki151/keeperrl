@@ -58,7 +58,7 @@ RICH_ENUM(ColorId,
   LIGHT_BLUE,
   PURPLE,
   VIOLET,
-  TRANSLUCENT_BLACK,
+  TRANSLUCENT_BLACK
 );
 
 Color transparency(const Color& color, int trans);
@@ -71,7 +71,7 @@ enum class SpriteId {
   LIBRARY,
   WORKSHOP,
   DIPLOMACY,
-  HELP,
+  HELP
 };
 
 class ViewObject;

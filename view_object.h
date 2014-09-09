@@ -33,8 +33,14 @@ const static vector<ViewLayer> allLayers =
 
 ENUM_HASH(ViewLayer);
 
+RICH_ENUM(ViewObjectModifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
+    ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT, DARK);
+RICH_ENUM(ViewObjectAttribute, BLEEDING, BURNING, HEIGHT, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY);
+
 class ViewObject {
   public:
+  typedef ViewObjectModifier Modifier;
+  typedef ViewObjectAttribute Attribute;
   ViewObject(ViewId id, ViewLayer l, const string& description);
 
   enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
@@ -42,13 +48,9 @@ class ViewObject {
   bool isHostile() const;
   bool isFriendly() const;
 
-  enum class Modifier;
-
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;
-
-  enum class Attribute;
 
   static void setHallu(bool);
 
@@ -76,9 +78,5 @@ class ViewObject {
   ViewLayer SERIAL(viewLayer);
   string SERIAL(description);
 };
-
-RICH_ENUM(ViewObject::Modifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
-    ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT, DARK);
-RICH_ENUM(ViewObject::Attribute, BLEEDING, BURNING, HEIGHT, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY);
 
 #endif

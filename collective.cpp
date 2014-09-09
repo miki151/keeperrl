@@ -493,6 +493,8 @@ MoveInfo Collective::getMove(Creature* c) {
   CHECK(contains(creatures, c));
   if (c->getLevel() != getLevel())
     return NoMove;
+  if (MoveInfo move = control.get()->getMove(c))
+    return move;
   if (hasTrait(c, MinionTrait::WORKER))
     return getWorkerMove(c);
   if (MoveInfo move = getDropItems(c))
@@ -503,8 +505,6 @@ MoveInfo Collective::getMove(Creature* c) {
     if (MoveInfo move = getGuardPostMove(c))
       return move;
   }
-  if (MoveInfo move = control.get()->getMove(c))
-    return move;
   if (Task* task = taskMap.getTask(c)) {
     if (task->isDone()) {
       taskMap.removeTask(task);

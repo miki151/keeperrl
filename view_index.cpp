@@ -22,21 +22,12 @@
 template <class Archive> 
 void ViewIndex::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(objIndex)
-    & SVAR(objects)
-    & SVAR(highlight);
+    & SVAR(highlight)
+    & SVAR(anyHighlight);
   CHECK_SERIAL;
 }
 
 SERIALIZABLE(ViewIndex);
-
-
-template <class Archive> 
-void ViewIndex::HighlightInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(type)
-    & BOOST_SERIALIZATION_NVP(amount);
-}
-
-SERIALIZABLE(ViewIndex::HighlightInfo);
 
 ViewIndex::ViewIndex() {
   objIndex = vector<int>(allLayers.size(), -1);
@@ -64,7 +55,7 @@ void ViewIndex::removeObject(ViewLayer l) {
 }
 
 bool ViewIndex::isEmpty() const {
-  return objects.empty() && highlight.empty();
+  return objects.empty() && !anyHighlight;
 }
 
 bool ViewIndex::noObjects() const {
@@ -90,21 +81,14 @@ const ViewObject* ViewIndex::getTopObject(const vector<ViewLayer>& layers) const
   return nullptr;
 }
 
-void ViewIndex::addHighlight(HighlightInfo info) {
-  addHighlight(info.type, info.amount);
-}
-
-void ViewIndex::addHighlight(HighlightType h, double amount) {
+void ViewIndex::setHighlight(HighlightType h, double amount) {
   CHECK(amount >= 0 && amount <= 1);
-  for (auto& elem : highlight)
-    if (elem.type == h) {
-      elem.amount = max(elem.amount, amount);
-      return;
-    }
-  highlight.push_back({h, amount});
+  if (amount > 0)
+    anyHighlight = true;
+  highlight[h] = amount;
 }
 
-vector<ViewIndex::HighlightInfo> ViewIndex::getHighlight() const {
-  return highlight;
+double ViewIndex::getHighlight(HighlightType h) const {
+  return highlight[h];
 }
 

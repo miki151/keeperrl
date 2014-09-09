@@ -48,7 +48,7 @@ RICH_ENUM(EpithetId,
   SECRETS,
   WAR,
   WEALTH,
-  WISDOM,
+  WISDOM
 );
 
 enum class WorshipType {

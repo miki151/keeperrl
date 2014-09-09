@@ -68,15 +68,15 @@ static Color getBleedingColor(const ViewObject& object) {
   return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
 }
 
-Color getHighlightColor(ViewIndex::HighlightInfo info) {
-  switch (info.type) {
+Color getHighlightColor(HighlightType type, double amount) {
+  switch (type) {
     case HighlightType::BUILD: return transparency(colors[ColorId::YELLOW], 170);
     case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);
-    case HighlightType::FOG: return transparency(colors[ColorId::WHITE], 120 * info.amount);
-    case HighlightType::POISON_GAS: return Color(0, min(255., info.amount * 500), 0, info.amount * 140);
+    case HighlightType::FOG: return transparency(colors[ColorId::WHITE], 120 * amount);
+    case HighlightType::POISON_GAS: return Color(0, min(255., amount * 500), 0, amount * 140);
     case HighlightType::MEMORY: return transparency(colors[ColorId::BLACK], 80);
-    case HighlightType::NIGHT: return transparency(colors[ColorId::NIGHT_BLUE], info.amount * 160);
-    case HighlightType::EFFICIENCY: return transparency(Color(255, 0, 0) , 120 * (1 - info.amount));
+    case HighlightType::NIGHT: return transparency(colors[ColorId::NIGHT_BLUE], amount * 160);
+    case HighlightType::EFFICIENCY: return transparency(Color(255, 0, 0) , 120 * (1 - amount));
   }
   FAIL << "pokpok";
   return Color();
@@ -364,8 +364,10 @@ void MapGui::render(Renderer& renderer) {
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
     if (auto index = objects[wpos]) {
       Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
-      for (ViewIndex::HighlightInfo highlight : index->getHighlight())
-        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, getHighlightColor(highlight));
+      for (HighlightType highlight : ENUM_ALL(HighlightType))
+        if (index->getHighlight(highlight) > 0)
+          renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY,
+              getHighlightColor(highlight, index->getHighlight(highlight)));
       if (highlightedPos == wpos) {
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
             colors[ColorId::LIGHT_GRAY]);

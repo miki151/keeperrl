@@ -47,14 +47,17 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::HINTS,
       OptionId::ASCII,
       OptionId::MUSIC,
-      OptionId::KEEP_SAVEFILES
+      OptionId::KEEP_SAVEFILES,
+#ifndef RELEASE
+      OptionId::SHOW_MAP,
+#endif
   }},
   {OptionSet::KEEPER, {
       OptionId::EASY_KEEPER,
       OptionId::AGGRESSIVE_HEROES,
 #ifndef RELEASE
-      OptionId::SHOW_MAP,
       OptionId::START_WITH_NIGHT,
+      OptionId::SHOW_MAP,
 #endif
   }},
   {OptionSet::ADVENTURER, {OptionId::EASY_ADVENTURER}},

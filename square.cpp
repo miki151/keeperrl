@@ -341,11 +341,11 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
 
   }
   if (c->canSee(position)) {
-    ret.addHighlight(HighlightType::NIGHT, 1.0 - level->getLight(position));
+    ret.setHighlight(HighlightType::NIGHT, 1.0 - level->getLight(position));
     if (poisonGas.getAmount() > 0)
-      ret.addHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas.getAmount()));
+      ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas.getAmount()));
     if (fog)
-      ret.addHighlight(HighlightType::FOG, fog);
+      ret.setHighlight(HighlightType::FOG, fog);
   }
   return ret;
 }

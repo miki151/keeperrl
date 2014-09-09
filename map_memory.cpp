@@ -39,17 +39,13 @@ void MapMemory::addObject(Vec2 pos, const ViewObject& obj) {
   if (!table[pos])
     table[pos] = ViewIndex();
   table[pos]->insert(obj);
-  table[pos]->addHighlight(HighlightType::MEMORY);
+  table[pos]->setHighlight(HighlightType::MEMORY);
 }
 
 void MapMemory::update(Vec2 pos, const ViewIndex& index) {
-  table[pos] = ViewIndex();
-  table[pos]->addHighlight(HighlightType::MEMORY);
-  for (ViewLayer l : { ViewLayer::ITEM, ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM})
-    if (index.hasObject(l))
-      addObject(pos, index.getObject(l));
-  for (auto highlight : index.getHighlight())
-    table[pos]->addHighlight(highlight);
+  table[pos] = index;
+  table[pos]->setHighlight(HighlightType::MEMORY);
+  table[pos]->removeObject(ViewLayer::CREATURE);
 }
 
 void MapMemory::clearSquare(Vec2 pos) {

@@ -238,7 +238,7 @@ RICH_ENUM(ViewId,
   FETCH_ICON,
 
   FOG_OF_WAR,
-  FOG_OF_WAR_CORNER,
+  FOG_OF_WAR_CORNER
 );
 
 #endif

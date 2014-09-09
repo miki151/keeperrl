@@ -30,7 +30,7 @@ RICH_ENUM(QuestId,
   CASTLE_CELLAR,
   BANDITS,
   GOBLINS,
-  DWARVES,
+  DWARVES
 );
 
 class Quest : public Singleton<Quest, QuestId> {

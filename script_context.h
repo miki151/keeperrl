@@ -28,8 +28,9 @@ class ScriptContext {
   template<typename E>
   static void registerEnum(const string& name) {
     AS_TRY(engine->RegisterEnum(name.c_str()));
-    for (E e : ENUM_ALL(E))
+    for (E e : ENUM_ALL(E)) {
       AS_TRY(engine->RegisterEnumValue(name.c_str(), EnumInfo<E>::getString(e).c_str(), int(e)));
+    }
   }
 
   static void execute(const string& path, const string& function);

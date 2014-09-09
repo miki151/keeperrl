@@ -38,7 +38,7 @@ RICH_ENUM(TribeId,
   KILL_EVERYONE,
   PEACEFUL,
   KEEPER,
-  LIZARD,
+  LIZARD
 );
 
 class Creature;

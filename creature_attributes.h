@@ -23,6 +23,7 @@
 #include "skill.h"
 #include "gender.h"
 #include "effect.h"
+#include "minion_task.h"
 
 // WTF is this defined
 #undef HUGE
@@ -44,7 +45,7 @@ RICH_ENUM(BodyPart,
   ARM,
   WING,
   LEG,
-  BACK,
+  BACK
 );
 
 RICH_ENUM(LastingEffect,
@@ -66,7 +67,6 @@ RICH_ENUM(LastingEffect,
     FLYING
 );
 
-enum class MinionTask;
 enum class SpawnType;
 
 #define CATTR(X) CreatureAttributes([&](CreatureAttributes& c) { X })

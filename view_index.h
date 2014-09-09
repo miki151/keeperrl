@@ -21,15 +21,15 @@
 
 class ViewObject;
 
-enum class HighlightType {
+RICH_ENUM(HighlightType,
   BUILD,
   RECT_SELECTION,
   POISON_GAS,
   FOG,
   MEMORY,
   NIGHT,
-  EFFICIENCY,
-};
+  EFFICIENCY
+);
 
 class ViewIndex {
   public:
@@ -44,27 +44,21 @@ class ViewIndex {
   bool noObjects() const;
   ~ViewIndex();
 
-  struct HighlightInfo {
-    HighlightType type;
-    double amount;
+  void setHighlight(HighlightType, double amount = 1);
 
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version);
-  };
-
-  void addHighlight(HighlightType, double amount = 1);
-  void addHighlight(HighlightInfo);
-
-  vector<HighlightInfo> getHighlight() const;
+  double getHighlight(HighlightType) const;
+  const vector<HighlightType>& getHighlights() const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   SERIAL_CHECKER;
+
   private:
   vector<int> SERIAL(objIndex);
   vector<ViewObject> SERIAL(objects);
-  vector<HighlightInfo> SERIAL(highlight);
+  EnumMap<HighlightType, double> SERIAL(highlight);
+  bool SERIAL2(anyHighlight, false);
 };
 
 #endif

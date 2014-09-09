@@ -3,6 +3,7 @@
 
 #include "enums.h"
 #include "util.h"
+#include "minion_task.h"
 
 class Tribe;
 class Level;
