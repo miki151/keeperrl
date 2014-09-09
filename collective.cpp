@@ -483,7 +483,7 @@ PTask Collective::getHealingTask(Creature* c) {
       if (c->getMinionTasks()[t] > 0) {
         vector<Vec2> positions = getAllSquares(getTaskInfo().at(t).squares);
         if (!positions.empty())
-          return Task::applySquare(this, positions);
+          return Task::applySquare(nullptr, positions);
       }
   return nullptr;
 }
@@ -1619,12 +1619,8 @@ void Collective::onAppliedSquare(Vec2 pos) {
   MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
   minionPayment[c].workAmount() += getTaskInfo().at(currentTask).cost;
   if (getSquares(SquareId::LIBRARY).count(pos)) {
-    switch (currentTask) {
-      case MinionTask::STUDY:
-        if (Random.rollD(60.0 / (getEfficiency(pos))) && !getAvailableSpells().empty())
-          c->addSpell(chooseRandom(getAvailableSpells()));
-      default:
-        break;
+    if (Random.rollD(60.0 / (getEfficiency(pos))) && !getAvailableSpells().empty())
+      c->addSpell(chooseRandom(getAvailableSpells()));
     }
   }
   if (getSquares(SquareId::TRAINING_ROOM).count(pos)) {

@@ -352,7 +352,8 @@ class ApplySquare : public NonTransferable {
       if (auto action = c->applySquare())
         return {1.0, action.append([=] {
             setDone();
-            callback->onAppliedSquare(c->getPosition());
+            if (callback)
+              callback->onAppliedSquare(c->getPosition());
         })};
       else {
         setDone();
