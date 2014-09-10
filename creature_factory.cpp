@@ -266,6 +266,21 @@ PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
             c.name = "boulder";), tribe));
 }
 
+CreatureAttributes getKrakenAttributes(ViewId id) {
+  return CATTR(
+      c.viewId = id;
+      c.speed = 40;
+      c.size = CreatureSize::LARGE;
+      c.strength = 15;
+      c.dexterity = 15;
+      c.barehandedDamage = 10;
+      c.humanoid = false;
+      c.bodyParts.clear();
+      c.skills.insert(SkillId::SWIMMING);
+      c.weight = 100;
+      c.name = "kraken";);
+}
+
 class KrakenController : public Monster {
   public:
   KrakenController(Creature* c) : Monster(c, MonsterAIFactory::monster()) {
@@ -281,8 +296,12 @@ class KrakenController : public Monster {
   }
   
   virtual void onKilled(const Creature* attacker) override {
-    if (attacker)
-      attacker->playerMessage("You cut the kraken's tentacle");
+    if (attacker) {
+      if (father)
+        attacker->playerMessage("You cut the kraken's tentacle");
+      else
+        attacker->playerMessage("You kill the kraken!");
+    }
     for (Creature* c : spawns)
       if (!c->isDead())
         c->die(nullptr);
@@ -291,7 +310,12 @@ class KrakenController : public Monster {
   virtual void you(MsgType type, const string& param) const override {
     string msg, msgNoSee;
     switch (type) {
-      case MsgType::KILLED_BY: msg = "The kraken's tentacle is cut by " + param; break;
+      case MsgType::KILLED_BY:
+        if (father)
+          msg = param + "cuts the kraken's tentacle";
+        else
+          msg = param + "kills the kraken!";
+        break;
       case MsgType::DIE:
       case MsgType::DIE_OF: return;
       default: Monster::you(type, param); break;
@@ -327,43 +351,54 @@ class KrakenController : public Monster {
         held->die();
       }
     }
-    if (numSpawns > 0)
+    bool isEnemy = false;
     for (Vec2 v: Rectangle(Vec2(-radius, -radius), Vec2(radius + 1, radius + 1)))
       if (creature->getLevel()->inBounds(creature->getPosition() + v))
         if (Creature * c = creature->getSquare(v)->getCreature())
-        if (creature->canSee(c) && creature->isEnemy(c) && !creature->isStationary()) {
-          if (v.length8() == 1) {
-            if (ready) {
-              c->you(MsgType::HAPPENS_TO, creature->getTheName() + " swings itself around");
-              c->setHeld(creature);
-              held = c;
-              unReady();
-            } else
-              makeReady();
-            break;
-          }
-          PCreature spawn = CreatureFactory::fromId(CreatureId::KRAKEN, creature->getTribe());
-          pair<Vec2, Vec2> dirs = v.approxL1();
-          vector<Vec2> moves;
-          if (creature->getSquare(dirs.first)->canEnter(spawn.get()))
-            moves.push_back(dirs.first);
-          if (creature->getSquare(dirs.second)->canEnter(spawn.get()))
-            moves.push_back(dirs.second);
-          if (!moves.empty()) {
-            if (!ready) {
-              makeReady();
-            } else {
-              Vec2 move = chooseRandom(moves);
-              spawns.push_back(spawn.get());
-              dynamic_cast<KrakenController*>(spawn->getController())->father = this;
-              creature->getLevel()->addCreature(creature->getPosition() + move, std::move(spawn));
-              --numSpawns;
-              unReady();
+          if (creature->canSee(c) && creature->isEnemy(c) && !creature->isStationary()) {
+            isEnemy = true;
+            if (numSpawns > 0) {
+              if (v.length8() == 1) {
+                if (ready) {
+                  c->you(MsgType::HAPPENS_TO, creature->getTheName() + " swings itself around");
+                  c->setHeld(creature);
+                  held = c;
+                  unReady();
+                } else
+                  makeReady();
+                break;
+              }
+              pair<Vec2, Vec2> dirs = v.approxL1();
+              vector<Vec2> moves;
+              if (creature->getSquare(dirs.first)->canEnter({MovementTrait::WALK, MovementTrait::SWIM}))
+                moves.push_back(dirs.first);
+              if (creature->getSquare(dirs.second)->canEnter({MovementTrait::WALK, MovementTrait::SWIM}))
+                moves.push_back(dirs.second);
+              if (!moves.empty()) {
+                if (!ready) {
+                  makeReady();
+                } else {
+                  Vec2 move = chooseRandom(moves);
+                  ViewId viewId = creature->getSquare(move)->canEnter({MovementTrait::SWIM}) 
+                    ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
+                  PCreature spawn(new Creature(creature->getTribe(), getKrakenAttributes(viewId),
+                        ControllerFactory([=](Creature* c) {
+                          return new KrakenController(c);
+                          })));
+                  spawns.push_back(spawn.get());
+                  dynamic_cast<KrakenController*>(spawn->getController())->father = this;
+                  creature->getLevel()->addCreature(creature->getPosition() + move, std::move(spawn));
+                  --numSpawns;
+                  unReady();
+                }
+              } else
+                unReady();
+              break;
             }
-          } else
-            unReady();
-          break;
-        }
+          }
+    if (!isEnemy && spawns.size() == 0 && father && Random.roll(5)) {
+      creature->die(nullptr, false, false);
+    }
     creature->wait().perform();
   }
 
@@ -1888,19 +1923,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::ANGEL;
           c.uncorporal = true;
           c.name = "angel";);
-    case CreatureId::KRAKEN: 
-      return CATTR(
-          c.viewId = ViewId::KRAKEN;
-          c.speed = 40;
-          c.size = CreatureSize::LARGE;
-          c.strength = 15;
-          c.dexterity = 15;
-          c.barehandedDamage = 10;
-          c.humanoid = false;
-          c.bodyParts.clear();
-          c.skills.insert(SkillId::SWIMMING);
-          c.weight = 100;
-          c.name = "kraken";);
+    case CreatureId::KRAKEN: return getKrakenAttributes(ViewId::KRAKEN_HEAD);
     case CreatureId::NIGHTMARE: /*
                                    return PCreature(new Shapechanger(
                                    ViewObject(ViewId::NIGHTMARE, ViewLayer::CREATURE, "nightmare"),

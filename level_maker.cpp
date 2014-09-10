@@ -1611,12 +1611,12 @@ static LevelMaker* underground(bool monsters, CreatureFactory waterFactory, Crea
     }
     queue->addMaker(new RandomLocations(vCavern, sizes, new AlwaysTrue(), false));
   }
-  switch (Random.getRandom(3)) {
+  switch (2) {
     case 1: queue->addMaker(new River(3, chooseRandom({SquareId::WATER, SquareId::MAGMA})));
             break;
     case 2:{
           int numLakes = sqrt(Random.getRandom(1, 100));
-          SquareType lakeType = chooseRandom({SquareId::WATER, SquareId::MAGMA}, {1, 1});
+          SquareType lakeType = chooseRandom({SquareId::WATER, SquareId::MAGMA}, {100, 1});
           vector<pair<int, int>> sizes;
           for (int i : Range(numLakes)) {
             int size = Random.getRandom(6, 20);
