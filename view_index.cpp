@@ -23,6 +23,7 @@ template <class Archive>
 void ViewIndex::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(objIndex)
     & SVAR(highlight)
+    & SVAR(objects)
     & SVAR(anyHighlight);
   CHECK_SERIAL;
 }
@@ -64,7 +65,7 @@ bool ViewIndex::noObjects() const {
 
 const ViewObject& ViewIndex::getObject(ViewLayer l) const {
   int ind = objIndex[int(l)];
-  CHECK(ind > -1) << "No object on layer " << int(l);
+  CHECK(ind >= 0 && ind < objects.size()) << "No object on layer " << int(l) << " " << ind;
   return objects[ind];
 }
 

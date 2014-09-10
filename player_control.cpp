@@ -1275,6 +1275,8 @@ bool PlayerControl::canSee(const Creature* c) const {
 bool PlayerControl::canSee(Vec2 position) const {
   if (seeEverything)
     return true;
+  if (getCollective()->getAllSquares().count(position))
+    return true;
   for (Creature* c : getCollective()->getCreatures())
     if (c->canSee(position))
       return true;

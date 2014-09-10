@@ -1621,7 +1621,6 @@ void Collective::onAppliedSquare(Vec2 pos) {
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     if (Random.rollD(60.0 / (getEfficiency(pos))) && !getAvailableSpells().empty())
       c->addSpell(chooseRandom(getAvailableSpells()));
-    }
   }
   if (getSquares(SquareId::TRAINING_ROOM).count(pos)) {
     double lev1 = 0.03;
