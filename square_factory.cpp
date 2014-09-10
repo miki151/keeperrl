@@ -929,7 +929,8 @@ Square* SquareFactory::getPtr(SquareType s) {
               {SquareId::CEMETERY, 10}, {SquareId::WORKSHOP, 10}, {SquareId::PRISON, 10},
               {SquareId::TORTURE_TABLE, 10}, {SquareId::LABORATORY, 10}, {SquareId::BEAST_LAIR, 10},
               {SquareId::IMPALED_HEAD, 5}, {SquareId::BARRICADE, 20}, {SquareId::TORCH, 5},
-              {SquareId::ALTAR, 35}, {SquareId::EYEBALL, 5}, {SquareId::CREATURE_ALTAR, 35}}});
+              {SquareId::ALTAR, 35}, {SquareId::EYEBALL, 5}, {SquareId::CREATURE_ALTAR, 35},
+              {SquareId::PLACE_OF_POWER, 10}}});
     case SquareId::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Rope bridge"), {
             .name = "rope bridge",
@@ -1098,6 +1099,11 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::TRAINING_ROOM:
         return new TrainingDummy(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training post"), 
             "training post");
+    case SquareId::PLACE_OF_POWER:
+        return new DestroyableSquare(ViewObject(ViewId::PLACE_OF_POWER, ViewLayer::FLOOR, "Place of power"), {
+            .name = "place of power",
+            .movementType = {MovementTrait::WALK},
+            .vision = Vision::get(VisionId::NORMAL) });
     case SquareId::IMPALED_HEAD:
         return new Square(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head")
             .setModifier(ViewObject::Modifier::ROUND_SHADOW), {

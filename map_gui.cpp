@@ -90,6 +90,7 @@ enum class ConnectionId {
   LIBRARY,
   TRAINING_ROOM,
   TORTURE_ROOM,
+  PLACE_OF_POWER,
   WORKSHOP,
   LABORATORY,
   BRIDGE,
@@ -116,6 +117,7 @@ Optional<ConnectionId> getConnectionId(const ViewObject& object) {
     case ViewId::WATER: return ConnectionId::WATER;
     case ViewId::LIBRARY: return ConnectionId::LIBRARY;
     case ViewId::TRAINING_ROOM: return ConnectionId::TRAINING_ROOM;
+    case ViewId::PLACE_OF_POWER: return ConnectionId::PLACE_OF_POWER;
     case ViewId::TORTURE_TABLE: return ConnectionId::TORTURE_ROOM;
     case ViewId::WORKSHOP: return ConnectionId::WORKSHOP;
     case ViewId::LABORATORY: return ConnectionId::LABORATORY;
@@ -132,6 +134,7 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
     case ViewId::WORKSHOP:
     case ViewId::LABORATORY:
     case ViewId::TORTURE_TABLE:
+    case ViewId::PLACE_OF_POWER:
     case ViewId::TRAINING_ROOM: return v8;
     default: return v4;
   }

@@ -263,6 +263,7 @@ void genTiles() {
   addTile(TORTURE_TABLE, empty().addConnection(setOfAllDirs(), "torturedeco").addBackground("torture"));
   addTile(IMPALED_HEAD, sprite(10, 10, 2).setNoShadow());
   addTile(TRAINING_ROOM, empty().addConnection(setOfAllDirs(), "traindeco").addBackground("train"));
+  addTile(PLACE_OF_POWER, empty().addConnection(setOfAllDirs(), "ritualroomdeco").addBackground("ritualroom"));
   addTile(LIBRARY, empty().addConnection(setOfAllDirs(), "libdeco").addBackground("lib"));
   addTile(LABORATORY, empty().addConnection(setOfAllDirs(), "labdeco").addBackground("lab"));
   addTile(CAULDRON, sprite("labdeco").setNoShadow());
@@ -497,6 +498,7 @@ void genSymbols() {
   addSymbol(TORTURE_TABLE, symbol("=", GRAY));
   addSymbol(IMPALED_HEAD, symbol("⚲", BROWN, true));
   addSymbol(TRAINING_ROOM, symbol("‡", BROWN, true));
+  addSymbol(PLACE_OF_POWER, symbol("Ω", PURPLE, true));
   addSymbol(LIBRARY, symbol("▤", BROWN, true));
   addSymbol(LABORATORY, symbol("ω", PURPLE, true));
   addSymbol(CAULDRON, symbol("ω", PURPLE, true));
