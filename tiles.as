@@ -131,6 +131,8 @@ void genTiles() {
   addTile(STATUE2, sprite(7, 5, 2).setNoShadow());
   addTile(GREAT_GOBLIN, sprite(6, 14));
   addTile(GOBLIN, sprite("orc"));
+  addTile(GOBLIN_SHAMAN, sprite("shaman"));
+  addTile(HARPY, sprite("harpy"));
   addTile(BANDIT, sprite(0, 2));
   addTile(GHOST, sprite("ghost4").setTranslucent(0.5));
   addTile(SPIRIT, sprite(17, 14));
@@ -352,8 +354,10 @@ void genSymbols() {
   addSymbol(WELL, symbol("0", BLUE));
   addSymbol(STATUE1, symbol("&", LIGHT_GRAY));
   addSymbol(STATUE2, symbol("&", LIGHT_GRAY));
-  addSymbol(GREAT_GOBLIN, symbol("O", PURPLE));
+  addSymbol(GREAT_GOBLIN, symbol("o", PURPLE));
   addSymbol(GOBLIN, symbol("o", DARK_BLUE));
+  addSymbol(GOBLIN_SHAMAN, symbol("o", YELLOW));
+  addSymbol(HARPY, symbol("R", YELLOW));
   addSymbol(BANDIT, symbol("@", DARK_BLUE));
   addSymbol(DARK_KNIGHT, symbol("@", PURPLE));
   addSymbol(GREEN_DRAGON, symbol("D", GREEN));

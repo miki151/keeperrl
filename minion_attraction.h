@@ -5,12 +5,16 @@
 #include "square_type.h"
 #include "util.h"
 
+enum class ItemClass;
+
 enum class AttractionId {
   SQUARE,
+  ITEM_CLASS,
 };
 
-typedef EnumVariant<AttractionId, TYPES(SquareType),
-    ASSIGN(SquareType, AttractionId::SQUARE)> MinionAttraction;
+typedef EnumVariant<AttractionId, TYPES(SquareType, ItemClass),
+    ASSIGN(SquareType, AttractionId::SQUARE),
+    ASSIGN(ItemClass, AttractionId::ITEM_CLASS)> MinionAttraction;
 
 namespace std {
   template <> struct hash<MinionAttraction> {

@@ -31,7 +31,9 @@ RICH_ENUM(CreatureId,
     KEEPER,
 
     GOBLIN,
+    GOBLIN_SHAMAN,
     GREAT_GOBLIN,
+    HARPY,
     BANDIT,
 
     SPECIAL_MONSTER,

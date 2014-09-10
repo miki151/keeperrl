@@ -1453,6 +1453,15 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks[MinionTask::LABORATORY] = 0.5; 
           c.minionTasks[MinionTask::SLEEP] = 1;
           c.name = "goblin";);
+    case CreatureId::GOBLIN_SHAMAN:
+      return INHERIT(GOBLIN,
+          c.viewId = ViewId::GOBLIN_SHAMAN;
+          c.minionTasks.clear();
+          c.minionTasks[MinionTask::WORSHIP] = 0.5; 
+          c.minionTasks[MinionTask::LABORATORY] = 4; 
+          c.minionTasks[MinionTask::STUDY] = 4;
+          c.minionTasks[MinionTask::SLEEP] = 1;
+          c.name = "goblin shaman";);
     case CreatureId::GREAT_GOBLIN: 
       return INHERIT(GOBLIN,
           c.viewId = ViewId::GREAT_GOBLIN;
@@ -1460,6 +1469,15 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity += 6;
           c.weight += 80;
           c.name = "great goblin";);
+    case CreatureId::HARPY:
+      return INHERIT(GOBLIN,
+          c.viewId = ViewId::HARPY;
+          c.speed = 120;
+          c.strength -= 3;
+          c.dexterity += 2;
+          c.weight = 70;
+          c.minionTasks[MinionTask::WORKSHOP] = 0;
+          c.name = "harpy";);
     case CreatureId::GNOME: 
       return CATTR(
           c.viewId = ViewId::GNOME;

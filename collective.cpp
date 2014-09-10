@@ -214,10 +214,25 @@ const CollectiveConfig& Collective::getConfig() const {
             },
            .traits = {MinionTrait::FIGHTER},
            .salary = 20},
+         { .id = CreatureId::GOBLIN_SHAMAN,
+           .frequency = 0.3,
+           .attractions = {
+             {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
+            },
+           .traits = {MinionTrait::FIGHTER},
+           .salary = 20},
          { .id = CreatureId::OGRE,
            .frequency = 0.3,
            .attractions = {
              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+            },
+           .traits = {MinionTrait::FIGHTER},
+           .salary = 40},
+         { .id = CreatureId::HARPY,
+           .frequency = 0.2,
+           .attractions = {
+             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+             {{AttractionId::ITEM_CLASS, ItemClass::RANGED_WEAPON}, 1.0, 3.0},
             },
            .traits = {MinionTrait::FIGHTER},
            .salary = 40},
@@ -259,6 +274,9 @@ double Collective::getAttractionValue(MinionAttraction attraction) {
   switch (attraction.getId()) {
     case AttractionId::SQUARE: 
       return getSquares(attraction.get<SquareType>()).size();
+    case AttractionId::ITEM_CLASS: 
+      return getAllItems([&](const Item* it) {
+          return it->getClass() == attraction.get<ItemClass>(); }, true).size();
   }
 }
 
