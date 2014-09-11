@@ -59,6 +59,11 @@ Tile Tile::empty() {
 Tile::Tile(Renderer::TileCoords coords, bool noShadow)
     : Tile(coords.pos.x, coords.pos.y, coords.texNum, noShadow) {}
 
+Tile Tile::setFloorBorders() {
+  floorBorders = true;
+  return *this;
+}
+
 Tile Tile::addConnection(EnumSet<Dir> c, int x, int y) {
   connections.insert({c, Vec2(x, y)});
   return *this;
@@ -202,6 +207,7 @@ void Tile::initialize() {
   ADD_SCRIPT_FUNCTION_OVERLOAD(dirs, "SetOfDir dirs(Dir, Dir, Dir, Dir)", (Dir, Dir, Dir, Dir), SetOfDir);
   ADD_SCRIPT_METHOD(Tile, setNoShadow, "Tile setNoShadow()");
   ADD_SCRIPT_METHOD(Tile, setTranslucent, "Tile setTranslucent(double)");
+  ADD_SCRIPT_METHOD(Tile, setFloorBorders, "Tile setFloorBorders()");
   ADD_SCRIPT_METHOD_OVERLOAD(Tile, addBackground, "Tile addBackground(int, int)", (int, int), Tile);
   ADD_SCRIPT_METHOD_OVERLOAD(Tile, addBackground, "Tile addBackground(const string& in)", (const string&), Tile);
   ADD_SCRIPT_METHOD_OVERLOAD(Tile, addConnection, "Tile addConnection(SetOfDir c, int, int)",

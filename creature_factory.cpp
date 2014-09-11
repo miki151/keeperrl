@@ -1115,6 +1115,22 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dexterity = 30;
           c.barehandedDamage = 30;
           c.name = "ancient spirit";);
+    case CreatureId::LOST_SOUL:
+      return INHERIT(GHOST,
+          c.strength = 5;
+          c.spawnType = SpawnType::DEMON;
+ //         c.attackEffect = Effect::INSANITY
+          c.name = "lost soul";);
+    case CreatureId::SUCCUBUS:
+      return INHERIT(LOST_SOUL,
+          c.viewId = ViewId::SUCCUBUS;
+          c.name = "succubus";
+          );
+    case CreatureId::DOPPLEGANGER:
+      return INHERIT(LOST_SOUL,
+          c.viewId = ViewId::DOPPLEGANGER;
+          c.name = "doppleganger";
+          );
     case CreatureId::DEVIL: 
       return CATTR(
           c.viewId = ViewId::DEVIL;

@@ -251,6 +251,21 @@ const CollectiveConfig& Collective::getConfig() const {
              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 2.0, 12.0},
             },
            .cost = CostInfo(ResourceId::CORPSE, 1)},
+         { .id = CreatureId::LOST_SOUL,
+           .frequency = 0.2,
+           .traits = {MinionTrait::FIGHTER},
+           .salary = 0,
+           .spawnAtDorm = true},
+         { .id = CreatureId::SUCCUBUS,
+           .frequency = 0.2,
+           .traits = {MinionTrait::FIGHTER},
+           .salary = 0,
+           .spawnAtDorm = true},
+         { .id = CreatureId::DOPPLEGANGER,
+           .frequency = 0.2,
+           .traits = {MinionTrait::FIGHTER},
+           .salary = 0,
+           .spawnAtDorm = true},
        },
     }},
     {CollectiveConfigId::VILLAGE, {}},
@@ -644,21 +659,6 @@ Optional<Vec2> Collective::chooseBedPos(const set<Vec2>& lair, const set<Vec2>& 
     return Nothing();
 }
 
-struct Collective::DormInfo {
-  SquareType dormType;
-  SquareType bedType;
-  Optional<Collective::Warning> warning;
-};
-
-const EnumMap<SpawnType, Collective::DormInfo>& Collective::getDormInfo() {
-  static EnumMap<SpawnType, DormInfo> dormInfo {
-    {SpawnType::HUMANOID, {SquareId::DORM, SquareId::BED, Warning::BEDS}},
-    {SpawnType::UNDEAD, {SquareId::CEMETERY, SquareId::GRAVE}},
-    {SpawnType::BEAST, {SquareId::BEAST_LAIR, SquareId::BEAST_CAGE}},
-  };
-  return dormInfo;
-}
-
 Optional<SquareType> Collective::getSecondarySquare(SquareType type) {
   switch (type.getId()) {
     case SquareId::DORM: return SquareType(SquareId::BED);
@@ -668,18 +668,40 @@ Optional<SquareType> Collective::getSecondarySquare(SquareType type) {
   }
 }
 
+struct Collective::DormInfo {
+  SquareType dormType;
+  Optional<SquareType> getBedType() const {
+    return getSecondarySquare(dormType);
+  }
+  Optional<Collective::Warning> warning;
+};
+
+const EnumMap<SpawnType, Collective::DormInfo>& Collective::getDormInfo() {
+  static EnumMap<SpawnType, DormInfo> dormInfo {
+    {SpawnType::HUMANOID, {SquareId::DORM,Warning::BEDS}},
+    {SpawnType::UNDEAD, {SquareId::CEMETERY}},
+    {SpawnType::BEAST, {SquareId::BEAST_LAIR}},
+    {SpawnType::DEMON, {SquareId::RITUAL_ROOM}},
+  };
+  return dormInfo;
+}
+
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   PCreature creature = CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this));
   SpawnType spawnType = *creature->getSpawnType();
   SquareType dormType = getDormInfo()[spawnType].dormType;
-  SquareType bedType = getDormInfo()[spawnType].bedType;
+  if (getSquares(dormType).empty())
+    return false;
+  Optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
   bool good = false;
   Optional<Vec2> bedPos;
   for (int i : Range(10)) {
-    if (getCreatures(spawnType).size() < getSquares(bedType).size())
-      bedPos = chooseRandom(getSquares(bedType));
+    if (!bedType)
+      bedPos = chooseRandom(getSquares(dormType));
+    else if (getCreatures(spawnType).size() < getSquares(*bedType).size())
+      bedPos = chooseRandom(getSquares(*bedType));
     else
-      bedPos = chooseBedPos(getSquares(dormType), getSquares(bedType));
+      bedPos = chooseBedPos(getSquares(dormType), getSquares(*bedType));
     if (!info.spawnAtDorm || (bedPos && level->getSquare(*bedPos)->canEnter(creature.get()))) {
       good = true;
       break;
@@ -705,7 +727,8 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   }
   Creature* c = creature.get();
   addCreature(std::move(creature), spawnPos, info.traits);
-  taskMap.addTask(Task::createBed(this, *bedPos, dormType, bedType), c);
+  if (bedType)
+    taskMap.addTask(Task::createBed(this, *bedPos, dormType, *bedType), c);
   minionPayment[c] = {info.salary, 0.0, 0};
   minionAttraction[c] = info.attractions;
   if (info.cost)
@@ -814,8 +837,8 @@ void Collective::tick(double time) {
   setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
   for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
     DormInfo info = getDormInfo()[spawnType];
-    if (info.warning)
-      setWarning(*info.warning, chooseBedPos(getSquares(info.dormType), getSquares(info.bedType)));
+    if (info.warning && info.getBedType())
+      setWarning(*info.warning, chooseBedPos(getSquares(info.dormType), getSquares(*info.getBedType())));
   }
   for (auto elem : getTaskInfo())
     if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)

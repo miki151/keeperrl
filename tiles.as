@@ -133,8 +133,10 @@ void genTiles() {
   addTile(GOBLIN, sprite("orc"));
   addTile(GOBLIN_SHAMAN, sprite("shaman"));
   addTile(HARPY, sprite("harpy"));
+  addTile(DOPPLEGANGER, sprite("dopple"));
+  addTile(SUCCUBUS, sprite("succubus"));
   addTile(BANDIT, sprite(0, 2));
-  addTile(GHOST, sprite("ghost4").setTranslucent(0.5));
+  addTile(GHOST, sprite("ghost4"));
   addTile(SPIRIT, sprite(17, 14));
   addTile(DEVIL, sprite(17, 18));
   addTile(DARK_KNIGHT, sprite(12, 14));
@@ -250,27 +252,30 @@ void genTiles() {
   addTile(ROCK, sprite("stonepile"));
   addTile(IRON_ROCK, sprite("ironpile2"));
   addTile(WOOD_PLANK, sprite("wood2"));
-  addTile(STOCKPILE1, sprite("storage1"));
-  addTile(STOCKPILE2, sprite("storage2"));
-  addTile(STOCKPILE3, sprite("storage3"));
+  addTile(STOCKPILE1, sprite("storage1").setFloorBorders());
+  addTile(STOCKPILE2, sprite("storage2").setFloorBorders());
+  addTile(STOCKPILE3, sprite("storage3").setFloorBorders());
   addTile(PRISON, sprite(6, 2, 1));
   addTile(BED, sprite("sleepdeco").setNoShadow());
-  addTile(DORM, sprite("sleep"));
+  addTile(DORM, sprite("sleep").setFloorBorders());
   addTile(TORCH, sprite(13, 1, 2).setNoShadow().setTranslucent(0.35));
   addTile(DUNGEON_HEART, sprite(6, 10, 2));
   addTile(ALTAR, sprite(2, 7, 2).setNoShadow());
   addTile(CREATURE_ALTAR, sprite(3, 7, 2).setNoShadow());
-  addTile(TORTURE_TABLE, empty().addConnection(setOfAllDirs(), "torturedeco").addBackground("torture"));
+  addTile(TORTURE_TABLE, empty().addConnection(setOfAllDirs(), "torturedeco").addBackground("torture")
+      .setFloorBorders());
   addTile(IMPALED_HEAD, sprite(10, 10, 2).setNoShadow());
-  addTile(TRAINING_ROOM, empty().addConnection(setOfAllDirs(), "traindeco").addBackground("train"));
-  addTile(PLACE_OF_POWER, empty().addConnection(setOfAllDirs(), "ritualroomdeco").addBackground("ritualroom"));
-  addTile(LIBRARY, empty().addConnection(setOfAllDirs(), "libdeco").addBackground("lib"));
-  addTile(LABORATORY, empty().addConnection(setOfAllDirs(), "labdeco").addBackground("lab"));
+  addTile(TRAINING_ROOM, empty().addConnection(setOfAllDirs(), "traindeco").addBackground("train").setFloorBorders());
+  addTile(RITUAL_ROOM, empty().addConnection(setOfAllDirs(), "ritualroomdeco").addBackground("ritualroom")
+      .setFloorBorders());
+  addTile(LIBRARY, empty().addConnection(setOfAllDirs(), "libdeco").addBackground("lib").setFloorBorders());
+  addTile(LABORATORY, empty().addConnection(setOfAllDirs(), "labdeco").addBackground("lab").setFloorBorders());
   addTile(CAULDRON, sprite("labdeco").setNoShadow());
-  addTile(BEAST_LAIR, sprite("lair"));
+  addTile(BEAST_LAIR, sprite("lair").setFloorBorders());
   addTile(BEAST_CAGE, sprite("lairdeco").setNoShadow().addBackground("lair"));
-  addTile(WORKSHOP, empty().addConnection(setOfAllDirs(), "workshopdeco").addBackground("workshop"));
-  addTile(CEMETERY, sprite("graveyard"));
+  addTile(WORKSHOP, empty().addConnection(setOfAllDirs(), "workshopdeco").addBackground("workshop")
+      .setFloorBorders());
+  addTile(CEMETERY, sprite("graveyard").setFloorBorders());
   addTile(GRAVE, sprite("gravedeco").setNoShadow().addBackground("graveyard"));
   addTile(ROBE, sprite(7, 11, 3));
   addTile(LEATHER_GLOVES, sprite(15, 11, 3));
@@ -498,7 +503,7 @@ void genSymbols() {
   addSymbol(TORTURE_TABLE, symbol("=", GRAY));
   addSymbol(IMPALED_HEAD, symbol("⚲", BROWN, true));
   addSymbol(TRAINING_ROOM, symbol("‡", BROWN, true));
-  addSymbol(PLACE_OF_POWER, symbol("Ω", PURPLE, true));
+  addSymbol(RITUAL_ROOM, symbol("Ω", PURPLE, true));
   addSymbol(LIBRARY, symbol("▤", BROWN, true));
   addSymbol(LABORATORY, symbol("ω", PURPLE, true));
   addSymbol(CAULDRON, symbol("ω", PURPLE, true));

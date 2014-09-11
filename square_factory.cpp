@@ -930,7 +930,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               {SquareId::TORTURE_TABLE, 10}, {SquareId::LABORATORY, 10}, {SquareId::BEAST_LAIR, 10},
               {SquareId::IMPALED_HEAD, 5}, {SquareId::BARRICADE, 20}, {SquareId::TORCH, 5},
               {SquareId::ALTAR, 35}, {SquareId::EYEBALL, 5}, {SquareId::CREATURE_ALTAR, 35},
-              {SquareId::PLACE_OF_POWER, 10}}});
+              {SquareId::RITUAL_ROOM, 10}}});
     case SquareId::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Rope bridge"), {
             .name = "rope bridge",
@@ -1087,8 +1087,8 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Furniture(
             ViewObject(chooseRandom({ViewId::STATUE1, ViewId::STATUE2}), ViewLayer::FLOOR, "Statue"), "statue", 0);
     case SquareId::TORTURE_TABLE:
-        return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture table"), 
-            "torture table", 0.3, SquareApplyType::TORTURE);
+        return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture room"), 
+            "torture room", 0.3, SquareApplyType::TORTURE);
     case SquareId::BEAST_CAGE:
         return new Bed(ViewObject(ViewId::BEAST_CAGE, ViewLayer::FLOOR, "Beast cage"), "beast cage");
     case SquareId::BEAST_LAIR:
@@ -1097,11 +1097,11 @@ Square* SquareFactory::getPtr(SquareType s) {
             .movementType = {MovementTrait::WALK},
             .vision = Vision::get(VisionId::NORMAL) });
     case SquareId::TRAINING_ROOM:
-        return new TrainingDummy(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training post"), 
-            "training post");
-    case SquareId::PLACE_OF_POWER:
-        return new DestroyableSquare(ViewObject(ViewId::PLACE_OF_POWER, ViewLayer::FLOOR, "Place of power"), {
-            .name = "place of power",
+        return new TrainingDummy(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training room"), 
+            "training room");
+    case SquareId::RITUAL_ROOM:
+        return new DestroyableSquare(ViewObject(ViewId::RITUAL_ROOM, ViewLayer::FLOOR, "Ritual room"), {
+            .name = "ritual room",
             .movementType = {MovementTrait::WALK},
             .vision = Vision::get(VisionId::NORMAL) });
     case SquareId::IMPALED_HEAD:
@@ -1117,15 +1117,14 @@ Square* SquareFactory::getPtr(SquareType s) {
             .movementType = {MovementTrait::WALK},
             .vision = Vision::get(VisionId::NORMAL)});
     case SquareId::LIBRARY:
-        return new TrainingDummy(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Book shelf"), 
-            "book shelf");
-    case SquareId::LABORATORY: return new Laboratory(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "cauldron"),
-                                   "cauldron", 0);
-    case SquareId::CAULDRON: return new Laboratory(ViewObject(ViewId::CAULDRON, ViewLayer::FLOOR, "cauldron"),
-                                   "cauldron", 0);
+        return new TrainingDummy(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Library"), 
+            "library");
+    case SquareId::LABORATORY:
+        return new Laboratory(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "Laboratory"), "laboratory", 0);
+    case SquareId::CAULDRON:
+        return new Laboratory(ViewObject(ViewId::CAULDRON, ViewLayer::FLOOR, "cauldron"), "cauldron", 0);
     case SquareId::WORKSHOP:
-        return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), 
-            "workshop stand", 1);
+        return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), "workshop stand", 1);
     case SquareId::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery",
             s.get<CreatureFactory>());

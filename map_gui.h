@@ -49,6 +49,7 @@ class MapGui : public GuiElem {
 
   private:
   void drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject&, int sizeX, int sizeY, Vec2 tilePos);
+  void drawFloorBorders(Renderer& r, const EnumSet<Dir>& borders, int x, int y);
   void drawHint(Renderer& renderer, Color color, const string& text);
   void drawFoWSprite(Renderer&, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs);
   MapLayout* layout;

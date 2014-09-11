@@ -90,10 +90,11 @@ enum class ConnectionId {
   LIBRARY,
   TRAINING_ROOM,
   TORTURE_ROOM,
-  PLACE_OF_POWER,
+  RITUAL_ROOM,
   WORKSHOP,
   LABORATORY,
   BRIDGE,
+  STOCKPILE,
 };
 
 unordered_map<Vec2, ConnectionId> floorIds;
@@ -117,11 +118,17 @@ Optional<ConnectionId> getConnectionId(const ViewObject& object) {
     case ViewId::WATER: return ConnectionId::WATER;
     case ViewId::LIBRARY: return ConnectionId::LIBRARY;
     case ViewId::TRAINING_ROOM: return ConnectionId::TRAINING_ROOM;
-    case ViewId::PLACE_OF_POWER: return ConnectionId::PLACE_OF_POWER;
+    case ViewId::RITUAL_ROOM: return ConnectionId::RITUAL_ROOM;
     case ViewId::TORTURE_TABLE: return ConnectionId::TORTURE_ROOM;
     case ViewId::WORKSHOP: return ConnectionId::WORKSHOP;
     case ViewId::LABORATORY: return ConnectionId::LABORATORY;
     case ViewId::BRIDGE: return ConnectionId::BRIDGE;
+    case ViewId::DORM:
+    case ViewId::CEMETERY:
+    case ViewId::BEAST_LAIR:
+    case ViewId::STOCKPILE1:
+    case ViewId::STOCKPILE2:
+    case ViewId::STOCKPILE3: return ConnectionId::STOCKPILE;
     default: return Nothing();
   }
 }
@@ -130,11 +137,17 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
   static vector<Vec2> v4 = Vec2::directions4();
   static vector<Vec2> v8 = Vec2::directions8();
   switch (id) {
+    case ViewId::DORM:
+    case ViewId::CEMETERY:
+    case ViewId::BEAST_LAIR:
+    case ViewId::STOCKPILE1:
+    case ViewId::STOCKPILE2:
+    case ViewId::STOCKPILE3:
     case ViewId::LIBRARY:
     case ViewId::WORKSHOP:
     case ViewId::LABORATORY:
     case ViewId::TORTURE_TABLE:
-    case ViewId::PLACE_OF_POWER:
+    case ViewId::RITUAL_ROOM:
     case ViewId::TRAINING_ROOM: return v8;
     default: return v4;
   }
@@ -175,6 +188,22 @@ void MapGui::onMouseRelease() {
   mouseHeldPos = Nothing();
 }
 
+void MapGui::drawFloorBorders(Renderer& renderer, const EnumSet<Dir>& borders, int x, int y) {
+  for (const Dir& dir : borders) {
+    int coord;
+    switch (dir) {
+      case Dir::N: coord = 0; break;
+      case Dir::E: coord = 1; break;
+      case Dir::S: coord = 2; break;
+      case Dir::W: coord = 3; break;
+      default: continue;
+    }
+    renderer.drawSprite(x, y, coord * Renderer::nominalSize.x, 18 * Renderer::nominalSize.y,
+        Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[1],
+        Renderer::nominalSize.x, Renderer::nominalSize.y);
+  }
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& object,
     int sizeX, int sizeY, Vec2 tilePos) {
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
@@ -208,11 +237,16 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
     if (sz.y > Renderer::nominalSize.y)
       off.y *= 2;
     EnumSet<Dir> dirs;
+    EnumSet<Dir> borderDirs;
     if (!object.hasModifier(ViewObject::Modifier::PLANNED))
       if (auto connectionId = getConnectionId(object))
-        for (Vec2 dir : getConnectionDirs(object.id()))
+        for (Vec2 dir : getConnectionDirs(object.id())) {
           if (tileConnects(*connectionId, tilePos + dir))
             dirs.insert(dir.getCardinalDir());
+          else
+            borderDirs.insert(dir.getCardinalDir());
+        }
+    
     Vec2 coord = tile.getSpriteCoord(dirs);
     if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
       moveY = -4* sizeY / Renderer::nominalSize.y;
@@ -233,6 +267,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
       return;
     renderer.drawSprite(x + off.x, y + moveY + off.y, coord.x * sz.x,
         coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
+    if (tile.floorBorders) {
+      drawFloorBorders(renderer, borderDirs, x, y);
+    }
     if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
         shadowed.count(tilePos) && !tile.noShadow)
       renderer.drawSprite(x, y, 1 * Renderer::nominalSize.x, 21 * Renderer::nominalSize.y,
@@ -266,7 +303,7 @@ void MapGui::updateObjects(const MapMemory* mem) {
   floorIds.clear();
   shadowed.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds()))
-    if (auto& index = objects[wpos])
+    if (auto& index = objects[wpos]) {
       if (index->hasObject(ViewLayer::FLOOR)) {
         ViewObject object = index->getObject(ViewLayer::FLOOR);
         if (object.hasModifier(ViewObject::Modifier::CASTS_SHADOW)) {
@@ -275,7 +312,11 @@ void MapGui::updateObjects(const MapMemory* mem) {
         }
         if (auto id = getConnectionId(object))
           floorIds.insert(make_pair(wpos, *id));
+      } else if (index->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
+        if (auto id = getConnectionId(index->getObject(ViewLayer::FLOOR_BACKGROUND)))
+          floorIds.insert(make_pair(wpos, *id));
       }
+    }
 }
 
 const int bgTransparency = 180;

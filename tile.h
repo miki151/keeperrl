@@ -40,12 +40,14 @@ class Tile {
   bool symFont = false;
   double translucent = 0;
   bool noShadow = false;
+  bool floorBorders = false;
 
   Tile setNoShadow();
 
   Tile addConnection(EnumSet<Dir> c, int x, int y);
   Tile addConnection(EnumSet<Dir> c, const string&);
   Tile addOption(Dir, const string&);
+  Tile setFloorBorders();
 
   Tile addBackground(int x, int y);
   Tile addBackground(const string&);

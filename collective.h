@@ -20,7 +20,8 @@ class Level;
 RICH_ENUM(SpawnType,
   HUMANOID,
   UNDEAD,
-  BEAST
+  BEAST,
+  DEMON
 );
 
 struct CollectiveConfig;
