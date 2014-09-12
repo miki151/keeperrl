@@ -224,6 +224,7 @@ class Square : public Renderable {
   Inventory SERIAL(inventory);
   string SERIAL(name);
   const MovementType& getMovementType() const;
+  void setMovementType(MovementType);
 
   private:
   Item* getTopItem() const;

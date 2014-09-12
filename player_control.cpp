@@ -96,7 +96,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
     BuildInfo({SquareId::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY, "", 'r', "Workshops"),
     BuildInfo({SquareId::WORKSHOP, {ResourceId::IRON, 15}, "Forge"}, TechId::CRAFTING, "", 'f', "Workshops"),
-    BuildInfo({SquareId::RITUAL_ROOM, {ResourceId::MANA, 15}, "Place of power"}, Nothing(), ""),
+    BuildInfo({SquareId::RITUAL_ROOM, {ResourceId::MANA, 15}, "Ritual room"}, Nothing(), ""),
     BuildInfo({SquareId::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, Nothing(), ""),
     BuildInfo({SquareId::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
     BuildInfo({SquareId::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 0),
@@ -1143,7 +1143,6 @@ bool PlayerControl::tryLockingDoor(Vec2 pos) {
   if (getCollective()->getConstructions().count(pos)) {
     Square* square = getLevel()->getSquare(pos);
     if (square->canLock()) {
-      getCollective()->updateSectors(pos);
       if (selection != DESELECT && !square->isLocked()) {
         square->lock();
         selection = SELECT;
@@ -1151,6 +1150,7 @@ bool PlayerControl::tryLockingDoor(Vec2 pos) {
         square->lock();
         selection = DESELECT;
       }
+      getCollective()->updateSectors(pos);
       return true;
     }
   }

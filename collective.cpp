@@ -1452,8 +1452,8 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   mySquares[type].insert(pos);
   if (efficiencySquares.count(type))
     updateEfficiency(pos, type);
- if (contains({SquareId::FLOOR, SquareId::BRIDGE}, type.getId()))
-    taskMap.clearAllLocked();
+  if (contains({SquareId::FLOOR, SquareId::BRIDGE, SquareId::BARRICADE}, type.getId()))
+    updateSectors(pos);
   if (taskMap.getMarked(pos))
     taskMap.unmarkSquare(pos);
   if (constructions.count(pos)) {
@@ -1461,7 +1461,6 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     constructions.at(pos).marked() = 0;
     constructions.at(pos).task() = -1;
   }
-  updateSectors(pos);
 }
 
 void Collective::updateSectors(Vec2 pos) {
@@ -1473,6 +1472,7 @@ void Collective::updateSectors(Vec2 pos) {
     flyingSectors->add(pos);
   else
     flyingSectors->remove(pos);
+  taskMap.clearAllLocked();
 }
 
 // after this time applying trap or building door is rescheduled (imp death, etc).

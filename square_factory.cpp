@@ -332,6 +332,7 @@ class Tree : public Square {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
       & SVAR(destroyed)
+      & SVAR(factory)
       & SVAR(numWood);
     CHECK_SERIAL;
   }
@@ -406,7 +407,9 @@ class Door : public Square {
 class TribeDoor : public Door {
   public:
   TribeDoor(const ViewObject& object, const Tribe* t, int destStrength)
-      : Door(object), tribe(t), destructionStrength(destStrength) { }
+      : Door(object), tribe(t), destructionStrength(destStrength) {
+    setMovementType({tribe, {MovementTrait::WALK}});
+  }
 
   virtual void destroyBy(Creature* c) override {
     destructionStrength -= c->getAttr(AttrType::STRENGTH);
@@ -434,10 +437,13 @@ class TribeDoor : public Door {
 
   virtual void lock() {
     locked = !locked;
-    if (locked)
+    if (locked) {
       modViewObject().setModifier(ViewObject::Modifier::LOCKED);
-    else
+      setMovementType({});
+    } else {
       modViewObject().removeModifier(ViewObject::Modifier::LOCKED);
+      setMovementType({tribe, {MovementTrait::WALK}});    
+    }
   }
 
   template <class Archive> 

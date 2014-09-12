@@ -461,3 +461,8 @@ void Square::setNonDirty() {
 bool Square::isDirty() const {
   return dirty;
 }
+
+void Square::setMovementType(MovementType t) {
+  movementType = t;
+}
+
