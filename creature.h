@@ -356,6 +356,7 @@ enum class MsgType {
     PUNCH,
     BITE,
     HIT,
+    TOUCH,
     CRAWL,
     TRIGGER_TRAP,
     DISARM_TRAP,

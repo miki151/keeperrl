@@ -109,13 +109,13 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
       if (c->isWorshipped())
         buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", c->getSpeciesName(), 0));
   append(buildInfo, {
-    BuildInfo({SquareId::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), ""),
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'p', "Orders"),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
     BuildInfo(BuildInfo::DISPATCH, "Order imps to perform the tasks at location now.", 'a', "Orders"),
     BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
     BuildInfo({{SquareId::TRIBE_DOOR, tribe}, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
         "Click on a built door to lock it.", 'o', "Installations"),
+    BuildInfo({SquareId::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), "", 0, "Installations"),
     BuildInfo({{SquareId::BARRICADE, tribe}, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, "", 0,
       "Installations"),
     BuildInfo({SquareId::TORCH, {ResourceId::WOOD, 1}, "Torch"}, Nothing(), "", 'c', "Installations"),

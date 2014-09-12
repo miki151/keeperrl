@@ -758,6 +758,7 @@ int getEffectPrice(EffectType type) {
   switch (type.getId()) {
     case EffectId::LASTING:
         switch (type.get<LastingEffect>()) {
+          case LastingEffect::INSANITY:
           case LastingEffect::HALLU: return 15;
           case LastingEffect::SPEED:
           case LastingEffect::PANIC:

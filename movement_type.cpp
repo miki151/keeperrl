@@ -20,7 +20,7 @@ bool MovementType::hasTrait(MovementTrait t) const {
 }
 
 bool MovementType::canEnter(const MovementType& t) const {
-  if (tribe && t.tribe != tribe)
+  if (tribe && t.tribe && t.tribe != tribe)
     return false;
   for (auto trait : traits)
     if (t.hasTrait(trait))

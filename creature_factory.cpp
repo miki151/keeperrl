@@ -1103,6 +1103,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedAttack = AttackType::HIT;
           c.humanoid = false;
           c.uncorporal = true;
+          c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
           c.chatReactionHostile = "\"Wouuuouuu!!!\"";
@@ -1119,16 +1120,19 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(GHOST,
           c.strength = 5;
           c.spawnType = SpawnType::DEMON;
- //         c.attackEffect = Effect::INSANITY
+          c.barehandedAttack = AttackType::POSSESS;
           c.name = "lost soul";);
     case CreatureId::SUCCUBUS:
-      return INHERIT(LOST_SOUL,
+      return INHERIT(GHOST,
           c.viewId = ViewId::SUCCUBUS;
+          c.spawnType = SpawnType::DEMON;
           c.name = "succubus";
           );
     case CreatureId::DOPPLEGANGER:
-      return INHERIT(LOST_SOUL,
+      return INHERIT(GHOST,
           c.viewId = ViewId::DOPPLEGANGER;
+          c.permanentEffects[LastingEffect::FLYING] = 0;
+          c.spawnType = SpawnType::DEMON;
           c.name = "doppleganger";
           );
     case CreatureId::DEVIL: 

@@ -1772,7 +1772,7 @@ MakerQueue* village(SettlementInfo info) {
 }
 
 MakerQueue* cottage(SettlementInfo info, const vector<FeatureInfo>& featureCount =
-    {{ {SquareId::CHEST, getChestFactory()}, 4, 9 }, { SquareId::BED, 2, 4 }}) {
+    {{ {SquareId::CHEST, getChestFactory()}, 4, 9 }, { SquareId::BED, 2, 4 }, { SquareId::TORCH, 1, 3 }}) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(building.floorOutside));

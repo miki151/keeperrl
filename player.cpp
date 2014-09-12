@@ -709,10 +709,11 @@ void Player::makeMove() {
       break;
     }
   }
-  for (Vec2 pos : creature->getLevel()->getVisibleTiles(creature)) {
-    (*levelMemory)[creature->getLevel()->getUniqueId()]
+  if (!creature->isDead())
+    for (Vec2 pos : creature->getLevel()->getVisibleTiles(creature)) {
+      (*levelMemory)[creature->getLevel()->getUniqueId()]
         .update(pos, creature->getLevel()->getSquare(pos)->getViewIndex(creature));
-  }
+    }
 }
 
 void Player::moveAction(Vec2 dir) {
@@ -786,7 +787,7 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::DROWN: msg = "You drown in the " + param; break;
     case MsgType::SET_UP_TRAP: msg = "You set up the trap"; break;
     case MsgType::KILLED_BY: msg = "You are killed by " + param; break;
-    case MsgType::TURN: msg = "You turn into " + param; break;
+    case MsgType::TURN: msg = "You turn " + param; break;
     case MsgType::BREAK_FREE: msg = "You break free from " + param; break;
     case MsgType::PRAY: msg = "You pray to " + param; break;
     case MsgType::SACRIFICE: msg = "You make a sacrifice to " + param; break;

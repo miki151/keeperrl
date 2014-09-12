@@ -30,6 +30,7 @@
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};
+vector<int> insanityTime { 5, 20, 50};
 vector<int> panicTime { 5, 15, 40};
 vector<int> halluTime { 30, 100, 250};
 vector<int> blindTime { 5, 15, 45};
@@ -403,6 +404,7 @@ double getDuration(const Creature* c, LastingEffect e, int strength) {
     case LastingEffect::POISON_RESISTANT: return resistantTime[strength];
     case LastingEffect::FLYING: return levitateTime[strength];
     case LastingEffect::SLEEP: return sleepTime[strength];
+    case LastingEffect::INSANITY: return insanityTime[strength];
   }
   return 0;
 }
@@ -484,6 +486,7 @@ string Effect::getName(EffectType type) {
           case LastingEffect::ENTANGLED: return "web";
           case LastingEffect::STUNNED: return "stunning";
           case LastingEffect::FIRE_RESISTANT: return "fire resistance";
+          case LastingEffect::INSANITY: return "insanity";
         }
   }
   return "";

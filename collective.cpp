@@ -183,7 +183,7 @@ Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t) : configId(cf
     for (Vec2 v : level->getBounds()) {
       if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK}))
         sectors->add(v);
-      if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::FLY}))
+      if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK, MovementTrait::FLY}))
         flyingSectors->add(v);
     }
 }
@@ -194,7 +194,7 @@ const CollectiveConfig& Collective::getConfig() const {
     {CollectiveConfigId::KEEPER, {
        .manageEquipment = true,
        .workerFollowLeader = true,
-       .immigrantFrequency = 0.01,
+       .immigrantFrequency = 0.1,
        .payoutTime = 500,
        .payoutMultiplier = 4,
        .stripSpawns = true,

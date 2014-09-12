@@ -706,6 +706,7 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       removeEffect(LastingEffect::POISON, true);
       break;
     case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "now fire resistant"); break;
+    case LastingEffect::INSANITY: if (msg) you(MsgType::TURN, "insane"); break;
   }
 }
 
@@ -753,6 +754,7 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
       if (msg) you(MsgType::FALL, getSquare()->getName());
       bleed(0.1);
       break;
+    case LastingEffect::INSANITY: if (msg) you(MsgType::TURN, "sane again"); break;
   } 
 }
 
@@ -963,6 +965,8 @@ void Creature::removeEnemyCheck(EnemyCheck* c) {
 }
 
 bool Creature::isEnemy(const Creature* c) const {
+  if (isAffected(LastingEffect::INSANITY))
+    return c != this;
   pair<double, double> myStanding = getStanding(c);
   pair<double, double> hisStanding = c->getStanding(this);
   double standing = 0;
@@ -1078,6 +1082,7 @@ static string getAttackParam(AttackType type) {
     case AttackType::HIT: return "hit";
     case AttackType::SHOOT: return "shot";
     case AttackType::SPELL: return "spell";
+    case AttackType::POSSESS: return "touch";
   }
   return "";
 }
@@ -1172,6 +1177,7 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
     case AttackType::BITE: return MsgType::BITE;
     case AttackType::PUNCH: return level == AttackLevel::LOW ? MsgType::KICK : MsgType::PUNCH;
     case AttackType::HIT: return MsgType::HIT;
+    case AttackType::POSSESS: return MsgType::TOUCH;
     default: FAIL << "Unhandled barehanded attack: " << int(type);
   }
   return MsgType(0);
@@ -1266,6 +1272,12 @@ bool Creature::takeDamage(const Attack& attack) {
   if (other)
     if (!contains(privateEnemies, other) && other->getTribe() != tribe)
       privateEnemies.push_back(other);
+  if (attackType == AttackType::POSSESS) {
+    you(MsgType::ARE, "possessed by " + other->getTheName());
+    other->die(nullptr, false, false);
+    addEffect(LastingEffect::INSANITY, 10);
+    return false;
+  }
   int defense = getAttr(AttrType::DEFENSE);
   Debug() << getTheName() << " attacked by " << other->getName() << " damage " << attack.getStrength() << " defense " << defense;
   if (passiveAttack && other && other->getPosition().dist8(position) == 1) {
@@ -1303,7 +1315,7 @@ bool Creature::takeDamage(const Attack& attack) {
         }
       }
     } else {
-      you(MsgType::TURN, "wisp of smoke");
+      you(MsgType::TURN, " into a wisp of smoke");
       die(attack.getAttacker());
       return true;
     }
@@ -2198,6 +2210,7 @@ vector<string> Creature::getAdjectives() const {
         case LastingEffect::POISON_RESISTANT: ret.push_back("poison resistant"); break;
         case LastingEffect::FIRE_RESISTANT: ret.push_back("fire resistant"); break;
         case LastingEffect::FLYING: ret.push_back("flying"); break;
+        case LastingEffect::INSANITY: ret.push_back("insane"); break;
         default: addCount = false; break;
       }
       if (addCount && !isAffectedPermanently(effect))

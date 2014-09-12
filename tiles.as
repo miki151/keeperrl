@@ -132,9 +132,9 @@ void genTiles() {
   addTile(GREAT_GOBLIN, sprite(6, 14));
   addTile(GOBLIN, sprite("orc"));
   addTile(GOBLIN_SHAMAN, sprite("shaman"));
-  addTile(HARPY, sprite("harpy"));
+  addTile(HARPY, sprite("harpysmall"));
   addTile(DOPPLEGANGER, sprite("dopple"));
-  addTile(SUCCUBUS, sprite("succubus"));
+  addTile(SUCCUBUS, sprite("succubussmall"));
   addTile(BANDIT, sprite(0, 2));
   addTile(GHOST, sprite("ghost4"));
   addTile(SPIRIT, sprite(17, 14));

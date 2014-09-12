@@ -64,7 +64,8 @@ RICH_ENUM(LastingEffect,
     STUNNED,
     POISON_RESISTANT,
     FIRE_RESISTANT,
-    FLYING
+    FLYING,
+    INSANITY
 );
 
 enum class SpawnType;
