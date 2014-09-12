@@ -194,7 +194,7 @@ const CollectiveConfig& Collective::getConfig() const {
     {CollectiveConfigId::KEEPER, {
        .manageEquipment = true,
        .workerFollowLeader = true,
-       .immigrantFrequency = 0.1,
+       .immigrantFrequency = 0.01,
        .payoutTime = 500,
        .payoutMultiplier = 4,
        .stripSpawns = true,

@@ -82,29 +82,13 @@ Color getHighlightColor(HighlightType type, double amount) {
   return Color();
 }
 
-enum class ConnectionId {
-  ROAD,
-  WALL,
-  WATER,
-  MOUNTAIN2,
-  LIBRARY,
-  TRAINING_ROOM,
-  TORTURE_ROOM,
-  RITUAL_ROOM,
-  WORKSHOP,
-  LABORATORY,
-  BRIDGE,
-  STOCKPILE,
-};
-
-unordered_map<Vec2, ConnectionId> floorIds;
+unordered_map<Vec2, ViewId> floorIds;
 set<Vec2> shadowed;
 
-Optional<ConnectionId> getConnectionId(const ViewObject& object) {
+Optional<ViewId> getConnectionId(const ViewObject& object) {
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     return Nothing();
   switch (object.id()) {
-    case ViewId::ROAD: return ConnectionId::ROAD;
     case ViewId::BLACK_WALL:
     case ViewId::YELLOW_WALL:
     case ViewId::HELL_WALL:
@@ -113,23 +97,8 @@ Optional<ConnectionId> getConnectionId(const ViewObject& object) {
     case ViewId::CASTLE_WALL:
     case ViewId::MUD_WALL:
     case ViewId::MOUNTAIN2:
-    case ViewId::WALL: return ConnectionId::WALL;
-    case ViewId::MAGMA:
-    case ViewId::WATER: return ConnectionId::WATER;
-    case ViewId::LIBRARY: return ConnectionId::LIBRARY;
-    case ViewId::TRAINING_ROOM: return ConnectionId::TRAINING_ROOM;
-    case ViewId::RITUAL_ROOM: return ConnectionId::RITUAL_ROOM;
-    case ViewId::TORTURE_TABLE: return ConnectionId::TORTURE_ROOM;
-    case ViewId::WORKSHOP: return ConnectionId::WORKSHOP;
-    case ViewId::LABORATORY: return ConnectionId::LABORATORY;
-    case ViewId::BRIDGE: return ConnectionId::BRIDGE;
-    case ViewId::DORM:
-    case ViewId::CEMETERY:
-    case ViewId::BEAST_LAIR:
-    case ViewId::STOCKPILE1:
-    case ViewId::STOCKPILE2:
-    case ViewId::STOCKPILE3: return ConnectionId::STOCKPILE;
-    default: return Nothing();
+    case ViewId::WALL: return ViewId::WALL;
+    default: return object.id();
   }
 }
 
@@ -153,7 +122,7 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
   }
 }
 
-bool tileConnects(ConnectionId id, Vec2 pos) {
+bool tileConnects(ViewId id, Vec2 pos) {
   return floorIds.count(pos) && id == floorIds.at(pos);
 }
 
