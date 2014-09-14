@@ -775,6 +775,56 @@ PTask Task::consumeItem(Callback* c, vector<Item*> items) {
   return PTask(new ConsumeItem(c, items));
 }
 
+namespace {
+class Copulate : public NonTransferable {
+  public:
+  Copulate(Callback* c, Creature* t, int turns) : target(t), callback(c), numTurns(turns) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (target->isDead() || !target->isAffected(LastingEffect::SLEEP)) {
+      setDone();
+      return NoMove;
+    }
+    if (c->getPosition().dist8(target->getPosition()) == 1) {
+      if (Random.roll(2))
+        for (Vec2 v : Vec2::directions8(true))
+          if (v.dist8(target->getPosition() - c->getPosition()) == 1)
+            if (auto action = c->move(v))
+              return action;
+      if (auto action = c->copulate(target->getPosition() - c->getPosition()))
+        return action.append([=] {
+          if (--numTurns == 0) {
+            setDone();
+            callback->onCopulated(c, target);
+          }});
+      else
+        return NoMove;
+    } else
+      return c->moveTowards(target->getPosition());
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(target)
+      & SVAR(numTurns)
+      & SVAR(callback);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Copulate);
+
+  protected:
+  Creature* SERIAL(target);
+  Callback* SERIAL(callback);
+  int SERIAL(numTurns);
+};
+}
+
+PTask Task::copulate(Callback* c, Creature* target, int numTurns) {
+  return PTask(new Copulate(c, target, numTurns));
+}
+
 template <class Archive>
 void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Construction);
@@ -792,6 +842,7 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, AttackCollective);
   REGISTER_TYPE(ar, CreateBed);
   REGISTER_TYPE(ar, ConsumeItem);
+  REGISTER_TYPE(ar, Copulate);
 }
 
 REGISTER_TYPES(Task);

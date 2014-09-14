@@ -788,8 +788,10 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::SET_UP_TRAP: msg = "You set up the trap"; break;
     case MsgType::KILLED_BY: msg = "You are killed by " + param; break;
     case MsgType::TURN: msg = "You turn " + param; break;
+    case MsgType::BECOME: msg = "You become " + param; break;
     case MsgType::BREAK_FREE: msg = "You break free from " + param; break;
     case MsgType::PRAY: msg = "You pray to " + param; break;
+    case MsgType::COPULATE: msg = "You copulate " + param; break;
     case MsgType::SACRIFICE: msg = "You make a sacrifice to " + param; break;
     case MsgType::HIT: msg = "You hit " + param; break;
     default: break;

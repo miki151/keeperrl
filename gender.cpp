@@ -41,5 +41,13 @@ void Gender::serialize(Archive& ar, const unsigned int version) {
   CHECK_SERIAL;
 }
 
+bool Gender::operator == (const Gender& o) const {
+  return fem == o.fem;
+}
+
+bool Gender::operator != (const Gender& o) const {
+  return !(*this == o);
+}
+
 SERIALIZABLE(Gender);
 

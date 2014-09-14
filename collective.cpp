@@ -11,6 +11,7 @@
 #include "statistics.h"
 #include "technology.h"
 #include "monster.h"
+#include "options.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -70,7 +71,7 @@ Collective::MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& d
 }
 
 Collective::MinionTaskInfo::MinionTaskInfo(Type t, const string& desc) : type(t), description(desc) {
-  CHECK(type == EXPLORE);
+  CHECK(type != APPLY_SQUARE);
 }
 
 ItemPredicate Collective::unMarkedItems(ItemClass type) const {
@@ -133,6 +134,9 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::STUDY, {{SquareId::LIBRARY}, "studying", Collective::Warning::LIBRARY, 1}},
     {MinionTask::PRISON, {{SquareId::PRISON}, "prison", Collective::Warning::NO_PRISON}},
     {MinionTask::TORTURE, {{SquareId::TORTURE_TABLE}, "torture ordered", Collective::Warning::TORTURE_ROOM, 0, true}},
+    {MinionTask::RITUAL, {{SquareId::RITUAL_ROOM}, "rituals"}},
+    {MinionTask::COPULATE, {MinionTaskInfo::COPULATE, "copulation"}},
+    {MinionTask::CONSUME, {MinionTaskInfo::CONSUME, "consumption"}},
     {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "spying"}},
     {MinionTask::SACRIFICE, {{}, "sacrifice ordered", Collective::Warning::ALTAR}},
     {MinionTask::EXECUTE, {{SquareId::PRISON}, "execution ordered", Collective::Warning::NO_PRISON}},
@@ -179,6 +183,10 @@ Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t) : configId(cf
   credit = {
     {ResourceId::MANA, 200},
   };
+  if (Options::getValue(OptionId::STARTING_RESOURCE)) {
+    for (auto elem : ENUM_ALL(ResourceId))
+      credit[elem] = 10000;
+  }
   if (getConfig().keepSectors)
     for (Vec2 v : level->getBounds()) {
       if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK}))
@@ -255,16 +263,25 @@ const CollectiveConfig& Collective::getConfig() const {
            .frequency = 0.2,
            .traits = {MinionTrait::FIGHTER},
            .salary = 0,
+           .attractions = {
+             {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 1.0, 9.0},
+            },
            .spawnAtDorm = true},
          { .id = CreatureId::SUCCUBUS,
            .frequency = 0.2,
            .traits = {MinionTrait::FIGHTER},
            .salary = 0,
+           .attractions = {
+             {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 2.0, 12.0},
+            },
            .spawnAtDorm = true},
          { .id = CreatureId::DOPPLEGANGER,
            .frequency = 0.2,
            .traits = {MinionTrait::FIGHTER},
            .salary = 0,
+           .attractions = {
+             {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 4.0, 12.0},
+            },
            .spawnAtDorm = true},
        },
     }},
@@ -485,11 +502,27 @@ PTask Collective::getStandardTask(Creature* c) {
     case MinionTaskInfo::EXPLORE:
       ret = Task::explore(chooseRandom(borderTiles));
       break;
+    case MinionTaskInfo::COPULATE:
+      if (Creature* target = getCopulationTarget(c->getGender()))
+        ret = Task::copulate(this, target, 20);
+      else
+        currentTasks.erase(c->getUniqueId());
+      break;
+    case MinionTaskInfo::CONSUME:
+ //     ret = Task::consume(getConsumptionTarget());
+      break;
   }
   if (ret && info.warning)
     setWarning(*info.warning, false);
   minionTaskStrings[c->getUniqueId()] = info.description;
   return ret;
+}
+
+Creature* Collective::getCopulationTarget(Gender g) {
+  for (Creature* c : randomPermutation(getCreatures()))
+    if (c->isCorporal() && c->getGender() != g && c->isAffected(LastingEffect::SLEEP))
+      return c;
+  return nullptr;
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
@@ -1814,6 +1847,15 @@ void Collective::onPickupEvent(const Creature* c, const vector<Item*>& items) {
 void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
   if (contains(creatures, torturer))
     returnResource({ResourceId::MANA, 1});
+}
+
+void Collective::onCopulateEvent(Creature* who, Creature* with) {
+  if (contains(getCreatures(), who)) {
+    if (contains(getCreatures(), with))
+      with->addMorale(1);
+    if (!pregnancies.count(who))
+      pregnancies.insert(who);
+  }
 }
 
 MinionEquipment& Collective::getMinionEquipment() {

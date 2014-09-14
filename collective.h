@@ -10,6 +10,7 @@
 #include "minion_attraction.h"
 #include "sectors.h"
 #include "minion_task.h"
+#include "gender.h"
 
 class Creature;
 class CollectiveControl;
@@ -155,7 +156,7 @@ class Collective : public Task::Callback {
   };
 
   struct MinionTaskInfo {
-    enum Type { APPLY_SQUARE, EXPLORE } type;
+    enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME } type;
     MinionTaskInfo(vector<SquareType>, const string& description, Optional<Warning> = Nothing(), double cost = 0,
         bool centerOnly = false);
     MinionTaskInfo(Type, const string&);
@@ -291,6 +292,7 @@ class Collective : public Task::Callback {
   REGISTER_HANDLER(EquipEvent, const Creature*, const Item*);
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
   REGISTER_HANDLER(TortureEvent, Creature* who, const Creature* torturer);
+  REGISTER_HANDLER(CopulateEvent, Creature* who, Creature* with);
 
   CollectiveConfigId SERIAL(configId);
   const CollectiveConfig& getConfig() const;
@@ -383,6 +385,8 @@ class Collective : public Task::Callback {
   double getAttractionOccupation(MinionAttraction);
   unique_ptr<Sectors> SERIAL(sectors);
   unique_ptr<Sectors> SERIAL(flyingSectors);
+  Creature* getCopulationTarget(Gender);
+  unordered_set<Creature*> SERIAL(pregnancies);
 };
 
 #endif

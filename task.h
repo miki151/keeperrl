@@ -34,6 +34,7 @@ class Task : public UniqueEntity<Task> {
     virtual void onCantPickItem(EntitySet<Item> items) {}
     virtual void onKillCancelled(Creature*) {}
     virtual void onBedCreated(Vec2 pos, SquareType fromType, SquareType toType) {}
+    virtual void onCopulated(Creature* who, Creature* with) {}
 
     SERIALIZATION_DECL(Callback);
   };
@@ -64,6 +65,8 @@ class Task : public UniqueEntity<Task> {
   static PTask attackCollective(Collective*);
   static PTask createBed(Callback*, Vec2, SquareType fromType, SquareType toType);
   static PTask consumeItem(Callback*, vector<Item*> items);
+  static PTask copulate(Callback*, Creature* target, int numTurns);
+  static PTask consume(Callback*, Creature* target);
 
 
   template <class Archive>

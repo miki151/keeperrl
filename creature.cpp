@@ -706,7 +706,7 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       removeEffect(LastingEffect::POISON, true);
       break;
     case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "now fire resistant"); break;
-    case LastingEffect::INSANITY: if (msg) you(MsgType::TURN, "insane"); break;
+    case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "insane"); break;
   }
 }
 
@@ -754,7 +754,7 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
       if (msg) you(MsgType::FALL, getSquare()->getName());
       bleed(0.1);
       break;
-    case LastingEffect::INSANITY: if (msg) you(MsgType::TURN, "sane again"); break;
+    case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "sane again"); break;
   } 
 }
 
@@ -1677,7 +1677,7 @@ bool Creature::canConstruct(SquareType type) const {
 }
 
 CreatureAction Creature::eat(Item* item) {
-  return CreatureAction([=]() {
+  return CreatureAction([=] {
     getSquare()->removeItem(item);
     spendTime(3);
   });
@@ -1705,6 +1705,17 @@ CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) {
     });
   else
     return CreatureAction();
+}
+
+CreatureAction Creature::copulate(Vec2 direction) {
+  Creature* other = getSquare(direction)->getCreature();
+  if (!other || !other->isCorporal() || other->getGender() == getGender())
+    return CreatureAction();
+  return wait().append([=] {
+    Debug() << getName() << " copulate with " << other->getName();
+    you(MsgType::COPULATE, "with " + other->getTheName());
+    GlobalEvents.addCopulateEvent(this, other);
+  });
 }
 
 vector<AttackLevel> Creature::getAttackLevels() const {

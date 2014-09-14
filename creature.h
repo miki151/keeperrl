@@ -205,6 +205,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   CreatureAction eat(Item*);
   enum DestroyAction { BASH, EAT, DESTROY };
   CreatureAction destroy(Vec2 direction, DestroyAction);
+  CreatureAction copulate(Vec2 direction);
   
   virtual void onChat(Creature*);
 
@@ -378,10 +379,13 @@ enum class MsgType {
     SET_UP_TRAP,
     DECAPITATE,
     TURN,
+    BECOME,
     KILLED_BY,
     BREAK_FREE,
     MISS_ATTACK,
     PRAY,
-    SACRIFICE};
+    SACRIFICE,
+    COPULATE,
+};
 
 #endif

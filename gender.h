@@ -28,6 +28,9 @@ class Gender {
 
   SERIALIZATION_DECL(Gender);
 
+  bool operator == (const Gender&) const;
+  bool operator != (const Gender&) const;
+
   private:
   Gender(bool female);
   bool SERIAL(fem);

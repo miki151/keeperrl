@@ -1121,17 +1121,23 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.strength = 5;
           c.spawnType = SpawnType::DEMON;
           c.barehandedAttack = AttackType::POSSESS;
-          c.name = "lost soul";);
+          c.minionTasks[MinionTask::RITUAL] = 1;
+          c.name = "ghost";);
     case CreatureId::SUCCUBUS:
       return INHERIT(GHOST,
           c.viewId = ViewId::SUCCUBUS;
           c.spawnType = SpawnType::DEMON;
+          c.minionTasks[MinionTask::COPULATE] = 1;
+          c.minionTasks[MinionTask::RITUAL] = 1;
+          c.gender = Gender::female;
           c.name = "succubus";
           );
     case CreatureId::DOPPLEGANGER:
       return INHERIT(GHOST,
           c.viewId = ViewId::DOPPLEGANGER;
           c.permanentEffects[LastingEffect::FLYING] = 0;
+          c.minionTasks[MinionTask::CONSUME] = 0.005;
+          c.minionTasks[MinionTask::RITUAL] = 1;
           c.spawnType = SpawnType::DEMON;
           c.name = "doppleganger";
           );
@@ -1496,6 +1502,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.strength -= 3;
           c.dexterity += 2;
           c.weight = 70;
+          c.gender = Gender::female;
           c.minionTasks[MinionTask::WORKSHOP] = 0;
           c.name = "harpy";);
     case CreatureId::GNOME: 
