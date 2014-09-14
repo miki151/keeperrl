@@ -468,27 +468,29 @@ string Effect::getName(EffectType type) {
     case EffectId::TELE_ENEMIES: return "surprise";
     case EffectId::SUMMON_SPIRIT: return "spirit summoning";
     case EffectId::SILVER_DAMAGE: return "silver";
-    case EffectId::LASTING:
-        switch (type.get<LastingEffect>()) {
-          case LastingEffect::SLOWED: return "slowness";
-          case LastingEffect::SPEED: return "speed";
-          case LastingEffect::BLIND: return "blindness";
-          case LastingEffect::INVISIBLE: return "invisibility";
-          case LastingEffect::POISON: return "poison";
-          case LastingEffect::POISON_RESISTANT: return "poison resistance";
-          case LastingEffect::FLYING: return "levitation";
-          case LastingEffect::PANIC: return "panic";
-          case LastingEffect::RAGE: return "rage";
-          case LastingEffect::HALLU: return "magic";
-          case LastingEffect::STR_BONUS: return "strength";
-          case LastingEffect::DEX_BONUS: return "dexterity";
-          case LastingEffect::SLEEP: return "sleep";
-          case LastingEffect::ENTANGLED: return "web";
-          case LastingEffect::STUNNED: return "stunning";
-          case LastingEffect::FIRE_RESISTANT: return "fire resistance";
-          case LastingEffect::INSANITY: return "insanity";
-        }
+    case EffectId::LASTING: return getName(type.get<LastingEffect>());
   }
   return "";
 }
 
+string Effect::getName(LastingEffect type) {
+  switch (type) {
+    case LastingEffect::SLOWED: return "slowness";
+    case LastingEffect::SPEED: return "speed";
+    case LastingEffect::BLIND: return "blindness";
+    case LastingEffect::INVISIBLE: return "invisibility";
+    case LastingEffect::POISON: return "poison";
+    case LastingEffect::POISON_RESISTANT: return "poison resistance";
+    case LastingEffect::FLYING: return "levitation";
+    case LastingEffect::PANIC: return "panic";
+    case LastingEffect::RAGE: return "rage";
+    case LastingEffect::HALLU: return "magic";
+    case LastingEffect::STR_BONUS: return "strength";
+    case LastingEffect::DEX_BONUS: return "dexterity";
+    case LastingEffect::SLEEP: return "sleep";
+    case LastingEffect::ENTANGLED: return "web";
+    case LastingEffect::STUNNED: return "stunning";
+    case LastingEffect::FIRE_RESISTANT: return "fire resistance";
+    case LastingEffect::INSANITY: return "insanity";
+  }
+}

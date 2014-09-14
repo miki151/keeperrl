@@ -260,7 +260,7 @@ const CollectiveConfig& Collective::getConfig() const {
             },
            .cost = CostInfo(ResourceId::CORPSE, 1)},
          { .id = CreatureId::LOST_SOUL,
-           .frequency = 0.2,
+           .frequency = 0.3,
            .traits = {MinionTrait::FIGHTER},
            .salary = 0,
            .attractions = {
@@ -268,7 +268,7 @@ const CollectiveConfig& Collective::getConfig() const {
             },
            .spawnAtDorm = true},
          { .id = CreatureId::SUCCUBUS,
-           .frequency = 0.2,
+           .frequency = 0.3,
            .traits = {MinionTrait::FIGHTER},
            .salary = 0,
            .attractions = {
@@ -455,6 +455,8 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
 
 int Collective::getTaskDuration(Creature* c, MinionTask task) const {
   switch (task) {
+    case MinionTask::CONSUME:
+    case MinionTask::COPULATE:
     case MinionTask::SLEEP: return 1;
     default: return 500 + 250 * c->getMorale();
   }
@@ -509,7 +511,10 @@ PTask Collective::getStandardTask(Creature* c) {
         currentTasks.erase(c->getUniqueId());
       break;
     case MinionTaskInfo::CONSUME:
- //     ret = Task::consume(getConsumptionTarget());
+      if (Creature* target = getConsumptionTarget())
+        ret = Task::consume(this, target);
+      else
+        currentTasks.erase(c->getUniqueId());
       break;
   }
   if (ret && info.warning)
@@ -519,8 +524,15 @@ PTask Collective::getStandardTask(Creature* c) {
 }
 
 Creature* Collective::getCopulationTarget(Gender g) {
-  for (Creature* c : randomPermutation(getCreatures()))
+  for (Creature* c : randomPermutation(getCreatures(MinionTrait::FIGHTER)))
     if (c->isCorporal() && c->getGender() != g && c->isAffected(LastingEffect::SLEEP))
+      return c;
+  return nullptr;
+}
+
+Creature* Collective::getConsumptionTarget() {
+  for (Creature* c : randomPermutation(getCreatures(MinionTrait::FIGHTER)))
+    if (c->isCorporal() && c != getLeader())
       return c;
   return nullptr;
 }
@@ -1849,7 +1861,7 @@ void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
     returnResource({ResourceId::MANA, 1});
 }
 
-void Collective::onCopulateEvent(Creature* who, Creature* with) {
+void Collective::onCopulated(Creature* who, Creature* with) {
   if (contains(getCreatures(), who)) {
     if (contains(getCreatures(), with))
       with->addMorale(1);

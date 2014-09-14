@@ -93,6 +93,7 @@ class Player : public Controller {
   void payDebtAction();
   void chatAction(Optional<Vec2> dir = Nothing());
   void spellAction();
+  void consumeAction();
   void fireAction(Vec2 dir);
   vector<Item*> chooseItem(const string& text, ItemPredicate, Optional<UserInput::Type> exitAction = Nothing());
   void getItemNames(vector<Item*> it, vector<View::ListElem>& names, vector<vector<Item*> >& groups,

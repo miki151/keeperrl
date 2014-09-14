@@ -92,6 +92,7 @@ class Collective : public Task::Callback {
   virtual void onAppliedSquare(Vec2 pos) override;
   virtual void onKillCancelled(Creature*) override;
   virtual void onBedCreated(Vec2, SquareType fromType, SquareType toType) override;
+  virtual void onCopulated(Creature* who, Creature* with);
 
   SERIALIZATION_DECL(Collective);
 
@@ -292,7 +293,6 @@ class Collective : public Task::Callback {
   REGISTER_HANDLER(EquipEvent, const Creature*, const Item*);
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
   REGISTER_HANDLER(TortureEvent, Creature* who, const Creature* torturer);
-  REGISTER_HANDLER(CopulateEvent, Creature* who, Creature* with);
 
   CollectiveConfigId SERIAL(configId);
   const CollectiveConfig& getConfig() const;
@@ -386,6 +386,7 @@ class Collective : public Task::Callback {
   unique_ptr<Sectors> SERIAL(sectors);
   unique_ptr<Sectors> SERIAL(flyingSectors);
   Creature* getCopulationTarget(Gender);
+  Creature* getConsumptionTarget();
   unordered_set<Creature*> SERIAL(pregnancies);
 };
 

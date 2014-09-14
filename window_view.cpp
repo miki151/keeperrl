@@ -1572,7 +1572,7 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
       else
         inputQueue.push(UserInput(UserInput::PAY_DEBT));
       break;
-    case Keyboard::C: inputQueue.push(UserInput(UserInput::CHAT)); break;
+    case Keyboard::C: inputQueue.push(UserInput(key.shift ? UserInput::CONSUME : UserInput::CHAT)); break;
     case Keyboard::U: inputQueue.push(UserInput(UserInput::UNPOSSESS)); break;
     case Keyboard::S: inputQueue.push(UserInput(UserInput::CAST_SPELL)); break;
     default: break;

@@ -22,6 +22,7 @@ template <class Archive>
 void Skill::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Singleton)
     & SVAR(name)
+    & SVAR(consume)
     & SVAR(helpText);
   CHECK_SERIAL;
 }
@@ -45,11 +46,17 @@ void Skill::init() {
   Skill::set(SkillId::STEALING, new Skill("stealing", "Steal from other monsters. Not available for player ATM."));
   Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning."));
   Skill::set(SkillId::ARCHERY, new Skill("archery", "Shoot bows."));
-  Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms."));
+  Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms.", false));
   Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees."));
   Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark."));
   Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them."));
+  Skill::set(SkillId::CONSUMPTION, new Skill("consumption",
+        "Consume other creatures and retain some of their attributes.", false));
 }
 
-Skill::Skill(string _name, string _helpText) : name(_name), helpText(_helpText) {}
+bool Skill::canConsume() const {
+  return consume;
+}
+
+Skill::Skill(string _name, string _helpText, bool _consume) : name(_name), helpText(_helpText), consume(_consume) {}
 

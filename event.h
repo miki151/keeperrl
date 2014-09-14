@@ -63,7 +63,6 @@ class EventListener {
   EVENT(TortureEvent, Creature* who, const Creature* torturer);
   EVENT(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
   EVENT(WorshipEvent, Creature* who, const Deity* to, WorshipType);
-  EVENT(CopulateEvent, Creature* who, Creature* with);
 };
 
 extern EventListener GlobalEvents;

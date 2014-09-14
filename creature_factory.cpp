@@ -1105,6 +1105,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.uncorporal = true;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
+          c.bodyParts.clear();
           c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
           c.chatReactionHostile = "\"Wouuuouuu!!!\"";
           c.name = "ghost";);
@@ -1130,15 +1131,21 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks[MinionTask::COPULATE] = 1;
           c.minionTasks[MinionTask::RITUAL] = 1;
           c.gender = Gender::female;
+          c.humanoid = true;
+          c.bodyParts[BodyPart::HEAD] = 1;
+          c.bodyParts[BodyPart::LEG] = 2;
+          c.bodyParts[BodyPart::ARM] = 2;
+          c.bodyParts[BodyPart::WING] = 2;
           c.name = "succubus";
           );
     case CreatureId::DOPPLEGANGER:
       return INHERIT(GHOST,
           c.viewId = ViewId::DOPPLEGANGER;
           c.permanentEffects[LastingEffect::FLYING] = 0;
-          c.minionTasks[MinionTask::CONSUME] = 0.005;
+          c.minionTasks[MinionTask::CONSUME] = 0.4;
           c.minionTasks[MinionTask::RITUAL] = 1;
           c.spawnType = SpawnType::DEMON;
+          c.skills.insert(SkillId::CONSUMPTION);
           c.name = "doppleganger";
           );
     case CreatureId::DEVIL: 
@@ -1504,6 +1511,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 70;
           c.gender = Gender::female;
           c.minionTasks[MinionTask::WORKSHOP] = 0;
+          c.bodyParts[BodyPart::WING] = 2;
+          c.permanentEffects[LastingEffect::FLYING] = 1;
           c.name = "harpy";);
     case CreatureId::GNOME: 
       return CATTR(

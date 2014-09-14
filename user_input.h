@@ -60,6 +60,7 @@ struct UserInput {
     WAIT,
     UNPOSSESS,
     CAST_SPELL,
+    CONSUME,
   } type;
 
   struct BuildInfo {

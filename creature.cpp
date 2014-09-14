@@ -782,6 +782,7 @@ void Creature::addPermanentEffect(LastingEffect effect, bool msg) {
 
 void Creature::removePermanentEffect(LastingEffect effect, bool msg) {
   --permanentEffects[effect];
+  CHECK(permanentEffects[effect] >= 0);
   if (!isAffected(effect))
     onRemoved(effect, msg);
 }
@@ -1154,8 +1155,8 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
       }
       break;
     case BodyPart::WING:
-      if (isAffected(LastingEffect::FLYING)) {
-        removeEffect(LastingEffect::FLYING);
+      if (isAffectedPermanently(LastingEffect::FLYING)) {
+        removePermanentEffect(LastingEffect::FLYING);
       }
       if ((numBodyParts(BodyPart::LEG) < 2 || numInjured(BodyPart::LEG) > 0) && !collapsed) {
         collapsed = true;
@@ -1711,10 +1712,101 @@ CreatureAction Creature::copulate(Vec2 direction) {
   Creature* other = getSquare(direction)->getCreature();
   if (!other || !other->isCorporal() || other->getGender() == getGender())
     return CreatureAction();
-  return wait().append([=] {
+  return CreatureAction([=] {
     Debug() << getName() << " copulate with " << other->getName();
     you(MsgType::COPULATE, "with " + other->getTheName());
-    GlobalEvents.addCopulateEvent(this, other);
+    spendTime(2);
+  });
+}
+
+template <typename T>
+void consumeAttr(T& mine, T& his, vector<string>& adjectives, const string& adj) {
+  if (Random.roll(2) && mine < his) {
+    mine = his;
+    if (!adj.empty())
+      adjectives.push_back(adj);
+  }
+}
+
+void consumeAttr(Gender& mine, Gender& his, vector<string>& adjectives) {
+  if (Random.roll(2) && mine != his) {
+    mine = his;
+    adjectives.emplace_back(mine == Gender::male ? "more masculine" : "more feminine");
+  }
+}
+
+
+template <typename T>
+void consumeAttr(Optional<T>& mine, Optional<T>& his, vector<string>& adjectives, const string& adj) {
+  if (Random.roll(2) && !mine && his) {
+    mine = *his;
+    if (!adj.empty())
+      adjectives.push_back(adj);
+  }
+}
+
+void consumeAttr(EnumSet<SkillId>& mine, EnumSet<SkillId>& his, vector<string>& adjectives) {
+  bool was = false;
+  for (SkillId skill : his)
+    if (!mine[skill] && Skill::get(skill)->canConsume() && Random.roll(2)) {
+      mine.insert(skill);
+      was = true;
+    }
+  if (was)
+    adjectives.push_back("more skillfull");
+}
+
+void Creature::consumeEffects(EnumMap<LastingEffect, int>& effects) {
+  for (LastingEffect effect : ENUM_ALL(LastingEffect))
+    if (effects[effect] > 0 && !isAffected(effect) && Random.roll(2)) {
+      addPermanentEffect(effect);
+    }
+}
+
+void Creature::consumeBodyParts(EnumMap<BodyPart, int>& parts) {
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    if (parts[part] > bodyParts[part] && Random.roll(2)) {
+      if (bodyParts[part] + 1 == parts[part])
+        you(MsgType::GROW, "a " + getBodyPartName(part));
+      else
+        you(MsgType::GROW, convertToString(parts[part] - bodyParts[part]) + " " + getBodyPartName(part) + "s");
+      bodyParts[part] = parts[part];
+    }
+}
+
+CreatureAction Creature::consume(Vec2 direction) {
+  Creature* other = getSquare(direction)->getCreature();
+  if (!hasSkill(Skill::get(SkillId::CONSUMPTION)) || !other || !other->isCorporal() || !isFriend(other))
+    return CreatureAction();
+  return CreatureAction([=] {
+    Debug() << getName() << " consume " << other->getName();
+    you(MsgType::CONSUME, other->getTheName());
+    consumeBodyParts(other->bodyParts);
+    if (*other->humanoid && !*humanoid 
+        && bodyParts[BodyPart::ARM] >= 2 && bodyParts[BodyPart::LEG] >= 2 && bodyParts[BodyPart::HEAD] >= 1) {
+      you(MsgType::BECOME, "a humanoid");
+      *humanoid = true;
+    }
+    vector<string> adjectives;
+    consumeAttr(*size, *other->size, adjectives, "larger");
+    consumeAttr(*speed, *other->speed, adjectives, "faster");
+    consumeAttr(*weight, *other->weight, adjectives, "");
+    consumeAttr(*strength, *other->strength, adjectives, "stronger");
+    consumeAttr(*dexterity, *other->dexterity, adjectives, "more agile");
+    consumeAttr(willpower, other->willpower, adjectives, "more disciplined");
+    consumeAttr(barehandedDamage, other->barehandedDamage, adjectives, "more dangerous");
+    consumeAttr(barehandedAttack, other->barehandedAttack, adjectives, "");
+    consumeAttr(attackEffect, other->attackEffect, adjectives, "");
+    consumeAttr(passiveAttack, other->passiveAttack, adjectives, "");
+    consumeAttr(gender, other->gender, adjectives);
+    consumeAttr(skills, other->skills, adjectives);
+    consumeAttr(expLevel, other->expLevel, adjectives, "more experienced");
+    if (!adjectives.empty())
+      you(MsgType::BECOME, combine(adjectives));
+    consumeBodyParts(other->bodyParts);
+    consumeEffects(other->permanentEffects);
+    other->die(this, true, false);
+    spendTime(2);
   });
 }
 

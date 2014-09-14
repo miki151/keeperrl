@@ -330,6 +330,22 @@ void Player::throwItem(vector<Item*> items, Optional<Vec2> dir) {
   tryToPerform(creature->throwItem(items[0], *dir));
 }
 
+void Player::consumeAction() {
+  vector<CreatureAction> actions;
+  for (Vec2 v : Vec2::directions8())
+    if (auto action = creature->consume(v))
+      actions.push_back(action);
+  if (actions.size() == 1) {
+    tryToPerform(actions[0]);
+  } else
+  if (actions.size() > 1) {
+    auto dir = model->getView()->chooseDirection("Which direction?");
+    if (!dir)
+      return;
+    tryToPerform(creature->consume(*dir));
+  }
+}
+
 void Player::equipmentAction() {
   if (!creature->isHumanoid()) {
     privateMessage("You can't use any equipment.");
@@ -675,6 +691,7 @@ void Player::makeMove() {
     case UserInput::HIDE: hideAction(); break;
     case UserInput::PAY_DEBT: payDebtAction(); break;
     case UserInput::CHAT: chatAction(); break;
+    case UserInput::CONSUME: consumeAction(); break;
     case UserInput::SHOW_HISTORY: messageBuffer.showHistory(); break;
     case UserInput::UNPOSSESS:
       if (unpossess()) {
@@ -792,6 +809,8 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::BREAK_FREE: msg = "You break free from " + param; break;
     case MsgType::PRAY: msg = "You pray to " + param; break;
     case MsgType::COPULATE: msg = "You copulate " + param; break;
+    case MsgType::CONSUME: msg = "You consume " + param; break;
+    case MsgType::GROW: msg = "You grow " + param; break;
     case MsgType::SACRIFICE: msg = "You make a sacrifice to " + param; break;
     case MsgType::HIT: msg = "You hit " + param; break;
     default: break;

@@ -30,7 +30,8 @@ RICH_ENUM(SkillId,
   CONSTRUCTION,
   ELF_VISION,
   NIGHT_VISION,
-  DISARM_TRAPS
+  DISARM_TRAPS,
+  CONSUMPTION
 );
 
 class Creature;
@@ -38,6 +39,7 @@ class Skill : public Singleton<Skill, SkillId> {
   public:
   string getName() const;
   string getHelpText() const;
+  bool canConsume() const;
 
   virtual void onTeach(Creature* c) {}
 
@@ -49,11 +51,12 @@ class Skill : public Singleton<Skill, SkillId> {
   static void registerTypes(Archive& ar);
 
   protected:
-  Skill(string name, string helpText);
+  Skill(string name, string helpText, bool canConsume = true);
 
   private:
   string SERIAL(name);
   string SERIAL(helpText);
+  bool SERIAL(consume);
 };
 
 

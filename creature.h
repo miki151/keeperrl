@@ -206,6 +206,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   enum DestroyAction { BASH, EAT, DESTROY };
   CreatureAction destroy(Vec2 direction, DestroyAction);
   CreatureAction copulate(Vec2 direction);
+  CreatureAction consume(Vec2 direction);
   
   virtual void onChat(Creature*);
 
@@ -272,6 +273,8 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
 
   bool affects(LastingEffect effect) const;
   void onAffected(LastingEffect effect, bool msg);
+  void consumeEffects(EnumMap<LastingEffect, int>&);
+  void consumeBodyParts(EnumMap<BodyPart, int>&);
   void onRemoved(LastingEffect effect, bool msg);
   void onTimedOut(LastingEffect effect, bool msg);
   string getRemainingString(LastingEffect effect) const;
@@ -386,6 +389,8 @@ enum class MsgType {
     PRAY,
     SACRIFICE,
     COPULATE,
+    CONSUME,
+    GROW,
 };
 
 #endif

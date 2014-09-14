@@ -825,6 +825,47 @@ PTask Task::copulate(Callback* c, Creature* target, int numTurns) {
   return PTask(new Copulate(c, target, numTurns));
 }
 
+namespace {
+class Consume : public NonTransferable {
+  public:
+  Consume(Callback* c, Creature* t) : target(t), callback(c) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (target->isDead()) {
+      setDone();
+      return NoMove;
+    }
+    if (c->getPosition().dist8(target->getPosition()) == 1) {
+      if (auto action = c->consume(target->getPosition() - c->getPosition()))
+        return action.append([=] {
+          setDone();
+        });
+      else
+        return NoMove;
+    } else
+      return c->moveTowards(target->getPosition());
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(target)
+      & SVAR(callback);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Consume);
+
+  protected:
+  Creature* SERIAL(target);
+  Callback* SERIAL(callback);
+};
+}
+
+PTask Task::consume(Callback* c, Creature* target) {
+  return PTask(new Consume(c, target));
+}
+
 template <class Archive>
 void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Construction);
