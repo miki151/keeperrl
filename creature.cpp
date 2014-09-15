@@ -1708,9 +1708,13 @@ CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) {
     return CreatureAction();
 }
 
+bool Creature::canCopulateWith(const Creature* c) {
+  return c->isCorporal() && c->getGender() != getGender() && c->isAffected(LastingEffect::SLEEP);
+}
+
 CreatureAction Creature::copulate(Vec2 direction) {
   Creature* other = getSquare(direction)->getCreature();
-  if (!other || !other->isCorporal() || other->getGender() == getGender())
+  if (!other || !canCopulateWith(other))
     return CreatureAction();
   return CreatureAction([=] {
     Debug() << getName() << " copulate with " << other->getName();

@@ -29,11 +29,6 @@
 #include "view_id.h"
 #include "collective.h"
 
-static map<string, function<PCreature ()> > creatureMap;
-static map<string, vector<string> > inventoryMap;
-static vector<string> keys;
-static map<string, pair<int, int> > levelRange;
-
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(tribe)
@@ -1120,12 +1115,14 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::LOST_SOUL:
       return INHERIT(GHOST,
           c.strength = 5;
+          c.courage = 10;
           c.spawnType = SpawnType::DEMON;
           c.barehandedAttack = AttackType::POSSESS;
           c.minionTasks[MinionTask::RITUAL] = 1;
           c.name = "ghost";);
     case CreatureId::SUCCUBUS:
       return INHERIT(GHOST,
+          c.strength = 5;
           c.viewId = ViewId::SUCCUBUS;
           c.spawnType = SpawnType::DEMON;
           c.minionTasks[MinionTask::COPULATE] = 1;
@@ -1136,6 +1133,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::LEG] = 2;
           c.bodyParts[BodyPart::ARM] = 2;
           c.bodyParts[BodyPart::WING] = 2;
+          c.courage = 0.0;
           c.name = "succubus";
           );
     case CreatureId::DOPPLEGANGER:

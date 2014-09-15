@@ -55,8 +55,8 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
-  fire(p.strength, p.flamability),
-    constructions(p.constructions), ticking(p.ticking), movementType(p.movementType) {
+    fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
+    movementType(p.movementType) {
 }
 
 Square::~Square() {

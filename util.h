@@ -48,7 +48,10 @@ DEF_UNIQUE_PTR(ViewObject);
 DEF_UNIQUE_PTR(Collective);
 DEF_UNIQUE_PTR(CollectiveControl);
 
-#define LAMBDA_CONSTRUCTOR(Class) Class(function<void(Class&)> fun) { fun(*this); }
+#define LAMBDA_CONSTRUCTOR(Class)\
+  Class(function<void(Class&)> fun) : Class{} { fun(*this); }\
+  Class() = default
+
 #define CONSTRUCT(Class, Code) Class([&] (Class& c) { Code })
 
 class Item;

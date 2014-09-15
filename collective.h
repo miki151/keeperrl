@@ -385,7 +385,7 @@ class Collective : public Task::Callback {
   double getAttractionOccupation(MinionAttraction);
   unique_ptr<Sectors> SERIAL(sectors);
   unique_ptr<Sectors> SERIAL(flyingSectors);
-  Creature* getCopulationTarget(Gender);
+  Creature* getCopulationTarget(Creature* succubus);
   Creature* getConsumptionTarget();
   unordered_set<Creature*> SERIAL(pregnancies);
 };

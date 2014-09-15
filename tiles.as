@@ -294,7 +294,7 @@ void genTiles() {
   addTile(MANA, sprite(5, 10, 2));
   addTile(DANGER, sprite(12, 9, 2));
   addTile(FETCH_ICON, sprite(15, 11, 3));
-  addTile(EYEBALL, sprite("eyeball2"));
+  addTile(EYEBALL, sprite("eyeball2").setNoShadow());
   addTile(FOG_OF_WAR, getWaterTile(14));
   addTile(FOG_OF_WAR_CORNER, sprite(14, 5, 4)
       .addConnection(dirs(NE), 14, 11)
@@ -364,6 +364,8 @@ void genSymbols() {
   addSymbol(GOBLIN, symbol("o", DARK_BLUE));
   addSymbol(GOBLIN_SHAMAN, symbol("o", YELLOW));
   addSymbol(HARPY, symbol("R", YELLOW));
+  addSymbol(DOPPLEGANGER, symbol("&", YELLOW));
+  addSymbol(SUCCUBUS, symbol("&", RED));
   addSymbol(BANDIT, symbol("@", DARK_BLUE));
   addSymbol(DARK_KNIGHT, symbol("@", PURPLE));
   addSymbol(GREEN_DRAGON, symbol("D", GREEN));

@@ -168,7 +168,6 @@ struct Collective::ImmigrantInfo {
 
 struct CollectiveConfig {
   LAMBDA_CONSTRUCTOR(CollectiveConfig);
-  CollectiveConfig() {}
   bool manageEquipment;
   bool workerFollowLeader;
   double immigrantFrequency;
@@ -522,7 +521,7 @@ PTask Collective::getStandardTask(Creature* c) {
       ret = Task::explore(chooseRandom(borderTiles));
       break;
     case MinionTaskInfo::COPULATE:
-      if (Creature* target = getCopulationTarget(c->getGender()))
+      if (Creature* target = getCopulationTarget(c))
         ret = Task::copulate(this, target, 20);
       else
         currentTasks.erase(c->getUniqueId());
@@ -540,9 +539,9 @@ PTask Collective::getStandardTask(Creature* c) {
   return ret;
 }
 
-Creature* Collective::getCopulationTarget(Gender g) {
+Creature* Collective::getCopulationTarget(Creature* succubus) {
   for (Creature* c : randomPermutation(getCreatures(MinionTrait::FIGHTER)))
-    if (c->isCorporal() && c->getGender() != g && c->isAffected(LastingEffect::SLEEP))
+    if (succubus->canCopulateWith(c))
       return c;
   return nullptr;
 }
@@ -1882,7 +1881,7 @@ void Collective::onCopulated(Creature* who, Creature* with) {
   if (contains(getCreatures(), who)) {
     if (contains(getCreatures(), with))
       with->addMorale(1);
-    if (!pregnancies.count(who))
+    if (Random.roll(5))
       pregnancies.insert(who);
   }
 }

@@ -352,7 +352,7 @@ class Fighter : public Behaviour {
   }
 
   double getMoraleBonus() {
-    return pow(2.0, creature->getMorale());
+    return creature->getCourage() * pow(2.0, creature->getMorale());
   }
 
   virtual MoveInfo getMove() override {

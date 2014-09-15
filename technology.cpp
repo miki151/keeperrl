@@ -37,14 +37,8 @@ void Technology::init() {
   int base = 100;
   Technology::set(TechId::ALCHEMY, new Technology("alchemy", base, {}));
   Technology::set(TechId::ALCHEMY_ADV, new Technology("advanced alchemy", base, {TechId::ALCHEMY}, false));
-  Technology::set(TechId::GOBLIN, new Technology("goblins", base, {}));
-  Technology::set(TechId::OGRE, new Technology("ogres", base, {TechId::GOBLIN}));
-  Technology::set(TechId::HUMANOID_MUT, new Technology("humanoid mutation",base,{TechId::OGRE}, false));
-  Technology::set(TechId::GOLEM, new Technology("stone golems", base, {TechId::ALCHEMY}));
-  Technology::set(TechId::GOLEM_ADV, new Technology("iron golems", base, {TechId::GOLEM}));
-  Technology::set(TechId::GOLEM_MAS, new Technology("lava golems", base, {TechId::GOLEM_ADV, TechId::ALCHEMY_ADV}));
-  Technology::set(TechId::BEAST, new Technology("beast taming", base, {}));
-  Technology::set(TechId::BEAST_MUT, new Technology("beast mutation", base, {TechId::BEAST}, false));
+  Technology::set(TechId::HUMANOID_MUT, new Technology("humanoid mutation",base,{}));
+  Technology::set(TechId::BEAST_MUT, new Technology("beast mutation", base, {}));
   Technology::set(TechId::CRAFTING, new Technology("crafting", base, {}));
   Technology::set(TechId::IRON_WORKING, new Technology("iron working", base, {TechId::CRAFTING}));
   Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", base, {TechId::IRON_WORKING}, true));
@@ -54,10 +48,6 @@ void Technology::init() {
   Technology::set(TechId::SPELLS, new Technology("sorcery", base, {}));
   Technology::set(TechId::SPELLS_ADV, new Technology("advanced sorcery", base, {TechId::SPELLS}));
   Technology::set(TechId::SPELLS_MAS, new Technology("master sorcery", base, {TechId::SPELLS_ADV}, false));
-  Technology::set(TechId::NECRO, new Technology("necromancy", base, {TechId::SPELLS}));
-  Technology::set(TechId::VAMPIRE, new Technology("vampirism", base, {TechId::NECRO}));
-  Technology::set(TechId::VAMPIRE_ADV, new Technology("advanced vampirism", base, {TechId::VAMPIRE,
-        TechId::SPELLS_MAS}));
 }
 
 bool Technology::canResearch() const {
