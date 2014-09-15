@@ -156,6 +156,7 @@ struct Collective::AttractionInfo {
 };
 
 struct Collective::ImmigrantInfo {
+  LAMBDA_CONSTRUCTOR(ImmigrantInfo);
   CreatureId id;
   double frequency;
   vector<AttractionInfo> attractions;
@@ -166,6 +167,8 @@ struct Collective::ImmigrantInfo {
 };
 
 struct CollectiveConfig {
+  LAMBDA_CONSTRUCTOR(CollectiveConfig);
+  CollectiveConfig() {}
   bool manageEquipment;
   bool workerFollowLeader;
   double immigrantFrequency;
@@ -191,100 +194,112 @@ Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t) : configId(cf
     for (Vec2 v : level->getBounds()) {
       if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK}))
         sectors->add(v);
-      if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK, MovementTrait::FLY}))
+      if (getLevel()->getSquare(v)->canEnterEmpty({{MovementTrait::WALK, MovementTrait::FLY}}))
         flyingSectors->add(v);
     }
 }
 
+#define LIST(...) {__VA_ARGS__}
+
 const CollectiveConfig& Collective::getConfig() const {
 
   static EnumMap<CollectiveConfigId, CollectiveConfig> collectiveConfigs {
-    {CollectiveConfigId::KEEPER, {
-       .manageEquipment = true,
-       .workerFollowLeader = true,
-       .immigrantFrequency = 0.01,
-       .payoutTime = 500,
-       .payoutMultiplier = 4,
-       .stripSpawns = true,
-       .keepSectors = true,
-       .immigrantInfo = {
-         { .id = CreatureId::GNOME,
-           .frequency = 1,
-           .attractions = {
-             {{AttractionId::SQUARE, SquareId::WORKSHOP}, 1.0, 12.0},
-            },
-           .traits = {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT},
-           .salary = 10},
-         { .id = CreatureId::GOBLIN,
-           .frequency = 0.8,
-           .attractions = {
-             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 1.0, 12.0},
-            },
-           .traits = {MinionTrait::FIGHTER},
-           .salary = 20},
-         { .id = CreatureId::GOBLIN_SHAMAN,
-           .frequency = 0.3,
-           .attractions = {
-             {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
-            },
-           .traits = {MinionTrait::FIGHTER},
-           .salary = 20},
-         { .id = CreatureId::OGRE,
-           .frequency = 0.3,
-           .attractions = {
-             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
-            },
-           .traits = {MinionTrait::FIGHTER},
-           .salary = 40},
-         { .id = CreatureId::HARPY,
-           .frequency = 0.2,
-           .attractions = {
-             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
-             {{AttractionId::ITEM_CLASS, ItemClass::RANGED_WEAPON}, 1.0, 3.0},
-            },
-           .traits = {MinionTrait::FIGHTER},
-           .salary = 40},
-         { .id = CreatureId::ZOMBIE,
-           .frequency = 0.5,
-           .traits = {MinionTrait::FIGHTER},
-           .salary = 10,
-           .spawnAtDorm = true,
-           .cost = CostInfo(ResourceId::CORPSE, 1)},
-         { .id = CreatureId::VAMPIRE,
-           .frequency = 0.3,
-           .traits = {MinionTrait::FIGHTER},
-           .salary = 40,
-           .spawnAtDorm = true,
-           .attractions = {
-             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 2.0, 12.0},
-            },
-           .cost = CostInfo(ResourceId::CORPSE, 1)},
-         { .id = CreatureId::LOST_SOUL,
-           .frequency = 0.3,
-           .traits = {MinionTrait::FIGHTER},
-           .salary = 0,
-           .attractions = {
-             {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 1.0, 9.0},
-            },
-           .spawnAtDorm = true},
-         { .id = CreatureId::SUCCUBUS,
-           .frequency = 0.3,
-           .traits = {MinionTrait::FIGHTER},
-           .salary = 0,
-           .attractions = {
-             {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 2.0, 12.0},
-            },
-           .spawnAtDorm = true},
-         { .id = CreatureId::DOPPLEGANGER,
-           .frequency = 0.2,
-           .traits = {MinionTrait::FIGHTER},
-           .salary = 0,
-           .attractions = {
-             {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 4.0, 12.0},
-            },
-           .spawnAtDorm = true},
-       },
-    }},
+    {CollectiveConfigId::KEEPER,
+      CONSTRUCT(CollectiveConfig,
+        c.manageEquipment = true;
+        c.workerFollowLeader = true;
+        c.immigrantFrequency = 0.01;
+        c.payoutTime = 500;
+        c.payoutMultiplier = 4;
+        c.stripSpawns = true;
+        c.keepSectors = true;
+        c.immigrantInfo = LIST(
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::GNOME;
+            c.frequency = 1;
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::WORKSHOP}, 1.0, 12.0},
+            );
+            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
+            c.salary = 10;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::GOBLIN;
+            c.frequency = 0.8;
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 1.0, 12.0},
+            );
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 20;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::GOBLIN_SHAMAN;
+            c.frequency = 0.3;
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
+            );
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 20;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::OGRE;
+            c.frequency = 0.3;
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0}
+            );
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 40;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::HARPY;
+            c.frequency = 0.2;
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+              {{AttractionId::ITEM_CLASS, ItemClass::RANGED_WEAPON}, 1.0, 3.0}
+            );
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 40;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::ZOMBIE;
+            c.frequency = 0.5;
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 10;
+            c.spawnAtDorm = true;
+            c.cost = CostInfo(ResourceId::CORPSE, 1);),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::VAMPIRE;
+            c.frequency = 0.3;
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 40;
+            c.spawnAtDorm = true;
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 2.0, 12.0}
+            );
+            c.cost = CostInfo(ResourceId::CORPSE, 1);),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::LOST_SOUL;
+            c.frequency = 0.3;
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 0;
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 1.0, 9.0}
+            );
+            c.spawnAtDorm = true;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::SUCCUBUS;
+            c.frequency = 0.3;
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 0;
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 2.0, 12.0}
+            );
+            c.spawnAtDorm = true;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::DOPPLEGANGER;
+            c.frequency = 0.2;
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 0;
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 4.0, 12.0}
+            );
+            c.spawnAtDorm = true;),
+        );)},
     {CollectiveConfigId::VILLAGE, {}},
   };
   return collectiveConfigs[configId];
@@ -310,6 +325,8 @@ double Collective::getAttractionValue(MinionAttraction attraction) {
       return getAllItems([&](const Item* it) {
           return it->getClass() == attraction.get<ItemClass>(); }, true).size();
   }
+  FAIL << "wefok";
+  return 0;
 }
 
 void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> traits) {

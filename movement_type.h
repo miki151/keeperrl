@@ -15,6 +15,7 @@ class Tribe;
 class MovementType {
   public:
   MovementType(initializer_list<MovementTrait> = {});
+  MovementType(MovementTrait);
   MovementType(const Tribe*, EnumSet<MovementTrait> = {});
   bool hasTrait(MovementTrait) const;
   /** Returns if the argument can enter square define by this. The relation is not symmetric.*/

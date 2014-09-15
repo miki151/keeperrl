@@ -48,6 +48,9 @@ DEF_UNIQUE_PTR(ViewObject);
 DEF_UNIQUE_PTR(Collective);
 DEF_UNIQUE_PTR(CollectiveControl);
 
+#define LAMBDA_CONSTRUCTOR(Class) Class(function<void(Class&)> fun) { fun(*this); }
+#define CONSTRUCT(Class, Code) Class([&] (Class& c) { Code })
+
 class Item;
 typedef function<bool(const Item*)> ItemPredicate;
 

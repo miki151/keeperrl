@@ -493,4 +493,5 @@ string Effect::getName(LastingEffect type) {
     case LastingEffect::FIRE_RESISTANT: return "fire resistance";
     case LastingEffect::INSANITY: return "insanity";
   }
+  return "";
 }

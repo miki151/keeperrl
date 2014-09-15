@@ -12,6 +12,9 @@ SERIALIZABLE(MovementType);
 MovementType::MovementType(initializer_list<MovementTrait> t) : traits(t), tribe(nullptr) {
 }
 
+MovementType::MovementType(MovementTrait t) : traits({t}), tribe(nullptr) {
+}
+
 MovementType::MovementType(const Tribe* tr, EnumSet<MovementTrait> t) : traits(t), tribe(tr) {
 }
 

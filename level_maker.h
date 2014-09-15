@@ -19,6 +19,7 @@
 #include "util.h"
 #include "level.h"
 #include "creature_factory.h"
+#include "item_factory.h"
 
 enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
 
@@ -38,6 +39,7 @@ enum class SettlementType {
 };
 
 struct SettlementInfo {
+  LAMBDA_CONSTRUCTOR(SettlementInfo);
   SettlementType type;
   CreatureFactory creatures;
   int numCreatures;

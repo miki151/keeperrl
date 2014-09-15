@@ -370,9 +370,9 @@ class KrakenController : public Monster {
               }
               pair<Vec2, Vec2> dirs = v.approxL1();
               vector<Vec2> moves;
-              if (creature->getSquare(dirs.first)->canEnter({MovementTrait::WALK, MovementTrait::SWIM}))
+              if (creature->getSquare(dirs.first)->canEnter({{MovementTrait::WALK, MovementTrait::SWIM}}))
                 moves.push_back(dirs.first);
-              if (creature->getSquare(dirs.second)->canEnter({MovementTrait::WALK, MovementTrait::SWIM}))
+              if (creature->getSquare(dirs.second)->canEnter({{MovementTrait::WALK, MovementTrait::SWIM}}))
                 moves.push_back(dirs.second);
               if (!moves.empty()) {
                 if (!ready) {

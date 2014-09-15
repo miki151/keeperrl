@@ -826,6 +826,7 @@ ViewId getTrapViewId(TrapType t) {
     case TrapType::SURPRISE: return ViewId::SURPRISE_TRAP;
     case TrapType::TERROR: return ViewId::TERROR_TRAP;
   }
+  return ViewId(0);
 }
 
 PItem getTrap(const ItemAttributes& attr, TrapType trapType, EffectType effectType) {
