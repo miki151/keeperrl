@@ -298,6 +298,24 @@ const CollectiveConfig& Collective::getConfig() const {
               {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 4.0, 12.0}
             );
             c.spawnAtDorm = true;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::RAVEN;
+            c.frequency = 0.8;
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 0;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::WOLF;
+            c.frequency = 0.3;
+            c.traits = {MinionTrait::FIGHTER};
+            c.salary = 0;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::WEREWOLF;
+            c.frequency = 0.1;
+            c.traits = {MinionTrait::FIGHTER};
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 4.0, 12.0}
+            );
+            c.salary = 0;),
         );)},
     {CollectiveConfigId::VILLAGE, {}},
   };

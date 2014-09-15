@@ -178,6 +178,7 @@ void genTiles() {
   addTile(BOAR, sprite("boar"));
   addTile(FOX, sprite("fox"));
   addTile(WOLF, sprite("wolf"));
+  addTile(WEREWOLF, sprite("werewolf2"));
   addTile(DOG, sprite("dog"));
   addTile(KRAKEN_HEAD, sprite("krakenhead"));
   addTile(KRAKEN_LAND, sprite("krakenland1"));
@@ -411,6 +412,7 @@ void genSymbols() {
   addSymbol(BOAR, symbol("b", LIGHT_BROWN));
   addSymbol(FOX, symbol("d", ORANGE_BROWN));
   addSymbol(WOLF, symbol("d", DARK_BLUE));
+  addSymbol(WEREWOLF, symbol("d", WHITE));
   addSymbol(DOG, symbol("d", BROWN));
   addSymbol(VODNIK, symbol("f", GREEN));
   addSymbol(KRAKEN_HEAD, symbol("S", GREEN));

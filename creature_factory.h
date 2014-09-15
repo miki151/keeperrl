@@ -112,6 +112,7 @@ RICH_ENUM(CreatureId,
     RAVEN,
     VULTURE,
     WOLF,
+    WEREWOLF,
     DOG,
 
     DEATH,
