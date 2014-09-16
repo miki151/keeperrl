@@ -790,6 +790,7 @@ int getEffectPrice(EffectType type) {
     case EffectId::ENHANCE_ARMOR:
     case EffectId::FIRE_SPHERE_PET:
     case EffectId::TELE_ENEMIES:
+    case EffectId::CURE_POISON:
     case EffectId::SUMMON_INSECTS: return 60;
     case EffectId::GUARDING_BOULDER:
     case EffectId::SUMMON_SPIRIT:

@@ -49,6 +49,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(minionPayment)
     & SVAR(flyingSectors)
     & SVAR(sectors)
+    & SVAR(pregnancies)
     & SVAR(nextPayoutTime);
   CHECK_SERIAL;
 }
@@ -924,9 +925,47 @@ void Collective::cashPayouts() {
       taskMap.addTask(Task::chain(std::move(tasks)), c);*/
 }
 
+struct BirthSpawn {
+  CreatureId id;
+  double frequency;
+  Optional<TechId> tech;
+};
+
+static vector<BirthSpawn> birthSpawns {
+  { CreatureId::GNOME, 1 },
+  { CreatureId::GOBLIN, 1 },
+  { CreatureId::GOBLIN_SHAMAN, 0.5 },
+  { CreatureId::HARPY, 0.5 },
+  { CreatureId::OGRE, 0.5 },
+  { CreatureId::WEREWOLF, 0.5 },
+  { CreatureId::SPECIAL_HUMANOID, 2, TechId::HUMANOID_MUT},
+  { CreatureId::SPECIAL_MONSTER_KEEPER, 2, TechId::BEAST_MUT },
+};
+
+void Collective::considerBirths() {
+  if (!pregnancies.empty() && Random.roll(50)) {
+    Creature* c = pregnancies.front();
+    pregnancies.pop_front();
+    vector<pair<CreatureId, double>> candidates;
+    for (auto& elem : birthSpawns)
+      if (!elem.tech || hasTech(*elem.tech)) 
+        candidates.emplace_back(elem.id, elem.frequency);
+    if (candidates.empty())
+      return;
+    PCreature spawn = CreatureFactory::fromId(chooseRandom(candidates), getTribe());
+    for (Vec2 v : c->getPosition().neighbors8(true))
+      if (getLevel()->getSquare(v)->canEnter(spawn.get())) {
+        Debug() << c->getAName() << " gives birth to " << spawn->getAName();
+        addCreature(std::move(spawn), v, {MinionTrait::FIGHTER});
+        return;
+      }
+  }
+}
+
 void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
+  considerBirths();
   if (Random.rollD(1.0 / getConfig().immigrantFrequency))
     considerImmigration();
   if (time > nextPayoutTime) {
@@ -1807,6 +1846,7 @@ static vector<SpellLearningInfo> spellLearning {
     { SpellId::DEX_BONUS, TechId::SPELLS_ADV},
     { SpellId::FIRE_SPHERE_PET, TechId::SPELLS_ADV},
     { SpellId::TELEPORT, TechId::SPELLS_ADV},
+    { SpellId::CURE_POISON, TechId::SPELLS_ADV},
     { SpellId::INVISIBILITY, TechId::SPELLS_MAS},
     { SpellId::WORD_OF_POWER, TechId::SPELLS_MAS},
     { SpellId::PORTAL, TechId::SPELLS_MAS},
@@ -1924,8 +1964,8 @@ void Collective::onCopulated(Creature* who, Creature* with) {
   if (contains(getCreatures(), who)) {
     if (contains(getCreatures(), with))
       with->addMorale(1);
-    if (Random.roll(5))
-      pregnancies.insert(who);
+    if (Random.roll(5) && !contains(pregnancies, who)) 
+      pregnancies.push_back(who);
   }
 }
 

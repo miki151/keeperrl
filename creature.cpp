@@ -123,6 +123,7 @@ SpellInfo Creature::getSpell(SpellId id) {
     case SpellId::WORD_OF_POWER: return {id, "word of power", EffectId::WORD_OF_POWER, 0, 300};
     case SpellId::SUMMON_SPIRIT: return {id, "summon spirits", EffectId::SUMMON_SPIRIT, 0, 300};
     case SpellId::PORTAL: return {id, "portal", EffectId::PORTAL, 0, 200};
+    case SpellId::CURE_POISON: return {id, "cure poisoning", EffectId::CURE_POISON, 0, 300};
   }
   FAIL << "wpeofk";
   return getSpell(SpellId::HEALING);

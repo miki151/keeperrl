@@ -25,6 +25,7 @@ enum class EffectId {
     SUMMON_SPIRIT,
     LEAVE_BODY,
     SILVER_DAMAGE,
+    CURE_POISON,
     LASTING,
 };
 

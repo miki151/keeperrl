@@ -126,9 +126,12 @@ class Heal : public Behaviour {
             return {0.5, action};
     if (!creature->isHumanoid())
       return NoMove;
-    if (creature->isAffected(LastingEffect::POISON))
+    if (creature->isAffected(LastingEffect::POISON)) {
       if (MoveInfo move = tryToApplyItem(EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT), 1))
         return move;
+      if (MoveInfo move = tryToApplyItem(EffectType(EffectId::CURE_POISON), 1))
+        return move;
+    }
     if (creature->getHealth() == 1)
       return NoMove;
     if (MoveInfo move = tryToApplyItem(EffectId::HEAL, 1))
@@ -413,6 +416,8 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::BLIND),
           EffectType(EffectId::LASTING, LastingEffect::SLEEP),
           EffectType(EffectId::LASTING, LastingEffect::POISON),
+          EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT),
+          EffectId::CURE_POISON,
           EffectId::TELEPORT,
           EffectType(EffectId::LASTING, LastingEffect::STR_BONUS),
           EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)},

@@ -304,7 +304,7 @@ static void setHandicap(Tribe* tribe, bool easy) {
   if (easy)
     tribe->setHandicap(5);
   else
-    tribe->setHandicap(0);
+    tribe->setHandicap(2);
 }
 
 Model* Model::heroModel(View* view) {

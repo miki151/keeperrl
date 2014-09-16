@@ -26,7 +26,7 @@ const unordered_map<OptionId, int> defaults {
   {OptionId::SHOW_MAP, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
-  {OptionId::EASY_KEEPER, 1},
+  {OptionId::EASY_KEEPER, 0},
   {OptionId::AGGRESSIVE_HEROES, 1},
   {OptionId::EASY_ADVENTURER, 1},
 };
@@ -55,9 +55,9 @@ const map<OptionSet, vector<OptionId>> optionSets {
 #endif
   }},
   {OptionSet::KEEPER, {
-      OptionId::EASY_KEEPER,
       OptionId::AGGRESSIVE_HEROES,
 #ifndef RELEASE
+      OptionId::EASY_KEEPER,
       OptionId::START_WITH_NIGHT,
       OptionId::SHOW_MAP,
       OptionId::STARTING_RESOURCE,

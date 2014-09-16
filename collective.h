@@ -337,6 +337,7 @@ class Collective : public Task::Callback {
   void considerHealingLeader();
   bool considerImmigrant(const ImmigrantInfo&);
   void considerImmigration();
+  void considerBirths();
   vector<Creature*> SERIAL(creatures);
   EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   EnumMap<SpawnType, vector<Creature*>> SERIAL(bySpawnType);
@@ -391,7 +392,7 @@ class Collective : public Task::Callback {
   unique_ptr<Sectors> SERIAL(flyingSectors);
   Creature* getCopulationTarget(Creature* succubus);
   Creature* getConsumptionTarget(Creature* consumer);
-  unordered_set<Creature*> SERIAL(pregnancies);
+  deque<Creature*> SERIAL(pregnancies);
 };
 
 #endif
