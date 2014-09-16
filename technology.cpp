@@ -34,20 +34,19 @@ SERIALIZABLE(Technology);
 SERIALIZATION_CONSTRUCTOR_IMPL(Technology);
 
 void Technology::init() {
-  int base = 100;
-  Technology::set(TechId::ALCHEMY, new Technology("alchemy", base, {}));
-  Technology::set(TechId::ALCHEMY_ADV, new Technology("advanced alchemy", base, {TechId::ALCHEMY}, false));
-  Technology::set(TechId::HUMANOID_MUT, new Technology("humanoid mutation",base,{}));
-  Technology::set(TechId::BEAST_MUT, new Technology("beast mutation", base, {}));
-  Technology::set(TechId::CRAFTING, new Technology("crafting", base, {}));
-  Technology::set(TechId::IRON_WORKING, new Technology("iron working", base, {TechId::CRAFTING}));
-  Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", base, {TechId::IRON_WORKING}, true));
-  Technology::set(TechId::TRAPS, new Technology("traps", base, {TechId::CRAFTING}));
-  Technology::set(TechId::ARCHERY, new Technology("archery", base, {TechId::CRAFTING}, true,
+  Technology::set(TechId::ALCHEMY, new Technology("alchemy", 80, {}));
+  Technology::set(TechId::ALCHEMY_ADV, new Technology("advanced alchemy", 200, {TechId::ALCHEMY}));
+  Technology::set(TechId::HUMANOID_MUT, new Technology("humanoid mutation", 250,{}));
+  Technology::set(TechId::BEAST_MUT, new Technology("beast mutation", 250, {}));
+  Technology::set(TechId::CRAFTING, new Technology("crafting", 40, {}));
+  Technology::set(TechId::IRON_WORKING, new Technology("iron working", 60, {TechId::CRAFTING}));
+  Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", 100, {TechId::IRON_WORKING}, true));
+  Technology::set(TechId::TRAPS, new Technology("traps", 60, {TechId::CRAFTING}));
+  Technology::set(TechId::ARCHERY, new Technology("archery", 80, {TechId::CRAFTING}, true,
         Skill::get(SkillId::ARCHERY)));
-  Technology::set(TechId::SPELLS, new Technology("sorcery", base, {}));
-  Technology::set(TechId::SPELLS_ADV, new Technology("advanced sorcery", base, {TechId::SPELLS}));
-  Technology::set(TechId::SPELLS_MAS, new Technology("master sorcery", base, {TechId::SPELLS_ADV}, false));
+  Technology::set(TechId::SPELLS, new Technology("sorcery", 60, {}));
+  Technology::set(TechId::SPELLS_ADV, new Technology("advanced sorcery", 120, {TechId::SPELLS}));
+  Technology::set(TechId::SPELLS_MAS, new Technology("master sorcery", 250, {TechId::SPELLS_ADV}));
 }
 
 bool Technology::canResearch() const {

@@ -39,7 +39,6 @@ enum class SettlementType {
 };
 
 struct SettlementInfo {
-  LAMBDA_CONSTRUCTOR(SettlementInfo);
   SettlementType type;
   CreatureFactory creatures;
   int numCreatures;

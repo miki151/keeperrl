@@ -34,10 +34,11 @@ RICH_ENUM(CollectiveConfigId,
 
 RICH_ENUM(CollectiveWarning,
     DIGGING,
-    STORAGE,WOOD,
+    STORAGE,
+    GOLD,
+    WOOD,
     IRON,
     STONE,
-    GOLD,
     LIBRARY,
     BEDS,
     TRAINING,
@@ -236,7 +237,7 @@ class Collective : public Task::Callback {
   bool hasTech(TechId id) const;
   void acquireTech(Technology*, bool free = false);
   const vector<Technology*>& getTechnologies() const;
-  double getTechCost();
+  double getTechCost(Technology*);
   static vector<SpellInfo> getSpellLearning(const Technology*);
   vector<SpellId> getAllSpells() const;
   vector<SpellId> getAvailableSpells() const;
@@ -269,8 +270,11 @@ class Collective : public Task::Callback {
   int getNextPayoutTime() const;
   int getSalary(const Creature*) const;
   int getNextSalaries() const;
+  bool hasMinionDebt() const;
 
   void updateSectors(Vec2);
+  void orderConsumption(Creature* consumer, Creature* who);
+  vector<Creature*>getConsumptionTargets(Creature* consumer);
 
   private:
   int getPaymentAmount(const Creature*) const;
@@ -386,7 +390,7 @@ class Collective : public Task::Callback {
   unique_ptr<Sectors> SERIAL(sectors);
   unique_ptr<Sectors> SERIAL(flyingSectors);
   Creature* getCopulationTarget(Creature* succubus);
-  Creature* getConsumptionTarget();
+  Creature* getConsumptionTarget(Creature* consumer);
   unordered_set<Creature*> SERIAL(pregnancies);
 };
 

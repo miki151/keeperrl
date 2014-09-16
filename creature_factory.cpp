@@ -1408,6 +1408,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.skills.insert(SkillId::NIGHT_VISION);
           c.minionTasks[MinionTask::TRAIN] = 4; 
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
+          c.minionTasks[MinionTask::STUDY] = 1;
           c.minionTasks[MinionTask::GRAVE] = 1;
           c.name = "vampire";);
     case CreatureId::VAMPIRE_LORD: 
@@ -1487,11 +1488,14 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::GOBLIN_SHAMAN:
       return INHERIT(GOBLIN,
           c.viewId = ViewId::GOBLIN_SHAMAN;
+          c.strength -= 3;
+          c.dexterity -= 3;
           c.minionTasks.clear();
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
           c.minionTasks[MinionTask::LABORATORY] = 4; 
           c.minionTasks[MinionTask::STUDY] = 4;
           c.minionTasks[MinionTask::SLEEP] = 1;
+          c.minionTasks[MinionTask::WORKSHOP] = 0;
           c.name = "goblin shaman";);
     case CreatureId::GREAT_GOBLIN: 
       return INHERIT(GOBLIN,

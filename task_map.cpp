@@ -187,4 +187,10 @@ void TaskMap<CostInfo>::freeTask(Task* task) {
     creatureMap.erase(task);
 }
 
+template <class CostInfo>
+void TaskMap<CostInfo>::freeFromTask(Creature* c) {
+  if (Task* t = getTask(c))
+    freeTask(t);
+}
+
 template class TaskMap<Collective::CostInfo>;

@@ -48,7 +48,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(lastControlKeeperQuestion)
     & SVAR(startImpNum)
     & SVAR(retired)
-    & SVAR(executions)
+    & SVAR(payoutWarning)
     & SVAR(surprises);
   CHECK_SERIAL;
 }
@@ -299,7 +299,7 @@ static vector<ItemType> marketItems {
 };
 
 enum class PlayerControl::MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, SACRIFICE, EXECUTE,
-  LABOR, TRAINING, WORKSHOP, LAB, STUDY, WORSHIP };
+  LABOR, TRAINING, WORKSHOP, LAB, STUDY, WORSHIP, COPULATE, CONSUME };
 
 struct TaskOption {
   MinionTask task;
@@ -312,7 +312,9 @@ vector<TaskOption> taskOptions {
   {MinionTask::WORKSHOP, PlayerControl::MinionOption::WORKSHOP, "Workshop"},
   {MinionTask::LABORATORY, PlayerControl::MinionOption::LAB, "Lab"},
   {MinionTask::STUDY, PlayerControl::MinionOption::STUDY, "Study"},
-  {MinionTask::WORSHIP, PlayerControl::MinionOption::WORSHIP, "Worship"},
+  {MinionTask::WORSHIP, PlayerControl::MinionOption::WORSHIP, "Forge"},
+  {MinionTask::COPULATE, PlayerControl::MinionOption::COPULATE, "Copulate"},
+  {MinionTask::CONSUME, PlayerControl::MinionOption::CONSUME, "Consume"},
 };
 
 static string getMoraleString(double morale) {
@@ -366,6 +368,18 @@ void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, ve
     lOpt.emplace_back(s, View::INACTIVE);
 }
 
+Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
+  vector<Creature*> res;
+  vector<View::ListElem> opt;
+  for (Creature* c : getCollective()->getConsumptionTargets(consumer)) {
+    res.push_back(c);
+    opt.emplace_back(c->getName() + ", level " + convertToString(c->getExpLevel()));
+  }
+  if (auto index = view->chooseFromList("Choose minion to consume:", opt))
+    return res[*index];
+  return nullptr;
+}
+
 void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
   vector<MinionOption> mOpt;
   vector<View::ListElem> lOpt;
@@ -401,6 +415,10 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
     case MinionOption::LABOR:
       getCollective()->setTrait(creature, MinionTrait::WORKER);
       break;
+    case MinionOption::CONSUME:
+      if (Creature* target = getConsumptionTarget(view, creature))
+        getCollective()->orderConsumption(creature, target);
+      return;
     default:
       for (auto elem : taskOptions)
         if (mOpt[*index] == elem.option) {
@@ -602,15 +620,14 @@ void PlayerControl::handleLibrary(View* view) {
     allInactive = true;
     options.emplace_back("You need a larger library to continue research.", View::TITLE);
   }
-  int neededPoints = 50 * getCollective()->getTechCost();
   options.push_back(View::ListElem("You have " 
-        + convertToString(int(getCollective()->numResource(ResourceId::MANA))) + " mana. " +
-        convertToString(neededPoints) + " needed to advance.", View::TITLE));
+        + convertToString(int(getCollective()->numResource(ResourceId::MANA))) + " mana. ", View::TITLE));
   vector<Technology*> techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
       [](const Technology* tech) { return tech->canResearch(); });
   for (Technology* tech : techs) {
-    string text = tech->getName();
-    options.emplace_back(text, neededPoints <= int(getCollective()->numResource(ResourceId::MANA))
+    int cost = getCollective()->getTechCost(tech);
+    string text = tech->getName() + " (" + convertToString(cost) + " mana)";
+    options.emplace_back(text, cost <= int(getCollective()->numResource(ResourceId::MANA))
         && !allInactive ? View::NORMAL : View::INACTIVE);
   }
   options.emplace_back("Researched:", View::TITLE);
@@ -620,7 +637,7 @@ void PlayerControl::handleLibrary(View* view) {
   if (!index)
     return;
   Technology* tech = techs[*index];
-  getCollective()->takeResource({ResourceId::MANA, neededPoints});
+  getCollective()->takeResource({ResourceId::MANA, int(getCollective()->getTechCost(tech))});
   getCollective()->acquireTech(tech);
   view->updateView(this);
   handleLibrary(view);
@@ -1262,6 +1279,11 @@ void PlayerControl::tick(double time) {
             getCardinalName((getKeeper()->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
   }
   updateVisibleCreatures();
+  if (getCollective()->hasMinionDebt() && !retired && !payoutWarning) {
+    model->getView()->presentText("Warning", "You don't have enough gold for salaries. "
+        "Your minions will refuse to work if they are not paid.");
+    payoutWarning = true;
+  }
   for (const Creature* c1 : getVisibleFriends()) {
     Creature* c = const_cast<Creature*>(c1);
     if (c->getSpawnType() && !contains(getCreatures(), c))

@@ -38,7 +38,6 @@ enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRA
 class Square : public Renderable {
   public:
   struct Params {
-    LAMBDA_CONSTRUCTOR(Params);
     string name;
     Vision* vision;
     bool canHide;

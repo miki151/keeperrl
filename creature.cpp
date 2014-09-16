@@ -1708,8 +1708,12 @@ CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) {
     return CreatureAction();
 }
 
-bool Creature::canCopulateWith(const Creature* c) {
+bool Creature::canCopulateWith(const Creature* c) const {
   return c->isCorporal() && c->getGender() != getGender() && c->isAffected(LastingEffect::SLEEP);
+}
+
+bool Creature::canConsume(const Creature* c) const {
+  return c->isCorporal();
 }
 
 CreatureAction Creature::copulate(Vec2 direction) {

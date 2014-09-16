@@ -18,6 +18,7 @@ class TaskMap {
   Optional<Vec2> getPosition(Task*) const;
   void takeTask(const Creature*, Task*);
   void freeTask(Task*);
+  void freeFromTask(Creature*);
 
   Task* addTaskCost(PTask, Vec2 pos, CostInfo);
   void markSquare(Vec2 pos, PTask);

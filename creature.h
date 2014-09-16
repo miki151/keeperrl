@@ -206,8 +206,9 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   enum DestroyAction { BASH, EAT, DESTROY };
   CreatureAction destroy(Vec2 direction, DestroyAction);
   CreatureAction copulate(Vec2 direction);
-  bool canCopulateWith(const Creature*);
+  bool canCopulateWith(const Creature*) const;
   CreatureAction consume(Vec2 direction);
+  bool canConsume(const Creature*) const;
   
   virtual void onChat(Creature*);
 

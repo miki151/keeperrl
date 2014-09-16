@@ -156,7 +156,6 @@ struct Collective::AttractionInfo {
 };
 
 struct Collective::ImmigrantInfo {
-  LAMBDA_CONSTRUCTOR(ImmigrantInfo);
   CreatureId id;
   double frequency;
   vector<AttractionInfo> attractions;
@@ -167,7 +166,6 @@ struct Collective::ImmigrantInfo {
 };
 
 struct CollectiveConfig {
-  LAMBDA_CONSTRUCTOR(CollectiveConfig);
   bool manageEquipment;
   bool workerFollowLeader;
   double immigrantFrequency;
@@ -207,7 +205,7 @@ const CollectiveConfig& Collective::getConfig() const {
       CONSTRUCT(CollectiveConfig,
         c.manageEquipment = true;
         c.workerFollowLeader = true;
-        c.immigrantFrequency = 0.01;
+        c.immigrantFrequency = 0.007;
         c.payoutTime = 500;
         c.payoutMultiplier = 4;
         c.stripSpawns = true;
@@ -545,7 +543,7 @@ PTask Collective::getStandardTask(Creature* c) {
         currentTasks.erase(c->getUniqueId());
       break;
     case MinionTaskInfo::CONSUME:
-      if (Creature* target = getConsumptionTarget())
+      if (Creature* target = getConsumptionTarget(c))
         ret = Task::consume(this, target);
       else
         currentTasks.erase(c->getUniqueId());
@@ -564,11 +562,29 @@ Creature* Collective::getCopulationTarget(Creature* succubus) {
   return nullptr;
 }
 
-Creature* Collective::getConsumptionTarget() {
+Creature* Collective::getConsumptionTarget(Creature* consumer) {
+  vector<Creature*> v = getConsumptionTargets(consumer);
+  if (!v.empty())
+    return chooseRandom(v);
+  else
+    return nullptr;
+}
+
+vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) {
+  vector<Creature*> ret;
   for (Creature* c : randomPermutation(getCreatures(MinionTrait::FIGHTER)))
-    if (c->isCorporal() && c != getLeader())
-      return c;
-  return nullptr;
+    if (consumer->canConsume(c) && c != getLeader())
+      ret.push_back(c);
+  return ret;
+}
+
+void Collective::orderConsumption(Creature* consumer, Creature* who) {
+  CHECK(consumer->getMinionTasks()[MinionTask::CONSUME] > 0);
+  setMinionTask(who, MinionTask::CONSUME);
+  MinionTaskInfo info = getTaskInfo().at(currentTasks[consumer->getUniqueId()].task());
+  minionTaskStrings[consumer->getUniqueId()] = info.description;
+  taskMap.freeFromTask(consumer);
+  taskMap.addTask(Task::consume(this, who), consumer);
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
@@ -860,6 +876,13 @@ int Collective::getNextSalaries() const {
     if (minionPayment.count(c))
       ret += getPaymentAmount(c) + minionPayment.at(c).debt();
   return ret;
+}
+
+bool Collective::hasMinionDebt() const {
+  for (Creature* c : creatures)
+    if (minionPayment.count(c) && minionPayment.at(c).debt())
+      return true;
+  return false;
 }
 
 void Collective::makePayouts() {
@@ -1739,6 +1762,7 @@ void Collective::onAppliedSquare(Vec2 pos) {
   MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
   minionPayment[c].workAmount() += getTaskInfo().at(currentTask).cost;
   if (getSquares(SquareId::LIBRARY).count(pos)) {
+    addMana(0.2);
     if (Random.rollD(60.0 / (getEfficiency(pos))) && !getAvailableSpells().empty())
       c->addSpell(chooseRandom(getAvailableSpells()));
   }
@@ -1832,10 +1856,11 @@ bool Collective::hasTech(TechId id) const {
   return contains(technologies, Technology::get(id));
 }
 
-double Collective::getTechCost() {
-  int numTech = technologies.size() - numFreeTech;
+double Collective::getTechCost(Technology* t) {
+  return t->getCost();
+ /* int numTech = technologies.size() - numFreeTech;
   int numDouble = 4;
-  return getTechCostMultiplier() * pow(2, double(numTech) / numDouble);
+  return getTechCostMultiplier() * pow(2, double(numTech) / numDouble);*/
 }
 
 void Collective::acquireTech(Technology* tech, bool free) {

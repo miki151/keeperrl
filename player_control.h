@@ -99,6 +99,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void addDeityServant(Deity*, Vec2 deityPos, Vec2 victimPos);
   static string getWarningText(Collective::Warning);
 
+  Creature* getConsumptionTarget(View*, Creature* consumer);
   void onWorshipEpithet(EpithetId);
   Creature* getCreature(UniqueEntity<Creature>::Id id);
   void handleCreatureButton(Creature* c, View* view);
@@ -193,7 +194,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   double SERIAL2(lastControlKeeperQuestion, -100);
   int SERIAL2(startImpNum, -1);
   bool SERIAL2(retired, false);
-  int SERIAL2(executions, 0);
+  bool SERIAL2(payoutWarning, false);
   unordered_set<Vec2> SERIAL(surprises);
 };
 
