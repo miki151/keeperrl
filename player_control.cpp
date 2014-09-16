@@ -79,6 +79,9 @@ PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, s
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH, DISPATCH}, type));
 }
 
+PlayerControl::BuildInfo::BuildInfo(MinionInfo info, Optional<TechId> tech, const string& group, const string& h)
+    : minionInfo(info), buildType(MINION), techId(tech), help(h), hotkey(0), groupName(group) {}
+
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
   return getBuildInfo(getLevel(), getTribe());
 }
@@ -143,6 +146,8 @@ vector<PlayerControl::BuildInfo> PlayerControl::workshopInfo {
 
 vector<PlayerControl::BuildInfo> PlayerControl::libraryInfo {
   BuildInfo(BuildInfo::IMP, "", 'i'),
+  BuildInfo({CreatureId::KRAKEN, {}, {ResourceId::MANA, 200}}, TechId::KRAKEN, "",
+      "Place the kraken in an underground lake, in reach of passing enemies."),
 };
 
 vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
@@ -652,6 +657,20 @@ Optional<pair<ViewObject, int>> PlayerControl::getCostObj(CostInfo cost) const {
     return Nothing();
 }
 
+string PlayerControl::getMinionName(CreatureId id) const {
+  static map<CreatureId, string> names;
+  if (!names.count(id))
+    names[id] = CreatureFactory::fromId(id, nullptr)->getName();
+  return names.at(id);
+}
+
+ViewObject PlayerControl::getMinionViewObject(CreatureId id) const {
+  static map<CreatureId, ViewObject> objs;
+  if (!objs.count(id))
+    objs[id] = CreatureFactory::fromId(id, nullptr)->getViewObject();
+  return objs.at(id);
+}
+
 vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) const {
   vector<Button> buttons;
   for (BuildInfo button : buildInfo) {
@@ -714,6 +733,16 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                "[" + convertToString(
                    getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}).size()) + "]",
                getImpCost() <= getCollective()->numResource(ResourceId::MANA) ? "" : "inactive"});
+           break; }
+      case BuildInfo::MINION: {
+           BuildInfo::MinionInfo& elem = button.minionInfo;
+           buttons.push_back({
+               getMinionViewObject(elem.id),
+               "Summon " + getMinionName(elem.id),
+               getCostObj(elem.cost),
+               "",
+               !getCollective()->hasResource(elem.cost) ? "inactive" : isTech ? "" 
+                  : "Requires " + Technology::get(*button.techId)->getName()});
            break; }
       case BuildInfo::DESTROY:
            buttons.push_back({
@@ -1074,6 +1103,20 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
                 && canSee(v)) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
               getCollective()->addCreature(std::move(imp), v, {MinionTrait::WORKER});
+              break;
+            }
+        }
+        break;
+    case BuildInfo::MINION:
+        if (getCollective()->hasResource(building.minionInfo.cost) && selection == NONE && !rectangle) {
+          const BuildInfo::MinionInfo& elem = building.minionInfo;
+          selection = SELECT;
+          PCreature creature = CreatureFactory::fromId(elem.id, getTribe(),
+              MonsterAIFactory::collective(getCollective()));
+          if (pos.inRectangle(getLevel()->getBounds()) && getLevel()->getSquare(pos)->canEnter(creature.get()) 
+                && canSee(pos)) {
+              getCollective()->takeResource(elem.cost);
+              getCollective()->addCreature(std::move(creature), pos, elem.traits);
               break;
             }
         }

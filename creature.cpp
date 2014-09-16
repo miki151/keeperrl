@@ -93,7 +93,8 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Creature);
 
 Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
     : CreatureAttributes(attr), Renderable(object), tribe(t), controller(f.get(this)) {
-  tribe->addMember(this);
+  if (tribe)
+    tribe->addMember(this);
   for (SkillId skill : skills)
     Skill::get(skill)->onTeach(this);
 }
@@ -102,7 +103,8 @@ Creature::Creature(Tribe* t, const CreatureAttributes& attr, ControllerFactory f
     : Creature(ViewObject(*attr.viewId, ViewLayer::CREATURE, *attr.name), t, attr, f) {}
 
 Creature::~Creature() {
-  tribe->removeMember(this);
+  if (tribe)
+    tribe->removeMember(this);
 }
 
 ViewIndex Creature::getViewIndex(Vec2 pos) const {

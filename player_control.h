@@ -120,7 +120,13 @@ class PlayerControl : public CreatureView, public CollectiveControl {
       ViewId viewId;
     } trapInfo;
 
-    enum BuildType { DIG, SQUARE, IMP, TRAP, GUARD_POST, DESTROY, FETCH, DISPATCH } buildType;
+    struct MinionInfo {
+      CreatureId id;
+      EnumSet<MinionTrait> traits;
+      Collective::CostInfo cost;
+    } minionInfo;
+
+    enum BuildType { DIG, SQUARE, IMP, MINION, TRAP, GUARD_POST, DESTROY, FETCH, DISPATCH } buildType;
 
     Optional<TechId> techId;
     string help;
@@ -133,6 +139,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
         string group = "");
     BuildInfo(DeityHabitat, Collective::CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
     BuildInfo(const Creature*, Collective::CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
+    BuildInfo(MinionInfo, Optional<TechId> techId, const string& groupName, const string& h = "");
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
@@ -196,6 +203,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool SERIAL2(retired, false);
   bool SERIAL2(payoutWarning, false);
   unordered_set<Vec2> SERIAL(surprises);
+  string getMinionName(CreatureId) const;
+  ViewObject getMinionViewObject(CreatureId) const;
 };
 
 #endif

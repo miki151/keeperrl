@@ -354,7 +354,8 @@ void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> 
 }
 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
-  c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
+  if (traits[MinionTrait::FIGHTER] || traits[MinionTrait::WORKER])
+    c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
   if (creatures.empty())
     traits.insert(MinionTrait::LEADER);
   CHECK(c->getTribe() == tribe);
