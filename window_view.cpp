@@ -873,7 +873,7 @@ void WindowView::updateView(const CreatureView* collective) {
   collective->refreshGameInfo(gameInfo);
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds()))
     objects[pos] = Nothing();
-  if ((center.x == 0 && center.y == 0) || collective->staticPosition())
+  if ((center.x < 0.01 && center.y < 0.01) || collective->staticPosition())
     center = {double(collective->getPosition().x), double(collective->getPosition().y)};
   Vec2 movePos = Vec2((center.x - mouseOffset.x) * mapLayout->squareWidth(),
       (center.y - mouseOffset.y) * mapLayout->squareHeight());

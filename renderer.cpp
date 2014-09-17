@@ -179,7 +179,7 @@ void Renderer::initialize(RenderTarget* d, int width, int height) {
 }
 
 void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSprite, double scale) {
-  Tile tile = Tile::getTile(object, useSprite);
+  const Tile& tile = Tile::getTile(object, useSprite);
   if (tile.hasSpriteCoord()) {
     CHECK(tile.getTexNum() >= 0 && tile.getTexNum() < Renderer::tiles.size());
     Vec2 sz = Renderer::tileSize[tile.getTexNum()];

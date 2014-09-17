@@ -708,9 +708,12 @@ class CreateBed : public NonTransferable {
     : callback(call), position(pos), fromType(from), toType(to) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getPosition() != position)
+    if (c->getPosition() != position) {
+      if (c->getPosition().dist8(position) == 1)
+        if (Creature* other = c->getLevel()->getSquare(position)->getCreature())
+          other->removeEffect(LastingEffect::SLEEP);
       return c->moveTowards(position);
-    else
+    } else
       return c->wait().append([=] {
         if (c->getPosition() == position) {
           c->getLevel()->replaceSquare(position, SquareFactory::get(toType));

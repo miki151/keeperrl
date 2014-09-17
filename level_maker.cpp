@@ -1840,7 +1840,7 @@ MakerQueue* castle(SettlementInfo info) {
   if (info.shopFactory)
     insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));
   inside->addMaker(new Division(Random.getDouble(0.25, 0.4), leftSide,
-        new Buildings(2, 6, 3, 6, building, false, insideMakers, false), building.wall));
+        new Buildings(1, 3, 3, 6, building, false, insideMakers, false), building.wall));
   MakerQueue* insidePlusWall = new MakerQueue();
   insidePlusWall->addMaker(new BorderGuard(inside, building.wall));
   MakerQueue* queue = new MakerQueue();
@@ -2208,7 +2208,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
         {Random.getRandom(5, 30), Random.getRandom(5, 30)}, new TypePredicate(SquareId::MOUNTAIN2));
   int maxDist = 30;
   int maxDist2 = 60;
-  addResources(locations, Random.getRandom(1, 3), 0, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE,
+  addResources(locations, Random.getRandom(1, 3), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE,
       startingPos, mineTown);
   addResources(locations, Random.getRandom(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE,
       startingPos, mineTown);

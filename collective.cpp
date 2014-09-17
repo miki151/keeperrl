@@ -92,7 +92,7 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
     {unMarkedItems(ItemClass::CORPSE), {SquareId::CEMETERY}, true, {}, Warning::GRAVES},
     {unMarkedItems(ItemClass::GOLD), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
     {[this](const Item* it) {
-        return minionEquipment.isItemUseful(it) && !isItemMarked(it);
+        return minionEquipment.isItemUseful(it) && it->getClass() != ItemClass::GOLD && !isItemMarked(it);
       }, equipmentStorage, false, {}, Warning::STORAGE},
     {[this](const Item* it) {
         return it->getName() == "wood plank" && !isItemMarked(it); },
@@ -206,7 +206,7 @@ const CollectiveConfig& Collective::getConfig() const {
         c.workerFollowLeader = true;
         c.immigrantFrequency = 0.007;
         c.payoutTime = 500;
-        c.payoutMultiplier = 4;
+        c.payoutMultiplier = 3;
         c.stripSpawns = true;
         c.keepSectors = true;
         c.immigrantInfo = LIST(
@@ -793,9 +793,9 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   for (int i : Range(10)) {
     if (!bedType)
       bedPos = chooseRandom(getSquares(dormType));
-    else if (getCreatures(spawnType).size() < getSquares(*bedType).size())
+    else if (getCreatures(spawnType).size() < getSquares(*bedType).size()) {
       bedPos = chooseRandom(getSquares(*bedType));
-    else
+    } else
       bedPos = chooseBedPos(getSquares(dormType), getSquares(*bedType));
     if (!info.spawnAtDorm || (bedPos && level->getSquare(*bedPos)->canEnter(creature.get()))) {
       good = true;

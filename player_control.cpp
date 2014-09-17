@@ -314,10 +314,10 @@ struct TaskOption {
 
 vector<TaskOption> taskOptions { 
   {MinionTask::TRAIN, PlayerControl::MinionOption::TRAINING, "Training"},
-  {MinionTask::WORKSHOP, PlayerControl::MinionOption::WORKSHOP, "Workshop"},
+  {MinionTask::WORKSHOP, PlayerControl::MinionOption::WORKSHOP, "Forge"},
   {MinionTask::LABORATORY, PlayerControl::MinionOption::LAB, "Lab"},
   {MinionTask::STUDY, PlayerControl::MinionOption::STUDY, "Study"},
-  {MinionTask::WORSHIP, PlayerControl::MinionOption::WORSHIP, "Forge"},
+  {MinionTask::WORSHIP, PlayerControl::MinionOption::WORSHIP, "Worship"},
   {MinionTask::COPULATE, PlayerControl::MinionOption::COPULATE, "Copulate"},
   {MinionTask::CONSUME, PlayerControl::MinionOption::CONSUME, "Consume"},
 };

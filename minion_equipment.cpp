@@ -64,7 +64,7 @@ Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
 }
 
 bool MinionEquipment::isItemUseful(const Item* it) const {
-  return getEquipmentType(it) || contains({ItemClass::POTION, ItemClass::SCROLL}, it->getClass());
+  return getEquipmentType(it) || contains({ItemClass::GOLD, ItemClass::POTION, ItemClass::SCROLL}, it->getClass());
 }
 
 bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, bool replacement) const {

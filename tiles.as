@@ -302,6 +302,8 @@ void genTiles() {
       .addConnection(dirs(NW), 13, 11)
       .addConnection(dirs(SE), 14, 12)
       .addConnection(dirs(SW), 13, 12));
+  addTile(SPECIAL_BEAST, sprite(7, 10));
+  addTile(SPECIAL_HUMANOID, sprite(2, 10));
 }
 
 void genSymbols() {
@@ -540,4 +542,8 @@ void genSymbols() {
   addSymbol(EYEBALL, symbol("e", BLUE));
   addSymbol(DANGER, symbol("*", RED));
   addSymbol(FETCH_ICON, symbol(0x1f44b, LIGHT_BROWN, true));
+  addSymbol(FOG_OF_WAR, symbol(' ', WHITE));
+  addSymbol(FOG_OF_WAR_CORNER, symbol(' ', WHITE));
+  addSymbol(SPECIAL_BEAST, symbol('B', PURPLE));
+  addSymbol(SPECIAL_HUMANOID, symbol('H', PURPLE));
 }

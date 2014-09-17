@@ -21,7 +21,7 @@
 
 class Tile {
   public:
-  static Tile getTile(const ViewObject& obj, bool sprite);
+  static const Tile& getTile(const ViewObject& obj, bool sprite);
   static const Tile& fromViewId(ViewId);
   static Color getColor(const ViewObject& object);
 

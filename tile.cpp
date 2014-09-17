@@ -220,10 +220,24 @@ void Tile::initialize() {
 
 void Tile::loadTiles() {
   ScriptContext::execute("tiles.as", "void genTiles()");
+  bool bad = false;
+  for (ViewId id : ENUM_ALL(ViewId))
+    if (!tiles.count(id)) {
+      Debug() << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
+      bad = true;
+    }
+  CHECK(!bad);
 }
 
 void Tile::loadUnicode() {
   ScriptContext::execute("tiles.as", "void genSymbols()");
+  bool bad = false;
+  for (ViewId id : ENUM_ALL(ViewId))
+    if (!symbols.count(id)) {
+      Debug() << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
+      bad = true;
+    }
+  CHECK(!bad);
 }
 
 const Tile& Tile::fromViewId(ViewId id) {
@@ -231,33 +245,29 @@ const Tile& Tile::fromViewId(ViewId id) {
   return tiles.at(id);
 }
 
-Tile getSpriteTile(const ViewObject& obj) {
+const Tile& getSpriteTile(const ViewObject& obj) {
   ViewId id = obj.id();
-  if (id == ViewId::SPECIAL_BEAST)
+/*  if (id == ViewId::SPECIAL_BEAST)
     return getSpecialCreatureSprite(obj, false);
   if (id == ViewId::SPECIAL_HUMANOID)
-    return getSpecialCreatureSprite(obj, true);
-  if (tiles.count(id))
-    return tiles.at(id);
-  else
+    return getSpecialCreatureSprite(obj, true);*/
+  if (!tiles.count(id))
     FAIL << "unhandled view id " << EnumInfo<ViewId>::getString(id);
-  return Tile::unicode(' ', ColorId(0));
+  return tiles.at(id);
 }
 
-Tile getAsciiTile(const ViewObject& obj) {
+const Tile& getAsciiTile(const ViewObject& obj) {
   ViewId id = obj.id();
-  if (id == ViewId::SPECIAL_BEAST)
+/*  if (id == ViewId::SPECIAL_BEAST)
     return getSpecialCreature(obj, false);
   if (id == ViewId::SPECIAL_HUMANOID)
-    return getSpecialCreature(obj, true);
-  if (symbols.count(id))
-    return symbols.at(id);
-  else
+    return getSpecialCreature(obj, true);*/
+  if (!symbols.count(id))
     FAIL << "unhandled view id " << EnumInfo<ViewId>::getString(id);
-  return Tile::unicode(' ', ColorId(0));
+  return symbols.at(id);
 }
 
-Tile Tile::getTile(const ViewObject& obj, bool sprite) {
+const Tile& Tile::getTile(const ViewObject& obj, bool sprite) {
   if (sprite)
     return getSpriteTile(obj);
   else
