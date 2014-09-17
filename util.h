@@ -56,6 +56,7 @@ T lambdaConstruct(function<void(T&)> fun) {
 }
 
 #define CONSTRUCT(Class, Code) lambdaConstruct<Class>([&] (Class& c) { Code })
+#define LIST(...) {__VA_ARGS__}
 
 class Item;
 typedef function<bool(const Item*)> ItemPredicate;

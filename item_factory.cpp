@@ -596,6 +596,12 @@ ItemFactory ItemFactory::dragonCave() {
       {ItemId::SPECIAL_WAR_HAMMER, 1 }});
 }
 
+ItemFactory ItemFactory::minerals() {
+  return ItemFactory({
+      {ItemId::IRON_ORE, 1 },
+      {ItemId::ROCK, 1 }});
+}
+
 ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
   ItemFactory factory({{ItemId::FIRST_AID_KIT, 2}});
   if (contains(techs, Technology::get(TechId::TRAPS))) {

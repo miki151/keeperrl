@@ -197,8 +197,6 @@ Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t) : configId(cf
     }
 }
 
-#define LIST(...) {__VA_ARGS__}
-
 const CollectiveConfig& Collective::getConfig() const {
 
   static EnumMap<CollectiveConfigId, CollectiveConfig> collectiveConfigs {

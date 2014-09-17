@@ -624,6 +624,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.location = getVillageLocation();
           c.tribe = Tribe::get(TribeId::HUMAN);
           c.buildingId = BuildingId::WOOD_CASTLE;
+          c.stockpiles = LIST({StockpileInfo::GOLD, 400});
           c.guardId = CreatureId::WARRIOR;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);),
         {VillageControlInfo::POWER_BASED, getKilledCoeff(), getPowerCoeff()}},
@@ -643,6 +644,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.numCreatures = Random.getRandom(11, 18);
           c.location = getVillageLocation();
           c.tribe = Tribe::get(TribeId::ELVEN);
+          c.stockpiles = LIST({StockpileInfo::GOLD, 400});
           c.buildingId = BuildingId::WOOD;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);),
         {VillageControlInfo::PEACEFUL}},
@@ -653,6 +655,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.location = getVillageLocation(true);
           c.tribe = Tribe::get(TribeId::DWARVEN);
           c.buildingId = BuildingId::DUNGEON;
+          c.stockpiles = LIST({StockpileInfo::GOLD, 400}, {StockpileInfo::MINERALS, 600});
           c.shopFactory = ItemFactory::dwarfShop();),
         {VillageControlInfo::POWER_BASED_DISCOVER, getKilledCoeff(), getPowerCoeff()}},
       {CONSTRUCT(SettlementInfo,
@@ -661,6 +664,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.numCreatures = Random.getRandom(20, 26);
           c.location = getVillageLocation();
           c.tribe = Tribe::get(TribeId::HUMAN);
+          c.stockpiles = LIST({StockpileInfo::GOLD, 400});
           c.buildingId = BuildingId::BRICK;
           c.guardId = CreatureId::CASTLE_GUARD;
           c.shopFactory = ItemFactory::villageShop();),

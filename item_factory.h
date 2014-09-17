@@ -46,6 +46,7 @@ class ItemFactory {
   static ItemFactory dragonCave();
   static ItemFactory workshop(const vector<Technology*>& techs);
   static ItemFactory laboratory(const vector<Technology*>& techs);
+  static ItemFactory minerals();
   static ItemFactory singleType(ItemType);
 
   static PItem fromId(ItemType);

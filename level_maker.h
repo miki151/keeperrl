@@ -38,6 +38,11 @@ enum class SettlementType {
   CAVE,
 };
 
+struct StockpileInfo {
+  enum Type { GOLD, MINERALS } type;
+  int number;
+};
+
 struct SettlementInfo {
   SettlementType type;
   CreatureFactory creatures;
@@ -48,6 +53,7 @@ struct SettlementInfo {
   BuildingId buildingId;
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
+  vector<StockpileInfo> stockpiles;
   Optional<CreatureId> guardId;
   Optional<ItemType> elderLoot;
   Optional<ItemFactory> shopFactory;

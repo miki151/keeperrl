@@ -165,7 +165,7 @@ class RoomMaker : public LevelMaker {
             SquareType _wallType,
             Optional<SquareType> _onType,
             LevelMaker* _roomContents = new Empty(SquareId::FLOOR),
-            LevelMaker* _shopMaker = nullptr,
+            vector<LevelMaker*> _insideMakers = {},
             bool _diggableCorners = false) : 
       numRooms(_numRooms),
       minSize(_minSize),
@@ -173,7 +173,7 @@ class RoomMaker : public LevelMaker {
       wallType(_wallType),
       squareType(_onType),
       roomContents(_roomContents),
-      shopMaker(_shopMaker),
+      insideMakers(_insideMakers),
       diggableCorners(_diggableCorners) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
@@ -223,8 +223,8 @@ class RoomMaker : public LevelMaker {
       }
       Rectangle inside(p.x + 1, p.y + 1, p.x + k.x - 1, p.y + k.y - 1);
       roomContents->make(builder, inside);
-      if (i == 0 && shopMaker)
-        shopMaker->make(builder, inside);
+      if (i < insideMakers.size())
+        insideMakers[i]->make(builder, inside);
       else
         for (Vec2 v : inside)
           builder->addAttrib(v, SquareAttrib::EMPTY_ROOM);
@@ -238,7 +238,7 @@ class RoomMaker : public LevelMaker {
   SquareType wallType;
   Optional<SquareType> squareType;
   LevelMaker* roomContents;
-  LevelMaker* shopMaker;
+  vector<LevelMaker*> insideMakers;
   bool diggableCorners;
 };
 
@@ -1547,18 +1547,30 @@ class Circle : public LevelMaker {
 
 class AreaCorners : public LevelMaker {
   public:
-  AreaCorners(LevelMaker* _maker, Vec2 _size) : maker(_maker), size(_size) {}
+  AreaCorners(LevelMaker* _maker, Vec2 _size, vector<LevelMaker*> _insideMakers)
+      : maker(_maker), size(_size), insideMakers(_insideMakers) {}
+
+  vector<Rectangle> getCorners(Rectangle area) {
+    return {
+      Rectangle(area.getTopLeft(), area.getTopLeft() + size),
+      Rectangle(area.getTopRight() - Vec2(size.x, 0), area.getTopRight() + Vec2(0, size.y)),
+      Rectangle(area.getBottomLeft() - Vec2(0, size.y), area.getBottomLeft() + Vec2(size.x, 0)),
+      Rectangle(area.getBottomRight() - size, area.getBottomRight())};
+  }
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
-    maker->make(builder, Rectangle(area.getTopLeft(), area.getTopLeft() + size));
-    maker->make(builder, Rectangle(area.getTopRight() - Vec2(size.x, 0), area.getTopRight() + Vec2(0, size.y)));
-    maker->make(builder, Rectangle(area.getBottomLeft() - Vec2(0, size.y), area.getBottomLeft() + Vec2(size.x, 0)));
-    maker->make(builder, Rectangle(area.getBottomRight() - size, area.getBottomRight()));
+    vector<Rectangle> corners = randomPermutation(getCorners(area));
+    for (int i : All(corners)) {
+      maker->make(builder, corners[i]);
+      if (i < insideMakers.size())
+        insideMakers[i]->make(builder, corners[i]);
+    }
   }
 
   private:
   LevelMaker* maker;
   Vec2 size;
+  vector<LevelMaker*> insideMakers;
 };
 
 class CastleExit : public LevelMaker {
@@ -1645,6 +1657,24 @@ static LevelMaker* underground(bool monsters, CreatureFactory waterFactory, Crea
   return queue;
 }
 
+static MakerQueue* stockpileMaker(StockpileInfo info) {
+  SquareId square;
+  switch (info.type) {
+    case StockpileInfo::GOLD: square = SquareId::TREASURE_CHEST; break;
+    case StockpileInfo::MINERALS: square = SquareId::STOCKPILE_RES; break;
+  }
+  ItemFactory items;
+  switch (info.type) {
+    case StockpileInfo::GOLD: items = ItemFactory::singleType(ItemId::GOLD_PIECE); break;
+    case StockpileInfo::MINERALS: items = ItemFactory::minerals(); break;
+  }
+  MakerQueue* queue = new MakerQueue();
+  queue->addMaker(new Empty(square));
+  queue->addMaker(new Items(items, square, info.number, info.number + 1));
+  return queue;
+}
+
+
 CreatureFactory getChestFactory() {
   return CreatureFactory::singleType(Tribe::get(TribeId::PEST), CreatureId::RAT);
 }
@@ -1663,13 +1693,13 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory roomFactory, CreatureFactory w
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::BLACK_WALL));
   queue->addMaker(underground(true, waterFactory, lavaFactory));
-  LevelMaker* shopMaker = nullptr;
+  vector<LevelMaker*> shopMaker;
   if (Random.roll(3)) {
-      shopMaker = new ShopMaker(chooseRandom({
+      shopMaker.push_back(new ShopMaker(chooseRandom({
             ItemFactory::villageShop(),
             ItemFactory::dwarfShop(),
             ItemFactory::goblinShop()}),
-          Tribe::get(TribeId::HUMAN), Random.getRandom(8, 16), brickBuilding);
+          Tribe::get(TribeId::HUMAN), Random.getRandom(8, 16), brickBuilding));
   }
   queue->addMaker(new RoomMaker(Random.getRandom(8, 15), 4, 7, SquareId::ROCK_WALL,
         SquareType(SquareId::BLACK_WALL), new Empty(SquareId::FLOOR), shopMaker));
@@ -1735,10 +1765,12 @@ MakerQueue* village2(SettlementInfo info) {
       { SquareId::BED, 4, 7 }};
   queue->addMaker(new LocationMaker(info.location));
   vector<LevelMaker*> insideMakers {getElderRoom(info)};
+  for (auto& elem : info.stockpiles)
+    insideMakers.push_back(stockpileMaker(elem));
   if (info.shopFactory)
     insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));
   queue->addMaker(new Buildings(6, 10, 3, 4, building, false, insideMakers));
-  queue->addMaker(new DungeonFeatures(new AttribPredicate(SquareAttrib::ROOM), featureCount));
+  queue->addMaker(new DungeonFeatures(new AttribPredicate(SquareAttrib::EMPTY_ROOM), featureCount));
   queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective, building.floorOutside));
   if (info.neutralCreatures)
     queue->addMaker(
@@ -1750,18 +1782,20 @@ MakerQueue* village(SettlementInfo info) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
-      { {SquareId::CHEST, getChestFactory()}, 1, 4 },
-      { SquareId::TORCH, 2, 5 },
-      { SquareId::BED, 6, 7 }};
+      { {SquareId::CHEST, getChestFactory()}, 1, 3 },
+      { SquareId::TORCH, 2, 4 },
+      { SquareId::BED, 3, 5 }};
   queue->addMaker(new LocationMaker(info.location));
   queue->addMaker(new UniformBlob(building.floorOutside, Nothing(), Nothing(), 0.6));
   vector<LevelMaker*> insideMakers {
-      hatchery(CreatureFactory::singleType(info.tribe, CreatureId::PIG), Random.getRandom(2, 5)),
+ //     hatchery(CreatureFactory::singleType(info.tribe, CreatureId::PIG), Random.getRandom(2, 5)),
       getElderRoom(info)};
   if (info.shopFactory)
     insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));
+  for (auto& elem : info.stockpiles)
+    insideMakers.push_back(stockpileMaker(elem));
   queue->addMaker(new Buildings(4, 8, 3, 7, building, true, insideMakers));
-  queue->addMaker(new DungeonFeatures(new AttribPredicate(SquareAttrib::ROOM), featureCount));
+  queue->addMaker(new DungeonFeatures(new AttribPredicate(SquareAttrib::EMPTY_ROOM), featureCount));
   queue->addMaker(new DungeonFeatures(new TypePredicate(building.floorOutside),
         {{SquareId::TORCH, 1, 3 }}));
   queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective, building.floorOutside));
@@ -1806,14 +1840,18 @@ MakerQueue* castle(SettlementInfo info) {
   if (info.shopFactory)
     insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));
   inside->addMaker(new Division(Random.getDouble(0.25, 0.4), leftSide,
-        new Buildings(1, 6, 3, 6, building, false, insideMakers, false), building.wall));
+        new Buildings(2, 6, 3, 6, building, false, insideMakers, false), building.wall));
   MakerQueue* insidePlusWall = new MakerQueue();
   insidePlusWall->addMaker(new BorderGuard(inside, building.wall));
   MakerQueue* queue = new MakerQueue();
   int insideMargin = 2;
   queue->addMaker(new Margin(insideMargin, new LocationMaker(info.location)));
   queue->addMaker(new Margin(insideMargin, insidePlusWall));
-  queue->addMaker(new AreaCorners(new BorderGuard(new Empty(building.floorInside), building.wall), Vec2(5, 5)));
+  vector<LevelMaker*> cornerMakers;
+  for (auto& elem : info.stockpiles)
+    cornerMakers.push_back(new Margin(1, stockpileMaker(elem)));
+  queue->addMaker(new AreaCorners(new BorderGuard(new Empty(building.floorInside), building.wall),
+        Vec2(5, 5), cornerMakers));
   queue->addMaker(new Margin(insideMargin, new Connector({0, 1, 0}, 18)));
   queue->addMaker(new Margin(insideMargin, new CastleExit(info.tribe, building, *info.guardId)));
   queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective, building.floorOutside));
@@ -1831,7 +1869,10 @@ MakerQueue* castle2(SettlementInfo info) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* inside = new MakerQueue();
   inside->addMaker(new Empty(building.floorOutside));
-  inside->addMaker(new Buildings(1, 2, 4, 6, building, false, {getElderRoom(info)}, false));
+  vector<LevelMaker*> insideMakers {new MakerQueue({
+      getElderRoom(info),
+      stockpileMaker(getOnlyElement(info.stockpiles))})};
+  inside->addMaker(new Buildings(1, 2, 3, 4, building, false, insideMakers, false));
   MakerQueue* insidePlusWall = new MakerQueue();
   insidePlusWall->addMaker(new BorderGuard(inside, building.wall));
   MakerQueue* queue = new MakerQueue();
@@ -1940,11 +1981,13 @@ static MakerQueue* mineTownMaker(SettlementInfo info) {
     vCavern.push_back(cavern);
   }
   queue->addMaker(new RandomLocations(vCavern, sizes, new AlwaysTrue(), false));
-  LevelMaker* shopMaker = nullptr;
+  vector<LevelMaker*> roomInsides;
   if (info.shopFactory)
-    shopMaker= new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building);
-  queue->addMaker(new RoomMaker(numRooms, 4, 7, SquareId::ROCK_WALL, Nothing(),
-      new Empty(SquareId::FLOOR, SquareAttrib::CONNECT_CORRIDOR), shopMaker));
+    roomInsides.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));
+  for (auto& elem : info.stockpiles)
+    roomInsides.push_back(stockpileMaker(elem));
+  queue->addMaker(new RoomMaker(numRooms, 6, 8, SquareId::ROCK_WALL, Nothing(),
+      new Empty(SquareId::FLOOR, SquareAttrib::CONNECT_CORRIDOR), roomInsides));
   queue->addMaker(new Connector({1, 0, 0}));
   SquarePredicate* featurePred = new AndPredicates(new AttribPredicate(SquareAttrib::EMPTY_ROOM),
       new TypePredicate(SquareId::FLOOR));
