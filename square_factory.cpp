@@ -430,10 +430,6 @@ class TribeDoor : public Door {
       || c->isInvincible(); // hack to make boulders destroy doors
   }
 
-  virtual bool canEnterSpecial(const Creature* c) const override {
-    return !locked && c->getTribe() == tribe;
-  }
-
   virtual bool canLock() const {
     return true;
   }
@@ -935,9 +931,19 @@ PSquare SquareFactory::get(SquareType s) {
 
 Square* SquareFactory::getPtr(SquareType s) {
   switch (s.getId()) {
-    case SquareId::PATH:
     case SquareId::FLOOR:
-        return new Square(ViewObject(ViewId::PATH, ViewLayer::FLOOR_BACKGROUND, "Floor"),
+        return new Square(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR_BACKGROUND, "Floor"),
+            CONSTRUCT(Square::Params,
+              c.name = "floor";
+              c.vision = Vision::get(VisionId::NORMAL);
+              c.movementType = {MovementTrait::WALK};
+              c.constructions[SquareId::IMPALED_HEAD] = 5;
+              c.constructions[SquareId::BARRICADE] = 20;
+              c.constructions[SquareId::TORCH] = 5;
+              c.constructions[SquareId::KEEPER_FLOOR] = 5;
+              c.constructions[SquareId::EYEBALL] = 5;));
+    case SquareId::KEEPER_FLOOR:
+        return new Square(ViewObject(ViewId::KEEPER_FLOOR, ViewLayer::FLOOR_BACKGROUND, "Floor"),
             CONSTRUCT(Square::Params,
               c.name = "floor";
               c.vision = Vision::get(VisionId::NORMAL);
@@ -1001,21 +1007,21 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
             CONSTRUCT(Square::Params,
               c.name = "wall";
-              c.constructions[SquareId::FLOOR] = Random.getRandom(3, 8);));
+              c.constructions[SquareId::KEEPER_FLOOR] = Random.getRandom(3, 8);));
     case SquareId::GOLD_ORE:
         return new ConstructionDropItems(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR, "Gold ore")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), "gold ore",
-            {{SquareId::FLOOR, Random.getRandom(30, 80)}},
+            {{SquareId::KEEPER_FLOOR, Random.getRandom(30, 80)}},
             ItemFactory::fromId(ItemId::GOLD_PIECE, Random.getRandom(15, 30)));
     case SquareId::IRON_ORE:
         return new ConstructionDropItems(ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR, "Iron ore")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), "iron ore",
-            {{SquareId::FLOOR, Random.getRandom(15, 40)}},
+            {{SquareId::KEEPER_FLOOR, Random.getRandom(15, 40)}},
             ItemFactory::fromId(ItemId::IRON_ORE, Random.getRandom(12, 27)));
     case SquareId::STONE:
         return new ConstructionDropItems(ViewObject(ViewId::STONE, ViewLayer::FLOOR, "Stone")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), "stone",
-            {{SquareId::FLOOR, Random.getRandom(30, 80)}},
+            {{SquareId::KEEPER_FLOOR, Random.getRandom(30, 80)}},
             ItemFactory::fromId(ItemId::ROCK, Random.getRandom(5, 20)));
     case SquareId::LOW_ROCK_WALL:
         return new Square(ViewObject(ViewId::LOW_ROCK_WALL, ViewLayer::FLOOR, "Wall")
@@ -1050,7 +1056,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = "mountain";
-            c.constructions[SquareId::FLOOR] = Random.getRandom(3, 8);));
+            c.constructions[SquareId::KEEPER_FLOOR] = Random.getRandom(3, 8);));
     case SquareId::GLACIER:
         return new Square(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"),
           CONSTRUCT(Square::Params,

@@ -113,8 +113,10 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
         buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", c->getSpeciesName(), 0));
   append(buildInfo, {
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'p', "Orders"),
+    BuildInfo({SquareId::KEEPER_FLOOR, {ResourceId::GOLD, 0}, "Claim tile", true}, Nothing(),
+      "Claim tile to be able to build on it.", 0, "Orders"),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
-    BuildInfo(BuildInfo::DISPATCH, "Order imps to perform the tasks at location now.", 'a', "Orders"),
+    BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to have imps perform it faster.", 'a', "Orders"),
     BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
     BuildInfo({{SquareId::TRIBE_DOOR, tribe}, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
         "Click on a built door to lock it.", 'o', "Installations"),
@@ -980,7 +982,7 @@ bool PlayerControl::canBuildDoor(Vec2 pos) const {
     return false;
   Rectangle innerRect = getLevel()->getBounds().minusMargin(1);
   auto wallFun = [=](Vec2 pos) {
-      return getLevel()->getSquare(pos)->canConstruct(SquareId::FLOOR) ||
+      return getLevel()->getSquare(pos)->canConstruct(SquareId::KEEPER_FLOOR) ||
           !pos.inRectangle(innerRect); };
   return !getCollective()->getTraps().count(pos) && pos.inRectangle(innerRect) && 
       ((wallFun(pos - Vec2(0, 1)) && wallFun(pos - Vec2(0, -1))) ||
@@ -1165,7 +1167,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
                 getCollective()->cutTree(pos);
                 selection = SELECT;
               } else
-                if (getLevel()->getSquare(pos)->canConstruct(SquareId::FLOOR)
+                if (getLevel()->getSquare(pos)->canConstruct(SquareId::KEEPER_FLOOR)
                     || !getCollective()->isKnownSquare(pos)) {
                   getCollective()->dig(pos);
                   selection = SELECT;

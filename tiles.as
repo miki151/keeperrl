@@ -93,8 +93,8 @@ void genTiles() {
   addTile(SHOPKEEPER, sprite(4, 2));
   addTile(BRIDGE, sprite("bridge").addOption(S, "bridge2"));
   addTile(ROAD, getRoadTile(7));
-  addTile(PATH, sprite(3, 14, 1));
   addTile(FLOOR, sprite(3, 14, 1));
+  addTile(KEEPER_FLOOR, sprite(4, 18, 1));
   addTile(SAND, sprite(7, 12, 2));
   addTile(MUD, sprite(3, 12, 2));
   addTile(GRASS, sprite(0, 13, 2));
@@ -325,10 +325,10 @@ void genSymbols() {
   addSymbol(CHICKEN, symbol("c", YELLOW));
   addSymbol(DWARF, symbol("h", BLUE));
   addSymbol(DWARF_BARON, symbol("h", DARK_BLUE));
-  addSymbol(FLOOR, symbol(".", WHITE));
+  addSymbol(FLOOR, symbol(".", LIGHT_GRAY));
+  addSymbol(KEEPER_FLOOR, symbol(".", WHITE));
   addSymbol(BRIDGE, symbol("_", BROWN));
   addSymbol(ROAD, symbol(".", LIGHT_GRAY));
-  addSymbol(PATH, symbol(".", LIGHT_GRAY));
   addSymbol(SAND, symbol(".", YELLOW));
   addSymbol(MUD, symbol(0x1d0f0, BROWN, true));
   addSymbol(GRASS, symbol(0x1d0f0, GREEN, true));
