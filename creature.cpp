@@ -2009,6 +2009,9 @@ bool Creature::isHatcheryAnimal() const {
   return hatcheryAnimal;
 }
 
+bool Creature::dontChase() const {
+  return CreatureAttributes::dontChase;
+}
 Optional<SpawnType> Creature::getSpawnType() const {
   return spawnType;
 }

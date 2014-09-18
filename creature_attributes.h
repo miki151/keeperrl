@@ -129,6 +129,7 @@ class CreatureAttributes {
   bool SERIAL2(carryAnything, false);
   bool SERIAL2(invincible, false);
   bool SERIAL2(worshipped, false);
+  bool SERIAL2(dontChase, false);
   double SERIAL2(damageMultiplier, 1);
   double SERIAL2(attributeGain, 0.5);
   EnumSet<SkillId> SERIAL(skills);

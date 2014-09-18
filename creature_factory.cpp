@@ -1532,7 +1532,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks[MinionTask::WORKSHOP] = 4;
           c.minionTasks[MinionTask::TRAIN] = 1; 
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
-          c.minionTasks[MinionTask::LABORATORY] = 2; 
+          c.minionTasks[MinionTask::LABORATORY] = 0.5; 
           c.minionTasks[MinionTask::SLEEP] = 1;
           c.skills.insert(SkillId::DISARM_TRAPS);
           c.name = "gnome";);
@@ -1548,6 +1548,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 30;
           c.courage = 0.1;
           c.carryAnything = true;
+          c.dontChase = true;
           c.skills.insert(SkillId::CONSTRUCTION);
           c.chatReactionFriendly = "talks about digging";
           c.chatReactionHostile = "\"Die!\"";
@@ -1715,6 +1716,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 500;
           c.animal = true;
+          c.dontChase = true;
           c.name = "horse";);
     case CreatureId::COW: 
       return CATTR(
@@ -1727,6 +1729,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 400;
           c.animal = true;
+          c.dontChase = true;
           c.name = "cow";);
     case CreatureId::SHEEP: 
       return CATTR(
@@ -1739,6 +1742,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 40;
           c.animal = true;
+          c.dontChase = true;
           c.name = "sheep";);
     case CreatureId::PIG: 
       return CATTR(
@@ -1751,6 +1755,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 150;
           c.animal = true;
+          c.dontChase = true;
           c.name = "pig";);
     case CreatureId::GOAT:
       return INHERIT(PIG,
@@ -1780,6 +1785,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 400;
           c.animal = true;
+          c.dontChase = true;
           c.name = "deer";);
     case CreatureId::BOAR: 
       return CATTR(
@@ -1792,6 +1798,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 200;
           c.animal = true;
+          c.dontChase = true;
           c.name = "boar";);
     case CreatureId::FOX: 
       return CATTR(
@@ -1805,6 +1812,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.weight = 10;
           c.animal = true;
+          c.dontChase = true;
           c.name = "fox";);
     case CreatureId::CAVE_BEAR: 
       return CATTR(
@@ -1830,6 +1838,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.weight = 1;
           c.animal = true;
+          c.dontChase = true;
           c.skills.insert(SkillId::SWIMMING);
           c.name = "rat";);
     case CreatureId::SCORPION: 
@@ -1865,6 +1874,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::LEG] = 6;
           c.bodyParts[BodyPart::WING] = 2;
           c.courage = 100;
+          c.dontChase = true;
           c.animal = true;
           c.name = "fly";);
     case CreatureId::SNAKE: 
@@ -1894,6 +1904,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::LEG] = 2;
           c.bodyParts[BodyPart::WING] = 2;
           c.animal = true;
+          c.dontChase = true;
           c.spawnType = SpawnType::BEAST;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.skills.insert(SkillId::ELF_VISION);
@@ -1905,6 +1916,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::VULTURE;
           c.speed = 80;
           c.weight = 5;
+          c.dontChase = true;
           c.name = "vulture";);
     case CreatureId::WOLF: 
       return CATTR(

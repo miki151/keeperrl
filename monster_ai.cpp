@@ -551,7 +551,7 @@ class Fighter : public Behaviour {
         if (MoveInfo move = getThrowMove(enemyDir))
           return move;
       }
-      if (chase && other->getTribe() != Tribe::get(TribeId::WILDLIFE)) {
+      if (chase && !other->dontChase()) {
         lastSeen = Nothing();
         if (auto action = creature->moveTowards(creature->getPosition() + enemyDir))
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=] {

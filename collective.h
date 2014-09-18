@@ -52,7 +52,8 @@ RICH_ENUM(CollectiveWarning,
     TORTURE_ROOM,
     ALTAR,
     MORE_CHESTS,
-    MANA
+    MANA,
+    MORE_LIGHTS
 );
 
 RICH_ENUM(CollectiveResourceId,
@@ -283,6 +284,8 @@ class Collective : public Task::Callback {
 
   double getAttractionValue(MinionAttraction);
   double getImmigrantChance(const ImmigrantInfo&);
+
+  bool isItemNeeded(const Item*) const;
 
   SERIAL_CHECKER;
   REGISTER_HANDLER(CombatEvent, const Creature*);

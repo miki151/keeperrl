@@ -231,6 +231,7 @@ const CollectiveConfig& Collective::getConfig() const {
             c.frequency = 0.3;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
+              {{AttractionId::SQUARE, SquareId::LABORATORY}, 1.0, 9.0},
             );
             c.traits = {MinionTrait::FIGHTER};
             c.salary = 20;),
@@ -723,7 +724,7 @@ vector<Vec2> Collective::getEnemyPositions() const {
   for (Vec2 pos : getExtendedTiles(10))
     if (const Creature* c = getLevel()->getSquare(pos)->getCreature())
       if (c->getTribe() != getTribe())
-        enemyPos.push_back(c->getPosition());
+        enemyPos.push_back(pos);
   return enemyPos;
 }
 
@@ -773,7 +774,7 @@ struct Collective::DormInfo {
 
 const EnumMap<SpawnType, Collective::DormInfo>& Collective::getDormInfo() {
   static EnumMap<SpawnType, DormInfo> dormInfo {
-    {SpawnType::HUMANOID, {SquareId::DORM,Warning::BEDS}},
+    {SpawnType::HUMANOID, {SquareId::DORM, Warning::BEDS}},
     {SpawnType::UNDEAD, {SquareId::CEMETERY}},
     {SpawnType::BEAST, {SquareId::BEAST_LAIR}},
     {SpawnType::DEMON, {SquareId::RITUAL_ROOM}},
@@ -835,13 +836,14 @@ double Collective::getImmigrantChance(const ImmigrantInfo& info) {
   double result = 0;
   if (info.cost && !hasResource(*info.cost))
     return 0;
-  for (auto& attraction : info.attractions) {
-    result += max(0.0, getAttractionValue(attraction.attraction) 
-      - getAttractionOccupation(attraction.attraction)
-      - attraction.minAmount);
-  }
   if (info.attractions.empty())
     result = 1;
+  for (auto& attraction : info.attractions) {
+    double value = getAttractionValue(attraction.attraction);
+    if (value < 0.001)
+      return 0;
+    result += max(0.0, value - getAttractionOccupation(attraction.attraction) - attraction.minAmount);
+  }
   return result * info.frequency;
 }
 
@@ -961,6 +963,13 @@ void Collective::considerBirths() {
   }
 }
 
+static vector<SquareType> roomsNeedingLight {
+  SquareId::WORKSHOP,
+  SquareId::TRAINING_ROOM,
+  SquareId::LIBRARY,
+  SquareId::LABORATORY,
+};
+
 void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
@@ -975,6 +984,7 @@ void Collective::tick(double time) {
   setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
   setWarning(Warning::WOOD, numResource(ResourceId::WOOD) == 0);
   setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
+  setWarning(Warning::MORE_LIGHTS, getSquares(SquareId::TORCH).size() * 25 < getAllSquares(roomsNeedingLight).size());
   for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
     DormInfo info = getDormInfo()[spawnType];
     if (info.warning && info.getBedType())
@@ -1705,7 +1715,7 @@ void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed) {
 }
 
 void Collective::onSurrenderEvent(Creature* who, const Creature* to) {
-  if (contains(getCreatures(), to) && !contains(getCreatures(), who) && !prisonerInfo.count(who) && !who->isAnimal())
+  if (contains(getCreatures(), to) && !contains(getCreatures(), who) && !prisonerInfo.count(who) && who->isHumanoid())
     prisonerInfo[who] = {PrisonerState::SURRENDER, 0};
 }
 
@@ -1795,6 +1805,15 @@ void Collective::addMana(double value) {
   }
 }
 
+bool Collective::isItemNeeded(const Item* item) const {
+  if (isWarning(Warning::NO_WEAPONS) && item->getClass() == ItemClass::WEAPON)
+    return true;
+  set<TrapType> neededTraps = getNeededTraps();
+  if (!neededTraps.empty() && item->getTrapType() && neededTraps.count(*item->getTrapType()))
+    return true;
+  return false;
+}
+
 void Collective::onAppliedSquare(Vec2 pos) {
   Creature* c = NOTNULL(getLevel()->getSquare(pos)->getCreature());
   MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
@@ -1816,11 +1835,10 @@ void Collective::onAppliedSquare(Vec2 pos) {
     }
   if (getSquares(SquareId::WORKSHOP).count(pos))
     if (Random.rollD(40.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
-      set<TrapType> neededTraps = getNeededTraps();
       vector<PItem> items;
-      for (int i : Range(10)) {
+      for (int i : Range(20)) {
         items = ItemFactory::workshop(technologies).random();
-        if (neededTraps.empty() || (items[0]->getTrapType() && neededTraps.count(*items[0]->getTrapType())))
+        if (isItemNeeded(items[0].get()))
           break;
       }
       if (items[0]->getClass() == ItemClass::WEAPON)

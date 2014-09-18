@@ -145,10 +145,10 @@ class AttackTriggerSet : public AttackTrigger {
 class PowerTrigger : public AttackTriggerSet {
   public:
   // How long to wait between being attacked and attacking
-  const int attackDelay = 100;
+  const int attackDelay = 200;
 
   // How long to wait between consecutive attacks from the same village
-  const int myAttacksDelay = 300;
+  const int myAttacksDelay = 900;
 
   PowerTrigger(VillageControl* c, double _killedCoeff, double _powerCoeff)
       : AttackTriggerSet(c), killedCoeff(_killedCoeff), powerCoeff(_powerCoeff) {
@@ -165,7 +165,7 @@ class PowerTrigger : public AttackTriggerSet {
 
   double getCurrentTrigger(double time) {
     double enemyPoints = killedCoeff * killedPoints + powerCoeff * (control->getVillain()->getWarLevel()
-      + max(0.0, (time - 1000) / 2));
+      + max(0.0, (time - 2000) / 2));
     Debug() << "Village " << control->getName() << " enemy points " << enemyPoints;
     double currentTrigger = 0;
     for (double trigger : triggerAmounts)

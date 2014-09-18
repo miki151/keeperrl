@@ -598,7 +598,7 @@ static double getKilledCoeff() {
 
 static double getPowerCoeff() {
   if (Options::getValue(OptionId::AGGRESSIVE_HEROES))
-    return Random.getDouble(0.1, 0.4);
+    return Random.getDouble(0.1, 0.3);
   else
     return 0.0;
 }

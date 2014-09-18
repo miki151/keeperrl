@@ -195,6 +195,7 @@ string PlayerControl::getWarningText(Collective::Warning w) {
     case Warning::ALTAR: return "You need to build a shrine to sacrifice.";
     case Warning::MORE_CHESTS: return "You need a larger treasure room.";
     case Warning::MANA: return "Kill or torture some innocent beings for more mana.";
+    case Warning::MORE_LIGHTS: return "Place more torches to light up your dungeon.";
   }
   return "";
 }
@@ -1324,7 +1325,8 @@ void PlayerControl::tick(double time) {
   updateVisibleCreatures();
   if (getCollective()->hasMinionDebt() && !retired && !payoutWarning) {
     model->getView()->presentText("Warning", "You don't have enough gold for salaries. "
-        "Your minions will refuse to work if they are not paid.");
+        "Your minions will refuse to work if they are not paid.\n \n"
+        "You can get more gold by mining or retrieve it from killed heroes and conquered villages.");
     payoutWarning = true;
   }
   for (const Creature* c1 : getVisibleFriends()) {
