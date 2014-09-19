@@ -1755,7 +1755,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 150;
           c.animal = true;
-          c.dontChase = true;
           c.name = "pig";);
     case CreatureId::GOAT:
       return INHERIT(PIG,
@@ -2170,6 +2169,9 @@ class ItemList {
 
 vector<ItemType> getInventory(CreatureId id) {
   switch (id) {
+    case CreatureId::GREEN_DRAGON:
+    case CreatureId::RED_DRAGON:
+      return ItemList().add(ItemId::GOLD_PIECE, Random.getRandom(200, 400));
     case CreatureId::ANGEL:
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 

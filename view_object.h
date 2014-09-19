@@ -62,6 +62,7 @@ class ViewObject {
 
   ViewLayer layer() const;
   ViewId id() const;
+  void setId(ViewId);
 
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();

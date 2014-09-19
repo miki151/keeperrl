@@ -983,7 +983,7 @@ void Collective::tick(double time) {
   cashPayouts();
   setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
   setWarning(Warning::WOOD, numResource(ResourceId::WOOD) == 0);
-  setWarning(Warning::DIGGING, getSquares(SquareId::KEEPER_FLOOR).empty());
+  setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
   setWarning(Warning::MORE_LIGHTS, getSquares(SquareId::TORCH).size() * 25 < getAllSquares(roomsNeedingLight).size());
   for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
     DormInfo info = getDormInfo()[spawnType];
@@ -1232,6 +1232,10 @@ vector<SquareType> Collective::getSquareTypes() const {
 
 const set<Vec2>& Collective::getAllSquares() const {
   return allSquares;
+}
+
+void Collective::claimSquare(Vec2 pos) {
+  allSquares.insert(pos);
 }
 
 void Collective::changeSquareType(Vec2 pos, SquareType from, SquareType to) {
@@ -1550,7 +1554,7 @@ const map<Vec2, Collective::ConstructionInfo>& Collective::getConstructions() co
 }
 
 void Collective::dig(Vec2 pos) {
-  taskMap.markSquare(pos, Task::construction(this, pos, SquareId::KEEPER_FLOOR));
+  taskMap.markSquare(pos, Task::construction(this, pos, SquareId::FLOOR));
 }
 
 void Collective::dontDig(Vec2 pos) {
@@ -1602,7 +1606,7 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   mySquares[type].insert(pos);
   if (efficiencySquares.count(type))
     updateEfficiency(pos, type);
-  if (contains({SquareId::KEEPER_FLOOR, SquareId::BRIDGE, SquareId::BARRICADE}, type.getId()))
+  if (contains({SquareId::FLOOR, SquareId::BRIDGE, SquareId::BARRICADE}, type.getId()))
     updateSectors(pos);
   if (taskMap.getMarked(pos))
     taskMap.unmarkSquare(pos);

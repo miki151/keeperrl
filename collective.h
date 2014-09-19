@@ -124,6 +124,7 @@ class Collective : public Task::Callback {
   vector<SquareType> getSquareTypes() const;
   vector<Vec2> getAllSquares(const vector<SquareType>&, bool centerOnly = false) const;
   const set<Vec2>& getAllSquares() const;
+  void claimSquare(Vec2);
   void changeSquareType(Vec2 pos, SquareType from, SquareType to);
   bool containsSquare(Vec2 pos) const;
   bool isKnownSquare(Vec2 pos) const;

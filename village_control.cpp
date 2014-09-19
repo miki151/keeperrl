@@ -116,7 +116,8 @@ static int expLevelFun(double time) {
 
 void VillageControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
   if (!isAnonymous() && getCreatures(MinionTrait::FIGHTER).empty() && !conquered) {
-    messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name));
+    messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name + ". "
+          "Make sure to plunder the village and retrieve any valuables."));
     conquered = true;
   }
 }

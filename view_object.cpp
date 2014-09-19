@@ -269,6 +269,10 @@ void ViewObject::setHallu(bool b) {
   hallu = b;
 }
 
+void ViewObject::setId(ViewId id) {
+  resource_id = id;
+}
+
 ViewId ViewObject::id() const {
   if (hallu) {
     if (auto elem = findElement(creatureIds, resource_id))

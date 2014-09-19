@@ -76,7 +76,7 @@ PlayerControl::BuildInfo::BuildInfo(const Creature* c, CostInfo cost, const stri
 
 PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, string group)
     : buildType(type), help(h), hotkey(key), groupName(group) {
-  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH, DISPATCH}, type));
+  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH, DISPATCH, CLAIM_TILE}, type));
 }
 
 PlayerControl::BuildInfo::BuildInfo(MinionInfo info, Optional<TechId> tech, const string& group, const string& h)
@@ -113,8 +113,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
         buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", c->getSpeciesName(), 0));
   append(buildInfo, {
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'p', "Orders"),
-    BuildInfo({SquareId::KEEPER_FLOOR, {ResourceId::GOLD, 0}, "Claim tile", true}, Nothing(),
-      "Claim tile to be able to build on it.", 0, "Orders"),
+    BuildInfo(BuildInfo::CLAIM_TILE, "Claim a tile. Building anything has the same effect.", 0, "Orders"),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
     BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to have imps perform it faster.", 'a', "Orders"),
     BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
@@ -710,6 +709,12 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                  "Fetch items", Nothing(), "", ""});
            }
            break;
+      case BuildInfo::CLAIM_TILE: {
+             buttons.push_back({
+                 ViewObject(ViewId::KEEPER_FLOOR, ViewLayer::LARGE_ITEM, ""),
+                 "Claim tile", Nothing(), "", ""});
+           }
+           break;
       case BuildInfo::DISPATCH: {
              buttons.push_back({
                  ViewObject(ViewId::IMP, ViewLayer::LARGE_ITEM, ""),
@@ -885,6 +890,10 @@ static const ViewObject& getConstructionObject(SquareType type) {
 
 ViewIndex PlayerControl::getViewIndex(Vec2 pos) const {
   ViewIndex index = getLevel()->getSquare(pos)->getViewIndex(this);
+  if (getCollective()->getAllSquares().count(pos) 
+      && index.hasObject(ViewLayer::FLOOR_BACKGROUND)
+      && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
+    index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = getLevel()->getSquare(pos)->getCreature())
     if (contains(team, c) && gatheringTeam)
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
@@ -982,7 +991,7 @@ bool PlayerControl::canBuildDoor(Vec2 pos) const {
     return false;
   Rectangle innerRect = getLevel()->getBounds().minusMargin(1);
   auto wallFun = [=](Vec2 pos) {
-      return getLevel()->getSquare(pos)->canConstruct(SquareId::KEEPER_FLOOR) ||
+      return getLevel()->getSquare(pos)->canConstruct(SquareId::FLOOR) ||
           !pos.inRectangle(innerRect); };
   return !getCollective()->getTraps().count(pos) && pos.inRectangle(innerRect) && 
       ((wallFun(pos - Vec2(0, 1)) && wallFun(pos - Vec2(0, -1))) ||
@@ -1167,7 +1176,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
                 getCollective()->cutTree(pos);
                 selection = SELECT;
               } else
-                if (getLevel()->getSquare(pos)->canConstruct(SquareId::KEEPER_FLOOR)
+                if (getLevel()->getSquare(pos)->canConstruct(SquareId::FLOOR)
                     || !getCollective()->isKnownSquare(pos)) {
                   getCollective()->dig(pos);
                   selection = SELECT;
@@ -1177,6 +1186,9 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         break;
     case BuildInfo::FETCH:
         getCollective()->fetchAllItems(pos);
+        break;
+    case BuildInfo::CLAIM_TILE:
+        getCollective()->claimSquare(pos);
         break;
     case BuildInfo::DISPATCH:
         getCollective()->setPriorityTasks(pos);
