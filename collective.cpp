@@ -164,6 +164,7 @@ struct Collective::ImmigrantInfo {
   bool spawnAtDorm;
   int salary;
   Optional<CostInfo> cost;
+  Optional<TechId> techId;
 };
 
 struct CollectiveConfig {
@@ -204,7 +205,7 @@ const CollectiveConfig& Collective::getConfig() const {
       CONSTRUCT(CollectiveConfig,
         c.manageEquipment = true;
         c.workerFollowLeader = true;
-        c.immigrantFrequency = 0.007;
+        c.immigrantFrequency = 0.011;
         c.payoutTime = 500;
         c.payoutMultiplier = 3;
         c.stripSpawns = true;
@@ -220,7 +221,7 @@ const CollectiveConfig& Collective::getConfig() const {
             c.salary = 10;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::GOBLIN;
-            c.frequency = 0.8;
+            c.frequency = 0.7;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 1.0, 12.0},
             );
@@ -245,12 +246,22 @@ const CollectiveConfig& Collective::getConfig() const {
             c.salary = 40;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::HARPY;
-            c.frequency = 0.2;
+            c.frequency = 0.3;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
               {{AttractionId::ITEM_CLASS, ItemClass::RANGED_WEAPON}, 1.0, 3.0}
             );
             c.traits = {MinionTrait::FIGHTER};
+            c.salary = 40;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::SPECIAL_HUMANOID;
+            c.frequency = 0.2;
+            c.attractions = LIST(
+              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+            );
+            c.traits = {MinionTrait::FIGHTER};
+            c.spawnAtDorm = true;
+            c.techId = TechId::HUMANOID_MUT;
             c.salary = 40;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::ZOMBIE;
@@ -313,6 +324,13 @@ const CollectiveConfig& Collective::getConfig() const {
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 4.0, 12.0}
             );
+            c.salary = 0;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::SPECIAL_MONSTER_KEEPER;
+            c.frequency = 0.2;
+            c.traits = {MinionTrait::FIGHTER};
+            c.spawnAtDorm = true;
+            c.techId = TechId::BEAST_MUT;
             c.salary = 0;),
         );)},
     {CollectiveConfigId::VILLAGE, {}},
@@ -783,6 +801,8 @@ const EnumMap<SpawnType, Collective::DormInfo>& Collective::getDormInfo() {
 }
 
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
+  if (info.techId && !hasTech(*info.techId))
+    return false;
   PCreature creature = CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this));
   SpawnType spawnType = *creature->getSpawnType();
   SquareType dormType = getDormInfo()[spawnType].dormType;
@@ -996,7 +1016,7 @@ void Collective::tick(double time) {
   setWarning(Warning::NO_WEAPONS, false);
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
   vector<Item*> freeWeapons = getAllItems([&](const Item* it) {
-      return it->getClass() == ItemClass::WEAPON && minionEquipment.getOwner(it); }, false);
+      return it->getClass() == ItemClass::WEAPON && !minionEquipment.getOwner(it); }, false);
   for (Creature* c : getCreatures({MinionTrait::FIGHTER}, {MinionTrait::NO_EQUIPMENT})) {
     if (usesEquipment(c) && c->equip(genWeapon.get()) && filter(freeWeapons,
           [&] (const Item* it) { return minionEquipment.needs(c, it); }).empty()) {

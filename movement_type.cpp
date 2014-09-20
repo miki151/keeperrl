@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "movement_type.h"
+#include "tribe.h"
 
 template <class Archive> 
 void MovementType::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(traits);
+  ar& SVAR(traits) & SVAR(tribe);
   CHECK_SERIAL;
 }
 

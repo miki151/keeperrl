@@ -1730,9 +1730,13 @@ CreatureAction Creature::copulate(Vec2 direction) {
   });
 }
 
+static bool consumeProb() {
+  return true;
+}
+
 template <typename T>
 void consumeAttr(T& mine, T& his, vector<string>& adjectives, const string& adj) {
-  if (Random.roll(2) && mine < his) {
+  if (consumeProb() && mine < his) {
     mine = his;
     if (!adj.empty())
       adjectives.push_back(adj);
@@ -1740,7 +1744,7 @@ void consumeAttr(T& mine, T& his, vector<string>& adjectives, const string& adj)
 }
 
 void consumeAttr(Gender& mine, Gender& his, vector<string>& adjectives) {
-  if (Random.roll(2) && mine != his) {
+  if (consumeProb() && mine != his) {
     mine = his;
     adjectives.emplace_back(mine == Gender::male ? "more masculine" : "more feminine");
   }
@@ -1749,7 +1753,7 @@ void consumeAttr(Gender& mine, Gender& his, vector<string>& adjectives) {
 
 template <typename T>
 void consumeAttr(Optional<T>& mine, Optional<T>& his, vector<string>& adjectives, const string& adj) {
-  if (Random.roll(2) && !mine && his) {
+  if (consumeProb() && !mine && his) {
     mine = *his;
     if (!adj.empty())
       adjectives.push_back(adj);
@@ -1759,7 +1763,7 @@ void consumeAttr(Optional<T>& mine, Optional<T>& his, vector<string>& adjectives
 void consumeAttr(EnumSet<SkillId>& mine, EnumSet<SkillId>& his, vector<string>& adjectives) {
   bool was = false;
   for (SkillId skill : his)
-    if (!mine[skill] && Skill::get(skill)->canConsume() && Random.roll(2)) {
+    if (!mine[skill] && Skill::get(skill)->canConsume() && consumeProb()) {
       mine.insert(skill);
       was = true;
     }
@@ -1769,14 +1773,14 @@ void consumeAttr(EnumSet<SkillId>& mine, EnumSet<SkillId>& his, vector<string>& 
 
 void Creature::consumeEffects(EnumMap<LastingEffect, int>& effects) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    if (effects[effect] > 0 && !isAffected(effect) && Random.roll(2)) {
+    if (effects[effect] > 0 && !isAffected(effect) && consumeProb()) {
       addPermanentEffect(effect);
     }
 }
 
 void Creature::consumeBodyParts(EnumMap<BodyPart, int>& parts) {
   for (BodyPart part : ENUM_ALL(BodyPart))
-    if (parts[part] > bodyParts[part] && Random.roll(2)) {
+    if (parts[part] > bodyParts[part] && consumeProb()) {
       if (bodyParts[part] + 1 == parts[part])
         you(MsgType::GROW, "a " + getBodyPartName(part));
       else

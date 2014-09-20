@@ -38,10 +38,10 @@ vector<int> invisibleTime { 5, 15, 45};
 vector<double> fireAmount { 0.5, 1, 1};
 vector<int> attrBonusTime { 10, 40, 150};
 vector<int> identifyNum { 1, 1, 400};
-vector<int> poisonTime { 200, 60, 20};
-vector<int> stunTime { 200, 60, 20};
-vector<int> resistantTime { 200, 60, 20};
-vector<int> levitateTime { 200, 60, 20};
+vector<int> poisonTime { 20, 60, 200};
+vector<int> stunTime { 1, 1, 20};
+vector<int> resistantTime { 20, 60, 200};
+vector<int> levitateTime { 20, 60, 200};
 vector<double> gasAmount { 0.3, 0.8, 3};
 vector<double> wordOfPowerDist { 1, 3, 10};
 
