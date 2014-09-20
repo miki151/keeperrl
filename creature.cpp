@@ -107,8 +107,8 @@ Creature::~Creature() {
     tribe->removeMember(this);
 }
 
-ViewIndex Creature::getViewIndex(Vec2 pos) const {
-  return level->getSquare(pos)->getViewIndex(this);
+void Creature::getViewIndex(Vec2 pos, ViewIndex& index) const {
+  return level->getSquare(pos)->getViewIndex(this, index);
 }
 
 SpellInfo Creature::getSpell(SpellId id) {

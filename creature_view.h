@@ -24,7 +24,7 @@ class GameInfo;
 class CreatureView {
   public:
   virtual const MapMemory& getMemory() const = 0;
-  virtual ViewIndex getViewIndex(Vec2 pos) const = 0;
+  virtual void getViewIndex(Vec2 pos, ViewIndex&) const = 0;
   virtual void refreshGameInfo(GameInfo&) const = 0;
   virtual Vec2 getPosition() const = 0;
   virtual bool staticPosition() const { return true; }

@@ -728,8 +728,9 @@ void Player::makeMove() {
   }
   if (!creature->isDead())
     for (Vec2 pos : creature->getLevel()->getVisibleTiles(creature)) {
-      (*levelMemory)[creature->getLevel()->getUniqueId()]
-        .update(pos, creature->getLevel()->getSquare(pos)->getViewIndex(creature));
+      ViewIndex index;
+      creature->getLevel()->getSquare(pos)->getViewIndex(creature, index);
+      (*levelMemory)[creature->getLevel()->getUniqueId()].update(pos, index);
     }
 }
 

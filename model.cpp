@@ -131,9 +131,9 @@ void Model::update(double totalTime) {
   }
   int absoluteTime = view->getTimeMilliAbsolute();
   if (playerControl) {
-    if (absoluteTime - lastUpdate > 50) {
+    if (totalTime - lastUpdate > 0.2) {
       playerControl->render(view);
-      lastUpdate = absoluteTime;
+      lastUpdate = totalTime;
     }
   }
   do {

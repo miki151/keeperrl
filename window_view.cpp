@@ -885,7 +885,8 @@ void WindowView::updateView(const CreatureView* collective) {
   const MapMemory* memory = &collective->getMemory(); 
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds())) 
     if (level->inBounds(pos)) {
-      ViewIndex index = collective->getViewIndex(pos);
+      ViewIndex index;
+      collective->getViewIndex(pos, index);
       if (!index.hasObject(ViewLayer::FLOOR) && !index.hasObject(ViewLayer::FLOOR_BACKGROUND) &&
           !index.isEmpty() && memory->hasViewIndex(pos)) {
         // special case when monster or item is visible but floor is only in memory

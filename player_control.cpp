@@ -888,8 +888,8 @@ static const ViewObject& getConstructionObject(SquareType type) {
   return objects.at(type);
 }
 
-ViewIndex PlayerControl::getViewIndex(Vec2 pos) const {
-  ViewIndex index = getLevel()->getSquare(pos)->getViewIndex(this);
+void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
+  getLevel()->getSquare(pos)->getViewIndex(this, index);
   if (getCollective()->getAllSquares().count(pos) 
       && index.hasObject(ViewLayer::FLOOR_BACKGROUND)
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
@@ -917,7 +917,6 @@ ViewIndex PlayerControl::getViewIndex(Vec2 pos) const {
   if (getCollective()->hasEfficiency(pos) && index.hasObject(ViewLayer::FLOOR))
     index.getObject(ViewLayer::FLOOR).setAttribute(
         ViewObject::Attribute::EFFICIENCY, getCollective()->getEfficiency(pos));
-  return index;
 }
 
 bool PlayerControl::staticPosition() const {
@@ -1257,7 +1256,9 @@ void PlayerControl::addToMemory(Vec2 pos) {
   if (!square->isDirty())
     return;
   square->setNonDirty();
-  getMemory(getLevel()).update(pos, square->getViewIndex(this));
+  ViewIndex index;
+  square->getViewIndex(this, index);
+  getMemory(getLevel()).update(pos, index);
 }
 
 void PlayerControl::addDeityServant(Deity* deity, Vec2 deityPos, Vec2 victimPos) {

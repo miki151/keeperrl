@@ -318,12 +318,11 @@ void Square::setBackground(const Square* square) {
   }
 }
 
-ViewIndex Square::getViewIndex(const CreatureView* c) const {
+void Square::getViewIndex(const CreatureView* c, ViewIndex& ret) const {
   double fireSize = 0;
   for (Item* it : inventory.getItems())
     fireSize = max(fireSize, it->getFireSize());
   fireSize = max(fireSize, fire.getSize());
-  ViewIndex ret;
   if (creature && (c->canSee(creature) || creature->isPlayer())) {
     ret.insert(copyOf(creature->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   }
@@ -347,7 +346,6 @@ ViewIndex Square::getViewIndex(const CreatureView* c) const {
     if (fog)
       ret.setHighlight(HighlightType::FOG, fog);
   }
-  return ret;
 }
 
 void Square::onEnter(Creature* c) {

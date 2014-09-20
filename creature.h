@@ -50,7 +50,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
 
   static void noExperienceLevels();
 
-  virtual ViewIndex getViewIndex(Vec2 pos) const override;
+  virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   void makeMove();
   double getTime() const;
   void setTime(double t);
