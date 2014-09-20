@@ -80,6 +80,8 @@ class GuiElem {
   static PGuiElem border(PGuiElem content);
   static PGuiElem border2(PGuiElem content);
   static PGuiElem invisible(PGuiElem content);
+  static void changeBackground(int r, int g, int b);
+  static void setBackground(int r, int g, int b);
 
   static Color background1;
   static Color background2;

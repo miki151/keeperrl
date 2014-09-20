@@ -58,6 +58,7 @@ Tile getWaterTile(int leftX) {
 
 
 void genTiles() {
+  setGuiBackground(5, 5, 8); //RGB 0..255
   addTile(UNKNOWN_MONSTER, symbol("?", LIGHT_GREEN));
   addTile(SHEEP, symbol("s", WHITE));
   addTile(VODNIK, symbol("f", GREEN));

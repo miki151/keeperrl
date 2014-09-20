@@ -161,7 +161,7 @@ void WindowView::initialize() {
   MinimapGui::initialize();
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP)); });
   mapDecoration = GuiElem::border2(GuiElem::empty());
-  minimapDecoration = GuiElem::border(GuiElem::empty());
+  minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
 }
 
@@ -180,13 +180,15 @@ void WindowView::reset() {
 static vector<Vec2> splashPositions;
 static vector<string> splashPaths { "splash2e.png", "splash2a.png", "splash2b.png", "splash2c.png", "splash2d.png" };
 
-void displayMenuSplash2() {
+void WindowView::displayMenuSplash2() {
   Image splash;
   CHECK(splash.loadFromFile("splash2f.png"));
-  int bottomMargin = 90;
-  renderer.drawImage(renderer.getWidth() / 2 - 415, renderer.getHeight() - bottomMargin, splash);
+  Rectangle menuPosition = getMenuPosition(View::MAIN_MENU);
+  int margin = 10;
+  renderer.drawImage(renderer.getWidth() / 2 - 415, menuPosition.getKY() + margin, splash);
   CHECK(splash.loadFromFile("splash2e.png"));
-  renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2, 90 - splash.getSize().y, splash);
+  renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2,
+      menuPosition.getPY() - splash.getSize().y - margin, splash);
   int x = 0;
   int y =0;
 }
@@ -1098,20 +1100,14 @@ int getScrollPos(int index, int count) {
 
 Rectangle WindowView::getMenuPosition(View::MenuType type) {
   int windowWidth = 800;
-  int ySpacing = 100;
+  int windowHeight = 400;
+  int ySpacing;
   int xSpacing = (renderer.getWidth() - windowWidth) / 2;
-  return Rectangle(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
-/*  switch (type) {
-    case View::MAIN_MENU:
-    case View::NORMAL_MENU:
-      return Rectangle(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
-    case View::MINION_MENU:
-      return Rectangle(renderer.getWidth() - rightBarWidth - 2 * minionWindowRightMargin - minionWindowWidth - 600,
-          100, renderer.getWidth() - rightBarWidth - 2 * minionWindowRightMargin - minionWindowWidth,
-        100 + minionWindowHeight);
+  switch (type) {
+    case View::MAIN_MENU: ySpacing = (renderer.getHeight() - windowHeight) / 2; break;
+    default: ySpacing = 100; break;
   }
-  FAIL << "ewf";
-  return Rectangle(1, 1);*/
+  return Rectangle(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
 }
 
 Optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
@@ -1224,7 +1220,7 @@ void WindowView::presentText(const string& title, const string& text) {
   presentList(title, View::getListElem(breakText(text)), false);
 }
 
-void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown,
+void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu,
     Optional<UserInput::Type> exitAction) {
   vector<ListElem> conv;
   for (ListElem e : options) {
@@ -1234,7 +1230,7 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
     conv.emplace_back(e.getText(), mod, e.getAction());
   }
   int scrollPos = scrollDown ? 1 : 0;
-  chooseFromListInternal(title, conv, -1, NORMAL_MENU, &scrollPos, exitAction, Nothing(), {});
+  chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, Nothing(), {});
 }
 
 static vector<PGuiElem> getMultiLine(const string& text, Color color) {
@@ -1503,6 +1499,12 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
   switch (key.code) {
 #ifndef RELEASE
     case Keyboard::F8: renderer.startMonkey(); break;
+    case Keyboard::Num1: GuiElem::changeBackground(1, 0, 0); break;
+    case Keyboard::Num2: GuiElem::changeBackground(-1, 0, 0); break;
+    case Keyboard::Num3: GuiElem::changeBackground(0, 1, 0); break;
+    case Keyboard::Num4: GuiElem::changeBackground(0, -1, 0); break;
+    case Keyboard::Num5: GuiElem::changeBackground(0, 0, 1); break;
+    case Keyboard::Num6: GuiElem::changeBackground(0, 0, -1); break;
 #endif
     case Keyboard::Z: switchZoom(); break;
     case Keyboard::F1:

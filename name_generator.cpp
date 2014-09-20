@@ -64,7 +64,6 @@ vector<string> combined(const string& path) {
   for (int i : Range(3000)) {
     ret.push_back("Thou " + chooseRandom(input[0]) + " " + chooseRandom(input[1]) + 
         " " + chooseRandom(input[2]) + "!");
-    Debug() << ret.back();
   }
   return ret;
 }

@@ -17,6 +17,7 @@
 #include "tile.h"
 #include "view_id.h"
 #include "script_context.h"
+#include "gui_elem.h"
 
 Tile::Tile() {
 }
@@ -185,6 +186,10 @@ static SetOfDir dirs(Dir d1, Dir d2, Dir d3, Dir d4) {
   return SetOfDir({d1, d2, d3, d4});
 }
 
+static void setBackground(int r, int g, int b) {
+  GuiElem::setBackground(r, g, b);
+}
+
 }
 
 void Tile::initialize() {
@@ -193,6 +198,7 @@ void Tile::initialize() {
   ADD_SCRIPT_ENUM(ColorId);
   ADD_SCRIPT_VALUE_TYPE(SetOfDir);
   ADD_SCRIPT_ENUM(ViewId);
+  ADD_SCRIPT_FUNCTION(setBackground, "void setGuiBackground(int, int, int)");
   ADD_SCRIPT_FUNCTION(Tile::byCoord, "Tile sprite(int, int, int = 0, bool = false)");
   ADD_SCRIPT_FUNCTION(Tile::byName, "Tile sprite(const string& in, bool = false)");
   ADD_SCRIPT_FUNCTION(Tile::fromString, "Tile symbol(const string& in, ColorId, bool = false)");

@@ -2209,7 +2209,7 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   }
   for (int i : Range(Random.getRandom(3, 5))) {
     locations->add(new UniformBlob(SquareId::FLOOR, Nothing()), 
-        {Random.getRandom(5, 12), Random.getRandom(3, 12)}, new TypePredicate(SquareId::MOUNTAIN2));
+        {Random.getRandom(5, 12), Random.getRandom(5, 12)}, new TypePredicate(SquareId::MOUNTAIN2));
     locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
   }
   int maxDist = 30;

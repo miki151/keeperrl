@@ -54,7 +54,7 @@ class WindowView: public View {
 
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      Optional<UserInput::Type> exitAction = Nothing()) override;
+      MenuType = NORMAL_MENU, Optional<UserInput::Type> exitAction = Nothing()) override;
   virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
 
   virtual UserInput getAction() override;
@@ -72,6 +72,7 @@ class WindowView: public View {
   private:
 
   void processEvents();
+  void displayMenuSplash2();
   void updateMinimap(const CreatureView*);
   Rectangle getMenuPosition(View::MenuType type);
   Optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
