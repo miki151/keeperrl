@@ -298,7 +298,7 @@ const CollectiveConfig& Collective::getConfig() const {
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::SUCCUBUS;
             c.frequency = 0.3;
-            c.traits = {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT};
+            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
             c.salary = 0;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 2.0, 12.0}
