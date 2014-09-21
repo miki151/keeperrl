@@ -828,11 +828,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     if (!elem.second.dontDisplay)
       info.numResource.push_back(
           {getResourceViewObject(elem.first), getCollective()->numResource(elem.first), elem.second.name});
-  if (attacking) {
-    if (info.warning.empty())
-      info.warning = NameGenerator::get(NameGeneratorId::INSULTS)->getNext();
-  } else
-    info.warning = "";
+  info.warning = "";
   for (Warning w : ENUM_ALL(Warning))
     if (getCollective()->isWarning(w)) {
       info.warning = getWarningText(w);

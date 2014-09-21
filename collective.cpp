@@ -298,7 +298,7 @@ const CollectiveConfig& Collective::getConfig() const {
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::SUCCUBUS;
             c.frequency = 0.3;
-            c.traits = {MinionTrait::FIGHTER};
+            c.traits = {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT};
             c.salary = 0;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 2.0, 12.0}
@@ -1027,6 +1027,7 @@ void Collective::tick(double time) {
     if (usesEquipment(c) && c->equip(genWeapon.get()) && filter(freeWeapons,
           [&] (const Item* it) { return minionEquipment.needs(c, it); }).empty()) {
       setWarning(Warning::NO_WEAPONS, true);
+      Debug() << "Can't get weapon for " << c->getName();
       break;
     }
   }
