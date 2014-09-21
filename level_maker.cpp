@@ -1658,7 +1658,7 @@ static LevelMaker* underground(bool monsters, CreatureFactory waterFactory, Crea
 }
 
 static MakerQueue* stockpileMaker(StockpileInfo info) {
-  SquareId square;
+  SquareId square = SquareId(0);
   switch (info.type) {
     case StockpileInfo::GOLD: square = SquareId::TREASURE_CHEST; break;
     case StockpileInfo::MINERALS: square = SquareId::STOCKPILE_RES; break;

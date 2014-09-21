@@ -69,7 +69,8 @@ extern EventListener GlobalEvents;
 
 #define REGISTER_HANDLER(Event, ...)\
   ConstructorFunction __LINE__##Event##Runner123 = ConstructorFunction([=] {\
-      GlobalEvents.link##Event(this, bindMethod(&std::remove_reference<decltype(*this)>::type::on##Event, this));\
+      auto A = this;\
+      GlobalEvents.link##Event(this, bindMethod(&std::remove_reference<decltype(*A)>::type::on##Event, this));\
   }, [=] {\
       GlobalEvents.unlink##Event(this);\
   });\
