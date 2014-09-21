@@ -62,6 +62,7 @@ class ItemAttributes {
   Optional<ItemId> SERIAL(firingWeapon);
   Optional<string> SERIAL(artifactName);
   Optional<TrapType> SERIAL(trapType);
+  Optional<CollectiveResourceId> SERIAL(resourceId);
   double SERIAL2(flamability, 0);
   int SERIAL2(price, 0);
   bool SERIAL2(noArticle, false);

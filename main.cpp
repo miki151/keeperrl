@@ -242,7 +242,16 @@ int main(int argc, char* argv[]) {
     }
   );
   while (!viewInitialized);
-  Jukebox jukebox("intro.ogg", "peaceful.ogg", "battle.ogg");
+  Jukebox jukebox("music/peaceful1.ogg");
+  jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful2.ogg");
+  jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful3.ogg");
+  jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful4.ogg");
+  jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful5.ogg");
+  jukebox.addTrack(Jukebox::BATTLE, "music/battle1.ogg");
+  jukebox.addTrack(Jukebox::BATTLE, "music/battle2.ogg");
+  jukebox.addTrack(Jukebox::BATTLE, "music/battle3.ogg");
+  jukebox.addTrack(Jukebox::BATTLE, "music/battle4.ogg");
+  jukebox.addTrack(Jukebox::BATTLE, "music/battle5.ogg");
   view->setJukebox(&jukebox);
   GuiElem::initialize("frame.png");
   if (!WindowView::areTilesOk())

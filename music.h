@@ -21,7 +21,10 @@
 class Jukebox {
   public:
   enum Type { INTRO, PEACEFUL, BATTLE };
-  Jukebox(const string& introPath, const string& peacefulPath, const string& warPath);
+
+  Jukebox(const string& introTrack);
+
+  void addTrack(Type, const string&);
 
   void setCurrent(Type);
   void toggle();
@@ -29,11 +32,13 @@ class Jukebox {
 
   private:
   bool turnedOff();
-  sf::Music& get(Type);
+  Type getCurrentType();
   unique_ptr<sf::Music[]> music;
-  Type current = INTRO;
-  Type currentPlaying;
+  map<Type, vector<int>> byType;
+  int current = 0;
+  int currentPlaying;
   bool on = true;
+  int numTracks = 1;
 };
 
 #endif

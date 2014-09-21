@@ -35,6 +35,16 @@ RICH_ENUM(TrapType,
   TERROR
 );
 
+RICH_ENUM(CollectiveResourceId,
+    GOLD,
+    WOOD,
+    IRON,
+    STONE,
+    MANA,
+    PRISONER_HEAD,
+    CORPSE
+);
+
 enum class ItemClass {
   WEAPON,
   RANGED_WEAPON,
@@ -79,6 +89,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   const Creature* getShopkeeper() const;
 
   Optional<TrapType> getTrapType() const;
+  Optional<CollectiveResourceId> getResourceId() const;
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;

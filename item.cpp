@@ -219,6 +219,10 @@ Optional<TrapType> Item::getTrapType() const {
   return trapType;
 }
 
+Optional<CollectiveResourceId> Item::getResourceId() const {
+  return resourceId;
+}
+
 void Item::apply(Creature* c, Level* l) {
   if (itemClass == ItemClass::SCROLL)
     Statistics::add(StatId::SCROLL_READ);

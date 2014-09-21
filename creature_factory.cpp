@@ -83,6 +83,7 @@ class BoulderController : public Monster {
                 break;
               } else {
                 other->you(MsgType::DISARM_TRAP, "");
+                GlobalEvents.addTrapTriggerEvent(creature->getLevel(), creature->getPosition());
                 creature->die();
               }
             }

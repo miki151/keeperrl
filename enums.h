@@ -27,6 +27,7 @@ namespace std { \
   }; \
 }
 
+enum class CollectiveResourceId;
 enum class CollectiveConfigId;
 enum class MsgType;
 enum class BodyPart;

@@ -2158,7 +2158,6 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   RandomLocations* locations = new RandomLocations();
   LevelMaker* startingPos = new StartingPos(new TypePredicate(SquareId::HILL), StairKey::PLAYER_SPAWN);
   locations->add(startingPos, Vec2(4, 4), new TypePredicate(SquareId::HILL));
-  LevelMaker* mineTown = nullptr;
   vector<LevelMaker*> cottages;
   for (SettlementInfo settlement : settlements) {
     MakerQueue* queue = nullptr;
@@ -2179,7 +2178,6 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
           break;
       case SettlementType::MINETOWN:
           queue = mineTownMaker(settlement);
-          mineTown = queue;
           break;
       case SettlementType::VAULT:
           queue = vaultMaker(settlement, false);

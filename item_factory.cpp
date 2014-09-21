@@ -1350,24 +1350,28 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.name = "rock";
             i.itemClass = ItemClass::OTHER;
             i.price = 0;
+            i.resourceId = CollectiveResourceId::STONE;
             i.weight = 0.3;);
     case ItemId::IRON_ORE: return ITATTR(
             i.viewId = ViewId::IRON_ROCK;
             i.name = "iron ore";
             i.itemClass = ItemClass::OTHER;
             i.price = 0;
+            i.resourceId = CollectiveResourceId::IRON;
             i.weight = 0.5;);
     case ItemId::WOOD_PLANK: return ITATTR(
             i.viewId = ViewId::WOOD_PLANK;
             i.name = "wood plank";
             i.itemClass = ItemClass::OTHER;
             i.price = 0;
+            i.resourceId = CollectiveResourceId::WOOD;
             i.weight = 5;);
     case ItemId::GOLD_PIECE: return ITATTR(
             i.viewId = ViewId::GOLD;
             i.name = "gold piece";
             i.itemClass = ItemClass::GOLD;
             i.price = 1;
+            i.resourceId = CollectiveResourceId::GOLD;
             i.weight = 0.01;);
   }
   FAIL << "unhandled item " << (int) item.getId();

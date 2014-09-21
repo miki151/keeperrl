@@ -11,6 +11,7 @@
 #include "sectors.h"
 #include "minion_task.h"
 #include "gender.h"
+#include "item.h"
 
 class Creature;
 class CollectiveControl;
@@ -55,17 +56,6 @@ RICH_ENUM(CollectiveWarning,
     MANA,
     MORE_LIGHTS
 );
-
-RICH_ENUM(CollectiveResourceId,
-    GOLD,
-    WOOD,
-    IRON,
-    STONE,
-    MANA,
-    PRISONER_HEAD,
-    CORPSE
-);
-
 
 class Collective : public Task::Callback {
   public:

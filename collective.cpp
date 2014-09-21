@@ -95,12 +95,14 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
         return minionEquipment.isItemUseful(it) && it->getClass() != ItemClass::GOLD && !isItemMarked(it);
       }, equipmentStorage, false, {}, Warning::STORAGE},
     {[this](const Item* it) {
-        return it->getName() == "wood plank" && !isItemMarked(it); },
+        return it->getResourceId() == ResourceId::WOOD && !isItemMarked(it); },
     resourceStorage, false, {SquareId::TREE_TRUNK}, Warning::STORAGE},
     {[this](const Item* it) {
-        return it->getName() == "iron ore" && !isItemMarked(it); }, resourceStorage, false, {}, Warning::STORAGE},
+        return it->getResourceId() == ResourceId::IRON && !isItemMarked(it); },
+    resourceStorage, false, {}, Warning::STORAGE},
     {[this](const Item* it) {
-        return it->getName() == "rock" && !isItemMarked(it); }, resourceStorage, false, {}, Warning::STORAGE},
+        return it->getResourceId() == ResourceId::STONE && !isItemMarked(it); },
+    resourceStorage, false, {}, Warning::STORAGE},
   };
 }
 
@@ -110,11 +112,14 @@ const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resource
   {ResourceId::PRISONER_HEAD, { {}, nullptr, ItemId::GOLD_PIECE, "", Nothing(), true}},
   {ResourceId::GOLD, { {SquareId::TREASURE_CHEST}, Item::classPredicate(ItemClass::GOLD), ItemId::GOLD_PIECE, "gold",
                        Collective::Warning::GOLD}},
-  {ResourceId::WOOD, { resourceStorage, Item::namePredicate("wood plank"),
+  {ResourceId::WOOD, { resourceStorage, [](const Item* it) {
+        return it->getResourceId() == ResourceId::WOOD; },
                        ItemId::WOOD_PLANK, "wood", Collective::Warning::WOOD}},
-  {ResourceId::IRON, { resourceStorage, Item::namePredicate("iron ore"),
+  {ResourceId::IRON, { resourceStorage, [](const Item* it) {
+        return it->getResourceId() == ResourceId::IRON; },
                        ItemId::IRON_ORE, "iron", Collective::Warning::IRON}},
-  {ResourceId::STONE, { resourceStorage, Item::namePredicate("rock"), ItemId::ROCK, "stone",
+  {ResourceId::STONE, { resourceStorage, [](const Item* it) {
+        return it->getResourceId() == ResourceId::STONE; }, ItemId::ROCK, "stone",
                        Collective::Warning::STONE}},
   {ResourceId::CORPSE, {
       {SquareId::CEMETERY},
@@ -309,7 +314,7 @@ const CollectiveConfig& Collective::getConfig() const {
             c.spawnAtDorm = true;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::RAVEN;
-            c.frequency = 0.8;
+            c.frequency = 2.0;
             c.traits = {MinionTrait::FIGHTER};
             c.salary = 0;),
           CONSTRUCT(ImmigrantInfo,

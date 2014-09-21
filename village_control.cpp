@@ -480,7 +480,7 @@ class DragonControl : public VillageControl {
       pleased += 1;
   }
 
-  virtual void onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType type) {
+  REGISTER_HANDLER(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType type) {
     if (contains(getCollective()->getCreatures(), to))
       switch (type) {
         case WorshipType::PRAYER: pleased += 0.01; break;
