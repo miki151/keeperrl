@@ -179,8 +179,8 @@ class Collective : public Task::Callback {
     Warning warning;
   };
 
-  vector<ItemFetchInfo> getFetchInfo() const;
-  void fetchItems(Vec2 pos, ItemFetchInfo, bool ignoreDelayed = false);
+  vector<ItemFetchInfo>& getFetchInfo() const;
+  void fetchItems(Vec2 pos, ItemFetchInfo&, bool ignoreDelayed = false);
 
   struct ConstructionInfo : public NamedTupleBase<CostInfo, bool, double, SquareType, UniqueEntity<Task>::Id> {
     NAMED_TUPLE_STUFF(ConstructionInfo);

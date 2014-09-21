@@ -87,8 +87,8 @@ vector<SquareType> Collective::getEquipmentStorageSquares() {
   return equipmentStorage;
 }
 
-vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
-  return {
+vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
+  static vector<ItemFetchInfo> fetchInfo {
     {unMarkedItems(ItemClass::CORPSE), {SquareId::CEMETERY}, true, {}, Warning::GRAVES},
     {unMarkedItems(ItemClass::GOLD), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
     {[this](const Item* it) {
@@ -104,6 +104,7 @@ vector<Collective::ItemFetchInfo> Collective::getFetchInfo() const {
         return it->getResourceId() == ResourceId::STONE && !isItemMarked(it); },
     resourceStorage, false, {}, Warning::STORAGE},
   };
+  return fetchInfo;
 }
 
 
@@ -1055,7 +1056,7 @@ void Collective::tick(double time) {
       }
   }
   updateConstructions();
-  for (ItemFetchInfo elem : getFetchInfo()) {
+  for (ItemFetchInfo& elem : getFetchInfo()) {
     for (Vec2 pos : getAllSquares())
       fetchItems(pos, elem);
     for (SquareType type : elem.additionalPos)
@@ -1717,11 +1718,11 @@ bool Collective::isDelayed(Vec2 pos) {
 }
 
 void Collective::fetchAllItems(Vec2 pos) {
-  for (ItemFetchInfo elem : getFetchInfo())
+  for (ItemFetchInfo& elem : getFetchInfo())
     fetchItems(pos, elem, true);
 }
 
-void Collective::fetchItems(Vec2 pos, ItemFetchInfo elem, bool ignoreDelayed) {
+void Collective::fetchItems(Vec2 pos, ItemFetchInfo& elem, bool ignoreDelayed) {
   if ((isDelayed(pos) && !ignoreDelayed) 
       || (traps.count(pos) && traps.at(pos).type() == TrapType::BOULDER && traps.at(pos).armed() == true))
     return;

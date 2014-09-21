@@ -799,7 +799,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         attacking = true;
     }
   if (attacking)
-    model->getView()->getJukebox()->setCurrent(Jukebox::BATTLE);
+    model->getView()->getJukebox()->updateCurrent(Jukebox::BATTLE);
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
   gameInfo.infoType = GameInfo::InfoType::BAND;

@@ -49,6 +49,11 @@ void Jukebox::toggle() {
     music[current].stop();
 }
 
+void Jukebox::updateCurrent(Type c) {
+  if (getCurrentType() != c)
+    current = chooseRandom(byType[c]);
+}
+
 void Jukebox::setCurrent(Type c) {
   current = chooseRandom(byType[c]);
 }

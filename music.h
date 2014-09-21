@@ -25,12 +25,13 @@ class Jukebox {
   Jukebox(const string& introTrack);
 
   void addTrack(Type, const string&);
+  void updateCurrent(Type);
 
-  void setCurrent(Type);
   void toggle();
   void update();
 
   private:
+  void setCurrent(Type);
   bool turnedOff();
   Type getCurrentType();
   unique_ptr<sf::Music[]> music;

@@ -596,7 +596,7 @@ bool contains(const string& s, const string& pattern);
 
 template <typename T, typename V>
 bool contains(const initializer_list<T>& v, const V& elem) {
-  return contains(vector<T>(v), elem);
+  return std::find(v.begin(), v.end(), elem) != v.end();
 }
 
 template <typename T>
