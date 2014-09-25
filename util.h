@@ -140,6 +140,7 @@ class Vec2 {
   static vector<Vec2> directions4(bool shuffle = false);
   vector<Vec2> neighbors4(bool shuffle = false) const;
   static vector<Vec2> corners();
+  static vector<set<Vec2>> calculateLayers(set<Vec2>);
 
   typedef function<Vec2(Vec2)> LinearMap;
 

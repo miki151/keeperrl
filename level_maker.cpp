@@ -48,6 +48,16 @@ enum class SquareAttrib {
 class SquarePredicate {
   public:
   virtual bool apply(Level::Builder* builder, Vec2 pos) = 0;
+
+  Vec2 getRandomPosition(Level::Builder* builder, Rectangle area) {
+    vector<Vec2> good;
+    for (Vec2 v : area)
+      if (apply(builder, v))
+        good.push_back(v);
+    if (good.empty())
+      FAIL << "Couldn't find good position";
+    return chooseRandom(good);
+  }
 };
 
 class AttribPredicate : public SquarePredicate {
@@ -112,15 +122,18 @@ class AlwaysTrue : public SquarePredicate {
 
 class AndPredicates : public SquarePredicate {
   public:
-  AndPredicates(SquarePredicate* a1, SquarePredicate* a2) : p1(a1), p2(a2) {}
+  AndPredicates(SquarePredicate* a1, SquarePredicate* a2) : p({a1, a2}) {}
+  AndPredicates(vector<SquarePredicate*> pr) : p(pr) {}
 
   virtual bool apply(Level::Builder* builder, Vec2 pos) override {
-    return p1->apply(builder, pos) && p2->apply(builder, pos);
+    for (auto elem : p)
+      if (!elem->apply(builder, pos))
+        return false;
+    return true;
   }
 
   private:
-  SquarePredicate* p1;
-  SquarePredicate* p2;
+  vector<SquarePredicate*> p;
 };
 
 class OrPredicates : public SquarePredicate {
@@ -516,39 +529,110 @@ class River : public LevelMaker {
   SquareType squareType;
 };
 
-/*class MountainRiver : public LevelMaker {
+
+class RepeatMaker : public LevelMaker {
   public:
-  MountainRiver(int num, char w) : number(num), water(w) {}
+  RepeatMaker(int num, LevelMaker* m) : number(num), maker(m) {}
+
   virtual void make(Level::Builder* builder, Rectangle area) override {
-    for (int i : Range(number)) {
-      Vec2 pos(Random.getRandom(area.getPX(), area.getKX()),
-             Random.getRandom(area.getPY(), area.getKY()));
-      while (1) {
-        builder->putSquare(pos, SquareFactory::fromSymbol(water), SquareId::RIVER);
-        double h = builder->getHeightMap(pos);
-        double lowest = 10000000;
-        Vec2 dir;
-        for (Vec2 v : Vec2::neighbors8(true)) {
-          double d;
-          if ((pos + v).inRectangle(area) && (d = builder->getHeightMap(pos + v)) < lowest && builder->getType(pos + v) != SquareId::RIVER) {
-            lowest = d;
-            dir = v;
-          }
+    for (int i : Range(number))
+      maker->make(builder, area);
+  }
+
+  private:
+  int number;
+  LevelMaker* maker;
+};
+
+
+class MountainRiver : public LevelMaker {
+  public:
+  MountainRiver(int num, SquareType waterType, SquareType sandType, SquarePredicate* startPred)
+    : number(num), water(waterType), sand(sandType), startPredicate(startPred) {}
+
+  Optional<Vec2> fillLake(Level::Builder* builder, set<Vec2>& waterTiles, Rectangle area, Vec2 pos) {
+    vector<Vec2> ret;
+    double height = builder->getHeightMap(pos);
+    queue<Vec2> q;
+    set<Vec2> visited {pos};
+    map<Vec2, Vec2> predecessor {{ pos, pos}};
+    q.push(pos);
+    while (!q.empty()) {
+      pos = q.front();
+      q.pop();
+      for (Vec2 v : pos.neighbors8(true))
+        if (v.inRectangle(area) && !visited.count(v)) {
+          visited.insert(v);
+          predecessor[v] = pos;
+          if (fabs(builder->getHeightMap(v) - height) < 0.000001)
+            q.push(v);
+          else
+          if (builder->getHeightMap(v) < height)
+            ret.push_back(v);
         }
-        if (lowest > 100000)
-          break;;
-       // if (lowest < h) {
-          pos = pos + dir;
-       // } else
-       //   break;
+    }
+    if (Random.roll(predecessor.size()) || ret.empty()) {
+      for (auto& elem : predecessor)
+        if (!contains(ret, elem.first))
+          waterTiles.insert(elem.first);
+      if (ret.empty())
+        return Nothing();
+      else
+        return chooseRandom(ret);
+    } else {
+      Vec2 end = chooseRandom(ret);
+      for (Vec2 v = predecessor.at(end);; v = predecessor.at(v)) {
+        waterTiles.insert(v);
+        if (v == predecessor.at(v))
+          break;
       }
+      return end;
+    }
+  }
+
+  virtual void make(Level::Builder* builder, Rectangle area) override {
+    set<Vec2> allWaterTiles;
+    for (int i : Range(number)) {
+      set<Vec2> waterTiles;
+      Vec2 pos = startPredicate->getRandomPosition(builder, area);
+      int width = Random.getRandom(3, 6);
+      while (1) {
+        if (builder->getType(pos) == water)
+          break;
+        if (auto next = fillLake(builder, waterTiles, area, pos))
+          pos = *next;
+        else
+          break;
+      }
+      for (Vec2 v : waterTiles)
+        for (Vec2 v2 : Rectangle(v, v + Vec2(width, width)))
+          allWaterTiles.insert(v2);
+    }
+    double depth = 0;
+    for (set<Vec2> layer : Vec2::calculateLayers(allWaterTiles)) {
+      for (Vec2 v : layer)
+        if (v.inRectangle(area)) {
+          if (contains({SquareId::WATER, SquareId::SAND}, builder->getType(v).getId()))
+            continue;
+          if (builder->getType(v) == SquareId::GRASS) {
+            if (depth == 0)
+              builder->putSquare(v, SquareId::SAND, SquareAttrib::RIVER);
+            else
+              builder->putSquare(v, SquareFactory::getWater(depth), SquareId::WATER, SquareAttrib::RIVER);
+          } else
+            builder->putSquare(v, SquareId::WATER, SquareAttrib::RIVER);
+
+        }
+      depth += 0.6;
     }
   }
 
   private:
   int number;
-  char water;
-};*/
+  SquareType water;
+  SquareType sand;
+  SquarePredicate* startPredicate;
+};
 
 class Blob : public LevelMaker {
   public:
@@ -872,29 +956,28 @@ class RandomLocations : public LevelMaker {
 
   class Predicate {
     public:
-    Predicate(vector<SquarePredicate*> p, vector<int> c) : predicates(p), counts(c) {
-      int sum = 0;
-      for (int i : counts)
-        sum += i;
-      CHECK(sum == 4);
+    Predicate(SquarePredicate* main, SquarePredicate* sec, int minSec, int maxSec)
+        : predicate(main), second(sec), minSecond(minSec), maxSecond(maxSec) {
     }
-    Predicate(SquarePredicate* p) : predicates({p}), counts(1, 4) {}
 
-    bool apply(Level::Builder* builder, vector<Vec2> points) {
-      for (int i : All(predicates)) {
-        int cnt = 0;
-        for (Vec2 v : points)
-          if (predicates[i]->apply(builder, v))
-            ++cnt;
-        if (cnt != counts[i])
+    Predicate(SquarePredicate* p) : predicate(p) {}
+
+    bool apply(Level::Builder* builder, Rectangle rect) {
+      int numSecond = 0;
+      for (Vec2 v : rect)
+        if (second && second->apply(builder, v))
+          ++numSecond;
+        else
+        if (!predicate->apply(builder, v))
           return false;
-      }
-      return true;
+      return !second || (numSecond >= minSecond && numSecond < maxSecond);
     }
 
     private:
-    vector<SquarePredicate*> predicates;
-    vector<int> counts;
+    SquarePredicate* predicate;
+    SquarePredicate* second = nullptr;
+    int minSecond;
+    int maxSecond;
   };
 
   RandomLocations(bool _separate = true) : separate(_separate) {}
@@ -955,11 +1038,7 @@ class RandomLocations : public LevelMaker {
             ok = false;
             break;
           }
-        if (!predicate[i].apply(builder, {
-              Vec2(px, py),
-              Vec2(px + width - 1, py),
-              Vec2(px + width - 1, py + height - 1),
-              Vec2(px, py + height - 1)}))
+        if (!predicate[i].apply(builder, Rectangle(px, py, px + width, py + height)))
           ok = false;
         else
           if (separate)
@@ -1125,18 +1204,35 @@ Table<double> genNoiseMap(Rectangle area, vector<int> cornerLevels, double varia
   return ret;
 }
 
+void raiseLocalMinima(Table<double>& t) {
+  Vec2 minPos = t.getBounds().getTopLeft();
+  for (Vec2 v : t.getBounds())
+    if (t[v] < t[minPos])
+      minPos = v;
+  Table<bool> visited(t.getBounds(), false);
+  auto comparator = [&](const Vec2& v1, const Vec2& v2) { return t[v1] > t[v2];};
+  priority_queue<Vec2, vector<Vec2>, decltype(comparator)> q(comparator);
+  q.push(minPos);
+  visited[minPos] = true;
+  while (!q.empty()) {
+    Vec2 pos = q.top();
+    q.pop();
+    for (Vec2 v : pos.neighbors4())
+      if (v.inRectangle(t.getBounds()) && !visited[v]) {
+        if (t[v] < t[pos])
+          t[v] = t[pos];
+        q.push(v);
+        visited[v] = true;
+      }
+  }
+}
+
 vector<double> sortedValues(const Table<double>& t) {
   vector<double> values;
   for (Vec2 v : t.getBounds()) {
     values.push_back(t[v]);
   }
   sort(values.begin(), values.end());
-/*  vector<double> tmp(values);
-  unique(tmp.begin(), tmp.end());
-    string out;
-    for (double d : values)
-      out.append(convertToString(d) + " ");
-    Debug() << (int)tmp.size() << " unique values out of " << (int)values.size() << " " << out;*/
   return values;
 }
 
@@ -1152,6 +1248,7 @@ class Mountains : public LevelMaker {
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
     Table<double> wys = genNoiseMap(area, cornerLevels, varianceMult);
+    raiseLocalMinima(wys);
     vector<double> values = sortedValues(wys);
     double cutOffValSand = values[(int)(ratio[0] * double(values.size()))];
     double cutOffValLand = values[(int)(ratio[1] * double(values.size()))];
@@ -1214,14 +1311,23 @@ class Roads : public LevelMaker {
   Roads(SquareType roadSquare) : square(roadSquare) {}
 
   double getValue(Level::Builder* builder, Vec2 pos) {
-    if ((!builder->getSquare(pos)->canEnter({MovementTrait::WALK}) && 
+    if ((!builder->getSquare(pos)->canEnter({MovementTrait::WALK, MovementTrait::SWIM}) && 
          !builder->hasAttrib(pos, SquareAttrib::ROAD_CUT_THRU)) ||
         builder->hasAttrib(pos, SquareAttrib::NO_ROAD))
       return ShortestPath::infinity;
     SquareType type = builder->getType(pos);
+    if (type == SquareId::WATER)
+      return 10;
     if (contains({SquareId::ROAD, SquareId::ROAD}, type.getId()))
       return 1;
     return 1 + pow(1 + builder->getHeightMap(pos), 2);
+  }
+
+  SquareType getRoadType(Level::Builder* builder, Vec2 pos) {
+    if (builder->getType(pos) == SquareId::WATER)
+      return SquareId::BRIDGE;
+    else
+      return SquareId::ROAD;
   }
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
@@ -1240,7 +1346,7 @@ class Roads : public LevelMaker {
           Vec2::directions4(true), p1 ,p2);
       Vec2 prev(-1, -1);
       for (Vec2 v = p2; v != p1; v = path.getNextMove(v)) {
-        SquareType roadType = SquareId::ROAD;
+        SquareType roadType = getRoadType(builder, v);
         if (v != p2 && v != p1 && builder->getType(v) != roadType)
           builder->putSquare(v, roadType);
         if (prev.x > -1)
@@ -1952,13 +2058,16 @@ Vec2 getSize(SettlementType type) {
 
 RandomLocations::Predicate getSettlementPredicate(SettlementType type) {
   switch (type) {
-    case SettlementType::VILLAGE2: return new AttribPredicate(SquareAttrib::FORREST);
+    case SettlementType::VILLAGE2:
+      return new AndPredicates(
+          new NoAttribPredicate(SquareAttrib::RIVER),
+          new AttribPredicate(SquareAttrib::FORREST));
     case SettlementType::CAVE: return RandomLocations::Predicate(
-      {new TypePredicate(SquareId::MOUNTAIN2), new TypePredicate(SquareId::HILL)}, {3, 1});
+      new TypePredicate(SquareId::MOUNTAIN2), new TypePredicate(SquareId::HILL), 5, 15);
     case SettlementType::VAULT:
     case SettlementType::MINETOWN: return new TypePredicate(SquareId::MOUNTAIN2);
     default: return new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
-                 new NoAttribPredicate(SquareAttrib::FOG));
+                 new NoAttribPredicate(SquareAttrib::RIVER));
   }
   FAIL << "Wef";
   return nullptr;
@@ -2047,8 +2156,9 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
     getTreesType(SquareId::DECID_TREE), getTreesType(SquareId::BUSH) };
   vector<double> probs { 2, 1 };
   RandomLocations* locations = new RandomLocations();
-  SquarePredicate* lowlandPred = new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
-          new NoAttribPredicate(SquareAttrib::FOG));
+  SquarePredicate* lowlandPred = new AndPredicates(
+      new AttribPredicate(SquareAttrib::LOWLAND),
+      new NoAttribPredicate(SquareAttrib::RIVER));
   int numLakes = 1;
   for (int i : Range(numLakes))
     locations->add(makeLake(), {Random.getRandom(60, 120), Random.getRandom(60, 120)}, lowlandPred);
@@ -2192,14 +2302,17 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
     locations->setMinDistance(startingPos, queue, 70);
     locations->add(queue, getSize(settlement.type), getSettlementPredicate(settlement.type));
   }
+  SquarePredicate* lowlandPred = new AndPredicates(
+      new AttribPredicate(SquareAttrib::LOWLAND),
+      new NoAttribPredicate(SquareAttrib::RIVER));
   for (LevelMaker* cottage : cottages)
     for (int i : Range(Random.getRandom(1, 3))) {
       locations->add(new UniformBlob(SquareId::CROPS), {Random.getRandom(7, 12), Random.getRandom(7, 12)},
-          new AttribPredicate(SquareAttrib::LOWLAND));
+          lowlandPred);
       locations->setMaxDistanceLast(cottage, 13);
     }
-  for (int i : Range(Random.getRandom(1, 4)))
-    locations->add(new Lake(), {20, 20}, new AttribPredicate(SquareAttrib::LOWLAND));
+ /* for (int i : Range(Random.getRandom(1, 4)))
+    locations->add(new Lake(), {20, 20}, new AttribPredicate(SquareAttrib::LOWLAND));*/
   for (int i : Range(Random.getRandom(3, 6))) {
     locations->add(new UniformBlob(SquareId::WATER, Nothing(), SquareAttrib::LAKE), 
         {Random.getRandom(5, 30), Random.getRandom(5, 30)}, new TypePredicate(SquareId::MOUNTAIN2));
@@ -2219,6 +2332,8 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   queue->addMaker(new Mountains({0.0, 0.0, 0.7, 0.75, 0.95}, 0.5, {0, 1, 0, 0, 0}, true,
         {SquareId::MOUNTAIN2, SquareId::MOUNTAIN2, SquareId::HILL, SquareId::GRASS, SquareId::SAND}));
   queue->addMaker(new AddAttrib(SquareAttrib::CONNECT_CORRIDOR, new AttribPredicate(SquareAttrib::LOWLAND)));
+  queue->addMaker(new MountainRiver(2, SquareId::WATER, SquareId::SAND,
+          new TypePredicate(SquareId::MOUNTAIN2)));
   queue->addMaker(new Forrest(0.7, 0.5, SquareId::GRASS, vegetationLow, probs));
   queue->addMaker(new Forrest(0.4, 0.5, SquareId::HILL, vegetationHigh, probs));
   queue->addMaker(new Forrest(0.2, 0.3, SquareId::MOUNTAIN, vegetationHigh, probs));

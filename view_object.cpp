@@ -97,7 +97,8 @@ string ViewObject::getDescription(bool stats) const {
       { Attribute::ATTACK, "attack"},
       { Attribute::DEFENSE, "defense"},
       { Attribute::LEVEL, "level"},
-      { Attribute::EFFICIENCY, "efficiency"}};
+      { Attribute::EFFICIENCY, "efficiency"},
+      { Attribute::HEIGHT, "height"}};
   string attr;
   if (stats)
     for (Attribute a : ENUM_ALL(Attribute))

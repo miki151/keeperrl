@@ -293,6 +293,24 @@ vector<Vec2> Vec2::corners() {
   return { Vec2(1, 1), Vec2(1, -1), Vec2(-1, -1), Vec2(-1, 1)};
 }
 
+vector<set<Vec2>> Vec2::calculateLayers(set<Vec2> elems) {
+  vector<set<Vec2>> ret;
+  while (1) {
+    ret.emplace_back();
+    set<Vec2> curElems(elems);
+    for (Vec2 v : curElems)
+      for (Vec2 v2 : v.neighbors4())
+        if (!curElems.count(v2)) {
+          ret.back().insert(v);
+          elems.erase(v);
+          break;
+        }
+    if (elems.empty())
+      break;
+  }
+  return ret;
+}
+
 template <class Archive> 
 void Rectangle::serialize(Archive& ar, const unsigned int version) {
   ar& BOOST_SERIALIZATION_NVP(px)
