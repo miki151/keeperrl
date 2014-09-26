@@ -1183,7 +1183,8 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         getCollective()->fetchAllItems(pos);
         break;
     case BuildInfo::CLAIM_TILE:
-        getCollective()->claimSquare(pos);
+        if (getCollective()->isKnownSquare(pos) && getLevel()->getSquare(pos)->canConstruct(SquareId::STOCKPILE))
+          getCollective()->claimSquare(pos);
         break;
     case BuildInfo::DISPATCH:
         getCollective()->setPriorityTasks(pos);
