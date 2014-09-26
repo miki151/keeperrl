@@ -1304,7 +1304,7 @@ bool Creature::takeDamage(const Attack& attack) {
       bleed(dam);
     if (!uncorporal) {
       if (attackType != AttackType::SPELL) {
-        BodyPart part = attack.inTheBack() ? BodyPart::BACK : getBodyPart(attack.getLevel());
+        BodyPart part = attack.inTheBack() && Random.roll(3) ? BodyPart::BACK : getBodyPart(attack.getLevel());
         if (dam >= getMinDamage(part) && numGood(part) > 0) {
           youHit(part, attackType); 
           injureBodyPart(part, contains({AttackType::CUT, AttackType::BITE}, attackType));
