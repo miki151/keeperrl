@@ -18,7 +18,6 @@
 
 #include "util.h"
 #include "gui_elem.h"
-#include "texture_renderer.h"
 
 class Level;
 class CreatureView;
@@ -42,7 +41,7 @@ class MinimapGui : public GuiElem {
 
   private:
 
-  void renderMap();
+  void renderMap(Renderer&, Vec2 topLeft);
 
   struct MinimapInfo {
     Rectangle bounds;

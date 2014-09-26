@@ -24,35 +24,33 @@
 #include "square.h"
 
 static Image mapBuffer;
-static TextureRenderer renderer;
 
-void MinimapGui::renderMap() {
-  renderer.drawImage(info.bounds, mapBuffer, info.scale);
+void MinimapGui::renderMap(Renderer& renderer, Vec2 topLeft) {
+  renderer.drawImage(info.bounds.translate(topLeft), mapBuffer, info.scale);
   for (Vec2 v : info.roads) {
     Vec2 rrad(1, 1);
-    Vec2 pos = info.bounds.getTopLeft() + v * info.scale;
+    Vec2 pos = topLeft + v * info.scale;
     renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), colors[ColorId::BROWN]);
   }
   Vec2 rad(3, 3);
   if (info.player.inRectangle(info.bounds.minusMargin(rad.x)))
-    renderer.drawFilledRectangle(Rectangle(info.player - rad, info.player + rad), colors[ColorId::BLUE]);
+    renderer.drawFilledRectangle(Rectangle(topLeft + info.player - rad,
+          topLeft + info.player + rad), colors[ColorId::BLUE]);
   for (Vec2 pos : info.enemies)
-    renderer.drawFilledRectangle(Rectangle(pos - rad, pos + rad), colors[ColorId::RED]);
+    renderer.drawFilledRectangle(Rectangle(topLeft + pos - rad, topLeft + pos + rad), colors[ColorId::RED]);
   for (auto loc : info.locations)
     if (loc.text.empty())
-      renderer.drawText(colors[ColorId::LIGHT_GREEN], loc.pos.x + 5, loc.pos.y, "?");
+      renderer.drawText(colors[ColorId::LIGHT_GREEN], topLeft.x + loc.pos.x + 5, topLeft.y + loc.pos.y, "?");
     else {
-      renderer.drawFilledRectangle(loc.pos.x, loc.pos.y,
-          loc.pos.x + renderer.getTextLength(loc.text) + 10, loc.pos.y + 25,
+      renderer.drawFilledRectangle(topLeft.x + loc.pos.x, topLeft.y + loc.pos.y,
+          topLeft.x + loc.pos.x + renderer.getTextLength(loc.text) + 10, topLeft.y + loc.pos.y + 25,
           transparency(colors[ColorId::BLACK], 130));
-      renderer.drawText(colors[ColorId::WHITE], loc.pos.x + 5, loc.pos.y, loc.text);
+      renderer.drawText(colors[ColorId::WHITE], topLeft.x + loc.pos.x + 5, topLeft.y + loc.pos.y, loc.text);
     }
 }
 
 void MinimapGui::render(Renderer& r) {
-  renderMap();
-  r.drawSprite(
-      getBounds().getTopLeft(), Vec2(0, 0), Vec2(getBounds().getW(), getBounds().getH()), renderer.getTexture());
+  renderMap(r, getBounds().getTopLeft());
 }
 
 MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
@@ -65,7 +63,6 @@ void MinimapGui::onLeftClick(Vec2 v) {
 
 void MinimapGui::initialize() {
   mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
-  renderer.initialize(min(2048u, Texture::getMaximumSize()), min(2048u, Texture::getMaximumSize()));
 }
 
 void putMapPixel(Vec2 pos, Color col) {
@@ -131,9 +128,7 @@ void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Wind
       double(bounds.getH()) / level->getBounds().getH());
   while (1) {
     update(level, level->getBounds(), Rectangle(bounds.getW(), bounds.getH()), creature, true);
-    renderMap();
-    r.drawSprite(
-      bounds.getTopLeft(), Vec2(0, 0), Vec2(bounds.getW(), bounds.getH()), renderer.getTexture());
+    renderMap(r, Vec2(0, 0));
     r.drawAndClearBuffer();
     Event event;
     while (r.pollEvent(event)) {
