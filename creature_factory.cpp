@@ -1826,6 +1826,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.animal = true;
           c.spawnType = SpawnType::BEAST;
+          c.minionTasks[MinionTask::EXPLORE] = 1;
+          c.minionTasks[MinionTask::LAIR] = 1;
           c.name = "cave bear";);
     case CreatureId::RAT: 
       return CATTR(
@@ -1909,7 +1911,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks[MinionTask::EXPLORE] = 1;
-          c.minionTasks[MinionTask::SLEEP] = 1;
+          c.minionTasks[MinionTask::LAIR] = 1;
           c.name = "raven";);
     case CreatureId::VULTURE: 
       return INHERIT(RAVEN,
@@ -1931,6 +1933,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 35;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.spawnType = SpawnType::BEAST;
+          c.minionTasks[MinionTask::EXPLORE] = 1;
+          c.minionTasks[MinionTask::LAIR] = 1;
           c.name = "wolf";);    
     case CreatureId::WEREWOLF:
       return INHERIT(WOLF,
@@ -1941,7 +1945,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.size = CreatureSize::LARGE;
           c.minionTasks[MinionTask::EXPLORE] = 1;
           c.minionTasks[MinionTask::TRAIN] = 1;
-          c.minionTasks[MinionTask::SLEEP] = 1;
+          c.minionTasks[MinionTask::LAIR] = 1;
           c.name = "werewolf";);
     case CreatureId::DOG: 
       return INHERIT(WOLF,
