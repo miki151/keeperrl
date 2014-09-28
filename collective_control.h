@@ -3,6 +3,7 @@
 
 #include "monster_ai.h"
 #include "square_type.h"
+#include "player_message.h"
 
 class Creature;
 class Collective;
@@ -17,6 +18,9 @@ class CollectiveControl {
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer);
   virtual double getWarLevel() const;
   virtual void update(Creature*);
+  virtual void addMessage(const PlayerMessage&) {}
+  virtual void addAssaultNotification(const Creature*, const VillageControl*) {}
+  virtual void removeAssaultNotification(const Creature*, const VillageControl*) {}
   Level* getLevel();
   const Level* getLevel() const;
 

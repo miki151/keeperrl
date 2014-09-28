@@ -842,6 +842,7 @@ class Consume : public NonTransferable {
       if (auto action = c->consume(target->getPosition() - c->getPosition()))
         return action.append([=] {
           setDone();
+          callback->onConsumed(c, target);
         });
       else
         return NoMove;

@@ -35,6 +35,7 @@ class Task : public UniqueEntity<Task> {
     virtual void onKillCancelled(Creature*) {}
     virtual void onBedCreated(Vec2 pos, SquareType fromType, SquareType toType) {}
     virtual void onCopulated(Creature* who, Creature* with) {}
+    virtual void onConsumed(Creature* consumer, Creature* who) {}
 
     SERIALIZATION_DECL(Callback);
   };

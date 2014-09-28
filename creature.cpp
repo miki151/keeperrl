@@ -254,7 +254,7 @@ void Creature::you(const string& param) const {
   controller->you(param);
 }
 
-void Creature::playerMessage(const string& message) const {
+void Creature::playerMessage(const PlayerMessage& message) const {
   controller->privateMessage(message);
 }
 
@@ -382,11 +382,11 @@ Vec2 Creature::getPosition() const {
   return position;
 }
 
-void Creature::globalMessage(const string& playerCanSee, const string& cant) const {
+void Creature::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
   level->globalMessage(this, playerCanSee, cant);
 }
 
-void Creature::monsterMessage(const string& playerCanSee, const string& cant) const {
+void Creature::monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
   if (!isPlayer())
     level->globalMessage(this, playerCanSee, cant);
 }
@@ -1939,7 +1939,7 @@ string Creature::getTheName() const {
  
 string Creature::getAName() const {
   if (islower((*name)[0]))
-    return "a " + *name;
+    return addAParticle(*name);
   return *name;
 }
 
@@ -2344,6 +2344,7 @@ vector<string> Creature::getAdjectives() const {
 }
 
 void Creature::refreshGameInfo(GameInfo& gameInfo) const {
+  gameInfo.messageBuffer = controller->getMessages();
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
   Model::SunlightInfo sunlightInfo = level->getModel()->getSunlightInfo();
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
@@ -2397,7 +2398,7 @@ void Creature::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto skill : getSkills())
     info.skills.push_back({skill->getName(), skill->getHelpText()});
   info.attributes.push_back({"gold", int(getGold(100000000).size()), 0, ""});
-  info.time = getTime();
+  gameInfo.time = getTime();
  /* info.elfStanding = Tribe::get(TribeId::ELVEN)->getStanding(this);
   info.dwarfStanding = Tribe::get(TribeId::DWARVEN)->getStanding(this);
   info.goblinStanding = Tribe::get(TribeId::GOBLIN)->getStanding(this);*/

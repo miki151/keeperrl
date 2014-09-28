@@ -168,9 +168,8 @@ void WindowView::initialize() {
 void WindowView::reset() {
   RenderLock lock(renderMutex);
   mapLayout = &currentTileLayout.normalLayout;
-  center = {0, 0};
+  center.x = center.y = 0;
   gameReady = false;
-  clearMessageBox();
   mapGui->clearOptions();
   activeBuilding = 0;
   activeWorkshop = -1;
@@ -308,7 +307,9 @@ PGuiElem WindowView::getTurnInfoGui(int turn) {
       GuiElem::label("T: " + convertToString(turn), colors[ColorId::WHITE]));
 }
 
-PGuiElem WindowView::drawBottomPlayerInfo(GameInfo::PlayerInfo& info, GameInfo::SunlightInfo& sunlightInfo) {
+PGuiElem WindowView::drawBottomPlayerInfo(GameInfo& gameInfo) {
+  GameInfo::PlayerInfo& info = gameInfo.playerInfo;
+  GameInfo::SunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
   string title = info.title;
   if (!info.adjectives.empty() || !info.playerName.empty())
     title = " " + title;
@@ -321,7 +322,7 @@ PGuiElem WindowView::drawBottomPlayerInfo(GameInfo::PlayerInfo& info, GameInfo::
   topWidths.push_back(renderer.getTextLength(nameLine) + 50);
   topLine.push_back(GuiElem::label(info.levelName, colors[ColorId::WHITE]));
   topWidths.push_back(200);
-  topLine.push_back(getTurnInfoGui(info.time));;
+  topLine.push_back(getTurnInfoGui(gameInfo.time));;
   topWidths.push_back(100);
   topLine.push_back(getSunlightInfoGui(sunlightInfo));
   topWidths.push_back(100);
@@ -690,7 +691,9 @@ PGuiElem WindowView::drawKeeperHelp() {
   return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }
 
-PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info, GameInfo::SunlightInfo& sunlightInfo) {
+PGuiElem WindowView::drawBottomBandInfo(GameInfo& gameInfo) {
+  GameInfo::BandInfo& info = gameInfo.bandInfo;
+  GameInfo::SunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
   vector<PGuiElem> topLine;
   vector<int> topWidths;
   int resourceSpacing = 95;
@@ -702,7 +705,7 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo::BandInfo& info, GameInfo::Sunl
     topLine.push_back(GuiElem::stack(mapGui->getHintCallback(info.numResource[i].name),
             GuiElem::horizontalList(std::move(res), 30, 0)));
   }
-  topLine.push_back(getTurnInfoGui(info.time));
+  topLine.push_back(getTurnInfoGui(gameInfo.time));
   topWidths.push_back(100);
   topLine.push_back(getSunlightInfoGui(sunlightInfo));
   topWidths.push_back(100);
@@ -767,13 +770,13 @@ void WindowView::rebuildGui() {
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::PLAYER:
         right = drawRightPlayerInfo(gameInfo.playerInfo);
-        bottom = drawBottomPlayerInfo(gameInfo.playerInfo, gameInfo.sunlightInfo);
+        bottom = drawBottomPlayerInfo(gameInfo);
         rightBarWidth = rightBarWidthPlayer;
         break;
     case GameInfo::InfoType::BAND:
         right = drawRightBandInfo(gameInfo.bandInfo, gameInfo.villageInfo);
         overMap = drawMinionWindow(gameInfo.bandInfo);
-        bottom = drawBottomBandInfo(gameInfo.bandInfo, gameInfo.sunlightInfo);
+        bottom = drawBottomBandInfo(gameInfo);
         rightBarWidth = rightBarWidthCollective;
         break;
   }
@@ -815,22 +818,89 @@ vector<GuiElem*> WindowView::getClickableGuiElems() {
   return ret;
 }
 
-void WindowView::refreshText() {
+int WindowView::getNumMessageLines() const {
+  return 3;
+}
+
+static Color makeBlack(const Color& col, double freshness) {
+  double amount = 0.5 + freshness / 2;
+  return Color(col.r * amount, col.g * amount, col.b * amount);
+}
+
+static Color getMessageColor(const PlayerMessage& msg) {
+  Color color;
+  switch (msg.getPriority()) {
+    case PlayerMessage::NORMAL: color = colors[ColorId::WHITE]; break;
+    case PlayerMessage::HIGH: color = colors[ColorId::ORANGE]; break;
+    case PlayerMessage::CRITICAL: color = colors[ColorId::RED]; break;
+  }
+  return makeBlack(color, msg.getFreshness());
+}
+
+static int getNumFitting(Renderer& renderer, const vector<PlayerMessage>& messages, int maxLength, int numLines) {
+  int currentWidth = 0;
+  int currentLine = 0;
+  for (int i = messages.size() - 1; i >= 0; --i) {
+    int length = renderer.getTextLength(messages[i].getText());
+    CHECK(length <= maxLength) << "Message length exceeded: " << messages[i].getText();
+    if (currentWidth > 0)
+      ++length;
+    if (currentWidth + length > maxLength) {
+      if (currentLine == numLines - 1) 
+        return messages.size() - i - 1;
+      currentWidth = 0;
+      ++currentLine;
+    }
+    currentWidth += length;
+  }
+  return messages.size();
+}
+
+static vector<vector<PlayerMessage>> fitMessages(Renderer& renderer, const vector<PlayerMessage>& messages,
+    int maxLength, int numLines) {
+  int currentWidth = 0;
+  vector<vector<PlayerMessage>> ret {{}};
+  int numFitting = getNumFitting(renderer, messages, maxLength, numLines);
+  for (int i : Range(messages.size() - numFitting, messages.size())) {
+    int length = renderer.getTextLength(messages[i].getText());
+    if (currentWidth > 0)
+      ++length;
+    if (currentWidth + length > maxLength) {
+      if (ret.size() == numLines) 
+        break;
+      currentWidth = 0;
+      ret.emplace_back();
+    }
+    currentWidth += length;
+    ret.back().push_back(messages[i]);
+  }
+  return ret;
+}
+
+int WindowView::getMaxMessageLength() const {
+  return getMapGuiBounds().getW() - 50;
+}
+
+void WindowView::renderMessages(const vector<PlayerMessage>& messageBuffer) {
+  vector<vector<PlayerMessage>> messages = fitMessages(renderer, messageBuffer, getMaxMessageLength(),
+      getNumMessageLines());
   int lineHeight = 20;
-  int numMsg = 0;
-  for (int i : All(currentMessage))
-    if (!currentMessage[i].empty())
-      numMsg = i + 1;
-  if (numMsg > 0)
-    renderer.drawFilledRectangle(0, 0, renderer.getWidth() - rightBarWidth, lineHeight * numMsg + 15,
+  if (!messages.empty())
+    renderer.drawFilledRectangle(0, 0, renderer.getWidth() - rightBarWidth, lineHeight * messages.size() + 15,
         transparency(colors[ColorId::BLACK], 100));
-  for (int i : All(currentMessage))
-    renderer.drawText(oldMessage ? colors[ColorId::GRAY] : colors[ColorId::WHITE],
-        10, 5 + lineHeight * i, currentMessage[i]);
+  for (int i : All(messages)) {
+    int carret = 0;
+    for (auto& message : messages[i]) {
+      string text = (carret > 0 ? " " : "") + message.getText();
+      renderer.drawText(getMessageColor(message),
+          10 + carret, 5 + lineHeight * i, text);
+      carret += renderer.getTextLength(text);
+    }
+  }
 }
 
 void WindowView::resetCenter() {
-  center = {0, 0};
+  center.x = center.y = 0;
 }
 
 function<void()> WindowView::getButtonCallback(UserInput input) {
@@ -855,7 +925,7 @@ void WindowView::drawLevelMap(const CreatureView* creature) {
   TempClockPause pause;
   addVoidDialog([=] {
     minimapGui->presentMap(creature, getMapGuiBounds(), renderer,
-        [this](double x, double y) { center = {x, y};}); });
+        [this](double x, double y) { center.x = x; center.y = y;}); });
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
@@ -875,8 +945,10 @@ void WindowView::updateView(const CreatureView* collective) {
   collective->refreshGameInfo(gameInfo);
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds()))
     objects[pos] = Nothing();
-  if ((center.x < 0.01 && center.y < 0.01) || collective->staticPosition())
-    center = {double(collective->getPosition().x), double(collective->getPosition().y)};
+  if ((center.x < 0.01 && center.y < 0.01) || collective->staticPosition()) {
+    center.x = collective->getPosition().x;
+    center.y = collective->getPosition().y;
+  }
   Vec2 movePos = Vec2((center.x - mouseOffset.x) * mapLayout->squareWidth(),
       (center.y - mouseOffset.y) * mapLayout->squareHeight());
   movePos.x = max(movePos.x, 0);
@@ -907,16 +979,6 @@ void WindowView::updateView(const CreatureView* collective) {
   mapGui->updateObjects(memory);
   mapGui->setLevelBounds(level->getBounds());
   rebuildGui();
-}
-
-void WindowView::refreshView() {
-  RenderLock lock(renderMutex);
-  CHECK(std::this_thread::get_id() == renderThreadId);
-  processEvents();
-  if (renderDialog) {
-    renderDialog();
-  } else
-    refreshScreen(true);
 }
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
@@ -963,11 +1025,22 @@ class FpsCounter {
   sf::Clock clock;
 } fpsCounter;
 
+void WindowView::refreshView() {
+  RenderLock lock(renderMutex);
+  CHECK(std::this_thread::get_id() == renderThreadId);
+  if (gameReady)
+    processEvents();
+  if (renderDialog) {
+    renderDialog();
+  } else {
+    refreshScreen(true);
+  }
+}
 
 void WindowView::drawMap() {
   for (GuiElem* gui : getAllGuiElems())
     gui->render(renderer);
-  refreshText();
+  renderMessages(gameInfo.messageBuffer);
   fpsCounter.addTick();
   renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() - 70, renderer.getHeight() - 30, "FPS " + convertToString(fpsCounter.getFps()));
 }
@@ -1006,10 +1079,9 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
   TempClockPause pause;
   SyncQueue<Optional<Vec2>> returnQueue;
   addReturnDialog<Optional<Vec2>>(returnQueue, [=] ()-> Optional<Vec2> {
-  showMessage(message);
+  gameInfo.messageBuffer = { PlayerMessage(message) };
   refreshScreen();
   do {
-    showMessage(message);
     Event event;
     renderer.waitEvent(event);
     considerResizeEvent(event, getAllGuiElems());
@@ -1049,18 +1121,18 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
     if (event.type == Event::KeyPressed)
       switch (event.key.code) {
         case Keyboard::Up:
-        case Keyboard::Numpad8: showMessage(""); refreshScreen(); return Vec2(0, -1);
-        case Keyboard::Numpad9: showMessage(""); refreshScreen(); return Vec2(1, -1);
+        case Keyboard::Numpad8: refreshScreen(); return Vec2(0, -1);
+        case Keyboard::Numpad9: refreshScreen(); return Vec2(1, -1);
         case Keyboard::Right:
-        case Keyboard::Numpad6: showMessage(""); refreshScreen(); return Vec2(1, 0);
-        case Keyboard::Numpad3: showMessage(""); refreshScreen(); return Vec2(1, 1);
+        case Keyboard::Numpad6: refreshScreen(); return Vec2(1, 0);
+        case Keyboard::Numpad3: refreshScreen(); return Vec2(1, 1);
         case Keyboard::Down:
-        case Keyboard::Numpad2: showMessage(""); refreshScreen(); return Vec2(0, 1);
-        case Keyboard::Numpad1: showMessage(""); refreshScreen(); return Vec2(-1, 1);
+        case Keyboard::Numpad2: refreshScreen(); return Vec2(0, 1);
+        case Keyboard::Numpad1: refreshScreen(); return Vec2(-1, 1);
         case Keyboard::Left:
-        case Keyboard::Numpad4: showMessage(""); refreshScreen(); return Vec2(-1, 0);
-        case Keyboard::Numpad7: showMessage(""); refreshScreen(); return Vec2(-1, -1);
-        case Keyboard::Escape: showMessage(""); refreshScreen(); return Nothing();
+        case Keyboard::Numpad4: refreshScreen(); return Vec2(-1, 0);
+        case Keyboard::Numpad7: refreshScreen(); return Vec2(-1, -1);
+        case Keyboard::Escape: refreshScreen(); return Nothing();
         default: break;
       }
   } while (1);
@@ -1273,50 +1345,6 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
   return GuiElem::verticalList(std::move(lines), heights, 0);
 }
 
-void WindowView::clearMessageBox() {
-  messageInd = 0;
-  oldMessage = false;
-  for (int i : All(currentMessage))
-    currentMessage[i].clear();
-}
-
-
-void WindowView::showMessage(const string& message) {
-  messageInd = 0;
-  oldMessage = false;
-  for (int i : All(currentMessage))
-    currentMessage[i].clear();
-  currentMessage[0] = message;
-}
-
-void WindowView::addImportantMessage(const string& message) {
-  presentText("", message);
-}
-
-void WindowView::clearMessages() { 
-  showMessage("");
-}
-
-void WindowView::retireMessages() {
-  string lastMsg = currentMessage[messageInd];
-  showMessage(lastMsg);
-  oldMessage = true;
-}
-
-void WindowView::addMessage(const string& message) {
-  if (oldMessage)
-    showMessage("");
-  oldMessage = false;
-  if (currentMessage[messageInd].size() + message.size() + 1 > maxMsgLength &&
-      messageInd == currentMessage.size() - 1) {
-    currentMessage.pop_front();
-    currentMessage.push_back("");
-  }
-  if (currentMessage[messageInd].size() + message.size() + 1 > maxMsgLength)
-    ++messageInd;
-  currentMessage[messageInd] += (currentMessage[messageInd].size() > 0 ? " " : "") + message;
-}
-
 void WindowView::switchZoom() {
   refreshInput = true;
   if (mapLayout != &currentTileLayout.normalLayout)
@@ -1383,8 +1411,9 @@ bool WindowView::considerResizeEvent(sf::Event& event, vector<GuiElem*> gui) {
 bool WindowView::considerScrollEvent(sf::Event& event) {
   static bool lastPressed = false;
   if (lastPressed && !Mouse::isButtonPressed(Mouse::Right)) {
-    center = {center.x - mouseOffset.x, center.y - mouseOffset.y};
-    mouseOffset = {0.0, 0.0};
+    center.x -= mouseOffset.x;
+    center.y -= mouseOffset.y;
+    mouseOffset.x = mouseOffset.y = 0;
     lastPressed = false;  
     refreshInput = true;
     return true;
@@ -1396,8 +1425,8 @@ bool WindowView::considerScrollEvent(sf::Event& event) {
     return true;
   }
   if (event.type == Event::MouseMoved && lastPressed) {
-    mouseOffset = {double(event.mouseMove.x - lastMousePos.x) / mapLayout->squareWidth(),
-      double(event.mouseMove.y - lastMousePos.y) / mapLayout->squareHeight() };
+    mouseOffset.x = double(event.mouseMove.x - lastMousePos.x) / mapLayout->squareWidth();
+    mouseOffset.y = double(event.mouseMove.y - lastMousePos.y) / mapLayout->squareHeight();
     refreshInput = true;
     return true;
   }

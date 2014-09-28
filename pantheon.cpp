@@ -177,8 +177,8 @@ vector<Deity*> generateDeities() {
   }
   for (Deity* deity : ret)
     Debug() << deity->getName() + " lives in " + deity->getHabitatString() + ". " 
-      << makeSentence(deity->getGender().he() + " is the " + deity->getGender().god() 
-          + " of " + deity->getEpithetsString());
+      << deity->getGender().he() << " is the " << deity->getGender().god() 
+          << " of " << deity->getEpithetsString();
   return ret;
 }
 

@@ -39,16 +39,21 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const  override;
   virtual Vec2 getPosition() const  override;
-  virtual bool canSee(const Creature*) const  override;
-  virtual bool canSee(Vec2 position) const  override;
+  virtual bool canSee(const Creature*) const override;
+  virtual bool canSee(Vec2 position) const override;
   virtual vector<const Creature*> getUnknownAttacker() const override;
   virtual const Tribe* getTribe() const override;
   Tribe* getTribe();
   virtual bool isEnemy(const Creature*) const override;
   virtual void update(Creature*) override;
 
+  virtual void addAssaultNotification(const Creature*, const VillageControl*) override;
+  virtual void removeAssaultNotification(const Creature*, const VillageControl*) override;
+
   virtual bool staticPosition() const override;
   virtual int getMaxSightRange() const override;
+  virtual void addMessage(const PlayerMessage&) override;
+  void addImportantLongMessage(const string&);
 
   void onConqueredLand(const string& name);
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
@@ -91,6 +96,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   REGISTER_HANDLER(TechBookEvent, Technology*);
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity* to, WorshipType);
   REGISTER_HANDLER(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
+  REGISTER_HANDLER(ConquerEvent, const VillageControl*);
 
   friend class KeeperControlOverride;
 
@@ -205,6 +211,9 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   unordered_set<Vec2> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   ViewObject getMinionViewObject(CreatureId) const;
+
+  vector<PlayerMessage> SERIAL(messages);
+  map<const VillageControl*, vector<const Creature*>> SERIAL(assaultNotifications);
 };
 
 #endif

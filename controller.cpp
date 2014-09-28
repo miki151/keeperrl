@@ -18,6 +18,7 @@
 #include "controller.h"
 #include "map_memory.h"
 #include "creature.h"
+#include "player_message.h"
 
 template <class Archive> 
 void DoNothingController::serialize(Archive& ar, const unsigned int version) {
@@ -45,6 +46,11 @@ Controller* Controller::getPossessedController(Creature* c) {
   return new DoNothingController(c);
 }
 
+const vector<PlayerMessage>& Controller::getMessages() const {
+  static vector<PlayerMessage> ret;
+  return ret;
+}
+
 ControllerFactory::ControllerFactory(function<Controller* (Creature*)> f) : fun(f) {}
 
 PController ControllerFactory::get(Creature* c) {
@@ -61,10 +67,10 @@ bool DoNothingController::isPlayer() const {
   return false;
 }
 
-void DoNothingController::you(MsgType type, const string& param) const {
+void DoNothingController::you(MsgType type, const string& param) {
 }
 
-void DoNothingController::you(const string& param) const {
+void DoNothingController::you(const string& param) {
 }
 
 void DoNothingController::makeMove() {

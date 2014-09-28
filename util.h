@@ -541,12 +541,22 @@ map<V, vector<T> > groupBy(const vector<T>& values, function<V (const T&)> getKe
 }
 
 template <typename T>
-vector<T> getPrefix(const vector<T>& v, int start, int length) {
+vector<T> getSubsequence(const vector<T>& v, int start, int length) {
   CHECK(start >= 0 && length > 0 && start + length <= v.size());
   vector<T> ret;
   for (int i : Range(start, start + length))
     ret.push_back(v[i]);
   return ret;
+}
+
+template <typename T>
+vector<T> getPrefix(const vector<T>& v, int num) {
+  return getSubsequence(v, 0, num);
+}
+
+template <typename T>
+vector<T> getSuffix(const vector<T>& v, int num) {
+  return getSubsequence(v, v.size() - num, num);
 }
 
 template <typename T, typename U, typename Fun>
@@ -964,6 +974,7 @@ vector<T> makeVec(Args&&... args) {
 string addAParticle(const string& s);
 
 string capitalFirst(string s);
+vector<string> makeSentences(string s);
 string makeSentence(string s);
 
 string lowercase(string s);

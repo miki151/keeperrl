@@ -660,6 +660,15 @@ string makeSentence(string s) {
   return s;
 }
 
+vector<string> makeSentences(string s) {
+  vector<string> ret = split(s, {'.'});
+  for (auto& elem : ret) {
+    trim(elem);
+    elem = makeSentence(elem);
+  }
+  return ret;
+}
+
 string lowercase(string s) {
   for (int i : All(s))
     if (isupper(s[i]))

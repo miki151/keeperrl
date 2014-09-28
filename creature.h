@@ -35,6 +35,7 @@
 #include "spell_info.h"
 #include "renderable.h"
 #include "movement_type.h"
+#include "player_message.h"
 
 class Level;
 class Tribe;
@@ -122,8 +123,8 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void dropCorpse();
   virtual vector<PItem> getCorpse();
   
-  void monsterMessage(const string& playerCanSee, const string& cant = "") const;
-  void globalMessage(const string& playerCanSee, const string& cant = "") const;
+  void monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant = "") const;
+  void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant = "") const;
 
   bool isDead() const;
   bool isBlind() const;
@@ -236,7 +237,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   
   void you(MsgType type, const string& param) const;
   void you(const string& param) const;
-  void playerMessage(const string& message) const;
+  void playerMessage(const PlayerMessage& message) const;
   bool isPlayer() const;
   const MapMemory& getMemory() const override;
   void grantIdentify(int numItems);

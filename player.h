@@ -35,9 +35,9 @@ class Player : public Controller {
 
   virtual bool isPlayer() const override;
 
-  virtual void you(MsgType type, const string& param) const override;
-  virtual void you(const string& param) const override;
-  virtual void privateMessage(const string& message) const override;
+  virtual void you(MsgType type, const string& param) override;
+  virtual void you(const string& param) override;
+  virtual void privateMessage(const PlayerMessage& message) override;
 
   virtual void onKilled(const Creature* attacker) override;
   virtual bool unpossess();
@@ -46,6 +46,7 @@ class Player : public Controller {
   virtual void onItemsAppeared(vector<Item*> items, const Creature* from) override;
 
   virtual const MapMemory& getMemory() const override;
+  virtual const vector<PlayerMessage>& getMessages() const override;
   virtual void learnLocation(const Location*) override;
 
   virtual void makeMove() override;
@@ -67,6 +68,7 @@ class Player : public Controller {
 
   map<UniqueEntity<Level>::Id, MapMemory>* SERIAL(levelMemory);
   Model* SERIAL(model);
+  void showHistory();
 
   private:
   REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);
@@ -108,6 +110,9 @@ class Player : public Controller {
   bool SERIAL(adventureMode);
   vector<EpithetId> SERIAL(usedEpithets);
   bool updateView = true;
+  void retireMessages();
+  vector<PlayerMessage> SERIAL(messages);
+  vector<string> SERIAL(messageHistory);
 };
 
 #endif

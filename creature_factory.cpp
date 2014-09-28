@@ -19,7 +19,6 @@
 #include "monster.h"
 #include "level.h"
 #include "quest.h"
-#include "message_buffer.h"
 #include "entity_set.h"
 #include "effect.h"
 #include "item_factory.h"
@@ -78,12 +77,12 @@ class BoulderController : public Monster {
                 stopped = false;
                 found = true;
                 GlobalEvents.addTrapTriggerEvent(creature->getLevel(), creature->getPosition());
-                creature->monsterMessage(MessageBuffer::important("The boulder starts rolling."),
-                    MessageBuffer::important("You hear a heavy boulder rolling."));
+                creature->monsterMessage(PlayerMessage("The boulder starts rolling.", PlayerMessage::CRITICAL),
+                    PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
                 break;
               } else {
                 other->you(MsgType::DISARM_TRAP, "");
-                GlobalEvents.addTrapTriggerEvent(creature->getLevel(), creature->getPosition());
+                GlobalEvents.addTrapDisarmEvent(creature->getLevel(), other, creature->getPosition());
                 creature->die();
               }
             }
@@ -154,7 +153,7 @@ class BoulderController : public Monster {
     creature->setSpeed(speed);
   }
 
-  virtual void you(MsgType type, const string& param) const override {
+  virtual void you(MsgType type, const string& param) override {
     string msg, msgNoSee;
     switch (type) {
       case MsgType::BURN: msg = creature->getTheName() + " burns in the " + param; break;
@@ -303,7 +302,7 @@ class KrakenController : public Monster {
         c->die(nullptr);
   }
 
-  virtual void you(MsgType type, const string& param) const override {
+  virtual void you(MsgType type, const string& param) override {
     string msg, msgNoSee;
     switch (type) {
       case MsgType::KILLED_BY:

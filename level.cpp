@@ -261,7 +261,7 @@ void Level::killCreature(Creature* creature) {
 
 const static int hearingRange = 30;
 
-void Level::globalMessage(Vec2 position, const string& ifPlayerCanSee, const string& cannot) const {
+void Level::globalMessage(Vec2 position, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const {
   if (player) {
     if (playerCanSee(position))
       player->playerMessage(ifPlayerCanSee);
@@ -270,7 +270,7 @@ void Level::globalMessage(Vec2 position, const string& ifPlayerCanSee, const str
   }
 }
 
-void Level::globalMessage(const Creature* c, const string& ifPlayerCanSee, const string& cannot) const {
+void Level::globalMessage(const Creature* c, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const {
   if (player) {
     if (player->canSee(c))
       globalMessage(c->getPosition(), ifPlayerCanSee, cannot);

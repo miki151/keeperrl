@@ -71,6 +71,19 @@ bool Item::isIdentified(const string& name) {
   return everythingIdentified || ident.count(name);
 }
 
+string Item::getTrapName(TrapType type) {
+  switch (type) {
+    case TrapType::BOULDER: return "boulder";
+    case TrapType::POISON_GAS: return "poison gas";
+    case TrapType::ALARM: return "alarm";
+    case TrapType::WEB: return "web";
+    case TrapType::SURPRISE: return "surprise";
+    case TrapType::TERROR: return "terror";
+  }
+  FAIL << "wef";
+  return "";
+}
+
 ItemPredicate Item::effectPredicate(EffectType type) {
   return [type](const Item* item) { return item->getEffectType() == type; };
 }

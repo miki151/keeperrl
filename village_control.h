@@ -41,13 +41,11 @@ class VillageControl : public Task::Callback, public CollectiveControl {
   virtual bool currentlyAttacking() const;
   virtual void tick(double time) override;
 
+  virtual string getAttackMessage() const = 0;
+
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
 
   GameInfo::VillageInfo::Village getVillageInfo() const;
-
-  void setPowerTrigger(double killedCoeff, double powerCoeff);
-  void setFinalTrigger(vector<VillageControl*> otherControls);
-  void setOnFirstContact();
 
   static PVillageControl get(VillageControlInfo, Collective*, Collective* villain, const Location* location);
   static PVillageControl getFinalAttack(Collective*, Collective* villain, const Location* location,

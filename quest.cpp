@@ -18,7 +18,6 @@
 #include "quest.h"
 #include "event.h"
 #include "tribe.h"
-#include "message_buffer.h"
 #include "location.h"
 #include "creature.h"
 
@@ -55,7 +54,7 @@ class KillTribeQuest : public Quest {
     if (isFinished() && !notified) {
       notified = true;
       for (auto c : adventurers) {
-        c->playerMessage(MessageBuffer::important("Your quest is finished."));
+        c->playerMessage(PlayerMessage("Your quest is finished.", PlayerMessage::CRITICAL));
       }
     }
   }
@@ -89,14 +88,14 @@ Quest* Quest::killTribeQuest(Tribe* tribe, string message, bool onlyImp) {
 }
 
 void Quest::addAdventurer(Creature* c) {
-  string text = MessageBuffer::important(startMessage);
+  string text = startMessage;
   if (location) {
     text += " You need to head " + 
       getCardinalName((location->getBounds().middle() - c->getPosition()).getBearing().getCardinalDir()) + 
       " to find it.";
     c->learnLocation(location);
   }
-  c->playerMessage(text);
+  c->playerMessage(PlayerMessage(text, PlayerMessage::CRITICAL));
   adventurers.insert(c);
 }
 

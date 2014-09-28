@@ -69,6 +69,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
 
   static void identifyEverything();
   static bool isEverythingIdentified();
+  static string getTrapName(TrapType);
 
   virtual void apply(Creature*, Level*);
 

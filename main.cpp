@@ -30,7 +30,6 @@
 #include "model.h"
 #include "quest.h"
 #include "tribe.h"
-#include "message_buffer.h"
 #include "statistics.h"
 #include "options.h"
 #include "technology.h"
@@ -260,7 +259,6 @@ int main(int argc, char* argv[]) {
         "is the same exact game as the full version. If you'd like to buy the full version, "
         "please visit keeperrl.com");
   while (1) {
-    messageBuffer.initialize(view.get());
     view->reset();
     clearAndInitialize();
     auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {

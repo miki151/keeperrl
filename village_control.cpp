@@ -16,7 +16,6 @@
 #include "stdafx.h"
 
 #include "village_control.h"
-#include "message_buffer.h"
 #include "square.h"
 #include "level.h"
 #include "name_generator.h"
@@ -116,8 +115,7 @@ static int expLevelFun(double time) {
 
 void VillageControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
   if (!isAnonymous() && getCreatures(MinionTrait::FIGHTER).empty() && !conquered) {
-    messageBuffer.addMessage(MessageBuffer::important("You have exterminated the armed forces of " + name + ". "
-          "Make sure to plunder the village and retrieve any valuables."));
+    GlobalEvents.addConquerEvent(this);
     conquered = true;
   }
 }
@@ -216,9 +214,6 @@ class PowerTrigger : public AttackTriggerSet {
       if (numCreatures > 0) {
         if (currentTrigger >= *triggerAmounts.rbegin() - 0.001)
           lastAttackLaunched = true;
-        if (!control->isAnonymous())
-          messageBuffer.addMessage(MessageBuffer::important("The " + control->getTribe()->getName() + 
-                " of " + control->getName() + " are attacking!"));
       }
     }
   }
@@ -307,8 +302,6 @@ class FinalTrigger : public AttackTriggerSet {
     if (allConquered && !control->isConquered() && totalWar == 100000)
       totalWar = time + Random.getRandom(80, 200);
     if (totalWar < time) {
-      messageBuffer.addMessage(MessageBuffer::important(control->getTribe()->getLeader()->getTheName() + 
-            " and his army have undertaken a final, desperate attack!"));
       totalWar = -1;
       for (const Creature* c : control->getCreatures(MinionTrait::FIGHTER))
         fightingCreatures.insert(c);
@@ -337,6 +330,10 @@ class PeacefulControl : public VillageControl {
     for (Vec2 v : location->getBounds())
       if (loc->getLevel()->getSquare(v)->getName() == "bed")
         beds.push_back(v);
+  }
+
+  virtual string getAttackMessage() const {
+    return "";
   }
 
   virtual PTask getNewTask(Creature* c) override {
@@ -375,10 +372,18 @@ class TopLevelVillageControl : public PeacefulControl {
       : PeacefulControl(col, villain, location) {}
 
   virtual PTask getNewTask(Creature* c) override {
-    if (attackTrigger->startedAttack(c))
+    if (attackTrigger->startedAttack(c)) {
+      villain->addAssaultNotification(c, this);
       return Task::attackCollective(villain);
-    else
+    } else
       return PeacefulControl::getNewTask(c);
+  }
+
+  virtual string getAttackMessage() const {
+    if (getName().empty())
+      return "You are under attack by " + getTribe()->getName() + "!";
+    else
+      return "You are under attack by " + getTribe()->getName() + " of " + getName() + "!";
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -441,6 +446,13 @@ class DragonControl : public VillageControl {
 
   const double angryVictims = 5;
 
+  virtual string getAttackMessage() const override {
+    const Creature* dragon = getOnlyElement(getCollective()->getCreatures());
+    return dragon->getName() + " the " + dragon->getSpeciesName() + " is very "
+        "angry (or hungry?) and is coming to pay you a visit. Feed him some weak minions and maybe he'll go away. "
+        "Building a shrine to keep him happy might be a good idea in the future.";
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     if (c->getLevel() != villain->getLevel())
       return NoMove;
@@ -448,21 +460,22 @@ class DragonControl : public VillageControl {
       getTribe()->addFriend(villain->getTribe());
     if (pleased < -5) {
       Debug() << "Village dragon attacking " << pleased;
-      if (firstAttackMsg) {
-        firstAttackMsg = false;
-        messageBuffer.addImportantMessage(c->getName() + " the " + c->getSpeciesName() + " is very "
-            "angry (or hungry?) and is going to pay you a visit. Feed him some weak minions and maybe he'll go away. "
-            "Building a shrine to keep him happy might be a good idea in the future.");
+      if (!currentlyAttacking) {
+        villain->addAssaultNotification(c, this);
+        currentlyAttacking = true;
       }
       getTribe()->addEnemy(villain->getTribe());
       if (auto action = c->moveTowards(villain->getLeader()->getPosition())) 
         return action;
     }
     else {
+      if (currentlyAttacking && pleased >= 0) {
+        getTribe()->addFriend(villain->getTribe());
+        currentlyAttacking = false;
+        villain->removeAssaultNotification(c, this);
+      }
       if (auto action = c->stayIn(location))
         return action;
-      if (pleased >= 0)
-        getTribe()->addFriend(villain->getTribe());
     }
     for (Vec2 v : Vec2::directions8(true))
       if (auto action = c->destroy(v, Creature::BASH))
@@ -494,14 +507,14 @@ class DragonControl : public VillageControl {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(VillageControl)
-      & SVAR(firstAttackMsg)
+      & SVAR(currentlyAttacking)
       & SVAR(pleased);
     CHECK_SERIAL;
   }
 
   private:
   double SERIAL2(pleased, 0);
-  bool SERIAL2(firstAttackMsg, true);
+  bool SERIAL2(currentlyAttacking, false);
 };
 
 }

@@ -203,6 +203,7 @@ void Tribe::init() {
   Tribe::get(TribeId::KEEPER)->addEnemy(Tribe::get(TribeId::DRAGON));
   Tribe::get(TribeId::KEEPER)->addEnemy(Tribe::get(TribeId::PEST));
   Tribe::get(TribeId::KEEPER)->addEnemy(Tribe::get(TribeId::MONSTER));
+  Tribe::get(TribeId::KEEPER)->addEnemy(Tribe::get(TribeId::BANDIT));
   Tribe::get(TribeId::ELVEN)->addEnemy(Tribe::get(TribeId::GOBLIN));
   Tribe::get(TribeId::ELVEN)->addEnemy(Tribe::get(TribeId::DWARVEN));
   Tribe::get(TribeId::ELVEN)->addEnemy(Tribe::get(TribeId::BANDIT));

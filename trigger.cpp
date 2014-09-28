@@ -162,7 +162,7 @@ class Trap : public Trigger {
         GlobalEvents.addTrapTriggerEvent(c->getLevel(), c->getPosition());
       } else {
         c->you(MsgType::DISARM_TRAP, "");
-        GlobalEvents.addTrapDisarmEvent(c->getLevel(), c->getPosition());
+        GlobalEvents.addTrapDisarmEvent(c->getLevel(), c, c->getPosition());
       }
       c->getSquare()->removeTrigger(this);
     }

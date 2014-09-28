@@ -21,7 +21,6 @@
 #include "square.h"
 #include "level.h"
 #include "creature_factory.h"
-#include "message_buffer.h"
 #include "item.h"
 #include "view_object.h"
 #include "view_id.h"
@@ -345,8 +344,8 @@ static void rollingBoulder(Creature* c) {
       continue;
     Vec2 dir = chooseRandom(possibleDirs);
     l->globalMessage(pos + dir * dist, 
-        MessageBuffer::important("A huge rolling boulder appears!"),
-        MessageBuffer::important("You hear a heavy boulder rolling."));
+        PlayerMessage("A huge rolling boulder appears!", PlayerMessage::CRITICAL),
+        PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
     Square* target = l->getSquare(pos + dir * dist);
     if (target->canDestroy())
       target->destroy();

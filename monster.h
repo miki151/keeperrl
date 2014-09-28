@@ -25,8 +25,8 @@ class Monster : public Controller {
   public:
   Monster(Creature* creature, MonsterAIFactory);
   
-  virtual void you(MsgType type, const string& param) const override;
-  virtual void you(const string& param) const override;
+  virtual void you(MsgType type, const string& param) override;
+  virtual void you(const string& param) override;
   
   virtual void makeMove() override;
   virtual bool isPlayer() const;

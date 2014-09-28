@@ -19,7 +19,6 @@
 #include "level.h"
 #include "task.h"
 #include "player.h"
-#include "message_buffer.h"
 #include "model.h"
 #include "statistics.h"
 #include "options.h"
@@ -49,7 +48,9 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(startImpNum)
     & SVAR(retired)
     & SVAR(payoutWarning)
-    & SVAR(surprises);
+    & SVAR(surprises)
+    & SVAR(assaultNotifications)
+    & SVAR(messages);
   CHECK_SERIAL;
 }
 
@@ -252,7 +253,6 @@ void PlayerControl::render(View* view) {
       possess(team.front(), view);
     } else {
       view->setTimeMilli(possessed->getTime() * 300);
-      view->clearMessages();
       if (possessed->getLevel() != getLevel())
         view->resetCenter();
       unpossess();
@@ -401,7 +401,7 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
   switch (mOpt[*index]) {
     case MinionOption::POSSESS: possess(creature, view); return;
     case MinionOption::EQUIPMENT: handleEquipment(view, creature); break;
-    case MinionOption::INFO: messageBuffer.addMessage(MessageBuffer::important(creature->getDescription())); break;
+    case MinionOption::INFO: view->presentText(creature->getName(), creature->getDescription()); break;
     case MinionOption::WAKE_UP: creature->removeEffect(LastingEffect::SLEEP); return;
     case MinionOption::PRISON:
       getCollective()->setMinionTask(creature, MinionTask::PRISON);
@@ -834,7 +834,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       info.warning = getWarningText(w);
       break;
     }
-  info.time = getCollective()->getTime();
+  gameInfo.time = getCollective()->getTime();
   info.gatheringTeam = gatheringTeam;
   info.team.clear();
   for (Creature* c : team)
@@ -842,6 +842,19 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.techButtons.clear();
   for (TechInfo tech : getTechInfo())
     info.techButtons.push_back(tech.button);
+  gameInfo.messageBuffer = messages;
+}
+
+void PlayerControl::addMessage(const PlayerMessage& msg) {
+  messages.push_back(msg);
+}
+
+void PlayerControl::addImportantLongMessage(const string& msg) {
+  model->getView()->presentText("Important", msg);
+  for (string s : split(msg, {'.'})) {
+    trim(s);
+    addMessage(PlayerMessage(s, PlayerMessage::CRITICAL));
+  }
 }
 
 void PlayerControl::updateMemory() {
@@ -945,7 +958,7 @@ class MinionController : public Player {
 
   virtual void onKilled(const Creature* attacker) override {
     if (model->getView()->yesOrNoPrompt("Would you like to see the last messages?"))
-      messageBuffer.showHistory();
+      showHistory();
     creature->popController();
   }
 
@@ -1321,7 +1334,13 @@ void PlayerControl::checkKeeperDanger() {
   }
 }
 
+const double messageTimeout = 80;
+
 void PlayerControl::tick(double time) {
+/*  messages = filter(messages, [&] (const MessageInfo& info) {
+      return info.time() + messageTimeout > time; });*/
+  for (auto& elem : messages)
+    elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   considerDeityFight();
@@ -1346,6 +1365,13 @@ void PlayerControl::tick(double time) {
     if (c->getSpawnType() && !contains(getCreatures(), c))
       getCollective()->addCreature(c, {MinionTrait::FIGHTER});
   }
+  for (auto assault : copyOf(assaultNotifications))
+    for (const Creature* c : assault.second)
+      if (canSee(c)) {
+        addImportantLongMessage(assault.first->getAttackMessage());
+        assaultNotifications.erase(assault.first);
+        break;
+      }
 }
 
 bool PlayerControl::canSee(const Creature* c) const {
@@ -1384,7 +1410,7 @@ bool PlayerControl::isEnemy(const Creature* c) const {
 
 void PlayerControl::onTechBookEvent(Technology* tech) {
   if (retired) {
-    messageBuffer.addImportantMessage("The tome describes the knowledge of " + tech->getName()
+    model->getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
         + ", but you do not comprehend it.");
     return;   
   }
@@ -1397,14 +1423,14 @@ void PlayerControl::onTechBookEvent(Technology* tech) {
   }
   if (!contains(getCollective()->getTechnologies(), tech)) {
     if (!contains(nextTechs, tech))
-      messageBuffer.addImportantMessage("The tome describes the knowledge of " + tech->getName()
+      model->getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
           + ", but you do not comprehend it.");
     else {
-      messageBuffer.addImportantMessage("You have acquired the knowledge of " + tech->getName());
+      model->getView()->presentText("Information", "You have acquired the knowledge of " + tech->getName());
       getCollective()->acquireTech(tech, true);
     }
   } else {
-    messageBuffer.addImportantMessage("The tome describes the knowledge of " + tech->getName()
+    model->getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
         + ", which you already possess.");
   }
 }
@@ -1496,11 +1522,25 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
     }
 }
 
+void PlayerControl::onConquerEvent(const VillageControl* control) {
+  addImportantLongMessage("You have exterminated the armed forces of " + control->getName() + ". "
+          "Make sure to plunder the village and retrieve any valuables.");
+}
+
 void PlayerControl::onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType type) {
   if (type == WorshipType::DESTROY_ALTAR) {
     model->getView()->presentText("", "Shrine to " + to->getName() + " has been devastated by " + who->getAName());
     return;
   }
+}
+
+void PlayerControl::addAssaultNotification(const Creature* c, const VillageControl* control) {
+  assaultNotifications[control].push_back(c);
+}
+
+void PlayerControl::removeAssaultNotification(const Creature *c, const VillageControl* control) {
+  if (assaultNotifications.count(control))
+    removeElementMaybe(assaultNotifications.at(control), c);
 }
 
 template <class Archive>

@@ -18,7 +18,6 @@
 #include "player.h"
 #include "location.h"
 #include "level.h"
-#include "message_buffer.h"
 #include "ranged_weapon.h"
 #include "name_generator.h"
 #include "model.h"
@@ -41,7 +40,9 @@ void Player::serialize(Archive& ar, const unsigned int version) {
     & SVAR(displayGreeting)
     & SVAR(levelMemory)
     & SVAR(usedEpithets)
-    & SVAR(model);
+    & SVAR(model)
+    & SVAR(messages)
+    & SVAR(messageHistory);
   CHECK_SERIAL;
 }
 
@@ -172,7 +173,7 @@ void Player::pickUpAction(bool extended) {
       return;
     num = *res;
   }
-  vector<Item*> pickUpItems = getPrefix(groups[index], 0, num);
+  vector<Item*> pickUpItems = getPrefix(groups[index], num);
   tryToPerform(creature->pickUp(pickUpItems));
 }
 
@@ -263,7 +264,7 @@ void Player::dropAction(bool extended) {
       return;
     num = *res;
   }
-  tryToPerform(creature->drop(getPrefix(items, 0, num)));
+  tryToPerform(creature->drop(getPrefix(items, num)));
 }
 
 void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
@@ -281,7 +282,7 @@ void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   if (num < 1)
     return;
   privateMessage("You take " + creature->getPluralName(groups[*index][0], num));
-  tryToPerform(creature->pickUp(getPrefix(groups[*index], 0, num), false));
+  tryToPerform(creature->pickUp(getPrefix(groups[*index], num), false));
 }
 
 void Player::applyAction() {
@@ -320,7 +321,7 @@ void Player::throwAction(Optional<Vec2> dir) {
 
 void Player::throwItem(vector<Item*> items, Optional<Vec2> dir) {
   if (items[0]->getClass() == ItemClass::AMMO && Options::getValue(OptionId::HINTS))
-    privateMessage(MessageBuffer::important("To fire arrows equip a bow and use alt + direction key"));
+    privateMessage(PlayerMessage("To fire arrows equip a bow and use alt + direction key", PlayerMessage::CRITICAL));
   if (!dir) {
     auto cDir = model->getView()->chooseDirection("Which direction do you want to throw?");
     if (!cDir)
@@ -582,6 +583,10 @@ const MapMemory& Player::getMemory() const {
   return (*levelMemory)[creature->getLevel()->getUniqueId()];
 }
 
+const vector<PlayerMessage>& Player::getMessages() const {
+  return messages;
+}
+
 void Player::sleeping() {
   if (creature->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
@@ -605,6 +610,13 @@ void Player::attackAction(Creature* other) {
     }
   if (auto ind = model->getView()->chooseFromList("Choose level of the attack:", elems))
     creature->attack(other, levels[*ind]).perform();;
+}
+
+void Player::retireMessages() {
+  if (!messages.empty()) {
+    messages = {messages.back()};
+    messages[0].setFreshness(0);
+  }
 }
 
 void Player::makeMove() {
@@ -635,7 +647,7 @@ void Player::makeMove() {
   }
   for (const Creature* c : creature->getVisibleEnemies()) {
     if (c->isSpecialMonster() && !contains(specialCreatures, c)) {
-      privateMessage(MessageBuffer::important(c->getDescription()));
+      privateMessage(PlayerMessage(c->getDescription(), PlayerMessage::CRITICAL));
       specialCreatures.push_back(c);
     }
   }
@@ -649,7 +661,8 @@ void Player::makeMove() {
   vector<Vec2> direction;
   bool travel = false;
   if (action.type != UserInput::IDLE) {
-    model->getView()->retireMessages();
+    if (action.type != UserInput::REFRESH)
+      retireMessages();
     updateView = true;
   }
   switch (action.type) {
@@ -692,7 +705,7 @@ void Player::makeMove() {
     case UserInput::PAY_DEBT: payDebtAction(); break;
     case UserInput::CHAT: chatAction(); break;
     case UserInput::CONSUME: consumeAction(); break;
-    case UserInput::SHOW_HISTORY: messageBuffer.showHistory(); break;
+    case UserInput::SHOW_HISTORY: showHistory(); break;
     case UserInput::UNPOSSESS:
       if (unpossess()) {
         creature->popController();
@@ -734,6 +747,10 @@ void Player::makeMove() {
     }
 }
 
+void Player::showHistory() {
+  model->getView()->presentList("Message history:", View::getListElem(messageHistory), true);
+}
+
 void Player::moveAction(Vec2 dir) {
   if (auto action = creature->move(dir)) {
     action.perform();
@@ -750,15 +767,20 @@ bool Player::isPlayer() const {
   return true;
 }
 
-void Player::privateMessage(const string& message) const {
-  messageBuffer.addMessage(message);
+void Player::privateMessage(const PlayerMessage& message) {
+  messageHistory.push_back(message.getText());
+  if (!messages.empty() && messages.back().getFreshness() < 1)
+    messages.clear();
+  messages.emplace_back(message);
+  if (message.getPriority() == PlayerMessage::CRITICAL)
+    model->getView()->presentText("Important!", message.getText());
 }
 
-void Player::you(const string& param) const {
+void Player::you(const string& param) {
   privateMessage("You " + param);
 }
 
-void Player::you(MsgType type, const string& param) const {
+void Player::you(MsgType type, const string& param) {
   string msg;
   switch (type) {
     case MsgType::ARE: msg = "You are " + param; break;
@@ -768,7 +790,7 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::WAKE_UP: msg = "You wake up."; break;
     case MsgType::FALL_APART: msg = "You fall apart."; break;
     case MsgType::FALL: msg = "You fall on the " + param; break;
-    case MsgType::DIE: messageBuffer.addMessage("You die!!"); break;
+    case MsgType::DIE: privateMessage("You die!!"); break;
     case MsgType::TELE_DISAPPEAR: msg = "You are standing somewhere else!"; break;
     case MsgType::BLEEDING_STOPS: msg = "Your bleeding stops."; break;
     case MsgType::DIE_OF: msg = "You die" + (param.empty() ? string(".") : " of " + param); break;
@@ -816,13 +838,13 @@ void Player::you(MsgType type, const string& param) const {
     case MsgType::HIT: msg = "You hit " + param; break;
     default: break;
   }
-  messageBuffer.addMessage(msg);
+  privateMessage(msg);
 }
 
 
 void Player::onKilled(const Creature* attacker) {
   if (model->getView()->yesOrNoPrompt("Would you like to see the last messages?"))
-    messageBuffer.showHistory();
+    showHistory();
   model->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
 }
 

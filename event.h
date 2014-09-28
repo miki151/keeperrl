@@ -25,6 +25,7 @@ class Quest;
 class Technology;
 class Deity;
 enum class WorshipType;
+enum class AssaultType;
 
 #define EVENT(Name, ...)\
 template<typename... Ts>\
@@ -53,7 +54,7 @@ class EventListener {
   EVENT(ThrowEvent, const Level*, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory);
   EVENT(ExplosionEvent, const Level* level, Vec2 pos);
   EVENT(TrapTriggerEvent, const Level*, Vec2 pos);
-  EVENT(TrapDisarmEvent, const Level*, Vec2 pos);
+  EVENT(TrapDisarmEvent, const Level*, const Creature*, Vec2 pos);
   EVENT(SquareReplacedEvent, const Level*, Vec2 pos);
   EVENT(ChangeLevelEvent, const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos);
   EVENT(AlarmEvent, const Level*, Vec2 pos);
@@ -63,6 +64,7 @@ class EventListener {
   EVENT(TortureEvent, Creature* who, const Creature* torturer);
   EVENT(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
   EVENT(WorshipEvent, Creature* who, const Deity* to, WorshipType);
+  EVENT(ConquerEvent, const VillageControl* who);
 };
 
 extern EventListener GlobalEvents;

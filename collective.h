@@ -85,6 +85,7 @@ class Collective : public Task::Callback {
   virtual void onKillCancelled(Creature*) override;
   virtual void onBedCreated(Vec2, SquareType fromType, SquareType toType) override;
   virtual void onCopulated(Creature* who, Creature* with);
+  virtual void onConsumed(Creature* consumer, Creature* who);
 
   SERIALIZATION_DECL(Collective);
 
@@ -120,7 +121,6 @@ class Collective : public Task::Callback {
   bool isKnownSquare(Vec2 pos) const;
   bool underAttack() const;
 
-  void updateEfficiency(Vec2, SquareType);
   double getEfficiency(Vec2) const;
   bool hasEfficiency(Vec2) const;
 
@@ -268,7 +268,11 @@ class Collective : public Task::Callback {
   void orderConsumption(Creature* consumer, Creature* who);
   vector<Creature*>getConsumptionTargets(Creature* consumer);
 
+  void addAssaultNotification(const Creature*, const VillageControl*);
+  void removeAssaultNotification(const Creature*, const VillageControl*);
+
   private:
+  void updateEfficiency(Vec2, SquareType);
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
   void cashPayouts();
@@ -287,7 +291,7 @@ class Collective : public Task::Callback {
   REGISTER_HANDLER(AlarmEvent, const Level*, Vec2 pos);
   REGISTER_HANDLER(SurrenderEvent, Creature* who, const Creature* to);
   REGISTER_HANDLER(TrapTriggerEvent, const Level*, Vec2 pos);
-  REGISTER_HANDLER(TrapDisarmEvent, const Level*, Vec2 pos);
+  REGISTER_HANDLER(TrapDisarmEvent, const Level*, const Creature*, Vec2 pos);
   REGISTER_HANDLER(EquipEvent, const Creature*, const Item*);
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
   REGISTER_HANDLER(TortureEvent, Creature* who, const Creature* torturer);

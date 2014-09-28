@@ -3,11 +3,13 @@
 
 #include "view_object.h"
 #include "unique_entity.h"
+#include "player_message.h"
 
 /** Represents all the game information displayed around the map window.*/
 class GameInfo {
   public:
   enum class InfoType { PLAYER, BAND} infoType;
+  double time;
 
   struct CreatureInfo {
     CreatureInfo(const Collective*, const Creature*);
@@ -48,7 +50,6 @@ class GameInfo {
       string name;
     };
     vector<Resource> numResource;
-    double time;
     bool gatheringTeam = false;
     vector<UniqueEntity<Creature>::Id> team;
 
@@ -85,7 +86,6 @@ class GameInfo {
     vector<SkillInfo> skills;
     bool possessed;
     bool spellcaster;
-    double time;
     string playerName;
     vector<string> adjectives;
     string title;
@@ -113,6 +113,8 @@ class GameInfo {
     string description;
     int timeRemaining;
   } sunlightInfo;
+
+  vector<PlayerMessage> messageBuffer;
 };
 
 #endif

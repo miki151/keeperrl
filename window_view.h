@@ -36,10 +36,6 @@ class WindowView: public View {
 
   virtual void close() override;
 
-  virtual void addMessage(const string& message) override;
-  virtual void addImportantMessage(const string& message) override;
-  virtual void clearMessages() override;
-  virtual void retireMessages() override;
   virtual void refreshView() override;
   virtual void updateView(const CreatureView*) override;
   virtual void drawLevelMap(const CreatureView*) override;
@@ -84,10 +80,10 @@ class WindowView: public View {
   void drawMap();
   PGuiElem getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo);
   PGuiElem getTurnInfoGui(int turn);
-  PGuiElem drawBottomPlayerInfo(GameInfo::PlayerInfo&, GameInfo::SunlightInfo&);
+  PGuiElem drawBottomPlayerInfo(GameInfo&);
   PGuiElem drawRightPlayerInfo(GameInfo::PlayerInfo&);
   PGuiElem drawPlayerStats(GameInfo::PlayerInfo&);
-  PGuiElem drawBottomBandInfo(GameInfo::BandInfo& info, GameInfo::SunlightInfo&);
+  PGuiElem drawBottomBandInfo(GameInfo&);
   PGuiElem drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo&);
   PGuiElem drawBuildings(GameInfo::BandInfo& info);
   PGuiElem drawTechnology(GameInfo::BandInfo& info);
@@ -101,12 +97,13 @@ class WindowView: public View {
   void propagateEvent(const Event& event, vector<GuiElem*>);
   void keyboardAction(Event::KeyEvent key);
 
-  void showMessage(const string& message);
   PGuiElem drawListGui(const string& title, const vector<ListElem>& options, int& height,
       int* highlight = nullptr, int* choice = nullptr);
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
-  void refreshText();
+  void renderMessages(const vector<PlayerMessage>&);
+  int getMaxMessageLength() const;
+  int getNumMessageLines() const;
   void drawAndClearBuffer();
   Optional<Vec2> getHighlightedTile();
 
@@ -125,7 +122,6 @@ class WindowView: public View {
   bool considerResizeEvent(sf::Event&, vector<GuiElem*> gui);
 
   int messageInd = 0;
-  const static unsigned int maxMsgLength = 90;
   std::deque<string> currentMessage = std::deque<string>(3, "");
   bool oldMessage = false;
 
@@ -153,6 +149,7 @@ class WindowView: public View {
   LegendOption legendOption = LegendOption::STATS;
 
   Table<Optional<ViewIndex>> objects;
+  GameInfo gameInfo;
 
   MapLayout* mapLayout;
   MapGui* mapGui;
@@ -187,8 +184,8 @@ class WindowView: public View {
 
   Vec2 lastMousePos;
   struct {
-    double x;
-    double y;
+    double x = 0;
+    double y = 0;
   } mouseOffset, center;
   std::recursive_mutex renderMutex;
 

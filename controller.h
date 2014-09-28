@@ -24,6 +24,7 @@ class Location;
 class MapMemory;
 class Item;
 class Level;
+class PlayerMessage;
 
 class Controller {
   public:
@@ -32,13 +33,14 @@ class Controller {
 
   virtual bool isPlayer() const = 0;
 
-  virtual void you(MsgType type, const string& param) const = 0;
-  virtual void you(const string& param) const = 0;
-  virtual void privateMessage(const string& message) const {}
+  virtual void you(MsgType type, const string& param) = 0;
+  virtual void you(const string& param) = 0;
+  virtual void privateMessage(const PlayerMessage& message) {}
 
   virtual void onKilled(const Creature* attacker) {}
   virtual void onItemsAppeared(vector<Item*> items, const Creature* from) { }
   virtual const MapMemory& getMemory() const = 0;
+  virtual const vector<PlayerMessage>& getMessages() const;
 
   virtual void learnLocation(const Location*) { }
 
@@ -64,8 +66,8 @@ class DoNothingController : public Controller {
   DoNothingController(Creature*);
 
   virtual bool isPlayer() const override;
-  virtual void you(MsgType type, const string& param) const override;
-  virtual void you(const string& param) const override;
+  virtual void you(MsgType type, const string& param) override;
+  virtual void you(const string& param) override;
   virtual const MapMemory& getMemory() const override;
   virtual void makeMove() override;
   virtual void onBump(Creature*) override;

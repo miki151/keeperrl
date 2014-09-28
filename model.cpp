@@ -20,7 +20,6 @@
 #include "quest.h"
 #include "player.h"
 #include "village_control.h"
-#include "message_buffer.h"
 #include "statistics.h"
 #include "options.h"
 #include "technology.h"
@@ -680,10 +679,10 @@ vector<EnemyInfo> getEnemyInfo() {
         {VillageControlInfo::PEACEFUL}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CAVE;
-          c.creatures = CreatureFactory::singleType(Tribe::get(TribeId::HUMAN), CreatureId::BANDIT);
+          c.creatures = CreatureFactory::singleType(Tribe::get(TribeId::BANDIT), CreatureId::BANDIT);
           c.numCreatures = Random.getRandom(4, 9);
           c.location = new Location();
-          c.tribe = Tribe::get(TribeId::HUMAN);
+          c.tribe = Tribe::get(TribeId::BANDIT);
           c.buildingId = BuildingId::DUNGEON;),
         {VillageControlInfo::POWER_BASED, getKilledCoeff(), getPowerCoeff()}},
   });

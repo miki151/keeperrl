@@ -381,6 +381,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
   if (creatures.empty())
     traits.insert(MinionTrait::LEADER);
+  else if (traits[MinionTrait::FIGHTER])
+    control->addMessage(c->getAName() + " joins your forces.");
   CHECK(c->getTribe() == tribe);
   creatures.push_back(c);
   for (MinionTrait t : traits)
@@ -914,6 +916,9 @@ bool Collective::hasMinionDebt() const {
 }
 
 void Collective::makePayouts() {
+  if (int numPay = getNextSalaries())
+    control->addMessage(PlayerMessage("Payout time: " + convertToString(numPay) + " gold",
+          PlayerMessage::HIGH));
   for (Creature* c : creatures)
     if (minionPayment.count(c)) {
       minionPayment.at(c).debt() += getPaymentAmount(c);
@@ -982,7 +987,7 @@ void Collective::considerBirths() {
     PCreature spawn = CreatureFactory::fromId(chooseRandom(candidates), getTribe());
     for (Vec2 v : c->getPosition().neighbors8(true))
       if (getLevel()->getSquare(v)->canEnter(spawn.get())) {
-        Debug() << c->getAName() << " gives birth to " << spawn->getAName();
+        control->addMessage(c->getAName() + " gives birth to " + spawn->getAName());
         addCreature(std::move(spawn), v, {MinionTrait::FIGHTER});
         return;
       }
@@ -1049,6 +1054,7 @@ void Collective::tick(double time) {
         Vec2 pos = c->getPosition();
         if (containsSquare(pos) && !c->isDead()) {
           getLevel()->globalMessage(pos, c->getTheName() + " surrenders.");
+          control->addMessage(PlayerMessage(c->getAName() + " surrenders."));
           c->die(nullptr, true, false);
           addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
                 MonsterAIFactory::collective(this)), pos, {MinionTrait::PRISONER});
@@ -1151,6 +1157,11 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     for (Creature* c : creatures)
       c->addMorale(-0.03);
     control->onCreatureKilled(victim, killer);
+    if (killer)
+      control->addMessage(PlayerMessage(victim->getAName() + " is killed by " + killer->getAName(),
+            PlayerMessage::HIGH));
+    else
+      control->addMessage(PlayerMessage(victim->getAName() + " is killed.", PlayerMessage::HIGH));
   }
   if (victim1->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
     for (Creature* c : creatures)
@@ -1160,6 +1171,8 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     points += victim1->getDifficultyPoints();
     if (Creature* leader = getLeader())
       leader->increaseExpLevel(double(victim1->getDifficultyPoints()) / 200);
+    if (killer)
+      control->addMessage(PlayerMessage(victim1->getAName() + " is killed by " + killer->getAName()));
   }
 }
 
@@ -1328,6 +1341,7 @@ static const int alarmTime = 100;
 
 void Collective::onAlarmEvent(const Level* l, Vec2 pos) {
   if (l == getLevel() && containsSquare(pos)) {
+    control->addMessage(PlayerMessage("An alarm goes off.", PlayerMessage::HIGH));
     alarmInfo.finishTime() = getTime() + alarmTime;
     alarmInfo.position() = pos;
     for (Creature* c : byTrait[MinionTrait::FIGHTER])
@@ -1780,9 +1794,12 @@ void Collective::onTrapTriggerEvent(const Level* l, Vec2 pos) {
   }
 }
 
-void Collective::onTrapDisarmEvent(const Level* l, Vec2 pos) {
-  if (traps.count(pos) && l == getLevel())
+void Collective::onTrapDisarmEvent(const Level* l, const Creature* who, Vec2 pos) {
+  if (traps.count(pos) && l == getLevel()) {
+    control->addMessage(PlayerMessage(who->getAName() + " disarms a " 
+          + Item::getTrapName(traps.at(pos).type()) + " trap.", PlayerMessage::HIGH));
     traps.at(pos).armed() = false;
+  }
 }
 
 void Collective::handleSurprise(Vec2 pos) {
@@ -1876,6 +1893,11 @@ void Collective::onAppliedSquare(Vec2 pos) {
         Statistics::add(StatId::WEAPON_PRODUCED);
       if (items[0]->getClass() == ItemClass::ARMOR)
         Statistics::add(StatId::ARMOR_PRODUCED);
+      if (items.size() > 1)
+        control->addMessage(c->getAName() + " produces " + convertToString(items.size())
+            + " " + items[0]->getName(true));
+      else
+        control->addMessage(c->getAName() + " produces " + items[0]->getAName());
       getLevel()->getSquare(pos)->dropItems(std::move(items));
     }
 }
@@ -2009,12 +2031,15 @@ void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {
-  if (contains(getCreatures(), who)) {
-    if (contains(getCreatures(), with))
-      with->addMorale(1);
-    if (Random.roll(5) && !contains(pregnancies, who)) 
-      pregnancies.push_back(who);
-  }
+  control->addMessage(who->getAName() + " copulates with " + with->getAName());
+  if (contains(getCreatures(), with))
+    with->addMorale(1);
+  if (Random.roll(5) && !contains(pregnancies, who)) 
+    pregnancies.push_back(who);
+}
+
+void Collective::onConsumed(Creature* consumer, Creature* who) {
+  control->addMessage(consumer->getAName() + " consumes " + who->getAName());
 }
 
 MinionEquipment& Collective::getMinionEquipment() {
@@ -2035,3 +2060,12 @@ int Collective::getSalary(const Creature* c) const {
 int Collective::getNextPayoutTime() const {
   return nextPayoutTime;
 }
+
+void Collective::addAssaultNotification(const Creature* c, const VillageControl* vil) {
+  control->addAssaultNotification(c, vil);
+}
+
+void Collective::removeAssaultNotification(const Creature *c, const VillageControl* vil) {
+  control->removeAssaultNotification(c, vil);
+}
+

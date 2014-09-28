@@ -61,7 +61,7 @@ void Monster::onBump(Creature* c) {
     action.perform();
 }
 
-void Monster::you(MsgType type, const string& param) const {
+void Monster::you(MsgType type, const string& param) {
   string msg, msgNoSee;
   switch (type) {
     case MsgType::ARE: msg = creature->getTheName() + " is " + param; break;
@@ -126,7 +126,7 @@ void Monster::you(MsgType type, const string& param) const {
     creature->monsterMessage(msg, msgNoSee);
 }
   
-void Monster::you(const string& param) const {
+void Monster::you(const string& param) {
   creature->monsterMessage(creature->getTheName() + " " + param);
 }
 

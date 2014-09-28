@@ -23,6 +23,7 @@
 #include "vision.h"
 #include "unique_entity.h"
 #include "bucket_map.h"
+#include "player_message.h"
 
 class Model;
 class Square;
@@ -147,11 +148,11 @@ class Level : public UniqueEntity<Level> {
 
   /** Displays \paramname{playerCanSee} message if the player can see position \paramname{pos},
     and \paramname{cannot} otherwise.*/
-  void globalMessage(Vec2 position, const string& playerCanSee, const string& cannot = "") const;
+  void globalMessage(Vec2 position, const PlayerMessage& playerCanSee, const PlayerMessage& cannot = "") const;
 
   /** Displays \paramname{playerCanSee} message if the player can see the creature, 
     and \paramname{cannot} otherwise.*/
-  void globalMessage(const Creature*, const string& ifPlayerCanSee, const string& cannot) const;
+  void globalMessage(const Creature*, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const;
 
   /** Returns the player creature.*/
   const Creature* getPlayer() const;

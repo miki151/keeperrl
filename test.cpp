@@ -157,7 +157,7 @@ void testRange() {
   a.clear();
   for (int x : Range(2, 6))
     a.push_back(x);
-  CHECKEQ(getPrefix(b, 2, 4), a);
+  CHECKEQ(getSubsequence(b, 2, 4), a);
   a.clear();
   for (int x : All(b))
     a.push_back(x);

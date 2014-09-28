@@ -57,19 +57,6 @@ class View {
   /** Scrolls back to the center of the view on next refresh.*/
   virtual void resetCenter() = 0;
 
-  //@{
-  /** Adds a new message to the box. The message is remembered between refreshes,
-      and is discarded when appropriate.*/
-  virtual void addMessage(const string& message) = 0;
-  virtual void addImportantMessage(const string& message) = 0;
-  //@}
-
-  /** Clears the message box.*/
-  virtual void clearMessages() = 0;
-
-  /** Current messages are shown as old.*/
-  virtual void retireMessages() = 0;
-
   /** Reads input in a non-blocking manner.*/
   virtual UserInput getAction() = 0;
 
@@ -166,8 +153,6 @@ class View {
 
   /** Returns a default View that reads all player actions from a file instead of the keyboard.*/
   static View* createReplayView(ifstream& ifs);
-
-  GameInfo gameInfo;
 
   private:
   Jukebox* jukebox = nullptr;
