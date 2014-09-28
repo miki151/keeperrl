@@ -45,8 +45,6 @@ enum class TrapType;
 
 enum class SquareAttrib;
 
-ENUM_HASH(SquareAttrib);
-
 enum class Dir;
 
 enum class StairKey;

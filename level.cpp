@@ -435,7 +435,7 @@ Level::Builder::Builder(int width, int height, const string& n, bool covered)
 bool Level::Builder::hasAttrib(Vec2 posT, SquareAttrib attr) {
   Vec2 pos = transform(posT);
   CHECK(squares[pos] != nullptr);
-  return attrib[pos].count(attr);
+  return attrib[pos][attr];
 }
 
 void Level::Builder::addAttrib(Vec2 pos, SquareAttrib attr) {

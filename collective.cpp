@@ -468,9 +468,11 @@ PTask Collective::getPrisonerTask(Creature* c) {
           case PrisonerState::SACRIFICE: t = Task::sacrifice(this, prisoner); break;
           default: return nullptr;
         }
-        if (t)
+        if (t && t->getMove(c)) {
           elem.second.task() = t->getUniqueId();
-        return t;
+          return t;
+        } else
+          return nullptr;
       }
   return nullptr;
 }
@@ -673,8 +675,7 @@ MoveInfo Collective::getMove(Creature* c) {
     if (t->getMove(c))
       return taskMap.addTask(std::move(t), c)->getMove(c);
   if (PTask t = getPrisonerTask(c))
-    if (t->getMove(c))
-      return taskMap.addTask(std::move(t), c)->getMove(c);
+    return taskMap.addTask(std::move(t), c)->getMove(c);
   if (PTask t = control->getNewTask(c))
     if (t->getMove(c))
       return taskMap.addTask(std::move(t), c)->getMove(c);

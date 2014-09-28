@@ -25,29 +25,9 @@
 #include "shortest_path.h"
 #include "creature.h"
 
-enum class SquareAttrib {
-  NO_DIG,
-  GLACIER,
-  MOUNTAIN,
-  HILL,
-  LOWLAND,
-  CONNECT_ROAD, 
-  CONNECT_CORRIDOR,
-  LAKE,
-  RIVER,
-  ROAD_CUT_THRU,
-  NO_ROAD,
-  ROOM,
-  COLLECTIVE_START,
-  COLLECTIVE_STAIRS,
-  EMPTY_ROOM,
-  FOG,
-  FORREST,
-};
-
 class SquarePredicate {
   public:
-  virtual bool apply(Level::Builder* builder, Vec2 pos) = 0;
+  virtual bool apply(Level::Builder* builder, Vec2 pos) const = 0;
 
   Vec2 getRandomPosition(Level::Builder* builder, Rectangle area) {
     vector<Vec2> good;
@@ -64,7 +44,7 @@ class AttribPredicate : public SquarePredicate {
   public:
   AttribPredicate(SquareAttrib attr) : onAttr(attr) {}
 
-  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+  virtual bool apply(Level::Builder* builder, Vec2 pos) const override {
     return builder->hasAttrib(pos, onAttr);
   }
 
@@ -75,7 +55,7 @@ class AttribPredicate : public SquarePredicate {
 class NoAttribPredicate : public AttribPredicate {
   using AttribPredicate::AttribPredicate;
 
-  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+  virtual bool apply(Level::Builder* builder, Vec2 pos) const override {
     return !builder->hasAttrib(pos, onAttr);
   }
 };
@@ -86,7 +66,7 @@ class TypePredicate : public SquarePredicate {
 
   TypePredicate(vector<SquareType> types) : onType(types) {}
 
-  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+  virtual bool apply(Level::Builder* builder, Vec2 pos) const override {
     return contains(onType, builder->getType(pos));
   }
 
@@ -98,7 +78,7 @@ class BorderPredicate : public SquarePredicate {
   public:
   BorderPredicate(SquareType type, SquareType neighbour) : onType(type), neighbourType(neighbour) {}
 
-  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+  virtual bool apply(Level::Builder* builder, Vec2 pos) const override {
     bool okNeighbour = false;
     for (Vec2 v : pos.neighbors4())
       if (builder->getType(v) == neighbourType) {
@@ -115,7 +95,7 @@ class BorderPredicate : public SquarePredicate {
 
 class AlwaysTrue : public SquarePredicate {
   public:
-  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+  virtual bool apply(Level::Builder* builder, Vec2 pos) const override {
     return true;
   }
 };
@@ -125,7 +105,7 @@ class AndPredicates : public SquarePredicate {
   AndPredicates(SquarePredicate* a1, SquarePredicate* a2) : p({a1, a2}) {}
   AndPredicates(vector<SquarePredicate*> pr) : p(pr) {}
 
-  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+  virtual bool apply(Level::Builder* builder, Vec2 pos) const override {
     for (auto elem : p)
       if (!elem->apply(builder, pos))
         return false;
@@ -140,7 +120,7 @@ class OrPredicates : public SquarePredicate {
   public:
   OrPredicates(SquarePredicate* a1, SquarePredicate* a2) : p1(a1), p2(a2) {}
 
-  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+  virtual bool apply(Level::Builder* builder, Vec2 pos) const override {
     return p1->apply(builder, pos) || p2->apply(builder, pos);
   }
 
@@ -151,7 +131,7 @@ class OrPredicates : public SquarePredicate {
 
 class DefaultCanEnter : public SquarePredicate {
   public:
-  virtual bool apply(Level::Builder* builder, Vec2 pos) override {
+  virtual bool apply(Level::Builder* builder, Vec2 pos) const override {
     return builder->getSquare(pos)->canEnter({MovementTrait::WALK});
   }
 };
@@ -933,6 +913,31 @@ class MakerQueue : public LevelMaker {
   vector<LevelMaker*> makers;
 };
 
+class PredicatePrecalc {
+  public:
+  PredicatePrecalc(const SquarePredicate* predicate, Level::Builder* builder, Rectangle area)
+      : counts(Rectangle(area.getTopLeft(), area.getBottomRight() + Vec2(1, 1))) {
+    int px = counts.getBounds().getPX();
+    int py = counts.getBounds().getPY();
+    for (int x : Range(px, counts.getBounds().getKX()))
+      counts[x][py] = 0;
+    for (int y : Range(py, counts.getBounds().getKY()))
+      counts[px][y] = 0;
+    for (Vec2 v : Rectangle(area.getTopLeft() + Vec2(1, 1), counts.getBounds().getBottomRight()))
+      counts[v] = (predicate->apply(builder, v - Vec2(1, 1)) ? 1 : 0) +
+        counts[v.x - 1][v.y] + counts[v.x][v.y - 1] -counts[v.x - 1][v.y - 1];
+  }
+
+  int getCount(Rectangle area) const {
+    return counts[area.getBottomRight()] + counts[area.getTopLeft()]
+      -counts[area.getBottomLeft()] - counts[area.getTopRight()];
+  }
+
+  private:
+  Table<int> counts;
+};
+
+
 class RandomLocations : public LevelMaker {
   public:
   RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
@@ -957,20 +962,37 @@ class RandomLocations : public LevelMaker {
   class Predicate {
     public:
     Predicate(SquarePredicate* main, SquarePredicate* sec, int minSec, int maxSec)
+      // main and sec must be mutually exclusive!!!
         : predicate(main), second(sec), minSecond(minSec), maxSecond(maxSec) {
     }
 
     Predicate(SquarePredicate* p) : predicate(p) {}
 
-    bool apply(Level::Builder* builder, Rectangle rect) {
-      int numSecond = 0;
-      for (Vec2 v : rect)
-        if (second && second->apply(builder, v))
-          ++numSecond;
-        else
-        if (!predicate->apply(builder, v))
-          return false;
-      return !second || (numSecond >= minSecond && numSecond < maxSecond);
+    class Precomputed {
+      public:
+      Precomputed(Level::Builder* builder, Rectangle area, SquarePredicate* p1, SquarePredicate* p2,
+          int minSec, int maxSec) : pred1(p1, builder, area), minSecond(minSec), maxSecond(maxSec) {
+        if (p2)
+          pred2 = PredicatePrecalc(p2, builder, area);
+      }
+
+      bool apply(Rectangle rect) const {
+        int numFirst = pred1.getCount(rect);
+        if (!pred2)
+          return numFirst == rect.getW() * rect.getH();
+        int numSecond = pred2->getCount(rect);
+        return numSecond >= minSecond && numSecond < maxSecond && numSecond + numFirst == rect.getW() * rect.getH();
+      }
+
+      private:
+      PredicatePrecalc pred1;
+      Optional<PredicatePrecalc> pred2;
+      int minSecond;
+      int maxSecond;
+    };
+
+    Precomputed precompute(Level::Builder* builder, Rectangle area) {
+      return Precomputed(builder, area, predicate, second, minSecond, maxSecond);
     }
 
     private:
@@ -1005,10 +1027,13 @@ class RandomLocations : public LevelMaker {
   }
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
-    makeCnt(builder, area, 3000);
+    vector<Predicate::Precomputed> precomputed;
+    for (int i : All(insideMakers))
+      precomputed.push_back(predicate[i].precompute(builder, area));
+    makeCnt(builder, precomputed, area, 3000);
   }
 
-  void makeCnt(Level::Builder* builder, Rectangle area, int tries) {
+  void makeCnt(Level::Builder* builder, vector<Predicate::Precomputed>& precomputed, Rectangle area, int tries) {
     vector<Rectangle> occupied;
     vector<Rectangle> makerBounds;
     vector<Level::Builder::Rot> maps;
@@ -1038,7 +1063,7 @@ class RandomLocations : public LevelMaker {
             ok = false;
             break;
           }
-        if (!predicate[i].apply(builder, Rectangle(px, py, px + width, py + height)))
+        if (!precomputed[i].apply(Rectangle(px, py, px + width, py + height)))
           ok = false;
         else
           if (separate)
@@ -1050,7 +1075,7 @@ class RandomLocations : public LevelMaker {
       } while (!ok && --cnt > 0);
       if (cnt == 0) {
         if (tries > 0) {
-          makeCnt(builder, area, tries - 1);
+          makeCnt(builder, precomputed, area, tries - 1);
           return;
         }
         else {

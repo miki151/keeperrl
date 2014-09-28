@@ -33,6 +33,27 @@ class Location;
 class Attack;
 class CollectiveBuilder;
 
+RICH_ENUM(SquareAttrib,
+  NO_DIG,
+  GLACIER,
+  MOUNTAIN,
+  HILL,
+  LOWLAND,
+  CONNECT_ROAD, 
+  CONNECT_CORRIDOR,
+  LAKE,
+  RIVER,
+  ROAD_CUT_THRU,
+  NO_ROAD,
+  ROOM,
+  COLLECTIVE_START,
+  COLLECTIVE_STAIRS,
+  EMPTY_ROOM,
+  FOG,
+  FORREST
+);
+
+
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level : public UniqueEntity<Level> {
   public:
@@ -255,7 +276,7 @@ class Level : public UniqueEntity<Level> {
     vector<Location*> locations;
     vector<CollectiveBuilder*> collectives;
     Table<CoverInfo> coverInfo;
-    Table<unordered_set<SquareAttrib>> attrib;
+    Table<EnumSet<SquareAttrib>> attrib;
     Table<SquareType> type;
     vector<PCreature> creatures;
     Table<vector<PItem>> items;

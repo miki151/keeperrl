@@ -1109,6 +1109,10 @@ class EnumSet : public EnumMap<T, char> {
     (*this)[elem] = 1;
   }
 
+  void erase(T elem) {
+    (*this)[elem] = 0;
+  }
+
   EnumSet sum(const EnumSet& other) const {
     EnumSet ret(other);
     for (T elem : *this)
