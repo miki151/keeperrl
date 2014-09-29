@@ -565,7 +565,10 @@ PTask Collective::getStandardTask(Creature* c) {
       ret = Task::applySquare(this, getAllSquares(info.squares, info.centerOnly));
       break;
     case MinionTaskInfo::EXPLORE:
-      ret = Task::explore(chooseRandom(borderTiles));
+      if (!borderTiles.empty())
+        ret = Task::explore(chooseRandom(borderTiles));
+      else
+        return nullptr;
       break;
     case MinionTaskInfo::COPULATE:
       if (Creature* target = getCopulationTarget(c))

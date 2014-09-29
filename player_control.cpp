@@ -1337,10 +1337,10 @@ void PlayerControl::checkKeeperDanger() {
 const double messageTimeout = 80;
 
 void PlayerControl::tick(double time) {
-/*  messages = filter(messages, [&] (const MessageInfo& info) {
-      return info.time() + messageTimeout > time; });*/
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
+  messages = filter(messages, [&] (const PlayerMessage& msg) {
+      return msg.getFreshness() > 0; });
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   considerDeityFight();
