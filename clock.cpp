@@ -39,3 +39,16 @@ int Clock::getRealMillis() {
   return sfClock.getElapsedTime().asMilliseconds();
 }
 
+Intervalometer::Intervalometer(int f) : frequency(f) {
+}
+
+int Intervalometer::getCount() {
+  int mill = Clock::get().getMillis();
+  if (mill >= lastUpdate + frequency) {
+    int diff = (mill - lastUpdate) / frequency;
+    lastUpdate += diff * frequency;
+    return diff;
+  }
+  return 0;
+}
+

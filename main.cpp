@@ -44,6 +44,7 @@
 #include "script_context.h"
 #include "tile.h"
 #include "window_view.h"
+#include "clock.h"
 
 using namespace boost::iostreams;
 
@@ -344,13 +345,15 @@ int main(int argc, char* argv[]) {
       clearAndInitialize();
       return 0;
     }
-    int var = 0;
     try {
+      Intervalometer meter(3);
+      double totTime = 0;
       while (1) {
+        model->update(totTime);
         if (model->isTurnBased())
-          model->update(var++);
+          ++totTime;
         else
-          model->update(double(view->getTimeMilli()) / 300);
+          totTime += min(1.0, double(meter.getCount()) * 0.01);
       }
     } 
 #ifdef RELEASE

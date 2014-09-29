@@ -17,5 +17,14 @@ class Clock : public Singleton1<Clock> {
   int lastPause = -1;
 };
 
+class Intervalometer {
+  public:
+  Intervalometer(int frequencyMillis);
+  int getCount();
+
+  private:
+  int frequency;
+  int lastUpdate = 0;
+};
 
 #endif

@@ -252,7 +252,6 @@ void PlayerControl::render(View* view) {
     if ((possessed->isDead() || possessed->isAffected(LastingEffect::SLEEP)) && !team.empty()) {
       possess(team.front(), view);
     } else {
-      view->setTimeMilli(possessed->getTime() * 300);
       if (possessed->getLevel() != getLevel())
         view->resetCenter();
       unpossess();
