@@ -59,7 +59,7 @@ class EnumVariant {
     return id == other.id && values == other.values;
   }
 
-  bool operator != (const EnumVariant& other) {
+  bool operator != (const EnumVariant& other) const {
     return !(*this == other);
   }
 

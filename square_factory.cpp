@@ -1076,15 +1076,15 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::CANIF_TREE:
         return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"),
             "tree", Vision::get(VisionId::ELF),
-            Random.getRandom(15, 30), {{SquareId::TREE_TRUNK, 20}}, s.get<CreatureFactory>());
+            Random.getRandom(15, 30), {{SquareId::TREE_TRUNK, 20}}, s.get<CreatureFactory::SingleCreature>());
     case SquareId::DECID_TREE:
         return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"),
             "tree", Vision::get(VisionId::ELF), Random.getRandom(15, 30), {{SquareId::TREE_TRUNK, 20}},
-            s.get<CreatureFactory>());
+            s.get<CreatureFactory::SingleCreature>());
     case SquareId::BUSH:
         return new Tree(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush",
             Vision::get(VisionId::NORMAL), Random.getRandom(5, 10), {{SquareId::TREE_TRUNK, 10}},
-            s.get<CreatureFactory>());
+            s.get<CreatureFactory::SingleCreature>());
     case SquareId::TREE_TRUNK:
         return new Square(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
           CONSTRUCT(Square::Params,
@@ -1176,7 +1176,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), "workshop stand", 1);
     case SquareId::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery",
-            s.get<CreatureFactory>());
+            s.get<CreatureFactory::SingleCreature>());
     case SquareId::ALTAR:
         return new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
               Deity::getDeity(s.get<DeityHabitat>()));
@@ -1192,14 +1192,14 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::CHEST:
         return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"),
             ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest",
-            s.get<CreatureFactory>(), Random.getRandom(3, 6),
+            s.get<CreatureFactory::SingleCreature>(), Random.getRandom(3, 6),
             "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::chest());
     case SquareId::TREASURE_CHEST:
         return new Furniture(ViewObject(ViewId::TREASURE_CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);
     case SquareId::COFFIN:
         return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"),
             ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin",
-            s.get<CreatureFactory>(), 1,
+            s.get<CreatureFactory::SingleCreature>(), 1,
             "There is a rotting corpse inside. You find an item.",
             "There is a rotting corpse inside. The corpse is alive!",
             "There is a rotting corpse inside. You find some gold.", ItemFactory::chest());

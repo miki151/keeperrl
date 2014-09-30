@@ -131,6 +131,15 @@ RICH_ENUM(CreatureId,
 
 class CreatureFactory {
   public:
+  struct SingleCreature {
+    SingleCreature(Tribe*, CreatureId);
+    CreatureId id;
+    Tribe* tribe;
+    bool operator == (const SingleCreature&) const;
+    SERIALIZATION_DECL(SingleCreature);
+  };
+  CreatureFactory(const SingleCreature&);
+
   static PCreature fromId(CreatureId, Tribe*, MonsterAIFactory = MonsterAIFactory::monster());
   static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
   static CreatureFactory humanVillage(Tribe*);
@@ -138,7 +147,7 @@ class CreatureFactory {
   static CreatureFactory elvenVillage(Tribe*);
   static CreatureFactory forrest(Tribe*);
   static CreatureFactory crypt(Tribe*);
-  static CreatureFactory coffins(Tribe*);
+  static SingleCreature coffins(Tribe*);
   static CreatureFactory hellLevel(Tribe*);
   static CreatureFactory dwarfTown(Tribe*);
   static CreatureFactory vikingTown(Tribe*);
@@ -162,8 +171,6 @@ class CreatureFactory {
 
   static void init();
 
-  bool operator == (const CreatureFactory&) const;
- 
   template <class Archive>
   static void registerTypes(Archive& ar);
 

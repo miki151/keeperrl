@@ -1264,7 +1264,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 10;);
     case ItemId::TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
-            i.name = "Unarmed " + Effect::getName(item.get<TrapInfo>().effectType()) + " trap";
+            i.name = "unarmed " + Effect::getName(item.get<TrapInfo>().effectType()) + " trap";
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;

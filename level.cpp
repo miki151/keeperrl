@@ -450,7 +450,7 @@ Square* Level::Builder::getSquare(Vec2 pos) {
   return squares[transform(pos)].get();
 }
     
-SquareType Level::Builder::getType(Vec2 pos) {
+const SquareType& Level::Builder::getType(Vec2 pos) {
   return type[transform(pos)];
 }
 

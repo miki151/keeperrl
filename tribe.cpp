@@ -180,19 +180,19 @@ void Tribe::onItemsStolen(const Creature* attacker) {
 }
 
 void Tribe::init() {
-  Tribe::set(TribeId::MONSTER, new Tribe("", false));
+  Tribe::set(TribeId::MONSTER, new Tribe("monsters", false));
   Tribe::set(TribeId::LIZARD, new Tribe("lizardmen", true));
-  Tribe::set(TribeId::PEST, new Tribe("", false));
-  Tribe::set(TribeId::WILDLIFE, new Tribe("", false));
+  Tribe::set(TribeId::PEST, new Tribe("pests", false));
+  Tribe::set(TribeId::WILDLIFE, new Tribe("wildlife", false));
   Tribe::set(TribeId::ELVEN, new Tribe("elves", true));
   Tribe::set(TribeId::HUMAN, new Tribe("humans", true));
   Tribe::set(TribeId::GOBLIN, new Tribe("goblins", true));
   Tribe::set(TribeId::DWARVEN, new Tribe("dwarves", true));
-  Tribe::set(TribeId::PLAYER, new Tribe("", false));
-  Tribe::set(TribeId::KEEPER, new Tribe("", false));
-  Tribe::set(TribeId::DRAGON, new Tribe("", false));
+  Tribe::set(TribeId::PLAYER, new Tribe("player", false));
+  Tribe::set(TribeId::KEEPER, new Tribe("keeper", false));
+  Tribe::set(TribeId::DRAGON, new Tribe("dragon", false));
   Tribe::set(TribeId::CASTLE_CELLAR, new Tribe("", false));
-  Tribe::set(TribeId::BANDIT, new Tribe("", false));
+  Tribe::set(TribeId::BANDIT, new Tribe("bandits", false));
   Tribe::set(TribeId::KILL_EVERYONE, new Constant(-1));
   Tribe::set(TribeId::PEACEFUL, new Constant(1));
   Tribe::get(TribeId::KEEPER)->addEnemy(Tribe::get(TribeId::PLAYER));

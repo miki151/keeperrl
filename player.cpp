@@ -768,6 +768,8 @@ bool Player::isPlayer() const {
 }
 
 void Player::privateMessage(const PlayerMessage& message) {
+  if (message.getText().size() < 2)
+    return;
   messageHistory.push_back(message.getText());
   if (!messages.empty() && messages.back().getFreshness() < 1)
     messages.clear();

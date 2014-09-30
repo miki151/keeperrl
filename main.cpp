@@ -213,6 +213,7 @@ int main(int argc, char* argv[]) {
     output.open(fname);
     CHECK(output.is_open());
     Debug() << "Writing to " << fname;
+  Debug() << int(sizeof(SquareType));
     view.reset(View::createLoggingView(output));
 #else
     view.reset(View::createDefaultView());
@@ -346,14 +347,16 @@ int main(int argc, char* argv[]) {
       return 0;
     }
     try {
-      Intervalometer meter(3);
-      double totTime = 0;
+      const double gameTimeStep = 0.01;
+      const int stepTimeMilli = 3;
+      Intervalometer meter(stepTimeMilli);
+      double totTime = model->getTime();
       while (1) {
         model->update(totTime);
         if (model->isTurnBased())
           ++totTime;
         else
-          totTime += min(1.0, double(meter.getCount()) * 0.01);
+          totTime += min(1.0, double(meter.getCount()) * gameTimeStep);
       }
     } 
 #ifdef RELEASE

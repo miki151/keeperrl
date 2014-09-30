@@ -179,8 +179,8 @@ class Collective : public Task::Callback {
     Warning warning;
   };
 
-  vector<ItemFetchInfo>& getFetchInfo() const;
-  void fetchItems(Vec2 pos, ItemFetchInfo&, bool ignoreDelayed = false);
+  const vector<ItemFetchInfo>& getFetchInfo() const;
+  void fetchItems(Vec2 pos, const ItemFetchInfo&, bool ignoreDelayed = false);
 
   struct ConstructionInfo : public NamedTupleBase<CostInfo, bool, double, SquareType, UniqueEntity<Task>::Id> {
     NAMED_TUPLE_STUFF(ConstructionInfo);
@@ -281,6 +281,7 @@ class Collective : public Task::Callback {
   double getImmigrantChance(const ImmigrantInfo&);
 
   bool isItemNeeded(const Item*) const;
+  void addProducesMessage(const Creature*, const vector<PItem>&);
 
   SERIAL_CHECKER;
   REGISTER_HANDLER(CombatEvent, const Creature*);
@@ -391,6 +392,7 @@ class Collective : public Task::Callback {
   Creature* getCopulationTarget(Creature* succubus);
   Creature* getConsumptionTarget(Creature* consumer);
   deque<Creature*> SERIAL(pregnancies);
+  mutable vector<ItemFetchInfo> itemFetchInfo;
 };
 
 #endif

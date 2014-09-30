@@ -87,24 +87,22 @@ vector<SquareType> Collective::getEquipmentStorageSquares() {
   return equipmentStorage;
 }
 
-vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
-  static vector<ItemFetchInfo> fetchInfo {
-    {unMarkedItems(ItemClass::CORPSE), {SquareId::CEMETERY}, true, {}, Warning::GRAVES},
-    {unMarkedItems(ItemClass::GOLD), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
-    {[this](const Item* it) {
+const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
+  if (itemFetchInfo.empty())
+    itemFetchInfo = {
+      {unMarkedItems(ItemClass::CORPSE), {SquareId::CEMETERY}, true, {}, Warning::GRAVES},
+      {unMarkedItems(ItemClass::GOLD), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
+      {[this](const Item* it) {
         return minionEquipment.isItemUseful(it) && it->getClass() != ItemClass::GOLD && !isItemMarked(it);
       }, equipmentStorage, false, {}, Warning::STORAGE},
-    {[this](const Item* it) {
-        return it->getResourceId() == ResourceId::WOOD && !isItemMarked(it); },
-    resourceStorage, false, {SquareId::TREE_TRUNK}, Warning::STORAGE},
-    {[this](const Item* it) {
-        return it->getResourceId() == ResourceId::IRON && !isItemMarked(it); },
-    resourceStorage, false, {}, Warning::STORAGE},
-    {[this](const Item* it) {
-        return it->getResourceId() == ResourceId::STONE && !isItemMarked(it); },
-    resourceStorage, false, {}, Warning::STORAGE},
+      {[this](const Item* it) { return it->getResourceId() == ResourceId::WOOD && !isItemMarked(it); },
+        resourceStorage, false, {SquareId::TREE_TRUNK}, Warning::STORAGE},
+      {[this](const Item* it) { return it->getResourceId() == ResourceId::IRON && !isItemMarked(it); },
+        resourceStorage, false, {}, Warning::STORAGE},
+      {[this](const Item* it) { return it->getResourceId() == ResourceId::STONE && !isItemMarked(it); },
+        resourceStorage, false, {}, Warning::STORAGE},
   };
-  return fetchInfo;
+  return itemFetchInfo;
 }
 
 
@@ -622,7 +620,7 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
-  if (!getConfig().manageEquipment)
+  if (!getConfig().manageEquipment || !Random.roll(4)) // don't do this every turn as it's expensive
     return nullptr;
   if (usesEquipment(c))
     autoEquipment(c, Random.roll(10));
@@ -1069,7 +1067,7 @@ void Collective::tick(double time) {
       }
   }
   updateConstructions();
-  for (ItemFetchInfo& elem : getFetchInfo()) {
+  for (const ItemFetchInfo& elem : getFetchInfo()) {
     for (Vec2 pos : getAllSquares())
       fetchItems(pos, elem);
     for (SquareType type : elem.additionalPos)
@@ -1739,11 +1737,11 @@ bool Collective::isDelayed(Vec2 pos) {
 }
 
 void Collective::fetchAllItems(Vec2 pos) {
-  for (ItemFetchInfo& elem : getFetchInfo())
+  for (const ItemFetchInfo& elem : getFetchInfo())
     fetchItems(pos, elem, true);
 }
 
-void Collective::fetchItems(Vec2 pos, ItemFetchInfo& elem, bool ignoreDelayed) {
+void Collective::fetchItems(Vec2 pos, const ItemFetchInfo& elem, bool ignoreDelayed) {
   if ((isDelayed(pos) && !ignoreDelayed) 
       || (traps.count(pos) && traps.at(pos).type() == TrapType::BOULDER && traps.at(pos).armed() == true))
     return;
@@ -1868,6 +1866,14 @@ bool Collective::isItemNeeded(const Item* item) const {
   return false;
 }
 
+void Collective::addProducesMessage(const Creature* c, const vector<PItem>& items) {
+  if (items.size() > 1)
+    control->addMessage(c->getAName() + " produces " + convertToString(items.size())
+        + " " + items[0]->getName(true));
+  else
+    control->addMessage(c->getAName() + " produces " + items[0]->getAName());
+}
+
 void Collective::onAppliedSquare(Vec2 pos) {
   Creature* c = NOTNULL(getLevel()->getSquare(pos)->getCreature());
   MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
@@ -1884,7 +1890,9 @@ void Collective::onAppliedSquare(Vec2 pos) {
   }
   if (getSquares(SquareId::LABORATORY).count(pos))
     if (Random.rollD(30.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
-      getLevel()->getSquare(pos)->dropItems(ItemFactory::laboratory(technologies).random());
+      vector<PItem> items = ItemFactory::laboratory(technologies).random();
+      addProducesMessage(c, items);
+      getLevel()->getSquare(pos)->dropItems(std::move(items));
       Statistics::add(StatId::POTION_PRODUCED);
     }
   if (getSquares(SquareId::WORKSHOP).count(pos))
@@ -1899,11 +1907,7 @@ void Collective::onAppliedSquare(Vec2 pos) {
         Statistics::add(StatId::WEAPON_PRODUCED);
       if (items[0]->getClass() == ItemClass::ARMOR)
         Statistics::add(StatId::ARMOR_PRODUCED);
-      if (items.size() > 1)
-        control->addMessage(c->getAName() + " produces " + convertToString(items.size())
-            + " " + items[0]->getName(true));
-      else
-        control->addMessage(c->getAName() + " produces " + items[0]->getAName());
+      addProducesMessage(c, items);
       getLevel()->getSquare(pos)->dropItems(std::move(items));
     }
 }
@@ -2040,7 +2044,7 @@ void Collective::onCopulated(Creature* who, Creature* with) {
   control->addMessage(who->getAName() + " copulates with " + with->getAName());
   if (contains(getCreatures(), with))
     with->addMorale(1);
-  if (Random.roll(5) && !contains(pregnancies, who)) 
+  if (!contains(pregnancies, who)) 
     pregnancies.push_back(who);
 }
 

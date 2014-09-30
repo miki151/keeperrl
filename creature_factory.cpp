@@ -42,8 +42,24 @@ SERIALIZABLE(CreatureFactory);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);
 
-bool CreatureFactory::operator == (const CreatureFactory& o) const {
-  return tribe == o.tribe && creatures == o.creatures && weights == o.weights && unique == o.unique;
+CreatureFactory::SingleCreature::SingleCreature(Tribe* t, CreatureId i) : id(i), tribe(t) {}
+
+bool CreatureFactory::SingleCreature::operator == (const SingleCreature& o) const {
+  return tribe == o.tribe && id == o.id;
+}
+
+template <class Archive> 
+void CreatureFactory::SingleCreature::serialize(Archive& ar, const unsigned int version) {
+  ar& SVAR(tribe)
+    & SVAR(id)
+  CHECK_SERIAL;
+}
+
+SERIALIZABLE(CreatureFactory::SingleCreature);
+
+SERIALIZATION_CONSTRUCTOR_IMPL2(CreatureFactory, SingleCreature);
+
+CreatureFactory::CreatureFactory(const SingleCreature& s) : CreatureFactory(s.tribe, {s.id}, {1}, {}) {
 }
 
 class BoulderController : public Monster {
@@ -863,8 +879,8 @@ CreatureFactory CreatureFactory::crypt(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::ZOMBIE}, { 1}, {});
 }
 
-CreatureFactory CreatureFactory::coffins(Tribe* tribe) {
-  return CreatureFactory(tribe, { CreatureId::VAMPIRE}, { 1}, {});
+CreatureFactory::SingleCreature CreatureFactory::coffins(Tribe* tribe) {
+  return SingleCreature(tribe, CreatureId::VAMPIRE);
 }
 
 CreatureFactory CreatureFactory::hellLevel(Tribe* tribe) {

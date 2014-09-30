@@ -1806,12 +1806,12 @@ static MakerQueue* stockpileMaker(StockpileInfo info) {
 }
 
 
-CreatureFactory getChestFactory() {
-  return CreatureFactory::singleType(Tribe::get(TribeId::PEST), CreatureId::RAT);
+CreatureFactory::SingleCreature getChestFactory() {
+  return CreatureFactory::SingleCreature(Tribe::get(TribeId::PEST), CreatureId::RAT);
 }
 
 SquareType getTreesType(SquareId id) {
-  return {id, CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::ENT)};
+  return {id, CreatureFactory::SingleCreature(Tribe::get(TribeId::MONSTER), CreatureId::ENT)};
 }
 
 LevelMaker* LevelMaker::roomLevel(CreatureFactory roomFactory, CreatureFactory waterFactory,
@@ -1853,7 +1853,7 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory roomFactory, CreatureFactory w
   return new BorderGuard(queue, SquareId::BLACK_WALL);
 }
 
-LevelMaker* LevelMaker::cryptLevel(CreatureFactory roomFactory, CreatureFactory coffinFactory,
+LevelMaker* LevelMaker::cryptLevel(CreatureFactory roomFactory, CreatureFactory::SingleCreature coffinFactory,
     vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
@@ -2341,20 +2341,20 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
   for (int i : Range(Random.getRandom(3, 6))) {
     locations->add(new UniformBlob(SquareId::WATER, Nothing(), SquareAttrib::LAKE), 
         {Random.getRandom(5, 30), Random.getRandom(5, 30)}, new TypePredicate(SquareId::MOUNTAIN2));
-    locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
+ //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
   }
   for (int i : Range(Random.getRandom(3, 5))) {
     locations->add(new UniformBlob(SquareId::FLOOR, Nothing()), 
         {Random.getRandom(5, 12), Random.getRandom(5, 12)}, new TypePredicate(SquareId::MOUNTAIN2));
-    locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
+ //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
   }
-  int maxDist = 30;
-  int maxDist2 = 60;
+  int maxDist = 35;
+  int maxDist2 = 80;
   addResources(locations, Random.getRandom(2, 5), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
   addResources(locations, Random.getRandom(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE, startingPos);
   addResources(locations, Random.getRandom(7, 12), 4, 5, 10, maxDist, maxDist2, SquareId::IRON_ORE, startingPos);
   queue->addMaker(new Empty(SquareId::WATER));
-  queue->addMaker(new Mountains({0.0, 0.0, 0.7, 0.75, 0.95}, 0.5, {0, 1, 0, 0, 0}, true,
+  queue->addMaker(new Mountains({0.0, 0.0, 0.6, 0.68, 0.95}, 0.45, {0, 1, 0, 0, 0}, true,
         {SquareId::MOUNTAIN2, SquareId::MOUNTAIN2, SquareId::HILL, SquareId::GRASS, SquareId::SAND}));
   queue->addMaker(new AddAttrib(SquareAttrib::CONNECT_CORRIDOR, new AttribPredicate(SquareAttrib::LOWLAND)));
   queue->addMaker(new MountainRiver(2, SquareId::WATER, SquareId::SAND,

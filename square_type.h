@@ -75,10 +75,10 @@ enum class SquareId {
   EYEBALL,
 };
 
-typedef EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureFactory, const Tribe*),
+typedef EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureFactory::SingleCreature, const Tribe*),
     ASSIGN(DeityHabitat, SquareId::ALTAR),
     ASSIGN(const Creature*, SquareId::CREATURE_ALTAR),
-    ASSIGN(CreatureFactory,
+    ASSIGN(CreatureFactory::SingleCreature,
         SquareId::CHEST,
         SquareId::COFFIN,
         SquareId::HATCHERY,

@@ -66,7 +66,7 @@ class LevelMaker {
 
   static LevelMaker* roomLevel(CreatureFactory roomFactory, CreatureFactory waterFactory,
     CreatureFactory fireFactory, vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* cryptLevel(CreatureFactory roomFactory, CreatureFactory coffinFactory,
+  static LevelMaker* cryptLevel(CreatureFactory roomFactory, CreatureFactory::SingleCreature coffinFactory,
       vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* cellarLevel(CreatureFactory cfactory, SquareType wallType, StairLook stairLook,
       vector<StairKey> up, vector<StairKey> down);

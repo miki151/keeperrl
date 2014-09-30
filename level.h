@@ -237,7 +237,7 @@ class Level : public UniqueEntity<Level> {
     //@}
 
     /** Returns the square type.*/
-    SquareType getType(Vec2);
+    const SquareType& getType(Vec2);
 
     /** Checks if the given square has an attribute.*/
     bool hasAttrib(Vec2 pos, SquareAttrib attr);

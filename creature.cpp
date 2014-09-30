@@ -1712,7 +1712,7 @@ CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) {
 }
 
 bool Creature::canCopulateWith(const Creature* c) const {
-  return c->isCorporal() && c->getGender() != getGender() && c->isAffected(LastingEffect::SLEEP);
+  return c->isCorporal() && c->getGender() != getGender() && c->isAffected(LastingEffect::SLEEP) && c->isHumanoid();
 }
 
 bool Creature::canConsume(const Creature* c) const {
