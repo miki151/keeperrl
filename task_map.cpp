@@ -193,4 +193,9 @@ void TaskMap<CostInfo>::freeFromTask(Creature* c) {
     freeTask(t);
 }
 
+template <class CostInfo>
+const map<Task*, CostInfo>& TaskMap<CostInfo>::getCompletionCosts() const {
+  return completionCost;
+}
+
 template class TaskMap<Collective::CostInfo>;

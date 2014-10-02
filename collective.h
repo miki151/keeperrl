@@ -36,10 +36,6 @@ RICH_ENUM(CollectiveConfigId,
 RICH_ENUM(CollectiveWarning,
     DIGGING,
     STORAGE,
-    GOLD,
-    WOOD,
-    IRON,
-    STONE,
     LIBRARY,
     BEDS,
     TRAINING,
@@ -145,7 +141,6 @@ class Collective : public Task::Callback {
     ItemPredicate predicate;
     ItemId itemId;
     string name;
-    Optional<Warning> warning;
     bool dontDisplay;
   };
 
@@ -167,6 +162,7 @@ class Collective : public Task::Callback {
 
 
   int numResource(ResourceId) const;
+  int numResourcePlusDebt(ResourceId) const;
   bool hasResource(CostInfo) const;
   void takeResource(CostInfo);
   void returnResource(CostInfo);
@@ -378,6 +374,7 @@ class Collective : public Task::Callback {
   unordered_map<Vec2, double> SERIAL(delayedPos);
   vector<Vec2> getEnemyPositions() const;
   double manaRemainder = 0;
+  double getKillManaScore(const Creature*) const;
   void addMana(double);
   unordered_map<const Creature*, double> SERIAL(lastCombat);
   vector<const Creature*> SERIAL(kills);

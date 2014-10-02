@@ -32,6 +32,7 @@ class TaskMap {
   void freeTaskDelay(Task*, double delayTime);
   void setPriorityTasks(Vec2 pos);
   Task* getTaskForWorker(Creature* c);
+  const map<Task*, CostInfo>& getCompletionCosts() const;
 
   template <class Archive>
     void serialize(Archive& ar, const unsigned int version);

@@ -77,7 +77,7 @@ const Model::SunlightInfo& Model::getSunlightInfo() const {
 void Model::updateSunlightInfo() {
   double d = 0;
   if (Options::getValue(OptionId::START_WITH_NIGHT))
-    d = -dayLength;
+    d = -dayLength + 10;
   while (1) {
     d += dayLength;
     if (d > currentTime) {
@@ -190,7 +190,10 @@ void Model::update(double totalTime) {
 }
 
 void Model::tick(double time) {
+  auto previous = sunlightInfo.state;
   updateSunlightInfo();
+  if (previous != sunlightInfo.state)
+    GlobalEvents.addSunlightChangeEvent();
   Debug() << "Turn " << time;
   for (Creature* c : timeQueue.getAllCreatures()) {
     c->tick(time);

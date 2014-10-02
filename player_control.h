@@ -97,6 +97,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity* to, WorshipType);
   REGISTER_HANDLER(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
   REGISTER_HANDLER(ConquerEvent, const VillageControl*);
+  REGISTER_HANDLER(SunlightChangeEvent);
 
   friend class KeeperControlOverride;
 

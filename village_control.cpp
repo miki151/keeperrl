@@ -374,6 +374,7 @@ class TopLevelVillageControl : public PeacefulControl {
   virtual PTask getNewTask(Creature* c) override {
     if (attackTrigger->startedAttack(c)) {
       villain->addAssaultNotification(c, this);
+      Debug() << c->getName() << " " << c->getUniqueId() << " assaulting ";
       return Task::attackCollective(villain);
     } else
       return PeacefulControl::getNewTask(c);

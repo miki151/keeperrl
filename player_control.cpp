@@ -179,10 +179,6 @@ string PlayerControl::getWarningText(Collective::Warning w) {
   switch (w) {
     case Warning::DIGGING: return "Start digging into the mountain to build a dungeon.";
     case Warning::STORAGE: return "You need to build a storage room.";
-    case Warning::WOOD: return "Cut down some trees for wood.";
-    case Warning::IRON: return "You need to mine more iron.";
-    case Warning::STONE: return "You need to mine more stone.";
-    case Warning::GOLD: return "You need to mine more gold.";
     case Warning::LIBRARY: return "Build a library to start research.";
     case Warning::BEDS: return "You need to build beds for your minions.";
     case Warning::TRAINING: return "Build a training room for your minions.";
@@ -826,7 +822,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto elem : getCollective()->resourceInfo)
     if (!elem.second.dontDisplay)
       info.numResource.push_back(
-          {getResourceViewObject(elem.first), getCollective()->numResource(elem.first), elem.second.name});
+          {getResourceViewObject(elem.first), getCollective()->numResourcePlusDebt(elem.first), elem.second.name});
   info.warning = "";
   for (Warning w : ENUM_ALL(Warning))
     if (getCollective()->isWarning(w)) {
@@ -1524,6 +1520,12 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
 void PlayerControl::onConquerEvent(const VillageControl* control) {
   addImportantLongMessage("You have exterminated the armed forces of " + control->getName() + ". "
           "Make sure to plunder the village and retrieve any valuables.");
+}
+
+void PlayerControl::onSunlightChangeEvent() {
+  if (model->getSunlightInfo().state == Model::SunlightInfo::NIGHT)
+      addMessage(PlayerMessage("Night is falling. Killing enemies in their sleep yields double mana.",
+            PlayerMessage::HIGH));
 }
 
 void PlayerControl::onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType type) {

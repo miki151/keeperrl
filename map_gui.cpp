@@ -173,11 +173,22 @@ void MapGui::drawFloorBorders(Renderer& renderer, const EnumSet<Dir>& borders, i
   }
 }
 
+static void drawMorale(Renderer& renderer, const Rectangle& rect, double morale) {
+  Color col;
+  if (morale < 0)
+    col = Color(255, 0, 0, -morale * 150);
+  else
+    col = Color(0, 255, 0, morale * 150);
+  renderer.drawFilledRectangle(rect, Color::Transparent, col);
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& object,
     int sizeX, int sizeY, Vec2 tilePos) {
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
     renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
+  if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE))
+    drawMorale(renderer, Rectangle(x, y, x + sizeX, y + sizeY), object.getAttribute(ViewObject::Attribute::MORALE));
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
     renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::DARK_GREEN]);
   }

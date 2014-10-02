@@ -1353,6 +1353,8 @@ void Creature::updateViewObject() {
   modViewObject().setAttribute(ViewObject::Attribute::DEFENSE, getAttr(AttrType::DEFENSE));
   modViewObject().setAttribute(ViewObject::Attribute::ATTACK, getAttr(AttrType::DAMAGE));
   modViewObject().setAttribute(ViewObject::Attribute::LEVEL, getExpLevel());
+  modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
+  modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
   if (const Creature* c = getLevel()->getPlayer()) {
     if (isEnemy(c))
       modViewObject().setEnemyStatus(ViewObject::HOSTILE);
@@ -1395,14 +1397,12 @@ string sizeStr(CreatureSize s) {
   return 0;
 }
 
-static string adjectives(CreatureSize s, bool undead, bool notLiving, bool uncorporal) {
+static string adjectives(CreatureSize s, bool undead, bool notLiving) {
   vector<string> ret {sizeStr(s)};
   if (notLiving)
     ret.push_back("non-living");
   if (undead)
     ret.push_back("undead");
-  if (uncorporal)
-    ret.push_back("body-less");
   return combine(ret);
 }
 
@@ -1456,8 +1456,8 @@ string Creature::getDescription() const {
   string attack;
   if (attackEffect)
     attack = " It has a " + Effect::getName(*attackEffect) + " attack.";
-  return getTheName() + " is a " + adjectives(*size, undead, notLiving, uncorporal) +
-      (isHumanoid() ? " humanoid creature" : " beast") + bodyDescription() + ". " +
+  return getTheName() + " is a " + adjectives(*size, undead, notLiving) +
+      (isHumanoid() ? " humanoid" : " beast") + (uncorporal ? " spirit" : "") + bodyDescription() + ". " +
      "It is " + attrStr(*strength > 16, *dexterity > 16, *speed > 100) + "." + weapon + attack;
 }
 

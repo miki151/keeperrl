@@ -700,7 +700,8 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo& gameInfo) {
   for (int i : All(info.numResource)) {
     vector<PGuiElem> res;
     res.push_back(GuiElem::viewObject(info.numResource[i].viewObject, tilesOk));
-    res.push_back(GuiElem::label(convertToString<int>(info.numResource[i].count), colors[ColorId::WHITE]));
+    res.push_back(GuiElem::label(convertToString<int>(info.numResource[i].count),
+          info.numResource[i].count >= 0 ? colors[ColorId::WHITE] : colors[ColorId::RED]));
     topWidths.push_back(resourceSpacing);
     topLine.push_back(GuiElem::stack(mapGui->getHintCallback(info.numResource[i].name),
             GuiElem::horizontalList(std::move(res), 30, 0)));

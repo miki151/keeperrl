@@ -107,25 +107,23 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
 
 
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
-  {ResourceId::MANA, { {}, nullptr, ItemId::GOLD_PIECE, "mana", Collective::Warning::MANA}},
-  {ResourceId::PRISONER_HEAD, { {}, nullptr, ItemId::GOLD_PIECE, "", Nothing(), true}},
-  {ResourceId::GOLD, { {SquareId::TREASURE_CHEST}, Item::classPredicate(ItemClass::GOLD), ItemId::GOLD_PIECE, "gold",
-                       Collective::Warning::GOLD}},
+  {ResourceId::MANA, { {}, nullptr, ItemId::GOLD_PIECE, "mana"}},
+  {ResourceId::PRISONER_HEAD, { {}, nullptr, ItemId::GOLD_PIECE, "", true}},
+  {ResourceId::GOLD, {{SquareId::TREASURE_CHEST}, Item::classPredicate(ItemClass::GOLD), ItemId::GOLD_PIECE,"gold",}},
   {ResourceId::WOOD, { resourceStorage, [](const Item* it) {
         return it->getResourceId() == ResourceId::WOOD; },
-                       ItemId::WOOD_PLANK, "wood", Collective::Warning::WOOD}},
+                       ItemId::WOOD_PLANK, "wood"}},
   {ResourceId::IRON, { resourceStorage, [](const Item* it) {
         return it->getResourceId() == ResourceId::IRON; },
-                       ItemId::IRON_ORE, "iron", Collective::Warning::IRON}},
+                       ItemId::IRON_ORE, "iron"}},
   {ResourceId::STONE, { resourceStorage, [](const Item* it) {
-        return it->getResourceId() == ResourceId::STONE; }, ItemId::ROCK, "stone",
-                       Collective::Warning::STONE}},
+        return it->getResourceId() == ResourceId::STONE; }, ItemId::ROCK, "stone"}},
   {ResourceId::CORPSE, {
       {SquareId::CEMETERY},
       [](const Item* it) {
           return it->getClass() == ItemClass::CORPSE && it->getCorpseInfo()->canBeRevived; },
       ItemId::GOLD_PIECE,
-      "corpses", Nothing(), true}},
+      "corpses", true}},
 };
 
 map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
@@ -629,7 +627,7 @@ PTask Collective::getEquipmentTask(Creature* c) {
       for (Item* it : getLevel()->getSquare(v)->getItems([this, c] (const Item* it) {
             return minionEquipment.getOwner(it) == c; })) {
         PTask t;
-        if (c->equip(it))
+        if (it->canEquip())
           return Task::equipItem(this, v, it);
         else
           return Task::pickItem(this, v, {it});
@@ -932,7 +930,6 @@ void Collective::makePayouts() {
 
 void Collective::cashPayouts() {
   int numGold = numResource(paymentResource);
-  bool isDebt = false;
   for (Creature* c : creatures)
     if (minionPayment.count(c))
       if (int payment = minionPayment.at(c).debt()) {
@@ -940,10 +937,8 @@ void Collective::cashPayouts() {
           takeResource({paymentResource, payment});
           numGold -= payment;
           minionPayment.at(c).debt() = 0;
-        } else 
-          isDebt = true;
+        }
       }
-  setWarning(Warning::GOLD, isDebt);
  /*     vector<PTask> tasks;
       for (SquareType type : resourceInfo.at(paymentResource).storageType) {
         for (Vec2 pos : getSquares(type)) {
@@ -1017,7 +1012,6 @@ void Collective::tick(double time) {
   }
   cashPayouts();
   setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
-  setWarning(Warning::WOOD, numResource(ResourceId::WOOD) == 0);
   setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
   setWarning(Warning::MORE_LIGHTS, getSquares(SquareId::TORCH).size() * 25 < getAllSquares(roomsNeedingLight).size());
   for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
@@ -1135,7 +1129,14 @@ bool Collective::underAttack() const {
         return true;
   return false;
 }
- 
+
+double Collective::getKillManaScore(const Creature* victim) const {
+  int ret = victim->getDifficultyPoints();
+  if (victim->isAffected(LastingEffect::SLEEP))
+    ret *= 2;
+  return ret;
+}
+
 void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
   if (contains(creatures, victim1)) {
     Creature* victim = const_cast<Creature*>(victim1);
@@ -1158,8 +1159,8 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
         removeElement(byTrait[t], victim);
     if (auto spawnType = victim->getSpawnType())
       removeElement(bySpawnType[*spawnType], victim);
-    for (Creature* c : creatures)
-      c->addMorale(-0.03);
+    for (Creature* c : getCreatures(MinionTrait::FIGHTER))
+      c->addMorale(-0.015);
     control->onCreatureKilled(victim, killer);
     if (killer)
       control->addMessage(PlayerMessage(victim->getAName() + " is killed by " + killer->getAName(),
@@ -1168,9 +1169,9 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
       control->addMessage(PlayerMessage(victim->getAName() + " is killed.", PlayerMessage::HIGH));
   }
   if (victim1->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
-    for (Creature* c : creatures)
-      c->addMorale(c == killer ? 0.25 : 0.03);
-    addMana(victim1->getDifficultyPoints() / 3);
+    for (Creature* c : getCreatures(MinionTrait::FIGHTER))
+      c->addMorale(c == killer ? 0.25 : 0.015);
+    addMana(getKillManaScore(victim1));
     kills.push_back(victim1);
     points += victim1->getDifficultyPoints();
     if (Creature* leader = getLeader())
@@ -1409,6 +1410,20 @@ int Collective::numResource(ResourceId id) const {
   for (SquareType type : resourceInfo.at(id).storageType)
     for (Vec2 pos : getSquares(type))
       ret += getLevel()->getSquare(pos)->getItems(resourceInfo.at(id).predicate).size();
+  return ret;
+}
+
+int Collective::numResourcePlusDebt(ResourceId id) const {
+  int ret = numResource(id);
+  for (auto& elem : constructions)
+    if (!elem.second.built() && elem.second.cost().id() == id)
+      ret -= elem.second.cost().value();
+  for (auto& elem : taskMap.getCompletionCosts())
+    if (elem.second.id() == id)
+      ret += elem.second.value();
+  if (id == ResourceId::GOLD)
+    for (auto& elem : minionPayment)
+      ret -= elem.second.debt();
   return ret;
 }
 
@@ -1696,8 +1711,6 @@ void Collective::updateConstructions() {
     }
   for (auto& elem : constructions)
     if (!isDelayed(elem.first) && elem.second.marked() <= getTime() && !elem.second.built()) {
-      if (auto warning = resourceInfo.at(elem.second.cost().id()).warning)
-        setWarning(*warning, !hasResource(elem.second.cost()));
       if (!hasResource(elem.second.cost()))
         continue;
       elem.second.task() = taskMap.addTaskCost(Task::construction(this, elem.first, elem.second.type()), elem.first,
