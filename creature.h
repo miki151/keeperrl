@@ -72,6 +72,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   double getHealth() const;
   double getMorale() const;
   void addMorale(double);
+  DEF_UNIQUE_PTR(MoraleOverride);
   class MoraleOverride {
     public:
     virtual Optional<double> getMorale() = 0;
@@ -79,7 +80,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
     template <class Archive> 
     void serialize(Archive& ar, const unsigned int version);
   };
-  DEF_UNIQUE_PTR(MoraleOverride);
   void addMoraleOverride(PMoraleOverride);
 
   double getWeight() const;
@@ -268,6 +268,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   bool isAffectedPermanently(LastingEffect) const;
 
   vector<AttackLevel> getAttackLevels() const;
+  bool hasSuicidalAttack() const;
 
   const EnumMap<MinionTask, double>& getMinionTasks() const;
 

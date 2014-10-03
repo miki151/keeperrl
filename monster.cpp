@@ -114,7 +114,7 @@ void Monster::you(MsgType type, const string& param) {
     case MsgType::TURN: msg = creature->getTheName() + " turns " + param; break;
     case MsgType::BECOME: msg = creature->getTheName() + " becomes " + param; break;
     case MsgType::COPULATE: msg = creature->getTheName() + " copulates " + param; break;
-    case MsgType::CONSUME: msg = creature->getTheName() + " consumes " + param; break;
+    case MsgType::CONSUME: msg = creature->getTheName() + " absorbs " + param; break;
     case MsgType::GROW: msg = creature->getTheName() + " grows " + param; break;
     case MsgType::BREAK_FREE: msg = creature->getTheName() + " breaks free from " + param; break;
     case MsgType::PRAY: msg = creature->getTheName() + " prays to " + param; break;

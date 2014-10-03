@@ -1075,6 +1075,10 @@ BodyPart Creature::getBodyPart(AttackLevel attack) const {
   return BodyPart::ARM;
 }
 
+bool Creature::hasSuicidalAttack() const {
+  return AttackType == AttackType::POSSESS;
+}
+
 static string getAttackParam(AttackType type) {
   switch (type) {
     case AttackType::CUT: return "cut";

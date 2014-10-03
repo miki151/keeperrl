@@ -1336,7 +1336,7 @@ class Roads : public LevelMaker {
   Roads(SquareType roadSquare) : square(roadSquare) {}
 
   double getValue(Level::Builder* builder, Vec2 pos) {
-    if ((!builder->getSquare(pos)->canEnter({MovementTrait::WALK, MovementTrait::SWIM}) && 
+    if ((!builder->getSquare(pos)->canEnter(MovementType({MovementTrait::WALK, MovementTrait::SWIM})) && 
          !builder->hasAttrib(pos, SquareAttrib::ROAD_CUT_THRU)) ||
         builder->hasAttrib(pos, SquareAttrib::NO_ROAD))
       return ShortestPath::infinity;

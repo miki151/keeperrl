@@ -76,13 +76,19 @@ class TempClockPause {
 
 int rightBarWidthCollective = 330;
 int rightBarWidthPlayer = 220;
-int rightBarWidth = rightBarWidthCollective;
-int bottomBarHeight = 75;
+int bottomBarHeightCollective = 45;
+int bottomBarHeightPlayer = 75;
 
 WindowRenderer renderer;
 
 Rectangle WindowView::getMapGuiBounds() const {
-  return Rectangle(0, 0, renderer.getWidth() - rightBarWidth, renderer.getHeight() - bottomBarHeight);
+  switch (gameInfo.infoType) {
+    case GameInfo::InfoType::PLAYER:
+      return Rectangle(0, 0, renderer.getWidth() - rightBarWidthPlayer, renderer.getHeight() - bottomBarHeightPlayer);
+    case GameInfo::InfoType::BAND:
+      return Rectangle(0, 0, renderer.getWidth() - rightBarWidthCollective,
+          renderer.getHeight() - bottomBarHeightCollective);
+  }
 }
 
 Rectangle WindowView::getMinimapBounds() const {
@@ -710,19 +716,37 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo& gameInfo) {
   topWidths.push_back(100);
   topLine.push_back(getSunlightInfoGui(sunlightInfo));
   topWidths.push_back(100);
-  vector<PGuiElem> bottomLine;
-  if (Clock::get().isPaused())
-    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().cont(); }),
-        GuiElem::label("PAUSED", colors[ColorId::RED])));
-  else
-    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().pause(); }),
-        GuiElem::label("PAUSE", colors[ColorId::LIGHT_BLUE])));
-  bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { switchZoom(); }),
-        GuiElem::label("ZOOM", colors[ColorId::LIGHT_BLUE])));
-  bottomLine.push_back(GuiElem::label(info.warning, colors[ColorId::RED]));
-  return GuiElem::verticalList(makeVec<PGuiElem>(GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2),
-        GuiElem::horizontalList(std::move(bottomLine), 85, 0)), 28, 0);
+ // vector<PGuiElem> bottomLine;
+ // topLine.push_back(GuiElem::label(info.warning, colors[ColorId::RED]));
+  return /*GuiElem::verticalList(makeVec<PGuiElem>(*/GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2);
+//        GuiElem::horizontalList(std::move(bottomLine), 85, 0)), 28, 0);
 }
+
+class FpsCounter {
+  public:
+
+  int getSec() {
+    return clock.getElapsedTime().asSeconds();
+  }
+  void addTick() {
+    if (getSec() == curSec)
+      ++curFps;
+    else {
+      lastFps = curFps;
+      curSec = getSec();
+      curFps = 0;
+    }
+  }
+
+  int getFps() {
+    return lastFps;
+  }
+
+  int lastFps = 0;
+  int curSec = -1;
+  int curFps = 0;
+  sf::Clock clock;
+} fpsCounter;
 
 PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo& villageInfo) {
   vector<PGuiElem> buttons = makeVec<PGuiElem>(
@@ -758,6 +782,19 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       invisible.push_back(GuiElem::invisible(std::move(elem.second)));
   main = GuiElem::border2(GuiElem::margins(std::move(main), 15, 15, 15, 5));
   PGuiElem butGui = GuiElem::margins(GuiElem::horizontalList(std::move(buttons), 50, 0), 0, 0, 0, 5);
+  vector<PGuiElem> bottomLine;
+  if (Clock::get().isPaused())
+    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().cont(); }),
+        GuiElem::label("PAUSED", colors[ColorId::RED])));
+  else
+    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().pause(); }),
+        GuiElem::label("PAUSE", colors[ColorId::LIGHT_BLUE])));
+  bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { switchZoom(); }),
+      GuiElem::label("ZOOM", colors[ColorId::LIGHT_BLUE])));
+  bottomLine.push_back(
+      GuiElem::label("FPS " + convertToString(fpsCounter.getFps()), colors[ColorId::WHITE]));
+  main = GuiElem::margin(GuiElem::margins(GuiElem::horizontalList(std::move(bottomLine), 90, 0), 30, 0, 0, 0),
+      std::move(main), bottomBarHeightCollective, GuiElem::BOTTOM);
   return GuiElem::stack(GuiElem::stack(std::move(invisible)),
       GuiElem::margin(std::move(butGui), std::move(main), 55, GuiElem::TOP));
 }
@@ -768,24 +805,28 @@ const int minionWindowHeight = 600;
 
 void WindowView::rebuildGui() {
   PGuiElem bottom, right, overMap;
+  int rightBarWidth;
+  int bottomBarHeight;
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::PLAYER:
         right = drawRightPlayerInfo(gameInfo.playerInfo);
         bottom = drawBottomPlayerInfo(gameInfo);
         rightBarWidth = rightBarWidthPlayer;
+        bottomBarHeight = bottomBarHeightPlayer;
         break;
     case GameInfo::InfoType::BAND:
         right = drawRightBandInfo(gameInfo.bandInfo, gameInfo.villageInfo);
         overMap = drawMinionWindow(gameInfo.bandInfo);
         bottom = drawBottomBandInfo(gameInfo);
         rightBarWidth = rightBarWidthCollective;
+        bottomBarHeight = bottomBarHeightCollective;
         break;
   }
   resetMapBounds();
   CHECK(std::this_thread::get_id() != renderThreadId);
   tempGuiElems.clear();
   tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2), 
-        GuiElem::margins(std::move(right), 20, 20, 10, 20)));
+        GuiElem::margins(std::move(right), 20, 20, 10, 0)));
   tempGuiElems.back()->setBounds(Rectangle(
         renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight()));
   tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2),
@@ -887,7 +928,7 @@ void WindowView::renderMessages(const vector<PlayerMessage>& messageBuffer) {
       getNumMessageLines());
   int lineHeight = 20;
   if (!messages.empty())
-    renderer.drawFilledRectangle(0, 0, renderer.getWidth() - rightBarWidth, lineHeight * messages.size() + 15,
+    renderer.drawFilledRectangle(0, 0, getMapGuiBounds().getKX(), lineHeight * messages.size() + 15,
         transparency(colors[ColorId::BLACK], 100));
   for (int i : All(messages)) {
     int carret = 0;
@@ -1000,32 +1041,6 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
     mapGui->addAnimation(Animation::fromId(id), pos);
 }
 
-class FpsCounter {
-  public:
-
-  int getSec() {
-    return clock.getElapsedTime().asSeconds();
-  }
-  void addTick() {
-    if (getSec() == curSec)
-      ++curFps;
-    else {
-      lastFps = curFps;
-      curSec = getSec();
-      curFps = 0;
-    }
-  }
-
-  int getFps() {
-    return lastFps;
-  }
-
-  int lastFps = 0;
-  int curSec = -1;
-  int curFps = 0;
-  sf::Clock clock;
-} fpsCounter;
-
 void WindowView::refreshView() {
   RenderLock lock(renderMutex);
   CHECK(std::this_thread::get_id() == renderThreadId);
@@ -1043,7 +1058,6 @@ void WindowView::drawMap() {
     gui->render(renderer);
   renderMessages(gameInfo.messageBuffer);
   fpsCounter.addTick();
-  renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() - 70, renderer.getHeight() - 30, "FPS " + convertToString(fpsCounter.getFps()));
 }
 
 void WindowView::refreshScreen(bool flipBuffer) {

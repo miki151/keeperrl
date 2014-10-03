@@ -175,7 +175,7 @@ vector<Vec2> Level::getLandingSquares(StairDirection dir, StairKey key) const {
   if (landingSquares.count({dir, key}))
     return landingSquares.at({dir, key});
   else
-    return {};
+    return vector<Vec2>();
 }
 
 Vec2 Level::landCreature(StairDirection direction, StairKey key, Creature* creature) {

@@ -382,9 +382,9 @@ class TopLevelVillageControl : public PeacefulControl {
 
   virtual string getAttackMessage() const {
     if (getName().empty())
-      return "You are under attack by " + getTribe()->getName() + "!";
+      return "You are being attacked by " + getTribe()->getName() + "!";
     else
-      return "You are under attack by " + getTribe()->getName() + " of " + getName() + "!";
+      return "You are being attacked by " + getTribe()->getName() + " of " + getName() + "!";
   }
 
   virtual MoveInfo getMove(Creature* c) override {

@@ -834,7 +834,7 @@ void Player::you(MsgType type, const string& param) {
     case MsgType::BREAK_FREE: msg = "You break free from " + param; break;
     case MsgType::PRAY: msg = "You pray to " + param; break;
     case MsgType::COPULATE: msg = "You copulate " + param; break;
-    case MsgType::CONSUME: msg = "You consume " + param; break;
+    case MsgType::CONSUME: msg = "You absorb " + param; break;
     case MsgType::GROW: msg = "You grow " + param; break;
     case MsgType::SACRIFICE: msg = "You make a sacrifice to " + param; break;
     case MsgType::HIT: msg = "You hit " + param; break;

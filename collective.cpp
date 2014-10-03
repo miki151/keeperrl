@@ -453,7 +453,7 @@ MoveInfo Collective::getDropItems(Creature *c) {
 }
 
 PTask Collective::getPrisonerTask(Creature* c) {
-  if (hasTrait(c, MinionTrait::FIGHTER))
+  if (hasTrait(c, MinionTrait::FIGHTER) && c->getSpawnType() != SpawnType::DEMON && !c->hasSuicidalAttack())
     for (auto& elem : prisonerInfo)
       if (!elem.second.task()) {
         Creature* prisoner = elem.first;
@@ -1017,7 +1017,7 @@ void Collective::tick(double time) {
   for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
     DormInfo info = getDormInfo()[spawnType];
     if (info.warning && info.getBedType())
-      setWarning(*info.warning, chooseBedPos(getSquares(info.dormType), getSquares(*info.getBedType())));
+      setWarning(*info.warning, !chooseBedPos(getSquares(info.dormType), getSquares(*info.getBedType())));
   }
   for (auto elem : getTaskInfo())
     if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
@@ -2054,7 +2054,7 @@ void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {
-  control->addMessage(who->getAName() + " copulates with " + with->getAName());
+  control->addMessage(who->getAName() + " is making love to " + with->getAName());
   if (contains(getCreatures(), with))
     with->addMorale(1);
   if (!contains(pregnancies, who)) 
@@ -2062,7 +2062,7 @@ void Collective::onCopulated(Creature* who, Creature* with) {
 }
 
 void Collective::onConsumed(Creature* consumer, Creature* who) {
-  control->addMessage(consumer->getAName() + " consumes " + who->getAName());
+  control->addMessage(consumer->getAName() + " absorbs " + who->getAName());
 }
 
 MinionEquipment& Collective::getMinionEquipment() {

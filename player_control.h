@@ -212,9 +212,13 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   unordered_set<Vec2> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   ViewObject getMinionViewObject(CreatureId) const;
-
   vector<PlayerMessage> SERIAL(messages);
   map<const VillageControl*, vector<const Creature*>> SERIAL(assaultNotifications);
+  struct CurrentWarningInfo {
+    Collective::Warning warning;
+    double lastView;
+  };
+  Optional<CurrentWarningInfo> currentWarning;
 };
 
 #endif

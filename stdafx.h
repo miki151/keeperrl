@@ -59,7 +59,8 @@
 #ifdef DEBUG_STL
 
 #include <debug/vector>
-#include <debug/string>
+//#include <debug/string>
+#include <string>
 #include <debug/deque>
 #include <debug/set>
 #include <debug/map>
@@ -67,7 +68,8 @@ using __gnu_debug::vector;
 using __gnu_debug::map;
 using __gnu_debug::set;
 using __gnu_debug::deque;
-using __gnu_debug::string;
+//using __gnu_debug::string;
+using std::string;
 
 #else
 

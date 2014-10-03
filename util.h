@@ -159,11 +159,11 @@ template <> struct hash<Vec2> {
 };
 
 #ifdef DEBUG_STL
-template <> struct hash<__gnu_debug::string> {
+/*template <> struct hash<__gnu_debug::string> {
   size_t operator()(const string& v) const {
     return hash<std::string>()(v);
   }
-};
+};*/
 
 template <class T> struct hash<__gnu_debug::set<T>> {
 #else

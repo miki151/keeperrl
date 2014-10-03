@@ -50,8 +50,8 @@ void Skill::init() {
   Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees."));
   Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark."));
   Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them."));
-  Skill::set(SkillId::CONSUMPTION, new Skill("consumption",
-        "Consume other creatures and retain some of their attributes.", false));
+  Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
+        "Absorb other creatures and retain their attributes.", false));
 }
 
 bool Skill::canConsume() const {

@@ -105,13 +105,13 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
     BuildInfo({SquareId::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 0),
     BuildInfo({SquareId::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u')};
-  for (Deity* deity : Deity::getDeities())
+/*  for (Deity* deity : Deity::getDeities())
     buildInfo.push_back(BuildInfo(deity->getHabitat(), altarCost, "Shrines",
           deity->getGender().god() + " of " + deity->getEpithetsString(), 0));
   if (level)
     for (const Creature* c : level->getAllCreatures())
       if (c->isWorshipped())
-        buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", c->getSpeciesName(), 0));
+        buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", c->getSpeciesName(), 0));*/
   append(buildInfo, {
     BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'p', "Orders"),
     BuildInfo(BuildInfo::CLAIM_TILE, "Claim a tile. Building anything has the same effect.", 0, "Orders"),
@@ -180,7 +180,7 @@ string PlayerControl::getWarningText(Collective::Warning w) {
     case Warning::DIGGING: return "Start digging into the mountain to build a dungeon.";
     case Warning::STORAGE: return "You need to build a storage room.";
     case Warning::LIBRARY: return "Build a library to start research.";
-    case Warning::BEDS: return "You need to build beds for your minions.";
+    case Warning::BEDS: return "You need to build a dormitory for your minions.";
     case Warning::TRAINING: return "Build a training room for your minions.";
     case Warning::WORKSHOP: return "Build a workshop to produce equipment and traps.";
     case Warning::LABORATORY: return "Build a laboratory to produce potions.";
@@ -316,7 +316,7 @@ vector<TaskOption> taskOptions {
   {MinionTask::STUDY, PlayerControl::MinionOption::STUDY, "Study"},
   {MinionTask::WORSHIP, PlayerControl::MinionOption::WORSHIP, "Worship"},
   {MinionTask::COPULATE, PlayerControl::MinionOption::COPULATE, "Copulate"},
-  {MinionTask::CONSUME, PlayerControl::MinionOption::CONSUME, "Consume"},
+  {MinionTask::CONSUME, PlayerControl::MinionOption::CONSUME, "Absorb"},
 };
 
 static string getMoraleString(double morale) {
@@ -824,11 +824,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       info.numResource.push_back(
           {getResourceViewObject(elem.first), getCollective()->numResourcePlusDebt(elem.first), elem.second.name});
   info.warning = "";
-  for (Warning w : ENUM_ALL(Warning))
-    if (getCollective()->isWarning(w)) {
-      info.warning = getWarningText(w);
-      break;
-    }
   gameInfo.time = getCollective()->getTime();
   info.gatheringTeam = gatheringTeam;
   info.team.clear();
@@ -1330,12 +1325,21 @@ void PlayerControl::checkKeeperDanger() {
 }
 
 const double messageTimeout = 80;
+const double warningFrequency = 200;
 
 void PlayerControl::tick(double time) {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
   messages = filter(messages, [&] (const PlayerMessage& msg) {
       return msg.getFreshness() > 0; });
+  for (Warning w : ENUM_ALL(Warning))
+    if (getCollective()->isWarning(w)) {
+      if (!currentWarning || currentWarning->warning != w || currentWarning->lastView + warningFrequency < time) {
+        addMessage(PlayerMessage(getWarningText(w), PlayerMessage::HIGH));
+        currentWarning = {w, time};
+      }
+      break;
+    }
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   considerDeityFight();
@@ -1376,7 +1380,8 @@ bool PlayerControl::canSee(const Creature* c) const {
 bool PlayerControl::canSee(Vec2 position) const {
   if (seeEverything)
     return true;
-  if (getCollective()->getAllSquares().count(position))
+  if (getCollective()->getAllSquares().count(position) 
+      && !getCollective()->getSquares(SquareId::FLOOR).count(position))
     return true;
   for (Creature* c : getCollective()->getCreatures())
     if (c->canSee(position))

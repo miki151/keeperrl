@@ -323,9 +323,9 @@ template<class Archive, class T>
 inline void serialize(Archive & ar, __gnu_debug::vector< T > &t, unsigned int file_version) {
 }
 
-template<class Archive>
+/*template<class Archive>
 inline void serialize(Archive & ar, __gnu_debug::string &t, unsigned int file_version) {
-}
+}*/
 
 template<class Archive, class T, class U>
 inline void serialize(Archive & ar, __gnu_debug::map< T, U > &t, unsigned int file_version) {
