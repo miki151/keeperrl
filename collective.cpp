@@ -1137,6 +1137,16 @@ double Collective::getKillManaScore(const Creature* victim) const {
   return ret;
 }
 
+void Collective::addMoraleForKill(const Creature* killer, const Creature* victim) {
+  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
+    c->addMorale(c == killer ? 0.25 : 0.015);
+}
+
+void Collective::decreaseMoraleForKill(const Creature* killer, const Creature* victim) {
+  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
+    c->addMorale(victim == getLeader() ? -2 : -0.015);
+}
+
 void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
   if (contains(creatures, victim1)) {
     Creature* victim = const_cast<Creature*>(victim1);
@@ -1145,6 +1155,7 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
       returnResource({ResourceId::PRISONER_HEAD, 1});
     prisonerInfo.erase(victim);
     freeFromGuardPost(victim);
+    decreaseMoraleForKill(killer, victim);
     removeElement(creatures, victim);
     minionAttraction.erase(victim);
     if (Task* task = taskMap.getTask(victim)) {
@@ -1159,8 +1170,6 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
         removeElement(byTrait[t], victim);
     if (auto spawnType = victim->getSpawnType())
       removeElement(bySpawnType[*spawnType], victim);
-    for (Creature* c : getCreatures(MinionTrait::FIGHTER))
-      c->addMorale(-0.015);
     control->onCreatureKilled(victim, killer);
     if (killer)
       control->addMessage(PlayerMessage(victim->getAName() + " is killed by " + killer->getAName(),
@@ -1169,9 +1178,8 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
       control->addMessage(PlayerMessage(victim->getAName() + " is killed.", PlayerMessage::HIGH));
   }
   if (victim1->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
-    for (Creature* c : getCreatures(MinionTrait::FIGHTER))
-      c->addMorale(c == killer ? 0.25 : 0.015);
     addMana(getKillManaScore(victim1));
+    addMoraleForKill(killer, victim1);
     kills.push_back(victim1);
     points += victim1->getDifficultyPoints();
     if (Creature* leader = getLeader())
@@ -2054,7 +2062,7 @@ void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {
-  control->addMessage(who->getAName() + " is making love to " + with->getAName());
+  control->addMessage(who->getAName() + " makes love to " + with->getAName());
   if (contains(getCreatures(), with))
     with->addMorale(1);
   if (!contains(pregnancies, who)) 

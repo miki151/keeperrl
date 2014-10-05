@@ -1076,7 +1076,7 @@ BodyPart Creature::getBodyPart(AttackLevel attack) const {
 }
 
 bool Creature::hasSuicidalAttack() const {
-  return AttackType == AttackType::POSSESS;
+  return barehandedAttack == AttackType::POSSESS;
 }
 
 static string getAttackParam(AttackType type) {

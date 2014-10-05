@@ -163,7 +163,7 @@ void WindowView::initialize() {
               inputQueue.push(UserInput(UserInput::BUILD, pos, {activeBuilding}));
           }
           break;
-      }});
+      }}, [](Vec2){});
   MinimapGui::initialize();
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP)); });
   mapDecoration = GuiElem::border2(GuiElem::empty());

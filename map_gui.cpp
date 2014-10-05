@@ -27,8 +27,8 @@
 #include "level.h"
 
 
-MapGui::MapGui(const Table<Optional<ViewIndex>>& o, function<void(Vec2)> fun)
-    : objects(o), leftClickFun(fun), fogOfWar(Level::getMaxBounds(), false) {
+MapGui::MapGui(const Table<Optional<ViewIndex>>& o, ClickFun leftFun, ClickFun rightFun)
+    : objects(o), leftClickFun(leftFun), rightClickFun(rightFun), fogOfWar(Level::getMaxBounds(), false) {
 }
 
 static int fireVar = 50;

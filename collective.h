@@ -273,6 +273,9 @@ class Collective : public Task::Callback {
   void makePayouts();
   void cashPayouts();
 
+  void addMoraleForKill(const Creature* killer, const Creature* victim);
+  void decreaseMoraleForKill(const Creature* killer, const Creature* victim);
+
   double getAttractionValue(MinionAttraction);
   double getImmigrantChance(const ImmigrantInfo&);
 
