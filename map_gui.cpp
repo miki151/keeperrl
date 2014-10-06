@@ -26,6 +26,7 @@
 #include "view_id.h"
 #include "level.h"
 
+using sf::Keyboard;
 
 MapGui::MapGui(const Table<Optional<ViewIndex>>& o, ClickFun leftFun, ClickFun rightFun)
     : objects(o), leftClickFun(leftFun), rightClickFun(rightFun), fogOfWar(Level::getMaxBounds(), false) {
@@ -38,8 +39,15 @@ static Color getFireColor() {
 }
 
 
-void MapGui::setLayout(MapLayout* l) {
+void MapGui::updateLayout(MapLayout* l, Rectangle levelBounds) {
   layout = l;
+  Vec2 movePos = Vec2((center.x - mouseOffset.x) * layout->squareWidth(),
+      (center.y - mouseOffset.y) * layout->squareHeight());
+  movePos.x = max(movePos.x, 0);
+  movePos.x = min(movePos.x, int(levelBounds.getKX() * layout->squareWidth()));
+  movePos.y = max(movePos.y, 0);
+  movePos.y = min(movePos.y, int(levelBounds.getKY() * layout->squareHeight()));
+  layout->updatePlayerPos(movePos);
 }
 
 void MapGui::setSpriteMode(bool s) {
@@ -126,6 +134,46 @@ bool tileConnects(ViewId id, Vec2 pos) {
   return floorIds.count(pos) && id == floorIds.at(pos);
 }
 
+void MapGui::onKeyPressed(Event::KeyEvent key) {
+  const double shiftScroll = 10;
+  const double normalScroll = 2.5;
+  switch (key.code) {
+    case Keyboard::Up:
+    case Keyboard::Numpad8:
+      center.y -= key.shift ? shiftScroll : normalScroll;
+      break;
+    case Keyboard::Numpad9:
+      center.y -= key.shift ? shiftScroll : normalScroll;
+      center.x += key.shift ? shiftScroll : normalScroll;
+      break;
+    case Keyboard::Right: 
+    case Keyboard::Numpad6:
+      center.x += key.shift ? shiftScroll : normalScroll;
+      break;
+    case Keyboard::Numpad3:
+      center.x += key.shift ? shiftScroll : normalScroll;
+      center.y += key.shift ? shiftScroll : normalScroll;
+      break;
+    case Keyboard::Down:
+    case Keyboard::Numpad2:
+      center.y += key.shift ? shiftScroll : normalScroll;
+      break;
+    case Keyboard::Numpad1:
+      center.x -= key.shift ? shiftScroll : normalScroll;
+      center.y += key.shift ? shiftScroll : normalScroll;
+      break;
+    case Keyboard::Left:
+    case Keyboard::Numpad4:
+      center.x -= key.shift ? shiftScroll : normalScroll;
+      break;
+    case Keyboard::Numpad7:
+      center.x -= key.shift ? shiftScroll : normalScroll;
+      center.y -= key.shift ? shiftScroll : normalScroll;
+      break;
+    default: break;
+  }
+}
+
 void MapGui::onLeftClick(Vec2 v) {
   if (optionsGui && v.inRectangle(optionsGui->getBounds()))
     optionsGui->onLeftClick(v);
@@ -136,7 +184,10 @@ void MapGui::onLeftClick(Vec2 v) {
   }
 }
 
-void MapGui::onRightClick(Vec2) {
+void MapGui::onRightClick(Vec2 pos) {
+  lastMousePos = pos;
+  isScrollingNow = true;
+  mouseOffset.x = mouseOffset.y = 0;
 }
 
 void MapGui::onMouseMove(Vec2 v) {
@@ -151,9 +202,23 @@ void MapGui::onMouseMove(Vec2 v) {
     highlightedPos = pos;
   } else
     highlightedPos = Nothing();
+  if (isScrollingNow) {
+    mouseOffset.x = double(v.x - lastMousePos.x) / layout->squareWidth();
+    mouseOffset.y = double(v.y - lastMousePos.y) / layout->squareHeight();
+  }
 }
 
 void MapGui::onMouseRelease() {
+  if (isScrollingNow) {
+    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1)
+      rightClickFun(layout->projectOnMap(getBounds(), lastMousePos));
+    else {
+      center.x -= mouseOffset.x;
+      center.y -= mouseOffset.y;
+    }
+    mouseOffset.x = mouseOffset.y = 0;
+    isScrollingNow = false;
+  }
   mouseHeldPos = Nothing();
 }
 
@@ -297,6 +362,22 @@ void MapGui::updateObjects(const MapMemory* mem) {
           floorIds.insert(make_pair(wpos, *id));
       }
     }
+}
+
+void MapGui::clearCenter() {
+  center = {0.0, 0.0};
+}
+
+bool MapGui::isCentered() const {
+  return center.x != 0 || center.y != 0;
+}
+
+void MapGui::setCenter(double x, double y) {
+  center = {x, y};
+}
+
+void MapGui::setCenter(Vec2 v) {
+  setCenter(v.x, v.y);
 }
 
 const int bgTransparency = 180;

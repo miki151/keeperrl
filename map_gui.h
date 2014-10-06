@@ -35,11 +35,12 @@ class MapGui : public GuiElem {
   virtual void onRightClick(Vec2) override;
   virtual void onMouseMove(Vec2) override;
   virtual void onMouseRelease() override;
+  virtual void onKeyPressed(Event::KeyEvent) override;
 
   void refreshObjects();
   void updateObjects(const MapMemory*);
   void setLevelBounds(Rectangle bounds);
-  void setLayout(MapLayout*);
+  void updateLayout(MapLayout*, Rectangle levelBounds);
   void setSpriteMode(bool);
   Optional<Vec2> getHighlightedTile(WindowRenderer& renderer);
   PGuiElem getHintCallback(const string&);
@@ -47,6 +48,10 @@ class MapGui : public GuiElem {
   void setOptions(const string& title, vector<PGuiElem>);
   void clearOptions();
   void addAnimation(PAnimation animation, Vec2 position);
+  void setCenter(double x, double y);
+  void setCenter(Vec2 pos);
+  void clearCenter();
+  bool isCentered() const;
 
   private:
   void drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject&, int sizeX, int sizeY, Vec2 tilePos);
@@ -72,6 +77,12 @@ class MapGui : public GuiElem {
   vector<AnimationInfo> animations;
   DirtyTable<bool> fogOfWar;
   bool isFoW(Vec2 pos) const;
+  struct {
+    double x;
+    double y;
+  } mouseOffset, center;
+  Vec2 lastMousePos;
+  bool isScrollingNow = false;
 };
 
 #endif

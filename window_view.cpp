@@ -144,26 +144,9 @@ void WindowView::initialize() {
     Tile::loadTiles();
   } else
     currentTileLayout = asciiLayouts;
-  mapGui = new MapGui(objects, [this](Vec2 pos) {
-      chosenCreature = "";
-      switch (gameInfo.infoType) {
-        case GameInfo::InfoType::PLAYER: inputQueue.push(UserInput(UserInput::MOVE_TO, pos)); break;
-        case GameInfo::InfoType::BAND:
-          if (!contains({CollectiveTab::WORKSHOP, CollectiveTab::BUILDINGS, CollectiveTab::TECHNOLOGY},
-              collectiveTab))
-            inputQueue.push(UserInput(UserInput::POSSESS, pos));
-          if (collectiveTab == CollectiveTab::WORKSHOP && activeWorkshop >= 0)
-            inputQueue.push(UserInput(UserInput::WORKSHOP, pos, {activeWorkshop}));
-          if (collectiveTab == CollectiveTab::TECHNOLOGY && activeLibrary >= 0)
-            inputQueue.push(UserInput(UserInput::LIBRARY, pos, {activeLibrary}));
-          if (collectiveTab == CollectiveTab::BUILDINGS) {
-            if (Keyboard::isKeyPressed(Keyboard::LShift))
-              inputQueue.push(UserInput(UserInput::RECT_SELECTION, pos));
-            else
-              inputQueue.push(UserInput(UserInput::BUILD, pos, {activeBuilding}));
-          }
-          break;
-      }}, [](Vec2){});
+  mapGui = new MapGui(objects,
+      [this](Vec2 pos) { mapLeftClickFun(pos); },
+      [this](Vec2 pos) { mapRightClickFun(pos); });
   MinimapGui::initialize();
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP)); });
   mapDecoration = GuiElem::border2(GuiElem::empty());
@@ -171,12 +154,43 @@ void WindowView::initialize() {
   resetMapBounds();
 }
 
+void WindowView::mapLeftClickFun(Vec2 pos) {
+  chosenCreature = "";
+  switch (gameInfo.infoType) {
+    case GameInfo::InfoType::PLAYER:
+      inputQueue.push(UserInput(UserInput::MOVE_TO, pos));
+      break;
+    case GameInfo::InfoType::BAND:
+      if (collectiveTab == CollectiveTab::WORKSHOP && activeWorkshop >= 0)
+        inputQueue.push(UserInput(UserInput::WORKSHOP, pos, {activeWorkshop}));
+      if (collectiveTab == CollectiveTab::TECHNOLOGY && activeLibrary >= 0)
+        inputQueue.push(UserInput(UserInput::LIBRARY, pos, {activeLibrary}));
+      if (collectiveTab == CollectiveTab::BUILDINGS) {
+        if (Keyboard::isKeyPressed(Keyboard::LShift))
+          inputQueue.push(UserInput(UserInput::RECT_SELECTION, pos));
+        else
+          inputQueue.push(UserInput(UserInput::BUILD, pos, {activeBuilding}));
+      }
+      break;
+  }
+}
+
+void WindowView::mapRightClickFun(Vec2 pos) {
+  switch (gameInfo.infoType) {
+    case GameInfo::InfoType::BAND:
+      inputQueue.push(UserInput(UserInput::POSSESS, pos));
+      break;
+    default:
+      break;
+  }
+}
+
 void WindowView::reset() {
   RenderLock lock(renderMutex);
   mapLayout = &currentTileLayout.normalLayout;
-  center.x = center.y = 0;
   gameReady = false;
   mapGui->clearOptions();
+  mapGui->clearCenter();
   activeBuilding = 0;
   activeWorkshop = -1;
   activeLibrary = -1;
@@ -194,8 +208,6 @@ void WindowView::displayMenuSplash2() {
   CHECK(splash.loadFromFile("splash2e.png"));
   renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2,
       menuPosition.getPY() - splash.getSize().y - margin, splash);
-  int x = 0;
-  int y =0;
 }
 
 void displayMenuSplash() {
@@ -942,7 +954,7 @@ void WindowView::renderMessages(const vector<PlayerMessage>& messageBuffer) {
 }
 
 void WindowView::resetCenter() {
-  center.x = center.y = 0;
+  mapGui->clearCenter();
 }
 
 function<void()> WindowView::getButtonCallback(UserInput input) {
@@ -967,7 +979,7 @@ void WindowView::drawLevelMap(const CreatureView* creature) {
   TempClockPause pause;
   addVoidDialog([=] {
     minimapGui->presentMap(creature, getMapGuiBounds(), renderer,
-        [this](double x, double y) { center.x = x; center.y = y;}); });
+        [this](double x, double y) { mapGui->setCenter(x, y);}); });
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
@@ -987,18 +999,10 @@ void WindowView::updateView(const CreatureView* collective) {
   collective->refreshGameInfo(gameInfo);
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds()))
     objects[pos] = Nothing();
-  if ((center.x < 0.01 && center.y < 0.01) || collective->staticPosition()) {
-    center.x = collective->getPosition().x;
-    center.y = collective->getPosition().y;
-  }
-  Vec2 movePos = Vec2((center.x - mouseOffset.x) * mapLayout->squareWidth(),
-      (center.y - mouseOffset.y) * mapLayout->squareHeight());
-  movePos.x = max(movePos.x, 0);
-  movePos.x = min(movePos.x, int(collective->getViewLevel()->getBounds().getKX() * mapLayout->squareWidth()));
-  movePos.y = max(movePos.y, 0);
-  movePos.y = min(movePos.y, int(collective->getViewLevel()->getBounds().getKY() * mapLayout->squareHeight()));
-  mapLayout->updatePlayerPos(movePos);
+  if (!mapGui->isCentered() || collective->staticPosition())
+    mapGui->setCenter(collective->getPosition());
   const MapMemory* memory = &collective->getMemory(); 
+  mapGui->updateLayout(mapLayout, collective->getViewLevel()->getBounds());
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds())) 
     if (level->inBounds(pos)) {
       ViewIndex index;
@@ -1016,7 +1020,6 @@ void WindowView::updateView(const CreatureView* collective) {
       index.setHighlight(HighlightType::NIGHT, 1.0 - collective->getViewLevel()->getLight(pos));
       objects[pos] = index;
     }
-  mapGui->setLayout(mapLayout);
   mapGui->setSpriteMode(currentTileLayout.sprites);
   mapGui->updateObjects(memory);
   mapGui->setLevelBounds(level->getBounds());
@@ -1423,37 +1426,11 @@ bool WindowView::considerResizeEvent(sf::Event& event, vector<GuiElem*> gui) {
   return false;
 }
 
-bool WindowView::considerScrollEvent(sf::Event& event) {
-  static bool lastPressed = false;
-  if (lastPressed && !Mouse::isButtonPressed(Mouse::Right)) {
-    center.x -= mouseOffset.x;
-    center.y -= mouseOffset.y;
-    mouseOffset.x = mouseOffset.y = 0;
-    lastPressed = false;  
-    refreshInput = true;
-    return true;
-  }
-  if (!lastPressed && Mouse::isButtonPressed(Mouse::Right)) {
-    lastMousePos = renderer.getMousePos();
-    lastPressed = true;
-    chosenCreature = "";
-    return true;
-  }
-  if (event.type == Event::MouseMoved && lastPressed) {
-    mouseOffset.x = double(event.mouseMove.x - lastMousePos.x) / mapLayout->squareWidth();
-    mouseOffset.y = double(event.mouseMove.y - lastMousePos.y) / mapLayout->squareHeight();
-    refreshInput = true;
-    return true;
-  }
-  return false;
-}
-
 Vec2 lastGoTo(-1, -1);
 
 void WindowView::processEvents() {
   Event event;
   while (renderer.pollEvent(event)) {
-    considerScrollEvent(event);
     considerResizeEvent(event, getAllGuiElems());
     propagateEvent(event, getClickableGuiElems());
     switch (event.type) {
@@ -1510,6 +1487,10 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       }
       }
       break;
+    case Event::KeyPressed:
+      for (GuiElem* elem : guiElems)
+        elem->onKeyPressed(event.key);
+      break;
     case Event::TextEntered:
       if (event.text.unicode < 128) {
         char key = event.text.unicode;
@@ -1532,9 +1513,6 @@ UserInput::Type getDirActionId(const Event::KeyEvent& key) {
   else
     return UserInput::MOVE;
 }
-
-const double shiftScroll = 10;
-const double normalScroll = 2.5;
 
 void WindowView::keyboardAction(Event::KeyEvent key) {
   if (lockKeyboard)
@@ -1570,39 +1548,27 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
       break;
     case Keyboard::Up:
     case Keyboard::Numpad8:
-      center.y -= key.shift ? shiftScroll : normalScroll;
       inputQueue.push(UserInput(getDirActionId(key), Vec2(0, -1)));
       break;
     case Keyboard::Numpad9:
-      center.y -= key.shift ? shiftScroll : normalScroll;
-      center.x += key.shift ? shiftScroll : normalScroll;
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1)));
       break;
     case Keyboard::Right: 
     case Keyboard::Numpad6:
-      center.x += key.shift ? shiftScroll : normalScroll;
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0)));
       break;
     case Keyboard::Numpad3:
-      center.x += key.shift ? shiftScroll : normalScroll;
-      center.y += key.shift ? shiftScroll : normalScroll;
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 1)));
       break;
     case Keyboard::Down:
     case Keyboard::Numpad2:
-      center.y += key.shift ? shiftScroll : normalScroll;
       inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1))); break;
     case Keyboard::Numpad1:
-      center.x -= key.shift ? shiftScroll : normalScroll;
-      center.y += key.shift ? shiftScroll : normalScroll;
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1))); break;
     case Keyboard::Left:
     case Keyboard::Numpad4:
-      center.x -= key.shift ? shiftScroll : normalScroll;
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0))); break;
     case Keyboard::Numpad7:
-      center.x -= key.shift ? shiftScroll : normalScroll;
-      center.y -= key.shift ? shiftScroll : normalScroll;     
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1))); break;
     case Keyboard::Return:
     case Keyboard::Numpad5: inputQueue.push(UserInput(UserInput::PICK_UP)); break;

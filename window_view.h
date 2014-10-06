@@ -70,6 +70,8 @@ class WindowView: public View {
   void processEvents();
   void displayMenuSplash2();
   void updateMinimap(const CreatureView*);
+  void mapLeftClickFun(Vec2);
+  void mapRightClickFun(Vec2);
   Rectangle getMenuPosition(View::MenuType type);
   Optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
       int* scrollPos, Optional<UserInput::Type> exitAction, Optional<sf::Event::KeyEvent> exitKey,
@@ -182,11 +184,6 @@ class WindowView: public View {
 
   function<void()> getButtonCallback(UserInput);
 
-  Vec2 lastMousePos;
-  struct {
-    double x = 0;
-    double y = 0;
-  } mouseOffset, center;
   std::recursive_mutex renderMutex;
 
   bool lockKeyboard = false;

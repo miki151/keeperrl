@@ -1060,9 +1060,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
         Vec2 pos = input.getPosition();
         if (!pos.inRectangle(getLevel()->getBounds()))
           return;
-        if (Creature* c = getLevel()->getSquare(pos)->getCreature())
+        if (Creature* c = getLevel()->getSquare(pos)->getCreature()) {
           if (getCollective()->hasAnyTrait(c, {MinionTrait::PRISONER, MinionTrait::FIGHTER, MinionTrait::LEADER}))
             handleCreatureButton(c, view);
+        } else
+          tryLockingDoor(pos);
         break;
         }
     case UserInput::RECT_SELECTION:
@@ -1164,21 +1166,19 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
         break;
     case BuildInfo::DIG:
-        if (!tryLockingDoor(pos)) {
-          if (getCollective()->isMarkedToDig(pos) && selection != SELECT) {
-            getCollective()->dontDig(pos);
-            selection = DESELECT;
+        if (getCollective()->isMarkedToDig(pos) && selection != SELECT) {
+          getCollective()->dontDig(pos);
+          selection = DESELECT;
+        } else
+        if (!getCollective()->isMarkedToDig(pos) && selection != DESELECT) {
+          if (getLevel()->getSquare(pos)->canConstruct(SquareId::TREE_TRUNK)) {
+            getCollective()->cutTree(pos);
+            selection = SELECT;
           } else
-            if (!getCollective()->isMarkedToDig(pos) && selection != DESELECT) {
-              if (getLevel()->getSquare(pos)->canConstruct(SquareId::TREE_TRUNK)) {
-                getCollective()->cutTree(pos);
-                selection = SELECT;
-              } else
-                if (getLevel()->getSquare(pos)->canConstruct(SquareId::FLOOR)
-                    || !getCollective()->isKnownSquare(pos)) {
-                  getCollective()->dig(pos);
-                  selection = SELECT;
-                }
+            if (getLevel()->getSquare(pos)->canConstruct(SquareId::FLOOR)
+                || !getCollective()->isKnownSquare(pos)) {
+              getCollective()->dig(pos);
+              selection = SELECT;
             }
         }
         break;
@@ -1193,20 +1193,18 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         getCollective()->setPriorityTasks(pos);
         break;
     case BuildInfo::SQUARE:
-        if (!tryLockingDoor(pos)) {
-          if (getCollective()->getConstructions().count(pos)) {
-            if (selection != SELECT) {
-              getCollective()->removeConstruction(pos);
-              selection = DESELECT;
-            }
-          } else {
-            BuildInfo::SquareInfo info = building.squareInfo;
-            if (getCollective()->isKnownSquare(pos) && getLevel()->getSquare(pos)->canConstruct(info.type) 
-                && !getCollective()->getTraps().count(pos)
-                && (info.type.getId() != SquareId::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
-              getCollective()->addConstruction(pos, info.type, info.cost, info.buildImmediatly, info.noCredit);
-              selection = SELECT;
-            }
+        if (getCollective()->getConstructions().count(pos)) {
+          if (selection != SELECT) {
+            getCollective()->removeConstruction(pos);
+            selection = DESELECT;
+          }
+        } else {
+          BuildInfo::SquareInfo info = building.squareInfo;
+          if (getCollective()->isKnownSquare(pos) && getLevel()->getSquare(pos)->canConstruct(info.type) 
+              && !getCollective()->getTraps().count(pos)
+              && (info.type.getId() != SquareId::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
+            getCollective()->addConstruction(pos, info.type, info.cost, info.buildImmediatly, info.noCredit);
+            selection = SELECT;
           }
         }
         break;
@@ -1217,13 +1215,7 @@ bool PlayerControl::tryLockingDoor(Vec2 pos) {
   if (getCollective()->getConstructions().count(pos)) {
     Square* square = getLevel()->getSquare(pos);
     if (square->canLock()) {
-      if (selection != DESELECT && !square->isLocked()) {
-        square->lock();
-        selection = SELECT;
-      } else if (selection != SELECT && square->isLocked()) {
-        square->lock();
-        selection = DESELECT;
-      }
+      square->lock();
       getCollective()->updateSectors(pos);
       return true;
     }

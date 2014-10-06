@@ -45,12 +45,12 @@ class Button : public GuiElem {
       fun();
   }
 
-  virtual void onKeyPressed(char c) {
+  virtual void onKeyPressed(char c) override {
     if (hotkey == c)
       fun();
   }
 
-  virtual void onKeyPressed(Event::KeyEvent key) {
+  virtual void onKeyPressed(Event::KeyEvent key) override {
     if (hotkey2.code == key.code && hotkey2.shift == key.shift)
       fun();
   }
@@ -201,7 +201,12 @@ class GuiLayout : public GuiElem {
       elems[i]->setBounds(getElemBounds(i));
   }
 
-  virtual void onKeyPressed(char key) {
+  virtual void onKeyPressed(char key) override {
+    for (int i : All(elems))
+      elems[i]->onKeyPressed(key);
+  }
+
+  virtual void onKeyPressed(Event::KeyEvent key) override {
     for (int i : All(elems))
       elems[i]->onKeyPressed(key);
   }
@@ -655,6 +660,10 @@ class Scrollable : public GuiElem {
 
   virtual void onKeyPressed(char c) override {
     content->onKeyPressed(c);
+  }
+
+  virtual void onKeyPressed(Event::KeyEvent key) override {
+    content->onKeyPressed(key);
   }
 
   private:
