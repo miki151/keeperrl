@@ -48,7 +48,8 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(payoutWarning)
     & SVAR(surprises)
     & SVAR(assaultNotifications)
-    & SVAR(messages);
+    & SVAR(messages)
+    & SVAR(hints);
   CHECK_SERIAL;
 }
 
@@ -197,7 +198,18 @@ string PlayerControl::getWarningText(Collective::Warning w) {
 
 static bool seeEverything = false;
 
-PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : CollectiveControl(col), model(m) {
+const int hintFrequency = 500;
+static vector<string> getHints() {
+  return {
+    "Right click on minions to control them or show information.",
+    "You can turn these hints off in the settings (F2).",
+    "Killing a leader greatly lowers the morale of his tribe.",
+    "Your minions' morale is boosted when they are commanded by the Keeper.",
+  };
+}
+
+PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : CollectiveControl(col), model(m),
+    hints(getHints()) {
   bool hotkeys[128] = {0};
   for (BuildInfo info : concat(getBuildInfo(level, nullptr), workshopInfo)) {
     if (info.hotkey) {
@@ -256,7 +268,7 @@ void PlayerControl::render(View* view) {
     view->updateView(this);
     showWelcomeMsg = false;
     view->presentText("Welcome", "In short: you are a warlock who has been banished from the lawful world for practicing black magic. You are going to claim the land of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext() + " and make it your domain. The best way to achieve this is to kill everyone.\n \n"
-"Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the options (press F2).");
+"Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the settings (press F2).");
   }
 }
 
@@ -1353,6 +1365,13 @@ void PlayerControl::tick(double time) {
         assaultNotifications.erase(assault.first);
         break;
       }
+  if (Options::getValue(OptionId::HINTS) && time > hintFrequency) {
+    int numHint = int(time) / hintFrequency - 1;
+    if (numHint < hints.size() && !hints[numHint].empty()) {
+      addMessage(PlayerMessage(hints[numHint], PlayerMessage::HIGH));
+      hints[numHint] = "";
+    }
+  }
 }
 
 bool PlayerControl::canSee(const Creature* c) const {

@@ -216,6 +216,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     double lastView;
   };
   Optional<CurrentWarningInfo> currentWarning;
+  vector<string> SERIAL(hints);
 };
 
 #endif
