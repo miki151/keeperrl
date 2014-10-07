@@ -34,6 +34,7 @@
 #include "player_control.h"
 #include "item_factory.h"
 #include "collective_control.h"
+#include "collective.h"
 
 template <class Archive>
 void Serialization::registerTypes(Archive& ar) {
@@ -55,6 +56,7 @@ void Serialization::registerTypes(Archive& ar) {
   Player::registerTypes(ar);
   PlayerControl::registerTypes(ar);
   CollectiveControl::registerTypes(ar);
+  Collective::registerTypes(ar);
 }
 
 REGISTER_TYPES(Serialization);

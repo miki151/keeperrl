@@ -275,6 +275,9 @@ class Collective : public Task::Callback {
   const vector<Creature*>& getTeam() const;
   void cancelTeam();
 
+  template <class Archive>
+  static void registerTypes(Archive& ar);
+
   private:
   void updateEfficiency(Vec2, SquareType);
   int getPaymentAmount(const Creature*) const;

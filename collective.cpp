@@ -366,6 +366,8 @@ double Collective::getAttractionValue(MinionAttraction attraction) {
   return 0;
 }
 
+namespace {
+
 class LeaderControlOverride : public Creature::MoraleOverride {
   public:
   LeaderControlOverride(Collective* col, Creature* c) : collective(col), creature(c) {}
@@ -389,6 +391,8 @@ class LeaderControlOverride : public Creature::MoraleOverride {
   Collective* SERIAL(collective);
   Creature* SERIAL(creature);
 };
+
+}
 
 void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> traits) {
   if (getConfig().stripSpawns)
@@ -1468,7 +1472,7 @@ int Collective::numResourcePlusDebt(ResourceId id) const {
     if (!elem.second.built() && elem.second.cost().id() == id)
       ret -= elem.second.cost().value();
   for (auto& elem : taskMap.getCompletionCosts())
-    if (elem.second.id() == id)
+    if (elem.second.id() == id && !elem.first->isDone())
       ret += elem.second.value();
   if (id == ResourceId::GOLD)
     for (auto& elem : minionPayment)
@@ -1712,6 +1716,8 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   if (!contains({SquareId::TREE_TRUNK}, type.getId()))
     allSquares.insert(pos);
   CHECK(!getSquares(type).count(pos));
+  for (auto& elem : mySquares)
+      elem.second.erase(pos);
   mySquares[type].insert(pos);
   if (efficiencySquares.count(type))
     updateEfficiency(pos, type);
@@ -2186,3 +2192,9 @@ void Collective::cancelTeam() {
   cancelTeamLeader();
 }
 
+template <class Archive>
+void Collective::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, LeaderControlOverride);
+}
+
+REGISTER_TYPES(Collective);

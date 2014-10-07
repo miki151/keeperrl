@@ -176,7 +176,7 @@ typedef Collective::Warning Warning;
 
 string PlayerControl::getWarningText(Collective::Warning w) {
   switch (w) {
-    case Warning::DIGGING: return "Start digging into the mountain to build a dungeon.";
+    case Warning::DIGGING: return "Dig into the mountain and start building a dungeon.";
     case Warning::STORAGE: return "You need to build a storage room.";
     case Warning::LIBRARY: return "Build a library to start research.";
     case Warning::BEDS: return "You need to build a dormitory for your minions.";
@@ -198,11 +198,11 @@ string PlayerControl::getWarningText(Collective::Warning w) {
 
 static bool seeEverything = false;
 
-const int hintFrequency = 500;
+const int hintFrequency = 700;
 static vector<string> getHints() {
   return {
     "Right click on minions to control them or show information.",
-    "You can turn these hints off in the settings (F2).",
+ //   "You can turn these hints off in the settings (F2).",
     "Killing a leader greatly lowers the morale of his tribe.",
     "Your minions' morale is boosted when they are commanded by the Keeper.",
   };
@@ -343,7 +343,7 @@ void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, ve
     return;
   }
   mOpt = {MinionOption::POSSESS, MinionOption::INFO };
-  lOpt = {"Possess", "Description" };
+  lOpt = {"Control", "Description" };
   if (!getCollective()->hasTrait(c, MinionTrait::NO_EQUIPMENT)) {
     mOpt.push_back(MinionOption::EQUIPMENT);
     lOpt.push_back("Equipment");
