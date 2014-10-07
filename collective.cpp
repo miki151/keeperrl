@@ -51,7 +51,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(sectors)
     & SVAR(pregnancies)
     & SVAR(nextPayoutTime)
-    & SVAR(teamInfo);
+    & SVAR(teamInfo)
+    & SVAR(knownLocations);
   CHECK_SERIAL;
 }
 
@@ -1900,6 +1901,11 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
 
 void Collective::addKnownTile(Vec2 pos) {
   if (!knownTiles[pos]) {
+    if (const Location* loc = getLevel()->getLocation(pos))
+      if (!knownLocations.count(loc)) {
+        knownLocations.insert(loc);
+        control->onDiscoveredLocation(loc);
+      }
     borderTiles.erase(pos);
     knownTiles[pos] = true;
     for (Vec2 v : pos.neighbors4())

@@ -1536,6 +1536,13 @@ void PlayerControl::removeAssaultNotification(const Creature *c, const VillageCo
     removeElementMaybe(assaultNotifications.at(control), c);
 }
 
+void PlayerControl::onDiscoveredLocation(const Location* loc) {
+  if (loc->hasName())
+    addMessage(PlayerMessage("Your minions discover the location of " + loc->getName(), PlayerMessage::HIGH));
+  else if (loc->isMarkedAsSurprise())
+    addMessage(PlayerMessage("Your minions discover a surprise location."));
+}
+
 template <class Archive>
 void PlayerControl::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, MinionController);

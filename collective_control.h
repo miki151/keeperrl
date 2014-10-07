@@ -21,6 +21,7 @@ class CollectiveControl {
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAssaultNotification(const Creature*, const VillageControl*) {}
   virtual void removeAssaultNotification(const Creature*, const VillageControl*) {}
+  virtual void onDiscoveredLocation(const Location*) {}
   Level* getLevel();
   const Level* getLevel() const;
 

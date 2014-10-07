@@ -408,6 +408,7 @@ class Collective : public Task::Callback {
     NAME_ELEM(1, leader);
   };
   TeamInfo SERIAL(teamInfo);
+  set<const Location*> SERIAL(knownLocations);
 };
 
 #endif

@@ -53,6 +53,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual bool staticPosition() const override;
   virtual int getMaxSightRange() const override;
   virtual void addMessage(const PlayerMessage&) override;
+  virtual void onDiscoveredLocation(const Location*) override;
   void addImportantLongMessage(const string&);
 
   void onConqueredLand(const string& name);
