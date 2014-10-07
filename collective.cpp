@@ -50,7 +50,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(flyingSectors)
     & SVAR(sectors)
     & SVAR(pregnancies)
-    & SVAR(nextPayoutTime);
+    & SVAR(nextPayoutTime)
+    & SVAR(teamInfo);
   CHECK_SERIAL;
 }
 
@@ -128,7 +129,7 @@ const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resource
 
 map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   map<MinionTask, MinionTaskInfo> ret {
-    {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", Collective::Warning::LABORATORY, 1}},
+    {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", Nothing(), 1}},
     {MinionTask::TRAIN, {{SquareId::TRAINING_ROOM}, "training", Collective::Warning::TRAINING, 1}},
     {MinionTask::WORKSHOP, {{SquareId::WORKSHOP}, "crafting", Collective::Warning::WORKSHOP, 1}},
     {MinionTask::SLEEP, {{SquareId::BED}, "sleeping", Collective::Warning::BEDS}},
@@ -364,6 +365,30 @@ double Collective::getAttractionValue(MinionAttraction attraction) {
   return 0;
 }
 
+class LeaderControlOverride : public Creature::MoraleOverride {
+  public:
+  LeaderControlOverride(Collective* col, Creature* c) : collective(col), creature(c) {}
+
+  virtual Optional<double> getMorale() override {
+    if (collective->isInTeam(creature) && collective->getTeamLeader() == collective->getLeader())
+      return 1;
+    else
+      return Nothing();
+  }
+
+  SERIALIZATION_CONSTRUCTOR(LeaderControlOverride);
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Creature::MoraleOverride) & SVAR(collective) & SVAR(creature);
+    CHECK_SERIAL;
+  }
+
+  private:
+  Collective* SERIAL(collective);
+  Creature* SERIAL(creature);
+};
+
 void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> traits) {
   if (getConfig().stripSpawns)
     creature->getEquipment().removeAllItems();
@@ -397,6 +422,9 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
       c->addSectors(sectors.get());
     else
       c->addSectors(flyingSectors.get());
+  }
+  if (traits[MinionTrait::FIGHTER]) {
+    c->addMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this, c)));
   }
 }
 
@@ -646,12 +674,22 @@ PTask Collective::getHealingTask(Creature* c) {
   return nullptr;
 }
 
+MoveInfo Collective::getTeamMemberMove(Creature* c) {
+  if (getTeamLeader()->getLevel() == c->getLevel()) 
+    if (auto action = c->moveTowards(getTeamLeader()->getPosition()))
+      return {1.0, action};
+  return NoMove;
+}
+
 MoveInfo Collective::getMove(Creature* c) {
   CHECK(control);
   CHECK(contains(creatures, c));
   if (c->getLevel() != getLevel())
     return NoMove;
-  if (MoveInfo move = control.get()->getMove(c))
+  if (isInTeam(c) && getTeamLeader() && getTeamLeader() != c)
+    if (MoveInfo move = getTeamMemberMove(c))
+      return move;
+  if (MoveInfo move = control->getMove(c))
     return move;
   if (hasTrait(c, MinionTrait::WORKER))
     return getWorkerMove(c);
@@ -1170,6 +1208,8 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
         removeElement(byTrait[t], victim);
     if (auto spawnType = victim->getSpawnType())
       removeElement(bySpawnType[*spawnType], victim);
+    if (isInTeam(victim))
+      removeFromTeam(victim);
     control->onCreatureKilled(victim, killer);
     if (killer)
       control->addMessage(PlayerMessage(victim->getAName() + " is killed by " + killer->getAName(),
@@ -2098,5 +2138,45 @@ void Collective::addAssaultNotification(const Creature* c, const VillageControl*
 
 void Collective::removeAssaultNotification(const Creature *c, const VillageControl* vil) {
   control->removeAssaultNotification(c, vil);
+}
+
+bool Collective::isInTeam(const Creature* c) const {
+  return contains(teamInfo.creatures(), c);
+}
+
+void Collective::addToTeam(Creature* c) {
+  CHECK(!contains(teamInfo.creatures(), c));
+  teamInfo.creatures().push_back(c);
+}
+
+void Collective::removeFromTeam(Creature* c) {
+  removeElement(teamInfo.creatures(), c);
+  if (teamInfo.leader() == c)
+    cancelTeamLeader();
+}
+
+void Collective::setTeamLeader(Creature* c) {
+  teamInfo.leader() = c;
+}
+
+void Collective::cancelTeamLeader() {
+  teamInfo.leader() = nullptr;
+}
+
+const Creature* Collective::getTeamLeader() const {
+  return teamInfo.leader();
+}
+
+Creature* Collective::getTeamLeader() {
+  return teamInfo.leader();
+}
+
+const vector<Creature*>& Collective::getTeam() const {
+  return teamInfo.creatures();
+}
+
+void Collective::cancelTeam() {
+  teamInfo.creatures().clear();
+  cancelTeamLeader();
 }
 

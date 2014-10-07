@@ -1435,28 +1435,24 @@ void WindowView::processEvents() {
     propagateEvent(event, getClickableGuiElems());
     switch (event.type) {
       case Event::TextEntered:
-        /*if (event.text.unicode < 128) {
-          char key = event.text.unicode;
-          for (int i : All(techHotkeys))
-            if (key == techHotkeys[i])
-              return UserInput(UserInput::TECHNOLOGY, i);
-        }*/
         break;
       case Event::KeyPressed:
         keyboardAction(event.key);
         renderer.flushEvents(Event::KeyPressed);
         break;
       case Event::MouseWheelMoved:
-          zoom(event.mouseWheel.delta < 0);
-          break;
+        zoom(event.mouseWheel.delta < 0);
+        break;
       case Event::MouseButtonPressed :
-          if (event.mouseButton.button == sf::Mouse::Middle)
-            inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP));
-          break;
+        if (event.mouseButton.button == sf::Mouse::Right)
+          chosenCreature = "";
+        if (event.mouseButton.button == sf::Mouse::Middle)
+          inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP));
+        break;
       case Event::MouseButtonReleased :
-          if (event.mouseButton.button == sf::Mouse::Left)
-            inputQueue.push(UserInput(UserInput::BUTTON_RELEASE, Vec2(0, 0), {activeBuilding}));
-          break;
+        if (event.mouseButton.button == sf::Mouse::Left)
+          inputQueue.push(UserInput(UserInput::BUTTON_RELEASE, Vec2(0, 0), {activeBuilding}));
+        break;
       default: break;
     }
   }

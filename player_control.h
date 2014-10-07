@@ -193,14 +193,11 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static ViewObject getTrapObject(TrapType type);
   bool underAttack() const;
   void addToMemory(Vec2 pos);
-  void updateMemory();
   bool tryLockingDoor(Vec2 pos);
   void uncoverRandomLocation();
 
   mutable unique_ptr<map<UniqueEntity<Level>::Id, MapMemory>> SERIAL(memory);
   bool SERIAL2(gatheringTeam, false);
-  vector<Creature*> SERIAL(team);
-  Creature* SERIAL2(possessed, nullptr);
   Model* SERIAL(model);
   bool SERIAL2(showWelcomeMsg, true);
   Optional<Vec2> rectSelectCorner;

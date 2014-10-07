@@ -40,7 +40,6 @@ RICH_ENUM(CollectiveWarning,
     BEDS,
     TRAINING,
     WORKSHOP,
-    LABORATORY,
     NO_WEAPONS,
     GRAVES,
     CHESTS,
@@ -266,6 +265,15 @@ class Collective : public Task::Callback {
 
   void addAssaultNotification(const Creature*, const VillageControl*);
   void removeAssaultNotification(const Creature*, const VillageControl*);
+  bool isInTeam(const Creature*) const;
+  void addToTeam(Creature*);
+  void removeFromTeam(Creature*);
+  void setTeamLeader(Creature*);
+  void cancelTeamLeader();
+  const Creature* getTeamLeader() const;
+  Creature* getTeamLeader();
+  const vector<Creature*>& getTeam() const;
+  void cancelTeam();
 
   private:
   void updateEfficiency(Vec2, SquareType);
@@ -323,8 +331,9 @@ class Collective : public Task::Callback {
 
   void handleSurprise(Vec2 pos);
   EnumSet<Warning> warnings;
-  MoveInfo getDropItems(Creature *c);
-  MoveInfo getWorkerMove(Creature* c);
+  MoveInfo getDropItems(Creature*);
+  MoveInfo getWorkerMove(Creature*);
+  MoveInfo getTeamMemberMove(Creature*);
   bool usesEquipment(const Creature* c) const;
   void autoEquipment(Creature* creature, bool replace);
   Item* getWorstItem(vector<Item*> items) const;
@@ -393,6 +402,12 @@ class Collective : public Task::Callback {
   Creature* getConsumptionTarget(Creature* consumer);
   deque<Creature*> SERIAL(pregnancies);
   mutable vector<ItemFetchInfo> itemFetchInfo;
+  struct TeamInfo : public NamedTupleBase<vector<Creature*>, Creature*> {
+    NAMED_TUPLE_STUFF(TeamInfo);
+    NAME_ELEM(0, creatures);
+    NAME_ELEM(1, leader);
+  };
+  TeamInfo SERIAL(teamInfo);
 };
 
 #endif
