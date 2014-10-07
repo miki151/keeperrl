@@ -38,7 +38,7 @@ GuiElem::~GuiElem() {
 class Button : public GuiElem {
   public:
   Button(function<void()> f, char key) : fun(f), hotkey(key) {}
-  Button(function<void()> f, Event::KeyEvent key) : fun(f), hotkey2(key) {}
+ // Button(function<void()> f, Event::KeyEvent key) : fun(f), hotkey2(key) {}
 
   virtual void onLeftClick(Vec2 pos) override {
     if (pos.inRectangle(getBounds()))
@@ -50,24 +50,24 @@ class Button : public GuiElem {
       fun();
   }
 
-  virtual void onKeyPressed(Event::KeyEvent key) override {
+/*  virtual void onKeyPressed(Event::KeyEvent key) override {
     if (hotkey2.code == key.code && hotkey2.shift == key.shift)
       fun();
-  }
+  }*/
 
   private:
   function<void()> fun;
   char hotkey;
-  Event::KeyEvent hotkey2;
+//  Event::KeyEvent hotkey2;
 };
 
 PGuiElem GuiElem::button(function<void()> fun, char hotkey) {
   return PGuiElem(new Button(fun, hotkey));
 }
 
-PGuiElem GuiElem::button(function<void()> fun, Event::KeyEvent hotkey) {
+/*PGuiElem GuiElem::button(function<void()> fun, Event::KeyEvent hotkey) {
   return PGuiElem(new Button(fun, hotkey));
-}
+}*/
 
 class DrawCustom : public GuiElem {
   public:
