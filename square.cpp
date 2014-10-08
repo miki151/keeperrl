@@ -320,15 +320,15 @@ void Square::setBackground(const Square* square) {
 
 void Square::getViewIndex(const CreatureView* c, ViewIndex& ret) const {
   double fireSize = 0;
-  for (Item* it : inventory.getItems())
-    fireSize = max(fireSize, it->getFireSize());
-  fireSize = max(fireSize, fire.getSize());
   if (creature && (c->canSee(creature) || creature->isPlayer())) {
-    ret.insert(copyOf(creature->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
+    ret.insert(copyOf(creature->getViewObject()));
   }
   else if (creature && contains(c->getUnknownAttacker(), creature))
-    ret.insert(copyOf(ViewObject::unknownMonster()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
+    ret.insert(copyOf(ViewObject::unknownMonster()));
   if (c->canSee(position)) {
+    for (Item* it : inventory.getItems())
+      fireSize = max(fireSize, it->getFireSize());
+    fireSize = max(fireSize, fire.getSize());
     if (backgroundObject)
       ret.insert(*backgroundObject);
     ret.insert(getViewObject());
@@ -337,15 +337,13 @@ void Square::getViewIndex(const CreatureView* c, ViewIndex& ret) const {
         ret.insert(copyOf(*obj).setAttribute(ViewObject::Attribute::BURNING, fireSize));
     if (Item* it = getTopItem())
       ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
-
-  }
-  if (c->canSee(position)) {
     ret.setHighlight(HighlightType::NIGHT, 1.0 - level->getLight(position));
     if (poisonGas.getAmount() > 0)
       ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas.getAmount()));
     if (fog)
       ret.setHighlight(HighlightType::FOG, fog);
-  }
+  } else
+    ret.setHiddenId(getViewObject().id());
 }
 
 void Square::onEnter(Creature* c) {

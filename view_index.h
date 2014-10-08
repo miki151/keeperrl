@@ -43,6 +43,9 @@ class ViewIndex {
   bool isEmpty() const;
   bool noObjects() const;
   ~ViewIndex();
+  // If the tile is not visible, we still need the id of the floor tile to render connections properly.
+  Optional<ViewId> getHiddenId() const;
+  void setHiddenId(ViewId);
 
   void setHighlight(HighlightType, double amount = 1);
 
@@ -59,6 +62,7 @@ class ViewIndex {
   vector<ViewObject> SERIAL(objects);
   EnumMap<HighlightType, double> SERIAL(highlight);
   bool SERIAL2(anyHighlight, false);
+  Optional<ViewId> hiddenId;
 };
 
 #endif

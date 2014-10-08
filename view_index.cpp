@@ -93,3 +93,11 @@ double ViewIndex::getHighlight(HighlightType h) const {
   return highlight[h];
 }
 
+Optional<ViewId> ViewIndex::getHiddenId() const {
+  return hiddenId;
+}
+
+void ViewIndex::setHiddenId(ViewId id) {
+  hiddenId = id;
+}
+

@@ -93,10 +93,8 @@ Color getHighlightColor(HighlightType type, double amount) {
 unordered_map<Vec2, ViewId> floorIds;
 set<Vec2> shadowed;
 
-Optional<ViewId> getConnectionId(const ViewObject& object) {
-  if (object.hasModifier(ViewObject::Modifier::PLANNED))
-    return Nothing();
-  switch (object.id()) {
+Optional<ViewId> getConnectionId(ViewId id) {
+  switch (id) {
     case ViewId::BLACK_WALL:
     case ViewId::YELLOW_WALL:
     case ViewId::HELL_WALL:
@@ -106,8 +104,15 @@ Optional<ViewId> getConnectionId(const ViewObject& object) {
     case ViewId::MUD_WALL:
     case ViewId::MOUNTAIN2:
     case ViewId::WALL: return ViewId::WALL;
-    default: return object.id();
+    default: return id;
   }
+}
+
+Optional<ViewId> getConnectionId(const ViewObject& object) {
+  if (object.hasModifier(ViewObject::Modifier::PLANNED))
+    return Nothing();
+  else
+    return getConnectionId(object.id());
 }
 
 vector<Vec2>& getConnectionDirs(ViewId id) {
@@ -125,6 +130,7 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
     case ViewId::LABORATORY:
     case ViewId::TORTURE_TABLE:
     case ViewId::RITUAL_ROOM:
+    case ViewId::MOUNTAIN2:
     case ViewId::TRAINING_ROOM: return v8;
     default: return v4;
   }
@@ -291,7 +297,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
           else
             borderDirs.insert(dir.getCardinalDir());
         }
-    
     Vec2 coord = tile.getSpriteCoord(dirs);
     if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
       moveY = -4* sizeY / Renderer::nominalSize.y;
@@ -312,6 +317,11 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
       return;
     renderer.drawSprite(x + off.x, y + moveY + off.y, coord.x * sz.x,
         coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
+    if (tile.hasCorners()) {
+      for (Vec2 coord : tile.getCornerCoords(dirs))
+        renderer.drawSprite(x + off.x, y + moveY + off.y, coord.x * sz.x,
+            coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
+    }
     if (tile.floorBorders) {
       drawFloorBorders(renderer, borderDirs, x, y);
     }
@@ -360,7 +370,9 @@ void MapGui::updateObjects(const MapMemory* mem) {
       } else if (index->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
         if (auto id = getConnectionId(index->getObject(ViewLayer::FLOOR_BACKGROUND)))
           floorIds.insert(make_pair(wpos, *id));
-      }
+      } else if (auto viewId = index->getHiddenId())
+        if (auto id = getConnectionId(*viewId))
+          floorIds.insert(make_pair(wpos, *id));
     }
 }
 

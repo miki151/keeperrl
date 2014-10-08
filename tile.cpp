@@ -170,6 +170,10 @@ void addSymbol(ViewId id, Tile tile) {
   symbols.insert({id, tile});
 }
 
+static SetOfDir dirs() {
+  return SetOfDir();
+}
+
 static SetOfDir dirs(Dir d1) {
   return SetOfDir({d1});
 }
@@ -207,6 +211,7 @@ void Tile::initialize() {
   ADD_SCRIPT_FUNCTION(addTile, "void addTile(ViewId, Tile)");
   ADD_SCRIPT_FUNCTION(addSymbol, "void addSymbol(ViewId, Tile)");
   ADD_SCRIPT_FUNCTION(SetOfDir::fullSet, "SetOfDir setOfAllDirs()");
+  ADD_SCRIPT_FUNCTION_OVERLOAD(dirs, "SetOfDir dirs()", (), SetOfDir);
   ADD_SCRIPT_FUNCTION_OVERLOAD(dirs, "SetOfDir dirs(Dir)", (Dir), SetOfDir);
   ADD_SCRIPT_FUNCTION_OVERLOAD(dirs, "SetOfDir dirs(Dir, Dir)", (Dir, Dir), SetOfDir);
   ADD_SCRIPT_FUNCTION_OVERLOAD(dirs, "SetOfDir dirs(Dir, Dir, Dir)", (Dir, Dir, Dir), SetOfDir);
@@ -222,6 +227,7 @@ void Tile::initialize() {
       (SetOfDir, const string&), Tile);
   ADD_SCRIPT_METHOD_OVERLOAD(Tile, addOption, "Tile addOption(Dir, const string& in)",
       (Dir, const string&), Tile);
+  ADD_SCRIPT_METHOD(Tile, addCorner, "Tile addCorner(SetOfDir def, SetOfDir borders, int x, int y)");
 }
 
 void Tile::loadTiles() {
@@ -301,4 +307,21 @@ Color Tile::getColor(const ViewObject& object) {
     return color;
 }
 
+Tile Tile::addCorner(EnumSet<Dir> cornerDef, EnumSet<Dir> borders, int x, int y) {
+  corners.push_back({cornerDef, borders, Vec2(x, y)});
+  return *this;
+}
+
+bool Tile::hasCorners() const {
+  return !corners.empty();
+}
+
+vector<Vec2> Tile::getCornerCoords(const EnumSet<Dir>& c) const {
+  vector<Vec2> ret;
+  for (auto& elem : corners) {
+    if (elem.cornerDef.intersection(c) == elem.borders)
+      ret.push_back(elem.tileCoord);
+  }
+  return ret;
+}
 

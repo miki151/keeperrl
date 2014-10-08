@@ -64,6 +64,10 @@ class Tile {
 
   int getTexNum() const;
 
+  bool hasCorners() const;
+  vector<Vec2> getCornerCoords(const EnumSet<Dir>& c) const;
+  Tile addCorner(EnumSet<Dir> cornerDef, EnumSet<Dir> borders, int, int);
+
   private:
   Tile();
   Tile(int x, int y, int num = 0, bool noShadow = false);
@@ -73,6 +77,12 @@ class Tile {
   int texNum = 0;
   unordered_map<EnumSet<Dir>, Vec2> connections;
   Optional<pair<Dir, Vec2>> connectionOption;
+  struct CornerInfo {
+    EnumSet<Dir> cornerDef;
+    EnumSet<Dir> borders;
+    Vec2 tileCoord;
+  };
+  vector<CornerInfo> corners;
 };
 
 
