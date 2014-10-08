@@ -191,7 +191,7 @@ string PlayerControl::getWarningText(Collective::Warning w) {
     case Warning::ALTAR: return "You need to build a shrine to sacrifice.";
     case Warning::MORE_CHESTS: return "You need a larger treasure room.";
     case Warning::MANA: return "Kill or torture some innocent beings for more mana.";
-    case Warning::MORE_LIGHTS: return "Place more torches to light up your dungeon.";
+    case Warning::MORE_LIGHTS: return "Place some torches to light up your dungeon.";
   }
   return "";
 }
@@ -949,7 +949,7 @@ class MinionController : public Player {
 
   virtual void onKilled(const Creature* attacker) override {
     showHistory();
-    creature->popController();
+    //creature->popController(); this makes the controller crash if creature committed suicide
   }
 
   virtual bool unpossess() override {
@@ -1381,9 +1381,9 @@ bool PlayerControl::canSee(const Creature* c) const {
 bool PlayerControl::canSee(Vec2 position) const {
   if (seeEverything)
     return true;
-  if (getCollective()->getAllSquares().count(position) 
+ /* if (getCollective()->getAllSquares().count(position) 
       && !getCollective()->getSquares(SquareId::FLOOR).count(position))
-    return true;
+    return true;*/
   for (Creature* c : getCollective()->getCreatures())
     if (c->canSee(position))
       return true;
@@ -1541,6 +1541,10 @@ void PlayerControl::onDiscoveredLocation(const Location* loc) {
     addMessage(PlayerMessage("Your minions discover the location of " + loc->getName(), PlayerMessage::HIGH));
   else if (loc->isMarkedAsSurprise())
     addMessage(PlayerMessage("Your minions discover a surprise location."));
+}
+
+void PlayerControl::onConstructed(Vec2 pos, SquareType type) {
+  getMemory(getLevel()).addObject(pos, getLevel()->getSquare(pos)->getViewObject());
 }
 
 template <class Archive>

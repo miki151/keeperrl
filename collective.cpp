@@ -1174,7 +1174,7 @@ bool Collective::underAttack() const {
 }
 
 double Collective::getKillManaScore(const Creature* victim) const {
-  int ret = victim->getDifficultyPoints();
+  int ret = victim->getDifficultyPoints() / 3;
   if (victim->isAffected(LastingEffect::SLEEP))
     ret *= 2;
   return ret;
@@ -1730,6 +1730,7 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     constructions.at(pos).marked() = 0;
     constructions.at(pos).task() = -1;
   }
+  control->onConstructed(pos, type);
 }
 
 void Collective::updateSectors(Vec2 pos) {

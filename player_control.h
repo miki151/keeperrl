@@ -58,6 +58,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   void onConqueredLand(const string& name);
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onConstructed(Vec2, SquareType) override;
 
   void processInput(View* view, UserInput);
   void tick(double);

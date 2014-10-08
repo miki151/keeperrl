@@ -259,7 +259,8 @@ int main(int argc, char* argv[]) {
     view->presentText("", "You are playing a version of KeeperRL without graphical tiles. "
         "Besides lack of graphics and music, this "
         "is the same exact game as the full version. If you'd like to buy the full version, "
-        "please visit keeperrl.com");
+        "please visit keeperrl.com.\n \nYou can also get it by donating to any wildlife charity. More information "
+        "on the website.");
   while (1) {
     view->reset();
     clearAndInitialize();
