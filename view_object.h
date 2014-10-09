@@ -20,18 +20,15 @@
 #include "enums.h"
 #include "util.h"
 
-enum class ViewLayer {
-  CREATURE,
-  LARGE_ITEM,
-  ITEM,
-  FLOOR,
+RICH_ENUM(ViewLayer,
   FLOOR_BACKGROUND,
-};
-
-const static vector<ViewLayer> allLayers =
-    {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::ITEM, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE};
-
-ENUM_HASH(ViewLayer);
+  FLOOR,
+  ITEM,
+  LARGE_ITEM,
+  TORCH1,
+  CREATURE,
+  TORCH2
+);
 
 RICH_ENUM(ViewObjectModifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
     ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT, DRAW_MORALE);
@@ -53,6 +50,9 @@ class ViewObject {
   bool hasModifier(Modifier) const;
 
   static void setHallu(bool);
+  
+  ViewObject& setAttachmentDir(Dir);
+  Optional<Dir> getAttachmentDir() const;
 
   ViewObject& setAttribute(Attribute, double);
   double getAttribute(Attribute) const;
@@ -78,6 +78,7 @@ class ViewObject {
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
   string SERIAL(description);
+  Optional<Dir> SERIAL(attachmentDir);
 };
 
 #endif

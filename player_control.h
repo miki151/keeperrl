@@ -135,7 +135,19 @@ class PlayerControl : public CreatureView, public CollectiveControl {
       Collective::CostInfo cost;
     } minionInfo;
 
-    enum BuildType { DIG, SQUARE, IMP, MINION, TRAP, GUARD_POST, DESTROY, FETCH, DISPATCH, CLAIM_TILE } buildType;
+    enum BuildType {
+      DIG,
+      SQUARE,
+      IMP,
+      MINION,
+      TRAP,
+      GUARD_POST,
+      DESTROY,
+      FETCH,
+      DISPATCH,
+      CLAIM_TILE,
+      TORCH,
+    } buildType;
 
     Optional<TechId> techId;
     string help;

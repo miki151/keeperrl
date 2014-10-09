@@ -253,6 +253,17 @@ static void drawMorale(Renderer& renderer, const Rectangle& rect, double morale)
   renderer.drawFilledRectangle(rect, Color::Transparent, col);
 }
 
+static Vec2 getAttachmentOffset(Dir dir, int width, int height) {
+  switch (dir) {
+    case Dir::N: return Vec2(0, -height * 2 / 3);
+    case Dir::S: return Vec2(0, height / 4);
+    case Dir::E:
+    case Dir::W: return Vec2(dir) * width / 2;
+    default: FAIL << "Bad attachment dir " << int(dir);
+  }
+  return Vec2();
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& object,
     int sizeX, int sizeY, Vec2 tilePos) {
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
@@ -280,7 +291,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
     color = Color(val, val, val);
   }
   if (tile.hasSpriteCoord()) {
-    int moveY = 0;
+    Vec2 move;
     Vec2 sz = Renderer::tileSize[tile.getTexNum()];
     Vec2 off = (Renderer::nominalSize -  sz).mult(Vec2(sizeX, sizeY)).div(Renderer::nominalSize * 2);
     int width = sz.x * sizeX / Renderer::nominalSize.x;
@@ -299,12 +310,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
         }
     Vec2 coord = tile.getSpriteCoord(dirs);
     if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
-      moveY = -4* sizeY / Renderer::nominalSize.y;
+      move.y = -4* sizeY / Renderer::nominalSize.y;
     if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
       renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize.x, 22 * Renderer::nominalSize.y,
           Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[0],
           min(Renderer::nominalSize.x, width), min(Renderer::nominalSize.y, height));
-      moveY = -4* sizeY / Renderer::nominalSize.y;
+      move.y = -4* sizeY / Renderer::nominalSize.y;
     }
     if (auto background = tile.getBackgroundCoord()) {
       renderer.drawSprite(x + off.x, y + off.y, background->x * sz.x,
@@ -315,11 +326,13 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
     }
     if (coord.x < 0)
       return;
-    renderer.drawSprite(x + off.x, y + moveY + off.y, coord.x * sz.x,
+    if (auto dir = object.getAttachmentDir())
+      move = getAttachmentOffset(*dir, width, height);
+    renderer.drawSprite(x + off.x + move.x, y + move.y + off.y, coord.x * sz.x,
         coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
     if (tile.hasCorners()) {
       for (Vec2 coord : tile.getCornerCoords(dirs))
-        renderer.drawSprite(x + off.x, y + moveY + off.y, coord.x * sz.x,
+        renderer.drawSprite(x + off.x + move.x, y + move.y + off.y, coord.x * sz.x,
             coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
     }
     if (tile.floorBorders) {

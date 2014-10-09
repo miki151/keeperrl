@@ -98,7 +98,10 @@ Optional<pair<StairDirection, StairKey>> Square::getLandingLink() const {
 }
 
 double Square::getLightEmission() const {
-  return 0;
+  double sum = 0;
+  for (auto& elem : triggers)
+    sum += elem->getLightEmission();
+  return sum;
 }
 
 void Square::setHeight(double h) {
@@ -376,6 +379,8 @@ Creature* Square::getCreature() {
 void Square::addTrigger(PTrigger t) {
   dirty = true;
   level->addTickingSquare(position);
+  Trigger* ref = t.get();
+  level->addLightSource(position, t->getLightEmission());
   triggers.push_back(std::move(t));
 }
 
@@ -389,14 +394,17 @@ PTrigger Square::removeTrigger(Trigger* trigger) {
     if (t.get() == trigger) {
       PTrigger ret = std::move(t);
       removeElement(triggers, t);
+      level->removeLightSource(position, ret->getLightEmission());
       return ret;
     }
   return nullptr;
 }
 
-void Square::removeTriggers() {
-  dirty = true;
-  triggers.clear();
+vector<PTrigger> Square::removeTriggers() {
+  vector<PTrigger> ret;
+  for (PTrigger& t : triggers)
+    ret.push_back(removeTrigger(t.get()));
+  return ret;
 }
 
 const Creature* Square::getCreature() const {

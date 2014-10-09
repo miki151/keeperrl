@@ -22,6 +22,7 @@
 #include "creature.h"
 #include "square.h"
 #include "collective.h"
+#include "trigger.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -61,6 +62,8 @@ void Task::setDone() {
   done = true;
 }
 
+namespace {
+
 class Construction : public Task {
   public:
   Construction(Callback* c, Vec2 pos, SquareType _type) : type(_type), position(pos), callback(c) {}
@@ -70,8 +73,7 @@ class Construction : public Task {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (!c->hasSkill(Skill::get(SkillId::CONSTRUCTION)))
-      return NoMove;
+    CHECK(c->hasSkill(Skill::get(SkillId::CONSTRUCTION)));
     Vec2 dir = position - c->getPosition();
     if (dir.length8() == 1) {
       if (auto action = c->construct(dir, type))
@@ -106,6 +108,55 @@ class Construction : public Task {
   Callback* SERIAL(callback);
 };
 
+}
+
+PTask Task::construction(Callback* c, Vec2 target, SquareType type) {
+  return PTask(new Construction(c, target, type));
+}
+
+namespace {
+
+class BuildTorch : public Task {
+  public:
+  BuildTorch(Callback* c, Vec2 pos, Dir dir) : position(pos), callback(c), attachmentDir(dir) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    CHECK(c->hasSkill(Skill::get(SkillId::CONSTRUCTION)));
+    if (c->getPosition() == position)
+      return c->wait().append([=] {
+          PTrigger torch = Trigger::getTorch(attachmentDir, c->getLevel(), position);
+          Trigger* tRef = torch.get();
+          c->getSquare()->addTrigger(std::move(torch));
+          setDone();
+          callback->onTorchBuilt(position, tRef);
+        });
+    else
+      return c->moveTowards(position);
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Task)
+      & SVAR(position)
+      & SVAR(callback)
+      & SVAR(attachmentDir);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(BuildTorch);
+
+  private:
+  Vec2 SERIAL(position);
+  Callback* SERIAL(callback);
+  Dir SERIAL(attachmentDir);
+};
+
+}
+
+PTask Task::buildTorch(Callback* call, Vec2 target, Dir attachmentDir) {
+  return PTask(new BuildTorch(call, target, attachmentDir));
+}
+
 namespace {
 
 class NonTransferable : public Task {
@@ -121,10 +172,6 @@ class NonTransferable : public Task {
   }
 };
 
-}
-
-PTask Task::construction(Callback* c, Vec2 target, SquareType type) {
-  return PTask(new Construction(c, target, type));
 }
 
 class PickItem : public NonTransferable {
@@ -873,6 +920,7 @@ PTask Task::consume(Callback* c, Creature* target) {
 template <class Archive>
 void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Construction);
+  REGISTER_TYPE(ar, BuildTorch);
   REGISTER_TYPE(ar, PickItem);
   REGISTER_TYPE(ar, EquipItem);
   REGISTER_TYPE(ar, BringItem);

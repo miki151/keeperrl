@@ -131,6 +131,9 @@ void WindowView::initialize() {
     Renderer::loadTilesFromDir("shroom36", Vec2(36, 36));
     Renderer::loadTilesFromDir("shroom46", Vec2(46, 46));
   }
+  vector<ViewLayer> allLayers;
+  for (auto l : ENUM_ALL(ViewLayer))
+    allLayers.push_back(l);
   asciiLayouts = {
     MapLayout(16, 20, allLayers),
     MapLayout(8, 10,

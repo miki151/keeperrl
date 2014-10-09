@@ -38,9 +38,13 @@ class Trigger {
   virtual bool isDangerous(const Creature* c) const;
   virtual void tick(double time);
   virtual void setOnFire(double size);
+  virtual double getLightEmission() const;
 
-  static PTrigger getPortal(const ViewObject& obj, Level*, Vec2 position);
-  static PTrigger getTrap(const ViewObject& obj, Level* l, Vec2 position, EffectType effect, Tribe* tribe);
+  static PTrigger getPortal(const ViewObject&, Level*, Vec2 position);
+  static PTrigger getTrap(const ViewObject&, Level*, Vec2 position, EffectType, Tribe*);
+  static PTrigger getTorch(Dir attachmentDir, Level*, Vec2 position);
+
+  static const ViewObject& getTorchViewObject(Dir);
 
   template <class Archive>
   static void registerTypes(Archive& ar);

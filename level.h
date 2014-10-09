@@ -125,8 +125,8 @@ class Level : public UniqueEntity<Level> {
   /** The given square's method Square::tick() will be called every turn. */
   void addTickingSquare(Vec2 pos);
 
-  /** Returns all squares that must be ticked. */
-  vector<Square*> getTickingSquares() const;
+  /** Ticks all squares that must be ticked. */
+  void tick(double time);
 
   /** Moves the creature to a different level according to \paramname{direction}. */
   void changeLevel(StairDirection direction, StairKey key, Creature* c);
@@ -193,6 +193,9 @@ class Level : public UniqueEntity<Level> {
   CoverInfo getCoverInfo(Vec2) const;
 
   const Model* getModel() const;
+
+  void addLightSource(Vec2, double radius);
+  void removeLightSource(Vec2, double radius);
 
   /** Returns the amount of light in the square, capped within (0, 1).*/
   double getLight(Vec2) const;
@@ -294,7 +297,7 @@ class Level : public UniqueEntity<Level> {
   Table<PSquare> SERIAL(squares);
   map<pair<StairDirection, StairKey>, vector<Vec2>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
-  vector<Square*> SERIAL(tickingSquares);
+  set<Vec2> SERIAL(tickingSquares);
   vector<Creature*> SERIAL(creatures);
   Model* SERIAL2(model, nullptr);
   mutable unordered_map<Vision*, FieldOfView> SERIAL(fieldOfView);

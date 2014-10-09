@@ -160,7 +160,7 @@ class Square : public Renderable {
   PTrigger removeTrigger(Trigger*);
 
   /** Removes all triggers from the square.*/
-  void removeTriggers();
+  vector<PTrigger> removeTriggers();
 
   //@{
   /** Drops item or items on the square. The square assumes ownership.*/

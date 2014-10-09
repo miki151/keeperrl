@@ -33,6 +33,7 @@
 #include "view_id.h"
 #include "collective.h"
 #include "effect.h"
+#include "trigger.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -76,7 +77,7 @@ PlayerControl::BuildInfo::BuildInfo(const Creature* c, CostInfo cost, const stri
 
 PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, string group)
     : buildType(type), help(h), hotkey(key), groupName(group) {
-  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH, DISPATCH, CLAIM_TILE}, type));
+  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH, DISPATCH, CLAIM_TILE, TORCH}, type));
 }
 
 PlayerControl::BuildInfo::BuildInfo(MinionInfo info, Optional<TechId> tech, const string& group, const string& h)
@@ -122,7 +123,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), "", 0, "Installations"),
     BuildInfo({{SquareId::BARRICADE, tribe}, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, "", 0,
       "Installations"),
-    BuildInfo({SquareId::TORCH, {ResourceId::WOOD, 1}, "Torch"}, Nothing(), "", 'c', "Installations"),
+    BuildInfo(BuildInfo::TORCH, "Place it on tiles next to a wall.", 'c', "Installations"),
     BuildInfo({SquareId::EYEBALL, {ResourceId::MANA, 10}, "Eyeball"}, Nothing(), "", 0, "Installations"),
     BuildInfo({SquareId::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, Nothing(),
         "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
@@ -384,7 +385,7 @@ Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
     res.push_back(c);
     opt.emplace_back(c->getName() + ", level " + convertToString(c->getExpLevel()));
   }
-  if (auto index = view->chooseFromList("Choose minion to consume:", opt))
+  if (auto index = view->chooseFromList("Choose minion to absorb:", opt))
     return res[*index];
   return nullptr;
 }
@@ -763,6 +764,10 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            buttons.push_back({
                ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", Nothing(), "", ""});
            break;
+      case BuildInfo::TORCH:
+           buttons.push_back({
+               ViewObject(ViewId::TORCH, ViewLayer::CREATURE, ""), "Torch", Nothing(), "", ""});
+           break;
     }
     if (!isTech)
       buttons.back().help = "Requires " + Technology::get(*button.techId)->getName();
@@ -912,6 +917,10 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     if (constructions.count(pos) && !constructions.at(pos).built())
       index.insert(getConstructionObject(constructions.at(pos).type()));
   }
+  const map<Vec2, Collective::TorchInfo>& torches = getCollective()->getTorches();
+  if (torches.count(pos) && !torches.at(pos).built())
+    index.insert(copyOf(Trigger::getTorchViewObject(torches.at(pos).attachmentDir()))
+        .setModifier(ViewObject::Modifier::PLANNED));
   if (surprises.count(pos) && !getCollective()->isKnownSquare(pos))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
   if (getCollective()->hasEfficiency(pos) && index.hasObject(ViewLayer::FLOOR))
@@ -1145,17 +1154,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       break;
     case BuildInfo::DESTROY:
         selection = SELECT;
-        if (getLevel()->getSquare(pos)->canDestroy() && getCollective()->containsSquare(pos))
-          getLevel()->getSquare(pos)->destroy();
-        getLevel()->getSquare(pos)->removeTriggers();
-        if (Creature* c = getLevel()->getSquare(pos)->getCreature())
-          if (c->getName() == "boulder")
-            c->die(nullptr, false);
-        if (getCollective()->getTraps().count(pos)) {
-          getCollective()->removeTrap(pos);
-        } else
-        if (getCollective()->getConstructions().count(pos))
-          getCollective()->removeConstruction(pos);
+        getCollective()->destroySquare(pos);
         break;
     case BuildInfo::GUARD_POST:
         if (getCollective()->isGuardPost(pos) && selection != SELECT) {
@@ -1164,6 +1163,16 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
         else if (canPlacePost(pos) && selection != DESELECT) {
           getCollective()->addGuardPost(pos);
+          selection = SELECT;
+        }
+        break;
+    case BuildInfo::TORCH:
+        if (getCollective()->isPlannedTorch(pos) && selection != SELECT) {
+          getCollective()->removeTorch(pos);
+          selection = DESELECT;
+        }
+        else if (getCollective()->canPlaceTorch(pos) && selection != DESELECT) {
+          getCollective()->addTorch(pos);
           selection = SELECT;
         }
         break;

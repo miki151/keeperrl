@@ -199,8 +199,7 @@ void Model::tick(double time) {
     c->tick(time);
   }
   for (PLevel& l : levels)
-    for (Square* square : l->getTickingSquares())
-      square->tick(time);
+    l->tick(time);
   lastTick = time;
   if (playerControl) {
     if (!playerControl->isRetired()) {

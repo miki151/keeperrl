@@ -21,6 +21,7 @@
 #include "item.h"
 #include "creature.h"
 #include "square.h"
+#include "view_id.h"
 #include "view_object.h"
 
 template <class Archive> 
@@ -51,10 +52,16 @@ void Trigger::onCreatureEnter(Creature* c) {}
 
 void Trigger::setOnFire(double size) {}
 
+double Trigger::getLightEmission() const {
+  return 0;
+}
+
 bool Trigger::interceptsFlyingItem(Item* it) const { return false; }
 void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, Vision*) {}
 bool Trigger::isDangerous(const Creature* c) const { return false; }
 void Trigger::tick(double time) {}
+
+namespace {
 
 class Portal : public Trigger {
   public:
@@ -131,11 +138,15 @@ class Portal : public Trigger {
   static Portal* SERIAL(previous);
 };
 
+}
+
 Portal* Portal::previous = nullptr;
   
 PTrigger Trigger::getPortal(const ViewObject& obj, Level* l, Vec2 position) {
   return PTrigger(new Portal(obj, l, position));
 }
+
+namespace {
 
 class Trap : public Trigger {
   public:
@@ -183,14 +194,52 @@ class Trap : public Trigger {
   Tribe* SERIAL(tribe);
 };
 
+}
+
+PTrigger Trigger::getTrap(const ViewObject& obj, Level* l, Vec2 position, EffectType effect, Tribe* tribe) {
+  return PTrigger(new Trap(obj, l, position, std::move(effect), tribe));
+}
+
+namespace {
+
+class Torch : public Trigger {
+  public:
+  Torch(const ViewObject& obj, Level* l, Vec2 position) : Trigger(obj, l, position) {
+  }
+
+  virtual double getLightEmission() const override {
+    return 8.2;
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Trigger);
+    CHECK_SERIAL;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(Torch);
+};
+
+}
+
+const ViewObject& Trigger::getTorchViewObject(Dir dir) {
+  static map<Dir, ViewObject> objs;
+  if (objs.empty())
+    for (Dir dir : ENUM_ALL(Dir))
+      objs[dir] = ViewObject(ViewId::TORCH, dir == Dir::N ? ViewLayer::TORCH1 : ViewLayer::TORCH2, "Torch")
+        .setAttachmentDir(dir);
+  return objs[dir];
+}
+
+PTrigger Trigger::getTorch(Dir attachmentDir, Level* l, Vec2 position) {
+  return PTrigger(new Torch(getTorchViewObject(attachmentDir), l, position));
+}
+
 template <class Archive>
 void Trigger::registerTypes(Archive& ar) {
+  REGISTER_TYPE(ar, Torch);
   REGISTER_TYPE(ar, Trap);
   REGISTER_TYPE(ar, Portal);
 }
 
 REGISTER_TYPES(Trigger);
-
-PTrigger Trigger::getTrap(const ViewObject& obj, Level* l, Vec2 position, EffectType effect, Tribe* tribe) {
-  return PTrigger(new Trap(obj, l, position, std::move(effect), tribe));
-}

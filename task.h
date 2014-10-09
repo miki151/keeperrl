@@ -27,6 +27,7 @@ class Task : public UniqueEntity<Task> {
   class Callback {
     public:
     virtual void onConstructed(Vec2 pos, SquareType) {}
+    virtual void onTorchBuilt(Vec2 pos, Trigger*) {}
     virtual void onAppliedItem(Vec2 pos, Item* item) {}
     virtual void onAppliedSquare(Vec2 pos) {}
     virtual void onAppliedItemCancel(Vec2 pos) {}
@@ -50,6 +51,7 @@ class Task : public UniqueEntity<Task> {
   bool isDone();
 
   static PTask construction(Callback*, Vec2 target, SquareType);
+  static PTask buildTorch(Callback*, Vec2 target, Dir attachmentDir);
   static PTask bringItem(Callback*, Vec2 position, vector<Item*>, vector<Vec2> target);
   static PTask applyItem(Callback*, Vec2 position, Item* item, Vec2 target);
   static PTask applySquare(Callback*, vector<Vec2> squares);
@@ -68,7 +70,6 @@ class Task : public UniqueEntity<Task> {
   static PTask consumeItem(Callback*, vector<Item*> items);
   static PTask copulate(Callback*, Creature* target, int numTurns);
   static PTask consume(Callback*, Creature* target);
-
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

@@ -22,6 +22,7 @@
 #include "creature.h"
 #include "square.h"
 #include "collective_builder.h"
+#include "trigger.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) { 
@@ -102,6 +103,14 @@ void Level::notifyLocations(Creature* c) {
       l->onCreature(c);
 }
 
+void Level::addLightSource(Vec2 pos, double radius) {
+  addLightSource(pos, radius, 1);
+}
+
+void Level::removeLightSource(Vec2 pos, double radius) {
+  addLightSource(pos, radius, -1);
+}
+
 void Level::addLightSource(Vec2 pos, double radius, int numLight) {
   if (radius > 0) {
     for (Vec2 v : getVisibleTilesNoDarkness(pos, Vision::get(VisionId::NORMAL))) {
@@ -113,17 +122,17 @@ void Level::addLightSource(Vec2 pos, double radius, int numLight) {
 }
 
 void Level::replaceSquare(Vec2 pos, PSquare square) {
-  if (contains(tickingSquares, getSquare(pos)))
-    removeElement(tickingSquares, getSquare(pos));
   squares[pos]->onConstructNewSquare(square.get());
   Creature* c = squares[pos]->getCreature();
   for (Item* it : squares[pos]->getItems())
     square->dropItem(squares[pos]->removeItem(it));
   addLightSource(pos, squares[pos]->getLightEmission(), -1);
+  square->setPosition(pos);
+  square->setLevel(this);
+  for (PTrigger& t : squares[pos]->removeTriggers())
+    square->addTrigger(std::move(t));
   square->setBackground(squares[pos].get());
   squares[pos] = std::move(square);
-  squares[pos]->setPosition(pos);
-  squares[pos]->setLevel(this);
   if (c) {
     squares[pos]->putCreatureSilently(c);
   }
@@ -417,13 +426,12 @@ Square* Level::getSquare(Vec2 pos) {
 }
 
 void Level::addTickingSquare(Vec2 pos) {
-  Square* s = squares[pos].get();
-  if (!contains(tickingSquares, s))
-    tickingSquares.push_back(s);
+  tickingSquares.insert(pos);
 }
-  
-vector<Square*> Level::getTickingSquares() const {
-  return tickingSquares;
+
+void Level::tick(double time) {
+  for (Vec2 pos : tickingSquares)
+    squares[pos]->tick(time);
 }
 
 Level::Builder::Builder(int width, int height, const string& n, bool covered)

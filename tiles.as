@@ -280,7 +280,7 @@ void genTiles() {
   addTile(PRISON, sprite(6, 2, 1));
   addTile(BED, sprite("sleepdeco").setNoShadow());
   addTile(DORM, sprite("sleep").setFloorBorders());
-  addTile(TORCH, sprite(13, 1, 2).setNoShadow().setTranslucent(0.35));
+  addTile(TORCH, sprite(12, 0, 2).setNoShadow().setTranslucent(0.35));
   addTile(DUNGEON_HEART, sprite(6, 10, 2));
   addTile(ALTAR, sprite(2, 7, 2).setNoShadow());
   addTile(CREATURE_ALTAR, sprite(3, 7, 2).setNoShadow());

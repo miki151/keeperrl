@@ -25,7 +25,8 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
     & SVAR(viewLayer)
     & SVAR(description)
     & SVAR(modifiers)
-    & SVAR(attributes);
+    & SVAR(attributes)
+    & SVAR(attachmentDir);
   CHECK_SERIAL;
 }
 
@@ -83,6 +84,15 @@ bool ViewObject::isFriendly() const {
 
 string ViewObject::getBareDescription() const {
   return description;
+}
+
+ViewObject&  ViewObject::setAttachmentDir(Dir dir) {
+  attachmentDir = dir;
+  return *this;
+}
+
+Optional<Dir> ViewObject::getAttachmentDir() const {
+  return attachmentDir;
 }
 
 string ViewObject::getAttributeString(Attribute attr) const {

@@ -18,6 +18,7 @@ class CollectiveControl;
 class Tribe;
 class Deity;
 class Level;
+class Trigger;
 
 RICH_ENUM(SpawnType,
   HUMANOID,
@@ -76,6 +77,7 @@ class Collective : public Task::Callback {
   virtual void onPickedUp(Vec2 pos, EntitySet<Item>) override;
   virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Vec2, SquareType) override;
+  virtual void onTorchBuilt(Vec2, Trigger*) override;
   virtual void onAppliedSquare(Vec2 pos) override;
   virtual void onKillCancelled(Creature*) override;
   virtual void onBedCreated(Vec2, SquareType fromType, SquareType toType) override;
@@ -213,6 +215,20 @@ class Collective : public Task::Callback {
   void removeTrap(Vec2);
   void addConstruction(Vec2, SquareType, CostInfo, bool immediately, bool noCredit);
   void removeConstruction(Vec2);
+  void destroySquare(Vec2);
+  struct TorchInfo : public NamedTupleBase<bool, double, UniqueEntity<Task>::Id, Dir, Trigger*> {
+    NAMED_TUPLE_STUFF(TorchInfo);
+    NAME_ELEM(0, built);
+    NAME_ELEM(1, marked);
+    NAME_ELEM(2, task);
+    NAME_ELEM(3, attachmentDir);
+    NAME_ELEM(4, trigger);
+  };
+  const map<Vec2, TorchInfo>& getTorches() const;
+  bool isPlannedTorch(Vec2) const;
+  bool canPlaceTorch(Vec2) const;
+  void removeTorch(Vec2);
+  void addTorch(Vec2);
   void fetchAllItems(Vec2);
   void dig(Vec2);
   void dontDig(Vec2);
@@ -374,6 +390,7 @@ class Collective : public Task::Callback {
   EntitySet<Item> SERIAL(markedItems);
   ItemPredicate unMarkedItems(ItemClass) const;
   map<Vec2, TrapInfo> SERIAL(traps);
+  map<Vec2, TorchInfo> SERIAL(torches);
   enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };
   struct PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueEntity<Task>::Id> {
     NAMED_TUPLE_STUFF(PrisonerInfo);

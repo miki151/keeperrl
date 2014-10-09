@@ -12,6 +12,7 @@
 #include "technology.h"
 #include "monster.h"
 #include "options.h"
+#include "trigger.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -52,7 +53,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(pregnancies)
     & SVAR(nextPayoutTime)
     & SVAR(teamInfo)
-    & SVAR(knownLocations);
+    & SVAR(knownLocations)
+    & SVAR(torches);
   CHECK_SERIAL;
 }
 
@@ -1056,7 +1058,7 @@ void Collective::tick(double time) {
   cashPayouts();
   setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
   setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
-  setWarning(Warning::MORE_LIGHTS, getSquares(SquareId::TORCH).size() * 25 < getAllSquares(roomsNeedingLight).size());
+  setWarning(Warning::MORE_LIGHTS, torches.size() * 25 < getAllSquares(roomsNeedingLight).size());
   for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
     DormInfo info = getDormInfo()[spawnType];
     if (info.warning && info.getBedType())
@@ -1652,6 +1654,22 @@ void Collective::removeConstruction(Vec2 pos) {
   constructions.erase(pos);
 }
 
+void Collective::destroySquare(Vec2 pos) {
+  if (level->getSquare(pos)->canDestroy() && containsSquare(pos))
+    level->getSquare(pos)->destroy();
+  level->getSquare(pos)->removeTriggers();
+  if (Creature* c = level->getSquare(pos)->getCreature())
+    if (c->getName() == "boulder")
+      c->die(nullptr, false);
+  if (traps.count(pos)) {
+    removeTrap(pos);
+  }
+  if (constructions.count(pos))
+    removeConstruction(pos);
+  if (torches.count(pos))
+    removeTorch(pos);
+}
+
 void Collective::addConstruction(Vec2 pos, SquareType type, CostInfo cost, bool immediately, bool noCredit) {
   if (immediately && hasResource(cost)) {
     while (!getLevel()->getSquare(pos)->construct(type)) {}
@@ -1712,6 +1730,13 @@ void Collective::onAppliedItemCancel(Vec2 pos) {
     traps.at(pos).marked() = 0;
 }
 
+void Collective::onTorchBuilt(Vec2 pos, Trigger* t) {
+  torches.at(pos).built() = true;
+  torches.at(pos).marked() = 0;
+  torches.at(pos).task() = -1;
+  torches.at(pos).trigger() = t;
+}
+
 void Collective::onConstructed(Vec2 pos, SquareType type) {
   if (!contains({SquareId::TREE_TRUNK}, type.getId()))
     allSquares.insert(pos);
@@ -1729,6 +1754,13 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     constructions.at(pos).built() = true;
     constructions.at(pos).marked() = 0;
     constructions.at(pos).task() = -1;
+  }
+  if (type == SquareId::FLOOR) {
+    for (Vec2 v : pos.neighbors4())
+      if (torches.count(v) && torches.at(v).attachmentDir() == (pos - v).getCardinalDir()) {
+        getLevel()->getSquare(v)->removeTrigger(torches.at(v).trigger());
+        removeTorch(v);
+      }
   }
   control->onConstructed(pos, type);
 }
@@ -1773,6 +1805,12 @@ void Collective::updateConstructions() {
           elem.second.cost())->getUniqueId();
       elem.second.marked() = getTime() + timeToBuild;
       takeResource(elem.second.cost());
+    }
+  for (auto& elem : torches)
+    if (!isDelayed(elem.first) && elem.second.marked() <= getTime() && !elem.second.built()) {
+      elem.second.task() = taskMap.addTask(
+          Task::buildTorch(this, elem.first, elem.second.attachmentDir()), elem.first)->getUniqueId();
+      elem.second.marked() = getTime() + timeToBuild;
     }
 }
 
@@ -2191,6 +2229,37 @@ const vector<Creature*>& Collective::getTeam() const {
 void Collective::cancelTeam() {
   teamInfo.creatures().clear();
   cancelTeamLeader();
+}
+
+static Optional<Vec2> getAdjacentWall(const Level* l, Vec2 pos) {
+  for (Vec2 v : pos.neighbors4(true))
+    if (l->getSquare(v)->canConstruct(SquareId::FLOOR))
+      return v;
+  return Nothing();
+}
+
+const map<Vec2, Collective::TorchInfo>& Collective::getTorches() const {
+  return torches;
+}
+
+bool Collective::isPlannedTorch(Vec2 pos) const {
+  return torches.count(pos) && !torches.at(pos).built();
+}
+
+void Collective::removeTorch(Vec2 pos) {
+  auto task = torches.at(pos).task();
+  if (task > -1)
+    taskMap.removeTask(torches.at(pos).task());
+  torches.erase(pos);
+}
+
+void Collective::addTorch(Vec2 pos) {
+  torches[pos] = {false, 0.0, -1, (*getAdjacentWall(getLevel(), pos) - pos).getCardinalDir(), nullptr};
+}
+
+bool Collective::canPlaceTorch(Vec2 pos) const {
+  return getAdjacentWall(getLevel(), pos) && !torches.count(pos) &&
+    getLevel()->getSquare(pos)->canEnterEmpty({MovementTrait::WALK}) && isKnownSquare(pos);
 }
 
 template <class Archive>
