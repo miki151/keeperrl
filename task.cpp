@@ -176,7 +176,9 @@ class NonTransferable : public Task {
 
 class PickItem : public NonTransferable {
   public:
-  PickItem(Callback* c, Vec2 pos, vector<Item*> _items) : items(_items), position(pos), callback(c) {}
+  PickItem(Callback* c, Vec2 pos, vector<Item*> _items) : items(_items), position(pos), callback(c) {
+    CHECK(!items.empty());
+  }
 
   virtual void onPickedUp() {
     setDone();

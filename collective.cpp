@@ -653,20 +653,18 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
-  if (!getConfig().manageEquipment || !Random.roll(4)) // don't do this every turn as it's expensive
-    return nullptr;
-  if (usesEquipment(c))
+  if (Random.roll(8)) // don't do this every turn as it's expensive
     autoEquipment(c, Random.roll(10));
-  if (c != getLeader() || !underAttack())
-    for (Vec2 v : getAllSquares(equipmentStorage))
-      for (Item* it : getLevel()->getSquare(v)->getItems([this, c] (const Item* it) {
-            return minionEquipment.getOwner(it) == c; })) {
-        PTask t;
-        if (it->canEquip())
-          return Task::equipItem(this, v, it);
-        else
-          return Task::pickItem(this, v, {it});
-      }
+  for (Vec2 v : getAllSquares(equipmentStorage)) {
+    vector<Item*> it = getLevel()->getSquare(v)->getItems([this, c] (const Item* it) {
+        return minionEquipment.getOwner(it) == c && it->canEquip(); });
+    if (!it.empty())
+      return Task::equipItem(this, v, it[0]);
+    it = getLevel()->getSquare(v)->getItems([this, c] (const Item* it) {
+      return minionEquipment.getOwner(it) == c; });
+    if (!it.empty())
+      return Task::pickItem(this, v, it);
+  }
   return nullptr;
 }
 
@@ -717,9 +715,10 @@ MoveInfo Collective::getMove(Creature* c) {
   if (PTask t = getHealingTask(c))
     if (t->getMove(c))
       return taskMap.addTask(std::move(t), c)->getMove(c);
-  if (PTask t = getEquipmentTask(c))
-    if (t->getMove(c))
-      return taskMap.addTask(std::move(t), c)->getMove(c);
+  if (usesEquipment(c))
+    if (PTask t = getEquipmentTask(c))
+      if (t->getMove(c))
+        return taskMap.addTask(std::move(t), c)->getMove(c);
   if (PTask t = getPrisonerTask(c))
     return taskMap.addTask(std::move(t), c)->getMove(c);
   if (PTask t = control->getNewTask(c))
@@ -1537,7 +1536,10 @@ vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squa
 }
 
 bool Collective::usesEquipment(const Creature* c) const {
-  return c->isHumanoid() && !hasTrait(c, MinionTrait::NO_EQUIPMENT) && !hasTrait(c, MinionTrait::PRISONER);
+  return getConfig().manageEquipment 
+    && c->isHumanoid() 
+    && !hasTrait(c, MinionTrait::NO_EQUIPMENT)
+    && !hasTrait(c, MinionTrait::PRISONER);
 }
 
 Item* Collective::getWorstItem(vector<Item*> items) const {

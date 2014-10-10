@@ -43,6 +43,11 @@ bool EntitySet<T>::contains(const T* e) const {
 }
 
 template <class T>
+bool EntitySet<T>::empty() const {
+  return elems.empty();
+}
+
+template <class T>
 void EntitySet<T>::insert(typename UniqueEntity<T>::Id e) {
   elems.insert(e);
 }
