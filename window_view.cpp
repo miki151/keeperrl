@@ -76,8 +76,8 @@ class TempClockPause {
 
 int rightBarWidthCollective = 330;
 int rightBarWidthPlayer = 220;
-int bottomBarHeightCollective = 45;
-int bottomBarHeightPlayer = 75;
+int bottomBarHeightCollective = 62;
+int bottomBarHeightPlayer = 62;
 
 WindowRenderer renderer;
 
@@ -100,7 +100,7 @@ Rectangle WindowView::getMinimapBounds() const {
 void WindowView::resetMapBounds() {
   mapGui->setBounds(getMapGuiBounds());
   minimapGui->setBounds(getMinimapBounds());
-  mapDecoration->setBounds(getMapGuiBounds().minusMargin(-6));
+ // mapDecoration->setBounds(Rectangle(renderer.getWidth(), renderer.getHeight()));
   minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
 }
 
@@ -152,7 +152,6 @@ void WindowView::initialize() {
       [this](Vec2 pos) { mapRightClickFun(pos); });
   MinimapGui::initialize();
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP)); });
-  mapDecoration = GuiElem::border2(GuiElem::empty());
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
 }
@@ -795,7 +794,7 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       main = std::move(elem.second);
     else
       invisible.push_back(GuiElem::invisible(std::move(elem.second)));
-  main = GuiElem::border2(GuiElem::margins(std::move(main), 15, 15, 15, 5));
+  main = GuiElem::margins(std::move(main), 15, 15, 15, 5);
   PGuiElem butGui = GuiElem::margins(GuiElem::horizontalList(std::move(buttons), 50, 0), 0, 0, 0, 5);
   vector<PGuiElem> bottomLine;
   if (Clock::get().isPaused())
@@ -840,12 +839,14 @@ void WindowView::rebuildGui() {
   resetMapBounds();
   CHECK(std::this_thread::get_id() != renderThreadId);
   tempGuiElems.clear();
-  tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2), 
-        GuiElem::margins(std::move(right), 20, 20, 10, 0)));
+  tempGuiElems.push_back(GuiElem::mainDecoration(rightBarWidth, bottomBarHeight));
+  tempGuiElems.back()->setBounds(Rectangle(renderer.getWidth(), renderer.getHeight()));
+  tempGuiElems.push_back(//GuiElem::stack(GuiElem::background(GuiElem::background2), 
+        GuiElem::margins(std::move(right), 20, 20, 10, 0));
   tempGuiElems.back()->setBounds(Rectangle(
         renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight()));
-  tempGuiElems.push_back(GuiElem::stack(GuiElem::background(GuiElem::background2),
-        GuiElem::margins(std::move(bottom), 10, 10, 0, 0)));
+  tempGuiElems.push_back(//GuiElem::stack(GuiElem::background(GuiElem::background2),
+        GuiElem::margins(std::move(bottom), 10, 10, 0, 0));
   tempGuiElems.back()->setBounds(Rectangle(
         0, renderer.getHeight() - bottomBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight()));
   if (overMap) {
@@ -861,13 +862,14 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
   CHECK(std::this_thread::get_id() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   if (gameReady)
-    ret = concat(concat({mapGui}, ret), {mapDecoration.get(), minimapDecoration.get(), minimapGui});
+    ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui});
   return ret;
 }
 
 vector<GuiElem*> WindowView::getClickableGuiElems() {
   CHECK(std::this_thread::get_id() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
+  ret = getSuffix(ret, ret.size() - 1);
   if (gameReady) {
     ret.push_back(minimapGui);
     ret.push_back(mapGui);

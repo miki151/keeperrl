@@ -119,19 +119,31 @@ PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, 
               size = Vec2(size.x, bounds.getH() - 2 * cornerOffset);
               break;
             case Alignment::TOP_LEFT:
-              pos = bounds.getTopLeft();
+              pos = bounds.getTopLeft() + Vec2(cornerOffset, 0);
               break;
             case Alignment::TOP_RIGHT:
-              pos = bounds.getTopRight() - Vec2(size.x, 0);
+              pos = bounds.getTopRight() - Vec2(size.x, 0) + Vec2(cornerOffset, 0);
               break;
             case Alignment::BOTTOM_RIGHT:
-              pos = bounds.getBottomRight() - size;
+              pos = bounds.getBottomRight() - size + Vec2(cornerOffset, 0);
               break;
             case Alignment::BOTTOM_LEFT:
-              pos = bounds.getBottomLeft() - Vec2(0, size.y);
+              pos = bounds.getBottomLeft() - Vec2(0, size.y) + Vec2(cornerOffset, 0);
               break;
             case Alignment::CENTER:
               pos = bounds.middle() - Vec2(size.x / 2, size.y / 2);
+              break;
+            case Alignment::TOP_CENTER:
+              pos = (bounds.getTopLeft() + bounds.getTopRight()) / 2 - Vec2(size.x / 2, 0);
+              break;
+            case Alignment::LEFT_CENTER:
+              pos = (bounds.getTopLeft() + bounds.getBottomLeft()) / 2 - Vec2(0, size.y / 2);
+              break;
+            case Alignment::BOTTOM_CENTER:
+              pos = (bounds.getBottomLeft() + bounds.getBottomRight()) / 2 - Vec2(size.x / 2, size.y);
+              break;
+            case Alignment::RIGHT_CENTER:
+              pos = (bounds.getTopRight() + bounds.getBottomRight()) / 2 - Vec2(size.x, size.y / 2);
               break;
           }
           if (vFlip) {
@@ -689,6 +701,17 @@ static Texture borderRight;
 static Texture borderBottom;
 static Texture borderLeft;
 
+static Texture horiCorner1;
+static Texture horiCorner2;
+static Texture horiLine;
+static Texture horiMiddle;
+static Texture vertBar;
+static Texture horiBar;
+static Texture horiBarMini;
+static Texture cornerTopLeft;
+static Texture cornerTopRight;
+static Texture cornerBottomRight;
+
 static Texture icons[7];
 const int border2Width = 6;
 
@@ -753,6 +776,20 @@ void GuiElem::initialize(const string& texturePath) {
     text = colors[ColorId::WHITE];
     titleText = colors[ColorId::YELLOW];
     inactiveText = colors[ColorId::LIGHT_GRAY];
+    horiCorner1.loadFromFile("ui/horicorner1.png");
+    horiCorner2.loadFromFile("ui/horicorner2.png");
+    horiLine.loadFromFile("ui/horiline.png");
+    horiLine.setRepeated(true);
+    horiMiddle.loadFromFile("ui/horimiddle.png");
+    vertBar.loadFromFile("ui/vertbar.png");
+    vertBar.setRepeated(true);
+    horiBar.loadFromFile("ui/horibar.png");
+    horiBar.setRepeated(true);
+    horiBarMini.loadFromFile("ui/horibarmini.png");
+    horiBarMini.setRepeated(true);
+    cornerTopLeft.loadFromFile("ui/cornerTOPL.png");
+    cornerTopRight.loadFromFile("ui/cornerTOPR.png");
+    cornerBottomRight.loadFromFile("ui/cornerBOTTOMR.png");
 }
 
 static PGuiElem getScrollbar() {
@@ -823,10 +860,10 @@ PGuiElem GuiElem::border2(PGuiElem content) {
         sprite(borderBottom, Alignment::BOTTOM, false, false, border2Width, alpha),
         sprite(borderLeft, Alignment::LEFT, false, false, border2Width, alpha),
         sprite(borderRight, Alignment::RIGHT, false, false, border2Width, alpha),
-        sprite(borderTopLeft, Alignment::TOP_LEFT, false, false, border2Width, alpha),
-        sprite(borderTopRight, Alignment::TOP_RIGHT, false, false, border2Width, alpha),
-        sprite(borderBottomLeft, Alignment::BOTTOM_LEFT, false, false, border2Width, alpha),
-        sprite(borderBottomRight, Alignment::BOTTOM_RIGHT, false, false, border2Width, alpha)));
+        sprite(borderTopLeft, Alignment::TOP_LEFT, false, false, 0, alpha),
+        sprite(borderTopRight, Alignment::TOP_RIGHT, false, false, 0, alpha),
+        sprite(borderBottomLeft, Alignment::BOTTOM_LEFT, false, false, 0, alpha),
+        sprite(borderBottomRight, Alignment::BOTTOM_RIGHT, false, false, 0, alpha)));
 }
 
 PGuiElem GuiElem::insideBackground(PGuiElem content) {
@@ -851,10 +888,10 @@ PGuiElem GuiElem::border(PGuiElem content) {
         sprite(borderBottom, Alignment::TOP, true, true, border2Width, alpha),
         sprite(borderLeft, Alignment::RIGHT, true, true, border2Width, alpha),
         sprite(borderRight, Alignment::LEFT, true, true, border2Width, alpha),
-        sprite(borderTopLeft, Alignment::BOTTOM_RIGHT, true, true, border2Width, alpha),
-        sprite(borderTopRight, Alignment::BOTTOM_LEFT, true, true, border2Width, alpha),
-        sprite(borderBottomLeft, Alignment::TOP_RIGHT, true, true, border2Width, alpha),
-        sprite(borderBottomRight, Alignment::TOP_LEFT, true, true, border2Width, alpha)));
+        sprite(borderTopLeft, Alignment::BOTTOM_RIGHT, true, true, 0, alpha),
+        sprite(borderTopRight, Alignment::BOTTOM_LEFT, true, true, 0, alpha),
+        sprite(borderBottomLeft, Alignment::TOP_RIGHT, true, true, 0, alpha),
+        sprite(borderBottomRight, Alignment::TOP_LEFT, true, true, 0, alpha)));
 }
 
 PGuiElem GuiElem::window(PGuiElem content) {
@@ -862,6 +899,29 @@ PGuiElem GuiElem::window(PGuiElem content) {
         rectangle(colors[ColorId::BLACK]),
         insideBackground(stack(background(background1),
         margins(std::move(content), borderWidth, borderHeight, borderWidth, borderHeight))))));
+}
+
+PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {
+  return margin(
+      stack(makeVec<PGuiElem>(
+          background(background2),
+          sprite(horiBar, Alignment::TOP),
+          sprite(horiBar, Alignment::BOTTOM),
+          margin(sprite(horiBarMini, Alignment::BOTTOM), empty(), 85, TOP),
+          sprite(vertBar, Alignment::RIGHT),
+          sprite(vertBar, Alignment::LEFT),
+          sprite(cornerTopLeft, Alignment::TOP_LEFT, false, false, -8),
+          sprite(cornerTopRight, Alignment::TOP_RIGHT),
+          sprite(cornerBottomRight, Alignment::BOTTOM_RIGHT)
+      )),
+      stack(makeVec<PGuiElem>(
+          margin(background(background2), empty(), bottomBarHeight, BOTTOM),
+          sprite(horiLine, Alignment::BOTTOM),
+          sprite(horiMiddle, Alignment::BOTTOM_CENTER),
+          sprite(horiCorner1, Alignment::BOTTOM_LEFT),
+          sprite(horiCorner2, Alignment::BOTTOM_RIGHT, false, false, 93))),
+      rightBarWidth,
+      RIGHT);
 }
 
 PGuiElem GuiElem::icon(IconId id) {
