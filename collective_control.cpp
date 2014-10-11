@@ -49,6 +49,11 @@ const vector<Creature*>& CollectiveControl::getCreatures() const {
   return getCollective()->getCreatures();
 }
 
+MoveInfo CollectiveControl::getMove(Creature*) {
+  return NoMove;
+}
+
+
 void CollectiveControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
 }
 
@@ -59,10 +64,6 @@ class IdleControl : public CollectiveControl {
   public:
 
   using CollectiveControl::CollectiveControl;
-
-  virtual MoveInfo getMove(Creature*) override {
-    return NoMove;
-  }
 
   virtual void tick(double time) override {
   }

@@ -12,7 +12,7 @@ class Tribe;
 class CollectiveControl {
   public:
   CollectiveControl(Collective*);
-  virtual MoveInfo getMove(Creature*) = 0;
+  virtual MoveInfo getMove(Creature*);
   virtual PTask getNewTask(Creature*);
   virtual void tick(double time) = 0;
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer);

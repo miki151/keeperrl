@@ -789,6 +789,96 @@ PTask Task::stealFrom(Collective* col) {
 
 namespace {
 
+class KillFighters : public NonTransferable {
+  public:
+  KillFighters(Collective* col, Creature* c, int numC) : collective(col), who(c), numCreatures(numC) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    CHECK(c == who);
+    if (numCreatures <= 0 || collective->getCreatures(MinionTrait::FIGHTER).empty()) {
+      setDone();
+      return NoMove;
+    }
+    if (c->getLevel() != collective->getLevel())
+      return NoMove;
+    for (Creature* c : collective->getCreatures(MinionTrait::FIGHTER))
+      targets.insert(c);
+    if (auto action = c->moveTowards(collective->getLeader()->getPosition())) 
+      return action;
+    else {
+      for (Vec2 v : Vec2::directions8(true))
+        if (auto action = c->destroy(v, Creature::BASH))
+          return action;
+      return c->wait();
+    }
+  }
+
+  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
+    if (killer == who && targets.contains(victim))
+      --numCreatures;
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(collective)
+      & SVAR(who)
+      & SVAR(numCreatures)
+      & SVAR(targets);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(KillFighters);
+
+  private:
+  Collective* SERIAL(collective);
+  Creature* SERIAL(who);
+  int SERIAL(numCreatures);
+  EntitySet<Creature> SERIAL(targets);
+};
+
+}
+
+PTask Task::killFighters(Collective* col, Creature* who, int numCreatures) {
+  return PTask(new KillFighters(col, who, numCreatures));
+}
+
+namespace {
+
+class StayInLocationUntil : public NonTransferable {
+  public:
+  StayInLocationUntil(const Location* l, double t) : location(l), time(t) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (c->getTime() >= time) {
+      setDone();
+      return NoMove;
+    }
+    return c->stayIn(location);
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(NonTransferable)
+      & SVAR(location)
+      & SVAR(time);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(StayInLocationUntil);
+
+  private:
+  const Location* SERIAL(location);
+  double SERIAL(time);
+};
+
+}
+
+PTask Task::stayInLocationUntil(const Location* l, double time) {
+  return PTask(new StayInLocationUntil(l, time));
+}
+
+namespace {
+
 class CreateBed : public NonTransferable {
   public:
   CreateBed(Callback* call, Vec2 pos, SquareType from, SquareType to)
@@ -974,6 +1064,8 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Explore);
   REGISTER_TYPE(ar, AttackLeader);
   REGISTER_TYPE(ar, StealFrom);
+  REGISTER_TYPE(ar, KillFighters);
+  REGISTER_TYPE(ar, StayInLocationUntil);
   REGISTER_TYPE(ar, CreateBed);
   REGISTER_TYPE(ar, ConsumeItem);
   REGISTER_TYPE(ar, Copulate);
