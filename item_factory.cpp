@@ -803,6 +803,7 @@ int getEffectPrice(EffectType type) {
     case EffectId::EMIT_POISON_GAS:  return 100;
     case EffectId::DECEPTION: 
     case EffectId::LEAVE_BODY: 
+    case EffectId::METEOR_SHOWER: 
     case EffectId::WORD_OF_POWER: return 150;
   }
   return -1;

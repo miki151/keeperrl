@@ -1228,6 +1228,7 @@ bool PlayerControl::tryLockingDoor(Vec2 pos) {
     if (square->canLock()) {
       square->lock();
       getCollective()->updateSectors(pos);
+      updateSquareMemory(pos);
       return true;
     }
   }
@@ -1552,8 +1553,12 @@ void PlayerControl::onDiscoveredLocation(const Location* loc) {
     addMessage(PlayerMessage("Your minions discover a surprise location."));
 }
 
-void PlayerControl::onConstructed(Vec2 pos, SquareType type) {
+void PlayerControl::updateSquareMemory(Vec2 pos) {
   getMemory(getLevel()).addObject(pos, getLevel()->getSquare(pos)->getViewObject());
+}
+
+void PlayerControl::onConstructed(Vec2 pos, SquareType type) {
+  updateSquareMemory(pos);
 }
 
 template <class Archive>

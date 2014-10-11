@@ -26,6 +26,7 @@ enum class EffectId {
     LEAVE_BODY,
     SILVER_DAMAGE,
     CURE_POISON,
+    METEOR_SHOWER,
     LASTING,
 };
 

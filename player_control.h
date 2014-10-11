@@ -107,6 +107,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void checkKeeperDanger();
   void addDeityServant(Deity*, Vec2 deityPos, Vec2 victimPos);
   static string getWarningText(Collective::Warning);
+  void updateSquareMemory(Vec2);
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
   void onWorshipEpithet(EpithetId);

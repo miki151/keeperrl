@@ -628,7 +628,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.stockpiles = LIST({StockpileInfo::GOLD, 400});
           c.guardId = CreatureId::WARRIOR;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);),
-        {VillageControlInfo::POWER_BASED, getKilledCoeff(), getPowerCoeff()}},
+        {VillageControlInfo::POWER_BASED, VillageControlInfo::ATTACK_LEADER, getKilledCoeff(), getPowerCoeff()}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::VILLAGE;
           c.creatures = CreatureFactory::lizardTown(Tribe::get(TribeId::LIZARD));
@@ -638,7 +638,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.buildingId = BuildingId::MUD;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::HUMANOID_MUT);
           c.shopFactory = ItemFactory::mushrooms();),
-        {VillageControlInfo::POWER_BASED, getKilledCoeff(), getPowerCoeff()}},
+        {VillageControlInfo::POWER_BASED, VillageControlInfo::ATTACK_LEADER, getKilledCoeff(), getPowerCoeff()}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::VILLAGE2;
           c.creatures = CreatureFactory::elvenVillage(Tribe::get(TribeId::ELVEN));
@@ -658,7 +658,8 @@ vector<EnemyInfo> getEnemyInfo() {
           c.buildingId = BuildingId::DUNGEON;
           c.stockpiles = LIST({StockpileInfo::GOLD, 400}, {StockpileInfo::MINERALS, 600});
           c.shopFactory = ItemFactory::dwarfShop();),
-        {VillageControlInfo::POWER_BASED_DISCOVER, getKilledCoeff(), getPowerCoeff()}},
+        {VillageControlInfo::POWER_BASED_DISCOVER, VillageControlInfo::ATTACK_LEADER,
+            getKilledCoeff(), getPowerCoeff()}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CASTLE;
           c.creatures = CreatureFactory::humanCastle(Tribe::get(TribeId::HUMAN));
@@ -669,7 +670,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.buildingId = BuildingId::BRICK;
           c.guardId = CreatureId::CASTLE_GUARD;
           c.shopFactory = ItemFactory::villageShop();),
-        {VillageControlInfo::FINAL_ATTACK}},
+        {VillageControlInfo::FINAL_ATTACK, VillageControlInfo::ATTACK_LEADER}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::WITCH_HOUSE;
           c.creatures = CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::WITCH);
@@ -686,7 +687,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.location = new Location();
           c.tribe = Tribe::get(TribeId::BANDIT);
           c.buildingId = BuildingId::DUNGEON;),
-        {VillageControlInfo::POWER_BASED, getKilledCoeff(), getPowerCoeff()}},
+        {VillageControlInfo::POWER_BASED, VillageControlInfo::ATTACK_LEADER, getKilledCoeff(), getPowerCoeff()}},
   });
   return ret;
 }

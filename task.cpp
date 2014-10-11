@@ -712,9 +712,9 @@ PTask Task::explore(Vec2 pos) {
 
 namespace {
 
-class AttackCollective : public NonTransferable {
+class AttackLeader : public NonTransferable {
   public:
-  AttackCollective(Collective* col) : collective(col) {}
+  AttackLeader(Collective* col) : collective(col) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (c->getLevel() != collective->getLevel())
@@ -736,7 +736,7 @@ class AttackCollective : public NonTransferable {
     CHECK_SERIAL;
   }
   
-  SERIALIZATION_CONSTRUCTOR(AttackCollective);
+  SERIALIZATION_CONSTRUCTOR(AttackLeader);
 
   private:
   Collective* SERIAL(collective);
@@ -744,10 +744,48 @@ class AttackCollective : public NonTransferable {
 
 }
 
-PTask Task::attackCollective(Collective* col) {
-  return PTask(new AttackCollective(col));
+PTask Task::attackLeader(Collective* col) {
+  return PTask(new AttackLeader(col));
 }
 
+namespace {
+
+class StealFrom : public NonTransferable {
+  public:
+  StealFrom(Collective* col) : collective(col) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    return NoMove;
+ /*   if (c->getLevel() != collective->getLevel())
+      return NoMove;
+    if (auto action = c->moveTowards(collective->getLeader()->getPosition())) 
+      return action;
+    else {
+      for (Vec2 v : Vec2::directions8(true))
+        if (auto action = c->destroy(v, Creature::BASH))
+          return action;
+      return c->wait();
+    }*/
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(collective);
+    CHECK_SERIAL;
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(StealFrom);
+
+  private:
+  Collective* SERIAL(collective);
+};
+
+}
+
+PTask Task::stealFrom(Collective* col) {
+  return PTask(new StealFrom(col));
+}
 
 namespace {
 
@@ -934,7 +972,8 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Disappear);
   REGISTER_TYPE(ar, Chain);
   REGISTER_TYPE(ar, Explore);
-  REGISTER_TYPE(ar, AttackCollective);
+  REGISTER_TYPE(ar, AttackLeader);
+  REGISTER_TYPE(ar, StealFrom);
   REGISTER_TYPE(ar, CreateBed);
   REGISTER_TYPE(ar, ConsumeItem);
   REGISTER_TYPE(ar, Copulate);

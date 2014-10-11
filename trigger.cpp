@@ -23,6 +23,7 @@
 #include "square.h"
 #include "view_id.h"
 #include "view_object.h"
+#include "item_factory.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {
@@ -233,6 +234,59 @@ const ViewObject& Trigger::getTorchViewObject(Dir dir) {
 
 PTrigger Trigger::getTorch(Dir attachmentDir, Level* l, Vec2 position) {
   return PTrigger(new Torch(getTorchViewObject(attachmentDir), l, position));
+}
+
+namespace {
+
+class MeteorShower : public Trigger {
+  public:
+  MeteorShower(Creature* c, double duration) : Trigger(c->getLevel(), c->getPosition()), creature(c),
+      endTime(creature->getTime() + duration) {}
+
+  virtual void tick(double time) override {
+    if (time >= endTime || creature->isDead()) {
+      level->getSquare(position)->removeTrigger(this);
+      return;
+    } else
+      for (int i : Range(10))
+        if (shootMeteorite())
+          break;
+  }
+
+  const int areaWidth = 3;
+  const int range = 4;
+
+  bool shootMeteorite() {
+    Vec2 targetPoint(Random.getRandom(-areaWidth / 2, areaWidth / 2 + 1),
+                     Random.getRandom(-areaWidth / 2, areaWidth / 2 + 1));
+    targetPoint += position;
+    Vec2 direction(Random.getRandom(-1, 2), Random.getRandom(-1, 2));
+    for (int i : Range(range + 1))
+      if (!level->getSquare(targetPoint + direction * i)->canEnter({MovementTrait::WALK, MovementTrait::FLY}))
+        return false;
+    level->throwItem(ItemFactory::fromId(ItemId::ROCK),
+        Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 25, 40, false), 10,
+        targetPoint + direction * range, -direction, Vision::get(VisionId::NORMAL));
+    return true;
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Trigger) & SVAR(creature) & SVAR(endTime);
+    CHECK_SERIAL;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(MeteorShower);
+
+  private:
+  Creature* SERIAL(creature);
+  double SERIAL(endTime);
+};
+
+}
+
+PTrigger Trigger::getMeteorShower(Creature* c, double duration) {
+  return PTrigger(new MeteorShower(c, duration));
 }
 
 template <class Archive>

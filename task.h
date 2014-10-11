@@ -65,7 +65,8 @@ class Task : public UniqueEntity<Task> {
   static PTask chain(PTask, PTask);
   static PTask chain(vector<PTask>);
   static PTask explore(Vec2);
-  static PTask attackCollective(Collective*);
+  static PTask attackLeader(Collective*);
+  static PTask stealFrom(Collective*);
   static PTask createBed(Callback*, Vec2, SquareType fromType, SquareType toType);
   static PTask consumeItem(Callback*, vector<Item*> items);
   static PTask copulate(Callback*, Creature* target, int numTurns);
