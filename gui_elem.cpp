@@ -884,21 +884,21 @@ PGuiElem GuiElem::insideBackground(PGuiElem content) {
 PGuiElem GuiElem::border(PGuiElem content) {
   double alpha = 1;
   return stack(makeVec<PGuiElem>(std::move(content),
-        sprite(borderTop, Alignment::BOTTOM, true, true, border2Width, alpha),
-        sprite(borderBottom, Alignment::TOP, true, true, border2Width, alpha),
-        sprite(borderLeft, Alignment::RIGHT, true, true, border2Width, alpha),
-        sprite(borderRight, Alignment::LEFT, true, true, border2Width, alpha),
-        sprite(borderTopLeft, Alignment::BOTTOM_RIGHT, true, true, 0, alpha),
-        sprite(borderTopRight, Alignment::BOTTOM_LEFT, true, true, 0, alpha),
-        sprite(borderBottomLeft, Alignment::TOP_RIGHT, true, true, 0, alpha),
-        sprite(borderBottomRight, Alignment::TOP_LEFT, true, true, 0, alpha)));
+        sprite(horiBar, Alignment::BOTTOM, false, false, border2Width, alpha),
+        sprite(horiBar, Alignment::TOP, false, false, border2Width, alpha),
+        sprite(vertBar, Alignment::RIGHT, false, false, border2Width, alpha),
+        sprite(vertBar, Alignment::LEFT, false, false, border2Width, alpha),
+        sprite(cornerTopLeft, Alignment::BOTTOM_RIGHT, true, true, 8, alpha),
+        sprite(cornerTopLeft, Alignment::BOTTOM_LEFT, true, false, -8, alpha),
+        sprite(cornerTopLeft, Alignment::TOP_RIGHT, false, true, 8, alpha),
+        sprite(cornerTopLeft, Alignment::TOP_LEFT, false, false, -8, alpha)));
 }
 
 PGuiElem GuiElem::window(PGuiElem content) {
   return border(stack(makeVec<PGuiElem>(
         rectangle(colors[ColorId::BLACK]),
         insideBackground(stack(background(background1),
-        margins(std::move(content), borderWidth, borderHeight, borderWidth, borderHeight))))));
+        margins(std::move(content), 20, 35, 30, 30))))));
 }
 
 PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {
