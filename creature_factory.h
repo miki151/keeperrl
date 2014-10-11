@@ -30,9 +30,10 @@ class Creature;
 RICH_ENUM(CreatureId,
     KEEPER,
 
-    GOBLIN,
-    GOBLIN_SHAMAN,
-    GREAT_GOBLIN,
+    GOBLIN, 
+    ORC,
+    ORC_SHAMAN,
+    GREAT_ORC,
     HARPY,
     SUCCUBUS,
     DOPPLEGANGER,
@@ -72,6 +73,7 @@ RICH_ENUM(CreatureId,
     MUMMY_LORD,
     SKELETON,
     
+    GNOME,
     DWARF,
     DWARF_BARON,
 
@@ -102,7 +104,6 @@ RICH_ENUM(CreatureId,
     PIG,
     GOAT,
     
-    GNOME, 
     LEPRECHAUN,
     
     JACKAL,
@@ -143,6 +144,7 @@ class CreatureFactory {
   static PCreature fromId(CreatureId, Tribe*, MonsterAIFactory = MonsterAIFactory::monster());
   static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
   static CreatureFactory humanVillage(Tribe*);
+  static CreatureFactory gnomeVillage(Tribe*);
   static CreatureFactory humanCastle(Tribe*);
   static CreatureFactory elvenVillage(Tribe*);
   static CreatureFactory forrest(Tribe*);
@@ -152,7 +154,7 @@ class CreatureFactory {
   static CreatureFactory dwarfTown(Tribe*);
   static CreatureFactory vikingTown(Tribe*);
   static CreatureFactory lizardTown(Tribe*);
-  static CreatureFactory goblinTown(Tribe*);
+  static CreatureFactory orcTown(Tribe*);
   static CreatureFactory level(int num, Tribe* allTribe, Tribe* dwarfTribe, Tribe* pestTribe);
   static CreatureFactory splash(Tribe*);
   static CreatureFactory singleType(Tribe*, CreatureId);

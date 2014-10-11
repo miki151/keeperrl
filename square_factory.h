@@ -34,7 +34,7 @@ enum class StairLook {
 enum class StairKey {
   DWARF,
   CRYPT,
-  GOBLIN,
+  ORC,
   PLAYER_SPAWN,
   HERO_SPAWN,
   PYRAMID,

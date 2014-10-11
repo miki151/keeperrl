@@ -18,6 +18,7 @@ enum class SpellId {
   SUMMON_SPIRIT,
   PORTAL,
   CURE_POISON,
+  METEOR_SHOWER,
 };
 
 struct SpellInfo {

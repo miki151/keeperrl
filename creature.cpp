@@ -126,6 +126,7 @@ SpellInfo Creature::getSpell(SpellId id) {
     case SpellId::SUMMON_SPIRIT: return {id, "summon spirits", EffectId::SUMMON_SPIRIT, 0, 300};
     case SpellId::PORTAL: return {id, "portal", EffectId::PORTAL, 0, 200};
     case SpellId::CURE_POISON: return {id, "cure poisoning", EffectId::CURE_POISON, 0, 300};
+    case SpellId::METEOR_SHOWER: return {id, "meteor shower", EffectId::METEOR_SHOWER, 0, 300};
   }
   FAIL << "wpeofk";
   return getSpell(SpellId::HEALING);
@@ -2405,7 +2406,7 @@ void Creature::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.time = getTime();
  /* info.elfStanding = Tribe::get(TribeId::ELVEN)->getStanding(this);
   info.dwarfStanding = Tribe::get(TribeId::DWARVEN)->getStanding(this);
-  info.goblinStanding = Tribe::get(TribeId::GOBLIN)->getStanding(this);*/
+  info.orcStanding = Tribe::get(TribeId::ORC)->getStanding(this);*/
   info.effects.clear();
   for (string s : getAdjectives())
     info.effects.push_back({s, true});

@@ -43,6 +43,7 @@ class Trigger {
   static PTrigger getPortal(const ViewObject&, Level*, Vec2 position);
   static PTrigger getTrap(const ViewObject&, Level*, Vec2 position, EffectType, Tribe*);
   static PTrigger getTorch(Dir attachmentDir, Level*, Vec2 position);
+  static PTrigger getMeteorShower(Creature*, double duration);
 
   static const ViewObject& getTorchViewObject(Dir);
 

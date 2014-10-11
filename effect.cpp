@@ -435,6 +435,7 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(c->getLevel(), c->getPosition(), strength, true); break;
     case EffectId::SILVER_DAMAGE: silverDamage(c); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;
+    case EffectId::METEOR_SHOWER: c->getSquare()->addTrigger(Trigger::getMeteorShower(c, 15)); break;
   }
 }
 
@@ -469,6 +470,7 @@ string Effect::getName(EffectType type) {
     case EffectId::SUMMON_SPIRIT: return "spirit summoning";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "cure poisoning";
+    case EffectId::METEOR_SHOWER: return "meteor shower";
     case EffectId::LASTING: return getName(type.get<LastingEffect>());
   }
   return "";

@@ -29,6 +29,7 @@ class EntitySet {
   void insert(const T*);
   void erase(const T*);
   bool contains(const T*) const;
+  bool empty() const;
 
   void insert(typename UniqueEntity<T>::Id);
   void erase(typename UniqueEntity<T>::Id);

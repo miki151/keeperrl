@@ -186,7 +186,7 @@ void Tribe::init() {
   Tribe::set(TribeId::WILDLIFE, new Tribe("wildlife", false));
   Tribe::set(TribeId::ELVEN, new Tribe("elves", true));
   Tribe::set(TribeId::HUMAN, new Tribe("humans", true));
-  Tribe::set(TribeId::GOBLIN, new Tribe("goblins", true));
+  Tribe::set(TribeId::ORC, new Tribe("orcs", true));
   Tribe::set(TribeId::DWARVEN, new Tribe("dwarves", true));
   Tribe::set(TribeId::PLAYER, new Tribe("player", false));
   Tribe::set(TribeId::KEEPER, new Tribe("keeper", false));
@@ -204,26 +204,26 @@ void Tribe::init() {
   Tribe::get(TribeId::KEEPER)->addEnemy(Tribe::get(TribeId::PEST));
   Tribe::get(TribeId::KEEPER)->addEnemy(Tribe::get(TribeId::MONSTER));
   Tribe::get(TribeId::KEEPER)->addEnemy(Tribe::get(TribeId::BANDIT));
-  Tribe::get(TribeId::ELVEN)->addEnemy(Tribe::get(TribeId::GOBLIN));
+  Tribe::get(TribeId::ELVEN)->addEnemy(Tribe::get(TribeId::ORC));
   Tribe::get(TribeId::ELVEN)->addEnemy(Tribe::get(TribeId::DWARVEN));
   Tribe::get(TribeId::ELVEN)->addEnemy(Tribe::get(TribeId::BANDIT));
   Tribe::get(TribeId::ELVEN)->addEnemy(Tribe::get(TribeId::DRAGON));
-  Tribe::get(TribeId::GOBLIN)->addEnemy(Tribe::get(TribeId::DWARVEN));
-  Tribe::get(TribeId::GOBLIN)->addEnemy(Tribe::get(TribeId::WILDLIFE));
-  Tribe::get(TribeId::HUMAN)->addEnemy(Tribe::get(TribeId::GOBLIN));
+  Tribe::get(TribeId::ORC)->addEnemy(Tribe::get(TribeId::DWARVEN));
+  Tribe::get(TribeId::ORC)->addEnemy(Tribe::get(TribeId::WILDLIFE));
+  Tribe::get(TribeId::HUMAN)->addEnemy(Tribe::get(TribeId::ORC));
   Tribe::get(TribeId::HUMAN)->addEnemy(Tribe::get(TribeId::LIZARD));
   Tribe::get(TribeId::HUMAN)->addEnemy(Tribe::get(TribeId::BANDIT));
   Tribe::get(TribeId::HUMAN)->addEnemy(Tribe::get(TribeId::CASTLE_CELLAR));
   Tribe::get(TribeId::HUMAN)->addEnemy(Tribe::get(TribeId::DRAGON));
   Tribe::get(TribeId::PLAYER)->addEnemy(Tribe::get(TribeId::MONSTER));
-  Tribe::get(TribeId::PLAYER)->addEnemy(Tribe::get(TribeId::GOBLIN));
+  Tribe::get(TribeId::PLAYER)->addEnemy(Tribe::get(TribeId::ORC));
   Tribe::get(TribeId::PLAYER)->addEnemy(Tribe::get(TribeId::PEST));
   Tribe::get(TribeId::PLAYER)->addEnemy(Tribe::get(TribeId::CASTLE_CELLAR));
   Tribe::get(TribeId::PLAYER)->addEnemy(Tribe::get(TribeId::DRAGON));
   Tribe::get(TribeId::PLAYER)->addEnemy(Tribe::get(TribeId::BANDIT));
   Tribe::get(TribeId::MONSTER)->addEnemy(Tribe::get(TribeId::WILDLIFE));
   Tribe::get(TribeId::WILDLIFE)->addEnemy(Tribe::get(TribeId::PLAYER));
-  Tribe::get(TribeId::WILDLIFE)->addEnemy(Tribe::get(TribeId::GOBLIN));
+  Tribe::get(TribeId::WILDLIFE)->addEnemy(Tribe::get(TribeId::ORC));
   Tribe::get(TribeId::WILDLIFE)->addEnemy(Tribe::get(TribeId::MONSTER));
 }
 

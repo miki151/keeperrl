@@ -25,6 +25,7 @@ class Tribe;
 
 struct VillageControlInfo {
   enum Id { PEACEFUL, POWER_BASED, POWER_BASED_DISCOVER, FINAL_ATTACK, DRAGON } id;
+  enum Action { ATTACK_LEADER, STEAL } action;
   double killedCoeff;
   double powerCoeff;
 };
@@ -61,6 +62,8 @@ class VillageControl : public Task::Callback, public CollectiveControl {
 
   Tribe* getTribe();
   const Tribe* getTribe() const;
+
+  typedef VillageControlInfo::Action AttackAction;
 
   protected:
   VillageControl(Collective* villain, const Location*);

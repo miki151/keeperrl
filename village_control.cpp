@@ -368,16 +368,22 @@ class PeacefulControl : public VillageControl {
 
 class TopLevelVillageControl : public PeacefulControl {
   public:
-  TopLevelVillageControl(Collective* col, Collective* villain, const Location* location)
-      : PeacefulControl(col, villain, location) {}
+  TopLevelVillageControl(Collective* col, Collective* villain, const Location* location, AttackAction a)
+      : PeacefulControl(col, villain, location), action(a) {}
 
   virtual PTask getNewTask(Creature* c) override {
     if (attackTrigger->startedAttack(c)) {
       villain->addAssaultNotification(c, this);
       Debug() << c->getName() << " " << c->getUniqueId() << " assaulting ";
-      return Task::attackCollective(villain);
-    } else
-      return PeacefulControl::getNewTask(c);
+      PTask t;
+      switch (action) {
+        case VillageControlInfo::ATTACK_LEADER: t = Task::attackLeader(villain); break;
+        case VillageControlInfo::STEAL: t = Task::stealFrom(villain); break;
+      }
+      if (t->getMove(c))
+        return t;
+    }
+    return PeacefulControl::getNewTask(c);
   }
 
   virtual string getAttackMessage() const {
@@ -432,6 +438,7 @@ class TopLevelVillageControl : public PeacefulControl {
 
   private:
   unique_ptr<AttackTrigger> SERIAL(attackTrigger);
+  AttackAction SERIAL(action);
 };
 
 namespace {
@@ -527,7 +534,7 @@ PVillageControl VillageControl::get(VillageControlInfo info, Collective* col, Co
     case VillageControlInfo::PEACEFUL: return PVillageControl(new PeacefulControl(col, villain, location));
     case VillageControlInfo::POWER_BASED_DISCOVER:
     case VillageControlInfo::POWER_BASED: {
-      TopLevelVillageControl* ret = new TopLevelVillageControl(col, villain, location);
+      TopLevelVillageControl* ret = new TopLevelVillageControl(col, villain, location, info.action);
       ret->setPowerTrigger(info.killedCoeff, info.powerCoeff);
       if (info.id == VillageControlInfo::POWER_BASED_DISCOVER)
         ret->setOnFirstContact();
@@ -539,7 +546,7 @@ PVillageControl VillageControl::get(VillageControlInfo info, Collective* col, Co
 
 PVillageControl VillageControl::getFinalAttack(Collective* col, Collective* villain, const Location* location,
       vector<VillageControl*> otherControls) {
-  TopLevelVillageControl* ret = new TopLevelVillageControl(col, villain, location);
+  TopLevelVillageControl* ret = new TopLevelVillageControl(col, villain, location, VillageControlInfo::ATTACK_LEADER);
   ret->setFinalTrigger(otherControls);
   return PVillageControl(ret);
 }
