@@ -218,7 +218,7 @@ const CollectiveConfig& Collective::getConfig() const {
         c.keepSectors = true;
         c.immigrantInfo = LIST(
           CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::GNOME;
+            c.id = CreatureId::GOBLIN;
             c.frequency = 1;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::WORKSHOP}, 1.0, 12.0},
@@ -226,7 +226,7 @@ const CollectiveConfig& Collective::getConfig() const {
             c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
             c.salary = 10;),
           CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::GOBLIN;
+            c.id = CreatureId::ORC;
             c.frequency = 0.7;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 1.0, 12.0},
@@ -234,7 +234,7 @@ const CollectiveConfig& Collective::getConfig() const {
             c.traits = {MinionTrait::FIGHTER};
             c.salary = 20;),
           CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::GOBLIN_SHAMAN;
+            c.id = CreatureId::ORC_SHAMAN;
             c.frequency = 0.3;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
@@ -1007,9 +1007,9 @@ struct BirthSpawn {
 };
 
 static vector<BirthSpawn> birthSpawns {
-  { CreatureId::GNOME, 1 },
   { CreatureId::GOBLIN, 1 },
-  { CreatureId::GOBLIN_SHAMAN, 0.5 },
+  { CreatureId::ORC, 1 },
+  { CreatureId::ORC_SHAMAN, 0.5 },
   { CreatureId::HARPY, 0.5 },
   { CreatureId::OGRE, 0.5 },
   { CreatureId::WEREWOLF, 0.5 },

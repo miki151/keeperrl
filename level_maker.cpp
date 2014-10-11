@@ -1829,7 +1829,7 @@ LevelMaker* LevelMaker::roomLevel(CreatureFactory roomFactory, CreatureFactory w
       shopMaker.push_back(new ShopMaker(chooseRandom({
             ItemFactory::villageShop(),
             ItemFactory::dwarfShop(),
-            ItemFactory::goblinShop()}),
+            ItemFactory::orcShop()}),
           Tribe::get(TribeId::HUMAN), Random.getRandom(8, 16), brickBuilding));
   }
   queue->addMaker(new RoomMaker(Random.getRandom(8, 15), 4, 7, SquareId::ROCK_WALL,
@@ -2074,6 +2074,7 @@ Vec2 getSize(SettlementType type) {
     case SettlementType::CASTLE: return {30, 20};
     case SettlementType::CASTLE2: return {15, 15};
     case SettlementType::MINETOWN: return {30, 20};
+    case SettlementType::SMALL_MINETOWN: return {15, 10};
     case SettlementType::CAVE: return {12, 12};
     case SettlementType::VAULT: return {10, 10};
   }
@@ -2090,6 +2091,7 @@ RandomLocations::Predicate getSettlementPredicate(SettlementType type) {
     case SettlementType::CAVE: return RandomLocations::Predicate(
       new TypePredicate(SquareId::MOUNTAIN2), new TypePredicate(SquareId::HILL), 5, 15);
     case SettlementType::VAULT:
+    case SettlementType::SMALL_MINETOWN:
     case SettlementType::MINETOWN: return new TypePredicate(SquareId::MOUNTAIN2);
     default: return new AndPredicates(new AttribPredicate(SquareAttrib::LOWLAND),
                  new NoAttribPredicate(SquareAttrib::RIVER));
@@ -2098,15 +2100,13 @@ RandomLocations::Predicate getSettlementPredicate(SettlementType type) {
   return nullptr;
 }
 
-static MakerQueue* mineTownMaker(SettlementInfo info) {
-  int numCavern = 10;
-  int maxCavernSize = 12;
-  int numRooms = Random.getRandom(5, 7);
+static MakerQueue* genericMineTownMaker(SettlementInfo info, int numCavern, int maxCavernSize, int numRooms,
+    int numTorches, int minRoomSize, int maxRoomSize, int minFeatures, int maxFeatures) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount {
-      { {SquareId::CHEST, getChestFactory()}, 4, 8 },
-      { SquareId::BED, 4, 8 }};
+      { {SquareId::CHEST, getChestFactory()}, minFeatures, maxFeatures },
+      { SquareId::BED, minFeatures, maxFeatures }};
   LevelMaker* cavern = new UniformBlob(SquareId::FLOOR);
   vector<LevelMaker*> vCavern;
   vector<pair<int, int>> sizes;
@@ -2120,7 +2120,7 @@ static MakerQueue* mineTownMaker(SettlementInfo info) {
     roomInsides.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.getRandom(8, 16), building));
   for (auto& elem : info.stockpiles)
     roomInsides.push_back(stockpileMaker(elem));
-  queue->addMaker(new RoomMaker(numRooms, 6, 8, SquareId::ROCK_WALL, Nothing(),
+  queue->addMaker(new RoomMaker(numRooms, minRoomSize, maxRoomSize, SquareId::ROCK_WALL, Nothing(),
       new Empty(SquareId::FLOOR, SquareAttrib::CONNECT_CORRIDOR), roomInsides));
   queue->addMaker(new Connector({1, 0, 0}));
   SquarePredicate* featurePred = new AndPredicates(new AttribPredicate(SquareAttrib::EMPTY_ROOM),
@@ -2131,13 +2131,21 @@ static MakerQueue* mineTownMaker(SettlementInfo info) {
     queue->addMaker(new Stairs(StairDirection::UP, key, featurePred));
   queue->addMaker(new DungeonFeatures(featurePred, featureCount));
   queue->addMaker(new DungeonFeatures(new OrPredicates(new TypePredicate(SquareId::FLOOR),
-          new TypePredicate(SquareId::FLOOR)), {{SquareId::TORCH, 10, 16}}));
+          new TypePredicate(SquareId::FLOOR)), {{SquareId::TORCH, numTorches, numTorches + 1}}));
   queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective));
   if (info.neutralCreatures)
     queue->addMaker(
         new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
    queue->addMaker(new LocationMaker(info.location));
   return queue;
+}
+
+static MakerQueue* mineTownMaker(SettlementInfo info) {
+  return genericMineTownMaker(info, 10, 12, Random.getRandom(5, 7), Random.getRandom(10, 16), 6, 8, 4, 8);
+}
+
+static MakerQueue* smallMineTownMaker(SettlementInfo info) {
+  return genericMineTownMaker(info, 2, 7, Random.getRandom(2, 4), Random.getRandom(2, 5), 5, 7, 2, 4);
 }
 
 static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
@@ -2207,6 +2215,9 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
       case SettlementType::MINETOWN:
           queue = mineTownMaker(settlement); break;
           break;
+      case SettlementType::SMALL_MINETOWN:
+          queue = smallMineTownMaker(settlement); break;
+          break;
       case SettlementType::VAULT:
           queue = vaultMaker(settlement, false); break;
           break;
@@ -2260,7 +2271,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   tower->addMaker(new LocationMaker(Location::towerTopLocation()));
 //  queue->addMaker(new Margin(100, 
 //        new RandomLocations({tower}, {make_pair(4, 4)}, new AttribPredicate(SquareAttrib::MOUNTAIN))));
- // queue->addMaker(new Margin(100, dungeonEntrance(StairKey::GOBLIN, SquareId::MOUNTAIN, "Our enemies the goblins are living there.")));
+ // queue->addMaker(new Margin(100, dungeonEntrance(StairKey::ORC, SquareId::MOUNTAIN, "Our enemies the orcs are living there.")));
   queue->addMaker(new Roads(SquareId::FLOOR));
   /*Deity* deity = Deity::getDeity(chooseRandom({DeityHabitat::STARS, DeityHabitat::TREES}));
   queue->addMaker(new Shrine(deity, SquareId::PATH,
@@ -2313,6 +2324,9 @@ LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<Settl
           break;
       case SettlementType::MINETOWN:
           queue = mineTownMaker(settlement);
+          break;
+      case SettlementType::SMALL_MINETOWN:
+          queue = smallMineTownMaker(settlement); break;
           break;
       case SettlementType::VAULT:
           queue = vaultMaker(settlement, false);

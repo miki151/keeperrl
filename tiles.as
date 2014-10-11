@@ -109,6 +109,7 @@ void genTiles() {
   addTile(PRISONER, sprite("prisoner"));
   addTile(OGRE, sprite("troll"));
   addTile(CHICKEN, sprite("chicken"));
+  addTile(GNOME, sprite(15, 8));
   addTile(DWARF, sprite(2, 6));
   addTile(DWARF_BARON, sprite(3, 6));
   addTile(SHOPKEEPER, sprite(4, 2));
@@ -150,9 +151,9 @@ void genTiles() {
   addTile(WELL, sprite(5, 8, 2).setNoShadow());
   addTile(STATUE1, sprite(6, 5, 2).setNoShadow());
   addTile(STATUE2, sprite(7, 5, 2).setNoShadow());
-  addTile(GREAT_GOBLIN, sprite(6, 14));
-  addTile(GOBLIN, sprite("orc"));
-  addTile(GOBLIN_SHAMAN, sprite("shaman"));
+  addTile(GREAT_ORC, sprite(6, 14));
+  addTile(ORC, sprite("orc"));
+  addTile(ORC_SHAMAN, sprite("shaman"));
   addTile(HARPY, sprite("harpysmall"));
   addTile(DOPPLEGANGER, sprite("dopple"));
   addTile(SUCCUBUS, sprite("succubussmall"));
@@ -209,7 +210,7 @@ void genTiles() {
   addTile(FIRE_SPHERE, sprite(16, 20));
   addTile(BEAR, sprite(8, 18));
   addTile(BAT, sprite(2, 12));
-  addTile(GNOME, sprite("goblin"));
+  addTile(GOBLIN, sprite("goblin"));
   addTile(LEPRECHAUN, sprite("leprechaun"));
   addTile(RAT, sprite("rat"));
   addTile(SPIDER, sprite(6, 12));
@@ -344,6 +345,7 @@ void genSymbols() {
   addSymbol(PRISONER, symbol("@", LIGHT_BROWN));
   addSymbol(OGRE, symbol("O", GREEN));
   addSymbol(CHICKEN, symbol("c", YELLOW));
+  addSymbol(GNOME, symbol("g", GREEN));
   addSymbol(DWARF, symbol("h", BLUE));
   addSymbol(DWARF_BARON, symbol("h", DARK_BLUE));
   addSymbol(FLOOR, symbol(".", LIGHT_GRAY));
@@ -384,9 +386,9 @@ void genSymbols() {
   addSymbol(WELL, symbol("0", BLUE));
   addSymbol(STATUE1, symbol("&", LIGHT_GRAY));
   addSymbol(STATUE2, symbol("&", LIGHT_GRAY));
-  addSymbol(GREAT_GOBLIN, symbol("o", PURPLE));
-  addSymbol(GOBLIN, symbol("o", DARK_BLUE));
-  addSymbol(GOBLIN_SHAMAN, symbol("o", YELLOW));
+  addSymbol(GREAT_ORC, symbol("o", PURPLE));
+  addSymbol(ORC, symbol("o", DARK_BLUE));
+  addSymbol(ORC_SHAMAN, symbol("o", YELLOW));
   addSymbol(HARPY, symbol("R", YELLOW));
   addSymbol(DOPPLEGANGER, symbol("&", YELLOW));
   addSymbol(SUCCUBUS, symbol("&", RED));
@@ -446,7 +448,7 @@ void genSymbols() {
   addSymbol(FIRE_SPHERE, symbol("e", RED));
   addSymbol(BEAR, symbol("N", BROWN));
   addSymbol(BAT, symbol("b", DARK_GRAY));
-  addSymbol(GNOME, symbol("g", GREEN));
+  addSymbol(GOBLIN, symbol("o", GREEN));
   addSymbol(LEPRECHAUN, symbol("l", GREEN));
   addSymbol(RAT, symbol("r", BROWN));
   addSymbol(SPIDER, symbol("s", BROWN));

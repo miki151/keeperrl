@@ -1155,6 +1155,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     case BuildInfo::DESTROY:
         selection = SELECT;
         getCollective()->destroySquare(pos);
+        updateSquareMemory(pos);
         break;
     case BuildInfo::GUARD_POST:
         if (getCollective()->isGuardPost(pos) && selection != SELECT) {

@@ -564,7 +564,7 @@ ItemFactory ItemFactory::armory() {
       {ItemId::IRON_BOOTS, 1} });
 }
 
-ItemFactory ItemFactory::goblinShop() {
+ItemFactory ItemFactory::orcShop() {
   return ItemFactory({
       {ItemId::KNIFE, 5 },
       {ItemId::SWORD, 2 },

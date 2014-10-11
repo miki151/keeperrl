@@ -849,6 +849,11 @@ CreatureFactory CreatureFactory::humanVillage(Tribe* tribe) {
       { 2, 1, 1, 1, 1, 0}, {});
 }
 
+CreatureFactory CreatureFactory::gnomeVillage(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::GNOME },
+      { 1}, {});
+}
+
 CreatureFactory CreatureFactory::humanCastle(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
       CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
@@ -903,8 +908,8 @@ CreatureFactory CreatureFactory::splash(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::IMP}, { 1}, { CreatureId::KEEPER });
 }
 
-CreatureFactory CreatureFactory::goblinTown(Tribe* tribe) {
-  return CreatureFactory(tribe, { CreatureId::GOBLIN, CreatureId::RAT}, {2, 1}, {CreatureId::GREAT_GOBLIN});
+CreatureFactory CreatureFactory::orcTown(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::RAT}, {2, 1}, {CreatureId::GREAT_ORC});
 }
 
 CreatureFactory CreatureFactory::pyramid(Tribe* tribe, int level) {
@@ -932,9 +937,9 @@ CreatureFactory CreatureFactory::level(int num, Tribe* allTribe, Tribe* dwarfTri
   map<CreatureId, vector<int>> frequencies {
       { CreatureId::SPECIAL_MONSTER, { 5, 8, 10, 12, 15, 18, 20, 22}},
       { CreatureId::SPECIAL_HUMANOID, { 5, 8, 10, 12, 15, 18, 20, 22}},
-      { CreatureId::GNOME, { 400, 200, 100, 100, 100, 100, 100, 100, 100, 100}},
+      { CreatureId::GOBLIN, { 400, 200, 100, 100, 100, 100, 100, 100, 100, 100}},
       { CreatureId::LEPRECHAUN, { 20, 20, 20, 20, 20, 20, 20, 20}},
-      { CreatureId::GOBLIN, { 20, 20, 30, 50, 50, 100, 200, 400 }},
+      { CreatureId::ORC, { 20, 20, 30, 50, 50, 100, 200, 400 }},
       { CreatureId::OGRE, { 0, 0, 100, 100, 200, 200, 200, 200, 200, 200 }},
       { CreatureId::JACKAL, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
       { CreatureId::ACID_MOUND, { 50, 50, 50, 50, 50, 50, 50, 50, 50, 50 }},
@@ -1483,9 +1488,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "curses all gravediggers";
           c.chatReactionHostile = "\"Die!\"";
           c.name = NameGenerator::get(NameGeneratorId::AZTEC)->getNext(););
-    case CreatureId::GOBLIN: 
+    case CreatureId::ORC: 
       return CATTR(
-          c.viewId = ViewId::GOBLIN;
+          c.viewId = ViewId::ORC;
           c.speed = 100;
           c.size = CreatureSize::LARGE;
           c.strength = 16;
@@ -1501,10 +1506,10 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
           c.minionTasks[MinionTask::LABORATORY] = 0.5; 
           c.minionTasks[MinionTask::SLEEP] = 1;
-          c.name = "goblin";);
-    case CreatureId::GOBLIN_SHAMAN:
-      return INHERIT(GOBLIN,
-          c.viewId = ViewId::GOBLIN_SHAMAN;
+          c.name = "orc";);
+    case CreatureId::ORC_SHAMAN:
+      return INHERIT(ORC,
+          c.viewId = ViewId::ORC_SHAMAN;
           c.strength -= 3;
           c.dexterity -= 3;
           c.minionTasks.clear();
@@ -1513,16 +1518,16 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks[MinionTask::STUDY] = 4;
           c.minionTasks[MinionTask::SLEEP] = 1;
           c.minionTasks[MinionTask::WORKSHOP] = 0;
-          c.name = "goblin shaman";);
-    case CreatureId::GREAT_GOBLIN: 
-      return INHERIT(GOBLIN,
-          c.viewId = ViewId::GREAT_GOBLIN;
+          c.name = "orc shaman";);
+    case CreatureId::GREAT_ORC: 
+      return INHERIT(ORC,
+          c.viewId = ViewId::GREAT_ORC;
           c.strength += 6;
           c.dexterity += 6;
           c.weight += 80;
-          c.name = "great goblin";);
+          c.name = "great orc";);
     case CreatureId::HARPY:
-      return INHERIT(GOBLIN,
+      return INHERIT(ORC,
           c.viewId = ViewId::HARPY;
           c.speed = 120;
           c.strength -= 3;
@@ -1543,8 +1548,21 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 45;
-          c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "talks about digging";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "gnome";);
+    case CreatureId::GOBLIN: 
+      return CATTR(
+          c.viewId = ViewId::GOBLIN;
+          c.speed = 80;
+          c.size = CreatureSize::MEDIUM;
+          c.strength = 12;
+          c.dexterity = 13;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 45;
+          c.spawnType = SpawnType::HUMANOID;
+          c.chatReactionFriendly = "talks about crafting";
           c.chatReactionHostile = "\"Die!\"";
           c.minionTasks[MinionTask::WORKSHOP] = 4;
           c.minionTasks[MinionTask::TRAIN] = 1; 
@@ -1552,7 +1570,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks[MinionTask::LABORATORY] = 0.5; 
           c.minionTasks[MinionTask::SLEEP] = 1;
           c.skills.insert(SkillId::DISARM_TRAPS);
-          c.name = "gnome";);
+          c.name = "goblin";);
     case CreatureId::IMP: 
       return CATTR(
           c.viewId = ViewId::IMP;
@@ -1639,7 +1657,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 90;
-          c.chatReactionFriendly = "curses all goblins";
+          c.chatReactionFriendly = "curses all orcs";
           c.chatReactionHostile = "\"Die!\"";
           c.name = "dwarf";);
     case CreatureId::DWARF_BARON: 
@@ -2123,9 +2141,9 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
             tribe, getAttributes(id), factory));
     case CreatureId::DWARF_BARON:
       return PCreature(new VillageElder({},
-            {{QuestId::GOBLINS, Random.getRandom(300, 400)}},
+            {{QuestId::ORCS, Random.getRandom(300, 400)}},
             tribe, getAttributes(id), factory));
-    case CreatureId::GREAT_GOBLIN:
+    case CreatureId::GREAT_ORC:
       return PCreature(new VillageElder({},
             {{QuestId::DWARVES, Random.getRandom(300, 400)}},
             tribe, getAttributes(id), factory));
@@ -2204,7 +2222,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::LEPRECHAUN: 
       return ItemList()
         .add({ItemId::SCROLL, EffectId::TELEPORT}, Random.getRandom(1, 4));
-    case CreatureId::GNOME: 
+    case CreatureId::GOBLIN: 
       return ItemList()
         .add(chooseRandom({ItemId::KNIFE}))
         .maybe(0.3, ItemId::LEATHER_BOOTS)
@@ -2255,12 +2273,12 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::OGRE: 
       return ItemList().add(ItemId::WAR_HAMMER);
     case CreatureId::BANDIT:
-    case CreatureId::GOBLIN: 
+    case CreatureId::ORC: 
       return ItemList()
         .add(chooseRandom({ItemId::SWORD}, {3}))
         .add(ItemId::LEATHER_ARMOR)
         .maybe(0.3, randomBackup());
-    case CreatureId::GREAT_GOBLIN: 
+    case CreatureId::GREAT_ORC: 
       return ItemList()
         .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
         .add(ItemId::IRON_HELM)

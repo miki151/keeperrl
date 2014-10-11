@@ -639,7 +639,7 @@ void Player::makeMove() {
   static bool greeting = false;
   if (Options::getValue(OptionId::HINTS) && displayGreeting) {
     CHECK(creature->getFirstName());
-    model->getView()->presentText("", "Dear " + *creature->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the goblins!");
+    model->getView()->presentText("", "Dear " + *creature->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
     model->getView()->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
         "\n \nYou can turn these messages off in the options (press F2).");
     displayGreeting = false;

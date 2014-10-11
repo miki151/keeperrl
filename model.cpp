@@ -262,9 +262,9 @@ Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
         "There is a bandit camp nearby. Kill them all."));
   Quest::set(QuestId::DWARVES, Quest::killTribeQuest(Tribe::get(TribeId::DWARVEN),
         "Slay our enemy, the dwarf baron. I will reward you.", true));
-  Quest::set(QuestId::GOBLINS, Quest::killTribeQuest(Tribe::get(TribeId::GOBLIN),
-        "The goblin den is located deep under the earth. "
-      "Slay the great goblin. I will reward you.", true));
+  Quest::set(QuestId::ORCS, Quest::killTribeQuest(Tribe::get(TribeId::ORC),
+        "The orc den is located deep under the earth. "
+      "Slay the great orc. I will reward you.", true));
   Level* top = buildLevel(
       Level::Builder(500, 500, "Wilderness", false),
       LevelMaker::topLevel(CreatureFactory::forrest(Tribe::get(TribeId::WILDLIFE)), settlements));
@@ -373,20 +373,20 @@ Model* Model::heroModel(View* view) {
       Level::Builder(60, 35, "Dwarven Halls"),
       LevelMaker::mineTownLevel(dwarfSettlement));
   m->collectives.push_back(dwarfSettlement.collective->build());
-  SettlementInfo goblinSettlement = CONSTRUCT(SettlementInfo,
+  SettlementInfo orcSettlement = CONSTRUCT(SettlementInfo,
      c.type = SettlementType::MINETOWN;
-     c.creatures = CreatureFactory::goblinTown(Tribe::get(TribeId::GOBLIN));
+     c.creatures = CreatureFactory::orcTown(Tribe::get(TribeId::ORC));
      c.numCreatures = Random.getRandom(10, 20);
      c.location = getVillageLocation();
-     c.tribe = Tribe::get(TribeId::GOBLIN);
+     c.tribe = Tribe::get(TribeId::ORC);
      c.buildingId = BuildingId::BRICK;
      c.upStairs = {StairKey::DWARF};
-     c.shopFactory = ItemFactory::goblinShop(););
-  goblinSettlement.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, goblinSettlement.tribe);
+     c.shopFactory = ItemFactory::orcShop(););
+  orcSettlement.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, orcSettlement.tribe);
   Level* g1 = m->buildLevel(
       Level::Builder(60, 35, "Goblin Den"),
-      LevelMaker::mineTownLevel(goblinSettlement));
-  m->collectives.push_back(goblinSettlement.collective->build());
+      LevelMaker::mineTownLevel(orcSettlement));
+  m->collectives.push_back(orcSettlement.collective->build());
   vector<Level*> gnomish;
   int numGnomLevels = 8;
  // int towerLinkIndex = Random.getRandom(1, numGnomLevels - 1);
@@ -423,7 +423,7 @@ Model* Model::heroModel(View* view) {
   PCreature player = m->makePlayer();
   for (int i : Range(Random.getRandom(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
-  Tribe::get(TribeId::GOBLIN)->makeSlightEnemy(player.get());
+  Tribe::get(TribeId::ORC)->makeSlightEnemy(player.get());
   Level* start = top;
   start->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(player));
   setHandicap(Tribe::get(TribeId::PLAYER), Options::getValue(OptionId::EASY_ADVENTURER));
@@ -561,7 +561,7 @@ struct FriendlyVault {
 
 static vector<FriendlyVault> friendlyVaults {
   {CreatureId::SPECIAL_HUMANOID, 1, 2},
-  {CreatureId::GOBLIN, 3, 8},
+  {CreatureId::ORC, 3, 8},
   {CreatureId::CAVE_BEAR, 2, 5},
   {CreatureId::OGRE, 2, 5},
   {CreatureId::IRON_GOLEM, 2, 5},
@@ -578,7 +578,7 @@ static vector<EnemyInfo> getVaults() {
         ItemFactory::dragonCave(), {VillageControlInfo::DRAGON}),*/
     getVault(SettlementType::VAULT, CreatureFactory::insects(Tribe::get(TribeId::MONSTER)),
         Tribe::get(TribeId::MONSTER), Random.getRandom(6, 12), Nothing(), {VillageControlInfo::PEACEFUL}),
-    getVault(SettlementType::VAULT, CreatureId::GOBLIN, Tribe::get(TribeId::KEEPER), Random.getRandom(3, 8),
+    getVault(SettlementType::VAULT, CreatureId::ORC, Tribe::get(TribeId::KEEPER), Random.getRandom(3, 8),
         Nothing(), {VillageControlInfo::PEACEFUL}),
     getVault(SettlementType::VAULT, CreatureId::CYCLOPS, Tribe::get(TribeId::MONSTER), 1,
         ItemFactory::mushrooms(true), {VillageControlInfo::PEACEFUL}),
@@ -614,6 +614,17 @@ vector<EnemyInfo> getEnemyInfo() {
         c.location = new Location();
         c.tribe = Tribe::get(TribeId::HUMAN);
         c.buildingId = BuildingId::WOOD;),
+        {VillageControlInfo::PEACEFUL}});
+  }
+  for (int i : Range(2, 5)) {
+    ret.push_back({CONSTRUCT(SettlementInfo,
+        c.type = SettlementType::SMALL_MINETOWN;
+        c.creatures = CreatureFactory::gnomeVillage(Tribe::get(TribeId::HUMAN));
+        c.numCreatures = Random.getRandom(3, 7);
+        c.location = new Location(true);
+        c.tribe = Tribe::get(TribeId::HUMAN);
+        c.buildingId = BuildingId::DUNGEON;
+        c.stockpiles = LIST({StockpileInfo::MINERALS, 300});),
         {VillageControlInfo::PEACEFUL}});
   }
   append(ret, getVaults());

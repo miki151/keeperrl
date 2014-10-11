@@ -34,6 +34,7 @@ enum class SettlementType {
   COTTAGE,
   WITCH_HOUSE,
   MINETOWN,
+  SMALL_MINETOWN,
   VAULT,
   CAVE,
 };

@@ -2406,7 +2406,7 @@ void Creature::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.time = getTime();
  /* info.elfStanding = Tribe::get(TribeId::ELVEN)->getStanding(this);
   info.dwarfStanding = Tribe::get(TribeId::DWARVEN)->getStanding(this);
-  info.goblinStanding = Tribe::get(TribeId::GOBLIN)->getStanding(this);*/
+  info.orcStanding = Tribe::get(TribeId::ORC)->getStanding(this);*/
   info.effects.clear();
   for (string s : getAdjectives())
     info.effects.push_back({s, true});
