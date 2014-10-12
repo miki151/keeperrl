@@ -448,66 +448,34 @@ class DragonControl : public VillageControl {
   DragonControl(Collective* col, Collective* villain, const Location* location)
       : VillageControl(col, villain, location) {}
 
-  const int waitTurns = 1500;
+  const int waitTurns = 2000;
 
-  const int angryTurns = 1500;
+  const int populationLimit = 25;
 
-  const double angryVictims = 5;
+  const int minVictims = 5;
+  const int maxVictims = 10;
 
   virtual string getAttackMessage() const override {
     const Creature* dragon = getOnlyElement(getCollective()->getCreatures());
-    return dragon->getName() + " the " + dragon->getSpeciesName() + " is very "
-        "angry (or hungry?) and is coming to pay you a visit. Feed him some weak minions and maybe he'll go away. "
-        "Building a shrine to keep him happy might be a good idea in the future.";
+    return "You are under attack by " + dragon->getName() + " the " + dragon->getSpeciesName() + "!";
   }
 
-  virtual MoveInfo getMove(Creature* c) override {
+  virtual PTask getNewTask(Creature* c) override {
     if (c->getLevel() != villain->getLevel())
-      return NoMove;
-    if (c->getTime() < waitTurns)
-      getTribe()->addFriend(villain->getTribe());
-    if (pleased < -5) {
-      Debug() << "Village dragon attacking " << pleased;
-      if (!currentlyAttacking) {
-        villain->addAssaultNotification(c, this);
-        currentlyAttacking = true;
-      }
-      getTribe()->addEnemy(villain->getTribe());
-      if (auto action = c->moveTowards(villain->getLeader()->getPosition())) 
-        return action;
+      return nullptr;
+    int population = villain->getCreatures(MinionTrait::FIGHTER).size();
+    if (population > populationLimit && c->getTime() >= nextAttack) {
+      nextAttack = c->getTime() + waitTurns;
+      villain->addAssaultNotification(c, this);
+      return Task::killFighters(villain, c, Random.getRandom(minVictims, maxVictims));
+    } else {
+      villain->removeAssaultNotification(c, this);
+      return Task::stayInLocationUntil(location, nextAttack);
     }
-    else {
-      if (currentlyAttacking && pleased >= 0) {
-        getTribe()->addFriend(villain->getTribe());
-        currentlyAttacking = false;
-        villain->removeAssaultNotification(c, this);
-      }
-      if (auto action = c->stayIn(location))
-        return action;
-    }
-    for (Vec2 v : Vec2::directions8(true))
-      if (auto action = c->destroy(v, Creature::BASH))
-        return action;
-    return NoMove;
+
   }
 
   virtual void tick(double time) {
-    if (time >= waitTurns)
-      pleased -= angryVictims / angryTurns;
-  }
-
-  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
-    if (contains(getCollective()->getCreatures(), killer))
-      pleased += 1;
-  }
-
-  REGISTER_HANDLER(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType type) {
-    if (contains(getCollective()->getCreatures(), to))
-      switch (type) {
-        case WorshipType::PRAYER: pleased += 0.01; break;
-        case WorshipType::SACRIFICE: pleased += 1; break;
-        case WorshipType::DESTROY_ALTAR: pleased = -10; break;
-      }
   }
 
   SERIALIZATION_CONSTRUCTOR(DragonControl);
@@ -515,14 +483,12 @@ class DragonControl : public VillageControl {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(VillageControl)
-      & SVAR(currentlyAttacking)
-      & SVAR(pleased);
+      & SVAR(nextAttack);
     CHECK_SERIAL;
   }
 
   private:
-  double SERIAL2(pleased, 0);
-  bool SERIAL2(currentlyAttacking, false);
+  double SERIAL2(nextAttack, -10000);
 };
 
 }
