@@ -262,7 +262,8 @@ class MeteorShower : public Trigger {
     targetPoint += position;
     Vec2 direction(Random.getRandom(-1, 2), Random.getRandom(-1, 2));
     for (int i : Range(range + 1))
-      if (!level->getSquare(targetPoint + direction * i)->canEnter({MovementTrait::WALK, MovementTrait::FLY}))
+      if (!level->getSquare(targetPoint + direction * i)->canEnter(
+            MovementType({MovementTrait::WALK, MovementTrait::FLY})))
         return false;
     level->throwItem(ItemFactory::fromId(ItemId::ROCK),
         Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 25, 40, false), 10,

@@ -8,7 +8,7 @@
 /** Represents all the game information displayed around the map window.*/
 class GameInfo {
   public:
-  enum class InfoType { PLAYER, BAND} infoType;
+  enum class InfoType { PLAYER, BAND} infoType = InfoType::PLAYER;
   double time;
 
   struct CreatureInfo {
