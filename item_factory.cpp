@@ -1153,7 +1153,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[AttrType::DEFENSE]= 1 + maybePlusMinusOne(4););
     case ItemId::LEATHER_BOOTS: return ITATTR(
             i.viewId = ViewId::LEATHER_BOOTS;
-            i.name = "leather boots";
+            i.name = "pair of leather boots";
             i.plural = "pairs of leather boots";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BOOTS;
@@ -1162,7 +1162,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::IRON_BOOTS: return ITATTR(
             i.viewId = ViewId::IRON_BOOTS;
-            i.name = "iron boots";
+            i.name = "pair of iron boots";
             i.plural = "pairs of iron boots";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BOOTS;
@@ -1171,7 +1171,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[AttrType::DEFENSE] = 2 + maybePlusMinusOne(4););
     case ItemId::SPEED_BOOTS: return ITATTR(
             i.viewId = ViewId::SPEED_BOOTS;
-            i.name = "boots of speed";
+            i.name = "pair of boots of speed";
             i.plural = "pairs of boots of speed";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BOOTS;
@@ -1181,7 +1181,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::LEVITATION_BOOTS: return ITATTR(
             i.viewId = ViewId::LEVITATION_BOOTS;
-            i.name = "boots of levitation";
+            i.name = "pair of boots of levitation";
             i.plural = "pairs of boots of levitation";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BOOTS;

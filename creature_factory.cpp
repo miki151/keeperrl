@@ -1598,7 +1598,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "talks about escape plans";
           c.minionTasks[MinionTask::PRISON] = 1;
           c.minionTasks[MinionTask::TORTURE] = 0.0001; 
-          c.minionTasks[MinionTask::SACRIFICE] = 0.0001; 
+ //         c.minionTasks[MinionTask::SACRIFICE] = 0.0001; 
           c.minionTasks[MinionTask::EXECUTE] = 0.0001;
           c.name = "prisoner";);
     case CreatureId::OGRE: 

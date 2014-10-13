@@ -145,14 +145,14 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::COPULATE, {MinionTaskInfo::COPULATE, "copulation"}},
     {MinionTask::CONSUME, {MinionTaskInfo::CONSUME, "consumption"}},
     {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "spying"}},
-    {MinionTask::SACRIFICE, {{}, "sacrifice ordered", Collective::Warning::ALTAR}},
+ //   {MinionTask::SACRIFICE, {{}, "sacrifice ordered", Collective::Warning::ALTAR}},
     {MinionTask::EXECUTE, {{SquareId::PRISON}, "execution ordered", Collective::Warning::NO_PRISON}},
     {MinionTask::WORSHIP, {{}, "worship", Nothing(), 1}}};
-  for (SquareType t : getSquareTypes())
+/*  for (SquareType t : getSquareTypes())
     if (contains({SquareId::ALTAR, SquareId::CREATURE_ALTAR}, t.getId()) && !getSquares(t).empty()) {
       ret.at(MinionTask::WORSHIP).squares.push_back(t);
       ret.at(MinionTask::SACRIFICE).squares.push_back(t);
-    }
+    }*/
   return ret;
 };
 
@@ -496,7 +496,7 @@ PTask Collective::getPrisonerTask(Creature* c) {
         switch (elem.second.state()) {
           case PrisonerState::EXECUTE: t = Task::kill(this, prisoner); break;
           case PrisonerState::TORTURE: t = Task::torture(this, prisoner); break;
-          case PrisonerState::SACRIFICE: t = Task::sacrifice(this, prisoner); break;
+ //         case PrisonerState::SACRIFICE: t = Task::sacrifice(this, prisoner); break;
           default: return nullptr;
         }
         if (t && t->getMove(c)) {
@@ -1624,11 +1624,11 @@ void Collective::orderTorture(Creature* c) {
 }
 
 void Collective::orderSacrifice(Creature* c) {
-  if (prisonerInfo.at(c).state() == PrisonerState::SACRIFICE)
+/*  if (prisonerInfo.at(c).state() == PrisonerState::SACRIFICE)
     return;
   clearPrisonerTask(c);
   prisonerInfo.at(c) = {PrisonerState::SACRIFICE, 0};
-  setMinionTask(c, MinionTask::SACRIFICE);
+  setMinionTask(c, MinionTask::SACRIFICE);*/
 }
 
 bool Collective::isItemMarked(const Item* it) const {

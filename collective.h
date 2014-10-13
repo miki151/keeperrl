@@ -47,7 +47,7 @@ RICH_ENUM(CollectiveWarning,
     NO_PRISON,
     LARGER_PRISON,
     TORTURE_ROOM,
-    ALTAR,
+//    ALTAR,
     MORE_CHESTS,
     MANA,
     MORE_LIGHTS

@@ -589,7 +589,7 @@ class ScrollBar : public GuiLayout {
   }
 
   virtual Rectangle getElemBounds(int num) override {
-    Vec2 topLeft(getBounds().getPX(), calcButHeight());
+    Vec2 topLeft(9 + getBounds().getPX(), calcButHeight());
     return Rectangle(topLeft, topLeft + Vec2(getBounds().getW(), buttonHeight));
   }
 
@@ -834,7 +834,7 @@ static PGuiElem getScrollbar() {
 }
 
 PGuiElem GuiElem::getScrollButton() {
-  return margins(sprite(get(SCROLL_BUTTON), Alignment::TOP_RIGHT), 3, 0, 3, 0);
+  return sprite(get(SCROLL_BUTTON), Alignment::TOP_RIGHT);
 }
 
 int getScrollButtonSize() {
