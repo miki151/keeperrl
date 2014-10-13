@@ -145,6 +145,10 @@ PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, 
             case Alignment::RIGHT_CENTER:
               pos = (bounds.getTopRight() + bounds.getBottomRight()) / 2 - Vec2(size.x, size.y / 2);
               break;
+            case Alignment::VERTICAL_CENTER:
+              pos = (bounds.getTopLeft() + bounds.getTopRight()) / 2 - Vec2(size.x / 2, -cornerOffset);
+              size = Vec2(size.x, bounds.getH() - 2 * cornerOffset);
+              break;
           }
           if (vFlip) {
             size = Vec2(size.x, -size.y);
@@ -578,8 +582,8 @@ PGuiElem GuiElem::mouseHighlight2(PGuiElem elem) {
 
 class ScrollBar : public GuiLayout {
   public:
-  ScrollBar(PGuiElem b, VerticalList* _content, int butHeight, int* scrollP, int contentH)
-      : GuiLayout(makeVec<PGuiElem>(std::move(b))), buttonHeight(butHeight), scrollPos(scrollP),
+  ScrollBar(PGuiElem b, VerticalList* _content, int butHeight, int vMarg, int* scrollP, int contentH)
+      : GuiLayout(makeVec<PGuiElem>(std::move(b))), buttonHeight(butHeight), vMargin(vMarg), scrollPos(scrollP),
       content(_content), contentHeight(contentH) {
     listSize = content->getSize();
   }
@@ -590,25 +594,36 @@ class ScrollBar : public GuiLayout {
   }
 
   double calcPos(int mouseHeight) {
-    return max(0.0, min(1.0, double(mouseHeight - getBounds().getPY()) / (getBounds().getH() - buttonHeight)));
+    return max(0.0, min(1.0, 
+          double(mouseHeight - getBounds().getPY() - vMargin) / (getBounds().getH() - 2 * vMargin - buttonHeight)));
+  }
+
+  int scrollLength() {
+    return content->getLastTopElem(getBounds().getH());
   }
 
   int calcButHeight() {
-    return getBounds().getPY() + *scrollPos * double(getBounds().getH() - buttonHeight)
-      / double(content->getLastTopElem(getBounds().getH()));
+    int ret = min<double>(getBounds().getKY() - buttonHeight - vMargin,
+        double(getBounds().getPY()) + vMargin + *scrollPos * double(getBounds().getH() - buttonHeight - 2 * vMargin)
+      / double(scrollLength()));
+    return ret;
   }
 
   virtual void onLeftClick(Vec2 v) override {
-    if (v.inRectangle(getElemBounds(0)))
+    if (v.y <= getBounds().getPY() + vMargin)
+      *scrollPos = max(0, *scrollPos - 1);
+    else if (v.y >= getBounds().getKY() - vMargin)
+      *scrollPos = min(scrollLength(), *scrollPos + 1);
+    else if (v.inRectangle(getElemBounds(0)))
       held = v.y - calcButHeight();
     else if (v.inRectangle(getBounds())) {
-      *scrollPos = listSize * calcPos(v.y);
+      *scrollPos = scrollLength() * calcPos(v.y);
     }
   }
 
   virtual void onMouseMove(Vec2 v) override {
     if (held)
-      *scrollPos = listSize * calcPos(v.y - *held);
+      *scrollPos = scrollLength() * calcPos(v.y - *held);
   }
 
   virtual void onMouseRelease() override {
@@ -621,6 +636,7 @@ class ScrollBar : public GuiLayout {
 
   private:
   int buttonHeight;
+  int vMargin;
   int* scrollPos;
   Optional<int> held;
   VerticalList* content;
@@ -635,20 +651,24 @@ class Scrollable : public GuiElem {
   }
 
   int getScrollOffset() {
-    return content->getElemsHeight(*scrollPos);
+    return content->getElemsHeight(getScrollPos());
+  }
+
+  int getScrollPos() {
+    return min(*scrollPos, content->getLastTopElem(getBounds().getH()));
   }
 
   void onRefreshBounds() override {
     int lastTopElem = content->getLastTopElem(getBounds().getH());
+    int offset = getScrollOffset();
     if (*scrollPos > lastTopElem)
       *scrollPos = lastTopElem;
-    int offset = getScrollOffset();
     content->setBounds(getBounds().translate(Vec2(0, -offset)));
     contentHeight ++;
   }
 
   virtual void render(Renderer& r) override {
-    content->renderPart(r, *scrollPos);
+    content->renderPart(r, getScrollPos());
   }
 
   virtual void onLeftClick(Vec2 v) override {
@@ -684,38 +704,38 @@ class Scrollable : public GuiElem {
   int* scrollPos;
 };
 
-static Texture scrollbarTop;
-static Texture scrollbarCut;
-static Texture scrollButton;
-static Texture backgroundTopCorner;
-static Texture backgroundBottomCorner;
-static Texture backgroundTop;
-static Texture backgroundLeft;
-static Texture backgroundPattern;
-static Texture borderTopLeft;
-static Texture borderTopRight;
-static Texture borderBottomLeft;
-static Texture borderBottomRight;
-static Texture borderTop;
-static Texture borderRight;
-static Texture borderBottom;
-static Texture borderLeft;
+enum TexId {
+  SCROLLBAR,
+  SCROLL_BUTTON,
+  BACKGROUND_TOP_CORNER,
+  BACKGROUND_BOTTOM_CORNER,
+  BACKGROUND_TOP,
+  BACKGROUND_LEFT,
+  BACKGROUND_PATTERN,
+  BORDER_TOP_LEFT,
+  BORDER_TOP_RIGHT,
+  BORDER_BOTTOM_LEFT,
+  BORDER_BOTTOM_RIGHT,
+  BORDER_TOP,
+  BORDER_RIGHT,
+  BORDER_BOTTOM,
+  BORDER_LEFT,
+  HORI_CORNER1,
+  HORI_CORNER2,
+  HORI_LINE,
+  HORI_MIDDLE,
+  VERT_BAR,
+  HORI_BAR,
+  HORI_BAR_MINI,
+  CORNER_TOP_LEFT,
+  CORNER_TOP_RIGHT,
+  CORNER_BOTTOM_RIGHT,
+  SCROLL_UP,
+  SCROLL_DOWN,
+};
 
-static Texture horiCorner1;
-static Texture horiCorner2;
-static Texture horiLine;
-static Texture horiMiddle;
-static Texture vertBar;
-static Texture horiBar;
-static Texture horiBarMini;
-static Texture cornerTopLeft;
-static Texture cornerTopRight;
-static Texture cornerBottomRight;
-
-static Texture icons[7];
 const int border2Width = 6;
 
-const int scrollButtonSize = 16;
 const int scrollbarWidth = 22;
 const int borderWidth = 8;
 const int borderHeight = 11;
@@ -728,6 +748,67 @@ Color GuiElem::foreground1;
 Color GuiElem::text;
 Color GuiElem::titleText;
 Color GuiElem::inactiveText;
+
+Texture& get(TexId id) {
+  static map<TexId, Texture> m;
+  if (m.empty()) {
+    m[BACKGROUND_TOP_CORNER].loadFromFile("frame.png", sf::IntRect(0, 128, backgroundSize, backgroundSize));
+    m[BACKGROUND_BOTTOM_CORNER].loadFromFile("frame.png", sf::IntRect(0, 128, backgroundSize, backgroundSize));
+    m[BACKGROUND_LEFT].loadFromFile("frame.png", sf::IntRect(0, 128 + backgroundSize - 1, backgroundSize, 1));
+    m[BACKGROUND_TOP].loadFromFile("frame.png", sf::IntRect(127, 128, 1, backgroundSize));
+    m[SCROLLBAR].loadFromFile("ui/scrollbar.png");
+    m[SCROLLBAR].setRepeated(true);
+    m[SCROLL_BUTTON].loadFromFile("ui/scrollmark.png");
+    int px = 166;
+    m[BORDER_TOP_LEFT].loadFromFile("frame.png", sf::IntRect(px, 0, border2Width, border2Width));
+    m[BORDER_TOP_RIGHT].loadFromFile("frame.png",
+        sf::IntRect(px + 1 + border2Width, 0, border2Width, border2Width));
+    m[BORDER_BOTTOM_LEFT].loadFromFile("frame.png",
+        sf::IntRect(px, border2Width + 1, border2Width, border2Width));
+    m[BORDER_BOTTOM_RIGHT].loadFromFile("frame.png",
+        sf::IntRect(px + 1 + border2Width, border2Width + 1, border2Width, border2Width));
+    m[BORDER_TOP].loadFromFile("frame.png", sf::IntRect(px + border2Width, 0, 1, border2Width));
+    m[BORDER_RIGHT].loadFromFile("frame.png", sf::IntRect(px + 1 + border2Width, border2Width, border2Width, 1));
+    m[BORDER_BOTTOM].loadFromFile("frame.png", sf::IntRect(px + border2Width, border2Width + 1, 1, border2Width));
+    m[BORDER_LEFT].loadFromFile("frame.png", sf::IntRect(px, border2Width, border2Width, 1));
+    m[BACKGROUND_PATTERN].loadFromFile("tekstuur_1.png");
+    m[BACKGROUND_PATTERN].setRepeated(true);
+    GuiElem::foreground1 = transparency(Color(0x20, 0x5c, 0x4a), 150);
+    GuiElem::text = colors[ColorId::WHITE];
+    GuiElem::titleText = colors[ColorId::YELLOW];
+    GuiElem::inactiveText = colors[ColorId::LIGHT_GRAY];
+    m[HORI_CORNER1].loadFromFile("ui/horicorner1.png");
+    m[HORI_CORNER2].loadFromFile("ui/horicorner2.png");
+    m[HORI_LINE].loadFromFile("ui/horiline.png");
+    m[HORI_LINE].setRepeated(true);
+    m[HORI_MIDDLE].loadFromFile("ui/horimiddle.png");
+    m[VERT_BAR].loadFromFile("ui/vertbar.png");
+    m[VERT_BAR].setRepeated(true);
+    m[HORI_BAR].loadFromFile("ui/horibar.png");
+    m[HORI_BAR].setRepeated(true);
+    m[HORI_BAR_MINI].loadFromFile("ui/horibarmini.png");
+    m[HORI_BAR_MINI].setRepeated(true);
+    m[CORNER_TOP_LEFT].loadFromFile("ui/cornerTOPL.png");
+    m[CORNER_TOP_RIGHT].loadFromFile("ui/cornerTOPR.png");
+    m[CORNER_BOTTOM_RIGHT].loadFromFile("ui/cornerBOTTOMR.png");
+    m[SCROLL_UP].loadFromFile("ui/up.png");
+    m[SCROLL_DOWN].loadFromFile("ui/down.png");
+  }
+  return m[id];
+}
+
+Texture& getIconTex(GuiElem::IconId id) {
+  static vector<Texture> v;
+  if (v.empty()) {
+    for (int i = 0; i < 7; ++i) {
+      v.emplace_back();
+      v.back().loadFromFile("icons.png", sf::IntRect(0, i * iconWidth, iconWidth, iconWidth));
+    }
+  }
+  int num = int(id);
+  CHECK(num >= 0 && num < v.size());
+  return v[num];
+}
 
 void GuiElem::changeBackground(int r, int g, int b) {
   background1.r += r;
@@ -745,62 +826,19 @@ void GuiElem::setBackground(int r, int g, int b) {
   Debug() << "New color " << background1.r << " " << background1.g << " " << background1.b << " ";
 }
 
-void GuiElem::initialize(const string& texturePath) {
-    backgroundTopCorner.loadFromFile("frame.png", sf::IntRect(0, 128, backgroundSize, backgroundSize));
-    backgroundBottomCorner.loadFromFile("frame.png", sf::IntRect(0, 128, backgroundSize, backgroundSize));
-    backgroundLeft.loadFromFile("frame.png", sf::IntRect(0, 128 + backgroundSize - 1, backgroundSize, 1));
-    backgroundTop.loadFromFile("frame.png", sf::IntRect(127, 128, 1, backgroundSize));
-    scrollbarTop.loadFromFile("frame.png", sf::IntRect(128, 0, scrollbarWidth, 32));
-    scrollbarCut.loadFromFile("frame.png", sf::IntRect(128, 31, scrollbarWidth, 1));
-    scrollButton.loadFromFile("frame.png", sf::IntRect(150, 0, scrollButtonSize, scrollButtonSize));
-    int px = 166;
-    borderTopLeft.loadFromFile("frame.png", sf::IntRect(px, 0, border2Width, border2Width));
-    borderTopRight.loadFromFile("frame.png",
-        sf::IntRect(px + 1 + border2Width, 0, border2Width, border2Width));
-    borderBottomLeft.loadFromFile("frame.png",
-        sf::IntRect(px, border2Width + 1, border2Width, border2Width));
-    borderBottomRight.loadFromFile("frame.png",
-        sf::IntRect(px + 1 + border2Width, border2Width + 1, border2Width, border2Width));
-    borderTop.loadFromFile("frame.png", sf::IntRect(px + border2Width, 0, 1, border2Width));
-    borderRight.loadFromFile("frame.png", sf::IntRect(px + 1 + border2Width, border2Width, border2Width, 1));
-    borderBottom.loadFromFile("frame.png", sf::IntRect(px + border2Width, border2Width + 1, 1, border2Width));
-    borderLeft.loadFromFile("frame.png", sf::IntRect(px, border2Width, border2Width, 1));
-    for (int i = 0; i < 7; ++i)
-      icons[i].loadFromFile("icons.png", sf::IntRect(0, i * iconWidth, iconWidth, iconWidth));
-    backgroundPattern.loadFromFile("tekstuur_1.png");
-    backgroundPattern.setRepeated(true);
-    scrollbarCut.setRepeated(true);
-/*    background1 = Color(5, 5, 8);
-    background2 = background1; //Color(0, 0, 0);*/
-    foreground1 = transparency(Color(0x20, 0x5c, 0x4a), 150);
-    text = colors[ColorId::WHITE];
-    titleText = colors[ColorId::YELLOW];
-    inactiveText = colors[ColorId::LIGHT_GRAY];
-    horiCorner1.loadFromFile("ui/horicorner1.png");
-    horiCorner2.loadFromFile("ui/horicorner2.png");
-    horiLine.loadFromFile("ui/horiline.png");
-    horiLine.setRepeated(true);
-    horiMiddle.loadFromFile("ui/horimiddle.png");
-    vertBar.loadFromFile("ui/vertbar.png");
-    vertBar.setRepeated(true);
-    horiBar.loadFromFile("ui/horibar.png");
-    horiBar.setRepeated(true);
-    horiBarMini.loadFromFile("ui/horibarmini.png");
-    horiBarMini.setRepeated(true);
-    cornerTopLeft.loadFromFile("ui/cornerTOPL.png");
-    cornerTopRight.loadFromFile("ui/cornerTOPR.png");
-    cornerBottomRight.loadFromFile("ui/cornerBOTTOMR.png");
-}
-
 static PGuiElem getScrollbar() {
   return GuiElem::stack(makeVec<PGuiElem>(
-        GuiElem::sprite(scrollbarCut, GuiElem::Alignment::RIGHT),
-        GuiElem::sprite(scrollbarTop, GuiElem::Alignment::TOP_RIGHT),
-        GuiElem::sprite(scrollbarTop, GuiElem::Alignment::BOTTOM_RIGHT, true)));
+        GuiElem::sprite(get(SCROLLBAR), GuiElem::Alignment::VERTICAL_CENTER),
+        GuiElem::sprite(get(SCROLL_UP), GuiElem::Alignment::TOP_RIGHT),
+        GuiElem::sprite(get(SCROLL_DOWN), GuiElem::Alignment::BOTTOM_RIGHT)));
 }
 
 PGuiElem GuiElem::getScrollButton() {
-  return margins(sprite(scrollButton, Alignment::TOP_RIGHT), 3, 0, 3, 0);
+  return margins(sprite(get(SCROLL_BUTTON), Alignment::TOP_RIGHT), 3, 0, 3, 0);
+}
+
+int getScrollButtonSize() {
+  return get(SCROLL_BUTTON).getSize().y;
 }
 
 class Conditional : public GuiLayout {
@@ -828,70 +866,71 @@ PGuiElem GuiElem::scrollable(PGuiElem content, int contentHeight, int* scrollPos
   VerticalList* list = dynamic_cast<VerticalList*>(content.release());
   CHECK(list) << "Scrolling only implemented for vertical list";
   PGuiElem scrollable(new Scrollable(PVerticalList(list), contentHeight, scrollPos));
-  PGuiElem bar(new ScrollBar(std::move(getScrollButton()), list, scrollButtonSize, scrollPos, contentHeight));
+  int scrollBarMargin = get(SCROLL_UP).getSize().y;
+  PGuiElem bar(new ScrollBar(
+        std::move(getScrollButton()), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight));
   PGuiElem barButtons = GuiElem::stack(makeVec<PGuiElem>(std::move(getScrollbar()),
     GuiElem::margin(GuiElem::empty(),
       GuiElem::button([scrollPos, list] {*scrollPos = min(list->getSize() - 1, *scrollPos + 1); }),
-      scrollbarWidth, TOP),
+      scrollBarMargin, TOP),
     GuiElem::margin(GuiElem::empty(),
       GuiElem::button([scrollPos] {*scrollPos = max(0, *scrollPos - 1); }),
-      scrollbarWidth, BOTTOM)));
+      scrollBarMargin, BOTTOM)));
   int hMargin = 30;
-  int vMargin = 15;
+  int vMargin = 0;
   barButtons = conditional(std::move(barButtons), [=] (GuiElem* e) {
-      return e->getBounds().getH() < contentHeight + 2 * scrollbarWidth;});
-  return margin(stack(std::move(barButtons),
-        margins(std::move(bar), 0, scrollbarWidth, 0, scrollbarWidth)),
+      return e->getBounds().getH() < contentHeight;});
+  return margin(stack(std::move(barButtons), std::move(bar)),
         margins(std::move(scrollable), hMargin, vMargin, hMargin, vMargin), scrollbarWidth, RIGHT);
 }
 
 PGuiElem GuiElem::background(Color c) {
-  return stack(rectangle(c), repeatedPattern(backgroundPattern));
+  return stack(rectangle(c), repeatedPattern(get(BACKGROUND_PATTERN)));
 }
 
 PGuiElem GuiElem::highlight(Color c) {
-  return stack(rectangle(c), repeatedPattern(backgroundPattern));
+  return stack(rectangle(c), repeatedPattern(get(BACKGROUND_PATTERN)));
 }
 
 PGuiElem GuiElem::border2(PGuiElem content) {
   double alpha = 1;
   return stack(makeVec<PGuiElem>(std::move(content),
-        sprite(borderTop, Alignment::TOP, false, false, border2Width, alpha),
-        sprite(borderBottom, Alignment::BOTTOM, false, false, border2Width, alpha),
-        sprite(borderLeft, Alignment::LEFT, false, false, border2Width, alpha),
-        sprite(borderRight, Alignment::RIGHT, false, false, border2Width, alpha),
-        sprite(borderTopLeft, Alignment::TOP_LEFT, false, false, 0, alpha),
-        sprite(borderTopRight, Alignment::TOP_RIGHT, false, false, 0, alpha),
-        sprite(borderBottomLeft, Alignment::BOTTOM_LEFT, false, false, 0, alpha),
-        sprite(borderBottomRight, Alignment::BOTTOM_RIGHT, false, false, 0, alpha)));
+        sprite(get(BORDER_TOP), Alignment::TOP, false, false, border2Width, alpha),
+        sprite(get(BORDER_BOTTOM), Alignment::BOTTOM, false, false, border2Width, alpha),
+        sprite(get(BORDER_LEFT), Alignment::LEFT, false, false, border2Width, alpha),
+        sprite(get(BORDER_RIGHT), Alignment::RIGHT, false, false, border2Width, alpha),
+        sprite(get(BORDER_TOP_LEFT), Alignment::TOP_LEFT, false, false, 0, alpha),
+        sprite(get(BORDER_TOP_RIGHT), Alignment::TOP_RIGHT, false, false, 0, alpha),
+        sprite(get(BORDER_BOTTOM_LEFT), Alignment::BOTTOM_LEFT, false, false, 0, alpha),
+        sprite(get(BORDER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT, false, false, 0, alpha)));
 }
 
 PGuiElem GuiElem::insideBackground(PGuiElem content) {
-  int cornerSide = backgroundTopCorner.getSize().x;
-  int cornerDown = backgroundTopCorner.getSize().y;
+  int cornerSide = get(BACKGROUND_TOP_CORNER).getSize().x;
+  int cornerDown = get(BACKGROUND_TOP_CORNER).getSize().y;
   return stack(makeVec<PGuiElem>(
         std::move(content),
-        margins(sprite(backgroundTop, Alignment::TOP), cornerSide, 0, cornerSide, 0),
-        margins(sprite(backgroundTop, Alignment::BOTTOM, true), cornerSide, 0, cornerSide, 0),
-        margins(sprite(backgroundLeft, Alignment::LEFT), 0, cornerSide, 0, cornerSide),
-        margins(sprite(backgroundLeft, Alignment::RIGHT, false, true), 0, cornerSide, 0, cornerSide),
-        sprite(backgroundTopCorner, Alignment::TOP_LEFT),
-        sprite(backgroundTopCorner, Alignment::TOP_RIGHT, false, true),
-        sprite(backgroundBottomCorner, Alignment::BOTTOM_LEFT, true),
-        sprite(backgroundBottomCorner, Alignment::BOTTOM_RIGHT, true, true)));
+        margins(sprite(get(BACKGROUND_TOP), Alignment::TOP), cornerSide, 0, cornerSide, 0),
+        margins(sprite(get(BACKGROUND_TOP), Alignment::BOTTOM, true), cornerSide, 0, cornerSide, 0),
+        margins(sprite(get(BACKGROUND_LEFT), Alignment::LEFT), 0, cornerSide, 0, cornerSide),
+        margins(sprite(get(BACKGROUND_LEFT), Alignment::RIGHT, false, true), 0, cornerSide, 0, cornerSide),
+        sprite(get(BACKGROUND_TOP_CORNER), Alignment::TOP_LEFT),
+        sprite(get(BACKGROUND_TOP_CORNER), Alignment::TOP_RIGHT, false, true),
+        sprite(get(BACKGROUND_BOTTOM_CORNER), Alignment::BOTTOM_LEFT, true),
+        sprite(get(BACKGROUND_BOTTOM_CORNER), Alignment::BOTTOM_RIGHT, true, true)));
 }
 
 PGuiElem GuiElem::border(PGuiElem content) {
   double alpha = 1;
   return stack(makeVec<PGuiElem>(std::move(content),
-        sprite(horiBar, Alignment::BOTTOM, false, false, border2Width, alpha),
-        sprite(horiBar, Alignment::TOP, false, false, border2Width, alpha),
-        sprite(vertBar, Alignment::RIGHT, false, false, border2Width, alpha),
-        sprite(vertBar, Alignment::LEFT, false, false, border2Width, alpha),
-        sprite(cornerTopLeft, Alignment::BOTTOM_RIGHT, true, true, 8, alpha),
-        sprite(cornerTopLeft, Alignment::BOTTOM_LEFT, true, false, -8, alpha),
-        sprite(cornerTopLeft, Alignment::TOP_RIGHT, false, true, 8, alpha),
-        sprite(cornerTopLeft, Alignment::TOP_LEFT, false, false, -8, alpha)));
+        sprite(get(HORI_BAR), Alignment::BOTTOM, true, false, border2Width, alpha),
+        sprite(get(HORI_BAR), Alignment::TOP, false, false, border2Width, alpha),
+        sprite(get(VERT_BAR), Alignment::RIGHT, false, true, border2Width, alpha),
+        sprite(get(VERT_BAR), Alignment::LEFT, false, false, border2Width, alpha),
+        sprite(get(CORNER_TOP_LEFT), Alignment::BOTTOM_RIGHT, true, true, 8, alpha),
+        sprite(get(CORNER_TOP_LEFT), Alignment::BOTTOM_LEFT, true, false, -8, alpha),
+        sprite(get(CORNER_TOP_LEFT), Alignment::TOP_RIGHT, false, true, 8, alpha),
+        sprite(get(CORNER_TOP_LEFT), Alignment::TOP_LEFT, false, false, -8, alpha)));
 }
 
 PGuiElem GuiElem::window(PGuiElem content) {
@@ -905,25 +944,25 @@ PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {
   return margin(
       stack(makeVec<PGuiElem>(
           background(background2),
-          sprite(horiBar, Alignment::TOP),
-          sprite(horiBar, Alignment::BOTTOM),
-          margin(sprite(horiBarMini, Alignment::BOTTOM), empty(), 85, TOP),
-          sprite(vertBar, Alignment::RIGHT),
-          sprite(vertBar, Alignment::LEFT),
-          sprite(cornerTopLeft, Alignment::TOP_LEFT, false, false, -8),
-          sprite(cornerTopRight, Alignment::TOP_RIGHT),
-          sprite(cornerBottomRight, Alignment::BOTTOM_RIGHT)
+          sprite(get(HORI_BAR), Alignment::TOP),
+          sprite(get(HORI_BAR), Alignment::BOTTOM),
+          margin(sprite(get(HORI_BAR_MINI), Alignment::BOTTOM), empty(), 85, TOP),
+          sprite(get(VERT_BAR), Alignment::RIGHT, false, true),
+          sprite(get(VERT_BAR), Alignment::LEFT),
+          sprite(get(CORNER_TOP_LEFT), Alignment::TOP_LEFT, false, false, -8),
+          sprite(get(CORNER_TOP_RIGHT), Alignment::TOP_RIGHT),
+          sprite(get(CORNER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT)
       )),
       stack(makeVec<PGuiElem>(
           margin(background(background2), empty(), bottomBarHeight, BOTTOM),
-          sprite(horiLine, Alignment::BOTTOM),
-          sprite(horiMiddle, Alignment::BOTTOM_CENTER),
-          sprite(horiCorner1, Alignment::BOTTOM_LEFT),
-          sprite(horiCorner2, Alignment::BOTTOM_RIGHT, false, false, 93))),
+          sprite(get(HORI_LINE), Alignment::BOTTOM),
+ //         sprite(get(HORI_MIDDLE), Alignment::BOTTOM_CENTER),
+          sprite(get(HORI_CORNER1), Alignment::BOTTOM_LEFT),
+          sprite(get(HORI_CORNER2), Alignment::BOTTOM_RIGHT, false, false, 93))),
       rightBarWidth,
       RIGHT);
 }
 
 PGuiElem GuiElem::icon(IconId id) {
-  return sprite(icons[int(id)], Alignment::CENTER);
+  return sprite(getIconTex(id), Alignment::CENTER);
 }

@@ -409,7 +409,7 @@ const int bgTransparency = 180;
 
 void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
   int height = 30;
-  int width = renderer.getTextLength(text) + 30;
+  int width = renderer.getTextLength(text) + 55;
   Vec2 pos(getBounds().getKX() - width, getBounds().getKY() - height);
   renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(colors[ColorId::BLACK],
         bgTransparency));

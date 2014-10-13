@@ -89,6 +89,8 @@ Rectangle WindowView::getMapGuiBounds() const {
       return Rectangle(0, 0, renderer.getWidth() - rightBarWidthCollective,
           renderer.getHeight() - bottomBarHeightCollective);
   }
+  FAIL << "wfw";
+  return Rectangle();
 }
 
 Rectangle WindowView::getMinimapBounds() const {
@@ -711,31 +713,6 @@ PGuiElem WindowView::drawKeeperHelp() {
   return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }
 
-PGuiElem WindowView::drawBottomBandInfo(GameInfo& gameInfo) {
-  GameInfo::BandInfo& info = gameInfo.bandInfo;
-  GameInfo::SunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
-  vector<PGuiElem> topLine;
-  vector<int> topWidths;
-  int resourceSpacing = 95;
-  for (int i : All(info.numResource)) {
-    vector<PGuiElem> res;
-    res.push_back(GuiElem::viewObject(info.numResource[i].viewObject, tilesOk));
-    res.push_back(GuiElem::label(convertToString<int>(info.numResource[i].count),
-          info.numResource[i].count >= 0 ? colors[ColorId::WHITE] : colors[ColorId::RED]));
-    topWidths.push_back(resourceSpacing);
-    topLine.push_back(GuiElem::stack(mapGui->getHintCallback(info.numResource[i].name),
-            GuiElem::horizontalList(std::move(res), 30, 0)));
-  }
-  topLine.push_back(getTurnInfoGui(gameInfo.time));
-  topWidths.push_back(100);
-  topLine.push_back(getSunlightInfoGui(sunlightInfo));
-  topWidths.push_back(100);
- // vector<PGuiElem> bottomLine;
- // topLine.push_back(GuiElem::label(info.warning, colors[ColorId::RED]));
-  return /*GuiElem::verticalList(makeVec<PGuiElem>(*/GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2);
-//        GuiElem::horizontalList(std::move(bottomLine), 85, 0)), 28, 0);
-}
-
 class FpsCounter {
   public:
 
@@ -761,6 +738,29 @@ class FpsCounter {
   int curFps = 0;
   sf::Clock clock;
 } fpsCounter;
+
+PGuiElem WindowView::drawBottomBandInfo(GameInfo& gameInfo) {
+  GameInfo::BandInfo& info = gameInfo.bandInfo;
+  GameInfo::SunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
+  vector<PGuiElem> topLine;
+  int resourceSpace = 95;
+  for (int i : All(info.numResource)) {
+    vector<PGuiElem> res;
+    res.push_back(GuiElem::viewObject(info.numResource[i].viewObject, tilesOk));
+    res.push_back(GuiElem::label(convertToString<int>(info.numResource[i].count),
+          info.numResource[i].count >= 0 ? colors[ColorId::WHITE] : colors[ColorId::RED]));
+    topLine.push_back(GuiElem::stack(mapGui->getHintCallback(info.numResource[i].name),
+            GuiElem::horizontalList(std::move(res), 30, 0)));
+  }
+  vector<PGuiElem> bottomLine;
+  bottomLine.push_back(getTurnInfoGui(gameInfo.time));
+  bottomLine.push_back(getSunlightInfoGui(sunlightInfo));
+  int numTop = topLine.size();
+  int numBottom = bottomLine.size();
+  return GuiElem::verticalList(makeVec<PGuiElem>(
+        GuiElem::centerHoriz(GuiElem::horizontalList(std::move(topLine), resourceSpace, 0), numTop * resourceSpace),
+        GuiElem::centerHoriz(GuiElem::horizontalList(std::move(bottomLine), 100, 0, 3), numBottom * 100)), 28, 0);
+}
 
 PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo& villageInfo) {
   vector<PGuiElem> buttons = makeVec<PGuiElem>(
@@ -799,16 +799,16 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
   vector<PGuiElem> bottomLine;
   if (Clock::get().isPaused())
     bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().cont(); }),
-        GuiElem::label("PAUSED", colors[ColorId::RED])));
+          GuiElem::label("PAUSED", colors[ColorId::RED])));
   else
     bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().pause(); }),
-        GuiElem::label("PAUSE", colors[ColorId::LIGHT_BLUE])));
+          GuiElem::label("PAUSE", colors[ColorId::LIGHT_BLUE])));
   bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { switchZoom(); }),
-      GuiElem::label("ZOOM", colors[ColorId::LIGHT_BLUE])));
+        GuiElem::label("ZOOM", colors[ColorId::LIGHT_BLUE])));
   bottomLine.push_back(
       GuiElem::label("FPS " + convertToString(fpsCounter.getFps()), colors[ColorId::WHITE]));
   main = GuiElem::margin(GuiElem::margins(GuiElem::horizontalList(std::move(bottomLine), 90, 0), 30, 0, 0, 0),
-      std::move(main), bottomBarHeightCollective, GuiElem::BOTTOM);
+      std::move(main), 48, GuiElem::BOTTOM);
   return GuiElem::stack(GuiElem::stack(std::move(invisible)),
       GuiElem::margin(std::move(butGui), std::move(main), 55, GuiElem::TOP));
 }
@@ -846,7 +846,7 @@ void WindowView::rebuildGui() {
   tempGuiElems.back()->setBounds(Rectangle(
         renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight()));
   tempGuiElems.push_back(//GuiElem::stack(GuiElem::background(GuiElem::background2),
-        GuiElem::margins(std::move(bottom), 10, 10, 0, 0));
+        GuiElem::margins(std::move(bottom), 80, 10, 80, 0));
   tempGuiElems.back()->setBounds(Rectangle(
         0, renderer.getHeight() - bottomBarHeight, renderer.getWidth() - rightBarWidth, renderer.getHeight()));
   if (overMap) {
@@ -1237,10 +1237,11 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
   PGuiElem list = drawListGui(title, options, contentHeight, &index, &choice);
-  PGuiElem dismissBut = GuiElem::stack(makeVec<PGuiElem>(
+  PGuiElem dismissBut = GuiElem::margins(GuiElem::stack(makeVec<PGuiElem>(
         GuiElem::button([&](){ choice = -100; }),
         GuiElem::mouseHighlight(GuiElem::highlight(GuiElem::foreground1), count, &index),
-        GuiElem::centerHoriz(GuiElem::label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss"))));
+        GuiElem::centerHoriz(GuiElem::label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss")))), 
+      0, 5, 0, 0);
   PGuiElem stuff = GuiElem::scrollable(std::move(list), contentHeight, scrollPos);
   if (menuType != MAIN_MENU)
     stuff = GuiElem::margin(GuiElem::centerHoriz(std::move(dismissBut), 200), std::move(stuff), 30, GuiElem::BOTTOM);
@@ -1324,7 +1325,7 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
       mod = View::TEXT;
     conv.emplace_back(e.getText(), mod, e.getAction());
   }
-  int scrollPos = scrollDown ? 1 : 0;
+  int scrollPos = scrollDown ? options.size() - 1 : 0;
   chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, Nothing(), {});
 }
 
@@ -1338,11 +1339,17 @@ static vector<PGuiElem> getMultiLine(const string& text, Color color) {
 PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& options, int& height,
     int* highlight, int* choice) {
   vector<PGuiElem> lines;
+  vector<int> heights;
   int lineHeight = 30;
-  if (!title.empty())
+  if (!title.empty()) {
     lines.push_back(GuiElem::label(capitalFirst(title), colors[ColorId::WHITE]));
-  lines.push_back(GuiElem::empty());
-  vector<int> heights(lines.size(), lineHeight);
+    heights.push_back(lineHeight);
+    lines.push_back(GuiElem::empty());
+    heights.push_back(lineHeight);
+  } else {
+    lines.push_back(GuiElem::empty());
+    heights.push_back(lineHeight / 2);
+  }
   int numActive = 0;
   for (int i : All(options)) {
     Color color;

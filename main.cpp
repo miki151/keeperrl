@@ -254,7 +254,6 @@ int main(int argc, char* argv[]) {
   jukebox.addTrack(Jukebox::BATTLE, "music/battle4.ogg");
   jukebox.addTrack(Jukebox::BATTLE, "music/battle5.ogg");
   view->setJukebox(&jukebox);
-  GuiElem::initialize("frame.png");
   if (!WindowView::areTilesOk())
     view->presentText("", "You are playing a version of KeeperRL without graphical tiles. "
         "Besides lack of graphics and music, this "

@@ -70,7 +70,7 @@ class GuiElem {
   static PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   static PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
-      TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER};
+      TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER};
   static PGuiElem sprite(Texture& tex, Alignment align, bool vFlip = false, bool hFlip = false, int cornerOffset = 0,
       double alpha = 1);
   static PGuiElem repeatedPattern(Texture& tex);
@@ -85,7 +85,6 @@ class GuiElem {
   static PGuiElem invisible(PGuiElem content);
   static void changeBackground(int r, int g, int b);
   static void setBackground(int r, int g, int b);
-
   static Color background1;
   static Color background2;
   static Color foreground1;
