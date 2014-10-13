@@ -397,13 +397,14 @@ PTrigger Square::removeTrigger(Trigger* trigger) {
       level->removeLightSource(position, ret->getLightEmission());
       return ret;
     }
+  FAIL << "Trigger not found";
   return nullptr;
 }
 
 vector<PTrigger> Square::removeTriggers() {
   vector<PTrigger> ret;
-  for (PTrigger& t : triggers)
-    ret.push_back(removeTrigger(t.get()));
+  for (Trigger* t : extractRefs(triggers))
+    ret.push_back(removeTrigger(t));
   return ret;
 }
 
