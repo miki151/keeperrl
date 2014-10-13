@@ -2074,7 +2074,7 @@ Vec2 getSize(SettlementType type) {
     case SettlementType::CASTLE: return {30, 20};
     case SettlementType::CASTLE2: return {15, 15};
     case SettlementType::MINETOWN: return {30, 20};
-    case SettlementType::SMALL_MINETOWN: return {15, 10};
+    case SettlementType::SMALL_MINETOWN: return {15, 15};
     case SettlementType::CAVE: return {12, 12};
     case SettlementType::VAULT: return {10, 10};
   }
@@ -2145,7 +2145,7 @@ static MakerQueue* mineTownMaker(SettlementInfo info) {
 }
 
 static MakerQueue* smallMineTownMaker(SettlementInfo info) {
-  return genericMineTownMaker(info, 2, 7, Random.getRandom(2, 4), Random.getRandom(2, 5), 5, 7, 2, 4);
+  return genericMineTownMaker(info, 2, 7, Random.getRandom(3, 5), Random.getRandom(2, 5), 5, 7, 2, 4);
 }
 
 static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {

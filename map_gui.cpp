@@ -30,6 +30,7 @@ using sf::Keyboard;
 
 MapGui::MapGui(const Table<Optional<ViewIndex>>& o, ClickFun leftFun, ClickFun rightFun)
     : objects(o), leftClickFun(leftFun), rightClickFun(rightFun), fogOfWar(Level::getMaxBounds(), false) {
+  clearCenter();
 }
 
 static int fireVar = 50;

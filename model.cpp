@@ -464,8 +464,8 @@ double Model::getTime() const {
 }
 
 void Model::exitAction() {
-  enum Action { SAVE, RETIRE, OPTIONS, ABANDON, CANCEL };
-  vector<View::ListElem> options { "Save the game", "Retire", "Change options", "Abandon the game", "Cancel" };
+  enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
+  vector<View::ListElem> options { "Save the game", "Retire", "Change options", "Abandon the game" };
   auto ind = view->chooseFromList("Would you like to:", options);
   if (!ind)
     return;
