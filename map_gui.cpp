@@ -105,6 +105,9 @@ Optional<ViewId> getConnectionId(ViewId id) {
     case ViewId::CASTLE_WALL:
     case ViewId::MUD_WALL:
     case ViewId::MOUNTAIN2:
+    case ViewId::GOLD_ORE:
+    case ViewId::IRON_ORE:
+    case ViewId::STONE:
     case ViewId::WALL: return ViewId::WALL;
     default: return id;
   }
@@ -133,6 +136,9 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
     case ViewId::TORTURE_TABLE:
     case ViewId::RITUAL_ROOM:
     case ViewId::MOUNTAIN2:
+    case ViewId::GOLD_ORE:
+    case ViewId::IRON_ORE:
+    case ViewId::STONE:
     case ViewId::TRAINING_ROOM: return v8;
     default: return v4;
   }

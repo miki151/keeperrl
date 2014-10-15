@@ -497,11 +497,11 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
     line.push_back(GuiElem::label(convertToString(elem.second.count) + "   " + elem.first, col));
     widths.push_back(200);
     function<void()> action;
-    if (elem.second.count == 1)
+/*    if (elem.second.count == 1)
       action = [this, elem]() {
         inputQueue.push(UserInput(UserInput::CREATURE_BUTTON, elem.second.any.uniqueId));
       };
-    else if (chosenCreature == elem.first)
+    else */if (chosenCreature == elem.first)
       action = [this] () {
         chosenCreature = "";
       };

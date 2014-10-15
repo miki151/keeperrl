@@ -308,7 +308,7 @@ static vector<ItemType> marketItems {
   {ItemId::RING, LastingEffect::POISON_RESISTANT},
 };
 
-enum class PlayerControl::MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, SACRIFICE, EXECUTE,
+enum class PlayerControl::MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE/*, SACRIFICE*/, EXECUTE,
   LABOR, TRAINING, WORKSHOP, LAB, STUDY, WORSHIP, COPULATE, CONSUME };
 
 struct TaskOption {
@@ -338,9 +338,9 @@ static string getMoraleString(double morale) {
 
 void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
   if (getCollective()->hasTrait(c, MinionTrait::PRISONER)) {
-    mOpt = {MinionOption::PRISON, MinionOption::TORTURE, MinionOption::SACRIFICE, MinionOption::EXECUTE,
+    mOpt = {MinionOption::PRISON, MinionOption::TORTURE/*, MinionOption::SACRIFICE*/, MinionOption::EXECUTE,
       MinionOption::LABOR};
-    lOpt = {"Send to prison", "Torture", "Sacrifice", "Execute", "Labor"};
+    lOpt = {"Send to prison", "Torture"/*, "Sacrifice"*/, "Execute", "Labor"};
     return;
   }
   mOpt = {MinionOption::POSSESS, MinionOption::INFO };
@@ -414,10 +414,10 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
       getCollective()->setTrait(creature, MinionTrait::PRISONER);
       getCollective()->orderTorture(creature);
       return;
-    case MinionOption::SACRIFICE:
+/*    case MinionOption::SACRIFICE:
       getCollective()->setTrait(creature, MinionTrait::PRISONER);
       getCollective()->orderSacrifice(creature);
-      return;
+      return;*/
     case MinionOption::EXECUTE:
       getCollective()->setTrait(creature, MinionTrait::PRISONER);
       getCollective()->orderExecution(creature);
@@ -875,11 +875,15 @@ MapMemory& PlayerControl::getMemory(Level* l) {
   return (*memory.get())[l->getUniqueId()];
 }
 
-ViewObject PlayerControl::getTrapObject(TrapType type) {
+ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
   for (const PlayerControl::BuildInfo& info : concat(workshopInfo, getBuildInfo(nullptr, nullptr)))
-    if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type)
-      return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed trap")
-        .setModifier(ViewObject::Modifier::PLANNED);
+    if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type) {
+      if (!armed)
+        return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed " + Item::getTrapName(type) + " trap")
+          .setModifier(ViewObject::Modifier::PLANNED);
+      else
+        return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, Item::getTrapName(type) + " trap");
+    }
   FAIL << "trap not found" << int(type);
   return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM, "Unarmed trap");
 }
@@ -911,7 +915,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   const map<Vec2, Collective::ConstructionInfo>& constructions = getCollective()->getConstructions();
   if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
     if (traps.count(pos))
-      index.insert(getTrapObject(traps.at(pos).type()));
+      index.insert(getTrapObject(traps.at(pos).type(), traps.at(pos).armed()));
     if (getCollective()->isGuardPost(pos))
       index.insert(ViewObject(ViewId::GUARD_POST, ViewLayer::LARGE_ITEM, "Guard post"));
     if (constructions.count(pos) && !constructions.at(pos).built())

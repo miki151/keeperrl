@@ -1638,10 +1638,10 @@ CreatureAction Creature::torture(Creature* c) {
     c->addEffect(LastingEffect::STUNNED, 3, false);
     c->bleed(0.1);
     if (c->health < 0.3) {
-      if (!Random.roll(15))
+      if (!Random.roll(8))
         c->heal();
       else
-      c->bleed(1);
+        c->bleed(1);
     }
     GlobalEvents.addTortureEvent(c, this);
     spendTime(1);
@@ -2268,7 +2268,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
 }
 
 vector<const Creature*> Creature::getUnknownAttacker() const {
-  return unknownAttacker;
+  return filter(unknownAttacker, [](const Creature* c) { return !c->isDead();});
 }
 
 string Creature::getNameAndTitle() const {

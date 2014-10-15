@@ -205,7 +205,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handleNecromancy(View*);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
-  static ViewObject getTrapObject(TrapType type);
+  static ViewObject getTrapObject(TrapType, bool built);
   bool underAttack() const;
   void addToMemory(Vec2 pos);
   bool tryLockingDoor(Vec2 pos);

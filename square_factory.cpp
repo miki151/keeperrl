@@ -143,10 +143,10 @@ class Water : public Square {
   
   private:
   static MovementType getMovement(double depth) {
-    if (depth >= 1.5)
+ //   if (depth >= 1.5)
       return {{MovementTrait::SWIM, MovementTrait::FLY}};
-    else
-      return {{MovementTrait::SWIM, MovementTrait::FLY, MovementTrait::WADE}};
+/*    else
+      return {{MovementTrait::SWIM, MovementTrait::FLY, MovementTrait::WADE}};*/
   }
 
   string SERIAL(itemMessage);

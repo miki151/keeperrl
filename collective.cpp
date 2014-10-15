@@ -2210,6 +2210,8 @@ void Collective::removeFromTeam(Creature* c) {
 }
 
 void Collective::setTeamLeader(Creature* c) {
+  if (!contains(teamInfo.creatures(), c))
+    addToTeam(c);
   teamInfo.leader() = c;
 }
 

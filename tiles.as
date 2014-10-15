@@ -37,8 +37,8 @@ Tile getWallTile(int wallSet) {
     .addConnection(dirs(N, E, W), 24, wallSet);
 }
 
-Tile getMountainTile(int set) {
-  return sprite(9, set, 1).setNoShadow()
+Tile getMountainTile(int numT, int set) {
+  return sprite(numT, set, 1).setNoShadow()
     .addCorner(dirs(S, W), dirs(W), 10, set)
     .addCorner(dirs(N, W), dirs(W), 11, set)
     .addCorner(dirs(S, E), dirs(E), 12, set)
@@ -122,12 +122,12 @@ void genTiles() {
   addTile(GRASS, sprite(0, 13, 2));
   addTile(CROPS, sprite("wheatfield1"));
   addTile(CROPS2, sprite("wheatfield2"));
-  addTile(MOUNTAIN2, getMountainTile(18));
+  addTile(MOUNTAIN2, getMountainTile(9, 18));
   addTile(WALL, getWallTile(2));
   addTile(MOUNTAIN, sprite(17, 2, 2).setNoShadow());
-  addTile(GOLD_ORE, sprite("gold"));
-  addTile(IRON_ORE, sprite("iron2"));
-  addTile(STONE, sprite("stone"));
+  addTile(GOLD_ORE, getMountainTile(8, 18));
+  addTile(IRON_ORE, getMountainTile(7, 18));
+  addTile(STONE, getMountainTile(6, 18));
   addTile(SNOW, sprite(16, 2, 2).setNoShadow());
   addTile(HILL, sprite(3, 13, 2));
   addTile(WOOD_WALL, getWallTile(4));
