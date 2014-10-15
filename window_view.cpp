@@ -856,8 +856,8 @@ const int minionWindowHeight = 600;
 
 void WindowView::rebuildGui() {
   PGuiElem bottom, right, overMap;
-  int rightBarWidth;
-  int bottomBarHeight;
+  int rightBarWidth = 0;
+  int bottomBarHeight = 0;
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::PLAYER:
         right = drawRightPlayerInfo(gameInfo.playerInfo);
