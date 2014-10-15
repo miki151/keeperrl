@@ -75,7 +75,7 @@ class TempClockPause {
 };
 
 int rightBarWidthCollective = 330;
-int rightBarWidthPlayer = 220;
+int rightBarWidthPlayer = 290;
 int bottomBarHeightCollective = 62;
 int bottomBarHeightPlayer = 62;
 
@@ -151,7 +151,8 @@ void WindowView::initialize() {
     currentTileLayout = asciiLayouts;
   mapGui = new MapGui(objects,
       [this](Vec2 pos) { mapLeftClickFun(pos); },
-      [this](Vec2 pos) { mapRightClickFun(pos); });
+      [this](Vec2 pos) { mapRightClickFun(pos); },
+      [this] { refreshInput = true;} );
   MinimapGui::initialize();
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP)); });
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
@@ -350,35 +351,71 @@ PGuiElem WindowView::drawBottomPlayerInfo(GameInfo& gameInfo) {
   topWidths.push_back(100);
   vector<PGuiElem> bottomLine;
   vector<int> bottomWidths;
-  vector<KeyInfo> bottomKeys =  {
-      { "Z", "Zoom", {Keyboard::Z}},
-      { "I", "Inventory", {Keyboard::I}},
-      { "E", "Equipment", {Keyboard::E}},
-      { "F1", "More commands", {Keyboard::F1}},
-  };
-  if (info.possessed)
-    bottomKeys = concat({{ "U", "Leave minion", {Keyboard::U}}}, bottomKeys);
-  if (info.spellcaster)
-    bottomKeys = concat({{ "S", "Cast spell", {Keyboard::S}}}, bottomKeys);
-  for (int i : All(bottomKeys)) {
-    string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
-    Event::KeyEvent key = bottomKeys[i].event;
-    bottomLine.push_back(GuiElem::stack(
-          GuiElem::label(text, colors[ColorId::LIGHT_BLUE]),
-          GuiElem::button([this, key]() { keyboardAction(key);})));
-    bottomWidths.push_back(renderer.getTextLength(text));
-  }
   int keySpacing = 50;
-  return GuiElem::verticalList(makeVec<PGuiElem>(GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2),
-        GuiElem::horizontalList(std::move(bottomLine), bottomWidths, keySpacing)), 28, 0);
-}
-
-PGuiElem WindowView::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
-  return drawPlayerStats(info);
+  return //GuiElem::verticalList(makeVec<PGuiElem>(
+        GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2);
+        //GuiElem::horizontalList(std::move(bottomLine), bottomWidths, keySpacing)), 28, 0);
 }
 
 const int legendLineHeight = 30;
-const int legendStartHeight = 70;
+
+PGuiElem WindowView::drawPlayerHelp(GameInfo::PlayerInfo& info) {
+  vector<PGuiElem> lines;
+  vector<KeyInfo> bottomKeys =  {
+      { "I", "Inventory", {Keyboard::I}},
+      { "E", "Equipment", {Keyboard::E}},
+      { "Enter", "Interact or pick up", {Keyboard::Return}},
+      { "D", "Drop item", {Keyboard::D}},
+      { "A", "Apply item", {Keyboard::A}},
+      { "T", "Throw item", {Keyboard::T}},
+      { "S", "Cast spell", {Keyboard::S}},
+      { "U", "Leave minion", {Keyboard::U}},
+      { "C", "Chat with someone", {Keyboard::C}},
+      { "H", "Hide", {Keyboard::H}},
+      { "P", "Pay debt", {Keyboard::P}},
+      { "M", "Message history", {Keyboard::M}},
+      { "Space", "Wait", {Keyboard::Space}},
+      { "F1", "More actions", {Keyboard::F1}},
+  };
+/*  if (info.possessed)
+    bottomKeys = concat({{ "U", "Leave minion", {Keyboard::U}}}, bottomKeys);
+  if (info.spellcaster)
+    bottomKeys = concat({{ "S", "Cast spell", {Keyboard::S}}}, bottomKeys);*/
+  for (int i : All(bottomKeys)) {
+    string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
+    Event::KeyEvent key = bottomKeys[i].event;
+    lines.push_back(GuiElem::stack(
+          GuiElem::label(text, colors[ColorId::LIGHT_BLUE]),
+          GuiElem::button([this, key]() { keyboardAction(key);})));
+  }
+  return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
+}
+
+PGuiElem WindowView::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
+  vector<PGuiElem> buttons = makeVec<PGuiElem>(
+    GuiElem::icon(GuiElem::MINION),
+    GuiElem::icon(GuiElem::HELP));
+  for (int i : All(buttons)) {
+    if (int(minionTab) == i)
+      buttons[i] = GuiElem::border2(std::move(buttons[i]));
+    else
+      buttons[i] = GuiElem::margins(std::move(buttons[i]), 6, 6, 6, 6);
+    buttons[i] = GuiElem::stack(std::move(buttons[i]),
+        GuiElem::button([this, i]() { minionTab = MinionTab(i); }));
+  }
+  PGuiElem main;
+  vector<pair<MinionTab, PGuiElem>> elems = makeVec<pair<MinionTab, PGuiElem>>(
+    make_pair(MinionTab::STATS, drawPlayerStats(info)),
+    make_pair(MinionTab::HELP, drawPlayerHelp(info)));
+  for (auto& elem : elems)
+    if (elem.first == minionTab)
+      main = std::move(elem.second);
+  main = GuiElem::margins(std::move(main), 15, 24, 15, 5);
+  int numButtons = buttons.size();
+  PGuiElem butGui = GuiElem::margins(
+      GuiElem::centerHoriz(GuiElem::horizontalList(std::move(buttons), 50, 0), numButtons * 50), 0, 5, 0, 5);
+  return GuiElem::margin(std::move(butGui), std::move(main), 55, GuiElem::TOP);
+}
 
 static Color getBonusColor(int bonus) {
   if (bonus < 0)
@@ -795,7 +832,7 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
     else
       invisible.push_back(GuiElem::invisible(std::move(elem.second)));
   main = GuiElem::margins(std::move(main), 15, 15, 15, 5);
-  PGuiElem butGui = GuiElem::margins(GuiElem::horizontalList(std::move(buttons), 50, 0), 0, 0, 0, 5);
+  PGuiElem butGui = GuiElem::margins(GuiElem::horizontalList(std::move(buttons), 50, 0), 0, 5, 0, 5);
   vector<PGuiElem> bottomLine;
   if (Clock::get().isPaused())
     bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().cont(); }),
@@ -1616,23 +1653,22 @@ UserInput WindowView::getAction() {
 vector<KeyInfo> keyInfo {
 //  { "I", "Inventory", {Keyboard::I}},
 //  { "E", "Manage equipment", {Keyboard::E}},
-  { "Enter", "Pick up items or interact with square", {Keyboard::Return}},
-  { "D", "Drop item", {Keyboard::D}},
+//  { "Enter", "Pick up items or interact with square", {Keyboard::Return}},
+//  { "D", "Drop item", {Keyboard::D}},
   { "Shift + D", "Extended drop - choose the number of items", {Keyboard::D, false, false, true}},
   { "Shift + P", "Extended pick up - choose the number of items", {Keyboard::P, false, false, true}},
-  { "A", "Apply item", {Keyboard::A}},
-  { "T", "Throw item", {Keyboard::T}},
+//  { "A", "Apply item", {Keyboard::A}},
+//  { "T", "Throw item", {Keyboard::T}},
 //  { "S", "Cast spell", {Keyboard::S}},
-  { "M", "Show message history", {Keyboard::M}},
-  { "C", "Chat with someone", {Keyboard::C}},
-  { "H", "Hide", {Keyboard::H}},
-  { "P", "Pay debt", {Keyboard::P}},
+//  { "M", "Show message history", {Keyboard::M}},
+//  { "C", "Chat with someone", {Keyboard::C}},
+//  { "H", "Hide", {Keyboard::H}},
+//  { "P", "Pay debt", {Keyboard::P}},
   //{ "U", "Unpossess", {Keyboard::U}},
-  { "Space", "Wait", {Keyboard::Space}},
+//  { "Space", "Wait", {Keyboard::Space}},
   //{ "Z", "Zoom in/out", {Keyboard::Z}},
-  { "Shift + Z", "World map", {Keyboard::Z, false, false, true}},
   { "F2", "Change settings", {Keyboard::F2}},
-  { "Escape", "Quit", {Keyboard::Escape}},
+//  { "Escape", "Quit", {Keyboard::Escape}},
 };
 
 Optional<Event::KeyEvent> WindowView::getEventFromMenu() {

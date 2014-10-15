@@ -28,7 +28,9 @@ class WindowRenderer;
 class MapGui : public GuiElem {
   public:
   typedef function<void(Vec2)> ClickFun;
-  MapGui(const Table<Optional<ViewIndex>>& objects, ClickFun leftClickFun, ClickFun rightClickFun);
+  typedef function<void()> RefreshFun;
+  MapGui(const Table<Optional<ViewIndex>>& objects, ClickFun leftClickFun, ClickFun rightClickFun,
+      RefreshFun refreshFun);
 
   virtual void render(Renderer&) override;
   virtual void onLeftClick(Vec2) override;
@@ -65,6 +67,7 @@ class MapGui : public GuiElem {
   Rectangle levelBounds = Rectangle(1, 1);
   ClickFun leftClickFun;
   ClickFun rightClickFun;
+  RefreshFun refreshFun;
   Optional<Vec2> mouseHeldPos;
   Optional<Vec2> highlightedPos;
   string hint;

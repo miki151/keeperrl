@@ -27,6 +27,10 @@ void CreatureView::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(CreatureView);
 
+bool CreatureView::staticPosition() const {
+  return true;
+}
+
 void CreatureView::updateVisibleCreatures() {
   visibleEnemies.clear();
   visibleFriends.clear();

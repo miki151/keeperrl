@@ -85,6 +85,7 @@ class WindowView: public View {
   PGuiElem drawBottomPlayerInfo(GameInfo&);
   PGuiElem drawRightPlayerInfo(GameInfo::PlayerInfo&);
   PGuiElem drawPlayerStats(GameInfo::PlayerInfo&);
+  PGuiElem drawPlayerHelp(GameInfo::PlayerInfo&);
   PGuiElem drawBottomBandInfo(GameInfo&);
   PGuiElem drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo&);
   PGuiElem drawBuildings(GameInfo::BandInfo& info);
@@ -143,12 +144,12 @@ class WindowView: public View {
     int& active, CollectiveTab tab);
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
 
-  enum class LegendOption {
+  enum class MinionTab {
     STATS,
-    OBJECTS,
+    HELP,
   };
-  
-  LegendOption legendOption = LegendOption::STATS;
+
+  MinionTab minionTab = MinionTab::STATS;
 
   Table<Optional<ViewIndex>> objects;
   GameInfo gameInfo;

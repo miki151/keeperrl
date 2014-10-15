@@ -27,7 +27,7 @@ class CreatureView {
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const = 0;
   virtual void refreshGameInfo(GameInfo&) const = 0;
   virtual Vec2 getPosition() const = 0;
-  virtual bool staticPosition() const { return true; }
+  virtual bool staticPosition() const;
   virtual bool canSee(const Creature*) const = 0;
   virtual bool canSee(Vec2 position) const = 0;
   virtual const Level* getViewLevel() const = 0;

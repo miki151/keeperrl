@@ -28,8 +28,9 @@
 
 using sf::Keyboard;
 
-MapGui::MapGui(const Table<Optional<ViewIndex>>& o, ClickFun leftFun, ClickFun rightFun)
-    : objects(o), leftClickFun(leftFun), rightClickFun(rightFun), fogOfWar(Level::getMaxBounds(), false) {
+MapGui::MapGui(const Table<Optional<ViewIndex>>& o, ClickFun leftFun, ClickFun rightFun, RefreshFun refFun)
+    : objects(o), leftClickFun(leftFun), rightClickFun(rightFun), refreshFun(refFun),
+    fogOfWar(Level::getMaxBounds(), false) {
   clearCenter();
 }
 
@@ -212,6 +213,7 @@ void MapGui::onMouseMove(Vec2 v) {
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->squareWidth();
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->squareHeight();
+    refreshFun();
   }
 }
 
@@ -225,6 +227,7 @@ void MapGui::onMouseRelease() {
     }
     mouseOffset.x = mouseOffset.y = 0;
     isScrollingNow = false;
+    refreshFun();
   }
   mouseHeldPos = Nothing();
 }

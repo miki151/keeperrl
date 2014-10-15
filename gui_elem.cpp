@@ -95,59 +95,59 @@ PGuiElem GuiElem::repeatedPattern(Texture& tex) {
         }));
 }
 
-PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, int cornerOffset, double alpha) {
+PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset, double alpha) {
   return PGuiElem(new DrawCustom(
-        [&tex, align, cornerOffset, alpha, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
+        [&tex, align, offset, alpha, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
           Vec2 size(tex.getSize().x, tex.getSize().y);
           Vec2 origin;
           Vec2 pos;
           switch (align) {
             case Alignment::TOP:
-              pos = bounds.getTopLeft() + Vec2(cornerOffset, 0);
-              size = Vec2(bounds.getW() - 2 * cornerOffset, size.y);
+              pos = bounds.getTopLeft() + offset;
+              size = Vec2(bounds.getW() - 2 * offset.x, size.y);
               break;
             case Alignment::BOTTOM:
-              pos = bounds.getBottomLeft() + Vec2(cornerOffset, -size.y);
-              size = Vec2(bounds.getW() - 2 * cornerOffset, size.y);
+              pos = bounds.getBottomLeft() + Vec2(0, -size.y) + offset;
+              size = Vec2(bounds.getW() - 2 * offset.x, size.y);
               break;
             case Alignment::RIGHT:
-              pos = bounds.getTopRight() + Vec2(-size.x, cornerOffset);
-              size = Vec2(size.x, bounds.getH() - 2 * cornerOffset);
+              pos = bounds.getTopRight() + Vec2(-size.x, 0) + offset;
+              size = Vec2(size.x, bounds.getH() - 2 * offset.y);
               break;
             case Alignment::LEFT:
-              pos = bounds.getTopLeft() + Vec2(0, cornerOffset);
-              size = Vec2(size.x, bounds.getH() - 2 * cornerOffset);
+              pos = bounds.getTopLeft() + offset;
+              size = Vec2(size.x, bounds.getH() - 2 * offset.y);
               break;
             case Alignment::TOP_LEFT:
-              pos = bounds.getTopLeft() + Vec2(cornerOffset, 0);
+              pos = bounds.getTopLeft() + offset;
               break;
             case Alignment::TOP_RIGHT:
-              pos = bounds.getTopRight() - Vec2(size.x, 0) + Vec2(cornerOffset, 0);
+              pos = bounds.getTopRight() - Vec2(size.x, 0) + offset;
               break;
             case Alignment::BOTTOM_RIGHT:
-              pos = bounds.getBottomRight() - size + Vec2(cornerOffset, 0);
+              pos = bounds.getBottomRight() - size + offset;
               break;
             case Alignment::BOTTOM_LEFT:
-              pos = bounds.getBottomLeft() - Vec2(0, size.y) + Vec2(cornerOffset, 0);
+              pos = bounds.getBottomLeft() - Vec2(0, size.y) + offset;
               break;
             case Alignment::CENTER:
-              pos = bounds.middle() - Vec2(size.x / 2, size.y / 2);
+              pos = bounds.middle() - Vec2(size.x / 2, size.y / 2) + offset;
               break;
             case Alignment::TOP_CENTER:
-              pos = (bounds.getTopLeft() + bounds.getTopRight()) / 2 - Vec2(size.x / 2, 0);
+              pos = (bounds.getTopLeft() + bounds.getTopRight()) / 2 - Vec2(size.x / 2, 0) + offset;
               break;
             case Alignment::LEFT_CENTER:
-              pos = (bounds.getTopLeft() + bounds.getBottomLeft()) / 2 - Vec2(0, size.y / 2);
+              pos = (bounds.getTopLeft() + bounds.getBottomLeft()) / 2 - Vec2(0, size.y / 2) + offset;
               break;
             case Alignment::BOTTOM_CENTER:
-              pos = (bounds.getBottomLeft() + bounds.getBottomRight()) / 2 - Vec2(size.x / 2, size.y);
+              pos = (bounds.getBottomLeft() + bounds.getBottomRight()) / 2 - Vec2(size.x / 2, size.y) + offset;
               break;
             case Alignment::RIGHT_CENTER:
-              pos = (bounds.getTopRight() + bounds.getBottomRight()) / 2 - Vec2(size.x, size.y / 2);
+              pos = (bounds.getTopRight() + bounds.getBottomRight()) / 2 - Vec2(size.x, size.y / 2) + offset;
               break;
             case Alignment::VERTICAL_CENTER:
-              pos = (bounds.getTopLeft() + bounds.getTopRight()) / 2 - Vec2(size.x / 2, -cornerOffset);
-              size = Vec2(size.x, bounds.getH() - 2 * cornerOffset);
+              pos = (bounds.getTopLeft() + bounds.getTopRight()) / 2 - Vec2(size.x / 2, 0) + offset;
+              size = Vec2(size.x, bounds.getH() - 2 * offset.y);
               break;
           }
           if (vFlip) {
@@ -732,6 +732,8 @@ enum TexId {
   CORNER_BOTTOM_RIGHT,
   SCROLL_UP,
   SCROLL_DOWN,
+  WINDOW_CORNER,
+  WINDOW_VERT_BAR,
 };
 
 const int border2Width = 6;
@@ -793,6 +795,8 @@ Texture& get(TexId id) {
     m[CORNER_BOTTOM_RIGHT].loadFromFile("ui/cornerBOTTOMR.png");
     m[SCROLL_UP].loadFromFile("ui/up.png");
     m[SCROLL_DOWN].loadFromFile("ui/down.png");
+    m[WINDOW_CORNER].loadFromFile("ui/corner1.png");
+    m[WINDOW_VERT_BAR].loadFromFile("ui/vertibarmsg1.png");
   }
   return m[id];
 }
@@ -895,14 +899,14 @@ PGuiElem GuiElem::highlight(Color c) {
 PGuiElem GuiElem::border2(PGuiElem content) {
   double alpha = 1;
   return stack(makeVec<PGuiElem>(std::move(content),
-        sprite(get(BORDER_TOP), Alignment::TOP, false, false, border2Width, alpha),
-        sprite(get(BORDER_BOTTOM), Alignment::BOTTOM, false, false, border2Width, alpha),
-        sprite(get(BORDER_LEFT), Alignment::LEFT, false, false, border2Width, alpha),
-        sprite(get(BORDER_RIGHT), Alignment::RIGHT, false, false, border2Width, alpha),
-        sprite(get(BORDER_TOP_LEFT), Alignment::TOP_LEFT, false, false, 0, alpha),
-        sprite(get(BORDER_TOP_RIGHT), Alignment::TOP_RIGHT, false, false, 0, alpha),
-        sprite(get(BORDER_BOTTOM_LEFT), Alignment::BOTTOM_LEFT, false, false, 0, alpha),
-        sprite(get(BORDER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT, false, false, 0, alpha)));
+        sprite(get(BORDER_TOP), Alignment::TOP, false, false, Vec2(border2Width, 0), alpha),
+        sprite(get(BORDER_BOTTOM), Alignment::BOTTOM, false, false, Vec2(border2Width, 0), alpha),
+        sprite(get(BORDER_LEFT), Alignment::LEFT, false, false, Vec2(0, border2Width), alpha),
+        sprite(get(BORDER_RIGHT), Alignment::RIGHT, false, false, Vec2(0, border2Width), alpha),
+        sprite(get(BORDER_TOP_LEFT), Alignment::TOP_LEFT, false, false, Vec2(0, 0), alpha),
+        sprite(get(BORDER_TOP_RIGHT), Alignment::TOP_RIGHT, false, false, Vec2(0, 0), alpha),
+        sprite(get(BORDER_BOTTOM_LEFT), Alignment::BOTTOM_LEFT, false, false, Vec2(0, 0), alpha),
+        sprite(get(BORDER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT, false, false, Vec2(0, 0), alpha)));
 }
 
 PGuiElem GuiElem::insideBackground(PGuiElem content) {
@@ -921,16 +925,15 @@ PGuiElem GuiElem::insideBackground(PGuiElem content) {
 }
 
 PGuiElem GuiElem::border(PGuiElem content) {
-  double alpha = 1;
   return stack(makeVec<PGuiElem>(std::move(content),
-        sprite(get(HORI_BAR), Alignment::BOTTOM, true, false, border2Width, alpha),
-        sprite(get(HORI_BAR), Alignment::TOP, false, false, border2Width, alpha),
-        sprite(get(VERT_BAR), Alignment::RIGHT, false, true, border2Width, alpha),
-        sprite(get(VERT_BAR), Alignment::LEFT, false, false, border2Width, alpha),
-        sprite(get(CORNER_TOP_LEFT), Alignment::BOTTOM_RIGHT, true, true, 8, alpha),
-        sprite(get(CORNER_TOP_LEFT), Alignment::BOTTOM_LEFT, true, false, -8, alpha),
-        sprite(get(CORNER_TOP_LEFT), Alignment::TOP_RIGHT, false, true, 8, alpha),
-        sprite(get(CORNER_TOP_LEFT), Alignment::TOP_LEFT, false, false, -8, alpha)));
+        sprite(get(HORI_BAR), Alignment::BOTTOM, true, false),
+        sprite(get(HORI_BAR), Alignment::TOP, false, false),
+        sprite(get(WINDOW_VERT_BAR), Alignment::RIGHT, false, true),
+        sprite(get(WINDOW_VERT_BAR), Alignment::LEFT, false, false),
+        sprite(get(WINDOW_CORNER), Alignment::BOTTOM_RIGHT, true, true, Vec2(8, 2)),
+        sprite(get(WINDOW_CORNER), Alignment::BOTTOM_LEFT, true, false, Vec2(-8, 2)),
+        sprite(get(WINDOW_CORNER), Alignment::TOP_RIGHT, false, true, Vec2(8, -2)),
+        sprite(get(WINDOW_CORNER), Alignment::TOP_LEFT, false, false, Vec2(-8, -2))));
 }
 
 PGuiElem GuiElem::window(PGuiElem content) {
@@ -949,7 +952,7 @@ PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {
           margin(sprite(get(HORI_BAR_MINI), Alignment::BOTTOM), empty(), 85, TOP),
           sprite(get(VERT_BAR), Alignment::RIGHT, false, true),
           sprite(get(VERT_BAR), Alignment::LEFT),
-          sprite(get(CORNER_TOP_LEFT), Alignment::TOP_LEFT, false, false, -8),
+          sprite(get(CORNER_TOP_LEFT), Alignment::TOP_LEFT, false, false, Vec2(-8, 0)),
           sprite(get(CORNER_TOP_RIGHT), Alignment::TOP_RIGHT),
           sprite(get(CORNER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT)
       )),
@@ -958,7 +961,7 @@ PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {
           sprite(get(HORI_LINE), Alignment::BOTTOM),
  //         sprite(get(HORI_MIDDLE), Alignment::BOTTOM_CENTER),
           sprite(get(HORI_CORNER1), Alignment::BOTTOM_LEFT),
-          sprite(get(HORI_CORNER2), Alignment::BOTTOM_RIGHT, false, false, 93))),
+          sprite(get(HORI_CORNER2), Alignment::BOTTOM_RIGHT, false, false, Vec2(93, 0)))),
       rightBarWidth,
       RIGHT);
 }
