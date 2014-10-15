@@ -265,7 +265,7 @@ int main(int argc, char* argv[]) {
     clearAndInitialize();
     auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
         View::ListElem("Choose your role:", View::TITLE),
-          "Keeper", "Adventurer", "Adventurer vs. Keeper",
+          "Keeper", "Adventurer",
         View::ListElem("Or simply:", View::TITLE),
           "Load a game", "Change settings", "View high scores", "View credits", "Quit"},
         lastIndex, View::MAIN_MENU);
@@ -273,14 +273,14 @@ int main(int argc, char* argv[]) {
       continue;
     lastIndex = *choice;
     Optional<string> savedGame;
-    if (choice == 2) {
+    if (choice == 1) {
       savedGame = chooseSaveFile({
           {GameType::RETIRED_KEEPER, "Retired keeper games:"}},
           "No retired games found.", view.get());
       if (!savedGame)
         continue;
     }
-    if (choice == 3) {
+    if (choice == 2) {
       savedGame = chooseSaveFile({
           {GameType::KEEPER, "Keeper games:"},
           {GameType::ADVENTURER, "Adventurer games:"}},
@@ -288,7 +288,7 @@ int main(int argc, char* argv[]) {
       if (!savedGame)
         continue;
     }
-    if (choice == 4) {
+    if (choice == 3) {
       Options::handle(view.get(), OptionSet::GENERAL);
       continue;
     }
@@ -296,21 +296,17 @@ int main(int argc, char* argv[]) {
       if (!Options::handleOrExit(view.get(), OptionSet::KEEPER, -1))
         continue;
     } 
-    if (choice == 1 && forceMode == -1) {
-      if (!Options::handleOrExit(view.get(), OptionSet::ADVENTURER, -1))
-        continue;
-    } 
-    if (choice == 5) {
+    if (choice == 4) {
       unique_ptr<Model> m(new Model(view.get()));
       m->showHighscore();
       continue;
     }
-    if (choice == 6) {
+    if (choice == 5) {
       unique_ptr<Model> m(new Model(view.get()));
       m->showCredits();
       continue;
     }
-    if (choice == 7) {
+    if (choice == 6) {
       return 0;
     }
     unique_ptr<Model> model;
@@ -320,10 +316,8 @@ int main(int argc, char* argv[]) {
     for (int i : Range(5)) {
       try {
         if (savedGame) {
-          model = loadGame(*savedGame, choice == 3);
+          model = loadGame(*savedGame, choice == 2);
         }
-        else if (choice == 1)
-          model.reset(Model::heroModel(view.get()));
         else {
           CHECK(choice == 0);
           model.reset(Model::collectiveModel(view.get()));
