@@ -769,12 +769,10 @@ vector<Vec2> Collective::getExtendedTiles(int maxRadius, int minRadius) const {
   map<Vec2, int> extendedTiles;
   vector<Vec2> extendedQueue;
   for (Vec2 pos : getAllSquares()) {
-    for (Vec2 v : pos.neighbors8())
-      if (v.inRectangle(getLevel()->getBounds()) && !containsSquare(v) && !extendedTiles.count(v) 
-          && getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK})) {
-        extendedTiles[v] = 1;
-        extendedQueue.push_back(v);
-      }
+    if (!extendedTiles.count(pos))  {
+      extendedTiles[pos] = 1;
+      extendedQueue.push_back(pos);
+    }
   }
   for (int i = 0; i < extendedQueue.size(); ++i) {
     Vec2 pos = extendedQueue[i];
@@ -2216,6 +2214,8 @@ void Collective::setTeamLeader(Creature* c) {
 }
 
 void Collective::cancelTeamLeader() {
+  if (teamInfo.creatures().size() == 1)
+    teamInfo.creatures().clear();
   teamInfo.leader() = nullptr;
 }
 

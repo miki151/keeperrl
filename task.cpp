@@ -752,7 +752,15 @@ namespace {
 
 class StealFrom : public NonTransferable {
   public:
-  StealFrom(Collective* col) : collective(col) {}
+
+  StealFrom(Collective* collective) {
+    for (Vec2 pos : collective->getSquares(SquareId::TREASURE_CHEST)) {
+      vector<Item*> gold = collective->getLevel()->getSquare(pos)->getItems(Item::classPredicate(ItemClass::GOLD));
+      if (!gold.empty())
+        items.push_back({pos, transform2<Item::Id>(gold, [] (Item* it) { return it->getUniqueId();})});
+//      if (items.
+    }
+  }
 
   virtual MoveInfo getMove(Creature* c) override {
     return NoMove;
@@ -771,14 +779,19 @@ class StealFrom : public NonTransferable {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
-      & SVAR(collective);
+      & SVAR(items);
     CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(StealFrom);
 
   private:
-  Collective* SERIAL(collective);
+  struct ItemInfo : public NamedTupleBase<Vec2, vector<Item::Id>> {
+    NAMED_TUPLE_STUFF(ItemInfo);
+    NAME_ELEM(0, pos);
+    NAME_ELEM(1, ids);
+  };
+  vector<ItemInfo> SERIAL(items);
 };
 
 }

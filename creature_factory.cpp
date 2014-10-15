@@ -1097,10 +1097,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::BANDIT: 
       return CATTR(
           c.viewId = ViewId::BANDIT;
-          c.speed = 80;
+          c.speed = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 15;
-          c.dexterity = 13;
+          c.strength = 18;
+          c.dexterity = 15;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;

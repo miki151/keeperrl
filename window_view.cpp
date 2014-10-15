@@ -353,7 +353,7 @@ PGuiElem WindowView::drawBottomPlayerInfo(GameInfo& gameInfo) {
   vector<int> bottomWidths;
   int keySpacing = 50;
   return //GuiElem::verticalList(makeVec<PGuiElem>(
-        GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2);
+        GuiElem::margins(GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2), 20, 0, 20, 0);
         //GuiElem::horizontalList(std::move(bottomLine), bottomWidths, keySpacing)), 28, 0);
 }
 
@@ -540,7 +540,7 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
     }
     list.push_back(GuiElem::horizontalList(std::move(line), 150, 0));
   }
-  list.push_back(GuiElem::label("Click on minion to possess.", colors[ColorId::LIGHT_BLUE]));
+///  list.push_back(GuiElem::label("Click on minion to possess.", colors[ColorId::LIGHT_BLUE]));
   list.push_back(GuiElem::empty());
   vector<PGuiElem> res;
   res.push_back(GuiElem::label("Next payout [" + convertToString(info.payoutTimeRemaining) + "]:",
@@ -780,7 +780,7 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo& gameInfo) {
   GameInfo::BandInfo& info = gameInfo.bandInfo;
   GameInfo::SunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
   vector<PGuiElem> topLine;
-  int resourceSpace = 95;
+  int resourceSpace = 110;
   for (int i : All(info.numResource)) {
     vector<PGuiElem> res;
     res.push_back(GuiElem::viewObject(info.numResource[i].viewObject, tilesOk));
@@ -796,7 +796,7 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo& gameInfo) {
   int numBottom = bottomLine.size();
   return GuiElem::verticalList(makeVec<PGuiElem>(
         GuiElem::centerHoriz(GuiElem::horizontalList(std::move(topLine), resourceSpace, 0), numTop * resourceSpace),
-        GuiElem::centerHoriz(GuiElem::horizontalList(std::move(bottomLine), 100, 0, 3), numBottom * 100)), 28, 0);
+        GuiElem::centerHoriz(GuiElem::horizontalList(std::move(bottomLine), 140, 0, 3), numBottom * 140)), 28, 0);
 }
 
 PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo& villageInfo) {

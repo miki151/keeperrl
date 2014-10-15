@@ -295,6 +295,7 @@ void Trigger::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Torch);
   REGISTER_TYPE(ar, Trap);
   REGISTER_TYPE(ar, Portal);
+  REGISTER_TYPE(ar, MeteorShower);
 }
 
 REGISTER_TYPES(Trigger);

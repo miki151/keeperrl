@@ -1217,7 +1217,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Door(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW));
     case SquareId::TRIBE_DOOR:
-        return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door - click to lock.")
+        return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door - right click to lock.")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), s.get<const Tribe*>(), 100);
     case SquareId::BARRICADE:
         return new Barricade(ViewObject(ViewId::BARRICADE, ViewLayer::FLOOR, "Barricade")

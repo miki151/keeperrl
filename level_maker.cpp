@@ -321,14 +321,28 @@ class Connector : public LevelMaker {
       if (p1 != p2)
         connect(builder, p1, p2, area);
     }
-    Dijkstra dijkstra(area, p1, 10000, [&] (Vec2 pos) {
-        if (builder->getSquare(pos)->canEnterEmpty({MovementTrait::WALK}))
-          return 1.;
-        else
-          return ShortestPath::infinity;});
-    for (Vec2 v : area)
-      if (connectPred->apply(builder, v) && !dijkstra.isReachable(v))
-        connect(builder, p1, v, area);
+    auto dijkstraFun = [&] (Vec2 pos) {
+      if (builder->getSquare(pos)->canEnterEmpty({MovementTrait::WALK}))
+        return 1.;
+      else
+        return ShortestPath::infinity;};
+    Table<bool> connected(area, false);
+    while (1) {
+      Dijkstra dijkstra(area, p1, 10000, dijkstraFun);
+      for (Vec2 v : area)
+        if (dijkstra.isReachable(v))
+          connected[v] = true;
+      bool found = false;
+      for (Vec2 v : area)
+        if (connectPred->apply(builder, v) && !connected[v]) {
+          connect(builder, p1, v, area);
+          p1 = v;
+          found = true;
+          break;
+         }
+      if (!found)
+        break;
+    }
   }
   
   private:
