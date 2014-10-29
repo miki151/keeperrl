@@ -77,6 +77,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   bool isTurnBased();
   void retire();
+  void unpossess();
 
   struct RoomInfo {
     string name;
@@ -113,7 +114,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void onWorshipEpithet(EpithetId);
   Creature* getCreature(UniqueEntity<Creature>::Id id);
   void handleCreatureButton(Creature* c, View* view);
-  void unpossess();
   void possess(const Creature*, View*);
   struct BuildInfo {
     struct SquareInfo {

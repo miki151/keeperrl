@@ -242,29 +242,22 @@ void PlayerControl::unpossess() {
   if (possessed == getKeeper())
     lastControlKeeperQuestion = getCollective()->getTime();
   CHECK(possessed);
+  if (possessed->getLevel() != getLevel())
+    model->getView()->resetCenter();
   if (possessed->isPlayer())
     possessed->popController();
   ViewObject::setHallu(false);
   getCollective()->cancelTeamLeader();
+  model->getView()->stopClock();
 }
 
 void PlayerControl::render(View* view) {
-  Creature* possessed = getCollective()->getTeamLeader();
   if (retired)
     return;
-  if (possessed && (!possessed->isPlayer() || possessed->isDead())) {
-    if ((possessed->isDead() || possessed->isAffected(LastingEffect::SLEEP)) && !getCollective()->getTeam().empty()) {
- //     possess(team.front(), view);
-    } else {
-      if (possessed->getLevel() != getLevel())
-        view->resetCenter();
-      unpossess();
-    }
-  }
+  Creature* possessed = getCollective()->getTeamLeader();
   if (!possessed) {
     view->updateView(this);
-  } else
-    view->stopClock();
+  }
   if (showWelcomeMsg && Options::getValue(OptionId::HINTS)) {
     view->updateView(this);
     showWelcomeMsg = false;
@@ -957,8 +950,8 @@ int PlayerControl::getImpCost() const {
 
 class MinionController : public Player {
   public:
-  MinionController(Creature* c, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory)
-    : Player(c, m, false, memory) {}
+  MinionController(Creature* c, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory, PlayerControl* ctrl)
+    : Player(c, m, false, memory), control(ctrl) {}
 
   virtual void onKilled(const Creature* attacker) override {
     showHistory();
@@ -966,34 +959,37 @@ class MinionController : public Player {
   }
 
   virtual bool unpossess() override {
+    control->unpossess();
     return true;
   }
 
-  virtual void onFellAsleep() {
-    if (model->getView()->yesOrNoPrompt("You fell asleep. Do you want to leave your minion?"))
-      creature->popController();
+  virtual void onFellAsleep() override {
+    model->getView()->presentText("Important!", "You fall asleep. You loose control of your minion.");
+    unpossess();
   }
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Player);
+    ar& SUBCLASS(Player) & SVAR(control);
   }
 
   SERIALIZATION_CONSTRUCTOR(MinionController);
+
+  private:
+  PlayerControl* SERIAL(control);
 };
 
 void PlayerControl::possess(const Creature* cr, View* view) {
   Creature* possessed = getCollective()->getTeamLeader();
   if (possessed && possessed != cr && possessed->isPlayer())
     possessed->popController();
-  view->stopClock();
   CHECK(contains(getCreatures(), cr));
   CHECK(!cr->isDead());
   Creature* c = const_cast<Creature*>(cr);
   if (c->isAffected(LastingEffect::SLEEP))
     c->removeEffect(LastingEffect::SLEEP);
   getCollective()->freeFromGuardPost(c);
-  c->pushController(PController(new MinionController(c, model, memory.get())));
+  c->pushController(PController(new MinionController(c, model, memory.get(), this)));
   getCollective()->setTeamLeader(c);
 }
 

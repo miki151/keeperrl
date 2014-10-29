@@ -87,8 +87,6 @@ class Predicate {
   PredFun predFun;
 };
 
-}
-
 class Empty : public LevelMaker {
   public:
   Empty(SquareType s, Optional<SquareAttrib> attr = Nothing()) : square(s), attrib(attr) {}
@@ -665,17 +663,6 @@ class Lake : public Blob {
       builder->putSquare(pos, SquareFactory::getWater(double(edgeDist) / 2), SquareId::WATER, SquareAttrib::LAKE);
   }
 };
-
-Vec2 LevelMaker::getRandomExit(Rectangle rect, int minCornerDist) {
-  CHECK(rect.getW() > 2 * minCornerDist && rect.getH() > 2 * minCornerDist);
-  int w1 = Random.getRandom(2);
-  int w2 = Random.getRandom(2);
-  int d1 = Random.getRandom(minCornerDist, rect.getW() - minCornerDist);
-  int d2 = Random.getRandom(minCornerDist, rect.getH() - minCornerDist);
-  return Vec2(
-        rect.getPX() + d1 * w1 + (1 - w1) * w2 * (rect.getW() - 1),
-        rect.getPY() + d2 * (1 - w1) + w1 * w2 * (rect.getH() - 1));
-}
 
 struct BuildingInfo {
   SquareType wall;
@@ -1671,6 +1658,8 @@ class CastleExit : public LevelMaker {
   CreatureId guardId;
 };
 
+}
+
 static LevelMaker* underground(bool monsters, CreatureFactory waterFactory, CreatureFactory lavaFactory) {
   MakerQueue* queue = new MakerQueue();
   if (Random.roll(1)) {
@@ -2386,3 +2375,16 @@ LevelMaker* LevelMaker::grassAndTrees() {
   queue->addMaker(new Forrest(0.8, 0.5, SquareId::GRASS, {getTreesType(SquareId::CANIF_TREE)}, {1}));
   return new BorderGuard(queue, SquareId::BLACK_WALL);
 }
+
+Vec2 LevelMaker::getRandomExit(Rectangle rect, int minCornerDist) {
+  CHECK(rect.getW() > 2 * minCornerDist && rect.getH() > 2 * minCornerDist);
+  int w1 = Random.getRandom(2);
+  int w2 = Random.getRandom(2);
+  int d1 = Random.getRandom(minCornerDist, rect.getW() - minCornerDist);
+  int d2 = Random.getRandom(minCornerDist, rect.getH() - minCornerDist);
+  return Vec2(
+        rect.getPX() + d1 * w1 + (1 - w1) * w2 * (rect.getW() - 1),
+        rect.getPY() + d2 * (1 - w1) + w1 * w2 * (rect.getH() - 1));
+}
+
+

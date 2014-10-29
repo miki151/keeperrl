@@ -707,10 +707,8 @@ void Player::makeMove() {
     case UserInput::CONSUME: consumeAction(); break;
     case UserInput::SHOW_HISTORY: showHistory(); break;
     case UserInput::UNPOSSESS:
-      if (unpossess()) {
-        creature->popController();
+      if (unpossess())
         return;
-      }
       break;
     case UserInput::CAST_SPELL: spellAction(); break;
     case UserInput::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature); break;

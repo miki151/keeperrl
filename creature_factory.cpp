@@ -2215,7 +2215,8 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 
       return ItemList()
-        .add(ItemId::ROBE);
+        .add(ItemId::ROBE)
+        .add({ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::BLIND)});
     case CreatureId::DEATH: 
       return ItemList()
         .add(ItemId::SCYTHE);
