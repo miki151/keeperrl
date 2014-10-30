@@ -121,7 +121,7 @@ const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resource
         return it->getResourceId() == ResourceId::IRON; },
                        ItemId::IRON_ORE, "iron"}},
   {ResourceId::STONE, { resourceStorage, [](const Item* it) {
-        return it->getResourceId() == ResourceId::STONE; }, ItemId::ROCK, "stone"}},
+        return it->getResourceId() == ResourceId::STONE; }, ItemId::ROCK, "granite"}},
   {ResourceId::CORPSE, {
       {SquareId::CEMETERY},
       [](const Item* it) {

@@ -226,7 +226,7 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
   }
   memory.reset(new map<UniqueEntity<Level>::Id, MapMemory>);
   for (Vec2 v : level->getBounds())
-    if (contains({"gold ore", "iron ore", "stone"}, level->getSquare(v)->getName()))
+    if (contains({"gold ore", "iron ore", "granite"}, level->getSquare(v)->getName()))
       getMemory(level).addObject(v, level->getSquare(v)->getViewObject());
   for(const Location* loc : level->getAllLocations())
     if (loc->isMarkedAsSurprise())
