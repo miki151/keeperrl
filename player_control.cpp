@@ -353,11 +353,11 @@ void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, ve
     lOpt.push_back("Wake up");
   }
   lOpt.emplace_back("", View::INACTIVE);
-  vector<Skill*> skills = c->getSkills();
+  vector<Creature::SkillInfo> skills = c->getSkillNames();
   if (!skills.empty()) {
     lOpt.emplace_back("Skills:", View::TITLE);
-    for (Skill* skill : skills)
-      lOpt.emplace_back(skill->getName(), View::INACTIVE);
+    for (auto skill : skills)
+      lOpt.emplace_back(skill.name, View::INACTIVE);
     lOpt.emplace_back("", View::INACTIVE);
   }
   vector<SpellInfo> spells = c->getSpells();

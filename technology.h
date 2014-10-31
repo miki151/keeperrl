@@ -19,8 +19,6 @@
 #include "singleton.h"
 #include "enums.h"
 
-class Skill;
-
 RICH_ENUM(TechId,
   ALCHEMY,
   ALCHEMY_ADV,
@@ -39,12 +37,10 @@ RICH_ENUM(TechId,
 
 class Technology : public Singleton<Technology, TechId> {
   public:
-  Technology(const string& name, int cost, const vector<TechId>& prerequisites, bool canResearch = true,
-      Skill* = nullptr);
+  Technology(const string& name, int cost, const vector<TechId>& prerequisites, bool canResearch = true);
   const string& getName() const;
   int getCost() const;
   bool canResearch() const;
-  Skill* getSkill() const;
   static vector<Technology*> getSorted();
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
@@ -61,7 +57,6 @@ class Technology : public Singleton<Technology, TechId> {
   int SERIAL(cost);
   vector<Technology*> SERIAL(prerequisites);
   bool SERIAL(research);
-  Skill* SERIAL(skill);
 };
 
 #endif

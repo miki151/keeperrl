@@ -48,7 +48,6 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(adventurer)
     & SVAR(currentTime);
   CHECK_SERIAL;
-  Skill::serializeAll(ar);
   Deity::serializeAll(ar);
   Quest::serializeAll(ar);
   Tribe::serializeAll(ar);
@@ -239,61 +238,10 @@ Model::Model(View* v) : view(v) {
 Model::~Model() {
 }
 
-Level* Model::prepareTopLevel2(vector<SettlementInfo> settlements) {
+Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
   Level* top = buildLevel(
       Level::Builder(250, 250, "Wilderness", false),
-      LevelMaker::topLevel2(CreatureFactory::forrest(Tribe::get(TribeId::WILDLIFE)), settlements));
-  return top;
-}
-
-Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
-  pair<CreatureFactory, string> castleNem1 = chooseRandom<pair<CreatureFactory, string>>(
-      {{CreatureFactory::singleType(Tribe::get(TribeId::CASTLE_CELLAR), CreatureId::GHOST),
-          "The castle cellar is haunted. Go and kill the evil that is lurking there."},
-      {CreatureFactory::insects(Tribe::get(TribeId::CASTLE_CELLAR)),
-          "The castle cellar is infested by vermin. Go and clean it up."}}, {1, 1});
-  pair<CreatureId, string> castleNem2 = chooseRandom<pair<CreatureId, string>>(
-      {{CreatureId::RED_DRAGON, "dragon"}, {CreatureId::GREEN_DRAGON, "dragon"}, {CreatureId::CYCLOPS, "cyclops"}},
-      {1, 1,1});
-  Quest::set(QuestId::DRAGON, Quest::killTribeQuest(Tribe::get(TribeId::DRAGON), "A " + castleNem2.second + 
-      " is harrasing our village. Kill it. It lives in a cave not far from here."));
-  Quest::set(QuestId::CASTLE_CELLAR, Quest::killTribeQuest(Tribe::get(TribeId::CASTLE_CELLAR), castleNem1.second));
-  Quest::set(QuestId::BANDITS, Quest::killTribeQuest(Tribe::get(TribeId::BANDIT),
-        "There is a bandit camp nearby. Kill them all."));
-  Quest::set(QuestId::DWARVES, Quest::killTribeQuest(Tribe::get(TribeId::DWARVEN),
-        "Slay our enemy, the dwarf baron. I will reward you.", true));
-  Quest::set(QuestId::ORCS, Quest::killTribeQuest(Tribe::get(TribeId::ORC),
-        "The orc den is located deep under the earth. "
-      "Slay the great orc. I will reward you.", true));
-  Level* top = buildLevel(
-      Level::Builder(500, 500, "Wilderness", false),
       LevelMaker::topLevel(CreatureFactory::forrest(Tribe::get(TribeId::WILDLIFE)), settlements));
-  Level* c1 = buildLevel(
-      Level::Builder(30, 20, "Crypt"),
-      LevelMaker::cryptLevel(
-        CreatureFactory::crypt(Tribe::get(TribeId::MONSTER)),
-        CreatureFactory::coffins(Tribe::get(TribeId::MONSTER)),
-        {StairKey::CRYPT}, {}));
- /* Level* p1 = buildLevel(
-      Level::Builder(13, 13, "Pyramid Level 2"),
-      LevelMaker::pyramidLevel(CreatureFactory::pyramid(1), {StairKey::PYRAMID},  {StairKey::PYRAMID}));
-  Level* p2 = buildLevel(
-      Level::Builder(11, 11, "Pyramid Level 3"),
-      LevelMaker::pyramidLevel(CreatureFactory::pyramid(2), {}, {StairKey::PYRAMID}));*/
-  Level* cellar = buildLevel(
-      Level::Builder(30, 20, "Cellar"),
-      LevelMaker::cellarLevel(castleNem1.first,
-          SquareId::LOW_ROCK_WALL, StairLook::CELLAR, {StairKey::CASTLE_CELLAR}, {}));
-  Level* dragon = buildLevel(
-      Level::Builder(40, 30, capitalFirst(castleNem2.second) + "'s Cave"),
-      LevelMaker::cavernLevel(CreatureFactory::singleType(Tribe::get(TribeId::DRAGON), castleNem2.first),
-          SquareId::MUD_WALL, SquareType(SquareId::MUD), StairLook::NORMAL, {StairKey::DRAGON}, {}));
-  addLink(StairDirection::DOWN, StairKey::CRYPT, top, c1);
- // addLink(StairDirection::UP, StairKey::PYRAMID, top, p1);
- // addLink(StairDirection::UP, StairKey::PYRAMID, p1, p2);
-  addLink(StairDirection::DOWN, StairKey::CASTLE_CELLAR, top, cellar);
-  addLink(StairDirection::DOWN, StairKey::DRAGON, top, dragon); 
-
   return top;
 }
 
@@ -306,128 +254,6 @@ static void setHandicap(Tribe* tribe, bool easy) {
     tribe->setHandicap(5);
   else
     tribe->setHandicap(2);
-}
-
-Model* Model::heroModel(View* view) {
-  Model* m = new Model(view);
-  m->adventurer = true;
-  Location* banditLocation = new Location("bandit hideout", "The bandits have robbed many travelers and townsfolk.");
-  vector<SettlementInfo> settlements {
-    CONSTRUCT(SettlementInfo,
-      c.type = SettlementType::CASTLE;
-      c.creatures = CreatureFactory::humanCastle(Tribe::get(TribeId::HUMAN));
-      c.numCreatures = Random.getRandom(10, 20);
-      c.location = getVillageLocation();
-      c.tribe = Tribe::get(TribeId::HUMAN);
-      c.buildingId = BuildingId::BRICK;
-      c.downStairs = {StairKey::CASTLE_CELLAR};
-      c.guardId = CreatureId::CASTLE_GUARD;
-      c.shopFactory = ItemFactory::villageShop();),
-    CONSTRUCT(SettlementInfo,
-      c.type = SettlementType::VILLAGE;
-      c.creatures = CreatureFactory::lizardTown(Tribe::get(TribeId::LIZARD));
-      c.numCreatures = Random.getRandom(5, 10);
-      c.location = getVillageLocation();
-      c.tribe = Tribe::get(TribeId::LIZARD);
-      c.buildingId = BuildingId::MUD;
-      c.shopFactory = ItemFactory::mushrooms();),
-    CONSTRUCT(SettlementInfo,
-      c.type = SettlementType::VILLAGE2;
-      c.creatures = CreatureFactory::elvenVillage(Tribe::get(TribeId::ELVEN));
-      c.numCreatures = Random.getRandom(10, 20);
-      c.location = getVillageLocation();
-      c.tribe = Tribe::get(TribeId::ELVEN);
-      c.buildingId = BuildingId::WOOD;),
-    CONSTRUCT(SettlementInfo,
-      c.type = SettlementType::WITCH_HOUSE;
-      c.creatures = CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::WITCH);
-      c.numCreatures = 1;
-      c.location = new Location();
-      c.tribe = Tribe::get(TribeId::MONSTER);
-      c.buildingId = BuildingId::WOOD;),
-    CONSTRUCT(SettlementInfo,
-      c.type = SettlementType::COTTAGE;
-      c.creatures = CreatureFactory::singleType(Tribe::get(TribeId::BANDIT), CreatureId::BANDIT);
-      c.numCreatures = Random.getRandom(4, 7);
-      c.location = banditLocation;
-      c.tribe = Tribe::get(TribeId::BANDIT);
-      c.buildingId = BuildingId::WOOD;)};
-  for (auto& elem : settlements)
-    elem.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, elem.tribe);
-  Level* top = m->prepareTopLevel(settlements);
-  for (auto& elem : settlements)
-    m->collectives.push_back(elem.collective->build());
-  Quest::get(QuestId::BANDITS)->setLocation(banditLocation);
-  SettlementInfo dwarfSettlement = CONSTRUCT(SettlementInfo,
-    c.type = SettlementType::MINETOWN;
-    c.creatures = CreatureFactory::dwarfTown(Tribe::get(TribeId::DWARVEN));
-    c.numCreatures = Random.getRandom(10, 20);
-    c.location = getVillageLocation();
-    c.tribe = Tribe::get(TribeId::DWARVEN);
-    c.buildingId = BuildingId::BRICK;
-    c.upStairs = {StairKey::DWARF};
-    c.downStairs = {StairKey::DWARF};
-    c.shopFactory = ItemFactory::dwarfShop(););
-  dwarfSettlement.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, dwarfSettlement.tribe);
-  Level* d1 = m->buildLevel(
-      Level::Builder(60, 35, "Dwarven Halls"),
-      LevelMaker::mineTownLevel(dwarfSettlement));
-  m->collectives.push_back(dwarfSettlement.collective->build());
-  SettlementInfo orcSettlement = CONSTRUCT(SettlementInfo,
-     c.type = SettlementType::MINETOWN;
-     c.creatures = CreatureFactory::orcTown(Tribe::get(TribeId::ORC));
-     c.numCreatures = Random.getRandom(10, 20);
-     c.location = getVillageLocation();
-     c.tribe = Tribe::get(TribeId::ORC);
-     c.buildingId = BuildingId::BRICK;
-     c.upStairs = {StairKey::DWARF};
-     c.shopFactory = ItemFactory::orcShop(););
-  orcSettlement.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, orcSettlement.tribe);
-  Level* g1 = m->buildLevel(
-      Level::Builder(60, 35, "Goblin Den"),
-      LevelMaker::mineTownLevel(orcSettlement));
-  m->collectives.push_back(orcSettlement.collective->build());
-  vector<Level*> gnomish;
-  int numGnomLevels = 8;
- // int towerLinkIndex = Random.getRandom(1, numGnomLevels - 1);
-  for (int i = 0; i < numGnomLevels; ++i) {
-    vector<StairKey> upKeys {StairKey::DWARF};
- /*   if (i == towerLinkIndex)
-      upKeys.push_back(StairKey::TOWER);*/
-    gnomish.push_back(m->buildLevel(
-          Level::Builder(60, 35, "Gnomish Mines Level " + convertToString(i + 1)),
-          LevelMaker::roomLevel(CreatureFactory::level(i + 1,
-              Tribe::get(TribeId::MONSTER), Tribe::get(TribeId::DWARVEN), Tribe::get(TribeId::PEST)),
-            CreatureFactory::waterCreatures(Tribe::get(TribeId::MONSTER)),
-            CreatureFactory::lavaCreatures(Tribe::get(TribeId::MONSTER)), upKeys, {StairKey::DWARF})));
-  }
- /* vector<Level*> tower;
-  int numTowerLevels = 5;
-  for (int i = 0; i < numTowerLevels; ++i)
-    tower.push_back(m->buildLevel(
-          Level::Builder(4, 4, "Stone Tower " + convertToString(i + 2)),
-          LevelMaker::towerLevel(StairKey::TOWER, StairKey::TOWER)));
-
-  for (int i = 0; i < numTowerLevels - 1; ++i)
-    m->addLink(StairDirection::DOWN, StairKey::TOWER, tower[i + 1], tower[i]);*/
-
- // m->addLink(StairDirection::DOWN, StairKey::TOWER, tower[0], gnomish[towerLinkIndex]);
- // m->addLink(StairDirection::DOWN, StairKey::TOWER, top, tower.back());
-
-  for (int i = 0; i < numGnomLevels - 1; ++i)
-    m->addLink(StairDirection::DOWN, StairKey::DWARF, gnomish[i], gnomish[i + 1]);
-
-  m->addLink(StairDirection::DOWN, StairKey::DWARF, top, d1);
-  m->addLink(StairDirection::DOWN, StairKey::DWARF, d1, gnomish[0]);
-  m->addLink(StairDirection::UP, StairKey::DWARF, g1, gnomish.back());
-  PCreature player = m->makePlayer();
-  for (int i : Range(Random.getRandom(70, 131)))
-    player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
-  Tribe::get(TribeId::ORC)->makeSlightEnemy(player.get());
-  Level* start = top;
-  start->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, std::move(player));
-  setHandicap(Tribe::get(TribeId::PLAYER), Options::getValue(OptionId::EASY_ADVENTURER));
-  return m;
 }
 
 PCreature Model::makePlayer() {
@@ -446,7 +272,6 @@ PCreature Model::makePlayer() {
           c.name = "Adventurer";
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
           c.maxLevel = 1;
-          c.skills.insert(SkillId::ARCHERY);
           c.skills.insert(SkillId::AMBUSH);), Player::getFactory(this, levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
@@ -711,7 +536,7 @@ Model* Model::collectiveModel(View* view) {
     elem.settlement.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, elem.settlement.tribe);
     settlements.push_back(elem.settlement);
   }
-  Level* top = m->prepareTopLevel2(settlements);
+  Level* top = m->prepareTopLevel(settlements);
   m->collectives.push_back(PCollective(
         new Collective(top, CollectiveConfigId::KEEPER, Tribe::get(TribeId::KEEPER))));
   Collective* keeperCollective = m->collectives.back().get();

@@ -245,7 +245,7 @@ static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improv
 static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is improved") {
   if (Item* item = c->getWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
-    item->addModifier(chooseRandom({AttrType::TO_HIT, AttrType::DAMAGE}), mod);
+    item->addModifier(chooseRandom({AttrType::ACCURACY, AttrType::DAMAGE}), mod);
   }
 }
 

@@ -1358,6 +1358,16 @@ function<void(Args...)> bindMethod(void (T::*ptr) (Args...), T* t) {
   return [=](Args... a) { (t->*ptr)(a...);};
 }
 
+template <typename... Args>
+function<void(Args...)> bindFunction(void (*ptr) (Args...)) {
+  return [=](Args... a) { (*ptr)(a...);};
+}
+
+template <typename Ret, typename... Args>
+function<Ret(Args...)> bindFunction(Ret (*ptr) (Args...)) {
+  return [=](Args... a) { return (*ptr)(a...);};
+}
+
 struct ConstructorFunction {
   ConstructorFunction(function<void()> inConstructor, function<void()> inDestructor = nullptr);
   ~ConstructorFunction();

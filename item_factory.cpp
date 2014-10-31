@@ -887,7 +887,7 @@ void makeArtifact(ItemAttributes& i) {
   } while (!good);
   Debug() << "Making artifact " << *i.name << " " << *i.artifactName;
   i.modifiers[AttrType::DAMAGE] += Random.getRandom(1, 4);
-  i.modifiers[AttrType::TO_HIT] += Random.getRandom(1, 4);
+  i.modifiers[AttrType::ACCURACY] += Random.getRandom(1, 4);
   i.price *= 15;
 }
 
@@ -964,10 +964,10 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 0.3;
             i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
-            i.modifiers[AttrType::TO_HIT] = maybePlusMinusOne(4);
+            i.modifiers[AttrType::ACCURACY] = maybePlusMinusOne(4);
             i.attackTime = 0.7;
             i.modifiers[AttrType::THROWN_DAMAGE] = 3 + maybePlusMinusOne(4);
-            i.modifiers[AttrType::THROWN_TO_HIT] = 3 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::THROWN_ACCURACY] = 3 + maybePlusMinusOne(4);
             i.price = 5;
             i.attackType = AttackType::STAB;);
     case ItemId::SPECIAL_KNIFE: return INHERIT(KNIFE,
@@ -981,7 +981,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1.5;
             i.modifiers[AttrType::DAMAGE] = 10 + maybePlusMinusOne(4);
-            i.modifiers[AttrType::TO_HIT] = 2 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::ACCURACY] = 2 + maybePlusMinusOne(4);
             i.price = 20;
             i.attackType = AttackType::STAB;);
     case ItemId::SPECIAL_SWORD: return INHERIT(SWORD,
@@ -996,7 +996,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1.5;
             i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
-            i.modifiers[AttrType::TO_HIT] = 3 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::ACCURACY] = 3 + maybePlusMinusOne(4);
             i.price = 20;
             i.attackType = AttackType::CUT;);
     case ItemId::SPECIAL_ELVEN_SWORD: return INHERIT(ELVEN_SWORD,
@@ -1011,7 +1011,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1;
             i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
-            i.modifiers[AttrType::TO_HIT] = 5 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::ACCURACY] = 5 + maybePlusMinusOne(4);
             i.price = 40;
             i.attackType = AttackType::CUT;);
     case ItemId::SPECIAL_BATTLE_AXE: return INHERIT(BATTLE_AXE,
@@ -1026,7 +1026,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 8;
             i.modifiers[AttrType::DAMAGE] = 14 + maybePlusMinusOne(4);
-            i.modifiers[AttrType::TO_HIT] = 2 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::ACCURACY] = 2 + maybePlusMinusOne(4);
             i.attackTime = 1.2;
             i.twoHanded = true;
             i.price = 140;
@@ -1043,7 +1043,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 8;
             i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
-            i.modifiers[AttrType::TO_HIT] = 2 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::ACCURACY] = 2 + maybePlusMinusOne(4);
             i.attackTime = 1.2;
             i.twoHanded = true;
             i.price = 100;
@@ -1055,7 +1055,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 5;
             i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
-            i.modifiers[AttrType::TO_HIT] = 0 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::ACCURACY] = 0 + maybePlusMinusOne(4);
             i.twoHanded = true;
             i.price = 100;
             i.attackType = AttackType::CUT;);
@@ -1065,15 +1065,15 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::RANGED_WEAPON;
             i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
             i.weight = 1;
-            i.rangedWeaponAccuracy = 10 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::FIRED_ACCURACY] = 10 + maybePlusMinusOne(4);
             i.price = 60;);
     case ItemId::ARROW: return ITATTR(
             i.viewId = ViewId::ARROW;
             i.name = "arrow";
             i.itemClass = ItemClass::AMMO;
             i.weight = 0.1;
-            i.modifiers[AttrType::THROWN_DAMAGE] = 5;
-            i.modifiers[AttrType::THROWN_TO_HIT] = -5;
+            i.modifiers[AttrType::FIRED_DAMAGE] = 5;
+            i.modifiers[AttrType::FIRED_ACCURACY] = -5;
             i.price = 2;);
     case ItemId::ROBE: return ITATTR(
             i.viewId = ViewId::ROBE;
@@ -1282,7 +1282,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.blindName = "potion";
             i.itemClass = ItemClass::POTION;
             i.fragile = true;
-            i.modifiers[AttrType::THROWN_TO_HIT] = 6;
+            i.modifiers[AttrType::THROWN_ACCURACY] = 6;
             i.weight = 0.3;
             i.effect = effect;
             i.price = getEffectPrice(effect);

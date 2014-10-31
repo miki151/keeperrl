@@ -27,6 +27,8 @@ RICH_ENUM(SkillId,
   STEALING,
   SWIMMING,
   ARCHERY,
+  WEAPON_MELEE,
+  UNARMED_MELEE,
   CONSTRUCTION,
   ELF_VISION,
   NIGHT_VISION,
@@ -38,26 +40,39 @@ class Creature;
 class Skill : public Singleton<Skill, SkillId> {
   public:
   string getName() const;
+  string getNameForCreature(const Creature*);
   string getHelpText() const;
-  bool canConsume() const;
+  bool transferOnConsumption() const;
+  bool isDiscrete() const;
 
-  virtual void onTeach(Creature* c) {}
+  int getModifier(const Creature*, AttrType) const;
 
-  SERIALIZATION_DECL(Skill);
-  
   static void init();
 
-  template <class Archive>
-  static void registerTypes(Archive& ar);
-
-  protected:
-  Skill(string name, string helpText, bool canConsume = true);
+  SERIALIZATION_DECL(Skill);
 
   private:
   string SERIAL(name);
   string SERIAL(helpText);
   bool SERIAL(consume);
+  bool SERIAL(discrete);
+  Skill(string name, string helpText, bool discrete, bool canConsume = true);
 };
 
+class Skillset {
+  public:
+  void insert(SkillId);
+  bool hasDiscrete(SkillId) const;
+  double getValue(SkillId) const;
+  void setValue(SkillId, double);
+  const EnumSet<SkillId>& getAllDiscrete() const;
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+
+  private:
+  EnumMap<SkillId, double> SERIAL(gradable);
+  EnumSet<SkillId> SERIAL(discrete);
+};
 
 #endif

@@ -24,8 +24,7 @@ void Technology::serialize(Archive& ar, const unsigned int version) {
     & SVAR(name)
     & SVAR(cost)
     & SVAR(prerequisites)
-    & SVAR(research)
-    & SVAR(skill);
+    & SVAR(research);
   CHECK_SERIAL;
 }
 
@@ -42,8 +41,7 @@ void Technology::init() {
   Technology::set(TechId::IRON_WORKING, new Technology("iron working", 60, {TechId::CRAFTING}));
   Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", 100, {TechId::IRON_WORKING}, true));
   Technology::set(TechId::TRAPS, new Technology("traps", 60, {TechId::CRAFTING}));
-  Technology::set(TechId::ARCHERY, new Technology("archery", 80, {TechId::CRAFTING}, true,
-        Skill::get(SkillId::ARCHERY)));
+  Technology::set(TechId::ARCHERY, new Technology("archery", 80, {TechId::CRAFTING}, true));
   Technology::set(TechId::SPELLS, new Technology("sorcery", 60, {}));
   Technology::set(TechId::SPELLS_ADV, new Technology("advanced sorcery", 120, {TechId::SPELLS}));
   Technology::set(TechId::SPELLS_MAS, new Technology("master sorcery", 250, {TechId::SPELLS_ADV}));
@@ -58,10 +56,6 @@ int Technology::getCost() const {
   return cost;
 }
 
-Skill* Technology::getSkill() const {
-  return skill;
-}
-
 vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current) {
   vector<Technology*> ret;
   for (Technology* t : Technology::getAll())
@@ -70,8 +64,8 @@ vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current)
   return ret;
 }
 
-Technology::Technology(const string& n, int c, const vector<TechId>& pre, bool canR, Skill* s)
-    : name(n), cost(c), research(canR), skill(s) {
+Technology::Technology(const string& n, int c, const vector<TechId>& pre, bool canR)
+    : name(n), cost(c), research(canR) {
   for (TechId id : pre)
     prerequisites.push_back(Technology::get(id));
 }

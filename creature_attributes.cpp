@@ -67,7 +67,6 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(damageMultiplier)
     & SVAR(attributeGain)
     & SVAR(skills)
-    & SVAR(skillGain)
     & SVAR(spells)
     & SVAR(permanentEffects)
     & SVAR(minionTasks);

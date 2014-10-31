@@ -20,7 +20,7 @@
 
 
 Attack::Attack(const Creature* a, AttackLevel l, AttackType t, int h, int s, bool b, Optional<EffectType> _effect)
-    : attacker(a), level(l), type(t), toHit(h), strength(s), back(b), effect(_effect) {}
+    : attacker(a), level(l), type(t), accuracy(h), strength(s), back(b), effect(_effect) {}
   
 const Creature* Attack::getAttacker() const {
   return attacker;
@@ -30,8 +30,8 @@ int Attack::getStrength() const {
   return strength;
 }
 
-int Attack::getToHit() const {
-  return toHit;
+int Attack::getAccuracy() const {
+  return accuracy;
 }
 
 AttackType Attack::getType() const {

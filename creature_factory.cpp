@@ -492,7 +492,8 @@ class KamikazeController : public Monster {
 
 class ShopkeeperController : public Monster {
   public:
-  ShopkeeperController(Creature* c, Location* area) : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
+  ShopkeeperController(Creature* c, Location* area)
+      : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
   }
 
   virtual void makeMove() override {
@@ -626,97 +627,6 @@ class ShopkeeperController : public Monster {
   bool SERIAL2(firstMove, true);
 };
 
-class VillageElder : public Creature {
-  public:
-  VillageElder(vector<pair<Skill*, double>> _teachSkills, vector<pair<QuestId, int>> _quests,
-      Tribe* t, const CreatureAttributes& attr, ControllerFactory factory) : 
-      Creature(t, attr, factory), teachSkills(_teachSkills) {
-    getTribe()->setLeader(this);
-    for (auto elem : _quests)
-      if (Quest::exists(elem.first))
-        quests.emplace_back(Quest::get(elem.first), elem.second);
-  }
-
-  bool teach(Creature* who) {
-    for (auto elem : teachSkills)
-      if (!who->hasSkill(elem.first) && getTribe()->getStanding(who) >= elem.second) {
-        Skill* teachSkill = elem.first;
-        who->addSkill(teachSkill);
-        who->playerMessage("\"You are a friend of our tribe. I will share my knowledge with you.\"");
-        who->playerMessage(getName() + " teaches you the " + teachSkill->getName());
-        if (teachSkill == Skill::get(SkillId::ARCHERY)) {
-          who->playerMessage(getName() + " hands you a bow and a quiver of arrows.");
-          who->take(std::move(ItemFactory::fromId(ItemId::BOW)));
-          who->take(ItemFactory::fromId(ItemId::ARROW, Random.getRandom(20, 36)));
-        }
-        return true;
-      }
-    return false;
-  }
-
-  bool tribeQuest(Creature* who) {
-    for (pair<Quest*, int> q : quests) {
-      if (q.first->isFinished()) {  
-        who->playerMessage("\"" + (*who->getFirstName()) +
-            ", you have fulfilled your quest. Here is your payment.\"");
-        who->takeItems(ItemFactory::fromId(ItemId::GOLD_PIECE, q.second), this);
-        removeElement(quests, q);
-        return true;
-      } else {
-        q.first->addAdventurer(who);
-        return true;
-      }
-    }
-    return false;
-  }
-
-  virtual void onChat(Creature* who) override {
-    if (isEnemy(who)) {
-      Creature::onChat(who);
-      return;
-    }
-    if (tribeQuest(who))
-      return;
-    Creature::onChat(who);
-    return;
- //   if (teach(who))
- //     return;
-    const vector<Location*> locations = getLevel()->getAllLocations();
-    if (locations.size() == 0)
-      Creature::onChat(who);
-    else
-      while (1) {
-        Location* l = locations[Random.getRandom(locations.size())];
-        if (l->hasName() && l != getLevel()->getLocation(getPosition())) {
-          Vec2 dir = l->getBounds().middle() - getPosition();
-          string dist = dir.lengthD() > 150 ? "far" : "close";
-          string bearing = getCardinalName(dir.getBearing().getCardinalDir());
-          who->playerMessage("\"There is a " + l->getName() + " " + dist + " in the " + bearing + "\"");
-          who->playerMessage("\"" + l->getDescription() + "\"");
-          return;
-        }
-      }
-  }
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Creature)
-      & SVAR(teachSkills)
-      & SVAR(quests)
-      & SVAR(bringItem)
-      & SVAR(killCreature);
-    CHECK_SERIAL;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(VillageElder);
-
-  private:
-  vector<pair<Skill*, double>> SERIAL(teachSkills);
-  vector<pair<Quest*, int>> SERIAL(quests);
-  const Item* SERIAL2(bringItem, nullptr);
-  const Creature* SERIAL2(killCreature, nullptr);
-};
-
 class GreenDragonController : public Monster {
   public:
   using Monster::Monster;
@@ -774,7 +684,6 @@ void CreatureFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, KrakenController);
   REGISTER_TYPE(ar, KamikazeController);
   REGISTER_TYPE(ar, ShopkeeperController);
-  REGISTER_TYPE(ar, VillageElder);
 }
 
 REGISTER_TYPES(CreatureFactory);
@@ -1092,8 +1001,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attributeGain = 1;
           c.minionTasks[MinionTask::STUDY] = 1;
           c.minionTasks[MinionTask::LABORATORY] = 0.0001; 
-          c.minionTasks[MinionTask::WORSHIP] = 0.0001;
-          c.skillGain.clear(););
+          c.minionTasks[MinionTask::WORSHIP] = 0.0001;);
     case CreatureId::BANDIT: 
       return CATTR(
           c.viewId = ViewId::BANDIT;
@@ -1943,7 +1851,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dontChase = true;
           c.spawnType = SpawnType::BEAST;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks[MinionTask::EXPLORE] = 1;
           c.minionTasks[MinionTask::LAIR] = 1;
           c.name = "raven";);
@@ -2118,10 +2025,6 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
     default: return Monster::getFactory(normalFactory);
   }
 }
-PCreature getElder(vector<pair<Skill*, double>> teachSkills, vector<pair<QuestId, int>> quests, Tribe* tribe,
-    CreatureAttributes attributes, ControllerFactory factory) {
-    return PCreature(new VillageElder(teachSkills, quests, tribe, attributes, factory));
-}
 
 PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
@@ -2135,26 +2038,6 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
     case CreatureId::SPECIAL_HUMANOID:
       return getSpecial(NameGenerator::get(NameGeneratorId::CREATURE)->getNext(),
           tribe, true, factory, false);
-    case CreatureId::ELF_LORD:
-      return PCreature(new VillageElder({},
-            {{QuestId::BANDITS, Random.getRandom(80, 120)}},
-            tribe, getAttributes(id), factory));
-    case CreatureId::DWARF_BARON:
-      return PCreature(new VillageElder({},
-            {{QuestId::ORCS, Random.getRandom(300, 400)}},
-            tribe, getAttributes(id), factory));
-    case CreatureId::GREAT_ORC:
-      return PCreature(new VillageElder({},
-            {{QuestId::DWARVES, Random.getRandom(300, 400)}},
-            tribe, getAttributes(id), factory));
-    case CreatureId::AVATAR:
-      return PCreature(new VillageElder({},
-            {{QuestId::CASTLE_CELLAR, Random.getRandom(80, 120)},
-            {QuestId::DRAGON, Random.getRandom(180, 320)}},
-            tribe, getAttributes(id), factory));
-    case CreatureId::LIZARDLORD:
-      return PCreature(new VillageElder({}, {},
-            tribe, getAttributes(id), factory));
     default: return get(getAttributes(id), tribe, getController(id, aiFactory));
   }
 }

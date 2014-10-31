@@ -346,14 +346,15 @@ string Item::getNameAndModifiers(bool getPlural, bool blind) const {
     string attrString;
     switch (getClass()) {
       case ItemClass::WEAPON:
-        printAttr.insert(AttrType::TO_HIT);
+        printAttr.insert(AttrType::ACCURACY);
         printAttr.insert(AttrType::DAMAGE);
         break;
       case ItemClass::ARMOR:
         printAttr.insert(AttrType::DEFENSE);
         break;
       case ItemClass::RANGED_WEAPON:
-        attrString = withSign(rangedWeaponAccuracy) + " accuracy";
+      case ItemClass::AMMO:
+        printAttr.insert(AttrType::FIRED_ACCURACY);
         break;
       default: break;
     }
@@ -411,10 +412,6 @@ bool Item::canEquip() const {
 EquipmentSlot Item::getEquipmentSlot() const {
   CHECK(canEquip());
   return *equipmentSlot;
-}
-
-int Item::getAccuracy() const {
-  return rangedWeaponAccuracy;
 }
 
 void Item::addModifier(AttrType attributeType, int value) {

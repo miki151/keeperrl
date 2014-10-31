@@ -36,6 +36,7 @@
 #include "renderable.h"
 #include "movement_type.h"
 #include "player_message.h"
+#include "game_info.h"
 
 class Level;
 class Tribe;
@@ -169,7 +170,10 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
 
   void addSkill(Skill* skill);
   bool hasSkill(Skill*) const;
-  vector<Skill*> getSkills() const;
+  double getSkillValue(Skill*) const;
+  const EnumSet<SkillId>& getDiscreteSkills() const;
+  typedef GameInfo::PlayerInfo::SkillInfo SkillInfo;
+  vector<SkillInfo> getSkillNames() const;
 
   string getPluralName(Item* item, int num);
   CreatureAction move(Vec2 direction);
@@ -291,13 +295,12 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void updateViewObject();
   int getStrengthAttackBonus() const;
   int getAttrVal(AttrType type) const;
-  int getToHit() const;
   BodyPart getBodyPart(AttackLevel attack) const;
   bool isFireResistant() const;
   void injure(BodyPart, bool drop);
   AttackLevel getRandomAttackLevel() const;
   AttackType getAttackType() const;
-  int toHitBonus() const;
+  int accuracyBonus() const;
   void spendTime(double time);
   BodyPart armOrWing() const;
   pair<double, double> getStanding(const Creature* c) const;

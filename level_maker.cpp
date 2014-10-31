@@ -2107,106 +2107,6 @@ LevelMaker* LevelMaker::mineTownLevel(SettlementInfo info) {
   return new BorderGuard(queue, SquareId::BLACK_WALL);
 }
 
-LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
-  MakerQueue* queue = new MakerQueue();
-  vector<SquareType> vegetationLow { 
-    getTreesType(SquareId::CANIF_TREE), getTreesType(SquareId::BUSH) };
-  vector<SquareType> vegetationHigh {
-    getTreesType(SquareId::DECID_TREE), getTreesType(SquareId::BUSH) };
-  vector<double> probs { 2, 1 };
-  RandomLocations* locations = new RandomLocations();
-  Predicate lowlandPred = Predicate::andPred(
-      Predicate::attrib(SquareAttrib::LOWLAND),
-      Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
-  int numLakes = 1;
-  for (int i : Range(numLakes))
-    locations->add(makeLake(), {Random.getRandom(60, 120), Random.getRandom(60, 120)}, lowlandPred);
-  LevelMaker* castleMaker = nullptr;
-  LevelMaker* elvenVillage = nullptr;
-  LevelMaker* bandits = nullptr;
-  for (SettlementInfo settlement : settlements) {
-    MakerQueue* queue = nullptr;
-    switch (settlement.type) {
-      case SettlementType::VILLAGE2: queue = village2(settlement); break;
-      case SettlementType::VILLAGE: queue = village(settlement); break;
-      case SettlementType::CASTLE:
-          queue = castle(settlement);
-          queue->addMaker(new StartingPos(Predicate::type(SquareId::MUD), StairKey::PLAYER_SPAWN));
-          castleMaker = queue;
-          break;
-      case SettlementType::CASTLE2: queue = castle2(settlement); break;
-      case SettlementType::COTTAGE: queue = cottage(settlement); break;
-      case SettlementType::WITCH_HOUSE:
-          queue = cottage(settlement, {{ SquareId::CAULDRON, 2, 5}}); break;
-      case SettlementType::MINETOWN:
-          queue = mineTownMaker(settlement); break;
-          break;
-      case SettlementType::SMALL_MINETOWN:
-          queue = smallMineTownMaker(settlement); break;
-          break;
-      case SettlementType::VAULT:
-          queue = vaultMaker(settlement, false); break;
-          break;
-      case SettlementType::CAVE:
-          queue = dragonCaveMaker(settlement); break;
-          break;
-    }
-    if (settlement.tribe == Tribe::get(TribeId::ELVEN))
-      elvenVillage = queue;
-    if (settlement.tribe == Tribe::get(TribeId::BANDIT))
-      bandits = queue;
-    if (settlement.collective)
-      queue->addMaker(new CollectiveMaker(settlement.collective));
-    locations->add(queue, getSize(settlement.type), getSettlementPredicate(settlement.type));
-  }
-  locations->setMaxDistance(elvenVillage, bandits, 100);
-  locations->setMinDistance(elvenVillage, bandits, 50);
-
-  for (int i : Range(Random.getRandom(2, 5))) {
-    locations->add(new UniformBlob(SquareId::CROPS),
-        {Random.getRandom(7, 12), Random.getRandom(7, 12)},
-        lowlandPred);
-    locations->setMaxDistanceLast(elvenVillage, 18);
-  }
-  locations->add(makeDragonSwamp(StairKey::DRAGON, Quest::get(QuestId::DRAGON)), {10, 10}, lowlandPred);
-  locations->setMaxDistanceLast(castleMaker, 50);
-  int numCemeteries = 1;
-  for (int i : Range(numCemeteries)) {
-    Location* loc = new Location("old cemetery", "Terrible evil is said to be lurking there.");
-    locations->add(new MakerQueue({
-          new LocationMaker(loc),
-          new Margin(1, new Buildings(1, 2, 2, 3, brickBuilding, false, {}, false)),
-          new DungeonFeatures(Predicate::type(SquareId::GRASS), {{ SquareId::GRAVE, 5, 15 }}),
-          new Stairs(StairDirection::DOWN, StairKey::CRYPT, Predicate::type(SquareId::FLOOR)),
-          }), {10, 10}, lowlandPred);
-  }
-  MakerQueue* pyramid = new MakerQueue();
-  pyramid->addMaker(new LocationMaker(new Location("ancient pyramid", "Terrible evil is said to be lurking there.")));
-  pyramid->addMaker(new Margin(1, pyramidLevel(Nothing(), {StairKey::PYRAMID}, {})));
-  locations->add(dungeonEntrance(StairKey::DWARF, SquareId::MOUNTAIN, "Our enemies the dwarves are living there."),
-      {1, 1}, Predicate::type(SquareId::MOUNTAIN));
-  queue->addMaker(new Empty(SquareId::WATER));
-  queue->addMaker(new Mountains({0.0, 0.0, 0.6, 0.8, 0.95}, 0.4, {0, 0, 1, 1, 0}, false));
- // queue->addMaker(new MountainRiver(30, '='));
-  queue->addMaker(new Forrest(0.7, 0.5, SquareId::GRASS, vegetationLow, probs));
-  queue->addMaker(new Forrest(0.4, 0.5, SquareId::HILL, vegetationHigh, probs));
-  queue->addMaker(new Forrest(0.2, 0.3, SquareId::MOUNTAIN, vegetationHigh, probs));
-  queue->addMaker(new Margin(100, locations));
-  MakerQueue* tower = new MakerQueue();
-  tower->addMaker(towerLevel(StairKey::TOWER, Nothing()));
-  tower->addMaker(new LocationMaker(Location::towerTopLocation()));
-//  queue->addMaker(new Margin(100, 
-//        new RandomLocations({tower}, {make_pair(4, 4)}, Predicate::attrib(SquareAttrib::MOUNTAIN))));
- // queue->addMaker(new Margin(100, dungeonEntrance(StairKey::ORC, SquareId::MOUNTAIN, "Our enemies the orcs are living there.")));
-  queue->addMaker(new Roads(SquareId::FLOOR));
-  /*Deity* deity = Deity::getDeity(chooseRandom({DeityHabitat::STARS, DeityHabitat::TREES}));
-  queue->addMaker(new Shrine(deity, SquareId::PATH,
-        Predicate::type({SquareId::GRASS, SquareId::DECID_TREE, SquareId::BUSH}), SquareId::WOOD_WALL, new LocationMaker(new Location("shrine", "It is dedicated to the god " + deity->getName()))));*/
-  queue->addMaker(new Creatures(forrestCreatures, Random.getRandom(30, 50), MonsterAIFactory::wildlifeNonPredator()));
-  queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::GRASS, 30, 60));
-  return new BorderGuard(queue);
-}
-
 static void addResources(RandomLocations* locations, int count, int countHere, int minSize, int maxSize, int maxDist,
     int maxDist2, SquareType type, LevelMaker* hereMaker) {
   for (int i : Range(count)) {
@@ -2221,7 +2121,7 @@ static void addResources(RandomLocations* locations, int count, int countHere, i
   }
 }
 
-LevelMaker* LevelMaker::topLevel2(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
+LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
   MakerQueue* queue = new MakerQueue();
   vector<SquareType> vegetationLow {
       getTreesType(SquareId::CANIF_TREE), getTreesType(SquareId::BUSH) };

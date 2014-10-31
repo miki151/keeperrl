@@ -30,9 +30,11 @@ class EnemyCheck;
 RICH_ENUM(AttrType,
   STRENGTH,
   DAMAGE,
-  TO_HIT,
+  ACCURACY,
   THROWN_DAMAGE,
-  THROWN_TO_HIT,
+  THROWN_ACCURACY,
+  FIRED_DAMAGE,
+  FIRED_ACCURACY,
   DEXTERITY,
   DEFENSE,
   SPEED,
@@ -66,7 +68,6 @@ class ItemAttributes {
   double SERIAL2(flamability, 0);
   int SERIAL2(price, 0);
   bool SERIAL2(noArticle, false);
-  int SERIAL2(rangedWeaponAccuracy, 0);
   EnumMap<AttrType, int> SERIAL(modifiers);
   bool SERIAL2(twoHanded, false);
   AttackType SERIAL2(attackType, AttackType::HIT);

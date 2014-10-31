@@ -17,13 +17,16 @@
 
 #include "skill.h"
 #include "enums.h"
+#include "item_attributes.h"
+#include "creature.h"
 
 template <class Archive> 
 void Skill::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Singleton)
     & SVAR(name)
     & SVAR(consume)
-    & SVAR(helpText);
+    & SVAR(helpText)
+    & SVAR(discrete);
   CHECK_SERIAL;
 }
 
@@ -35,28 +38,135 @@ string Skill::getName() const {
   return name;
 }
 
+string Skill::getNameForCreature(const Creature* c) {
+  double val = c->getSkillValue(this);
+  CHECK(val >= 0 && val <= 1) << "Skill value " << val;
+  string grade;
+  if (val == 0)
+    grade = "unskilled";
+  else if (val < 0.3)
+    grade = "basic";
+  else if (val < 0.6)
+    grade = "skilled";
+  else if (val < 1)
+    grade = "expert";
+  else
+    grade = "master";
+  return getName() + " (" + grade + ")";
+}
+
 string Skill::getHelpText() const {
   return helpText;
 }
 
-void Skill::init() {
-  Skill::set(SkillId::AMBUSH, new Skill("ambush",
-        "Hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it."));
-  Skill::set(SkillId::KNIFE_THROWING, new Skill("knife throwing", "Throw knives with deadly precision."));
-  Skill::set(SkillId::STEALING, new Skill("stealing", "Steal from other monsters. Not available for player ATM."));
-  Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning."));
-  Skill::set(SkillId::ARCHERY, new Skill("archery", "Shoot bows."));
-  Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms.", false));
-  Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees."));
-  Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark."));
-  Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them."));
-  Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
-        "Absorb other creatures and retain their attributes.", false));
+bool Skill::isDiscrete() const {
+  return discrete;
 }
 
-bool Skill::canConsume() const {
+static int archeryBonus(const Creature* c, AttrType t) {
+  switch (t) {
+    case AttrType::FIRED_ACCURACY: return c->getSkillValue(Skill::get(SkillId::ARCHERY)) * 10;
+    case AttrType::FIRED_DAMAGE: return c->getSkillValue(Skill::get(SkillId::ARCHERY)) * 10;
+    default: break;
+  }
+  return 0;
+}
+
+static int weaponBonus(const Creature* c, AttrType t) {
+  if (!c->getWeapon())
+    return 0;
+  switch (t) {
+    case AttrType::ACCURACY: return c->getSkillValue(Skill::get(SkillId::WEAPON_MELEE)) * 10;
+    case AttrType::DAMAGE: return c->getSkillValue(Skill::get(SkillId::WEAPON_MELEE)) * 10;
+    default: break;
+  }
+  return 0;
+}
+
+static int unarmedBonus(const Creature* c, AttrType t) {
+  if (c->getWeapon())
+    return 0;
+  switch (t) {
+    case AttrType::ACCURACY: return c->getSkillValue(Skill::get(SkillId::UNARMED_MELEE)) * 10;
+    case AttrType::DAMAGE: return c->getSkillValue(Skill::get(SkillId::UNARMED_MELEE)) * 10;
+    default: break;
+  }
+  return 0;
+}
+
+static int knifeBonus(const Creature* c, AttrType t) {
+  switch (t) {
+    case AttrType::THROWN_ACCURACY: return c->getSkillValue(Skill::get(SkillId::KNIFE_THROWING)) * 10;
+    case AttrType::THROWN_DAMAGE: return c->getSkillValue(Skill::get(SkillId::KNIFE_THROWING)) * 10;
+    default: break;
+  }
+  return 0;
+}
+
+int Skill::getModifier(const Creature* c, AttrType t) const {
+  switch (getId()) {
+    case SkillId::ARCHERY: return archeryBonus(c, t);
+    case SkillId::WEAPON_MELEE: return weaponBonus(c, t);
+    case SkillId::UNARMED_MELEE: return unarmedBonus(c, t);
+    case SkillId::KNIFE_THROWING: return knifeBonus(c, t);
+    default: break;
+  }
+  return 0;
+}
+
+void Skill::init() {
+  Skill::set(SkillId::AMBUSH, new Skill("ambush",
+        "Hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.", true));
+  Skill::set(SkillId::KNIFE_THROWING, new Skill("knife throwing", "Throw knives with deadly precision.", false));
+  Skill::set(SkillId::STEALING,
+      new Skill("stealing", "Steal from other monsters. Not available for player ATM.", true));
+  Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning.", true));
+  Skill::set(SkillId::ARCHERY, new Skill("archery", "Shoot bows.", false));
+  Skill::set(SkillId::WEAPON_MELEE, new Skill("weapon melee", "Fight with weapons.", false));
+  Skill::set(SkillId::UNARMED_MELEE, new Skill("weapon melee", "Fight unarmed.", false));
+  Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms.", true, false));
+  Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees.", true));
+  Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark.", true));
+  Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them.", true));
+  Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
+        "Absorb other creatures and retain their attributes.", true, false));
+}
+
+bool Skill::transferOnConsumption() const {
   return consume;
 }
 
-Skill::Skill(string _name, string _helpText, bool _consume) : name(_name), helpText(_helpText), consume(_consume) {}
+Skill::Skill(string _name, string _helpText, bool _discrete, bool _consume) 
+  : name(_name), helpText(_helpText), consume(_consume), discrete(_discrete) {}
 
+void Skillset::insert(SkillId s) {
+  CHECK(Skill::get(s)->isDiscrete());
+  discrete.insert(s);
+}
+
+bool Skillset::hasDiscrete(SkillId s) const {
+  CHECK(Skill::get(s)->isDiscrete());
+  return discrete[s];
+}
+
+double Skillset::getValue(SkillId s) const {
+  CHECK(!Skill::get(s)->isDiscrete());
+  return gradable[s];
+}
+
+void Skillset::setValue(SkillId s, double v) {
+  CHECK(!Skill::get(s)->isDiscrete());
+  gradable[s] = v;
+}
+
+const EnumSet<SkillId>& Skillset::getAllDiscrete() const {
+  return discrete;
+}
+
+
+template <class Archive>
+void Skillset::serialize(Archive& ar, const unsigned int version) {
+  ar & SVAR(discrete) & SVAR(gradable);
+}
+
+SERIALIZABLE(Skillset);

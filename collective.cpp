@@ -419,9 +419,6 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     bySpawnType[*spawnType].push_back(c);
   for (const Item* item : c->getEquipment().getItems())
     minionEquipment.own(c, item);
-  for (Technology* t : technologies)
-    if (Skill* skill = t->getSkill())
-      c->addSkill(skill);
   if (traits[MinionTrait::PRISONER])
     prisonerInfo[c] = {PrisonerState::PRISON, 0};
   if (getConfig().keepSectors) {
@@ -2104,9 +2101,6 @@ void Collective::acquireTech(Technology* tech, bool free) {
     if (Technology::get(elem.techId) == tech)
       if (Creature* leader = getLeader())
         leader->addSpell(elem.id);
-  if (Skill* skill = tech->getSkill())
-    for (Creature* c : getCreatures())
-      c->addSkill(skill);
 }
 
 const vector<Technology*>& Collective::getTechnologies() const {

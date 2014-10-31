@@ -96,7 +96,6 @@ class Model {
   Level* buildLevel(Level::Builder&&, LevelMaker*);
   void addLink(StairDirection, StairKey, Level*, Level*);
   Level* prepareTopLevel(vector<SettlementInfo> settlements);
-  Level* prepareTopLevel2(vector<SettlementInfo> settlements);
 
   vector<PLevel> SERIAL(levels);
   vector<PCollective> SERIAL(collectives);

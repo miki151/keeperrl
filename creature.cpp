@@ -26,7 +26,6 @@
 #include "effect.h"
 #include "item_factory.h"
 #include "square.h"
-#include "game_info.h"
 
 template <class Archive> 
 void SpellInfo::serialize(Archive& ar, const unsigned int version) {
@@ -95,8 +94,6 @@ Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes&
     : CreatureAttributes(attr), Renderable(object), tribe(t), controller(f.get(this)) {
   if (tribe)
     tribe->addMember(this);
-  for (SkillId skill : skills)
-    Skill::get(skill)->onTeach(this);
 }
 
 Creature::Creature(Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
@@ -393,22 +390,22 @@ void Creature::monsterMessage(const PlayerMessage& playerCanSee, const PlayerMes
 }
 
 void Creature::addSkill(Skill* skill) {
-  if (!skills[skill->getId()]) {
+  if (!hasSkill(skill)) {
     skills.insert(skill->getId());
-    skill->onTeach(this);
     playerMessage(skill->getHelpText());
   }
 }
 
 bool Creature::hasSkill(Skill* skill) const {
-  return skills[skill->getId()];
+  return skills.hasDiscrete(skill->getId());
 }
 
-vector<Skill*> Creature::getSkills() const {
-  vector<Skill*> ret;
-  for (SkillId id : skills)
-    ret.push_back(Skill::get(id));
-  return ret;
+double Creature::getSkillValue(Skill* skill) const {
+  return skills.getValue(skill->getId());
+}
+
+const EnumSet<SkillId>& Creature::getDiscreteSkills() const {
+  return skills.getAllDiscrete();
 }
 
 vector<Item*> Creature::getPickUpOptions() const {
@@ -487,17 +484,12 @@ void Creature::finishEquipChain() {
 bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
   if (!isHumanoid()) {
     if (reason)
-      *reason = "You can't equip items!";
+      *reason = "Only humanoids can equip items!";
     return false;
   }
   if (numGood(BodyPart::ARM) == 0) {
     if (reason)
       *reason = "You have no healthy arms!";
-    return false;
-  }
-  if (!hasSkill(Skill::get(SkillId::ARCHERY)) && item->getClass() == ItemClass::RANGED_WEAPON) {
-    if (reason)
-      *reason = "You don't have the skill to shoot a bow.";
     return false;
   }
   if (numGood(BodyPart::ARM) == 1 && item->isWieldedTwoHanded()) {
@@ -586,7 +578,7 @@ CreatureAction Creature::applySquare() {
 }
 
 CreatureAction Creature::hide() {
-  if (!skills[SkillId::AMBUSH])
+  if (!hasSkill(Skill::get(SkillId::AMBUSH)))
     return CreatureAction("You don't have this skill.");
   if (!getConstSquare()->canHide())
     return CreatureAction("You can't hide here.");
@@ -832,7 +824,7 @@ int simulAttackPen(int attackers) {
   return max(0, (attackers - 1) * 2);
 }
 
-int Creature::toHitBonus() const {
+int Creature::accuracyBonus() const {
   if (Item* weapon = getWeapon())
     return -max(0, weapon->getMinStrength() - getAttr(AttrType::STRENGTH));
   else
@@ -844,6 +836,8 @@ int Creature::getAttr(AttrType type) const {
   for (Item* item : equipment.getItems())
     if (equipment.isEquiped(item))
       def += item->getModifier(type);
+  for (SkillId skill : ENUM_ALL(SkillId))
+    def += Skill::get(skill)->getModifier(this, type);
   switch (type) {
     case AttrType::STRENGTH:
         def += tribe->getHandicap();
@@ -865,6 +859,7 @@ int Creature::getAttr(AttrType type) const {
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         def -= simulAttackPen(numAttacksThisTurn);
         break;
+    case AttrType::FIRED_DAMAGE: 
     case AttrType::THROWN_DAMAGE: 
         def += getAttr(AttrType::DEXTERITY);
         if (isAffected(LastingEffect::PANIC))
@@ -890,11 +885,12 @@ int Creature::getAttr(AttrType type) const {
         if (isAffected(LastingEffect::SLEEP))
           def *= 0.66;
         break;
-    case AttrType::THROWN_TO_HIT: 
+    case AttrType::FIRED_ACCURACY: 
+    case AttrType::THROWN_ACCURACY: 
         def += getAttr(AttrType::DEXTERITY);
         break;
-    case AttrType::TO_HIT: 
-        def += toHitBonus();
+    case AttrType::ACCURACY: 
+        def += accuracyBonus();
         def += getAttr(AttrType::DEXTERITY);
         if (isAffected(LastingEffect::SLEEP))
           def = 0;
@@ -1113,9 +1109,11 @@ string Creature::getAttrName(AttrType attr) {
   switch (attr) {
     case AttrType::STRENGTH: return "strength";
     case AttrType::DAMAGE: return "damage";
-    case AttrType::TO_HIT: return "accuracy";
+    case AttrType::ACCURACY: return "accuracy";
     case AttrType::THROWN_DAMAGE: return "thrown damage";
-    case AttrType::THROWN_TO_HIT: return "thrown accuracy";
+    case AttrType::THROWN_ACCURACY: return "thrown accuracy";
+    case AttrType::FIRED_DAMAGE: return "projectile damage";
+    case AttrType::FIRED_ACCURACY: return "projectile accuracy";
     case AttrType::DEXTERITY: return "dexterity";
     case AttrType::DEFENSE: return "defense";
     case AttrType::SPEED: return "speed";
@@ -1201,13 +1199,13 @@ CreatureAction Creature::attack(const Creature* c1, Optional<AttackLevel> attack
     return CreatureAction("Invalid attack level.");
   return CreatureAction([=] () {
   Debug() << getTheName() << " attacking " << c->getName();
-  int toHit =  getAttr(AttrType::TO_HIT);
+  int accuracy =  getAttr(AttrType::ACCURACY);
   int damage = getAttr(AttrType::DAMAGE);
-  int toHitVariance = 1 + toHit / 3;
+  int accuracyVariance = 1 + accuracy / 3;
   int damageVariance = 1 + damage / 3;
-  auto rToHit = [=] () { return Random.getRandom(-toHitVariance, toHitVariance); };
+  auto rAccuracy = [=] () { return Random.getRandom(-accuracyVariance, accuracyVariance); };
   auto rDamage = [=] () { return Random.getRandom(-damageVariance, damageVariance); };
-  toHit += rToHit() + rToHit();
+  accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
   bool backstab = false;
   string enemyName = getLevel()->playerCanSee(c) ? c->getTheName() : "something";
@@ -1221,7 +1219,7 @@ CreatureAction Creature::attack(const Creature* c1, Optional<AttackLevel> attack
     you(MsgType::ATTACK_SURPRISE, enemyName);
   }
   AttackLevel attackLevel = attackLevel1 ? (*attackLevel1) : getRandomAttackLevel();
-  Attack attack(this, attackLevel, getAttackType(), toHit, damage, backstab,
+  Attack attack(this, attackLevel, getAttackType(), accuracy, damage, backstab,
       getWeapon() ? getWeapon()->getAttackEffect() : attackEffect);
   if (!c->dodgeAttack(attack)) {
     if (getWeapon()) {
@@ -1246,14 +1244,15 @@ CreatureAction Creature::attack(const Creature* c1, Optional<AttackLevel> attack
 
 bool Creature::dodgeAttack(const Attack& attack) {
   ++numAttacksThisTurn;
-  Debug() << getTheName() << " dodging " << attack.getAttacker()->getName() << " to hit " << attack.getToHit() << " dodge " << getAttr(AttrType::TO_HIT);
+  Debug() << getTheName() << " dodging " << attack.getAttacker()->getName()
+    << " accuracy " << attack.getAccuracy() << " dodge " << getAttr(AttrType::ACCURACY);
   if (const Creature* c = attack.getAttacker()) {
     if (!canSee(c))
       unknownAttacker.push_back(c);
     if (!contains(privateEnemies, c) && c->getTribe() != tribe)
       privateEnemies.push_back(c);
   }
-  return canSee(attack.getAttacker()) && attack.getToHit() <= getAttr(AttrType::TO_HIT);
+  return canSee(attack.getAttacker()) && attack.getAccuracy() <= getAttr(AttrType::ACCURACY);
 }
 
 double Creature::getMinDamage(BodyPart part) const {
@@ -1565,8 +1564,6 @@ void Creature::take(vector<PItem> items) {
 void Creature::take(PItem item) {
  /* item->identify();
   Debug() << (specialMonster ? "special monster " : "") + getTheName() << " takes " << item->getNameAndModifiers();*/
-  if (item->getClass() == ItemClass::RANGED_WEAPON)
-    addSkill(Skill::get(SkillId::ARCHERY));
   Item* ref = item.get();
   equipment.addItem(std::move(item));
   if (auto action = equip(ref))
@@ -1656,8 +1653,6 @@ CreatureAction Creature::fire(Vec2 direction) {
   CHECK(direction.length8() == 1);
   if (getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())
     return CreatureAction("You need a ranged weapon.");
-  if (!hasSkill(Skill::get(SkillId::ARCHERY)))
-    return CreatureAction("You don't have this skill.");
   if (numGood(BodyPart::ARM) < 2)
     return CreatureAction("You need two hands to shoot a bow.");
   if (!getAmmo())
@@ -1765,13 +1760,19 @@ void consumeAttr(Optional<T>& mine, Optional<T>& his, vector<string>& adjectives
   }
 }
 
-void consumeAttr(EnumSet<SkillId>& mine, EnumSet<SkillId>& his, vector<string>& adjectives) {
+void consumeAttr(Skillset& mine, Skillset& his, vector<string>& adjectives) {
   bool was = false;
-  for (SkillId skill : his)
-    if (!mine[skill] && Skill::get(skill)->canConsume() && consumeProb()) {
-      mine.insert(skill);
+  for (SkillId id : his.getAllDiscrete())
+    if (!mine.hasDiscrete(id) && Skill::get(id)->transferOnConsumption() && consumeProb()) {
+      mine.insert(id);
       was = true;
     }
+  for (SkillId id : ENUM_ALL(SkillId)) {
+    if (!Skill::get(id)->isDiscrete() && mine.getValue(id) < his.getValue(id)) {
+      mine.setValue(id, his.getValue(id));
+      was = true;
+    }
+  }
   if (was)
     adjectives.push_back("more skillfull");
 }
@@ -1888,7 +1889,7 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) {
   else if (item->getWeight() > 20)
     return CreatureAction(item->getTheName() + " is too heavy!");
   int dist = 0;
-  int toHitVariance = 10;
+  int accuracyVariance = 10;
   int attackVariance = 10;
   int str = getAttr(AttrType::STRENGTH);
   if (item->getWeight() <= 0.5)
@@ -1899,15 +1900,15 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) {
     dist = 2 * str / 15;
   else 
     FAIL << "Item too heavy.";
-  int toHit = Random.getRandom(-toHitVariance, toHitVariance) +
-      getAttr(AttrType::THROWN_TO_HIT) + item->getModifier(AttrType::THROWN_TO_HIT);
+  int accuracy = Random.getRandom(-accuracyVariance, accuracyVariance) +
+      getAttr(AttrType::THROWN_ACCURACY) + item->getModifier(AttrType::THROWN_ACCURACY);
   int damage = Random.getRandom(-attackVariance, attackVariance) +
       getAttr(AttrType::THROWN_DAMAGE) + item->getModifier(AttrType::THROWN_DAMAGE);
-  if (hasSkill(Skill::get(SkillId::KNIFE_THROWING)) && item->getAttackType() == AttackType::STAB) {
-    damage += 7;
-    toHit += 4;
+  if (item->getAttackType() == AttackType::STAB) {
+    damage += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, AttrType::THROWN_DAMAGE);
+    accuracy += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, AttrType::THROWN_ACCURACY);
   }
-  Attack attack(this, getRandomAttackLevel(), item->getAttackType(), toHit, damage, false, Nothing());
+  Attack attack(this, getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, Nothing());
   return CreatureAction([=]() {
     playerMessage("You throw " + item->getAName(false, isBlind()));
     monsterMessage(getTheName() + " throws " + item->getAName());
@@ -2029,7 +2030,7 @@ bool Creature::canEnter(const MovementType& movement) const {
   return movement.canEnter(MovementType(getTribe(), {
       true,
       isAffected(LastingEffect::FLYING),
-      skills[SkillId::SWIMMING],
+      hasSkill(Skill::get(SkillId::SWIMMING)),
       contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size)}));
  /* return movement.hasTrait(MovementTrait::WALK)
     || (skills[SkillId::SWIMMING] && movement.hasTrait(MovementTrait::SWIM))
@@ -2074,11 +2075,6 @@ Gender Creature::getGender() const {
 
 void Creature::increaseExpLevel(double amount) {
   expLevel = min<double>(maxLevel, amount + expLevel);
-  if (skillGain.count(getExpLevel()) && isHumanoid()) {
-    you(MsgType::ARE, "more experienced");
-    addSkill(skillGain.at(getExpLevel()));
-    skillGain.erase(getExpLevel());
-  }
 }
 
 int Creature::getExpLevel() const {
@@ -2087,7 +2083,7 @@ int Creature::getExpLevel() const {
 
 int Creature::getDifficultyPoints() const {
   difficultyPoints = max<double>(difficultyPoints,
-      getAttr(AttrType::DEFENSE) + getAttr(AttrType::TO_HIT) + getAttr(AttrType::DAMAGE)
+      getAttr(AttrType::DEFENSE) + getAttr(AttrType::ACCURACY) + getAttr(AttrType::DAMAGE)
       + getAttr(AttrType::SPEED) / 10);
   return difficultyPoints;
 }
@@ -2279,7 +2275,7 @@ string Creature::getNameAndTitle() const {
 }
 
 Vision* Creature::getVision() const {
-  if (hasSkill(Skill::get(SkillId::ELF_VISION)))
+  if (hasSkill(Skill::get(SkillId::ELF_VISION)) || isAffected(LastingEffect::FLYING))
     return Vision::get(VisionId::ELF);
   if (hasSkill(Skill::get(SkillId::NIGHT_VISION)))
     return Vision::get(VisionId::NIGHT);
@@ -2348,6 +2344,16 @@ vector<string> Creature::getAdjectives() const {
   return ret;
 }
 
+vector<Creature::SkillInfo> Creature::getSkillNames() const {
+  vector<SkillInfo> ret;
+  for (auto skill : getDiscreteSkills())
+    ret.push_back({Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
+  for (SkillId id : ENUM_ALL(SkillId))
+    if (!Skill::get(id)->isDiscrete() && getSkillValue(Skill::get(id)) > 0)
+      ret.push_back({Skill::get(id)->getNameForCreature(this), Skill::get(id)->getHelpText()});
+  return ret;
+}
+
 void Creature::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.messageBuffer = controller->getMessages();
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
@@ -2380,8 +2386,8 @@ void Creature::refreshGameInfo(GameInfo& gameInfo) const {
       isAffected(LastingEffect::RAGE) ? -1 : isAffected(LastingEffect::PANIC) ? 1 : 0,
       "Affects if and how much damage is taken in combat."},
     {"accuracy",
-      getAttr(AttrType::TO_HIT),
-      toHitBonus(),
+      getAttr(AttrType::ACCURACY),
+      accuracyBonus(),
       "Defines the chance of a successful melee attack and dodging."},
     {"strength",
       getAttr(AttrType::STRENGTH),
@@ -2399,9 +2405,7 @@ void Creature::refreshGameInfo(GameInfo& gameInfo) const {
       getAttr(AttrType::SPEED),
       isAffected(LastingEffect::SPEED) ? 1 : isAffected(LastingEffect::SLOWED) ? -1 : 0,
       "Affects how much time every action takes."}};
-  info.skills.clear();
-  for (auto skill : getSkills())
-    info.skills.push_back({skill->getName(), skill->getHelpText()});
+  info.skills = getSkillNames();
   info.attributes.push_back({"gold", int(getGold(100000000).size()), 0, ""});
   gameInfo.time = getTime();
  /* info.elfStanding = Tribe::get(TribeId::ELVEN)->getStanding(this);

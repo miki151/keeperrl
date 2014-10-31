@@ -132,10 +132,7 @@ class CreatureAttributes {
   bool SERIAL2(dontChase, false);
   double SERIAL2(damageMultiplier, 1);
   double SERIAL2(attributeGain, 0.5);
-  EnumSet<SkillId> SERIAL(skills);
-  map<int, Skill*> skillGain {
-    {6, Skill::get(SkillId::KNIFE_THROWING)}};
-  SERIAL3(skillGain);
+  Skillset SERIAL(skills);
   vector<SpellInfo> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<MinionTask, double> SERIAL(minionTasks);

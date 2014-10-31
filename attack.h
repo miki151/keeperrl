@@ -29,7 +29,7 @@ class Attack {
 
   const Creature* getAttacker() const;
   int getStrength() const;
-  int getToHit() const;
+  int getAccuracy() const;
   AttackType getType() const;
   AttackLevel getLevel() const;
   bool inTheBack() const;
@@ -39,7 +39,7 @@ class Attack {
   const Creature* attacker;
   AttackLevel level;
   AttackType type;
-  int toHit;
+  int accuracy;
   int strength;
   bool back;
   Optional<EffectType> effect;

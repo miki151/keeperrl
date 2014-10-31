@@ -74,7 +74,6 @@ class LevelMaker {
   static LevelMaker* cavernLevel(CreatureFactory cfactory, SquareType wallType, SquareType floorType,
       StairLook stairLook, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* topLevel(CreatureFactory forrest, vector<SettlementInfo> village);
-  static LevelMaker* topLevel2(CreatureFactory forrest, vector<SettlementInfo> village);
   static LevelMaker* mineTownLevel(SettlementInfo);
 
   static LevelMaker* pyramidLevel(Optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
