@@ -342,30 +342,31 @@ string Item::getArtifactName() const {
 string Item::getNameAndModifiers(bool getPlural, bool blind) const {
   if (inspected) {
     string artStr = artifactName ? " named " + *artifactName : "";
-    EnumSet<AttrType> printAttr;
-    string attrString;
+    EnumSet<ModifierType> printMod;
     switch (getClass()) {
       case ItemClass::WEAPON:
-        printAttr.insert(AttrType::ACCURACY);
-        printAttr.insert(AttrType::DAMAGE);
+        printMod.insert(ModifierType::ACCURACY);
+        printMod.insert(ModifierType::DAMAGE);
         break;
       case ItemClass::ARMOR:
-        printAttr.insert(AttrType::DEFENSE);
+        printMod.insert(ModifierType::DEFENSE);
         break;
       case ItemClass::RANGED_WEAPON:
       case ItemClass::AMMO:
-        printAttr.insert(AttrType::FIRED_ACCURACY);
+        printMod.insert(ModifierType::FIRED_ACCURACY);
         break;
       default: break;
     }
+    for (auto mod : ENUM_ALL(ModifierType))
+      if (modifiers[mod] != 0)
+        printMod.insert(mod);
+    vector<string> attrStrings;
+    for (auto mod : printMod)
+      attrStrings.push_back(withSign(modifiers[mod]) + " " + Creature::getModifierName(mod));
     for (auto attr : ENUM_ALL(AttrType))
-      if (modifiers[attr] != 0)
-        printAttr.insert(attr);
-    for (auto attr : printAttr) {
-      if (!attrString.empty())
-        attrString += ", ";
-      attrString += withSign(modifiers[attr]) + " " + Creature::getAttrName(attr);
-    }
+      if (attrs[attr] != 0)
+        attrStrings.push_back(withSign(attrs[attr]) + " " + Creature::getAttrName(attr));
+    string attrString = combine(attrStrings);
     if (!attrString.empty())
       attrString = " (" + attrString + ")";
     return getName(getPlural, blind) + artStr + attrString;
@@ -414,14 +415,18 @@ EquipmentSlot Item::getEquipmentSlot() const {
   return *equipmentSlot;
 }
 
-void Item::addModifier(AttrType attributeType, int value) {
-  modifiers[attributeType] += value;
+void Item::addModifier(ModifierType type, int value) {
+  modifiers[type] += value;
 }
 
-int Item::getModifier(AttrType attributeType) const {
-  return modifiers[attributeType];
+int Item::getModifier(ModifierType type) const {
+  return modifiers[type];
 }
-  
+
+int Item::getAttr(AttrType type) const {
+  return attrs[type];
+}
+ 
 AttackType Item::getAttackType() const {
   return attackType;
 }

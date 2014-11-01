@@ -1234,6 +1234,11 @@ T chooseRandom(EnumMap<T, double> vi, double r = -1) {
   return chooseRandom(v, p);
 }
 
+template <typename T>
+T chooseRandom() {
+  return T(Random.getRandom(EnumInfo<T>::getSize()));
+}
+
 template <typename U, typename V>
 class BiMap {
   public:

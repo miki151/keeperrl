@@ -24,6 +24,7 @@
 #include "gender.h"
 #include "effect.h"
 #include "minion_task.h"
+#include "item_attributes.h"
 
 // WTF is this defined
 #undef HUGE
@@ -87,11 +88,8 @@ class CreatureAttributes {
   Optional<ViewId> SERIAL(undeadViewId);
   MustInitialize<string> SERIAL(name);
   Optional<string> SERIAL(undeadName);
-  MustInitialize<int> SERIAL(speed);
+  EnumMap<AttrType, int> SERIAL(attr);
   MustInitialize<CreatureSize> SERIAL(size);
-  MustInitialize<int> SERIAL(strength);
-  MustInitialize<int> SERIAL(dexterity);
-  int SERIAL2(willpower, 12);
   MustInitialize<double> SERIAL(weight);
   Optional<string> SERIAL(chatReactionFriendly);
   Optional<string> SERIAL(chatReactionHostile);
@@ -125,7 +123,6 @@ class CreatureAttributes {
   bool SERIAL2(stationary, false);
   bool SERIAL2(noSleep, false);
   double SERIAL2(courage, 1);
-  int SERIAL2(maxLevel, 10);
   bool SERIAL2(carryAnything, false);
   bool SERIAL2(invincible, false);
   bool SERIAL2(worshipped, false);

@@ -33,6 +33,7 @@ enum class MsgType;
 enum class BodyPart;
 enum class AttackType;
 enum class AttackLevel;
+enum class ModifierType;
 enum class AttrType;
 enum class ItemClass;
 enum class EquipmentSlot;

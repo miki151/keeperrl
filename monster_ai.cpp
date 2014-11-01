@@ -85,8 +85,8 @@ Item* Behaviour::getBestWeapon() {
   Item* best = nullptr;
   int damage = -1;
   for (Item* item : creature->getEquipment().getItems(Item::classPredicate(ItemClass::WEAPON))) 
-    if (item->getModifier(AttrType::DAMAGE) > damage) {
-      damage = item->getModifier(AttrType::DAMAGE);
+    if (item->getModifier(ModifierType::DAMAGE) > damage) {
+      damage = item->getModifier(ModifierType::DAMAGE);
       best = item;
     }
   return best;
@@ -361,12 +361,12 @@ class Fighter : public Behaviour {
   virtual MoveInfo getMove() override {
     const Creature* other = getClosestEnemy();
     if (other != nullptr) {
-      double myDamage = creature->getAttr(AttrType::DAMAGE);
+      double myDamage = creature->getModifier(ModifierType::DAMAGE);
       Item* weapon = getBestWeapon();
       if (!creature->getWeapon() && weapon)
-        myDamage += weapon->getModifier(AttrType::DAMAGE);
-      double powerRatio = getMoraleBonus() * myDamage / other->getAttr(AttrType::DAMAGE);
-      bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
+        myDamage += weapon->getModifier(ModifierType::DAMAGE);
+      double powerRatio = getMoraleBonus() * myDamage / other->getModifier(ModifierType::DAMAGE);
+      bool significantEnemy = myDamage < 5 * other->getModifier(ModifierType::DAMAGE);
       double weight = 1. - creature->getHealth() * 0.9;
       if (powerRatio < maxPowerRatio)
         weight += 2 - powerRatio * 2;
@@ -427,11 +427,11 @@ class Fighter : public Behaviour {
       return 0.1;
     if (item->getClass() != ItemClass::WEAPON || creature->getAttr(AttrType::STRENGTH) < item->getMinStrength())
       return 0;
-    if (item->getModifier(AttrType::THROWN_DAMAGE) > 0)
-      return (double)item->getModifier(AttrType::THROWN_DAMAGE) / 50;
-    int damage = item->getModifier(AttrType::DAMAGE);
+    if (item->getModifier(ModifierType::THROWN_DAMAGE) > 0)
+      return (double)item->getModifier(ModifierType::THROWN_DAMAGE) / 50;
+    int damage = item->getModifier(ModifierType::DAMAGE);
     Item* best = getBestWeapon();
-    if (best && best != item && best->getModifier(AttrType::DAMAGE) >= damage)
+    if (best && best != item && best->getModifier(ModifierType::DAMAGE) >= damage)
         return 0;
     return (double)damage / 50;
   }
@@ -454,7 +454,7 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
           it->getEffectType()))
       return 100;
-    return it->getModifier(AttrType::THROWN_DAMAGE);
+    return it->getModifier(ModifierType::THROWN_DAMAGE);
   }
 
   MoveInfo getThrowMove(Vec2 enemyDir) {

@@ -27,20 +27,23 @@
 
 class EnemyCheck;
 
-RICH_ENUM(AttrType,
-  STRENGTH,
+RICH_ENUM(ModifierType,
   DAMAGE,
   ACCURACY,
   THROWN_DAMAGE,
   THROWN_ACCURACY,
   FIRED_DAMAGE,
   FIRED_ACCURACY,
-  DEXTERITY,
   DEFENSE,
-  SPEED,
-  INV_LIMIT,
-  WILLPOWER
+  INV_LIMIT
 );
+
+RICH_ENUM(AttrType,
+  STRENGTH,
+  DEXTERITY,
+  SPEED
+);
+
 
 enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, EAT, HIT, SHOOT, SPELL, POSSESS};
 
@@ -68,7 +71,8 @@ class ItemAttributes {
   double SERIAL2(flamability, 0);
   int SERIAL2(price, 0);
   bool SERIAL2(noArticle, false);
-  EnumMap<AttrType, int> SERIAL(modifiers);
+  EnumMap<ModifierType, int> SERIAL(modifiers);
+  EnumMap<AttrType, int> SERIAL(attrs);
   bool SERIAL2(twoHanded, false);
   AttackType SERIAL2(attackType, AttackType::HIT);
   double SERIAL2(attackTime, 1);

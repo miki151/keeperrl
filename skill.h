@@ -33,6 +33,7 @@ RICH_ENUM(SkillId,
   ELF_VISION,
   NIGHT_VISION,
   DISARM_TRAPS,
+  SORCERY,
   CONSUMPTION
 );
 
@@ -45,7 +46,7 @@ class Skill : public Singleton<Skill, SkillId> {
   bool transferOnConsumption() const;
   bool isDiscrete() const;
 
-  int getModifier(const Creature*, AttrType) const;
+  int getModifier(const Creature*, ModifierType) const;
 
   static void init();
 

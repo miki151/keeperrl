@@ -124,6 +124,8 @@ string ViewObject::getDescription(bool stats) const {
     mods.push_back("poisoned");
   if (hasModifier(Modifier::PLANNED))
     mods.push_back("planned");
+  if (hasModifier(Modifier::SLEEPING))
+    mods.push_back("sleeping");
   if (mods.size() > 0)
     return description + attr + "(" + combine(mods) + ")";
   else

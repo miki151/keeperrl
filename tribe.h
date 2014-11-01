@@ -57,8 +57,6 @@ class Tribe : public Singleton<Tribe, TribeId> {
   const string& getName() const;
   void addEnemy(Tribe*);
   void addFriend(Tribe*);
-  int getHandicap() const;
-  void setHandicap(int);
 
   SERIALIZATION_DECL(Tribe);
 
@@ -85,7 +83,6 @@ class Tribe : public Singleton<Tribe, TribeId> {
   vector<const Creature*> SERIAL(members);
   unordered_set<Tribe*> SERIAL(enemyTribes);
   string SERIAL(name);
-  int SERIAL2(handicap, 0);
 };
 
 #endif

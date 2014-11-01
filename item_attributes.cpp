@@ -49,7 +49,8 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(identifyOnApply)
     & SVAR(identifiable)
     & SVAR(identifyOnEquip)
-    & SVAR(modifiers);
+    & SVAR(modifiers)
+    & SVAR(attrs);
   CHECK_SERIAL;
 }
 

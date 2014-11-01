@@ -110,7 +110,7 @@ const Tribe* VillageControl::getTribe() const {
 
 
 static int expLevelFun(double time) {
-  return max(0.0, time - 1000) / 500;
+  return 10 + max(0.0, time - 1000) / 500;
 }
 
 void VillageControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
@@ -404,7 +404,7 @@ class TopLevelVillageControl : public PeacefulControl {
     attackTrigger->tick(time);
     for (Creature* c : getCreatures())
       if (c->getExpLevel() < expLevelFun(time))
-        c->increaseExpLevel(1);
+        c->exerciseAttr(chooseRandom<AttrType>());
   }
 
   void setPowerTrigger(double killedCoeff, double powerCoeff) {

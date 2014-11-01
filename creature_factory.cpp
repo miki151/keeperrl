@@ -153,7 +153,7 @@ class BoulderController : public Monster {
         return;
       }
     }
-    double speed = creature->getSpeed();
+    double speed = creature->getAttr(AttrType::SPEED);
     double deceleration = 0.1;
     speed -= deceleration * 100 * 100 / speed;
     if (speed < 30) {
@@ -166,7 +166,7 @@ class BoulderController : public Monster {
       creature->setStationary();
       myTribe = nullptr;
     }
-    creature->setSpeed(speed);
+    creature->setBoulderSpeed(speed);
   }
 
   virtual void you(MsgType type, const string& param) override {
@@ -196,7 +196,7 @@ class BoulderController : public Monster {
     c->playerMessage("You push " + something);
     if (stopped || dir == direction) {
       direction = dir;
-      creature->setSpeed(100 * c->getAttr(AttrType::STRENGTH) / 30);
+      creature->setBoulderSpeed(100 * c->getAttr(AttrType::STRENGTH) / 30);
       stopped = false;
     }
   }
@@ -244,12 +244,12 @@ class Boulder : public Creature {
 PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
   return PCreature(new Boulder(CATTR(
             c.viewId = ViewId::BOULDER;
-            c.dexterity = 1;
-            c.strength = 1000;
+            c.attr[AttrType::DEXTERITY] = 1;
+            c.attr[AttrType::STRENGTH] = 1000;
             c.weight = 1000;
             c.humanoid = false;
             c.size = CreatureSize::LARGE;
-            c.speed = 200;
+            c.attr[AttrType::SPEED] = 200;
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.stationary = true;
             c.noSleep = true;
@@ -262,12 +262,12 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
 PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
   return PCreature(new Boulder(CATTR(
             c.viewId = ViewId::BOULDER;
-            c.dexterity = 1;
-            c.strength = 1000;
+            c.attr[AttrType::DEXTERITY] = 1;
+            c.attr[AttrType::STRENGTH] = 1000;
             c.weight = 1000;
             c.humanoid = false;
             c.size = CreatureSize::LARGE;
-            c.speed = 140;
+            c.attr[AttrType::SPEED] = 140;
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.noSleep = true;
             c.stationary = true;
@@ -280,10 +280,10 @@ PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
 CreatureAttributes getKrakenAttributes(ViewId id) {
   return CATTR(
       c.viewId = id;
-      c.speed = 40;
+      c.attr[AttrType::SPEED] = 40;
       c.size = CreatureSize::LARGE;
-      c.strength = 15;
-      c.dexterity = 15;
+      c.attr[AttrType::STRENGTH] = 15;
+      c.attr[AttrType::DEXTERITY] = 15;
       c.barehandedDamage = 10;
       c.humanoid = false;
       c.bodyParts.clear();
@@ -701,10 +701,10 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
   PCreature ret(new Creature(tribe,
       CATTR(
         c.viewId = ViewId::SHOPKEEPER;
-        c.speed = 100;
+        c.attr[AttrType::SPEED] = 100;
         c.size = CreatureSize::LARGE;
-        c.strength = 17;
-        c.dexterity = 13;
+        c.attr[AttrType::STRENGTH] = 17;
+        c.attr[AttrType::DEXTERITY] = 13;
         c.barehandedDamage = 13;
         c.humanoid = true;
         c.weight = 100;
@@ -893,13 +893,17 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
   r.init(hash<string>()(name));
   PCreature c = get(CATTR(
         c.viewId = humanoid ? ViewId::SPECIAL_HUMANOID : ViewId::SPECIAL_BEAST;
-        c.speed = r.getRandom(70, 150);
+        c.attr[AttrType::SPEED] = r.getRandom(70, 150);
         c.size = chooseRandom({CreatureSize::SMALL, CreatureSize::MEDIUM, CreatureSize::LARGE}, {1, 1, 1});
-        c.strength = r.getRandom(20, 26);
-        c.dexterity = r.getRandom(20, 26);
+        c.attr[AttrType::STRENGTH] = r.getRandom(20, 26);
+        c.attr[AttrType::DEXTERITY] = r.getRandom(20, 26);
         c.barehandedDamage = r.getRandom(5, 15);
         c.humanoid = humanoid;
         c.spawnType = humanoid ? SpawnType::HUMANOID : SpawnType::BEAST;
+        c.skills.setValue(SkillId::WEAPON_MELEE, r.getDouble(0, 1));
+        c.skills.setValue(SkillId::UNARMED_MELEE, r.getDouble(0, 1));
+        c.skills.setValue(SkillId::ARCHERY, r.getDouble(0, 1));
+        c.skills.setValue(SkillId::SORCERY, r.getDouble(0, 1));
         c.weight = c.size == CreatureSize::LARGE ? r.getRandom(80,120) : 
                    c.size == CreatureSize::MEDIUM ? r.getRandom(40, 60) :
                    r.getRandom(5, 20);
@@ -918,8 +922,8 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         if (!(*c.humanoid) && Random.roll(10)) {
           c.uncorporal = true;
           c.bodyParts.clear();
-          *c.strength -= 5;
-          *c.dexterity += 10;
+          c.attr[AttrType::STRENGTH] -= 5;
+          c.attr[AttrType::DEXTERITY] += 10;
           c.barehandedDamage += 10;
         } else {
           if (r.roll(4)) {
@@ -929,8 +933,8 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
           if (*c.humanoid == false) {
             c.bodyParts[BodyPart::ARM] = r.roll(2) ? 2 : 0;
             c.bodyParts[BodyPart::LEG] = r.getRandom(3) * 2;
-            *c.strength += 5;
-            *c.dexterity += 5;
+            c.attr[AttrType::STRENGTH] += 5;
+            c.attr[AttrType::DEXTERITY] += 5;
             c.barehandedDamage += 5;
             switch (Random.getRandom(8)) {
               case 0: c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON); break;
@@ -988,11 +992,11 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::KEEPER;
           c.undeadViewId = ViewId::UNDEAD_KEEPER;
           c.undeadName = "Lich";
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.weight = 90;
           c.size = CreatureSize::LARGE;
-          c.strength = 15;
-          c.dexterity = 15;
+          c.attr[AttrType::STRENGTH] = 15;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 5;
           c.humanoid = true;
           c.name = "Keeper";
@@ -1001,14 +1005,15 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attributeGain = 1;
           c.minionTasks[MinionTask::STUDY] = 1;
           c.minionTasks[MinionTask::LABORATORY] = 0.0001; 
+          c.skills.setValue(SkillId::SORCERY, 0.2);
           c.minionTasks[MinionTask::WORSHIP] = 0.0001;);
     case CreatureId::BANDIT: 
       return CATTR(
           c.viewId = ViewId::BANDIT;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 18;
-          c.dexterity = 15;
+          c.attr[AttrType::STRENGTH] = 18;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1019,10 +1024,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::GHOST: 
       return CATTR(
           c.viewId = ViewId::GHOST;
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::LARGE;
-          c.strength = 14;
-          c.dexterity = 15;
+          c.attr[AttrType::STRENGTH] = 14;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 3;
           c.barehandedAttack = AttackType::HIT;
           c.humanoid = false;
@@ -1036,15 +1041,15 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::SPIRIT:
       return INHERIT(GHOST,
           c.viewId = ViewId::SPIRIT;
-          c.strength = 24;
-          c.speed = 100;
-          c.dexterity = 30;
+          c.attr[AttrType::STRENGTH] = 24;
+          c.attr[AttrType::SPEED] = 100;
+          c.attr[AttrType::DEXTERITY] = 30;
           c.barehandedDamage = 30;
           c.name = "ancient spirit";);
     case CreatureId::LOST_SOUL:
       return INHERIT(GHOST,
-          c.strength = 5;
-          c.dexterity = 25;
+          c.attr[AttrType::STRENGTH] = 5;
+          c.attr[AttrType::DEXTERITY] = 25;
           c.courage = 10;
           c.spawnType = SpawnType::DEMON;
           c.barehandedAttack = AttackType::POSSESS;
@@ -1052,7 +1057,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.name = "ghost";);
     case CreatureId::SUCCUBUS:
       return INHERIT(GHOST,
-          c.strength = 5;
+          c.attr[AttrType::STRENGTH] = 5;
           c.viewId = ViewId::SUCCUBUS;
           c.spawnType = SpawnType::DEMON;
           c.minionTasks[MinionTask::COPULATE] = 1;
@@ -1079,10 +1084,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DEVIL: 
       return CATTR(
           c.viewId = ViewId::DEVIL;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 19;
-          c.dexterity = 16;
+          c.attr[AttrType::STRENGTH] = 19;
+          c.attr[AttrType::DEXTERITY] = 16;
           c.barehandedDamage = 10;
           c.humanoid = true;
           c.weight = 80;
@@ -1092,10 +1097,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DARK_KNIGHT: 
       return CATTR(
           c.viewId = ViewId::DARK_KNIGHT;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 22;
-          c.dexterity = 19;
+          c.attr[AttrType::STRENGTH] = 22;
+          c.attr[AttrType::DEXTERITY] = 19;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1105,10 +1110,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::WITCH: 
       return CATTR(
           c.viewId = ViewId::WITCH;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 14;
-          c.dexterity = 12;
+          c.attr[AttrType::STRENGTH] = 14;
+          c.attr[AttrType::DEXTERITY] = 12;
           c.barehandedDamage = 6;
           c.humanoid = true;
           c.weight = 50;
@@ -1119,10 +1124,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::CYCLOPS: 
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 25;
-          c.dexterity = 18;
+          c.attr[AttrType::STRENGTH] = 25;
+          c.attr[AttrType::DEXTERITY] = 18;
           c.barehandedDamage = 10;
           c.humanoid = true;
           c.weight = 150;
@@ -1131,10 +1136,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
-          c.speed = 90;
+          c.attr[AttrType::SPEED] = 90;
           c.size = CreatureSize::HUGE;
-          c.strength = 40;
-          c.dexterity = 25;
+          c.attr[AttrType::STRENGTH] = 40;
+          c.attr[AttrType::DEXTERITY] = 25;
           c.barehandedDamage = 5;
           c.barehandedAttack = AttackType::EAT;
           c.humanoid = false;
@@ -1156,15 +1161,16 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::KNIGHT: 
       return CATTR(
           c.viewId = ViewId::KNIGHT;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 26;
-          c.dexterity = 19;
+          c.attr[AttrType::STRENGTH] = 26;
+          c.attr[AttrType::DEXTERITY] = 19;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Die!\"";
+          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "knight";);
     case CreatureId::CASTLE_GUARD: 
       return INHERIT(KNIGHT,
@@ -1173,16 +1179,17 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::AVATAR: 
       return INHERIT(KNIGHT,
           c.viewId = ViewId::AVATAR;
-          c.strength += 5;
-          c.dexterity += 2;
+          c.attr[AttrType::STRENGTH] += 3;
+          c.attr[AttrType::DEXTERITY] += 2;
           c.courage = 3;
           c.barehandedDamage += 5;
+          c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext(););
     case CreatureId::WARRIOR:
       return INHERIT(KNIGHT,
           c.viewId = ViewId::WARRIOR;
-          c.strength -= 3;
-          c.dexterity -= 3;
+          c.attr[AttrType::STRENGTH] -= 3;
+          c.attr[AttrType::DEXTERITY] -= 3;
           c.name = "warrior";);
     case CreatureId::SHAMAN:
       return INHERIT(WARRIOR,
@@ -1192,27 +1199,29 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
           c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
           c.spells.push_back(Creature::getSpell(SpellId::SUMMON_SPIRIT));
+          c.skills.setValue(SkillId::SORCERY, 1);
           c.name = "shaman";);
     case CreatureId::ARCHER: 
       return CATTR(
           c.viewId = ViewId::ARCHER;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 17;
-          c.dexterity = 22;
+          c.attr[AttrType::STRENGTH] = 17;
+          c.attr[AttrType::DEXTERITY] = 22;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Die!\"";
+          c.skills.setValue(SkillId::ARCHERY, 1);
           c.name = "archer";);
     case CreatureId::PESEANT: 
       return CATTR(
           c.viewId = chooseRandom({ViewId::PESEANT, ViewId::PESEANT_WOMAN});
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::LARGE;
-          c.strength = 14;
-          c.dexterity = 12;
+          c.attr[AttrType::STRENGTH] = 14;
+          c.attr[AttrType::DEXTERITY] = 12;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1223,10 +1232,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::CHILD: 
       return INHERIT(PESEANT,
           c.viewId = ViewId::CHILD;
-          c.speed = 140;
+          c.attr[AttrType::SPEED] = 140;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 8;
-          c.dexterity = 16;
+          c.attr[AttrType::STRENGTH] = 8;
+          c.attr[AttrType::DEXTERITY] = 16;
           c.weight = 40;
           c.chatReactionFriendly = "\"plaaaaay!\"";
           c.chatReactionHostile = "\"Heeelp!\"";
@@ -1234,10 +1243,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::CLAY_GOLEM: 
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
-          c.speed = 50;
+          c.attr[AttrType::SPEED] = 50;
           c.size = CreatureSize::LARGE;
-          c.strength = 14;
-          c.dexterity = 12;
+          c.attr[AttrType::STRENGTH] = 14;
+          c.attr[AttrType::DEXTERITY] = 12;
           c.barehandedDamage = 13;
           c.barehandedAttack = AttackType::PUNCH;
           c.humanoid = false;
@@ -1250,26 +1259,26 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::STONE_GOLEM: 
       return INHERIT(CLAY_GOLEM,
           c.viewId = ViewId::STONE_GOLEM;
-          c.speed += 10;
-          c.strength += 2;
-          c.dexterity += 2;
+          c.attr[AttrType::SPEED] += 10;
+          c.attr[AttrType::STRENGTH] += 2;
+          c.attr[AttrType::DEXTERITY] += 2;
           c.barehandedDamage += 2;
           c.weight += 20;
           c.name = "stone golem";);
     case CreatureId::IRON_GOLEM: 
       return INHERIT(STONE_GOLEM,
           c.viewId = ViewId::IRON_GOLEM;
-          c.speed += 10;
-          c.strength += 2;
-          c.dexterity += 2;
+          c.attr[AttrType::SPEED] += 10;
+          c.attr[AttrType::STRENGTH] += 2;
+          c.attr[AttrType::DEXTERITY] += 2;
           c.barehandedDamage += 2;
           c.name = "iron golem";);
     case CreatureId::LAVA_GOLEM: 
       return INHERIT(IRON_GOLEM,
           c.viewId = ViewId::LAVA_GOLEM;
-          c.speed += 10;
-          c.strength += 2;
-          c.dexterity += 2;
+          c.attr[AttrType::SPEED] += 10;
+          c.attr[AttrType::STRENGTH] += 2;
+          c.attr[AttrType::DEXTERITY] += 2;
           c.barehandedDamage += 2;
           c.attackEffect = EffectId::FIRE;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
@@ -1277,10 +1286,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::ACID_MOUND: 
       return CATTR(
           c.viewId = ViewId::ACID_MOUND;
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::LARGE;
-          c.strength = 15;
-          c.dexterity = 5;
+          c.attr[AttrType::STRENGTH] = 15;
+          c.attr[AttrType::DEXTERITY] = 5;
           c.barehandedDamage = 1;
           c.humanoid = false;
           c.passiveAttack = EffectId::ACID;
@@ -1293,10 +1302,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::ZOMBIE: 
       return CATTR(
           c.viewId = ViewId::ZOMBIE;
-          c.speed = 60;
+          c.attr[AttrType::SPEED] = 60;
           c.size = CreatureSize::LARGE;
-          c.strength = 14;
-          c.dexterity = 13;
+          c.attr[AttrType::STRENGTH] = 14;
+          c.attr[AttrType::DEXTERITY] = 13;
           c.barehandedDamage = 13;
           c.humanoid = true;
           c.brain = false;
@@ -1310,10 +1319,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::SKELETON: 
       return CATTR(
           c.viewId = ViewId::SKELETON;
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::LARGE;
-          c.strength = 14;
-          c.dexterity = 13;
+          c.attr[AttrType::STRENGTH] = 14;
+          c.attr[AttrType::DEXTERITY] = 13;
           c.barehandedDamage = 13;
           c.humanoid = true;
           c.brain = false;
@@ -1324,10 +1333,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::VAMPIRE: 
       return CATTR(
           c.viewId = ViewId::VAMPIRE;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 17;
-          c.dexterity = 17;
+          c.attr[AttrType::STRENGTH] = 17;
+          c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 2;
           c.humanoid = true;
           c.weight = 100;
@@ -1340,26 +1349,28 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
           c.minionTasks[MinionTask::STUDY] = 1;
           c.minionTasks[MinionTask::GRAVE] = 1;
+          c.skills.setValue(SkillId::SORCERY, 0.1);
           c.name = "vampire";);
     case CreatureId::VAMPIRE_LORD: 
       return INHERIT(VAMPIRE,
           c.viewId = ViewId::VAMPIRE_LORD;
-          c.speed += 20;
-          c.strength += 1;
-          c.dexterity += 1;
+          c.attr[AttrType::SPEED] += 20;
+          c.attr[AttrType::STRENGTH] += 1;
+          c.attr[AttrType::DEXTERITY] += 1;
           c.barehandedDamage += 4;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.minionTasks[MinionTask::STUDY] = 1;
+          c.skills.setValue(SkillId::SORCERY, 0.5);
           c.name = "vampire lord";);
       /*   case CreatureId::VAMPIRE_BAT: 
            return PCreature(new Shapechanger(
            ViewObject(ViewId::BAT, ViewLayer::CREATURE, "Bat"),
            tribe,
            CATTR(
-           c.speed = 150;
+           c.attr[AttrType::SPEED] = 150;
            c.size = CreatureSize::SMALL;
-           c.strength = 3;
-           c.dexterity = 16;
+           c.attr[AttrType::STRENGTH] = 3;
+           c.attr[AttrType::DEXTERITY] = 16;
            c.barehandedDamage = 12;
            c.humanoid = false;
            c.legs = 0;
@@ -1373,10 +1384,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::MUMMY: 
       return CATTR(
           c.viewId = ViewId::MUMMY;
-          c.speed = 60;
+          c.attr[AttrType::SPEED] = 60;
           c.size = CreatureSize::LARGE;
-          c.strength = 12;
-          c.dexterity = 13;
+          c.attr[AttrType::STRENGTH] = 12;
+          c.attr[AttrType::DEXTERITY] = 13;
           c.barehandedDamage = 13;
           c.humanoid = true;
           c.weight = 100;
@@ -1390,8 +1401,8 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::MUMMY_LORD: 
       return INHERIT(MUMMY,
           c.viewId = ViewId::MUMMY_LORD;
-          c.strength += 4;
-          c.dexterity += 2;
+          c.attr[AttrType::STRENGTH] += 4;
+          c.attr[AttrType::DEXTERITY] += 2;
           c.weight = 120;
           c.chatReactionFriendly = "curses all gravediggers";
           c.chatReactionHostile = "\"Die!\"";
@@ -1399,10 +1410,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::ORC: 
       return CATTR(
           c.viewId = ViewId::ORC;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 16;
-          c.dexterity = 14;
+          c.attr[AttrType::STRENGTH] = 16;
+          c.attr[AttrType::DEXTERITY] = 14;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1414,45 +1425,49 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
           c.minionTasks[MinionTask::LABORATORY] = 0.5; 
           c.minionTasks[MinionTask::SLEEP] = 1;
+          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "orc";);
     case CreatureId::ORC_SHAMAN:
       return INHERIT(ORC,
           c.viewId = ViewId::ORC_SHAMAN;
-          c.strength -= 3;
-          c.dexterity -= 3;
+          c.attr[AttrType::STRENGTH] -= 3;
+          c.attr[AttrType::DEXTERITY] -= 3;
           c.minionTasks.clear();
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
           c.minionTasks[MinionTask::LABORATORY] = 4; 
           c.minionTasks[MinionTask::STUDY] = 4;
           c.minionTasks[MinionTask::SLEEP] = 1;
           c.minionTasks[MinionTask::WORKSHOP] = 0;
+          c.skills.setValue(SkillId::SORCERY, 0.7);
+          c.skills.setValue(SkillId::WEAPON_MELEE, 0.0);
           c.name = "orc shaman";);
     case CreatureId::GREAT_ORC: 
       return INHERIT(ORC,
           c.viewId = ViewId::GREAT_ORC;
-          c.strength += 6;
-          c.dexterity += 6;
+          c.attr[AttrType::STRENGTH] += 6;
+          c.attr[AttrType::DEXTERITY] += 6;
           c.weight += 80;
           c.name = "great orc";);
     case CreatureId::HARPY:
       return INHERIT(ORC,
           c.viewId = ViewId::HARPY;
-          c.speed = 120;
-          c.strength -= 3;
-          c.dexterity += 2;
+          c.attr[AttrType::SPEED] = 120;
+          c.attr[AttrType::STRENGTH] -= 3;
+          c.attr[AttrType::DEXTERITY] += 2;
           c.weight = 70;
           c.gender = Gender::female;
           c.minionTasks[MinionTask::WORKSHOP] = 0;
           c.bodyParts[BodyPart::WING] = 2;
           c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.skills.setValue(SkillId::ARCHERY, 1);
           c.name = "harpy";);
     case CreatureId::GNOME: 
       return CATTR(
           c.viewId = ViewId::GNOME;
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 12;
-          c.dexterity = 13;
+          c.attr[AttrType::STRENGTH] = 12;
+          c.attr[AttrType::DEXTERITY] = 13;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 45;
@@ -1462,10 +1477,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::GOBLIN: 
       return CATTR(
           c.viewId = ViewId::GOBLIN;
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 12;
-          c.dexterity = 13;
+          c.attr[AttrType::STRENGTH] = 12;
+          c.attr[AttrType::DEXTERITY] = 13;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 45;
@@ -1482,10 +1497,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::IMP: 
       return CATTR(
           c.viewId = ViewId::IMP;
-          c.speed = 200;
+          c.attr[AttrType::SPEED] = 200;
           c.size = CreatureSize::SMALL;
-          c.strength = 8;
-          c.dexterity = 15;
+          c.attr[AttrType::STRENGTH] = 8;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 30;
@@ -1500,7 +1515,7 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::PRISONER:
       return INHERIT(IMP,
           c.viewId = ViewId::PRISONER;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
           c.weight = 60;
           c.chatReactionFriendly = "talks about escape plans";
@@ -1512,10 +1527,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::OGRE: 
       return CATTR(
           c.viewId = ViewId::OGRE;
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::LARGE;
-          c.strength = 20;
-          c.dexterity = 17;
+          c.attr[AttrType::STRENGTH] = 20;
+          c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 6;
           c.humanoid = true;
           c.weight = 140;
@@ -1525,14 +1540,15 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks[MinionTask::TRAIN] = 4; 
           c.minionTasks[MinionTask::WORSHIP] = 0.5; 
           c.minionTasks[MinionTask::SLEEP] = 1;
+          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "ogre";);
     case CreatureId::CHICKEN: 
       return CATTR(
           c.viewId = ViewId::CHICKEN;
-          c.speed = 50;
+          c.attr[AttrType::SPEED] = 50;
           c.size = CreatureSize::SMALL;
-          c.strength = 2;
-          c.dexterity = 2;
+          c.attr[AttrType::STRENGTH] = 2;
+          c.attr[AttrType::DEXTERITY] = 2;
           c.barehandedDamage = 5;
           c.humanoid = false;
           c.weight = 3;
@@ -1542,10 +1558,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::LEPRECHAUN: 
       return CATTR(
           c.viewId = ViewId::LEPRECHAUN;
-          c.speed = 160;
+          c.attr[AttrType::SPEED] = 160;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 10;
-          c.dexterity = 16;
+          c.attr[AttrType::STRENGTH] = 10;
+          c.attr[AttrType::DEXTERITY] = 16;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 35;
@@ -1557,11 +1573,11 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DWARF: 
       return CATTR(
           c.viewId = ViewId::DWARF;
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::MEDIUM;
           c.firstName = NameGenerator::get(NameGeneratorId::DWARF)->getNext();
-          c.strength = 21;
-          c.dexterity = 16;
+          c.attr[AttrType::STRENGTH] = 21;
+          c.attr[AttrType::DEXTERITY] = 16;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 90;
@@ -1571,19 +1587,19 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DWARF_BARON: 
       return INHERIT(DWARF,
           c.viewId = ViewId::DWARF_BARON;
-          c.strength += 6;
-          c.dexterity += 5;
-          c.speed += 10;
+          c.attr[AttrType::STRENGTH] += 6;
+          c.attr[AttrType::DEXTERITY] += 5;
+          c.attr[AttrType::SPEED] += 10;
           c.courage = 3;
           c.weight = 120;
           c.name = "dwarf baron";);
     case CreatureId::LIZARDMAN: 
       return CATTR(
           c.viewId = ViewId::LIZARDMAN;
-          c.speed = 120;
+          c.attr[AttrType::SPEED] = 120;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 15;
-          c.dexterity = 18;
+          c.attr[AttrType::STRENGTH] = 15;
+          c.attr[AttrType::DEXTERITY] = 18;
           c.barehandedDamage = 7;
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
@@ -1597,19 +1613,19 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::LIZARDLORD: 
       return INHERIT(LIZARDMAN,
           c.viewId = ViewId::LIZARDLORD;
-          c.speed += 20;
-          c.strength += 6;
-          c.dexterity += 10;
+          c.attr[AttrType::SPEED] += 20;
+          c.attr[AttrType::STRENGTH] += 6;
+          c.attr[AttrType::DEXTERITY] += 10;
           c.courage = 3;
           c.weight = 60;
           c.name = "lizardman chief";);
     case CreatureId::ELF: 
       return CATTR(
           c.viewId = ViewId::ELF;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 11;
-          c.dexterity = 17;
+          c.attr[AttrType::STRENGTH] = 11;
+          c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 50;
@@ -1622,17 +1638,17 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::ELF_ARCHER: 
       return INHERIT(ELF,
           c.viewId = ViewId::ELF_ARCHER;
-          c.speed += 20;
+          c.attr[AttrType::SPEED] += 20;
           c.innocent = false;
-          c.skills.insert(SkillId::ARCHERY);
+          c.skills.setValue(SkillId::ARCHERY, 1);
           c.name = "elven archer";);
     case CreatureId::ELF_CHILD: 
       return INHERIT(ELF,
           c.viewId = ViewId::ELF_CHILD;
-          c.speed += 20;
+          c.attr[AttrType::SPEED] += 20;
           c.size = CreatureSize::SMALL;
-          c.strength = 7;
-          c.dexterity = 17;
+          c.attr[AttrType::STRENGTH] = 7;
+          c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 0;
           c.weight = 25;
           c.spells.clear();
@@ -1640,21 +1656,23 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::ELF_LORD: 
       return INHERIT(ELF_ARCHER,
           c.viewId = ViewId::ELF_LORD;
-          c.speed += 20;
-          c.strength += 3;
-          c.dexterity += 3;
+          c.attr[AttrType::SPEED] += 20;
+          c.attr[AttrType::STRENGTH] += 3;
+          c.attr[AttrType::DEXTERITY] += 3;
           c.healer = true;
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
           c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
           c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
+          c.skills.setValue(SkillId::WEAPON_MELEE, 1);
+          c.skills.setValue(SkillId::SORCERY, 1);
           c.name = "elf lord";);
     case CreatureId::HORSE: 
       return CATTR(
           c.viewId = ViewId::HORSE;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 10;
-          c.dexterity = 17;
+          c.attr[AttrType::STRENGTH] = 10;
+          c.attr[AttrType::DEXTERITY] = 13;
           c.humanoid = false;
           c.innocent = true;
           c.weight = 500;
@@ -1664,10 +1682,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::COW: 
       return CATTR(
           c.viewId = ViewId::COW;
-          c.speed = 40;
+          c.attr[AttrType::SPEED] = 40;
           c.size = CreatureSize::LARGE;
-          c.strength = 10;
-          c.dexterity = 12;
+          c.attr[AttrType::STRENGTH] = 10;
+          c.attr[AttrType::DEXTERITY] = 12;
           c.humanoid = false;
           c.innocent = true;
           c.weight = 400;
@@ -1677,10 +1695,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::SHEEP: 
       return CATTR(
           c.viewId = ViewId::SHEEP;
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 5;
-          c.dexterity = 12;
+          c.attr[AttrType::STRENGTH] = 5;
+          c.attr[AttrType::DEXTERITY] = 12;
           c.humanoid = false;
           c.innocent = true;
           c.weight = 40;
@@ -1690,10 +1708,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::PIG: 
       return CATTR(
           c.viewId = ViewId::PIG;
-          c.speed = 60;
+          c.attr[AttrType::SPEED] = 60;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 12;
-          c.dexterity = 8;
+          c.attr[AttrType::STRENGTH] = 12;
+          c.attr[AttrType::DEXTERITY] = 8;
           c.humanoid = false;
           c.innocent = true;
           c.weight = 150;
@@ -1707,10 +1725,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::JACKAL: 
       return CATTR(
           c.viewId = ViewId::JACKAL;
-          c.speed = 120;
+          c.attr[AttrType::SPEED] = 120;
           c.size = CreatureSize::SMALL;
-          c.strength = 10;
-          c.dexterity = 15;
+          c.attr[AttrType::STRENGTH] = 10;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 2;
           c.humanoid = false;
           c.weight = 10;
@@ -1719,10 +1737,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DEER: 
       return CATTR(
           c.viewId = ViewId::DEER;
-          c.speed = 200;
+          c.attr[AttrType::SPEED] = 200;
           c.size = CreatureSize::LARGE;
-          c.strength = 10;
-          c.dexterity = 17;
+          c.attr[AttrType::STRENGTH] = 10;
+          c.attr[AttrType::DEXTERITY] = 17;
           c.humanoid = false;
           c.innocent = true;
           c.weight = 400;
@@ -1732,10 +1750,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::BOAR: 
       return CATTR(
           c.viewId = ViewId::BOAR;
-          c.speed = 180;
+          c.attr[AttrType::SPEED] = 180;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 18;
-          c.dexterity = 15;
+          c.attr[AttrType::STRENGTH] = 18;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.humanoid = false;
           c.innocent = true;
           c.weight = 200;
@@ -1745,10 +1763,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::FOX: 
       return CATTR(
           c.viewId = ViewId::FOX;
-          c.speed = 140;
+          c.attr[AttrType::SPEED] = 140;
           c.size = CreatureSize::SMALL;
-          c.strength = 10;
-          c.dexterity = 15;
+          c.attr[AttrType::STRENGTH] = 10;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 2;
           c.innocent = true;
           c.humanoid = false;
@@ -1759,10 +1777,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::CAVE_BEAR: 
       return CATTR(
           c.viewId = ViewId::BEAR;
-          c.speed = 120;
+          c.attr[AttrType::SPEED] = 120;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 23;
-          c.dexterity = 18;
+          c.attr[AttrType::STRENGTH] = 23;
+          c.attr[AttrType::DEXTERITY] = 18;
           c.barehandedDamage = 14;
           c.weight = 250;
           c.humanoid = false;
@@ -1774,10 +1792,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::RAT: 
       return CATTR(
           c.viewId = ViewId::RAT;
-          c.speed = 180;
+          c.attr[AttrType::SPEED] = 180;
           c.size = CreatureSize::SMALL;
-          c.strength = 2;
-          c.dexterity = 12;
+          c.attr[AttrType::STRENGTH] = 2;
+          c.attr[AttrType::DEXTERITY] = 12;
           c.barehandedDamage = 2;
           c.humanoid = false;
           c.weight = 1;
@@ -1788,10 +1806,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::SCORPION: 
       return CATTR(
           c.viewId = ViewId::SCORPION;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::SMALL;
-          c.strength = 9;
-          c.dexterity = 13;
+          c.attr[AttrType::STRENGTH] = 9;
+          c.attr[AttrType::DEXTERITY] = 13;
           c.barehandedDamage = 10;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.humanoid = false;
@@ -1807,10 +1825,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::FLY: 
       return CATTR(
           c.viewId = ViewId::FLY;
-          c.speed = 150;
+          c.attr[AttrType::SPEED] = 150;
           c.size = CreatureSize::SMALL;
-          c.strength = 1;
-          c.dexterity = 14;
+          c.attr[AttrType::STRENGTH] = 1;
+          c.attr[AttrType::DEXTERITY] = 14;
           c.barehandedDamage = 10;
           c.humanoid = false;
           c.weight = 0.1;
@@ -1824,10 +1842,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::SNAKE: 
       return CATTR(
           c.viewId = ViewId::SNAKE;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::SMALL;
-          c.strength = 2;
-          c.dexterity = 14;
+          c.attr[AttrType::STRENGTH] = 2;
+          c.attr[AttrType::DEXTERITY] = 14;
           c.barehandedDamage = 15;
           c.humanoid = false;
           c.weight = 2;
@@ -1838,10 +1856,10 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::RAVEN: 
       return CATTR(
           c.viewId = ViewId::RAVEN;
-          c.speed = 250;
+          c.attr[AttrType::SPEED] = 250;
           c.size = CreatureSize::SMALL;
-          c.strength = 2;
-          c.dexterity = 12;
+          c.attr[AttrType::STRENGTH] = 2;
+          c.attr[AttrType::DEXTERITY] = 12;
           c.barehandedDamage = 0;
           c.humanoid = false;
           c.weight = 0.5;
@@ -1857,17 +1875,17 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::VULTURE: 
       return INHERIT(RAVEN,
           c.viewId = ViewId::VULTURE;
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.weight = 5;
           c.dontChase = true;
           c.name = "vulture";);
     case CreatureId::WOLF: 
       return CATTR(
           c.viewId = ViewId::WOLF;
-          c.speed = 160;
+          c.attr[AttrType::SPEED] = 160;
           c.size = CreatureSize::MEDIUM;
-          c.strength = 18;
-          c.dexterity = 17;
+          c.attr[AttrType::STRENGTH] = 18;
+          c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 12;
           c.humanoid = false;
           c.animal = true;
@@ -1880,7 +1898,7 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::WEREWOLF:
       return INHERIT(WOLF,
           c.viewId = ViewId::WEREWOLF;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.humanoid = true;
           c.weight = 80;
           c.size = CreatureSize::LARGE;
@@ -1891,18 +1909,18 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DOG: 
       return INHERIT(WOLF,
           c.viewId = ViewId::DOG;
-          c.strength -= 3;
-          c.dexterity -= 3;
+          c.attr[AttrType::STRENGTH] -= 3;
+          c.attr[AttrType::DEXTERITY] -= 3;
           c.weight -= 10;
           c.innocent = true;
           c.name = "dog";);
     case CreatureId::FIRE_SPHERE: 
       return CATTR(
           c.viewId = ViewId::FIRE_SPHERE;
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.strength = 5;
-          c.dexterity = 15;
+          c.attr[AttrType::STRENGTH] = 5;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 10;
           c.humanoid = false;
           c.bodyParts.clear();
@@ -1916,23 +1934,23 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::FIRE_ELEMENTAL:
       return INHERIT(FIRE_SPHERE,
           c.viewId = ViewId::FIRE_ELEMENTAL;
-          c.speed = 120;
-          c.strength = 20;
-          c.dexterity = 20;
+          c.attr[AttrType::SPEED] = 120;
+          c.attr[AttrType::STRENGTH] = 20;
+          c.attr[AttrType::DEXTERITY] = 20;
           c.barehandedAttack = AttackType::HIT;
           c.name = "fire elemental";);
     case CreatureId::AIR_ELEMENTAL:
       return INHERIT(FIRE_ELEMENTAL,
           c.viewId = ViewId::AIR_ELEMENTAL;
           c.fireCreature = false;
-          c.speed = 160;
+          c.attr[AttrType::SPEED] = 160;
           c.name = "air elemental";);
     case CreatureId::EARTH_ELEMENTAL:
       return INHERIT(AIR_ELEMENTAL,
           c.viewId = ViewId::EARTH_ELEMENTAL;
-          c.speed = 80;
+          c.attr[AttrType::SPEED] = 80;
           c.uncorporal = false;
-          c.strength = 30;
+          c.attr[AttrType::STRENGTH] = 30;
           c.name = "earth elemental";);
     case CreatureId::WATER_ELEMENTAL:
       return INHERIT(EARTH_ELEMENTAL,
@@ -1955,10 +1973,10 @@ CreatureAttributes getAttributes(CreatureId id) {
                                    ViewObject(ViewId::NIGHTMARE, ViewLayer::CREATURE, "nightmare"),
                                    Tribe::get(TribeId::MONSTER),
                                    CATTR(
-                                   c.speed = 100;
+                                   c.attr[AttrType::SPEED] = 100;
                                    c.size = CreatureSize::LARGE;
-                                   c.strength = 5;
-                                   c.dexterity = 25;
+                                   c.attr[AttrType::STRENGTH] = 5;
+                                   c.attr[AttrType::DEXTERITY] = 25;
                                    c.barehandedDamage = 10;
                                    c.humanoid = false;
                                    c.arms = 0;
@@ -1977,19 +1995,19 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::BAT: 
       return INHERIT(RAVEN,
           c.viewId = ViewId::BAT;
-          c.speed = 150;
-          c.strength = 3;
-          c.dexterity = 16;
+          c.attr[AttrType::SPEED] = 150;
+          c.attr[AttrType::STRENGTH] = 3;
+          c.attr[AttrType::DEXTERITY] = 16;
           c.barehandedDamage = 12;
           c.weight = 1;
           c.name = "bat";);
     case CreatureId::DEATH: 
       return CATTR(
           c.viewId = ViewId::DEATH;
-          c.speed = 95;
+          c.attr[AttrType::SPEED] = 95;
           c.size = CreatureSize::LARGE;
-          c.strength = 100;
-          c.dexterity = 35;
+          c.attr[AttrType::STRENGTH] = 100;
+          c.attr[AttrType::DEXTERITY] = 35;
           c.barehandedDamage = 10;
           c.chatReactionFriendly = c.chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\"";
           c.humanoid = true;

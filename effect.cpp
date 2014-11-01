@@ -116,11 +116,11 @@ static void deception(Creature* c) {
     viewObject.setModifier(ViewObject::Modifier::ILLUSION);
     creatures.push_back(PCreature(new Creature(viewObject, c->getTribe(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.weight = 1;
           c.size = CreatureSize::LARGE;
-          c.strength = 1;
-          c.dexterity = 1;
+          c.attr[AttrType::STRENGTH] = 1;
+          c.attr[AttrType::DEXTERITY] = 1;
           c.barehandedDamage = 20; // just so it's not ignored by creatures
           c.stationary = true;
           c.permanentEffects[LastingEffect::BLIND] = 1;
@@ -142,12 +142,12 @@ static void leaveBody(Creature* creature) {
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   PCreature spirit(new Creature(viewObject, creature->getTribe(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
-          c.speed = 100;
+          c.attr[AttrType::SPEED] = 100;
           c.weight = 1;
           c.size = CreatureSize::LARGE;
-          c.strength = 1;
+          c.attr[AttrType::STRENGTH] = 1;
           c.barehandedDamage = 20; // just so it's not ignored by creatures
-          c.dexterity = 1;
+          c.attr[AttrType::DEXTERITY] = 1;
           c.noSleep = true;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.breathing = false;
@@ -236,8 +236,8 @@ static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improv
     for (Item* item : c->getEquipment().getItem(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
-        if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
-          item->addModifier(AttrType::DEFENSE, mod);
+        if (item->getModifier(ModifierType::DEFENSE) > 0 || mod > 0)
+          item->addModifier(ModifierType::DEFENSE, mod);
         return;
       }
 }
@@ -245,7 +245,7 @@ static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improv
 static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is improved") {
   if (Item* item = c->getWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
-    item->addModifier(chooseRandom({AttrType::ACCURACY, AttrType::DAMAGE}), mod);
+    item->addModifier(chooseRandom({ModifierType::ACCURACY, ModifierType::DAMAGE}), mod);
   }
 }
 

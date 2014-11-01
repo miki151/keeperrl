@@ -63,47 +63,47 @@ bool Skill::isDiscrete() const {
   return discrete;
 }
 
-static int archeryBonus(const Creature* c, AttrType t) {
+static int archeryBonus(const Creature* c, ModifierType t) {
   switch (t) {
-    case AttrType::FIRED_ACCURACY: return c->getSkillValue(Skill::get(SkillId::ARCHERY)) * 10;
-    case AttrType::FIRED_DAMAGE: return c->getSkillValue(Skill::get(SkillId::ARCHERY)) * 10;
+    case ModifierType::FIRED_ACCURACY: return c->getSkillValue(Skill::get(SkillId::ARCHERY)) * 10;
+    case ModifierType::FIRED_DAMAGE: return c->getSkillValue(Skill::get(SkillId::ARCHERY)) * 10;
     default: break;
   }
   return 0;
 }
 
-static int weaponBonus(const Creature* c, AttrType t) {
+static int weaponBonus(const Creature* c, ModifierType t) {
   if (!c->getWeapon())
     return 0;
   switch (t) {
-    case AttrType::ACCURACY: return c->getSkillValue(Skill::get(SkillId::WEAPON_MELEE)) * 10;
-    case AttrType::DAMAGE: return c->getSkillValue(Skill::get(SkillId::WEAPON_MELEE)) * 10;
+    case ModifierType::ACCURACY: return c->getSkillValue(Skill::get(SkillId::WEAPON_MELEE)) * 10;
+    case ModifierType::DAMAGE: return c->getSkillValue(Skill::get(SkillId::WEAPON_MELEE)) * 10;
     default: break;
   }
   return 0;
 }
 
-static int unarmedBonus(const Creature* c, AttrType t) {
+static int unarmedBonus(const Creature* c, ModifierType t) {
   if (c->getWeapon())
     return 0;
   switch (t) {
-    case AttrType::ACCURACY: return c->getSkillValue(Skill::get(SkillId::UNARMED_MELEE)) * 10;
-    case AttrType::DAMAGE: return c->getSkillValue(Skill::get(SkillId::UNARMED_MELEE)) * 10;
+    case ModifierType::ACCURACY: return c->getSkillValue(Skill::get(SkillId::UNARMED_MELEE)) * 10;
+    case ModifierType::DAMAGE: return c->getSkillValue(Skill::get(SkillId::UNARMED_MELEE)) * 10;
     default: break;
   }
   return 0;
 }
 
-static int knifeBonus(const Creature* c, AttrType t) {
+static int knifeBonus(const Creature* c, ModifierType t) {
   switch (t) {
-    case AttrType::THROWN_ACCURACY: return c->getSkillValue(Skill::get(SkillId::KNIFE_THROWING)) * 10;
-    case AttrType::THROWN_DAMAGE: return c->getSkillValue(Skill::get(SkillId::KNIFE_THROWING)) * 10;
+    case ModifierType::THROWN_ACCURACY: return c->getSkillValue(Skill::get(SkillId::KNIFE_THROWING)) * 10;
+    case ModifierType::THROWN_DAMAGE: return c->getSkillValue(Skill::get(SkillId::KNIFE_THROWING)) * 10;
     default: break;
   }
   return 0;
 }
 
-int Skill::getModifier(const Creature* c, AttrType t) const {
+int Skill::getModifier(const Creature* c, ModifierType t) const {
   switch (getId()) {
     case SkillId::ARCHERY: return archeryBonus(c, t);
     case SkillId::WEAPON_MELEE: return weaponBonus(c, t);
@@ -128,6 +128,7 @@ void Skill::init() {
   Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees.", true));
   Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark.", true));
   Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them.", true));
+  Skill::set(SkillId::SORCERY, new Skill("sorcery", "Cast spells.", false));
   Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
         "Absorb other creatures and retain their attributes.", true, false));
 }

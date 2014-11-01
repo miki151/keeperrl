@@ -235,7 +235,6 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
 }
 
 const int basicImpCost = 20;
-const int minionLimit = 40;
 
 void PlayerControl::unpossess() {
   Creature* possessed = getCollective()->getTeamLeader();
@@ -817,7 +816,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       info.tasks[c->getUniqueId()] = "fighting";
     info.creatures.push_back({getCollective(), c});
   }
-  info.monsterHeader = "Monsters: " + convertToString(getNumMinions()) + " / " + convertToString(minionLimit);
+  info.monsterHeader = "Minions: ";
   info.enemies.clear();
   for (Vec2 v : getCollective()->getAllSquares())
     if (const Creature* c = getLevel()->getSquare(v)->getCreature())

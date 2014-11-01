@@ -27,8 +27,7 @@ void Tribe::serialize(Archive& ar, const unsigned int version) {
     & SVAR(leader)
     & SVAR(members)
     & SVAR(enemyTribes)
-    & SVAR(name)
-    & SVAR(handicap);
+    & SVAR(name);
   CHECK_SERIAL;
 }
 

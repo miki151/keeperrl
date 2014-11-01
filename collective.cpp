@@ -1223,8 +1223,8 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     addMoraleForKill(killer, victim1);
     kills.push_back(victim1);
     points += victim1->getDifficultyPoints();
-    if (Creature* leader = getLeader())
-      leader->increaseExpLevel(double(victim1->getDifficultyPoints()) / 200);
+/*    if (Creature* leader = getLeader())
+      leader->increaseExpLevel(double(victim1->getDifficultyPoints()) / 200);*/
     if (killer)
       control->addMessage(PlayerMessage(victim1->getAName() + " is killed by " + killer->getAName()));
   }
@@ -1992,11 +1992,8 @@ void Collective::onAppliedSquare(Vec2 pos) {
     if (Random.rollD(60.0 / (getEfficiency(pos))) && !getAvailableSpells().empty())
       c->addSpell(chooseRandom(getAvailableSpells()));
   }
-  if (getSquares(SquareId::TRAINING_ROOM).count(pos)) {
-    double lev1 = 0.03;
-    double lev10 = 0.01;
-    c->increaseExpLevel(getEfficiency(pos) * (lev1 - double(c->getExpLevel() - 1) * (lev1 - lev10) / 9.0  ));
-  }
+  if (getSquares(SquareId::TRAINING_ROOM).count(pos))
+    c->exerciseAttr(chooseRandom<AttrType>(), getEfficiency(pos));
   if (getSquares(SquareId::LABORATORY).count(pos))
     if (Random.rollD(30.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
       vector<PItem> items = ItemFactory::laboratory(technologies).random();

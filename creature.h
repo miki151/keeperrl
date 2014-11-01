@@ -101,8 +101,10 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   string getSpeciesName() const;
   string getNameAndTitle() const;
   Optional<string> getFirstName() const;
+  int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
-  static string getAttrName(AttrType attr);
+  static string getAttrName(AttrType);
+  static string getModifierName(ModifierType);
 
   int getPoints() const;
   vector<string> getMainAdjectives() const;
@@ -160,9 +162,9 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   double getCourage() const;
   Gender getGender() const;
 
-  void increaseExpLevel(double);
-  int getExpLevel() const;
   int getDifficultyPoints() const;
+  int getExpLevel() const;
+  void exerciseAttr(AttrType, double value = 1);
 
   string getDescription() const;
   bool isSpecialMonster() const;
@@ -250,8 +252,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void pushController(PController);
   void setController(PController);
   void popController();
-  void setSpeed(double);
-  double getSpeed() const;
+  void setBoulderSpeed(double);
   CreatureSize getSize() const;
 
   void addCreatureVision(CreatureVision*);
@@ -279,6 +280,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   private:
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
 
+  int getRawAttr(AttrType) const;
   bool affects(LastingEffect effect) const;
   void onAffected(LastingEffect effect, bool msg);
   void consumeEffects(EnumMap<LastingEffect, int>&);
@@ -294,7 +296,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   Item* getAmmo() const;
   void updateViewObject();
   int getStrengthAttackBonus() const;
-  int getAttrVal(AttrType type) const;
   BodyPart getBodyPart(AttackLevel attack) const;
   bool isFireResistant() const;
   void injure(BodyPart, bool drop);
@@ -325,7 +326,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   int numEquipActions = 0;
   const Creature* SERIAL2(lastAttacker, nullptr);
   int SERIAL2(swapPositionCooldown, 0);
-  double SERIAL2(expLevel, 1);
   vector<const Creature*> SERIAL(unknownAttacker);
   vector<const Creature*> SERIAL(privateEnemies);
   const Creature* SERIAL2(holding, nullptr);
@@ -339,6 +339,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   int SERIAL2(numAttacksThisTurn, 0);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   vector<PMoraleOverride> SERIAL(moraleOverrides);
+  EnumMap<AttrType, double> SERIAL(attrIncrease);
 };
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };

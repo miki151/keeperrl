@@ -94,8 +94,9 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;
-  void addModifier(AttrType attributeType, int value);
-  int getModifier(AttrType attributeType) const;
+  void addModifier(ModifierType, int value);
+  int getModifier(ModifierType) const;
+  int getAttr(AttrType) const;
 
   void tick(double time, Level*, Vec2 position);
   

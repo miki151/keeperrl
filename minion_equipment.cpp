@@ -103,7 +103,7 @@ bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) const
 }
 
 int MinionEquipment::getItemValue(const Item* it) const {
-  return it->getModifier(AttrType::ACCURACY) + it->getModifier(AttrType::DAMAGE)
-    + it->getModifier(AttrType::DEFENSE);
+  return it->getModifier(ModifierType::ACCURACY) + it->getModifier(ModifierType::DAMAGE)
+    + it->getModifier(ModifierType::DEFENSE);
 }
 
