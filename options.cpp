@@ -26,9 +26,7 @@ const unordered_map<OptionId, int> defaults {
   {OptionId::SHOW_MAP, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
-  {OptionId::EASY_KEEPER, 0},
   {OptionId::AGGRESSIVE_HEROES, 1},
-  {OptionId::EASY_ADVENTURER, 1},
 };
 
 const map<OptionId, string> names {
@@ -39,9 +37,7 @@ const map<OptionId, string> names {
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
-  {OptionId::EASY_KEEPER, "Game difficulty"},
   {OptionId::AGGRESSIVE_HEROES, "Aggressive enemies"},
-  {OptionId::EASY_ADVENTURER, "Game difficulty"},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -57,13 +53,11 @@ const map<OptionSet, vector<OptionId>> optionSets {
   {OptionSet::KEEPER, {
       OptionId::AGGRESSIVE_HEROES,
 #ifndef RELEASE
-      OptionId::EASY_KEEPER,
       OptionId::START_WITH_NIGHT,
       OptionId::SHOW_MAP,
       OptionId::STARTING_RESOURCE,
 #endif
   }},
-  {OptionSet::ADVENTURER, {OptionId::EASY_ADVENTURER}},
 };
 
 map<OptionId, Options::Trigger> triggers;
@@ -100,9 +94,7 @@ unordered_map<OptionId, vector<string>> valueNames {
   {OptionId::SHOW_MAP, { "no", "yes" }},
   {OptionId::STARTING_RESOURCE, { "no", "yes" }},
   {OptionId::START_WITH_NIGHT, { "no", "yes" }},
-  {OptionId::EASY_KEEPER, { "hard", "easy" }},
   {OptionId::AGGRESSIVE_HEROES, { "no", "yes" }},
-  {OptionId::EASY_ADVENTURER, { "hard", "easy" }},
 };
 
 static View::MenuType getMenuType(OptionSet set) {

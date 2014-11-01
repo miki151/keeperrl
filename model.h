@@ -90,7 +90,7 @@ class Model {
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
 
   void updateSunlightInfo();
-  PCreature makePlayer();
+  PCreature makePlayer(int handicap);
   const Creature* getPlayer() const;
   void landHeroPlayer();
   Level* buildLevel(Level::Builder&&, LevelMaker*);

@@ -249,14 +249,7 @@ static Location* getVillageLocation(bool markSurprise = false) {
   return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext(), "", markSurprise);
 }
 
-static void setHandicap(Tribe* tribe, bool easy) {
-  if (easy)
-    tribe->setHandicap(5);
-  else
-    tribe->setHandicap(2);
-}
-
-PCreature Model::makePlayer() {
+PCreature Model::makePlayer(int handicap) {
   map<UniqueEntity<Level>::Id, MapMemory>* levelMemory = new map<UniqueEntity<Level>::Id, MapMemory>();
   PCreature player = CreatureFactory::addInventory(
       PCreature(new Creature(Tribe::get(TribeId::PLAYER),
@@ -265,8 +258,8 @@ PCreature Model::makePlayer() {
           c.attr[AttrType::SPEED] = 100;
           c.weight = 90;
           c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 13;
-          c.attr[AttrType::DEXTERITY] = 15;
+          c.attr[AttrType::STRENGTH] = 13 + handicap;
+          c.attr[AttrType::DEXTERITY] = 15 + handicap;
           c.barehandedDamage = 5;
           c.humanoid = true;
           c.name = "Adventurer";
@@ -325,18 +318,15 @@ void Model::exitAction() {
 void Model::retireCollective() {
   CHECK(playerControl);
   Statistics::init();
-  Tribe::get(TribeId::KEEPER)->setHandicap(0);
   playerControl->retire();
   won = false;
   addHero = true;
 }
 
 void Model::landHeroPlayer() {
-  PCreature player = makePlayer();
-  levels[0]->landCreature(StairDirection::UP, StairKey::HERO_SPAWN, std::move(player));
   auto handicap = view->getNumber("Choose handicap (strength and dexterity increase)", 0, 20, 5);
-  if (handicap)
-    Tribe::get(TribeId::PLAYER)->setHandicap(*handicap);
+  PCreature player = makePlayer(handicap.getOr(0));
+  levels[0]->landCreature(StairDirection::UP, StairKey::HERO_SPAWN, std::move(player));
   adventurer = true;
 }
 
@@ -567,7 +557,6 @@ Model* Model::collectiveModel(View* view) {
     collective->setControl(std::move(control));
     m->collectives.push_back(std::move(collective));
   }
-  setHandicap(Tribe::get(TribeId::KEEPER), Options::getValue(OptionId::EASY_KEEPER));
   return m;
 }
 

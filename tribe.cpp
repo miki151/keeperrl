@@ -65,14 +65,6 @@ REGISTER_TYPES(Tribe);
 Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
 }
 
-int Tribe::getHandicap() const {
-  return handicap;
-}
-
-void Tribe::setHandicap(int h) {
-  handicap = h;
-}
-
 void Tribe::removeMember(const Creature* c) {
   if (c == leader)
     leader = nullptr;

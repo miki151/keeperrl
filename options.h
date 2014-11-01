@@ -29,10 +29,7 @@ enum class OptionId {
   START_WITH_NIGHT,
   STARTING_RESOURCE,
 
-  EASY_KEEPER,
   AGGRESSIVE_HEROES,
-
-  EASY_ADVENTURER,
 };
 
 enum class OptionSet {

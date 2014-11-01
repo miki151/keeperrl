@@ -102,13 +102,6 @@ static int summonCreatures(Creature* c, int radius, vector<PCreature> creatures)
   return summonCreatures(c->getLevel(), c->getPosition(), radius, std::move(creatures));
 }
 
-static void insects(Creature* c) {
-  vector<PCreature> creatures;
-  for (int i : Range(Random.getRandom(3, 7)))
-    creatures.push_back(CreatureFactory::fromId(CreatureId::FLY, c->getTribe()));
-  summonCreatures(c, 1, std::move(creatures));
-}
-
 static void deception(Creature* c) {
   vector<PCreature> creatures;
   for (int i : Range(Random.getRandom(3, 7))) {
@@ -417,7 +410,7 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectId::TELE_ENEMIES: teleEnemies(c); break;
     case EffectId::ALARM: alarm(c); break;
     case EffectId::ACID: acid(c); break;
-    case EffectId::SUMMON_INSECTS: insects(c); break;
+    case EffectId::SUMMON_INSECTS: summon(c, CreatureId::FLY, Random.getRandom(3, 7), 100); break;
     case EffectId::DECEPTION: deception(c); break;
     case EffectId::WORD_OF_POWER: wordOfPower(c, strength); break;
     case EffectId::GUARDING_BOULDER: guardingBuilder(c); break;
