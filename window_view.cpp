@@ -471,17 +471,6 @@ static map<string, CreatureMapElem> getCreatureMap(vector<CreatureInfo>& creatur
   return creatureMap;
 }
 
-/*static void drawViewObject(const ViewObject& obj, int x, int y, bool sprite) {
-    Tile tile = Tile::getTile(obj, sprite);
-    if (tile.hasSpriteCoord()) {
-      int sz = Renderer::tileSize[tile.getTexNum()];
-      int of = (Renderer::nominalSize - sz) / 2;
-      Vec2 coord = tile.getSpriteCoord();
-      renderer.drawSprite(x - sz / 2, y + of, coord.x * sz, coord.y * sz, sz, sz, Renderer::tiles[tile.getTexNum()], sz * 2 / 3, sz * 2 /3);
-    } else
-      renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, Tile::getColor(obj), x, y, tile.text, true);
-}*/
-
 PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
   map<string, CreatureMapElem> creatureMap = getCreatureMap(info.creatures);
   map<string, CreatureMapElem> enemyMap = getCreatureMap(info.enemies);
