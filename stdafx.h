@@ -112,7 +112,10 @@ using std::get;
 using std::hash;
 using std::thread;
 using std::atomic;
+using std::swap;
 using boost::variant;
+using boost::archive::binary_oarchive;
+using boost::archive::binary_iarchive;
 
 #include "serialization.h"
 #endif

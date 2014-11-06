@@ -48,11 +48,11 @@ View* View::createDefaultView() {
   return new WindowView();
 }
 
-View* View::createLoggingView(ofstream& of) {
+View* View::createLoggingView(binary_oarchive& of) {
   return new LoggingView<WindowView>(of);
 }
 
-View* View::createReplayView(ifstream& ifs) {
+View* View::createReplayView(binary_iarchive& ifs) {
   return new ReplayView<WindowView>(ifs);
 }
 
@@ -154,7 +154,7 @@ void WindowView::initialize() {
       [this](Vec2 pos) { mapRightClickFun(pos); },
       [this] { refreshInput = true;} );
   MinimapGui::initialize();
-  minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP)); });
+  minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
 }
@@ -163,18 +163,16 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
   chosenCreature = "";
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::PLAYER:
-      inputQueue.push(UserInput(UserInput::MOVE_TO, pos));
+      inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
       break;
     case GameInfo::InfoType::BAND:
-      if (collectiveTab == CollectiveTab::WORKSHOP && activeWorkshop >= 0)
-        inputQueue.push(UserInput(UserInput::WORKSHOP, pos, {activeWorkshop}));
       if (collectiveTab == CollectiveTab::TECHNOLOGY && activeLibrary >= 0)
-        inputQueue.push(UserInput(UserInput::LIBRARY, pos, {activeLibrary}));
+        inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo(pos, activeLibrary)));
       if (collectiveTab == CollectiveTab::BUILDINGS) {
         if (Keyboard::isKeyPressed(Keyboard::LShift))
-          inputQueue.push(UserInput(UserInput::RECT_SELECTION, pos));
+          inputQueue.push(UserInput(UserInputId::RECT_SELECTION, pos));
         else
-          inputQueue.push(UserInput(UserInput::BUILD, pos, {activeBuilding}));
+          inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo(pos, activeBuilding)));
       }
       break;
   }
@@ -183,7 +181,7 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
 void WindowView::mapRightClickFun(Vec2 pos) {
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::BAND:
-      inputQueue.push(UserInput(UserInput::POSSESS, pos));
+      inputQueue.push(UserInput(UserInputId::POSSESS, pos));
       break;
     default:
       break;
@@ -197,7 +195,6 @@ void WindowView::reset() {
   mapGui->clearOptions();
   mapGui->clearCenter();
   activeBuilding = 0;
-  activeWorkshop = -1;
   activeLibrary = -1;
 }
 
@@ -472,7 +469,7 @@ static map<string, CreatureMapElem> getCreatureMap(vector<CreatureInfo>& creatur
 }
 
 PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
-  map<string, CreatureMapElem> creatureMap = getCreatureMap(info.creatures);
+  map<string, CreatureMapElem> creatureMap = getCreatureMap(info.minions);
   map<string, CreatureMapElem> enemyMap = getCreatureMap(info.enemies);
   vector<PGuiElem> list;
   list.push_back(GuiElem::label(info.monsterHeader, colors[ColorId::WHITE]));
@@ -481,16 +478,11 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
     vector<int> widths;
     line.push_back(GuiElem::viewObject(elem.second.object, tilesOk));
     widths.push_back(40);
-    Color col = (elem.first == chosenCreature 
-        || (elem.second.count == 1 && contains(info.team, elem.second.any.uniqueId))) ? colors[ColorId::GREEN] : colors[ColorId::WHITE];
+    Color col = elem.first == chosenCreature ? colors[ColorId::GREEN] : colors[ColorId::WHITE];
     line.push_back(GuiElem::label(convertToString(elem.second.count) + "   " + elem.first, col));
     widths.push_back(200);
     function<void()> action;
-/*    if (elem.second.count == 1)
-      action = [this, elem]() {
-        inputQueue.push(UserInput(UserInput::CREATURE_BUTTON, elem.second.any.uniqueId));
-      };
-    else */if (chosenCreature == elem.first)
+    if (chosenCreature == elem.first)
       action = [this] () {
         chosenCreature = "";
       };
@@ -498,38 +490,41 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
       action = [this, elem] () {
         chosenCreature = elem.first;
       };
-    list.push_back(GuiElem::margins(GuiElem::stack(GuiElem::button(action), GuiElem::horizontalList(std::move(line), widths, 0)), 20, 0, 0, 0));
+    list.push_back(GuiElem::margins(GuiElem::stack(GuiElem::button(action),
+            GuiElem::horizontalList(std::move(line), widths, 0)), 20, 0, 0, 0));
   }
-  if (!info.team.empty()) {
-    list.push_back(GuiElem::label("Team: " + getPlural("monster", "monsters", info.team.size()), colors[ColorId::WHITE]));
-    if (!info.gatheringTeam) {
-      vector<PGuiElem> line;
-      vector<int> widths;
-      line.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInput::GATHER_TEAM)),
-          GuiElem::label("[command]", colors[ColorId::WHITE])));
-      widths.push_back(10 + renderer.getTextLength("[command]"));
-      line.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInput::EDIT_TEAM)),
-          GuiElem::label("[edit]", colors[ColorId::WHITE])));
-      widths.push_back(10 + renderer.getTextLength("[edit]"));
-      line.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInput::CANCEL_TEAM)),
-          GuiElem::label("[cancel]", colors[ColorId::WHITE])));
-      widths.push_back(100);
-      list.push_back(GuiElem::horizontalList(std::move(line), widths, 0));
+  list.push_back(GuiElem::label("Teams: ", colors[ColorId::WHITE]));
+  for (auto elem : info.teams) {
+    TeamId teamId = elem.first;
+    const auto team = elem.second;
+    const int numPerLine = 8;
+    const int elemWidth = 30;
+    vector<PGuiElem> currentLine = makeVec<PGuiElem>(
+        GuiElem::stack(
+          GuiElem::button(getButtonCallback({UserInputId::EDIT_TEAM, teamId})),
+          GuiElem::label("X", colors[info.currentTeam == teamId ? ColorId::GREEN : ColorId::WHITE])));
+    for (auto elem : team) {
+      currentLine.push_back(GuiElem::stack(
+            GuiElem::button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo(teamId, elem)})),
+            GuiElem::viewObject(info.getMinion(elem).viewObject, tilesOk),
+            GuiElem::label(convertToString(info.getMinion(elem).expLevel), 12)));
+      if (currentLine.size() >= numPerLine)
+        list.push_back(GuiElem::horizontalList(std::move(currentLine), elemWidth, 0));
     }
-    
+    if (team.empty())
+      currentLine.push_back(GuiElem::label("Click on minions to add.", colors[ColorId::LIGHT_BLUE]));
+    if (!currentLine.empty())
+      list.push_back(GuiElem::horizontalList(std::move(currentLine), elemWidth, 0));
+    if (info.currentTeam == teamId)
+      list.push_back(GuiElem::horizontalList(makeVec<PGuiElem>(
+              GuiElem::stack(
+                GuiElem::button(getButtonCallback({UserInputId::COMMAND_TEAM, teamId})), GuiElem::label("[command]")),
+              GuiElem::stack(GuiElem::button(getButtonCallback({UserInputId::CANCEL_TEAM, teamId})),
+                GuiElem::label("[disband]"))), 100, 0));
   }
-  if ((info.creatures.size() > 1 && info.team.empty()) || info.gatheringTeam) {
-    vector<PGuiElem> line;
-    line.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInput::GATHER_TEAM)),
-        GuiElem::label(info.team.empty() ? "[form team]" : "[done]",
-            (info.gatheringTeam && info.team.empty()) ? colors[ColorId::GREEN] : colors[ColorId::WHITE])));
-    if (info.gatheringTeam) {
-      line.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInput::CANCEL_TEAM)),
-          GuiElem::label("[cancel]", colors[ColorId::WHITE])));
-    }
-    list.push_back(GuiElem::horizontalList(std::move(line), 150, 0));
-  }
-///  list.push_back(GuiElem::label("Click on minion to possess.", colors[ColorId::LIGHT_BLUE]));
+  if (!info.currentTeam || !info.teams[*info.currentTeam].empty())
+    list.push_back(GuiElem::stack(GuiElem::button(getButtonCallback(UserInputId::CREATE_TEAM)),
+        GuiElem::label("[new team]", colors[ColorId::WHITE])));
   list.push_back(GuiElem::empty());
   vector<PGuiElem> res;
   res.push_back(GuiElem::label("Next payout [" + convertToString(info.payoutTimeRemaining) + "]:",
@@ -557,19 +552,20 @@ PGuiElem WindowView::drawMinionWindow(GameInfo::BandInfo& info) {
   if (chosenCreature != "") {
     vector<PGuiElem> lines;
     vector<CreatureInfo> chosen;
-    for (auto& c : info.creatures)
+    for (auto& c : info.minions)
       if (c.speciesName == chosenCreature)
         chosen.push_back(c);
-    lines.push_back(GuiElem::label(info.gatheringTeam ? "Click to add to team:" : "Click to control:", colors[ColorId::LIGHT_BLUE]));
+    lines.push_back(GuiElem::label(info.currentTeam ? "Click to add to team:" : "Click to control:", colors[ColorId::LIGHT_BLUE]));
     for (auto& c : chosen) {
       string text = "L: " + convertToString(c.expLevel) + "    " + info.tasks[c.uniqueId];
       if (c.speciesName != c.name)
         text = c.name + " " + text;
       vector<PGuiElem> line;
       line.push_back(GuiElem::viewObject(c.viewObject, tilesOk));
-      line.push_back(GuiElem::label(text, (info.gatheringTeam && contains(info.team, c.uniqueId)) ? colors[ColorId::GREEN] : colors[ColorId::WHITE]));
+      line.push_back(GuiElem::label(text, (info.currentTeam && contains(info.teams[*info.currentTeam],c.uniqueId))
+            ? colors[ColorId::GREEN] : colors[ColorId::WHITE]));
       lines.push_back(GuiElem::stack(GuiElem::button(
-              getButtonCallback(UserInput(UserInput::CREATURE_BUTTON, c.uniqueId))),
+              getButtonCallback(UserInput(UserInputId::CREATURE_BUTTON, c.uniqueId))),
             GuiElem::horizontalList(std::move(line), 40, 0)));
     }
     return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
@@ -703,18 +699,13 @@ PGuiElem WindowView::drawDeities(GameInfo::BandInfo& info) {
   vector<PGuiElem> lines;
   for (int i : All(info.deities)) {
     lines.push_back(GuiElem::stack(
-          GuiElem::button(getButtonCallback(UserInput(UserInput::DEITIES, i))),
+          GuiElem::button(getButtonCallback(UserInput(UserInputId::DEITIES, i))),
           GuiElem::label(capitalFirst(info.deities[i].name), colors[ColorId::WHITE])));
     lines.push_back(GuiElem::margins(GuiElem::horizontalList(makeVec<PGuiElem>(
               GuiElem::label("standing: ", colors[ColorId::WHITE]),
               getStandingGui(info.deities[i].standing)), 85, 0), 40, 0, 0, 0));
   }
   return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
-}
-
-PGuiElem WindowView::drawWorkshop(GameInfo::BandInfo& info) {
-  return GuiElem::verticalList(drawButtons(info.workshop, activeWorkshop, CollectiveTab::WORKSHOP),
-      legendLineHeight, 0);
 }
 
 PGuiElem WindowView::drawTechnology(GameInfo::BandInfo& info) {
@@ -724,7 +715,7 @@ PGuiElem WindowView::drawTechnology(GameInfo::BandInfo& info) {
     line.push_back(GuiElem::viewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, ""), tilesOk));
     line.push_back(GuiElem::label(info.techButtons[i].name, colors[ColorId::WHITE], info.techButtons[i].hotkey));
     lines.push_back(GuiElem::stack(
-          GuiElem::button(getButtonCallback(UserInput(UserInput::TECHNOLOGY, i)), info.techButtons[i].hotkey),
+          GuiElem::button(getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i)), info.techButtons[i].hotkey),
           GuiElem::horizontalList(std::move(line), 35, 0)));
   }
   return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
@@ -1210,7 +1201,7 @@ Optional<int> WindowView::getNumber(const string& title, int min, int max, int i
 }
 
 Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
-    MenuType type, int* scrollPos, Optional<UserInput::Type> exitAction) {
+    MenuType type, int* scrollPos, Optional<UserInputId> exitAction) {
   return chooseFromListInternal(title, options, index, type, scrollPos, exitAction, Nothing(), {});
 }
 
@@ -1232,7 +1223,7 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
 }
 
 Optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
-    MenuType menuType, int* scrollPos1, Optional<UserInput::Type> exitAction, Optional<Event::KeyEvent> exitKey,
+    MenuType menuType, int* scrollPos1, Optional<UserInputId> exitAction, Optional<Event::KeyEvent> exitKey,
     vector<Event::KeyEvent> shortCuts) {
   if (options.size() == 0)
     return Nothing();
@@ -1343,7 +1334,7 @@ void WindowView::presentText(const string& title, const string& text) {
 }
 
 void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu,
-    Optional<UserInput::Type> exitAction) {
+    Optional<UserInputId> exitAction) {
   vector<ListElem> conv;
   for (ListElem e : options) {
     View::ElemMod mod = e.getMod();
@@ -1485,11 +1476,11 @@ void WindowView::processEvents() {
         if (event.mouseButton.button == sf::Mouse::Right)
           chosenCreature = "";
         if (event.mouseButton.button == sf::Mouse::Middle)
-          inputQueue.push(UserInput(UserInput::DRAW_LEVEL_MAP));
+          inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP));
         break;
       case Event::MouseButtonReleased :
         if (event.mouseButton.button == sf::Mouse::Left)
-          inputQueue.push(UserInput(UserInput::BUTTON_RELEASE, Vec2(0, 0), {activeBuilding}));
+          inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo(Vec2(0, 0), activeBuilding)));
         break;
       default: break;
     }
@@ -1539,13 +1530,13 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       elem->onRefreshBounds();
 }
 
-UserInput::Type getDirActionId(const Event::KeyEvent& key) {
+UserInputId getDirActionId(const Event::KeyEvent& key) {
   if (key.control)
-    return UserInput::TRAVEL;
+    return UserInputId::TRAVEL;
   if (key.alt)
-    return UserInput::FIRE;
+    return UserInputId::FIRE;
   else
-    return UserInput::MOVE;
+    return UserInputId::MOVE;
 }
 
 void WindowView::keyboardAction(Event::KeyEvent key) {
@@ -1574,11 +1565,11 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
         Clock::get().pause();
       else
         Clock::get().cont();
-      inputQueue.push(UserInput(UserInput::WAIT));
+      inputQueue.push(UserInput(UserInputId::WAIT));
       break;
     case Keyboard::Escape:
       if (!renderer.isMonkey())
-        inputQueue.push(UserInput(UserInput::EXIT));
+        inputQueue.push(UserInput(UserInputId::EXIT));
       break;
     case Keyboard::Up:
     case Keyboard::Numpad8:
@@ -1605,23 +1596,23 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
     case Keyboard::Numpad7:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1))); break;
     case Keyboard::Return:
-    case Keyboard::Numpad5: inputQueue.push(UserInput(UserInput::PICK_UP)); break;
-    case Keyboard::I: inputQueue.push(UserInput(UserInput::SHOW_INVENTORY)); break;
-    case Keyboard::D: inputQueue.push(UserInput(key.shift ? UserInput::EXT_DROP : UserInput::DROP)); break;
-    case Keyboard::A: inputQueue.push(UserInput(UserInput::APPLY_ITEM)); break;
-    case Keyboard::E: inputQueue.push(UserInput(UserInput::EQUIPMENT)); break;
-    case Keyboard::T: inputQueue.push(UserInput(UserInput::THROW)); break;
-    case Keyboard::M: inputQueue.push(UserInput(UserInput::SHOW_HISTORY)); break;
-    case Keyboard::H: inputQueue.push(UserInput(UserInput::HIDE)); break;
+    case Keyboard::Numpad5: inputQueue.push(UserInput(UserInputId::PICK_UP)); break;
+    case Keyboard::I: inputQueue.push(UserInput(UserInputId::SHOW_INVENTORY)); break;
+    case Keyboard::D: inputQueue.push(UserInput(key.shift ? UserInputId::EXT_DROP : UserInputId::DROP)); break;
+    case Keyboard::A: inputQueue.push(UserInput(UserInputId::APPLY_ITEM)); break;
+    case Keyboard::E: inputQueue.push(UserInput(UserInputId::EQUIPMENT)); break;
+    case Keyboard::T: inputQueue.push(UserInput(UserInputId::THROW)); break;
+    case Keyboard::M: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
+    case Keyboard::H: inputQueue.push(UserInput(UserInputId::HIDE)); break;
     case Keyboard::P:
       if (key.shift)
-        inputQueue.push(UserInput(UserInput::EXT_PICK_UP));
+        inputQueue.push(UserInput(UserInputId::EXT_PICK_UP));
       else
-        inputQueue.push(UserInput(UserInput::PAY_DEBT));
+        inputQueue.push(UserInput(UserInputId::PAY_DEBT));
       break;
-    case Keyboard::C: inputQueue.push(UserInput(key.shift ? UserInput::CONSUME : UserInput::CHAT)); break;
-    case Keyboard::U: inputQueue.push(UserInput(UserInput::UNPOSSESS)); break;
-    case Keyboard::S: inputQueue.push(UserInput(UserInput::CAST_SPELL)); break;
+    case Keyboard::C: inputQueue.push(UserInput(key.shift ? UserInputId::CONSUME : UserInputId::CHAT)); break;
+    case Keyboard::U: inputQueue.push(UserInput(UserInputId::UNPOSSESS)); break;
+    case Keyboard::S: inputQueue.push(UserInput(UserInputId::CAST_SPELL)); break;
     default: break;
   }
 }
@@ -1630,13 +1621,13 @@ UserInput WindowView::getAction() {
   lockKeyboard = false;
   if (refreshInput) {
     refreshInput = false;
-    return UserInput::REFRESH;
+    return UserInputId::REFRESH;
   }
   if (auto input = inputQueue.popAsync())
     return *input;
   else
-    return UserInput(UserInput::IDLE);
-  return UserInput(UserInput::IDLE);
+    return UserInput(UserInputId::IDLE);
+  return UserInput(UserInputId::IDLE);
 }
 
 vector<KeyInfo> keyInfo {

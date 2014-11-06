@@ -42,7 +42,7 @@ class WindowView: public View {
   virtual void resetCenter() override;
   virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = View::NORMAL_MENU, int* scrollPos = nullptr,
-      Optional<UserInput::Type> exitAction = Nothing()) override;
+      Optional<UserInputId> exitAction = Nothing()) override;
   virtual Optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
@@ -50,7 +50,7 @@ class WindowView: public View {
 
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = NORMAL_MENU, Optional<UserInput::Type> exitAction = Nothing()) override;
+      MenuType = NORMAL_MENU, Optional<UserInputId> exitAction = Nothing()) override;
   virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
 
   virtual UserInput getAction() override;
@@ -74,9 +74,9 @@ class WindowView: public View {
   void mapRightClickFun(Vec2);
   Rectangle getMenuPosition(View::MenuType type);
   Optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      int* scrollPos, Optional<UserInput::Type> exitAction, Optional<sf::Event::KeyEvent> exitKey,
+      int* scrollPos, Optional<UserInputId> exitAction, Optional<sf::Event::KeyEvent> exitKey,
       vector<sf::Event::KeyEvent> shortCuts);
-  Optional<UserInput::Type> getSimpleInput(sf::Event::KeyEvent key);
+  Optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   void rebuildGui();
   void drawMap();
@@ -90,7 +90,6 @@ class WindowView: public View {
   PGuiElem drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo&);
   PGuiElem drawBuildings(GameInfo::BandInfo& info);
   PGuiElem drawTechnology(GameInfo::BandInfo& info);
-  PGuiElem drawWorkshop(GameInfo::BandInfo& info);
   PGuiElem drawVillages(GameInfo::VillageInfo& info);
   PGuiElem drawDeities(GameInfo::BandInfo& info);
   PGuiElem drawMinions(GameInfo::BandInfo& info);
@@ -179,7 +178,6 @@ class WindowView: public View {
   TileLayouts currentTileLayout;
 
   int activeBuilding = 0;
-  int activeWorkshop = -1;
   int activeLibrary = -1;
   string chosenCreature;
 

@@ -77,7 +77,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   bool isTurnBased();
   void retire();
-  void unpossess();
+  void leaveControl();
 
   struct RoomInfo {
     string name;
@@ -114,7 +114,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void onWorshipEpithet(EpithetId);
   Creature* getCreature(UniqueEntity<Creature>::Id id);
   void handleCreatureButton(Creature* c, View* view);
-  void possess(const Creature*, View*);
+  void controlSingle(const Creature*);
+  void commandTeam(TeamId);
   struct BuildInfo {
     struct SquareInfo {
       SquareType type;
@@ -185,10 +186,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   };
   vector<TechInfo> getTechInfo() const;
 
-  MoveInfo getBeastMove(Creature* c);
-  MoveInfo getPossessedMove(Creature* c);
-  MoveInfo getBacktrackMove(Creature* c);
-
   int getImpCost() const;
   bool canBuildDoor(Vec2 pos) const;
   bool canPlacePost(Vec2 pos) const;
@@ -210,9 +207,12 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void addToMemory(Vec2 pos);
   bool tryLockingDoor(Vec2 pos);
   void uncoverRandomLocation();
+  Creature* getControlled();
 
   mutable unique_ptr<map<UniqueEntity<Level>::Id, MapMemory>> SERIAL(memory);
-  bool SERIAL2(gatheringTeam, false);
+  Optional<TeamId> getCurrentTeam() const;
+  void setCurrentTeam(Optional<TeamId>);
+  Optional<TeamId> SERIAL(currentTeam);
   Model* SERIAL(model);
   bool SERIAL2(showWelcomeMsg, true);
   Optional<Vec2> rectSelectCorner;

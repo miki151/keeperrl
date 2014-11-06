@@ -17,9 +17,10 @@
 #define _USER_INPUT_H
 
 #include "util.h"
+#include "enum_variant.h"
+#include "unique_entity.h"
 
-struct UserInput {
-  enum Type {
+enum class UserInputId {
 // common
     IDLE,
     REFRESH,
@@ -27,16 +28,17 @@ struct UserInput {
     EXIT,
 // real-time actions
     BUILD,
-    WORKSHOP,
     LIBRARY,
     DEITIES,
     RECT_SELECTION,
     POSSESS,
     BUTTON_RELEASE,
     CREATURE_BUTTON,
-    GATHER_TEAM,
+    CREATE_TEAM,
     EDIT_TEAM,
     CANCEL_TEAM,
+    COMMAND_TEAM,
+    SET_TEAM_LEADER,
     MARKET,
     TECHNOLOGY,
 // turn-based actions
@@ -61,30 +63,41 @@ struct UserInput {
     UNPOSSESS,
     CAST_SPELL,
     CONSUME,
-  } type;
-
-  struct BuildInfo {
-    int building;
-  };
-
-  UserInput();
-  UserInput(Type);
-  UserInput(Type, Vec2, BuildInfo);
-  UserInput(Type, int);
-  UserInput(Type, Vec2);
-
-  Vec2 getPosition();
-  int getNum();
-  BuildInfo getBuildInfo();
-
-  private:
-
-  Vec2 position;
-  int num;
-  BuildInfo buildInfo;
 };
 
-std::ostream& operator << (std::ostream&, UserInput);
-std::istream& operator >> (std::istream&, UserInput&);
+struct BuildingInfo : public NamedTupleBase<Vec2, int> {
+  NAMED_TUPLE_STUFF(BuildingInfo);
+  NAME_ELEM(0, pos);
+  NAME_ELEM(1, building);
+};
+
+struct TeamLeaderInfo : public NamedTupleBase<TeamId, UniqueEntity<Creature>::Id> {
+  NAMED_TUPLE_STUFF(TeamLeaderInfo);
+  NAME_ELEM(0, team);
+  NAME_ELEM(1, creatureId);
+};
+
+typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, Vec2, TeamLeaderInfo),
+        ASSIGN(BuildingInfo,
+            UserInputId::BUILD,
+            UserInputId::LIBRARY,
+            UserInputId::BUTTON_RELEASE),
+        ASSIGN(int,
+            UserInputId::TECHNOLOGY,
+            UserInputId::DEITIES,
+            UserInputId::CREATURE_BUTTON,
+            UserInputId::EDIT_TEAM,
+            UserInputId::CANCEL_TEAM,
+            UserInputId::COMMAND_TEAM),
+        ASSIGN(Vec2,
+            UserInputId::POSSESS,
+            UserInputId::MOVE, 
+            UserInputId::MOVE_TO, 
+            UserInputId::TRAVEL, 
+            UserInputId::FIRE,
+            UserInputId::THROW_DIR,
+            UserInputId::RECT_SELECTION),
+        ASSIGN(TeamLeaderInfo,
+            UserInputId::SET_TEAM_LEADER)> UserInput;
 
 #endif

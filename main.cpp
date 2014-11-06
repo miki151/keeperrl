@@ -49,6 +49,7 @@
 
 using namespace boost::iostreams;
 using namespace boost::program_options;
+using namespace boost::archive;
 
 struct SaveFileInfo {
   string path;
@@ -117,16 +118,31 @@ static Optional<string> chooseSaveFile(vector<pair<GameType, string>> games, str
     return Nothing();
 }
 
+template <class T, class U>
+class StreamCombiner {
+  public:
+  StreamCombiner(const string& filename) : stream(filename.c_str()), archive(stream) {
+    CHECK(stream.good()) << "File not found: " << filename;
+  }
+
+  U& getArchive() {
+    return archive;
+  }
+
+  private:
+  T stream;
+  U archive;
+};
+
+typedef StreamCombiner<ofstream, binary_oarchive> CompressedOutput;
+typedef StreamCombiner<ifstream, binary_iarchive> CompressedInput;
+
 static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
   unique_ptr<Model> model;
   {
-    igzstream ifs(filename.c_str());
-    CHECK(ifs.good()) << "File not found: " << filename;
-    filtering_streambuf<input> in;
-    in.push(ifs);
-    boost::archive::binary_iarchive ia(in);
-    Serialization::registerTypes(ia);
-    ia >> BOOST_SERIALIZATION_NVP(model);
+    CompressedInput input(filename.c_str());
+    Serialization::registerTypes(input.getArchive());
+    input.getArchive() >> BOOST_SERIALIZATION_NVP(model);
   }
 #ifdef RELEASE
   if (eraseFile && !Options::getValue(OptionId::KEEP_SAVEFILES))
@@ -136,12 +152,9 @@ static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
 }
 
 static void saveGame(unique_ptr<Model> model, const string& filename) {
-  ogzstream ofs(filename.c_str());
-  boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
-  out.push(ofs);
-  boost::archive::binary_oarchive oa(ofs);
-  Serialization::registerTypes(oa);
-  oa << BOOST_SERIALIZATION_NVP(model);
+  CompressedOutput out(filename.c_str());
+  Serialization::registerTypes(out.getArchive());
+  out.getArchive() << BOOST_SERIALIZATION_NVP(model);
 }
 
 /*static Table<bool> readSplashTable(const string& path) {
@@ -199,8 +212,8 @@ int main(int argc, char* argv[]) {
     return 0;
   }
   unique_ptr<View> view;
-  ifstream input;
-  ofstream output;
+  unique_ptr<CompressedInput> input;
+  unique_ptr<CompressedOutput> output;
   string lognamePref = "log";
   Debug::init();
   Options::init("options.txt");
@@ -212,19 +225,17 @@ int main(int argc, char* argv[]) {
     Debug() << "Reading from " << fname;
     seed = convertFromString<int>(fname.substr(lognamePref.size()));
     Random.init(seed);
-    input.open(fname);
-    CHECK(input.is_open());
-    view.reset(View::createReplayView(input));
+    input.reset(new CompressedInput(fname));
+    view.reset(View::createReplayView(input->getArchive()));
   } else {
 #ifndef RELEASE
     Random.init(seed);
     string fname(lognamePref);
     fname += convertToString(seed);
-    output.open(fname);
-    CHECK(output.is_open());
+    output.reset(new CompressedOutput(fname));
     Debug() << "Writing to " << fname;
   Debug() << int(sizeof(SquareType));
-    view.reset(View::createLoggingView(output));
+    view.reset(View::createLoggingView(output->getArchive()));
 #else
     view.reset(View::createDefaultView());
     ofstream("seeds.txt", std::ios_base::app) << seed << endl;

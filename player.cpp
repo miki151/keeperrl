@@ -235,7 +235,7 @@ static string getText(ItemClass type) {
 }
 
 
-vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Optional<UserInput::Type> exitAction) {
+vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Optional<UserInputId> exitAction) {
   map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
       creature->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
   vector<View::ListElem> names;
@@ -253,7 +253,7 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, Op
 
 void Player::dropAction(bool extended) {
   vector<Item*> items = chooseItem("Choose an item to drop:", [this](const Item* item) {
-      return !creature->getEquipment().isEquiped(item) || item->getClass() == ItemClass::WEAPON;}, UserInput::DROP);
+      return !creature->getEquipment().isEquiped(item) || item->getClass() == ItemClass::WEAPON;}, UserInputId::DROP);
   int num = items.size();
   if (num < 1)
     return;
@@ -287,7 +287,7 @@ void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
 
 void Player::applyAction() {
   vector<Item*> items = chooseItem("Choose an item to apply:", [this](const Item* item) {
-      return creature->applyItem(const_cast<Item*>(item));}, UserInput::APPLY_ITEM);
+      return creature->applyItem(const_cast<Item*>(item));}, UserInputId::APPLY_ITEM);
   if (items.size() == 0)
     return;
   applyItem(items);
@@ -313,7 +313,7 @@ void Player::applyItem(vector<Item*> items) {
 
 void Player::throwAction(Optional<Vec2> dir) {
   vector<Item*> items = chooseItem("Choose an item to throw:", [this](const Item* item) {
-      return !creature->getEquipment().isEquiped(item);}, UserInput::THROW);
+      return !creature->getEquipment().isEquiped(item);}, UserInputId::THROW);
   if (items.size() == 0)
     return;
   throwItem(items, dir);
@@ -377,7 +377,7 @@ void Player::equipmentAction() {
     }
     model->getView()->updateView(creature);
     Optional<int> newIndex = model->getView()->chooseFromList("Equipment", list, index, View::NORMAL_MENU, nullptr,
-        UserInput::Type::EQUIPMENT);
+        UserInputId::EQUIPMENT);
     if (!newIndex) {
       creature->finishEquipChain();
       return;
@@ -434,7 +434,7 @@ void Player::displayInventory() {
     model->getView()->presentText("", "Your inventory is empty.");
     return;
   }
-  vector<Item*> item = chooseItem("Inventory:", alwaysTrue<const Item*>(), UserInput::Type::SHOW_INVENTORY);
+  vector<Item*> item = chooseItem("Inventory:", alwaysTrue<const Item*>(), UserInputId::SHOW_INVENTORY);
   if (item.size() == 0) {
     return;
   }
@@ -657,21 +657,21 @@ void Player::makeMove() {
     targetAction();
   else {
     UserInput action = model->getView()->getAction();
-    Debug() << "Action " << int(action.type);
+    Debug() << "Action " << int(action.getId());
   vector<Vec2> direction;
   bool travel = false;
-  if (action.type != UserInput::IDLE) {
-    if (action.type != UserInput::REFRESH)
+  if (action.getId() != UserInputId::IDLE) {
+    if (action.getId() != UserInputId::REFRESH)
       retireMessages();
     updateView = true;
   }
-  switch (action.type) {
-    case UserInput::FIRE: fireAction(action.getPosition()); break;
-    case UserInput::TRAVEL: travel = true;
-    case UserInput::MOVE: direction.push_back(action.getPosition()); break;
-    case UserInput::MOVE_TO: 
-      if (action.getPosition().dist8(creature->getPosition()) == 1) {
-        Vec2 dir = action.getPosition() - creature->getPosition();
+  switch (action.getId()) {
+    case UserInputId::FIRE: fireAction(action.get<Vec2>()); break;
+    case UserInputId::TRAVEL: travel = true;
+    case UserInputId::MOVE: direction.push_back(action.get<Vec2>()); break;
+    case UserInputId::MOVE_TO: 
+      if (action.get<Vec2>().dist8(creature->getPosition()) == 1) {
+        Vec2 dir = action.get<Vec2>() - creature->getPosition();
         if (const Creature* c = creature->getConstSquare(dir)->getCreature()) {
           if (!creature->isEnemy(c)) {
             chatAction(dir);
@@ -680,8 +680,8 @@ void Player::makeMove() {
         }
         direction.push_back(dir);
       } else
-        if (action.getPosition() != creature->getPosition()) {
-          target = action.getPosition();
+        if (action.get<Vec2>() != creature->getPosition()) {
+          target = action.get<Vec2>();
           target = Vec2(min(creature->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
               min(creature->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
           // Just in case
@@ -691,28 +691,28 @@ void Player::makeMove() {
         else
           pickUpAction(false);
       break;
-    case UserInput::SHOW_INVENTORY: displayInventory(); break;
-    case UserInput::PICK_UP: pickUpAction(false); break;
-    case UserInput::EXT_PICK_UP: pickUpAction(true); break;
-    case UserInput::DROP: dropAction(false); break;
-    case UserInput::EXT_DROP: dropAction(true); break;
-    case UserInput::WAIT: creature->wait().perform(); break;
-    case UserInput::APPLY_ITEM: applyAction(); break; 
-    case UserInput::THROW: throwAction(); break;
-    case UserInput::THROW_DIR: throwAction(action.getPosition()); break;
-    case UserInput::EQUIPMENT: equipmentAction(); break;
-    case UserInput::HIDE: hideAction(); break;
-    case UserInput::PAY_DEBT: payDebtAction(); break;
-    case UserInput::CHAT: chatAction(); break;
-    case UserInput::CONSUME: consumeAction(); break;
-    case UserInput::SHOW_HISTORY: showHistory(); break;
-    case UserInput::UNPOSSESS:
+    case UserInputId::SHOW_INVENTORY: displayInventory(); break;
+    case UserInputId::PICK_UP: pickUpAction(false); break;
+    case UserInputId::EXT_PICK_UP: pickUpAction(true); break;
+    case UserInputId::DROP: dropAction(false); break;
+    case UserInputId::EXT_DROP: dropAction(true); break;
+    case UserInputId::WAIT: creature->wait().perform(); break;
+    case UserInputId::APPLY_ITEM: applyAction(); break; 
+    case UserInputId::THROW: throwAction(); break;
+    case UserInputId::THROW_DIR: throwAction(action.get<Vec2>()); break;
+    case UserInputId::EQUIPMENT: equipmentAction(); break;
+    case UserInputId::HIDE: hideAction(); break;
+    case UserInputId::PAY_DEBT: payDebtAction(); break;
+    case UserInputId::CHAT: chatAction(); break;
+    case UserInputId::CONSUME: consumeAction(); break;
+    case UserInputId::SHOW_HISTORY: showHistory(); break;
+    case UserInputId::UNPOSSESS:
       if (unpossess())
         return;
       break;
-    case UserInput::CAST_SPELL: spellAction(); break;
-    case UserInput::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature); break;
-    case UserInput::EXIT: model->exitAction(); break;
+    case UserInputId::CAST_SPELL: spellAction(); break;
+    case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature); break;
+    case UserInputId::EXIT: model->exitAction(); break;
     default: break;
   }
   if (creature->isAffected(LastingEffect::SLEEP)) {

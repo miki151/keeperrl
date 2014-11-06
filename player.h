@@ -97,7 +97,7 @@ class Player : public Controller {
   void spellAction();
   void consumeAction();
   void fireAction(Vec2 dir);
-  vector<Item*> chooseItem(const string& text, ItemPredicate, Optional<UserInput::Type> exitAction = Nothing());
+  vector<Item*> chooseItem(const string& text, ItemPredicate, Optional<UserInputId> exitAction = Nothing());
   void getItemNames(vector<Item*> it, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());
   string getPluralName(Item* item, int num);

@@ -142,7 +142,7 @@ void Model::update(double totalTime) {
     if (playerControl && !playerControl->isTurnBased()) {
       while (1) {
         UserInput input = view->getAction();
-        if (input.type == UserInput::IDLE)
+        if (input.getId() == UserInputId::IDLE)
           break;
         else
           lastUpdate = -10;

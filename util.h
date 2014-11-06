@@ -700,7 +700,7 @@ class Optional {
 
   T& operator = (T&& t) {
     if (!elem.empty())
-      elem.front() = std::move(t);
+      elem[0] = std::move(t);
     else {
       elem.push_back(std::move(t));
     }
@@ -909,9 +909,12 @@ Optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
 }
 
 template<class T>
-void removeElementMaybe(vector<T>& v, const T& element) {
-  if (auto ind = findElement(v, element))
+bool removeElementMaybe(vector<T>& v, const T& element) {
+  if (auto ind = findElement(v, element)) {
     removeIndex(v, *ind);
+    return true;
+  }
+  return false;
 }
 
 template<class T>

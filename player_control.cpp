@@ -40,7 +40,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CreatureView)
     & SUBCLASS(CollectiveControl)
     & SVAR(memory)
-    & SVAR(gatheringTeam)
+    & SVAR(currentTeam)
     & SVAR(model)
     & SVAR(showWelcomeMsg)
     & SVAR(lastControlKeeperQuestion)
@@ -236,8 +236,16 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
 
 const int basicImpCost = 20;
 
-void PlayerControl::unpossess() {
-  Creature* possessed = getCollective()->getTeamLeader();
+Creature* PlayerControl::getControlled() {
+  for (TeamId team : getCollective()->getActiveTeams()) {
+    if (getCollective()->getTeamLeader(team)->isPlayer())
+      return getCollective()->getTeamLeader(team);
+  }
+  return nullptr;
+}
+
+void PlayerControl::leaveControl() {
+  Creature* possessed = getControlled();
   if (possessed == getKeeper())
     lastControlKeeperQuestion = getCollective()->getTime();
   CHECK(possessed);
@@ -246,15 +254,18 @@ void PlayerControl::unpossess() {
   if (possessed->isPlayer())
     possessed->popController();
   ViewObject::setHallu(false);
-  getCollective()->cancelTeamLeader();
+  TeamId team = getOnlyElement(getCollective()->getActiveTeams(possessed));
+  if (getCollective()->getTeam(team).size() == 1)
+    getCollective()->cancelTeam(team);
+  else
+    getCollective()->deactivateTeam(team);
   model->getView()->stopClock();
 }
 
 void PlayerControl::render(View* view) {
   if (retired)
     return;
-  Creature* possessed = getCollective()->getTeamLeader();
-  if (!possessed) {
+  if (!getControlled()) {
     view->updateView(this);
   }
   if (showWelcomeMsg && Options::getValue(OptionId::HINTS)) {
@@ -266,12 +277,12 @@ void PlayerControl::render(View* view) {
 }
 
 bool PlayerControl::isTurnBased() {
-  Creature* possessed = getCollective()->getTeamLeader();
-  return retired || (possessed != nullptr && possessed->isPlayer());
+  return retired || getControlled();
 }
 
 void PlayerControl::retire() {
-  getCollective()->cancelTeam();
+  if (getControlled())
+    leaveControl();
   retired = true;
 }
 
@@ -394,7 +405,7 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
   if (!index)
     return;
   switch (mOpt[*index]) {
-    case MinionOption::POSSESS: possess(creature, view); return;
+    case MinionOption::POSSESS: controlSingle(creature); return;
     case MinionOption::EQUIPMENT: handleEquipment(view, creature); break;
     case MinionOption::INFO: view->presentText(creature->getName(), creature->getDescription()); break;
     case MinionOption::WAKE_UP: creature->removeEffect(LastingEffect::SLEEP); return;
@@ -807,14 +818,14 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.workshop = fillButtons(workshopInfo);
   info.libraryButtons = fillButtons(libraryInfo);
   info.tasks = getCollective()->getMinionTaskStrings();
-  info.creatures.clear();
+  info.minions.clear();
   info.payoutTimeRemaining = getCollective()->getNextPayoutTime() - getCollective()->getTime();
   info.nextPayout = getCollective()->getNextSalaries();
   for (Creature* c : getCollective()->getCreaturesAnyOf(
         {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER})) {
     if (getCollective()->isInCombat(c))
       info.tasks[c->getUniqueId()] = "fighting";
-    info.creatures.push_back({getCollective(), c});
+    info.minions.push_back({getCollective(), c});
   }
   info.monsterHeader = "Minions: ";
   info.enemies.clear();
@@ -829,10 +840,13 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
           {getResourceViewObject(elem.first), getCollective()->numResourcePlusDebt(elem.first), elem.second.name});
   info.warning = "";
   gameInfo.time = getCollective()->getTime();
-  info.gatheringTeam = gatheringTeam;
-  info.team.clear();
-  for (Creature* c : getCollective()->getTeam())
-    info.team.push_back(c->getUniqueId());
+  info.currentTeam = getCurrentTeam();
+  info.teams.clear();
+  for (TeamId team :getCollective()->getTeams()) {
+    info.teams[team].clear();
+    for (Creature* c : getCollective()->getTeam(team))
+      info.teams[team].push_back(c->getUniqueId());
+  }
   info.techButtons.clear();
   for (TechInfo tech : getTechInfo())
     info.techButtons.push_back(tech.button);
@@ -889,6 +903,17 @@ static const ViewObject& getConstructionObject(SquareType type) {
   return objects.at(type);
 }
 
+void PlayerControl::setCurrentTeam(Optional<TeamId> team) {
+  currentTeam = team;
+}
+
+Optional<TeamId> PlayerControl::getCurrentTeam() const {
+  if (currentTeam && getCollective()->teamExists(*currentTeam))
+    return currentTeam;
+  else
+    return Nothing();
+}
+
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   getLevel()->getSquare(pos)->getViewIndex(this, index);
   if (getCollective()->getAllSquares().count(pos) 
@@ -896,7 +921,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = getLevel()->getSquare(pos)->getCreature())
-    if (getCollective()->isInTeam(c) && gatheringTeam)
+    if (getCurrentTeam() && getCollective()->isInTeam(*getCurrentTeam(), c))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (getCollective()->isMarkedToDig(pos))
     index.setHighlight(HighlightType::BUILD);
@@ -958,7 +983,7 @@ class MinionController : public Player {
   }
 
   virtual bool unpossess() override {
-    control->unpossess();
+    control->leaveControl();
     return true;
   }
 
@@ -978,18 +1003,14 @@ class MinionController : public Player {
   PlayerControl* SERIAL(control);
 };
 
-void PlayerControl::possess(const Creature* cr, View* view) {
-  Creature* possessed = getCollective()->getTeamLeader();
-  if (possessed && possessed != cr && possessed->isPlayer())
-    possessed->popController();
+void PlayerControl::controlSingle(const Creature* cr) {
   CHECK(contains(getCreatures(), cr));
   CHECK(!cr->isDead());
+  auto team = getCollective()->createTeam();
   Creature* c = const_cast<Creature*>(cr);
-  if (c->isAffected(LastingEffect::SLEEP))
-    c->removeEffect(LastingEffect::SLEEP);
-  getCollective()->freeFromGuardPost(c);
-  c->pushController(PController(new MinionController(c, model, memory.get(), this)));
-  getCollective()->setTeamLeader(c);
+  getCollective()->addToTeam(team, c);
+  getCollective()->setTeamLeader(team, c);
+  commandTeam(team);
 }
 
 bool PlayerControl::canBuildDoor(Vec2 pos) const {
@@ -1018,56 +1039,60 @@ Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) {
 }
 
 void PlayerControl::handleCreatureButton(Creature* c, View* view) {
-  if (!gatheringTeam)
+  if (!getCurrentTeam())
     minionView(view, c);
   else if (getCollective()->hasAnyTrait(c, {MinionTrait::FIGHTER, MinionTrait::LEADER})) {
-    if (getCollective()->isInTeam(c))
-      getCollective()->removeFromTeam(c);
+    if (getCollective()->isInTeam(*getCurrentTeam(), c))
+      getCollective()->removeFromTeam(*getCurrentTeam(), c);
     else
-      getCollective()->addToTeam(c);
+      getCollective()->addToTeam(*getCurrentTeam(), c);
   }
+}
+
+void PlayerControl::commandTeam(TeamId team) {
+  if (getControlled())
+    leaveControl();
+  Creature* c = getCollective()->getTeamLeader(team);
+  c->pushController(PController(new MinionController(c, model, memory.get(), this)));
+  getCollective()->activateTeam(team);
 }
 
 void PlayerControl::processInput(View* view, UserInput input) {
   if (retired)
     return;
-  const vector<Creature*>& team = getCollective()->getTeam();
-  switch (input.type) {
-    case UserInput::EDIT_TEAM:
-        CHECK(!getCollective()->getTeam().empty());
-        CHECK(!gatheringTeam);
-        gatheringTeam = true;
-      break;
-    case UserInput::GATHER_TEAM:
-        if (gatheringTeam && !team.empty()) {
-          gatheringTeam = false;
+  switch (input.getId()) {
+    case UserInputId::EDIT_TEAM:
+        if (getCurrentTeam() && getCollective()->getTeam(*getCurrentTeam()).empty())
+          getCollective()->cancelTeam(*getCurrentTeam());
+        setCurrentTeam(input.get<TeamId>());
+        break;
+    case UserInputId::CREATE_TEAM:
+        setCurrentTeam(getCollective()->createTeam());
+        break;
+    case UserInputId::COMMAND_TEAM:
+        if (!getCurrentTeam() || getCollective()->getTeam(*getCurrentTeam()).empty())
           break;
-        } 
-        if (!gatheringTeam && !team.empty()) {
-          getCollective()->setTeamLeader(team[0]);
-          possess(team[0], view);
- //         gatheringTeam = false;
-          for (Creature* c : team) {
-            getCollective()->freeFromGuardPost(c);
-            if (c->isAffected(LastingEffect::SLEEP))
-              c->removeEffect(LastingEffect::SLEEP);
-          }
-        } else
-          gatheringTeam = true;
+        commandTeam(*getCurrentTeam());
         break;
-    case UserInput::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
-    case UserInput::CANCEL_TEAM: gatheringTeam = false; getCollective()->cancelTeam(); break;
-    case UserInput::MARKET: handleMarket(view); break;
-    case UserInput::DEITIES: model->keeperopedia.deity(view, Deity::getDeities()[input.getNum()]); break;
-    case UserInput::TECHNOLOGY: {
+    case UserInputId::CANCEL_TEAM:
+        getCollective()->cancelTeam(input.get<TeamId>());
+        break;
+    case UserInputId::SET_TEAM_LEADER:
+        getCollective()->setTeamLeader(input.get<TeamLeaderInfo>().team(),
+            getCreature(input.get<TeamLeaderInfo>().creatureId()));
+        break;
+    case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
+    case UserInputId::MARKET: handleMarket(view); break;
+    case UserInputId::DEITIES: model->keeperopedia.deity(view, Deity::getDeities()[input.get<int>()]); break;
+    case UserInputId::TECHNOLOGY: {
         vector<TechInfo> techInfo = getTechInfo();
-        techInfo[input.getNum()].butFun(this, view);
+        techInfo[input.get<int>()].butFun(this, view);
         break;}
-    case UserInput::CREATURE_BUTTON: 
-        handleCreatureButton(getCreature(input.getNum()), view);
+    case UserInputId::CREATURE_BUTTON: 
+        handleCreatureButton(getCreature(input.get<int>()), view);
         break;
-    case UserInput::POSSESS: {
-        Vec2 pos = input.getPosition();
+    case UserInputId::POSSESS: {
+        Vec2 pos = input.get<Vec2>();
         if (!pos.inRectangle(getLevel()->getBounds()))
           return;
         if (Creature* c = getLevel()->getSquare(pos)->getCreature()) {
@@ -1077,34 +1102,31 @@ void PlayerControl::processInput(View* view, UserInput input) {
           tryLockingDoor(pos);
         break;
         }
-    case UserInput::RECT_SELECTION:
+    case UserInputId::RECT_SELECTION:
         if (rectSelectCorner) {
-          rectSelectCorner2 = input.getPosition();
+          rectSelectCorner2 = input.get<Vec2>();
         } else
-          rectSelectCorner = input.getPosition();
+          rectSelectCorner = input.get<Vec2>();
         break;
-    case UserInput::BUILD:
-        handleSelection(input.getPosition(), getBuildInfo()[input.getBuildInfo().building], false);
+    case UserInputId::BUILD:
+        handleSelection(input.get<BuildingInfo>().pos(), getBuildInfo()[input.get<BuildingInfo>().building()], false);
         break;
-    case UserInput::WORKSHOP:
-        handleSelection(input.getPosition(), workshopInfo[input.getBuildInfo().building], false);
+    case UserInputId::LIBRARY:
+        handleSelection(input.get<BuildingInfo>().pos(), libraryInfo[input.get<BuildingInfo>().building()], false);
         break;
-    case UserInput::LIBRARY:
-        handleSelection(input.getPosition(), libraryInfo[input.getBuildInfo().building], false);
-        break;
-    case UserInput::BUTTON_RELEASE:
+    case UserInputId::BUTTON_RELEASE:
         selection = NONE;
         if (rectSelectCorner && rectSelectCorner2) {
-          handleSelection(*rectSelectCorner, getBuildInfo()[input.getBuildInfo().building], true);
+          handleSelection(*rectSelectCorner, getBuildInfo()[input.get<BuildingInfo>().building()], true);
           for (Vec2 v : Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2}))
-            handleSelection(v, getBuildInfo()[input.getBuildInfo().building], true);
+            handleSelection(v, getBuildInfo()[input.get<BuildingInfo>().building()], true);
         }
         rectSelectCorner = Nothing();
         rectSelectCorner2 = Nothing();
         selection = NONE;
         break;
-    case UserInput::EXIT: model->exitAction(); break;
-    case UserInput::IDLE: break;
+    case UserInputId::EXIT: model->exitAction(); break;
+    case UserInputId::IDLE: break;
     default: break;
   }
 }
@@ -1152,9 +1174,11 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
       break;
     case BuildInfo::DESTROY:
-        selection = SELECT;
-        getCollective()->destroySquare(pos);
-        updateSquareMemory(pos);
+        if (getCollective()->isKnownSquare(pos)) {
+          selection = SELECT;
+          getCollective()->destroySquare(pos);
+          updateSquareMemory(pos);
+        }
         break;
     case BuildInfo::GUARD_POST:
         if (getCollective()->isGuardPost(pos) && selection != SELECT) {
@@ -1308,13 +1332,13 @@ void PlayerControl::considerDeityFight() {
 }
 
 void PlayerControl::checkKeeperDanger() {
-  Creature* possessed = getCollective()->getTeamLeader();
+  Creature* possessed = getControlled();
   if (!retired && possessed != getKeeper()) { 
     if ((getCollective()->isInCombat(getKeeper()) || getKeeper()->getHealth() < 1)
         && lastControlKeeperQuestion < getCollective()->getTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getTime();
       if (model->getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
-        possess(getKeeper(), model->getView());
+        controlSingle(getKeeper());
         return;
       }
     }
@@ -1322,7 +1346,7 @@ void PlayerControl::checkKeeperDanger() {
         && lastControlKeeperQuestion < getCollective()->getTime() - 5) {
       lastControlKeeperQuestion = getCollective()->getTime();
       if (model->getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
-        possess(getKeeper(), model->getView());
+        controlSingle(getKeeper());
         return;
       }
     }

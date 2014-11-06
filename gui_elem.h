@@ -56,7 +56,8 @@ class GuiElem {
   enum MarginType { TOP, LEFT, RIGHT, BOTTOM};
   static PGuiElem margin(PGuiElem top, PGuiElem rest, int height, MarginType);
   static PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
-  static PGuiElem label(const string&, Color, char hotkey = 0);
+  static PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
+  static PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
   static PGuiElem label(sf::Uint32, Color, int size, Renderer::FontId);
   static PGuiElem viewObject(const ViewObject& object, bool useSprites);
   static PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);

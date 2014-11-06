@@ -20,10 +20,10 @@
 #include "collective.h"
 
 
-View::ListElem::ListElem(const string& t, ElemMod m, Optional<UserInput::Type> a) : text(t), mod(m), action(a) {
+View::ListElem::ListElem(const string& t, ElemMod m, Optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
 
-View::ListElem::ListElem(const char* s, ElemMod m, Optional<UserInput::Type> a) : text(s), mod(m), action(a) {
+View::ListElem::ListElem(const char* s, ElemMod m, Optional<UserInputId> a) : text(s), mod(m), action(a) {
 }
 
 const string& View::ListElem::getText() const {
@@ -34,7 +34,7 @@ View::ElemMod View::ListElem::getMod() const {
   return mod;
 }
 
-Optional<UserInput::Type> View::ListElem::getAction() const {
+Optional<UserInputId> View::ListElem::getAction() const {
   return action;
 }
 
@@ -68,3 +68,12 @@ GameInfo::CreatureInfo::CreatureInfo(const Collective* col, const Creature* c)
       salary(col ? col->getSalary(c) : 0),
       credit(col ? 0 : 0) {
 }
+
+GameInfo::CreatureInfo& GameInfo::BandInfo::getMinion(UniqueEntity<Creature>::Id id) {
+  for (auto& elem : minions)
+    if (elem.uniqueId == id)
+      return elem;
+  FAIL << "Minion not found " << id;
+  return minions[0];
+}
+

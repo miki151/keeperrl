@@ -171,6 +171,15 @@ PGuiElem GuiElem::label(const string& s, Color c, char hotkey) {
         }));
 }
 
+PGuiElem GuiElem::label(const string& s, int size, Color c) {
+  return PGuiElem(new DrawCustom(
+        [=] (Renderer& r, Rectangle bounds) {
+          r.drawText(transparency(colors[ColorId::BLACK], 100),
+            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, false, size);
+          r.drawText(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, false, size);
+        }));
+}
+
 PGuiElem GuiElem::label(sf::Uint32 s, Color color, int size, Renderer::FontId fontId) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {

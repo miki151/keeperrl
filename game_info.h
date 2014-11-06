@@ -41,7 +41,7 @@ class GameInfo {
     vector<Button> minionButtons;
     vector<Button> libraryButtons;
     string monsterHeader;
-    vector<CreatureInfo> creatures;
+    vector<CreatureInfo> minions;
     vector<CreatureInfo> enemies;
     map<UniqueEntity<Creature>::Id, string> tasks;
     struct Resource {
@@ -50,9 +50,9 @@ class GameInfo {
       string name;
     };
     vector<Resource> numResource;
-    bool gatheringTeam = false;
-    vector<UniqueEntity<Creature>::Id> team;
-
+    Optional<TeamId> currentTeam;
+    map<TeamId, vector<UniqueEntity<Creature>::Id>> teams;
+    CreatureInfo& getMinion(UniqueEntity<Creature>::Id);
     int nextPayout;
     int payoutTimeRemaining;
 

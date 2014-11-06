@@ -281,15 +281,25 @@ class Collective : public Task::Callback {
 
   void addAssaultNotification(const Creature*, const VillageControl*);
   void removeAssaultNotification(const Creature*, const VillageControl*);
-  bool isInTeam(const Creature*) const;
-  void addToTeam(Creature*);
-  void removeFromTeam(Creature*);
-  void setTeamLeader(Creature*);
-  void cancelTeamLeader();
-  const Creature* getTeamLeader() const;
-  Creature* getTeamLeader();
-  const vector<Creature*>& getTeam() const;
-  void cancelTeam();
+
+  bool isInTeam(TeamId, const Creature*) const;
+  bool isTeamActive(TeamId) const;
+  void addToTeam(TeamId, Creature*);
+  void removeFromTeam(TeamId, Creature*);
+  void setTeamLeader(TeamId, Creature*);
+  void activateTeam(TeamId);
+  void deactivateTeam(TeamId);
+  TeamId createTeam();
+  void removeFromAllTeams(Creature*);
+  const Creature* getTeamLeader(TeamId) const;
+  Creature* getTeamLeader(TeamId);
+  const vector<Creature*>& getTeam(TeamId) const;
+  vector<TeamId> getTeams(const Creature*) const;
+  vector<TeamId> getTeams() const;
+  vector<TeamId> getActiveTeams(const Creature*) const;
+  vector<TeamId> getActiveTeams() const;
+  void cancelTeam(TeamId);
+  bool teamExists(TeamId) const;
 
   template <class Archive>
   static void registerTypes(Archive& ar);
@@ -422,12 +432,12 @@ class Collective : public Task::Callback {
   Creature* getConsumptionTarget(Creature* consumer);
   deque<Creature*> SERIAL(pregnancies);
   mutable vector<ItemFetchInfo> itemFetchInfo;
-  struct TeamInfo : public NamedTupleBase<vector<Creature*>, Creature*> {
+  struct TeamInfo : public NamedTupleBase<vector<Creature*>, bool> {
     NAMED_TUPLE_STUFF(TeamInfo);
     NAME_ELEM(0, creatures);
-    NAME_ELEM(1, leader);
+    NAME_ELEM(1, active);
   };
-  TeamInfo SERIAL(teamInfo);
+  map<TeamId, TeamInfo> SERIAL(teamInfo);
   set<const Location*> SERIAL(knownLocations);
 };
 

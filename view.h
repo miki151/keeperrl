@@ -73,18 +73,18 @@ class View {
   class ListElem {
     public:
     ListElem(const char*, ElemMod mod = NORMAL,
-        Optional<UserInput::Type> triggerAction = Nothing());
+        Optional<UserInputId> triggerAction = Nothing());
     ListElem(const string& text = "", ElemMod mod = NORMAL,
-        Optional<UserInput::Type> triggerAction = Nothing());
+        Optional<UserInputId> triggerAction = Nothing());
 
     const string& getText() const;
     ElemMod getMod() const;
-    Optional<UserInput::Type> getAction() const;
+    Optional<UserInputId> getAction() const;
 
     private:
     string text;
     ElemMod mod;
-    Optional<UserInput::Type> action;
+    Optional<UserInputId> action;
   };
 
   static vector<ListElem> getListElem(const vector<string>&);
@@ -98,7 +98,7 @@ class View {
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
       Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = NORMAL_MENU, int* scrollPos = nullptr, Optional<UserInput::Type> exitAction = Nothing()) = 0;
+      MenuType = NORMAL_MENU, int* scrollPos = nullptr, Optional<UserInputId> exitAction = Nothing()) = 0;
 
   /** Let's the player choose a direction from the main 8. Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<Vec2> chooseDirection(const string& message) = 0;
@@ -111,7 +111,7 @@ class View {
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = NORMAL_MENU, Optional<UserInput::Type> exitAction = Nothing()) = 0;
+      MenuType = NORMAL_MENU, Optional<UserInputId> exitAction = Nothing()) = 0;
 
   /** Let's the player choose a number. Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
@@ -149,10 +149,10 @@ class View {
   static View* createDefaultView();
 
   /** Returns a default View that additionally logs all player actions into a file.*/
-  static View* createLoggingView(ofstream& of);
+  static View* createLoggingView(binary_oarchive& of);
 
   /** Returns a default View that reads all player actions from a file instead of the keyboard.*/
-  static View* createReplayView(ifstream& ifs);
+  static View* createReplayView(binary_iarchive& ifs);
 
   private:
   Jukebox* jukebox = nullptr;

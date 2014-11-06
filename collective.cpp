@@ -375,10 +375,10 @@ class LeaderControlOverride : public Creature::MoraleOverride {
   LeaderControlOverride(Collective* col, Creature* c) : collective(col), creature(c) {}
 
   virtual Optional<double> getMorale() override {
-    if (collective->isInTeam(creature) && collective->getTeamLeader() == collective->getLeader())
-      return 1;
-    else
-      return Nothing();
+    for (auto team : collective->getTeams(collective->getLeader()))
+      if (collective->isTeamActive(team) && collective->isInTeam(team, creature))
+        return 1;
+    return Nothing();
   }
 
   SERIALIZATION_CONSTRUCTOR(LeaderControlOverride);
@@ -677,9 +677,9 @@ PTask Collective::getHealingTask(Creature* c) {
 }
 
 MoveInfo Collective::getTeamMemberMove(Creature* c) {
-  if (getTeamLeader()->getLevel() == c->getLevel()) 
-    if (auto action = c->moveTowards(getTeamLeader()->getPosition()))
-      return {1.0, action};
+  for (auto team : getTeams(c))
+    if (isTeamActive(team) && c != getTeamLeader(team) && getTeamLeader(team)->getLevel() == c->getLevel())
+      return c->moveTowards(getTeamLeader(team)->getPosition());
   return NoMove;
 }
 
@@ -688,9 +688,8 @@ MoveInfo Collective::getMove(Creature* c) {
   CHECK(contains(creatures, c));
   if (c->getLevel() != getLevel())
     return NoMove;
-  if (isInTeam(c) && getTeamLeader() && getTeamLeader() != c)
-    if (MoveInfo move = getTeamMemberMove(c))
-      return move;
+  if (MoveInfo move = getTeamMemberMove(c))
+    return move;
   if (MoveInfo move = control->getMove(c))
     return move;
   if (hasTrait(c, MinionTrait::WORKER))
@@ -1209,8 +1208,7 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
         removeElement(byTrait[t], victim);
     if (auto spawnType = victim->getSpawnType())
       removeElement(bySpawnType[*spawnType], victim);
-    if (isInTeam(victim))
-      removeFromTeam(victim);
+    removeFromAllTeams(victim);
     control->onCreatureKilled(victim, killer);
     if (killer)
       control->addMessage(PlayerMessage(victim->getAName() + " is killed by " + killer->getAName(),
@@ -2183,48 +2181,104 @@ void Collective::removeAssaultNotification(const Creature *c, const VillageContr
   control->removeAssaultNotification(c, vil);
 }
 
-bool Collective::isInTeam(const Creature* c) const {
-  return contains(teamInfo.creatures(), c);
+bool Collective::isInTeam(TeamId team, const Creature* c) const {
+  return contains(teamInfo.at(team).creatures(), c);
 }
 
-void Collective::addToTeam(Creature* c) {
-  CHECK(!contains(teamInfo.creatures(), c));
-  teamInfo.creatures().push_back(c);
+void Collective::addToTeam(TeamId team, Creature* c) {
+  CHECK(!contains(teamInfo[team].creatures(), c));
+  teamInfo[team].creatures().push_back(c);
 }
 
-void Collective::removeFromTeam(Creature* c) {
-  removeElement(teamInfo.creatures(), c);
-  if (teamInfo.leader() == c)
-    cancelTeamLeader();
+void Collective::removeFromTeam(TeamId team, Creature* c) {
+  removeElement(teamInfo[team].creatures(), c);
 }
 
-void Collective::setTeamLeader(Creature* c) {
-  if (!contains(teamInfo.creatures(), c))
-    addToTeam(c);
-  teamInfo.leader() = c;
+void Collective::activateTeam(TeamId team) {
+  teamInfo[team].active() = true;
+  for (Creature* c : teamInfo[team].creatures()) {
+    freeFromGuardPost(c);
+    if (c->isAffected(LastingEffect::SLEEP))
+      c->removeEffect(LastingEffect::SLEEP);
+  }
 }
 
-void Collective::cancelTeamLeader() {
-  if (teamInfo.creatures().size() == 1)
-    teamInfo.creatures().clear();
-  teamInfo.leader() = nullptr;
+void Collective::deactivateTeam(TeamId team) {
+  teamInfo[team].active() = false;
 }
 
-const Creature* Collective::getTeamLeader() const {
-  return teamInfo.leader();
+void Collective::setTeamLeader(TeamId team, Creature* c) {
+  if (!contains(teamInfo[team].creatures(), c))
+    addToTeam(team, c);
+  swap(teamInfo[team].creatures()[0], teamInfo[team].creatures()[*findElement(teamInfo[team].creatures(), c)]);
 }
 
-Creature* Collective::getTeamLeader() {
-  return teamInfo.leader();
+const Creature* Collective::getTeamLeader(TeamId team) const {
+  CHECK(!teamInfo.at(team).creatures().empty());
+  return teamInfo.at(team).creatures()[0];
 }
 
-const vector<Creature*>& Collective::getTeam() const {
-  return teamInfo.creatures();
+Creature* Collective::getTeamLeader(TeamId team) {
+  CHECK(!teamInfo.at(team).creatures().empty());
+  return teamInfo.at(team).creatures()[0];
 }
 
-void Collective::cancelTeam() {
-  teamInfo.creatures().clear();
-  cancelTeamLeader();
+const vector<Creature*>& Collective::getTeam(TeamId team) const {
+  return teamInfo.at(team).creatures();
+}
+
+vector<TeamId> Collective::getTeams(const Creature* c) const {
+  vector<TeamId> ret;
+  for (auto team : getKeys(teamInfo))
+    if (contains(teamInfo.at(team).creatures(), c))
+      ret.push_back(team);
+  return ret;
+}
+
+vector<TeamId> Collective::getTeams() const {
+  return getKeys(teamInfo);
+}
+
+vector<TeamId> Collective::getActiveTeams(const Creature* c) const {
+  vector<TeamId> ret;
+  for (TeamId t : getTeams(c))
+    if (isTeamActive(t))
+      ret.push_back(t);
+  return ret;
+}
+
+vector<TeamId> Collective::getActiveTeams() const {
+  vector<TeamId> ret;
+  for (TeamId t : getKeys(teamInfo))
+    if (isTeamActive(t))
+      ret.push_back(t);
+  return ret;
+}
+
+TeamId Collective::createTeam() {
+  static int cnt = 0;
+  TeamId id = ++cnt;
+  teamInfo[id].creatures().clear();
+  return id;
+}
+
+bool Collective::teamExists(TeamId id) const {
+  return teamInfo.count(id);
+}
+
+bool Collective::isTeamActive(TeamId team) const {
+  return teamInfo.at(team).active();
+}
+
+void Collective::removeFromAllTeams(Creature* c) {
+  for (TeamId team : getTeams()) {
+    if (removeElementMaybe(teamInfo[team].creatures(), c) && teamInfo[team].creatures().empty())
+      teamInfo.erase(team);
+  }
+}
+
+void Collective::cancelTeam(TeamId team) {
+  teamInfo.erase(team);
 }
 
 static Optional<Vec2> getAdjacentWall(const Level* l, Vec2 pos) {

@@ -27,6 +27,8 @@ namespace std { \
   }; \
 }
 
+typedef int TeamId;
+
 enum class CollectiveResourceId;
 enum class CollectiveConfigId;
 enum class MsgType;

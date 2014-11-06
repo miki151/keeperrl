@@ -19,11 +19,10 @@
 template <class T>
 class ReplayView : public T {
   public:
-    ReplayView(ifstream& iff) : input(iff) {
+    ReplayView(binary_iarchive& iff) : input(iff) {
     }
 
     virtual void close() override {
-      input.close();
       T::close();
     }
 
@@ -69,29 +68,20 @@ class ReplayView : public T {
     }
 
     virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        View::MenuType, int* scrollPos, Optional<UserInput::Type> a) override {
+        View::MenuType, int* scrollPos, Optional<UserInputId> a) override {
       string method;
-      string action;
+      Optional<int> action;
       input >> method >> action;
       CHECKEQ(method, "chooseFromList");
-      if (action == "nothing")
-        return Nothing();
-      else
-        return convertFromString<int>(action);
+      return action;
     }
 
     virtual Optional<Vec2> chooseDirection(const string& message) override {
       string method;
-      string action;
+      Optional<Vec2> action;
       input >> method >> action;
       CHECKEQ(method, "chooseDirection");
-      if (action == "nothing")
-        return Nothing();
-      else {
-        vector<string> s = split(action, {','});
-        CHECKEQ((int)s.size(), 2);
-        return Vec2(convertFromString<int>(s[0]), convertFromString<int>(s[1]));
-      }
+      return action;
     }
 
     virtual bool yesOrNoPrompt(const string& message) override {
@@ -104,16 +94,13 @@ class ReplayView : public T {
 
     virtual Optional<int> getNumber(const string& title, int min, int max, int increments) override {
       string method;
-      string action;
+      Optional<int> action;
       input >> method >> action;
       CHECKEQ(method, "getNumber");
-      if (action == "nothing")
-        return Nothing();
-      else
-        return convertFromString<int>(action);
+      return action;
     }
   private:
-    ifstream& input;
+    binary_iarchive& input;
 };
 
 #endif
