@@ -63,15 +63,6 @@ void MarkovChain<T>::update() {
 }
 
 template<class T>
-bool MarkovChain<T>::updateToNext() {
-  const vector<pair<T, double>> t = transitions.at(state);
-  if (t.size() == 1)
-    return false;
-  state = chooseRandom(getPrefix(t, 0, t.size() - 1));
-  return true;
-}
-
-template<class T>
 bool MarkovChain<T>::containsState(T state) const {
   return transitions.count(state);
 }

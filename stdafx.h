@@ -55,6 +55,7 @@
 #include <boost/serialization/variant.hpp>
 #include <boost/variant.hpp>
 #include <boost/any.hpp>
+#include <boost/version.hpp>
 
 #ifdef DEBUG_STL
 

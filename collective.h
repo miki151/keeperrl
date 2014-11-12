@@ -196,7 +196,7 @@ class Collective : public Task::Callback {
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
 
   static vector<SquareType> getEquipmentStorageSquares();
-  vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = {}) const;
+  vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = set<Vec2>()) const;
 
   void orderExecution(Creature*);
   void orderSacrifice(Creature*);

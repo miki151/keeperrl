@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "util.h"
 
-#include <extern/scriptstdstring.h>
-#include <extern/scriptbuilder.h>
-#include <extern/scripthelper.h>
+#include "extern/scriptstdstring.h"
+#include "extern/scriptbuilder.h"
+#include "extern/scripthelper.h"
 
 #include "script_context.h"
 
