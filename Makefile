@@ -9,7 +9,7 @@ LD = g++
 endif
 
 CFLAGS = -Werror -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wfatal-errors
-LDFLAGS = -Wl,-rpath=. -static-libstdc++
+LDFLAGS = -Wl
 
 CMD:=$(shell rm -f zagadka)
 

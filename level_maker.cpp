@@ -895,20 +895,15 @@ class PredicatePrecalc {
 class RandomLocations : public LevelMaker {
   public:
   RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
-      Predicate pred, bool _separate = true, map<pair<LevelMaker*, LevelMaker*>, double> _minDistance = {},
-      map<pair<LevelMaker*, LevelMaker*>, double> _maxDistance = {})
-      : insideMakers(_insideMakers), sizes(_sizes), predicate(sizes.size(), pred), separate(_separate),
-        minDistance(_minDistance), maxDistance(_maxDistance) {
+      Predicate pred, bool _separate = true)
+      : insideMakers(_insideMakers), sizes(_sizes), predicate(sizes.size(), pred), separate(_separate) {
         CHECK(insideMakers.size() == sizes.size());
         CHECK(predicate.size() == sizes.size());
       }
 
   RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
-      const vector<Predicate>& pred, bool _separate = true,
-      map<pair<LevelMaker*, LevelMaker*>, double> _minDistance = {},
-      map<pair<LevelMaker*, LevelMaker*>, double> _maxDistance = {})
-      : insideMakers(_insideMakers), sizes(_sizes), predicate(pred.begin(), pred.end()), separate(_separate),
-        minDistance(_minDistance), maxDistance(_maxDistance) {
+      const vector<Predicate>& pred, bool _separate = true)
+      : insideMakers(_insideMakers), sizes(_sizes), predicate(pred.begin(), pred.end()), separate(_separate) {
     CHECK(insideMakers.size() == sizes.size());
     CHECK(pred.size() == sizes.size());
   }
