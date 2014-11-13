@@ -283,23 +283,16 @@ double Model::getTime() const {
 
 void Model::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
-  vector<View::ListElem> options { "Save the game", "Retire", "Change options", "Abandon the game" };
+  vector<View::ListElem> options { "Save the game",
+    {"Retire", playerControl->isRetired() ? View::INACTIVE : View::NORMAL} , "Change options", "Abandon the game" };
   auto ind = view->chooseFromList("Would you like to:", options);
   if (!ind)
     return;
   switch (Action(*ind)) {
-    case RETIRE: {
-      bool canRetire = true;
-      for (VillageControl* c : villageControls)
-        if (c->currentlyAttacking()) {
-          view->presentText("", "You can't retire now as there is an ongoing attack.");
-          canRetire = false;
-          break;
-        }
-      if (canRetire && view->yesOrNoPrompt("Are you sure you want to retire your dungeon?")) {
+    case RETIRE:
+      if (view->yesOrNoPrompt("Are you sure you want to retire your dungeon?")) {
         retireCollective();
         throw SaveGameException(GameType::RETIRED_KEEPER);
-      }
       }
       break;
     case SAVE:

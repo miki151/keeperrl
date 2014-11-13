@@ -92,32 +92,6 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static Optional<string> chooseSaveFile(vector<pair<GameType, string>> games, string noSaveMsg, View* view) {
-  vector<View::ListElem> options;
-  bool noGames = true;
-  vector<SaveFileInfo> allFiles;
-  for (auto elem : games) {
-    vector<SaveFileInfo> files = getSaveFiles(getSaveSuffix(elem.first));
-    append(allFiles, files);
-    if (!files.empty()) {
-      noGames = false;
-      auto removeSuf = [&] (const SaveFileInfo& s) { return s.path.substr(0, s.path.size() - 
-          getSaveSuffix(elem.first).size()) + "  (" + getDateString(s.date) + ")"; };
-      options.emplace_back(elem.second, View::TITLE);
-      append(options, View::getListElem(transform2<string>(files, removeSuf)));
-    }
-  }
-  if (noGames) {
-    view->presentText("", noSaveMsg);
-    return Nothing();
-  }
-  auto ind = view->chooseFromList("Choose game", options, 0, View::MAIN_MENU);
-  if (ind)
-    return allFiles[*ind].path;
-  else
-    return Nothing();
-}
-
 template <class T, class U>
 class StreamCombiner {
   public:
@@ -137,12 +111,45 @@ class StreamCombiner {
 typedef StreamCombiner<ofstream, OutputArchive> CompressedOutput;
 typedef StreamCombiner<ifstream, InputArchive> CompressedInput;
 
+string getGameName(const SaveFileInfo& save) {
+  CompressedInput input(save.path.c_str());
+  Serialization::registerTypes(input.getArchive());
+  string name;
+  input.getArchive() >> name;
+  return name + " (" + getDateString(save.date) + ")";
+}
+
+static Optional<string> chooseSaveFile(vector<pair<GameType, string>> games, string noSaveMsg, View* view) {
+  vector<View::ListElem> options;
+  bool noGames = true;
+  vector<SaveFileInfo> allFiles;
+  for (auto elem : games) {
+    vector<SaveFileInfo> files = getSaveFiles(getSaveSuffix(elem.first));
+    append(allFiles, files);
+    if (!files.empty()) {
+      noGames = false;
+      options.emplace_back(elem.second, View::TITLE);
+      append(options, View::getListElem(transform2<string>(files, getGameName)));
+    }
+  }
+  if (noGames) {
+    view->presentText("", noSaveMsg);
+    return Nothing();
+  }
+  auto ind = view->chooseFromList("Choose game", options, 0, View::MAIN_MENU);
+  if (ind)
+    return allFiles[*ind].path;
+  else
+    return Nothing();
+}
+
 static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
   unique_ptr<Model> model;
   {
     CompressedInput input(filename.c_str());
     Serialization::registerTypes(input.getArchive());
-    input.getArchive() >> BOOST_SERIALIZATION_NVP(model);
+    string discard;
+    input.getArchive() >> BOOST_SERIALIZATION_NVP(discard) >> BOOST_SERIALIZATION_NVP(model);
   }
 #ifdef RELEASE
   if (eraseFile && !Options::getValue(OptionId::KEEP_SAVEFILES))
@@ -151,10 +158,10 @@ static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
   return model;
 }
 
-static void saveGame(unique_ptr<Model> model, const string& filename) {
+static void saveGame(unique_ptr<Model> model, const string& gameName, const string& filename) {
   CompressedOutput out(filename.c_str());
   Serialization::registerTypes(out.getArchive());
-  out.getArchive() << BOOST_SERIALIZATION_NVP(model);
+  out.getArchive() << BOOST_SERIALIZATION_NVP(gameName) << BOOST_SERIALIZATION_NVP(model);
 }
 
 /*static Table<bool> readSplashTable(const string& path) {
@@ -317,8 +324,8 @@ void gameLoop(View* view, int forceMode, bool genExit, atomic<bool>& finished) {
         catch (SaveGameException ex) {
             atomic<bool> ready(false);
             view->displaySplash(View::SAVING, ready);
-            string id = model->getGameIdentifier() + getSaveSuffix(ex.type);
-            saveGame(std::move(model), id);
+            string game = model->getGameIdentifier();
+            saveGame(std::move(model), game, game + getSaveSuffix(ex.type));
             ready = true;
         }
     }
