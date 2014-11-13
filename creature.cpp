@@ -421,7 +421,7 @@ string Creature::getPluralName(Item* item, int num) {
   if (num == 1)
     return item->getTheName(false, isBlind());
   else
-    return convertToString(num) + " " + item->getTheName(true, isBlind());
+    return toString(num) + " " + item->getTheName(true, isBlind());
 }
 
 
@@ -1797,7 +1797,7 @@ void Creature::consumeBodyParts(EnumMap<BodyPart, int>& parts) {
       if (bodyParts[part] + 1 == parts[part])
         you(MsgType::GROW, "a " + getBodyPartName(part));
       else
-        you(MsgType::GROW, convertToString(parts[part] - bodyParts[part]) + " " + getBodyPartName(part) + "s");
+        you(MsgType::GROW, toString(parts[part] - bodyParts[part]) + " " + getBodyPartName(part) + "s");
       bodyParts[part] = parts[part];
     }
 }
@@ -2298,7 +2298,7 @@ Vision* Creature::getVision() const {
 }
 
 string Creature::getRemainingString(LastingEffect effect) const {
-  return "[" + convertToString<int>(lastingEffects[effect] - time) + "]";
+  return "[" + toString<int>(lastingEffects[effect] - time) + "]";
 }
 
 vector<string> Creature::getMainAdjectives() const {

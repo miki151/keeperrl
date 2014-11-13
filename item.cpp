@@ -108,7 +108,7 @@ vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, functi
   for (auto elem : stacks)
     if (elem.second.size() > 1)
       ret.emplace_back(
-          convertToString<int>(elem.second.size()) + " " 
+          toString<int>(elem.second.size()) + " " 
           + elem.second[0]->getNameAndModifiers(true) + suffix(elem.second[0]), elem.second);
     else
       ret.push_back(elem);
@@ -291,11 +291,11 @@ void Item::setName(const string& n) {
 }
 
 string Item::getName(bool plural, bool blind) const {
-  string suff = uses > -1 && displayUses && inspected ? string(" (") + convertToString(uses) + " uses left)" : "";
+  string suff = uses > -1 && displayUses && inspected ? string(" (") + toString(uses) + " uses left)" : "";
   if (fire.isBurning())
     suff.append(" (burning)");
   if (getShopkeeper())
-    suff += " (" + convertToString(getPrice()) + (plural ? " zorkmids each)" : " zorkmids)");
+    suff += " (" + toString(getPrice()) + (plural ? " zorkmids each)" : " zorkmids)");
   if (blind)
     return getBlindName(plural);
   if (isIdentified(*name))
@@ -329,9 +329,9 @@ string Item::getVisibleName(bool getPlural) const {
 
 static string withSign(int a) {
   if (a >= 0)
-    return "+" + convertToString(a);
+    return "+" + toString(a);
   else
-    return convertToString(a);
+    return toString(a);
 }
 
 string Item::getArtifactName() const {

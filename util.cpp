@@ -105,37 +105,37 @@ double RandomGen::getDouble(double a, double b) {
 
 RandomGen Random;
 
-template string convertToString<int>(const int&);
-template string convertToString<size_t>(const size_t&);
-template string convertToString<char>(const char&);
-template string convertToString<double>(const double&);
-//template string convertToString<Vec2>(const Vec2&);
+template string toString<int>(const int&);
+template string toString<size_t>(const size_t&);
+template string toString<char>(const char&);
+template string toString<double>(const double&);
+//template string toString<Vec2>(const Vec2&);
 
-template int convertFromString<int>(const string&);
-template char convertFromString<char>(const string&);
-template double convertFromString<double>(const string&);
+template int fromString<int>(const string&);
+template char fromString<char>(const string&);
+template double fromString<double>(const string&);
 
 template <class T>
-string convertToString(const T& t){
+string toString(const T& t){
   std::stringstream ss;
   ss << t;
   return ss.str();
 }
 
 template <>
-string convertToString(const Vec2& t){
+string toString(const Vec2& t){
   std::stringstream ss;
   ss << "(" << t.x << "," << t.y << ")";
   return ss.str();
 }
 
 template <>
-string convertToString(const bool& t){
+string toString(const bool& t){
   return t ? "true" : "false";
 }
 
 template <class T>
-T convertFromString(const string& s){
+T fromString(const string& s){
   std::stringstream ss(s);
   T t;
   ss >> t;
@@ -680,14 +680,14 @@ string getPlural(const string& a, const string&b, int num) {
   if (num == 1)
     return "1 " + a;
   else
-    return convertToString(num) + " " + b;
+    return toString(num) + " " + b;
 }
 
 string getPlural(const string& a, int num) {
   if (num == 1)
     return "1 " + a;
   else
-    return convertToString(num) + " " + a + "s";
+    return toString(num) + " " + a + "s";
 }
 
 Semaphore::Semaphore(int v) : value(v) {}

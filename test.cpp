@@ -23,8 +23,8 @@
 #include "sectors.h"
 
 void testStringConvertion() {
-  CHECK(convertToString(1234) == "1234");
-  CHECK(convertFromString<int>("1234") == 1234);
+  CHECK(toString(1234) == "1234");
+  CHECK(fromString<int>("1234") == 1234);
 }
 
 void testTimeQueue() {
@@ -342,7 +342,7 @@ void testCombine() {
 void testTransform2() {
   vector<int> v { 5, 4, 3, 2, 1};
   vector<string> s { "s5", "s4", "s3", "s2", "s1" };
-  function<string(const int&)> func = [](const int& a) { return "s" + convertToString(a); };
+  function<string(const int&)> func = [](const int& a) { return "s" + toString(a); };
   vector<string> res = transform2<string>(v, func);
   CHECKEQ(res, s);
 }

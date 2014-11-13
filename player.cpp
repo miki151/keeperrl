@@ -120,7 +120,7 @@ void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, ve
     if (elem.second.size() == 1)
       names.emplace_back(elem.first, predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
     else
-      names.emplace_back(convertToString<int>(elem.second.size()) + " " 
+      names.emplace_back(toString<int>(elem.second.size()) + " " 
           + elem.second[0]->getNameAndModifiers(true, creature->isBlind()),
           predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
     groups.push_back(elem.second);
@@ -302,7 +302,7 @@ void Player::applyItem(vector<Item*> items) {
     for (const Creature* c : creature->getVisibleEnemies())
       if ((c->getPosition() - creature->getPosition()).length8() < 3) { 
         if (!model->getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " + 
-            convertToString(items[0]->getApplyTime()) + " turns. Are you sure you want to continue?"))
+            toString(items[0]->getApplyTime()) + " turns. Are you sure you want to continue?"))
           return;
         else
           break;
@@ -535,8 +535,8 @@ void Player::payDebtAction() {
         vector<Item*> gold = creature->getGold(debt);
         if (gold.size() < debt) {
           privateMessage("You don't have enough gold to pay.");
-        } else if (model->getView()->yesOrNoPrompt("Buy items for " + convertToString(debt) + " zorkmids?")) {
-          privateMessage("You pay " + c->getName() + " " + convertToString(debt) + " zorkmids.");
+        } else if (model->getView()->yesOrNoPrompt("Buy items for " + toString(debt) + " zorkmids?")) {
+          privateMessage("You pay " + c->getName() + " " + toString(debt) + " zorkmids.");
           creature->give(c, gold);
         }
       } else {
@@ -571,7 +571,7 @@ void Player::spellAction() {
   auto spells = creature->getSpells();
   for (int i : All(spells))
     list.push_back(View::ListElem(spells[i].name + " " + (!creature->castSpell(i) ? "(ready in " +
-          convertToString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""),
+          toString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""),
           creature->castSpell(i) ? View::NORMAL : View::INACTIVE));
   auto index = model->getView()->chooseFromList("Cast a spell:", list);
   if (!index)

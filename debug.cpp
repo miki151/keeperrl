@@ -21,7 +21,7 @@
 
 
 Debug::Debug(DebugType t, const string& msg, int line) 
-    : out((string[]) { "INFO ", "FATAL "}[t] + msg + ":" + convertToString(line) + " "), type(t) {
+    : out((string[]) { "INFO ", "FATAL "}[t] + msg + ":" + toString(line) + " "), type(t) {
 #ifdef RELEASE
   if (t == DebugType::FATAL)
     throw out;
@@ -54,15 +54,15 @@ Debug& Debug::operator <<(const string& msg) {
   return *this;
 }
 Debug& Debug::operator <<(const int msg) {
-  add(convertToString(msg));
+  add(toString(msg));
   return *this;
 }
 Debug& Debug::operator <<(const char msg) {
-  add(convertToString(msg));
+  add(toString(msg));
   return *this;
 }
 Debug& Debug::operator <<(const double msg) {
-  add(convertToString(msg));
+  add(toString(msg));
   return *this;
 }
 Debug& Debug::operator <<(void* msg) {

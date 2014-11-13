@@ -105,7 +105,7 @@ unique_ptr<T> notNullCheck(unique_ptr<T> e, const char* file, int line, const ch
 }
 
 #define NOTNULL(e) notNullCheck(e, __FILE__, __LINE__, #e)
-#define CHECKEQ(e, v) valueCheck(e, v, string(__FILE__) + ":" + convertToString(__LINE__) + ": " + #e + " != " + #v + " ")
-#define CHECKEQ2(e, v, msg) valueCheck(e, v, string(__FILE__) + ":" + convertToString(__LINE__) + ": " + #e + " != " + #v + " " + msg)
+#define CHECKEQ(e, v) valueCheck(e, v, string(__FILE__) + ":" + toString(__LINE__) + ": " + #e + " != " + #v + " ")
+#define CHECKEQ2(e, v, msg) valueCheck(e, v, string(__FILE__) + ":" + toString(__LINE__) + ": " + #e + " != " + #v + " " + msg)
 
 #endif

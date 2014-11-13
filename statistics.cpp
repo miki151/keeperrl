@@ -50,7 +50,7 @@ vector<string> Statistics::getText() {
   vector<string> ret;
   for (auto elem : text) {
     if (int n = count[elem.first])
-      ret.emplace_back(convertToString(n) + " " + elem.second);
+      ret.emplace_back(toString(n) + " " + elem.second);
   }
   return ret;
 }

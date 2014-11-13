@@ -590,8 +590,8 @@ void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
 }
   
 void Model::conquered(const string& title, const string& land, vector<const Creature*> kills, int points) {
-  string text= "You have conquered this land. You killed " + convertToString(kills.size()) +
-      " innocent beings and scored " + convertToString(points) +
+  string text= "You have conquered this land. You killed " + toString(kills.size()) +
+      " innocent beings and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
   for (string stat : Statistics::getText())
     text += stat + "\n";
@@ -604,8 +604,8 @@ void Model::conquered(const string& title, const string& land, vector<const Crea
 void Model::killedKeeper(const string& title, const string& keeper, const string& land,
     vector<const Creature*> kills, int points) {
   string text= "You have freed this land from the bloody reign of " + keeper + 
-      ". You killed " + convertToString(kills.size()) +
-      " enemies and scored " + convertToString(points) +
+      ". You killed " + toString(kills.size()) +
+      " enemies and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
   for (string stat : Statistics::getText())
     text += stat + "\n";
@@ -627,8 +627,8 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
     killer = c->getName();
     text += ", killed by a " + killer;
   }
-  text += ". He killed " + convertToString(numKills) 
-      + " " + enemiesString + " and scored " + convertToString(points) + " points.\n \n";
+  text += ". He killed " + toString(numKills) 
+      + " " + enemiesString + " and scored " + toString(points) + " points.\n \n";
   for (string stat : Statistics::getText())
     text += stat + "\n";
   view->presentText("Game over", text);
@@ -676,7 +676,7 @@ void Model::showHighscore(bool highlightLast) {
     Elem e;
     e.name = p[0];
     e.killer = p[1];
-    e.points = convertFromString<int>(p[2]);
+    e.points = fromString<int>(p[2]);
     v.push_back(e);
   }
   if (v.empty())
@@ -689,7 +689,7 @@ void Model::showHighscore(bool highlightLast) {
   vector<View::ListElem> scores;
   for (Elem& elem : v) {
     scores.push_back(View::ListElem(elem.name + ", " + elem.killer + "       " +
-        convertToString(elem.points) + " points",
+        toString(elem.points) + " points",
         highlightLast && !elem.highlight ? View::INACTIVE : View::NORMAL));
   }
   view->presentList("High scores", scores, false, highlightLast ? View::NORMAL_MENU : View::MAIN_MENU);

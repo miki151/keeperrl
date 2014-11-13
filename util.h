@@ -23,10 +23,10 @@
 #include "serialization.h"
 
 template <class T>
-string convertToString(const T& t);
+string toString(const T& t);
 
 template <class T>
-T convertFromString(const string& s);
+T fromString(const string& s);
 
 #define DEF_UNIQUE_PTR(T) class T;\
   typedef unique_ptr<T> P##T;
@@ -274,7 +274,7 @@ Range All(const T& container) {
 
 extern const vector<Vec2> neighbors;
 
-#define GET_ID(uniqueId) (string(__FILE__) + convertToString(__LINE__) + convertToString(uniqueId))
+#define GET_ID(uniqueId) (string(__FILE__) + toString(__LINE__) + toString(uniqueId))
 
 class RandomGen {
   public:
@@ -850,7 +850,7 @@ inline std::istream& operator >>(std::istream& d, Vec2& msg) {
   d >> in;
   vector<string> s = split(in.substr(1, in.size() - 2), {','});
   CHECKEQ((int)s.size(), 2);
-  msg = Vec2(convertFromString<int>(s[0]), convertFromString<int>(s[1]));
+  msg = Vec2(fromString<int>(s[0]), fromString<int>(s[1]));
   return d;
 }
 

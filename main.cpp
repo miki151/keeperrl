@@ -363,7 +363,7 @@ int main(int argc, char* argv[]) {
   if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;
-    seed = convertFromString<int>(fname.substr(lognamePref.size()));
+    seed = fromString<int>(fname.substr(lognamePref.size()));
     Random.init(seed);
     input.reset(new CompressedInput(fname));
     view.reset(View::createReplayView(input->getArchive()));
@@ -371,7 +371,7 @@ int main(int argc, char* argv[]) {
 #ifndef RELEASE
     Random.init(seed);
     string fname(lognamePref);
-    fname += convertToString(seed);
+    fname += toString(seed);
     output.reset(new CompressedOutput(fname));
     Debug() << "Writing to " << fname;
   Debug() << int(sizeof(SquareType));

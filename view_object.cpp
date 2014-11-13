@@ -97,9 +97,9 @@ Optional<Dir> ViewObject::getAttachmentDir() const {
 
 string ViewObject::getAttributeString(Attribute attr) const {
   if (attr == Attribute::EFFICIENCY)
-    return convertToString<int>(100 * getAttribute(attr)) + "%";
+    return toString<int>(100 * getAttribute(attr)) + "%";
   else
-    return convertToString(getAttribute(attr));
+    return toString(getAttribute(attr));
 }
 
 string ViewObject::getDescription(bool stats) const {

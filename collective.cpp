@@ -957,7 +957,7 @@ bool Collective::hasMinionDebt() const {
 
 void Collective::makePayouts() {
   if (int numPay = getNextSalaries())
-    control->addMessage(PlayerMessage("Payout time: " + convertToString(numPay) + " gold",
+    control->addMessage(PlayerMessage("Payout time: " + toString(numPay) + " gold",
           PlayerMessage::HIGH));
   for (Creature* c : creatures)
     if (minionPayment.count(c)) {
@@ -1977,7 +1977,7 @@ bool Collective::isItemNeeded(const Item* item) const {
 
 void Collective::addProducesMessage(const Creature* c, const vector<PItem>& items) {
   if (items.size() > 1)
-    control->addMessage(c->getAName() + " produces " + convertToString(items.size())
+    control->addMessage(c->getAName() + " produces " + toString(items.size())
         + " " + items[0]->getName(true));
   else
     control->addMessage(c->getAName() + " produces " + items[0]->getAName());

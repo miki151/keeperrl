@@ -315,7 +315,7 @@ PGuiElem WindowView::getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo) {
   vector<PGuiElem> line;
   Color color = sunlightInfo.description == "day" ? colors[ColorId::WHITE] : colors[ColorId::LIGHT_BLUE];
   line.push_back(GuiElem::label(sunlightInfo.description, color));
-  line.push_back(GuiElem::label("[" + convertToString(sunlightInfo.timeRemaining) + "]", color));
+  line.push_back(GuiElem::label("[" + toString(sunlightInfo.timeRemaining) + "]", color));
   return GuiElem::stack(
     mapGui->getHintCallback(sunlightInfo.description == "day"
       ? "Time remaining till nightfall." : "Time remaining till day."),
@@ -324,7 +324,7 @@ PGuiElem WindowView::getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo) {
 
 PGuiElem WindowView::getTurnInfoGui(int turn) {
   return GuiElem::stack(mapGui->getHintCallback("Current turn"),
-      GuiElem::label("T: " + convertToString(turn), colors[ColorId::WHITE]));
+      GuiElem::label("T: " + toString(turn), colors[ColorId::WHITE]));
 }
 
 PGuiElem WindowView::drawBottomPlayerInfo(GameInfo& gameInfo) {
@@ -434,7 +434,7 @@ PGuiElem WindowView::drawPlayerStats(GameInfo::PlayerInfo& info) {
     elems.push_back(GuiElem::stack(mapGui->getHintCallback(elem.help),
         GuiElem::horizontalList(makeVec<PGuiElem>(
           GuiElem::label(capitalFirst(elem.name + ":"), colors[ColorId::WHITE]),
-          GuiElem::label(convertToString(elem.value), getBonusColor(elem.bonus))), 100, 1)));
+          GuiElem::label(toString(elem.value), getBonusColor(elem.bonus))), 100, 1)));
   }
   elems.push_back(GuiElem::empty());
   elems.push_back(GuiElem::label("Skills:", colors[ColorId::WHITE]));
@@ -479,7 +479,7 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
     line.push_back(GuiElem::viewObject(elem.second.object, tilesOk));
     widths.push_back(40);
     Color col = elem.first == chosenCreature ? colors[ColorId::GREEN] : colors[ColorId::WHITE];
-    line.push_back(GuiElem::label(convertToString(elem.second.count) + "   " + elem.first, col));
+    line.push_back(GuiElem::label(toString(elem.second.count) + "   " + elem.first, col));
     widths.push_back(200);
     function<void()> action;
     if (chosenCreature == elem.first)
@@ -507,7 +507,7 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
       currentLine.push_back(GuiElem::stack(
             GuiElem::button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo(teamId, elem)})),
             GuiElem::viewObject(info.getMinion(elem).viewObject, tilesOk),
-            GuiElem::label(convertToString(info.getMinion(elem).expLevel), 12)));
+            GuiElem::label(toString(info.getMinion(elem).expLevel), 12)));
       if (currentLine.size() >= numPerLine)
         list.push_back(GuiElem::horizontalList(std::move(currentLine), elemWidth, 0));
     }
@@ -527,10 +527,10 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
         GuiElem::label("[new team]", colors[ColorId::WHITE])));
   list.push_back(GuiElem::empty());
   vector<PGuiElem> res;
-  res.push_back(GuiElem::label("Next payout [" + convertToString(info.payoutTimeRemaining) + "]:",
+  res.push_back(GuiElem::label("Next payout [" + toString(info.payoutTimeRemaining) + "]:",
         colors[ColorId::WHITE]));
   res.push_back(GuiElem::viewObject(info.numResource[0].viewObject, tilesOk));
-  res.push_back(GuiElem::label(convertToString<int>(info.nextPayout), colors[ColorId::WHITE]));
+  res.push_back(GuiElem::label(toString<int>(info.nextPayout), colors[ColorId::WHITE]));
   list.push_back(GuiElem::horizontalList(std::move(res), {170, 30, 1}, 0));
   list.push_back(GuiElem::empty());
   if (!enemyMap.empty()) {
@@ -538,7 +538,7 @@ PGuiElem WindowView::drawMinions(GameInfo::BandInfo& info) {
     for (auto elem : enemyMap){
       vector<PGuiElem> line;
       line.push_back(GuiElem::viewObject(elem.second.object, tilesOk));
-      line.push_back(GuiElem::label(convertToString(elem.second.count) + "   " + elem.first, colors[ColorId::WHITE]));
+      line.push_back(GuiElem::label(toString(elem.second.count) + "   " + elem.first, colors[ColorId::WHITE]));
       list.push_back(GuiElem::horizontalList(std::move(line), 20, 0));
     }
   }
@@ -557,7 +557,7 @@ PGuiElem WindowView::drawMinionWindow(GameInfo::BandInfo& info) {
         chosen.push_back(c);
     lines.push_back(GuiElem::label(info.currentTeam ? "Click to add to team:" : "Click to control:", colors[ColorId::LIGHT_BLUE]));
     for (auto& c : chosen) {
-      string text = "L: " + convertToString(c.expLevel) + "    " + info.tasks[c.uniqueId];
+      string text = "L: " + toString(c.expLevel) + "    " + info.tasks[c.uniqueId];
       if (c.speciesName != c.name)
         text = c.name + " " + text;
       vector<PGuiElem> line;
@@ -616,7 +616,7 @@ PGuiElem WindowView::getButtonLine(GameInfo::BandInfo::Button button, function<v
           [=, &active] (GuiElem*) { return active == num; }));
   widths.push_back(100);
   if (button.cost) {
-    string costText = convertToString(button.cost->second);
+    string costText = toString(button.cost->second);
     line.push_back(GuiElem::label(costText, colors[ColorId::WHITE]));
     widths.push_back(renderer.getTextLength(costText) + 8);
     line.push_back(GuiElem::viewObject(button.cost->first, tilesOk));
@@ -764,7 +764,7 @@ PGuiElem WindowView::drawBottomBandInfo(GameInfo& gameInfo) {
   for (int i : All(info.numResource)) {
     vector<PGuiElem> res;
     res.push_back(GuiElem::viewObject(info.numResource[i].viewObject, tilesOk));
-    res.push_back(GuiElem::label(convertToString<int>(info.numResource[i].count),
+    res.push_back(GuiElem::label(toString<int>(info.numResource[i].count),
           info.numResource[i].count >= 0 ? colors[ColorId::WHITE] : colors[ColorId::RED]));
     topLine.push_back(GuiElem::stack(mapGui->getHintCallback(info.numResource[i].name),
             GuiElem::horizontalList(std::move(res), 30, 0)));
@@ -823,7 +823,7 @@ PGuiElem WindowView::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
   bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { switchZoom(); }),
         GuiElem::label("ZOOM", colors[ColorId::LIGHT_BLUE])));
   bottomLine.push_back(
-      GuiElem::label("FPS " + convertToString(fpsCounter.getFps()), colors[ColorId::WHITE]));
+      GuiElem::label("FPS " + toString(fpsCounter.getFps()), colors[ColorId::WHITE]));
   main = GuiElem::margin(GuiElem::margins(GuiElem::horizontalList(std::move(bottomLine), 90, 0), 30, 0, 0, 0),
       std::move(main), 48, GuiElem::BOTTOM);
   return GuiElem::stack(GuiElem::stack(std::move(invisible)),
@@ -1190,7 +1190,7 @@ Optional<int> WindowView::getNumber(const string& title, int min, int max, int i
   vector<View::ListElem> options;
   vector<int> numbers;
   for (int i = min; i <= max; i += increments) {
-    options.push_back(convertToString(i));
+    options.push_back(toString(i));
     numbers.push_back(i);
   }
   Optional<int> res = WindowView::chooseFromList(title, options);

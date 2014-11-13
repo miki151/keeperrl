@@ -331,7 +331,7 @@ vector<TaskOption> taskOptions {
 };
 
 static string getMoraleString(double morale) {
-  return convertToString(morale);
+  return toString(morale);
  /* if (morale < -0.33)
     return "low";
   if (morale > 0.33)
@@ -386,7 +386,7 @@ Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
   vector<View::ListElem> opt;
   for (Creature* c : getCollective()->getConsumptionTargets(consumer)) {
     res.push_back(c);
-    opt.emplace_back(c->getName() + ", level " + convertToString(c->getExpLevel()));
+    opt.emplace_back(c->getName() + ", level " + toString(c->getExpLevel()));
   }
   if (auto index = view->chooseFromList("Choose minion to absorb:", opt))
     return res[*index];
@@ -398,8 +398,8 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
   vector<View::ListElem> lOpt;
   getMinionOptions(creature, mOpt, lOpt);
   auto index = view->chooseFromList(capitalFirst(creature->getNameAndTitle()) 
-      + ", level: " + convertToString(creature->getExpLevel()) + ", kills: "
-      + convertToString(creature->getKills().size())
+      + ", level: " + toString(creature->getExpLevel()) + ", kills: "
+      + toString(creature->getKills().size())
       + ", morale: " + getMoraleString(creature->getMorale()),
       lOpt, prevIndex, View::MINION_MENU);
   if (!index)
@@ -552,7 +552,7 @@ Item* PlayerControl::chooseEquipmentItem(View* view, vector<Item*> currentItems,
   vector<pair<string, vector<Item*>>> usedStacks = Item::stackItems(usedItems,
       [&](const Item* it) {
         const Creature* c = NOTNULL(getCollective()->getMinionEquipment().getOwner(it));
-        return " owned by " + c->getAName() + " (level " + convertToString(c->getExpLevel()) + ")";});
+        return " owned by " + c->getAName() + " (level " + toString(c->getExpLevel()) + ")";});
   vector<Item*> allStacked;
   for (auto elem : concat(Item::stackItems(availableItems), usedStacks)) {
     if (!usedStacks.empty() && elem == usedStacks.front())
@@ -579,7 +579,7 @@ void PlayerControl::handleMarket(View* view, int prevItem) {
   vector<PItem> items;
   for (ItemType id : marketItems) {
     items.push_back(ItemFactory::fromId(id));
-    options.emplace_back(items.back()->getName() + "    $" + convertToString(items.back()->getPrice()),
+    options.emplace_back(items.back()->getName() + "    $" + toString(items.back()->getPrice()),
         items.back()->getPrice() > getCollective()->numResource(ResourceId::GOLD) ? View::INACTIVE : View::NORMAL);
   }
   auto index = view->chooseFromList("Buy items", options, prevItem);
@@ -634,12 +634,12 @@ void PlayerControl::handleLibrary(View* view) {
     options.emplace_back("You need a larger library to continue research.", View::TITLE);
   }
   options.push_back(View::ListElem("You have " 
-        + convertToString(int(getCollective()->numResource(ResourceId::MANA))) + " mana. ", View::TITLE));
+        + toString(int(getCollective()->numResource(ResourceId::MANA))) + " mana. ", View::TITLE));
   vector<Technology*> techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
       [](const Technology* tech) { return tech->canResearch(); });
   for (Technology* tech : techs) {
     int cost = getCollective()->getTechCost(tech);
-    string text = tech->getName() + " (" + convertToString(cost) + " mana)";
+    string text = tech->getName() + " (" + toString(cost) + " mana)";
     options.emplace_back(text, cost <= int(getCollective()->numResource(ResourceId::MANA))
         && !allInactive ? View::NORMAL : View::INACTIVE);
   }
@@ -689,10 +689,10 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            ViewObject viewObj(SquareFactory::get(elem.type)->getViewObject());
            string description;
            if (elem.cost.value() > 0)
-             description = "[" + convertToString(getCollective()->getSquares(elem.type).size()) + "]";
+             description = "[" + toString(getCollective()->getSquares(elem.type).size()) + "]";
            int availableNow = !elem.cost.value() ? 1 : getCollective()->numResource(elem.cost.id()) / elem.cost.value();
            if (Collective::resourceInfo.at(elem.cost.id()).dontDisplay && availableNow)
-             description += " (" + convertToString(availableNow) + " available)";
+             description += " (" + toString(availableNow) + " available)";
            if (Collective::getSecondarySquare(elem.type))
              viewObj = SquareFactory::get(*Collective::getSecondarySquare(elem.type))->getViewObject();
            buttons.push_back({
@@ -734,7 +734,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                  ViewObject(elem.viewId, ViewLayer::LARGE_ITEM, ""),
                  elem.name,
                  Nothing(),
-                 "(" + convertToString(numTraps) + " ready)",
+                 "(" + toString(numTraps) + " ready)",
                  isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
            }
            break;
@@ -744,7 +744,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                ViewObject(ViewId::IMP, ViewLayer::CREATURE, ""),
                "Summon imp",
                cost,
-               "[" + convertToString(
+               "[" + toString(
                    getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}).size()) + "]",
                getImpCost() <= getCollective()->numResource(ResourceId::MANA) ? "" : "inactive"});
            break; }

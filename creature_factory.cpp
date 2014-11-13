@@ -525,7 +525,7 @@ class ShopkeeperController : public Monster {
     for (auto elem : debt) {
       const Creature* c = elem.first;
       if (!contains(creatures, c)) {
-        c->playerMessage("\"Come back, you owe me " + convertToString(elem.second) + " zorkmids!\"");
+        c->playerMessage("\"Come back, you owe me " + toString(elem.second) + " zorkmids!\"");
         if (++thiefCount[c] == 4) {
           c->playerMessage("\"Thief! Thief!\"");
           creature->getTribe()->onItemsStolen(c);
