@@ -37,7 +37,7 @@ MapGui::MapGui(const Table<Optional<ViewIndex>>& o, ClickFun leftFun, ClickFun r
 static int fireVar = 50;
 
 static Color getFireColor() {
-  return Color(200 + Random.getRandom(-fireVar, fireVar), Random.getRandom(fireVar), Random.getRandom(fireVar), 150);
+  return Color(200 + Random.get(-fireVar, fireVar), Random.get(fireVar), Random.get(fireVar), 150);
 }
 
 
@@ -353,7 +353,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
       renderer.drawSprite(x, y, 1 * Renderer::nominalSize.x, 21 * Renderer::nominalSize.y,
           Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[5], width, height);
     if (object.getAttribute(ViewObject::Attribute::BURNING) > 0) {
-      renderer.drawSprite(x, y, Random.getRandom(10, 12) * Renderer::nominalSize.x, 0 * Renderer::nominalSize.y,
+      renderer.drawSprite(x, y, Random.get(10, 12) * Renderer::nominalSize.x, 0 * Renderer::nominalSize.y,
           Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[2], width, height);
     }
     if (object.hasModifier(ViewObject::Modifier::LOCKED))

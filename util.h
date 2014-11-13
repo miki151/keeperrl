@@ -274,30 +274,20 @@ Range All(const T& container) {
 
 extern const vector<Vec2> neighbors;
 
-#define GET_ID(uniqueId) (string(__FILE__) + toString(__LINE__) + toString(uniqueId))
-
 class RandomGen {
   public:
   void init(int seed);
-  int getRandom(int max);
-  int getRandom(int min, int max);
-  int getRandom(const string& shuffleId, int min, int max);
-  int getRandom(const vector<double>& weights, double r = -1);
+  int get(int max);
+  int get(int min, int max);
+  int get(const vector<double>& weights, double r = -1);
   double getDouble();
   double getDouble(double a, double b);
   bool roll(int chance);
   bool rollD(double chance);
 
   private:
-  void makeShuffle(string id, int min, int max);
   default_random_engine generator;
   std::uniform_real_distribution<double> defaultDist;
-  struct ShuffleInfo {
-    int minRange;
-    int maxRange;
-    vector<int> numbers;
-  };
-  unordered_map<string, ShuffleInfo> shuffleMap;
 };
 
 extern RandomGen Random;
@@ -451,7 +441,7 @@ T chooseElem(const vector<T>& v, int ind) {
 template <typename T>
 T chooseRandom(const vector<T>& v, const vector<double>& p, double r = -1) {
   CHECK(v.size() == p.size());
-  return v[Random.getRandom(p, r)];
+  return v[Random.get(p, r)];
 }
 
 
@@ -493,7 +483,7 @@ T chooseRandom(vector<pair<T, double>> vi, double r = -1) {
 
 template <typename T>
 vector<T> randomPermutation(vector<T> v) {
-  random_shuffle(v.begin(), v.end(), [](int a) { return Random.getRandom(a);});
+  random_shuffle(v.begin(), v.end(), [](int a) { return Random.get(a);});
   return v;
 }
 
@@ -507,7 +497,7 @@ vector<T> randomPermutation(const set<T>& vi) {
 template <typename T>
 vector<T> randomPermutation(initializer_list<T> vi) {
   vector<T> v(vi);
-  random_shuffle(v.begin(), v.end(), [](int a) { return Random.getRandom(a);});
+  random_shuffle(v.begin(), v.end(), [](int a) { return Random.get(a);});
   return v;
 }
 
@@ -1239,7 +1229,7 @@ T chooseRandom(EnumMap<T, double> vi, double r = -1) {
 
 template <typename T>
 T chooseRandom() {
-  return T(Random.getRandom(EnumInfo<T>::getSize()));
+  return T(Random.get(EnumInfo<T>::getSize()));
 }
 
 template <typename U, typename V>

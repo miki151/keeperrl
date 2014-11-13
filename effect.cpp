@@ -104,7 +104,7 @@ static int summonCreatures(Creature* c, int radius, vector<PCreature> creatures)
 
 static void deception(Creature* c) {
   vector<PCreature> creatures;
-  for (int i : Range(Random.getRandom(3, 7))) {
+  for (int i : Range(Random.get(3, 7))) {
     ViewObject viewObject(c->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
     viewObject.setModifier(ViewObject::Modifier::ILLUSION);
     creatures.push_back(PCreature(new Creature(viewObject, c->getTribe(), CATTR(
@@ -124,7 +124,7 @@ static void deception(Creature* c) {
           c.humanoid = true;
           c.name = "illusion";),
         ControllerFactory([c] (Creature* o) { return new IllusionController(o, c->getTime()
-            + Random.getRandom(5, 10));}))));
+            + Random.get(5, 10));}))));
   }
   summonCreatures(c, 2, std::move(creatures));
 }
@@ -354,7 +354,7 @@ static void rollingBoulder(Creature* c) {
 static void acid(Creature* c) {
   c->you(MsgType::ARE, "hurt by the acid");
   c->bleed(0.2);
-  switch (Random.getRandom(2)) {
+  switch (Random.get(2)) {
     case 0 : enhanceArmor(c, -1, "corrodes"); break;
     case 1 : enhanceWeapon(c, -1, "corrodes"); break;
   }
@@ -410,7 +410,7 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectId::TELE_ENEMIES: teleEnemies(c); break;
     case EffectId::ALARM: alarm(c); break;
     case EffectId::ACID: acid(c); break;
-    case EffectId::SUMMON_INSECTS: summon(c, CreatureId::FLY, Random.getRandom(3, 7), 100); break;
+    case EffectId::SUMMON_INSECTS: summon(c, CreatureId::FLY, Random.get(3, 7), 100); break;
     case EffectId::DECEPTION: deception(c); break;
     case EffectId::WORD_OF_POWER: wordOfPower(c, strength); break;
     case EffectId::GUARDING_BOULDER: guardingBuilder(c); break;
@@ -424,7 +424,7 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectId::PORTAL: portal(c); break;
     case EffectId::TELEPORT: teleport(c); break;
     case EffectId::ROLLING_BOULDER: rollingBoulder(c); break;
-    case EffectId::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.getRandom(2, 5), 100); break;
+    case EffectId::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.get(2, 5), 100); break;
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(c->getLevel(), c->getPosition(), strength, true); break;
     case EffectId::SILVER_DAMAGE: silverDamage(c); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;

@@ -1219,8 +1219,8 @@ CreatureAction Creature::attack(const Creature* c1, Optional<AttackLevel> attack
   int damage = getModifier(ModifierType::DAMAGE);
   int accuracyVariance = 1 + accuracy / 3;
   int damageVariance = 1 + damage / 3;
-  auto rAccuracy = [=] () { return Random.getRandom(-accuracyVariance, accuracyVariance); };
-  auto rDamage = [=] () { return Random.getRandom(-damageVariance, damageVariance); };
+  auto rAccuracy = [=] () { return Random.get(-accuracyVariance, accuracyVariance); };
+  auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
   accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
   bool backstab = false;
@@ -1904,9 +1904,9 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) {
     dist = 2 * str / 15;
   else 
     FAIL << "Item too heavy.";
-  int accuracy = Random.getRandom(-accuracyVariance, accuracyVariance) +
+  int accuracy = Random.get(-accuracyVariance, accuracyVariance) +
       getModifier(ModifierType::THROWN_ACCURACY) + item->getModifier(ModifierType::THROWN_ACCURACY);
-  int damage = Random.getRandom(-attackVariance, attackVariance) +
+  int damage = Random.get(-attackVariance, attackVariance) +
       getModifier(ModifierType::THROWN_DAMAGE) + item->getModifier(ModifierType::THROWN_DAMAGE);
   if (item->getAttackType() == AttackType::STAB) {
     damage += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, ModifierType::THROWN_DAMAGE);
@@ -2189,7 +2189,7 @@ CreatureAction Creature::moveAway(Vec2 pos, bool pathfinding) {
   if (auto action = move(dirs.second))
     moves.push_back(action);
   if (moves.size() > 0)
-    return moves[Random.getRandom(moves.size())];
+    return moves[Random.get(moves.size())];
   return CreatureAction();
 }
 

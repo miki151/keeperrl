@@ -230,7 +230,7 @@ class Boulder : public Creature {
             return new BoulderController(c, myTribe); })) {}
 
   virtual vector<PItem> getCorpse() override {
-    return ItemFactory::fromId(ItemId::ROCK, Random.getRandom(10, 20));
+    return ItemFactory::fromId(ItemId::ROCK, Random.get(10, 20));
   }
 
   template <class Archive>
@@ -714,7 +714,7 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
         c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();),
       ControllerFactory([shopArea](Creature* c) { 
           return new ShopkeeperController(c, shopArea); })));
-  vector<ItemType> inventory(Random.getRandom(100, 300), ItemId::GOLD_PIECE);
+  vector<ItemType> inventory(Random.get(100, 300), ItemId::GOLD_PIECE);
   inventory.push_back(ItemId::SWORD);
   inventory.push_back(ItemId::LEATHER_ARMOR);
   inventory.push_back(ItemId::LEATHER_BOOTS);
@@ -863,8 +863,8 @@ CreatureFactory CreatureFactory::level(int num, Tribe* allTribe, Tribe* dwarfTri
       { CreatureId::NIGHTMARE, { 5, 5, 10, 10, 20, 30, 30, 40, 40, 40 }},
       { CreatureId::DWARF, { 400, 200, 100, 50, 50, 30, 20, 20 }}};
   vector<vector<CreatureId>> uniqueMonsters(maxLevel);
-  uniqueMonsters[Random.getRandom(5, maxLevel)].push_back(CreatureId::SPECIAL_MONSTER);
-  uniqueMonsters[Random.getRandom(5, maxLevel)].push_back(CreatureId::SPECIAL_HUMANOID);
+  uniqueMonsters[Random.get(5, maxLevel)].push_back(CreatureId::SPECIAL_MONSTER);
+  uniqueMonsters[Random.get(5, maxLevel)].push_back(CreatureId::SPECIAL_HUMANOID);
   vector<CreatureId> ids;
   vector<double> freq;
   for (auto elem : frequencies) {
@@ -893,20 +893,20 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
   r.init(hash<string>()(name));
   PCreature c = get(CATTR(
         c.viewId = humanoid ? ViewId::SPECIAL_HUMANOID : ViewId::SPECIAL_BEAST;
-        c.attr[AttrType::SPEED] = r.getRandom(70, 150);
+        c.attr[AttrType::SPEED] = r.get(70, 150);
         c.size = chooseRandom({CreatureSize::SMALL, CreatureSize::MEDIUM, CreatureSize::LARGE}, {1, 1, 1});
-        c.attr[AttrType::STRENGTH] = r.getRandom(20, 26);
-        c.attr[AttrType::DEXTERITY] = r.getRandom(20, 26);
-        c.barehandedDamage = r.getRandom(5, 15);
+        c.attr[AttrType::STRENGTH] = r.get(20, 26);
+        c.attr[AttrType::DEXTERITY] = r.get(20, 26);
+        c.barehandedDamage = r.get(5, 15);
         c.humanoid = humanoid;
         c.spawnType = humanoid ? SpawnType::HUMANOID : SpawnType::BEAST;
         c.skills.setValue(SkillId::WEAPON_MELEE, r.getDouble(0, 1));
         c.skills.setValue(SkillId::UNARMED_MELEE, r.getDouble(0, 1));
         c.skills.setValue(SkillId::ARCHERY, r.getDouble(0, 1));
         c.skills.setValue(SkillId::SORCERY, r.getDouble(0, 1));
-        c.weight = c.size == CreatureSize::LARGE ? r.getRandom(80,120) : 
-                   c.size == CreatureSize::MEDIUM ? r.getRandom(40, 60) :
-                   r.getRandom(5, 20);
+        c.weight = c.size == CreatureSize::LARGE ? r.get(80,120) : 
+                   c.size == CreatureSize::MEDIUM ? r.get(40, 60) :
+                   r.get(5, 20);
         if (*c.humanoid) {
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
           c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
@@ -932,11 +932,11 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
           }
           if (*c.humanoid == false) {
             c.bodyParts[BodyPart::ARM] = r.roll(2) ? 2 : 0;
-            c.bodyParts[BodyPart::LEG] = r.getRandom(3) * 2;
+            c.bodyParts[BodyPart::LEG] = r.get(3) * 2;
             c.attr[AttrType::STRENGTH] += 5;
             c.attr[AttrType::DEXTERITY] += 5;
             c.barehandedDamage += 5;
-            switch (Random.getRandom(8)) {
+            switch (Random.get(8)) {
               case 0: c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON); break;
               case 1: c.attackEffect = EffectId::FIRE; c.barehandedAttack = AttackType::HIT; break;
               default: break;
@@ -954,12 +954,12 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
   if (c->isHumanoid()) {
     if (Random.roll(400)) {
       c->take(ItemFactory::fromId(ItemId::BOW));
-      c->take(ItemFactory::fromId(ItemId::ARROW, Random.getRandom(20, 36)));
+      c->take(ItemFactory::fromId(ItemId::ARROW, Random.get(20, 36)));
     } else
       c->take(ItemFactory::fromId(chooseRandom(
             {ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER})));
   } else if (!keeper) {
-    switch (Random.getRandom(3)) {
+    switch (Random.get(3)) {
       case 0:
         c->take(ItemFactory::fromId(
               chooseRandom({ItemId::WARNING_AMULET, ItemId::HEALING_AMULET, ItemId::DEFENSE_AMULET})));
@@ -967,12 +967,12 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
       case 1:
         c->take(ItemFactory::fromId({ItemId::POTION,
               EffectType(EffectId::LASTING, LastingEffect::INVISIBLE)},
-              Random.getRandom(3, 6)));
+              Random.get(3, 6)));
         break;
       case 2:
         c->take(ItemFactory::fromId(chooseRandom<ItemType>({
               {ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::STR_BONUS)},
-              {ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)}}), Random.getRandom(3, 6)));
+              {ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)}}), Random.get(3, 6)));
         break;
       default:
         FAIL << "Unhandled case value";
@@ -2111,7 +2111,7 @@ vector<ItemType> getInventory(CreatureId id) {
   switch (id) {
     case CreatureId::GREEN_DRAGON:
     case CreatureId::RED_DRAGON:
-      return ItemList().add(ItemId::GOLD_PIECE, Random.getRandom(200, 400));
+      return ItemList().add(ItemId::GOLD_PIECE, Random.get(200, 400));
     case CreatureId::ANGEL:
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 
@@ -2123,17 +2123,17 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::SCYTHE);
     case CreatureId::LEPRECHAUN: 
       return ItemList()
-        .add({ItemId::SCROLL, EffectId::TELEPORT}, Random.getRandom(1, 4));
+        .add({ItemId::SCROLL, EffectId::TELEPORT}, Random.get(1, 4));
     case CreatureId::GOBLIN: 
       return ItemList()
         .add(chooseRandom({ItemId::KNIFE}))
         .maybe(0.3, ItemId::LEATHER_BOOTS)
-        .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.getRandom(20, 36)));
+        .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36)));
     case CreatureId::WARRIOR: 
       return ItemList()
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::SWORD)
-        .add(ItemId::GOLD_PIECE, Random.getRandom(10, 20));
+        .add(ItemId::GOLD_PIECE, Random.get(10, 20));
     case CreatureId::SHAMAN: 
       return ItemList()
         .add(ItemId::LEATHER_ARMOR)
@@ -2141,15 +2141,15 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::LIZARDLORD: 
     case CreatureId::LIZARDMAN: 
       return ItemList().add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::GOLD_PIECE, Random.getRandom(10, 20));
+        .add(ItemId::GOLD_PIECE, Random.get(10, 20));
     case CreatureId::ARCHER: 
       return ItemList()
-        .add(ItemId::BOW).add(ItemId::ARROW, Random.getRandom(20, 36))
+        .add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36))
         .add(ItemId::KNIFE)
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::LEATHER_BOOTS)
         .add(randomHealing())
-        .add(ItemId::GOLD_PIECE, Random.getRandom(20, 50));
+        .add(ItemId::GOLD_PIECE, Random.get(20, 50));
     case CreatureId::CASTLE_GUARD:
     case CreatureId::KNIGHT: 
       return ItemList()
@@ -2157,7 +2157,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::LEATHER_BOOTS)
         .add(randomHealing())
-        .add(ItemId::GOLD_PIECE, Random.getRandom(30, 80));
+        .add(ItemId::GOLD_PIECE, Random.get(30, 80));
     case CreatureId::DEVIL: 
       return ItemList().add(chooseRandom<ItemType>({
               {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::BLIND)},
@@ -2170,8 +2170,8 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_HELM)
         .add(ItemId::IRON_BOOTS)
-        .add({ItemId::POTION, EffectId::HEAL}, Random.getRandom(1, 4))
-        .add(ItemId::GOLD_PIECE, Random.getRandom(200, 300));
+        .add({ItemId::POTION, EffectId::HEAL}, Random.get(1, 4))
+        .add(ItemId::GOLD_PIECE, Random.get(200, 300));
     case CreatureId::OGRE: 
       return ItemList().add(ItemId::WAR_HAMMER);
     case CreatureId::BANDIT:
@@ -2187,8 +2187,8 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::IRON_BOOTS)
         .add(ItemId::CHAIN_ARMOR)
         .add(randomBackup())
-        .add(ItemId::KNIFE, Random.getRandom(2, 5))
-        .add(ItemId::GOLD_PIECE, Random.getRandom(100, 200));
+        .add(ItemId::KNIFE, Random.get(2, 5))
+        .add(ItemId::GOLD_PIECE, Random.get(100, 200));
     case CreatureId::DWARF: 
       return ItemList()
         .add(chooseRandom({ItemId::BATTLE_AXE, ItemId::WAR_HAMMER}, {1, 1}))
@@ -2196,7 +2196,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .maybe(0.5, ItemId::IRON_HELM)
         .maybe(0.3, ItemId::IRON_BOOTS)
-        .add(ItemId::GOLD_PIECE, Random.getRandom(10, 30));
+        .add(ItemId::GOLD_PIECE, Random.get(10, 30));
     case CreatureId::DWARF_BARON: 
       return ItemList()
         .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
@@ -2204,24 +2204,24 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_BOOTS)
         .add(ItemId::IRON_HELM)
-        .add(ItemId::GOLD_PIECE, Random.getRandom(100, 200));
+        .add(ItemId::GOLD_PIECE, Random.get(100, 200));
     case CreatureId::ELF_LORD: 
       return ItemList()
         .add(ItemId::SPECIAL_ELVEN_SWORD)
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::BOW)
-        .add(ItemId::ARROW, Random.getRandom(20, 36))
+        .add(ItemId::ARROW, Random.get(20, 36))
         .add(randomBackup());
     case CreatureId::ELF_ARCHER: 
       return ItemList()
         .add(ItemId::ELVEN_SWORD)
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::BOW)
-        .add(ItemId::ARROW, Random.getRandom(20, 36))
+        .add(ItemId::ARROW, Random.get(20, 36))
         .add(randomBackup());
     case CreatureId::MUMMY_LORD: 
       return ItemList()
-        .add(ItemId::GOLD_PIECE, Random.getRandom(100, 200)).add(
+        .add(ItemId::GOLD_PIECE, Random.get(100, 200)).add(
             chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD}, {1, 1, 1}));
     case CreatureId::WITCH: 
       return ItemList()

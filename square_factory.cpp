@@ -284,7 +284,7 @@ class Fountain : public Square {
   SERIALIZATION_CONSTRUCTOR(Fountain);
 
   private:
-  int SERIAL2(seed, Random.getRandom(123456));
+  int SERIAL2(seed, Random.get(123456));
 };
 
 class Tree : public Square {
@@ -319,7 +319,7 @@ class Tree : public Square {
     numCut += numWood;
     if (numCut > 1000 && Random.roll(max(30, (3000 - numCut) / 20)))
       Effect::summon(getLevel(), factory, getPosition(), 1,
-          Random.getRandom(30, 60));
+          Random.get(30, 60));
   }
 
   virtual void burnOut() override {
@@ -996,22 +996,22 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
             CONSTRUCT(Square::Params,
               c.name = "wall";
-              c.constructions[SquareId::FLOOR] = Random.getRandom(3, 8);));
+              c.constructions[SquareId::FLOOR] = Random.get(3, 8);));
     case SquareId::GOLD_ORE:
         return new ConstructionDropItems(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR, "Gold ore")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), "gold ore",
-            {{SquareId::FLOOR, Random.getRandom(30, 80)}},
-            ItemFactory::fromId(ItemId::GOLD_PIECE, Random.getRandom(15, 30)));
+            {{SquareId::FLOOR, Random.get(30, 80)}},
+            ItemFactory::fromId(ItemId::GOLD_PIECE, Random.get(15, 30)));
     case SquareId::IRON_ORE:
         return new ConstructionDropItems(ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR, "Iron ore")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), "iron ore",
-            {{SquareId::FLOOR, Random.getRandom(15, 40)}},
-            ItemFactory::fromId(ItemId::IRON_ORE, Random.getRandom(12, 27)));
+            {{SquareId::FLOOR, Random.get(15, 40)}},
+            ItemFactory::fromId(ItemId::IRON_ORE, Random.get(12, 27)));
     case SquareId::STONE:
         return new ConstructionDropItems(ViewObject(ViewId::STONE, ViewLayer::FLOOR, "Granite")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), "granite",
-            {{SquareId::FLOOR, Random.getRandom(30, 80)}},
-            ItemFactory::fromId(ItemId::ROCK, Random.getRandom(5, 20)));
+            {{SquareId::FLOOR, Random.get(30, 80)}},
+            ItemFactory::fromId(ItemId::ROCK, Random.get(5, 20)));
     case SquareId::LOW_ROCK_WALL:
         return new Square(ViewObject(ViewId::LOW_ROCK_WALL, ViewLayer::FLOOR, "Wall")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
@@ -1045,7 +1045,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = "mountain";
-            c.constructions[SquareId::FLOOR] = Random.getRandom(3, 8);));
+            c.constructions[SquareId::FLOOR] = Random.get(3, 8);));
     case SquareId::GLACIER:
         return new Square(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"),
           CONSTRUCT(Square::Params,
@@ -1076,14 +1076,14 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::CANIF_TREE:
         return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"),
             "tree", Vision::get(VisionId::ELF),
-            Random.getRandom(15, 30), {{SquareId::TREE_TRUNK, 20}}, s.get<CreatureFactory::SingleCreature>());
+            Random.get(15, 30), {{SquareId::TREE_TRUNK, 20}}, s.get<CreatureFactory::SingleCreature>());
     case SquareId::DECID_TREE:
         return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"),
-            "tree", Vision::get(VisionId::ELF), Random.getRandom(15, 30), {{SquareId::TREE_TRUNK, 20}},
+            "tree", Vision::get(VisionId::ELF), Random.get(15, 30), {{SquareId::TREE_TRUNK, 20}},
             s.get<CreatureFactory::SingleCreature>());
     case SquareId::BUSH:
         return new Tree(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush",
-            Vision::get(VisionId::NORMAL), Random.getRandom(5, 10), {{SquareId::TREE_TRUNK, 10}},
+            Vision::get(VisionId::NORMAL), Random.get(5, 10), {{SquareId::TREE_TRUNK, 10}},
             s.get<CreatureFactory::SingleCreature>());
     case SquareId::TREE_TRUNK:
         return new Square(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
@@ -1192,7 +1192,7 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::CHEST:
         return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"),
             ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest",
-            s.get<CreatureFactory::SingleCreature>(), Random.getRandom(3, 6),
+            s.get<CreatureFactory::SingleCreature>(), Random.get(3, 6),
             "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::chest());
     case SquareId::TREASURE_CHEST:
         return new Furniture(ViewObject(ViewId::TREASURE_CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);

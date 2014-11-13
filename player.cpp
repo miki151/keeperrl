@@ -1016,13 +1016,13 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
               grantGift(creature, ItemId::HEALING_AMULET, to->getName());
             else
               grantGift(creature, {ItemId::POTION, EffectId::HEAL}, to->getName(),
-                  Random.getRandom(1, 4));
+                  Random.get(1, 4));
           }
           break;
       case EpithetId::NATURE: grantGift(creature, ItemId::FRIENDLY_ANIMALS_AMULET, to->getName()); break;
 //      case EpithetId::LOVE: grantGift(c, ItemId::PANIC_MUSHROOM, name); break;
       case EpithetId::WEALTH:
-        grantGift(creature, ItemId::GOLD_PIECE, to->getName(), Random.getRandom(100, 200)); break;
+        grantGift(creature, ItemId::GOLD_PIECE, to->getName(), Random.get(100, 200)); break;
       case EpithetId::DEFENSE: grantGift(creature, ItemId::DEFENSE_AMULET, to->getName()); break;
       case EpithetId::DARKNESS: applyEffect(creature, EffectType(EffectId::LASTING, LastingEffect::BLIND), ""); break;
       case EpithetId::CRAFTS: applyEffect(creature,

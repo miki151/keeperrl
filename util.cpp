@@ -22,38 +22,13 @@ void RandomGen::init(int seed) {
   generator.seed(seed);
 }
 
-int RandomGen::getRandom(int max) {
-  return getRandom(0, max);
+int RandomGen::get(int max) {
+  return get(0, max);
 }
 
-int RandomGen::getRandom(int min, int max) {
+int RandomGen::get(int min, int max) {
   CHECK(max > min);
   return uniform_int_distribution<int>(min, max - 1)(generator);
-}
-
-void RandomGen::makeShuffle(string id, int min, int max) {
-  shuffleMap.erase(id);
-  ShuffleInfo info;
-  info.minRange = min;
-  info.maxRange = max;
-  for (int i : Range(min, max))
-    info.numbers.push_back(i);
-  random_shuffle(info.numbers.begin(), info.numbers.end(), [](int a) { return Random.getRandom(a);});
-  shuffleMap.insert({id, std::move(info)});
-}
-
-int RandomGen::getRandom(const string& shuffleId, int min, int max) {
-  if (!shuffleMap.count(shuffleId))
-    makeShuffle(shuffleId, min, max);
-  else {
-    ShuffleInfo& info = shuffleMap.at(shuffleId);
-    if (info.minRange != min || info.maxRange != max || info.numbers.empty())
-      makeShuffle(shuffleId, min, max);
-  }
-  ShuffleInfo& info = shuffleMap.at(shuffleId);
-  int ret = info.numbers.back();
-  info.numbers.pop_back();
-  return ret;
 }
 
 string getCardinalName(Dir d) {
@@ -71,7 +46,7 @@ string getCardinalName(Dir d) {
   return "";
 }
 
-int RandomGen::getRandom(const vector<double>& weights, double r) {
+int RandomGen::get(const vector<double>& weights, double r) {
   double sum = 0;
   for (double elem : weights)
     sum += elem;
@@ -88,7 +63,7 @@ int RandomGen::getRandom(const vector<double>& weights, double r) {
 }
 
 bool RandomGen::roll(int chance) {
-  return getRandom(chance) == 0;
+  return get(chance) == 0;
 }
 
 bool RandomGen::rollD(double chance) {
@@ -233,7 +208,7 @@ vector<Vec2> Vec2::box(int radius, bool shuffle) {
   for (int k = -radius; k < radius; ++k)
     v.push_back(*this + Vec2(-radius, -k));
   if (shuffle)
-    random_shuffle(v.begin(), v.end(), [](int a) { return Random.getRandom(a);});
+    random_shuffle(v.begin(), v.end(), [](int a) { return Random.get(a);});
   return v;
 }
 
@@ -249,7 +224,7 @@ vector<Vec2> Vec2::directions8(bool shuffle) {
 vector<Vec2> Vec2::neighbors8(bool shuffle) const {
   vector<Vec2> res = {Vec2(x, y + 1), Vec2(x + 1, y), Vec2(x, y - 1), Vec2(x - 1, y), Vec2(x + 1, y + 1), Vec2(x + 1, y - 1), Vec2(x - 1, y - 1), Vec2(x - 1, y + 1)};
   if (shuffle)
-    random_shuffle(res.begin(), res.end(),[](int a) { return Random.getRandom(a);});
+    random_shuffle(res.begin(), res.end(),[](int a) { return Random.get(a);});
   return res;
 }
 
@@ -260,7 +235,7 @@ vector<Vec2> Vec2::directions4(bool shuffle) {
 vector<Vec2> Vec2::neighbors4(bool shuffle) const {
   vector<Vec2> res = { Vec2(x, y + 1), Vec2(x + 1, y), Vec2(x, y - 1), Vec2(x - 1, y)};
   if (shuffle)
-    random_shuffle(res.begin(), res.end(),[](int a) { return Random.getRandom(a);});
+    random_shuffle(res.begin(), res.end(),[](int a) { return Random.get(a);});
   return res;
 }
 
@@ -503,7 +478,7 @@ Rectangle::Rectangle(Vec2 p, Vec2 k) : px(p.x), py(p.y), kx(k.x), ky(k.y), w(k.x
 Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), px(px1), py(py1), kx(kx1), ky(ky1) {}
 
 Vec2 Rectangle::randomVec2() const {
-  return Vec2(Random.getRandom(px, kx), Random.getRandom(py, ky));
+  return Vec2(Random.get(px, kx), Random.get(py, ky));
 }
 
 Vec2 Rectangle::middle() const {

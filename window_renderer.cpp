@@ -34,22 +34,22 @@ void WindowRenderer::initialize(int width, int height, string title) {
 }
 
 Event WindowRenderer::getRandomEvent() {
-  Event::EventType type = Event::EventType(Random.getRandom(int(Event::Count)));
+  Event::EventType type = Event::EventType(Random.get(int(Event::Count)));
   Event ret;
   ret.type = type;
   int modProb = 5;
   switch (type) {
     case Event::KeyPressed:
-      ret.key = {Keyboard::Key(Random.getRandom(int(Keyboard::Key::KeyCount))), Random.roll(modProb),
+      ret.key = {Keyboard::Key(Random.get(int(Keyboard::Key::KeyCount))), Random.roll(modProb),
           Random.roll(modProb), Random.roll(modProb), Random.roll(modProb) };
       break;
     case Event::MouseButtonReleased:
     case Event::MouseButtonPressed:
-      ret.mouseButton = { chooseRandom({Mouse::Left, Mouse::Right}), Random.getRandom(getWidth()),
-        Random.getRandom(getHeight()) };
+      ret.mouseButton = { chooseRandom({Mouse::Left, Mouse::Right}), Random.get(getWidth()),
+        Random.get(getHeight()) };
       break;
     case Event::MouseMoved:
-      ret.mouseMove = { Random.getRandom(getWidth()), Random.getRandom(getHeight()) };
+      ret.mouseMove = { Random.get(getWidth()), Random.get(getHeight()) };
       break;
     default: return getRandomEvent();
   }
@@ -117,7 +117,7 @@ void WindowRenderer::waitEvent(Event& ev) {
 
 Vec2 WindowRenderer::getMousePos() {
   if (monkey)
-    return Vec2(Random.getRandom(getWidth()), Random.getRandom(getHeight()));
+    return Vec2(Random.get(getWidth()), Random.get(getHeight()));
   auto pos = Mouse::getPosition(*display);
   return Vec2(pos.x, pos.y);
 }

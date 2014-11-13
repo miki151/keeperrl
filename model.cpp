@@ -272,7 +272,7 @@ PCreature Model::makePlayer(int handicap) {
       ItemId::LEATHER_GLOVES,
       ItemId::LEATHER_ARMOR,
       ItemId::LEATHER_HELM});
-  for (int i : Range(Random.getRandom(70, 131)))
+  for (int i : Range(Random.get(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
   return player;
 }
@@ -385,17 +385,17 @@ static vector<EnemyInfo> getVaults() {
  /*   getVault(SettlementType::CAVE, CreatureId::GREEN_DRAGON, Tribe::get(TribeId::DRAGON), 1,
         ItemFactory::dragonCave(), {VillageControlInfo::DRAGON}),*/
     getVault(SettlementType::VAULT, CreatureFactory::insects(Tribe::get(TribeId::MONSTER)),
-        Tribe::get(TribeId::MONSTER), Random.getRandom(6, 12), Nothing(), {VillageControlInfo::PEACEFUL}),
-    getVault(SettlementType::VAULT, CreatureId::ORC, Tribe::get(TribeId::KEEPER), Random.getRandom(3, 8),
+        Tribe::get(TribeId::MONSTER), Random.get(6, 12), Nothing(), {VillageControlInfo::PEACEFUL}),
+    getVault(SettlementType::VAULT, CreatureId::ORC, Tribe::get(TribeId::KEEPER), Random.get(3, 8),
         Nothing(), {VillageControlInfo::PEACEFUL}),
     getVault(SettlementType::VAULT, CreatureId::CYCLOPS, Tribe::get(TribeId::MONSTER), 1,
         ItemFactory::mushrooms(true), {VillageControlInfo::PEACEFUL}),
-    getVault(SettlementType::VAULT, CreatureId::RAT, Tribe::get(TribeId::PEST), Random.getRandom(3, 8),
+    getVault(SettlementType::VAULT, CreatureId::RAT, Tribe::get(TribeId::PEST), Random.get(3, 8),
         ItemFactory::armory(), {VillageControlInfo::PEACEFUL})
   };
-  for (int i : Range(Random.getRandom(1, 3))) {
+  for (int i : Range(Random.get(1, 3))) {
     FriendlyVault v = chooseRandom(friendlyVaults);
-    ret.push_back(getVault(SettlementType::VAULT, v.id, Tribe::get(TribeId::KEEPER), Random.getRandom(v.min, v.max),
+    ret.push_back(getVault(SettlementType::VAULT, v.id, Tribe::get(TribeId::KEEPER), Random.get(v.min, v.max),
           Nothing(), {VillageControlInfo::PEACEFUL}));
   }
   return ret;
@@ -418,7 +418,7 @@ vector<EnemyInfo> getEnemyInfo() {
     ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::COTTAGE;
         c.creatures = CreatureFactory::humanVillage(Tribe::get(TribeId::HUMAN));
-        c.numCreatures = Random.getRandom(3, 7);
+        c.numCreatures = Random.get(3, 7);
         c.location = new Location();
         c.tribe = Tribe::get(TribeId::HUMAN);
         c.buildingId = BuildingId::WOOD;),
@@ -428,7 +428,7 @@ vector<EnemyInfo> getEnemyInfo() {
     ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::SMALL_MINETOWN;
         c.creatures = CreatureFactory::gnomeVillage(Tribe::get(TribeId::HUMAN));
-        c.numCreatures = Random.getRandom(3, 7);
+        c.numCreatures = Random.get(3, 7);
         c.location = new Location(true);
         c.tribe = Tribe::get(TribeId::HUMAN);
         c.buildingId = BuildingId::DUNGEON;
@@ -440,7 +440,7 @@ vector<EnemyInfo> getEnemyInfo() {
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CASTLE2;
           c.creatures = CreatureFactory::vikingTown(Tribe::get(TribeId::HUMAN));
-          c.numCreatures = Random.getRandom(12, 16);
+          c.numCreatures = Random.get(12, 16);
           c.location = getVillageLocation();
           c.tribe = Tribe::get(TribeId::HUMAN);
           c.buildingId = BuildingId::WOOD_CASTLE;
@@ -451,7 +451,7 @@ vector<EnemyInfo> getEnemyInfo() {
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::VILLAGE;
           c.creatures = CreatureFactory::lizardTown(Tribe::get(TribeId::LIZARD));
-          c.numCreatures = Random.getRandom(8, 14);
+          c.numCreatures = Random.get(8, 14);
           c.location = getVillageLocation();
           c.tribe = Tribe::get(TribeId::LIZARD);
           c.buildingId = BuildingId::MUD;
@@ -461,7 +461,7 @@ vector<EnemyInfo> getEnemyInfo() {
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::VILLAGE2;
           c.creatures = CreatureFactory::elvenVillage(Tribe::get(TribeId::ELVEN));
-          c.numCreatures = Random.getRandom(11, 18);
+          c.numCreatures = Random.get(11, 18);
           c.location = getVillageLocation();
           c.tribe = Tribe::get(TribeId::ELVEN);
           c.stockpiles = LIST({StockpileInfo::GOLD, 400});
@@ -471,7 +471,7 @@ vector<EnemyInfo> getEnemyInfo() {
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::MINETOWN;
           c.creatures = CreatureFactory::dwarfTown(Tribe::get(TribeId::DWARVEN));
-          c.numCreatures = Random.getRandom(9, 14);
+          c.numCreatures = Random.get(9, 14);
           c.location = getVillageLocation(true);
           c.tribe = Tribe::get(TribeId::DWARVEN);
           c.buildingId = BuildingId::DUNGEON;
@@ -482,7 +482,7 @@ vector<EnemyInfo> getEnemyInfo() {
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CASTLE;
           c.creatures = CreatureFactory::humanCastle(Tribe::get(TribeId::HUMAN));
-          c.numCreatures = Random.getRandom(20, 26);
+          c.numCreatures = Random.get(20, 26);
           c.location = getVillageLocation();
           c.tribe = Tribe::get(TribeId::HUMAN);
           c.stockpiles = LIST({StockpileInfo::GOLD, 400});
@@ -502,7 +502,7 @@ vector<EnemyInfo> getEnemyInfo() {
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CAVE;
           c.creatures = CreatureFactory::singleType(Tribe::get(TribeId::BANDIT), CreatureId::BANDIT);
-          c.numCreatures = Random.getRandom(4, 9);
+          c.numCreatures = Random.get(4, 9);
           c.location = new Location();
           c.tribe = Tribe::get(TribeId::BANDIT);
           c.buildingId = BuildingId::DUNGEON;),

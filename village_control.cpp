@@ -155,7 +155,7 @@ class PowerTrigger : public AttackTriggerSet {
     for (const Creature* c : control->getCreatures(MinionTrait::FIGHTER))
       myPower += c->getDifficultyPoints();
     Debug() << "Village " << control->getName() << " power " << myPower;
-    for (int i : Range(Random.getRandom(1, 3))) {
+    for (int i : Range(Random.get(1, 3))) {
       double trigger = myPower * Random.getDouble(0.4, 1.2);
       triggerAmounts.insert(trigger);
       Debug() << "Village " << control->getName() << " trigger " << trigger;
@@ -300,7 +300,7 @@ class FinalTrigger : public AttackTriggerSet {
     for (VillageControl* c : controls)
       allConquered &= (c->isConquered() || c->isAnonymous());
     if (allConquered && !control->isConquered() && totalWar == 100000)
-      totalWar = time + Random.getRandom(80, 200);
+      totalWar = time + Random.get(80, 200);
     if (totalWar < time) {
       totalWar = -1;
       for (const Creature* c : control->getCreatures(MinionTrait::FIGHTER))
@@ -467,7 +467,7 @@ class DragonControl : public VillageControl {
     if (population > populationLimit && c->getTime() >= nextAttack) {
       nextAttack = c->getTime() + waitTurns;
       villain->addAssaultNotification(c, this);
-      return Task::killFighters(villain, c, Random.getRandom(minVictims, maxVictims));
+      return Task::killFighters(villain, c, Random.get(minVictims, maxVictims));
     } else {
       villain->removeAssaultNotification(c, this);
       return Task::stayInLocationUntil(location, nextAttack);

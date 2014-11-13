@@ -219,7 +219,7 @@ void displayMenuSplash() {
   renderer.drawImage(100, renderer.getHeight() - bottomMargin, splash);
   vector<Rectangle> drawn;
   if (splashPositions.empty())
-    random_shuffle(++splashPaths.begin(), splashPaths.end(), [](int a) { return Random.getRandom(a);});
+    random_shuffle(++splashPaths.begin(), splashPaths.end(), [](int a) { return Random.get(a);});
   for (int path : All(splashPaths)) {
     CHECK(splash.loadFromFile(splashPaths[path]));
     int cnt = 100;
@@ -229,8 +229,8 @@ void displayMenuSplash() {
         px = splashPositions[path].x;
         py = splashPositions[path].y;
       } else {
-        px = Random.getRandom(renderer.getWidth() - splash.getSize().x);
-        py = Random.getRandom(renderer.getHeight() - bottomMargin - splash.getSize().y);
+        px = Random.get(renderer.getWidth() - splash.getSize().x);
+        py = Random.get(renderer.getHeight() - bottomMargin - splash.getSize().y);
         splashPositions.push_back({px, py});
       }
       Rectangle pos(px, py, px + splash.getSize().x, py + splash.getSize().y);
@@ -264,7 +264,7 @@ void WindowView::displaySplash(View::SplashType type, atomic<bool>& ready) {
     case View::SAVING: text = "Saving the game..."; break;
   }
   Image splash;
-  CHECK(splash.loadFromFile(splashPaths[Random.getRandom(1, splashPaths.size())]));
+  CHECK(splash.loadFromFile(splashPaths[Random.get(1, splashPaths.size())]));
   renderDialog = [=, &ready] {
     while (!ready) {
       renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2, (renderer.getHeight() - splash.getSize().y) / 2, splash);

@@ -160,7 +160,7 @@ vector<Deity*> generateDeities() {
     if ((deity.back() == 'a' || deity.back() == 'i') && !Random.roll(4))
       gend = Gender::female;
     vector<EpithetId> ep;
-    for (int i : Range(Random.getRandom(1, 4))) {
+    for (int i : Range(Random.get(1, 4))) {
       EpithetId epithet;
       int cnt = 100;
       do {

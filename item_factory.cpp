@@ -495,10 +495,10 @@ vector<PItem> ItemFactory::random(Optional<int> seed) {
   if (seed) {
     RandomGen gen;
     gen.init(*seed);
-    index = gen.getRandom(weights);
+    index = gen.get(weights);
   } else
-    index = Random.getRandom(weights);
-  return fromId(items[index], Random.getRandom(minCount[index], maxCount[index]));
+    index = Random.get(weights);
+  return fromId(items[index], Random.get(minCount[index], maxCount[index]));
 }
 
 vector<PItem> ItemFactory::getAll() {
@@ -756,8 +756,8 @@ ItemFactory ItemFactory::singleType(ItemType id) {
 void ItemFactory::init() {
   for (int i : Range(100))
     scroll_looks.push_back(toUpper(NameGenerator::get(NameGeneratorId::SCROLL)->getNext()));
-  random_shuffle(potion_looks.begin(), potion_looks.end(),[](int a) { return Random.getRandom(a);});
-  random_shuffle(amulet_looks.begin(), amulet_looks.end(),[](int a) { return Random.getRandom(a);});
+  random_shuffle(potion_looks.begin(), potion_looks.end(),[](int a) { return Random.get(a);});
+  random_shuffle(amulet_looks.begin(), amulet_looks.end(),[](int a) { return Random.get(a);});
 }
 
 int getEffectPrice(EffectType type) {
@@ -864,7 +864,7 @@ ViewId getRingViewId(LastingEffect e) {
 
 static int maybePlusMinusOne(int prob) {
   if (Random.roll(prob))
-    return Random.getRandom(2) * 2 - 1;
+    return Random.get(2) * 2 - 1;
   return 0;
 }
 
@@ -886,8 +886,8 @@ void makeArtifact(ItemAttributes& i) {
         }
   } while (!good);
   Debug() << "Making artifact " << *i.name << " " << *i.artifactName;
-  i.modifiers[ModifierType::DAMAGE] += Random.getRandom(1, 4);
-  i.modifiers[ModifierType::ACCURACY] += Random.getRandom(1, 4);
+  i.modifiers[ModifierType::DAMAGE] += Random.get(1, 4);
+  i.modifiers[ModifierType::ACCURACY] += Random.get(1, 4);
   i.price *= 15;
 }
 
@@ -1246,7 +1246,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
-            i.uses = Random.getRandom(3, 6);
+            i.uses = Random.get(3, 6);
             i.usedUpMsg = true;
             i.displayUses = true;
             i.price = 10;

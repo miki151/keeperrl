@@ -23,10 +23,10 @@ string getSyllable() {
   string consonants = "qwrtplkjhgfdszxcvbnm";
   string ret;
   if (Random.roll(3))
-    ret += consonants[Random.getRandom(consonants.size())];
-  ret += vowels[Random.getRandom(vowels.size())];
+    ret += consonants[Random.get(consonants.size())];
+  ret += vowels[Random.get(vowels.size())];
   if (Random.roll(3))
-    ret += consonants[Random.getRandom(consonants.size())];
+    ret += consonants[Random.get(consonants.size())];
   return ret;
 }
 

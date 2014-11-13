@@ -140,17 +140,17 @@ Tile getSpecialCreature(const ViewObject& obj, bool humanoid) {
   if (contains(let, tolower(obj.getBareDescription()[0])))
     c = tolower(obj.getBareDescription()[0]);
   else
-    c = let[r.getRandom(let.size())];
-  return Tile::unicode(c, ColorId(Random.getRandom(EnumInfo<ColorId>::getSize())));
+    c = let[r.get(let.size())];
+  return Tile::unicode(c, ColorId(Random.get(EnumInfo<ColorId>::getSize())));
 }
 
 Tile getSpecialCreatureSprite(const ViewObject& obj, bool humanoid) {
   RandomGen r;
   r.init(hash<string>()(obj.getBareDescription()));
   if (humanoid)
-    return Tile::byCoord(r.getRandom(7), 10);
+    return Tile::byCoord(r.get(7), 10);
   else
-    return Tile::byCoord(r.getRandom(7, 10), 10);
+    return Tile::byCoord(r.get(7, 10), 10);
 }
 
 static map<ViewId, Tile> tiles;

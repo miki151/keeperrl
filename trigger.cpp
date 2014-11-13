@@ -257,10 +257,10 @@ class MeteorShower : public Trigger {
   const int range = 4;
 
   bool shootMeteorite() {
-    Vec2 targetPoint(Random.getRandom(-areaWidth / 2, areaWidth / 2 + 1),
-                     Random.getRandom(-areaWidth / 2, areaWidth / 2 + 1));
+    Vec2 targetPoint(Random.get(-areaWidth / 2, areaWidth / 2 + 1),
+                     Random.get(-areaWidth / 2, areaWidth / 2 + 1));
     targetPoint += position;
-    Vec2 direction(Random.getRandom(-1, 2), Random.getRandom(-1, 2));
+    Vec2 direction(Random.get(-1, 2), Random.get(-1, 2));
     for (int i : Range(range + 1))
       if (!level->getSquare(targetPoint + direction * i)->canEnter(
             MovementType({MovementTrait::WALK, MovementTrait::FLY})))
