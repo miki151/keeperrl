@@ -37,8 +37,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual const MapMemory& getMemory() const override;
   MapMemory& getMemory(Level* l);
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
-  virtual void refreshGameInfo(GameInfo&) const  override;
-  virtual Vec2 getPosition() const  override;
+  virtual void refreshGameInfo(GameInfo&) const override;
+  virtual Vec2 getPosition() const override;
   virtual bool canSee(const Creature*) const override;
   virtual bool canSee(Vec2 position) const override;
   virtual vector<const Creature*> getUnknownAttacker() const override;

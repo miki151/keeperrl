@@ -342,16 +342,16 @@ PGuiElem WindowView::drawBottomPlayerInfo(GameInfo& gameInfo) {
   topWidths.push_back(renderer.getTextLength(nameLine) + 50);
   topLine.push_back(GuiElem::label(info.levelName, colors[ColorId::WHITE]));
   topWidths.push_back(200);
-  topLine.push_back(getTurnInfoGui(gameInfo.time));;
-  topWidths.push_back(100);
-  topLine.push_back(getSunlightInfoGui(sunlightInfo));
-  topWidths.push_back(100);
   vector<PGuiElem> bottomLine;
   vector<int> bottomWidths;
+  bottomLine.push_back(getTurnInfoGui(gameInfo.time));;
+  bottomWidths.push_back(100);
+  bottomLine.push_back(getSunlightInfoGui(sunlightInfo));
+  bottomWidths.push_back(100);
   int keySpacing = 50;
-  return //GuiElem::verticalList(makeVec<PGuiElem>(
-        GuiElem::margins(GuiElem::horizontalList(std::move(topLine), topWidths, 0, 2), 20, 0, 20, 0);
-        //GuiElem::horizontalList(std::move(bottomLine), bottomWidths, keySpacing)), 28, 0);
+  return GuiElem::verticalList(makeVec<PGuiElem>(
+        GuiElem::centerHoriz(GuiElem::horizontalList(std::move(topLine), topWidths, 0), 300),
+        GuiElem::centerHoriz(GuiElem::horizontalList(std::move(bottomLine), bottomWidths, keySpacing), 200)), 28, 0);
 }
 
 const int legendLineHeight = 30;

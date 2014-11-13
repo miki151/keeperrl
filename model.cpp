@@ -43,6 +43,7 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(lastTick)
     & SVAR(levelLinks)
     & SVAR(playerControl)
+    & SVAR(playerCollective)
     & SVAR(won)
     & SVAR(addHero)
     & SVAR(adventurer)
@@ -337,10 +338,10 @@ string Model::getGameIdentifier() const {
     return *NOTNULL(getPlayer())->getFirstName();
 }
 
-void Model::onKillEvent(const Creature* victim, const Creature* killer) {
-  if (playerControl && playerControl->isRetired() && victim == playerControl->getKeeper()) {
+void Model::onKilledLeaderEvent(const Collective* victim, const Creature* leader) {
+  if (playerControl && playerControl->isRetired() && playerCollective == victim) {
     const Creature* c = getPlayer();
-    killedKeeper(c->getNameAndTitle(), playerControl->getKeeper()->getNameAndTitle(), NameGenerator::get(NameGeneratorId::WORLD)->getNext(), c->getKills(), c->getPoints());
+    killedKeeper(c->getNameAndTitle(), leader->getNameAndTitle(), NameGenerator::get(NameGeneratorId::WORLD)->getNext(), c->getKills(), c->getPoints());
   }
 }
 
@@ -528,18 +529,18 @@ Model* Model::collectiveModel(View* view) {
   Level* top = m->prepareTopLevel(settlements);
   m->collectives.push_back(PCollective(
         new Collective(top, CollectiveConfigId::KEEPER, Tribe::get(TribeId::KEEPER))));
-  Collective* keeperCollective = m->collectives.back().get();
-  m->playerControl = new PlayerControl(keeperCollective, m, top);
-  keeperCollective->setControl(PCollectiveControl(m->playerControl));
+  m->playerCollective = m->collectives.back().get();
+  m->playerControl = new PlayerControl(m->playerCollective, m, top);
+  m->playerCollective->setControl(PCollectiveControl(m->playerControl));
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::get(TribeId::KEEPER),
-      MonsterAIFactory::collective(keeperCollective));
+      MonsterAIFactory::collective(m->playerCollective));
   Creature* ref = c.get();
   top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
   for (int i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, Tribe::get(TribeId::KEEPER),
-        MonsterAIFactory::collective(keeperCollective));
+        MonsterAIFactory::collective(m->playerCollective));
     top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
     m->playerControl->addImp(c.get());
     m->addCreature(std::move(c));
@@ -548,10 +549,10 @@ Model* Model::collectiveModel(View* view) {
     PCollective collective = enemyInfo[i].settlement.collective->build();
     PVillageControl control;
     if (enemyInfo[i].controlInfo.id != VillageControlInfo::FINAL_ATTACK)
-      control = VillageControl::get(enemyInfo[i].controlInfo, collective.get(), keeperCollective,
+      control = VillageControl::get(enemyInfo[i].controlInfo, collective.get(), m->playerCollective,
           enemyInfo[i].settlement.location);
     else
-      control = VillageControl::getFinalAttack(collective.get(), keeperCollective, enemyInfo[i].settlement.location,
+      control = VillageControl::getFinalAttack(collective.get(), m->playerCollective, enemyInfo[i].settlement.location,
           m->villageControls);
     m->villageControls.push_back(control.get());
     collective->setControl(std::move(control));

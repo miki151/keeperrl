@@ -87,7 +87,7 @@ class Model {
   Encyclopedia keeperopedia;
 
   private:
-  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
+  REGISTER_HANDLER(KilledLeaderEvent, const Collective*, const Creature*);
 
   void updateSunlightInfo();
   PCreature makePlayer(int handicap);
@@ -99,6 +99,7 @@ class Model {
 
   vector<PLevel> SERIAL(levels);
   vector<PCollective> SERIAL(collectives);
+  Collective* SERIAL(playerCollective);
   vector<VillageControl*> SERIAL(villageControls);
   View* view;
   TimeQueue SERIAL(timeQueue);

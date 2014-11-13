@@ -1191,6 +1191,8 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer)
       && prisonerInfo.at(victim).state() == PrisonerState::EXECUTE)
       returnResource({ResourceId::PRISONER_HEAD, 1});
+    if (hasTrait(victim, MinionTrait::LEADER))
+      GlobalEvents.addKilledLeaderEvent(this, victim);
     prisonerInfo.erase(victim);
     freeFromGuardPost(victim);
     decreaseMoraleForKill(killer, victim);

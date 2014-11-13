@@ -65,6 +65,7 @@ class EventListener {
   EVENT(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
   EVENT(WorshipEvent, Creature* who, const Deity* to, WorshipType);
   EVENT(ConquerEvent, const VillageControl* who);
+  EVENT(KilledLeaderEvent, const Collective*, const Creature*);
   EVENT(SunlightChangeEvent);
 };
 

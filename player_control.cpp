@@ -958,7 +958,10 @@ int PlayerControl::getMaxSightRange() const {
 }
 
 Vec2 PlayerControl::getPosition() const {
-  return getKeeper()->getPosition();
+  if (const Creature* keeper = getKeeper())
+    return keeper->getPosition();
+  else
+    return Vec2(0, 0);
 }
 
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
@@ -1374,7 +1377,7 @@ void PlayerControl::tick(double time) {
   considerDeityFight();
   checkKeeperDanger();
   model->getView()->getJukebox()->update();
-  if (retired) {
+  if (retired && getKeeper()) {
     if (const Creature* c = getLevel()->getPlayer())
       if (Random.roll(30) && !getCollective()->containsSquare(c->getPosition()))
         c->playerMessage("You sense horrible evil in the " + 
@@ -1440,7 +1443,7 @@ Tribe* PlayerControl::getTribe() {
 }
 
 bool PlayerControl::isEnemy(const Creature* c) const {
-  return getKeeper()->isEnemy(c);
+  return getKeeper() && getKeeper()->isEnemy(c);
 }
 
 void PlayerControl::onTechBookEvent(Technology* tech) {
@@ -1532,7 +1535,7 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
       case EpithetId::DEATH:
         if (!who->isUndead() && Random.roll(500))
           who->makeUndead();
-        if (type == WorshipType::SACRIFICE && Random.roll(10))
+        if (type == WorshipType::SACRIFICE && Random.roll(10) && getKeeper())
           getKeeper()->makeUndead();
         break;
       case EpithetId::SECRETS:
