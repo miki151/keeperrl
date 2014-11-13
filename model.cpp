@@ -620,7 +620,6 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "freed the land of " + land + "," << points << std::endl;
   showHighscore(true);
-  throw GameOverException();
 }
 
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {

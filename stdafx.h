@@ -42,10 +42,8 @@
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
+#include "extern/portable_iarchive.hpp"
+#include "extern/portable_oarchive.hpp"
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/deque.hpp>
@@ -115,8 +113,8 @@ using std::thread;
 using std::atomic;
 using std::swap;
 using boost::variant;
-using boost::archive::binary_oarchive;
-using boost::archive::binary_iarchive;
+using eos::portable_oarchive;
+using eos::portable_iarchive;
 
 #include "serialization.h"
 #endif

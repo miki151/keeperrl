@@ -149,10 +149,10 @@ class View {
   static View* createDefaultView();
 
   /** Returns a default View that additionally logs all player actions into a file.*/
-  static View* createLoggingView(binary_oarchive& of);
+  static View* createLoggingView(OutputArchive& of);
 
   /** Returns a default View that reads all player actions from a file instead of the keyboard.*/
-  static View* createReplayView(binary_iarchive& ifs);
+  static View* createReplayView(InputArchive& ifs);
 
   private:
   Jukebox* jukebox = nullptr;

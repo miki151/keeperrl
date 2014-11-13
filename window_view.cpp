@@ -48,11 +48,11 @@ View* View::createDefaultView() {
   return new WindowView();
 }
 
-View* View::createLoggingView(binary_oarchive& of) {
+View* View::createLoggingView(OutputArchive& of) {
   return new LoggingView<WindowView>(of);
 }
 
-View* View::createReplayView(binary_iarchive& ifs) {
+View* View::createReplayView(InputArchive& ifs) {
   return new ReplayView<WindowView>(ifs);
 }
 

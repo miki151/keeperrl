@@ -19,7 +19,7 @@
 template <class T>
 class ReplayView : public T {
   public:
-    ReplayView(binary_iarchive& iff) : input(iff) {
+    ReplayView(InputArchive& iff) : input(iff) {
     }
 
     virtual void close() override {
@@ -100,7 +100,7 @@ class ReplayView : public T {
       return action;
     }
   private:
-    binary_iarchive& input;
+    InputArchive& input;
 };
 
 #endif

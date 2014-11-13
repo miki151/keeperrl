@@ -16,22 +16,25 @@
 #ifndef _SERIALIZATION
 #define _SERIALIZATION
 
+typedef portable_iarchive InputArchive;
+typedef portable_oarchive OutputArchive;
+
 #define SUBCLASS(X) boost::serialization::make_nvp("Base", boost::serialization::base_object<X>(*this))
 
 #define SERIALIZABLE(T) \
-   template void T::serialize(boost::archive::binary_iarchive&, unsigned); \
-   template void T::serialize(boost::archive::binary_oarchive&, unsigned);
+   template void T::serialize(InputArchive&, unsigned); \
+   template void T::serialize(OutputArchive&, unsigned);
  //  template void T::serialize(boost::archive::xml_iarchive&, unsigned);
  //  template void T::serialize(boost::archive::xml_oarchive&, unsigned);
 
 #define SERIALIZABLE_TMPL(T, ...) \
    template class T<__VA_ARGS__>;\
-   template void T<__VA_ARGS__>::serialize(boost::archive::binary_iarchive&, unsigned); \
-   template void T<__VA_ARGS__>::serialize(boost::archive::binary_oarchive&, unsigned);
+   template void T<__VA_ARGS__>::serialize(InputArchive&, unsigned); \
+   template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned);
 
 #define REGISTER_TYPES(T) \
-   template void T::registerTypes(boost::archive::binary_iarchive&); \
-   template void T::registerTypes(boost::archive::binary_oarchive&);
+   template void T::registerTypes(InputArchive&); \
+   template void T::registerTypes(OutputArchive&);
  //  template void T::registerTypes(boost::archive::xml_iarchive&);
 //   template void T::registerTypes(boost::archive::xml_oarchive&);
 

@@ -20,7 +20,7 @@
 template <class T>
 class LoggingView : public T {
   public:
-    LoggingView(binary_oarchive& of) : output(of) {
+    LoggingView(OutputArchive& of) : output(of) {
     }
 
     virtual void close() override {
@@ -71,7 +71,7 @@ class LoggingView : public T {
       return res;
     }
   private:
-    binary_oarchive& output;
+    OutputArchive& output;
 };
 
 #endif

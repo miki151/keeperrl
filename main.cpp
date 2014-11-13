@@ -134,8 +134,8 @@ class StreamCombiner {
   U archive;
 };
 
-typedef StreamCombiner<ofstream, binary_oarchive> CompressedOutput;
-typedef StreamCombiner<ifstream, binary_iarchive> CompressedInput;
+typedef StreamCombiner<ofstream, OutputArchive> CompressedOutput;
+typedef StreamCombiner<ifstream, InputArchive> CompressedInput;
 
 static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
   unique_ptr<Model> model;
@@ -383,6 +383,7 @@ int main(int argc, char* argv[]) {
     view->refreshView();
     sf::sleep(sf::milliseconds(1));
   }
+  t.join();
   return 0;
 }
 
