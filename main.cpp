@@ -108,8 +108,8 @@ class StreamCombiner {
   U archive;
 };
 
-typedef StreamCombiner<ofstream, OutputArchive> CompressedOutput;
-typedef StreamCombiner<ifstream, InputArchive> CompressedInput;
+typedef StreamCombiner<ogzstream, OutputArchive> CompressedOutput;
+typedef StreamCombiner<igzstream, InputArchive> CompressedInput;
 
 string getGameName(const SaveFileInfo& save) {
   CompressedInput input(save.path.c_str());
