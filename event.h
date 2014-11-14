@@ -75,7 +75,8 @@ extern EventListener GlobalEvents;
   ConstructorFunction __LINE__##Event##Runner123 = ConstructorFunction([=] {\
       auto A = this;\
       GlobalEvents.link##Event(this, bindMethod(&std::remove_reference<decltype(*A)>::type::on##Event, this));\
-  }, [=] {\
+  });\
+  DestructorFunction __LINE##Event##Runnder321 = DestructorFunction([=] {\
       GlobalEvents.unlink##Event(this);\
   });\
   void on##Event(__VA_ARGS__)

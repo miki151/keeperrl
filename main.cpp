@@ -190,8 +190,7 @@ static void saveExceptionLine(const string& path, const string& line) {
   of << line << std::endl;
 }
 
-void clearAndInitialize() {
-  Item::identifyEverything();
+void clearSingletons() {
   Quest::clearAll();
   Tribe::clearAll();
   Technology::clearAll();
@@ -199,6 +198,10 @@ void clearAndInitialize() {
   Vision::clearAll();
   Epithet::clearAll();
   NameGenerator::clearAll();
+}
+
+void initializeSingletons() {
+  Item::identifyEverything();
   Tribe::init();
   Skill::init();
   Technology::init();
@@ -210,136 +213,135 @@ void clearAndInitialize() {
 }
 
 void gameLoop(View* view, int forceMode, bool genExit, atomic<bool>& finished) {
-    Jukebox jukebox("music/peaceful1.ogg");
-    jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful2.ogg");
-    jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful3.ogg");
-    jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful4.ogg");
-    jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful5.ogg");
-    jukebox.addTrack(Jukebox::BATTLE, "music/battle1.ogg");
-    jukebox.addTrack(Jukebox::BATTLE, "music/battle2.ogg");
-    jukebox.addTrack(Jukebox::BATTLE, "music/battle3.ogg");
-    jukebox.addTrack(Jukebox::BATTLE, "music/battle4.ogg");
-    jukebox.addTrack(Jukebox::BATTLE, "music/battle5.ogg");
-    view->setJukebox(&jukebox);
-    if (!WindowView::areTilesOk())
-        view->presentText("", "You are playing a version of KeeperRL without graphical tiles. "
-                          "Besides lack of graphics and music, this "
-                          "is the same exact game as the full version. If you'd like to buy the full version, "
-                          "please visit keeperrl.com.\n \nYou can also get it by donating to any wildlife charity. More information "
-                          "on the website.");
-    int lastIndex = 0;
-    while (1) {
-        view->reset();
-        clearAndInitialize();
-        auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
-            View::ListElem("Choose your role:", View::TITLE),
-            "Keeper", "Adventurer",
-            View::ListElem("Or simply:", View::TITLE),
-            "Load a game", "Change settings", "View high scores", "View credits", "Quit"},
-                                                                                       lastIndex, View::MAIN_MENU);
-        if (!choice)
-            continue;
-        lastIndex = *choice;
-        Optional<string> savedGame;
-        if (choice == 1) {
-            savedGame = chooseSaveFile({
-                {GameType::RETIRED_KEEPER, "Retired keeper games:"}},
-                                       "No retired games found.", view);
-            if (!savedGame)
-                continue;
-        }
-        if (choice == 2) {
-            savedGame = chooseSaveFile({
-                {GameType::KEEPER, "Keeper games:"},
-                {GameType::ADVENTURER, "Adventurer games:"}},
-                                       "No save files found.", view);
-            if (!savedGame)
-                continue;
-        }
-        if (choice == 3) {
-            Options::handle(view, OptionSet::GENERAL);
-            continue;
-        }
-        if (choice == 0 && forceMode == -1) {
-            if (!Options::handleOrExit(view, OptionSet::KEEPER, -1))
-                continue;
-        }
-        if (choice == 4) {
-            unique_ptr<Model> m(new Model(view));
-            m->showHighscore();
-            continue;
-        }
-        if (choice == 5) {
-            unique_ptr<Model> m(new Model(view));
-            m->showCredits();
-            continue;
-        }
-        if (choice == 6) {
-            break;
-        }
-        unique_ptr<Model> model;
-        string ex;
-        atomic<bool> ready(false);
-        view->displaySplash(savedGame ? View::LOADING : View::CREATING, ready);
-        for (int i : Range(5)) {
-            try {
-                if (savedGame) {
-                    model = loadGame(*savedGame, choice == 2);
-                }
-                else {
-                    CHECK(choice == 0);
-                    model.reset(Model::collectiveModel(view));
-                }
-                break;
-            } catch (string s) {
-                ex = s;
-            }
-        }
-        if (!model) {
-            view->presentText("Sorry!", "World generation permanently failed with the following error:\n \n" + ex +
-                              "\n \nIf you would be so kind, please send the file \'crash.log\'"
-                              " to rusolis@poczta.fm Thanks!");
-            saveExceptionLine("crash.log", ex);
-        }
-        ready = true;
-        model->setView(view);
-        if (genExit) {
-            model.reset();
-            clearAndInitialize();
-            break;
-        }
-        try {
-            const double gameTimeStep = 0.01;
-            const int stepTimeMilli = 3;
-            Intervalometer meter(stepTimeMilli);
-            double totTime = model->getTime();
-            while (1) {
-                model->update(totTime);
-                if (model->isTurnBased())
-                    ++totTime;
-                else
-                    totTime += min(1.0, double(meter.getCount()) * gameTimeStep);
-            }
-        } 
-#ifdef RELEASE
-        catch (string ex) {
-            view->presentText("Sorry!", "The game has crashed with the following error:\n \n" + ex +
-                              "\n \nIf you would be so kind, please send the file \'crash.log\'"
-                              " and a description of the circumstances to rusolis@poczta.fm Thanks!");
-            saveExceptionLine("crash.log", ex);
-        }
-#endif
-        catch (GameOverException ex) {
-        }
-        catch (SaveGameException ex) {
-            atomic<bool> ready(false);
-            view->displaySplash(View::SAVING, ready);
-            string game = model->getGameIdentifier();
-            saveGame(std::move(model), game, game + getSaveSuffix(ex.type));
-            ready = true;
-        }
+  Jukebox jukebox("music/peaceful1.ogg");
+  jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful2.ogg");
+  jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful3.ogg");
+  jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful4.ogg");
+  jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful5.ogg");
+  jukebox.addTrack(Jukebox::BATTLE, "music/battle1.ogg");
+  jukebox.addTrack(Jukebox::BATTLE, "music/battle2.ogg");
+  jukebox.addTrack(Jukebox::BATTLE, "music/battle3.ogg");
+  jukebox.addTrack(Jukebox::BATTLE, "music/battle4.ogg");
+  jukebox.addTrack(Jukebox::BATTLE, "music/battle5.ogg");
+  view->setJukebox(&jukebox);
+  if (!WindowView::areTilesOk())
+    view->presentText("", "You are playing a version of KeeperRL without graphical tiles. "
+                      "Besides lack of graphics and music, this "
+                      "is the same exact game as the full version. If you'd like to buy the full version, "
+                      "please visit keeperrl.com.\n \nYou can also get it by donating to any wildlife charity. More information "
+                      "on the website.");
+  int lastIndex = 0;
+  while (1) {
+    view->reset();
+    clearSingletons();
+    initializeSingletons();
+    auto choice = forceMode > -1 ? Optional<int>(forceMode) : view->chooseFromList("", {
+      View::ListElem("Choose your role:", View::TITLE),
+      "Keeper", "Adventurer",
+      View::ListElem("Or simply:", View::TITLE),
+      "Load a game", "Change settings", "View high scores", "View credits", "Quit"},
+                                                                                   lastIndex, View::MAIN_MENU);
+    if (!choice)
+      continue;
+    lastIndex = *choice;
+    Optional<string> savedGame;
+    if (choice == 1) {
+      savedGame = chooseSaveFile({
+        {GameType::RETIRED_KEEPER, "Retired keeper games:"}},
+                                 "No retired games found.", view);
+      if (!savedGame)
+        continue;
     }
-    finished = true;
+    if (choice == 2) {
+      savedGame = chooseSaveFile({
+        {GameType::KEEPER, "Keeper games:"},
+        {GameType::ADVENTURER, "Adventurer games:"}},
+                                 "No save files found.", view);
+      if (!savedGame)
+        continue;
+    }
+    if (choice == 3) {
+      Options::handle(view, OptionSet::GENERAL);
+      continue;
+    }
+    if (choice == 0 && forceMode == -1) {
+      if (!Options::handleOrExit(view, OptionSet::KEEPER, -1))
+        continue;
+    }
+    if (choice == 4) {
+      unique_ptr<Model> m(new Model(view));
+      m->showHighscore();
+      continue;
+    }
+    if (choice == 5) {
+      unique_ptr<Model> m(new Model(view));
+      m->showCredits();
+      continue;
+    }
+    if (choice == 6) {
+      break;
+    }
+    unique_ptr<Model> model;
+    string ex;
+    atomic<bool> ready(false);
+    view->displaySplash(savedGame ? View::LOADING : View::CREATING, ready);
+    for (int i : Range(5)) {
+      try {
+        if (savedGame) {
+          model = loadGame(*savedGame, choice == 2);
+        }
+        else {
+          CHECK(choice == 0);
+          model.reset(Model::collectiveModel(view));
+        }
+        break;
+      } catch (string s) {
+        ex = s;
+      }
+    }
+    if (!model) {
+      view->presentText("Sorry!", "World generation permanently failed with the following error:\n \n" + ex +
+                        "\n \nIf you would be so kind, please send the file \'crash.log\'"
+                        " to rusolis@poczta.fm Thanks!");
+      saveExceptionLine("crash.log", ex);
+    }
+    ready = true;
+    model->setView(view);
+    if (genExit)
+      break;
+    try {
+      const double gameTimeStep = 0.01;
+      const int stepTimeMilli = 3;
+      Intervalometer meter(stepTimeMilli);
+      double totTime = model->getTime();
+      while (1) {
+        model->update(totTime);
+        if (model->isTurnBased())
+          ++totTime;
+        else
+          totTime += min(1.0, double(meter.getCount()) * gameTimeStep);
+      }
+    }
+#ifdef RELEASE
+    catch (string ex) {
+      view->presentText("Sorry!", "The game has crashed with the following error:\n \n" + ex +
+                        "\n \nIf you would be so kind, please send the file \'crash.log\'"
+                        " and a description of the circumstances to rusolis@poczta.fm Thanks!");
+      saveExceptionLine("crash.log", ex);
+    }
+#endif
+    catch (GameOverException ex) {
+    }
+    catch (SaveGameException ex) {
+      atomic<bool> ready(false);
+      view->displaySplash(View::SAVING, ready);
+      string game = model->getGameIdentifier();
+      saveGame(std::move(model), game, game + getSaveSuffix(ex.type));
+      ready = true;
+    }
+  }
+  clearSingletons();
+  finished = true;
 }
 
 int main(int argc, char* argv[]) {

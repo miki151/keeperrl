@@ -1367,12 +1367,17 @@ function<Ret(Args...)> bindFunction(Ret (*ptr) (Args...)) {
 }
 
 struct ConstructorFunction {
-  ConstructorFunction(function<void()> inConstructor, function<void()> inDestructor = nullptr);
-  ~ConstructorFunction();
+  ConstructorFunction(function<void()> inConstructor);
+};
 
+struct DestructorFunction {
+  DestructorFunction(function<void()> inDestructor);
+  ~DestructorFunction();
+    
   private:
   function<void()> destFun;
 };
+
 
 template<typename... Args>
 struct NamedTupleBase : public tuple<Args...> {

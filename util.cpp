@@ -694,12 +694,14 @@ AsyncLoop::~AsyncLoop() {
   t.join();
 }
 
-ConstructorFunction::ConstructorFunction(function<void()> fun, function<void()> dest) : destFun(dest) {
+ConstructorFunction::ConstructorFunction(function<void()> fun) {
   fun();
 }
 
-ConstructorFunction::~ConstructorFunction() {
-  if (destFun)
-    destFun();
+DestructorFunction::DestructorFunction(function<void()> dest) : destFun(dest) {
+}
+
+DestructorFunction::~DestructorFunction() {
+  destFun();
 }
 
