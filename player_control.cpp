@@ -922,7 +922,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = getLevel()->getSquare(pos)->getCreature())
     if (getCurrentTeam() && getCollective()->isInTeam(*getCurrentTeam(), c)
-        && index.hasObject(<#ViewLayer#>::CREATURE))
+        && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (getCollective()->isMarkedToDig(pos))
     index.setHighlight(HighlightType::BUILD);
