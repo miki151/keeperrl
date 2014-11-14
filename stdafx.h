@@ -112,6 +112,7 @@ using std::hash;
 using std::thread;
 using std::atomic;
 using std::swap;
+using std::remove_if;
 using boost::variant;
 using eos::portable_oarchive;
 using eos::portable_iarchive;

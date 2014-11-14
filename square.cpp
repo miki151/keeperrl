@@ -389,6 +389,7 @@ const vector<Trigger*> Square::getTriggers() const {
 }
 
 PTrigger Square::removeTrigger(Trigger* trigger) {
+  CHECK(trigger);
   dirty = true;
   for (PTrigger& t : triggers)
     if (t.get() == trigger) {

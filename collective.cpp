@@ -1654,7 +1654,6 @@ void Collective::removeConstruction(Vec2 pos) {
 void Collective::destroySquare(Vec2 pos) {
   if (level->getSquare(pos)->canDestroy() && containsSquare(pos))
     level->getSquare(pos)->destroy();
-  level->getSquare(pos)->removeTriggers();
   if (Creature* c = level->getSquare(pos)->getCreature())
     if (c->getName() == "boulder")
       c->die(nullptr, false);
@@ -1665,6 +1664,7 @@ void Collective::destroySquare(Vec2 pos) {
     removeConstruction(pos);
   if (torches.count(pos))
     removeTorch(pos);
+  level->getSquare(pos)->removeTriggers();
 }
 
 void Collective::addConstruction(Vec2 pos, SquareType type, CostInfo cost, bool immediately, bool noCredit) {
@@ -1754,10 +1754,8 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   }
   if (type == SquareId::FLOOR) {
     for (Vec2 v : pos.neighbors4())
-      if (torches.count(v) && torches.at(v).attachmentDir() == (pos - v).getCardinalDir()) {
-        getLevel()->getSquare(v)->removeTrigger(torches.at(v).trigger());
+      if (torches.count(v) && torches.at(v).attachmentDir() == (pos - v).getCardinalDir())
         removeTorch(v);
-      }
   }
   control->onConstructed(pos, type);
 }
@@ -2285,7 +2283,7 @@ void Collective::cancelTeam(TeamId team) {
 
 static Optional<Vec2> getAdjacentWall(const Level* l, Vec2 pos) {
   for (Vec2 v : pos.neighbors4(true))
-    if (l->getSquare(v)->canConstruct(SquareId::FLOOR))
+    if (l->inBounds(v) && l->getSquare(v)->canConstruct(SquareId::FLOOR))
       return v;
   return Nothing();
 }
@@ -2299,9 +2297,10 @@ bool Collective::isPlannedTorch(Vec2 pos) const {
 }
 
 void Collective::removeTorch(Vec2 pos) {
-  auto task = torches.at(pos).task();
-  if (task > -1)
+  if (torches.at(pos).task() > -1)
     taskMap.removeTask(torches.at(pos).task());
+  if (auto trigger = torches.at(pos).trigger())
+    getLevel()->getSquare(pos)->removeTrigger(trigger);
   torches.erase(pos);
 }
 

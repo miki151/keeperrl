@@ -158,7 +158,17 @@ static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
   return model;
 }
 
-static void saveGame(unique_ptr<Model> model, const string& gameName, const string& filename) {
+bool isNonAscii(char c) {
+  return !(c>=0 && c <128);
+}
+
+string stripNonAscii(string s) {
+  s.erase(remove_if(s.begin(),s.end(), isNonAscii), s.end());
+  return s;
+}
+
+static void saveGame(unique_ptr<Model> model, const string& gameName, string filename) {
+  filename = stripNonAscii(filename);
   CompressedOutput out(filename.c_str());
   Serialization::registerTypes(out.getArchive());
   out.getArchive() << BOOST_SERIALIZATION_NVP(gameName) << BOOST_SERIALIZATION_NVP(model);
