@@ -296,7 +296,11 @@ void genTiles() {
   addTile(CAULDRON, sprite("labdeco").setNoShadow());
   addTile(BEAST_LAIR, sprite("lair").setFloorBorders());
   addTile(BEAST_CAGE, sprite("lairdeco").setNoShadow().addBackground("lair"));
+  addTile(FORGE, empty().addConnection(setOfAllDirs(), "forgedeco").addBackground("forge")
+      .setFloorBorders());
   addTile(WORKSHOP, empty().addConnection(setOfAllDirs(), "workshopdeco").addBackground("workshop")
+      .setFloorBorders());
+  addTile(JEWELER, empty().addConnection(setOfAllDirs(), "jewelerdeco").addBackground("jeweler")
       .setFloorBorders());
   addTile(CEMETERY, sprite("graveyard").setFloorBorders());
   addTile(GRAVE, sprite("gravedeco").setNoShadow().addBackground("graveyard"));
@@ -538,7 +542,9 @@ void genSymbols() {
   addSymbol(CAULDRON, symbol("ω", PURPLE, true));
   addSymbol(BEAST_LAIR, symbol(".", YELLOW));
   addSymbol(BEAST_CAGE, symbol("▥", LIGHT_GRAY, true));
-  addSymbol(WORKSHOP, symbol("&", LIGHT_BLUE));
+  addSymbol(WORKSHOP, symbol("&", LIGHT_BROWN));
+  addSymbol(FORGE, symbol("&", LIGHT_BLUE));
+  addSymbol(JEWELER, symbol("&", YELLOW));
   addSymbol(CEMETERY, symbol(".", DARK_BLUE));
   addSymbol(GRAVE, symbol(0x2617, GRAY, true));
   addSymbol(BARS, symbol("⧻", LIGHT_BLUE));

@@ -947,9 +947,11 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::STOCKPILE_RES] = 1;
               c.constructions[SquareId::CEMETERY] = 10;
               c.constructions[SquareId::WORKSHOP] = 10;
+              c.constructions[SquareId::FORGE] = 10;
+              c.constructions[SquareId::LABORATORY] = 10;
+              c.constructions[SquareId::JEWELER] = 10;
               c.constructions[SquareId::PRISON] = 10;
               c.constructions[SquareId::TORTURE_TABLE] = 10;
-              c.constructions[SquareId::LABORATORY] = 10;
               c.constructions[SquareId::BEAST_LAIR] = 10;
               c.constructions[SquareId::IMPALED_HEAD] = 5;
               c.constructions[SquareId::BARRICADE] = 20;
@@ -1168,12 +1170,16 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::LIBRARY:
         return new TrainingDummy(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Library"), 
             "library");
-    case SquareId::LABORATORY:
-        return new Laboratory(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "Laboratory"), "laboratory", 0);
     case SquareId::CAULDRON:
         return new Laboratory(ViewObject(ViewId::CAULDRON, ViewLayer::FLOOR, "cauldron"), "cauldron", 0);
+    case SquareId::LABORATORY:
+      return new Laboratory(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "Laboratory"), "laboratory", 0);
+    case SquareId::FORGE:
+        return new Workshop(ViewObject(ViewId::FORGE, ViewLayer::FLOOR, "Forge"), "forge", 1);
     case SquareId::WORKSHOP:
-        return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"), "workshop stand", 1);
+      return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"),"workshop stand", 1);
+    case SquareId::JEWELER:
+      return new Workshop(ViewObject(ViewId::JEWELER, ViewLayer::FLOOR, "Jeweler stand"),"jeweler stand", 1);
     case SquareId::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery",
             s.get<CreatureFactory::SingleCreature>());

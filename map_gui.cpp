@@ -132,7 +132,9 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
     case ViewId::STOCKPILE3:
     case ViewId::LIBRARY:
     case ViewId::WORKSHOP:
+    case ViewId::FORGE:
     case ViewId::LABORATORY:
+    case ViewId::JEWELER:
     case ViewId::TORTURE_TABLE:
     case ViewId::RITUAL_ROOM:
     case ViewId::MOUNTAIN2:

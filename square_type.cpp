@@ -16,4 +16,3 @@ bool isWall(SquareType t) {
     default: return false;
   }
 }
-

@@ -93,18 +93,6 @@ void rooms(View* view, int lastInd = 0) {
   rooms(view, *index);
 }
 
-void workshop(View* view, int lastInd = 0) {
-  vector<View::ListElem> options;
-  vector<PlayerControl::RoomInfo> roomList = PlayerControl::getWorkshopInfo();
-  for (auto& elem : roomList)
-    options.push_back(elem.name);
-  auto index = view->chooseFromList("Workshop", options, lastInd);
-  if (!index)
-    return;
-  room(view, roomList[*index]);
-  workshop(view, *index);
-}
-
 void tribes(View* view, int lastInd = 0) {
 }
 

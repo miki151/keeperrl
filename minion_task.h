@@ -8,8 +8,10 @@ RICH_ENUM(MinionTask,
   GRAVE,
   TRAIN,
   WORKSHOP,
-  STUDY,
+  FORGE,
   LABORATORY,
+  JEWELER,
+  STUDY,
   PRISON,
   TORTURE,
   //SACRIFICE,
@@ -21,6 +23,10 @@ RICH_ENUM(MinionTask,
   CONSUME,
   RITUAL
 );
+
+inline vector<MinionTask> getWorkshopTasks() {
+  return {MinionTask::WORKSHOP, MinionTask::FORGE, MinionTask::LABORATORY, MinionTask::JEWELER};
+}
 
 RICH_ENUM(MinionTrait,
   LEADER,

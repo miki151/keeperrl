@@ -39,6 +39,7 @@ void Technology::init() {
   Technology::set(TechId::BEAST_MUT, new Technology("beast mutation", 250, {}));
   Technology::set(TechId::CRAFTING, new Technology("crafting", 40, {}));
   Technology::set(TechId::IRON_WORKING, new Technology("iron working", 60, {TechId::CRAFTING}));
+  Technology::set(TechId::JEWELLERY, new Technology("jewellery", 200, {TechId::IRON_WORKING}));
   Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", 100, {TechId::IRON_WORKING}, true));
   Technology::set(TechId::TRAPS, new Technology("traps", 60, {TechId::CRAFTING}));
   Technology::set(TechId::ARCHERY, new Technology("archery", 80, {TechId::CRAFTING}, true));

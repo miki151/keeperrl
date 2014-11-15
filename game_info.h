@@ -37,7 +37,6 @@ class GameInfo {
       string groupName;
     };
     vector<Button> buildings;
-    vector<Button> workshop;
     vector<Button> minionButtons;
     vector<Button> libraryButtons;
     string monsterHeader;

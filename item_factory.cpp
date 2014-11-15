@@ -603,7 +603,13 @@ ItemFactory ItemFactory::minerals() {
 }
 
 ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
-  ItemFactory factory({{ItemId::FIRST_AID_KIT, 2}});
+  ItemFactory factory({
+    {ItemId::FIRST_AID_KIT, 2},
+    {ItemId::LEATHER_ARMOR, 4 },
+    {ItemId::LEATHER_HELM, 2 },
+    {ItemId::LEATHER_BOOTS, 2 },
+    {ItemId::LEATHER_GLOVES, 2 },
+  });
   if (contains(techs, Technology::get(TechId::TRAPS))) {
     factory.addItem({ItemId::BOULDER_TRAP_ITEM, 0.5 });
     factory.addItem({{ItemId::TRAP_ITEM, TrapInfo({TrapType::POISON_GAS, EffectId::EMIT_POISON_GAS})}, 0.5 });
@@ -618,25 +624,35 @@ ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
     factory.addItem({ItemId::BOW, 2 });
     factory.addItem({ItemId::ARROW, 2, 10, 30 });
   }
+  return factory;
+}
+
+ItemFactory ItemFactory::forge(const vector<Technology*>& techs) {
+//  CHECK(contains(techs, Technology::get(TechId::IRON_WORKING)));
+  ItemFactory factory({
+    {ItemId::SWORD, 6 },
+    {ItemId::SPECIAL_SWORD, 0.05 },
+    {ItemId::CHAIN_ARMOR, 4 },
+    {ItemId::IRON_HELM, 2 },
+    {ItemId::IRON_BOOTS, 2 },
+  });
   if (contains(techs, Technology::get(TechId::TWO_H_WEAP))) {
     factory.addItem({ItemId::BATTLE_AXE, 2 });
     factory.addItem({ItemId::WAR_HAMMER, 2 });
     factory.addItem({ItemId::SPECIAL_BATTLE_AXE, 0.05 });
     factory.addItem({ItemId::SPECIAL_WAR_HAMMER, 0.05 });
   }
-  if (contains(techs, Technology::get(TechId::IRON_WORKING))) {
-    factory.addItem({ItemId::SWORD, 6 });
-    factory.addItem({ItemId::SPECIAL_SWORD, 0.05 });
-    factory.addItem({ItemId::CHAIN_ARMOR, 4 });
-    factory.addItem({ItemId::IRON_HELM, 2 });
-    factory.addItem({ItemId::IRON_BOOTS, 2 });
-  } else {
-    factory.addItem({ItemId::LEATHER_ARMOR, 4 });
-    factory.addItem({ItemId::LEATHER_HELM, 2 });
-    factory.addItem({ItemId::LEATHER_BOOTS, 2 });
-    factory.addItem({ItemId::LEATHER_GLOVES, 2 });
-  }
   return factory;
+}
+
+ItemFactory ItemFactory::jeweler(const vector<Technology*>& techs) {
+  return ItemFactory({
+    {ItemId::WARNING_AMULET, 3 },
+    {ItemId::HEALING_AMULET, 3 },
+    {ItemId::DEFENSE_AMULET, 3 },
+    {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 3},
+    {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 3},
+  });
 }
 
 ItemFactory ItemFactory::laboratory(const vector<Technology*>& techs) {

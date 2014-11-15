@@ -47,12 +47,14 @@ enum class SquareId {
   IMPALED_HEAD,
   TRAINING_ROOM,
   LIBRARY,
+  WORKSHOP,
+  FORGE,
   LABORATORY,
+  JEWELER,
   RITUAL_ROOM,
   CAULDRON,
   BEAST_LAIR,
   BEAST_CAGE,
-  WORKSHOP,
   HATCHERY,
   PRISON,
   CEMETERY,
@@ -87,7 +89,8 @@ typedef EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureFacto
         SquareId::BUSH),
     ASSIGN(const Tribe*,
         SquareId::TRIBE_DOOR,
-        SquareId::BARRICADE)> SquareType;
+        SquareId::BARRICADE)
+> SquareType;
 
 
 bool isWall(SquareType);

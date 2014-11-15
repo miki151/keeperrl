@@ -275,7 +275,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   vector<AttackLevel> getAttackLevels() const;
   bool hasSuicidalAttack() const;
 
-  const EnumMap<MinionTask, double>& getMinionTasks() const;
+  const MinionTaskMap& getMinionTasks() const;
 
   private:
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);

@@ -89,6 +89,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
 
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level, const Tribe* tribe) {
   const CostInfo altarCost {ResourceId::STONE, 30};
+  const string workshop = "Manufactories";
   vector<BuildInfo> buildInfo {
     BuildInfo(BuildInfo::DIG, "", 'd'),
     BuildInfo({SquareId::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, Nothing(), "", 's', "Storage"),
@@ -98,8 +99,10 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, Nothing(), "", 'm'),
     BuildInfo({SquareId::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
     BuildInfo({SquareId::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
-    BuildInfo({SquareId::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY, "", 'r', "Workshops"),
-    BuildInfo({SquareId::WORKSHOP, {ResourceId::IRON, 15}, "Forge"}, TechId::CRAFTING, "", 'f', "Workshops"),
+    BuildInfo({SquareId::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"}, TechId::CRAFTING, "", 'w', workshop),
+    BuildInfo({SquareId::FORGE, {ResourceId::IRON, 15}, "Forge"}, TechId::IRON_WORKING, "", 'f', workshop),
+    BuildInfo({SquareId::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY,"", 'r', workshop),
+    BuildInfo({SquareId::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"}, TechId::JEWELLERY, "", 'j', workshop),
     BuildInfo({SquareId::RITUAL_ROOM, {ResourceId::MANA, 15}, "Ritual room"}, Nothing(), ""),
     BuildInfo({SquareId::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, Nothing(), ""),
     BuildInfo({SquareId::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
@@ -143,9 +146,6 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
   return buildInfo;
 }
 
-vector<PlayerControl::BuildInfo> PlayerControl::workshopInfo {
-};
-
 vector<PlayerControl::BuildInfo> PlayerControl::libraryInfo {
   BuildInfo(BuildInfo::IMP, "", 'i'),
   BuildInfo({CreatureId::KRAKEN, {}, {ResourceId::MANA, 200}}, TechId::KRAKEN, "",
@@ -160,16 +160,6 @@ vector<PlayerControl::RoomInfo> PlayerControl::getRoomInfo() {
   for (BuildInfo bInfo : getBuildInfo(nullptr, nullptr))
     if (bInfo.buildType == BuildInfo::SQUARE)
       ret.push_back({bInfo.squareInfo.name, bInfo.help, bInfo.techId});
-  return ret;
-}
-
-vector<PlayerControl::RoomInfo> PlayerControl::getWorkshopInfo() {
-  vector<RoomInfo> ret;
-  for (BuildInfo bInfo : workshopInfo)
-    if (bInfo.buildType == BuildInfo::TRAP) {
-      BuildInfo::TrapInfo info = bInfo.trapInfo;
-      ret.push_back({info.name, bInfo.help, bInfo.techId});
-    }
   return ret;
 }
 
@@ -212,7 +202,7 @@ static vector<string> getHints() {
 PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : CollectiveControl(col), model(m),
     hints(getHints()) {
   bool hotkeys[128] = {0};
-  for (BuildInfo info : concat(getBuildInfo(level, nullptr), workshopInfo)) {
+  for (BuildInfo info : getBuildInfo(level, nullptr)) {
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
       hotkeys[int(info.hotkey)] = true;
@@ -312,7 +302,7 @@ static vector<ItemType> marketItems {
 };
 
 enum class PlayerControl::MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE/*, SACRIFICE*/, EXECUTE,
-  LABOR, TRAINING, WORKSHOP, LAB, STUDY, WORSHIP, COPULATE, CONSUME };
+  LABOR, TRAINING, WORKSHOP, FORGE, LAB, JEWELER, STUDY, WORSHIP, COPULATE, CONSUME };
 
 struct TaskOption {
   MinionTask task;
@@ -322,8 +312,10 @@ struct TaskOption {
 
 vector<TaskOption> taskOptions { 
   {MinionTask::TRAIN, PlayerControl::MinionOption::TRAINING, "Training"},
-  {MinionTask::WORKSHOP, PlayerControl::MinionOption::WORKSHOP, "Forge"},
+  {MinionTask::WORKSHOP, PlayerControl::MinionOption::WORKSHOP, "Workshop"},
+  {MinionTask::FORGE, PlayerControl::MinionOption::FORGE, "Forge"},
   {MinionTask::LABORATORY, PlayerControl::MinionOption::LAB, "Lab"},
+  {MinionTask::JEWELER, PlayerControl::MinionOption::JEWELER, "Jeweler"},
   {MinionTask::STUDY, PlayerControl::MinionOption::STUDY, "Study"},
   {MinionTask::WORSHIP, PlayerControl::MinionOption::WORSHIP, "Worship"},
   {MinionTask::COPULATE, PlayerControl::MinionOption::COPULATE, "Copulate"},
@@ -354,7 +346,7 @@ void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, ve
   }
   lOpt.emplace_back("Order task:", View::TITLE);
   for (auto elem : taskOptions)
-    if (c->getMinionTasks()[elem.task] > 0) {
+    if (c->getMinionTasks().getValue(elem.task) > 0) {
       lOpt.push_back(elem.description);
       mOpt.push_back(elem.option);
     }
@@ -815,7 +807,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.infoType = GameInfo::InfoType::BAND;
   GameInfo::BandInfo& info = gameInfo.bandInfo;
   info.buildings = fillButtons(getBuildInfo());
-  info.workshop = fillButtons(workshopInfo);
   info.libraryButtons = fillButtons(libraryInfo);
   info.tasks = getCollective()->getMinionTaskStrings();
   info.minions.clear();
@@ -882,7 +873,7 @@ MapMemory& PlayerControl::getMemory(Level* l) {
 }
 
 ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
-  for (const PlayerControl::BuildInfo& info : concat(workshopInfo, getBuildInfo(nullptr, nullptr)))
+  for (const PlayerControl::BuildInfo& info : getBuildInfo(nullptr, nullptr))
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type) {
       if (!armed)
         return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed " + Item::getTrapName(type) + " trap")

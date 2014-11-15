@@ -910,10 +910,10 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         if (*c.humanoid) {
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
           c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
-          c.minionTasks[MinionTask::WORKSHOP] = 1;
-          c.minionTasks[MinionTask::TRAIN] = 4; 
-          c.minionTasks[MinionTask::WORSHIP] = 0.5; 
-          c.minionTasks[MinionTask::SLEEP] = 1;
+          c.minionTasks.setWorkshopTasks(1);
+          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
+          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
         } else {
           c.chatReactionFriendly = c.chatReactionHostile = "The " + name + " snarls.";
         }
@@ -1003,10 +1003,10 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
           c.attributeGain = 1;
-          c.minionTasks[MinionTask::STUDY] = 1;
-          c.minionTasks[MinionTask::LABORATORY] = 0.0001; 
+          c.minionTasks.setValue(MinionTask::STUDY, 1);
+          c.minionTasks.setValue(MinionTask::LABORATORY, 0.0001); 
           c.skills.setValue(SkillId::SORCERY, 0.2);
-          c.minionTasks[MinionTask::WORSHIP] = 0.0001;);
+          c.minionTasks.setValue(MinionTask::WORSHIP, 0.0001););
     case CreatureId::BANDIT: 
       return CATTR(
           c.viewId = ViewId::BANDIT;
@@ -1053,15 +1053,15 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.courage = 10;
           c.spawnType = SpawnType::DEMON;
           c.barehandedAttack = AttackType::POSSESS;
-          c.minionTasks[MinionTask::RITUAL] = 1;
+          c.minionTasks.setValue(MinionTask::RITUAL, 1);
           c.name = "ghost";);
     case CreatureId::SUCCUBUS:
       return INHERIT(GHOST,
           c.attr[AttrType::STRENGTH] = 5;
           c.viewId = ViewId::SUCCUBUS;
           c.spawnType = SpawnType::DEMON;
-          c.minionTasks[MinionTask::COPULATE] = 1;
-          c.minionTasks[MinionTask::RITUAL] = 1;
+          c.minionTasks.setValue(MinionTask::COPULATE, 1);
+          c.minionTasks.setValue(MinionTask::RITUAL, 1);
           c.gender = Gender::female;
           c.humanoid = true;
           c.bodyParts[BodyPart::HEAD] = 1;
@@ -1075,8 +1075,8 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(GHOST,
           c.viewId = ViewId::DOPPLEGANGER;
           c.permanentEffects[LastingEffect::FLYING] = 0;
-          c.minionTasks[MinionTask::CONSUME] = 0.4;
-          c.minionTasks[MinionTask::RITUAL] = 1;
+          c.minionTasks.setValue(MinionTask::CONSUME, 0.4);
+          c.minionTasks.setValue(MinionTask::RITUAL, 1);
           c.spawnType = SpawnType::DEMON;
           c.skills.insert(SkillId::CONSUMPTION);
           c.name = "doppleganger";
@@ -1254,7 +1254,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.brain = false;
           c.notLiving = true;
           c.weight = 100;
-          c.minionTasks[MinionTask::TRAIN] = 1;
+          c.minionTasks.setValue(MinionTask::TRAIN, 1);
           c.name = "clay golem";);
     case CreatureId::STONE_GOLEM: 
       return INHERIT(CLAY_GOLEM,
@@ -1312,9 +1312,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 100;
           c.undead = true;
           c.spawnType = SpawnType::UNDEAD;
-          c.minionTasks[MinionTask::TRAIN] = 4; 
-          c.minionTasks[MinionTask::WORSHIP] = 0.5; 
-          c.minionTasks[MinionTask::GRAVE] = 1;
+          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
+          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
+          c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.name = "zombie";);
     case CreatureId::SKELETON: 
       return CATTR(
@@ -1345,10 +1345,10 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionHostile = "\"Die!\"";
           c.spawnType = SpawnType::UNDEAD;
           c.skills.insert(SkillId::NIGHT_VISION);
-          c.minionTasks[MinionTask::TRAIN] = 4; 
-          c.minionTasks[MinionTask::WORSHIP] = 0.5; 
-          c.minionTasks[MinionTask::STUDY] = 1;
-          c.minionTasks[MinionTask::GRAVE] = 1;
+          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
+          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
+          c.minionTasks.setValue(MinionTask::STUDY, 1);
+          c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.skills.setValue(SkillId::SORCERY, 0.1);
           c.name = "vampire";);
     case CreatureId::VAMPIRE_LORD: 
@@ -1359,7 +1359,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::DEXTERITY] += 1;
           c.barehandedDamage += 4;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.minionTasks[MinionTask::STUDY] = 1;
+          c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.skills.setValue(SkillId::SORCERY, 0.5);
           c.name = "vampire lord";);
       /*   case CreatureId::VAMPIRE_BAT: 
@@ -1394,9 +1394,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.brain = false;
           c.undead = true;
           c.spawnType = SpawnType::UNDEAD;
-          c.minionTasks[MinionTask::TRAIN] = 4; 
-          c.minionTasks[MinionTask::WORSHIP] = 0.5; 
-          c.minionTasks[MinionTask::GRAVE] = 1;
+          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
+          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
+          c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.name = "mummy";);
     case CreatureId::MUMMY_LORD: 
       return INHERIT(MUMMY,
@@ -1420,11 +1420,11 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "curses all elves";
           c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks[MinionTask::WORKSHOP] = 1;
-          c.minionTasks[MinionTask::TRAIN] = 4; 
-          c.minionTasks[MinionTask::WORSHIP] = 0.5; 
-          c.minionTasks[MinionTask::LABORATORY] = 0.5; 
-          c.minionTasks[MinionTask::SLEEP] = 1;
+          c.minionTasks.setWorkshopTasks(1);
+          c.minionTasks.setValue(MinionTask::TRAIN, 4);
+          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
+          c.minionTasks.setValue(MinionTask::LABORATORY, 0.5); 
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "orc";);
     case CreatureId::ORC_SHAMAN:
@@ -1433,11 +1433,11 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::STRENGTH] -= 3;
           c.attr[AttrType::DEXTERITY] -= 3;
           c.minionTasks.clear();
-          c.minionTasks[MinionTask::WORSHIP] = 0.5; 
-          c.minionTasks[MinionTask::LABORATORY] = 4; 
-          c.minionTasks[MinionTask::STUDY] = 4;
-          c.minionTasks[MinionTask::SLEEP] = 1;
-          c.minionTasks[MinionTask::WORKSHOP] = 0;
+          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
+          c.minionTasks.setValue(MinionTask::LABORATORY, 4); 
+          c.minionTasks.setValue(MinionTask::STUDY, 4);
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.minionTasks.setWorkshopTasks(0);
           c.skills.setValue(SkillId::SORCERY, 0.7);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.0);
           c.name = "orc shaman";);
@@ -1456,7 +1456,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::DEXTERITY] += 2;
           c.weight = 70;
           c.gender = Gender::female;
-          c.minionTasks[MinionTask::WORKSHOP] = 0;
+          c.minionTasks.setWorkshopTasks(0);
           c.bodyParts[BodyPart::WING] = 2;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.skills.setValue(SkillId::ARCHERY, 1);
@@ -1487,11 +1487,11 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "talks about crafting";
           c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks[MinionTask::WORKSHOP] = 4;
-          c.minionTasks[MinionTask::TRAIN] = 1; 
-          c.minionTasks[MinionTask::WORSHIP] = 0.5; 
-          c.minionTasks[MinionTask::LABORATORY] = 0.5; 
-          c.minionTasks[MinionTask::SLEEP] = 1;
+          c.minionTasks.setWorkshopTasks(4);
+          c.minionTasks.setValue(MinionTask::TRAIN, 1); 
+          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
+          c.minionTasks.setValue(MinionTask::LABORATORY, 0.5); 
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.skills.insert(SkillId::DISARM_TRAPS);
           c.name = "goblin";);
     case CreatureId::IMP: 
@@ -1519,10 +1519,10 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.size = CreatureSize::LARGE;
           c.weight = 60;
           c.chatReactionFriendly = "talks about escape plans";
-          c.minionTasks[MinionTask::PRISON] = 1;
-          c.minionTasks[MinionTask::TORTURE] = 0.0001; 
- //         c.minionTasks[MinionTask::SACRIFICE] = 0.0001; 
-          c.minionTasks[MinionTask::EXECUTE] = 0.0001;
+          c.minionTasks.setValue(MinionTask::PRISON, 1);
+          c.minionTasks.setValue(MinionTask::TORTURE, 0.0001); 
+ //         c.minionTasks.setValue(MinionTask::SACRIFICE, 0.0001); 
+          c.minionTasks.setValue(MinionTask::EXECUTE, 0.0001);
           c.name = "prisoner";);
     case CreatureId::OGRE: 
       return CATTR(
@@ -1536,10 +1536,10 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 140;
           c.firstName = NameGenerator::get(NameGeneratorId::DEMON)->getNext();
           c.spawnType = SpawnType::HUMANOID;
-          c.minionTasks[MinionTask::WORKSHOP] = 1;
-          c.minionTasks[MinionTask::TRAIN] = 4; 
-          c.minionTasks[MinionTask::WORSHIP] = 0.5; 
-          c.minionTasks[MinionTask::SLEEP] = 1;
+          c.minionTasks.setWorkshopTasks(1);
+          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
+          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "ogre";);
     case CreatureId::CHICKEN: 
@@ -1786,8 +1786,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.animal = true;
           c.spawnType = SpawnType::BEAST;
-          c.minionTasks[MinionTask::EXPLORE] = 1;
-          c.minionTasks[MinionTask::LAIR] = 1;
+          c.minionTasks.setValue(MinionTask::EXPLORE, 1);
+          c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.name = "cave bear";);
     case CreatureId::RAT: 
       return CATTR(
@@ -1869,8 +1869,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dontChase = true;
           c.spawnType = SpawnType::BEAST;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.minionTasks[MinionTask::EXPLORE] = 1;
-          c.minionTasks[MinionTask::LAIR] = 1;
+          c.minionTasks.setValue(MinionTask::EXPLORE, 1);
+          c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.name = "raven";);
     case CreatureId::VULTURE: 
       return INHERIT(RAVEN,
@@ -1892,8 +1892,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 35;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.spawnType = SpawnType::BEAST;
-          c.minionTasks[MinionTask::EXPLORE] = 1;
-          c.minionTasks[MinionTask::LAIR] = 1;
+          c.minionTasks.setValue(MinionTask::EXPLORE, 1);
+          c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.name = "wolf";);    
     case CreatureId::WEREWOLF:
       return INHERIT(WOLF,
@@ -1902,9 +1902,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.weight = 80;
           c.size = CreatureSize::LARGE;
-          c.minionTasks[MinionTask::EXPLORE] = 1;
-          c.minionTasks[MinionTask::TRAIN] = 1;
-          c.minionTasks[MinionTask::LAIR] = 1;
+          c.minionTasks.setValue(MinionTask::EXPLORE, 1);
+          c.minionTasks.setValue(MinionTask::TRAIN, 1);
+          c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.name = "werewolf";);
     case CreatureId::DOG: 
       return INHERIT(WOLF,

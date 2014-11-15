@@ -25,6 +25,7 @@
 #include "effect.h"
 #include "minion_task.h"
 #include "item_attributes.h"
+#include "minion_task_map.h"
 
 // WTF is this defined
 #undef HUGE
@@ -132,7 +133,7 @@ class CreatureAttributes {
   Skillset SERIAL(skills);
   vector<SpellInfo> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
-  EnumMap<MinionTask, double> SERIAL(minionTasks);
+  MinionTaskMap SERIAL(minionTasks);
 };
 
 #endif

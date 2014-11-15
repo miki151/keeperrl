@@ -318,7 +318,7 @@ class Collective : public Task::Callback {
 
   bool isItemNeeded(const Item*) const;
   void addProducesMessage(const Creature*, const vector<PItem>&);
-
+  
   SERIAL_CHECKER;
   REGISTER_HANDLER(CombatEvent, const Creature*);
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);

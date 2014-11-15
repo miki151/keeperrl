@@ -132,9 +132,11 @@ const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resource
 
 map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   map<MinionTask, MinionTaskInfo> ret {
-    {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", Nothing(), 1}},
     {MinionTask::TRAIN, {{SquareId::TRAINING_ROOM}, "training", Collective::Warning::TRAINING, 1}},
-    {MinionTask::WORKSHOP, {{SquareId::WORKSHOP}, "crafting", Collective::Warning::WORKSHOP, 1}},
+    {MinionTask::WORKSHOP, {{SquareId::WORKSHOP}, "workshop", Collective::Warning::WORKSHOP, 1}},
+    {MinionTask::FORGE, {{SquareId::FORGE}, "forge", Nothing(), 1}},
+    {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", Nothing(), 1}},
+    {MinionTask::JEWELER, {{SquareId::JEWELER}, "jewellery", Nothing(), 1}},
     {MinionTask::SLEEP, {{SquareId::BED}, "sleeping", Collective::Warning::BEDS}},
     {MinionTask::GRAVE, {{SquareId::GRAVE}, "sleeping", Collective::Warning::GRAVES}},
     {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
@@ -222,6 +224,8 @@ const CollectiveConfig& Collective::getConfig() const {
             c.frequency = 1;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::WORKSHOP}, 1.0, 12.0},
+              {{AttractionId::SQUARE, SquareId::JEWELER}, 1.0, 9.0},
+              {{AttractionId::SQUARE, SquareId::FORGE}, 1.0, 9.0},
             );
             c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
             c.salary = 10;),
@@ -557,29 +561,22 @@ void Collective::setMinionTask(Creature* c, MinionTask task) {
   currentTasks[c->getUniqueId()] = {task, c->getTime() + getTaskDuration(c, task)};
 }
 
-static double getSum(EnumMap<MinionTask, double> m) {
-  double ret = 0;
-  for (MinionTask t : ENUM_ALL(MinionTask))
-    ret += m[t];
-  return ret;
-}
-
 MinionTask Collective::chooseRandomFreeTask(const Creature* c) {
   vector<MinionTask> freeTasks;
   for (MinionTask t : ENUM_ALL(MinionTask))
-    if (c->getMinionTasks()[t] > 0 && getTaskInfo().at(t).cost == 0)
+    if (c->getMinionTasks().getValue(t) > 0 && getTaskInfo().at(t).cost == 0)
       freeTasks.push_back(t);
   return chooseRandom(freeTasks);
 }
 
 PTask Collective::getStandardTask(Creature* c) {
-  if (getSum(c->getMinionTasks()) == 0)
+  if (!c->getMinionTasks().hasAnyTask())
     return nullptr;
   if (minionPayment.count(c) && minionPayment.at(c).debt() > 0) {
     setMinionTask(c, chooseRandomFreeTask(c));
   } else
   if (!currentTasks.count(c->getUniqueId()) || currentTasks.at(c->getUniqueId()).finishTime() < c->getTime())
-    setMinionTask(c, chooseRandom(c->getMinionTasks()));
+    setMinionTask(c, c->getMinionTasks().getRandom());
   MinionTaskInfo info = getTaskInfo().at(currentTasks[c->getUniqueId()].task());
   PTask ret;
   switch (info.type) {
@@ -641,7 +638,7 @@ vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) {
 }
 
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
-  CHECK(consumer->getMinionTasks()[MinionTask::CONSUME] > 0);
+  CHECK(consumer->getMinionTasks().getValue(MinionTask::CONSUME) > 0);
   setMinionTask(who, MinionTask::CONSUME);
   MinionTaskInfo info = getTaskInfo().at(currentTasks[consumer->getUniqueId()].task());
   minionTaskStrings[consumer->getUniqueId()] = info.description;
@@ -668,7 +665,7 @@ PTask Collective::getEquipmentTask(Creature* c) {
 PTask Collective::getHealingTask(Creature* c) {
   if (c->getHealth() < 1 && c->canSleep() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR})
-      if (c->getMinionTasks()[t] > 0) {
+      if (c->getMinionTasks().getValue(t) > 0) {
         vector<Vec2> positions = getAllSquares(getTaskInfo().at(t).squares);
         if (!positions.empty())
           return Task::applySquare(nullptr, positions);
@@ -1033,9 +1030,11 @@ void Collective::considerBirths() {
 
 static vector<SquareType> roomsNeedingLight {
   SquareId::WORKSHOP,
+  SquareId::FORGE,
+  SquareId::LABORATORY,
+  SquareId::JEWELER,
   SquareId::TRAINING_ROOM,
   SquareId::LIBRARY,
-  SquareId::LABORATORY,
 };
 
 void Collective::tick(double time) {
@@ -1353,8 +1352,10 @@ const static unordered_set<SquareType> efficiencySquares {
   SquareId::TRAINING_ROOM,
   SquareId::TORTURE_TABLE,
   SquareId::WORKSHOP,
-  SquareId::LIBRARY,
+  SquareId::FORGE,
   SquareId::LABORATORY,
+  SquareId::JEWELER,
+  SquareId::LIBRARY,
 };
 
 bool Collective::hasEfficiency(Vec2 pos) const {
@@ -1981,6 +1982,26 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
     control->addMessage(c->getAName() + " produces " + items[0]->getAName());
 }
 
+static vector<SquareType> workshopSquares {
+  SquareId::WORKSHOP,
+  SquareId::FORGE,
+  SquareId::JEWELER,
+  SquareId::LABORATORY
+};
+
+static ItemFactory getWorkshopFactory(Collective* c, Vec2 pos) {
+  for (auto elem : workshopSquares)
+    if (c->getSquares(elem).count(pos))
+      switch (elem.getId()) {
+        case SquareId::WORKSHOP: return ItemFactory::workshop(c->getTechnologies());
+        case SquareId::FORGE: return ItemFactory::forge(c->getTechnologies());
+        case SquareId::LABORATORY: return ItemFactory::laboratory(c->getTechnologies());
+        case SquareId::JEWELER: return ItemFactory::jeweler(c->getTechnologies());
+        default: FAIL << "Bad workshop position " << pos;
+      }
+  return ItemFactory::workshop(c->getTechnologies());
+}
+
 void Collective::onAppliedSquare(Vec2 pos) {
   Creature* c = NOTNULL(getLevel()->getSquare(pos)->getCreature());
   MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
@@ -1992,18 +2013,11 @@ void Collective::onAppliedSquare(Vec2 pos) {
   }
   if (getSquares(SquareId::TRAINING_ROOM).count(pos))
     c->exerciseAttr(chooseRandom<AttrType>(), getEfficiency(pos));
-  if (getSquares(SquareId::LABORATORY).count(pos))
-    if (Random.rollD(30.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
-      vector<PItem> items = ItemFactory::laboratory(technologies).random();
-      addProducesMessage(c, items);
-      getLevel()->getSquare(pos)->dropItems(std::move(items));
-      Statistics::add(StatId::POTION_PRODUCED);
-    }
-  if (getSquares(SquareId::WORKSHOP).count(pos))
+  if (contains(getAllSquares(workshopSquares), pos))
     if (Random.rollD(40.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
       vector<PItem> items;
       for (int i : Range(20)) {
-        items = ItemFactory::workshop(technologies).random();
+        items = getWorkshopFactory(this, pos).random();
         if (isItemNeeded(items[0].get()))
           break;
       }
@@ -2011,6 +2025,8 @@ void Collective::onAppliedSquare(Vec2 pos) {
         Statistics::add(StatId::WEAPON_PRODUCED);
       if (items[0]->getClass() == ItemClass::ARMOR)
         Statistics::add(StatId::ARMOR_PRODUCED);
+      if (items[0]->getClass() == ItemClass::POTION)
+        Statistics::add(StatId::POTION_PRODUCED);
       addProducesMessage(c, items);
       getLevel()->getSquare(pos)->dropItems(std::move(items));
     }
