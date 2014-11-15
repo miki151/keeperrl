@@ -8,7 +8,7 @@ CC = g++
 LD = g++
 endif
 
-CFLAGS = -Werror -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wfatal-errors -Wno-shift-count-overflow
+CFLAGS = -Werror -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare
 LDFLAGS = -Wl,-rpath=. -static-libstdc++
 
 CMD:=$(shell rm -f zagadka)
