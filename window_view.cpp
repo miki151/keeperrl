@@ -918,7 +918,7 @@ static int getNumFitting(Renderer& renderer, const vector<PlayerMessage>& messag
   int currentLine = 0;
   for (int i = messages.size() - 1; i >= 0; --i) {
     int length = renderer.getTextLength(messages[i].getText());
-    CHECK(length <= maxLength) << "Message length exceeded: " << messages[i].getText();
+    length = min(length, maxLength);
     if (currentWidth > 0)
       ++length;
     if (currentWidth + length > maxLength) {
@@ -939,6 +939,7 @@ static vector<vector<PlayerMessage>> fitMessages(Renderer& renderer, const vecto
   int numFitting = getNumFitting(renderer, messages, maxLength, numLines);
   for (int i : Range(messages.size() - numFitting, messages.size())) {
     int length = renderer.getTextLength(messages[i].getText());
+    length = min(length, maxLength);
     if (currentWidth > 0)
       ++length;
     if (currentWidth + length > maxLength) {
@@ -957,6 +958,11 @@ int WindowView::getMaxMessageLength() const {
   return getMapGuiBounds().getW() - 50;
 }
 
+static void cutToFit(Renderer& renderer, string& s, int maxLength) {
+  while (!s.empty() && renderer.getTextLength(s) > maxLength)
+    s.pop_back();
+}
+
 void WindowView::renderMessages(const vector<PlayerMessage>& messageBuffer) {
   vector<vector<PlayerMessage>> messages = fitMessages(renderer, messageBuffer, getMaxMessageLength(),
       getNumMessageLines());
@@ -968,6 +974,7 @@ void WindowView::renderMessages(const vector<PlayerMessage>& messageBuffer) {
     int carret = 0;
     for (auto& message : messages[i]) {
       string text = (carret > 0 ? " " : "") + message.getText();
+      cutToFit(renderer, text, getMaxMessageLength());
       renderer.drawText(getMessageColor(message),
           10 + carret, 5 + lineHeight * i, text);
       carret += renderer.getTextLength(text);

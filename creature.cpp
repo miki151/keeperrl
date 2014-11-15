@@ -1375,6 +1375,8 @@ void Creature::updateViewObject() {
   modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
   if (isAffected(LastingEffect::SLEEP))
     modViewObject().setModifier(ViewObject::Modifier::SLEEPING);
+  else
+    modViewObject().removeModifier(ViewObject::Modifier::SLEEPING);
   modViewObject().setAttribute(ViewObject::Attribute::BLEEDING, 1 - health);
 }
 

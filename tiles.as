@@ -526,7 +526,7 @@ void genSymbols() {
   addSymbol(DORM, symbol(".", BROWN));
   addSymbol(BED, symbol("=", WHITE));
   addSymbol(DUNGEON_HEART, symbol("♥", WHITE, true));
-  addSymbol(TORCH, symbol("I", ORANGE));
+  addSymbol(TORCH, symbol("*", YELLOW));
   addSymbol(ALTAR, symbol("Ω", WHITE, true));
   addSymbol(CREATURE_ALTAR, symbol("Ω", YELLOW, true));
   addSymbol(TORTURE_TABLE, symbol("=", GRAY));

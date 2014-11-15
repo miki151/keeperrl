@@ -73,7 +73,7 @@ bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, boo
     if (c->getEquipment().getItems([&](const Item* it) { return getEquipmentType(it) == *type;}).size() >= limit)
       return false;
     return ((c->canEquip(it) || (replacement && c->canEquipIfEmptySlot(it))) && (isItemAppropriate(c, it) || noLimit))
-      || (type == ARCHERY && c->hasSkill(Skill::get(SkillId::ARCHERY)) && (c->canEquip(it) ||
+      || (type == ARCHERY && (c->canEquip(it) ||
         (it->getClass() == ItemClass::AMMO && !c->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())))
       || (type == HEALING && !c->isNotLiving()) 
       || type == COMBAT_ITEM;

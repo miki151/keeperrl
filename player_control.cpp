@@ -921,7 +921,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = getLevel()->getSquare(pos)->getCreature())
-    if (getCurrentTeam() && getCollective()->isInTeam(*getCurrentTeam(), c))
+    if (getCurrentTeam() && getCollective()->isInTeam(*getCurrentTeam(), c)
+        && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (getCollective()->isMarkedToDig(pos))
     index.setHighlight(HighlightType::BUILD);
@@ -1422,7 +1423,7 @@ bool PlayerControl::canSee(Vec2 position) const {
       && !getCollective()->getSquares(SquareId::FLOOR).count(position))
     return true;*/
   for (Creature* c : getCollective()->getCreatures())
-    if (c->canSee(position))
+    if (c->canSee(position) || c->getPosition() == position)
       return true;
   for (Vec2 pos : getCollective()->getSquares(SquareId::EYEBALL))
     if (getLevel()->canSee(pos, position, Vision::get(VisionId::NORMAL)))
