@@ -79,6 +79,7 @@ class Player : public Controller {
   void tryToPerform(CreatureAction);
   void attackAction(Creature* other);
   void pickUpAction(bool extended);
+  void pickUpItemAction(int item);
   void itemsMessage();
   void dropAction(bool extended);
   void equipmentAction();

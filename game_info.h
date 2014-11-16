@@ -95,6 +95,12 @@ class GameInfo {
       bool bad;
     };
     vector<Effect> effects;
+    struct ItemInfo {
+      string name;
+      ViewObject viewObject;
+    };
+    vector<ItemInfo> lyingItems;
+    string squareName;
   } playerInfo;
 
   class VillageInfo {

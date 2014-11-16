@@ -759,6 +759,7 @@ Color GuiElem::foreground1;
 Color GuiElem::text;
 Color GuiElem::titleText;
 Color GuiElem::inactiveText;
+Color GuiElem::translucentBgColor;
 
 Texture& get(TexId id) {
   static map<TexId, Texture> m;
@@ -785,6 +786,7 @@ Texture& get(TexId id) {
     m[BACKGROUND_PATTERN].loadFromFile("tekstuur_1.png");
     m[BACKGROUND_PATTERN].setRepeated(true);
     GuiElem::foreground1 = transparency(Color(0x20, 0x5c, 0x4a), 150);
+    GuiElem::translucentBgColor = transparency(Color(0, 0, 0), 150);
     GuiElem::text = colors[ColorId::WHITE];
     GuiElem::titleText = colors[ColorId::YELLOW];
     GuiElem::inactiveText = colors[ColorId::LIGHT_GRAY];
@@ -973,6 +975,10 @@ PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {
           sprite(get(HORI_CORNER2), Alignment::BOTTOM_RIGHT, false, false, Vec2(93, 0)))),
       rightBarWidth,
       RIGHT);
+}
+
+PGuiElem GuiElem::translucentBackground(PGuiElem content) {
+  return stack(GuiElem::rectangle(translucentBgColor), std::move(content));
 }
 
 PGuiElem GuiElem::icon(IconId id) {

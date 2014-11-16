@@ -177,6 +177,12 @@ void Player::pickUpAction(bool extended) {
   tryToPerform(creature->pickUp(pickUpItems));
 }
 
+void Player::pickUpItemAction(int numItem) {
+  auto items = Item::stackItems(creature->getPickUpOptions());
+  CHECK(numItem < items.size());
+  tryToPerform(creature->pickUp(items[numItem].second));
+}
+
 void Player::tryToPerform(CreatureAction action) {
   if (action)
     action.perform();
@@ -185,7 +191,7 @@ void Player::tryToPerform(CreatureAction action) {
 }
 
 void Player::itemsMessage() {
-  vector<View::ListElem> names;
+/*  vector<View::ListElem> names;
   vector<vector<Item*> > groups;
   getItemNames(creature->getPickUpOptions(), names, groups);
   if (names.size() > 1)
@@ -193,7 +199,7 @@ void Player::itemsMessage() {
   else if (names.size() == 1)
     privateMessage((creature->isBlind() ? string("You feel here ") : ("You see here ")) + 
         (groups[0].size() == 1 ? "a " + groups[0][0]->getNameAndModifiers(false, creature->isBlind()) :
-            names[0].getText()));
+            names[0].getText()));*/
 }
 
 ItemClass typeDisplayOrder[] {
@@ -661,7 +667,7 @@ void Player::makeMove() {
   vector<Vec2> direction;
   bool travel = false;
   if (action.getId() != UserInputId::IDLE) {
-    if (action.getId() != UserInputId::REFRESH)
+    if (action.getId() != UserInputId::REFRESH && action.getId() != UserInputId::BUTTON_RELEASE)
       retireMessages();
     updateView = true;
   }
@@ -694,6 +700,7 @@ void Player::makeMove() {
     case UserInputId::SHOW_INVENTORY: displayInventory(); break;
     case UserInputId::PICK_UP: pickUpAction(false); break;
     case UserInputId::EXT_PICK_UP: pickUpAction(true); break;
+    case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
     case UserInputId::DROP: dropAction(false); break;
     case UserInputId::EXT_DROP: dropAction(true); break;
     case UserInputId::WAIT: creature->wait().perform(); break;

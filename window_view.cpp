@@ -356,6 +356,33 @@ PGuiElem WindowView::drawBottomPlayerInfo(GameInfo& gameInfo) {
 
 const int legendLineHeight = 30;
 
+GuiElemAndSize WindowView::drawPickupOptions(GameInfo::PlayerInfo& info) {
+  if (info.lyingItems.empty())
+    return {nullptr, Vec2()};
+  vector<PGuiElem> ret;
+  const int maxElems = 6;
+  const string title = "Click to pick up:";
+  int numElems = min<int>(maxElems, info.lyingItems.size());
+  Vec2 size = Vec2(renderer.getTextLength(title), (1 + numElems) * legendLineHeight);
+  if (!info.lyingItems.empty()) {
+    ret.push_back(GuiElem::label(title));
+    for (int i : All(info.lyingItems)) {
+      if (i == maxElems - 1) {
+        ret.push_back(GuiElem::stack(
+            GuiElem::label("[more]", colors[ColorId::LIGHT_BLUE]),
+            GuiElem::button(getButtonCallback(UserInputId::PICK_UP))));
+        break;
+      } else
+        size.x = max(size.x, renderer.getTextLength(info.lyingItems[i].name));
+        ret.push_back(GuiElem::stack(GuiElem::horizontalList(makeVec<PGuiElem>(
+                GuiElem::viewObject(info.lyingItems[i].viewObject, true),
+                GuiElem::label(info.lyingItems[i].name)), 30, 0),
+            GuiElem::button(getButtonCallback({UserInputId::PICK_UP_ITEM, i}))));
+    }
+  }
+  return {GuiElem::verticalList(std::move(ret), legendLineHeight, 0), size};
+}
+
 PGuiElem WindowView::drawPlayerHelp(GameInfo::PlayerInfo& info) {
   vector<PGuiElem> lines;
   vector<KeyInfo> bottomKeys =  {
@@ -836,6 +863,7 @@ const int minionWindowHeight = 600;
 
 void WindowView::rebuildGui() {
   PGuiElem bottom, right, overMap;
+  GuiElemAndSize overMapLeft;
   int rightBarWidth = 0;
   int bottomBarHeight = 0;
   switch (gameInfo.infoType) {
@@ -844,6 +872,7 @@ void WindowView::rebuildGui() {
         bottom = drawBottomPlayerInfo(gameInfo);
         rightBarWidth = rightBarWidthPlayer;
         bottomBarHeight = bottomBarHeightPlayer;
+        overMapLeft = drawPickupOptions(gameInfo.playerInfo);
         break;
     case GameInfo::InfoType::BAND:
         right = drawRightBandInfo(gameInfo.bandInfo, gameInfo.villageInfo);
@@ -872,6 +901,19 @@ void WindowView::rebuildGui() {
     tempGuiElems.back()->setBounds(Rectangle(
           renderer.getWidth() - rightBarWidth - minionWindowWidth - minionWindowRightMargin, 100,
           renderer.getWidth() - rightBarWidth - minionWindowRightMargin, 100 + minionWindowHeight));
+  }
+  if (overMapLeft.elem) {
+    int bottomOffset = 15;
+    int margin = 10;
+    int rightMargin = 70;
+    int width = margin + rightMargin + overMapLeft.size.x;
+    int leftOffset = 10;
+    int height = overMapLeft.size.y + 2 * margin;
+    tempGuiElems.push_back(GuiElem::translucentBackground(
+        GuiElem::margins(std::move(overMapLeft.elem), margin, margin, rightMargin, margin)));
+    tempGuiElems.back()->setBounds(Rectangle(
+        leftOffset, renderer.getHeight() - bottomBarHeight - height - bottomOffset,
+        leftOffset + width, renderer.getHeight() - bottomBarHeight - bottomOffset));
   }
 }
 
@@ -1499,14 +1541,22 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
   if (gameReady)
     mapGui->resetHint();
   switch (event.type) {
-    case Event::MouseButtonReleased :
-      for (GuiElem* elem : guiElems)
+    case Event::MouseButtonReleased : {
+      Vec2 mousePos(event.mouseButton.x, event.mouseButton.y);
+      for (GuiElem* elem : guiElems) {
         elem->onMouseRelease();
-      break;
-    case Event::MouseMoved:
-      for (GuiElem* elem : guiElems)
-        elem->onMouseMove(Vec2(event.mouseMove.x, event.mouseMove.y));
-      break;
+        if (mousePos.inRectangle(elem->getBounds()))
+          break;
+      }
+    break; }
+    case Event::MouseMoved: {
+      Vec2 mousePos(event.mouseMove.x, event.mouseMove.y);
+      for (GuiElem* elem : guiElems) {
+        elem->onMouseMove(mousePos);
+        if (mousePos.inRectangle(elem->getBounds()))
+          break;
+      }
+      break; }
     case Event::MouseButtonPressed: {
       Vec2 clickPos(event.mouseButton.x, event.mouseButton.y);
       for (GuiElem* elem : guiElems) {

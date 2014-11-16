@@ -213,9 +213,9 @@ void initializeSingletons() {
 }
 
 void gameLoop(View* view, int forceMode, bool genExit, atomic<bool>& finished) {
-  Jukebox jukebox("music/peaceful1.ogg");
+  Jukebox jukebox("music/peaceful3.ogg");
+  jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful1.ogg");
   jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful2.ogg");
-  jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful3.ogg");
   jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful4.ogg");
   jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful5.ogg");
   jukebox.addTrack(Jukebox::BATTLE, "music/battle1.ogg");
@@ -339,6 +339,7 @@ void gameLoop(View* view, int forceMode, bool genExit, atomic<bool>& finished) {
       saveGame(std::move(model), game, game + getSaveSuffix(ex.type));
       ready = true;
     }
+    jukebox.updateCurrent(Jukebox::PEACEFUL);
   }
   clearSingletons();
   finished = true;

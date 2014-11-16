@@ -418,14 +418,12 @@ void MapGui::setCenter(Vec2 v) {
   setCenter(v.x, v.y);
 }
 
-const int bgTransparency = 180;
-
 void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
   int height = 30;
   int width = renderer.getTextLength(text) + 55;
   Vec2 pos(getBounds().getKX() - width, getBounds().getKY() - height);
-  renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, transparency(colors[ColorId::BLACK],
-        bgTransparency));
+  renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height,
+      GuiElem::translucentBgColor);
   renderer.drawText(color, pos.x + 10, pos.y + 1, text);
 }
 
@@ -559,8 +557,7 @@ void MapGui::setOptions(const string& title, vector<PGuiElem> options) {
     heights.push_back(30);
   }
   optionsHeight = 30 * options.size() + 40 + 2 * margin;
-  optionsGui = GuiElem::stack(
-      GuiElem::rectangle(transparency(colors[ColorId::BLACK], bgTransparency)),
+  optionsGui = GuiElem::translucentBackground(
       GuiElem::margins(GuiElem::verticalList(std::move(lines), heights, 0), margin, margin, margin, margin));
 }
 

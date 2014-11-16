@@ -87,6 +87,7 @@ class WindowView: public View {
   PGuiElem drawPlayerStats(GameInfo::PlayerInfo&);
   PGuiElem drawPlayerHelp(GameInfo::PlayerInfo&);
   PGuiElem drawBottomBandInfo(GameInfo&);
+  GuiElemAndSize drawPickupOptions(GameInfo::PlayerInfo&);
   PGuiElem drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo&);
   PGuiElem drawBuildings(GameInfo::BandInfo& info);
   PGuiElem drawTechnology(GameInfo::BandInfo& info);

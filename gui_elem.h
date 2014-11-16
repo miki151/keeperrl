@@ -84,6 +84,8 @@ class GuiElem {
   static PGuiElem border2(PGuiElem content);
   static PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
   static PGuiElem invisible(PGuiElem content);
+  static PGuiElem translucentBackground(PGuiElem content);
+  static Color translucentBgColor;
   static void changeBackground(int r, int g, int b);
   static void setBackground(int r, int g, int b);
   static Color background1;
@@ -104,6 +106,11 @@ class GuiElem {
   };
 
   static PGuiElem icon(IconId);
+};
+
+struct GuiElemAndSize {
+  PGuiElem elem;
+  Vec2 size;
 };
 
 #endif

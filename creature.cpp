@@ -2426,6 +2426,14 @@ void Creature::refreshGameInfo(GameInfo& gameInfo) const {
   info.effects.clear();
   for (string s : getAdjectives())
     info.effects.push_back({s, true});
+  info.squareName = getConstSquare()->getName();
+  info.lyingItems.clear();
+  for (auto stack : Item::stackItems(getPickUpOptions()))
+    if (stack.second.size() == 1)
+      info.lyingItems.push_back({stack.first, stack.second[0]->getViewObject()});
+    else info.lyingItems.push_back({toString(stack.second.size()) + " "
+        + stack.second[0]->getName(true), stack.second[0]->getViewObject()});
+
 }
 
 const MinionTaskMap& Creature::getMinionTasks() const {
