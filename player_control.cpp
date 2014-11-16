@@ -99,10 +99,14 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, Nothing(), "", 'm'),
     BuildInfo({SquareId::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
     BuildInfo({SquareId::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
-    BuildInfo({SquareId::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"}, TechId::CRAFTING, "", 'w', workshop),
-    BuildInfo({SquareId::FORGE, {ResourceId::IRON, 15}, "Forge"}, TechId::IRON_WORKING, "", 'f', workshop),
-    BuildInfo({SquareId::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY,"", 'r', workshop),
-    BuildInfo({SquareId::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"}, TechId::JEWELLERY, "", 'j', workshop),
+    BuildInfo({SquareId::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"}, TechId::CRAFTING,
+        "Produces leather equipment, traps, first-aid kits and other.", 'w', workshop),
+    BuildInfo({SquareId::FORGE, {ResourceId::IRON, 15}, "Forge"}, TechId::IRON_WORKING,
+        "Produces iron weapons and armor.", 'f', workshop),
+    BuildInfo({SquareId::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"}, TechId::ALCHEMY,
+        "Produces magical potions.", 'r', workshop),
+    BuildInfo({SquareId::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"}, TechId::JEWELLERY,
+        "Produces magical rings and amulets.", 'j', workshop),
     BuildInfo({SquareId::RITUAL_ROOM, {ResourceId::MANA, 15}, "Ritual room"}, Nothing(), ""),
     BuildInfo({SquareId::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, Nothing(), ""),
     BuildInfo({SquareId::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
@@ -261,7 +265,9 @@ void PlayerControl::render(View* view) {
   if (showWelcomeMsg && Options::getValue(OptionId::HINTS)) {
     view->updateView(this);
     showWelcomeMsg = false;
-    view->presentText("Welcome", "In short: you are a warlock who has been banished from the lawful world for practicing black magic. You are going to claim the land of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext() + " and make it your domain. The best way to achieve this is to kill everyone.\n \n"
+    view->presentText("", "So, warlock...\n \nYou were dabbling in the Dark Arts, a tad, I see.\n \n " "Welcome to " + NameGenerator::get(NameGeneratorId::WORLD)->getNext() + ", where you'll have to do "
+        "what you can to KEEP yourself together. Build rooms, storage units and workshops to endorse your "
+        "minions. The only way to go forward in this world is to destroy the ones  who oppose you.\n \n"
 "Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the settings (press F2).");
   }
 }

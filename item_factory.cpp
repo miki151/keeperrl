@@ -604,7 +604,7 @@ ItemFactory ItemFactory::minerals() {
 
 ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
   ItemFactory factory({
-    {ItemId::FIRST_AID_KIT, 2},
+    {ItemId::FIRST_AID_KIT, 4},
     {ItemId::LEATHER_ARMOR, 4 },
     {ItemId::LEATHER_HELM, 2 },
     {ItemId::LEATHER_BOOTS, 2 },
@@ -637,8 +637,8 @@ ItemFactory ItemFactory::forge(const vector<Technology*>& techs) {
     {ItemId::IRON_BOOTS, 2 },
   });
   if (contains(techs, Technology::get(TechId::TWO_H_WEAP))) {
-    factory.addItem({ItemId::BATTLE_AXE, 2 });
-    factory.addItem({ItemId::WAR_HAMMER, 2 });
+    factory.addItem({ItemId::BATTLE_AXE, 5 });
+    factory.addItem({ItemId::WAR_HAMMER, 5 });
     factory.addItem({ItemId::SPECIAL_BATTLE_AXE, 0.05 });
     factory.addItem({ItemId::SPECIAL_WAR_HAMMER, 0.05 });
   }
@@ -1101,7 +1101,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::LEATHER_GLOVES: return ITATTR(
             i.viewId = ViewId::LEATHER_GLOVES;
-            i.name = "leather gloves";
+            i.name = "pair of leather gloves";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::GLOVES;
             i.weight = 0.3;
@@ -1109,7 +1109,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::DEXTERITY_GLOVES: return ITATTR(
             i.viewId = ViewId::DEXTERITY_GLOVES;
-            i.name = "gloves of dexterity";
+            i.name = "pair of gloves of dexterity";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::GLOVES;
             i.weight = 0.3;

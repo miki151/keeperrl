@@ -36,7 +36,7 @@
 #include <stack>
 #include <stdexcept>
 #include <tuple>
-#include <thread>
+#include <boost/thread.hpp>
 #include <typeinfo>
 #include <tuple>
 #include <mutex>
@@ -109,7 +109,7 @@ using std::uniform_real_distribution;
 using std::make_tuple;
 using std::get;
 using std::hash;
-using std::thread;
+using boost::thread;
 using std::atomic;
 using std::swap;
 using std::remove_if;

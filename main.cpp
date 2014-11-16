@@ -344,6 +344,12 @@ void gameLoop(View* view, int forceMode, bool genExit, atomic<bool>& finished) {
   finished = true;
 }
 
+static thread::attributes getAttributes() {
+  thread::attributes attr;
+  attr.set_stack_size(4096 * 2000);
+  return attr;
+}
+
 int main(int argc, char* argv[]) {
   options_description options("Flags");
   options.add_options()
@@ -397,7 +403,7 @@ int main(int argc, char* argv[]) {
   ScriptContext::init();
   Tile::initialize();
   view->initialize();
-  thread t([&] { gameLoop(view.get(), forceMode, genExit, gameFinished); });
+  thread t(getAttributes(), [&] { gameLoop(view.get(), forceMode, genExit, gameFinished); });
   while (!gameFinished) {
     view->refreshView();
     sf::sleep(sf::milliseconds(1));

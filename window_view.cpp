@@ -117,7 +117,7 @@ bool WindowView::areTilesOk() {
 void WindowView::initialize() {
   renderer.initialize(1024, 600, "KeeperRL");
   Clock::set(new Clock());
-  renderThreadId = std::this_thread::get_id();
+  renderThreadId = boost::this_thread::get_id();
   Renderer::setNominalSize(Vec2(36, 36));
   if (!ifstream("tiles_int.png")) {
     tilesOk = false;
@@ -854,7 +854,7 @@ void WindowView::rebuildGui() {
         break;
   }
   resetMapBounds();
-  CHECK(std::this_thread::get_id() != renderThreadId);
+  CHECK(boost::this_thread::get_id() != renderThreadId);
   tempGuiElems.clear();
   tempGuiElems.push_back(GuiElem::mainDecoration(rightBarWidth, bottomBarHeight));
   tempGuiElems.back()->setBounds(Rectangle(renderer.getWidth(), renderer.getHeight()));
@@ -876,7 +876,7 @@ void WindowView::rebuildGui() {
 }
 
 vector<GuiElem*> WindowView::getAllGuiElems() {
-  CHECK(std::this_thread::get_id() == renderThreadId);
+  CHECK(boost::this_thread::get_id() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   if (gameReady)
     ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui});
@@ -884,7 +884,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
 }
 
 vector<GuiElem*> WindowView::getClickableGuiElems() {
-  CHECK(std::this_thread::get_id() == renderThreadId);
+  CHECK(boost::this_thread::get_id() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   ret = getSuffix(ret, ret.size() - 1);
   if (gameReady) {
@@ -998,7 +998,7 @@ void WindowView::addVoidDialog(function<void()> fun) {
     sem.v();
     renderDialog = nullptr;
   };
-  if (std::this_thread::get_id() == renderThreadId)
+  if (boost::this_thread::get_id() == renderThreadId)
     renderDialog();
   lock.unlock();
   sem.p();
@@ -1075,7 +1075,7 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
 
 void WindowView::refreshView() {
   RenderLock lock(renderMutex);
-  CHECK(std::this_thread::get_id() == renderThreadId);
+  CHECK(boost::this_thread::get_id() == renderThreadId);
   if (gameReady)
     processEvents();
   if (renderDialog) {
@@ -1495,7 +1495,7 @@ void WindowView::processEvents() {
 }
 
 void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
-  CHECK(std::this_thread::get_id() == renderThreadId);
+  CHECK(boost::this_thread::get_id() == renderThreadId);
   if (gameReady)
     mapGui->resetHint();
   switch (event.type) {

@@ -348,28 +348,23 @@ inline void serialize(Archive & ar, __gnu_debug::deque< T > &t, unsigned int fil
 
 //tuple
 template<int N>
-struct Serialize
-{
+struct Serialize {
     template<class Archive, typename... Args>
-    static void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version)
-    {
+    static void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version) {
         ar & boost::serialization::make_nvp("elem", std::get<N-1>(t));
         Serialize<N-1>::serialize(ar, t, version);
     }
 };
 
 template<>
-struct Serialize<0>
-{
+struct Serialize<0> {
     template<class Archive, typename... Args>
-    static void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version)
-    {
+    static void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version) {
     }
 };
 
 template<class Archive, typename... Args>
-void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version)
-{
+void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version) {
     Serialize<sizeof...(Args)>::serialize(ar, t, version);
 }
 

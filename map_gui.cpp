@@ -323,7 +323,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
     Vec2 coord = tile.getSpriteCoord(dirs);
     if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
       move.y = -4* sizeY / Renderer::nominalSize.y;
-    if (object.layer() == ViewLayer::CREATURE || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
+    if ((object.layer() == ViewLayer::CREATURE && object.id() != ViewId::BOULDER)
+        || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
       renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize.x, 22 * Renderer::nominalSize.y,
           Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[0],
           min(Renderer::nominalSize.x, width), min(Renderer::nominalSize.y, height));

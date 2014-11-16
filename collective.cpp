@@ -159,9 +159,12 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
 };
 
 struct Collective::AttractionInfo {
+  AttractionInfo(MinionAttraction a, double cl, double min, bool mand = false)
+      : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
   MinionAttraction attraction;
   double amountClaimed;
   double minAmount;
+  bool mandatory;
 };
 
 struct Collective::ImmigrantInfo {
@@ -259,7 +262,7 @@ const CollectiveConfig& Collective::getConfig() const {
             c.frequency = 0.3;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
-              {{AttractionId::ITEM_CLASS, ItemClass::RANGED_WEAPON}, 1.0, 3.0}
+              {{AttractionId::ITEM_CLASS, ItemClass::RANGED_WEAPON}, 1.0, 3.0, true}
             );
             c.traits = {MinionTrait::FIGHTER};
             c.salary = 40;),
@@ -905,7 +908,7 @@ double Collective::getImmigrantChance(const ImmigrantInfo& info) {
     result = 1;
   for (auto& attraction : info.attractions) {
     double value = getAttractionValue(attraction.attraction);
-    if (value < 0.001)
+    if (value < 0.001 && attraction.mandatory)
       return 0;
     result += max(0.0, value - getAttractionOccupation(attraction.attraction) - attraction.minAmount);
   }
@@ -1989,17 +1992,27 @@ static vector<SquareType> workshopSquares {
   SquareId::LABORATORY
 };
 
-static ItemFactory getWorkshopFactory(Collective* c, Vec2 pos) {
+struct WorkshopInfo {
+  ItemFactory factory;
+  Collective::CostInfo itemCost;
+};
+
+// The production cost is actually not applied ATM.
+static WorkshopInfo getWorkshopInfo(Collective* c, Vec2 pos) {
   for (auto elem : workshopSquares)
     if (c->getSquares(elem).count(pos))
       switch (elem.getId()) {
-        case SquareId::WORKSHOP: return ItemFactory::workshop(c->getTechnologies());
-        case SquareId::FORGE: return ItemFactory::forge(c->getTechnologies());
-        case SquareId::LABORATORY: return ItemFactory::laboratory(c->getTechnologies());
-        case SquareId::JEWELER: return ItemFactory::jeweler(c->getTechnologies());
+        case SquareId::WORKSHOP:
+            return { ItemFactory::workshop(c->getTechnologies()), {CollectiveResourceId::GOLD, 0}};
+        case SquareId::FORGE:
+            return { ItemFactory::forge(c->getTechnologies()), {CollectiveResourceId::IRON, 10}};
+        case SquareId::LABORATORY:
+            return { ItemFactory::laboratory(c->getTechnologies()), {CollectiveResourceId::MANA, 10}};
+        case SquareId::JEWELER:
+            return { ItemFactory::jeweler(c->getTechnologies()), {CollectiveResourceId::GOLD, 5}};
         default: FAIL << "Bad workshop position " << pos;
       }
-  return ItemFactory::workshop(c->getTechnologies());
+  return { ItemFactory::workshop(c->getTechnologies()),{CollectiveResourceId::GOLD, 5}};
 }
 
 void Collective::onAppliedSquare(Vec2 pos) {
@@ -2017,7 +2030,8 @@ void Collective::onAppliedSquare(Vec2 pos) {
     if (Random.rollD(40.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
       vector<PItem> items;
       for (int i : Range(20)) {
-        items = getWorkshopFactory(this, pos).random();
+        auto workshopInfo = getWorkshopInfo(this, pos);
+        items = workshopInfo.factory.random();
         if (isItemNeeded(items[0].get()))
           break;
       }

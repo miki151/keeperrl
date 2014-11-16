@@ -975,11 +975,13 @@ class RandomLocations : public LevelMaker {
     vector<LocationPredicate::Precomputed> precomputed;
     for (int i : All(insideMakers))
       precomputed.push_back(predicate[i].precompute(builder, area));
-    makeCnt(builder, precomputed, area, 3000);
+    for (int i : Range(3000))
+      if (tryMake(builder, precomputed, area))
+        return;
+    FAIL << "Failed to find free space for " << (int)sizes.size() << " areas";
   }
 
-  void makeCnt(Level::Builder* builder, vector<LocationPredicate::Precomputed>& precomputed, Rectangle area,
-      int tries) {
+  bool tryMake(Level::Builder* builder, vector<LocationPredicate::Precomputed>& precomputed, Rectangle area) {
     vector<Rectangle> occupied;
     vector<Rectangle> makerBounds;
     vector<Level::Builder::Rot> maps;
@@ -1019,15 +1021,8 @@ class RandomLocations : public LevelMaker {
                 break;
               }
       } while (!ok && --cnt > 0);
-      if (cnt == 0) {
-        if (tries > 0) {
-          makeCnt(builder, precomputed, area, tries - 1);
-          return;
-        }
-        else {
-          FAIL << "Failed to find free space for " << (int)sizes.size() << " areas";
-        }
-      }
+      if (cnt == 0)
+        return false;
       occupied.push_back(Rectangle(px, py, px + width, py + height));
       makerBounds.push_back(Rectangle(px, py, px + sizes[i].first, py + sizes[i].second));
     }
@@ -1037,6 +1032,7 @@ class RandomLocations : public LevelMaker {
       insideMakers[i]->make(builder, makerBounds[i]);
       builder->popMap();
     }
+    return true;
   }
 
   private:

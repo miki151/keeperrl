@@ -1,0 +1,22 @@
+Music:
+Marcin Brzozowski and Krzysztof Łoza
+www.spotmusic.pl
+https://soundcloud.com/christopher-loza
+
+Graphics:
+16-bit fantasy set by oryxdesignlab.com.
+ShroomArts, shroomarts.blogspot.com.
+Icons by Lorc
+game-icons.net
+
+Testing and ideas:
+Jakub Jurkowski
+
+Font:
+Lato by Łukasz Dziedzic
+latofonts.com
+
+Welcome text:
+Oliver C. Mattson
+
+See license.txt for licence of particular data.
