@@ -191,9 +191,7 @@ void MapGui::onKeyPressed(Event::KeyEvent key) {
 }
 
 void MapGui::onLeftClick(Vec2 v) {
-  if (optionsGui && v.inRectangle(optionsGui->getBounds()))
-    optionsGui->onLeftClick(v);
-  else if (v.inRectangle(getBounds())) {
+  if (v.inRectangle(getBounds())) {
     Vec2 pos = layout->projectOnMap(getBounds(), v);
     leftClickFun(pos);
     mouseHeldPos = pos;
@@ -207,10 +205,8 @@ void MapGui::onRightClick(Vec2 pos) {
 }
 
 void MapGui::onMouseMove(Vec2 v) {
-  if (optionsGui)
-    optionsGui->onMouseMove(v);
   Vec2 pos = layout->projectOnMap(getBounds(), v);
-  if (v.inRectangle(getBounds()) && (!optionsGui || !v.inRectangle(optionsGui->getBounds()))) {
+  if (v.inRectangle(getBounds())) {
     if (mouseHeldPos && *mouseHeldPos != pos) {
       leftClickFun(pos);
       mouseHeldPos = pos;
@@ -533,35 +529,8 @@ void MapGui::render(Renderer& renderer) {
       col = colors[ColorId::GREEN];
     drawHint(renderer, col, highlighted->getDescription(true));
   }
-  if (optionsGui) {
-    int margin = 10;
-    optionsGui->setBounds(Rectangle(margin, getBounds().getKY() - optionsHeight - margin, 380, getBounds().getKY() - margin));
-    optionsGui->render(renderer);
-  }
 }
 
-void MapGui::resetHint() {
-  hint.clear();
+void MapGui::setHint(const string& h) {
+  hint = h;
 }
-
-PGuiElem MapGui::getHintCallback(const string& s) {
-  return GuiElem::mouseOverAction([this, s]() { hint = s; });
-}
-
-void MapGui::setOptions(const string& title, vector<PGuiElem> options) {
-  int margin = 10;
-  vector<PGuiElem> lines = makeVec<PGuiElem>(GuiElem::label(title, colors[ColorId::WHITE]));
-  vector<int> heights {40};
-  for (auto& elem : options) {
-    lines.push_back(GuiElem::margins(std::move(elem), 15, 0, 0, 0));
-    heights.push_back(30);
-  }
-  optionsHeight = 30 * options.size() + 40 + 2 * margin;
-  optionsGui = GuiElem::translucentBackground(
-      GuiElem::margins(GuiElem::verticalList(std::move(lines), heights, 0), margin, margin, margin, margin));
-}
-
-void MapGui::clearOptions() {
-  optionsGui.reset();
-}
-

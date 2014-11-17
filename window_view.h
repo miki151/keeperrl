@@ -23,6 +23,7 @@
 #include "minimap_gui.h"
 #include "input_queue.h"
 #include "animation.h"
+#include "gui_builder.h"
 
 class ViewIndex;
 
@@ -80,22 +81,6 @@ class WindowView: public View {
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   void rebuildGui();
   void drawMap();
-  PGuiElem getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo);
-  PGuiElem getTurnInfoGui(int turn);
-  PGuiElem drawBottomPlayerInfo(GameInfo&);
-  PGuiElem drawRightPlayerInfo(GameInfo::PlayerInfo&);
-  PGuiElem drawPlayerStats(GameInfo::PlayerInfo&);
-  PGuiElem drawPlayerHelp(GameInfo::PlayerInfo&);
-  PGuiElem drawBottomBandInfo(GameInfo&);
-  GuiElemAndSize drawPickupOptions(GameInfo::PlayerInfo&);
-  PGuiElem drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo&);
-  PGuiElem drawBuildings(GameInfo::BandInfo& info);
-  PGuiElem drawTechnology(GameInfo::BandInfo& info);
-  PGuiElem drawVillages(GameInfo::VillageInfo& info);
-  PGuiElem drawDeities(GameInfo::BandInfo& info);
-  PGuiElem drawMinions(GameInfo::BandInfo& info);
-  PGuiElem drawMinionWindow(GameInfo::BandInfo& info);
-  PGuiElem drawKeeperHelp();
   Optional<sf::Event::KeyEvent> getEventFromMenu();
   void propagateEvent(const Event& event, vector<GuiElem*>);
   void keyboardAction(Event::KeyEvent key);
@@ -128,29 +113,6 @@ class WindowView: public View {
   std::deque<string> currentMessage = std::deque<string>(3, "");
   bool oldMessage = false;
 
-  enum class CollectiveTab {
-    BUILDINGS,
-    MINIONS,
-    TECHNOLOGY,
-    WORKSHOP,
-    VILLAGES,
-    KEY_MAPPING,
-  };
-  
-  vector<PGuiElem> drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveTab);
-  PGuiElem getButtonLine(GameInfo::BandInfo::Button, function<void()>, int num, int& active, CollectiveTab);
-  void setCollectiveTab(CollectiveTab t);
-  void setOptionsMenu(const string& title, const vector<GameInfo::BandInfo::Button>& buttons, int offset,
-    int& active, CollectiveTab tab);
-  CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
-
-  enum class MinionTab {
-    STATS,
-    HELP,
-  };
-
-  MinionTab minionTab = MinionTab::STATS;
-
   Table<Optional<ViewIndex>> objects;
   GameInfo gameInfo;
 
@@ -178,10 +140,6 @@ class WindowView: public View {
   TileLayouts spriteLayouts;
   TileLayouts currentTileLayout;
 
-  int activeBuilding = 0;
-  int activeLibrary = -1;
-  string chosenCreature;
-
   function<void()> getButtonCallback(UserInput);
 
   std::recursive_mutex renderMutex;
@@ -202,6 +160,8 @@ class WindowView: public View {
     if (boost::this_thread::get_id() == renderThreadId)
       renderDialog();
   }
+  
+  GuiBuilder guiBuilder;
 };
 
 

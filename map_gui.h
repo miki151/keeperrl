@@ -45,10 +45,7 @@ class MapGui : public GuiElem {
   void updateLayout(MapLayout*, Rectangle levelBounds);
   void setSpriteMode(bool);
   Optional<Vec2> getHighlightedTile(WindowRenderer& renderer);
-  PGuiElem getHintCallback(const string&);
-  void resetHint();
-  void setOptions(const string& title, vector<PGuiElem>);
-  void clearOptions();
+  void setHint(const string&);
   void addAnimation(PAnimation animation, Vec2 position);
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
@@ -71,8 +68,6 @@ class MapGui : public GuiElem {
   Optional<Vec2> mouseHeldPos;
   Optional<Vec2> highlightedPos;
   string hint;
-  PGuiElem optionsGui;
-  int optionsHeight;
   struct AnimationInfo {
     PAnimation animation;
     Vec2 position;

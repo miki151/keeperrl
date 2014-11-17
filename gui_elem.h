@@ -108,9 +108,5 @@ class GuiElem {
   static PGuiElem icon(IconId);
 };
 
-struct GuiElemAndSize {
-  PGuiElem elem;
-  Vec2 size;
-};
 
 #endif
