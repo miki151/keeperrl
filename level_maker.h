@@ -37,6 +37,7 @@ enum class SettlementType {
   SMALL_MINETOWN,
   VAULT,
   CAVE,
+  ISLAND_VAULT,
 };
 
 struct StockpileInfo {

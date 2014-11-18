@@ -391,7 +391,7 @@ static vector<EnemyInfo> getVaults() {
     getVault(SettlementType::VAULT, CreatureId::CYCLOPS, Tribe::get(TribeId::MONSTER), 1,
         ItemFactory::mushrooms(true), {VillageControlInfo::PEACEFUL}),
     getVault(SettlementType::VAULT, CreatureId::RAT, Tribe::get(TribeId::PEST), Random.get(3, 8),
-        ItemFactory::armory(), {VillageControlInfo::PEACEFUL})
+        ItemFactory::armory(), {VillageControlInfo::PEACEFUL}),
   };
   for (int i : Range(Random.get(1, 3))) {
     FriendlyVault v = chooseRandom(friendlyVaults);
@@ -435,6 +435,12 @@ vector<EnemyInfo> getEnemyInfo() {
         c.stockpiles = LIST({StockpileInfo::MINERALS, 300});),
         {VillageControlInfo::PEACEFUL}});
   }
+  ret.push_back({CONSTRUCT(SettlementInfo,
+        c.type = SettlementType::ISLAND_VAULT;
+        c.location = new Location(true);
+        c.buildingId = BuildingId::DUNGEON;
+        c.stockpiles = LIST({StockpileInfo::GOLD, 400});),
+      {VillageControlInfo::PEACEFUL}});
   append(ret, getVaults());
   append(ret, {
       {CONSTRUCT(SettlementInfo,
@@ -539,6 +545,8 @@ Model* Model::collectiveModel(View* view) {
     m->addCreature(std::move(c));
   }
   for (int i : All(enemyInfo)) {
+    if (!enemyInfo[i].settlement.collective->hasCreatures())
+      continue;
     PCollective collective = enemyInfo[i].settlement.collective->build();
     PVillageControl control;
     if (enemyInfo[i].controlInfo.id != VillageControlInfo::FINAL_ATTACK)

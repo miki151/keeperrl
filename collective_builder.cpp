@@ -20,3 +20,6 @@ PCollective CollectiveBuilder::build() {
   return PCollective(c);
 }
 
+bool CollectiveBuilder::hasCreatures() const {
+  return !creatures.empty();
+}

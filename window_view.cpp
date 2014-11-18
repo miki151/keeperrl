@@ -84,7 +84,8 @@ WindowRenderer renderer;
 Rectangle WindowView::getMapGuiBounds() const {
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::PLAYER:
-      return Rectangle(0, 0, renderer.getWidth() - rightBarWidthPlayer, renderer.getHeight() - bottomBarHeightPlayer);
+      return Rectangle(0, 0, renderer.getWidth() - rightBarWidthPlayer,
+          renderer.getHeight() - bottomBarHeightPlayer);
     case GameInfo::InfoType::BAND:
       return Rectangle(0, 0, renderer.getWidth() - rightBarWidthCollective,
           renderer.getHeight() - bottomBarHeightCollective);
@@ -102,7 +103,6 @@ Rectangle WindowView::getMinimapBounds() const {
 void WindowView::resetMapBounds() {
   mapGui->setBounds(getMapGuiBounds());
   minimapGui->setBounds(getMinimapBounds());
- // mapDecoration->setBounds(Rectangle(renderer.getWidth(), renderer.getHeight()));
   minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
 }
 
@@ -205,7 +205,12 @@ void WindowView::reset() {
 }
 
 static vector<Vec2> splashPositions;
-static vector<string> splashPaths { "splash2e.png", "splash2a.png", "splash2b.png", "splash2c.png", "splash2d.png" };
+static vector<string> splashPaths {
+    "splash2e.png",
+    "splash2a.png",
+    "splash2b.png",
+    "splash2c.png",
+    "splash2d.png" };
 
 void WindowView::displayMenuSplash2() {
   Image splash;
@@ -1000,16 +1005,16 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       Vec2 mousePos(event.mouseButton.x, event.mouseButton.y);
       for (GuiElem* elem : guiElems) {
         elem->onMouseRelease();
-        if (mousePos.inRectangle(elem->getBounds()))
-          break;
+/*        if (mousePos.inRectangle(elem->getBounds()))
+          break;*/
       }
     break; }
     case Event::MouseMoved: {
       Vec2 mousePos(event.mouseMove.x, event.mouseMove.y);
       for (GuiElem* elem : guiElems) {
         elem->onMouseMove(mousePos);
-        if (mousePos.inRectangle(elem->getBounds()))
-          break;
+/*        if (mousePos.inRectangle(elem->getBounds()))
+          break;*/
       }
       break; }
     case Event::MouseButtonPressed: {

@@ -15,6 +15,7 @@ class CollectiveBuilder {
   void setLevel(Level*);
   void addCreature(Creature*, EnumSet<MinionTrait>);
   PCollective build();
+  bool hasCreatures() const;
 
   private:
   Level* level;

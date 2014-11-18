@@ -492,7 +492,8 @@ void Level::Builder::addLocation(Location* l, Rectangle area) {
 }
 
 void Level::Builder::addCollective(CollectiveBuilder* col) {
-  collectives.push_back(col);
+  if (!contains(collectives, col))
+    collectives.push_back(col);
 }
 
 void Level::Builder::setHeightMap(Vec2 pos, double h) {
