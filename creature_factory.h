@@ -117,7 +117,6 @@ RICH_ENUM(CreatureId,
     DOG,
 
     DEATH,
-    NIGHTMARE,
     FIRE_SPHERE,
     KRAKEN,
     BAT,
@@ -155,7 +154,6 @@ class CreatureFactory {
   static CreatureFactory vikingTown(Tribe*);
   static CreatureFactory lizardTown(Tribe*);
   static CreatureFactory orcTown(Tribe*);
-  static CreatureFactory level(int num, Tribe* allTribe, Tribe* dwarfTribe, Tribe* pestTribe);
   static CreatureFactory splash(Tribe*);
   static CreatureFactory singleType(Tribe*, CreatureId);
   static CreatureFactory pyramid(Tribe*, int level);

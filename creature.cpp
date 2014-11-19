@@ -1613,7 +1613,7 @@ bool Creature::isInnocent() const {
 }
 
 CreatureAction Creature::flyAway() {
-  if (!isAffected(LastingEffect::FLYING) || level->getCoverInfo(position).covered)
+  if (!isAffected(LastingEffect::FLYING) || level->getCoverInfo(position).covered())
     return CreatureAction();
   return CreatureAction([=]() {
     Debug() << getTheName() << " fly away";
@@ -2291,10 +2291,10 @@ string Creature::getNameAndTitle() const {
 }
 
 Vision* Creature::getVision() const {
-  if (hasSkill(Skill::get(SkillId::ELF_VISION)) || isAffected(LastingEffect::FLYING))
-    return Vision::get(VisionId::ELF);
   if (hasSkill(Skill::get(SkillId::NIGHT_VISION)))
     return Vision::get(VisionId::NIGHT);
+  else if (hasSkill(Skill::get(SkillId::ELF_VISION)) || isAffected(LastingEffect::FLYING))
+    return Vision::get(VisionId::ELF);
   else
     return Vision::get(VisionId::NORMAL); 
 }

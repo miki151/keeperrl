@@ -26,7 +26,8 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
     & SVAR(description)
     & SVAR(modifiers)
     & SVAR(attributes)
-    & SVAR(attachmentDir);
+    & SVAR(attachmentDir)
+    & SVAR(position);
   CHECK_SERIAL;
 }
 
@@ -126,6 +127,10 @@ string ViewObject::getDescription(bool stats) const {
     mods.push_back("planned");
   if (hasModifier(Modifier::SLEEPING))
     mods.push_back("sleeping");
+#ifndef RELEASE
+  if (position.x > -1)
+    mods.push_back(toString(position.x) + ", " + toString(position.y));
+#endif
   if (mods.size() > 0)
     return description + attr + "(" + combine(mods) + ")";
   else
@@ -310,5 +315,9 @@ const ViewObject& ViewObject::empty() {
 const ViewObject& ViewObject::mana() {
   static ViewObject ret(ViewId::MANA, ViewLayer::FLOOR, "");
   return ret;
+}
+
+void ViewObject::setPosition(Vec2 pos) {
+  position = pos;
 }
 

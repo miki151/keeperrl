@@ -840,53 +840,9 @@ CreatureFactory CreatureFactory::lavaCreatures(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::FIRE_SPHERE }, {1}, { });
 }
 
-CreatureFactory CreatureFactory::level(int num, Tribe* allTribe, Tribe* dwarfTribe, Tribe* pestTribe) {
-  int maxLevel = 8;
-  CHECK(num <= maxLevel && num > 0);
-  map<CreatureId, vector<int>> frequencies {
-      { CreatureId::SPECIAL_MONSTER, { 5, 8, 10, 12, 15, 18, 20, 22}},
-      { CreatureId::SPECIAL_HUMANOID, { 5, 8, 10, 12, 15, 18, 20, 22}},
-      { CreatureId::GOBLIN, { 400, 200, 100, 100, 100, 100, 100, 100, 100, 100}},
-      { CreatureId::LEPRECHAUN, { 20, 20, 20, 20, 20, 20, 20, 20}},
-      { CreatureId::ORC, { 20, 20, 30, 50, 50, 100, 200, 400 }},
-      { CreatureId::OGRE, { 0, 0, 100, 100, 200, 200, 200, 200, 200, 200 }},
-      { CreatureId::JACKAL, { 400, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
-      { CreatureId::ACID_MOUND, { 50, 50, 50, 50, 50, 50, 50, 50, 50, 50 }},
-      { CreatureId::SPIDER, { 200, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
-      { CreatureId::SCORPION, { 200, 100, 100, 100, 100, 100, 100, 100, 100, 100 }},
-      { CreatureId::RAT, { 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 }},
-      { CreatureId::BAT, { 100, 100, 200, 200, 200, 200, 200, 200, 200, 200 }},
-      { CreatureId::ZOMBIE, { 0, 0, 0, 30, 50, 100, 100, 100, 100, 100 }},
-      { CreatureId::SKELETON, { 0, 0, 0, 30, 50, 100, 100, 100, 100, 100 }},
-      { CreatureId::VAMPIRE, { 0, 0, 0, 10, 30, 50, 100, 100, 100, 100 }},
-      { CreatureId::VAMPIRE_LORD, { 0, 0, 0, 0, 10, 10, 30, 50, 50, 50 }},
-      { CreatureId::NIGHTMARE, { 5, 5, 10, 10, 20, 30, 30, 40, 40, 40 }},
-      { CreatureId::DWARF, { 400, 200, 100, 50, 50, 30, 20, 20 }}};
-  vector<vector<CreatureId>> uniqueMonsters(maxLevel);
-  uniqueMonsters[Random.get(5, maxLevel)].push_back(CreatureId::SPECIAL_MONSTER);
-  uniqueMonsters[Random.get(5, maxLevel)].push_back(CreatureId::SPECIAL_HUMANOID);
-  vector<CreatureId> ids;
-  vector<double> freq;
-  for (auto elem : frequencies) {
-    ids.push_back(elem.first);
-    freq.push_back(elem.second[num - 1]);
-  }
-  return CreatureFactory(allTribe, ids, freq, uniqueMonsters[num - 1], 
-      {{CreatureId::DWARF, dwarfTribe}, {CreatureId::RAT, pestTribe}});
-}
-
 CreatureFactory CreatureFactory::singleType(Tribe* tribe, CreatureId id) {
   return CreatureFactory(tribe, { id}, {1}, {});
 }
-
-/*vector<PCreature> CreatureFactory::getFlock(int size, CreatureId id, Creature* leader) {
-  vector<PCreature> ret;
-  for (int i : Range(size)) {
-    PCreature c = fromId(id, leader->getTribe(), MonsterAIFactory::follower(leader, 5));
-    ret.push_back(std::move(c));
-  }
-  return ret;
-}*/
 
 PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, ControllerFactory factory, bool keeper) {
   RandomGen r;
@@ -1786,7 +1742,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.animal = true;
           c.spawnType = SpawnType::BEAST;
-          c.minionTasks.setValue(MinionTask::EXPLORE, 1);
+          c.minionTasks.setValue(MinionTask::EXPLORE_CAVES, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.name = "cave bear";);
     case CreatureId::RAT: 
@@ -1867,6 +1823,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::WING] = 2;
           c.animal = true;
           c.dontChase = true;
+          c.courage = 100;
           c.spawnType = SpawnType::BEAST;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.minionTasks.setValue(MinionTask::EXPLORE, 1);
@@ -1892,7 +1849,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 35;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.spawnType = SpawnType::BEAST;
-          c.minionTasks.setValue(MinionTask::EXPLORE, 1);
+          c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.name = "wolf";);    
     case CreatureId::WEREWOLF:
@@ -1902,7 +1859,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.weight = 80;
           c.size = CreatureSize::LARGE;
-          c.minionTasks.setValue(MinionTask::EXPLORE, 1);
+          c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
           c.minionTasks.setValue(MinionTask::TRAIN, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.name = "werewolf";);
@@ -1968,37 +1925,17 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.uncorporal = true;
           c.name = "angel";);
     case CreatureId::KRAKEN: return getKrakenAttributes(ViewId::KRAKEN_HEAD);
-    case CreatureId::NIGHTMARE: /*
-                                   return PCreature(new Shapechanger(
-                                   ViewObject(ViewId::NIGHTMARE, ViewLayer::CREATURE, "nightmare"),
-                                   Tribe::get(TribeId::MONSTER),
-                                   CATTR(
-                                   c.attr[AttrType::SPEED] = 100;
-                                   c.size = CreatureSize::LARGE;
-                                   c.attr[AttrType::STRENGTH] = 5;
-                                   c.attr[AttrType::DEXTERITY] = 25;
-                                   c.barehandedDamage = 10;
-                                   c.humanoid = false;
-                                   c.arms = 0;
-                                   c.legs = 0;
-                                   c.flyer = true;
-                                   c.weight = 100;
-                                   c.name = "nightmare";), {
-                                   CreatureId::CAVE_BEAR,
-                                   CreatureId::WOLF,
-                                   CreatureId::ZOMBIE,
-                                   CreatureId::VAMPIRE,
-                                   CreatureId::MUMMY,
-                                   CreatureId::FIRE_SPHERE,
-                                   CreatureId::SPECIAL_MONSTER,
-                                   }));*/
     case CreatureId::BAT: 
       return INHERIT(RAVEN,
           c.viewId = ViewId::BAT;
           c.attr[AttrType::SPEED] = 150;
           c.attr[AttrType::STRENGTH] = 3;
           c.attr[AttrType::DEXTERITY] = 16;
-          c.barehandedDamage = 12;
+          c.barehandedDamage = 7;
+          c.skills.insert(SkillId::NIGHT_VISION);
+          c.minionTasks.clear();
+          c.minionTasks.setValue(MinionTask::EXPLORE_CAVES, 1);
+          c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.weight = 1;
           c.name = "bat";);
     case CreatureId::DEATH: 

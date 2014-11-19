@@ -64,6 +64,8 @@ class ViewObject {
   ViewId id() const;
   void setId(ViewId);
 
+  void setPosition(Vec2);
+
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();
   const static ViewObject& mana();
@@ -79,6 +81,7 @@ class ViewObject {
   ViewLayer SERIAL(viewLayer);
   string SERIAL(description);
   Optional<Dir> SERIAL(attachmentDir);
+  Vec2 SERIAL2(position, Vec2(-1, -1));
 };
 
 #endif

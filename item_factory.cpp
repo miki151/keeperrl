@@ -274,7 +274,7 @@ class Corpse : public Item {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
         Effect::applyToPosition(level, position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
-        !level->getCoverInfo(position).covered && Random.roll(35)) {
+        !level->getCoverInfo(position).covered() && Random.roll(35)) {
       for (Vec2 v : position.neighbors8(true))
         if (level->inBounds(v)) {
           PCreature vulture = CreatureFactory::fromId(

@@ -47,15 +47,9 @@ void Level::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Level);
 
-template <class Archive>
-void Level::CoverInfo::serialize(Archive& ar, const unsigned int version) {
-   ar& BOOST_SERIALIZATION_NVP(covered)
-     & BOOST_SERIALIZATION_NVP(sunlight);
-}
-
-SERIALIZABLE(Level::CoverInfo);
-
 SERIALIZATION_CONSTRUCTOR_IMPL(Level);
+
+Level::~Level() {}
 
 Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n,
     Table<CoverInfo> covers) 
@@ -173,7 +167,7 @@ const Model* Level::getModel() const {
 }
 
 double Level::getSunlight(Vec2 pos) const {
-  return coverInfo[pos].sunlight * model->getSunlightInfo().lightAmount;
+  return coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount;
 }
 
 double Level::getLight(Vec2 pos) const {

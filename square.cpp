@@ -70,6 +70,7 @@ void Square::putCreature(Creature* c) {
 
 void Square::setPosition(Vec2 v) {
   position = v;
+  modViewObject().setPosition(v);
 }
 
 Vec2 Square::getPosition() const {

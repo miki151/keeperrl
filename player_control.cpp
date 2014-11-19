@@ -783,12 +783,8 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
 vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   vector<TechInfo> ret;
   ret.push_back({{ViewId::MANA, "Sorcery"}, [this](PlayerControl* c, View* view) {c->handlePersonalSpells(view);}});
-  ret.push_back({{ViewId::EMPTY, ""}, [](PlayerControl* c, View*) {}});
   ret.push_back({{ViewId::LIBRARY, "Library", 'l'},
       [this](PlayerControl* c, View* view) { c->handleLibrary(view); }});
-  ret.push_back({{ViewId::GOLD, "Black market"},
-      [this](PlayerControl* c, View* view) { c->handleMarket(view); }});
-  ret.push_back({{ViewId::EMPTY, ""}, [](PlayerControl* c, View*) {}});
   ret.push_back({{ViewId::BOOK, "Keeperopedia"},
       [this](PlayerControl* c, View* view) { model->keeperopedia.present(view); }});
   return ret;
@@ -1083,12 +1079,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
             getCreature(input.get<TeamLeaderInfo>().creatureId()));
         break;
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
-    case UserInputId::MARKET: handleMarket(view); break;
     case UserInputId::DEITIES: model->keeperopedia.deity(view, Deity::getDeities()[input.get<int>()]); break;
-    case UserInputId::TECHNOLOGY: {
-        vector<TechInfo> techInfo = getTechInfo();
-        techInfo[input.get<int>()].butFun(this, view);
-        break;}
+    case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::CREATURE_BUTTON: 
         handleCreatureButton(getCreature(input.get<int>()), view);
         break;

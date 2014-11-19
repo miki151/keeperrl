@@ -1003,17 +1003,17 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new ConstructionDropItems(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR, "Gold ore")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), "gold ore",
             {{SquareId::FLOOR, Random.get(30, 80)}},
-            ItemFactory::fromId(ItemId::GOLD_PIECE, Random.get(15, 30)));
+            ItemFactory::fromId(ItemId::GOLD_PIECE, Random.get(18, 40)));
     case SquareId::IRON_ORE:
         return new ConstructionDropItems(ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR, "Iron ore")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), "iron ore",
             {{SquareId::FLOOR, Random.get(15, 40)}},
-            ItemFactory::fromId(ItemId::IRON_ORE, Random.get(12, 27)));
+            ItemFactory::fromId(ItemId::IRON_ORE, Random.get(18, 40)));
     case SquareId::STONE:
         return new ConstructionDropItems(ViewObject(ViewId::STONE, ViewLayer::FLOOR, "Granite")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), "granite",
             {{SquareId::FLOOR, Random.get(30, 80)}},
-            ItemFactory::fromId(ItemId::ROCK, Random.get(5, 20)));
+            ItemFactory::fromId(ItemId::ROCK, Random.get(18, 40)));
     case SquareId::LOW_ROCK_WALL:
         return new Square(ViewObject(ViewId::LOW_ROCK_WALL, ViewLayer::FLOOR, "Wall")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));

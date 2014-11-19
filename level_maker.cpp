@@ -1410,12 +1410,6 @@ class RemoveAttrib : public ForEachSquare {
     : ForEachSquare([attr](Level::Builder* b, Vec2 pos) { b->removeAttrib(pos, attr); }, onPred) {}
 };
 
-/*class SetDark : public ForEachSquare {
-  public:
-  SetDark(SquarePredicate* onPred = nullptr)
-    : ForEachSquare([](Level::Builder* b, Vec2 pos) { b->setCoverInfo(pos, {true, 0.0}); }, onPred) {}
-};*/
-
 class Stairs : public LevelMaker {
   public:
   Stairs(StairDirection dir, StairKey k, Predicate onPred, Optional<SquareAttrib> _setAttr = Nothing(),

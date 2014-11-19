@@ -39,7 +39,6 @@ enum class UserInputId {
     CANCEL_TEAM,
     COMMAND_TEAM,
     SET_TEAM_LEADER,
-    MARKET,
     TECHNOLOGY,
 // turn-based actions
     MOVE,

@@ -1,3 +1,17 @@
+/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
+
+   This file is part of KeeperRL.
+
+   KeeperRL is free software; you can redistribute it and/or modify it under the terms of the
+   GNU General Public License as published by the Free Software Foundation; either version 2
+   of the License, or (at your option) any later version.
+
+   KeeperRL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+   even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along with this program.
+   If not, see http://www.gnu.org/licenses/ . */
 #ifndef _COLLECTIVE_H
 #define _COLLECTIVE_H
 
@@ -12,6 +26,7 @@
 #include "minion_task.h"
 #include "gender.h"
 #include "item.h"
+#include "known_tiles.h"
 
 class Creature;
 class CollectiveControl;
@@ -189,7 +204,7 @@ class Collective : public Task::Callback {
   };
   const map<Vec2, ConstructionInfo>& getConstructions() const;
 
-  void setMinionTask(Creature* c, MinionTask task);
+  void setMinionTask(const Creature* c, MinionTask task);
 
   set<TrapType> getNeededTraps() const;
 
@@ -344,8 +359,7 @@ class Collective : public Task::Callback {
   void markItem(const Item*);
   void unmarkItem(UniqueEntity<Item>::Id);
 
-  Table<bool> SERIAL(knownTiles);
-  set<Vec2> SERIAL(borderTiles);
+  KnownTiles SERIAL(knownTiles);
 
   struct CurrentTaskInfo : NamedTupleBase<MinionTask, double> {
     NAMED_TUPLE_STUFF(CurrentTaskInfo);
@@ -353,10 +367,12 @@ class Collective : public Task::Callback {
     NAME_ELEM(1, finishTime);
   };
   map<UniqueEntity<Creature>::Id, CurrentTaskInfo> SERIAL(currentTasks);
+  Optional<Vec2> getTileToExplore(const Creature*, MinionTask) const;
   PTask getStandardTask(Creature* c);
   PTask getEquipmentTask(Creature* c);
   PTask getHealingTask(Creature* c);
-  MinionTask chooseRandomFreeTask(const Creature*);
+  bool isTaskGood(const Creature*, MinionTask) const;
+  void setRandomTask(const Creature*);
 
   void handleSurprise(Vec2 pos);
   EnumSet<Warning> warnings;
@@ -366,7 +382,7 @@ class Collective : public Task::Callback {
   bool usesEquipment(const Creature* c) const;
   void autoEquipment(Creature* creature, bool replace);
   Item* getWorstItem(vector<Item*> items) const;
-  int getTaskDuration(Creature*, MinionTask) const;
+  int getTaskDuration(const Creature*, MinionTask) const;
   map<UniqueEntity<Creature>::Id, string> SERIAL(minionTaskStrings);
   double getStanding(EpithetId id) const;
   void onEpithetWorship(Creature*, WorshipType, EpithetId);

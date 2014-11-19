@@ -58,6 +58,7 @@ RICH_ENUM(SquareAttrib,
 class Level : public UniqueEntity<Level> {
   public:
 
+  ~Level();
   static Rectangle getMaxBounds();
 
   /** Checks if the creature can move to \paramname{direction}. This ensures 
@@ -183,11 +184,10 @@ class Level : public UniqueEntity<Level> {
 
   const vector<Location*> getAllLocations() const;
 
-  struct CoverInfo {
-    bool covered;
-    double sunlight;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
+  struct CoverInfo : public NamedTupleBase<bool, double> {
+    NAMED_TUPLE_STUFF(CoverInfo);
+    NAME_ELEM(0, covered);
+    NAME_ELEM(1, sunlight);
   };
 
   CoverInfo getCoverInfo(Vec2) const;

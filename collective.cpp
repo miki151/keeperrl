@@ -13,6 +13,7 @@
 #include "monster.h"
 #include "options.h"
 #include "trigger.h"
+#include "model.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -39,7 +40,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(knownTiles)
     & SVAR(technologies)
     & SVAR(numFreeTech)
-    & SVAR(borderTiles)
     & SVAR(lastCombat)
     & SVAR(kills)
     & SVAR(points)
@@ -147,6 +147,8 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::COPULATE, {MinionTaskInfo::COPULATE, "copulation"}},
     {MinionTask::CONSUME, {MinionTaskInfo::CONSUME, "consumption"}},
     {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "spying"}},
+    {MinionTask::EXPLORE_NOCTURNAL, {MinionTaskInfo::EXPLORE, "spying"}},
+    {MinionTask::EXPLORE_CAVES, {MinionTaskInfo::EXPLORE, "spying"}},
  //   {MinionTask::SACRIFICE, {{}, "sacrifice ordered", Collective::Warning::ALTAR}},
     {MinionTask::EXECUTE, {{SquareId::PRISON}, "execution ordered", Collective::Warning::NO_PRISON}},
     {MinionTask::WORSHIP, {{}, "worship", Nothing(), 1}}};
@@ -176,6 +178,7 @@ struct Collective::ImmigrantInfo {
   int salary;
   Optional<CostInfo> cost;
   Optional<TechId> techId;
+  Optional<Model::SunlightInfo::State> limit;
 };
 
 struct CollectiveConfig {
@@ -190,7 +193,7 @@ struct CollectiveConfig {
 };
 
 Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t) : configId(cfg),
-  knownTiles(l->getBounds(), false), control(CollectiveControl::idle(this)),
+  knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
   tribe(t), level(l), nextPayoutTime(getConfig().payoutTime), sectors(new Sectors(level->getBounds())),
     flyingSectors(new Sectors(level->getBounds())) {
   credit = {
@@ -322,8 +325,15 @@ const CollectiveConfig& Collective::getConfig() const {
             c.spawnAtDorm = true;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::RAVEN;
-            c.frequency = 2.0;
+            c.frequency = 1.0;
             c.traits = {MinionTrait::FIGHTER};
+            c.limit = Model::SunlightInfo::DAY;
+            c.salary = 0;),
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::BAT;
+            c.frequency = 1.0;
+            c.traits = {MinionTrait::FIGHTER};
+            c.limit = Model::SunlightInfo::NIGHT;
             c.salary = 0;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::WOLF;
@@ -549,7 +559,7 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
   }
 }
 
-int Collective::getTaskDuration(Creature* c, MinionTask task) const {
+int Collective::getTaskDuration(const Creature* c, MinionTask task) const {
   switch (task) {
     case MinionTask::CONSUME:
     case MinionTask::COPULATE:
@@ -560,27 +570,78 @@ int Collective::getTaskDuration(Creature* c, MinionTask task) const {
   }
 }
 
-void Collective::setMinionTask(Creature* c, MinionTask task) {
+void Collective::setMinionTask(const Creature* c, MinionTask task) {
   currentTasks[c->getUniqueId()] = {task, c->getTime() + getTaskDuration(c, task)};
 }
 
-MinionTask Collective::chooseRandomFreeTask(const Creature* c) {
-  vector<MinionTask> freeTasks;
+bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
+  if (c->getMinionTasks().getValue(task) == 0)
+    return false;
+  if (minionPayment.count(c) && minionPayment.at(c).debt() > 0 && getTaskInfo().at(task).cost > 0)
+    return false;
+  switch (task) {
+    case MinionTask::EXPLORE:
+        return getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::DAY;
+    case MinionTask::EXPLORE_NOCTURNAL:
+    case MinionTask::EXPLORE_CAVES:
+        return getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::NIGHT;
+    default: return true;
+  }
+}
+
+void Collective::setRandomTask(const Creature* c) {
+  vector<MinionTask> goodTasks;
   for (MinionTask t : ENUM_ALL(MinionTask))
-    if (c->getMinionTasks().getValue(t) > 0 && getTaskInfo().at(t).cost == 0)
-      freeTasks.push_back(t);
-  return chooseRandom(freeTasks);
+    if (isTaskGood(c, t))
+      goodTasks.push_back(t);
+  if (!goodTasks.empty())
+    setMinionTask(c, chooseRandom(goodTasks));
+}
+
+static bool betterPos(Vec2 from, Vec2 current, Vec2 candidate) {
+  double maxDiff = 0.3;
+  double curDist = from.dist8(current);
+  double newDist = from.dist8(candidate);
+  return Random.getDouble() <= 1.0 - (newDist - curDist) / (curDist * maxDiff);
+}
+
+static Optional<Vec2> getRandomCloseTile(Vec2 from, const vector<Vec2>& tiles, function<bool(Vec2)> predicate) {
+  Optional<Vec2> ret;
+  for (Vec2 pos : tiles)
+    if (predicate(pos) && (!ret || betterPos(from, *ret, pos)))
+      ret = pos;
+  return ret;
+}
+
+Optional<Vec2> Collective::getTileToExplore(const Creature* c, MinionTask task) const {
+  vector<Vec2> border = randomPermutation(knownTiles.getBorderTiles());
+  switch (task) {
+    case MinionTask::EXPLORE_CAVES:
+        if (auto pos = getRandomCloseTile(c->getPosition(), border,
+              [this, c](Vec2 pos) { return getLevel()->getCoverInfo(pos).sunlight() < 1
+                  && getLevel()->getSquare(pos)->canEnter(c);}))
+          return *pos; // intentionally no break so bats fall back to exploring outdoors if there are no caves
+    case MinionTask::EXPLORE:
+    case MinionTask::EXPLORE_NOCTURNAL:
+        return getRandomCloseTile(c->getPosition(), border,
+            [this, c](Vec2 pos) { return !getLevel()->getCoverInfo(pos).covered()
+                  && getLevel()->getSquare(pos)->canEnter(c);});
+    default: FAIL << "Unrecognized explore task: " << int(task);
+  }
+  return Nothing();
 }
 
 PTask Collective::getStandardTask(Creature* c) {
   if (!c->getMinionTasks().hasAnyTask())
     return nullptr;
-  if (minionPayment.count(c) && minionPayment.at(c).debt() > 0) {
-    setMinionTask(c, chooseRandomFreeTask(c));
-  } else
-  if (!currentTasks.count(c->getUniqueId()) || currentTasks.at(c->getUniqueId()).finishTime() < c->getTime())
-    setMinionTask(c, c->getMinionTasks().getRandom());
-  MinionTaskInfo info = getTaskInfo().at(currentTasks[c->getUniqueId()].task());
+  if (!currentTasks.count(c->getUniqueId()) ||
+      currentTasks.at(c->getUniqueId()).finishTime() < c->getTime() ||
+      !isTaskGood(c, currentTasks.at(c->getUniqueId()).task()))
+    currentTasks.erase(c->getUniqueId());
+  if (!currentTasks.count(c->getUniqueId()))
+    setRandomTask(c);
+  MinionTask task = currentTasks[c->getUniqueId()].task();
+  MinionTaskInfo info = getTaskInfo().at(task);
   PTask ret;
   switch (info.type) {
     case MinionTaskInfo::APPLY_SQUARE:
@@ -593,8 +654,8 @@ PTask Collective::getStandardTask(Creature* c) {
       ret = Task::applySquare(this, getAllSquares(info.squares, info.centerOnly));
       break;
     case MinionTaskInfo::EXPLORE:
-      if (!borderTiles.empty())
-        ret = Task::explore(chooseRandom(borderTiles));
+      if (auto pos = getTileToExplore(c, task))
+        ret = Task::explore(*pos);
       else
         return nullptr;
       break;
@@ -901,9 +962,11 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
 }
 
 double Collective::getImmigrantChance(const ImmigrantInfo& info) {
-  double result = 0;
+  if (info.limit && info.limit != getLevel()->getModel()->getSunlightInfo().state)
+    return 0;
   if (info.cost && !hasResource(*info.cost))
     return 0;
+  double result = 0;
   if (info.attractions.empty())
     result = 1;
   for (auto& attraction : info.attractions) {
@@ -1344,7 +1407,7 @@ bool Collective::containsSquare(Vec2 pos) const {
 }
 
 bool Collective::isKnownSquare(Vec2 pos) const {
-  return knownTiles[pos];
+  return knownTiles.isKnown(pos);
 }
 
 void Collective::update(Creature* c) {
@@ -1944,17 +2007,13 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
 }
 
 void Collective::addKnownTile(Vec2 pos) {
-  if (!knownTiles[pos]) {
+  if (!knownTiles.isKnown(pos)) {
     if (const Location* loc = getLevel()->getLocation(pos))
       if (!knownLocations.count(loc)) {
         knownLocations.insert(loc);
         control->onDiscoveredLocation(loc);
       }
-    borderTiles.erase(pos);
-    knownTiles[pos] = true;
-    for (Vec2 v : pos.neighbors4())
-      if (getLevel()->inBounds(v) && !knownTiles[v])
-        borderTiles.insert(v);
+    knownTiles.addTile(pos);
     if (Task* task = taskMap.getMarked(pos))
       if (task->isImpossible(getLevel()))
         taskMap.removeTask(task);
