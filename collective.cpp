@@ -245,7 +245,7 @@ const CollectiveConfig& Collective::getConfig() const {
             c.salary = 20;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::ORC_SHAMAN;
-            c.frequency = 0.3;
+            c.frequency = 0.15;
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
               {{AttractionId::SQUARE, SquareId::LABORATORY}, 1.0, 9.0},
@@ -1103,10 +1103,22 @@ static vector<SquareType> roomsNeedingLight {
   SquareId::LIBRARY,
 };
 
+void Collective::considerWeaponWarning() {
+  int numWeapons = getAllItems([&](const Item* it) {
+      return it->getClass() == ItemClass::WEAPON && !minionEquipment.getOwner(it); }).size();
+  PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
+  int numNeededWeapons = 0;
+  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
+    if (usesEquipment(c) && c->equip(genWeapon.get()) && minionEquipment.needs(c, genWeapon.get()))
+      ++numNeededWeapons;
+  setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
+}
+
 void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
   considerBirths();
+  considerWeaponWarning();
   if (Random.rollD(1.0 / getConfig().immigrantFrequency))
     considerImmigration();
   if (time > nextPayoutTime) {
@@ -1125,18 +1137,6 @@ void Collective::tick(double time) {
   for (auto elem : getTaskInfo())
     if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
       setWarning(*elem.second.warning, false);
-  setWarning(Warning::NO_WEAPONS, false);
-  PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
-  vector<Item*> freeWeapons = getAllItems([&](const Item* it) {
-      return it->getClass() == ItemClass::WEAPON && !minionEquipment.getOwner(it); }, false);
-  for (Creature* c : getCreatures({MinionTrait::FIGHTER}, {MinionTrait::NO_EQUIPMENT})) {
-    if (usesEquipment(c) && c->equip(genWeapon.get()) && filter(freeWeapons,
-          [&] (const Item* it) { return minionEquipment.needs(c, it); }).empty()) {
-      setWarning(Warning::NO_WEAPONS, true);
-      Debug() << "Can't get weapon for " << c->getName();
-      break;
-    }
-  }
   vector<Vec2> enemyPos = getEnemyPositions();
   if (!enemyPos.empty())
     delayDangerousTasks(enemyPos, getTime() + 20);

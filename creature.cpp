@@ -1372,7 +1372,7 @@ void Creature::updateViewObject() {
   modViewObject().setAttribute(ViewObject::Attribute::ATTACK, getModifier(ModifierType::DAMAGE));
   modViewObject().setAttribute(ViewObject::Attribute::LEVEL, getExpLevel());
   modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
-  modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
+  modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
   if (isAffected(LastingEffect::SLEEP))
     modViewObject().setModifier(ViewObject::Modifier::SLEEPING);
   else

@@ -390,6 +390,7 @@ class Collective : public Task::Callback {
   bool considerImmigrant(const ImmigrantInfo&);
   void considerImmigration();
   void considerBirths();
+  void considerWeaponWarning();
   vector<Creature*> SERIAL(creatures);
   EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   EnumMap<SpawnType, vector<Creature*>> SERIAL(bySpawnType);
