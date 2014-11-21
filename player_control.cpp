@@ -231,28 +231,31 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
 const int basicImpCost = 20;
 
 Creature* PlayerControl::getControlled() {
-  for (TeamId team : getCollective()->getActiveTeams()) {
-    if (getCollective()->getTeamLeader(team)->isPlayer())
-      return getCollective()->getTeamLeader(team);
+  for (TeamId team : getCollective()->getTeams().getActiveTeams()) {
+    if (!getCollective()->getTeams().isHidden(team) && getCollective()->getTeams().getLeader(team)->isPlayer())
+      return getCollective()->getTeams().getLeader(team);
   }
   return nullptr;
 }
 
 void PlayerControl::leaveControl() {
-  Creature* possessed = getControlled();
-  if (possessed == getKeeper())
+  Creature* controlled = getControlled();
+  if (controlled == getKeeper())
     lastControlKeeperQuestion = getCollective()->getTime();
-  CHECK(possessed);
-  if (possessed->getLevel() != getLevel())
+  CHECK(controlled);
+  if (controlled->getLevel() != getLevel())
     model->getView()->resetCenter();
-  if (possessed->isPlayer())
-    possessed->popController();
+  if (controlled->isPlayer())
+    controlled->popController();
   ViewObject::setHallu(false);
-  TeamId team = getOnlyElement(getCollective()->getActiveTeams(possessed));
-  if (getCollective()->getTeam(team).size() == 1)
-    getCollective()->cancelTeam(team);
-  else
-    getCollective()->deactivateTeam(team);
+  for (TeamId team : getCollective()->getTeams().getActiveTeams(controlled))
+    if (!getCollective()->getTeams().isHidden(team)) {
+      if (getCollective()->getTeams().getMembers(team).size() == 1)
+        getCollective()->getTeams().cancel(team);
+      else
+        getCollective()->getTeams().deactivate(team);
+      break;
+    }
   model->getView()->stopClock();
 }
 
@@ -835,11 +838,12 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.time = getCollective()->getTime();
   info.currentTeam = getCurrentTeam();
   info.teams.clear();
-  for (TeamId team :getCollective()->getTeams()) {
-    info.teams[team].clear();
-    for (Creature* c : getCollective()->getTeam(team))
-      info.teams[team].push_back(c->getUniqueId());
-  }
+  for (TeamId team :getCollective()->getTeams().getAll()) 
+    if (!getCollective()->getTeams().isHidden(team)) {
+      info.teams[team].clear();
+      for (Creature* c : getCollective()->getTeams().getMembers(team))
+        info.teams[team].push_back(c->getUniqueId());
+    }
   info.techButtons.clear();
   for (TechInfo tech : getTechInfo())
     info.techButtons.push_back(tech.button);
@@ -901,7 +905,7 @@ void PlayerControl::setCurrentTeam(Optional<TeamId> team) {
 }
 
 Optional<TeamId> PlayerControl::getCurrentTeam() const {
-  if (currentTeam && getCollective()->teamExists(*currentTeam))
+  if (currentTeam && getCollective()->getTeams().exists(*currentTeam))
     return currentTeam;
   else
     return Nothing();
@@ -914,7 +918,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = getLevel()->getSquare(pos)->getCreature())
-    if (getCurrentTeam() && getCollective()->isInTeam(*getCurrentTeam(), c)
+    if (getCurrentTeam() && getCollective()->getTeams().contains(*getCurrentTeam(), c)
         && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (getCollective()->isMarkedToDig(pos))
@@ -1003,11 +1007,8 @@ class MinionController : public Player {
 void PlayerControl::controlSingle(const Creature* cr) {
   CHECK(contains(getCreatures(), cr));
   CHECK(!cr->isDead());
-  auto team = getCollective()->createTeam();
   Creature* c = const_cast<Creature*>(cr);
-  getCollective()->addToTeam(team, c);
-  getCollective()->setTeamLeader(team, c);
-  commandTeam(team);
+  commandTeam(getCollective()->getTeams().create({c}));
 }
 
 bool PlayerControl::canBuildDoor(Vec2 pos) const {
@@ -1039,19 +1040,20 @@ void PlayerControl::handleCreatureButton(Creature* c, View* view) {
   if (!getCurrentTeam())
     minionView(view, c);
   else if (getCollective()->hasAnyTrait(c, {MinionTrait::FIGHTER, MinionTrait::LEADER})) {
-    if (getCollective()->isInTeam(*getCurrentTeam(), c))
-      getCollective()->removeFromTeam(*getCurrentTeam(), c);
+    if (getCollective()->getTeams().contains(*getCurrentTeam(), c))
+      getCollective()->getTeams().remove(*getCurrentTeam(), c);
     else
-      getCollective()->addToTeam(*getCurrentTeam(), c);
+      getCollective()->getTeams().add(*getCurrentTeam(), c);
   }
 }
 
 void PlayerControl::commandTeam(TeamId team) {
   if (getControlled())
     leaveControl();
-  Creature* c = getCollective()->getTeamLeader(team);
+  Creature* c = getCollective()->getTeams().getLeader(team);
   c->pushController(PController(new MinionController(c, model, memory.get(), this)));
-  getCollective()->activateTeam(team);
+  getCollective()->getTeams().activate(team);
+  getCollective()->freeTeamMembers(team);
 }
 
 void PlayerControl::processInput(View* view, UserInput input) {
@@ -1059,23 +1061,23 @@ void PlayerControl::processInput(View* view, UserInput input) {
     return;
   switch (input.getId()) {
     case UserInputId::EDIT_TEAM:
-        if (getCurrentTeam() && getCollective()->getTeam(*getCurrentTeam()).empty())
-          getCollective()->cancelTeam(*getCurrentTeam());
+        if (getCurrentTeam() && getCollective()->getTeams().getMembers(*getCurrentTeam()).empty())
+          getCollective()->getTeams().cancel(*getCurrentTeam());
         setCurrentTeam(input.get<TeamId>());
         break;
     case UserInputId::CREATE_TEAM:
-        setCurrentTeam(getCollective()->createTeam());
+        setCurrentTeam(getCollective()->getTeams().create());
         break;
     case UserInputId::COMMAND_TEAM:
-        if (!getCurrentTeam() || getCollective()->getTeam(*getCurrentTeam()).empty())
+        if (!getCurrentTeam() || getCollective()->getTeams().getMembers(*getCurrentTeam()).empty())
           break;
         commandTeam(*getCurrentTeam());
         break;
     case UserInputId::CANCEL_TEAM:
-        getCollective()->cancelTeam(input.get<TeamId>());
+        getCollective()->getTeams().cancel(input.get<TeamId>());
         break;
     case UserInputId::SET_TEAM_LEADER:
-        getCollective()->setTeamLeader(input.get<TeamLeaderInfo>().team(),
+        getCollective()->getTeams().setLeader(input.get<TeamLeaderInfo>().team(),
             getCreature(input.get<TeamLeaderInfo>().creatureId()));
         break;
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
@@ -1325,8 +1327,8 @@ void PlayerControl::considerDeityFight() {
 }
 
 void PlayerControl::checkKeeperDanger() {
-  Creature* possessed = getControlled();
-  if (!retired && possessed != getKeeper()) { 
+  Creature* controlled = getControlled();
+  if (!retired && controlled != getKeeper()) { 
     if ((getCollective()->isInCombat(getKeeper()) || getKeeper()->getHealth() < 1)
         && lastControlKeeperQuestion < getCollective()->getTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getTime();
@@ -1380,10 +1382,14 @@ void PlayerControl::tick(double time) {
         "You can get more gold by mining or retrieve it from killed heroes and conquered villages.");
     payoutWarning = true;
   }
-  for (const Creature* c1 : getVisibleFriends()) {
-    Creature* c = const_cast<Creature*>(c1);
-    if (c->getSpawnType() && !contains(getCreatures(), c))
-      getCollective()->addCreature(c, {MinionTrait::FIGHTER});
+  vector<Creature*> addedCreatures;
+  for (const Creature* c : getVisibleFriends())
+    if (c->getSpawnType() && !contains(getCreatures(), c)) {
+      addedCreatures.push_back(const_cast<Creature*>(c));
+      getCollective()->addCreature(const_cast<Creature*>(c), {MinionTrait::FIGHTER});
+    }
+  if (!addedCreatures.empty()) {
+    getCollective()->addNewCreatureMessage(addedCreatures);
   }
   for (auto assault : copyOf(assaultNotifications))
     for (const Creature* c : assault.second)

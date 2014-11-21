@@ -968,7 +968,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::BANDIT;
           c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 18;
+          c.attr[AttrType::STRENGTH] = 15;
           c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 3;
           c.humanoid = true;
@@ -1026,6 +1026,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::WING] = 2;
           c.courage = 0.0;
           c.name = "succubus";
+          c.pluralName = "succubi";
           );
     case CreatureId::DOPPLEGANGER:
       return INHERIT(GHOST,
@@ -1076,6 +1077,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.gender = Gender::female;
           c.chatReactionFriendly = "curses all humans";
           c.chatReactionHostile = "\"Die!\"";
+          c.pluralName = "witches";
           c.name = "witch";);
     case CreatureId::CYCLOPS: 
       return CATTR(
@@ -1088,7 +1090,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.weight = 150;
           c.firstName = NameGenerator::get(NameGeneratorId::DEMON)->getNext();
-          c.name = "cyclops";);
+          c.name = "cyclops";
+          c.pluralName = "cyclopes";);
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
@@ -1195,7 +1198,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 40;
           c.chatReactionFriendly = "\"plaaaaay!\"";
           c.chatReactionHostile = "\"Heeelp!\"";
-          c.name = "child";);
+          c.name = "child";
+          c.pluralName = "children";);
     case CreatureId::CLAY_GOLEM: 
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
@@ -1254,7 +1258,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.noSleep = true;
           c.stationary = true;
           c.weight = 120;
-          c.name = "acid jelly";);
+          c.name = "acid jelly";
+          c.pluralName = "acid jellies";);
     case CreatureId::ZOMBIE: 
       return CATTR(
           c.viewId = ViewId::ZOMBIE;
@@ -1353,7 +1358,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
-          c.name = "mummy";);
+          c.name = "mummy";
+          c.pluralName = "mummies";);
     case CreatureId::MUMMY_LORD: 
       return INHERIT(MUMMY,
           c.viewId = ViewId::MUMMY_LORD;
@@ -1416,7 +1422,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::WING] = 2;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.skills.setValue(SkillId::ARCHERY, 1);
-          c.name = "harpy";);
+          c.name = "harpy";
+          c.pluralName = "harpies";);
     case CreatureId::GNOME: 
       return CATTR(
           c.viewId = ViewId::GNOME;
@@ -1539,6 +1546,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 90;
           c.chatReactionFriendly = "curses all orcs";
           c.chatReactionHostile = "\"Die!\"";
+          c.pluralName = "dwarves";
           c.name = "dwarf";);
     case CreatureId::DWARF_BARON: 
       return INHERIT(DWARF,
@@ -1565,7 +1573,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 50;
           c.chatReactionFriendly = "curses all humans";
           c.chatReactionHostile = "\"Die!\"";
-          c.name = "lizardman";);
+          c.name = "lizardman";
+          c.pluralName = "lizardmen";);
     case CreatureId::LIZARDLORD: 
       return INHERIT(LIZARDMAN,
           c.viewId = ViewId::LIZARDLORD;
@@ -1590,7 +1599,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionHostile = "\"Die!\"";
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
           c.skills.insert(SkillId::ELF_VISION);
-          c.name = "elf";);
+          c.name = "elf";
+          c.pluralName = "elves";);
     case CreatureId::ELF_ARCHER: 
       return INHERIT(ELF,
           c.viewId = ViewId::ELF_ARCHER;
@@ -1608,7 +1618,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 0;
           c.weight = 25;
           c.spells.clear();
-          c.name = "elf child";);
+          c.name = "elf child";
+          c.pluralName = "elf children";);
     case CreatureId::ELF_LORD: 
       return INHERIT(ELF_ARCHER,
           c.viewId = ViewId::ELF_LORD;
@@ -1660,7 +1671,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 40;
           c.animal = true;
           c.dontChase = true;
-          c.name = "sheep";);
+          c.name = "sheep";
+          c.pluralName = "sheep";);
     case CreatureId::PIG: 
       return CATTR(
           c.viewId = ViewId::PIG;
@@ -1702,7 +1714,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 400;
           c.animal = true;
           c.dontChase = true;
-          c.name = "deer";);
+          c.name = "deer";
+          c.pluralName = "deer";);
     case CreatureId::BOAR: 
       return CATTR(
           c.viewId = ViewId::BOAR;
@@ -1729,7 +1742,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 10;
           c.animal = true;
           c.dontChase = true;
-          c.name = "fox";);
+          c.name = "fox";
+          c.pluralName = "foxes";);
     case CreatureId::CAVE_BEAR: 
       return CATTR(
           c.viewId = ViewId::BEAR;
@@ -1794,7 +1808,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.courage = 100;
           c.dontChase = true;
           c.animal = true;
-          c.name = "fly";);
+          c.name = "fly";
+          c.pluralName = "flies";);
     case CreatureId::SNAKE: 
       return CATTR(
           c.viewId = ViewId::SNAKE;
@@ -1828,6 +1843,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.minionTasks.setValue(MinionTask::EXPLORE, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
+          c.groupName = "flock";
           c.name = "raven";);
     case CreatureId::VULTURE: 
       return INHERIT(RAVEN,
@@ -1847,10 +1863,12 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.animal = true;
           c.weight = 35;
+          c.groupName = "pack";
           c.skills.insert(SkillId::NIGHT_VISION);
           c.spawnType = SpawnType::BEAST;
           c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
+          c.pluralName = "wolves";
           c.name = "wolf";);    
     case CreatureId::WEREWOLF:
       return INHERIT(WOLF,
@@ -1862,6 +1880,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
           c.minionTasks.setValue(MinionTask::TRAIN, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
+          c.pluralName = "werewolves";
           c.name = "werewolf";);
     case CreatureId::DOG: 
       return INHERIT(WOLF,
@@ -2114,8 +2133,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::BANDIT:
     case CreatureId::ORC: 
       return ItemList()
-        .add(chooseRandom({ItemId::SWORD}, {3}))
-        .add(ItemId::LEATHER_ARMOR)
+        .add(ItemId::SWORD)
         .maybe(0.3, randomBackup());
     case CreatureId::GREAT_ORC: 
       return ItemList()

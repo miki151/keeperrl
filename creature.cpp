@@ -1959,6 +1959,17 @@ Optional<string> Creature::getFirstName() const {
   return firstName;
 }
 
+string Creature::getPluralName() const {
+  if (pluralName)
+    return *pluralName;
+  else
+    return *name + "s";
+}
+
+string Creature::getGroupName(int count) const {
+  return groupName + " of " + toString(count) + " " + getPluralName();
+}
+
 string Creature::getName() const {
   return *name;
 }

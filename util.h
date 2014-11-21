@@ -244,6 +244,9 @@ class Range {
   Range(int start, int end);
   Range(int end);
 
+  int getStart() const;
+  int getEnd() const;
+
   class Iter {
     public:
     Iter(int ind, int min, int max);
@@ -279,6 +282,7 @@ class RandomGen {
   void init(int seed);
   int get(int max);
   int get(int min, int max);
+  int get(Range);
   int get(const vector<double>& weights, double r = -1);
   double getDouble();
   double getDouble(double a, double b);

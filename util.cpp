@@ -26,6 +26,10 @@ int RandomGen::get(int max) {
   return get(0, max);
 }
 
+int RandomGen::get(Range r) {
+  return get(r.getStart(), r.getEnd());
+}
+
 int RandomGen::get(int min, int max) {
   CHECK(max > min);
   return uniform_int_distribution<int>(min, max - 1)(generator);
@@ -575,6 +579,14 @@ Range::Range(int a, int b) : start(a), finish(b) {
   CHECK(a <= b);
 }
 Range::Range(int a) : Range(0, a) {}
+
+int Range::getStart() const {
+  return start;
+}
+
+int Range::getEnd() const {
+  return finish;
+}
 
 Range::Iter Range::begin() {
   return Iter(start, start, finish);

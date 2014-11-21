@@ -89,6 +89,7 @@ class CreatureAttributes {
   Optional<ViewId> SERIAL(undeadViewId);
   MustInitialize<string> SERIAL(name);
   Optional<string> SERIAL(undeadName);
+  Optional<string> SERIAL(pluralName);
   EnumMap<AttrType, int> SERIAL(attr);
   MustInitialize<CreatureSize> SERIAL(size);
   MustInitialize<double> SERIAL(weight);
@@ -134,6 +135,7 @@ class CreatureAttributes {
   vector<SpellInfo> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   MinionTaskMap SERIAL(minionTasks);
+  string SERIAL2(groupName, "group");
 };
 
 #endif

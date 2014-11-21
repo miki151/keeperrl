@@ -27,6 +27,7 @@
 #include "gender.h"
 #include "item.h"
 #include "known_tiles.h"
+#include "collective_teams.h"
 
 class Creature;
 class CollectiveControl;
@@ -84,6 +85,7 @@ class Collective : public Task::Callback {
   const Level* getLevel() const;
   double getTime() const;
   void update(Creature*);
+  void addNewCreatureMessage(const vector<Creature*>&);
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;
@@ -96,8 +98,8 @@ class Collective : public Task::Callback {
   virtual void onAppliedSquare(Vec2 pos) override;
   virtual void onKillCancelled(Creature*) override;
   virtual void onBedCreated(Vec2, SquareType fromType, SquareType toType) override;
-  virtual void onCopulated(Creature* who, Creature* with);
-  virtual void onConsumed(Creature* consumer, Creature* who);
+  virtual void onCopulated(Creature* who, Creature* with) override;
+  virtual void onConsumed(Creature* consumer, Creature* who) override;
 
   SERIALIZATION_DECL(Collective);
 
@@ -297,24 +299,9 @@ class Collective : public Task::Callback {
   void addAssaultNotification(const Creature*, const VillageControl*);
   void removeAssaultNotification(const Creature*, const VillageControl*);
 
-  bool isInTeam(TeamId, const Creature*) const;
-  bool isTeamActive(TeamId) const;
-  void addToTeam(TeamId, Creature*);
-  void removeFromTeam(TeamId, Creature*);
-  void setTeamLeader(TeamId, Creature*);
-  void activateTeam(TeamId);
-  void deactivateTeam(TeamId);
-  TeamId createTeam();
-  void removeFromAllTeams(Creature*);
-  const Creature* getTeamLeader(TeamId) const;
-  Creature* getTeamLeader(TeamId);
-  const vector<Creature*>& getTeam(TeamId) const;
-  vector<TeamId> getTeams(const Creature*) const;
-  vector<TeamId> getTeams() const;
-  vector<TeamId> getActiveTeams(const Creature*) const;
-  vector<TeamId> getActiveTeams() const;
-  void cancelTeam(TeamId);
-  bool teamExists(TeamId) const;
+  CollectiveTeams& getTeams();
+  const CollectiveTeams& getTeams() const;
+  void freeTeamMembers(TeamId);
 
   template <class Archive>
   static void registerTypes(Archive& ar);
@@ -388,6 +375,8 @@ class Collective : public Task::Callback {
   void onEpithetWorship(Creature*, WorshipType, EpithetId);
   void considerHealingLeader();
   bool considerImmigrant(const ImmigrantInfo&);
+  vector<Vec2> getBedPositions(const vector<PCreature>&, const ImmigrantInfo& info);
+  Optional<Vec2> getSpawnPos(const Creature*);
   void considerImmigration();
   void considerBirths();
   void considerWeaponWarning();
@@ -449,12 +438,7 @@ class Collective : public Task::Callback {
   Creature* getConsumptionTarget(Creature* consumer);
   deque<Creature*> SERIAL(pregnancies);
   mutable vector<ItemFetchInfo> itemFetchInfo;
-  struct TeamInfo : public NamedTupleBase<vector<Creature*>, bool> {
-    NAMED_TUPLE_STUFF(TeamInfo);
-    NAME_ELEM(0, creatures);
-    NAME_ELEM(1, active);
-  };
-  map<TeamId, TeamInfo> SERIAL(teamInfo);
+  CollectiveTeams SERIAL(teams);
   set<const Location*> SERIAL(knownLocations);
 };
 

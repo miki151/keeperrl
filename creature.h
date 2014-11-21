@@ -101,6 +101,8 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   string getSpeciesName() const;
   string getNameAndTitle() const;
   Optional<string> getFirstName() const;
+  string getGroupName(int count) const;
+  string getPluralName() const;
   int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
   static string getAttrName(AttrType);

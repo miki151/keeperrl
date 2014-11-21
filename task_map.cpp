@@ -93,6 +93,11 @@ CostInfo TaskMap<CostInfo>::removeTask(UniqueEntity<Task>::Id id) {
 }
 
 template <class CostInfo>
+bool TaskMap<CostInfo>::isPriorityTask(const Task* t) const {
+  return priorityTasks.contains(t);
+}
+
+template <class CostInfo>
 bool TaskMap<CostInfo>::isLocked(const Creature* c, const Task* t) const {
   return lockedTasks.count({c, t->getUniqueId()});
 }
@@ -150,6 +155,13 @@ Task* TaskMap<CostInfo>::addTask(PTask task, const Creature* c) {
   creatureMap.insert(c, task.get());
   tasks.push_back(std::move(task));
   return tasks.back().get();
+}
+
+template <class CostInfo>
+Task* TaskMap<CostInfo>::addPriorityTask(PTask task, const Creature* c) {
+  Task* t = addTask(std::move(task), c);
+  priorityTasks.insert(t);
+  return t;
 }
 
 template <class CostInfo>

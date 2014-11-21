@@ -52,7 +52,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(sectors)
     & SVAR(pregnancies)
     & SVAR(nextPayoutTime)
-    & SVAR(teamInfo)
+    & SVAR(teams)
     & SVAR(knownLocations)
     & SVAR(torches);
   CHECK_SERIAL;
@@ -179,6 +179,8 @@ struct Collective::ImmigrantInfo {
   Optional<CostInfo> cost;
   Optional<TechId> techId;
   Optional<Model::SunlightInfo::State> limit;
+  Optional<Range> groupSize;
+  bool autoTeam;
 };
 
 struct CollectiveConfig {
@@ -337,8 +339,10 @@ const CollectiveConfig& Collective::getConfig() const {
             c.salary = 0;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::WOLF;
-            c.frequency = 0.3;
-            c.traits = {MinionTrait::FIGHTER};
+            c.frequency = 0.15;
+            c.traits = LIST(MinionTrait::FIGHTER);
+            c.groupSize = LIST(3, 9);
+            c.autoTeam = true;
             c.salary = 0;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::WEREWOLF;
@@ -392,8 +396,8 @@ class LeaderControlOverride : public Creature::MoraleOverride {
   LeaderControlOverride(Collective* col, Creature* c) : collective(col), creature(c) {}
 
   virtual Optional<double> getMorale() override {
-    for (auto team : collective->getTeams(collective->getLeader()))
-      if (collective->isTeamActive(team) && collective->isInTeam(team, creature))
+    for (auto team : collective->getTeams().getContaining(collective->getLeader()))
+      if (collective->getTeams().isActive(team) && collective->getTeams().contains(team, creature))
         return 1;
     return Nothing();
   }
@@ -426,8 +430,6 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
   if (creatures.empty())
     traits.insert(MinionTrait::LEADER);
-  else if (traits[MinionTrait::FIGHTER])
-    control->addMessage(c->getAName() + " joins your forces.");
   CHECK(c->getTribe() == tribe);
   creatures.push_back(c);
   for (MinionTrait t : traits)
@@ -738,9 +740,16 @@ PTask Collective::getHealingTask(Creature* c) {
 }
 
 MoveInfo Collective::getTeamMemberMove(Creature* c) {
-  for (auto team : getTeams(c))
-    if (isTeamActive(team) && c != getTeamLeader(team) && getTeamLeader(team)->getLevel() == c->getLevel())
-      return c->moveTowards(getTeamLeader(team)->getPosition());
+  for (auto team : teams.getContaining(c))
+    if (teams.isActive(team)) {
+        const Creature* leader = teams.getLeader(team);
+        if (c != leader && leader->getLevel() == c->getLevel()) {
+            if (leader->getPosition().dist8(c->getPosition()) > 1)
+              return c->moveTowards(teams.getLeader(team)->getPosition());
+            else
+              return c->wait();
+        }
+    }
   return NoMove;
 }
 
@@ -749,6 +758,13 @@ MoveInfo Collective::getMove(Creature* c) {
   CHECK(contains(creatures, c));
   if (c->getLevel() != getLevel())
     return NoMove;
+  if (Task* task = taskMap.getTask(c))
+    if (taskMap.isPriorityTask(task)) {
+      if (task->isDone()) {
+        taskMap.removeTask(task);
+      } else
+        return task->getMove(c);
+    }
   if (MoveInfo move = getTeamMemberMove(c))
     return move;
   if (MoveInfo move = control->getMove(c))
@@ -909,56 +925,114 @@ const EnumMap<SpawnType, Collective::DormInfo>& Collective::getDormInfo() {
   return dormInfo;
 }
 
+Optional<Vec2> Collective::getSpawnPos(const Creature* c) {
+  vector<Vec2> extendedTiles = getExtendedTiles(20, 10);
+  if (extendedTiles.empty())
+    return Nothing();
+  int cnt = 100;
+  Vec2 spawnPos;
+  do {
+    spawnPos = chooseRandom(extendedTiles);
+  } while (!getLevel()->getSquare(spawnPos)->canEnter(c) && --cnt > 0);
+  if (cnt == 0) {
+    Debug() << "Couldn't spawn immigrant " << c->getName();
+    return Nothing();
+  }
+  return spawnPos;
+}
+
+template <typename T>
+static set<T> addVector(const set<T>& s, const vector<T>& v) {
+  set<T> ret(s);
+  ret.insert(v.begin(), v.end());
+  return ret;
+}
+
+template <typename T>
+static set<T> removeVector(const set<T>& s, const vector<T>& v) {
+  set<T> ret(s);
+  for (auto elem : v)
+    ret.erase(elem);
+  return ret;
+}
+
+vector<Vec2> Collective::getBedPositions(const vector<PCreature>& creatures, const ImmigrantInfo& info) {
+  SpawnType spawnType = *creatures[0]->getSpawnType();
+  SquareType dormType = getDormInfo()[spawnType].dormType;
+  Optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
+  vector<Vec2> bedPos;
+  for (int j : All(creatures))
+    for (int i : Range(30)) {
+      Optional<Vec2> newPos;
+      if (!bedType)
+        newPos = chooseRandom(removeVector(getSquares(dormType), bedPos));
+      else if (getCreatures(spawnType).size() + bedPos.size() < getSquares(*bedType).size()) {
+        newPos = chooseRandom(removeVector(getSquares(*bedType), bedPos));
+      } else
+        newPos = chooseBedPos(removeVector(getSquares(dormType), bedPos), addVector(getSquares(*bedType), bedPos));
+      if (newPos && !contains(bedPos, *newPos) &&
+          (!info.spawnAtDorm || level->getSquare(*newPos)->canEnter(creatures[i].get()))) {
+        bedPos.push_back(*newPos);
+        break;
+      }
+    }
+  return bedPos;
+}
+
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   if (info.techId && !hasTech(*info.techId))
     return false;
-  PCreature creature = CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this));
-  SpawnType spawnType = *creature->getSpawnType();
+  vector<PCreature> creatures;
+  for (int i : (info.groupSize ? Range(Random.get(*info.groupSize)) : Range(1)))
+    creatures.push_back(CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this)));
+  CHECK(creatures[0]->getSpawnType()) << "No spawn type for immigrant " << creatures[0]->getName();
+  SpawnType spawnType = *creatures[0]->getSpawnType();
   SquareType dormType = getDormInfo()[spawnType].dormType;
   if (getSquares(dormType).empty())
     return false;
   Optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
-  bool good = false;
-  Optional<Vec2> bedPos;
-  for (int i : Range(10)) {
-    if (!bedType)
-      bedPos = chooseRandom(getSquares(dormType));
-    else if (getCreatures(spawnType).size() < getSquares(*bedType).size()) {
-      bedPos = chooseRandom(getSquares(*bedType));
-    } else
-      bedPos = chooseBedPos(getSquares(dormType), getSquares(*bedType));
-    if (!info.spawnAtDorm || (bedPos && level->getSquare(*bedPos)->canEnter(creature.get()))) {
-      good = true;
-      break;
-    }
+  vector<Vec2> bedPos = getBedPositions(creatures, info);
+  if (info.groupSize) {
+    if (bedPos.size() < info.groupSize->getStart())
+      return false;
+    if (bedPos.size() < creatures.size())
+      creatures.resize(bedPos.size());
   }
-  if (!bedPos || !good)
+  else if (bedPos.empty())
     return false;
-  Vec2 spawnPos;
+  vector<Vec2> spawnPos;
   if (info.spawnAtDorm)
-    spawnPos = *bedPos;
-  else {
-    vector<Vec2> extendedTiles = getExtendedTiles(20, 10);
-    if (extendedTiles.empty())
-      return false;
-    int cnt = 100;
-    do {
-      spawnPos = chooseRandom(extendedTiles);
-    } while (!getLevel()->getSquare(spawnPos)->canEnter(creature.get()) && --cnt > 0);
-    if (cnt == 0) {
-      Debug() << "Couldn't spawn immigrant " << creature->getName();
-      return false;
+    spawnPos = bedPos;
+  else
+    for (int i : All(creatures))
+      if (auto pos = getSpawnPos(creatures[i].get()))
+        spawnPos.push_back(*pos);
+      else 
+        return false;
+  if (info.autoTeam)
+    teams.activate(teams.createHidden(extractRefs(creatures)));
+  addNewCreatureMessage(extractRefs(creatures));
+  for (int i : All(creatures)) {
+    Creature* c = creatures[i].get();
+    addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
+    if (bedType) {
+      taskMap.addPriorityTask(Task::createBed(this, bedPos[i], dormType, *bedType), c);
+      Debug() << c->getName() << " creating bed " << bedPos[i];
     }
+    minionPayment[c] = {info.salary, 0.0, 0};
+    minionAttraction[c] = info.attractions;
+    if (info.cost)
+      takeResource(*info.cost);
   }
-  Creature* c = creature.get();
-  addCreature(std::move(creature), spawnPos, info.traits);
-  if (bedType)
-    taskMap.addTask(Task::createBed(this, *bedPos, dormType, *bedType), c);
-  minionPayment[c] = {info.salary, 0.0, 0};
-  minionAttraction[c] = info.attractions;
-  if (info.cost)
-    takeResource(*info.cost);
   return true;
+}
+
+void Collective::addNewCreatureMessage(const vector<Creature*>& creatures) {
+  if (creatures.size() == 1)
+    control->addMessage(creatures[0]->getAName() + " joins your forces.");
+  else {
+    control->addMessage("A " + creatures[0]->getGroupName(creatures.size()) + " joins your forces.");
+  }
 }
 
 double Collective::getImmigrantChance(const ImmigrantInfo& info) {
@@ -1275,7 +1349,11 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
         removeElement(byTrait[t], victim);
     if (auto spawnType = victim->getSpawnType())
       removeElement(bySpawnType[*spawnType], victim);
-    removeFromAllTeams(victim);
+    for (auto team : teams.getContaining(victim)) {
+      teams.remove(team, victim);
+      if (teams.getMembers(team).empty())
+        teams.cancel(team);
+    }
     control->onCreatureKilled(victim, killer);
     if (killer)
       control->addMessage(PlayerMessage(victim->getAName() + " is killed by " + killer->getAName(),
@@ -2270,104 +2348,20 @@ void Collective::removeAssaultNotification(const Creature *c, const VillageContr
   control->removeAssaultNotification(c, vil);
 }
 
-bool Collective::isInTeam(TeamId team, const Creature* c) const {
-  return contains(teamInfo.at(team).creatures(), c);
+CollectiveTeams& Collective::getTeams() {
+  return teams;
 }
 
-void Collective::addToTeam(TeamId team, Creature* c) {
-  CHECK(!contains(teamInfo[team].creatures(), c));
-  teamInfo[team].creatures().push_back(c);
+const CollectiveTeams& Collective::getTeams() const {
+  return teams;
 }
 
-void Collective::removeFromTeam(TeamId team, Creature* c) {
-  removeElement(teamInfo[team].creatures(), c);
-}
-
-void Collective::activateTeam(TeamId team) {
-  teamInfo[team].active() = true;
-  for (Creature* c : teamInfo[team].creatures()) {
+void Collective::freeTeamMembers(TeamId id) {
+  for (Creature* c : teams.getMembers(id)) {
     freeFromGuardPost(c);
     if (c->isAffected(LastingEffect::SLEEP))
       c->removeEffect(LastingEffect::SLEEP);
   }
-}
-
-void Collective::deactivateTeam(TeamId team) {
-  teamInfo[team].active() = false;
-}
-
-void Collective::setTeamLeader(TeamId team, Creature* c) {
-  if (!contains(teamInfo[team].creatures(), c))
-    addToTeam(team, c);
-  swap(teamInfo[team].creatures()[0], teamInfo[team].creatures()[*findElement(teamInfo[team].creatures(), c)]);
-}
-
-const Creature* Collective::getTeamLeader(TeamId team) const {
-  CHECK(!teamInfo.at(team).creatures().empty());
-  return teamInfo.at(team).creatures()[0];
-}
-
-Creature* Collective::getTeamLeader(TeamId team) {
-  CHECK(!teamInfo.at(team).creatures().empty());
-  return teamInfo.at(team).creatures()[0];
-}
-
-const vector<Creature*>& Collective::getTeam(TeamId team) const {
-  return teamInfo.at(team).creatures();
-}
-
-vector<TeamId> Collective::getTeams(const Creature* c) const {
-  vector<TeamId> ret;
-  for (auto team : getKeys(teamInfo))
-    if (contains(teamInfo.at(team).creatures(), c))
-      ret.push_back(team);
-  return ret;
-}
-
-vector<TeamId> Collective::getTeams() const {
-  return getKeys(teamInfo);
-}
-
-vector<TeamId> Collective::getActiveTeams(const Creature* c) const {
-  vector<TeamId> ret;
-  for (TeamId t : getTeams(c))
-    if (isTeamActive(t))
-      ret.push_back(t);
-  return ret;
-}
-
-vector<TeamId> Collective::getActiveTeams() const {
-  vector<TeamId> ret;
-  for (TeamId t : getKeys(teamInfo))
-    if (isTeamActive(t))
-      ret.push_back(t);
-  return ret;
-}
-
-TeamId Collective::createTeam() {
-  static int cnt = 0;
-  TeamId id = ++cnt;
-  teamInfo[id].creatures().clear();
-  return id;
-}
-
-bool Collective::teamExists(TeamId id) const {
-  return teamInfo.count(id);
-}
-
-bool Collective::isTeamActive(TeamId team) const {
-  return teamInfo.at(team).active();
-}
-
-void Collective::removeFromAllTeams(Creature* c) {
-  for (TeamId team : getTeams()) {
-    if (removeElementMaybe(teamInfo[team].creatures(), c) && teamInfo[team].creatures().empty())
-      teamInfo.erase(team);
-  }
-}
-
-void Collective::cancelTeam(TeamId team) {
-  teamInfo.erase(team);
 }
 
 static Optional<Vec2> getAdjacentWall(const Level* l, Vec2 pos) {

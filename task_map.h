@@ -11,6 +11,7 @@ template<typename CostInfo>
 class TaskMap {
   public:
   Task* addTask(PTask, const Creature*);
+  Task* addPriorityTask(PTask, const Creature*);
   Task* addTask(PTask, Vec2);
   Task* getTask(const Creature*) const;
   vector<Task*> getTasks(Vec2) const;
@@ -26,6 +27,7 @@ class TaskMap {
   Task* getMarked(Vec2 pos) const;
   CostInfo removeTask(Task*);
   CostInfo removeTask(UniqueEntity<Task>::Id);
+  bool isPriorityTask(const Task*) const;
   bool isLocked(const Creature*, const Task*) const;
   void lock(const Creature*, const Task*);
   void clearAllLocked();
