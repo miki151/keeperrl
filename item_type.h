@@ -16,6 +16,8 @@ enum class ItemId {
   SPECIAL_BATTLE_AXE,
   WAR_HAMMER,
   SPECIAL_WAR_HAMMER,
+  CLUB,
+  HEAVY_CLUB,
   SCYTHE,
   BOW,
   ARROW,

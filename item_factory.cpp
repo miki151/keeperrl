@@ -609,6 +609,8 @@ ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
     {ItemId::LEATHER_HELM, 2 },
     {ItemId::LEATHER_BOOTS, 2 },
     {ItemId::LEATHER_GLOVES, 2 },
+    {ItemId::CLUB, 3 },
+    {ItemId::HEAVY_CLUB, 1 },
   });
   if (contains(techs, Technology::get(TechId::TRAPS))) {
     factory.addItem({ItemId::BOULDER_TRAP_ITEM, 0.5 });
@@ -1063,6 +1065,27 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.attackTime = 1.2;
             i.twoHanded = true;
             i.price = 100;
+            i.attackType = AttackType::CRUSH;);
+    case ItemId::CLUB: return ITATTR(
+            i.viewId = ViewId::CLUB;
+            i.name = "club";
+            i.itemClass = ItemClass::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
+            i.weight = 2;
+            i.modifiers[ModifierType::DAMAGE] = 4 + maybePlusMinusOne(4);
+            i.modifiers[ModifierType::ACCURACY] = 4 + maybePlusMinusOne(4);
+            i.price = 10;
+            i.attackType = AttackType::CRUSH;);
+    case ItemId::HEAVY_CLUB: return ITATTR(
+            i.viewId = ViewId::HEAVY_CLUB;
+            i.name = "heavy club";
+            i.itemClass = ItemClass::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
+            i.weight = 8;
+            i.modifiers[ModifierType::DAMAGE] = 10 + maybePlusMinusOne(4);
+            i.modifiers[ModifierType::ACCURACY] = 2 + maybePlusMinusOne(4);
+            i.twoHanded = true;
+            i.price = 20;
             i.attackType = AttackType::CRUSH;);
     case ItemId::SCYTHE: return ITATTR(
             i.viewId = ViewId::SWORD;

@@ -238,6 +238,8 @@ void genTiles() {
   addTile(SPECIAL_BATTLE_AXE, sprite(21, 7, 3));
   addTile(BOW, sprite(14, 8, 3));
   addTile(ARROW, sprite(5, 8, 3));
+  addTile(CLUB, sprite(2, 8, 3));
+  addTile(HEAVY_CLUB, sprite(2, 8, 3));
   addTile(SCROLL, sprite(3, 6, 3));
   addTile(STEEL_AMULET, sprite(1, 1, 3));
   addTile(COPPER_AMULET, sprite(2, 1, 3));
@@ -484,6 +486,8 @@ void genSymbols() {
   addSymbol(BATTLE_AXE, symbol(")", GREEN));
   addSymbol(SPECIAL_BATTLE_AXE, symbol(")", LIGHT_GREEN));
   addSymbol(BOW, symbol(")", BROWN));
+  addSymbol(CLUB, symbol(")", BROWN));
+  addSymbol(HEAVY_CLUB, symbol(")", BROWN));
   addSymbol(ARROW, symbol("\\", BROWN));
   addSymbol(SCROLL, symbol("?", WHITE));
   addSymbol(STEEL_AMULET, symbol("\"", YELLOW));

@@ -2082,9 +2082,8 @@ vector<ItemType> getInventory(CreatureId id) {
         .add({ItemId::SCROLL, EffectId::TELEPORT}, Random.get(1, 4));
     case CreatureId::GOBLIN: 
       return ItemList()
-        .add(chooseRandom({ItemId::KNIFE}))
-        .maybe(0.3, ItemId::LEATHER_BOOTS)
-        .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36)));
+        .add(ItemId::CLUB)
+        .maybe(0.3, ItemId::LEATHER_BOOTS);
     case CreatureId::WARRIOR: 
       return ItemList()
         .add(ItemId::LEATHER_ARMOR)
@@ -2128,13 +2127,15 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::IRON_BOOTS)
         .add({ItemId::POTION, EffectId::HEAL}, Random.get(1, 4))
         .add(ItemId::GOLD_PIECE, Random.get(200, 300));
+    case CreatureId::CYCLOPS: 
     case CreatureId::OGRE: 
-      return ItemList().add(ItemId::WAR_HAMMER);
+      return ItemList().add(ItemId::HEAVY_CLUB);
     case CreatureId::BANDIT:
     case CreatureId::ORC: 
       return ItemList()
         .add(ItemId::SWORD)
-        .maybe(0.3, randomBackup());
+        .maybe(0.3, randomBackup())
+        .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36)));
     case CreatureId::GREAT_ORC: 
       return ItemList()
         .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))

@@ -433,7 +433,7 @@ class TopLevelVillageControl : public PeacefulControl {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(PeacefulControl)
       & SVAR(attackTrigger)
-      & SVAR(attackAction);
+      & SVAR(action);
     CHECK_SERIAL;
   }
 
