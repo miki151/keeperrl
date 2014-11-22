@@ -199,8 +199,23 @@ PGuiElem GuiBuilder::drawTechnology(GameInfo::BandInfo& info) {
 }
 
 PGuiElem GuiBuilder::drawKeeperHelp() {
-  vector<string> helpText { "use mouse to dig and build", "shift selects rectangles", "", "scroll with arrows", "or right mouse button", "shift with arros scrolls faster", "", "click on minion", "to possess",
-    "", "[space] pause", "[z] or mouse wheel: zoom", "press mouse wheel: level map", "", "follow the red hints :-)"};
+  vector<string> helpText {
+    "use mouse to dig and build",
+    "shift selects rectangles",
+    "control deselects",
+    "",
+    "scroll with arrows",
+    "or right mouse button",
+    "shift with arrows scrolls faster",
+    "",
+    "click on minion",
+    "to control or show information",
+    "",
+    "[space] pause",
+    "[z] or mouse wheel: zoom",
+    "press mouse wheel: level map",
+    "",
+    "follow the orange hints :-)"};
   vector<PGuiElem> lines;
   for (string line : helpText)
     lines.push_back(GuiElem::label(line, colors[ColorId::LIGHT_BLUE]));

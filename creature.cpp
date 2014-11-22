@@ -2120,6 +2120,10 @@ void Creature::addSectors(Sectors* s) {
   sectors = s;
 }
 
+bool Creature::isSameSector(Vec2 pos) const {
+  return sectors->same(getPosition(), pos);
+}
+
 CreatureAction Creature::continueMoving() {
   if (shortestPath && shortestPath->isReachable(getPosition())) {
     Vec2 pos2 = shortestPath->getNextMove(getPosition());

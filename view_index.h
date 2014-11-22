@@ -24,6 +24,7 @@ class ViewObject;
 RICH_ENUM(HighlightType,
   BUILD,
   RECT_SELECTION,
+  RECT_DESELECTION,
   POISON_GAS,
   FOG,
   MEMORY,

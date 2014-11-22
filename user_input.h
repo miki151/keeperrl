@@ -31,6 +31,7 @@ enum class UserInputId {
     LIBRARY,
     DEITIES,
     RECT_SELECTION,
+    RECT_DESELECTION,
     POSSESS,
     BUTTON_RELEASE,
     CREATURE_BUTTON,
@@ -97,7 +98,8 @@ typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, Vec2, TeamLeaderInfo),
             UserInputId::TRAVEL, 
             UserInputId::FIRE,
             UserInputId::THROW_DIR,
-            UserInputId::RECT_SELECTION),
+            UserInputId::RECT_SELECTION,
+            UserInputId::RECT_DESELECTION),
         ASSIGN(TeamLeaderInfo,
             UserInputId::SET_TEAM_LEADER)> UserInput;
 

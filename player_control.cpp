@@ -923,9 +923,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (getCollective()->isMarkedToDig(pos))
     index.setHighlight(HighlightType::BUILD);
-  else if (rectSelectCorner && rectSelectCorner2
-      && pos.inRectangle(Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2})))
-    index.setHighlight(HighlightType::RECT_SELECTION);
+  if (rectSelection
+      && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
+    index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   const map<Vec2, Collective::TrapInfo>& traps = getCollective()->getTraps();
   const map<Vec2, Collective::ConstructionInfo>& constructions = getCollective()->getConstructions();
   if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
@@ -1098,26 +1098,31 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
         }
     case UserInputId::RECT_SELECTION:
-        if (rectSelectCorner) {
-          rectSelectCorner2 = input.get<Vec2>();
+        if (rectSelection) {
+          rectSelection->corner2 = input.get<Vec2>();
         } else
-          rectSelectCorner = input.get<Vec2>();
+          rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = input.get<Vec2>(););
+        break;
+    case UserInputId::RECT_DESELECTION:
+        if (rectSelection) {
+          rectSelection->corner2 = input.get<Vec2>();
+        } else
+          rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = input.get<Vec2>(); c.deselect = true;);
         break;
     case UserInputId::BUILD:
-        handleSelection(input.get<BuildingInfo>().pos(), getBuildInfo()[input.get<BuildingInfo>().building()], false);
+        handleSelection(input.get<BuildingInfo>().pos(),
+            getBuildInfo()[input.get<BuildingInfo>().building()], false);
         break;
     case UserInputId::LIBRARY:
         handleSelection(input.get<BuildingInfo>().pos(), libraryInfo[input.get<BuildingInfo>().building()], false);
         break;
     case UserInputId::BUTTON_RELEASE:
-        selection = NONE;
-        if (rectSelectCorner && rectSelectCorner2) {
-          handleSelection(*rectSelectCorner, getBuildInfo()[input.get<BuildingInfo>().building()], true);
-          for (Vec2 v : Rectangle::boundingBox({*rectSelectCorner, *rectSelectCorner2}))
-            handleSelection(v, getBuildInfo()[input.get<BuildingInfo>().building()], true);
+        if (rectSelection) {
+          selection = rectSelection->deselect ? DESELECT : SELECT;
+          for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
+            handleSelection(v, getBuildInfo()[input.get<BuildingInfo>().building()], true, rectSelection->deselect);
         }
-        rectSelectCorner = Nothing();
-        rectSelectCorner2 = Nothing();
+        rectSelection = Nothing();
         selection = NONE;
         break;
     case UserInputId::EXIT: model->exitAction(); break;
@@ -1126,10 +1131,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
   }
 }
 
-void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle) {
+void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle, bool deselectOnly) {
   if (building.techId && !getCollective()->hasTech(*building.techId))
     return;
   if (!pos.inRectangle(getLevel()->getBounds()))
+    return;
+  if (deselectOnly && !contains({BuildInfo::DIG, BuildInfo::SQUARE}, building.buildType))
     return;
   switch (building.buildType) {
     case BuildInfo::IMP:

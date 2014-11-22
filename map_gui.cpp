@@ -80,6 +80,7 @@ static Color getBleedingColor(const ViewObject& object) {
 
 Color getHighlightColor(HighlightType type, double amount) {
   switch (type) {
+    case HighlightType::RECT_DESELECTION: return transparency(colors[ColorId::RED], 90);
     case HighlightType::BUILD: return transparency(colors[ColorId::YELLOW], 170);
     case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);
     case HighlightType::FOG: return transparency(colors[ColorId::WHITE], 120 * amount);

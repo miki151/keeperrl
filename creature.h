@@ -230,6 +230,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   CreatureAction continueMoving();
   CreatureAction stayIn(const Location*);
   void addSectors(Sectors*);
+  bool isSameSector(Vec2) const;
 
   bool atTarget() const;
   void die(const Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);

@@ -165,7 +165,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     BuildInfo(MinionInfo, Optional<TechId> techId, const string& groupName, const string& h = "");
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
   };
-  void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle);
+  void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   vector<BuildInfo> getBuildInfo() const;
   static vector<BuildInfo> getBuildInfo(const Level*, const Tribe*);
@@ -215,8 +215,12 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   Optional<TeamId> SERIAL(currentTeam);
   Model* SERIAL(model);
   bool SERIAL2(showWelcomeMsg, true);
-  Optional<Vec2> rectSelectCorner;
-  Optional<Vec2> rectSelectCorner2;
+  struct SelectionInfo {
+    Vec2 corner1;
+    Vec2 corner2;
+    bool deselect;
+  };
+  Optional<SelectionInfo> rectSelection;
   double SERIAL2(lastControlKeeperQuestion, -100);
   int SERIAL2(startImpNum, -1);
   bool SERIAL2(retired, false);

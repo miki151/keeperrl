@@ -620,14 +620,12 @@ Optional<Vec2> Collective::getTileToExplore(const Creature* c, MinionTask task) 
   switch (task) {
     case MinionTask::EXPLORE_CAVES:
         if (auto pos = getRandomCloseTile(c->getPosition(), border,
-              [this, c](Vec2 pos) { return getLevel()->getCoverInfo(pos).sunlight() < 1
-                  && getLevel()->getSquare(pos)->canEnter(c);}))
+              [this, c](Vec2 pos) { return getLevel()->getCoverInfo(pos).sunlight() < 1 && c->isSameSector(pos);}))
           return *pos; // intentionally no break so bats fall back to exploring outdoors if there are no caves
     case MinionTask::EXPLORE:
     case MinionTask::EXPLORE_NOCTURNAL:
         return getRandomCloseTile(c->getPosition(), border,
-            [this, c](Vec2 pos) { return !getLevel()->getCoverInfo(pos).covered()
-                  && getLevel()->getSquare(pos)->canEnter(c);});
+            [this, c](Vec2 pos) { return !getLevel()->getCoverInfo(pos).covered() && c->isSameSector(pos);});
     default: FAIL << "Unrecognized explore task: " << int(task);
   }
   return Nothing();
