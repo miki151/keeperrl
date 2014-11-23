@@ -26,17 +26,15 @@ class CreatureView {
   virtual const MapMemory& getMemory() const = 0;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const = 0;
   virtual void refreshGameInfo(GameInfo&) const = 0;
-  virtual Vec2 getPosition() const = 0;
-  virtual bool staticPosition() const;
+  virtual Optional<Vec2> getViewPosition(bool force) const = 0;
   virtual bool canSee(const Creature*) const = 0;
   virtual bool canSee(Vec2 position) const = 0;
   virtual const Level* getViewLevel() const = 0;
   virtual vector<const Creature*> getUnknownAttacker() const = 0;
   virtual const Tribe* getTribe() const = 0;
   virtual bool isEnemy(const Creature*) const = 0;
-  virtual int getMaxSightRange() const = 0;
 
-  void updateVisibleCreatures();
+  void updateVisibleCreatures(Rectangle range);
   vector<const Creature*> getVisibleEnemies() const;
   vector<const Creature*> getVisibleFriends() const;
 

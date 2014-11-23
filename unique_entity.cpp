@@ -19,6 +19,7 @@
 #include "item.h"
 #include "creature.h"
 #include "task.h"
+#include "player_message.h"
 
 static int idCounter = 1;
 
@@ -44,3 +45,4 @@ SERIALIZABLE_TMPL(UniqueEntity, Level);
 SERIALIZABLE_TMPL(UniqueEntity, Item);
 SERIALIZABLE_TMPL(UniqueEntity, Creature);
 SERIALIZABLE_TMPL(UniqueEntity, Task);
+SERIALIZABLE_TMPL(UniqueEntity, PlayerMessage);

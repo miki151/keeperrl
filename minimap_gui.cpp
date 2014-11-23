@@ -96,7 +96,7 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
         info.roads.push_back(v - levelPart.getTopLeft());
     }
   }
-  info.player = bounds.getTopLeft() + (creature->getPosition() - levelPart.getTopLeft()) * scale;
+  info.player = bounds.getTopLeft() + (*creature->getViewPosition(true) - levelPart.getTopLeft()) * scale;
   for (const Creature* c : creature->getVisibleEnemies()) {
     Vec2 pos = bounds.getTopLeft() + (c->getPosition() - levelPart.getTopLeft()) * scale;
     if (pos.inRectangle(bounds))

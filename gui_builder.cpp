@@ -362,32 +362,33 @@ PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
         GuiElem::centerHoriz(GuiElem::horizontalList(std::move(bottomLine), bottomWidths, keySpacing), 200)), 28, 0);
 }
 
-GuiBuilder::OverlayInfo GuiBuilder::drawPlayerOverlay(GameInfo::PlayerInfo& info) {
+void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInfo& info) {
   if (info.lyingItems.empty())
-    return {nullptr, Vec2()};
-  vector<PGuiElem> ret;
+    return;
+  vector<PGuiElem> lines;
   const int maxElems = 6;
   const string title = "Click to pick up:";
   int numElems = min<int>(maxElems, info.lyingItems.size());
   Vec2 size = Vec2(renderer.getTextLength(title), (1 + numElems) * legendLineHeight);
   if (!info.lyingItems.empty()) {
-    ret.push_back(GuiElem::label(title));
+    lines.push_back(GuiElem::label(title));
     for (int i : All(info.lyingItems)) {
       if (i == maxElems - 1) {
-        ret.push_back(GuiElem::stack(
+        lines.push_back(GuiElem::stack(
             GuiElem::label("[more]", colors[ColorId::LIGHT_BLUE]),
             GuiElem::button(getButtonCallback(UserInputId::PICK_UP))));
         break;
-      } else
-        size.x = max(size.x, renderer.getTextLength(info.lyingItems[i].name));
-        ret.push_back(GuiElem::stack(GuiElem::horizontalList(makeVec<PGuiElem>(
+      } else {
+        int viewObjectWidth = 30;
+        size.x = max(size.x, viewObjectWidth + renderer.getTextLength(info.lyingItems[i].name));
+        lines.push_back(GuiElem::stack(GuiElem::horizontalList(makeVec<PGuiElem>(
                 GuiElem::viewObject(info.lyingItems[i].viewObject, true),
-                GuiElem::label(info.lyingItems[i].name)), 30, 0),
+                GuiElem::label(info.lyingItems[i].name)), viewObjectWidth, 0),
             GuiElem::button(getButtonCallback({UserInputId::PICK_UP_ITEM, i}))));
+      }
     }
   }
-  return {GuiElem::verticalList(std::move(ret), legendLineHeight, 0), size,
-      OverlayInfo::LEFT};
+  ret.push_back({GuiElem::verticalList(std::move(lines), legendLineHeight, 0), size, OverlayInfo::LEFT});
 }
 
 struct KeyInfo {
@@ -593,9 +594,9 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
 
 const int minionWindowWidth = 300;
 
-GuiBuilder::OverlayInfo GuiBuilder::drawMinionsOverlay(GameInfo::BandInfo& info) {
+void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
   if (chosenCreature == "")
-    return {};
+    return;
   vector<PGuiElem> lines;
   vector<CreatureInfo> chosen;
   for (auto& c : info.minions)
@@ -614,14 +615,14 @@ GuiBuilder::OverlayInfo GuiBuilder::drawMinionsOverlay(GameInfo::BandInfo& info)
           GuiElem::button(getButtonCallback(UserInput(UserInputId::CREATURE_BUTTON, c.uniqueId))),
           GuiElem::horizontalList(std::move(line), 40, 0)));
   }
-  return {GuiElem::verticalList(std::move(lines), legendLineHeight, 0),
+  ret.push_back({GuiElem::verticalList(std::move(lines), legendLineHeight, 0),
       Vec2(minionWindowWidth, (chosen.size() + 2) * legendLineHeight),
-      OverlayInfo::RIGHT};
+      OverlayInfo::RIGHT});
 }
 
-GuiBuilder::OverlayInfo GuiBuilder::drawBuildingsOverlay(GameInfo::BandInfo& info) {
+void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
   if (activeBuilding == -1 || info.buildings[activeBuilding].groupName.empty())
-    return {};
+    return;
   string groupName = info.buildings[activeBuilding].groupName;
   vector<PGuiElem> lines;
   for (int i : All(info.buildings)) {
@@ -630,20 +631,118 @@ GuiBuilder::OverlayInfo GuiBuilder::drawBuildingsOverlay(GameInfo::BandInfo& inf
       lines.push_back(getButtonLine(elem, i, activeBuilding, collectiveTab));
   }
   int height = lines.size() * legendLineHeight;
-  return { GuiElem::verticalList(std::move(lines), legendLineHeight, 0),
+  ret.push_back({GuiElem::verticalList(std::move(lines), legendLineHeight, 0),
       Vec2(minionWindowWidth, height),
-      OverlayInfo::LEFT};
+      OverlayInfo::LEFT});
 }
 
-GuiBuilder::OverlayInfo GuiBuilder::drawBandOverlay(GameInfo::BandInfo& info) {
+void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
   switch (collectiveTab) {
-    case CollectiveTab::MINIONS: return drawMinionsOverlay(info);
-    case CollectiveTab::BUILDINGS: return drawBuildingsOverlay(info);
+    case CollectiveTab::MINIONS: return drawMinionsOverlay(ret, info);
+    case CollectiveTab::BUILDINGS: return drawBuildingsOverlay(ret, info);
     default: break;
   }
-  return {};
 }
 
+int GuiBuilder::getNumMessageLines() const {
+  return 3;
+}
+
+static Color makeBlack(const Color& col, double freshness) {
+  double amount = 0.5 + freshness / 2;
+  return Color(col.r * amount, col.g * amount, col.b * amount);
+}
+
+static Color getMessageColor(const PlayerMessage& msg) {
+  Color color;
+  switch (msg.getPriority()) {
+    case PlayerMessage::NORMAL: color = colors[ColorId::WHITE]; break;
+    case PlayerMessage::HIGH: color = colors[ColorId::ORANGE]; break;
+    case PlayerMessage::CRITICAL: color = colors[ColorId::RED]; break;
+  }
+  return makeBlack(color, msg.getFreshness());
+}
+
+const int messageArrowLength = 15;
+
+static int getMessageLength(Renderer& renderer, const PlayerMessage& msg) {
+  return renderer.getTextLength(msg.getText()) + (msg.isClickable() ? messageArrowLength : 0);
+}
+
+static int getNumFitting(Renderer& renderer, const vector<PlayerMessage>& messages, int maxLength, int numLines) {
+  int currentWidth = 0;
+  int currentLine = 0;
+  for (int i = messages.size() - 1; i >= 0; --i) {
+    int length = getMessageLength(renderer, messages[i]);
+    length = min(length, maxLength);
+    if (currentWidth > 0)
+      ++length;
+    if (currentWidth + length > maxLength) {
+      if (currentLine == numLines - 1) 
+        return messages.size() - i - 1;
+      currentWidth = 0;
+      ++currentLine;
+    }
+    currentWidth += length;
+  }
+  return messages.size();
+}
+
+static vector<vector<PlayerMessage>> fitMessages(Renderer& renderer, const vector<PlayerMessage>& messages,
+    int maxLength, int numLines) {
+  int currentWidth = 0;
+  vector<vector<PlayerMessage>> ret {{}};
+  int numFitting = getNumFitting(renderer, messages, maxLength, numLines);
+  for (int i : Range(messages.size() - numFitting, messages.size())) {
+    int length = getMessageLength(renderer, messages[i]);
+    length = min(length, maxLength);
+    if (currentWidth > 0)
+      ++length;
+    if (currentWidth + length > maxLength) {
+      if (ret.size() == numLines) 
+        break;
+      currentWidth = 0;
+      ret.emplace_back();
+    }
+    currentWidth += length;
+    ret.back().push_back(messages[i]);
+  }
+  return ret;
+}
+
+static void cutToFit(Renderer& renderer, string& s, int maxLength) {
+  while (!s.empty() && renderer.getTextLength(s) > maxLength)
+    s.pop_back();
+}
+
+void GuiBuilder::drawMessages(vector<OverlayInfo>& ret,
+    const vector<PlayerMessage>& messageBuffer, int maxMessageLength) {
+  vector<vector<PlayerMessage>> messages = fitMessages(renderer, messageBuffer, maxMessageLength,
+      getNumMessageLines());
+  int lineHeight = 20;
+  vector<PGuiElem> lines;
+  for (int i : All(messages)) {
+    vector<PGuiElem> line;
+    vector<int> lengths;
+    for (auto& message : messages[i]) {
+      string text = (line.empty() ? "" : " ") + message.getText();
+      cutToFit(renderer, text, maxMessageLength);
+      line.push_back(GuiElem::stack(
+            GuiElem::button(getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
+            GuiElem::label(text, getMessageColor(message))));
+      lengths.push_back(renderer.getTextLength(text));
+      if (message.isClickable()) {
+        line.push_back(GuiElem::labelUnicode(String(L'➚'), getMessageColor(message)));
+        lengths.push_back(messageArrowLength);
+      }
+    }
+    if (!messages[i].empty())
+      lines.push_back(GuiElem::horizontalList(std::move(line), lengths, 0));
+  }
+  if (!lines.empty())
+    ret.push_back({GuiElem::verticalList(std::move(lines), lineHeight, 0),
+        Vec2(maxMessageLength, lineHeight * messages.size() + 15), OverlayInfo::MESSAGES});
+}
 
 PGuiElem GuiBuilder::drawVillages(GameInfo::VillageInfo& info) {
   vector<PGuiElem> lines;

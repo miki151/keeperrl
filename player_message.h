@@ -2,15 +2,24 @@
 #define _PLAYER_MESSAGE_H
 
 #include "util.h"
+#include "unique_entity.h"
 
-class PlayerMessage {
+class PlayerMessage : public UniqueEntity<PlayerMessage> {
   public:
   enum Priority { NORMAL, HIGH, CRITICAL };
 
   PlayerMessage(const string&, Priority = NORMAL);
   PlayerMessage(const char*, Priority = NORMAL);
 
-  const string& getText() const;
+  PlayerMessage& setPosition(Vec2);
+  Optional<Vec2> getPosition() const;
+
+  PlayerMessage& setCreature(UniqueEntity<Creature>::Id);
+  Optional<UniqueEntity<Creature>::Id> getCreature() const;
+
+  bool isClickable() const;
+
+  string getText() const;
   Priority getPriority() const;
   double getFreshness() const;
   void setFreshness(double);
@@ -21,6 +30,8 @@ class PlayerMessage {
   string SERIAL(text);
   Priority SERIAL(priority);
   double SERIAL(freshness);
+  Optional<Vec2> SERIAL(position);
+  Optional<UniqueEntity<Creature>::Id> SERIAL(creature);
 };
 
 #endif

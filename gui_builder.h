@@ -48,10 +48,11 @@ class GuiBuilder {
   struct OverlayInfo {
     PGuiElem elem;
     Vec2 size;
-    enum { LEFT, RIGHT } alignment;
+    enum { LEFT, RIGHT, MESSAGES } alignment;
   };
-  OverlayInfo drawPlayerOverlay(GameInfo::PlayerInfo&);
-  OverlayInfo drawBandOverlay(GameInfo::BandInfo&);
+  void drawPlayerOverlay(vector<OverlayInfo>&, GameInfo::PlayerInfo&);
+  void drawBandOverlay(vector<OverlayInfo>&, GameInfo::BandInfo&);
+  void drawMessages(vector<OverlayInfo>&, const vector<PlayerMessage>&, int guiLength);
   
   enum class CollectiveTab {
     BUILDINGS,
@@ -105,8 +106,10 @@ class GuiBuilder {
 
   vector<PGuiElem> drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveTab);
   PGuiElem getButtonLine(GameInfo::BandInfo::Button, int num, int& active, CollectiveTab);
-  OverlayInfo drawMinionsOverlay(GameInfo::BandInfo&);
-  OverlayInfo drawBuildingsOverlay(GameInfo::BandInfo&);
+  void drawMinionsOverlay(vector<OverlayInfo>&, GameInfo::BandInfo&);
+  void drawBuildingsOverlay(vector<OverlayInfo>&, GameInfo::BandInfo&);
+  void renderMessages(const vector<PlayerMessage>&);
+  int getNumMessageLines() const;
 };
 
 #endif

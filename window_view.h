@@ -89,9 +89,6 @@ class WindowView: public View {
       int* highlight = nullptr, int* choice = nullptr);
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
-  void renderMessages(const vector<PlayerMessage>&);
-  int getMaxMessageLength() const;
-  int getNumMessageLines() const;
   void drawAndClearBuffer();
   Optional<Vec2> getHighlightedTile();
 

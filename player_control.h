@@ -38,7 +38,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   MapMemory& getMemory(Level* l);
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual Vec2 getPosition() const override;
+  virtual Optional<Vec2> getViewPosition(bool force) const override;
   virtual bool canSee(const Creature*) const override;
   virtual bool canSee(Vec2 position) const override;
   virtual vector<const Creature*> getUnknownAttacker() const override;
@@ -50,11 +50,9 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void addAssaultNotification(const Creature*, const VillageControl*) override;
   virtual void removeAssaultNotification(const Creature*, const VillageControl*) override;
 
-  virtual bool staticPosition() const override;
-  virtual int getMaxSightRange() const override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onDiscoveredLocation(const Location*) override;
-  void addImportantLongMessage(const string&);
+  void addImportantLongMessage(const string&, Optional<Vec2> = Nothing());
 
   void onConqueredLand(const string& name);
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
@@ -230,12 +228,15 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   ViewObject getMinionViewObject(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
   map<const VillageControl*, vector<const Creature*>> SERIAL(assaultNotifications);
-  struct CurrentWarningInfo {
-    Collective::Warning warning;
-    double lastView;
+  struct CurrentWarningInfo : public NamedTupleBase<Collective::Warning, double> {
+    NAMED_TUPLE_STUFF(CurrentWarningInfo);
+    NAME_ELEM(0, warning);
+    NAME_ELEM(1, lastView);
   };
-  Optional<CurrentWarningInfo> currentWarning;
+  Optional<CurrentWarningInfo> SERIAL(currentWarning);
   vector<string> SERIAL(hints);
+  mutable queue<Vec2> scrollPos;
+  Optional<PlayerMessage> findMessage(PlayerMessage::Id);
 };
 
 #endif

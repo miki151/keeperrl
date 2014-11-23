@@ -180,7 +180,7 @@ PGuiElem GuiElem::label(const string& s, int size, Color c) {
         }));
 }
 
-PGuiElem GuiElem::label(sf::Uint32 s, Color color, int size, Renderer::FontId fontId) {
+PGuiElem GuiElem::labelUnicode(const String& s, Color color, int size, Renderer::FontId fontId) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(fontId, size, color, bounds.getTopLeft().x, bounds.getTopLeft().y, s, false);

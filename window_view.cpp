@@ -326,7 +326,7 @@ Color getSpeedColor(int value) {
 
 void WindowView::rebuildGui() {
   PGuiElem bottom, right;
-  GuiBuilder::OverlayInfo overlay;
+  vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;
   int bottomBarHeight = 0;
   switch (gameInfo.infoType) {
@@ -335,11 +335,11 @@ void WindowView::rebuildGui() {
         bottom = guiBuilder.drawBottomPlayerInfo(gameInfo);
         rightBarWidth = rightBarWidthPlayer;
         bottomBarHeight = bottomBarHeightPlayer;
-        overlay = guiBuilder.drawPlayerOverlay(gameInfo.playerInfo);
+        guiBuilder.drawPlayerOverlay(overlays, gameInfo.playerInfo);
         break;
     case GameInfo::InfoType::BAND:
         right = guiBuilder.drawRightBandInfo(gameInfo.bandInfo, gameInfo.villageInfo);
-        overlay = guiBuilder.drawBandOverlay(gameInfo.bandInfo);
+        guiBuilder.drawBandOverlay(overlays, gameInfo.bandInfo);
         bottom = guiBuilder.drawBottomBandInfo(gameInfo);
         rightBarWidth = rightBarWidthCollective;
         bottomBarHeight = bottomBarHeightCollective;
@@ -357,15 +357,19 @@ void WindowView::rebuildGui() {
   tempGuiElems.back()->setBounds(Rectangle(
       0, renderer.getHeight() - bottomBarHeight,
       renderer.getWidth() - rightBarWidth, renderer.getHeight()));
-  if (overlay.elem) {
-    int bottomOffset = 15;
-    int margin = 10;
-    int rightMargin = overlay.alignment == GuiBuilder::OverlayInfo::RIGHT ? 20 : 70;
-    int width = margin + rightMargin + overlay.size.x;
-    int sideOffset = 10;
-    int height = overlay.size.y + 2 * margin;
-    int rightWindowHeight = 80;
+  int bottomOffset = 15;
+  int leftMargin = 10;
+  int topMargin = 10;
+  int rightMargin = 20;
+  int bottomMargin = 10;
+  int sideOffset = 10;
+  int rightWindowHeight = 80;
+  guiBuilder.drawMessages(overlays, gameInfo.messageBuffer,
+      renderer.getWidth() - rightBarWidth - leftMargin - rightMargin);
+  for (auto& overlay : overlays) {
     Vec2 pos;
+    int width = leftMargin + rightMargin + overlay.size.x;
+    int height = overlay.size.y + bottomMargin + topMargin;
     switch (overlay.alignment) {
       case GuiBuilder::OverlayInfo::RIGHT:
           pos = Vec2(renderer.getWidth() - rightBarWidth - sideOffset - width,
@@ -375,9 +379,15 @@ void WindowView::rebuildGui() {
           pos = Vec2(sideOffset,
               renderer.getHeight() - bottomBarHeight - bottomOffset - height);
           break;
+      case GuiBuilder::OverlayInfo::MESSAGES:
+          width -= rightMargin - 10;
+          height -= bottomMargin + topMargin + 6;
+          topMargin = 2;
+          pos = Vec2(0, 0);
+          break;
     }
     tempGuiElems.push_back(GuiElem::translucentBackground(
-        GuiElem::margins(std::move(overlay.elem), margin, margin, rightMargin, margin)));
+        GuiElem::margins(std::move(overlay.elem), leftMargin, topMargin, rightMargin, bottomMargin)));
     tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(width, height)));
   }
 }
@@ -399,94 +409,6 @@ vector<GuiElem*> WindowView::getClickableGuiElems() {
     ret.push_back(mapGui);
   }
   return ret;
-}
-
-int WindowView::getNumMessageLines() const {
-  return 3;
-}
-
-static Color makeBlack(const Color& col, double freshness) {
-  double amount = 0.5 + freshness / 2;
-  return Color(col.r * amount, col.g * amount, col.b * amount);
-}
-
-static Color getMessageColor(const PlayerMessage& msg) {
-  Color color;
-  switch (msg.getPriority()) {
-    case PlayerMessage::NORMAL: color = colors[ColorId::WHITE]; break;
-    case PlayerMessage::HIGH: color = colors[ColorId::ORANGE]; break;
-    case PlayerMessage::CRITICAL: color = colors[ColorId::RED]; break;
-  }
-  return makeBlack(color, msg.getFreshness());
-}
-
-static int getNumFitting(Renderer& renderer, const vector<PlayerMessage>& messages, int maxLength, int numLines) {
-  int currentWidth = 0;
-  int currentLine = 0;
-  for (int i = messages.size() - 1; i >= 0; --i) {
-    int length = renderer.getTextLength(messages[i].getText());
-    length = min(length, maxLength);
-    if (currentWidth > 0)
-      ++length;
-    if (currentWidth + length > maxLength) {
-      if (currentLine == numLines - 1) 
-        return messages.size() - i - 1;
-      currentWidth = 0;
-      ++currentLine;
-    }
-    currentWidth += length;
-  }
-  return messages.size();
-}
-
-static vector<vector<PlayerMessage>> fitMessages(Renderer& renderer, const vector<PlayerMessage>& messages,
-    int maxLength, int numLines) {
-  int currentWidth = 0;
-  vector<vector<PlayerMessage>> ret {{}};
-  int numFitting = getNumFitting(renderer, messages, maxLength, numLines);
-  for (int i : Range(messages.size() - numFitting, messages.size())) {
-    int length = renderer.getTextLength(messages[i].getText());
-    length = min(length, maxLength);
-    if (currentWidth > 0)
-      ++length;
-    if (currentWidth + length > maxLength) {
-      if (ret.size() == numLines) 
-        break;
-      currentWidth = 0;
-      ret.emplace_back();
-    }
-    currentWidth += length;
-    ret.back().push_back(messages[i]);
-  }
-  return ret;
-}
-
-int WindowView::getMaxMessageLength() const {
-  return getMapGuiBounds().getW() - 50;
-}
-
-static void cutToFit(Renderer& renderer, string& s, int maxLength) {
-  while (!s.empty() && renderer.getTextLength(s) > maxLength)
-    s.pop_back();
-}
-
-void WindowView::renderMessages(const vector<PlayerMessage>& messageBuffer) {
-  vector<vector<PlayerMessage>> messages = fitMessages(renderer, messageBuffer, getMaxMessageLength(),
-      getNumMessageLines());
-  int lineHeight = 20;
-  if (!messages.empty())
-    renderer.drawFilledRectangle(0, 0, getMapGuiBounds().getKX(), lineHeight * messages.size() + 15,
-        transparency(colors[ColorId::BLACK], 100));
-  for (int i : All(messages)) {
-    int carret = 0;
-    for (auto& message : messages[i]) {
-      string text = (carret > 0 ? " " : "") + message.getText();
-      cutToFit(renderer, text, getMaxMessageLength());
-      renderer.drawText(getMessageColor(message),
-          10 + carret, 5 + lineHeight * i, text);
-      carret += renderer.getTextLength(text);
-    }
-  }
 }
 
 void WindowView::resetCenter() {
@@ -531,8 +453,10 @@ void WindowView::updateView(const CreatureView* collective) {
   collective->refreshGameInfo(gameInfo);
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds()))
     objects[pos] = Nothing();
-  if (!mapGui->isCentered() || collective->staticPosition())
-    mapGui->setCenter(collective->getPosition());
+  if (!mapGui->isCentered())
+    mapGui->setCenter(*collective->getViewPosition(true));
+  else if (auto pos = collective->getViewPosition(false))
+    mapGui->setCenter(*pos);
   const MapMemory* memory = &collective->getMemory(); 
   mapGui->updateLayout(mapLayout, collective->getViewLevel()->getBounds());
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds())) 
@@ -591,7 +515,6 @@ void WindowView::refreshView() {
 void WindowView::drawMap() {
   for (GuiElem* gui : getAllGuiElems())
     gui->render(renderer);
-  renderMessages(gameInfo.messageBuffer);
   guiBuilder.addFpsCounterTick();
 }
 

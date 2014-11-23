@@ -303,7 +303,8 @@ void Creature::makeMove() {
     spendTime(1);
     return;
   }
-  updateVisibleCreatures();
+  int range = FieldOfView::sightRange;
+  updateVisibleCreatures(Rectangle(getPosition() - Vec2(range, range), getPosition() + Vec2(range, range)));
   if (swapPositionCooldown)
     --swapPositionCooldown;
   MEASURE(controller->makeMove(), "creature move time");
@@ -366,10 +367,6 @@ const Level* Creature::getViewLevel() const {
   return level;
 }
 
-int Creature::getMaxSightRange() const {
-  return FieldOfView::sightRange;
-}
-
 Level* Creature::getLevel() {
   return level;
 }
@@ -380,6 +377,10 @@ const Level* Creature::getLevel() const {
 
 Vec2 Creature::getPosition() const {
   return position;
+}
+
+Optional<Vec2> Creature::getViewPosition(bool) const {
+  return getPosition();
 }
 
 void Creature::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {

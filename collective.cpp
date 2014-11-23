@@ -221,7 +221,10 @@ const CollectiveConfig& Collective::getConfig() const {
       CONSTRUCT(CollectiveConfig,
         c.manageEquipment = true;
         c.workerFollowLeader = true;
-        c.immigrantFrequency = 0.011;
+        if (Options::getValue(OptionId::FAST_IMMIGRATION))
+          c.immigrantFrequency = 0.1;
+        else
+          c.immigrantFrequency = 0.011;
         c.payoutTime = 500;
         c.payoutMultiplier = 3;
         c.stripSpawns = true;
@@ -1009,7 +1012,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
         return false;
   if (info.autoTeam)
     teams.activate(teams.createHidden(extractRefs(creatures)));
-  addNewCreatureMessage(extractRefs(creatures));
+  auto creatureRefs = extractRefs(creatures);
   for (int i : All(creatures)) {
     Creature* c = creatures[i].get();
     addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
@@ -1022,14 +1025,17 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     if (info.cost)
       takeResource(*info.cost);
   }
+  addNewCreatureMessage(creatureRefs);
   return true;
 }
 
 void Collective::addNewCreatureMessage(const vector<Creature*>& creatures) {
   if (creatures.size() == 1)
-    control->addMessage(creatures[0]->getAName() + " joins your forces.");
+    control->addMessage(PlayerMessage(creatures[0]->getAName() + " joins your forces.")
+        .setCreature(creatures[0]->getUniqueId()));
   else {
-    control->addMessage("A " + creatures[0]->getGroupName(creatures.size()) + " joins your forces.");
+    control->addMessage(PlayerMessage("A " + creatures[0]->getGroupName(creatures.size()) + " joins your forces.")
+        .setCreature(creatures[0]->getUniqueId()));
   }
 }
 
@@ -1227,7 +1233,7 @@ void Collective::tick(double time) {
         Vec2 pos = c->getPosition();
         if (containsSquare(pos) && !c->isDead()) {
           getLevel()->globalMessage(pos, c->getTheName() + " surrenders.");
-          control->addMessage(PlayerMessage(c->getAName() + " surrenders."));
+          control->addMessage(PlayerMessage(c->getAName() + " surrenders.").setPosition(c->getPosition()));
           c->die(nullptr, true, false);
           addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
                 MonsterAIFactory::collective(this)), pos, {MinionTrait::PRISONER});
@@ -1355,9 +1361,10 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     control->onCreatureKilled(victim, killer);
     if (killer)
       control->addMessage(PlayerMessage(victim->getAName() + " is killed by " + killer->getAName(),
-            PlayerMessage::HIGH));
+            PlayerMessage::HIGH).setPosition(victim->getPosition()));
     else
-      control->addMessage(PlayerMessage(victim->getAName() + " is killed.", PlayerMessage::HIGH));
+      control->addMessage(PlayerMessage(victim->getAName() + " is killed.", PlayerMessage::HIGH)
+          .setPosition(victim->getPosition()));
   }
   if (victim1->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
     addMana(getKillManaScore(victim1));
@@ -1367,7 +1374,8 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
 /*    if (Creature* leader = getLeader())
       leader->increaseExpLevel(double(victim1->getDifficultyPoints()) / 200);*/
     if (killer)
-      control->addMessage(PlayerMessage(victim1->getAName() + " is killed by " + killer->getAName()));
+      control->addMessage(PlayerMessage(victim1->getAName() + " is killed by " + killer->getAName())
+          .setPosition(victim1->getPosition()));
   }
 }
 
@@ -1538,7 +1546,7 @@ static const int alarmTime = 100;
 
 void Collective::onAlarmEvent(const Level* l, Vec2 pos) {
   if (l == getLevel() && containsSquare(pos)) {
-    control->addMessage(PlayerMessage("An alarm goes off.", PlayerMessage::HIGH));
+    control->addMessage(PlayerMessage("An alarm goes off.", PlayerMessage::HIGH).setPosition(pos));
     alarmInfo.finishTime() = getTime() + alarmTime;
     alarmInfo.position() = pos;
     for (Creature* c : byTrait[MinionTrait::FIGHTER])
@@ -2046,7 +2054,7 @@ void Collective::onTrapTriggerEvent(const Level* l, Vec2 pos) {
 void Collective::onTrapDisarmEvent(const Level* l, const Creature* who, Vec2 pos) {
   if (traps.count(pos) && l == getLevel()) {
     control->addMessage(PlayerMessage(who->getAName() + " disarms a " 
-          + Item::getTrapName(traps.at(pos).type()) + " trap.", PlayerMessage::HIGH));
+          + Item::getTrapName(traps.at(pos).type()) + " trap.", PlayerMessage::HIGH).setPosition(pos));
     traps.at(pos).armed() = false;
   }
 }

@@ -58,7 +58,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void setTime(double t);
   void setLevel(Level* l);
   virtual const Level* getViewLevel() const override;
-  virtual int getMaxSightRange() const override;
   Level* getLevel();
   const Level* getLevel() const;
   const Square* getConstSquare() const;
@@ -66,7 +65,8 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   Square* getSquare();
   Square* getSquare(Vec2 direction);
   void setPosition(Vec2 pos);
-  virtual Vec2 getPosition() const override;
+  Vec2 getPosition() const;
+  virtual Optional<Vec2> getViewPosition(bool force) const override;
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);

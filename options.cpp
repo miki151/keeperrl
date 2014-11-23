@@ -24,6 +24,7 @@ const unordered_map<OptionId, int> defaults {
   {OptionId::MUSIC, 1},
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
+  {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
   {OptionId::AGGRESSIVE_HEROES, 1},
@@ -35,6 +36,7 @@ const map<OptionId, string> names {
   {OptionId::MUSIC, "Music"},
   {OptionId::KEEP_SAVEFILES, "Keep save files"},
   {OptionId::SHOW_MAP, "Show map"},
+  {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::AGGRESSIVE_HEROES, "Aggressive enemies"},
@@ -56,6 +58,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::START_WITH_NIGHT,
       OptionId::SHOW_MAP,
       OptionId::STARTING_RESOURCE,
+      OptionId::FAST_IMMIGRATION,
 #endif
   }},
 };
@@ -92,6 +95,7 @@ unordered_map<OptionId, vector<string>> valueNames {
   {OptionId::MUSIC, { "off", "on" }},
   {OptionId::KEEP_SAVEFILES, { "no", "yes" }},
   {OptionId::SHOW_MAP, { "no", "yes" }},
+  {OptionId::FAST_IMMIGRATION, { "no", "yes" }},
   {OptionId::STARTING_RESOURCE, { "no", "yes" }},
   {OptionId::START_WITH_NIGHT, { "no", "yes" }},
   {OptionId::AGGRESSIVE_HEROES, { "no", "yes" }},

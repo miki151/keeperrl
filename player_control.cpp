@@ -50,6 +50,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(surprises)
     & SVAR(assaultNotifications)
     & SVAR(messages)
+    & SVAR(currentWarning)
     & SVAR(hints);
   CHECK_SERIAL;
 }
@@ -854,11 +855,14 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
   messages.push_back(msg);
 }
 
-void PlayerControl::addImportantLongMessage(const string& msg) {
+void PlayerControl::addImportantLongMessage(const string& msg, Optional<Vec2> pos) {
   model->getView()->presentText("Important", msg);
   for (string s : split(msg, {'.'})) {
     trim(s);
-    addMessage(PlayerMessage(s, PlayerMessage::CRITICAL));
+    auto msg = PlayerMessage(s, PlayerMessage::CRITICAL);
+    if (pos)
+      msg.setPosition(*pos);
+    addMessage(msg);
   }
 }
 
@@ -947,19 +951,20 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         ViewObject::Attribute::EFFICIENCY, getCollective()->getEfficiency(pos));
 }
 
-bool PlayerControl::staticPosition() const {
-  return false;
-}
-
-int PlayerControl::getMaxSightRange() const {
-  return 100000;
-}
-
-Vec2 PlayerControl::getPosition() const {
-  if (const Creature* keeper = getKeeper())
-    return keeper->getPosition();
-  else
-    return Vec2(0, 0);
+Optional<Vec2> PlayerControl::getViewPosition(bool force) const {
+  if (force) {
+    if (const Creature* keeper = getKeeper())
+      return keeper->getPosition();
+    else
+      return Vec2(0, 0);
+  } else {
+    if (!scrollPos.empty()) {
+      Vec2 ret = scrollPos.front();
+      scrollPos.pop();
+      return ret;
+    } else
+      return Nothing();
+  }
 }
 
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
@@ -1032,7 +1037,6 @@ Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) {
   for (Creature* c : getCreatures())
     if (c->getUniqueId() == id)
       return c;
-  FAIL << "Creature not found " << id;
   return nullptr;
 }
 
@@ -1056,10 +1060,27 @@ void PlayerControl::commandTeam(TeamId team) {
   getCollective()->freeTeamMembers(team);
 }
 
+Optional<PlayerMessage> PlayerControl::findMessage(PlayerMessage::Id id){
+  for (auto& elem : messages)
+    if (elem.getUniqueId() == id)
+      return elem;
+  return Nothing();
+}
+
 void PlayerControl::processInput(View* view, UserInput input) {
   if (retired)
     return;
   switch (input.getId()) {
+    case UserInputId::MESSAGE_INFO:
+        if (auto message = findMessage(input.get<int>())) {
+          if (auto pos = message->getPosition())
+            scrollPos.push(*pos);
+          else if (auto id = message->getCreature()) {
+            if (const Creature* c = getCreature(*id))
+              scrollPos.push(c->getPosition());
+          }
+        }
+        break;
     case UserInputId::EDIT_TEAM:
         if (getCurrentTeam() && getCollective()->getTeams().getMembers(*getCurrentTeam()).empty())
           getCollective()->getTeams().cancel(*getCurrentTeam());
@@ -1077,14 +1098,15 @@ void PlayerControl::processInput(View* view, UserInput input) {
         getCollective()->getTeams().cancel(input.get<TeamId>());
         break;
     case UserInputId::SET_TEAM_LEADER:
-        getCollective()->getTeams().setLeader(input.get<TeamLeaderInfo>().team(),
-            getCreature(input.get<TeamLeaderInfo>().creatureId()));
+        if (Creature* c = getCreature(input.get<TeamLeaderInfo>().creatureId()))
+          getCollective()->getTeams().setLeader(input.get<TeamLeaderInfo>().team(), c);
         break;
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DEITIES: model->keeperopedia.deity(view, Deity::getDeities()[input.get<int>()]); break;
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::CREATURE_BUTTON: 
-        handleCreatureButton(getCreature(input.get<int>()), view);
+        if (Creature* c = getCreature(input.get<int>()))
+          handleCreatureButton(c, view);
         break;
     case UserInputId::POSSESS: {
         Vec2 pos = input.get<Vec2>();
@@ -1365,7 +1387,7 @@ void PlayerControl::tick(double time) {
       return msg.getFreshness() > 0; });
   for (Warning w : ENUM_ALL(Warning))
     if (getCollective()->isWarning(w)) {
-      if (!currentWarning || currentWarning->warning != w || currentWarning->lastView + warningFrequency < time) {
+      if (!currentWarning || currentWarning->warning() != w || currentWarning->lastView() + warningFrequency < time) {
         addMessage(PlayerMessage(getWarningText(w), PlayerMessage::HIGH));
         currentWarning = {w, time};
       }
@@ -1382,7 +1404,7 @@ void PlayerControl::tick(double time) {
         c->playerMessage("You sense horrible evil in the " + 
             getCardinalName((getKeeper()->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
   }
-  updateVisibleCreatures();
+  updateVisibleCreatures(getLevel()->getBounds());
   if (getCollective()->hasMinionDebt() && !retired && !payoutWarning) {
     model->getView()->presentText("Warning", "You don't have enough gold for salaries. "
         "Your minions will refuse to work if they are not paid.\n \n"
@@ -1401,7 +1423,7 @@ void PlayerControl::tick(double time) {
   for (auto assault : copyOf(assaultNotifications))
     for (const Creature* c : assault.second)
       if (canSee(c)) {
-        addImportantLongMessage(assault.first->getAttackMessage());
+        addImportantLongMessage(assault.first->getAttackMessage(), c->getPosition());
         assaultNotifications.erase(assault.first);
         break;
       }
@@ -1578,9 +1600,10 @@ void PlayerControl::removeAssaultNotification(const Creature *c, const VillageCo
 
 void PlayerControl::onDiscoveredLocation(const Location* loc) {
   if (loc->hasName())
-    addMessage(PlayerMessage("Your minions discover the location of " + loc->getName(), PlayerMessage::HIGH));
+    addMessage(PlayerMessage("Your minions discover the location of " + loc->getName(), PlayerMessage::HIGH)
+        .setPosition(loc->getBounds().middle()));
   else if (loc->isMarkedAsSurprise())
-    addMessage(PlayerMessage("Your minions discover a surprise location."));
+    addMessage(PlayerMessage("Your minions discover a surprise location.").setPosition(loc->getBounds().middle()));
 }
 
 void PlayerControl::updateSquareMemory(Vec2 pos) {

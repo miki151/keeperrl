@@ -27,16 +27,10 @@ void CreatureView::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(CreatureView);
 
-bool CreatureView::staticPosition() const {
-  return true;
-}
-
-void CreatureView::updateVisibleCreatures() {
+void CreatureView::updateVisibleCreatures(Rectangle range) {
   visibleEnemies.clear();
   visibleFriends.clear();
-  int range = getMaxSightRange();
-  Rectangle box(getPosition() - Vec2(range, range), getPosition() + Vec2(range, range));
-  for (const Creature* c : getViewLevel()->getAllCreatures(box)) 
+  for (const Creature* c : getViewLevel()->getAllCreatures(range)) 
     if (canSee(c)) {
       if (isEnemy(c))
         visibleEnemies.push_back(c);

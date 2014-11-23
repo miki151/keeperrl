@@ -24,6 +24,7 @@ enum class OptionId {
   ASCII,
   MUSIC,
   KEEP_SAVEFILES,
+  FAST_IMMIGRATION,
 
   SHOW_MAP,
   START_WITH_NIGHT,
