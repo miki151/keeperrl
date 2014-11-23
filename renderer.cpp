@@ -37,7 +37,7 @@ Vec2 Renderer::nominalSize;
 map<string, Renderer::TileCoords> Renderer::tileCoords;
 
 int Renderer::getTextLength(string s) {
-  Text t(s, textFont, textSize);
+  Text t(toUnicode(s), textFont, textSize);
   return t.getLocalBounds().width;
 }
 
@@ -65,10 +65,14 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s
   display->draw(t);
 }
 
-void Renderer::drawText(Color color, int x, int y, string s, bool center, int size) {
+String Renderer::toUnicode(const string& s) {
   std::basic_string<sf::Uint32> utf32;
   sf::Utf8::toUtf32(s.begin(), s.end(), std::back_inserter(utf32));
-  drawText(TEXT_FONT, size, color, x, y, utf32, center);
+  return utf32;
+}
+
+void Renderer::drawText(Color color, int x, int y, string s, bool center, int size) {
+  drawText(TEXT_FONT, size, color, x, y, toUnicode(s), center);
 }
 
 void Renderer::drawText(Color color, int x, int y, const char* c, bool center, int size) {

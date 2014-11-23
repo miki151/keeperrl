@@ -31,9 +31,8 @@ Tile Tile::unicode(sf::Uint32 ch, ColorId col, bool sym) {
 }
 
 Tile Tile::fromString(const string& ch, ColorId colorId, bool symbol) {
-  std::basic_string<sf::Uint32> tmp;
-  sf::Utf8::toUtf32(ch.begin(), ch.end(), std::back_inserter(tmp));
-  CHECK(tmp.size() == 1) << "Symbol text too long: " << ch;
+  String tmp = Renderer::toUnicode(ch);
+  CHECK(tmp.getSize() == 1) << "Symbol text too long: " << ch;
   return Tile::unicode(tmp[0], colorId, symbol);
 }
 

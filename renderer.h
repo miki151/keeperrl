@@ -101,6 +101,7 @@ class Renderer {
   static bool loadTilesFromDir(const string& path, Vec2 size);
   static bool loadTilesFromFile(const string& path, Vec2 size);
   static void setNominalSize(Vec2);
+  static String toUnicode(const string&);
 
   struct TileCoords {
     Vec2 pos;
