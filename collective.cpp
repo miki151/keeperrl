@@ -962,8 +962,8 @@ vector<Vec2> Collective::getBedPositions(const vector<PCreature>& creatures, con
   SquareType dormType = getDormInfo()[spawnType].dormType;
   Optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
   vector<Vec2> bedPos;
-  for (int j : All(creatures))
-    for (int i : Range(30)) {
+  for (int i : All(creatures))
+    for (int j : Range(30)) {
       Optional<Vec2> newPos;
       if (!bedType)
         newPos = chooseRandom(removeVector(getSquares(dormType), bedPos));
