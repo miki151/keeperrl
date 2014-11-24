@@ -195,7 +195,7 @@ struct CollectiveConfig {
 
 Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t) : configId(cfg),
   knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
-  tribe(t), level(l), nextPayoutTime(getConfig().payoutTime), sectors(new Sectors(level->getBounds())),
+  tribe(t), level(l), nextPayoutTime(-1), sectors(new Sectors(level->getBounds())),
     flyingSectors(new Sectors(level->getBounds())) {
   credit = {
     {ResourceId::MANA, 200},
@@ -925,18 +925,22 @@ const EnumMap<SpawnType, Collective::DormInfo>& Collective::getDormInfo() {
   return dormInfo;
 }
 
-Optional<Vec2> Collective::getSpawnPos(const Creature* c) {
+vector<Vec2> Collective::getSpawnPos(const vector<Creature*>& creatures) {
   vector<Vec2> extendedTiles = getExtendedTiles(20, 10);
   if (extendedTiles.empty())
-    return Nothing();
-  int cnt = 100;
-  Vec2 spawnPos;
-  do {
-    spawnPos = chooseRandom(extendedTiles);
-  } while (!getLevel()->getSquare(spawnPos)->canEnter(c) && --cnt > 0);
-  if (cnt == 0) {
-    Debug() << "Couldn't spawn immigrant " << c->getName();
-    return Nothing();
+    return {};
+  vector<Vec2> spawnPos;
+  for (auto c : creatures) {
+    Vec2 pos;
+    int cnt = 100;
+    do {
+      pos = chooseRandom(extendedTiles);
+    } while ((!getLevel()->getSquare(pos)->canEnter(c) || contains(spawnPos, pos)) && --cnt > 0);
+    if (cnt == 0) {
+      Debug() << "Couldn't spawn immigrant " << c->getName();
+      return {};
+    } else
+      spawnPos.push_back(pos);
   }
   return spawnPos;
 }
@@ -1000,18 +1004,17 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   }
   else if (bedPos.empty())
     return false;
+  auto creatureRefs = extractRefs(creatures);
   vector<Vec2> spawnPos;
   if (info.spawnAtDorm)
     spawnPos = bedPos;
-  else
-    for (int i : All(creatures))
-      if (auto pos = getSpawnPos(creatures[i].get()))
-        spawnPos.push_back(*pos);
-      else 
-        return false;
+  else {
+    spawnPos = getSpawnPos(creatureRefs);
+    if (spawnPos.size() < creatures.size())
+      return false;
+  }
   if (info.autoTeam)
     teams.activate(teams.createHidden(extractRefs(creatures)));
-  auto creatureRefs = extractRefs(creatures);
   for (int i : All(creatures)) {
     Creature* c = creatures[i].get();
     addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
@@ -1182,11 +1185,11 @@ static vector<SquareType> roomsNeedingLight {
 
 void Collective::considerWeaponWarning() {
   int numWeapons = getAllItems([&](const Item* it) {
-      return it->getClass() == ItemClass::WEAPON && !minionEquipment.getOwner(it); }).size();
+      return it->getClass() == ItemClass::WEAPON; }).size();
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
   int numNeededWeapons = 0;
   for (Creature* c : getCreatures(MinionTrait::FIGHTER))
-    if (usesEquipment(c) && c->equip(genWeapon.get()) && minionEquipment.needs(c, genWeapon.get()))
+    if (usesEquipment(c) && minionEquipment.needs(c, genWeapon.get(), true, true))
       ++numNeededWeapons;
   setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
 }
@@ -1198,7 +1201,7 @@ void Collective::tick(double time) {
   considerWeaponWarning();
   if (Random.rollD(1.0 / getConfig().immigrantFrequency))
     considerImmigration();
-  if (time > nextPayoutTime) {
+  if (nextPayoutTime > -1 && time > nextPayoutTime) {
     nextPayoutTime += getConfig().payoutTime;
     makePayouts();
   }
@@ -2160,7 +2163,11 @@ static WorkshopInfo getWorkshopInfo(Collective* c, Vec2 pos) {
 void Collective::onAppliedSquare(Vec2 pos) {
   Creature* c = NOTNULL(getLevel()->getSquare(pos)->getCreature());
   MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
-  minionPayment[c].workAmount() += getTaskInfo().at(currentTask).cost;
+  if (getTaskInfo().at(currentTask).cost > 0) {
+    if (nextPayoutTime == -1)
+      nextPayoutTime = getTime() + getConfig().payoutTime;
+    minionPayment[c].workAmount() += getTaskInfo().at(currentTask).cost;
+  }
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     addMana(0.2);
     if (Random.rollD(60.0 / (getEfficiency(pos))) && !getAvailableSpells().empty())

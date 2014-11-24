@@ -570,13 +570,15 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
         GuiElem::button(getButtonCallback(UserInputId::CREATE_TEAM)),
         GuiElem::label("[new team]", colors[ColorId::WHITE])));
   list.push_back(GuiElem::empty());
-  vector<PGuiElem> res;
-  res.push_back(GuiElem::label("Next payout [" + toString(info.payoutTimeRemaining) + "]:",
-        colors[ColorId::WHITE]));
-  res.push_back(GuiElem::viewObject(info.numResource[0].viewObject, tilesOk));
-  res.push_back(GuiElem::label(toString<int>(info.nextPayout), colors[ColorId::WHITE]));
-  list.push_back(GuiElem::horizontalList(std::move(res), {170, 30, 1}, 0));
-  list.push_back(GuiElem::empty());
+  if (info.payoutTimeRemaining > -1) {
+    vector<PGuiElem> res;
+    res.push_back(GuiElem::label("Next payout [" + toString(info.payoutTimeRemaining) + "]:",
+          colors[ColorId::WHITE]));
+    res.push_back(GuiElem::viewObject(info.numResource[0].viewObject, tilesOk));
+    res.push_back(GuiElem::label(toString<int>(info.nextPayout), colors[ColorId::WHITE]));
+    list.push_back(GuiElem::horizontalList(std::move(res), {170, 30, 1}, 0));
+    list.push_back(GuiElem::empty());
+  }
   if (!enemyMap.empty()) {
     list.push_back(GuiElem::label("Enemies:", colors[ColorId::WHITE]));
     for (auto elem : enemyMap){

@@ -1005,7 +1005,7 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::LOST_SOUL:
       return INHERIT(GHOST,
           c.attr[AttrType::STRENGTH] = 5;
-          c.attr[AttrType::DEXTERITY] = 25;
+          c.attr[AttrType::DEXTERITY] = 35;
           c.courage = 10;
           c.spawnType = SpawnType::DEMON;
           c.barehandedAttack = AttackType::POSSESS;

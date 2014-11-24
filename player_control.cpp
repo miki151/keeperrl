@@ -818,7 +818,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.libraryButtons = fillButtons(libraryInfo);
   info.tasks = getCollective()->getMinionTaskStrings();
   info.minions.clear();
-  info.payoutTimeRemaining = getCollective()->getNextPayoutTime() - getCollective()->getTime();
+  int payoutTime = getCollective()->getNextPayoutTime(); 
+  if (payoutTime > -1)
+    info.payoutTimeRemaining = payoutTime - getCollective()->getTime();
+  else
+    info.payoutTimeRemaining = -1;
   info.nextPayout = getCollective()->getNextSalaries();
   for (Creature* c : getCollective()->getCreaturesAnyOf(
         {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER})) {

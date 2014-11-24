@@ -423,7 +423,7 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)},
           item->getEffectType()))
       return 1;
-    if (item->getClass() == ItemClass::AMMO && creature->hasSkill(Skill::get(SkillId::ARCHERY)))
+    if (item->getClass() == ItemClass::AMMO && creature->getSkillValue(Skill::get(SkillId::ARCHERY)) > 0)
       return 0.1;
     if (item->getClass() != ItemClass::WEAPON || creature->getAttr(AttrType::STRENGTH) < item->getMinStrength())
       return 0;
