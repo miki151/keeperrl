@@ -862,13 +862,14 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
 }
 
 void PlayerControl::addImportantLongMessage(const string& msg, Optional<Vec2> pos) {
-  model->getView()->presentText("Important", msg);
+//  model->getView()->presentText("Important", msg);
   for (string s : split(msg, {'.'})) {
     trim(s);
     auto msg = PlayerMessage(s, PlayerMessage::CRITICAL);
     if (pos)
       msg.setPosition(*pos);
     addMessage(msg);
+    model->getView()->stopClock();
   }
 }
 
