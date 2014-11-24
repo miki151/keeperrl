@@ -150,8 +150,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::EXPLORE_NOCTURNAL, {MinionTaskInfo::EXPLORE, "spying"}},
     {MinionTask::EXPLORE_CAVES, {MinionTaskInfo::EXPLORE, "spying"}},
  //   {MinionTask::SACRIFICE, {{}, "sacrifice ordered", Collective::Warning::ALTAR}},
-    {MinionTask::EXECUTE, {{SquareId::PRISON}, "execution ordered", Collective::Warning::NO_PRISON}},
-    {MinionTask::WORSHIP, {{}, "worship", Nothing(), 1}}};
+    {MinionTask::EXECUTE, {{SquareId::PRISON}, "execution ordered", Collective::Warning::NO_PRISON}}};
 /*  for (SquareType t : getSquareTypes())
     if (contains({SquareId::ALTAR, SquareId::CREATURE_ALTAR}, t.getId()) && !getSquares(t).empty()) {
       ret.at(MinionTask::WORSHIP).squares.push_back(t);
@@ -595,10 +594,10 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
 }
 
 void Collective::setRandomTask(const Creature* c) {
-  vector<MinionTask> goodTasks;
+  vector<pair<MinionTask, double>> goodTasks;
   for (MinionTask t : ENUM_ALL(MinionTask))
     if (isTaskGood(c, t))
-      goodTasks.push_back(t);
+      goodTasks.push_back({t, c->getMinionTasks().getValue(t)});
   if (!goodTasks.empty())
     setMinionTask(c, chooseRandom(goodTasks));
 }

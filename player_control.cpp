@@ -311,8 +311,8 @@ static vector<ItemType> marketItems {
   {ItemId::RING, LastingEffect::POISON_RESISTANT},
 };
 
-enum class PlayerControl::MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE/*, SACRIFICE*/, EXECUTE,
-  LABOR, TRAINING, WORKSHOP, FORGE, LAB, JEWELER, STUDY, WORSHIP, COPULATE, CONSUME };
+enum class PlayerControl::MinionOption { POSSESS, EQUIPMENT, INFO, WAKE_UP, PRISON, TORTURE, EXECUTE,
+  LABOR, TRAINING, WORKSHOP, FORGE, LAB, JEWELER, STUDY, COPULATE, CONSUME };
 
 struct TaskOption {
   MinionTask task;
@@ -327,25 +327,27 @@ vector<TaskOption> taskOptions {
   {MinionTask::LABORATORY, PlayerControl::MinionOption::LAB, "Lab"},
   {MinionTask::JEWELER, PlayerControl::MinionOption::JEWELER, "Jeweler"},
   {MinionTask::STUDY, PlayerControl::MinionOption::STUDY, "Study"},
-  {MinionTask::WORSHIP, PlayerControl::MinionOption::WORSHIP, "Worship"},
   {MinionTask::COPULATE, PlayerControl::MinionOption::COPULATE, "Copulate"},
   {MinionTask::CONSUME, PlayerControl::MinionOption::CONSUME, "Absorb"},
 };
 
 static string getMoraleString(double morale) {
+#ifndef RELEASE
   return toString(morale);
- /* if (morale < -0.33)
+#else
+  if (morale < -0.33)
     return "low";
   if (morale > 0.33)
     return "high";
-  return "normal";*/
+  return "normal";
+#endif
 }
 
 void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, vector<View::ListElem>& lOpt) {
   if (getCollective()->hasTrait(c, MinionTrait::PRISONER)) {
-    mOpt = {MinionOption::PRISON, MinionOption::TORTURE/*, MinionOption::SACRIFICE*/, MinionOption::EXECUTE,
+    mOpt = {MinionOption::PRISON, MinionOption::TORTURE, MinionOption::EXECUTE,
       MinionOption::LABOR};
-    lOpt = {"Send to prison", "Torture"/*, "Sacrifice"*/, "Execute", "Labor"};
+    lOpt = {"Send to prison", "Torture", "Execute", "Labor"};
     return;
   }
   mOpt = {MinionOption::POSSESS, MinionOption::INFO };
@@ -1387,7 +1389,7 @@ void PlayerControl::tick(double time) {
       return msg.getFreshness() > 0; });
   for (Warning w : ENUM_ALL(Warning))
     if (getCollective()->isWarning(w)) {
-      if (!currentWarning || currentWarning->warning() != w || currentWarning->lastView() + warningFrequency < time) {
+      if (!currentWarning || currentWarning->warning() != w || currentWarning->lastView()+warningFrequency < time) {
         addMessage(PlayerMessage(getWarningText(w), PlayerMessage::HIGH));
         currentWarning = {w, time};
       }

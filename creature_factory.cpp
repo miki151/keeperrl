@@ -868,8 +868,8 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
           c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
           c.minionTasks.setWorkshopTasks(1);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.minionTasks.setValue(MinionTask::STUDY, 1);
         } else {
           c.chatReactionFriendly = c.chatReactionHostile = "The " + name + " snarls.";
         }
@@ -960,9 +960,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
           c.attributeGain = 1;
           c.minionTasks.setValue(MinionTask::STUDY, 1);
-          c.minionTasks.setValue(MinionTask::LABORATORY, 0.0001); 
-          c.skills.setValue(SkillId::SORCERY, 0.2);
-          c.minionTasks.setValue(MinionTask::WORSHIP, 0.0001););
+          c.minionTasks.setValue(MinionTask::LABORATORY, 0.01); 
+          c.minionTasks.setValue(MinionTask::TRAIN, 0.0001); 
+          c.skills.setValue(SkillId::SORCERY, 0.2););
     case CreatureId::BANDIT: 
       return CATTR(
           c.viewId = ViewId::BANDIT;
@@ -1274,7 +1274,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.undead = true;
           c.spawnType = SpawnType::UNDEAD;
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.name = "zombie";);
     case CreatureId::SKELETON: 
@@ -1307,7 +1306,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spawnType = SpawnType::UNDEAD;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.skills.setValue(SkillId::SORCERY, 0.1);
@@ -1356,7 +1354,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.undead = true;
           c.spawnType = SpawnType::UNDEAD;
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.name = "mummy";
           c.pluralName = "mummies";);
@@ -1384,7 +1381,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionHostile = "\"Die!\"";
           c.minionTasks.setWorkshopTasks(1);
           c.minionTasks.setValue(MinionTask::TRAIN, 4);
-          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
           c.minionTasks.setValue(MinionTask::LABORATORY, 0.5); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
@@ -1395,7 +1391,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::STRENGTH] -= 3;
           c.attr[AttrType::DEXTERITY] -= 3;
           c.minionTasks.clear();
-          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
           c.minionTasks.setValue(MinionTask::LABORATORY, 4); 
           c.minionTasks.setValue(MinionTask::STUDY, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
@@ -1452,7 +1447,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionHostile = "\"Die!\"";
           c.minionTasks.setWorkshopTasks(4);
           c.minionTasks.setValue(MinionTask::TRAIN, 1); 
-          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
           c.minionTasks.setValue(MinionTask::LABORATORY, 0.5); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.skills.insert(SkillId::DISARM_TRAPS);
@@ -1501,7 +1495,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spawnType = SpawnType::HUMANOID;
           c.minionTasks.setWorkshopTasks(1);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::WORSHIP, 0.5); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "ogre";);
