@@ -98,6 +98,16 @@ void Renderer::drawImage(Rectangle r, const Image& image, double scale) {
   drawImage(r.getPX(), r.getPY(), r.getKX(), r.getKY(), image, scale);
 }
 
+void Renderer::drawFullImage(int px, int py, int kx, int ky, const Image& image) {
+  Texture t;
+  t.setSmooth(true);
+  t.loadFromImage(image);
+  Sprite s(t);
+  s.setPosition(px, py);
+  s.setScale(double(kx - px) / image.getSize().x, double(ky - py) / image.getSize().y);
+  display->draw(s);
+}
+
 void Renderer::drawImage(int px, int py, int kx, int ky, const Image& image, double scale) {
   Texture t;
   t.loadFromImage(image);

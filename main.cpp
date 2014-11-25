@@ -136,7 +136,7 @@ static Optional<string> chooseSaveFile(vector<pair<GameType, string>> games, str
     view->presentText("", noSaveMsg);
     return Nothing();
   }
-  auto ind = view->chooseFromList("Choose game", options, 0, View::MAIN_MENU);
+  auto ind = view->chooseFromList("Choose game", options, 0);
   if (ind)
     return allFiles[*ind].path;
   else

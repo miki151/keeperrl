@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "player_message.h"
-
+#include "location.h"
 
 PlayerMessage::PlayerMessage(const string& t, Priority p) : text(makeSentence(t)), priority(p), freshness(1) {}
 PlayerMessage::PlayerMessage(const char* t, Priority p) : text(makeSentence(t)), priority(p), freshness(1) {}
@@ -41,8 +41,17 @@ Optional<UniqueEntity<Creature>::Id> PlayerMessage::getCreature() const {
   return creature;
 }
 
+PlayerMessage& PlayerMessage::setLocation(const Location* l) {
+  location = l;
+  return *this;
+}
+
+const Location* PlayerMessage::getLocation() const {
+  return location;
+}
+
 bool PlayerMessage::isClickable() const {
-  return position || creature;
+  return position || creature || location;
 }
 
 template <class Archive> 
@@ -52,7 +61,8 @@ void PlayerMessage::serialize(Archive& ar, const unsigned int version) {
      & SVAR(priority)
      & SVAR(freshness)
      & SVAR(position)
-     & SVAR(creature);
+     & SVAR(creature)
+     & SVAR(location);
   CHECK_SERIAL;
 }
 

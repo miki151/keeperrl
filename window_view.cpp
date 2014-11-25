@@ -214,58 +214,21 @@ static vector<string> splashPaths {
     "splash2c.png",
     "splash2d.png" };
 
-void WindowView::displayMenuSplash2() {
+void WindowView::displayOldSplash() {
   Image splash;
   CHECK(splash.loadFromFile("splash2f.png"));
-  Rectangle menuPosition = getMenuPosition(View::MAIN_MENU);
+  Rectangle menuPosition = getMenuPosition(View::MAIN_MENU_NO_TILES);
   int margin = 10;
   renderer.drawImage(renderer.getWidth() / 2 - 415, menuPosition.getKY() + margin, splash);
   CHECK(splash.loadFromFile("splash2e.png"));
   renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2,
-      menuPosition.getPY() - splash.getSize().y - margin, splash);
+      menuPosition.getPY() - splash.getSize().y - margin, splash);  
 }
 
-void displayMenuSplash() {
+void WindowView::displayMenuSplash2() {
   Image splash;
-  CHECK(splash.loadFromFile("splash2f.png"));
-  int bottomMargin = 100;
-  renderer.drawImage(100, renderer.getHeight() - bottomMargin, splash);
-  vector<Rectangle> drawn;
-  if (splashPositions.empty())
-    random_shuffle(++splashPaths.begin(), splashPaths.end(), [](int a) { return Random.get(a);});
-  for (int path : All(splashPaths)) {
-    CHECK(splash.loadFromFile(splashPaths[path]));
-    int cnt = 100;
-    while (1) {
-      int px, py;
-      if (!splashPositions.empty()) {
-        px = splashPositions[path].x;
-        py = splashPositions[path].y;
-      } else {
-        px = Random.get(renderer.getWidth() - splash.getSize().x);
-        py = Random.get(renderer.getHeight() - bottomMargin - splash.getSize().y);
-        splashPositions.push_back({px, py});
-      }
-      Rectangle pos(px, py, px + splash.getSize().x, py + splash.getSize().y);
-      bool bad = false;
-      for (Rectangle& rec : drawn)
-        if (pos.intersects(rec)) {
-          bad = true;
-          break;
-        }
-      if (bad) {
-        if (--cnt > 0)
-          continue;
-        else
-          break;
-      }
-      drawn.push_back(pos);
-      renderer.drawImage(pos.getPX(), pos.getPY(), splash);
-      break;
-    }
-  }
- // drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() - 60, "Loading...", true);
- // drawAndClearBuffer();
+  CHECK(splash.loadFromFile("ui/menu.png"));
+  renderer.drawFullImage(0, 0, renderer.getWidth(), renderer.getHeight(), splash);
 }
 
 void WindowView::displaySplash(View::SplashType type, atomic<bool>& ready) {
@@ -519,8 +482,12 @@ void WindowView::drawMap() {
 }
 
 void WindowView::refreshScreen(bool flipBuffer) {
-  if (!gameReady)
-    displayMenuSplash2();
+  if (!gameReady) {
+    if (tilesOk)
+      displayMenuSplash2();
+    else
+      displayOldSplash();
+  }
   else
     drawMap();
   if (flipBuffer)
@@ -647,17 +614,26 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
   int windowWidth = 800;
   int windowHeight = 400;
   int ySpacing;
-  int xSpacing = (renderer.getWidth() - windowWidth) / 2;
   switch (type) {
-    case View::MAIN_MENU: ySpacing = (renderer.getHeight() - windowHeight) / 2; break;
+    case View::MAIN_MENU_NO_TILES:
+      ySpacing = (renderer.getHeight() - windowHeight) / 2;
+      break;
+    case View::MAIN_MENU:
+      windowHeight = 310;
+      windowWidth = 250;
+      ySpacing = (renderer.getHeight() - windowHeight) / 2;
+      break;
     default: ySpacing = 100; break;
   }
+  int xSpacing = (renderer.getWidth() - windowWidth) / 2;
   return Rectangle(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
 }
 
 Optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
     MenuType menuType, int* scrollPos1, Optional<UserInputId> exitAction, Optional<Event::KeyEvent> exitKey,
     vector<Event::KeyEvent> shortCuts) {
+  if (!tilesOk && menuType == MenuType::MAIN_MENU)
+    menuType = MenuType::MAIN_MENU_NO_TILES;
   if (options.size() == 0)
     return Nothing();
   RenderLock lock(renderMutex);
@@ -686,7 +662,7 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
-  PGuiElem list = drawListGui(title, options, contentHeight, &index, &choice);
+  PGuiElem list = drawListGui(title, options, menuType, contentHeight, &index, &choice);
   PGuiElem dismissBut = GuiElem::margins(GuiElem::stack(makeVec<PGuiElem>(
         GuiElem::button([&](){ choice = -100; }),
         GuiElem::mouseHighlight(GuiElem::highlight(GuiElem::foreground1), count, &index),
@@ -695,22 +671,23 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   PGuiElem stuff = GuiElem::scrollable(std::move(list), contentHeight, scrollPos);
   if (menuType != MAIN_MENU)
     stuff = GuiElem::margin(GuiElem::centerHoriz(std::move(dismissBut), 200), std::move(stuff), 30, GuiElem::BOTTOM);
-  PGuiElem window = GuiElem::window(std::move(stuff));
+  if (menuType != MAIN_MENU)
+    stuff = GuiElem::window(std::move(stuff));
   while (1) {
 /*    for (GuiElem* gui : getAllGuiElems())
       gui->render(renderer);*/
     refreshScreen(false);
-    window->setBounds(getMenuPosition(menuType));
-    window->render(renderer);
+    stuff->setBounds(getMenuPosition(menuType));
+    stuff->render(renderer);
     renderer.drawAndClearBuffer();
     Event event;
     while (renderer.pollEvent(event)) {
-      propagateEvent(event, {window.get()});
+      propagateEvent(event, {stuff.get()});
       if (choice > -1)
         return indexes[choice];
       if (choice == -100)
         return Nothing();
-      if (considerResizeEvent(event, concat({window.get()}, getAllGuiElems())))
+      if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
         continue;
       if (event.type == Event::MouseWheelMoved)
           *scrollPos = min<int>(options.size() - 1, max(0, *scrollPos - event.mouseWheel.delta));
@@ -779,15 +756,21 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
   chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, Nothing(), {});
 }
 
-static vector<PGuiElem> getMultiLine(const string& text, Color color) {
+static vector<PGuiElem> getMultiLine(const string& text, Color color, View::MenuType menuType) {
   vector<PGuiElem> ret;
-  for (const string& s : breakText(text))
-    ret.push_back(GuiElem::label(s, color));
+  for (const string& s : breakText(text)) {
+    PGuiElem l = GuiElem::label(s, color);
+    if (menuType != View::MenuType::MAIN_MENU)
+      ret.push_back(std::move(l));
+    else
+      ret.push_back(GuiElem::centerHoriz(std::move(l), renderer.getTextLength(text)));
+
+  }
   return ret;
 }
 
-PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& options, int& height,
-    int* highlight, int* choice) {
+PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& options, MenuType menuType,
+    int& height, int* highlight, int* choice) {
   vector<PGuiElem> lines;
   vector<int> heights;
   int lineHeight = 30;
@@ -809,7 +792,7 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       case View::TEXT:
       case View::NORMAL: color = GuiElem::text; break;
     }
-    vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color);
+    vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType);
     heights.push_back(label1.size() * lineHeight);
     lines.push_back(GuiElem::margins(GuiElem::verticalList(std::move(label1), lineHeight, 0), 10, 3, 0, 0));
     if (highlight && options[i].getMod() == View::NORMAL) {

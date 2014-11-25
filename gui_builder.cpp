@@ -208,7 +208,7 @@ PGuiElem GuiBuilder::drawKeeperHelp() {
     "or right mouse button",
     "shift with arrows scrolls faster",
     "",
-    "click on minion",
+    "right click on minion",
     "to control or show information",
     "",
     "[space] pause",

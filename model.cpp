@@ -662,7 +662,7 @@ void Model::showCredits() {
     else
       lines.emplace_back(s, View::NORMAL);
   }
-  view->presentList("Credits", lines, false, View::MAIN_MENU);
+  view->presentList("Credits", lines, false);
 }
 
 void Model::showHighscore(bool highlightLast) {
@@ -700,5 +700,5 @@ void Model::showHighscore(bool highlightLast) {
         toString(elem.points) + " points",
         highlightLast && !elem.highlight ? View::INACTIVE : View::NORMAL));
   }
-  view->presentList("High scores", scores, false, highlightLast ? View::NORMAL_MENU : View::MAIN_MENU);
+  view->presentList("High scores", scores, false);
 }

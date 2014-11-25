@@ -103,7 +103,7 @@ unordered_map<OptionId, vector<string>> valueNames {
 
 static View::MenuType getMenuType(OptionSet set) {
   switch (set) {
-    default: return View::MAIN_MENU;
+    default: return View::NORMAL_MENU;
   }
 }
 
@@ -113,11 +113,10 @@ bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
   for (OptionId option : optionSets.at(set))
     options.emplace_back(names.at(option) + "      " + valueNames.at(option)[getValue(option)]);
   options.emplace_back("Done");
-  options.emplace_back("Cancel");
   if (lastIndex == -1)
     lastIndex = optionSets.at(set).size();
   auto index = view->chooseFromList("", options, lastIndex, getMenuType(set));
-  if (!index || (*index) == optionSets.at(set).size() + 1)
+  if (!index)
     return false;
   else if (index && (*index) == optionSets.at(set).size())
     return true;

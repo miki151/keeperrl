@@ -1085,7 +1085,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
           else if (auto id = message->getCreature()) {
             if (const Creature* c = getCreature(*id))
               scrollPos.push(c->getPosition());
+          } else if (auto loc = message->getLocation()) {
+            vector<Vec2> visible;
+            for (Vec2 v : loc->getBounds())
+              if (getCollective()->isKnownSquare(v))
+                visible.push_back(v);
+            scrollPos.push(Rectangle::boundingBox(visible).middle());
           }
+
         }
         break;
     case UserInputId::EDIT_TEAM:
@@ -1604,13 +1611,12 @@ void PlayerControl::removeAssaultNotification(const Creature *c, const VillageCo
   if (assaultNotifications.count(control))
     removeElementMaybe(assaultNotifications.at(control), c);
 }
-
 void PlayerControl::onDiscoveredLocation(const Location* loc) {
   if (loc->hasName())
     addMessage(PlayerMessage("Your minions discover the location of " + loc->getName(), PlayerMessage::HIGH)
-        .setPosition(loc->getBounds().middle()));
+        .setLocation(loc));
   else if (loc->isMarkedAsSurprise())
-    addMessage(PlayerMessage("Your minions discover a surprise location.").setPosition(loc->getBounds().middle()));
+    addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
 }
 
 void PlayerControl::updateSquareMemory(Vec2 pos) {

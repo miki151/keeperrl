@@ -92,6 +92,7 @@ class View {
   enum MenuType {
     NORMAL_MENU,
     MAIN_MENU,
+    MAIN_MENU_NO_TILES,
     MINION_MENU,
   };
 

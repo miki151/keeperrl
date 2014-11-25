@@ -4,6 +4,8 @@
 #include "util.h"
 #include "unique_entity.h"
 
+class Location;
+
 class PlayerMessage : public UniqueEntity<PlayerMessage> {
   public:
   enum Priority { NORMAL, HIGH, CRITICAL };
@@ -16,6 +18,9 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
 
   PlayerMessage& setCreature(UniqueEntity<Creature>::Id);
   Optional<UniqueEntity<Creature>::Id> getCreature() const;
+
+  PlayerMessage& setLocation(const Location*);
+  const Location* getLocation() const;
 
   bool isClickable() const;
 
@@ -32,6 +37,7 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
   double SERIAL(freshness);
   Optional<Vec2> SERIAL(position);
   Optional<UniqueEntity<Creature>::Id> SERIAL(creature);
+  const Location* SERIAL2(location, nullptr);
 };
 
 #endif

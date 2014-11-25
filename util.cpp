@@ -304,6 +304,7 @@ SERIALIZABLE(Rectangle);
 SERIALIZATION_CONSTRUCTOR_IMPL(Rectangle);
 
 Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {
+  CHECK(!verts.empty());
   int infinity = 1000000;
   int minX = infinity, maxX = -infinity, minY = infinity, maxY = -infinity;
   for (Vec2 v : verts) {

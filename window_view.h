@@ -70,6 +70,7 @@ class WindowView: public View {
 
   void processEvents();
   void displayMenuSplash2();
+  void displayOldSplash();
   void updateMinimap(const CreatureView*);
   void mapLeftClickFun(Vec2);
   void mapRightClickFun(Vec2);
@@ -85,7 +86,7 @@ class WindowView: public View {
   void propagateEvent(const Event& event, vector<GuiElem*>);
   void keyboardAction(Event::KeyEvent key);
 
-  PGuiElem drawListGui(const string& title, const vector<ListElem>& options, int& height,
+  PGuiElem drawListGui(const string& title, const vector<ListElem>& options, MenuType, int& height,
       int* highlight = nullptr, int* choice = nullptr);
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
