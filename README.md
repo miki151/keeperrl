@@ -11,7 +11,8 @@ Compiling
   * make essentials
   * gcc-4.8.2 OR clang-3.3
   * git
-  * libboost 1.5+ with libboost-serialize
+  * libboost 1.5+ with libboost-serialization, libboost-program-optoins
+  * For compiling on OSX you'll also need libboost-system and libboost-thread
   * libsfml-dev 2+ (Ubuntu ppa that contains libsfml 2: http://www.playdeb.net/updates/Ubuntu/13.10#how_to_install )
   * freeglut-dev
   * libglew-dev (if you're still getting undefined symbols about GLEW, try compiling SFML from source)
@@ -26,5 +27,6 @@ In terminal:
   make -j 8 # for slow & debug mode or
   make -j 8 OPT=true RELEASE=true # for release
   # add CLANG=true to compile with clang.
+  # add OSX=true to compile on OSX
   ./keeper
   ```
