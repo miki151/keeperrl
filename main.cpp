@@ -212,6 +212,15 @@ void initializeSingletons() {
   Epithet::init();
 }
 
+void renderLoop(View* view, atomic<bool>& finished, atomic<bool>& initialized) {
+  view->initialize();
+  initialized = true;
+  while (!finished) {
+    view->refreshView();
+    sf::sleep(sf::milliseconds(1));
+  }
+}
+
 void gameLoop(View* view, int forceMode, bool genExit, atomic<bool>& finished) {
   Jukebox jukebox("music/peaceful3.ogg");
   jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful1.ogg");
@@ -345,11 +354,13 @@ void gameLoop(View* view, int forceMode, bool genExit, atomic<bool>& finished) {
   finished = true;
 }
 
+#ifdef OSX // see thread comment in stdafx.h
 static thread::attributes getAttributes() {
   thread::attributes attr;
   attr.set_stack_size(4096 * 2000);
   return attr;
 }
+#endif
 
 int main(int argc, char* argv[]) {
   options_description options("Flags");
@@ -393,7 +404,6 @@ int main(int argc, char* argv[]) {
     fname += toString(seed);
     output.reset(new CompressedOutput(fname));
     Debug() << "Writing to " << fname;
-  Debug() << int(sizeof(SquareType));
     view.reset(View::createLoggingView(output->getArchive()));
 #else
     view.reset(View::createDefaultView());
@@ -401,14 +411,18 @@ int main(int argc, char* argv[]) {
 #endif
   } 
   std::atomic<bool> gameFinished(false);
+  std::atomic<bool> viewInitialized(false);
   ScriptContext::init();
   Tile::initialize();
-  view->initialize();
-  thread t(getAttributes(), [&] { gameLoop(view.get(), forceMode, genExit, gameFinished); });
-  while (!gameFinished) {
-    view->refreshView();
-    sf::sleep(sf::milliseconds(1));
-  }
+  auto game = [&] { while (!viewInitialized) {} gameLoop(view.get(), forceMode, genExit, gameFinished); };
+  auto render = [&] { renderLoop(view.get(), gameFinished, viewInitialized); };
+#ifdef OSX // see thread comment in stdafx.h
+  thread t(getAttributes(), game);
+  render();
+#else
+  thread t(render);
+  game();
+#endif
   t.join();
   return 0;
 }

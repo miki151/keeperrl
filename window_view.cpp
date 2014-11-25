@@ -121,7 +121,7 @@ bool WindowView::areTilesOk() {
 void WindowView::initialize() {
   renderer.initialize(1024, 600, "KeeperRL");
   Clock::set(new Clock());
-  renderThreadId = boost::this_thread::get_id();
+  renderThreadId = currentThreadId();
   Renderer::setNominalSize(Vec2(36, 36));
   if (!ifstream("tiles_int.png")) {
     tilesOk = false;
@@ -309,7 +309,7 @@ void WindowView::rebuildGui() {
         break;
   }
   resetMapBounds();
-  CHECK(boost::this_thread::get_id() != renderThreadId);
+  CHECK(currentThreadId() != renderThreadId);
   tempGuiElems.clear();
   tempGuiElems.push_back(GuiElem::mainDecoration(rightBarWidth, bottomBarHeight));
   tempGuiElems.back()->setBounds(Rectangle(renderer.getWidth(), renderer.getHeight()));
@@ -356,7 +356,7 @@ void WindowView::rebuildGui() {
 }
 
 vector<GuiElem*> WindowView::getAllGuiElems() {
-  CHECK(boost::this_thread::get_id() == renderThreadId);
+  CHECK(currentThreadId() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   if (gameReady)
     ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui});
@@ -364,7 +364,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
 }
 
 vector<GuiElem*> WindowView::getClickableGuiElems() {
-  CHECK(boost::this_thread::get_id() == renderThreadId);
+  CHECK(currentThreadId() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   ret = getSuffix(ret, ret.size() - 1);
   if (gameReady) {
@@ -386,7 +386,7 @@ void WindowView::addVoidDialog(function<void()> fun) {
     sem.v();
     renderDialog = nullptr;
   };
-  if (boost::this_thread::get_id() == renderThreadId)
+  if (currentThreadId() == renderThreadId)
     renderDialog();
   lock.unlock();
   sem.p();
@@ -465,7 +465,7 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
 
 void WindowView::refreshView() {
   RenderLock lock(renderMutex);
-  CHECK(boost::this_thread::get_id() == renderThreadId);
+  CHECK(currentThreadId() == renderThreadId);
   if (gameReady)
     processEvents();
   if (renderDialog) {
@@ -905,7 +905,7 @@ void WindowView::processEvents() {
 }
 
 void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
-  CHECK(boost::this_thread::get_id() == renderThreadId);
+  CHECK(currentThreadId() == renderThreadId);
   if (gameReady)
     mapGui->setHint("");
   switch (event.type) {

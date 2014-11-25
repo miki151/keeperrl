@@ -36,7 +36,15 @@
 #include <stack>
 #include <stdexcept>
 #include <tuple>
+
+// Use boost threads on OSX to use the main thread for rendering
+// and set a large stack size for the model thread.
+#ifdef OSX
 #include <boost/thread.hpp>
+#else
+#include <thread>
+#endif
+
 #include <typeinfo>
 #include <tuple>
 #include <mutex>
@@ -109,7 +117,13 @@ using std::uniform_real_distribution;
 using std::make_tuple;
 using std::get;
 using std::hash;
+#ifdef OSX
 using boost::thread;
+inline thread::id currentThreadId() { return boost::this_thread::get_id(); }
+#else
+using std::thread;
+inline thread::id currentThreadId() { return std::this_thread::get_id(); }
+#endif
 using std::atomic;
 using std::swap;
 using std::remove_if;

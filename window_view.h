@@ -155,7 +155,7 @@ class WindowView: public View {
       q.push(fun());
       renderDialog = nullptr;
     };
-    if (boost::this_thread::get_id() == renderThreadId)
+    if (currentThreadId() == renderThreadId)
       renderDialog();
   }
   
