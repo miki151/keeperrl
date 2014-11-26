@@ -28,7 +28,7 @@ void WindowRenderer::resize(int width, int height) {
 }
 
 void WindowRenderer::initialize(int width, int height, string title) {
-  display = new RenderWindow(VideoMode(1024, 600, 32), "KeeperRL");
+  display = new RenderWindow(sf::VideoMode::getDesktopMode(), "KeeperRL");
   sfView = new sf::View(display->getDefaultView());
   Renderer::initialize(display, width, height);
 }

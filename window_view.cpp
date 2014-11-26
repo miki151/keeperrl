@@ -206,7 +206,6 @@ void WindowView::reset() {
   guiBuilder.reset();
 }
 
-static vector<Vec2> splashPositions;
 static vector<string> splashPaths {
     "splash2e.png",
     "splash2a.png",
@@ -228,10 +227,12 @@ void WindowView::displayOldSplash() {
 void WindowView::displayMenuSplash2() {
   Image splash;
   CHECK(splash.loadFromFile("ui/menu.png"));
-  renderer.drawFullImage(0, 0, renderer.getWidth(), renderer.getHeight(), splash);
+  double scale = double(renderer.getHeight()) / splash.getSize().y;
+  int width = splash.getSize().x * scale;
+  renderer.drawImage((renderer.getWidth() - width) / 2, 0, splash, scale);
 }
 
-void WindowView::displaySplash(View::SplashType type, atomic<bool>& ready) {
+void WindowView::displaySplash(View::SplashType type) {
   RenderLock lock(renderMutex);
   string text;
   switch (type) {
@@ -241,8 +242,9 @@ void WindowView::displaySplash(View::SplashType type, atomic<bool>& ready) {
   }
   Image splash;
   CHECK(splash.loadFromFile(splashPaths[Random.get(1, splashPaths.size())]));
-  renderDialog = [=, &ready] {
-    while (!ready) {
+  splashDone = false;
+  renderDialog = [=] {
+    while (!splashDone) {
       renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2, (renderer.getHeight() - splash.getSize().y) / 2, splash);
       renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() - 60, text, true);
       renderer.drawAndClearBuffer();
@@ -256,6 +258,10 @@ void WindowView::displaySplash(View::SplashType type, atomic<bool>& ready) {
     }
     renderDialog = nullptr;
   };
+}
+
+void WindowView::clearSplash() {
+  splashDone = true;
 }
 
 void WindowView::resize(int width, int height, vector<GuiElem*> gui) {

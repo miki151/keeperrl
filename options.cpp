@@ -52,15 +52,15 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::SHOW_MAP,
 #endif
   }},
+#ifndef RELEASE
   {OptionSet::KEEPER, {
       OptionId::AGGRESSIVE_HEROES,
-#ifndef RELEASE
       OptionId::START_WITH_NIGHT,
       OptionId::SHOW_MAP,
       OptionId::STARTING_RESOURCE,
       OptionId::FAST_IMMIGRATION,
-#endif
   }},
+#endif
 };
 
 map<OptionId, Options::Trigger> triggers;
@@ -108,6 +108,8 @@ static View::MenuType getMenuType(OptionSet set) {
 }
 
 bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
+  if (!optionSets.count(set))
+    return true;
   vector<View::ListElem> options;
   options.emplace_back("Change settings:", View::TITLE);
   for (OptionId option : optionSets.at(set))

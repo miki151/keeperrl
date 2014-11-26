@@ -47,6 +47,7 @@ DEF_UNIQUE_PTR(Animation);
 DEF_UNIQUE_PTR(ViewObject);
 DEF_UNIQUE_PTR(Collective);
 DEF_UNIQUE_PTR(CollectiveControl);
+DEF_UNIQUE_PTR(Model);
 
 template <typename T>
 T lambdaConstruct(function<void(T&)> fun) {

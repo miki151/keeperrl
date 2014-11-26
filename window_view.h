@@ -33,7 +33,8 @@ class WindowView: public View {
   WindowView(); 
   virtual void initialize() override;
   virtual void reset() override;
-  virtual void displaySplash(View::SplashType, atomic<bool>& ready) override;
+  virtual void displaySplash(View::SplashType) override;
+  virtual void clearSplash() override;
 
   virtual void close() override;
 
@@ -158,7 +159,7 @@ class WindowView: public View {
     if (currentThreadId() == renderThreadId)
       renderDialog();
   }
-  
+  atomic<bool> splashDone;
   GuiBuilder guiBuilder;
 };
 
