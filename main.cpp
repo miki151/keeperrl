@@ -334,6 +334,7 @@ void playGameChoice(View* view, bool genExit) {
         model = loadPrevious(view);
         break;
       case 3: 
+        clearSingletons();
         return;
     }
     if (model)
