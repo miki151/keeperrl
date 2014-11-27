@@ -1606,6 +1606,7 @@ void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
   if (innocent)
     Statistics::add(StatId::INNOCENT_KILLED);
   Statistics::add(StatId::DEATH);
+  controller.reset();
 }
 
 bool Creature::isInnocent() const {
