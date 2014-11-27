@@ -191,7 +191,7 @@ class Square : public Renderable {
 
   Optional<ViewObject> getBackgroundObject() const;
   void setBackground(const Square*);
-  void getViewIndex(const CreatureView*, ViewIndex&) const;
+  void getViewIndex(ViewIndex&, const Tribe*) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
   virtual bool itemBounces(Item* item, Vision*) const;

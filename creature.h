@@ -58,6 +58,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void setTime(double t);
   void setLevel(Level* l);
   virtual const Level* getViewLevel() const override;
+  virtual vector<const Creature*> getVisibleEnemies() const override;
   Level* getLevel();
   const Level* getLevel() const;
   const Square* getConstSquare() const;
@@ -90,9 +91,9 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
   vector<PItem> steal(const vector<Item*> items);
-  virtual bool canSee(const Creature*) const override;
-  virtual bool canSee(Vec2 pos) const override;
-  virtual bool isEnemy(const Creature*) const override;
+  bool canSee(const Creature*) const;
+  bool canSee(Vec2 pos) const;
+  bool isEnemy(const Creature*) const;
   void tick(double realTime);
 
   string getTheName() const;
@@ -113,7 +114,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   vector<string> getAdjectives() const;
   Vision* getVision() const;
 
-  virtual const Tribe* getTribe() const override;
+  const Tribe* getTribe() const;
   Tribe* getTribe();
   bool isFriend(const Creature*) const;
   void addEnemyCheck(EnemyCheck*);
@@ -241,7 +242,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void setHeld(const Creature* holding);
   bool isHeld() const;
 
-  virtual vector<const Creature*> getUnknownAttacker() const override;
   virtual void refreshGameInfo(GameInfo&) const override;
   
   void you(MsgType type, const string& param) const;
@@ -330,6 +330,7 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   const Creature* SERIAL2(lastAttacker, nullptr);
   int SERIAL2(swapPositionCooldown, 0);
   vector<const Creature*> SERIAL(unknownAttacker);
+  vector<const Creature*> getUnknownAttacker() const;
   vector<const Creature*> SERIAL(privateEnemies);
   const Creature* SERIAL2(holding, nullptr);
   PController SERIAL(controller);
@@ -343,6 +344,8 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   vector<PMoraleOverride> SERIAL(moraleOverrides);
   EnumMap<AttrType, double> SERIAL(attrIncrease);
+  void updateVisibleCreatures(Rectangle range);
+  vector<const Creature*> SERIAL(visibleEnemies);
 };
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };

@@ -45,7 +45,7 @@ Trigger::~Trigger() {}
 Trigger::Trigger(const ViewObject& obj, Level* l, Vec2 p): viewObject(obj), level(l), position(p) {
 }
 
-Optional<ViewObject> Trigger::getViewObject(const CreatureView*) const {
+Optional<ViewObject> Trigger::getViewObject(const Tribe*) const {
   return viewObject;
 }
 
@@ -155,8 +155,8 @@ class Trap : public Trigger {
       : Trigger(obj, l, position), effect(_effect), tribe(_tribe) {
   }
 
-  virtual Optional<ViewObject> getViewObject(const CreatureView* c) const {
-    if (c->getTribe() == tribe)
+  virtual Optional<ViewObject> getViewObject(const Tribe* t) const {
+    if (t == tribe)
       return viewObject;
     else
       return Nothing();

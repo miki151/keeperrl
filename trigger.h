@@ -28,7 +28,7 @@ class ViewObject;
 
 class Trigger {
   public:
-  virtual Optional<ViewObject> getViewObject(const CreatureView*) const;
+  virtual Optional<ViewObject> getViewObject(const Tribe*) const;
   virtual ~Trigger();
 
   virtual void onCreatureEnter(Creature* c);

@@ -26,6 +26,8 @@
 #include "tile.h"
 #include "clock.h"
 #include "creature_view.h"
+#include "view_index.h"
+#include "map_memory.h"
 
 using sf::Color;
 using sf::String;

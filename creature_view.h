@@ -16,10 +16,12 @@
 #ifndef _CREATURE_VIEW_H
 #define _CREATURE_VIEW_H
 
-#include "map_memory.h"
+#include "util.h"
 
-class Tribe;
 class GameInfo;
+class MapMemory;
+class ViewIndex;
+class Level;
 
 class CreatureView {
   public:
@@ -27,27 +29,10 @@ class CreatureView {
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const = 0;
   virtual void refreshGameInfo(GameInfo&) const = 0;
   virtual Optional<Vec2> getViewPosition(bool force) const = 0;
-  virtual bool canSee(const Creature*) const = 0;
-  virtual bool canSee(Vec2 position) const = 0;
   virtual const Level* getViewLevel() const = 0;
-  virtual vector<const Creature*> getUnknownAttacker() const = 0;
-  virtual const Tribe* getTribe() const = 0;
-  virtual bool isEnemy(const Creature*) const = 0;
-
-  void updateVisibleCreatures(Rectangle range);
-  vector<const Creature*> getVisibleEnemies() const;
-  vector<const Creature*> getVisibleFriends() const;
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
+  virtual vector<const Creature*> getVisibleEnemies() const = 0;
 
   virtual ~CreatureView() {}
-
-  SERIAL_CHECKER;
-
-  private:
-  vector<const Creature*> SERIAL(visibleEnemies);
-  vector<const Creature*> SERIAL(visibleFriends);
 };
 
 #endif

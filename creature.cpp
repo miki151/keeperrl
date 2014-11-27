@@ -49,7 +49,6 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar
     & SUBCLASS(CreatureAttributes)
     & SUBCLASS(Renderable)
-    & SUBCLASS(CreatureView)
     & SUBCLASS(UniqueEntity)
     & SVAR(level)
     & SVAR(position)
@@ -82,7 +81,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(sectors)
     & SVAR(numAttacksThisTurn)
     & SVAR(moraleOverrides)
-    & SVAR(attrIncrease);
+    & SVAR(attrIncrease)
+    & SVAR(visibleEnemies);
   CHECK_SERIAL;
 }
 
@@ -107,7 +107,16 @@ Creature::~Creature() {
 }
 
 void Creature::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  return level->getSquare(pos)->getViewIndex(this, index);
+  if (canSee(pos))
+    level->getSquare(pos)->getViewIndex(index, tribe);
+  else
+    index.setHiddenId(level->getSquare(pos)->getViewObject().id());
+  if (const Creature* c = level->getSquare(pos)->getCreature()) {
+    if (canSee(c))
+      index.insert(c->getViewObject());
+    else if (contains(getUnknownAttacker(), c))
+      index.insert(copyOf(ViewObject::unknownMonster()));
+  }
 }
 
 SpellInfo Creature::getSpell(SpellId id) {
@@ -2470,3 +2479,18 @@ void Creature::refreshGameInfo(GameInfo& gameInfo) const {
 const MinionTaskMap& Creature::getMinionTasks() const {
   return minionTasks;
 }
+
+void Creature::updateVisibleCreatures(Rectangle range) {
+  visibleEnemies.clear();
+  for (const Creature* c : getViewLevel()->getAllCreatures(range)) 
+    if (canSee(c) &&  isEnemy(c))
+        visibleEnemies.push_back(c);
+  for (const Creature* c : getUnknownAttacker())
+    if (!contains(visibleEnemies, c))
+      visibleEnemies.push_back(c);
+}
+
+vector<const Creature*> Creature::getVisibleEnemies() const {
+  return visibleEnemies;
+}
+

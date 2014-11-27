@@ -37,8 +37,7 @@
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(CreatureView)
-    & SUBCLASS(CollectiveControl)
+  ar& SUBCLASS(CollectiveControl)
     & SVAR(memory)
     & SVAR(currentTeam)
     & SVAR(model)
@@ -51,7 +50,9 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(assaultNotifications)
     & SVAR(messages)
     & SVAR(currentWarning)
-    & SVAR(hints);
+    & SVAR(hints)
+    & SVAR(visibleEnemies)
+    & SVAR(visibleFriends);
   CHECK_SERIAL;
 }
 
@@ -923,7 +924,7 @@ Optional<TeamId> PlayerControl::getCurrentTeam() const {
 }
 
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  getLevel()->getSquare(pos)->getViewIndex(this, index);
+  getSquareViewIndex(getLevel()->getSquare(pos), index);
   if (getCollective()->getAllSquares().count(pos) 
       && index.hasObject(ViewLayer::FLOOR_BACKGROUND)
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
@@ -1317,13 +1318,23 @@ double PlayerControl::getWarLevel() const {
   return ret * getCollective()->getWarMultiplier();
 }
 
+void PlayerControl::getSquareViewIndex(const Square* square, ViewIndex& index) const {
+  if (canSee(square->getPosition()))
+    square->getViewIndex(index, getCollective()->getTribe());
+  else
+    index.setHiddenId(square->getViewObject().id());
+  if (const Creature* c = square->getCreature())
+    if (canSee(c))
+      index.insert(c->getViewObject());
+}
+
 void PlayerControl::addToMemory(Vec2 pos) {
   Square* square = getLevel()->getSquare(pos);
   if (!square->isDirty())
     return;
   square->setNonDirty();
   ViewIndex index;
-  square->getViewIndex(this, index);
+  getSquareViewIndex(square, index);
   getMemory(getLevel()).update(pos, index);
 }
 
@@ -1426,7 +1437,7 @@ void PlayerControl::tick(double time) {
     payoutWarning = true;
   }
   vector<Creature*> addedCreatures;
-  for (const Creature* c : getVisibleFriends())
+  for (const Creature* c : visibleFriends)
     if (c->getSpawnType() && !contains(getCreatures(), c)) {
       addedCreatures.push_back(const_cast<Creature*>(c));
       getCollective()->addCreature(const_cast<Creature*>(c), {MinionTrait::FIGHTER});
@@ -1467,10 +1478,6 @@ bool PlayerControl::canSee(Vec2 position) const {
     if (getLevel()->canSee(pos, position, Vision::get(VisionId::NORMAL)))
       return true;
   return false;
-}
-
-vector<const Creature*> PlayerControl::getUnknownAttacker() const {
-  return {};
 }
 
 const Tribe* PlayerControl::getTribe() const {
@@ -1625,6 +1632,22 @@ void PlayerControl::updateSquareMemory(Vec2 pos) {
 
 void PlayerControl::onConstructed(Vec2 pos, SquareType type) {
   updateSquareMemory(pos);
+}
+
+void PlayerControl::updateVisibleCreatures(Rectangle range) {
+  visibleEnemies.clear();
+  visibleFriends.clear();
+  for (const Creature* c : getViewLevel()->getAllCreatures(range)) 
+    if (canSee(c)) {
+      if (isEnemy(c))
+        visibleEnemies.push_back(c);
+      else if (c->getTribe() == getTribe())
+        visibleFriends.push_back(c);
+    }
+}
+
+vector<const Creature*> PlayerControl::getVisibleEnemies() const {
+  return visibleEnemies;
 }
 
 template <class Archive>

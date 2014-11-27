@@ -39,13 +39,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Optional<Vec2> getViewPosition(bool force) const override;
-  virtual bool canSee(const Creature*) const override;
-  virtual bool canSee(Vec2 position) const override;
-  virtual vector<const Creature*> getUnknownAttacker() const override;
-  virtual const Tribe* getTribe() const override;
-  Tribe* getTribe();
-  virtual bool isEnemy(const Creature*) const override;
   virtual void update(Creature*) override;
+  virtual vector<const Creature*> getVisibleEnemies() const override;
 
   virtual void addAssaultNotification(const Creature*, const VillageControl*) override;
   virtual void removeAssaultNotification(const Creature*, const VillageControl*) override;
@@ -102,11 +97,17 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   friend class KeeperControlOverride;
 
+  const Tribe* getTribe() const;
+  Tribe* getTribe();
+  bool canSee(const Creature*) const;
+  bool canSee(Vec2 position) const;
+
   void considerDeityFight();
   void checkKeeperDanger();
   void addDeityServant(Deity*, Vec2 deityPos, Vec2 victimPos);
   static string getWarningText(Collective::Warning);
   void updateSquareMemory(Vec2);
+  bool isEnemy(const Creature*) const;
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
   void onWorshipEpithet(EpithetId);
@@ -203,6 +204,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static ViewObject getTrapObject(TrapType, bool built);
   bool underAttack() const;
   void addToMemory(Vec2 pos);
+  void getSquareViewIndex(const Square*, ViewIndex&) const;
   bool tryLockingDoor(Vec2 pos);
   void uncoverRandomLocation();
   Creature* getControlled();
@@ -237,6 +239,9 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<string> SERIAL(hints);
   mutable queue<Vec2> scrollPos;
   Optional<PlayerMessage> findMessage(PlayerMessage::Id);
+  void updateVisibleCreatures(Rectangle range);
+  vector<const Creature*> SERIAL(visibleEnemies);
+  vector<const Creature*> SERIAL(visibleFriends);
 };
 
 #endif
