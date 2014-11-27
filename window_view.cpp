@@ -162,6 +162,13 @@ void WindowView::initialize() {
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
   guiBuilder.setTilesOk(tilesOk);
+  if (tilesOk) {
+    CHECK(splash1.loadFromFile("ui/menu.png"));
+  } else {
+    CHECK(splash1.loadFromFile("splash2f.png"));
+    CHECK(splash2.loadFromFile("splash2e.png"));
+  }
+
 }
 
 void WindowView::mapLeftClickFun(Vec2 pos) {
@@ -214,22 +221,17 @@ static vector<string> splashPaths {
     "splash2d.png" };
 
 void WindowView::displayOldSplash() {
-  Image splash;
-  CHECK(splash.loadFromFile("splash2f.png"));
   Rectangle menuPosition = getMenuPosition(View::MAIN_MENU_NO_TILES);
   int margin = 10;
-  renderer.drawImage(renderer.getWidth() / 2 - 415, menuPosition.getKY() + margin, splash);
-  CHECK(splash.loadFromFile("splash2e.png"));
-  renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2,
-      menuPosition.getPY() - splash.getSize().y - margin, splash);  
+  renderer.drawImage(renderer.getWidth() / 2 - 415, menuPosition.getKY() + margin, splash1);
+  renderer.drawImage((renderer.getWidth() - splash2.getSize().x) / 2,
+      menuPosition.getPY() - splash2.getSize().y - margin, splash2);  
 }
 
 void WindowView::displayMenuSplash2() {
-  Image splash;
-  CHECK(splash.loadFromFile("ui/menu.png"));
-  double scale = double(renderer.getHeight()) / splash.getSize().y;
-  int width = splash.getSize().x * scale;
-  renderer.drawImage((renderer.getWidth() - width) / 2, 0, splash, scale);
+  double scale = double(renderer.getHeight()) / splash1.getSize().y;
+  int width = splash1.getSize().x * scale;
+  renderer.drawImage((renderer.getWidth() - width) / 2, 0, splash1, scale);
 }
 
 void WindowView::displaySplash(View::SplashType type) {

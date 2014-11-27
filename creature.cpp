@@ -2420,6 +2420,9 @@ void Creature::refreshGameInfo(GameInfo& gameInfo) const {
   info.levelName = location && location->hasName() 
     ? capitalFirst(location->getName()) : getLevel()->getName();
   info.attributes = {
+    {"level",
+      getExpLevel(), 0,
+      "Describes general combat value of the creature."},
     {"attack",
       getModifier(ModifierType::DAMAGE),
       isAffected(LastingEffect::RAGE) ? 1 : isAffected(LastingEffect::PANIC) ? -1 : 0,

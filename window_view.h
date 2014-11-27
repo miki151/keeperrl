@@ -161,6 +161,8 @@ class WindowView: public View {
   }
   atomic<bool> splashDone;
   GuiBuilder guiBuilder;
+  Image splash1;
+  Image splash2;
 };
 
 
