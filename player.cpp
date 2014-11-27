@@ -858,7 +858,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!creature->canSee(pos) && getMemory().hasViewIndex(pos))
     index.mergeFromMemory(getMemory().getViewIndex(pos));
   if (const Creature* c = getLevel()->getSquare(pos)->getCreature()) {
-    if (creature->canSee(c))
+    if (creature->canSee(c) || c == creature)
       index.insert(c->getViewObject());
     else if (contains(creature->getUnknownAttacker(), c))
       index.insert(copyOf(ViewObject::unknownMonster()));
