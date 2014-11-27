@@ -118,6 +118,7 @@ SpellInfo Creature::getSpell(SpellId id) {
     case SpellId::SPEED_SELF: return {id, "haste self", {EffectId::LASTING, LastingEffect::SPEED}, 0, 60};
     case SpellId::STR_BONUS: return {id, "strength", {EffectId::LASTING, LastingEffect::STR_BONUS}, 0, 90};
     case SpellId::DEX_BONUS: return {id, "dexterity", {EffectId::LASTING, LastingEffect::DEX_BONUS}, 0, 90};
+    case SpellId::MAGIC_SHIELD: return {id, "magic shield", {EffectId::LASTING, LastingEffect::MAGIC_SHIELD}, 0, 150};
     case SpellId::FIRE_SPHERE_PET: return {id, "fire sphere", EffectId::FIRE_SPHERE_PET, 0, 20};
     case SpellId::TELEPORT: return {id, "escape", EffectId::TELEPORT, 0, 120};
     case SpellId::INVISIBILITY: return {id, "invisibility", {EffectId::LASTING, LastingEffect::INVISIBLE}, 0, 300};
@@ -706,6 +707,7 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       break;
     case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "now fire resistant"); break;
     case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "insane"); break;
+    case LastingEffect::MAGIC_SHIELD: if (msg) you(MsgType::FEEL, "protected"); break;
   }
 }
 
@@ -754,6 +756,7 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
       bleed(0.1);
       break;
     case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "sane again"); break;
+    case LastingEffect::MAGIC_SHIELD: if (msg) you(MsgType::FEEL, "less protected"); break;
   } 
 }
 
@@ -898,6 +901,8 @@ int Creature::getModifier(ModifierType type) const {
           def -= attrBonus;
         if (isAffected(LastingEffect::SLEEP))
           def *= 0.66;
+        if (isAffected(LastingEffect::MAGIC_SHIELD))
+          def += 20;
         break;
     case ModifierType::FIRED_ACCURACY: 
     case ModifierType::THROWN_ACCURACY: 
@@ -1302,10 +1307,15 @@ bool Creature::takeDamage(const Attack& attack) {
     return false;
   }
   int defense = getModifier(ModifierType::DEFENSE);
-  Debug() << getTheName() << " attacked by " << other->getName() << " damage " << attack.getStrength() << " defense " << defense;
+  Debug() << getTheName() << " attacked by " << other->getName()
+      << " damage " << attack.getStrength() << " defense " << defense;
   if (passiveAttack && other && other->getPosition().dist8(position) == 1) {
     Effect::applyToCreature(other, *passiveAttack, EffectStrength::NORMAL);
     other->lastAttacker = this;
+  }
+  if (isAffected(LastingEffect::MAGIC_SHIELD)) {
+    lastingEffects[LastingEffect::MAGIC_SHIELD] -= 5;
+    globalMessage("The magic shield absorbs the attack", "");
   }
   if (attack.getStrength() > defense) {
     if (attackType == AttackType::EAT) {
@@ -2365,6 +2375,7 @@ vector<string> Creature::getAdjectives() const {
         case LastingEffect::FIRE_RESISTANT: ret.push_back("fire resistant"); break;
         case LastingEffect::FLYING: ret.push_back("flying"); break;
         case LastingEffect::INSANITY: ret.push_back("insane"); break;
+        case LastingEffect::MAGIC_SHIELD: ret.push_back("magic shield"); break;
         default: addCount = false; break;
       }
       if (addCount && !isAffectedPermanently(effect))
@@ -2415,7 +2426,8 @@ void Creature::refreshGameInfo(GameInfo& gameInfo) const {
       "Affects if and how much damage is dealt in combat."},
     {"defense",
       getModifier(ModifierType::DEFENSE),
-      isAffected(LastingEffect::RAGE) ? -1 : isAffected(LastingEffect::PANIC) ? 1 : 0,
+      isAffected(LastingEffect::RAGE) ? -1
+          : (isAffected(LastingEffect::PANIC) || isAffected(LastingEffect::MAGIC_SHIELD)) ? 1 : 0,
       "Affects if and how much damage is taken in combat."},
     {"accuracy",
       getModifier(ModifierType::ACCURACY),

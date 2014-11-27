@@ -41,6 +41,7 @@ vector<int> poisonTime { 20, 60, 200};
 vector<int> stunTime { 1, 1, 20};
 vector<int> resistantTime { 20, 60, 200};
 vector<int> levitateTime { 20, 60, 200};
+vector<int> magicShieldTime { 5, 20, 60};
 vector<double> gasAmount { 0.3, 0.8, 3};
 vector<double> wordOfPowerDist { 1, 3, 10};
 
@@ -397,6 +398,7 @@ double getDuration(const Creature* c, LastingEffect e, int strength) {
     case LastingEffect::FLYING: return levitateTime[strength];
     case LastingEffect::SLEEP: return sleepTime[strength];
     case LastingEffect::INSANITY: return insanityTime[strength];
+    case LastingEffect::MAGIC_SHIELD: return magicShieldTime[strength];
   }
   return 0;
 }
@@ -488,6 +490,7 @@ string Effect::getName(LastingEffect type) {
     case LastingEffect::STUNNED: return "stunning";
     case LastingEffect::FIRE_RESISTANT: return "fire resistance";
     case LastingEffect::INSANITY: return "insanity";
+    case LastingEffect::MAGIC_SHIELD: return "magic shield";
   }
   return "";
 }

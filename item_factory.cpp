@@ -789,6 +789,7 @@ int getEffectPrice(EffectType type) {
           case LastingEffect::SLEEP:
           case LastingEffect::ENTANGLED:
           case LastingEffect::STUNNED:
+          case LastingEffect::MAGIC_SHIELD:
           case LastingEffect::RAGE: return 60;
           case LastingEffect::BLIND: return 80;
           case LastingEffect::STR_BONUS:
@@ -860,15 +861,6 @@ PItem getTrap(const ItemAttributes& attr, TrapType trapType, EffectType effectTy
         ViewObject(getTrapViewId(trapType), ViewLayer::LARGE_ITEM, Effect::getName(effectType) + " trap"),
         attr,
         effectType));
-}
-
-string getLastingEffectName(LastingEffect e) {
-  switch (e) {
-    case LastingEffect::FIRE_RESISTANT: return "fire resistance";
-    case LastingEffect::POISON_RESISTANT: return "poison resistance";
-    default: FAIL << "Unhandled lasting effect " << int(e);
-  }
-  return "";
 }
 
 ViewId getRingViewId(LastingEffect e) {
@@ -1228,8 +1220,8 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::RING: return ITATTR(
             i.viewId = getRingViewId(item.get<LastingEffect>());
-            i.name = "ring of " + getLastingEffectName(item.get<LastingEffect>());
-            i.plural = "rings of " + getLastingEffectName(item.get<LastingEffect>());
+            i.name = "ring of " + Effect::getName(item.get<LastingEffect>());
+            i.plural = "rings of " + Effect::getName(item.get<LastingEffect>());
             i.weight = 0.05;
             i.equipmentSlot = EquipmentSlot::RINGS;
             i.itemClass = ItemClass::RING;
