@@ -479,7 +479,8 @@ void WindowView::refreshView() {
   if (renderDialog) {
     renderDialog();
   } else {
-    refreshScreen(true);
+    if (gameReady)
+      refreshScreen(true);
   }
 }
 
