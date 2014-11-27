@@ -25,14 +25,6 @@ double CollectiveControl::getWarLevel() const {
 void CollectiveControl::update(Creature*) {
 }
 
-Level* CollectiveControl::getLevel() {
-  return getCollective()->getLevel();
-}
-
-const Level* CollectiveControl::getLevel() const {
-  return getCollective()->getLevel();
-}
-
 const Collective* CollectiveControl::getCollective() const {
   return NOTNULL(collective);
 }

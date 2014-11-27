@@ -24,7 +24,6 @@
 #include "tribe.h"
 #include "skill.h"
 #include "map_memory.h"
-#include "creature_view.h"
 #include "controller.h"
 #include "unique_entity.h"
 #include "event.h"
@@ -43,7 +42,7 @@ class Tribe;
 class EnemyCheck;
 class ViewObject;
 
-class Creature : private CreatureAttributes, public Renderable, public CreatureView, public UniqueEntity<Creature> {
+class Creature : private CreatureAttributes, public Renderable, public UniqueEntity<Creature> {
   public:
   typedef CreatureAttributes CreatureAttributes;
   Creature(Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
@@ -51,14 +50,13 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   virtual ~Creature();
 
   static void noExperienceLevels();
+  static string getBodyPartName(BodyPart);
 
-  virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   void makeMove();
   double getTime() const;
   void setTime(double t);
   void setLevel(Level* l);
-  virtual const Level* getViewLevel() const override;
-  virtual vector<const Creature*> getVisibleEnemies() const override;
+  vector<const Creature*> getVisibleEnemies() const;
   Level* getLevel();
   const Level* getLevel() const;
   const Square* getConstSquare() const;
@@ -67,7 +65,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   Square* getSquare(Vec2 direction);
   void setPosition(Vec2 pos);
   Vec2 getPosition() const;
-  virtual Optional<Vec2> getViewPosition(bool force) const override;
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);
@@ -110,8 +107,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   static string getModifierName(ModifierType);
 
   int getPoints() const;
-  vector<string> getMainAdjectives() const;
-  vector<string> getAdjectives() const;
   Vision* getVision() const;
 
   const Tribe* getTribe() const;
@@ -242,13 +237,10 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void setHeld(const Creature* holding);
   bool isHeld() const;
 
-  virtual void refreshGameInfo(GameInfo&) const override;
-  
   void you(MsgType type, const string& param) const;
   void you(const string& param) const;
   void playerMessage(const PlayerMessage& message) const;
   bool isPlayer() const;
-  const MapMemory& getMemory() const override;
   void grantIdentify(int numItems);
 
   Controller* getController();
@@ -278,7 +270,11 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   vector<AttackLevel> getAttackLevels() const;
   bool hasSuicidalAttack() const;
 
+  vector<const Creature*> getUnknownAttacker() const;
   const MinionTaskMap& getMinionTasks() const;
+  int accuracyBonus() const;
+  vector<string> getMainAdjectives() const;
+  vector<string> getAdjectives() const;
 
   private:
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
@@ -290,7 +286,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void consumeBodyParts(EnumMap<BodyPart, int>&);
   void onRemoved(LastingEffect effect, bool msg);
   void onTimedOut(LastingEffect effect, bool msg);
-  string getRemainingString(LastingEffect effect) const;
   static PCreature defaultCreature;
   static PCreature defaultFlyer;
   static PCreature defaultMinion;
@@ -304,7 +299,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   void injure(BodyPart, bool drop);
   AttackLevel getRandomAttackLevel() const;
   AttackType getAttackType() const;
-  int accuracyBonus() const;
   void spendTime(double time);
   BodyPart armOrWing() const;
   pair<double, double> getStanding(const Creature* c) const;
@@ -330,7 +324,6 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   const Creature* SERIAL2(lastAttacker, nullptr);
   int SERIAL2(swapPositionCooldown, 0);
   vector<const Creature*> SERIAL(unknownAttacker);
-  vector<const Creature*> getUnknownAttacker() const;
   vector<const Creature*> SERIAL(privateEnemies);
   const Creature* SERIAL2(holding, nullptr);
   PController SERIAL(controller);
@@ -346,6 +339,8 @@ class Creature : private CreatureAttributes, public Renderable, public CreatureV
   EnumMap<AttrType, double> SERIAL(attrIncrease);
   void updateVisibleCreatures(Rectangle range);
   vector<const Creature*> SERIAL(visibleEnemies);
+  double getTimeRemaining(LastingEffect) const;
+  string getRemainingString(LastingEffect) const;
 };
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };

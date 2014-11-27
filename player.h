@@ -22,12 +22,13 @@
 #include "item.h"
 #include "user_input.h"
 #include "view.h"
+#include "creature_view.h"
 
 class View;
 class Model;
 class Creature;
 
-class Player : public Controller {
+class Player : public Controller, public CreatureView {
   public:
   Player(Creature*, Model*, bool adventureMode, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);
   virtual ~Player();
@@ -45,8 +46,6 @@ class Player : public Controller {
 
   virtual void onItemsAppeared(vector<Item*> items, const Creature* from) override;
 
-  virtual const MapMemory& getMemory() const override;
-  virtual const vector<PlayerMessage>& getMessages() const override;
   virtual void learnLocation(const Location*) override;
 
   virtual void makeMove() override;
@@ -65,6 +64,14 @@ class Player : public Controller {
 
   protected:
   virtual void moveAction(Vec2 direction);
+
+  // from CreatureView
+  virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
+  virtual const MapMemory& getMemory() const override;
+  virtual void refreshGameInfo(GameInfo&) const override;
+  virtual Optional<Vec2> getPosition(bool force) const override;
+  virtual const Level* getLevel() const override;
+  virtual vector<const Creature*> getVisibleEnemies() const override;
 
   map<UniqueEntity<Level>::Id, MapMemory>* SERIAL(levelMemory);
   Model* SERIAL(model);
@@ -114,6 +121,7 @@ class Player : public Controller {
   void retireMessages();
   vector<PlayerMessage> SERIAL(messages);
   vector<string> SERIAL(messageHistory);
+  string getRemainingString(LastingEffect) const;
 };
 
 #endif

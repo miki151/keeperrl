@@ -83,7 +83,6 @@ class GameInfo {
       string help;
     };
     vector<SkillInfo> skills;
-    bool possessed;
     bool spellcaster;
     string playerName;
     vector<string> adjectives;

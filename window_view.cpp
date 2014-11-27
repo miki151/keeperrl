@@ -410,7 +410,7 @@ void WindowView::drawLevelMap(const CreatureView* creature) {
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
-  const Level* level = creature->getViewLevel();
+  const Level* level = creature->getLevel();
   Vec2 rad(40, 40);
   Rectangle bounds(mapLayout->getPlayerPos() - rad, mapLayout->getPlayerPos() + rad);
   if (level->getBounds().intersects(bounds))
@@ -422,31 +422,21 @@ void WindowView::updateView(const CreatureView* collective) {
   updateMinimap(collective);
   gameReady = true;
   switchTiles();
-  const Level* level = collective->getViewLevel();
+  const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds()))
     objects[pos] = Nothing();
   if (!mapGui->isCentered())
-    mapGui->setCenter(*collective->getViewPosition(true));
-  else if (auto pos = collective->getViewPosition(false))
+    mapGui->setCenter(*collective->getPosition(true));
+  else if (auto pos = collective->getPosition(false))
     mapGui->setCenter(*pos);
   const MapMemory* memory = &collective->getMemory(); 
-  mapGui->updateLayout(mapLayout, collective->getViewLevel()->getBounds());
+  mapGui->updateLayout(mapLayout, collective->getLevel()->getBounds());
   for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds())) 
     if (level->inBounds(pos)) {
       ViewIndex index;
       collective->getViewIndex(pos, index);
-      if (!index.hasObject(ViewLayer::FLOOR) && !index.hasObject(ViewLayer::FLOOR_BACKGROUND) &&
-          !index.isEmpty() && memory->hasViewIndex(pos)) {
-        // special case when monster or item is visible but floor is only in memory
-        if (memory->getViewIndex(pos).hasObject(ViewLayer::FLOOR))
-          index.insert(memory->getViewIndex(pos).getObject(ViewLayer::FLOOR));
-        if (memory->getViewIndex(pos).hasObject(ViewLayer::FLOOR_BACKGROUND))
-          index.insert(memory->getViewIndex(pos).getObject(ViewLayer::FLOOR_BACKGROUND));
-      }
-      if (index.isEmpty() && memory->hasViewIndex(pos))
-        index = memory->getViewIndex(pos);
-      index.setHighlight(HighlightType::NIGHT, 1.0 - collective->getViewLevel()->getLight(pos));
+      index.setHighlight(HighlightType::NIGHT, 1.0 - collective->getLevel()->getLight(pos));
       objects[pos] = index;
     }
   mapGui->setSpriteMode(currentTileLayout.sprites);

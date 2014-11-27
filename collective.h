@@ -89,17 +89,6 @@ class Collective : public Task::Callback {
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;
-  virtual void onAppliedItem(Vec2 pos, Item* item) override;
-  virtual void onAppliedItemCancel(Vec2 pos) override;
-  virtual void onPickedUp(Vec2 pos, EntitySet<Item>) override;
-  virtual void onCantPickItem(EntitySet<Item> items) override;
-  virtual void onConstructed(Vec2, SquareType) override;
-  virtual void onTorchBuilt(Vec2, Trigger*) override;
-  virtual void onAppliedSquare(Vec2 pos) override;
-  virtual void onKillCancelled(Creature*) override;
-  virtual void onBedCreated(Vec2, SquareType fromType, SquareType toType) override;
-  virtual void onCopulated(Creature* who, Creature* with) override;
-  virtual void onConsumed(Creature* consumer, Creature* who) override;
 
   SERIALIZATION_DECL(Collective);
 
@@ -305,6 +294,21 @@ class Collective : public Task::Callback {
 
   template <class Archive>
   static void registerTypes(Archive& ar);
+
+  protected:
+  // From Task::Callback
+  virtual void onAppliedItem(Vec2 pos, Item* item) override;
+  virtual void onAppliedItemCancel(Vec2 pos) override;
+  virtual void onPickedUp(Vec2 pos, EntitySet<Item>) override;
+  virtual void onCantPickItem(EntitySet<Item> items) override;
+  virtual void onConstructed(Vec2, SquareType) override;
+  virtual void onTorchBuilt(Vec2, Trigger*) override;
+  virtual void onAppliedSquare(Vec2 pos) override;
+  virtual void onKillCancelled(Creature*) override;
+  virtual void onBedCreated(Vec2, SquareType fromType, SquareType toType) override;
+  virtual void onCopulated(Creature* who, Creature* with) override;
+  virtual void onConsumed(Creature* consumer, Creature* who) override;
+
 
   private:
   void updateEfficiency(Vec2, SquareType);

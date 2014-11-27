@@ -34,30 +34,13 @@ class View;
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
   PlayerControl(Collective*, Model*, Level*);
-  virtual const MapMemory& getMemory() const override;
-  MapMemory& getMemory(Level* l);
-  virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
-  virtual void refreshGameInfo(GameInfo&) const override;
-  virtual Optional<Vec2> getViewPosition(bool force) const override;
-  virtual void update(Creature*) override;
-  virtual vector<const Creature*> getVisibleEnemies() const override;
-
-  virtual void addAssaultNotification(const Creature*, const VillageControl*) override;
-  virtual void removeAssaultNotification(const Creature*, const VillageControl*) override;
-
-  virtual void addMessage(const PlayerMessage&) override;
-  virtual void onDiscoveredLocation(const Location*) override;
   void addImportantLongMessage(const string&, Optional<Vec2> = Nothing());
 
   void onConqueredLand(const string& name);
-  virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
-  virtual void onConstructed(Vec2, SquareType) override;
 
   void processInput(View* view, UserInput);
   void tick(double);
   MoveInfo getMove(Creature* c);
-
-  virtual const Level* getViewLevel() const;
 
   bool isRetired() const;
   const Creature* getKeeper() const;
@@ -87,6 +70,24 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   template <class Archive>
   static void registerTypes(Archive& ar);
 
+  protected:
+  // from CreatureView
+  virtual const Level* getLevel() const;
+  virtual const MapMemory& getMemory() const override;
+  virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
+  virtual void refreshGameInfo(GameInfo&) const override;
+  virtual Optional<Vec2> getPosition(bool force) const override;
+  virtual vector<const Creature*> getVisibleEnemies() const override;
+
+  // from CollectiveControl
+  virtual void update(Creature*) override;
+  virtual void addAssaultNotification(const Creature*, const VillageControl*) override;
+  virtual void removeAssaultNotification(const Creature*, const VillageControl*) override;
+  virtual void addMessage(const PlayerMessage&) override;
+  virtual void onDiscoveredLocation(const Location*) override;
+  virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onConstructed(Vec2, SquareType) override;
+
   private:
 
   REGISTER_HANDLER(TechBookEvent, Technology*);
@@ -97,10 +98,12 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   friend class KeeperControlOverride;
 
+  Level* getLevel();
   const Tribe* getTribe() const;
   Tribe* getTribe();
   bool canSee(const Creature*) const;
   bool canSee(Vec2 position) const;
+  MapMemory& getMemory(Level* l);
 
   void considerDeityFight();
   void checkKeeperDanger();

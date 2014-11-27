@@ -23,8 +23,6 @@ class CollectiveControl {
   virtual void removeAssaultNotification(const Creature*, const VillageControl*) {}
   virtual void onDiscoveredLocation(const Location*) {}
   virtual void onConstructed(Vec2, SquareType) {}
-  Level* getLevel();
-  const Level* getLevel() const;
 
   SERIALIZATION_DECL(CollectiveControl);
 

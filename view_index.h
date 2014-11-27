@@ -41,6 +41,7 @@ class ViewIndex {
   const ViewObject& getObject(ViewLayer) const;
   ViewObject& getObject(ViewLayer);
   const ViewObject* getTopObject(const vector<ViewLayer>&) const;
+  void mergeFromMemory(const ViewIndex& memory);
   bool isEmpty() const;
   bool noObjects() const;
   ~ViewIndex();

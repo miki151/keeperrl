@@ -46,11 +46,6 @@ Controller* Controller::getPossessedController(Creature* c) {
   return new DoNothingController(c);
 }
 
-const vector<PlayerMessage>& Controller::getMessages() const {
-  static vector<PlayerMessage> ret;
-  return ret;
-}
-
 ControllerFactory::ControllerFactory(function<Controller* (Creature*)> f) : fun(f) {}
 
 PController ControllerFactory::get(Creature* c) {
@@ -58,10 +53,6 @@ PController ControllerFactory::get(Creature* c) {
 }
 
 DoNothingController::DoNothingController(Creature* c) : Controller(c) {}
-
-const MapMemory& DoNothingController::getMemory() const {
-  return MapMemory::empty();
-}
 
 bool DoNothingController::isPlayer() const {
   return false;

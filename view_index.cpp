@@ -101,3 +101,14 @@ void ViewIndex::setHiddenId(ViewId id) {
   hiddenId = id;
 }
 
+void ViewIndex::mergeFromMemory(const ViewIndex& memory) {
+  if (isEmpty())
+    *this = memory;
+  else if (!hasObject(ViewLayer::FLOOR) && !hasObject(ViewLayer::FLOOR_BACKGROUND) && !isEmpty()) {
+    // special case when monster or item is visible but floor is only in memory
+    if (memory.hasObject(ViewLayer::FLOOR))
+      insert(memory.getObject(ViewLayer::FLOOR));
+    if (memory.hasObject(ViewLayer::FLOOR_BACKGROUND))
+      insert(memory.getObject(ViewLayer::FLOOR_BACKGROUND));
+  }
+}

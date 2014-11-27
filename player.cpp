@@ -381,7 +381,7 @@ void Player::equipmentAction() {
         itemsChoice.push_back(nullptr);
       }
     }
-    model->getView()->updateView(creature);
+    model->getView()->updateView(this);
     Optional<int> newIndex = model->getView()->chooseFromList("Equipment", list, index, View::NORMAL_MENU, nullptr,
         UserInputId::EQUIPMENT);
     if (!newIndex) {
@@ -485,7 +485,7 @@ bool Player::interruptedByEnemy() {
   if (enemies.size() > 0) {
     for (const Creature* c : enemies)
       if (!contains(ignoreCreatures, c->getAName())) {
-        model->getView()->updateView(creature);
+        model->getView()->updateView(this);
         privateMessage("You notice " + c->getAName());
         return true;
       }
@@ -589,17 +589,13 @@ const MapMemory& Player::getMemory() const {
   return (*levelMemory)[creature->getLevel()->getUniqueId()];
 }
 
-const vector<PlayerMessage>& Player::getMessages() const {
-  return messages;
-}
-
 void Player::sleeping() {
   if (creature->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
   else
     ViewObject::setHallu(false);
   MEASURE(
-      model->getView()->updateView(creature),
+      model->getView()->updateView(this),
       "level render time");
 }
 
@@ -627,7 +623,6 @@ void Player::retireMessages() {
 
 void Player::makeMove() {
   vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
-  const vector<Creature*>& creatures = creature->getLevel()->getAllCreatures();
   if (creature->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
   else
@@ -635,21 +630,20 @@ void Player::makeMove() {
   if (updateView) {
     updateView = false;
     MEASURE(
-        model->getView()->updateView(creature),
+        model->getView()->updateView(this),
         "level render time");
   }
   if (Options::getValue(OptionId::HINTS) && displayTravelInfo && creature->getConstSquare()->getName() == "road") {
     model->getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
   }
-  static bool greeting = false;
   if (Options::getValue(OptionId::HINTS) && displayGreeting) {
     CHECK(creature->getFirstName());
     model->getView()->presentText("", "Dear " + *creature->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
 /*    model->getView()->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
         "\n \nYou can turn these messages off in the options (press F2).");*/
     displayGreeting = false;
-    model->getView()->updateView(creature);
+    model->getView()->updateView(this);
   }
   for (const Creature* c : creature->getVisibleEnemies()) {
     if (c->isSpecialMonster() && !contains(specialCreatures, c)) {
@@ -718,7 +712,7 @@ void Player::makeMove() {
         return;
       break;
     case UserInputId::CAST_SPELL: spellAction(); break;
-    case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(creature); break;
+    case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(this); break;
     case UserInputId::EXIT: model->exitAction(); break;
     default: break;
   }
@@ -747,7 +741,7 @@ void Player::makeMove() {
   if (!creature->isDead())
     for (Vec2 pos : creature->getLevel()->getVisibleTiles(creature)) {
       ViewIndex index;
-      creature->getViewIndex(pos, index);
+      getViewIndex(pos, index);
       (*levelMemory)[creature->getLevel()->getUniqueId()].update(pos, index);
     }
 }
@@ -848,6 +842,28 @@ void Player::you(MsgType type, const string& param) {
   privateMessage(msg);
 }
 
+const Level* Player::getLevel() const {
+  return creature->getLevel();
+}
+
+Optional<Vec2> Player::getPosition(bool) const {
+  return creature->getPosition();
+}
+
+void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
+  if (creature->canSee(pos))
+    getLevel()->getSquare(pos)->getViewIndex(index, creature->getTribe());
+  else
+    index.setHiddenId(getLevel()->getSquare(pos)->getViewObject().id());
+  if (!creature->canSee(pos) && getMemory().hasViewIndex(pos))
+    index.mergeFromMemory(getMemory().getViewIndex(pos));
+  if (const Creature* c = getLevel()->getSquare(pos)->getCreature()) {
+    if (creature->canSee(c))
+      index.insert(c->getViewObject());
+    else if (contains(creature->getUnknownAttacker(), c))
+      index.insert(copyOf(ViewObject::unknownMonster()));
+  }
+}
 
 void Player::onKilled(const Creature* attacker) {
   showHistory();
@@ -1046,6 +1062,73 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
     creature->playerMessage("Your prayer is not answered.");
 }
 
+void Player::refreshGameInfo(GameInfo& gameInfo) const {
+  gameInfo.messageBuffer = messages;
+  gameInfo.infoType = GameInfo::InfoType::PLAYER;
+  Model::SunlightInfo sunlightInfo = getLevel()->getModel()->getSunlightInfo();
+  gameInfo.sunlightInfo.description = sunlightInfo.getText();
+  gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
+  GameInfo::PlayerInfo& info = gameInfo.playerInfo;
+  info.playerName = creature->getFirstName().getOr("");
+  info.title = creature->getName();
+  info.spellcaster = !creature->getSpells().empty();
+  info.adjectives = creature->getMainAdjectives();
+  Item* weapon = creature->getWeapon();
+  info.weaponName = weapon ? weapon->getName() : "";
+  const Location* location = getLevel()->getLocation(creature->getPosition());
+  info.levelName = location && location->hasName() 
+    ? capitalFirst(location->getName()) : getLevel()->getName();
+  info.attributes = {
+    {"level",
+      creature->getExpLevel(), 0,
+      "Describes general combat value of the creature."},
+    {"attack",
+      creature->getModifier(ModifierType::DAMAGE),
+      creature->isAffected(LastingEffect::RAGE) ? 1 : creature->isAffected(LastingEffect::PANIC) ? -1 : 0,
+      "Affects if and how much damage is dealt in combat."},
+    {"defense",
+      creature->getModifier(ModifierType::DEFENSE),
+      creature->isAffected(LastingEffect::RAGE) ? -1 : (creature->isAffected(LastingEffect::PANIC) 
+          || creature->isAffected(LastingEffect::MAGIC_SHIELD)) ? 1 : 0,
+      "Affects if and how much damage is taken in combat."},
+    {"accuracy",
+      creature->getModifier(ModifierType::ACCURACY),
+      creature->accuracyBonus(),
+      "Defines the chance of a successful melee attack and dodging."},
+    {"strength",
+      creature->getAttr(AttrType::STRENGTH),
+      creature->isAffected(LastingEffect::STR_BONUS),
+      "Affects the values of attack, defense and carrying capacity."},
+    {"dexterity",
+      creature->getAttr(AttrType::DEXTERITY),
+      creature->isAffected(LastingEffect::DEX_BONUS),
+      "Affects the values of melee and ranged accuracy, and ranged damage."},
+    {"speed",
+      creature->getAttr(AttrType::SPEED),
+      creature->isAffected(LastingEffect::SPEED) ? 1 : creature->isAffected(LastingEffect::SLOWED) ? -1 : 0,
+      "Affects how much time every action takes."}};
+  info.skills = creature->getSkillNames();
+  info.attributes.push_back({"gold", int(creature->getGold(100000000).size()), 0, ""});
+  gameInfo.time = creature->getTime();
+ /* info.elfStanding = Tribe::get(TribeId::ELVEN)->getStanding(this);
+  info.dwarfStanding = Tribe::get(TribeId::DWARVEN)->getStanding(this);
+  info.orcStanding = Tribe::get(TribeId::ORC)->getStanding(this);*/
+  info.effects.clear();
+  for (string s : creature->getAdjectives())
+    info.effects.push_back({s, true});
+  info.squareName = creature->getConstSquare()->getName();
+  info.lyingItems.clear();
+  for (auto stack : Item::stackItems(creature->getPickUpOptions()))
+    if (stack.second.size() == 1)
+      info.lyingItems.push_back({stack.first, stack.second[0]->getViewObject()});
+    else info.lyingItems.push_back({toString(stack.second.size()) + " "
+        + stack.second[0]->getName(true), stack.second[0]->getViewObject()});
+
+}
+
+vector<const Creature*> Player::getVisibleEnemies() const {
+  return creature->getVisibleEnemies();
+}
 
 template <class Archive>
 void Player::registerTypes(Archive& ar) {

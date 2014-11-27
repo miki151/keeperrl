@@ -96,7 +96,7 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
         info.roads.push_back(v - levelPart.getTopLeft());
     }
   }
-  info.player = bounds.getTopLeft() + (*creature->getViewPosition(true) - levelPart.getTopLeft()) * scale;
+  info.player = bounds.getTopLeft() + (*creature->getPosition(true) - levelPart.getTopLeft()) * scale;
   for (const Creature* c : creature->getVisibleEnemies()) {
     Vec2 pos = bounds.getTopLeft() + (c->getPosition() - levelPart.getTopLeft()) * scale;
     if (pos.inRectangle(bounds))
@@ -123,7 +123,7 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
 
 void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, WindowRenderer& r,
     function<void(double, double)> clickFun) {
-  const Level* level = creature->getViewLevel();
+  const Level* level = creature->getLevel();
   double scale = min(double(bounds.getW()) / level->getBounds().getW(),
       double(bounds.getH()) / level->getBounds().getH());
   while (1) {

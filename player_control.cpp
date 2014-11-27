@@ -923,13 +923,26 @@ Optional<TeamId> PlayerControl::getCurrentTeam() const {
     return Nothing();
 }
 
+void PlayerControl::getSquareViewIndex(const Square* square, ViewIndex& index) const {
+  if (canSee(square->getPosition()))
+    square->getViewIndex(index, getCollective()->getTribe());
+  else
+    index.setHiddenId(square->getViewObject().id());
+  if (const Creature* c = square->getCreature())
+    if (canSee(c))
+      index.insert(c->getViewObject());
+}
+
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  getSquareViewIndex(getLevel()->getSquare(pos), index);
+  const Square* square = getLevel()->getSquare(pos);
+  getSquareViewIndex(square, index);
+  if (!canSee(pos) && getMemory().hasViewIndex(pos))
+    index.mergeFromMemory(getMemory().getViewIndex(pos));
   if (getCollective()->getAllSquares().count(pos) 
       && index.hasObject(ViewLayer::FLOOR_BACKGROUND)
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
-  if (const Creature* c = getLevel()->getSquare(pos)->getCreature())
+  if (const Creature* c = square->getCreature())
     if (getCurrentTeam() && getCollective()->getTeams().contains(*getCurrentTeam(), c)
         && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
@@ -959,7 +972,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         ViewObject::Attribute::EFFICIENCY, getCollective()->getEfficiency(pos));
 }
 
-Optional<Vec2> PlayerControl::getViewPosition(bool force) const {
+Optional<Vec2> PlayerControl::getPosition(bool force) const {
   if (force) {
     if (const Creature* keeper = getKeeper())
       return keeper->getPosition();
@@ -1318,16 +1331,6 @@ double PlayerControl::getWarLevel() const {
   return ret * getCollective()->getWarMultiplier();
 }
 
-void PlayerControl::getSquareViewIndex(const Square* square, ViewIndex& index) const {
-  if (canSee(square->getPosition()))
-    square->getViewIndex(index, getCollective()->getTribe());
-  else
-    index.setHiddenId(square->getViewObject().id());
-  if (const Creature* c = square->getCreature())
-    if (canSee(c))
-      index.insert(c->getViewObject());
-}
-
 void PlayerControl::addToMemory(Vec2 pos) {
   Square* square = getLevel()->getSquare(pos);
   if (!square->isDirty())
@@ -1551,10 +1554,13 @@ void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* kil
   Creature* c = const_cast<Creature*>(victim);
 }
 
-const Level* PlayerControl::getViewLevel() const {
-  return getLevel();
+const Level* PlayerControl::getLevel() const {
+  return getCollective()->getLevel();
 }
 
+Level* PlayerControl::getLevel() {
+  return getCollective()->getLevel();
+}
 void PlayerControl::uncoverRandomLocation() {
   const Location* location = nullptr;
   for (auto loc : randomPermutation(getLevel()->getAllLocations()))
@@ -1637,7 +1643,7 @@ void PlayerControl::onConstructed(Vec2 pos, SquareType type) {
 void PlayerControl::updateVisibleCreatures(Rectangle range) {
   visibleEnemies.clear();
   visibleFriends.clear();
-  for (const Creature* c : getViewLevel()->getAllCreatures(range)) 
+  for (const Creature* c : getLevel()->getAllCreatures(range)) 
     if (canSee(c)) {
       if (isEnemy(c))
         visibleEnemies.push_back(c);

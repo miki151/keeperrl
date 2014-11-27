@@ -106,19 +106,6 @@ Creature::~Creature() {
     tribe->removeMember(this);
 }
 
-void Creature::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  if (canSee(pos))
-    level->getSquare(pos)->getViewIndex(index, tribe);
-  else
-    index.setHiddenId(level->getSquare(pos)->getViewObject().id());
-  if (const Creature* c = level->getSquare(pos)->getCreature()) {
-    if (canSee(c))
-      index.insert(c->getViewObject());
-    else if (contains(getUnknownAttacker(), c))
-      index.insert(copyOf(ViewObject::unknownMonster()));
-  }
-}
-
 SpellInfo Creature::getSpell(SpellId id) {
   switch (id) {
     case SpellId::HEALING: return {id, "healing", EffectId::HEAL, 0, 30};
@@ -276,10 +263,6 @@ Controller* Creature::getController() {
   return controller.get();
 }
 
-const MapMemory& Creature::getMemory() const {
-  return controller->getMemory();
-}
-
 CreatureAction Creature::swapPosition(Vec2 direction, bool force) {
   Creature* c = getSquare(direction)->getCreature();
   if (!c)
@@ -373,10 +356,6 @@ Item* Creature::getAmmo() const {
   return nullptr;
 }
 
-const Level* Creature::getViewLevel() const {
-  return level;
-}
-
 Level* Creature::getLevel() {
   return level;
 }
@@ -387,10 +366,6 @@ const Level* Creature::getLevel() const {
 
 Vec2 Creature::getPosition() const {
   return position;
-}
-
-Optional<Vec2> Creature::getViewPosition(bool) const {
-  return getPosition();
 }
 
 void Creature::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
@@ -798,6 +773,11 @@ void Creature::removePermanentEffect(LastingEffect effect, bool msg) {
     onRemoved(effect, msg);
 }
 
+double Creature::getTimeRemaining(LastingEffect effect) const {
+  CHECK(isAffected(effect));
+  return lastingEffects[effect] - getTime();
+}
+
 bool Creature::isAffected(LastingEffect effect) const {
   return lastingEffects[effect] >= getTime() || permanentEffects[effect] > 0;
 }
@@ -1109,7 +1089,7 @@ static string getAttackParam(AttackType type) {
   return "";
 }
 
-static string getBodyPartName(BodyPart part) {
+string Creature::getBodyPartName(BodyPart part) {
   switch (part) {
     case BodyPart::LEG: return "leg";
     case BodyPart::ARM: return "arm";
@@ -2334,8 +2314,36 @@ Vision* Creature::getVision() const {
     return Vision::get(VisionId::NORMAL); 
 }
 
+vector<Creature::SkillInfo> Creature::getSkillNames() const {
+  vector<SkillInfo> ret;
+  for (auto skill : getDiscreteSkills())
+    ret.push_back({Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
+  for (SkillId id : ENUM_ALL(SkillId))
+    if (!Skill::get(id)->isDiscrete() && getSkillValue(Skill::get(id)) > 0)
+      ret.push_back({Skill::get(id)->getNameForCreature(this), Skill::get(id)->getHelpText()});
+  return ret;
+}
+
+const MinionTaskMap& Creature::getMinionTasks() const {
+  return minionTasks;
+}
+
+void Creature::updateVisibleCreatures(Rectangle range) {
+  visibleEnemies.clear();
+  for (const Creature* c : getLevel()->getAllCreatures(range)) 
+    if (canSee(c) &&  isEnemy(c))
+        visibleEnemies.push_back(c);
+  for (const Creature* c : getUnknownAttacker())
+    if (!contains(visibleEnemies, c))
+      visibleEnemies.push_back(c);
+}
+
+vector<const Creature*> Creature::getVisibleEnemies() const {
+  return visibleEnemies;
+}
+
 string Creature::getRemainingString(LastingEffect effect) const {
-  return "[" + toString<int>(lastingEffects[effect] - time) + "]";
+  return "[" + toString<int>(getTimeRemaining(effect)) + "]";
 }
 
 vector<string> Creature::getMainAdjectives() const {
@@ -2358,7 +2366,7 @@ vector<string> Creature::getMainAdjectives() const {
 }
 
 vector<string> Creature::getAdjectives() const {
-  vector<string> ret;
+  vector<string> ret = getMainAdjectives();
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = injuredBodyParts[part])
       ret.push_back(getPlural("injured " + getBodyPartName(part), num));
@@ -2396,101 +2404,4 @@ vector<string> Creature::getAdjectives() const {
   return ret;
 }
 
-vector<Creature::SkillInfo> Creature::getSkillNames() const {
-  vector<SkillInfo> ret;
-  for (auto skill : getDiscreteSkills())
-    ret.push_back({Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
-  for (SkillId id : ENUM_ALL(SkillId))
-    if (!Skill::get(id)->isDiscrete() && getSkillValue(Skill::get(id)) > 0)
-      ret.push_back({Skill::get(id)->getNameForCreature(this), Skill::get(id)->getHelpText()});
-  return ret;
-}
-
-void Creature::refreshGameInfo(GameInfo& gameInfo) const {
-  gameInfo.messageBuffer = controller->getMessages();
-  gameInfo.infoType = GameInfo::InfoType::PLAYER;
-  Model::SunlightInfo sunlightInfo = level->getModel()->getSunlightInfo();
-  gameInfo.sunlightInfo.description = sunlightInfo.getText();
-  gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
-  GameInfo::PlayerInfo& info = gameInfo.playerInfo;
-  if (firstName) {
-    info.playerName = *firstName;
-    info.title = *name;
-  } else {
-    info.playerName = "";
-    info.title = *name;
-  }
-  info.possessed = !controllerStack.empty();
-  info.spellcaster = !spells.empty();
-  info.adjectives = getMainAdjectives();
-  Item* weapon = getWeapon();
-  info.weaponName = weapon ? weapon->getName() : "";
-  const Location* location = getLevel()->getLocation(getPosition());
-  info.levelName = location && location->hasName() 
-    ? capitalFirst(location->getName()) : getLevel()->getName();
-  info.attributes = {
-    {"level",
-      getExpLevel(), 0,
-      "Describes general combat value of the creature."},
-    {"attack",
-      getModifier(ModifierType::DAMAGE),
-      isAffected(LastingEffect::RAGE) ? 1 : isAffected(LastingEffect::PANIC) ? -1 : 0,
-      "Affects if and how much damage is dealt in combat."},
-    {"defense",
-      getModifier(ModifierType::DEFENSE),
-      isAffected(LastingEffect::RAGE) ? -1
-          : (isAffected(LastingEffect::PANIC) || isAffected(LastingEffect::MAGIC_SHIELD)) ? 1 : 0,
-      "Affects if and how much damage is taken in combat."},
-    {"accuracy",
-      getModifier(ModifierType::ACCURACY),
-      accuracyBonus(),
-      "Defines the chance of a successful melee attack and dodging."},
-    {"strength",
-      getAttr(AttrType::STRENGTH),
-      isAffected(LastingEffect::STR_BONUS),
-      "Affects the values of attack, defense and carrying capacity."},
-    {"dexterity",
-      getAttr(AttrType::DEXTERITY),
-      isAffected(LastingEffect::DEX_BONUS),
-      "Affects the values of melee and ranged accuracy, and ranged damage."},
-    {"speed",
-      getAttr(AttrType::SPEED),
-      isAffected(LastingEffect::SPEED) ? 1 : isAffected(LastingEffect::SLOWED) ? -1 : 0,
-      "Affects how much time every action takes."}};
-  info.skills = getSkillNames();
-  info.attributes.push_back({"gold", int(getGold(100000000).size()), 0, ""});
-  gameInfo.time = getTime();
- /* info.elfStanding = Tribe::get(TribeId::ELVEN)->getStanding(this);
-  info.dwarfStanding = Tribe::get(TribeId::DWARVEN)->getStanding(this);
-  info.orcStanding = Tribe::get(TribeId::ORC)->getStanding(this);*/
-  info.effects.clear();
-  for (string s : getAdjectives())
-    info.effects.push_back({s, true});
-  info.squareName = getConstSquare()->getName();
-  info.lyingItems.clear();
-  for (auto stack : Item::stackItems(getPickUpOptions()))
-    if (stack.second.size() == 1)
-      info.lyingItems.push_back({stack.first, stack.second[0]->getViewObject()});
-    else info.lyingItems.push_back({toString(stack.second.size()) + " "
-        + stack.second[0]->getName(true), stack.second[0]->getViewObject()});
-
-}
-
-const MinionTaskMap& Creature::getMinionTasks() const {
-  return minionTasks;
-}
-
-void Creature::updateVisibleCreatures(Rectangle range) {
-  visibleEnemies.clear();
-  for (const Creature* c : getViewLevel()->getAllCreatures(range)) 
-    if (canSee(c) &&  isEnemy(c))
-        visibleEnemies.push_back(c);
-  for (const Creature* c : getUnknownAttacker())
-    if (!contains(visibleEnemies, c))
-      visibleEnemies.push_back(c);
-}
-
-vector<const Creature*> Creature::getVisibleEnemies() const {
-  return visibleEnemies;
-}
 
