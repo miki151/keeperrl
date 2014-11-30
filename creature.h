@@ -239,7 +239,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
 
   void you(MsgType type, const string& param) const;
   void you(const string& param) const;
-  void playerMessage(const PlayerMessage& message) const;
+  void playerMessage(const PlayerMessage&) const;
   bool isPlayer() const;
   void grantIdentify(int numItems);
 
