@@ -47,10 +47,19 @@ void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers)
   villain.collective->addAssaultNotification(getCollective(), attackers, getAttackMessage(villain, attackers));
   getCollective()->getTeams().activate(getCollective()->getTeams().create(attackers));
   for (Creature* c : attackers)
-    getCollective()->setTask(c, villain.getAttackTask());
+    getCollective()->setTask(c, villain.getAttackTask(this));
 }
 
 void VillageControl::tick(double time) {
+  if (!getCollective()->getTeams().getAll().empty()) {
+    for (auto team : getCollective()->getTeams().getAll()) {
+      for (const Creature* c : getCollective()->getTeams().getMembers(team))
+        if (!getCollective()->hasTask(c)) {
+          getCollective()->getTeams().cancel(team);
+          break;
+        }
+    }
+  }
   if (!getCollective()->getTeams().getAll().empty())
     return;
   vector<Creature*> fighters = getCollective()->getCreatures(MinionTrait::FIGHTER);
@@ -70,11 +79,11 @@ MoveInfo VillageControl::getMove(Creature*) {
   return NoMove;
 }
 
-PTask VillageControl::Villain::getAttackTask() const {
+PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
   switch (behaviour.getId()) {
     case VillageBehaviourId::KILL_LEADER: return Task::attackLeader(collective);
     case VillageBehaviourId::KILL_MEMBERS: return Task::killFighters(collective, behaviour.get<int>());
-    case VillageBehaviourId::STEAL_GOLD: return Task::stealFrom(collective);
+    case VillageBehaviourId::STEAL_GOLD: return Task::stealFrom(collective, self->getCollective());
   }
 }
 

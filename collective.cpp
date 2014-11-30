@@ -782,6 +782,10 @@ void Collective::setTask(const Creature *c, PTask task) {
   taskMap.addTask(std::move(task), c);
 }
 
+bool Collective::hasTask(const Creature* c) const {
+  return taskMap.getTask(c);
+}
+
 MoveInfo Collective::getMove(Creature* c) {
   CHECK(control);
   CHECK(contains(creatures, c));

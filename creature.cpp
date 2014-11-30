@@ -2189,7 +2189,14 @@ CreatureAction Creature::moveTowards(Vec2 pos, bool away, bool stepOnTile) {
     shortestPath = ShortestPath(getLevel(), this, pos, getPosition(), -1.5);
   if (shortestPath->isReachable(getPosition())) {
     Vec2 pos2 = shortestPath->getNextMove(getPosition());
-    return move(pos2 - getPosition());
+    if (auto action = move(pos2 - getPosition()))
+      return action;
+    else {
+      if (!getLevel()->getSquare(pos2)->canEnterEmpty(this))
+        if (auto action = destroy(pos2 - getPosition(), Creature::BASH))
+          return action;
+      return CreatureAction();
+    }
   } else {
     Debug() << "Cannot move toward " << pos;
     return CreatureAction();

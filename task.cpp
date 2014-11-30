@@ -188,8 +188,20 @@ class PickItem : public NonTransferable {
     return position;
   }
 
+  bool itemsExist(Square* target) {
+    for (const Item* it : target->getItems())
+      if (items.contains(it))
+        return true;
+    return false;
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(!pickedUp);
+    if (!itemsExist(c->getLevel()->getSquare(position))) {
+      callback->onCantPickItem(items);
+      setDone();
+      return NoMove;
+    }
     if (c->getPosition() == position) {
       vector<Item*> hereItems;
       for (Item* it : c->getPickUpOptions())
@@ -636,15 +648,12 @@ class Chain : public Task {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    MoveInfo ret = tasks[current]->getMove(c);
-    if (ret)
-      ret.move.append([=] { 
-          if (tasks[current]->isDone())
-            ++current;
-          if (current >= tasks.size())
-            setDone();
-          });
-    return ret;
+    while (tasks[current]->isDone())
+      if (++current >= tasks.size()) {
+        setDone();
+        return NoMove;
+      }
+    return tasks[current]->getMove(c);
   }
 
   template <class Archive> 
@@ -719,14 +728,7 @@ class AttackLeader : public NonTransferable {
   virtual MoveInfo getMove(Creature* c) override {
     if (c->getLevel() != collective->getLevel())
       return NoMove;
-    if (auto action = c->moveTowards(collective->getLeader()->getPosition())) 
-      return action;
-    else {
-      for (Vec2 v : Vec2::directions8(true))
-        if (auto action = c->destroy(v, Creature::BASH))
-          return action;
-      return c->wait();
-    }
+    return c->moveTowards(collective->getLeader()->getPosition());
   }
 
   template <class Archive> 
@@ -748,56 +750,14 @@ PTask Task::attackLeader(Collective* col) {
   return PTask(new AttackLeader(col));
 }
 
-namespace {
-
-class StealFrom : public NonTransferable {
-  public:
-
-  StealFrom(Collective* collective) {
-    for (Vec2 pos : collective->getSquares(SquareId::TREASURE_CHEST)) {
-      vector<Item*> gold = collective->getLevel()->getSquare(pos)->getItems(Item::classPredicate(ItemClass::GOLD));
-      if (!gold.empty())
-        items.push_back({pos, transform2<Item::Id>(gold, [] (Item* it) { return it->getUniqueId();})});
-//      if (items.
-    }
+PTask Task::stealFrom(Collective* collective, Callback* callback) {
+  vector<PTask> tasks;
+  for (Vec2 pos : collective->getSquares(SquareId::TREASURE_CHEST)) {
+    vector<Item*> gold = collective->getLevel()->getSquare(pos)->getItems(Item::classPredicate(ItemClass::GOLD));
+    if (!gold.empty())
+      tasks.push_back(pickItem(callback, pos, gold));
   }
-
-  virtual MoveInfo getMove(Creature* c) override {
-    return NoMove;
- /*   if (c->getLevel() != collective->getLevel())
-      return NoMove;
-    if (auto action = c->moveTowards(collective->getLeader()->getPosition())) 
-      return action;
-    else {
-      for (Vec2 v : Vec2::directions8(true))
-        if (auto action = c->destroy(v, Creature::BASH))
-          return action;
-      return c->wait();
-    }*/
-  }
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(items);
-    CHECK_SERIAL;
-  }
-  
-  SERIALIZATION_CONSTRUCTOR(StealFrom);
-
-  private:
-  struct ItemInfo : public NamedTupleBase<Vec2, vector<Item::Id>> {
-    NAMED_TUPLE_STUFF(ItemInfo);
-    NAME_ELEM(0, pos);
-    NAME_ELEM(1, ids);
-  };
-  vector<ItemInfo> SERIAL(items);
-};
-
-}
-
-PTask Task::stealFrom(Collective* col) {
-  return PTask(new StealFrom(col));
+  return chain(std::move(tasks));
 }
 
 namespace {
@@ -816,14 +776,7 @@ class KillFighters : public NonTransferable {
       return NoMove;
     for (Creature* c : collective->getCreatures(MinionTrait::FIGHTER))
       targets.insert(c);
-    if (auto action = c->moveTowards(collective->getLeader()->getPosition())) 
-      return action;
-    else {
-      for (Vec2 v : Vec2::directions8(true))
-        if (auto action = c->destroy(v, Creature::BASH))
-          return action;
-      return c->wait();
-    }
+    return c->moveTowards(collective->getLeader()->getPosition());
   }
 
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
@@ -1076,7 +1029,6 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Chain);
   REGISTER_TYPE(ar, Explore);
   REGISTER_TYPE(ar, AttackLeader);
-  REGISTER_TYPE(ar, StealFrom);
   REGISTER_TYPE(ar, KillFighters);
   REGISTER_TYPE(ar, StayInLocationUntil);
   REGISTER_TYPE(ar, CreateBed);

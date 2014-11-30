@@ -57,7 +57,7 @@ class VillageControl : public CollectiveControl {
     Behaviour SERIAL(behaviour);
     AttackMessage SERIAL(attackMessage);
 
-    PTask getAttackTask() const;
+    PTask getAttackTask(VillageControl* self);
     double getAttackProbability(const VillageControl* self) const;
     double getTriggerValue(const Trigger&, const VillageControl* self, const Collective* villain) const;
 

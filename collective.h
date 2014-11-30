@@ -88,6 +88,7 @@ class Collective : public Task::Callback {
   void addNewCreatureMessage(const vector<Creature*>&);
   GameInfo::VillageInfo::Village getVillageInfo() const;
   void setTask(const Creature*, PTask);
+  bool hasTask(const Creature*) const;
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;
