@@ -46,6 +46,7 @@ class Square : public Renderable {
     map<SquareId, int> constructions;
     bool ticking;
     MovementType movementType;
+    bool canDestroy;
   };
   Square(const ViewObject&, Params);
 
@@ -110,8 +111,8 @@ class Square : public Renderable {
   int getStrength() const;
 
   /** Checks if this square can be destroyed.*/
-  virtual bool canDestroyBy(const Creature* c) const { return canDestroy(); }
-  virtual bool canDestroy() const { return false; }
+  virtual bool canDestroyBy(const Creature* c) const;
+  virtual bool canDestroy() const;
 
   /** Called when something destroyed this square.*/
   virtual void destroyBy(Creature* c) { destroy(); }
@@ -247,6 +248,7 @@ class Square : public Renderable {
   double SERIAL2(fog, 0);
   MovementType SERIAL(movementType);
   bool SERIAL2(dirty, true);
+  bool SERIAL2(canDestroySquare, false);
 };
 
 #endif

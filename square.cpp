@@ -45,7 +45,8 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(ticking)
     & SVAR(fog)
     & SVAR(movementType)
-    & SVAR(dirty);
+    & SVAR(dirty)
+    & SVAR(canDestroySquare);
   CHECK_SERIAL;
 }
 
@@ -56,7 +57,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
-    movementType(p.movementType) {
+    movementType(p.movementType), canDestroySquare(p.canDestroy) {
 }
 
 Square::~Square() {
@@ -124,8 +125,6 @@ bool Square::construct(SquareType type) {
   CHECK(canConstruct(type));
   if (--constructions[type.getId()] <= 0) {
     PSquare newSquare = PSquare(SquareFactory::get(type));
-/*    if (creature && !newSquare->canEnter(creature))
-      return false;*/
     level->replaceSquare(position, std::move(newSquare));
     return true;
   } else
@@ -137,6 +136,14 @@ void Square::destroy() {
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
+}
+
+bool Square::canDestroyBy(const Creature* c) const {
+  return canDestroy();
+}
+
+bool Square::canDestroy() const {
+  return canDestroySquare;
 }
 
 void Square::burnOut() {

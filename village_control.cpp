@@ -36,10 +36,11 @@ VillageControl::VillageControl(Collective* col, const Location* l, vector<Villai
     getCollective()->claimSquare(v);
 }
 
-void VillageControl::onCreatureKilled(const Creature*, const Creature* killer) {
-  for (auto& villain : villains)
-    if (contains(villain.collective->getCreatures(), killer))
-      ++victims[villain.collective];
+void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
+  if (victim->getTribe() == getCollective()->getTribe())
+    for (auto& villain : villains)
+      if (contains(villain.collective->getCreatures(), killer))
+        ++victims[villain.collective];
 }
 
 void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers) {

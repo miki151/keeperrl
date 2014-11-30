@@ -70,7 +70,6 @@ class VillageControl : public CollectiveControl {
   VillageControl(Collective*, const Location*, vector<Villain>);
 
   protected:
-  virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
   virtual void tick(double time) override;
   virtual MoveInfo getMove(Creature*);
 
@@ -80,6 +79,8 @@ class VillageControl : public CollectiveControl {
   const string& getAttackMessage(const Villain&) const;
   string getAttackMessage(const Villain&, const vector<Creature*> attackers) const;
   void launchAttack(Villain&, vector<Creature*> attackers);
+
+  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
 
   const Location* SERIAL(location);
   vector<Villain> SERIAL(villains);

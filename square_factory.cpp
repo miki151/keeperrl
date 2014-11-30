@@ -1158,6 +1158,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::ROUND_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = "impaled head";
+            c.canDestroy = true;
             c.movementType = {MovementTrait::WALK};
             c.vision = Vision::get(VisionId::NORMAL);));
     case SquareId::EYEBALL:
@@ -1165,6 +1166,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::ROUND_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = "eyeball";
+            c.canDestroy = true;
             c.movementType = {MovementTrait::WALK};
             c.vision = Vision::get(VisionId::NORMAL);));
     case SquareId::LIBRARY:

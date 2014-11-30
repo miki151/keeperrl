@@ -409,10 +409,10 @@ vector<EnemyInfo> getEnemyInfo() {
   for (int i : Range(2, 5)) {
     ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::SMALL_MINETOWN;
-        c.creatures = CreatureFactory::gnomeVillage(Tribe::get(TribeId::HUMAN));
+        c.creatures = CreatureFactory::gnomeVillage(Tribe::get(TribeId::DWARVEN));
         c.numCreatures = Random.get(3, 7);
         c.location = new Location(true);
-        c.tribe = Tribe::get(TribeId::HUMAN);
+        c.tribe = Tribe::get(TribeId::DWARVEN);
         c.buildingId = BuildingId::DUNGEON;
         c.stockpiles = LIST({StockpileInfo::MINERALS, 300});), {}});
   }
@@ -473,7 +473,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.stockpiles = LIST({StockpileInfo::GOLD, 400}, {StockpileInfo::MINERALS, 600});
           c.shopFactory = ItemFactory::dwarfShop();),
        {CONSTRUCT(VillainInfo,
-          c.minPopulation = 7;
+          c.minPopulation = 3;
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS});
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 3);

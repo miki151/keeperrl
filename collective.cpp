@@ -223,7 +223,11 @@ const string& Collective::getName() const {
 
 const CollectiveConfig& Collective::getConfig() const {
 
-  static EnumMap<CollectiveConfigId, CollectiveConfig> collectiveConfigs {
+  static EnumMap<CollectiveConfigId, CollectiveConfig> collectiveConfigs;
+  static bool initialized = false;
+  if (!initialized) {
+    initialized = true;
+    collectiveConfigs = {
     {CollectiveConfigId::KEEPER,
       CONSTRUCT(CollectiveConfig,
         c.manageEquipment = true;
@@ -376,6 +380,7 @@ const CollectiveConfig& Collective::getConfig() const {
         );)},
     {CollectiveConfigId::VILLAGE, {}},
   };
+  }
   return collectiveConfigs[configId];
 }
 
