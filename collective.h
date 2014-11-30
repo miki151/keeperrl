@@ -28,6 +28,7 @@
 #include "item.h"
 #include "known_tiles.h"
 #include "collective_teams.h"
+#include "game_info.h"
 
 class Creature;
 class CollectiveControl;
@@ -71,7 +72,6 @@ RICH_ENUM(CollectiveWarning,
 
 class Collective : public Task::Callback {
   public:
-  Collective(Level*, CollectiveConfigId, Tribe*);
   void addCreature(Creature*, EnumSet<MinionTrait>);
   void addCreature(PCreature, Vec2, EnumSet<MinionTrait>);
   MoveInfo getMove(Creature*);
@@ -86,6 +86,8 @@ class Collective : public Task::Callback {
   double getTime() const;
   void update(Creature*);
   void addNewCreatureMessage(const vector<Creature*>&);
+  GameInfo::VillageInfo::Village getVillageInfo() const;
+  void setTask(const Creature*, PTask);
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;
@@ -94,6 +96,7 @@ class Collective : public Task::Callback {
 
   vector<Creature*>& getCreatures();
   const vector<Creature*>& getCreatures() const;
+  bool isConquered() const;
 
   const vector<Creature*>& getCreatures(SpawnType) const;
   const vector<Creature*>& getCreatures(MinionTrait) const;
@@ -285,12 +288,14 @@ class Collective : public Task::Callback {
   void orderConsumption(Creature* consumer, Creature* who);
   vector<Creature*>getConsumptionTargets(Creature* consumer);
 
-  void addAssaultNotification(const Creature*, const VillageControl*);
-  void removeAssaultNotification(const Creature*, const VillageControl*);
+  void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message);
+  void removeAssaultNotification(const Collective*);
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
   void freeTeamMembers(TeamId);
+
+  const string& getName() const;
 
   template <class Archive>
   static void registerTypes(Archive& ar);
@@ -311,6 +316,8 @@ class Collective : public Task::Callback {
 
 
   private:
+  friend class CollectiveBuilder;
+  Collective(Level*, CollectiveConfigId, Tribe*, const string& name);
   void updateEfficiency(Vec2, SquareType);
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
@@ -444,6 +451,7 @@ class Collective : public Task::Callback {
   mutable vector<ItemFetchInfo> itemFetchInfo;
   CollectiveTeams SERIAL(teams);
   set<const Location*> SERIAL(knownLocations);
+  string SERIAL(name);
 };
 
 #endif

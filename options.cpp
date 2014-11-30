@@ -27,7 +27,6 @@ const unordered_map<OptionId, int> defaults {
   {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
-  {OptionId::AGGRESSIVE_HEROES, 1},
 };
 
 const map<OptionId, string> names {
@@ -39,7 +38,6 @@ const map<OptionId, string> names {
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
-  {OptionId::AGGRESSIVE_HEROES, "Aggressive enemies"},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -54,7 +52,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
   }},
 #ifndef RELEASE
   {OptionSet::KEEPER, {
-      OptionId::AGGRESSIVE_HEROES,
       OptionId::START_WITH_NIGHT,
       OptionId::SHOW_MAP,
       OptionId::STARTING_RESOURCE,
@@ -98,7 +95,6 @@ unordered_map<OptionId, vector<string>> valueNames {
   {OptionId::FAST_IMMIGRATION, { "no", "yes" }},
   {OptionId::STARTING_RESOURCE, { "no", "yes" }},
   {OptionId::START_WITH_NIGHT, { "no", "yes" }},
-  {OptionId::AGGRESSIVE_HEROES, { "no", "yes" }},
 };
 
 static View::MenuType getMenuType(OptionSet set) {

@@ -52,7 +52,8 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(currentWarning)
     & SVAR(hints)
     & SVAR(visibleEnemies)
-    & SVAR(visibleFriends);
+    & SVAR(visibleFriends)
+    & SVAR(notifiedConquered);
   CHECK_SERIAL;
 }
 
@@ -802,15 +803,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (Deity* deity : Deity::getDeities())
     gameInfo.bandInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});
   gameInfo.villageInfo.villages.clear();
-  bool attacking = false;
-  for (VillageControl* c : model->getVillageControls())
-    if (!c->isAnonymous()) {
-      gameInfo.villageInfo.villages.push_back(c->getVillageInfo());
-      if (c->currentlyAttacking())
-        attacking = true;
-    }
-  if (attacking)
-    model->getView()->getJukebox()->updateCurrent(Jukebox::BATTLE);
+  for (const Collective* c : model->getMainVillains())
+    gameInfo.villageInfo.villages.push_back(c->getVillageInfo());
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
   gameInfo.infoType = GameInfo::InfoType::BAND;
@@ -1323,14 +1317,6 @@ Creature* PlayerControl::getKeeper() {
   return getCollective()->getLeader();
 }
 
-double PlayerControl::getWarLevel() const {
-  double ret = 0;
-  for (const Creature* c : getCollective()->getCreatures({MinionTrait::FIGHTER}))
-    ret += c->getDifficultyPoints();
-  ret += getCollective()->getSquares(SquareId::IMPALED_HEAD).size() * 150;
-  return ret * getCollective()->getWarMultiplier();
-}
-
 void PlayerControl::addToMemory(Vec2 pos) {
   Square* square = getLevel()->getSquare(pos);
   if (!square->isDirty())
@@ -1449,10 +1435,11 @@ void PlayerControl::tick(double time) {
     getCollective()->addNewCreatureMessage(addedCreatures);
   }
   for (auto assault : copyOf(assaultNotifications))
-    for (const Creature* c : assault.second)
+    for (const Creature* c : assault.second.creatures())
       if (canSee(c)) {
-        addImportantLongMessage(assault.first->getAttackMessage(), c->getPosition());
+        addImportantLongMessage(assault.second.message(), c->getPosition());
         assaultNotifications.erase(assault.first);
+        model->getView()->getJukebox()->updateCurrent(Jukebox::BATTLE);
         break;
       }
   if (Options::getValue(OptionId::HINTS) && time > hintFrequency) {
@@ -1462,6 +1449,12 @@ void PlayerControl::tick(double time) {
       hints[numHint] = "";
     }
   }
+  for (const Collective* col : model->getMainVillains())
+    if (col->isConquered() && !notifiedConquered.count(col)) {
+      addImportantLongMessage("You have exterminated the armed forces of " + col->getName() + ". "
+          "Make sure to plunder the village and retrieve any valuables.");
+      notifiedConquered.insert(col);
+    }
 }
 
 bool PlayerControl::canSee(const Creature* c) const {
@@ -1598,11 +1591,6 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
     }
 }
 
-void PlayerControl::onConquerEvent(const VillageControl* control) {
-  addImportantLongMessage("You have exterminated the armed forces of " + control->getName() + ". "
-          "Make sure to plunder the village and retrieve any valuables.");
-}
-
 void PlayerControl::onSunlightChangeEvent() {
   if (model->getSunlightInfo().state == Model::SunlightInfo::NIGHT)
       addMessage(PlayerMessage("Night is falling. Killing enemies in their sleep yields double mana.",
@@ -1616,14 +1604,15 @@ void PlayerControl::onWorshipCreatureEvent(Creature* who, const Creature* to, Wo
   }
 }
 
-void PlayerControl::addAssaultNotification(const Creature* c, const VillageControl* control) {
-  assaultNotifications[control].push_back(c);
+void PlayerControl::addAssaultNotification(const Collective* col, const vector<Creature*>& c, const string& message) {
+  assaultNotifications[col].creatures() = c;
+  assaultNotifications[col].message() = message;
 }
 
-void PlayerControl::removeAssaultNotification(const Creature *c, const VillageControl* control) {
-  if (assaultNotifications.count(control))
-    removeElementMaybe(assaultNotifications.at(control), c);
+void PlayerControl::removeAssaultNotification(const Collective* col) {
+  assaultNotifications.erase(col);
 }
+
 void PlayerControl::onDiscoveredLocation(const Location* loc) {
   if (loc->hasName())
     addMessage(PlayerMessage("Your minions discover the location of " + loc->getName(), PlayerMessage::HIGH)

@@ -37,7 +37,7 @@ template <class Archive>
 void Model::serialize(Archive& ar, const unsigned int version) { 
   ar& SVAR(levels)
     & SVAR(collectives)
-    & SVAR(villageControls)
+    & SVAR(mainVillains)
     & SVAR(timeQueue)
     & SVAR(deadCreatures)
     & SVAR(lastTick)
@@ -111,10 +111,6 @@ const char* Model::SunlightInfo::getText() {
   return "";
 }
 
-const vector<VillageControl*> Model::getVillageControls() const {
-  return villageControls;
-}
-
 const Creature* Model::getPlayer() const {
   for (const PLevel& l : levels)
     if (l->getPlayer())
@@ -155,9 +151,7 @@ void Model::update(double totalTime) {
     if (currentTime >= lastTick + 1) {
       MEASURE({ tick(currentTime); }, "ticking time");
     }
-    bool unpossessed = false;
     if (!creature->isDead()) {
-      bool wasPlayer = creature->isPlayer();
 #ifndef RELEASE
       CreatureAction::checkUsage(true);
       try {
@@ -173,8 +167,6 @@ void Model::update(double totalTime) {
       }
       CreatureAction::checkUsage(false);
 #endif
-      if (wasPlayer && !creature->isPlayer())
-        unpossessed = true;
     }
     for (PCollective& c : collectives)
       c->update(creature);
@@ -182,11 +174,11 @@ void Model::update(double totalTime) {
       Level* level = creature->getLevel();
       CHECK(level->getSquare(creature->getPosition())->getCreature() == creature);
     }
-    if (unpossessed) {
-      lastUpdate = -10;
-      break;
-    }
   } while (1);
+}
+
+const vector<Collective*> Model::getMainVillains() const {
+  return mainVillains;
 }
 
 void Model::tick(double time) {
@@ -206,8 +198,8 @@ void Model::tick(double time) {
       for (PCollective& col : collectives)
         col->tick(time);
       bool conquered = true;
-      for (VillageControl* control : villageControls)
-        conquered &= (control->isAnonymous() || control->isConquered());
+      for (Collective* col : mainVillains)
+        conquered &= col->isConquered();
       if (conquered && !won) {
         playerControl->onConqueredLand(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
         won = true;
@@ -338,13 +330,15 @@ void Model::onKilledLeaderEvent(const Collective* victim, const Creature* leader
   }
 }
 
+typedef VillageControl::Villain VillainInfo;
+
 struct EnemyInfo {
   SettlementInfo settlement;
-  VillageControlInfo controlInfo;
+  vector<VillainInfo> villains;
 };
 
 static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* tribe, int num,
-    Optional<ItemFactory> itemFactory, VillageControlInfo controlInfo) {
+    Optional<ItemFactory> itemFactory = Nothing(), vector<VillainInfo> villains = {}) {
   return {CONSTRUCT(SettlementInfo,
       c.type = type;
       c.creatures = factory;
@@ -353,12 +347,12 @@ static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* t
       c.tribe = tribe;
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = itemFactory;),
-    controlInfo};
+    villains};
 }
 
 static EnemyInfo getVault(SettlementType type, CreatureId id, Tribe* tribe, int num,
-    Optional<ItemFactory> itemFactory, VillageControlInfo controlInfo) {
-  return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, controlInfo);
+    Optional<ItemFactory> itemFactory = Nothing(), vector<VillainInfo> villains = {}) {
+  return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, villains);
 }
 
 struct FriendlyVault {
@@ -370,46 +364,35 @@ struct FriendlyVault {
 static vector<FriendlyVault> friendlyVaults {
   {CreatureId::SPECIAL_HUMANOID, 1, 2},
   {CreatureId::ORC, 3, 8},
-  {CreatureId::CAVE_BEAR, 2, 5},
   {CreatureId::OGRE, 2, 5},
-  {CreatureId::IRON_GOLEM, 2, 5},
   {CreatureId::VAMPIRE, 2, 5},
 };
 
 static vector<EnemyInfo> getVaults() {
   vector<EnemyInfo> ret {
     getVault(SettlementType::CAVE, chooseRandom({CreatureId::RED_DRAGON, CreatureId::GREEN_DRAGON}),
-        Tribe::get(TribeId::DRAGON), 1, ItemFactory::dragonCave(), {
-        Options::getValue(OptionId::AGGRESSIVE_HEROES) ? VillageControlInfo::DRAGON
-        : VillageControlInfo::PEACEFUL}),
+        Tribe::get(TribeId::DRAGON), 1, ItemFactory::dragonCave(),
+        { CONSTRUCT(VillainInfo,
+            c.minPopulation = 0;
+            c.minTeamSize = 1;
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 30});
+            c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 5);
+            c.attackMessage = VillageControl::CREATURE_TITLE;)}),
  /*   getVault(SettlementType::CAVE, CreatureId::GREEN_DRAGON, Tribe::get(TribeId::DRAGON), 1,
         ItemFactory::dragonCave(), {VillageControlInfo::DRAGON}),*/
     getVault(SettlementType::VAULT, CreatureFactory::insects(Tribe::get(TribeId::MONSTER)),
-        Tribe::get(TribeId::MONSTER), Random.get(6, 12), Nothing(), {VillageControlInfo::PEACEFUL}),
-    getVault(SettlementType::VAULT, CreatureId::ORC, Tribe::get(TribeId::KEEPER), Random.get(3, 8),
-        Nothing(), {VillageControlInfo::PEACEFUL}),
+        Tribe::get(TribeId::MONSTER), Random.get(6, 12)),
+    getVault(SettlementType::VAULT, CreatureId::ORC, Tribe::get(TribeId::KEEPER), Random.get(3, 8)),
     getVault(SettlementType::VAULT, CreatureId::CYCLOPS, Tribe::get(TribeId::MONSTER), 1,
-        ItemFactory::mushrooms(true), {VillageControlInfo::PEACEFUL}),
+        ItemFactory::mushrooms(true)),
     getVault(SettlementType::VAULT, CreatureId::RAT, Tribe::get(TribeId::PEST), Random.get(3, 8),
-        ItemFactory::armory(), {VillageControlInfo::PEACEFUL}),
+        ItemFactory::armory()),
   };
   for (int i : Range(Random.get(1, 3))) {
     FriendlyVault v = chooseRandom(friendlyVaults);
-    ret.push_back(getVault(SettlementType::VAULT, v.id, Tribe::get(TribeId::KEEPER), Random.get(v.min, v.max),
-          Nothing(), {VillageControlInfo::PEACEFUL}));
+    ret.push_back(getVault(SettlementType::VAULT, v.id, Tribe::get(TribeId::KEEPER), Random.get(v.min, v.max)));
   }
   return ret;
-}
-
-static double getKilledCoeff() {
-  return Random.getDouble(0.1, 1.2);
-};
-
-static double getPowerCoeff() {
-  if (Options::getValue(OptionId::AGGRESSIVE_HEROES))
-    return Random.getDouble(0.1, 0.3);
-  else
-    return 0.0;
 }
 
 vector<EnemyInfo> getEnemyInfo() {
@@ -421,8 +404,7 @@ vector<EnemyInfo> getEnemyInfo() {
         c.numCreatures = Random.get(3, 7);
         c.location = new Location();
         c.tribe = Tribe::get(TribeId::HUMAN);
-        c.buildingId = BuildingId::WOOD;),
-        {VillageControlInfo::PEACEFUL}});
+        c.buildingId = BuildingId::WOOD;), {}});
   }
   for (int i : Range(2, 5)) {
     ret.push_back({CONSTRUCT(SettlementInfo,
@@ -432,15 +414,13 @@ vector<EnemyInfo> getEnemyInfo() {
         c.location = new Location(true);
         c.tribe = Tribe::get(TribeId::HUMAN);
         c.buildingId = BuildingId::DUNGEON;
-        c.stockpiles = LIST({StockpileInfo::MINERALS, 300});),
-        {VillageControlInfo::PEACEFUL}});
+        c.stockpiles = LIST({StockpileInfo::MINERALS, 300});), {}});
   }
   ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::ISLAND_VAULT;
         c.location = new Location(true);
         c.buildingId = BuildingId::DUNGEON;
-        c.stockpiles = LIST({StockpileInfo::GOLD, 400});),
-      {VillageControlInfo::PEACEFUL}});
+        c.stockpiles = LIST({StockpileInfo::GOLD, 400});), {}});
   append(ret, getVaults());
   append(ret, {
       {CONSTRUCT(SettlementInfo,
@@ -453,7 +433,12 @@ vector<EnemyInfo> getEnemyInfo() {
           c.stockpiles = LIST({StockpileInfo::GOLD, 400});
           c.guardId = CreatureId::WARRIOR;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);),
-        {VillageControlInfo::POWER_BASED, VillageControlInfo::ATTACK_LEADER, getKilledCoeff(), getPowerCoeff()}},
+       {CONSTRUCT(VillainInfo,
+          c.minPopulation = 6;
+          c.minTeamSize = 5;
+          c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS});
+          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
+          c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::VILLAGE;
           c.creatures = CreatureFactory::lizardTown(Tribe::get(TribeId::LIZARD));
@@ -463,7 +448,12 @@ vector<EnemyInfo> getEnemyInfo() {
           c.buildingId = BuildingId::MUD;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::HUMANOID_MUT);
           c.shopFactory = ItemFactory::mushrooms();),
-        {VillageControlInfo::POWER_BASED, VillageControlInfo::ATTACK_LEADER, getKilledCoeff(), getPowerCoeff()}},
+       {CONSTRUCT(VillainInfo,
+          c.minPopulation = 4;
+          c.minTeamSize = 4;
+          c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS});
+          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
+          c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::VILLAGE2;
           c.creatures = CreatureFactory::elvenVillage(Tribe::get(TribeId::ELVEN));
@@ -472,8 +462,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.tribe = Tribe::get(TribeId::ELVEN);
           c.stockpiles = LIST({StockpileInfo::GOLD, 400});
           c.buildingId = BuildingId::WOOD;
-          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);),
-        {VillageControlInfo::PEACEFUL}},
+          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);), {}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::MINETOWN;
           c.creatures = CreatureFactory::dwarfTown(Tribe::get(TribeId::DWARVEN));
@@ -483,8 +472,12 @@ vector<EnemyInfo> getEnemyInfo() {
           c.buildingId = BuildingId::DUNGEON;
           c.stockpiles = LIST({StockpileInfo::GOLD, 400}, {StockpileInfo::MINERALS, 600});
           c.shopFactory = ItemFactory::dwarfShop();),
-        {VillageControlInfo::POWER_BASED_DISCOVER, VillageControlInfo::ATTACK_LEADER,
-            getKilledCoeff(), getPowerCoeff()}},
+       {CONSTRUCT(VillainInfo,
+          c.minPopulation = 7;
+          c.minTeamSize = 4;
+          c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS});
+          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 3);
+          c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CASTLE;
           c.creatures = CreatureFactory::humanCastle(Tribe::get(TribeId::HUMAN));
@@ -495,7 +488,12 @@ vector<EnemyInfo> getEnemyInfo() {
           c.buildingId = BuildingId::BRICK;
           c.guardId = CreatureId::CASTLE_GUARD;
           c.shopFactory = ItemFactory::villageShop();),
-        {VillageControlInfo::FINAL_ATTACK, VillageControlInfo::ATTACK_LEADER}},
+       {CONSTRUCT(VillainInfo,
+          c.minPopulation = 2;
+          c.minTeamSize = 10;
+          c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS});
+          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
+          c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::WITCH_HOUSE;
           c.creatures = CreatureFactory::singleType(Tribe::get(TribeId::MONSTER), CreatureId::WITCH);
@@ -503,8 +501,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.location = new Location();
           c.tribe = Tribe::get(TribeId::MONSTER);
           c.buildingId = BuildingId::WOOD;
-          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);),
-        {VillageControlInfo::PEACEFUL}},
+          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);), {}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CAVE;
           c.creatures = CreatureFactory::singleType(Tribe::get(TribeId::BANDIT), CreatureId::BANDIT);
@@ -512,7 +509,12 @@ vector<EnemyInfo> getEnemyInfo() {
           c.location = new Location();
           c.tribe = Tribe::get(TribeId::BANDIT);
           c.buildingId = BuildingId::DUNGEON;),
-        {VillageControlInfo::POWER_BASED, VillageControlInfo::ATTACK_LEADER, getKilledCoeff(), getPowerCoeff()}},
+       {CONSTRUCT(VillainInfo,
+          c.minPopulation = 0;
+          c.minTeamSize = 3;
+          c.triggers = LIST({AttackTriggerId::GOLD, 300});
+          c.behaviour = VillageBehaviour(VillageBehaviourId::STEAL_GOLD);
+          c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
   });
   return ret;
 }
@@ -526,8 +528,8 @@ Model* Model::collectiveModel(View* view) {
     settlements.push_back(elem.settlement);
   }
   Level* top = m->prepareTopLevel(settlements);
-  m->collectives.push_back(PCollective(
-        new Collective(top, CollectiveConfigId::KEEPER, Tribe::get(TribeId::KEEPER))));
+  m->collectives.push_back(CollectiveBuilder(
+        CollectiveConfigId::KEEPER, Tribe::get(TribeId::KEEPER)).setLevel(top).build("Keeper"));
   m->playerCollective = m->collectives.back().get();
   m->playerControl = new PlayerControl(m->playerCollective, m, top);
   m->playerCollective->setControl(PCollectiveControl(m->playerControl));
@@ -547,15 +549,15 @@ Model* Model::collectiveModel(View* view) {
   for (int i : All(enemyInfo)) {
     if (!enemyInfo[i].settlement.collective->hasCreatures())
       continue;
-    PCollective collective = enemyInfo[i].settlement.collective->build();
     PVillageControl control;
-    if (enemyInfo[i].controlInfo.id != VillageControlInfo::FINAL_ATTACK)
-      control = VillageControl::get(enemyInfo[i].controlInfo, collective.get(), m->playerCollective,
-          enemyInfo[i].settlement.location);
-    else
-      control = VillageControl::getFinalAttack(collective.get(), m->playerCollective, enemyInfo[i].settlement.location,
-          m->villageControls);
-    m->villageControls.push_back(control.get());
+    Location* location = enemyInfo[i].settlement.location;
+    PCollective collective = enemyInfo[i].settlement.collective->build(
+        location->hasName() ? location->getName() : "");
+    if (!enemyInfo[i].villains.empty())
+      getOnlyElement(enemyInfo[i].villains).collective = m->playerCollective;
+    control.reset(new VillageControl(collective.get(), location, enemyInfo[i].villains));
+    if (location->hasName())
+      m->mainVillains.push_back(collective.get());
     collective->setControl(std::move(control));
     m->collectives.push_back(std::move(collective));
   }

@@ -804,10 +804,10 @@ namespace {
 
 class KillFighters : public NonTransferable {
   public:
-  KillFighters(Collective* col, Creature* c, int numC) : collective(col), who(c), numCreatures(numC) {}
+  KillFighters(Collective* col, int numC) : collective(col), numCreatures(numC) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    CHECK(c == who);
+    who = c;
     if (numCreatures <= 0 || collective->getCreatures(MinionTrait::FIGHTER).empty()) {
       setDone();
       return NoMove;
@@ -827,7 +827,7 @@ class KillFighters : public NonTransferable {
   }
 
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
-    if (killer == who && targets.contains(victim))
+    if (killer && killer == who && targets.contains(victim))
       --numCreatures;
   }
 
@@ -845,15 +845,15 @@ class KillFighters : public NonTransferable {
 
   private:
   Collective* SERIAL(collective);
-  Creature* SERIAL(who);
+  const Creature* SERIAL2(who, nullptr);
   int SERIAL(numCreatures);
   EntitySet<Creature> SERIAL(targets);
 };
 
 }
 
-PTask Task::killFighters(Collective* col, Creature* who, int numCreatures) {
-  return PTask(new KillFighters(col, who, numCreatures));
+PTask Task::killFighters(Collective* col, int numCreatures) {
+  return PTask(new KillFighters(col, numCreatures));
 }
 
 namespace {

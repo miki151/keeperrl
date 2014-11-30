@@ -12,9 +12,9 @@ class Creature;
 class CollectiveBuilder {
   public:
   CollectiveBuilder(CollectiveConfigId, Tribe*);
-  void setLevel(Level*);
-  void addCreature(Creature*, EnumSet<MinionTrait>);
-  PCollective build();
+  CollectiveBuilder& setLevel(Level*);
+  CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
+  PCollective build(const string& name);
   bool hasCreatures() const;
 
   private:

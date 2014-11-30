@@ -29,8 +29,6 @@ enum class OptionId {
   SHOW_MAP,
   START_WITH_NIGHT,
   STARTING_RESOURCE,
-
-  AGGRESSIVE_HEROES,
 };
 
 enum class OptionSet {

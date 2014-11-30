@@ -18,19 +18,11 @@ Collective* CollectiveControl::getCollective() {
   return NOTNULL(collective);
 }
 
-double CollectiveControl::getWarLevel() const {
-  return 0;
-}
-
 void CollectiveControl::update(Creature*) {
 }
 
 const Collective* CollectiveControl::getCollective() const {
   return NOTNULL(collective);
-}
-
-PTask CollectiveControl::getNewTask(Creature*) {
-  return nullptr;
 }
 
 vector<Creature*>& CollectiveControl::getCreatures() {

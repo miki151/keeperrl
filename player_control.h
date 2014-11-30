@@ -45,7 +45,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool isRetired() const;
   const Creature* getKeeper() const;
   Creature* getKeeper();
-  virtual double getWarLevel() const override;
   void addImp(Creature*);
   void addKeeper(Creature*);
 
@@ -81,8 +80,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   // from CollectiveControl
   virtual void update(Creature*) override;
-  virtual void addAssaultNotification(const Creature*, const VillageControl*) override;
-  virtual void removeAssaultNotification(const Creature*, const VillageControl*) override;
+  virtual void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message) override;
+  virtual void removeAssaultNotification(const Collective*) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onDiscoveredLocation(const Location*) override;
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
@@ -93,7 +92,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   REGISTER_HANDLER(TechBookEvent, Technology*);
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity* to, WorshipType);
   REGISTER_HANDLER(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
-  REGISTER_HANDLER(ConquerEvent, const VillageControl*);
   REGISTER_HANDLER(SunlightChangeEvent);
 
   friend class KeeperControlOverride;
@@ -232,7 +230,12 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   string getMinionName(CreatureId) const;
   ViewObject getMinionViewObject(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
-  map<const VillageControl*, vector<const Creature*>> SERIAL(assaultNotifications);
+  struct AssaultInfo : public NamedTupleBase<string, vector<Creature*>> {
+    NAMED_TUPLE_STUFF(AssaultInfo);
+    NAME_ELEM(0, message);
+    NAME_ELEM(1, creatures);
+  };
+  map<const Collective*, AssaultInfo> SERIAL(assaultNotifications);
   struct CurrentWarningInfo : public NamedTupleBase<Collective::Warning, double> {
     NAMED_TUPLE_STUFF(CurrentWarningInfo);
     NAME_ELEM(0, warning);
@@ -245,6 +248,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void updateVisibleCreatures(Rectangle range);
   vector<const Creature*> SERIAL(visibleEnemies);
   vector<const Creature*> SERIAL(visibleFriends);
+  unordered_set<const Collective*> SERIAL(notifiedConquered);
 };
 
 #endif

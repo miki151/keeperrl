@@ -54,7 +54,7 @@ class Model {
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
   void removeCreature(Creature*);
 
-  const vector<VillageControl*> getVillageControls() const;
+  const vector<Collective*> getMainVillains() const;
 
   bool isTurnBased();
 
@@ -100,7 +100,7 @@ class Model {
   vector<PLevel> SERIAL(levels);
   vector<PCollective> SERIAL(collectives);
   Collective* SERIAL(playerCollective);
-  vector<VillageControl*> SERIAL(villageControls);
+  vector<Collective*> SERIAL(mainVillains);
   View* view;
   TimeQueue SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);

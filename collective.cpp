@@ -54,7 +54,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(nextPayoutTime)
     & SVAR(teams)
     & SVAR(knownLocations)
-    & SVAR(torches);
+    & SVAR(torches)
+    & SVAR(name);
   CHECK_SERIAL;
 }
 
@@ -108,7 +109,6 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
   };
   return itemFetchInfo;
 }
-
 
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
   {ResourceId::MANA, { {}, nullptr, ItemId::GOLD_PIECE, "mana"}},
@@ -190,13 +190,17 @@ struct CollectiveConfig {
   double payoutMultiplier;
   bool stripSpawns;
   bool keepSectors;
+  bool fetchItems;
+  bool enemyPositions;
+  bool warnings;
+  bool constructions;
   vector<Collective::ImmigrantInfo> immigrantInfo;
 };
 
-Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t) : configId(cfg),
+Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t, const string& n) : configId(cfg),
   knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
   tribe(t), level(l), nextPayoutTime(-1), sectors(new Sectors(level->getBounds())),
-    flyingSectors(new Sectors(level->getBounds())) {
+    flyingSectors(new Sectors(level->getBounds())), name(n) {
   credit = {
     {ResourceId::MANA, 200},
   };
@@ -211,6 +215,10 @@ Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t) : configId(cf
       if (getLevel()->getSquare(v)->canEnterEmpty({{MovementTrait::WALK, MovementTrait::FLY}}))
         flyingSectors->add(v);
     }
+}
+
+const string& Collective::getName() const {
+  return name;
 }
 
 const CollectiveConfig& Collective::getConfig() const {
@@ -228,6 +236,10 @@ const CollectiveConfig& Collective::getConfig() const {
         c.payoutMultiplier = 3;
         c.stripSpawns = true;
         c.keepSectors = true;
+        c.fetchItems = true;
+        c.enemyPositions = true;
+        c.warnings = true;
+        c.constructions = true;
         c.immigrantInfo = LIST(
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::GOBLIN;
@@ -492,7 +504,11 @@ const vector<Creature*>& Collective::getCreatures() const {
 }
 
 double Collective::getWarLevel() const {
-  return control->getWarLevel();
+  double ret = 0;
+  for (const Creature* c : getCreatures({MinionTrait::FIGHTER}))
+    ret += c->getDifficultyPoints();
+  ret += getSquares(SquareId::IMPALED_HEAD).size() * 150;
+  return ret * getWarMultiplier();
 }
 
 MoveInfo Collective::getDropItems(Creature *c) {
@@ -542,9 +558,6 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
     } else
       return task->getMove(c);
   }
-  if (PTask t = control->getNewTask(c))
-    if (t->getMove(c))
-      return taskMap.addTask(std::move(t), c)->getMove(c);
   if (Task* closest = taskMap.getTaskForWorker(c)) {
     taskMap.takeTask(c, closest);
     return closest->getMove(c);
@@ -558,7 +571,8 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
         return {1.0, action};
       else
         return NoMove;
-    } else
+    } else if (!getAllSquares().empty() && !getAllSquares().count(c->getPosition()))
+        return c->moveTowards(chooseRandom(getAllSquares()));
       return NoMove;
   }
 }
@@ -703,6 +717,10 @@ vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) {
   return ret;
 }
 
+bool Collective::isConquered() const {
+  return getCreaturesAnyOf({MinionTrait::FIGHTER, MinionTrait::LEADER}).empty();
+}
+
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
   CHECK(consumer->getMinionTasks().getValue(MinionTask::CONSUME) > 0);
   setMinionTask(who, MinionTask::CONSUME);
@@ -753,6 +771,17 @@ MoveInfo Collective::getTeamMemberMove(Creature* c) {
   return NoMove;
 }
 
+void Collective::setTask(const Creature *c, PTask task) {
+  if (Task* task = taskMap.getTask(c)) {
+    if (!task->canTransfer()) {
+      task->cancel();
+      returnResource(taskMap.removeTask(task));
+    } else
+      taskMap.freeTaskDelay(task, getTime() + 50);
+  }
+  taskMap.addTask(std::move(task), c);
+}
+
 MoveInfo Collective::getMove(Creature* c) {
   CHECK(control);
   CHECK(contains(creatures, c));
@@ -794,13 +823,13 @@ MoveInfo Collective::getMove(Creature* c) {
         return taskMap.addTask(std::move(t), c)->getMove(c);
   if (PTask t = getPrisonerTask(c))
     return taskMap.addTask(std::move(t), c)->getMove(c);
-  if (PTask t = control->getNewTask(c))
-    if (t->getMove(c))
-      return taskMap.addTask(std::move(t), c)->getMove(c);
   if (PTask t = getStandardTask(c))
     if (t->getMove(c))
       return taskMap.addTask(std::move(t), c)->getMove(c);
-  return NoMove;
+  if (!getAllSquares().empty() && !getAllSquares().count(c->getPosition()))
+    return c->moveTowards(chooseRandom(getAllSquares()));
+  else
+    return NoMove;
 }
 
 void Collective::setControl(PCollectiveControl c) {
@@ -1198,7 +1227,6 @@ void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
   considerBirths();
-  considerWeaponWarning();
   if (Random.rollD(1.0 / getConfig().immigrantFrequency))
     considerImmigration();
   if (nextPayoutTime > -1 && time > nextPayoutTime) {
@@ -1206,51 +1234,59 @@ void Collective::tick(double time) {
     makePayouts();
   }
   cashPayouts();
-  setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
-  setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
-  setWarning(Warning::MORE_LIGHTS, torches.size() * 25 < getAllSquares(roomsNeedingLight).size());
-  for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
-    DormInfo info = getDormInfo()[spawnType];
-    if (info.warning && info.getBedType())
-      setWarning(*info.warning, !chooseBedPos(getSquares(info.dormType), getSquares(*info.getBedType())));
-  }
-  for (auto elem : getTaskInfo())
-    if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
-      setWarning(*elem.second.warning, false);
-  vector<Vec2> enemyPos = getEnemyPositions();
-  if (!enemyPos.empty())
-    delayDangerousTasks(enemyPos, getTime() + 20);
-  else
-    alarmInfo.finishTime() = -1000;
-  bool allSurrender = true;
-  for (Vec2 v : enemyPos)
-    if (!prisonerInfo.count(NOTNULL(getLevel()->getSquare(v)->getCreature()))) {
-      allSurrender = false;
-      break;
+  if (getConfig().warnings) {
+    considerWeaponWarning();
+    setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
+    setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
+    setWarning(Warning::MORE_LIGHTS, torches.size() * 25 < getAllSquares(roomsNeedingLight).size());
+    for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
+      DormInfo info = getDormInfo()[spawnType];
+      if (info.warning && info.getBedType())
+        setWarning(*info.warning, !chooseBedPos(getSquares(info.dormType), getSquares(*info.getBedType())));
     }
-  if (allSurrender) {
-    for (auto elem : copyOf(prisonerInfo))
-      if (elem.second.state() == PrisonerState::SURRENDER) {
-        Creature* c = elem.first;
-        Vec2 pos = c->getPosition();
-        if (containsSquare(pos) && !c->isDead()) {
-          getLevel()->globalMessage(pos, c->getTheName() + " surrenders.");
-          control->addMessage(PlayerMessage(c->getAName() + " surrenders.").setPosition(c->getPosition()));
-          c->die(nullptr, true, false);
-          addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
-                MonsterAIFactory::collective(this)), pos, {MinionTrait::PRISONER});
-        }
-        prisonerInfo.erase(c);
+    for (auto elem : getTaskInfo())
+      if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
+        setWarning(*elem.second.warning, false);
+  }
+  if (getConfig().enemyPositions) {
+    vector<Vec2> enemyPos = getEnemyPositions();
+    if (alarmInfo.finishTime() > 0) {
+      if (!enemyPos.empty())
+        delayDangerousTasks(enemyPos, getTime() + 20);
+    } else
+      alarmInfo.finishTime() = -1000;
+    bool allSurrender = true;
+    for (Vec2 v : enemyPos)
+      if (!prisonerInfo.count(NOTNULL(getLevel()->getSquare(v)->getCreature()))) {
+        allSurrender = false;
+        break;
       }
+    if (allSurrender) {
+      for (auto elem : copyOf(prisonerInfo))
+        if (elem.second.state() == PrisonerState::SURRENDER) {
+          Creature* c = elem.first;
+          Vec2 pos = c->getPosition();
+          if (containsSquare(pos) && !c->isDead()) {
+            getLevel()->globalMessage(pos, c->getTheName() + " surrenders.");
+            control->addMessage(PlayerMessage(c->getAName() + " surrenders.").setPosition(c->getPosition()));
+            c->die(nullptr, true, false);
+            addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
+                  MonsterAIFactory::collective(this)), pos, {MinionTrait::PRISONER});
+          }
+          prisonerInfo.erase(c);
+        }
+    }
   }
-  updateConstructions();
-  for (const ItemFetchInfo& elem : getFetchInfo()) {
-    for (Vec2 pos : getAllSquares())
-      fetchItems(pos, elem);
-    for (SquareType type : elem.additionalPos)
-      for (Vec2 pos : getSquares(type))
+  if (getConfig().constructions)
+    updateConstructions();
+  if (getConfig().fetchItems)
+    for (const ItemFetchInfo& elem : getFetchInfo()) {
+      for (Vec2 pos : getAllSquares())
         fetchItems(pos, elem);
-  }
+      for (SquareType type : elem.additionalPos)
+        for (Vec2 pos : getSquares(type))
+          fetchItems(pos, elem);
+    }
 }
 
 const vector<Creature*>& Collective::getCreatures(MinionTrait trait) const {
@@ -2353,12 +2389,12 @@ int Collective::getNextPayoutTime() const {
   return nextPayoutTime;
 }
 
-void Collective::addAssaultNotification(const Creature* c, const VillageControl* vil) {
-  control->addAssaultNotification(c, vil);
+void Collective::addAssaultNotification(const Collective* col, const vector<Creature*>& c, const string& message) {
+  control->addAssaultNotification(col, c, message);
 }
 
-void Collective::removeAssaultNotification(const Creature *c, const VillageControl* vil) {
-  control->removeAssaultNotification(c, vil);
+void Collective::removeAssaultNotification(const Collective* col) {
+  control->removeAssaultNotification(col);
 }
 
 CollectiveTeams& Collective::getTeams() {
@@ -2407,6 +2443,15 @@ void Collective::addTorch(Vec2 pos) {
 bool Collective::canPlaceTorch(Vec2 pos) const {
   return getAdjacentWall(getLevel(), pos) && !torches.count(pos) &&
     getLevel()->getSquare(pos)->canEnterEmpty({MovementTrait::WALK}) && isKnownSquare(pos);
+}
+
+GameInfo::VillageInfo::Village Collective::getVillageInfo() const {
+  GameInfo::VillageInfo::Village info;
+  info.name = getName();
+  info.tribeName = getTribe()->getName();
+  if (isConquered())
+    info.state = "conquered";
+  return info;
 }
 
 template <class Archive>

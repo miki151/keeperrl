@@ -13,14 +13,12 @@ class CollectiveControl {
   public:
   CollectiveControl(Collective*);
   virtual MoveInfo getMove(Creature*);
-  virtual PTask getNewTask(Creature*);
   virtual void tick(double time) = 0;
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer);
-  virtual double getWarLevel() const;
   virtual void update(Creature*);
   virtual void addMessage(const PlayerMessage&) {}
-  virtual void addAssaultNotification(const Creature*, const VillageControl*) {}
-  virtual void removeAssaultNotification(const Creature*, const VillageControl*) {}
+  virtual void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message) {}
+  virtual void removeAssaultNotification(const Collective*) {}
   virtual void onDiscoveredLocation(const Location*) {}
   virtual void onConstructed(Vec2, SquareType) {}
 

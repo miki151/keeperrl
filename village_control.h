@@ -21,56 +21,70 @@
 #include "game_info.h"
 #include "collective_control.h"
 
-class Tribe;
+enum class VillageBehaviourId {
+  KILL_LEADER,
+  KILL_MEMBERS,
+  STEAL_GOLD,
+};
+typedef EnumVariant<VillageBehaviourId, TYPES(int),
+        ASSIGN(int, VillageBehaviourId::KILL_MEMBERS)> VillageBehaviour;
 
-struct VillageControlInfo {
-  enum Id { PEACEFUL, POWER_BASED, POWER_BASED_DISCOVER, FINAL_ATTACK, DRAGON } id;
-  enum Action { ATTACK_LEADER, STEAL } action;
-  double killedCoeff;
-  double powerCoeff;
+enum class AttackTriggerId {
+  POWER,
+  SELF_VICTIMS,
+  ENEMY_POPULATION,
+  GOLD
 };
 
-class VillageControl : public Task::Callback, public CollectiveControl {
+typedef EnumVariant<AttackTriggerId, TYPES(int),
+        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> AttackTrigger;
+
+class VillageControl : public CollectiveControl {
   public:
-  VillageControl(Collective*, Collective* villain, const Location*);
-  virtual ~VillageControl();
+  typedef VillageBehaviour Behaviour;
+  typedef AttackTrigger Trigger;
 
-  bool isConquered() const;
-  bool isAnonymous() const;
-  vector<Creature*> getCreatures(MinionTrait) const;
-  vector<Creature*> getCreatures() const;
-  virtual bool currentlyAttacking() const;
-  virtual void tick(double time) override;
+  enum AttackMessage {
+    CREATURE_TITLE,
+    TRIBE_AND_NAME,
+  };
 
-  virtual string getAttackMessage() const = 0;
+  struct Villain {
+    int SERIAL(minPopulation);
+    int SERIAL(minTeamSize);
+    Collective* SERIAL(collective);
+    vector<Trigger> SERIAL(triggers);
+    Behaviour SERIAL(behaviour);
+    AttackMessage SERIAL(attackMessage);
 
+    PTask getAttackTask() const;
+    double getAttackProbability(const VillageControl* self) const;
+    double getTriggerValue(const Trigger&, const VillageControl* self, const Collective* villain) const;
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+  };
+
+  friend struct Villain;
+
+  VillageControl(Collective*, const Location*, vector<Villain>);
+
+  protected:
   virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
-
-  GameInfo::VillageInfo::Village getVillageInfo() const;
-
-  static PVillageControl get(VillageControlInfo, Collective*, Collective* villain, const Location* location);
-  static PVillageControl getFinalAttack(Collective*, Collective* villain, const Location* location,
-      vector<VillageControl*> otherControls);
+  virtual void tick(double time) override;
+  virtual MoveInfo getMove(Creature*);
 
   SERIALIZATION_DECL(VillageControl);
 
-  template <class Archive>
-  static void registerTypes(Archive& ar);
+  private:
+  const string& getAttackMessage(const Villain&) const;
+  string getAttackMessage(const Villain&, const vector<Creature*> attackers) const;
+  void launchAttack(Villain&, vector<Creature*> attackers);
 
-  const string& getName() const;
-  const Collective* getVillain() const;
+  const Location* SERIAL(location);
+  vector<Villain> SERIAL(villains);
 
-  Tribe* getTribe();
-  const Tribe* getTribe() const;
-
-  typedef VillageControlInfo::Action AttackAction;
-
-  protected:
-  VillageControl(Collective* villain, const Location*);
-  Collective* SERIAL2(villain, nullptr);
-  const Location* SERIAL2(location, nullptr);
-  string SERIAL(name);
-  bool SERIAL2(conquered, false);
+  map<const Collective*, int> SERIAL(victims);
 };
 
 #endif
