@@ -29,8 +29,8 @@ class CollectiveTeams {
   void setLeader(TeamId, Creature*);
   void activate(TeamId);
   void deactivate(TeamId);
-  TeamId create(vector<Creature*> = {});
-  TeamId createHidden(vector<Creature*> = {});
+  TeamId create(vector<Creature*>);
+  TeamId createHidden(vector<Creature*>);
   const Creature* getLeader(TeamId) const;
   Creature* getLeader(TeamId);
   const vector<Creature*>& getMembers(TeamId) const;

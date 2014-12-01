@@ -1406,11 +1406,8 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
         removeElement(byTrait[t], victim);
     if (auto spawnType = victim->getSpawnType())
       removeElement(bySpawnType[*spawnType], victim);
-    for (auto team : teams.getContaining(victim)) {
+    for (auto team : teams.getContaining(victim))
       teams.remove(team, victim);
-      if (teams.getMembers(team).empty())
-        teams.cancel(team);
-    }
     control->onCreatureKilled(victim, killer);
     if (killer)
       control->addMessage(PlayerMessage(victim->getAName() + " is killed by " + killer->getAName(),

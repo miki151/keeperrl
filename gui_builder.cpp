@@ -535,11 +535,11 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
             GuiElem::horizontalList(std::move(line), widths, 0)), 20, 0, 0, 0));
   }
   list.push_back(GuiElem::label("Teams: ", colors[ColorId::WHITE]));
+  const int elemWidth = 30;
   for (auto elem : info.teams) {
     TeamId teamId = elem.first;
     const auto team = elem.second;
     const int numPerLine = 8;
-    const int elemWidth = 30;
     vector<PGuiElem> currentLine = makeVec<PGuiElem>(
         GuiElem::stack(
           GuiElem::button(getButtonCallback({UserInputId::EDIT_TEAM, teamId})),
@@ -552,8 +552,6 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
       if (currentLine.size() >= numPerLine)
         list.push_back(GuiElem::horizontalList(std::move(currentLine), elemWidth, 0));
     }
-    if (team.empty())
-      currentLine.push_back(GuiElem::label("Click on minions to add.", colors[ColorId::LIGHT_BLUE]));
     if (!currentLine.empty())
       list.push_back(GuiElem::horizontalList(std::move(currentLine), elemWidth, 0));
     if (info.currentTeam == teamId)
@@ -565,10 +563,14 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
                   GuiElem::button(getButtonCallback({UserInputId::CANCEL_TEAM, teamId})),
                   GuiElem::label("[disband]"))), 100, 0));
   }
-  if (!info.currentTeam || !info.teams[*info.currentTeam].empty())
+  if (!info.newTeam)
     list.push_back(GuiElem::stack(
         GuiElem::button(getButtonCallback(UserInputId::CREATE_TEAM)),
         GuiElem::label("[new team]", colors[ColorId::WHITE])));
+  else
+    list.push_back(GuiElem::horizontalList(makeVec<PGuiElem>(
+        GuiElem::label("X", colors[ColorId::GREEN]),
+        GuiElem::label("Click on minions to add.", colors[ColorId::LIGHT_BLUE])), elemWidth, 0));
   list.push_back(GuiElem::empty());
   if (info.payoutTimeRemaining > -1) {
     vector<PGuiElem> res;

@@ -50,6 +50,7 @@ class GameInfo {
     };
     vector<Resource> numResource;
     Optional<TeamId> currentTeam;
+    bool newTeam;
     map<TeamId, vector<UniqueEntity<Creature>::Id>> teams;
     CreatureInfo& getMinion(UniqueEntity<Creature>::Id);
     int nextPayout;

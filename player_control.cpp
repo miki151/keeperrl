@@ -840,6 +840,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.time = getCollective()->getTime();
   info.currentTeam = getCurrentTeam();
   info.teams.clear();
+  info.newTeam = newTeam;
   for (TeamId team :getCollective()->getTeams().getAll()) 
     if (!getCollective()->getTeams().isHidden(team)) {
       info.teams[team].clear();
@@ -1058,12 +1059,18 @@ Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) {
 }
 
 void PlayerControl::handleCreatureButton(Creature* c, View* view) {
-  if (!getCurrentTeam())
+  if (!getCurrentTeam() && !newTeam)
     minionView(view, c);
   else if (getCollective()->hasAnyTrait(c, {MinionTrait::FIGHTER, MinionTrait::LEADER})) {
-    if (getCollective()->getTeams().contains(*getCurrentTeam(), c))
+    if (newTeam) {
+      setCurrentTeam(getCollective()->getTeams().create({c}));
+      newTeam = false;
+    }
+    else if (getCollective()->getTeams().contains(*getCurrentTeam(), c)) {
       getCollective()->getTeams().remove(*getCurrentTeam(), c);
-    else
+      if (!getCurrentTeam())  // team disappeared so it was the last minion in it
+        newTeam = true;
+    } else
       getCollective()->getTeams().add(*getCurrentTeam(), c);
   }
 }
@@ -1106,17 +1113,18 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         break;
     case UserInputId::EDIT_TEAM:
-        if (getCurrentTeam() && getCollective()->getTeams().getMembers(*getCurrentTeam()).empty())
-          getCollective()->getTeams().cancel(*getCurrentTeam());
         setCurrentTeam(input.get<TeamId>());
+        newTeam = false;
         break;
     case UserInputId::CREATE_TEAM:
-        setCurrentTeam(getCollective()->getTeams().create());
+        newTeam = true;
+        setCurrentTeam(Nothing());
         break;
     case UserInputId::COMMAND_TEAM:
         if (!getCurrentTeam() || getCollective()->getTeams().getMembers(*getCurrentTeam()).empty())
           break;
         commandTeam(*getCurrentTeam());
+        setCurrentTeam(Nothing());
         break;
     case UserInputId::CANCEL_TEAM:
         getCollective()->getTeams().cancel(input.get<TeamId>());

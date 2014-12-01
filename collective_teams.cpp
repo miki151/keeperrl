@@ -13,6 +13,8 @@ void CollectiveTeams::add(TeamId team, Creature* c) {
 
 void CollectiveTeams::remove(TeamId team, Creature* c) {
   removeElement(teamInfo[team].creatures(), c);
+  if (teamInfo[team].creatures().empty())
+    cancel(team);
 }
 
 void CollectiveTeams::activate(TeamId team) {
@@ -78,6 +80,7 @@ vector<TeamId> CollectiveTeams::getActiveTeams() const {
 TeamId CollectiveTeams::create(vector<Creature*> c) {
   static int cnt = 0;
   TeamId id = ++cnt;
+  CHECK(!c.empty());
   teamInfo[id].creatures() = c;
   return id;
 }

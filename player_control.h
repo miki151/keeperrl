@@ -249,6 +249,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<const Creature*> SERIAL(visibleEnemies);
   vector<const Creature*> SERIAL(visibleFriends);
   unordered_set<const Collective*> SERIAL(notifiedConquered);
+  bool SERIAL2(newTeam, false);
 };
 
 #endif
