@@ -634,9 +634,8 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
       ySpacing = (renderer.getHeight() - windowHeight) / 2;
       break;
     case View::MAIN_MENU:
-      windowHeight = 310;
-      windowWidth = 250;
-      ySpacing = (renderer.getHeight() - windowHeight) / 2;
+      windowWidth = renderer.getWidth() / 5;
+      ySpacing = renderer.getHeight() / 3;
       break;
     default: ySpacing = 100; break;
   }
@@ -677,17 +676,18 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
-  PGuiElem list = drawListGui(title, options, menuType, contentHeight, &index, &choice);
+  PGuiElem stuff = drawListGui(title, options, menuType, contentHeight, &index, &choice);
   PGuiElem dismissBut = GuiElem::margins(GuiElem::stack(makeVec<PGuiElem>(
         GuiElem::button([&](){ choice = -100; }),
         GuiElem::mouseHighlight(GuiElem::highlight(GuiElem::foreground1), count, &index),
-        GuiElem::centerHoriz(GuiElem::label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss")))), 
-      0, 5, 0, 0);
-  PGuiElem stuff = GuiElem::scrollable(std::move(list), contentHeight, scrollPos);
-  if (menuType != MAIN_MENU)
-    stuff = GuiElem::margin(GuiElem::centerHoriz(std::move(dismissBut), 200), std::move(stuff), 30, GuiElem::BOTTOM);
-  if (menuType != MAIN_MENU)
+        GuiElem::centerHoriz(
+            GuiElem::label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss")))), 0, 5, 0, 0);
+  if (menuType != MAIN_MENU) {
+    stuff = GuiElem::scrollable(std::move(stuff), contentHeight, scrollPos);
+    stuff = GuiElem::margin(GuiElem::centerHoriz(std::move(dismissBut), 200),
+        std::move(stuff), 30, GuiElem::BOTTOM);
     stuff = GuiElem::window(std::move(stuff));
+  }
   while (1) {
 /*    for (GuiElem* gui : getAllGuiElems())
       gui->render(renderer);*/
@@ -774,11 +774,10 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
 static vector<PGuiElem> getMultiLine(const string& text, Color color, View::MenuType menuType) {
   vector<PGuiElem> ret;
   for (const string& s : breakText(text)) {
-    PGuiElem l = GuiElem::label(s, color);
     if (menuType != View::MenuType::MAIN_MENU)
-      ret.push_back(std::move(l));
+      ret.push_back(GuiElem::label(s, color));
     else
-      ret.push_back(GuiElem::centerHoriz(std::move(l), renderer.getTextLength(text)));
+      ret.push_back(GuiElem::centerHoriz(GuiElem::mainMenuLabel(s, color), renderer.getTextLength(s)));
 
   }
   return ret;
@@ -809,18 +808,25 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
     }
     vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType);
     heights.push_back(label1.size() * lineHeight);
-    lines.push_back(GuiElem::margins(GuiElem::verticalList(std::move(label1), lineHeight, 0), 10, 3, 0, 0));
+    PGuiElem line;
+    if (menuType != MAIN_MENU)
+      line = GuiElem::verticalList(std::move(label1), lineHeight, 0);
+    else
+      line = std::move(getOnlyElement(label1));
+    lines.push_back(GuiElem::margins(std::move(line), 10, 3, 0, 0));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = GuiElem::stack(makeVec<PGuiElem>(
             GuiElem::button([=]() { *choice = numActive; }),
-            GuiElem::margins(
-              GuiElem::mouseHighlight(GuiElem::highlight(GuiElem::foreground1), numActive, highlight), 0, 0, 0, 0),
+            GuiElem::mouseHighlight(GuiElem::highlight(GuiElem::foreground1), numActive, highlight),
             std::move(lines.back())));
       ++numActive;
     }
   }
   height = accumulate(heights.begin(), heights.end(), 0);
-  return GuiElem::verticalList(std::move(lines), heights, 0);
+  if (menuType != MAIN_MENU)
+    return GuiElem::verticalList(std::move(lines), heights, 0);
+  else
+    return GuiElem::verticalListFit(std::move(lines), 0.5);
 }
 
 void WindowView::switchZoom() {

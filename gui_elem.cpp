@@ -187,6 +187,29 @@ PGuiElem GuiElem::labelUnicode(const String& s, Color color, int size, Renderer:
         }));
 }
 
+class MainMenuLabel : public GuiElem {
+  public:
+  MainMenuLabel(const string& s, Color c) : text(s), color(c) {}
+
+  virtual void render(Renderer& renderer) override {
+    int size = getBounds().getH();
+    renderer.drawText(color, getBounds().middle().x, getBounds().getPY(), text, true, size);
+  }
+
+  virtual void onMouseMove(Vec2 pos) override {
+    over = pos.inRectangle(getBounds());
+  }
+
+  private:
+  string text;
+  Color color;
+  bool over = false;
+};
+
+PGuiElem GuiElem::mainMenuLabel(const string& s, Color c) {
+  return PGuiElem(new MainMenuLabel(s, c));
+}
+
 class GuiLayout : public GuiElem {
   public:
   GuiLayout(vector<PGuiElem> e) : elems(std::move(e)) {}
@@ -329,6 +352,27 @@ PGuiElem GuiElem::verticalList(vector<PGuiElem> e, vector<int> heights, int spac
 PGuiElem GuiElem::verticalList(vector<PGuiElem> e, int height, int spacing) {
   vector<int> heights(e.size(), height);
   return PGuiElem(new VerticalList(std::move(e), heights, spacing, 0));
+}
+
+class VerticalListFit : public GuiLayout {
+  public:
+  VerticalListFit(vector<PGuiElem> e, double space) : GuiLayout(std::move(e)), spacing(space) {
+    CHECK(!elems.empty());
+  }
+
+  virtual Rectangle getElemBounds(int num) override {
+    int elemHeight = double(getBounds().getH()) / (double(elems.size()) * (1.0 + spacing) - spacing);
+    return Rectangle(getBounds().getTopLeft() + Vec2(0, num * (elemHeight * (1.0 + spacing))), 
+        getBounds().getTopRight() + Vec2(0, num * (elemHeight * (1.0 + spacing)) + elemHeight));
+  }
+
+  protected:
+  double spacing;
+};
+
+
+PGuiElem GuiElem::verticalListFit(vector<PGuiElem> e, double spacing) {
+  return PGuiElem(new VerticalListFit(std::move(e), spacing));
 }
 
 class HorizontalList : public VerticalList {

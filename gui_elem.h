@@ -48,6 +48,7 @@ class GuiElem {
   static PGuiElem rectangle(sf::Color color, Optional<sf::Color> borderColor = Nothing());
   static PGuiElem verticalList(vector<PGuiElem>, int elemHeight, int spacing);
   static PGuiElem verticalList(vector<PGuiElem>, vector<int> elemHeight, int spacing);
+  static PGuiElem verticalListFit(vector<PGuiElem>, double spacing);
   static PGuiElem horizontalList(vector<PGuiElem>, int elemWidth, int spacing, int numAlignRight = 0);
   static PGuiElem horizontalList(vector<PGuiElem>, vector<int> elemWidth, int spacing, int numAlignRight = 0);
   static PGuiElem tabs(vector<PGuiElem> buttons, vector<PGuiElem> content, int tabWidth, int tabHeight,
@@ -58,6 +59,7 @@ class GuiElem {
   static PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
   static PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   static PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
+  static PGuiElem mainMenuLabel(const string&, Color = colors[ColorId::WHITE]);
   static PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
   static PGuiElem viewObject(const ViewObject& object, bool useSprites);
