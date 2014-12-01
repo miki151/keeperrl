@@ -346,26 +346,31 @@ const CollectiveConfig& Collective::getConfig() const {
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::RAVEN;
             c.frequency = 1.0;
-            c.traits = {MinionTrait::FIGHTER};
+            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
             c.limit = Model::SunlightInfo::DAY;
             c.salary = 0;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::BAT;
             c.frequency = 1.0;
-            c.traits = {MinionTrait::FIGHTER};
+            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
             c.limit = Model::SunlightInfo::NIGHT;
             c.salary = 0;),
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::WOLF;
             c.frequency = 0.15;
-            c.traits = LIST(MinionTrait::FIGHTER);
+            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
             c.groupSize = LIST(3, 9);
             c.autoTeam = true;
             c.salary = 0;),
           CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::CAVE_BEAR;
+            c.frequency = 0.1;
+            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
+            c.salary = 0;),
+          CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::WEREWOLF;
             c.frequency = 0.1;
-            c.traits = {MinionTrait::FIGHTER};
+            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
             c.attractions = LIST(
               {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 4.0, 12.0}
             );
@@ -373,7 +378,7 @@ const CollectiveConfig& Collective::getConfig() const {
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::SPECIAL_MONSTER_KEEPER;
             c.frequency = 0.2;
-            c.traits = {MinionTrait::FIGHTER};
+            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
             c.spawnAtDorm = true;
             c.techId = TechId::BEAST_MUT;
             c.salary = 0;),
@@ -576,7 +581,8 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
         return {1.0, action};
       else
         return NoMove;
-    } else if (!getAllSquares().empty() && !getAllSquares().count(c->getPosition()))
+    } else if (!hasTrait(c, MinionTrait::NO_RETURNING) &&  !getAllSquares().empty() &&
+               !getAllSquares().count(c->getPosition()))
         return c->moveTowards(chooseRandom(getAllSquares()));
       return NoMove;
   }
@@ -606,7 +612,6 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
     case MinionTask::EXPLORE:
         return getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::DAY;
     case MinionTask::EXPLORE_NOCTURNAL:
-    case MinionTask::EXPLORE_CAVES:
         return getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::NIGHT;
     default: return true;
   }
@@ -642,7 +647,7 @@ Optional<Vec2> Collective::getTileToExplore(const Creature* c, MinionTask task) 
     case MinionTask::EXPLORE_CAVES:
         if (auto pos = getRandomCloseTile(c->getPosition(), border,
               [this, c](Vec2 pos) { return getLevel()->getCoverInfo(pos).sunlight() < 1 && c->isSameSector(pos);}))
-          return *pos; // intentionally no break so bats fall back to exploring outdoors if there are no caves
+          return *pos;
     case MinionTask::EXPLORE:
     case MinionTask::EXPLORE_NOCTURNAL:
         return getRandomCloseTile(c->getPosition(), border,
@@ -835,7 +840,8 @@ MoveInfo Collective::getMove(Creature* c) {
   if (PTask t = getStandardTask(c))
     if (t->getMove(c))
       return taskMap.addTask(std::move(t), c)->getMove(c);
-  if (!getAllSquares().empty() && !getAllSquares().count(c->getPosition()))
+  if (!hasTrait(c, MinionTrait::NO_RETURNING) && !getAllSquares().empty() &&
+      !getAllSquares().count(c->getPosition()))
     return c->moveTowards(chooseRandom(getAllSquares()));
   else
     return NoMove;

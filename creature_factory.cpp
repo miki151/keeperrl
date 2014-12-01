@@ -1744,7 +1744,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.size = CreatureSize::MEDIUM;
           c.attr[AttrType::STRENGTH] = 23;
           c.attr[AttrType::DEXTERITY] = 18;
-          c.barehandedDamage = 14;
+          c.barehandedDamage = 11;
           c.weight = 250;
           c.humanoid = false;
           c.animal = true;
@@ -1947,6 +1947,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.skills.insert(SkillId::NIGHT_VISION);
           c.minionTasks.clear();
           c.minionTasks.setValue(MinionTask::EXPLORE_CAVES, 1);
+          c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.weight = 1;
           c.name = "bat";);
