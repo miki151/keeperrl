@@ -23,9 +23,10 @@
 #include "square.h"
 #include "collective_builder.h"
 #include "trigger.h"
+#include "progress_meter.h"
 
 template <class Archive> 
-void Level::serialize(Archive& ar, const unsigned int version) { 
+void Level::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(UniqueEntity)
     & SVAR(squares)
     & SVAR(landingSquares)
@@ -428,10 +429,10 @@ void Level::tick(double time) {
     squares[pos]->tick(time);
 }
 
-Level::Builder::Builder(int width, int height, const string& n, bool covered)
+Level::Builder::Builder(ProgressMeter& meter, int width, int height, const string& n, bool covered)
   : squares(width, height), heightMap(width, height, 0),
     coverInfo(width, height, {covered, covered ? 0.0 : 1.0}), attrib(width, height),
-    type(width, height, SquareType(SquareId(0))), items(width, height), name(n) {
+    type(width, height, SquareType(SquareId(0))), items(width, height), name(n), progressMeter(meter) {
 }
 
 bool Level::Builder::hasAttrib(Vec2 posT, SquareAttrib attr) {
@@ -469,8 +470,10 @@ void Level::Builder::putSquare(Vec2 pos, PSquare square, SquareType t, Optional<
 }
 
 void Level::Builder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<SquareAttrib> attr) {
+  progressMeter.addProgress();
   Vec2 pos = transform(posT);
-  CHECK(!contains({SquareId::UP_STAIRS, SquareId::DOWN_STAIRS}, type[pos].getId())) << "Attempted to overwrite stairs";
+  CHECK(!contains({SquareId::UP_STAIRS, SquareId::DOWN_STAIRS}, type[pos].getId()))
+    << "Attempted to overwrite stairs";
   square->setPosition(pos);
   if (squares[pos])
     square->setBackground(squares[pos].get());

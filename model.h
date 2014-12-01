@@ -23,6 +23,7 @@
 
 class PlayerControl;
 class Level;
+class ProgressMeter;
 
 /**
   * Main class that holds all game logic.
@@ -32,11 +33,8 @@ class Model {
   Model(View* view);
   ~Model();
 
-  /** Generates levels and all game entities for a single player game. */
-  static Model* heroModel(View* view);
- 
   /** Generates levels and all game entities for a collective game. */
-  static Model* collectiveModel(View* view);
+  static Model* collectiveModel(ProgressMeter&, View* view);
 
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
@@ -95,7 +93,7 @@ class Model {
   void landHeroPlayer();
   Level* buildLevel(Level::Builder&&, LevelMaker*);
   void addLink(StairDirection, StairKey, Level*, Level*);
-  Level* prepareTopLevel(vector<SettlementInfo> settlements);
+  Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 
   vector<PLevel> SERIAL(levels);
   vector<PCollective> SERIAL(collectives);

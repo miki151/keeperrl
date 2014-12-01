@@ -25,6 +25,7 @@
 class CreatureView;
 class Level;
 class Jukebox;
+class ProgressMeter;
 
 class View {
   public:
@@ -40,7 +41,7 @@ class View {
   enum SplashType { CREATING, LOADING, SAVING };
 
   /** Displays a splash screen in an active loop until \paramname{ready} is set to true in another thread.*/
-  virtual void displaySplash(SplashType type) = 0;
+  virtual void displaySplash(const ProgressMeter&, SplashType type) = 0;
 
   virtual void clearSplash() = 0;
 

@@ -32,6 +32,7 @@ class Creature;
 class Item;
 class CreatureView;
 class Attack;
+class ProgressMeter;
 
 enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP, TORTURE };
 
@@ -49,6 +50,9 @@ class Square : public Renderable {
     bool canDestroy;
   };
   Square(const ViewObject&, Params);
+
+  /** For displaying progress while loading/saving the game.*/
+  static ProgressMeter* progressMeter;
 
   /** Returns the square name. */
   string getName() const;

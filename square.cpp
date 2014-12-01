@@ -22,6 +22,7 @@
 #include "item.h"
 #include "view_object.h"
 #include "trigger.h"
+#include "progress_meter.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -48,7 +49,11 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(dirty)
     & SVAR(canDestroySquare);
   CHECK_SERIAL;
+  if (progressMeter)
+    progressMeter->addProgress();
 }
+
+ProgressMeter* Square::progressMeter = nullptr;
 
 SERIALIZABLE(Square);
 

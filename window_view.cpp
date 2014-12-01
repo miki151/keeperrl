@@ -28,6 +28,7 @@
 #include "creature_view.h"
 #include "view_index.h"
 #include "map_memory.h"
+#include "progress_meter.h"
 
 using sf::Color;
 using sf::String;
@@ -165,10 +166,16 @@ void WindowView::initialize() {
   resetMapBounds();
   guiBuilder.setTilesOk(tilesOk);
   if (tilesOk) {
-    CHECK(splash1.loadFromFile("ui/menu.png"));
+    CHECK(menuCore.loadFromFile("ui/menu_core.png"));
+    CHECK(menuMouth.loadFromFile("ui/menu_mouth.png"));
   } else {
     CHECK(splash1.loadFromFile("splash2f.png"));
     CHECK(splash2.loadFromFile("splash2e.png"));
+    CHECK(loadingSplash.loadFromFile(chooseRandom(LIST(
+        "splash2a.png",
+        "splash2b.png",
+        "splash2c.png",
+        "splash2d.png"))));
   }
 
 }
@@ -215,28 +222,31 @@ void WindowView::reset() {
   guiBuilder.reset();
 }
 
-static vector<string> splashPaths {
-    "splash2e.png",
-    "splash2a.png",
-    "splash2b.png",
-    "splash2c.png",
-    "splash2d.png" };
-
 void WindowView::displayOldSplash() {
   Rectangle menuPosition = getMenuPosition(View::MAIN_MENU_NO_TILES);
   int margin = 10;
   renderer.drawImage(renderer.getWidth() / 2 - 415, menuPosition.getKY() + margin, splash1);
   renderer.drawImage((renderer.getWidth() - splash2.getSize().x) / 2,
-      menuPosition.getPY() - splash2.getSize().y - margin, splash2);  
+      menuPosition.getPY() - splash2.getSize().y - margin, splash2);
 }
 
 void WindowView::displayMenuSplash2() {
-  double scale = double(renderer.getHeight()) / splash1.getSize().y;
-  int width = splash1.getSize().x * scale;
-  renderer.drawImage((renderer.getWidth() - width) / 2, 0, splash1, scale);
+  drawMenuBackground(0, 0);
 }
 
-void WindowView::displaySplash(View::SplashType type) {
+void WindowView::drawMenuBackground(double barState, double mouthState) {
+  double scale = double(renderer.getHeight()) / menuCore.getSize().y;
+  int width = menuCore.getSize().x * scale;
+  double mouthPos1 = 184;
+  double mouthPos2 = 214;
+  double mouthX = (renderer.getWidth() - (menuMouth.getSize().x + 5) * scale) / 2;
+  renderer.drawFilledRectangle(mouthX, mouthPos1 * scale, 1 + mouthX + barState * menuMouth.getSize().x * scale,
+      (mouthPos1 + menuMouth.getSize().y) * scale, sf::Color(30, 38, 24));
+  renderer.drawImage((renderer.getWidth() - width) / 2, 0, menuCore, scale);
+  renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
+}
+
+void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type) {
   RenderLock lock(renderMutex);
   string text;
   switch (type) {
@@ -244,13 +254,17 @@ void WindowView::displaySplash(View::SplashType type) {
     case View::LOADING: text = "Loading the game..."; break;
     case View::SAVING: text = "Saving the game..."; break;
   }
-  Image splash;
-  CHECK(splash.loadFromFile(splashPaths[Random.get(1, splashPaths.size())]));
   splashDone = false;
-  renderDialog = [=] {
+  renderDialog = [=, &meter] {
+    int t0 = Clock::get().getRealMillis();
+    int mouthMillis = 400;
     while (!splashDone) {
-      renderer.drawImage((renderer.getWidth() - splash.getSize().x) / 2, (renderer.getHeight() - splash.getSize().y) / 2, splash);
-      renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() - 60, text, true);
+      if (tilesOk)
+        drawMenuBackground(meter.getProgress(), min(1.0, double(Clock::get().getRealMillis() - t0) / mouthMillis));
+      else
+        renderer.drawImage((renderer.getWidth() - loadingSplash.getSize().x) / 2,
+            (renderer.getHeight() - loadingSplash.getSize().y) / 2, loadingSplash);
+      renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() * 0.6, text, true);
       renderer.drawAndClearBuffer();
       sf::sleep(sf::milliseconds(30));
       Event event;

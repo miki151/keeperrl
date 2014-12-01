@@ -231,9 +231,9 @@ Model::Model(View* v) : view(v) {
 Model::~Model() {
 }
 
-Level* Model::prepareTopLevel(vector<SettlementInfo> settlements) {
+Level* Model::prepareTopLevel(ProgressMeter& meter, vector<SettlementInfo> settlements) {
   Level* top = buildLevel(
-      Level::Builder(250, 250, "Wilderness", false),
+      Level::Builder(meter, 250, 250, "Wilderness", false),
       LevelMaker::topLevel(CreatureFactory::forrest(Tribe::get(TribeId::WILDLIFE)), settlements));
   return top;
 }
@@ -519,7 +519,7 @@ vector<EnemyInfo> getEnemyInfo() {
   return ret;
 }
 
-Model* Model::collectiveModel(View* view) {
+Model* Model::collectiveModel(ProgressMeter& meter, View* view) {
   Model* m = new Model(view);
   vector<EnemyInfo> enemyInfo = getEnemyInfo();
   vector<SettlementInfo> settlements;
@@ -527,7 +527,7 @@ Model* Model::collectiveModel(View* view) {
     elem.settlement.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, elem.settlement.tribe);
     settlements.push_back(elem.settlement);
   }
-  Level* top = m->prepareTopLevel(settlements);
+  Level* top = m->prepareTopLevel(meter, settlements);
   m->collectives.push_back(CollectiveBuilder(
         CollectiveConfigId::KEEPER, Tribe::get(TribeId::KEEPER)).setLevel(top).build("Keeper"));
   m->playerCollective = m->collectives.back().get();

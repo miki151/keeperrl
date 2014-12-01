@@ -33,7 +33,7 @@ class WindowView: public View {
   WindowView(); 
   virtual void initialize() override;
   virtual void reset() override;
-  virtual void displaySplash(View::SplashType) override;
+  virtual void displaySplash(const ProgressMeter&, View::SplashType) override;
   virtual void clearSplash() override;
 
   virtual void close() override;
@@ -161,8 +161,12 @@ class WindowView: public View {
   }
   atomic<bool> splashDone;
   GuiBuilder guiBuilder;
+  Image menuCore;
+  Image menuMouth;
+  void drawMenuBackground(double barState, double mouthState);
   Image splash1;
   Image splash2;
+  Image loadingSplash;
 };
 
 

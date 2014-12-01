@@ -46,6 +46,8 @@
 #include "tile.h"
 #include "window_view.h"
 #include "clock.h"
+#include "progress_meter.h"
+#include "square.h"
 
 using namespace boost::iostreams;
 using namespace boost::program_options;
@@ -174,17 +176,6 @@ static void saveGame(unique_ptr<Model> model, const string& gameName, string fil
   out.getArchive() << BOOST_SERIALIZATION_NVP(gameName) << BOOST_SERIALIZATION_NVP(model);
 }
 
-/*static Table<bool> readSplashTable(const string& path) {
-  ifstream in(path);
-  int x, y;
-  in >> x >> y;
-  Table<bool> ret(x, y);
-  for (int i : Range(y))
-    for (int j : Range(x))
-      in >> ret[j][i];
-  return ret;
-}*/
-
 static void saveExceptionLine(const string& path, const string& line) {
   ofstream of(path, std::fstream::out | std::fstream::app);
   of << line << std::endl;
@@ -224,10 +215,11 @@ void renderLoop(View* view, atomic<bool>& finished, atomic<bool>& initialized) {
 PModel keeperGame(View* view) {
   PModel model;
   string ex;
-  view->displaySplash(View::CREATING);
+  ProgressMeter meter(1.0 / 166000);
+  view->displaySplash(meter, View::CREATING);
   for (int i : Range(5)) {
     try {
-      model.reset(Model::collectiveModel(view));
+      model.reset(Model::collectiveModel(meter, view));
       break;
     } catch (string s) {
       ex = s;
@@ -244,7 +236,9 @@ PModel keeperGame(View* view) {
 }
 
 PModel loadModel(View* view, string file) {
-  view->displaySplash(View::LOADING);
+  ProgressMeter meter(1.0 / 62500);
+  Square::progressMeter = &meter;
+  view->displaySplash(meter, View::LOADING);
   PModel ret = loadGame(file, false);
   ret->setView(view);
   view->clearSplash();
@@ -298,10 +292,13 @@ void playModel(View* view, PModel model) {
   catch (GameOverException ex) {
   }
   catch (SaveGameException ex) {
-    view->displaySplash(View::SAVING);
+    ProgressMeter meter(1.0 / 62500);
+    Square::progressMeter = &meter;
+    view->displaySplash(meter, View::SAVING);
     string game = model->getGameIdentifier();
     saveGame(std::move(model), game, game + getSaveSuffix(ex.type));
     view->clearSplash();
+    Square::progressMeter = nullptr;
   }
 }
 

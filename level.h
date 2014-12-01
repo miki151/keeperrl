@@ -32,6 +32,7 @@ class LevelMaker;
 class Location;
 class Attack;
 class CollectiveBuilder;
+class ProgressMeter;
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
@@ -207,7 +208,7 @@ class Level : public UniqueEntity<Level> {
   class Builder {
     public:
     /** Constructs a builder with given size and name. */
-    Builder(int width, int height, const string& name, bool covered = true);
+    Builder(ProgressMeter&, int width, int height, const string& name, bool covered = true);
     
     /** Move constructor.*/
     Builder(Builder&&) = default;
@@ -286,6 +287,7 @@ class Level : public UniqueEntity<Level> {
     string entryMessage;
     string name;
     vector<Vec2::LinearMap> mapStack;
+    ProgressMeter& progressMeter;
   };
 
   typedef unique_ptr<Builder> PBuilder;
