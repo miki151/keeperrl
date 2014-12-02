@@ -97,15 +97,15 @@ void genTiles() {
   addTile(TREE_TRUNK, sprite("treecut").setNoShadow());
   addTile(BURNT_TREE, sprite("treeburnt").setNoShadow());
   addTile(PLAYER, sprite(1, 0));
-  addTile(KEEPER, sprite(3, 0));
+  addTile(KEEPER, sprite("keeper"));
   addTile(UNDEAD_KEEPER, sprite(9, 16));
-  addTile(ELF, sprite(10, 6));
-  addTile(ELF_ARCHER, sprite(12, 6));
-  addTile(ELF_CHILD, sprite(14, 6));
-  addTile(ELF_LORD, sprite(13, 6));
+  addTile(ELF, sprite("elf male"));
+  addTile(ELF_ARCHER, sprite("elf archer"));
+  addTile(ELF_CHILD, sprite("elf kid"));
+  addTile(ELF_LORD, sprite("elf lord"));
   addTile(LIZARDMAN, sprite(8, 8));
   addTile(LIZARDLORD, sprite(11, 8));
-  addTile(IMP, sprite(18, 19));
+  addTile(IMP, sprite("imp"));
   addTile(PRISONER, sprite("prisoner"));
   addTile(OGRE, sprite("troll"));
   addTile(CHICKEN, sprite("chicken"));
@@ -238,8 +238,8 @@ void genTiles() {
   addTile(SPECIAL_BATTLE_AXE, sprite(21, 7, 3));
   addTile(BOW, sprite(14, 8, 3));
   addTile(ARROW, sprite(5, 8, 3));
-  addTile(CLUB, sprite(2, 8, 3));
-  addTile(HEAVY_CLUB, sprite(2, 8, 3));
+  addTile(CLUB, sprite("club"));
+  addTile(HEAVY_CLUB, sprite("heavy club"));
   addTile(SCROLL, sprite(3, 6, 3));
   addTile(STEEL_AMULET, sprite(1, 1, 3));
   addTile(COPPER_AMULET, sprite(2, 1, 3));
@@ -289,7 +289,7 @@ void genTiles() {
   addTile(CREATURE_ALTAR, sprite(3, 7, 2).setNoShadow());
   addTile(TORTURE_TABLE, empty().addConnection(setOfAllDirs(), "torturedeco").addBackground("torture")
       .setFloorBorders());
-  addTile(IMPALED_HEAD, sprite(10, 10, 2).setNoShadow());
+  addTile(IMPALED_HEAD, sprite("impaledhead").setNoShadow());
   addTile(TRAINING_ROOM, empty().addConnection(setOfAllDirs(), "traindeco").addBackground("train").setFloorBorders());
   addTile(RITUAL_ROOM, empty().addConnection(setOfAllDirs(), "ritualroomdeco").addBackground("ritualroom")
       .setFloorBorders());
