@@ -1076,11 +1076,13 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.movementType = {MovementTrait::WALK};
             c.vision = Vision::get(VisionId::NORMAL);));
     case SquareId::CANIF_TREE:
-        return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree"),
+        return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree")
+                .setModifier(ViewObject::Modifier::ROUND_SHADOW),
             "tree", Vision::get(VisionId::ELF),
             Random.get(25, 40), {{SquareId::TREE_TRUNK, 20}}, s.get<CreatureFactory::SingleCreature>());
     case SquareId::DECID_TREE:
-        return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree"),
+        return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree")
+                .setModifier(ViewObject::Modifier::ROUND_SHADOW),
             "tree", Vision::get(VisionId::ELF), Random.get(25, 40), {{SquareId::TREE_TRUNK, 20}},
             s.get<CreatureFactory::SingleCreature>());
     case SquareId::BUSH:

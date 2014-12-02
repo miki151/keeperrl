@@ -12,15 +12,13 @@ class GameInfo {
   double time;
 
   struct CreatureInfo {
-    CreatureInfo(const Collective*, const Creature*);
+    CreatureInfo(const Creature*);
     ViewObject viewObject;
     UniqueEntity<Creature>::Id uniqueId;
     string name;
     string speciesName;
     int expLevel;
     double morale;
-    double salary;
-    double credit;
   };
 
   class BandInfo {
@@ -101,6 +99,7 @@ class GameInfo {
     };
     vector<ItemInfo> lyingItems;
     string squareName;
+    vector<CreatureInfo> team;
   } playerInfo;
 
   class VillageInfo {

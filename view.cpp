@@ -58,15 +58,13 @@ View::View() {
 View::~View() {
 }
 
-GameInfo::CreatureInfo::CreatureInfo(const Collective* col, const Creature* c) 
+GameInfo::CreatureInfo::CreatureInfo(const Creature* c) 
     : viewObject(c->getViewObject()),
       uniqueId(c->getUniqueId()),
       name(c->getName()),
       speciesName(c->getSpeciesName()),
       expLevel(c->getExpLevel()),
-      morale(c->getMorale()),
-      salary(col ? col->getSalary(c) : 0),
-      credit(col ? 0 : 0) {
+      morale(c->getMorale()) {
 }
 
 GameInfo::CreatureInfo& GameInfo::BandInfo::getMinion(UniqueEntity<Creature>::Id id) {

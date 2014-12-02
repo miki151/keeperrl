@@ -823,14 +823,14 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER})) {
     if (getCollective()->isInCombat(c))
       info.tasks[c->getUniqueId()] = "fighting";
-    info.minions.push_back({getCollective(), c});
+    info.minions.push_back(c);
   }
   info.monsterHeader = "Minions: ";
   info.enemies.clear();
   for (Vec2 v : getCollective()->getAllSquares())
     if (const Creature* c = getLevel()->getSquare(v)->getCreature())
       if (c->getTribe() != getTribe())
-        info.enemies.push_back({nullptr, c});
+        info.enemies.push_back(c);
   info.numResource.clear();
   for (auto elem : getCollective()->resourceInfo)
     if (!elem.second.dontDisplay)
@@ -998,8 +998,8 @@ int PlayerControl::getImpCost() const {
 
 class MinionController : public Player {
   public:
-  MinionController(Creature* c, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory, PlayerControl* ctrl)
-    : Player(c, m, false, memory), control(ctrl) {}
+  MinionController(Creature* c, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory, PlayerControl* ctrl,
+      vector<Creature*> t) : Player(c, m, false, memory), control(ctrl), team(t) {}
 
   virtual void onKilled(const Creature* attacker) override {
     showHistory();
@@ -1016,15 +1016,22 @@ class MinionController : public Player {
     unpossess();
   }
 
+  virtual const vector<Creature*> getTeam() const {
+    return filter(team, [](const Creature* c) { return !c->isDead(); });
+  }
+
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Player) & SVAR(control);
+    ar& SUBCLASS(Player)
+      & SVAR(control)
+      & SVAR(team);
   }
 
   SERIALIZATION_CONSTRUCTOR(MinionController);
 
   private:
   PlayerControl* SERIAL(control);
+  vector<Creature*> SERIAL(team);
 };
 
 void PlayerControl::controlSingle(const Creature* cr) {
@@ -1079,7 +1086,9 @@ void PlayerControl::commandTeam(TeamId team) {
   if (getControlled())
     leaveControl();
   Creature* c = getCollective()->getTeams().getLeader(team);
-  c->pushController(PController(new MinionController(c, model, memory.get(), this)));
+  vector<Creature*> members = getCollective()->getTeams().getMembers(team);
+  removeElement(members, c);
+  c->pushController(PController(new MinionController(c, model, memory.get(), this, members)));
   getCollective()->getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
 }

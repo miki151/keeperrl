@@ -484,6 +484,26 @@ PGuiElem GuiBuilder::drawPlayerStats(GameInfo::PlayerInfo& info) {
           GuiElem::label(capitalFirst(elem.name), colors[ColorId::WHITE])));
   }
   elems.push_back(GuiElem::empty());
+  if (!info.team.empty()) {
+    const int numPerLine = 6;
+    vector<int> widths { 60 };
+    vector<PGuiElem> currentLine = makeVec<PGuiElem>(
+        GuiElem::label("Team: ", colors[ColorId::WHITE]));
+    for (auto& elem : info.team) {
+      currentLine.push_back(GuiElem::stack(
+ //             GuiElem::button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo(teamId, elem)})),
+            GuiElem::viewObject(elem.viewObject, tilesOk),
+            GuiElem::label(toString(elem.expLevel), 12)));
+      widths.push_back(30);
+      if (currentLine.size() >= numPerLine) {
+        elems.push_back(GuiElem::horizontalList(std::move(currentLine), widths, 0));
+        widths.clear();
+      }
+    }
+    if (!currentLine.empty())
+      elems.push_back(GuiElem::horizontalList(std::move(currentLine), widths, 0));
+    elems.push_back(GuiElem::empty());
+  }
   for (auto effect : info.effects)
     elems.push_back(GuiElem::label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::GREEN]));
   return GuiElem::verticalList(std::move(elems), legendLineHeight, 0);

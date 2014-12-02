@@ -196,6 +196,13 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
   return Vec2(round(sizeDiff.x * scale * 0.5), round(sizeDiff.y * scale * 0.5));
 }
 
+Color Renderer::getBleedingColor(const ViewObject& object) {
+  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING);
+  if (bleeding > 0)
+    bleeding = 0.3 + bleeding * 0.7;
+  return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
+}
+
 void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSprite, double scale) {
   const Tile& tile = Tile::getTile(object, useSprite);
   if (tile.hasSpriteCoord()) {
@@ -203,8 +210,9 @@ void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSp
     Vec2 sz = Renderer::tileSize[tile.getTexNum()];
     Vec2 of = getOffset(Renderer::nominalSize - sz, scale);
     Vec2 coord = tile.getSpriteCoord(EnumSet<Dir>::fullSet());
+    Color color = getBleedingColor(object);
     drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles.at(tile.getTexNum()),
-        sz.x * scale, sz.y * scale);
+        sz.x * scale, sz.y * scale, color);
   } else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20,
         Tile::getColor(object), x, y, tile.text);
@@ -214,7 +222,6 @@ const static string imageSuf = ".png";
 
 bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
   tileSize.push_back(size);
-  struct dirent *ent;
   DIR* dir = opendir(path.c_str());
   if (!dir)
     return false;

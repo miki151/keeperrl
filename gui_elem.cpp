@@ -859,7 +859,7 @@ Texture& get(TexId id) {
 Texture& getIconTex(GuiElem::IconId id) {
   static vector<Texture> v;
   if (v.empty()) {
-    for (int i = 0; i < 7; ++i) {
+    for (int i = 0; i < 8; ++i) {
       v.emplace_back();
       v.back().loadFromFile("icons.png", sf::IntRect(0, i * iconWidth, iconWidth, iconWidth));
     }

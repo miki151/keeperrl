@@ -877,6 +877,10 @@ bool Player::unpossess() {
 void Player::onFellAsleep() {
 }
 
+const vector<Creature*> Player::getTeam() const {
+  return {};
+}
+
 class PossessedController : public Player {
   public:
   PossessedController(Creature* c, Creature* _owner, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory,
@@ -1075,6 +1079,9 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.adjectives = creature->getMainAdjectives();
   Item* weapon = creature->getWeapon();
   info.weaponName = weapon ? weapon->getName() : "";
+  info.team.clear();
+  for (const Creature* c : getTeam())
+    info.team.push_back(c);
   const Location* location = getLevel()->getLocation(creature->getPosition());
   info.levelName = location && location->hasName() 
     ? capitalFirst(location->getName()) : getLevel()->getName();

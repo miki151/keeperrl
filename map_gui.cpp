@@ -69,15 +69,6 @@ Optional<Vec2> MapGui::getHighlightedTile(WindowRenderer& renderer) {
   return layout->projectOnMap(getBounds(), pos);
 }
 
-static Color getBleedingColor(const ViewObject& object) {
-  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING);
- /* if (object.isPoisoned())
-    return Color(0, 255, 0);*/
-  if (bleeding > 0)
-    bleeding = 0.3 + bleeding * 0.7;
-  return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
-}
-
 Color getHighlightColor(HighlightType type, double amount) {
   switch (type) {
     case HighlightType::RECT_DESELECTION: return transparency(colors[ColorId::RED], 90);
@@ -284,7 +275,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
     renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::DARK_GREEN]);
   }
   const Tile& tile = Tile::getTile(object, spriteMode);
-  Color color = getBleedingColor(object);
+  Color color = Renderer::getBleedingColor(object);
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = transparency(color, 70);
   else

@@ -93,7 +93,7 @@ void genTiles() {
   addTile(VAMPIRE, sprite("vampire"));
   addTile(FALLEN_TREE, sprite("treecut").setNoShadow());
   addTile(DECID_TREE, sprite("tree2").setNoShadow());
-  addTile(CANIF_TREE, sprite("tree3").setNoShadow());
+  addTile(CANIF_TREE, sprite("tree1").setNoShadow());
   addTile(TREE_TRUNK, sprite("treecut").setNoShadow());
   addTile(BURNT_TREE, sprite("treeburnt").setNoShadow());
   addTile(PLAYER, sprite(1, 0));
@@ -224,7 +224,7 @@ void genTiles() {
   addTile(BUSH, sprite(17, 0, 2).setNoShadow());
   addTile(WATER, getWaterTile(5));
   addTile(MAGMA, getWaterTile(11));
-  addTile(DOOR, sprite(4, 2, 2).setNoShadow());
+  addTile(DOOR, sprite("door").setNoShadow());
   addTile(BARRICADE, sprite("barricade").setNoShadow());
   addTile(DIG_ICON, sprite(8, 10, 2));
   addTile(SWORD, sprite(12, 9, 3));

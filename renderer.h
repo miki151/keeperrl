@@ -97,6 +97,7 @@ class Renderer {
   void drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline = Nothing());
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline = Nothing());
   void drawViewObject(int x, int y, const ViewObject&, bool useSprite, double scale = 1);
+  static Color getBleedingColor(const ViewObject&);
   int getWidth();
   int getHeight();
   static bool loadTilesFromDir(const string& path, Vec2 size);

@@ -32,30 +32,9 @@ class Player : public Controller, public CreatureView {
   public:
   Player(Creature*, Model*, bool adventureMode, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);
   virtual ~Player();
-  virtual void grantIdentify(int numItems) override;
-
-  virtual bool isPlayer() const override;
-
-  virtual void you(MsgType type, const string& param) override;
-  virtual void you(const string& param) override;
-  virtual void privateMessage(const PlayerMessage& message) override;
-
-  virtual void onKilled(const Creature* attacker) override;
-  virtual bool unpossess();
-  virtual void onFellAsleep();
-
-  virtual void onItemsAppeared(vector<Item*> items, const Creature* from) override;
-
-  virtual void learnLocation(const Location*) override;
-
-  virtual void makeMove() override;
-  virtual void sleeping() override;
-
-  virtual void onBump(Creature*);
+  virtual Controller* getPossessedController(Creature* c) override;
 
   static ControllerFactory getFactory(Model*, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);
-  
-  virtual Controller* getPossessedController(Creature* c) override;
 
   SERIALIZATION_DECL(Player);
 
@@ -72,6 +51,25 @@ class Player : public Controller, public CreatureView {
   virtual Optional<Vec2> getPosition(bool force) const override;
   virtual const Level* getLevel() const override;
   virtual vector<const Creature*> getVisibleEnemies() const override;
+
+  // from Controller
+  virtual void onKilled(const Creature* attacker) override;
+  virtual void makeMove() override;
+  virtual void sleeping() override;
+  virtual void grantIdentify(int numItems) override;
+  virtual bool isPlayer() const override;
+  virtual void you(MsgType type, const string& param) override;
+  virtual void you(const string& param) override;
+  virtual void privateMessage(const PlayerMessage& message) override;
+  virtual void onItemsAppeared(vector<Item*> items, const Creature* from) override;
+  virtual void learnLocation(const Location*) override;
+  virtual void onBump(Creature*) override;
+
+
+  // overridden by subclasses
+  virtual bool unpossess();
+  virtual void onFellAsleep();
+  virtual const vector<Creature*> getTeam() const;
 
   map<UniqueEntity<Level>::Id, MapMemory>* SERIAL(levelMemory);
   Model* SERIAL(model);
