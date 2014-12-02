@@ -75,11 +75,13 @@ class GuiElem {
   static PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER};
-  static PGuiElem sprite(Texture& tex, Alignment align, bool vFlip = false, bool hFlip = false,
+  static PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
       Vec2 offset = Vec2(0, 0), double alpha = 1);
+  static PGuiElem spriteFitVert(Texture&, double vMargin);
   static PGuiElem repeatedPattern(Texture& tex);
   static PGuiElem background(Color);
   static PGuiElem highlight(Color);
+  static PGuiElem mainMenuHighlight();
   static PGuiElem insideBackground(PGuiElem content);
   static PGuiElem window(PGuiElem content);
   static PGuiElem mapWindow(PGuiElem content);

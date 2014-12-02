@@ -162,6 +162,17 @@ PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, 
         }));
 }
 
+PGuiElem GuiElem::spriteFitVert(Texture& tex, double vMargin) {
+  return PGuiElem(new DrawCustom(
+        [=, &tex] (Renderer& r, Rectangle bounds) {
+          double height = double(bounds.getH()) * (1.0 + 2 * vMargin);
+          double scale = height / tex.getSize().y;
+          int width = scale * tex.getSize().x;
+          r.drawSprite(Vec2(bounds.middle().x - width / 2, bounds.getPY() - vMargin * bounds.getH()),
+              Vec2(width, height), tex);
+        }));
+}
+
 PGuiElem GuiElem::label(const string& s, Color c, char hotkey) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
@@ -193,7 +204,7 @@ class MainMenuLabel : public GuiElem {
 
   virtual void render(Renderer& renderer) override {
     int size = getBounds().getH();
-    renderer.drawText(color, getBounds().middle().x, getBounds().getPY(), text, true, size);
+    renderer.drawText(color, getBounds().middle().x, getBounds().getPY() - size / 4, text, true, size);
   }
 
   virtual void onMouseMove(Vec2 pos) override {
@@ -787,6 +798,7 @@ enum TexId {
   SCROLL_DOWN,
   WINDOW_CORNER,
   WINDOW_VERT_BAR,
+  MAIN_MENU_HIGHLIGHT,
 };
 
 const int border2Width = 6;
@@ -852,6 +864,7 @@ Texture& get(TexId id) {
     m[SCROLL_DOWN].loadFromFile("ui/down.png");
     m[WINDOW_CORNER].loadFromFile("ui/corner1.png");
     m[WINDOW_VERT_BAR].loadFromFile("ui/vertibarmsg1.png");
+    m[MAIN_MENU_HIGHLIGHT].loadFromFile("ui/menu_highlight.png");
   }
   return m[id];
 }
@@ -949,6 +962,10 @@ PGuiElem GuiElem::background(Color c) {
 
 PGuiElem GuiElem::highlight(Color c) {
   return stack(rectangle(c), repeatedPattern(get(BACKGROUND_PATTERN)));
+}
+
+PGuiElem GuiElem::mainMenuHighlight() {
+  return spriteFitVert(get(MAIN_MENU_HIGHLIGHT), 0.3);
 }
 
 PGuiElem GuiElem::border2(PGuiElem content) {

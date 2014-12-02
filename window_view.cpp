@@ -783,6 +783,13 @@ static vector<PGuiElem> getMultiLine(const string& text, Color color, View::Menu
   return ret;
 }
 
+static PGuiElem getHighlight(View::MenuType type) {
+  switch (type) {
+    case View::MAIN_MENU: return GuiElem::mainMenuHighlight();
+    default: return GuiElem::highlight(GuiElem::foreground1);
+  }
+}
+
 PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& options, MenuType menuType,
     int& height, int* highlight, int* choice) {
   vector<PGuiElem> lines;
@@ -817,7 +824,7 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = GuiElem::stack(makeVec<PGuiElem>(
             GuiElem::button([=]() { *choice = numActive; }),
-            GuiElem::mouseHighlight(GuiElem::highlight(GuiElem::foreground1), numActive, highlight),
+            GuiElem::mouseHighlight(getHighlight(menuType), numActive, highlight),
             std::move(lines.back())));
       ++numActive;
     }

@@ -98,16 +98,6 @@ void Renderer::drawImage(Rectangle r, const Image& image, double scale) {
   drawImage(r.getPX(), r.getPY(), r.getKX(), r.getKY(), image, scale);
 }
 
-void Renderer::drawFullImage(int px, int py, int kx, int ky, const Image& image) {
-  Texture t;
-  t.setSmooth(true);
-  t.loadFromImage(image);
-  Sprite s(t);
-  s.setPosition(px, py);
-  s.setScale(double(kx - px) / image.getSize().x, double(ky - py) / image.getSize().y);
-  display->draw(s);
-}
-
 void Renderer::drawImage(int px, int py, int kx, int ky, const Image& image, double scale) {
   Texture t;
   t.loadFromImage(image);
@@ -120,6 +110,10 @@ void Renderer::drawImage(int px, int py, int kx, int ky, const Image& image, dou
 
 void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, Optional<Color> color) {
   drawSprite(pos.x, pos.y, spos.x, spos.y, size.x, size.y, t, -1, -1, color);
+}
+
+void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
+  drawSprite(pos.x, pos.y, 0, 0, t.getSize().x, t.getSize().y, t, stretchSize.x, stretchSize.y);
 }
 
 void Renderer::drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t, int dw, int dh,
