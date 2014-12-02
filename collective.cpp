@@ -814,8 +814,9 @@ MoveInfo Collective::getMove(Creature* c) {
     return move;
   if (hasTrait(c, MinionTrait::WORKER))
     return getWorkerMove(c);
-  if (MoveInfo move = getDropItems(c))
-    return move;
+  if (getConfig().fetchItems)
+    if (MoveInfo move = getDropItems(c))
+      return move;
   if (hasTrait(c, MinionTrait::FIGHTER)) {
     if (MoveInfo move = getAlarmMove(c))
       return move;
