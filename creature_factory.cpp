@@ -1159,6 +1159,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
           c.spells.push_back(Creature::getSpell(SpellId::SUMMON_SPIRIT));
           c.skills.setValue(SkillId::SORCERY, 1);
+          c.skills.insert(SkillId::HEALING);
           c.name = "shaman";);
     case CreatureId::ARCHER: 
       return CATTR(
@@ -1397,6 +1398,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setWorkshopTasks(0);
           c.skills.setValue(SkillId::SORCERY, 0.7);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.0);
+          c.skills.insert(SkillId::HEALING);
           c.name = "orc shaman";);
     case CreatureId::GREAT_ORC: 
       return INHERIT(ORC,
@@ -1619,12 +1621,12 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::SPEED] += 20;
           c.attr[AttrType::STRENGTH] += 3;
           c.attr[AttrType::DEXTERITY] += 3;
-          c.healer = true;
           c.spells.push_back(Creature::getSpell(SpellId::HEALING));
           c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
           c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.skills.setValue(SkillId::SORCERY, 1);
+          c.skills.insert(SkillId::HEALING);
           c.name = "elf lord";);
     case CreatureId::HORSE: 
       return CATTR(

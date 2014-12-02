@@ -117,7 +117,6 @@ class CreatureAttributes {
   bool SERIAL2(breathing, true);
   MustInitialize<bool> SERIAL(humanoid);
   bool SERIAL2(animal, false);
-  bool SERIAL2(healer, false);
   bool SERIAL2(undead, false);
   bool SERIAL2(notLiving, false);
   bool SERIAL2(brain, true);

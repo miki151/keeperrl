@@ -533,7 +533,7 @@ CreatureAction Creature::unequip(Item* item) {
 
 CreatureAction Creature::heal(Vec2 direction) {
   Creature* other = level->getSquare(position + direction)->getCreature();
-  if (!healer || !other || other->getHealth() >= 0.9999)
+  if (!hasSkill(Skill::get(SkillId::HEALING)) || !other || other->getHealth() >= 0.9999)
     return CreatureAction();
   return CreatureAction([=]() {
     Creature* other = level->getSquare(position + direction)->getCreature();

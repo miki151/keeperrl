@@ -241,7 +241,7 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
   double mouthPos2 = 214;
   double mouthX = (renderer.getWidth() - (menuMouth.getSize().x + 5) * scale) / 2;
   renderer.drawFilledRectangle(mouthX, mouthPos1 * scale, 1 + mouthX + barState * menuMouth.getSize().x * scale,
-      (mouthPos1 + menuMouth.getSize().y) * scale, sf::Color(30, 38, 24));
+      (mouthPos2 + menuMouth.getSize().y) * scale, sf::Color(30, 38, 24));
   renderer.drawImage((renderer.getWidth() - width) / 2, 0, menuCore, scale);
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
 }

@@ -119,7 +119,8 @@ class Heal : public Behaviour {
   }
 
   virtual MoveInfo getMove() {
-    for (Vec2 v : Vec2::directions8())
+    int healingRadius = 2;
+    for (Vec2 v : Rectangle(-healingRadius, -healingRadius, healingRadius, healingRadius))
       if (const Creature* other = creature->getConstSquare(v)->getCreature())
         if (creature->isFriend(other))
           if (auto action = creature->heal(v))
