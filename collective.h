@@ -21,7 +21,6 @@
 #include "minion_equipment.h"
 #include "spell_info.h"
 #include "task_map.h"
-#include "minion_attraction.h"
 #include "sectors.h"
 #include "minion_task.h"
 #include "gender.h"
@@ -29,6 +28,7 @@
 #include "known_tiles.h"
 #include "collective_teams.h"
 #include "game_info.h"
+#include "collective_config.h"
 
 class Creature;
 class CollectiveControl;
@@ -36,19 +36,14 @@ class Tribe;
 class Deity;
 class Level;
 class Trigger;
+struct ImmigrantInfo;
+struct AttractionInfo;
 
 RICH_ENUM(SpawnType,
   HUMANOID,
   UNDEAD,
   BEAST,
   DEMON
-);
-
-struct CollectiveConfig;
-
-RICH_ENUM(CollectiveConfigId,
-  KEEPER,
-  VILLAGE
 );
 
 RICH_ENUM(CollectiveWarning,
@@ -266,8 +261,6 @@ class Collective : public Task::Callback {
 
   vector<Vec2> getExtendedTiles(int maxRadius, int minRadius = 0) const;
 
-  struct ImmigrantInfo;
-
   struct DormInfo;
   static const EnumMap<SpawnType, DormInfo>& getDormInfo();
   static Optional<SquareType> getSecondarySquare(SquareType);
@@ -318,7 +311,7 @@ class Collective : public Task::Callback {
 
   private:
   friend class CollectiveBuilder;
-  Collective(Level*, CollectiveConfigId, Tribe*, const string& name);
+  Collective(Level*, CollectiveConfig, Tribe*, const string& name);
   void updateEfficiency(Vec2, SquareType);
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
@@ -347,8 +340,6 @@ class Collective : public Task::Callback {
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
   REGISTER_HANDLER(TortureEvent, Creature* who, const Creature* torturer);
 
-  CollectiveConfigId SERIAL(configId);
-  const CollectiveConfig& getConfig() const;
   MinionEquipment SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
   TaskMap<CostInfo> SERIAL(taskMap);
@@ -387,6 +378,7 @@ class Collective : public Task::Callback {
   void onEpithetWorship(Creature*, WorshipType, EpithetId);
   void considerHealingLeader();
   bool considerImmigrant(const ImmigrantInfo&);
+  bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
   vector<Vec2> getBedPositions(const vector<PCreature>&, const ImmigrantInfo& info);
   vector<Vec2> getSpawnPos(const vector<Creature*>&);
   void considerImmigration();
@@ -441,7 +433,6 @@ class Collective : public Task::Callback {
   int SERIAL2(points, 0);
   unordered_map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);
   int SERIAL(nextPayoutTime);
-  struct AttractionInfo;
   unordered_map<const Creature*, vector<AttractionInfo>> SERIAL(minionAttraction);
   double getAttractionOccupation(MinionAttraction);
   unique_ptr<Sectors> SERIAL(sectors);
@@ -453,6 +444,7 @@ class Collective : public Task::Callback {
   CollectiveTeams SERIAL(teams);
   set<const Location*> SERIAL(knownLocations);
   string SERIAL(name);
+  CollectiveConfig SERIAL(config);
 };
 
 #endif

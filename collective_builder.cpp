@@ -2,7 +2,8 @@
 #include "collective_builder.h"
 #include "collective.h"
 
-CollectiveBuilder::CollectiveBuilder(CollectiveConfigId id, Tribe* t) : config(id), tribe(t) {
+CollectiveBuilder::CollectiveBuilder(CollectiveConfig cfg, Tribe* t)
+    : config(cfg), tribe(t) {
 }
 
 CollectiveBuilder& CollectiveBuilder::setLevel(Level* l) {

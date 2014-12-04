@@ -201,7 +201,7 @@ static vector<string> getHints() {
   return {
     "Right click on minions to control them or show information.",
  //   "You can turn these hints off in the settings (F2).",
-    "Killing a leader greatly lowers the morale of his tribe.",
+    "Killing a leader greatly lowers the morale of his tribe and stops immigration.",
     "Your minions' morale is boosted when they are commanded by the Keeper.",
   };
 }

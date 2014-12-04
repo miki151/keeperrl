@@ -266,9 +266,11 @@ class Range {
   Iter begin();
   Iter end();
 
+  SERIALIZATION_DECL(Range);
+  
   private:
-  int start;
-  int finish;
+  int SERIAL(start);
+  int SERIAL(finish);
 };
 
 template <class T>
