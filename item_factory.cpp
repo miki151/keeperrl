@@ -319,7 +319,7 @@ class Corpse : public Item {
 
 PItem ItemFactory::corpse(CreatureId id, ItemClass type, Item::CorpseInfo corpseInfo) {
   PCreature c = CreatureFactory::fromId(id, Tribe::get(TribeId::MONSTER));
-  return corpse(c->getName() + " corpse", c->getName() + " skeleton", c->getWeight(), type, corpseInfo);
+  return corpse(c->getName().bare() + " corpse", c->getName().bare() + " skeleton", c->getWeight(), type, corpseInfo);
 }
 
 PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemClass itemClass,

@@ -134,7 +134,7 @@ void Model::update(double totalTime) {
   do {
     Creature* creature = timeQueue.getNextCreature();
     CHECK(creature) << "No more creatures";
-    Debug() << creature->getTheName() << " moving now " << creature->getTime();
+    Debug() << creature->getName().the() << " moving now " << creature->getTime();
     currentTime = creature->getTime();
     if (playerControl && !playerControl->isTurnBased()) {
       while (1) {
@@ -626,16 +626,11 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
 }
 
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
-  string text = "And so dies ";
-  string title;
-  if (auto firstName = creature->getFirstName())
-    title = *firstName + " ";
-  title += "the " + creature->getName();
-  text += title;
+  string text = "And so dies " + creature->getNameAndTitle();
   string killer;
   if (const Creature* c = creature->getLastAttacker()) {
-    killer = c->getName();
-    text += ", killed by a " + killer;
+    killer = c->getName().a();
+    text += ", killed by " + killer;
   }
   text += ". He killed " + toString(numKills) 
       + " " + enemiesString + " and scored " + toString(points) + " points.\n \n";
@@ -643,7 +638,7 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
     text += stat + "\n";
   view->presentText("Game over", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
-    << title << "," << "killed by a " + killer << "," << points << std::endl;
+    << creature->getNameAndTitle() << (killer.empty() ? "" : ", killed by " + killer) << "," << points << std::endl;
   showHighscore(true);
 /*  if (view->yesOrNoPrompt("Would you like to see the last messages?"))
     messageBuffer.showHistory();*/

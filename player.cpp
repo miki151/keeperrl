@@ -484,9 +484,9 @@ bool Player::interruptedByEnemy() {
   vector<string> ignoreCreatures { "a boar" ,"a deer", "a fox", "a vulture", "a rat", "a jackal", "a boulder" };
   if (enemies.size() > 0) {
     for (const Creature* c : enemies)
-      if (!contains(ignoreCreatures, c->getAName())) {
+      if (!contains(ignoreCreatures, c->getName().a())) {
         model->getView()->updateView(this);
-        privateMessage("You notice " + c->getAName());
+        privateMessage("You notice " + c->getName().a());
         return true;
       }
   }
@@ -542,11 +542,11 @@ void Player::payDebtAction() {
         if (gold.size() < debt) {
           privateMessage("You don't have enough gold to pay.");
         } else if (model->getView()->yesOrNoPrompt("Buy items for " + toString(debt) + " zorkmids?")) {
-          privateMessage("You pay " + c->getName() + " " + toString(debt) + " zorkmids.");
+          privateMessage("You pay " + c->getName().the() + " " + toString(debt) + " zorkmids.");
           creature->give(c, gold);
         }
       } else {
-        Debug() << "No debt " << c->getName();
+        Debug() << "No debt " << c->getName().bare();
       }
     }
 }
@@ -1074,7 +1074,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
   GameInfo::PlayerInfo& info = gameInfo.playerInfo;
   info.playerName = creature->getFirstName().getOr("");
-  info.title = creature->getName();
+  info.title = creature->getName().bare();
   info.spellcaster = !creature->getSpells().empty();
   info.adjectives = creature->getMainAdjectives();
   Item* weapon = creature->getWeapon();

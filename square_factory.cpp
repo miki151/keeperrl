@@ -725,12 +725,12 @@ class DeityAltar : public Altar {
 class CreatureAltar : public Altar {
   public:
   CreatureAltar(const ViewObject& object, const Creature* c) : Altar(ViewObject(object.id(), object.layer(),
-        "Shrine to " + c->getName())), creature(c) {
+        "Shrine to " + c->getName().bare())), creature(c) {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
     if (c->isHumanoid()) {
-      c->playerMessage("This is a shrine to " + creature->getName());
+      c->playerMessage("This is a shrine to " + creature->getName().bare());
       c->playerMessage(creature->getDescription());
     }
   }
@@ -741,7 +741,7 @@ class CreatureAltar : public Altar {
   }
 
   virtual string getName() override {
-    return creature->getName();
+    return creature->getName().bare();
   }
 
   virtual void onPrayer(Creature* c) override {

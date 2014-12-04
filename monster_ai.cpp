@@ -334,9 +334,6 @@ class Fighter : public Behaviour {
   }
 
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
-    if (victim != creature && victim->getName() == creature->getName() && creature->canSee(victim)) {
-      creature->addMorale(-0.1);
-    }
     if (lastSeen && victim == lastSeen->creature)
       lastSeen = Nothing();
   }
@@ -344,10 +341,10 @@ class Fighter : public Behaviour {
   REGISTER_HANDLER(ThrowEvent, const Level* l, const Creature* thrower, const Item* item, const vector<Vec2>& traj) {
     if (!creature->isHumanoid() || l != creature->getLevel())
       return;
-    string name = creature->getName();
+    string name = creature->getName().bare();
     if (contains(traj, creature->getPosition())
           && item->getName().size() > name.size() && item->getName().substr(0, name.size()) == name) {
-      creature->globalMessage(creature->getTheName() + " screams in terror!", "You hear a scream of terror.");
+      creature->globalMessage(creature->getName().the() + " screams in terror!", "You hear a scream of terror.");
       if (Random.roll(2))
         creature->addEffect(LastingEffect::RAGE, (30));
       else
@@ -376,7 +373,7 @@ class Fighter : public Behaviour {
         weight = 1;
       if (other->isAffected(LastingEffect::SLEEP) || other->isStationary())
         weight = 0;
-      Debug() << creature->getName() << " panic weight " << weight;
+      Debug() << creature->getName().bare() << " panic weight " << weight;
       if (weight >= 0.5) {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
@@ -524,7 +521,7 @@ class Fighter : public Behaviour {
     CHECK(other);
     if (other->isInvincible())
       return NoMove;
-    Debug() << creature->getName() << " enemy " << other->getName();
+    Debug() << creature->getName().bare() << " enemy " << other->getName().bare();
     Vec2 enemyDir = (other->getPosition() - creature->getPosition());
     distance = enemyDir.length8();
     if (creature->isHumanoid() && !creature->getWeapon()) {
@@ -533,7 +530,7 @@ class Fighter : public Behaviour {
           return {3.0 / (2.0 + distance), action.prepend([=] {
             GlobalEvents.addCombatEvent(creature);
             GlobalEvents.addCombatEvent(other);
-            creature->globalMessage(creature->getTheName() + " draws " + weapon->getAName());
+            creature->globalMessage(creature->getName().the() + " draws " + weapon->getAName());
         })};
     }
     if (distance <= 5)
@@ -825,7 +822,7 @@ class Thief : public Behaviour {
         if (allGold.size() > 0)
           if (auto action = creature->stealFrom(dir, allGold))
           return {1.0, action.append([=] {
-            other->playerMessage(creature->getTheName() + " steals all your gold!");
+            other->playerMessage(creature->getName().the() + " steals all your gold!");
             robbed.push_back(other);
           })};
       }

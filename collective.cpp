@@ -982,7 +982,7 @@ vector<Vec2> Collective::getSpawnPos(const vector<Creature*>& creatures) {
       pos = chooseRandom(extendedTiles);
     } while ((!getLevel()->getSquare(pos)->canEnter(c) || contains(spawnPos, pos)) && --cnt > 0);
     if (cnt == 0) {
-      Debug() << "Couldn't spawn immigrant " << c->getName();
+      Debug() << "Couldn't spawn immigrant " << c->getName().bare();
       return {};
     } else
       spawnPos.push_back(pos);
@@ -1034,7 +1034,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   vector<PCreature> creatures;
   for (int i : (info.groupSize ? Range(Random.get(*info.groupSize)) : Range(1)))
     creatures.push_back(CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this)));
-  CHECK(creatures[0]->getSpawnType()) << "No spawn type for immigrant " << creatures[0]->getName();
+  CHECK(creatures[0]->getSpawnType()) << "No spawn type for immigrant " << creatures[0]->getName().bare();
   SpawnType spawnType = *creatures[0]->getSpawnType();
   SquareType dormType = getDormInfo()[spawnType].dormType;
   if (getSquares(dormType).empty())
@@ -1065,7 +1065,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
     if (bedType) {
       taskMap.addPriorityTask(Task::createBed(this, bedPos[i], dormType, *bedType), c);
-      Debug() << c->getName() << " creating bed " << bedPos[i];
+      Debug() << c->getName().bare() << " creating bed " << bedPos[i];
     }
     minionPayment[c] = {info.salary, 0.0, 0};
     minionAttraction[c] = info.attractions;
@@ -1078,7 +1078,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
 
 void Collective::addNewCreatureMessage(const vector<Creature*>& creatures) {
   if (creatures.size() == 1)
-    control->addMessage(PlayerMessage(creatures[0]->getAName() + " joins your forces.")
+    control->addMessage(PlayerMessage(creatures[0]->getName().a() + " joins your forces.")
         .setCreature(creatures[0]->getUniqueId()));
   else {
     control->addMessage(PlayerMessage("A " + creatures[0]->getGroupName(creatures.size()) + " joins your forces.")
@@ -1212,7 +1212,7 @@ void Collective::considerBirths() {
     PCreature spawn = CreatureFactory::fromId(chooseRandom(candidates), getTribe());
     for (Vec2 v : c->getPosition().neighbors8(true))
       if (getLevel()->getSquare(v)->canEnter(spawn.get())) {
-        control->addMessage(c->getAName() + " gives birth to " + spawn->getAName());
+        control->addMessage(c->getName().a() + " gives birth to " + spawn->getName().a());
         addCreature(std::move(spawn), v, {MinionTrait::FIGHTER});
         return;
       }
@@ -1283,8 +1283,8 @@ void Collective::tick(double time) {
           Creature* c = elem.first;
           Vec2 pos = c->getPosition();
           if (containsSquare(pos) && !c->isDead()) {
-            getLevel()->globalMessage(pos, c->getTheName() + " surrenders.");
-            control->addMessage(PlayerMessage(c->getAName() + " surrenders.").setPosition(c->getPosition()));
+            getLevel()->globalMessage(pos, c->getName().the() + " surrenders.");
+            control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
             c->die(nullptr, true, false);
             addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
                   MonsterAIFactory::collective(this)), pos, {MinionTrait::PRISONER});
@@ -1411,10 +1411,10 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
       teams.remove(team, victim);
     control->onCreatureKilled(victim, killer);
     if (killer)
-      control->addMessage(PlayerMessage(victim->getAName() + " is killed by " + killer->getAName(),
+      control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
             PlayerMessage::HIGH).setPosition(victim->getPosition()));
     else
-      control->addMessage(PlayerMessage(victim->getAName() + " is killed.", PlayerMessage::HIGH)
+      control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
           .setPosition(victim->getPosition()));
   }
   if (victim1->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
@@ -1425,7 +1425,7 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
 /*    if (Creature* leader = getLeader())
       leader->increaseExpLevel(double(victim1->getDifficultyPoints()) / 200);*/
     if (killer)
-      control->addMessage(PlayerMessage(victim1->getAName() + " is killed by " + killer->getAName())
+      control->addMessage(PlayerMessage(victim1->getName().a() + " is killed by " + killer->getName().a())
           .setPosition(victim1->getPosition()));
   }
 }
@@ -1857,7 +1857,7 @@ void Collective::destroySquare(Vec2 pos) {
   if (level->getSquare(pos)->canDestroy() && containsSquare(pos))
     level->getSquare(pos)->destroy();
   if (Creature* c = level->getSquare(pos)->getCreature())
-    if (c->getName() == "boulder")
+    if (c->isStationary())
       c->die(nullptr, false);
   if (traps.count(pos)) {
     removeTrap(pos);
@@ -2104,7 +2104,7 @@ void Collective::onTrapTriggerEvent(const Level* l, Vec2 pos) {
 
 void Collective::onTrapDisarmEvent(const Level* l, const Creature* who, Vec2 pos) {
   if (traps.count(pos) && l == getLevel()) {
-    control->addMessage(PlayerMessage(who->getAName() + " disarms a " 
+    control->addMessage(PlayerMessage(who->getName().a() + " disarms a " 
           + Item::getTrapName(traps.at(pos).type()) + " trap.", PlayerMessage::HIGH).setPosition(pos));
     traps.at(pos).armed() = false;
   }
@@ -2173,10 +2173,10 @@ bool Collective::isItemNeeded(const Item* item) const {
 
 void Collective::addProducesMessage(const Creature* c, const vector<PItem>& items) {
   if (items.size() > 1)
-    control->addMessage(c->getAName() + " produces " + toString(items.size())
+    control->addMessage(c->getName().a() + " produces " + toString(items.size())
         + " " + items[0]->getName(true));
   else
-    control->addMessage(c->getAName() + " produces " + items[0]->getAName());
+    control->addMessage(c->getName().a() + " produces " + items[0]->getAName());
 }
 
 static vector<SquareType> workshopSquares {
@@ -2372,7 +2372,7 @@ void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {
-  control->addMessage(who->getAName() + " makes love to " + with->getAName());
+  control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
   if (contains(getCreatures(), with))
     with->addMorale(1);
   if (!contains(pregnancies, who)) 
@@ -2380,7 +2380,7 @@ void Collective::onCopulated(Creature* who, Creature* with) {
 }
 
 void Collective::onConsumed(Creature* consumer, Creature* who) {
-  control->addMessage(consumer->getAName() + " absorbs " + who->getAName());
+  control->addMessage(consumer->getName().a() + " absorbs " + who->getName().a());
 }
 
 MinionEquipment& Collective::getMinionEquipment() {

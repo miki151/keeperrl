@@ -91,7 +91,7 @@ PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
 string VillageControl::getAttackMessage(const Villain& villain, const vector<Creature*> attackers) const {
   switch (villain.attackMessage) {
     case CREATURE_TITLE:
-      return "You are under attack by " + attackers[0]->getName() + " the " + attackers[0]->getSpeciesName() + "!";
+      return "You are under attack by " + attackers[0]->getNameAndTitle() + "!";
     case TRIBE_AND_NAME:
       if (getCollective()->getName().empty())
         return "You are under attack by " + getCollective()->getTribe()->getName() + "!";

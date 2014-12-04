@@ -26,6 +26,7 @@
 #include "minion_task.h"
 #include "item_attributes.h"
 #include "minion_task_map.h"
+#include "entity_name.h"
 
 // WTF is this defined
 #undef HUGE
@@ -88,7 +89,7 @@ class CreatureAttributes {
 
   MustInitialize<ViewId> SERIAL(viewId);
   Optional<ViewId> SERIAL(undeadViewId);
-  MustInitialize<string> SERIAL(name);
+  MustInitialize<EntityName> SERIAL(name);
   Optional<string> SERIAL(undeadName);
   Optional<string> SERIAL(pluralName);
   EnumMap<AttrType, int> SERIAL(attr);

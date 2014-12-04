@@ -75,7 +75,7 @@ PlayerControl::BuildInfo::BuildInfo(DeityHabitat habitat, CostInfo cost, const s
     buildType(SQUARE), help(h), hotkey(key), groupName(group) {}
 
 PlayerControl::BuildInfo::BuildInfo(const Creature* c, CostInfo cost, const string& group, const string& h, char key)
-    : squareInfo({SquareType(SquareId::CREATURE_ALTAR, c), cost, "To " + c->getName(), false}),
+    : squareInfo({SquareType(SquareId::CREATURE_ALTAR, c), cost, "To " + c->getName().bare(), false}),
     buildType(SQUARE), help(h), hotkey(key), groupName(group) {}
 
 PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, string group)
@@ -392,7 +392,7 @@ Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
   vector<View::ListElem> opt;
   for (Creature* c : getCollective()->getConsumptionTargets(consumer)) {
     res.push_back(c);
-    opt.emplace_back(c->getName() + ", level " + toString(c->getExpLevel()));
+    opt.emplace_back(c->getName().bare() + ", level " + toString(c->getExpLevel()));
   }
   if (auto index = view->chooseFromList("Choose minion to absorb:", opt))
     return res[*index];
@@ -413,7 +413,7 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
   switch (mOpt[*index]) {
     case MinionOption::POSSESS: controlSingle(creature); return;
     case MinionOption::EQUIPMENT: handleEquipment(view, creature); break;
-    case MinionOption::INFO: view->presentText(creature->getName(), creature->getDescription()); break;
+    case MinionOption::INFO: view->presentText(creature->getName().bare(), creature->getDescription()); break;
     case MinionOption::WAKE_UP: creature->removeEffect(LastingEffect::SLEEP); return;
     case MinionOption::PRISON:
       getCollective()->setMinionTask(creature, MinionTask::PRISON);
@@ -453,7 +453,7 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
 
 void PlayerControl::handleEquipment(View* view, Creature* creature, int prevItem) {
   if (!creature->isHumanoid()) {
-    view->presentText("", creature->getTheName() + " can't use any equipment.");
+    view->presentText("", creature->getName().the() + " can't use any equipment.");
     return;
   }
   vector<EquipmentSlot> slots;
@@ -493,7 +493,7 @@ void PlayerControl::handleEquipment(View* view, Creature* creature, int prevItem
   for (auto elem : consumables)
     list.push_back(elem.first);
   list.push_back("[Add item]");
-  Optional<int> newIndex = model->getView()->chooseFromList(creature->getName() + "'s equipment", list, prevItem);
+  Optional<int> newIndex = model->getView()->chooseFromList(creature->getName().bare() + "'s equipment", list, prevItem);
   if (!newIndex)
     return;
   int index = *newIndex;
@@ -525,7 +525,7 @@ void PlayerControl::handleEquipment(View* view, Creature* creature, int prevItem
         c->removeEffect(LastingEffect::SLEEP);
       if (chosenItem->getEquipmentSlot() != EquipmentSlot::WEAPON
           || chosenItem->getMinStrength() <= creature->getAttr(AttrType::STRENGTH)
-          || view->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " + creature->getTheName() 
+          || view->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " + creature->getName().the() 
             + ", and will incur an accuracy penaulty.\n Do you want to continue?"))
         getCollective()->getMinionEquipment().own(creature, chosenItem);
     }
@@ -558,7 +558,7 @@ Item* PlayerControl::chooseEquipmentItem(View* view, vector<Item*> currentItems,
   vector<pair<string, vector<Item*>>> usedStacks = Item::stackItems(usedItems,
       [&](const Item* it) {
         const Creature* c = NOTNULL(getCollective()->getMinionEquipment().getOwner(it));
-        return " owned by " + c->getAName() + " (level " + toString(c->getExpLevel()) + ")";});
+        return " owned by " + c->getName().a() + " (level " + toString(c->getExpLevel()) + ")";});
   vector<Item*> allStacked;
   for (auto elem : concat(Item::stackItems(availableItems), usedStacks)) {
     if (!usedStacks.empty() && elem == usedStacks.front())
@@ -674,7 +674,7 @@ Optional<pair<ViewObject, int>> PlayerControl::getCostObj(CostInfo cost) const {
 string PlayerControl::getMinionName(CreatureId id) const {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, nullptr)->getName();
+    names[id] = CreatureFactory::fromId(id, nullptr)->getName().the();
   return names.at(id);
 }
 
@@ -1589,7 +1589,7 @@ void PlayerControl::uncoverRandomLocation() {
 
 void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
   if (type == WorshipType::DESTROY_ALTAR) {
-    model->getView()->presentText("", "A shrine to " + to->getName() + " has been devastated by " + who->getAName() + ".");
+    model->getView()->presentText("", "A shrine to " + to->getName() + " has been devastated by " + who->getName().a() + ".");
     return;
   }
   if (!contains(getCreatures(), who))
@@ -1597,10 +1597,10 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
   for (EpithetId id : to->getEpithets())
     switch (id) {
       case EpithetId::DEATH:
-        if (!who->isUndead() && Random.roll(500))
+ /*       if (!who->isUndead() && Random.roll(500))
           who->makeUndead();
         if (type == WorshipType::SACRIFICE && Random.roll(10) && getKeeper())
-          getKeeper()->makeUndead();
+          getKeeper()->makeUndead();*/
         break;
       case EpithetId::SECRETS:
         if (Random.roll(200) || type == WorshipType::SACRIFICE)
@@ -1618,7 +1618,7 @@ void PlayerControl::onSunlightChangeEvent() {
 
 void PlayerControl::onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType type) {
   if (type == WorshipType::DESTROY_ALTAR) {
-    model->getView()->presentText("", "Shrine to " + to->getName() + " has been devastated by " + who->getAName());
+    model->getView()->presentText("", "Shrine to " + to->getName().bare() + " has been devastated by " + who->getName().a());
     return;
   }
 }

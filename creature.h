@@ -45,11 +45,10 @@ class ViewObject;
 class Creature : private CreatureAttributes, public Renderable, public UniqueEntity<Creature> {
   public:
   typedef CreatureAttributes CreatureAttributes;
-  Creature(Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
-  Creature(const ViewObject&, Tribe* tribe, const CreatureAttributes& attr, ControllerFactory);
+  Creature(Tribe*, const CreatureAttributes&, ControllerFactory);
+  Creature(const ViewObject&, Tribe*, const CreatureAttributes&, ControllerFactory);
   virtual ~Creature();
 
-  static void noExperienceLevels();
   static string getBodyPartName(BodyPart);
 
   void makeMove();
@@ -93,14 +92,11 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   bool isEnemy(const Creature*) const;
   void tick(double realTime);
 
-  string getTheName() const;
-  string getAName() const;
-  string getName() const;
+  const EntityName& getName() const;
   string getSpeciesName() const;
   string getNameAndTitle() const;
   Optional<string> getFirstName() const;
   string getGroupName(int count) const;
-  string getPluralName() const;
   int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
   static string getAttrName(AttrType);
@@ -137,7 +133,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void setStationary();
   bool isInvincible() const;
   bool isUndead() const;
-  void makeUndead();
   bool hasBrain() const;
   bool isNotLiving() const;
   bool isCorporal() const;
@@ -286,9 +281,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void consumeBodyParts(EnumMap<BodyPart, int>&);
   void onRemoved(LastingEffect effect, bool msg);
   void onTimedOut(LastingEffect effect, bool msg);
-  static PCreature defaultCreature;
-  static PCreature defaultFlyer;
-  static PCreature defaultMinion;
   CreatureAction moveTowards(Vec2 pos, bool away, bool stepOnTile);
   double getInventoryWeight() const;
   Item* getAmmo() const;

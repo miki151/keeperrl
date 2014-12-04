@@ -131,7 +131,7 @@ static void deception(Creature* c) {
 }
 
 static void leaveBody(Creature* creature) {
-  string spiritName = creature->getFirstName().getOr(creature->getName()) + "'s spirit";
+  string spiritName = creature->getFirstName().getOr(creature->getName().bare()) + "'s spirit";
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, spiritName);
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   PCreature spirit(new Creature(viewObject, creature->getTribe(), CATTR(

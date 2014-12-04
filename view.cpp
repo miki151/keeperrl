@@ -61,7 +61,7 @@ View::~View() {
 GameInfo::CreatureInfo::CreatureInfo(const Creature* c) 
     : viewObject(c->getViewObject()),
       uniqueId(c->getUniqueId()),
-      name(c->getName()),
+      name(c->getName().bare()),
       speciesName(c->getSpeciesName()),
       expLevel(c->getExpLevel()),
       morale(c->getMorale()) {

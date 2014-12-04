@@ -122,13 +122,13 @@ class BoulderController : public Monster {
           decreaseHealth(c->getSize());
           if (health < 0) {
             creature->getLevel()->globalMessage(creature->getPosition() + direction,
-                creature->getTheName() + " crashes on the " + c->getTheName(),
+                creature->getName().the() + " crashes on the " + c->getName().the(),
                 "You hear a crash");
             creature->die();
             c->bleed(Random.getDouble(0.1, 0.3));
             return;
           } else {
-            c->you(MsgType::KILLED_BY, creature->getTheName());
+            c->you(MsgType::KILLED_BY, creature->getName().the());
             c->die(creature);
           }
         }
@@ -147,7 +147,7 @@ class BoulderController : public Monster {
         health = 0.1;
       } else {
         creature->getLevel()->globalMessage(creature->getPosition() + direction,
-            creature->getTheName() + " crashes on the " + creature->getConstSquare(direction)->getName(),
+            creature->getName().the() + " crashes on the " + creature->getConstSquare(direction)->getName(),
             "You hear a crash");
         creature->die();
         return;
@@ -172,11 +172,11 @@ class BoulderController : public Monster {
   virtual void you(MsgType type, const string& param) override {
     string msg, msgNoSee;
     switch (type) {
-      case MsgType::BURN: msg = creature->getTheName() + " burns in the " + param; break;
-      case MsgType::DROWN: msg = creature->getTheName() + " falls into the " + param;
+      case MsgType::BURN: msg = creature->getName().the() + " burns in the " + param; break;
+      case MsgType::DROWN: msg = creature->getName().the() + " falls into the " + param;
                            msgNoSee = "You hear a loud splash"; break;
-      case MsgType::KILLED_BY: msg = creature->getTheName() + " is destroyed by " + param; break;
-      case MsgType::ENTER_PORTAL: msg = creature->getTheName() + " disappears in the portal."; break;
+      case MsgType::KILLED_BY: msg = creature->getName().the() + " is destroyed by " + param; break;
+      case MsgType::ENTER_PORTAL: msg = creature->getName().the() + " disappears in the portal."; break;
       default: break;
     }
     if (!msg.empty())
@@ -187,8 +187,8 @@ class BoulderController : public Monster {
     if (myTribe)
       return;
     Vec2 dir = creature->getPosition() - c->getPosition();
-    string it = c->canSee(creature) ? creature->getTheName() : "it";
-    string something = c->canSee(creature) ? creature->getTheName() : "something";
+    string it = c->canSee(creature) ? creature->getName().the() : "it";
+    string something = c->canSee(creature) ? creature->getName().the() : "something";
     if (!creature->move(dir)) {
       c->playerMessage(it + " won't move in this direction");
       return;
@@ -351,14 +351,14 @@ class KrakenController : public Monster {
     if (held && ((held->getPosition() - creature->getPosition()).length8() != 1 || held->isDead()))
       held = nullptr;
     if (held) {
-      held->you(MsgType::HAPPENS_TO, creature->getTheName() + " pulls");
+      held->you(MsgType::HAPPENS_TO, creature->getName().the() + " pulls");
       if (father) {
         held->setHeld(father->creature);
         father->held = held;
         creature->die(nullptr, false);
         creature->getLevel()->moveCreature(held, creature->getPosition() - held->getPosition());
       } else {
-        held->you(MsgType::ARE, "eaten by " + creature->getTheName());
+        held->you(MsgType::ARE, "eaten by " + creature->getName().the());
         held->die();
       }
     }
@@ -371,7 +371,7 @@ class KrakenController : public Monster {
             if (numSpawns > 0) {
               if (v.length8() == 1) {
                 if (ready) {
-                  c->you(MsgType::HAPPENS_TO, creature->getTheName() + " swings itself around");
+                  c->you(MsgType::HAPPENS_TO, creature->getName().the() + " swings itself around");
                   c->setHeld(creature);
                   held = c;
                   unReady();
@@ -448,9 +448,9 @@ class KrakenController : public Monster {
         if (Creature* enemy = getSquare(v)->getCreature())
           if (canSee(enemy) && isEnemy(enemy) && enemy->isPlayer()) {
             PCreature c = CreatureFactory::fromId(chooseRandom(creatures), getTribe());
-            enemy->you(MsgType::ARE, "frozen in place by " + getTheName() + "!");
+            enemy->you(MsgType::ARE, "frozen in place by " + getName().the() + "!");
             enemy->setHeld(c.get());
-            globalMessage(getTheName() + " turns into " + c->getAName());
+            globalMessage(getName().the() + " turns into " + c->getAName());
             Vec2 pos = getPosition();
             die(nullptr, false);
             getLevel()->addCreature(pos, std::move(c));
@@ -472,7 +472,7 @@ class KamikazeController : public Monster {
       if (creature->getLevel()->inBounds(creature->getPosition() + v))
         if (Creature* c = creature->getSquare(v)->getCreature())
           if (creature->isEnemy(c) && creature->canSee(c)) {
-            creature->monsterMessage(creature->getTheName() + " explodes!");
+            creature->monsterMessage(creature->getName().the() + " explodes!");
             for (Vec2 v : Vec2::directions8())
               c->getSquare(v)->setOnFire(1);
             c->getSquare()->setOnFire(1);
@@ -900,7 +900,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
           }
           if (Random.roll(10)) {
             c.undead = true;
-            c.name = "undead " + *c.name;
+            c.name = "undead " + (*c.name).bare();
           }
         }
         if (r.roll(3))
