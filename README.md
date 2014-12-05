@@ -19,6 +19,12 @@ Compiling
   * angelscript (http://www.angelcode.com/angelscript/)
 
 
+Under Ubuntu 14.4 , you could use these to create development enviroment 
+```
+sudo apt-get install libboost1.55-all-dev libsfml-dev freeglut3-dev libglew-dev llvm-3.4 build-essential
+
+```
+
 
 In terminal:  
   ```
