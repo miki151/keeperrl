@@ -1021,7 +1021,7 @@ PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {
       stack(makeVec<PGuiElem>(
           background(background2),
           sprite(get(HORI_BAR), Alignment::TOP),
-          sprite(get(HORI_BAR), Alignment::BOTTOM),
+          sprite(get(HORI_BAR), Alignment::BOTTOM, true),
           margin(sprite(get(HORI_BAR_MINI), Alignment::BOTTOM), empty(), 85, TOP),
           sprite(get(VERT_BAR), Alignment::RIGHT, false, true),
           sprite(get(VERT_BAR), Alignment::LEFT),
