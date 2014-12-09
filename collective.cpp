@@ -2077,6 +2077,7 @@ static vector<SpellLearningInfo> spellLearning {
     { SpellId::SUMMON_INSECTS, TechId::SPELLS},
     { SpellId::DECEPTION, TechId::SPELLS},
     { SpellId::SPEED_SELF, TechId::SPELLS},
+    { SpellId::STUN_RAY, TechId::SPELLS},
     { SpellId::MAGIC_SHIELD, TechId::SPELLS_ADV},
     { SpellId::STR_BONUS, TechId::SPELLS_ADV},
     { SpellId::DEX_BONUS, TechId::SPELLS_ADV},

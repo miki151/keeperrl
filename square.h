@@ -119,7 +119,7 @@ class Square : public Renderable {
   virtual bool canDestroy() const;
 
   /** Called when something destroyed this square.*/
-  virtual void destroyBy(Creature* c) { destroy(); }
+  virtual void destroyBy(Creature* c);
   virtual void destroy();
 
   /** Called when this square is burned completely.*/

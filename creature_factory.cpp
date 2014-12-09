@@ -958,7 +958,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.name = "Keeper";
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
           c.spells.add(SpellId::HEALING);
-          c.spells.add(SpellId::STUN_RAY);
           c.attributeGain = 1;
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::LABORATORY, 0.01); 
@@ -1159,6 +1158,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spells.add(SpellId::SPEED_SELF);
           c.spells.add(SpellId::STR_BONUS);
           c.spells.add(SpellId::SUMMON_SPIRIT);
+          c.spells.add(SpellId::STUN_RAY);
+          c.spells.add(SpellId::BLAST);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.skills.insert(SkillId::HEALING);
           c.name = "shaman";);
@@ -1626,6 +1627,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spells.add(SpellId::HEALING);
           c.spells.add(SpellId::SPEED_SELF);
           c.spells.add(SpellId::STR_BONUS);
+          c.spells.add(SpellId::STUN_RAY);
+          c.spells.add(SpellId::BLAST);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.skills.insert(SkillId::HEALING);

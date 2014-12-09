@@ -184,6 +184,8 @@ static void blast(Creature* who, Square* square, Vec2 direction, int maxDistance
           elem.second[0]->getAttackType(), 15, 15, false), maxDistance, position, direction,
         Vision::get(VisionId::NORMAL));
   }
+  if (square->canDestroy())
+    square->destroy();
 }
 
 static void blast(Creature* c, Vec2 direction, int range) {

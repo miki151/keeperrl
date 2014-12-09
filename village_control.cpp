@@ -52,25 +52,25 @@ void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers)
 }
 
 void VillageControl::tick(double time) {
-  if (!getCollective()->getTeams().getAll().empty()) {
-    for (auto team : getCollective()->getTeams().getAll()) {
-      for (const Creature* c : getCollective()->getTeams().getMembers(team))
-        if (!getCollective()->hasTask(c)) {
-          getCollective()->getTeams().cancel(team);
-          break;
-        }
-    }
-  }
-  if (!getCollective()->getTeams().getAll().empty())
-    return;
   vector<Creature*> fighters = getCollective()->getCreatures(MinionTrait::FIGHTER);
+  vector<Creature*> allMembers = getCollective()->getCreatures();
+  Debug() << getCollective()->getName() << " fighters: " << int(fighters.size())
+    << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
+  for (auto team : getCollective()->getTeams().getAll()) {
+    for (const Creature* c : getCollective()->getTeams().getMembers(team))
+      if (!getCollective()->hasTask(c)) {
+        getCollective()->getTeams().cancel(team);
+        break;
+      }
+    return;
+  }
   for (auto& villain : villains) {
-    if (fighters.size() < villain.minPopulation + villain.minTeamSize)
+    if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
       continue;
     double prob = villain.getAttackProbability(this);
     if (prob > 0 && Random.roll(1 / prob)) {
       launchAttack(villain, getPrefix(randomPermutation(fighters),
-            Random.get(villain.minTeamSize, fighters.size() - villain.minPopulation + 1)));
+            Random.get(villain.minTeamSize, allMembers.size() - villain.minPopulation + 1)));
       break;
     }
   }

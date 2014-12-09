@@ -136,7 +136,12 @@ bool Square::construct(SquareType type) {
     return false;
 }
 
+bool Square::canDestroy() const {
+  return canDestroySquare;
+}
+
 void Square::destroy() {
+  CHECK(canDestroy());
   dirty = true;
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
@@ -147,8 +152,8 @@ bool Square::canDestroyBy(const Creature* c) const {
   return canDestroy();
 }
 
-bool Square::canDestroy() const {
-  return canDestroySquare;
+void Square::destroyBy(Creature* c) {
+  destroy();
 }
 
 void Square::burnOut() {
