@@ -612,6 +612,15 @@ const Range::Iter& Range::Iter::operator++ () {
   return *this;
 }
 
+template <class Archive> 
+void Range::serialize(Archive& ar, const unsigned int version) {
+  ar& SVAR(start)
+    & SVAR(finish);
+}
+
+SERIALIZABLE(Range);
+SERIALIZATION_CONSTRUCTOR_IMPL(Range);
+
 string combine(const vector<string>& adj) {
   string res;
   for (int i : All(adj)) {

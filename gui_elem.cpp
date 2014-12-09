@@ -864,6 +864,7 @@ Texture& get(TexId id) {
     m[SCROLL_DOWN].loadFromFile("ui/down.png");
     m[WINDOW_CORNER].loadFromFile("ui/corner1.png");
     m[WINDOW_VERT_BAR].loadFromFile("ui/vertibarmsg1.png");
+    m[WINDOW_VERT_BAR].setRepeated(true);
     m[MAIN_MENU_HIGHLIGHT].loadFromFile("ui/menu_highlight.png");
   }
   return m[id];
@@ -1000,12 +1001,12 @@ PGuiElem GuiElem::border(PGuiElem content) {
   return stack(makeVec<PGuiElem>(std::move(content),
         sprite(get(HORI_BAR), Alignment::BOTTOM, true, false),
         sprite(get(HORI_BAR), Alignment::TOP, false, false),
-        sprite(get(WINDOW_VERT_BAR), Alignment::RIGHT, false, true),
-        sprite(get(WINDOW_VERT_BAR), Alignment::LEFT, false, false),
-        sprite(get(WINDOW_CORNER), Alignment::BOTTOM_RIGHT, true, true, Vec2(8, 2)),
-        sprite(get(WINDOW_CORNER), Alignment::BOTTOM_LEFT, true, false, Vec2(-8, 2)),
-        sprite(get(WINDOW_CORNER), Alignment::TOP_RIGHT, false, true, Vec2(8, -2)),
-        sprite(get(WINDOW_CORNER), Alignment::TOP_LEFT, false, false, Vec2(-8, -2))));
+        sprite(get(WINDOW_VERT_BAR), Alignment::RIGHT, false, false),
+        sprite(get(WINDOW_VERT_BAR), Alignment::LEFT, false, true),
+        sprite(get(WINDOW_CORNER), Alignment::BOTTOM_RIGHT, true, true, Vec2(6, 2)),
+        sprite(get(WINDOW_CORNER), Alignment::BOTTOM_LEFT, true, false, Vec2(-6, 2)),
+        sprite(get(WINDOW_CORNER), Alignment::TOP_RIGHT, false, true, Vec2(6, -2)),
+        sprite(get(WINDOW_CORNER), Alignment::TOP_LEFT, false, false, Vec2(-6, -2))));
 }
 
 PGuiElem GuiElem::window(PGuiElem content) {
@@ -1020,7 +1021,7 @@ PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {
       stack(makeVec<PGuiElem>(
           background(background2),
           sprite(get(HORI_BAR), Alignment::TOP),
-          sprite(get(HORI_BAR), Alignment::BOTTOM),
+          sprite(get(HORI_BAR), Alignment::BOTTOM, true),
           margin(sprite(get(HORI_BAR_MINI), Alignment::BOTTOM), empty(), 85, TOP),
           sprite(get(VERT_BAR), Alignment::RIGHT, false, true),
           sprite(get(VERT_BAR), Alignment::LEFT),

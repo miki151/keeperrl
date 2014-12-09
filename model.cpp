@@ -32,6 +32,7 @@
 #include "view_id.h"
 #include "collective.h"
 #include "collective_builder.h"
+#include "collective_config.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -334,6 +335,7 @@ typedef VillageControl::Villain VillainInfo;
 
 struct EnemyInfo {
   SettlementInfo settlement;
+  CollectiveConfig config;
   vector<VillainInfo> villains;
 };
 
@@ -346,7 +348,7 @@ static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* t
       c.location = new Location(true);
       c.tribe = tribe;
       c.buildingId = BuildingId::DUNGEON;
-      c.shopFactory = itemFactory;),
+      c.shopFactory = itemFactory;), CollectiveConfig::noImmigrants(),
     villains};
 }
 
@@ -404,7 +406,7 @@ vector<EnemyInfo> getEnemyInfo() {
         c.numCreatures = Random.get(3, 7);
         c.location = new Location();
         c.tribe = Tribe::get(TribeId::HUMAN);
-        c.buildingId = BuildingId::WOOD;), {}});
+        c.buildingId = BuildingId::WOOD;), CollectiveConfig::noImmigrants(), {}});
   }
   for (int i : Range(2, 5)) {
     ret.push_back({CONSTRUCT(SettlementInfo,
@@ -414,13 +416,13 @@ vector<EnemyInfo> getEnemyInfo() {
         c.location = new Location(true);
         c.tribe = Tribe::get(TribeId::DWARVEN);
         c.buildingId = BuildingId::DUNGEON;
-        c.stockpiles = LIST({StockpileInfo::MINERALS, 300});), {}});
+        c.stockpiles = LIST({StockpileInfo::MINERALS, 300});), CollectiveConfig::noImmigrants(), {}});
   }
   ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::ISLAND_VAULT;
         c.location = new Location(true);
         c.buildingId = BuildingId::DUNGEON;
-        c.stockpiles = LIST({StockpileInfo::GOLD, 400});), {}});
+        c.stockpiles = LIST({StockpileInfo::GOLD, 400});), CollectiveConfig::noImmigrants(), {}});
   append(ret, getVaults());
   append(ret, {
       {CONSTRUCT(SettlementInfo,
@@ -433,6 +435,12 @@ vector<EnemyInfo> getEnemyInfo() {
           c.stockpiles = LIST({StockpileInfo::GOLD, 400});
           c.guardId = CreatureId::WARRIOR;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);),
+       CollectiveConfig::withImmigrants(0.003, 16, {
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::WARRIOR;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);),          
+           }),
        {CONSTRUCT(VillainInfo,
           c.minPopulation = 6;
           c.minTeamSize = 5;
@@ -448,6 +456,12 @@ vector<EnemyInfo> getEnemyInfo() {
           c.buildingId = BuildingId::MUD;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::HUMANOID_MUT);
           c.shopFactory = ItemFactory::mushrooms();),
+       CollectiveConfig::withImmigrants(0.007, 15, {
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::LIZARDMAN;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);),          
+           }),
        {CONSTRUCT(VillainInfo,
           c.minPopulation = 4;
           c.minTeamSize = 4;
@@ -462,7 +476,13 @@ vector<EnemyInfo> getEnemyInfo() {
           c.tribe = Tribe::get(TribeId::ELVEN);
           c.stockpiles = LIST({StockpileInfo::GOLD, 400});
           c.buildingId = BuildingId::WOOD;
-          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);), {}},
+          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);),
+       CollectiveConfig::withImmigrants(0.002, 18, {
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::ELF_ARCHER;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);),          
+           }), {}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::MINETOWN;
           c.creatures = CreatureFactory::dwarfTown(Tribe::get(TribeId::DWARVEN));
@@ -472,6 +492,12 @@ vector<EnemyInfo> getEnemyInfo() {
           c.buildingId = BuildingId::DUNGEON;
           c.stockpiles = LIST({StockpileInfo::GOLD, 400}, {StockpileInfo::MINERALS, 600});
           c.shopFactory = ItemFactory::dwarfShop();),
+       CollectiveConfig::withImmigrants(0.002, 15, {
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::DWARF;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);),          
+           }),
        {CONSTRUCT(VillainInfo,
           c.minPopulation = 3;
           c.minTeamSize = 4;
@@ -488,8 +514,18 @@ vector<EnemyInfo> getEnemyInfo() {
           c.buildingId = BuildingId::BRICK;
           c.guardId = CreatureId::CASTLE_GUARD;
           c.shopFactory = ItemFactory::villageShop();),
+       CollectiveConfig::withImmigrants(0.003, 26, {
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::KNIGHT;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);),
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::ARCHER;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);),          
+           }),
        {CONSTRUCT(VillainInfo,
-          c.minPopulation = 2;
+          c.minPopulation = 12;
           c.minTeamSize = 10;
           c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS});
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
@@ -501,7 +537,7 @@ vector<EnemyInfo> getEnemyInfo() {
           c.location = new Location();
           c.tribe = Tribe::get(TribeId::MONSTER);
           c.buildingId = BuildingId::WOOD;
-          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);), {}},
+          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);), CollectiveConfig::noImmigrants(), {}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CAVE;
           c.creatures = CreatureFactory::singleType(Tribe::get(TribeId::BANDIT), CreatureId::BANDIT);
@@ -509,6 +545,12 @@ vector<EnemyInfo> getEnemyInfo() {
           c.location = new Location();
           c.tribe = Tribe::get(TribeId::BANDIT);
           c.buildingId = BuildingId::DUNGEON;),
+       CollectiveConfig::withImmigrants(0.001, 10, {
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::BANDIT;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);),
+           }),
        {CONSTRUCT(VillainInfo,
           c.minPopulation = 0;
           c.minTeamSize = 3;
@@ -519,17 +561,161 @@ vector<EnemyInfo> getEnemyInfo() {
   return ret;
 }
 
+static CollectiveConfig getKeeperConfig() {
+  return CollectiveConfig::keeper(
+      Options::getValue(OptionId::FAST_IMMIGRATION) ? 0.1 : 0.011,
+      500,
+      3,
+      {
+      CONSTRUCT(ImmigrantInfo,
+        c.id = CreatureId::GOBLIN;
+        c.frequency = 1;
+        c.attractions = LIST(
+          {{AttractionId::SQUARE, SquareId::WORKSHOP}, 1.0, 12.0},
+          {{AttractionId::SQUARE, SquareId::JEWELER}, 1.0, 9.0},
+          {{AttractionId::SQUARE, SquareId::FORGE}, 1.0, 9.0},
+          );
+        c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
+        c.salary = 10;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::ORC;
+          c.frequency = 0.7;
+          c.attractions = LIST(
+            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 1.0, 12.0},
+            );
+          c.traits = {MinionTrait::FIGHTER};
+          c.salary = 20;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::ORC_SHAMAN;
+          c.frequency = 0.15;
+          c.attractions = LIST(
+            {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
+            {{AttractionId::SQUARE, SquareId::LABORATORY}, 1.0, 9.0},
+            );
+          c.traits = {MinionTrait::FIGHTER};
+          c.salary = 20;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::OGRE;
+          c.frequency = 0.3;
+          c.attractions = LIST(
+            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0}
+            );
+          c.traits = {MinionTrait::FIGHTER};
+          c.salary = 40;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::HARPY;
+          c.frequency = 0.3;
+          c.attractions = LIST(
+            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+            {{AttractionId::ITEM_CLASS, ItemClass::RANGED_WEAPON}, 1.0, 3.0, true}
+            );
+          c.traits = {MinionTrait::FIGHTER};
+          c.salary = 40;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::SPECIAL_HUMANOID;
+          c.frequency = 0.2;
+          c.attractions = LIST(
+            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+            );
+          c.traits = {MinionTrait::FIGHTER};
+          c.spawnAtDorm = true;
+          c.techId = TechId::HUMANOID_MUT;
+          c.salary = 40;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::ZOMBIE;
+          c.frequency = 0.5;
+          c.traits = {MinionTrait::FIGHTER};
+          c.salary = 10;
+          c.spawnAtDorm = true;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::VAMPIRE;
+          c.frequency = 0.3;
+          c.traits = {MinionTrait::FIGHTER};
+          c.salary = 40;
+          c.spawnAtDorm = true;
+          c.attractions = LIST(
+            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 2.0, 12.0}
+            );),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::LOST_SOUL;
+          c.frequency = 0.3;
+          c.traits = {MinionTrait::FIGHTER};
+          c.salary = 0;
+          c.attractions = LIST(
+            {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 1.0, 9.0}
+            );
+          c.spawnAtDorm = true;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::SUCCUBUS;
+          c.frequency = 0.3;
+          c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
+          c.salary = 0;
+          c.attractions = LIST(
+            {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 2.0, 12.0}
+            );
+          c.spawnAtDorm = true;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::DOPPLEGANGER;
+          c.frequency = 0.2;
+          c.traits = {MinionTrait::FIGHTER};
+          c.salary = 0;
+          c.attractions = LIST(
+            {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 4.0, 12.0}
+            );
+          c.spawnAtDorm = true;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::RAVEN;
+          c.frequency = 1.0;
+          c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
+          c.limit = Model::SunlightInfo::DAY;
+          c.salary = 0;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::BAT;
+          c.frequency = 1.0;
+          c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
+          c.limit = Model::SunlightInfo::NIGHT;
+          c.salary = 0;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::WOLF;
+          c.frequency = 0.15;
+          c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
+          c.groupSize = LIST(3, 9);
+          c.autoTeam = true;
+          c.salary = 0;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::CAVE_BEAR;
+          c.frequency = 0.1;
+          c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
+          c.salary = 0;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::WEREWOLF;
+          c.frequency = 0.1;
+          c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
+          c.attractions = LIST(
+            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 4.0, 12.0}
+            );
+          c.salary = 0;),
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::SPECIAL_MONSTER_KEEPER;
+          c.frequency = 0.2;
+          c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
+          c.spawnAtDorm = true;
+          c.techId = TechId::BEAST_MUT;
+          c.salary = 0;)});
+}
+
 Model* Model::collectiveModel(ProgressMeter& meter, View* view) {
   Model* m = new Model(view);
   vector<EnemyInfo> enemyInfo = getEnemyInfo();
   vector<SettlementInfo> settlements;
   for (auto& elem : enemyInfo) {
-    elem.settlement.collective = new CollectiveBuilder(CollectiveConfigId::VILLAGE, elem.settlement.tribe);
+    elem.settlement.collective =
+      new CollectiveBuilder(elem.config, elem.settlement.tribe);
     settlements.push_back(elem.settlement);
   }
   Level* top = m->prepareTopLevel(meter, settlements);
   m->collectives.push_back(CollectiveBuilder(
-        CollectiveConfigId::KEEPER, Tribe::get(TribeId::KEEPER)).setLevel(top).build("Keeper"));
+        getKeeperConfig(), Tribe::get(TribeId::KEEPER)).setLevel(top).build("Keeper"));
   m->playerCollective = m->collectives.back().get();
   m->playerControl = new PlayerControl(m->playerCollective, m, top);
   m->playerCollective->setControl(PCollectiveControl(m->playerControl));

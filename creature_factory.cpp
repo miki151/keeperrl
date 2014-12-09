@@ -2082,12 +2082,12 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::WARRIOR: 
       return ItemList()
         .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::SWORD)
+        .add(ItemId::CLUB)
         .add(ItemId::GOLD_PIECE, Random.get(10, 20));
     case CreatureId::SHAMAN: 
       return ItemList()
         .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::SWORD);
+        .add(ItemId::CLUB);
     case CreatureId::LIZARDLORD: 
     case CreatureId::LIZARDMAN: 
       return ItemList().add(ItemId::LEATHER_ARMOR)

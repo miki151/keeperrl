@@ -391,7 +391,7 @@ void MapGui::updateObjects(const MapMemory* mem) {
 }
 
 void MapGui::clearCenter() {
-  center = {0.0, 0.0};
+  center = mouseOffset = {0.0, 0.0};
 }
 
 bool MapGui::isCentered() const {

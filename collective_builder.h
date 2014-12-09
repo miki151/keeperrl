@@ -4,14 +4,16 @@
 #include "enums.h"
 #include "util.h"
 #include "minion_task.h"
+#include "collective_config.h"
 
 class Tribe;
 class Level;
 class Creature;
+struct ImmigrantInfo;
 
 class CollectiveBuilder {
   public:
-  CollectiveBuilder(CollectiveConfigId, Tribe*);
+  CollectiveBuilder(CollectiveConfig, Tribe*);
   CollectiveBuilder& setLevel(Level*);
   CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
   PCollective build(const string& name);
@@ -24,7 +26,7 @@ class CollectiveBuilder {
     EnumSet<MinionTrait> traits;
   };
   vector<CreatureInfo> creatures;
-  CollectiveConfigId config;
+  CollectiveConfig config;
   Tribe* tribe;
 };
 

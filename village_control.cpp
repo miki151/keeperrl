@@ -86,6 +86,7 @@ PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
     case VillageBehaviourId::KILL_MEMBERS: return Task::killFighters(collective, behaviour.get<int>());
     case VillageBehaviourId::STEAL_GOLD: return Task::stealFrom(collective, self->getCollective());
   }
+  return nullptr;
 }
 
 string VillageControl::getAttackMessage(const Villain& villain, const vector<Creature*> attackers) const {
@@ -99,6 +100,7 @@ string VillageControl::getAttackMessage(const Villain& villain, const vector<Cre
         return "You are under attack by " + getCollective()->getTribe()->getName() + 
             " of " + getCollective()->getName() + "!";
   }
+  return "";
 }
 
 static double powerClosenessFun(double myPower, double hisPower) {
@@ -170,6 +172,7 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
     case AttackTriggerId::GOLD:
       return goldMaxProb * goldFun(villain->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
   }
+  return 0;
 }
 
 double VillageControl::Villain::getAttackProbability(const VillageControl* self) const {

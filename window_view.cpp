@@ -450,7 +450,8 @@ void WindowView::updateView(const CreatureView* collective) {
     if (level->inBounds(pos)) {
       ViewIndex index;
       collective->getViewIndex(pos, index);
-      index.setHighlight(HighlightType::NIGHT, 1.0 - collective->getLevel()->getLight(pos));
+      if (!index.isEmpty())
+        index.setHighlight(HighlightType::NIGHT, 1.0 - collective->getLevel()->getLight(pos));
       objects[pos] = index;
     }
   mapGui->setSpriteMode(currentTileLayout.sprites);

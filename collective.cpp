@@ -44,7 +44,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(kills)
     & SVAR(points)
     & SVAR(currentTasks)
-    & SVAR(configId)
     & SVAR(credit)
     & SVAR(level)
     & SVAR(minionPayment)
@@ -55,7 +54,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(teams)
     & SVAR(knownLocations)
     & SVAR(torches)
-    & SVAR(name);
+    & SVAR(name)
+    & SVAR(config);
   CHECK_SERIAL;
 }
 
@@ -159,48 +159,10 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   return ret;
 };
 
-struct Collective::AttractionInfo {
-  AttractionInfo(MinionAttraction a, double cl, double min, bool mand = false)
-      : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
-  MinionAttraction attraction;
-  double amountClaimed;
-  double minAmount;
-  bool mandatory;
-};
-
-struct Collective::ImmigrantInfo {
-  CreatureId id;
-  double frequency;
-  vector<AttractionInfo> attractions;
-  EnumSet<MinionTrait> traits;
-  bool spawnAtDorm;
-  int salary;
-  Optional<CostInfo> cost;
-  Optional<TechId> techId;
-  Optional<Model::SunlightInfo::State> limit;
-  Optional<Range> groupSize;
-  bool autoTeam;
-};
-
-struct CollectiveConfig {
-  bool manageEquipment;
-  bool workerFollowLeader;
-  double immigrantFrequency;
-  int payoutTime;
-  double payoutMultiplier;
-  bool stripSpawns;
-  bool keepSectors;
-  bool fetchItems;
-  bool enemyPositions;
-  bool warnings;
-  bool constructions;
-  vector<Collective::ImmigrantInfo> immigrantInfo;
-};
-
-Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t, const string& n) : configId(cfg),
-  knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
+Collective::Collective(Level* l, CollectiveConfig cfg, Tribe* t, const string& n) 
+  : knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
   tribe(t), level(l), nextPayoutTime(-1), sectors(new Sectors(level->getBounds())),
-    flyingSectors(new Sectors(level->getBounds())), name(n) {
+    flyingSectors(new Sectors(level->getBounds())), name(n), config(cfg) {
   credit = {
     {ResourceId::MANA, 200},
   };
@@ -208,7 +170,7 @@ Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t, const string&
     for (auto elem : ENUM_ALL(ResourceId))
       credit[elem] = 10000;
   }
-  if (getConfig().keepSectors)
+  if (config.getKeepSectors())
     for (Vec2 v : level->getBounds()) {
       if (getLevel()->getSquare(v)->canEnterEmpty({MovementTrait::WALK}))
         sectors->add(v);
@@ -219,174 +181,6 @@ Collective::Collective(Level* l, CollectiveConfigId cfg, Tribe* t, const string&
 
 const string& Collective::getName() const {
   return name;
-}
-
-const CollectiveConfig& Collective::getConfig() const {
-
-  static EnumMap<CollectiveConfigId, CollectiveConfig> collectiveConfigs;
-  static bool initialized = false;
-  if (!initialized) {
-    initialized = true;
-    collectiveConfigs = {
-    {CollectiveConfigId::KEEPER,
-      CONSTRUCT(CollectiveConfig,
-        c.manageEquipment = true;
-        c.workerFollowLeader = true;
-        if (Options::getValue(OptionId::FAST_IMMIGRATION))
-          c.immigrantFrequency = 0.1;
-        else
-          c.immigrantFrequency = 0.011;
-        c.payoutTime = 500;
-        c.payoutMultiplier = 3;
-        c.stripSpawns = true;
-        c.keepSectors = true;
-        c.fetchItems = true;
-        c.enemyPositions = true;
-        c.warnings = true;
-        c.constructions = true;
-        c.immigrantInfo = LIST(
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::GOBLIN;
-            c.frequency = 1;
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::WORKSHOP}, 1.0, 12.0},
-              {{AttractionId::SQUARE, SquareId::JEWELER}, 1.0, 9.0},
-              {{AttractionId::SQUARE, SquareId::FORGE}, 1.0, 9.0},
-            );
-            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
-            c.salary = 10;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::ORC;
-            c.frequency = 0.7;
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 1.0, 12.0},
-            );
-            c.traits = {MinionTrait::FIGHTER};
-            c.salary = 20;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::ORC_SHAMAN;
-            c.frequency = 0.15;
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
-              {{AttractionId::SQUARE, SquareId::LABORATORY}, 1.0, 9.0},
-            );
-            c.traits = {MinionTrait::FIGHTER};
-            c.salary = 20;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::OGRE;
-            c.frequency = 0.3;
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0}
-            );
-            c.traits = {MinionTrait::FIGHTER};
-            c.salary = 40;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::HARPY;
-            c.frequency = 0.3;
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
-              {{AttractionId::ITEM_CLASS, ItemClass::RANGED_WEAPON}, 1.0, 3.0, true}
-            );
-            c.traits = {MinionTrait::FIGHTER};
-            c.salary = 40;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::SPECIAL_HUMANOID;
-            c.frequency = 0.2;
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
-            );
-            c.traits = {MinionTrait::FIGHTER};
-            c.spawnAtDorm = true;
-            c.techId = TechId::HUMANOID_MUT;
-            c.salary = 40;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::ZOMBIE;
-            c.frequency = 0.5;
-            c.traits = {MinionTrait::FIGHTER};
-            c.salary = 10;
-            c.spawnAtDorm = true;
-            c.cost = CostInfo(ResourceId::CORPSE, 1);),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::VAMPIRE;
-            c.frequency = 0.3;
-            c.traits = {MinionTrait::FIGHTER};
-            c.salary = 40;
-            c.spawnAtDorm = true;
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 2.0, 12.0}
-            );
-            c.cost = CostInfo(ResourceId::CORPSE, 1);),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::LOST_SOUL;
-            c.frequency = 0.3;
-            c.traits = {MinionTrait::FIGHTER};
-            c.salary = 0;
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 1.0, 9.0}
-            );
-            c.spawnAtDorm = true;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::SUCCUBUS;
-            c.frequency = 0.3;
-            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
-            c.salary = 0;
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 2.0, 12.0}
-            );
-            c.spawnAtDorm = true;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::DOPPLEGANGER;
-            c.frequency = 0.2;
-            c.traits = {MinionTrait::FIGHTER};
-            c.salary = 0;
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 4.0, 12.0}
-            );
-            c.spawnAtDorm = true;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::RAVEN;
-            c.frequency = 1.0;
-            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-            c.limit = Model::SunlightInfo::DAY;
-            c.salary = 0;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::BAT;
-            c.frequency = 1.0;
-            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-            c.limit = Model::SunlightInfo::NIGHT;
-            c.salary = 0;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::WOLF;
-            c.frequency = 0.15;
-            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-            c.groupSize = LIST(3, 9);
-            c.autoTeam = true;
-            c.salary = 0;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::CAVE_BEAR;
-            c.frequency = 0.1;
-            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-            c.salary = 0;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::WEREWOLF;
-            c.frequency = 0.1;
-            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-            c.attractions = LIST(
-              {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 4.0, 12.0}
-            );
-            c.salary = 0;),
-          CONSTRUCT(ImmigrantInfo,
-            c.id = CreatureId::SPECIAL_MONSTER_KEEPER;
-            c.frequency = 0.2;
-            c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-            c.spawnAtDorm = true;
-            c.techId = TechId::BEAST_MUT;
-            c.salary = 0;),
-        );)},
-    {CollectiveConfigId::VILLAGE, {}},
-  };
-  }
-  return collectiveConfigs[configId];
 }
 
 Collective::~Collective() {
@@ -442,7 +236,7 @@ class LeaderControlOverride : public Creature::MoraleOverride {
 }
 
 void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> traits) {
-  if (getConfig().stripSpawns)
+  if (config.getStripSpawns())
     creature->getEquipment().removeAllItems();
   Creature* c = creature.get();
   getLevel()->addCreature(pos, std::move(creature));
@@ -464,7 +258,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     minionEquipment.own(c, item);
   if (traits[MinionTrait::PRISONER])
     prisonerInfo[c] = {PrisonerState::PRISON, 0};
-  if (getConfig().keepSectors) {
+  if (config.getKeepSectors()) {
     if (!c->isAffected(LastingEffect::FLYING))
       c->addSectors(sectors.get());
     else
@@ -572,7 +366,7 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
     taskMap.takeTask(c, closest);
     return closest->getMove(c);
   } else {
-    if (getConfig().workerFollowLeader && getLeader() && !containsSquare(c->getPosition())
+    if (config.getWorkerFollowLeader() && getLeader() && !containsSquare(c->getPosition())
         && getLeader()->getLevel() == c->getLevel()) {
       Vec2 leaderPos = getLeader()->getPosition();
       if (leaderPos.dist8(c->getPosition()) < 3)
@@ -741,8 +535,7 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
-  if (Random.roll(8)) // don't do this every turn as it's expensive
-    autoEquipment(c, Random.roll(10));
+  autoEquipment(c, Random.roll(10));
   for (Vec2 v : getAllSquares(equipmentStorage)) {
     vector<Item*> it = getLevel()->getSquare(v)->getItems([this, c] (const Item* it) {
         return minionEquipment.getOwner(it) == c && it->canEquip(); });
@@ -814,7 +607,7 @@ MoveInfo Collective::getMove(Creature* c) {
     return move;
   if (hasTrait(c, MinionTrait::WORKER))
     return getWorkerMove(c);
-  if (getConfig().fetchItems)
+  if (config.getFetchItems())
     if (MoveInfo move = getDropItems(c))
       return move;
   if (hasTrait(c, MinionTrait::FIGHTER)) {
@@ -1028,15 +821,46 @@ vector<Vec2> Collective::getBedPositions(const vector<PCreature>& creatures, con
   return bedPos;
 }
 
+bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCreature> creatures) {
+  CHECK(!info.spawnAtDorm);
+  auto creatureRefs = extractRefs(creatures);
+  vector<Vec2> spawnPos;
+  spawnPos = getSpawnPos(creatureRefs);
+  if (spawnPos.size() < creatures.size())
+    return false;
+  if (info.autoTeam)
+    teams.activate(teams.createHidden(extractRefs(creatures)));
+  for (int i : All(creatures)) {
+    Creature* c = creatures[i].get();
+    addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
+    minionPayment[c] = {info.salary, 0.0, 0};
+    minionAttraction[c] = info.attractions;
+  }
+  addNewCreatureMessage(creatureRefs);
+  return true;
+}
+
+static Collective::CostInfo getSpawnCost(SpawnType type, int howMany) {
+  switch (type) {
+    case SpawnType::UNDEAD: return {CollectiveResourceId::CORPSE, howMany};
+    default: return {CollectiveResourceId::GOLD, 0};
+  }
+}
+
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   if (info.techId && !hasTech(*info.techId))
     return false;
   vector<PCreature> creatures;
   for (int i : (info.groupSize ? Range(Random.get(*info.groupSize)) : Range(1)))
     creatures.push_back(CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this)));
+  if (!creatures[0]->getSpawnType())
+    return considerNonSpawnImmigrant(info, std::move(creatures));
   CHECK(creatures[0]->getSpawnType()) << "No spawn type for immigrant " << creatures[0]->getName().bare();
   SpawnType spawnType = *creatures[0]->getSpawnType();
   SquareType dormType = getDormInfo()[spawnType].dormType;
+  if (!hasResource(getSpawnCost(spawnType, creatures.size())))
+    return false;
+  takeResource(getSpawnCost(spawnType, creatures.size()));
   if (getSquares(dormType).empty())
     return false;
   Optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
@@ -1069,8 +893,6 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     }
     minionPayment[c] = {info.salary, 0.0, 0};
     minionAttraction[c] = info.attractions;
-    if (info.cost)
-      takeResource(*info.cost);
   }
   addNewCreatureMessage(creatureRefs);
   return true;
@@ -1089,8 +911,6 @@ void Collective::addNewCreatureMessage(const vector<Creature*>& creatures) {
 double Collective::getImmigrantChance(const ImmigrantInfo& info) {
   if (info.limit && info.limit != getLevel()->getModel()->getSunlightInfo().state)
     return 0;
-  if (info.cost && !hasResource(*info.cost))
-    return 0;
   double result = 0;
   if (info.attractions.empty())
     result = 1;
@@ -1104,9 +924,11 @@ double Collective::getImmigrantChance(const ImmigrantInfo& info) {
 }
 
 void Collective::considerImmigration() {
+  if (getCreatures().size() >= config.getMaxPopulation() || !getLeader())
+    return;
   vector<double> weights;
   bool ok = false;
-  for (auto& elem : getConfig().immigrantInfo) {
+  for (auto& elem : config.getImmigrantInfo()) {
     weights.push_back(getImmigrantChance(elem));
     if (weights.back() > 0)
       ok = true;
@@ -1114,7 +936,7 @@ void Collective::considerImmigration() {
   if (!ok)
     return;
   for (int i : Range(10))
-    if (considerImmigrant(chooseRandom(getConfig().immigrantInfo, weights)))
+    if (considerImmigrant(chooseRandom(config.getImmigrantInfo(), weights)))
       break;
 }
 
@@ -1124,8 +946,8 @@ int Collective::getPaymentAmount(const Creature* c) const {
   if (!minionPayment.count(c))
     return 0;
   else
-    return getConfig().payoutMultiplier *
-      minionPayment.at(c).salary() * minionPayment.at(c).workAmount() / getConfig().payoutTime;
+    return config.getPayoutMultiplier() *
+      minionPayment.at(c).salary() * minionPayment.at(c).workAmount() / config.getPayoutTime();
 }
 
 int Collective::getNextSalaries() const {
@@ -1243,14 +1065,14 @@ void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
   considerBirths();
-  if (Random.rollD(1.0 / getConfig().immigrantFrequency))
+  if (Random.rollD(1.0 / config.getImmigrantFrequency()))
     considerImmigration();
   if (nextPayoutTime > -1 && time > nextPayoutTime) {
-    nextPayoutTime += getConfig().payoutTime;
+    nextPayoutTime += config.getPayoutTime();
     makePayouts();
   }
   cashPayouts();
-  if (getConfig().warnings) {
+  if (config.getWarnings()) {
     considerWeaponWarning();
     setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
     setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
@@ -1264,7 +1086,7 @@ void Collective::tick(double time) {
       if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
         setWarning(*elem.second.warning, false);
   }
-  if (getConfig().enemyPositions) {
+  if (config.getEnemyPositions()) {
     vector<Vec2> enemyPos = getEnemyPositions();
     if (alarmInfo.finishTime() > 0) {
       if (!enemyPos.empty())
@@ -1293,9 +1115,9 @@ void Collective::tick(double time) {
         }
     }
   }
-  if (getConfig().constructions)
+  if (config.getConstructions())
     updateConstructions();
-  if (getConfig().fetchItems)
+  if (config.getFetchItems())
     for (const ItemFetchInfo& elem : getFetchInfo()) {
       for (Vec2 pos : getAllSquares())
         fetchItems(pos, elem);
@@ -1733,7 +1555,7 @@ vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squa
 }
 
 bool Collective::usesEquipment(const Creature* c) const {
-  return getConfig().manageEquipment 
+  return config.getManageEquipment()
     && c->isHumanoid() 
     && !hasTrait(c, MinionTrait::NO_EQUIPMENT)
     && !hasTrait(c, MinionTrait::PRISONER);
@@ -2087,7 +1909,7 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
       info.built() = false;
       info.task() = -1;
     }
-    if (getConfig().keepSectors) {
+    if (config.getKeepSectors()) {
       sectors->add(pos);
       flyingSectors->add(pos);
     }
@@ -2214,7 +2036,7 @@ void Collective::onAppliedSquare(Vec2 pos) {
   MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
   if (getTaskInfo().at(currentTask).cost > 0) {
     if (nextPayoutTime == -1)
-      nextPayoutTime = getTime() + getConfig().payoutTime;
+      nextPayoutTime = getTime() + config.getPayoutTime();
     minionPayment[c].workAmount() += getTaskInfo().at(currentTask).cost;
   }
   if (getSquares(SquareId::LIBRARY).count(pos)) {
