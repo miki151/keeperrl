@@ -30,6 +30,7 @@ class Effect {
   public:
   static void applyToCreature(Creature*, EffectType, EffectStrength);
   static void applyToPosition(Level*, Vec2, EffectType, EffectStrength);
+  static void applyDirected(Creature*, Vec2 direction, EffectType, EffectStrength);
 
   static void summon(Creature*, CreatureId, int num, int ttl);
   static void summon(Level*, CreatureFactory, Vec2 pos, int num, int ttl);

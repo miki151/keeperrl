@@ -28,6 +28,7 @@ enum class EffectId {
     CURE_POISON,
     METEOR_SHOWER,
     LASTING,
+    BLAST,
 };
 
 typedef EnumVariant<EffectId, TYPES(LastingEffect),

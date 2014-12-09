@@ -965,7 +965,7 @@ PGuiElem GuiElem::highlight(Color c) {
 }
 
 PGuiElem GuiElem::mainMenuHighlight() {
-  return spriteFitVert(get(MAIN_MENU_HIGHLIGHT), 0.3);
+  return spriteFitVert(get(MAIN_MENU_HIGHLIGHT), -0.2);
 }
 
 PGuiElem GuiElem::border2(PGuiElem content) {

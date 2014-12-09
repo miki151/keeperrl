@@ -1160,7 +1160,7 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
     ++injuredBodyParts[part];
   switch (part) {
     case BodyPart::LEG:
-      if (!collapsed) {
+      if (!collapsed && !isAffected(LastingEffect::FLYING)) {
         you(MsgType::COLLAPSE, "");
         collapsed = true;
       }
@@ -1464,11 +1464,6 @@ bool Creature::isSpecialMonster() const {
 
 string Creature::getDescription() const {
   string weapon;
-  /*if (Item* item = getEquipment().getItem(EquipmentSlot::WEAPON))
-    weapon = " It's wielding " + item->getAName() + ".";
-  else
-  if (Item* item = getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))
-    weapon = " It's wielding " + item->getAName() + ".";*/
   string attack;
   if (attackEffect)
     attack = " It has a " + Effect::getName(*attackEffect) + " attack.";

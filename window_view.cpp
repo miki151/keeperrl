@@ -241,7 +241,7 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
   double mouthPos2 = 214;
   double mouthX = (renderer.getWidth() - (menuMouth.getSize().x + 5) * scale) / 2;
   renderer.drawFilledRectangle(mouthX, mouthPos1 * scale, 1 + mouthX + barState * menuMouth.getSize().x * scale,
-      (mouthPos2 + menuMouth.getSize().y) * scale, sf::Color(30, 38, 24));
+      (mouthPos2 + menuMouth.getSize().y) * scale, sf::Color(60, 76, 48));
   renderer.drawImage((renderer.getWidth() - width) / 2, 0, menuCore, scale);
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
 }
@@ -264,7 +264,7 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
       else
         renderer.drawImage((renderer.getWidth() - loadingSplash.getSize().x) / 2,
             (renderer.getHeight() - loadingSplash.getSize().y) / 2, loadingSplash);
-      renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() * 0.6, text, true);
+      renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() * 0.5, text, true);
       renderer.drawAndClearBuffer();
       sf::sleep(sf::milliseconds(30));
       Event event;
