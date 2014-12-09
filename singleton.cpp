@@ -25,6 +25,7 @@
 #include "skill.h"
 #include "name_generator.h"
 #include "pantheon.h"
+#include "spell.h"
 
 template<class T, class E>
 EnumMap<E, unique_ptr<T>> Singleton<T, E>::elems;
@@ -81,6 +82,7 @@ SERIALIZABLE_TMPL(Singleton, Quest, QuestId);
 SERIALIZABLE_TMPL(Singleton, Vision, VisionId);
 SERIALIZABLE_TMPL(Singleton, NameGenerator, NameGeneratorId);
 SERIALIZABLE_TMPL(Singleton, Epithet, EpithetId);
+SERIALIZABLE_TMPL(Singleton, Spell, SpellId);
 
 
 template<class T>

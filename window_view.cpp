@@ -533,9 +533,10 @@ Optional<int> reverseIndexHeight(const vector<View::ListElem>& options, int heig
 Optional<Vec2> WindowView::chooseDirection(const string& message) {
   RenderLock lock(renderMutex);
   TempClockPause pause;
+  gameInfo.messageBuffer = { PlayerMessage(message) };
+  rebuildGui();
   SyncQueue<Optional<Vec2>> returnQueue;
   addReturnDialog<Optional<Vec2>>(returnQueue, [=] ()-> Optional<Vec2> {
-  gameInfo.messageBuffer = { PlayerMessage(message) };
   refreshScreen();
   do {
     Event event;
@@ -564,8 +565,8 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
           renderer.drawSprite(wpos.x, wpos.y, 16 * 36, (8 + numArrow) * 36, 36, 36, Renderer::tiles[4]);
         else {
           static sf::Uint32 arrows[] = { L'⇐', L'⇖', L'⇑', L'⇗', L'⇒', L'⇘', L'⇓', L'⇙'};
-          renderer.drawText(Renderer::SYMBOL_FONT, 20, colors[ColorId::WHITE], wpos.x + mapLayout->squareWidth() / 2, wpos.y,
-              arrows[numArrow], true);
+          renderer.drawText(Renderer::SYMBOL_FONT, 20, colors[ColorId::WHITE],
+              wpos.x + mapLayout->squareWidth() / 2, wpos.y, arrows[numArrow], true);
         }
         renderer.drawAndClearBuffer();
         if (event.type == Event::MouseButtonPressed)

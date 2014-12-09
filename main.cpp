@@ -48,6 +48,7 @@
 #include "clock.h"
 #include "progress_meter.h"
 #include "square.h"
+#include "spell.h"
 
 using namespace boost::iostreams;
 using namespace boost::program_options;
@@ -189,6 +190,7 @@ void clearSingletons() {
   Vision::clearAll();
   Epithet::clearAll();
   NameGenerator::clearAll();
+  Spell::clearAll();
 }
 
 void initializeSingletons() {
@@ -201,6 +203,7 @@ void initializeSingletons() {
   NameGenerator::init();
   ItemFactory::init();
   Epithet::init();
+  Spell::init();
 }
 
 void renderLoop(View* view, atomic<bool>& finished, atomic<bool>& initialized) {

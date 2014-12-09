@@ -957,7 +957,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.name = "Keeper";
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
-          c.spells.push_back(Creature::getSpell(SpellId::HEALING));
+          c.spells.add(SpellId::HEALING);
+          c.spells.add(SpellId::STUN_RAY);
           c.attributeGain = 1;
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::LABORATORY, 0.01); 
@@ -1154,10 +1155,10 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(WARRIOR,
           c.viewId = ViewId::SHAMAN;
           c.courage = 3;
-          c.spells.push_back(Creature::getSpell(SpellId::HEALING));
-          c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
-          c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
-          c.spells.push_back(Creature::getSpell(SpellId::SUMMON_SPIRIT));
+          c.spells.add(SpellId::HEALING);
+          c.spells.add(SpellId::SPEED_SELF);
+          c.spells.add(SpellId::STR_BONUS);
+          c.spells.add(SpellId::SUMMON_SPIRIT);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.skills.insert(SkillId::HEALING);
           c.name = "shaman";);
@@ -1186,6 +1187,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.weight = 100;
           c.innocent = true;
+          c.spells.add(SpellId::BLAST);
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Heeelp!\"";
           c.name = "peasant";);
@@ -1592,7 +1594,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
-          c.spells.push_back(Creature::getSpell(SpellId::HEALING));
+          c.spells.add(SpellId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
           c.name = "elf";
           c.pluralName = "elves";);
@@ -1621,9 +1623,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::SPEED] += 20;
           c.attr[AttrType::STRENGTH] += 3;
           c.attr[AttrType::DEXTERITY] += 3;
-          c.spells.push_back(Creature::getSpell(SpellId::HEALING));
-          c.spells.push_back(Creature::getSpell(SpellId::SPEED_SELF));
-          c.spells.push_back(Creature::getSpell(SpellId::STR_BONUS));
+          c.spells.add(SpellId::HEALING);
+          c.spells.add(SpellId::SPEED_SELF);
+          c.spells.add(SpellId::STR_BONUS);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.skills.insert(SkillId::HEALING);

@@ -21,7 +21,6 @@
 #include "task.h"
 #include "entity_set.h"
 #include "event.h"
-#include "spell_info.h"
 #include "view.h"
 #include "collective_control.h"
 #include "collective.h"

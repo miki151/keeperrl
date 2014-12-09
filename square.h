@@ -217,6 +217,9 @@ class Square : public Renderable {
   bool isDirty() const;
   void setNonDirty();
 
+  Level* getLevel();
+  const Level* getLevel() const;
+
   SERIALIZATION_DECL(Square);
 
   protected:
@@ -224,8 +227,6 @@ class Square : public Renderable {
   virtual bool canEnterSpecial(const Creature*) const;
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(double time) {}
-  Level* getLevel();
-  const Level* getLevel() const;
   Inventory SERIAL(inventory);
   string SERIAL(name);
   const MovementType& getMovementType() const;

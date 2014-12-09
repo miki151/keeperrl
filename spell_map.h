@@ -13,35 +13,27 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _EFFECT_H
-#define _EFFECT_H
+#ifndef _SPELL_MAP_H
+#define _SPELL_MAP_H
 
-#include "util.h"
-#include "enums.h"
-#include "creature_factory.h"
-#include "effect_type.h"
+#include "spell.h"
 
-class Level;
-class Creature;
-class Item;
-class Tribe;
-
-class Effect {
+class SpellMap {
   public:
-  static void applyToCreature(Creature*, EffectType, EffectStrength);
-  static void applyToPosition(Level*, Vec2, EffectType, EffectStrength);
-  static void applyDirected(Creature*, Vec2 direction, DirEffectType, EffectStrength);
-
-  static void summon(Creature*, CreatureId, int num, int ttl);
-  static void summon(Level*, CreatureFactory, Vec2 pos, int num, int ttl);
-  static string getName(EffectType);
-  static string getName(LastingEffect);
+  void add(Spell*);
+  void add(SpellId);
+  double getReadyTime(Spell*) const;
+  void setReadyTime(Spell*, double);
+  vector<Spell*> getAll() const;
+  bool contains(Spell*) const;
+  void clear();
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  void serialize(Archive& ar, const unsigned int version);
+
+  private:
+  SERIAL_CHECKER;
+  EnumMap<SpellId, Optional<double>> SERIAL(elems);
 };
-
-enum class EffectStrength { WEAK, NORMAL, STRONG };
-
 
 #endif

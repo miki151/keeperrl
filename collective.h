@@ -19,7 +19,6 @@
 #include "task.h"
 #include "event.h"
 #include "minion_equipment.h"
-#include "spell_info.h"
 #include "task_map.h"
 #include "sectors.h"
 #include "minion_task.h"
@@ -38,6 +37,7 @@ class Level;
 class Trigger;
 struct ImmigrantInfo;
 struct AttractionInfo;
+class Spell;
 
 RICH_ENUM(SpawnType,
   HUMANOID,
@@ -246,10 +246,10 @@ class Collective : public Task::Callback {
   void acquireTech(Technology*, bool free = false);
   const vector<Technology*>& getTechnologies() const;
   double getTechCost(Technology*);
-  static vector<SpellInfo> getSpellLearning(const Technology*);
-  vector<SpellId> getAllSpells() const;
-  vector<SpellId> getAvailableSpells() const;
-  TechId getNeededTech(SpellId) const;
+  static vector<Spell*> getSpellLearning(const Technology*);
+  vector<Spell*> getAllSpells() const;
+  vector<Spell*> getAvailableSpells() const;
+  TechId getNeededTech(Spell*) const;
   bool isInCombat(const Creature*) const;
   void addKnownTile(Vec2 pos);
 

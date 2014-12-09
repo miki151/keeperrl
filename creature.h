@@ -31,7 +31,6 @@
 #include "vision.h"
 #include "square_type.h"
 #include "creature_action.h"
-#include "spell_info.h"
 #include "renderable.h"
 #include "movement_type.h"
 #include "player_message.h"
@@ -247,11 +246,12 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
 
   void addCreatureVision(CreatureVision*);
   void removeCreatureVision(CreatureVision*);
-
-  void addSpell(SpellId);
-  const vector<SpellInfo>& getSpells() const;
-  CreatureAction castSpell(int index);
-  static SpellInfo getSpell(SpellId);
+  void addSpell(Spell*);
+  vector<Spell*> getSpells() const;
+  CreatureAction castSpell(Spell*);
+  CreatureAction castSpell(Spell*, Vec2);
+  double getSpellDelay(Spell*) const;
+  bool isReady(Spell*) const;
 
   SERIALIZATION_DECL(Creature);
 

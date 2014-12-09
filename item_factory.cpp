@@ -819,7 +819,6 @@ int getEffectPrice(EffectType type) {
     case EffectId::SUMMON_INSECTS: return 60;
     case EffectId::GUARDING_BOULDER:
     case EffectId::SUMMON_SPIRIT:
-    case EffectId::BLAST:
     case EffectId::EMIT_POISON_GAS:  return 100;
     case EffectId::DECEPTION: 
     case EffectId::LEAVE_BODY: 

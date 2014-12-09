@@ -376,11 +376,11 @@ void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, ve
       lOpt.emplace_back(skill.name, View::INACTIVE);
     lOpt.emplace_back("", View::INACTIVE);
   }
-  vector<SpellInfo> spells = c->getSpells();
+  vector<Spell*> spells = c->getSpells();
   if (!spells.empty()) {
     lOpt.emplace_back("Spells:", View::TITLE);
-    for (SpellInfo elem : spells)
-      lOpt.emplace_back(elem.name, View::INACTIVE);
+    for (Spell* elem : spells)
+      lOpt.emplace_back(elem->getName(), View::INACTIVE);
     lOpt.emplace_back("", View::INACTIVE);
   }
   for (string s : c->getAdjectives())
@@ -606,16 +606,15 @@ void PlayerControl::handlePersonalSpells(View* view) {
   vector<View::ListElem> options {
       View::ListElem("The Keeper can learn spells for use in combat and other situations. ", View::TITLE),
       View::ListElem("You can cast them with 's' when you are in control of the Keeper.", View::TITLE)};
-  vector<SpellId> knownSpells = getCollective()->getAvailableSpells();
-  for (auto elem : getCollective()->getAllSpells()) {
-    SpellInfo spell = Creature::getSpell(elem);
+  vector<Spell*> knownSpells = getCollective()->getAvailableSpells();
+  for (auto spell : getCollective()->getAllSpells()) {
     View::ElemMod mod = View::NORMAL;
     string suff;
-    if (!contains(knownSpells, spell.id)) {
+    if (!contains(knownSpells, spell)) {
       mod = View::INACTIVE;
-      suff = requires(getCollective()->getNeededTech(spell.id));
+      suff = requires(getCollective()->getNeededTech(spell));
     }
-    options.emplace_back(spell.name + suff, mod);
+    options.emplace_back(spell->getName() + suff, mod);
   }
   view->presentList("Sorcery", options);
 }

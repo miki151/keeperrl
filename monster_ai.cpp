@@ -31,7 +31,8 @@ class Behaviour {
   virtual double itemValue(const Item*) { return 0; }
   Item* getBestWeapon();
   const Creature* getClosestEnemy();
-  MoveInfo tryToApplyItem(EffectType, double maxTurns);
+  MoveInfo tryEffect(EffectType, double maxTurns);
+  MoveInfo tryEffect(DirEffectType, Vec2);
 
   virtual ~Behaviour() {}
 
@@ -92,10 +93,10 @@ Item* Behaviour::getBestWeapon() {
   return best;
 }
 
-MoveInfo Behaviour::tryToApplyItem(EffectType type, double maxTurns) {
-  for (int i : All(creature->getSpells())) {
-    if (creature->getSpells()[i].type == type)
-      if (auto action = creature->castSpell(i))
+MoveInfo Behaviour::tryEffect(EffectType type, double maxTurns) {
+  for (Spell* spell : creature->getSpells()) {
+    if (spell->hasEffect(type))
+      if (auto action = creature->castSpell(spell))
         return { 1, action };
   }
   auto items = creature->getEquipment().getItems(Item::effectPredicate(type)); 
@@ -103,6 +104,15 @@ MoveInfo Behaviour::tryToApplyItem(EffectType type, double maxTurns) {
     if (item->getApplyTime() <= maxTurns)
       if (auto action = creature->applyItem(item))
         return { 1, action};
+  return NoMove;
+}
+
+MoveInfo Behaviour::tryEffect(DirEffectType type, Vec2 dir) {
+  for (Spell* spell : creature->getSpells()) {
+    if (spell->hasEffect(type))
+      if (auto action = creature->castSpell(spell, dir))
+        return { 1, action };
+  }
   return NoMove;
 }
 
@@ -128,16 +138,16 @@ class Heal : public Behaviour {
     if (!creature->isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
-      if (MoveInfo move = tryToApplyItem(EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT), 1))
+      if (MoveInfo move = tryEffect(EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT), 1))
         return move;
-      if (MoveInfo move = tryToApplyItem(EffectType(EffectId::CURE_POISON), 1))
+      if (MoveInfo move = tryEffect(EffectType(EffectId::CURE_POISON), 1))
         return move;
     }
     if (creature->getHealth() == 1)
       return NoMove;
-    if (MoveInfo move = tryToApplyItem(EffectId::HEAL, 1))
+    if (MoveInfo move = tryEffect(EffectId::HEAL, 1))
       return move.setValue(min(1.0, 1.5 - creature->getHealth()));
-    if (MoveInfo move = tryToApplyItem(EffectId::HEAL, 3))
+    if (MoveInfo move = tryEffect(EffectId::HEAL, 3))
       return move.setValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
     if (creature->getConstSquare()->getApplyType(creature) == SquareApplyType::SLEEP)
       return { 0.4 * min(1.0, 1.5 - creature->getHealth()), creature->applySquare()};
@@ -392,7 +402,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getPanicMove(const Creature* other, double weight) {
-    if (auto teleMove = tryToApplyItem(EffectId::TELEPORT, 1))
+    if (auto teleMove = tryEffect(EffectId::TELEPORT, 1))
       return {weight, teleMove.move};
     if (other->getPosition().dist8(creature->getPosition()) > 3)
       if (auto move = getFireMove(other->getPosition() - creature->getPosition()))
@@ -478,11 +488,21 @@ class Fighter : public Behaviour {
     return NoMove;
   }
 
+  vector<DirEffectType> getOffensiveEffects() {
+    return makeVec<DirEffectType>(
+        DirEffectId::BLAST,
+        DirEffectType(DirEffectId::CREATURE_EFFECT, EffectType(EffectId::LASTING, LastingEffect::STUNNED))
+    );
+  }
+
   MoveInfo getFireMove(Vec2 dir) {
     if (dir.x != 0 && dir.y != 0 && abs(dir.x) != abs(dir.y))
       return NoMove;
     if (checkFriendlyFire(dir))
       return NoMove;
+    for (auto effect : getOffensiveEffects())
+      if (auto action = tryEffect(effect, dir.shorten()))
+        return action;
     if (auto action = creature->fire(dir.shorten()))
       return {1.0, action.append([=] {
           GlobalEvents.addCombatEvent(creature);
@@ -540,7 +560,7 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS),
           EffectType(EffectId::LASTING, LastingEffect::SPEED),
           EffectType(EffectId::SUMMON_SPIRIT)})
-        if (MoveInfo move = tryToApplyItem(effect, 1))
+        if (MoveInfo move = tryEffect(effect, 1))
           return move;
     if (distance > 1) {
       if (distance < 10) {
@@ -806,7 +826,7 @@ class Thief : public Behaviour {
       return NoMove;
     for (const Creature* other : robbed) {
       if (creature->canSee(other)) {
-        if (MoveInfo teleMove = tryToApplyItem(EffectId::TELEPORT, 1))
+        if (MoveInfo teleMove = tryEffect(EffectId::TELEPORT, 1))
           return teleMove;
         if (auto action = creature->moveAway(other->getPosition()))
         return {1.0, action};

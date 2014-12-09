@@ -14,6 +14,7 @@
 #include "options.h"
 #include "trigger.h"
 #include "model.h"
+#include "spell.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -2083,37 +2084,38 @@ static vector<SpellLearningInfo> spellLearning {
     { SpellId::TELEPORT, TechId::SPELLS_ADV},
     { SpellId::CURE_POISON, TechId::SPELLS_ADV},
     { SpellId::INVISIBILITY, TechId::SPELLS_MAS},
+    { SpellId::BLAST, TechId::SPELLS_MAS},
     { SpellId::WORD_OF_POWER, TechId::SPELLS_MAS},
     { SpellId::PORTAL, TechId::SPELLS_MAS},
     { SpellId::METEOR_SHOWER, TechId::SPELLS_MAS},
 };
 
-vector<SpellInfo> Collective::getSpellLearning(const Technology* tech) {
-  vector<SpellInfo> ret;
+vector<Spell*> Collective::getSpellLearning(const Technology* tech) {
+  vector<Spell*> ret;
   for (auto elem : spellLearning)
     if (Technology::get(elem.techId) == tech)
-      ret.push_back(Creature::getSpell(elem.id));
+      ret.push_back(Spell::get(elem.id));
   return ret;
 }
 
-vector<SpellId> Collective::getAvailableSpells() const {
-  vector<SpellId> ret;
+vector<Spell*> Collective::getAvailableSpells() const {
+  vector<Spell*> ret;
   for (auto elem : spellLearning)
     if (hasTech(elem.techId))
-      ret.push_back(elem.id);
+      ret.push_back(Spell::get(elem.id));
   return ret;
 }
 
-vector<SpellId> Collective::getAllSpells() const {
-  vector<SpellId> ret;
+vector<Spell*> Collective::getAllSpells() const {
+  vector<Spell*> ret;
   for (auto elem : spellLearning)
-    ret.push_back(elem.id);
+    ret.push_back(Spell::get(elem.id));
   return ret;
 }
 
-TechId Collective::getNeededTech(SpellId id) const {
+TechId Collective::getNeededTech(Spell* spell) const {
   for (auto elem : spellLearning)
-    if (elem.id == id)
+    if (elem.id == spell->getId())
       return elem.techId;
   FAIL << "Spell not found";
   return TechId(0);
@@ -2146,7 +2148,7 @@ void Collective::acquireTech(Technology* tech, bool free) {
   for (auto elem : spellLearning)
     if (Technology::get(elem.techId) == tech)
       if (Creature* leader = getLeader())
-        leader->addSpell(elem.id);
+        leader->addSpell(Spell::get(elem.id));
 }
 
 const vector<Technology*>& Collective::getTechnologies() const {

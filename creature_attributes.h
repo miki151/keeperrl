@@ -27,6 +27,7 @@
 #include "item_attributes.h"
 #include "minion_task_map.h"
 #include "entity_name.h"
+#include "spell_map.h"
 
 // WTF is this defined
 #undef HUGE
@@ -49,27 +50,6 @@ RICH_ENUM(BodyPart,
   WING,
   LEG,
   BACK
-);
-
-RICH_ENUM(LastingEffect,
-    SLEEP,
-    PANIC,
-    RAGE,
-    SLOWED,
-    SPEED,
-    STR_BONUS,
-    DEX_BONUS,
-    HALLU,
-    BLIND,
-    INVISIBLE,
-    POISON,
-    ENTANGLED,
-    STUNNED,
-    POISON_RESISTANT,
-    FIRE_RESISTANT,
-    FLYING,
-    INSANITY,
-    MAGIC_SHIELD
 );
 
 enum class SpawnType;
@@ -133,7 +113,7 @@ class CreatureAttributes {
   double SERIAL2(damageMultiplier, 1);
   double SERIAL2(attributeGain, 0.5);
   Skillset SERIAL(skills);
-  vector<SpellInfo> SERIAL(spells);
+  SpellMap SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   MinionTaskMap SERIAL(minionTasks);
   string SERIAL2(groupName, "group");

@@ -28,11 +28,39 @@ enum class EffectId {
     CURE_POISON,
     METEOR_SHOWER,
     LASTING,
-    BLAST,
 };
+
+RICH_ENUM(LastingEffect,
+    SLEEP,
+    PANIC,
+    RAGE,
+    SLOWED,
+    SPEED,
+    STR_BONUS,
+    DEX_BONUS,
+    HALLU,
+    BLIND,
+    INVISIBLE,
+    POISON,
+    ENTANGLED,
+    STUNNED,
+    POISON_RESISTANT,
+    FIRE_RESISTANT,
+    FLYING,
+    INSANITY,
+    MAGIC_SHIELD
+);
+
 
 typedef EnumVariant<EffectId, TYPES(LastingEffect),
         ASSIGN(LastingEffect, EffectId::LASTING)> EffectType;
 
+enum class DirEffectId {
+  BLAST,
+  CREATURE_EFFECT,
+};
+
+typedef EnumVariant<DirEffectId, TYPES(EffectType),
+        ASSIGN(EffectType, DirEffectId::CREATURE_EFFECT)> DirEffectType;
 
 #endif

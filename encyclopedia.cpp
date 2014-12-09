@@ -34,7 +34,7 @@ void advance(View* view, const Technology* tech) {
     text += "Requires: " + combine(prerequisites) + "\n";
   if (!allowed.empty())
     text += "Allows research: " + combine(allowed) + "\n";
-  const vector<SpellInfo>& spells = Collective::getSpellLearning(tech);
+  vector<Spell*> spells = Collective::getSpellLearning(tech);
   if (!spells.empty())
     text += "Teaches spells: " + combine(spells) + "\n";
   const vector<PlayerControl::RoomInfo>& rooms = filter(PlayerControl::getRoomInfo(), 

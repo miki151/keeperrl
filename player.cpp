@@ -574,15 +574,19 @@ void Player::fireAction(Vec2 dir) {
 
 void Player::spellAction() {
   vector<View::ListElem> list;
-  auto spells = creature->getSpells();
-  for (int i : All(spells))
-    list.push_back(View::ListElem(spells[i].name + " " + (!creature->castSpell(i) ? "(ready in " +
-          toString(int(spells[i].ready - creature->getTime() + 0.9999)) + " turns)" : ""),
-          creature->castSpell(i) ? View::NORMAL : View::INACTIVE));
+  vector<Spell*> spells = creature->getSpells();
+  for (Spell* spell : spells)
+    list.push_back(View::ListElem(spell->getName() + " " + (!creature->isReady(spell) ? "(ready in " +
+          toString(int(creature->getSpellDelay(spell) + 0.9999)) + " turns)" : ""),
+          creature->isReady(spell) ? View::NORMAL : View::INACTIVE));
   auto index = model->getView()->chooseFromList("Cast a spell:", list);
   if (!index)
     return;
-  tryToPerform(creature->castSpell(*index));
+  Spell* spell = spells[*index];
+  if (!spell->isDirected())
+    tryToPerform(creature->castSpell(spell));
+  else if (auto dir = model->getView()->chooseDirection("Which direction?"))
+    tryToPerform(creature->castSpell(spell, *dir));
 }
 
 const MapMemory& Player::getMemory() const {

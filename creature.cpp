@@ -28,17 +28,6 @@
 #include "square.h"
 
 template <class Archive> 
-void SpellInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(id)
-    & BOOST_SERIALIZATION_NVP(name)
-    & BOOST_SERIALIZATION_NVP(type)
-    & BOOST_SERIALIZATION_NVP(ready)
-    & BOOST_SERIALIZATION_NVP(difficulty);
-}
-
-SERIALIZABLE(SpellInfo);
-
-template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
 }
 
@@ -106,58 +95,60 @@ Creature::~Creature() {
     tribe->removeMember(this);
 }
 
-SpellInfo Creature::getSpell(SpellId id) {
-  switch (id) {
-    case SpellId::HEALING: return {id, "healing", EffectId::HEAL, 0, 30};
-    case SpellId::SUMMON_INSECTS: return {id, "summon insects", EffectId::SUMMON_INSECTS, 0, 30};
-    case SpellId::DECEPTION: return {id, "deception", EffectId::DECEPTION, 0, 60};
-    case SpellId::SPEED_SELF: return {id, "haste self", {EffectId::LASTING, LastingEffect::SPEED}, 0, 60};
-    case SpellId::STR_BONUS: return {id, "strength", {EffectId::LASTING, LastingEffect::STR_BONUS}, 0, 90};
-    case SpellId::DEX_BONUS: return {id, "dexterity", {EffectId::LASTING, LastingEffect::DEX_BONUS}, 0, 90};
-    case SpellId::MAGIC_SHIELD: return {id, "magic shield", {EffectId::LASTING, LastingEffect::MAGIC_SHIELD}, 0, 150};
-    case SpellId::FIRE_SPHERE_PET: return {id, "fire sphere", EffectId::FIRE_SPHERE_PET, 0, 20};
-    case SpellId::TELEPORT: return {id, "escape", EffectId::TELEPORT, 0, 120};
-    case SpellId::INVISIBILITY: return {id, "invisibility", {EffectId::LASTING, LastingEffect::INVISIBLE}, 0, 300};
-    case SpellId::WORD_OF_POWER: return {id, "word of power", EffectId::WORD_OF_POWER, 0, 300};
-    case SpellId::SUMMON_SPIRIT: return {id, "summon spirits", EffectId::SUMMON_SPIRIT, 0, 300};
-    case SpellId::PORTAL: return {id, "portal", EffectId::PORTAL, 0, 200};
-    case SpellId::CURE_POISON: return {id, "cure poisoning", EffectId::CURE_POISON, 0, 300};
-    case SpellId::METEOR_SHOWER: return {id, "meteor shower", EffectId::METEOR_SHOWER, 0, 300};
-  }
-  FAIL << "wpeofk";
-  return getSpell(SpellId::HEALING);
-}
-
 bool Creature::isFireResistant() const {
   return fireCreature || isAffected(LastingEffect::FIRE_RESISTANT);
 }
 
-void Creature::addSpell(SpellId id) {
-  for (SpellInfo& info : spells)
-    if (info.id == id)
-      return;
-  spells.push_back(getSpell(id));
+void Creature::addSpell(Spell* spell) {
+  spells.add(spell);
 }
 
-const vector<SpellInfo>& Creature::getSpells() const {
-  return spells;
+vector<Spell*> Creature::getSpells() const {
+  return spells.getAll();
+}
+
+double Creature::getSpellDelay(Spell* spell) const {
+  CHECK(!isReady(spell));
+  return spells.getReadyTime(spell) - getTime();
+}
+
+bool Creature::isReady(Spell* spell) const {
+  return spells.getReadyTime(spell) < getTime();
 }
 
 static double getWillpowerMult(double sorcerySkill) {
   return 2 * pow(0.25, sorcerySkill); 
 }
 
-CreatureAction Creature::castSpell(int index) {
-  CHECK(index >= 0 && index < spells.size());
-  if (spells[index].ready > getTime())
+CreatureAction Creature::castSpell(Spell* spell) {
+  CHECK(spells.contains(spell));
+  CHECK(!spell->isDirected());
+  if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction([=] () {
     monsterMessage(getName().the() + " casts a spell");
-    playerMessage("You cast " + spells[index].name);
-    Effect::applyToCreature(this, spells[index].type, EffectStrength::NORMAL);
+    playerMessage("You cast " + spell->getName());
+    Effect::applyToCreature(this, spell->getEffectType(), EffectStrength::NORMAL);
     Statistics::add(StatId::SPELL_CAST);
-    spells[index].ready = getTime() + spells[index].difficulty
-        * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY)));
+    spells.setReadyTime(spell, getTime() + spell->getDifficulty()
+        * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
+    spendTime(1);
+  });
+}
+
+CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) {
+  CHECK(spells.contains(spell));
+  CHECK(spell->isDirected());
+  CHECK(dir.length8() == 1);
+  if (!isReady(spell))
+    return CreatureAction("You can't cast this spell yet.");
+  return CreatureAction([=] () {
+    monsterMessage(getName().the() + " casts a spell");
+    playerMessage("You cast " + spell->getName());
+    Effect::applyDirected(this, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
+    Statistics::add(StatId::SPELL_CAST);
+    spells.setReadyTime(spell, getTime() + spell->getDifficulty()
+        * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     spendTime(1);
   });
 }
@@ -1356,7 +1347,7 @@ bool Creature::takeDamage(const Attack& attack) {
         you(MsgType::ARE, "not hurt");
     }
     if (auto effect = attack.getEffect())
-      Effect::applyToCreature(this, *effect, EffectStrength::NORMAL);
+      Effect::applyToCreature(this, *effect, EffectStrength::WEAK);
   } else {
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attackType));
     if (attack.getEffect() && attack.getAttacker()->harmlessApply)

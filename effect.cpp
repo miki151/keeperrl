@@ -38,13 +38,14 @@ vector<double> fireAmount { 0.5, 1, 1};
 vector<int> attrBonusTime { 10, 40, 150};
 vector<int> identifyNum { 1, 1, 400};
 vector<int> poisonTime { 20, 60, 200};
-vector<int> stunTime { 1, 1, 20};
+vector<int> stunTime { 1, 7, 20};
 vector<int> resistantTime { 20, 60, 200};
 vector<int> levitateTime { 20, 60, 200};
 vector<int> magicShieldTime { 5, 20, 60};
 vector<double> gasAmount { 0.3, 0.8, 3};
 vector<double> wordOfPowerDist { 1, 3, 10};
 vector<int> blastRange { 2, 5, 10};
+vector<int> creatureEffectRange { 2, 5, 10};
 
 class IllusionController : public DoNothingController {
   public:
@@ -153,46 +154,47 @@ static void leaveBody(Creature* creature) {
   summonCreatures(creature, 1, makeVec<PCreature>(std::move(spirit)));
 }
 
-static void pushCreature(Creature* c, Vec2 direction, int maxDistance) {
-  Level* l = c->getLevel();
-  int dist = 0;
-  for (int i : Range(1, maxDistance))
-    if (l->canMoveCreature(c, direction * i))
-      dist = i;
-    else
-      break;
-  if (dist > 0) {
-    l->moveCreature(c, direction * dist);
-    c->you(MsgType::ARE, "pushed back");
+static void creatureEffect(Creature* who, EffectType type, EffectStrength str, Vec2 direction, int range) {
+  for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
+    if (Creature* c = who->getSquare(v)->getCreature())
+      Effect::applyToCreature(c, type, str);
+}
+
+static void blast(Creature* who, Square* square, Vec2 direction, int maxDistance) {
+  Level* l = square->getLevel();
+  Vec2 position = square->getPosition();
+  if (Creature* c = square->getCreature())
+    if (!c->isStationary()) {
+      int dist = 0;
+      for (int i : Range(1, maxDistance))
+        if (l->canMoveCreature(c, direction * i))
+          dist = i;
+        else
+          break;
+      if (dist > 0) {
+        l->moveCreature(c, direction * dist);
+        c->you(MsgType::ARE, "thrown back");
+      }
+      c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
+    }
+  for (auto elem : Item::stackItems(square->getItems())) {
+    l->throwItem(
+        square->removeItems(elem.second),
+        Attack(who, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
+          elem.second[0]->getAttackType(), 15, 15, false), maxDistance, position, direction,
+        Vision::get(VisionId::NORMAL));
   }
-  c->addEffect(LastingEffect::STUNNED, 2);
-  c->takeDamage(Attack(c, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
 }
 
 static void blast(Creature* c, Vec2 direction, int range) {
   for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
-    if (Creature* other = c->getSquare(v)->getCreature())
-      pushCreature(other, direction, range);
+    blast(c, c->getSquare(v), direction, range);
 }
 
 static void wordOfPower(Creature* c, int strength) {
-  Level* l = c->getLevel();
   GlobalEvents.addExplosionEvent(c->getLevel(), c->getPosition());
-  for (Vec2 v : Vec2::directions8(true)) {
-    if (Creature* other = c->getSquare(v)->getCreature()) {
-      if (other->isStationary())
-        continue;
-      if (!other->isDead())
-        pushCreature(other, v, wordOfPowerDist[strength]);
-    }
-    for (auto elem : Item::stackItems(c->getSquare(v)->getItems())) {
-      l->throwItem(
-        c->getSquare(v)->removeItems(elem.second),
-        Attack(c, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
-        elem.second[0]->getAttackType(), 15, 15, false), wordOfPowerDist[strength], c->getPosition(), v,
-        Vision::get(VisionId::NORMAL));
-    }
-  }
+  for (Vec2 v : Vec2::directions8(true))
+    blast(c, c->getSquare(v), v, wordOfPowerDist[strength]);
 }
 
 static void emitPoisonGas(Level* level, Vec2 pos, int strength, bool msg) {
@@ -442,7 +444,6 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectId::SILVER_DAMAGE: silverDamage(c); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;
     case EffectId::METEOR_SHOWER: c->getSquare()->addTrigger(Trigger::getMeteorShower(c, 15)); break;
-    default: FAIL << "Can't apply to creature " << int(type.getId());
   }
 }
 
@@ -453,9 +454,12 @@ void Effect::applyToPosition(Level* level, Vec2 pos, EffectType type, EffectStre
   }
 }
 
-void Effect::applyDirected(Creature* c, Vec2 direction, EffectType type, EffectStrength strength) {
+void Effect::applyDirected(Creature* c, Vec2 direction, DirEffectType type, EffectStrength strength) {
   switch (type.getId()) {
-    case EffectId::BLAST: blast(c, direction, blastRange[int(strength)]); break;
+    case DirEffectId::BLAST: blast(c, direction, blastRange[int(strength)]); break;
+    case DirEffectId::CREATURE_EFFECT:
+        creatureEffect(c, type.get<EffectType>(), strength, direction, creatureEffectRange[int(strength)]);
+        break;
     default: FAIL << "Can't apply directed " << int(type.getId());
   }
 }
@@ -485,7 +489,6 @@ string Effect::getName(EffectType type) {
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "cure poisoning";
     case EffectId::METEOR_SHOWER: return "meteor shower";
-    case EffectId::BLAST: return "blast";
     case EffectId::LASTING: return getName(type.get<LastingEffect>());
   }
   return "";
