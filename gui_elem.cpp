@@ -162,13 +162,13 @@ PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, 
         }));
 }
 
-PGuiElem GuiElem::spriteFitVert(Texture& tex, double vMargin) {
+PGuiElem GuiElem::spriteFitVert(Texture& tex, double topMargin, double bottomMargin) {
   return PGuiElem(new DrawCustom(
         [=, &tex] (Renderer& r, Rectangle bounds) {
-          double height = double(bounds.getH()) * (1.0 + 2 * vMargin);
+          double height = double(bounds.getH()) * (1.0 - bottomMargin - topMargin);
           double scale = height / tex.getSize().y;
           int width = scale * tex.getSize().x;
-          r.drawSprite(Vec2(bounds.middle().x - width / 2, bounds.getPY() - vMargin * bounds.getH()),
+          r.drawSprite(Vec2(bounds.middle().x - width / 2, bounds.getPY() + topMargin * bounds.getH()),
               Vec2(width, height), tex);
         }));
 }
@@ -966,7 +966,7 @@ PGuiElem GuiElem::highlight(Color c) {
 }
 
 PGuiElem GuiElem::mainMenuHighlight() {
-  return spriteFitVert(get(MAIN_MENU_HIGHLIGHT), -0.2);
+  return spriteFitVert(get(MAIN_MENU_HIGHLIGHT), 0.35, 0.25);
 }
 
 PGuiElem GuiElem::border2(PGuiElem content) {

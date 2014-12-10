@@ -77,7 +77,7 @@ class GuiElem {
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER};
   static PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
       Vec2 offset = Vec2(0, 0), double alpha = 1);
-  static PGuiElem spriteFitVert(Texture&, double vMargin);
+  static PGuiElem spriteFitVert(Texture&, double topMargin, double bottomMargin);
   static PGuiElem repeatedPattern(Texture& tex);
   static PGuiElem background(Color);
   static PGuiElem highlight(Color);
