@@ -2184,11 +2184,10 @@ void Collective::onEquipEvent(const Creature* c, const Item* it) {
     minionEquipment.own(c, it);
 }
 
-void Collective::onPickupEvent(const Creature* c, const vector<Item*>& items) {
-  if (contains(creatures, c) && !hasTrait(c, MinionTrait::WORKER))
-    for (Item* it : items)
-      if (minionEquipment.isItemUseful(it))
-        minionEquipment.own(c, it);
+void Collective::ownItems(const Creature* who, const vector<Item*> items) {
+  for (const Item* it : items)
+    if (minionEquipment.isItemUseful(it))
+      minionEquipment.own(who, it);
 }
 
 void Collective::onTortureEvent(Creature* who, const Creature* torturer) {

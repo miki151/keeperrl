@@ -85,7 +85,7 @@ class VillageControl : public CollectiveControl {
   const Location* SERIAL(location);
   vector<Villain> SERIAL(villains);
 
-  map<const Collective*, int> SERIAL(victims);
+  map<const Collective*, double> SERIAL(victims);
 };
 
 #endif

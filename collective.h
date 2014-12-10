@@ -288,6 +288,7 @@ class Collective : public Task::Callback {
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
   void freeTeamMembers(TeamId);
+  void ownItems(const Creature* who, const vector<Item*>);
 
   const string& getName() const;
 
@@ -337,7 +338,6 @@ class Collective : public Task::Callback {
   REGISTER_HANDLER(TrapTriggerEvent, const Level*, Vec2 pos);
   REGISTER_HANDLER(TrapDisarmEvent, const Level*, const Creature*, Vec2 pos);
   REGISTER_HANDLER(EquipEvent, const Creature*, const Item*);
-  REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
   REGISTER_HANDLER(TortureEvent, Creature* who, const Creature* torturer);
 
   MinionEquipment SERIAL(minionEquipment);

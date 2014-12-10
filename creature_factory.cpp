@@ -1188,7 +1188,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.weight = 100;
           c.innocent = true;
-          c.spells.add(SpellId::BLAST);
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Heeelp!\"";
           c.name = "peasant";);
@@ -1926,7 +1925,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::EARTH_ELEMENTAL;
           c.attr[AttrType::SPEED] = 80;
           c.uncorporal = false;
-          c.attr[AttrType::STRENGTH] = 30;
+          c.attr[AttrType::STRENGTH] = 25;
           c.name = "earth elemental";);
     case CreatureId::WATER_ELEMENTAL:
       return INHERIT(EARTH_ELEMENTAL,

@@ -1506,6 +1506,11 @@ bool PlayerControl::isEnemy(const Creature* c) const {
   return getKeeper() && getKeeper()->isEnemy(c);
 }
 
+void PlayerControl::onPickupEvent(const Creature* c, const vector<Item*>& items) {
+  if (c == getControlled())
+    getCollective()->ownItems(c, items);
+}
+
 void PlayerControl::onTechBookEvent(Technology* tech) {
   if (retired) {
     model->getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()

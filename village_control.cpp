@@ -39,8 +39,12 @@ VillageControl::VillageControl(Collective* col, const Location* l, vector<Villai
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim->getTribe() == getCollective()->getTribe())
     for (auto& villain : villains)
-      if (contains(villain.collective->getCreatures(), killer))
-        ++victims[villain.collective];
+      if (contains(villain.collective->getCreatures(), killer)) {
+        if (contains(getCollective()->getCreatures(), victim))
+          victims[villain.collective] += 1;
+        else
+          victims[villain.collective] += 0.15; // small increase for same tribe but different village
+      }
 }
 
 void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers) {
@@ -52,7 +56,7 @@ void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers)
 }
 
 void VillageControl::tick(double time) {
-  vector<Creature*> fighters = getCollective()->getCreatures(MinionTrait::FIGHTER);
+  vector<Creature*> fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::LEADER});
   vector<Creature*> allMembers = getCollective()->getCreatures();
   Debug() << getCollective()->getName() << " fighters: " << int(fighters.size())
     << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");

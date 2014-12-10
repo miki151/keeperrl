@@ -318,8 +318,7 @@ class Tree : public Square {
     s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
     numCut += numWood;
     if (numCut > 1000 && Random.roll(max(30, (3000 - numCut) / 20)))
-      Effect::summon(getLevel(), factory, getPosition(), 1,
-          Random.get(30, 60));
+      Effect::summon(getLevel(), factory, getPosition(), 1, 100000);
   }
 
   virtual void burnOut() override {
