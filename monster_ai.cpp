@@ -131,10 +131,11 @@ class Heal : public Behaviour {
   virtual MoveInfo getMove() {
     int healingRadius = 2;
     for (Vec2 v : Rectangle(-healingRadius, -healingRadius, healingRadius, healingRadius))
-      if (const Creature* other = creature->getConstSquare(v)->getCreature())
-        if (creature->isFriend(other))
-          if (auto action = creature->heal(v))
-            return {0.5, action};
+      if (creature->getLevel()->inBounds(creature->getPosition() + v))
+        if (const Creature* other = creature->getConstSquare(v)->getCreature())
+          if (creature->isFriend(other))
+            if (auto action = creature->heal(v))
+              return {0.5, action};
     if (!creature->isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
