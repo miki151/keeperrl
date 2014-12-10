@@ -2065,6 +2065,15 @@ void Creature::exerciseAttr(AttrType t, double value) {
   attrIncrease[t] += ((exerciseMax - 1) * attr[t] - attrIncrease[t]) * increaseMult * value;
 }
 
+void Creature::increaseExpLevel(int increase) {
+  int l = getExpLevel();
+  for (int i : Range(100000)) {
+    exerciseAttr(chooseRandom<AttrType>(), 1);
+    if (getExpLevel() >= l + increase)
+      break;
+  }
+}
+
 int Creature::getDifficultyPoints() const {
   difficultyPoints = max<double>(difficultyPoints,
       getModifier(ModifierType::DEFENSE) + getModifier(ModifierType::ACCURACY) + getModifier(ModifierType::DAMAGE)

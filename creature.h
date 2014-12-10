@@ -157,6 +157,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   int getDifficultyPoints() const;
   int getExpLevel() const;
   void exerciseAttr(AttrType, double value = 1);
+  void increaseExpLevel(int increase);
 
   string getDescription() const;
   bool isSpecialMonster() const;

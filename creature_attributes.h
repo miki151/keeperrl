@@ -71,7 +71,6 @@ class CreatureAttributes {
   Optional<ViewId> SERIAL(undeadViewId);
   MustInitialize<EntityName> SERIAL(name);
   Optional<string> SERIAL(undeadName);
-  Optional<string> SERIAL(pluralName);
   EnumMap<AttrType, int> SERIAL(attr);
   MustInitialize<CreatureSize> SERIAL(size);
   MustInitialize<double> SERIAL(weight);

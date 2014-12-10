@@ -890,6 +890,8 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     teams.activate(teams.createHidden(extractRefs(creatures)));
   for (int i : All(creatures)) {
     Creature* c = creatures[i].get();
+    if (i == 0)
+      c->increaseExpLevel(2);
     addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
     if (bedType) {
       taskMap.addPriorityTask(Task::createBed(this, bedPos[i], dormType, *bedType), c);

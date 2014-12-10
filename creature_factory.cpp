@@ -1025,8 +1025,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::ARM] = 2;
           c.bodyParts[BodyPart::WING] = 2;
           c.courage = 0.0;
-          c.name = "succubus";
-          c.pluralName = "succubi";
+          c.name = EntityName("succubus", "succubi");
           );
     case CreatureId::DOPPLEGANGER:
       return INHERIT(GHOST,
@@ -1077,8 +1076,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.gender = Gender::female;
           c.chatReactionFriendly = "curses all humans";
           c.chatReactionHostile = "\"Die!\"";
-          c.pluralName = "witches";
-          c.name = "witch";);
+          c.name = EntityName("witch", "witches"););
     case CreatureId::CYCLOPS: 
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
@@ -1090,8 +1088,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.weight = 150;
           c.firstName = NameGenerator::get(NameGeneratorId::DEMON)->getNext();
-          c.name = "cyclops";
-          c.pluralName = "cyclopes";);
+          c.name = EntityName("cyclops", "cyclopes"););
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
@@ -1201,8 +1198,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 40;
           c.chatReactionFriendly = "\"plaaaaay!\"";
           c.chatReactionHostile = "\"Heeelp!\"";
-          c.name = "child";
-          c.pluralName = "children";);
+          c.name = EntityName("child", "children"););
     case CreatureId::CLAY_GOLEM: 
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
@@ -1246,23 +1242,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attackEffect = EffectId::FIRE;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.name = "lava golem";);
-    case CreatureId::ACID_MOUND: 
-      return CATTR(
-          c.viewId = ViewId::ACID_MOUND;
-          c.attr[AttrType::SPEED] = 80;
-          c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 15;
-          c.attr[AttrType::DEXTERITY] = 5;
-          c.barehandedDamage = 1;
-          c.humanoid = false;
-          c.passiveAttack = EffectId::ACID;
-          c.bodyParts.clear();
-          c.brain = false;
-          c.noSleep = true;
-          c.stationary = true;
-          c.weight = 120;
-          c.name = "acid jelly";
-          c.pluralName = "acid jellies";);
     case CreatureId::ZOMBIE: 
       return CATTR(
           c.viewId = ViewId::ZOMBIE;
@@ -1358,8 +1337,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spawnType = SpawnType::UNDEAD;
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
-          c.name = "mummy";
-          c.pluralName = "mummies";);
+          c.name = EntityName("mummy", "mummies"););
     case CreatureId::MUMMY_LORD: 
       return INHERIT(MUMMY,
           c.viewId = ViewId::MUMMY_LORD;
@@ -1421,8 +1399,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::WING] = 2;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.skills.setValue(SkillId::ARCHERY, 1);
-          c.name = "harpy";
-          c.pluralName = "harpies";);
+          c.name = EntityName("harpy", "harpies"););
     case CreatureId::GNOME: 
       return CATTR(
           c.viewId = ViewId::GNOME;
@@ -1543,8 +1520,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 90;
           c.chatReactionFriendly = "curses all orcs";
           c.chatReactionHostile = "\"Die!\"";
-          c.pluralName = "dwarves";
-          c.name = "dwarf";);
+          c.name = EntityName("dwarf", "dwarves"););
     case CreatureId::DWARF_BARON: 
       return INHERIT(DWARF,
           c.viewId = ViewId::DWARF_BARON;
@@ -1570,8 +1546,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 50;
           c.chatReactionFriendly = "curses all humans";
           c.chatReactionHostile = "\"Die!\"";
-          c.name = "lizardman";
-          c.pluralName = "lizardmen";);
+          c.name = EntityName("lizardman", "lizardmen"););
     case CreatureId::LIZARDLORD: 
       return INHERIT(LIZARDMAN,
           c.viewId = ViewId::LIZARDLORD;
@@ -1596,8 +1571,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionHostile = "\"Die!\"";
           c.spells.add(SpellId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
-          c.name = "elf";
-          c.pluralName = "elves";);
+          c.name = EntityName("elf", "elves"););
     case CreatureId::ELF_ARCHER: 
       return INHERIT(ELF,
           c.viewId = ViewId::ELF_ARCHER;
@@ -1615,8 +1589,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 0;
           c.weight = 25;
           c.spells.clear();
-          c.name = "elf child";
-          c.pluralName = "elf children";);
+          c.name = EntityName("elf child", "elf children"););
     case CreatureId::ELF_LORD: 
       return INHERIT(ELF_ARCHER,
           c.viewId = ViewId::ELF_LORD;
@@ -1670,8 +1643,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 40;
           c.animal = true;
           c.dontChase = true;
-          c.name = "sheep";
-          c.pluralName = "sheep";);
+          c.name = EntityName("sheep", "sheep"););
     case CreatureId::PIG: 
       return CATTR(
           c.viewId = ViewId::PIG;
@@ -1713,8 +1685,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 400;
           c.animal = true;
           c.dontChase = true;
-          c.name = "deer";
-          c.pluralName = "deer";);
+          c.name = EntityName("deer", "deer"););
     case CreatureId::BOAR: 
       return CATTR(
           c.viewId = ViewId::BOAR;
@@ -1741,8 +1712,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 10;
           c.animal = true;
           c.dontChase = true;
-          c.name = "fox";
-          c.pluralName = "foxes";);
+          c.name = EntityName("fox", "foxes"););
     case CreatureId::CAVE_BEAR: 
       return CATTR(
           c.viewId = ViewId::BEAR;
@@ -1807,8 +1777,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.courage = 100;
           c.dontChase = true;
           c.animal = true;
-          c.name = "fly";
-          c.pluralName = "flies";);
+          c.name = EntityName("fly", "flies"););
     case CreatureId::SNAKE: 
       return CATTR(
           c.viewId = ViewId::SNAKE;
@@ -1867,8 +1836,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spawnType = SpawnType::BEAST;
           c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
-          c.pluralName = "wolves";
-          c.name = "wolf";);    
+          c.name = EntityName("wolf", "wolves"););    
     case CreatureId::WEREWOLF:
       return INHERIT(WOLF,
           c.viewId = ViewId::WEREWOLF;
@@ -1879,8 +1847,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
           c.minionTasks.setValue(MinionTask::TRAIN, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
-          c.pluralName = "werewolves";
-          c.name = "werewolf";);
+          c.name = EntityName("werewolf", "werewolves"););    
     case CreatureId::DOG: 
       return INHERIT(WOLF,
           c.viewId = ViewId::DOG;
@@ -1986,8 +1953,6 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
       return ControllerFactory([=](Creature* c) {
           return new KamikazeController(c, normalFactory);
           });
-    case CreatureId::ACID_MOUND:
-      return Monster::getFactory(MonsterAIFactory::idle());
     case CreatureId::GREEN_DRAGON:
       return ControllerFactory([=](Creature* c) {
           return new GreenDragonController(c, normalFactory);

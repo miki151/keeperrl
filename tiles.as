@@ -190,7 +190,6 @@ void genTiles() {
   addTile(VAMPIRE_LORD, sprite("vampirelord"));
   addTile(MUMMY, sprite(7, 16));
   addTile(MUMMY_LORD, sprite(8, 16));
-  addTile(ACID_MOUND, sprite(1, 12));
   addTile(JACKAL, sprite(12, 12));
   addTile(DEER, sprite("deer"));
   addTile(HORSE, sprite("horse"));
@@ -432,7 +431,6 @@ void genSymbols() {
   addSymbol(VAMPIRE_LORD, symbol("V", PURPLE));
   addSymbol(MUMMY, symbol("Z", YELLOW));
   addSymbol(MUMMY_LORD, symbol("Z", ORANGE));
-  addSymbol(ACID_MOUND, symbol("j", GREEN));
   addSymbol(JACKAL, symbol("d", LIGHT_BROWN));
   addSymbol(DEER, symbol("R", DARK_BROWN));
   addSymbol(HORSE, symbol("H", LIGHT_BROWN));

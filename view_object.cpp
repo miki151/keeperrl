@@ -202,7 +202,6 @@ static vector<ViewId> creatureIds {
   ViewId::RAT,
   ViewId::SPIDER,
   ViewId::FLY,
-  ViewId::ACID_MOUND,
   ViewId::SCORPION,
   ViewId::SNAKE,
   ViewId::VULTURE,
