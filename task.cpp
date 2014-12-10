@@ -261,9 +261,9 @@ PTask Task::pickItem(Callback* c, Vec2 position, vector<Item*> items) {
   return PTask(new PickItem(c, position, items));
 }
 
-class EquipItem : public PickItem {
+class PickAndEquipItem : public PickItem {
   public:
-  EquipItem(Callback* c, Vec2 position, vector<Item*> _items) : PickItem(c, position, _items) {
+  PickAndEquipItem(Callback* c, Vec2 position, vector<Item*> _items) : PickItem(c, position, _items) {
   }
 
   virtual void onPickedUp() override {
@@ -288,11 +288,41 @@ class EquipItem : public PickItem {
     ar & SUBCLASS(PickItem);
   }
   
-  SERIALIZATION_CONSTRUCTOR(EquipItem);
+  SERIALIZATION_CONSTRUCTOR(PickAndEquipItem);
 };
 
-PTask Task::equipItem(Callback* c, Vec2 position, Item* items) {
-  return PTask(new EquipItem(c, position, {items}));
+PTask Task::pickAndEquipItem(Callback* c, Vec2 position, Item* items) {
+  return PTask(new PickAndEquipItem(c, position, {items}));
+}
+
+namespace {
+class EquipItem : public NonTransferable {
+  public:
+  EquipItem(Item* _item) : item(_item) {
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    CHECK(contains(c->getEquipment().getItems(), item) && c->getEquipment().canEquip(item));
+    if (auto action = c->equip(item))
+      return action.append([=] {setDone();});
+    else
+      return NoMove;
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(item);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(EquipItem);
+
+  private:
+  Item* SERIAL(item);
+};
+}
+
+PTask Task::equipItem(Item* item) {
+  return PTask(new EquipItem(item));
 }
 
 static Vec2 chooseRandomClose(Vec2 start, const vector<Vec2>& squares) {
@@ -1018,6 +1048,7 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Construction);
   REGISTER_TYPE(ar, BuildTorch);
   REGISTER_TYPE(ar, PickItem);
+  REGISTER_TYPE(ar, PickAndEquipItem);
   REGISTER_TYPE(ar, EquipItem);
   REGISTER_TYPE(ar, BringItem);
   REGISTER_TYPE(ar, ApplyItem);

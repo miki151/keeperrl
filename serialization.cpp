@@ -49,6 +49,7 @@ void Serialization::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, RangedWeapon);
   REGISTER_TYPE(ar, PlayerControl);
   REGISTER_TYPE(ar, VillageControl);
+  REGISTER_TYPE(ar, DoNothingController);
   Quest::registerTypes(ar);
   Tribe::registerTypes(ar);
   Trigger::registerTypes(ar);

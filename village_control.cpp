@@ -74,7 +74,7 @@ void VillageControl::tick(double time) {
     double prob = villain.getAttackProbability(this);
     if (prob > 0 && Random.roll(1 / prob)) {
       launchAttack(villain, getPrefix(randomPermutation(fighters),
-            Random.get(villain.minTeamSize, allMembers.size() - villain.minPopulation + 1)));
+            Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation + 1))));
       break;
     }
   }

@@ -55,7 +55,8 @@ class Task : public UniqueEntity<Task> {
   static PTask bringItem(Callback*, Vec2 position, vector<Item*>, vector<Vec2> target);
   static PTask applyItem(Callback*, Vec2 position, Item* item, Vec2 target);
   static PTask applySquare(Callback*, vector<Vec2> squares);
-  static PTask equipItem(Callback*, Vec2 position, Item* item);
+  static PTask pickAndEquipItem(Callback*, Vec2 position, Item* item);
+  static PTask equipItem(Item* item);
   static PTask pickItem(Callback*, Vec2 position, vector<Item*> items);
   static PTask kill(Callback*, Creature*);
   static PTask torture(Callback*, Creature*);

@@ -537,11 +537,14 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
 
 PTask Collective::getEquipmentTask(Creature* c) {
   autoEquipment(c, Random.roll(10));
+  for (Item* it : c->getEquipment().getItems())
+    if (!c->getEquipment().isEquiped(it) && c->getEquipment().canEquip(it))
+      return Task::equipItem(it);
   for (Vec2 v : getAllSquares(equipmentStorage)) {
     vector<Item*> it = getLevel()->getSquare(v)->getItems([this, c] (const Item* it) {
         return minionEquipment.getOwner(it) == c && it->canEquip(); });
     if (!it.empty())
-      return Task::equipItem(this, v, it[0]);
+      return Task::pickAndEquipItem(this, v, it[0]);
     it = getLevel()->getSquare(v)->getItems([this, c] (const Item* it) {
       return minionEquipment.getOwner(it) == c; });
     if (!it.empty())
@@ -2036,7 +2039,7 @@ void Collective::onAppliedSquare(Vec2 pos) {
   Creature* c = NOTNULL(getLevel()->getSquare(pos)->getCreature());
   MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
   if (getTaskInfo().at(currentTask).cost > 0) {
-    if (nextPayoutTime == -1)
+    if (nextPayoutTime == -1 && minionPayment.count(c) && minionPayment.at(c).salary() > 0)
       nextPayoutTime = getTime() + config.getPayoutTime();
     minionPayment[c].workAmount() += getTaskInfo().at(currentTask).cost;
   }
