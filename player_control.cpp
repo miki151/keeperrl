@@ -1647,7 +1647,9 @@ void PlayerControl::onDiscoveredLocation(const Location* loc) {
 }
 
 void PlayerControl::updateSquareMemory(Vec2 pos) {
-  getMemory(getLevel()).addObject(pos, getLevel()->getSquare(pos)->getViewObject());
+  ViewIndex index;
+  getLevel()->getSquare(pos)->getViewIndex(index, getCollective()->getTribe());
+  getMemory(getLevel()).update(pos, index);
 }
 
 void PlayerControl::onConstructed(Vec2 pos, SquareType type) {

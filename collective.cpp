@@ -1131,6 +1131,8 @@ void Collective::tick(double time) {
         for (Vec2 pos : getSquares(type))
           fetchItems(pos, elem);
     }
+  if (config.getManageEquipment())
+    minionEquipment.updateOwners(getAllItems([](const Item*) { return true;}, true));
 }
 
 const vector<Creature*>& Collective::getCreatures(MinionTrait trait) const {

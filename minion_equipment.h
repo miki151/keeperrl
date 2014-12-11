@@ -30,6 +30,7 @@ class MinionEquipment {
   const Creature* getOwner(const Item*) const;
   void own(const Creature*, const Item*);
   void discard(const Item*);
+  void updateOwners(const vector<Item*>);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -45,7 +46,7 @@ class MinionEquipment {
   int getEquipmentLimit(EquipmentType type) const;
   bool isItemAppropriate(const Creature*, const Item*) const;
 
-  map<UniqueEntity<Creature>::Id, const Creature*> SERIAL(owners);
+  map<UniqueEntity<Item>::Id, const Creature*> SERIAL(owners);
 };
 
 #endif

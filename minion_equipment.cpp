@@ -82,12 +82,19 @@ bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, boo
 }
 
 const Creature* MinionEquipment::getOwner(const Item* it) const {
-  if (owners.count(it->getUniqueId())) {
-    const Creature* c = owners.at(it->getUniqueId());
-    if (!c->isDead() && needs(c, it, true, true))
-      return c;
-  }
-  return nullptr;
+  if (owners.count(it->getUniqueId()))
+    return owners.at(it->getUniqueId());
+  else
+    return nullptr;
+}
+
+void MinionEquipment::updateOwners(const vector<Item*> items) {
+  for (const Item* item : items)
+    if (owners.count(item->getUniqueId())) {
+      const Creature* c = owners.at(item->getUniqueId());
+      if (c->isDead() || !needs(c, item, true, true))
+        discard(item);
+    }
 }
 
 void MinionEquipment::discard(const Item* it) {
