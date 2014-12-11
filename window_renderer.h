@@ -49,10 +49,12 @@ class WindowRenderer : public Renderer {
   Event getRandomEvent();
 
   private:
+  bool pollEventWorkaroundMouseReleaseBug(Event&);
   RenderWindow* display = nullptr;
   sf::View* sfView;
   bool monkey = false;
   deque<Event> eventQueue;
+  bool genReleaseEvent = false;
 };
 
 #endif

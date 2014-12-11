@@ -408,7 +408,7 @@ void MapGui::setCenter(Vec2 v) {
 
 void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
   int height = 30;
-  int width = renderer.getTextLength(text) + 55;
+  int width = renderer.getTextLength(text) + 110;
   Vec2 pos(getBounds().getKX() - width, getBounds().getKY() - height);
   renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height,
       GuiElem::translucentBgColor);

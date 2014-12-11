@@ -56,23 +56,23 @@ Event WindowRenderer::getRandomEvent() {
   return ret;
 }
 
-bool WindowRenderer::pollEvent(Event& event, Event::EventType type) {
-  for (int i : All(eventQueue))
-    if (eventQueue[i].type == type) {
-      event = eventQueue[i];
-      eventQueue.erase(eventQueue.begin() + i);
-      return true;
-    }
-  Event ev;
-  while (display->pollEvent(ev)) {
-    if (ev.type != type)
-      eventQueue.push_back(ev);
-    else {
-      event = ev;
-      return true;
-    }
+bool WindowRenderer::pollEventWorkaroundMouseReleaseBug(Event& ev) {
+  if (genReleaseEvent && !Mouse::isButtonPressed(Mouse::Right) && !Mouse::isButtonPressed(Mouse::Left)) {
+    ev.type = Event::MouseButtonReleased;
+    ev.mouseButton = {Mouse::Left, Mouse::getPosition().x, Mouse::getPosition().y};
+    genReleaseEvent = false;
+    return true;
   }
-  return false;
+  bool was = display->pollEvent(ev);
+  if (!was)
+    return false;
+  if (ev.type == Event::MouseButtonPressed) {
+    genReleaseEvent = true;
+    return true;
+  } else if (ev.type == Event::MouseButtonReleased)
+    return false;
+  else
+    return true;
 }
 
 bool WindowRenderer::pollEvent(Event& ev) {
@@ -86,7 +86,7 @@ bool WindowRenderer::pollEvent(Event& ev) {
       eventQueue.pop_front();
       return true;
   } else
-    return display->pollEvent(ev);
+    return pollEventWorkaroundMouseReleaseBug(ev);
 }
 
 void WindowRenderer::flushEvents(Event::EventType type) {
@@ -95,11 +95,6 @@ void WindowRenderer::flushEvents(Event::EventType type) {
     if (ev.type != type)
       eventQueue.push_back(ev);
   }
-}
-
-void WindowRenderer::flushAllEvents() {
-  Event ev;
-  while (display->pollEvent(ev));
 }
 
 void WindowRenderer::waitEvent(Event& ev) {

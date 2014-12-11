@@ -271,10 +271,12 @@ void PlayerControl::render(View* view) {
   if (showWelcomeMsg && Options::getValue(OptionId::HINTS)) {
     view->updateView(this);
     showWelcomeMsg = false;
-    view->presentText("", "So, warlock...\n \nYou were dabbling in the Dark Arts, a tad, I see.\n \n " "Welcome to " + NameGenerator::get(NameGeneratorId::WORLD)->getNext() + ", where you'll have to do "
+    view->presentText("", "So warlock,\n \nYou were dabbling in the Dark Arts, a tad, I see.\n \n "
+        "Welcome to the valley of" + NameGenerator::get(NameGeneratorId::WORLD)->getNext() 
+        + ", where you'll have to do "
         "what you can to KEEP yourself together. Build rooms, storage units and workshops to endorse your "
-        "minions. The only way to go forward in this world is to destroy the ones  who oppose you.\n \n"
-"Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the settings (press F2).");
+        "minions. The only way to go forward in this world is to destroy the ones who oppose you.\n \n"
+"Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron, stone and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the settings (press F2).");
   }
 }
 

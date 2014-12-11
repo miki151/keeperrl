@@ -637,11 +637,11 @@ void Player::makeMove() {
         model->getView()->updateView(this),
         "level render time");
   }
-  if (Options::getValue(OptionId::HINTS) && displayTravelInfo && creature->getConstSquare()->getName() == "road") {
+  if (displayTravelInfo && creature->getConstSquare()->getName() == "road" && Options::getValue(OptionId::HINTS)) {
     model->getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
   }
-  if (Options::getValue(OptionId::HINTS) && displayGreeting) {
+  if (displayGreeting && Options::getValue(OptionId::HINTS)) {
     CHECK(creature->getFirstName());
     model->getView()->presentText("", "Dear " + *creature->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
 /*    model->getView()->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
