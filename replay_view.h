@@ -16,6 +16,8 @@
 #ifndef _REPLAY_VIEW
 #define _REPLAY_VIEW
 
+#include "logging_view.h"
+
 template <class T>
 class ReplayView : public T {
   public:
@@ -34,11 +36,16 @@ class ReplayView : public T {
       return fabs(a - b) < 0.001;
     }
 
+    void checkMethod(LoggingToken token) {
+      LoggingToken t;
+      input >> t;
+      CHECKEQ(int(t), int(token));
+    }
+
     virtual int getTimeMilli() override {
-      string method;
+      checkMethod(LoggingToken::GET_TIME);
       int time;
-      input >> method >> time;
-      CHECKEQ(method, "getTime");
+      input >> time;
       return time;
     }
 
@@ -48,55 +55,46 @@ class ReplayView : public T {
 
     virtual bool isClockStopped() override {
       T::isClockStopped();
-      string method;
+      checkMethod(LoggingToken::IS_CLOCK_STOPPED);
       bool ret;
-      input >> method >> ret;
-      CHECKEQ(method, "isClockStopped");
+      input >> ret;
       return ret;
     }
 
     virtual UserInput getAction() override {
       T::getAction();
- //     usleep(300000);
-      string method;
+      checkMethod(LoggingToken::GET_ACTION);
       UserInput action;
-      input >> method >> action;
-      if (method == "exit")
-        exit(0);
-      CHECKEQ(method, "getAction");
+      input >> action;
       return action;
     }
 
     virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
         View::MenuType, int* scrollPos, Optional<UserInputId> a) override {
-      string method;
+      checkMethod(LoggingToken::CHOOSE_FROM_LIST);
       Optional<int> action;
-      input >> method >> action;
-      CHECKEQ(method, "chooseFromList");
+      input >> action;
       return action;
     }
 
     virtual Optional<Vec2> chooseDirection(const string& message) override {
-      string method;
+      checkMethod(LoggingToken::CHOOSE_DIRECTION);
       Optional<Vec2> action;
-      input >> method >> action;
-      CHECKEQ(method, "chooseDirection");
+      input >> action;
       return action;
     }
 
     virtual bool yesOrNoPrompt(const string& message) override {
-      string method;
+      checkMethod(LoggingToken::YES_OR_NO_PROMPT);
       bool action;
-      input >> method >> action;
-      CHECKEQ(method, "yesOrNoPrompt");
+      input >> action;
       return action;
     }
 
     virtual Optional<int> getNumber(const string& title, int min, int max, int increments) override {
-      string method;
+      checkMethod(LoggingToken::GET_NUMBER);
       Optional<int> action;
-      input >> method >> action;
-      CHECKEQ(method, "getNumber");
+      input >> action;
       return action;
     }
   private:

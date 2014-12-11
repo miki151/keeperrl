@@ -16,6 +16,15 @@
 #ifndef _LOGGING_VIEW
 #define _LOGGING_VIEW
 
+enum class LoggingToken {
+  GET_TIME,
+  IS_CLOCK_STOPPED,
+  GET_ACTION,
+  CHOOSE_FROM_LIST,
+  CHOOSE_DIRECTION,
+  YES_OR_NO_PROMPT,
+  GET_NUMBER,
+};
 
 template <class T>
 class LoggingView : public T {
@@ -30,44 +39,51 @@ class LoggingView : public T {
 
     virtual int getTimeMilli() override {
       int res = T::getTimeMilli();
-      output << "getTime" << res;
+      auto token = LoggingToken::GET_TIME;
+      output << token << res;
       return res;
     }
 
     virtual bool isClockStopped() override {
       bool res = T::isClockStopped();
-      output << "isClockStopped" << res;
+      auto token = LoggingToken::IS_CLOCK_STOPPED;
+      output << token << res;
       return res;
     }
     
     virtual UserInput getAction() override {
       UserInput res = T::getAction();
-      output << "getAction" << res;
+      auto token = LoggingToken::GET_ACTION;
+      output << token << res;
       return res;
     }
 
     virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
         View::MenuType type, int* scrollPos, Optional<UserInputId> action) override {
       auto res = T::chooseFromList(title, options, index, type, scrollPos, action);
-      output << "chooseFromList" << res;
+      auto token = LoggingToken::CHOOSE_FROM_LIST;
+      output << token << res;
       return res;
     }
 
     virtual Optional<Vec2> chooseDirection(const string& message) override {
       auto res = T::chooseDirection(message);
-      output << "chooseDirection" << res;
+      auto token = LoggingToken::CHOOSE_DIRECTION;
+      output << token << res;
       return res;
     }
 
     virtual bool yesOrNoPrompt(const string& message) override {
       auto res = T::yesOrNoPrompt(message);
-      output << "yesOrNoPrompt" << res;
+      auto token = LoggingToken::YES_OR_NO_PROMPT;
+      output << token << res;
       return res;
     }
 
     virtual Optional<int> getNumber(const string& title, int min, int max, int increments) override {
       auto res = T::getNumber(title, min, max, increments);
-      output << "getNumber" << res;
+      auto token = LoggingToken::GET_NUMBER;
+      output << token << res;
       return res;
     }
   private:
