@@ -116,7 +116,7 @@ class Portal : public Trigger {
       startTime = time;
     if (time - startTime >= 30) {
       level->globalMessage(position, "The portal disappears.");
-      level->getSquare(position)->removeTrigger(this);
+      level->getSafeSquare(position)->removeTrigger(this);
     }
   }
 
@@ -245,7 +245,7 @@ class MeteorShower : public Trigger {
 
   virtual void tick(double time) override {
     if (time >= endTime || creature->isDead()) {
-      level->getSquare(position)->removeTrigger(this);
+      level->getSafeSquare(position)->removeTrigger(this);
       return;
     } else
       for (int i : Range(10))
@@ -261,8 +261,10 @@ class MeteorShower : public Trigger {
                      Random.get(-areaWidth / 2, areaWidth / 2 + 1));
     targetPoint += position;
     Vec2 direction(Random.get(-1, 2), Random.get(-1, 2));
+    if (!level->inBounds(targetPoint) || direction.length8() == 0)
+      return false;
     for (int i : Range(range + 1))
-      if (!level->getSquare(targetPoint + direction * i)->canEnter(
+      if (!level->getSafeSquare(targetPoint + direction * i)->canEnter(
             MovementType({MovementTrait::WALK, MovementTrait::FLY})))
         return false;
     level->throwItem(ItemFactory::fromId(ItemId::ROCK),

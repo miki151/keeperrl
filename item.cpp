@@ -160,7 +160,7 @@ double Item::getFireSize() const {
 void Item::tick(double time, Level* level, Vec2 position) {
   if (fire.isBurning()) {
     Debug() << getName() << " burning " << fire.getSize();
-    level->getSquare(position)->setOnFire(fire.getSize());
+    level->getSafeSquare(position)->setOnFire(fire.getSize());
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
     fire.tick(level, position);
     if (!fire.isBurning()) {

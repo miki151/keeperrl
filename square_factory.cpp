@@ -210,7 +210,7 @@ class Chest : public Square {
       int numR = numCreatures;
       for (Vec2 v : getPosition().neighbors8(true)) {
         PCreature rat = creatureFactory.random();
-        if (getLevel()->getSquare(v)->canEnter(rat.get())) {
+        if (getLevel()->getSafeSquare(v)->canEnter(rat.get())) {
           getLevel()->addCreature(v, std::move(rat));
           if (--numR == 0)
             break;
@@ -855,8 +855,8 @@ class Hatchery : public Square {
   virtual void tickSpecial(double time) override {
     if (getCreature() || !Random.roll(10))
       return;
-    for (Vec2 v : getPosition().neighbors8())
-      if (Creature* c = getLevel()->getSquare(v)->getCreature())
+    for (Square* s : getLevel()->getSquares(getPosition().neighbors8()))
+      if (Creature* c = s->getCreature())
         if (c->isHatcheryAnimal())
           return;
     getLevel()->addCreature(getPosition(), factory.random(MonsterAIFactory::moveRandomly()));

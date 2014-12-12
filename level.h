@@ -118,8 +118,12 @@ class Level : public UniqueEntity<Level> {
 
   //@{
   /** Returns the given square. \paramname{pos} must lie within the boundaries. */
-  const Square* getSquare(Vec2 pos) const;
-  Square* getSquare(Vec2 pos);
+  vector<const Square*> getSquare(Vec2) const;
+  vector<Square*> getSquare(Vec2);
+  vector<const Square*> getSquares(const vector<Vec2>& pos) const;
+  vector<Square*> getSquares(const vector<Vec2>&);
+  const Square* getSafeSquare(Vec2) const;
+  Square* getSafeSquare(Vec2);
   //@}
 
   void replaceSquare(Vec2 pos, PSquare square);

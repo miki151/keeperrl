@@ -57,10 +57,14 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   vector<const Creature*> getVisibleEnemies() const;
   Level* getLevel();
   const Level* getLevel() const;
-  const Square* getConstSquare() const;
-  const Square* getConstSquare(Vec2 direction) const;
   Square* getSquare();
-  Square* getSquare(Vec2 direction);
+  const Square* getSquare() const;
+  Square* getSafeSquare(Vec2 direction);
+  const Square* getSafeSquare(Vec2 direction) const;
+  vector<Square*> getSquare(Vec2 direction);
+  vector<const Square*> getSquare(Vec2 direction) const;
+  vector<Square*> getSquares(const vector<Vec2>& direction);
+  vector<const Square*> getSquares(const vector<Vec2>& direction) const;
   void setPosition(Vec2 pos);
   Vec2 getPosition() const;
   bool dodgeAttack(const Attack&);
@@ -157,7 +161,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   int getDifficultyPoints() const;
   int getExpLevel() const;
   void exerciseAttr(AttrType, double value = 1);
-  void increaseExpLevel(int increase);
+  void increaseExpLevel(double increase);
 
   string getDescription() const;
   bool isSpecialMonster() const;
@@ -275,7 +279,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   private:
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
 
-  int getRawAttr(AttrType) const;
+  double getExpLevelDouble() const;
+  double getRawAttr(AttrType) const;
   bool affects(LastingEffect effect) const;
   void onAffected(LastingEffect effect, bool msg);
   void consumeEffects(EnumMap<LastingEffect, int>&);

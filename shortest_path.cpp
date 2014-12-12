@@ -67,15 +67,15 @@ const int margin = 15;
 ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to, Vec2 from, double mult)
     : target(to), directions(Vec2::directions8()), bounds(level->getBounds()) {
   auto entryFun = [=](Vec2 pos) { 
-      if (level->getSquare(pos)->canEnter(creature) || creature->getPosition() == pos) 
+      if (level->getSafeSquare(pos)->canEnter(creature) || creature->getPosition() == pos) 
         return 1.0;
-      if (level->getSquare(pos)->canEnterEmpty(creature)) {
-        if (const Creature* other = level->getSquare(pos)->getCreature())
+      if (level->getSafeSquare(pos)->canEnterEmpty(creature)) {
+        if (const Creature* other = level->getSafeSquare(pos)->getCreature())
           if (other->isStationary())
             return 100.0;
         return 5.0;
       }
-      if (level->getSquare(pos)->canDestroyBy(creature))
+      if (level->getSafeSquare(pos)->canDestroyBy(creature))
         return 5.0;
       return infinity;};
   CHECK(to.inRectangle(level->getBounds()));

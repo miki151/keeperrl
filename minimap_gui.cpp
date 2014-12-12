@@ -91,8 +91,8 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
     if (!v.inRectangle(level->getBounds()) || !memory.hasViewIndex(v))
       putMapPixel(v - levelPart.getTopLeft(), colors[ColorId::BLACK]);
     else {
-      putMapPixel(v - levelPart.getTopLeft(), Tile::getColor(level->getSquare(v)->getViewObject()));
-      if (level->getSquare(v)->getName() == "road")
+      putMapPixel(v - levelPart.getTopLeft(), Tile::getColor(level->getSafeSquare(v)->getViewObject()));
+      if (level->getSafeSquare(v)->getName() == "road")
         info.roads.push_back(v - levelPart.getTopLeft());
     }
   }

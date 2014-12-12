@@ -173,7 +173,7 @@ void Model::update(double totalTime) {
       c->update(creature);
     if (!creature->isDead()) {
       Level* level = creature->getLevel();
-      CHECK(level->getSquare(creature->getPosition())->getCreature() == creature);
+      CHECK(level->getSafeSquare(creature->getPosition())->getCreature() == creature);
     }
   } while (1);
 }

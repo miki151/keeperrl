@@ -130,12 +130,12 @@ class Heal : public Behaviour {
 
   virtual MoveInfo getMove() {
     int healingRadius = 2;
-    for (Vec2 v : Rectangle(-healingRadius, -healingRadius, healingRadius, healingRadius))
-      if (creature->getLevel()->inBounds(creature->getPosition() + v))
-        if (const Creature* other = creature->getConstSquare(v)->getCreature())
-          if (creature->isFriend(other))
-            if (auto action = creature->heal(v))
-              return {0.5, action};
+    for (Square* square : creature->getSquares(
+          Rectangle(-healingRadius, -healingRadius, healingRadius, healingRadius).getAllSquares()))
+      if (const Creature* other = square->getCreature())
+        if (creature->isFriend(other))
+          if (auto action = creature->heal(other->getPosition() - creature->getPosition()))
+            return {0.5, action};
     if (!creature->isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
@@ -150,16 +150,15 @@ class Heal : public Behaviour {
       return move.setValue(min(1.0, 1.5 - creature->getHealth()));
     if (MoveInfo move = tryEffect(EffectId::HEAL, 3))
       return move.setValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
-    if (creature->getConstSquare()->getApplyType(creature) == SquareApplyType::SLEEP)
+    if (creature->getSquare()->getApplyType(creature) == SquareApplyType::SLEEP)
       return { 0.4 * min(1.0, 1.5 - creature->getHealth()), creature->applySquare()};
     Vec2 bedRadius(10, 10);
-    Level* l = creature->getLevel();
     if (useBeds && creature->canSleep() && !creature->isAffected(LastingEffect::POISON)) {
       if (!hasBed || hasBed->level != creature->getLevel()) {
-        for (Vec2 v : Rectangle(creature->getPosition() - bedRadius, creature->getPosition() + bedRadius))
-          if (l->inBounds(v) && l->getSquare(v)->getApplyType(creature) == SquareApplyType::SLEEP)
-            if (auto action = creature->moveTowards(v)) {
-              hasBed = {v, creature->getLevel() };
+        for (Square* square : creature->getSquares(Rectangle(-bedRadius, bedRadius).getAllSquares()))
+          if (square->getApplyType(creature) == SquareApplyType::SLEEP)
+            if (auto action = creature->moveTowards(square->getPosition())) {
+              hasBed = {square->getPosition(), creature->getLevel() };
               return { 0.4 * min(1.0, 1.5 - creature->getHealth()), action};
             }
       } else 
@@ -271,8 +270,8 @@ class AttackPest : public Behaviour {
     if (creature->getTribe() == Tribe::get(TribeId::PEST))
       return NoMove;
     const Creature* other = nullptr;
-    for (Vec2 v : Vec2::directions8(true))
-      if (const Creature* c = creature->getConstSquare(v)->getCreature())
+    for (Square* square : creature->getSquares(Vec2::directions8(true)))
+      if (const Creature* c = square->getCreature())
         if (c->getTribe() == Tribe::get(TribeId::PEST)) {
           other = c;
           break;
@@ -448,7 +447,7 @@ class Fighter : public Behaviour {
   bool checkFriendlyFire(Vec2 enemyDir) {
     Vec2 dir = enemyDir.shorten();
     for (Vec2 v = dir; v != enemyDir; v += dir) {
-      const Creature* c = creature->getConstSquare(v)->getCreature();
+      const Creature* c = creature->getSafeSquare(v)->getCreature();
       if (c && !creature->isEnemy(c))
         return true;
     }
@@ -712,34 +711,6 @@ class Wait : public Behaviour {
   }
 };
 
-class DoorEater : public Behaviour {
-  public:
-  DoorEater(Creature* c) : Behaviour(c) {}
-
-  virtual MoveInfo getMove() override {
-    Optional<Vec2> closestDoor;
-    for (Vec2 v : Rectangle(-10, -10, 10, 10))
-      if (creature->getLevel()->inBounds(creature->getPosition() + v)
-          && creature->getSquare(v)->canLock() && creature->getSquare(v)->canDestroyBy(creature))
-        if (!closestDoor || v.length8() < closestDoor->length8())
-          closestDoor = v;
-    if (closestDoor) {
-      if (auto action = creature->destroy(*closestDoor, Creature::EAT))
-        return {1.0, action};
-      else if (auto action = creature->moveTowards(creature->getPosition() + *closestDoor))
-        return {1.0, action};
-    }
-    return NoMove;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(DoorEater);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
-};
-
 class DieTime : public Behaviour {
   public:
   DieTime(Creature* c, double t) : Behaviour(c), dieTime(t) {}
@@ -833,15 +804,15 @@ class Thief : public Behaviour {
         return {1.0, action};
       }
     }
-    for (Vec2 dir : Vec2::directions8(true)) {
-      const Creature* other = creature->getConstSquare(dir)->getCreature();
+    for (Square* square : creature->getSquares(Vec2::directions8(true))) {
+      const Creature* other = square->getCreature();
       if (other && !contains(robbed, other)) {
         vector<Item*> allGold;
         for (Item* it : other->getEquipment().getItems())
           if (it->getClass() == ItemClass::GOLD)
             allGold.push_back(it);
         if (allGold.size() > 0)
-          if (auto action = creature->stealFrom(dir, allGold))
+          if (auto action = creature->stealFrom(other->getPosition() - creature->getPosition(), allGold))
           return {1.0, action.append([=] {
             other->playerMessage(creature->getName().the() + " steals all your gold!");
             robbed.push_back(other);
@@ -933,7 +904,6 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, BirdFlyAway);
   REGISTER_TYPE(ar, GoldLust);
   REGISTER_TYPE(ar, Fighter);
-  REGISTER_TYPE(ar, DoorEater);
   REGISTER_TYPE(ar, GuardTarget);
   REGISTER_TYPE(ar, GuardArea);
   REGISTER_TYPE(ar, GuardSquare);
@@ -1058,16 +1028,6 @@ MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
           new Fighter(c, 1.2, false),
           new MoveRandomly(c, 3)},
           {5, 1});
-      });
-}
-
-MonsterAIFactory MonsterAIFactory::doorEater() {
-  return MonsterAIFactory([](Creature* c) {
-      return new MonsterAI(c, {
-          new Fighter(c, 1.2, false),
-          new DoorEater(c),
-          new MoveRandomly(c, 3)},
-          {5, 2, 1});
       });
 }
 

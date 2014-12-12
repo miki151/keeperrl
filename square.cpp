@@ -209,9 +209,9 @@ void Square::tick(double time) {
   if (fire.isBurning()) {
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
     Debug() << getName() << " burning " << fire.getSize();
-    for (Vec2 v : position.neighbors8(true))
+    for (Square* s : level->getSquares(position.neighbors8(true)))
       if (fire.getSize() > Random.getDouble() * 40)
-        level->getSquare(v)->setOnFire(fire.getSize() / 20);
+        s->setOnFire(fire.getSize() / 20);
     fire.tick(level, position);
     if (fire.isBurntOut()) {
       level->globalMessage(position, "The " + getName() + " burns out");

@@ -69,7 +69,7 @@ void Player::onThrowEvent(const Level* l, const Creature* thrower, const Item* i
 void Player::learnLocation(const Location* loc) {
   for (Vec2 v : loc->getBounds())
     (*levelMemory)[creature->getLevel()->getUniqueId()]
-        .addObject(v, creature->getLevel()->getSquare(v)->getViewObject());
+        .addObject(v, creature->getLevel()->getSafeSquare(v)->getViewObject());
 }
 
 void Player::onExplosionEvent(const Level* level, Vec2 pos) {
@@ -142,7 +142,7 @@ static string getSquareQuestion(SquareApplyType type, string name) {
 
 void Player::pickUpAction(bool extended) {
   auto items = creature->getPickUpOptions();
-  const Square* square = creature->getConstSquare();
+  const Square* square = creature->getSquare();
   if (square->getApplyType(creature)) {
     string question = getSquareQuestion(*square->getApplyType(creature), square->getName());
     if (!question.empty() && (items.empty() || model->getView()->yesOrNoPrompt(question))) {
@@ -507,7 +507,7 @@ void Player::travelAction() {
     travelling = false;
     return;
   }
-  vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
+  vector<Vec2> squareDirs = creature->getSquare()->getTravelDir();
   if (squareDirs.size() != 2) {
     travelling = false;
     Debug() << "Stopped by multiple routes";
@@ -535,8 +535,8 @@ void Player::targetAction() {
 }
 
 void Player::payDebtAction() {
-  for (Vec2 v : Vec2::directions8())
-    if (const Creature* c = creature->getConstSquare(v)->getCreature()) {
+  for (Square* square : creature->getSquares(Vec2::directions8()))
+    if (const Creature* c = square->getCreature()) {
       if (int debt = c->getDebt(creature)) {
         vector<Item*> gold = creature->getGold(debt);
         if (gold.size() < debt) {
@@ -553,8 +553,8 @@ void Player::payDebtAction() {
 
 void Player::chatAction(Optional<Vec2> dir) {
   vector<const Creature*> creatures;
-  for (Vec2 v : Vec2::directions8())
-    if (const Creature* c = creature->getConstSquare(v)->getCreature())
+  for (Square* square : creature->getSquares(Vec2::directions8()))
+    if (const Creature* c = square->getCreature())
       creatures.push_back(c);
   if (creatures.size() == 1 && !dir) {
     tryToPerform(creature->chatTo(creatures[0]->getPosition() - creature->getPosition()));
@@ -626,7 +626,7 @@ void Player::retireMessages() {
 }
 
 void Player::makeMove() {
-  vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
+  vector<Vec2> squareDirs = creature->getSquare()->getTravelDir();
   if (creature->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
   else
@@ -637,7 +637,7 @@ void Player::makeMove() {
         model->getView()->updateView(this),
         "level render time");
   }
-  if (displayTravelInfo && creature->getConstSquare()->getName() == "road" && Options::getValue(OptionId::HINTS)) {
+  if (displayTravelInfo && creature->getSquare()->getName() == "road" && Options::getValue(OptionId::HINTS)) {
     model->getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
   }
@@ -676,12 +676,13 @@ void Player::makeMove() {
     case UserInputId::MOVE_TO: 
       if (action.get<Vec2>().dist8(creature->getPosition()) == 1) {
         Vec2 dir = action.get<Vec2>() - creature->getPosition();
-        if (const Creature* c = creature->getConstSquare(dir)->getCreature()) {
-          if (!creature->isEnemy(c)) {
-            chatAction(dir);
-            break;
+        for (Square* square : creature->getSquare(dir))
+          if (const Creature* c = square->getCreature()) {
+            if (!creature->isEnemy(c)) {
+              chatAction(dir);
+              break;
+            }
           }
-        }
         direction.push_back(dir);
       } else
         if (action.get<Vec2>() != creature->getPosition()) {
@@ -726,10 +727,10 @@ void Player::makeMove() {
   }
   for (Vec2 dir : direction)
     if (travel) {
-      if (Creature* other = creature->getSquare(dir)->getCreature())
+      if (Creature* other = creature->getSafeSquare(dir)->getCreature())
         attackAction(other);
       else {
-        vector<Vec2> squareDirs = creature->getConstSquare()->getTravelDir();
+        vector<Vec2> squareDirs = creature->getSquare()->getTravelDir();
         if (findElement(squareDirs, dir)) {
           travelDir = dir;
           lastLocation = creature->getLevel()->getLocation(creature->getPosition());
@@ -758,10 +759,8 @@ void Player::moveAction(Vec2 dir) {
   if (auto action = creature->move(dir)) {
     action.perform();
     itemsMessage();
-  } else if (const Creature *c = creature->getConstSquare(dir)->getCreature()) {
-    if (auto action = creature->bumpInto(dir))
-      action.perform();
-  }
+  } else if (auto action = creature->bumpInto(dir))
+    action.perform();
   else if (auto action = creature->destroy(dir, Creature::BASH))
     action.perform();
 }
@@ -855,13 +854,14 @@ Optional<Vec2> Player::getPosition(bool) const {
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
+  const Square* square = getLevel()->getSafeSquare(pos);
   if (creature->canSee(pos))
-    getLevel()->getSquare(pos)->getViewIndex(index, creature->getTribe());
+    square->getViewIndex(index, creature->getTribe());
   else
-    index.setHiddenId(getLevel()->getSquare(pos)->getViewObject().id());
+    index.setHiddenId(square->getViewObject().id());
   if (!creature->canSee(pos) && getMemory().hasViewIndex(pos))
     index.mergeFromMemory(getMemory().getViewIndex(pos));
-  if (const Creature* c = getLevel()->getSquare(pos)->getCreature()) {
+  if (const Creature* c = square->getCreature()) {
     if (creature->canSee(c) || c == creature)
       index.insert(c->getViewObject());
     else if (contains(creature->getUnknownAttacker(), c))
@@ -915,13 +915,16 @@ class PossessedController : public Player {
       Player::moveAction(dir);
       return;
     }
-    if (Creature *c = creature->getSquare(dir)->getCreature()) {
-      if (c == owner)
-        owner->popController();
-      else
-        c->pushController(PController(new PossessedController(c, owner, model, levelMemory, false)));
-      creature->die();
-    } else Player::moveAction(dir);
+    for (Square* square : creature->getSquare(dir))
+      if (Creature *c = square->getCreature()) {
+        if (c == owner)
+          owner->popController();
+        else
+          c->pushController(PController(new PossessedController(c, owner, model, levelMemory, false)));
+        creature->die();
+        return;
+      }
+    Player::moveAction(dir);
   }
 
   void onFellAsleep() override {
@@ -969,10 +972,10 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
     switch (epithet) {
       case EpithetId::DEATH: {
           PCreature death = CreatureFactory::fromId(CreatureId::DEATH, Tribe::get(TribeId::KILL_EVERYONE));
-          for (Vec2 v : creature->getPosition().neighbors8(true))
-            if (creature->getLevel()->inBounds(v) && creature->getLevel()->getSquare(v)->canEnter(death.get())) {
+          for (Square* square : creature->getSquares(Vec2::directions8(true)))
+            if (square->canEnter(death.get())) {
               creature->playerMessage("Death appears before you.");
-              creature->getLevel()->addCreature(v, std::move(death));
+              creature->getLevel()->addCreature(square->getPosition(), std::move(death));
               break;
             }
           if (death)
@@ -1007,9 +1010,9 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
       case EpithetId::CHANGE:
           if (Random.roll(2) && creature->getWeapon()) {
             PCreature snake = CreatureFactory::fromId(CreatureId::SNAKE, Tribe::get(TribeId::PEST));
-            for (Vec2 v : creature->getPosition().neighbors8(true))
-              if (creature->getLevel()->inBounds(v) && creature->getLevel()->getSquare(v)->canEnter(snake.get())) {
-                creature->getLevel()->addCreature(v, std::move(snake));
+            for (Square* square : creature->getSquares(Vec2::directions8(true)))
+              if (square->canEnter(snake.get())) {
+                creature->getLevel()->addCreature(square->getPosition(), std::move(snake));
                 creature->steal({creature->getEquipment().getItem(EquipmentSlot::WEAPON)});
                 creature->playerMessage("Ouch!");
                 creature->you(MsgType::YOUR, "weapon turns into a snake!");
@@ -1127,7 +1130,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.effects.clear();
   for (string s : creature->getAdjectives())
     info.effects.push_back({s, true});
-  info.squareName = creature->getConstSquare()->getName();
+  info.squareName = creature->getSquare()->getName();
   info.lyingItems.clear();
   for (auto stack : Item::stackItems(creature->getPickUpOptions()))
     if (stack.second.size() == 1)

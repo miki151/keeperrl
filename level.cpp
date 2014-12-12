@@ -82,13 +82,14 @@ void Level::addCreature(Vec2 position, PCreature c) {
 }
 
 void Level::putCreature(Vec2 position, Creature* c) {
+  CHECK(inBounds(position));
   creatures.push_back(c);
-  CHECK(getSquare(position)->getCreature() == nullptr);
+  CHECK(getSafeSquare(position)->getCreature() == nullptr);
   bucketMap.addElement(position, c);
   c->setLevel(this);
   c->setPosition(position);
   //getSquare(position)->putCreatureSilently(c);
-  getSquare(position)->putCreature(c);
+  getSafeSquare(position)->putCreature(c);
   notifyLocations(c);
 }
   
@@ -234,21 +235,22 @@ void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 positi
 void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction,
     Vision* vision) {
   CHECK(!item.empty());
+  CHECK(direction.length8() == 1);
   int cnt = 1;
   vector<Vec2> trajectory;
   for (Vec2 v = position + direction;; v += direction) {
     trajectory.push_back(v);
-    if (getSquare(v)->itemBounces(item[0].get(), vision)) {
-        item[0]->onHitSquareMessage(v, getSquare(v), item.size() > 1);
+    if (getSafeSquare(v)->itemBounces(item[0].get(), vision)) {
+        item[0]->onHitSquareMessage(v, getSafeSquare(v), item.size() > 1);
         trajectory.pop_back();
         GlobalEvents.addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
         if (!item[0]->isDiscarded())
-          getSquare(v - direction)->dropItems(std::move(item));
+          getSafeSquare(v - direction)->dropItems(std::move(item));
         return;
     }
-    if (++cnt > maxDist || getSquare(v)->itemLands(extractRefs(item), attack)) {
+    if (++cnt > maxDist || getSafeSquare(v)->itemLands(extractRefs(item), attack)) {
       GlobalEvents.addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
-      getSquare(v)->onItemLands(std::move(item), attack, maxDist - cnt - 1, direction, vision);
+      getSafeSquare(v)->onItemLands(std::move(item), attack, maxDist - cnt - 1, direction, vision);
       return;
     }
   }
@@ -257,7 +259,7 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
 void Level::killCreature(Creature* creature) {
   bucketMap.removeElement(creature->getPosition(), creature);
   removeElement(creatures, creature);
-  getSquare(creature->getPosition())->removeCreature();
+  getSafeSquare(creature->getPosition())->removeCreature();
   model->removeCreature(creature);
   if (creature->isPlayer())
     updatePlayer();
@@ -277,16 +279,16 @@ void Level::globalMessage(Vec2 position, const PlayerMessage& ifPlayerCanSee, co
 void Level::globalMessage(const Creature* c, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const {
   if (player) {
     if (player->canSee(c))
-      globalMessage(c->getPosition(), ifPlayerCanSee, cannot);
-    else
-      globalMessage(c->getPosition(), cannot, "");
+      player->playerMessage(ifPlayerCanSee);
+    else if (player->getPosition().dist8(c->getPosition()) < hearingRange)
+      player->playerMessage(cannot);
   }
 }
 
 void Level::changeLevel(StairDirection dir, StairKey key, Creature* c) {
   Vec2 fromPosition = c->getPosition();
   removeElement(creatures, c);
-  getSquare(c->getPosition())->removeCreature();
+  getSafeSquare(c->getPosition())->removeCreature();
   bucketMap.removeElement(c->getPosition(), c);
   Vec2 toPosition = model->changeLevel(dir, key, c);
   GlobalEvents.addChangeLevelEvent(c, this, fromPosition, c->getLevel(), toPosition);
@@ -295,7 +297,7 @@ void Level::changeLevel(StairDirection dir, StairKey key, Creature* c) {
 void Level::changeLevel(Level* destination, Vec2 landing, Creature* c) {
   Vec2 fromPosition = c->getPosition();
   removeElement(creatures, c);
-  getSquare(c->getPosition())->removeCreature();
+  getSafeSquare(c->getPosition())->removeCreature();
   bucketMap.removeElement(c->getPosition(), c);
   model->changeLevel(destination, landing, c);
   GlobalEvents.addChangeLevelEvent(c, this, fromPosition, destination, landing);
@@ -351,15 +353,15 @@ bool Level::canMoveCreature(const Creature* creature, Vec2 direction) const {
   Vec2 destination = position + direction;
   if (!inBounds(destination))
     return false;
-  return getSquare(destination)->canEnter(creature);
+  return getSafeSquare(destination)->canEnter(creature);
 }
 
 void Level::moveCreature(Creature* creature, Vec2 direction) {
   CHECK(canMoveCreature(creature, direction));
   Vec2 position = creature->getPosition();
   bucketMap.moveElement(position, position + direction, creature);
-  Square* nextSquare = getSquare(position + direction);
-  Square* thisSquare = getSquare(position);
+  Square* nextSquare = getSafeSquare(position + direction);
+  Square* thisSquare = getSafeSquare(position);
   thisSquare->removeCreature();
   creature->setPosition(position + direction);
   nextSquare->putCreature(creature);
@@ -371,8 +373,8 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
   Vec2 position2 = c2->getPosition();
   bucketMap.moveElement(position1, position2, c1);
   bucketMap.moveElement(position2, position1, c2);
-  Square* square1 = getSquare(position1);
-  Square* square2 = getSquare(position2);
+  Square* square1 = getSafeSquare(position1);
+  Square* square2 = getSafeSquare(position2);
   square1->removeCreature();
   square2->removeCreature();
   c1->setPosition(position2);
@@ -410,14 +412,44 @@ void Level::setBackgroundLevel(const Level* l, Vec2 offs) {
 static unordered_map<Vec2, const ViewObject*> background;
 
 
-const Square* Level::getSquare(Vec2 pos) const {
+const Square* Level::getSafeSquare(Vec2 pos) const {
   CHECK(inBounds(pos));
   return squares[pos].get();
 }
 
-Square* Level::getSquare(Vec2 pos) {
+Square* Level::getSafeSquare(Vec2 pos) {
   CHECK(inBounds(pos));
   return squares[pos].get();
+}
+
+vector<const Square*> Level::getSquare(Vec2 pos) const {
+  if (inBounds(pos))
+    return {getSafeSquare(pos)};
+  else
+    return {};
+}
+
+vector<Square*> Level::getSquare(Vec2 pos) {
+  if (inBounds(pos))
+    return {getSafeSquare(pos)};
+  else
+    return {};
+}
+
+vector<const Square*> Level::getSquares(const  vector<Vec2>& pos) const {
+  vector<const Square*> ret;
+  for (Vec2 v : pos)
+    if (inBounds(v))
+      ret.push_back(getSafeSquare(v));
+  return ret;
+}
+
+vector<Square*> Level::getSquares(const vector<Vec2>& pos) {
+  vector<Square*> ret;
+  for (Vec2 v : pos)
+    if (inBounds(v))
+      ret.push_back(getSafeSquare(v));
+  return ret;
 }
 
 void Level::addTickingSquare(Vec2 pos) {

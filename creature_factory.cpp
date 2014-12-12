@@ -86,24 +86,26 @@ class BoulderController : public Monster {
         for (int i = 1; i <= radius; ++i) {
           if (!(creature->getPosition() + (v * i)).inRectangle(creature->getLevel()->getBounds()))
             break;
-          if (Creature* other = creature->getSquare(v * i)->getCreature())
-            if (other->getTribe() != myTribe) {
-              if (!other->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
-                direction = v;
-                stopped = false;
-                found = true;
-                GlobalEvents.addTrapTriggerEvent(creature->getLevel(), creature->getPosition());
-                creature->monsterMessage(PlayerMessage("The boulder starts rolling.", PlayerMessage::CRITICAL),
-                    PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
-                break;
-              } else {
-                other->you(MsgType::DISARM_TRAP, "");
-                GlobalEvents.addTrapDisarmEvent(creature->getLevel(), other, creature->getPosition());
-                creature->die();
+          for (Square* square : creature->getSquare(v * i)) {
+            if (Creature* other = square->getCreature())
+              if (other->getTribe() != myTribe) {
+                if (!other->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
+                  direction = v;
+                  stopped = false;
+                  found = true;
+                  GlobalEvents.addTrapTriggerEvent(creature->getLevel(), creature->getPosition());
+                  creature->monsterMessage(PlayerMessage("The boulder starts rolling.", PlayerMessage::CRITICAL),
+                      PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
+                  break;
+                } else {
+                  other->you(MsgType::DISARM_TRAP, "");
+                  GlobalEvents.addTrapDisarmEvent(creature->getLevel(), other, creature->getPosition());
+                  creature->die();
+                }
               }
-            }
-          if (!creature->getSquare(v * i)->canEnterEmpty(creature))
-            break;
+            if (!square->canEnterEmpty(creature))
+              break;
+          }
         }
         if (found)
           break;
@@ -113,42 +115,42 @@ class BoulderController : public Monster {
       creature->wait().perform();
       return;
     }
-    if (creature->getConstSquare(direction)->getStrength() < 300) {
-      if (Creature* c = creature->getSquare(direction)->getCreature()) {
-        if (!c->isCorporal()) {
-          if (auto action = creature->swapPosition(direction, true))
-            action.perform();
-        } else {
-          decreaseHealth(c->getSize());
-          if (health < 0) {
-            creature->getLevel()->globalMessage(creature->getPosition() + direction,
-                creature->getName().the() + " crashes on the " + c->getName().the(),
-                "You hear a crash");
-            creature->die();
-            c->bleed(Random.getDouble(0.1, 0.3));
-            return;
+    for (Square* square : creature->getSquare(direction))
+      if (square->getStrength() < 300) {
+        if (Creature* c = square->getCreature()) {
+          if (!c->isCorporal()) {
+            if (auto action = creature->swapPosition(direction, true))
+              action.perform();
           } else {
-            c->you(MsgType::KILLED_BY, creature->getName().the());
-            c->die(creature);
+            decreaseHealth(c->getSize());
+            if (health < 0) {
+              creature->getLevel()->globalMessage(creature->getPosition() + direction,
+                  creature->getName().the() + " crashes on the " + c->getName().the(),
+                  "You hear a crash");
+              creature->die();
+              c->bleed(Random.getDouble(0.1, 0.3));
+              return;
+            } else {
+              c->you(MsgType::KILLED_BY, creature->getName().the());
+              c->die(creature);
+            }
           }
         }
+        if (auto action = creature->destroy(direction, Creature::DESTROY))
+          action.perform();
       }
-      if (auto action = creature->destroy(direction, Creature::DESTROY))
-        action.perform();
-    }
     if (auto action = creature->move(direction))
       action.perform();
-    else {
-      if (health >= 0.9 && creature->getConstSquare(direction)->canConstruct(SquareId::FLOOR)) {
-        creature->globalMessage("The " + creature->getConstSquare(direction)->getName() + " is destroyed!");
-        while (!creature->getSquare(direction)->construct(SquareId::FLOOR)) {}
+    else for (Square* square : creature->getSquare(direction)) {
+      if (health >= 0.9 && square->canConstruct(SquareId::FLOOR)) {
+        creature->globalMessage("The " + square->getName() + " is destroyed!");
+        while (!square->construct(SquareId::FLOOR)) {} // This should use destroy() probably
         if (auto action = creature->move(direction))
           action.perform();
         health = 0.1;
       } else {
         creature->getLevel()->globalMessage(creature->getPosition() + direction,
-            creature->getName().the() + " crashes on the " + creature->getConstSquare(direction)->getName(),
-            "You hear a crash");
+            creature->getName().the() + " crashes on the " + square->getName(), "You hear a crash");
         creature->die();
         return;
       }
@@ -363,10 +365,11 @@ class KrakenController : public Monster {
       }
     }
     bool isEnemy = false;
-    for (Vec2 v: Rectangle(Vec2(-radius, -radius), Vec2(radius + 1, radius + 1)))
-      if (creature->getLevel()->inBounds(creature->getPosition() + v))
-        if (Creature * c = creature->getSquare(v)->getCreature())
+    for (Square* square : creature->getSquares(
+          Rectangle(Vec2(-radius, -radius), Vec2(radius + 1, radius + 1)).getAllSquares()))
+        if (Creature * c = square->getCreature())
           if (creature->canSee(c) && creature->isEnemy(c) && !creature->isStationary()) {
+            Vec2 v = square->getPosition() - creature->getPosition();
             isEnemy = true;
             if (numSpawns > 0) {
               if (v.length8() == 1) {
@@ -381,16 +384,16 @@ class KrakenController : public Monster {
               }
               pair<Vec2, Vec2> dirs = v.approxL1();
               vector<Vec2> moves;
-              if (creature->getSquare(dirs.first)->canEnter({{MovementTrait::WALK, MovementTrait::SWIM}}))
+              if (creature->getSafeSquare(dirs.first)->canEnter({{MovementTrait::WALK, MovementTrait::SWIM}}))
                 moves.push_back(dirs.first);
-              if (creature->getSquare(dirs.second)->canEnter({{MovementTrait::WALK, MovementTrait::SWIM}}))
+              if (creature->getSafeSquare(dirs.second)->canEnter({{MovementTrait::WALK, MovementTrait::SWIM}}))
                 moves.push_back(dirs.second);
               if (!moves.empty()) {
                 if (!ready) {
                   makeReady();
                 } else {
                   Vec2 move = chooseRandom(moves);
-                  ViewId viewId = creature->getSquare(move)->canEnter({MovementTrait::SWIM}) 
+                  ViewId viewId = creature->getSafeSquare(move)->canEnter({MovementTrait::SWIM}) 
                     ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
                   PCreature spawn(new Creature(creature->getTribe(), getKrakenAttributes(viewId),
                         ControllerFactory([=](Creature* c) {
@@ -436,49 +439,21 @@ class KrakenController : public Monster {
   KrakenController* SERIAL2(father, nullptr);
 };
 
-/*class Shapechanger : public Monster {
-  public:
-  Shapechanger(const ViewObject& obj, Tribe* tribe, const CreatureAttributes& attr, vector<CreatureId> _creatures)
-      : Monster(obj, tribe, attr, MonsterAIFactory::monster()), creatures(_creatures) {}
-
-  virtual void makeMoveSpecial() override {
-    int radius = 3;
-    for (Vec2 v: Rectangle(Vec2(-radius, -radius), Vec2(radius + 1, radius + 1)))
-      if (getLevel()->inBounds(getPosition() + v))
-        if (Creature* enemy = getSquare(v)->getCreature())
-          if (canSee(enemy) && isEnemy(enemy) && enemy->isPlayer()) {
-            PCreature c = CreatureFactory::fromId(chooseRandom(creatures), getTribe());
-            enemy->you(MsgType::ARE, "frozen in place by " + getName().the() + "!");
-            enemy->setHeld(c.get());
-            globalMessage(getName().the() + " turns into " + c->getAName());
-            Vec2 pos = getPosition();
-            die(nullptr, false);
-            getLevel()->addCreature(pos, std::move(c));
-            return;
-          }
-    Monster::makeMoveSpecial();
-  }
-
-  private:
-  vector<CreatureId> creatures;
-};*/
-
 class KamikazeController : public Monster {
   public:
   KamikazeController(Creature* c, MonsterAIFactory f) : Monster(c, f) {}
 
   virtual void makeMove() override {
-    for (Vec2 v : Vec2::directions8())
-      if (creature->getLevel()->inBounds(creature->getPosition() + v))
-        if (Creature* c = creature->getSquare(v)->getCreature())
-          if (creature->isEnemy(c) && creature->canSee(c)) {
-            creature->monsterMessage(creature->getName().the() + " explodes!");
-            for (Vec2 v : Vec2::directions8())
-              c->getSquare(v)->setOnFire(1);
-            c->getSquare()->setOnFire(1);
-            creature->die(nullptr, false);
-            return;
-          }
+    for (Square* square : creature->getSquares(Vec2::directions8()))
+      if (Creature* c = square->getCreature())
+        if (creature->isEnemy(c) && creature->canSee(c)) {
+          creature->monsterMessage(creature->getName().the() + " explodes!");
+          for (Square* square : c->getSquares(Vec2::directions8()))
+            square->setOnFire(1);
+          c->getSquare()->setOnFire(1);
+          creature->die(nullptr, false);
+          return;
+        }
     Monster::makeMove();
   }
 
@@ -503,15 +478,15 @@ class ShopkeeperController : public Monster {
     }
     if (firstMove) {
       for (Vec2 v : shopArea->getBounds())
-        for (Item* item : creature->getLevel()->getSquare(v)->getItems()) {
+        for (Item* item : creature->getLevel()->getSafeSquare(v)->getItems()) {
           myItems.insert(item);
           item->setShopkeeper(creature);
         }
       firstMove = false;
     }
     vector<const Creature*> creatures;
-    for (Vec2 v : shopArea->getBounds().minusMargin(-1))
-      if (const Creature* c = creature->getLevel()->getSquare(v)->getCreature()) {
+    for (Square* square : creature->getLevel()->getSquares(shopArea->getBounds().minusMargin(-1).getAllSquares()))
+      if (const Creature* c = square->getCreature()) {
         creatures.push_back(c);
         if (!prevCreatures.count(c) && !thieves.count(c) && !creature->isEnemy(c)) {
           if (!debt.count(c))
@@ -652,13 +627,12 @@ class RedDragonController : public Monster {
 
   virtual void makeMove() override {
     if (creature->getTime() > lastSpawn + 10)
-      for (Vec2 v : Rectangle(-Vec2(5, 5), Vec2(5, 5)))
-        if (creature->getLevel()->inBounds(creature->getPosition() + v))
-          if (const Creature* c = creature->getSquare(v)->getCreature())
-            if (creature->isEnemy(c)) {
-              Effect::applyToCreature(creature, EffectId::FIRE_SPHERE_PET, EffectStrength::NORMAL);
-              lastSpawn = creature->getTime();
-            }
+      for (Square* square : creature->getSquares(Rectangle(-Vec2(5, 5), Vec2(5, 5)).getAllSquares()))
+        if (const Creature* c = square->getCreature())
+          if (creature->isEnemy(c)) {
+            Effect::applyToCreature(creature, EffectId::FIRE_SPHERE_PET, EffectStrength::NORMAL);
+            lastSpawn = creature->getTime();
+          }
     Monster::makeMove();
   }
 
@@ -691,7 +665,6 @@ REGISTER_TYPES(CreatureFactory);
 PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& items) {
   for (ItemType item : items) {
     PItem it = ItemFactory::fromId(item);
-    Item* ref = it.get();
     c->take(std::move(it));
   }
   return c;
@@ -1092,11 +1065,11 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
-          c.attr[AttrType::SPEED] = 90;
+          c.attr[AttrType::SPEED] = 110;
           c.size = CreatureSize::HUGE;
           c.attr[AttrType::STRENGTH] = 40;
-          c.attr[AttrType::DEXTERITY] = 25;
-          c.barehandedDamage = 5;
+          c.attr[AttrType::DEXTERITY] = 30;
+          c.barehandedDamage = 10;
           c.barehandedAttack = AttackType::EAT;
           c.humanoid = false;
           c.weight = 1000;

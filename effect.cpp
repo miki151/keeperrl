@@ -90,12 +90,12 @@ REGISTER_TYPES(Effect);
 
 static int summonCreatures(Level* level, Vec2 pos, int radius, vector<PCreature> creatures) {
   int numCreated = 0;
-  vector<Vec2> area = Rectangle(-radius, -radius, radius, radius).getAllSquares();
+  vector<Vec2> area = Rectangle(pos - Vec2(radius, radius), pos + Vec2(radius, radius)).getAllSquares();
   for (int i : All(creatures))
-    for (Vec2 v : randomPermutation(area))
-      if (level->inBounds(v + pos) && level->getSquare(v + pos)->canEnter(creatures[i].get())) {
+    for (Square* square : level->getSquares(randomPermutation(area)))
+      if (square->canEnter(creatures[i].get())) {
         ++numCreated;
-        level->addCreature(pos + v, std::move(creatures[i]));
+        level->addCreature(square->getPosition(), std::move(creatures[i]));
         break;
   }
   return numCreated;
@@ -156,8 +156,9 @@ static void leaveBody(Creature* creature) {
 
 static void creatureEffect(Creature* who, EffectType type, EffectStrength str, Vec2 direction, int range) {
   for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
-    if (Creature* c = who->getSquare(v)->getCreature())
-      Effect::applyToCreature(c, type, str);
+    for (Square* square : who->getSquare(v))
+      if (Creature* c = square->getCreature())
+        Effect::applyToCreature(c, type, str);
 }
 
 static void blast(Creature* who, Square* square, Vec2 direction, int maxDistance) {
@@ -190,28 +191,31 @@ static void blast(Creature* who, Square* square, Vec2 direction, int maxDistance
 
 static void blast(Creature* c, Vec2 direction, int range) {
   for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
-    blast(c, c->getSquare(v), direction, range);
+    for (Square* s : c->getSquare(v))
+      blast(c, s, direction, range);
 }
 
 static void wordOfPower(Creature* c, int strength) {
   GlobalEvents.addExplosionEvent(c->getLevel(), c->getPosition());
   for (Vec2 v : Vec2::directions8(true))
-    blast(c, c->getSquare(v), v, wordOfPowerDist[strength]);
+    for (Square* s : c->getSquare(v))
+      blast(c, s, v, wordOfPowerDist[strength]);
 }
 
 static void emitPoisonGas(Level* level, Vec2 pos, int strength, bool msg) {
   for (Vec2 v : pos.neighbors8())
-    level->getSquare(v)->addPoisonGas(gasAmount[strength] / 2);
-  level->getSquare(pos)->addPoisonGas(gasAmount[strength]);
+    for (Square* s : level->getSquare(v))
+      s->addPoisonGas(gasAmount[strength] / 2);
+  level->getSafeSquare(pos)->addPoisonGas(gasAmount[strength]);
   if (msg)
     level->globalMessage(pos, "A cloud of gas is released", "You hear a hissing sound");
 }
 
 static void guardingBuilder(Creature* c) {
   Optional<Vec2> dest;
-  for (Vec2 v : Vec2::directions8(true))
-    if (c->move(v) && !c->getSquare(v)->getCreature()) {
-      dest = v;
+  for (Square* square : c->getSquares(Vec2::directions8(true)))
+    if (c->move(square->getPosition() - c->getPosition()) && !square->getCreature()) {
+      dest = square->getPosition() - c->getPosition();
       break;
     }
   Vec2 pos = c->getPosition();
@@ -278,11 +282,11 @@ static void heal(Creature* c, int strength) {
 
 static void portal(Creature* c) {
   Level* l = c->getLevel();
-  for (Vec2 v : c->getPosition().neighbors8(true))
-    if (l->getSquare(v)->canEnter(c)) {
-      l->globalMessage(v, "A magic portal appears.");
-      l->getSquare(v)->addTrigger(Trigger::getPortal(
-            ViewObject(ViewId::PORTAL, ViewLayer::LARGE_ITEM, "Portal"), l, v));
+  for (Square* square : c->getSquares(Vec2::directions8(true)))
+    if (square->canEnter(c)) {
+      l->globalMessage(square->getPosition(), "A magic portal appears.");
+      square->addTrigger(Trigger::getPortal(
+            ViewObject(ViewId::PORTAL, ViewLayer::LARGE_ITEM, "Portal"), l, square->getPosition()));
       return;
     }
 }
@@ -298,7 +302,7 @@ static void teleport(Creature* c) {
   Table<int> weight(area, infinity);
   queue<Vec2> q;
   for (Vec2 v : area)
-    if (Creature *other = l->getSquare(v)->getCreature())
+    if (Creature *other = l->getSafeSquare(v)->getCreature())
       if (other->isEnemy(c)) {
         q.push(v);
         weight[v] = 0;
@@ -307,7 +311,8 @@ static void teleport(Creature* c) {
     Vec2 v = q.front();
     q.pop();
     for (Vec2 w : v.neighbors8())
-      if (w.inRectangle(area) && l->getSquare(w)->canEnterEmpty({MovementTrait::WALK}) && weight[w] == infinity) {
+      if (w.inRectangle(area) && l->getSafeSquare(w)->canEnterEmpty({MovementTrait::WALK})
+          && weight[w] == infinity) {
         weight[w] = weight[v] + 1;
         q.push(w);
       }
@@ -315,7 +320,8 @@ static void teleport(Creature* c) {
   vector<Vec2> good;
   int maxW = 0;
   for (Vec2 v : l->getBounds().intersection(Rectangle(pos - teleRadius, pos + teleRadius))) {
-    if (!l->canMoveCreature(c, v - pos) || l->getSquare(v)->isBurning() || l->getSquare(v)->getPoisonGasAmount() > 0)
+    if (!l->canMoveCreature(c, v - pos) || l->getSafeSquare(v)->isBurning() ||
+        l->getSafeSquare(v)->getPoisonGasAmount() > 0)
       continue;
     if (weight[v] == maxW)
       good.push_back(v);
@@ -342,7 +348,7 @@ static void rollingBoulder(Creature* c) {
     for (Vec2 dir : Vec2::directions8()) {
       bool good = true;
       for (int i : Range(1, dist + 1))
-        if (!l->getSquare(pos + dir * i)->canEnterEmpty({MovementTrait::WALK})) {
+        if (!l->getSafeSquare(pos + dir * i)->canEnterEmpty({MovementTrait::WALK})) {
           good = false;
           break;
         }
@@ -355,7 +361,7 @@ static void rollingBoulder(Creature* c) {
     l->globalMessage(pos + dir * dist, 
         PlayerMessage("A huge rolling boulder appears!", PlayerMessage::CRITICAL),
         PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
-    Square* target = l->getSquare(pos + dir * dist);
+    Square* target = l->getSafeSquare(pos + dir * dist);
     if (target->canDestroy())
       target->destroy();
     if (Creature *c = target->getCreature()) {

@@ -69,7 +69,7 @@ class Construction : public Task {
   Construction(Callback* c, Vec2 pos, SquareType _type) : type(_type), position(pos), callback(c) {}
 
   virtual bool isImpossible(const Level* level) {
-    return !level->getSquare(position)->canConstruct(type);
+    return !level->getSafeSquare(position)->canConstruct(type);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -197,7 +197,7 @@ class PickItem : public NonTransferable {
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(!pickedUp);
-    if (!itemsExist(c->getLevel()->getSquare(position))) {
+    if (!itemsExist(c->getLevel()->getSafeSquare(position))) {
       callback->onCantPickItem(items);
       setDone();
       return NoMove;
@@ -365,7 +365,7 @@ class BringItem : public PickItem {
       }
     } else {
       if (c->getPosition().dist8(target) == 1)
-        if (Creature* other = c->getLevel()->getSquare(target)->getCreature())
+        if (Creature* other = c->getLevel()->getSafeSquare(target)->getCreature())
           if (other->isAffected(LastingEffect::SLEEP))
             other->removeEffect(LastingEffect::SLEEP);
       return c->moveTowards(target);
@@ -453,7 +453,7 @@ class ApplySquare : public NonTransferable {
     } else {
       MoveInfo move(c->moveTowards(position));
       if (!move || (position.dist8(c->getPosition()) == 1
-            && c->getLevel()->getSquare(position)->getCreature())) {
+            && c->getLevel()->getSafeSquare(position)->getCreature())) {
         rejectedPosition.insert(position);
         position = Vec2(-1, -1);
         if (--invalidCount == 0) {
@@ -613,7 +613,7 @@ class DestroySquare : public NonTransferable {
     if (c->getPosition().dist8(position) == 1)
       if (auto action = c->destroy(position - c->getPosition(), Creature::DESTROY))
         return action.append([=] { 
-          if (!c->getLevel()->getSquare(position)->canDestroyBy(c))
+          if (!c->getLevel()->getSafeSquare(position)->canDestroyBy(c))
             setDone();
           });
     if (auto action = c->moveTowards(position))
@@ -783,7 +783,8 @@ PTask Task::attackLeader(Collective* col) {
 PTask Task::stealFrom(Collective* collective, Callback* callback) {
   vector<PTask> tasks;
   for (Vec2 pos : collective->getSquares(SquareId::TREASURE_CHEST)) {
-    vector<Item*> gold = collective->getLevel()->getSquare(pos)->getItems(Item::classPredicate(ItemClass::GOLD));
+    vector<Item*> gold = collective->getLevel()->getSafeSquare(pos)->getItems(
+        Item::classPredicate(ItemClass::GOLD));
     if (!gold.empty())
       tasks.push_back(pickItem(callback, pos, gold));
   }
@@ -883,7 +884,7 @@ class CreateBed : public NonTransferable {
   virtual MoveInfo getMove(Creature* c) override {
     if (c->getPosition() != position) {
       if (c->getPosition().dist8(position) == 1)
-        if (Creature* other = c->getLevel()->getSquare(position)->getCreature())
+        if (Creature* other = c->getLevel()->getSafeSquare(position)->getCreature())
           other->removeEffect(LastingEffect::SLEEP);
       return c->moveTowards(position);
     } else

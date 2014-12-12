@@ -77,23 +77,21 @@ class AmuletOfWarning : public Item {
   AmuletOfWarning(const ItemAttributes& attr, int r) : Item(attr), radius(r) {}
 
   virtual void specialTick(double time, Level* level, Vec2 position) override {
-    Creature* owner = level->getSquare(position)->getCreature();
+    Creature* owner = level->getSafeSquare(position)->getCreature();
     if (owner && owner->getEquipment().isEquiped(this)) {
       Rectangle rect = Rectangle(position.x - radius, position.y - radius,
           position.x + radius + 1, position.y + radius + 1);
       bool isDanger = false;
       bool isBigDanger = false;
-      for (Vec2 v : rect) {
-        if (!level->inBounds(v))
-          continue;
-        for (Trigger* t : level->getSquare(v)->getTriggers())
+      for (Square* square : level->getSquares(rect.getAllSquares())) {
+        for (Trigger* t : square->getTriggers())
           if (t->isDangerous(owner)) {
-            if (v.dist8(position) <= 1)
+            if (square->getPosition().dist8(position) <= 1)
               isBigDanger = true;
             else
               isDanger = true;
           }
-        if (Creature* c = level->getSquare(v)->getCreature()) {
+        if (Creature* c = square->getCreature()) {
           if (!owner->canSee(c) && c->isEnemy(owner)) {
             int diff = c->getModifier(ModifierType::DAMAGE) - owner->getModifier(ModifierType::DAMAGE);
             if (diff > 5)
@@ -130,7 +128,7 @@ class AmuletOfHealing : public Item {
   AmuletOfHealing(const ItemAttributes& attr) : Item(attr) {}
 
   virtual void specialTick(double time, Level* level, Vec2 position) override {
-    Creature* owner = level->getSquare(position)->getCreature();
+    Creature* owner = level->getSafeSquare(position)->getCreature();
     if (owner && owner->getEquipment().isEquiped(this)) {
       if (lastTick == -1)
         lastTick = time;
@@ -274,14 +272,13 @@ class Corpse : public Item {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
         Effect::applyToPosition(level, position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
-        !level->getCoverInfo(position).covered() && Random.roll(35)) {
-      for (Vec2 v : position.neighbors8(true))
-        if (level->inBounds(v)) {
-          PCreature vulture = CreatureFactory::fromId(
-              CreatureId::VULTURE, Tribe::get(TribeId::PEST), MonsterAIFactory::scavengerBird(v));
-          if (level->getSquare(v)->canEnter(vulture.get())) {
-            level->addCreature(v, std::move(vulture));
-            level->globalMessage(v, "A vulture lands near " + getTheName());
+          !level->getCoverInfo(position).covered() && Random.roll(35)) {
+        for (Square* square : level->getSquares(position.neighbors8(true))) {
+          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, Tribe::get(TribeId::PEST),
+              MonsterAIFactory::scavengerBird(square->getPosition()));
+          if (square->canEnter(vulture.get())) {
+            level->addCreature(square->getPosition(), std::move(vulture));
+            level->globalMessage(square->getPosition(), "A vulture lands near " + getTheName());
             rottenTime -= 40;
             break;
           }

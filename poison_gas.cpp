@@ -41,14 +41,13 @@ void PoisonGas::tick(Level* level, Vec2 pos) {
     amount = 0;
     return;
   }
-  for (Vec2 v : Vec2::directions8(true)) {
-    Square* square = level->getSquare(pos + v);
+  for (Square* square : level->getSquares(pos.neighbors8(true))) {
     if (square->canSeeThru() && amount > 0 && square->getPoisonGasAmount() < amount) {
-      double transfer = v.isCardinal4() ? spread : spread / 2;
+      double transfer = (square->getPosition() - pos).isCardinal4() ? spread : spread / 2;
       transfer = min(amount, transfer);
       transfer = min((amount - square->getPoisonGasAmount()) / 2, transfer);
       amount -= transfer;
-      level->getSquare(v + pos)->addPoisonGas(transfer);
+      square->addPoisonGas(transfer);
     }
   }
   amount = max(0.0, amount * decrease);
