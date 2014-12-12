@@ -21,7 +21,7 @@
 #include "view_index.h"
 #include "tile.h"
 #include "window_view.h"
-#include "window_renderer.h"
+#include "renderer.h"
 #include "clock.h"
 #include "view_id.h"
 #include "level.h"
@@ -62,7 +62,7 @@ void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
 }
 
 
-Optional<Vec2> MapGui::getHighlightedTile(WindowRenderer& renderer) {
+Optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
   Vec2 pos = renderer.getMousePos();
   if (!pos.inRectangle(getBounds()))
     return Nothing();
@@ -274,7 +274,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
     renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::DARK_GREEN]);
   }
-  const Tile& tile = Tile::getTile(object, spriteMode);
+  const Tile& tile = Tile::getTile(object.id(), spriteMode);
   Color color = Renderer::getBleedingColor(object);
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = transparency(color, 70);

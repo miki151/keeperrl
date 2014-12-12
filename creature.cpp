@@ -2099,7 +2099,7 @@ int Creature::getExpLevel() const {
 }
 
 double exerciseMax = 2.0;
-double increaseMult = 0.002; // This translates to about 690 stat exercises to reach 50% of the max increase,
+double increaseMult = 0.001; // This translates to about 690 stat exercises to reach 50% of the max increase,
                              // and 2300 to reach 90%
 
 void Creature::exerciseAttr(AttrType t, double value) {

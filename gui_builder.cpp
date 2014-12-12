@@ -16,7 +16,8 @@
 #include "stdafx.h"
 #include "gui_builder.h"
 #include "clock.h"
-#include "window_renderer.h"
+#include "renderer.h"
+#include "view_id.h"
 
 using sf::Color;
 using sf::String;
@@ -563,12 +564,17 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
     vector<PGuiElem> currentLine = makeVec<PGuiElem>(
         GuiElem::stack(
           GuiElem::button(getButtonCallback({UserInputId::EDIT_TEAM, teamId})),
-          GuiElem::label("X", colors[info.currentTeam == teamId ? ColorId::GREEN : ColorId::WHITE])));
+          info.currentTeam == teamId 
+              ? GuiElem::viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk)
+              : GuiElem::viewObject(ViewId::TEAM_BUTTON, tilesOk),
+          GuiElem::mouseHighlight2(GuiElem::viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk))));
     for (auto elem : team) {
-      currentLine.push_back(GuiElem::stack(
+      currentLine.push_back(GuiElem::stack(makeVec<PGuiElem>(
             GuiElem::button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo(teamId, elem)})),
             GuiElem::viewObject(info.getMinion(elem).viewObject, tilesOk),
-            GuiElem::label(toString(info.getMinion(elem).expLevel), 12)));
+            GuiElem::mouseHighlight2(GuiElem::margins(
+                GuiElem::rectangle(colors[ColorId::TRANSPARENT], colors[ColorId::WHITE]), -3, -2, -3, -2)),
+            GuiElem::label(toString(info.getMinion(elem).expLevel), 12))));
       if (currentLine.size() >= numPerLine)
         list.push_back(GuiElem::horizontalList(std::move(currentLine), elemWidth, 0));
     }
@@ -589,7 +595,7 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
         GuiElem::label("[new team]", colors[ColorId::WHITE])));
   else
     list.push_back(GuiElem::horizontalList(makeVec<PGuiElem>(
-        GuiElem::label("X", colors[ColorId::GREEN]),
+        GuiElem::viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk),
         GuiElem::label("Click on minions to add.", colors[ColorId::LIGHT_BLUE])), elemWidth, 0));
   list.push_back(GuiElem::empty());
   if (info.payoutTimeRemaining > -1) {

@@ -1123,11 +1123,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         break;
     case UserInputId::EDIT_TEAM:
-        setCurrentTeam(input.get<TeamId>());
+        if (getCurrentTeam() == input.get<TeamId>())
+          setCurrentTeam(Nothing());
+        else
+          setCurrentTeam(input.get<TeamId>());
         newTeam = false;
         break;
     case UserInputId::CREATE_TEAM:
-        newTeam = true;
+        newTeam = !newTeam;
         setCurrentTeam(Nothing());
         break;
     case UserInputId::COMMAND_TEAM:

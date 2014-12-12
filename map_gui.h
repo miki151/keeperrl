@@ -23,7 +23,7 @@ class ViewIndex;
 class MapMemory;
 class MapLayout;
 class ViewObject;
-class WindowRenderer;
+class Renderer;
 
 class MapGui : public GuiElem {
   public:
@@ -44,7 +44,7 @@ class MapGui : public GuiElem {
   void setLevelBounds(Rectangle bounds);
   void updateLayout(MapLayout*, Rectangle levelBounds);
   void setSpriteMode(bool);
-  Optional<Vec2> getHighlightedTile(WindowRenderer& renderer);
+  Optional<Vec2> getHighlightedTile(Renderer& renderer);
   void setHint(const string&);
   void addAnimation(PAnimation animation, Vec2 position);
   void setCenter(double x, double y);

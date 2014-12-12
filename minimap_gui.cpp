@@ -19,7 +19,7 @@
 #include "creature_view.h"
 #include "tile.h"
 #include "location.h"
-#include "window_renderer.h"
+#include "renderer.h"
 #include "creature.h"
 #include "square.h"
 
@@ -121,7 +121,7 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
     }
 }
 
-void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, WindowRenderer& r,
+void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Renderer& r,
     function<void(double, double)> clickFun) {
   const Level* level = creature->getLevel();
   double scale = min(double(bounds.getW()) / level->getBounds().getW(),

@@ -543,20 +543,28 @@ PGuiElem GuiElem::empty() {
 class ViewObjectGui : public GuiElem {
   public:
   ViewObjectGui(const ViewObject& obj, bool sprites) : object(obj), useSprites(sprites) {}
+  ViewObjectGui(ViewId id, bool sprites) : object(id), useSprites(sprites) {}
   
   virtual void render(Renderer& renderer) override {
     int x = getBounds().getTopLeft().x;
     int y = getBounds().getTopLeft().y;
-    renderer.drawViewObject(x, y, object, useSprites, 0.6666);
+    if (ViewObject* obj = boost::get<ViewObject>(&object))
+      renderer.drawViewObject(x, y, *obj, useSprites, 0.6666);
+    else
+      renderer.drawViewObject(x, y, boost::get<ViewId>(object), useSprites, 0.6666);
   }
 
   private:
-  ViewObject object;
+  variant<ViewObject, ViewId> object;
   bool useSprites;
 };
 
 PGuiElem GuiElem::viewObject(const ViewObject& object, bool useSprites) {
   return PGuiElem(new ViewObjectGui(object, useSprites));
+}
+
+PGuiElem GuiElem::viewObject(ViewId id, bool useSprites) {
+  return PGuiElem(new ViewObjectGui(id, useSprites));
 }
 
 class TranslateGui : public GuiLayout {
@@ -623,17 +631,10 @@ class MouseHighlight2 : public GuiLayout {
   MouseHighlight2(PGuiElem h)
     : GuiLayout(makeVec<PGuiElem>(std::move(h))) {}
 
-  virtual void onMouseMove(Vec2 pos) override {
-    over = pos.inRectangle(getBounds());
-  }
-
   virtual void render(Renderer& r) override {
-    if (over)
+    if (r.getMousePos().inRectangle(getBounds()))
       elems[0]->render(r);
   }
-
-  private:
-  bool over = false;
 };
 
 PGuiElem GuiElem::mouseHighlight(PGuiElem elem, int myIndex, int* highlighted) {

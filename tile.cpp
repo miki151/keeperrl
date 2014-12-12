@@ -256,33 +256,23 @@ const Tile& Tile::fromViewId(ViewId id) {
   return tiles.at(id);
 }
 
-const Tile& getSpriteTile(const ViewObject& obj) {
-  ViewId id = obj.id();
-/*  if (id == ViewId::SPECIAL_BEAST)
-    return getSpecialCreatureSprite(obj, false);
-  if (id == ViewId::SPECIAL_HUMANOID)
-    return getSpecialCreatureSprite(obj, true);*/
+const Tile& getSpriteTile(ViewId id) {
   if (!tiles.count(id))
     FAIL << "unhandled view id " << EnumInfo<ViewId>::getString(id);
   return tiles.at(id);
 }
 
-const Tile& getAsciiTile(const ViewObject& obj) {
-  ViewId id = obj.id();
-/*  if (id == ViewId::SPECIAL_BEAST)
-    return getSpecialCreature(obj, false);
-  if (id == ViewId::SPECIAL_HUMANOID)
-    return getSpecialCreature(obj, true);*/
+const Tile& getAsciiTile(ViewId id) {
   if (!symbols.count(id))
     FAIL << "unhandled view id " << EnumInfo<ViewId>::getString(id);
   return symbols.at(id);
 }
 
-const Tile& Tile::getTile(const ViewObject& obj, bool sprite) {
+const Tile& Tile::getTile(ViewId id, bool sprite) {
   if (sprite)
-    return getSpriteTile(obj);
+    return getSpriteTile(id);
   else
-    return getAsciiTile(obj);
+    return getAsciiTile(id);
 }
 
 Color Tile::getColor(const ViewObject& object) {
@@ -290,7 +280,7 @@ Color Tile::getColor(const ViewObject& object) {
     return colors[ColorId::DARK_GRAY];
   if (object.hasModifier(ViewObject::Modifier::HIDDEN))
     return colors[ColorId::LIGHT_GRAY];
-  Color color = getAsciiTile(object).color;
+  Color color = getAsciiTile(object.id()).color;
   if (object.hasModifier(ViewObject::Modifier::PLANNED)) {
     return Color((color.r) / 2, (color.g) / 2, (color.b) / 2);
   }

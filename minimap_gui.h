@@ -21,7 +21,7 @@
 
 class Level;
 class CreatureView;
-class WindowRenderer;
+class Renderer;
 
 class MinimapGui : public GuiElem {
   public:
@@ -31,8 +31,7 @@ class MinimapGui : public GuiElem {
   void update(const Level* level, Rectangle levelPart, const CreatureView* creature, bool printLocations = false);
   void update(const Level* level, Rectangle levelPart, Rectangle bounds,
       const CreatureView* creature, bool printLocations = false);
-  void presentMap(const CreatureView* creature, Rectangle bounds, WindowRenderer& renderer,
-      function<void(double, double)> clickFun);
+  void presentMap(const CreatureView*, Rectangle bounds, Renderer&, function<void(double, double)> clickFun);
 
   virtual void render(Renderer&) override;
   virtual void onLeftClick(Vec2) override;

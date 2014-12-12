@@ -45,16 +45,16 @@ void Spell::init() {
   set(SpellId::SPEED_SELF, new Spell("haste self", {EffectId::LASTING, LastingEffect::SPEED}, 60));
   set(SpellId::STR_BONUS, new Spell("strength", {EffectId::LASTING, LastingEffect::STR_BONUS}, 90));
   set(SpellId::DEX_BONUS, new Spell("dexterity", {EffectId::LASTING, LastingEffect::DEX_BONUS}, 90));
-  set(SpellId::BLAST, new Spell("force bolt", DirEffectId::BLAST, 150));
+  set(SpellId::BLAST, new Spell("force bolt", DirEffectId::BLAST, 100));
   set(SpellId::STUN_RAY, new Spell("stun ray", 
-        DirEffectType(DirEffectId::CREATURE_EFFECT, EffectType(EffectId::LASTING, LastingEffect::STUNNED)) , 150));
-  set(SpellId::MAGIC_SHIELD, new Spell("magic shield", {EffectId::LASTING, LastingEffect::MAGIC_SHIELD}, 150));
+        DirEffectType(DirEffectId::CREATURE_EFFECT, EffectType(EffectId::LASTING, LastingEffect::STUNNED)) , 60));
+  set(SpellId::MAGIC_SHIELD, new Spell("magic shield", {EffectId::LASTING, LastingEffect::MAGIC_SHIELD}, 100));
   set(SpellId::FIRE_SPHERE_PET, new Spell("fire sphere", EffectId::FIRE_SPHERE_PET, 20));
-  set(SpellId::TELEPORT, new Spell("escape", EffectId::TELEPORT, 120));
-  set(SpellId::INVISIBILITY, new Spell("invisibility", {EffectId::LASTING, LastingEffect::INVISIBLE}, 300));
-  set(SpellId::WORD_OF_POWER, new Spell("word of power", EffectId::WORD_OF_POWER, 300));
-  set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", EffectId::SUMMON_SPIRIT, 300));
-  set(SpellId::PORTAL, new Spell("portal", EffectId::PORTAL, 200));
-  set(SpellId::CURE_POISON, new Spell("cure poisoning", EffectId::CURE_POISON, 300));
-  set(SpellId::METEOR_SHOWER, new Spell("meteor shower", EffectId::METEOR_SHOWER, 300));
+  set(SpellId::TELEPORT, new Spell("escape", EffectId::TELEPORT, 80));
+  set(SpellId::INVISIBILITY, new Spell("invisibility", {EffectId::LASTING, LastingEffect::INVISIBLE}, 150));
+  set(SpellId::WORD_OF_POWER, new Spell("word of power", EffectId::WORD_OF_POWER, 150));
+  set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", EffectId::SUMMON_SPIRIT, 150));
+  set(SpellId::PORTAL, new Spell("portal", EffectId::PORTAL, 150));
+  set(SpellId::CURE_POISON, new Spell("cure poisoning", EffectId::CURE_POISON, 150));
+  set(SpellId::METEOR_SHOWER, new Spell("meteor shower", EffectId::METEOR_SHOWER, 150));
 }

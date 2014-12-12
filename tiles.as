@@ -331,6 +331,8 @@ void genTiles() {
       .addConnection(dirs(SW), 13, 12));
   addTile(SPECIAL_BEAST, sprite(7, 10));
   addTile(SPECIAL_HUMANOID, sprite(2, 10));
+  addTile(TEAM_BUTTON, sprite("team_button"));
+  addTile(TEAM_BUTTON_HIGHLIGHT, sprite("team_button_highlight"));
 }
 
 void genSymbols() {
@@ -577,4 +579,6 @@ void genSymbols() {
   addSymbol(FOG_OF_WAR_CORNER, symbol(' ', WHITE));
   addSymbol(SPECIAL_BEAST, symbol('B', PURPLE));
   addSymbol(SPECIAL_HUMANOID, symbol('H', PURPLE));
+  addSymbol(TEAM_BUTTON, symbol("⚐", WHITE, true));
+  addSymbol(TEAM_BUTTON_HIGHLIGHT, symbol("⚐", GREEN, true));
 }

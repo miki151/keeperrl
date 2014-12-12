@@ -63,6 +63,7 @@ class GuiElem {
   static PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
   static PGuiElem viewObject(const ViewObject& object, bool useSprites);
+  static PGuiElem viewObject(ViewId, bool useSprites);
   static PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);
   static PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
   static PGuiElem centerHoriz(PGuiElem, int width);

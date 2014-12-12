@@ -58,7 +58,8 @@ RICH_ENUM(ColorId,
   LIGHT_BLUE,
   PURPLE,
   VIOLET,
-  TRANSLUCENT_BLACK
+  TRANSLUCENT_BLACK,
+  TRANSPARENT
 );
 
 Color transparency(const Color& color, int trans);
@@ -80,7 +81,6 @@ class Renderer {
   public: 
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
-  void initialize(RenderTarget*, int width, int height);
   int getTextLength(string s);
   void drawText(FontId, int size, Color color, int x, int y, String s, bool center = false);
   void drawTextWithHotkey(Color color, int x, int y, const string& text, char key);
@@ -97,6 +97,7 @@ class Renderer {
   void drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline = Nothing());
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline = Nothing());
   void drawViewObject(int x, int y, const ViewObject&, bool useSprite, double scale = 1);
+  void drawViewObject(int x, int y, ViewId, bool useSprite, double scale = 1);
   static Color getBleedingColor(const ViewObject&);
   int getWidth();
   int getHeight();
@@ -104,6 +105,22 @@ class Renderer {
   static bool loadTilesFromFile(const string& path, Vec2 size);
   static void setNominalSize(Vec2);
   static String toUnicode(const string&);
+
+  void initialize(int width, int height, string title);
+  void drawAndClearBuffer();
+  void resize(int width, int height);
+  bool pollEvent(Event&, Event::EventType);
+  bool pollEvent(Event&);
+  void flushEvents(Event::EventType);
+  void flushAllEvents();
+  void waitEvent(Event&);
+  Vec2 getMousePos();
+  bool leftButtonPressed();
+  bool rightButtonPressed();
+
+  void startMonkey();
+  bool isMonkey();
+  Event getRandomEvent();
 
   struct TileCoords {
     Vec2 pos;
@@ -118,7 +135,12 @@ class Renderer {
 
   private:
   static map<string, TileCoords> tileCoords;
-  RenderTarget* display = nullptr;
+  bool pollEventWorkaroundMouseReleaseBug(Event&);
+  RenderWindow* display = nullptr;
+  sf::View* sfView;
+  bool monkey = false;
+  deque<Event> eventQueue;
+  bool genReleaseEvent = false;
 };
 
 #endif

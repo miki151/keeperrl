@@ -150,8 +150,9 @@ int Renderer::getHeight() {
   return display->getSize().y;
 }
 
-void Renderer::initialize(RenderTarget* d, int width, int height) {
-  display = d;
+void Renderer::initialize(int width, int height, string title) {
+  display = new RenderWindow(sf::VideoMode::getDesktopMode(), title);
+  sfView = new sf::View(display->getDefaultView());
   CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(tileFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(symbolFont.loadFromFile("Symbola.ttf"));
@@ -183,7 +184,7 @@ void Renderer::initialize(RenderTarget* d, int width, int height) {
   colors[ColorId::PURPLE] = Color(160, 32, 240);
   colors[ColorId::VIOLET] = Color(120, 0, 255);
   colors[ColorId::TRANSLUCENT_BLACK] = Color(0, 0, 0);
-
+  colors[ColorId::TRANSPARENT] = Color(0, 0, 0, 0);
 }
 
 Vec2 getOffset(Vec2 sizeDiff, double scale) {
@@ -197,8 +198,21 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
   return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
 }
 
+void Renderer::drawViewObject(int x, int y, ViewId id, bool useSprite, double scale) {
+  const Tile& tile = Tile::getTile(id, useSprite);
+  if (tile.hasSpriteCoord()) {
+    CHECK(tile.getTexNum() >= 0 && tile.getTexNum() < Renderer::tiles.size());
+    Vec2 sz = Renderer::tileSize[tile.getTexNum()];
+    Vec2 of = getOffset(Renderer::nominalSize - sz, scale);
+    Vec2 coord = tile.getSpriteCoord(EnumSet<Dir>::fullSet());
+    drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles.at(tile.getTexNum()),
+        sz.x * scale, sz.y * scale);
+  } else
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, x, y, tile.text);
+}
+
 void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSprite, double scale) {
-  const Tile& tile = Tile::getTile(object, useSprite);
+  const Tile& tile = Tile::getTile(object.id(), useSprite);
   if (tile.hasSpriteCoord()) {
     CHECK(tile.getTexNum() >= 0 && tile.getTexNum() < Renderer::tiles.size());
     Vec2 sz = Renderer::tileSize[tile.getTexNum()];
@@ -260,3 +274,103 @@ void Renderer::setNominalSize(Vec2 sz) {
   nominalSize = sz;
 }
 
+void Renderer::drawAndClearBuffer() {
+  display->display();
+  display->clear(Color(0, 0, 0));
+}
+
+void Renderer::resize(int width, int height) {
+  display->setView(*(sfView = new sf::View(sf::FloatRect(0, 0, width, height))));
+}
+
+Event Renderer::getRandomEvent() {
+  Event::EventType type = Event::EventType(Random.get(int(Event::Count)));
+  Event ret;
+  ret.type = type;
+  int modProb = 5;
+  switch (type) {
+    case Event::KeyPressed:
+      ret.key = {Keyboard::Key(Random.get(int(Keyboard::Key::KeyCount))), Random.roll(modProb),
+          Random.roll(modProb), Random.roll(modProb), Random.roll(modProb) };
+      break;
+    case Event::MouseButtonReleased:
+    case Event::MouseButtonPressed:
+      ret.mouseButton = { chooseRandom({Mouse::Left, Mouse::Right}), Random.get(getWidth()),
+        Random.get(getHeight()) };
+      break;
+    case Event::MouseMoved:
+      ret.mouseMove = { Random.get(getWidth()), Random.get(getHeight()) };
+      break;
+    default: return getRandomEvent();
+  }
+  return ret;
+}
+
+bool Renderer::pollEventWorkaroundMouseReleaseBug(Event& ev) {
+  if (genReleaseEvent && !Mouse::isButtonPressed(Mouse::Right) && !Mouse::isButtonPressed(Mouse::Left)) {
+    ev.type = Event::MouseButtonReleased;
+    ev.mouseButton = {Mouse::Left, Mouse::getPosition().x, Mouse::getPosition().y};
+    genReleaseEvent = false;
+    return true;
+  }
+  bool was = display->pollEvent(ev);
+  if (!was)
+    return false;
+  if (ev.type == Event::MouseButtonPressed) {
+    genReleaseEvent = true;
+    return true;
+  } else if (ev.type == Event::MouseButtonReleased)
+    return false;
+  else
+    return true;
+}
+
+bool Renderer::pollEvent(Event& ev) {
+  if (monkey) {
+    if (Random.roll(2))
+      return false;
+    ev = getRandomEvent();
+    return true;
+  } else if (!eventQueue.empty()) {
+      ev = eventQueue.front();
+      eventQueue.pop_front();
+      return true;
+  } else
+    return pollEventWorkaroundMouseReleaseBug(ev);
+}
+
+void Renderer::flushEvents(Event::EventType type) {
+  Event ev;
+  while (display->pollEvent(ev)) {
+    if (ev.type != type)
+      eventQueue.push_back(ev);
+  }
+}
+
+void Renderer::waitEvent(Event& ev) {
+  if (monkey) {
+    ev = getRandomEvent();
+    return;
+  } else {
+    if (!eventQueue.empty()) {
+      ev = eventQueue.front();
+      eventQueue.pop_front();
+    } else
+      display->waitEvent(ev);
+  }
+}
+
+Vec2 Renderer::getMousePos() {
+  if (monkey)
+    return Vec2(Random.get(getWidth()), Random.get(getHeight()));
+  auto pos = Mouse::getPosition(*display);
+  return Vec2(pos.x, pos.y);
+}
+
+void Renderer::startMonkey() {
+  monkey = true;
+}
+  
+bool Renderer::isMonkey() {
+  return monkey;
+}

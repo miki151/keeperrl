@@ -35,17 +35,17 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Technology);
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology("alchemy", 80, {}));
   Technology::set(TechId::ALCHEMY_ADV, new Technology("advanced alchemy", 200, {TechId::ALCHEMY}));
-  Technology::set(TechId::HUMANOID_MUT, new Technology("humanoid mutation", 250,{}));
-  Technology::set(TechId::BEAST_MUT, new Technology("beast mutation", 250, {}));
+  Technology::set(TechId::HUMANOID_MUT, new Technology("humanoid mutation", 400,{}));
+  Technology::set(TechId::BEAST_MUT, new Technology("beast mutation", 400, {}));
   Technology::set(TechId::CRAFTING, new Technology("crafting", 40, {}));
   Technology::set(TechId::IRON_WORKING, new Technology("iron working", 60, {TechId::CRAFTING}));
   Technology::set(TechId::JEWELLERY, new Technology("jewellery", 200, {TechId::IRON_WORKING}));
   Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", 100, {TechId::IRON_WORKING}, true));
-  Technology::set(TechId::TRAPS, new Technology("traps", 60, {TechId::CRAFTING}));
-  Technology::set(TechId::ARCHERY, new Technology("archery", 80, {TechId::CRAFTING}, true));
+  Technology::set(TechId::TRAPS, new Technology("traps", 100, {TechId::CRAFTING}));
+  Technology::set(TechId::ARCHERY, new Technology("archery", 100, {TechId::CRAFTING}, true));
   Technology::set(TechId::SPELLS, new Technology("sorcery", 60, {}));
   Technology::set(TechId::SPELLS_ADV, new Technology("advanced sorcery", 120, {TechId::SPELLS}));
-  Technology::set(TechId::SPELLS_MAS, new Technology("master sorcery", 250, {TechId::SPELLS_ADV}));
+  Technology::set(TechId::SPELLS_MAS, new Technology("master sorcery", 350, {TechId::SPELLS_ADV}));
   Technology::set(TechId::KRAKEN, new Technology("kraken breeding", 150, {TechId::ALCHEMY}));
 }
 

@@ -1348,7 +1348,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::LABORATORY, 4); 
           c.minionTasks.setValue(MinionTask::STUDY, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setWorkshopTasks(0);
           c.skills.setValue(SkillId::SORCERY, 0.7);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.0);
           c.skills.insert(SkillId::HEALING);
@@ -1889,7 +1888,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::SPEED] = 150;
           c.attr[AttrType::STRENGTH] = 3;
           c.attr[AttrType::DEXTERITY] = 16;
-          c.barehandedDamage = 7;
+          c.barehandedDamage = 2;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.minionTasks.clear();
           c.minionTasks.setValue(MinionTask::EXPLORE_CAVES, 1);

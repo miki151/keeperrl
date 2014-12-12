@@ -22,7 +22,7 @@
 #include "level.h"
 #include "options.h"
 #include "location.h"
-#include "window_renderer.h"
+#include "renderer.h"
 #include "tile.h"
 #include "clock.h"
 #include "creature_view.h"
@@ -82,7 +82,7 @@ int rightBarWidthPlayer = 290;
 int bottomBarHeightCollective = 62;
 int bottomBarHeightPlayer = 62;
 
-WindowRenderer renderer;
+Renderer renderer;
 
 Rectangle WindowView::getMapGuiBounds() const {
   switch (gameInfo.infoType) {
