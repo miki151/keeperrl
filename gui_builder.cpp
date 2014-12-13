@@ -383,7 +383,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
         int viewObjectWidth = 30;
         size.x = max(size.x, viewObjectWidth + renderer.getTextLength(info.lyingItems[i].name));
         lines.push_back(GuiElem::stack(GuiElem::horizontalList(makeVec<PGuiElem>(
-                GuiElem::viewObject(info.lyingItems[i].viewObject, true),
+                GuiElem::viewObject(info.lyingItems[i].viewObject, tilesOk),
                 GuiElem::label(info.lyingItems[i].name)), viewObjectWidth, 0),
             GuiElem::button(getButtonCallback({UserInputId::PICK_UP_ITEM, i}))));
       }
