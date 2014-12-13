@@ -20,7 +20,7 @@
 template <class Archive> 
 void Monster::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(Controller)
-     & SVAR(actor)
+     & SVAR(monsterAI)
      & SVAR(enemies);
   CHECK_SERIAL;
 }
@@ -29,14 +29,14 @@ SERIALIZABLE(Monster);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Monster);
 
-Monster::Monster(Creature* c, MonsterAIFactory f) : Controller(c), actor(f.getMonsterAI(c)) {}
+Monster::Monster(Creature* c, MonsterAIFactory f) : Controller(c), monsterAI(f.getMonsterAI(c)) {}
 
 ControllerFactory Monster::getFactory(MonsterAIFactory f) {
   return ControllerFactory([=](Creature* c) { return new Monster(c, f);});
 }
 
 void Monster::makeMove() {
-  actor->makeMove();
+  monsterAI->makeMove();
 }
 
 static string addName(const string& s, const string& n) {

@@ -830,10 +830,12 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         c.barehandedDamage = r.get(5, 15);
         c.humanoid = humanoid;
         c.spawnType = humanoid ? SpawnType::HUMANOID : SpawnType::BEAST;
-        c.skills.setValue(SkillId::WEAPON_MELEE, r.getDouble(0, 1));
-        c.skills.setValue(SkillId::UNARMED_MELEE, r.getDouble(0, 1));
-        c.skills.setValue(SkillId::ARCHERY, r.getDouble(0, 1));
-        c.skills.setValue(SkillId::SORCERY, r.getDouble(0, 1));
+        if (humanoid) {
+          c.skills.setValue(SkillId::WEAPON_MELEE, r.getDouble(0, 1));
+          c.skills.setValue(SkillId::UNARMED_MELEE, r.getDouble(0, 1));
+          c.skills.setValue(SkillId::ARCHERY, r.getDouble(0, 1));
+          c.skills.setValue(SkillId::SORCERY, r.getDouble(0, 1));
+        }
         c.weight = c.size == CreatureSize::LARGE ? r.get(80,120) : 
                    c.size == CreatureSize::MEDIUM ? r.get(40, 60) :
                    r.get(5, 20);
@@ -1876,7 +1878,7 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(EARTH_ELEMENTAL,
           c.viewId = ViewId::ENT;
           c.skills.insert(SkillId::ELF_VISION);
-          c.name = "ent";);
+          c.name = "tree spirit";);
     case CreatureId::ANGEL:
       return INHERIT(KNIGHT,
           c.viewId = ViewId::ANGEL;

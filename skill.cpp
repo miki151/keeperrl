@@ -123,7 +123,7 @@ void Skill::init() {
   Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning.", true));
   Skill::set(SkillId::ARCHERY, new Skill("archery", "Shoot bows.", false));
   Skill::set(SkillId::WEAPON_MELEE, new Skill("weapon melee", "Fight with weapons.", false));
-  Skill::set(SkillId::UNARMED_MELEE, new Skill("weapon melee", "Fight unarmed.", false));
+  Skill::set(SkillId::UNARMED_MELEE, new Skill("unarmed melee", "Fight unarmed.", false));
   Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms.", true, false));
   Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees.", true));
   Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark.", true));

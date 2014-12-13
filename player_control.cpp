@@ -830,7 +830,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.enemies.clear();
   for (Vec2 v : getCollective()->getAllSquares())
     if (const Creature* c = getLevel()->getSafeSquare(v)->getCreature())
-      if (c->getTribe() != getTribe())
+      if (c->getTribe() != getTribe() && canSee(c))
         info.enemies.push_back(c);
   info.numResource.clear();
   for (auto elem : getCollective()->resourceInfo)

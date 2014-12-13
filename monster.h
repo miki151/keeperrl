@@ -23,7 +23,7 @@
 
 class Monster : public Controller {
   public:
-  Monster(Creature* creature, MonsterAIFactory);
+  Monster(Creature*, MonsterAIFactory);
   
   virtual void you(MsgType type, const string& param) override;
   virtual void you(const string& param) override;
@@ -39,7 +39,7 @@ class Monster : public Controller {
   SERIALIZATION_DECL(Monster);
 
   private:
-  PMonsterAI SERIAL(actor);
+  PMonsterAI SERIAL(monsterAI);
   vector<const Creature*> SERIAL(enemies);
 };
 

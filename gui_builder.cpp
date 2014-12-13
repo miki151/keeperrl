@@ -573,7 +573,7 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
             GuiElem::button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo(teamId, elem)})),
             GuiElem::viewObject(info.getMinion(elem).viewObject, tilesOk),
             GuiElem::mouseHighlight2(GuiElem::margins(
-                GuiElem::rectangle(colors[ColorId::TRANSPARENT], colors[ColorId::WHITE]), -3, -2, -3, -2)),
+                GuiElem::rectangle(colors[ColorId::TRANSPARENT], colors[ColorId::WHITE]), -3, -2, 3, 2)),
             GuiElem::label(toString(info.getMinion(elem).expLevel), 12))));
       if (currentLine.size() >= numPerLine)
         list.push_back(GuiElem::horizontalList(std::move(currentLine), elemWidth, 0));
