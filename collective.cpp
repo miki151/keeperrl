@@ -52,6 +52,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(sectors)
     & SVAR(pregnancies)
     & SVAR(nextPayoutTime)
+    & SVAR(minionAttraction)
     & SVAR(teams)
     & SVAR(knownLocations)
     & SVAR(torches)

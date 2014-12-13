@@ -132,8 +132,8 @@ class CreatureFactory {
   public:
   struct SingleCreature {
     SingleCreature(Tribe*, CreatureId);
-    CreatureId id;
-    Tribe* tribe;
+    CreatureId SERIAL(id);
+    Tribe* SERIAL(tribe);
     bool operator == (const SingleCreature&) const;
     SERIALIZATION_DECL(SingleCreature);
   };

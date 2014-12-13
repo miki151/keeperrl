@@ -30,7 +30,6 @@ class Creature;
 
 class Player : public Controller, public CreatureView {
   public:
-  Player(Creature*, Model*, bool adventureMode, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);
   virtual ~Player();
   virtual Controller* getPossessedController(Creature* c) override;
 
@@ -42,6 +41,8 @@ class Player : public Controller, public CreatureView {
   static void registerTypes(Archive& ar);
 
   protected:
+  Player(Creature*, Model*, bool greeting, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);
+
   virtual void moveAction(Vec2 direction);
 
   // from CreatureView
@@ -113,7 +114,6 @@ class Player : public Controller, public CreatureView {
   const Location* SERIAL2(lastLocation, nullptr);
   vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);
-  bool SERIAL(adventureMode);
   vector<EpithetId> SERIAL(usedEpithets);
   bool updateView = true;
   void retireMessages();

@@ -92,7 +92,7 @@ DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
 ##############################################################################
 
 
-all: $(NAME)
+all: check_serial $(NAME)
 
 stdafx.h.gch: stdafx.h
 	$(CC) -x c++-header $< -MMD $(CFLAGS) -o $@
@@ -107,11 +107,14 @@ endif
 $(OBJDIR)/%.o: %.cpp ${PCH}
 	$(CC) -MMD $(CFLAGS) $(PCHINC) -c $< -o $@
 
-$(NAME): $(OBJS) $(OBJDIR)/main.o
+$(NAME): $(OBJS)
 	$(LD) $(CFLAGS) -o $@ $^ $(LIBS)
 
 test: $(OBJS) $(OBJDIR)/test.o
 	$(LD) $(CFLAGS) -o $@ $^ $(LIBS)
+
+check_serial:
+	bash ./check_serial.sh
 
 clean:
 	$(RM) $(OBJDIR)/*.o

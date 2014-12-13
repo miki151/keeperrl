@@ -22,8 +22,7 @@
 
 template <class Archive> 
 void DoNothingController::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(Controller)
-     & BOOST_SERIALIZATION_NVP(creature);
+  ar & SUBCLASS(Controller);
 }
 
 SERIALIZABLE(DoNothingController);
@@ -65,9 +64,18 @@ void DoNothingController::you(const string& param) {
 }
 
 void DoNothingController::makeMove() {
-  creature->wait().perform();
+  getCreature()->wait().perform();
 }
 
 void DoNothingController::onBump(Creature* c) {
 }
+
+Creature* Controller::getCreature() {
+  return creature;
+}
+
+const Creature* Controller::getCreature() const {
+  return creature;
+}
+
 
