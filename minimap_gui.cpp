@@ -23,10 +23,8 @@
 #include "creature.h"
 #include "square.h"
 
-static Image mapBuffer;
-
 void MinimapGui::renderMap(Renderer& renderer, Vec2 topLeft) {
-  renderer.drawImage(info.bounds.translate(topLeft), mapBuffer, info.scale);
+  renderer.drawImage(info.bounds.translate(topLeft), mapBufferTex, info.scale);
   for (Vec2 v : info.roads) {
     Vec2 rrad(1, 1);
     Vec2 pos = topLeft + v * info.scale;
@@ -54,6 +52,7 @@ void MinimapGui::render(Renderer& r) {
 }
 
 MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
+  mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
 }
 
 void MinimapGui::onLeftClick(Vec2 v) {
@@ -61,11 +60,7 @@ void MinimapGui::onLeftClick(Vec2 v) {
     clickFun();
 }
 
-void MinimapGui::initialize() {
-  mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
-}
-
-void putMapPixel(Vec2 pos, Color col) {
+void MinimapGui::putMapPixel(Vec2 pos, Color col) {
   if (pos.inRectangle(Level::getMaxBounds()))
     mapBuffer.setPixel(pos.x, pos.y, col);
 }
@@ -119,6 +114,7 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
         info.locations.push_back({pos, loc->getName()});
       }
     }
+  mapBufferTex.loadFromImage(mapBuffer);
 }
 
 void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Renderer& r,

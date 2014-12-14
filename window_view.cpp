@@ -160,7 +160,6 @@ void WindowView::initialize() {
       [this](Vec2 pos) { mapLeftClickFun(pos); },
       [this](Vec2 pos) { mapRightClickFun(pos); },
       [this] { refreshInput = true;} );
-  MinimapGui::initialize();
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
@@ -168,6 +167,8 @@ void WindowView::initialize() {
   if (tilesOk) {
     CHECK(menuCore.loadFromFile("menu_core.png"));
     CHECK(menuMouth.loadFromFile("menu_mouth.png"));
+    menuCore.setSmooth(true);
+    menuMouth.setSmooth(true);
   } else {
     CHECK(splash1.loadFromFile("splash2f.png"));
     CHECK(splash2.loadFromFile("splash2e.png"));
@@ -261,7 +262,7 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
     while (!splashDone) {
       if (tilesOk) {
         drawMenuBackground(meter.getProgress(), min(1.0, double(Clock::get().getRealMillis() - t0) / mouthMillis));
-        renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() * 0.6, text, true);
+        renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() * 0.5, text, true);
       } else {
         renderer.drawImage((renderer.getWidth() - loadingSplash.getSize().x) / 2,
             (renderer.getHeight() - loadingSplash.getSize().y) / 2, loadingSplash);

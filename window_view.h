@@ -161,12 +161,12 @@ class WindowView: public View {
   }
   atomic<bool> splashDone;
   GuiBuilder guiBuilder;
-  Image menuCore;
-  Image menuMouth;
+  Texture menuCore;
+  Texture menuMouth;
   void drawMenuBackground(double barState, double mouthState);
-  Image splash1;
-  Image splash2;
-  Image loadingSplash;
+  Texture splash1;
+  Texture splash2;
+  Texture loadingSplash;
 };
 
 

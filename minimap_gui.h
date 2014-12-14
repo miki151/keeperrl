@@ -36,11 +36,10 @@ class MinimapGui : public GuiElem {
   virtual void render(Renderer&) override;
   virtual void onLeftClick(Vec2) override;
 
-  static void initialize();
-
   private:
 
   void renderMap(Renderer&, Vec2 topLeft);
+  void putMapPixel(Vec2 pos, Color col);
 
   struct MinimapInfo {
     Rectangle bounds;
@@ -56,6 +55,9 @@ class MinimapGui : public GuiElem {
   } info;
 
   function<void()> clickFun;
+
+  sf::Texture mapBufferTex;
+  sf::Image mapBuffer;
 };
 
 #endif

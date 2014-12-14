@@ -90,22 +90,19 @@ void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text,
   drawText(color, x, y, text);
 }
 
-void Renderer::drawImage(int px, int py, const Image& image, double scale) {
+void Renderer::drawImage(int px, int py, const Texture& image, double scale) {
   drawImage(px, py, px + image.getSize().x * scale, py + image.getSize().y * scale, image, scale);
 }
 
-void Renderer::drawImage(Rectangle r, const Image& image, double scale) {
+void Renderer::drawImage(Rectangle r, const Texture& image, double scale) {
   drawImage(r.getPX(), r.getPY(), r.getKX(), r.getKY(), image, scale);
 }
 
-void Renderer::drawImage(int px, int py, int kx, int ky, const Image& image, double scale) {
-  Texture t;
-  t.loadFromImage(image);
+void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, double scale) {
   Sprite s(t, sf::IntRect(0, 0, (kx - px) / scale, (ky - py) / scale));
   s.setPosition(px, py);
   if (scale != 1) {
     s.setScale(scale, scale);
-    t.setSmooth(true);
   }
   display->draw(s);
 }
