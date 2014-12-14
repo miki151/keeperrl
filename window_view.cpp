@@ -259,12 +259,14 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
     int t0 = Clock::get().getRealMillis();
     int mouthMillis = 400;
     while (!splashDone) {
-      if (tilesOk)
+      if (tilesOk) {
         drawMenuBackground(meter.getProgress(), min(1.0, double(Clock::get().getRealMillis() - t0) / mouthMillis));
-      else
+        renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() * 0.6, text, true);
+      } else {
         renderer.drawImage((renderer.getWidth() - loadingSplash.getSize().x) / 2,
             (renderer.getHeight() - loadingSplash.getSize().y) / 2, loadingSplash);
-      renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() * 0.5, text, true);
+        renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() - 60, text, true);
+      }
       renderer.drawAndClearBuffer();
       sf::sleep(sf::milliseconds(30));
       Event event;
@@ -636,7 +638,7 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
       ySpacing = (renderer.getHeight() - windowHeight) / 2;
       break;
     case View::MAIN_MENU:
-      windowWidth = renderer.getWidth() / 5;
+      windowWidth = 0.41 * renderer.getHeight();
       ySpacing = renderer.getHeight() / 3;
       break;
     default: ySpacing = 100; break;
@@ -681,12 +683,12 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   PGuiElem stuff = drawListGui(title, options, menuType, contentHeight, &index, &choice);
   PGuiElem dismissBut = GuiElem::margins(GuiElem::stack(makeVec<PGuiElem>(
         GuiElem::button([&](){ choice = -100; }),
-        GuiElem::mouseHighlight(GuiElem::highlight(GuiElem::foreground1), count, &index),
+        GuiElem::mouseHighlight(GuiElem::mainMenuHighlight(), count, &index),
         GuiElem::centerHoriz(
             GuiElem::label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss")))), 0, 5, 0, 0);
   if (menuType != MAIN_MENU) {
     stuff = GuiElem::scrollable(std::move(stuff), contentHeight, scrollPos);
-    stuff = GuiElem::margin(GuiElem::centerHoriz(std::move(dismissBut), 200),
+    stuff = GuiElem::margin(GuiElem::centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
         std::move(stuff), 30, GuiElem::BOTTOM);
     stuff = GuiElem::window(std::move(stuff));
   }
@@ -779,7 +781,7 @@ static vector<PGuiElem> getMultiLine(const string& text, Color color, View::Menu
     if (menuType != View::MenuType::MAIN_MENU)
       ret.push_back(GuiElem::label(s, color));
     else
-      ret.push_back(GuiElem::centerHoriz(GuiElem::mainMenuLabel(s, color), renderer.getTextLength(s)));
+      ret.push_back(GuiElem::mainMenuLabel(s, 0.15, color));
 
   }
   return ret;
@@ -822,7 +824,7 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       line = GuiElem::verticalList(std::move(label1), lineHeight, 0);
     else
       line = std::move(getOnlyElement(label1));
-    lines.push_back(GuiElem::margins(std::move(line), 10, 3, 0, 0));
+    lines.push_back(GuiElem::margins(std::move(line), 10, 3, 10, 0));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = GuiElem::stack(makeVec<PGuiElem>(
             GuiElem::button([=]() { *choice = numActive; }),
@@ -835,7 +837,7 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
   if (menuType != MAIN_MENU)
     return GuiElem::verticalList(std::move(lines), heights, 0);
   else
-    return GuiElem::verticalListFit(std::move(lines), 0.5);
+    return GuiElem::verticalListFit(std::move(lines), 0.0);
 }
 
 void WindowView::switchZoom() {

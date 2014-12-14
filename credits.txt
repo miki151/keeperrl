@@ -1,13 +1,16 @@
+Design and programming:
+Michał Brzozowski
+
 Music:
 Marcin Brzozowski and Krzysztof Łoza
 www.spotmusic.pl
 https://soundcloud.com/christopher-loza
 
 Graphics:
-16-bit fantasy set by oryxdesignlab.com.
-ShroomArts, shroomarts.blogspot.com.
-Icons by Lorc
-game-icons.net
+16-bit fantasy set by oryxdesignlab.com
+ShroomArts, shroomarts.blogspot.com
+Artur Reterski, http://artperski.com
+Icons by Lorc, game-icons.net
 
 Testing and ideas:
 Jakub Jurkowski

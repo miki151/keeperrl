@@ -99,6 +99,7 @@ PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, 
   return PGuiElem(new DrawCustom(
         [&tex, align, offset, alpha, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
           Vec2 size(tex.getSize().x, tex.getSize().y);
+          Optional<Vec2> stretchSize;
           Vec2 origin;
           Vec2 pos;
           switch (align) {
@@ -149,16 +150,29 @@ PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, 
               pos = (bounds.getTopLeft() + bounds.getTopRight()) / 2 - Vec2(size.x / 2, 0) + offset;
               size = Vec2(size.x, bounds.getH() - 2 * offset.y);
               break;
+            case Alignment::LEFT_STRETCHED:
+              stretchSize = size * (double(bounds.getH()) / size.y);
+              pos = (bounds.getTopLeft() + bounds.getBottomLeft()) / 2 - Vec2(0, stretchSize->y / 2) + offset;
+              break;
+            case Alignment::RIGHT_STRETCHED:
+              stretchSize = size * (double(bounds.getH()) / size.y);
+              pos = (bounds.getTopRight() + bounds.getBottomRight()) / 2
+                  - Vec2(stretchSize->x, stretchSize->y / 2) + offset;
+              break;
           }
           if (vFlip) {
+            if (stretchSize)
+              stretchSize->y *= -1;
             size = Vec2(size.x, -size.y);
             origin = Vec2(0, -size.y);
           }
           if (hFlip) {
+            if (stretchSize)
+              stretchSize->x *= -1;
             size = Vec2(-size.x, size.y);
             origin = Vec2(-size.x, origin.y);
           }
-          r.drawSprite(pos, origin, size, tex, Color(255, 255, 255, alpha * 255));
+          r.drawSprite(pos, origin, size, tex, Color(255, 255, 255, alpha * 255), stretchSize);
         }));
 }
 
@@ -200,25 +214,22 @@ PGuiElem GuiElem::labelUnicode(const String& s, Color color, int size, Renderer:
 
 class MainMenuLabel : public GuiElem {
   public:
-  MainMenuLabel(const string& s, Color c) : text(s), color(c) {}
+  MainMenuLabel(const string& s, Color c, double vPad) : text(s), color(c), vPadding(vPad) {}
 
   virtual void render(Renderer& renderer) override {
-    int size = getBounds().getH();
-    renderer.drawText(color, getBounds().middle().x, getBounds().getPY() - size / 4, text, true, size);
-  }
-
-  virtual void onMouseMove(Vec2 pos) override {
-    over = pos.inRectangle(getBounds());
+    int size = (1.0 - 2 * vPadding) * getBounds().getH();
+    double height = getBounds().getPY() + vPadding * getBounds().getH();
+    renderer.drawText(color, getBounds().middle().x, height - size / 4, text, true, size);
   }
 
   private:
   string text;
   Color color;
-  bool over = false;
+  double vPadding;
 };
 
-PGuiElem GuiElem::mainMenuLabel(const string& s, Color c) {
-  return PGuiElem(new MainMenuLabel(s, c));
+PGuiElem GuiElem::mainMenuLabel(const string& s, double vPadding, Color c) {
+  return PGuiElem(new MainMenuLabel(s, c, vPadding));
 }
 
 class GuiLayout : public GuiElem {
@@ -867,6 +878,7 @@ Texture& get(TexId id) {
     m[WINDOW_VERT_BAR].loadFromFile("ui/vertibarmsg1.png");
     m[WINDOW_VERT_BAR].setRepeated(true);
     m[MAIN_MENU_HIGHLIGHT].loadFromFile("ui/menu_highlight.png");
+    m[MAIN_MENU_HIGHLIGHT].setSmooth(true);
   }
   return m[id];
 }
@@ -963,11 +975,13 @@ PGuiElem GuiElem::background(Color c) {
 }
 
 PGuiElem GuiElem::highlight(Color c) {
-  return stack(rectangle(c), repeatedPattern(get(BACKGROUND_PATTERN)));
+  return margins(sprite(get(MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED, false, true), -25, 0, 0, 0);
 }
 
 PGuiElem GuiElem::mainMenuHighlight() {
-  return spriteFitVert(get(MAIN_MENU_HIGHLIGHT), 0.35, 0.25);
+  return stack(
+      sprite(get(MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED, false, true),
+      sprite(get(MAIN_MENU_HIGHLIGHT), Alignment::RIGHT_STRETCHED));
 }
 
 PGuiElem GuiElem::border2(PGuiElem content) {

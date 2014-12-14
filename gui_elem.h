@@ -59,7 +59,7 @@ class GuiElem {
   static PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
   static PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   static PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
-  static PGuiElem mainMenuLabel(const string&, Color = colors[ColorId::WHITE]);
+  static PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::WHITE]);
   static PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
   static PGuiElem viewObject(const ViewObject& object, bool useSprites);
@@ -75,7 +75,7 @@ class GuiElem {
   static PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   static PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
-      TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER};
+      TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED};
   static PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
       Vec2 offset = Vec2(0, 0), double alpha = 1);
   static PGuiElem spriteFitVert(Texture&, double topMargin, double bottomMargin);

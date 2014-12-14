@@ -675,7 +675,7 @@ Optional<pair<ViewObject, int>> PlayerControl::getCostObj(CostInfo cost) const {
 string PlayerControl::getMinionName(CreatureId id) const {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, nullptr)->getName().the();
+    names[id] = CreatureFactory::fromId(id, nullptr)->getName().bare();
   return names.at(id);
 }
 

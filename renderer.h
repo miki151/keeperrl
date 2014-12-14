@@ -89,7 +89,8 @@ class Renderer {
   void drawImage(int px, int py, const Image& image, double scale = 1);
   void drawImage(int px, int py, int kx, int ky, const Image& image, double scale = 1);
   void drawImage(Rectangle, const Image& image, double scale = 1);
-  void drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, Optional<Color> color = Nothing());
+  void drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, Optional<Color> color = Nothing(),
+      Optional<Vec2> stretchSize = Nothing());
   void drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t, int dw = -1, int dh = -1,
       Optional<Color> color = Nothing());
   void drawSprite(int x, int y, SpriteId, Optional<Color> color = Nothing());

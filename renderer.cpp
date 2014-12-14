@@ -103,13 +103,19 @@ void Renderer::drawImage(int px, int py, int kx, int ky, const Image& image, dou
   t.loadFromImage(image);
   Sprite s(t, sf::IntRect(0, 0, (kx - px) / scale, (ky - py) / scale));
   s.setPosition(px, py);
-  if (scale != 1)
+  if (scale != 1) {
     s.setScale(scale, scale);
+    t.setSmooth(true);
+  }
   display->draw(s);
 }
 
-void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, Optional<Color> color) {
-  drawSprite(pos.x, pos.y, spos.x, spos.y, size.x, size.y, t, -1, -1, color);
+void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, Optional<Color> color,
+    Optional<Vec2> stretchSize) {
+  if (stretchSize)
+    drawSprite(pos.x, pos.y, spos.x, spos.y, size.x, size.y, t, stretchSize->x, stretchSize->y, color);
+  else
+    drawSprite(pos.x, pos.y, spos.x, spos.y, size.x, size.y, t, -1, -1, color);
 }
 
 void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
