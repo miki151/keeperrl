@@ -1,0 +1,19 @@
+The following files are granted to use only with the official binary distribution of KeeperRL:
+tiles_int.png
+tiles2_int.png
+tiles3_int.png
+tiles4_int.png
+tiles5_int.png
+tiles6_int.png
+tiles7_int.png
+menu_core.png
+menu_mouth.png
+Every file inside directories: music, shroom24, shroom36, shroom46
+
+The file Lato-Bol.ttf was made by Łukasz Dziedzic (latofonts.com) and is distributed under the SIL Open Font License.
+
+The file icons.png is a derivative of work by Lorc (http://game-icons.net)
+
+The file Symbola.ttf is public domain.
+
+Please contact miki@keeperrl.com for more information.
