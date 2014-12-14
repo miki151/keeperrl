@@ -435,8 +435,8 @@ int main(int argc, char* argv[]) {
     input.reset(new CompressedInput(fname));
     view.reset(View::createReplayView(input->getArchive()));
   } else {
-#ifndef RELEASE
     Random.init(seed);
+#ifndef RELEASE
     string fname(lognamePref);
     fname += toString(seed);
     output.reset(new CompressedOutput(fname));
