@@ -980,8 +980,8 @@ PGuiElem GuiElem::highlight(Color c) {
 
 PGuiElem GuiElem::mainMenuHighlight() {
   return stack(
-      sprite(get(MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED, false, true),
-      sprite(get(MAIN_MENU_HIGHLIGHT), Alignment::RIGHT_STRETCHED));
+      sprite(get(MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED),
+      sprite(get(MAIN_MENU_HIGHLIGHT), Alignment::RIGHT_STRETCHED, false, true));
 }
 
 PGuiElem GuiElem::border2(PGuiElem content) {

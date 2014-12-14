@@ -166,8 +166,8 @@ void WindowView::initialize() {
   resetMapBounds();
   guiBuilder.setTilesOk(tilesOk);
   if (tilesOk) {
-    CHECK(menuCore.loadFromFile("ui/menu_core.png"));
-    CHECK(menuMouth.loadFromFile("ui/menu_mouth.png"));
+    CHECK(menuCore.loadFromFile("menu_core.png"));
+    CHECK(menuMouth.loadFromFile("menu_mouth.png"));
   } else {
     CHECK(splash1.loadFromFile("splash2f.png"));
     CHECK(splash2.loadFromFile("splash2e.png"));
