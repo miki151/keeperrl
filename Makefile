@@ -1,5 +1,9 @@
 
 
+ifndef RPATH
+RPATH = .
+endif
+
 ifdef CLANG
 CC = clang++
 LD = clang++
@@ -14,7 +18,7 @@ ifdef OSX
 LDFLAGS = -Wl
 CFLAGS += -DOSX
 else
-LDFLAGS = -Wl,-rpath=. -static-libstdc++
+LDFLAGS = -Wl,-rpath=$(RPATH) -static-libstdc++
 endif
 
 CMD:=$(shell rm -f zagadka)
