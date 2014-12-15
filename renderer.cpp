@@ -316,7 +316,7 @@ bool Renderer::pollEventWorkaroundMouseReleaseBug(Event& ev) {
     genReleaseEvent = false;
     return true;
   }
-  bool was = display->pollEvent(ev);
+  bool was = pollEventOrFromQueue(ev);
   if (!was)
     return false;
   if (ev.type == Event::MouseButtonPressed) {
@@ -328,17 +328,22 @@ bool Renderer::pollEventWorkaroundMouseReleaseBug(Event& ev) {
     return true;
 }
 
+bool Renderer::pollEventOrFromQueue(Event& ev) {
+  if (!eventQueue.empty()) {
+    ev = eventQueue.front();
+    eventQueue.pop_front();
+    return true;
+  } else
+    return display->pollEvent(ev);
+}
+
 bool Renderer::pollEvent(Event& ev) {
   if (monkey) {
     if (Random.roll(2))
       return false;
     ev = getRandomEvent();
     return true;
-  } else if (!eventQueue.empty()) {
-      ev = eventQueue.front();
-      eventQueue.pop_front();
-      return true;
-  } else
+  } else 
     return pollEventWorkaroundMouseReleaseBug(ev);
 }
 

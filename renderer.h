@@ -137,6 +137,7 @@ class Renderer {
   private:
   static map<string, TileCoords> tileCoords;
   bool pollEventWorkaroundMouseReleaseBug(Event&);
+  bool pollEventOrFromQueue(Event&);
   RenderWindow* display = nullptr;
   sf::View* sfView;
   bool monkey = false;

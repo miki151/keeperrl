@@ -912,8 +912,6 @@ void WindowView::processEvents() {
     considerResizeEvent(event, getAllGuiElems());
     propagateEvent(event, getClickableGuiElems());
     switch (event.type) {
-      case Event::TextEntered:
-        break;
       case Event::KeyPressed:
         keyboardAction(event.key);
         renderer.flushEvents(Event::KeyPressed);
