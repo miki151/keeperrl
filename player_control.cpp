@@ -921,20 +921,21 @@ Optional<TeamId> PlayerControl::getCurrentTeam() const {
     return Nothing();
 }
 
-void PlayerControl::getSquareViewIndex(const Square* square, ViewIndex& index) const {
-  if (canSee(square->getPosition()))
+void PlayerControl::getSquareViewIndex(const Square* square, bool canSee, ViewIndex& index) const {
+  if (canSee)
     square->getViewIndex(index, getCollective()->getTribe());
   else
     index.setHiddenId(square->getViewObject().id());
   if (const Creature* c = square->getCreature())
-    if (canSee(c))
+    if (canSee)
       index.insert(c->getViewObject());
 }
 
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   const Square* square = getLevel()->getSafeSquare(pos);
-  getSquareViewIndex(square, index);
-  if (!canSee(pos) && getMemory().hasViewIndex(pos))
+  bool canSeePos = canSee(pos);
+  getSquareViewIndex(square, canSeePos, index);
+  if (!canSeePos && getMemory().hasViewIndex(pos))
     index.mergeFromMemory(getMemory().getViewIndex(pos));
   if (getCollective()->getAllSquares().count(pos) 
       && index.hasObject(ViewLayer::FLOOR_BACKGROUND)
@@ -1345,7 +1346,7 @@ void PlayerControl::addToMemory(Vec2 pos) {
     return;
   square->setNonDirty();
   ViewIndex index;
-  getSquareViewIndex(square, index);
+  getSquareViewIndex(square, true, index);
   getMemory(getLevel()).update(pos, index);
 }
 

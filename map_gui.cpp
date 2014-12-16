@@ -444,13 +444,14 @@ void MapGui::render(Renderer& renderer) {
   int sizeX = layout->squareWidth();
   int sizeY = layout->squareHeight();
   renderer.drawFilledRectangle(getBounds(), colors[ColorId::ALMOST_BLACK]);
+  renderer.drawFilledRectangle(Rectangle(
+        layout->projectOnScreen(getBounds(), levelBounds.getTopLeft()),
+        layout->projectOnScreen(getBounds(), levelBounds.getBottomRight())), colors[ColorId::BLACK]);
   Optional<ViewObject> highlighted;
   fogOfWar.clear();
   for (ViewLayer layer : layout->getLayers()) {
     for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
       Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
-      if (!spriteMode && wpos.inRectangle(levelBounds))
-        renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
       if (!objects[wpos] || objects[wpos]->noObjects()) {
         if (layer == layout->getLayers().back()) {
           if (wpos.inRectangle(levelBounds))
