@@ -325,7 +325,7 @@ void Player::throwAction(Optional<Vec2> dir) {
 }
 
 void Player::throwItem(vector<Item*> items, Optional<Vec2> dir) {
-  if (items[0]->getClass() == ItemClass::AMMO && Options::getValue(OptionId::HINTS))
+  if (items[0]->getClass() == ItemClass::AMMO && model->getOptions()->getBoolValue(OptionId::HINTS))
     privateMessage(PlayerMessage("To fire arrows equip a bow and use alt + direction key", PlayerMessage::CRITICAL));
   if (!dir) {
     auto cDir = model->getView()->chooseDirection("Which direction do you want to throw?");
@@ -636,13 +636,14 @@ void Player::makeMove() {
         model->getView()->updateView(this),
         "level render time");
   }
-  if (displayTravelInfo && getCreature()->getSquare()->getName() == "road" && Options::getValue(OptionId::HINTS)) {
+  if (displayTravelInfo && getCreature()->getSquare()->getName() == "road" 
+      && model->getOptions()->getBoolValue(OptionId::HINTS)) {
     model->getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
   }
-  if (displayGreeting && Options::getValue(OptionId::HINTS)) {
+  if (displayGreeting && model->getOptions()->getBoolValue(OptionId::HINTS)) {
     CHECK(getCreature()->getFirstName());
-    model->getView()->presentText("", "Dear " + *getCreature()->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
+    model->getView()->presentText("", "Dear " + *getCreature()->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + model->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
 /*    model->getView()->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
         "\n \nYou can turn these messages off in the options (press F2).");*/
     displayGreeting = false;

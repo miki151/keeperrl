@@ -648,6 +648,12 @@ string capitalFirst(string s) {
   return s;
 }
 
+string noCapitalFirst(string s) {
+  if (!s.empty() && isupper(s[0]))
+    s[0] = tolower(s[0]);
+  return s;
+}
+
 string makeSentence(string s) {
   s = capitalFirst(s);
   if (s.size() > 1 && s[0] == '\"' && islower(s[1]))

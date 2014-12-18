@@ -99,6 +99,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   string getSpeciesName() const;
   string getNameAndTitle() const;
   Optional<string> getFirstName() const;
+  void setFirstName(const string&);
   string getGroupName(int count) const;
   int getModifier(ModifierType) const;
   int getAttr(AttrType) const;

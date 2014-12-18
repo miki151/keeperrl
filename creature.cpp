@@ -1971,6 +1971,10 @@ Optional<string> Creature::getFirstName() const {
   return firstName;
 }
 
+void Creature::setFirstName(const string& name) {
+  firstName = name;
+}
+
 string Creature::getGroupName(int count) const {
   return groupName + " of " + getName().multiple(count);
 }
@@ -2314,7 +2318,7 @@ vector<const Creature*> Creature::getUnknownAttacker() const {
 
 string Creature::getNameAndTitle() const {
   if (firstName)
-    return *firstName + " " + getName().the();
+    return *firstName + " the " + getName().bare();
   else if (speciesName)
     return getName().bare() + *speciesName;
   else

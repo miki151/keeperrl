@@ -59,6 +59,7 @@ class GuiElem {
   static PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
   static PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   static PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
+  static PGuiElem variableLabel(function<string()>, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
   static PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::WHITE]);
   static PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);

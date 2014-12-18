@@ -161,17 +161,10 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   return ret;
 };
 
-Collective::Collective(Level* l, CollectiveConfig cfg, Tribe* t, const string& n) 
-  : knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
+Collective::Collective(Level* l, CollectiveConfig cfg, Tribe* t, EnumMap<ResourceId, int> _credit, const string& n) 
+  : credit(_credit), knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
   tribe(t), level(l), nextPayoutTime(-1), sectors(new Sectors(level->getBounds())),
     flyingSectors(new Sectors(level->getBounds())), name(n), config(cfg) {
-  credit = {
-    {ResourceId::MANA, 200},
-  };
-  if (Options::getValue(OptionId::STARTING_RESOURCE)) {
-    for (auto elem : ENUM_ALL(ResourceId))
-      credit[elem] = 10000;
-  }
   if (config.getKeepSectors())
     for (Vec2 v : level->getBounds()) {
       if (getLevel()->getSafeSquare(v)->canEnterEmpty({MovementTrait::WALK}))

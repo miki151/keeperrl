@@ -26,6 +26,7 @@ class CreatureView;
 class Level;
 class Jukebox;
 class ProgressMeter;
+class Options;
 
 class View {
   public:
@@ -33,7 +34,7 @@ class View {
   virtual ~View();
 
   /** Does all the library specific init.*/
-  virtual void initialize() = 0;
+  virtual void initialize(Options*) = 0;
 
   /** Resets the view before a new game.*/
   virtual void reset() = 0;
@@ -120,6 +121,10 @@ class View {
   /** Let's the player choose a number. Returns Nothing() if the player cancelled the choice.*/
   virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
 
+  /** Let's the player input a string. Returns Nothing() if the player cancelled the choice.*/
+  virtual Optional<string> getText(const string& title, const string& value, int maxLength,
+      const string& hint = "") = 0;
+
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;
 
@@ -135,9 +140,6 @@ class View {
 
   /** Stops the real time clock.*/
   virtual void stopClock() = 0;
-
-  /** Sets the real time clock.*/
-  virtual void setTimeMilli(int) = 0;
 
   /** Continues the real time clock after it had been stopped.*/
 

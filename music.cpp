@@ -19,26 +19,22 @@
 
 using sf::Music;
 
-Jukebox::Jukebox(const string& introPath) {
+Jukebox::Jukebox(const string& introPath, Options* options) {
   music.reset(new Music[20]);
   music[0].openFromFile(introPath);
   byType[INTRO].push_back(0);
   currentPlaying = current;
-  if (!turnedOff())
+  if (!options->getBoolValue(OptionId::MUSIC))
     music[current].play();
   else
     on = false;
-  Options::addTrigger(OptionId::MUSIC, [this](bool turnOn) { if (turnOn != on) toggle(); });
+  options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { if (turnOn != on) toggle(); });
 }
 
 void Jukebox::addTrack(Type type, const string& path) {
   music[numTracks].openFromFile(path);
   byType[type].push_back(numTracks);
   ++numTracks;
-}
-
-bool Jukebox::turnedOff() {
-  return !Options::getValue(OptionId::MUSIC);
 }
 
 void Jukebox::toggle() {
@@ -69,7 +65,7 @@ Jukebox::Type Jukebox::getCurrentType() {
 const int volumeDec = 20;
 
 void Jukebox::update() {
-  if (turnedOff())
+  if (!on)
     return;
   if (currentPlaying == 0 && music[0].getStatus() == sf::SoundSource::Stopped) {
     setCurrent(PEACEFUL);

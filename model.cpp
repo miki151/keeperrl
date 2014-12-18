@@ -48,7 +48,8 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(won)
     & SVAR(addHero)
     & SVAR(adventurer)
-    & SVAR(currentTime);
+    & SVAR(currentTime)
+    & SVAR(worldName);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
   Quest::serializeAll(ar);
@@ -77,8 +78,8 @@ const Model::SunlightInfo& Model::getSunlightInfo() const {
 
 void Model::updateSunlightInfo() {
   double d = 0;
-  if (Options::getValue(OptionId::START_WITH_NIGHT))
-    d = -dayLength + 10;
+/*  if (options->getBoolValue(OptionId::START_WITH_NIGHT))
+    d = -dayLength + 10;*/
   while (1) {
     d += dayLength;
     if (d > currentTime) {
@@ -202,7 +203,7 @@ void Model::tick(double time) {
       for (Collective* col : mainVillains)
         conquered &= col->isConquered();
       if (conquered && !won) {
-        playerControl->onConqueredLand(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
+        playerControl->onConqueredLand(worldName);
         won = true;
       }
     } else // temp fix to the player gets the location message
@@ -225,7 +226,7 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker) {
   return levels.back().get();
 }
 
-Model::Model(View* v) : view(v) {
+Model::Model(View* v, const string& world) : view(v), worldName(world) {
   updateSunlightInfo();
 }
 
@@ -276,9 +277,9 @@ double Model::getTime() const {
 
 void Model::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
-  vector<View::ListElem> options { "Save the game",
+  vector<View::ListElem> elems { "Save the game",
     {"Retire", playerControl->isRetired() ? View::INACTIVE : View::NORMAL} , "Change options", "Abandon the game" };
-  auto ind = view->chooseFromList("Would you like to:", options);
+  auto ind = view->chooseFromList("Would you like to:", elems);
   if (!ind)
     return;
   switch (Action(*ind)) {
@@ -297,7 +298,7 @@ void Model::exitAction() {
       if (view->yesOrNoPrompt("Are you sure you want to abandon your game?"))
         throw GameOverException();
       break;
-    case OPTIONS: Options::handle(view, OptionSet::GENERAL); break;
+    case OPTIONS: options->handle(view, OptionSet::GENERAL); break;
     default: break;
   }
 }
@@ -313,21 +314,31 @@ void Model::retireCollective() {
 void Model::landHeroPlayer() {
   auto handicap = view->getNumber("Choose handicap (strength and dexterity increase)", 0, 20, 5);
   PCreature player = makePlayer(handicap.getOr(0));
+  string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
+  if (!advName.empty())
+    player->setFirstName(advName);
   levels[0]->landCreature(StairDirection::UP, StairKey::HERO_SPAWN, std::move(player));
   adventurer = true;
 }
 
 string Model::getGameIdentifier() const {
-  if (!adventurer)
-    return *NOTNULL(playerControl)->getKeeper()->getFirstName();
-  else
-    return *NOTNULL(getPlayer())->getFirstName();
+  string playerName = !adventurer
+      ? *NOTNULL(playerControl)->getKeeper()->getFirstName()
+      : *NOTNULL(getPlayer())->getFirstName();
+  return playerName + " of " + worldName;
+}
+
+string Model::getShortGameIdentifier() const {
+  string playerName = !adventurer
+      ? *NOTNULL(playerControl)->getKeeper()->getFirstName()
+      : *NOTNULL(getPlayer())->getFirstName();
+  return playerName + "_" + worldName;
 }
 
 void Model::onKilledLeaderEvent(const Collective* victim, const Creature* leader) {
   if (playerControl && playerControl->isRetired() && playerCollective == victim) {
     const Creature* c = getPlayer();
-    killedKeeper(c->getNameAndTitle(), leader->getNameAndTitle(), NameGenerator::get(NameGeneratorId::WORLD)->getNext(), c->getKills(), c->getPoints());
+    killedKeeper(c->getNameAndTitle(), leader->getNameAndTitle(), worldName, c->getKills(), c->getPoints());
   }
 }
 
@@ -561,9 +572,9 @@ vector<EnemyInfo> getEnemyInfo() {
   return ret;
 }
 
-static CollectiveConfig getKeeperConfig() {
+static CollectiveConfig getKeeperConfig(bool fastImmigration) {
   return CollectiveConfig::keeper(
-      Options::getValue(OptionId::FAST_IMMIGRATION) ? 0.1 : 0.011,
+      fastImmigration ? 0.1 : 0.011,
       500,
       3,
       {
@@ -704,8 +715,20 @@ static CollectiveConfig getKeeperConfig() {
           c.salary = 0;)});
 }
 
-Model* Model::collectiveModel(ProgressMeter& meter, View* view) {
-  Model* m = new Model(view);
+static EnumMap<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
+  return {{CollectiveResourceId::MANA, 200}};
+  if (resourceBonus) {
+    EnumMap<CollectiveResourceId, int> credit;
+    for (auto elem : ENUM_ALL(CollectiveResourceId))
+      credit[elem] = 10000;
+    return credit;
+  }
+ 
+}
+
+Model* Model::collectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
+  Model* m = new Model(view, worldName);
+  m->setOptions(options);
   vector<EnemyInfo> enemyInfo = getEnemyInfo();
   vector<SettlementInfo> settlements;
   for (auto& elem : enemyInfo) {
@@ -715,12 +738,19 @@ Model* Model::collectiveModel(ProgressMeter& meter, View* view) {
   }
   Level* top = m->prepareTopLevel(meter, settlements);
   m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(), Tribe::get(TribeId::KEEPER)).setLevel(top).build("Keeper"));
+        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), Tribe::get(TribeId::KEEPER))
+      .setLevel(top)
+      .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
+      .build("Keeper"));
+ 
   m->playerCollective = m->collectives.back().get();
   m->playerControl = new PlayerControl(m->playerCollective, m, top);
   m->playerCollective->setControl(PCollectiveControl(m->playerControl));
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::get(TribeId::KEEPER),
       MonsterAIFactory::collective(m->playerCollective));
+  string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
+  if (!keeperName.empty())
+    c->setFirstName(keeperName);
   Creature* ref = c.get();
   top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
   m->addCreature(std::move(c));
@@ -756,8 +786,14 @@ View* Model::getView() {
 
 void Model::setView(View* v) {
   view = v;
-  if (playerControl)
-    v->setTimeMilli(playerControl->getKeeper()->getTime() * 300);
+}
+
+Options* Model::getOptions() {
+  return options;
+}
+
+void Model::setOptions(Options* o) {
+  options = o;
 }
 
 void Model::addLink(StairDirection dir, StairKey key, Level* l1, Level* l2) {
@@ -794,7 +830,7 @@ void Model::conquered(const string& title, const string& land, vector<const Crea
   view->presentText("Victory", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "conquered the land of " + land + "," << points << std::endl;
-  showHighscore(true);
+  showHighscore(view, true);
 }
 
 void Model::killedKeeper(const string& title, const string& keeper, const string& land,
@@ -808,7 +844,7 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
   view->presentText("Victory", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "freed the land of " + land + "," << points << std::endl;
-  showHighscore(true);
+  showHighscore(view, true);
 }
 
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
@@ -825,13 +861,17 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
   view->presentText("Game over", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << creature->getNameAndTitle() << (killer.empty() ? "" : ", killed by " + killer) << "," << points << std::endl;
-  showHighscore(true);
+  showHighscore(view, true);
 /*  if (view->yesOrNoPrompt("Would you like to see the last messages?"))
     messageBuffer.showHistory();*/
   throw GameOverException();
 }
 
-void Model::showCredits() {
+const string& Model::getWorldName() const {
+  return worldName;
+}
+
+void Model::showCredits(View* view) {
   ifstream in("credits.txt");
   vector<View::ListElem> lines;
   while (1) {
@@ -848,7 +888,7 @@ void Model::showCredits() {
   view->presentList("Credits", lines, false);
 }
 
-void Model::showHighscore(bool highlightLast) {
+void Model::showHighscore(View* view, bool highlightLast) {
   struct Elem {
     string name;
     string killer;

@@ -374,7 +374,7 @@ void MapGui::updateObjects(const MapMemory* mem) {
   for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds()))
     if (auto& index = objects[wpos]) {
       if (index->hasObject(ViewLayer::FLOOR)) {
-        ViewObject object = index->getObject(ViewLayer::FLOOR);
+        const ViewObject& object = index->getObject(ViewLayer::FLOOR);
         if (object.hasModifier(ViewObject::Modifier::CASTS_SHADOW)) {
           shadowed.erase(wpos);
           shadowed.insert(wpos + Vec2(0, 1));

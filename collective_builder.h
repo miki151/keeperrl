@@ -15,6 +15,7 @@ class CollectiveBuilder {
   public:
   CollectiveBuilder(CollectiveConfig, Tribe*);
   CollectiveBuilder& setLevel(Level*);
+  CollectiveBuilder& setCredit(EnumMap<CollectiveResourceId, int>);
   CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
   PCollective build(const string& name);
   bool hasCreatures() const;
@@ -28,6 +29,7 @@ class CollectiveBuilder {
   vector<CreatureInfo> creatures;
   CollectiveConfig config;
   Tribe* tribe;
+  EnumMap<CollectiveResourceId, int> credit;
 };
 
 #endif

@@ -980,6 +980,7 @@ vector<T> makeVec(Args&&... args) {
 string addAParticle(const string& s);
 
 string capitalFirst(string s);
+string noCapitalFirst(string s);
 vector<string> makeSentences(string s);
 string makeSentence(string s);
 

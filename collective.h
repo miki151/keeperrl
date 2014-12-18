@@ -312,7 +312,7 @@ class Collective : public Task::Callback {
 
   private:
   friend class CollectiveBuilder;
-  Collective(Level*, CollectiveConfig, Tribe*, const string& name);
+  Collective(Level*, CollectiveConfig, Tribe*, EnumMap<ResourceId, int> credit, const string& name);
   void updateEfficiency(Vec2, SquareType);
   int getPaymentAmount(const Creature*) const;
   void makePayouts();

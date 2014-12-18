@@ -170,11 +170,13 @@ string stripNonAscii(string s) {
   return s;
 }
 
-static void saveGame(unique_ptr<Model> model, const string& gameName, string filename) {
+static void saveGame(unique_ptr<Model> model, const string& saveSuffix) {
+  string filename = model->getShortGameIdentifier() + saveSuffix;
   filename = stripNonAscii(filename);
   CompressedOutput out(filename.c_str());
   Serialization::registerTypes(out.getArchive());
-  out.getArchive() << BOOST_SERIALIZATION_NVP(gameName) << BOOST_SERIALIZATION_NVP(model);
+  string game = model->getGameIdentifier();
+  out.getArchive() << BOOST_SERIALIZATION_NVP(game) << BOOST_SERIALIZATION_NVP(model);
 }
 
 static void saveExceptionLine(const string& path, const string& line) {
@@ -206,8 +208,8 @@ void initializeSingletons() {
   Spell::init();
 }
 
-void renderLoop(View* view, atomic<bool>& finished, atomic<bool>& initialized) {
-  view->initialize();
+void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<bool>& initialized) {
+  view->initialize(options);
   initialized = true;
   while (!finished) {
     view->refreshView();
@@ -215,14 +217,15 @@ void renderLoop(View* view, atomic<bool>& finished, atomic<bool>& initialized) {
   }
 }
 
-PModel keeperGame(View* view) {
+PModel keeperGame(View* view, Options* options) {
   PModel model;
   string ex;
   ProgressMeter meter(1.0 / 166000);
   view->displaySplash(meter, View::CREATING);
   for (int i : Range(5)) {
     try {
-      model.reset(Model::collectiveModel(meter, view));
+      model.reset(Model::collectiveModel(meter, options, view,
+            NameGenerator::get(NameGeneratorId::WORLD)->getNext()));
       break;
     } catch (string s) {
       ex = s;
@@ -238,33 +241,33 @@ PModel keeperGame(View* view) {
   return model;
 }
 
-PModel loadModel(View* view, string file) {
+PModel loadModel(View* view, string file, bool erase) {
   ProgressMeter meter(1.0 / 62500);
   Square::progressMeter = &meter;
   view->displaySplash(meter, View::LOADING);
-  PModel ret = loadGame(file, false);
+  PModel ret = loadGame(file, erase);
   ret->setView(view);
   view->clearSplash();
   return ret;
 }
 
-PModel adventurerGame(View* view) {
+PModel adventurerGame(View* view, Options* options) {
   Optional<string> savedGame = chooseSaveFile({
       {GameType::RETIRED_KEEPER, "Retired keeper games:"}},
       "No retired games found.", view);
   if (savedGame)
-    return loadModel(view, *savedGame);
+    return loadModel(view, *savedGame, false);
   else
     return nullptr;
 }
 
-PModel loadPrevious(View* view) {
+PModel loadPrevious(View* view, bool erase) {
   Optional<string> savedGame = chooseSaveFile({
       {GameType::KEEPER, "Keeper games:"},
       {GameType::ADVENTURER, "Adventurer games:"}},
       "No save files found.", view);
   if (savedGame)
-    return loadModel(view, *savedGame);
+    return loadModel(view, *savedGame, erase);
   else
     return nullptr;
 }
@@ -298,14 +301,20 @@ void playModel(View* view, PModel model) {
     ProgressMeter meter(1.0 / 62500);
     Square::progressMeter = &meter;
     view->displaySplash(meter, View::SAVING);
-    string game = model->getGameIdentifier();
-    saveGame(std::move(model), game, game + getSaveSuffix(ex.type));
+    saveGame(std::move(model), getSaveSuffix(ex.type));
     view->clearSplash();
     Square::progressMeter = nullptr;
   }
 }
 
-void playGameChoice(View* view, bool genExit) {
+static bool eraseSave(Options* options) {
+#ifdef RELEASE
+  return !options->getValue(OptionId::KEEP_SAVEFILES);
+#endif
+  return false;
+}
+
+void playGameChoice(View* view, Options* options, bool genExit) {
   while (1) {
     auto choice = view->chooseFromList("", {
         View::ListElem("Choose your role:", View::TITLE),
@@ -321,41 +330,43 @@ void playGameChoice(View* view, bool genExit) {
     PModel model;
     switch (*choice) {
       case 0:
-        if (Options::handleOrExit(view, OptionSet::KEEPER, -1)) {
-          model = keeperGame(view);
+        options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+        if (options->handleOrExit(view, OptionSet::KEEPER, -1)) {
+          model = keeperGame(view, options);
         }
         break;
       case 1:
-        if (Options::handleOrExit(view, OptionSet::ADVENTURER, -1)) {
-          model = adventurerGame(view);
+        options->setDefaultString(OptionId::ADVENTURER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+        if (options->handleOrExit(view, OptionSet::ADVENTURER, -1)) {
+          model = adventurerGame(view, options);
         }
         break;
       case 2:
-        model = loadPrevious(view);
+        model = loadPrevious(view, eraseSave(options));
         break;
       case 3: 
         clearSingletons();
         return;
     }
-    if (model)
+    if (model) {
+      model->setOptions(options);
       playModel(view, std::move(model));
+    }
     clearSingletons();
     view->reset();
   }
 }
 
 void showHighscores(View* view) {
-  unique_ptr<Model> m(new Model(view));
-  m->showHighscore();
+  Model::showHighscore(view);
 }
 
 void showCredits(View* view) {
-  unique_ptr<Model> m(new Model(view));
-  m->showCredits();
+  Model::showCredits(view);
 }
 
-void gameLoop(View* view, int forceMode, bool genExit, atomic<bool>& finished) {
-  Jukebox jukebox("music/peaceful3.ogg");
+void gameLoop(View* view, Options* options, int forceMode, bool genExit, atomic<bool>& finished) {
+  Jukebox jukebox("music/peaceful3.ogg", options);
   jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful1.ogg");
   jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful2.ogg");
   jukebox.addTrack(Jukebox::PEACEFUL, "music/peaceful4.ogg");
@@ -380,8 +391,8 @@ void gameLoop(View* view, int forceMode, bool genExit, atomic<bool>& finished) {
       continue;
     lastIndex = *choice;
     switch (*choice) {
-      case 0: playGameChoice(view, genExit); break;
-      case 1: Options::handle(view, OptionSet::GENERAL); break;
+      case 0: playGameChoice(view, options, genExit); break;
+      case 1: options->handle(view, OptionSet::GENERAL); break;
       case 2: showHighscores(view); break;
       case 3: showCredits(view); break;
       case 4: finished = true; break;
@@ -400,8 +411,8 @@ static thread::attributes getAttributes() {
 #endif
 
 int main(int argc, char* argv[]) {
-  options_description options("Flags");
-  options.add_options()
+  options_description flags("Flags");
+  flags.add_options()
     ("help", "Print help")
     ("run_tests", "Run all unit tests and exit")
     ("gen_world_exit", "Exit after creating a world")
@@ -409,9 +420,9 @@ int main(int argc, char* argv[]) {
     ("seed", value<int>(), "Use given seed")
     ("replay", value<string>(), "Replay game from file");
   variables_map vars;
-  store(parse_command_line(argc, argv, options), vars);
+  store(parse_command_line(argc, argv, flags), vars);
   if (vars.count("help")) {
-    std::cout << options << endl;
+    std::cout << flags << endl;
     return 0;
   }
   if (vars.count("run_tests")) {
@@ -423,7 +434,7 @@ int main(int argc, char* argv[]) {
   unique_ptr<CompressedOutput> output;
   string lognamePref = "log";
   Debug::init();
-  Options::init("options.txt");
+  Options options("options.txt");
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   int forceMode = vars.count("force_keeper") ? 0 : -1;
   bool genExit = vars.count("gen_world_exit");
@@ -451,8 +462,8 @@ int main(int argc, char* argv[]) {
   std::atomic<bool> viewInitialized(false);
   ScriptContext::init();
   Tile::initialize();
-  auto game = [&] { while (!viewInitialized) {} gameLoop(view.get(), forceMode, genExit, gameFinished); };
-  auto render = [&] { renderLoop(view.get(), gameFinished, viewInitialized); };
+  auto game = [&] { while (!viewInitialized) {} gameLoop(view.get(), &options, forceMode, genExit, gameFinished); };
+  auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
 #ifdef OSX // see thread comment in stdafx.h
   thread t(getAttributes(), game);
   render();

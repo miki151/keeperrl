@@ -205,6 +205,16 @@ PGuiElem GuiElem::label(const string& s, int size, Color c) {
         }));
 }
 
+PGuiElem GuiElem::variableLabel(function<string()> fun, int size, Color c) {
+  return PGuiElem(new DrawCustom(
+        [=] (Renderer& r, Rectangle bounds) {
+          string s = fun();
+          r.drawText(transparency(colors[ColorId::BLACK], 100),
+            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, false, size);
+          r.drawText(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, false, size);
+        }));
+}
+
 PGuiElem GuiElem::labelUnicode(const String& s, Color color, int size, Renderer::FontId fontId) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {

@@ -31,7 +31,7 @@ class ViewIndex;
 class WindowView: public View {
   public:
   WindowView(); 
-  virtual void initialize() override;
+  virtual void initialize(Options*) override;
   virtual void reset() override;
   virtual void displaySplash(const ProgressMeter&, View::SplashType) override;
   virtual void clearSplash() override;
@@ -54,18 +54,20 @@ class WindowView: public View {
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
       MenuType = NORMAL_MENU, Optional<UserInputId> exitAction = Nothing()) override;
   virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
+  virtual Optional<string> getText(const string& title, const string& value, int maxLength,
+      const string& hint) override;
 
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual int getTimeMilli() override;
   virtual int getTimeMilliAbsolute() override;
-  virtual void setTimeMilli(int) override;
   virtual void stopClock() override;
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   
   static Color getFireColor();
   static bool areTilesOk();
+
 
   private:
 
@@ -99,11 +101,11 @@ class WindowView: public View {
   void clearMessageBox();
   void switchZoom();
   void zoom(bool out);
-  void switchTiles();
   void resize(int width, int height, vector<GuiElem*> gui);
   Rectangle getMapGuiBounds() const;
   Rectangle getMinimapBounds() const;
   void resetMapBounds();
+  void switchTiles();
 
   bool considerScrollEvent(sf::Event&);
   bool considerResizeEvent(sf::Event&, vector<GuiElem*> gui);
@@ -167,6 +169,7 @@ class WindowView: public View {
   Texture splash1;
   Texture splash2;
   Texture loadingSplash;
+  Options* options;
 };
 
 

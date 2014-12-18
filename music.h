@@ -18,11 +18,13 @@
 
 #include <SFML/Audio/Music.hpp>
 
+class Options;
+
 class Jukebox {
   public:
   enum Type { INTRO, PEACEFUL, BATTLE };
 
-  Jukebox(const string& introTrack);
+  Jukebox(const string& introTrack, Options*);
 
   void addTrack(Type, const string&);
   void updateCurrent(Type);

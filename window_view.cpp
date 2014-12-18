@@ -121,7 +121,8 @@ bool WindowView::areTilesOk() {
   return tilesOk;
 }
 
-void WindowView::initialize() {
+void WindowView::initialize(Options* o) {
+  options = o;
   renderer.initialize(1024, 600, "KeeperRL");
   Clock::set(new Clock());
   renderThreadId = currentThreadId();
@@ -217,7 +218,7 @@ void WindowView::mapRightClickFun(Vec2 pos) {
 
 void WindowView::reset() {
   RenderLock lock(renderMutex);
-  mapLayout = &currentTileLayout.normalLayout;
+  mapLayout = &currentTileLayout.unzoomLayout;
   gameReady = false;
   mapGui->clearCenter();
   guiBuilder.reset();
@@ -625,6 +626,67 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
   return chooseFromListInternal(title, options, index, type, scrollPos, exitAction, Nothing(), {});
 }
 
+static Rectangle getTextInputBounds() {
+  Vec2 center = Vec2(renderer.getWidth(), renderer.getHeight()) / 2;
+  return Rectangle(center - Vec2(300, 129), center + Vec2(300, 129));
+}
+
+static PGuiElem getTextContent(const string& title, const string& value, const string& hint) {
+  vector<PGuiElem> lines = makeVec<PGuiElem>(
+      GuiElem::variableLabel([&] { return title + ":  " + value + "_"; }));
+  if (!hint.empty())
+    lines.push_back(GuiElem::label(hint, GuiElem::inactiveText));
+  return GuiElem::verticalList(std::move(lines), 40, 0);
+}
+
+Optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
+  RenderLock lock(renderMutex);
+  TempClockPause pause;
+  SyncQueue<Optional<string>> returnQueue;
+  addReturnDialog<Optional<string>>(returnQueue, [=] ()-> Optional<string> {
+  bool dismiss = false;
+  string text = value;
+  PGuiElem dismissBut = GuiElem::margins(GuiElem::stack(makeVec<PGuiElem>(
+        GuiElem::button([&](){ dismiss = true; }),
+        GuiElem::mouseHighlight2(GuiElem::mainMenuHighlight()),
+        GuiElem::centerHoriz(
+            GuiElem::label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss")))), 0, 5, 0, 0);
+  PGuiElem stuff = GuiElem::margins(getTextContent(title, text, hint), 30, 50, 0, 0);
+  stuff = GuiElem::margin(GuiElem::centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
+    std::move(stuff), 30, GuiElem::BOTTOM);
+  stuff = GuiElem::window(std::move(stuff));
+  while (1) {
+    refreshScreen(false);
+    stuff->setBounds(getTextInputBounds());
+    stuff->render(renderer);
+    renderer.drawAndClearBuffer();
+    Event event;
+    while (renderer.pollEvent(event)) {
+      propagateEvent(event, {stuff.get()});
+      if (dismiss)
+        return Nothing();
+      if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
+        continue;
+      if (event.type == Event::TextEntered)
+        if (isprint(event.text.unicode) && text.size() < maxLength)
+          text += event.text.unicode;
+      if (event.type == Event::KeyPressed)
+        switch (event.key.code) {
+          case Keyboard::BackSpace:
+              if (!text.empty())
+                text.pop_back();
+              break;
+          case Keyboard::Return: return text;
+          case Keyboard::Escape: return Nothing();
+          default: break;
+        }
+    }
+  }
+  });
+  lock.unlock();
+  return returnQueue.pop();
+
+}
 
 int getScrollPos(int index, int count) {
   return max(0, min(count - 1, index - 3));
@@ -859,7 +921,7 @@ void WindowView::zoom(bool out) {
 
 void WindowView::switchTiles() {
   bool normal = (mapLayout == &currentTileLayout.normalLayout);
-  if (Options::getValue(OptionId::ASCII) || !tilesOk)
+  if (options->getBoolValue(OptionId::ASCII) || !tilesOk)
     currentTileLayout = asciiLayouts;
   else
     currentTileLayout = spriteLayouts;
@@ -879,10 +941,6 @@ int WindowView::getTimeMilli() {
 
 int WindowView::getTimeMilliAbsolute() {
   return Clock::get().getRealMillis();
-}
-
-void WindowView::setTimeMilli(int time) {
-  Clock::get().setMillis(time);
 }
 
 void WindowView::stopClock() {
@@ -1015,7 +1073,7 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
         lockKeyboard = false;
         keyboardAction(*ev);
       } break;
-    case Keyboard::F2: Options::handle(this, OptionSet::GENERAL); refreshScreen(); break;
+    case Keyboard::F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
     case Keyboard::Space:
       if (!Clock::get().isPaused())
         Clock::get().pause();
