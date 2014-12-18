@@ -1327,6 +1327,10 @@ bool PlayerControl::tryLockingDoor(Vec2 pos) {
   return false;
 }
 
+double PlayerControl::getTime() const {
+  return model->getTime();
+}
+
 bool PlayerControl::isRetired() const {
   return retired;
 }

@@ -66,6 +66,15 @@ class ViewObject {
 
   void setPosition(Vec2);
 
+  struct MovementInfo {
+    Vec2 direction;
+    double tBegin;
+    double tEnd;
+  };
+
+  void setMovementInfo(MovementInfo);
+  const Optional<MovementInfo>& getMovementInfo() const;
+
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();
   const static ViewObject& mana();
@@ -82,6 +91,7 @@ class ViewObject {
   string SERIAL(description);
   Optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL2(position, Vec2(-1, -1));
+  Optional<MovementInfo> movementInfo;
 };
 
 #endif

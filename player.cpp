@@ -1145,6 +1145,10 @@ vector<const Creature*> Player::getVisibleEnemies() const {
   return getCreature()->getVisibleEnemies();
 }
 
+double Player::getTime() const {
+  return getCreature()->getTime();
+}
+
 template <class Archive>
 void Player::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, PossessedController);

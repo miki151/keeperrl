@@ -40,7 +40,7 @@ class MapGui : public GuiElem {
   virtual void onKeyPressed(Event::KeyEvent) override;
 
   void refreshObjects();
-  void updateObjects(const MapMemory*);
+  void updateObjects(const MapMemory*, double time);
   void setLevelBounds(Rectangle bounds);
   void updateLayout(MapLayout*, Rectangle levelBounds);
   void setSpriteMode(bool);
@@ -81,6 +81,7 @@ class MapGui : public GuiElem {
   } mouseOffset, center;
   Vec2 lastMousePos;
   bool isScrollingNow = false;
+  double lastTime = 0;
 };
 
 #endif

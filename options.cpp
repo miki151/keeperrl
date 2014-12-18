@@ -22,6 +22,7 @@ const unordered_map<OptionId, Options::Value> defaults {
   {OptionId::MUSIC, 1},
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
+  {OptionId::SMOOTH_MOVEMENT, 1},
   {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
@@ -35,6 +36,7 @@ const map<OptionId, string> names {
   {OptionId::MUSIC, "Music"},
   {OptionId::KEEP_SAVEFILES, "Keep save files"},
   {OptionId::SHOW_MAP, "Show map"},
+  {OptionId::SMOOTH_MOVEMENT, "Smooth movement"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
@@ -48,6 +50,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::ASCII,
       OptionId::MUSIC,
       OptionId::KEEP_SAVEFILES,
+      OptionId::SMOOTH_MOVEMENT,
 #ifndef RELEASE
       OptionId::SHOW_MAP,
 #endif
@@ -115,6 +118,7 @@ string Options::getValueString(OptionId id, Options::Value value) {
   switch (id) {
     case OptionId::HINTS:
     case OptionId::ASCII:
+    case OptionId::SMOOTH_MOVEMENT:
     case OptionId::MUSIC: return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:

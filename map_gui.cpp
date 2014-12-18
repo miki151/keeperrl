@@ -264,6 +264,23 @@ static Vec2 getAttachmentOffset(Dir dir, int width, int height) {
   return Vec2();
 }
 
+static double getJumpOffset(double state) {
+  if (state > 0.5)
+    state -= 0.5;
+  state *= 2;
+  const double maxH = 0.15;
+  return maxH * (1.0 - (2.0 * state - 1) * (2.0 * state - 1));
+}
+
+static Vec2 getMovementOffset(Vec2 dir, Vec2 size, double time, double tBegin, double tEnd) {
+  if (time >= tEnd || time <= tBegin)
+    return Vec2(0, 0);
+  double state = (time - tBegin) / (tEnd - tBegin);
+  double minStopTime = 0.2;
+  state = min(1.0, max(0.0, (state - minStopTime) / (1.0 - 2 * minStopTime)));
+  return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(state)) * size.y);
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& object,
     int sizeX, int sizeY, Vec2 tilePos) {
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
@@ -308,12 +325,16 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
           else
             borderDirs.insert(dir.getCardinalDir());
         }
+    Vec2 movement;
+    if (auto& info = object.getMovementInfo())
+      movement = getMovementOffset(info->direction, Vec2(sizeX, sizeY), lastTime, info->tBegin, info->tEnd);
     Vec2 coord = tile.getSpriteCoord(dirs);
     if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
       move.y = -4* sizeY / Renderer::nominalSize.y;
     if ((object.layer() == ViewLayer::CREATURE && object.id() != ViewId::BOULDER)
         || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
-      renderer.drawSprite(x, y - 2, 2 * Renderer::nominalSize.x, 22 * Renderer::nominalSize.y,
+      renderer.drawSprite(x + movement.x, y + movement.y - 2, 2 * Renderer::nominalSize.x,
+          22 * Renderer::nominalSize.y,
           Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[0],
           min(Renderer::nominalSize.x, width), min(Renderer::nominalSize.y, height));
       move.y = -4* sizeY / Renderer::nominalSize.y;
@@ -329,6 +350,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
       return;
     if (auto dir = object.getAttachmentDir())
       move = getAttachmentOffset(*dir, width, height);
+    move += movement;
     renderer.drawSprite(x + off.x + move.x, y + move.y + off.y, coord.x * sz.x,
         coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
     if (tile.hasCorners()) {
@@ -367,8 +389,9 @@ void MapGui::setLevelBounds(Rectangle b) {
   levelBounds = b;
 }
 
-void MapGui::updateObjects(const MapMemory* mem) {
+void MapGui::updateObjects(const MapMemory* mem, double time) {
   lastMemory = mem;
+  lastTime = time;
   floorIds.clear();
   shadowed.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds()))

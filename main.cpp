@@ -154,10 +154,8 @@ static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
     string discard;
     input.getArchive() >> BOOST_SERIALIZATION_NVP(discard) >> BOOST_SERIALIZATION_NVP(model);
   }
-#ifdef RELEASE
-  if (eraseFile && !Options::getValue(OptionId::KEEP_SAVEFILES))
+  if (eraseFile)
     CHECK(!remove(filename.c_str()));
-#endif
   return model;
 }
 
@@ -309,7 +307,7 @@ void playModel(View* view, PModel model) {
 
 static bool eraseSave(Options* options) {
 #ifdef RELEASE
-  return !options->getValue(OptionId::KEEP_SAVEFILES);
+  return !options->getBoolValue(OptionId::KEEP_SAVEFILES);
 #endif
   return false;
 }

@@ -48,6 +48,14 @@ ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
     setAttribute(attr, -1);
 }
 
+void ViewObject::setMovementInfo(MovementInfo info) {
+  movementInfo = info;
+}
+
+const Optional<ViewObject::MovementInfo>& ViewObject::getMovementInfo() const {
+  return movementInfo;
+}
+
 ViewObject& ViewObject::setModifier(Modifier mod) {
   modifiers[mod] = true;
   return *this;

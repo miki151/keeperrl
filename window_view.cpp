@@ -218,7 +218,7 @@ void WindowView::mapRightClickFun(Vec2 pos) {
 
 void WindowView::reset() {
   RenderLock lock(renderMutex);
-  mapLayout = &currentTileLayout.unzoomLayout;
+  mapLayout = &currentTileLayout.normalLayout;
   gameReady = false;
   mapGui->clearCenter();
   guiBuilder.reset();
@@ -459,7 +459,7 @@ void WindowView::updateView(const CreatureView* collective) {
       objects[pos] = index;
     }
   mapGui->setSpriteMode(currentTileLayout.sprites);
-  mapGui->updateObjects(memory);
+  mapGui->updateObjects(memory, options->getBoolValue(OptionId::SMOOTH_MOVEMENT) ? collective->getTime() : 1000000);
   mapGui->setLevelBounds(level->getBounds());
   rebuildGui();
 }
