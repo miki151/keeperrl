@@ -18,6 +18,7 @@
 
 #include "util.h"
 #include "gui_elem.h"
+#include "view_id.h"
 
 class ViewIndex;
 class MapMemory;
@@ -57,6 +58,7 @@ class MapGui : public GuiElem {
   void drawFloorBorders(Renderer& r, const EnumSet<Dir>& borders, int x, int y);
   void drawHint(Renderer& renderer, Color color, const string& text);
   void drawFoWSprite(Renderer&, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs);
+  void renderExtraBorders(Renderer&);
   MapLayout* layout;
   const Table<Optional<ViewIndex>>& objects;
   const MapMemory* lastMemory = nullptr;
@@ -74,6 +76,7 @@ class MapGui : public GuiElem {
   };
   vector<AnimationInfo> animations;
   DirtyTable<bool> fogOfWar;
+  DirtyTable<EnumSet<ViewId>> extraBorderPos;
   bool isFoW(Vec2 pos) const;
   struct {
     double x;

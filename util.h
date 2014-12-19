@@ -420,13 +420,26 @@ class DirtyTable {
   public:
   DirtyTable(Rectangle bounds, T dirty) : val(bounds), dirty(bounds, 0), dirtyVal(dirty) {} 
 
-  double getValue(Vec2 v) const {
+  T getValue(Vec2 v) const {
     return dirty[v] < counter ? dirtyVal : val[v];
+  }
+
+  bool isDirty(Vec2 v) const {
+    return dirty[v] == counter;
+  }
+
+  T& getDirtyValue(Vec2 v) {
+    CHECK(isDirty(v));
+    return val[v];
   }
 
   void setValue(Vec2 v, const T& d) {
     val[v] = d;
     dirty[v] = counter;
+  }
+
+  const Rectangle& getBounds() const {
+    return val.getBounds();
   }
 
   void clear() {

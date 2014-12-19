@@ -960,7 +960,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::CREATURE_ALTAR] = 35;
               c.constructions[SquareId::RITUAL_ROOM] = 10;));
     case SquareId::BRIDGE:
-        return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Rope bridge"),
+        return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Bridge"),
             CONSTRUCT(Square::Params,
               c.name = "rope bridge";
               c.movementType = {MovementTrait::WALK};
@@ -1061,7 +1061,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.constructions[SquareId::IMPALED_HEAD] = 5;
             c.movementType = {MovementTrait::WALK};));
     case SquareId::WATER:
-        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR, "Water"), "water",
+        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water",
             "sinks in the water", "You hear a splash", 100);
     case SquareId::MAGMA: 
         return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR, "Magma"),
@@ -1262,6 +1262,6 @@ PSquare SquareFactory::getStairs(StairDirection direction, StairKey key, StairLo
 }
   
 PSquare SquareFactory::getWater(double depth) {
-  return PSquare(new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR, "Water"), "water",
+  return PSquare(new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water",
       "sinks in the water", "You hear a splash", depth));
 }

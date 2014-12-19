@@ -26,8 +26,8 @@ const unordered_map<OptionId, Options::Value> defaults {
   {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
-  {OptionId::KEEPER_NAME, string("pokw")},
-  {OptionId::ADVENTURER_NAME, string("wgfk")},
+  {OptionId::KEEPER_NAME, string("")},
+  {OptionId::ADVENTURER_NAME, string("")},
 };
 
 const map<OptionId, string> names {

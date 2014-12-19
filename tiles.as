@@ -76,6 +76,22 @@ Tile getWaterTile(int leftX) {
     .addConnection(dirs(E, W), leftX + 1, 11);
 }
 
+Tile getExtraBorderTile(int set) {
+  return sprite(1, set, 5)
+    .addExtraBorder(dirs(W, N), 10, set)
+    .addExtraBorder(dirs(E, N), 11, set)
+    .addExtraBorder(dirs(E, S), 12, set)
+    .addExtraBorder(dirs(W, S), 13, set)
+    .addExtraBorder(dirs(W, N, E), 14, set)
+    .addExtraBorder(dirs(S, N, E), 15, set)
+    .addExtraBorder(dirs(S, W, E), 16, set)
+    .addExtraBorder(dirs(S, W, N), 17, set)
+    .addExtraBorder(dirs(S, W, N, E), 18, set)
+    .addExtraBorder(dirs(N), 19, set)
+    .addExtraBorder(dirs(E), 20, set)
+    .addExtraBorder(dirs(S), 21, set)
+    .addExtraBorder(dirs(W), 22, set);
+}
 
 void genTiles() {
   setGuiBackground(5, 5, 8); //RGB 0..255
@@ -117,9 +133,13 @@ void genTiles() {
   addTile(ROAD, getRoadTile(7));
   addTile(FLOOR, sprite(3, 14, 1));
   addTile(KEEPER_FLOOR, sprite(4, 18, 1));
-  addTile(SAND, sprite(7, 12, 2));
+  addTile(SAND, getExtraBorderTile(14)
+    .addExtraBorderId(WATER));
   addTile(MUD, sprite(3, 12, 2));
-  addTile(GRASS, sprite(0, 13, 2));
+  addTile(GRASS, getExtraBorderTile(18)
+    .addExtraBorderId(SAND)
+    .addExtraBorderId(HILL)
+    .addExtraBorderId(WATER));
   addTile(CROPS, sprite("wheatfield1"));
   addTile(CROPS2, sprite("wheatfield2"));
   addTile(MOUNTAIN2, getMountainTile(9, 18));
@@ -129,7 +149,9 @@ void genTiles() {
   addTile(IRON_ORE, getMountainTile(7, 18));
   addTile(STONE, getMountainTile(6, 18));
   addTile(SNOW, sprite(16, 2, 2).setNoShadow());
-  addTile(HILL, sprite(3, 13, 2));
+  addTile(HILL, getExtraBorderTile(8)
+    .addExtraBorderId(SAND)
+    .addExtraBorderId(WATER));
   addTile(WOOD_WALL, getWallTile(4));
   addTile(BLACK_WALL, getWallTile(2));
   addTile(YELLOW_WALL, getWallTile(8));

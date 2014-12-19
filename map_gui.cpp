@@ -30,7 +30,7 @@ using sf::Keyboard;
 
 MapGui::MapGui(const Table<Optional<ViewIndex>>& o, ClickFun leftFun, ClickFun rightFun, RefreshFun refFun)
     : objects(o), leftClickFun(leftFun), rightClickFun(rightFun), refreshFun(refFun),
-    fogOfWar(Level::getMaxBounds(), false) {
+    fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}) {
   clearCenter();
 }
 
@@ -84,7 +84,26 @@ Color getHighlightColor(HighlightType type, double amount) {
   return Color();
 }
 
-unordered_map<Vec2, ViewId> floorIds;
+class ViewIdMap {
+  public:
+  void add(Vec2 pos, ViewId id) {
+    ids[pos].insert(id);
+  }
+
+  bool has(Vec2 pos, ViewId id) {
+    return ids[pos].count(id);
+  }
+
+  void clear() {
+    ids.clear();
+  }
+
+  private:
+  unordered_map<Vec2, unordered_set<ViewId>> ids;
+};
+
+ViewIdMap connectionMap;
+
 set<Vec2> shadowed;
 
 Optional<ViewId> getConnectionId(ViewId id) {
@@ -136,10 +155,6 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
     case ViewId::TRAINING_ROOM: return v8;
     default: return v4;
   }
-}
-
-bool tileConnects(ViewId id, Vec2 pos) {
-  return floorIds.count(pos) && id == floorIds.at(pos);
 }
 
 void MapGui::onKeyPressed(Event::KeyEvent key) {
@@ -320,7 +335,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
     if (!object.hasModifier(ViewObject::Modifier::PLANNED))
       if (auto connectionId = getConnectionId(object))
         for (Vec2 dir : getConnectionDirs(object.id())) {
-          if (tileConnects(*connectionId, tilePos + dir))
+          if (connectionMap.has(tilePos + dir, *connectionId))
             dirs.insert(dir.getCardinalDir());
           else
             borderDirs.insert(dir.getCardinalDir());
@@ -392,7 +407,7 @@ void MapGui::setLevelBounds(Rectangle b) {
 void MapGui::updateObjects(const MapMemory* mem, double time) {
   lastMemory = mem;
   lastTime = time;
-  floorIds.clear();
+  connectionMap.clear();
   shadowed.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds()))
     if (auto& index = objects[wpos]) {
@@ -403,13 +418,15 @@ void MapGui::updateObjects(const MapMemory* mem, double time) {
           shadowed.insert(wpos + Vec2(0, 1));
         }
         if (auto id = getConnectionId(object))
-          floorIds.insert(make_pair(wpos, *id));
-      } else if (index->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
+          connectionMap.add(wpos, *id);
+      }
+      if (index->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
         if (auto id = getConnectionId(index->getObject(ViewLayer::FLOOR_BACKGROUND)))
-          floorIds.insert(make_pair(wpos, *id));
-      } else if (auto viewId = index->getHiddenId())
+          connectionMap.add(wpos, *id);
+      }
+      if (auto viewId = index->getHiddenId())
         if (auto id = getConnectionId(*viewId))
-          floorIds.insert(make_pair(wpos, *id));
+          connectionMap.add(wpos, *id);
     }
 }
 
@@ -463,6 +480,38 @@ bool MapGui::isFoW(Vec2 pos) const {
   return !pos.inRectangle(Level::getMaxBounds()) || fogOfWar.getValue(pos);
 }
 
+void MapGui::renderExtraBorders(Renderer& renderer) {
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
+    if (objects[wpos]->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
+      ViewId viewId = objects[wpos]->getObject(ViewLayer::FLOOR_BACKGROUND).id();
+      if (Tile::fromViewId(viewId).hasExtraBorders())
+        for (Vec2 v : wpos.neighbors4())
+          if (v.inRectangle(extraBorderPos.getBounds())) {
+            if (extraBorderPos.isDirty(v))
+              extraBorderPos.getDirtyValue(v).insert(viewId);
+            else
+              extraBorderPos.setValue(v, {viewId});
+          }
+    }
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
+    for (ViewId id : extraBorderPos.getValue(wpos)) {
+      const Tile& tile = Tile::fromViewId(id);
+      for (ViewId underId : tile.getExtraBorderIds())
+        if (connectionMap.has(wpos, underId)) {
+          EnumSet<Dir> dirs;
+          for (Vec2 v : Vec2::directions4())
+            if (connectionMap.has(wpos + v, id))
+              dirs.insert(v.getCardinalDir());
+          if (auto coord = tile.getExtraBorderCoord(dirs)) {
+            Vec2 sz = Renderer::tileSize[tile.getTexNum()];
+            Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
+            renderer.drawSprite(pos.x, pos.y, coord->x * sz.x, coord->y * sz.y, sz.x, sz.y,
+                Renderer::tiles[tile.getTexNum()], layout->squareWidth(), layout->squareHeight());
+          }
+        }
+    }
+}
+
 void MapGui::render(Renderer& renderer) {
   int sizeX = layout->squareWidth();
   int sizeY = layout->squareHeight();
@@ -472,6 +521,7 @@ void MapGui::render(Renderer& renderer) {
         layout->projectOnScreen(getBounds(), levelBounds.getBottomRight())), colors[ColorId::BLACK]);
   Optional<ViewObject> highlighted;
   fogOfWar.clear();
+  extraBorderPos.clear();
   for (ViewLayer layer : layout->getLayers()) {
     for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
       Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
@@ -513,6 +563,8 @@ void MapGui::render(Renderer& renderer) {
     }
     if (!spriteMode)
       break;
+    if (layer == ViewLayer::FLOOR_BACKGROUND)
+      renderExtraBorders(renderer);
   }
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
     if (auto index = objects[wpos]) {

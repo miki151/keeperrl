@@ -1226,7 +1226,6 @@ class Mountains : public LevelMaker {
     for (Vec2 v : area) {
       builder->setHeightMap(v, wys[v]);
       if (wys[v] > cutOffValSnow) {
-        builder->putSquare(v, types[2]);
         builder->putSquare(v, types[0], SquareAttrib::GLACIER);
         if (makeDark)
           builder->setCoverInfo(v, {true, 0.0});
@@ -1235,7 +1234,6 @@ class Mountains : public LevelMaker {
         ++gCnt;
       }
       else if (wys[v] > cutOffVal) {
-        builder->putSquare(v, types[2]);
         builder->putSquare(v, types[1], SquareAttrib::MOUNTAIN);
         if (makeDark)
           builder->setCoverInfo(v, {true, 1. - (wys[v] - cutOffVal) / (cutOffValSnow - cutOffVal)});

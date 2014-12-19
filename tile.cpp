@@ -15,7 +15,6 @@
 
 #include "stdafx.h"
 #include "tile.h"
-#include "view_id.h"
 #include "script_context.h"
 #include "gui_elem.h"
 
@@ -91,6 +90,31 @@ Tile Tile::addBackground(const string& name) {
   Renderer::TileCoords coords = Renderer::getTileCoords(name);
   texNum = coords.texNum;
   return addBackground(coords.pos.x, coords.pos.y);
+}
+
+Tile Tile::addExtraBorder(EnumSet<Dir> dir, int x, int y) {
+  extraBorders[dir] = Vec2(x, y);
+  return *this;
+}
+
+Tile Tile::addExtraBorderId(ViewId id) {
+  extraBorderIds.insert(id);
+  return *this;
+}
+
+const EnumSet<ViewId>& Tile::getExtraBorderIds() const {
+  return extraBorderIds;
+}
+
+bool Tile::hasExtraBorders() const {
+  return !extraBorders.empty();
+}
+
+Optional<Vec2> Tile::getExtraBorderCoord(const EnumSet<Dir>& c) const {
+  if (extraBorders.count(c))
+    return extraBorders.at(c);
+  else
+    return Nothing();
 }
 
 Tile Tile::setTranslucent(double v) {
@@ -227,6 +251,8 @@ void Tile::initialize() {
   ADD_SCRIPT_METHOD_OVERLOAD(Tile, addOption, "Tile addOption(Dir, const string& in)",
       (Dir, const string&), Tile);
   ADD_SCRIPT_METHOD(Tile, addCorner, "Tile addCorner(SetOfDir def, SetOfDir borders, int x, int y)");
+  ADD_SCRIPT_METHOD(Tile, addExtraBorder, "Tile addExtraBorder(SetOfDir def, int x, int y)");
+  ADD_SCRIPT_METHOD(Tile, addExtraBorderId, "Tile addExtraBorderId(ViewId)");
 }
 
 void Tile::loadTiles() {

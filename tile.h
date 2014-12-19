@@ -18,6 +18,8 @@
 
 #include "view_object.h"
 #include "renderer.h"
+#include "view_id.h"
+#include "util.h"
 
 class Tile {
   public:
@@ -44,13 +46,19 @@ class Tile {
 
   Tile setNoShadow();
 
-  Tile addConnection(EnumSet<Dir> c, int x, int y);
-  Tile addConnection(EnumSet<Dir> c, const string&);
+  Tile addConnection(EnumSet<Dir>, int x, int y);
+  Tile addConnection(EnumSet<Dir>, const string&);
   Tile addOption(Dir, const string&);
   Tile setFloorBorders();
 
   Tile addBackground(int x, int y);
   Tile addBackground(const string&);
+
+  Tile addExtraBorder(EnumSet<Dir>, int x, int y);
+  Tile addExtraBorderId(ViewId);
+  const EnumSet<ViewId>& getExtraBorderIds() const;
+  bool hasExtraBorders() const;
+  Optional<Vec2> getExtraBorderCoord(const EnumSet<Dir>& c) const;
 
   Tile setTranslucent(double v);
 
@@ -83,6 +91,8 @@ class Tile {
     Vec2 tileCoord;
   };
   vector<CornerInfo> corners;
+  unordered_map<EnumSet<Dir>, Vec2> extraBorders;
+  EnumSet<ViewId> extraBorderIds;
 };
 
 
