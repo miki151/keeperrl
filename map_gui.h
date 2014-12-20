@@ -34,8 +34,8 @@ class MapGui : public GuiElem {
       RefreshFun refreshFun);
 
   virtual void render(Renderer&) override;
-  virtual void onLeftClick(Vec2) override;
-  virtual void onRightClick(Vec2) override;
+  virtual bool onLeftClick(Vec2) override;
+  virtual bool onRightClick(Vec2) override;
   virtual void onMouseMove(Vec2) override;
   virtual void onMouseRelease() override;
   virtual void onKeyPressed(Event::KeyEvent) override;

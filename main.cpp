@@ -273,11 +273,11 @@ PModel loadPrevious(View* view, bool erase) {
 void playModel(View* view, PModel model) {
   view->reset();
   try {
-    const double gameTimeStep = 0.01;
     const int stepTimeMilli = 3;
     Intervalometer meter(stepTimeMilli);
     double totTime = model->getTime();
     while (1) {
+      double gameTimeStep = view->getGameSpeed() / stepTimeMilli;
       model->update(totTime);
       if (model->isTurnBased())
         ++totTime;

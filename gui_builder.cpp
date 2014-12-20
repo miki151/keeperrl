@@ -36,8 +36,8 @@ using sf::Texture;
 using sf::Keyboard;
 using sf::Mouse;
 
-GuiBuilder::GuiBuilder(Renderer& r, InputCallback in, HintCallback hint, KeyboardCallback key)
-    : renderer(r), inputCallback(in), hintCallback(hint), keyboardCallback(key) {
+GuiBuilder::GuiBuilder(Renderer& r, Callbacks call)
+    : renderer(r), callbacks(call), gameSpeed(GameSpeed::NORMAL) {
 }
 
 void GuiBuilder::reset() {
@@ -49,11 +49,11 @@ void GuiBuilder::reset() {
 const int legendLineHeight = 30;
 
 PGuiElem GuiBuilder::getHintCallback(const string& s) {
-  return GuiElem::mouseOverAction([this, s]() { hintCallback(s); });
+  return GuiElem::mouseOverAction([this, s]() { callbacks.hintCallback(s); });
 }
 
 function<void()> GuiBuilder::getButtonCallback(UserInput input) {
-  return [this, input]() { inputCallback(input); };
+  return [this, input]() { callbacks.inputCallback(input); };
 }
 
 void GuiBuilder::setTilesOk(bool ok) {
@@ -131,7 +131,6 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<GameInfo::BandInfo::Button> butt
       int lastItem = i - 1;
       GameInfo::BandInfo::Button button1 = groupedButtons.front();
       function<void()> buttonFun = [=, &active] {
-      //  setOptionsMenu(button1.groupName, groupedButtons, firstItem, active, tab);
         active = firstItem;
       };
       vector<PGuiElem> line;
@@ -268,6 +267,22 @@ PGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
       GuiElem::centerHoriz(GuiElem::horizontalList(std::move(bottomLine), 140, 0, 3), numBottom * 140)), 28, 0);
 }
 
+string GuiBuilder::getGameSpeedName(GuiBuilder::GameSpeed gameSpeed) const {
+  switch (gameSpeed) {
+    case GameSpeed::SLOW: return "slow";
+    case GameSpeed::NORMAL: return "normal";
+    case GameSpeed::FAST: return "fast";
+    case GameSpeed::VERY_FAST: return "very fast";
+  }
+}
+
+string GuiBuilder::getCurrentGameSpeedName() const {
+  if (Clock::get().isPaused())
+    return "paused";
+  else
+    return getGameSpeedName(gameSpeed);
+}
+
 PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo& villageInfo) {
   vector<PGuiElem> buttons = makeVec<PGuiElem>(
       GuiElem::icon(GuiElem::BUILDING),
@@ -303,22 +318,56 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
   main = GuiElem::margins(std::move(main), 15, 15, 15, 5);
   PGuiElem butGui = GuiElem::margins(GuiElem::horizontalList(std::move(buttons), 50, 0), 0, 5, 0, 5);
   vector<PGuiElem> bottomLine;
-  if (Clock::get().isPaused())
-    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().cont(); }),
-          GuiElem::label("PAUSED", colors[ColorId::RED])));
-  else
-    bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { Clock::get().pause(); }),
-          GuiElem::label("PAUSE", colors[ColorId::LIGHT_BLUE])));
-  /*bottomLine.push_back(GuiElem::stack(GuiElem::button([&]() { switchZoom(); }),
-        GuiElem::label("ZOOM", colors[ColorId::LIGHT_BLUE])));*/
+  bottomLine.push_back(GuiElem::stack(
+      GuiElem::horizontalList(makeVec<PGuiElem>(
+          GuiElem::label("speed:"),
+          GuiElem::label(getCurrentGameSpeedName(),
+              colors[Clock::get().isPaused() ? ColorId::RED : ColorId::WHITE])), 60, 0),
+      GuiElem::button([&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })));
   bottomLine.push_back(
       GuiElem::label("FPS " + toString(fpsCounter.getFps()), colors[ColorId::WHITE]));
-  main = GuiElem::margin(GuiElem::margins(GuiElem::horizontalList(std::move(bottomLine), 90, 0), 30, 0, 0, 0),
+  main = GuiElem::margin(GuiElem::margins(GuiElem::horizontalList(std::move(bottomLine), 160, 0), 30, 0, 0, 0),
       std::move(main), 48, GuiElem::BOTTOM);
   return GuiElem::stack(GuiElem::stack(std::move(invisible)),
       GuiElem::margin(std::move(butGui), std::move(main), 55, GuiElem::TOP));
 }
 
+GuiBuilder::GameSpeed GuiBuilder::getGameSpeed() const {
+  return gameSpeed;
+}
+
+static char getHotkey(GuiBuilder::GameSpeed speed) {
+  return '1' + int(speed);
+}
+
+void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
+  vector<PGuiElem> lines;
+  int keyMargin = 80;
+  lines.push_back(GuiElem::stack(
+        GuiElem::horizontalList(makeVec<PGuiElem>(
+            GuiElem::label("pause"),
+            GuiElem::label("[space]")), keyMargin, 0),
+        GuiElem::button([=] {
+            if (Clock::get().isPaused()) 
+              Clock::get().cont();
+            else
+              Clock::get().pause();
+            gameSpeedDialogOpen = false;
+            }, ' ')));
+  for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
+    Color color = colors[speed == gameSpeed ? ColorId::LIGHT_GREEN : ColorId::WHITE];
+    lines.push_back(GuiElem::stack(GuiElem::horizontalList(makeVec<PGuiElem>(
+             GuiElem::label(getGameSpeedName(speed), color),
+             GuiElem::label("'" + string(1, getHotkey(speed)) + "' ", color)), keyMargin, 0),
+          GuiElem::button([=] { gameSpeed = speed; gameSpeedDialogOpen = false; Clock::get().cont();},
+            getHotkey(speed))));
+  }
+  reverse(lines.begin(), lines.end());
+  Vec2 size(150, legendLineHeight * lines.size() - 10);
+  PGuiElem dialog = GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
+  overlays.push_back({std::move(dialog), size,
+      gameSpeedDialogOpen ? OverlayInfo::GAME_SPEED : OverlayInfo::INVISIBLE});
+}
 
 PGuiElem GuiBuilder::getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo) {
   vector<PGuiElem> line;
@@ -360,7 +409,7 @@ PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
   int keySpacing = 50;
   return GuiElem::verticalList(makeVec<PGuiElem>(
         GuiElem::centerHoriz(GuiElem::horizontalList(std::move(topLine), topWidths, 0), 300),
-        GuiElem::centerHoriz(GuiElem::horizontalList(std::move(bottomLine), bottomWidths, keySpacing), 200)), 28, 0);
+        GuiElem::centerHoriz(GuiElem::horizontalList(std::move(bottomLine), bottomWidths, keySpacing), 300)), 28, 0);
 }
 
 void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInfo& info) {
@@ -425,7 +474,7 @@ PGuiElem GuiBuilder::drawPlayerHelp(GameInfo::PlayerInfo& info) {
     Event::KeyEvent key = bottomKeys[i].event;
     lines.push_back(GuiElem::stack(
           GuiElem::label(text, colors[ColorId::LIGHT_BLUE]),
-          GuiElem::button([this, key]() { keyboardCallback(key);})));
+          GuiElem::button([this, key]() { callbacks.keyboardCallback(key);})));
   }
   return GuiElem::verticalList(std::move(lines), legendLineHeight, 0);
 }

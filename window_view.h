@@ -49,6 +49,7 @@ class WindowView: public View {
   virtual bool yesOrNoPrompt(const string& message) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
   virtual void animation(Vec2 pos, AnimationId) override;
+  virtual double getGameSpeed() override;
 
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
@@ -170,6 +171,7 @@ class WindowView: public View {
   Texture splash2;
   Texture loadingSplash;
   Options* options;
+  bool choiceOpen = false;
 };
 
 

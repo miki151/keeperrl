@@ -55,9 +55,12 @@ MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
   mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
 }
 
-void MinimapGui::onLeftClick(Vec2 v) {
-  if (v.inRectangle(getBounds()))
+bool MinimapGui::onLeftClick(Vec2 v) {
+  if (v.inRectangle(getBounds())) {
     clickFun();
+    return true;
+  }
+  return false;
 }
 
 void MinimapGui::putMapPixel(Vec2 pos, Color col) {

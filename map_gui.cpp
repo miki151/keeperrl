@@ -197,18 +197,24 @@ void MapGui::onKeyPressed(Event::KeyEvent key) {
   }
 }
 
-void MapGui::onLeftClick(Vec2 v) {
+bool MapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
     Vec2 pos = layout->projectOnMap(getBounds(), v);
     leftClickFun(pos);
     mouseHeldPos = pos;
+    return true;
   }
+  return false;
 }
 
-void MapGui::onRightClick(Vec2 pos) {
-  lastMousePos = pos;
-  isScrollingNow = true;
-  mouseOffset.x = mouseOffset.y = 0;
+bool MapGui::onRightClick(Vec2 pos) {
+  if (pos.inRectangle(getBounds())) {
+    lastMousePos = pos;
+    isScrollingNow = true;
+    mouseOffset.x = mouseOffset.y = 0;
+    return true;
+  }
+  return false;
 }
 
 void MapGui::onMouseMove(Vec2 v) {

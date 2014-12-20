@@ -34,7 +34,7 @@ class MinimapGui : public GuiElem {
   void presentMap(const CreatureView*, Rectangle bounds, Renderer&, function<void(double, double)> clickFun);
 
   virtual void render(Renderer&) override;
-  virtual void onLeftClick(Vec2) override;
+  virtual bool onLeftClick(Vec2) override;
 
   private:
 

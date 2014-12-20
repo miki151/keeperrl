@@ -110,10 +110,10 @@ void WindowView::resetMapBounds() {
 }
 
 WindowView::WindowView() : objects(Level::getMaxBounds()),
-    guiBuilder(renderer,
+    guiBuilder(renderer, {
         [this](UserInput input) { inputQueue.push(input);},
         [this](const string& s) { mapGui->setHint(s);},
-        [this](sf::Event::KeyEvent ev) { keyboardAction(ev);}) {}
+        [this](sf::Event::KeyEvent ev) { keyboardAction(ev);}}) {}
 
 static bool tilesOk = true;
 
@@ -339,6 +339,11 @@ void WindowView::rebuildGui() {
   resetMapBounds();
   CHECK(currentThreadId() != renderThreadId);
   tempGuiElems.clear();
+  int bottomOffset = 15;
+  int leftMargin = 10;
+  int rightMargin = 20;
+  int sideOffset = 10;
+  int rightWindowHeight = 80;
   tempGuiElems.push_back(GuiElem::mainDecoration(rightBarWidth, bottomBarHeight));
   tempGuiElems.back()->setBounds(Rectangle(renderer.getWidth(), renderer.getHeight()));
   tempGuiElems.push_back(GuiElem::margins(std::move(right), 20, 20, 10, 0));
@@ -348,17 +353,13 @@ void WindowView::rebuildGui() {
   tempGuiElems.back()->setBounds(Rectangle(
       0, renderer.getHeight() - bottomBarHeight,
       renderer.getWidth() - rightBarWidth, renderer.getHeight()));
-  int bottomOffset = 15;
-  int leftMargin = 10;
-  int topMargin = 10;
-  int rightMargin = 20;
-  int bottomMargin = 10;
-  int sideOffset = 10;
-  int rightWindowHeight = 80;
   guiBuilder.drawMessages(overlays, gameInfo.messageBuffer,
       renderer.getWidth() - rightBarWidth - leftMargin - rightMargin);
+  guiBuilder.drawGameSpeedDialog(overlays);
   for (auto& overlay : overlays) {
     Vec2 pos;
+    int topMargin = 10;
+    int bottomMargin = 10;
     int width = leftMargin + rightMargin + overlay.size.x;
     int height = overlay.size.y + bottomMargin + topMargin;
     switch (overlay.alignment) {
@@ -376,10 +377,26 @@ void WindowView::rebuildGui() {
           topMargin = 2;
           pos = Vec2(0, 0);
           break;
+      case GuiBuilder::OverlayInfo::GAME_SPEED:
+          pos = Vec2(renderer.getWidth() - overlay.size.x - 80, renderer.getHeight() - overlay.size.y - 67);
+          break;
+      case GuiBuilder::OverlayInfo::INVISIBLE:
+          pos = Vec2(renderer.getWidth(), 0);
+          overlay.elem = GuiElem::invisible(std::move(overlay.elem));
+          break;
     }
-    tempGuiElems.push_back(GuiElem::translucentBackground(
-        GuiElem::margins(std::move(overlay.elem), leftMargin, topMargin, rightMargin, bottomMargin)));
+    PGuiElem elem = GuiElem::margins(std::move(overlay.elem), leftMargin, topMargin, rightMargin, bottomMargin);
+    switch (overlay.alignment) {
+      case GuiBuilder::OverlayInfo::GAME_SPEED:
+        elem = GuiElem::background(std::move(elem), colors[ColorId::BLACK]);
+        break;
+      default:
+        elem = GuiElem::translucentBackground(std::move(elem));
+        break;
+    }
+    tempGuiElems.push_back(std::move(elem));
     tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(width, height)));
+    Debug() << "Overlay " << overlay.alignment << " bounds " << tempGuiElems.back()->getBounds();
   }
 }
 
@@ -394,7 +411,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
 vector<GuiElem*> WindowView::getClickableGuiElems() {
   CHECK(currentThreadId() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
-  ret = getSuffix(ret, ret.size() - 1);
+  reverse(ret.begin(), ret.end());
   if (gameReady) {
     ret.push_back(minimapGui);
     ret.push_back(mapGui);
@@ -1018,11 +1035,11 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       Vec2 clickPos(event.mouseButton.x, event.mouseButton.y);
       for (GuiElem* elem : guiElems) {
         if (event.mouseButton.button == sf::Mouse::Right)
-          elem->onRightClick(clickPos);
+          if (elem->onRightClick(clickPos))
+            break;
         if (event.mouseButton.button == sf::Mouse::Left)
-          elem->onLeftClick(clickPos);
-        if (clickPos.inRectangle(elem->getBounds()))
-          break;
+          if (elem->onLeftClick(clickPos))
+            break;
       }
       }
       break;
@@ -1075,10 +1092,6 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
       } break;
     case Keyboard::F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
     case Keyboard::Space:
-      if (!Clock::get().isPaused())
-        Clock::get().pause();
-      else
-        Clock::get().cont();
       inputQueue.push(UserInput(UserInputId::WAIT));
       break;
     case Keyboard::Escape:
@@ -1186,3 +1199,11 @@ Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
   return keyInfo[*index].event;
 }
 
+double WindowView::getGameSpeed() {
+  switch (guiBuilder.getGameSpeed()) {
+    case GuiBuilder::GameSpeed::SLOW: return 0.015;
+    case GuiBuilder::GameSpeed::NORMAL: return 0.025;
+    case GuiBuilder::GameSpeed::FAST: return 0.04;
+    case GuiBuilder::GameSpeed::VERY_FAST: return 0.06;
+  }
+}

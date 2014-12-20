@@ -23,8 +23,8 @@ class ViewObject;
 class GuiElem {
   public:
   virtual void render(Renderer&) {}
-  virtual void onLeftClick(Vec2) {}
-  virtual void onRightClick(Vec2) {}
+  virtual bool onLeftClick(Vec2) { return false; }
+  virtual bool onRightClick(Vec2) { return false; }
   virtual void onMouseMove(Vec2) {}
   virtual void onMouseRelease() {}
   virtual void onRefreshBounds() {}
@@ -91,6 +91,7 @@ class GuiElem {
   static PGuiElem border2(PGuiElem content);
   static PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
   static PGuiElem invisible(PGuiElem content);
+  static PGuiElem background(PGuiElem content, Color);
   static PGuiElem translucentBackground(PGuiElem content);
   static Color translucentBgColor;
   static void changeBackground(int r, int g, int b);

@@ -40,9 +40,12 @@ class Button : public GuiElem {
   Button(function<void()> f, char key) : fun(f), hotkey(key) {}
  // Button(function<void()> f, Event::KeyEvent key) : fun(f), hotkey2(key) {}
 
-  virtual void onLeftClick(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
+  virtual bool onLeftClick(Vec2 pos) override {
+    if (pos.inRectangle(getBounds())) {
       fun();
+      return true;
+    }
+    return false;
   }
 
   virtual void onKeyPressed(char c) override {
@@ -246,16 +249,20 @@ class GuiLayout : public GuiElem {
   public:
   GuiLayout(vector<PGuiElem> e) : elems(std::move(e)) {}
 
-  virtual void onLeftClick(Vec2 pos) override {
+  virtual bool onLeftClick(Vec2 pos) override {
     for (int i : All(elems))
       if (isVisible(i))
-        elems[i]->onLeftClick(pos);
+        if (elems[i]->onLeftClick(pos))
+          return true;
+    return false;
   }
 
-  virtual void onRightClick(Vec2 pos) override {
+  virtual bool onRightClick(Vec2 pos) override {
     for (int i : All(elems))
       if (isVisible(i))
-        elems[i]->onRightClick(pos);
+        if (elems[i]->onRightClick(pos))
+          return true;
+    return false;
   }
 
   virtual void onMouseMove(Vec2 pos) override {
@@ -695,16 +702,19 @@ class ScrollBar : public GuiLayout {
     return ret;
   }
 
-  virtual void onLeftClick(Vec2 v) override {
-    if (v.y <= getBounds().getPY() + vMargin)
-      *scrollPos = max(0, *scrollPos - 1);
-    else if (v.y >= getBounds().getKY() - vMargin)
-      *scrollPos = min(scrollLength(), *scrollPos + 1);
-    else if (v.inRectangle(getElemBounds(0)))
-      held = v.y - calcButHeight();
-    else if (v.inRectangle(getBounds())) {
-      *scrollPos = scrollLength() * calcPos(v.y);
+  virtual bool onLeftClick(Vec2 v) override {
+    if (v.inRectangle(getBounds())) {
+      if (v.y <= getBounds().getPY() + vMargin)
+        *scrollPos = max(0, *scrollPos - 1);
+      else if (v.y >= getBounds().getKY() - vMargin)
+        *scrollPos = min(scrollLength(), *scrollPos + 1);
+      else if (v.inRectangle(getElemBounds(0)))
+        held = v.y - calcButHeight();
+      else
+        *scrollPos = scrollLength() * calcPos(v.y);
+      return true;
     }
+    return false;
   }
 
   virtual void onMouseMove(Vec2 v) override {
@@ -757,14 +767,16 @@ class Scrollable : public GuiElem {
     content->renderPart(r, getScrollPos());
   }
 
-  virtual void onLeftClick(Vec2 v) override {
+  virtual bool onLeftClick(Vec2 v) override {
     if (v.inRectangle(getBounds()))
-      content->onLeftClick(v);
+      return content->onLeftClick(v);
+    return false;
   }
 
-  virtual void onRightClick(Vec2 v) override {
+  virtual bool onRightClick(Vec2 v) override {
     if (v.inRectangle(getBounds()))
-      content->onRightClick(v);
+      return content->onRightClick(v);
+    return false;
   }
 
   virtual void onMouseMove(Vec2 v) override {
@@ -1065,7 +1077,11 @@ PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {
 }
 
 PGuiElem GuiElem::translucentBackground(PGuiElem content) {
-  return stack(GuiElem::rectangle(translucentBgColor), std::move(content));
+  return background(std::move(content), translucentBgColor);
+}
+
+PGuiElem GuiElem::background(PGuiElem content, Color color) {
+  return stack(GuiElem::rectangle(color), std::move(content));
 }
 
 PGuiElem GuiElem::icon(IconId id) {
