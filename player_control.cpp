@@ -272,7 +272,7 @@ void PlayerControl::render(View* view) {
     view->updateView(this);
     showWelcomeMsg = false;
     view->presentText("", "So warlock,\n \nYou were dabbling in the Dark Arts, a tad, I see.\n \n "
-        "Welcome to the valley of" + model->getWorldName() + ", where you'll have to do "
+        "Welcome to the valley of " + model->getWorldName() + ", where you'll have to do "
         "what you can to KEEP yourself together. Build rooms, storage units and workshops to endorse your "
         "minions. The only way to go forward in this world is to destroy the ones who oppose you.\n \n"
 "Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron, stone and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the settings (press F2).");
@@ -946,6 +946,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (getCollective()->isMarkedToDig(pos))
     index.setHighlight(HighlightType::BUILD);
+  if (getCollective()->hasPriorityTasks(pos))
+    index.setHighlight(HighlightType::PRIORITY_TASK);
   if (rectSelection
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);

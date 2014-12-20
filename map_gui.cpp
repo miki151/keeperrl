@@ -79,6 +79,7 @@ Color getHighlightColor(HighlightType type, double amount) {
     case HighlightType::MEMORY: return transparency(colors[ColorId::BLACK], 80);
     case HighlightType::NIGHT: return transparency(colors[ColorId::NIGHT_BLUE], amount * 160);
     case HighlightType::EFFICIENCY: return transparency(Color(255, 0, 0) , 120 * (1 - amount));
+    case HighlightType::PRIORITY_TASK: return transparency(Color(0, 255, 0), 120);
   }
   FAIL << "pokpok";
   return Color();

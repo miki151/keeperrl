@@ -241,6 +241,7 @@ class Collective : public Task::Callback {
   double getDangerLevel(bool includeExecutions = true) const;
   bool isMarkedToDig(Vec2) const;
   void setPriorityTasks(Vec2);
+  bool hasPriorityTasks(Vec2) const;
 
   bool hasTech(TechId id) const;
   void acquireTech(Technology*, bool free = false);

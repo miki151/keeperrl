@@ -84,7 +84,7 @@ void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text,
     int ind = lowercase(text).find(key);
     if (ind != string::npos) {
       int pos = x + getTextLength(text.substr(0, ind));
-      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, colors[ColorId::GRAY]);
+      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, colors[ColorId::GREEN]);
     }
   }
   drawText(color, x, y, text);

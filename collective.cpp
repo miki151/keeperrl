@@ -1723,6 +1723,10 @@ void Collective::setPriorityTasks(Vec2 pos) {
   taskMap.setPriorityTasks(pos);
 }
 
+bool Collective::hasPriorityTasks(Vec2 pos) const {
+  return taskMap.hasPriorityTasks(pos);
+}
+
 void Collective::cutTree(Vec2 pos) {
   taskMap.markSquare(pos, Task::construction(this, pos, SquareId::TREE_TRUNK));
 }

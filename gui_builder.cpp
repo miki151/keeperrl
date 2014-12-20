@@ -355,7 +355,7 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
             gameSpeedDialogOpen = false;
             }, ' ')));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
-    Color color = colors[speed == gameSpeed ? ColorId::LIGHT_GREEN : ColorId::WHITE];
+    Color color = colors[speed == gameSpeed ? ColorId::GREEN : ColorId::WHITE];
     lines.push_back(GuiElem::stack(GuiElem::horizontalList(makeVec<PGuiElem>(
              GuiElem::label(getGameSpeedName(speed), color),
              GuiElem::label("'" + string(1, getHotkey(speed)) + "' ", color)), keyMargin, 0),
