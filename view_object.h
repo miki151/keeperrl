@@ -72,8 +72,10 @@ class ViewObject {
     double tEnd;
   };
 
-  void setMovementInfo(MovementInfo);
-  const Optional<MovementInfo>& getMovementInfo() const;
+  void addMovementInfo(MovementInfo);
+  bool hasAnyMovementInfo() const;
+  MovementInfo getLastMovementInfo() const;
+  Vec2 getMovementInfo(double tBegin, double tEnd) const;
 
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();
@@ -91,7 +93,21 @@ class ViewObject {
   string SERIAL(description);
   Optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL2(position, Vec2(-1, -1));
-  Optional<MovementInfo> movementInfo;
+
+  class MovementQueue {
+    public:
+    void add(MovementInfo);
+    const MovementInfo& getLast() const;
+    Vec2 getTotalMovement(double tBegin, double tEnd) const;
+    bool hasAny() const;
+
+    private:
+    int makeGoodIndex(int index) const;
+    const static int maxMoves = 6;
+    std::array<MovementInfo, maxMoves> elems;
+    int index = 0;
+    int totalMoves = 0;
+  } movementQueue;
 };
 
 #endif

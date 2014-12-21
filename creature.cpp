@@ -222,7 +222,7 @@ CreatureAction Creature::move(Vec2 direction) {
       spendTime(3);
     } else
       spendTime(1);
-    modViewObject().setMovementInfo({direction, oldTime, getTime()});
+    modViewObject().addMovementInfo({direction, oldTime, getTime()});
   });
 }
 
@@ -274,7 +274,7 @@ CreatureAction Creature::swapPosition(Vec2 direction, bool force) {
       getSafeSquare(direction)->getCreature()->playerMessage("Excuse me!");
     playerMessage("Excuse me!");
     level->swapCreatures(this, c);
-    c->modViewObject().setMovementInfo({-direction, getTime(), c->getTime()});
+    c->modViewObject().addMovementInfo({-direction, getTime(), c->getTime()});
   });
 }
 

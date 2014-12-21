@@ -988,6 +988,10 @@ Optional<Vec2> PlayerControl::getPosition(bool force) const {
   }
 }
 
+Optional<CreatureView::MovementInfo> PlayerControl::getMovementInfo() const {
+  return Nothing();
+}
+
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
 int PlayerControl::getImpCost() const {

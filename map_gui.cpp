@@ -25,11 +25,11 @@
 #include "clock.h"
 #include "view_id.h"
 #include "level.h"
+#include "creature_view.h"
 
 using sf::Keyboard;
 
-MapGui::MapGui(const Table<Optional<ViewIndex>>& o, ClickFun leftFun, ClickFun rightFun, RefreshFun refFun)
-    : objects(o), leftClickFun(leftFun), rightClickFun(rightFun), refreshFun(refFun),
+MapGui::MapGui(Callbacks call) : objects(Level::getMaxBounds()), callbacks(call),
     fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}) {
   clearCenter();
 }
@@ -40,8 +40,8 @@ static Color getFireColor() {
   return Color(200 + Random.get(-fireVar, fireVar), Random.get(fireVar), Random.get(fireVar), 150);
 }
 
-
-void MapGui::updateLayout(MapLayout* l, Rectangle levelBounds) {
+void MapGui::updateLayout(MapLayout* l, Rectangle bounds) {
+  levelBounds = bounds;
   layout = l;
   Vec2 movePos = Vec2((center.x - mouseOffset.x) * layout->squareWidth(),
       (center.y - mouseOffset.y) * layout->squareHeight());
@@ -201,7 +201,7 @@ void MapGui::onKeyPressed(Event::KeyEvent key) {
 bool MapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
     Vec2 pos = layout->projectOnMap(getBounds(), v);
-    leftClickFun(pos);
+    callbacks.leftClickFun(pos);
     mouseHeldPos = pos;
     return true;
   }
@@ -222,7 +222,7 @@ void MapGui::onMouseMove(Vec2 v) {
   Vec2 pos = layout->projectOnMap(getBounds(), v);
   if (v.inRectangle(getBounds())) {
     if (mouseHeldPos && *mouseHeldPos != pos) {
-      leftClickFun(pos);
+      callbacks.leftClickFun(pos);
       mouseHeldPos = pos;
     }
     highlightedPos = pos;
@@ -231,21 +231,21 @@ void MapGui::onMouseMove(Vec2 v) {
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->squareWidth();
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->squareHeight();
-    refreshFun();
+    callbacks.refreshFun();
   }
 }
 
 void MapGui::onMouseRelease() {
   if (isScrollingNow) {
     if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1)
-      rightClickFun(layout->projectOnMap(getBounds(), lastMousePos));
+      callbacks.rightClickFun(layout->projectOnMap(getBounds(), lastMousePos));
     else {
       center.x -= mouseOffset.x;
       center.y -= mouseOffset.y;
     }
     mouseOffset.x = mouseOffset.y = 0;
     isScrollingNow = false;
-    refreshFun();
+    callbacks.refreshFun();
   }
   mouseHeldPos = Nothing();
 }
@@ -290,21 +290,36 @@ static double getJumpOffset(double state) {
   if (state > 0.5)
     state -= 0.5;
   state *= 2;
-  const double maxH = 0.15;
+  const double maxH = 0.09;
   return maxH * (1.0 - (2.0 * state - 1) * (2.0 * state - 1));
 }
 
-static Vec2 getMovementOffset(Vec2 dir, Vec2 size, double time, double tBegin, double tEnd) {
-  if (time >= tEnd || time <= tBegin)
+Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time, int curTimeReal) {
+  if (!object.hasAnyMovementInfo())
     return Vec2(0, 0);
-  double state = (time - tBegin) / (tEnd - tBegin);
-  double minStopTime = 0.2;
-  state = min(1.0, max(0.0, (state - minStopTime) / (1.0 - 2 * minStopTime)));
+  double state;
+  Vec2 dir;
+  if (screenMovement && 
+      curTimeReal >= screenMovement->startTimeReal &&
+      curTimeReal <= screenMovement->endTimeReal) {
+    state = (double(curTimeReal) - screenMovement->startTimeReal) /
+          (screenMovement->endTimeReal - screenMovement->startTimeReal);
+    dir = object.getMovementInfo(screenMovement->startTimeGame, screenMovement->endTimeGame);
+  } else if (object.hasAnyMovementInfo() && !screenMovement) {
+    ViewObject::MovementInfo info = object.getLastMovementInfo();
+    dir = info.direction;
+    if (info.direction.length8() == 0 || time >= info.tEnd || time <= info.tBegin)
+      return Vec2(0, 0);
+    state = (time - info.tBegin) / (info.tEnd - info.tBegin);
+    double minStopTime = 0.2;
+    state = min(1.0, max(0.0, (state - minStopTime) / (1.0 - 2 * minStopTime)));
+  } else
+    return Vec2(0, 0);
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(state)) * size.y);
 }
 
-void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& object,
-    int sizeX, int sizeY, Vec2 tilePos) {
+void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, int x, int y,
+    int sizeX, int sizeY) {
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
     renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
@@ -313,6 +328,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
     renderer.drawFilledRectangle(x, y, x + sizeX, y + sizeY, Color::Transparent, colors[ColorId::DARK_GREEN]);
   }
+}
+
+void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& object,
+    int sizeX, int sizeY, Vec2 tilePos, int curTimeReal) {
   const Tile& tile = Tile::getTile(object.id(), spriteMode);
   Color color = Renderer::getBleedingColor(object);
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
@@ -347,9 +366,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
           else
             borderDirs.insert(dir.getCardinalDir());
         }
-    Vec2 movement;
-    if (auto& info = object.getMovementInfo())
-      movement = getMovementOffset(info->direction, Vec2(sizeX, sizeY), lastTime, info->tBegin, info->tEnd);
+    Vec2 movement = getMovementOffset(object, Vec2(sizeX, sizeY), currentTimeGame, curTimeReal);
+    drawCreatureHighlights(renderer, object, x + movement.x, y + movement.y, sizeX, sizeY);
     Vec2 coord = tile.getSpriteCoord(dirs);
     if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
       move.y = -4* sizeY / Renderer::nominalSize.y;
@@ -407,13 +425,36 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
   }
 }
 
-void MapGui::setLevelBounds(Rectangle b) {
-  levelBounds = b;
-}
-
-void MapGui::updateObjects(const MapMemory* mem, double time) {
-  lastMemory = mem;
-  lastTime = time;
+void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement) {
+  const Level* level = view->getLevel();
+  for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds()))
+    objects[pos] = Nothing();
+  if (!isCentered())
+    setCenter(*view->getPosition(true));
+  else if (auto pos = view->getPosition(false))
+    setCenter(*pos);
+  updateLayout(mapLayout, view->getLevel()->getBounds());
+  for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds())) 
+    if (level->inBounds(pos)) {
+      ViewIndex index;
+      view->getViewIndex(pos, index);
+      if (!index.isEmpty())
+        index.setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
+      objects[pos] = index;
+    }
+  currentTimeGame = smoothMovement ? view->getTime() : 1000000000;
+  if (auto movement = view->getMovementInfo()) {
+    if (!screenMovement || screenMovement->startTimeGame != movement->prevTime) {
+      screenMovement = {
+        movement->from,
+        movement->to,
+        Clock::get().getRealMillis(),
+        Clock::get().getRealMillis() + 100,
+        movement->prevTime,
+        currentTimeGame
+      };
+    }
+  }
   connectionMap.clear();
   shadowed.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds()))
@@ -487,9 +528,9 @@ bool MapGui::isFoW(Vec2 pos) const {
   return !pos.inRectangle(Level::getMaxBounds()) || fogOfWar.getValue(pos);
 }
 
-void MapGui::renderExtraBorders(Renderer& renderer) {
+void MapGui::renderExtraBorders(Renderer& renderer, int currentTimeReal) {
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
-    if (objects[wpos]->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
+    if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
       ViewId viewId = objects[wpos]->getObject(ViewLayer::FLOOR_BACKGROUND).id();
       if (Tile::fromViewId(viewId).hasExtraBorders())
         for (Vec2 v : wpos.neighbors4())
@@ -511,7 +552,7 @@ void MapGui::renderExtraBorders(Renderer& renderer) {
               dirs.insert(v.getCardinalDir());
           if (auto coord = tile.getExtraBorderCoord(dirs)) {
             Vec2 sz = Renderer::tileSize[tile.getTexNum()];
-            Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
+            Vec2 pos = projectOnScreen(wpos, currentTimeReal);
             renderer.drawSprite(pos.x, pos.y, coord->x * sz.x, coord->y * sz.y, sz.x, sz.y,
                 Renderer::tiles[tile.getTexNum()], layout->squareWidth(), layout->squareHeight());
           }
@@ -519,19 +560,34 @@ void MapGui::renderExtraBorders(Renderer& renderer) {
     }
 }
 
+Vec2 MapGui::projectOnScreen(Vec2 wpos, int curTime) {
+  double x = wpos.x;
+  double y = wpos.y;
+  if (screenMovement) {
+    if (curTime >= screenMovement->startTimeReal && curTime <= screenMovement->endTimeReal) {
+      double state = (double(curTime) - screenMovement->startTimeReal) /
+          (screenMovement->endTimeReal - screenMovement->startTimeReal);
+      x += (1 - state) * (screenMovement->to.x - screenMovement->from.x);
+      y += (1 - state) * (screenMovement->to.y - screenMovement->from.y);
+    }
+  }
+  return layout->projectOnScreen(getBounds(), x, y);
+}
+
 void MapGui::render(Renderer& renderer) {
   int sizeX = layout->squareWidth();
   int sizeY = layout->squareHeight();
+  int currentTimeReal = Clock::get().getRealMillis();
   renderer.drawFilledRectangle(getBounds(), colors[ColorId::ALMOST_BLACK]);
   renderer.drawFilledRectangle(Rectangle(
-        layout->projectOnScreen(getBounds(), levelBounds.getTopLeft()),
-        layout->projectOnScreen(getBounds(), levelBounds.getBottomRight())), colors[ColorId::BLACK]);
+        projectOnScreen(levelBounds.getTopLeft(), currentTimeReal),
+        projectOnScreen(levelBounds.getBottomRight(), currentTimeReal)), colors[ColorId::BLACK]);
   Optional<ViewObject> highlighted;
   fogOfWar.clear();
   extraBorderPos.clear();
   for (ViewLayer layer : layout->getLayers()) {
     for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
-      Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
+      Vec2 pos = projectOnScreen(wpos, currentTimeReal);
       if (!objects[wpos] || objects[wpos]->noObjects()) {
         if (layer == layout->getLayers().back()) {
           if (wpos.inRectangle(levelBounds))
@@ -548,7 +604,7 @@ void MapGui::render(Renderer& renderer) {
       } else
         object = index.getTopObject(layout->getLayers());
       if (object) {
-        drawObjectAbs(renderer, pos.x, pos.y, *object, sizeX, sizeY, wpos);
+        drawObjectAbs(renderer, pos.x, pos.y, *object, sizeX, sizeY, wpos, currentTimeReal);
         if (highlightedPos == wpos)
           highlighted = *object;
       }
@@ -571,11 +627,11 @@ void MapGui::render(Renderer& renderer) {
     if (!spriteMode)
       break;
     if (layer == ViewLayer::FLOOR_BACKGROUND)
-      renderExtraBorders(renderer);
+      renderExtraBorders(renderer, currentTimeReal);
   }
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
     if (auto index = objects[wpos]) {
-      Vec2 pos = layout->projectOnScreen(getBounds(), wpos);
+      Vec2 pos = projectOnScreen(wpos, currentTimeReal);
       for (HighlightType highlight : ENUM_ALL(HighlightType))
         if (index->getHighlight(highlight) > 0)
           renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY,
@@ -591,7 +647,7 @@ void MapGui::render(Renderer& renderer) {
     elem.animation->render(
         renderer,
         getBounds(),
-        layout->projectOnScreen(getBounds(), elem.position),
+        projectOnScreen(elem.position, currentTimeReal),
         Clock::get().getRealMillis());
   if (!hint.empty())
     drawHint(renderer, colors[ColorId::WHITE], hint);

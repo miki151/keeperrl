@@ -743,12 +743,17 @@ void Player::makeMove() {
       break;
     }
   }
-  if (!getCreature()->isDead())
+  if (!getCreature()->isDead()) {
+    if (getCreature()->getTime() > currentTimePos.time) {
+      previousTimePos = currentTimePos;
+      currentTimePos = { getCreature()->getPosition(), getCreature()->getTime()};
+    }
     for (Vec2 pos : getCreature()->getLevel()->getVisibleTiles(getCreature())) {
       ViewIndex index;
       getViewIndex(pos, index);
       (*levelMemory)[getCreature()->getLevel()->getUniqueId()].update(pos, index);
     }
+  }
 }
 
 void Player::showHistory() {
@@ -851,6 +856,13 @@ const Level* Player::getLevel() const {
 
 Optional<Vec2> Player::getPosition(bool) const {
   return getCreature()->getPosition();
+}
+
+Optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
+  if (previousTimePos.pos.x > -1)
+    return MovementInfo({previousTimePos.pos, currentTimePos.pos, previousTimePos.time});
+  else
+    return Nothing();
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {

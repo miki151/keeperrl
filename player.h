@@ -50,6 +50,7 @@ class Player : public Controller, public CreatureView {
   virtual const MapMemory& getMemory() const override;
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Optional<Vec2> getPosition(bool force) const override;
+  virtual Optional<MovementInfo> getMovementInfo() const override;
   virtual const Level* getLevel() const override;
   virtual vector<const Creature*> getVisibleEnemies() const override;
   virtual double getTime() const override;
@@ -121,6 +122,12 @@ class Player : public Controller, public CreatureView {
   vector<PlayerMessage> SERIAL(messages);
   vector<string> SERIAL(messageHistory);
   string getRemainingString(LastingEffect) const;
+  struct TimePosInfo {
+    Vec2 pos;
+    double time;
+  };
+  TimePosInfo currentTimePos = {Vec2(-1, -1), 0.0};
+  TimePosInfo previousTimePos = {Vec2(-1, -1), 0.0};
 };
 
 #endif

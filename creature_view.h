@@ -29,6 +29,12 @@ class CreatureView {
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const = 0;
   virtual void refreshGameInfo(GameInfo&) const = 0;
   virtual Optional<Vec2> getPosition(bool force) const = 0;
+  struct MovementInfo {
+    Vec2 from;
+    Vec2 to;
+    double prevTime;
+  };
+  virtual Optional<MovementInfo> getMovementInfo() const = 0;
   virtual const Level* getLevel() const = 0;
   virtual double getTime() const = 0;
   virtual vector<const Creature*> getVisibleEnemies() const = 0;

@@ -30,7 +30,7 @@ class MapLayout {
 
   int squareWidth();
   int squareHeight();
-  Vec2 projectOnScreen(Rectangle bounds, Vec2 mapPos);
+  Vec2 projectOnScreen(Rectangle bounds, double x, double y);
   Vec2 projectOnMap(Rectangle bounds, Vec2 screenPos);
   Rectangle getAllTiles(Rectangle screenBounds, Rectangle tableBounds);
   void updatePlayerPos(Vec2);

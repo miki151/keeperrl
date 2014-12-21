@@ -115,7 +115,6 @@ class WindowView: public View {
   std::deque<string> currentMessage = std::deque<string>(3, "");
   bool oldMessage = false;
 
-  Table<Optional<ViewIndex>> objects;
   GameInfo gameInfo;
 
   MapLayout* mapLayout;

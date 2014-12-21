@@ -31,8 +31,8 @@ int MapLayout::squareWidth() {
   return squareW;
 }
 
-Vec2 MapLayout::projectOnScreen(Rectangle bounds, Vec2 mapPos) {
-  return bounds.middle() + mapPos.mult(Vec2(squareW, squareH)) - center;
+Vec2 MapLayout::projectOnScreen(Rectangle bounds, double x, double y) {
+  return bounds.middle() + Vec2(x * squareW, y * squareH) - center;
 }
 
 Vec2 MapLayout::projectOnMap(Rectangle bounds, Vec2 screenPos) {

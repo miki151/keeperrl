@@ -48,12 +48,49 @@ ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
     setAttribute(attr, -1);
 }
 
-void ViewObject::setMovementInfo(MovementInfo info) {
-  movementInfo = info;
+void ViewObject::addMovementInfo(MovementInfo info) {
+  movementQueue.add(info);
 }
 
-const Optional<ViewObject::MovementInfo>& ViewObject::getMovementInfo() const {
-  return movementInfo;
+bool ViewObject::hasAnyMovementInfo() const {
+  return movementQueue.hasAny();
+}
+
+ViewObject::MovementInfo ViewObject::getLastMovementInfo() const {
+  return movementQueue.getLast();
+}
+
+Vec2 ViewObject::getMovementInfo(double tBegin, double tEnd) const {
+  return movementQueue.getTotalMovement(tBegin, tEnd);
+}
+
+void ViewObject::MovementQueue::add(MovementInfo info) {
+  elems[index] = info;
+  ++totalMoves;
+  index = makeGoodIndex(index + 1);
+}
+
+const ViewObject::MovementInfo& ViewObject::MovementQueue::getLast() const {
+  CHECK(hasAny());
+  return elems[makeGoodIndex(index - 1)];
+}
+
+Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin, double tEnd) const {
+  Vec2 ret;
+  for (int i : Range(min(totalMoves, maxMoves)))
+    if (elems[i].tBegin >= tBegin)
+      ret += elems[i].direction;
+  return ret;
+}
+
+const int ViewObject::MovementQueue::maxMoves;
+
+bool ViewObject::MovementQueue::hasAny() const {
+  return totalMoves > 0;
+}
+
+int ViewObject::MovementQueue::makeGoodIndex(int index) const {
+  return (index % maxMoves + maxMoves) % maxMoves;
 }
 
 ViewObject& ViewObject::setModifier(Modifier mod) {

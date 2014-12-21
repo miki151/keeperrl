@@ -109,8 +109,7 @@ void WindowView::resetMapBounds() {
   minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
 }
 
-WindowView::WindowView() : objects(Level::getMaxBounds()),
-    guiBuilder(renderer, {
+WindowView::WindowView() : guiBuilder(renderer, {
         [this](UserInput input) { inputQueue.push(input);},
         [this](const string& s) { mapGui->setHint(s);},
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);}}) {}
@@ -157,10 +156,10 @@ void WindowView::initialize(Options* o) {
     Tile::loadTiles();
   } else
     currentTileLayout = asciiLayouts;
-  mapGui = new MapGui(objects,
+  mapGui = new MapGui({
       [this](Vec2 pos) { mapLeftClickFun(pos); },
       [this](Vec2 pos) { mapRightClickFun(pos); },
-      [this] { refreshInput = true;} );
+      [this] { refreshInput = true;}} );
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
@@ -459,25 +458,8 @@ void WindowView::updateView(const CreatureView* collective) {
   switchTiles();
   const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
-  for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds()))
-    objects[pos] = Nothing();
-  if (!mapGui->isCentered())
-    mapGui->setCenter(*collective->getPosition(true));
-  else if (auto pos = collective->getPosition(false))
-    mapGui->setCenter(*pos);
-  const MapMemory* memory = &collective->getMemory(); 
-  mapGui->updateLayout(mapLayout, collective->getLevel()->getBounds());
-  for (Vec2 pos : mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds())) 
-    if (level->inBounds(pos)) {
-      ViewIndex index;
-      collective->getViewIndex(pos, index);
-      if (!index.isEmpty())
-        index.setHighlight(HighlightType::NIGHT, 1.0 - collective->getLevel()->getLight(pos));
-      objects[pos] = index;
-    }
   mapGui->setSpriteMode(currentTileLayout.sprites);
-  mapGui->updateObjects(memory, options->getBoolValue(OptionId::SMOOTH_MOVEMENT) ? collective->getTime() : 1000000);
-  mapGui->setLevelBounds(level->getBounds());
+  mapGui->updateObjects(collective, mapLayout, options->getBoolValue(OptionId::SMOOTH_MOVEMENT));
   rebuildGui();
 }
 
@@ -581,7 +563,7 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
           case Dir::SE: numArrow = 5; break;
           case Dir::SW: numArrow = 7; break;
         }
-        Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), middle + dir);
+        Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), (middle + dir).x, (middle + dir).y);
         if (currentTileLayout.sprites)
           renderer.drawSprite(wpos.x, wpos.y, 16 * 36, (8 + numArrow) * 36, 36, 36, Renderer::tiles[4]);
         else {

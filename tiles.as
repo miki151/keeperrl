@@ -103,7 +103,7 @@ void genTiles() {
   addTile(BARS, symbol("⧻", LIGHT_BLUE));
   addTile(DESTROYED_FURNITURE, symbol("*", BROWN));
   addTile(BURNT_FURNITURE, symbol("*", DARK_GRAY));
-  addTile(DESTROY_BUTTON, symbol("X", RED));
+  addTile(DESTROY_BUTTON, sprite("remove"));
   addTile(EMPTY, empty());
   addTile(BORDER_GUARD, empty());
   addTile(VAMPIRE, sprite("vampire"));

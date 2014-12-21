@@ -75,6 +75,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Optional<Vec2> getPosition(bool force) const override;
+  virtual Optional<MovementInfo> getMovementInfo() const override;
   virtual vector<const Creature*> getVisibleEnemies() const override;
   virtual double getTime() const override;
 
