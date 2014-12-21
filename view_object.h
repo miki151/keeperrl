@@ -103,8 +103,7 @@ class ViewObject {
 
     private:
     int makeGoodIndex(int index) const;
-    const static int maxMoves = 6;
-    std::array<MovementInfo, maxMoves> elems;
+    std::array<MovementInfo, 6> elems;
     int index = 0;
     int totalMoves = 0;
   } movementQueue;

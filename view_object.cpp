@@ -77,20 +77,18 @@ const ViewObject::MovementInfo& ViewObject::MovementQueue::getLast() const {
 
 Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin, double tEnd) const {
   Vec2 ret;
-  for (int i : Range(min(totalMoves, maxMoves)))
+  for (int i : Range(min<int>(totalMoves, elems.size())))
     if (elems[i].tBegin >= tBegin)
       ret += elems[i].direction;
   return ret;
 }
-
-const int ViewObject::MovementQueue::maxMoves;
 
 bool ViewObject::MovementQueue::hasAny() const {
   return totalMoves > 0;
 }
 
 int ViewObject::MovementQueue::makeGoodIndex(int index) const {
-  return (index % maxMoves + maxMoves) % maxMoves;
+  return (index % elems.size() + elems.size()) % elems.size();
 }
 
 ViewObject& ViewObject::setModifier(Modifier mod) {
