@@ -671,40 +671,40 @@ struct BuildingInfo {
   SquareType door;
 };
 
-BuildingInfo woodBuilding {
-  .wall = SquareId::WOOD_WALL,
-  .floorInside = SquareId::FLOOR,
-  .floorOutside = SquareId::GRASS,
-  .door = SquareId::DOOR
-};
+BuildingInfo woodBuilding = CONSTRUCT_GLOBAL(BuildingInfo,
+  c.wall = SquareId::WOOD_WALL;
+  c.floorInside = SquareId::FLOOR;
+  c.floorOutside = SquareId::GRASS;
+  c.door = SquareId::DOOR;
+);
 
-BuildingInfo woodCastleBuilding {
-  .wall = SquareId::WOOD_WALL,
-  .floorInside = SquareId::FLOOR,
-  .floorOutside = SquareId::MUD,
-  .door = SquareId::DOOR
-};
+BuildingInfo woodCastleBuilding = CONSTRUCT_GLOBAL(BuildingInfo,
+  c.wall = SquareId::WOOD_WALL;
+  c.floorInside = SquareId::FLOOR;
+  c.floorOutside = SquareId::MUD;
+  c.door = SquareId::DOOR;
+);
 
-BuildingInfo mudBuilding {
-  .wall = SquareId::MUD_WALL,
-  .floorInside = SquareId::MUD,
-  .floorOutside = SquareId::MUD,
-  .door = SquareId::MUD
-};
+BuildingInfo mudBuilding = CONSTRUCT_GLOBAL(BuildingInfo,
+  c.wall = SquareId::MUD_WALL;
+  c.floorInside = SquareId::MUD;
+  c.floorOutside = SquareId::MUD;
+  c.door = SquareId::MUD;
+);
 
-BuildingInfo brickBuilding {
-  .wall = SquareId::CASTLE_WALL,
-  .floorInside = SquareId::FLOOR,
-  .floorOutside = SquareId::MUD,
-  .door = SquareId::DOOR
-};
+BuildingInfo brickBuilding = CONSTRUCT_GLOBAL(BuildingInfo,
+  c.wall = SquareId::CASTLE_WALL;
+  c.floorInside = SquareId::FLOOR;
+  c.floorOutside = SquareId::MUD;
+  c.door = SquareId::DOOR;
+);
 
-BuildingInfo dungeonBuilding {
-  .wall = SquareId::MOUNTAIN2,
-  .floorInside = SquareId::FLOOR,
-  .floorOutside = SquareId::FLOOR,
-  .door = SquareId::DOOR
-};
+BuildingInfo dungeonBuilding = CONSTRUCT_GLOBAL(BuildingInfo,
+  c.wall = SquareId::MOUNTAIN2;
+  c.floorInside = SquareId::FLOOR;
+  c.floorOutside = SquareId::FLOOR;
+  c.door = SquareId::DOOR;
+);
 
 static BuildingInfo get(BuildingId id) {
   switch (id) {

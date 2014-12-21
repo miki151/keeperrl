@@ -57,6 +57,8 @@ T lambdaConstruct(function<void(T&)> fun) {
 }
 
 #define CONSTRUCT(Class, Code) lambdaConstruct<Class>([&] (Class& c) { Code })
+#define CONSTRUCT_GLOBAL(Class, Code) lambdaConstruct<Class>([] (Class& c) { Code })
+
 #define LIST(...) {__VA_ARGS__}
 
 class Item;
