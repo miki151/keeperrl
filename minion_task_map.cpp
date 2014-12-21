@@ -33,6 +33,16 @@ double MinionTaskMap::getValue(MinionTask t) const {
   return tasks[t];
 }
 
+static MinionTask chooseRandom(EnumMap<MinionTask, double> vi) {
+  vector<MinionTask> v;
+  vector<double> p;
+  for (MinionTask elem : ENUM_ALL(MinionTask)) {
+    v.push_back(elem);
+    p.push_back(vi[elem]);
+  }
+  return chooseRandom(v, p);
+}
+
 MinionTask MinionTaskMap::getRandom() const {
   return chooseRandom(tasks);
 }

@@ -164,7 +164,7 @@ Tile getSpecialCreature(const ViewObject& obj, bool humanoid) {
     c = tolower(obj.getBareDescription()[0]);
   else
     c = let[r.get(let.size())];
-  return Tile::unicode(c, ColorId(Random.get(EnumInfo<ColorId>::getSize())));
+  return Tile::unicode(c, chooseRandom<ColorId>());
 }
 
 Tile getSpecialCreatureSprite(const ViewObject& obj, bool humanoid) {

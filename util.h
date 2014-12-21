@@ -1020,7 +1020,6 @@ template<typename T>
 class EnumInfo {
   public:
   static string getString(T);
-  static constexpr int getSize() { return 0;}
 };
 
 #define RICH_ENUM(Name, ...) \
@@ -1040,12 +1039,9 @@ class EnumInfo<Name> { \
     static vector<string> names = split(#__VA_ARGS__, {' ', ','});\
     return names[int(e)];\
   }\
-  enum class Tmp { __VA_ARGS__, END_TMP};\
-  static constexpr int getSize() {\
-    return (int)Tmp::END_TMP;\
-  }\
+  enum Tmp { __VA_ARGS__, size};\
   static Name fromString(const string& s) {\
-    for (int i : Range(getSize())) \
+    for (int i : Range(size)) \
       if (getString(Name(i)) == s) \
         return Name(i); \
     FAIL << #Name << " value not found " << s;\
@@ -1068,12 +1064,12 @@ class EnumMap {
   }
 
   void clear(U value) {
-    for (int i = 0; i < EnumInfo<T>::getSize(); ++i)
+    for (int i = 0; i < EnumInfo<T>::size; ++i)
       elems[i] = value;
   }
 
   void clear() {
-    for (int i = 0; i < EnumInfo<T>::getSize(); ++i)
+    for (int i = 0; i < EnumInfo<T>::size; ++i)
       elems[i] = U();
   }
 
@@ -1105,7 +1101,7 @@ class EnumMap {
   }
 
   private:
-  std::array<U, EnumInfo<T>::getSize()> elems;
+  std::array<U, EnumInfo<T>::size> elems;
 };
 
 template<class T>
@@ -1119,7 +1115,7 @@ class EnumSet : public EnumMap<T, char> {
   }
 
   EnumSet(initializer_list<char> il) {
-    CHECK(il.size() == EnumInfo<T>::getSize());
+    CHECK(il.size() == EnumInfo<T>::size);
     int cnt = 0;
     for (int i : il)
       (*this)[T(cnt++)] = i;
@@ -1161,7 +1157,7 @@ class EnumSet : public EnumMap<T, char> {
     }
 
     void goForward() {
-      while (ind < EnumInfo<T>::getSize() && !set[T(ind)])
+      while (ind < EnumInfo<T>::size && !set[T(ind)])
         ++ind;
     }
 
@@ -1189,7 +1185,7 @@ class EnumSet : public EnumMap<T, char> {
   }
 
   Iter end() const {
-    return Iter(*this, EnumInfo<T>::getSize());
+    return Iter(*this, EnumInfo<T>::size);
   }
 };
 
@@ -1237,26 +1233,15 @@ class EnumAll {
   }
 
   Iter end() {
-    return Iter(EnumInfo<T>::getSize());
+    return Iter(EnumInfo<T>::size);
   }
 };
 
 #define ENUM_ALL(X) EnumAll<X>()
 
 template <typename T>
-T chooseRandom(EnumMap<T, double> vi, double r = -1) {
-  vector<T> v;
-  vector<double> p;
-  for (T elem : ENUM_ALL(T)) {
-    v.push_back(elem);
-    p.push_back(vi[elem]);
-  }
-  return chooseRandom(v, p);
-}
-
-template <typename T>
 T chooseRandom() {
-  return T(Random.get(EnumInfo<T>::getSize()));
+  return T(Random.get(EnumInfo<T>::size));
 }
 
 template <typename U, typename V>
