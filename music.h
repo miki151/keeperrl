@@ -22,7 +22,7 @@
 
 class Options;
 
-enum class MusicType { PEACEFUL, BATTLE };
+enum class MusicType { MAIN, PEACEFUL, BATTLE, NIGHT };
 
 class Jukebox {
   public:

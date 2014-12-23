@@ -240,6 +240,7 @@ void initializeRendererTiles(Renderer& r) {
 }
 
 void initializeJukebox(Jukebox& jukebox) {
+  jukebox.addTrack(MusicType::MAIN, "music/main.ogg");
   jukebox.addTrack(MusicType::PEACEFUL, "music/peaceful1.ogg");
   jukebox.addTrack(MusicType::PEACEFUL, "music/peaceful2.ogg");
   jukebox.addTrack(MusicType::PEACEFUL, "music/peaceful3.ogg");
@@ -250,6 +251,9 @@ void initializeJukebox(Jukebox& jukebox) {
   jukebox.addTrack(MusicType::BATTLE, "music/battle3.ogg");
   jukebox.addTrack(MusicType::BATTLE, "music/battle4.ogg");
   jukebox.addTrack(MusicType::BATTLE, "music/battle5.ogg");
+  jukebox.addTrack(MusicType::NIGHT, "music/night1.ogg");
+  jukebox.addTrack(MusicType::NIGHT, "music/night2.ogg");
+  jukebox.addTrack(MusicType::NIGHT, "music/night3.ogg");
 }
 
 class MainLoop {
@@ -259,6 +263,7 @@ class MainLoop {
 
   void playModel(PModel model) {
     view->reset();
+    jukebox->update(MusicType::PEACEFUL);
     try {
       const int stepTimeMilli = 3;
       Intervalometer meter(stepTimeMilli);
@@ -347,8 +352,8 @@ class MainLoop {
           "More information on the website.");
     int lastIndex = 0;
     jukebox->toggle();
-    jukebox->update(MusicType::PEACEFUL);
     while (1) {
+      jukebox->update(MusicType::MAIN);
       auto choice = view->chooseFromList("", {
           "Play game", "Change settings", "View high scores", "View credits", "Quit"}, lastIndex, View::MAIN_MENU);
       if (!choice)
