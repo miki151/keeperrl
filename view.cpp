@@ -23,11 +23,18 @@
 View::ListElem::ListElem(const string& t, ElemMod m, Optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
 
+View::ListElem::ListElem(const string& t, const string& sec, ElemMod m) : text(t), secondColumn(sec), mod(m) {
+}
+
 View::ListElem::ListElem(const char* s, ElemMod m, Optional<UserInputId> a) : text(s), mod(m), action(a) {
 }
 
 const string& View::ListElem::getText() const {
   return text;
+}
+
+const string& View::ListElem::getSecondColumn() const {
+  return secondColumn;
 }
 
 View::ElemMod View::ListElem::getMod() const {

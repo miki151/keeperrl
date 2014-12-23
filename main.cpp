@@ -353,7 +353,7 @@ class MainLoop {
     int lastIndex = 0;
     jukebox->toggle();
     while (1) {
-      jukebox->update(MusicType::MAIN);
+ //     jukebox->update(MusicType::MAIN);
       auto choice = view->chooseFromList("", {
           "Play game", "Change settings", "View high scores", "View credits", "Quit"}, lastIndex, View::MAIN_MENU);
       if (!choice)

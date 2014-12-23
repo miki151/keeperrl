@@ -46,6 +46,12 @@ void Jukebox::setCurrent(MusicType c) {
   current = chooseRandom(byType[c]);
 }
 
+void Jukebox::continueCurrent() {
+  if (byType[getCurrentType()].size() >= 2)
+    while (current == currentPlaying)
+      setCurrent(getCurrentType());
+}
+
 MusicType Jukebox::getCurrentType() {
   for (auto& elem : byType)
     if (contains(elem.second, current))
@@ -73,8 +79,7 @@ void Jukebox::update(MusicType c) {
       music[currentPlaying].setVolume(max(0.0f, music[currentPlaying].getVolume() - volumeDec));
   } else
   if (music[current].getStatus() == sf::SoundSource::Stopped) {
-    while (current == currentPlaying)
-      setCurrent(getCurrentType());
+    continueCurrent();
     currentPlaying = current;
     music[current].play();
   }

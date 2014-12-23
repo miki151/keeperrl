@@ -82,13 +82,16 @@ class View {
         Optional<UserInputId> triggerAction = Nothing());
     ListElem(const string& text = "", ElemMod mod = NORMAL,
         Optional<UserInputId> triggerAction = Nothing());
+    ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
 
     const string& getText() const;
+    const string& getSecondColumn() const;
     ElemMod getMod() const;
     Optional<UserInputId> getAction() const;
 
     private:
     string text;
+    string secondColumn;
     ElemMod mod;
     Optional<UserInputId> action;
   };

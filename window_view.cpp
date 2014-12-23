@@ -851,6 +851,8 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       line = GuiElem::verticalList(std::move(label1), lineHeight, 0);
     else
       line = std::move(getOnlyElement(label1));
+    if (!options[i].getSecondColumn().empty())
+      line = GuiElem::horizontalList(makeVec<PGuiElem>(std::move(line), GuiElem::label(options[i].getSecondColumn())), 300, 0);
     lines.push_back(GuiElem::margins(std::move(line), 10, 3, 10, 0));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = GuiElem::stack(makeVec<PGuiElem>(
