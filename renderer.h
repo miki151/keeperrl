@@ -79,6 +79,17 @@ class ViewObject;
 
 class Renderer {
   public: 
+  class TileCoord {
+    public:
+    TileCoord(Vec2, int);
+    TileCoord();
+    TileCoord(const TileCoord& o) : pos(o.pos), texNum(o.texNum) {}
+
+    Vec2 pos;
+    int texNum;
+  };
+
+  Renderer(const string& windowTile, Vec2 nominalTileSize);
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(string s);
@@ -98,16 +109,16 @@ class Renderer {
   void drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline = Nothing());
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline = Nothing());
   void drawViewObject(int x, int y, const ViewObject&, bool useSprite, double scale = 1);
-  void drawViewObject(int x, int y, ViewId, bool useSprite, double scale = 1);
+  void drawViewObject(int x, int y, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
+  void drawTile(int x, int y, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
+  void drawTile(int x, int y, TileCoord coord, int sizeX, int sizeY, Color = colors[ColorId::WHITE]);
   static Color getBleedingColor(const ViewObject&);
   int getWidth();
   int getHeight();
-  static bool loadTilesFromDir(const string& path, Vec2 size);
-  static bool loadTilesFromFile(const string& path, Vec2 size);
-  static void setNominalSize(Vec2);
+  bool loadTilesFromDir(const string& path, Vec2 size);
+  bool loadTilesFromFile(const string& path, Vec2 size);
   static String toUnicode(const string&);
 
-  void initialize(int width, int height, string title);
   void drawAndClearBuffer();
   void resize(int width, int height);
   bool pollEvent(Event&, Event::EventType);
@@ -123,19 +134,14 @@ class Renderer {
   bool isMonkey();
   Event getRandomEvent();
 
-  struct TileCoords {
-    Vec2 pos;
-    int texNum;
-  };
-
-  static TileCoords getTileCoords(const string&);
-
-  static vector<Texture> tiles;
-  static vector<Vec2> tileSize;
-  static Vec2 nominalSize;
+  TileCoord getTileCoord(const string&);
+  Vec2 getNominalSize() const;
+  vector<Texture> tiles;
 
   private:
-  static map<string, TileCoords> tileCoords;
+  vector<Vec2> tileSize;
+  Vec2 nominalSize;
+  map<string, TileCoord> tileCoords;
   bool pollEventWorkaroundMouseReleaseBug(Event&);
   bool pollEventOrFromQueue(Event&);
   RenderWindow* display = nullptr;

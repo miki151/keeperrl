@@ -260,9 +260,7 @@ void MapGui::drawFloorBorders(Renderer& renderer, const EnumSet<Dir>& borders, i
       case Dir::W: coord = 3; break;
       default: continue;
     }
-    renderer.drawSprite(x, y, coord * Renderer::nominalSize.x, 18 * Renderer::nominalSize.y,
-        Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[1],
-        Renderer::nominalSize.x, Renderer::nominalSize.y);
+    renderer.drawTile(x, y, {Vec2(coord, 18), 1});
   }
 }
 
@@ -348,14 +346,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
     int val = max(0.0, 255.0 - min(2.0, waterDepth) * 60);
     color = Color(val, val, val);
   }
-  if (tile.hasSpriteCoord()) {
-    Vec2 move;
-    Vec2 sz = Renderer::tileSize[tile.getTexNum()];
-    Vec2 off = (Renderer::nominalSize -  sz).mult(Vec2(sizeX, sizeY)).div(Renderer::nominalSize * 2);
-    int width = sz.x * sizeX / Renderer::nominalSize.x;
-    int height = sz.y* sizeY / Renderer::nominalSize.y;
-    if (sz.y > Renderer::nominalSize.y)
-      off.y *= 2;
+  if (spriteMode) {
     EnumSet<Dir> dirs;
     EnumSet<Dir> borderDirs;
     if (!object.hasModifier(ViewObject::Modifier::PLANNED))
@@ -366,53 +357,39 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
           else
             borderDirs.insert(dir.getCardinalDir());
         }
+    Vec2 move;
     Vec2 movement = getMovementOffset(object, Vec2(sizeX, sizeY), currentTimeGame, curTimeReal);
     drawCreatureHighlights(renderer, object, x + movement.x, y + movement.y, sizeX, sizeY);
-    Vec2 coord = tile.getSpriteCoord(dirs);
-    if (object.hasModifier(ViewObject::Modifier::MOVE_UP))
-      move.y = -4* sizeY / Renderer::nominalSize.y;
     if ((object.layer() == ViewLayer::CREATURE && object.id() != ViewId::BOULDER)
         || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
-      renderer.drawSprite(x + movement.x, y + movement.y - 2, 2 * Renderer::nominalSize.x,
-          22 * Renderer::nominalSize.y,
-          Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[0],
-          min(Renderer::nominalSize.x, width), min(Renderer::nominalSize.y, height));
-      move.y = -4* sizeY / Renderer::nominalSize.y;
+      renderer.drawTile(x + movement.x, y + movement.y, {Vec2(2, 22), 0}, sizeX, sizeY);
+      move.y = -4* sizeY / renderer.getNominalSize().y;
     }
     if (auto background = tile.getBackgroundCoord()) {
-      renderer.drawSprite(x + off.x, y + off.y, background->x * sz.x,
-          background->y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
+      renderer.drawTile(x, y, *background, sizeX, sizeY, color);
       if (shadowed.count(tilePos))
-        renderer.drawSprite(x, y, 1 * Renderer::nominalSize.x, 21 * Renderer::nominalSize.y,
-            Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[5], width, height);
+        renderer.drawTile(x, y, {Vec2(1, 21), 5}, sizeX, sizeY, color);
     }
-    if (coord.x < 0)
-      return;
     if (auto dir = object.getAttachmentDir())
-      move = getAttachmentOffset(*dir, width, height);
+      move = getAttachmentOffset(*dir, sizeX, sizeY);
     move += movement;
-    renderer.drawSprite(x + off.x + move.x, y + move.y + off.y, coord.x * sz.x,
-        coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
+    if (tile.hasSpriteCoord())
+      renderer.drawTile(x + move.x, y + move.y, tile.getSpriteCoord(dirs), sizeX, sizeY, color);
     if (tile.hasCorners()) {
-      for (Vec2 coord : tile.getCornerCoords(dirs))
-        renderer.drawSprite(x + off.x + move.x, y + move.y + off.y, coord.x * sz.x,
-            coord.y * sz.y, sz.x, sz.y, Renderer::tiles[tile.getTexNum()], width, height, color);
+      for (auto coord : tile.getCornerCoords(dirs))
+        renderer.drawTile(x + move.x, y + move.y, coord, sizeX, sizeY, color);
     }
     if (tile.floorBorders) {
       drawFloorBorders(renderer, borderDirs, x, y);
     }
     if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
         shadowed.count(tilePos) && !tile.noShadow)
-      renderer.drawSprite(x, y, 1 * Renderer::nominalSize.x, 21 * Renderer::nominalSize.y,
-          Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[5], width, height);
+      renderer.drawTile(x, y, {Vec2(1, 21), 5}, sizeX, sizeY);
     if (object.getAttribute(ViewObject::Attribute::BURNING) > 0) {
-      renderer.drawSprite(x, y, Random.get(10, 12) * Renderer::nominalSize.x, 0 * Renderer::nominalSize.y,
-          Renderer::nominalSize.x, Renderer::nominalSize.y, Renderer::tiles[2], width, height);
+      renderer.drawTile(x, y, {Vec2(Random.get(10, 12), 0), 2}, sizeX, sizeY);
     }
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
-      renderer.drawSprite(x + (Renderer::nominalSize.x - Renderer::tileSize[3].x) / 2, y,
-          5 * Renderer::tileSize[3].x, 6 * Renderer::tileSize[3].y,
-          Renderer::tileSize[3].x, Renderer::tileSize[3].y, Renderer::tiles[3], width / 2, height / 2);
+      renderer.drawTile(x, y, {Vec2(5, 6), 3}, sizeX, sizeY);
   } else {
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, sizeY, Tile::getColor(object),
         x + sizeX / 2, y - 3, tile.text, true);
@@ -506,10 +483,8 @@ void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
 void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs) {
   const Tile& tile = Tile::fromViewId(ViewId::FOG_OF_WAR); 
   const Tile& tile2 = Tile::fromViewId(ViewId::FOG_OF_WAR_CORNER); 
-  Vec2 coord = tile.getSpriteCoord(dirs.intersection({Dir::N, Dir::S, Dir::E, Dir::W}));
-  Vec2 sz = Renderer::tileSize[tile.getTexNum()];
-  renderer.drawSprite(pos.x, pos.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y,
-      Renderer::tiles[tile.getTexNum()], sizeX, sizeY);
+  auto coord = tile.getSpriteCoord(dirs.intersection({Dir::N, Dir::S, Dir::E, Dir::W}));
+  renderer.drawTile(pos.x, pos.y, coord, sizeX, sizeY);
   for (Dir dir : dirs.intersection({Dir::NE, Dir::SE, Dir::NW, Dir::SW})) {
     switch (dir) {
       case Dir::NE: if (!dirs[Dir::N] || !dirs[Dir::E]) continue;
@@ -518,9 +493,7 @@ void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, int sizeX, int sizeY, E
       case Dir::SW: if (!dirs[Dir::S] || !dirs[Dir::W]) continue;
       default: break;
     }
-    Vec2 coord = tile2.getSpriteCoord({dir});
-    renderer.drawSprite(pos.x, pos.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y,
-        Renderer::tiles[tile2.getTexNum()], sizeX, sizeY);
+    renderer.drawTile(pos.x, pos.y, tile2.getSpriteCoord({dir}), sizeX, sizeY);
   }
 }
 
@@ -551,10 +524,8 @@ void MapGui::renderExtraBorders(Renderer& renderer, int currentTimeReal) {
             if (connectionMap.has(wpos + v, id))
               dirs.insert(v.getCardinalDir());
           if (auto coord = tile.getExtraBorderCoord(dirs)) {
-            Vec2 sz = Renderer::tileSize[tile.getTexNum()];
             Vec2 pos = projectOnScreen(wpos, currentTimeReal);
-            renderer.drawSprite(pos.x, pos.y, coord->x * sz.x, coord->y * sz.y, sz.x, sz.y,
-                Renderer::tiles[tile.getTexNum()], layout->squareWidth(), layout->squareHeight());
+            renderer.drawTile(pos.x, pos.y, *coord, layout->squareWidth(), layout->squareHeight());
           }
         }
     }

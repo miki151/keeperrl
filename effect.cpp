@@ -330,8 +330,10 @@ static void teleport(Creature* c) {
       maxW = weight[v];
     }
   }
-  if (maxW < 2)
+  if (maxW < 2) {
     c->playerMessage("The spell didn't work.");
+    return;
+  }
   CHECK(!good.empty());
   c->you(MsgType::TELE_DISAPPEAR, "");
   l->moveCreature(c, chooseRandom(good) - pos);

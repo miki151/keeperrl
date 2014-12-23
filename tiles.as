@@ -1,96 +1,117 @@
 
+Tile sprite(int x, int y, int tex) {
+  return sprite(byCoord(x, y, tex));
+}
+
+Tile sprite(int x, int y) {
+  return sprite(byCoord(x, y, 0));
+}
+
+Tile sprite(const string& in s) {
+  return sprite(byName(s));
+}
+
+Tile empty() {
+  return sprite("empty");
+}
+
 Tile getRoadTile(int pathSet) {
-  return sprite(0, pathSet, 5)
-    .addConnection(dirs(E, W), 2, pathSet)
-    .addConnection(dirs(W), 3, pathSet)
-    .addConnection(dirs(E), 1, pathSet)
-    .addConnection(dirs(S), 4, pathSet)
-    .addConnection(dirs(N, S), 5, pathSet)
-    .addConnection(dirs(N), 6, pathSet)
-    .addConnection(dirs(S, E), 7, pathSet)
-    .addConnection(dirs(S, W), 8, pathSet)
-    .addConnection(dirs(N, E), 9, pathSet)
-    .addConnection(dirs(N, W), 10, pathSet)
-    .addConnection(dirs(N, E, S, W), 11, pathSet)
-    .addConnection(dirs(E, S, W), 12, pathSet)
-    .addConnection(dirs(N, S, W), 13, pathSet)
-    .addConnection(dirs(N, E, S), 14, pathSet)
-    .addConnection(dirs(N, E, W), 15, pathSet);
+  int tex = 5;
+  return sprite(0, pathSet, tex)
+    .addConnection(dirs(E, W), byCoord(2, pathSet, tex))
+    .addConnection(dirs(W), byCoord(3, pathSet, tex))
+    .addConnection(dirs(E), byCoord(1, pathSet, tex))
+    .addConnection(dirs(S), byCoord(4, pathSet, tex))
+    .addConnection(dirs(N, S), byCoord(5, pathSet, tex))
+    .addConnection(dirs(N), byCoord(6, pathSet, tex))
+    .addConnection(dirs(S, E), byCoord(7, pathSet, tex))
+    .addConnection(dirs(S, W), byCoord(8, pathSet, tex))
+    .addConnection(dirs(N, E), byCoord(9, pathSet, tex))
+    .addConnection(dirs(N, W), byCoord(10, pathSet, tex))
+    .addConnection(dirs(N, E, S, W), byCoord(11, pathSet, tex))
+    .addConnection(dirs(E, S, W), byCoord(12, pathSet, tex))
+    .addConnection(dirs(N, S, W), byCoord(13, pathSet, tex))
+    .addConnection(dirs(N, E, S), byCoord(14, pathSet, tex))
+    .addConnection(dirs(N, E, W), byCoord(15, pathSet, tex));
 }
 
 Tile getWallTile(int wallSet) {
-  return sprite(9, wallSet, 1).setNoShadow()
-    .addConnection(dirs(E, W), 11, wallSet)
-    .addConnection(dirs(W), 12, wallSet)
-    .addConnection(dirs(E), 10, wallSet)
-    .addConnection(dirs(S), 13, wallSet)
-    .addConnection(dirs(N, S), 14, wallSet)
-    .addConnection(dirs(N), 15, wallSet)
-    .addConnection(dirs(E, S), 16, wallSet)
-    .addConnection(dirs(S, W), 17, wallSet)
-    .addConnection(dirs(N, E), 18, wallSet)
-    .addConnection(dirs(N, W), 19, wallSet)
-    .addConnection(dirs(N, E, S, W), 20, wallSet)
-    .addConnection(dirs(E, S, W), 21, wallSet)
-    .addConnection(dirs(N, S, W), 22, wallSet)
-    .addConnection(dirs(N, E, S), 23, wallSet)
-    .addConnection(dirs(N, E, W), 24, wallSet);
+  int tex = 1;
+  return sprite(9, wallSet, tex).setNoShadow()
+    .addConnection(dirs(E, W), byCoord(11, wallSet, tex))
+    .addConnection(dirs(W), byCoord(12, wallSet, tex))
+    .addConnection(dirs(E), byCoord(10, wallSet, tex))
+    .addConnection(dirs(S), byCoord(13, wallSet, tex))
+    .addConnection(dirs(N, S), byCoord(14, wallSet, tex))
+    .addConnection(dirs(N), byCoord(15, wallSet, tex))
+    .addConnection(dirs(E, S), byCoord(16, wallSet, tex))
+    .addConnection(dirs(S, W), byCoord(17, wallSet, tex))
+    .addConnection(dirs(N, E), byCoord(18, wallSet, tex))
+    .addConnection(dirs(N, W), byCoord(19, wallSet, tex))
+    .addConnection(dirs(N, E, S, W), byCoord(20, wallSet, tex))
+    .addConnection(dirs(E, S, W), byCoord(21, wallSet, tex))
+    .addConnection(dirs(N, S, W), byCoord(22, wallSet, tex))
+    .addConnection(dirs(N, E, S), byCoord(23, wallSet, tex))
+    .addConnection(dirs(N, E, W), byCoord(24, wallSet, tex));
 }
 
 Tile getMountainTile(int numT, int set) {
-  return sprite(numT, set, 1).setNoShadow()
-    .addCorner(dirs(S, W), dirs(W), 10, set)
-    .addCorner(dirs(N, W), dirs(W), 11, set)
-    .addCorner(dirs(S, E), dirs(E), 12, set)
-    .addCorner(dirs(N, E), dirs(E), 13, set)
-    .addCorner(dirs(N, W), dirs(N), 14, set)
-    .addCorner(dirs(N, E), dirs(N), 15, set)
-    .addCorner(dirs(S, W), dirs(S), 16, set)
-    .addCorner(dirs(S, E), dirs(S), 17, set)
-    .addCorner(dirs(N, W), dirs(), 18, set)
-    .addCorner(dirs(N, E), dirs(), 19, set)
-    .addCorner(dirs(S, W), dirs(), 20, set)
-    .addCorner(dirs(S, E), dirs(), 21, set)
-    .addCorner(dirs(S, E, SE), dirs(S, E), 22, set)
-    .addCorner(dirs(S, W, SW), dirs(S, W), 23, set)
-    .addCorner(dirs(N, E, NE), dirs(N, E), 24, set)
-    .addCorner(dirs(N, W, NW), dirs(N, W), 25, set);
+  int tex = 1;
+  return sprite(numT, set, tex).setNoShadow()
+    .addCorner(dirs(S, W), dirs(W), byCoord(10, set, tex))
+    .addCorner(dirs(N, W), dirs(W), byCoord(11, set, tex))
+    .addCorner(dirs(S, E), dirs(E), byCoord(12, set, tex))
+    .addCorner(dirs(N, E), dirs(E), byCoord(13, set, tex))
+    .addCorner(dirs(N, W), dirs(N), byCoord(14, set, tex))
+    .addCorner(dirs(N, E), dirs(N), byCoord(15, set, tex))
+    .addCorner(dirs(S, W), dirs(S), byCoord(16, set, tex))
+    .addCorner(dirs(S, E), dirs(S), byCoord(17, set, tex))
+    .addCorner(dirs(N, W), dirs(), byCoord(18, set, tex))
+    .addCorner(dirs(N, E), dirs(), byCoord(19, set, tex))
+    .addCorner(dirs(S, W), dirs(), byCoord(20, set, tex))
+    .addCorner(dirs(S, E), dirs(), byCoord(21, set, tex))
+    .addCorner(dirs(S, E, SE), dirs(S, E), byCoord(22, set, tex))
+    .addCorner(dirs(S, W, SW), dirs(S, W), byCoord(23, set, tex))
+    .addCorner(dirs(N, E, NE), dirs(N, E), byCoord(24, set, tex))
+    .addCorner(dirs(N, W, NW), dirs(N, W), byCoord(25, set, tex));
 }
 
 Tile getWaterTile(int leftX) {
-  return sprite(leftX, 5, 4)
-    .addConnection(dirs(N, E, S, W), leftX - 1, 7)
-    .addConnection(dirs(E, S, W), leftX, 4)
-    .addConnection(dirs(N, E, W), leftX, 6)
-    .addConnection(dirs(N, S, W), leftX + 1, 5)
-    .addConnection(dirs(N, E, S), leftX - 1, 5)
-    .addConnection(dirs(N, E), leftX - 1, 6)
-    .addConnection(dirs(E, S), leftX - 1, 4)
-    .addConnection(dirs(S, W), leftX + 1, 4)
-    .addConnection(dirs(N, W), leftX + 1, 6)
-    .addConnection(dirs(S), leftX, 7)
-    .addConnection(dirs(N), leftX, 8)
-    .addConnection(dirs(W), leftX + 1, 7)
-    .addConnection(dirs(E), leftX + 1, 8)
-    .addConnection(dirs(N, S), leftX + 1, 12)
-    .addConnection(dirs(E, W), leftX + 1, 11);
+  int tex = 4;
+  return sprite(leftX, 5, tex)
+    .addConnection(dirs(N, E, S, W), byCoord(leftX - 1, 7, tex))
+    .addConnection(dirs(E, S, W), byCoord(leftX, 4, tex))
+    .addConnection(dirs(N, E, W), byCoord(leftX, 6, tex))
+    .addConnection(dirs(N, S, W), byCoord(leftX + 1, 5, tex))
+    .addConnection(dirs(N, E, S), byCoord(leftX - 1, 5, tex))
+    .addConnection(dirs(N, E), byCoord(leftX - 1, 6, tex))
+    .addConnection(dirs(E, S), byCoord(leftX - 1, 4, tex))
+    .addConnection(dirs(S, W), byCoord(leftX + 1, 4, tex))
+    .addConnection(dirs(N, W), byCoord(leftX + 1, 6, tex))
+    .addConnection(dirs(S), byCoord(leftX, 7, tex))
+    .addConnection(dirs(N), byCoord(leftX, 8, tex))
+    .addConnection(dirs(W), byCoord(leftX + 1, 7, tex))
+    .addConnection(dirs(E), byCoord(leftX + 1, 8, tex))
+    .addConnection(dirs(N, S), byCoord(leftX + 1, 12, tex))
+    .addConnection(dirs(E, W), byCoord(leftX + 1, 11, tex));
 }
 
 Tile getExtraBorderTile(int set) {
-  return sprite(1, set, 5)
-    .addExtraBorder(dirs(W, N), 10, set)
-    .addExtraBorder(dirs(E, N), 11, set)
-    .addExtraBorder(dirs(E, S), 12, set)
-    .addExtraBorder(dirs(W, S), 13, set)
-    .addExtraBorder(dirs(W, N, E), 14, set)
-    .addExtraBorder(dirs(S, N, E), 15, set)
-    .addExtraBorder(dirs(S, W, E), 16, set)
-    .addExtraBorder(dirs(S, W, N), 17, set)
-    .addExtraBorder(dirs(S, W, N, E), 18, set)
-    .addExtraBorder(dirs(N), 19, set)
-    .addExtraBorder(dirs(E), 20, set)
-    .addExtraBorder(dirs(S), 21, set)
-    .addExtraBorder(dirs(W), 22, set);
+  int tex = 5;
+  return sprite(1, set, tex)
+    .addExtraBorder(dirs(W, N), byCoord(10, set, tex))
+    .addExtraBorder(dirs(E, N), byCoord(11, set, tex))
+    .addExtraBorder(dirs(E, S), byCoord(12, set, tex))
+    .addExtraBorder(dirs(W, S), byCoord(13, set, tex))
+    .addExtraBorder(dirs(W, N, E), byCoord(14, set, tex))
+    .addExtraBorder(dirs(S, N, E), byCoord(15, set, tex))
+    .addExtraBorder(dirs(S, W, E), byCoord(16, set, tex))
+    .addExtraBorder(dirs(S, W, N), byCoord(17, set, tex))
+    .addExtraBorder(dirs(S, W, N, E), byCoord(18, set, tex))
+    .addExtraBorder(dirs(N), byCoord(19, set, tex))
+    .addExtraBorder(dirs(E), byCoord(20, set, tex))
+    .addExtraBorder(dirs(S), byCoord(21, set, tex))
+    .addExtraBorder(dirs(W), byCoord(22, set, tex));
 }
 
 void genTiles() {
@@ -129,16 +150,20 @@ void genTiles() {
   addTile(DWARF, sprite(2, 6));
   addTile(DWARF_BARON, sprite(3, 6));
   addTile(SHOPKEEPER, sprite(4, 2));
-  addTile(BRIDGE, sprite("bridge").addOption(S, "bridge2"));
+  addTile(BRIDGE, sprite("bridge").addOption(S, byName("bridge2")));
   addTile(ROAD, getRoadTile(7));
   addTile(FLOOR, sprite(3, 14, 1));
   addTile(KEEPER_FLOOR, sprite(4, 18, 1));
   addTile(SAND, getExtraBorderTile(14)
     .addExtraBorderId(WATER));
-  addTile(MUD, sprite(3, 12, 2));
+  addTile(MUD, getExtraBorderTile(10)
+    .addExtraBorderId(WATER)
+    .addExtraBorderId(HILL)
+    .addExtraBorderId(SAND));
   addTile(GRASS, getExtraBorderTile(18)
     .addExtraBorderId(SAND)
     .addExtraBorderId(HILL)
+    .addExtraBorderId(MUD)
     .addExtraBorderId(WATER));
   addTile(CROPS, sprite("wheatfield1"));
   addTile(CROPS2, sprite("wheatfield2"));
@@ -283,7 +308,7 @@ void genTiles() {
   addTile(MUSHROOM, sprite(5, 4, 3));
   addTile(FOUNTAIN, sprite(0, 7, 2).setNoShadow());
   addTile(GOLD, sprite(8, 3, 3).setNoShadow());
-  addTile(TREASURE_CHEST, sprite("treasurydeco").setNoShadow().addBackground("treasury"));
+  addTile(TREASURE_CHEST, sprite("treasurydeco").setNoShadow().addBackground(byName("treasury")));
   addTile(CHEST, sprite(3, 3, 2).setNoShadow());
   addTile(OPENED_CHEST, sprite(6, 3, 2).setNoShadow());
   addTile(COFFIN, sprite(7, 3, 2).setNoShadow());
@@ -308,25 +333,34 @@ void genTiles() {
   addTile(DUNGEON_HEART, sprite(6, 10, 2));
   addTile(ALTAR, sprite(2, 7, 2).setNoShadow());
   addTile(CREATURE_ALTAR, sprite(3, 7, 2).setNoShadow());
-  addTile(TORTURE_TABLE, empty().addConnection(setOfAllDirs(), "torturedeco").addBackground("torture")
+  addTile(TORTURE_TABLE, empty().addConnection(setOfAllDirs(), byName("torturedeco"))
+      .addBackground(byName("torture"))
       .setFloorBorders());
   addTile(IMPALED_HEAD, sprite("impaledhead").setNoShadow());
-  addTile(TRAINING_ROOM, empty().addConnection(setOfAllDirs(), "traindeco").addBackground("train").setFloorBorders());
-  addTile(RITUAL_ROOM, empty().addConnection(setOfAllDirs(), "ritualroomdeco").addBackground("ritualroom")
+  addTile(TRAINING_ROOM, empty().addConnection(setOfAllDirs(), byName("traindeco"))
+      .addBackground(byName("train")).setFloorBorders());
+  addTile(RITUAL_ROOM, empty().addConnection(setOfAllDirs(), byName("ritualroomdeco"))
+      .addBackground(byName("ritualroom"))
       .setFloorBorders());
-  addTile(LIBRARY, empty().addConnection(setOfAllDirs(), "libdeco").addBackground("lib").setFloorBorders());
-  addTile(LABORATORY, empty().addConnection(setOfAllDirs(), "labdeco").addBackground("lab").setFloorBorders());
+  addTile(LIBRARY, empty().addConnection(setOfAllDirs(), byName("libdeco"))
+      .addBackground(byName("lib")).setFloorBorders());
+  addTile(LABORATORY, empty().addConnection(setOfAllDirs(), byName("labdeco"))
+      .addBackground(byName("lab")).setFloorBorders());
   addTile(CAULDRON, sprite("labdeco").setNoShadow());
   addTile(BEAST_LAIR, sprite("lair").setFloorBorders());
-  addTile(BEAST_CAGE, sprite("lairdeco").setNoShadow().addBackground("lair"));
-  addTile(FORGE, empty().addConnection(setOfAllDirs(), "forgedeco").addBackground("forge")
+  addTile(BEAST_CAGE, sprite("lairdeco").setNoShadow()
+      .addBackground(byName("lair")));
+  addTile(FORGE, empty().addConnection(setOfAllDirs(), byName("forgedeco"))
+      .addBackground(byName("forge"))
       .setFloorBorders());
-  addTile(WORKSHOP, empty().addConnection(setOfAllDirs(), "workshopdeco").addBackground("workshop")
+  addTile(WORKSHOP, empty().addConnection(setOfAllDirs(), byName("workshopdeco"))
+      .addBackground(byName("workshop"))
       .setFloorBorders());
-  addTile(JEWELER, empty().addConnection(setOfAllDirs(), "jewelerdeco").addBackground("jeweler")
+  addTile(JEWELER, empty().addConnection(setOfAllDirs(), byName("jewelerdeco"))
+      .addBackground(byName("jeweler"))
       .setFloorBorders());
   addTile(CEMETERY, sprite("graveyard").setFloorBorders());
-  addTile(GRAVE, sprite("gravedeco").setNoShadow().addBackground("graveyard"));
+  addTile(GRAVE, sprite("gravedeco").setNoShadow().addBackground(byName("graveyard")));
   addTile(ROBE, sprite(7, 11, 3));
   addTile(LEATHER_GLOVES, sprite(15, 11, 3));
   addTile(DEXTERITY_GLOVES, sprite(19, 11, 3));
@@ -347,10 +381,10 @@ void genTiles() {
   addTile(EYEBALL, sprite("eyeball2").setNoShadow());
   addTile(FOG_OF_WAR, getWaterTile(14));
   addTile(FOG_OF_WAR_CORNER, sprite(14, 5, 4)
-      .addConnection(dirs(NE), 14, 11)
-      .addConnection(dirs(NW), 13, 11)
-      .addConnection(dirs(SE), 14, 12)
-      .addConnection(dirs(SW), 13, 12));
+      .addConnection(dirs(NE), byCoord(14, 11, 4))
+      .addConnection(dirs(NW), byCoord(13, 11, 4))
+      .addConnection(dirs(SE), byCoord(14, 12, 4))
+      .addConnection(dirs(SW), byCoord(13, 12, 4)));
   addTile(SPECIAL_BEAST, sprite(7, 10));
   addTile(SPECIAL_HUMANOID, sprite(2, 10));
   addTile(TEAM_BUTTON, sprite("team_button"));

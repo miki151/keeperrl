@@ -32,10 +32,10 @@ Tile Tile::unicode(sf::Uint32 ch, ColorId col, bool sym) {
 Tile Tile::fromString(const string& ch, ColorId colorId, bool symbol) {
   String tmp = Renderer::toUnicode(ch);
   CHECK(tmp.getSize() == 1) << "Symbol text too long: " << ch;
-  return Tile::unicode(tmp[0], colorId, symbol);
+  return unicode(tmp[0], colorId, symbol);
 }
 
-Tile::Tile(int x, int y, int num, bool _noShadow) : noShadow(_noShadow), tileCoord(Vec2(x, y)), texNum(num) {
+Tile::Tile(TileCoord c) : tileCoord(c) {
 }
 
 Tile Tile::setNoShadow() {
@@ -43,57 +43,32 @@ Tile Tile::setNoShadow() {
   return *this;
 }
 
-Tile Tile::byCoord(int x, int y, int num, bool noShadow) {
-  return Tile(x, y, num, noShadow);
+Tile Tile::byCoord(TileCoord c) {
+  return Tile(c);
 }
-
-Tile Tile::byName(const string& s, bool noShadow) {
-  return Tile(Renderer::getTileCoords(s), noShadow);
-}
-
-Tile Tile::empty() {
-  return byName("empty");
-}
-
-Tile::Tile(Renderer::TileCoords coords, bool noShadow)
-    : Tile(coords.pos.x, coords.pos.y, coords.texNum, noShadow) {}
 
 Tile Tile::setFloorBorders() {
   floorBorders = true;
   return *this;
 }
 
-Tile Tile::addConnection(EnumSet<Dir> c, int x, int y) {
-  connections.insert({c, Vec2(x, y)});
+Tile Tile::addConnection(EnumSet<Dir> c, TileCoord coord) {
+  connections.insert({c, coord});
   return *this;
 }
 
-Tile Tile::addConnection(EnumSet<Dir> c, const string& name) {
-  Renderer::TileCoords coords = Renderer::getTileCoords(name);
-  texNum = coords.texNum;
-  return addConnection(c, coords.pos.x, coords.pos.y);
-}
-
-Tile Tile::addOption(Dir d, const string& name) {
-  Renderer::TileCoords coords = Renderer::getTileCoords(name);
-  texNum = coords.texNum;
-  connectionOption = {d, coords.pos};
+Tile Tile::addOption(Dir d, TileCoord coord) {
+  connectionOption = {d, coord};
   return *this;
 }
 
-Tile Tile::addBackground(int x, int y) {
-  backgroundCoord = Vec2(x, y);
+Tile Tile::addBackground(TileCoord coord) {
+  backgroundCoord = coord;
   return *this;
 }
 
-Tile Tile::addBackground(const string& name) {
-  Renderer::TileCoords coords = Renderer::getTileCoords(name);
-  texNum = coords.texNum;
-  return addBackground(coords.pos.x, coords.pos.y);
-}
-
-Tile Tile::addExtraBorder(EnumSet<Dir> dir, int x, int y) {
-  extraBorders[dir] = Vec2(x, y);
+Tile Tile::addExtraBorder(EnumSet<Dir> dir, TileCoord coord) {
+  extraBorders[dir] = coord;
   return *this;
 }
 
@@ -110,7 +85,7 @@ bool Tile::hasExtraBorders() const {
   return !extraBorders.empty();
 }
 
-Optional<Vec2> Tile::getExtraBorderCoord(const EnumSet<Dir>& c) const {
+Optional<Tile::TileCoord> Tile::getExtraBorderCoord(const EnumSet<Dir>& c) const {
   if (extraBorders.count(c))
     return extraBorders.at(c);
   else
@@ -126,15 +101,15 @@ bool Tile::hasSpriteCoord() const {
   return tileCoord;
 }
 
-Vec2 Tile::getSpriteCoord() const {
+Tile::TileCoord Tile::getSpriteCoord() const {
   return *tileCoord;
 }
 
-Optional<Vec2> Tile::getBackgroundCoord() const {
+Optional<Tile::TileCoord> Tile::getBackgroundCoord() const {
   return backgroundCoord;
 }
 
-Vec2 Tile::getSpriteCoord(const EnumSet<Dir>& c) const {
+Tile::TileCoord Tile::getSpriteCoord(const EnumSet<Dir>& c) const {
   if (connectionOption) {
     CHECK(connections.empty()) << "Can't have connections and options at the same time";
     if (c[connectionOption->first])
@@ -145,35 +120,6 @@ Vec2 Tile::getSpriteCoord(const EnumSet<Dir>& c) const {
   if (connections.count(c))
     return connections.at(c);
   else return *tileCoord;
-}
-
-int Tile::getTexNum() const {
-  CHECK(tileCoord) << "Not a sprite tile";
-  return texNum;
-}
-
-Tile getSpecialCreature(const ViewObject& obj, bool humanoid) {
-  RandomGen r;
-  r.init(hash<string>()(obj.getBareDescription()));
-  string let = humanoid ? "WETUIPLKJHFAXBM" : "qwetyupkfaxbnm";
-  char c;
-  if (contains(let, obj.getBareDescription()[0]))
-    c = obj.getBareDescription()[0];
-  else
-  if (contains(let, tolower(obj.getBareDescription()[0])))
-    c = tolower(obj.getBareDescription()[0]);
-  else
-    c = let[r.get(let.size())];
-  return Tile::unicode(c, chooseRandom<ColorId>());
-}
-
-Tile getSpecialCreatureSprite(const ViewObject& obj, bool humanoid) {
-  RandomGen r;
-  r.init(hash<string>()(obj.getBareDescription()));
-  if (humanoid)
-    return Tile::byCoord(r.get(7), 10);
-  else
-    return Tile::byCoord(r.get(7, 10), 10);
 }
 
 static map<ViewId, Tile> tiles;
@@ -219,18 +165,38 @@ static void setBackground(int r, int g, int b) {
 
 }
 
-void Tile::initialize() {
+class TileCoordLookup {
+  public:
+  TileCoordLookup(Renderer& r) : renderer(r) {}
+
+  Tile::TileCoord byName(const string& s) {
+    return renderer.getTileCoord(s);
+  }
+
+  Tile::TileCoord getCoords(int x, int y, int tex) {
+    return {Vec2(x, y), tex};
+  }
+
+  private:
+  Renderer& renderer;
+};
+
+void Tile::initialize(Renderer& renderer, bool useTiles) {
+  TileCoordLookup lookup(renderer);
   ADD_SCRIPT_VALUE_TYPE(Tile);
+  ADD_SCRIPT_VALUE_TYPE(TileCoord);
   ADD_SCRIPT_ENUM(Dir);
   ADD_SCRIPT_ENUM(ColorId);
   ADD_SCRIPT_VALUE_TYPE(SetOfDir);
   ADD_SCRIPT_ENUM(ViewId);
   ADD_SCRIPT_FUNCTION(setBackground, "void setGuiBackground(int, int, int)");
-  ADD_SCRIPT_FUNCTION(Tile::byCoord, "Tile sprite(int, int, int = 0, bool = false)");
-  ADD_SCRIPT_FUNCTION(Tile::byName, "Tile sprite(const string& in, bool = false)");
+  ADD_SCRIPT_FUNCTION(Tile::byCoord, "Tile sprite(TileCoord)");
+  ADD_SCRIPT_FUNCTION_FROM_SINGLETON(TileCoordLookup::byName, "TileCoord byName(const string& in)",
+      lookup);
+  ADD_SCRIPT_FUNCTION_FROM_SINGLETON(TileCoordLookup::getCoords, "TileCoord byCoord(int x, int y, int tex)",
+      lookup);
   ADD_SCRIPT_FUNCTION(Tile::fromString, "Tile symbol(const string& in, ColorId, bool = false)");
   ADD_SCRIPT_FUNCTION(Tile::unicode, "Tile symbol(uint, ColorId, bool = false)");
-  ADD_SCRIPT_FUNCTION(Tile::empty, "Tile empty()");
   ADD_SCRIPT_FUNCTION(addTile, "void addTile(ViewId, Tile)");
   ADD_SCRIPT_FUNCTION(addSymbol, "void addSymbol(ViewId, Tile)");
   ADD_SCRIPT_FUNCTION(SetOfDir::fullSet, "SetOfDir setOfAllDirs()");
@@ -242,17 +208,17 @@ void Tile::initialize() {
   ADD_SCRIPT_METHOD(Tile, setNoShadow, "Tile setNoShadow()");
   ADD_SCRIPT_METHOD(Tile, setTranslucent, "Tile setTranslucent(double)");
   ADD_SCRIPT_METHOD(Tile, setFloorBorders, "Tile setFloorBorders()");
-  ADD_SCRIPT_METHOD_OVERLOAD(Tile, addBackground, "Tile addBackground(int, int)", (int, int), Tile);
-  ADD_SCRIPT_METHOD_OVERLOAD(Tile, addBackground, "Tile addBackground(const string& in)", (const string&), Tile);
-  ADD_SCRIPT_METHOD_OVERLOAD(Tile, addConnection, "Tile addConnection(SetOfDir c, int, int)",
-      (SetOfDir, int, int), Tile);
-  ADD_SCRIPT_METHOD_OVERLOAD(Tile, addConnection, "Tile addConnection(SetOfDir c, const string& in)",
-      (SetOfDir, const string&), Tile);
-  ADD_SCRIPT_METHOD_OVERLOAD(Tile, addOption, "Tile addOption(Dir, const string& in)",
-      (Dir, const string&), Tile);
-  ADD_SCRIPT_METHOD(Tile, addCorner, "Tile addCorner(SetOfDir def, SetOfDir borders, int x, int y)");
-  ADD_SCRIPT_METHOD(Tile, addExtraBorder, "Tile addExtraBorder(SetOfDir def, int x, int y)");
+  ADD_SCRIPT_METHOD_OVERLOAD(Tile, addBackground, "Tile addBackground(TileCoord)", (TileCoord), Tile);
+  ADD_SCRIPT_METHOD_OVERLOAD(Tile, addConnection, "Tile addConnection(SetOfDir c, TileCoord)",
+      (SetOfDir, TileCoord), Tile);
+  ADD_SCRIPT_METHOD_OVERLOAD(Tile, addOption, "Tile addOption(Dir, TileCoord)",
+      (Dir, TileCoord), Tile);
+  ADD_SCRIPT_METHOD(Tile, addCorner, "Tile addCorner(SetOfDir def, SetOfDir borders, TileCoord)");
+  ADD_SCRIPT_METHOD(Tile, addExtraBorder, "Tile addExtraBorder(SetOfDir def, TileCoord)");
   ADD_SCRIPT_METHOD(Tile, addExtraBorderId, "Tile addExtraBorderId(ViewId)");
+  loadUnicode();
+  if (useTiles)
+    loadTiles();
 }
 
 void Tile::loadTiles() {
@@ -322,8 +288,8 @@ Color Tile::getColor(const ViewObject& object) {
     return color;
 }
 
-Tile Tile::addCorner(EnumSet<Dir> cornerDef, EnumSet<Dir> borders, int x, int y) {
-  corners.push_back({cornerDef, borders, Vec2(x, y)});
+Tile Tile::addCorner(EnumSet<Dir> cornerDef, EnumSet<Dir> borders, TileCoord coord) {
+  corners.push_back({cornerDef, borders, coord});
   return *this;
 }
 
@@ -331,8 +297,8 @@ bool Tile::hasCorners() const {
   return !corners.empty();
 }
 
-vector<Vec2> Tile::getCornerCoords(const EnumSet<Dir>& c) const {
-  vector<Vec2> ret;
+vector<Tile::TileCoord> Tile::getCornerCoords(const EnumSet<Dir>& c) const {
+  vector<TileCoord> ret;
   for (auto& elem : corners) {
     if (elem.cornerDef.intersection(c) == elem.borders)
       ret.push_back(elem.tileCoord);

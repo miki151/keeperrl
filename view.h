@@ -26,7 +26,6 @@ class CreatureView;
 class Level;
 class Jukebox;
 class ProgressMeter;
-class Options;
 
 class View {
   public:
@@ -34,7 +33,7 @@ class View {
   virtual ~View();
 
   /** Does all the library specific init.*/
-  virtual void initialize(Options*) = 0;
+  virtual void initialize() = 0;
 
   /** Resets the view before a new game.*/
   virtual void reset() = 0;
@@ -151,9 +150,6 @@ class View {
   /** Returns whether the real time clock is currently stopped.*/
   virtual bool isClockStopped() = 0;
 
-  void setJukebox(Jukebox*);
-  Jukebox* getJukebox();
-
   /** Returns a default View.*/
   static View* createDefaultView();
 
@@ -162,9 +158,6 @@ class View {
 
   /** Returns a default View that reads all player actions from a file instead of the keyboard.*/
   static View* createReplayView(InputArchive& ifs);
-
-  private:
-  Jukebox* jukebox = nullptr;
 };
 
 enum class AnimationId {

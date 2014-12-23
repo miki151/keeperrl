@@ -43,14 +43,6 @@ vector<View::ListElem> View::getListElem(const vector<string>& v) {
   return transform2<ListElem>(v, fun);
 }
 
-void View::setJukebox(Jukebox* j) {
-  jukebox = j;
-}
-
-Jukebox* View::getJukebox() {
-  return NOTNULL(jukebox);
-}
-
 View::View() {
 
 }

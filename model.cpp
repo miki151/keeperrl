@@ -33,6 +33,7 @@
 #include "collective.h"
 #include "collective_builder.h"
 #include "collective_config.h"
+#include "music.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -49,7 +50,8 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(addHero)
     & SVAR(adventurer)
     & SVAR(currentTime)
-    & SVAR(worldName);
+    & SVAR(worldName)
+    & SVAR(musicType);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
   Quest::serializeAll(ar);
@@ -71,6 +73,14 @@ const double dayLength = 1500;
 const double nightLength = 1500;
 
 const double duskLength  = 180;
+
+MusicType Model::getCurrentMusic() const {
+  return musicType;
+}
+
+void Model::setCurrentMusic(MusicType type) {
+  musicType = type;
+}
 
 const Model::SunlightInfo& Model::getSunlightInfo() const {
   return sunlightInfo;
@@ -226,7 +236,7 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker) {
   return levels.back().get();
 }
 
-Model::Model(View* v, const string& world) : view(v), worldName(world) {
+Model::Model(View* v, const string& world) : view(v), worldName(world), musicType(MusicType::PEACEFUL) {
   updateSunlightInfo();
 }
 

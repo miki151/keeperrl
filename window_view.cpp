@@ -47,7 +47,7 @@ using sf::Texture;
 using sf::Keyboard;
 using sf::Mouse;
 
-View* View::createDefaultView() {
+/*View* View::createDefaultView() {
   return new WindowView();
 }
 
@@ -57,7 +57,7 @@ View* View::createLoggingView(OutputArchive& of) {
 
 View* View::createReplayView(InputArchive& ifs) {
   return new ReplayView<WindowView>(ifs);
-}
+}*/
 
 class TempClockPause {
   public:
@@ -81,8 +81,6 @@ int rightBarWidthCollective = 330;
 int rightBarWidthPlayer = 290;
 int bottomBarHeightCollective = 62;
 int bottomBarHeightPlayer = 62;
-
-Renderer renderer;
 
 Rectangle WindowView::getMapGuiBounds() const {
   switch (gameInfo.infoType) {
@@ -109,37 +107,14 @@ void WindowView::resetMapBounds() {
   minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
 }
 
-WindowView::WindowView() : guiBuilder(renderer, {
+WindowView::WindowView(Renderer& r, bool tiles, Options* o) : renderer(r), useTiles(tiles), options(o),
+    guiBuilder(renderer, {
         [this](UserInput input) { inputQueue.push(input);},
         [this](const string& s) { mapGui->setHint(s);},
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);}}) {}
 
-static bool tilesOk = true;
-
-bool WindowView::areTilesOk() {
-  return tilesOk;
-}
-
-void WindowView::initialize(Options* o) {
-  options = o;
-  renderer.initialize(1024, 600, "KeeperRL");
-  Clock::set(new Clock());
+void WindowView::initialize() {
   renderThreadId = currentThreadId();
-  Renderer::setNominalSize(Vec2(36, 36));
-  if (!ifstream("tiles_int.png")) {
-    tilesOk = false;
-  } else {
-    Renderer::loadTilesFromFile("tiles_int.png", Vec2(36, 36));
-    Renderer::loadTilesFromFile("tiles2_int.png", Vec2(36, 36));
-    Renderer::loadTilesFromFile("tiles3_int.png", Vec2(36, 36));
-    Renderer::loadTilesFromFile("tiles4_int.png", Vec2(24, 24));
-    Renderer::loadTilesFromFile("tiles5_int.png", Vec2(36, 36));
-    Renderer::loadTilesFromFile("tiles6_int.png", Vec2(36, 36));
-    Renderer::loadTilesFromFile("tiles7_int.png", Vec2(36, 36));
-    Renderer::loadTilesFromDir("shroom24", Vec2(24, 24));
-    Renderer::loadTilesFromDir("shroom36", Vec2(36, 36));
-    Renderer::loadTilesFromDir("shroom46", Vec2(46, 46));
-  }
   vector<ViewLayer> allLayers;
   for (auto l : ENUM_ALL(ViewLayer))
     allLayers.push_back(l);
@@ -150,11 +125,9 @@ void WindowView::initialize(Options* o) {
   spriteLayouts = {
     MapLayout(36, 36, allLayers),
     MapLayout(18, 18, allLayers), true};
-  Tile::loadUnicode();
-  if (tilesOk) {
+  if (useTiles)
     currentTileLayout = spriteLayouts;
-    Tile::loadTiles();
-  } else
+  else
     currentTileLayout = asciiLayouts;
   mapGui = new MapGui({
       [this](Vec2 pos) { mapLeftClickFun(pos); },
@@ -163,8 +136,8 @@ void WindowView::initialize(Options* o) {
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
-  guiBuilder.setTilesOk(tilesOk);
-  if (tilesOk) {
+  guiBuilder.setTilesOk(useTiles);
+  if (useTiles) {
     CHECK(menuCore.loadFromFile("menu_core.png"));
     CHECK(menuMouth.loadFromFile("menu_mouth.png"));
     menuCore.setSmooth(true);
@@ -260,7 +233,7 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
     int t0 = Clock::get().getRealMillis();
     int mouthMillis = 400;
     while (!splashDone) {
-      if (tilesOk) {
+      if (useTiles) {
         drawMenuBackground(meter.getProgress(), min(1.0, double(Clock::get().getRealMillis() - t0) / mouthMillis));
         renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() * 0.5, text, true);
       } else {
@@ -297,14 +270,6 @@ struct KeyInfo {
 };
 
 void WindowView::close() {
-}
-
-void printStanding(int x, int y, double standing, const string& tribeName) {
-  standing = min(1., max(-1., standing));
-  Color color = standing < 0
-      ? Color(255, 255 * (1. + standing), 255 *(1. + standing))
-      : Color(255 * (1. - standing), 255, 255 * (1. - standing));
-  renderer.drawText(color, x, y, (standing >= 0 ? "friend of " : "enemy of ") + tribeName);
 }
 
 Color getSpeedColor(int value) {
@@ -502,7 +467,7 @@ void WindowView::drawMap() {
 
 void WindowView::refreshScreen(bool flipBuffer) {
   if (!gameReady) {
-    if (tilesOk)
+    if (useTiles)
       displayMenuSplash2();
     else
       displayOldSplash();
@@ -565,7 +530,7 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
         }
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), (middle + dir).x, (middle + dir).y);
         if (currentTileLayout.sprites)
-          renderer.drawSprite(wpos.x, wpos.y, 16 * 36, (8 + numArrow) * 36, 36, 36, Renderer::tiles[4]);
+          renderer.drawTile(wpos.x, wpos.y, {Vec2(16, numArrow), 4});
         else {
           static sf::Uint32 arrows[] = { L'⇐', L'⇖', L'⇑', L'⇗', L'⇒', L'⇘', L'⇓', L'⇙'};
           renderer.drawText(Renderer::SYMBOL_FONT, 20, colors[ColorId::WHITE],
@@ -625,7 +590,7 @@ Optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
   return chooseFromListInternal(title, options, index, type, scrollPos, exitAction, Nothing(), {});
 }
 
-static Rectangle getTextInputBounds() {
+Rectangle WindowView::getTextInputPosition() {
   Vec2 center = Vec2(renderer.getWidth(), renderer.getHeight()) / 2;
   return Rectangle(center - Vec2(300, 129), center + Vec2(300, 129));
 }
@@ -656,7 +621,7 @@ Optional<string> WindowView::getText(const string& title, const string& value, i
   stuff = GuiElem::window(std::move(stuff));
   while (1) {
     refreshScreen(false);
-    stuff->setBounds(getTextInputBounds());
+    stuff->setBounds(getTextInputPosition());
     stuff->render(renderer);
     renderer.drawAndClearBuffer();
     Event event;
@@ -712,7 +677,7 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
 Optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
     MenuType menuType, int* scrollPos1, Optional<UserInputId> exitAction, Optional<Event::KeyEvent> exitKey,
     vector<Event::KeyEvent> shortCuts) {
-  if (!tilesOk && menuType == MenuType::MAIN_MENU)
+  if (!useTiles && menuType == MenuType::MAIN_MENU)
     menuType = MenuType::MAIN_MENU_NO_TILES;
   if (options.size() == 0)
     return Nothing();
@@ -920,7 +885,7 @@ void WindowView::zoom(bool out) {
 
 void WindowView::switchTiles() {
   bool normal = (mapLayout == &currentTileLayout.normalLayout);
-  if (options->getBoolValue(OptionId::ASCII) || !tilesOk)
+  if (options->getBoolValue(OptionId::ASCII) || !useTiles)
     currentTileLayout = asciiLayouts;
   else
     currentTileLayout = spriteLayouts;

@@ -60,6 +60,8 @@ class Model {
   string getShortGameIdentifier() const;
   void exitAction();
   double getTime() const;
+  MusicType getCurrentMusic() const;
+  void setCurrentMusic(MusicType);
 
   View* getView();
   void setView(View*);
@@ -120,6 +122,7 @@ class Model {
   double lastUpdate = -10;
   Options* options;
   string SERIAL(worldName);
+  MusicType SERIAL(musicType);
 };
 
 #endif

@@ -34,6 +34,7 @@
 #include "collective.h"
 #include "effect.h"
 #include "trigger.h"
+#include "music.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1443,7 +1444,6 @@ void PlayerControl::tick(double time) {
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   considerDeityFight();
   checkKeeperDanger();
-  model->getView()->getJukebox()->update();
   if (retired && getKeeper()) {
     if (const Creature* c = getLevel()->getPlayer())
       if (Random.roll(30) && !getCollective()->containsSquare(c->getPosition()))
@@ -1471,7 +1471,7 @@ void PlayerControl::tick(double time) {
       if (canSee(c)) {
         addImportantLongMessage(assault.second.message(), c->getPosition());
         assaultNotifications.erase(assault.first);
-        model->getView()->getJukebox()->updateCurrent(Jukebox::BATTLE);
+        model->setCurrentMusic(MusicType::BATTLE);
         break;
       }
   if (model->getOptions()->getBoolValue(OptionId::HINTS) && time > hintFrequency) {
@@ -1496,9 +1496,6 @@ bool PlayerControl::canSee(const Creature* c) const {
 bool PlayerControl::canSee(Vec2 position) const {
   if (seeEverything)
     return true;
- /* if (getCollective()->getAllSquares().count(position) 
-      && !getCollective()->getSquares(SquareId::FLOOR).count(position))
-    return true;*/
   for (Creature* c : getCollective()->getCreatures())
     if (c->canSee(position) || c->getPosition() == position)
       return true;

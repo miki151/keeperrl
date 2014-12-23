@@ -26,12 +26,13 @@
 #include "gui_builder.h"
 
 class ViewIndex;
+class Options;
 
 /** See view.h for documentation.*/
 class WindowView: public View {
   public:
-  WindowView(); 
-  virtual void initialize(Options*) override;
+  WindowView(Renderer& r, bool tiles, Options* o); 
+  virtual void initialize() override;
   virtual void reset() override;
   virtual void displaySplash(const ProgressMeter&, View::SplashType) override;
   virtual void clearSplash() override;
@@ -72,6 +73,7 @@ class WindowView: public View {
 
   private:
 
+  Renderer& renderer;
   void processEvents();
   void displayMenuSplash2();
   void displayOldSplash();
@@ -79,6 +81,7 @@ class WindowView: public View {
   void mapLeftClickFun(Vec2);
   void mapRightClickFun(Vec2);
   Rectangle getMenuPosition(View::MenuType type);
+  Rectangle getTextInputPosition();
   Optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
       int* scrollPos, Optional<UserInputId> exitAction, Optional<sf::Event::KeyEvent> exitKey,
       vector<sf::Event::KeyEvent> shortCuts);
@@ -162,6 +165,8 @@ class WindowView: public View {
       renderDialog();
   }
   atomic<bool> splashDone;
+  bool useTiles;
+  Options* options;
   GuiBuilder guiBuilder;
   Texture menuCore;
   Texture menuMouth;
@@ -169,8 +174,6 @@ class WindowView: public View {
   Texture splash1;
   Texture splash2;
   Texture loadingSplash;
-  Options* options;
-  bool choiceOpen = false;
 };
 
 

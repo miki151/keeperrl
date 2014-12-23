@@ -27,14 +27,15 @@ Font symbolFont;
 
 EnumMap<ColorId, Color> colors;
 
+Renderer::TileCoord::TileCoord(Vec2 p, int t) : pos(p), texNum(t) {
+}
+
+Renderer::TileCoord::TileCoord() : TileCoord(Vec2(0, 0), -1) {
+}
+
 Color transparency(const Color& color, int trans) {
   return Color(color.r, color.g, color.b, trans);
 }
-
-vector<Texture> Renderer::tiles;
-vector<Vec2> Renderer::tileSize;
-Vec2 Renderer::nominalSize;
-map<string, Renderer::TileCoords> Renderer::tileCoords;
 
 int Renderer::getTextLength(string s) {
   Text t(toUnicode(s), textFont, textSize);
@@ -153,7 +154,7 @@ int Renderer::getHeight() {
   return display->getSize().y;
 }
 
-void Renderer::initialize(int width, int height, string title) {
+Renderer::Renderer(const string& title, Vec2 nominal) : nominalSize(nominal) {
   display = new RenderWindow(sf::VideoMode::getDesktopMode(), title);
   sfView = new sf::View(display->getDefaultView());
   CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
@@ -201,32 +202,36 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
   return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
 }
 
-void Renderer::drawViewObject(int x, int y, ViewId id, bool useSprite, double scale) {
+void Renderer::drawTile(int x, int y, TileCoord coord, int sizeX, int sizeY, Color color) {
+  Vec2 sz = Renderer::tileSize[coord.texNum];
+  Vec2 off = (nominalSize -  sz).mult(Vec2(sizeX, sizeY)).div(Renderer::nominalSize * 2);
+  int width = sz.x * sizeX / nominalSize.x;
+  int height = sz.y* sizeY / nominalSize.y;
+  if (sz.y > nominalSize.y)
+    off.y *= 2;
+  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
+  drawSprite(x + off.x, y + off.y, coord.pos.x * sz.x, coord.pos.y * sz.y, sz.x, sz.y,
+      Renderer::tiles.at(coord.texNum), width, height, color);
+}
+
+void Renderer::drawTile(int x, int y, TileCoord coord, double scale, Color color) {
+  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
+  Vec2 sz = Renderer::tileSize[coord.texNum];
+  Vec2 of = getOffset(Renderer::nominalSize - sz, scale);
+  drawSprite(x + of.x, y + of.y, coord.pos.x * sz.x, coord.pos.y * sz.y, sz.x, sz.y,
+      Renderer::tiles.at(coord.texNum), sz.x * scale, sz.y * scale, color);
+}
+
+void Renderer::drawViewObject(int x, int y, ViewId id, bool useSprite, double scale, Color color) {
   const Tile& tile = Tile::getTile(id, useSprite);
-  if (tile.hasSpriteCoord()) {
-    CHECK(tile.getTexNum() >= 0 && tile.getTexNum() < Renderer::tiles.size());
-    Vec2 sz = Renderer::tileSize[tile.getTexNum()];
-    Vec2 of = getOffset(Renderer::nominalSize - sz, scale);
-    Vec2 coord = tile.getSpriteCoord(EnumSet<Dir>::fullSet());
-    drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles.at(tile.getTexNum()),
-        sz.x * scale, sz.y * scale);
-  } else
+  if (tile.hasSpriteCoord())
+    drawTile(x, y, tile.getSpriteCoord(EnumSet<Dir>::fullSet()), scale, color);
+  else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, x, y, tile.text);
 }
 
 void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSprite, double scale) {
-  const Tile& tile = Tile::getTile(object.id(), useSprite);
-  if (tile.hasSpriteCoord()) {
-    CHECK(tile.getTexNum() >= 0 && tile.getTexNum() < Renderer::tiles.size());
-    Vec2 sz = Renderer::tileSize[tile.getTexNum()];
-    Vec2 of = getOffset(Renderer::nominalSize - sz, scale);
-    Vec2 coord = tile.getSpriteCoord(EnumSet<Dir>::fullSet());
-    Color color = getBleedingColor(object);
-    drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles.at(tile.getTexNum()),
-        sz.x * scale, sz.y * scale, color);
-  } else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20,
-        Tile::getColor(object), x, y, tile.text);
+  drawViewObject(x, y, object.id(), useSprite, scale, getBleedingColor(object));
 }
 
 const static string imageSuf = ".png";
@@ -262,19 +267,19 @@ bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
   return true;
 }
 
-Renderer::TileCoords Renderer::getTileCoords(const string& name) {
+Renderer::TileCoord Renderer::getTileCoord(const string& name) {
   CHECK(tileCoords.count(name)) << "Tile not found " << name;
   return tileCoords.at(name);
+}
+
+Vec2 Renderer::getNominalSize() const {
+  return nominalSize;
 }
 
 bool Renderer::loadTilesFromFile(const string& path, Vec2 size) {
   tileSize.push_back(size);
   tiles.emplace_back();
   return tiles.back().loadFromFile(path.c_str());
-}
-
-void Renderer::setNominalSize(Vec2 sz) {
-  nominalSize = sz;
 }
 
 void Renderer::drawAndClearBuffer() {

@@ -20,6 +20,9 @@
   AS_TRY(ScriptContext::engine->RegisterGlobalFunction(SIG, asFUNCTION(NAME), asCALL_CDECL));
 #define ADD_SCRIPT_FUNCTION_OVERLOAD(NAME, SIG, ...)\
   AS_TRY(ScriptContext::engine->RegisterGlobalFunction(SIG, asFUNCTIONPR(NAME, __VA_ARGS__), asCALL_CDECL));
+#define ADD_SCRIPT_FUNCTION_FROM_SINGLETON(NAME, SIG, OBJECT)\
+  AS_TRY(ScriptContext::engine->RegisterGlobalFunction(SIG, asMETHOD(decltype(OBJECT), NAME),\
+        asCALL_THISCALL_ASGLOBAL, &OBJECT));
 
 class ScriptContext {
   public:
