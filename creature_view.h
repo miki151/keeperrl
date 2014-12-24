@@ -17,6 +17,7 @@
 #define _CREATURE_VIEW_H
 
 #include "util.h"
+#include "unique_entity.h"
 
 class GameInfo;
 class MapMemory;
@@ -33,6 +34,7 @@ class CreatureView {
     Vec2 from;
     Vec2 to;
     double prevTime;
+    UniqueEntity<Creature>::Id creatureId;
   };
   virtual Optional<MovementInfo> getMovementInfo() const = 0;
   virtual const Level* getLevel() const = 0;

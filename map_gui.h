@@ -19,6 +19,7 @@
 #include "util.h"
 #include "gui_elem.h"
 #include "view_id.h"
+#include "unique_entity.h"
 
 class ViewIndex;
 class MapMemory;
@@ -94,6 +95,7 @@ class MapGui : public GuiElem {
     int endTimeReal;
     double startTimeGame;
     double endTimeGame;
+    UniqueEntity<Creature>::Id creatureId;
   };
   Optional<ScreenMovement> screenMovement;
 };

@@ -19,6 +19,7 @@
 #include "debug.h"
 #include "enums.h"
 #include "util.h"
+#include "unique_entity.h"
 
 RICH_ENUM(ViewLayer,
   FLOOR_BACKGROUND,
@@ -70,12 +71,15 @@ class ViewObject {
     Vec2 direction;
     double tBegin;
     double tEnd;
+    UniqueEntity<Creature>::Id entityId;
   };
 
   void addMovementInfo(MovementInfo);
   bool hasAnyMovementInfo() const;
   MovementInfo getLastMovementInfo() const;
-  Vec2 getMovementInfo(double tBegin, double tEnd) const;
+  Vec2 getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creature>::Id controlledId) const;
+
+  void setCreatureId(UniqueEntity<Creature>::Id);
 
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();
@@ -93,6 +97,7 @@ class ViewObject {
   string SERIAL(description);
   Optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL2(position, Vec2(-1, -1));
+  UniqueEntity<Creature>::Id SERIAL2(creatureId, 0);
 
   class MovementQueue {
     public:

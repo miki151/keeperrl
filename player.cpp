@@ -860,7 +860,8 @@ Optional<Vec2> Player::getPosition(bool) const {
 
 Optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
   if (previousTimePos.pos.x > -1)
-    return MovementInfo({previousTimePos.pos, currentTimePos.pos, previousTimePos.time});
+    return MovementInfo({previousTimePos.pos, currentTimePos.pos, previousTimePos.time,
+        getCreature()->getUniqueId()});
   else
     return Nothing();
 }
