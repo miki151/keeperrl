@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
+﻿/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
 
    This file is part of KeeperRL.
 
@@ -114,6 +114,7 @@ WindowView::WindowView(Renderer& r, bool tiles, Options* o) : renderer(r), useTi
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);}}) {}
 
 void WindowView::initialize() {
+  renderer.initialize();
   renderThreadId = currentThreadId();
   vector<ViewLayer> allLayers;
   for (auto l : ENUM_ALL(ViewLayer))
