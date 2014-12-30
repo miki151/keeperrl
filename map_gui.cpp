@@ -158,7 +158,7 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
   }
 }
 
-void MapGui::onKeyPressed(Event::KeyEvent key) {
+void MapGui::onKeyPressed2(Event::KeyEvent key) {
   const double shiftScroll = 10;
   const double normalScroll = 2.5;
   switch (key.code) {

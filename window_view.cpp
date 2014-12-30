@@ -715,6 +715,7 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
             GuiElem::label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss")))), 0, 5, 0, 0);
   if (menuType != MAIN_MENU) {
     stuff = GuiElem::scrollable(std::move(stuff), contentHeight, scrollPos);
+    stuff = GuiElem::margins(std::move(stuff), 0, 15, 0, 0);
     stuff = GuiElem::margin(GuiElem::centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
         std::move(stuff), 30, GuiElem::BOTTOM);
     stuff = GuiElem::window(std::move(stuff));
@@ -994,7 +995,7 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       break;
     case Event::KeyPressed:
       for (GuiElem* elem : guiElems)
-        elem->onKeyPressed(event.key);
+        elem->onKeyPressed2(event.key);
       break;
     case Event::TextEntered:
       if (event.text.unicode < 128) {
