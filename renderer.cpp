@@ -154,9 +154,12 @@ int Renderer::getHeight() {
   return display->getSize().y;
 }
 
-Renderer::Renderer(const string& title, Vec2 nominal) : nominalSize(nominal) {
-  display = new RenderWindow(sf::VideoMode::getDesktopMode(), title);
+void Renderer::initialize() {
+  display = new RenderWindow(sf::VideoMode::getDesktopMode(), "KeeperRL");
   sfView = new sf::View(display->getDefaultView());
+}
+
+Renderer::Renderer(const string& title, Vec2 nominal) : nominalSize(nominal) {
   CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(tileFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(symbolFont.loadFromFile("Symbola.ttf"));

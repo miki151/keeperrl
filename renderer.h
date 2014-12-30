@@ -90,6 +90,7 @@ class Renderer {
   };
 
   Renderer(const string& windowTile, Vec2 nominalTileSize);
+  void initialize();
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(string s);
