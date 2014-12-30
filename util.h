@@ -1090,10 +1090,12 @@ class EnumMap {
   }
 
   const U& operator[](T elem) const {
+    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
     return elems[int(elem)];
   }
 
   U& operator[](T elem) {
+    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
     return elems[int(elem)];
   }
 
