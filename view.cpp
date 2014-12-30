@@ -41,6 +41,10 @@ View::ElemMod View::ListElem::getMod() const {
   return mod;
 }
 
+void View::ListElem::setMod(ElemMod m) {
+  mod = m;
+}
+
 Optional<UserInputId> View::ListElem::getAction() const {
   return action;
 }

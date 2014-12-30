@@ -478,22 +478,14 @@ int main(int argc, char* argv[]) {
     seed = fromString<int>(fname.substr(lognamePref.size()));
     Random.init(seed);
     input.reset(new CompressedInput(fname));
-    view.reset(new WindowView(renderer, tilesPresent(), &options));
-    //view.reset(View::createReplayView(input->getArchive()));
+    view.reset(WindowView::createReplayView(input->getArchive(), {renderer, tilesPresent(), &options}));
   } else {
     Random.init(seed);
-#ifndef RELEASE
     string fname(lognamePref);
     fname += toString(seed);
     output.reset(new CompressedOutput(fname));
     Debug() << "Writing to " << fname;
-    view.reset(new WindowView(renderer, tilesPresent(), &options));
-    //view.reset(View::createLoggingView(output->getArchive()));
-#else
-    view.reset(new WindowView(renderer, tilesPresent(), &options));
-    //view.reset(View::createDefaultView());
-    ofstream("seeds.txt", std::ios_base::app) << seed << endl;
-#endif
+    view.reset(WindowView::createLoggingView(output->getArchive(), {renderer, tilesPresent(), &options}));
   } 
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);

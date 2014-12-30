@@ -29,7 +29,8 @@ enum class LoggingToken {
 template <class T>
 class LoggingView : public T {
   public:
-    LoggingView(OutputArchive& of) : output(of) {
+    template <typename... Args>
+    LoggingView(OutputArchive& of, Args... args) : T(args...), output(of) {
     }
 
     virtual void close() override {

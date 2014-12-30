@@ -138,7 +138,7 @@ void Model::update(double totalTime) {
   }
   int absoluteTime = view->getTimeMilliAbsolute();
   if (playerControl) {
-    if (absoluteTime - lastUpdate > 50) {
+    if (absoluteTime - lastUpdate > 20) {
       playerControl->render(view);
       lastUpdate = absoluteTime;
     }
@@ -898,40 +898,66 @@ void Model::showCredits(View* view) {
   view->presentList("Credits", lines, false);
 }
 
+namespace {
+
+struct HighscoreElem {
+
+  static HighscoreElem parse(const string& s) {
+    vector<string> p = split(s, {','});
+    if (p.size() != 2 && p.size() != 3)
+      return CONSTRUCT(HighscoreElem, c.name = "ERROR: " + s;);
+    HighscoreElem e;
+    e.name = p[0];
+    if (p.size() == 3) {
+      e.killer = p[1];
+      e.points = fromString<int>(p[2]);
+    } else
+      e.points = fromString<int>(p[1]);
+    return e; 
+  }
+
+  View::ElemMod getHighlight(bool highlightLast) {
+    if (highlight || !highlightLast)
+      return View::NORMAL;
+    else
+      return View::INACTIVE;
+  }
+
+  View::ListElem toListElem(bool highlightLast) {
+    if (killer)
+      return View::ListElem(name + ", " + *killer, toString(points) + " points", getHighlight(highlightLast));
+    else
+      return View::ListElem(name, toString(points) + " points", getHighlight(highlightLast));
+  }
+
+  bool highlight = false;
+  string name;
+  Optional<string> killer;
+  int points;
+};
+
+}
+
 void Model::showHighscore(View* view, bool highlightLast) {
-  struct Elem {
-    string name;
-    string killer;
-    int points;
-    bool highlight = false;
-  };
-  vector<Elem> v;
+  vector<HighscoreElem> v;
   ifstream in("highscore.txt");
   while (1) {
     char buf[100];
     in.getline(buf, 100);
     if (!in)
       break;
-    vector<string> p = split(string(buf), {','});
-    CHECK(p.size() == 3) << "Input error " << p;
-    Elem e;
-    e.name = p[0];
-    e.killer = p[1];
-    e.points = fromString<int>(p[2]);
-    v.push_back(e);
+    v.push_back(HighscoreElem::parse(buf));
   }
   if (v.empty())
     return;
   if (highlightLast)
     v.back().highlight = true;
-  sort(v.begin(), v.end(), [] (const Elem& a, const Elem& b) -> bool {
+  sort(v.begin(), v.end(), [] (const HighscoreElem& a, const HighscoreElem& b) -> bool {
       return a.points > b.points;
     });
   vector<View::ListElem> scores;
-  for (Elem& elem : v) {
-    scores.push_back(View::ListElem(elem.name + ", " + elem.killer + "       " +
-        toString(elem.points) + " points",
-        highlightLast && !elem.highlight ? View::INACTIVE : View::NORMAL));
+  for (HighscoreElem& elem : v) {
+    scores.push_back(elem.toListElem(highlightLast));
   }
   view->presentList("High scores", scores, false);
 }
