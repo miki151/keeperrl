@@ -854,52 +854,52 @@ Color GuiElem::translucentBgColor;
 Texture& get(TexId id) {
   static map<TexId, Texture> m;
   if (m.empty()) {
-    m[BACKGROUND_TOP_CORNER].loadFromFile("frame.png", sf::IntRect(0, 128, backgroundSize, backgroundSize));
-    m[BACKGROUND_BOTTOM_CORNER].loadFromFile("frame.png", sf::IntRect(0, 128, backgroundSize, backgroundSize));
-    m[BACKGROUND_LEFT].loadFromFile("frame.png", sf::IntRect(0, 128 + backgroundSize - 1, backgroundSize, 1));
-    m[BACKGROUND_TOP].loadFromFile("frame.png", sf::IntRect(127, 128, 1, backgroundSize));
-    m[SCROLLBAR].loadFromFile("ui/scrollbar.png");
+    CHECK(m[BACKGROUND_TOP_CORNER].loadFromFile("frame.png", sf::IntRect(0, 128, backgroundSize, backgroundSize)));
+    CHECK(m[BACKGROUND_BOTTOM_CORNER].loadFromFile("frame.png", sf::IntRect(0, 128, backgroundSize, backgroundSize)));
+    CHECK(m[BACKGROUND_LEFT].loadFromFile("frame.png", sf::IntRect(0, 128 + backgroundSize - 1, backgroundSize, 1)));
+    CHECK(m[BACKGROUND_TOP].loadFromFile("frame.png", sf::IntRect(127, 128, 1, backgroundSize)));
+    CHECK(m[SCROLLBAR].loadFromFile("ui/scrollbar.png"));
     m[SCROLLBAR].setRepeated(true);
-    m[SCROLL_BUTTON].loadFromFile("ui/scrollmark.png");
+    CHECK(m[SCROLL_BUTTON].loadFromFile("ui/scrollmark.png"));
     int px = 166;
-    m[BORDER_TOP_LEFT].loadFromFile("frame.png", sf::IntRect(px, 0, border2Width, border2Width));
-    m[BORDER_TOP_RIGHT].loadFromFile("frame.png",
-        sf::IntRect(px + 1 + border2Width, 0, border2Width, border2Width));
-    m[BORDER_BOTTOM_LEFT].loadFromFile("frame.png",
-        sf::IntRect(px, border2Width + 1, border2Width, border2Width));
-    m[BORDER_BOTTOM_RIGHT].loadFromFile("frame.png",
-        sf::IntRect(px + 1 + border2Width, border2Width + 1, border2Width, border2Width));
-    m[BORDER_TOP].loadFromFile("frame.png", sf::IntRect(px + border2Width, 0, 1, border2Width));
-    m[BORDER_RIGHT].loadFromFile("frame.png", sf::IntRect(px + 1 + border2Width, border2Width, border2Width, 1));
-    m[BORDER_BOTTOM].loadFromFile("frame.png", sf::IntRect(px + border2Width, border2Width + 1, 1, border2Width));
-    m[BORDER_LEFT].loadFromFile("frame.png", sf::IntRect(px, border2Width, border2Width, 1));
-    m[BACKGROUND_PATTERN].loadFromFile("tekstuur_1.png");
+    CHECK(m[BORDER_TOP_LEFT].loadFromFile("frame.png", sf::IntRect(px, 0, border2Width, border2Width)));
+    CHECK(m[BORDER_TOP_RIGHT].loadFromFile("frame.png",
+        sf::IntRect(px + 1 + border2Width, 0, border2Width, border2Width)));
+    CHECK(m[BORDER_BOTTOM_LEFT].loadFromFile("frame.png",
+        sf::IntRect(px, border2Width + 1, border2Width, border2Width)));
+    CHECK(m[BORDER_BOTTOM_RIGHT].loadFromFile("frame.png",
+        sf::IntRect(px + 1 + border2Width, border2Width + 1, border2Width, border2Width)));
+    CHECK(m[BORDER_TOP].loadFromFile("frame.png", sf::IntRect(px + border2Width, 0, 1, border2Width)));
+    CHECK(m[BORDER_RIGHT].loadFromFile("frame.png", sf::IntRect(px + 1 + border2Width, border2Width, border2Width, 1)));
+    CHECK(m[BORDER_BOTTOM].loadFromFile("frame.png", sf::IntRect(px + border2Width, border2Width + 1, 1, border2Width)));
+    CHECK(m[BORDER_LEFT].loadFromFile("frame.png", sf::IntRect(px, border2Width, border2Width, 1)));
+    CHECK(m[BACKGROUND_PATTERN].loadFromFile("tekstuur_1.png"));
     m[BACKGROUND_PATTERN].setRepeated(true);
     GuiElem::foreground1 = transparency(Color(0x20, 0x5c, 0x4a), 150);
     GuiElem::translucentBgColor = transparency(Color(0, 0, 0), 150);
     GuiElem::text = colors[ColorId::WHITE];
     GuiElem::titleText = colors[ColorId::YELLOW];
     GuiElem::inactiveText = colors[ColorId::LIGHT_GRAY];
-    m[HORI_CORNER1].loadFromFile("ui/horicorner1.png");
-    m[HORI_CORNER2].loadFromFile("ui/horicorner2.png");
-    m[HORI_LINE].loadFromFile("ui/horiline.png");
+    CHECK(m[HORI_CORNER1].loadFromFile("ui/horicorner1.png"));
+    CHECK(m[HORI_CORNER2].loadFromFile("ui/horicorner2.png"));
+    CHECK(m[HORI_LINE].loadFromFile("ui/horiline.png"));
     m[HORI_LINE].setRepeated(true);
-    m[HORI_MIDDLE].loadFromFile("ui/horimiddle.png");
-    m[VERT_BAR].loadFromFile("ui/vertbar.png");
+    CHECK(m[HORI_MIDDLE].loadFromFile("ui/horimiddle.png"));
+    CHECK(m[VERT_BAR].loadFromFile("ui/vertbar.png"));
     m[VERT_BAR].setRepeated(true);
-    m[HORI_BAR].loadFromFile("ui/horibar.png");
+    CHECK(m[HORI_BAR].loadFromFile("ui/horibar.png"));
     m[HORI_BAR].setRepeated(true);
-    m[HORI_BAR_MINI].loadFromFile("ui/horibarmini.png");
+    CHECK(m[HORI_BAR_MINI].loadFromFile("ui/horibarmini.png"));
     m[HORI_BAR_MINI].setRepeated(true);
-    m[CORNER_TOP_LEFT].loadFromFile("ui/cornerTOPL.png");
-    m[CORNER_TOP_RIGHT].loadFromFile("ui/cornerTOPR.png");
-    m[CORNER_BOTTOM_RIGHT].loadFromFile("ui/cornerBOTTOMR.png");
+    CHECK(m[CORNER_TOP_LEFT].loadFromFile("ui/cornerTOPL.png"));
+    CHECK(m[CORNER_TOP_RIGHT].loadFromFile("ui/cornerTOPR.png"));
+    CHECK(m[CORNER_BOTTOM_RIGHT].loadFromFile("ui/cornerBOTTOMR.png"));
     m[SCROLL_UP].loadFromFile("ui/up.png");
     m[SCROLL_DOWN].loadFromFile("ui/down.png");
     m[WINDOW_CORNER].loadFromFile("ui/corner1.png");
-    m[WINDOW_VERT_BAR].loadFromFile("ui/vertibarmsg1.png");
+    CHECK(m[WINDOW_VERT_BAR].loadFromFile("ui/vertibarmsg1.png"));
     m[WINDOW_VERT_BAR].setRepeated(true);
-    m[MAIN_MENU_HIGHLIGHT].loadFromFile("ui/menu_highlight.png");
+    CHECK(m[MAIN_MENU_HIGHLIGHT].loadFromFile("ui/menu_highlight.png"));
     m[MAIN_MENU_HIGHLIGHT].setSmooth(true);
   }
   return m[id];
