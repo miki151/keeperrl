@@ -42,7 +42,6 @@
 #include "creature.h"
 #include "test.h"
 #include "pantheon.h"
-#include "script_context.h"
 #include "tile.h"
 #include "clock.h"
 #include "progress_meter.h"
@@ -482,7 +481,6 @@ int main(int argc, char* argv[]) {
   } 
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
-  ScriptContext::init();
   Tile::initialize(renderer, tilesPresent());
   Jukebox jukebox(&options);
   if (tilesPresent())
