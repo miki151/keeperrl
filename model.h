@@ -36,9 +36,23 @@ class Model {
   /** Generates levels and all game entities for a collective game. */
   static Model* collectiveModel(ProgressMeter&, Options*, View* view, const string& worldName);
 
+  enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER };
+
+  class ExitInfo {
+    public:
+    static ExitInfo SaveGame(GameType);
+    static ExitInfo Abandon();
+
+    bool isAbandoned() const;
+    GameType getGameType() const;
+    private:
+    GameType type;
+    bool abandon;
+  };
+
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
-  void update(double totalTime);
+  Optional<ExitInfo> update(double totalTime);
 
   /** Removes creature from current level and puts into the next, according to direction. */
   Vec2 changeLevel(StairDirection direction, StairKey key, Creature*);
@@ -120,6 +134,7 @@ class Model {
   double lastUpdate = -10;
   Options* options;
   string SERIAL(worldName);
+  Optional<ExitInfo> exitInfo;
 };
 
 #endif

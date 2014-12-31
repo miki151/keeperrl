@@ -78,17 +78,6 @@ const vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
   return ret;
 }
 
-struct GameOverException {
-};
-
-enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER };
-
-struct SaveGameException {
-  SaveGameException(GameType t) : type(t) {
-  }
-  GameType type;
-};
-
 void trim(string& s);
 string toUpper(const string& s);
 string toLower(const string& s);

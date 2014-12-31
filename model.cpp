@@ -120,7 +120,7 @@ const Creature* Model::getPlayer() const {
   return nullptr;
 }
 
-void Model::update(double totalTime) {
+Optional<Model::ExitInfo> Model::update(double totalTime) {
   if (addHero) {
     CHECK(playerControl && playerControl->isRetired());
     landHeroPlayer();
@@ -146,29 +146,32 @@ void Model::update(double totalTime) {
         else
           lastUpdate = -10;
         playerControl->processInput(view, input);
+        if (exitInfo)
+          return exitInfo;
       }
     }
     if (currentTime > totalTime)
-      return;
+      return Nothing();
     if (currentTime >= lastTick + 1) {
       MEASURE({ tick(currentTime); }, "ticking time");
     }
     if (!creature->isDead()) {
 #ifndef RELEASE
       CreatureAction::checkUsage(true);
-      try {
 #endif
       creature->makeMove();
 #ifndef RELEASE
-      } catch (GameOverException ex) {
+/*      } catch (GameOverException ex) {
         CreatureAction::checkUsage(false);
         throw ex;
       } catch (SaveGameException ex) {
         CreatureAction::checkUsage(false);
         throw ex;
-      }
+      }*/
       CreatureAction::checkUsage(false);
 #endif
+      if (exitInfo)
+        return exitInfo;
     }
     for (PCollective& c : collectives)
       c->update(creature);
@@ -286,17 +289,23 @@ void Model::exitAction() {
     case RETIRE:
       if (view->yesOrNoPrompt("Are you sure you want to retire your dungeon?")) {
         retireCollective();
-        throw SaveGameException(GameType::RETIRED_KEEPER);
+        exitInfo = ExitInfo::SaveGame(GameType::RETIRED_KEEPER);
+        return;
       }
       break;
     case SAVE:
-      if (!playerControl || playerControl->isRetired())
-        throw SaveGameException(GameType::ADVENTURER);
-      else
-        throw SaveGameException(GameType::KEEPER);
+      if (!playerControl || playerControl->isRetired()) {
+        exitInfo = ExitInfo::SaveGame(GameType::ADVENTURER);
+        return;
+      } else {
+        exitInfo = ExitInfo::SaveGame(GameType::KEEPER);
+        return;
+      }
     case ABANDON:
-      if (view->yesOrNoPrompt("Are you sure you want to abandon your game?"))
-        throw GameOverException();
+      if (view->yesOrNoPrompt("Are you sure you want to abandon your game?")) {
+        exitInfo = ExitInfo::Abandon();
+        return;
+      }
       break;
     case OPTIONS: options->handle(view, OptionSet::GENERAL); break;
     default: break;
