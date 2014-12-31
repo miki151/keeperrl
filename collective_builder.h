@@ -21,7 +21,7 @@ class CollectiveBuilder {
   bool hasCreatures() const;
 
   private:
-  Level* level;
+  Level* level = nullptr;
   struct CreatureInfo {
     Creature* creature;
     EnumSet<MinionTrait> traits;

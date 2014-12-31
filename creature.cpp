@@ -1404,6 +1404,7 @@ void Creature::updateViewObject() {
   else
     modViewObject().removeModifier(ViewObject::Modifier::SLEEPING);
   modViewObject().setAttribute(ViewObject::Attribute::BLEEDING, 1 - health);
+  modViewObject().setCreatureId(getUniqueId());
 }
 
 double Creature::getHealth() const {

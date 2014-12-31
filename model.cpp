@@ -130,7 +130,7 @@ const Creature* Model::getPlayer() const {
   return nullptr;
 }
 
-void Model::update(double totalTime) {
+Optional<Model::ExitInfo> Model::update(double totalTime) {
   if (addHero) {
     CHECK(playerControl && playerControl->isRetired());
     landHeroPlayer();
@@ -138,7 +138,7 @@ void Model::update(double totalTime) {
   }
   int absoluteTime = view->getTimeMilliAbsolute();
   if (playerControl) {
-    if (absoluteTime - lastUpdate > 50) {
+    if (absoluteTime - lastUpdate > 20) {
       playerControl->render(view);
       lastUpdate = absoluteTime;
     }
@@ -156,29 +156,32 @@ void Model::update(double totalTime) {
         else
           lastUpdate = -10;
         playerControl->processInput(view, input);
+        if (exitInfo)
+          return exitInfo;
       }
     }
     if (currentTime > totalTime)
-      return;
+      return Nothing();
     if (currentTime >= lastTick + 1) {
       MEASURE({ tick(currentTime); }, "ticking time");
     }
     if (!creature->isDead()) {
 #ifndef RELEASE
       CreatureAction::checkUsage(true);
-      try {
 #endif
       creature->makeMove();
 #ifndef RELEASE
-      } catch (GameOverException ex) {
+/*      } catch (GameOverException ex) {
         CreatureAction::checkUsage(false);
         throw ex;
       } catch (SaveGameException ex) {
         CreatureAction::checkUsage(false);
         throw ex;
-      }
+      }*/
       CreatureAction::checkUsage(false);
 #endif
+      if (exitInfo)
+        return exitInfo;
     }
     for (PCollective& c : collectives)
       c->update(creature);
@@ -285,6 +288,28 @@ double Model::getTime() const {
   return currentTime;
 }
 
+Model::ExitInfo Model::ExitInfo::saveGame(GameType type) {
+  ExitInfo ret;
+  ret.type = type;
+  ret.abandon = false;
+  return ret;
+}
+
+Model::ExitInfo Model::ExitInfo::abandonGame() {
+  ExitInfo ret;
+  ret.abandon = true;
+  return ret;
+}
+
+bool Model::ExitInfo::isAbandoned() const {
+  return abandon;
+}
+
+Model::GameType Model::ExitInfo::getGameType() const {
+  CHECK(!abandon);
+  return type;
+}
+
 void Model::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
   vector<View::ListElem> elems { "Save the game",
@@ -296,17 +321,23 @@ void Model::exitAction() {
     case RETIRE:
       if (view->yesOrNoPrompt("Are you sure you want to retire your dungeon?")) {
         retireCollective();
-        throw SaveGameException(GameType::RETIRED_KEEPER);
+        exitInfo = ExitInfo::saveGame(GameType::RETIRED_KEEPER);
+        return;
       }
       break;
     case SAVE:
-      if (!playerControl || playerControl->isRetired())
-        throw SaveGameException(GameType::ADVENTURER);
-      else
-        throw SaveGameException(GameType::KEEPER);
+      if (!playerControl || playerControl->isRetired()) {
+        exitInfo = ExitInfo::saveGame(GameType::ADVENTURER);
+        return;
+      } else {
+        exitInfo = ExitInfo::saveGame(GameType::KEEPER);
+        return;
+      }
     case ABANDON:
-      if (view->yesOrNoPrompt("Are you sure you want to abandon your game?"))
-        throw GameOverException();
+      if (view->yesOrNoPrompt("Are you sure you want to abandon your game?")) {
+        exitInfo = ExitInfo::abandonGame();
+        return;
+      }
       break;
     case OPTIONS: options->handle(view, OptionSet::GENERAL); break;
     default: break;
@@ -872,9 +903,7 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << creature->getNameAndTitle() << (killer.empty() ? "" : ", killed by " + killer) << "," << points << std::endl;
   showHighscore(view, true);
-/*  if (view->yesOrNoPrompt("Would you like to see the last messages?"))
-    messageBuffer.showHistory();*/
-  throw GameOverException();
+  exitInfo = ExitInfo::abandonGame();
 }
 
 const string& Model::getWorldName() const {
@@ -898,40 +927,66 @@ void Model::showCredits(View* view) {
   view->presentList("Credits", lines, false);
 }
 
+namespace {
+
+struct HighscoreElem {
+
+  static HighscoreElem parse(const string& s) {
+    vector<string> p = split(s, {','});
+    if (p.size() != 2 && p.size() != 3)
+      return CONSTRUCT(HighscoreElem, c.name = "ERROR: " + s;);
+    HighscoreElem e;
+    e.name = p[0];
+    if (p.size() == 3) {
+      e.killer = p[1];
+      e.points = fromString<int>(p[2]);
+    } else
+      e.points = fromString<int>(p[1]);
+    return e; 
+  }
+
+  View::ElemMod getHighlight(bool highlightLast) {
+    if (highlight || !highlightLast)
+      return View::NORMAL;
+    else
+      return View::INACTIVE;
+  }
+
+  View::ListElem toListElem(bool highlightLast) {
+    if (killer)
+      return View::ListElem(name + ", " + *killer, toString(points) + " points", getHighlight(highlightLast));
+    else
+      return View::ListElem(name, toString(points) + " points", getHighlight(highlightLast));
+  }
+
+  bool highlight = false;
+  string name;
+  Optional<string> killer;
+  int points;
+};
+
+}
+
 void Model::showHighscore(View* view, bool highlightLast) {
-  struct Elem {
-    string name;
-    string killer;
-    int points;
-    bool highlight = false;
-  };
-  vector<Elem> v;
+  vector<HighscoreElem> v;
   ifstream in("highscore.txt");
   while (1) {
     char buf[100];
     in.getline(buf, 100);
     if (!in)
       break;
-    vector<string> p = split(string(buf), {','});
-    CHECK(p.size() == 3) << "Input error " << p;
-    Elem e;
-    e.name = p[0];
-    e.killer = p[1];
-    e.points = fromString<int>(p[2]);
-    v.push_back(e);
+    v.push_back(HighscoreElem::parse(buf));
   }
   if (v.empty())
     return;
   if (highlightLast)
     v.back().highlight = true;
-  sort(v.begin(), v.end(), [] (const Elem& a, const Elem& b) -> bool {
+  sort(v.begin(), v.end(), [] (const HighscoreElem& a, const HighscoreElem& b) -> bool {
       return a.points > b.points;
     });
   vector<View::ListElem> scores;
-  for (Elem& elem : v) {
-    scores.push_back(View::ListElem(elem.name + ", " + elem.killer + "       " +
-        toString(elem.points) + " points",
-        highlightLast && !elem.highlight ? View::INACTIVE : View::NORMAL));
+  for (HighscoreElem& elem : v) {
+    scores.push_back(elem.toListElem(highlightLast));
   }
   view->presentList("High scores", scores, false);
 }

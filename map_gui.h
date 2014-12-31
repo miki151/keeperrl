@@ -19,6 +19,7 @@
 #include "util.h"
 #include "gui_elem.h"
 #include "view_id.h"
+#include "unique_entity.h"
 
 class ViewIndex;
 class MapMemory;
@@ -41,7 +42,7 @@ class MapGui : public GuiElem {
   virtual bool onRightClick(Vec2) override;
   virtual void onMouseMove(Vec2) override;
   virtual void onMouseRelease() override;
-  virtual void onKeyPressed(Event::KeyEvent) override;
+  virtual void onKeyPressed2(Event::KeyEvent) override;
 
   void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement);
   void updateLayout(MapLayout*, Rectangle levelBounds);
@@ -94,6 +95,7 @@ class MapGui : public GuiElem {
     int endTimeReal;
     double startTimeGame;
     double endTimeGame;
+    UniqueEntity<Creature>::Id creatureId;
   };
   Optional<ScreenMovement> screenMovement;
 };

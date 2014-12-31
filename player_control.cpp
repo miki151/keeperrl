@@ -1199,7 +1199,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         rectSelection = Nothing();
         selection = NONE;
         break;
-    case UserInputId::EXIT: model->exitAction(); break;
+    case UserInputId::EXIT: model->exitAction(); return;
     case UserInputId::IDLE: break;
     default: break;
   }
@@ -1578,7 +1578,6 @@ void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* kil
     model->gameOver(victim, getCollective()->getKills().size(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());
   }
-  Creature* c = const_cast<Creature*>(victim);
 }
 
 const Level* PlayerControl::getLevel() const {

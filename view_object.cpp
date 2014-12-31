@@ -27,7 +27,8 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
     & SVAR(modifiers)
     & SVAR(attributes)
     & SVAR(attachmentDir)
-    & SVAR(position);
+    & SVAR(position)
+    & SVAR(creatureId);
   CHECK_SERIAL;
 }
 
@@ -48,6 +49,10 @@ ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
     setAttribute(attr, -1);
 }
 
+void ViewObject::setCreatureId(UniqueEntity<Creature>::Id id) {
+  creatureId = id;
+}
+
 void ViewObject::addMovementInfo(MovementInfo info) {
   movementQueue.add(info);
 }
@@ -60,8 +65,14 @@ ViewObject::MovementInfo ViewObject::getLastMovementInfo() const {
   return movementQueue.getLast();
 }
 
-Vec2 ViewObject::getMovementInfo(double tBegin, double tEnd) const {
-  return movementQueue.getTotalMovement(tBegin, tEnd);
+Vec2 ViewObject::getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creature>::Id controlledId) const {
+  if (!movementQueue.hasAny())
+    return Vec2(0, 0);
+  CHECK(creatureId > 0);
+  if (controlledId > creatureId)
+    return movementQueue.getTotalMovement(tBegin, tEnd);
+  else
+    return movementQueue.getTotalMovement(tBegin - 0.00000001, tEnd);
 }
 
 void ViewObject::MovementQueue::add(MovementInfo info) {
@@ -78,7 +89,7 @@ const ViewObject::MovementInfo& ViewObject::MovementQueue::getLast() const {
 Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin, double tEnd) const {
   Vec2 ret;
   for (int i : Range(min<int>(totalMoves, elems.size())))
-    if (elems[i].tBegin >= tBegin)
+    if (elems[i].tBegin > tBegin)
       ret += elems[i].direction;
   return ret;
 }

@@ -31,7 +31,16 @@ class Options;
 /** See view.h for documentation.*/
 class WindowView: public View {
   public:
-  WindowView(Renderer& r, bool tiles, Options* o); 
+  struct ViewParams {
+    Renderer& renderer;
+    bool useTiles;
+    Options* options;
+  };
+  static View* createDefaultView(ViewParams);
+  static View* createLoggingView(OutputArchive& of, ViewParams);
+  static View* createReplayView(InputArchive& ifs, ViewParams);
+
+  WindowView(ViewParams); 
   virtual void initialize() override;
   virtual void reset() override;
   virtual void displaySplash(const ProgressMeter&, View::SplashType) override;

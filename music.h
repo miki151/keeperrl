@@ -36,6 +36,7 @@ class Jukebox {
 
   private:
   void setCurrent(MusicType);
+  void continueCurrent();
   bool turnedOff();
   MusicType getCurrentType();
   unique_ptr<sf::Music[]> music;

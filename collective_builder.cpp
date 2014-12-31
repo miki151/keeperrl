@@ -22,7 +22,7 @@ CollectiveBuilder& CollectiveBuilder::setCredit(EnumMap<CollectiveResourceId, in
 }
 
 PCollective CollectiveBuilder::build(const string& name) {
-  Collective* c = new Collective(level, config, tribe, credit, name);
+  Collective* c = new Collective(NOTNULL(level), config, tribe, credit, name);
   for (auto& elem : creatures)
     c->addCreature(elem.creature, elem.traits);
   return PCollective(c);

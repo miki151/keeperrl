@@ -79,11 +79,11 @@ static vector<SaveFileInfo> getSaveFiles(const string& suffix) {
   return ret;
 }
 
-static string getSaveSuffix(GameType t) {
+static string getSaveSuffix(Model::GameType t) {
   switch (t) {
-    case GameType::KEEPER: return ".kep";
-    case GameType::ADVENTURER: return ".adv";
-    case GameType::RETIRED_KEEPER: return ".ret";
+    case Model::GameType::KEEPER: return ".kep";
+    case Model::GameType::ADVENTURER: return ".adv";
+    case Model::GameType::RETIRED_KEEPER: return ".ret";
   }
   FAIL << "wef";
   return "";
@@ -122,7 +122,7 @@ string getGameName(const SaveFileInfo& save) {
   return name + " (" + getDateString(save.date) + ")";
 }
 
-static Optional<string> chooseSaveFile(vector<pair<GameType, string>> games, string noSaveMsg, View* view) {
+static Optional<string> chooseSaveFile(vector<pair<Model::GameType, string>> games, string noSaveMsg, View* view) {
   vector<View::ListElem> options;
   bool noGames = true;
   vector<SaveFileInfo> allFiles;
@@ -261,40 +261,33 @@ class MainLoop {
   MainLoop(View* v, Options* o, Jukebox* j, std::atomic<bool>& fin)
       : view(v), options(o), jukebox(j), finished(fin) {}
 
+  void saveUI(PModel model, Model::GameType type) {
+    ProgressMeter meter(1.0 / 62500);
+    Square::progressMeter = &meter;
+    view->displaySplash(meter, View::SAVING);
+    saveGame(std::move(model), getSaveSuffix(type));
+    view->clearSplash();
+    Square::progressMeter = nullptr;
+  }
+
   void playModel(PModel model) {
     view->reset();
     jukebox->update(MusicType::PEACEFUL);
-    try {
-      const int stepTimeMilli = 3;
-      Intervalometer meter(stepTimeMilli);
-      double totTime = model->getTime();
-      while (1) {
-        double gameTimeStep = view->getGameSpeed() / stepTimeMilli;
-        model->update(totTime);
-        jukebox->update(model->getCurrentMusic());
-        if (model->isTurnBased())
-          ++totTime;
-        else
-          totTime += min(1.0, double(meter.getCount()) * gameTimeStep);
+    const int stepTimeMilli = 3;
+    Intervalometer meter(stepTimeMilli);
+    double totTime = model->getTime();
+    while (1) {
+      double gameTimeStep = view->getGameSpeed() / stepTimeMilli;
+      if (auto exitInfo = model->update(totTime)) {
+        if (!exitInfo->isAbandoned())
+          saveUI(std::move(model), exitInfo->getGameType());
+        return;
       }
-    }
-#ifdef RELEASE
-    catch (string ex) {
-      view->presentText("Sorry!", "The game has crashed with the following error:\n \n" + ex +
-          "\n \nIf you would be so kind, please send the file \'crash.log\'"
-          " and a description of the circumstances to rusolis@poczta.fm Thanks!");
-      saveExceptionLine("crash.log", ex);
-    }
-#endif
-    catch (GameOverException ex) {
-    }
-    catch (SaveGameException ex) {
-      ProgressMeter meter(1.0 / 62500);
-      Square::progressMeter = &meter;
-      view->displaySplash(meter, View::SAVING);
-      saveGame(std::move(model), getSaveSuffix(ex.type));
-      view->clearSplash();
-      Square::progressMeter = nullptr;
+      jukebox->update(model->getCurrentMusic());
+      if (model->isTurnBased())
+        ++totTime;
+      else
+        totTime += min(1.0, double(meter.getCount()) * gameTimeStep);
     }
   }
 
@@ -353,7 +346,7 @@ class MainLoop {
     int lastIndex = 0;
     jukebox->toggle();
     while (1) {
-      jukebox->update(MusicType::MAIN);
+ //     jukebox->update(MusicType::MAIN);
       auto choice = view->chooseFromList("", {
           "Play game", "Change settings", "View high scores", "View credits", "Quit"}, lastIndex, View::MAIN_MENU);
       if (!choice)
@@ -407,7 +400,7 @@ class MainLoop {
 
   PModel adventurerGame() {
     Optional<string> savedGame = chooseSaveFile({
-        {GameType::RETIRED_KEEPER, "Retired keeper games:"}},
+        {Model::GameType::RETIRED_KEEPER, "Retired keeper games:"}},
         "No retired games found.", view);
     if (savedGame)
       return loadModel(*savedGame, false);
@@ -417,8 +410,8 @@ class MainLoop {
 
   PModel loadPrevious(bool erase) {
     Optional<string> savedGame = chooseSaveFile({
-        {GameType::KEEPER, "Keeper games:"},
-        {GameType::ADVENTURER, "Adventurer games:"}},
+        {Model::GameType::KEEPER, "Keeper games:"},
+        {Model::GameType::ADVENTURER, "Adventurer games:"}},
         "No save files found.", view);
     if (savedGame)
       return loadModel(*savedGame, erase);
@@ -478,22 +471,14 @@ int main(int argc, char* argv[]) {
     seed = fromString<int>(fname.substr(lognamePref.size()));
     Random.init(seed);
     input.reset(new CompressedInput(fname));
-    view.reset(new WindowView(renderer, tilesPresent(), &options));
-    //view.reset(View::createReplayView(input->getArchive()));
+    view.reset(WindowView::createReplayView(input->getArchive(), {renderer, tilesPresent(), &options}));
   } else {
     Random.init(seed);
-#ifndef RELEASE
     string fname(lognamePref);
     fname += toString(seed);
     output.reset(new CompressedOutput(fname));
     Debug() << "Writing to " << fname;
-    view.reset(new WindowView(renderer, tilesPresent(), &options));
-    //view.reset(View::createLoggingView(output->getArchive()));
-#else
-    view.reset(new WindowView(renderer, tilesPresent(), &options));
-    //view.reset(View::createDefaultView());
-    ofstream("seeds.txt", std::ios_base::app) << seed << endl;
-#endif
+    view.reset(WindowView::createLoggingView(output->getArchive(), {renderer, tilesPresent(), &options}));
   } 
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);

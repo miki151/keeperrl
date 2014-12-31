@@ -336,8 +336,17 @@ GuiBuilder::GameSpeed GuiBuilder::getGameSpeed() const {
   return gameSpeed;
 }
 
-static char getHotkey(GuiBuilder::GameSpeed speed) {
+static char getHotkeyChar(GuiBuilder::GameSpeed speed) {
   return '1' + int(speed);
+}
+
+static Event::KeyEvent getHotkey(GuiBuilder::GameSpeed speed) {
+  switch (speed) {
+    case GuiBuilder::GameSpeed::SLOW: return Event::KeyEvent{Keyboard::Num1};
+    case GuiBuilder::GameSpeed::NORMAL: return Event::KeyEvent{Keyboard::Num2};
+    case GuiBuilder::GameSpeed::FAST: return Event::KeyEvent{Keyboard::Num3};
+    case GuiBuilder::GameSpeed::VERY_FAST: return Event::KeyEvent{Keyboard::Num4};
+  }
 }
 
 void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
@@ -358,7 +367,7 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
     Color color = colors[speed == gameSpeed ? ColorId::GREEN : ColorId::WHITE];
     lines.push_back(GuiElem::stack(GuiElem::horizontalList(makeVec<PGuiElem>(
              GuiElem::label(getGameSpeedName(speed), color),
-             GuiElem::label("'" + string(1, getHotkey(speed)) + "' ", color)), keyMargin, 0),
+             GuiElem::label("'" + string(1, getHotkeyChar(speed)) + "' ", color)), keyMargin, 0),
           GuiElem::button([=] { gameSpeed = speed; gameSpeedDialogOpen = false; Clock::get().cont();},
             getHotkey(speed))));
   }

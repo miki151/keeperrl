@@ -21,7 +21,8 @@
 template <class T>
 class ReplayView : public T {
   public:
-    ReplayView(InputArchive& iff) : input(iff) {
+    template <typename... Args>
+    ReplayView(InputArchive& iff, Args... args) : T(args...),  input(iff) {
     }
 
     virtual void close() override {

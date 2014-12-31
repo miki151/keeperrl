@@ -82,13 +82,17 @@ class View {
         Optional<UserInputId> triggerAction = Nothing());
     ListElem(const string& text = "", ElemMod mod = NORMAL,
         Optional<UserInputId> triggerAction = Nothing());
+    ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
 
     const string& getText() const;
+    const string& getSecondColumn() const;
     ElemMod getMod() const;
     Optional<UserInputId> getAction() const;
+    void setMod(ElemMod);
 
     private:
     string text;
+    string secondColumn;
     ElemMod mod;
     Optional<UserInputId> action;
   };
@@ -149,15 +153,6 @@ class View {
 
   /** Returns whether the real time clock is currently stopped.*/
   virtual bool isClockStopped() = 0;
-
-  /** Returns a default View.*/
-  static View* createDefaultView();
-
-  /** Returns a default View that additionally logs all player actions into a file.*/
-  static View* createLoggingView(OutputArchive& of);
-
-  /** Returns a default View that reads all player actions from a file instead of the keyboard.*/
-  static View* createReplayView(InputArchive& ifs);
 };
 
 enum class AnimationId {

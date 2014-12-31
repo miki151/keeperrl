@@ -37,8 +37,7 @@ GuiElem::~GuiElem() {
 
 class Button : public GuiElem {
   public:
-  Button(function<void()> f, char key) : fun(f), hotkey(key) {}
- // Button(function<void()> f, Event::KeyEvent key) : fun(f), hotkey2(key) {}
+  Button(function<void()> f) : fun(f) {}
 
   virtual bool onLeftClick(Vec2 pos) override {
     if (pos.inRectangle(getBounds())) {
@@ -48,29 +47,43 @@ class Button : public GuiElem {
     return false;
   }
 
+  protected:
+  function<void()> fun;
+};
+
+class ButtonChar : public Button {
+  public:
+  ButtonChar(function<void()> f, char key) : Button(f), hotkey(key) {}
+
   virtual void onKeyPressed(char c) override {
     if (hotkey == c)
       fun();
   }
 
-/*  virtual void onKeyPressed(Event::KeyEvent key) override {
-    if (hotkey2.code == key.code && hotkey2.shift == key.shift)
+  private:
+  char hotkey;
+};
+
+class ButtonKey : public Button {
+  public:
+  ButtonKey(function<void()> f, Event::KeyEvent key) : Button(f), hotkey(key) {}
+
+  virtual void onKeyPressed2(Event::KeyEvent key) override {
+    if (hotkey.code == key.code && hotkey.shift == key.shift)
       fun();
-  }*/
+  }
 
   private:
-  function<void()> fun;
-  char hotkey;
-//  Event::KeyEvent hotkey2;
+  Event::KeyEvent hotkey;
 };
 
 PGuiElem GuiElem::button(function<void()> fun, char hotkey) {
-  return PGuiElem(new Button(fun, hotkey));
+  return PGuiElem(new ButtonChar(fun, hotkey));
 }
 
-/*PGuiElem GuiElem::button(function<void()> fun, Event::KeyEvent hotkey) {
-  return PGuiElem(new Button(fun, hotkey));
-}*/
+PGuiElem GuiElem::button(function<void()> fun, Event::KeyEvent hotkey) {
+  return PGuiElem(new ButtonKey(fun, hotkey));
+}
 
 class DrawCustom : public GuiElem {
   public:
@@ -293,9 +306,9 @@ class GuiLayout : public GuiElem {
       elems[i]->onKeyPressed(key);
   }
 
-  virtual void onKeyPressed(Event::KeyEvent key) override {
+  virtual void onKeyPressed2(Event::KeyEvent key) override {
     for (int i : All(elems))
-      elems[i]->onKeyPressed(key);
+      elems[i]->onKeyPressed2(key);
   }
 
   virtual Rectangle getElemBounds(int num) {
@@ -792,8 +805,8 @@ class Scrollable : public GuiElem {
     content->onKeyPressed(c);
   }
 
-  virtual void onKeyPressed(Event::KeyEvent key) override {
-    content->onKeyPressed(key);
+  virtual void onKeyPressed2(Event::KeyEvent key) override {
+    content->onKeyPressed2(key);
   }
 
   private:
@@ -977,13 +990,7 @@ PGuiElem GuiElem::scrollable(PGuiElem content, int contentHeight, int* scrollPos
   int scrollBarMargin = get(SCROLL_UP).getSize().y;
   PGuiElem bar(new ScrollBar(
         std::move(getScrollButton()), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight));
-  PGuiElem barButtons = GuiElem::stack(makeVec<PGuiElem>(std::move(getScrollbar()),
-    GuiElem::margin(GuiElem::empty(),
-      GuiElem::button([scrollPos, list] {*scrollPos = min(list->getSize() - 1, *scrollPos + 1); }),
-      scrollBarMargin, TOP),
-    GuiElem::margin(GuiElem::empty(),
-      GuiElem::button([scrollPos] {*scrollPos = max(0, *scrollPos - 1); }),
-      scrollBarMargin, BOTTOM)));
+  PGuiElem barButtons = getScrollbar();
   int hMargin = 30;
   int vMargin = 0;
   barButtons = conditional(std::move(barButtons), [=] (GuiElem* e) {

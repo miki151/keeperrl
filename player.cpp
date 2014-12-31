@@ -718,7 +718,7 @@ void Player::makeMove() {
       break;
     case UserInputId::CAST_SPELL: spellAction(); break;
     case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(this); break;
-    case UserInputId::EXIT: model->exitAction(); break;
+    case UserInputId::EXIT: model->exitAction(); return;
     default: break;
   }
   if (getCreature()->isAffected(LastingEffect::SLEEP)) {
@@ -860,7 +860,8 @@ Optional<Vec2> Player::getPosition(bool) const {
 
 Optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
   if (previousTimePos.pos.x > -1)
-    return MovementInfo({previousTimePos.pos, currentTimePos.pos, previousTimePos.time});
+    return MovementInfo({previousTimePos.pos, currentTimePos.pos, previousTimePos.time,
+        getCreature()->getUniqueId()});
   else
     return Nothing();
 }

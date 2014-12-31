@@ -29,7 +29,7 @@ class GuiElem {
   virtual void onMouseRelease() {}
   virtual void onRefreshBounds() {}
   virtual void onKeyPressed(char) {}
-  virtual void onKeyPressed(Event::KeyEvent) {}
+  virtual void onKeyPressed2(Event::KeyEvent) {}
 
   void setBounds(Rectangle);
   Rectangle getBounds();

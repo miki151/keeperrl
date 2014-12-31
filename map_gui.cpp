@@ -158,7 +158,7 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
   }
 }
 
-void MapGui::onKeyPressed(Event::KeyEvent key) {
+void MapGui::onKeyPressed2(Event::KeyEvent key) {
   const double shiftScroll = 10;
   const double normalScroll = 2.5;
   switch (key.code) {
@@ -302,7 +302,8 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
       curTimeReal <= screenMovement->endTimeReal) {
     state = (double(curTimeReal) - screenMovement->startTimeReal) /
           (screenMovement->endTimeReal - screenMovement->startTimeReal);
-    dir = object.getMovementInfo(screenMovement->startTimeGame, screenMovement->endTimeGame);
+    dir = object.getMovementInfo(screenMovement->startTimeGame, screenMovement->endTimeGame,
+        screenMovement->creatureId);
   } else if (object.hasAnyMovementInfo() && !screenMovement) {
     ViewObject::MovementInfo info = object.getLastMovementInfo();
     dir = info.direction;
@@ -428,10 +429,12 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
         Clock::get().getRealMillis(),
         Clock::get().getRealMillis() + 100,
         movement->prevTime,
-        currentTimeGame
+        currentTimeGame,
+        movement->creatureId
       };
     }
-  }
+  } else
+    screenMovement = Nothing();
   connectionMap.clear();
   shadowed.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds()))

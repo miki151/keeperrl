@@ -47,17 +47,17 @@ using sf::Texture;
 using sf::Keyboard;
 using sf::Mouse;
 
-/*View* View::createDefaultView() {
-  return new WindowView();
+View* WindowView::createDefaultView(ViewParams params) {
+  return new WindowView(params);
 }
 
-View* View::createLoggingView(OutputArchive& of) {
-  return new LoggingView<WindowView>(of);
+View* WindowView::createLoggingView(OutputArchive& of, ViewParams params) {
+  return new LoggingView<WindowView>(of, params);
 }
 
-View* View::createReplayView(InputArchive& ifs) {
-  return new ReplayView<WindowView>(ifs);
-}*/
+View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
+  return new ReplayView<WindowView>(ifs, params);
+}
 
 class TempClockPause {
   public:
@@ -107,8 +107,8 @@ void WindowView::resetMapBounds() {
   minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
 }
 
-WindowView::WindowView(Renderer& r, bool tiles, Options* o) : renderer(r), useTiles(tiles), options(o),
-    guiBuilder(renderer, {
+WindowView::WindowView(ViewParams params) : renderer(params.renderer), useTiles(params.useTiles),
+    options(params.options), guiBuilder(renderer, {
         [this](UserInput input) { inputQueue.push(input);},
         [this](const string& s) { mapGui->setHint(s);},
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);}}) {}
@@ -422,7 +422,6 @@ void WindowView::updateView(const CreatureView* collective) {
   updateMinimap(collective);
   gameReady = true;
   switchTiles();
-  const Level* level = collective->getLevel();
   collective->refreshGameInfo(gameInfo);
   mapGui->setSpriteMode(currentTileLayout.sprites);
   mapGui->updateObjects(collective, mapLayout, options->getBoolValue(OptionId::SMOOTH_MOVEMENT));
@@ -716,6 +715,7 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
             GuiElem::label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss")))), 0, 5, 0, 0);
   if (menuType != MAIN_MENU) {
     stuff = GuiElem::scrollable(std::move(stuff), contentHeight, scrollPos);
+    stuff = GuiElem::margins(std::move(stuff), 0, 15, 0, 0);
     stuff = GuiElem::margin(GuiElem::centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
         std::move(stuff), 30, GuiElem::BOTTOM);
     stuff = GuiElem::window(std::move(stuff));
@@ -792,13 +792,10 @@ void WindowView::presentText(const string& title, const string& text) {
 
 void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu,
     Optional<UserInputId> exitAction) {
-  vector<ListElem> conv;
-  for (ListElem e : options) {
-    View::ElemMod mod = e.getMod();
-    if (mod == View::NORMAL)
-      mod = View::TEXT;
-    conv.emplace_back(e.getText(), mod, e.getAction());
-  }
+  vector<ListElem> conv(options);
+  for (ListElem& e : conv)
+    if (e.getMod() == View::NORMAL)
+      e.setMod(View::TEXT);
   int scrollPos = scrollDown ? options.size() - 1 : 0;
   chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, Nothing(), {});
 }
@@ -837,6 +834,10 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
     heights.push_back(lineHeight / 2);
   }
   int numActive = 0;
+  int secColumn = 300;
+  for (auto& elem : options)
+    secColumn = max(secColumn, renderer.getTextLength(elem.getText()) + 50);
+  secColumn = min(secColumn, getMenuPosition(menuType).getKX() - 100);
   for (int i : All(options)) {
     Color color;
     switch (options[i].getMod()) {
@@ -852,6 +853,9 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       line = GuiElem::verticalList(std::move(label1), lineHeight, 0);
     else
       line = std::move(getOnlyElement(label1));
+    if (!options[i].getSecondColumn().empty())
+      line = GuiElem::horizontalList(makeVec<PGuiElem>(std::move(line),
+            GuiElem::label(options[i].getSecondColumn())), secColumn, 0);
     lines.push_back(GuiElem::margins(std::move(line), 10, 3, 10, 0));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = GuiElem::stack(makeVec<PGuiElem>(
@@ -993,7 +997,7 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       break;
     case Event::KeyPressed:
       for (GuiElem* elem : guiElems)
-        elem->onKeyPressed(event.key);
+        elem->onKeyPressed2(event.key);
       break;
     case Event::TextEntered:
       if (event.text.unicode < 128) {
