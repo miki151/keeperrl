@@ -130,7 +130,7 @@ const Creature* Model::getPlayer() const {
   return nullptr;
 }
 
-void Model::update(double totalTime) {
+Optional<Model::ExitInfo> Model::update(double totalTime) {
   if (addHero) {
     CHECK(playerControl && playerControl->isRetired());
     landHeroPlayer();
@@ -156,29 +156,32 @@ void Model::update(double totalTime) {
         else
           lastUpdate = -10;
         playerControl->processInput(view, input);
+        if (exitInfo)
+          return exitInfo;
       }
     }
     if (currentTime > totalTime)
-      return;
+      return Nothing();
     if (currentTime >= lastTick + 1) {
       MEASURE({ tick(currentTime); }, "ticking time");
     }
     if (!creature->isDead()) {
 #ifndef RELEASE
       CreatureAction::checkUsage(true);
-      try {
 #endif
       creature->makeMove();
 #ifndef RELEASE
-      } catch (GameOverException ex) {
+/*      } catch (GameOverException ex) {
         CreatureAction::checkUsage(false);
         throw ex;
       } catch (SaveGameException ex) {
         CreatureAction::checkUsage(false);
         throw ex;
-      }
+      }*/
       CreatureAction::checkUsage(false);
 #endif
+      if (exitInfo)
+        return exitInfo;
     }
     for (PCollective& c : collectives)
       c->update(creature);
@@ -285,6 +288,28 @@ double Model::getTime() const {
   return currentTime;
 }
 
+Model::ExitInfo Model::ExitInfo::saveGame(GameType type) {
+  ExitInfo ret;
+  ret.type = type;
+  ret.abandon = false;
+  return ret;
+}
+
+Model::ExitInfo Model::ExitInfo::abandonGame() {
+  ExitInfo ret;
+  ret.abandon = true;
+  return ret;
+}
+
+bool Model::ExitInfo::isAbandoned() const {
+  return abandon;
+}
+
+Model::GameType Model::ExitInfo::getGameType() const {
+  CHECK(!abandon);
+  return type;
+}
+
 void Model::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
   vector<View::ListElem> elems { "Save the game",
@@ -296,17 +321,23 @@ void Model::exitAction() {
     case RETIRE:
       if (view->yesOrNoPrompt("Are you sure you want to retire your dungeon?")) {
         retireCollective();
-        throw SaveGameException(GameType::RETIRED_KEEPER);
+        exitInfo = ExitInfo::saveGame(GameType::RETIRED_KEEPER);
+        return;
       }
       break;
     case SAVE:
-      if (!playerControl || playerControl->isRetired())
-        throw SaveGameException(GameType::ADVENTURER);
-      else
-        throw SaveGameException(GameType::KEEPER);
+      if (!playerControl || playerControl->isRetired()) {
+        exitInfo = ExitInfo::saveGame(GameType::ADVENTURER);
+        return;
+      } else {
+        exitInfo = ExitInfo::saveGame(GameType::KEEPER);
+        return;
+      }
     case ABANDON:
-      if (view->yesOrNoPrompt("Are you sure you want to abandon your game?"))
-        throw GameOverException();
+      if (view->yesOrNoPrompt("Are you sure you want to abandon your game?")) {
+        exitInfo = ExitInfo::abandonGame();
+        return;
+      }
       break;
     case OPTIONS: options->handle(view, OptionSet::GENERAL); break;
     default: break;
@@ -872,9 +903,7 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << creature->getNameAndTitle() << (killer.empty() ? "" : ", killed by " + killer) << "," << points << std::endl;
   showHighscore(view, true);
-/*  if (view->yesOrNoPrompt("Would you like to see the last messages?"))
-    messageBuffer.showHistory();*/
-  throw GameOverException();
+  exitInfo = ExitInfo::abandonGame();
 }
 
 const string& Model::getWorldName() const {
