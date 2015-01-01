@@ -305,7 +305,7 @@ void WindowView::rebuildGui() {
   CHECK(currentThreadId() != renderThreadId);
   tempGuiElems.clear();
   int bottomOffset = 15;
-  int leftMargin = 10;
+  int leftMargin = 20;
   int rightMargin = 20;
   int sideOffset = 10;
   int rightWindowHeight = 80;
@@ -323,8 +323,8 @@ void WindowView::rebuildGui() {
   guiBuilder.drawGameSpeedDialog(overlays);
   for (auto& overlay : overlays) {
     Vec2 pos;
-    int topMargin = 10;
-    int bottomMargin = 10;
+    int topMargin = 20;
+    int bottomMargin = 20;
     int width = leftMargin + rightMargin + overlay.size.x;
     int height = overlay.size.y + bottomMargin + topMargin;
     switch (overlay.alignment) {
@@ -343,7 +343,7 @@ void WindowView::rebuildGui() {
           pos = Vec2(0, 0);
           break;
       case GuiBuilder::OverlayInfo::GAME_SPEED:
-          pos = Vec2(renderer.getWidth() - overlay.size.x - 80, renderer.getHeight() - overlay.size.y - 67);
+          pos = Vec2(renderer.getWidth() - overlay.size.x - 90, renderer.getHeight() - overlay.size.y - 90);
           break;
       case GuiBuilder::OverlayInfo::INVISIBLE:
           pos = Vec2(renderer.getWidth(), 0);
@@ -352,11 +352,11 @@ void WindowView::rebuildGui() {
     }
     PGuiElem elem = GuiElem::margins(std::move(overlay.elem), leftMargin, topMargin, rightMargin, bottomMargin);
     switch (overlay.alignment) {
-      case GuiBuilder::OverlayInfo::GAME_SPEED:
-        elem = GuiElem::background(std::move(elem), colors[ColorId::BLACK]);
+      case GuiBuilder::OverlayInfo::MESSAGES:
+        elem = GuiElem::translucentBackground(std::move(elem));
         break;
       default:
-        elem = GuiElem::translucentBackground(std::move(elem));
+        elem = GuiElem::miniWindow(std::move(elem));
         break;
     }
     tempGuiElems.push_back(std::move(elem));
