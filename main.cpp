@@ -343,7 +343,8 @@ class MainLoop {
           "please visit keeperrl.com.\n \nYou can also get it by donating to any wildlife charity."
           "More information on the website.");
     int lastIndex = 0;
-    jukebox->toggle();
+    if (options->getBoolValue(OptionId::MUSIC))
+      jukebox->toggle();
     while (1) {
  //     jukebox->update(MusicType::MAIN);
       auto choice = view->chooseFromList("", {
