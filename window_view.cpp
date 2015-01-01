@@ -422,6 +422,7 @@ void WindowView::updateView(const CreatureView* collective) {
   RenderLock lock(renderMutex);
   updateMinimap(collective);
   gameReady = true;
+  uiLock = false;
   switchTiles();
   collective->refreshGameInfo(gameInfo);
   mapGui->setSpriteMode(currentTileLayout.sprites);
@@ -453,14 +454,13 @@ void WindowView::refreshView() {
     CHECK(currentThreadId() == renderThreadId);
     if (gameReady)
       processEvents();
-    if (renderDialog) {
+    if (renderDialog)
       renderDialog();
-    }
+    if (uiLock && !renderDialog)
+      return;
   }
-  if (!renderDialog && gameReady) {
-    if (gameReady)
-      refreshScreen(true);
-  }
+  if (!renderDialog && gameReady)
+    refreshScreen(true);
 }
 
 void WindowView::drawMap() {
@@ -689,6 +689,7 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   if (options.size() == 0)
     return Nothing();
   RenderLock lock(renderMutex);
+  uiLock = true;
   TempClockPause pause(clock);
   SyncQueue<Optional<int>> returnQueue;
   addReturnDialog<Optional<int>>(returnQueue, [=] ()-> Optional<int> {

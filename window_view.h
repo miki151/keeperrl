@@ -142,6 +142,7 @@ class WindowView: public View {
   SyncQueue<UserInput> inputQueue;
 
   bool gameReady = false;
+  bool uiLock = false;
   std::atomic<bool> refreshInput;
 
   typedef std::unique_lock<std::recursive_mutex> RenderLock;
