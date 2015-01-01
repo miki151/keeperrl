@@ -86,8 +86,10 @@ class GuiElem {
   static PGuiElem mainMenuHighlight();
   static PGuiElem insideBackground(PGuiElem content);
   static PGuiElem window(PGuiElem content);
+  static PGuiElem miniWindow(PGuiElem content);
   static PGuiElem mapWindow(PGuiElem content);
   static PGuiElem border(PGuiElem content);
+  static PGuiElem miniBorder(PGuiElem content);
   static PGuiElem border2(PGuiElem content);
   static PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
   static PGuiElem invisible(PGuiElem content);

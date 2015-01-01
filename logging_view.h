@@ -24,6 +24,7 @@ enum class LoggingToken {
   CHOOSE_DIRECTION,
   YES_OR_NO_PROMPT,
   GET_NUMBER,
+  GET_GAME_SPEED,
 };
 
 template <class T>
@@ -41,6 +42,13 @@ class LoggingView : public T {
     virtual int getTimeMilli() override {
       int res = T::getTimeMilli();
       auto token = LoggingToken::GET_TIME;
+      output << token << res;
+      return res;
+    }
+
+    virtual double getGameSpeed() override {
+      double res = T::getGameSpeed();
+      auto token = LoggingToken::GET_GAME_SPEED;
       output << token << res;
       return res;
     }

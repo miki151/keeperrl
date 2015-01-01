@@ -50,6 +50,13 @@ class ReplayView : public T {
       return time;
     }
 
+    virtual double getGameSpeed() override {
+      checkMethod(LoggingToken::GET_GAME_SPEED);
+      double s;
+      input >> s;
+      return s;
+    }
+
     virtual void presentText(const string& title, const string& text) override {
       return;
     }

@@ -818,10 +818,6 @@ class Scrollable : public GuiElem {
 enum TexId {
   SCROLLBAR,
   SCROLL_BUTTON,
-  BACKGROUND_TOP_CORNER,
-  BACKGROUND_BOTTOM_CORNER,
-  BACKGROUND_TOP,
-  BACKGROUND_LEFT,
   BACKGROUND_PATTERN,
   BORDER_TOP_LEFT,
   BORDER_TOP_RIGHT,
@@ -838,6 +834,8 @@ enum TexId {
   VERT_BAR,
   HORI_BAR,
   HORI_BAR_MINI,
+  VERT_BAR_MINI,
+  CORNER_MINI,
   CORNER_TOP_LEFT,
   CORNER_TOP_RIGHT,
   CORNER_BOTTOM_RIGHT,
@@ -867,10 +865,6 @@ Color GuiElem::translucentBgColor;
 Texture& get(TexId id) {
   static map<TexId, Texture> m;
   if (m.empty()) {
-    CHECK(m[BACKGROUND_TOP_CORNER].loadFromFile("frame.png", sf::IntRect(0, 128, backgroundSize, backgroundSize)));
-    CHECK(m[BACKGROUND_BOTTOM_CORNER].loadFromFile("frame.png", sf::IntRect(0, 128, backgroundSize, backgroundSize)));
-    CHECK(m[BACKGROUND_LEFT].loadFromFile("frame.png", sf::IntRect(0, 128 + backgroundSize - 1, backgroundSize, 1)));
-    CHECK(m[BACKGROUND_TOP].loadFromFile("frame.png", sf::IntRect(127, 128, 1, backgroundSize)));
     CHECK(m[SCROLLBAR].loadFromFile("ui/scrollbar.png"));
     m[SCROLLBAR].setRepeated(true);
     CHECK(m[SCROLL_BUTTON].loadFromFile("ui/scrollmark.png"));
@@ -907,9 +901,12 @@ Texture& get(TexId id) {
     CHECK(m[CORNER_TOP_LEFT].loadFromFile("ui/cornerTOPL.png"));
     CHECK(m[CORNER_TOP_RIGHT].loadFromFile("ui/cornerTOPR.png"));
     CHECK(m[CORNER_BOTTOM_RIGHT].loadFromFile("ui/cornerBOTTOMR.png"));
-    m[SCROLL_UP].loadFromFile("ui/up.png");
-    m[SCROLL_DOWN].loadFromFile("ui/down.png");
-    m[WINDOW_CORNER].loadFromFile("ui/corner1.png");
+    CHECK(m[VERT_BAR_MINI].loadFromFile("ui/vertbarmini.png"));
+    m[VERT_BAR_MINI].setRepeated(true);
+    CHECK(m[CORNER_MINI].loadFromFile("ui/cornersmall.png"));
+    CHECK(m[SCROLL_UP].loadFromFile("ui/up.png"));
+    CHECK(m[SCROLL_DOWN].loadFromFile("ui/down.png"));
+    CHECK(m[WINDOW_CORNER].loadFromFile("ui/corner1.png"));
     CHECK(m[WINDOW_VERT_BAR].loadFromFile("ui/vertibarmsg1.png"));
     m[WINDOW_VERT_BAR].setRepeated(true);
     CHECK(m[MAIN_MENU_HIGHLIGHT].loadFromFile("ui/menu_highlight.png"));
@@ -1026,19 +1023,16 @@ PGuiElem GuiElem::border2(PGuiElem content) {
         sprite(get(BORDER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT, false, false, Vec2(0, 0), alpha)));
 }
 
-PGuiElem GuiElem::insideBackground(PGuiElem content) {
-  int cornerSide = get(BACKGROUND_TOP_CORNER).getSize().x;
-  int cornerDown = get(BACKGROUND_TOP_CORNER).getSize().y;
-  return stack(makeVec<PGuiElem>(
-        std::move(content),
-        margins(sprite(get(BACKGROUND_TOP), Alignment::TOP), cornerSide, 0, cornerSide, 0),
-        margins(sprite(get(BACKGROUND_TOP), Alignment::BOTTOM, true), cornerSide, 0, cornerSide, 0),
-        margins(sprite(get(BACKGROUND_LEFT), Alignment::LEFT), 0, cornerSide, 0, cornerSide),
-        margins(sprite(get(BACKGROUND_LEFT), Alignment::RIGHT, false, true), 0, cornerSide, 0, cornerSide),
-        sprite(get(BACKGROUND_TOP_CORNER), Alignment::TOP_LEFT),
-        sprite(get(BACKGROUND_TOP_CORNER), Alignment::TOP_RIGHT, false, true),
-        sprite(get(BACKGROUND_BOTTOM_CORNER), Alignment::BOTTOM_LEFT, true),
-        sprite(get(BACKGROUND_BOTTOM_CORNER), Alignment::BOTTOM_RIGHT, true, true)));
+PGuiElem GuiElem::miniBorder(PGuiElem content) {
+  return stack(makeVec<PGuiElem>(std::move(content),
+        sprite(get(HORI_BAR_MINI), Alignment::BOTTOM, true, false),
+        sprite(get(HORI_BAR_MINI), Alignment::TOP, false, false),
+        sprite(get(VERT_BAR_MINI), Alignment::RIGHT, false, true),
+        sprite(get(VERT_BAR_MINI), Alignment::LEFT, false, false),
+        sprite(get(CORNER_MINI), Alignment::BOTTOM_RIGHT, true, true),
+        sprite(get(CORNER_MINI), Alignment::BOTTOM_LEFT, true, false),
+        sprite(get(CORNER_MINI), Alignment::TOP_RIGHT, false, true),
+        sprite(get(CORNER_MINI), Alignment::TOP_LEFT, false, false)));
 }
 
 PGuiElem GuiElem::border(PGuiElem content) {
@@ -1053,11 +1047,18 @@ PGuiElem GuiElem::border(PGuiElem content) {
         sprite(get(WINDOW_CORNER), Alignment::TOP_LEFT, false, false, Vec2(-6, -2))));
 }
 
+PGuiElem GuiElem::miniWindow(PGuiElem content) {
+  return miniBorder(stack(makeVec<PGuiElem>(
+        rectangle(colors[ColorId::BLACK]),
+        background(background1),
+        std::move(content))));
+}
+
 PGuiElem GuiElem::window(PGuiElem content) {
   return border(stack(makeVec<PGuiElem>(
         rectangle(colors[ColorId::BLACK]),
-        insideBackground(stack(background(background1),
-        margins(std::move(content), 20, 35, 30, 30))))));
+        background(background1),
+        margins(std::move(content), 20, 35, 30, 30))));
 }
 
 PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {

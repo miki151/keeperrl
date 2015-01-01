@@ -63,7 +63,8 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s
   }
   t.setPosition(x + ox, y + oy);
   t.setColor(color);
-  display->draw(t);
+  renderList.push_back(
+      [this, t] { display->draw(t); });
 }
 
 String Renderer::toUnicode(const string& s) {
@@ -105,7 +106,8 @@ void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, doubl
   if (scale != 1) {
     s.setScale(scale, scale);
   }
-  display->draw(s);
+  renderList.push_back(
+      [this, s] { display->draw(s); });
 }
 
 void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, Optional<Color> color,
@@ -128,7 +130,8 @@ void Renderer::drawSprite(int x, int y, int px, int py, int w, int h, const Text
     s.setColor(*color);
   if (dw != -1)
     s.setScale(double(dw) / w, double(dh) / h);
-  display->draw(s);
+  renderList.push_back(
+      [this, s] { display->draw(s); });
 }
 
 void Renderer::drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline) {
@@ -139,7 +142,8 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, Optional<Col
     r.setOutlineThickness(-2);
     r.setOutlineColor(*outline);
   }
-  display->draw(r);
+  renderList.push_back(
+      [this, r] { display->draw(r); });
 }
 
 void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline) {
@@ -286,6 +290,9 @@ bool Renderer::loadTilesFromFile(const string& path, Vec2 size) {
 }
 
 void Renderer::drawAndClearBuffer() {
+  for (auto& elem : renderList)
+    elem();
+  renderList.clear();
   display->display();
   display->clear(Color(0, 0, 0));
 }

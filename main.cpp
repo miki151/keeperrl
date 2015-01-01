@@ -210,7 +210,6 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
   initialized = true;
   while (!finished) {
     view->refreshView();
-    sf::sleep(sf::milliseconds(1));
   }
 }
 bool tilesPresent() {
@@ -286,7 +285,7 @@ class MainLoop {
       if (model->isTurnBased())
         ++totTime;
       else
-        totTime += min(1.0, double(meter.getCount()) * gameTimeStep);
+        totTime += min(1.0, double(meter.getCount(view->getTimeMilli())) * gameTimeStep);
     }
   }
 
@@ -343,7 +342,8 @@ class MainLoop {
           "please visit keeperrl.com.\n \nYou can also get it by donating to any wildlife charity."
           "More information on the website.");
     int lastIndex = 0;
-    jukebox->toggle();
+    if (options->getBoolValue(OptionId::MUSIC))
+      jukebox->toggle();
     while (1) {
  //     jukebox->update(MusicType::MAIN);
       auto choice = view->chooseFromList("", {
@@ -458,7 +458,7 @@ int main(int argc, char* argv[]) {
   Debug::init();
   Options options("options.txt");
   Renderer renderer("KeeperRL", Vec2(36, 36));
-  Clock::set(new Clock());
+  Clock clock;
   if (tilesPresent())
     initializeRendererTiles(renderer);
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
@@ -470,14 +470,14 @@ int main(int argc, char* argv[]) {
     seed = fromString<int>(fname.substr(lognamePref.size()));
     Random.init(seed);
     input.reset(new CompressedInput(fname));
-    view.reset(WindowView::createReplayView(input->getArchive(), {renderer, tilesPresent(), &options}));
+    view.reset(WindowView::createReplayView(input->getArchive(), {renderer, tilesPresent(), &options, &clock}));
   } else {
     Random.init(seed);
     string fname(lognamePref);
     fname += toString(seed);
     output.reset(new CompressedOutput(fname));
     Debug() << "Writing to " << fname;
-    view.reset(WindowView::createLoggingView(output->getArchive(), {renderer, tilesPresent(), &options}));
+    view.reset(WindowView::createLoggingView(output->getArchive(), {renderer, tilesPresent(), &options, &clock}));
   } 
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);

@@ -150,6 +150,7 @@ class Renderer {
   bool monkey = false;
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
+  vector<function<void()>> renderList;
 };
 
 #endif

@@ -36,8 +36,8 @@ using sf::Texture;
 using sf::Keyboard;
 using sf::Mouse;
 
-GuiBuilder::GuiBuilder(Renderer& r, Callbacks call)
-    : renderer(r), callbacks(call), gameSpeed(GameSpeed::NORMAL) {
+GuiBuilder::GuiBuilder(Renderer& r, Clock* c, Callbacks call)
+    : renderer(r), clock(c), callbacks(call), gameSpeed(GameSpeed::NORMAL) {
 }
 
 void GuiBuilder::reset() {
@@ -277,7 +277,7 @@ string GuiBuilder::getGameSpeedName(GuiBuilder::GameSpeed gameSpeed) const {
 }
 
 string GuiBuilder::getCurrentGameSpeedName() const {
-  if (Clock::get().isPaused())
+  if (clock->isPaused())
     return "paused";
   else
     return getGameSpeedName(gameSpeed);
@@ -322,7 +322,7 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       GuiElem::horizontalList(makeVec<PGuiElem>(
           GuiElem::label("speed:"),
           GuiElem::label(getCurrentGameSpeedName(),
-              colors[Clock::get().isPaused() ? ColorId::RED : ColorId::WHITE])), 60, 0),
+              colors[clock->isPaused() ? ColorId::RED : ColorId::WHITE])), 60, 0),
       GuiElem::button([&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })));
   bottomLine.push_back(
       GuiElem::label("FPS " + toString(fpsCounter.getFps()), colors[ColorId::WHITE]));
@@ -351,16 +351,16 @@ static Event::KeyEvent getHotkey(GuiBuilder::GameSpeed speed) {
 
 void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
   vector<PGuiElem> lines;
-  int keyMargin = 80;
+  int keyMargin = 95;
   lines.push_back(GuiElem::stack(
         GuiElem::horizontalList(makeVec<PGuiElem>(
             GuiElem::label("pause"),
             GuiElem::label("[space]")), keyMargin, 0),
         GuiElem::button([=] {
-            if (Clock::get().isPaused()) 
-              Clock::get().cont();
+            if (clock->isPaused()) 
+              clock->cont();
             else
-              Clock::get().pause();
+              clock->pause();
             gameSpeedDialogOpen = false;
             }, ' ')));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
@@ -368,7 +368,7 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
     lines.push_back(GuiElem::stack(GuiElem::horizontalList(makeVec<PGuiElem>(
              GuiElem::label(getGameSpeedName(speed), color),
              GuiElem::label("'" + string(1, getHotkeyChar(speed)) + "' ", color)), keyMargin, 0),
-          GuiElem::button([=] { gameSpeed = speed; gameSpeedDialogOpen = false; Clock::get().cont();},
+          GuiElem::button([=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();},
             getHotkey(speed))));
   }
   reverse(lines.begin(), lines.end());

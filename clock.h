@@ -1,9 +1,9 @@
 #ifndef _CLOCK_H
 #define _CLOCK_H
 
-#include "singleton.h"
+#include <SFML/Graphics.hpp>
 
-class Clock : public Singleton1<Clock> {
+class Clock {
   public:
   int getMillis();
   void setMillis(int time);
@@ -15,12 +15,13 @@ class Clock : public Singleton1<Clock> {
   private:
   int pausedTime = 0;
   int lastPause = -1;
+  sf::Clock sfClock;
 };
 
 class Intervalometer {
   public:
   Intervalometer(int frequencyMillis);
-  int getCount();
+  int getCount(int currentTimeMillis);
 
   private:
   int frequency;
