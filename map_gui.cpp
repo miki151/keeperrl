@@ -29,7 +29,7 @@
 
 using sf::Keyboard;
 
-MapGui::MapGui(Callbacks call) : objects(Level::getMaxBounds()), callbacks(call),
+MapGui::MapGui(Callbacks call, Clock* c) : objects(Level::getMaxBounds()), callbacks(call), clock(c),
     fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}) {
   clearCenter();
 }
@@ -57,7 +57,7 @@ void MapGui::setSpriteMode(bool s) {
 }
 
 void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
-  animation->setBegin(Clock::get().getRealMillis());
+  animation->setBegin(clock->getRealMillis());
   animations.push_back({std::move(animation), pos});
 }
 
@@ -426,8 +426,8 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
       screenMovement = {
         movement->from,
         movement->to,
-        Clock::get().getRealMillis(),
-        Clock::get().getRealMillis() + 100,
+        clock->getRealMillis(),
+        clock->getRealMillis() + 100,
         movement->prevTime,
         currentTimeGame,
         movement->creatureId
@@ -551,7 +551,7 @@ Vec2 MapGui::projectOnScreen(Vec2 wpos, int curTime) {
 void MapGui::render(Renderer& renderer) {
   int sizeX = layout->squareWidth();
   int sizeY = layout->squareHeight();
-  int currentTimeReal = Clock::get().getRealMillis();
+  int currentTimeReal = clock->getRealMillis();
   renderer.drawFilledRectangle(getBounds(), colors[ColorId::ALMOST_BLACK]);
   renderer.drawFilledRectangle(Rectangle(
         projectOnScreen(levelBounds.getTopLeft(), currentTimeReal),
@@ -615,14 +615,14 @@ void MapGui::render(Renderer& renderer) {
             colors[ColorId::LIGHT_GRAY]);
       }
     }
-  animations = filter(std::move(animations), [](const AnimationInfo& elem) 
-      { return !elem.animation->isDone(Clock::get().getRealMillis());});
+  animations = filter(std::move(animations), [this](const AnimationInfo& elem) 
+      { return !elem.animation->isDone(clock->getRealMillis());});
   for (auto& elem : animations)
     elem.animation->render(
         renderer,
         getBounds(),
         projectOnScreen(elem.position, currentTimeReal),
-        Clock::get().getRealMillis());
+        clock->getRealMillis());
   if (!hint.empty())
     drawHint(renderer, colors[ColorId::WHITE], hint);
   else

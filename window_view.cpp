@@ -61,19 +61,20 @@ View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
 
 class TempClockPause {
   public:
-  TempClockPause() {
-    if (!Clock::get().isPaused()) {
-      Clock::get().pause();
+  TempClockPause(Clock* c) : clock(c) {
+    if (!clock->isPaused()) {
+      clock->pause();
       cont = true;
     }
   }
 
   ~TempClockPause() {
     if (cont)
-      Clock::get().cont();
+      clock->cont();
   }
 
   private:
+  Clock* clock;
   bool cont = false;
 };
 
@@ -108,7 +109,7 @@ void WindowView::resetMapBounds() {
 }
 
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), useTiles(params.useTiles),
-    options(params.options), guiBuilder(renderer, {
+    options(params.options), clock(params.clock), guiBuilder(renderer, clock, {
         [this](UserInput input) { inputQueue.push(input);},
         [this](const string& s) { mapGui->setHint(s);},
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);}}) {}
@@ -133,7 +134,7 @@ void WindowView::initialize() {
   mapGui = new MapGui({
       [this](Vec2 pos) { mapLeftClickFun(pos); },
       [this](Vec2 pos) { mapRightClickFun(pos); },
-      [this] { refreshInput = true;}} );
+      [this] { refreshInput = true;}}, clock );
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
@@ -231,11 +232,11 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
   }
   splashDone = false;
   renderDialog = [=, &meter] {
-    int t0 = Clock::get().getRealMillis();
+    int t0 = clock->getRealMillis();
     int mouthMillis = 400;
     while (!splashDone) {
       if (useTiles) {
-        drawMenuBackground(meter.getProgress(), min(1.0, double(Clock::get().getRealMillis() - t0) / mouthMillis));
+        drawMenuBackground(meter.getProgress(), min(1.0, double(clock->getRealMillis() - t0) / mouthMillis));
         renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() * 0.5, text, true);
       } else {
         renderer.drawImage((renderer.getWidth() - loadingSplash.getSize().x) / 2,
@@ -403,7 +404,7 @@ void WindowView::addVoidDialog(function<void()> fun) {
 }
 
 void WindowView::drawLevelMap(const CreatureView* creature) {
-  TempClockPause pause;
+  TempClockPause pause(clock);
   addVoidDialog([=] {
     minimapGui->presentMap(creature, getMapGuiBounds(), renderer,
         [this](double x, double y) { mapGui->setCenter(x, y);}); });
@@ -447,13 +448,16 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
 }
 
 void WindowView::refreshView() {
-  RenderLock lock(renderMutex);
-  CHECK(currentThreadId() == renderThreadId);
-  if (gameReady)
-    processEvents();
-  if (renderDialog) {
-    renderDialog();
-  } else {
+  {
+    RenderLock lock(renderMutex);
+    CHECK(currentThreadId() == renderThreadId);
+    if (gameReady)
+      processEvents();
+    if (renderDialog) {
+      renderDialog();
+    }
+  }
+  if (!renderDialog && gameReady) {
     if (gameReady)
       refreshScreen(true);
   }
@@ -466,14 +470,17 @@ void WindowView::drawMap() {
 }
 
 void WindowView::refreshScreen(bool flipBuffer) {
-  if (!gameReady) {
-    if (useTiles)
-      displayMenuSplash2();
+  {
+    RenderLock lock(renderMutex);
+    if (!gameReady) {
+      if (useTiles)
+        displayMenuSplash2();
+      else
+        displayOldSplash();
+    }
     else
-      displayOldSplash();
+      drawMap();
   }
-  else
-    drawMap();
   if (flipBuffer)
     renderer.drawAndClearBuffer();
 }
@@ -500,7 +507,7 @@ Optional<int> reverseIndexHeight(const vector<View::ListElem>& options, int heig
 
 Optional<Vec2> WindowView::chooseDirection(const string& message) {
   RenderLock lock(renderMutex);
-  TempClockPause pause;
+  TempClockPause pause(clock);
   gameInfo.messageBuffer = { PlayerMessage(message) };
   rebuildGui();
   SyncQueue<Optional<Vec2>> returnQueue;
@@ -605,7 +612,7 @@ static PGuiElem getTextContent(const string& title, const string& value, const s
 
 Optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
   RenderLock lock(renderMutex);
-  TempClockPause pause;
+  TempClockPause pause(clock);
   SyncQueue<Optional<string>> returnQueue;
   addReturnDialog<Optional<string>>(returnQueue, [=] ()-> Optional<string> {
   bool dismiss = false;
@@ -682,7 +689,7 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   if (options.size() == 0)
     return Nothing();
   RenderLock lock(renderMutex);
-  TempClockPause pause;
+  TempClockPause pause(clock);
   SyncQueue<Optional<int>> returnQueue;
   addReturnDialog<Optional<int>>(returnQueue, [=] ()-> Optional<int> {
   int contentHeight;
@@ -786,7 +793,7 @@ static vector<string> breakText(const string& text) {
 }
 
 void WindowView::presentText(const string& title, const string& text) {
-  TempClockPause pause;
+  TempClockPause pause(clock);
   presentList(title, View::getListElem(breakText(text)), false);
 }
 
@@ -905,23 +912,23 @@ bool WindowView::travelInterrupt() {
 }
 
 int WindowView::getTimeMilli() {
-  return Clock::get().getMillis();
+  return clock->getMillis();
 }
 
 int WindowView::getTimeMilliAbsolute() {
-  return Clock::get().getRealMillis();
+  return clock->getRealMillis();
 }
 
 void WindowView::stopClock() {
-  Clock::get().pause();
+  clock->pause();
 }
 
 void WindowView::continueClock() {
-  Clock::get().cont();
+  clock->cont();
 }
 
 bool WindowView::isClockStopped() {
-  return Clock::get().isPaused();
+  return clock->isPaused();
 }
 bool WindowView::considerResizeEvent(sf::Event& event, vector<GuiElem*> gui) {
   if (event.type == Event::Resized) {

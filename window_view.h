@@ -27,6 +27,7 @@
 
 class ViewIndex;
 class Options;
+class Clock;
 
 /** See view.h for documentation.*/
 class WindowView: public View {
@@ -35,6 +36,7 @@ class WindowView: public View {
     Renderer& renderer;
     bool useTiles;
     Options* options;
+    Clock* clock;
   };
   static View* createDefaultView(ViewParams);
   static View* createLoggingView(OutputArchive& of, ViewParams);
@@ -176,6 +178,7 @@ class WindowView: public View {
   atomic<bool> splashDone;
   bool useTiles;
   Options* options;
+  Clock* clock;
   GuiBuilder guiBuilder;
   Texture menuCore;
   Texture menuMouth;

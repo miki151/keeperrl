@@ -22,6 +22,8 @@
 #include "game_info.h"
 #include "user_input.h"
 
+class Clock;
+
 class GuiBuilder {
   public:
   enum class GameSpeed;
@@ -30,7 +32,7 @@ class GuiBuilder {
     function<void(const string&)> hintCallback;
     function<void(sf::Event::KeyEvent)> keyboardCallback;
   };
-  GuiBuilder(Renderer&, Callbacks);
+  GuiBuilder(Renderer&, Clock*, Callbacks);
   void reset();
   void setTilesOk(bool);
   
@@ -84,6 +86,7 @@ class GuiBuilder {
 
   private:
   Renderer& renderer;
+  Clock* clock;
   Callbacks callbacks;
   PGuiElem getHintCallback(const string&);
   function<void()> getButtonCallback(UserInput);

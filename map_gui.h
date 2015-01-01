@@ -27,6 +27,7 @@ class MapLayout;
 class ViewObject;
 class Renderer;
 class CreatureView;
+class Clock;
 
 class MapGui : public GuiElem {
   public:
@@ -35,7 +36,7 @@ class MapGui : public GuiElem {
     function<void(Vec2)> rightClickFun;
     function<void()> refreshFun;
   };
-  MapGui(Callbacks);
+  MapGui(Callbacks, Clock*);
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
@@ -70,6 +71,7 @@ class MapGui : public GuiElem {
   bool spriteMode;
   Rectangle levelBounds = Rectangle(1, 1);
   Callbacks callbacks;
+  Clock* clock;
   Optional<Vec2> mouseHeldPos;
   Optional<Vec2> highlightedPos;
   string hint;
