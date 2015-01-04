@@ -60,6 +60,7 @@
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/variant.hpp>
 #include <boost/variant.hpp>
+#include <boost/version.hpp>
 #include <boost/any.hpp>
 #include <boost/version.hpp>
 
