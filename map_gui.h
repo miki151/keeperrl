@@ -81,7 +81,7 @@ class MapGui : public GuiElem {
   };
   vector<AnimationInfo> animations;
   DirtyTable<bool> fogOfWar;
-  DirtyTable<EnumSet<ViewId>> extraBorderPos;
+  DirtyTable<vector<ViewId>> extraBorderPos;
   bool isFoW(Vec2 pos) const;
   struct {
     double x;
@@ -100,6 +100,18 @@ class MapGui : public GuiElem {
     UniqueEntity<Creature>::Id creatureId;
   };
   Optional<ScreenMovement> screenMovement;
+  class ViewIdMap {
+    public:
+    ViewIdMap(Rectangle bounds);
+    void add(Vec2 pos, ViewId id);
+    bool has(Vec2 pos, ViewId id);
+    void clear();
+
+    private:
+    DirtyTable<EnumSet<ViewId>> ids;
+  };
+
+  ViewIdMap connectionMap;
 };
 
 #endif

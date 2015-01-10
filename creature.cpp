@@ -71,7 +71,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(numAttacksThisTurn)
     & SVAR(moraleOverrides)
     & SVAR(attrIncrease)
-    & SVAR(visibleEnemies);
+    & SVAR(visibleEnemies)
+    & SVAR(vision);
   CHECK_SERIAL;
 }
 
@@ -88,7 +89,9 @@ Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes&
 }
 
 Creature::Creature(Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
-    : Creature(ViewObject(*attr.viewId, ViewLayer::CREATURE, (*attr.name).bare()), t, attr, f) {}
+    : Creature(ViewObject(*attr.viewId, ViewLayer::CREATURE, (*attr.name).bare()), t, attr, f) {
+  updateVision();    
+}
 
 Creature::~Creature() {
   if (tribe)
@@ -1030,6 +1033,7 @@ void Creature::setTime(double t) {
 }
 
 void Creature::tick(double realTime) {
+  updateVision();
   getDifficultyPoints();
   for (Item* item : equipment.getItems()) {
     item->tick(time, level, position);
@@ -2329,13 +2333,17 @@ string Creature::getNameAndTitle() const {
     return getName().the();
 }
 
-Vision* Creature::getVision() const {
+void Creature::updateVision() {
   if (hasSkill(Skill::get(SkillId::NIGHT_VISION)))
-    return Vision::get(VisionId::NIGHT);
+    vision = Vision::get(VisionId::NIGHT);
   else if (hasSkill(Skill::get(SkillId::ELF_VISION)) || isAffected(LastingEffect::FLYING))
-    return Vision::get(VisionId::ELF);
+    vision = Vision::get(VisionId::ELF);
   else
-    return Vision::get(VisionId::NORMAL); 
+    vision = Vision::get(VisionId::NORMAL); 
+}
+
+Vision* Creature::getVision() const {
+  return vision;
 }
 
 vector<Creature::SkillInfo> Creature::getSkillNames() const {

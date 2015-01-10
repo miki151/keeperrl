@@ -340,6 +340,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   vector<const Creature*> SERIAL(visibleEnemies);
   double getTimeRemaining(LastingEffect) const;
   string getRemainingString(LastingEffect) const;
+  Vision* SERIAL2(vision, nullptr);
+  void updateVision();
 };
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };

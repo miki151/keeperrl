@@ -530,7 +530,9 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
-  autoEquipment(c, Random.roll(10));
+  if (!Random.roll(10))
+    return nullptr;
+  autoEquipment(c, Random.roll(5));
   for (Item* it : c->getEquipment().getItems())
     if (!c->getEquipment().isEquiped(it) && c->getEquipment().canEquip(it))
       return Task::equipItem(it);
@@ -1758,6 +1760,8 @@ void Collective::onAppliedItemCancel(Vec2 pos) {
 }
 
 void Collective::onTorchBuilt(Vec2 pos, Trigger* t) {
+  if (!torches.count(pos))
+    addTorch(pos);
   torches.at(pos).built() = true;
   torches.at(pos).marked() = 0;
   torches.at(pos).task() = -1;

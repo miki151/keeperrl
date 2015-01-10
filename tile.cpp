@@ -72,11 +72,11 @@ Tile Tile::addExtraBorder(EnumSet<Dir> dir, TileCoord coord) {
 }
 
 Tile Tile::addExtraBorderId(ViewId id) {
-  extraBorderIds.insert(id);
+  extraBorderIds.push_back(id);
   return *this;
 }
 
-const EnumSet<ViewId>& Tile::getExtraBorderIds() const {
+const vector<ViewId>& Tile::getExtraBorderIds() const {
   return extraBorderIds;
 }
 

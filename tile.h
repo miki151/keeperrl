@@ -55,7 +55,7 @@ class Tile {
   Tile addCorner(EnumSet<Dir> cornerDef, EnumSet<Dir> borders, TileCoord);
   Tile setTranslucent(double v);
 
-  const EnumSet<ViewId>& getExtraBorderIds() const;
+  const vector<ViewId>& getExtraBorderIds() const;
   bool hasExtraBorders() const;
   Optional<TileCoord> getExtraBorderCoord(const EnumSet<Dir>& c) const;
 
@@ -84,7 +84,7 @@ class Tile {
   };
   vector<CornerInfo> corners;
   unordered_map<EnumSet<Dir>, TileCoord> extraBorders;
-  EnumSet<ViewId> extraBorderIds;
+  vector<ViewId> extraBorderIds;
 };
 
 

@@ -574,7 +574,8 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
 }
 
 bool WindowView::yesOrNoPrompt(const string& message) {
-  return chooseFromList("", {ListElem(message, TITLE), "Yes", "No"}) == 0;
+  return chooseFromListInternal("", {ListElem(message, TITLE), "Yes", "No"}, 0, MenuType::NORMAL_MENU, nullptr,
+      Nothing(), Nothing(), {}) == 0;
 }
 
 Optional<int> WindowView::getNumber(const string& title, int min, int max, int increments) {
