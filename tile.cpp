@@ -97,7 +97,7 @@ Tile Tile::setTranslucent(double v) {
 }
 
 bool Tile::hasSpriteCoord() const {
-  return tileCoord;
+  return !!tileCoord;
 }
 
 Tile::TileCoord Tile::getSpriteCoord() const {

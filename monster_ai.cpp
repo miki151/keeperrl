@@ -121,7 +121,7 @@ class Heal : public Behaviour {
   Heal(Creature* c, bool _useBeds = true) : Behaviour(c), useBeds(_useBeds) {}
 
   virtual double itemValue(const Item* item) {
-    if (item->getEffectType() == EffectId::HEAL) {
+    if (item->getEffectType() == EffectType(EffectId::HEAL)) {
       return 0.5;
     }
     else

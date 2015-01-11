@@ -53,7 +53,7 @@ void MapMemory::clearSquare(Vec2 pos) {
 }
 
 bool MapMemory::hasViewIndex(Vec2 pos) const {
-  return table[pos];
+  return !!table[pos];
 }
 
 ViewIndex MapMemory::getViewIndex(Vec2 pos) const {

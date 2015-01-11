@@ -354,7 +354,7 @@ void Model::retireCollective() {
 
 void Model::landHeroPlayer() {
   auto handicap = view->getNumber("Choose handicap (strength and dexterity increase)", 0, 20, 5);
-  PCreature player = makePlayer(handicap.getOr(0));
+  PCreature player = makePlayer(handicap.get_value_or(0));
   string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
     player->setFirstName(advName);
@@ -731,7 +731,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::WOLF;
           c.frequency = 0.15;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.groupSize = LIST(3, 9);
+          c.groupSize = Range(3, 9);
           c.autoTeam = true;
           c.salary = 0;),
       CONSTRUCT(ImmigrantInfo,

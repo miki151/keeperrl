@@ -407,7 +407,7 @@ Optional<EffectType> Item::getAttackEffect() const {
 }
 
 bool Item::canEquip() const {
-  return equipmentSlot;
+  return !!equipmentSlot;
 }
 
 EquipmentSlot Item::getEquipmentSlot() const {

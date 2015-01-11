@@ -18,6 +18,7 @@
 
 #include "util.h"
 #include "effect_type.h"
+#include "view_object.h"
 
 class Creature;
 class CreatureView;

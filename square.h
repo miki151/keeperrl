@@ -26,6 +26,7 @@
 #include "square_type.h"
 #include "renderable.h"
 #include "movement_type.h"
+#include "view_object.h"
 
 class Level;
 class Creature;

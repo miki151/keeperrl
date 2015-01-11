@@ -56,7 +56,7 @@ Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
     return MinionEquipment::ARMOR;
   if (contains({ItemClass::RANGED_WEAPON, ItemClass::AMMO}, it->getClass()))
     return MinionEquipment::ARCHERY;
-  if (it->getEffectType() == EffectId::HEAL)
+  if (it->getEffectType() == EffectType(EffectId::HEAL))
     return MinionEquipment::HEALING;
   if (contains(combatConsumables, it->getEffectType()))
     return MinionEquipment::COMBAT_ITEM;

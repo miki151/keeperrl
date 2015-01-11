@@ -27,7 +27,7 @@ vector<Spell*> SpellMap::getAll() const {
 }
 
 bool SpellMap::contains(Spell* spell) const {
-  return elems[spell->getId()];
+  return !!elems[spell->getId()];
 }
  
 void SpellMap::clear() {
