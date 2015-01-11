@@ -52,10 +52,10 @@ void MapGui::ViewIdMap::add(Vec2 pos, ViewId id) {
 }
 
 bool MapGui::ViewIdMap::has(Vec2 pos, ViewId id) {
-  if (!ids.isDirty(pos))
+  if (!pos.inRectangle(ids.getBounds()) || !ids.isDirty(pos))
     return false;
   else
-    return pos.inRectangle(ids.getBounds()) && ids.getDirtyValue(pos)[id];
+    return ids.getDirtyValue(pos)[id];
 }
 
 void MapGui::ViewIdMap::clear() {
