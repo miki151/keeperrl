@@ -63,7 +63,8 @@ class IllusionController : public DoNothingController {
   virtual void makeMove() override {
     if (creature->getTime() >= deathTime)
       kill();
-    creature->wait().perform();
+    else
+      creature->wait().perform();
   }
 
   template <class Archive>
@@ -133,7 +134,7 @@ static void deception(Creature* c) {
 }
 
 static void leaveBody(Creature* creature) {
-  string spiritName = creature->getFirstName().getOr(creature->getName().bare()) + "'s spirit";
+  string spiritName = creature->getFirstName().value_or(creature->getName().bare()) + "'s spirit";
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, spiritName);
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   PCreature spirit(new Creature(viewObject, creature->getTribe(), CATTR(
@@ -212,7 +213,7 @@ static void emitPoisonGas(Level* level, Vec2 pos, int strength, bool msg) {
 }
 
 static void guardingBuilder(Creature* c) {
-  Optional<Vec2> dest;
+  optional<Vec2> dest;
   for (Square* square : c->getSquares(Vec2::directions8(true)))
     if (c->move(square->getPosition() - c->getPosition()) && !square->getCreature()) {
       dest = square->getPosition() - c->getPosition();

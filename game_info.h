@@ -27,7 +27,7 @@ class GameInfo {
     struct Button {
       ViewObject object;
       string name;
-      Optional<pair<ViewObject, int>> cost;
+      optional<pair<ViewObject, int>> cost;
       string count;
       string inactiveReason;
       string help;
@@ -47,7 +47,7 @@ class GameInfo {
       string name;
     };
     vector<Resource> numResource;
-    Optional<TeamId> currentTeam;
+    optional<TeamId> currentTeam;
     bool newTeam;
     map<TeamId, vector<UniqueEntity<Creature>::Id>> teams;
     CreatureInfo& getMinion(UniqueEntity<Creature>::Id);

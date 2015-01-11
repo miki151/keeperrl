@@ -192,11 +192,11 @@ void TaskMap<CostInfo>::takeTask(const Creature* c, Task* task) {
 }
 
 template <class CostInfo>
-Optional<Vec2> TaskMap<CostInfo>::getPosition(Task* task) const {
+optional<Vec2> TaskMap<CostInfo>::getPosition(Task* task) const {
   if (positionMap.count(task))
     return positionMap.at(task);
   else
-    return Nothing();
+    return none;
 }
 
 template <class CostInfo>

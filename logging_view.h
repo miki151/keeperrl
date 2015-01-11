@@ -67,15 +67,15 @@ class LoggingView : public T {
       return res;
     }
 
-    virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        View::MenuType type, int* scrollPos, Optional<UserInputId> action) override {
+    virtual optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
+        View::MenuType type, int* scrollPos, optional<UserInputId> action) override {
       auto res = T::chooseFromList(title, options, index, type, scrollPos, action);
       auto token = LoggingToken::CHOOSE_FROM_LIST;
       output << token << res;
       return res;
     }
 
-    virtual Optional<Vec2> chooseDirection(const string& message) override {
+    virtual optional<Vec2> chooseDirection(const string& message) override {
       auto res = T::chooseDirection(message);
       auto token = LoggingToken::CHOOSE_DIRECTION;
       output << token << res;
@@ -89,7 +89,7 @@ class LoggingView : public T {
       return res;
     }
 
-    virtual Optional<int> getNumber(const string& title, int min, int max, int increments) override {
+    virtual optional<int> getNumber(const string& title, int min, int max, int increments) override {
       auto res = T::getNumber(title, min, max, increments);
       auto token = LoggingToken::GET_NUMBER;
       output << token << res;

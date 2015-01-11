@@ -422,6 +422,7 @@ void WindowView::updateView(const CreatureView* collective) {
   RenderLock lock(renderMutex);
   updateMinimap(collective);
   gameReady = true;
+  uiLock = false;
   switchTiles();
   collective->refreshGameInfo(gameInfo);
   mapGui->setSpriteMode(currentTileLayout.sprites);
@@ -453,14 +454,13 @@ void WindowView::refreshView() {
     CHECK(currentThreadId() == renderThreadId);
     if (gameReady)
       processEvents();
-    if (renderDialog) {
+    if (renderDialog)
       renderDialog();
-    }
+    if (uiLock && !renderDialog)
+      return;
   }
-  if (!renderDialog && gameReady) {
-    if (gameReady)
-      refreshScreen(true);
-  }
+  if (!renderDialog && gameReady)
+    refreshScreen(true);
 }
 
 void WindowView::drawMap() {
@@ -495,9 +495,9 @@ int indexHeight(const vector<View::ListElem>& options, int index) {
   return -1;
 }
 
-Optional<int> reverseIndexHeight(const vector<View::ListElem>& options, int height) {
+optional<int> reverseIndexHeight(const vector<View::ListElem>& options, int height) {
   if (height < 0 || height >= options.size() || options[height].getMod() != View::NORMAL)
-    return Nothing();
+    return none;
   int sub = 0;
   for (int i : Range(height))
     if (options[i].getMod() != View::NORMAL)
@@ -505,13 +505,13 @@ Optional<int> reverseIndexHeight(const vector<View::ListElem>& options, int heig
   return height - sub;
 }
 
-Optional<Vec2> WindowView::chooseDirection(const string& message) {
+optional<Vec2> WindowView::chooseDirection(const string& message) {
   RenderLock lock(renderMutex);
   TempClockPause pause(clock);
   gameInfo.messageBuffer = { PlayerMessage(message) };
   rebuildGui();
-  SyncQueue<Optional<Vec2>> returnQueue;
-  addReturnDialog<Optional<Vec2>>(returnQueue, [=] ()-> Optional<Vec2> {
+  SyncQueue<optional<Vec2>> returnQueue;
+  addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   refreshScreen();
   do {
     Event event;
@@ -564,7 +564,7 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
         case Keyboard::Left:
         case Keyboard::Numpad4: refreshScreen(); return Vec2(-1, 0);
         case Keyboard::Numpad7: refreshScreen(); return Vec2(-1, -1);
-        case Keyboard::Escape: refreshScreen(); return Nothing();
+        case Keyboard::Escape: refreshScreen(); return none;
         default: break;
       }
   } while (1);
@@ -574,10 +574,11 @@ Optional<Vec2> WindowView::chooseDirection(const string& message) {
 }
 
 bool WindowView::yesOrNoPrompt(const string& message) {
-  return chooseFromList("", {ListElem(message, TITLE), "Yes", "No"}) == 0;
+  return chooseFromListInternal("", {ListElem(message, TITLE), "Yes", "No"}, 0, MenuType::NORMAL_MENU, nullptr,
+      none, none, {}) == 0;
 }
 
-Optional<int> WindowView::getNumber(const string& title, int min, int max, int increments) {
+optional<int> WindowView::getNumber(const string& title, int min, int max, int increments) {
   CHECK(min < max);
   vector<View::ListElem> options;
   vector<int> numbers;
@@ -585,16 +586,16 @@ Optional<int> WindowView::getNumber(const string& title, int min, int max, int i
     options.push_back(toString(i));
     numbers.push_back(i);
   }
-  Optional<int> res = WindowView::chooseFromList(title, options);
+  optional<int> res = WindowView::chooseFromList(title, options);
   if (!res)
-    return Nothing();
+    return none;
   else
     return numbers[*res];
 }
 
-Optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
-    MenuType type, int* scrollPos, Optional<UserInputId> exitAction) {
-  return chooseFromListInternal(title, options, index, type, scrollPos, exitAction, Nothing(), {});
+optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
+    MenuType type, int* scrollPos, optional<UserInputId> exitAction) {
+  return chooseFromListInternal(title, options, index, type, scrollPos, exitAction, none, {});
 }
 
 Rectangle WindowView::getTextInputPosition() {
@@ -610,11 +611,11 @@ static PGuiElem getTextContent(const string& title, const string& value, const s
   return GuiElem::verticalList(std::move(lines), 40, 0);
 }
 
-Optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
+optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
   RenderLock lock(renderMutex);
   TempClockPause pause(clock);
-  SyncQueue<Optional<string>> returnQueue;
-  addReturnDialog<Optional<string>>(returnQueue, [=] ()-> Optional<string> {
+  SyncQueue<optional<string>> returnQueue;
+  addReturnDialog<optional<string>>(returnQueue, [=] ()-> optional<string> {
   bool dismiss = false;
   string text = value;
   PGuiElem dismissBut = GuiElem::margins(GuiElem::stack(makeVec<PGuiElem>(
@@ -635,7 +636,7 @@ Optional<string> WindowView::getText(const string& title, const string& value, i
     while (renderer.pollEvent(event)) {
       propagateEvent(event, {stuff.get()});
       if (dismiss)
-        return Nothing();
+        return none;
       if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
         continue;
       if (event.type == Event::TextEntered)
@@ -648,7 +649,7 @@ Optional<string> WindowView::getText(const string& title, const string& value, i
                 text.pop_back();
               break;
           case Keyboard::Return: return text;
-          case Keyboard::Escape: return Nothing();
+          case Keyboard::Escape: return none;
           default: break;
         }
     }
@@ -681,17 +682,18 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
   return Rectangle(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
 }
 
-Optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
-    MenuType menuType, int* scrollPos1, Optional<UserInputId> exitAction, Optional<Event::KeyEvent> exitKey,
+optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
+    MenuType menuType, int* scrollPos1, optional<UserInputId> exitAction, optional<Event::KeyEvent> exitKey,
     vector<Event::KeyEvent> shortCuts) {
   if (!useTiles && menuType == MenuType::MAIN_MENU)
     menuType = MenuType::MAIN_MENU_NO_TILES;
   if (options.size() == 0)
-    return Nothing();
+    return none;
   RenderLock lock(renderMutex);
+  uiLock = true;
   TempClockPause pause(clock);
-  SyncQueue<Optional<int>> returnQueue;
-  addReturnDialog<Optional<int>>(returnQueue, [=] ()-> Optional<int> {
+  SyncQueue<optional<int>> returnQueue;
+  addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
   int contentHeight;
   int choice = -1;
   int count = 0;
@@ -740,7 +742,7 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
       if (choice > -1)
         return indexes[choice];
       if (choice == -100)
-        return Nothing();
+        return none;
       if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
         continue;
       if (event.type == Event::MouseWheelMoved)
@@ -765,7 +767,7 @@ Optional<int> WindowView::chooseFromListInternal(const string& title, const vect
             break;
           case Keyboard::Numpad5:
           case Keyboard::Return: if (count > 0 && index > -1) return indexes[index];
-          case Keyboard::Escape: return Nothing();
+          case Keyboard::Escape: return none;
                                  //       case Keyboard::Space : refreshScreen(); return;
           default: break;
         }
@@ -798,13 +800,13 @@ void WindowView::presentText(const string& title, const string& text) {
 }
 
 void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu,
-    Optional<UserInputId> exitAction) {
+    optional<UserInputId> exitAction) {
   vector<ListElem> conv(options);
   for (ListElem& e : conv)
     if (e.getMod() == View::NORMAL)
       e.setMod(View::TEXT);
   int scrollPos = scrollDown ? options.size() - 1 : 0;
-  chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, Nothing(), {});
+  chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, none, {});
 }
 
 static vector<PGuiElem> getMultiLine(const string& text, Color color, View::MenuType menuType) {
@@ -1137,7 +1139,7 @@ vector<KeyInfo> keyInfo {
 //  { "Escape", "Quit", {Keyboard::Escape}},
 };
 
-Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
+optional<Event::KeyEvent> WindowView::getEventFromMenu() {
   vector<View::ListElem> options {
       View::ListElem("Move around with the number pad.", View::TITLE),
       View::ListElem("Extended attack with ctrl + arrow.", View::TITLE),
@@ -1151,10 +1153,10 @@ Optional<Event::KeyEvent> WindowView::getEventFromMenu() {
   vector<Event::KeyEvent> shortCuts;
   for (KeyInfo key : keyInfo)
     shortCuts.push_back(key.event);
-  auto index = chooseFromListInternal("", options, 0, NORMAL_MENU, nullptr, Nothing(),
-      Optional<Event::KeyEvent>({Keyboard::F1}), shortCuts);
+  auto index = chooseFromListInternal("", options, 0, NORMAL_MENU, nullptr, none,
+      optional<Event::KeyEvent>({Keyboard::F1}), shortCuts);
   if (!index)
-    return Nothing();
+    return none;
   return keyInfo[*index].event;
 }
 

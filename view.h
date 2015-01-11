@@ -79,22 +79,22 @@ class View {
   class ListElem {
     public:
     ListElem(const char*, ElemMod mod = NORMAL,
-        Optional<UserInputId> triggerAction = Nothing());
+        optional<UserInputId> triggerAction = none);
     ListElem(const string& text = "", ElemMod mod = NORMAL,
-        Optional<UserInputId> triggerAction = Nothing());
+        optional<UserInputId> triggerAction = none);
     ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
 
     const string& getText() const;
     const string& getSecondColumn() const;
     ElemMod getMod() const;
-    Optional<UserInputId> getAction() const;
+    optional<UserInputId> getAction() const;
     void setMod(ElemMod);
 
     private:
     string text;
     string secondColumn;
     ElemMod mod;
-    Optional<UserInputId> action;
+    optional<UserInputId> action;
   };
 
   static vector<ListElem> getListElem(const vector<string>&);
@@ -107,12 +107,12 @@ class View {
   };
 
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
-      Returns Nothing() if the player cancelled the choice.*/
-  virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = NORMAL_MENU, int* scrollPos = nullptr, Optional<UserInputId> exitAction = Nothing()) = 0;
+      Returns none if the player cancelled the choice.*/
+  virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
+      MenuType = NORMAL_MENU, int* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
-  /** Let's the player choose a direction from the main 8. Returns Nothing() if the player cancelled the choice.*/
-  virtual Optional<Vec2> chooseDirection(const string& message) = 0;
+  /** Let's the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
+  virtual optional<Vec2> chooseDirection(const string& message) = 0;
 
   /** Asks the player a yer-or-no question.*/
   virtual bool yesOrNoPrompt(const string& message) = 0;
@@ -122,13 +122,13 @@ class View {
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = NORMAL_MENU, Optional<UserInputId> exitAction = Nothing()) = 0;
+      MenuType = NORMAL_MENU, optional<UserInputId> exitAction = none) = 0;
 
-  /** Let's the player choose a number. Returns Nothing() if the player cancelled the choice.*/
-  virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
+  /** Let's the player choose a number. Returns none if the player cancelled the choice.*/
+  virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
 
-  /** Let's the player input a string. Returns Nothing() if the player cancelled the choice.*/
-  virtual Optional<string> getText(const string& title, const string& value, int maxLength,
+  /** Let's the player input a string. Returns none if the player cancelled the choice.*/
+  virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint = "") = 0;
 
   /** Draws an animation of an object between two locations on a map.*/

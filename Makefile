@@ -4,15 +4,17 @@ ifndef RPATH
 RPATH = .
 endif
 
+CFLAGS = -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare
+
 ifdef CLANG
 CC = clang++
 LD = clang++
+CFLAGS += -Werror
 else
 CC = g++
 LD = g++
 endif
 
-CFLAGS = -Werror -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare
 
 ifdef OSX
 LDFLAGS = -Wl

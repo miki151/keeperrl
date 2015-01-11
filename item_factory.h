@@ -30,7 +30,7 @@ class Technology;
 
 class ItemFactory {
   public:
-  vector<PItem> random(Optional<int> seed = Nothing());
+  vector<PItem> random(optional<int> seed = none);
   vector<PItem> getAll();
 
   static ItemFactory dungeon();

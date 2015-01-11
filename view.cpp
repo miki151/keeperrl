@@ -20,13 +20,13 @@
 #include "collective.h"
 
 
-View::ListElem::ListElem(const string& t, ElemMod m, Optional<UserInputId> a) : text(t), mod(m), action(a) {
+View::ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
 
 View::ListElem::ListElem(const string& t, const string& sec, ElemMod m) : text(t), secondColumn(sec), mod(m) {
 }
 
-View::ListElem::ListElem(const char* s, ElemMod m, Optional<UserInputId> a) : text(s), mod(m), action(a) {
+View::ListElem::ListElem(const char* s, ElemMod m, optional<UserInputId> a) : text(s), mod(m), action(a) {
 }
 
 const string& View::ListElem::getText() const {
@@ -45,7 +45,7 @@ void View::ListElem::setMod(ElemMod m) {
   mod = m;
 }
 
-Optional<UserInputId> View::ListElem::getAction() const {
+optional<UserInputId> View::ListElem::getAction() const {
   return action;
 }
 

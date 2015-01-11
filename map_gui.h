@@ -48,7 +48,7 @@ class MapGui : public GuiElem {
   void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement);
   void updateLayout(MapLayout*, Rectangle levelBounds);
   void setSpriteMode(bool);
-  Optional<Vec2> getHighlightedTile(Renderer& renderer);
+  optional<Vec2> getHighlightedTile(Renderer& renderer);
   void setHint(const string&);
   void addAnimation(PAnimation animation, Vec2 position);
   void setCenter(double x, double y);
@@ -67,13 +67,13 @@ class MapGui : public GuiElem {
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, int curTimeReal);
   Vec2 projectOnScreen(Vec2 wpos, int currentTimeReal);
   MapLayout* layout;
-  Table<Optional<ViewIndex>> objects;
+  Table<optional<ViewIndex>> objects;
   bool spriteMode;
   Rectangle levelBounds = Rectangle(1, 1);
   Callbacks callbacks;
   Clock* clock;
-  Optional<Vec2> mouseHeldPos;
-  Optional<Vec2> highlightedPos;
+  optional<Vec2> mouseHeldPos;
+  optional<Vec2> highlightedPos;
   string hint;
   struct AnimationInfo {
     PAnimation animation;
@@ -81,7 +81,7 @@ class MapGui : public GuiElem {
   };
   vector<AnimationInfo> animations;
   DirtyTable<bool> fogOfWar;
-  DirtyTable<EnumSet<ViewId>> extraBorderPos;
+  DirtyTable<vector<ViewId>> extraBorderPos;
   bool isFoW(Vec2 pos) const;
   struct {
     double x;
@@ -99,7 +99,19 @@ class MapGui : public GuiElem {
     double endTimeGame;
     UniqueEntity<Creature>::Id creatureId;
   };
-  Optional<ScreenMovement> screenMovement;
+  optional<ScreenMovement> screenMovement;
+  class ViewIdMap {
+    public:
+    ViewIdMap(Rectangle bounds);
+    void add(Vec2 pos, ViewId id);
+    bool has(Vec2 pos, ViewId id);
+    void clear();
+
+    private:
+    DirtyTable<EnumSet<ViewId>> ids;
+  };
+
+  ViewIdMap connectionMap;
 };
 
 #endif

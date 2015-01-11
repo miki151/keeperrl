@@ -130,7 +130,7 @@ const Creature* Model::getPlayer() const {
   return nullptr;
 }
 
-Optional<Model::ExitInfo> Model::update(double totalTime) {
+optional<Model::ExitInfo> Model::update(double totalTime) {
   if (addHero) {
     CHECK(playerControl && playerControl->isRetired());
     landHeroPlayer();
@@ -161,7 +161,7 @@ Optional<Model::ExitInfo> Model::update(double totalTime) {
       }
     }
     if (currentTime > totalTime)
-      return Nothing();
+      return none;
     if (currentTime >= lastTick + 1) {
       MEASURE({ tick(currentTime); }, "ticking time");
     }
@@ -354,7 +354,7 @@ void Model::retireCollective() {
 
 void Model::landHeroPlayer() {
   auto handicap = view->getNumber("Choose handicap (strength and dexterity increase)", 0, 20, 5);
-  PCreature player = makePlayer(handicap.getOr(0));
+  PCreature player = makePlayer(handicap.get_value_or(0));
   string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
     player->setFirstName(advName);
@@ -392,7 +392,7 @@ struct EnemyInfo {
 };
 
 static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* tribe, int num,
-    Optional<ItemFactory> itemFactory = Nothing(), vector<VillainInfo> villains = {}) {
+    optional<ItemFactory> itemFactory = none, vector<VillainInfo> villains = {}) {
   return {CONSTRUCT(SettlementInfo,
       c.type = type;
       c.creatures = factory;
@@ -405,7 +405,7 @@ static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* t
 }
 
 static EnemyInfo getVault(SettlementType type, CreatureId id, Tribe* tribe, int num,
-    Optional<ItemFactory> itemFactory = Nothing(), vector<VillainInfo> villains = {}) {
+    optional<ItemFactory> itemFactory = none, vector<VillainInfo> villains = {}) {
   return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, villains);
 }
 
@@ -731,7 +731,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::WOLF;
           c.frequency = 0.15;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.groupSize = LIST(3, 9);
+          c.groupSize = Range(3, 9);
           c.autoTeam = true;
           c.salary = 0;),
       CONSTRUCT(ImmigrantInfo,
@@ -961,7 +961,7 @@ struct HighscoreElem {
 
   bool highlight = false;
   string name;
-  Optional<string> killer;
+  optional<string> killer;
   int points;
 };
 

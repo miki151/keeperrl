@@ -42,12 +42,12 @@ class Staircase : public Square {
     c->playerMessage("There are " + getName() + " here.");
   }
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override {
+  virtual optional<SquareApplyType> getApplyType(const Creature*) const override {
     switch (getLandingLink()->first) {
       case StairDirection::DOWN: return SquareApplyType::DESCEND;
       case StairDirection::UP: return SquareApplyType::ASCEND;
     }
-    return Nothing();
+    return none;
   }
 
   virtual void onApply(Creature* c) override {
@@ -188,9 +188,9 @@ class Chest : public Square {
     s->dropItems(std::move(item));
   }
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature* c) const override { 
+  virtual optional<SquareApplyType> getApplyType(const Creature* c) const override { 
     if (opened || !c->isHumanoid()) 
-      return Nothing();
+      return none;
     else
       return SquareApplyType::USE_CHEST;
   }
@@ -256,7 +256,7 @@ class Fountain : public Square {
         c.movementType = {MovementTrait::WALK};
         c.strength = 100;)) {}
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
+  virtual optional<SquareApplyType> getApplyType(const Creature*) const override { 
     return SquareApplyType::DRINK;
   }
 
@@ -509,7 +509,7 @@ class Barricade : public Square {
 class Furniture : public Square {
   public:
   Furniture(ViewObject object, const string& name, double flamability,
-      Optional<SquareApplyType> _applyType = Nothing()) 
+      optional<SquareApplyType> _applyType = none) 
       : Square(object.setModifier(ViewObject::Modifier::ROUND_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = name;
@@ -523,7 +523,7 @@ class Furniture : public Square {
     return true;
   }
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override {
+  virtual optional<SquareApplyType> getApplyType(const Creature*) const override {
     return applyType;
   }
 
@@ -543,7 +543,7 @@ class Furniture : public Square {
   SERIALIZATION_CONSTRUCTOR(Furniture);
   
   private:
-  Optional<SquareApplyType> SERIAL(applyType);
+  optional<SquareApplyType> SERIAL(applyType);
 };
 
 class DestroyableSquare : public Square {
@@ -564,7 +564,7 @@ class Bed : public Furniture {
   public:
   Bed(const ViewObject& object, const string& name, double flamability = 1) : Furniture(object, name, flamability) {}
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
+  virtual optional<SquareApplyType> getApplyType(const Creature*) const override { 
     return SquareApplyType::SLEEP;
   }
 
@@ -590,11 +590,11 @@ class Grave : public Bed {
   public:
   Grave(const ViewObject& object, const string& name) : Bed(object, name, 0) {}
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature* c) const override { 
+  virtual optional<SquareApplyType> getApplyType(const Creature* c) const override { 
     if (c->isUndead())
       return SquareApplyType::SLEEP;
     else
-      return Nothing();
+      return none;
   }
 
   virtual void onApply(Creature* c) override {
@@ -625,11 +625,11 @@ class Altar : public Square {
     return true;
   }
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature* c) const override { 
+  virtual optional<SquareApplyType> getApplyType(const Creature* c) const override { 
     if (c->isHumanoid())
       return SquareApplyType::PRAY;
     else
-      return Nothing();
+      return none;
   }
 
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
@@ -794,7 +794,7 @@ class TrainingDummy : public Furniture {
   public:
   TrainingDummy(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
+  virtual optional<SquareApplyType> getApplyType(const Creature*) const override { 
     return SquareApplyType::TRAIN;
   }
 
@@ -829,7 +829,7 @@ class Workshop : public Furniture {
   public:
   using Furniture::Furniture;
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const override { 
+  virtual optional<SquareApplyType> getApplyType(const Creature*) const override { 
     return SquareApplyType::WORKSHOP;
   }
 

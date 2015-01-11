@@ -660,109 +660,13 @@ class OnExit {
   function<void()> fun;
 };
 
-class Nothing {
-};
-
-template <class T>
-class Optional {
-  public:
-  Optional(const T& t) {
-    elem.push_back(t);
-  }
-  Optional(const Optional<T>& t) {
-    if (t)
-      elem.push_back(*t);
-  }
-  Optional(Optional<T>&&) = default;
-  Optional(Nothing) {}
-  Optional() {}
-
-  Optional<T>& operator = (const Optional<T>& t) {
-    if (t) {
-      elem.clear();
-      elem.push_back(*t);
-    }
-    else
-      elem.clear();
-    return *this;
-  }
-
-  T& operator = (const T& t) {
-    elem.clear();
-    elem.push_back(t);
-    return elem.front();
-  }
-
-  Optional<T>& operator = (Optional<T>&& t) = default;
-
-  void operator = (Nothing) {
-    elem.clear();
-  }
-
-  T& operator = (T&& t) {
-    if (!elem.empty())
-      elem[0] = std::move(t);
-    else {
-      elem.push_back(std::move(t));
-    }
-    return elem.front();
-  }
-
-  T* operator -> () {
-    CHECK(!elem.empty());
-    return &elem.front();
-  }
-
-  const T* operator -> () const {
-    CHECK(!elem.empty());
-    return &elem.front();
-  }
-
-  bool operator == (const T& t) const {
-    return !elem.empty() && elem.front() == t;
-  }
-
-  bool operator != (const T& t) const {
-    return elem.empty() || elem.front() != t;
-  }
-
-  operator bool() const {
-    return !elem.empty();
-  }
-
-  T& operator * () {
-    CHECK(!elem.empty());
-    return elem.front();
-  }
-
-  const T& operator * () const {
-    CHECK(!elem.empty());
-    return elem.front();
-  }
-
-  T getOr(const T& other) {
-    if (!elem.empty())
-      return elem.front();
-    else
-      return other;
-  }
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & BOOST_SERIALIZATION_NVP(elem);
-  }
-
-  private:
-  vector<T> elem;
-};
-
 template <typename T, typename V>
-bool contains(const vector<T>& v, const Optional<V>& elem) {
+bool contains(const vector<T>& v, const optional<V>& elem) {
   return elem && contains(v, *elem);
 }
 
 template <typename T, typename V>
-bool contains(const initializer_list<T>& v, const Optional<V>& elem) {
+bool contains(const initializer_list<T>& v, const optional<V>& elem) {
   return contains(vector<T>(v), elem);
 }
 
@@ -886,27 +790,27 @@ void removeIndex(vector<T>& v, int index) {
 }
 
 template<class T>
-Optional<int> findElement(const vector<T>& v, const T& element) {
+optional<int> findElement(const vector<T>& v, const T& element) {
   for (int i : All(v))
     if (v[i] == element)
       return i;
-  return Nothing();
+  return none;
 }
 
 template<class T>
-Optional<int> findElement(const vector<T*>& v, const T* element) {
+optional<int> findElement(const vector<T*>& v, const T* element) {
   for (int i : All(v))
     if (v[i] == element)
       return i;
-  return Nothing();
+  return none;
 }
 
 template<class T>
-Optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
+optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
   for (int i : All(v))
     if (v[i].get() == element)
       return i;
-  return Nothing();
+  return none;
 }
 
 template<class T>
@@ -1322,10 +1226,10 @@ class SyncQueue {
     return q.front();
   }
 
-  Optional<T> popAsync() {
+  optional<T> popAsync() {
     std::unique_lock<std::mutex> lock(mut);
     if (q.empty())
-      return Nothing();
+      return none;
     else {
       OnExit o([=] { q.pop(); });
       return q.front();

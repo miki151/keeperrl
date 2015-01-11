@@ -33,7 +33,7 @@ class View;
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
   PlayerControl(Collective*, Model*, Level*);
-  void addImportantLongMessage(const string&, Optional<Vec2> = Nothing());
+  void addImportantLongMessage(const string&, optional<Vec2> = none);
 
   void onConqueredLand(const string& name);
 
@@ -56,7 +56,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   struct RoomInfo {
     string name;
     string description;
-    Optional<TechId> techId;
+    optional<TechId> techId;
   };
   static vector<RoomInfo> getRoomInfo();
   static vector<RoomInfo> getWorkshopInfo();
@@ -74,8 +74,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual Optional<Vec2> getPosition(bool force) const override;
-  virtual Optional<MovementInfo> getMovementInfo() const override;
+  virtual optional<Vec2> getPosition(bool force) const override;
+  virtual optional<MovementInfo> getMovementInfo() const override;
   virtual vector<const Creature*> getVisibleEnemies() const override;
   virtual double getTime() const override;
 
@@ -153,18 +153,18 @@ class PlayerControl : public CreatureView, public CollectiveControl {
       TORCH,
     } buildType;
 
-    Optional<TechId> techId;
+    optional<TechId> techId;
     string help;
     char hotkey;
     string groupName;
 
-    BuildInfo(SquareInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0,
+    BuildInfo(SquareInfo info, optional<TechId> techId = none, const string& h = "", char hotkey = 0,
         string group = "");
-    BuildInfo(TrapInfo info, Optional<TechId> techId = Nothing(), const string& h = "", char hotkey = 0,
+    BuildInfo(TrapInfo info, optional<TechId> techId = none, const string& h = "", char hotkey = 0,
         string group = "");
     BuildInfo(DeityHabitat, Collective::CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
     BuildInfo(const Creature*, Collective::CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
-    BuildInfo(MinionInfo, Optional<TechId> techId, const string& groupName, const string& h = "");
+    BuildInfo(MinionInfo, optional<TechId> techId, const string& groupName, const string& h = "");
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
@@ -176,7 +176,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static vector<BuildInfo> minionsInfo;
 
   ViewObject getResourceViewObject(Collective::ResourceId id) const;
-  Optional<pair<ViewObject, int>> getCostObj(Collective::CostInfo) const;
+  optional<pair<ViewObject, int>> getCostObj(Collective::CostInfo) const;
 
   typedef GameInfo::BandInfo::TechButton TechButton;
 
@@ -213,9 +213,9 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   Creature* getControlled();
 
   mutable unique_ptr<map<UniqueEntity<Level>::Id, MapMemory>> SERIAL(memory);
-  Optional<TeamId> getCurrentTeam() const;
-  void setCurrentTeam(Optional<TeamId>);
-  Optional<TeamId> SERIAL(currentTeam);
+  optional<TeamId> getCurrentTeam() const;
+  void setCurrentTeam(optional<TeamId>);
+  optional<TeamId> SERIAL(currentTeam);
   Model* SERIAL(model);
   bool SERIAL2(showWelcomeMsg, true);
   struct SelectionInfo {
@@ -223,7 +223,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     Vec2 corner2;
     bool deselect;
   };
-  Optional<SelectionInfo> rectSelection;
+  optional<SelectionInfo> rectSelection;
   double SERIAL2(lastControlKeeperQuestion, -100);
   int SERIAL2(startImpNum, -1);
   bool SERIAL2(retired, false);
@@ -243,10 +243,10 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     NAME_ELEM(0, warning);
     NAME_ELEM(1, lastView);
   };
-  Optional<CurrentWarningInfo> SERIAL(currentWarning);
+  optional<CurrentWarningInfo> SERIAL(currentWarning);
   vector<string> SERIAL(hints);
   mutable queue<Vec2> scrollPos;
-  Optional<PlayerMessage> findMessage(PlayerMessage::Id);
+  optional<PlayerMessage> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures(Rectangle range);
   vector<const Creature*> SERIAL(visibleEnemies);
   vector<const Creature*> SERIAL(visibleFriends);

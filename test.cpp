@@ -184,15 +184,15 @@ void testPredicates() {
   }
 }
 
-Optional<int> getInt(bool yes) {
+optional<int> getInt(bool yes) {
   if (yes) 
     return 1;
   else
-    return Nothing();
+    return none;
 }
 
 void testOptional() {
-  Optional<int> r = getInt(true);
+  optional<int> r = getInt(true);
   CHECK(r);
   CHECK(r == 1);
   CHECK(!getInt(false));

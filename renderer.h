@@ -101,14 +101,14 @@ class Renderer {
   void drawImage(int px, int py, const Texture&, double scale = 1);
   void drawImage(int px, int py, int kx, int ky, const Texture&, double scale = 1);
   void drawImage(Rectangle, const Texture&, double scale = 1);
-  void drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture&, Optional<Color> color = Nothing(),
-      Optional<Vec2> stretchSize = Nothing());
+  void drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture&, optional<Color> color = none,
+      optional<Vec2> stretchSize = none);
   void drawSprite(int x, int y, int px, int py, int w, int h, const Texture&, int dw = -1, int dh = -1,
-      Optional<Color> color = Nothing());
-  void drawSprite(int x, int y, SpriteId, Optional<Color> color = Nothing());
+      optional<Color> color = none);
+  void drawSprite(int x, int y, SpriteId, optional<Color> color = none);
   void drawSprite(Vec2 pos, Vec2 stretchSize, const Texture&);
-  void drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline = Nothing());
-  void drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline = Nothing());
+  void drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline = none);
+  void drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline = none);
   void drawViewObject(int x, int y, const ViewObject&, bool useSprite, double scale = 1);
   void drawViewObject(int x, int y, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawTile(int x, int y, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);

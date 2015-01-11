@@ -72,11 +72,11 @@ Tile Tile::addExtraBorder(EnumSet<Dir> dir, TileCoord coord) {
 }
 
 Tile Tile::addExtraBorderId(ViewId id) {
-  extraBorderIds.insert(id);
+  extraBorderIds.push_back(id);
   return *this;
 }
 
-const EnumSet<ViewId>& Tile::getExtraBorderIds() const {
+const vector<ViewId>& Tile::getExtraBorderIds() const {
   return extraBorderIds;
 }
 
@@ -84,11 +84,11 @@ bool Tile::hasExtraBorders() const {
   return !extraBorders.empty();
 }
 
-Optional<Tile::TileCoord> Tile::getExtraBorderCoord(const EnumSet<Dir>& c) const {
+optional<Tile::TileCoord> Tile::getExtraBorderCoord(const EnumSet<Dir>& c) const {
   if (extraBorders.count(c))
     return extraBorders.at(c);
   else
-    return Nothing();
+    return none;
 }
 
 Tile Tile::setTranslucent(double v) {
@@ -97,14 +97,14 @@ Tile Tile::setTranslucent(double v) {
 }
 
 bool Tile::hasSpriteCoord() const {
-  return tileCoord;
+  return !!tileCoord;
 }
 
 Tile::TileCoord Tile::getSpriteCoord() const {
   return *tileCoord;
 }
 
-Optional<Tile::TileCoord> Tile::getBackgroundCoord() const {
+optional<Tile::TileCoord> Tile::getBackgroundCoord() const {
   return backgroundCoord;
 }
 

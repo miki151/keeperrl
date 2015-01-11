@@ -53,7 +53,7 @@ class ViewObject {
   static void setHallu(bool);
   
   ViewObject& setAttachmentDir(Dir);
-  Optional<Dir> getAttachmentDir() const;
+  optional<Dir> getAttachmentDir() const;
 
   ViewObject& setAttribute(Attribute, double);
   double getAttribute(Attribute) const;
@@ -95,7 +95,7 @@ class ViewObject {
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
   string SERIAL(description);
-  Optional<Dir> SERIAL(attachmentDir);
+  optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL2(position, Vec2(-1, -1));
   UniqueEntity<Creature>::Id SERIAL2(creatureId, 0);
 

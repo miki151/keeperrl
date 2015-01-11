@@ -61,7 +61,7 @@ class FieldOfView {
   };
   
   const Table<PSquare>* SERIAL(squares);
-  Table<Optional<Visibility>> SERIAL(visibility);
+  Table<unique_ptr<Visibility>> SERIAL(visibility);
   Vision* SERIAL(vision);
 };
 

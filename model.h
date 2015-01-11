@@ -52,7 +52,7 @@ class Model {
 
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
-  Optional<ExitInfo> update(double totalTime);
+  optional<ExitInfo> update(double totalTime);
 
   /** Removes creature from current level and puts into the next, according to direction. */
   Vec2 changeLevel(StairDirection direction, StairKey key, Creature*);
@@ -137,7 +137,7 @@ class Model {
   Options* options;
   string SERIAL(worldName);
   MusicType SERIAL(musicType);
-  Optional<ExitInfo> exitInfo;
+  optional<ExitInfo> exitInfo;
 };
 
 #endif

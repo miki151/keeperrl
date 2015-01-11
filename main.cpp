@@ -121,7 +121,7 @@ string getGameName(const SaveFileInfo& save) {
   return name + " (" + getDateString(save.date) + ")";
 }
 
-static Optional<string> chooseSaveFile(vector<pair<Model::GameType, string>> games, string noSaveMsg, View* view) {
+static optional<string> chooseSaveFile(vector<pair<Model::GameType, string>> games, string noSaveMsg, View* view) {
   vector<View::ListElem> options;
   bool noGames = true;
   vector<SaveFileInfo> allFiles;
@@ -136,13 +136,13 @@ static Optional<string> chooseSaveFile(vector<pair<Model::GameType, string>> gam
   }
   if (noGames) {
     view->presentText("", noSaveMsg);
-    return Nothing();
+    return none;
   }
   auto ind = view->chooseFromList("Choose game", options, 0);
   if (ind)
     return allFiles[*ind].path;
   else
-    return Nothing();
+    return none;
 }
 
 static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
@@ -213,7 +213,7 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
   }
 }
 bool tilesPresent() {
-  return ifstream("tiles_int.png");
+  return !!ifstream("tiles_int.png");
 }
 
 #ifdef OSX // see thread comment in stdafx.h
@@ -398,7 +398,7 @@ class MainLoop {
   }
 
   PModel adventurerGame() {
-    Optional<string> savedGame = chooseSaveFile({
+    optional<string> savedGame = chooseSaveFile({
         {Model::GameType::RETIRED_KEEPER, "Retired keeper games:"}},
         "No retired games found.", view);
     if (savedGame)
@@ -408,7 +408,7 @@ class MainLoop {
   }
 
   PModel loadPrevious(bool erase) {
-    Optional<string> savedGame = chooseSaveFile({
+    optional<string> savedGame = chooseSaveFile({
         {Model::GameType::KEEPER, "Keeper games:"},
         {Model::GameType::ADVENTURER, "Adventurer games:"}},
         "No save files found.", view);

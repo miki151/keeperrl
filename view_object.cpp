@@ -146,7 +146,7 @@ ViewObject&  ViewObject::setAttachmentDir(Dir dir) {
   return *this;
 }
 
-Optional<Dir> ViewObject::getAttachmentDir() const {
+optional<Dir> ViewObject::getAttachmentDir() const {
   return attachmentDir;
 }
 
