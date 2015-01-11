@@ -592,7 +592,7 @@ class Sacrifice : public NonTransferable {
 
   private:
   Creature* SERIAL(creature);
-  Optional<Vec2> SERIAL(sacrificePos);
+  optional<Vec2> SERIAL(sacrificePos);
   Callback* SERIAL(callback);
 };
 

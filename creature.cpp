@@ -1231,7 +1231,7 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
   return MsgType(0);
 }
 
-CreatureAction Creature::attack(const Creature* c1, Optional<AttackLevel> attackLevel1, bool spend) {
+CreatureAction Creature::attack(const Creature* c1, optional<AttackLevel> attackLevel1, bool spend) {
   CHECK(!c1->isDead());
   Creature* c = const_cast<Creature*>(c1);
   if (c->getPosition().dist8(position) != 1)
@@ -1791,7 +1791,7 @@ void consumeAttr(Gender& mine, Gender& his, vector<string>& adjectives) {
 
 
 template <typename T>
-void consumeAttr(Optional<T>& mine, Optional<T>& his, vector<string>& adjectives, const string& adj) {
+void consumeAttr(optional<T>& mine, optional<T>& his, vector<string>& adjectives, const string& adj) {
   if (consumeProb() && !mine && his) {
     mine = *his;
     if (!adj.empty())
@@ -1946,7 +1946,7 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) {
     damage += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, ModifierType::THROWN_DAMAGE);
     accuracy += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, ModifierType::THROWN_ACCURACY);
   }
-  Attack attack(this, getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, Nothing());
+  Attack attack(this, getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, none);
   return CreatureAction([=]() {
     playerMessage("You throw " + item->getAName(false, isBlind()));
     monsterMessage(getName().the() + " throws " + item->getAName());
@@ -1975,7 +1975,7 @@ bool Creature::isPlayer() const {
   return controller->isPlayer();
 }
 
-Optional<string> Creature::getFirstName() const {
+optional<string> Creature::getFirstName() const {
   return firstName;
 }
 
@@ -2045,7 +2045,7 @@ bool Creature::isHatcheryAnimal() const {
 bool Creature::dontChase() const {
   return CreatureAttributes::dontChase;
 }
-Optional<SpawnType> Creature::getSpawnType() const {
+optional<SpawnType> Creature::getSpawnType() const {
   return spawnType;
 }
 

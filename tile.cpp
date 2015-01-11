@@ -84,11 +84,11 @@ bool Tile::hasExtraBorders() const {
   return !extraBorders.empty();
 }
 
-Optional<Tile::TileCoord> Tile::getExtraBorderCoord(const EnumSet<Dir>& c) const {
+optional<Tile::TileCoord> Tile::getExtraBorderCoord(const EnumSet<Dir>& c) const {
   if (extraBorders.count(c))
     return extraBorders.at(c);
   else
-    return Nothing();
+    return none;
 }
 
 Tile Tile::setTranslucent(double v) {
@@ -104,7 +104,7 @@ Tile::TileCoord Tile::getSpriteCoord() const {
   return *tileCoord;
 }
 
-Optional<Tile::TileCoord> Tile::getBackgroundCoord() const {
+optional<Tile::TileCoord> Tile::getBackgroundCoord() const {
   return backgroundCoord;
 }
 

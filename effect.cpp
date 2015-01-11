@@ -213,7 +213,7 @@ static void emitPoisonGas(Level* level, Vec2 pos, int strength, bool msg) {
 }
 
 static void guardingBuilder(Creature* c) {
-  Optional<Vec2> dest;
+  optional<Vec2> dest;
   for (Square* square : c->getSquares(Vec2::directions8(true)))
     if (c->move(square->getPosition() - c->getPosition()) && !square->getCreature()) {
       dest = square->getPosition() - c->getPosition();

@@ -97,7 +97,7 @@ class DrawCustom : public GuiElem {
   function<void(Renderer&, Rectangle)> drawFun;
 };
 
-PGuiElem GuiElem::rectangle(Color color, Optional<Color> borderColor) {
+PGuiElem GuiElem::rectangle(Color color, optional<Color> borderColor) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawFilledRectangle(bounds, color, borderColor);
@@ -115,7 +115,7 @@ PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, 
   return PGuiElem(new DrawCustom(
         [&tex, align, offset, alpha, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
           Vec2 size(tex.getSize().x, tex.getSize().y);
-          Optional<Vec2> stretchSize;
+          optional<Vec2> stretchSize;
           Vec2 origin;
           Vec2 pos;
           switch (align) {
@@ -736,7 +736,7 @@ class ScrollBar : public GuiLayout {
   }
 
   virtual void onMouseRelease() override {
-    held = Nothing();
+    held = none;
   }
 
   virtual bool isVisible(int num) {
@@ -747,7 +747,7 @@ class ScrollBar : public GuiLayout {
   int buttonHeight;
   int vMargin;
   int* scrollPos;
-  Optional<int> held;
+  optional<int> held;
   VerticalList* content;
   int listSize;
   int contentHeight;

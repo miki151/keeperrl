@@ -287,7 +287,7 @@ class Corpse : public Item {
     }
   }
 
-  virtual Optional<CorpseInfo> getCorpseInfo() const override { 
+  virtual optional<CorpseInfo> getCorpseInfo() const override { 
     return corpseInfo;
   }
 
@@ -482,7 +482,7 @@ ItemFactory& ItemFactory::addUniqueItem(ItemType id) {
   return *this;
 }
 
-vector<PItem> ItemFactory::random(Optional<int> seed) {
+vector<PItem> ItemFactory::random(optional<int> seed) {
   if (unique.size() > 0) {
     ItemType id = unique.back();
     unique.pop_back();

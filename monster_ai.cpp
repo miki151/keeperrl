@@ -187,7 +187,7 @@ class Heal : public Behaviour {
       ar & BOOST_SERIALIZATION_NVP(pos) & BOOST_SERIALIZATION_NVP(level);
     }
   };
-  Optional<BedInfo> SERIAL(hasBed);
+  optional<BedInfo> SERIAL(hasBed);
   bool SERIAL(useBeds);
 };
 
@@ -345,7 +345,7 @@ class Fighter : public Behaviour {
 
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
     if (lastSeen && victim == lastSeen->creature)
-      lastSeen = Nothing();
+      lastSeen = none;
   }
 
   REGISTER_HANDLER(ThrowEvent, const Level* l, const Creature* thrower, const Item* item, const vector<Vec2>& traj) {
@@ -518,7 +518,7 @@ class Fighter : public Behaviour {
     if (lastSeen->level != creature->getLevel() ||
         lastSeen->time < creature->getTime() - lastSeenTimeout ||
         lastSeen->pos == creature->getPosition()) {
-      lastSeen = Nothing();
+      lastSeen = none;
       return NoMove;
     }
     if (chase && lastSeen->type == LastSeen::ATTACK)
@@ -570,7 +570,7 @@ class Fighter : public Behaviour {
           return move;
       }
       if (chase && !other->dontChase()) {
-        lastSeen = Nothing();
+        lastSeen = none;
         if (auto action = creature->moveTowards(creature->getPosition() + enemyDir))
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=] {
             GlobalEvents.addCombatEvent(creature);
@@ -619,7 +619,7 @@ class Fighter : public Behaviour {
         & BOOST_SERIALIZATION_NVP(creature);
     }
   };
-  Optional<LastSeen> SERIAL(lastSeen);
+  optional<LastSeen> SERIAL(lastSeen);
 };
 
 class GuardTarget : public Behaviour {

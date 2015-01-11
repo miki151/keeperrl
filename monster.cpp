@@ -56,7 +56,7 @@ const MapMemory& Monster::getMemory() const {
 
 void Monster::onBump(Creature* c) {
   if (c->isEnemy(getCreature()))
-    c->attack(getCreature(), Nothing(), false).perform();
+    c->attack(getCreature(), none, false).perform();
   else if (auto action = c->move(getCreature()->getPosition() - c->getPosition()))
     action.perform();
 }

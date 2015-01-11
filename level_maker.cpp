@@ -89,7 +89,7 @@ class Predicate {
 
 class Empty : public LevelMaker {
   public:
-  Empty(SquareType s, Optional<SquareAttrib> attr = Nothing()) : square(s), attrib(attr) {}
+  Empty(SquareType s, optional<SquareAttrib> attr = none) : square(s), attrib(attr) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
     for (Vec2 v : area) {
@@ -99,7 +99,7 @@ class Empty : public LevelMaker {
 
   private:
   SquareType square;
-  Optional<SquareAttrib> attrib;
+  optional<SquareAttrib> attrib;
 };
 
 class RoomMaker : public LevelMaker {
@@ -107,7 +107,7 @@ class RoomMaker : public LevelMaker {
   RoomMaker(int _numRooms,
             int _minSize, int _maxSize, 
             SquareType _wallType,
-            Optional<SquareType> _onType,
+            optional<SquareType> _onType,
             LevelMaker* _roomContents = new Empty(SquareId::FLOOR),
             vector<LevelMaker*> _insideMakers = {},
             bool _diggableCorners = false) : 
@@ -151,9 +151,9 @@ class RoomMaker : public LevelMaker {
       for (int i : Range(p.x, p.x + k.x)) {
         if (i == p.x || i == p.x + k.x - 1) {
           builder->putSquare(Vec2(i, p.y), wallType,
-              !diggableCorners ? Optional<SquareAttrib>(SquareAttrib::NO_DIG) : Nothing());
+              !diggableCorners ? optional<SquareAttrib>(SquareAttrib::NO_DIG) : none);
           builder->putSquare(Vec2(i, p.y + k.y - 1), wallType,
-              !diggableCorners ? Optional<SquareAttrib>(SquareAttrib::NO_DIG) : Nothing());
+              !diggableCorners ? optional<SquareAttrib>(SquareAttrib::NO_DIG) : none);
         } else {
           builder->putSquare(Vec2(i, p.y), wallType);
           builder->putSquare(Vec2(i, p.y + k.y - 1), wallType);
@@ -180,7 +180,7 @@ class RoomMaker : public LevelMaker {
   int minSize;
   int maxSize;
   SquareType wallType;
-  Optional<SquareType> squareType;
+  optional<SquareType> squareType;
   LevelMaker* roomContents;
   vector<LevelMaker*> insideMakers;
   bool diggableCorners;
@@ -310,7 +310,7 @@ struct FeatureInfo {
 class DungeonFeatures : public LevelMaker {
   public:
   DungeonFeatures(Predicate pred, vector<FeatureInfo> _squareTypes,
-      Optional<SquareAttrib> setAttr = Nothing()): 
+      optional<SquareAttrib> setAttr = none): 
       squareTypes(_squareTypes), predicate(pred), attr(setAttr) {
   }
 
@@ -340,19 +340,19 @@ class DungeonFeatures : public LevelMaker {
   private:
   vector<FeatureInfo> squareTypes;
   Predicate predicate;
-  Optional<SquareAttrib> attr;
+  optional<SquareAttrib> attr;
 };
 
 class Creatures : public LevelMaker {
   public:
-  Creatures(CreatureFactory cf, int numC, MonsterAIFactory actorF, Optional<SquareType> type = Nothing()) :
+  Creatures(CreatureFactory cf, int numC, MonsterAIFactory actorF, optional<SquareType> type = none) :
       cfactory(cf), numCreature(numC), actorFactory(actorF), squareType(type) {}
 
-  Creatures(CreatureFactory cf, int numC, CollectiveBuilder* col, Optional<SquareType> type = Nothing()) :
+  Creatures(CreatureFactory cf, int numC, CollectiveBuilder* col, optional<SquareType> type = none) :
       cfactory(cf), numCreature(numC), actorFactory(MonsterAIFactory::monster()), squareType(type),
       collective(col) {}
 
-  Creatures(CreatureFactory cf, int numC, Optional<SquareType> type = Nothing()) :
+  Creatures(CreatureFactory cf, int numC, optional<SquareType> type = none) :
       cfactory(cf), numCreature(numC), squareType(type) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
@@ -384,8 +384,8 @@ class Creatures : public LevelMaker {
   private:
   CreatureFactory cfactory;
   int numCreature;
-  Optional<MonsterAIFactory> actorFactory;
-  Optional<SquareType> squareType;
+  optional<MonsterAIFactory> actorFactory;
+  optional<SquareType> squareType;
   CollectiveBuilder* collective = nullptr;
 };
 
@@ -495,7 +495,7 @@ class MountainRiver : public LevelMaker {
   MountainRiver(int num, SquareType waterType, SquareType sandType, Predicate startPred)
     : number(num), water(waterType), sand(sandType), startPredicate(startPred) {}
 
-  Optional<Vec2> fillLake(Level::Builder* builder, set<Vec2>& waterTiles, Rectangle area, Vec2 pos) {
+  optional<Vec2> fillLake(Level::Builder* builder, set<Vec2>& waterTiles, Rectangle area, Vec2 pos) {
     vector<Vec2> ret;
     double height = builder->getHeightMap(pos);
     queue<Vec2> q;
@@ -521,7 +521,7 @@ class MountainRiver : public LevelMaker {
         if (!contains(ret, elem.first))
           waterTiles.insert(elem.first);
       if (ret.empty())
-        return Nothing();
+        return none;
       else
         return chooseRandom(ret);
     } else {
@@ -637,8 +637,8 @@ class Blob : public LevelMaker {
 
 class UniformBlob : public Blob {
   public:
-  UniformBlob(SquareType insideSquare, Optional<SquareType> borderSquare = Nothing(),
-      Optional<SquareAttrib> _attrib = Nothing(), double insideRatio = 0.3333) : Blob(insideRatio),
+  UniformBlob(SquareType insideSquare, optional<SquareType> borderSquare = none,
+      optional<SquareAttrib> _attrib = none, double insideRatio = 0.3333) : Blob(insideRatio),
       inside(insideSquare), border(borderSquare), attrib(_attrib) {}
 
   virtual void addSquare(Level::Builder* builder, Vec2 pos, int edgeDist) override {
@@ -650,8 +650,8 @@ class UniformBlob : public Blob {
 
   private:
   SquareType inside;
-  Optional<SquareType> border;
-  Optional<SquareAttrib> attrib;
+  optional<SquareType> border;
+  optional<SquareAttrib> attrib;
 };
 
 class Lake : public Blob {
@@ -1410,7 +1410,7 @@ class RemoveAttrib : public ForEachSquare {
 
 class Stairs : public LevelMaker {
   public:
-  Stairs(StairDirection dir, StairKey k, Predicate onPred, Optional<SquareAttrib> _setAttr = Nothing(),
+  Stairs(StairDirection dir, StairKey k, Predicate onPred, optional<SquareAttrib> _setAttr = none,
       StairLook look = StairLook::NORMAL) : direction(dir), key(k), onPredicate(onPred), setAttr(_setAttr),
       stairLook(look) {}
 
@@ -1429,7 +1429,7 @@ class Stairs : public LevelMaker {
   StairDirection direction;
   StairKey key;
   Predicate onPredicate;
-  Optional<SquareAttrib> setAttr;
+  optional<SquareAttrib> setAttr;
   StairLook stairLook;
 };
 
@@ -1463,7 +1463,7 @@ class ShopMaker : public LevelMaker {
 
 class LevelExit : public LevelMaker {
   public:
-  LevelExit(SquareType _exitType, Optional<SquareAttrib> _attrib = Nothing(), int _minCornerDist = 1)
+  LevelExit(SquareType _exitType, optional<SquareAttrib> _attrib = none, int _minCornerDist = 1)
       : exitType(_exitType), attrib(_attrib), minCornerDist(_minCornerDist) {}
   
   virtual void make(Level::Builder* builder, Rectangle area) override {
@@ -1472,7 +1472,7 @@ class LevelExit : public LevelMaker {
 
   private:
   SquareType exitType;
-  Optional<SquareAttrib> attrib;
+  optional<SquareAttrib> attrib;
   int minCornerDist;
 };
 
@@ -1480,13 +1480,13 @@ class Division : public LevelMaker {
   public:
   Division(double _vRatio, double _hRatio,
       LevelMaker* _upperLeft, LevelMaker* _upperRight, LevelMaker* _lowerLeft, LevelMaker* _lowerRight,
-      Optional<SquareType> _wall = Nothing()) : vRatio(_vRatio), hRatio(_hRatio),
+      optional<SquareType> _wall = none) : vRatio(_vRatio), hRatio(_hRatio),
       upperLeft(_upperLeft), upperRight(_upperRight), lowerLeft(_lowerLeft), lowerRight(_lowerRight), wall(_wall) {}
 
-  Division(double _hRatio, LevelMaker* _left, LevelMaker* _right, Optional<SquareType> _wall = Nothing()) 
+  Division(double _hRatio, LevelMaker* _left, LevelMaker* _right, optional<SquareType> _wall = none) 
       : vRatio(-1), hRatio(_hRatio), upperLeft(_left), upperRight(_right), wall(_wall) {}
 
-  Division(bool, double _vRatio, LevelMaker* _top, LevelMaker* _bottom, Optional<SquareType> _wall = Nothing()) 
+  Division(bool, double _vRatio, LevelMaker* _top, LevelMaker* _bottom, optional<SquareType> _wall = none) 
       : vRatio(_vRatio), hRatio(-1), upperLeft(_top), lowerLeft(_bottom), wall(_wall) {}
 
   void makeHorizDiv(Level::Builder* builder, Rectangle area) {
@@ -1546,7 +1546,7 @@ class Division : public LevelMaker {
   LevelMaker *upperRight = nullptr;
   LevelMaker *lowerLeft = nullptr;
   LevelMaker *lowerRight = nullptr;
-  Optional<SquareType> wall;
+  optional<SquareType> wall;
 };
 
 class Circle : public LevelMaker {
@@ -1662,7 +1662,7 @@ static LevelMaker* underground(bool monsters, CreatureFactory waterFactory, Crea
             sizes.emplace_back(size, size);
           }
           queue->addMaker(new RandomLocations(
-          vector<LevelMaker*>(numLakes, new UniformBlob(lakeType, Nothing(), SquareAttrib::LAKE)),
+          vector<LevelMaker*>(numLakes, new UniformBlob(lakeType, none, SquareAttrib::LAKE)),
           sizes, Predicate::alwaysTrue(), false));
           if (monsters) {
             DeityHabitat deity = (lakeType == SquareId::MAGMA) ? DeityHabitat::FIRE : DeityHabitat::WATER;
@@ -1813,7 +1813,7 @@ MakerQueue* village(SettlementInfo info) {
       { SquareId::TORCH, 2, 4 },
       { SquareId::BED, 3, 5 }};
   queue->addMaker(new LocationMaker(info.location));
-  queue->addMaker(new UniformBlob(building.floorOutside, Nothing(), Nothing(), 0.6));
+  queue->addMaker(new UniformBlob(building.floorOutside, none, none, 0.6));
   vector<LevelMaker*> insideMakers {
  //     hatchery(CreatureFactory::singleType(info.tribe, CreatureId::PIG), Random.get(2, 5)),
       getElderRoom(info)};
@@ -1859,7 +1859,7 @@ MakerQueue* castle(SettlementInfo info) {
       { SquareId::BED, 5, 8 }};
   leftSide->addMaker(new DungeonFeatures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), featureCount));
   for (StairKey key : info.downStairs)
-    leftSide->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(building.floorInside), Nothing()));
+    leftSide->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(building.floorInside), none));
   leftSide->addMaker(getElderRoom(info));
   MakerQueue* inside = new MakerQueue();
   inside->addMaker(new Empty(building.floorOutside));
@@ -1938,7 +1938,7 @@ LevelMaker* makeLake() {
   return queue;
 }
 
-LevelMaker* LevelMaker::towerLevel(Optional<StairKey> down, Optional<StairKey> up) {
+LevelMaker* LevelMaker::towerLevel(optional<StairKey> down, optional<StairKey> up) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(up ? SquareId::ROCK_WALL : SquareId::LOW_ROCK_WALL));
   queue->addMaker(new Margin(1, new Empty(SquareId::FLOOR)));
@@ -1957,7 +1957,7 @@ LevelMaker* makeDragonSwamp(StairKey down, Quest* dragonQuest) {
   dragonQuest->setLocation(loc);
   queue->addMaker(new LocationMaker(loc));
   queue->addMaker(new UniformBlob(SquareId::MUD));
-  queue->addMaker(new Margin(3, new Stairs(StairDirection::DOWN, down, Predicate::type(SquareId::MUD), Nothing(),
+  queue->addMaker(new Margin(3, new Stairs(StairDirection::DOWN, down, Predicate::type(SquareId::MUD), none,
       StairLook::DUNGEON_ENTRANCE_MUD)));
   return queue;
 }
@@ -2020,7 +2020,7 @@ static MakerQueue* genericMineTownMaker(SettlementInfo info, int numCavern, int 
     roomInsides.push_back(new ShopMaker(*info.shopFactory, info.tribe, Random.get(8, 16), building));
   for (auto& elem : info.stockpiles)
     roomInsides.push_back(stockpileMaker(elem));
-  queue->addMaker(new RoomMaker(numRooms, minRoomSize, maxRoomSize, building.wall, Nothing(),
+  queue->addMaker(new RoomMaker(numRooms, minRoomSize, maxRoomSize, building.wall, none,
       new Empty(SquareId::FLOOR, SquareAttrib::CONNECT_CORRIDOR), roomInsides));
   queue->addMaker(new Connector(1, 0));
   Predicate featurePred = Predicate::andPred(
@@ -2053,7 +2053,7 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
   MakerQueue* queue = new MakerQueue();
   BuildingInfo building = get(info.buildingId);
   if (connection)
-    queue->addMaker(new UniformBlob(building.floorOutside, Nothing(), SquareAttrib::CONNECT_CORRIDOR));
+    queue->addMaker(new UniformBlob(building.floorOutside, none, SquareAttrib::CONNECT_CORRIDOR));
   else
     queue->addMaker(new UniformBlob(building.floorOutside));
   queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective));
@@ -2069,7 +2069,7 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
 static LevelMaker* islandVaultMaker(SettlementInfo info, bool connection) {
   MakerQueue* queue = new MakerQueue();
   BuildingInfo building = get(info.buildingId);
-  queue->addMaker(new UniformBlob(SquareId::WATER, Nothing(), SquareAttrib::LAKE));
+  queue->addMaker(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE));
   RandomLocations* locations = new RandomLocations();
   LevelMaker* inside;
   if (!info.stockpiles.empty())
@@ -2105,7 +2105,7 @@ LevelMaker* LevelMaker::mineTownLevel(SettlementInfo info) {
 static void addResources(RandomLocations* locations, int count, int countHere, int minSize, int maxSize, int maxDist,
     int maxDist2, SquareType type, LevelMaker* hereMaker) {
   for (int i : Range(count)) {
-    locations->add(new UniformBlob(type, Nothing(), SquareAttrib::NO_DIG),
+    locations->add(new UniformBlob(type, none, SquareAttrib::NO_DIG),
         {Random.get(minSize, maxSize), Random.get(minSize, maxSize)}, 
         Predicate::type(SquareId::MOUNTAIN2));
     if (i < countHere)
@@ -2174,12 +2174,12 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
  /* for (int i : Range(Random.get(1, 4)))
     locations->add(new Lake(), {20, 20}, Predicate::attrib(SquareAttrib::LOWLAND));*/
   for (int i : Range(Random.get(3, 6))) {
-    locations->add(new UniformBlob(SquareId::WATER, Nothing(), SquareAttrib::LAKE), 
+    locations->add(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE), 
         {Random.get(5, 30), Random.get(5, 30)}, Predicate::type(SquareId::MOUNTAIN2));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
   }
   for (int i : Range(Random.get(3, 5))) {
-    locations->add(new UniformBlob(SquareId::FLOOR, Nothing()), 
+    locations->add(new UniformBlob(SquareId::FLOOR, none), 
         {Random.get(5, 12), Random.get(5, 12)}, Predicate::type(SquareId::MOUNTAIN2));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
   }
@@ -2205,7 +2205,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   return new BorderGuard(queue);
 }
 
-LevelMaker* LevelMaker::pyramidLevel(Optional<CreatureFactory> cfactory, vector<StairKey> up,
+LevelMaker* LevelMaker::pyramidLevel(optional<CreatureFactory> cfactory, vector<StairKey> up,
     vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::YELLOW_WALL));
@@ -2236,10 +2236,10 @@ LevelMaker* LevelMaker::cellarLevel(CreatureFactory cfactory, SquareType wallTyp
   queue->addMaker(new Connector(1, 0));
   queue->addMaker(new DungeonFeatures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), featureCount));
   for (StairKey key : down)
-    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(SquareId::FLOOR), Nothing(),
+    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(SquareId::FLOOR), none,
           stairLook));
   for (StairKey key : up)
-    queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(SquareId::FLOOR), Nothing(), stairLook));
+    queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(SquareId::FLOOR), none, stairLook));
   queue->addMaker(new Creatures(cfactory, Random.get(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareId::FLOOR, 5, 10));
   return new BorderGuard(queue, wallType);
@@ -2254,10 +2254,10 @@ LevelMaker* LevelMaker::cavernLevel(CreatureFactory cfactory, SquareType wallTyp
   queue->addMaker(new UniformBlob(floorType));
   queue->addMaker(new DungeonFeatures(Predicate::type(floorType), featureCount));
   for (StairKey key : down)
-    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(floorType), Nothing(),
+    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(floorType), none,
           stairLook));
   for (StairKey key : up)
-    queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(floorType), Nothing(), stairLook));
+    queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(floorType), none, stairLook));
   queue->addMaker(new Creatures(cfactory, 1, MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), floorType, 10, 15));
   return new BorderGuard(queue, wallType);

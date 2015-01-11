@@ -68,29 +68,29 @@ class CreatureAttributes {
   SERIALIZATION_DECL(CreatureAttributes);
 
   MustInitialize<ViewId> SERIAL(viewId);
-  Optional<ViewId> SERIAL(undeadViewId);
+  optional<ViewId> SERIAL(undeadViewId);
   MustInitialize<EntityName> SERIAL(name);
-  Optional<string> SERIAL(undeadName);
+  optional<string> SERIAL(undeadName);
   EnumMap<AttrType, int> SERIAL(attr);
   MustInitialize<CreatureSize> SERIAL(size);
   MustInitialize<double> SERIAL(weight);
-  Optional<string> SERIAL(chatReactionFriendly);
-  Optional<string> SERIAL(chatReactionHostile);
-  Optional<string> SERIAL(firstName);
-  Optional<string> SERIAL(speciesName);
+  optional<string> SERIAL(chatReactionFriendly);
+  optional<string> SERIAL(chatReactionHostile);
+  optional<string> SERIAL(firstName);
+  optional<string> SERIAL(speciesName);
   bool SERIAL2(specialMonster, false);
   int SERIAL2(barehandedDamage, 0);
-  Optional<AttackType> SERIAL(barehandedAttack);
-  Optional<EffectType> SERIAL(attackEffect);
+  optional<AttackType> SERIAL(barehandedAttack);
+  optional<EffectType> SERIAL(attackEffect);
   bool SERIAL2(harmlessApply, false); // apply the attack effect even if attack was harmless
-  Optional<EffectType> SERIAL(passiveAttack);
+  optional<EffectType> SERIAL(passiveAttack);
   Gender SERIAL2(gender, Gender::male);
   EnumMap<BodyPart, int> bodyParts { 
     { BodyPart::ARM, 2},
     { BodyPart::LEG, 2},
     { BodyPart::HEAD, 1}};
   SERIAL3(bodyParts);
-  Optional<SpawnType> SERIAL(spawnType);
+  optional<SpawnType> SERIAL(spawnType);
   bool SERIAL2(innocent, false);
   bool SERIAL2(uncorporal, false);
   bool SERIAL2(fireCreature, false);

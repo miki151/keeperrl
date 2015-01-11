@@ -59,7 +59,7 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
       lightAmount(squares.getBounds(), 0) {
   for (Vec2 pos : squares.getBounds()) {
     squares[pos]->setLevel(this);
-    Optional<pair<StairDirection, StairKey>> link = squares[pos]->getLandingLink();
+    optional<pair<StairDirection, StairKey>> link = squares[pos]->getLandingLink();
     if (link)
       landingSquares[*link].push_back(pos);
   }
@@ -489,7 +489,7 @@ const SquareType& Level::Builder::getType(Vec2 pos) {
   return type[transform(pos)];
 }
 
-void Level::Builder::putSquare(Vec2 pos, SquareType t, Optional<SquareAttrib> at) {
+void Level::Builder::putSquare(Vec2 pos, SquareType t, optional<SquareAttrib> at) {
   putSquare(pos, SquareFactory::get(t), t, at);
 }
 
@@ -497,7 +497,7 @@ void Level::Builder::putSquare(Vec2 pos, SquareType t, vector<SquareAttrib> at) 
   putSquare(pos, SquareFactory::get(t), t, at);
 }
 
-void Level::Builder::putSquare(Vec2 pos, PSquare square, SquareType t, Optional<SquareAttrib> attr) {
+void Level::Builder::putSquare(Vec2 pos, PSquare square, SquareType t, optional<SquareAttrib> attr) {
   putSquare(pos, std::move(square), t, attr ? vector<SquareAttrib>({*attr}) : vector<SquareAttrib>());
 }
 

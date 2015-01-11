@@ -92,6 +92,7 @@ using std::map;
 using std::set;
 using std::deque;
 using std::string;
+using boost::none;
 
 #endif
 

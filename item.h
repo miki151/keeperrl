@@ -81,16 +81,16 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   string getNameAndModifiers(bool plural = false, bool blind = false) const;
   string getArtifactName() const;
 
-  virtual Optional<EffectType> getEffectType() const;
-  Optional<EffectType> getAttackEffect() const;
+  virtual optional<EffectType> getEffectType() const;
+  optional<EffectType> getAttackEffect() const;
   ItemClass getClass() const;
   
   int getPrice() const;
   void setShopkeeper(const Creature* shopkeeper);
   const Creature* getShopkeeper() const;
 
-  Optional<TrapType> getTrapType() const;
-  Optional<CollectiveResourceId> getResourceId() const;
+  optional<TrapType> getTrapType() const;
+  optional<CollectiveResourceId> getResourceId() const;
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;
@@ -144,7 +144,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
     void serialize(Archive& ar, const unsigned int version);
   };
 
-  virtual Optional<CorpseInfo> getCorpseInfo() const { return Nothing(); }
+  virtual optional<CorpseInfo> getCorpseInfo() const { return none; }
 
   SERIALIZATION_DECL(Item);
 

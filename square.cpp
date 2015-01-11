@@ -100,7 +100,7 @@ bool Square::isLandingSquare(StairDirection direction, StairKey key) {
   return landingLink == make_pair(direction, key);
 }
 
-Optional<pair<StairDirection, StairKey>> Square::getLandingLink() const {
+optional<pair<StairDirection, StairKey>> Square::getLandingLink() const {
   return landingLink;
 }
 
@@ -326,7 +326,7 @@ bool Square::isBurning() const {
   return fire.isBurning();
 }
 
-Optional<ViewObject> Square::getBackgroundObject() const {
+optional<ViewObject> Square::getBackgroundObject() const {
   return backgroundObject;
 }
 

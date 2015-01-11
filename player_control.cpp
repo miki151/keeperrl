@@ -65,10 +65,10 @@ SERIALIZATION_CONSTRUCTOR_IMPL(PlayerControl);
 typedef Collective::CostInfo CostInfo;
 typedef Collective::ResourceId ResourceId;
 
-PlayerControl::BuildInfo::BuildInfo(SquareInfo info, Optional<TechId> id, const string& h, char key, string group)
+PlayerControl::BuildInfo::BuildInfo(SquareInfo info, optional<TechId> id, const string& h, char key, string group)
     : squareInfo(info), buildType(SQUARE), techId(id), help(h), hotkey(key), groupName(group) {}
 
-PlayerControl::BuildInfo::BuildInfo(TrapInfo info, Optional<TechId> id, const string& h, char key, string group)
+PlayerControl::BuildInfo::BuildInfo(TrapInfo info, optional<TechId> id, const string& h, char key, string group)
     : trapInfo(info), buildType(TRAP), techId(id), help(h), hotkey(key), groupName(group) {}
 
 PlayerControl::BuildInfo::BuildInfo(DeityHabitat habitat, CostInfo cost, const string& group, const string& h,
@@ -84,7 +84,7 @@ PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, s
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH, DISPATCH, CLAIM_TILE, TORCH}, type));
 }
 
-PlayerControl::BuildInfo::BuildInfo(MinionInfo info, Optional<TechId> tech, const string& group, const string& h)
+PlayerControl::BuildInfo::BuildInfo(MinionInfo info, optional<TechId> tech, const string& group, const string& h)
     : minionInfo(info), buildType(MINION), techId(tech), help(h), hotkey(0), groupName(group) {}
 
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
@@ -96,13 +96,13 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
   const string workshop = "Manufactories";
   vector<BuildInfo> buildInfo {
     BuildInfo(BuildInfo::DIG, "", 'd'),
-    BuildInfo({SquareId::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, Nothing(), "", 's', "Storage"),
-    BuildInfo({SquareId::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, Nothing(), "", 0, "Storage"),
-    BuildInfo({SquareId::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, Nothing(), "", 0, "Storage"),
-    BuildInfo({SquareId::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, Nothing(), ""),
-    BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, Nothing(), "", 'm'),
-    BuildInfo({SquareId::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, Nothing(), "", 't'),
-    BuildInfo({SquareId::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, Nothing(), "", 'y'),
+    BuildInfo({SquareId::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, none, "", 's', "Storage"),
+    BuildInfo({SquareId::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, none, "", 0, "Storage"),
+    BuildInfo({SquareId::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, none, "", 0, "Storage"),
+    BuildInfo({SquareId::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, none, ""),
+    BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, none, "", 'm'),
+    BuildInfo({SquareId::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, none, "", 't'),
+    BuildInfo({SquareId::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, none, "", 'y'),
     BuildInfo({SquareId::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"}, TechId::CRAFTING,
         "Produces leather equipment, traps, first-aid kits and other.", 'w', workshop),
     BuildInfo({SquareId::FORGE, {ResourceId::IRON, 15}, "Forge"}, TechId::IRON_WORKING,
@@ -111,11 +111,11 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
         "Produces magical potions.", 'r', workshop),
     BuildInfo({SquareId::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"}, TechId::JEWELLERY,
         "Produces magical rings and amulets.", 'j', workshop),
-    BuildInfo({SquareId::RITUAL_ROOM, {ResourceId::MANA, 15}, "Ritual room"}, Nothing(), ""),
-    BuildInfo({SquareId::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, Nothing(), ""),
-    BuildInfo({SquareId::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, Nothing(), "", 'v'),
-    BuildInfo({SquareId::PRISON, {ResourceId::IRON, 20}, "Prison"}, Nothing(), "", 0),
-    BuildInfo({SquareId::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, Nothing(), "", 'u')};
+    BuildInfo({SquareId::RITUAL_ROOM, {ResourceId::MANA, 15}, "Ritual room"}, none, ""),
+    BuildInfo({SquareId::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, none, ""),
+    BuildInfo({SquareId::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, none, "", 'v'),
+    BuildInfo({SquareId::PRISON, {ResourceId::IRON, 20}, "Prison"}, none, "", 0),
+    BuildInfo({SquareId::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, none, "", 'u')};
 /*  for (Deity* deity : Deity::getDeities())
     buildInfo.push_back(BuildInfo(deity->getHabitat(), altarCost, "Shrines",
           deity->getGender().god() + " of " + deity->getEpithetsString(), 0));
@@ -131,12 +131,12 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
     BuildInfo({{SquareId::TRIBE_DOOR, tribe}, {ResourceId::WOOD, 5}, "Door"}, TechId::CRAFTING,
         "Click on a built door to lock it.", 'o', "Installations"),
-    BuildInfo({SquareId::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, Nothing(), "", 0, "Installations"),
+    BuildInfo({SquareId::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, none, "", 0, "Installations"),
     BuildInfo({{SquareId::BARRICADE, tribe}, {ResourceId::WOOD, 20}, "Barricade"}, TechId::CRAFTING, "", 0,
       "Installations"),
     BuildInfo(BuildInfo::TORCH, "Place it on tiles next to a wall.", 'c', "Installations"),
-    BuildInfo({SquareId::EYEBALL, {ResourceId::MANA, 10}, "Eyeball"}, Nothing(), "", 0, "Installations"),
-    BuildInfo({SquareId::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, Nothing(),
+    BuildInfo({SquareId::EYEBALL, {ResourceId::MANA, 10}, "Eyeball"}, none, "", 0, "Installations"),
+    BuildInfo({SquareId::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, none,
         "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
     BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, TechId::TRAPS,
         "Causes the trespasser to panic.", 0, "Traps"),
@@ -495,7 +495,7 @@ void PlayerControl::handleEquipment(View* view, Creature* creature, int prevItem
   for (auto elem : consumables)
     list.push_back(elem.first);
   list.push_back("[Add item]");
-  Optional<int> newIndex = model->getView()->chooseFromList(creature->getName().bare() + "'s equipment", list, prevItem);
+  optional<int> newIndex = model->getView()->chooseFromList(creature->getName().bare() + "'s equipment", list, prevItem);
   if (!newIndex)
     return;
   int index = *newIndex;
@@ -665,11 +665,11 @@ void PlayerControl::handleLibrary(View* view) {
 
 typedef GameInfo::BandInfo::Button Button;
 
-Optional<pair<ViewObject, int>> PlayerControl::getCostObj(CostInfo cost) const {
+optional<pair<ViewObject, int>> PlayerControl::getCostObj(CostInfo cost) const {
   if (cost.value() > 0 && !Collective::resourceInfo.at(cost.id()).dontDisplay)
     return make_pair(getResourceViewObject(cost.id()), cost.value());
   else
-    return Nothing();
+    return none;
 }
 
 string PlayerControl::getMinionName(CreatureId id) const {
@@ -713,25 +713,25 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
       case BuildInfo::DIG: {
              buttons.push_back({
                  ViewObject(ViewId::DIG_ICON, ViewLayer::LARGE_ITEM, ""),
-                 "Dig or cut tree", Nothing(), "", ""});
+                 "Dig or cut tree", none, "", ""});
            }
            break;
       case BuildInfo::FETCH: {
              buttons.push_back({
                  ViewObject(ViewId::FETCH_ICON, ViewLayer::LARGE_ITEM, ""),
-                 "Fetch items", Nothing(), "", ""});
+                 "Fetch items", none, "", ""});
            }
            break;
       case BuildInfo::CLAIM_TILE: {
              buttons.push_back({
                  ViewObject(ViewId::KEEPER_FLOOR, ViewLayer::LARGE_ITEM, ""),
-                 "Claim tile", Nothing(), "", ""});
+                 "Claim tile", none, "", ""});
            }
            break;
       case BuildInfo::DISPATCH: {
              buttons.push_back({
                  ViewObject(ViewId::IMP, ViewLayer::LARGE_ITEM, ""),
-                 "Dispatch imp", Nothing(), "", ""});
+                 "Dispatch imp", none, "", ""});
            }
            break;
       case BuildInfo::TRAP: {
@@ -740,7 +740,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
              buttons.push_back({
                  ViewObject(elem.viewId, ViewLayer::LARGE_ITEM, ""),
                  elem.name,
-                 Nothing(),
+                 none,
                  "(" + toString(numTraps) + " ready)",
                  isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
            }
@@ -767,16 +767,16 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            break; }
       case BuildInfo::DESTROY:
            buttons.push_back({
-               ViewObject(ViewId::DESTROY_BUTTON, ViewLayer::CREATURE, ""), "Remove construction", Nothing(), "",
+               ViewObject(ViewId::DESTROY_BUTTON, ViewLayer::CREATURE, ""), "Remove construction", none, "",
                    ""});
            break;
       case BuildInfo::GUARD_POST:
            buttons.push_back({
-               ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", Nothing(), "", ""});
+               ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", none, "", ""});
            break;
       case BuildInfo::TORCH:
            buttons.push_back({
-               ViewObject(ViewId::TORCH, ViewLayer::CREATURE, ""), "Torch", Nothing(), "", ""});
+               ViewObject(ViewId::TORCH, ViewLayer::CREATURE, ""), "Torch", none, "", ""});
            break;
     }
     if (!isTech)
@@ -858,7 +858,7 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
   messages.push_back(msg);
 }
 
-void PlayerControl::addImportantLongMessage(const string& msg, Optional<Vec2> pos) {
+void PlayerControl::addImportantLongMessage(const string& msg, optional<Vec2> pos) {
 //  model->getView()->presentText("Important", msg);
   if (Creature* c = getControlled())
     c->playerMessage(PlayerMessage(msg, PlayerMessage::CRITICAL));
@@ -910,15 +910,15 @@ static const ViewObject& getConstructionObject(SquareType type) {
   return objects.at(type);
 }
 
-void PlayerControl::setCurrentTeam(Optional<TeamId> team) {
+void PlayerControl::setCurrentTeam(optional<TeamId> team) {
   currentTeam = team;
 }
 
-Optional<TeamId> PlayerControl::getCurrentTeam() const {
+optional<TeamId> PlayerControl::getCurrentTeam() const {
   if (currentTeam && getCollective()->getTeams().exists(*currentTeam))
     return currentTeam;
   else
-    return Nothing();
+    return none;
 }
 
 void PlayerControl::getSquareViewIndex(const Square* square, bool canSee, ViewIndex& index) const {
@@ -973,7 +973,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         ViewObject::Attribute::EFFICIENCY, getCollective()->getEfficiency(pos));
 }
 
-Optional<Vec2> PlayerControl::getPosition(bool force) const {
+optional<Vec2> PlayerControl::getPosition(bool force) const {
   if (force) {
     if (const Creature* keeper = getKeeper())
       return keeper->getPosition();
@@ -985,12 +985,12 @@ Optional<Vec2> PlayerControl::getPosition(bool force) const {
       scrollPos.pop();
       return ret;
     } else
-      return Nothing();
+      return none;
   }
 }
 
-Optional<CreatureView::MovementInfo> PlayerControl::getMovementInfo() const {
-  return Nothing();
+optional<CreatureView::MovementInfo> PlayerControl::getMovementInfo() const {
+  return none;
 }
 
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
@@ -1101,11 +1101,11 @@ void PlayerControl::commandTeam(TeamId team) {
   getCollective()->freeTeamMembers(team);
 }
 
-Optional<PlayerMessage> PlayerControl::findMessage(PlayerMessage::Id id){
+optional<PlayerMessage> PlayerControl::findMessage(PlayerMessage::Id id){
   for (auto& elem : messages)
     if (elem.getUniqueId() == id)
       return elem;
-  return Nothing();
+  return none;
 }
 
 void PlayerControl::processInput(View* view, UserInput input) {
@@ -1131,20 +1131,20 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::EDIT_TEAM:
         if (getCurrentTeam() == input.get<TeamId>())
-          setCurrentTeam(Nothing());
+          setCurrentTeam(none);
         else
           setCurrentTeam(input.get<TeamId>());
         newTeam = false;
         break;
     case UserInputId::CREATE_TEAM:
         newTeam = !newTeam;
-        setCurrentTeam(Nothing());
+        setCurrentTeam(none);
         break;
     case UserInputId::COMMAND_TEAM:
         if (!getCurrentTeam() || getCollective()->getTeams().getMembers(*getCurrentTeam()).empty())
           break;
         commandTeam(*getCurrentTeam());
-        setCurrentTeam(Nothing());
+        setCurrentTeam(none);
         break;
     case UserInputId::CANCEL_TEAM:
         getCollective()->getTeams().cancel(input.get<TeamId>());
@@ -1196,7 +1196,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
             handleSelection(v, getBuildInfo()[input.get<BuildingInfo>().building()], true, rectSelection->deselect);
         }
-        rectSelection = Nothing();
+        rectSelection = none;
         selection = NONE;
         break;
     case UserInputId::EXIT: model->exitAction(); return;

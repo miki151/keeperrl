@@ -152,12 +152,12 @@ class Collective : public Task::Callback {
 
   struct MinionTaskInfo {
     enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME } type;
-    MinionTaskInfo(vector<SquareType>, const string& description, Optional<Warning> = Nothing(), double cost = 0,
+    MinionTaskInfo(vector<SquareType>, const string& description, optional<Warning> = none, double cost = 0,
         bool centerOnly = false);
     MinionTaskInfo(Type, const string&);
     vector<SquareType> squares;
     string description;
-    Optional<Warning> warning;
+    optional<Warning> warning;
     double cost = 0;
     bool centerOnly = false;
   };
@@ -264,8 +264,8 @@ class Collective : public Task::Callback {
 
   struct DormInfo;
   static const EnumMap<SpawnType, DormInfo>& getDormInfo();
-  static Optional<SquareType> getSecondarySquare(SquareType);
-  static Optional<Vec2> chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds);
+  static optional<SquareType> getSecondarySquare(SquareType);
+  static optional<Vec2> chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds);
 
   struct MinionPaymentInfo : public NamedTupleBase<int, double, int> {
     NAMED_TUPLE_STUFF(MinionPaymentInfo);
@@ -358,7 +358,7 @@ class Collective : public Task::Callback {
     NAME_ELEM(1, finishTime);
   };
   map<UniqueEntity<Creature>::Id, CurrentTaskInfo> SERIAL(currentTasks);
-  Optional<Vec2> getTileToExplore(const Creature*, MinionTask) const;
+  optional<Vec2> getTileToExplore(const Creature*, MinionTask) const;
   PTask getStandardTask(Creature* c);
   PTask getEquipmentTask(Creature* c);
   PTask getHealingTask(Creature* c);

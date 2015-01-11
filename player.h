@@ -49,8 +49,8 @@ class Player : public Controller, public CreatureView {
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual const MapMemory& getMemory() const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual Optional<Vec2> getPosition(bool force) const override;
-  virtual Optional<MovementInfo> getMovementInfo() const override;
+  virtual optional<Vec2> getPosition(bool force) const override;
+  virtual optional<MovementInfo> getMovementInfo() const override;
   virtual const Level* getLevel() const override;
   virtual vector<const Creature*> getVisibleEnemies() const override;
   virtual double getTime() const override;
@@ -93,8 +93,8 @@ class Player : public Controller, public CreatureView {
   void equipmentAction();
   void applyAction();
   void applyItem(vector<Item*> item);
-  void throwAction(Optional<Vec2> dir = Nothing());
-  void throwItem(vector<Item*> item, Optional<Vec2> dir = Nothing());
+  void throwAction(optional<Vec2> dir = none);
+  void throwItem(vector<Item*> item, optional<Vec2> dir = none);
   void takeOffAction();
   void hideAction();
   void displayInventory();
@@ -102,17 +102,17 @@ class Player : public Controller, public CreatureView {
   void travelAction();
   void targetAction();
   void payDebtAction();
-  void chatAction(Optional<Vec2> dir = Nothing());
+  void chatAction(optional<Vec2> dir = none);
   void spellAction();
   void consumeAction();
   void fireAction(Vec2 dir);
-  vector<Item*> chooseItem(const string& text, ItemPredicate, Optional<UserInputId> exitAction = Nothing());
+  vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
   void getItemNames(vector<Item*> it, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());
   string getPluralName(Item* item, int num);
   bool SERIAL2(travelling, false);
   Vec2 SERIAL(travelDir);
-  Optional<Vec2> SERIAL(target);
+  optional<Vec2> SERIAL(target);
   const Location* SERIAL2(lastLocation, nullptr);
   vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);

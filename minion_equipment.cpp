@@ -51,7 +51,7 @@ int MinionEquipment::getEquipmentLimit(EquipmentType type) const {
   return 0;
 }
 
-Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
+optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
   if (it->canEquip())
     return MinionEquipment::ARMOR;
   if (contains({ItemClass::RANGED_WEAPON, ItemClass::AMMO}, it->getClass()))
@@ -60,7 +60,7 @@ Optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
     return MinionEquipment::HEALING;
   if (contains(combatConsumables, it->getEffectType()))
     return MinionEquipment::COMBAT_ITEM;
-  return Nothing();
+  return none;
 }
 
 bool MinionEquipment::isItemUseful(const Item* it) const {
@@ -68,7 +68,7 @@ bool MinionEquipment::isItemUseful(const Item* it) const {
 }
 
 bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, bool replacement) const {
-  if (Optional<EquipmentType> type = getEquipmentType(it)) {
+  if (optional<EquipmentType> type = getEquipmentType(it)) {
     int limit = noLimit ? 10000 : getEquipmentLimit(*type);
     if (c->getEquipment().getItems([&](const Item* it) { return getEquipmentType(it) == *type;}).size() >= limit)
       return false;

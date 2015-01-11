@@ -76,7 +76,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   DEF_UNIQUE_PTR(MoraleOverride);
   class MoraleOverride {
     public:
-    virtual Optional<double> getMorale() = 0;
+    virtual optional<double> getMorale() = 0;
     virtual ~MoraleOverride() {}
     template <class Archive> 
     void serialize(Archive& ar, const unsigned int version);
@@ -98,7 +98,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   const EntityName& getName() const;
   string getSpeciesName() const;
   string getNameAndTitle() const;
-  Optional<string> getFirstName() const;
+  optional<string> getFirstName() const;
   void setFirstName(const string&);
   string getGroupName(int count) const;
   int getModifier(ModifierType) const;
@@ -143,7 +143,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   bool isWorshipped() const;
   bool isHatcheryAnimal() const;
   bool dontChase() const;
-  Optional<SpawnType> getSpawnType() const;
+  optional<SpawnType> getSpawnType() const;
   bool canEnter(const MovementType&) const;
 
   int numBodyParts(BodyPart) const;
@@ -183,7 +183,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   CreatureAction pickUp(const vector<Item*>& item, bool spendTime = true);
   CreatureAction drop(const vector<Item*>& item);
   void drop(vector<PItem> item);
-  CreatureAction attack(const Creature*, Optional<AttackLevel> = Nothing(), bool spendTime = true);
+  CreatureAction attack(const Creature*, optional<AttackLevel> = none, bool spendTime = true);
   CreatureAction bumpInto(Vec2 direction);
   CreatureAction applyItem(Item* item);
   void startEquipChain();
@@ -306,7 +306,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   Vec2 SERIAL(position);
   double SERIAL2(time, 1);
   Equipment SERIAL(equipment);
-  Optional<ShortestPath> SERIAL(shortestPath);
+  optional<ShortestPath> SERIAL(shortestPath);
   unordered_set<const Creature*> SERIAL(knownHiding);
   Tribe* SERIAL(tribe);
   vector<EnemyCheck*> SERIAL(enemyChecks);

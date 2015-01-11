@@ -29,7 +29,7 @@ class ViewObject;
 
 class Trigger {
   public:
-  virtual Optional<ViewObject> getViewObject(const Tribe*) const;
+  virtual optional<ViewObject> getViewObject(const Tribe*) const;
   virtual ~Trigger();
 
   virtual void onCreatureEnter(Creature* c);
@@ -57,7 +57,7 @@ class Trigger {
   Trigger(Level*, Vec2 position);
   Trigger(const ViewObject& obj, Level* l, Vec2 p);
 
-  Optional<ViewObject> SERIAL(viewObject);
+  optional<ViewObject> SERIAL(viewObject);
   Level* SERIAL(level);
   Vec2 SERIAL(position);
 };

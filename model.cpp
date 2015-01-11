@@ -130,7 +130,7 @@ const Creature* Model::getPlayer() const {
   return nullptr;
 }
 
-Optional<Model::ExitInfo> Model::update(double totalTime) {
+optional<Model::ExitInfo> Model::update(double totalTime) {
   if (addHero) {
     CHECK(playerControl && playerControl->isRetired());
     landHeroPlayer();
@@ -161,7 +161,7 @@ Optional<Model::ExitInfo> Model::update(double totalTime) {
       }
     }
     if (currentTime > totalTime)
-      return Nothing();
+      return none;
     if (currentTime >= lastTick + 1) {
       MEASURE({ tick(currentTime); }, "ticking time");
     }
@@ -392,7 +392,7 @@ struct EnemyInfo {
 };
 
 static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* tribe, int num,
-    Optional<ItemFactory> itemFactory = Nothing(), vector<VillainInfo> villains = {}) {
+    optional<ItemFactory> itemFactory = none, vector<VillainInfo> villains = {}) {
   return {CONSTRUCT(SettlementInfo,
       c.type = type;
       c.creatures = factory;
@@ -405,7 +405,7 @@ static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* t
 }
 
 static EnemyInfo getVault(SettlementType type, CreatureId id, Tribe* tribe, int num,
-    Optional<ItemFactory> itemFactory = Nothing(), vector<VillainInfo> villains = {}) {
+    optional<ItemFactory> itemFactory = none, vector<VillainInfo> villains = {}) {
   return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, villains);
 }
 
@@ -961,7 +961,7 @@ struct HighscoreElem {
 
   bool highlight = false;
   string name;
-  Optional<string> killer;
+  optional<string> killer;
   int points;
 };
 

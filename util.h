@@ -660,18 +660,13 @@ class OnExit {
   function<void()> fun;
 };
 
-typedef boost::none_t Nothing;
-
-template <class T>
-using Optional = optional<T>;
-
 template <typename T, typename V>
-bool contains(const vector<T>& v, const Optional<V>& elem) {
+bool contains(const vector<T>& v, const optional<V>& elem) {
   return elem && contains(v, *elem);
 }
 
 template <typename T, typename V>
-bool contains(const initializer_list<T>& v, const Optional<V>& elem) {
+bool contains(const initializer_list<T>& v, const optional<V>& elem) {
   return contains(vector<T>(v), elem);
 }
 
@@ -795,27 +790,27 @@ void removeIndex(vector<T>& v, int index) {
 }
 
 template<class T>
-Optional<int> findElement(const vector<T>& v, const T& element) {
+optional<int> findElement(const vector<T>& v, const T& element) {
   for (int i : All(v))
     if (v[i] == element)
       return i;
-  return Nothing();
+  return none;
 }
 
 template<class T>
-Optional<int> findElement(const vector<T*>& v, const T* element) {
+optional<int> findElement(const vector<T*>& v, const T* element) {
   for (int i : All(v))
     if (v[i] == element)
       return i;
-  return Nothing();
+  return none;
 }
 
 template<class T>
-Optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
+optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
   for (int i : All(v))
     if (v[i].get() == element)
       return i;
-  return Nothing();
+  return none;
 }
 
 template<class T>
@@ -1231,10 +1226,10 @@ class SyncQueue {
     return q.front();
   }
 
-  Optional<T> popAsync() {
+  optional<T> popAsync() {
     std::unique_lock<std::mutex> lock(mut);
     if (q.empty())
-      return Nothing();
+      return none;
     else {
       OnExit o([=] { q.pop(); });
       return q.front();

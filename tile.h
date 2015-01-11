@@ -57,13 +57,13 @@ class Tile {
 
   const vector<ViewId>& getExtraBorderIds() const;
   bool hasExtraBorders() const;
-  Optional<TileCoord> getExtraBorderCoord(const EnumSet<Dir>& c) const;
+  optional<TileCoord> getExtraBorderCoord(const EnumSet<Dir>& c) const;
 
   bool hasSpriteCoord() const;
 
   TileCoord getSpriteCoord() const;
   TileCoord getSpriteCoord(const EnumSet<Dir>& c) const;
-  Optional<TileCoord> getBackgroundCoord() const;
+  optional<TileCoord> getBackgroundCoord() const;
 
   bool hasCorners() const;
   vector<TileCoord> getCornerCoords(const EnumSet<Dir>& c) const;
@@ -73,10 +73,10 @@ class Tile {
   static void loadUnicode();
   Tile();
   Tile(TileCoord);
-  Optional<TileCoord> tileCoord;
-  Optional<TileCoord> backgroundCoord;
+  optional<TileCoord> tileCoord;
+  optional<TileCoord> backgroundCoord;
   unordered_map<EnumSet<Dir>, TileCoord> connections;
-  Optional<pair<Dir, TileCoord>> connectionOption;
+  optional<pair<Dir, TileCoord>> connectionOption;
   struct CornerInfo {
     EnumSet<Dir> cornerDef;
     EnumSet<Dir> borders;

@@ -87,7 +87,7 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
     auto lengthFun = [](Vec2 v)->double { return v.length8(); };
     bounds = bounds.intersection(Rectangle(min(to.x, from.x) - margin, min(to.y, from.y) - margin,
         max(to.x, from.x) + margin, max(to.y, from.y) + margin));
-    init(entryFun, lengthFun, target, Nothing(), revShortestLimit);
+    init(entryFun, lengthFun, target, none, revShortestLimit);
     distanceTable.setDistance(target, infinity);
     reverse(entryFun, lengthFun, mult, from, revShortestLimit);
   }
@@ -99,14 +99,14 @@ ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, functio
   if (mult == 0)
     init(entryFun, lengthFun, target, from);
   else {
-    init(entryFun, lengthFun, target, Nothing(), revShortestLimit);
+    init(entryFun, lengthFun, target, none, revShortestLimit);
     distanceTable.setDistance(target, infinity);
     reverse(entryFun, lengthFun, mult, from, revShortestLimit);
   }
 }
 
 void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, Vec2 target,
-    Optional<Vec2> from, Optional<int> limit) {
+    optional<Vec2> from, optional<int> limit) {
   reversed = false;
   distanceTable.clear();
   function<bool(Vec2, Vec2)> comparator;

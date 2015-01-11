@@ -84,10 +84,10 @@ void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
 }
 
 
-Optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
+optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
   Vec2 pos = renderer.getMousePos();
   if (!pos.inRectangle(getBounds()))
-    return Nothing();
+    return none;
   return layout->projectOnMap(getBounds(), pos);
 }
 
@@ -109,7 +109,7 @@ Color getHighlightColor(HighlightType type, double amount) {
 
 set<Vec2> shadowed;
 
-Optional<ViewId> getConnectionId(ViewId id) {
+optional<ViewId> getConnectionId(ViewId id) {
   switch (id) {
     case ViewId::BLACK_WALL:
     case ViewId::YELLOW_WALL:
@@ -127,9 +127,9 @@ Optional<ViewId> getConnectionId(ViewId id) {
   }
 }
 
-Optional<ViewId> getConnectionId(const ViewObject& object) {
+optional<ViewId> getConnectionId(const ViewObject& object) {
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
-    return Nothing();
+    return none;
   else
     return getConnectionId(object.id());
 }
@@ -229,7 +229,7 @@ void MapGui::onMouseMove(Vec2 v) {
     }
     highlightedPos = pos;
   } else
-    highlightedPos = Nothing();
+    highlightedPos = none;
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->squareWidth();
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->squareHeight();
@@ -249,7 +249,7 @@ void MapGui::onMouseRelease() {
     isScrollingNow = false;
     callbacks.refreshFun();
   }
-  mouseHeldPos = Nothing();
+  mouseHeldPos = none;
 }
 
 void MapGui::drawFloorBorders(Renderer& renderer, const EnumSet<Dir>& borders, int x, int y) {
@@ -408,7 +408,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
 void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement) {
   const Level* level = view->getLevel();
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds()))
-    objects[pos] = Nothing();
+    objects[pos] = none;
   if (!isCentered())
     setCenter(*view->getPosition(true));
   else if (auto pos = view->getPosition(false))
@@ -436,7 +436,7 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
       };
     }
   } else
-    screenMovement = Nothing();
+    screenMovement = none;
   connectionMap.clear();
   shadowed.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds()))
@@ -559,7 +559,7 @@ void MapGui::render(Renderer& renderer) {
   renderer.drawFilledRectangle(Rectangle(
         projectOnScreen(levelBounds.getTopLeft(), currentTimeReal),
         projectOnScreen(levelBounds.getBottomRight(), currentTimeReal)), colors[ColorId::BLACK]);
-  Optional<ViewObject> highlighted;
+  optional<ViewObject> highlighted;
   fogOfWar.clear();
   for (ViewLayer layer : layout->getLayers()) {
     for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {

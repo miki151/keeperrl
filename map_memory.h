@@ -38,7 +38,7 @@ class MapMemory {
   SERIAL_CHECKER;
 
   private:
-  Table<Optional<ViewIndex>> SERIAL(table);
+  Table<optional<ViewIndex>> SERIAL(table);
 };
 
 #endif

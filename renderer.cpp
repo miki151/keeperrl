@@ -110,8 +110,8 @@ void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, doubl
       [this, s] { display->draw(s); });
 }
 
-void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, Optional<Color> color,
-    Optional<Vec2> stretchSize) {
+void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, optional<Color> color,
+    optional<Vec2> stretchSize) {
   if (stretchSize)
     drawSprite(pos.x, pos.y, spos.x, spos.y, size.x, size.y, t, stretchSize->x, stretchSize->y, color);
   else
@@ -123,7 +123,7 @@ void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
 }
 
 void Renderer::drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t, int dw, int dh,
-    Optional<Color> color) {
+    optional<Color> color) {
   Sprite s(t, sf::IntRect(px, py, w, h));
   s.setPosition(x, y);
   if (color)
@@ -134,7 +134,7 @@ void Renderer::drawSprite(int x, int y, int px, int py, int w, int h, const Text
       [this, s] { display->draw(s); });
 }
 
-void Renderer::drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline) {
+void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
   RectangleShape r(Vector2f(t.getW(), t.getH()));
   r.setPosition(t.getPX(), t.getPY());
   r.setFillColor(color);
@@ -146,7 +146,7 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, Optional<Col
       [this, r] { display->draw(r); });
 }
 
-void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline) {
+void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline) {
   drawFilledRectangle(Rectangle(px, py, kx, ky), color, outline);
 }
 

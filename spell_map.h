@@ -33,7 +33,7 @@ class SpellMap {
 
   private:
   SERIAL_CHECKER;
-  EnumMap<SpellId, Optional<double>> SERIAL(elems);
+  EnumMap<SpellId, optional<double>> SERIAL(elems);
 };
 
 #endif

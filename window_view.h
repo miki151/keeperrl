@@ -54,10 +54,10 @@ class WindowView: public View {
   virtual void updateView(const CreatureView*) override;
   virtual void drawLevelMap(const CreatureView*) override;
   virtual void resetCenter() override;
-  virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
+  virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = View::NORMAL_MENU, int* scrollPos = nullptr,
-      Optional<UserInputId> exitAction = Nothing()) override;
-  virtual Optional<Vec2> chooseDirection(const string& message) override;
+      optional<UserInputId> exitAction = none) override;
+  virtual optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
   virtual void animation(Vec2 pos, AnimationId) override;
@@ -65,9 +65,9 @@ class WindowView: public View {
 
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = NORMAL_MENU, Optional<UserInputId> exitAction = Nothing()) override;
-  virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
-  virtual Optional<string> getText(const string& title, const string& value, int maxLength,
+      MenuType = NORMAL_MENU, optional<UserInputId> exitAction = none) override;
+  virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
+  virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
 
   virtual UserInput getAction() override;
@@ -93,14 +93,14 @@ class WindowView: public View {
   void mapRightClickFun(Vec2);
   Rectangle getMenuPosition(View::MenuType type);
   Rectangle getTextInputPosition();
-  Optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      int* scrollPos, Optional<UserInputId> exitAction, Optional<sf::Event::KeyEvent> exitKey,
+  optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
+      int* scrollPos, optional<UserInputId> exitAction, optional<sf::Event::KeyEvent> exitKey,
       vector<sf::Event::KeyEvent> shortCuts);
-  Optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
+  optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   void rebuildGui();
   void drawMap();
-  Optional<sf::Event::KeyEvent> getEventFromMenu();
+  optional<sf::Event::KeyEvent> getEventFromMenu();
   void propagateEvent(const Event& event, vector<GuiElem*>);
   void keyboardAction(Event::KeyEvent key);
 
@@ -109,9 +109,9 @@ class WindowView: public View {
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
-  Optional<Vec2> getHighlightedTile();
+  optional<Vec2> getHighlightedTile();
 
-  Optional<ViewObject> drawObjectAbs(int x, int y, const ViewIndex&, int sizeX, int sizeY, Vec2 tilePos);
+  optional<ViewObject> drawObjectAbs(int x, int y, const ViewIndex&, int sizeX, int sizeY, Vec2 tilePos);
   void darkenObjectAbs(int x, int y);
   void clearMessageBox();
   void switchZoom();
