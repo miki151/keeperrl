@@ -563,8 +563,7 @@ const Rectangle::Iter& Rectangle::Iter::operator++ () {
   if (pos.y >= ky) {
     pos.y = py;
     ++pos.x;
-  } else 
-    CHECK(pos.x < kx) << "Iterator out of range: " << **this << ", " << Vec2(px, py) << " " << Vec2(kx, ky);
+  }
   return *this;
 }
 

@@ -427,7 +427,8 @@ void WindowView::updateView(const CreatureView* collective) {
   switchTiles();
   collective->refreshGameInfo(gameInfo);
   mapGui->setSpriteMode(currentTileLayout.sprites);
-  mapGui->updateObjects(collective, mapLayout, options->getBoolValue(OptionId::SMOOTH_MOVEMENT));
+  mapGui->updateObjects(collective, mapLayout, options->getBoolValue(OptionId::SMOOTH_MOVEMENT)
+      && currentTileLayout.sprites);
   rebuildGui();
 }
 

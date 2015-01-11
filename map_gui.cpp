@@ -423,20 +423,22 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
       objects[pos] = index;
     }
   currentTimeGame = smoothMovement ? view->getTime() : 1000000000;
-  if (auto movement = view->getMovementInfo()) {
-    if (!screenMovement || screenMovement->startTimeGame != movement->prevTime) {
-      screenMovement = {
-        movement->from,
-        movement->to,
-        clock->getRealMillis(),
-        clock->getRealMillis() + 100,
-        movement->prevTime,
-        currentTimeGame,
-        movement->creatureId
-      };
-    }
-  } else
-    screenMovement = none;
+  if (smoothMovement) {
+    if (auto movement = view->getMovementInfo()) {
+      if (!screenMovement || screenMovement->startTimeGame != movement->prevTime) {
+        screenMovement = {
+          movement->from,
+          movement->to,
+          clock->getRealMillis(),
+          clock->getRealMillis() + 100,
+          movement->prevTime,
+          currentTimeGame,
+          movement->creatureId
+        };
+      }
+    } else
+      screenMovement = none;
+  }
   connectionMap.clear();
   shadowed.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds()))
