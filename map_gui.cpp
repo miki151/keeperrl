@@ -55,7 +55,7 @@ bool MapGui::ViewIdMap::has(Vec2 pos, ViewId id) {
   if (!ids.isDirty(pos))
     return false;
   else
-    return ids.getDirtyValue(pos)[id];
+    return pos.inRectangle(ids.getBounds()) && ids.getDirtyValue(pos)[id];
 }
 
 void MapGui::ViewIdMap::clear() {

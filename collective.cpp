@@ -351,12 +351,8 @@ void Collective::onBedCreated(Vec2 pos, SquareType fromType, SquareType toType) 
 }
 
 MoveInfo Collective::getWorkerMove(Creature* c) {
-  if (Task* task = taskMap.getTask(c)) {
-    if (task->isDone()) {
-      taskMap.removeTask(task);
-    } else
-      return task->getMove(c);
-  }
+  if (Task* task = taskMap.getTask(c))
+    return task->getMove(c);
   if (Task* closest = taskMap.getTaskForWorker(c)) {
     taskMap.takeTask(c, closest);
     return closest->getMove(c);
@@ -586,7 +582,7 @@ void Collective::setTask(const Creature *c, PTask task) {
 }
 
 bool Collective::hasTask(const Creature* c) const {
-  return taskMap.getTask(c);
+  return taskMap.hasTask(c);
 }
 
 MoveInfo Collective::getMove(Creature* c) {
@@ -595,12 +591,8 @@ MoveInfo Collective::getMove(Creature* c) {
   if (c->getLevel() != getLevel())
     return NoMove;
   if (Task* task = taskMap.getTask(c))
-    if (taskMap.isPriorityTask(task)) {
-      if (task->isDone()) {
-        taskMap.removeTask(task);
-      } else
-        return task->getMove(c);
-    }
+    if (taskMap.isPriorityTask(task))
+      return task->getMove(c);
   if (MoveInfo move = getTeamMemberMove(c))
     return move;
   if (MoveInfo move = control->getMove(c))
@@ -616,12 +608,8 @@ MoveInfo Collective::getMove(Creature* c) {
     if (MoveInfo move = getGuardPostMove(c))
       return move;
   }
-  if (Task* task = taskMap.getTask(c)) {
-    if (task->isDone()) {
-      taskMap.removeTask(task);
-    } else
-      return task->getMove(c);
-  }
+  if (Task* task = taskMap.getTask(c))
+    return task->getMove(c);
   if (PTask t = getHealingTask(c))
     if (t->getMove(c))
       return taskMap.addTask(std::move(t), c)->getMove(c);
@@ -1248,8 +1236,6 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     addMoraleForKill(killer, victim1);
     kills.push_back(victim1);
     points += victim1->getDifficultyPoints();
-/*    if (Creature* leader = getLeader())
-      leader->increaseExpLevel(double(victim1->getDifficultyPoints()) / 200);*/
     if (killer)
       control->addMessage(PlayerMessage(victim1->getName().a() + " is killed by " + killer->getName().a())
           .setPosition(victim1->getPosition()));

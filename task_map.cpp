@@ -147,11 +147,23 @@ void TaskMap<CostInfo>::unmarkSquare(Vec2 pos) {
 }
 
 template <class CostInfo>
-Task* TaskMap<CostInfo>::getTask(const Creature* c) const {
+bool TaskMap<CostInfo>::hasTask(const Creature* c) const {
   if (creatureMap.contains(c))
-    return creatureMap.get(c);
+    return !creatureMap.get(c)->isDone();
   else
     return nullptr;
+}
+
+template <class CostInfo>
+Task* TaskMap<CostInfo>::getTask(const Creature* c) {
+  if (creatureMap.contains(c)) {
+    Task* task = creatureMap.get(c);
+    if (task->isDone())
+      removeTask(task);
+    else
+      return task;
+  }
+  return nullptr;
 }
 
 template <class CostInfo>
