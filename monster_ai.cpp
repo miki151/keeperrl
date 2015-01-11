@@ -158,7 +158,7 @@ class Heal : public Behaviour {
         for (Square* square : creature->getSquares(Rectangle(-bedRadius, bedRadius).getAllSquares()))
           if (square->getApplyType(creature) == SquareApplyType::SLEEP)
             if (auto action = creature->moveTowards(square->getPosition())) {
-              hasBed = {square->getPosition(), creature->getLevel() };
+              hasBed = BedInfo{square->getPosition(), creature->getLevel() };
               return { 0.4 * min(1.0, 1.5 - creature->getHealth()), action};
             }
       } else 

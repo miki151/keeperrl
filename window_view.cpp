@@ -1154,7 +1154,7 @@ optional<Event::KeyEvent> WindowView::getEventFromMenu() {
   for (KeyInfo key : keyInfo)
     shortCuts.push_back(key.event);
   auto index = chooseFromListInternal("", options, 0, NORMAL_MENU, nullptr, none,
-      optional<Event::KeyEvent>({Keyboard::F1}), shortCuts);
+      optional<Event::KeyEvent>(Event::KeyEvent{Keyboard::F1}), shortCuts);
   if (!index)
     return none;
   return keyInfo[*index].event;
