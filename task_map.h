@@ -13,7 +13,8 @@ class TaskMap {
   Task* addTask(PTask, const Creature*);
   Task* addPriorityTask(PTask, const Creature*);
   Task* addTask(PTask, Vec2);
-  Task* getTask(const Creature*) const;
+  Task* getTask(const Creature*);
+  bool hasTask(const Creature*) const;
   const vector<Task*>& getTasks(Vec2) const;
   const Creature* getOwner(Task*) const;
   optional<Vec2> getPosition(Task*) const;

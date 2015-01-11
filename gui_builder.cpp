@@ -244,6 +244,10 @@ void GuiBuilder::addFpsCounterTick() {
   fpsCounter.addTick();
 }
 
+void GuiBuilder::addUpsCounterTick() {
+  upsCounter.addTick();
+}
+
 PGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   GameInfo::BandInfo& info = gameInfo.bandInfo;
   GameInfo::SunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
@@ -325,7 +329,8 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
               colors[clock->isPaused() ? ColorId::RED : ColorId::WHITE])), 60, 0),
       GuiElem::button([&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })));
   bottomLine.push_back(
-      GuiElem::label("FPS " + toString(fpsCounter.getFps()), colors[ColorId::WHITE]));
+      GuiElem::label("FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()),
+      colors[ColorId::WHITE]));
   main = GuiElem::margin(GuiElem::margins(GuiElem::horizontalList(std::move(bottomLine), 160, 0), 30, 0, 0, 0),
       std::move(main), 48, GuiElem::BOTTOM);
   return GuiElem::stack(GuiElem::stack(std::move(invisible)),

@@ -79,6 +79,7 @@ class GuiBuilder {
   };
 
   void addFpsCounterTick();
+  void addUpsCounterTick();
   void closeOverlayWindows();
   int getActiveBuilding() const;
   int getActiveLibrary() const;
@@ -113,7 +114,7 @@ class GuiBuilder {
     int curSec = -1;
     int curFps = 0;
     sf::Clock clock;
-  } fpsCounter;
+  } fpsCounter, upsCounter;
 
   vector<PGuiElem> drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveTab);
   PGuiElem getButtonLine(GameInfo::BandInfo::Button, int num, int& active, CollectiveTab);
