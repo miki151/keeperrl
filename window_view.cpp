@@ -420,6 +420,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
 
 void WindowView::updateView(const CreatureView* collective) {
   RenderLock lock(renderMutex);
+  guiBuilder.addUpsCounterTick();
   updateMinimap(collective);
   gameReady = true;
   uiLock = false;
