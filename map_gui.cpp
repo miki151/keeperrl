@@ -490,18 +490,20 @@ void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
 void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs) {
   const Tile& tile = Tile::fromViewId(ViewId::FOG_OF_WAR); 
   const Tile& tile2 = Tile::fromViewId(ViewId::FOG_OF_WAR_CORNER); 
-  auto coord = tile.getSpriteCoord(dirs.intersection({Dir::N, Dir::S, Dir::E, Dir::W}));
+  static EnumSet<Dir> fourDirs {Dir::N, Dir::S, Dir::E, Dir::W};
+  auto coord = tile.getSpriteCoord(dirs.intersection(fourDirs));
   renderer.drawTile(pos.x, pos.y, coord, sizeX, sizeY);
-  for (Dir dir : dirs.intersection({Dir::NE, Dir::SE, Dir::NW, Dir::SW})) {
-    switch (dir) {
-      case Dir::NE: if (!dirs[Dir::N] || !dirs[Dir::E]) continue;
-      case Dir::SE: if (!dirs[Dir::S] || !dirs[Dir::E]) continue;
-      case Dir::NW: if (!dirs[Dir::N] || !dirs[Dir::W]) continue;
-      case Dir::SW: if (!dirs[Dir::S] || !dirs[Dir::W]) continue;
-      default: break;
+  for (Dir dir : dirs)
+    if (!fourDirs[dir]) {
+      switch (dir) {
+        case Dir::NE: if (!dirs[Dir::N] || !dirs[Dir::E]) continue;
+        case Dir::SE: if (!dirs[Dir::S] || !dirs[Dir::E]) continue;
+        case Dir::NW: if (!dirs[Dir::N] || !dirs[Dir::W]) continue;
+        case Dir::SW: if (!dirs[Dir::S] || !dirs[Dir::W]) continue;
+        default: break;
+      }
+      renderer.drawTile(pos.x, pos.y, tile2.getSpriteCoord({dir}), sizeX, sizeY);
     }
-    renderer.drawTile(pos.x, pos.y, tile2.getSpriteCoord({dir}), sizeX, sizeY);
-  }
 }
 
 bool MapGui::isFoW(Vec2 pos) const {

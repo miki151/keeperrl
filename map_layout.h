@@ -26,7 +26,7 @@ class MapLayout {
   MapLayout() {}
   MapLayout(int squareW, int squareH, vector<ViewLayer> layers);
 
-  vector<ViewLayer> getLayers() const;
+  const vector<ViewLayer>& getLayers() const;
 
   int squareWidth();
   int squareHeight();
