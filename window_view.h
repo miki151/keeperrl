@@ -133,7 +133,7 @@ class WindowView: public View {
 
   MapLayout* mapLayout;
   MapGui* mapGui;
-  unique_ptr<MinimapGui> minimapGui;
+  MinimapGui* minimapGui;
   PGuiElem mapDecoration;
   PGuiElem minimapDecoration;
   vector<PGuiElem> tempGuiElems;

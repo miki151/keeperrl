@@ -30,6 +30,7 @@ class MinimapGui : public GuiElem {
 
   void update(const Level* level, Rectangle bounds, const CreatureView* creature, bool printLocations = false);
   void presentMap(const CreatureView*, Rectangle bounds, Renderer&, function<void(double, double)> clickFun);
+  void clear();
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;

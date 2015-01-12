@@ -1034,7 +1034,8 @@ void Creature::setTime(double t) {
 
 void Creature::tick(double realTime) {
   updateVision();
-  getDifficultyPoints();
+  if (Random.roll(5))
+    getDifficultyPoints();
   for (Item* item : equipment.getItems()) {
     item->tick(time, level, position);
     if (item->isDiscarded())

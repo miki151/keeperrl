@@ -63,6 +63,10 @@ MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
   mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
 }
 
+void MinimapGui::clear() {
+  refreshBuffer = true;
+}
+
 bool MinimapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
     clickFun();
