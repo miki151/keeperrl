@@ -100,7 +100,7 @@ class Renderer {
   void drawText(Color color, int x, int y, const char* c, bool center = false, int size = textSize);
   void drawImage(int px, int py, const Texture&, double scale = 1);
   void drawImage(int px, int py, int kx, int ky, const Texture&, double scale = 1);
-  void drawImage(Rectangle, const Texture&, double scale = 1);
+  void drawImage(Rectangle target, Rectangle source, const Texture&);
   void drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture&, optional<Color> color = none,
       optional<Vec2> stretchSize = none);
   void drawSprite(int x, int y, int px, int py, int w, int h, const Texture&, int dw = -1, int dh = -1,

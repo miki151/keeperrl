@@ -135,7 +135,7 @@ void WindowView::initialize() {
       [this](Vec2 pos) { mapLeftClickFun(pos); },
       [this](Vec2 pos) { mapRightClickFun(pos); },
       [this] { refreshInput = true;}}, clock );
-  minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
+  minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
   guiBuilder.setTilesOk(useTiles);
@@ -194,6 +194,7 @@ void WindowView::reset() {
   RenderLock lock(renderMutex);
   mapLayout = &currentTileLayout.normalLayout;
   gameReady = false;
+  minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
   mapGui->clearCenter();
   guiBuilder.reset();
 }
@@ -370,7 +371,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
   CHECK(currentThreadId() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   if (gameReady)
-    ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui});
+    ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui.get()});
   return ret;
 }
 
@@ -379,7 +380,7 @@ vector<GuiElem*> WindowView::getClickableGuiElems() {
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   reverse(ret.begin(), ret.end());
   if (gameReady) {
-    ret.push_back(minimapGui);
+    ret.push_back(minimapGui.get());
     ret.push_back(mapGui);
   }
   return ret;
@@ -414,8 +415,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
   const Level* level = creature->getLevel();
   Vec2 rad(40, 40);
   Rectangle bounds(mapLayout->getPlayerPos() - rad, mapLayout->getPlayerPos() + rad);
-  if (level->getBounds().intersects(bounds))
-    minimapGui->update(level, bounds, creature);
+  minimapGui->update(level, bounds, creature);
 }
 
 void WindowView::updateView(const CreatureView* collective) {

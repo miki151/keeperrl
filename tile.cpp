@@ -790,7 +790,7 @@ class TileCoordLookup {
     addSymbol(ViewId::CEMETERY, symbol(".", ColorId::DARK_BLUE));
     addSymbol(ViewId::GRAVE, symbol(0x2617, ColorId::GRAY, true));
     addSymbol(ViewId::BARS, symbol("⧻", ColorId::LIGHT_BLUE));
-    addSymbol(ViewId::BORDER_GUARD, symbol(" ", ColorId::WHITE));
+    addSymbol(ViewId::BORDER_GUARD, symbol(" ", ColorId::BLACK));
     addSymbol(ViewId::ROBE, symbol("[", ColorId::LIGHT_BROWN));
     addSymbol(ViewId::LEATHER_GLOVES, symbol("[", ColorId::BROWN));
     addSymbol(ViewId::STRENGTH_GLOVES, symbol("[", ColorId::RED));
