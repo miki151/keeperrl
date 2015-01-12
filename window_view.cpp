@@ -419,7 +419,10 @@ void WindowView::updateMinimap(const CreatureView* creature) {
 }
 
 void WindowView::updateView(const CreatureView* collective) {
+  if (!wasRendered)
+    return;
   RenderLock lock(renderMutex);
+  wasRendered = false;
   guiBuilder.addUpsCounterTick();
   updateMinimap(collective);
   gameReady = true;
@@ -453,6 +456,7 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
 void WindowView::refreshView() {
   {
     RenderLock lock(renderMutex);
+    wasRendered = true;
     CHECK(currentThreadId() == renderThreadId);
     if (gameReady)
       processEvents();
