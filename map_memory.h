@@ -27,6 +27,8 @@ class MapMemory {
   MapMemory(const MapMemory&);
   void addObject(Vec2 pos, const ViewObject& obj);
   void update(Vec2, const ViewIndex&);
+  const vector<Vec2>& getUpdated() const;
+  void clearUpdated() const;
   void clearSquare(Vec2 pos);
   bool hasViewIndex(Vec2 pos) const;
   ViewIndex getViewIndex(Vec2 pos) const;
@@ -39,6 +41,7 @@ class MapMemory {
 
   private:
   Table<optional<ViewIndex>> SERIAL(table);
+  mutable vector<Vec2> updated;
 };
 
 #endif

@@ -987,7 +987,8 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.vision = Vision::get(VisionId::NORMAL);
               c.movementType = {MovementTrait::WALK};));
     case SquareId::ROAD:
-        return new Square(ViewObject(ViewId::ROAD, ViewLayer::FLOOR, "Road"),
+        return new Square(ViewObject(ViewId::ROAD, ViewLayer::FLOOR, "Road")
+            .setModifier(ViewObject::Modifier::ROAD),
             CONSTRUCT(Square::Params,
               c.name = "road";
               c.vision = Vision::get(VisionId::NORMAL);

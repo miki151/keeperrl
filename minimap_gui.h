@@ -28,9 +28,7 @@ class MinimapGui : public GuiElem {
 
   MinimapGui(function<void()> clickFun);
 
-  void update(const Level* level, Rectangle levelPart, const CreatureView* creature, bool printLocations = false);
-  void update(const Level* level, Rectangle levelPart, Rectangle bounds,
-      const CreatureView* creature, bool printLocations = false);
+  void update(const Level* level, Rectangle bounds, const CreatureView* creature, bool printLocations = false);
   void presentMap(const CreatureView*, Rectangle bounds, Renderer&, function<void(double, double)> clickFun);
 
   virtual void render(Renderer&) override;
@@ -38,15 +36,14 @@ class MinimapGui : public GuiElem {
 
   private:
 
-  void renderMap(Renderer&, Vec2 topLeft);
+  void renderMap(Renderer&, Rectangle target);
   void putMapPixel(Vec2 pos, Color col);
 
   struct MinimapInfo {
     Rectangle bounds;
-    vector<Vec2> roads;
+    unordered_set<Vec2> roads;
     vector<Vec2> enemies;
     Vec2 player;
-    double scale;
     struct Location {
       Vec2 pos;
       string text;
@@ -58,6 +55,7 @@ class MinimapGui : public GuiElem {
 
   sf::Texture mapBufferTex;
   sf::Image mapBuffer;
+  bool refreshBuffer = true;
 };
 
 #endif

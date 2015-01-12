@@ -96,8 +96,9 @@ void Renderer::drawImage(int px, int py, const Texture& image, double scale) {
   drawImage(px, py, px + image.getSize().x * scale, py + image.getSize().y * scale, image, scale);
 }
 
-void Renderer::drawImage(Rectangle r, const Texture& image, double scale) {
-  drawImage(r.getPX(), r.getPY(), r.getKX(), r.getKY(), image, scale);
+void Renderer::drawImage(Rectangle target, Rectangle source, const Texture& image) {
+  drawSprite(target.getPX(), target.getPY(), source.getPX(), source.getPY(), source.getW(), source.getH(),
+      image, target.getW(), target.getH());
 }
 
 void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, double scale) {
