@@ -17,7 +17,7 @@
 
 #include "map_layout.h"
 
-vector<ViewLayer> MapLayout::getLayers() const {
+const vector<ViewLayer>& MapLayout::getLayers() const {
   return layers;
 }
 
