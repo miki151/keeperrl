@@ -1352,9 +1352,9 @@ Creature* PlayerControl::getKeeper() {
 
 void PlayerControl::addToMemory(Vec2 pos) {
   Square* square = getLevel()->getSafeSquare(pos);
-  if (!square->isDirty())
+  if (!square->needsMemoryUpdate())
     return;
-  square->setNonDirty();
+  square->setMemoryUpdated();
   ViewIndex index;
   getSquareViewIndex(square, true, index);
   getMemory(getLevel()).update(pos, index);

@@ -215,8 +215,8 @@ class Square : public Renderable {
 
   void setFog(double val);
 
-  bool isDirty() const;
-  void setNonDirty();
+  bool needsMemoryUpdate() const;
+  void setMemoryUpdated();
 
   Level* getLevel();
   const Level* getLevel() const;
@@ -253,7 +253,10 @@ class Square : public Renderable {
   bool SERIAL(ticking);
   double SERIAL2(fog, 0);
   MovementType SERIAL(movementType);
-  bool SERIAL2(dirty, true);
+  bool SERIAL2(updateMemory, true);
+  mutable bool SERIAL2(updateViewIndex, true);
+  mutable ViewIndex SERIAL(viewIndex);
+  void setDirty();
   bool SERIAL2(canDestroySquare, false);
 };
 
