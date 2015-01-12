@@ -135,7 +135,7 @@ void WindowView::initialize() {
       [this](Vec2 pos) { mapLeftClickFun(pos); },
       [this](Vec2 pos) { mapRightClickFun(pos); },
       [this] { refreshInput = true;}}, clock );
-  minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
+  minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
   guiBuilder.setTilesOk(useTiles);
@@ -194,7 +194,7 @@ void WindowView::reset() {
   RenderLock lock(renderMutex);
   mapLayout = &currentTileLayout.normalLayout;
   gameReady = false;
-  minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
+  minimapGui->clear();
   mapGui->clearCenter();
   guiBuilder.reset();
 }
@@ -371,7 +371,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
   CHECK(currentThreadId() == renderThreadId);
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   if (gameReady)
-    ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui.get()});
+    ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui});
   return ret;
 }
 
@@ -380,7 +380,7 @@ vector<GuiElem*> WindowView::getClickableGuiElems() {
   vector<GuiElem*> ret = extractRefs(tempGuiElems);
   reverse(ret.begin(), ret.end());
   if (gameReady) {
-    ret.push_back(minimapGui.get());
+    ret.push_back(minimapGui);
     ret.push_back(mapGui);
   }
   return ret;

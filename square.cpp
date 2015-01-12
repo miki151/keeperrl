@@ -46,7 +46,9 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(ticking)
     & SVAR(fog)
     & SVAR(movementType)
-    & SVAR(dirty)
+    & SVAR(updateViewIndex)
+    & SVAR(updateMemory)
+    & SVAR(viewIndex)
     & SVAR(canDestroySquare);
   CHECK_SERIAL;
   if (progressMeter)
@@ -88,7 +90,7 @@ string Square::getName() const {
 }
 
 void Square::setName(const string& s) {
-  dirty = true;
+  setDirty();
   name = s;
 }
 
@@ -126,7 +128,7 @@ bool Square::canConstruct(SquareType type) const {
 }
 
 bool Square::construct(SquareType type) {
-  dirty = true;
+  setDirty();
   CHECK(canConstruct(type));
   if (--constructions[type.getId()] <= 0) {
     PSquare newSquare = PSquare(SquareFactory::get(type));
@@ -142,7 +144,7 @@ bool Square::canDestroy() const {
 
 void Square::destroy() {
   CHECK(canDestroy());
-  dirty = true;
+  setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
@@ -157,7 +159,7 @@ void Square::destroyBy(Creature* c) {
 }
 
 void Square::burnOut() {
-  dirty = true;
+  setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
   GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
@@ -190,12 +192,12 @@ const Level* Square::getLevel() const {
 }
 
 void Square::setFog(double val) {
-  dirty = true;
+  setDirty();
   fog = val;
 }
 
 void Square::tick(double time) {
-  dirty = true;
+  setDirty();
   if (!inventory.isEmpty())
     for (Item* item : inventory.getItems()) {
       item->tick(time, level, position);
@@ -253,7 +255,7 @@ bool Square::itemBounces(Item* item, Vision* v) const {
 }
 
 void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, Vision* vision) {
-  dirty = true;
+  setDirty();
   if (creature) {
     item[0]->onHitCreature(creature, attack, item.size() > 1);
     if (!item[0]->isDiscarded())
@@ -296,7 +298,7 @@ bool Square::canEnterSpecial(const Creature* c) const {
 }
 
 void Square::setOnFire(double amount) {
-  dirty = true;
+  setDirty();
   bool burning = fire.isBurning();
   fire.set(amount);
   if (!burning && fire.isBurning()) {
@@ -311,7 +313,7 @@ void Square::setOnFire(double amount) {
 }
 
 void Square::addPoisonGas(double amount) {
-  dirty = true;
+  setDirty();
   if (canSeeThru()) {
     poisonGas.addAmount(amount);
     level->addTickingSquare(position);
@@ -331,7 +333,7 @@ optional<ViewObject> Square::getBackgroundObject() const {
 }
 
 void Square::setBackground(const Square* square) {
-  dirty = true;
+  setDirty();
   if (getViewObject().layer() != ViewLayer::FLOOR_BACKGROUND) {
     const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject) : square->getViewObject();
     if (obj.layer() == ViewLayer::FLOOR_BACKGROUND)
@@ -340,6 +342,10 @@ void Square::setBackground(const Square* square) {
 }
 
 void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
+  if (!updateViewIndex) {
+    ret = viewIndex;
+    return;
+  }
   double fireSize = 0;
   for (Item* it : inventory.getItems())
     fireSize = max(fireSize, it->getFireSize());
@@ -357,17 +363,19 @@ void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
     ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas.getAmount()));
   if (fog)
     ret.setHighlight(HighlightType::FOG, fog);
+  updateViewIndex = false;
+  viewIndex = ret;
 }
 
 void Square::onEnter(Creature* c) {
-  dirty = true;
+  setDirty();
   for (Trigger* t : extractRefs(triggers))
     t->onCreatureEnter(c);
   onEnterSpecial(c);
 }
 
 void Square::dropItem(PItem item) {
-  dirty = true;
+  setDirty();
   if (level)  // if level == null, then it's being constructed, square will be added later
     level->addTickingSquare(getPosition());
   inventory.addItem(std::move(item));
@@ -387,7 +395,7 @@ Creature* Square::getCreature() {
 }
 
 void Square::addTrigger(PTrigger t) {
-  dirty = true;
+  setDirty();
   level->addTickingSquare(position);
   Trigger* ref = t.get();
   level->addLightSource(position, t->getLightEmission());
@@ -400,7 +408,7 @@ const vector<Trigger*> Square::getTriggers() const {
 
 PTrigger Square::removeTrigger(Trigger* trigger) {
   CHECK(trigger);
-  dirty = true;
+  setDirty();
   for (PTrigger& t : triggers)
     if (t.get() == trigger) {
       PTrigger ret = std::move(t);
@@ -424,7 +432,7 @@ const Creature* Square::getCreature() const {
 }
 
 void Square::removeCreature() {
-  dirty = true;
+  setDirty();
   CHECK(creature);
   creature = 0;
 }
@@ -461,21 +469,26 @@ vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {
 }
 
 PItem Square::removeItem(Item* it) {
-  dirty = true;
+  setDirty();
   return inventory.removeItem(it);
 }
 
 vector<PItem> Square::removeItems(vector<Item*> it) {
-  dirty = true;
+  setDirty();
   return inventory.removeItems(it);
 }
 
-void Square::setNonDirty() {
-  dirty = false;
+void Square::setDirty() {
+  updateMemory = true;
+  updateViewIndex = true;
 }
 
-bool Square::isDirty() const {
-  return dirty;
+void Square::setMemoryUpdated() {
+  updateMemory = false;
+}
+
+bool Square::needsMemoryUpdate() const {
+  return updateMemory;
 }
 
 void Square::setMovementType(MovementType t) {
