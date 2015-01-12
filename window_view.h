@@ -143,7 +143,8 @@ class WindowView: public View {
 
   bool gameReady = false;
   bool uiLock = false;
-  std::atomic<bool> refreshInput;
+  atomic<bool> refreshInput;
+  atomic<bool> wasRendered;
 
   typedef std::unique_lock<std::recursive_mutex> RenderLock;
 
