@@ -151,6 +151,24 @@ void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, 
   drawFilledRectangle(Rectangle(px, py, kx, ky), color, outline);
 }
 
+Vector2f getV(Vec2 v) {
+  return {float(v.x), float(v.y)};
+}
+
+void Renderer::addQuad(const Rectangle& r, Color color) {
+  quads.push_back(Vertex(getV(r.getTopLeft()), color));
+  quads.push_back(Vertex(getV(r.getTopRight()), color));
+  quads.push_back(Vertex(getV(r.getBottomRight()), color));
+  quads.push_back(Vertex(getV(r.getBottomLeft()), color));
+}
+
+void Renderer::drawQuads() {
+  vector<Vertex>& quadsTmp = quads;
+  renderList.push_back(
+      [this, quadsTmp] { display->draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
+  quads.clear();
+}
+
 int Renderer::getWidth() {
   return display->getSize().x;
 }

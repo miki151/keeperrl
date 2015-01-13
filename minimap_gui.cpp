@@ -61,6 +61,7 @@ void MinimapGui::render(Renderer& r) {
 
 MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
   mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
+  mapBufferTex.loadFromImage(mapBuffer);
 }
 
 void MinimapGui::clear() {
@@ -121,7 +122,7 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
         info.locations.push_back({pos, loc->getName()});
       }
     }
-  mapBufferTex.loadFromImage(mapBuffer);
+  mapBufferTex.update(mapBuffer);
 }
 
 static Vec2 embed(Vec2 levelSize, Vec2 screenSize) {
