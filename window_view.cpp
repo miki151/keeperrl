@@ -414,7 +414,8 @@ void WindowView::drawLevelMap(const CreatureView* creature) {
 void WindowView::updateMinimap(const CreatureView* creature) {
   const Level* level = creature->getLevel();
   Vec2 rad(40, 40);
-  Rectangle bounds(mapLayout->getPlayerPos() - rad, mapLayout->getPlayerPos() + rad);
+  Vec2 playerPos = mapGui->getScreenPos().div(Vec2(mapLayout->squareWidth(), mapLayout->squareHeight()));
+  Rectangle bounds(playerPos - rad, playerPos + rad);
   minimapGui->update(level, bounds, creature);
 }
 
@@ -424,7 +425,6 @@ void WindowView::updateView(const CreatureView* collective) {
   RenderLock lock(renderMutex);
   wasRendered = false;
   guiBuilder.addUpsCounterTick();
-  updateMinimap(collective);
   gameReady = true;
   uiLock = false;
   switchTiles();
@@ -432,6 +432,7 @@ void WindowView::updateView(const CreatureView* collective) {
   mapGui->setSpriteMode(currentTileLayout.sprites);
   mapGui->updateObjects(collective, mapLayout, options->getBoolValue(OptionId::SMOOTH_MOVEMENT)
       && currentTileLayout.sprites);
+  updateMinimap(collective);
   rebuildGui();
 }
 
@@ -527,7 +528,8 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
       if (auto pos = mapGui->getHighlightedTile(renderer)) {
         refreshScreen(false);
         int numArrow = 0;
-        Vec2 middle = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds()).middle();
+        Vec2 middle = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos())
+            .middle();
         if (pos == middle)
           continue;
         Vec2 dir = (*pos - middle).getBearing();
@@ -541,7 +543,8 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
           case Dir::SE: numArrow = 5; break;
           case Dir::SW: numArrow = 7; break;
         }
-        Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), (middle + dir).x, (middle + dir).y);
+        Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
+            (middle + dir).x, (middle + dir).y);
         if (currentTileLayout.sprites)
           renderer.drawTile(wpos.x, wpos.y, {Vec2(16, numArrow), 4});
         else {

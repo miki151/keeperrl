@@ -99,7 +99,7 @@ bool ViewObject::MovementQueue::hasAny() const {
 }
 
 int ViewObject::MovementQueue::makeGoodIndex(int index) const {
-  return (index % elems.size() + elems.size()) % elems.size();
+  return (index + elems.size()) % elems.size();
 }
 
 ViewObject& ViewObject::setModifier(Modifier mod) {
