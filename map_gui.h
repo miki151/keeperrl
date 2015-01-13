@@ -73,7 +73,6 @@ class MapGui : public GuiElem {
   Callbacks callbacks;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
-  optional<Vec2> highlightedPos;
   string hint;
   struct AnimationInfo {
     PAnimation animation;
