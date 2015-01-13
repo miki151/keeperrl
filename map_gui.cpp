@@ -569,7 +569,7 @@ void MapGui::render(Renderer& renderer) {
       if (!objects[wpos] || objects[wpos]->noObjects()) {
         if (layer == layout->getLayers().back()) {
           if (wpos.inRectangle(levelBounds))
-            renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, colors[ColorId::BLACK]);
+            renderer.addQuad(Rectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY), colors[ColorId::BLACK]);
         }
         fogOfWar.setValue(wpos, true);
         continue;
@@ -586,7 +586,7 @@ void MapGui::render(Renderer& renderer) {
         if (highlightedPos == wpos)
           highlighted = *object;
       }
-      if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, layer) && highlightedPos == wpos) {
+      if ((layer == ViewLayer::FLOOR || layer == ViewLayer::FLOOR_BACKGROUND) && highlightedPos == wpos) {
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
             colors[ColorId::LIGHT_GRAY]);
       }
@@ -612,13 +612,14 @@ void MapGui::render(Renderer& renderer) {
       Vec2 pos = projectOnScreen(wpos, currentTimeReal);
       for (HighlightType highlight : ENUM_ALL(HighlightType))
         if (index->getHighlight(highlight) > 0)
-          renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY,
+          renderer.addQuad(Rectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY),
               getHighlightColor(highlight, index->getHighlight(highlight)));
       if (highlightedPos == wpos) {
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
             colors[ColorId::LIGHT_GRAY]);
       }
     }
+  renderer.drawQuads();
   animations = filter(std::move(animations), [this](const AnimationInfo& elem) 
       { return !elem.animation->isDone(clock->getRealMillis());});
   for (auto& elem : animations)

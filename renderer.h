@@ -28,6 +28,7 @@ using sf::Sprite;
 using sf::Texture;
 using sf::RenderWindow;
 using sf::RenderTarget;
+using sf::Vertex;
 using sf::Event;
 
 RICH_ENUM(ColorId,
@@ -94,10 +95,10 @@ class Renderer {
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(string s);
-  void drawText(FontId, int size, Color color, int x, int y, String s, bool center = false);
-  void drawTextWithHotkey(Color color, int x, int y, const string& text, char key);
-  void drawText(Color color, int x, int y, string s, bool center = false, int size = textSize);
-  void drawText(Color color, int x, int y, const char* c, bool center = false, int size = textSize);
+  void drawText(FontId, int size, Color, int x, int y, String, bool center = false);
+  void drawTextWithHotkey(Color, int x, int y, const string&, char key);
+  void drawText(Color, int x, int y, string, bool center = false, int size = textSize);
+  void drawText(Color, int x, int y, const char* c, bool center = false, int size = textSize);
   void drawImage(int px, int py, const Texture&, double scale = 1);
   void drawImage(int px, int py, int kx, int ky, const Texture&, double scale = 1);
   void drawImage(Rectangle target, Rectangle source, const Texture&);
@@ -107,12 +108,14 @@ class Renderer {
       optional<Color> color = none);
   void drawSprite(int x, int y, SpriteId, optional<Color> color = none);
   void drawSprite(Vec2 pos, Vec2 stretchSize, const Texture&);
-  void drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline = none);
+  void drawFilledRectangle(const Rectangle&, Color, optional<Color> outline = none);
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline = none);
   void drawViewObject(int x, int y, const ViewObject&, bool useSprite, double scale = 1);
   void drawViewObject(int x, int y, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawTile(int x, int y, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawTile(int x, int y, TileCoord coord, int sizeX, int sizeY, Color = colors[ColorId::WHITE]);
+  void addQuad(const Rectangle&, Color);
+  void drawQuads();
   static Color getBleedingColor(const ViewObject&);
   int getWidth();
   int getHeight();
@@ -151,6 +154,7 @@ class Renderer {
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
   vector<function<void()>> renderList;
+  vector<Vertex> quads;
 };
 
 #endif
