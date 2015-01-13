@@ -40,14 +40,14 @@ void MapMemory::addObject(Vec2 pos, const ViewObject& obj) {
     table[pos] = ViewIndex();
   table[pos]->insert(obj);
   table[pos]->setHighlight(HighlightType::MEMORY);
-  updated.push_back(pos);
+  updated.insert(pos);
 }
 
 void MapMemory::update(Vec2 pos, const ViewIndex& index) {
   table[pos] = index;
   table[pos]->setHighlight(HighlightType::MEMORY);
   table[pos]->removeObject(ViewLayer::CREATURE);
-  updated.push_back(pos);
+  updated.insert(pos);
 }
 
 void MapMemory::clearSquare(Vec2 pos) {
@@ -67,7 +67,7 @@ const MapMemory& MapMemory::empty() {
   return mem;
 } 
 
-const vector<Vec2>& MapMemory::getUpdated() const {
+const unordered_set<Vec2>& MapMemory::getUpdated() const {
   return updated;
 }
 

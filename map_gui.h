@@ -46,7 +46,6 @@ class MapGui : public GuiElem {
   virtual void onKeyPressed2(Event::KeyEvent) override;
 
   void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement);
-  void updateLayout(MapLayout*, Rectangle levelBounds);
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void setHint(const string&);
@@ -55,6 +54,7 @@ class MapGui : public GuiElem {
   void setCenter(Vec2 pos);
   void clearCenter();
   bool isCentered() const;
+  Vec2 getScreenPos() const;
 
   private:
   void drawObjectAbs(Renderer&, int x, int y, const ViewObject&, int sizeX, int sizeY, Vec2 tilePos,
@@ -110,7 +110,7 @@ class MapGui : public GuiElem {
     private:
     DirtyTable<EnumSet<ViewId>> ids;
   };
-
+  bool keyScrolling = false;
   ViewIdMap connectionMap;
 };
 

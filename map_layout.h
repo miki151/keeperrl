@@ -30,15 +30,12 @@ class MapLayout {
 
   int squareWidth();
   int squareHeight();
-  Vec2 projectOnScreen(Rectangle bounds, double x, double y);
-  Vec2 projectOnMap(Rectangle bounds, Vec2 screenPos);
-  Rectangle getAllTiles(Rectangle screenBounds, Rectangle tableBounds);
-  void updatePlayerPos(Vec2);
-  Vec2 getPlayerPos();
+  Vec2 projectOnScreen(Rectangle bounds, Vec2 screenPos, double x, double y);
+  Vec2 projectOnMap(Rectangle bounds, Vec2 screenPos, Vec2 pos);
+  Rectangle getAllTiles(Rectangle screenBounds, Rectangle tableBounds, Vec2 screenPos);
 
   private:
   vector<ViewLayer> layers;
-  Vec2 center;
   int squareW;
   int squareH;
 };

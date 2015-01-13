@@ -31,27 +31,19 @@ int MapLayout::squareWidth() {
   return squareW;
 }
 
-Vec2 MapLayout::projectOnScreen(Rectangle bounds, double x, double y) {
-  return bounds.middle() + Vec2(x * squareW, y * squareH) - center;
+Vec2 MapLayout::projectOnScreen(Rectangle bounds, Vec2 screenPos, double x, double y) {
+  return bounds.middle() + Vec2(x * squareW, y * squareH) - screenPos;
 }
 
-Vec2 MapLayout::projectOnMap(Rectangle bounds, Vec2 screenPos) {
-  return (screenPos + center - bounds.middle()).div(Vec2(squareW, squareH));
+Vec2 MapLayout::projectOnMap(Rectangle bounds, Vec2 screenPos, Vec2 pos) {
+  return (pos + screenPos - bounds.middle()).div(Vec2(squareW, squareH));
 }
 
-void MapLayout::updatePlayerPos(Vec2 pos) {
-  center = pos;
-}
-
-Vec2 MapLayout::getPlayerPos() {
-  return center.div(Vec2(squareW, squareH));
-}
-
-Rectangle MapLayout::getAllTiles(Rectangle screenBounds1, Rectangle tableBounds) {
+Rectangle MapLayout::getAllTiles(Rectangle screenBounds1, Rectangle tableBounds, Vec2 screenPos) {
   vector<Vec2> ret;
   Rectangle screenBounds = screenBounds1.minusMargin(-2 * squareH);
   Rectangle grid(screenBounds.getW() / squareW, screenBounds.getH() / squareH);
-  Vec2 offset = center.div(Vec2(squareW, squareH)) - grid.middle();
+  Vec2 offset = screenPos.div(Vec2(squareW, squareH)) - grid.middle();
   return tableBounds.intersection(grid.translate(offset));
 }
 

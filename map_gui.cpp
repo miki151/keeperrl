@@ -62,16 +62,9 @@ void MapGui::ViewIdMap::clear() {
   ids.clear();
 }
 
-void MapGui::updateLayout(MapLayout* l, Rectangle bounds) {
-  levelBounds = bounds;
-  layout = l;
-  Vec2 movePos = Vec2((center.x - mouseOffset.x) * layout->squareWidth(),
+Vec2 MapGui::getScreenPos() const {
+  return Vec2((center.x - mouseOffset.x) * layout->squareWidth(),
       (center.y - mouseOffset.y) * layout->squareHeight());
-  movePos.x = max(movePos.x, 0);
-  movePos.x = min(movePos.x, int(levelBounds.getKX() * layout->squareWidth()));
-  movePos.y = max(movePos.y, 0);
-  movePos.y = min(movePos.y, int(levelBounds.getKY() * layout->squareHeight()));
-  layout->updatePlayerPos(movePos);
 }
 
 void MapGui::setSpriteMode(bool s) {
@@ -88,7 +81,7 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
   Vec2 pos = renderer.getMousePos();
   if (!pos.inRectangle(getBounds()))
     return none;
-  return layout->projectOnMap(getBounds(), pos);
+  return layout->projectOnMap(getBounds(), getScreenPos(), pos);
 }
 
 Color getHighlightColor(HighlightType type, double amount) {
@@ -163,6 +156,8 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
 void MapGui::onKeyPressed2(Event::KeyEvent key) {
   const double shiftScroll = 10;
   const double normalScroll = 2.5;
+  if (!keyScrolling)
+    return;
   switch (key.code) {
     case Keyboard::Up:
     case Keyboard::Numpad8:
@@ -202,7 +197,7 @@ void MapGui::onKeyPressed2(Event::KeyEvent key) {
 
 bool MapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
-    Vec2 pos = layout->projectOnMap(getBounds(), v);
+    Vec2 pos = layout->projectOnMap(getBounds(), getScreenPos(), v);
     callbacks.leftClickFun(pos);
     mouseHeldPos = pos;
     return true;
@@ -221,7 +216,7 @@ bool MapGui::onRightClick(Vec2 pos) {
 }
 
 void MapGui::onMouseMove(Vec2 v) {
-  Vec2 pos = layout->projectOnMap(getBounds(), v);
+  Vec2 pos = layout->projectOnMap(getBounds(), getScreenPos(), v);
   if (v.inRectangle(getBounds())) {
     if (mouseHeldPos && *mouseHeldPos != pos) {
       callbacks.leftClickFun(pos);
@@ -240,7 +235,7 @@ void MapGui::onMouseMove(Vec2 v) {
 void MapGui::onMouseRelease() {
   if (isScrollingNow) {
     if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1)
-      callbacks.rightClickFun(layout->projectOnMap(getBounds(), lastMousePos));
+      callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
     else {
       center.x -= mouseOffset.x;
       center.y -= mouseOffset.y;
@@ -407,14 +402,17 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
 
 void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement) {
   const Level* level = view->getLevel();
-  for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds()))
+  levelBounds = view->getLevel()->getBounds();
+  layout = mapLayout;
+  for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
     objects[pos] = none;
   if (!isCentered())
     setCenter(*view->getPosition(true));
   else if (auto pos = view->getPosition(false))
     setCenter(*pos);
-  updateLayout(mapLayout, view->getLevel()->getBounds());
-  for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds())) 
+  // If we have a fixed position (control mode), disable key scrolling because they move the character
+  keyScrolling = !view->getPosition(false);
+  for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos())) 
     if (level->inBounds(pos)) {
       ViewIndex index;
       view->getViewIndex(pos, index);
@@ -441,7 +439,7 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
   }
   connectionMap.clear();
   shadowed.clear();
-  for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds()))
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds(), getScreenPos()))
     if (auto& index = objects[wpos]) {
       if (index->hasObject(ViewLayer::FLOOR)) {
         const ViewObject& object = index->getObject(ViewLayer::FLOOR);
@@ -512,7 +510,7 @@ bool MapGui::isFoW(Vec2 pos) const {
 
 void MapGui::renderExtraBorders(Renderer& renderer, int currentTimeReal) {
   extraBorderPos.clear();
-  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
       ViewId viewId = objects[wpos]->getObject(ViewLayer::FLOOR_BACKGROUND).id();
       if (Tile::fromViewId(viewId).hasExtraBorders())
@@ -524,7 +522,7 @@ void MapGui::renderExtraBorders(Renderer& renderer, int currentTimeReal) {
               extraBorderPos.setValue(v, {viewId});
           }
     }
-  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     for (ViewId id : extraBorderPos.getValue(wpos)) {
       const Tile& tile = Tile::fromViewId(id);
       for (ViewId underId : tile.getExtraBorderIds())
@@ -552,7 +550,7 @@ Vec2 MapGui::projectOnScreen(Vec2 wpos, int curTime) {
       y += (1 - state) * (screenMovement->to.y - screenMovement->from.y);
     }
   }
-  return layout->projectOnScreen(getBounds(), x, y);
+  return layout->projectOnScreen(getBounds(), getScreenPos(), x, y);
 }
 
 void MapGui::render(Renderer& renderer) {
@@ -566,7 +564,7 @@ void MapGui::render(Renderer& renderer) {
   optional<ViewObject> highlighted;
   fogOfWar.clear();
   for (ViewLayer layer : layout->getLayers()) {
-    for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds)) {
+    for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos())) {
       Vec2 pos = projectOnScreen(wpos, currentTimeReal);
       if (!objects[wpos] || objects[wpos]->noObjects()) {
         if (layer == layout->getLayers().back()) {
@@ -609,7 +607,7 @@ void MapGui::render(Renderer& renderer) {
     if (layer == ViewLayer::FLOOR_BACKGROUND)
       renderExtraBorders(renderer, currentTimeReal);
   }
-  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds))
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     if (auto index = objects[wpos]) {
       Vec2 pos = projectOnScreen(wpos, currentTimeReal);
       for (HighlightType highlight : ENUM_ALL(HighlightType))
