@@ -291,36 +291,27 @@ class MainLoop {
 
   void playGameChoice() {
     while (1) {
-      auto choice = view->chooseFromList("", {
-          View::ListElem("Choose your role:", View::TITLE),
-          "Keeper",
-          "Adventurer", 
-          View::ListElem("Or simply:", View::TITLE),
-          "Load a game",
-          "Go back"},
-          0, View::MAIN_MENU);
-      if (!choice)
-        return;
+      auto choice = view->chooseGameType();
       initializeSingletons();
       PModel model;
-      switch (*choice) {
-        case 0:
+      switch (choice) {
+        case View::KEEPER_CHOICE:
           options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
           if (options->handleOrExit(view, OptionSet::KEEPER, -1)) {
             model = keeperGame();
           }
           break;
-        case 1:
+        case View::ADVENTURER_CHOICE:
           options->setDefaultString(OptionId::ADVENTURER_NAME,
               NameGenerator::get(NameGeneratorId::FIRST)->getNext());
           if (options->handleOrExit(view, OptionSet::ADVENTURER, -1)) {
             model = adventurerGame();
           }
           break;
-        case 2:
+        case View::LOAD_CHOICE:
           model = loadPrevious(eraseSave(options));
           break;
-        case 3: 
+        case View::BACK_CHOICE:
           clearSingletons();
           return;
       }

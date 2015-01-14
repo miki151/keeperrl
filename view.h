@@ -104,12 +104,22 @@ class View {
     MAIN_MENU,
     MAIN_MENU_NO_TILES,
     MINION_MENU,
+    GAME_CHOICE_MENU,
   };
 
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
       Returns none if the player cancelled the choice.*/
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = NORMAL_MENU, int* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
+
+  enum GameTypeChoice {
+    KEEPER_CHOICE,
+    ADVENTURER_CHOICE,
+    LOAD_CHOICE,
+    BACK_CHOICE,
+  };
+
+  virtual GameTypeChoice chooseGameType() = 0;
 
   /** Let's the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(const string& message) = 0;
