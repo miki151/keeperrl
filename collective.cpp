@@ -1746,8 +1746,12 @@ void Collective::onAppliedItemCancel(Vec2 pos) {
 }
 
 void Collective::onTorchBuilt(Vec2 pos, Trigger* t) {
-  if (!torches.count(pos))
-    addTorch(pos);
+  if (!torches.count(pos)) {
+    if (canPlaceTorch(pos))
+      addTorch(pos);
+    else
+      return;
+  }
   torches.at(pos).built() = true;
   torches.at(pos).marked() = 0;
   torches.at(pos).task() = -1;
@@ -2269,6 +2273,7 @@ void Collective::removeTorch(Vec2 pos) {
 }
 
 void Collective::addTorch(Vec2 pos) {
+  CHECK(canPlaceTorch(pos));
   torches[pos] = {false, 0.0, -1, (*getAdjacentWall(getLevel(), pos) - pos).getCardinalDir(), nullptr};
 }
 

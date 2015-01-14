@@ -24,6 +24,7 @@
 #include "square.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
+  mapBufferTex.update(mapBuffer);
   renderer.drawImage(target, info.bounds, mapBufferTex);
   Vec2 topLeft = target.getTopLeft();
   double scale = min(double(target.getW()) / info.bounds.getW(),
@@ -122,7 +123,6 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
         info.locations.push_back({pos, loc->getName()});
       }
     }
-  mapBufferTex.update(mapBuffer);
 }
 
 static Vec2 embed(Vec2 levelSize, Vec2 screenSize) {
