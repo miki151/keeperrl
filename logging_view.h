@@ -25,6 +25,7 @@ enum class LoggingToken {
   YES_OR_NO_PROMPT,
   GET_NUMBER,
   GET_GAME_SPEED,
+  CHOOSE_GAME_TYPE,
 };
 
 template <class T>
@@ -71,6 +72,13 @@ class LoggingView : public T {
         View::MenuType type, int* scrollPos, optional<UserInputId> action) override {
       auto res = T::chooseFromList(title, options, index, type, scrollPos, action);
       auto token = LoggingToken::CHOOSE_FROM_LIST;
+      output << token << res;
+      return res;
+    }
+
+    virtual View::GameTypeChoice chooseGameType() override {
+      auto res = T::chooseGameType();
+      auto token = LoggingToken::CHOOSE_GAME_TYPE;
       output << token << res;
       return res;
     }

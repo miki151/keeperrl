@@ -85,6 +85,13 @@ class ReplayView : public T {
       return action;
     }
 
+    virtual View::GameTypeChoice chooseGameType() override {
+      checkMethod(LoggingToken::CHOOSE_GAME_TYPE);
+      View::GameTypeChoice action;
+      input >> action;
+      return action;
+    }
+
     virtual optional<Vec2> chooseDirection(const string& message) override {
       checkMethod(LoggingToken::CHOOSE_DIRECTION);
       optional<Vec2> action;

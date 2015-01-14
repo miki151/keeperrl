@@ -57,6 +57,7 @@ class WindowView: public View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = View::NORMAL_MENU, int* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
+  virtual GameTypeChoice chooseGameType() override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
@@ -98,6 +99,7 @@ class WindowView: public View {
       vector<sf::Event::KeyEvent> shortCuts);
   optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
+  PGuiElem drawGameChoices(optional<View::GameTypeChoice>& choice, optional<View::GameTypeChoice>& index);
   void rebuildGui();
   void drawMap();
   optional<sf::Event::KeyEvent> getEventFromMenu();
@@ -109,11 +111,7 @@ class WindowView: public View {
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
-  optional<Vec2> getHighlightedTile();
 
-  optional<ViewObject> drawObjectAbs(int x, int y, const ViewIndex&, int sizeX, int sizeY, Vec2 tilePos);
-  void darkenObjectAbs(int x, int y);
-  void clearMessageBox();
   void switchZoom();
   void zoom(bool out);
   void resize(int width, int height, vector<GuiElem*> gui);
@@ -122,7 +120,6 @@ class WindowView: public View {
   void resetMapBounds();
   void switchTiles();
 
-  bool considerScrollEvent(sf::Event&);
   bool considerResizeEvent(sf::Event&, vector<GuiElem*> gui);
 
   int messageInd = 0;

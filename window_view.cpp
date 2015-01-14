@@ -677,6 +677,7 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
   int windowWidth = 800;
   int windowHeight = 400;
   int ySpacing;
+  int yOffset = 0;
   switch (type) {
     case View::MAIN_MENU_NO_TILES:
       ySpacing = (renderer.getHeight() - windowHeight) / 2;
@@ -685,10 +686,134 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
       windowWidth = 0.41 * renderer.getHeight();
       ySpacing = renderer.getHeight() / 3;
       break;
+    case View::GAME_CHOICE_MENU:
+      windowWidth = 0.41 * renderer.getHeight();
+      ySpacing = renderer.getHeight() * 0.28;
+      yOffset = renderer.getHeight() * 0.05;
+      break;
     default: ySpacing = 100; break;
   }
   int xSpacing = (renderer.getWidth() - windowWidth) / 2;
-  return Rectangle(xSpacing, ySpacing, xSpacing + windowWidth, renderer.getHeight() - ySpacing);
+  return Rectangle(xSpacing, ySpacing + yOffset, xSpacing + windowWidth, renderer.getHeight() - ySpacing + yOffset);
+}
+
+PGuiElem WindowView::drawGameChoices(optional<View::GameTypeChoice>& choice,optional<View::GameTypeChoice>& index) {
+  return GuiElem::verticalAspect(
+      GuiElem::marginFit(
+      GuiElem::horizontalListFit(makeVec<PGuiElem>(
+            GuiElem::stack(makeVec<PGuiElem>(
+              GuiElem::button([&] { choice = View::KEEPER_CHOICE;}),
+              GuiElem::mouseOverAction([&] { index = View::KEEPER_CHOICE;}),             
+              GuiElem::mouseHighlightGameChoice(
+                GuiElem::sprite(GuiElem::GAME_HIGHLIGHT, GuiElem::Alignment::LEFT_STRETCHED),
+                View::KEEPER_CHOICE, index),
+              GuiElem::sprite(GuiElem::KEEPER_GAME, GuiElem::Alignment::LEFT_STRETCHED))),
+            GuiElem::stack(makeVec<PGuiElem>(
+              GuiElem::button([&] { choice = View::ADVENTURER_CHOICE;}),
+              GuiElem::mouseHighlightGameChoice(
+                GuiElem::sprite(GuiElem::GAME_HIGHLIGHT, GuiElem::Alignment::RIGHT_STRETCHED),
+                View::ADVENTURER_CHOICE, index),
+              GuiElem::sprite(GuiElem::ADVENTURER_GAME, GuiElem::Alignment::RIGHT_STRETCHED)))), 0),
+      GuiElem::margins(GuiElem::verticalListFit(makeVec<PGuiElem>(
+            GuiElem::stack(
+              GuiElem::button([&] { choice = View::LOAD_CHOICE;}),
+              GuiElem::mouseHighlightGameChoice(GuiElem::mainMenuHighlight(), View::LOAD_CHOICE, index),
+              GuiElem::mainMenuLabel("Load game", 0.2)),
+            GuiElem::stack(
+              GuiElem::button([&] { choice = View::BACK_CHOICE;}),
+              GuiElem::mouseHighlightGameChoice(GuiElem::mainMenuHighlight(), View::BACK_CHOICE, index),
+              GuiElem::mainMenuLabel("Go back", 0.2))), 0), 0, 50, 0, 0),
+      0.6, GuiElem::TOP), 1);
+}
+
+View::GameTypeChoice WindowView::chooseGameType() {
+  if (!useTiles) {
+    if (auto ind = chooseFromListInternal("", {
+          View::ListElem("Choose your role:", View::TITLE),
+          "Keeper",
+          "Adventurer",
+          View::ListElem("Or simply:", View::TITLE),
+          "Load game",
+          "Go back",
+          },
+        0, MenuType::NORMAL_MENU, nullptr, none, none, {}))
+      return (GameTypeChoice)(*ind);
+    else
+      return BACK_CHOICE;
+  }
+  RenderLock lock(renderMutex);
+  uiLock = true;
+  TempClockPause pause(clock);
+  SyncQueue<GameTypeChoice> returnQueue;
+  addReturnDialog<GameTypeChoice>(returnQueue, [=] ()-> GameTypeChoice {
+  optional<View::GameTypeChoice> choice;
+  optional<View::GameTypeChoice> index = KEEPER_CHOICE;
+  PGuiElem stuff = drawGameChoices(choice, index);
+  while (1) {
+    refreshScreen(false);
+    stuff->setBounds(getMenuPosition(View::GAME_CHOICE_MENU));
+    stuff->render(renderer);
+    renderer.drawAndClearBuffer();
+    Event event;
+    while (renderer.pollEvent(event)) {
+      propagateEvent(event, {stuff.get()});
+      if (choice)
+        return *choice;
+      if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
+        continue;
+      if (event.type == Event::KeyPressed)
+        switch (event.key.code) {
+          case Keyboard::Numpad4:
+          case Keyboard::Left:
+            if (index != KEEPER_CHOICE)
+              index = KEEPER_CHOICE;
+            else
+              index = ADVENTURER_CHOICE;
+            break;
+          case Keyboard::Numpad6:
+          case Keyboard::Right:
+            if (index != ADVENTURER_CHOICE)
+              index = ADVENTURER_CHOICE;
+            else
+              index = KEEPER_CHOICE;
+            break;
+          case Keyboard::Numpad8:
+          case Keyboard::Up:
+            if (!index)
+              index = KEEPER_CHOICE;
+            else
+              switch (*index) {
+                case LOAD_CHOICE: index = KEEPER_CHOICE; break;
+                case BACK_CHOICE: index = LOAD_CHOICE; break;
+                case KEEPER_CHOICE: 
+                case ADVENTURER_CHOICE: index = BACK_CHOICE; break;
+                default: break;
+              }
+            break;
+          case Keyboard::Numpad2:
+          case Keyboard::Down:
+            if (!index)
+              index = KEEPER_CHOICE;
+            else
+              switch (*index) {
+                case LOAD_CHOICE: index = BACK_CHOICE; break;
+                case BACK_CHOICE: index = KEEPER_CHOICE; break;
+                case KEEPER_CHOICE: 
+                case ADVENTURER_CHOICE: index = LOAD_CHOICE; break;
+                default: break;
+              }
+            break;
+          case Keyboard::Numpad5:
+          case Keyboard::Return: if (index) return *index;
+          case Keyboard::Escape: return BACK_CHOICE;
+          default: break;
+        }
+    }
+  }
+  });
+  lock.unlock();
+  return returnQueue.pop();
+
 }
 
 optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
@@ -739,8 +864,6 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     stuff = GuiElem::window(std::move(stuff));
   }
   while (1) {
-/*    for (GuiElem* gui : getAllGuiElems())
-      gui->render(renderer);*/
     refreshScreen(false);
     stuff->setBounds(getMenuPosition(menuType));
     stuff->render(renderer);

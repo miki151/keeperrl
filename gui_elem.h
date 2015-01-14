@@ -17,6 +17,7 @@
 #define _GUI_ELEM
 
 #include "renderer.h"
+#include "view.h"
 
 class ViewObject;
 
@@ -51,11 +52,12 @@ class GuiElem {
   static PGuiElem verticalListFit(vector<PGuiElem>, double spacing);
   static PGuiElem horizontalList(vector<PGuiElem>, int elemWidth, int spacing, int numAlignRight = 0);
   static PGuiElem horizontalList(vector<PGuiElem>, vector<int> elemWidth, int spacing, int numAlignRight = 0);
-  static PGuiElem tabs(vector<PGuiElem> buttons, vector<PGuiElem> content, int tabWidth, int tabHeight,
-      int tabSpacing);
+  static PGuiElem horizontalListFit(vector<PGuiElem>, double spacing);
+  static PGuiElem verticalAspect(PGuiElem, double ratio);
   static PGuiElem empty();
   enum MarginType { TOP, LEFT, RIGHT, BOTTOM};
   static PGuiElem margin(PGuiElem top, PGuiElem rest, int height, MarginType);
+  static PGuiElem marginFit(PGuiElem top, PGuiElem rest, double height, MarginType);
   static PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
   static PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   static PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
@@ -71,15 +73,23 @@ class GuiElem {
   static PGuiElem mouseOverAction(function<void()>);
   static PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
   static PGuiElem mouseHighlight2(PGuiElem highlight);
+  static PGuiElem mouseHighlightGameChoice(PGuiElem, View::GameTypeChoice my,
+      optional<View::GameTypeChoice>& highlight);
   static PGuiElem scrollable(PGuiElem content, int contentHeight, int* scrollPos);
   static PGuiElem getScrollButton();
   static PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   static PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
-      TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED};
+      TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED,
+      CENTER_STRETCHED};
   static PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
       Vec2 offset = Vec2(0, 0), double alpha = 1);
-  static PGuiElem spriteFitVert(Texture&, double topMargin, double bottomMargin);
+  enum ImageId {
+    KEEPER_GAME,
+    ADVENTURER_GAME,
+    GAME_HIGHLIGHT,
+  };
+  static PGuiElem sprite(ImageId, Alignment);
   static PGuiElem repeatedPattern(Texture& tex);
   static PGuiElem background(Color);
   static PGuiElem highlight(Color);
@@ -117,6 +127,7 @@ class GuiElem {
   };
 
   static PGuiElem icon(IconId);
+
 };
 
 
