@@ -380,7 +380,7 @@ void Player::equipmentAction() {
         itemsChoice.push_back(nullptr);
       }
     }
-    model->getView()->updateView(this);
+    model->getView()->updateView(this, true);
     optional<int> newIndex = model->getView()->chooseFromList("Equipment", list, index, View::NORMAL_MENU, nullptr,
         UserInputId::EQUIPMENT);
     if (!newIndex) {
@@ -484,7 +484,7 @@ bool Player::interruptedByEnemy() {
   if (enemies.size() > 0) {
     for (const Creature* c : enemies)
       if (!contains(ignoreCreatures, c->getName().a())) {
-        model->getView()->updateView(this);
+        model->getView()->updateView(this, false);
         privateMessage("You notice " + c->getName().a());
         return true;
       }
@@ -598,7 +598,7 @@ void Player::sleeping() {
   else
     ViewObject::setHallu(false);
   MEASURE(
-      model->getView()->updateView(this),
+      model->getView()->updateView(this, false),
       "level render time");
 }
 
@@ -633,7 +633,7 @@ void Player::makeMove() {
   if (updateView) {
     updateView = false;
     MEASURE(
-        model->getView()->updateView(this),
+        model->getView()->updateView(this, false),
         "level render time");
   }
   if (displayTravelInfo && getCreature()->getSquare()->getName() == "road" 
@@ -647,7 +647,7 @@ void Player::makeMove() {
 /*    model->getView()->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
         "\n \nYou can turn these messages off in the options (press F2).");*/
     displayGreeting = false;
-    model->getView()->updateView(this);
+    model->getView()->updateView(this, false);
   }
   for (const Creature* c : getCreature()->getVisibleEnemies()) {
     if (c->isSpecialMonster() && !contains(specialCreatures, c)) {

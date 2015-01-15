@@ -54,8 +54,9 @@ class View {
   /** Returns real-time game mode speed measured in turns per millisecond. **/
   virtual double getGameSpeed() = 0;
 
-  /** Reads the game state from \paramname{creatureView} and only updates internal data, doesn't refresh.*/
-  virtual void updateView(const CreatureView* creatureView) = 0;
+  /** Reads the game state from \paramname{creatureView}. If \paramname{noRefresh} is set,
+      won't trigger screen to refresh.*/
+  virtual void updateView(const CreatureView* creatureView, bool noRefresh) = 0;
 
   /** Draw a blocking view of the whole level.*/
   virtual void drawLevelMap(const CreatureView*) = 0;

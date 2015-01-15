@@ -419,14 +419,15 @@ void WindowView::updateMinimap(const CreatureView* creature) {
   minimapGui->update(level, bounds, creature);
 }
 
-void WindowView::updateView(const CreatureView* collective) {
+void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
   if (!wasRendered)
     return;
   RenderLock lock(renderMutex);
   wasRendered = false;
   guiBuilder.addUpsCounterTick();
   gameReady = true;
-  uiLock = false;
+  if (!noRefresh)
+    uiLock = false;
   switchTiles();
   collective->refreshGameInfo(gameInfo);
   mapGui->setSpriteMode(currentTileLayout.sprites);

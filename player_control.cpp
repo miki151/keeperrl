@@ -267,10 +267,10 @@ void PlayerControl::render(View* view) {
   if (retired)
     return;
   if (!getControlled()) {
-    view->updateView(this);
+    view->updateView(this, false);
   }
   if (showWelcomeMsg && model->getOptions()->getBoolValue(OptionId::HINTS)) {
-    view->updateView(this);
+    view->updateView(this, false);
     showWelcomeMsg = false;
     view->presentText("", "So warlock,\n \nYou were dabbling in the Dark Arts, a tad, I see.\n \n "
         "Welcome to the valley of " + model->getWorldName() + ", where you'll have to do "
@@ -596,7 +596,7 @@ void PlayerControl::handleMarket(View* view, int prevItem) {
   Vec2 dest = chooseRandom(storage);
   getCollective()->takeResource({ResourceId::GOLD, items[*index]->getPrice()});
   getLevel()->getSafeSquare(dest)->dropItem(std::move(items[*index]));
-  view->updateView(this);
+  view->updateView(this, true);
   handleMarket(view, *index);
 }
 
@@ -659,7 +659,7 @@ void PlayerControl::handleLibrary(View* view) {
   Technology* tech = techs[*index];
   getCollective()->takeResource({ResourceId::MANA, int(getCollective()->getTechCost(tech))});
   getCollective()->acquireTech(tech);
-  view->updateView(this);
+  view->updateView(this, true);
   handleLibrary(view);
 }
 

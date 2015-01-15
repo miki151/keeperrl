@@ -193,6 +193,8 @@ void MapGui::onKeyPressed2(Event::KeyEvent key) {
       break;
     default: break;
   }
+  center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
+  center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
 }
 
 bool MapGui::onLeftClick(Vec2 v) {
