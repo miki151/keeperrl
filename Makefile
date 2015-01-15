@@ -12,11 +12,11 @@ CC = g++
 LD = g++
 endif
 
-CFLAGS = -Werror -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare
+CFLAGS = -Werror -Wall -stdlib=libc++ -std=c++11 -Wno-sign-compare -Wno-unused-variable -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare
 
 ifdef OSX
 LDFLAGS = -Wl
-CFLAGS += -DOSX
+CFLAGS += -DOSX -m32 -mmacosx-version-min=10.7
 else
 LDFLAGS = -Wl,-rpath=$(RPATH) -static-libstdc++
 endif
