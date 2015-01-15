@@ -71,7 +71,7 @@ class ViewObject {
     Vec2 direction;
     double tBegin;
     double tEnd;
-    UniqueEntity<Creature>::Id entityId;
+    enum { MOVE, ATTACK } type;
   };
 
   void addMovementInfo(MovementInfo);

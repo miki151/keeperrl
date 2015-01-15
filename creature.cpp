@@ -225,7 +225,7 @@ CreatureAction Creature::move(Vec2 direction) {
       spendTime(3);
     } else
       spendTime(1);
-    modViewObject().addMovementInfo({direction, oldTime, getTime()});
+    modViewObject().addMovementInfo({direction, oldTime, getTime(), ViewObject::MovementInfo::MOVE});
   });
 }
 
@@ -277,7 +277,7 @@ CreatureAction Creature::swapPosition(Vec2 direction, bool force) {
       getSafeSquare(direction)->getCreature()->playerMessage("Excuse me!");
     playerMessage("Excuse me!");
     level->swapCreatures(this, c);
-    c->modViewObject().addMovementInfo({-direction, getTime(), c->getTime()});
+    c->modViewObject().addMovementInfo({-direction, getTime(), c->getTime(), ViewObject::MovementInfo::MOVE});
   });
 }
 
@@ -1235,7 +1235,8 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
 CreatureAction Creature::attack(const Creature* c1, optional<AttackLevel> attackLevel1, bool spend) {
   CHECK(!c1->isDead());
   Creature* c = const_cast<Creature*>(c1);
-  if (c->getPosition().dist8(position) != 1)
+  Vec2 dir = c->getPosition() - getPosition();
+  if (dir.length8() != 1)
     return CreatureAction();
   if (attackLevel1 && !contains(getAttackLevels(), *attackLevel1))
     return CreatureAction("Invalid attack level.");
@@ -1277,8 +1278,10 @@ CreatureAction Creature::attack(const Creature* c1, optional<AttackLevel> attack
   else
     you(MsgType::MISS_ATTACK, enemyName);
   GlobalEvents.addAttackEvent(c, this);
+  double oldTime = getTime();
   if (spend)
     spendTime(1);
+  modViewObject().addMovementInfo({dir, oldTime, getTime(), ViewObject::MovementInfo::ATTACK});
   });
 }
 

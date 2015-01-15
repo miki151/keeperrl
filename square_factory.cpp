@@ -446,6 +446,7 @@ class TribeDoor : public Door {
       modViewObject().removeModifier(ViewObject::Modifier::LOCKED);
       setMovementType({tribe, {MovementTrait::WALK}});    
     }
+    setDirty();
   }
 
   template <class Archive> 

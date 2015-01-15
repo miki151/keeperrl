@@ -232,6 +232,7 @@ class Square : public Renderable {
   string SERIAL(name);
   const MovementType& getMovementType() const;
   void setMovementType(MovementType);
+  void setDirty();
 
   private:
   Item* getTopItem() const;
@@ -256,7 +257,6 @@ class Square : public Renderable {
   bool SERIAL2(updateMemory, true);
   mutable bool SERIAL2(updateViewIndex, true);
   mutable ViewIndex SERIAL(viewIndex);
-  void setDirty();
   bool SERIAL2(canDestroySquare, false);
 };
 
