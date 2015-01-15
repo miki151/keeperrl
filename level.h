@@ -238,9 +238,9 @@ class Level : public UniqueEntity<Level> {
 
     //@{
     /** Puts a square on given position. Sets optional attributes of the square. The attributes remain if the square is changed.*/
-    void putSquare(Vec2, SquareType, Optional<SquareAttrib> = Nothing());
+    void putSquare(Vec2, SquareType, optional<SquareAttrib> = none);
     void putSquare(Vec2, SquareType, vector<SquareAttrib> attribs);
-    void putSquare(Vec2, PSquare, SquareType, Optional<SquareAttrib> = Nothing());
+    void putSquare(Vec2, PSquare, SquareType, optional<SquareAttrib> = none);
     void putSquare(Vec2, PSquare, SquareType, vector<SquareAttrib> attribs);
     //@}
 

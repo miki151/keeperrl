@@ -23,77 +23,86 @@
 #include "creature.h"
 #include "square.h"
 
-void MinimapGui::renderMap(Renderer& renderer, Vec2 topLeft) {
-  renderer.drawImage(info.bounds.translate(topLeft), mapBufferTex, info.scale);
+void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
+  mapBufferTex.update(mapBuffer);
+  renderer.drawImage(target, info.bounds, mapBufferTex);
+  Vec2 topLeft = target.getTopLeft();
+  double scale = min(double(target.getW()) / info.bounds.getW(),
+      double(target.getW()) / info.bounds.getH());
   for (Vec2 v : info.roads) {
     Vec2 rrad(1, 1);
-    Vec2 pos = topLeft + v * info.scale;
-    renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), colors[ColorId::BROWN]);
+    Vec2 pos = topLeft + (v - info.bounds.getTopLeft()) * scale;
+    if (pos.inRectangle(target.minusMargin(rrad.x)))
+      renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), colors[ColorId::BROWN]);
   }
   Vec2 rad(3, 3);
-  if (info.player.inRectangle(info.bounds.minusMargin(rad.x)))
-    renderer.drawFilledRectangle(Rectangle(topLeft + info.player - rad,
-          topLeft + info.player + rad), colors[ColorId::BLUE]);
-  for (Vec2 pos : info.enemies)
-    renderer.drawFilledRectangle(Rectangle(topLeft + pos - rad, topLeft + pos + rad), colors[ColorId::RED]);
-  for (auto loc : info.locations)
+  Vec2 player = topLeft + (info.player - info.bounds.getTopLeft()) * scale;
+  if (player.inRectangle(target.minusMargin(rad.x)))
+    renderer.drawFilledRectangle(Rectangle(player - rad, player + rad), colors[ColorId::BLUE]);
+  for (Vec2 pos : info.enemies) {
+    Vec2 v = (pos - info.bounds.getTopLeft()) * scale;
+    renderer.drawFilledRectangle(Rectangle(topLeft + v - rad, topLeft + v + rad), colors[ColorId::RED]);
+  }
+  for (auto loc : info.locations) {
+    Vec2 v = (loc.pos - info.bounds.getTopLeft()) * scale;
     if (loc.text.empty())
-      renderer.drawText(colors[ColorId::LIGHT_GREEN], topLeft.x + loc.pos.x + 5, topLeft.y + loc.pos.y, "?");
+      renderer.drawText(colors[ColorId::LIGHT_GREEN], topLeft.x + v.x + 5, topLeft.y + v.y, "?");
     else {
-      renderer.drawFilledRectangle(topLeft.x + loc.pos.x, topLeft.y + loc.pos.y,
-          topLeft.x + loc.pos.x + renderer.getTextLength(loc.text) + 10, topLeft.y + loc.pos.y + 25,
+      renderer.drawFilledRectangle(topLeft.x + v.x, topLeft.y + v.y,
+          topLeft.x + v.x + renderer.getTextLength(loc.text) + 10, topLeft.y + v.y + 25,
           transparency(colors[ColorId::BLACK], 130));
-      renderer.drawText(colors[ColorId::WHITE], topLeft.x + loc.pos.x + 5, topLeft.y + loc.pos.y, loc.text);
+      renderer.drawText(colors[ColorId::WHITE], topLeft.x + v.x + 5, topLeft.y + v.y, loc.text);
     }
+  }
 }
 
 void MinimapGui::render(Renderer& r) {
-  renderMap(r, getBounds().getTopLeft());
+  renderMap(r, getBounds());
 }
 
 MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
   mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
+  mapBufferTex.loadFromImage(mapBuffer);
 }
 
-void MinimapGui::onLeftClick(Vec2 v) {
-  if (v.inRectangle(getBounds()))
+void MinimapGui::clear() {
+  refreshBuffer = true;
+}
+
+bool MinimapGui::onLeftClick(Vec2 v) {
+  if (v.inRectangle(getBounds())) {
     clickFun();
+    return true;
+  }
+  return false;
 }
 
-void MinimapGui::putMapPixel(Vec2 pos, Color col) {
-  if (pos.inRectangle(Level::getMaxBounds()))
-    mapBuffer.setPixel(pos.x, pos.y, col);
-}
-
-void MinimapGui::update(const Level* level, Rectangle levelPart, const CreatureView* creature, bool printLocations) {
-  update(level, levelPart, Rectangle(getBounds().getW(), getBounds().getH()), creature, printLocations);
-}
-
-void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bounds, const CreatureView* creature,
-    bool printLocations) {
-  double scale = min(double(bounds.getW()) / levelPart.getW(),
-      double(bounds.getH()) / levelPart.getH());
+void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView* creature, bool printLocations) {
   info.bounds = bounds;
-  info.scale = scale;
-  info.roads.clear();
   info.enemies.clear();
   info.locations.clear();
-  for (Vec2 v : Rectangle(bounds.getW() / scale, bounds.getH() / scale)) {
-    putMapPixel(v, colors[ColorId::BLACK]);
-  }
   const MapMemory& memory = creature->getMemory();
-  for (Vec2 v : levelPart) {
-    if (!v.inRectangle(level->getBounds()) || !memory.hasViewIndex(v))
-      putMapPixel(v - levelPart.getTopLeft(), colors[ColorId::BLACK]);
-    else {
-      putMapPixel(v - levelPart.getTopLeft(), Tile::getColor(level->getSafeSquare(v)->getViewObject()));
-      if (level->getSafeSquare(v)->getName() == "road")
-        info.roads.push_back(v - levelPart.getTopLeft());
+  if (refreshBuffer) {
+    for (Vec2 v : Level::getMaxBounds()) {
+      if (!v.inRectangle(level->getBounds()) || !memory.hasViewIndex(v))
+        mapBuffer.setPixel(v.x, v.y, colors[ColorId::BLACK]);
+      else {
+        mapBuffer.setPixel(v.x, v.y, Tile::getColor(level->getSafeSquare(v)->getViewObject()));
+        if (level->getSafeSquare(v)->getViewObject().hasModifier(ViewObject::Modifier::ROAD))
+          info.roads.insert(v);
+      }
     }
+    refreshBuffer = false;
   }
-  info.player = bounds.getTopLeft() + (*creature->getPosition(true) - levelPart.getTopLeft()) * scale;
+  for (Vec2 v : memory.getUpdated()) {
+    mapBuffer.setPixel(v.x, v.y, Tile::getColor(level->getSafeSquare(v)->getViewObject()));
+    if (level->getSafeSquare(v)->getViewObject().hasModifier(ViewObject::Modifier::ROAD))
+      info.roads.insert(v);
+  }
+  memory.clearUpdated();
+  info.player = *creature->getPosition(true);
   for (const Creature* c : creature->getVisibleEnemies()) {
-    Vec2 pos = bounds.getTopLeft() + (c->getPosition() - levelPart.getTopLeft()) * scale;
+    Vec2 pos = c->getPosition();
     if (pos.inRectangle(bounds))
       info.enemies.push_back(pos);
   }
@@ -106,15 +115,19 @@ void MinimapGui::update(const Level* level, Rectangle levelPart, Rectangle bound
           break;
         }
       if (loc->isMarkedAsSurprise() && !seen) {
-        Vec2 pos = bounds.getTopLeft() + loc->getBounds().middle() * scale;
+        Vec2 pos = loc->getBounds().middle();
         info.locations.push_back({pos, ""});
       }
       if (loc->hasName() && seen) {
-        Vec2 pos = bounds.getTopLeft() + loc->getBounds().getBottomRight() * scale;
+        Vec2 pos = loc->getBounds().getBottomRight();
         info.locations.push_back({pos, loc->getName()});
       }
     }
-  mapBufferTex.loadFromImage(mapBuffer);
+}
+
+static Vec2 embed(Vec2 levelSize, Vec2 screenSize) {
+  double s = min(double(screenSize.x) / levelSize.x, double(screenSize.y) / levelSize.y);
+  return levelSize * s;
 }
 
 void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Renderer& r,
@@ -123,8 +136,8 @@ void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Rend
   double scale = min(double(bounds.getW()) / level->getBounds().getW(),
       double(bounds.getH()) / level->getBounds().getH());
   while (1) {
-    update(level, level->getBounds(), Rectangle(bounds.getW(), bounds.getH()), creature, true);
-    renderMap(r, Vec2(0, 0));
+    update(level, level->getBounds(), creature, true);
+    renderMap(r, Rectangle(Vec2(0, 0), embed(level->getBounds().getBottomRight(), bounds.getBottomRight())));
     r.drawAndClearBuffer();
     Event event;
     while (r.pollEvent(event)) {

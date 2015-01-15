@@ -56,7 +56,7 @@ class SpriteAnim : public Animation {
         origin.x + current.offset.x, origin.y + current.offset.y,
         current.origin.x, current.origin.y,
         current.size.x, current.size.y,
-        Renderer::tiles[tileNum]);
+        renderer.tiles[tileNum]);
   }
 
   private:

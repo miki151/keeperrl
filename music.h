@@ -18,28 +18,33 @@
 
 #include <SFML/Audio/Music.hpp>
 
+#include "util.h"
+
+class Options;
+
+enum class MusicType { MAIN, PEACEFUL, BATTLE, NIGHT };
+
 class Jukebox {
   public:
-  enum Type { INTRO, PEACEFUL, BATTLE };
 
-  Jukebox(const string& introTrack);
+  Jukebox(Options*);
 
-  void addTrack(Type, const string&);
-  void updateCurrent(Type);
+  void addTrack(MusicType, const string&);
+  void update(MusicType);
 
   void toggle();
-  void update();
 
   private:
-  void setCurrent(Type);
+  void setCurrent(MusicType);
+  void continueCurrent();
   bool turnedOff();
-  Type getCurrentType();
+  MusicType getCurrentType();
   unique_ptr<sf::Music[]> music;
-  map<Type, vector<int>> byType;
+  map<MusicType, vector<int>> byType;
   int current = 0;
-  int currentPlaying;
+  int currentPlaying = 0;
   bool on = true;
-  int numTracks = 1;
+  int numTracks = 0;
 };
 
 #endif

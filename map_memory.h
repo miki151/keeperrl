@@ -27,6 +27,8 @@ class MapMemory {
   MapMemory(const MapMemory&);
   void addObject(Vec2 pos, const ViewObject& obj);
   void update(Vec2, const ViewIndex&);
+  const unordered_set<Vec2>& getUpdated() const;
+  void clearUpdated() const;
   void clearSquare(Vec2 pos);
   bool hasViewIndex(Vec2 pos) const;
   ViewIndex getViewIndex(Vec2 pos) const;
@@ -38,7 +40,8 @@ class MapMemory {
   SERIAL_CHECKER;
 
   private:
-  Table<Optional<ViewIndex>> SERIAL(table);
+  Table<optional<ViewIndex>> SERIAL(table);
+  mutable unordered_set<Vec2> updated;
 };
 
 #endif

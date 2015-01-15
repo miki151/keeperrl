@@ -59,9 +59,9 @@ struct ImmigrantInfo {
   EnumSet<MinionTrait> SERIAL(traits);
   bool SERIAL(spawnAtDorm);
   int SERIAL(salary);
-  Optional<TechId> SERIAL(techId);
-  Optional<Model::SunlightInfo::State> SERIAL(limit);
-  Optional<Range> SERIAL(groupSize);
+  optional<TechId> SERIAL(techId);
+  optional<Model::SunlightInfo::State> SERIAL(limit);
+  optional<Range> SERIAL(groupSize);
   bool SERIAL(autoTeam);
 
   template <class Archive>

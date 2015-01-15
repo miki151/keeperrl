@@ -16,17 +16,18 @@
 #include "stdafx.h"
 #include "options.h"
 
-string Options::filename;
-
-const unordered_map<OptionId, int> defaults {
+const unordered_map<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
   {OptionId::ASCII, 0},
   {OptionId::MUSIC, 1},
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
+  {OptionId::SMOOTH_MOVEMENT, 1},
   {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
+  {OptionId::KEEPER_NAME, string("")},
+  {OptionId::ADVENTURER_NAME, string("")},
 };
 
 const map<OptionId, string> names {
@@ -35,9 +36,12 @@ const map<OptionId, string> names {
   {OptionId::MUSIC, "Music"},
   {OptionId::KEEP_SAVEFILES, "Keep save files"},
   {OptionId::SHOW_MAP, "Show map"},
+  {OptionId::SMOOTH_MOVEMENT, "Smooth movement"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
+  {OptionId::KEEPER_NAME, "Keeper's name"},
+  {OptionId::ADVENTURER_NAME, "Adventurer's name"},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -46,18 +50,23 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::ASCII,
       OptionId::MUSIC,
       OptionId::KEEP_SAVEFILES,
+      OptionId::SMOOTH_MOVEMENT,
 #ifndef RELEASE
       OptionId::SHOW_MAP,
 #endif
   }},
-#ifndef RELEASE
   {OptionSet::KEEPER, {
+#ifndef RELEASE
       OptionId::START_WITH_NIGHT,
       OptionId::SHOW_MAP,
       OptionId::STARTING_RESOURCE,
       OptionId::FAST_IMMIGRATION,
-  }},
 #endif
+      OptionId::KEEPER_NAME,
+  }},
+  {OptionSet::ADVENTURER, {
+      OptionId::ADVENTURER_NAME,
+  }},
 };
 
 map<OptionId, Options::Trigger> triggers;
@@ -66,40 +75,91 @@ void Options::addTrigger(OptionId id, Trigger trigger) {
   triggers[id] = trigger;
 }
 
-void Options::init(const string& path) {
-  filename = path;
+Options::Options(const string& path) : filename(path) {
 }
 
-int Options::getValue(OptionId id) {
-  auto values = readValues(filename);
+Options::Value Options::getValue(OptionId id) {
+  auto values = readValues();
   if (values.count(id))
     return values.at(id);
   else
     return defaults.at(id);
 }
 
-void Options::setValue(OptionId id, int value) {
-  auto values = readValues(filename);
-  values[id] = value;
-  if (triggers.count(id))
-    triggers.at(id)(value);
-  writeValues(filename, values);
+bool Options::getBoolValue(OptionId id) {
+  return boost::get<bool>(getValue(id));
 }
 
-unordered_map<OptionId, vector<string>> valueNames {
-  {OptionId::HINTS, { "off", "on" }},
-  {OptionId::ASCII, { "off", "on" }},
-  {OptionId::MUSIC, { "off", "on" }},
-  {OptionId::KEEP_SAVEFILES, { "no", "yes" }},
-  {OptionId::SHOW_MAP, { "no", "yes" }},
-  {OptionId::FAST_IMMIGRATION, { "no", "yes" }},
-  {OptionId::STARTING_RESOURCE, { "no", "yes" }},
-  {OptionId::START_WITH_NIGHT, { "no", "yes" }},
-};
+string Options::getStringValue(OptionId id) {
+  return getValueString(id, getValue(id));
+}
+
+void Options::setValue(OptionId id, Value value) {
+  auto values = readValues();
+  values[id] = value;
+  if (triggers.count(id))
+    triggers.at(id)(boost::get<bool>(value));
+  writeValues(values);
+}
+
+void Options::setDefaultString(OptionId id, const string& s) {
+  defaultStrings[id] = s;
+}
+
+static string getOnOff(const Options::Value& value) {
+  return boost::get<bool>(value) ? "on" : "off";
+}
+
+static string getYesNo(const Options::Value& value) {
+  return boost::get<bool>(value) ? "yes" : "no";
+}
+
+string Options::getValueString(OptionId id, Options::Value value) {
+  switch (id) {
+    case OptionId::HINTS:
+    case OptionId::ASCII:
+    case OptionId::SMOOTH_MOVEMENT:
+    case OptionId::MUSIC: return getOnOff(value);
+    case OptionId::KEEP_SAVEFILES:
+    case OptionId::SHOW_MAP:
+    case OptionId::FAST_IMMIGRATION:
+    case OptionId::STARTING_RESOURCE:
+    case OptionId::START_WITH_NIGHT: return getYesNo(value);
+    case OptionId::ADVENTURER_NAME:
+    case OptionId::KEEPER_NAME: {
+        string val = boost::get<string>(value);
+        if (val.empty() && defaultStrings.count(id))
+          return defaultStrings.at(id);
+        else
+          return val;
+        }
+  }
+}
+
+static Options::Value readValue(OptionId id, const string& input) {
+  switch (id) {
+    case OptionId::ADVENTURER_NAME:
+    case OptionId::KEEPER_NAME: return input;
+    default: return fromString<int>(input);
+  }
+}
 
 static View::MenuType getMenuType(OptionSet set) {
   switch (set) {
     default: return View::NORMAL_MENU;
+  }
+}
+
+void Options::changeValue(OptionId id, const Options::Value& value, View* view) {
+  switch (id) {
+    case OptionId::KEEPER_NAME:
+    case OptionId::ADVENTURER_NAME:
+        if (auto val = view->getText("Enter " + names.at(id), boost::get<string>(value), 23,
+              "Leave blank to use a random name."))
+          setValue(id, *val);
+        break;
+    default:
+        setValue(id, !boost::get<bool>(value));
   }
 }
 
@@ -109,7 +169,7 @@ bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
   vector<View::ListElem> options;
   options.emplace_back("Change settings:", View::TITLE);
   for (OptionId option : optionSets.at(set))
-    options.emplace_back(names.at(option) + "      " + valueNames.at(option)[getValue(option)]);
+    options.emplace_back(names.at(option), getValueString(option, getValue(option)));
   options.emplace_back("Done");
   if (lastIndex == -1)
     lastIndex = optionSets.at(set).size();
@@ -119,7 +179,7 @@ bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
   else if (index && (*index) == optionSets.at(set).size())
     return true;
   OptionId option = optionSets.at(set)[*index];
-  setValue(option, 1 - getValue(option));
+  changeValue(option, getValue(option), view);
   return handleOrExit(view, set, *index);
 }
 
@@ -127,33 +187,36 @@ void Options::handle(View* view, OptionSet set, int lastIndex) {
   vector<View::ListElem> options;
   options.emplace_back("Change settings:", View::TITLE);
   for (OptionId option : optionSets.at(set))
-    options.emplace_back(names.at(option) + "      " + valueNames.at(option)[getValue(option)]);
+    options.emplace_back(names.at(option), getValueString(option, getValue(option)));
   options.emplace_back("Done");
   auto index = view->chooseFromList("", options, lastIndex, getMenuType(set));
   if (!index || (*index) == optionSets.at(set).size())
     return;
   OptionId option = optionSets.at(set)[*index];
-  setValue(option, 1 - getValue(option));
+  changeValue(option, getValue(option), view);
   handle(view, set, *index);
 }
 
-unordered_map<OptionId, int> Options::readValues(const string& path) {
-  unordered_map<OptionId, int> ret;
-  ifstream in(path);
+unordered_map<OptionId, Options::Value> Options::readValues() {
+  unordered_map<OptionId, Value> ret;
+  ifstream in(filename);
   while (1) {
     char buf[100];
     in.getline(buf, 100);
     if (!in)
       break;
     vector<string> p = split(string(buf), {','});
-    CHECK(p.size() == 2) << "Input error " << p;
-    ret[OptionId(fromString<int>(p[0]))] = fromString<int>(p[1]);
+    CHECK(p.size() >= 1) << "Input error " << p;
+    if (p.size() == 1)
+      p.push_back("");
+    OptionId optionId = OptionId(fromString<int>(p[0]));
+    ret[optionId] = readValue(optionId, p[1]);
   }
   return ret;
 }
 
-void Options::writeValues(const string& path, const unordered_map<OptionId, int>& values) {
-  ofstream out(path);
+void Options::writeValues(const unordered_map<OptionId, Value>& values) {
+  ofstream out(filename);
   for (auto elem : values)
     out << int(elem.first) << "," << elem.second << std::endl;
 }

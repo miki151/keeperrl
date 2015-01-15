@@ -42,7 +42,7 @@ class MinionEquipment {
   private:
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
 
-  static Optional<EquipmentType> getEquipmentType(const Item* it);
+  static optional<EquipmentType> getEquipmentType(const Item* it);
   int getEquipmentLimit(EquipmentType type) const;
   bool isItemAppropriate(const Creature*, const Item*) const;
 

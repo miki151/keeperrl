@@ -59,8 +59,10 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/variant.hpp>
+#include <boost/serialization/optional.hpp>
 #include <boost/variant.hpp>
 #include <boost/any.hpp>
+#include <boost/optional.hpp>
 #include <boost/version.hpp>
 
 #ifdef DEBUG_STL
@@ -90,6 +92,7 @@ using std::map;
 using std::set;
 using std::deque;
 using std::string;
+using boost::none;
 
 #endif
 
@@ -128,6 +131,8 @@ using std::atomic;
 using std::swap;
 using std::remove_if;
 using boost::variant;
+using boost::optional;
+using boost::none_t;
 using eos::portable_oarchive;
 using eos::portable_iarchive;
 

@@ -24,12 +24,15 @@ enum class LoggingToken {
   CHOOSE_DIRECTION,
   YES_OR_NO_PROMPT,
   GET_NUMBER,
+  GET_GAME_SPEED,
+  CHOOSE_GAME_TYPE,
 };
 
 template <class T>
 class LoggingView : public T {
   public:
-    LoggingView(OutputArchive& of) : output(of) {
+    template <typename... Args>
+    LoggingView(OutputArchive& of, Args... args) : T(args...), output(of) {
     }
 
     virtual void close() override {
@@ -40,6 +43,13 @@ class LoggingView : public T {
     virtual int getTimeMilli() override {
       int res = T::getTimeMilli();
       auto token = LoggingToken::GET_TIME;
+      output << token << res;
+      return res;
+    }
+
+    virtual double getGameSpeed() override {
+      double res = T::getGameSpeed();
+      auto token = LoggingToken::GET_GAME_SPEED;
       output << token << res;
       return res;
     }
@@ -58,15 +68,22 @@ class LoggingView : public T {
       return res;
     }
 
-    virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        View::MenuType type, int* scrollPos, Optional<UserInputId> action) override {
+    virtual optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
+        View::MenuType type, int* scrollPos, optional<UserInputId> action) override {
       auto res = T::chooseFromList(title, options, index, type, scrollPos, action);
       auto token = LoggingToken::CHOOSE_FROM_LIST;
       output << token << res;
       return res;
     }
 
-    virtual Optional<Vec2> chooseDirection(const string& message) override {
+    virtual View::GameTypeChoice chooseGameType() override {
+      auto res = T::chooseGameType();
+      auto token = LoggingToken::CHOOSE_GAME_TYPE;
+      output << token << res;
+      return res;
+    }
+
+    virtual optional<Vec2> chooseDirection(const string& message) override {
       auto res = T::chooseDirection(message);
       auto token = LoggingToken::CHOOSE_DIRECTION;
       output << token << res;
@@ -80,7 +97,7 @@ class LoggingView : public T {
       return res;
     }
 
-    virtual Optional<int> getNumber(const string& title, int min, int max, int increments) override {
+    virtual optional<int> getNumber(const string& title, int min, int max, int increments) override {
       auto res = T::getNumber(title, min, max, increments);
       auto token = LoggingToken::GET_NUMBER;
       output << token << res;

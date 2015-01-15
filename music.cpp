@@ -19,63 +19,56 @@
 
 using sf::Music;
 
-Jukebox::Jukebox(const string& introPath) {
+Jukebox::Jukebox(Options* options) {
   music.reset(new Music[20]);
-  music[0].openFromFile(introPath);
-  byType[INTRO].push_back(0);
-  currentPlaying = current;
-  if (!turnedOff())
-    music[current].play();
-  else
-    on = false;
-  Options::addTrigger(OptionId::MUSIC, [this](bool turnOn) { if (turnOn != on) toggle(); });
+  on = false;
+  options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { if (turnOn != on) toggle(); });
 }
 
-void Jukebox::addTrack(Type type, const string& path) {
+void Jukebox::addTrack(MusicType type, const string& path) {
   music[numTracks].openFromFile(path);
   byType[type].push_back(numTracks);
   ++numTracks;
 }
 
-bool Jukebox::turnedOff() {
-  return !Options::getValue(OptionId::MUSIC);
-}
-
 void Jukebox::toggle() {
+  if (!numTracks)
+    return;
   if ((on = !on)) {
+    current = chooseRandom(byType[getCurrentType()]);
     currentPlaying = current;
     music[current].play();
   } else
     music[current].stop();
 }
 
-void Jukebox::updateCurrent(Type c) {
-  if (getCurrentType() != c)
-    current = chooseRandom(byType[c]);
-}
-
-void Jukebox::setCurrent(Type c) {
+void Jukebox::setCurrent(MusicType c) {
   current = chooseRandom(byType[c]);
 }
 
-Jukebox::Type Jukebox::getCurrentType() {
+void Jukebox::continueCurrent() {
+  if (byType[getCurrentType()].size() >= 2)
+    while (current == currentPlaying)
+      setCurrent(getCurrentType());
+}
+
+MusicType Jukebox::getCurrentType() {
   for (auto& elem : byType)
     if (contains(elem.second, current))
       return elem.first;
   FAIL << "Track type not found " << current;
-  return PEACEFUL;
+  return MusicType::PEACEFUL;
 }
 
 const int volumeDec = 20;
 
-void Jukebox::update() {
-  if (turnedOff())
+void Jukebox::update(MusicType c) {
+  if (byType[c].empty())
     return;
-  if (currentPlaying == 0 && music[0].getStatus() == sf::SoundSource::Stopped) {
-    setCurrent(PEACEFUL);
-    currentPlaying = current;
-    music[current].play();
-  }
+  if (getCurrentType() != c)
+    current = chooseRandom(byType[c]);
+  if (!on)
+    return;
   if (current != currentPlaying) {
     if (music[currentPlaying].getVolume() == 0) {
       music[currentPlaying].stop();
@@ -86,8 +79,7 @@ void Jukebox::update() {
       music[currentPlaying].setVolume(max(0.0f, music[currentPlaying].getVolume() - volumeDec));
   } else
   if (music[current].getStatus() == sf::SoundSource::Stopped) {
-    while (current == currentPlaying)
-      setCurrent(getCurrentType());
+    continueCurrent();
     currentPlaying = current;
     music[current].play();
   }

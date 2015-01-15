@@ -33,6 +33,7 @@
 #include "collective.h"
 #include "collective_builder.h"
 #include "collective_config.h"
+#include "music.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -48,7 +49,9 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(won)
     & SVAR(addHero)
     & SVAR(adventurer)
-    & SVAR(currentTime);
+    & SVAR(currentTime)
+    & SVAR(worldName)
+    & SVAR(musicType);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
   Quest::serializeAll(ar);
@@ -71,14 +74,22 @@ const double nightLength = 1500;
 
 const double duskLength  = 180;
 
+MusicType Model::getCurrentMusic() const {
+  return musicType;
+}
+
+void Model::setCurrentMusic(MusicType type) {
+  musicType = type;
+}
+
 const Model::SunlightInfo& Model::getSunlightInfo() const {
   return sunlightInfo;
 }
 
 void Model::updateSunlightInfo() {
   double d = 0;
-  if (Options::getValue(OptionId::START_WITH_NIGHT))
-    d = -dayLength + 10;
+/*  if (options->getBoolValue(OptionId::START_WITH_NIGHT))
+    d = -dayLength + 10;*/
   while (1) {
     d += dayLength;
     if (d > currentTime) {
@@ -119,7 +130,7 @@ const Creature* Model::getPlayer() const {
   return nullptr;
 }
 
-void Model::update(double totalTime) {
+optional<Model::ExitInfo> Model::update(double totalTime) {
   if (addHero) {
     CHECK(playerControl && playerControl->isRetired());
     landHeroPlayer();
@@ -127,7 +138,7 @@ void Model::update(double totalTime) {
   }
   int absoluteTime = view->getTimeMilliAbsolute();
   if (playerControl) {
-    if (absoluteTime - lastUpdate > 50) {
+    if (absoluteTime - lastUpdate > 20) {
       playerControl->render(view);
       lastUpdate = absoluteTime;
     }
@@ -145,29 +156,32 @@ void Model::update(double totalTime) {
         else
           lastUpdate = -10;
         playerControl->processInput(view, input);
+        if (exitInfo)
+          return exitInfo;
       }
     }
     if (currentTime > totalTime)
-      return;
+      return none;
     if (currentTime >= lastTick + 1) {
       MEASURE({ tick(currentTime); }, "ticking time");
     }
     if (!creature->isDead()) {
 #ifndef RELEASE
       CreatureAction::checkUsage(true);
-      try {
 #endif
       creature->makeMove();
 #ifndef RELEASE
-      } catch (GameOverException ex) {
+/*      } catch (GameOverException ex) {
         CreatureAction::checkUsage(false);
         throw ex;
       } catch (SaveGameException ex) {
         CreatureAction::checkUsage(false);
         throw ex;
-      }
+      }*/
       CreatureAction::checkUsage(false);
 #endif
+      if (exitInfo)
+        return exitInfo;
     }
     for (PCollective& c : collectives)
       c->update(creature);
@@ -202,7 +216,7 @@ void Model::tick(double time) {
       for (Collective* col : mainVillains)
         conquered &= col->isConquered();
       if (conquered && !won) {
-        playerControl->onConqueredLand(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
+        playerControl->onConqueredLand(worldName);
         won = true;
       }
     } else // temp fix to the player gets the location message
@@ -225,7 +239,7 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker) {
   return levels.back().get();
 }
 
-Model::Model(View* v) : view(v) {
+Model::Model(View* v, const string& world) : view(v), worldName(world), musicType(MusicType::PEACEFUL) {
   updateSunlightInfo();
 }
 
@@ -274,30 +288,58 @@ double Model::getTime() const {
   return currentTime;
 }
 
+Model::ExitInfo Model::ExitInfo::saveGame(GameType type) {
+  ExitInfo ret;
+  ret.type = type;
+  ret.abandon = false;
+  return ret;
+}
+
+Model::ExitInfo Model::ExitInfo::abandonGame() {
+  ExitInfo ret;
+  ret.abandon = true;
+  return ret;
+}
+
+bool Model::ExitInfo::isAbandoned() const {
+  return abandon;
+}
+
+Model::GameType Model::ExitInfo::getGameType() const {
+  CHECK(!abandon);
+  return type;
+}
+
 void Model::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
-  vector<View::ListElem> options { "Save the game",
+  vector<View::ListElem> elems { "Save the game",
     {"Retire", playerControl->isRetired() ? View::INACTIVE : View::NORMAL} , "Change options", "Abandon the game" };
-  auto ind = view->chooseFromList("Would you like to:", options);
+  auto ind = view->chooseFromList("Would you like to:", elems);
   if (!ind)
     return;
   switch (Action(*ind)) {
     case RETIRE:
       if (view->yesOrNoPrompt("Are you sure you want to retire your dungeon?")) {
         retireCollective();
-        throw SaveGameException(GameType::RETIRED_KEEPER);
+        exitInfo = ExitInfo::saveGame(GameType::RETIRED_KEEPER);
+        return;
       }
       break;
     case SAVE:
-      if (!playerControl || playerControl->isRetired())
-        throw SaveGameException(GameType::ADVENTURER);
-      else
-        throw SaveGameException(GameType::KEEPER);
+      if (!playerControl || playerControl->isRetired()) {
+        exitInfo = ExitInfo::saveGame(GameType::ADVENTURER);
+        return;
+      } else {
+        exitInfo = ExitInfo::saveGame(GameType::KEEPER);
+        return;
+      }
     case ABANDON:
-      if (view->yesOrNoPrompt("Are you sure you want to abandon your game?"))
-        throw GameOverException();
+      if (view->yesOrNoPrompt("Are you sure you want to abandon your game?")) {
+        exitInfo = ExitInfo::abandonGame();
+        return;
+      }
       break;
-    case OPTIONS: Options::handle(view, OptionSet::GENERAL); break;
+    case OPTIONS: options->handle(view, OptionSet::GENERAL); break;
     default: break;
   }
 }
@@ -312,22 +354,32 @@ void Model::retireCollective() {
 
 void Model::landHeroPlayer() {
   auto handicap = view->getNumber("Choose handicap (strength and dexterity increase)", 0, 20, 5);
-  PCreature player = makePlayer(handicap.getOr(0));
+  PCreature player = makePlayer(handicap.get_value_or(0));
+  string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
+  if (!advName.empty())
+    player->setFirstName(advName);
   levels[0]->landCreature(StairDirection::UP, StairKey::HERO_SPAWN, std::move(player));
   adventurer = true;
 }
 
 string Model::getGameIdentifier() const {
-  if (!adventurer)
-    return *NOTNULL(playerControl)->getKeeper()->getFirstName();
-  else
-    return *NOTNULL(getPlayer())->getFirstName();
+  string playerName = !adventurer
+      ? *NOTNULL(playerControl)->getKeeper()->getFirstName()
+      : *NOTNULL(getPlayer())->getFirstName();
+  return playerName + " of " + worldName;
+}
+
+string Model::getShortGameIdentifier() const {
+  string playerName = !adventurer
+      ? *NOTNULL(playerControl)->getKeeper()->getFirstName()
+      : *NOTNULL(getPlayer())->getFirstName();
+  return playerName + "_" + worldName;
 }
 
 void Model::onKilledLeaderEvent(const Collective* victim, const Creature* leader) {
   if (playerControl && playerControl->isRetired() && playerCollective == victim) {
     const Creature* c = getPlayer();
-    killedKeeper(c->getNameAndTitle(), leader->getNameAndTitle(), NameGenerator::get(NameGeneratorId::WORLD)->getNext(), c->getKills(), c->getPoints());
+    killedKeeper(c->getNameAndTitle(), leader->getNameAndTitle(), worldName, c->getKills(), c->getPoints());
   }
 }
 
@@ -340,7 +392,7 @@ struct EnemyInfo {
 };
 
 static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* tribe, int num,
-    Optional<ItemFactory> itemFactory = Nothing(), vector<VillainInfo> villains = {}) {
+    optional<ItemFactory> itemFactory = none, vector<VillainInfo> villains = {}) {
   return {CONSTRUCT(SettlementInfo,
       c.type = type;
       c.creatures = factory;
@@ -353,7 +405,7 @@ static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* t
 }
 
 static EnemyInfo getVault(SettlementType type, CreatureId id, Tribe* tribe, int num,
-    Optional<ItemFactory> itemFactory = Nothing(), vector<VillainInfo> villains = {}) {
+    optional<ItemFactory> itemFactory = none, vector<VillainInfo> villains = {}) {
   return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, villains);
 }
 
@@ -561,9 +613,9 @@ vector<EnemyInfo> getEnemyInfo() {
   return ret;
 }
 
-static CollectiveConfig getKeeperConfig() {
+static CollectiveConfig getKeeperConfig(bool fastImmigration) {
   return CollectiveConfig::keeper(
-      Options::getValue(OptionId::FAST_IMMIGRATION) ? 0.1 : 0.011,
+      fastImmigration ? 0.1 : 0.011,
       500,
       3,
       {
@@ -679,7 +731,7 @@ static CollectiveConfig getKeeperConfig() {
           c.id = CreatureId::WOLF;
           c.frequency = 0.15;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.groupSize = LIST(3, 9);
+          c.groupSize = Range(3, 9);
           c.autoTeam = true;
           c.salary = 0;),
       CONSTRUCT(ImmigrantInfo,
@@ -704,8 +756,20 @@ static CollectiveConfig getKeeperConfig() {
           c.salary = 0;)});
 }
 
-Model* Model::collectiveModel(ProgressMeter& meter, View* view) {
-  Model* m = new Model(view);
+static EnumMap<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
+  return {{CollectiveResourceId::MANA, 200}};
+  if (resourceBonus) {
+    EnumMap<CollectiveResourceId, int> credit;
+    for (auto elem : ENUM_ALL(CollectiveResourceId))
+      credit[elem] = 10000;
+    return credit;
+  }
+ 
+}
+
+Model* Model::collectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
+  Model* m = new Model(view, worldName);
+  m->setOptions(options);
   vector<EnemyInfo> enemyInfo = getEnemyInfo();
   vector<SettlementInfo> settlements;
   for (auto& elem : enemyInfo) {
@@ -715,12 +779,19 @@ Model* Model::collectiveModel(ProgressMeter& meter, View* view) {
   }
   Level* top = m->prepareTopLevel(meter, settlements);
   m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(), Tribe::get(TribeId::KEEPER)).setLevel(top).build("Keeper"));
+        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), Tribe::get(TribeId::KEEPER))
+      .setLevel(top)
+      .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
+      .build("Keeper"));
+ 
   m->playerCollective = m->collectives.back().get();
   m->playerControl = new PlayerControl(m->playerCollective, m, top);
   m->playerCollective->setControl(PCollectiveControl(m->playerControl));
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, Tribe::get(TribeId::KEEPER),
       MonsterAIFactory::collective(m->playerCollective));
+  string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
+  if (!keeperName.empty())
+    c->setFirstName(keeperName);
   Creature* ref = c.get();
   top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
   m->addCreature(std::move(c));
@@ -756,8 +827,14 @@ View* Model::getView() {
 
 void Model::setView(View* v) {
   view = v;
-  if (playerControl)
-    v->setTimeMilli(playerControl->getKeeper()->getTime() * 300);
+}
+
+Options* Model::getOptions() {
+  return options;
+}
+
+void Model::setOptions(Options* o) {
+  options = o;
 }
 
 void Model::addLink(StairDirection dir, StairKey key, Level* l1, Level* l2) {
@@ -794,7 +871,7 @@ void Model::conquered(const string& title, const string& land, vector<const Crea
   view->presentText("Victory", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "conquered the land of " + land + "," << points << std::endl;
-  showHighscore(true);
+  showHighscore(view, true);
 }
 
 void Model::killedKeeper(const string& title, const string& keeper, const string& land,
@@ -808,7 +885,7 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
   view->presentText("Victory", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << title << "," << "freed the land of " + land + "," << points << std::endl;
-  showHighscore(true);
+  showHighscore(view, true);
 }
 
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
@@ -825,13 +902,15 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
   view->presentText("Game over", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
     << creature->getNameAndTitle() << (killer.empty() ? "" : ", killed by " + killer) << "," << points << std::endl;
-  showHighscore(true);
-/*  if (view->yesOrNoPrompt("Would you like to see the last messages?"))
-    messageBuffer.showHistory();*/
-  throw GameOverException();
+  showHighscore(view, true);
+  exitInfo = ExitInfo::abandonGame();
 }
 
-void Model::showCredits() {
+const string& Model::getWorldName() const {
+  return worldName;
+}
+
+void Model::showCredits(View* view) {
   ifstream in("credits.txt");
   vector<View::ListElem> lines;
   while (1) {
@@ -848,40 +927,66 @@ void Model::showCredits() {
   view->presentList("Credits", lines, false);
 }
 
-void Model::showHighscore(bool highlightLast) {
-  struct Elem {
-    string name;
-    string killer;
-    int points;
-    bool highlight = false;
-  };
-  vector<Elem> v;
+namespace {
+
+struct HighscoreElem {
+
+  static HighscoreElem parse(const string& s) {
+    vector<string> p = split(s, {','});
+    if (p.size() != 2 && p.size() != 3)
+      return CONSTRUCT(HighscoreElem, c.name = "ERROR: " + s;);
+    HighscoreElem e;
+    e.name = p[0];
+    if (p.size() == 3) {
+      e.killer = p[1];
+      e.points = fromString<int>(p[2]);
+    } else
+      e.points = fromString<int>(p[1]);
+    return e; 
+  }
+
+  View::ElemMod getHighlight(bool highlightLast) {
+    if (highlight || !highlightLast)
+      return View::NORMAL;
+    else
+      return View::INACTIVE;
+  }
+
+  View::ListElem toListElem(bool highlightLast) {
+    if (killer)
+      return View::ListElem(name + ", " + *killer, toString(points) + " points", getHighlight(highlightLast));
+    else
+      return View::ListElem(name, toString(points) + " points", getHighlight(highlightLast));
+  }
+
+  bool highlight = false;
+  string name;
+  optional<string> killer;
+  int points;
+};
+
+}
+
+void Model::showHighscore(View* view, bool highlightLast) {
+  vector<HighscoreElem> v;
   ifstream in("highscore.txt");
   while (1) {
     char buf[100];
     in.getline(buf, 100);
     if (!in)
       break;
-    vector<string> p = split(string(buf), {','});
-    CHECK(p.size() == 3) << "Input error " << p;
-    Elem e;
-    e.name = p[0];
-    e.killer = p[1];
-    e.points = fromString<int>(p[2]);
-    v.push_back(e);
+    v.push_back(HighscoreElem::parse(buf));
   }
   if (v.empty())
     return;
   if (highlightLast)
     v.back().highlight = true;
-  sort(v.begin(), v.end(), [] (const Elem& a, const Elem& b) -> bool {
+  sort(v.begin(), v.end(), [] (const HighscoreElem& a, const HighscoreElem& b) -> bool {
       return a.points > b.points;
     });
   vector<View::ListElem> scores;
-  for (Elem& elem : v) {
-    scores.push_back(View::ListElem(elem.name + ", " + elem.killer + "       " +
-        toString(elem.points) + " points",
-        highlightLast && !elem.highlight ? View::INACTIVE : View::NORMAL));
+  for (HighscoreElem& elem : v) {
+    scores.push_back(elem.toListElem(highlightLast));
   }
   view->presentList("High scores", scores, false);
 }

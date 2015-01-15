@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "clock.h"
 
-#include <SFML/Graphics.hpp>
-
-static sf::Clock sfClock;
 
 int Clock::getMillis() {
   if (lastPause > -1)
@@ -42,8 +39,7 @@ int Clock::getRealMillis() {
 Intervalometer::Intervalometer(int f) : frequency(f) {
 }
 
-int Intervalometer::getCount() {
-  int mill = Clock::get().getMillis();
+int Intervalometer::getCount(int mill) {
   if (mill >= lastUpdate + frequency) {
     int diff = (mill - lastUpdate) / frequency;
     lastUpdate += diff * frequency;

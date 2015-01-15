@@ -49,16 +49,16 @@ struct SettlementInfo {
   SettlementType type;
   CreatureFactory creatures;
   int numCreatures;
-  Optional<pair<CreatureFactory, int>> neutralCreatures;
+  optional<pair<CreatureFactory, int>> neutralCreatures;
   Location* location;
   Tribe* tribe;
   BuildingId buildingId;
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
   vector<StockpileInfo> stockpiles;
-  Optional<CreatureId> guardId;
-  Optional<ItemType> elderLoot;
-  Optional<ItemFactory> shopFactory;
+  optional<CreatureId> guardId;
+  optional<ItemType> elderLoot;
+  optional<ItemFactory> shopFactory;
   CollectiveBuilder* collective;
 };
 
@@ -77,8 +77,8 @@ class LevelMaker {
   static LevelMaker* topLevel(CreatureFactory forrest, vector<SettlementInfo> village);
   static LevelMaker* mineTownLevel(SettlementInfo);
 
-  static LevelMaker* pyramidLevel(Optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* towerLevel(Optional<StairKey> down, Optional<StairKey> up);
+  static LevelMaker* pyramidLevel(optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
+  static LevelMaker* towerLevel(optional<StairKey> down, optional<StairKey> up);
   static Vec2 getRandomExit(Rectangle rect, int minCornerDist = 1);
   static LevelMaker* grassAndTrees();
 };

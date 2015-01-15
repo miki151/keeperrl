@@ -49,18 +49,18 @@ bool FieldOfView::canSee(Vec2 from, Vec2 to) {
   if ((from - to).lengthD() > sightRange)
     return false;
   if (!visibility[from])
-    visibility[from] = Visibility(*squares, vision, from.x, from.y);
+    visibility[from].reset(new Visibility(*squares, vision, from.x, from.y));
   return visibility[from]->checkVisible(to.x - from.x, to.y - from.y);
 }
   
 void FieldOfView::squareChanged(Vec2 pos) {
   vector<Vec2> updateList;
   if (!visibility[pos])
-    visibility[pos] = Visibility(*squares, vision, pos.x, pos.y);
+    visibility[pos].reset(new Visibility(*squares, vision, pos.x, pos.y));
   vector<Vec2> visible = visibility[pos]->getVisibleTiles();
   for (Vec2 v : visible)
     if (visibility[v] && visibility[v]->checkVisible(pos.x - v.x, pos.y - v.y)) {
-      visibility[v] = Nothing();
+      visibility[v].reset();
     }
 }
 
@@ -101,7 +101,7 @@ const vector<Vec2>& FieldOfView::Visibility::getVisibleTiles() const {
 
 const vector<Vec2>& FieldOfView::getVisibleTiles(Vec2 from) {
   if (!visibility[from]) {
-    visibility[from] = Visibility(*squares, vision, from.x, from.y);
+    visibility[from].reset(new Visibility(*squares, vision, from.x, from.y));
   }
   return visibility[from]->getVisibleTiles();
 }

@@ -29,6 +29,8 @@ namespace std { \
 
 typedef int TeamId;
 
+enum class MusicType;
+
 enum class CollectiveResourceId;
 enum class CollectiveConfigId;
 enum class MsgType;

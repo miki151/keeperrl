@@ -21,7 +21,8 @@
 template <class T>
 class ReplayView : public T {
   public:
-    ReplayView(InputArchive& iff) : input(iff) {
+    template <typename... Args>
+    ReplayView(InputArchive& iff, Args... args) : T(args...),  input(iff) {
     }
 
     virtual void close() override {
@@ -49,6 +50,13 @@ class ReplayView : public T {
       return time;
     }
 
+    virtual double getGameSpeed() override {
+      checkMethod(LoggingToken::GET_GAME_SPEED);
+      double s;
+      input >> s;
+      return s;
+    }
+
     virtual void presentText(const string& title, const string& text) override {
       return;
     }
@@ -69,17 +77,24 @@ class ReplayView : public T {
       return action;
     }
 
-    virtual Optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        View::MenuType, int* scrollPos, Optional<UserInputId> a) override {
+    virtual optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
+        View::MenuType, int* scrollPos, optional<UserInputId> a) override {
       checkMethod(LoggingToken::CHOOSE_FROM_LIST);
-      Optional<int> action;
+      optional<int> action;
       input >> action;
       return action;
     }
 
-    virtual Optional<Vec2> chooseDirection(const string& message) override {
+    virtual View::GameTypeChoice chooseGameType() override {
+      checkMethod(LoggingToken::CHOOSE_GAME_TYPE);
+      View::GameTypeChoice action;
+      input >> action;
+      return action;
+    }
+
+    virtual optional<Vec2> chooseDirection(const string& message) override {
       checkMethod(LoggingToken::CHOOSE_DIRECTION);
-      Optional<Vec2> action;
+      optional<Vec2> action;
       input >> action;
       return action;
     }
@@ -91,9 +106,9 @@ class ReplayView : public T {
       return action;
     }
 
-    virtual Optional<int> getNumber(const string& title, int min, int max, int increments) override {
+    virtual optional<int> getNumber(const string& title, int min, int max, int increments) override {
       checkMethod(LoggingToken::GET_NUMBER);
-      Optional<int> action;
+      optional<int> action;
       input >> action;
       return action;
     }

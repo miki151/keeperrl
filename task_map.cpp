@@ -8,6 +8,7 @@ template <class Archive>
 void TaskMap<CostInfo>::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(tasks)
     & SVAR(positionMap)
+    & SVAR(reversePositions)
     & SVAR(creatureMap)
     & SVAR(marked)
     & SVAR(lockedTasks)
@@ -19,7 +20,6 @@ void TaskMap<CostInfo>::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(TaskMap<Collective::CostInfo>);
 
-
 template <class CostInfo>
 Task* TaskMap<CostInfo>::getTaskForWorker(Creature* c) {
   Task* closest = nullptr;
@@ -29,13 +29,15 @@ Task* TaskMap<CostInfo>::getTaskForWorker(Creature* c) {
       const Creature* owner = getOwner(task.get());
       if ((!owner || (task->canTransfer() && (*pos - owner->getPosition()).length8() > dist))
           && (!closest || dist < (*getPosition(closest) - c->getPosition()).length8()
-              || priorityTasks.contains(task.get()))
+              || isPriorityTask(task.get()))
           && !isLocked(c, task.get())
           && (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
         bool valid = task->getMove(c);
-        if (valid)
+        if (valid) {
           closest = task.get();
-        else
+          if (isPriorityTask(task.get()))
+            return task.get();
+        } else
           lock(c, task.get());
       }
     }
@@ -78,8 +80,10 @@ CostInfo TaskMap<CostInfo>::removeTask(Task* task) {
     }
   if (creatureMap.contains(task))
     creatureMap.erase(task);
-  if (positionMap.count(task))
+  if (positionMap.count(task)) {
+    removeElement(reversePositions.at(positionMap.at(task)), task);
     positionMap.erase(task);
+  }
   return cost;
 }
 
@@ -95,6 +99,15 @@ CostInfo TaskMap<CostInfo>::removeTask(UniqueEntity<Task>::Id id) {
 template <class CostInfo>
 bool TaskMap<CostInfo>::isPriorityTask(const Task* t) const {
   return priorityTasks.contains(t);
+}
+
+template <class CostInfo>
+bool TaskMap<CostInfo>::hasPriorityTasks(Vec2 pos) const {
+  if (reversePositions.count(pos))
+    for (Task* task : reversePositions.at(pos))
+      if (isPriorityTask(task))
+        return true;
+  return false;
 }
 
 template <class CostInfo>
@@ -134,20 +147,32 @@ void TaskMap<CostInfo>::unmarkSquare(Vec2 pos) {
 }
 
 template <class CostInfo>
-Task* TaskMap<CostInfo>::getTask(const Creature* c) const {
+bool TaskMap<CostInfo>::hasTask(const Creature* c) const {
   if (creatureMap.contains(c))
-    return creatureMap.get(c);
+    return !creatureMap.get(c)->isDone();
   else
     return nullptr;
 }
 
 template <class CostInfo>
-vector<Task*> TaskMap<CostInfo>::getTasks(Vec2 pos) const {
-  vector<Task*> ret;
-  for (const PTask& task : tasks)
-    if (getPosition(task.get()) == pos)
-      ret.push_back(task.get());
-  return ret;
+Task* TaskMap<CostInfo>::getTask(const Creature* c) {
+  if (creatureMap.contains(c)) {
+    Task* task = creatureMap.get(c);
+    if (task->isDone())
+      removeTask(task);
+    else
+      return task;
+  }
+  return nullptr;
+}
+
+template <class CostInfo>
+const vector<Task*>& TaskMap<CostInfo>::getTasks(Vec2 pos) const {
+  static vector<Task*> empty;
+  if (reversePositions.count(pos))
+    return reversePositions.at(pos);
+  else
+    return empty;
 }
 
 template <class CostInfo>
@@ -167,6 +192,7 @@ Task* TaskMap<CostInfo>::addPriorityTask(PTask task, const Creature* c) {
 template <class CostInfo>
 Task* TaskMap<CostInfo>::addTask(PTask task, Vec2 position) {
   positionMap[task.get()] = position;
+  reversePositions[position].push_back(task.get());
   tasks.push_back(std::move(task));
   return tasks.back().get();
 }
@@ -178,11 +204,11 @@ void TaskMap<CostInfo>::takeTask(const Creature* c, Task* task) {
 }
 
 template <class CostInfo>
-Optional<Vec2> TaskMap<CostInfo>::getPosition(Task* task) const {
+optional<Vec2> TaskMap<CostInfo>::getPosition(Task* task) const {
   if (positionMap.count(task))
     return positionMap.at(task);
   else
-    return Nothing();
+    return none;
 }
 
 template <class CostInfo>

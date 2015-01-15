@@ -73,7 +73,7 @@ bool Collective::isWarning(Warning w) const {
   return warnings[w];
 }
 
-Collective::MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, Optional<Warning> w,
+Collective::MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, optional<Warning> w,
     double _cost, bool center) 
     : type(APPLY_SQUARE), squares(s), description(desc), warning(w), cost(_cost), centerOnly(center) {
 }
@@ -136,9 +136,9 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   map<MinionTask, MinionTaskInfo> ret {
     {MinionTask::TRAIN, {{SquareId::TRAINING_ROOM}, "training", Collective::Warning::TRAINING, 1}},
     {MinionTask::WORKSHOP, {{SquareId::WORKSHOP}, "workshop", Collective::Warning::WORKSHOP, 1}},
-    {MinionTask::FORGE, {{SquareId::FORGE}, "forge", Nothing(), 1}},
-    {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", Nothing(), 1}},
-    {MinionTask::JEWELER, {{SquareId::JEWELER}, "jewellery", Nothing(), 1}},
+    {MinionTask::FORGE, {{SquareId::FORGE}, "forge", none, 1}},
+    {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", none, 1}},
+    {MinionTask::JEWELER, {{SquareId::JEWELER}, "jewellery", none, 1}},
     {MinionTask::SLEEP, {{SquareId::BED}, "sleeping", Collective::Warning::BEDS}},
     {MinionTask::GRAVE, {{SquareId::GRAVE}, "sleeping", Collective::Warning::GRAVES}},
     {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
@@ -161,17 +161,10 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   return ret;
 };
 
-Collective::Collective(Level* l, CollectiveConfig cfg, Tribe* t, const string& n) 
-  : knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
+Collective::Collective(Level* l, CollectiveConfig cfg, Tribe* t, EnumMap<ResourceId, int> _credit, const string& n) 
+  : credit(_credit), knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
   tribe(t), level(l), nextPayoutTime(-1), sectors(new Sectors(level->getBounds())),
     flyingSectors(new Sectors(level->getBounds())), name(n), config(cfg) {
-  credit = {
-    {ResourceId::MANA, 200},
-  };
-  if (Options::getValue(OptionId::STARTING_RESOURCE)) {
-    for (auto elem : ENUM_ALL(ResourceId))
-      credit[elem] = 10000;
-  }
   if (config.getKeepSectors())
     for (Vec2 v : level->getBounds()) {
       if (getLevel()->getSafeSquare(v)->canEnterEmpty({MovementTrait::WALK}))
@@ -215,11 +208,11 @@ class LeaderControlOverride : public Creature::MoraleOverride {
   public:
   LeaderControlOverride(Collective* col, Creature* c) : collective(col), creature(c) {}
 
-  virtual Optional<double> getMorale() override {
+  virtual optional<double> getMorale() override {
     for (auto team : collective->getTeams().getContaining(collective->getLeader()))
       if (collective->getTeams().isActive(team) && collective->getTeams().contains(team, creature))
         return 1;
-    return Nothing();
+    return none;
   }
 
   SERIALIZATION_CONSTRUCTOR(LeaderControlOverride);
@@ -358,12 +351,8 @@ void Collective::onBedCreated(Vec2 pos, SquareType fromType, SquareType toType) 
 }
 
 MoveInfo Collective::getWorkerMove(Creature* c) {
-  if (Task* task = taskMap.getTask(c)) {
-    if (task->isDone()) {
-      taskMap.removeTask(task);
-    } else
-      return task->getMove(c);
-  }
+  if (Task* task = taskMap.getTask(c))
+    return task->getMove(c);
   if (Task* closest = taskMap.getTaskForWorker(c)) {
     taskMap.takeTask(c, closest);
     return closest->getMove(c);
@@ -429,15 +418,15 @@ static bool betterPos(Vec2 from, Vec2 current, Vec2 candidate) {
   return Random.getDouble() <= 1.0 - (newDist - curDist) / (curDist * maxDiff);
 }
 
-static Optional<Vec2> getRandomCloseTile(Vec2 from, const vector<Vec2>& tiles, function<bool(Vec2)> predicate) {
-  Optional<Vec2> ret;
+static optional<Vec2> getRandomCloseTile(Vec2 from, const vector<Vec2>& tiles, function<bool(Vec2)> predicate) {
+  optional<Vec2> ret;
   for (Vec2 pos : tiles)
     if (predicate(pos) && (!ret || betterPos(from, *ret, pos)))
       ret = pos;
   return ret;
 }
 
-Optional<Vec2> Collective::getTileToExplore(const Creature* c, MinionTask task) const {
+optional<Vec2> Collective::getTileToExplore(const Creature* c, MinionTask task) const {
   vector<Vec2> border = randomPermutation(knownTiles.getBorderTiles());
   switch (task) {
     case MinionTask::EXPLORE_CAVES:
@@ -450,7 +439,7 @@ Optional<Vec2> Collective::getTileToExplore(const Creature* c, MinionTask task) 
             [this, c](Vec2 pos) { return !getLevel()->getCoverInfo(pos).covered() && c->isSameSector(pos);});
     default: FAIL << "Unrecognized explore task: " << int(task);
   }
-  return Nothing();
+  return none;
 }
 
 PTask Collective::getStandardTask(Creature* c) {
@@ -537,7 +526,9 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
-  autoEquipment(c, Random.roll(10));
+  if (!Random.roll(10))
+    return nullptr;
+  autoEquipment(c, Random.roll(5));
   for (Item* it : c->getEquipment().getItems())
     if (!c->getEquipment().isEquiped(it) && c->getEquipment().canEquip(it))
       return Task::equipItem(it);
@@ -591,7 +582,7 @@ void Collective::setTask(const Creature *c, PTask task) {
 }
 
 bool Collective::hasTask(const Creature* c) const {
-  return taskMap.getTask(c);
+  return taskMap.hasTask(c);
 }
 
 MoveInfo Collective::getMove(Creature* c) {
@@ -600,12 +591,8 @@ MoveInfo Collective::getMove(Creature* c) {
   if (c->getLevel() != getLevel())
     return NoMove;
   if (Task* task = taskMap.getTask(c))
-    if (taskMap.isPriorityTask(task)) {
-      if (task->isDone()) {
-        taskMap.removeTask(task);
-      } else
-        return task->getMove(c);
-    }
+    if (taskMap.isPriorityTask(task))
+      return task->getMove(c);
   if (MoveInfo move = getTeamMemberMove(c))
     return move;
   if (MoveInfo move = control->getMove(c))
@@ -621,12 +608,8 @@ MoveInfo Collective::getMove(Creature* c) {
     if (MoveInfo move = getGuardPostMove(c))
       return move;
   }
-  if (Task* task = taskMap.getTask(c)) {
-    if (task->isDone()) {
-      taskMap.removeTask(task);
-    } else
-      return task->getMove(c);
-  }
+  if (Task* task = taskMap.getTask(c))
+    return task->getMove(c);
   if (PTask t = getHealingTask(c))
     if (t->getMove(c))
       return taskMap.addTask(std::move(t), c)->getMove(c);
@@ -721,7 +704,7 @@ static int countNeighbor(Vec2 pos, const set<Vec2>& squares) {
   return num;
 }
 
-Optional<Vec2> Collective::chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds) {
+optional<Vec2> Collective::chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds) {
   vector<Vec2> res;
   for (Vec2 v : lair) {
     if (countNeighbor(v, beds) > 2)
@@ -738,24 +721,24 @@ Optional<Vec2> Collective::chooseBedPos(const set<Vec2>& lair, const set<Vec2>& 
   if (!res.empty())
     return chooseRandom(res);
   else
-    return Nothing();
+    return none;
 }
 
-Optional<SquareType> Collective::getSecondarySquare(SquareType type) {
+optional<SquareType> Collective::getSecondarySquare(SquareType type) {
   switch (type.getId()) {
     case SquareId::DORM: return SquareType(SquareId::BED);
     case SquareId::BEAST_LAIR: return SquareType(SquareId::BEAST_CAGE);
     case SquareId::CEMETERY: return SquareType(SquareId::GRAVE);
-    default: return Nothing();
+    default: return none;
   }
 }
 
 struct Collective::DormInfo {
   SquareType dormType;
-  Optional<SquareType> getBedType() const {
+  optional<SquareType> getBedType() const {
     return getSecondarySquare(dormType);
   }
-  Optional<Collective::Warning> warning;
+  optional<Collective::Warning> warning;
 };
 
 const EnumMap<SpawnType, Collective::DormInfo>& Collective::getDormInfo() {
@@ -806,11 +789,11 @@ static set<T> removeVector(const set<T>& s, const vector<T>& v) {
 vector<Vec2> Collective::getBedPositions(const vector<PCreature>& creatures, const ImmigrantInfo& info) {
   SpawnType spawnType = *creatures[0]->getSpawnType();
   SquareType dormType = getDormInfo()[spawnType].dormType;
-  Optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
+  optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
   vector<Vec2> bedPos;
   for (int i : All(creatures))
     for (int j : Range(30)) {
-      Optional<Vec2> newPos;
+      optional<Vec2> newPos;
       if (!bedType)
         newPos = chooseRandom(removeVector(getSquares(dormType), bedPos));
       else if (getCreatures(spawnType).size() + bedPos.size() < getSquares(*bedType).size()) {
@@ -868,7 +851,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   takeResource(getSpawnCost(spawnType, creatures.size()));
   if (getSquares(dormType).empty())
     return false;
-  Optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
+  optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
   vector<Vec2> bedPos = getBedPositions(creatures, info);
   if (info.groupSize) {
     if (bedPos.size() < info.groupSize->getStart())
@@ -1014,7 +997,7 @@ void Collective::cashPayouts() {
 struct BirthSpawn {
   CreatureId id;
   double frequency;
-  Optional<TechId> tech;
+  optional<TechId> tech;
 };
 
 static vector<BirthSpawn> birthSpawns {
@@ -1253,8 +1236,6 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     addMoraleForKill(killer, victim1);
     kills.push_back(victim1);
     points += victim1->getDifficultyPoints();
-/*    if (Creature* leader = getLeader())
-      leader->increaseExpLevel(double(victim1->getDifficultyPoints()) / 200);*/
     if (killer)
       control->addMessage(PlayerMessage(victim1->getName().a() + " is killed by " + killer->getName().a())
           .setPosition(victim1->getPosition()));
@@ -1730,6 +1711,10 @@ void Collective::setPriorityTasks(Vec2 pos) {
   taskMap.setPriorityTasks(pos);
 }
 
+bool Collective::hasPriorityTasks(Vec2 pos) const {
+  return taskMap.hasPriorityTasks(pos);
+}
+
 void Collective::cutTree(Vec2 pos) {
   taskMap.markSquare(pos, Task::construction(this, pos, SquareId::TREE_TRUNK));
 }
@@ -1761,6 +1746,12 @@ void Collective::onAppliedItemCancel(Vec2 pos) {
 }
 
 void Collective::onTorchBuilt(Vec2 pos, Trigger* t) {
+  if (!torches.count(pos)) {
+    if (canPlaceTorch(pos))
+      addTorch(pos);
+    else
+      return;
+  }
   torches.at(pos).built() = true;
   torches.at(pos).marked() = 0;
   torches.at(pos).task() = -1;
@@ -2258,11 +2249,11 @@ void Collective::freeTeamMembers(TeamId id) {
   }
 }
 
-static Optional<Vec2> getAdjacentWall(const Level* l, Vec2 pos) {
+static optional<Vec2> getAdjacentWall(const Level* l, Vec2 pos) {
   for (const Square* square : l->getSquares(pos.neighbors4(true)))
     if (square->canConstruct(SquareId::FLOOR))
       return square->getPosition();
-  return Nothing();
+  return none;
 }
 
 const map<Vec2, Collective::TorchInfo>& Collective::getTorches() const {
@@ -2282,6 +2273,7 @@ void Collective::removeTorch(Vec2 pos) {
 }
 
 void Collective::addTorch(Vec2 pos) {
+  CHECK(canPlaceTorch(pos));
   torches[pos] = {false, 0.0, -1, (*getAdjacentWall(getLevel(), pos) - pos).getCardinalDir(), nullptr};
 }
 

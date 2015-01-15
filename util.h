@@ -57,6 +57,8 @@ T lambdaConstruct(function<void(T&)> fun) {
 }
 
 #define CONSTRUCT(Class, Code) lambdaConstruct<Class>([&] (Class& c) { Code })
+#define CONSTRUCT_GLOBAL(Class, Code) lambdaConstruct<Class>([] (Class& c) { Code })
+
 #define LIST(...) {__VA_ARGS__}
 
 class Item;
@@ -77,17 +79,6 @@ const vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
     ret.push_back(el.get());
   return ret;
 }
-
-struct GameOverException {
-};
-
-enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER };
-
-struct SaveGameException {
-  SaveGameException(GameType t) : type(t) {
-  }
-  GameType type;
-};
 
 void trim(string& s);
 string toUpper(const string& s);
@@ -420,13 +411,26 @@ class DirtyTable {
   public:
   DirtyTable(Rectangle bounds, T dirty) : val(bounds), dirty(bounds, 0), dirtyVal(dirty) {} 
 
-  double getValue(Vec2 v) const {
+  T getValue(Vec2 v) const {
     return dirty[v] < counter ? dirtyVal : val[v];
+  }
+
+  bool isDirty(Vec2 v) const {
+    return dirty[v] == counter;
+  }
+
+  T& getDirtyValue(Vec2 v) {
+    CHECK(isDirty(v));
+    return val[v];
   }
 
   void setValue(Vec2 v, const T& d) {
     val[v] = d;
     dirty[v] = counter;
+  }
+
+  const Rectangle& getBounds() const {
+    return val.getBounds();
   }
 
   void clear() {
@@ -656,109 +660,13 @@ class OnExit {
   function<void()> fun;
 };
 
-class Nothing {
-};
-
-template <class T>
-class Optional {
-  public:
-  Optional(const T& t) {
-    elem.push_back(t);
-  }
-  Optional(const Optional<T>& t) {
-    if (t)
-      elem.push_back(*t);
-  }
-  Optional(Optional<T>&&) = default;
-  Optional(Nothing) {}
-  Optional() {}
-
-  Optional<T>& operator = (const Optional<T>& t) {
-    if (t) {
-      elem.clear();
-      elem.push_back(*t);
-    }
-    else
-      elem.clear();
-    return *this;
-  }
-
-  T& operator = (const T& t) {
-    elem.clear();
-    elem.push_back(t);
-    return elem.front();
-  }
-
-  Optional<T>& operator = (Optional<T>&& t) = default;
-
-  void operator = (Nothing) {
-    elem.clear();
-  }
-
-  T& operator = (T&& t) {
-    if (!elem.empty())
-      elem[0] = std::move(t);
-    else {
-      elem.push_back(std::move(t));
-    }
-    return elem.front();
-  }
-
-  T* operator -> () {
-    CHECK(!elem.empty());
-    return &elem.front();
-  }
-
-  const T* operator -> () const {
-    CHECK(!elem.empty());
-    return &elem.front();
-  }
-
-  bool operator == (const T& t) const {
-    return !elem.empty() && elem.front() == t;
-  }
-
-  bool operator != (const T& t) const {
-    return elem.empty() || elem.front() != t;
-  }
-
-  operator bool() const {
-    return !elem.empty();
-  }
-
-  T& operator * () {
-    CHECK(!elem.empty());
-    return elem.front();
-  }
-
-  const T& operator * () const {
-    CHECK(!elem.empty());
-    return elem.front();
-  }
-
-  T getOr(const T& other) {
-    if (!elem.empty())
-      return elem.front();
-    else
-      return other;
-  }
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & BOOST_SERIALIZATION_NVP(elem);
-  }
-
-  private:
-  vector<T> elem;
-};
-
 template <typename T, typename V>
-bool contains(const vector<T>& v, const Optional<V>& elem) {
+bool contains(const vector<T>& v, const optional<V>& elem) {
   return elem && contains(v, *elem);
 }
 
 template <typename T, typename V>
-bool contains(const initializer_list<T>& v, const Optional<V>& elem) {
+bool contains(const initializer_list<T>& v, const optional<V>& elem) {
   return contains(vector<T>(v), elem);
 }
 
@@ -882,27 +790,27 @@ void removeIndex(vector<T>& v, int index) {
 }
 
 template<class T>
-Optional<int> findElement(const vector<T>& v, const T& element) {
+optional<int> findElement(const vector<T>& v, const T& element) {
   for (int i : All(v))
     if (v[i] == element)
       return i;
-  return Nothing();
+  return none;
 }
 
 template<class T>
-Optional<int> findElement(const vector<T*>& v, const T* element) {
+optional<int> findElement(const vector<T*>& v, const T* element) {
   for (int i : All(v))
     if (v[i] == element)
       return i;
-  return Nothing();
+  return none;
 }
 
 template<class T>
-Optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
+optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
   for (int i : All(v))
     if (v[i].get() == element)
       return i;
-  return Nothing();
+  return none;
 }
 
 template<class T>
@@ -980,6 +888,7 @@ vector<T> makeVec(Args&&... args) {
 string addAParticle(const string& s);
 
 string capitalFirst(string s);
+string noCapitalFirst(string s);
 vector<string> makeSentences(string s);
 string makeSentence(string s);
 
@@ -1006,7 +915,6 @@ template<typename T>
 class EnumInfo {
   public:
   static string getString(T);
-  static constexpr int getSize() { return 0;}
 };
 
 #define RICH_ENUM(Name, ...) \
@@ -1026,12 +934,9 @@ class EnumInfo<Name> { \
     static vector<string> names = split(#__VA_ARGS__, {' ', ','});\
     return names[int(e)];\
   }\
-  enum class Tmp { __VA_ARGS__, END_TMP};\
-  static constexpr int getSize() {\
-    return (int)Tmp::END_TMP;\
-  }\
+  enum Tmp { __VA_ARGS__, size};\
   static Name fromString(const string& s) {\
-    for (int i : Range(getSize())) \
+    for (int i : Range(size)) \
       if (getString(Name(i)) == s) \
         return Name(i); \
     FAIL << #Name << " value not found " << s;\
@@ -1054,12 +959,12 @@ class EnumMap {
   }
 
   void clear(U value) {
-    for (int i = 0; i < EnumInfo<T>::getSize(); ++i)
+    for (int i = 0; i < EnumInfo<T>::size; ++i)
       elems[i] = value;
   }
 
   void clear() {
-    for (int i = 0; i < EnumInfo<T>::getSize(); ++i)
+    for (int i = 0; i < EnumInfo<T>::size; ++i)
       elems[i] = U();
   }
 
@@ -1078,20 +983,28 @@ class EnumMap {
   }
 
   const U& operator[](T elem) const {
+    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
     return elems[int(elem)];
   }
 
   U& operator[](T elem) {
+    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
     return elems[int(elem)];
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & elems;
+    vector<U> tmp;
+    for (int i : All(elems))
+      tmp.push_back(std::move(elems[i]));
+    ar & tmp;
+    CHECK(tmp.size() <= elems.size());
+    for (int i : All(tmp))
+      elems[i] = std::move(tmp[i]);
   }
 
   private:
-  std::array<U, EnumInfo<T>::getSize()> elems;
+  std::array<U, EnumInfo<T>::size> elems;
 };
 
 template<class T>
@@ -1105,7 +1018,7 @@ class EnumSet : public EnumMap<T, char> {
   }
 
   EnumSet(initializer_list<char> il) {
-    CHECK(il.size() == EnumInfo<T>::getSize());
+    CHECK(il.size() == EnumInfo<T>::size);
     int cnt = 0;
     for (int i : il)
       (*this)[T(cnt++)] = i;
@@ -1147,7 +1060,7 @@ class EnumSet : public EnumMap<T, char> {
     }
 
     void goForward() {
-      while (ind < EnumInfo<T>::getSize() && !set[T(ind)])
+      while (ind < EnumInfo<T>::size && !set[T(ind)])
         ++ind;
     }
 
@@ -1175,7 +1088,7 @@ class EnumSet : public EnumMap<T, char> {
   }
 
   Iter end() const {
-    return Iter(*this, EnumInfo<T>::getSize());
+    return Iter(*this, EnumInfo<T>::size);
   }
 };
 
@@ -1223,26 +1136,15 @@ class EnumAll {
   }
 
   Iter end() {
-    return Iter(EnumInfo<T>::getSize());
+    return Iter(EnumInfo<T>::size);
   }
 };
 
 #define ENUM_ALL(X) EnumAll<X>()
 
 template <typename T>
-T chooseRandom(EnumMap<T, double> vi, double r = -1) {
-  vector<T> v;
-  vector<double> p;
-  for (T elem : ENUM_ALL(T)) {
-    v.push_back(elem);
-    p.push_back(vi[elem]);
-  }
-  return chooseRandom(v, p);
-}
-
-template <typename T>
 T chooseRandom() {
-  return T(Random.get(EnumInfo<T>::getSize()));
+  return T(Random.get(EnumInfo<T>::size));
 }
 
 template <typename U, typename V>
@@ -1330,10 +1232,10 @@ class SyncQueue {
     return q.front();
   }
 
-  Optional<T> popAsync() {
+  optional<T> popAsync() {
     std::unique_lock<std::mutex> lock(mut);
     if (q.empty())
-      return Nothing();
+      return none;
     else {
       OnExit o([=] { q.pop(); });
       return q.front();

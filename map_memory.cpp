@@ -40,20 +40,22 @@ void MapMemory::addObject(Vec2 pos, const ViewObject& obj) {
     table[pos] = ViewIndex();
   table[pos]->insert(obj);
   table[pos]->setHighlight(HighlightType::MEMORY);
+  updated.insert(pos);
 }
 
 void MapMemory::update(Vec2 pos, const ViewIndex& index) {
   table[pos] = index;
   table[pos]->setHighlight(HighlightType::MEMORY);
   table[pos]->removeObject(ViewLayer::CREATURE);
+  updated.insert(pos);
 }
 
 void MapMemory::clearSquare(Vec2 pos) {
-  table[pos] = Nothing();
+  table[pos] = none;
 }
 
 bool MapMemory::hasViewIndex(Vec2 pos) const {
-  return table[pos];
+  return !!table[pos];
 }
 
 ViewIndex MapMemory::getViewIndex(Vec2 pos) const {
@@ -63,4 +65,12 @@ ViewIndex MapMemory::getViewIndex(Vec2 pos) const {
 const MapMemory& MapMemory::empty() {
   static MapMemory mem;
   return mem;
+} 
+
+const unordered_set<Vec2>& MapMemory::getUpdated() const {
+  return updated;
+}
+
+void MapMemory::clearUpdated() const {
+  updated.clear();
 }

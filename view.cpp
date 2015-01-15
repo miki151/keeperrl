@@ -20,35 +20,38 @@
 #include "collective.h"
 
 
-View::ListElem::ListElem(const string& t, ElemMod m, Optional<UserInputId> a) : text(t), mod(m), action(a) {
+View::ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
 
-View::ListElem::ListElem(const char* s, ElemMod m, Optional<UserInputId> a) : text(s), mod(m), action(a) {
+View::ListElem::ListElem(const string& t, const string& sec, ElemMod m) : text(t), secondColumn(sec), mod(m) {
+}
+
+View::ListElem::ListElem(const char* s, ElemMod m, optional<UserInputId> a) : text(s), mod(m), action(a) {
 }
 
 const string& View::ListElem::getText() const {
   return text;
 }
 
+const string& View::ListElem::getSecondColumn() const {
+  return secondColumn;
+}
+
 View::ElemMod View::ListElem::getMod() const {
   return mod;
 }
 
-Optional<UserInputId> View::ListElem::getAction() const {
+void View::ListElem::setMod(ElemMod m) {
+  mod = m;
+}
+
+optional<UserInputId> View::ListElem::getAction() const {
   return action;
 }
 
 vector<View::ListElem> View::getListElem(const vector<string>& v) {
   function<ListElem(const string&)> fun = [](const string& s) -> ListElem { return ListElem(s); };
   return transform2<ListElem>(v, fun);
-}
-
-void View::setJukebox(Jukebox* j) {
-  jukebox = j;
-}
-
-Jukebox* View::getJukebox() {
-  return NOTNULL(jukebox);
 }
 
 View::View() {

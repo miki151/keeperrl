@@ -10,7 +10,6 @@ Graphics:
 16-bit fantasy set by oryxdesignlab.com
 ShroomArts, shroomarts.blogspot.com
 Artur Reterski, http://artperski.com
-Icons by Lorc, game-icons.net
 
 Testing and ideas:
 Jakub Jurkowski

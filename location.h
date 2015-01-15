@@ -44,8 +44,8 @@ class Location {
   SERIAL_CHECKER;
 
   private:
-  Optional<string> SERIAL(name);
-  Optional<string> SERIAL(description);
+  optional<string> SERIAL(name);
+  optional<string> SERIAL(description);
   const Level* SERIAL(level);
   Rectangle SERIAL(bounds);
   bool SERIAL2(surprise, false);

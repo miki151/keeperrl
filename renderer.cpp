@@ -27,14 +27,15 @@ Font symbolFont;
 
 EnumMap<ColorId, Color> colors;
 
+Renderer::TileCoord::TileCoord(Vec2 p, int t) : pos(p), texNum(t) {
+}
+
+Renderer::TileCoord::TileCoord() : TileCoord(Vec2(0, 0), -1) {
+}
+
 Color transparency(const Color& color, int trans) {
   return Color(color.r, color.g, color.b, trans);
 }
-
-vector<Texture> Renderer::tiles;
-vector<Vec2> Renderer::tileSize;
-Vec2 Renderer::nominalSize;
-map<string, Renderer::TileCoords> Renderer::tileCoords;
 
 int Renderer::getTextLength(string s) {
   Text t(toUnicode(s), textFont, textSize);
@@ -62,7 +63,8 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s
   }
   t.setPosition(x + ox, y + oy);
   t.setColor(color);
-  display->draw(t);
+  renderList.push_back(
+      [this, t] { display->draw(t); });
 }
 
 String Renderer::toUnicode(const string& s) {
@@ -84,7 +86,7 @@ void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text,
     int ind = lowercase(text).find(key);
     if (ind != string::npos) {
       int pos = x + getTextLength(text.substr(0, ind));
-      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, colors[ColorId::GRAY]);
+      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, colors[ColorId::GREEN]);
     }
   }
   drawText(color, x, y, text);
@@ -94,8 +96,9 @@ void Renderer::drawImage(int px, int py, const Texture& image, double scale) {
   drawImage(px, py, px + image.getSize().x * scale, py + image.getSize().y * scale, image, scale);
 }
 
-void Renderer::drawImage(Rectangle r, const Texture& image, double scale) {
-  drawImage(r.getPX(), r.getPY(), r.getKX(), r.getKY(), image, scale);
+void Renderer::drawImage(Rectangle target, Rectangle source, const Texture& image) {
+  drawSprite(target.getPX(), target.getPY(), source.getPX(), source.getPY(), source.getW(), source.getH(),
+      image, target.getW(), target.getH());
 }
 
 void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, double scale) {
@@ -104,11 +107,12 @@ void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, doubl
   if (scale != 1) {
     s.setScale(scale, scale);
   }
-  display->draw(s);
+  renderList.push_back(
+      [this, s] { display->draw(s); });
 }
 
-void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, Optional<Color> color,
-    Optional<Vec2> stretchSize) {
+void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, optional<Color> color,
+    optional<Vec2> stretchSize) {
   if (stretchSize)
     drawSprite(pos.x, pos.y, spos.x, spos.y, size.x, size.y, t, stretchSize->x, stretchSize->y, color);
   else
@@ -120,17 +124,18 @@ void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
 }
 
 void Renderer::drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t, int dw, int dh,
-    Optional<Color> color) {
+    optional<Color> color) {
   Sprite s(t, sf::IntRect(px, py, w, h));
   s.setPosition(x, y);
   if (color)
     s.setColor(*color);
   if (dw != -1)
     s.setScale(double(dw) / w, double(dh) / h);
-  display->draw(s);
+  renderList.push_back(
+      [this, s] { display->draw(s); });
 }
 
-void Renderer::drawFilledRectangle(const Rectangle& t, Color color, Optional<Color> outline) {
+void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
   RectangleShape r(Vector2f(t.getW(), t.getH()));
   r.setPosition(t.getPX(), t.getPY());
   r.setFillColor(color);
@@ -138,11 +143,30 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, Optional<Col
     r.setOutlineThickness(-2);
     r.setOutlineColor(*outline);
   }
-  display->draw(r);
+  renderList.push_back(
+      [this, r] { display->draw(r); });
 }
 
-void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, Optional<Color> outline) {
+void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline) {
   drawFilledRectangle(Rectangle(px, py, kx, ky), color, outline);
+}
+
+Vector2f getV(Vec2 v) {
+  return {float(v.x), float(v.y)};
+}
+
+void Renderer::addQuad(const Rectangle& r, Color color) {
+  quads.push_back(Vertex(getV(r.getTopLeft()), color));
+  quads.push_back(Vertex(getV(r.getTopRight()), color));
+  quads.push_back(Vertex(getV(r.getBottomRight()), color));
+  quads.push_back(Vertex(getV(r.getBottomLeft()), color));
+}
+
+void Renderer::drawQuads() {
+  vector<Vertex>& quadsTmp = quads;
+  renderList.push_back(
+      [this, quadsTmp] { display->draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
+  quads.clear();
 }
 
 int Renderer::getWidth() {
@@ -153,9 +177,12 @@ int Renderer::getHeight() {
   return display->getSize().y;
 }
 
-void Renderer::initialize(int width, int height, string title) {
-  display = new RenderWindow(sf::VideoMode::getDesktopMode(), title);
+void Renderer::initialize() {
+  display = new RenderWindow(sf::VideoMode::getDesktopMode(), "KeeperRL");
   sfView = new sf::View(display->getDefaultView());
+}
+
+Renderer::Renderer(const string& title, Vec2 nominal) : nominalSize(nominal) {
   CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(tileFont.loadFromFile("Lato-Bol.ttf"));
   CHECK(symbolFont.loadFromFile("Symbola.ttf"));
@@ -201,32 +228,36 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
   return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
 }
 
-void Renderer::drawViewObject(int x, int y, ViewId id, bool useSprite, double scale) {
+void Renderer::drawTile(int x, int y, TileCoord coord, int sizeX, int sizeY, Color color) {
+  Vec2 sz = Renderer::tileSize[coord.texNum];
+  Vec2 off = (nominalSize -  sz).mult(Vec2(sizeX, sizeY)).div(Renderer::nominalSize * 2);
+  int width = sz.x * sizeX / nominalSize.x;
+  int height = sz.y* sizeY / nominalSize.y;
+  if (sz.y > nominalSize.y)
+    off.y *= 2;
+  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
+  drawSprite(x + off.x, y + off.y, coord.pos.x * sz.x, coord.pos.y * sz.y, sz.x, sz.y,
+      Renderer::tiles.at(coord.texNum), width, height, color);
+}
+
+void Renderer::drawTile(int x, int y, TileCoord coord, double scale, Color color) {
+  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
+  Vec2 sz = Renderer::tileSize[coord.texNum];
+  Vec2 of = getOffset(Renderer::nominalSize - sz, scale);
+  drawSprite(x + of.x, y + of.y, coord.pos.x * sz.x, coord.pos.y * sz.y, sz.x, sz.y,
+      Renderer::tiles.at(coord.texNum), sz.x * scale, sz.y * scale, color);
+}
+
+void Renderer::drawViewObject(int x, int y, ViewId id, bool useSprite, double scale, Color color) {
   const Tile& tile = Tile::getTile(id, useSprite);
-  if (tile.hasSpriteCoord()) {
-    CHECK(tile.getTexNum() >= 0 && tile.getTexNum() < Renderer::tiles.size());
-    Vec2 sz = Renderer::tileSize[tile.getTexNum()];
-    Vec2 of = getOffset(Renderer::nominalSize - sz, scale);
-    Vec2 coord = tile.getSpriteCoord(EnumSet<Dir>::fullSet());
-    drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles.at(tile.getTexNum()),
-        sz.x * scale, sz.y * scale);
-  } else
+  if (tile.hasSpriteCoord())
+    drawTile(x, y, tile.getSpriteCoord(EnumSet<Dir>::fullSet()), scale, color);
+  else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, x, y, tile.text);
 }
 
 void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSprite, double scale) {
-  const Tile& tile = Tile::getTile(object.id(), useSprite);
-  if (tile.hasSpriteCoord()) {
-    CHECK(tile.getTexNum() >= 0 && tile.getTexNum() < Renderer::tiles.size());
-    Vec2 sz = Renderer::tileSize[tile.getTexNum()];
-    Vec2 of = getOffset(Renderer::nominalSize - sz, scale);
-    Vec2 coord = tile.getSpriteCoord(EnumSet<Dir>::fullSet());
-    Color color = getBleedingColor(object);
-    drawSprite(x + of.x, y + of.y, coord.x * sz.x, coord.y * sz.y, sz.x, sz.y, Renderer::tiles.at(tile.getTexNum()),
-        sz.x * scale, sz.y * scale, color);
-  } else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20,
-        Tile::getColor(object), x, y, tile.text);
+  drawViewObject(x, y, object.id(), useSprite, scale, getBleedingColor(object));
 }
 
 const static string imageSuf = ".png";
@@ -262,9 +293,13 @@ bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
   return true;
 }
 
-Renderer::TileCoords Renderer::getTileCoords(const string& name) {
+Renderer::TileCoord Renderer::getTileCoord(const string& name) {
   CHECK(tileCoords.count(name)) << "Tile not found " << name;
   return tileCoords.at(name);
+}
+
+Vec2 Renderer::getNominalSize() const {
+  return nominalSize;
 }
 
 bool Renderer::loadTilesFromFile(const string& path, Vec2 size) {
@@ -273,11 +308,10 @@ bool Renderer::loadTilesFromFile(const string& path, Vec2 size) {
   return tiles.back().loadFromFile(path.c_str());
 }
 
-void Renderer::setNominalSize(Vec2 sz) {
-  nominalSize = sz;
-}
-
 void Renderer::drawAndClearBuffer() {
+  for (auto& elem : renderList)
+    elem();
+  renderList.clear();
   display->display();
   display->clear(Color(0, 0, 0));
 }

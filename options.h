@@ -24,8 +24,12 @@ enum class OptionId {
   ASCII,
   MUSIC,
   KEEP_SAVEFILES,
-  FAST_IMMIGRATION,
+  SMOOTH_MOVEMENT,
 
+  FAST_IMMIGRATION,
+  ADVENTURER_NAME,
+
+  KEEPER_NAME,
   SHOW_MAP,
   START_WITH_NIGHT,
   STARTING_RESOURCE,
@@ -41,18 +45,25 @@ ENUM_HASH(OptionId);
 
 class Options {
   public:
-  static void init(const string& path);
-  static int getValue(OptionId);
-  static void handle(View*, OptionSet, int lastIndex = 0);
-  static bool handleOrExit(View*, OptionSet, int lastIndex = -1);
+  typedef variant<bool, string> Value;
+  Options(const string& path);
+  bool getBoolValue(OptionId);
+  string getStringValue(OptionId);
+  void handle(View*, OptionSet, int lastIndex = 0);
+  bool handleOrExit(View*, OptionSet, int lastIndex = -1);
   typedef function<void(bool)> Trigger;
-  static void addTrigger(OptionId, Trigger trigger);
+  void addTrigger(OptionId, Trigger trigger);
+  void setDefaultString(OptionId, const string&);
 
   private:
-  static void setValue(OptionId, int);
-  static unordered_map<OptionId, int> readValues(const string& path);
-  static void writeValues(const string& path, const unordered_map<OptionId, int>&);
-  static string filename;
+  void setValue(OptionId, Value);
+  void changeValue(OptionId, const Options::Value&, View*);
+  string getValueString(OptionId, Options::Value);
+  Value getValue(OptionId);
+  unordered_map<OptionId, Value> readValues();
+  void writeValues(const unordered_map<OptionId, Value>&);
+  string filename;
+  unordered_map<OptionId, string> defaultStrings;
 };
 
 

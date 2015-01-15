@@ -24,21 +24,35 @@
 class PlayerControl;
 class Level;
 class ProgressMeter;
+class Options;
 
 /**
   * Main class that holds all game logic.
   */
 class Model {
   public:
-  Model(View* view);
   ~Model();
 
   /** Generates levels and all game entities for a collective game. */
-  static Model* collectiveModel(ProgressMeter&, View* view);
+  static Model* collectiveModel(ProgressMeter&, Options*, View* view, const string& worldName);
+
+  enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER };
+
+  class ExitInfo {
+    public:
+    static ExitInfo saveGame(GameType);
+    static ExitInfo abandonGame();
+
+    bool isAbandoned() const;
+    GameType getGameType() const;
+    private:
+    GameType type;
+    bool abandon;
+  };
 
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
-  void update(double totalTime);
+  optional<ExitInfo> update(double totalTime);
 
   /** Removes creature from current level and puts into the next, according to direction. */
   Vec2 changeLevel(StairDirection direction, StairKey key, Creature*);
@@ -57,19 +71,24 @@ class Model {
   bool isTurnBased();
 
   string getGameIdentifier() const;
+  string getShortGameIdentifier() const;
   void exitAction();
   double getTime() const;
+  MusicType getCurrentMusic() const;
+  void setCurrentMusic(MusicType);
 
   View* getView();
   void setView(View*);
+  Options* getOptions();
+  void setOptions(Options*);
 
   void tick(double time);
   void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, const string& land, vector<const Creature*> kills, int points);
   void killedKeeper(const string& title, const string& keeper, const string& land,
     vector<const Creature*> kills, int points);
-  void showHighscore(bool highlightLast = false);
-  void showCredits();
+  static void showHighscore(View*, bool highlightLast = false);
+  static void showCredits(View*);
   void retireCollective();
 
   struct SunlightInfo {
@@ -80,12 +99,16 @@ class Model {
   };
   const SunlightInfo& getSunlightInfo() const;
 
+  const string& getWorldName() const;
+
   SERIALIZATION_DECL(Model);
 
   Encyclopedia keeperopedia;
 
   private:
   REGISTER_HANDLER(KilledLeaderEvent, const Collective*, const Creature*);
+
+  Model(View* view, const string& worldName);
 
   void updateSunlightInfo();
   PCreature makePlayer(int handicap);
@@ -111,6 +134,10 @@ class Model {
   double SERIAL2(currentTime, 0);
   SunlightInfo sunlightInfo;
   double lastUpdate = -10;
+  Options* options;
+  string SERIAL(worldName);
+  MusicType SERIAL(musicType);
+  optional<ExitInfo> exitInfo;
 };
 
 #endif

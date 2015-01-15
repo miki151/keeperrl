@@ -228,11 +228,11 @@ const Creature* Item::getShopkeeper() const {
     return shopkeeper;
 }
 
-Optional<TrapType> Item::getTrapType() const {
+optional<TrapType> Item::getTrapType() const {
   return trapType;
 }
 
-Optional<CollectiveResourceId> Item::getResourceId() const {
+optional<CollectiveResourceId> Item::getResourceId() const {
   return resourceId;
 }
 
@@ -398,16 +398,16 @@ bool Item::isDiscarded() {
   return discarded;
 }
 
-Optional<EffectType> Item::getEffectType() const {
+optional<EffectType> Item::getEffectType() const {
   return effect;
 }
 
-Optional<EffectType> Item::getAttackEffect() const {
+optional<EffectType> Item::getAttackEffect() const {
   return attackEffect;
 }
 
 bool Item::canEquip() const {
-  return equipmentSlot;
+  return !!equipmentSlot;
 }
 
 EquipmentSlot Item::getEquipmentSlot() const {

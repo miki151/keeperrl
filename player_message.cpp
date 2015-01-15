@@ -28,7 +28,7 @@ PlayerMessage& PlayerMessage::setPosition(Vec2 pos) {
   return *this;
 }
 
-Optional<Vec2> PlayerMessage::getPosition() const {
+optional<Vec2> PlayerMessage::getPosition() const {
   return position;
 }
 
@@ -37,7 +37,7 @@ PlayerMessage& PlayerMessage::setCreature(UniqueEntity<Creature>::Id id) {
   return *this;
 }
 
-Optional<UniqueEntity<Creature>::Id> PlayerMessage::getCreature() const {
+optional<UniqueEntity<Creature>::Id> PlayerMessage::getCreature() const {
   return creature;
 }
 

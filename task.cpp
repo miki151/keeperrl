@@ -592,7 +592,7 @@ class Sacrifice : public NonTransferable {
 
   private:
   Creature* SERIAL(creature);
-  Optional<Vec2> SERIAL(sacrificePos);
+  optional<Vec2> SERIAL(sacrificePos);
   Callback* SERIAL(callback);
 };
 
@@ -674,11 +674,11 @@ class Chain : public Task {
   }
 
   virtual bool canTransfer() override {
-    return tasks[current]->canTransfer();
+    return tasks.at(current)->canTransfer();
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    while (tasks[current]->isDone())
+    while (tasks.at(current)->isDone())
       if (++current >= tasks.size()) {
         setDone();
         return NoMove;

@@ -54,7 +54,7 @@ string Location::getDescription() const {
 }
 
 bool Location::hasName() const {
-  return name;
+  return !!name;
 }
 
 Rectangle Location::getBounds() const {

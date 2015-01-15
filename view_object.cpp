@@ -27,7 +27,8 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
     & SVAR(modifiers)
     & SVAR(attributes)
     & SVAR(attachmentDir)
-    & SVAR(position);
+    & SVAR(position)
+    & SVAR(creatureId);
   CHECK_SERIAL;
 }
 
@@ -46,6 +47,59 @@ ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
       Attribute::WATER_DEPTH,
       Attribute::EFFICIENCY})
     setAttribute(attr, -1);
+}
+
+void ViewObject::setCreatureId(UniqueEntity<Creature>::Id id) {
+  creatureId = id;
+}
+
+void ViewObject::addMovementInfo(MovementInfo info) {
+  movementQueue.add(info);
+}
+
+bool ViewObject::hasAnyMovementInfo() const {
+  return movementQueue.hasAny();
+}
+
+ViewObject::MovementInfo ViewObject::getLastMovementInfo() const {
+  return movementQueue.getLast();
+}
+
+Vec2 ViewObject::getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creature>::Id controlledId) const {
+  if (!movementQueue.hasAny())
+    return Vec2(0, 0);
+  CHECK(creatureId > 0);
+  if (controlledId > creatureId)
+    return movementQueue.getTotalMovement(tBegin, tEnd);
+  else
+    return movementQueue.getTotalMovement(tBegin - 0.00000001, tEnd);
+}
+
+void ViewObject::MovementQueue::add(MovementInfo info) {
+  elems[index] = info;
+  ++totalMoves;
+  index = makeGoodIndex(index + 1);
+}
+
+const ViewObject::MovementInfo& ViewObject::MovementQueue::getLast() const {
+  CHECK(hasAny());
+  return elems[makeGoodIndex(index - 1)];
+}
+
+Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin, double tEnd) const {
+  Vec2 ret;
+  for (int i : Range(min<int>(totalMoves, elems.size())))
+    if (elems[i].tBegin > tBegin && elems[i].type != MovementInfo::ATTACK)
+      ret += elems[i].direction;
+  return ret;
+}
+
+bool ViewObject::MovementQueue::hasAny() const {
+  return totalMoves > 0;
+}
+
+int ViewObject::MovementQueue::makeGoodIndex(int index) const {
+  return (index + elems.size()) % elems.size();
 }
 
 ViewObject& ViewObject::setModifier(Modifier mod) {
@@ -92,7 +146,7 @@ ViewObject&  ViewObject::setAttachmentDir(Dir dir) {
   return *this;
 }
 
-Optional<Dir> ViewObject::getAttachmentDir() const {
+optional<Dir> ViewObject::getAttachmentDir() const {
   return attachmentDir;
 }
 

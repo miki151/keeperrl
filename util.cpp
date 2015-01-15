@@ -563,8 +563,7 @@ const Rectangle::Iter& Rectangle::Iter::operator++ () {
   if (pos.y >= ky) {
     pos.y = py;
     ++pos.x;
-  } else 
-    CHECK(pos.x < kx) << "Iterator out of range: " << **this << ", " << Vec2(px, py) << " " << Vec2(kx, ky);
+  }
   return *this;
 }
 
@@ -645,6 +644,12 @@ string addAParticle(const string& s) {
 string capitalFirst(string s) {
   if (!s.empty() && islower(s[0]))
     s[0] = toupper(s[0]);
+  return s;
+}
+
+string noCapitalFirst(string s) {
+  if (!s.empty() && isupper(s[0]))
+    s[0] = tolower(s[0]);
   return s;
 }
 

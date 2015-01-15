@@ -26,11 +26,23 @@
 #include "gui_builder.h"
 
 class ViewIndex;
+class Options;
+class Clock;
 
 /** See view.h for documentation.*/
 class WindowView: public View {
   public:
-  WindowView(); 
+  struct ViewParams {
+    Renderer& renderer;
+    bool useTiles;
+    Options* options;
+    Clock* clock;
+  };
+  static View* createDefaultView(ViewParams);
+  static View* createLoggingView(OutputArchive& of, ViewParams);
+  static View* createReplayView(InputArchive& ifs, ViewParams);
+
+  WindowView(ViewParams); 
   virtual void initialize() override;
   virtual void reset() override;
   virtual void displaySplash(const ProgressMeter&, View::SplashType) override;
@@ -39,27 +51,30 @@ class WindowView: public View {
   virtual void close() override;
 
   virtual void refreshView() override;
-  virtual void updateView(const CreatureView*) override;
+  virtual void updateView(const CreatureView*, bool noRefresh) override;
   virtual void drawLevelMap(const CreatureView*) override;
   virtual void resetCenter() override;
-  virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
+  virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = View::NORMAL_MENU, int* scrollPos = nullptr,
-      Optional<UserInputId> exitAction = Nothing()) override;
-  virtual Optional<Vec2> chooseDirection(const string& message) override;
+      optional<UserInputId> exitAction = none) override;
+  virtual GameTypeChoice chooseGameType() override;
+  virtual optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
   virtual void animation(Vec2 pos, AnimationId) override;
+  virtual double getGameSpeed() override;
 
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = NORMAL_MENU, Optional<UserInputId> exitAction = Nothing()) override;
-  virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
+      MenuType = NORMAL_MENU, optional<UserInputId> exitAction = none) override;
+  virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
+  virtual optional<string> getText(const string& title, const string& value, int maxLength,
+      const string& hint) override;
 
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual int getTimeMilli() override;
   virtual int getTimeMilliAbsolute() override;
-  virtual void setTimeMilli(int) override;
   virtual void stopClock() override;
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
@@ -67,8 +82,10 @@ class WindowView: public View {
   static Color getFireColor();
   static bool areTilesOk();
 
+
   private:
 
+  Renderer& renderer;
   void processEvents();
   void displayMenuSplash2();
   void displayOldSplash();
@@ -76,14 +93,16 @@ class WindowView: public View {
   void mapLeftClickFun(Vec2);
   void mapRightClickFun(Vec2);
   Rectangle getMenuPosition(View::MenuType type);
-  Optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      int* scrollPos, Optional<UserInputId> exitAction, Optional<sf::Event::KeyEvent> exitKey,
+  Rectangle getTextInputPosition();
+  optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
+      int* scrollPos, optional<UserInputId> exitAction, optional<sf::Event::KeyEvent> exitKey,
       vector<sf::Event::KeyEvent> shortCuts);
-  Optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
+  optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
+  PGuiElem drawGameChoices(optional<View::GameTypeChoice>& choice, optional<View::GameTypeChoice>& index);
   void rebuildGui();
   void drawMap();
-  Optional<sf::Event::KeyEvent> getEventFromMenu();
+  optional<sf::Event::KeyEvent> getEventFromMenu();
   void propagateEvent(const Event& event, vector<GuiElem*>);
   void keyboardAction(Event::KeyEvent key);
 
@@ -92,27 +111,21 @@ class WindowView: public View {
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
-  Optional<Vec2> getHighlightedTile();
 
-  Optional<ViewObject> drawObjectAbs(int x, int y, const ViewIndex&, int sizeX, int sizeY, Vec2 tilePos);
-  void darkenObjectAbs(int x, int y);
-  void clearMessageBox();
   void switchZoom();
   void zoom(bool out);
-  void switchTiles();
   void resize(int width, int height, vector<GuiElem*> gui);
   Rectangle getMapGuiBounds() const;
   Rectangle getMinimapBounds() const;
   void resetMapBounds();
+  void switchTiles();
 
-  bool considerScrollEvent(sf::Event&);
   bool considerResizeEvent(sf::Event&, vector<GuiElem*> gui);
 
   int messageInd = 0;
   std::deque<string> currentMessage = std::deque<string>(3, "");
   bool oldMessage = false;
 
-  Table<Optional<ViewIndex>> objects;
   GameInfo gameInfo;
 
   MapLayout* mapLayout;
@@ -126,7 +139,9 @@ class WindowView: public View {
   SyncQueue<UserInput> inputQueue;
 
   bool gameReady = false;
-  std::atomic<bool> refreshInput;
+  bool uiLock = false;
+  atomic<bool> refreshInput;
+  atomic<bool> wasRendered;
 
   typedef std::unique_lock<std::recursive_mutex> RenderLock;
 
@@ -160,6 +175,9 @@ class WindowView: public View {
       renderDialog();
   }
   atomic<bool> splashDone;
+  bool useTiles;
+  Options* options;
+  Clock* clock;
   GuiBuilder guiBuilder;
   Texture menuCore;
   Texture menuMouth;

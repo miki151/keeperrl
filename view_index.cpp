@@ -31,7 +31,7 @@ void ViewIndex::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(ViewIndex);
 
 ViewIndex::ViewIndex() {
-  objIndex = vector<int>(EnumInfo<ViewLayer>::getSize(), -1);
+  objIndex = vector<int>(EnumInfo<ViewLayer>::size, -1);
 }
 
 ViewIndex::~ViewIndex() {
@@ -93,7 +93,7 @@ double ViewIndex::getHighlight(HighlightType h) const {
   return highlight[h];
 }
 
-Optional<ViewId> ViewIndex::getHiddenId() const {
+optional<ViewId> ViewIndex::getHiddenId() const {
   return hiddenId;
 }
 

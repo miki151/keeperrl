@@ -26,6 +26,7 @@
 #include "square_type.h"
 #include "renderable.h"
 #include "movement_type.h"
+#include "view_object.h"
 
 class Level;
 class Creature;
@@ -68,8 +69,8 @@ class Square : public Renderable {
   /** Checks if this square is a point of entry from another level. See setLandingLink().*/
   bool isLandingSquare(StairDirection, StairKey);
 
-  /** Returns the entry point details. Returns nothing if square is not entry point. See setLandingLink().*/
-  Optional<pair<StairDirection, StairKey>> getLandingLink() const;
+  /** Returns the entry point details. Returns none if square is not entry point. See setLandingLink().*/
+  optional<pair<StairDirection, StairKey>> getLandingLink() const;
 
   /** Returns radius of emitted light (0 if none).*/
   virtual double getLightEmission() const;
@@ -194,7 +195,7 @@ class Square : public Renderable {
   virtual bool isLocked() const { FAIL << "BAD"; return false; }
   virtual void lock() { FAIL << "BAD"; }
 
-  Optional<ViewObject> getBackgroundObject() const;
+  optional<ViewObject> getBackgroundObject() const;
   void setBackground(const Square*);
   void getViewIndex(ViewIndex&, const Tribe*) const;
 
@@ -205,7 +206,7 @@ class Square : public Renderable {
   PItem removeItem(Item*);
   vector<PItem> removeItems(vector<Item*>);
 
-  virtual Optional<SquareApplyType> getApplyType(const Creature*) const { return Nothing(); }
+  virtual optional<SquareApplyType> getApplyType(const Creature*) const { return none; }
   virtual void onApply(Creature* c) { Debug(FATAL) << "Bad square applied"; }
  
   const Level* getConstLevel() const;
@@ -214,8 +215,8 @@ class Square : public Renderable {
 
   void setFog(double val);
 
-  bool isDirty() const;
-  void setNonDirty();
+  bool needsMemoryUpdate() const;
+  void setMemoryUpdated();
 
   Level* getLevel();
   const Level* getLevel() const;
@@ -231,6 +232,7 @@ class Square : public Renderable {
   string SERIAL(name);
   const MovementType& getMovementType() const;
   void setMovementType(MovementType);
+  void setDirty();
 
   private:
   Item* getTopItem() const;
@@ -239,20 +241,22 @@ class Square : public Renderable {
   Vec2 SERIAL(position);
   Creature* SERIAL2(creature, nullptr);
   vector<PTrigger> SERIAL(triggers);
-  Optional<ViewObject> SERIAL(backgroundObject);
+  optional<ViewObject> SERIAL(backgroundObject);
   Vision* SERIAL(vision);
   bool SERIAL(hide);
   int SERIAL(strength);
   double SERIAL(height);
   vector<Vec2> SERIAL(travelDir);
-  Optional<pair<StairDirection, StairKey>> SERIAL(landingLink);
+  optional<pair<StairDirection, StairKey>> SERIAL(landingLink);
   Fire SERIAL(fire);
   PoisonGas SERIAL(poisonGas);
   map<SquareId, int> SERIAL(constructions);
   bool SERIAL(ticking);
   double SERIAL2(fog, 0);
   MovementType SERIAL(movementType);
-  bool SERIAL2(dirty, true);
+  bool SERIAL2(updateMemory, true);
+  mutable bool SERIAL2(updateViewIndex, true);
+  mutable ViewIndex SERIAL(viewIndex);
   bool SERIAL2(canDestroySquare, false);
 };
 

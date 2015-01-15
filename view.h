@@ -51,8 +51,12 @@ class View {
   /** Reads the game state from \paramname{creatureView} and refreshes the display.*/
   virtual void refreshView() = 0;
 
-  /** Reads the game state from \paramname{creatureView} and only updates internal data, doesn't refresh.*/
-  virtual void updateView(const CreatureView* creatureView) = 0;
+  /** Returns real-time game mode speed measured in turns per millisecond. **/
+  virtual double getGameSpeed() = 0;
+
+  /** Reads the game state from \paramname{creatureView}. If \paramname{noRefresh} is set,
+      won't trigger screen to refresh.*/
+  virtual void updateView(const CreatureView* creatureView, bool noRefresh) = 0;
 
   /** Draw a blocking view of the whole level.*/
   virtual void drawLevelMap(const CreatureView*) = 0;
@@ -76,18 +80,22 @@ class View {
   class ListElem {
     public:
     ListElem(const char*, ElemMod mod = NORMAL,
-        Optional<UserInputId> triggerAction = Nothing());
+        optional<UserInputId> triggerAction = none);
     ListElem(const string& text = "", ElemMod mod = NORMAL,
-        Optional<UserInputId> triggerAction = Nothing());
+        optional<UserInputId> triggerAction = none);
+    ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
 
     const string& getText() const;
+    const string& getSecondColumn() const;
     ElemMod getMod() const;
-    Optional<UserInputId> getAction() const;
+    optional<UserInputId> getAction() const;
+    void setMod(ElemMod);
 
     private:
     string text;
+    string secondColumn;
     ElemMod mod;
-    Optional<UserInputId> action;
+    optional<UserInputId> action;
   };
 
   static vector<ListElem> getListElem(const vector<string>&);
@@ -97,15 +105,25 @@ class View {
     MAIN_MENU,
     MAIN_MENU_NO_TILES,
     MINION_MENU,
+    GAME_CHOICE_MENU,
   };
 
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
-      Returns Nothing() if the player cancelled the choice.*/
-  virtual Optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = NORMAL_MENU, int* scrollPos = nullptr, Optional<UserInputId> exitAction = Nothing()) = 0;
+      Returns none if the player cancelled the choice.*/
+  virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
+      MenuType = NORMAL_MENU, int* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
-  /** Let's the player choose a direction from the main 8. Returns Nothing() if the player cancelled the choice.*/
-  virtual Optional<Vec2> chooseDirection(const string& message) = 0;
+  enum GameTypeChoice {
+    KEEPER_CHOICE,
+    ADVENTURER_CHOICE,
+    LOAD_CHOICE,
+    BACK_CHOICE,
+  };
+
+  virtual GameTypeChoice chooseGameType() = 0;
+
+  /** Let's the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
+  virtual optional<Vec2> chooseDirection(const string& message) = 0;
 
   /** Asks the player a yer-or-no question.*/
   virtual bool yesOrNoPrompt(const string& message) = 0;
@@ -115,10 +133,14 @@ class View {
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = NORMAL_MENU, Optional<UserInputId> exitAction = Nothing()) = 0;
+      MenuType = NORMAL_MENU, optional<UserInputId> exitAction = none) = 0;
 
-  /** Let's the player choose a number. Returns Nothing() if the player cancelled the choice.*/
-  virtual Optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
+  /** Let's the player choose a number. Returns none if the player cancelled the choice.*/
+  virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
+
+  /** Let's the player input a string. Returns none if the player cancelled the choice.*/
+  virtual optional<string> getText(const string& title, const string& value, int maxLength,
+      const string& hint = "") = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;
@@ -136,30 +158,12 @@ class View {
   /** Stops the real time clock.*/
   virtual void stopClock() = 0;
 
-  /** Sets the real time clock.*/
-  virtual void setTimeMilli(int) = 0;
-
   /** Continues the real time clock after it had been stopped.*/
 
   virtual void continueClock() = 0;
 
   /** Returns whether the real time clock is currently stopped.*/
   virtual bool isClockStopped() = 0;
-
-  void setJukebox(Jukebox*);
-  Jukebox* getJukebox();
-
-  /** Returns a default View.*/
-  static View* createDefaultView();
-
-  /** Returns a default View that additionally logs all player actions into a file.*/
-  static View* createLoggingView(OutputArchive& of);
-
-  /** Returns a default View that reads all player actions from a file instead of the keyboard.*/
-  static View* createReplayView(InputArchive& ifs);
-
-  private:
-  Jukebox* jukebox = nullptr;
 };
 
 enum class AnimationId {

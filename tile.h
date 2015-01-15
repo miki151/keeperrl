@@ -18,9 +18,12 @@
 
 #include "view_object.h"
 #include "renderer.h"
+#include "view_id.h"
+#include "util.h"
 
 class Tile {
   public:
+  typedef Renderer::TileCoord TileCoord;
   static const Tile& getTile(ViewId, bool sprite);
   static const Tile& fromViewId(ViewId);
   static Color getColor(const ViewObject& object);
@@ -28,12 +31,9 @@ class Tile {
   static Tile empty();
   static Tile unicode(sf::Uint32 ch, ColorId, bool sym = false);
   static Tile fromString(const string&, ColorId, bool symbol = false);
-  static Tile byCoord(int x, int y, int num = 0, bool noShadow = false);
-  static Tile byName(const string&, bool noShadow = false);
+  static Tile byCoord(TileCoord);
 
-  static void initialize();
-  static void loadTiles();
-  static void loadUnicode();
+  static void initialize(Renderer&, bool useTiles);
 
   Color color;
   String text;
@@ -44,45 +44,47 @@ class Tile {
 
   Tile setNoShadow();
 
-  Tile addConnection(EnumSet<Dir> c, int x, int y);
-  Tile addConnection(EnumSet<Dir> c, const string&);
-  Tile addOption(Dir, const string&);
+  Tile addConnection(EnumSet<Dir>, TileCoord);
+  Tile addOption(Dir, TileCoord);
   Tile setFloorBorders();
 
-  Tile addBackground(int x, int y);
-  Tile addBackground(const string&);
+  Tile addBackground(TileCoord);
 
+  Tile addExtraBorder(EnumSet<Dir>, TileCoord);
+  Tile addExtraBorderId(ViewId);
+  Tile addCorner(EnumSet<Dir> cornerDef, EnumSet<Dir> borders, TileCoord);
   Tile setTranslucent(double v);
+
+  const vector<ViewId>& getExtraBorderIds() const;
+  bool hasExtraBorders() const;
+  optional<TileCoord> getExtraBorderCoord(const EnumSet<Dir>& c) const;
 
   bool hasSpriteCoord() const;
 
-  Vec2 getSpriteCoord() const;
-
-  Optional<Vec2> getBackgroundCoord() const;
-
-  Vec2 getSpriteCoord(const EnumSet<Dir>& c) const;
-
-  int getTexNum() const;
+  TileCoord getSpriteCoord() const;
+  TileCoord getSpriteCoord(const EnumSet<Dir>& c) const;
+  optional<TileCoord> getBackgroundCoord() const;
 
   bool hasCorners() const;
-  vector<Vec2> getCornerCoords(const EnumSet<Dir>& c) const;
-  Tile addCorner(EnumSet<Dir> cornerDef, EnumSet<Dir> borders, int, int);
+  vector<TileCoord> getCornerCoords(const EnumSet<Dir>& c) const;
 
   private:
+  static void loadTiles();
+  static void loadUnicode();
   Tile();
-  Tile(int x, int y, int num = 0, bool noShadow = false);
-  Tile(Renderer::TileCoords coords, bool noShadow);
-  Optional<Vec2> tileCoord;
-  Optional<Vec2> backgroundCoord;
-  int texNum = 0;
-  unordered_map<EnumSet<Dir>, Vec2> connections;
-  Optional<pair<Dir, Vec2>> connectionOption;
+  Tile(TileCoord);
+  optional<TileCoord> tileCoord;
+  optional<TileCoord> backgroundCoord;
+  unordered_map<EnumSet<Dir>, TileCoord> connections;
+  optional<pair<Dir, TileCoord>> connectionOption;
   struct CornerInfo {
     EnumSet<Dir> cornerDef;
     EnumSet<Dir> borders;
-    Vec2 tileCoord;
+    TileCoord tileCoord;
   };
   vector<CornerInfo> corners;
+  unordered_map<EnumSet<Dir>, TileCoord> extraBorders;
+  vector<ViewId> extraBorderIds;
 };
 
 

@@ -19,7 +19,7 @@
 
 
 
-Attack::Attack(const Creature* a, AttackLevel l, AttackType t, int h, int s, bool b, Optional<EffectType> _effect)
+Attack::Attack(const Creature* a, AttackLevel l, AttackType t, int h, int s, bool b, optional<EffectType> _effect)
     : attacker(a), level(l), type(t), accuracy(h), strength(s), back(b), effect(_effect) {}
   
 const Creature* Attack::getAttacker() const {
@@ -46,6 +46,6 @@ bool Attack::inTheBack() const {
   return back;
 }
   
-Optional<EffectType> Attack::getEffect() const {
+optional<EffectType> Attack::getEffect() const {
   return effect;
 }

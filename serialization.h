@@ -312,7 +312,7 @@ inline void serialize(Archive & ar, std::vector<T, Allocator> & t, unsigned int 
   boost::serialization::split_free(ar, t, file_version);
 }
 
-#if BOOST_VERSION < 105600
+#ifdef CLANG
 // array
 template<class Archive, class T, size_t N>
 inline void serialize(Archive & ar, std::array<T, N> &t, unsigned int) {

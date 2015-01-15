@@ -19,6 +19,7 @@
 #include "debug.h"
 #include "enums.h"
 #include "util.h"
+#include "unique_entity.h"
 
 RICH_ENUM(ViewLayer,
   FLOOR_BACKGROUND,
@@ -31,7 +32,7 @@ RICH_ENUM(ViewLayer,
 );
 
 RICH_ENUM(ViewObjectModifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
-    ROUND_SHADOW, MOVE_UP, TEAM_HIGHLIGHT, DRAW_MORALE, SLEEPING);
+    ROUND_SHADOW, TEAM_HIGHLIGHT, DRAW_MORALE, SLEEPING, ROAD);
 RICH_ENUM(ViewObjectAttribute, BLEEDING, BURNING, HEIGHT, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, MORALE);
 
 class ViewObject {
@@ -52,7 +53,7 @@ class ViewObject {
   static void setHallu(bool);
   
   ViewObject& setAttachmentDir(Dir);
-  Optional<Dir> getAttachmentDir() const;
+  optional<Dir> getAttachmentDir() const;
 
   ViewObject& setAttribute(Attribute, double);
   double getAttribute(Attribute) const;
@@ -65,6 +66,20 @@ class ViewObject {
   void setId(ViewId);
 
   void setPosition(Vec2);
+
+  struct MovementInfo {
+    Vec2 direction;
+    double tBegin;
+    double tEnd;
+    enum { MOVE, ATTACK } type;
+  };
+
+  void addMovementInfo(MovementInfo);
+  bool hasAnyMovementInfo() const;
+  MovementInfo getLastMovementInfo() const;
+  Vec2 getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creature>::Id controlledId) const;
+
+  void setCreatureId(UniqueEntity<Creature>::Id);
 
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();
@@ -80,8 +95,23 @@ class ViewObject {
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
   string SERIAL(description);
-  Optional<Dir> SERIAL(attachmentDir);
+  optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL2(position, Vec2(-1, -1));
+  UniqueEntity<Creature>::Id SERIAL2(creatureId, 0);
+
+  class MovementQueue {
+    public:
+    void add(MovementInfo);
+    const MovementInfo& getLast() const;
+    Vec2 getTotalMovement(double tBegin, double tEnd) const;
+    bool hasAny() const;
+
+    private:
+    int makeGoodIndex(int index) const;
+    std::array<MovementInfo, 6> elems;
+    int index = 0;
+    int totalMoves = 0;
+  } movementQueue;
 };
 
 #endif

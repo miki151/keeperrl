@@ -18,55 +18,62 @@
 
 #include "util.h"
 #include "gui_elem.h"
+#include "view_id.h"
+#include "unique_entity.h"
+#include "view_index.h"
 
 class ViewIndex;
 class MapMemory;
 class MapLayout;
 class ViewObject;
 class Renderer;
+class CreatureView;
+class Clock;
 
 class MapGui : public GuiElem {
   public:
-  typedef function<void(Vec2)> ClickFun;
-  typedef function<void()> RefreshFun;
-  MapGui(const Table<Optional<ViewIndex>>& objects, ClickFun leftClickFun, ClickFun rightClickFun,
-      RefreshFun refreshFun);
+  struct Callbacks {
+    function<void(Vec2)> leftClickFun;
+    function<void(Vec2)> rightClickFun;
+    function<void()> refreshFun;
+  };
+  MapGui(Callbacks, Clock*);
 
   virtual void render(Renderer&) override;
-  virtual void onLeftClick(Vec2) override;
-  virtual void onRightClick(Vec2) override;
+  virtual bool onLeftClick(Vec2) override;
+  virtual bool onRightClick(Vec2) override;
   virtual void onMouseMove(Vec2) override;
   virtual void onMouseRelease() override;
-  virtual void onKeyPressed(Event::KeyEvent) override;
+  virtual void onKeyPressed2(Event::KeyEvent) override;
 
-  void refreshObjects();
-  void updateObjects(const MapMemory*);
-  void setLevelBounds(Rectangle bounds);
-  void updateLayout(MapLayout*, Rectangle levelBounds);
+  void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement);
   void setSpriteMode(bool);
-  Optional<Vec2> getHighlightedTile(Renderer& renderer);
+  optional<Vec2> getHighlightedTile(Renderer& renderer);
   void setHint(const string&);
   void addAnimation(PAnimation animation, Vec2 position);
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
   void clearCenter();
   bool isCentered() const;
+  Vec2 getScreenPos() const;
 
   private:
-  void drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject&, int sizeX, int sizeY, Vec2 tilePos);
+  void drawObjectAbs(Renderer&, int x, int y, const ViewObject&, int sizeX, int sizeY, Vec2 tilePos,
+      int currentTimeReal);
+  void drawCreatureHighlights(Renderer&, const ViewObject&, int x, int y, int sizeX, int sizeY);
   void drawFloorBorders(Renderer& r, const EnumSet<Dir>& borders, int x, int y);
   void drawHint(Renderer& renderer, Color color, const string& text);
   void drawFoWSprite(Renderer&, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs);
+  void renderExtraBorders(Renderer&, int currentTimeReal);
+  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, int curTimeReal);
+  Vec2 projectOnScreen(Vec2 wpos, int currentTimeReal);
   MapLayout* layout;
-  const Table<Optional<ViewIndex>>& objects;
-  const MapMemory* lastMemory = nullptr;
+  Table<optional<ViewIndex>> objects;
   bool spriteMode;
   Rectangle levelBounds = Rectangle(1, 1);
-  ClickFun leftClickFun;
-  ClickFun rightClickFun;
-  RefreshFun refreshFun;
-  Optional<Vec2> mouseHeldPos;
-  Optional<Vec2> highlightedPos;
+  Callbacks callbacks;
+  Clock* clock;
+  optional<Vec2> mouseHeldPos;
   string hint;
   struct AnimationInfo {
     PAnimation animation;
@@ -74,6 +81,7 @@ class MapGui : public GuiElem {
   };
   vector<AnimationInfo> animations;
   DirtyTable<bool> fogOfWar;
+  DirtyTable<vector<ViewId>> extraBorderPos;
   bool isFoW(Vec2 pos) const;
   struct {
     double x;
@@ -81,6 +89,29 @@ class MapGui : public GuiElem {
   } mouseOffset, center;
   Vec2 lastMousePos;
   bool isScrollingNow = false;
+  double currentTimeGame = 0;
+  struct ScreenMovement {
+    Vec2 from;
+    Vec2 to;
+    int startTimeReal;
+    int endTimeReal;
+    double startTimeGame;
+    double endTimeGame;
+    UniqueEntity<Creature>::Id creatureId;
+  };
+  optional<ScreenMovement> screenMovement;
+  class ViewIdMap {
+    public:
+    ViewIdMap(Rectangle bounds);
+    void add(Vec2 pos, ViewId id);
+    bool has(Vec2 pos, ViewId id);
+    void clear();
+
+    private:
+    DirtyTable<EnumSet<ViewId>> ids;
+  };
+  bool keyScrolling = false;
+  ViewIdMap connectionMap;
 };
 
 #endif

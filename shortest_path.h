@@ -44,8 +44,8 @@ class ShortestPath {
   SERIALIZATION_DECL(ShortestPath);
 
   private:
-  void init(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, Vec2 target, Optional<Vec2> from,
-      Optional<int> limit = Nothing());
+  void init(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, Vec2 target, optional<Vec2> from,
+      optional<int> limit = none);
   void reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, double mult, Vec2 from, int limit);
   void constructPath(Vec2 start, bool reversed = false);
   vector<Vec2> SERIAL(path);
