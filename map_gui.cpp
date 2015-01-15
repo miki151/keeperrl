@@ -224,6 +224,10 @@ void MapGui::onMouseMove(Vec2 v) {
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->squareWidth();
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->squareHeight();
+    mouseOffset.x = min(mouseOffset.x, center.x);
+    mouseOffset.y = min(mouseOffset.y, center.y);
+    mouseOffset.x = max(mouseOffset.x, center.x - levelBounds.getKX());
+    mouseOffset.y = max(mouseOffset.y, center.y - levelBounds.getKY());
     callbacks.refreshFun();
   }
 }
