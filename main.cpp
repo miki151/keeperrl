@@ -463,12 +463,16 @@ int main(int argc, char* argv[]) {
     input.reset(new CompressedInput(fname));
     view.reset(WindowView::createReplayView(input->getArchive(), {renderer, tilesPresent(), &options, &clock}));
   } else {
+#ifndef RELEASE
     Random.init(seed);
     string fname(lognamePref);
     fname += toString(seed);
     output.reset(new CompressedOutput(fname));
     Debug() << "Writing to " << fname;
     view.reset(WindowView::createLoggingView(output->getArchive(), {renderer, tilesPresent(), &options, &clock}));
+#else
+    view.reset(WindowView::createDefaultView({renderer, tilesPresent(), &options, &clock}));
+#endif
   } 
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
