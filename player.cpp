@@ -1094,7 +1094,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
   gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
   GameInfo::PlayerInfo& info = gameInfo.playerInfo;
-  info.playerName = getCreature()->getFirstName().value_or("");
+  info.playerName = getCreature()->getFirstName().get_value_or("");
   info.title = getCreature()->getName().bare();
   info.spellcaster = !getCreature()->getSpells().empty();
   info.adjectives = getCreature()->getMainAdjectives();

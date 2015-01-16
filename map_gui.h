@@ -20,6 +20,7 @@
 #include "gui_elem.h"
 #include "view_id.h"
 #include "unique_entity.h"
+#include "view_index.h"
 
 class ViewIndex;
 class MapMemory;

@@ -15,10 +15,9 @@ CC = g++
 LD = g++
 endif
 
-
 ifdef OSX
 LDFLAGS = -Wl
-CFLAGS += -DOSX
+CFLAGS += -stdlib=libc++ -DOSX -m32 -mmacosx-version-min=10.7
 else
 LDFLAGS = -Wl,-rpath=$(RPATH) -static-libstdc++
 endif
