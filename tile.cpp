@@ -121,21 +121,19 @@ Tile::TileCoord Tile::getSpriteCoord(const EnumSet<Dir>& c) const {
   else return *tileCoord;
 }
 
-static map<ViewId, Tile> tiles;
-static map<ViewId, Tile> symbols;
+static EnumMap<ViewId, optional<Tile>> tiles;
+static EnumMap<ViewId, optional<Tile>> symbols;
 
 typedef EnumSet<Dir> SetOfDir;
 
 namespace {
 
 void addTile(ViewId id, Tile tile) {
-  tiles.erase(id);
-  tiles.insert({id, tile});
+  tiles[id] = tile;
 }
 
 void addSymbol(ViewId id, Tile tile) {
-  symbols.erase(id);
-  symbols.insert({id, tile});
+  symbols[id] = tile;
 }
 
 }
@@ -148,7 +146,7 @@ class TileCoordLookup {
     genTiles();
     bool bad = false;
     for (ViewId id : ENUM_ALL(ViewId))
-      if (!tiles.count(id)) {
+      if (!tiles[id]) {
         Debug() << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
         bad = true;
       }
@@ -159,7 +157,7 @@ class TileCoordLookup {
     genSymbols();
     bool bad = false;
     for (ViewId id : ENUM_ALL(ViewId))
-      if (!symbols.count(id)) {
+      if (!symbols[id]) {
         Debug() << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
         bad = true;
       }
@@ -832,21 +830,12 @@ void Tile::initialize(Renderer& renderer, bool useTiles) {
     lookup.loadTiles();
 }
 
-const Tile& Tile::fromViewId(ViewId id) {
-  CHECK(tiles.count(id));
-  return tiles.at(id);
-}
-
 const Tile& getSpriteTile(ViewId id) {
-  if (!tiles.count(id))
-    FAIL << "unhandled view id " << EnumInfo<ViewId>::getString(id);
-  return tiles.at(id);
+  return *tiles[id];
 }
 
 const Tile& getAsciiTile(ViewId id) {
-  if (!symbols.count(id))
-    FAIL << "unhandled view id " << EnumInfo<ViewId>::getString(id);
-  return symbols.at(id);
+  return *symbols[id];
 }
 
 const Tile& Tile::getTile(ViewId id, bool sprite) {

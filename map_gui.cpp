@@ -493,8 +493,8 @@ void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
 }
 
 void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs) {
-  const Tile& tile = Tile::fromViewId(ViewId::FOG_OF_WAR); 
-  const Tile& tile2 = Tile::fromViewId(ViewId::FOG_OF_WAR_CORNER); 
+  const Tile& tile = Tile::getTile(ViewId::FOG_OF_WAR, true); 
+  const Tile& tile2 = Tile::getTile(ViewId::FOG_OF_WAR_CORNER, true); 
   static EnumSet<Dir> fourDirs {Dir::N, Dir::S, Dir::E, Dir::W};
   auto coord = tile.getSpriteCoord(dirs.intersection(fourDirs));
   renderer.drawTile(pos.x, pos.y, coord, sizeX, sizeY);
@@ -520,7 +520,7 @@ void MapGui::renderExtraBorders(Renderer& renderer, int currentTimeReal) {
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
       ViewId viewId = objects[wpos]->getObject(ViewLayer::FLOOR_BACKGROUND).id();
-      if (Tile::fromViewId(viewId).hasExtraBorders())
+      if (Tile::getTile(viewId, true).hasExtraBorders())
         for (Vec2 v : wpos.neighbors4())
           if (v.inRectangle(extraBorderPos.getBounds())) {
             if (extraBorderPos.isDirty(v))
@@ -531,7 +531,7 @@ void MapGui::renderExtraBorders(Renderer& renderer, int currentTimeReal) {
     }
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     for (ViewId id : extraBorderPos.getValue(wpos)) {
-      const Tile& tile = Tile::fromViewId(id);
+      const Tile& tile = Tile::getTile(id, true);
       for (ViewId underId : tile.getExtraBorderIds())
         if (connectionMap.has(wpos, underId)) {
           EnumSet<Dir> dirs;
@@ -603,7 +603,7 @@ void MapGui::render(Renderer& renderer) {
         renderer.drawFilledRectangle(pos.x, pos.y, pos.x + sizeX, pos.y + sizeY, Color::Transparent,
             colors[ColorId::LIGHT_GRAY]);
       }
-      if (layer == layout->getLayers().back())
+      if (spriteMode && layer == layout->getLayers().back())
         if (!isFoW(wpos))
           drawFoWSprite(renderer, pos, sizeX, sizeY, {
               !isFoW(wpos + Vec2(Dir::N)),
