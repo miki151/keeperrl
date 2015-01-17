@@ -788,7 +788,7 @@ View::GameTypeChoice WindowView::chooseGameType() {
           "Load game",
           "Go back",
           },
-        0, MenuType::NORMAL_MENU, nullptr, none, none, {}))
+        0, MenuType::MAIN_MENU, nullptr, none, none, {}))
       return (GameTypeChoice)(*ind);
     else
       return BACK_CHOICE;

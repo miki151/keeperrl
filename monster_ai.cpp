@@ -1046,6 +1046,7 @@ class SplashItems : public Task::Callback {
   void setInitialized() {
     initialized = true;
     ifstream iff("splash.txt");
+    CHECK(!!iff);
     Vec2 sz;
     iff >> sz.x >> sz.y;
     for (int i : Range(sz.y)) {
