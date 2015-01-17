@@ -88,6 +88,8 @@ class MonsterAIFactory {
   static MonsterAIFactory dieTime(double time);
   static MonsterAIFactory moveRandomly();
   static MonsterAIFactory idle();
+  static MonsterAIFactory splashHeroes(bool leader);
+  static MonsterAIFactory splashMonsters(bool imps = false);
 
   private:
   typedef function<MonsterAI*(Creature*)> MakerFun;

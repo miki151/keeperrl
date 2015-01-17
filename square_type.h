@@ -7,6 +7,7 @@
 
 enum class SquareId {
   FLOOR,
+  BLACK_FLOOR,
   BRIDGE,
   ROAD,
   GRASS,

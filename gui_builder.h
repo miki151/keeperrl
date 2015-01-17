@@ -84,6 +84,7 @@ class GuiBuilder {
   int getActiveBuilding() const;
   int getActiveLibrary() const;
   GameSpeed getGameSpeed() const;
+  void setGameSpeed(GameSpeed);
 
   private:
   Renderer& renderer;

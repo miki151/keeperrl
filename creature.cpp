@@ -2096,6 +2096,10 @@ double Creature::getCourage() const {
   return courage;
 }
 
+void Creature::setCourage(double c) {
+  courage = c;
+}
+
 Gender Creature::getGender() const {
   return gender;
 }

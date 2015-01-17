@@ -33,6 +33,8 @@ using sf::Event;
 
 RICH_ENUM(ColorId,
   WHITE,
+  MAIN_MENU_ON,
+  MAIN_MENU_OFF,
   YELLOW,
   LIGHT_BROWN,
   ORANGE_BROWN,

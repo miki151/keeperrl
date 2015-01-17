@@ -316,7 +316,7 @@ Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {
   return Rectangle(minX, minY, maxX + 1, maxY + 1);
 }
 
-vector<Vec2> Rectangle::getAllSquares() {
+vector<Vec2> Rectangle::getAllSquares() const {
   vector<Vec2> ret;
   for (Vec2 v : (*this))
     ret.push_back(v);

@@ -268,9 +268,10 @@ class MainLoop {
     Square::progressMeter = nullptr;
   }
 
-  void playModel(PModel model) {
+  void playModel(PModel model, bool withMusic = true) {
     view->reset();
-    jukebox->update(MusicType::PEACEFUL);
+    if (withMusic)
+      jukebox->update(MusicType::PEACEFUL);
     const int stepTimeMilli = 3;
     Intervalometer meter(stepTimeMilli);
     double totTime = model->getTime();
@@ -281,7 +282,8 @@ class MainLoop {
           saveUI(std::move(model), exitInfo->getGameType());
         return;
       }
-      jukebox->update(model->getCurrentMusic());
+      if (withMusic)
+        jukebox->update(model->getCurrentMusic());
       if (model->isTurnBased())
         ++totTime;
       else
@@ -324,8 +326,16 @@ class MainLoop {
     }
   }
 
+  void splashScreen() {
+    ProgressMeter meter(1);
+    initializeSingletons();
+    playModel(PModel(Model::splashModel(meter, view)), false);
+    clearSingletons();
+  }
 
   void start() {
+    splashScreen();
+    view->reset();
     if (!tilesPresent())
       view->presentText("", "You are playing a version of KeeperRL without graphical tiles. "
           "Besides lack of graphics and music, this "

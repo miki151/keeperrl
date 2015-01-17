@@ -192,6 +192,8 @@ Renderer::Renderer(const string& title, Vec2 nominal) : nominalSize(nominal) {
   colors[ColorId::ORANGE_BROWN] = Color(250, 150, 0);
   colors[ColorId::BROWN] = Color(240, 130, 0);
   colors[ColorId::DARK_BROWN] = Color(100, 60, 0);
+  colors[ColorId::MAIN_MENU_ON] = Color(255, 255, 255, 190);
+  colors[ColorId::MAIN_MENU_OFF] = Color(255, 255, 255, 70);
   colors[ColorId::LIGHT_GRAY] = Color(150, 150, 150);
   colors[ColorId::GRAY] = Color(100, 100, 100);
   colors[ColorId::ALMOST_GRAY] = Color(102, 102, 102);

@@ -142,6 +142,8 @@ class CreatureFactory {
   static PCreature fromId(CreatureId, Tribe*, MonsterAIFactory = MonsterAIFactory::monster());
   static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
   static CreatureFactory humanVillage(Tribe*);
+  static CreatureFactory splashHeroes(Tribe*);
+  static CreatureFactory splashMonsters(Tribe*);
   static CreatureFactory gnomeVillage(Tribe*);
   static CreatureFactory humanCastle(Tribe*);
   static CreatureFactory elvenVillage(Tribe*);
@@ -177,7 +179,7 @@ class CreatureFactory {
 
   private:
   CreatureFactory(Tribe* tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
-      const vector<CreatureId>& unique, EnumMap<CreatureId, Tribe*> overrides = {});
+      const vector<CreatureId>& unique, EnumMap<CreatureId, Tribe*> overrides = {}, double levelIncrease = 0);
   Tribe* getTribeFor(CreatureId);
   SERIAL_CHECKER;
   Tribe* SERIAL(tribe);
@@ -185,6 +187,7 @@ class CreatureFactory {
   vector<double> SERIAL(weights);
   vector<CreatureId> SERIAL(unique);
   EnumMap<CreatureId, Tribe*> SERIAL(tribeOverrides);
+  double SERIAL2(levelIncrease, 0);
 };
 
 

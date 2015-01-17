@@ -25,6 +25,7 @@ class PlayerControl;
 class Level;
 class ProgressMeter;
 class Options;
+class CreatureView;
 
 /**
   * Main class that holds all game logic.
@@ -34,7 +35,9 @@ class Model {
   ~Model();
 
   /** Generates levels and all game entities for a collective game. */
-  static Model* collectiveModel(ProgressMeter&, Options*, View* view, const string& worldName);
+  static Model* collectiveModel(ProgressMeter&, Options*, View*, const string& worldName);
+
+  static Model* splashModel(ProgressMeter&, View*);
 
   enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER };
 
@@ -138,6 +141,7 @@ class Model {
   string SERIAL(worldName);
   MusicType SERIAL(musicType);
   optional<ExitInfo> exitInfo;
+  unique_ptr<CreatureView> SERIAL(spectator);
 };
 
 #endif

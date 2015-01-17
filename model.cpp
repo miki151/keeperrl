@@ -34,6 +34,7 @@
 #include "collective_builder.h"
 #include "collective_config.h"
 #include "music.h"
+#include "spectator.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -51,7 +52,8 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(adventurer)
     & SVAR(currentTime)
     & SVAR(worldName)
-    & SVAR(musicType);
+    & SVAR(musicType)
+    & SVAR(spectator);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
   Quest::serializeAll(ar);
@@ -66,7 +68,7 @@ SERIALIZABLE(Model);
 SERIALIZATION_CONSTRUCTOR_IMPL(Model);
 
 bool Model::isTurnBased() {
-  return !playerControl || playerControl->isTurnBased();
+  return !spectator && (!playerControl || playerControl->isTurnBased());
 }
 
 const double dayLength = 1500;
@@ -137,17 +139,27 @@ optional<Model::ExitInfo> Model::update(double totalTime) {
     addHero = false;
   }
   int absoluteTime = view->getTimeMilliAbsolute();
-  if (playerControl) {
-    if (absoluteTime - lastUpdate > 20) {
-      playerControl->render(view);
-      lastUpdate = absoluteTime;
-    }
-  }
+  if (playerControl && absoluteTime - lastUpdate > 20) {
+    playerControl->render(view);
+    lastUpdate = absoluteTime;
+  } else
+  if (spectator && absoluteTime - lastUpdate > 20) {
+    view->updateView(spectator.get(), false);
+    lastUpdate = absoluteTime;
+  } 
   do {
     Creature* creature = timeQueue.getNextCreature();
     CHECK(creature) << "No more creatures";
     Debug() << creature->getName().the() << " moving now " << creature->getTime();
     currentTime = creature->getTime();
+    if (spectator)
+      while (1) {
+        UserInput input = view->getAction();
+        if (input.getId() == UserInputId::EXIT)
+          return ExitInfo::abandonGame();
+        if (input.getId() == UserInputId::IDLE)
+          break;
+      }
     if (playerControl && !playerControl->isTurnBased()) {
       while (1) {
         UserInput input = view->getAction();
@@ -225,7 +237,7 @@ void Model::tick(double time) {
 }
 
 void Model::addCreature(PCreature c) {
-  c->setTime(timeQueue.getCurrentTime() + 1);
+  c->setTime(timeQueue.getCurrentTime() + 1 + Random.getDouble());
   timeQueue.addCreature(std::move(c));
 }
 
@@ -990,3 +1002,18 @@ void Model::showHighscore(View* view, bool highlightLast) {
   }
   view->presentList("High scores", scores, false);
 }
+
+Model* Model::splashModel(ProgressMeter& meter, View* view) {
+  Model* m = new Model(view, "");
+  Level* l = m->buildLevel(
+      Level::Builder(meter, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness", false),
+      LevelMaker::splashLevel(
+          CreatureFactory::singleType(Tribe::get(TribeId::HUMAN), CreatureId::AVATAR),
+          CreatureFactory::splashHeroes(Tribe::get(TribeId::HUMAN)),
+          CreatureFactory::splashMonsters(Tribe::get(TribeId::KEEPER)),
+          CreatureFactory::singleType(Tribe::get(TribeId::KEEPER), CreatureId::IMP) 
+          ));
+  m->spectator.reset(new Spectator(l));
+  return m;
+}
+

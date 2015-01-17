@@ -394,8 +394,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(x, y, {Vec2(5, 6), 3}, sizeX, sizeY);
   } else {
+    Vec2 movement = getMovementOffset(object, Vec2(sizeX, sizeY), currentTimeGame, curTimeReal);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, sizeY, Tile::getColor(object),
-        x + sizeX / 2, y - 3, tile.text, true);
+        x + sizeX / 2 + movement.x, y - 3 + movement.y, tile.text, true);
     double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
     if (burningVal > 0) {
       renderer.drawText(Renderer::SYMBOL_FONT, sizeY, getFireColor(), x + sizeX / 2, y - 3, L'ѡ', true);
@@ -405,9 +406,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
   }
 }
 
-void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement) {
+void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui) {
   const Level* level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
+  mouseUI = ui;
   layout = mapLayout;
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
     objects[pos] = none;
@@ -563,7 +565,7 @@ void MapGui::render(Renderer& renderer) {
   int sizeY = layout->squareHeight();
   int currentTimeReal = clock->getRealMillis();
   optional<Vec2> highlightedPos;
-  if (renderer.getMousePos().inRectangle(getBounds()))
+  if (renderer.getMousePos().inRectangle(getBounds()) && mouseUI)
     highlightedPos = layout->projectOnMap(getBounds(), getScreenPos(), renderer.getMousePos());
   renderer.drawFilledRectangle(getBounds(), colors[ColorId::ALMOST_BLACK]);
   renderer.drawFilledRectangle(Rectangle(

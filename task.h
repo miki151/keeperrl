@@ -32,6 +32,7 @@ class Task : public UniqueEntity<Task> {
     virtual void onAppliedSquare(Vec2 pos) {}
     virtual void onAppliedItemCancel(Vec2 pos) {}
     virtual void onPickedUp(Vec2 pos, EntitySet<Item>) {}
+    virtual void onBrought(Vec2 pos, EntitySet<Item>) {}
     virtual void onCantPickItem(EntitySet<Item> items) {}
     virtual void onKillCancelled(Creature*) {}
     virtual void onBedCreated(Vec2 pos, SquareType fromType, SquareType toType) {}

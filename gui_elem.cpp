@@ -235,9 +235,9 @@ class MainMenuLabel : public GuiElem {
   MainMenuLabel(const string& s, Color c, double vPad) : text(s), color(c), vPadding(vPad) {}
 
   virtual void render(Renderer& renderer) override {
-    int size = (1.0 - 2 * vPadding) * getBounds().getH();
+    int size = (0.9 - 2 * vPadding) * getBounds().getH();
     double height = getBounds().getPY() + vPadding * getBounds().getH();
-    renderer.drawText(color, getBounds().middle().x, height - size / 4, text, true, size);
+    renderer.drawText(color, getBounds().middle().x, height - size / 11, text, true, size);
   }
 
   private:
@@ -947,7 +947,9 @@ enum TexId {
   MAIN_MENU_HIGHLIGHT,
   KEEPER_CHOICE,
   ADVENTURER_CHOICE,
-  CHOICE_HIGHLIGHT,
+  KEEPER_HIGHLIGHT_TEX,
+  ADVENTURER_HIGHLIGHT_TEX,
+  MENU_ITEM,
 };
 
 const int border2Width = 6;
@@ -1017,10 +1019,14 @@ Texture& get(TexId id) {
     m[MAIN_MENU_HIGHLIGHT].setSmooth(true);
     m[KEEPER_CHOICE].loadFromFile("keeper_choice.png");
     m[ADVENTURER_CHOICE].loadFromFile("adventurer_choice.png");
-    m[CHOICE_HIGHLIGHT].loadFromFile("choice_highlight.png");
+    m[KEEPER_HIGHLIGHT_TEX].loadFromFile("keeper_highlight.png");
+    m[ADVENTURER_HIGHLIGHT_TEX].loadFromFile("adventurer_highlight.png");
     m[KEEPER_CHOICE].setSmooth(true);
     m[ADVENTURER_CHOICE].setSmooth(true);
-    m[CHOICE_HIGHLIGHT].setSmooth(true);
+    m[KEEPER_HIGHLIGHT_TEX].setSmooth(true);
+    m[ADVENTURER_HIGHLIGHT_TEX].setSmooth(true);
+    m[MENU_ITEM].loadFromFile("ui/barmid.png");
+    m[MENU_ITEM].setSmooth(true);
   }
   return m[id];
 }
@@ -1210,11 +1216,19 @@ static Texture& get(GuiElem::ImageId id) {
   switch (id) {
     case GuiElem::KEEPER_GAME: return get(KEEPER_CHOICE);
     case GuiElem::ADVENTURER_GAME: return get(ADVENTURER_CHOICE);
-    case GuiElem::GAME_HIGHLIGHT: return get(CHOICE_HIGHLIGHT);
+    case GuiElem::KEEPER_HIGHLIGHT: return get(KEEPER_HIGHLIGHT_TEX);
+    case GuiElem::ADVENTURER_HIGHLIGHT: return get(ADVENTURER_HIGHLIGHT_TEX);
   }
 }
 
 PGuiElem GuiElem::sprite(ImageId id, Alignment a) {
   return sprite(get(id), a);
+}
+
+PGuiElem GuiElem::mainMenuLabelBg(const string& s, double vPadding, Color color) {
+  return stack(
+      GuiElem::marginFit(GuiElem::empty(), GuiElem::sprite(get(MENU_ITEM), GuiElem::Alignment::CENTER_STRETCHED),
+          0.12, GuiElem::BOTTOM),
+      mainMenuLabel(s, vPadding, color));
 }
 

@@ -72,7 +72,16 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
 }
 
 Rectangle Level::getMaxBounds() {
-  return Rectangle(800, 800);
+  return Rectangle(300, 300);
+}
+
+Rectangle Level::getSplashBounds() {
+  return Rectangle(80, 40);
+}
+
+Rectangle Level::getSplashVisibleBounds() {
+  Vec2 sz(40, 20);
+  return Rectangle(getSplashBounds().middle() - sz / 2, getSplashBounds().middle() + sz / 2);
 }
 
 void Level::addCreature(Vec2 position, PCreature c) {

@@ -61,6 +61,8 @@ class Level : public UniqueEntity<Level> {
 
   ~Level();
   static Rectangle getMaxBounds();
+  static Rectangle getSplashBounds();
+  static Rectangle getSplashVisibleBounds();
 
   /** Checks if the creature can move to \paramname{direction}. This ensures 
     * that a subsequent call to #moveCreature will not fail.*/

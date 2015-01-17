@@ -62,7 +62,8 @@ class GuiElem {
   static PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   static PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
   static PGuiElem variableLabel(function<string()>, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
-  static PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::WHITE]);
+  static PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_ON]);
+  static PGuiElem mainMenuLabelBg(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_OFF]);
   static PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
   static PGuiElem viewObject(const ViewObject& object, bool useSprites);
@@ -87,7 +88,8 @@ class GuiElem {
   enum ImageId {
     KEEPER_GAME,
     ADVENTURER_GAME,
-    GAME_HIGHLIGHT,
+    KEEPER_HIGHLIGHT,
+    ADVENTURER_HIGHLIGHT,
   };
   static PGuiElem sprite(ImageId, Alignment);
   static PGuiElem repeatedPattern(Texture& tex);

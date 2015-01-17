@@ -44,6 +44,7 @@ void GuiBuilder::reset() {
   chosenCreature = "";
   activeBuilding = 0;
   activeLibrary = -1;
+  gameSpeed = GameSpeed::NORMAL;
 }
 
 const int legendLineHeight = 30;
@@ -339,6 +340,10 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
 
 GuiBuilder::GameSpeed GuiBuilder::getGameSpeed() const {
   return gameSpeed;
+}
+
+void GuiBuilder::setGameSpeed(GameSpeed speed) {
+  gameSpeed = speed;
 }
 
 static char getHotkeyChar(GuiBuilder::GameSpeed speed) {

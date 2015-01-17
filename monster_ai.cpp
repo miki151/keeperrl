@@ -895,6 +895,239 @@ class SingleTask : public Behaviour {
   PTask SERIAL(task);
 };
 
+const static Vec2 splashTarget = Level::getSplashBounds().middle() - Vec2(3, 0);
+const static Vec2 splashLeaderPos = Vec2(Level::getSplashVisibleBounds().getKX(),
+    Level::getSplashBounds().middle().y) - Vec2(4, 0);
+
+class SplashHeroes : public Behaviour {
+  public:
+  SplashHeroes(Creature* c) : Behaviour(c) {}
+
+  virtual MoveInfo getMove() override {
+    creature->setCourage(100);
+    if (!started && creature->getLevel()->getSafeSquare(splashLeaderPos)->getCreature())
+      started = true;
+    if (!started)
+      return creature->wait();
+    else {
+      if (creature->getPosition().x > splashTarget.x)
+        return {0.1, creature->move(Vec2(-1, 0))};
+      else
+        return {0.1, creature->wait()};
+    }
+  };
+
+  SERIALIZATION_CONSTRUCTOR(SplashHeroes);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+    CHECK_SERIAL;
+  }
+
+  private:
+  bool started = false;
+};
+
+class SplashHeroLeader : public Behaviour {
+  public:
+  SplashHeroLeader(Creature* c) : Behaviour(c) {}
+
+  virtual MoveInfo getMove() override {
+    creature->setCourage(100);
+    Vec2 pos = creature->getPosition();
+    if (started)
+      return creature->moveTowards(splashTarget);
+    if (pos == splashLeaderPos)
+      for (Square* square : creature->getSquares(
+            {Vec2(2, 0), Vec2(2, -1), Vec2(2, 1), Vec2(3, 0), Vec2(3, -1), Vec2(3, 1)}))
+        if (square->getCreature())
+          started = true;
+    if (pos != splashLeaderPos) {
+      if (pos.y == splashLeaderPos.y)
+        return creature->move(Vec2(-1, 0));
+      else
+        return creature->moveTowards(splashLeaderPos);
+    } else
+      return creature->wait();
+  };
+
+  SERIALIZATION_CONSTRUCTOR(SplashHeroLeader);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+    CHECK_SERIAL;
+  }
+
+  private:
+
+  bool started = false;
+};
+
+class SplashMonsters : public Behaviour {
+  public:
+  SplashMonsters(Creature* c) : Behaviour(c) {}
+
+  virtual MoveInfo getMove() override {
+    creature->setCourage(100);
+    if (!initialPos)
+      initialPos = creature->getPosition();
+    vector<Creature*> heroes;
+    for (Square* square : creature->getLevel()->getSquares(creature->getLevel()->getBounds().getAllSquares()))
+      if (square->getCreature() && square->getCreature()->isEnemy(creature))
+        heroes.push_back(square->getCreature());
+    if (heroes.empty()) {
+      if (creature->getPosition() == *initialPos)
+        return creature->wait();
+      else
+        return creature->moveTowards(*initialPos);
+    }
+    if (const Creature* other = creature->getLevel()->getSafeSquare(splashTarget)->getCreature())
+      if (creature->isEnemy(other))
+        attack = true;
+    if (!attack)
+      return creature->wait();
+    else
+      return {0.1, creature->moveTowards(chooseRandom(heroes)->getPosition())};
+  };
+
+  SERIALIZATION_CONSTRUCTOR(SplashMonsters);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+    CHECK_SERIAL;
+  }
+
+  private:
+  optional<Vec2> initialPos;
+  bool attack = false;
+};
+
+class SplashItems : public Task::Callback {
+  public:
+  void addItems(Vec2 pos, vector<Item*> v) {
+    items[pos] = v;
+  }
+
+  virtual void onBrought(Vec2 pos, EntitySet<Item>) override {
+    removeElementMaybe(targetsGold, pos);
+    removeElementMaybe(targetsCorpse, pos);
+  }
+
+  Vec2 chooseClosest(Vec2 pos) {
+    Vec2 ret(1000, 1000);
+    for (Vec2 v : getKeys(items))
+      if (v.dist8(pos) < ret.dist8(pos))
+        ret = v;
+    return ret;
+  }
+
+  PTask getNextTask(Vec2 position) {
+    if (items.empty())
+      return nullptr;
+    Vec2 pos = chooseClosest(position);
+    vector<Item*> it = {chooseRandom(items[pos])};
+    if (it[0]->getClass() == ItemClass::GOLD || it[0]->getClass() == ItemClass::AMMO)
+      for (Item* it2 : copyOf(items[pos]))
+        if (it[0] != it2 && it2->getClass() == it[0]->getClass() && Random.roll(10))
+          it.push_back(it2);
+    for (Item* it2 : it)
+      removeElement(items[pos], it2);
+    if (items[pos].empty())
+      items.erase(pos);
+    vector<Vec2>& targets = it[0]->getClass() == ItemClass::GOLD ? targetsGold : targetsCorpse;
+    if (targets.empty())
+      return nullptr;
+    return Task::bringItem(this, pos, it, {chooseRandom(targets)});
+  }
+
+  void setInitialized() {
+    initialized = true;
+    ifstream iff("splash.txt");
+    Vec2 sz;
+    iff >> sz.x >> sz.y;
+    for (int i : Range(sz.y)) {
+      string s;
+      iff >> s;
+      for (int j : Range(sz.x)) {
+        if (s[j] == '1')
+          targetsGold.push_back(Level::getSplashVisibleBounds().getTopLeft() + Vec2(j, i));
+        else if (s[j] == '2')
+          targetsCorpse.push_back(Level::getSplashVisibleBounds().getTopLeft() + Vec2(j, i));
+      }
+    }
+  }
+
+  bool isInitialized() {
+    return initialized;
+  }
+
+  private:
+  map<Vec2, vector<Item*>> items;
+  bool initialized = false;
+  vector<Vec2> targetsGold;
+  vector<Vec2> targetsCorpse;
+} splashItems;
+
+class SplashImps : public Behaviour {
+  public:
+  SplashImps(Creature* c) : Behaviour(c) {}
+
+  void initializeSplashItems() {
+    for (Vec2 v : Level::getSplashVisibleBounds()) {
+      vector<Item*> inv = creature->getLevel()->getSafeSquare(v)->getItems(
+          [](const Item* it) { return it->getClass() == ItemClass::GOLD || it->getClass() == ItemClass::CORPSE;});
+      if (!inv.empty())
+        splashItems.addItems(v, inv);
+    }
+    splashItems.setInitialized();
+  }
+
+  virtual MoveInfo getMove() override {
+    creature->addEffect(LastingEffect::SPEED, 1000);
+    if (!initialPos)
+      initialPos = creature->getPosition();
+    bool heroesDead = true;
+    for (Square* square : creature->getLevel()->getSquares(Level::getSplashBounds().getAllSquares()))
+      if (square->getCreature() && square->getCreature()->isEnemy(creature)) {
+        heroesDead = false;
+      }
+    if (heroesDead) {
+      for (Square* square : creature->getLevel()->getSquares(Level::getSplashVisibleBounds().getAllSquares()))
+        if (square->getCreature() && square->getCreature()->getName().bare() != "imp")
+          return creature->wait();
+      if (!splashItems.isInitialized())
+        initializeSplashItems();
+      if (task) {
+        if (!task->isDone())
+          return task->getMove(creature);
+        else
+          task.reset();
+      }
+      task = splashItems.getNextTask(creature->getPosition());
+      if (!task)
+        return creature->moveTowards(*initialPos);
+      else
+        return task->getMove(creature);
+    }
+    return creature->wait();
+  }
+
+  SERIALIZATION_CONSTRUCTOR(SplashImps);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+    CHECK_SERIAL;
+  }
+
+  private:
+  optional<Vec2> initialPos;
+  PTask task;
+};
+
 template <class Archive>
 void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Heal);
@@ -1087,6 +1320,30 @@ MonsterAIFactory MonsterAIFactory::dieTime(double dieTime) {
           new MoveRandomly(c, 3),
           new GoldLust(c)},
           { 5, 4, 3, 1, 1 });
+      });
+}
+
+MonsterAIFactory MonsterAIFactory::splashHeroes(bool leader) {
+  return MonsterAIFactory([=](Creature* c) {
+      return new MonsterAI(c, {
+        leader ? (Behaviour*)new SplashHeroLeader(c) : (Behaviour*)new SplashHeroes(c),
+        new Heal(c, false),
+        new Fighter(c, 0.6, true),
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
+        new AttackPest(c)},
+        { 6, 5, 2, 1, 1}, false);
+      });
+}
+
+MonsterAIFactory MonsterAIFactory::splashMonsters(bool imps) {
+  return MonsterAIFactory([=](Creature* c) {
+      return new MonsterAI(c, {
+        imps ? (Behaviour*)new SplashImps(c) : (Behaviour*)new SplashMonsters(c),
+        new Heal(c, false),
+        new Fighter(c, 0.6, true),
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
+        new AttackPest(c)},
+        { 6, 5, 2, 1, 1}, false);
       });
 }
 

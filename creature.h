@@ -157,6 +157,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   string bodyDescription() const;
 
   double getCourage() const;
+  void setCourage(double);
   Gender getGender() const;
 
   int getDifficultyPoints() const;

@@ -346,7 +346,9 @@ class BringItem : public PickItem {
       : PickItem(c, position, items), target(chooseRandomClose(position, _target)) {}
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) {
-    return c->drop(it);
+    return c->drop(it).append([=] {
+        callback->onBrought(c->getPosition(), it);
+    });
   }
 
   virtual void onPickedUp() override {

@@ -34,7 +34,8 @@ void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
     & SVAR(creatures)
     & SVAR(weights)
     & SVAR(unique)
-    & SVAR(tribeOverrides);
+    & SVAR(tribeOverrides)
+    & SVAR(levelIncrease);
   CHECK_SERIAL;
 }
 
@@ -711,7 +712,9 @@ PCreature CreatureFactory::random(MonsterAIFactory actorFactory) {
     unique.pop_back();
   } else
     id = chooseRandom(creatures, weights);
-  return fromId(id, getTribeFor(id), actorFactory);
+  PCreature ret = fromId(id, getTribeFor(id), actorFactory);
+  ret->increaseExpLevel(levelIncrease);
+  return ret;
 }
 
 PCreature get(
@@ -722,8 +725,8 @@ PCreature get(
 }
 
 CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const vector<double>& w,
-    const vector<CreatureId>& u, EnumMap<CreatureId, Tribe*> overrides)
-    : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides) {
+    const vector<CreatureId>& u, EnumMap<CreatureId, Tribe*> overrides, double lIncrease)
+    : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides), levelIncrease(lIncrease) {
 }
 
 CreatureFactory CreatureFactory::humanVillage(Tribe* tribe) {
@@ -741,6 +744,19 @@ CreatureFactory CreatureFactory::humanCastle(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
       CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
       { 10, 6, 2, 1, 1, 1, 1, 1}, {CreatureId::AVATAR});
+}
+
+CreatureFactory CreatureFactory::splashHeroes(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER},
+      { 1, 1}, {});
+}
+
+CreatureFactory CreatureFactory::splashMonsters(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::GNOME, CreatureId::GOBLIN, CreatureId::OGRE,
+      CreatureId::SPECIAL_HUMANOID, CreatureId::SPECIAL_MONSTER_KEEPER, CreatureId::WOLF, CreatureId::CAVE_BEAR,
+      CreatureId::BAT, CreatureId::WEREWOLF, CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::DOPPLEGANGER,
+      CreatureId::SUCCUBUS},
+      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}, 25);
 }
 
 CreatureFactory CreatureFactory::elvenVillage(Tribe* tribe) {

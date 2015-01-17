@@ -46,7 +46,7 @@ class MapGui : public GuiElem {
   virtual void onMouseRelease() override;
   virtual void onKeyPressed2(Event::KeyEvent) override;
 
-  void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement);
+  void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI);
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void setHint(const string&);
@@ -112,6 +112,7 @@ class MapGui : public GuiElem {
   };
   bool keyScrolling = false;
   ViewIdMap connectionMap;
+  bool mouseUI = false;
 };
 
 #endif

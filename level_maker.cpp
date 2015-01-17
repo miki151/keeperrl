@@ -1629,6 +1629,14 @@ class CastleExit : public LevelMaker {
   CreatureId guardId;
 };
 
+class SetCovered : public LevelMaker {
+  public:
+  virtual void make(Level::Builder* builder, Rectangle area) override {
+    for (Vec2 v : area)
+      builder->setCoverInfo(v, {true, 1.0});
+  }
+};
+
 }
 
 static LevelMaker* underground(bool monsters, CreatureFactory waterFactory, CreatureFactory lavaFactory) {
@@ -2281,4 +2289,42 @@ Vec2 LevelMaker::getRandomExit(Rectangle rect, int minCornerDist) {
         rect.getPY() + d2 * (1 - w1) + w1 * w2 * (rect.getH() - 1));
 }
 
+class SpecificArea : public LevelMaker {
+  public:
+  SpecificArea(Rectangle a, LevelMaker* m) : area(a), maker(m) {}
+
+  virtual void make(Level::Builder* builder, Rectangle) override {
+    maker->make(builder, area);
+  }
+
+  private:
+  Rectangle area;
+  LevelMaker* maker;
+};
+
+LevelMaker* LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,
+    CreatureFactory imps) {
+  MakerQueue* queue = new MakerQueue();
+  queue->addMaker(new Empty(SquareId::BLACK_FLOOR));
+  Rectangle leaderSpawn(
+          Level::getSplashVisibleBounds().getKX() + 1, Level::getSplashVisibleBounds().middle().y,
+          Level::getSplashVisibleBounds().getKX() + 2, Level::getSplashVisibleBounds().middle().y + 1);
+  Rectangle heroSpawn(
+          Level::getSplashVisibleBounds().getKX() + 2, Level::getSplashVisibleBounds().middle().y - 1,
+          Level::getSplashBounds().getKX(), Level::getSplashVisibleBounds().middle().y + 2);
+  Rectangle monsterSpawn1(
+          Level::getSplashVisibleBounds().getPX(), 0,
+          Level::getSplashVisibleBounds().getKX(), Level::getSplashVisibleBounds().getPY() - 1);
+  Rectangle monsterSpawn2(
+          Level::getSplashVisibleBounds().getPX(), Level::getSplashVisibleBounds().getKY() + 2,
+          Level::getSplashVisibleBounds().getKX(), Level::getSplashBounds().getKY());
+  queue->addMaker(new SpecificArea(leaderSpawn, new Creatures(heroLeader, 1,MonsterAIFactory::splashHeroes(true))));
+  queue->addMaker(new SpecificArea(heroSpawn, new Creatures(heroes, 22, MonsterAIFactory::splashHeroes(false))));
+  queue->addMaker(new SpecificArea(monsterSpawn1, new Creatures(monsters, 17, MonsterAIFactory::splashMonsters())));
+  queue->addMaker(new SpecificArea(monsterSpawn2, new Creatures(monsters, 17, MonsterAIFactory::splashMonsters())));
+  queue->addMaker(new SpecificArea(monsterSpawn1, new Creatures(imps, 15, MonsterAIFactory::splashMonsters(true))));
+  queue->addMaker(new SpecificArea(monsterSpawn2, new Creatures(imps, 15, MonsterAIFactory::splashMonsters(true))));
+  queue->addMaker(new SetCovered());
+  return new BorderGuard(queue, SquareId::BLACK_WALL);
+}
 

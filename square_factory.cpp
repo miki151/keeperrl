@@ -960,6 +960,12 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::EYEBALL] = 5;
               c.constructions[SquareId::CREATURE_ALTAR] = 35;
               c.constructions[SquareId::RITUAL_ROOM] = 10;));
+    case SquareId::BLACK_FLOOR:
+        return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
+            CONSTRUCT(Square::Params,
+              c.name = "floor";
+              c.vision = Vision::get(VisionId::NORMAL);
+              c.movementType = {MovementTrait::WALK};));
     case SquareId::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Bridge"),
             CONSTRUCT(Square::Params,
@@ -1024,7 +1030,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.name = "wall";
               c.flamability = 0.4;));
     case SquareId::BLACK_WALL:
-        return new Square(ViewObject(ViewId::BLACK_WALL, ViewLayer::FLOOR, "Wall")
+        return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR, "Wall")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
     case SquareId::YELLOW_WALL:
         return new Square(ViewObject(ViewId::YELLOW_WALL, ViewLayer::FLOOR, "Wall")
