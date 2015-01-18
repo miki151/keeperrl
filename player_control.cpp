@@ -54,7 +54,8 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(hints)
     & SVAR(visibleEnemies)
     & SVAR(visibleFriends)
-    & SVAR(notifiedConquered);
+    & SVAR(notifiedConquered)
+    & SVAR(visibilityMap);
   CHECK_SERIAL;
 }
 
@@ -208,7 +209,7 @@ static vector<string> getHints() {
 }
 
 PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : CollectiveControl(col), model(m),
-    hints(getHints()) {
+    hints(getHints()), visibilityMap(level->getBounds()) {
   bool hotkeys[128] = {0};
   for (BuildInfo info : getBuildInfo(level, nullptr)) {
     if (info.hotkey) {
@@ -266,6 +267,10 @@ void PlayerControl::leaveControl() {
 void PlayerControl::render(View* view) {
   if (retired)
     return;
+  if (firstRender) {
+    firstRender = false;
+    initialize();
+  }
   if (!getControlled()) {
     view->updateView(this, false);
   }
@@ -872,12 +877,20 @@ void PlayerControl::addImportantLongMessage(const string& msg, optional<Vec2> po
   }
 }
 
+void PlayerControl::initialize() {
+  for (Creature* c : getCollective()->getCreatures())
+    update(c);
+}
+
 void PlayerControl::update(Creature* c) {
-  if (contains(getCollective()->getCreatures(), c))
-    for (Vec2 pos : getCollective()->getLevel()->getVisibleTiles(c)) {
+  if (contains(getCollective()->getCreatures(), c)) {
+    vector<Vec2> visibleTiles = getCollective()->getLevel()->getVisibleTiles(c);
+    visibilityMap.update(c, visibleTiles);
+    for (Vec2 pos : visibleTiles) {
       getCollective()->addKnownTile(pos);
       addToMemory(pos);
     }
+  }
 }
 
 const MapMemory& PlayerControl::getMemory() const {
@@ -1496,8 +1509,7 @@ bool PlayerControl::canSee(const Creature* c) const {
 bool PlayerControl::canSee(Vec2 position) const {
   if (seeEverything)
     return true;
-  for (Creature* c : getCollective()->getCreatures())
-    if (c->canSee(position) || c->getPosition() == position)
+  if (visibilityMap.isVisible(position))
       return true;
   for (Vec2 pos : getCollective()->getSquares(SquareId::EYEBALL))
     if (getLevel()->canSee(pos, position, Vision::get(VisionId::NORMAL)))
@@ -1574,6 +1586,7 @@ void PlayerControl::onConqueredLand(const string& name) {
 }
 
 void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
+  visibilityMap.remove(victim);
   if (!getKeeper() && !retired) {
     model->gameOver(victim, getCollective()->getKills().size(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());

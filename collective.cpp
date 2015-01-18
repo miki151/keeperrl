@@ -162,7 +162,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
 };
 
 Collective::Collective(Level* l, CollectiveConfig cfg, Tribe* t, EnumMap<ResourceId, int> _credit, const string& n) 
-  : credit(_credit), knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
+  : credit(_credit), taskMap(l->getBounds()), knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
   tribe(t), level(l), nextPayoutTime(-1), sectors(new Sectors(level->getBounds())),
     flyingSectors(new Sectors(level->getBounds())), name(n), config(cfg) {
   if (config.getKeepSectors())
@@ -1041,6 +1041,8 @@ static vector<SquareType> roomsNeedingLight {
 };
 
 void Collective::considerWeaponWarning() {
+  if (!Random.roll(10))
+    return;
   int numWeapons = getAllItems([&](const Item* it) {
       return it->getClass() == ItemClass::WEAPON; }).size();
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);

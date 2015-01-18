@@ -39,7 +39,7 @@ void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int version)
 
 SERIALIZABLE(FieldOfView::Visibility);
 SERIALIZATION_CONSTRUCTOR_IMPL(FieldOfView);
-SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView, Visibility);
+SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility);
 
 FieldOfView::FieldOfView(const Table<PSquare>& s, Vision* v) 
   : squares(&s), visibility(s.getWidth(), s.getHeight()), vision(v) {

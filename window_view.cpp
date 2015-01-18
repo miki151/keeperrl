@@ -1093,7 +1093,8 @@ void WindowView::switchTiles() {
     currentTileLayout = asciiLayouts;
   else
     currentTileLayout = spriteLayouts;
-  if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR && useTiles)
+  if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR && useTiles &&
+      renderer.getWidth() < Level::getSplashVisibleBounds().getW() * mapLayout->squareWidth())
     normal = false;
   if (normal)
     mapLayout = &currentTileLayout.normalLayout;

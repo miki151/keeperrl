@@ -10,6 +10,7 @@ class Creature;
 template<typename CostInfo>
 class TaskMap {
   public:
+  TaskMap(Rectangle bounds);
   Task* addTask(PTask, const Creature*);
   Task* addPriorityTask(PTask, const Creature*);
   Task* addTask(PTask, Vec2);
@@ -38,17 +39,14 @@ class TaskMap {
   Task* getTaskForWorker(Creature* c);
   const map<Task*, CostInfo>& getCompletionCosts() const;
 
-  template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-
-  SERIAL_CHECKER;
+  SERIALIZATION_DECL(TaskMap);
 
   private:
   BiMap<const Creature*, Task*> SERIAL(creatureMap);
   unordered_map<Task*, Vec2> SERIAL(positionMap);
-  unordered_map<Vec2, vector<Task*>> SERIAL(reversePositions);
+  Table<vector<Task*>> SERIAL(reversePositions);
   vector<PTask> SERIAL(tasks);
-  map<Vec2, Task*> SERIAL(marked);
+  Table<Task*> SERIAL(marked);
   map<Task*, CostInfo> SERIAL(completionCost);
   set<pair<const Creature*, UniqueEntity<Creature>::Id>> SERIAL(lockedTasks);
   map<UniqueEntity<Creature>::Id, double> SERIAL(delayedTasks);

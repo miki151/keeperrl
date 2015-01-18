@@ -25,6 +25,7 @@
 #include "collective_control.h"
 #include "collective.h"
 #include "event.h"
+#include "visibility_map.h"
 
 class Model;
 class Technology;
@@ -104,6 +105,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool canSee(const Creature*) const;
   bool canSee(Vec2 position) const;
   MapMemory& getMemory(Level* l);
+  void initialize();
 
   void considerDeityFight();
   void checkKeeperDanger();
@@ -252,6 +254,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<const Creature*> SERIAL(visibleFriends);
   unordered_set<const Collective*> SERIAL(notifiedConquered);
   bool newTeam = false;
+  VisibilityMap SERIAL(visibilityMap);
+  bool firstRender = true;
 };
 
 #endif

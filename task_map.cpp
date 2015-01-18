@@ -20,6 +20,13 @@ void TaskMap<CostInfo>::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(TaskMap<Collective::CostInfo>);
 
+template<class CostInfo>
+SERIALIZATION_CONSTRUCTOR_IMPL2(TaskMap<CostInfo>, TaskMap);
+
+template <class CostInfo>
+TaskMap<CostInfo>::TaskMap(Rectangle bounds) : reversePositions(bounds), marked(bounds, nullptr) {
+}
+
 template <class CostInfo>
 Task* TaskMap<CostInfo>::getTaskForWorker(Creature* c) {
   Task* closest = nullptr;
@@ -71,8 +78,7 @@ CostInfo TaskMap<CostInfo>::removeTask(Task* task) {
     completionCost.erase(task);
   }
   if (auto pos = getPosition(task))
-    if (marked.count(*pos))
-      marked.erase(*pos);
+    marked[*pos] = nullptr;
   for (int i : All(tasks))
     if (tasks[i].get() == task) {
       removeIndex(tasks, i);
@@ -81,7 +87,7 @@ CostInfo TaskMap<CostInfo>::removeTask(Task* task) {
   if (creatureMap.contains(task))
     creatureMap.erase(task);
   if (positionMap.count(task)) {
-    removeElement(reversePositions.at(positionMap.at(task)), task);
+    removeElement(reversePositions[positionMap.at(task)], task);
     positionMap.erase(task);
   }
   return cost;
@@ -103,10 +109,9 @@ bool TaskMap<CostInfo>::isPriorityTask(const Task* t) const {
 
 template <class CostInfo>
 bool TaskMap<CostInfo>::hasPriorityTasks(Vec2 pos) const {
-  if (reversePositions.count(pos))
-    for (Task* task : reversePositions.at(pos))
-      if (isPriorityTask(task))
-        return true;
+  for (Task* task : reversePositions[pos])
+    if (isPriorityTask(task))
+      return true;
   return false;
 }
 
@@ -127,10 +132,7 @@ void TaskMap<CostInfo>::clearAllLocked() {
 
 template <class CostInfo>
 Task* TaskMap<CostInfo>::getMarked(Vec2 pos) const {
-  if (marked.count(pos))
-    return marked.at(pos);
-  else
-    return nullptr;
+  return marked[pos];
 }
 
 template <class CostInfo>
@@ -141,8 +143,8 @@ void TaskMap<CostInfo>::markSquare(Vec2 pos, PTask task) {
 
 template <class CostInfo>
 void TaskMap<CostInfo>::unmarkSquare(Vec2 pos) {
-  Task* task = marked.at(pos);
-  marked.erase(pos);
+  Task* task = marked[pos];
+  marked[pos] = nullptr;
   removeTask(task);
 }
 
@@ -168,11 +170,7 @@ Task* TaskMap<CostInfo>::getTask(const Creature* c) {
 
 template <class CostInfo>
 const vector<Task*>& TaskMap<CostInfo>::getTasks(Vec2 pos) const {
-  static vector<Task*> empty;
-  if (reversePositions.count(pos))
-    return reversePositions.at(pos);
-  else
-    return empty;
+  return reversePositions[pos];
 }
 
 template <class CostInfo>

@@ -68,7 +68,7 @@ typedef portable_oarchive OutputArchive;
   A::A() {}
 
 #define SERIALIZATION_CONSTRUCTOR_IMPL2(A, B) \
-  A::B::B() {}
+  A::B() {}
 
 #define SERIALIZATION_CONSTRUCTOR(A) \
   A() {} \

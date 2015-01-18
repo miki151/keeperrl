@@ -129,13 +129,15 @@ class Heal : public Behaviour {
   }
 
   virtual MoveInfo getMove() {
-    int healingRadius = 2;
-    for (Square* square : creature->getSquares(
-          Rectangle(-healingRadius, -healingRadius, healingRadius, healingRadius).getAllSquares()))
-      if (const Creature* other = square->getCreature())
-        if (creature->isFriend(other))
-          if (auto action = creature->heal(other->getPosition() - creature->getPosition()))
-            return {0.5, action};
+    if (creature->hasSkill(Skill::get(SkillId::HEALING))) {
+      int healingRadius = 2;
+      for (Square* square : creature->getSquares(
+            Rectangle(-healingRadius, -healingRadius, healingRadius, healingRadius).getAllSquares()))
+        if (const Creature* other = square->getCreature())
+          if (creature->isFriend(other))
+            if (auto action = creature->heal(other->getPosition() - creature->getPosition()))
+              return {0.5, action};
+    }
     if (!creature->isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
@@ -152,7 +154,7 @@ class Heal : public Behaviour {
       return move.setValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
     if (creature->getSquare()->getApplyType(creature) == SquareApplyType::SLEEP)
       return { 0.4 * min(1.0, 1.5 - creature->getHealth()), creature->applySquare()};
-    Vec2 bedRadius(10, 10);
+    Vec2 bedRadius(5, 5);
     if (useBeds && creature->canSleep() && !creature->isAffected(LastingEffect::POISON)) {
       if (!hasBed || hasBed->level != creature->getLevel()) {
         for (Square* square : creature->getSquares(Rectangle(-bedRadius, bedRadius).getAllSquares()))

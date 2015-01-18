@@ -58,7 +58,7 @@ void CreatureFactory::SingleCreature::serialize(Archive& ar, const unsigned int 
 
 SERIALIZABLE(CreatureFactory::SingleCreature);
 
-SERIALIZATION_CONSTRUCTOR_IMPL2(CreatureFactory, SingleCreature);
+SERIALIZATION_CONSTRUCTOR_IMPL2(CreatureFactory::SingleCreature, SingleCreature);
 
 CreatureFactory::CreatureFactory(const SingleCreature& s) : CreatureFactory(s.tribe, {s.id}, {1}, {}) {
 }

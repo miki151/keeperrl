@@ -38,7 +38,7 @@ void Task::Callback::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(Task::Callback);
-SERIALIZATION_CONSTRUCTOR_IMPL2(Task, Callback);
+SERIALIZATION_CONSTRUCTOR_IMPL2(Task::Callback, Callback);
 
 Task::Task() {
 }
