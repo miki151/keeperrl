@@ -202,7 +202,9 @@ class Square : public Renderable {
   bool itemLands(vector<Item*> item, const Attack& attack) const;
   virtual bool itemBounces(Item* item, Vision*) const;
   void onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, Vision*);
-  vector<Item*> getItems(function<bool (Item*)> predicate = alwaysTrue<Item*>()) const;
+  const vector<Item*>& getItems() const;
+  vector<Item*> getItems(function<bool (Item*)> predicate) const;
+  const vector<Item*>& getItems(ItemIndex) const;
   PItem removeItem(Item*);
   vector<PItem> removeItems(vector<Item*>);
 

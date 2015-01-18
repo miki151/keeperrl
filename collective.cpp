@@ -113,23 +113,13 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
 }
 
 const map<Collective::ResourceId, Collective::ResourceInfo> Collective::resourceInfo {
-  {ResourceId::MANA, { {}, nullptr, ItemId::GOLD_PIECE, "mana"}},
-  {ResourceId::PRISONER_HEAD, { {}, nullptr, ItemId::GOLD_PIECE, "", true}},
-  {ResourceId::GOLD, {{SquareId::TREASURE_CHEST}, Item::classPredicate(ItemClass::GOLD), ItemId::GOLD_PIECE,"gold",}},
-  {ResourceId::WOOD, { resourceStorage, [](const Item* it) {
-        return it->getResourceId() == ResourceId::WOOD; },
-                       ItemId::WOOD_PLANK, "wood"}},
-  {ResourceId::IRON, { resourceStorage, [](const Item* it) {
-        return it->getResourceId() == ResourceId::IRON; },
-                       ItemId::IRON_ORE, "iron"}},
-  {ResourceId::STONE, { resourceStorage, [](const Item* it) {
-        return it->getResourceId() == ResourceId::STONE; }, ItemId::ROCK, "granite"}},
-  {ResourceId::CORPSE, {
-      {SquareId::CEMETERY},
-      [](const Item* it) {
-          return it->getClass() == ItemClass::CORPSE && it->getCorpseInfo()->canBeRevived; },
-      ItemId::GOLD_PIECE,
-      "corpses", true}},
+  {ResourceId::MANA, { {}, none, ItemId::GOLD_PIECE, "mana"}},
+  {ResourceId::PRISONER_HEAD, { {}, none, ItemId::GOLD_PIECE, "", true}},
+  {ResourceId::GOLD, {{SquareId::TREASURE_CHEST}, ItemIndex::GOLD, ItemId::GOLD_PIECE,"gold",}},
+  {ResourceId::WOOD, { resourceStorage, ItemIndex::WOOD, ItemId::WOOD_PLANK, "wood"}},
+  {ResourceId::IRON, { resourceStorage, ItemIndex::IRON, ItemId::IRON_ORE, "iron"}},
+  {ResourceId::STONE, { resourceStorage, ItemIndex::STONE, ItemId::ROCK, "granite"}},
+  {ResourceId::CORPSE, { {SquareId::CEMETERY}, ItemIndex::REVIVABLE_CORPSE, ItemId::GOLD_PIECE, "corpses", true}},
 };
 
 map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
@@ -977,21 +967,6 @@ void Collective::cashPayouts() {
           minionPayment.at(c).debt() = 0;
         }
       }
- /*     vector<PTask> tasks;
-      for (SquareType type : resourceInfo.at(paymentResource).storageType) {
-        for (Vec2 pos : getSquares(type)) {
-          vector<Item*> items = getLevel()->getSquare(pos)->getItems(resourceInfo.at(paymentResource).predicate);
-          if (items.size() >= payment)
-            items.resize(payment);
-          tasks.push_back(Task::chain(Task::pickItem(this, pos, items), Task::consumeItem(this, items)));
-          payment -= items.size();
-          if (payment == 0)
-            break;
-        }
-        if (payment == 0)
-          break;
-      }
-      taskMap.addTask(Task::chain(std::move(tasks)), c);*/
 }
 
 struct BirthSpawn {
@@ -1041,10 +1016,7 @@ static vector<SquareType> roomsNeedingLight {
 };
 
 void Collective::considerWeaponWarning() {
-  if (!Random.roll(10))
-    return;
-  int numWeapons = getAllItems([&](const Item* it) {
-      return it->getClass() == ItemClass::WEAPON; }).size();
+  int numWeapons = getAllItems(ItemIndex::WEAPON).size();
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
   int numNeededWeapons = 0;
   for (Creature* c : getCreatures(MinionTrait::FIGHTER))
@@ -1472,9 +1444,10 @@ bool Collective::isGuardPost(Vec2 pos) const {
 
 int Collective::numResource(ResourceId id) const {
   int ret = credit[id];
-  for (SquareType type : resourceInfo.at(id).storageType)
-    for (Vec2 pos : getSquares(type))
-      ret += getLevel()->getSafeSquare(pos)->getItems(resourceInfo.at(id).predicate).size();
+  if (resourceInfo.at(id).itemIndex)
+    for (SquareType type : resourceInfo.at(id).storageType)
+      for (Vec2 pos : getSquares(type))
+        ret += getLevel()->getSafeSquare(pos)->getItems(*resourceInfo.at(id).itemIndex).size();
   return ret;
 }
 
@@ -1510,14 +1483,15 @@ void Collective::takeResource(CostInfo cost) {
       credit[cost.id()] = 0;
     }
   }
-  for (Vec2 pos : randomPermutation(getAllSquares(resourceInfo.at(cost.id()).storageType))) {
-    vector<Item*> goldHere = getLevel()->getSafeSquare(pos)->getItems(resourceInfo.at(cost.id()).predicate);
-    for (Item* it : goldHere) {
-      getLevel()->getSafeSquare(pos)->removeItem(it);
-      if (--num == 0)
-        return;
+  if (resourceInfo.at(cost.id()).itemIndex)
+    for (Vec2 pos : randomPermutation(getAllSquares(resourceInfo.at(cost.id()).storageType))) {
+      vector<Item*> goldHere = getLevel()->getSafeSquare(pos)->getItems(*resourceInfo.at(cost.id()).itemIndex);
+      for (Item* it : goldHere) {
+        getLevel()->getSafeSquare(pos)->removeItem(it);
+        if (--num == 0)
+          return;
+      }
     }
-  }
   FAIL << "Not enough " << resourceInfo.at(cost.id()).name;
 }
 
@@ -1601,6 +1575,23 @@ vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinio
   if (includeMinions)
     for (Creature* c : getCreatures())
       append(allItems, c->getEquipment().getItems(predicate));
+  sort(allItems.begin(), allItems.end(), [this](const Item* it1, const Item* it2) {
+      int diff = minionEquipment.getItemValue(it1) - minionEquipment.getItemValue(it2);
+      if (diff == 0)
+        return it1->getUniqueId() < it2->getUniqueId();
+      else
+        return diff > 0;
+    });
+  return allItems;
+}
+
+vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) const {
+  vector<Item*> allItems;
+  for (Vec2 v : getAllSquares())
+    append(allItems, getLevel()->getSafeSquare(v)->getItems(index));
+  if (includeMinions)
+    for (Creature* c : getCreatures())
+      append(allItems, c->getEquipment().getItems(index));
   sort(allItems.begin(), allItems.end(), [this](const Item* it1, const Item* it2) {
       int diff = minionEquipment.getItemValue(it1) - minionEquipment.getItemValue(it2);
       if (diff == 0)

@@ -468,6 +468,14 @@ vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {
   return inventory.getItems(predicate);
 }
 
+const vector<Item*>& Square::getItems() const {
+  return inventory.getItems();
+}
+
+const vector<Item*>& Square::getItems(ItemIndex index) const {
+  return inventory.getItems(index);
+}
+
 PItem Square::removeItem(Item* it) {
   setDirty();
   return inventory.removeItem(it);

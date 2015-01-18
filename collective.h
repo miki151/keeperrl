@@ -144,7 +144,7 @@ class Collective : public Task::Callback {
 
   struct ResourceInfo {
     vector<SquareType> storageType;
-    ItemPredicate predicate;
+    optional<ItemIndex> itemIndex;
     ItemId itemId;
     string name;
     bool dontDisplay;
@@ -199,6 +199,7 @@ class Collective : public Task::Callback {
   set<TrapType> getNeededTraps() const;
 
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
+  vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
 
   static vector<SquareType> getEquipmentStorageSquares();
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = set<Vec2>()) const;
