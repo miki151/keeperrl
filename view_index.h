@@ -18,8 +18,8 @@
 
 #include "enums.h"
 #include "util.h"
+#include "view_object.h"
 
-class ViewObject;
 
 RICH_ENUM(HighlightType,
   BUILD,
@@ -61,7 +61,7 @@ class ViewIndex {
   SERIAL_CHECKER;
 
   private:
-  vector<int> SERIAL(objIndex);
+  std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);
   vector<ViewObject> SERIAL(objects);
   EnumMap<HighlightType, double> SERIAL(highlight);
   bool SERIAL2(anyHighlight, false);

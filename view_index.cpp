@@ -31,7 +31,8 @@ void ViewIndex::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(ViewIndex);
 
 ViewIndex::ViewIndex() {
-  objIndex = vector<int>(EnumInfo<ViewLayer>::size, -1);
+  for (auto& elem : objIndex)
+    elem = -1;
 }
 
 ViewIndex::~ViewIndex() {
