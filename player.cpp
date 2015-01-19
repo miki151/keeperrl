@@ -632,6 +632,11 @@ void Player::makeMove() {
     ViewObject::setHallu(false);
   if (updateView) {
     updateView = false;
+    for (Vec2 pos : getCreature()->getLevel()->getVisibleTiles(getCreature())) {
+      ViewIndex index;
+      getViewIndex(pos, index);
+      (*levelMemory)[getCreature()->getLevel()->getUniqueId()].update(pos, index);
+    }
     MEASURE(
         model->getView()->updateView(this, false),
         "level render time");
@@ -747,11 +752,6 @@ void Player::makeMove() {
     if (getCreature()->getTime() > currentTimePos.time) {
       previousTimePos = currentTimePos;
       currentTimePos = { getCreature()->getPosition(), getCreature()->getTime()};
-    }
-    for (Vec2 pos : getCreature()->getLevel()->getVisibleTiles(getCreature())) {
-      ViewIndex index;
-      getViewIndex(pos, index);
-      (*levelMemory)[getCreature()->getLevel()->getUniqueId()].update(pos, index);
     }
   }
 }
