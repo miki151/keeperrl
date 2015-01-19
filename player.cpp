@@ -867,12 +867,13 @@ optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
+  bool canSee = getCreature()->canSee(pos);
   const Square* square = getLevel()->getSafeSquare(pos);
-  if (getCreature()->canSee(pos))
+  if (canSee)
     square->getViewIndex(index, getCreature()->getTribe());
   else
     index.setHiddenId(square->getViewObject().id());
-  if (!getCreature()->canSee(pos) && getMemory().hasViewIndex(pos))
+  if (!canSee && getMemory().hasViewIndex(pos))
     index.mergeFromMemory(getMemory().getViewIndex(pos));
   if (const Creature* c = square->getCreature()) {
     if (getCreature()->canSee(c) || c == getCreature())

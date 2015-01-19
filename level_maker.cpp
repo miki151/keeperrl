@@ -2193,7 +2193,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   }
   int maxDist = 35;
   int maxDist2 = 80;
-  addResources(locations, Random.get(2, 5), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
+  addResources(locations, Random.get(4, 6), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
   addResources(locations, Random.get(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE, startingPos);
   addResources(locations, Random.get(7, 12), 4, 5, 10, maxDist, maxDist2, SquareId::IRON_ORE, startingPos);
   queue->addMaker(new Empty(SquareId::WATER));

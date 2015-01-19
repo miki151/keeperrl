@@ -32,7 +32,7 @@ SERIALIZABLE(ViewIndex);
 
 ViewIndex::ViewIndex() {
   for (auto& elem : objIndex)
-    elem = -1;
+    elem = 100;
 }
 
 ViewIndex::~ViewIndex() {
@@ -40,7 +40,7 @@ ViewIndex::~ViewIndex() {
 
 void ViewIndex::insert(const ViewObject& obj) {
   int ind = objIndex[int(obj.layer())];
-  if (ind > -1)
+  if (ind < 100)
     objects[ind] = obj;
   else {
     objIndex[int(obj.layer())] = objects.size();
@@ -49,11 +49,11 @@ void ViewIndex::insert(const ViewObject& obj) {
 }
 
 bool ViewIndex::hasObject(ViewLayer l) const {
-  return objIndex[int(l)] > -1;
+  return objIndex[int(l)] < 100;
 }
 
 void ViewIndex::removeObject(ViewLayer l) {
-  objIndex[int(l)] = -1;
+  objIndex[int(l)] = 100;
 }
 
 bool ViewIndex::isEmpty() const {
@@ -72,7 +72,7 @@ const ViewObject& ViewIndex::getObject(ViewLayer l) const {
 
 ViewObject& ViewIndex::getObject(ViewLayer l) {
   int ind = objIndex[int(l)];
-  CHECK(ind > -1) << "No object on layer " << int(l);
+  CHECK(ind < 100) << "No object on layer " << int(l);
   return objects[ind];
 }
 

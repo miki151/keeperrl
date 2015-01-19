@@ -1093,14 +1093,11 @@ class SplashImps : public Behaviour {
     if (!initialPos)
       initialPos = creature->getPosition();
     bool heroesDead = true;
-    for (Square* square : creature->getLevel()->getSquares(Level::getSplashBounds().getAllSquares()))
-      if (square->getCreature() && square->getCreature()->isEnemy(creature)) {
+    for (const Creature* c : creature->getLevel()->getAllCreatures())
+      if (c->isEnemy(creature)) {
         heroesDead = false;
       }
     if (heroesDead) {
-      for (Square* square : creature->getLevel()->getSquares(Level::getSplashVisibleBounds().getAllSquares()))
-        if (square->getCreature() && square->getCreature()->getName().bare() != "imp")
-          return creature->wait();
       if (!splashItems.isInitialized())
         initializeSplashItems();
       if (task) {
@@ -1217,9 +1214,8 @@ MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
         new Heal(c, false),
         new Fighter(c, 0.6, true),
         new ByCollective(c, col),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
-        new AttackPest(c)},
-        { 6, 5, 2, 1, 1}, false);
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
+        { 6, 5, 2, 1}, false);
       });
 }
 

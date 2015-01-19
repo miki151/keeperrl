@@ -312,13 +312,18 @@ inline void serialize(Archive & ar, std::vector<T, Allocator> & t, unsigned int 
   boost::serialization::split_free(ar, t, file_version);
 }
 
-#ifdef CLANG
-// array
-template<class Archive, class T, size_t N>
-inline void serialize(Archive & ar, std::array<T, N> &t, unsigned int) {
-  for(int i = 0; i < N; ++i)
-    ar & boost::serialization::make_nvp("item", t[i]);
+#ifdef CLANG // clang doesn't see the serialization of std::array in boost, for some reason
+
+template <class Archive, class T, std::size_t N>
+void serialize(Archive& ar, std::array<T,N>& a, const unsigned int /* version */)
+{
+    ar & boost::serialization::make_nvp(
+        "elems",
+        *static_cast<T (*)[N]>(static_cast<void *>(a.data()))
+    );
+
 }
+
 #endif
 
 #ifdef DEBUG_STL

@@ -28,8 +28,12 @@ RICH_ENUM(ItemIndex,
   IRON,
   STONE,
   REVIVABLE_CORPSE,
+  CORPSE,
   WEAPON,
-  TRAP
+  TRAP,
+  MINION_EQUIPMENT,
+  RANGED_WEAPON,
+  CAN_EQUIP
 );
 
 class Inventory {
@@ -57,7 +61,7 @@ class Inventory {
   private:
   vector<PItem> SERIAL(items);
   vector<Item*> SERIAL(itemsCache);
-  mutable EnumMap<ItemIndex, optional<vector<Item*>>> SERIAL(indexes);
+  mutable EnumMap<ItemIndex, optional<vector<Item*>>> indexes;
 };
 
 #endif

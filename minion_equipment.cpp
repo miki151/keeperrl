@@ -63,7 +63,7 @@ optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
   return none;
 }
 
-bool MinionEquipment::isItemUseful(const Item* it) const {
+bool MinionEquipment::isItemUseful(const Item* it) {
   return getEquipmentType(it) || contains({ItemClass::GOLD, ItemClass::POTION, ItemClass::SCROLL}, it->getClass());
 }
 
@@ -109,7 +109,7 @@ bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) const
   return it->getClass() != ItemClass::WEAPON || c->getAttr(AttrType::STRENGTH) >= it->getMinStrength();
 }
 
-int MinionEquipment::getItemValue(const Item* it) const {
+int MinionEquipment::getItemValue(const Item* it) {
   return it->getModifier(ModifierType::ACCURACY) + it->getModifier(ModifierType::DAMAGE)
     + it->getModifier(ModifierType::DEFENSE);
 }

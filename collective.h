@@ -174,6 +174,7 @@ class Collective : public Task::Callback {
   void returnResource(CostInfo);
 
   struct ItemFetchInfo {
+    ItemIndex index;
     ItemPredicate predicate;
     vector<SquareType> destination;
     bool oneAtATime;
@@ -198,8 +199,10 @@ class Collective : public Task::Callback {
 
   set<TrapType> getNeededTraps() const;
 
+  vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
+  static void sortByEquipmentValue(vector<Item*>&);
 
   static vector<SquareType> getEquipmentStorageSquares();
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = set<Vec2>()) const;
@@ -410,7 +413,7 @@ class Collective : public Task::Callback {
   MoveInfo getGuardPostMove(Creature* c);
   map<Vec2, ConstructionInfo> SERIAL(constructions);
   EntitySet<Item> SERIAL(markedItems);
-  ItemPredicate unMarkedItems(ItemClass) const;
+  ItemPredicate unMarkedItems() const;
   map<Vec2, TrapInfo> SERIAL(traps);
   map<Vec2, TorchInfo> SERIAL(torches);
   enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };

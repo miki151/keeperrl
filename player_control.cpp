@@ -553,7 +553,9 @@ Item* PlayerControl::chooseEquipmentItem(View* view, vector<Item*> currentItems,
   options.emplace_back("Free:", View::TITLE);
   vector<Item*> availableItems;
   vector<Item*> usedItems;
-  for (Item* item : getCollective()->getAllItems(predicate))
+  vector<Item*> allItems = getCollective()->getAllItems(predicate);
+  getCollective()->sortByEquipmentValue(allItems);
+  for (Item* item : allItems)
     if (!contains(currentItems, item)) {
       if (getCollective()->getMinionEquipment().getOwner(item))
         usedItems.push_back(item);

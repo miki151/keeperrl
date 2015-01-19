@@ -421,11 +421,10 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
   keyScrolling = !view->getPosition(false);
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos())) 
     if (level->inBounds(pos)) {
-      ViewIndex index;
-      view->getViewIndex(pos, index);
-      if (!index.isEmpty())
-        index.setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
-      objects[pos] = index;
+      objects[pos].emplace();
+      view->getViewIndex(pos, objects[pos]);
+      if (!objects[pos].isEmpty())
+        objects[pos].setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
     }
   currentTimeGame = smoothMovement ? view->getTime() : 1000000000;
   if (smoothMovement) {

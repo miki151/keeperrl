@@ -82,9 +82,8 @@ Collective::MinionTaskInfo::MinionTaskInfo(Type t, const string& desc) : type(t)
   CHECK(type != APPLY_SQUARE);
 }
 
-ItemPredicate Collective::unMarkedItems(ItemClass type) const {
-  return [this, type](const Item* it) {
-      return it->getClass() == type && !isItemMarked(it); };
+ItemPredicate Collective::unMarkedItems() const {
+  return [this](const Item* it) { return !isItemMarked(it); };
 }
 
 const static vector<SquareType> resourceStorage {SquareId::STOCKPILE, SquareId::STOCKPILE_RES};
@@ -97,17 +96,14 @@ vector<SquareType> Collective::getEquipmentStorageSquares() {
 const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
   if (itemFetchInfo.empty())
     itemFetchInfo = {
-      {unMarkedItems(ItemClass::CORPSE), {SquareId::CEMETERY}, true, {}, Warning::GRAVES},
-      {unMarkedItems(ItemClass::GOLD), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
-      {[this](const Item* it) {
-        return minionEquipment.isItemUseful(it) && it->getClass() != ItemClass::GOLD && !isItemMarked(it);
-      }, equipmentStorage, false, {}, Warning::STORAGE},
-      {[this](const Item* it) { return it->getResourceId() == ResourceId::WOOD && !isItemMarked(it); },
-        resourceStorage, false, {SquareId::TREE_TRUNK}, Warning::STORAGE},
-      {[this](const Item* it) { return it->getResourceId() == ResourceId::IRON && !isItemMarked(it); },
-        resourceStorage, false, {}, Warning::STORAGE},
-      {[this](const Item* it) { return it->getResourceId() == ResourceId::STONE && !isItemMarked(it); },
-        resourceStorage, false, {}, Warning::STORAGE},
+      {ItemIndex::CORPSE, unMarkedItems(), {SquareId::CEMETERY}, true, {}, Warning::GRAVES},
+      {ItemIndex::GOLD, unMarkedItems(), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
+      {ItemIndex::MINION_EQUIPMENT, [this](const Item* it)
+          { return it->getClass() != ItemClass::GOLD && !isItemMarked(it);},
+          equipmentStorage, false, {}, Warning::STORAGE},
+      {ItemIndex::WOOD, unMarkedItems(), resourceStorage, false, {SquareId::TREE_TRUNK}, Warning::STORAGE},
+      {ItemIndex::IRON, unMarkedItems(), resourceStorage, false, {}, Warning::STORAGE},
+      {ItemIndex::STONE, unMarkedItems(), resourceStorage, false, {}, Warning::STORAGE},
   };
   return itemFetchInfo;
 }
@@ -184,9 +180,8 @@ double Collective::getAttractionValue(MinionAttraction attraction) {
   switch (attraction.getId()) {
     case AttractionId::SQUARE: 
       return getSquares(attraction.get<SquareType>()).size();
-    case AttractionId::ITEM_CLASS: 
-      return getAllItems([&](const Item* it) {
-          return it->getClass() == attraction.get<ItemClass>(); }, true).size();
+    case AttractionId::ITEM_INDEX: 
+      return getAllItems(attraction.get<ItemIndex>(), true).size();
   }
   FAIL << "wefok";
   return 0;
@@ -1036,7 +1031,7 @@ void Collective::tick(double time) {
     makePayouts();
   }
   cashPayouts();
-  if (config.getWarnings()) {
+  if (config.getWarnings() && Random.roll(5)) {
     considerWeaponWarning();
     setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
     setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
@@ -1050,7 +1045,7 @@ void Collective::tick(double time) {
       if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
         setWarning(*elem.second.warning, false);
   }
-  if (config.getEnemyPositions()) {
+  if (config.getEnemyPositions() && Random.roll(5)) {
     vector<Vec2> enemyPos = getEnemyPositions();
     if (alarmInfo.finishTime() > 0) {
       if (!enemyPos.empty())
@@ -1081,7 +1076,7 @@ void Collective::tick(double time) {
   }
   if (config.getConstructions())
     updateConstructions();
-  if (config.getFetchItems())
+  if (config.getFetchItems() && Random.roll(10))
     for (const ItemFetchInfo& elem : getFetchInfo()) {
       for (Vec2 pos : getAllSquares())
         fetchItems(pos, elem);
@@ -1089,8 +1084,8 @@ void Collective::tick(double time) {
         for (Vec2 pos : getSquares(type))
           fetchItems(pos, elem);
     }
-  if (config.getManageEquipment())
-    minionEquipment.updateOwners(getAllItems([](const Item*) { return true;}, true));
+  if (config.getManageEquipment() && Random.roll(10))
+    minionEquipment.updateOwners(getAllItems(true));
 }
 
 const vector<Creature*>& Collective::getCreatures(MinionTrait trait) const {
@@ -1537,8 +1532,8 @@ Item* Collective::getWorstItem(vector<Item*> items) const {
 
 void Collective::autoEquipment(Creature* creature, bool replace) {
   map<EquipmentSlot, vector<Item*>> slots;
-  vector<Item*> myItems = getAllItems([&](const Item* it) {
-      return minionEquipment.getOwner(it) == creature && it->canEquip(); });
+  vector<Item*> myItems = filter(getAllItems(ItemIndex::CAN_EQUIP), [&](const Item* it) {
+      return minionEquipment.getOwner(it) == creature;});
   for (Item* it : myItems) {
     EquipmentSlot slot = it->getEquipmentSlot();
     if (slots[slot].size() < creature->getEquipment().getMaxItems(slot)) {
@@ -1547,8 +1542,10 @@ void Collective::autoEquipment(Creature* creature, bool replace) {
           //should happen only when an item leaves the fortress and then is braught back
       minionEquipment.discard(it);
   }
-  for (Item* it : getAllItems([&](const Item* it) {
-      return minionEquipment.needs(creature, it, false, replace) && !minionEquipment.getOwner(it); }, false)) {
+  vector<Item*> possibleItems = getAllItems([&](const Item* it) {
+      return minionEquipment.needs(creature, it, false, replace) && !minionEquipment.getOwner(it); }, false);
+  sortByEquipmentValue(possibleItems);
+  for (Item* it : possibleItems) {
     if (!it->canEquip()
         || slots[it->getEquipmentSlot()].size() < creature->getEquipment().getMaxItems(it->getEquipmentSlot())
         || minionEquipment.getItemValue(getWorstItem(slots[it->getEquipmentSlot()]))
@@ -1568,6 +1565,26 @@ void Collective::autoEquipment(Creature* creature, bool replace) {
   }
 }
 
+vector<Item*> Collective::getAllItems(bool includeMinions) const {
+  vector<Item*> allItems;
+  for (Vec2 v : getAllSquares())
+    append(allItems, getLevel()->getSafeSquare(v)->getItems());
+  if (includeMinions)
+    for (Creature* c : getCreatures())
+      append(allItems, c->getEquipment().getItems());
+  return allItems;
+}
+
+void Collective::sortByEquipmentValue(vector<Item*>& items) {
+  sort(items.begin(), items.end(), [](const Item* it1, const Item* it2) {
+      int diff = MinionEquipment::getItemValue(it1) - MinionEquipment::getItemValue(it2);
+      if (diff == 0)
+        return it1->getUniqueId() < it2->getUniqueId();
+      else
+        return diff > 0;
+    });
+}
+
 vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
   vector<Item*> allItems;
   for (Vec2 v : getAllSquares())
@@ -1575,13 +1592,6 @@ vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinio
   if (includeMinions)
     for (Creature* c : getCreatures())
       append(allItems, c->getEquipment().getItems(predicate));
-  sort(allItems.begin(), allItems.end(), [this](const Item* it1, const Item* it2) {
-      int diff = minionEquipment.getItemValue(it1) - minionEquipment.getItemValue(it2);
-      if (diff == 0)
-        return it1->getUniqueId() < it2->getUniqueId();
-      else
-        return diff > 0;
-    });
   return allItems;
 }
 
@@ -1592,13 +1602,6 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
   if (includeMinions)
     for (Creature* c : getCreatures())
       append(allItems, c->getEquipment().getItems(index));
-  sort(allItems.begin(), allItems.end(), [this](const Item* it1, const Item* it2) {
-      int diff = minionEquipment.getItemValue(it1) - minionEquipment.getItemValue(it2);
-      if (diff == 0)
-        return it1->getUniqueId() < it2->getUniqueId();
-      else
-        return diff > 0;
-    });
   return allItems;
 }
 
@@ -1868,7 +1871,7 @@ void Collective::fetchItems(Vec2 pos, const ItemFetchInfo& elem, bool ignoreDela
   for (SquareType type : elem.destination)
     if (getSquares(type).count(pos))
       return;
-  vector<Item*> equipment = getLevel()->getSafeSquare(pos)->getItems(elem.predicate);
+  vector<Item*> equipment = filter(getLevel()->getSafeSquare(pos)->getItems(elem.index), elem.predicate);
   if (!equipment.empty()) {
     vector<Vec2> destination = getAllSquares(elem.destination);
     if (!destination.empty()) {

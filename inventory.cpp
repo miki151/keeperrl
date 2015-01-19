@@ -17,12 +17,12 @@
 
 #include "inventory.h"
 #include "item.h"
+#include "minion_equipment.h"
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(items)
-    & SVAR(itemsCache)
-    & SVAR(indexes);
+    & SVAR(itemsCache);
   CHECK_SERIAL;
 }
 
@@ -98,6 +98,13 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
     case ItemIndex::WEAPON: return [](const Item* it) {
         return it->getClass() == ItemClass::WEAPON; };
     case ItemIndex::TRAP: return [](const Item* it) { return !!it->getTrapType(); };
+    case ItemIndex::CORPSE: return [](const Item* it) {
+        return it->getClass() == ItemClass::CORPSE; };
+    case ItemIndex::MINION_EQUIPMENT: return [](const Item* it) {
+        return MinionEquipment::isItemUseful(it);};
+    case ItemIndex::RANGED_WEAPON: return [](const Item* it) {
+        return it->getClass() == ItemClass::RANGED_WEAPON;};
+    case ItemIndex::CAN_EQUIP: return [](const Item* it) {return it->canEquip();};
   }
 }
 

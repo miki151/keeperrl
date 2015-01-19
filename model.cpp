@@ -671,7 +671,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.frequency = 0.3;
           c.attractions = LIST(
             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
-            {{AttractionId::ITEM_CLASS, ItemClass::RANGED_WEAPON}, 1.0, 3.0, true}
+            {{AttractionId::ITEM_INDEX, ItemIndex::RANGED_WEAPON}, 1.0, 3.0, true}
             );
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 40;),

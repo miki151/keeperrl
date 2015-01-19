@@ -61,7 +61,7 @@ class ViewIndex {
   SERIAL_CHECKER;
 
   private:
-  std::array<signed char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);
+  std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);
   vector<ViewObject> SERIAL(objects);
   EnumMap<HighlightType, double> SERIAL(highlight);
   bool SERIAL2(anyHighlight, false);

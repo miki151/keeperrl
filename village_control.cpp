@@ -68,16 +68,18 @@ void VillageControl::tick(double time) {
       }
     return;
   }
-  for (auto& villain : villains) {
-    if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
-      continue;
-    double prob = villain.getAttackProbability(this);
-    if (prob > 0 && Random.roll(1 / prob)) {
-      launchAttack(villain, getPrefix(randomPermutation(fighters),
-            Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
-      break;
+  double updateFreq = 0.1;
+  if (Random.roll(1 / updateFreq))
+    for (auto& villain : villains) {
+      if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
+        continue;
+      double prob = villain.getAttackProbability(this) / updateFreq;
+      if (prob > 0 && Random.roll(1 / prob)) {
+        launchAttack(villain, getPrefix(randomPermutation(fighters),
+              Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
+        break;
+      }
     }
-  }
 }
 
 MoveInfo VillageControl::getMove(Creature*) {

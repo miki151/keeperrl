@@ -25,7 +25,7 @@ class Item;
 class MinionEquipment {
   public:
 
-  bool isItemUseful(const Item*) const;
+  static bool isItemUseful(const Item*);
   bool needs(const Creature* c, const Item* it, bool noLimit = false, bool replacement = false) const;
   const Creature* getOwner(const Item*) const;
   void own(const Creature*, const Item*);
@@ -37,7 +37,7 @@ class MinionEquipment {
 
   SERIAL_CHECKER;
 
-  int getItemValue(const Item*) const;
+  static int getItemValue(const Item*);
 
   private:
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
