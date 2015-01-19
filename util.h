@@ -946,6 +946,54 @@ class EnumInfo<Name> { \
 
 RICH_ENUM(Dir, N, S, E, W, NE, NW, SE, SW );
 
+class DirSet {
+  public:
+  DirSet();
+  DirSet(const vector<Dir>&);
+  DirSet(const initializer_list<Dir>&);
+  DirSet(bool n, bool s, bool e, bool w, bool ne, bool nw, bool se, bool sw);
+  typedef unsigned char ContentType;
+  DirSet(ContentType);
+  static DirSet fullSet();
+  static DirSet oneElement(Dir);
+
+  bool contains(DirSet) const;
+ // static DirSet getDirSet(const EnumSet<Dir>&);
+  void insert(Dir);
+  bool has(Dir) const;
+  DirSet intersection(DirSet) const;
+  DirSet complement() const;
+
+  operator size_t() const {
+    return content;
+  }
+
+  class Iter {
+    public:
+    Iter(const DirSet&, Dir);
+
+    void goForward();
+    Dir operator* () const;
+    bool operator != (const Iter& other) const;
+    const Iter& operator++ ();
+
+    private:
+    const DirSet& set;
+    Dir ind;
+  };
+
+  Iter begin() const {
+    return Iter(*this, Dir(0));
+  }
+
+  Iter end() const {
+    return Iter(*this, Dir(8));
+  }
+
+  private:
+  ContentType content = 0;
+};
+
 template<class T, class U>
 class EnumMap {
   public:

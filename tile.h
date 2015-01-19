@@ -43,47 +43,50 @@ class Tile {
 
   Tile setNoShadow();
 
-  Tile addConnection(EnumSet<Dir>, TileCoord);
+  Tile addConnection(DirSet, TileCoord);
   Tile addOption(Dir, TileCoord);
   Tile setFloorBorders();
 
   Tile addBackground(TileCoord);
 
-  Tile addExtraBorder(EnumSet<Dir>, TileCoord);
+  Tile addExtraBorder(DirSet, TileCoord);
   Tile addExtraBorderId(ViewId);
-  Tile addCorner(EnumSet<Dir> cornerDef, EnumSet<Dir> borders, TileCoord);
+  Tile addCorner(DirSet cornerDef, DirSet borders, TileCoord);
   Tile setTranslucent(double v);
 
   const vector<ViewId>& getExtraBorderIds() const;
   bool hasExtraBorders() const;
-  optional<TileCoord> getExtraBorderCoord(const EnumSet<Dir>& c) const;
+  optional<TileCoord> getExtraBorderCoord(DirSet) const;
 
   bool hasSpriteCoord() const;
 
   TileCoord getSpriteCoord() const;
-  TileCoord getSpriteCoord(const EnumSet<Dir>& c) const;
+  TileCoord getSpriteCoord(DirSet) const;
   optional<TileCoord> getBackgroundCoord() const;
 
   bool hasCorners() const;
-  vector<TileCoord> getCornerCoords(const EnumSet<Dir>& c) const;
+  const vector<TileCoord>& getCornerCoords(DirSet) const;
 
   private:
   static void loadTiles();
   static void loadUnicode();
+  friend class TileCoordLookup;
   Tile();
   Tile(TileCoord);
+ // Tile(const Tile&) = default;
   optional<TileCoord> tileCoord;
   optional<TileCoord> backgroundCoord;
-  unordered_map<EnumSet<Dir>, TileCoord> connections;
+  array<optional<TileCoord>, 256> connections;
+  bool anyConnections = false;
   optional<pair<Dir, TileCoord>> connectionOption;
-  struct CornerInfo {
-    EnumSet<Dir> cornerDef;
-    EnumSet<Dir> borders;
-    TileCoord tileCoord;
-  };
-  vector<CornerInfo> corners;
-  unordered_map<EnumSet<Dir>, TileCoord> extraBorders;
+  array<vector<TileCoord>, 256> corners;
+  array<optional<TileCoord>, 256> extraBorders;
+  bool anyExtraBorders = false;
   vector<ViewId> extraBorderIds;
+  static void addTile(ViewId, Tile);
+  static void addSymbol(ViewId, Tile);
+  static EnumMap<ViewId, optional<Tile>> tiles;
+  static EnumMap<ViewId, optional<Tile>> symbols;
 };
 
 

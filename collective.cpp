@@ -1512,8 +1512,8 @@ vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squa
   if (squares.empty())
     squares = getSquares(SquareId::WORKSHOP);
   for (Vec2 pos : squares) {
-    vector<Item*> v = getLevel()->getSafeSquare(pos)->getItems([type, this](Item* it) {
-        return it->getTrapType() == type && !isItemMarked(it); });
+    vector<Item*> v = filter(getLevel()->getSafeSquare(pos)->getItems(ItemIndex::TRAP),
+        [type, this](Item* it) { return it->getTrapType() == type && !isItemMarked(it); });
     for (Item* it : v)
       ret.emplace_back(it, pos);
   }

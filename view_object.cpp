@@ -88,9 +88,20 @@ const ViewObject::MovementInfo& ViewObject::MovementQueue::getLast() const {
 
 Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin, double tEnd) const {
   Vec2 ret;
+  bool attack = false;
   for (int i : Range(min<int>(totalMoves, elems.size())))
-    if (elems[i].tBegin > tBegin && elems[i].type != MovementInfo::ATTACK)
-      ret += elems[i].direction;
+    if (elems[i].tBegin > tBegin) {
+      if (elems[i].type == MovementInfo::ATTACK && ret.length8() == 0) {
+        attack = true;
+        ret = elems[i].direction;
+      } else {
+        if (attack) {
+          attack = false;
+          ret = Vec2(0, 0);
+        }
+        ret += elems[i].direction;
+      }
+    }
   return ret;
 }
 

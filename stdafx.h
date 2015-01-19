@@ -120,6 +120,7 @@ using std::uniform_real_distribution;
 using std::make_tuple;
 using std::get;
 using std::hash;
+using std::array;
 #ifdef OSX
 using boost::thread;
 inline thread::id currentThreadId() { return boost::this_thread::get_id(); }

@@ -249,7 +249,7 @@ void MapGui::onMouseRelease() {
   mouseHeldPos = none;
 }
 
-void MapGui::drawFloorBorders(Renderer& renderer, const EnumSet<Dir>& borders, int x, int y) {
+/*void MapGui::drawFloorBorders(Renderer& renderer, DirSet borders, int x, int y) {
   for (const Dir& dir : borders) {
     int coord;
     switch (dir) {
@@ -261,7 +261,7 @@ void MapGui::drawFloorBorders(Renderer& renderer, const EnumSet<Dir>& borders, i
     }
     renderer.drawTile(x, y, {Vec2(coord, 18), 1});
   }
-}
+}*/
 
 static void drawMorale(Renderer& renderer, const Rectangle& rect, double morale) {
   Color col;
@@ -350,8 +350,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
     color = Color(val, val, val);
   }
   if (spriteMode) {
-    EnumSet<Dir> dirs;
-    EnumSet<Dir> borderDirs;
+    DirSet dirs;
+    DirSet borderDirs;
     if (!object.hasModifier(ViewObject::Modifier::PLANNED))
       if (auto connectionId = getConnectionId(object))
         for (Vec2 dir : getConnectionDirs(object.id())) {
@@ -382,9 +382,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, int x, int y, const ViewObject& o
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(x + move.x, y + move.y, coord, sizeX, sizeY, color);
     }
-    if (tile.floorBorders) {
+/*    if (tile.floorBorders) {
       drawFloorBorders(renderer, borderDirs, x, y);
-    }
+    }*/
     if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
         shadowed.count(tilePos) && !tile.noShadow)
       renderer.drawTile(x, y, {Vec2(1, 21), 5}, sizeX, sizeY);
@@ -492,23 +492,26 @@ void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
   renderer.drawText(color, pos.x + 10, pos.y + 1, text);
 }
 
-void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs) {
+void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, int sizeX, int sizeY, DirSet dirs) {
   const Tile& tile = Tile::getTile(ViewId::FOG_OF_WAR, true); 
   const Tile& tile2 = Tile::getTile(ViewId::FOG_OF_WAR_CORNER, true); 
-  static EnumSet<Dir> fourDirs {Dir::N, Dir::S, Dir::E, Dir::W};
-  auto coord = tile.getSpriteCoord(dirs.intersection(fourDirs));
+  static DirSet fourDirs = DirSet({Dir::N, Dir::S, Dir::E, Dir::W});
+  auto coord = tile.getSpriteCoord(dirs & fourDirs);
   renderer.drawTile(pos.x, pos.y, coord, sizeX, sizeY);
-  for (Dir dir : dirs)
-    if (!fourDirs[dir]) {
-      switch (dir) {
-        case Dir::NE: if (!dirs[Dir::N] || !dirs[Dir::E]) continue;
-        case Dir::SE: if (!dirs[Dir::S] || !dirs[Dir::E]) continue;
-        case Dir::NW: if (!dirs[Dir::N] || !dirs[Dir::W]) continue;
-        case Dir::SW: if (!dirs[Dir::S] || !dirs[Dir::W]) continue;
-        default: break;
-      }
-      renderer.drawTile(pos.x, pos.y, tile2.getSpriteCoord({dir}), sizeX, sizeY);
+  for (Dir dir : dirs.intersection(fourDirs.complement())) {
+    static DirSet ne({Dir::N, Dir::E});
+    static DirSet se({Dir::S, Dir::E});
+    static DirSet nw({Dir::N, Dir::W});
+    static DirSet sw({Dir::S, Dir::W});
+    switch (dir) {
+      case Dir::NE: if (!dirs.contains(ne)) continue;
+      case Dir::SE: if (!dirs.contains(se)) continue;
+      case Dir::NW: if (!dirs.contains(nw)) continue;
+      case Dir::SW: if (!dirs.contains(sw)) continue;
+      default: break;
     }
+    renderer.drawTile(pos.x, pos.y, tile2.getSpriteCoord(DirSet::oneElement(dir)), sizeX, sizeY);
+  }
 }
 
 bool MapGui::isFoW(Vec2 pos) const {
@@ -534,7 +537,7 @@ void MapGui::renderExtraBorders(Renderer& renderer, int currentTimeReal) {
       const Tile& tile = Tile::getTile(id, true);
       for (ViewId underId : tile.getExtraBorderIds())
         if (connectionMap.has(wpos, underId)) {
-          EnumSet<Dir> dirs;
+          DirSet dirs = 0;
           for (Vec2 v : Vec2::directions4())
             if (connectionMap.has(wpos + v, id))
               dirs.insert(v.getCardinalDir());
@@ -605,7 +608,7 @@ void MapGui::render(Renderer& renderer) {
       }
       if (spriteMode && layer == layout->getLayers().back())
         if (!isFoW(wpos))
-          drawFoWSprite(renderer, pos, sizeX, sizeY, {
+          drawFoWSprite(renderer, pos, sizeX, sizeY, DirSet(
               !isFoW(wpos + Vec2(Dir::N)),
               !isFoW(wpos + Vec2(Dir::S)),
               !isFoW(wpos + Vec2(Dir::E)),
@@ -613,7 +616,7 @@ void MapGui::render(Renderer& renderer) {
               isFoW(wpos + Vec2(Dir::NE)),
               isFoW(wpos + Vec2(Dir::NW)),
               isFoW(wpos + Vec2(Dir::SE)),
-              isFoW(wpos + Vec2(Dir::SW))});
+              isFoW(wpos + Vec2(Dir::SW))));
     }
     if (!spriteMode)
       break;

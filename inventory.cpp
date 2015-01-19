@@ -97,6 +97,7 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
         return it->getClass() == ItemClass::CORPSE && it->getCorpseInfo()->canBeRevived; };
     case ItemIndex::WEAPON: return [](const Item* it) {
         return it->getClass() == ItemClass::WEAPON; };
+    case ItemIndex::TRAP: return [](const Item* it) { return !!it->getTrapType(); };
   }
 }
 

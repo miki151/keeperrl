@@ -275,6 +275,7 @@ class MainLoop {
     const int stepTimeMilli = 3;
     Intervalometer meter(stepTimeMilli);
     double totTime = model->getTime();
+    double lastMusicUpdate = -1000;
     while (1) {
       double gameTimeStep = view->getGameSpeed() / stepTimeMilli;
       if (auto exitInfo = model->update(totTime)) {
@@ -282,9 +283,10 @@ class MainLoop {
           saveUI(std::move(model), exitInfo->getGameType());
         return;
       }
-      if (withMusic)
+      if (lastMusicUpdate < totTime - 1 && withMusic) {
         jukebox->update(model->getCurrentMusic());
-      if (model->isTurnBased())
+        lastMusicUpdate = totTime;
+      } if (model->isTurnBased())
         ++totTime;
       else
         totTime += min(1.0, double(meter.getCount(view->getTimeMilli())) * gameTimeStep);

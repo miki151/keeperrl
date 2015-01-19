@@ -28,7 +28,8 @@ RICH_ENUM(ItemIndex,
   IRON,
   STONE,
   REVIVABLE_CORPSE,
-  WEAPON
+  WEAPON,
+  TRAP
 );
 
 class Inventory {

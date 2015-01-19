@@ -61,9 +61,9 @@ class MapGui : public GuiElem {
   void drawObjectAbs(Renderer&, int x, int y, const ViewObject&, int sizeX, int sizeY, Vec2 tilePos,
       int currentTimeReal);
   void drawCreatureHighlights(Renderer&, const ViewObject&, int x, int y, int sizeX, int sizeY);
-  void drawFloorBorders(Renderer& r, const EnumSet<Dir>& borders, int x, int y);
+ // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
   void drawHint(Renderer& renderer, Color color, const string& text);
-  void drawFoWSprite(Renderer&, Vec2 pos, int sizeX, int sizeY, EnumSet<Dir> dirs);
+  void drawFoWSprite(Renderer&, Vec2 pos, int sizeX, int sizeY, DirSet dirs);
   void renderExtraBorders(Renderer&, int currentTimeReal);
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, int curTimeReal);
   Vec2 projectOnScreen(Vec2 wpos, int currentTimeReal);

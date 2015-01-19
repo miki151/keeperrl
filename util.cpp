@@ -732,3 +732,75 @@ DestructorFunction::~DestructorFunction() {
   destFun();
 }
 
+bool DirSet::contains(DirSet dirSet) const {
+  return intersection(dirSet) == dirSet;
+}
+
+DirSet::DirSet(const initializer_list<Dir>& dirs) {
+  for (Dir dir : dirs)
+    content |= (1 << int(dir));
+}
+
+DirSet::DirSet(const vector<Dir>& dirs) {
+  for (Dir dir : dirs)
+    content |= (1 << int(dir));
+}
+
+DirSet::DirSet(unsigned char c) : content(c) {
+}
+
+DirSet::DirSet() {
+}
+
+DirSet::DirSet(bool n, bool s, bool e, bool w, bool ne, bool nw, bool se, bool sw) {
+  content = n | (s << 1) | (e << 2) | (w << 3) | (ne << 4) | (nw << 5) | (se << 6) | (sw << 7);
+}
+
+void DirSet::insert(Dir dir) {
+  content |= (1 << int(dir));
+}
+
+bool DirSet::has(Dir dir) const {
+  return content & (1 << int(dir));
+}
+
+DirSet DirSet::oneElement(Dir dir) {
+  return DirSet(1 << int(dir));
+}
+
+DirSet DirSet::fullSet() {
+  return 255;
+}
+
+DirSet DirSet::intersection(DirSet s) const {
+  s.content &= content;
+  return s;
+}
+
+DirSet DirSet::complement() const {
+  return ~content;
+}
+
+DirSet::Iter::Iter(const DirSet& s, Dir num) : set(s), ind(num) {
+  goForward();
+}
+
+void DirSet::Iter::goForward() {
+  while (ind < Dir(8) && !set.has(ind))
+    ind = Dir(int(ind) + 1);
+}
+
+Dir DirSet::Iter::operator* () const {
+  return ind;
+}
+
+bool DirSet::Iter::operator != (const Iter& other) const {
+  return ind != other.ind;
+}
+
+const DirSet::Iter& DirSet::Iter::operator++ () {
+  ind = Dir(int(ind) + 1);
+  goForward();
+  return *this;
+}
+

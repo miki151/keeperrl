@@ -253,7 +253,7 @@ void Renderer::drawTile(int x, int y, TileCoord coord, double scale, Color color
 void Renderer::drawViewObject(int x, int y, ViewId id, bool useSprite, double scale, Color color) {
   const Tile& tile = Tile::getTile(id, useSprite);
   if (tile.hasSpriteCoord())
-    drawTile(x, y, tile.getSpriteCoord(EnumSet<Dir>::fullSet()), scale, color);
+    drawTile(x, y, tile.getSpriteCoord(DirSet::fullSet()), scale, color);
   else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, x, y, tile.text);
 }
