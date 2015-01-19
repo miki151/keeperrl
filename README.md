@@ -16,7 +16,6 @@ Compiling
   * libsfml-dev 2+ (Ubuntu ppa that contains libsfml 2: http://www.playdeb.net/updates/Ubuntu/13.10#how_to_install )
   * freeglut-dev
   * libglew-dev (if you're still getting undefined symbols about GLEW, try compiling SFML from source)
-  * angelscript (http://www.angelcode.com/angelscript/)
 
 
 Under Ubuntu 14.4 , you could use these to create development enviroment 
