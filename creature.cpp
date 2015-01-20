@@ -86,6 +86,8 @@ Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes&
     tribe->addMember(this);
   for (auto id : ENUM_ALL(AttrType))
     CHECK(attr[id] > 0);
+  CHECK(getUniqueId() != 0);
+  modViewObject().setCreatureId(getUniqueId());
 }
 
 Creature::Creature(Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
@@ -1412,7 +1414,6 @@ void Creature::updateViewObject() {
   else
     modViewObject().removeModifier(ViewObject::Modifier::SLEEPING);
   modViewObject().setAttribute(ViewObject::Attribute::BLEEDING, 1 - health);
-  modViewObject().setCreatureId(getUniqueId());
 }
 
 double Creature::getHealth() const {
