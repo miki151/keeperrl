@@ -22,7 +22,7 @@
 
 class Options;
 
-enum class MusicType { MAIN, PEACEFUL, BATTLE, NIGHT };
+enum class MusicType { INTRO, MAIN, PEACEFUL, BATTLE, NIGHT };
 
 class Jukebox {
   public:
@@ -38,6 +38,7 @@ class Jukebox {
   void setCurrent(MusicType);
   void continueCurrent();
   bool turnedOff();
+  void refresh();
   MusicType getCurrentType();
   unique_ptr<sf::Music[]> music;
   map<MusicType, vector<int>> byType;
@@ -45,6 +46,7 @@ class Jukebox {
   int currentPlaying = 0;
   bool on = true;
   int numTracks = 0;
+  AsyncLoop refreshLoop;
 };
 
 #endif

@@ -16,10 +16,11 @@
 #include "stdafx.h"
 #include "music.h"
 #include "options.h"
+#include <SFML/System.hpp>
 
 using sf::Music;
 
-Jukebox::Jukebox(Options* options) {
+Jukebox::Jukebox(Options* options) : refreshLoop([this] { refresh(); sf::sleep(sf::milliseconds(500)); }) {
   music.reset(new Music[20]);
   on = false;
   options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { if (turnOn != on) toggle(); });
@@ -67,7 +68,10 @@ void Jukebox::update(MusicType c) {
     return;
   if (getCurrentType() != c)
     current = chooseRandom(byType[c]);
-  if (!on)
+}
+
+void Jukebox::refresh() {
+  if (!on || !numTracks)
     return;
   if (current != currentPlaying) {
     if (music[currentPlaying].getVolume() == 0) {

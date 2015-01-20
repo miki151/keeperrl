@@ -238,6 +238,7 @@ void initializeRendererTiles(Renderer& r) {
 }
 
 void initializeJukebox(Jukebox& jukebox) {
+  jukebox.addTrack(MusicType::INTRO, "music/intro.ogg");
   jukebox.addTrack(MusicType::MAIN, "music/main.ogg");
   jukebox.addTrack(MusicType::PEACEFUL, "music/peaceful1.ogg");
   jukebox.addTrack(MusicType::PEACEFUL, "music/peaceful2.ogg");
@@ -270,8 +271,6 @@ class MainLoop {
 
   void playModel(PModel model, bool withMusic = true) {
     view->reset();
-    if (withMusic)
-      jukebox->update(MusicType::PEACEFUL);
     const int stepTimeMilli = 3;
     Intervalometer meter(stepTimeMilli);
     double totTime = model->getTime();
@@ -321,6 +320,7 @@ class MainLoop {
       }
       if (model) {
         model->setOptions(options);
+        jukebox->update(MusicType::PEACEFUL);
         playModel(std::move(model));
       }
       clearSingletons();
@@ -331,11 +331,14 @@ class MainLoop {
   void splashScreen() {
     ProgressMeter meter(1);
     initializeSingletons();
+    jukebox->update(MusicType::INTRO);
     playModel(PModel(Model::splashModel(meter, view)), false);
     clearSingletons();
   }
 
   void start() {
+    if (options->getBoolValue(OptionId::MUSIC))
+      jukebox->toggle();
     splashScreen();
     view->reset();
     if (!tilesPresent())
@@ -345,10 +348,8 @@ class MainLoop {
           "please visit keeperrl.com.\n \nYou can also get it by donating to any wildlife charity."
           "More information on the website.");
     int lastIndex = 0;
-    if (options->getBoolValue(OptionId::MUSIC))
-      jukebox->toggle();
     while (1) {
- //     jukebox->update(MusicType::MAIN);
+      jukebox->update(MusicType::MAIN);
       auto choice = view->chooseFromList("", {
           "Play game", "Change settings", "View high scores", "View credits", "Quit"}, lastIndex, View::MAIN_MENU);
       if (!choice)
