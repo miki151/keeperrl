@@ -185,6 +185,7 @@ class WindowView: public View {
   Texture splash1;
   Texture splash2;
   Texture loadingSplash;
+  atomic<int> fullScreenTrigger;
 };
 
 

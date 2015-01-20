@@ -120,11 +120,11 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), useTiles(
     options(params.options), clock(params.clock), guiBuilder(renderer, clock, {
         [this](UserInput input) { inputQueue.push(input);},
         [this](const string& s) { mapGui->setHint(s);},
-        [this](sf::Event::KeyEvent ev) { keyboardAction(ev);}}) {}
+        [this](sf::Event::KeyEvent ev) { keyboardAction(ev);}}), fullScreenTrigger(-1) {}
 
 void WindowView::initialize() {
   renderer.initialize(options->getBoolValue(OptionId::FULLSCREEN));
-  options->addTrigger(OptionId::FULLSCREEN, [this] (bool on) { renderer.initialize(on); });
+  options->addTrigger(OptionId::FULLSCREEN, [this] (bool on) { fullScreenTrigger = on; });
   renderThreadId = currentThreadId();
   vector<ViewLayer> allLayers;
   for (auto l : ENUM_ALL(ViewLayer))
@@ -521,6 +521,10 @@ void WindowView::drawMap() {
 void WindowView::refreshScreen(bool flipBuffer) {
   {
     RenderLock lock(renderMutex);
+    if (fullScreenTrigger > -1) {
+      renderer.initialize(fullScreenTrigger);
+      fullScreenTrigger = -1;
+    }
     if (!gameReady) {
       if (useTiles)
         displayMenuSplash2();
