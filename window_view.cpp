@@ -587,7 +587,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
             (middle + dir).x, (middle + dir).y);
         if (currentTileLayout.sprites)
-          renderer.drawTile(wpos.x, wpos.y, {Vec2(16, numArrow), 4});
+          renderer.drawTile(wpos.x, wpos.y, {Vec2(16, 8 + numArrow), 4});
         else {
           static sf::Uint32 arrows[] = { L'⇐', L'⇖', L'⇑', L'⇗', L'⇒', L'⇘', L'⇓', L'⇙'};
           renderer.drawText(Renderer::SYMBOL_FONT, 20, colors[ColorId::WHITE],
