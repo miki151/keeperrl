@@ -2191,7 +2191,11 @@ void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {
-  control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
+  if (with->getName().bare() == "vampire")
+    control->addMessage(who->getName().a() + " makes love to " + with->getName().a()
+        + " with a monkey on " + who->getGender().his() + " knee");
+  else
+    control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
   if (contains(getCreatures(), with))
     with->addMorale(1);
   if (!contains(pregnancies, who)) 

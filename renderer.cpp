@@ -177,18 +177,15 @@ int Renderer::getHeight() {
   return display->getSize().y;
 }
 
-void Renderer::initialize() {
-  display = new RenderWindow(sf::VideoMode::getDesktopMode(), "KeeperRL");
+void Renderer::initialize(bool fullscreen) {
+  if (display)
+    display->close();
+  if (fullscreen)
+    display = new RenderWindow(sf::VideoMode::getFullscreenModes()[0], "KeeperRL", sf::Style::Fullscreen);
+  else
+    display = new RenderWindow(sf::VideoMode::getDesktopMode(), "KeeperRL");
   sfView = new sf::View(display->getDefaultView());
   display->setVerticalSyncEnabled(true);
-}
-
-void Renderer::setFullScreen(bool yes) {
-  if (yes)
-    display->create(sf::VideoMode::getFullscreenModes()[0], "KeeperRL", sf::Style::Fullscreen);
-  else
-    display->create(sf::VideoMode::getDesktopMode(), "KeeperRL");
-  display->setView(*(sfView = new sf::View(sf::FloatRect(0, 0, display->getSize().x, display->getSize().y))));
 }
 
 Renderer::Renderer(const string& title, Vec2 nominal) : nominalSize(nominal) {

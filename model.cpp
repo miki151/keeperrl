@@ -365,7 +365,7 @@ void Model::retireCollective() {
 }
 
 void Model::landHeroPlayer() {
-  auto handicap = view->getNumber("Choose handicap (strength and dexterity increase)", 0, 20, 5);
+  auto handicap = view->getNumber("Choose handicap (your adventurer's strength and dexterity increase)", 0, 20, 5);
   PCreature player = makePlayer(handicap.get_value_or(0));
   string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
