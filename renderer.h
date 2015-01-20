@@ -94,6 +94,7 @@ class Renderer {
 
   Renderer(const string& windowTile, Vec2 nominalTileSize);
   void initialize();
+  void setFullScreen(bool);
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(string s);
@@ -143,6 +144,9 @@ class Renderer {
   TileCoord getTileCoord(const string&);
   Vec2 getNominalSize() const;
   vector<Texture> tiles;
+
+  // remove
+  int setViewCount = 0;
 
   private:
   vector<Vec2> tileSize;

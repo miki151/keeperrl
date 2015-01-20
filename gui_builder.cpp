@@ -332,8 +332,10 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
   bottomLine.push_back(
       GuiElem::label("FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()),
       colors[ColorId::WHITE]));
-  main = GuiElem::margin(GuiElem::margins(GuiElem::horizontalList(std::move(bottomLine), 160, 0), 30, 0, 0, 0),
-      std::move(main), 48, GuiElem::BOTTOM);
+  main = GuiElem::margin(GuiElem::margins(GuiElem::verticalList(makeVec<PGuiElem>(
+        GuiElem::label(toString(renderer.setViewCount)),
+        GuiElem::horizontalList(std::move(bottomLine), 160, 0)), 30, 0), 25, 0, 0, 0),
+      std::move(main), 68, GuiElem::BOTTOM);
   return GuiElem::stack(GuiElem::stack(std::move(invisible)),
       GuiElem::margin(std::move(butGui), std::move(main), 55, GuiElem::TOP));
 }

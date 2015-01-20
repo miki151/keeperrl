@@ -124,6 +124,9 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), useTiles(
 
 void WindowView::initialize() {
   renderer.initialize();
+  if (options->getBoolValue(OptionId::FULLSCREEN))
+    renderer.setFullScreen(true);
+  options->addTrigger(OptionId::FULLSCREEN, [this] (bool on) { renderer.setFullScreen(on); });
   renderThreadId = currentThreadId();
   vector<ViewLayer> allLayers;
   for (auto l : ENUM_ALL(ViewLayer))
