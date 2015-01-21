@@ -639,13 +639,13 @@ void MapGui::render(Renderer& renderer) {
         colors[ColorId::LIGHT_GRAY]);
   }
   animations = filter(std::move(animations), [this](const AnimationInfo& elem) 
-      { return !elem.animation->isDone(clock->getRealMillis());});
+      { return !elem.animation->isDone(currentTimeGame);});
   for (auto& elem : animations)
     elem.animation->render(
         renderer,
         getBounds(),
         projectOnScreen(elem.position, currentTimeReal),
-        clock->getRealMillis());
+        currentTimeGame);
   if (!hint.empty())
     drawHint(renderer, colors[ColorId::WHITE], hint);
   else
