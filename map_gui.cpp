@@ -601,14 +601,14 @@ void MapGui::render(Renderer& renderer) {
               getHighlightColor(highlight, index->getHighlight(highlight)));
     }
   renderer.drawQuads();
-  animations = filter(std::move(animations), [this](const AnimationInfo& elem) 
-      { return !elem.animation->isDone(currentTimeGame);});
+  animations = filter(std::move(animations), [=](const AnimationInfo& elem) 
+      { return !elem.animation->isDone(currentTimeReal);});
   for (auto& elem : animations)
     elem.animation->render(
         renderer,
         getBounds(),
         projectOnScreen(elem.position, currentTimeReal),
-        currentTimeGame);
+        currentTimeReal);
   if (!hint.empty())
     drawHint(renderer, colors[ColorId::WHITE], hint);
   else

@@ -35,7 +35,7 @@ class ThrownObject : public Animation {
   ViewObject viewObject;
   bool useSprite;
 };
-  
+
 PAnimation Animation::thrownObject(Vec2 direction, ViewObject obj, bool useSprite) {
   return PAnimation(new ThrownObject(direction, obj, useSprite));
 }
