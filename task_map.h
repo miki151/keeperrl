@@ -24,9 +24,10 @@ class TaskMap {
   void freeFromTask(Creature*);
 
   Task* addTaskCost(PTask, Vec2 pos, CostInfo);
-  void markSquare(Vec2 pos, PTask);
+  void markSquare(Vec2 pos, HighlightType, PTask);
   void unmarkSquare(Vec2 pos);
   Task* getMarked(Vec2 pos) const;
+  HighlightType getHighlightType(Vec2 pos) const;
   CostInfo removeTask(Task*);
   CostInfo removeTask(UniqueEntity<Task>::Id);
   bool isPriorityTask(const Task*) const;
@@ -47,6 +48,7 @@ class TaskMap {
   Table<vector<Task*>> SERIAL(reversePositions);
   vector<PTask> SERIAL(tasks);
   Table<Task*> SERIAL(marked);
+  Table<HighlightType> SERIAL(highlight);
   map<Task*, CostInfo> SERIAL(completionCost);
   set<pair<const Creature*, UniqueEntity<Creature>::Id>> SERIAL(lockedTasks);
   map<UniqueEntity<Creature>::Id, double> SERIAL(delayedTasks);

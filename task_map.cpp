@@ -14,7 +14,8 @@ void TaskMap<CostInfo>::serialize(Archive& ar, const unsigned int version) {
     & SVAR(lockedTasks)
     & SVAR(completionCost)
     & SVAR(priorityTasks)
-    & SVAR(delayedTasks);
+    & SVAR(delayedTasks)
+    & SVAR(highlight);
   CHECK_SERIAL;
 }
 
@@ -24,7 +25,7 @@ template<class CostInfo>
 SERIALIZATION_CONSTRUCTOR_IMPL2(TaskMap<CostInfo>, TaskMap);
 
 template <class CostInfo>
-TaskMap<CostInfo>::TaskMap(Rectangle bounds) : reversePositions(bounds), marked(bounds, nullptr) {
+TaskMap<CostInfo>::TaskMap(Rectangle bounds) : reversePositions(bounds), marked(bounds, nullptr), highlight(bounds) {
 }
 
 template <class CostInfo>
@@ -34,7 +35,7 @@ Task* TaskMap<CostInfo>::getTaskForWorker(Creature* c) {
     if (auto pos = getPosition(task.get())) {
       double dist = (*pos - c->getPosition()).length8();
       const Creature* owner = getOwner(task.get());
-      if ((!owner || (task->canTransfer() && (*pos - owner->getPosition()).length8() > dist))
+      if (!task->isDone() && (!owner || (task->canTransfer() && (*pos - owner->getPosition()).length8() > dist))
           && (!closest || dist < (*getPosition(closest) - c->getPosition()).length8()
               || isPriorityTask(task.get()))
           && !isLocked(c, task.get())
@@ -136,9 +137,15 @@ Task* TaskMap<CostInfo>::getMarked(Vec2 pos) const {
 }
 
 template <class CostInfo>
-void TaskMap<CostInfo>::markSquare(Vec2 pos, PTask task) {
+void TaskMap<CostInfo>::markSquare(Vec2 pos, HighlightType h, PTask task) {
   marked[pos] = task.get();
+  highlight[pos] = h;
   addTask(std::move(task), pos);
+}
+
+template <class CostInfo>
+HighlightType TaskMap<CostInfo>::getHighlightType(Vec2 pos) const {
+  return highlight[pos];
 }
 
 template <class CostInfo>

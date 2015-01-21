@@ -1692,15 +1692,19 @@ const map<Vec2, Collective::ConstructionInfo>& Collective::getConstructions() co
 }
 
 void Collective::dig(Vec2 pos) {
-  taskMap.markSquare(pos, Task::construction(this, pos, SquareId::FLOOR));
+  taskMap.markSquare(pos, HighlightType::DIG, Task::construction(this, pos, SquareId::FLOOR));
 }
 
 void Collective::dontDig(Vec2 pos) {
   taskMap.unmarkSquare(pos);
 }
 
-bool Collective::isMarkedToDig(Vec2 pos) const {
+bool Collective::isMarked(Vec2 pos) const {
   return taskMap.getMarked(pos);
+}
+
+HighlightType Collective::getMarkHighlight(Vec2 pos) const {
+  return taskMap.getHighlightType(pos);
 }
 
 void Collective::setPriorityTasks(Vec2 pos) {
@@ -1712,7 +1716,7 @@ bool Collective::hasPriorityTasks(Vec2 pos) const {
 }
 
 void Collective::cutTree(Vec2 pos) {
-  taskMap.markSquare(pos, Task::construction(this, pos, SquareId::TREE_TRUNK));
+  taskMap.markSquare(pos, HighlightType::CUT_TREE, Task::construction(this, pos, SquareId::TREE_TRUNK));
 }
 
 set<TrapType> Collective::getNeededTraps() const {
@@ -1860,13 +1864,28 @@ bool Collective::isDelayed(Vec2 pos) {
 }
 
 void Collective::fetchAllItems(Vec2 pos) {
-  for (const ItemFetchInfo& elem : getFetchInfo())
-    fetchItems(pos, elem, true);
+  vector<PTask> tasks;
+  for (const ItemFetchInfo& elem : getFetchInfo()) {
+    vector<Item*> equipment = filter(getLevel()->getSafeSquare(pos)->getItems(elem.index), elem.predicate);
+    if (!equipment.empty()) {
+      vector<Vec2> destination = getAllSquares(elem.destination);
+      if (!destination.empty()) {
+        setWarning(elem.warning, false);
+        if (elem.oneAtATime)
+          equipment = {equipment[0]};
+        tasks.push_back(Task::bringItem(this, pos, equipment, destination));
+        for (Item* it : equipment)
+          markItem(it);
+      } else
+        setWarning(elem.warning, true);
+    }
+  }
+  if (!tasks.empty())
+    taskMap.markSquare(pos, HighlightType::FETCH_ITEMS, Task::chain(std::move(tasks)));
 }
 
-void Collective::fetchItems(Vec2 pos, const ItemFetchInfo& elem, bool ignoreDelayed) {
-  if ((isDelayed(pos) && !ignoreDelayed) 
-      || (traps.count(pos) && traps.at(pos).type() == TrapType::BOULDER && traps.at(pos).armed() == true))
+void Collective::fetchItems(Vec2 pos, const ItemFetchInfo& elem) {
+  if (isDelayed(pos) || (traps.count(pos) && traps.at(pos).type() == TrapType::BOULDER && traps.at(pos).armed() == true))
     return;
   for (SquareType type : elem.destination)
     if (getSquares(type).count(pos))

@@ -182,9 +182,6 @@ class Collective : public Task::Callback {
     Warning warning;
   };
 
-  const vector<ItemFetchInfo>& getFetchInfo() const;
-  void fetchItems(Vec2 pos, const ItemFetchInfo&, bool ignoreDelayed = false);
-
   struct ConstructionInfo : public NamedTupleBase<CostInfo, bool, double, SquareType, UniqueEntity<Task>::Id> {
     NAMED_TUPLE_STUFF(ConstructionInfo);
     NAME_ELEM(0, cost);
@@ -243,7 +240,8 @@ class Collective : public Task::Callback {
   void dontDig(Vec2);
   void cutTree(Vec2);
   double getDangerLevel(bool includeExecutions = true) const;
-  bool isMarkedToDig(Vec2) const;
+  bool isMarked(Vec2) const;
+  HighlightType getMarkHighlight(Vec2) const;
   void setPriorityTasks(Vec2);
   bool hasPriorityTasks(Vec2) const;
 
@@ -322,6 +320,9 @@ class Collective : public Task::Callback {
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
   void cashPayouts();
+
+  const vector<ItemFetchInfo>& getFetchInfo() const;
+  void fetchItems(Vec2 pos, const ItemFetchInfo&);
 
   void addMoraleForKill(const Creature* killer, const Creature* victim);
   void decreaseMoraleForKill(const Creature* killer, const Creature* victim);

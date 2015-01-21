@@ -45,7 +45,7 @@ RICH_ENUM(CollectiveResourceId,
     CORPSE
 );
 
-enum class ItemClass {
+RICH_ENUM(ItemClass,
   WEAPON,
   RANGED_WEAPON,
   AMMO,
@@ -59,7 +59,8 @@ enum class ItemClass {
   OTHER,
   GOLD,
   FOOD,
-  CORPSE };
+  CORPSE
+);
 
 class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item> {
   public:

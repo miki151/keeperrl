@@ -974,8 +974,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     if (getCurrentTeam() && getCollective()->getTeams().contains(*getCurrentTeam(), c)
         && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
-  if (getCollective()->isMarkedToDig(pos))
-    index.setHighlight(HighlightType::BUILD);
+  if (getCollective()->isMarked(pos))
+    index.setHighlight(getCollective()->getMarkHighlight(pos));
   if (getCollective()->hasPriorityTasks(pos))
     index.setHighlight(HighlightType::PRIORITY_TASK);
   if (rectSelection
@@ -1303,12 +1303,13 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           selection = SELECT;
         }
         break;
-    case BuildInfo::DIG:
-        if (getCollective()->isMarkedToDig(pos) && selection != SELECT) {
+    case BuildInfo::DIG: {
+        bool markedToDig = getCollective()->isMarked(pos) && getCollective()->getMarkHighlight(pos) == HighlightType::DIG;
+        if (markedToDig && selection != SELECT) {
           getCollective()->dontDig(pos);
           selection = DESELECT;
         } else
-        if (!getCollective()->isMarkedToDig(pos) && selection != DESELECT) {
+        if (!markedToDig && selection != DESELECT) {
           if (getLevel()->getSafeSquare(pos)->canConstruct(SquareId::TREE_TRUNK)) {
             getCollective()->cutTree(pos);
             selection = SELECT;
@@ -1320,6 +1321,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             }
         }
         break;
+        }
     case BuildInfo::FETCH:
         getCollective()->fetchAllItems(pos);
         break;
