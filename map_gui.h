@@ -29,12 +29,14 @@ class ViewObject;
 class Renderer;
 class CreatureView;
 class Clock;
+class Creature;
 
 class MapGui : public GuiElem {
   public:
   struct Callbacks {
     function<void(Vec2)> leftClickFun;
     function<void(Vec2)> rightClickFun;
+    function<void(UniqueEntity<Creature>::Id)> creatureClickFun;
     function<void()> refreshFun;
   };
   MapGui(Callbacks, Clock*);
@@ -58,12 +60,11 @@ class MapGui : public GuiElem {
   Vec2 getScreenPos() const;
 
   private:
-  void drawObjectAbs(Renderer&, int x, int y, const ViewObject&, int sizeX, int sizeY, Vec2 tilePos,
-      int currentTimeReal);
-  void drawCreatureHighlights(Renderer&, const ViewObject&, int x, int y, int sizeX, int sizeY);
+  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal);
+  void drawCreatureHighlights(Renderer&, const ViewObject&, Rectangle tile);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
   void drawHint(Renderer& renderer, Color color, const string& text);
-  void drawFoWSprite(Renderer&, Vec2 pos, int sizeX, int sizeY, DirSet dirs);
+  void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
   void renderExtraBorders(Renderer&, int currentTimeReal);
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, int curTimeReal);
   Vec2 projectOnScreen(Vec2 wpos, int currentTimeReal);
@@ -113,6 +114,7 @@ class MapGui : public GuiElem {
   bool keyScrolling = false;
   ViewIdMap connectionMap;
   bool mouseUI = false;
+  vector<pair<Rectangle, UniqueEntity<Creature>::Id>> creatureMap;
 };
 
 #endif

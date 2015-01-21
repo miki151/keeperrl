@@ -53,6 +53,10 @@ void ViewObject::setCreatureId(UniqueEntity<Creature>::Id id) {
   creatureId = id;
 }
 
+optional<UniqueEntity<Creature>::Id> ViewObject::getCreatureId() const {
+  return creatureId;
+}
+
 void ViewObject::addMovementInfo(MovementInfo info) {
   movementQueue.add(info);
 }
@@ -68,8 +72,8 @@ ViewObject::MovementInfo ViewObject::getLastMovementInfo() const {
 Vec2 ViewObject::getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creature>::Id controlledId) const {
   if (!movementQueue.hasAny())
     return Vec2(0, 0);
-  CHECK(creatureId > 0);
-  if (controlledId > creatureId)
+  CHECK(creatureId);
+  if (controlledId > *creatureId)
     return movementQueue.getTotalMovement(tBegin, tEnd);
   else
     return movementQueue.getTotalMovement(tBegin - 0.00000001, tEnd);

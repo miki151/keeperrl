@@ -91,6 +91,7 @@ class WindowView: public View {
   void displayOldSplash();
   void updateMinimap(const CreatureView*);
   void mapLeftClickFun(Vec2);
+  void mapCreatureClickFun(UniqueEntity<Creature>::Id);
   void mapRightClickFun(Vec2);
   Rectangle getMenuPosition(View::MenuType type);
   Rectangle getTextInputPosition();

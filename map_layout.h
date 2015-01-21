@@ -24,20 +24,18 @@
 class MapLayout {
   public:
   MapLayout() {}
-  MapLayout(int squareW, int squareH, vector<ViewLayer> layers);
+  MapLayout(Vec2 squareSize, vector<ViewLayer> layers);
 
   const vector<ViewLayer>& getLayers() const;
 
-  int squareWidth();
-  int squareHeight();
+  Vec2 getSquareSize();
   Vec2 projectOnScreen(Rectangle bounds, Vec2 screenPos, double x, double y);
   Vec2 projectOnMap(Rectangle bounds, Vec2 screenPos, Vec2 pos);
   Rectangle getAllTiles(Rectangle screenBounds, Rectangle tableBounds, Vec2 screenPos);
 
   private:
   vector<ViewLayer> layers;
-  int squareW;
-  int squareH;
+  Vec2 squareSize;
 };
 
 

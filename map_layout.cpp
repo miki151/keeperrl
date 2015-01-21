@@ -21,29 +21,25 @@ const vector<ViewLayer>& MapLayout::getLayers() const {
   return layers;
 }
 
-MapLayout::MapLayout(int sW, int sH, vector<ViewLayer> l) : layers(l), squareW(sW), squareH(sH) {}
+MapLayout::MapLayout(Vec2 square, vector<ViewLayer> l) : layers(l), squareSize(square) {}
 
-int MapLayout::squareHeight() {
-  return squareH;
-}
-
-int MapLayout::squareWidth() {
-  return squareW;
+Vec2 MapLayout::getSquareSize() {
+  return squareSize;
 }
 
 Vec2 MapLayout::projectOnScreen(Rectangle bounds, Vec2 screenPos, double x, double y) {
-  return bounds.middle() + Vec2(x * squareW, y * squareH) - screenPos;
+  return bounds.middle() + Vec2(x * squareSize.x, y * squareSize.y) - screenPos;
 }
 
 Vec2 MapLayout::projectOnMap(Rectangle bounds, Vec2 screenPos, Vec2 pos) {
-  return (pos + screenPos - bounds.middle()).div(Vec2(squareW, squareH));
+  return (pos + screenPos - bounds.middle()).div(squareSize);
 }
 
 Rectangle MapLayout::getAllTiles(Rectangle screenBounds1, Rectangle tableBounds, Vec2 screenPos) {
   vector<Vec2> ret;
-  Rectangle screenBounds = screenBounds1.minusMargin(-2 * squareH);
-  Rectangle grid(screenBounds.getW() / squareW, screenBounds.getH() / squareH);
-  Vec2 offset = screenPos.div(Vec2(squareW, squareH)) - grid.middle();
+  Rectangle screenBounds = screenBounds1.minusMargin(-2 * squareSize.x);
+  Rectangle grid(screenBounds.getSize().div(squareSize));
+  Vec2 offset = screenPos.div(squareSize) - grid.middle();
   return tableBounds.intersection(grid.translate(offset));
 }
 

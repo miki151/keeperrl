@@ -80,6 +80,7 @@ class ViewObject {
   Vec2 getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creature>::Id controlledId) const;
 
   void setCreatureId(UniqueEntity<Creature>::Id);
+  optional<UniqueEntity<Creature>::Id> getCreatureId() const;
 
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();
@@ -97,7 +98,7 @@ class ViewObject {
   string SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL2(position, Vec2(-1, -1));
-  UniqueEntity<Creature>::Id SERIAL2(creatureId, 0);
+  optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
 
   class MovementQueue {
     public:

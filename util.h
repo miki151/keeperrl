@@ -189,6 +189,7 @@ class Rectangle {
   int getKY() const;
   int getW() const;
   int getH() const;
+  Vec2 getSize() const;
 
   Vec2 getTopLeft() const;
   Vec2 getBottomRight() const;

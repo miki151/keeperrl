@@ -661,12 +661,10 @@ class ViewObjectGui : public GuiElem {
   ViewObjectGui(ViewId id, bool sprites) : object(id), useSprites(sprites) {}
   
   virtual void render(Renderer& renderer) override {
-    int x = getBounds().getTopLeft().x;
-    int y = getBounds().getTopLeft().y;
     if (ViewObject* obj = boost::get<ViewObject>(&object))
-      renderer.drawViewObject(x, y, *obj, useSprites, 0.6666);
+      renderer.drawViewObject(getBounds().getTopLeft(), *obj, useSprites, 0.6666);
     else
-      renderer.drawViewObject(x, y, boost::get<ViewId>(object), useSprites, 0.6666);
+      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object), useSprites, 0.6666);
   }
 
   private:

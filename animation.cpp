@@ -27,7 +27,7 @@ class ThrownObject : public Animation {
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
     int x = origin.x + state * direction.x;
     int y = origin.y + state * direction.y;
-    renderer.drawViewObject(x, y, viewObject, useSprite, 1);
+    renderer.drawViewObject(Vec2(x, y), viewObject, useSprite, 1);
   }
 
   private:
@@ -52,11 +52,7 @@ class SpriteAnim : public Animation {
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
     FrameInfo current = frames[min<int>(frames.size() - 1, max(0, int(state * frames.size())))];
-    renderer.drawSprite(
-        origin.x + current.offset.x, origin.y + current.offset.y,
-        current.origin.x, current.origin.y,
-        current.size.x, current.size.y,
-        renderer.tiles[tileNum]);
+    renderer.drawSprite(origin + current.offset, current.origin, current.size, renderer.tiles[tileNum]);
   }
 
   private:

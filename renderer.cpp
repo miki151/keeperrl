@@ -97,8 +97,7 @@ void Renderer::drawImage(int px, int py, const Texture& image, double scale) {
 }
 
 void Renderer::drawImage(Rectangle target, Rectangle source, const Texture& image) {
-  drawSprite(target.getPX(), target.getPY(), source.getPX(), source.getPY(), source.getW(), source.getH(),
-      image, target.getW(), target.getH());
+  drawSprite(target.getTopLeft(), source.getTopLeft(), source.getSize(), image, target.getSize());
 }
 
 void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, double scale) {
@@ -114,23 +113,23 @@ void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, doubl
 void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, optional<Color> color,
     optional<Vec2> stretchSize) {
   if (stretchSize)
-    drawSprite(pos.x, pos.y, spos.x, spos.y, size.x, size.y, t, stretchSize->x, stretchSize->y, color);
+    drawSprite(pos, spos, size, t, *stretchSize, color);
   else
-    drawSprite(pos.x, pos.y, spos.x, spos.y, size.x, size.y, t, -1, -1, color);
+    drawSprite(pos, spos, size, t, Vec2(-1, -1), color);
 }
 
 void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
-  drawSprite(pos.x, pos.y, 0, 0, t.getSize().x, t.getSize().y, t, stretchSize.x, stretchSize.y);
+  drawSprite(pos, Vec2(0, 0), Vec2(t.getSize().x, t.getSize().y), t, stretchSize);
 }
 
-void Renderer::drawSprite(int x, int y, int px, int py, int w, int h, const Texture& t, int dw, int dh,
+void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, Vec2 targetSize,
     optional<Color> color) {
-  Sprite s(t, sf::IntRect(px, py, w, h));
-  s.setPosition(x, y);
+  Sprite s(t, sf::IntRect(source.x, source.y, size.x, size.y));
+  s.setPosition(pos.x, pos.y);
   if (color)
     s.setColor(*color);
-  if (dw != -1)
-    s.setScale(double(dw) / w, double(dh) / h);
+  if (targetSize.x != -1)
+    s.setScale(double(targetSize.x) / size.x, double(targetSize.y) / size.y);
   renderList.push_back(
       [this, s] { display->draw(s); });
 }
@@ -169,12 +168,8 @@ void Renderer::drawQuads() {
   quads.clear();
 }
 
-int Renderer::getWidth() {
-  return display->getSize().x;
-}
-
-int Renderer::getHeight() {
-  return display->getSize().y;
+Vec2 Renderer::getSize() {
+  return Vec2(display->getSize().x, display->getSize().y);
 }
 
 void Renderer::initialize(bool fullscreen) {
@@ -236,36 +231,33 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
   return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
 }
 
-void Renderer::drawTile(int x, int y, TileCoord coord, int sizeX, int sizeY, Color color) {
+void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color) {
   Vec2 sz = Renderer::tileSize[coord.texNum];
-  Vec2 off = (nominalSize -  sz).mult(Vec2(sizeX, sizeY)).div(Renderer::nominalSize * 2);
-  int width = sz.x * sizeX / nominalSize.x;
-  int height = sz.y* sizeY / nominalSize.y;
+  Vec2 off = (nominalSize -  sz).mult(size).div(Renderer::nominalSize * 2);
+  Vec2 tileSize = sz.mult(size).div(nominalSize);
   if (sz.y > nominalSize.y)
     off.y *= 2;
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
-  drawSprite(x + off.x, y + off.y, coord.pos.x * sz.x, coord.pos.y * sz.y, sz.x, sz.y,
-      Renderer::tiles.at(coord.texNum), width, height, color);
+  drawSprite(pos + off, coord.pos.mult(sz), sz, Renderer::tiles.at(coord.texNum), tileSize, color);
 }
 
-void Renderer::drawTile(int x, int y, TileCoord coord, double scale, Color color) {
+void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Vec2 sz = Renderer::tileSize[coord.texNum];
-  Vec2 of = getOffset(Renderer::nominalSize - sz, scale);
-  drawSprite(x + of.x, y + of.y, coord.pos.x * sz.x, coord.pos.y * sz.y, sz.x, sz.y,
-      Renderer::tiles.at(coord.texNum), sz.x * scale, sz.y * scale, color);
+  Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
+  drawSprite(pos + off, coord.pos.mult(sz), sz, Renderer::tiles.at(coord.texNum), sz * scale, color);
 }
 
-void Renderer::drawViewObject(int x, int y, ViewId id, bool useSprite, double scale, Color color) {
+void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
   const Tile& tile = Tile::getTile(id, useSprite);
   if (tile.hasSpriteCoord())
-    drawTile(x, y, tile.getSpriteCoord(DirSet::fullSet()), scale, color);
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color);
   else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, x, y, tile.text);
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, pos.x, pos.y, tile.text);
 }
 
-void Renderer::drawViewObject(int x, int y, const ViewObject& object, bool useSprite, double scale) {
-  drawViewObject(x, y, object.id(), useSprite, scale, getBleedingColor(object));
+void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale) {
+  drawViewObject(pos, object.id(), useSprite, scale, getBleedingColor(object));
 }
 
 const static string imageSuf = ".png";
@@ -341,11 +333,11 @@ Event Renderer::getRandomEvent() {
       break;
     case Event::MouseButtonReleased:
     case Event::MouseButtonPressed:
-      ret.mouseButton = { chooseRandom({Mouse::Left, Mouse::Right}), Random.get(getWidth()),
-        Random.get(getHeight()) };
+      ret.mouseButton = { chooseRandom({Mouse::Left, Mouse::Right}), Random.get(getSize().x),
+        Random.get(getSize().y) };
       break;
     case Event::MouseMoved:
-      ret.mouseMove = { Random.get(getWidth()), Random.get(getHeight()) };
+      ret.mouseMove = { Random.get(getSize().x), Random.get(getSize().y) };
       break;
     default: return getRandomEvent();
   }
@@ -413,7 +405,7 @@ void Renderer::waitEvent(Event& ev) {
 
 Vec2 Renderer::getMousePos() {
   if (monkey)
-    return Vec2(Random.get(getWidth()), Random.get(getHeight()));
+    return Vec2(Random.get(getSize().x), Random.get(getSize().y));
   auto pos = Mouse::getPosition(*display);
   return Vec2(pos.x, pos.y);
 }

@@ -1191,12 +1191,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::POSSESS: {
         Vec2 pos = input.get<Vec2>();
-        if (!pos.inRectangle(getLevel()->getBounds()))
-          return;
-        if (Creature* c = getLevel()->getSafeSquare(pos)->getCreature()) {
-          if (getCollective()->hasAnyTrait(c, {MinionTrait::PRISONER, MinionTrait::FIGHTER, MinionTrait::LEADER}))
-            handleCreatureButton(c, view);
-        } else
+        if (pos.inRectangle(getLevel()->getBounds()))
           tryLockingDoor(pos);
         break;
         }

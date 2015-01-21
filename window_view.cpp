@@ -86,28 +86,23 @@ int bottomBarHeightPlayer = 62;
 Rectangle WindowView::getMapGuiBounds() const {
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::PLAYER:
-      return Rectangle(0, 0, renderer.getWidth() - rightBarWidthPlayer,
-          renderer.getHeight() - bottomBarHeightPlayer);
+      return Rectangle(0, 0, renderer.getSize().x - rightBarWidthPlayer,
+          renderer.getSize().y - bottomBarHeightPlayer);
     case GameInfo::InfoType::BAND:
-      return Rectangle(0, 0, renderer.getWidth() - rightBarWidthCollective,
-          renderer.getHeight() - bottomBarHeightCollective);
+      return Rectangle(0, 0, renderer.getSize().x - rightBarWidthCollective,
+          renderer.getSize().y - bottomBarHeightCollective);
     case GameInfo::InfoType::SPECTATOR: {
-      int x = Level::getSplashVisibleBounds().getW();
-      int y = Level::getSplashVisibleBounds().getH();
-      return Rectangle((renderer.getWidth() - x * mapLayout->squareWidth()) / 2,
-          (renderer.getHeight() - y * mapLayout->squareHeight()) / 2,
-          (renderer.getWidth() + x * mapLayout->squareWidth()) / 2,
-          (renderer.getHeight() + y * mapLayout->squareHeight()) / 2);
+      Vec2 levelSize = Level::getSplashVisibleBounds().getSize();
+      return Rectangle(
+          (renderer.getSize() - levelSize.mult(mapLayout->getSquareSize())) / 2,
+          (renderer.getSize() + levelSize.mult(mapLayout->getSquareSize())) / 2);
       }
   }
-  FAIL << "wfw";
-  return Rectangle();
 }
 
 Rectangle WindowView::getMinimapBounds() const {
-  int x = 20;
-  int y = 70;
-  return Rectangle(x, y, x + renderer.getWidth() / 12, y + renderer.getWidth() / 12);
+  Vec2 offset(20, 70);
+  return Rectangle(offset, offset + renderer.getSize() / 12);
 }
 
 void WindowView::resetMapBounds() {
@@ -130,12 +125,12 @@ void WindowView::initialize() {
   for (auto l : ENUM_ALL(ViewLayer))
     allLayers.push_back(l);
   asciiLayouts = {
-    MapLayout(16, 20, allLayers),
-    MapLayout(8, 10,
+    MapLayout(Vec2(16, 20), allLayers),
+    MapLayout(Vec2(8, 10),
         {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
   spriteLayouts = {
-    MapLayout(36, 36, allLayers),
-    MapLayout(18, 18, allLayers), true};
+    MapLayout(Vec2(36, 36), allLayers),
+    MapLayout(Vec2(18, 18), allLayers), true};
   if (useTiles)
     currentTileLayout = spriteLayouts;
   else
@@ -143,6 +138,7 @@ void WindowView::initialize() {
   mapGui = new MapGui({
       [this](Vec2 pos) { mapLeftClickFun(pos); },
       [this](Vec2 pos) { mapRightClickFun(pos); },
+      [this](UniqueEntity<Creature>::Id id) { mapCreatureClickFun(id); },
       [this] { refreshInput = true;}}, clock );
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = GuiElem::border2(GuiElem::rectangle(colors[ColorId::BLACK]));
@@ -163,6 +159,10 @@ void WindowView::initialize() {
         "splash2d.png"))));
   }
 
+}
+
+void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
+  inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
 }
 
 void WindowView::mapLeftClickFun(Vec2 pos) {
@@ -214,8 +214,8 @@ void WindowView::reset() {
 void WindowView::displayOldSplash() {
   Rectangle menuPosition = getMenuPosition(View::MAIN_MENU_NO_TILES);
   int margin = 10;
-  renderer.drawImage(renderer.getWidth() / 2 - 415, menuPosition.getKY() + margin, splash1);
-  renderer.drawImage((renderer.getWidth() - splash2.getSize().x) / 2,
+  renderer.drawImage(renderer.getSize().x / 2 - 415, menuPosition.getKY() + margin, splash1);
+  renderer.drawImage((renderer.getSize().x - splash2.getSize().x) / 2,
       menuPosition.getPY() - splash2.getSize().y - margin, splash2);
 }
 
@@ -224,14 +224,14 @@ void WindowView::displayMenuSplash2() {
 }
 
 void WindowView::drawMenuBackground(double barState, double mouthState) {
-  double scale = double(renderer.getHeight()) / menuCore.getSize().y;
+  double scale = double(renderer.getSize().y) / menuCore.getSize().y;
   int width = menuCore.getSize().x * scale;
   double mouthPos1 = 184;
   double mouthPos2 = 214;
-  double mouthX = (renderer.getWidth() - (menuMouth.getSize().x + 5) * scale) / 2;
+  double mouthX = (renderer.getSize().x - (menuMouth.getSize().x + 5) * scale) / 2;
   renderer.drawFilledRectangle(mouthX, mouthPos1 * scale, 1 + mouthX + barState * menuMouth.getSize().x * scale,
       (mouthPos2 + menuMouth.getSize().y) * scale, sf::Color(60, 76, 48));
-  renderer.drawImage((renderer.getWidth() - width) / 2, 0, menuCore, scale);
+  renderer.drawImage((renderer.getSize().x - width) / 2, 0, menuCore, scale);
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
 }
 
@@ -250,11 +250,11 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
     while (!splashDone) {
       if (useTiles) {
         drawMenuBackground(meter.getProgress(), min(1.0, double(clock->getRealMillis() - t0) / mouthMillis));
-        renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() * 0.5, text, true);
+        renderer.drawText(colors[ColorId::WHITE], renderer.getSize().x / 2, renderer.getSize().y * 0.5, text, true);
       } else {
-        renderer.drawImage((renderer.getWidth() - loadingSplash.getSize().x) / 2,
-            (renderer.getHeight() - loadingSplash.getSize().y) / 2, loadingSplash);
-        renderer.drawText(colors[ColorId::WHITE], renderer.getWidth() / 2, renderer.getHeight() - 60, text, true);
+        renderer.drawImage((renderer.getSize().x - loadingSplash.getSize().x) / 2,
+            (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
+        renderer.drawText(colors[ColorId::WHITE], renderer.getSize().x / 2, renderer.getSize().y - 60, text, true);
       }
       renderer.drawAndClearBuffer();
       sf::sleep(sf::milliseconds(30));
@@ -308,17 +308,15 @@ void WindowView::rebuildGui() {
         bottomBarHeight = 0;
         if (getMapGuiBounds().getPX() > 0) {
           tempGuiElems.push_back(GuiElem::rectangle(colors[ColorId::BLACK]));
-          tempGuiElems.back()->setBounds(Rectangle(0, 0, getMapGuiBounds().getPX(), renderer.getHeight()));
+          tempGuiElems.back()->setBounds(Rectangle(0, 0, getMapGuiBounds().getPX(), renderer.getSize().y));
           tempGuiElems.push_back(GuiElem::rectangle(colors[ColorId::BLACK]));
-          tempGuiElems.back()->setBounds(Rectangle(getMapGuiBounds().getKX(), 0,
-                renderer.getWidth(), renderer.getHeight()));
+          tempGuiElems.back()->setBounds(Rectangle(Vec2(getMapGuiBounds().getKX(), 0), renderer.getSize()));
         }
         if (getMapGuiBounds().getPY() > 0) {
           tempGuiElems.push_back(GuiElem::rectangle(colors[ColorId::BLACK]));
-          tempGuiElems.back()->setBounds(Rectangle(0, 0, renderer.getWidth(), getMapGuiBounds().getPY()));
+          tempGuiElems.back()->setBounds(Rectangle(0, 0, renderer.getSize().x, getMapGuiBounds().getPY()));
           tempGuiElems.push_back(GuiElem::rectangle(colors[ColorId::BLACK]));
-          tempGuiElems.back()->setBounds(Rectangle(0, getMapGuiBounds().getKY(),
-                renderer.getWidth(), renderer.getHeight()));
+          tempGuiElems.back()->setBounds(Rectangle(Vec2(0, getMapGuiBounds().getKY()), renderer.getSize()));
         }
         break;
     case GameInfo::InfoType::PLAYER:
@@ -345,16 +343,15 @@ void WindowView::rebuildGui() {
   int rightWindowHeight = 80;
   if (rightBarWidth > 0) {
     tempGuiElems.push_back(GuiElem::mainDecoration(rightBarWidth, bottomBarHeight));
-    tempGuiElems.back()->setBounds(Rectangle(renderer.getWidth(), renderer.getHeight()));
+    tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
     tempGuiElems.push_back(GuiElem::margins(std::move(right), 20, 20, 10, 0));
-    tempGuiElems.back()->setBounds(Rectangle(
-          renderer.getWidth() - rightBarWidth, 0, renderer.getWidth(), renderer.getHeight()));
+    tempGuiElems.back()->setBounds(Rectangle(Vec2(renderer.getSize().x - rightBarWidth, 0), renderer.getSize()));
     tempGuiElems.push_back(GuiElem::margins(std::move(bottom), 80, 10, 80, 0));
     tempGuiElems.back()->setBounds(Rectangle(
-          0, renderer.getHeight() - bottomBarHeight,
-          renderer.getWidth() - rightBarWidth, renderer.getHeight()));
+          0, renderer.getSize().y - bottomBarHeight,
+          renderer.getSize().x - rightBarWidth, renderer.getSize().y));
     guiBuilder.drawMessages(overlays, gameInfo.messageBuffer,
-        renderer.getWidth() - rightBarWidth - leftMargin - rightMargin);
+        renderer.getSize().x - rightBarWidth - leftMargin - rightMargin);
     guiBuilder.drawGameSpeedDialog(overlays);
     for (auto& overlay : overlays) {
       Vec2 pos;
@@ -364,12 +361,12 @@ void WindowView::rebuildGui() {
       int height = overlay.size.y + bottomMargin + topMargin;
       switch (overlay.alignment) {
         case GuiBuilder::OverlayInfo::RIGHT:
-          pos = Vec2(renderer.getWidth() - rightBarWidth - sideOffset - width,
+          pos = Vec2(renderer.getSize().x - rightBarWidth - sideOffset - width,
               rightWindowHeight);
           break;
         case GuiBuilder::OverlayInfo::LEFT:
           pos = Vec2(sideOffset,
-              renderer.getHeight() - bottomBarHeight - bottomOffset - height);
+              renderer.getSize().y - bottomBarHeight - bottomOffset - height);
           break;
         case GuiBuilder::OverlayInfo::MESSAGES:
           width -= rightMargin - 10;
@@ -378,10 +375,10 @@ void WindowView::rebuildGui() {
           pos = Vec2(0, 0);
           break;
         case GuiBuilder::OverlayInfo::GAME_SPEED:
-          pos = Vec2(renderer.getWidth() - overlay.size.x - 90, renderer.getHeight() - overlay.size.y - 90);
+          pos = renderer.getSize() - overlay.size - Vec2(90, 90);
           break;
         case GuiBuilder::OverlayInfo::INVISIBLE:
-          pos = Vec2(renderer.getWidth(), 0);
+          pos = Vec2(renderer.getSize().x, 0);
           overlay.elem = GuiElem::invisible(std::move(overlay.elem));
           break;
       }
@@ -452,7 +449,7 @@ void WindowView::drawLevelMap(const CreatureView* creature) {
 void WindowView::updateMinimap(const CreatureView* creature) {
   const Level* level = creature->getLevel();
   Vec2 rad(40, 40);
-  Vec2 playerPos = mapGui->getScreenPos().div(Vec2(mapLayout->squareWidth(), mapLayout->squareHeight()));
+  Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);
   minimapGui->update(level, bounds, creature);
 }
@@ -483,8 +480,7 @@ void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
   if (trajectory.size() >= 2)
     mapGui->addAnimation(
         Animation::thrownObject(
-          (trajectory.back() - trajectory.front())
-              .mult(Vec2(mapLayout->squareWidth(), mapLayout->squareHeight())),
+          (trajectory.back() - trajectory.front()).mult(mapLayout->getSquareSize()),
           object,
           currentTileLayout.sprites),
         trajectory.front());
@@ -590,13 +586,13 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
           case Dir::SW: numArrow = 7; break;
         }
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
-            (middle + dir).x, (middle + dir).y);
+            middle.x + dir.x, middle.y + dir.y);
         if (currentTileLayout.sprites)
-          renderer.drawTile(wpos.x, wpos.y, {Vec2(16, 8 + numArrow), 4});
+          renderer.drawTile(wpos, {Vec2(16, 8 + numArrow), 4});
         else {
           static sf::Uint32 arrows[] = { L'⇐', L'⇖', L'⇑', L'⇗', L'⇒', L'⇘', L'⇓', L'⇙'};
           renderer.drawText(Renderer::SYMBOL_FONT, 20, colors[ColorId::WHITE],
-              wpos.x + mapLayout->squareWidth() / 2, wpos.y, arrows[numArrow], true);
+              wpos.x + mapLayout->getSquareSize().x / 2, wpos.y, arrows[numArrow], true);
         }
         renderer.drawAndClearBuffer();
         if (event.type == Event::MouseButtonPressed)
@@ -654,7 +650,7 @@ optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
 }
 
 Rectangle WindowView::getTextInputPosition() {
-  Vec2 center = Vec2(renderer.getWidth(), renderer.getHeight()) / 2;
+  Vec2 center = renderer.getSize() / 2;
   return Rectangle(center - Vec2(300, 129), center + Vec2(300, 129));
 }
 
@@ -726,21 +722,21 @@ Rectangle WindowView::getMenuPosition(View::MenuType type) {
   int yOffset = 0;
   switch (type) {
     case View::MAIN_MENU_NO_TILES:
-      ySpacing = (renderer.getHeight() - windowHeight) / 2;
+      ySpacing = (renderer.getSize().y - windowHeight) / 2;
       break;
     case View::MAIN_MENU:
-      windowWidth = 0.41 * renderer.getHeight();
-      ySpacing = renderer.getHeight() / 3;
+      windowWidth = 0.41 * renderer.getSize().y;
+      ySpacing = renderer.getSize().y / 3;
       break;
     case View::GAME_CHOICE_MENU:
-      windowWidth = 0.41 * renderer.getHeight();
-      ySpacing = renderer.getHeight() * 0.28;
-      yOffset = renderer.getHeight() * 0.05;
+      windowWidth = 0.41 * renderer.getSize().y;
+      ySpacing = renderer.getSize().y * 0.28;
+      yOffset = renderer.getSize().y * 0.05;
       break;
     default: ySpacing = 100; break;
   }
-  int xSpacing = (renderer.getWidth() - windowWidth) / 2;
-  return Rectangle(xSpacing, ySpacing + yOffset, xSpacing + windowWidth, renderer.getHeight() - ySpacing + yOffset);
+  int xSpacing = (renderer.getSize().x - windowWidth) / 2;
+  return Rectangle(xSpacing, ySpacing + yOffset, xSpacing + windowWidth, renderer.getSize().y - ySpacing + yOffset);
 }
 
 PGuiElem WindowView::drawGameChoices(optional<View::GameTypeChoice>& choice,optional<View::GameTypeChoice>& index) {
@@ -1100,7 +1096,7 @@ void WindowView::switchTiles() {
   else
     currentTileLayout = spriteLayouts;
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR && useTiles &&
-      renderer.getWidth() < Level::getSplashVisibleBounds().getW() * mapLayout->squareWidth())
+      renderer.getSize().x < Level::getSplashVisibleBounds().getW() * mapLayout->getSquareSize().x)
     normal = false;
   if (normal)
     mapLayout = &currentTileLayout.normalLayout;

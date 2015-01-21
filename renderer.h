@@ -104,23 +104,22 @@ class Renderer {
   void drawImage(int px, int py, const Texture&, double scale = 1);
   void drawImage(int px, int py, int kx, int ky, const Texture&, double scale = 1);
   void drawImage(Rectangle target, Rectangle source, const Texture&);
-  void drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture&, optional<Color> color = none,
+  void drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture&, optional<Color> color,
       optional<Vec2> stretchSize = none);
-  void drawSprite(int x, int y, int px, int py, int w, int h, const Texture&, int dw = -1, int dh = -1,
+  void drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture&, Vec2 targetSize = Vec2(-1, -1),
       optional<Color> color = none);
   void drawSprite(int x, int y, SpriteId, optional<Color> color = none);
   void drawSprite(Vec2 pos, Vec2 stretchSize, const Texture&);
   void drawFilledRectangle(const Rectangle&, Color, optional<Color> outline = none);
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline = none);
-  void drawViewObject(int x, int y, const ViewObject&, bool useSprite, double scale = 1);
-  void drawViewObject(int x, int y, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
-  void drawTile(int x, int y, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
-  void drawTile(int x, int y, TileCoord coord, int sizeX, int sizeY, Color = colors[ColorId::WHITE]);
+  void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1);
+  void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
+  void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
+  void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = colors[ColorId::WHITE]);
   void addQuad(const Rectangle&, Color);
   void drawQuads();
   static Color getBleedingColor(const ViewObject&);
-  int getWidth();
-  int getHeight();
+  Vec2 getSize();
   bool loadTilesFromDir(const string& path, Vec2 size);
   bool loadTilesFromFile(const string& path, Vec2 size);
   static String toUnicode(const string&);

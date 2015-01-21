@@ -514,6 +514,10 @@ int Rectangle::getH() const {
   return h;
 }
 
+Vec2 Rectangle::getSize() const {
+  return Vec2(w, h);
+}
+
 Vec2 Rectangle::getTopLeft() const {
   return Vec2(px, py);
 }
