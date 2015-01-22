@@ -28,6 +28,9 @@ string toString(const T& t);
 template <class T>
 T fromString(const string& s);
 
+template <class T>
+optional<T> fromStringSafe(const string& s);
+
 #define DEF_UNIQUE_PTR(T) class T;\
   typedef unique_ptr<T> P##T;
 
@@ -942,6 +945,12 @@ class EnumInfo<Name> { \
         return Name(i); \
     FAIL << #Name << " value not found " << s;\
     return Name(0);\
+  }\
+  static optional<Name> fromStringSafe(const string& s) {\
+    for (int i : Range(size)) \
+      if (getString(Name(i)) == s) \
+        return Name(i); \
+    return none;\
   }\
 }
 

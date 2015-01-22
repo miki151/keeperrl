@@ -20,22 +20,24 @@
 
 using sf::Music;
 
-Jukebox::Jukebox(Options* options) : refreshLoop([this] { refresh(); sf::sleep(sf::milliseconds(500)); }) {
-  music.reset(new Music[20]);
-  on = false;
-  options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { if (turnOn != on) toggle(); });
+Jukebox::Jukebox(Options* options, vector<pair<MusicType, string>> tracks) : numTracks(tracks.size()) {
+  music.reset(new Music[numTracks]);
+  for (int i : All(tracks)) {
+    music[i].openFromFile(tracks[i].second);
+    byType[tracks[i].first].push_back(i);
+  }
+  options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { toggle(turnOn); });
+  refreshLoop.emplace([this] { refresh(); sf::sleep(sf::milliseconds(500)); });
 }
 
-void Jukebox::addTrack(MusicType type, const string& path) {
-  music[numTracks].openFromFile(path);
-  byType[type].push_back(numTracks);
-  ++numTracks;
-}
-
-void Jukebox::toggle() {
+void Jukebox::toggle(bool state) {
+  MusicLock lock(musicMutex);
+  if (state == on)
+    return;
   if (!numTracks)
     return;
-  if ((on = !on)) {
+  on = state;
+  if (on) {
     current = chooseRandom(byType[getCurrentType()]);
     currentPlaying = current;
     music[current].play();
@@ -63,7 +65,8 @@ MusicType Jukebox::getCurrentType() {
 
 const int volumeDec = 20;
 
-void Jukebox::update(MusicType c) {
+void Jukebox::setType(MusicType c) {
+  MusicLock lock(musicMutex);
   if (byType[c].empty())
     return;
   if (getCurrentType() != c)
@@ -71,6 +74,7 @@ void Jukebox::update(MusicType c) {
 }
 
 void Jukebox::refresh() {
+  MusicLock lock(musicMutex);
   if (!on || !numTracks)
     return;
   if (current != currentPlaying) {

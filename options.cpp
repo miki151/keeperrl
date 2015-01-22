@@ -16,7 +16,7 @@
 #include "stdafx.h"
 #include "options.h"
 
-const unordered_map<OptionId, Options::Value> defaults {
+const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
   {OptionId::ASCII, 0},
   {OptionId::MUSIC, 1},
@@ -82,11 +82,7 @@ Options::Options(const string& path) : filename(path) {
 }
 
 Options::Value Options::getValue(OptionId id) {
-  auto values = readValues();
-  if (values.count(id))
-    return values.at(id);
-  else
-    return defaults.at(id);
+  return readValues()[id];
 }
 
 bool Options::getBoolValue(OptionId id) {
@@ -132,19 +128,23 @@ string Options::getValueString(OptionId id, Options::Value value) {
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_NAME: {
         string val = boost::get<string>(value);
-        if (val.empty() && defaultStrings.count(id))
-          return defaultStrings.at(id);
+        if (val.empty())
+          return defaultStrings[id];
         else
           return val;
         }
   }
 }
 
-static Options::Value readValue(OptionId id, const string& input) {
+static optional<Options::Value> readValue(OptionId id, const string& input) {
   switch (id) {
     case OptionId::ADVENTURER_NAME:
-    case OptionId::KEEPER_NAME: return input;
-    default: return fromString<int>(input);
+    case OptionId::KEEPER_NAME: return Options::Value(input);
+    default:
+        if (auto ret = fromStringSafe<int>(input))
+          return Options::Value(*ret);
+        else
+          return none;
   }
 }
 
@@ -201,8 +201,8 @@ void Options::handle(View* view, OptionSet set, int lastIndex) {
   handle(view, set, *index);
 }
 
-unordered_map<OptionId, Options::Value> Options::readValues() {
-  unordered_map<OptionId, Value> ret;
+EnumMap<OptionId, Options::Value> Options::readValues() {
+  EnumMap<OptionId, Value> ret = defaults;
   ifstream in(filename);
   while (1) {
     char buf[100];
@@ -210,18 +210,24 @@ unordered_map<OptionId, Options::Value> Options::readValues() {
     if (!in)
       break;
     vector<string> p = split(string(buf), {','});
-    CHECK(p.size() >= 1) << "Input error " << p;
+    if (p.empty())
+      continue;
     if (p.size() == 1)
       p.push_back("");
-    OptionId optionId = OptionId(fromString<int>(p[0]));
-    ret[optionId] = readValue(optionId, p[1]);
+    OptionId optionId;
+    if (auto id = EnumInfo<OptionId>::fromStringSafe(p[0]))
+      optionId = *id;
+    else
+      continue;
+    if (auto val = readValue(optionId, p[1]))
+      ret[optionId] = *val;
   }
   return ret;
 }
 
-void Options::writeValues(const unordered_map<OptionId, Value>& values) {
+void Options::writeValues(const EnumMap<OptionId, Value>& values) {
   ofstream out(filename);
-  for (auto elem : values)
-    out << int(elem.first) << "," << elem.second << std::endl;
+  for (OptionId id : ENUM_ALL(OptionId))
+    out << EnumInfo<OptionId>::getString(id) << "," << values[id] << std::endl;
 }
 

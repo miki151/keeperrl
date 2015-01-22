@@ -237,22 +237,27 @@ void initializeRendererTiles(Renderer& r) {
   r.loadTilesFromDir("shroom46", Vec2(46, 46));
 }
 
-void initializeJukebox(Jukebox& jukebox) {
-  jukebox.addTrack(MusicType::INTRO, "music/intro.ogg");
-  jukebox.addTrack(MusicType::MAIN, "music/main.ogg");
-  jukebox.addTrack(MusicType::PEACEFUL, "music/peaceful1.ogg");
-  jukebox.addTrack(MusicType::PEACEFUL, "music/peaceful2.ogg");
-  jukebox.addTrack(MusicType::PEACEFUL, "music/peaceful3.ogg");
-  jukebox.addTrack(MusicType::PEACEFUL, "music/peaceful4.ogg");
-  jukebox.addTrack(MusicType::PEACEFUL, "music/peaceful5.ogg");
-  jukebox.addTrack(MusicType::BATTLE, "music/battle1.ogg");
-  jukebox.addTrack(MusicType::BATTLE, "music/battle2.ogg");
-  jukebox.addTrack(MusicType::BATTLE, "music/battle3.ogg");
-  jukebox.addTrack(MusicType::BATTLE, "music/battle4.ogg");
-  jukebox.addTrack(MusicType::BATTLE, "music/battle5.ogg");
-  jukebox.addTrack(MusicType::NIGHT, "music/night1.ogg");
-  jukebox.addTrack(MusicType::NIGHT, "music/night2.ogg");
-  jukebox.addTrack(MusicType::NIGHT, "music/night3.ogg");
+vector<pair<MusicType, string>> getMusicTracks() {
+  if (!tilesPresent())
+    return {};
+  else
+    return {
+      {MusicType::INTRO, "music/intro.ogg"},
+      {MusicType::MAIN, "music/main.ogg"},
+      {MusicType::PEACEFUL, "music/peaceful1.ogg"},
+      {MusicType::PEACEFUL, "music/peaceful2.ogg"},
+      {MusicType::PEACEFUL, "music/peaceful3.ogg"},
+      {MusicType::PEACEFUL, "music/peaceful4.ogg"},
+      {MusicType::PEACEFUL, "music/peaceful5.ogg"},
+      {MusicType::BATTLE, "music/battle1.ogg"},
+      {MusicType::BATTLE, "music/battle2.ogg"},
+      {MusicType::BATTLE, "music/battle3.ogg"},
+      {MusicType::BATTLE, "music/battle4.ogg"},
+      {MusicType::BATTLE, "music/battle5.ogg"},
+      {MusicType::NIGHT, "music/night1.ogg"},
+      {MusicType::NIGHT, "music/night2.ogg"},
+      {MusicType::NIGHT, "music/night3.ogg"},
+    };
 }
 
 class MainLoop {
@@ -283,7 +288,7 @@ class MainLoop {
         return;
       }
       if (lastMusicUpdate < totTime - 1 && withMusic) {
-        jukebox->update(model->getCurrentMusic());
+        jukebox->setType(model->getCurrentMusic());
         lastMusicUpdate = totTime;
       } if (model->isTurnBased())
         ++totTime;
@@ -320,7 +325,7 @@ class MainLoop {
       }
       if (model) {
         model->setOptions(options);
-        jukebox->update(MusicType::PEACEFUL);
+        jukebox->setType(MusicType::PEACEFUL);
         playModel(std::move(model));
       }
       clearSingletons();
@@ -331,14 +336,14 @@ class MainLoop {
   void splashScreen() {
     ProgressMeter meter(1);
     initializeSingletons();
-    jukebox->update(MusicType::INTRO);
+    jukebox->setType(MusicType::INTRO);
     playModel(PModel(Model::splashModel(meter, view)), false);
     clearSingletons();
   }
 
   void start() {
     if (options->getBoolValue(OptionId::MUSIC))
-      jukebox->toggle();
+      jukebox->toggle(true);
     splashScreen();
     view->reset();
     if (!tilesPresent())
@@ -349,7 +354,7 @@ class MainLoop {
           "More information on the website.");
     int lastIndex = 0;
     while (1) {
-      jukebox->update(MusicType::MAIN);
+      jukebox->setType(MusicType::MAIN);
       auto choice = view->chooseFromList("", {
           "Play game", "Change settings", "View high scores", "View credits", "Quit"}, lastIndex, View::MAIN_MENU);
       if (!choice)
@@ -490,9 +495,7 @@ int main(int argc, char* argv[]) {
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
   Tile::initialize(renderer, tilesPresent());
-  Jukebox jukebox(&options);
-  if (tilesPresent())
-    initializeJukebox(jukebox);
+  Jukebox jukebox(&options, getMusicTracks());
   MainLoop loop(view.get(), &options, &jukebox, gameFinished);
   auto game = [&] { while (!viewInitialized) {} loop.start(); };
   auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };

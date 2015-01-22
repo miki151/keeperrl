@@ -19,7 +19,7 @@
 #include "view.h"
 #include "util.h"
 
-enum class OptionId {
+RICH_ENUM(OptionId,
   HINTS,
   ASCII,
   MUSIC,
@@ -33,16 +33,14 @@ enum class OptionId {
   KEEPER_NAME,
   SHOW_MAP,
   START_WITH_NIGHT,
-  STARTING_RESOURCE,
-};
+  STARTING_RESOURCE
+);
 
 enum class OptionSet {
   GENERAL,
   KEEPER,
   ADVENTURER,
 };
-
-ENUM_HASH(OptionId);
 
 class Options {
   public:
@@ -61,10 +59,10 @@ class Options {
   void changeValue(OptionId, const Options::Value&, View*);
   string getValueString(OptionId, Options::Value);
   Value getValue(OptionId);
-  unordered_map<OptionId, Value> readValues();
-  void writeValues(const unordered_map<OptionId, Value>&);
+  EnumMap<OptionId, Value> readValues();
+  void writeValues(const EnumMap<OptionId, Value>&);
   string filename;
-  unordered_map<OptionId, string> defaultStrings;
+  EnumMap<OptionId, string> defaultStrings;
 };
 
 

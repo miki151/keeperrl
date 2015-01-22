@@ -91,8 +91,10 @@ template string toString<double>(const double&);
 //template string toString<Vec2>(const Vec2&);
 
 template int fromString<int>(const string&);
-template char fromString<char>(const string&);
 template double fromString<double>(const string&);
+
+template optional<int> fromStringSafe<int>(const string&);
+template optional<double> fromStringSafe<double>(const string&);
 
 template <class T>
 string toString(const T& t){
@@ -119,6 +121,16 @@ T fromString(const string& s){
   T t;
   ss >> t;
   CHECK(ss) << "Error parsing " << s << " to " << typeid(T).name();
+  return t;
+}
+
+template <class T>
+optional<T> fromStringSafe(const string& s){
+  std::stringstream ss(s);
+  T t;
+  ss >> t;
+  if (!ss)
+    return none;
   return t;
 }
 

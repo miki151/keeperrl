@@ -26,13 +26,10 @@ enum class MusicType { INTRO, MAIN, PEACEFUL, BATTLE, NIGHT };
 
 class Jukebox {
   public:
+  Jukebox(Options*, vector<pair<MusicType, string>> tracks);
 
-  Jukebox(Options*);
-
-  void addTrack(MusicType, const string&);
-  void update(MusicType);
-
-  void toggle();
+  void setType(MusicType);
+  void toggle(bool on);
 
   private:
   void setCurrent(MusicType);
@@ -40,13 +37,17 @@ class Jukebox {
   bool turnedOff();
   void refresh();
   MusicType getCurrentType();
+
+  typedef std::unique_lock<std::recursive_mutex> MusicLock;
+  std::recursive_mutex musicMutex;
+
   unique_ptr<sf::Music[]> music;
   map<MusicType, vector<int>> byType;
   int current = 0;
   int currentPlaying = 0;
-  bool on = true;
+  bool on = false;
   int numTracks = 0;
-  AsyncLoop refreshLoop;
+  optional<AsyncLoop> refreshLoop;
 };
 
 #endif
