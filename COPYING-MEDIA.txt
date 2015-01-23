@@ -1,14 +1,6 @@
-The following files are granted to use only with the official binary distribution of KeeperRL:
-tiles_int.png
-tiles2_int.png
-tiles3_int.png
-tiles4_int.png
-tiles5_int.png
-tiles6_int.png
-tiles7_int.png
-menu_core.png
-menu_mouth.png
-Every file inside directories: music, shroom24, shroom36, shroom46
+Every file located in directory 'data' is granted to use only with the official binary distribution of KeeperRL. 
+
+Every file located in directory 'data_free' is granted under the Creative Commons BY-NC-SA licence. See https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
 The file Lato-Bol.ttf was made by Łukasz Dziedzic (latofonts.com) and is distributed under the SIL Open Font License.
 
