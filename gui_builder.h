@@ -32,7 +32,7 @@ class GuiBuilder {
     function<void(const string&)> hintCallback;
     function<void(sf::Event::KeyEvent)> keyboardCallback;
   };
-  GuiBuilder(Renderer&, Clock*, Callbacks);
+  GuiBuilder(Renderer&, GuiFactory&, Clock*, Callbacks);
   void reset();
   void setTilesOk(bool);
   
@@ -88,6 +88,7 @@ class GuiBuilder {
 
   private:
   Renderer& renderer;
+  GuiFactory& gui;
   Clock* clock;
   Callbacks callbacks;
   PGuiElem getHintCallback(const string&);
@@ -123,6 +124,7 @@ class GuiBuilder {
   void drawBuildingsOverlay(vector<OverlayInfo>&, GameInfo::BandInfo&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
+  PGuiElem getStandingGui(double standing);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

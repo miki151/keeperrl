@@ -77,11 +77,11 @@ class ButtonKey : public Button {
   Event::KeyEvent hotkey;
 };
 
-PGuiElem GuiElem::button(function<void()> fun, char hotkey) {
+PGuiElem GuiFactory::button(function<void()> fun, char hotkey) {
   return PGuiElem(new ButtonChar(fun, hotkey));
 }
 
-PGuiElem GuiElem::button(function<void()> fun, Event::KeyEvent hotkey) {
+PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey) {
   return PGuiElem(new ButtonKey(fun, hotkey));
 }
 
@@ -97,21 +97,21 @@ class DrawCustom : public GuiElem {
   function<void(Renderer&, Rectangle)> drawFun;
 };
 
-PGuiElem GuiElem::rectangle(Color color, optional<Color> borderColor) {
+PGuiElem GuiFactory::rectangle(Color color, optional<Color> borderColor) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawFilledRectangle(bounds, color, borderColor);
         }));
 }
 
-PGuiElem GuiElem::repeatedPattern(Texture& tex) {
+PGuiElem GuiFactory::repeatedPattern(Texture& tex) {
   return PGuiElem(new DrawCustom(
         [&tex] (Renderer& r, Rectangle bounds) {
           r.drawSprite(bounds.getTopLeft(), bounds.getTopLeft(), Vec2(bounds.getW(), bounds.getH()), tex);
         }));
 }
 
-PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset, double alpha) {
+PGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset, double alpha) {
   return PGuiElem(new DrawCustom(
         [&tex, align, offset, alpha, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
           Vec2 size(tex.getSize().x, tex.getSize().y);
@@ -195,7 +195,7 @@ PGuiElem GuiElem::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, 
         }));
 }
 
-PGuiElem GuiElem::label(const string& s, Color c, char hotkey) {
+PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
@@ -204,7 +204,7 @@ PGuiElem GuiElem::label(const string& s, Color c, char hotkey) {
         }));
 }
 
-PGuiElem GuiElem::label(const string& s, int size, Color c) {
+PGuiElem GuiFactory::label(const string& s, int size, Color c) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
@@ -213,7 +213,7 @@ PGuiElem GuiElem::label(const string& s, int size, Color c) {
         }));
 }
 
-PGuiElem GuiElem::variableLabel(function<string()> fun, int size, Color c) {
+PGuiElem GuiFactory::variableLabel(function<string()> fun, int size, Color c) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           string s = fun();
@@ -223,7 +223,7 @@ PGuiElem GuiElem::variableLabel(function<string()> fun, int size, Color c) {
         }));
 }
 
-PGuiElem GuiElem::labelUnicode(const String& s, Color color, int size, Renderer::FontId fontId) {
+PGuiElem GuiFactory::labelUnicode(const String& s, Color color, int size, Renderer::FontId fontId) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(fontId, size, color, bounds.getTopLeft().x, bounds.getTopLeft().y, s, false);
@@ -246,7 +246,7 @@ class MainMenuLabel : public GuiElem {
   double vPadding;
 };
 
-PGuiElem GuiElem::mainMenuLabel(const string& s, double vPadding, Color c) {
+PGuiElem GuiFactory::mainMenuLabel(const string& s, double vPadding, Color c) {
   return PGuiElem(new MainMenuLabel(s, c, vPadding));
 }
 
@@ -315,15 +315,15 @@ class GuiLayout : public GuiElem {
   vector<PGuiElem> elems;
 };
 
-PGuiElem GuiElem::stack(vector<PGuiElem> elems) {
+PGuiElem GuiFactory::stack(vector<PGuiElem> elems) {
   return PGuiElem(new GuiLayout(std::move(elems)));
 }
 
-PGuiElem GuiElem::stack(PGuiElem g1, PGuiElem g2) {
+PGuiElem GuiFactory::stack(PGuiElem g1, PGuiElem g2) {
   return stack(makeVec<PGuiElem>(std::move(g1), std::move(g2)));
 }
 
-PGuiElem GuiElem::stack(PGuiElem g1, PGuiElem g2, PGuiElem g3) {
+PGuiElem GuiFactory::stack(PGuiElem g1, PGuiElem g2, PGuiElem g3) {
   return stack(makeVec<PGuiElem>(std::move(g1), std::move(g2), std::move(g3)));
 }
 
@@ -389,11 +389,11 @@ class VerticalList : public GuiLayout {
   int numAlignBack;
 };
 
-PGuiElem GuiElem::verticalList(vector<PGuiElem> e, vector<int> heights, int spacing) {
+PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights, int spacing) {
   return PGuiElem(new VerticalList(std::move(e), heights, spacing, 0));
 }
 
-PGuiElem GuiElem::verticalList(vector<PGuiElem> e, int height, int spacing) {
+PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, int height, int spacing) {
   vector<int> heights(e.size(), height);
   return PGuiElem(new VerticalList(std::move(e), heights, spacing, 0));
 }
@@ -415,7 +415,7 @@ class VerticalListFit : public GuiLayout {
 };
 
 
-PGuiElem GuiElem::verticalListFit(vector<PGuiElem> e, double spacing) {
+PGuiElem GuiFactory::verticalListFit(vector<PGuiElem> e, double spacing) {
   return PGuiElem(new VerticalListFit(std::move(e), spacing));
 }
 
@@ -436,7 +436,7 @@ class HorizontalListFit : public GuiLayout {
 };
 
 
-PGuiElem GuiElem::horizontalListFit(vector<PGuiElem> e, double spacing) {
+PGuiElem GuiFactory::horizontalListFit(vector<PGuiElem> e, double spacing) {
   return PGuiElem(new HorizontalListFit(std::move(e), spacing));
 }
 
@@ -459,11 +459,11 @@ class HorizontalList : public VerticalList {
   }
 };
 
-PGuiElem GuiElem::horizontalList(vector<PGuiElem> e, vector<int> widths, int spacing, int numAlignRight) {
+PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, vector<int> widths, int spacing, int numAlignRight) {
   return PGuiElem(new HorizontalList(std::move(e), widths, spacing, numAlignRight));
 }
 
-PGuiElem GuiElem::horizontalList(vector<PGuiElem> e, int width, int spacing, int numAlignRight) {
+PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, int width, int spacing, int numAlignRight) {
   vector<int> widths(e.size(), width);
   return horizontalList(std::move(e), widths, spacing, numAlignRight);
 }
@@ -483,7 +483,7 @@ class VerticalAspect : public GuiLayout {
   double ratio;
 };
 
-PGuiElem GuiElem::verticalAspect(PGuiElem elem, double ratio) {
+PGuiElem GuiFactory::verticalAspect(PGuiElem elem, double ratio) {
   return PGuiElem(new VerticalAspect(std::move(elem), ratio));
 }
 
@@ -500,49 +500,53 @@ class CenterHoriz : public GuiLayout {
   int width;
 };
 
-PGuiElem GuiElem::centerHoriz(PGuiElem e, int width) {
+PGuiElem GuiFactory::centerHoriz(PGuiElem e, int width) {
   return PGuiElem(new CenterHoriz(std::move(e), width));
 }
 
 class MarginGui : public GuiLayout {
   public:
-  MarginGui(PGuiElem top, PGuiElem rest, int _width, MarginType t)
+  MarginGui(PGuiElem top, PGuiElem rest, int _width, GuiFactory::MarginType t)
     : GuiLayout(makeVec<PGuiElem>(std::move(top), std::move(rest))), width(_width), type(t) {}
 
   virtual Rectangle getElemBounds(int num) override {
     CHECK(num == 0 || num == 1);
     if (num == 0)
       switch (type) { // the margin
-        case TOP: return Rectangle(getBounds().getTopLeft(), getBounds().getTopRight() + Vec2(0, width)); break;
-        case LEFT: return Rectangle(getBounds().getTopLeft(), getBounds().getBottomLeft() + Vec2(width, 0)); break;
-        case RIGHT: return Rectangle(getBounds().getTopRight() - Vec2(width, 0), getBounds().getBottomRight()); break;
-        case BOTTOM: return Rectangle(getBounds().getBottomLeft() - Vec2(0, width), getBounds().getBottomRight());
-                       break;
+        case GuiFactory::TOP:
+          return Rectangle(getBounds().getTopLeft(), getBounds().getTopRight() + Vec2(0, width));
+        case GuiFactory::LEFT:
+          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomLeft() + Vec2(width, 0));
+        case GuiFactory::RIGHT:
+          return Rectangle(getBounds().getTopRight() - Vec2(width, 0), getBounds().getBottomRight());
+        case GuiFactory::BOTTOM:
+          return Rectangle(getBounds().getBottomLeft() - Vec2(0, width), getBounds().getBottomRight());
       }
     else
       switch (type) { // the remainder
-        case TOP: return Rectangle(getBounds().getTopLeft() + Vec2(0, width), getBounds().getBottomRight()); break;
-        case LEFT: return Rectangle(getBounds().getTopLeft() + Vec2(width, 0), getBounds().getBottomRight()); break;
-        case RIGHT: return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(width, 0)); break;
-        case BOTTOM: return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(0, width));
-                     break;
+        case GuiFactory::TOP:
+          return Rectangle(getBounds().getTopLeft() + Vec2(0, width), getBounds().getBottomRight());
+        case GuiFactory::LEFT:
+          return Rectangle(getBounds().getTopLeft() + Vec2(width, 0), getBounds().getBottomRight());
+        case GuiFactory::RIGHT:
+          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(width, 0));
+        case GuiFactory::BOTTOM:
+          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(0, width));
       }
-    FAIL << "Ff";
-    return Rectangle(1, 1);
   }
 
   private:
   int width;
-  MarginType type;
+  GuiFactory::MarginType type;
 };
 
-PGuiElem GuiElem::margin(PGuiElem top, PGuiElem rest, int width, MarginType type) {
+PGuiElem GuiFactory::margin(PGuiElem top, PGuiElem rest, int width, MarginType type) {
   return PGuiElem(new MarginGui(std::move(top), std::move(rest), width, type));
 }
 
 class MarginFit : public GuiLayout {
   public:
-  MarginFit(PGuiElem top, PGuiElem rest, double _width, MarginType t)
+  MarginFit(PGuiElem top, PGuiElem rest, double _width, GuiFactory::MarginType t)
     : GuiLayout(makeVec<PGuiElem>(std::move(top), std::move(rest))), width(_width), type(t) {}
 
   virtual Rectangle getElemBounds(int num) override {
@@ -551,34 +555,34 @@ class MarginFit : public GuiLayout {
     int h = getBounds().getH();
     if (num == 0)
       switch (type) { // the margin
-        case TOP:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getTopRight() + Vec2(0, width * h)); break;
-        case LEFT:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomLeft() + Vec2(width * w, 0)); break;
-        case RIGHT:
-          return Rectangle(getBounds().getTopRight() - Vec2(width * w, 0), getBounds().getBottomRight()); break;
-        case BOTTOM:
+        case GuiFactory::TOP:
+          return Rectangle(getBounds().getTopLeft(), getBounds().getTopRight() + Vec2(0, width * h));
+        case GuiFactory::LEFT:
+          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomLeft() + Vec2(width * w, 0));
+        case GuiFactory::RIGHT:
+          return Rectangle(getBounds().getTopRight() - Vec2(width * w, 0), getBounds().getBottomRight());
+        case GuiFactory::BOTTOM:
           return Rectangle(getBounds().getBottomLeft() - Vec2(0, width * h), getBounds().getBottomRight());
       }
     else
       switch (type) { // the remainder
-        case TOP:
-          return Rectangle(getBounds().getTopLeft() + Vec2(0, width * h), getBounds().getBottomRight()); break;
-        case LEFT:
-          return Rectangle(getBounds().getTopLeft() + Vec2(width * w, 0), getBounds().getBottomRight()); break;
-        case RIGHT:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(width * w, 0)); break;
-        case BOTTOM:
+        case GuiFactory::TOP:
+          return Rectangle(getBounds().getTopLeft() + Vec2(0, width * h), getBounds().getBottomRight());
+        case GuiFactory::LEFT:
+          return Rectangle(getBounds().getTopLeft() + Vec2(width * w, 0), getBounds().getBottomRight());
+        case GuiFactory::RIGHT:
+          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(width * w, 0));
+        case GuiFactory::BOTTOM:
           return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(0, width * h));
       }
   }
 
   private:
   double width;
-  MarginType type;
+  GuiFactory::MarginType type;
 };
 
-PGuiElem GuiElem::marginFit(PGuiElem top, PGuiElem rest, double width, MarginType type) {
+PGuiElem GuiFactory::marginFit(PGuiElem top, PGuiElem rest, double width, MarginType type) {
   return PGuiElem(new MarginFit(std::move(top), std::move(rest), width, type));
 }
 
@@ -599,7 +603,7 @@ class Margins : public GuiLayout {
   int bottom;
 };
 
-PGuiElem GuiElem::margins(PGuiElem content, int left, int top, int right, int bottom) {
+PGuiElem GuiFactory::margins(PGuiElem content, int left, int top, int right, int bottom) {
   return PGuiElem(new Margins(std::move(content), left, top, right, bottom));
 }
 
@@ -612,7 +616,7 @@ class Invisible : public GuiLayout {
   }
 };
 
-PGuiElem GuiElem::invisible(PGuiElem content) {
+PGuiElem GuiFactory::invisible(PGuiElem content) {
   return PGuiElem(new Invisible(std::move(content)));
 }
 
@@ -647,11 +651,11 @@ class Switchable : public GuiLayout {
   int currentTab = 0;
 };
 
-PGuiElem GuiElem::tabs(vector<PGuiElem> but, vector<PGuiElem> tabs, int tabWidth, int tabHeight, int tabSpacing) {
+PGuiElem GuiFactory::tabs(vector<PGuiElem> but, vector<PGuiElem> tabs, int tabWidth, int tabHeight, int tabSpacing) {
   return PGuiElem(new TabGui(std::move(but), std::move(tabs), tabWidth, tabHeight, tabSpacing));
 }*/
 
-PGuiElem GuiElem::empty() {
+PGuiElem GuiFactory::empty() {
   return PGuiElem(new GuiElem());
 }
 
@@ -672,11 +676,11 @@ class ViewObjectGui : public GuiElem {
   bool useSprites;
 };
 
-PGuiElem GuiElem::viewObject(const ViewObject& object, bool useSprites) {
+PGuiElem GuiFactory::viewObject(const ViewObject& object, bool useSprites) {
   return PGuiElem(new ViewObjectGui(object, useSprites));
 }
 
-PGuiElem GuiElem::viewObject(ViewId id, bool useSprites) {
+PGuiElem GuiFactory::viewObject(ViewId id, bool useSprites) {
   return PGuiElem(new ViewObjectGui(id, useSprites));
 }
 
@@ -696,7 +700,7 @@ class TranslateGui : public GuiLayout {
   Rectangle newSize;
 };
 
-PGuiElem GuiElem::translate(PGuiElem e, Vec2 v, Rectangle newSize) {
+PGuiElem GuiFactory::translate(PGuiElem e, Vec2 v, Rectangle newSize) {
   return PGuiElem(new TranslateGui(std::move(e), v, newSize));
 }
 
@@ -713,7 +717,7 @@ class MouseOverAction : public GuiElem {
   function<void()> callback;
 };
 
-PGuiElem GuiElem::mouseOverAction(function<void()> callback) {
+PGuiElem GuiFactory::mouseOverAction(function<void()> callback) {
   return PGuiElem(new MouseOverAction(callback));
 }
 
@@ -750,7 +754,7 @@ class MouseHighlight2 : public GuiLayout {
   }
 };
 
-PGuiElem GuiElem::mouseHighlight(PGuiElem elem, int myIndex, int* highlighted) {
+PGuiElem GuiFactory::mouseHighlight(PGuiElem elem, int myIndex, int* highlighted) {
   return PGuiElem(new MouseHighlight(std::move(elem), myIndex, highlighted));
 }
 
@@ -776,12 +780,12 @@ class MouseHighlightGameChoice : public GuiLayout {
   optional<View::GameTypeChoice>& highlighted;
 };
 
-PGuiElem GuiElem::mouseHighlightGameChoice(PGuiElem elem,
+PGuiElem GuiFactory::mouseHighlightGameChoice(PGuiElem elem,
     View::GameTypeChoice my, optional<View::GameTypeChoice>& highlight) {
   return PGuiElem(new MouseHighlightGameChoice(std::move(elem), my, highlight));
 }
 
-PGuiElem GuiElem::mouseHighlight2(PGuiElem elem) {
+PGuiElem GuiFactory::mouseHighlight2(PGuiElem elem) {
   return PGuiElem(new MouseHighlight2(std::move(elem)));
 }
 
@@ -914,42 +918,6 @@ class Scrollable : public GuiElem {
   int* scrollPos;
 };
 
-enum TexId {
-  SCROLLBAR,
-  SCROLL_BUTTON,
-  BACKGROUND_PATTERN,
-  BORDER_TOP_LEFT,
-  BORDER_TOP_RIGHT,
-  BORDER_BOTTOM_LEFT,
-  BORDER_BOTTOM_RIGHT,
-  BORDER_TOP,
-  BORDER_RIGHT,
-  BORDER_BOTTOM,
-  BORDER_LEFT,
-  HORI_CORNER1,
-  HORI_CORNER2,
-  HORI_LINE,
-  HORI_MIDDLE,
-  VERT_BAR,
-  HORI_BAR,
-  HORI_BAR_MINI,
-  VERT_BAR_MINI,
-  CORNER_MINI,
-  CORNER_TOP_LEFT,
-  CORNER_TOP_RIGHT,
-  CORNER_BOTTOM_RIGHT,
-  SCROLL_UP,
-  SCROLL_DOWN,
-  WINDOW_CORNER,
-  WINDOW_VERT_BAR,
-  MAIN_MENU_HIGHLIGHT,
-  KEEPER_CHOICE,
-  ADVENTURER_CHOICE,
-  KEEPER_HIGHLIGHT_TEX,
-  ADVENTURER_HIGHLIGHT_TEX,
-  MENU_ITEM,
-};
-
 const int border2Width = 6;
 
 const int scrollbarWidth = 22;
@@ -958,119 +926,108 @@ const int borderHeight = 11;
 const int backgroundSize = 128;
 const int iconWidth = 42;
 
-Color GuiElem::background1;
-Color GuiElem::background2;
-Color GuiElem::foreground1;
-Color GuiElem::text;
-Color GuiElem::titleText;
-Color GuiElem::inactiveText;
-Color GuiElem::translucentBgColor;
+Texture& GuiFactory::get(TexId id) {
+  return textures.at(id);
+}
 
-Texture& get(TexId id) {
-  static map<TexId, Texture> m;
-  if (m.empty()) {
-    CHECK(m[SCROLLBAR].loadFromFile("ui/scrollbar.png"));
-    m[SCROLLBAR].setRepeated(true);
-    CHECK(m[SCROLL_BUTTON].loadFromFile("ui/scrollmark.png"));
-    int px = 166;
-    CHECK(m[BORDER_TOP_LEFT].loadFromFile("frame.png", sf::IntRect(px, 0, border2Width, border2Width)));
-    CHECK(m[BORDER_TOP_RIGHT].loadFromFile("frame.png",
+void GuiFactory::loadFreeImages(const string& path) {
+  CHECK(textures[TexId::SCROLLBAR].loadFromFile(path + "/ui/scrollbar.png"));
+  textures[TexId::SCROLLBAR].setRepeated(true);
+  CHECK(textures[TexId::SCROLL_BUTTON].loadFromFile(path + "/ui/scrollmark.png"));
+  int px = 166;
+  CHECK(textures[TexId::BORDER_TOP_LEFT].loadFromFile(path + "/frame.png",
+        sf::IntRect(px, 0, border2Width, border2Width)));
+  CHECK(textures[TexId::BORDER_TOP_RIGHT].loadFromFile(path + "/frame.png",
         sf::IntRect(px + 1 + border2Width, 0, border2Width, border2Width)));
-    CHECK(m[BORDER_BOTTOM_LEFT].loadFromFile("frame.png",
+  CHECK(textures[TexId::BORDER_BOTTOM_LEFT].loadFromFile(path + "/frame.png",
         sf::IntRect(px, border2Width + 1, border2Width, border2Width)));
-    CHECK(m[BORDER_BOTTOM_RIGHT].loadFromFile("frame.png",
+  CHECK(textures[TexId::BORDER_BOTTOM_RIGHT].loadFromFile(path + "/frame.png",
         sf::IntRect(px + 1 + border2Width, border2Width + 1, border2Width, border2Width)));
-    CHECK(m[BORDER_TOP].loadFromFile("frame.png", sf::IntRect(px + border2Width, 0, 1, border2Width)));
-    CHECK(m[BORDER_RIGHT].loadFromFile("frame.png", sf::IntRect(px + 1 + border2Width, border2Width, border2Width, 1)));
-    CHECK(m[BORDER_BOTTOM].loadFromFile("frame.png", sf::IntRect(px + border2Width, border2Width + 1, 1, border2Width)));
-    CHECK(m[BORDER_LEFT].loadFromFile("frame.png", sf::IntRect(px, border2Width, border2Width, 1)));
-    CHECK(m[BACKGROUND_PATTERN].loadFromFile("tekstuur_1.png"));
-    m[BACKGROUND_PATTERN].setRepeated(true);
-    GuiElem::foreground1 = transparency(Color(0x20, 0x5c, 0x4a), 150);
-    GuiElem::translucentBgColor = transparency(Color(0, 0, 0), 150);
-    GuiElem::text = colors[ColorId::WHITE];
-    GuiElem::titleText = colors[ColorId::YELLOW];
-    GuiElem::inactiveText = colors[ColorId::LIGHT_GRAY];
-    CHECK(m[HORI_CORNER1].loadFromFile("ui/horicorner1.png"));
-    CHECK(m[HORI_CORNER2].loadFromFile("ui/horicorner2.png"));
-    CHECK(m[HORI_LINE].loadFromFile("ui/horiline.png"));
-    m[HORI_LINE].setRepeated(true);
-    CHECK(m[HORI_MIDDLE].loadFromFile("ui/horimiddle.png"));
-    CHECK(m[VERT_BAR].loadFromFile("ui/vertbar.png"));
-    m[VERT_BAR].setRepeated(true);
-    CHECK(m[HORI_BAR].loadFromFile("ui/horibar.png"));
-    m[HORI_BAR].setRepeated(true);
-    CHECK(m[HORI_BAR_MINI].loadFromFile("ui/horibarmini.png"));
-    m[HORI_BAR_MINI].setRepeated(true);
-    CHECK(m[CORNER_TOP_LEFT].loadFromFile("ui/cornerTOPL.png"));
-    CHECK(m[CORNER_TOP_RIGHT].loadFromFile("ui/cornerTOPR.png"));
-    CHECK(m[CORNER_BOTTOM_RIGHT].loadFromFile("ui/cornerBOTTOMR.png"));
-    CHECK(m[VERT_BAR_MINI].loadFromFile("ui/vertbarmini.png"));
-    m[VERT_BAR_MINI].setRepeated(true);
-    CHECK(m[CORNER_MINI].loadFromFile("ui/cornersmall.png"));
-    CHECK(m[SCROLL_UP].loadFromFile("ui/up.png"));
-    CHECK(m[SCROLL_DOWN].loadFromFile("ui/down.png"));
-    CHECK(m[WINDOW_CORNER].loadFromFile("ui/corner1.png"));
-    CHECK(m[WINDOW_VERT_BAR].loadFromFile("ui/vertibarmsg1.png"));
-    m[WINDOW_VERT_BAR].setRepeated(true);
-    CHECK(m[MAIN_MENU_HIGHLIGHT].loadFromFile("ui/menu_highlight.png"));
-    m[MAIN_MENU_HIGHLIGHT].setSmooth(true);
-    m[KEEPER_CHOICE].loadFromFile("keeper_choice.png");
-    m[ADVENTURER_CHOICE].loadFromFile("adventurer_choice.png");
-    m[KEEPER_HIGHLIGHT_TEX].loadFromFile("keeper_highlight.png");
-    m[ADVENTURER_HIGHLIGHT_TEX].loadFromFile("adventurer_highlight.png");
-    m[KEEPER_CHOICE].setSmooth(true);
-    m[ADVENTURER_CHOICE].setSmooth(true);
-    m[KEEPER_HIGHLIGHT_TEX].setSmooth(true);
-    m[ADVENTURER_HIGHLIGHT_TEX].setSmooth(true);
-    m[MENU_ITEM].loadFromFile("ui/barmid.png");
-    m[MENU_ITEM].setSmooth(true);
+  CHECK(textures[TexId::BORDER_TOP].loadFromFile(path + "/frame.png",
+        sf::IntRect(px + border2Width, 0, 1, border2Width)));
+  CHECK(textures[TexId::BORDER_RIGHT].loadFromFile(path + "/frame.png",
+        sf::IntRect(px + 1 + border2Width, border2Width, border2Width, 1)));
+  CHECK(textures[TexId::BORDER_BOTTOM].loadFromFile(path + "/frame.png",
+        sf::IntRect(px + border2Width, border2Width + 1, 1, border2Width)));
+  CHECK(textures[TexId::BORDER_LEFT].loadFromFile(path + "/frame.png", sf::IntRect(px, border2Width, border2Width, 1)));
+  CHECK(textures[TexId::BACKGROUND_PATTERN].loadFromFile(path + "/window_bg.png"));
+  textures[TexId::BACKGROUND_PATTERN].setRepeated(true);
+  foreground1 = transparency(Color(0x20, 0x5c, 0x4a), 150);
+  translucentBgColor = transparency(Color(0, 0, 0), 150);
+  text = colors[ColorId::WHITE];
+  titleText = colors[ColorId::YELLOW];
+  inactiveText = colors[ColorId::LIGHT_GRAY];
+  CHECK(textures[TexId::HORI_CORNER1].loadFromFile(path + "/ui/horicorner1.png"));
+  CHECK(textures[TexId::HORI_CORNER2].loadFromFile(path + "/ui/horicorner2.png"));
+  CHECK(textures[TexId::HORI_LINE].loadFromFile(path + "/ui/horiline.png"));
+  textures[TexId::HORI_LINE].setRepeated(true);
+  CHECK(textures[TexId::HORI_MIDDLE].loadFromFile(path + "/ui/horimiddle.png"));
+  CHECK(textures[TexId::VERT_BAR].loadFromFile(path + "/ui/vertbar.png"));
+  textures[TexId::VERT_BAR].setRepeated(true);
+  CHECK(textures[TexId::HORI_BAR].loadFromFile(path + "/ui/horibar.png"));
+  textures[TexId::HORI_BAR].setRepeated(true);
+  CHECK(textures[TexId::HORI_BAR_MINI].loadFromFile(path + "/ui/horibarmini.png"));
+  textures[TexId::HORI_BAR_MINI].setRepeated(true);
+  CHECK(textures[TexId::CORNER_TOP_LEFT].loadFromFile(path + "/ui/cornerTOPL.png"));
+  CHECK(textures[TexId::CORNER_TOP_RIGHT].loadFromFile(path + "/ui/cornerTOPR.png"));
+  CHECK(textures[TexId::CORNER_BOTTOM_RIGHT].loadFromFile(path + "/ui/cornerBOTTOMR.png"));
+  CHECK(textures[TexId::VERT_BAR_MINI].loadFromFile(path + "/ui/vertbarmini.png"));
+  textures[TexId::VERT_BAR_MINI].setRepeated(true);
+  CHECK(textures[TexId::CORNER_MINI].loadFromFile(path + "/ui/cornersmall.png"));
+  CHECK(textures[TexId::SCROLL_UP].loadFromFile(path + "/ui/up.png"));
+  CHECK(textures[TexId::SCROLL_DOWN].loadFromFile(path + "/ui/down.png"));
+  CHECK(textures[TexId::WINDOW_CORNER].loadFromFile(path + "/ui/corner1.png"));
+  CHECK(textures[TexId::WINDOW_VERT_BAR].loadFromFile(path + "/ui/vertibarmsg1.png"));
+  textures[TexId::WINDOW_VERT_BAR].setRepeated(true);
+  CHECK(textures[TexId::MAIN_MENU_HIGHLIGHT].loadFromFile(path + "/ui/menu_highlight.png"));
+  textures[TexId::MAIN_MENU_HIGHLIGHT].setSmooth(true);
+  CHECK(textures[TexId::SPLASH1].loadFromFile(path + "/splash2f.png"));
+  CHECK(textures[TexId::SPLASH2].loadFromFile(path + "/splash2e.png"));
+  CHECK(textures[TexId::LOADING_SPLASH].loadFromFile(path + "/" + chooseRandom(LIST(
+            "splash2a.png",
+            "splash2b.png",
+            "splash2c.png",
+            "splash2d.png"))));
+  for (int i = 0; i < 8; ++i) {
+    iconTextures.emplace_back();
+    CHECK(iconTextures.back().loadFromFile(path + "/icons.png", sf::IntRect(0, i * iconWidth, iconWidth, iconWidth)));
   }
-  return m[id];
 }
 
-Texture& getIconTex(GuiElem::IconId id) {
-  static vector<Texture> v;
-  if (v.empty()) {
-    for (int i = 0; i < 8; ++i) {
-      v.emplace_back();
-      v.back().loadFromFile("icons.png", sf::IntRect(0, i * iconWidth, iconWidth, iconWidth));
-    }
-  }
-  int num = int(id);
-  CHECK(num >= 0 && num < v.size());
-  return v[num];
+void GuiFactory::loadNonFreeImages(const string& path) {
+  CHECK(textures[TexId::KEEPER_CHOICE].loadFromFile(path + "/keeper_choice.png"));
+  CHECK(textures[TexId::ADVENTURER_CHOICE].loadFromFile(path + "/adventurer_choice.png"));
+  CHECK(textures[TexId::KEEPER_HIGHLIGHT].loadFromFile(path + "/keeper_highlight.png"));
+  CHECK(textures[TexId::ADVENTURER_HIGHLIGHT].loadFromFile(path + "/adventurer_highlight.png"));
+  textures[TexId::KEEPER_CHOICE].setSmooth(true);
+  textures[TexId::ADVENTURER_CHOICE].setSmooth(true);
+  textures[TexId::KEEPER_HIGHLIGHT].setSmooth(true);
+  textures[TexId::ADVENTURER_HIGHLIGHT].setSmooth(true);
+  CHECK(textures[TexId::MENU_ITEM].loadFromFile(path + "/barmid.png"));
+  textures[TexId::MENU_ITEM].setSmooth(true);
+  CHECK(textures[TexId::MENU_CORE].loadFromFile(path + "/menu_core.png"));
+  CHECK(textures[TexId::MENU_MOUTH].loadFromFile(path + "/menu_mouth.png"));
+  textures[TexId::MENU_CORE].setSmooth(true);
+  textures[TexId::MENU_MOUTH].setSmooth(true);
 }
 
-void GuiElem::changeBackground(int r, int g, int b) {
-  background1.r += r;
-  background1.g += g;
-  background1.b += b;
-  background2 = background1;
-  Debug() << "New color " << background1.r << " " << background1.g << " " << background1.b << " ";
+Texture& GuiFactory::getIconTex(IconId id) {
+  return iconTextures.at(id);
 }
 
-void GuiElem::setBackground(int r, int g, int b) {
-  background1.r = r;
-  background1.g = g;
-  background1.b = b;
-  background2 = background1;
-  Debug() << "New color " << background1.r << " " << background1.g << " " << background1.b << " ";
+PGuiElem GuiFactory::getScrollbar() {
+  return stack(makeVec<PGuiElem>(
+        sprite(get(TexId::SCROLLBAR), GuiFactory::Alignment::VERTICAL_CENTER),
+        sprite(get(TexId::SCROLL_UP), GuiFactory::Alignment::TOP_RIGHT),
+        sprite(get(TexId::SCROLL_DOWN), GuiFactory::Alignment::BOTTOM_RIGHT)));
 }
 
-static PGuiElem getScrollbar() {
-  return GuiElem::stack(makeVec<PGuiElem>(
-        GuiElem::sprite(get(SCROLLBAR), GuiElem::Alignment::VERTICAL_CENTER),
-        GuiElem::sprite(get(SCROLL_UP), GuiElem::Alignment::TOP_RIGHT),
-        GuiElem::sprite(get(SCROLL_DOWN), GuiElem::Alignment::BOTTOM_RIGHT)));
+PGuiElem GuiFactory::getScrollButton() {
+  return sprite(get(TexId::SCROLL_BUTTON), Alignment::TOP_RIGHT);
 }
 
-PGuiElem GuiElem::getScrollButton() {
-  return sprite(get(SCROLL_BUTTON), Alignment::TOP_RIGHT);
-}
-
-int getScrollButtonSize() {
-  return get(SCROLL_BUTTON).getSize().y;
+int GuiFactory::getScrollButtonSize() {
+  return get(TexId::SCROLL_BUTTON).getSize().y;
 }
 
 class Conditional : public GuiLayout {
@@ -1085,20 +1042,20 @@ class Conditional : public GuiLayout {
   function<bool(GuiElem*)> cond;
 };
 
-PGuiElem GuiElem::conditional(PGuiElem elem, function<bool(GuiElem*)> f) {
+PGuiElem GuiFactory::conditional(PGuiElem elem, function<bool(GuiElem*)> f) {
   return PGuiElem(new Conditional(std::move(elem), f));
 }
 
-PGuiElem GuiElem::conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> f) {
+PGuiElem GuiFactory::conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> f) {
   return stack(PGuiElem(new Conditional(std::move(elem), f)),
       PGuiElem(new Conditional(std::move(alter), [=] (GuiElem* e) { return !f(e);})));
 }
 
-PGuiElem GuiElem::scrollable(PGuiElem content, int contentHeight, int* scrollPos) {
+PGuiElem GuiFactory::scrollable(PGuiElem content, int contentHeight, int* scrollPos) {
   VerticalList* list = dynamic_cast<VerticalList*>(content.release());
   CHECK(list) << "Scrolling only implemented for vertical list";
   PGuiElem scrollable(new Scrollable(PVerticalList(list), contentHeight, scrollPos));
-  int scrollBarMargin = get(SCROLL_UP).getSize().y;
+  int scrollBarMargin = get(TexId::SCROLL_UP).getSize().y;
   PGuiElem bar(new ScrollBar(
         std::move(getScrollButton()), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight));
   PGuiElem barButtons = getScrollbar();
@@ -1110,123 +1067,114 @@ PGuiElem GuiElem::scrollable(PGuiElem content, int contentHeight, int* scrollPos
         margins(std::move(scrollable), hMargin, vMargin, hMargin, vMargin), scrollbarWidth, RIGHT);
 }
 
-PGuiElem GuiElem::background(Color c) {
-  return stack(rectangle(c), repeatedPattern(get(BACKGROUND_PATTERN)));
+PGuiElem GuiFactory::background(Color c) {
+  return stack(rectangle(c), repeatedPattern(get(TexId::BACKGROUND_PATTERN)));
 }
 
-PGuiElem GuiElem::highlight(Color c) {
-  return margins(sprite(get(MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED, false, true), -25, 0, 0, 0);
+PGuiElem GuiFactory::highlight(Color c) {
+  return margins(sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED, false, true), -25, 0, 0, 0);
 }
 
-PGuiElem GuiElem::mainMenuHighlight() {
+PGuiElem GuiFactory::mainMenuHighlight() {
   return stack(
-      sprite(get(MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED),
-      sprite(get(MAIN_MENU_HIGHLIGHT), Alignment::RIGHT_STRETCHED, false, true));
+      sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED),
+      sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::RIGHT_STRETCHED, false, true));
 }
 
-PGuiElem GuiElem::border2(PGuiElem content) {
+PGuiElem GuiFactory::border2(PGuiElem content) {
   double alpha = 1;
   return stack(makeVec<PGuiElem>(std::move(content),
-        sprite(get(BORDER_TOP), Alignment::TOP, false, false, Vec2(border2Width, 0), alpha),
-        sprite(get(BORDER_BOTTOM), Alignment::BOTTOM, false, false, Vec2(border2Width, 0), alpha),
-        sprite(get(BORDER_LEFT), Alignment::LEFT, false, false, Vec2(0, border2Width), alpha),
-        sprite(get(BORDER_RIGHT), Alignment::RIGHT, false, false, Vec2(0, border2Width), alpha),
-        sprite(get(BORDER_TOP_LEFT), Alignment::TOP_LEFT, false, false, Vec2(0, 0), alpha),
-        sprite(get(BORDER_TOP_RIGHT), Alignment::TOP_RIGHT, false, false, Vec2(0, 0), alpha),
-        sprite(get(BORDER_BOTTOM_LEFT), Alignment::BOTTOM_LEFT, false, false, Vec2(0, 0), alpha),
-        sprite(get(BORDER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT, false, false, Vec2(0, 0), alpha)));
+        sprite(get(TexId::BORDER_TOP), Alignment::TOP, false, false, Vec2(border2Width, 0), alpha),
+        sprite(get(TexId::BORDER_BOTTOM), Alignment::BOTTOM, false, false, Vec2(border2Width, 0), alpha),
+        sprite(get(TexId::BORDER_LEFT), Alignment::LEFT, false, false, Vec2(0, border2Width), alpha),
+        sprite(get(TexId::BORDER_RIGHT), Alignment::RIGHT, false, false, Vec2(0, border2Width), alpha),
+        sprite(get(TexId::BORDER_TOP_LEFT), Alignment::TOP_LEFT, false, false, Vec2(0, 0), alpha),
+        sprite(get(TexId::BORDER_TOP_RIGHT), Alignment::TOP_RIGHT, false, false, Vec2(0, 0), alpha),
+        sprite(get(TexId::BORDER_BOTTOM_LEFT), Alignment::BOTTOM_LEFT, false, false, Vec2(0, 0), alpha),
+        sprite(get(TexId::BORDER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT, false, false, Vec2(0, 0), alpha)));
 }
 
-PGuiElem GuiElem::miniBorder(PGuiElem content) {
+PGuiElem GuiFactory::miniBorder(PGuiElem content) {
   return stack(makeVec<PGuiElem>(std::move(content),
-        sprite(get(HORI_BAR_MINI), Alignment::BOTTOM, true, false),
-        sprite(get(HORI_BAR_MINI), Alignment::TOP, false, false),
-        sprite(get(VERT_BAR_MINI), Alignment::RIGHT, false, true),
-        sprite(get(VERT_BAR_MINI), Alignment::LEFT, false, false),
-        sprite(get(CORNER_MINI), Alignment::BOTTOM_RIGHT, true, true),
-        sprite(get(CORNER_MINI), Alignment::BOTTOM_LEFT, true, false),
-        sprite(get(CORNER_MINI), Alignment::TOP_RIGHT, false, true),
-        sprite(get(CORNER_MINI), Alignment::TOP_LEFT, false, false)));
+        sprite(get(TexId::HORI_BAR_MINI), Alignment::BOTTOM, true, false),
+        sprite(get(TexId::HORI_BAR_MINI), Alignment::TOP, false, false),
+        sprite(get(TexId::VERT_BAR_MINI), Alignment::RIGHT, false, true),
+        sprite(get(TexId::VERT_BAR_MINI), Alignment::LEFT, false, false),
+        sprite(get(TexId::CORNER_MINI), Alignment::BOTTOM_RIGHT, true, true),
+        sprite(get(TexId::CORNER_MINI), Alignment::BOTTOM_LEFT, true, false),
+        sprite(get(TexId::CORNER_MINI), Alignment::TOP_RIGHT, false, true),
+        sprite(get(TexId::CORNER_MINI), Alignment::TOP_LEFT, false, false)));
 }
 
-PGuiElem GuiElem::border(PGuiElem content) {
+PGuiElem GuiFactory::border(PGuiElem content) {
   return stack(makeVec<PGuiElem>(std::move(content),
-        sprite(get(HORI_BAR), Alignment::BOTTOM, true, false),
-        sprite(get(HORI_BAR), Alignment::TOP, false, false),
-        sprite(get(WINDOW_VERT_BAR), Alignment::RIGHT, false, false),
-        sprite(get(WINDOW_VERT_BAR), Alignment::LEFT, false, true),
-        sprite(get(WINDOW_CORNER), Alignment::BOTTOM_RIGHT, true, true, Vec2(6, 2)),
-        sprite(get(WINDOW_CORNER), Alignment::BOTTOM_LEFT, true, false, Vec2(-6, 2)),
-        sprite(get(WINDOW_CORNER), Alignment::TOP_RIGHT, false, true, Vec2(6, -2)),
-        sprite(get(WINDOW_CORNER), Alignment::TOP_LEFT, false, false, Vec2(-6, -2))));
+        sprite(get(TexId::HORI_BAR), Alignment::BOTTOM, true, false),
+        sprite(get(TexId::HORI_BAR), Alignment::TOP, false, false),
+        sprite(get(TexId::WINDOW_VERT_BAR), Alignment::RIGHT, false, false),
+        sprite(get(TexId::WINDOW_VERT_BAR), Alignment::LEFT, false, true),
+        sprite(get(TexId::WINDOW_CORNER), Alignment::BOTTOM_RIGHT, true, true, Vec2(6, 2)),
+        sprite(get(TexId::WINDOW_CORNER), Alignment::BOTTOM_LEFT, true, false, Vec2(-6, 2)),
+        sprite(get(TexId::WINDOW_CORNER), Alignment::TOP_RIGHT, false, true, Vec2(6, -2)),
+        sprite(get(TexId::WINDOW_CORNER), Alignment::TOP_LEFT, false, false, Vec2(-6, -2))));
 }
 
-PGuiElem GuiElem::miniWindow(PGuiElem content) {
+PGuiElem GuiFactory::miniWindow(PGuiElem content) {
   return miniBorder(stack(makeVec<PGuiElem>(
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         std::move(content))));
 }
 
-PGuiElem GuiElem::window(PGuiElem content) {
+PGuiElem GuiFactory::window(PGuiElem content) {
   return border(stack(makeVec<PGuiElem>(
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         margins(std::move(content), 20, 35, 30, 30))));
 }
 
-PGuiElem GuiElem::mainDecoration(int rightBarWidth, int bottomBarHeight) {
+PGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight) {
   return margin(
       stack(makeVec<PGuiElem>(
           background(background2),
-          sprite(get(HORI_BAR), Alignment::TOP),
-          sprite(get(HORI_BAR), Alignment::BOTTOM, true),
-          margin(sprite(get(HORI_BAR_MINI), Alignment::BOTTOM), empty(), 85, TOP),
-          sprite(get(VERT_BAR), Alignment::RIGHT, false, true),
-          sprite(get(VERT_BAR), Alignment::LEFT),
-          sprite(get(CORNER_TOP_LEFT), Alignment::TOP_LEFT, false, false, Vec2(-8, 0)),
-          sprite(get(CORNER_TOP_RIGHT), Alignment::TOP_RIGHT),
-          sprite(get(CORNER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT)
+          sprite(get(TexId::HORI_BAR), Alignment::TOP),
+          sprite(get(TexId::HORI_BAR), Alignment::BOTTOM, true),
+          margin(sprite(get(TexId::HORI_BAR_MINI), Alignment::BOTTOM), empty(), 85, TOP),
+          sprite(get(TexId::VERT_BAR), Alignment::RIGHT, false, true),
+          sprite(get(TexId::VERT_BAR), Alignment::LEFT),
+          sprite(get(TexId::CORNER_TOP_LEFT), Alignment::TOP_LEFT, false, false, Vec2(-8, 0)),
+          sprite(get(TexId::CORNER_TOP_RIGHT), Alignment::TOP_RIGHT),
+          sprite(get(TexId::CORNER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT)
       )),
       stack(makeVec<PGuiElem>(
           margin(background(background2), empty(), bottomBarHeight, BOTTOM),
-          sprite(get(HORI_LINE), Alignment::BOTTOM),
- //         sprite(get(HORI_MIDDLE), Alignment::BOTTOM_CENTER),
-          sprite(get(HORI_CORNER1), Alignment::BOTTOM_LEFT),
-          sprite(get(HORI_CORNER2), Alignment::BOTTOM_RIGHT, false, false, Vec2(93, 0)))),
+          sprite(get(TexId::HORI_LINE), Alignment::BOTTOM),
+ //         sprite(get(TexId::HORI_MIDDLE), Alignment::BOTTOM_CENTER),
+          sprite(get(TexId::HORI_CORNER1), Alignment::BOTTOM_LEFT),
+          sprite(get(TexId::HORI_CORNER2), Alignment::BOTTOM_RIGHT, false, false, Vec2(93, 0)))),
       rightBarWidth,
       RIGHT);
 }
 
-PGuiElem GuiElem::translucentBackground(PGuiElem content) {
+PGuiElem GuiFactory::translucentBackground(PGuiElem content) {
   return background(std::move(content), translucentBgColor);
 }
 
-PGuiElem GuiElem::background(PGuiElem content, Color color) {
-  return stack(GuiElem::rectangle(color), std::move(content));
+PGuiElem GuiFactory::background(PGuiElem content, Color color) {
+  return stack(rectangle(color), std::move(content));
 }
 
-PGuiElem GuiElem::icon(IconId id) {
+PGuiElem GuiFactory::icon(IconId id) {
   return sprite(getIconTex(id), Alignment::CENTER);
 }
 
-static Texture& get(GuiElem::ImageId id) {
-  switch (id) {
-    case GuiElem::KEEPER_GAME: return get(KEEPER_CHOICE);
-    case GuiElem::ADVENTURER_GAME: return get(ADVENTURER_CHOICE);
-    case GuiElem::KEEPER_HIGHLIGHT: return get(KEEPER_HIGHLIGHT_TEX);
-    case GuiElem::ADVENTURER_HIGHLIGHT: return get(ADVENTURER_HIGHLIGHT_TEX);
-  }
-}
-
-PGuiElem GuiElem::sprite(ImageId id, Alignment a) {
+PGuiElem GuiFactory::sprite(TexId id, Alignment a) {
   return sprite(get(id), a);
 }
 
-PGuiElem GuiElem::mainMenuLabelBg(const string& s, double vPadding, Color color) {
+PGuiElem GuiFactory::mainMenuLabelBg(const string& s, double vPadding, Color color) {
   return stack(
-      GuiElem::marginFit(GuiElem::empty(), GuiElem::sprite(get(MENU_ITEM), GuiElem::Alignment::CENTER_STRETCHED),
-          0.12, GuiElem::BOTTOM),
+      marginFit(empty(), sprite(get(TexId::MENU_ITEM), Alignment::CENTER_STRETCHED),
+          0.12, BOTTOM),
       mainMenuLabel(s, vPadding, color));
 }
 

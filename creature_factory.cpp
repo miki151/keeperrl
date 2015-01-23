@@ -1072,19 +1072,20 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::CYCLOPS: 
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr[AttrType::SPEED] = 90;
           c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 25;
-          c.attr[AttrType::DEXTERITY] = 18;
+          c.attr[AttrType::STRENGTH] = 35;
+          c.attr[AttrType::DEXTERITY] = 25;
           c.barehandedDamage = 10;
+          c.barehandedAttack = AttackType::EAT;
           c.humanoid = true;
-          c.weight = 150;
-          c.firstName = NameGenerator::get(NameGeneratorId::DEMON)->getNext();
+          c.weight = 400;
+          c.firstName = NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext();
           c.name = EntityName("cyclops", "cyclopes"););
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
-          c.attr[AttrType::SPEED] = 110;
+          c.attr[AttrType::SPEED] = 90;
           c.size = CreatureSize::HUGE;
           c.attr[AttrType::STRENGTH] = 40;
           c.attr[AttrType::DEXTERITY] = 30;
@@ -1102,6 +1103,8 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::RED_DRAGON:
       return INHERIT(GREEN_DRAGON,
           c.viewId = ViewId::RED_DRAGON;
+          c.attr[AttrType::SPEED] = 110;
+          c.attr[AttrType::STRENGTH] = 50;
           c.fireCreature = true;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 0;
           c.speciesName = "red dragon";
@@ -2021,9 +2024,12 @@ class ItemList {
 
 vector<ItemType> getInventory(CreatureId id) {
   switch (id) {
+    case CreatureId::CYCLOPS: 
+      return ItemList().add(ItemId::HEAVY_CLUB).add(ItemId::GOLD_PIECE, Random.get(200, 400));
     case CreatureId::GREEN_DRAGON:
+      return ItemList().add(ItemId::GOLD_PIECE, Random.get(300, 500));
     case CreatureId::RED_DRAGON:
-      return ItemList().add(ItemId::GOLD_PIECE, Random.get(200, 400));
+      return ItemList().add(ItemId::GOLD_PIECE, Random.get(600, 1000));
     case CreatureId::ANGEL:
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 
@@ -2082,7 +2088,6 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::IRON_BOOTS)
         .add({ItemId::POTION, EffectId::HEAL}, Random.get(1, 4))
         .add(ItemId::GOLD_PIECE, Random.get(200, 300));
-    case CreatureId::CYCLOPS: 
     case CreatureId::OGRE: 
       return ItemList().add(ItemId::HEAVY_CLUB);
     case CreatureId::BANDIT:

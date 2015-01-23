@@ -34,6 +34,7 @@ class WindowView: public View {
   public:
   struct ViewParams {
     Renderer& renderer;
+    GuiFactory& gui;
     bool useTiles;
     Options* options;
     Clock* clock;
@@ -86,6 +87,7 @@ class WindowView: public View {
   private:
 
   Renderer& renderer;
+  GuiFactory& gui;
   void processEvents();
   void displayMenuSplash2();
   void displayOldSplash();
@@ -101,6 +103,10 @@ class WindowView: public View {
   optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   PGuiElem drawGameChoices(optional<View::GameTypeChoice>& choice, optional<View::GameTypeChoice>& index);
+  PGuiElem getTextContent(const string& title, const string& value, const string& hint);
+  vector<PGuiElem> getMultiLine(const string& text, Color color, View::MenuType menuType);
+  PGuiElem menuElemMargins(PGuiElem);
+  PGuiElem getHighlight(View::MenuType type, const string& label);
   void rebuildGui();
   void drawMap();
   optional<sf::Event::KeyEvent> getEventFromMenu();
@@ -180,12 +186,7 @@ class WindowView: public View {
   Options* options;
   Clock* clock;
   GuiBuilder guiBuilder;
-  Texture menuCore;
-  Texture menuMouth;
   void drawMenuBackground(double barState, double mouthState);
-  Texture splash1;
-  Texture splash2;
-  Texture loadingSplash;
   atomic<int> fullScreenTrigger;
 };
 

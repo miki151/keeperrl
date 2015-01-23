@@ -30,8 +30,8 @@ RICH_ENUM(NameGeneratorId,
   DEITY,
   DEMON,
   DOG,
-  INSULTS,
-  DRAGON
+  DRAGON,
+  CYCLOPS
 );
 
 class NameGenerator : public Singleton<NameGenerator, NameGeneratorId> {
@@ -39,7 +39,7 @@ class NameGenerator : public Singleton<NameGenerator, NameGeneratorId> {
   NameGenerator() = default;
   string getNext();
 
-  static void init();
+  static void init(const string&);
 
   private:
   NameGenerator(vector<string> names, bool oneName = false);

@@ -92,7 +92,7 @@ class Renderer {
     int texNum;
   };
 
-  Renderer(const string& windowTile, Vec2 nominalTileSize);
+  Renderer(const string& windowTile, Vec2 nominalTileSize, const string& fontPath);
   void initialize(bool fullscreen);
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };

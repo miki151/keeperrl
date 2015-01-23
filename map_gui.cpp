@@ -441,8 +441,7 @@ void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
   int height = 30;
   int width = renderer.getTextLength(text) + 110;
   Vec2 pos(getBounds().getKX() - width, getBounds().getKY() - height);
-  renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height,
-      GuiElem::translucentBgColor);
+  renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, Color(0, 0, 0, 150));
   renderer.drawText(color, pos.x + 10, pos.y + 1, text);
 }
 

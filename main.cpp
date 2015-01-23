@@ -199,7 +199,7 @@ void initializeSingletons() {
   Technology::init();
   Statistics::init();
   Vision::init();
-  NameGenerator::init();
+  NameGenerator::init("data_free/names");
   ItemFactory::init();
   Epithet::init();
   Spell::init();
@@ -213,7 +213,7 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
   }
 }
 bool tilesPresent() {
-  return !!ifstream("tiles_int.png");
+  return !!opendir("data");
 }
 
 #ifdef OSX // see thread comment in stdafx.h
@@ -224,46 +224,46 @@ static thread::attributes getAttributes() {
 }
 #endif
 
-void initializeRendererTiles(Renderer& r) {
-  r.loadTilesFromFile("tiles_int.png", Vec2(36, 36));
-  r.loadTilesFromFile("tiles2_int.png", Vec2(36, 36));
-  r.loadTilesFromFile("tiles3_int.png", Vec2(36, 36));
-  r.loadTilesFromFile("tiles4_int.png", Vec2(24, 24));
-  r.loadTilesFromFile("tiles5_int.png", Vec2(36, 36));
-  r.loadTilesFromFile("tiles6_int.png", Vec2(36, 36));
-  r.loadTilesFromFile("tiles7_int.png", Vec2(36, 36));
-  r.loadTilesFromDir("shroom24", Vec2(24, 24));
-  r.loadTilesFromDir("shroom36", Vec2(36, 36));
-  r.loadTilesFromDir("shroom46", Vec2(46, 46));
+void initializeRendererTiles(Renderer& r, const string& path) {
+  r.loadTilesFromFile(path + "/tiles_int.png", Vec2(36, 36));
+  r.loadTilesFromFile(path + "/tiles2_int.png", Vec2(36, 36));
+  r.loadTilesFromFile(path + "/tiles3_int.png", Vec2(36, 36));
+  r.loadTilesFromFile(path + "/tiles4_int.png", Vec2(24, 24));
+  r.loadTilesFromFile(path + "/tiles5_int.png", Vec2(36, 36));
+  r.loadTilesFromFile(path + "/tiles6_int.png", Vec2(36, 36));
+  r.loadTilesFromFile(path + "/tiles7_int.png", Vec2(36, 36));
+  r.loadTilesFromDir(path + "/shroom24", Vec2(24, 24));
+  r.loadTilesFromDir(path + "/shroom36", Vec2(36, 36));
+  r.loadTilesFromDir(path + "/shroom46", Vec2(46, 46));
 }
 
-vector<pair<MusicType, string>> getMusicTracks() {
+vector<pair<MusicType, string>> getMusicTracks(const string& path) {
   if (!tilesPresent())
     return {};
   else
     return {
-      {MusicType::INTRO, "music/intro.ogg"},
-      {MusicType::MAIN, "music/main.ogg"},
-      {MusicType::PEACEFUL, "music/peaceful1.ogg"},
-      {MusicType::PEACEFUL, "music/peaceful2.ogg"},
-      {MusicType::PEACEFUL, "music/peaceful3.ogg"},
-      {MusicType::PEACEFUL, "music/peaceful4.ogg"},
-      {MusicType::PEACEFUL, "music/peaceful5.ogg"},
-      {MusicType::BATTLE, "music/battle1.ogg"},
-      {MusicType::BATTLE, "music/battle2.ogg"},
-      {MusicType::BATTLE, "music/battle3.ogg"},
-      {MusicType::BATTLE, "music/battle4.ogg"},
-      {MusicType::BATTLE, "music/battle5.ogg"},
-      {MusicType::NIGHT, "music/night1.ogg"},
-      {MusicType::NIGHT, "music/night2.ogg"},
-      {MusicType::NIGHT, "music/night3.ogg"},
+      {MusicType::INTRO, path + "/intro.ogg"},
+      {MusicType::MAIN, path + "/main.ogg"},
+      {MusicType::PEACEFUL, path + "/peaceful1.ogg"},
+      {MusicType::PEACEFUL, path + "/peaceful2.ogg"},
+      {MusicType::PEACEFUL, path + "/peaceful3.ogg"},
+      {MusicType::PEACEFUL, path + "/peaceful4.ogg"},
+      {MusicType::PEACEFUL, path + "/peaceful5.ogg"},
+      {MusicType::BATTLE, path + "/battle1.ogg"},
+      {MusicType::BATTLE, path + "/battle2.ogg"},
+      {MusicType::BATTLE, path + "/battle3.ogg"},
+      {MusicType::BATTLE, path + "/battle4.ogg"},
+      {MusicType::BATTLE, path + "/battle5.ogg"},
+      {MusicType::NIGHT, path + "/night1.ogg"},
+      {MusicType::NIGHT, path + "/night2.ogg"},
+      {MusicType::NIGHT, path + "/night3.ogg"},
     };
 }
 
 class MainLoop {
   public:
-  MainLoop(View* v, Options* o, Jukebox* j, std::atomic<bool>& fin)
-      : view(v), options(o), jukebox(j), finished(fin) {}
+  MainLoop(View* v, const string& _dataFreePath, Options* o, Jukebox* j, std::atomic<bool>& fin)
+      : view(v), dataFreePath(_dataFreePath), options(o), jukebox(j), finished(fin) {}
 
   void saveUI(PModel model, Model::GameType type) {
     ProgressMeter meter(1.0 / 62500);
@@ -341,6 +341,24 @@ class MainLoop {
     clearSingletons();
   }
 
+  void showCredits(const string& path, View* view) {
+    ifstream in(path);
+    CHECK(!!in);
+    vector<View::ListElem> lines;
+    while (1) {
+      char buf[100];
+      in.getline(buf, 100);
+      if (!in)
+        break;
+      string s(buf);
+      if (s.back() == ':')
+        lines.emplace_back(s, View::TITLE);
+      else
+        lines.emplace_back(s, View::NORMAL);
+    }
+    view->presentList("Credits", lines, false);
+  }
+
   void start() {
     if (options->getBoolValue(OptionId::MUSIC))
       jukebox->toggle(true);
@@ -364,7 +382,7 @@ class MainLoop {
         case 0: playGameChoice(); break;
         case 1: options->handle(view, OptionSet::GENERAL); break;
         case 2: Model::showHighscore(view); break;
-        case 3: Model::showCredits(view); break;
+        case 3: showCredits(dataFreePath + "/credits.txt", view); break;
         case 4: finished = true; break;
       }
       if (finished)
@@ -436,6 +454,7 @@ class MainLoop {
 
   private:
   View* view;
+  string dataFreePath;
   Options* options;
   Jukebox* jukebox;
   std::atomic<bool>& finished;
@@ -466,10 +485,14 @@ int main(int argc, char* argv[]) {
   string lognamePref = "log";
   Debug::init();
   Options options("options.txt");
-  Renderer renderer("KeeperRL", Vec2(36, 36));
+  Renderer renderer("KeeperRL", Vec2(36, 36), "data_free");
+  GuiFactory guiFactory;
+  guiFactory.loadFreeImages("data_free/images");
+  if (tilesPresent())
+    guiFactory.loadNonFreeImages("data/images");
   Clock clock;
   if (tilesPresent())
-    initializeRendererTiles(renderer);
+    initializeRendererTiles(renderer, "data/images");
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
  // int forceMode = vars.count("force_keeper") ? 0 : -1;
   bool genExit = vars.count("gen_world_exit");
@@ -479,7 +502,8 @@ int main(int argc, char* argv[]) {
     seed = fromString<int>(fname.substr(lognamePref.size()));
     Random.init(seed);
     input.reset(new CompressedInput(fname));
-    view.reset(WindowView::createReplayView(input->getArchive(), {renderer, tilesPresent(), &options, &clock}));
+    view.reset(WindowView::createReplayView(input->getArchive(),
+          {renderer, guiFactory, tilesPresent(), &options, &clock}));
   } else {
 #ifndef RELEASE
     Random.init(seed);
@@ -487,16 +511,18 @@ int main(int argc, char* argv[]) {
     fname += toString(seed);
     output.reset(new CompressedOutput(fname));
     Debug() << "Writing to " << fname;
-    view.reset(WindowView::createLoggingView(output->getArchive(), {renderer, tilesPresent(), &options, &clock}));
+    view.reset(WindowView::createLoggingView(output->getArchive(),
+          {renderer, guiFactory, tilesPresent(), &options, &clock}));
 #else
-    view.reset(WindowView::createDefaultView({renderer, tilesPresent(), &options, &clock}));
+    view.reset(WindowView::createDefaultView(
+          {renderer, guiFactory, tilesPresent(), &options, &clock}));
 #endif
   } 
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
   Tile::initialize(renderer, tilesPresent());
-  Jukebox jukebox(&options, getMusicTracks());
-  MainLoop loop(view.get(), &options, &jukebox, gameFinished);
+  Jukebox jukebox(&options, getMusicTracks("data/music"));
+  MainLoop loop(view.get(), "data_free", &options, &jukebox, gameFinished);
   auto game = [&] { while (!viewInitialized) {} loop.start(); };
   auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
 #ifdef OSX // see thread comment in stdafx.h

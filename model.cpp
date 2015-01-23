@@ -436,17 +436,33 @@ static vector<FriendlyVault> friendlyVaults {
 
 static vector<EnemyInfo> getVaults() {
   vector<EnemyInfo> ret {
-    getVault(SettlementType::CAVE, chooseRandom({CreatureId::RED_DRAGON, CreatureId::GREEN_DRAGON}),
+    getVault(SettlementType::CAVE, CreatureId::GREEN_DRAGON,
+        Tribe::get(TribeId::DRAGON), 1, ItemFactory::dragonCave(),
+        { CONSTRUCT(VillainInfo,
+            c.minPopulation = 0;
+            c.minTeamSize = 1;
+            c.leaderAttacks = true;
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 22});
+            c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);
+            c.attackMessage = VillageControl::CREATURE_TITLE;)}),
+    getVault(SettlementType::CAVE, CreatureId::RED_DRAGON,
         Tribe::get(TribeId::DRAGON), 1, ItemFactory::dragonCave(),
         { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
             c.leaderAttacks = true;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 30});
-            c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 5);
+            c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 12);
             c.attackMessage = VillageControl::CREATURE_TITLE;)}),
- /*   getVault(SettlementType::CAVE, CreatureId::GREEN_DRAGON, Tribe::get(TribeId::DRAGON), 1,
-        ItemFactory::dragonCave(), {VillageControlInfo::DRAGON}),*/
+    getVault(SettlementType::CAVE, CreatureId::CYCLOPS,
+        Tribe::get(TribeId::DRAGON), 1, ItemFactory::mushrooms(true),
+        { CONSTRUCT(VillainInfo,
+            c.minPopulation = 0;
+            c.minTeamSize = 1;
+            c.leaderAttacks = true;
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 15});
+            c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 4);
+            c.attackMessage = VillageControl::CREATURE_TITLE;)}),
     getVault(SettlementType::VAULT, CreatureFactory::insects(Tribe::get(TribeId::MONSTER)),
         Tribe::get(TribeId::MONSTER), Random.get(6, 12)),
     getVault(SettlementType::VAULT, CreatureId::ORC, Tribe::get(TribeId::KEEPER), Random.get(3, 8)),
@@ -921,23 +937,6 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
 
 const string& Model::getWorldName() const {
   return worldName;
-}
-
-void Model::showCredits(View* view) {
-  ifstream in("credits.txt");
-  vector<View::ListElem> lines;
-  while (1) {
-    char buf[100];
-    in.getline(buf, 100);
-    if (!in)
-      break;
-    string s(buf);
-    if (s.back() == ':')
-      lines.emplace_back(s, View::TITLE);
-    else
-      lines.emplace_back(s, View::NORMAL);
-  }
-  view->presentList("Credits", lines, false);
 }
 
 namespace {

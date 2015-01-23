@@ -183,10 +183,10 @@ void Renderer::initialize(bool fullscreen) {
   display->setVerticalSyncEnabled(true);
 }
 
-Renderer::Renderer(const string& title, Vec2 nominal) : nominalSize(nominal) {
-  CHECK(textFont.loadFromFile("Lato-Bol.ttf"));
-  CHECK(tileFont.loadFromFile("Lato-Bol.ttf"));
-  CHECK(symbolFont.loadFromFile("Symbola.ttf"));
+Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : nominalSize(nominal) {
+  CHECK(textFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
+  CHECK(tileFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
+  CHECK(symbolFont.loadFromFile(fontPath + "/Symbola.ttf"));
   colors[ColorId::WHITE] = Color(255, 255, 255);
   colors[ColorId::YELLOW] = Color(250, 255, 0);
   colors[ColorId::LIGHT_BROWN] = Color(210, 150, 0);
