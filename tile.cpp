@@ -79,6 +79,15 @@ Tile Tile::addExtraBorderId(ViewId id) {
   return *this;
 }
 
+Tile Tile::addHighlight(TileCoord coord) {
+  highlightCoord = coord;
+  return *this;
+}
+
+Tile::TileCoord Tile::getHighlightCoord() const {
+  return *highlightCoord;
+}
+
 const vector<ViewId>& Tile::getExtraBorderIds() const {
   return extraBorderIds;
 }
@@ -283,6 +292,7 @@ class TileCoordLookup {
 
   void genTiles() {
     Tile::addTile(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
+    Tile::addTile(ViewId::DIG_MARK, sprite("dig_mark"));
     Tile::addTile(ViewId::SHEEP, symbol("s", ColorId::WHITE));
     Tile::addTile(ViewId::VODNIK, symbol("f", ColorId::GREEN));
     Tile::addTile(ViewId::ABYSS, symbol("~", ColorId::DARK_GRAY));
@@ -295,8 +305,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BORDER_GUARD, empty());
     Tile::addTile(ViewId::VAMPIRE, sprite("vampire"));
     Tile::addTile(ViewId::FALLEN_TREE, sprite("treecut").setNoShadow());
-    Tile::addTile(ViewId::DECID_TREE, sprite("tree2").setNoShadow());
-    Tile::addTile(ViewId::CANIF_TREE, sprite("tree1").setNoShadow());
+    Tile::addTile(ViewId::DECID_TREE, sprite("tree2").setNoShadow().addHighlight(byName("tree2_mark")));
+    Tile::addTile(ViewId::CANIF_TREE, sprite("tree1").setNoShadow().addHighlight(byName("tree1_mark")));
     Tile::addTile(ViewId::TREE_TRUNK, sprite("treecut").setNoShadow());
     Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt").setNoShadow());
     Tile::addTile(ViewId::PLAYER, sprite(1, 0));
@@ -433,7 +443,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::RAVEN, sprite(17, 12));
     Tile::addTile(ViewId::BODY_PART, sprite("corpse4"));
     Tile::addTile(ViewId::BONE, sprite(3, 0, 2));
-    Tile::addTile(ViewId::BUSH, sprite(17, 0, 2).setNoShadow());
+    Tile::addTile(ViewId::BUSH, sprite("bush").setNoShadow().addHighlight(byName("bush_mark")));
     Tile::addTile(ViewId::WATER, getWaterTile(5));
     Tile::addTile(ViewId::MAGMA, getWaterTile(11));
     Tile::addTile(ViewId::DOOR, sprite("door").setNoShadow());
@@ -567,6 +577,7 @@ class TileCoordLookup {
 
   void genSymbols() {
     Tile::addSymbol(ViewId::EMPTY, symbol(" ", ColorId::BLACK));
+    Tile::addSymbol(ViewId::DIG_MARK, symbol(" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol("@", ColorId::WHITE));
     Tile::addSymbol(ViewId::KEEPER, symbol("@", ColorId::PURPLE));
     Tile::addSymbol(ViewId::UNDEAD_KEEPER, symbol("@", ColorId::DARK_GRAY));

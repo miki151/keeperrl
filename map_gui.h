@@ -60,12 +60,24 @@ class MapGui : public GuiElem {
   Vec2 getScreenPos() const;
 
   private:
-  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal);
+  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal,
+      const EnumMap<HighlightType, double>&);
   void drawCreatureHighlights(Renderer&, const ViewObject&, Rectangle tile);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
   void drawHint(Renderer& renderer, Color color, const string& text);
   void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
   void renderExtraBorders(Renderer&, int currentTimeReal);
+  void renderHighlights(Renderer&, Vec2 size, int currentTimeReal);
+  struct HighlightedInfo {
+    optional<Vec2> creaturePos;
+    optional<Vec2> tilePos;
+    optional<ViewObject> object;
+  };
+  void renderMapObjects(Renderer&, Vec2 size, HighlightedInfo&, int currentTimeReal);
+  HighlightedInfo getHighlightedInfo(Renderer&, Vec2 size, int currentTimeReal);
+  void renderHint(Renderer&, const optional<ViewObject>& highlighted);
+  void renderAnimations(Renderer&, int currentTimeReal);
+
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, int curTimeReal);
   Vec2 projectOnScreen(Vec2 wpos, int currentTimeReal);
   MapLayout* layout;

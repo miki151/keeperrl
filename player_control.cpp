@@ -1299,7 +1299,9 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
         break;
     case BuildInfo::DIG: {
-        bool markedToDig = getCollective()->isMarked(pos) && getCollective()->getMarkHighlight(pos) == HighlightType::DIG;
+        bool markedToDig = getCollective()->isMarked(pos) &&
+            (getCollective()->getMarkHighlight(pos) == HighlightType::DIG ||
+             getCollective()->getMarkHighlight(pos) == HighlightType::CUT_TREE);
         if (markedToDig && selection != SELECT) {
           getCollective()->dontDig(pos);
           selection = DESELECT;

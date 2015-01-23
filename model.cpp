@@ -441,6 +441,7 @@ static vector<EnemyInfo> getVaults() {
         { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
+            c.leaderAttacks = true;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 30});
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 5);
             c.attackMessage = VillageControl::CREATURE_TITLE;)}),

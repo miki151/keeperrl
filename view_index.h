@@ -55,7 +55,7 @@ class ViewIndex {
   void setHighlight(HighlightType, double amount = 1);
 
   double getHighlight(HighlightType) const;
-  const vector<HighlightType>& getHighlights() const;
+  const EnumMap<HighlightType, double>& getHighlightMap() const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);

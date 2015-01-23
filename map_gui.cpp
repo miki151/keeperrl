@@ -342,7 +342,7 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
 }
 
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size,
-    Vec2 tilePos, int curTimeReal) {
+    Vec2 tilePos, int curTimeReal, const EnumMap<HighlightType, double>& highlightMap) {
   const Tile& tile = Tile::getTile(object.id(), spriteMode);
   Color color = Renderer::getBleedingColor(object);
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
@@ -388,6 +388,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     move += movement;
     if (tile.hasSpriteCoord()) {
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
+      if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
+        renderer.drawTile(pos + move, tile.getHighlightCoord(), size, color);
       if (auto id = object.getCreatureId())
         creatureMap.emplace_back(Rectangle(pos + move, pos + move + size), *id);
     }
@@ -515,30 +517,84 @@ Vec2 MapGui::projectOnScreen(Vec2 wpos, int curTime) {
   return layout->projectOnScreen(getBounds(), getScreenPos(), x, y);
 }
 
-void MapGui::render(Renderer& renderer) {
-  Vec2 size = layout->getSquareSize();
-  int currentTimeReal = clock->getRealMillis();
-  optional<Vec2> highlightedCreaturePos;
-  optional<Vec2> highlightedPos;
-  optional<ViewObject> highlighted;
+void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal) {
+  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
+  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  for (Vec2 wpos : allTiles)
+    if (auto index = objects[wpos]) {
+      Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
+      for (HighlightType highlight : ENUM_ALL(HighlightType))
+        if (index->getHighlight(highlight) > 0)
+          switch (highlight) {
+            case HighlightType::CUT_TREE:
+                if (spriteMode && index->hasObject(ViewLayer::FLOOR))
+                  break;
+            case HighlightType::DIG:
+                if (spriteMode) {
+                  renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size);
+                  break;
+                }
+            default:
+                renderer.addQuad(Rectangle(pos, pos + size),
+                    getHighlightColor(highlight, index->getHighlight(highlight)));
+              break;
+          }
+    }
+  renderer.drawQuads();
+}
+
+void MapGui::renderAnimations(Renderer& renderer, int currentTimeReal) {
+  animations = filter(std::move(animations), [=](const AnimationInfo& elem) 
+      { return !elem.animation->isDone(currentTimeReal);});
+  for (auto& elem : animations)
+    elem.animation->render(
+        renderer,
+        getBounds(),
+        projectOnScreen(elem.position, currentTimeReal),
+        currentTimeReal);
+}
+
+void MapGui::renderHint(Renderer& renderer, const optional<ViewObject>& highlighted) {
+  if (!hint.empty())
+    drawHint(renderer, colors[ColorId::WHITE], hint);
+  else
+  if (highlighted) {
+    Color col = colors[ColorId::WHITE];
+    if (highlighted->isHostile())
+      col = colors[ColorId::RED];
+    else if (highlighted->isFriendly())
+      col = colors[ColorId::GREEN];
+    drawHint(renderer, col, highlighted->getDescription(true));
+  }
+}
+
+MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size, int currentTimeReal) {
+  HighlightedInfo ret;
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
   if (renderer.getMousePos().inRectangle(getBounds()) && mouseUI) {
-    highlightedPos = layout->projectOnMap(getBounds(), getScreenPos(), renderer.getMousePos());
-    for (Vec2 wpos : Rectangle(*highlightedPos - Vec2(2, 2), *highlightedPos + Vec2(2, 2))) {
+    ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), renderer.getMousePos());
+    for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
+        .intersection(objects.getBounds())) {
       Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
       if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::CREATURE)) {
         const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
         Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal);
         if (renderer.getMousePos().inRectangle(Rectangle(pos + movement, pos + movement + size))) {
-          highlightedPos = none;
-          highlighted = object;
-          highlightedCreaturePos = pos + movement;
+          ret.tilePos = none;
+          ret.object = object;
+          ret.creaturePos = pos + movement;
           break;
         }
       }
     }
   }
+  return ret;
+}
+
+void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& highlightedInfo,int currentTimeReal) {
+  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
+  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
   renderer.drawFilledRectangle(getBounds(), colors[ColorId::ALMOST_BLACK]);
   renderer.drawFilledRectangle(Rectangle(
         projectOnScreen(levelBounds.getTopLeft(), currentTimeReal),
@@ -546,8 +602,8 @@ void MapGui::render(Renderer& renderer) {
   fogOfWar.clear();
   creatureMap.clear();
   for (ViewLayer layer : layout->getLayers()) {
-    if (layer == ViewLayer::CREATURE && highlightedCreaturePos)
-      renderer.drawFilledRectangle(Rectangle(*highlightedCreaturePos, *highlightedCreaturePos + size),
+    if (layer == ViewLayer::CREATURE && highlightedInfo.creaturePos)
+      renderer.drawFilledRectangle(Rectangle(*highlightedInfo.creaturePos, *highlightedInfo.creaturePos + size),
           Color::Transparent, colors[ColorId::LIGHT_GRAY]);
     for (Vec2 wpos : allTiles) {
       Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
@@ -567,13 +623,9 @@ void MapGui::render(Renderer& renderer) {
       } else
         object = index.getTopObject(layout->getLayers());
       if (object) {
-        drawObjectAbs(renderer, pos, *object, size, wpos, currentTimeReal);
-        if (highlightedPos == wpos && object->layer() != ViewLayer::CREATURE)
-          highlighted = *object;
-      }
-      if ((layer == ViewLayer::FLOOR || layer == ViewLayer::FLOOR_BACKGROUND) && highlightedPos == wpos) {
-        renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent,
-            colors[ColorId::LIGHT_GRAY]);
+        drawObjectAbs(renderer, pos, *object, size, wpos, currentTimeReal, index.getHighlightMap());
+        if (highlightedInfo.tilePos == wpos && object->layer() != ViewLayer::CREATURE)
+          highlightedInfo.object = *object;
       }
       if (spriteMode && layer == layout->getLayers().back())
         if (!isFoW(wpos))
@@ -592,34 +644,23 @@ void MapGui::render(Renderer& renderer) {
     if (layer == ViewLayer::FLOOR_BACKGROUND)
       renderExtraBorders(renderer, currentTimeReal);
   }
-  for (Vec2 wpos : allTiles)
-    if (auto index = objects[wpos]) {
-      Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
-      for (HighlightType highlight : ENUM_ALL(HighlightType))
-        if (index->getHighlight(highlight) > 0)
-          renderer.addQuad(Rectangle(pos, pos + size),
-              getHighlightColor(highlight, index->getHighlight(highlight)));
-    }
   renderer.drawQuads();
-  animations = filter(std::move(animations), [=](const AnimationInfo& elem) 
-      { return !elem.animation->isDone(currentTimeReal);});
-  for (auto& elem : animations)
-    elem.animation->render(
-        renderer,
-        getBounds(),
-        projectOnScreen(elem.position, currentTimeReal),
-        currentTimeReal);
-  if (!hint.empty())
-    drawHint(renderer, colors[ColorId::WHITE], hint);
-  else
-  if (highlighted) {
-    Color col = colors[ColorId::WHITE];
-    if (highlighted->isHostile())
-      col = colors[ColorId::RED];
-    else if (highlighted->isFriendly())
-      col = colors[ColorId::GREEN];
-    drawHint(renderer, col, highlighted->getDescription(true));
+}
+
+void MapGui::render(Renderer& renderer) {
+  Vec2 size = layout->getSquareSize();
+  int currentTimeReal = clock->getRealMillis();
+  HighlightedInfo highlightedInfo = getHighlightedInfo(renderer, size, currentTimeReal);
+  renderMapObjects(renderer, size, highlightedInfo, currentTimeReal);
+  renderHighlights(renderer, size, currentTimeReal);
+  renderAnimations(renderer, currentTimeReal);
+  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
+  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  if (highlightedInfo.tilePos) {
+    Vec2 pos = topLeftCorner + (*highlightedInfo.tilePos - allTiles.getTopLeft()).mult(layout->getSquareSize());
+    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
+  renderHint(renderer, highlightedInfo.object);
 }
 
 void MapGui::setHint(const string& h) {

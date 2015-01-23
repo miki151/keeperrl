@@ -56,6 +56,7 @@ class VillageControl : public CollectiveControl {
     vector<Trigger> SERIAL(triggers);
     Behaviour SERIAL(behaviour);
     AttackMessage SERIAL(attackMessage);
+    bool SERIAL2(leaderAttacks, false);
 
     PTask getAttackTask(VillageControl* self);
     double getAttackProbability(const VillageControl* self) const;

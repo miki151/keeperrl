@@ -27,6 +27,7 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(collective)
     & SVAR(triggers)
     & SVAR(behaviour)
+    & SVAR(leaderAttacks)
     & SVAR(attackMessage);
 }
 
@@ -56,10 +57,7 @@ void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers)
 }
 
 void VillageControl::tick(double time) {
-  vector<Creature*> fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::LEADER});
   vector<Creature*> allMembers = getCollective()->getCreatures();
-  Debug() << getCollective()->getName() << " fighters: " << int(fighters.size())
-    << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
   for (auto team : getCollective()->getTeams().getAll()) {
     for (const Creature* c : getCollective()->getTeams().getMembers(team))
       if (!getCollective()->hasTask(c)) {
@@ -71,6 +69,13 @@ void VillageControl::tick(double time) {
   double updateFreq = 0.1;
   if (Random.roll(1 / updateFreq))
     for (auto& villain : villains) {
+      vector<Creature*> fighters;
+      if (villain.leaderAttacks)
+        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER});
+      else
+        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::LEADER});
+      Debug() << getCollective()->getName() << " fighters: " << int(fighters.size())
+        << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
       if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
         continue;
       double prob = villain.getAttackProbability(this) / updateFreq;

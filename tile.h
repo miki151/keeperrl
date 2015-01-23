@@ -53,6 +53,8 @@ class Tile {
   Tile addExtraBorderId(ViewId);
   Tile addCorner(DirSet cornerDef, DirSet borders, TileCoord);
   Tile setTranslucent(double v);
+  Tile addHighlight(TileCoord);
+  TileCoord getHighlightCoord() const;
 
   const vector<ViewId>& getExtraBorderIds() const;
   bool hasExtraBorders() const;
@@ -76,6 +78,7 @@ class Tile {
  // Tile(const Tile&) = default;
   optional<TileCoord> tileCoord;
   optional<TileCoord> backgroundCoord;
+  optional<TileCoord> highlightCoord;
   array<optional<TileCoord>, 256> connections;
   bool anyConnections = false;
   optional<pair<Dir, TileCoord>> connectionOption;

@@ -2337,7 +2337,7 @@ string Creature::getNameAndTitle() const {
   if (firstName)
     return *firstName + " the " + getName().bare();
   else if (speciesName)
-    return getName().bare() + *speciesName;
+    return getName().bare() + " the " + *speciesName;
   else
     return getName().the();
 }

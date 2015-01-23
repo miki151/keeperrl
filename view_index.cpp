@@ -102,6 +102,10 @@ void ViewIndex::setHiddenId(ViewId id) {
   hiddenId = id;
 }
 
+const EnumMap<HighlightType, double>& ViewIndex::getHighlightMap() const {
+  return highlight;
+}
+
 void ViewIndex::mergeFromMemory(const ViewIndex& memory) {
   if (isEmpty())
     *this = memory;
