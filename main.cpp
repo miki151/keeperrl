@@ -337,7 +337,7 @@ class MainLoop {
     ProgressMeter meter(1);
     initializeSingletons();
     jukebox->setType(MusicType::INTRO);
-    playModel(PModel(Model::splashModel(meter, view)), false);
+    playModel(PModel(Model::splashModel(meter, view, dataFreePath + "/splash.txt")), false);
     clearSingletons();
   }
 
@@ -485,7 +485,7 @@ int main(int argc, char* argv[]) {
   string lognamePref = "log";
   Debug::init();
   Options options("options.txt");
-  Renderer renderer("KeeperRL", Vec2(36, 36), "data_free");
+  Renderer renderer("KeeperRL", Vec2(36, 36), "data_contrib");
   GuiFactory guiFactory;
   guiFactory.loadFreeImages("data_free/images");
   if (tilesPresent())

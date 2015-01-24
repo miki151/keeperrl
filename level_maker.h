@@ -77,7 +77,7 @@ class LevelMaker {
   static LevelMaker* topLevel(CreatureFactory forrest, vector<SettlementInfo> village);
   static LevelMaker* mineTownLevel(SettlementInfo);
   static LevelMaker* splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,
-      CreatureFactory imps);
+      CreatureFactory imps, const string& splashPath);
 
   static LevelMaker* pyramidLevel(optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* towerLevel(optional<StairKey> down, optional<StairKey> up);

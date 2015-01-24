@@ -1022,7 +1022,7 @@ void Model::showHighscore(View* view, bool highlightLast) {
   view->presentList("High scores", scores, false);
 }
 
-Model* Model::splashModel(ProgressMeter& meter, View* view) {
+Model* Model::splashModel(ProgressMeter& meter, View* view, const string& splashPath) {
   Model* m = new Model(view, "");
   Level* l = m->buildLevel(
       Level::Builder(meter, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness", false),
@@ -1030,8 +1030,7 @@ Model* Model::splashModel(ProgressMeter& meter, View* view) {
           CreatureFactory::singleType(Tribe::get(TribeId::HUMAN), CreatureId::AVATAR),
           CreatureFactory::splashHeroes(Tribe::get(TribeId::HUMAN)),
           CreatureFactory::splashMonsters(Tribe::get(TribeId::KEEPER)),
-          CreatureFactory::singleType(Tribe::get(TribeId::KEEPER), CreatureId::IMP) 
-          ));
+          CreatureFactory::singleType(Tribe::get(TribeId::KEEPER), CreatureId::IMP), splashPath));
   m->spectator.reset(new Spectator(l));
   return m;
 }

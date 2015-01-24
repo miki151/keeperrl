@@ -89,7 +89,8 @@ class MonsterAIFactory {
   static MonsterAIFactory moveRandomly();
   static MonsterAIFactory idle();
   static MonsterAIFactory splashHeroes(bool leader);
-  static MonsterAIFactory splashMonsters(bool imps = false);
+  static MonsterAIFactory splashMonsters();
+  static MonsterAIFactory splashImps(const string& splashPath);
 
   private:
   typedef function<MonsterAI*(Creature*)> MakerFun;

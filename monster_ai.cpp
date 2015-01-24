@@ -1045,9 +1045,9 @@ class SplashItems : public Task::Callback {
     return Task::bringItem(this, pos, it, {chooseRandom(targets)});
   }
 
-  void setInitialized() {
+  void setInitialized(const string& splashPath) {
     initialized = true;
-    ifstream iff("splash.txt");
+    ifstream iff(splashPath.c_str());
     CHECK(!!iff);
     Vec2 sz;
     iff >> sz.x >> sz.y;
@@ -1076,7 +1076,7 @@ class SplashItems : public Task::Callback {
 
 class SplashImps : public Behaviour {
   public:
-  SplashImps(Creature* c) : Behaviour(c) {}
+  SplashImps(Creature* c, const string& splash) : Behaviour(c), splashPath(splash) {}
 
   void initializeSplashItems() {
     for (Vec2 v : Level::getSplashVisibleBounds()) {
@@ -1085,7 +1085,7 @@ class SplashImps : public Behaviour {
       if (!inv.empty())
         splashItems.addItems(v, inv);
     }
-    splashItems.setInitialized();
+    splashItems.setInitialized(splashPath);
   }
 
   virtual MoveInfo getMove() override {
@@ -1126,6 +1126,7 @@ class SplashImps : public Behaviour {
   private:
   optional<Vec2> initialPos;
   PTask task;
+  string splashPath;
 };
 
 template <class Archive>
@@ -1334,10 +1335,22 @@ MonsterAIFactory MonsterAIFactory::splashHeroes(bool leader) {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::splashMonsters(bool imps) {
+MonsterAIFactory MonsterAIFactory::splashMonsters() {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
-        imps ? (Behaviour*)new SplashImps(c) : (Behaviour*)new SplashMonsters(c),
+        new SplashMonsters(c),
+        new Heal(c, false),
+        new Fighter(c, 0.6, true),
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
+        new AttackPest(c)},
+        { 6, 5, 2, 1, 1}, false);
+      });
+}
+
+MonsterAIFactory MonsterAIFactory::splashImps(const string& splashPath) {
+  return MonsterAIFactory([=](Creature* c) {
+      return new MonsterAI(c, {
+        new SplashImps(c, splashPath),
         new Heal(c, false),
         new Fighter(c, 0.6, true),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),

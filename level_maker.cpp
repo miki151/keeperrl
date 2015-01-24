@@ -2303,7 +2303,7 @@ class SpecificArea : public LevelMaker {
 };
 
 LevelMaker* LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,
-    CreatureFactory imps) {
+    CreatureFactory imps, const string& splashPath) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::BLACK_FLOOR));
   Rectangle leaderSpawn(
@@ -2322,8 +2322,10 @@ LevelMaker* LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
   queue->addMaker(new SpecificArea(heroSpawn, new Creatures(heroes, 22, MonsterAIFactory::splashHeroes(false))));
   queue->addMaker(new SpecificArea(monsterSpawn1, new Creatures(monsters, 17, MonsterAIFactory::splashMonsters())));
   queue->addMaker(new SpecificArea(monsterSpawn2, new Creatures(monsters, 17, MonsterAIFactory::splashMonsters())));
-  queue->addMaker(new SpecificArea(monsterSpawn1, new Creatures(imps, 15, MonsterAIFactory::splashMonsters(true))));
-  queue->addMaker(new SpecificArea(monsterSpawn2, new Creatures(imps, 15, MonsterAIFactory::splashMonsters(true))));
+  queue->addMaker(new SpecificArea(monsterSpawn1, new Creatures(imps, 15,
+          MonsterAIFactory::splashImps(splashPath))));
+  queue->addMaker(new SpecificArea(monsterSpawn2, new Creatures(imps, 15,
+          MonsterAIFactory::splashImps(splashPath))));
   queue->addMaker(new SetCovered());
   return new BorderGuard(queue, SquareId::BLACK_WALL);
 }

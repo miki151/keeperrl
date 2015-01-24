@@ -38,7 +38,7 @@ class Model {
   /** Generates levels and all game entities for a collective game. */
   static Model* collectiveModel(ProgressMeter&, Options*, View*, const string& worldName);
 
-  static Model* splashModel(ProgressMeter&, View*);
+  static Model* splashModel(ProgressMeter&, View*, const string& splashPath);
 
   enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER };
 
