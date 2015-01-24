@@ -2221,6 +2221,8 @@ void Collective::onCopulated(Creature* who, Creature* with) {
 
 void Collective::onConsumed(Creature* consumer, Creature* who) {
   control->addMessage(consumer->getName().a() + " absorbs " + who->getName().a());
+  for (string s : consumer->popPersonalEvents())
+    control->addMessage(s);
 }
 
 MinionEquipment& Collective::getMinionEquipment() {

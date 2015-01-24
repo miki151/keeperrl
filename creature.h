@@ -278,6 +278,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   vector<string> getMainAdjectives() const;
   vector<string> getAdjectives() const;
 
+  vector<string> popPersonalEvents();
+
   private:
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
 
@@ -343,6 +345,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   string getRemainingString(LastingEffect) const;
   Vision* SERIAL2(vision, nullptr);
   void updateVision();
+  vector<string> SERIAL(personalEvents);
 };
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };

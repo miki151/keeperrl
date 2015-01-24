@@ -72,7 +72,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(moraleOverrides)
     & SVAR(attrIncrease)
     & SVAR(visibleEnemies)
-    & SVAR(vision);
+    & SVAR(vision)
+    & SVAR(personalEvents);
   CHECK_SERIAL;
 }
 
@@ -1839,6 +1840,12 @@ void Creature::consumeBodyParts(EnumMap<BodyPart, int>& parts) {
     }
 }
 
+vector<string> Creature::popPersonalEvents() {
+  vector<string> ret = personalEvents;
+  personalEvents.clear();
+  return ret;
+}
+
 CreatureAction Creature::consume(Vec2 direction) {
   if (!getLevel()->inBounds(position + direction))
     return CreatureAction();
@@ -1852,6 +1859,7 @@ CreatureAction Creature::consume(Vec2 direction) {
     if (*other->humanoid && !*humanoid 
         && bodyParts[BodyPart::ARM] >= 2 && bodyParts[BodyPart::LEG] >= 2 && bodyParts[BodyPart::HEAD] >= 1) {
       you(MsgType::BECOME, "a humanoid");
+      personalEvents.push_back(getName().the() + " turns into a humanoid");
       *humanoid = true;
     }
     vector<string> adjectives;
@@ -1867,6 +1875,7 @@ CreatureAction Creature::consume(Vec2 direction) {
     consumeAttr(skills, other->skills, adjectives);
     if (!adjectives.empty())
       you(MsgType::BECOME, combine(adjectives));
+    personalEvents.push_back(getName().the() + " becomes " + combine(adjectives));
     consumeBodyParts(other->bodyParts);
     consumeEffects(other->permanentEffects);
     other->die(this, true, false);
