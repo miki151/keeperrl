@@ -511,9 +511,7 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
-  if (!Random.roll(10))
-    return nullptr;
-  autoEquipment(c, Random.roll(5));
+  autoEquipment(c, Random.roll(10));
   for (Item* it : c->getEquipment().getItems())
     if (!c->getEquipment().isEquiped(it) && c->getEquipment().canEquip(it))
       return Task::equipItem(it);
@@ -1076,7 +1074,7 @@ void Collective::tick(double time) {
   }
   if (config.getConstructions())
     updateConstructions();
-  if (config.getFetchItems() && Random.roll(10))
+  if (config.getFetchItems() && Random.roll(5))
     for (const ItemFetchInfo& elem : getFetchInfo()) {
       for (Vec2 pos : getAllSquares())
         fetchItems(pos, elem);

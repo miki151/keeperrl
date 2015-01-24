@@ -528,9 +528,14 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal
             case HighlightType::CUT_TREE:
                 if (spriteMode && index->hasObject(ViewLayer::FLOOR))
                   break;
+            case HighlightType::FETCH_ITEMS:
+            case HighlightType::RECT_SELECTION:
+            case HighlightType::RECT_DESELECTION:
+            case HighlightType::PRIORITY_TASK:
             case HighlightType::DIG:
                 if (spriteMode) {
-                  renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size);
+                  renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
+                      getHighlightColor(highlight, index->getHighlight(highlight)));
                   break;
                 }
             default:
