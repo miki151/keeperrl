@@ -25,6 +25,7 @@
 #include "effect.h"
 #include "view_object.h"
 #include "view_id.h"
+#include "model.h"
 
 class Staircase : public Square {
   public:
@@ -316,7 +317,8 @@ class Tree : public Square {
 
   virtual void onConstructNewSquare(Square* s) override {
     s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
-    numCut += numWood;
+    getLevel()->getModel()->addWoodCount(numWood);
+    int numCut = getLevel()->getModel()->getWoodCount();
     if (numCut > 1000 && Random.roll(max(30, (3000 - numCut) / 20)))
       Effect::summon(getLevel(), factory, getPosition(), 1, 100000);
   }
@@ -325,11 +327,6 @@ class Tree : public Square {
     setVision(Vision::get(VisionId::NORMAL));
     getLevel()->updateVisibility(getPosition());
     setViewObject(ViewObject(ViewId::BURNT_TREE, ViewLayer::FLOOR, "Burnt tree"));
-  }
-
-  virtual void onEnterSpecial(Creature* c) override {
- /*   c->playerMessage(isBurnt() ? "There is a burnt tree here." : 
-        destroyed ? "There is fallen tree here." : "You pass beneath a tree");*/
   }
 
   template <class Archive> 
@@ -347,10 +344,7 @@ class Tree : public Square {
   bool SERIAL2(destroyed, false);
   int SERIAL(numWood);
   CreatureFactory SERIAL(factory);
-  static int numCut;
 };
-
-int Tree::numCut = 0;
 
 class TrapSquare : public Square {
   public:

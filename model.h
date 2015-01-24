@@ -26,6 +26,7 @@ class Level;
 class ProgressMeter;
 class Options;
 class CreatureView;
+class Trigger;
 
 /**
   * Main class that holds all game logic.
@@ -108,6 +109,12 @@ class Model {
 
   Encyclopedia keeperopedia;
 
+  Trigger* getDanglingPortal();
+  void setDanglingPortal(Trigger*);
+
+  void addWoodCount(int);
+  int getWoodCount() const;
+
   private:
   REGISTER_HANDLER(KilledLeaderEvent, const Collective*, const Creature*);
 
@@ -142,6 +149,8 @@ class Model {
   MusicType SERIAL(musicType);
   optional<ExitInfo> exitInfo;
   unique_ptr<CreatureView> SERIAL(spectator);
+  Trigger* SERIAL2(danglingPortal, nullptr);
+  int SERIAL2(woodCount, 0);
 };
 
 #endif

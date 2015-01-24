@@ -35,6 +35,7 @@
 #include "collective_config.h"
 #include "music.h"
 #include "spectator.h"
+#include "trigger.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -53,7 +54,9 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(currentTime)
     & SVAR(worldName)
     & SVAR(musicType)
-    & SVAR(spectator);
+    & SVAR(spectator)
+    & SVAR(danglingPortal)
+    & SVAR(woodCount);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
   Quest::serializeAll(ar);
@@ -75,6 +78,22 @@ const double dayLength = 1500;
 const double nightLength = 1500;
 
 const double duskLength  = 180;
+
+Trigger* Model::getDanglingPortal() {
+  return danglingPortal;
+}
+
+void Model::setDanglingPortal(Trigger* p) {
+  danglingPortal = p;
+}
+
+void Model::addWoodCount(int cnt) {
+  woodCount += cnt;
+}
+
+int Model::getWoodCount() const {
+  return woodCount;
+}
 
 MusicType Model::getCurrentMusic() const {
   return musicType;

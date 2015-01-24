@@ -1045,10 +1045,9 @@ void Collective::tick(double time) {
   }
   if (config.getEnemyPositions() && Random.roll(5)) {
     vector<Vec2> enemyPos = getEnemyPositions();
-    if (alarmInfo.finishTime() > 0) {
-      if (!enemyPos.empty())
-        delayDangerousTasks(enemyPos, getTime() + 20);
-    } else
+    if (!enemyPos.empty())
+      delayDangerousTasks(enemyPos, getTime() + 20);
+    else
       alarmInfo.finishTime() = -1000;
     bool allSurrender = true;
     for (Vec2 v : enemyPos)

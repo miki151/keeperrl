@@ -200,6 +200,7 @@ class Level : public UniqueEntity<Level> {
   CoverInfo getCoverInfo(Vec2) const;
 
   const Model* getModel() const;
+  Model* getModel();
 
   void addLightSource(Vec2, double radius);
   void removeLightSource(Vec2, double radius);

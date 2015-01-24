@@ -24,6 +24,7 @@
 #include "view_id.h"
 #include "view_object.h"
 #include "item_factory.h"
+#include "model.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {
@@ -67,13 +68,13 @@ namespace {
 class Portal : public Trigger {
   public:
   Portal(const ViewObject& obj, Level* l, Vec2 position) : Trigger(obj, l, position) {
-    if (previous) {
+    if (Portal* previous = dynamic_cast<Portal*>(l->getModel()->getDanglingPortal())) {
       other = previous;
       other->other = this;
-      previous = nullptr;
+      l->getModel()->setDanglingPortal(nullptr);
       startTime = other->startTime = -1;
     } else
-      previous = this;
+      l->getModel()->setDanglingPortal(this);
   }
 
   virtual void onCreatureEnter(Creature* c) override {
@@ -96,8 +97,8 @@ class Portal : public Trigger {
           }
       } else
         level->changeLevel(other->level, other->position, c);
-    } else 
-      c->playerMessage("The portal is not working.");
+    } else
+      c->playerMessage("Creating another portal will open a connection.");
   }
 
   virtual bool interceptsFlyingItem(Item* it) const override {
@@ -125,8 +126,7 @@ class Portal : public Trigger {
     ar& SUBCLASS(Trigger)
       & SVAR(startTime)
       & SVAR(active)
-      & SVAR(other)
-      & SVAR(previous);
+      & SVAR(other);
     CHECK_SERIAL;
   }
 
@@ -136,13 +136,10 @@ class Portal : public Trigger {
   double SERIAL2(startTime, 1000000);
   bool SERIAL2(active, true);
   Portal* SERIAL2(other, nullptr);
-  static Portal* SERIAL(previous);
 };
 
 }
 
-Portal* Portal::previous = nullptr;
-  
 PTrigger Trigger::getPortal(const ViewObject& obj, Level* l, Vec2 position) {
   return PTrigger(new Portal(obj, l, position));
 }

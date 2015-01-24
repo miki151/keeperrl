@@ -177,6 +177,10 @@ const Model* Level::getModel() const {
   return model;
 }
 
+Model* Level::getModel() {
+  return model;
+}
+
 double Level::getSunlight(Vec2 pos) const {
   return coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount;
 }

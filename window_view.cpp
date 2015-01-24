@@ -164,9 +164,9 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
       if (collectiveTab == GuiBuilder::CollectiveTab::TECHNOLOGY && activeLibrary >= 0)
         inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo(pos, activeLibrary)));
       if (collectiveTab == GuiBuilder::CollectiveTab::BUILDINGS) {
-        if (Keyboard::isKeyPressed(Keyboard::LShift))
+        if (Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift))
           inputQueue.push(UserInput(UserInputId::RECT_SELECTION, pos));
-        else if (Keyboard::isKeyPressed(Keyboard::LControl))
+        else if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl))
           inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
         else
           inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo(pos, activeBuilding)));
