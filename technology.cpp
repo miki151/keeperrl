@@ -46,7 +46,6 @@ void Technology::init() {
   Technology::set(TechId::SPELLS, new Technology("sorcery", 60, {}));
   Technology::set(TechId::SPELLS_ADV, new Technology("advanced sorcery", 120, {TechId::SPELLS}));
   Technology::set(TechId::SPELLS_MAS, new Technology("master sorcery", 350, {TechId::SPELLS_ADV}));
-  Technology::set(TechId::KRAKEN, new Technology("kraken breeding", 150, {TechId::ALCHEMY}));
 }
 
 bool Technology::canResearch() const {

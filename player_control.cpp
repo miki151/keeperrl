@@ -171,8 +171,6 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
 
 vector<PlayerControl::BuildInfo> PlayerControl::libraryInfo {
   BuildInfo(BuildInfo::IMP, "", 'i'),
-  BuildInfo({CreatureId::KRAKEN, {}, {ResourceId::MANA, 200}}, TechId::KRAKEN, "",
-      "Place the kraken in an underground lake, in reach of passing enemies."),
 };
 
 vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {

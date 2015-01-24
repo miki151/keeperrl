@@ -32,8 +32,7 @@ RICH_ENUM(TechId,
   ARCHERY,
   SPELLS,
   SPELLS_ADV,
-  SPELLS_MAS,
-  KRAKEN
+  SPELLS_MAS
 );
 
 class Technology : public Singleton<Technology, TechId> {
