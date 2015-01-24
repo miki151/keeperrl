@@ -565,20 +565,10 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
         if (pos == middle)
           continue;
         Vec2 dir = (*pos - middle).getBearing();
-        switch (dir.getCardinalDir()) {
-          case Dir::N: numArrow = 2; break;
-          case Dir::S: numArrow = 6; break;
-          case Dir::E: numArrow = 4; break;
-          case Dir::W: numArrow = 0; break;
-          case Dir::NE: numArrow = 3; break;
-          case Dir::NW: numArrow = 1; break;
-          case Dir::SE: numArrow = 5; break;
-          case Dir::SW: numArrow = 7; break;
-        }
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
             middle.x + dir.x, middle.y + dir.y);
         if (currentTileLayout.sprites)
-          renderer.drawTile(wpos, {Vec2(16, 8 + numArrow), 4});
+          renderer.drawTile(wpos, {Vec2(17, 5) + dir, 4});
         else {
           static sf::Uint32 arrows[] = { L'⇐', L'⇖', L'⇑', L'⇗', L'⇒', L'⇘', L'⇓', L'⇙'};
           renderer.drawText(Renderer::SYMBOL_FONT, 20, colors[ColorId::WHITE],
