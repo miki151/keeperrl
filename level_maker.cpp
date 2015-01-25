@@ -16,7 +16,6 @@
 #include "stdafx.h"
 
 #include "level_maker.h"
-#include "quest.h"
 #include "pantheon.h"
 #include "item_factory.h"
 #include "square.h"
@@ -1956,17 +1955,6 @@ LevelMaker* LevelMaker::towerLevel(optional<StairKey> down, optional<StairKey> u
       Predicate::type(SquareId::FLOOR)) : nullptr;
   LevelMaker* upStairs = (up) ? new Stairs(StairDirection::UP, *up, Predicate::type(SquareId::FLOOR)) : nullptr;
   queue->addMaker(new Division(0.5, 0.5, upStairs, nullptr, nullptr, downStairs));
-  return queue;
-}
-
-LevelMaker* makeDragonSwamp(StairKey down, Quest* dragonQuest) {
-  MakerQueue* queue = new MakerQueue();
-  Location* loc = new Location();
-  dragonQuest->setLocation(loc);
-  queue->addMaker(new LocationMaker(loc));
-  queue->addMaker(new UniformBlob(SquareId::MUD));
-  queue->addMaker(new Margin(3, new Stairs(StairDirection::DOWN, down, Predicate::type(SquareId::MUD), none,
-      StairLook::DUNGEON_ENTRANCE_MUD)));
   return queue;
 }
 

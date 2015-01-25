@@ -1139,9 +1139,6 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.skills = getCreature()->getSkillNames();
   info.attributes.push_back({"gold", int(getCreature()->getGold(100000000).size()), 0, ""});
   gameInfo.time = getCreature()->getTime();
- /* info.elfStanding = Tribe::get(TribeId::ELVEN)->getStanding(this);
-  info.dwarfStanding = Tribe::get(TribeId::DWARVEN)->getStanding(this);
-  info.orcStanding = Tribe::get(TribeId::ORC)->getStanding(this);*/
   info.effects.clear();
   for (string s : getCreature()->getAdjectives())
     info.effects.push_back({s, true});

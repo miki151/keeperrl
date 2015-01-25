@@ -21,7 +21,6 @@
 class Level;
 class Creature;
 class Item;
-class Quest;
 class Technology;
 class Deity;
 enum class WorshipType;

@@ -18,7 +18,6 @@
 #include "creature_factory.h"
 #include "monster.h"
 #include "level.h"
-#include "quest.h"
 #include "entity_set.h"
 #include "effect.h"
 #include "item_factory.h"

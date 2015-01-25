@@ -17,7 +17,6 @@
 
 #include "model.h"
 #include "player_control.h"
-#include "quest.h"
 #include "player.h"
 #include "village_control.h"
 #include "statistics.h"
@@ -59,7 +58,6 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(woodCount);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
-  Quest::serializeAll(ar);
   Tribe::serializeAll(ar);
   Technology::serializeAll(ar);
   Vision::serializeAll(ar);

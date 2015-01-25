@@ -21,7 +21,6 @@
 #include "monster_ai.h"
 #include "effect.h"
 #include "enemy_check.h"
-#include "quest.h"
 #include "skill.h"
 #include "tribe.h"
 #include "trigger.h"
@@ -50,7 +49,6 @@ void Serialization::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, PlayerControl);
   REGISTER_TYPE(ar, VillageControl);
   REGISTER_TYPE(ar, DoNothingController);
-  Quest::registerTypes(ar);
   Tribe::registerTypes(ar);
   Trigger::registerTypes(ar);
   VillageControl::registerTypes(ar);

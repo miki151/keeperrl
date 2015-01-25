@@ -29,7 +29,6 @@
 
 #include "view.h"
 #include "model.h"
-#include "quest.h"
 #include "tribe.h"
 #include "statistics.h"
 #include "options.h"
@@ -182,7 +181,6 @@ static void saveExceptionLine(const string& path, const string& line) {
 }
 
 void clearSingletons() {
-  Quest::clearAll();
   Tribe::clearAll();
   Technology::clearAll();
   Skill::clearAll();
