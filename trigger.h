@@ -23,7 +23,6 @@
 class Creature;
 class CreatureView;
 class Attack;
-class Vision;
 class Tribe;
 class ViewObject;
 
@@ -34,7 +33,7 @@ class Trigger {
 
   virtual void onCreatureEnter(Creature* c);
   virtual bool interceptsFlyingItem(Item* it) const;
-  virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, Vision*);
+  virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId);
 
   virtual bool isDangerous(const Creature* c) const;
   virtual void tick(double time);

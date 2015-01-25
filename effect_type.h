@@ -6,7 +6,6 @@
 enum class EffectId { 
     TELEPORT,
     HEAL,
-    IDENTIFY,
     ROLLING_BOULDER,
     FIRE,
     PORTAL,

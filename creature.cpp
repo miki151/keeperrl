@@ -135,7 +135,7 @@ CreatureAction Creature::castSpell(Spell* spell) {
     monsterMessage(getName().the() + " casts a spell");
     playerMessage("You cast " + spell->getName());
     Effect::applyToCreature(this, spell->getEffectType(), EffectStrength::NORMAL);
-    Statistics::add(StatId::SPELL_CAST);
+    level->getModel()->getStatistics().add(StatId::SPELL_CAST);
     spells.setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     spendTime(1);
@@ -152,7 +152,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) {
     monsterMessage(getName().the() + " casts a spell");
     playerMessage("You cast " + spell->getName());
     Effect::applyDirected(this, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
-    Statistics::add(StatId::SPELL_CAST);
+    level->getModel()->getStatistics().add(StatId::SPELL_CAST);
     spells.setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     spendTime(1);
@@ -252,10 +252,6 @@ void Creature::you(const string& param) const {
 
 void Creature::playerMessage(const PlayerMessage& message) const {
   controller->privateMessage(message);
-}
-
-void Creature::grantIdentify(int numItems) {
-  controller->grantIdentify(numItems);
 }
 
 Controller* Creature::getController() {
@@ -406,7 +402,7 @@ bool Creature::hasSkill(Skill* skill) const {
   return skills.hasDiscrete(skill->getId());
 }
 
-double Creature::getSkillValue(Skill* skill) const {
+double Creature::getSkillValue(const Skill* skill) const {
   return skills.getValue(skill->getId());
 }
 
@@ -1182,9 +1178,9 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
     return;
   if (drop) {
     if (contains({BodyPart::LEG, BodyPart::ARM, BodyPart::WING}, part))
-      Statistics::add(StatId::CHOPPED_LIMB);
+      level->getModel()->getStatistics().add(StatId::CHOPPED_LIMB);
     else if (part == BodyPart::HEAD)
-      Statistics::add(StatId::CHOPPED_HEAD);
+      level->getModel()->getStatistics().add(StatId::CHOPPED_HEAD);
     --bodyParts[part];
     ++lostBodyParts[part];
     if (injuredBodyParts[part] > bodyParts[part])
@@ -1636,8 +1632,8 @@ void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
   level->killCreature(this);
   GlobalEvents.addKillEvent(this, attacker);
   if (innocent)
-    Statistics::add(StatId::INNOCENT_KILLED);
-  Statistics::add(StatId::DEATH);
+    level->getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
+  level->getModel()->getStatistics().add(StatId::DEATH);
   controller.reset(new DoNothingController(this));
 }
 
@@ -2353,14 +2349,14 @@ string Creature::getNameAndTitle() const {
 
 void Creature::updateVision() {
   if (hasSkill(Skill::get(SkillId::NIGHT_VISION)))
-    vision = Vision::get(VisionId::NIGHT);
+    vision = VisionId::NIGHT;
   else if (hasSkill(Skill::get(SkillId::ELF_VISION)) || isAffected(LastingEffect::FLYING))
-    vision = Vision::get(VisionId::ELF);
+    vision = VisionId::ELF;
   else
-    vision = Vision::get(VisionId::NORMAL); 
+    vision = VisionId::NORMAL; 
 }
 
-Vision* Creature::getVision() const {
+VisionId Creature::getVision() const {
   return vision;
 }
 

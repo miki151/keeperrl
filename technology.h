@@ -49,14 +49,12 @@ class Technology : public Singleton<Technology, TechId> {
 
   static void init();
 
-  SERIALIZATION_DECL(Technology);
-
   private:
   bool canLearnFrom(const vector<Technology*>&) const;
-  string SERIAL(name);
-  int SERIAL(cost);
-  vector<Technology*> SERIAL(prerequisites);
-  bool SERIAL(research);
+  string name;
+  int cost;
+  vector<Technology*> prerequisites;
+  bool research;
 };
 
 #endif

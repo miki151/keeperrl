@@ -41,7 +41,7 @@ class Square : public Renderable {
   public:
   struct Params {
     string name;
-    Vision* vision;
+    optional<VisionId> vision;
     bool canHide;
     int strength;
     double flamability;
@@ -104,10 +104,10 @@ class Square : public Renderable {
   //@}
 
   /** Checks if this square obstructs view.*/
-  bool canSeeThru(Vision* = Vision::get(VisionId::NORMAL)) const;
+  bool canSeeThru(VisionId = VisionId::NORMAL) const;
 
   /** Sets if this square obstructs view.*/
-  void setVision(Vision*);
+  void setVision(VisionId);
 
   /** Checks if the player can hide behind this square.*/
   bool canHide() const;
@@ -200,8 +200,8 @@ class Square : public Renderable {
   void getViewIndex(ViewIndex&, const Tribe*) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
-  virtual bool itemBounces(Item* item, Vision*) const;
-  void onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, Vision*);
+  virtual bool itemBounces(Item* item, VisionId) const;
+  void onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionId);
   const vector<Item*>& getItems() const;
   vector<Item*> getItems(function<bool (Item*)> predicate) const;
   const vector<Item*>& getItems(ItemIndex) const;
@@ -244,7 +244,7 @@ class Square : public Renderable {
   Creature* SERIAL2(creature, nullptr);
   vector<PTrigger> SERIAL(triggers);
   optional<ViewObject> SERIAL(backgroundObject);
-  Vision* SERIAL(vision);
+  optional<VisionId> SERIAL(vision);
   bool SERIAL(hide);
   int SERIAL(strength);
   double SERIAL(height);

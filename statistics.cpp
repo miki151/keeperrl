@@ -16,21 +16,20 @@
 #include "stdafx.h"
 #include "statistics.h"
 
-unordered_map<StatId, int> Statistics::count;
-
 template <class Archive>
 void Statistics::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(count);
+  ar & SVAR(count);
 }
 
 SERIALIZABLE(Statistics);
 
-void Statistics::init() {
-  count.clear();
-}
-
 void Statistics::add(StatId id) {
   ++count[id];
+}
+
+void Statistics::clear() {
+  for (StatId id : ENUM_ALL(StatId))
+    count[id] = 0;
 }
 
 vector<pair<StatId, string>> text {
@@ -46,7 +45,7 @@ vector<pair<StatId, string>> text {
 
 };
 
-vector<string> Statistics::getText() {
+vector<string> Statistics::getText() const {
   vector<string> ret;
   for (auto elem : text) {
     if (int n = count[elem.first])

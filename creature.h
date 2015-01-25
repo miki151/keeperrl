@@ -107,7 +107,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   static string getModifierName(ModifierType);
 
   int getPoints() const;
-  Vision* getVision() const;
+  VisionId getVision() const;
 
   const Tribe* getTribe() const;
   Tribe* getTribe();
@@ -171,7 +171,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
 
   void addSkill(Skill* skill);
   bool hasSkill(Skill*) const;
-  double getSkillValue(Skill*) const;
+  double getSkillValue(const Skill*) const;
   const EnumSet<SkillId>& getDiscreteSkills() const;
   typedef GameInfo::PlayerInfo::SkillInfo SkillInfo;
   vector<SkillInfo> getSkillNames() const;
@@ -242,7 +242,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void you(const string& param) const;
   void playerMessage(const PlayerMessage&) const;
   bool isPlayer() const;
-  void grantIdentify(int numItems);
 
   Controller* getController();
   void pushController(PController);
@@ -343,7 +342,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   vector<const Creature*> SERIAL(visibleEnemies);
   double getTimeRemaining(LastingEffect) const;
   string getRemainingString(LastingEffect) const;
-  Vision* SERIAL2(vision, nullptr);
+  VisionId SERIAL(vision);
   void updateVision();
   vector<string> SERIAL(personalEvents);
 };

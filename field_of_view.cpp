@@ -41,7 +41,7 @@ SERIALIZABLE(FieldOfView::Visibility);
 SERIALIZATION_CONSTRUCTOR_IMPL(FieldOfView);
 SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility);
 
-FieldOfView::FieldOfView(const Table<PSquare>& s, Vision* v) 
+FieldOfView::FieldOfView(const Table<PSquare>& s, VisionId v) 
   : squares(&s), visibility(s.getWidth(), s.getHeight()), vision(v) {
 }
 
@@ -74,7 +74,7 @@ void FieldOfView::Visibility::setVisible(int x, int y) {
 static int totalIter = 0;
 static int numSamples = 0;
 
-FieldOfView::Visibility::Visibility(const Table<PSquare>& squares, Vision* vision, int x, int y) : px(x), py(y) {
+FieldOfView::Visibility::Visibility(const Table<PSquare>& squares, VisionId vision, int x, int y) : px(x), py(y) {
   memset(visible, 0, (2 * sightRange + 1) * (2 * sightRange + 1));
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
       [&](int px, int py) { return !squares[x + px][y + py]->canSeeThru(vision); },

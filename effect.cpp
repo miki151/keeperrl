@@ -183,8 +183,7 @@ static void blast(Creature* who, Square* square, Vec2 direction, int maxDistance
     l->throwItem(
         square->removeItems(elem.second),
         Attack(who, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
-          elem.second[0]->getAttackType(), 15, 15, false), maxDistance, position, direction,
-        Vision::get(VisionId::NORMAL));
+          elem.second[0]->getAttackType(), 15, 15, false), maxDistance, position, direction, VisionId::NORMAL);
   }
   if (square->canDestroy())
     square->destroy();
@@ -445,7 +444,6 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
     case EffectId::ENHANCE_WEAPON: enhanceWeapon(c); break;
     case EffectId::DESTROY_EQUIPMENT: destroyEquipment(c); break;
     case EffectId::HEAL: heal(c, strength); break;
-    case EffectId::IDENTIFY: c->grantIdentify(identifyNum[strength]); break;
     case EffectId::FIRE: c->getSquare()->setOnFire(fireAmount[strength]); break;
     case EffectId::PORTAL: portal(c); break;
     case EffectId::TELEPORT: teleport(c); break;
@@ -479,7 +477,6 @@ string Effect::getName(EffectType type) {
   switch (type.getId()) {
     case EffectId::HEAL: return "healing";
     case EffectId::TELEPORT: return "teleport";
-    case EffectId::IDENTIFY: return "identify";
     case EffectId::ROLLING_BOULDER: return "rolling boulder";
     case EffectId::PORTAL: return "magic portal";
     case EffectId::EMIT_POISON_GAS: return "poison gas";

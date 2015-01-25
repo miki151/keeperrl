@@ -20,25 +20,11 @@
 #include "item_attributes.h"
 #include "creature.h"
 
-template <class Archive> 
-void Skill::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(Singleton)
-    & SVAR(name)
-    & SVAR(consume)
-    & SVAR(helpText)
-    & SVAR(discrete);
-  CHECK_SERIAL;
-}
-
-SERIALIZABLE(Skill);
-
-SERIALIZATION_CONSTRUCTOR_IMPL(Skill);
-
 string Skill::getName() const {
   return name;
 }
 
-string Skill::getNameForCreature(const Creature* c) {
+string Skill::getNameForCreature(const Creature* c) const {
   double val = c->getSkillValue(this);
   CHECK(val >= 0 && val <= 1) << "Skill value " << val;
   string grade;

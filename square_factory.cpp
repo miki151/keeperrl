@@ -32,7 +32,7 @@ class Staircase : public Square {
   Staircase(const ViewObject& obj, const string& name, StairDirection dir, StairKey key) : Square(obj,
       CONSTRUCT(Square::Params,
         c.name = name;
-        c.vision = Vision::get(VisionId::NORMAL);
+        c.vision = VisionId::NORMAL;
         c.canHide = true;
         c.strength = 10000;
         c.movementType = {MovementTrait::WALK};)) {
@@ -70,7 +70,7 @@ class Magma : public Square {
   Magma(const ViewObject& object, const string& name, const string& itemMsg, const string& noSee) : Square(object,
       CONSTRUCT(Square::Params,
         c.name = name;
-        c.vision = Vision::get(VisionId::NORMAL);
+        c.vision = VisionId::NORMAL;
         c.constructions[SquareId::BRIDGE] = 20;
         c.movementType = {MovementTrait::FLY};)),
     itemMessage(itemMsg), noSeeMsg(noSee) {}
@@ -111,7 +111,7 @@ class Water : public Square {
       : Square(object.setAttribute(ViewObject::Attribute::WATER_DEPTH, _depth),
           CONSTRUCT(Square::Params,
             c.name = name;
-            c.vision = Vision::get(VisionId::NORMAL);
+            c.vision = VisionId::NORMAL;
             c.constructions[SquareId::BRIDGE] = 20;
             c.movementType = getMovement(_depth);
           )),
@@ -161,7 +161,7 @@ class Chest : public Square {
     : Square(object,
           CONSTRUCT(Square::Params,
             c.name = name;
-            c.vision = Vision::get(VisionId::NORMAL);
+            c.vision = VisionId::NORMAL;
             c.canHide = true;
             c.strength = 30;
             c.movementType = {MovementTrait::WALK};
@@ -252,7 +252,7 @@ class Fountain : public Square {
   Fountain(const ViewObject& object) : Square(object,
       CONSTRUCT(Square::Params,
         c.name = "fountain";
-        c.vision = Vision::get(VisionId::NORMAL);
+        c.vision = VisionId::NORMAL;
         c.canHide = true;
         c.movementType = {MovementTrait::WALK};
         c.strength = 100;)) {}
@@ -290,7 +290,7 @@ class Fountain : public Square {
 
 class Tree : public Square {
   public:
-  Tree(const ViewObject& object, const string& name, Vision* vision, int _numWood,
+  Tree(const ViewObject& object, const string& name, VisionId vision, int _numWood,
       map<SquareId, int> construct, CreatureFactory f) : Square(object,
         CONSTRUCT(Square::Params,
           c.name = name;
@@ -310,8 +310,7 @@ class Tree : public Square {
       return;
     getLevel()->globalMessage(getPosition(), "The tree falls.");
     destroyed = true;
-    setVision(Vision::get(VisionId::NORMAL));
-    getLevel()->updateVisibility(getPosition());
+    setVision(VisionId::NORMAL);
     setViewObject(ViewObject(ViewId::FALLEN_TREE, ViewLayer::FLOOR, "Fallen tree"));
   }
 
@@ -324,8 +323,7 @@ class Tree : public Square {
   }
 
   virtual void burnOut() override {
-    setVision(Vision::get(VisionId::NORMAL));
-    getLevel()->updateVisibility(getPosition());
+    setVision(VisionId::NORMAL);
     setViewObject(ViewObject(ViewId::BURNT_TREE, ViewLayer::FLOOR, "Burnt tree"));
   }
 
@@ -352,7 +350,7 @@ class TrapSquare : public Square {
       CONSTRUCT(Square::Params,
         c.name = "floor";
         c.movementType = {MovementTrait::WALK};
-        c.vision = Vision::get(VisionId::NORMAL);)), effect(e) {
+        c.vision = VisionId::NORMAL;)), effect(e) {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -465,7 +463,7 @@ class Barricade : public Square {
   Barricade(const ViewObject& object, const Tribe* t, int destStrength) : Square(object,
       CONSTRUCT(Square::Params,
         c.name = "barricade";
-        c.vision = Vision::get(VisionId::NORMAL);
+        c.vision = VisionId::NORMAL;
         c.flamability = 0.5;)),
       tribe(t), destructionStrength(destStrength) {
   }
@@ -508,7 +506,7 @@ class Furniture : public Square {
       : Square(object.setModifier(ViewObject::Modifier::ROUND_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = name;
-            c.vision = Vision::get(VisionId::NORMAL);
+            c.vision = VisionId::NORMAL;
             c.canHide = true;
             c.strength = 100;
             c.movementType = {MovementTrait::WALK};
@@ -610,7 +608,7 @@ class Altar : public Square {
   Altar(const ViewObject& object) : Square(object,
       CONSTRUCT(Square::Params,
         c.name = "shrine";
-        c.vision = Vision::get(VisionId::NORMAL);
+        c.vision = VisionId::NORMAL;
         c.canHide = true;
         c.movementType = {MovementTrait::WALK};
         c.strength = 100;)) {
@@ -842,7 +840,7 @@ class Hatchery : public Square {
   Hatchery(const ViewObject& object, const string& name, CreatureFactory f) : Square(object,
       CONSTRUCT(Square::Params,
         c.name = name;
-        c.vision = Vision::get(VisionId::NORMAL);
+        c.vision = VisionId::NORMAL;
         c.movementType = {MovementTrait::WALK};
         c.ticking = true;)),
     factory(f) {}
@@ -929,7 +927,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR_BACKGROUND, "Floor"),
             CONSTRUCT(Square::Params,
               c.name = "floor";
-              c.vision = Vision::get(VisionId::NORMAL);
+              c.vision = VisionId::NORMAL;
               c.movementType = {MovementTrait::WALK};
               c.constructions[SquareId::TREASURE_CHEST] = 10;
               c.constructions[SquareId::DORM] = 10;
@@ -958,20 +956,20 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
             CONSTRUCT(Square::Params,
               c.name = "floor";
-              c.vision = Vision::get(VisionId::NORMAL);
+              c.vision = VisionId::NORMAL;
               c.movementType = {MovementTrait::WALK};));
     case SquareId::BRIDGE:
         return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR,"Bridge"),
             CONSTRUCT(Square::Params,
               c.name = "rope bridge";
               c.movementType = {MovementTrait::WALK};
-              c.vision = Vision::get(VisionId::NORMAL);));
+              c.vision = VisionId::NORMAL;));
     case SquareId::GRASS:
         return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND, "Grass"),
             CONSTRUCT(Square::Params,
               c.name = "grass";
               c.movementType = {MovementTrait::WALK};
-              c.vision = Vision::get(VisionId::NORMAL);
+              c.vision = VisionId::NORMAL;
               c.constructions[SquareId::EYEBALL] = 5;
               c.constructions[SquareId::IMPALED_HEAD] = 5;));
     case SquareId::CROPS:
@@ -979,20 +977,20 @@ Square* SquareFactory::getPtr(SquareType s) {
                 ViewLayer::FLOOR_BACKGROUND, "Wheat"),
             CONSTRUCT(Square::Params,
               c.name = "potatoes";
-              c.vision = Vision::get(VisionId::NORMAL);
+              c.vision = VisionId::NORMAL;
               c.movementType = {MovementTrait::WALK};));
     case SquareId::MUD:
         return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Mud"),
             CONSTRUCT(Square::Params,
               c.name = "mud";
-              c.vision = Vision::get(VisionId::NORMAL);
+              c.vision = VisionId::NORMAL;
               c.movementType = {MovementTrait::WALK};));
     case SquareId::ROAD:
         return new Square(ViewObject(ViewId::ROAD, ViewLayer::FLOOR, "Road")
             .setModifier(ViewObject::Modifier::ROAD),
             CONSTRUCT(Square::Params,
               c.name = "road";
-              c.vision = Vision::get(VisionId::NORMAL);
+              c.vision = VisionId::NORMAL;
               c.movementType = {MovementTrait::WALK};));
     case SquareId::ROCK_WALL:
         return new Square(ViewObject(ViewId::WALL, ViewLayer::FLOOR, "Wall")
@@ -1042,7 +1040,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain"),
           CONSTRUCT(Square::Params,
             c.name = "mountain";
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::MOUNTAIN2:
         return new Square(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
@@ -1053,12 +1051,12 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"),
           CONSTRUCT(Square::Params,
             c.name = "mountain";
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::HILL:
         return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND, "Hill"),
           CONSTRUCT(Square::Params,
             c.name = "hill";
-            c.vision = Vision::get(VisionId::NORMAL);
+            c.vision = VisionId::NORMAL;
             c.constructions[SquareId::EYEBALL] = 5;
             c.constructions[SquareId::IMPALED_HEAD] = 5;
             c.movementType = {MovementTrait::WALK};));
@@ -1075,27 +1073,26 @@ Square* SquareFactory::getPtr(SquareType s) {
           CONSTRUCT(Square::Params,
             c.name = "sand";
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::CANIF_TREE:
         return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR, "Tree")
-                .setModifier(ViewObject::Modifier::ROUND_SHADOW),
-            "tree", Vision::get(VisionId::ELF),
+                .setModifier(ViewObject::Modifier::ROUND_SHADOW), "tree", VisionId::ELF,
             Random.get(25, 40), {{SquareId::TREE_TRUNK, 20}}, s.get<CreatureFactory::SingleCreature>());
     case SquareId::DECID_TREE:
         return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR, "Tree")
                 .setModifier(ViewObject::Modifier::ROUND_SHADOW),
-            "tree", Vision::get(VisionId::ELF), Random.get(25, 40), {{SquareId::TREE_TRUNK, 20}},
+            "tree", VisionId::ELF, Random.get(25, 40), {{SquareId::TREE_TRUNK, 20}},
             s.get<CreatureFactory::SingleCreature>());
     case SquareId::BUSH:
         return new Tree(ViewObject(ViewId::BUSH, ViewLayer::FLOOR, "Bush"), "bush",
-            Vision::get(VisionId::NORMAL), Random.get(5, 10), {{SquareId::TREE_TRUNK, 10}},
+            VisionId::NORMAL, Random.get(5, 10), {{SquareId::TREE_TRUNK, 10}},
             s.get<CreatureFactory::SingleCreature>());
     case SquareId::TREE_TRUNK:
         return new Square(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
           CONSTRUCT(Square::Params,
             c.name = "tree trunk";
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::BED:
         return new Bed(ViewObject(ViewId::BED, ViewLayer::FLOOR, "Bed"), "bed");
     case SquareId::DORM:
@@ -1103,34 +1100,34 @@ Square* SquareFactory::getPtr(SquareType s) {
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::TORCH: return new Torch(ViewObject(ViewId::TORCH, ViewLayer::FLOOR, "Torch"), "torch");
     case SquareId::STOCKPILE:
         return new DestroyableSquare(ViewObject(ViewId::STOCKPILE1, ViewLayer::FLOOR_BACKGROUND, "Storage (all)"),
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::STOCKPILE_EQUIP:
         return new DestroyableSquare(ViewObject(ViewId::STOCKPILE2, ViewLayer::FLOOR_BACKGROUND,
               "Storage (equipment)"),
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::STOCKPILE_RES:
         return new DestroyableSquare(ViewObject(ViewId::STOCKPILE3, ViewLayer::FLOOR_BACKGROUND,
               "Storage (resources)"),
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::PRISON:
         return new DestroyableSquare(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND, "Prison"),
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::WELL:
         return new Furniture(ViewObject(ViewId::WELL, ViewLayer::FLOOR, "Well"), "well", 0);
     case SquareId::STATUE:
@@ -1146,7 +1143,7 @@ Square* SquareFactory::getPtr(SquareType s) {
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::TRAINING_ROOM:
         return new TrainingDummy(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training room"), 
             "training room");
@@ -1155,7 +1152,7 @@ Square* SquareFactory::getPtr(SquareType s) {
           CONSTRUCT(Square::Params,
             c.name = "ritual room";
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::IMPALED_HEAD:
         return new Square(ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR, "Impaled head")
             .setModifier(ViewObject::Modifier::ROUND_SHADOW),
@@ -1163,7 +1160,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.name = "impaled head";
             c.canDestroy = true;
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::EYEBALL:
         return new Square(ViewObject(ViewId::EYEBALL, ViewLayer::FLOOR, "Eyeball")
             .setModifier(ViewObject::Modifier::ROUND_SHADOW),
@@ -1171,7 +1168,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.name = "eyeball";
             c.canDestroy = true;
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::LIBRARY:
         return new TrainingDummy(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Library"), 
             "library");
@@ -1219,7 +1216,7 @@ Square* SquareFactory::getPtr(SquareType s) {
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.movementType = {MovementTrait::WALK};
-            c.vision = Vision::get(VisionId::NORMAL);));
+            c.vision = VisionId::NORMAL;));
     case SquareId::GRAVE:
         return new Grave(ViewObject(ViewId::GRAVE, ViewLayer::FLOOR, "Grave"), "grave");
     case SquareId::IRON_BARS:

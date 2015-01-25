@@ -7,18 +7,6 @@ void CreatureVision::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(CreatureVision);
 
-template <class Archive> 
-void Vision::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(Singleton) 
-    & SVAR(inheritedFov)
-    & SVAR(nightVision);
-  CHECK_SERIAL;
-}
-
-SERIALIZABLE(Vision);
-
-SERIALIZATION_CONSTRUCTOR_IMPL(Vision);
-
 Vision::Vision(Vision* inherited, bool night) : inheritedFov(inherited), nightVision(night) {}
 
 Vision* Vision::getInheritedFov() const {

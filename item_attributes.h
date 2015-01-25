@@ -60,8 +60,6 @@ class ItemAttributes {
   string SERIAL(description);
   MustInitialize<double> SERIAL(weight);
   MustInitialize<ItemClass> SERIAL(itemClass);
-  optional<string> SERIAL(realName);
-  optional<string> SERIAL(realPlural);
   optional<string> SERIAL(plural);
   optional<string> SERIAL(blindName);
   optional<ItemId> SERIAL(firingWeapon);

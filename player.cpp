@@ -409,27 +409,6 @@ void Player::equipmentAction() {
   }
 }
 
-void Player::grantIdentify(int numItems) {
-  auto unidentFun = [this](const Item* item) { return item->canIdentify() && !item->isIdentified();};
-  vector<Item*> unIded = getCreature()->getEquipment().getItems(unidentFun);
-  if (unIded.empty()) {
-    privateMessage("All your posessions are already identified");
-    return;
-  }
-  if (numItems > unIded.size()) {
-    privateMessage("You identify all your posessions");
-    for (Item* it : unIded)
-      it->identify();
-  } else
-  for (int i : Range(numItems)) {
-    vector<Item*> items = chooseItem("Choose an item to identify:", unidentFun);
-    if (items.size() == 0)
-      return; 
-    items[0]->identify();
-    privateMessage("You identify " + items[0]->getTheName());
-  }
-}
-
 void Player::displayInventory() {
   if (!getCreature()->isHumanoid()) {
     model->getView()->presentText("", "You can't use inventory.");

@@ -42,7 +42,7 @@ class Creature;
 class Skill : public Singleton<Skill, SkillId> {
   public:
   string getName() const;
-  string getNameForCreature(const Creature*);
+  string getNameForCreature(const Creature*) const;
   string getHelpText() const;
   bool transferOnConsumption() const;
   bool isDiscrete() const;
@@ -51,13 +51,11 @@ class Skill : public Singleton<Skill, SkillId> {
 
   static void init();
 
-  SERIALIZATION_DECL(Skill);
-
   private:
-  string SERIAL(name);
-  string SERIAL(helpText);
-  bool SERIAL(consume);
-  bool SERIAL(discrete);
+  string name;
+  string helpText;
+  bool consume;
+  bool discrete;
   Skill(string name, string helpText, bool discrete, bool canConsume = true);
 };
 

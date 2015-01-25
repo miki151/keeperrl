@@ -47,8 +47,6 @@ class FireScroll : public Item {
   FireScroll(const ItemAttributes& attr) : Item(attr) {}
 
   virtual void apply(Creature* c, Level* l) override {
-    if (l->playerCanSee(c->getPosition()))
-      identify();
     set = true;
   }
 
@@ -366,10 +364,10 @@ class Potion : public Item {
 
 class SkillBook : public Item {
   public:
-  SkillBook(const ItemAttributes& attr, Skill* s) : Item(attr), skill(s) {}
+  SkillBook(const ItemAttributes& attr, Skill* s) : Item(attr), skill(s->getId()) {}
 
   virtual void apply(Creature* c, Level* l) override {
-    c->addSkill(skill);
+    c->addSkill(Skill::get(skill));
   }
 
   template <class Archive> 
@@ -382,16 +380,16 @@ class SkillBook : public Item {
   SERIALIZATION_CONSTRUCTOR(SkillBook);
 
   private:
-  Skill* SERIAL(skill);
+  SkillId SERIAL(skill);
 };
 
 class TechBook : public Item {
   public:
-  TechBook(const ItemAttributes& attr, Technology* t = nullptr) : Item(attr), tech(t) {}
+  TechBook(const ItemAttributes& attr, optional<TechId> t) : Item(attr), tech(t) {}
 
   virtual void apply(Creature* c, Level* l) override {
-    if (!read || tech != nullptr) {
-      GlobalEvents.addTechBookEvent(tech);
+    if (!read || !!tech) {
+      GlobalEvents.addTechBookEvent(tech ? Technology::get(*tech) : nullptr);
       read = true;
     }
   }
@@ -407,7 +405,7 @@ class TechBook : public Item {
   SERIALIZATION_CONSTRUCTOR(TechBook);
 
   private:
-  Technology* SERIAL2(tech, nullptr);
+  optional<TechId> SERIAL(tech);
   bool SERIAL2(read, false);
 };
 
@@ -455,13 +453,6 @@ void ItemFactory::registerTypes(Archive& ar) {
 }
 
 REGISTER_TYPES(ItemFactory);
-
-static vector<string> amulet_looks = { "steel", "copper", "crystal", "wooden", "amber"};
-static vector<ViewId> amulet_ids = { ViewId::STEEL_AMULET, ViewId::COPPER_AMULET, ViewId::CRYSTAL_AMULET, ViewId::WOODEN_AMULET, ViewId::AMBER_AMULET};
-
-static vector<string> potion_looks = { "effervescent", "murky", "swirly", "violet", "puce", "smoky", "fizzy", "milky" };
-static vector<ViewId> potion_ids = { ViewId::EFFERVESCENT_POTION, ViewId::MURKY_POTION, ViewId::SWIRLY_POTION, ViewId::VIOLET_POTION, ViewId::PUCE_POTION, ViewId::SMOKY_POTION, ViewId::FIZZY_POTION, ViewId::MILKY_POTION};
-static vector<string> scroll_looks;
 
 ItemFactory::ItemFactory(const vector<ItemInfo>& _items,
       const vector<ItemType>& _unique) : unique(_unique) {
@@ -511,7 +502,8 @@ ItemFactory ItemFactory::villageShop() {
   return ItemFactory({
       {{ItemId::SCROLL, EffectId::TELEPORT}, 5 },
       {{ItemId::SCROLL, EffectId::PORTAL}, 5 },
-      {{ItemId::SCROLL, EffectId::IDENTIFY}, 5 },
+      {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 5 },
+      {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 5 },
       {ItemId::FIRE_SCROLL, 5 },
       {{ItemId::SCROLL, EffectId::FIRE_SPHERE_PET}, 5 },
       {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
@@ -686,7 +678,8 @@ ItemFactory ItemFactory::potions() {
 ItemFactory ItemFactory::scrolls() {
   return ItemFactory({
       {{ItemId::SCROLL, EffectId::TELEPORT}, 1 },
-      {{ItemId::SCROLL, EffectId::IDENTIFY}, 1 },
+      {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 1 },
+      {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 1 },
       {ItemId::FIRE_SCROLL, 1 },
       {{ItemId::SCROLL, EffectId::FIRE_SPHERE_PET}, 1 },
       {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
@@ -736,7 +729,8 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::STRENGTH_GLOVES, 3 },
       {{ItemId::SCROLL, EffectId::TELEPORT}, 30 },
       {{ItemId::SCROLL, EffectId::PORTAL}, 10 },
-      {{ItemId::SCROLL, EffectId::IDENTIFY}, 30 },
+      {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 30 },
+      {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 30 },
       {ItemId::FIRE_SCROLL, 30 },
       {{ItemId::SCROLL, EffectId::FIRE_SPHERE_PET}, 30 },
       {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 5 },
@@ -768,13 +762,6 @@ ItemFactory ItemFactory::singleType(ItemType id) {
   return ItemFactory({{id, 1}});
 }
 
-void ItemFactory::init() {
-  for (int i : Range(100))
-    scroll_looks.push_back(toUpper(NameGenerator::get(NameGeneratorId::SCROLL)->getNext()));
-  random_shuffle(potion_looks.begin(), potion_looks.end(),[](int a) { return Random.get(a);});
-  random_shuffle(amulet_looks.begin(), amulet_looks.end(),[](int a) { return Random.get(a);});
-}
-
 int getEffectPrice(EffectType type) {
   switch (type.getId()) {
     case EffectId::LASTING:
@@ -798,7 +785,6 @@ int getEffectPrice(EffectType type) {
           case LastingEffect::INVISIBLE: return 120;
           case LastingEffect::FLYING: return 130;
         }
-    case EffectId::IDENTIFY: return 15;
     case EffectId::ACID:
     case EffectId::HEAL: return 40;
     case EffectId::TELEPORT:
@@ -836,10 +822,6 @@ const static vector<EffectType> potionEffects {
    {EffectId::LASTING, LastingEffect::INVISIBLE},
    {EffectId::LASTING, LastingEffect::FLYING},
 };
-
-static int getPotionNum(EffectType e) {
-  return (*findElement(potionEffects, e)) % potion_looks.size();
-}
 
 ViewId getTrapViewId(TrapType t) {
   switch (t) {
@@ -950,8 +932,8 @@ PItem ItemFactory::fromId(ItemType item) {
     case ItemId::FRIENDLY_ANIMALS_AMULET:
         return PItem(new AmuletOfEnemyCheck(getAttributes(item), EnemyCheck::friendlyAnimals(0.5)));
     case ItemId::FIRE_SCROLL: return PItem(new FireScroll(getAttributes(item)));
-    case ItemId::RANDOM_TECH_BOOK: return PItem(new TechBook(getAttributes(item)));
-    case ItemId::TECH_BOOK: return PItem(new TechBook(getAttributes(item), Technology::get(item.get<TechId>())));
+    case ItemId::RANDOM_TECH_BOOK: return PItem(new TechBook(getAttributes(item), none));
+    case ItemId::TECH_BOOK: return PItem(new TechBook(getAttributes(item), item.get<TechId>()));
     case ItemId::POTION: return PItem(new Potion(getAttributes(item)));
     case ItemId::TRAP_ITEM:
         return getTrap(getAttributes(item), item.get<TrapInfo>().trapType(), item.get<TrapInfo>().effectType());
@@ -1224,49 +1206,41 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::RING;
             i.price = 200;);
     case ItemId::WARNING_AMULET: return ITATTR(
-            i.viewId = amulet_ids[0];
-            i.name = amulet_looks[0] + " amulet";
-            i.realName = "amulet of warning";
-            i.realPlural = "amulets of warning";
+            i.viewId = ViewId::STEEL_AMULET;
+            i.name = "amulet of warning";
+            i.plural = "amulets of warning";
             i.description = "Warns about dangerous beasts and enemies.";
             i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 220;
-            i.identifiable = true;
             i.weight = 0.3;);
     case ItemId::HEALING_AMULET: return ITATTR(
-            i.viewId = amulet_ids[1];
-            i.name = amulet_looks[1] + " amulet";
-            i.realName = "amulet of healing";
-            i.realPlural = "amulets of healing";
+            i.viewId = ViewId::AMBER_AMULET;
+            i.name = "amulet of healing";
+            i.plural = "amulets of healing";
             i.description = "Slowly heals all wounds.";
             i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 300;
-            i.identifiable = true;
             i.weight = 0.3;);
     case ItemId::DEFENSE_AMULET: return ITATTR(
-            i.viewId = amulet_ids[2];
-            i.name = amulet_looks[2] + " amulet";
-            i.realName = "amulet of defense";
-            i.realPlural = "amulets of defense";
+            i.viewId = ViewId::COPPER_AMULET;
+            i.name = "amulet of defense";
+            i.plural = "amulets of defense";
             i.description = "Increases the toughness of your skin and flesh, making you harder to wound.";
             i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 300;
-            i.identifiable = true;
             i.modifiers[ModifierType::DEFENSE] = 3 + maybePlusMinusOne(4); 
             i.weight = 0.3;);
     case ItemId::FRIENDLY_ANIMALS_AMULET: return ITATTR(
-            i.viewId = amulet_ids[3];
-            i.name = amulet_looks[3] + " amulet";
-            i.realName = "amulet of nature affinity";
-            i.realPlural = "amulets of nature affinity";
+            i.viewId = ViewId::WOODEN_AMULET;
+            i.name = "amulet of nature affinity";
+            i.plural = "amulets of nature affinity";
             i.description = "Makes all animals peaceful.";
             i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 120;
-            i.identifiable = true;
             i.weight = 0.3;);
     case ItemId::FIRST_AID_KIT: return ITATTR(
             i.viewId = ViewId::FIRST_AID;
@@ -1302,10 +1276,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 10;);
     case ItemId::POTION: return ITATTR(
             EffectType effect = item.get<EffectType>();
-            i.viewId = potion_ids[getPotionNum(effect)];
-            i.name = potion_looks[getPotionNum(effect)] + " potion";
-            i.realName = "potion of " + Effect::getName(effect);
-            i.realPlural = "potions of " + Effect::getName(effect);
+            i.viewId = ViewId::PUCE_POTION;
+            i.name = "potion of " + Effect::getName(effect);
+            i.plural = "potions of " + Effect::getName(effect);
             i.blindName = "potion";
             i.itemClass = ItemClass::POTION;
             i.fragile = true;
@@ -1314,24 +1287,18 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.effect = effect;
             i.price = getEffectPrice(effect);
             i.flamability = 0.3;
-            i.identifiable = true;
             i.uses = 1;); 
     case ItemId::MUSHROOM: return ITATTR(
             EffectType effect = item.get<EffectType>();
             i.viewId = ViewId::MUSHROOM;
-            i.name = "mushroom";
-            i.realName = Effect::getName(effect) + " mushroom";
+            i.name = Effect::getName(effect) + " mushroom";
             i.itemClass= ItemClass::FOOD;
             i.weight = 0.1;
             i.modifiers[ModifierType::THROWN_DAMAGE] = -15;
             i.effect = effect;
             i.price = getEffectPrice(effect);
-            i.identifyOnApply = false;
             i.uses = 1;);
     case ItemId::SCROLL: 
-        if (item.get<EffectType>() == EffectId::IDENTIFY && Item::isEverythingIdentified())
-          return getAttributes({ItemId::SCROLL, chooseRandom(
-                {EffectId::ENHANCE_WEAPON, EffectId::ENHANCE_ARMOR})});
         return ITATTR(
             EffectType effect = item.get<EffectType>();
             i.viewId = ViewId::SCROLL;

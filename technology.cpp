@@ -18,20 +18,6 @@
 #include "util.h"
 #include "skill.h"
 
-template <class Archive> 
-void Technology::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(Singleton)
-    & SVAR(name)
-    & SVAR(cost)
-    & SVAR(prerequisites)
-    & SVAR(research);
-  CHECK_SERIAL;
-}
-
-SERIALIZABLE(Technology);
-
-SERIALIZATION_CONSTRUCTOR_IMPL(Technology);
-
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology("alchemy", 80, {}));
   Technology::set(TechId::ALCHEMY_ADV, new Technology("advanced alchemy", 200, {TechId::ALCHEMY}));

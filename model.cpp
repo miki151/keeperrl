@@ -53,15 +53,13 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(currentTime)
     & SVAR(worldName)
     & SVAR(musicType)
-    & SVAR(spectator)
     & SVAR(danglingPortal)
-    & SVAR(woodCount);
+    & SVAR(woodCount)
+    & SVAR(statistics)
+    & SVAR(spectator);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
   Tribe::serializeAll(ar);
-  Technology::serializeAll(ar);
-  Vision::serializeAll(ar);
-  Statistics::serialize(ar, version);
   updateSunlightInfo();
 }
 
@@ -91,6 +89,13 @@ void Model::addWoodCount(int cnt) {
 
 int Model::getWoodCount() const {
   return woodCount;
+}
+Statistics& Model::getStatistics() {
+  return statistics;
+}
+
+const Statistics& Model::getStatistics() const {
+  return statistics;
 }
 
 MusicType Model::getCurrentMusic() const {
@@ -375,7 +380,7 @@ void Model::exitAction() {
 
 void Model::retireCollective() {
   CHECK(playerControl);
-  Statistics::init();
+  statistics.clear();
   playerControl->retire();
   won = false;
   addHero = true;
@@ -912,7 +917,7 @@ void Model::conquered(const string& title, const string& land, vector<const Crea
   string text= "You have conquered this land. You killed " + toString(kills.size()) +
       " innocent beings and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
-  for (string stat : Statistics::getText())
+  for (string stat : statistics.getText())
     text += stat + "\n";
   view->presentText("Victory", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
@@ -926,7 +931,7 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
       ". You killed " + toString(kills.size()) +
       " enemies and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
-  for (string stat : Statistics::getText())
+  for (string stat : statistics.getText())
     text += stat + "\n";
   view->presentText("Victory", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
@@ -943,7 +948,7 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
   }
   text += ". He killed " + toString(numKills) 
       + " " + enemiesString + " and scored " + toString(points) + " points.\n \n";
-  for (string stat : Statistics::getText())
+  for (string stat : statistics.getText())
     text += stat + "\n";
   view->presentText("Game over", text);
   ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)

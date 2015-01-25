@@ -32,11 +32,9 @@ class Vision : public Singleton<Vision, VisionId> {
   bool isNightVision() const;
   static void init();
 
-  SERIALIZATION_DECL(Vision);
-
   private:
-  Vision* SERIAL(inheritedFov);
-  bool SERIAL(nightVision);
+  Vision* inheritedFov;
+  bool nightVision;
 };
 
 class Creature;

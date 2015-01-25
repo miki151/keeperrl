@@ -19,7 +19,7 @@
 #include "util.h"
 #include "enums.h"
 
-enum class StatId {
+RICH_ENUM(StatId,
   DEATH,
   CHOPPED_HEAD,
   CHOPPED_LIMB,
@@ -28,22 +28,20 @@ enum class StatId {
   SCROLL_READ,
   ARMOR_PRODUCED,
   WEAPON_PRODUCED,
-  POTION_PRODUCED,
-};
-
-ENUM_HASH(StatId);
+  POTION_PRODUCED
+);
 
 class Statistics {
   public:
-  static void init();
-  static void add(StatId);
-  static vector<string> getText();
+  void add(StatId);
+  vector<string> getText() const;
+  void clear();
 
   template <class Archive>
-  static void serialize(Archive& ar, const unsigned int version);
+  void serialize(Archive& ar, const unsigned int version);
 
   private:
-  static unordered_map<StatId, int> count;
+  EnumMap<StatId, int> SERIAL(count);
 };
 
 #endif

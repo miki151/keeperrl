@@ -2068,11 +2068,11 @@ void Collective::onAppliedSquare(Vec2 pos) {
           break;
       }
       if (items[0]->getClass() == ItemClass::WEAPON)
-        Statistics::add(StatId::WEAPON_PRODUCED);
+        level->getModel()->getStatistics().add(StatId::WEAPON_PRODUCED);
       if (items[0]->getClass() == ItemClass::ARMOR)
-        Statistics::add(StatId::ARMOR_PRODUCED);
+        level->getModel()->getStatistics().add(StatId::ARMOR_PRODUCED);
       if (items[0]->getClass() == ItemClass::POTION)
-        Statistics::add(StatId::POTION_PRODUCED);
+        level->getModel()->getStatistics().add(StatId::POTION_PRODUCED);
       addProducesMessage(c, items);
       getLevel()->getSafeSquare(pos)->dropItems(std::move(items));
     }
@@ -2143,7 +2143,7 @@ double Collective::getDangerLevel(bool includeExecutions) const {
 }
 
 bool Collective::hasTech(TechId id) const {
-  return contains(technologies, Technology::get(id));
+  return contains(technologies, id);
 }
 
 double Collective::getTechCost(Technology* t) {
@@ -2154,7 +2154,7 @@ double Collective::getTechCost(Technology* t) {
 }
 
 void Collective::acquireTech(Technology* tech, bool free) {
-  technologies.push_back(tech);
+  technologies.push_back(tech->getId());
   if (free)
     ++numFreeTech;
   for (auto elem : spellLearning)
@@ -2163,8 +2163,8 @@ void Collective::acquireTech(Technology* tech, bool free) {
         leader->addSpell(Spell::get(elem.id));
 }
 
-const vector<Technology*>& Collective::getTechnologies() const {
-  return technologies;
+vector<Technology*> Collective::getTechnologies() const {
+  return transform2<Technology*>(technologies, [] (const TechId t) { return Technology::get(t); });
 }
 
 void Collective::onCombatEvent(const Creature* c) {

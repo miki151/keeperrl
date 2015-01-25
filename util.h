@@ -1007,7 +1007,8 @@ class DirSet {
 template<class T, class U>
 class EnumMap {
   public:
-  EnumMap() : elems() {
+  EnumMap() {
+    clear();
   }
 
   EnumMap(const EnumMap& o) : elems(o.elems) {}

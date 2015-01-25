@@ -59,7 +59,7 @@ double Trigger::getLightEmission() const {
 }
 
 bool Trigger::interceptsFlyingItem(Item* it) const { return false; }
-void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, Vision*) {}
+void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId) {}
 bool Trigger::isDangerous(const Creature* c) const { return false; }
 void Trigger::tick(double time) {}
 
@@ -106,7 +106,7 @@ class Portal : public Trigger {
   }
 
   virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir,
-      Vision* vision) {
+      VisionId vision) {
     string name = it[0]->getTheName(it.size() > 1);
     level->globalMessage(position, name + " disappears in the portal.");
     other->level->throwItem(std::move(it), a, remainingDist, other->position, dir, vision);
@@ -266,7 +266,7 @@ class MeteorShower : public Trigger {
         return false;
     level->throwItem(ItemFactory::fromId(ItemId::ROCK),
         Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 25, 40, false), 10,
-        targetPoint + direction * range, -direction, Vision::get(VisionId::NORMAL));
+        targetPoint + direction * range, -direction, VisionId::NORMAL);
     return true;
   }
 

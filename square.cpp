@@ -250,11 +250,11 @@ bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
   return false;
 }
 
-bool Square::itemBounces(Item* item, Vision* v) const {
+bool Square::itemBounces(Item* item, VisionId v) const {
   return !canSeeThru(v);
 }
 
-void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, Vision* vision) {
+void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionId vision) {
   setDirty();
   if (creature) {
     item[0]->onHitCreature(creature, attack, item.size() > 1);
@@ -437,12 +437,13 @@ void Square::removeCreature() {
   creature = 0;
 }
 
-bool Square::canSeeThru(Vision* v) const {
-  return vision && (v == vision || v->getInheritedFov() == vision);
+bool Square::canSeeThru(VisionId v) const {
+  return vision && (v == *vision || Vision::get(v)->getInheritedFov() == Vision::get(*vision));
 }
 
-void Square::setVision(Vision* v) {
+void Square::setVision(VisionId v) {
   vision = v;
+  getLevel()->updateVisibility(getPosition());
 }
 
 bool Square::canHide() const {

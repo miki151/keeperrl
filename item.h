@@ -68,8 +68,6 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   Item(const ItemAttributes&);
   virtual ~Item();
 
-  static void identifyEverything();
-  static bool isEverythingIdentified();
   static string getTrapName(TrapType);
 
   virtual void apply(Creature*, Level*);
@@ -105,10 +103,6 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   string getApplyMsgFirstPerson() const;
   string getNoSeeApplyMsg() const;
 
-  static void identify(const string& name);
-  void identify();
-  bool isIdentified() const;
-  bool canIdentify() const;
   void onEquip(Creature*);
   void onUnequip(Creature*);
   virtual void onEquipSpecial(Creature*) {}
@@ -153,13 +147,9 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   virtual void specialTick(double time, Level*, Vec2 position) {}
   void setName(const string& name);
   bool SERIAL2(discarded, false);
-  bool SERIAL(inspected);
-  static bool everythingIdentified;
 
   private:
-  static bool isIdentified(const string& name);
   string getVisibleName(bool plural) const;
-  string getRealName(bool plural) const;
   string getBlindName(bool plural) const;
   const Creature* SERIAL2(shopkeeper, nullptr);
   Fire SERIAL(fire);

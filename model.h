@@ -20,6 +20,7 @@
 #include "encyclopedia.h"
 #include "time_queue.h"
 #include "level_maker.h"
+#include "statistics.h"
 
 class PlayerControl;
 class Level;
@@ -86,6 +87,9 @@ class Model {
   Options* getOptions();
   void setOptions(Options*);
 
+  Statistics& getStatistics();
+  const Statistics& getStatistics() const;
+
   void tick(double time);
   void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, const string& land, vector<const Creature*> kills, int points);
@@ -151,6 +155,7 @@ class Model {
   unique_ptr<CreatureView> SERIAL(spectator);
   Trigger* SERIAL2(danglingPortal, nullptr);
   int SERIAL2(woodCount, 0);
+  Statistics SERIAL(statistics);
 };
 
 #endif

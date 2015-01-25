@@ -59,7 +59,6 @@ class Player : public Controller, public CreatureView {
   virtual void onKilled(const Creature* attacker) override;
   virtual void makeMove() override;
   virtual void sleeping() override;
-  virtual void grantIdentify(int numItems) override;
   virtual bool isPlayer() const override;
   virtual void you(MsgType type, const string& param) override;
   virtual void you(const string& param) override;

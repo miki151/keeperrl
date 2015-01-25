@@ -247,7 +247,7 @@ class Collective : public Task::Callback {
 
   bool hasTech(TechId id) const;
   void acquireTech(Technology*, bool free = false);
-  const vector<Technology*>& getTechnologies() const;
+  vector<Technology*> getTechnologies() const;
   double getTechCost(Technology*);
   static vector<Spell*> getSpellLearning(const Technology*);
   vector<Spell*> getAllSpells() const;
@@ -349,7 +349,7 @@ class Collective : public Task::Callback {
   MinionEquipment SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
   TaskMap<CostInfo> SERIAL(taskMap);
-  vector<Technology*> SERIAL(technologies);
+  vector<TechId> SERIAL(technologies);
   int SERIAL2(numFreeTech, 0);
   bool isItemMarked(const Item*) const;
   void markItem(const Item*);

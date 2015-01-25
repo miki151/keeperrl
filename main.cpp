@@ -182,25 +182,10 @@ static void saveExceptionLine(const string& path, const string& line) {
 
 void clearSingletons() {
   Tribe::clearAll();
-  Technology::clearAll();
-  Skill::clearAll();
-  Vision::clearAll();
-  Epithet::clearAll();
-  NameGenerator::clearAll();
-  Spell::clearAll();
 }
 
 void initializeSingletons() {
-  Item::identifyEverything();
   Tribe::init();
-  Skill::init();
-  Technology::init();
-  Statistics::init();
-  Vision::init();
-  NameGenerator::init("data_free/names");
-  ItemFactory::init();
-  Epithet::init();
-  Spell::init();
 }
 
 void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<bool>& initialized) {
@@ -482,6 +467,12 @@ int main(int argc, char* argv[]) {
   unique_ptr<CompressedOutput> output;
   string lognamePref = "log";
   Debug::init();
+  Skill::init();
+  Technology::init();
+  Spell::init();
+  Epithet::init();
+  Vision::init();
+  NameGenerator::init("data_free/names");
   Options options("options.txt");
   Renderer renderer("KeeperRL", Vec2(36, 36), "data_contrib");
   GuiFactory guiFactory;

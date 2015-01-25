@@ -22,6 +22,7 @@
 #include "effect.h"
 #include "square.h"
 #include "view_object.h"
+#include "model.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -29,7 +30,6 @@ void Item::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(UniqueEntity)
     & SUBCLASS(Renderable)
     & SVAR(discarded)
-    & SVAR(inspected)
     & SVAR(shopkeeper)
     & SVAR(fire);
   CHECK_SERIAL;
@@ -49,26 +49,10 @@ SERIALIZABLE(Item::CorpseInfo);
 
 
 Item::Item(const ItemAttributes& attr) : ItemAttributes(attr),
-  Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)),
-    inspected(everythingIdentified), fire(*weight, flamability) {
+    Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)), fire(*weight, flamability) {
 }
 
 Item::~Item() {
-}
-
-void Item::identifyEverything() {
-  everythingIdentified = true;
-}
-
-bool Item::isEverythingIdentified() {
-  return everythingIdentified;
-}
-
-bool Item::everythingIdentified = false;
- 
-static set<string> ident;
-bool Item::isIdentified(const string& name) {
-  return everythingIdentified || ident.count(name);
 }
 
 string Item::getTrapName(TrapType type) {
@@ -115,27 +99,7 @@ vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, functi
   return ret;
 }
 
-void Item::identify(const string& name) {
-  Debug() << "Identify " << name;
-  ident.insert(name);
-}
-
-void Item::identify() {
-  identify(*name);
-  inspected = true;
-}
-
-bool Item::canIdentify() const {
-  return identifiable;
-}
-
-bool Item::isIdentified() const {
-  return isIdentified(*name);
-}
-
 void Item::onEquip(Creature* c) {
-  if (identifyOnEquip && c->isPlayer())
-    identify();
   onEquipSpecial(c);
 }
 
@@ -192,8 +156,6 @@ void Item::onHitCreature(Creature* c, const Attack& attack, bool plural) {
     return;
   if (effect && getClass() == ItemClass::POTION) {
     Effect::applyToCreature(c, *effect, EffectStrength::NORMAL);
-    if (c->getLevel()->playerCanSee(c->getPosition()))
-      identify();
   }
 }
 
@@ -238,9 +200,7 @@ optional<CollectiveResourceId> Item::getResourceId() const {
 
 void Item::apply(Creature* c, Level* l) {
   if (itemClass == ItemClass::SCROLL)
-    Statistics::add(StatId::SCROLL_READ);
-  if (identifyOnApply && l->playerCanSee(c->getPosition()))
-    identify(*name);
+    l->getModel()->getStatistics().add(StatId::SCROLL_READ);
   if (effect)
     Effect::applyToCreature(c, *effect, EffectStrength::NORMAL);
   if (uses > -1 && --uses == 0) {
@@ -291,17 +251,14 @@ void Item::setName(const string& n) {
 }
 
 string Item::getName(bool plural, bool blind) const {
-  string suff = uses > -1 && displayUses && inspected ? string(" (") + toString(uses) + " uses left)" : "";
+  string suff = uses > -1 && displayUses ? string(" (") + toString(uses) + " uses left)" : "";
   if (fire.isBurning())
     suff.append(" (burning)");
   if (getShopkeeper())
     suff += " (" + toString(getPrice()) + (plural ? " zorkmids each)" : " zorkmids)");
   if (blind)
     return getBlindName(plural);
-  if (isIdentified(*name))
-    return getRealName(plural) + suff;
-  else
-    return getVisibleName(plural) + suff;
+  return getVisibleName(plural) + suff;
 }
 
 string Item::getAName(bool getPlural, bool blind) const {
@@ -340,51 +297,35 @@ string Item::getArtifactName() const {
 }
 
 string Item::getNameAndModifiers(bool getPlural, bool blind) const {
-  if (inspected) {
-    string artStr = artifactName ? " named " + *artifactName : "";
-    EnumSet<ModifierType> printMod;
-    switch (getClass()) {
-      case ItemClass::WEAPON:
-        printMod.insert(ModifierType::ACCURACY);
-        printMod.insert(ModifierType::DAMAGE);
-        break;
-      case ItemClass::ARMOR:
-        printMod.insert(ModifierType::DEFENSE);
-        break;
-      case ItemClass::RANGED_WEAPON:
-      case ItemClass::AMMO:
-        printMod.insert(ModifierType::FIRED_ACCURACY);
-        break;
-      default: break;
-    }
-    for (auto mod : ENUM_ALL(ModifierType))
-      if (modifiers[mod] != 0)
-        printMod.insert(mod);
-    vector<string> attrStrings;
-    for (auto mod : printMod)
-      attrStrings.push_back(withSign(modifiers[mod]) + " " + Creature::getModifierName(mod));
-    for (auto attr : ENUM_ALL(AttrType))
-      if (attrs[attr] != 0)
-        attrStrings.push_back(withSign(attrs[attr]) + " " + Creature::getAttrName(attr));
-    string attrString = combine(attrStrings);
-    if (!attrString.empty())
-      attrString = " (" + attrString + ")";
-    return getName(getPlural, blind) + artStr + attrString;
-  } else
-    return getName(getPlural, blind);
-}
-
-string Item::getRealName(bool getPlural) const {
-  if (!realName)
-    return getVisibleName(getPlural);
-  if (!getPlural)
-    return *realName;
-  else {
-    if (realPlural)
-      return *realPlural;
-    else
-      return *realName + "s";
+  string artStr = artifactName ? " named " + *artifactName : "";
+  EnumSet<ModifierType> printMod;
+  switch (getClass()) {
+    case ItemClass::WEAPON:
+      printMod.insert(ModifierType::ACCURACY);
+      printMod.insert(ModifierType::DAMAGE);
+      break;
+    case ItemClass::ARMOR:
+      printMod.insert(ModifierType::DEFENSE);
+      break;
+    case ItemClass::RANGED_WEAPON:
+    case ItemClass::AMMO:
+      printMod.insert(ModifierType::FIRED_ACCURACY);
+      break;
+    default: break;
   }
+  for (auto mod : ENUM_ALL(ModifierType))
+    if (modifiers[mod] != 0)
+      printMod.insert(mod);
+  vector<string> attrStrings;
+  for (auto mod : printMod)
+    attrStrings.push_back(withSign(modifiers[mod]) + " " + Creature::getModifierName(mod));
+  for (auto attr : ENUM_ALL(AttrType))
+    if (attrs[attr] != 0)
+      attrStrings.push_back(withSign(attrs[attr]) + " " + Creature::getAttrName(attr));
+  string attrString = combine(attrStrings);
+  if (!attrString.empty())
+    attrString = " (" + attrString + ")";
+  return getName(getPlural, blind) + artStr + attrString;
 }
 
 string Item::getBlindName(bool plural) const {

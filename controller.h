@@ -29,7 +29,6 @@ class PlayerMessage;
 class Controller {
   public:
   Controller(Creature*);
-  virtual void grantIdentify(int numItems) {};
 
   virtual bool isPlayer() const = 0;
 

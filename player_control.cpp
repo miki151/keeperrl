@@ -1525,7 +1525,7 @@ bool PlayerControl::canSee(Vec2 position) const {
   if (visibilityMap.isVisible(position))
       return true;
   for (Vec2 pos : getCollective()->getSquares(SquareId::EYEBALL))
-    if (getLevel()->canSee(pos, position, Vision::get(VisionId::NORMAL)))
+    if (getLevel()->canSee(pos, position, VisionId::NORMAL))
       return true;
   return false;
 }

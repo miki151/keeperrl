@@ -65,8 +65,8 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
   }
   for (Location *l : locations)
     l->setLevel(this);
-  for (Vision* vision : Vision::getAll())
-    fieldOfView.emplace(vision, FieldOfView(squares, vision));
+  for (VisionId vision : ENUM_ALL(VisionId))
+    fieldOfView[vision] = FieldOfView(squares, vision);
   for (Vec2 pos : squares.getBounds())
     addLightSource(pos, squares[pos]->getLightEmission(), 1);
 }
@@ -118,7 +118,7 @@ void Level::removeLightSource(Vec2 pos, double radius) {
 
 void Level::addLightSource(Vec2 pos, double radius, int numLight) {
   if (radius > 0) {
-    for (Vec2 v : getVisibleTilesNoDarkness(pos, Vision::get(VisionId::NORMAL))) {
+    for (Vec2 v : getVisibleTilesNoDarkness(pos, VisionId::NORMAL)) {
       double dist = (v - pos).lengthD();
       if (dist <= radius)
         lightAmount[v] += min(1.0, 1 - (dist) / radius) * numLight;
@@ -146,11 +146,11 @@ void Level::replaceSquare(Vec2 pos, PSquare square) {
 }
 
 void Level::updateVisibility(Vec2 changedSquare) {
-  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, Vision::get(VisionId::NORMAL)))
+  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL))
     addLightSource(pos, squares[pos]->getLightEmission(), -1);
-  for (auto& elem : fieldOfView)
-    elem.second.squareChanged(changedSquare);
-  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, Vision::get(VisionId::NORMAL)))
+  for (VisionId vision : ENUM_ALL(VisionId))
+    fieldOfView[vision].squareChanged(changedSquare);
+  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL))
     addLightSource(pos, squares[pos]->getLightEmission(), 1);
 }
 
@@ -239,14 +239,14 @@ Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
   return Vec2(0, 0);
 }
 
-void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, Vision* vision) {
+void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId vision) {
   vector<PItem> v;
   v.push_back(std::move(item));
   throwItem(std::move(v), attack, maxDist, position, direction, vision);
 }
 
 void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction,
-    Vision* vision) {
+    VisionId vision) {
   CHECK(!item.empty());
   CHECK(direction.length8() == 1);
   int cnt = 1;
@@ -337,15 +337,15 @@ vector<Creature*> Level::getAllCreatures(Rectangle bounds) const {
 
 const int darkViewRadius = 5;
 
-bool Level::isWithinVision(Vec2 from, Vec2 to, Vision* v) const {
-  return v->isNightVision() || from.distD(to) <= darkViewRadius || getLight(to) > 0.3;
+bool Level::isWithinVision(Vec2 from, Vec2 to, VisionId v) const {
+  return Vision::get(v)->isNightVision() || from.distD(to) <= darkViewRadius || getLight(to) > 0.3;
 }
 
-FieldOfView& Level::getFieldOfView(Vision* vision) const {
-  return fieldOfView.at(vision);
+FieldOfView& Level::getFieldOfView(VisionId vision) const {
+  return fieldOfView[vision];
 }
 
-bool Level::canSee(Vec2 from, Vec2 to, Vision* vision) const {
+bool Level::canSee(Vec2 from, Vec2 to, VisionId vision) const {
   return isWithinVision(from, to, vision) && getFieldOfView(vision).canSee(from, to);
 }
 
@@ -398,11 +398,11 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
   notifyLocations(c2);
 }
 
-vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, Vision* vision) const {
+vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
   return getFieldOfView(vision).getVisibleTiles(pos);
 }
 
-vector<Vec2> Level::getVisibleTiles(Vec2 pos, Vision* vision) const {
+vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionId vision) const {
   return filter(getFieldOfView(vision).getVisibleTiles(pos),
       [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
