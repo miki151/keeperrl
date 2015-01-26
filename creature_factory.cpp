@@ -224,8 +224,8 @@ class BoulderController : public Monster {
 
 class Boulder : public Creature {
   public:
-  Boulder(const CreatureAttributes& attr, Vec2 dir) : 
-    Creature(Tribe::get(TribeId::KILL_EVERYONE), attr, ControllerFactory([dir](Creature* c) { 
+  Boulder(const CreatureAttributes& attr, Tribe* tribe, Vec2 dir) : 
+    Creature(tribe, attr, ControllerFactory([dir](Creature* c) { 
             return new BoulderController(c, dir); })) {}
 
   Boulder(const CreatureAttributes& attr, Tribe* myTribe) : 
@@ -244,7 +244,7 @@ class Boulder : public Creature {
   SERIALIZATION_CONSTRUCTOR(Boulder);
 };
 
-PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
+PCreature CreatureFactory::getRollingBoulder(Vec2 direction, Tribe* tribe) {
   return PCreature(new Boulder(CATTR(
             c.viewId = ViewId::BOULDER;
             c.attr[AttrType::DEXTERITY] = 1;
@@ -259,7 +259,7 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
             c.invincible = true;
             c.breathing = false;
             c.brain = false;
-            c.name = "boulder";), direction));
+            c.name = "boulder";), tribe, direction));
 }
 
 PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {

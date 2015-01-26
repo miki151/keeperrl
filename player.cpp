@@ -965,7 +965,8 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
     bool noEffect = false;
     switch (epithet) {
       case EpithetId::DEATH: {
-          PCreature death = CreatureFactory::fromId(CreatureId::DEATH, Tribe::get(TribeId::KILL_EVERYONE));
+          PCreature death = CreatureFactory::fromId(CreatureId::DEATH,
+              getCreature()->getLevel()->getModel()->getKillEveryoneTribe());
           for (Square* square : getCreature()->getSquares(Vec2::directions8(true)))
             if (square->canEnter(death.get())) {
               getCreature()->playerMessage("Death appears before you.");
@@ -1003,7 +1004,8 @@ void Player::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
           break;
       case EpithetId::CHANGE:
           if (Random.roll(2) && getCreature()->getWeapon()) {
-            PCreature snake = CreatureFactory::fromId(CreatureId::SNAKE, Tribe::get(TribeId::PEST));
+            PCreature snake = CreatureFactory::fromId(CreatureId::SNAKE,
+                getCreature()->getLevel()->getModel()->getPestTribe());
             for (Square* square : getCreature()->getSquares(Vec2::directions8(true)))
               if (square->canEnter(snake.get())) {
                 getCreature()->getLevel()->addCreature(square->getPosition(), std::move(snake));

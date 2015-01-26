@@ -18,6 +18,7 @@
 #include "enum_variant.h"
 #include "square_type.h"
 #include "util.h"
+#include "minion_task.h"
 #include "model.h"
 
 enum class ItemClass;

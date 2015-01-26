@@ -23,28 +23,12 @@
 #include "event.h"
 #include "singleton.h"
 
-RICH_ENUM(TribeId,
-  MONSTER,
-  PEST,
-  WILDLIFE,
-  HUMAN,
-  ELVEN,
-  DWARVEN,
-  ORC,
-  PLAYER,
-  DRAGON,
-  CASTLE_CELLAR,
-  BANDIT,
-  KILL_EVERYONE,
-  PEACEFUL,
-  KEEPER,
-  LIZARD
-);
-
 class Creature;
 
-class Tribe : public Singleton<Tribe, TribeId> {
+class Tribe {
   public:
+  Tribe(const string& name, bool diplomatic);
+
   virtual double getStanding(const Creature*) const;
 
   void onItemsStolen(const Creature* thief);
@@ -55,18 +39,33 @@ class Tribe : public Singleton<Tribe, TribeId> {
   const Creature* getLeader() const;
   vector<const Creature*> getMembers(bool includeDead = false);
   const string& getName() const;
-  void addEnemy(Tribe*);
+  void addEnemy(vector<Tribe*>);
   void addFriend(Tribe*);
 
   SERIALIZATION_DECL(Tribe);
 
-  static void init();
-
   template <class Archive>
   static void registerTypes(Archive& ar);
 
-  protected:
-  Tribe(const string& name, bool diplomatic);
+  struct Set {
+    Set();
+
+    PTribe SERIAL(monster);
+    PTribe SERIAL(pest);
+    PTribe SERIAL(wildlife);
+    PTribe SERIAL(human);
+    PTribe SERIAL(elven);
+    PTribe SERIAL(dwarven);
+    PTribe SERIAL(adventurer);
+    PTribe SERIAL(bandit);
+    PTribe SERIAL(killEveryone);
+    PTribe SERIAL(peaceful);
+    PTribe SERIAL(keeper);
+    PTribe SERIAL(lizard);
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+  };
 
   private:
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);

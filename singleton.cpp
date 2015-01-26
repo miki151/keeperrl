@@ -17,7 +17,6 @@
 #include "singleton.h"
 #include "enums.h"
 #include "util.h"
-#include "tribe.h"
 #include "technology.h"
 #include "vision.h"
 #include "clock.h"
@@ -74,7 +73,6 @@ E Singleton<T, E>::getId() const {
   return id;
 }
 
-SERIALIZABLE_TMPL(Singleton, Tribe, TribeId);
 SERIALIZABLE_TMPL(Singleton, Technology, TechId);
 SERIALIZABLE_TMPL(Singleton, Skill, SkillId);
 SERIALIZABLE_TMPL(Singleton, Vision, VisionId);

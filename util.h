@@ -51,6 +51,7 @@ DEF_UNIQUE_PTR(ViewObject);
 DEF_UNIQUE_PTR(Collective);
 DEF_UNIQUE_PTR(CollectiveControl);
 DEF_UNIQUE_PTR(Model);
+DEF_UNIQUE_PTR(Tribe);
 
 template <typename T>
 T lambdaConstruct(function<void(T&)> fun) {

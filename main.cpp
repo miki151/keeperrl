@@ -48,6 +48,7 @@
 #include "spell.h"
 #include "window_view.h"
 #include "clock.h"
+#include "model_builder.h"
 
 using namespace boost::iostreams;
 using namespace boost::program_options;
@@ -180,14 +181,6 @@ static void saveExceptionLine(const string& path, const string& line) {
   of << line << std::endl;
 }
 
-void clearSingletons() {
-  Tribe::clearAll();
-}
-
-void initializeSingletons() {
-  Tribe::init();
-}
-
 void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<bool>& initialized) {
   view->initialize();
   initialized = true;
@@ -283,7 +276,6 @@ class MainLoop {
   void playGameChoice() {
     while (1) {
       auto choice = view->chooseGameType();
-      initializeSingletons();
       PModel model;
       switch (choice) {
         case View::KEEPER_CHOICE:
@@ -303,7 +295,6 @@ class MainLoop {
           model = loadPrevious(eraseSave(options));
           break;
         case View::BACK_CHOICE:
-          clearSingletons();
           return;
       }
       if (model) {
@@ -311,17 +302,14 @@ class MainLoop {
         jukebox->setType(MusicType::PEACEFUL);
         playModel(std::move(model));
       }
-      clearSingletons();
       view->reset();
     }
   }
 
   void splashScreen() {
     ProgressMeter meter(1);
-    initializeSingletons();
     jukebox->setType(MusicType::INTRO);
-    playModel(PModel(Model::splashModel(meter, view, dataFreePath + "/splash.txt")), false);
-    clearSingletons();
+    playModel(PModel(ModelBuilder::splashModel(meter, view, dataFreePath + "/splash.txt")), false);
   }
 
   void showCredits(const string& path, View* view) {
@@ -380,7 +368,7 @@ class MainLoop {
     view->displaySplash(meter, View::CREATING);
     for (int i : Range(5)) {
       try {
-        model.reset(Model::collectiveModel(meter, options, view,
+        model.reset(ModelBuilder::collectiveModel(meter, options, view,
               NameGenerator::get(NameGeneratorId::WORLD)->getNext()));
         break;
       } catch (string s) {

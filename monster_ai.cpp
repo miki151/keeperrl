@@ -74,7 +74,7 @@ const Creature* Behaviour::getClosestEnemy() {
   const Creature* result = nullptr;
   for (const Creature* other : creature->getVisibleEnemies()) {
     if ((other->getPosition() - creature->getPosition()).length8() < dist
-        && other->getTribe() != Tribe::get(TribeId::PEST)) {
+        && other->getTribe() != creature->getLevel()->getModel()->getPestTribe()) {
       result = other;
       dist = (other->getPosition() - creature->getPosition()).length8();
     }
@@ -269,12 +269,12 @@ class AttackPest : public Behaviour {
   AttackPest(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    if (creature->getTribe() == Tribe::get(TribeId::PEST))
+    if (creature->getTribe() == creature->getLevel()->getModel()->getPestTribe())
       return NoMove;
     const Creature* other = nullptr;
     for (Square* square : creature->getSquares(Vec2::directions8(true)))
       if (const Creature* c = square->getCreature())
-        if (c->getTribe() == Tribe::get(TribeId::PEST)) {
+        if (c->getTribe() == creature->getLevel()->getModel()->getPestTribe()) {
           other = c;
           break;
         }

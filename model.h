@@ -36,11 +36,6 @@ class Model {
   public:
   ~Model();
 
-  /** Generates levels and all game entities for a collective game. */
-  static Model* collectiveModel(ProgressMeter&, Options*, View*, const string& worldName);
-
-  static Model* splashModel(ProgressMeter&, View*, const string& splashPath);
-
   enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER };
 
   class ExitInfo {
@@ -119,10 +114,16 @@ class Model {
   void addWoodCount(int);
   int getWoodCount() const;
 
+  Tribe* getPestTribe();
+  Tribe* getKillEveryoneTribe();
+  Tribe* getPeacefulTribe();
+
   private:
   REGISTER_HANDLER(KilledLeaderEvent, const Collective*, const Creature*);
 
-  Model(View* view, const string& worldName);
+  Model(View* view, const string& worldName, Tribe::Set&&);
+
+  friend class ModelBuilder;
 
   void updateSunlightInfo();
   PCreature makePlayer(int handicap);
@@ -132,6 +133,7 @@ class Model {
   void addLink(StairDirection, StairKey, Level*, Level*);
   Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 
+  Tribe::Set SERIAL(tribeSet);
   vector<PLevel> SERIAL(levels);
   vector<PCollective> SERIAL(collectives);
   Collective* SERIAL(playerCollective);

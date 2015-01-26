@@ -165,7 +165,7 @@ class CreatureFactory {
   PCreature random(MonsterAIFactory = MonsterAIFactory::monster());
 
   static PCreature getShopkeeper(Location* shopArea, Tribe*);
-  static PCreature getRollingBoulder(Vec2 direction);
+  static PCreature getRollingBoulder(Vec2 direction, Tribe*);
   static PCreature getGuardingBoulder(Tribe* tribe);
 
   static PCreature addInventory(PCreature c, const vector<ItemType>& items);

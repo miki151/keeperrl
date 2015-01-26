@@ -20,8 +20,7 @@
 
 template <class Archive> 
 void Tribe::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(Singleton)
-    & SVAR(diplomatic)
+  ar& SVAR(diplomatic)
     & SVAR(standing)
     & SVAR(attacks)
     & SVAR(leader)
@@ -89,10 +88,12 @@ void Tribe::initStanding(const Creature* c) {
   standing[c] = getStanding(c);
 }
 
-void Tribe::addEnemy(Tribe* t) {
-  CHECK(t != this);
-  enemyTribes.insert(t);
-  t->enemyTribes.insert(this);
+void Tribe::addEnemy(vector<Tribe*> tribes) {
+  for (Tribe* t : tribes) {
+    CHECK(t != this);
+    enemyTribes.insert(t);
+    t->enemyTribes.insert(this);
+  }
 }
 
 void Tribe::addFriend(Tribe* t) {
@@ -170,51 +171,44 @@ void Tribe::onItemsStolen(const Creature* attacker) {
   }
 }
 
-void Tribe::init() {
-  set(TribeId::MONSTER, new Tribe("monsters", false));
-  set(TribeId::LIZARD, new Tribe("lizardmen", true));
-  set(TribeId::PEST, new Tribe("pests", false));
-  set(TribeId::WILDLIFE, new Tribe("wildlife", false));
-  set(TribeId::ELVEN, new Tribe("elves", true));
-  set(TribeId::HUMAN, new Tribe("humans", true));
-  set(TribeId::ORC, new Tribe("orcs", true));
-  set(TribeId::DWARVEN, new Tribe("dwarves", true));
-  set(TribeId::PLAYER, new Tribe("player", false));
-  set(TribeId::KEEPER, new Tribe("keeper", false));
-  set(TribeId::DRAGON, new Tribe("dragon", false));
-  set(TribeId::CASTLE_CELLAR, new Tribe("", false));
-  set(TribeId::BANDIT, new Tribe("bandits", false));
-  set(TribeId::KILL_EVERYONE, new Constant(-1));
-  set(TribeId::PEACEFUL, new Constant(1));
-  get(TribeId::KEEPER)->addEnemy(get(TribeId::PLAYER));
-  get(TribeId::KEEPER)->addEnemy(get(TribeId::ELVEN));
-  get(TribeId::KEEPER)->addEnemy(get(TribeId::DWARVEN));
-  get(TribeId::KEEPER)->addEnemy(get(TribeId::HUMAN));
-  get(TribeId::KEEPER)->addEnemy(get(TribeId::LIZARD));
-  get(TribeId::KEEPER)->addEnemy(get(TribeId::DRAGON));
-  get(TribeId::KEEPER)->addEnemy(get(TribeId::PEST));
-  get(TribeId::KEEPER)->addEnemy(get(TribeId::MONSTER));
-  get(TribeId::KEEPER)->addEnemy(get(TribeId::BANDIT));
-  get(TribeId::ELVEN)->addEnemy(get(TribeId::ORC));
-  get(TribeId::ELVEN)->addEnemy(get(TribeId::DWARVEN));
-  get(TribeId::ELVEN)->addEnemy(get(TribeId::BANDIT));
-  get(TribeId::ELVEN)->addEnemy(get(TribeId::DRAGON));
-  get(TribeId::ORC)->addEnemy(get(TribeId::DWARVEN));
-  get(TribeId::ORC)->addEnemy(get(TribeId::WILDLIFE));
-  get(TribeId::HUMAN)->addEnemy(get(TribeId::ORC));
-  get(TribeId::HUMAN)->addEnemy(get(TribeId::LIZARD));
-  get(TribeId::HUMAN)->addEnemy(get(TribeId::BANDIT));
-  get(TribeId::HUMAN)->addEnemy(get(TribeId::CASTLE_CELLAR));
-  get(TribeId::HUMAN)->addEnemy(get(TribeId::DRAGON));
-  get(TribeId::PLAYER)->addEnemy(get(TribeId::MONSTER));
-  get(TribeId::PLAYER)->addEnemy(get(TribeId::ORC));
-  get(TribeId::PLAYER)->addEnemy(get(TribeId::PEST));
-  get(TribeId::PLAYER)->addEnemy(get(TribeId::CASTLE_CELLAR));
-  get(TribeId::PLAYER)->addEnemy(get(TribeId::DRAGON));
-  get(TribeId::PLAYER)->addEnemy(get(TribeId::BANDIT));
-  get(TribeId::MONSTER)->addEnemy(get(TribeId::WILDLIFE));
-  get(TribeId::WILDLIFE)->addEnemy(get(TribeId::PLAYER));
-  get(TribeId::WILDLIFE)->addEnemy(get(TribeId::ORC));
-  get(TribeId::WILDLIFE)->addEnemy(get(TribeId::MONSTER));
+template <class Archive> 
+void Tribe::Set::serialize(Archive& ar, const unsigned int version) { 
+  ar& SVAR(monster)
+    & SVAR(pest)
+    & SVAR(wildlife)
+    & SVAR(human)
+    & SVAR(elven)
+    & SVAR(dwarven)
+    & SVAR(adventurer)
+    & SVAR(bandit)
+    & SVAR(killEveryone)
+    & SVAR(peaceful)
+    & SVAR(keeper)
+    & SVAR(lizard);
 }
+
+SERIALIZABLE(Tribe::Set);
+
+
+Tribe::Set::Set() {
+  monster.reset(new Tribe("monsters", false));
+  lizard.reset(new Tribe("lizardmen", true));
+  pest.reset(new Tribe("pests", false));
+  wildlife.reset(new Tribe("wildlife", false));
+  elven.reset(new Tribe("elves", true));
+  human.reset(new Tribe("humans", true));
+  dwarven.reset(new Tribe("dwarves", true));
+  adventurer.reset(new Tribe("player", false));
+  keeper.reset(new Tribe("keeper", false));
+  bandit.reset(new Tribe("bandits", false));
+  killEveryone.reset(new Constant(-1));
+  peaceful.reset(new Constant(1));
+  keeper->addEnemy({adventurer.get(), elven.get(), dwarven.get(), human.get(), lizard.get(), pest.get(),
+      monster.get(), bandit.get() });
+  elven->addEnemy({ dwarven.get(), bandit.get() });
+  human->addEnemy({ lizard.get(), bandit.get() });
+  adventurer->addEnemy({ monster.get(), pest.get(), bandit.get(), wildlife.get() });
+  monster->addEnemy({wildlife.get()});
+}
+
 

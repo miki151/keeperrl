@@ -370,7 +370,8 @@ static void rollingBoulder(Creature* c) {
       c->you(MsgType::ARE, "killed by the boulder");
       c->die();
     } 
-    l->addCreature(pos + dir * dist, CreatureFactory::getRollingBoulder(dir * (-1)));
+    l->addCreature(pos + dir * dist, CreatureFactory::getRollingBoulder(dir * (-1),
+          c->getLevel()->getModel()->getKillEveryoneTribe()));
     return;
   }
 }

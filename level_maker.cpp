@@ -1638,59 +1638,6 @@ class SetCovered : public LevelMaker {
 
 }
 
-static LevelMaker* underground(bool monsters, CreatureFactory waterFactory, CreatureFactory lavaFactory) {
-  MakerQueue* queue = new MakerQueue();
-  if (Random.roll(1)) {
-    LevelMaker* cavern = new UniformBlob(SquareId::FLOOR);
-    vector<LevelMaker*> vCavern;
-    vector<pair<int, int>> sizes;
-    int minSize = Random.get(5, 15);
-    int maxSize = minSize + Random.get(3, 10);
-    for (int i : Range(sqrt(Random.get(4, 100)))) {
-      int size = Random.get(minSize, maxSize);
-      sizes.push_back(make_pair(size, size));
-      MakerQueue* queue = new MakerQueue();
-      queue->addMaker(cavern);
-   /*   if (Random.roll(4))
-        queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::PATH, 2, 5));*/
-      vCavern.push_back(queue);
-    }
-    queue->addMaker(new RandomLocations(vCavern, sizes, Predicate::alwaysTrue(), false));
-  }
-  switch (2) {
-    case 1: queue->addMaker(new River(3, chooseRandom({SquareId::WATER, SquareId::MAGMA})));
-            break;
-    case 2:{
-          int numLakes = sqrt(Random.get(1, 100));
-          SquareType lakeType = chooseRandom({SquareId::WATER, SquareId::MAGMA}, {100, 1});
-          vector<pair<int, int>> sizes;
-          for (int i : Range(numLakes)) {
-            int size = Random.get(6, 20);
-            sizes.emplace_back(size, size);
-          }
-          queue->addMaker(new RandomLocations(
-          vector<LevelMaker*>(numLakes, new UniformBlob(lakeType, none, SquareAttrib::LAKE)),
-          sizes, Predicate::alwaysTrue(), false));
-          if (monsters) {
-            DeityHabitat deity = (lakeType == SquareId::MAGMA) ? DeityHabitat::FIRE : DeityHabitat::WATER;
-            queue->addMaker(new Shrine(deity, lakeType,
-                  Predicate::type(lakeType), SquareId::ROCK_WALL, nullptr));
-            if (lakeType == SquareId::WATER) {
-              queue->addMaker(new Creatures(waterFactory, 1, MonsterAIFactory::monster(),
-                    SquareType(SquareId::WATER)));
-            }
-            if (lakeType == SquareId::MAGMA) {
-              queue->addMaker(new Creatures(lavaFactory, Random.get(1, 4),
-                    MonsterAIFactory::monster(), SquareType(SquareId::MAGMA)));
-            }
-          }
-          break;
-          }
-    default: break;
-  }
-  return queue;
-}
-
 static MakerQueue* stockpileMaker(StockpileInfo info) {
   SquareId square = SquareId(0);
   switch (info.type) {
@@ -1708,59 +1655,11 @@ static MakerQueue* stockpileMaker(StockpileInfo info) {
   return queue;
 }
 
-
-CreatureFactory::SingleCreature getChestFactory() {
-  return CreatureFactory::SingleCreature(Tribe::get(TribeId::PEST), CreatureId::RAT);
-}
-
-SquareType getTreesType(SquareId id) {
-  return {id, CreatureFactory::SingleCreature(Tribe::get(TribeId::MONSTER), CreatureId::ENT)};
-}
-
-LevelMaker* LevelMaker::roomLevel(CreatureFactory roomFactory, CreatureFactory waterFactory,
-    CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down) {
-  vector<FeatureInfo> featureCount { 
-      { SquareId::FOUNTAIN, 0, 3 },
-      { {SquareId::CHEST, getChestFactory()}, 3, 7},
-      { SquareId::TORCH, 5, 10},
-      { SquareId::TORTURE_TABLE, 2, 3}};
-  MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new Empty(SquareId::BLACK_WALL));
-  queue->addMaker(underground(true, waterFactory, lavaFactory));
-  vector<LevelMaker*> shopMaker;
-  if (Random.roll(3)) {
-      shopMaker.push_back(new ShopMaker(chooseRandom({
-            ItemFactory::villageShop(),
-            ItemFactory::dwarfShop(),
-            ItemFactory::orcShop()}),
-          Tribe::get(TribeId::HUMAN), Random.get(8, 16), brickBuilding));
-  }
-  queue->addMaker(new RoomMaker(Random.get(8, 15), 4, 7, SquareId::ROCK_WALL,
-        SquareType(SquareId::BLACK_WALL), new Empty(SquareId::FLOOR), shopMaker));
-  queue->addMaker(new Connector(5, 3));
-  if (Random.roll(3)) {
-    DeityHabitat deity = chooseRandom({DeityHabitat::EARTH});
-    queue->addMaker(new Shrine(deity, SquareId::FLOOR,
-        Predicate::type({SquareType(SquareId::ROCK_WALL), SquareType(SquareId::BLACK_WALL)}), SquareId::ROCK_WALL));
-  }
-  queue->addMaker(new DungeonFeatures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), featureCount));
-  queue->addMaker(new DungeonFeatures(Predicate::type(SquareId::FLOOR), {
-        { SquareId::ROLLING_BOULDER, 0, 3 },
-        { SquareId::POISON_GAS, 0, 3 }}));
-  for (StairKey key : down)
-    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(SquareId::FLOOR)));
-  for (StairKey key : up)
-    queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(SquareId::FLOOR)));
-  queue->addMaker(new Creatures(roomFactory, Random.get(10, 15), MonsterAIFactory::monster()));
-  queue->addMaker(new Items(ItemFactory::dungeon(), SquareId::FLOOR, 5, 10));
-  return new BorderGuard(queue, SquareId::BLACK_WALL);
-}
-
-LevelMaker* LevelMaker::cryptLevel(CreatureFactory roomFactory, CreatureFactory::SingleCreature coffinFactory,
+LevelMaker* LevelMaker::cryptLevel(CreatureFactory roomFactory, CreatureId coffinCreature,
     vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
-      { {SquareId::COFFIN, coffinFactory}, 3, 7}};
+      { {SquareId::COFFIN, coffinCreature}, 3, 7}};
   queue->addMaker(new Empty(SquareId::BLACK_WALL));
   queue->addMaker(new RoomMaker(Random.get(8, 15), 3, 5, SquareId::ROCK_WALL,
         SquareType(SquareId::BLACK_WALL)));
@@ -1794,7 +1693,7 @@ MakerQueue* village2(SettlementInfo info) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
-      { {SquareId::CHEST, getChestFactory()}, 1, 4 },
+      { {SquareId::CHEST, CreatureId::RAT}, 1, 4 },
       { SquareId::TORCH, 2, 5 },
       { SquareId::BED, 4, 7 }};
   queue->addMaker(new LocationMaker(info.location));
@@ -1816,7 +1715,7 @@ MakerQueue* village(SettlementInfo info) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
-      { {SquareId::CHEST, getChestFactory()}, 1, 3 },
+      { {SquareId::CHEST, CreatureId::RAT}, 1, 3 },
       { SquareId::TORCH, 2, 4 },
       { SquareId::BED, 3, 5 }};
   queue->addMaker(new LocationMaker(info.location));
@@ -1840,7 +1739,7 @@ MakerQueue* village(SettlementInfo info) {
 }
 
 MakerQueue* cottage(SettlementInfo info, const vector<FeatureInfo>& featureCount =
-    {{ {SquareId::CHEST, getChestFactory()}, 4, 9 }, { SquareId::BED, 2, 4 }, { SquareId::TORCH, 1, 3 }}) {
+    {{ {SquareId::CHEST, CreatureId::RAT}, 4, 9 }, { SquareId::BED, 2, 4 }, { SquareId::TORCH, 1, 3 }}) {
   BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(building.floorOutside));
@@ -1862,7 +1761,7 @@ MakerQueue* castle(SettlementInfo info) {
   leftSide->addMaker(new Division(true, Random.getDouble(0.5, 0.5),
       new Margin(1, -1, -1, 1, castleRoom), new Margin(1, 1, -1, -1, castleRoom)));
   vector<FeatureInfo> featureCount { 
-      { {SquareId::CHEST, getChestFactory()}, 3, 8 },
+      { {SquareId::CHEST, CreatureId::RAT}, 3, 8 },
       { SquareId::BED, 5, 8 }};
   leftSide->addMaker(new DungeonFeatures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), featureCount));
   for (StairKey key : info.downStairs)
@@ -2001,7 +1900,7 @@ static MakerQueue* genericMineTownMaker(SettlementInfo info, int numCavern, int 
   BuildingInfo building = get(info.buildingId);
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount {
-      { {SquareId::CHEST, getChestFactory()}, minFeatures, maxFeatures },
+      { {SquareId::CHEST, CreatureId::RAT}, minFeatures, maxFeatures },
       { SquareId::BED, minFeatures, maxFeatures }};
   LevelMaker* cavern = new UniformBlob(SquareId::FLOOR);
   vector<LevelMaker*> vCavern;
@@ -2110,6 +2009,10 @@ static void addResources(RandomLocations* locations, int count, int countHere, i
       locations->setMaxDistanceLast(hereMaker, maxDist2);
     }
   }
+}
+
+static SquareType getTreesType(SquareId id) {
+  return {id, CreatureId::ENT};
 }
 
 LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<SettlementInfo> settlements) {
@@ -2225,7 +2128,7 @@ LevelMaker* LevelMaker::cellarLevel(CreatureFactory cfactory, SquareType wallTyp
     vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount {
-      { {SquareId::CHEST, getChestFactory()}, 3, 7}};
+      { {SquareId::CHEST, CreatureId::RAT}, 3, 7}};
   queue->addMaker(new Empty(SquareId::FLOOR));
   queue->addMaker(new Empty(wallType));
   queue->addMaker(new RoomMaker(Random.get(8, 15), 3, 5, wallType, wallType));
@@ -2245,7 +2148,7 @@ LevelMaker* LevelMaker::cavernLevel(CreatureFactory cfactory, SquareType wallTyp
     StairLook stairLook, vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   vector<FeatureInfo> featureCount { 
-      { {SquareId::CHEST, getChestFactory()}, 10, 14}};
+      { {SquareId::CHEST, CreatureId::RAT}, 10, 14}};
   queue->addMaker(new Empty(wallType));
   queue->addMaker(new UniformBlob(floorType));
   queue->addMaker(new DungeonFeatures(Predicate::type(floorType), featureCount));

@@ -27,6 +27,7 @@
 #include "view_object.h"
 #include "view_id.h"
 #include "trigger.h"
+#include "model.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -272,7 +273,7 @@ class Corpse : public Item {
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
           !level->getCoverInfo(position).covered() && Random.roll(35)) {
         for (Square* square : level->getSquares(position.neighbors8(true))) {
-          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, Tribe::get(TribeId::PEST),
+          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, level->getModel()->getPestTribe(),
               MonsterAIFactory::scavengerBird(square->getPosition()));
           if (square->canEnter(vulture.get())) {
             level->addCreature(square->getPosition(), std::move(vulture));
@@ -311,11 +312,6 @@ class Corpse : public Item {
   string SERIAL(rottenName);
   CorpseInfo SERIAL(corpseInfo);
 };
-
-PItem ItemFactory::corpse(CreatureId id, ItemClass type, Item::CorpseInfo corpseInfo) {
-  PCreature c = CreatureFactory::fromId(id, Tribe::get(TribeId::MONSTER));
-  return corpse(c->getName().bare() + " corpse", c->getName().bare() + " skeleton", c->getWeight(), type, corpseInfo);
-}
 
 PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemClass itemClass,
     Item::CorpseInfo corpseInfo) {

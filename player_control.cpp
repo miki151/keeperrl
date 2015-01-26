@@ -1388,7 +1388,7 @@ void PlayerControl::addToMemory(Vec2 pos) {
 
 void PlayerControl::addDeityServant(Deity* deity, Vec2 deityPos, Vec2 victimPos) {
   PTask task = Task::chain(Task::destroySquare(victimPos), Task::disappear());
-  PCreature creature = deity->getServant(Tribe::get(TribeId::KILL_EVERYONE)).random(
+  PCreature creature = deity->getServant(getLevel()->getModel()->getKillEveryoneTribe()).random(
       MonsterAIFactory::singleTask(task));
   for (Square* square : getLevel()->getSquares(concat({deityPos}, deityPos.neighbors8(true))))
     if (square->canEnter(creature.get())) {
