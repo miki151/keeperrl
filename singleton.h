@@ -25,7 +25,6 @@ class Singleton {
   static vector<T*> getAll();
   static void set(E, T*);
   static bool exists(E);
-  static void clearAll();
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

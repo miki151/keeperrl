@@ -39,11 +39,6 @@ void Singleton<T, E>::serialize(Archive& ar, const unsigned int version) {
 }
 
 template<class T, class E>
-void Singleton<T, E>::clearAll() {
-  elems.clear();
-}
-
-template<class T, class E>
 T* Singleton<T, E>::get(E id) {
   return elems[id].get();
 }

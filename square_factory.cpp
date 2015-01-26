@@ -202,7 +202,7 @@ class Chest : public Square {
       c->playerMessage(msgMonster);
       int numR = numCreatures;
       for (Vec2 v : getPosition().neighbors8(true)) {
-        PCreature rat = CreatureFactory::fromId(creature, c->getLevel()->getModel()->getPestTribe());
+        PCreature rat = CreatureFactory::fromId(creature, getLevel()->getModel()->getPestTribe());
         if (getLevel()->getSafeSquare(v)->canEnter(rat.get())) {
           getLevel()->addCreature(v, std::move(rat));
           if (--numR == 0)
@@ -312,7 +312,7 @@ class Tree : public Square {
     int numCut = getLevel()->getModel()->getWoodCount();
     if (numCut > 1000 && Random.roll(max(30, (3000 - numCut) / 20)))
       Effect::summon(getLevel(), CreatureFactory::singleType(
-            s->getLevel()->getModel()->getKillEveryoneTribe(), creature), getPosition(), 1, 100000);
+            getLevel()->getModel()->getKillEveryoneTribe(), creature), getPosition(), 1, 100000);
   }
 
   virtual void burnOut() override {
