@@ -843,6 +843,8 @@ const Tile& Tile::getTile(ViewId id, bool sprite) {
 }
 
 Color Tile::getColor(const ViewObject& object) {
+  if (object.hasModifier(ViewObject::Modifier::LOCKED))
+    return colors[ColorId::PURPLE];
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE))
     return colors[ColorId::DARK_GRAY];
   if (object.hasModifier(ViewObject::Modifier::HIDDEN))

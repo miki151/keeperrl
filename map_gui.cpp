@@ -578,20 +578,21 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size
   Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
   if (renderer.getMousePos().inRectangle(getBounds()) && mouseUI) {
     ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), renderer.getMousePos());
-    for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
-        .intersection(objects.getBounds())) {
-      Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
-      if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::CREATURE)) {
-        const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
-        Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal);
-        if (renderer.getMousePos().inRectangle(Rectangle(pos + movement, pos + movement + size))) {
-          ret.tilePos = none;
-          ret.object = object;
-          ret.creaturePos = pos + movement;
-          break;
+    if (ret.tilePos->inRectangle(objects.getBounds()))
+      for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
+          .intersection(objects.getBounds())) {
+        Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
+        if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::CREATURE)) {
+          const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
+          Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal);
+          if (renderer.getMousePos().inRectangle(Rectangle(pos + movement, pos + movement + size))) {
+            ret.tilePos = none;
+            ret.object = object;
+            ret.creaturePos = pos + movement;
+            break;
+          }
         }
       }
-    }
   }
   return ret;
 }
