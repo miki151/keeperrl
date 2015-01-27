@@ -23,6 +23,7 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 #include "gzstream.h"
 
 #include "dirent.h"
@@ -50,6 +51,14 @@
 #include "clock.h"
 #include "model_builder.h"
 
+#ifndef DATA_DIR
+#define DATA_DIR "."
+#endif
+
+#ifndef USER_DIR
+#define USER_DIR "."
+#endif
+
 using namespace boost::iostreams;
 using namespace boost::program_options;
 using namespace boost::archive;
@@ -59,12 +68,12 @@ struct SaveFileInfo {
   time_t date;
 };
 
-static vector<SaveFileInfo> getSaveFiles(const string& suffix) {
+static vector<SaveFileInfo> getSaveFiles(const string& path, const string& suffix) {
   vector<SaveFileInfo> ret;
-  DIR* dir = opendir(".");
-  CHECK(dir) << "Couldn't open current directory";
+  DIR* dir = opendir(path.c_str());
+  CHECK(dir) << "Couldn't open " + path;
   while (dirent* ent = readdir(dir)) {
-    string name(ent->d_name);
+    string name(path + "/" + ent->d_name);
     if (endsWith(name, suffix)) {
       struct stat buf;
       stat(name.c_str(), &buf);
@@ -121,30 +130,6 @@ string getGameName(const SaveFileInfo& save) {
   return name + " (" + getDateString(save.date) + ")";
 }
 
-static optional<string> chooseSaveFile(vector<pair<Model::GameType, string>> games, string noSaveMsg, View* view) {
-  vector<View::ListElem> options;
-  bool noGames = true;
-  vector<SaveFileInfo> allFiles;
-  for (auto elem : games) {
-    vector<SaveFileInfo> files = getSaveFiles(getSaveSuffix(elem.first));
-    append(allFiles, files);
-    if (!files.empty()) {
-      noGames = false;
-      options.emplace_back(elem.second, View::TITLE);
-      append(options, View::getListElem(transform2<string>(files, getGameName)));
-    }
-  }
-  if (noGames) {
-    view->presentText("", noSaveMsg);
-    return none;
-  }
-  auto ind = view->chooseFromList("Choose game", options, 0);
-  if (ind)
-    return allFiles[*ind].path;
-  else
-    return none;
-}
-
 static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
   unique_ptr<Model> model;
   {
@@ -167,10 +152,10 @@ string stripNonAscii(string s) {
   return s;
 }
 
-static void saveGame(unique_ptr<Model> model, const string& saveSuffix) {
+static void saveGame(unique_ptr<Model> model, const string& dir, const string& saveSuffix) {
   string filename = model->getShortGameIdentifier() + saveSuffix;
   filename = stripNonAscii(filename);
-  CompressedOutput out(filename.c_str());
+  CompressedOutput out(dir + "/" + filename.c_str());
   Serialization::registerTypes(out.getArchive());
   string game = model->getGameIdentifier();
   out.getArchive() << BOOST_SERIALIZATION_NVP(game) << BOOST_SERIALIZATION_NVP(model);
@@ -188,9 +173,8 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
     view->refreshView();
   }
 }
-bool tilesPresent() {
-  return !!opendir("data");
-}
+
+static bool tilesPresent;
 
 #ifdef OSX // see thread comment in stdafx.h
 static thread::attributes getAttributes() {
@@ -214,7 +198,7 @@ void initializeRendererTiles(Renderer& r, const string& path) {
 }
 
 vector<pair<MusicType, string>> getMusicTracks(const string& path) {
-  if (!tilesPresent())
+  if (!tilesPresent)
     return {};
   else
     return {
@@ -238,16 +222,41 @@ vector<pair<MusicType, string>> getMusicTracks(const string& path) {
 
 class MainLoop {
   public:
-  MainLoop(View* v, const string& _dataFreePath, Options* o, Jukebox* j, std::atomic<bool>& fin)
-      : view(v), dataFreePath(_dataFreePath), options(o), jukebox(j), finished(fin) {}
+  MainLoop(View* v, const string& _dataFreePath, const string& _userPath, Options* o, Jukebox* j,
+      std::atomic<bool>& fin)
+      : view(v), dataFreePath(_dataFreePath), userPath(_userPath), options(o), jukebox(j), finished(fin) {}
 
   void saveUI(PModel model, Model::GameType type) {
     ProgressMeter meter(1.0 / 62500);
     Square::progressMeter = &meter;
     view->displaySplash(meter, View::SAVING);
-    saveGame(std::move(model), getSaveSuffix(type));
+    saveGame(std::move(model), userPath, getSaveSuffix(type));
     view->clearSplash();
     Square::progressMeter = nullptr;
+  }
+
+  optional<string> chooseSaveFile(vector<pair<Model::GameType, string>> games, string noSaveMsg, View* view) {
+    vector<View::ListElem> options;
+    bool noGames = true;
+    vector<SaveFileInfo> allFiles;
+    for (auto elem : games) {
+      vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem.first));
+      append(allFiles, files);
+      if (!files.empty()) {
+        noGames = false;
+        options.emplace_back(elem.second, View::TITLE);
+        append(options, View::getListElem(transform2<string>(files, getGameName)));
+      }
+    }
+    if (noGames) {
+      view->presentText("", noSaveMsg);
+      return none;
+    }
+    auto ind = view->chooseFromList("Choose game", options, 0);
+    if (ind)
+      return allFiles[*ind].path;
+    else
+      return none;
   }
 
   void playModel(PModel model, bool withMusic = true) {
@@ -335,7 +344,7 @@ class MainLoop {
       jukebox->toggle(true);
     splashScreen();
     view->reset();
-    if (!tilesPresent())
+    if (!tilesPresent)
       view->presentText("", "You are playing a version of KeeperRL without graphical tiles. "
           "Besides lack of graphics and music, this "
           "is the same exact game as the full version. If you'd like to buy the full version, "
@@ -389,6 +398,7 @@ class MainLoop {
     ProgressMeter meter(1.0 / 62500);
     Square::progressMeter = &meter;
     view->displaySplash(meter, View::LOADING);
+    Debug() << "Loading from " << file;
     PModel ret = loadGame(file, erase);
     ret->setView(view);
     view->clearSplash();
@@ -426,15 +436,22 @@ class MainLoop {
   private:
   View* view;
   string dataFreePath;
+  string userPath;
   Options* options;
   Jukebox* jukebox;
   std::atomic<bool>& finished;
 };
 
+void makeDir(const string& path) {
+  boost::filesystem::create_directories(path.c_str());
+}
+
 int main(int argc, char* argv[]) {
   options_description flags("Flags");
   flags.add_options()
     ("help", "Print help")
+    ("user_dir", value<string>(), "Directory for options and save files")
+    ("data_dir", value<string>(), "Directory containing the game data")
     ("run_tests", "Run all unit tests and exit")
     ("gen_world_exit", "Exit after creating a world")
     ("force_keeper", "Skip main menu and force keeper mode")
@@ -460,16 +477,36 @@ int main(int argc, char* argv[]) {
   Spell::init();
   Epithet::init();
   Vision::init();
-  NameGenerator::init("data_free/names");
-  Options options("options.txt");
-  Renderer renderer("KeeperRL", Vec2(36, 36), "data_contrib");
+  string dataPath;
+  if (vars.count("data_dir"))
+    dataPath = vars["data_dir"].as<string>();
+  else
+    dataPath = DATA_DIR;
+  string freeDataPath = dataPath + "/data_free";
+  string paidDataPath = dataPath + "/data";
+  string contribDataPath = dataPath + "/data_contrib";
+  tilesPresent = !!opendir(paidDataPath.c_str());
+  string userPath;
+  if (vars.count("user_dir"))
+    userPath = vars["user_dir"].as<string>();
+  else
+  if (const char* localPath = std::getenv("XDG_DATA_HOME"))
+    userPath = localPath + string("/KeeperRL");
+  else
+    userPath = USER_DIR;
+  Debug() << "Data path: " << dataPath;
+  Debug() << "User path: " << userPath;
+  makeDir(userPath);
+  NameGenerator::init(freeDataPath + "/names");
+  Options options(userPath + "/options.txt");
+  Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
   GuiFactory guiFactory;
-  guiFactory.loadFreeImages("data_free/images");
-  if (tilesPresent())
-    guiFactory.loadNonFreeImages("data/images");
+  guiFactory.loadFreeImages(freeDataPath + "/images");
+  if (tilesPresent)
+    guiFactory.loadNonFreeImages(paidDataPath + "/images");
   Clock clock;
-  if (tilesPresent())
-    initializeRendererTiles(renderer, "data/images");
+  if (tilesPresent)
+    initializeRendererTiles(renderer, paidDataPath + "/images");
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
  // int forceMode = vars.count("force_keeper") ? 0 : -1;
   bool genExit = vars.count("gen_world_exit");
@@ -480,7 +517,7 @@ int main(int argc, char* argv[]) {
     Random.init(seed);
     input.reset(new CompressedInput(fname));
     view.reset(WindowView::createReplayView(input->getArchive(),
-          {renderer, guiFactory, tilesPresent(), &options, &clock}));
+          {renderer, guiFactory, tilesPresent, &options, &clock}));
   } else {
 #ifndef RELEASE
     Random.init(seed);
@@ -489,17 +526,17 @@ int main(int argc, char* argv[]) {
     output.reset(new CompressedOutput(fname));
     Debug() << "Writing to " << fname;
     view.reset(WindowView::createLoggingView(output->getArchive(),
-          {renderer, guiFactory, tilesPresent(), &options, &clock}));
+          {renderer, guiFactory, tilesPresent, &options, &clock}));
 #else
     view.reset(WindowView::createDefaultView(
-          {renderer, guiFactory, tilesPresent(), &options, &clock}));
+          {renderer, guiFactory, tilesPresent, &options, &clock}));
 #endif
   } 
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
-  Tile::initialize(renderer, tilesPresent());
-  Jukebox jukebox(&options, getMusicTracks("data/music"));
-  MainLoop loop(view.get(), "data_free", &options, &jukebox, gameFinished);
+  Tile::initialize(renderer, tilesPresent);
+  Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
+  MainLoop loop(view.get(), freeDataPath, userPath, &options, &jukebox, gameFinished);
   auto game = [&] { while (!viewInitialized) {} loop.start(); };
   auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
 #ifdef OSX // see thread comment in stdafx.h
