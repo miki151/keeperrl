@@ -606,9 +606,6 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
   fogOfWar.clear();
   creatureMap.clear();
   for (ViewLayer layer : layout->getLayers()) {
-    if (layer == ViewLayer::CREATURE && highlightedInfo.creaturePos)
-      renderer.drawFilledRectangle(Rectangle(*highlightedInfo.creaturePos, *highlightedInfo.creaturePos + size),
-          Color::Transparent, colors[ColorId::LIGHT_GRAY]);
     for (Vec2 wpos : allTiles) {
       Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
       if (!objects[wpos] || objects[wpos]->noObjects()) {
@@ -643,6 +640,9 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
               isFoW(wpos + Vec2(Dir::SE)),
               isFoW(wpos + Vec2(Dir::SW))));
     }
+    if (highlightedInfo.creaturePos && (layer == ViewLayer::FLOOR || !spriteMode))
+      renderer.drawFilledRectangle(Rectangle(*highlightedInfo.creaturePos, *highlightedInfo.creaturePos + size),
+          Color::Transparent, colors[ColorId::LIGHT_GRAY]);
     if (!spriteMode)
       break;
     if (layer == ViewLayer::FLOOR_BACKGROUND)
