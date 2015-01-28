@@ -1861,24 +1861,26 @@ bool Collective::isDelayed(Vec2 pos) {
 }
 
 void Collective::fetchAllItems(Vec2 pos) {
-  vector<PTask> tasks;
-  for (const ItemFetchInfo& elem : getFetchInfo()) {
-    vector<Item*> equipment = filter(getLevel()->getSafeSquare(pos)->getItems(elem.index), elem.predicate);
-    if (!equipment.empty()) {
-      vector<Vec2> destination = getAllSquares(elem.destination);
-      if (!destination.empty()) {
-        setWarning(elem.warning, false);
-        if (elem.oneAtATime)
-          equipment = {equipment[0]};
-        tasks.push_back(Task::bringItem(this, pos, equipment, destination));
-        for (Item* it : equipment)
-          markItem(it);
-      } else
-        setWarning(elem.warning, true);
+  if (isKnownSquare(pos)) {
+    vector<PTask> tasks;
+    for (const ItemFetchInfo& elem : getFetchInfo()) {
+      vector<Item*> equipment = filter(getLevel()->getSafeSquare(pos)->getItems(elem.index), elem.predicate);
+      if (!equipment.empty()) {
+        vector<Vec2> destination = getAllSquares(elem.destination);
+        if (!destination.empty()) {
+          setWarning(elem.warning, false);
+          if (elem.oneAtATime)
+            equipment = {equipment[0]};
+          tasks.push_back(Task::bringItem(this, pos, equipment, destination));
+          for (Item* it : equipment)
+            markItem(it);
+        } else
+          setWarning(elem.warning, true);
+      }
     }
+    if (!tasks.empty())
+      taskMap.markSquare(pos, HighlightType::FETCH_ITEMS, Task::chain(std::move(tasks)));
   }
-  if (!tasks.empty())
-    taskMap.markSquare(pos, HighlightType::FETCH_ITEMS, Task::chain(std::move(tasks)));
 }
 
 void Collective::fetchItems(Vec2 pos, const ItemFetchInfo& elem) {

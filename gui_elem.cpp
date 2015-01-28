@@ -632,29 +632,6 @@ class Switchable : public GuiLayout {
   function<int()> switchFun;
 };
 
-/*class TabGui : public MarginGui {
-  public:
-  TabGui(vector<PGuiElem> tabs, vector<PGuiElem> content, int tabWidth, int tabHeight, int tabSpacing)
-      : MarginGui(horizontalList(makeTabButtons(std::move(tabs)), tabWidth, tabSpacing), 
-          PGuiElem(new Switchable(std::move(content), [this]() { return currentTab; })), tabHeight, MarginGui::TOP) {}
-
-  vector<PGuiElem> makeTabButtons(vector<PGuiElem> tabs) {
-    vector<PGuiElem> ret;
-    for (int i : All(tabs))
-      ret.push_back(GuiElem::stack(std::move(tabs[i]), GuiElem::button([this, i]() { currentTab = i; })));
-    return ret;
-  }
-
-  private:
-  vector<PGuiElem> content;
-  int contentMargin;
-  int currentTab = 0;
-};
-
-PGuiElem GuiFactory::tabs(vector<PGuiElem> but, vector<PGuiElem> tabs, int tabWidth, int tabHeight, int tabSpacing) {
-  return PGuiElem(new TabGui(std::move(but), std::move(tabs), tabWidth, tabHeight, tabSpacing));
-}*/
-
 PGuiElem GuiFactory::empty() {
   return PGuiElem(new GuiElem());
 }

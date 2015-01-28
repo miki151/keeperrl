@@ -231,14 +231,25 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
   return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
 }
 
-void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color) {
+void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool hFlip, bool vFlip) {
   Vec2 sz = Renderer::tileSize[coord.texNum];
   Vec2 off = (nominalSize -  sz).mult(size).div(Renderer::nominalSize * 2);
   Vec2 tileSize = sz.mult(size).div(nominalSize);
   if (sz.y > nominalSize.y)
     off.y *= 2;
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
-  drawSprite(pos + off, coord.pos.mult(sz), sz, Renderer::tiles.at(coord.texNum), tileSize, color);
+  Vec2 coordPos = coord.pos.mult(sz);
+  if (vFlip) {
+    sz.y *= -1;
+    tileSize.y *= -1;
+    coordPos.y -= sz.y;
+  }
+  if (vFlip) {
+    sz.x *= -1;
+    tileSize.x *= -1;
+    coordPos.x -= sz.x;
+  }
+  drawSprite(pos + off, coordPos, sz, Renderer::tiles.at(coord.texNum), tileSize, color);
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
@@ -368,8 +379,16 @@ bool Renderer::pollEventOrFromQueue(Event& ev) {
     ev = eventQueue.front();
     eventQueue.pop_front();
     return true;
-  } else
-    return display->pollEvent(ev);
+  } else {
+    bool ret = display->pollEvent(ev);
+    considerMouseMoveEvent(ev);
+    return ret;
+  }
+}
+
+void Renderer::considerMouseMoveEvent(Event& ev) {
+  if (ev.type == Event::MouseMoved)
+    mousePos = Vec2(ev.mouseMove.x, ev.mouseMove.y);
 }
 
 bool Renderer::pollEvent(Event& ev) {
@@ -385,6 +404,7 @@ bool Renderer::pollEvent(Event& ev) {
 void Renderer::flushEvents(Event::EventType type) {
   Event ev;
   while (display->pollEvent(ev)) {
+    considerMouseMoveEvent(ev);
     if (ev.type != type)
       eventQueue.push_back(ev);
   }
@@ -398,16 +418,18 @@ void Renderer::waitEvent(Event& ev) {
     if (!eventQueue.empty()) {
       ev = eventQueue.front();
       eventQueue.pop_front();
-    } else
+    } else {
       display->waitEvent(ev);
+      considerMouseMoveEvent(ev);
+    }
   }
 }
 
 Vec2 Renderer::getMousePos() {
   if (monkey)
     return Vec2(Random.get(getSize().x), Random.get(getSize().y));
-  auto pos = Mouse::getPosition(*display);
-  return Vec2(pos.x, pos.y);
+  else
+    return mousePos;
 }
 
 void Renderer::startMonkey() {

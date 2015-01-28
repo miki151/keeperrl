@@ -260,7 +260,6 @@ static vector<ViewId> creatureIds {
   ViewId::COW,
   ViewId::PIG,
   ViewId::GOAT,
-  ViewId::SHEEP,
   ViewId::JACKAL,
   ViewId::DEER,
   ViewId::BOAR,
@@ -276,7 +275,6 @@ static vector<ViewId> creatureIds {
   ViewId::VULTURE,
   ViewId::RAVEN,
   ViewId::GOBLIN,
-  ViewId::VODNIK,
   ViewId::LEPRECHAUN,
   ViewId::KRAKEN_HEAD,
   ViewId::KRAKEN_LAND,
@@ -331,7 +329,6 @@ static vector<ViewId> itemIds {
   ViewId::SPEED_BOOTS,
   ViewId::BOULDER,
   ViewId::PORTAL,
-  ViewId::TRAP,
   ViewId::GAS_TRAP,
   ViewId::ALARM_TRAP,
   ViewId::WEB_TRAP,
@@ -389,3 +386,7 @@ void ViewObject::setPosition(Vec2 pos) {
   position = pos;
 }
 
+int ViewObject::getPositionHash() const {
+  int a = position.x * position.y;
+  return (a * (a + 3)) % 1487;
+}

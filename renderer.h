@@ -115,7 +115,8 @@ class Renderer {
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
-  void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = colors[ColorId::WHITE]);
+  void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = colors[ColorId::WHITE], bool hFlip = false,
+      bool vFlip = false);
   void addQuad(const Rectangle&, Color);
   void drawQuads();
   static Color getBleedingColor(const ViewObject&);
@@ -152,6 +153,7 @@ class Renderer {
   map<string, TileCoord> tileCoords;
   bool pollEventWorkaroundMouseReleaseBug(Event&);
   bool pollEventOrFromQueue(Event&);
+  void considerMouseMoveEvent(Event&);
   RenderWindow* display = nullptr;
   sf::View* sfView;
   bool monkey = false;
@@ -159,6 +161,7 @@ class Renderer {
   bool genReleaseEvent = false;
   vector<function<void()>> renderList;
   vector<Vertex> quads;
+  Vec2 mousePos;
 };
 
 #endif

@@ -182,11 +182,11 @@ Model* Level::getModel() {
 }
 
 double Level::getSunlight(Vec2 pos) const {
-  return coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount;
+  return coverInfo[pos].covered() ? 0 : coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount;
 }
 
 double Level::getLight(Vec2 pos) const {
-  return max(0.0, min(1.0, lightAmount[pos] + getSunlight(pos)));
+  return max(0.0, min(1.0, lightAmount[pos] + coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount));
 }
 
 vector<Vec2> Level::getLandingSquares(StairDirection dir, StairKey key) const {

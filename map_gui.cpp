@@ -341,6 +341,16 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   }
 }
 
+static bool mirrorSprite(ViewId id) {
+  switch (id) {
+    case ViewId::GRASS:
+    case ViewId::HILL:
+      return true;
+    default:
+      return false;
+  }
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size,
     Vec2 tilePos, int curTimeReal, const EnumMap<HighlightType, double>& highlightMap) {
   const Tile& tile = Tile::getTile(object.id(), spriteMode);
@@ -359,7 +369,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     int val = max(0.0, 255.0 - min(2.0, waterDepth) * 60);
     color = Color(val, val, val);
   }
-  if (spriteMode) {
+  if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
     DirSet borderDirs;
     if (!object.hasModifier(ViewObject::Modifier::PLANNED))
@@ -386,13 +396,15 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (auto dir = object.getAttachmentDir())
       move = getAttachmentOffset(*dir, size);
     move += movement;
-    if (tile.hasSpriteCoord()) {
+    if (mirrorSprite(object.id()))
+      renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
+          object.getPositionHash() % 2, object.getPositionHash() % 4 > 1);
+    else
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
-      if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
-        renderer.drawTile(pos + move, tile.getHighlightCoord(), size, color);
-      if (auto id = object.getCreatureId())
-        creatureMap.emplace_back(Rectangle(pos + move, pos + move + size), *id);
-    }
+    if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
+      renderer.drawTile(pos + move, tile.getHighlightCoord(), size, color);
+    if (auto id = object.getCreatureId())
+      creatureMap.emplace_back(Rectangle(pos + move, pos + move + size), *id);
     if (tile.hasCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
@@ -409,9 +421,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos, {Vec2(5, 6), 3}, size);
   } else {
-    Vec2 movement = getMovementOffset(object, Vec2(size), currentTimeGame, curTimeReal);
+    Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
+    Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
-        pos.x + size.x / 2 + movement.x, pos.y - 3 + movement.y, tile.text, true);
+        tilePos.x, tilePos.y, tile.text, true);
+    if (auto id = object.getCreatureId())
+      creatureMap.emplace_back(Rectangle(tilePos, tilePos + size), *id);
     double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
     if (burningVal > 0) {
       renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ', true);

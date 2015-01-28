@@ -100,7 +100,6 @@ RICH_ENUM(CreatureId,
     ELF_LORD,
     HORSE,
     COW,
-    SHEEP,
     PIG,
     GOAT,
     

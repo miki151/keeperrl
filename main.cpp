@@ -497,7 +497,6 @@ int main(int argc, char* argv[]) {
   Debug() << "Data path: " << dataPath;
   Debug() << "User path: " << userPath;
   makeDir(userPath);
-  NameGenerator::init(freeDataPath + "/names");
   Options options(userPath + "/options.txt");
   Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
   GuiFactory guiFactory;
@@ -535,6 +534,7 @@ int main(int argc, char* argv[]) {
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
   Tile::initialize(renderer, tilesPresent);
+  NameGenerator::init(freeDataPath + "/names");
   Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
   MainLoop loop(view.get(), freeDataPath, userPath, &options, &jukebox, gameFinished);
   auto game = [&] { while (!viewInitialized) {} loop.start(); };

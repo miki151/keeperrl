@@ -1624,19 +1624,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.animal = true;
           c.dontChase = true;
           c.name = "cow";);
-    case CreatureId::SHEEP: 
-      return CATTR(
-          c.viewId = ViewId::SHEEP;
-          c.attr[AttrType::SPEED] = 80;
-          c.size = CreatureSize::MEDIUM;
-          c.attr[AttrType::STRENGTH] = 5;
-          c.attr[AttrType::DEXTERITY] = 12;
-          c.humanoid = false;
-          c.innocent = true;
-          c.weight = 40;
-          c.animal = true;
-          c.dontChase = true;
-          c.name = EntityName("sheep", "sheep"););
     case CreatureId::PIG: 
       return CATTR(
           c.viewId = ViewId::PIG;

@@ -66,6 +66,7 @@ class ViewObject {
   void setId(ViewId);
 
   void setPosition(Vec2);
+  int getPositionHash() const;
 
   struct MovementInfo {
     Vec2 direction;

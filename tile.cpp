@@ -293,13 +293,6 @@ class TileCoordLookup {
   void genTiles() {
     Tile::addTile(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
     Tile::addTile(ViewId::DIG_MARK, sprite("dig_mark"));
-    Tile::addTile(ViewId::SHEEP, symbol("s", ColorId::WHITE));
-    Tile::addTile(ViewId::VODNIK, symbol("f", ColorId::GREEN));
-    Tile::addTile(ViewId::ABYSS, symbol("~", ColorId::DARK_GRAY));
-    Tile::addTile(ViewId::TRAP, symbol("➹", ColorId::YELLOW, true));
-    Tile::addTile(ViewId::BARS, symbol("⧻", ColorId::LIGHT_BLUE));
-    Tile::addTile(ViewId::DESTROYED_FURNITURE, symbol("*", ColorId::BROWN));
-    Tile::addTile(ViewId::BURNT_FURNITURE, symbol("*", ColorId::DARK_GRAY));
     Tile::addTile(ViewId::DESTROY_BUTTON, sprite("remove"));
     Tile::addTile(ViewId::EMPTY, empty());
     Tile::addTile(ViewId::BORDER_GUARD, empty());
@@ -678,7 +671,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DEER, symbol("R", ColorId::DARK_BROWN));
     Tile::addSymbol(ViewId::HORSE, symbol("H", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::COW, symbol("C", ColorId::WHITE));
-    Tile::addSymbol(ViewId::SHEEP, symbol("s", ColorId::WHITE));
     Tile::addSymbol(ViewId::PIG, symbol("p", ColorId::YELLOW));
     Tile::addSymbol(ViewId::GOAT, symbol("g", ColorId::GRAY));
     Tile::addSymbol(ViewId::BOAR, symbol("b", ColorId::LIGHT_BROWN));
@@ -686,7 +678,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WOLF, symbol("d", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::WEREWOLF, symbol("d", ColorId::WHITE));
     Tile::addSymbol(ViewId::DOG, symbol("d", ColorId::BROWN));
-    Tile::addSymbol(ViewId::VODNIK, symbol("f", ColorId::GREEN));
     Tile::addSymbol(ViewId::KRAKEN_HEAD, symbol("S", ColorId::GREEN));
     Tile::addSymbol(ViewId::KRAKEN_WATER, symbol("S", ColorId::DARK_GREEN));
     Tile::addSymbol(ViewId::KRAKEN_LAND, symbol("S", ColorId::DARK_GREEN));
@@ -713,7 +704,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::BURNT_TREE, symbol(".", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::WATER, symbol("~", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::MAGMA, symbol("~", ColorId::RED));
-    Tile::addSymbol(ViewId::ABYSS, symbol("~", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::DOOR, symbol("|", ColorId::BROWN));
     Tile::addSymbol(ViewId::BARRICADE, symbol("X", ColorId::BROWN));
     Tile::addSymbol(ViewId::DIG_ICON, symbol(0x26cf, ColorId::LIGHT_GRAY, true));
@@ -759,7 +749,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::COFFIN, symbol("⚰", ColorId::DARK_GRAY, true));
     Tile::addSymbol(ViewId::BOULDER, symbol("●", ColorId::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::PORTAL, symbol(0x1d6af, ColorId::LIGHT_GREEN, true));
-    Tile::addSymbol(ViewId::TRAP, symbol("➹", ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::GAS_TRAP, symbol("☠", ColorId::GREEN, true));
     Tile::addSymbol(ViewId::ALARM_TRAP, symbol("^", ColorId::RED, true));
     Tile::addSymbol(ViewId::WEB_TRAP, symbol("#", ColorId::WHITE, true));
@@ -792,7 +781,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::JEWELER, symbol("&", ColorId::YELLOW));
     Tile::addSymbol(ViewId::CEMETERY, symbol(".", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::GRAVE, symbol(0x2617, ColorId::GRAY, true));
-    Tile::addSymbol(ViewId::BARS, symbol("⧻", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::BORDER_GUARD, symbol(" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::ROBE, symbol("[", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::LEATHER_GLOVES, symbol("[", ColorId::BROWN));
@@ -807,8 +795,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::IRON_BOOTS, symbol("[", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::SPEED_BOOTS, symbol("[", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::LEVITATION_BOOTS, symbol("[", ColorId::LIGHT_GREEN));
-    Tile::addSymbol(ViewId::DESTROYED_FURNITURE, symbol("*", ColorId::BROWN));
-    Tile::addSymbol(ViewId::BURNT_FURNITURE, symbol("*", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::FALLEN_TREE, symbol("*", ColorId::GREEN));
     Tile::addSymbol(ViewId::GUARD_POST, symbol("⚐", ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::DESTROY_BUTTON, symbol("X", ColorId::RED));
