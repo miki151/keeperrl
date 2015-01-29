@@ -1163,11 +1163,9 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
   switch (event.type) {
     case Event::MouseButtonReleased : {
       Vec2 mousePos(event.mouseButton.x, event.mouseButton.y);
-      for (GuiElem* elem : guiElems) {
+      for (GuiElem* elem : guiElems)
         elem->onMouseRelease();
-/*        if (mousePos.inRectangle(elem->getBounds()))
-          break;*/
-      }
+      mapGui->onMouseRelease();
     break; }
     case Event::MouseMoved: {
       Vec2 mousePos(event.mouseMove.x, event.mouseMove.y);
