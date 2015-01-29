@@ -1870,8 +1870,10 @@ void Collective::fetchAllItems(Vec2 pos) {
         if (!destination.empty()) {
           setWarning(elem.warning, false);
           if (elem.oneAtATime)
-            equipment = {equipment[0]};
-          tasks.push_back(Task::bringItem(this, pos, equipment, destination));
+            for (Item* it : equipment)
+              tasks.push_back(Task::bringItem(this, pos, {it}, destination));
+          else
+            tasks.push_back(Task::bringItem(this, pos, equipment, destination));
           for (Item* it : equipment)
             markItem(it);
         } else
