@@ -1165,7 +1165,7 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       Vec2 mousePos(event.mouseButton.x, event.mouseButton.y);
       for (GuiElem* elem : guiElems)
         elem->onMouseRelease();
-      mapGui->onMouseRelease();
+      mapGui->onMouseRelease(); // MapGui needs this event otherwise it will sometimes lock the mouse button
     break; }
     case Event::MouseMoved: {
       Vec2 mousePos(event.mouseMove.x, event.mouseMove.y);

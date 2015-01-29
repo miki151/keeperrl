@@ -1265,7 +1265,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         if (getCollective()->getTraps().count(pos)) {
           getCollective()->removeTrap(pos);// Does this mean I can remove the order if the trap physically exists?
         } else
-        if (canPlacePost(pos) && getCollective()->containsSquare(pos)) {
+        if (canPlacePost(pos) && getCollective()->getSquares(SquareId::FLOOR).count(pos)) {
           getCollective()->addTrap(pos, building.trapInfo.type);
         }
       break;
