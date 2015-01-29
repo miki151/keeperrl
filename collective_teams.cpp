@@ -12,6 +12,8 @@ void CollectiveTeams::add(TeamId team, Creature* c) {
 }
 
 void CollectiveTeams::remove(TeamId team, Creature* c) {
+  if (c == getLeader(team))
+    deactivate(team); // otherwise teams are still active when the player gets killed
   removeElement(teamInfo[team].creatures(), c);
   if (teamInfo[team].creatures().empty())
     cancel(team);
@@ -78,8 +80,9 @@ vector<TeamId> CollectiveTeams::getActiveTeams() const {
 }
 
 TeamId CollectiveTeams::create(vector<Creature*> c) {
-  static int cnt = 0;
-  TeamId id = ++cnt;
+  TeamId id = 1;
+  for (TeamId id1 : getKeys(teamInfo))
+    id = max(id, id1 + 1);
   CHECK(!c.empty());
   teamInfo[id].creatures() = c;
   return id;

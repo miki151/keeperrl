@@ -518,8 +518,8 @@ int main(int argc, char* argv[]) {
     view.reset(WindowView::createReplayView(input->getArchive(),
           {renderer, guiFactory, tilesPresent, &options, &clock}));
   } else {
-#ifndef RELEASE
     Random.init(seed);
+#ifndef RELEASE
     string fname(lognamePref);
     fname += toString(seed);
     output.reset(new CompressedOutput(fname));

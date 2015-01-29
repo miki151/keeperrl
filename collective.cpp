@@ -1971,7 +1971,7 @@ void Collective::onPickedUp(Vec2 pos, EntitySet<Item> items) {
   for (auto id : items)
     unmarkItem(id);
 }
-  
+
 void Collective::onCantPickItem(EntitySet<Item> items) {
   for (auto id : items)
     unmarkItem(id);
