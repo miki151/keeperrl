@@ -224,34 +224,44 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
 }
 
-void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type) {
+void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type, function<void()> cancelFun) {
   RenderLock lock(renderMutex);
   string text;
   switch (type) {
     case View::CREATING: text = "Creating a new world, just for you..."; break;
     case View::LOADING: text = "Loading the game..."; break;
     case View::SAVING: text = "Saving the game..."; break;
+    case View::UPLOADING: text = "Uploading the map to keeperrl.com..."; break;
   }
   splashDone = false;
   renderDialog = [=, &meter] {
     int t0 = clock->getRealMillis();
     int mouthMillis = 400;
     Texture& loadingSplash = gui.get(GuiFactory::TexId::LOADING_SPLASH);
+    string cancelText = "[cancel]";
     while (!splashDone) {
-      if (useTiles) {
+      Vec2 textPos = useTiles ? Vec2(renderer.getSize().x / 2, renderer.getSize().y * 0.5)
+        : Vec2(renderer.getSize().x / 2, renderer.getSize().y - 60);
+    Rectangle cancelBut(textPos.x - renderer.getTextLength(cancelText) / 2, textPos.y + 30,
+        textPos.x + renderer.getTextLength(cancelText) / 2, textPos.y + 60);
+      if (useTiles)
         drawMenuBackground(meter.getProgress(), min(1.0, double(clock->getRealMillis() - t0) / mouthMillis));
-        renderer.drawText(colors[ColorId::WHITE], renderer.getSize().x / 2, renderer.getSize().y * 0.5, text, true);
-      } else {
+      else
         renderer.drawImage((renderer.getSize().x - loadingSplash.getSize().x) / 2,
             (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
-        renderer.drawText(colors[ColorId::WHITE], renderer.getSize().x / 2, renderer.getSize().y - 60, text, true);
-      }
+      renderer.drawText(colors[ColorId::WHITE], textPos.x, textPos.y, text, true);
+      if (cancelFun)
+        renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.getPX(), cancelBut.getPY(), cancelText);
       renderer.drawAndClearBuffer();
       sf::sleep(sf::milliseconds(30));
       Event event;
       while (renderer.pollEvent(event)) {
         if (event.type == Event::Resized) {
           resize(event.size.width, event.size.height, {});
+        }
+        if (event.type == Event::MouseButtonPressed && cancelFun) {
+          if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(cancelBut))
+            cancelFun();
         }
       }
     }

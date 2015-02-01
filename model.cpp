@@ -352,7 +352,7 @@ void Model::exitAction() {
     return;
   switch (Action(*ind)) {
     case RETIRE:
-      if (view->yesOrNoPrompt("Are you sure you want to retire your dungeon?")) {
+      if (view->yesOrNoPrompt("Retire your dungeon and upload it to keeperrl.com?")) {
         retireCollective();
         exitInfo = ExitInfo::saveGame(GameType::RETIRED_KEEPER);
         return;

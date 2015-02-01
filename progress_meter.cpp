@@ -15,3 +15,7 @@ void ProgressMeter::addProgress() {
   ++progress;
 }
 
+void ProgressMeter::setProgress(double p) {
+  increase = 0.0001;
+  progress = p / increase;
+}

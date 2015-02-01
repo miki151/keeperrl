@@ -50,6 +50,7 @@
 #include "window_view.h"
 #include "clock.h"
 #include "model_builder.h"
+#include "file_sharing.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -152,10 +153,8 @@ string stripNonAscii(string s) {
   return s;
 }
 
-static void saveGame(unique_ptr<Model> model, const string& dir, const string& saveSuffix) {
-  string filename = model->getShortGameIdentifier() + saveSuffix;
-  filename = stripNonAscii(filename);
-  CompressedOutput out(dir + "/" + filename.c_str());
+static void saveGame(unique_ptr<Model> model, const string& path) {
+  CompressedOutput out(path);
   Serialization::registerTypes(out.getArchive());
   string game = model->getGameIdentifier();
   out.getArchive() << BOOST_SERIALIZATION_NVP(game) << BOOST_SERIALIZATION_NVP(model);
@@ -222,17 +221,30 @@ vector<pair<MusicType, string>> getMusicTracks(const string& path) {
 
 class MainLoop {
   public:
-  MainLoop(View* v, const string& _dataFreePath, const string& _userPath, Options* o, Jukebox* j,
+  MainLoop(View* v, const string& _dataFreePath, const string& _userPath, const string& _uploadUrl, Options* o, Jukebox* j,
       std::atomic<bool>& fin)
-      : view(v), dataFreePath(_dataFreePath), userPath(_userPath), options(o), jukebox(j), finished(fin) {}
+      : view(v), dataFreePath(_dataFreePath), userPath(_userPath), uploadUrl(_uploadUrl), options(o), jukebox(j), finished(fin) {}
+
+  void uploadFile(const string& path) {
+    ProgressMeter meter(1);
+    FileSharing f(uploadUrl);
+    view->displaySplash(meter, View::UPLOADING, f.getCancelFun());
+    optional<string> error = f.upload(path, meter);
+    view->clearSplash();
+    if (error)
+      view->presentText("Error uploading file", *error);
+  }
 
   void saveUI(PModel model, Model::GameType type) {
     ProgressMeter meter(1.0 / 62500);
     Square::progressMeter = &meter;
     view->displaySplash(meter, View::SAVING);
-    saveGame(std::move(model), userPath, getSaveSuffix(type));
+    string path = userPath + "/" + stripNonAscii(model->getShortGameIdentifier()) + getSaveSuffix(type);
+    saveGame(std::move(model), path);
     view->clearSplash();
     Square::progressMeter = nullptr;
+    if (type == Model::GameType::RETIRED_KEEPER)
+      uploadFile(path);
   }
 
   optional<string> chooseSaveFile(vector<pair<Model::GameType, string>> games, string noSaveMsg, View* view) {
@@ -437,6 +449,7 @@ class MainLoop {
   View* view;
   string dataFreePath;
   string userPath;
+  string uploadUrl;
   Options* options;
   Jukebox* jukebox;
   std::atomic<bool>& finished;
@@ -452,6 +465,7 @@ int main(int argc, char* argv[]) {
     ("help", "Print help")
     ("user_dir", value<string>(), "Directory for options and save files")
     ("data_dir", value<string>(), "Directory containing the game data")
+    ("upload_url", value<string>(), "URL for uploading maps")
     ("run_tests", "Run all unit tests and exit")
     ("gen_world_exit", "Exit after creating a world")
     ("force_keeper", "Skip main menu and force keeper mode")
@@ -496,6 +510,11 @@ int main(int argc, char* argv[]) {
     userPath = USER_DIR;
   Debug() << "Data path: " << dataPath;
   Debug() << "User path: " << userPath;
+  string uploadUrl;
+  if (vars.count("upload_url"))
+    uploadUrl = vars["upload_url"].as<string>();
+  else
+    uploadUrl = "http://keeperrl.com/retired";
   makeDir(userPath);
   Options options(userPath + "/options.txt");
   Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
@@ -536,7 +555,7 @@ int main(int argc, char* argv[]) {
   Tile::initialize(renderer, tilesPresent);
   NameGenerator::init(freeDataPath + "/names");
   Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
-  MainLoop loop(view.get(), freeDataPath, userPath, &options, &jukebox, gameFinished);
+  MainLoop loop(view.get(), freeDataPath, userPath, uploadUrl, &options, &jukebox, gameFinished);
   auto game = [&] { while (!viewInitialized) {} loop.start(); };
   auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
 #ifdef OSX // see thread comment in stdafx.h
