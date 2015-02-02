@@ -52,6 +52,11 @@
 #include <condition_variable>
 #include "extern/portable_iarchive.hpp"
 #include "extern/portable_oarchive.hpp"
+
+
+#define BOOST_ENABLE_ASSERT_HANDLER
+#include <boost/assert.hpp>
+
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/deque.hpp>

@@ -196,7 +196,7 @@ int addr2line(char const * const program_name, void const * const addr)
         break;
       case SIGINT:
         fputs("Caught SIGINT: Interactive attention signal, (usually ctrl+c)\n", stderr);
-        return;
+        break;
       case SIGFPE:
         switch(siginfo->si_code)
         {
@@ -304,7 +304,7 @@ int addr2line(char const * const program_name, void const * const addr)
 
       if (sigaction(SIGSEGV, &sig_action, NULL) != 0) { err(1, "sigaction"); }
       if (sigaction(SIGFPE,  &sig_action, NULL) != 0) { err(1, "sigaction"); }
-      if (sigaction(SIGINT,  &sig_action, NULL) != 0) { err(1, "sigaction"); }
+      //if (sigaction(SIGINT,  &sig_action, NULL) != 0) { err(1, "sigaction"); }
       if (sigaction(SIGILL,  &sig_action, NULL) != 0) { err(1, "sigaction"); }
       if (sigaction(SIGTERM, &sig_action, NULL) != 0) { err(1, "sigaction"); }
       if (sigaction(SIGABRT, &sig_action, NULL) != 0) { err(1, "sigaction"); }
