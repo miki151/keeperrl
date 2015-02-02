@@ -345,14 +345,19 @@ Model::GameType Model::ExitInfo::getGameType() const {
 
 void Model::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
+#ifdef RELEASE
+  bool canRetire = !playerControl->isRetired() && won;
+#else
+  bool canRetire = !playerControl->isRetired();
+#endif
   vector<View::ListElem> elems { "Save the game",
-    {"Retire", playerControl->isRetired() ? View::INACTIVE : View::NORMAL} , "Change options", "Abandon the game" };
+    {"Retire", canRetire ? View::NORMAL : View::INACTIVE} , "Change options", "Abandon the game" };
   auto ind = view->chooseFromList("Would you like to:", elems);
   if (!ind)
     return;
   switch (Action(*ind)) {
     case RETIRE:
-      if (view->yesOrNoPrompt("Are you sure you want to retire your dungeon?")) {
+      if (view->yesOrNoPrompt("Retire your dungeon and share it online?")) {
         retireCollective();
         exitInfo = ExitInfo::saveGame(GameType::RETIRED_KEEPER);
         return;

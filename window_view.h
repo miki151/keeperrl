@@ -46,7 +46,7 @@ class WindowView: public View {
   WindowView(ViewParams); 
   virtual void initialize() override;
   virtual void reset() override;
-  virtual void displaySplash(const ProgressMeter&, View::SplashType) override;
+  virtual void displaySplash(const ProgressMeter&, View::SplashType, function<void()> cancelFun) override;
   virtual void clearSplash() override;
 
   virtual void close() override;

@@ -38,10 +38,10 @@ class View {
   /** Resets the view before a new game.*/
   virtual void reset() = 0;
 
-  enum SplashType { CREATING, LOADING, SAVING };
+  enum SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING };
 
   /** Displays a splash screen in an active loop until \paramname{ready} is set to true in another thread.*/
-  virtual void displaySplash(const ProgressMeter&, SplashType type) = 0;
+  virtual void displaySplash(const ProgressMeter&, SplashType type, function<void()> cancelFun = nullptr) = 0;
 
   virtual void clearSplash() = 0;
 

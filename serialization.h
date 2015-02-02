@@ -109,6 +109,22 @@ class SerialChecker {
 };
 
 
+template <class T, class U>
+class StreamCombiner {
+  public:
+  StreamCombiner(const string& filename) : stream(filename.c_str()), archive(stream) {
+ //   CHECK(stream.good()) << "File not found: " << filename;
+  }
+
+  U& getArchive() {
+    return archive;
+  }
+
+  private:
+  T stream;
+  U archive;
+};
+
 
 template <class T>
 T& checkSerial(T& t, SerialChecker::Check& check) {

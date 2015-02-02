@@ -20,11 +20,12 @@ class ProgressMeter {
   public:
   ProgressMeter(double increase);
   double getProgress() const;
+  void setProgress(double);
   void addProgress();
 
   private:
   atomic<int> progress;
-  const double increase;
+  double increase;
 };
 
 #endif
