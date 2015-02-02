@@ -51,6 +51,7 @@
 #include "clock.h"
 #include "model_builder.h"
 #include "file_sharing.h"
+#include "stack_printer.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -500,6 +501,7 @@ void makeDir(const string& path) {
 }
 
 int main(int argc, char* argv[]) {
+  StackPrinter::initialize(argv[0]);
   options_description flags("Flags");
   flags.add_options()
     ("help", "Print help")
