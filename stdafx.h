@@ -60,6 +60,7 @@
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/variant.hpp>
 #include <boost/serialization/optional.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/variant.hpp>
 #include <boost/any.hpp>
 #include <boost/optional.hpp>
@@ -134,6 +135,7 @@ using std::remove_if;
 using boost::variant;
 using boost::optional;
 using boost::none_t;
+using boost::replace_all;
 using eos::portable_oarchive;
 using eos::portable_iarchive;
 

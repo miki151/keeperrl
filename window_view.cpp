@@ -682,7 +682,7 @@ optional<string> WindowView::getText(const string& title, const string& value, i
       if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
         continue;
       if (event.type == Event::TextEntered)
-        if (isprint(event.text.unicode) && text.size() < maxLength)
+        if ((isalnum(event.text.unicode) || event.text.unicode == ' ') && text.size() < maxLength)
           text += event.text.unicode;
       if (event.type == Event::KeyPressed)
         switch (event.key.code) {

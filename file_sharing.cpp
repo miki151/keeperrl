@@ -29,6 +29,11 @@ size_t dataFun(void *buffer, size_t size, size_t nmemb, void *userp) {
   return size * nmemb;
 }
 
+static string escapeUrl(string s) {
+  replace_all(s, " ", "%20");
+  return s;
+}
+
 static optional<string> curlUpload(const char* path, const char* url) {
 
   struct curl_httppost *formpost=NULL;
@@ -53,7 +58,7 @@ static optional<string> curlUpload(const char* path, const char* url) {
     string ret;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
     /* what URL that receives this POST */ 
-    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(url).c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
     // Internal CURL progressmeter must be disabled if we provide our own callback
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
@@ -87,7 +92,8 @@ static vector<FileSharing::GameInfo> parseGames(const string& s) {
       break;
     Debug() << "Parsing " << string(buf);
     vector<string> fields = split(buf, {','});
-    CHECK(fields.size() >= 3);
+    if (fields.size() < 3)
+      continue;
     Debug() << "Parsed " << fields;
     ret.push_back({fields[0], fields[1], fromString<int>(fields[2])});
   }
@@ -96,7 +102,7 @@ static vector<FileSharing::GameInfo> parseGames(const string& s) {
 
 vector<FileSharing::GameInfo> FileSharing::listGames(int version) {
   if(CURL* curl = curl_easy_init()) {
-    curl_easy_setopt(curl, CURLOPT_URL, (uploadUrl + "/get_games.php?version=" + toString(version)).c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_games.php?version=" + toString(version)).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
     string ret;
@@ -122,13 +128,14 @@ optional<string> FileSharing::download(const string& filename, const string& dir
     string path = dir + "/" + filename;
     Debug() << "Downloading to " << path;
     if (FILE *fp = fopen(path.c_str(), "wb")) {
-      curl_easy_setopt(curl, CURLOPT_URL, (uploadUrl + "/uploads/" + filename).c_str());
+      curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/uploads/" + filename).c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToFile);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
       // Internal CURL progressmeter must be disabled if we provide our own callback
       curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
       // Install the callback function
       curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
+      curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
       CURLcode res = curl_easy_perform(curl);
       string ret;
       if(res != CURLE_OK)
