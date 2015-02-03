@@ -20,6 +20,8 @@
 
 template <class Archive> 
 void FieldOfView::serialize(Archive& ar, const unsigned int version) {
+  if (Archive::is_saving::value) // don't save the visibility values, as they can be easily recomputed
+    visibility = Table<unique_ptr<Visibility>>(visibility.getBounds());
   ar & SVAR(squares)
      & SVAR(visibility)
      & SVAR(vision);
