@@ -418,7 +418,19 @@ static EnumMap<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
  
 }
 
-Model* ModelBuilder::collectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
+PModel ModelBuilder::collectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
+  for (int i : Range(5)) {
+    try {
+      return tryCollectiveModel(meter, options, view, worldName);
+    } catch (LevelGenException ex) {
+      Debug() << "Retrying level gen";
+    }
+  }
+  FAIL << "Couldn't generate a level";
+  return nullptr;
+}
+
+PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
   Model* m = new Model(view, worldName, Tribe::Set());
   m->setOptions(options);
   vector<EnemyInfo> enemyInfo = getEnemyInfo(m->tribeSet);
@@ -469,10 +481,10 @@ Model* ModelBuilder::collectiveModel(ProgressMeter& meter, Options* options, Vie
     collective->setControl(std::move(control));
     m->collectives.push_back(std::move(collective));
   }
-  return m;
+  return PModel(m);
 }
 
-Model* ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string& splashPath) {
+PModel ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string& splashPath) {
   Model* m = new Model(view, "", Tribe::Set());
   Level* l = m->buildLevel(
       Level::Builder(meter, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness", false),
@@ -482,6 +494,6 @@ Model* ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string&
           CreatureFactory::splashMonsters(m->tribeSet.keeper.get()),
           CreatureFactory::singleType(m->tribeSet.keeper.get(), CreatureId::IMP), splashPath));
   m->spectator.reset(new Spectator(l));
-  return m;
+  return PModel(m);
 }
 

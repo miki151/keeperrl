@@ -26,6 +26,15 @@
 
 namespace {
 
+void failGen() {
+  throw LevelGenException();
+}
+
+void checkGen(bool b) {
+  if (!b)
+    failGen();
+}
+
 class Predicate {
   public:
   bool apply(Level::Builder* builder, Vec2 pos) const {
@@ -38,7 +47,7 @@ class Predicate {
       if (apply(builder, v))
         good.push_back(v);
     if (good.empty())
-      FAIL << "Couldn't find good position";
+      failGen();
     return chooseRandom(good);
   }
 
@@ -322,8 +331,7 @@ class DungeonFeatures : public LevelMaker {
     for (auto iter : squareTypes) {
       maxTotal += iter.max - 1;
     }
-    CHECK(maxTotal <= available.size()) << "Not enough available squares " << (int)available.size() 
-        << " for " << maxTotal << " features.";
+    checkGen(maxTotal <= available.size());
     for (auto iter : squareTypes) {
       int num = Random.get(iter.min, iter.max);
       for (int i : Range(num)) {
@@ -369,7 +377,7 @@ class Creatures : public LevelMaker {
         pos = Vec2(Random.get(area.getPX(), area.getKX()), Random.get(area.getPY(), area.getKY()));
       } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get())
           || (squareType && builder->getType(pos) != *squareType)));
-      CHECK(numTries > 0) << "Failed to find square for creature";
+      checkGen(numTries > 0);
       if (collective) {
         collective->addCreature(creature.get(),
             { creature->isInnocent() ? MinionTrait::WORKER : MinionTrait::FIGHTER });
@@ -713,8 +721,6 @@ static BuildingInfo get(BuildingId id) {
     case BuildingId::BRICK: return brickBuilding;
     case BuildingId::DUNGEON: return dungeonBuilding;
   }
-  FAIL << "ref";
-  return woodBuilding;
 }
 
 class Buildings : public LevelMaker {
@@ -782,7 +788,7 @@ class Buildings : public LevelMaker {
       } while (!spaceOk && --cnt > 0);
       if (cnt == 0) {
         if (i < minBuildings)
-          FAIL << "Failed to add " << minBuildings - i << " buildings out of " << minBuildings;
+          failGen(); // "Failed to add " << minBuildings - i << " buildings out of " << minBuildings;
         else
           break;
       }
@@ -977,7 +983,7 @@ class RandomLocations : public LevelMaker {
     for (int i : Range(3000))
       if (tryMake(builder, precomputed, area))
         return;
-    FAIL << "Failed to find free space for " << (int)sizes.size() << " areas";
+    failGen(); // "Failed to find free space for " << (int)sizes.size() << " areas";
   }
 
   bool tryMake(Level::Builder* builder, vector<LocationPredicate::Precomputed>& precomputed, Rectangle area) {
@@ -1418,7 +1424,7 @@ class Stairs : public LevelMaker {
     for (Vec2 v : area)
       if (onPredicate.apply(builder, v))
         pos.push_back(v);
-    CHECK(pos.size() > 0) << "Couldn't find position for stairs " << area;
+    checkGen(pos.size() > 0);
     SquareType type = direction == StairDirection::DOWN ? SquareId::DOWN_STAIRS : SquareId::UP_STAIRS;
     builder->putSquare(pos[Random.get(pos.size())], SquareFactory::getStairs(direction, key, stairLook),
         type, setAttr);
@@ -1871,8 +1877,6 @@ Vec2 getSize(SettlementType type) {
     case SettlementType::VAULT: return {10, 10};
     case SettlementType::ISLAND_VAULT: return {Random.get(15, 25), Random.get(15, 25)};
   }
-  FAIL << "fewf";
-  return {0, 0};
 }
 
 RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
@@ -1891,8 +1895,6 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
     default: return Predicate::andPred(Predicate::attrib(SquareAttrib::LOWLAND),
                  Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
   }
-  FAIL << "Wef";
-  return RandomLocations::LocationPredicate(Predicate::alwaysTrue());
 }
 
 static MakerQueue* genericMineTownMaker(SettlementInfo info, int numCavern, int maxCavernSize, int numRooms,

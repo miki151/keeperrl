@@ -143,11 +143,6 @@ static void saveGame(unique_ptr<Model> model, const string& path) {
     << BOOST_SERIALIZATION_NVP(model);
 }
 
-static void saveExceptionLine(const string& path, const string& line) {
-  ofstream of(path, std::fstream::out | std::fstream::app);
-  of << line << std::endl;
-}
-
 void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<bool>& initialized) {
   view->initialize();
   initialized = true;
@@ -351,7 +346,7 @@ class MainLoop {
   void splashScreen() {
     ProgressMeter meter(1);
     jukebox->setType(MusicType::INTRO);
-    playModel(PModel(ModelBuilder::splashModel(meter, view, dataFreePath + "/splash.txt")), false);
+    playModel(ModelBuilder::splashModel(meter, view, dataFreePath + "/splash.txt"), false);
   }
 
   void showCredits(const string& path, View* view) {
@@ -408,21 +403,8 @@ class MainLoop {
     string ex;
     ProgressMeter meter(1.0 / 166000);
     view->displaySplash(meter, View::CREATING);
-    for (int i : Range(5)) {
-      try {
-        model.reset(ModelBuilder::collectiveModel(meter, options, view,
-              NameGenerator::get(NameGeneratorId::WORLD)->getNext()));
-        break;
-      } catch (string s) {
-        ex = s;
-      }
-    }
-    if (!model) {
-      view->presentText("Sorry!", "World generation permanently failed with the following error:\n \n" + ex +
-          "\n \nIf you would be so kind, please send the file \'crash.log\'"
-          " to rusolis@poczta.fm Thanks!");
-      saveExceptionLine("crash.log", ex);
-    }
+    model = ModelBuilder::collectiveModel(meter, options, view,
+        NameGenerator::get(NameGeneratorId::WORLD)->getNext());
     view->clearSplash();
     return model;
   }
