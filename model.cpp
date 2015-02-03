@@ -214,13 +214,6 @@ optional<Model::ExitInfo> Model::update(double totalTime) {
 #endif
       creature->makeMove();
 #ifndef RELEASE
-/*      } catch (GameOverException ex) {
-        CreatureAction::checkUsage(false);
-        throw ex;
-      } catch (SaveGameException ex) {
-        CreatureAction::checkUsage(false);
-        throw ex;
-      }*/
       CreatureAction::checkUsage(false);
 #endif
       if (exitInfo)

@@ -251,7 +251,7 @@ void Item::setName(const string& n) {
 }
 
 string Item::getName(bool plural, bool blind) const {
-  string suff = uses > -1 && displayUses ? string(" (") + toString(uses) + " uses left)" : "";
+  string suff;
   if (fire.isBurning())
     suff.append(" (burning)");
   if (getShopkeeper())
@@ -325,6 +325,8 @@ string Item::getNameAndModifiers(bool getPlural, bool blind) const {
   string attrString = combine(attrStrings);
   if (!attrString.empty())
     attrString = " (" + attrString + ")";
+  if (uses > -1 && displayUses) 
+    attrString += " (" + toString(uses) + " uses left)";
   return getName(getPlural, blind) + artStr + attrString;
 }
 
