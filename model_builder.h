@@ -10,9 +10,13 @@ class ModelBuilder {
   public:
 
   /** Generates levels and all game entities for a collective game. */
-  static Model* collectiveModel(ProgressMeter&, Options*, View*, const string& worldName);
+  static PModel collectiveModel(ProgressMeter&, Options*, View*, const string& worldName);
 
-  static Model* splashModel(ProgressMeter&, View*, const string& splashPath);
+  static PModel splashModel(ProgressMeter&, View*, const string& splashPath);
+
+  private:
+  static PModel tryCollectiveModel(ProgressMeter&, Options*, View*, const string& worldName);
+
 };
 
 

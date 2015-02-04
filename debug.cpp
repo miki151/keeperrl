@@ -19,13 +19,21 @@
 #include "util.h"
 
 
+static void fail() {
+  *((int*) 0x1234) = 0; // best way to fail
+}
+
+namespace boost {
+  void assertion_failed(char const * expr, char const * function, char const * file, long line) {
+    fail();
+  }
+}
+
 
 Debug::Debug(DebugType t, const string& msg, int line) 
     : out((string[]) { "INFO ", "FATAL "}[t] + msg + ":" + toString(line) + " "), type(t) {
-#ifdef RELEASE
   if (t == DebugType::FATAL)
-    throw out;
-#endif
+    fail();
 }
 
 static ofstream output;

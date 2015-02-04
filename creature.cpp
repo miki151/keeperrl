@@ -1612,8 +1612,10 @@ void Creature::dropCorpse() {
 }
 
 vector<PItem> Creature::getCorpse() {
-  return makeVec<PItem>(ItemFactory::corpse(getName().bare() + " corpse", getName().bare() + " skeleton", getWeight(),
-        isFood ? ItemClass::FOOD : ItemClass::CORPSE, {getUniqueId(), true, numBodyParts(BodyPart::HEAD) > 0, false}));
+  return makeVec<PItem>(
+      ItemFactory::corpse(getName().bare() + " corpse", getName().bare() + " skeleton", getWeight(),
+        isFood ? ItemClass::FOOD : ItemClass::CORPSE,
+        {getUniqueId(), true, numBodyParts(BodyPart::HEAD) > 0, false}));
 }
 
 void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
@@ -1634,7 +1636,6 @@ void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
   if (innocent)
     level->getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
   level->getModel()->getStatistics().add(StatId::DEATH);
-  controller.reset(new DoNothingController(this));
 }
 
 bool Creature::isInnocent() const {

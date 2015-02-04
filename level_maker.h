@@ -26,6 +26,9 @@ enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
 class ItemFactory;
 class CollectiveBuilder;
 
+class LevelGenException {
+};
+
 enum class SettlementType {
   VILLAGE,
   VILLAGE2,
