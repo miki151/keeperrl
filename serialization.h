@@ -313,9 +313,9 @@ inline void serialize(Archive & ar, std::vector<T, Allocator> & t, unsigned int 
 }
 
 #ifdef CLANG // clang doesn't see the serialization of std::array in boost, for some reason
-
+#ifndef OSX
 template <class Archive, class T, std::size_t N>
-void serialize(Archive& ar, std::array<T,N>& a, const unsigned int /* version */)
+void serialize(Archive& ar, std::array<T,N>& a, const unsigned int)
 {
     ar & boost::serialization::make_nvp(
         "elems",
@@ -324,6 +324,7 @@ void serialize(Archive& ar, std::array<T,N>& a, const unsigned int /* version */
 
 }
 
+#endif
 #endif
 
 #ifdef DEBUG_STL
