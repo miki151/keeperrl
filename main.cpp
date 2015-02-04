@@ -113,16 +113,17 @@ typedef StreamCombiner<igzstream, InputArchive> CompressedInput;
 
 static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
   unique_ptr<Model> model;
-  {
+  try {
     CompressedInput input(filename.c_str());
     Serialization::registerTypes(input.getArchive());
     string discard;
     int version;
     input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard)
       >> BOOST_SERIALIZATION_NVP(model);
+    if (eraseFile)
+      CHECK(!remove(filename.c_str()));
+  } catch (boost::archive::archive_exception& ex) {
   }
-  if (eraseFile)
-    CHECK(!remove(filename.c_str()));
   return model;
 }
 
@@ -212,11 +213,15 @@ class MainLoop {
   }
 
   int getSaveVersion(const SaveFileInfo& save) {
-    CompressedInput input(userPath + "/" + save.filename.c_str());
-    string name;
-    int version;
-    input.getArchive() >> version;
-    return version;
+    try {
+      CompressedInput input(userPath + "/" + save.filename.c_str());
+      string name;
+      int version;
+      input.getArchive() >> version;
+      return version;
+    } catch (boost::archive::archive_exception& ex) {
+      return -1;
+    }
   }
 
 
@@ -415,8 +420,12 @@ class MainLoop {
     view->displaySplash(meter, View::LOADING);
     Debug() << "Loading from " << file;
     PModel ret = loadGame(userPath + "/" + file, erase);
-    ret->setView(view);
+    if (ret) {
+      ret->setView(view);
+    }
     view->clearSplash();
+    if (!ret)
+      view->presentText("Sorry", "This save file is corrupted :(");
     return ret;
   }
 
