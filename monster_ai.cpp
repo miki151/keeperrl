@@ -73,8 +73,8 @@ const Creature* Behaviour::getClosestEnemy() {
   int dist = 1000000000;
   const Creature* result = nullptr;
   for (const Creature* other : creature->getVisibleEnemies()) {
-    if ((other->getPosition() - creature->getPosition()).length8() < dist
-        && other->getTribe() != creature->getLevel()->getModel()->getPestTribe()) {
+    int curDist = other->getPosition().dist8(creature->getPosition());
+    if (curDist < dist && (!other->dontChase() || curDist == 1)) {
       result = other;
       dist = (other->getPosition() - creature->getPosition()).length8();
     }
@@ -262,36 +262,6 @@ class MoveRandomly : public Behaviour {
   private:
   deque<Vec2> SERIAL(memory);
   int SERIAL(memSize);
-};
-
-class AttackPest : public Behaviour {
-  public:
-  AttackPest(Creature* c) : Behaviour(c) {}
-
-  virtual MoveInfo getMove() override {
-    if (creature->getTribe() == creature->getLevel()->getModel()->getPestTribe())
-      return NoMove;
-    const Creature* other = nullptr;
-    for (Square* square : creature->getSquares(Vec2::directions8(true)))
-      if (const Creature* c = square->getCreature())
-        if (c->getTribe() == creature->getLevel()->getModel()->getPestTribe()) {
-          other = c;
-          break;
-        }
-    if (!other)
-      return NoMove;
-    if (CreatureAction action = creature->attack(other))
-      return {1.0, action};
-    else
-      return NoMove;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(AttackPest);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
 };
 
 class BirdFlyAway : public Behaviour {
@@ -1134,7 +1104,6 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Heal);
   REGISTER_TYPE(ar, Rest);
   REGISTER_TYPE(ar, MoveRandomly);
-  REGISTER_TYPE(ar, AttackPest);
   REGISTER_TYPE(ar, BirdFlyAway);
   REGISTER_TYPE(ar, GoldLust);
   REGISTER_TYPE(ar, Fighter);
@@ -1226,9 +1195,8 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l, bool moveRandomly
           new Heal(c),
           new Thief(c),
           new Fighter(c, 0.6, true),
-          new AttackPest(c),
           new GoldLust(c)};
-      vector<int> weights { 5, 4, 3, 1, 1 };
+      vector<int> weights { 5, 4, 3, 1 };
       if (l != nullptr) {
         actors.push_back(new GuardArea(c, l));
         weights.push_back(1);
@@ -1329,9 +1297,8 @@ MonsterAIFactory MonsterAIFactory::splashHeroes(bool leader) {
         leader ? (Behaviour*)new SplashHeroLeader(c) : (Behaviour*)new SplashHeroes(c),
         new Heal(c, false),
         new Fighter(c, 0.6, true),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
-        new AttackPest(c)},
-        { 6, 5, 2, 1, 1}, false);
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
+        { 6, 5, 2, 1}, false);
       });
 }
 
@@ -1341,9 +1308,8 @@ MonsterAIFactory MonsterAIFactory::splashMonsters() {
         new SplashMonsters(c),
         new Heal(c, false),
         new Fighter(c, 0.6, true),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
-        new AttackPest(c)},
-        { 6, 5, 2, 1, 1}, false);
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
+        { 6, 5, 2, 1}, false);
       });
 }
 
@@ -1353,9 +1319,8 @@ MonsterAIFactory MonsterAIFactory::splashImps(const string& splashPath) {
         new SplashImps(c, splashPath),
         new Heal(c, false),
         new Fighter(c, 0.6, true),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1}),
-        new AttackPest(c)},
-        { 6, 5, 2, 1, 1}, false);
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
+        { 6, 5, 2, 1}, false);
       });
 }
 
