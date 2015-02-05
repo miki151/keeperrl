@@ -901,7 +901,7 @@ void PlayerControl::initialize() {
 }
 
 void PlayerControl::update(Creature* c) {
-  if (contains(getCollective()->getCreatures(), c)) {
+  if (!retired && contains(getCollective()->getCreatures(), c)) {
     vector<Vec2> visibleTiles = getCollective()->getLevel()->getVisibleTiles(c);
     visibilityMap.update(c, visibleTiles);
     for (Vec2 pos : visibleTiles) {

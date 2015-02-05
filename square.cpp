@@ -53,6 +53,8 @@ void Square::serialize(Archive& ar, const unsigned int version) {
   CHECK_SERIAL;
   if (progressMeter)
     progressMeter->addProgress();
+  updateViewIndex = true;
+  updateMemory = true;
 }
 
 ProgressMeter* Square::progressMeter = nullptr;
