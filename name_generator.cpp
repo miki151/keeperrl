@@ -49,6 +49,7 @@ vector<string> readLines(const string& path) {
 }
 
 void NameGenerator::init(const string& namesPath) {
+  clearAll();
   vector<string> input;
   for (int i : Range(1000)) {
     string ret;

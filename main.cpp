@@ -352,6 +352,7 @@ class MainLoop {
   void splashScreen() {
     ProgressMeter meter(1);
     jukebox->setType(MusicType::INTRO);
+    NameGenerator::init(dataFreePath + "/names");
     playModel(ModelBuilder::splashModel(meter, view, dataFreePath + "/splash.txt"), false);
   }
 
@@ -409,6 +410,7 @@ class MainLoop {
     string ex;
     ProgressMeter meter(1.0 / 166000);
     view->displaySplash(meter, View::CREATING);
+    NameGenerator::init(dataFreePath + "/names");
     model = ModelBuilder::collectiveModel(meter, options, view,
         NameGenerator::get(NameGeneratorId::WORLD)->getNext());
     view->clearSplash();
@@ -586,7 +588,6 @@ int main(int argc, char* argv[]) {
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
   Tile::initialize(renderer, tilesPresent);
-  NameGenerator::init(freeDataPath + "/names");
   Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
   MainLoop loop(view.get(), freeDataPath, userPath, uploadUrl, &options, &jukebox, gameFinished);
   auto game = [&] { while (!viewInitialized) {} loop.start(); };
