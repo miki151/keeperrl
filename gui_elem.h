@@ -81,7 +81,7 @@ class GuiFactory {
   PGuiElem mouseHighlight2(PGuiElem highlight);
   PGuiElem mouseHighlightGameChoice(PGuiElem, View::GameTypeChoice my,
       optional<View::GameTypeChoice>& highlight);
-  PGuiElem scrollable(PGuiElem content, int contentHeight, int* scrollPos);
+  PGuiElem scrollable(PGuiElem content, int contentHeight, double* scrollPos);
   PGuiElem getScrollButton();
   PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
@@ -175,7 +175,7 @@ class GuiFactory {
   private:
 
   PGuiElem getScrollbar();
-  int getScrollButtonSize();
+  Vec2 getScrollButtonSize();
   Texture& getIconTex(IconId);
 
   map<TexId, Texture> textures;

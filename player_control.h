@@ -196,13 +196,13 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handleMarket(View*, int prevItem = 0);
   void getEquipmentItem(View* view, ItemPredicate predicate);
   Item* chooseEquipmentItem(View* view, vector<Item*> currentItems, ItemPredicate predicate,
-      int* index = nullptr, int* scrollPos = nullptr) const;
+      int* index = nullptr, double* scrollPos = nullptr) const;
 
   void getMinionOptions(Creature*, vector<MinionOption>&, vector<View::ListElem>&);
 
   int getNumMinions() const;
   void minionView(View* view, Creature* creature, int prevItem = 0);
-  void handleEquipment(View* view, Creature* creature, int prevItem = 0);
+  void handleEquipment(View* view, Creature* creature);
   void handleNecromancy(View*);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);

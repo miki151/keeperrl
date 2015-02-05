@@ -56,7 +56,7 @@ class WindowView: public View {
   virtual void drawLevelMap(const CreatureView*) override;
   virtual void resetCenter() override;
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = View::NORMAL_MENU, int* scrollPos = nullptr,
+      MenuType = View::NORMAL_MENU, double* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
   virtual GameTypeChoice chooseGameType() override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
@@ -98,7 +98,7 @@ class WindowView: public View {
   Rectangle getMenuPosition(View::MenuType type);
   Rectangle getTextInputPosition();
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      int* scrollPos, optional<UserInputId> exitAction, optional<sf::Event::KeyEvent> exitKey,
+      double* scrollPos, optional<UserInputId> exitAction, optional<sf::Event::KeyEvent> exitKey,
       vector<sf::Event::KeyEvent> shortCuts);
   optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);

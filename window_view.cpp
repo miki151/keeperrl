@@ -636,7 +636,7 @@ optional<int> WindowView::getNumber(const string& title, int min, int max, int i
 }
 
 optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
-    MenuType type, int* scrollPos, optional<UserInputId> exitAction) {
+    MenuType type, double* scrollPos, optional<UserInputId> exitAction) {
   return chooseFromListInternal(title, options, index, type, scrollPos, exitAction, none, {});
 }
 
@@ -861,7 +861,7 @@ View::GameTypeChoice WindowView::chooseGameType() {
 }
 
 optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
-    MenuType menuType, int* scrollPos1, optional<UserInputId> exitAction, optional<Event::KeyEvent> exitKey,
+    MenuType menuType, double* scrollPos1, optional<UserInputId> exitAction, optional<Event::KeyEvent> exitKey,
     vector<Event::KeyEvent> shortCuts) {
   if (!useTiles && menuType == MenuType::MAIN_MENU)
     menuType = MenuType::MAIN_MENU_NO_TILES;
@@ -876,7 +876,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int contentHeight;
   int choice = -1;
   int count = 0;
-  int* scrollPos = scrollPos1;
+  double* scrollPos = scrollPos1;
   int index = index1;
   vector<int> indexes(options.size());
   vector<int> optionIndexes;
@@ -892,7 +892,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   }
   if (optionIndexes.empty())
     optionIndexes.push_back(0);
-  int localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
+  double localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
   PGuiElem stuff = drawListGui(title, options, menuType, contentHeight, &index, &choice);
@@ -923,7 +923,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
       if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
         continue;
       if (event.type == Event::MouseWheelMoved)
-          *scrollPos = min<int>(options.size() - 1, max(0, *scrollPos - event.mouseWheel.delta));
+          *scrollPos = min<double>(options.size() - 1, max<double>(0, *scrollPos - event.mouseWheel.delta));
       if (event.type == Event::KeyPressed)
         switch (event.key.code) {
           case Keyboard::Numpad8:
@@ -932,7 +932,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
               index = (index - 1 + count) % count;
               *scrollPos = getScrollPos(optionIndexes[index], options.size());
             } else
-              *scrollPos = max(0, *scrollPos - 1);
+              *scrollPos = max<double>(0, *scrollPos - 1);
             break;
           case Keyboard::Numpad2:
           case Keyboard::Down:
@@ -958,7 +958,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
 static vector<string> breakText(const string& text) {
   if (text.empty())
     return {""};
-  int maxWidth = 80;
+  int maxWidth = 75;
   vector<string> rows;
   for (string line : split(text, {'\n'})) {
     rows.push_back("");
@@ -982,7 +982,7 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
   for (ListElem& e : conv)
     if (e.getMod() == View::NORMAL)
       e.setMod(View::TEXT);
-  int scrollPos = scrollDown ? options.size() - 1 : 0;
+  double scrollPos = scrollDown ? options.size() - 1 : 0;
   chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, none, {});
 }
 
