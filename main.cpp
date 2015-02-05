@@ -120,10 +120,11 @@ static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
     int version;
     input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard)
       >> BOOST_SERIALIZATION_NVP(model);
-    if (eraseFile)
-      CHECK(!remove(filename.c_str()));
   } catch (boost::archive::archive_exception& ex) {
+    return nullptr;
   }
+  if (eraseFile)
+    remove(filename.c_str());
   return model;
 }
 
@@ -420,11 +421,10 @@ class MainLoop {
     view->displaySplash(meter, View::LOADING);
     Debug() << "Loading from " << file;
     PModel ret = loadGame(userPath + "/" + file, erase);
+    view->clearSplash();
     if (ret) {
       ret->setView(view);
-    }
-    view->clearSplash();
-    if (!ret)
+    } else
       view->presentText("Sorry", "This save file is corrupted :(");
     return ret;
   }
