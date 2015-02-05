@@ -98,8 +98,6 @@ static string getSaveSuffix(Model::GameType t) {
     case Model::GameType::ADVENTURER: return ".adv";
     case Model::GameType::RETIRED_KEEPER: return ".ret";
   }
-  FAIL << "wef";
-  return "";
 }
 
 static string getDateString(time_t t) {
@@ -113,16 +111,20 @@ typedef StreamCombiner<igzstream, InputArchive> CompressedInput;
 
 static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
   unique_ptr<Model> model;
+#ifdef RELEASE
   try {
+#endif
     CompressedInput input(filename.c_str());
     Serialization::registerTypes(input.getArchive());
     string discard;
     int version;
     input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard)
       >> BOOST_SERIALIZATION_NVP(model);
+#ifdef RELEASE
   } catch (boost::archive::archive_exception& ex) {
     return nullptr;
   }
+#endif
   if (eraseFile)
     remove(filename.c_str());
   return model;
@@ -140,7 +142,7 @@ string stripNonAscii(string s) {
 static void saveGame(unique_ptr<Model> model, const string& path) {
   CompressedOutput out(path);
   Serialization::registerTypes(out.getArchive());
-  string game = model->getGameIdentifier();
+  string game = model->getGameDisplayName();
   out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(game)
     << BOOST_SERIALIZATION_NVP(model);
 }
@@ -241,7 +243,7 @@ class MainLoop {
     ProgressMeter meter(1.0 / 62500);
     Square::progressMeter = &meter;
     view->displaySplash(meter, View::SAVING);
-    string path = userPath + "/" + stripNonAscii(model->getShortGameIdentifier()) + getSaveSuffix(type);
+    string path = userPath + "/" + stripNonAscii(model->getGameIdentifier()) + getSaveSuffix(type);
     saveGame(std::move(model), path);
     view->clearSplash();
     Square::progressMeter = nullptr;

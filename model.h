@@ -71,7 +71,7 @@ class Model {
   bool isTurnBased();
 
   string getGameIdentifier() const;
-  string getShortGameIdentifier() const;
+  string getGameDisplayName() const;
   void exitAction();
   double getTime() const;
   MusicType getCurrentMusic() const;
@@ -121,7 +121,7 @@ class Model {
   private:
   REGISTER_HANDLER(KilledLeaderEvent, const Collective*, const Creature*);
 
-  Model(View* view, const string& worldName, Tribe::Set&&);
+  Model(View* view, const string& idSuf, const string& worldName, Tribe::Set&&);
 
   friend class ModelBuilder;
 
@@ -158,6 +158,9 @@ class Model {
   Trigger* SERIAL2(danglingPortal, nullptr);
   int SERIAL2(woodCount, 0);
   Statistics SERIAL(statistics);
+  string SERIAL(idSuf);
 };
+
+BOOST_CLASS_VERSION(Model, 1)
 
 #endif

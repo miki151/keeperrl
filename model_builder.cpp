@@ -430,8 +430,19 @@ PModel ModelBuilder::collectiveModel(ProgressMeter& meter, Options* options, Vie
   return nullptr;
 }
 
+static string getNewIdSuffix() {
+  vector<char> chars;
+  for (char c : Range(128))
+    if (isalnum(c))
+      chars.push_back(c);
+  string ret;
+  for (int i : Range(4))
+    ret += chooseRandom(chars);
+  return ret;
+}
+
 PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
-  Model* m = new Model(view, worldName, Tribe::Set());
+  Model* m = new Model(view, getNewIdSuffix(), worldName, Tribe::Set());
   m->setOptions(options);
   vector<EnemyInfo> enemyInfo = getEnemyInfo(m->tribeSet);
   vector<SettlementInfo> settlements;
@@ -485,7 +496,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
 }
 
 PModel ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string& splashPath) {
-  Model* m = new Model(view, "", Tribe::Set());
+  Model* m = new Model(view, "", "", Tribe::Set());
   Level* l = m->buildLevel(
       Level::Builder(meter, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness", false),
       LevelMaker::splashLevel(

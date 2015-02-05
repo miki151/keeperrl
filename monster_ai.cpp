@@ -1099,11 +1099,44 @@ class SplashImps : public Behaviour {
   string splashPath;
 };
 
+// SERIALIZATION_OBSOLETE
+class AttackPest : public Behaviour {
+  public:
+  AttackPest(Creature* c) : Behaviour(c) {}
+
+  virtual MoveInfo getMove() override {
+    if (creature->getTribe() == creature->getLevel()->getModel()->getPestTribe())
+      return NoMove;
+    const Creature* other = nullptr;
+    for (Square* square : creature->getSquares(Vec2::directions8(true)))
+      if (const Creature* c = square->getCreature())
+        if (c->getTribe() == creature->getLevel()->getModel()->getPestTribe()) {
+          other = c;
+          break;
+        }
+    if (!other)
+      return NoMove;
+    if (CreatureAction action = creature->attack(other))
+      return {1.0, action};
+    else
+      return NoMove;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(AttackPest);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+  }
+};
+
+
 template <class Archive>
 void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Heal);
   REGISTER_TYPE(ar, Rest);
   REGISTER_TYPE(ar, MoveRandomly);
+  REGISTER_TYPE(ar, AttackPest);  
   REGISTER_TYPE(ar, BirdFlyAway);
   REGISTER_TYPE(ar, GoldLust);
   REGISTER_TYPE(ar, Fighter);

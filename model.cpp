@@ -33,6 +33,7 @@
 #include "music.h"
 #include "trigger.h"
 
+
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
   ar& SVAR(levels)
@@ -55,10 +56,13 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(statistics)
     & SVAR(spectator)
     & SVAR(tribeSet);
+  if (version == 1)
+    ar & SVAR(idSuf);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
   updateSunlightInfo();
 }
+
 
 SERIALIZABLE(Model);
 SERIALIZATION_CONSTRUCTOR_IMPL(Model);
@@ -275,8 +279,8 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker) {
   return levels.back().get();
 }
 
-Model::Model(View* v, const string& world, Tribe::Set&& tribes)
-  : tribeSet(std::move(tribes)), view(v), worldName(world), musicType(MusicType::PEACEFUL) {
+Model::Model(View* v, const string& id, const string& world, Tribe::Set&& tribes)
+  : tribeSet(std::move(tribes)), view(v), worldName(world), musicType(MusicType::PEACEFUL), idSuf(id) {
   updateSunlightInfo();
 }
 
@@ -393,18 +397,18 @@ void Model::landHeroPlayer() {
   adventurer = true;
 }
 
-string Model::getGameIdentifier() const {
+string Model::getGameDisplayName() const {
   string playerName = !adventurer
       ? *NOTNULL(playerControl)->getKeeper()->getFirstName()
       : *NOTNULL(getPlayer())->getFirstName();
   return playerName + " of " + worldName;
 }
 
-string Model::getShortGameIdentifier() const {
+string Model::getGameIdentifier() const {
   string playerName = !adventurer
       ? *NOTNULL(playerControl)->getKeeper()->getFirstName()
       : *NOTNULL(getPlayer())->getFirstName();
-  return playerName + "_" + worldName;
+  return playerName + "_" + worldName + idSuf;
 }
 
 void Model::onKilledLeaderEvent(const Collective* victim, const Creature* leader) {
