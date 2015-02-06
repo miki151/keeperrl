@@ -1035,6 +1035,8 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       secColumnWidth = max(secColumnWidth, 80 + renderer.getTextLength(elem.getSecondColumn()));
   }
   columnWidth = min(columnWidth, getMenuPosition(menuType).getW() - secColumnWidth - 140);
+  if (menuType == MAIN_MENU)
+    columnWidth = 1000000;
   for (int i : All(options)) {
     Color color;
     switch (options[i].getMod()) {

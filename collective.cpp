@@ -149,7 +149,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
 
 Collective::Collective(Level* l, CollectiveConfig cfg, Tribe* t, EnumMap<ResourceId, int> _credit, const string& n) 
   : credit(_credit), taskMap(l->getBounds()), knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
-  tribe(t), level(l), nextPayoutTime(-1), sectors(new Sectors(level->getBounds())),
+  tribe(NOTNULL(t)), level(NOTNULL(l)), nextPayoutTime(-1), sectors(new Sectors(level->getBounds())),
     flyingSectors(new Sectors(level->getBounds())), name(n), config(cfg) {
   if (config.getKeepSectors())
     for (Vec2 v : level->getBounds()) {
