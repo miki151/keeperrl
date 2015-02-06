@@ -414,7 +414,7 @@ string Model::getGameIdentifier() const {
 void Model::onKilledLeaderEvent(const Collective* victim, const Creature* leader) {
   if (playerControl && playerControl->isRetired() && playerCollective == victim) {
     const Creature* c = getPlayer();
-    killedKeeper(*c->getFirstName(), *leader->getFirstName(), worldName, c->getKills(), c->getPoints());
+    killedKeeper(*c->getFirstName(), leader->getNameAndTitle(), worldName, c->getKills(), c->getPoints());
   }
 }
 View* Model::getView() {
@@ -474,7 +474,7 @@ void Model::conquered(const string& title, vector<const Creature*> kills, int po
         c.points = points;
         c.gameId = getGameIdentifier();
         c.playerName = title;
-        c.gameResult = "conquered the land of " + getWorldName();
+        c.gameResult = "achieved world domination";
   );
   highscores->add(score);
   highscores->present(view, score);

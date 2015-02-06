@@ -87,7 +87,7 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
 Color getHighlightColor(HighlightType type, double amount) {
   switch (type) {
     case HighlightType::RECT_DESELECTION: return transparency(colors[ColorId::RED], 90);
-    case HighlightType::DIG: return transparency(colors[ColorId::YELLOW], 170);
+    case HighlightType::DIG: return transparency(colors[ColorId::YELLOW], 120);
     case HighlightType::CUT_TREE: return transparency(colors[ColorId::YELLOW], 170);
     case HighlightType::FETCH_ITEMS: return transparency(colors[ColorId::YELLOW], 170);
     case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);

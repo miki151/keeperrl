@@ -1692,6 +1692,13 @@ void PlayerControl::updateSquareMemory(Vec2 pos) {
 
 void PlayerControl::onConstructed(Vec2 pos, SquareType type) {
   updateSquareMemory(pos);
+  if (type == SquareId::FLOOR) {
+    Vec2 visRadius(3, 3);
+    for (Vec2 v : Rectangle(pos - visRadius, pos + visRadius + Vec2(1, 1))) {
+      getCollective()->addKnownTile(v);
+      updateSquareMemory(v);
+    }
+  }
 }
 
 void PlayerControl::updateVisibleCreatures(Rectangle range) {
