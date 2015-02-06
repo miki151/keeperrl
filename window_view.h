@@ -106,7 +106,7 @@ class WindowView: public View {
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   vector<PGuiElem> getMultiLine(const string& text, Color color, View::MenuType menuType, int maxWidth);
   PGuiElem menuElemMargins(PGuiElem);
-  PGuiElem getHighlight(View::MenuType type, const string& label);
+  PGuiElem getHighlight(View::MenuType type, const string& label, int height);
   vector<string> breakText(const string&, int maxWidth);
   void rebuildGui();
   void drawMap();

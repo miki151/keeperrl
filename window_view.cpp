@@ -1004,10 +1004,10 @@ PGuiElem WindowView::menuElemMargins(PGuiElem elem) {
   return gui.margins(std::move(elem), 10, 3, 10, 0);
 }
 
-PGuiElem WindowView::getHighlight(View::MenuType type, const string& label) {
+PGuiElem WindowView::getHighlight(View::MenuType type, const string& label, int height) {
   switch (type) {
     case View::MAIN_MENU: return menuElemMargins(gui.mainMenuLabel(label, menuLabelVPadding));
-    default: return gui.highlight(gui.foreground1);
+    default: return gui.highlight(height);
   }
 }
 
@@ -1028,12 +1028,13 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
   }
   int numActive = 0;
   int secColumnWidth = 0;
-  for (auto& elem : options)
+  int columnWidth = 300;
+  for (auto& elem : options) {
+    columnWidth = max(columnWidth, renderer.getTextLength(elem.getText()) + 50);
     if (!elem.getSecondColumn().empty())
-      secColumnWidth = max(secColumnWidth, 130 + renderer.getTextLength(elem.getSecondColumn()));
-  int secColumnPos = 100000;
-  if (secColumnWidth > 0)
-    secColumnPos = max(300, getMenuPosition(menuType).getW() - secColumnWidth);
+      secColumnWidth = max(secColumnWidth, 80 + renderer.getTextLength(elem.getSecondColumn()));
+  }
+  columnWidth = min(columnWidth, getMenuPosition(menuType).getW() - secColumnWidth - 140);
   for (int i : All(options)) {
     Color color;
     switch (options[i].getMod()) {
@@ -1042,7 +1043,7 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       case View::TEXT:
       case View::NORMAL: color = gui.text; break;
     }
-    vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, secColumnPos - 80);
+    vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, columnWidth);
     heights.push_back(label1.size() * lineHeight);
     PGuiElem line;
     if (menuType != MAIN_MENU)
@@ -1051,13 +1052,13 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       line = std::move(getOnlyElement(label1));
     if (!options[i].getSecondColumn().empty())
       line = gui.horizontalList(makeVec<PGuiElem>(std::move(line),
-            gui.label(options[i].getSecondColumn())), secColumnPos, 0);
+            gui.label(options[i].getSecondColumn())), columnWidth + 80, 0);
     lines.push_back(menuElemMargins(std::move(line)));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = gui.stack(makeVec<PGuiElem>(
             gui.button([=]() { *choice = numActive; }),
             std::move(lines.back()),
-            gui.mouseHighlight(getHighlight(menuType, options[i].getText()), numActive, highlight)));
+            gui.mouseHighlight(getHighlight(menuType, options[i].getText(), lineHeight), numActive, highlight)));
       ++numActive;
     }
   }

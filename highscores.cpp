@@ -12,6 +12,7 @@ void Highscores::add(Score s) {
   localScores.push_back(s);
   remoteScores.push_back(s);
   sortScores(localScores);
+  sortScores(remoteScores);
   saveToFile(localScores, localPath);
   thread t([=] { fileSharing.uploadHighscores(localPath); });
   t.detach();
@@ -30,7 +31,8 @@ vector<Highscores::Score> Highscores::fromStream(istream& in) {
     in.getline(buf, 1000);
     if (!in)
       break;
-    ret.push_back(Score::parse(buf));
+    if (auto score = Score::parse(buf))
+      ret.push_back(*score);
   }
   sortScores(ret);
   return ret;
@@ -50,7 +52,8 @@ void Highscores::saveToFile(const vector<Score>& scores, const string& path) {
 }
 
 bool Highscores::Score::operator == (const Score& s) const {
-  return gameId == s.gameId;
+  return gameId == s.gameId && playerName == s.playerName && worldName == s.worldName && gameResult == s.gameResult
+    && points == s.points;
 }
 
 vector<Highscores::Score> Highscores::fromFile(const string& path) {
@@ -63,10 +66,14 @@ vector<Highscores::Score>  Highscores::fromString(const string& s) {
   return fromStream(in);
 }
 
-Highscores::Score Highscores::Score::parse(const string& buf) {
+optional<Highscores::Score> Highscores::Score::parse(const string& buf) {
   vector<string> p = split(buf, {','});
   if (p.size() != 5)
+#ifndef RELEASE
     return CONSTRUCT(Score, c.playerName = "ERROR: " + buf;);
+#else
+    return none;
+#endif
   else {
     return CONSTRUCT(Score,
         c.gameId = p[0];

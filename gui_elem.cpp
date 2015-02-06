@@ -111,6 +111,15 @@ PGuiElem GuiFactory::repeatedPattern(Texture& tex) {
         }));
 }
 
+PGuiElem GuiFactory::sprite(Texture& tex, double height) {
+  return PGuiElem(new DrawCustom(
+        [&tex, height] (Renderer& r, Rectangle bounds) {
+          Vec2 size(tex.getSize().x, tex.getSize().y);
+          r.drawSprite(bounds.getTopLeft(), Vec2(0, 0), size, tex, Color(255, 255, 255, 255),
+              Vec2(height * size.x / size.y, height));
+        }));
+}
+
 PGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset, double alpha) {
   return PGuiElem(new DrawCustom(
         [&tex, align, offset, alpha, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
@@ -1052,8 +1061,8 @@ PGuiElem GuiFactory::background(Color c) {
   return stack(rectangle(c), repeatedPattern(get(TexId::BACKGROUND_PATTERN)));
 }
 
-PGuiElem GuiFactory::highlight(Color c) {
-  return margins(sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED, false, true), -25, 0, 0, 0);
+PGuiElem GuiFactory::highlight(double height) {
+  return margins(sprite(get(TexId::MAIN_MENU_HIGHLIGHT), height), -25, 0, 0, 0);
 }
 
 PGuiElem GuiFactory::mainMenuHighlight() {

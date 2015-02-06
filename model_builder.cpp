@@ -125,7 +125,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
         c.type = SettlementType::ISLAND_VAULT;
         c.location = new Location(true);
         c.buildingId = BuildingId::DUNGEON;
-        c.stockpiles = LIST({StockpileInfo::GOLD, 400});), CollectiveConfig::noImmigrants(), {}});
+        c.stockpiles = LIST({StockpileInfo::GOLD, 800});), CollectiveConfig::noImmigrants(), {}});
   append(ret, getVaults(tribeSet));
   append(ret, {
       {CONSTRUCT(SettlementInfo,
@@ -135,7 +135,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
           c.location = getVillageLocation();
           c.tribe = tribeSet.human.get();
           c.buildingId = BuildingId::WOOD_CASTLE;
-          c.stockpiles = LIST({StockpileInfo::GOLD, 400});
+          c.stockpiles = LIST({StockpileInfo::GOLD, 800});
           c.guardId = CreatureId::WARRIOR;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);),
        CollectiveConfig::withImmigrants(0.003, 16, {
@@ -177,7 +177,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
           c.numCreatures = Random.get(11, 18);
           c.location = getVillageLocation();
           c.tribe = tribeSet.elven.get();
-          c.stockpiles = LIST({StockpileInfo::GOLD, 400});
+          c.stockpiles = LIST({StockpileInfo::GOLD, 800});
           c.buildingId = BuildingId::WOOD;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);),
        CollectiveConfig::withImmigrants(0.002, 18, {
@@ -193,7 +193,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
           c.location = getVillageLocation(true);
           c.tribe = tribeSet.dwarven.get();
           c.buildingId = BuildingId::DUNGEON;
-          c.stockpiles = LIST({StockpileInfo::GOLD, 400}, {StockpileInfo::MINERALS, 600});
+          c.stockpiles = LIST({StockpileInfo::GOLD, 1000}, {StockpileInfo::MINERALS, 600});
           c.shopFactory = ItemFactory::dwarfShop();),
        CollectiveConfig::withImmigrants(0.002, 15, {
            CONSTRUCT(ImmigrantInfo,
@@ -213,7 +213,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
           c.numCreatures = Random.get(20, 26);
           c.location = getVillageLocation();
           c.tribe = tribeSet.human.get();
-          c.stockpiles = LIST({StockpileInfo::GOLD, 400});
+          c.stockpiles = LIST({StockpileInfo::GOLD, 700});
           c.buildingId = BuildingId::BRICK;
           c.guardId = CreatureId::CASTLE_GUARD;
           c.shopFactory = ItemFactory::villageShop();),
@@ -257,7 +257,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
        {CONSTRUCT(VillainInfo,
           c.minPopulation = 0;
           c.minTeamSize = 3;
-          c.triggers = LIST({AttackTriggerId::GOLD, 300});
+          c.triggers = LIST({AttackTriggerId::GOLD, 500});
           c.behaviour = VillageBehaviour(VillageBehaviourId::STEAL_GOLD);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
   });

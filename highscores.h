@@ -11,7 +11,7 @@ class Highscores {
   Highscores(const string& localPath, FileSharing&);
 
   struct Score {
-    static Score parse(const string& buf);
+    static optional<Score> parse(const string& buf);
     bool operator == (const Score&) const;
     string toString() const;
     string gameId;

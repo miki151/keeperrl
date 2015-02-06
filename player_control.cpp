@@ -1598,7 +1598,7 @@ void PlayerControl::addImp(Creature* c) {
 void PlayerControl::onConqueredLand() {
   if (retired)
     return;
-  model->conquered(*getKeeper()->getFirstName() + " the Keeper", getCollective()->getKills(),
+  model->conquered(*getKeeper()->getFirstName(), getCollective()->getKills(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
 }
 

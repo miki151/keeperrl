@@ -90,6 +90,7 @@ class GuiFactory {
       CENTER_STRETCHED};
   PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
       Vec2 offset = Vec2(0, 0), double alpha = 1);
+  PGuiElem sprite(Texture&, double scale);
 
   enum class TexId {
     SCROLLBAR,
@@ -135,7 +136,7 @@ class GuiFactory {
   PGuiElem sprite(TexId, Alignment);
   PGuiElem repeatedPattern(Texture& tex);
   PGuiElem background(Color);
-  PGuiElem highlight(Color);
+  PGuiElem highlight(double height);
   PGuiElem mainMenuHighlight();
   PGuiElem insideBackground(PGuiElem content);
   PGuiElem window(PGuiElem content);
