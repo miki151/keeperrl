@@ -28,6 +28,7 @@ class ProgressMeter;
 class Options;
 class CreatureView;
 class Trigger;
+class Highscores;
 
 /**
   * Main class that holds all game logic.
@@ -81,16 +82,16 @@ class Model {
   void setView(View*);
   Options* getOptions();
   void setOptions(Options*);
+  void setHighscores(Highscores*);
 
   Statistics& getStatistics();
   const Statistics& getStatistics() const;
 
   void tick(double time);
   void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
-  void conquered(const string& title, const string& land, vector<const Creature*> kills, int points);
+  void conquered(const string& title, vector<const Creature*> kills, int points);
   void killedKeeper(const string& title, const string& keeper, const string& land,
     vector<const Creature*> kills, int points);
-  static void showHighscore(View*, bool highlightLast = false);
   static void showCredits(View*);
   void retireCollective();
 
@@ -121,7 +122,7 @@ class Model {
   private:
   REGISTER_HANDLER(KilledLeaderEvent, const Collective*, const Creature*);
 
-  Model(View* view, const string& idSuf, const string& worldName, Tribe::Set&&);
+  Model(View* view, const string& worldName, Tribe::Set&&);
 
   friend class ModelBuilder;
 
@@ -151,6 +152,7 @@ class Model {
   SunlightInfo sunlightInfo;
   double lastUpdate = -10;
   Options* options;
+  Highscores* highscores;
   string SERIAL(worldName);
   MusicType SERIAL(musicType);
   optional<ExitInfo> exitInfo;
@@ -158,7 +160,8 @@ class Model {
   Trigger* SERIAL2(danglingPortal, nullptr);
   int SERIAL2(woodCount, 0);
   Statistics SERIAL(statistics);
-  string SERIAL(idSuf);
+  string SERIAL(gameIdentifier);
+  string SERIAL(gameDisplayName);
 };
 
 BOOST_CLASS_VERSION(Model, 1)

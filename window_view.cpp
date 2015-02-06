@@ -955,15 +955,14 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   return returnQueue.pop();
 }
 
-static vector<string> breakText(const string& text) {
+vector<string> WindowView::breakText(const string& text, int maxWidth) {
   if (text.empty())
     return {""};
-  int maxWidth = 75;
   vector<string> rows;
   for (string line : split(text, {'\n'})) {
     rows.push_back("");
     for (string word : split(line, {' '}))
-      if (rows.back().size() + word.size() + 1 <= maxWidth)
+      if (renderer.getTextLength(rows.back() + ' ' + word) <= maxWidth)
         rows.back().append((rows.back().size() > 0 ? " " : "") + word);
       else
         rows.push_back(word);
@@ -973,7 +972,8 @@ static vector<string> breakText(const string& text) {
 
 void WindowView::presentText(const string& title, const string& text) {
   TempClockPause pause(clock);
-  presentList(title, View::getListElem(breakText(text)), false);
+  presentList(title, View::getListElem(breakText(text,
+          getMenuPosition(MenuType::NORMAL_MENU).getW() - 140)), false);
 }
 
 void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu,
@@ -988,9 +988,9 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
 
 const double menuLabelVPadding = 0.15;
 
-vector<PGuiElem> WindowView::getMultiLine(const string& text, Color color, View::MenuType menuType) {
+vector<PGuiElem> WindowView::getMultiLine(const string& text, Color color, View::MenuType menuType, int maxWidth) {
   vector<PGuiElem> ret;
-  for (const string& s : breakText(text)) {
+  for (const string& s : breakText(text, maxWidth)) {
     if (menuType != View::MenuType::MAIN_MENU)
       ret.push_back(gui.label(s, color));
     else
@@ -1016,6 +1016,7 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
   vector<PGuiElem> lines;
   vector<int> heights;
   int lineHeight = 30;
+  int brokenLineHeight = 24;
   if (!title.empty()) {
     lines.push_back(gui.label(capitalFirst(title), colors[ColorId::WHITE]));
     heights.push_back(lineHeight);
@@ -1026,10 +1027,13 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
     heights.push_back(lineHeight / 2);
   }
   int numActive = 0;
-  int secColumn = 300;
+  int secColumnWidth = 0;
   for (auto& elem : options)
-    secColumn = max(secColumn, renderer.getTextLength(elem.getText()) + 50);
-  secColumn = min(secColumn, getMenuPosition(menuType).getKX() - 100);
+    if (!elem.getSecondColumn().empty())
+      secColumnWidth = max(secColumnWidth, 130 + renderer.getTextLength(elem.getSecondColumn()));
+  int secColumnPos = 100000;
+  if (secColumnWidth > 0)
+    secColumnPos = max(300, getMenuPosition(menuType).getW() - secColumnWidth);
   for (int i : All(options)) {
     Color color;
     switch (options[i].getMod()) {
@@ -1038,16 +1042,16 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       case View::TEXT:
       case View::NORMAL: color = gui.text; break;
     }
-    vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType);
+    vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, secColumnPos - 80);
     heights.push_back(label1.size() * lineHeight);
     PGuiElem line;
     if (menuType != MAIN_MENU)
-      line = gui.verticalList(std::move(label1), lineHeight, 0);
+      line = gui.verticalList(std::move(label1), brokenLineHeight, 0);
     else
       line = std::move(getOnlyElement(label1));
     if (!options[i].getSecondColumn().empty())
       line = gui.horizontalList(makeVec<PGuiElem>(std::move(line),
-            gui.label(options[i].getSecondColumn())), secColumn, 0);
+            gui.label(options[i].getSecondColumn())), secColumnPos, 0);
     lines.push_back(menuElemMargins(std::move(line)));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = gui.stack(makeVec<PGuiElem>(

@@ -36,7 +36,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   PlayerControl(Collective*, Model*, Level*);
   void addImportantLongMessage(const string&, optional<Vec2> = none);
 
-  void onConqueredLand(const string& name);
+  void onConqueredLand();
 
   void processInput(View* view, UserInput);
   void tick(double);

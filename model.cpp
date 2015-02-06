@@ -32,6 +32,7 @@
 #include "collective.h"
 #include "music.h"
 #include "trigger.h"
+#include "highscores.h"
 
 
 template <class Archive> 
@@ -56,8 +57,13 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(statistics)
     & SVAR(spectator)
     & SVAR(tribeSet);
-  if (version == 1)
-    ar & SVAR(idSuf);
+  if (version == 1) {
+    ar & SVAR(gameIdentifier)
+       & SVAR(gameDisplayName);
+  } else {
+    gameIdentifier = *playerControl->getKeeper()->getFirstName() + "_" + worldName;
+    gameDisplayName = *playerControl->getKeeper()->getFirstName() + " of " + worldName;
+  }
   CHECK_SERIAL;
   Deity::serializeAll(ar);
   updateSunlightInfo();
@@ -256,7 +262,7 @@ void Model::tick(double time) {
       for (Collective* col : mainVillains)
         conquered &= col->isConquered();
       if (conquered && !won) {
-        playerControl->onConqueredLand(worldName);
+        playerControl->onConqueredLand();
         won = true;
       }
     } else // temp fix to the player gets the location message
@@ -279,8 +285,8 @@ Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker) {
   return levels.back().get();
 }
 
-Model::Model(View* v, const string& id, const string& world, Tribe::Set&& tribes)
-  : tribeSet(std::move(tribes)), view(v), worldName(world), musicType(MusicType::PEACEFUL), idSuf(id) {
+Model::Model(View* v, const string& world, Tribe::Set&& tribes)
+  : tribeSet(std::move(tribes)), view(v), worldName(world), musicType(MusicType::PEACEFUL) {
   updateSunlightInfo();
 }
 
@@ -398,23 +404,17 @@ void Model::landHeroPlayer() {
 }
 
 string Model::getGameDisplayName() const {
-  string playerName = !adventurer
-      ? *NOTNULL(playerControl)->getKeeper()->getFirstName()
-      : *NOTNULL(getPlayer())->getFirstName();
-  return playerName + " of " + worldName;
+  return gameDisplayName;
 }
 
 string Model::getGameIdentifier() const {
-  string playerName = !adventurer
-      ? *NOTNULL(playerControl)->getKeeper()->getFirstName()
-      : *NOTNULL(getPlayer())->getFirstName();
-  return playerName + "_" + worldName + idSuf;
+  return gameIdentifier;
 }
 
 void Model::onKilledLeaderEvent(const Collective* victim, const Creature* leader) {
   if (playerControl && playerControl->isRetired() && playerCollective == victim) {
     const Creature* c = getPlayer();
-    killedKeeper(c->getNameAndTitle(), leader->getNameAndTitle(), worldName, c->getKills(), c->getPoints());
+    killedKeeper(*c->getFirstName(), *leader->getFirstName(), worldName, c->getKills(), c->getPoints());
   }
 }
 View* Model::getView() {
@@ -431,6 +431,10 @@ Options* Model::getOptions() {
 
 void Model::setOptions(Options* o) {
   options = o;
+}
+
+void Model::setHighscores(Highscores* h) {
+  highscores = h;
 }
 
 void Model::addLink(StairDirection dir, StairKey key, Level* l1, Level* l2) {
@@ -458,16 +462,22 @@ void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
   }
 }
   
-void Model::conquered(const string& title, const string& land, vector<const Creature*> kills, int points) {
+void Model::conquered(const string& title, vector<const Creature*> kills, int points) {
   string text= "You have conquered this land. You killed " + toString(kills.size()) +
       " innocent beings and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
   for (string stat : statistics.getText())
     text += stat + "\n";
   view->presentText("Victory", text);
-  ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
-    << title << "," << "conquered the land of " + land + "," << points << std::endl;
-  showHighscore(view, true);
+  Highscores::Score score = CONSTRUCT(Highscores::Score,
+        c.worldName = getWorldName();
+        c.points = points;
+        c.gameId = getGameIdentifier();
+        c.playerName = title;
+        c.gameResult = "conquered the land of " + getWorldName();
+  );
+  highscores->add(score);
+  highscores->present(view, score);
 }
 
 void Model::killedKeeper(const string& title, const string& keeper, const string& land,
@@ -479,9 +489,15 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
   for (string stat : statistics.getText())
     text += stat + "\n";
   view->presentText("Victory", text);
-  ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
-    << title << "," << "freed the land of " + land + "," << points << std::endl;
-  showHighscore(view, true);
+  Highscores::Score score = CONSTRUCT(Highscores::Score,
+        c.worldName = getWorldName();
+        c.points = points;
+        c.gameId = getGameIdentifier();
+        c.playerName = title;
+        c.gameResult = "freed his land from " + keeper;
+  );
+  highscores->add(score);
+  highscores->present(view, score);
 }
 
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
@@ -496,78 +512,20 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
   for (string stat : statistics.getText())
     text += stat + "\n";
   view->presentText("Game over", text);
-  ofstream("highscore.txt", std::ofstream::out | std::ofstream::app)
-    << creature->getNameAndTitle() << (killer.empty() ? "" : ", killed by " + killer) << "," << points << std::endl;
-  showHighscore(view, true);
+  Highscores::Score score = CONSTRUCT(Highscores::Score,
+        c.worldName = getWorldName();
+        c.points = points;
+        c.gameId = getGameIdentifier();
+        c.playerName = *creature->getFirstName();
+        c.gameResult = (killer.empty() ? "" : "killed by " + killer);
+  );
+  highscores->add(score);
+  highscores->present(view, score);
   exitInfo = ExitInfo::abandonGame();
 }
 
 const string& Model::getWorldName() const {
   return worldName;
-}
-
-namespace {
-
-struct HighscoreElem {
-
-  static HighscoreElem parse(const string& s) {
-    vector<string> p = split(s, {','});
-    if (p.size() != 2 && p.size() != 3)
-      return CONSTRUCT(HighscoreElem, c.name = "ERROR: " + s;);
-    HighscoreElem e;
-    e.name = p[0];
-    if (p.size() == 3) {
-      e.killer = p[1];
-      e.points = fromString<int>(p[2]);
-    } else
-      e.points = fromString<int>(p[1]);
-    return e; 
-  }
-
-  View::ElemMod getHighlight(bool highlightLast) {
-    if (highlight || !highlightLast)
-      return View::NORMAL;
-    else
-      return View::INACTIVE;
-  }
-
-  View::ListElem toListElem(bool highlightLast) {
-    if (killer)
-      return View::ListElem(name + ", " + *killer, toString(points) + " points", getHighlight(highlightLast));
-    else
-      return View::ListElem(name, toString(points) + " points", getHighlight(highlightLast));
-  }
-
-  bool highlight = false;
-  string name;
-  optional<string> killer;
-  int points;
-};
-
-}
-
-void Model::showHighscore(View* view, bool highlightLast) {
-  vector<HighscoreElem> v;
-  ifstream in("highscore.txt");
-  while (1) {
-    char buf[100];
-    in.getline(buf, 100);
-    if (!in)
-      break;
-    v.push_back(HighscoreElem::parse(buf));
-  }
-  if (v.empty())
-    return;
-  if (highlightLast)
-    v.back().highlight = true;
-  sort(v.begin(), v.end(), [] (const HighscoreElem& a, const HighscoreElem& b) -> bool {
-      return a.points > b.points;
-    });
-  vector<View::ListElem> scores;
-  for (HighscoreElem& elem : v) {
-    scores.push_back(elem.toListElem(highlightLast));
-  }
-  view->presentList("High scores", scores, false);
 }
 
 Level* Model::prepareTopLevel(ProgressMeter& meter, vector<SettlementInfo> settlements) {

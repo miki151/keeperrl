@@ -104,9 +104,10 @@ class WindowView: public View {
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   PGuiElem drawGameChoices(optional<View::GameTypeChoice>& choice, optional<View::GameTypeChoice>& index);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
-  vector<PGuiElem> getMultiLine(const string& text, Color color, View::MenuType menuType);
+  vector<PGuiElem> getMultiLine(const string& text, Color color, View::MenuType menuType, int maxWidth);
   PGuiElem menuElemMargins(PGuiElem);
   PGuiElem getHighlight(View::MenuType type, const string& label);
+  vector<string> breakText(const string&, int maxWidth);
   void rebuildGui();
   void drawMap();
   optional<sf::Event::KeyEvent> getEventFromMenu();

@@ -2,6 +2,7 @@
 #define _FILE_SHARING_H
 
 #include "util.h"
+#include "highscores.h"
 
 class ProgressMeter;
 
@@ -9,7 +10,7 @@ class FileSharing {
   public:
   FileSharing(const string& uploadUrl);
 
-  optional<string> upload(const string& path, ProgressMeter&);
+  optional<string> uploadRetired(const string& path, ProgressMeter&);
   struct GameInfo {
     string displayName;
     string filename;
@@ -17,6 +18,8 @@ class FileSharing {
   };
   vector<GameInfo> listGames(int version);
   optional<string> download(const string& filename, const string& dir, ProgressMeter&);
+  void uploadHighscores(const string& path);
+  string downloadHighscores();
 
   function<void()> getCancelFun();
   

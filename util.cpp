@@ -98,14 +98,14 @@ template optional<double> fromStringSafe<double>(const string&);
 
 template <class T>
 string toString(const T& t){
-  std::stringstream ss;
+  stringstream ss;
   ss << t;
   return ss.str();
 }
 
 template <>
 string toString(const Vec2& t){
-  std::stringstream ss;
+  stringstream ss;
   ss << "(" << t.x << "," << t.y << ")";
   return ss.str();
 }

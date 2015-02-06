@@ -442,7 +442,7 @@ static string getNewIdSuffix() {
 }
 
 PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
-  Model* m = new Model(view, getNewIdSuffix(), worldName, Tribe::Set());
+  Model* m = new Model(view, worldName, Tribe::Set());
   m->setOptions(options);
   vector<EnemyInfo> enemyInfo = getEnemyInfo(m->tribeSet);
   vector<SettlementInfo> settlements;
@@ -466,6 +466,8 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   if (!keeperName.empty())
     c->setFirstName(keeperName);
+  m->gameIdentifier = *c->getFirstName() + "_" + m->worldName + getNewIdSuffix();
+  m->gameDisplayName = *c->getFirstName() + " of " + m->worldName;
   Creature* ref = c.get();
   top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
   m->addCreature(std::move(c));
@@ -496,7 +498,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
 }
 
 PModel ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string& splashPath) {
-  Model* m = new Model(view, "", "", Tribe::Set());
+  Model* m = new Model(view, "", Tribe::Set());
   Level* l = m->buildLevel(
       Level::Builder(meter, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness", false),
       LevelMaker::splashLevel(

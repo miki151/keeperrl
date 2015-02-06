@@ -1595,10 +1595,10 @@ void PlayerControl::addImp(Creature* c) {
   getCollective()->addCreature(c, {MinionTrait::WORKER, MinionTrait::NO_EQUIPMENT});
 }
 
-void PlayerControl::onConqueredLand(const string& name) {
+void PlayerControl::onConqueredLand() {
   if (retired)
     return;
-  model->conquered(*getKeeper()->getFirstName() + " the Keeper", name, getCollective()->getKills(),
+  model->conquered(*getKeeper()->getFirstName() + " the Keeper", getCollective()->getKills(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
 }
 
