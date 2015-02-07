@@ -75,7 +75,7 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
             return 100.0;
         return 5.0;
       }
-      if (level->getSafeSquare(pos)->canDestroyBy(creature))
+      if (level->getSafeSquare(pos)->canDestroy(creature))
         return 5.0;
       return infinity;};
   CHECK(to.inRectangle(level->getBounds()));

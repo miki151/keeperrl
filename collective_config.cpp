@@ -69,10 +69,6 @@ bool CollectiveConfig::getStripSpawns() const {
   return type == KEEPER;
 }
 
-bool CollectiveConfig::getKeepSectors() const {
-  return type == KEEPER;
-}
-
 bool CollectiveConfig::getFetchItems() const {
   return type == KEEPER;
 }

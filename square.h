@@ -49,6 +49,7 @@ class Square : public Renderable {
     bool ticking;
     MovementType movementType;
     bool canDestroy;
+    const Tribe* owner;
   };
   Square(const ViewObject&, Params);
 
@@ -115,11 +116,13 @@ class Square : public Renderable {
   /** Returns the strength, i.e. resistance to demolition.*/
   int getStrength() const;
 
-  /** Checks if this square can be destroyed.*/
-  virtual bool canDestroyBy(const Creature* c) const;
-  virtual bool canDestroy() const;
+  /** Checks if this square can be destroyed by member of a tribe (can be nullptr for generic destroying).*/
+  bool canDestroy(const Tribe* = nullptr) const;
 
-  /** Called when something destroyed this square.*/
+  /** Checks if this square can be destroyed by a creature. Pathfinding will not take into account this result.*/
+  virtual bool canDestroy(const Creature*) const;
+
+  /** Called when something is destroying this square (may take a few turns to destroy).*/
   virtual void destroyBy(Creature* c);
   virtual void destroy();
 
@@ -260,6 +263,7 @@ class Square : public Renderable {
   mutable bool SERIAL2(updateViewIndex, true);
   mutable ViewIndex SERIAL(viewIndex);
   bool SERIAL2(canDestroySquare, false);
+  const Tribe* SERIAL(owner);
 };
 
 #endif

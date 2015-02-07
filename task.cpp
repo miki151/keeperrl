@@ -615,7 +615,7 @@ class DestroySquare : public NonTransferable {
     if (c->getPosition().dist8(position) == 1)
       if (auto action = c->destroy(position - c->getPosition(), Creature::DESTROY))
         return action.append([=] { 
-          if (!c->getLevel()->getSafeSquare(position)->canDestroyBy(c))
+          if (!c->getLevel()->getSafeSquare(position)->canDestroy(c))
             setDone();
           });
     if (auto action = c->moveTowards(position))

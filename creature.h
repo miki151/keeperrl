@@ -144,7 +144,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   bool isHatcheryAnimal() const;
   bool dontChase() const;
   optional<SpawnType> getSpawnType() const;
-  bool canEnter(const MovementType&) const;
+  MovementType getMovementType() const;
 
   int numBodyParts(BodyPart) const;
   int numLost(BodyPart) const;
@@ -226,7 +226,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   CreatureAction moveAway(Vec2 pos, bool pathfinding = true);
   CreatureAction continueMoving();
   CreatureAction stayIn(const Location*);
-  void addSectors(Sectors*);
   bool isSameSector(Vec2) const;
 
   bool atTarget() const;
@@ -333,7 +332,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   mutable vector<const Creature*> SERIAL(kills);
   mutable double SERIAL2(difficultyPoints, 0);
   int SERIAL2(points, 0);
-  Sectors* SERIAL2(sectors, nullptr);
   int SERIAL2(numAttacksThisTurn, 0);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   vector<PMoraleOverride> SERIAL(moraleOverrides);

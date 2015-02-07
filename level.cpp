@@ -42,6 +42,8 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     & SVAR(backgroundOffset)
     & SVAR(coverInfo)
     & SVAR(bucketMap)
+    & SVAR(sectors)
+    & SVAR(squareOwners)
     & SVAR(lightAmount);
   CHECK_SERIAL;
 }  
@@ -143,6 +145,7 @@ void Level::replaceSquare(Vec2 pos, PSquare square) {
   }
   addLightSource(pos, squares[pos]->getLightEmission(), 1);
   updateVisibility(pos);
+  updateConnectivity(pos);
 }
 
 void Level::updateVisibility(Vec2 changedSquare) {
@@ -656,3 +659,26 @@ const string& Level::getName() const {
   return name;
 }
 
+void Level::updateConnectivity(Vec2 pos) {
+  for (auto& elem : sectors)
+    if (getSafeSquare(pos)->canEnterEmpty(elem.first) || getSafeSquare(pos)->canDestroy(elem.first.getTribe()))
+      elem.second.add(pos);
+    else
+      elem.second.remove(pos);
+}
+
+bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement1) const {
+  MovementType movement = squareOwners.count(movement1.getTribe()) ? movement1 : movement1.getWithNoTribe();
+  if (!sectors.count(movement)) {
+    sectors[movement] = Sectors(getBounds());
+    Sectors& newSectors = sectors.at(movement);
+    for (Vec2 v : getBounds())
+      if (getSafeSquare(v)->canEnterEmpty(movement) || getSafeSquare(v)->canDestroy(movement.getTribe()))
+        newSectors.add(v);
+  }
+  return sectors.at(movement).same(p1, p2);
+}
+
+void Level::addSquareOwner(const Tribe* t) {
+  squareOwners.insert(t);
+}

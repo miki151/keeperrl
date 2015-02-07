@@ -281,7 +281,7 @@ class Collective : public Task::Callback {
   int getNextSalaries() const;
   bool hasMinionDebt() const;
 
-  void updateSectors(Vec2);
+  bool tryLockingDoor(Vec2);
   void orderConsumption(Creature* consumer, Creature* who);
   vector<Creature*>getConsumptionTargets(Creature* consumer);
 

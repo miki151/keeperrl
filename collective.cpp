@@ -149,15 +149,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
 
 Collective::Collective(Level* l, CollectiveConfig cfg, Tribe* t, EnumMap<ResourceId, int> _credit, const string& n) 
   : credit(_credit), taskMap(l->getBounds()), knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
-  tribe(NOTNULL(t)), level(NOTNULL(l)), nextPayoutTime(-1), sectors(new Sectors(level->getBounds())),
-    flyingSectors(new Sectors(level->getBounds())), name(n), config(cfg) {
-  if (config.getKeepSectors())
-    for (Vec2 v : level->getBounds()) {
-      if (getLevel()->getSafeSquare(v)->canEnterEmpty({MovementTrait::WALK}))
-        sectors->add(v);
-      if (getLevel()->getSafeSquare(v)->canEnterEmpty({{MovementTrait::WALK, MovementTrait::FLY}}))
-        flyingSectors->add(v);
-    }
+  tribe(NOTNULL(t)), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
 
 const string& Collective::getName() const {
@@ -238,12 +230,6 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     minionEquipment.own(c, item);
   if (traits[MinionTrait::PRISONER])
     prisonerInfo[c] = {PrisonerState::PRISON, 0};
-  if (config.getKeepSectors()) {
-    if (!c->isAffected(LastingEffect::FLYING))
-      c->addSectors(sectors.get());
-    else
-      c->addSectors(flyingSectors.get());
-  }
   if (traits[MinionTrait::FIGHTER]) {
     c->addMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this, c)));
   }
@@ -1765,7 +1751,7 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   if (efficiencySquares.count(type))
     updateEfficiency(pos, type);
   if (contains({SquareId::FLOOR, SquareId::BRIDGE, SquareId::BARRICADE}, type.getId()))
-    updateSectors(pos);
+    taskMap.clearAllLocked();
   if (taskMap.getMarked(pos))
     taskMap.unmarkSquare(pos);
   if (constructions.count(pos)) {
@@ -1781,17 +1767,16 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   control->onConstructed(pos, type);
 }
 
-void Collective::updateSectors(Vec2 pos) {
-  if (getLevel()->getSafeSquare(pos)->canEnterEmpty(MovementType(getTribe(), {MovementTrait::WALK})))
-    sectors->add(pos);
-  else
-    sectors->remove(pos);
-  if (getLevel()->getSafeSquare(pos)->canEnterEmpty(MovementType(getTribe(),
-          {MovementTrait::WALK, MovementTrait::FLY})))
-    flyingSectors->add(pos);
-  else
-    flyingSectors->remove(pos);
-  taskMap.clearAllLocked();
+bool Collective::tryLockingDoor(Vec2 pos) {
+  if (getConstructions().count(pos)) {
+    Square* square = getLevel()->getSafeSquare(pos);
+    if (square->canLock()) {
+      square->lock();
+      taskMap.clearAllLocked();
+      return true;
+    }
+  }
+  return false;
 }
 
 // after this time applying trap or building door is rescheduled (imp death, etc).
@@ -1925,10 +1910,6 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
       info.marked() = getTime() + 10; // wait a little before considering rebuilding
       info.built() = false;
       info.task() = -1;
-    }
-    if (config.getKeepSectors()) {
-      sectors->add(pos);
-      flyingSectors->add(pos);
     }
   }
 }

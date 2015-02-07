@@ -24,6 +24,8 @@
 #include "unique_entity.h"
 #include "bucket_map.h"
 #include "player_message.h"
+#include "movement_type.h"
+#include "sectors.h"
 
 class Model;
 class Square;
@@ -33,6 +35,8 @@ class Location;
 class Attack;
 class CollectiveBuilder;
 class ProgressMeter;
+class Sectors;
+class Tribe;
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
@@ -211,6 +215,14 @@ class Level : public UniqueEntity<Level> {
   /** Returns the amount of sunlight in the square, capped within (0, 1).*/
   double getSunlight(Vec2) const;
 
+  /** Returns if two squares are connected assuming given movement.*/
+  bool areConnected(Vec2, Vec2, const MovementType&) const;
+
+  void updateConnectivity(Vec2);
+
+  /* Notify that there are squares enterable only by this tribe and custom movement type needs to be tracked.*/
+  void addSquareOwner(const Tribe*);
+
   /** Class used to initialize a level object.*/
   class Builder {
     public:
@@ -318,6 +330,8 @@ class Level : public UniqueEntity<Level> {
   Table<CoverInfo> SERIAL(coverInfo);
   BucketMap<Creature*> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
+  mutable unordered_map<MovementType, Sectors> SERIAL(sectors);
+  unordered_set<const Tribe*> SERIAL(squareOwners);
   
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name,
       Table<CoverInfo> coverInfo);

@@ -49,7 +49,8 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(updateViewIndex)
     & SVAR(updateMemory)
     & SVAR(viewIndex)
-    & SVAR(canDestroySquare);
+    & SVAR(canDestroySquare)
+    & SVAR(owner);
   CHECK_SERIAL;
   if (progressMeter)
     progressMeter->addProgress();
@@ -66,7 +67,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
-    movementType(p.movementType), canDestroySquare(p.canDestroy) {
+    movementType(p.movementType), canDestroySquare(p.canDestroy), owner(p.owner) {
 }
 
 Square::~Square() {
@@ -140,8 +141,8 @@ bool Square::construct(SquareType type) {
     return false;
 }
 
-bool Square::canDestroy() const {
-  return canDestroySquare;
+bool Square::canDestroy(const Tribe* tribe) const {
+  return canDestroySquare && (tribe == nullptr || tribe != owner);
 }
 
 void Square::destroy() {
@@ -152,8 +153,8 @@ void Square::destroy() {
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
-bool Square::canDestroyBy(const Creature* c) const {
-  return canDestroy();
+bool Square::canDestroy(const Creature* c) const {
+  return canDestroy(c->getTribe());
 }
 
 void Square::destroyBy(Creature* c) {
@@ -179,6 +180,8 @@ void Square::setLevel(Level* l) {
   level = l;
   if (ticking || !inventory.isEmpty())
     level->addTickingSquare(position);
+  if (owner)
+    level->addSquareOwner(owner);
 }
 
 const Level* Square::getConstLevel() const {
@@ -292,7 +295,7 @@ bool Square::canEnter(const Creature* c) const {
 }
 
 bool Square::canEnterEmpty(const Creature* c) const {
-  return c->canEnter(movementType) || canEnterSpecial(c);
+  return movementType.canEnter(c->getMovementType()) || canEnterSpecial(c);
 }
 
 bool Square::canEnterSpecial(const Creature* c) const {
@@ -504,5 +507,7 @@ bool Square::needsMemoryUpdate() const {
 
 void Square::setMovementType(MovementType t) {
   movementType = t;
+  if (level)
+    level->updateConnectivity(position);
 }
 

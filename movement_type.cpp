@@ -31,3 +31,25 @@ bool MovementType::canEnter(const MovementType& t) const {
       return true;
   return false;
 }
+
+bool MovementType::operator == (const MovementType& o) const {
+  return traits == o.traits && tribe == o.tribe;
+}
+
+const EnumSet<MovementTrait>& MovementType::getTraits() const {
+  return traits;
+}
+
+namespace std {
+  size_t hash<MovementType>::operator()(const MovementType& t) const {
+      return hash<EnumSet<MovementTrait>>()(t.getTraits());
+  }
+}
+
+const Tribe* MovementType::getTribe() const {
+  return tribe;
+}
+
+MovementType MovementType::getWithNoTribe() const {
+  return MovementType(nullptr, traits);
+}

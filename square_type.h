@@ -66,7 +66,6 @@ enum class SquareId {
   CHEST,
   TREASURE_CHEST,
   COFFIN,
-  IRON_BARS,
   DOOR,
   TRIBE_DOOR,
   BARRICADE,

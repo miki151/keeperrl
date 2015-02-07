@@ -210,7 +210,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool underAttack() const;
   void addToMemory(Vec2 pos);
   void getSquareViewIndex(const Square*, bool canSee, ViewIndex&) const;
-  bool tryLockingDoor(Vec2 pos);
+  void tryLockingDoor(Vec2 pos);
   void uncoverRandomLocation();
   Creature* getControlled();
 

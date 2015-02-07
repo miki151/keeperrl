@@ -1194,7 +1194,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::POSSESS: {
         Vec2 pos = input.get<Vec2>();
         if (pos.inRectangle(getLevel()->getBounds()))
-          tryLockingDoor(pos);
+          getCollective()->tryLockingDoor(pos);
         break;
         }
     case UserInputId::RECT_SELECTION:
@@ -1351,17 +1351,9 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
   }
 }
 
-bool PlayerControl::tryLockingDoor(Vec2 pos) {
-  if (getCollective()->getConstructions().count(pos)) {
-    Square* square = getLevel()->getSafeSquare(pos);
-    if (square->canLock()) {
-      square->lock();
-      getCollective()->updateSectors(pos);
-      updateSquareMemory(pos);
-      return true;
-    }
-  }
-  return false;
+void PlayerControl::tryLockingDoor(Vec2 pos) {
+  if (getCollective()->tryLockingDoor(pos))
+    updateSquareMemory(pos);
 }
 
 double PlayerControl::getTime() const {
