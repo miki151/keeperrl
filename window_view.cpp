@@ -1194,6 +1194,7 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       }
       break; }
     case Event::MouseButtonPressed: {
+      lockKeyboard = true;
       Vec2 clickPos(event.mouseButton.x, event.mouseButton.y);
       for (GuiElem* elem : guiElems) {
         if (event.mouseButton.button == sf::Mouse::Right)
