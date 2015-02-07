@@ -1194,7 +1194,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::POSSESS: {
         Vec2 pos = input.get<Vec2>();
         if (pos.inRectangle(getLevel()->getBounds()))
-          getCollective()->tryLockingDoor(pos);
+          tryLockingDoor(pos);
         break;
         }
     case UserInputId::RECT_SELECTION:
