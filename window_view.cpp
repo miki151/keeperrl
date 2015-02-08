@@ -336,7 +336,6 @@ void WindowView::rebuildGui() {
         break;
   }
   resetMapBounds();
-  CHECK(currentThreadId() != renderThreadId);
   int bottomOffset = 15;
   int leftMargin = 20;
   int rightMargin = 20;
@@ -471,7 +470,6 @@ void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
   mapGui->updateObjects(collective, mapLayout, options->getBoolValue(OptionId::SMOOTH_MOVEMENT)
       && (currentTileLayout.sprites || spectator), !spectator);
   updateMinimap(collective);
-  rebuildGui();
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);
 }
@@ -496,6 +494,8 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
 void WindowView::refreshView() {
   {
     RenderLock lock(renderMutex);
+    if (!wasRendered)
+      rebuildGui();
     wasRendered = true;
     CHECK(currentThreadId() == renderThreadId);
     if (gameReady)
@@ -559,9 +559,9 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
   RenderLock lock(renderMutex);
   TempClockPause pause(clock);
   gameInfo.messageBuffer = { PlayerMessage(message) };
-  rebuildGui();
   SyncQueue<optional<Vec2>> returnQueue;
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
+  rebuildGui();
   refreshScreen();
   do {
     Event event;
@@ -972,8 +972,7 @@ vector<string> WindowView::breakText(const string& text, int maxWidth) {
 
 void WindowView::presentText(const string& title, const string& text) {
   TempClockPause pause(clock);
-  presentList(title, View::getListElem(breakText(text,
-          getMenuPosition(MenuType::NORMAL_MENU).getW() - 140)), false);
+  presentList(title, View::getListElem({text}), false);
 }
 
 void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu,

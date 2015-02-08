@@ -1539,7 +1539,7 @@ bool PlayerControl::isEnemy(const Creature* c) const {
 }
 
 void PlayerControl::onPickupEvent(const Creature* c, const vector<Item*>& items) {
-  if (c == getControlled())
+  if (c == getControlled() && !getCollective()->hasTrait(c, MinionTrait::WORKER))
     getCollective()->ownItems(c, items);
 }
 
@@ -1592,6 +1592,8 @@ void PlayerControl::onConqueredLand() {
     return;
   model->conquered(*getKeeper()->getFirstName(), getCollective()->getKills(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
+  model->getView()->presentText("", "When you are ready, retire your dungeon and share it online."
+      "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
 }
 
 void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
