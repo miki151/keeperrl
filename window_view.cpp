@@ -1045,7 +1045,12 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       case View::NORMAL: color = gui.text; break;
     }
     vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, columnWidth);
-    heights.push_back(label1.size() * lineHeight);
+    if (options.size() == 1 && label1.size() > 1) { // hacky way of checking that we display a wall of text
+      heights = vector<int>(label1.size(), lineHeight);
+      lines = std::move(label1);
+      break;
+    }
+    heights.push_back((label1.size() - 1) * brokenLineHeight + lineHeight);
     PGuiElem line;
     if (menuType != MAIN_MENU)
       line = gui.verticalList(std::move(label1), brokenLineHeight, 0);
