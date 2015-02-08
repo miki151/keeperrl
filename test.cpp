@@ -386,6 +386,47 @@ void testSectors2() {
   CHECK(!s.same(Vec2(0, 3), Vec2(3, 2)));
 }
 
+void testSectors3() {
+  Rectangle bounds(250, 250);
+  Sectors s(bounds);
+  Table<bool> t(bounds, true);
+  Rectangle bounds2(15, 15);
+  Rectangle bounds3(3, 3);
+  for (int i : Range(40)) {
+    Vec2 pos(bounds.randomVec2());
+    for (Vec2 v : bounds2.translate(pos).intersection(bounds))
+      t[v] = false;
+  }
+  for (int i : Range(100)) {
+    Vec2 pos(bounds.randomVec2());
+    for (Vec2 v : bounds3.translate(pos).intersection(bounds))
+      t[v] = true;
+  }
+  for (Vec2 v : bounds)
+    if (t[v])
+      s.add(v);
+  for (int i : Range(1000)) {
+    if (i % 10 == 0)
+      std::cout << '.' << std::endl;
+    Vec2 v = bounds.randomVec2();
+    if (Random.roll(10)) {
+      s.remove(v);
+      t[v] = false;
+    } else {
+      s.add(v);
+      t[v] = true;
+    }
+  }
+  for (Vec2 pos : bounds) {
+    CHECK(t[pos] == s.contains(pos));
+    if (t[pos])
+      for (Vec2 v : pos.neighbors8())
+        if (v.inRectangle(bounds))
+          CHECK(t[v] == s.same(pos, v));
+  }
+  std::cout << s.getNumSectors() << " sectors" << endl;
+}
+
 void testReverse() {
   vector<int> v1 {1, 2, 3, 4};
   vector<int> v2 {4, 3, 2, 1};
@@ -434,6 +475,7 @@ int testAll() {
   testVec2Box2();
   testSectors1();
   testSectors2();
+  testSectors3();
   testReverse();
   testReverse2();
   testReverse3();

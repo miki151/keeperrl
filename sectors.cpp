@@ -31,15 +31,19 @@ Sectors::Sectors(Rectangle b) : bounds(b), sectors(bounds, -1) {
 }
 
 bool Sectors::same(Vec2 v, Vec2 w) const {
-  return sectors[v] > -1 && sectors[v] == sectors[w];
+  return contains(v) && sectors[v] == sectors[w];
+}
+
+bool Sectors::contains(Vec2 v) const {
+  return sectors[v] > -1;
 }
 
 void Sectors::add(Vec2 pos) {
-  if (sectors[pos] > -1)
+  if (contains(pos))
     return;
   set<int> neighbors;
   for (Vec2 v : pos.neighbors8())
-    if (v.inRectangle(bounds) && sectors[v] > -1)
+    if (v.inRectangle(bounds) && contains(v))
       neighbors.insert(sectors[v]);
   if (neighbors.size() == 0)
     setSector(pos, getNewSector());
@@ -57,7 +61,7 @@ void Sectors::add(Vec2 pos) {
 
 void Sectors::setSector(Vec2 pos, int sector) {
   CHECK(sectors[pos] != sector);
-  if (sectors[pos] > -1)
+  if (contains(pos))
     --sizes[sectors[pos]];
   sectors[pos] = sector;
   ++sizes[sector];
@@ -66,6 +70,14 @@ void Sectors::setSector(Vec2 pos, int sector) {
 int Sectors::getNewSector() {
   sizes.push_back(0);
   return sizes.size() - 1;
+}
+
+int Sectors::getNumSectors() const {
+  int ret = 0;
+  for (int s : sizes)
+    if (s > 0)
+      ++ret;
+  return ret;
 }
 
 void Sectors::join(Vec2 pos1, int sector) {
@@ -84,7 +96,7 @@ void Sectors::join(Vec2 pos1, int sector) {
 }
 
 void Sectors::remove(Vec2 pos) {
-  if (sectors[pos] == -1)
+  if (!contains(pos))
     return;
   int curNumber = sizes[sectors[pos]];
   --sizes[sectors[pos]];
@@ -92,7 +104,7 @@ void Sectors::remove(Vec2 pos) {
   int maxSector = sizes.size() - 1;
   vector<int> newSizes;
   for (Vec2 v : pos.neighbors8())
-    if (v.inRectangle(bounds) && sectors[v] > -1 && sectors[v] <= maxSector) {
+    if (v.inRectangle(bounds) && contains(v) && sectors[v] <= maxSector) {
       join(v, getNewSector());
       newSizes.push_back(sizes[sectors[v]]);
     }
