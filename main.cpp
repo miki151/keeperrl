@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
   FileSharing fileSharing(uploadUrl);
-  Highscores highscores(userPath + "/" + "highscores.txt", fileSharing);
+  Highscores highscores(userPath + "/" + "highscores.txt", fileSharing, &options);
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished);
   auto game = [&] { while (!viewInitialized) {} loop.start(tilesPresent); };
   auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };

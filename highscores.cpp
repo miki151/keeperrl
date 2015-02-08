@@ -2,12 +2,16 @@
 #include "highscores.h"
 #include "view.h"
 #include "file_sharing.h"
+#include "options.h"
 
-Highscores::Highscores(const string& local, FileSharing& sharing) : localPath(local), fileSharing(sharing) {
+Highscores::Highscores(const string& local, FileSharing& sharing, Options* o)
+    : localPath(local), fileSharing(sharing), options(o) {
   localScores = fromFile(localPath);
   remoteScores = fromString(fileSharing.downloadHighscores());
-  thread t([=] { fileSharing.uploadHighscores(localPath); });
-  t.detach();
+  if (options->getBoolValue(OptionId::ONLINE)) {
+    thread t([=] { fileSharing.uploadHighscores(localPath); });
+    t.detach();
+  }
 }
 
 void Highscores::add(Score s) {
@@ -16,8 +20,10 @@ void Highscores::add(Score s) {
   sortScores(localScores);
   sortScores(remoteScores);
   saveToFile(localScores, localPath);
-  thread t([=] { fileSharing.uploadHighscores(localPath); });
-  t.detach();
+  if (options->getBoolValue(OptionId::ONLINE)) {
+    thread t([=] { fileSharing.uploadHighscores(localPath); });
+    t.detach();
+  }
 }
 
 void Highscores::sortScores(vector<Score>& scores) {
@@ -105,8 +111,10 @@ static void fillScores(vector<View::ListElem>& elems, const vector<Score>& score
 void Highscores::present(View* view, optional<Score> lastAdded) const {
   vector<View::ListElem> elems { View::ListElem("Local highscores:", View::TITLE)};
   fillScores(elems, localScores, lastAdded); 
-  elems.push_back(View::ListElem("Online highscores:", View::TITLE));
-  fillScores(elems, remoteScores, lastAdded); 
+  if (options->getBoolValue(OptionId::ONLINE)) {
+    elems.push_back(View::ListElem("Online highscores:", View::TITLE));
+    fillScores(elems, remoteScores, lastAdded); 
+  }
   view->presentList("High scores", elems);
 }
 

@@ -5,10 +5,11 @@
 
 class View;
 class FileSharing;
+class Options;
 
 class Highscores {
   public:
-  Highscores(const string& localPath, FileSharing&);
+  Highscores(const string& localPath, FileSharing&, Options*);
 
   struct Score {
     static optional<Score> parse(const string& buf);
@@ -36,6 +37,7 @@ class Highscores {
   FileSharing& fileSharing;
   vector<Score> localScores;
   vector<Score> remoteScores;
+  Options* options;
 };
 
 #endif

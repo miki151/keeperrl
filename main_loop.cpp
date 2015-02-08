@@ -131,7 +131,7 @@ void MainLoop::saveUI(PModel model, Model::GameType type) {
   saveGame(std::move(model), path);
   view->clearSplash();
   Square::progressMeter = nullptr;
-  if (type == Model::GameType::RETIRED_KEEPER)
+  if (type == Model::GameType::RETIRED_KEEPER && options->getBoolValue(OptionId::ONLINE))
     uploadFile(path);
 }
 
@@ -331,12 +331,13 @@ bool MainLoop::downloadGame(const string& filename) {
 }
 
 PModel MainLoop::adventurerGame() {
-  vector<View::ListElem> options;
+  vector<View::ListElem> elems;
   vector<SaveFileInfo> files;
   getSaveOptions({
-      {Model::GameType::RETIRED_KEEPER, "Retired local games:"}}, options, files);
-  getDownloadOptions(options, files, "Retired online games:");
-  optional<SaveFileInfo> savedGame = chooseSaveFile(options, files, "No retired games found.", view);
+      {Model::GameType::RETIRED_KEEPER, "Retired local games:"}}, elems, files);
+  if (options->getBoolValue(OptionId::ONLINE))
+    getDownloadOptions(elems, files, "Retired online games:");
+  optional<SaveFileInfo> savedGame = chooseSaveFile(elems, files, "No retired games found.", view);
   if (savedGame) {
     if (savedGame->download)
       if (!downloadGame(savedGame->filename))
