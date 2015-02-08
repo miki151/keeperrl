@@ -437,20 +437,21 @@ void Player::displayInventory() {
   }
   auto index = model->getView()->chooseFromList("What to do with "
       + getCreature()->getPluralName(item[0], item.size()) + "?", options);
-  if (!index) {
+  if (index) {
+    if (options[*index].getText() == "drop")
+      tryToPerform(getCreature()->drop(item));
+    if (options[*index].getText() == "throw") {
+      throwItem(item);
+      return;
+    } if (options[*index].getText() == "apply") {
+      applyItem(item);
+      return;
+    } if (options[*index].getText() == "remove")
+      tryToPerform(getCreature()->unequip(getOnlyElement(item)));
+    if (options[*index].getText() == "equip")
+      tryToPerform(getCreature()->equip(item[0]));
     displayInventory();
-    return;
   }
-  if (options[*index].getText() == "drop")
-    tryToPerform(getCreature()->drop(item));
-  if (options[*index].getText() == "throw")
-    throwItem(item);
-  if (options[*index].getText() == "apply")
-    applyItem(item);
-  if (options[*index].getText() == "remove")
-    tryToPerform(getCreature()->unequip(getOnlyElement(item)));
-  if (options[*index].getText() == "equip")
-    tryToPerform(getCreature()->equip(item[0]));
 }
 
 void Player::hideAction() {

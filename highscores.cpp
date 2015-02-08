@@ -6,6 +6,8 @@
 Highscores::Highscores(const string& local, FileSharing& sharing) : localPath(local), fileSharing(sharing) {
   localScores = fromFile(localPath);
   remoteScores = fromString(fileSharing.downloadHighscores());
+  thread t([=] { fileSharing.uploadHighscores(localPath); });
+  t.detach();
 }
 
 void Highscores::add(Score s) {
