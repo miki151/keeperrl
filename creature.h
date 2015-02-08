@@ -178,6 +178,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
 
   string getPluralName(Item* item, int num);
   CreatureAction move(Vec2 direction);
+  CreatureAction forceMove(Vec2 direction);
   CreatureAction swapPosition(Vec2 direction, bool force = false);
   CreatureAction wait();
   vector<Item*> getPickUpOptions() const;
@@ -343,6 +344,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   VisionId SERIAL(vision);
   void updateVision();
   vector<string> SERIAL(personalEvents);
+  bool forceMovement = false;
 };
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };

@@ -204,6 +204,16 @@ void Creature::spendTime(double t) {
   hidden = false;
 }
 
+CreatureAction Creature::forceMove(Vec2 dir) {
+  forceMovement = true;
+  CreatureAction action = move(dir);
+  forceMovement = false;
+  if (action)
+    return action.prepend([this] { forceMovement = true; }).append([this] { forceMovement = false; });
+  else
+    return action;
+}
+
 CreatureAction Creature::move(Vec2 direction) {
   if (holding)
     return CreatureAction("You can't break free!");
@@ -2064,7 +2074,9 @@ MovementType Creature::getMovementType() const {
       true,
       isAffected(LastingEffect::FLYING),
       hasSkill(Skill::get(SkillId::SWIMMING)),
-      contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size)});
+      contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size),
+      isBlind() || isHeld() || forceMovement,
+      isFireResistant()});
 }
 
 int Creature::numBodyParts(BodyPart part) const {

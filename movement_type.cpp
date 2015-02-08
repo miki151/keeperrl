@@ -52,4 +52,13 @@ const Tribe* MovementType::getTribe() const {
 
 MovementType MovementType::getWithNoTribe() const {
   return MovementType(nullptr, traits);
+} 
+
+void MovementType::removeTrait(MovementTrait trait) {
+  traits.erase(trait);
 }
+
+void MovementType::addTrait(MovementTrait trait) {
+  traits.insert(trait);
+}
+

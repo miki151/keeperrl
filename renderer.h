@@ -133,8 +133,6 @@ class Renderer {
   void flushAllEvents();
   void waitEvent(Event&);
   Vec2 getMousePos();
-  bool leftButtonPressed();
-  bool rightButtonPressed();
 
   void startMonkey();
   bool isMonkey();

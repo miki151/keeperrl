@@ -740,10 +740,23 @@ void Player::showHistory() {
   model->getView()->presentList("Message history:", View::getListElem(messageHistory), true);
 }
 
+static string getForceMovementQuestion(const Square* square) {
+  if (square->isBurning())
+    return "Walk into the fire?";
+  else if (square->canEnterEmpty(MovementTrait::SWIM))
+    return "The water is very deep, are you sure?";
+  else
+    return "Walk into the " + square->getName() + "?";
+}
+
 void Player::moveAction(Vec2 dir) {
   if (auto action = getCreature()->move(dir)) {
     action.perform();
     itemsMessage();
+  } else if (auto action = getCreature()->forceMove(dir)) {
+    for (Square* square : getCreature()->getSquare(dir))
+      if (model->getView()->yesOrNoPrompt(getForceMovementQuestion(square)))
+        action.perform();
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform();
   else if (auto action = getCreature()->destroy(dir, Creature::BASH))

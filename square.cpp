@@ -142,7 +142,11 @@ bool Square::construct(SquareType type) {
 }
 
 bool Square::canDestroy(const Tribe* tribe) const {
-  return canDestroySquare && (tribe == nullptr || tribe != owner);
+  return canDestroySquare && tribe != owner && !fire.isBurning();
+}
+
+bool Square::canDestroy() const {
+  return canDestroySquare;
 }
 
 void Square::destroy() {
@@ -154,7 +158,8 @@ void Square::destroy() {
 }
 
 bool Square::canDestroy(const Creature* c) const {
-  return canDestroy(c->getTribe());
+  return canDestroy(c->getTribe())
+    || (canDestroySquare && c->isInvincible()); // so that boulders destroy keeper doors
 }
 
 void Square::destroyBy(Creature* c) {
@@ -201,6 +206,21 @@ void Square::setFog(double val) {
   fog = val;
 }
 
+void Square::updateMovement() {
+  if (fire.isBurning()) {
+    if (!movementType.hasTrait(MovementTrait::FIRE_RESISTANT)) {
+      movementType.addTrait(MovementTrait::FIRE_RESISTANT);
+      movementType.addTrait(MovementTrait::BY_FORCE);
+      movementType.removeTrait(MovementTrait::WALK);
+      level->updateConnectivity(position);
+    }
+  } else
+  if (!movementType.hasTrait(MovementTrait::WALK)) {
+    movementType.addTrait(MovementTrait::WALK);
+    level->updateConnectivity(position);
+  }
+}
+
 void Square::tick(double time) {
   setDirty();
   if (!inventory.isEmpty())
@@ -222,6 +242,7 @@ void Square::tick(double time) {
     fire.tick(level, position);
     if (fire.isBurntOut()) {
       level->globalMessage(position, "The " + getName() + " burns out");
+      updateMovement();
       burnOut();
       return;
     }
@@ -295,11 +316,7 @@ bool Square::canEnter(const Creature* c) const {
 }
 
 bool Square::canEnterEmpty(const Creature* c) const {
-  return movementType.canEnter(c->getMovementType()) || canEnterSpecial(c);
-}
-
-bool Square::canEnterSpecial(const Creature* c) const {
-  return false;
+  return movementType.canEnter(c->getMovementType());
 }
 
 void Square::setOnFire(double amount) {
@@ -310,6 +327,7 @@ void Square::setOnFire(double amount) {
     level->addTickingSquare(position);
     level->globalMessage(position, "The " + getName() + " catches fire.");
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
+    updateMovement();
   }
   if (creature)
     creature->setOnFire(amount);

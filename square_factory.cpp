@@ -75,12 +75,10 @@ class Magma : public Square {
         c.movementType = {MovementTrait::FLY};)),
     itemMessage(itemMsg), noSeeMsg(noSee) {}
 
-  virtual bool canEnterSpecial(const Creature* c) const override {
-    return c->isBlind() || c->isHeld();
-  }
-
   virtual void onEnterSpecial(Creature* c) override {
-    if (!getMovementType().canEnter(c->getMovementType())) {
+    MovementType realMovement = c->getMovementType();
+    realMovement.removeTrait(MovementTrait::BY_FORCE);
+    if (!getMovementType().canEnter(realMovement)) {
       c->you(MsgType::BURN, getName());
       c->die(nullptr, false);
     }
@@ -117,12 +115,10 @@ class Water : public Square {
           )),
         itemMessage(itemMsg), noSeeMsg(noSee) {}
 
-  virtual bool canEnterSpecial(const Creature* c) const override {
-    return c->isBlind() || c->isHeld();
-  }
-
   virtual void onEnterSpecial(Creature* c) override {
-    if (!getMovementType().canEnter(c->getMovementType())) {
+    MovementType realMovement = c->getMovementType();
+    realMovement.removeTrait(MovementTrait::BY_FORCE);
+    if (!getMovementType().canEnter(realMovement)) {
       c->you(MsgType::DROWN, getName());
       c->die(nullptr, false);
     }
@@ -144,10 +140,10 @@ class Water : public Square {
   
   private:
   static MovementType getMovement(double depth) {
- //   if (depth >= 1.5)
-      return {{MovementTrait::SWIM, MovementTrait::FLY}};
-/*    else
-      return {{MovementTrait::SWIM, MovementTrait::FLY, MovementTrait::WADE}};*/
+    if (depth >= 1.5)
+      return {{MovementTrait::SWIM, MovementTrait::FLY, MovementTrait::BY_FORCE}};
+    else
+      return {{MovementTrait::SWIM, MovementTrait::FLY, MovementTrait::BY_FORCE, MovementTrait::WADE}};
   }
 
   string SERIAL(itemMessage);
@@ -388,10 +384,6 @@ class TribeDoor : public Door {
     if (destructionStrength <= 0) {
       Door::destroyBy(c);
     }
-  }
-
-  virtual bool canDestroy(const Creature* c) const override {
-    return Door::canDestroy(c) || c->isInvincible(); // hack to make boulders destroy doors
   }
 
   virtual bool canLock() const {

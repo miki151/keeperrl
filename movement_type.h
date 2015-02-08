@@ -7,7 +7,9 @@ RICH_ENUM(MovementTrait,
   WALK,
   FLY,
   SWIM,
-  WADE
+  WADE,
+  BY_FORCE,
+  FIRE_RESISTANT
 );
 
 class Tribe;
@@ -21,6 +23,8 @@ class MovementType {
   /** Returns if the argument can enter square defined by this. The relation is not symmetric.*/
   bool canEnter(const MovementType&) const;
   const Tribe* getTribe() const;
+  void removeTrait(MovementTrait);
+  void addTrait(MovementTrait);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
