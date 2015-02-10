@@ -133,8 +133,6 @@ class Renderer {
   void flushAllEvents();
   void waitEvent(Event&);
   Vec2 getMousePos();
-  bool leftButtonPressed();
-  bool rightButtonPressed();
 
   void startMonkey();
   bool isMonkey();
@@ -148,6 +146,7 @@ class Renderer {
   int setViewCount = 0;
 
   private:
+  Renderer(const Renderer&);
   vector<Vec2> tileSize;
   Vec2 nominalSize;
   map<string, TileCoord> tileCoords;
@@ -162,6 +161,11 @@ class Renderer {
   vector<function<void()>> renderList;
   vector<Vertex> quads;
   Vec2 mousePos;
+  Font textFont;
+  Font tileFont;
+  Font symbolFont;
+  Font& getFont(Renderer::FontId);
+  thread::id renderThreadId;
 };
 
 #endif

@@ -21,10 +21,6 @@
 
 using namespace sf;
 
-Font textFont;
-Font tileFont;
-Font symbolFont;
-
 EnumMap<ColorId, Color> colors;
 
 Renderer::TileCoord::TileCoord(Vec2 p, int t) : pos(p), texNum(t) {
@@ -38,18 +34,17 @@ Color transparency(const Color& color, int trans) {
 }
 
 int Renderer::getTextLength(string s) {
+  CHECK(currentThreadId() == renderThreadId);
   Text t(toUnicode(s), textFont, textSize);
   return t.getLocalBounds().width;
 }
 
-Font& getFont(Renderer::FontId id) {
+Font& Renderer::getFont(Renderer::FontId id) {
   switch (id) {
     case Renderer::TEXT_FONT: return textFont;
     case Renderer::TILE_FONT: return tileFont;
     case Renderer::SYMBOL_FONT: return symbolFont;
   }
-  FAIL << "ewf";
-  return textFont;
 }
 
 void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s, bool center) {
@@ -59,7 +54,6 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s
   if (center) {
     sf::FloatRect bounds = t.getLocalBounds();
     ox -= bounds.left + bounds.width / 2;
-    //oy -= bounds.top + bounds.height / 2;
   }
   t.setPosition(x + ox, y + oy);
   t.setColor(color);
@@ -173,6 +167,7 @@ Vec2 Renderer::getSize() {
 }
 
 void Renderer::initialize(bool fullscreen) {
+  renderThreadId = currentThreadId();
   if (display)
     display->close();
   if (fullscreen)

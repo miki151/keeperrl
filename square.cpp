@@ -49,10 +49,13 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(updateViewIndex)
     & SVAR(updateMemory)
     & SVAR(viewIndex)
-    & SVAR(canDestroySquare);
+    & SVAR(canDestroySquare)
+    & SVAR(owner);
   CHECK_SERIAL;
   if (progressMeter)
     progressMeter->addProgress();
+  updateViewIndex = true;
+  updateMemory = true;
 }
 
 ProgressMeter* Square::progressMeter = nullptr;
@@ -64,7 +67,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
-    movementType(p.movementType), canDestroySquare(p.canDestroy) {
+    movementType(p.movementType), canDestroySquare(p.canDestroy), owner(p.owner) {
 }
 
 Square::~Square() {
@@ -138,6 +141,10 @@ bool Square::construct(SquareType type) {
     return false;
 }
 
+bool Square::canDestroy(const Tribe* tribe) const {
+  return canDestroySquare && tribe != owner && !fire.isBurning();
+}
+
 bool Square::canDestroy() const {
   return canDestroySquare;
 }
@@ -146,12 +153,13 @@ void Square::destroy() {
   CHECK(canDestroy());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
-  GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
+  GlobalEvents.addSquareDestroyedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
-bool Square::canDestroyBy(const Creature* c) const {
-  return canDestroy();
+bool Square::canDestroy(const Creature* c) const {
+  return canDestroy(c->getTribe())
+    || (canDestroySquare && c->isInvincible()); // so that boulders destroy keeper doors
 }
 
 void Square::destroyBy(Creature* c) {
@@ -161,7 +169,7 @@ void Square::destroyBy(Creature* c) {
 void Square::burnOut() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
-  GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
+  GlobalEvents.addSquareDestroyedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
@@ -177,6 +185,8 @@ void Square::setLevel(Level* l) {
   level = l;
   if (ticking || !inventory.isEmpty())
     level->addTickingSquare(position);
+  if (owner)
+    level->addSquareOwner(owner);
 }
 
 const Level* Square::getConstLevel() const {
@@ -194,6 +204,21 @@ const Level* Square::getLevel() const {
 void Square::setFog(double val) {
   setDirty();
   fog = val;
+}
+
+void Square::updateMovement() {
+  if (fire.isBurning()) {
+    if (!movementType.hasTrait(MovementTrait::FIRE_RESISTANT)) {
+      movementType.addTrait(MovementTrait::FIRE_RESISTANT);
+      movementType.addTrait(MovementTrait::BY_FORCE);
+      movementType.removeTrait(MovementTrait::WALK);
+      level->updateConnectivity(position);
+    }
+  } else
+  if (!movementType.hasTrait(MovementTrait::WALK)) {
+    movementType.addTrait(MovementTrait::WALK);
+    level->updateConnectivity(position);
+  }
 }
 
 void Square::tick(double time) {
@@ -217,6 +242,7 @@ void Square::tick(double time) {
     fire.tick(level, position);
     if (fire.isBurntOut()) {
       level->globalMessage(position, "The " + getName() + " burns out");
+      updateMovement();
       burnOut();
       return;
     }
@@ -290,11 +316,7 @@ bool Square::canEnter(const Creature* c) const {
 }
 
 bool Square::canEnterEmpty(const Creature* c) const {
-  return c->canEnter(movementType) || canEnterSpecial(c);
-}
-
-bool Square::canEnterSpecial(const Creature* c) const {
-  return false;
+  return movementType.canEnter(c->getMovementType());
 }
 
 void Square::setOnFire(double amount) {
@@ -305,6 +327,7 @@ void Square::setOnFire(double amount) {
     level->addTickingSquare(position);
     level->globalMessage(position, "The " + getName() + " catches fire.");
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
+    updateMovement();
   }
   if (creature)
     creature->setOnFire(amount);
@@ -502,5 +525,7 @@ bool Square::needsMemoryUpdate() const {
 
 void Square::setMovementType(MovementType t) {
   movementType = t;
+  if (level)
+    level->updateConnectivity(position);
 }
 

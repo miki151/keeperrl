@@ -27,6 +27,7 @@ class Task : public UniqueEntity<Task> {
   class Callback {
     public:
     virtual void onConstructed(Vec2 pos, SquareType) {}
+    virtual void onConstructionCancelled(Vec2 pos) {}
     virtual void onTorchBuilt(Vec2 pos, Trigger*) {}
     virtual void onAppliedItem(Vec2 pos, Item* item) {}
     virtual void onAppliedSquare(Vec2 pos) {}
@@ -49,6 +50,7 @@ class Task : public UniqueEntity<Task> {
   virtual bool isImpossible(const Level*);
   virtual bool canTransfer();
   virtual void cancel() {}
+  virtual string getDescription() const = 0;
   bool isDone();
 
   static PTask construction(Callback*, Vec2 target, SquareType);

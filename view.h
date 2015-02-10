@@ -111,7 +111,7 @@ class View {
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
       Returns none if the player cancelled the choice.*/
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = NORMAL_MENU, int* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
+      MenuType = NORMAL_MENU, double* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
   enum GameTypeChoice {
     KEEPER_CHOICE,

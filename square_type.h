@@ -4,8 +4,9 @@
 #include "enums.h"
 #include "creature_factory.h"
 #include "enum_variant.h"
+#include "util.h"
 
-enum class SquareId {
+RICH_ENUM(SquareId,
   FLOOR,
   BLACK_FLOOR,
   BRIDGE,
@@ -66,7 +67,6 @@ enum class SquareId {
   CHEST,
   TREASURE_CHEST,
   COFFIN,
-  IRON_BARS,
   DOOR,
   TRIBE_DOOR,
   BARRICADE,
@@ -75,8 +75,8 @@ enum class SquareId {
   BORDER_GUARD,
   ALTAR,
   CREATURE_ALTAR,
-  EYEBALL,
-};
+  EYEBALL
+);
 
 typedef EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId, const Tribe*),
     ASSIGN(DeityHabitat, SquareId::ALTAR),

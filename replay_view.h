@@ -78,7 +78,7 @@ class ReplayView : public T {
     }
 
     virtual optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        View::MenuType, int* scrollPos, optional<UserInputId> a) override {
+        View::MenuType, double* scrollPos, optional<UserInputId> a) override {
       checkMethod(LoggingToken::CHOOSE_FROM_LIST);
       optional<int> action;
       input >> action;

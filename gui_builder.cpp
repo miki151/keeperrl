@@ -624,6 +624,7 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
     else
       action = [this, elem] () {
         chosenCreature = elem.first;
+        showTasks = false;
       };
     list.push_back(gui.margins(gui.stack(gui.button(action),
             gui.horizontalList(std::move(line), widths, 0)), 20, 0, 0, 0));
@@ -678,8 +679,17 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
     res.push_back(gui.viewObject(info.numResource[0].viewObject, tilesOk));
     res.push_back(gui.label(toString<int>(info.nextPayout), colors[ColorId::WHITE]));
     list.push_back(gui.horizontalList(std::move(res), {170, 30, 1}, 0));
-    list.push_back(gui.empty());
   }
+  list.push_back(gui.horizontalList(makeVec<PGuiElem>(
+          gui.stack(
+            gui.label("Show tasks", colors[showTasks ? ColorId::GREEN : ColorId::WHITE]),
+            gui.button([this] { showTasks = !showTasks; chosenCreature = ""; })),
+          gui.stack(
+            getHintCallback("Morale affects minion's productivity and chances of fleeing from battle."),
+            gui.label("Show morale", colors[morale ? ColorId::GREEN : ColorId::WHITE]),
+            gui.button([this] { morale = !morale; }))
+      ), 120, 0));
+  list.push_back(gui.empty());
   if (!enemyMap.empty()) {
     list.push_back(gui.label("Enemies:", colors[ColorId::WHITE]));
     for (auto elem : enemyMap){
@@ -695,9 +705,40 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
   return gui.verticalList(std::move(list), legendLineHeight, 0);
 }
 
+bool GuiBuilder::showMorale() const {
+  return morale;
+}
+
+const int taskMapWindowWidth = 350;
+
+void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
+  if (info.taskMap.empty())
+    return;
+  vector<PGuiElem> lines;
+  vector<PGuiElem> freeLines;
+  for (auto& elem : info.taskMap)
+    if (elem.creature)
+      lines.push_back(gui.horizontalList(makeVec<PGuiElem>(
+            gui.viewObject(info.getMinion(*elem.creature).viewObject, tilesOk),
+            gui.label(elem.name, colors[elem.priority ? ColorId::GREEN : ColorId::WHITE])), 35, 0));
+    else
+      freeLines.push_back(gui.horizontalList(makeVec<PGuiElem>(
+            gui.empty(),
+            gui.label(elem.name, colors[elem.priority ? ColorId::GREEN : ColorId::WHITE])), 35, 0));
+  int lineHeight = 25;
+  append(lines, std::move(freeLines));
+  ret.push_back({gui.verticalList(std::move(lines), lineHeight, 0),
+      Vec2(taskMapWindowWidth, (info.taskMap.size() + 1) * lineHeight),
+      OverlayInfo::RIGHT});
+}
+
 const int minionWindowWidth = 300;
 
 void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
+  if (showTasks) {
+    drawTasksOverlay(ret, info);
+    return;
+  }
   if (chosenCreature == "")
     return;
   vector<PGuiElem> lines;
@@ -705,7 +746,8 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo
   for (auto& c : info.minions)
     if (c.speciesName == chosenCreature)
       chosen.push_back(c);
-  lines.push_back(gui.label(info.currentTeam ? "Click to add to team:" : "Click to control:", colors[ColorId::LIGHT_BLUE]));
+  lines.push_back(gui.label(info.currentTeam ? "Click to add to team:" : "Click to control:",
+        colors[ColorId::LIGHT_BLUE]));
   for (auto& c : chosen) {
     string text = "L: " + toString(c.expLevel) + "    " + info.tasks[c.uniqueId];
     if (c.speciesName != c.name)

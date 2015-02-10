@@ -35,7 +35,7 @@ int addr2line(char const * const program_name, void const * const addr)
     /* apple does things differently... */
     sprintf(addr2line_cmd,"atos -o %.256s %p", program_name, addr); 
   #else
-    sprintf(addr2line_cmd,"addr2line -f -p -e %.256s %p >> stacktrace.out 2>&1", program_name, addr); 
+    sprintf(addr2line_cmd,"addr2line -f -p -e \"%.256s\" %p >> stacktrace.out 2>&1", program_name, addr); 
   #endif
 
   return system(addr2line_cmd);

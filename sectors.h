@@ -26,6 +26,8 @@ class Sectors {
   void add(Vec2);
   void remove(Vec2);
   void dump();
+  bool contains(Vec2) const;
+  int getNumSectors() const;
 
   SERIALIZATION_DECL(Sectors);
 

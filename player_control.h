@@ -36,7 +36,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   PlayerControl(Collective*, Model*, Level*);
   void addImportantLongMessage(const string&, optional<Vec2> = none);
 
-  void onConqueredLand(const string& name);
+  void onConqueredLand();
 
   void processInput(View* view, UserInput);
   void tick(double);
@@ -196,13 +196,13 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handleMarket(View*, int prevItem = 0);
   void getEquipmentItem(View* view, ItemPredicate predicate);
   Item* chooseEquipmentItem(View* view, vector<Item*> currentItems, ItemPredicate predicate,
-      int* index = nullptr, int* scrollPos = nullptr) const;
+      int* index = nullptr, double* scrollPos = nullptr) const;
 
   void getMinionOptions(Creature*, vector<MinionOption>&, vector<View::ListElem>&);
 
   int getNumMinions() const;
   void minionView(View* view, Creature* creature, int prevItem = 0);
-  void handleEquipment(View* view, Creature* creature, int prevItem = 0);
+  void handleEquipment(View* view, Creature* creature);
   void handleNecromancy(View*);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
@@ -210,7 +210,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool underAttack() const;
   void addToMemory(Vec2 pos);
   void getSquareViewIndex(const Square*, bool canSee, ViewIndex&) const;
-  bool tryLockingDoor(Vec2 pos);
+  void tryLockingDoor(Vec2 pos);
   void uncoverRandomLocation();
   Creature* getControlled();
 

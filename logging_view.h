@@ -69,7 +69,7 @@ class LoggingView : public T {
     }
 
     virtual optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        View::MenuType type, int* scrollPos, optional<UserInputId> action) override {
+        View::MenuType type, double* scrollPos, optional<UserInputId> action) override {
       auto res = T::chooseFromList(title, options, index, type, scrollPos, action);
       auto token = LoggingToken::CHOOSE_FROM_LIST;
       output << token << res;

@@ -56,7 +56,7 @@ class WindowView: public View {
   virtual void drawLevelMap(const CreatureView*) override;
   virtual void resetCenter() override;
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = View::NORMAL_MENU, int* scrollPos = nullptr,
+      MenuType = View::NORMAL_MENU, double* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
   virtual GameTypeChoice chooseGameType() override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
@@ -98,15 +98,16 @@ class WindowView: public View {
   Rectangle getMenuPosition(View::MenuType type);
   Rectangle getTextInputPosition();
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      int* scrollPos, optional<UserInputId> exitAction, optional<sf::Event::KeyEvent> exitKey,
+      double* scrollPos, optional<UserInputId> exitAction, optional<sf::Event::KeyEvent> exitKey,
       vector<sf::Event::KeyEvent> shortCuts);
   optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   PGuiElem drawGameChoices(optional<View::GameTypeChoice>& choice, optional<View::GameTypeChoice>& index);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
-  vector<PGuiElem> getMultiLine(const string& text, Color color, View::MenuType menuType);
+  vector<PGuiElem> getMultiLine(const string& text, Color color, View::MenuType menuType, int maxWidth);
   PGuiElem menuElemMargins(PGuiElem);
-  PGuiElem getHighlight(View::MenuType type, const string& label);
+  PGuiElem getHighlight(View::MenuType type, const string& label, int height);
+  vector<string> breakText(const string&, int maxWidth);
   void rebuildGui();
   void drawMap();
   optional<sf::Event::KeyEvent> getEventFromMenu();

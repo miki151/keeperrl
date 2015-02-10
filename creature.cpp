@@ -67,7 +67,6 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(kills)
     & SVAR(difficultyPoints)
     & SVAR(points)
-    & SVAR(sectors)
     & SVAR(numAttacksThisTurn)
     & SVAR(moraleOverrides)
     & SVAR(attrIncrease)
@@ -203,6 +202,16 @@ vector<const Creature*> Creature::getKills() const {
 void Creature::spendTime(double t) {
   time += 100.0 * t / (double) getAttr(AttrType::SPEED);
   hidden = false;
+}
+
+CreatureAction Creature::forceMove(Vec2 dir) {
+  forceMovement = true;
+  CreatureAction action = move(dir);
+  forceMovement = false;
+  if (action)
+    return action.prepend([this] { forceMovement = true; }).append([this] { forceMovement = false; });
+  else
+    return action;
 }
 
 CreatureAction Creature::move(Vec2 direction) {
@@ -1728,12 +1737,12 @@ CreatureAction Creature::eat(Item* item) {
 
 CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) {
   for (Square* s : getSquare(direction))
-    if (direction.length8() == 1 && s->canDestroyBy(this))
+    if (direction.length8() == 1 && s->canDestroy(this))
       return CreatureAction([=]() {
         switch (dAction) {
           case BASH: 
             playerMessage("You bash the " + s->getName());
-            monsterMessage(getName().the() + " bashes the " + s->getName(), "You hear a bang");
+            monsterMessage(getName().the() + " bashes the " + s->getName(), "BANG!");
             break;
           case EAT: 
             playerMessage("You eat the " + s->getName());
@@ -1741,7 +1750,7 @@ CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) {
             break;
           case DESTROY: 
             playerMessage("You destroy the " + s->getName());
-            monsterMessage(getName().the() + " destroys the " + s->getName(), "You hear a crash");
+            monsterMessage(getName().the() + " destroys the " + s->getName(), "CRASH!");
             break;
       }
       s->destroyBy(this);
@@ -2060,16 +2069,14 @@ optional<SpawnType> Creature::getSpawnType() const {
   return spawnType;
 }
 
-bool Creature::canEnter(const MovementType& movement) const {
-  return movement.canEnter(MovementType(getTribe(), {
+MovementType Creature::getMovementType() const {
+  return MovementType(getTribe(), {
       true,
       isAffected(LastingEffect::FLYING),
       hasSkill(Skill::get(SkillId::SWIMMING)),
-      contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size)}));
- /* return movement.hasTrait(MovementTrait::WALK)
-    || (skills[SkillId::SWIMMING] && movement.hasTrait(MovementTrait::SWIM))
-    || (contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size) && movement.hasTrait(MovementTrait::WADE))
-    || (isAffected(LastingEffect::FLYING) && movement.hasTrait(MovementTrait::FLY));*/
+      contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size),
+      isBlind() || isHeld() || forceMovement,
+      isFireResistant()});
 }
 
 int Creature::numBodyParts(BodyPart part) const {
@@ -2149,15 +2156,6 @@ int Creature::getDifficultyPoints() const {
   return difficultyPoints;
 }
 
-void Creature::addSectors(Sectors* s) {
-  CHECK(!sectors);
-  sectors = s;
-}
-
-bool Creature::isSameSector(Vec2 pos) const {
-  return sectors->same(getPosition(), pos);
-}
-
 CreatureAction Creature::continueMoving() {
   if (shortestPath && shortestPath->isReachable(getPosition())) {
     Vec2 pos2 = shortestPath->getNextMove(getPosition());
@@ -2187,10 +2185,11 @@ CreatureAction Creature::moveTowards(Vec2 pos, bool stepOnTile) {
 CreatureAction Creature::moveTowards(Vec2 pos, bool away, bool stepOnTile) {
   if (stepOnTile && !level->getSafeSquare(pos)->canEnterEmpty(this))
     return CreatureAction();
-  if (!away && sectors) {
+  if (!away) {
     bool sectorOk = false;
+    MovementType movement = getMovementType();
     for (Vec2 v : pos.neighbors8())
-      if (v.inRectangle(level->getBounds()) && sectors->same(getPosition(), v)) {
+      if (v.inRectangle(level->getBounds()) && level->areConnected(position, v, movement)) {
         sectorOk = true;
         break;
       }
@@ -2451,4 +2450,7 @@ vector<string> Creature::getAdjectives() const {
   return ret;
 }
 
+bool Creature::isSameSector(Vec2 pos) const {
+  return level->areConnected(position, pos, getMovementType());
+}
 

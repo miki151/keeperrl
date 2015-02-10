@@ -15,6 +15,7 @@
 
 #include "stdafx.h"
 #include "sectors.h"
+#include "level.h"
 
 template <class Archive> 
 void Sectors::serialize(Archive& ar, const unsigned int version) {
@@ -31,15 +32,19 @@ Sectors::Sectors(Rectangle b) : bounds(b), sectors(bounds, -1) {
 }
 
 bool Sectors::same(Vec2 v, Vec2 w) const {
-  return sectors[v] > -1 && sectors[v] == sectors[w];
+  return contains(v) && sectors[v] == sectors[w];
+}
+
+bool Sectors::contains(Vec2 v) const {
+  return sectors[v] > -1;
 }
 
 void Sectors::add(Vec2 pos) {
-  if (sectors[pos] > -1)
+  if (contains(pos))
     return;
   set<int> neighbors;
   for (Vec2 v : pos.neighbors8())
-    if (v.inRectangle(bounds) && sectors[v] > -1)
+    if (v.inRectangle(bounds) && contains(v))
       neighbors.insert(sectors[v]);
   if (neighbors.size() == 0)
     setSector(pos, getNewSector());
@@ -57,7 +62,7 @@ void Sectors::add(Vec2 pos) {
 
 void Sectors::setSector(Vec2 pos, int sector) {
   CHECK(sectors[pos] != sector);
-  if (sectors[pos] > -1)
+  if (contains(pos))
     --sizes[sectors[pos]];
   sectors[pos] = sector;
   ++sizes[sector];
@@ -66,6 +71,14 @@ void Sectors::setSector(Vec2 pos, int sector) {
 int Sectors::getNewSector() {
   sizes.push_back(0);
   return sizes.size() - 1;
+}
+
+int Sectors::getNumSectors() const {
+  int ret = 0;
+  for (int s : sizes)
+    if (s > 0)
+      ++ret;
+  return ret;
 }
 
 void Sectors::join(Vec2 pos1, int sector) {
@@ -83,20 +96,53 @@ void Sectors::join(Vec2 pos1, int sector) {
   }
 }
 
+static DirtyTable<int> bfsTable(Level::getMaxBounds(), -1);
+
 void Sectors::remove(Vec2 pos) {
-  if (sectors[pos] == -1)
+  if (!contains(pos))
     return;
-  int curNumber = sizes[sectors[pos]];
   --sizes[sectors[pos]];
   sectors[pos] = -1;
-  int maxSector = sizes.size() - 1;
-  vector<int> newSizes;
+  vector<queue<Vec2>> queues;
+  bfsTable.clear();
+  int numNeighbor = 0;
   for (Vec2 v : pos.neighbors8())
-    if (v.inRectangle(bounds) && sectors[v] > -1 && sectors[v] <= maxSector) {
-      join(v, getNewSector());
-      newSizes.push_back(sizes[sectors[v]]);
+    if (v.inRectangle(bounds) && contains(v)) {
+      bfsTable.setValue(v, numNeighbor++);
+      queues.emplace_back();
+      queues.back().push(v);
     }
-  Debug() << "Sectors size " << curNumber << " split into " << newSizes;
+  if (numNeighbor == 0)
+    return;
+  DisjointSets sets(numNeighbor);
+  int lastNeighbor = -1;
+  while (1) {
+    vector<int> activeQueues;
+    for (auto& q : queues)
+      if (!q.empty()) {
+        Vec2 v = q.front();
+        int myNum = bfsTable.getValue(v);
+        activeQueues.push_back(myNum);
+        lastNeighbor = myNum;
+        q.pop();
+        for (Vec2 w : v.neighbors8())
+          if (w.inRectangle(bounds) && contains(w) && w != pos) {
+            if (!bfsTable.isDirty(w)) {
+              bfsTable.setValue(w, myNum);
+              q.push(w);
+            } else
+              sets.join(bfsTable.getDirtyValue(w), myNum);
+          }
+      }
+    if (sets.same(activeQueues)) {
+      break;
+    }
+  }
+  int maxSector = sizes.size() - 1;
+  for (Vec2 v : pos.neighbors8())
+    if (v.inRectangle(bounds) && sectors[v] <= maxSector && contains(v) &&
+        !sets.same(bfsTable.getDirtyValue(v), lastNeighbor))
+      join(v, getNewSector());
 }
 
 using namespace std;

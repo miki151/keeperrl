@@ -39,7 +39,9 @@ Debug::Debug(DebugType t, const string& msg, int line)
 static ofstream output;
 
 void Debug::init() {
+#ifndef RELEASE
   output.open("log.out");
+#endif
 }
 
 void Debug::add(const string& a) {

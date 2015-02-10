@@ -24,6 +24,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::SHOW_MAP, 0},
   {OptionId::SMOOTH_MOVEMENT, 1},
   {OptionId::FULLSCREEN, 0},
+  {OptionId::ONLINE, 1},
   {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
@@ -39,6 +40,7 @@ const map<OptionId, string> names {
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::SMOOTH_MOVEMENT, "Smooth movement"},
   {OptionId::FULLSCREEN, "Fullscreen"},
+  {OptionId::ONLINE, "Online exchange of dungeons and highscores"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
@@ -54,6 +56,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::KEEP_SAVEFILES,
       OptionId::SMOOTH_MOVEMENT,
       OptionId::FULLSCREEN,
+      OptionId::ONLINE,
 #ifndef RELEASE
       OptionId::SHOW_MAP,
 #endif
@@ -124,6 +127,7 @@ string Options::getValueString(OptionId id, Options::Value value) {
     case OptionId::SHOW_MAP:
     case OptionId::FAST_IMMIGRATION:
     case OptionId::STARTING_RESOURCE:
+    case OptionId::ONLINE:
     case OptionId::START_WITH_NIGHT: return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_NAME: {

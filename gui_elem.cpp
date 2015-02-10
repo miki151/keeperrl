@@ -111,6 +111,15 @@ PGuiElem GuiFactory::repeatedPattern(Texture& tex) {
         }));
 }
 
+PGuiElem GuiFactory::sprite(Texture& tex, double height) {
+  return PGuiElem(new DrawCustom(
+        [&tex, height] (Renderer& r, Rectangle bounds) {
+          Vec2 size(tex.getSize().x, tex.getSize().y);
+          r.drawSprite(bounds.getTopLeft(), Vec2(0, 0), size, tex, Color(255, 255, 255, 255),
+              Vec2(height * size.x / size.y, height));
+        }));
+}
+
 PGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset, double alpha) {
   return PGuiElem(new DrawCustom(
         [&tex, align, offset, alpha, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
@@ -768,20 +777,21 @@ PGuiElem GuiFactory::mouseHighlight2(PGuiElem elem) {
 
 class ScrollBar : public GuiLayout {
   public:
-  ScrollBar(PGuiElem b, VerticalList* _content, int butHeight, int vMarg, int* scrollP, int contentH)
-      : GuiLayout(makeVec<PGuiElem>(std::move(b))), buttonHeight(butHeight), vMargin(vMarg), scrollPos(scrollP),
+  ScrollBar(PGuiElem b, VerticalList* _content, Vec2 butSize, int vMarg, double* scrollP, int contentH)
+      : GuiLayout(makeVec<PGuiElem>(std::move(b))), buttonSize(butSize), vMargin(vMarg), scrollPos(scrollP),
       content(_content), contentHeight(contentH) {
     listSize = content->getSize();
   }
 
   virtual Rectangle getElemBounds(int num) override {
-    Vec2 topLeft(9 + getBounds().getPX(), calcButHeight());
-    return Rectangle(topLeft, topLeft + Vec2(getBounds().getW(), buttonHeight));
+    Vec2 center(getBounds().middle().x, calcButHeight());
+    return Rectangle(center - buttonSize / 2, center + buttonSize / 2);
   }
 
   double calcPos(int mouseHeight) {
     return max(0.0, min(1.0, 
-          double(mouseHeight - getBounds().getPY() - vMargin) / (getBounds().getH() - 2 * vMargin - buttonHeight)));
+          double(mouseHeight - getBounds().getPY() - vMargin - buttonSize.y / 2)
+              / (getBounds().getH() - 2 * vMargin - buttonSize.y)));
   }
 
   int scrollLength() {
@@ -789,20 +799,23 @@ class ScrollBar : public GuiLayout {
   }
 
   int calcButHeight() {
-    int ret = min<double>(getBounds().getKY() - buttonHeight - vMargin,
-        double(getBounds().getPY()) + vMargin + *scrollPos * double(getBounds().getH() - buttonHeight - 2 * vMargin)
-      / double(scrollLength()));
+    int ret = min<double>(getBounds().getKY() - buttonSize.y / 2 - vMargin,
+        double(getBounds().getPY()) + buttonSize.y / 2 + vMargin + *scrollPos
+            * double(getBounds().getH() - buttonSize.y - 2 * vMargin)
+            / double(scrollLength()));
     return ret;
   }
 
   virtual bool onLeftClick(Vec2 v) override {
+    if (v.inRectangle(getElemBounds(0))) {
+      held = v.y - calcButHeight();
+      return true;
+    } else
     if (v.inRectangle(getBounds())) {
       if (v.y <= getBounds().getPY() + vMargin)
-        *scrollPos = max(0, *scrollPos - 1);
+        *scrollPos = max<double>(0, *scrollPos - 1);
       else if (v.y >= getBounds().getKY() - vMargin)
-        *scrollPos = min(scrollLength(), *scrollPos + 1);
-      else if (v.inRectangle(getElemBounds(0)))
-        held = v.y - calcButHeight();
+        *scrollPos = min<double>(scrollLength(), *scrollPos + 1);
       else
         *scrollPos = scrollLength() * calcPos(v.y);
       return true;
@@ -824,9 +837,9 @@ class ScrollBar : public GuiLayout {
   }
 
   private:
-  int buttonHeight;
+  Vec2 buttonSize;
   int vMargin;
-  int* scrollPos;
+  double* scrollPos;
   optional<int> held;
   VerticalList* content;
   int listSize;
@@ -835,7 +848,7 @@ class ScrollBar : public GuiLayout {
 
 class Scrollable : public GuiElem {
   public:
-  Scrollable(PVerticalList c, int cHeight, int* scrollP)
+  Scrollable(PVerticalList c, int cHeight, double* scrollP)
       : content(std::move(c)), contentHeight(cHeight), scrollPos(scrollP) {
   }
 
@@ -843,8 +856,8 @@ class Scrollable : public GuiElem {
     return content->getElemsHeight(getScrollPos());
   }
 
-  int getScrollPos() {
-    return min(*scrollPos, content->getLastTopElem(getBounds().getH()));
+  double getScrollPos() {
+    return min<double>(*scrollPos, content->getLastTopElem(getBounds().getH()));
   }
 
   void onRefreshBounds() override {
@@ -892,7 +905,7 @@ class Scrollable : public GuiElem {
   private:
   PVerticalList content;
   int contentHeight;
-  int* scrollPos;
+  double* scrollPos;
 };
 
 const int border2Width = 6;
@@ -1000,11 +1013,11 @@ PGuiElem GuiFactory::getScrollbar() {
 }
 
 PGuiElem GuiFactory::getScrollButton() {
-  return sprite(get(TexId::SCROLL_BUTTON), Alignment::TOP_RIGHT);
+  return sprite(get(TexId::SCROLL_BUTTON), Alignment::CENTER);
 }
 
-int GuiFactory::getScrollButtonSize() {
-  return get(TexId::SCROLL_BUTTON).getSize().y;
+Vec2 GuiFactory::getScrollButtonSize() {
+  return Vec2(get(TexId::SCROLL_BUTTON).getSize().x, get(TexId::SCROLL_BUTTON).getSize().y);
 }
 
 class Conditional : public GuiLayout {
@@ -1028,7 +1041,7 @@ PGuiElem GuiFactory::conditional(PGuiElem elem, PGuiElem alter, function<bool(Gu
       PGuiElem(new Conditional(std::move(alter), [=] (GuiElem* e) { return !f(e);})));
 }
 
-PGuiElem GuiFactory::scrollable(PGuiElem content, int contentHeight, int* scrollPos) {
+PGuiElem GuiFactory::scrollable(PGuiElem content, int contentHeight, double* scrollPos) {
   VerticalList* list = dynamic_cast<VerticalList*>(content.release());
   CHECK(list) << "Scrolling only implemented for vertical list";
   PGuiElem scrollable(new Scrollable(PVerticalList(list), contentHeight, scrollPos));
@@ -1048,8 +1061,8 @@ PGuiElem GuiFactory::background(Color c) {
   return stack(rectangle(c), repeatedPattern(get(TexId::BACKGROUND_PATTERN)));
 }
 
-PGuiElem GuiFactory::highlight(Color c) {
-  return margins(sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED, false, true), -25, 0, 0, 0);
+PGuiElem GuiFactory::highlight(double height) {
+  return margins(sprite(get(TexId::MAIN_MENU_HIGHLIGHT), height), -25, 0, 0, 0);
 }
 
 PGuiElem GuiFactory::mainMenuHighlight() {

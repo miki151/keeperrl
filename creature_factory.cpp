@@ -1277,7 +1277,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.weight = 100;
           c.undead = true;
-          c.chatReactionFriendly = "curses all humans";
+          c.chatReactionFriendly = "\"All men be cursed!\"";
           c.chatReactionHostile = "\"Die!\"";
           c.spawnType = SpawnType::UNDEAD;
           c.skills.insert(SkillId::NIGHT_VISION);

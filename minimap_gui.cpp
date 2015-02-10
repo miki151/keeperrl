@@ -67,6 +67,7 @@ MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
 
 void MinimapGui::clear() {
   refreshBuffer = true;
+  info = MinimapInfo {};
 }
 
 bool MinimapGui::onLeftClick(Vec2 v) {

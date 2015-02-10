@@ -23,8 +23,6 @@ class Singleton {
   public:
   static T* get(E);
   static vector<T*> getAll();
-  static void set(E, T*);
-  static bool exists(E);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -37,6 +35,10 @@ class Singleton {
   E getId() const;
 
   SERIAL_CHECKER;
+
+  protected:
+  static void set(E, T*);
+  static void clearAll();
 
   private:
   static EnumMap<E, unique_ptr<T>> elems;

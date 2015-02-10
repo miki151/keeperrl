@@ -470,90 +470,94 @@ void PlayerControl::minionView(View* view, Creature* creature, int prevIndex) {
   minionView(view, creature, *index);
 }
 
-void PlayerControl::handleEquipment(View* view, Creature* creature, int prevItem) {
+void PlayerControl::handleEquipment(View* view, Creature* creature) {
   if (!creature->isHumanoid()) {
     view->presentText("", creature->getName().the() + " can't use any equipment.");
     return;
   }
-  vector<EquipmentSlot> slots;
-  for (auto slot : Equipment::slotTitles)
-    slots.push_back(slot.first);
-  vector<View::ListElem> list;
-  vector<Item*> ownedItems = getCollective()->getAllItems([this, creature](const Item* it) {
-      return getCollective()->getMinionEquipment().getOwner(it) == creature; });
-  vector<Item*> slotItems;
-  vector<EquipmentSlot> slotIndex;
-  for (auto slot : slots) {
-    list.emplace_back(Equipment::slotTitles.at(slot), View::TITLE);
-    vector<Item*> items;
-    for (Item* it : ownedItems)
-      if (it->canEquip() && it->getEquipmentSlot() == slot)
-        items.push_back(it);
-    for (int i = creature->getEquipment().getMaxItems(slot); i < items.size(); ++i)
-      // a rare occurence that minion owns too many items of the same slot,
-      //should happen only when an item leaves the fortress and then is braught back
-      getCollective()->getMinionEquipment().discard(items[i]);
-    append(slotItems, items);
-    append(slotIndex, vector<EquipmentSlot>(items.size(), slot));
-    for (Item* item : items) {
-      removeElement(ownedItems, item);
-      list.push_back(item->getNameAndModifiers() + (creature->getEquipment().isEquiped(item) 
-            ? " (equiped)" : " (pending)"));
+  int index = 0;
+  double scrollPos = 0;
+  while (1) {
+    vector<EquipmentSlot> slots;
+    for (auto slot : Equipment::slotTitles)
+      slots.push_back(slot.first);
+    vector<View::ListElem> list;
+    vector<Item*> ownedItems = getCollective()->getAllItems([this, creature](const Item* it) {
+        return getCollective()->getMinionEquipment().getOwner(it) == creature; });
+    vector<Item*> slotItems;
+    vector<EquipmentSlot> slotIndex;
+    for (auto slot : slots) {
+      list.emplace_back(Equipment::slotTitles.at(slot), View::TITLE);
+      vector<Item*> items;
+      for (Item* it : ownedItems)
+        if (it->canEquip() && it->getEquipmentSlot() == slot)
+          items.push_back(it);
+      for (int i = creature->getEquipment().getMaxItems(slot); i < items.size(); ++i)
+        // a rare occurence that minion owns too many items of the same slot,
+        //should happen only when an item leaves the fortress and then is braught back
+        getCollective()->getMinionEquipment().discard(items[i]);
+      append(slotItems, items);
+      append(slotIndex, vector<EquipmentSlot>(items.size(), slot));
+      for (Item* item : items) {
+        removeElement(ownedItems, item);
+        list.push_back(item->getNameAndModifiers() + (creature->getEquipment().isEquiped(item) 
+              ? " (equiped)" : " (pending)"));
+      }
+      if (creature->getEquipment().getMaxItems(slot) > items.size()) {
+        list.push_back("[Equip item]");
+        slotIndex.push_back(slot);
+        slotItems.push_back(nullptr);
+      }
     }
-    if (creature->getEquipment().getMaxItems(slot) > items.size()) {
-      list.push_back("[Equip item]");
-      slotIndex.push_back(slot);
-      slotItems.push_back(nullptr);
-    }
+    list.emplace_back(View::ListElem("Consumables", View::TITLE));
+    vector<pair<string, vector<Item*>>> consumables = Item::stackItems(ownedItems,
+        [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
+    for (auto elem : consumables)
+      list.push_back(elem.first);
+    list.push_back("[Add item]");
+    optional<int> newIndex = model->getView()->chooseFromList(creature->getName().bare() + "'s equipment", list,
+        index, View::NORMAL_MENU, &scrollPos);
+    if (!newIndex)
+      return;
+    index = *newIndex;
+    if (index == slotItems.size() + consumables.size()) { // [Add item]
+      int itIndex = 0;
+      double scrollPos = 0;
+      while (1) {
+        const Item* chosenItem = chooseEquipmentItem(view, {}, [&](const Item* it) {
+            return getCollective()->getMinionEquipment().getOwner(it) != creature && !it->canEquip()
+            && getCollective()->getMinionEquipment().needs(creature, it, true); }, &itIndex, &scrollPos);
+        if (chosenItem)
+          getCollective()->getMinionEquipment().own(creature, chosenItem);
+        else
+          break;
+      }
+    } else
+      if (index >= slotItems.size()) {  // discard a consumable item
+        getCollective()->getMinionEquipment().discard(consumables[index - slotItems.size()].second[0]);
+      } else
+        if (Item* item = slotItems[index])  // discard equipment
+          getCollective()->getMinionEquipment().discard(item);
+        else { // add new equipment
+          vector<Item*> currentItems = creature->getEquipment().getItem(slotIndex[index]);
+          const Item* chosenItem = chooseEquipmentItem(view, currentItems, [&](const Item* it) {
+              return getCollective()->getMinionEquipment().getOwner(it) != creature
+              && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slotIndex[index]; });
+          if (chosenItem) {
+            if (Creature* c = const_cast<Creature*>(getCollective()->getMinionEquipment().getOwner(chosenItem)))
+              c->removeEffect(LastingEffect::SLEEP);
+            if (chosenItem->getEquipmentSlot() != EquipmentSlot::WEAPON
+                || chosenItem->getMinStrength() <= creature->getAttr(AttrType::STRENGTH)
+                || view->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " + creature->getName().the() 
+                  + ", and will incur an accuracy penaulty.\n Do you want to continue?"))
+              getCollective()->getMinionEquipment().own(creature, chosenItem);
+          }
+        }
   }
-  list.emplace_back(View::ListElem("Consumables", View::TITLE));
-  vector<pair<string, vector<Item*>>> consumables = Item::stackItems(ownedItems,
-      [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
-  for (auto elem : consumables)
-    list.push_back(elem.first);
-  list.push_back("[Add item]");
-  optional<int> newIndex = model->getView()->chooseFromList(creature->getName().bare() + "'s equipment", list, prevItem);
-  if (!newIndex)
-    return;
-  int index = *newIndex;
-  if (index == slotItems.size() + consumables.size()) { // [Add item]
-    int itIndex = 0;
-    int scrollPos = 0;
-    while (1) {
-      const Item* chosenItem = chooseEquipmentItem(view, {}, [&](const Item* it) {
-          return getCollective()->getMinionEquipment().getOwner(it) != creature && !it->canEquip()
-              && getCollective()->getMinionEquipment().needs(creature, it, true); }, &itIndex, &scrollPos);
-      if (chosenItem)
-        getCollective()->getMinionEquipment().own(creature, chosenItem);
-      else
-        break;
-    }
-  } else
-  if (index >= slotItems.size()) {  // discard a consumable item
-    getCollective()->getMinionEquipment().discard(consumables[index - slotItems.size()].second[0]);
-  } else
-  if (Item* item = slotItems[index])  // discard equipment
-    getCollective()->getMinionEquipment().discard(item);
-  else { // add new equipment
-    vector<Item*> currentItems = creature->getEquipment().getItem(slotIndex[index]);
-    const Item* chosenItem = chooseEquipmentItem(view, currentItems, [&](const Item* it) {
-        return getCollective()->getMinionEquipment().getOwner(it) != creature
-            && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slotIndex[index]; });
-    if (chosenItem) {
-      if (Creature* c = const_cast<Creature*>(getCollective()->getMinionEquipment().getOwner(chosenItem)))
-        c->removeEffect(LastingEffect::SLEEP);
-      if (chosenItem->getEquipmentSlot() != EquipmentSlot::WEAPON
-          || chosenItem->getMinStrength() <= creature->getAttr(AttrType::STRENGTH)
-          || view->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " + creature->getName().the() 
-            + ", and will incur an accuracy penaulty.\n Do you want to continue?"))
-        getCollective()->getMinionEquipment().own(creature, chosenItem);
-    }
-  }
-  handleEquipment(view, creature, index);
 }
 
 Item* PlayerControl::chooseEquipmentItem(View* view, vector<Item*> currentItems, ItemPredicate predicate,
-    int* prevIndex, int* scrollPos) const {
+    int* prevIndex, double* scrollPos) const {
   vector<View::ListElem> options;
   vector<Item*> currentItemVec;
   if (!currentItems.empty())
@@ -750,7 +754,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
       case BuildInfo::DISPATCH: {
              buttons.push_back({
                  ViewObject(ViewId::IMP, ViewLayer::LARGE_ITEM, ""),
-                 "Dispatch imp", none, "", ""});
+                 "Prioritize task", none, "", ""});
            }
            break;
       case BuildInfo::TRAP: {
@@ -840,7 +844,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.payoutTimeRemaining = -1;
   info.nextPayout = getCollective()->getNextSalaries();
   for (Creature* c : getCollective()->getCreaturesAnyOf(
-        {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER})) {
+        {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER})) {
     if (getCollective()->isInCombat(c))
       info.tasks[c->getUniqueId()] = "fighting";
     info.minions.push_back(c);
@@ -871,6 +875,13 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (TechInfo tech : getTechInfo())
     info.techButtons.push_back(tech.button);
   gameInfo.messageBuffer = messages;
+  info.taskMap.clear();
+  for (const Task* task : getCollective()->getTaskMap().getAllTasks()) {
+    optional<UniqueEntity<Creature>::Id> creature;
+    if (const Creature *c = getCollective()->getTaskMap().getOwner(task))
+      creature = c->getUniqueId();
+    info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
+  }
 }
 
 void PlayerControl::addMessage(const PlayerMessage& msg) {
@@ -897,7 +908,7 @@ void PlayerControl::initialize() {
 }
 
 void PlayerControl::update(Creature* c) {
-  if (contains(getCollective()->getCreatures(), c)) {
+  if (!retired && contains(getCollective()->getCreatures(), c)) {
     vector<Vec2> visibleTiles = getCollective()->getLevel()->getVisibleTiles(c);
     visibilityMap.update(c, visibleTiles);
     for (Vec2 pos : visibleTiles) {
@@ -1347,17 +1358,9 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
   }
 }
 
-bool PlayerControl::tryLockingDoor(Vec2 pos) {
-  if (getCollective()->getConstructions().count(pos)) {
-    Square* square = getLevel()->getSafeSquare(pos);
-    if (square->canLock()) {
-      square->lock();
-      getCollective()->updateSectors(pos);
-      updateSquareMemory(pos);
-      return true;
-    }
-  }
-  return false;
+void PlayerControl::tryLockingDoor(Vec2 pos) {
+  if (getCollective()->tryLockingDoor(pos))
+    updateSquareMemory(pos);
 }
 
 double PlayerControl::getTime() const {
@@ -1543,7 +1546,7 @@ bool PlayerControl::isEnemy(const Creature* c) const {
 }
 
 void PlayerControl::onPickupEvent(const Creature* c, const vector<Item*>& items) {
-  if (c == getControlled())
+  if (c == getControlled() && !getCollective()->hasTrait(c, MinionTrait::WORKER))
     getCollective()->ownItems(c, items);
 }
 
@@ -1591,11 +1594,13 @@ void PlayerControl::addImp(Creature* c) {
   getCollective()->addCreature(c, {MinionTrait::WORKER, MinionTrait::NO_EQUIPMENT});
 }
 
-void PlayerControl::onConqueredLand(const string& name) {
+void PlayerControl::onConqueredLand() {
   if (retired)
     return;
-  model->conquered(*getKeeper()->getFirstName() + " the Keeper", name, getCollective()->getKills(),
+  model->conquered(*getKeeper()->getFirstName(), getCollective()->getKills(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
+  model->getView()->presentText("", "When you are ready, retire your dungeon and share it online."
+      "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
 }
 
 void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
@@ -1688,6 +1693,13 @@ void PlayerControl::updateSquareMemory(Vec2 pos) {
 
 void PlayerControl::onConstructed(Vec2 pos, SquareType type) {
   updateSquareMemory(pos);
+  if (type == SquareId::FLOOR) {
+    Vec2 visRadius(3, 3);
+    for (Vec2 v : Rectangle(pos - visRadius, pos + visRadius + Vec2(1, 1)).intersection(getLevel()->getBounds())) {
+      getCollective()->addKnownTile(v);
+      updateSquareMemory(v);
+    }
+  }
 }
 
 void PlayerControl::updateVisibleCreatures(Rectangle range) {

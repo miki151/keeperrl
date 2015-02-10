@@ -98,14 +98,14 @@ template optional<double> fromStringSafe<double>(const string&);
 
 template <class T>
 string toString(const T& t){
-  std::stringstream ss;
+  stringstream ss;
   ss << t;
   return ss.str();
 }
 
 template <>
 string toString(const Vec2& t){
-  std::stringstream ss;
+  stringstream ss;
   ss << "(" << t.x << "," << t.y << ")";
   return ss.str();
 }
@@ -820,3 +820,39 @@ const DirSet::Iter& DirSet::Iter::operator++ () {
   return *this;
 }
 
+DisjointSets::DisjointSets(int s) : father(s), size(s, 1) {
+  for (int i : Range(s))
+    father[i] = i;
+}
+
+void DisjointSets::join(int i, int j) {
+  i = getSet(i);
+  j = getSet(j);
+  if (size[i] < size[j])
+    swap(i, j);
+  father[j] = i;
+  size[i] += size[j];
+}
+
+bool DisjointSets::same(int i, int j) {
+  return getSet(i) == getSet(j);
+}
+
+bool DisjointSets::same(const vector<int>& v) {
+  for (int i : All(v))
+    if (!same(v[i], v[0]))
+      return false;
+  return true;
+}
+
+int DisjointSets::getSet(int i) {
+  int ret = i;
+  while (father[ret] != ret)
+    ret = father[ret];
+  while (i != ret) {
+    int j = father[i];
+    father[i] = ret;
+    i = j;
+  }
+  return ret;
+}

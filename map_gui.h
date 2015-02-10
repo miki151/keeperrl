@@ -48,7 +48,7 @@ class MapGui : public GuiElem {
   virtual void onMouseRelease() override;
   virtual void onKeyPressed2(Event::KeyEvent) override;
 
-  void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI);
+  void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, bool showMorale);
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void setHint(const string&);
@@ -127,6 +127,7 @@ class MapGui : public GuiElem {
   ViewIdMap connectionMap;
   bool mouseUI = false;
   vector<pair<Rectangle, UniqueEntity<Creature>::Id>> creatureMap;
+  bool showMorale;
 };
 
 #endif

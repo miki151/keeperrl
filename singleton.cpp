@@ -52,11 +52,6 @@ vector<T*> Singleton<T, E>::getAll() {
 }
 
 template<class T, class E>
-bool Singleton<T, E>::exists(E id) {
-  return elems[id] != nullptr;
-}
-
-template<class T, class E>
 void Singleton<T, E>::set(E id, T* q) {
   CHECK(!elems[id]);
   elems[id].reset(q);
@@ -66,6 +61,12 @@ void Singleton<T, E>::set(E id, T* q) {
 template<class T, class E>
 E Singleton<T, E>::getId() const {
   return id;
+}
+
+template<class T, class E>
+void Singleton<T, E>::clearAll() {
+  for (E elem : EnumAll<E>())
+    elems[elem].reset();
 }
 
 SERIALIZABLE_TMPL(Singleton, Technology, TechId);

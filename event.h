@@ -54,7 +54,7 @@ class EventListener {
   EVENT(ExplosionEvent, const Level* level, Vec2 pos);
   EVENT(TrapTriggerEvent, const Level*, Vec2 pos);
   EVENT(TrapDisarmEvent, const Level*, const Creature*, Vec2 pos);
-  EVENT(SquareReplacedEvent, const Level*, Vec2 pos);
+  EVENT(SquareDestroyedEvent, const Level*, Vec2 pos);
   EVENT(ChangeLevelEvent, const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos);
   EVENT(AlarmEvent, const Level*, Vec2 pos);
   EVENT(TechBookEvent, Technology*);

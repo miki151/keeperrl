@@ -82,7 +82,6 @@ class CollectiveConfig {
   int getPayoutTime() const;
   double getPayoutMultiplier() const;
   bool getStripSpawns() const;
-  bool getKeepSectors() const;
   bool getFetchItems() const;
   bool getEnemyPositions() const;
   bool getWarnings() const;

@@ -336,7 +336,6 @@ void WindowView::rebuildGui() {
         break;
   }
   resetMapBounds();
-  CHECK(currentThreadId() != renderThreadId);
   int bottomOffset = 15;
   int leftMargin = 20;
   int rightMargin = 20;
@@ -469,9 +468,8 @@ void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
   mapGui->setSpriteMode(currentTileLayout.sprites);
   bool spectator = gameInfo.infoType == GameInfo::InfoType::SPECTATOR;
   mapGui->updateObjects(collective, mapLayout, options->getBoolValue(OptionId::SMOOTH_MOVEMENT)
-      && (currentTileLayout.sprites || spectator), !spectator);
+      && (currentTileLayout.sprites || spectator), !spectator, guiBuilder.showMorale());
   updateMinimap(collective);
-  rebuildGui();
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);
 }
@@ -496,6 +494,8 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
 void WindowView::refreshView() {
   {
     RenderLock lock(renderMutex);
+    if (!wasRendered)
+      rebuildGui();
     wasRendered = true;
     CHECK(currentThreadId() == renderThreadId);
     if (gameReady)
@@ -559,9 +559,9 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
   RenderLock lock(renderMutex);
   TempClockPause pause(clock);
   gameInfo.messageBuffer = { PlayerMessage(message) };
-  rebuildGui();
   SyncQueue<optional<Vec2>> returnQueue;
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
+  rebuildGui();
   refreshScreen();
   do {
     Event event;
@@ -636,7 +636,7 @@ optional<int> WindowView::getNumber(const string& title, int min, int max, int i
 }
 
 optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
-    MenuType type, int* scrollPos, optional<UserInputId> exitAction) {
+    MenuType type, double* scrollPos, optional<UserInputId> exitAction) {
   return chooseFromListInternal(title, options, index, type, scrollPos, exitAction, none, {});
 }
 
@@ -861,7 +861,7 @@ View::GameTypeChoice WindowView::chooseGameType() {
 }
 
 optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
-    MenuType menuType, int* scrollPos1, optional<UserInputId> exitAction, optional<Event::KeyEvent> exitKey,
+    MenuType menuType, double* scrollPos1, optional<UserInputId> exitAction, optional<Event::KeyEvent> exitKey,
     vector<Event::KeyEvent> shortCuts) {
   if (!useTiles && menuType == MenuType::MAIN_MENU)
     menuType = MenuType::MAIN_MENU_NO_TILES;
@@ -876,7 +876,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int contentHeight;
   int choice = -1;
   int count = 0;
-  int* scrollPos = scrollPos1;
+  double* scrollPos = scrollPos1;
   int index = index1;
   vector<int> indexes(options.size());
   vector<int> optionIndexes;
@@ -892,7 +892,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   }
   if (optionIndexes.empty())
     optionIndexes.push_back(0);
-  int localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
+  double localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
   PGuiElem stuff = drawListGui(title, options, menuType, contentHeight, &index, &choice);
@@ -923,7 +923,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
       if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
         continue;
       if (event.type == Event::MouseWheelMoved)
-          *scrollPos = min<int>(options.size() - 1, max(0, *scrollPos - event.mouseWheel.delta));
+          *scrollPos = min<double>(options.size() - 1, max<double>(0, *scrollPos - event.mouseWheel.delta));
       if (event.type == Event::KeyPressed)
         switch (event.key.code) {
           case Keyboard::Numpad8:
@@ -932,7 +932,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
               index = (index - 1 + count) % count;
               *scrollPos = getScrollPos(optionIndexes[index], options.size());
             } else
-              *scrollPos = max(0, *scrollPos - 1);
+              *scrollPos = max<double>(0, *scrollPos - 1);
             break;
           case Keyboard::Numpad2:
           case Keyboard::Down:
@@ -955,15 +955,14 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   return returnQueue.pop();
 }
 
-static vector<string> breakText(const string& text) {
+vector<string> WindowView::breakText(const string& text, int maxWidth) {
   if (text.empty())
     return {""};
-  int maxWidth = 80;
   vector<string> rows;
   for (string line : split(text, {'\n'})) {
     rows.push_back("");
     for (string word : split(line, {' '}))
-      if (rows.back().size() + word.size() + 1 <= maxWidth)
+      if (renderer.getTextLength(rows.back() + ' ' + word) <= maxWidth)
         rows.back().append((rows.back().size() > 0 ? " " : "") + word);
       else
         rows.push_back(word);
@@ -973,7 +972,7 @@ static vector<string> breakText(const string& text) {
 
 void WindowView::presentText(const string& title, const string& text) {
   TempClockPause pause(clock);
-  presentList(title, View::getListElem(breakText(text)), false);
+  presentList(title, View::getListElem({text}), false);
 }
 
 void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu,
@@ -982,15 +981,15 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
   for (ListElem& e : conv)
     if (e.getMod() == View::NORMAL)
       e.setMod(View::TEXT);
-  int scrollPos = scrollDown ? options.size() - 1 : 0;
+  double scrollPos = scrollDown ? options.size() - 1 : 0;
   chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, none, {});
 }
 
 const double menuLabelVPadding = 0.15;
 
-vector<PGuiElem> WindowView::getMultiLine(const string& text, Color color, View::MenuType menuType) {
+vector<PGuiElem> WindowView::getMultiLine(const string& text, Color color, View::MenuType menuType, int maxWidth) {
   vector<PGuiElem> ret;
-  for (const string& s : breakText(text)) {
+  for (const string& s : breakText(text, maxWidth)) {
     if (menuType != View::MenuType::MAIN_MENU)
       ret.push_back(gui.label(s, color));
     else
@@ -1004,10 +1003,10 @@ PGuiElem WindowView::menuElemMargins(PGuiElem elem) {
   return gui.margins(std::move(elem), 10, 3, 10, 0);
 }
 
-PGuiElem WindowView::getHighlight(View::MenuType type, const string& label) {
+PGuiElem WindowView::getHighlight(View::MenuType type, const string& label, int height) {
   switch (type) {
     case View::MAIN_MENU: return menuElemMargins(gui.mainMenuLabel(label, menuLabelVPadding));
-    default: return gui.highlight(gui.foreground1);
+    default: return gui.highlight(height);
   }
 }
 
@@ -1016,6 +1015,7 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
   vector<PGuiElem> lines;
   vector<int> heights;
   int lineHeight = 30;
+  int brokenLineHeight = 24;
   if (!title.empty()) {
     lines.push_back(gui.label(capitalFirst(title), colors[ColorId::WHITE]));
     heights.push_back(lineHeight);
@@ -1026,10 +1026,16 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
     heights.push_back(lineHeight / 2);
   }
   int numActive = 0;
-  int secColumn = 300;
-  for (auto& elem : options)
-    secColumn = max(secColumn, renderer.getTextLength(elem.getText()) + 50);
-  secColumn = min(secColumn, getMenuPosition(menuType).getKX() - 100);
+  int secColumnWidth = 0;
+  int columnWidth = 300;
+  for (auto& elem : options) {
+    columnWidth = max(columnWidth, renderer.getTextLength(elem.getText()) + 50);
+    if (!elem.getSecondColumn().empty())
+      secColumnWidth = max(secColumnWidth, 80 + renderer.getTextLength(elem.getSecondColumn()));
+  }
+  columnWidth = min(columnWidth, getMenuPosition(menuType).getW() - secColumnWidth - 140);
+  if (menuType == MAIN_MENU)
+    columnWidth = 1000000;
   for (int i : All(options)) {
     Color color;
     switch (options[i].getMod()) {
@@ -1038,22 +1044,27 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       case View::TEXT:
       case View::NORMAL: color = gui.text; break;
     }
-    vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType);
-    heights.push_back(label1.size() * lineHeight);
+    vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, columnWidth);
+    if (options.size() == 1 && label1.size() > 1) { // hacky way of checking that we display a wall of text
+      heights = vector<int>(label1.size(), lineHeight);
+      lines = std::move(label1);
+      break;
+    }
+    heights.push_back((label1.size() - 1) * brokenLineHeight + lineHeight);
     PGuiElem line;
     if (menuType != MAIN_MENU)
-      line = gui.verticalList(std::move(label1), lineHeight, 0);
+      line = gui.verticalList(std::move(label1), brokenLineHeight, 0);
     else
       line = std::move(getOnlyElement(label1));
     if (!options[i].getSecondColumn().empty())
       line = gui.horizontalList(makeVec<PGuiElem>(std::move(line),
-            gui.label(options[i].getSecondColumn())), secColumn, 0);
+            gui.label(options[i].getSecondColumn())), columnWidth + 80, 0);
     lines.push_back(menuElemMargins(std::move(line)));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = gui.stack(makeVec<PGuiElem>(
             gui.button([=]() { *choice = numActive; }),
             std::move(lines.back()),
-            gui.mouseHighlight(getHighlight(menuType, options[i].getText()), numActive, highlight)));
+            gui.mouseHighlight(getHighlight(menuType, options[i].getText(), lineHeight), numActive, highlight)));
       ++numActive;
     }
   }
@@ -1187,6 +1198,7 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       }
       break; }
     case Event::MouseButtonPressed: {
+      lockKeyboard = true;
       Vec2 clickPos(event.mouseButton.x, event.mouseButton.y);
       for (GuiElem* elem : guiElems) {
         if (event.mouseButton.button == sf::Mouse::Right)

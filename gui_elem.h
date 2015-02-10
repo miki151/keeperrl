@@ -81,7 +81,7 @@ class GuiFactory {
   PGuiElem mouseHighlight2(PGuiElem highlight);
   PGuiElem mouseHighlightGameChoice(PGuiElem, View::GameTypeChoice my,
       optional<View::GameTypeChoice>& highlight);
-  PGuiElem scrollable(PGuiElem content, int contentHeight, int* scrollPos);
+  PGuiElem scrollable(PGuiElem content, int contentHeight, double* scrollPos);
   PGuiElem getScrollButton();
   PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
@@ -90,6 +90,7 @@ class GuiFactory {
       CENTER_STRETCHED};
   PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
       Vec2 offset = Vec2(0, 0), double alpha = 1);
+  PGuiElem sprite(Texture&, double scale);
 
   enum class TexId {
     SCROLLBAR,
@@ -135,7 +136,7 @@ class GuiFactory {
   PGuiElem sprite(TexId, Alignment);
   PGuiElem repeatedPattern(Texture& tex);
   PGuiElem background(Color);
-  PGuiElem highlight(Color);
+  PGuiElem highlight(double height);
   PGuiElem mainMenuHighlight();
   PGuiElem insideBackground(PGuiElem content);
   PGuiElem window(PGuiElem content);
@@ -175,7 +176,7 @@ class GuiFactory {
   private:
 
   PGuiElem getScrollbar();
-  int getScrollButtonSize();
+  Vec2 getScrollButtonSize();
   Texture& getIconTex(IconId);
 
   map<TexId, Texture> textures;

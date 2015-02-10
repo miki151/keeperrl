@@ -87,7 +87,7 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
 Color getHighlightColor(HighlightType type, double amount) {
   switch (type) {
     case HighlightType::RECT_DESELECTION: return transparency(colors[ColorId::RED], 90);
-    case HighlightType::DIG: return transparency(colors[ColorId::YELLOW], 170);
+    case HighlightType::DIG: return transparency(colors[ColorId::YELLOW], 120);
     case HighlightType::CUT_TREE: return transparency(colors[ColorId::YELLOW], 170);
     case HighlightType::FETCH_ITEMS: return transparency(colors[ColorId::YELLOW], 170);
     case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);
@@ -334,7 +334,7 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
-  if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE))
+  if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
     drawMorale(renderer, tile, object.getAttribute(ViewObject::Attribute::MORALE));
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::DARK_GREEN]);
@@ -446,6 +446,8 @@ bool MapGui::isCentered() const {
 
 void MapGui::setCenter(double x, double y) {
   center = {x, y};
+  center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
+  center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
 }
 
 void MapGui::setCenter(Vec2 v) {
@@ -687,10 +689,11 @@ void MapGui::setHint(const string& h) {
   hint = h;
 }
 
-void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui) {
+void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui, bool moral) {
   const Level* level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
   mouseUI = ui;
+  showMorale = moral;
   layout = mapLayout;
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
     objects[pos] = none;

@@ -17,7 +17,8 @@ class TaskMap {
   Task* getTask(const Creature*);
   bool hasTask(const Creature*) const;
   const vector<Task*>& getTasks(Vec2) const;
-  const Creature* getOwner(Task*) const;
+  vector<const Task*> getAllTasks() const;
+  const Creature* getOwner(const Task*) const;
   optional<Vec2> getPosition(Task*) const;
   void takeTask(const Creature*, Task*);
   void freeTask(Task*);
