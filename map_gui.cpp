@@ -446,6 +446,8 @@ bool MapGui::isCentered() const {
 
 void MapGui::setCenter(double x, double y) {
   center = {x, y};
+  center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
+  center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
 }
 
 void MapGui::setCenter(Vec2 v) {
