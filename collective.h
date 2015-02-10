@@ -182,7 +182,7 @@ class Collective : public Task::Callback {
     Warning warning;
   };
 
-  struct ConstructionInfo : public NamedTupleBase<CostInfo, bool, double, SquareType, UniqueEntity<Task>::Id> {
+  struct ConstructionInfo : public NamedTupleBase<CostInfo, bool, bool, SquareType, UniqueEntity<Task>::Id> {
     NAMED_TUPLE_STUFF(ConstructionInfo);
     NAME_ELEM(0, cost);
     NAME_ELEM(1, built);
@@ -210,7 +210,7 @@ class Collective : public Task::Callback {
 
   const map<UniqueEntity<Creature>::Id, string>& getMinionTaskStrings() const;
 
-  struct TrapInfo : public NamedTupleBase<TrapType, bool, double> {
+  struct TrapInfo : public NamedTupleBase<TrapType, bool, bool> {
     NAMED_TUPLE_STUFF(TrapInfo);
     NAME_ELEM(0, type);
     NAME_ELEM(1, armed);
@@ -222,7 +222,7 @@ class Collective : public Task::Callback {
   void addConstruction(Vec2, SquareType, CostInfo, bool immediately, bool noCredit);
   void removeConstruction(Vec2);
   void destroySquare(Vec2);
-  struct TorchInfo : public NamedTupleBase<bool, double, UniqueEntity<Task>::Id, Dir, Trigger*> {
+  struct TorchInfo : public NamedTupleBase<bool, bool, UniqueEntity<Task>::Id, Dir, Trigger*> {
     NAMED_TUPLE_STUFF(TorchInfo);
     NAME_ELEM(0, built);
     NAME_ELEM(1, marked);
@@ -307,6 +307,7 @@ class Collective : public Task::Callback {
   virtual void onPickedUp(Vec2 pos, EntitySet<Item>) override;
   virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Vec2, SquareType) override;
+  virtual void onConstructionCancelled(Vec2) override;
   virtual void onTorchBuilt(Vec2, Trigger*) override;
   virtual void onAppliedSquare(Vec2 pos) override;
   virtual void onKillCancelled(Creature*) override;
@@ -340,7 +341,7 @@ class Collective : public Task::Callback {
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity*, WorshipType);
   REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker);
-  REGISTER_HANDLER(SquareReplacedEvent, const Level*, Vec2 pos);
+  REGISTER_HANDLER(SquareDestroyedEvent, const Level*, Vec2 pos);
   REGISTER_HANDLER(AlarmEvent, const Level*, Vec2 pos);
   REGISTER_HANDLER(SurrenderEvent, Creature* who, const Creature* to);
   REGISTER_HANDLER(TrapTriggerEvent, const Level*, Vec2 pos);

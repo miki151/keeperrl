@@ -468,7 +468,7 @@ void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
   mapGui->setSpriteMode(currentTileLayout.sprites);
   bool spectator = gameInfo.infoType == GameInfo::InfoType::SPECTATOR;
   mapGui->updateObjects(collective, mapLayout, options->getBoolValue(OptionId::SMOOTH_MOVEMENT)
-      && (currentTileLayout.sprites || spectator), !spectator);
+      && (currentTileLayout.sprites || spectator), !spectator, guiBuilder.showMorale());
   updateMinimap(collective);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);

@@ -44,7 +44,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 2;
+static const int saveVersion = 3;
 
 static string getSaveSuffix(Model::GameType t) {
   switch (t) {

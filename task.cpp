@@ -76,9 +76,14 @@ class Construction : public Task {
     switch (type.getId()) {
       case SquareId::FLOOR: return "Dig " + toString(position);
       case SquareId::TREE_TRUNK: return "Cut tree " + toString(position);
-      default: return "Construct " + transform2(EnumInfo<SquareId>::getString(type.getId()),
+      default: return "Build " + transform2(EnumInfo<SquareId>::getString(type.getId()),
                    [] (char c) -> char { if (c == '_') return ' '; else return tolower(c); }) + toString(position);
     }
+  }
+
+  virtual void cancel() override {
+ // if the task is transferable then this callback is not needed ???
+ //   callback->onConstructionCancelled(position); 
   }
 
   virtual MoveInfo getMove(Creature* c) override {

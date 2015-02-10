@@ -153,7 +153,7 @@ void Square::destroy() {
   CHECK(canDestroy());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
-  GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
+  GlobalEvents.addSquareDestroyedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
@@ -169,7 +169,7 @@ void Square::destroyBy(Creature* c) {
 void Square::burnOut() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
-  GlobalEvents.addSquareReplacedEvent(getLevel(), getPosition());
+  GlobalEvents.addSquareDestroyedEvent(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 

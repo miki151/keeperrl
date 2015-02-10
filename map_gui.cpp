@@ -334,7 +334,7 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
-  if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE))
+  if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
     drawMorale(renderer, tile, object.getAttribute(ViewObject::Attribute::MORALE));
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::DARK_GREEN]);
@@ -687,10 +687,11 @@ void MapGui::setHint(const string& h) {
   hint = h;
 }
 
-void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui) {
+void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui, bool moral) {
   const Level* level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
   mouseUI = ui;
+  showMorale = moral;
   layout = mapLayout;
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
     objects[pos] = none;

@@ -679,12 +679,17 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
     res.push_back(gui.viewObject(info.numResource[0].viewObject, tilesOk));
     res.push_back(gui.label(toString<int>(info.nextPayout), colors[ColorId::WHITE]));
     list.push_back(gui.horizontalList(std::move(res), {170, 30, 1}, 0));
-    list.push_back(gui.empty());
   }
-  list.push_back(gui.stack(
-      gui.label("Show tasks", colors[showTasks ? ColorId::GREEN : ColorId::WHITE]),
-      gui.button([this] { showTasks = !showTasks; chosenCreature = ""; })
-      ));
+  list.push_back(gui.horizontalList(makeVec<PGuiElem>(
+          gui.stack(
+            gui.label("Show tasks", colors[showTasks ? ColorId::GREEN : ColorId::WHITE]),
+            gui.button([this] { showTasks = !showTasks; chosenCreature = ""; })),
+          gui.stack(
+            getHintCallback("Morale affects minion's productivity and chances of fleeing from battle."),
+            gui.label("Show morale", colors[morale ? ColorId::GREEN : ColorId::WHITE]),
+            gui.button([this] { morale = !morale; }))
+      ), 120, 0));
+  list.push_back(gui.empty());
   if (!enemyMap.empty()) {
     list.push_back(gui.label("Enemies:", colors[ColorId::WHITE]));
     for (auto elem : enemyMap){
@@ -698,6 +703,10 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
     chosenCreature = "";
   }
   return gui.verticalList(std::move(list), legendLineHeight, 0);
+}
+
+bool GuiBuilder::showMorale() const {
+  return morale;
 }
 
 const int taskMapWindowWidth = 350;

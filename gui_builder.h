@@ -85,6 +85,7 @@ class GuiBuilder {
   int getActiveLibrary() const;
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
+  bool showMorale() const;
 
   private:
   Renderer& renderer;
@@ -127,6 +128,7 @@ class GuiBuilder {
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
   PGuiElem getStandingGui(double standing);
+  bool morale = false;
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

@@ -41,13 +41,13 @@ void BucketMap<T>::moveElement(Vec2 from, Vec2 to, T elem) {
 template<class T>
 vector<T> BucketMap<T>::getElements(Rectangle area) const {
   vector<T> ret;
-  Rectangle allBuckets = Rectangle(
+  Rectangle bArea(
       area.getPX() / bucketSize, area.getPY() / bucketSize,
-      area.getKX() / bucketSize, area.getKY() / bucketSize)
-    .intersection(Rectangle(buckets.getBounds()));
-  for (Vec2 v : allBuckets)
-    for (T elem : buckets[v])
-      ret.push_back(elem);
+      area.getKX() / bucketSize, area.getKY() / bucketSize);
+  if (bArea.intersects(buckets.getBounds()))
+    for (Vec2 v : bArea.intersection(buckets.getBounds()))
+      for (T elem : buckets[v])
+        ret.push_back(elem);
   return ret;
 }
 

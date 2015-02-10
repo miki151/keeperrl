@@ -1718,14 +1718,14 @@ void Collective::addTrap(Vec2 pos, TrapType type) {
 void Collective::onAppliedItem(Vec2 pos, Item* item) {
   CHECK(item->getTrapType());
   if (traps.count(pos)) {
-    traps[pos].marked() = 0;
+    traps[pos].marked() = false;
     traps[pos].armed() = true;
   }
 }
 
 void Collective::onAppliedItemCancel(Vec2 pos) {
   if (traps.count(pos))
-    traps.at(pos).marked() = 0;
+    traps.at(pos).marked() = false;
 }
 
 void Collective::onTorchBuilt(Vec2 pos, Trigger* t) {
@@ -1736,9 +1736,17 @@ void Collective::onTorchBuilt(Vec2 pos, Trigger* t) {
       return;
   }
   torches.at(pos).built() = true;
-  torches.at(pos).marked() = 0;
+  torches.at(pos).marked() = false;
   torches.at(pos).task() = -1;
   torches.at(pos).trigger() = t;
+}
+
+void Collective::onConstructionCancelled(Vec2 pos) {
+  if (constructions.count(pos)) {
+    constructions.at(pos).built() = false;
+    constructions.at(pos).marked() = false;
+    constructions.at(pos).task() = -1;
+  }
 }
 
 void Collective::onConstructed(Vec2 pos, SquareType type) {
@@ -1756,7 +1764,7 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
     taskMap.unmarkSquare(pos);
   if (constructions.count(pos)) {
     constructions.at(pos).built() = true;
-    constructions.at(pos).marked() = 0;
+    constructions.at(pos).marked() = false;
     constructions.at(pos).task() = -1;
   }
   if (type == SquareId::FLOOR) {
@@ -1779,9 +1787,6 @@ bool Collective::tryLockingDoor(Vec2 pos) {
   return false;
 }
 
-// after this time applying trap or building door is rescheduled (imp death, etc).
-const static int timeToBuild = 50;
-
 void Collective::updateConstructions() {
   map<TrapType, vector<pair<Item*, Vec2>>> trapItems;
   for (TrapType type : ENUM_ALL(TrapType))
@@ -1790,29 +1795,29 @@ void Collective::updateConstructions() {
     if (!isDelayed(elem.first)) {
       vector<pair<Item*, Vec2>>& items = trapItems.at(elem.second.type());
       if (!items.empty()) {
-        if (!elem.second.armed() && elem.second.marked() <= getTime()) {
+        if (!elem.second.armed() && !elem.second.marked()) {
           Vec2 pos = items.back().second;
           taskMap.addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
           markItem(items.back().first);
           items.pop_back();
-          traps[elem.first].marked() = getTime() + timeToBuild;
+          traps[elem.first].marked() = true;
         }
       }
     }
   for (auto& elem : constructions)
-    if (!isDelayed(elem.first) && elem.second.marked() <= getTime() && !elem.second.built()) {
+    if (!isDelayed(elem.first) && !elem.second.marked() && !elem.second.built()) {
       if (!hasResource(elem.second.cost()))
         continue;
       elem.second.task() = taskMap.addTaskCost(Task::construction(this, elem.first, elem.second.type()), elem.first,
           elem.second.cost())->getUniqueId();
-      elem.second.marked() = getTime() + timeToBuild;
+      elem.second.marked() = true;
       takeResource(elem.second.cost());
     }
   for (auto& elem : torches)
-    if (!isDelayed(elem.first) && elem.second.marked() <= getTime() && !elem.second.built()) {
+    if (!isDelayed(elem.first) && !elem.second.marked() && !elem.second.built()) {
       elem.second.task() = taskMap.addTask(
           Task::buildTorch(this, elem.first, elem.second.attachmentDir()), elem.first)->getUniqueId();
-      elem.second.marked() = getTime() + timeToBuild;
+      elem.second.marked() = true;
     }
 }
 
@@ -1896,8 +1901,7 @@ void Collective::onSurrenderEvent(Creature* who, const Creature* to) {
     prisonerInfo[who] = {PrisonerState::SURRENDER, 0};
 }
 
-// actually only called when square is destroyed
-void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
+void Collective::onSquareDestroyedEvent(const Level* l, Vec2 pos) {
   if (l == getLevel()) {
     for (auto& elem : mySquares)
       if (elem.second.count(pos)) {
@@ -1905,9 +1909,10 @@ void Collective::onSquareReplacedEvent(const Level* l, Vec2 pos) {
         if (efficiencySquares.count(elem.first))
           updateEfficiency(pos, elem.first);
       }
+    mySquares[SquareId::FLOOR].insert(pos);
     if (constructions.count(pos)) {
       ConstructionInfo& info = constructions.at(pos);
-      info.marked() = getTime() + 10; // wait a little before considering rebuilding
+      info.marked() = false;
       info.built() = false;
       info.task() = -1;
     }

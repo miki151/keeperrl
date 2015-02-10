@@ -754,7 +754,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
       case BuildInfo::DISPATCH: {
              buttons.push_back({
                  ViewObject(ViewId::IMP, ViewLayer::LARGE_ITEM, ""),
-                 "Dispatch imp", none, "", ""});
+                 "Prioritize task", none, "", ""});
            }
            break;
       case BuildInfo::TRAP: {
