@@ -565,6 +565,13 @@ vector<T> getSuffix(const vector<T>& v, int num) {
   return getSubsequence(v, v.size() - num, num);
 }
 
+template <typename Fun>
+string transform2(const string& u, Fun fun) {
+  string ret(u.size(), ' ');
+  transform(u.begin(), u.end(), ret.begin(), fun);
+  return ret;
+}
+
 template <typename T, typename U, typename Fun>
 vector<T> transform2(const vector<U>& u, Fun fun) {
   vector<T> ret(u.size());

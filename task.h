@@ -49,6 +49,7 @@ class Task : public UniqueEntity<Task> {
   virtual bool isImpossible(const Level*);
   virtual bool canTransfer();
   virtual void cancel() {}
+  virtual string getDescription() const = 0;
   bool isDone();
 
   static PTask construction(Callback*, Vec2 target, SquareType);

@@ -52,6 +52,10 @@ Task* TaskMap<CostInfo>::getTaskForWorker(Creature* c) {
   }
   return closest;
 }
+template <class CostInfo>
+vector<const Task*> TaskMap<CostInfo>::getAllTasks() const {
+  return transform2<const Task*>(tasks, [] (const PTask& t) { return t.get(); });
+}
 
 template <class CostInfo>
 void TaskMap<CostInfo>::freeTaskDelay(Task* t, double d) {
@@ -217,9 +221,9 @@ optional<Vec2> TaskMap<CostInfo>::getPosition(Task* task) const {
 }
 
 template <class CostInfo>
-const Creature* TaskMap<CostInfo>::getOwner(Task* task) const {
-  if (creatureMap.contains(task))
-    return creatureMap.get(task);
+const Creature* TaskMap<CostInfo>::getOwner(const Task* task) const {
+  if (creatureMap.contains(const_cast<Task*>(task)))
+    return creatureMap.get(const_cast<Task*>(task));
   else
     return nullptr;
 }

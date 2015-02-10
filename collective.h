@@ -295,6 +295,8 @@ class Collective : public Task::Callback {
 
   const string& getName() const;
 
+  const TaskMap<CostInfo>& getTaskMap() const;
+
   template <class Archive>
   static void registerTypes(Archive& ar);
 

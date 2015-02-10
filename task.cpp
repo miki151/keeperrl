@@ -72,6 +72,15 @@ class Construction : public Task {
     return !level->getSafeSquare(position)->canConstruct(type);
   }
 
+  virtual string getDescription() const override {
+    switch (type.getId()) {
+      case SquareId::FLOOR: return "Dig " + toString(position);
+      case SquareId::TREE_TRUNK: return "Cut tree " + toString(position);
+      default: return "Construct " + transform2(EnumInfo<SquareId>::getString(type.getId()),
+                   [] (char c) -> char { if (c == '_') return ' '; else return tolower(c); }) + toString(position);
+    }
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(c->hasSkill(Skill::get(SkillId::CONSTRUCTION)));
     Vec2 dir = position - c->getPosition();
@@ -134,6 +143,10 @@ class BuildTorch : public Task {
       return c->moveTowards(position);
   }
 
+  virtual string getDescription() const override {
+    return "Build torch " + toString(position);
+  }
+
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Task)
@@ -193,6 +206,10 @@ class PickItem : public NonTransferable {
       if (items.contains(it))
         return true;
     return false;
+  }
+
+  virtual string getDescription() const override {
+    return "Pick item " + toString(position);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -269,6 +286,10 @@ class PickAndEquipItem : public PickItem {
   virtual void onPickedUp() override {
   }
 
+  virtual string getDescription() const override {
+    return "Pick and equip item " + toString(position);
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     if (!pickedUp)
       return PickItem::getMove(c);
@@ -299,6 +320,10 @@ namespace {
 class EquipItem : public NonTransferable {
   public:
   EquipItem(Item* _item) : item(_item) {
+  }
+
+  virtual string getDescription() const override {
+    return "Equip item";
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -349,6 +374,10 @@ class BringItem : public PickItem {
     return c->drop(it).append([=] {
         callback->onBrought(c->getPosition(), it);
     });
+  }
+
+  virtual string getDescription() const override {
+    return "Bring item from " + toString(position) + " to " + toString(target);
   }
 
   virtual void onPickedUp() override {
@@ -402,6 +431,10 @@ class ApplyItem : public BringItem {
 
   virtual void cancel() override {
     callback->onAppliedItemCancel(target);
+  }
+
+  virtual string getDescription() const override {
+    return "Bring and apply item " + toString(position) + " to " + toString(target);
   }
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) override {
@@ -468,6 +501,10 @@ class ApplySquare : public NonTransferable {
     }
   }
 
+  virtual string getDescription() const override {
+    return "Apply square " + toString(position);
+  }
+
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
@@ -507,6 +544,10 @@ class Kill : public NonTransferable {
       case TORTURE: return c->torture(creature);
     }
     return CreatureAction();
+  }
+
+  virtual string getDescription() const override {
+    return "Kill " + creature->getName().bare();
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -577,6 +618,10 @@ class Sacrifice : public NonTransferable {
     return c->moveTowards(creature->getPosition());
   }
 
+  virtual string getDescription() const override {
+    return "Sacrifice " + creature->getName().bare();
+  }
+
   virtual void cancel() override {
     callback->onKillCancelled(creature);
   }
@@ -626,6 +671,10 @@ class DestroySquare : public NonTransferable {
     return NoMove;
   }
 
+  virtual string getDescription() const override {
+    return "Destroy " + toString(position);
+  }
+
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
@@ -653,6 +702,10 @@ class Disappear : public NonTransferable {
 
   virtual MoveInfo getMove(Creature* c) override {
     return c->disappear();
+  }
+
+  virtual string getDescription() const override {
+    return "Disappear";
   }
 
   template <class Archive> 
@@ -686,6 +739,12 @@ class Chain : public Task {
         return NoMove;
       }
     return tasks[current]->getMove(c);
+  }
+
+  virtual string getDescription() const override {
+    if (current >= tasks.size())
+      return "Chain: done";
+    return tasks[current]->getDescription();
   }
 
   template <class Archive> 
@@ -732,6 +791,10 @@ class Explore : public NonTransferable {
     return NoMove;
   }
 
+  virtual string getDescription() const override {
+    return "Explore " + toString(position);
+  }
+
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
@@ -768,6 +831,10 @@ class AttackLeader : public NonTransferable {
     ar& SUBCLASS(NonTransferable)
       & SVAR(collective);
     CHECK_SERIAL;
+  }
+
+  virtual string getDescription() const override {
+    return "Attack " + collective->getLeader()->getName().bare();
   }
   
   SERIALIZATION_CONSTRUCTOR(AttackLeader);
@@ -817,6 +884,10 @@ class KillFighters : public NonTransferable {
       --numCreatures;
   }
 
+  virtual string getDescription() const override {
+    return "Kill " + toString(numCreatures) + " minions of " + collective->getName();
+  }
+
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
@@ -862,7 +933,11 @@ class StayInLocationUntil : public NonTransferable {
       & SVAR(location)
       & SVAR(time);
   }
-  
+
+  virtual string getDescription() const override {
+    return "Stay in " + (location->hasName() ? location->getName() : "location") + " until " + toString(time);
+  }
+
   SERIALIZATION_CONSTRUCTOR(StayInLocationUntil);
 
   private:
@@ -897,6 +972,10 @@ class CreateBed : public NonTransferable {
           setDone();
         }
       });
+  }
+
+  virtual string getDescription() const override {
+    return "Create bed at " + toString(position);
   }
 
   template <class Archive> 
@@ -941,6 +1020,10 @@ class ConsumeItem : public NonTransferable {
       & SVAR(callback);
     CHECK_SERIAL;
   }
+
+  virtual string getDescription() const override {
+    return "Consume item";
+  }
   
   SERIALIZATION_CONSTRUCTOR(ConsumeItem);
 
@@ -980,6 +1063,10 @@ class Copulate : public NonTransferable {
         return NoMove;
     } else
       return c->moveTowards(target->getPosition());
+  }
+
+  virtual string getDescription() const override {
+    return "Copulate with " + target->getName().bare();
   }
 
   template <class Archive> 
@@ -1024,6 +1111,10 @@ class Consume : public NonTransferable {
         return NoMove;
     } else
       return c->moveTowards(target->getPosition());
+  }
+
+  virtual string getDescription() const override {
+    return "Absorb " + target->getName().bare();
   }
 
   template <class Archive> 

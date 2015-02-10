@@ -2294,6 +2294,10 @@ GameInfo::VillageInfo::Village Collective::getVillageInfo() const {
   return info;
 }
 
+const TaskMap<Collective::CostInfo>& Collective::getTaskMap() const {
+  return taskMap;
+}
+
 template <class Archive>
 void Collective::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, LeaderControlOverride);

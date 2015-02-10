@@ -96,6 +96,7 @@ class GuiBuilder {
   int activeBuilding = 0;
   int activeLibrary = -1;
   string chosenCreature;
+  bool showTasks;
   bool tilesOk;
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
   MinionTab minionTab = MinionTab::STATS;
@@ -121,6 +122,7 @@ class GuiBuilder {
   vector<PGuiElem> drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active, CollectiveTab);
   PGuiElem getButtonLine(GameInfo::BandInfo::Button, int num, int& active, CollectiveTab);
   void drawMinionsOverlay(vector<OverlayInfo>&, GameInfo::BandInfo&);
+  void drawTasksOverlay(vector<OverlayInfo>&, GameInfo::BandInfo&);
   void drawBuildingsOverlay(vector<OverlayInfo>&, GameInfo::BandInfo&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;

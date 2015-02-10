@@ -66,6 +66,13 @@ class GameInfo {
       double standing;
     };
     vector<Deity> deities;
+
+    struct Task {
+      string name;
+      optional<UniqueEntity<Creature>::Id> creature;
+      bool priority;
+    };
+    vector<Task> taskMap;
   } bandInfo;
 
   class PlayerInfo {

@@ -844,7 +844,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.payoutTimeRemaining = -1;
   info.nextPayout = getCollective()->getNextSalaries();
   for (Creature* c : getCollective()->getCreaturesAnyOf(
-        {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER})) {
+        {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER})) {
     if (getCollective()->isInCombat(c))
       info.tasks[c->getUniqueId()] = "fighting";
     info.minions.push_back(c);
@@ -875,6 +875,13 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (TechInfo tech : getTechInfo())
     info.techButtons.push_back(tech.button);
   gameInfo.messageBuffer = messages;
+  info.taskMap.clear();
+  for (const Task* task : getCollective()->getTaskMap().getAllTasks()) {
+    optional<UniqueEntity<Creature>::Id> creature;
+    if (const Creature *c = getCollective()->getTaskMap().getOwner(task))
+      creature = c->getUniqueId();
+    info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
+  }
 }
 
 void PlayerControl::addMessage(const PlayerMessage& msg) {
