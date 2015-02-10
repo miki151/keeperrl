@@ -405,11 +405,11 @@ void testSectors3() {
   for (Vec2 v : bounds)
     if (t[v])
       s.add(v);
-  for (int i : Range(1000)) {
+  for (int i : Range(100000)) {
     if (i % 10 == 0)
       std::cout << '.' << std::endl;
     Vec2 v = bounds.randomVec2();
-    if (Random.roll(10)) {
+    if (Random.roll(3)) {
       s.remove(v);
       t[v] = false;
     } else {

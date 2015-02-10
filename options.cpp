@@ -40,7 +40,7 @@ const map<OptionId, string> names {
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::SMOOTH_MOVEMENT, "Smooth movement"},
   {OptionId::FULLSCREEN, "Fullscreen"},
-  {OptionId::ONLINE, "Online exchange dungeons and highscores"},
+  {OptionId::ONLINE, "Online exchange of dungeons and highscores"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},

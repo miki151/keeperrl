@@ -1374,4 +1374,17 @@ struct NamedTupleBase : public tuple<Args...> {
   const std::tuple_element<num, BaseTuple>::type& name() const { return get<num>(*this); }
 
 
+class DisjointSets {
+  public:
+  DisjointSets(int size);
+  void join(int, int);
+  bool same(int, int);
+  bool same(const vector<int>&);
+
+  private:
+  int getSet(int);
+  vector<int> father;
+  vector<int> size;
+};
+
 #endif
