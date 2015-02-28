@@ -25,7 +25,7 @@ int progressFunction(void* ptr, double totalDown, double nowDown, double totalUp
 
 size_t dataFun(void *buffer, size_t size, size_t nmemb, void *userp) {
   string& buf = *((string*) userp);
-  buf += (char*) buffer;
+  buf += string((char*) buffer, (char*) buffer + size * nmemb);
   return size * nmemb;
 }
 

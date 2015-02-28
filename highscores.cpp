@@ -76,7 +76,7 @@ vector<Highscores::Score>  Highscores::fromString(const string& s) {
 
 optional<Highscores::Score> Highscores::Score::parse(const string& buf) {
   vector<string> p = split(buf, {','});
-  if (p.size() != 5)
+  if (p.size() != 5 || !fromStringSafe<int>(p[4]))
 #ifndef RELEASE
     return CONSTRUCT(Score, c.playerName = "ERROR: " + buf;);
 #else
