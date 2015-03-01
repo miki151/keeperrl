@@ -97,7 +97,7 @@ class GuiBuilder {
   int activeBuilding = 0;
   int activeLibrary = -1;
   string chosenCreature;
-  bool showTasks;
+  bool showTasks = false;
   bool tilesOk;
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
   MinionTab minionTab = MinionTab::STATS;
