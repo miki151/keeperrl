@@ -1310,8 +1310,8 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.uses = 1;);
     case ItemId::FIRE_SCROLL: return ITATTR(
             i.viewId = ViewId::SCROLL;
-            i.name = "scroll labelled combustio";
-            i.plural= "scrolls labelled combustio";
+            i.name = "scroll of fire";
+            i.plural= "scrolls of fire";
             i.description = "Sets itself on fire.";
             i.blindName = "scroll";
             i.itemClass= ItemClass::SCROLL;

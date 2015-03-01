@@ -1281,7 +1281,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
       break;
     case BuildInfo::DESTROY:
-        if (getCollective()->isKnownSquare(pos)) {
+        if (getCollective()->isKnownSquare(pos) && !getCollective()->getLevel()->getSafeSquare(pos)->isBurning()) {
           selection = SELECT;
           getCollective()->destroySquare(pos);
           updateSquareMemory(pos);
