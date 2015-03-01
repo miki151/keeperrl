@@ -1719,7 +1719,15 @@ CreatureAction Creature::construct(Vec2 direction, SquareType type) {
   for (Square* s : getSquare(direction))
     if (s->canConstruct(type) && canConstruct(type))
       return CreatureAction([=]() {
-        s->construct(type);
+        if (s->construct(type)) {
+          if (type.getId() == SquareId::FLOOR) {
+            monsterMessage(getName().the() + " digs a tunnel");
+            playerMessage("You dig a tunnel");
+          } else {
+            monsterMessage(getName().the() + " builds " + getSafeSquare(direction)->getName());
+            playerMessage("You build " + getSafeSquare(direction)->getName());
+          }
+        }
         spendTime(1);
       });
   return CreatureAction();

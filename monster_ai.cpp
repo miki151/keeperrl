@@ -1130,6 +1130,30 @@ class AttackPest : public Behaviour {
   }
 };
 
+class AvoidFire : public Behaviour {
+  public:
+  using Behaviour::Behaviour;
+
+  virtual MoveInfo getMove() override {
+    if (creature->getSquare()->isBurning() && !creature->isFireResistant()) {
+      for (Square* s : creature->getSquares(Vec2::directions8(true)))
+        if (!s->isBurning())
+          if (auto action = creature->move(s->getPosition() - creature->getPosition()))
+            return action;
+      for (Square* s : creature->getSquares(Vec2::directions8(true)))
+        if (auto action = creature->forceMove(s->getPosition() - creature->getPosition()))
+          return action;
+    }
+    return NoMove;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(AvoidFire);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+  }
+};
 
 template <class Archive>
 void MonsterAI::registerTypes(Archive& ar) {
@@ -1150,6 +1174,7 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, ByCollective);
   REGISTER_TYPE(ar, ChooseRandom);
   REGISTER_TYPE(ar, SingleTask);
+  REGISTER_TYPE(ar, AvoidFire);
 }
 
 REGISTER_TYPES(MonsterAI);
@@ -1214,22 +1239,24 @@ MonsterAIFactory MonsterAIFactory::monster() {
 MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
+        new AvoidFire(c),
         new Heal(c, false),
         new Fighter(c, 0.6, true),
         new ByCollective(c, col),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
-        { 6, 5, 2, 1}, false);
+        { 10, 6, 5, 2, 1}, false);
       });
 }
 
 MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l, bool moveRandomly) {
   return MonsterAIFactory([=](Creature* c) {
       vector<Behaviour*> actors { 
+          new AvoidFire(c),
           new Heal(c),
           new Thief(c),
           new Fighter(c, 0.6, true),
           new GoldLust(c)};
-      vector<int> weights { 5, 4, 3, 1 };
+      vector<int> weights { 10, 5, 4, 3, 1 };
       if (l != nullptr) {
         actors.push_back(new GuardArea(c, l));
         weights.push_back(1);
@@ -1304,11 +1331,12 @@ MonsterAIFactory MonsterAIFactory::summoned(Creature* leader, int ttl) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
           new Summoned(c, leader, 1, 3, ttl),
+          new AvoidFire(c),
           new Heal(c),
           new Fighter(c, 0.6, true),
           new MoveRandomly(c, 3),
           new GoldLust(c)},
-          { 5, 4, 3, 1, 1 });
+          { 6, 5, 4, 3, 1, 1 });
       });
 }
 
@@ -1316,11 +1344,12 @@ MonsterAIFactory MonsterAIFactory::dieTime(double dieTime) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
           new DieTime(c, dieTime),
+          new AvoidFire(c),
           new Heal(c),
           new Fighter(c, 0.6, true),
           new MoveRandomly(c, 3),
           new GoldLust(c)},
-          { 5, 4, 3, 1, 1 });
+          { 6, 5, 4, 3, 1, 1 });
       });
 }
 
