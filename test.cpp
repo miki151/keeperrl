@@ -193,8 +193,10 @@ optional<int> getInt(bool yes) {
 
 void testOptional() {
   optional<int> r = getInt(true);
+  optional<int> q;
   CHECK(r);
   CHECK(r == 1);
+  CHECK(!(q == 1));
   CHECK(!getInt(false));
 }
 
@@ -406,8 +408,6 @@ void testSectors3() {
     if (t[v])
       s.add(v);
   for (int i : Range(100000)) {
-    if (i % 10 == 0)
-      std::cout << '.' << std::endl;
     Vec2 v = bounds.randomVec2();
     if (Random.roll(3)) {
       s.remove(v);

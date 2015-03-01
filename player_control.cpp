@@ -1433,7 +1433,7 @@ void PlayerControl::considerDeityFight() {
 
 void PlayerControl::checkKeeperDanger() {
   Creature* controlled = getControlled();
-  if (!retired && controlled != getKeeper()) { 
+  if (!retired && getKeeper() && controlled != getKeeper()) { 
     if ((getCollective()->isInCombat(getKeeper()) || getKeeper()->getHealth() < 1)
         && lastControlKeeperQuestion < getCollective()->getTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getTime();
@@ -1595,7 +1595,7 @@ void PlayerControl::addImp(Creature* c) {
 }
 
 void PlayerControl::onConqueredLand() {
-  if (retired)
+  if (retired || !getKeeper())
     return;
   model->conquered(*getKeeper()->getFirstName(), getCollective()->getKills(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
