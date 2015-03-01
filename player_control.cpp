@@ -1605,7 +1605,7 @@ void PlayerControl::onConqueredLand() {
 
 void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
   visibilityMap.remove(victim);
-  if (!getKeeper() && !retired) {
+  if (!getKeeper() && !retired && !model->isGameOver()) {
     model->gameOver(victim, getCollective()->getKills().size(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());
   }

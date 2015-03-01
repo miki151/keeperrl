@@ -500,6 +500,10 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
   highscores->present(view, score);
 }
 
+bool Model::isGameOver() const {
+  return !!exitInfo;
+}
+
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
   string text = "And so dies " + creature->getNameAndTitle();
   string killer;

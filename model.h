@@ -92,6 +92,7 @@ class Model {
   void conquered(const string& title, vector<const Creature*> kills, int points);
   void killedKeeper(const string& title, const string& keeper, const string& land,
     vector<const Creature*> kills, int points);
+  bool isGameOver() const;
   static void showCredits(View*);
   void retireCollective();
 
