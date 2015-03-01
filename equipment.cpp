@@ -59,7 +59,7 @@ int Equipment::getMaxItems(EquipmentSlot slot) const {
 }
 
 bool Equipment::canEquip(const Item* item) const {
-  if (!item->canEquip())
+  if (!item->canEquip() || isEquiped(item))
     return false;
   EquipmentSlot slot = item->getEquipmentSlot();
   return !items.count(slot) || items.at(slot).size() < getMaxItems(slot);

@@ -108,6 +108,7 @@ class Player : public Controller, public CreatureView {
   vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
   void getItemNames(vector<Item*> it, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());
+  string getInventoryItemName(const Item*, bool plural);
   string getPluralName(Item* item, int num);
   bool SERIAL2(travelling, false);
   Vec2 SERIAL(travelDir);
