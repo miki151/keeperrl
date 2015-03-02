@@ -66,6 +66,8 @@ static vector<EnemyInfo> getVaults(Tribe::Set& tribeSet) {
             c.leaderAttacks = true;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 22}, AttackTriggerId::STOLEN_ITEMS);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);
+            c.welcomeMessage = VillageControl::DRAGON_WELCOME;
+            c.itemTheftMessage = VillageControl::DRAGON_THEFT;
             c.attackMessage = VillageControl::CREATURE_TITLE;)}),
     getVault(SettlementType::CAVE, CreatureId::RED_DRAGON,
         tribeSet.killEveryone.get(), 1, ItemFactory::dragonCave(),
@@ -75,6 +77,8 @@ static vector<EnemyInfo> getVaults(Tribe::Set& tribeSet) {
             c.leaderAttacks = true;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 30}, AttackTriggerId::STOLEN_ITEMS);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 12);
+            c.welcomeMessage = VillageControl::DRAGON_WELCOME;
+            c.itemTheftMessage = VillageControl::DRAGON_THEFT;
             c.attackMessage = VillageControl::CREATURE_TITLE;)}),
     getVault(SettlementType::CAVE, CreatureId::CYCLOPS,
         tribeSet.killEveryone.get(), 1, ItemFactory::mushrooms(true),

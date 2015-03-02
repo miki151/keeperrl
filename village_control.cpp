@@ -29,6 +29,10 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(behaviour)
     & SVAR(leaderAttacks)
     & SVAR(attackMessage);
+  if (version == 1) {
+    ar & SVAR(itemTheftMessage)
+       & SVAR(welcomeMessage);
+  }
 }
 
 VillageControl::VillageControl(Collective* col, const Location* l, vector<Villain> v)
@@ -40,26 +44,42 @@ VillageControl::VillageControl(Collective* col, const Location* l, vector<Villai
   }
 }
 
+optional<VillageControl::Villain&> VillageControl::getVillain(const Creature* c) {
+  for (auto& villain : villains)
+    if (villain.contains(c))
+      return villain;
+  return none;
+}
+
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
   if (victim->getTribe() == getCollective()->getTribe())
-    for (auto& villain : villains)
-      if (contains(villain.collective->getCreatures(), killer)) {
-        if (contains(getCollective()->getCreatures(), victim))
-          victims[villain.collective] += 1;
-        else
-          victims[villain.collective] += 0.15; // small increase for same tribe but different village
-      }
+    if (auto villain = getVillain(killer)) {
+      if (contains(getCollective()->getCreatures(), victim))
+        victims[villain->collective] += 1;
+      else
+        victims[villain->collective] += 0.15; // small increase for same tribe but different village
+    }
 }
 
 void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& items) {
   if (who->getPosition().inRectangle(location->getBounds()))
-    for (const Item* it : items)
-      if (myItems.contains(it))
-        for (auto& villain : villains)
-          if (contains(villain.collective->getCreatures(), who)) {
-            ++stolenItemCount[villain.collective];
-            myItems.erase(it);
-          }
+    if (auto villain = getVillain(who)) {
+      bool wasTheft = false;
+      for (const Item* it : items)
+        if (myItems.contains(it)) {
+          wasTheft = true;
+          ++stolenItemCount[villain->collective];
+          myItems.erase(it);
+        }
+      if (getCollective()->getLeader() && wasTheft && villain->itemTheftMessage) {
+        switch (*villain->itemTheftMessage) {
+          case DRAGON_THEFT:
+            who->playerMessage(PlayerMessage("You are going to regret this", PlayerMessage::HIGH));
+            break;
+        }
+        villain->itemTheftMessage.reset();
+      }
+    }
 }
 
 void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers) {
@@ -70,7 +90,26 @@ void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers)
     getCollective()->setTask(c, villain.getAttackTask(this));
 }
 
+void VillageControl::considerWelcomeMessage() {
+  if (Creature* leader = getCollective()->getLeader())
+    for (auto& villain : villains)
+      if (villain.welcomeMessage)
+        switch (*villain.welcomeMessage) {
+          case DRAGON_WELCOME:
+            for (Vec2 pos : location->getBounds())
+              if (Creature* c = getCollective()->getLevel()->getSafeSquare(pos)->getCreature())
+                if (c->isAffected(LastingEffect::INVISIBLE) && villain.contains(c) && c->isPlayer()
+                    && leader->canSee(c->getPosition())) {
+                  c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
+                        "I hear your breath. Come along!\"", PlayerMessage::HIGH));
+                  villain.welcomeMessage.reset();
+                }
+            break;
+        }
+}
+
 void VillageControl::tick(double time) {
+  considerWelcomeMessage();
   vector<Creature*> allMembers = getCollective()->getCreatures();
   for (auto team : getCollective()->getTeams().getAll()) {
     for (const Creature* c : getCollective()->getTeams().getMembers(team))
@@ -101,7 +140,7 @@ void VillageControl::tick(double time) {
     }
 }
 
-MoveInfo VillageControl::getMove(Creature*) {
+MoveInfo VillageControl::getMove(Creature* c) {
   return NoMove;
 }
 
@@ -187,6 +226,9 @@ static double stolenItemsFun(int numStolen) {
     return 1.0;
 }
 
+bool VillageControl::Villain::contains(const Creature* c) {
+  return ::contains(collective->getCreatures(), c);
+}
 
 double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const VillageControl* self,
     const Collective* villain) const {
