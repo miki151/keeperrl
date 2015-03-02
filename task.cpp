@@ -873,14 +873,13 @@ class KillFighters : public NonTransferable {
 
   virtual MoveInfo getMove(Creature* c) override {
     who = c;
-    if (numCreatures <= 0 || collective->getCreatures(MinionTrait::FIGHTER).empty()) {
+    targets = collective->getCreaturesAnyOf({MinionTrait::FIGHTER, MinionTrait::LEADER});
+    if (numCreatures <= 0 || targets.empty()) {
       setDone();
       return NoMove;
     }
     if (c->getLevel() != collective->getLevel())
       return NoMove;
-    for (Creature* c : collective->getCreatures(MinionTrait::FIGHTER))
-      targets.insert(c);
     return c->moveTowards(collective->getLeader()->getPosition());
   }
 

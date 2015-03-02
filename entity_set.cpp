@@ -20,12 +20,18 @@
 #include "creature.h"
 #include "level.h"
 
-template<>
-template<>
-EntitySet<Item>::EntitySet(const vector<Item*>& v) {
-  for (const Item* e : v)
+template<class T>
+template<class Container>
+EntitySet<T>::EntitySet(const Container& v) {
+  for (const T* e : v)
     insert(e);
 }
+
+template
+EntitySet<Item>::EntitySet(const vector<Item*>&);
+
+template
+EntitySet<Creature>::EntitySet(const vector<Creature*>&);
 
 template <class T>
 void EntitySet<T>::insert(const T* e) {

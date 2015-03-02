@@ -1073,8 +1073,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::CYCLOPS;
           c.attr[AttrType::SPEED] = 90;
           c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 35;
-          c.attr[AttrType::DEXTERITY] = 25;
+          c.attr[AttrType::STRENGTH] = 33;
+          c.attr[AttrType::DEXTERITY] = 23;
           c.barehandedDamage = 10;
           c.barehandedAttack = AttackType::EAT;
           c.humanoid = true;
@@ -1086,8 +1086,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::GREEN_DRAGON;
           c.attr[AttrType::SPEED] = 90;
           c.size = CreatureSize::HUGE;
-          c.attr[AttrType::STRENGTH] = 40;
-          c.attr[AttrType::DEXTERITY] = 30;
+          c.attr[AttrType::STRENGTH] = 38;
+          c.attr[AttrType::DEXTERITY] = 28;
           c.barehandedDamage = 10;
           c.barehandedAttack = AttackType::EAT;
           c.humanoid = false;
@@ -1103,7 +1103,7 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(GREEN_DRAGON,
           c.viewId = ViewId::RED_DRAGON;
           c.attr[AttrType::SPEED] = 110;
-          c.attr[AttrType::STRENGTH] = 50;
+          c.attr[AttrType::STRENGTH] = 47;
           c.fireCreature = true;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 0;
           c.speciesName = "red dragon";

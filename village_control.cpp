@@ -18,7 +18,7 @@
 #include "village_control.h"
 #include "collective.h"
 #include "creature.h"
-
+#include "square.h"
 
 template <class Archive>
 void VillageControl::Villain::serialize(Archive& ar, const unsigned int version) {
@@ -33,8 +33,11 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
 
 VillageControl::VillageControl(Collective* col, const Location* l, vector<Villain> v)
     : CollectiveControl(col), location(l), villains(v) {
-  for (Vec2 v : l->getBounds())
+  for (Vec2 v : l->getBounds()) {
     getCollective()->claimSquare(v);
+    for (Item* it : getCollective()->getLevel()->getSafeSquare(v)->getItems())
+      myItems.insert(it);
+  }
 }
 
 void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
@@ -46,6 +49,17 @@ void VillageControl::onKillEvent(const Creature* victim, const Creature* killer)
         else
           victims[villain.collective] += 0.15; // small increase for same tribe but different village
       }
+}
+
+void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& items) {
+  if (who->getPosition().inRectangle(location->getBounds()))
+    for (const Item* it : items)
+      if (myItems.contains(it))
+        for (auto& villain : villains)
+          if (contains(villain.collective->getCreatures(), who)) {
+            ++stolenItemCount[villain.collective];
+            myItems.erase(it);
+          }
 }
 
 void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers) {
@@ -166,12 +180,21 @@ static double goldFun(int gold, int minGold) {
     return 1.0;
 }
 
+static double stolenItemsFun(int numStolen) {
+  if (!numStolen)
+    return 0;
+  else 
+    return 1.0;
+}
+
+
 double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const VillageControl* self,
     const Collective* villain) const {
-  double powerMaxProb = 1.0 / 20000; // rather small chance that they attack just because you are strong
+  double powerMaxProb = 1.0 / 10000; // rather small chance that they attack just because you are strong
   double victimsMaxProb = 1.0 / 500;
   double populationMaxProb = 1.0 / 500;
   double goldMaxProb = 1.0 / 500;
+  double stolenMaxProb = 1.0 / 300;
   switch (trigger.getId()) {
     case AttackTriggerId::POWER: 
       return powerMaxProb * powerClosenessFun(self->getCollective()->getWarLevel(), villain->getWarLevel());
@@ -182,6 +205,9 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
           villain->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
     case AttackTriggerId::GOLD:
       return goldMaxProb * goldFun(villain->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
+    case AttackTriggerId::STOLEN_ITEMS:
+      return stolenMaxProb 
+          * stolenItemsFun(self->stolenItemCount.count(villain) ? self->stolenItemCount.at(villain) : 0);
   }
   return 0;
 }
@@ -206,6 +232,10 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(location)
     & SVAR(villains)
     & SVAR(victims);
+  if (version == 1) {
+    ar & SVAR(myItems)
+       & SVAR(stolenItemCount);
+  }
 }
 
 SERIALIZABLE(VillageControl);

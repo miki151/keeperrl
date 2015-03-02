@@ -33,7 +33,8 @@ enum class AttackTriggerId {
   POWER,
   SELF_VICTIMS,
   ENEMY_POPULATION,
-  GOLD
+  GOLD,
+  STOLEN_ITEMS,
 };
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
@@ -82,11 +83,16 @@ class VillageControl : public CollectiveControl {
   void launchAttack(Villain&, vector<Creature*> attackers);
 
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
+  REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 
   const Location* SERIAL(location);
   vector<Villain> SERIAL(villains);
 
   map<const Collective*, double> SERIAL(victims);
+  EntitySet<Item> SERIAL(myItems);
+  map<const Collective*, int> SERIAL(stolenItemCount);
 };
+
+BOOST_CLASS_VERSION(VillageControl, 1)
 
 #endif
