@@ -1251,8 +1251,9 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           selection = SELECT;
           PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribe(),
               MonsterAIFactory::collective(getCollective()));
-          for (Square* square : getLevel()->getSquares(pos.neighbors8(true)))
-            if (square->canEnter(imp.get()) && canSee(square->getPosition())) {
+          for (Square* square : getLevel()->getSquares(concat(pos.neighbors8(true), {pos})))
+            if (square->canEnter(imp.get())
+                && (canSee(square->getPosition()) || getCollective()->containsSquare(square->getPosition()))) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
               getCollective()->addCreature(std::move(imp), square->getPosition(), {MinionTrait::WORKER});
               break;
