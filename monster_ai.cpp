@@ -541,7 +541,7 @@ class Fighter : public Behaviour {
         if (MoveInfo move = getThrowMove(enemyDir))
           return move;
       }
-      if (chase && !other->dontChase()) {
+      if (chase && !other->dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(creature->getPosition() + enemyDir))
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=] {
@@ -549,6 +549,8 @@ class Fighter : public Behaviour {
             GlobalEvents.addCombatEvent(other);
             lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel(),
                 LastSeen::ATTACK, other};
+            if (!chaseFreeze.count(other) || other->getTime() > chaseFreeze.at(other).second)
+              chaseFreeze[other] = make_pair(other->getTime() + 20, other->getTime() + 70);
           })};
       }
     }
@@ -592,6 +594,12 @@ class Fighter : public Behaviour {
     }
   };
   optional<LastSeen> SERIAL(lastSeen);
+  map<const Creature*, pair<double, double>> chaseFreeze;
+
+  bool isChaseFrozen(const Creature* c) {
+    return chaseFreeze.count(c) && chaseFreeze.at(c).first <= c->getTime()
+      && chaseFreeze.at(c).second >= c->getTime();
+  }
 };
 
 class GuardTarget : public Behaviour {
