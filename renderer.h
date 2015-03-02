@@ -130,7 +130,6 @@ class Renderer {
   bool pollEvent(Event&, Event::EventType);
   bool pollEvent(Event&);
   void flushEvents(Event::EventType);
-  void flushAllEvents();
   void waitEvent(Event&);
   Vec2 getMousePos();
 
