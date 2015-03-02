@@ -2,16 +2,17 @@
 #define _ENUM_VARIANT_H
 
 #include "serialization.h"
+#include "debug.h"
 
 template<typename U, typename Id, Id...value>
 struct TypeAssign {
   TypeAssign(const U& u, Id id) {
-    assert(hasValue(id));
+    CHECK(hasValue(id));
   }
 
   template <typename V>
   TypeAssign(const V& u, Id id) {
-    assert(!hasValue(id));
+    CHECK(!hasValue(id));
   }
 
   bool hasValue(Id id) {

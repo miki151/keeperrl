@@ -25,6 +25,7 @@ static void fail() {
 
 namespace boost {
   void assertion_failed(char const * expr, char const * function, char const * file, long line) {
+    (ofstream("stacktrace.out") << "Assertion at " << file << ":" << line << std::endl).flush();
     fail();
   }
 }
@@ -32,8 +33,10 @@ namespace boost {
 
 Debug::Debug(DebugType t, const string& msg, int line) 
     : out((string[]) { "INFO ", "FATAL "}[t] + msg + ":" + toString(line) + " "), type(t) {
-  if (t == DebugType::FATAL)
+  if (t == DebugType::FATAL) {
+    (ofstream("stacktrace.out") << "Assertion at " << msg << ":" << line << std::endl).flush();
     fail();
+  }
 }
 
 static ofstream output;

@@ -258,15 +258,15 @@ Level* Collective::getLevel() {
 }
 
 const Level* Collective::getLevel() const {
-  return NOTNULL(level);
+  return level;
 }
 
 const Tribe* Collective::getTribe() const {
-  return NOTNULL(tribe);
+  return tribe;
 }
 
 Tribe* Collective::getTribe() {
-  return NOTNULL(tribe);
+  return tribe;
 }
 
 const vector<Creature*>& Collective::getCreatures() const {
