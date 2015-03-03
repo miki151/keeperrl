@@ -1719,9 +1719,9 @@ vector<const Creature*> PlayerControl::getVisibleEnemies() const {
 }
 
 template <class Archive>
-void PlayerControl::registerTypes(Archive& ar) {
+void PlayerControl::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, MinionController);
 }
 
-REGISTER_TYPES(PlayerControl);
+REGISTER_TYPES(PlayerControl::registerTypes);
 

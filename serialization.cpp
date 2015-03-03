@@ -36,30 +36,30 @@
 #include "collective.h"
 
 template <class Archive>
-void Serialization::registerTypes(Archive& ar) {
-  CreatureFactory::registerTypes(ar);
-  ItemFactory::registerTypes(ar);
-  SquareFactory::registerTypes(ar);
-  MonsterAI::registerTypes(ar);
-  Effect::registerTypes(ar);
-  EnemyCheck::registerTypes(ar);
+void Serialization::registerTypes(Archive& ar, int version) {
+  CreatureFactory::registerTypes(ar, version);
+  ItemFactory::registerTypes(ar, version);
+  SquareFactory::registerTypes(ar, version);
+  MonsterAI::registerTypes(ar, version);
+  Effect::registerTypes(ar, version);
+  EnemyCheck::registerTypes(ar, version);
   REGISTER_TYPE(ar, Player);
   REGISTER_TYPE(ar, Monster);
   REGISTER_TYPE(ar, RangedWeapon);
   REGISTER_TYPE(ar, PlayerControl);
   REGISTER_TYPE(ar, VillageControl);
   REGISTER_TYPE(ar, DoNothingController);
-  Tribe::registerTypes(ar);
-  Trigger::registerTypes(ar);
-  VillageControl::registerTypes(ar);
-  Task::registerTypes(ar);
-  Player::registerTypes(ar);
-  PlayerControl::registerTypes(ar);
-  CollectiveControl::registerTypes(ar);
-  Collective::registerTypes(ar);
+  Tribe::registerTypes(ar, version);
+  Trigger::registerTypes(ar, version);
+  VillageControl::registerTypes(ar, version);
+  Task::registerTypes(ar, version);
+  Player::registerTypes(ar, version);
+  PlayerControl::registerTypes(ar, version);
+  CollectiveControl::registerTypes(ar, version);
+  Collective::registerTypes(ar, version);
 }
 
-REGISTER_TYPES(Serialization);
+REGISTER_TYPES(Serialization::registerTypes);
 
 void SerialChecker::checkSerial() {
   for (Check* c : checks)

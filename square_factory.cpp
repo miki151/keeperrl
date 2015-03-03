@@ -828,7 +828,7 @@ PSquare SquareFactory::getAltar(Creature* creature) {
 }
 
 template <class Archive>
-void SquareFactory::registerTypes(Archive& ar) {
+void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Laboratory);
   REGISTER_TYPE(ar, Staircase);
   REGISTER_TYPE(ar, Magma);
@@ -852,7 +852,7 @@ void SquareFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Hatchery);
 }
 
-REGISTER_TYPES(SquareFactory);
+REGISTER_TYPES(SquareFactory::registerTypes);
 
 PSquare SquareFactory::get(SquareType s) {
   return PSquare(getPtr(s));

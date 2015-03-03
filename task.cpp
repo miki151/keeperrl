@@ -1143,7 +1143,7 @@ PTask Task::consume(Callback* c, Creature* target) {
 }
 
 template <class Archive>
-void Task::registerTypes(Archive& ar) {
+void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Construction);
   REGISTER_TYPE(ar, BuildTorch);
   REGISTER_TYPE(ar, PickItem);
@@ -1166,4 +1166,4 @@ void Task::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Copulate);
 }
 
-REGISTER_TYPES(Task);
+REGISTER_TYPES(Task::registerTypes);

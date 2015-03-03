@@ -38,7 +38,7 @@ class Effect {
   static string getName(LastingEffect);
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 };
 
 enum class EffectStrength { WEAK, NORMAL, STRONG };

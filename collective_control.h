@@ -29,7 +29,7 @@ class CollectiveControl {
   static PCollectiveControl idle(Collective*);
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 
   const vector<Creature*>& getCreatures() const;
   vector<Creature*>& getCreatures();

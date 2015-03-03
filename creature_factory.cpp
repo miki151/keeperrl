@@ -603,6 +603,7 @@ class ShopkeeperController : public Monster {
   bool SERIAL2(firstMove, true);
 };
 
+// OBSOLETE
 class GreenDragonController : public Monster {
   public:
   using Monster::Monster;
@@ -651,7 +652,7 @@ class RedDragonController : public Monster {
 };
 
 template <class Archive>
-void CreatureFactory::registerTypes(Archive& ar) {
+void CreatureFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, GreenDragonController);
   REGISTER_TYPE(ar, RedDragonController);
   REGISTER_TYPE(ar, BoulderController);
@@ -661,7 +662,7 @@ void CreatureFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, ShopkeeperController);
 }
 
-REGISTER_TYPES(CreatureFactory);
+REGISTER_TYPES(CreatureFactory::registerTypes);
 
 PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& items) {
   for (ItemType item : items) {

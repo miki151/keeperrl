@@ -65,9 +65,9 @@ PCollectiveControl CollectiveControl::idle(Collective* col) {
 }
 
 template <class Archive>
-void CollectiveControl::registerTypes(Archive& ar) {
+void CollectiveControl::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, IdleControl);
 }
 
-REGISTER_TYPES(CollectiveControl);
+REGISTER_TYPES(CollectiveControl::registerTypes);
 

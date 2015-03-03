@@ -45,7 +45,7 @@ class Tribe {
   SERIALIZATION_DECL(Tribe);
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 
   struct Set {
     Set();

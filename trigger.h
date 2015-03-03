@@ -48,7 +48,7 @@ class Trigger {
   static const ViewObject& getTorchViewObject(Dir);
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 
   SERIALIZATION_DECL(Trigger);
 

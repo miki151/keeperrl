@@ -18,6 +18,7 @@
 
 #include "creature.h"
 
+// OBSOLETE
 class EnemyCheck {
   public:
   EnemyCheck(double weight);
@@ -29,7 +30,7 @@ class EnemyCheck {
   static EnemyCheck* friendlyAnimals(double weight);
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 
   protected:
   SERIALIZATION_DECL(EnemyCheck);
