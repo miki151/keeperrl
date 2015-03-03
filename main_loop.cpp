@@ -44,7 +44,11 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 3;
+static const int saveVersion = 4;
+
+static bool isCompatible(int loadedVersion) {
+  return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
+}
 
 static string getSaveSuffix(Model::GameType t) {
   switch (t) {
@@ -60,11 +64,11 @@ static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
   try {
 #endif
     CompressedInput input(filename.c_str());
-    Serialization::registerTypes(input.getArchive());
     string discard;
     int version;
-    input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard)
-      >> BOOST_SERIALIZATION_NVP(model);
+    input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard);
+    Serialization::registerTypes(input.getArchive(), version);
+    input.getArchive() >> BOOST_SERIALIZATION_NVP(model);
 #ifdef RELEASE
   } catch (boost::archive::archive_exception& ex) {
     return nullptr;
@@ -86,7 +90,7 @@ string stripNonAscii(string s) {
 
 static void saveGame(unique_ptr<Model> model, const string& path) {
   CompressedOutput out(path);
-  Serialization::registerTypes(out.getArchive());
+  Serialization::registerTypes(out.getArchive(), saveVersion);
   string game = model->getGameDisplayName();
   out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(game)
     << BOOST_SERIALIZATION_NVP(model);
@@ -139,7 +143,7 @@ void MainLoop::getSaveOptions(const vector<pair<Model::GameType, string>>& games
     vector<View::ListElem>& options, vector<SaveFileInfo>& allFiles) {
   for (auto elem : games) {
     vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem.first));
-    files = ::filter(files, [this] (const SaveFileInfo& info) { return getSaveVersion(info) == saveVersion;});
+    files = ::filter(files, [this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
     append(allFiles, files);
     if (!files.empty()) {
       options.emplace_back(elem.second, View::TITLE);
@@ -151,20 +155,21 @@ void MainLoop::getSaveOptions(const vector<pair<Model::GameType, string>>& games
 
 void MainLoop::getDownloadOptions(vector<View::ListElem>& options, vector<SaveFileInfo>& allFiles,
     const string& title) {
-  vector<FileSharing::GameInfo> games = fileSharing->listGames(saveVersion);
+  vector<FileSharing::GameInfo> games = fileSharing->listGames();
   options.emplace_back(title, View::TITLE);
-  for (FileSharing::GameInfo info : games) {
-    bool dup = false;
-    for (auto& elem : allFiles)
-      if (elem.filename == info.filename) {
-        dup = true;
-        break;
-      }
-    if (dup)
-      continue;
-    options.emplace_back(info.displayName, getDateString(info.time));
-    allFiles.push_back({info.filename, info.time, true});
-  }
+  for (FileSharing::GameInfo info : games)
+    if (isCompatible(info.version)) {
+      bool dup = false;
+      for (auto& elem : allFiles)
+        if (elem.filename == info.filename) {
+          dup = true;
+          break;
+        }
+      if (dup)
+        continue;
+      options.emplace_back(info.displayName, getDateString(info.time));
+      allFiles.push_back({info.filename, info.time, true});
+    }
 }
 
 optional<MainLoop::SaveFileInfo> MainLoop::chooseSaveFile(const vector<View::ListElem>& options,

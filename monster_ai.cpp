@@ -1164,7 +1164,7 @@ class AvoidFire : public Behaviour {
 };
 
 template <class Archive>
-void MonsterAI::registerTypes(Archive& ar) {
+void MonsterAI::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Heal);
   REGISTER_TYPE(ar, Rest);
   REGISTER_TYPE(ar, MoveRandomly);
@@ -1182,10 +1182,11 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, ByCollective);
   REGISTER_TYPE(ar, ChooseRandom);
   REGISTER_TYPE(ar, SingleTask);
-  REGISTER_TYPE(ar, AvoidFire);
+  if (version >= 4)
+    REGISTER_TYPE(ar, AvoidFire);
 }
 
-REGISTER_TYPES(MonsterAI);
+REGISTER_TYPES(MonsterAI::registerTypes);
 
 MonsterAI::MonsterAI(Creature* c, const vector<Behaviour*>& beh, const vector<int>& w, bool pick) :
     weights(w), creature(c), pickItems(pick) {

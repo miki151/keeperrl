@@ -1159,9 +1159,9 @@ double Player::getTime() const {
 }
 
 template <class Archive>
-void Player::registerTypes(Archive& ar) {
+void Player::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, PossessedController);
 }
 
-REGISTER_TYPES(Player);
+REGISTER_TYPES(Player::registerTypes);
 

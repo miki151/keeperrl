@@ -83,11 +83,11 @@ class IllusionController : public DoNothingController {
 };
 
 template <class Archive>
-void Effect::registerTypes(Archive& ar) {
+void Effect::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, IllusionController);
 }
 
-REGISTER_TYPES(Effect);
+REGISTER_TYPES(Effect::registerTypes);
 
 static int summonCreatures(Level* level, Vec2 pos, int radius, vector<PCreature> creatures) {
   int numCreated = 0;

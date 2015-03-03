@@ -172,7 +172,7 @@ class CreatureFactory {
   static void init();
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 
   SERIALIZATION_DECL(CreatureFactory);
 

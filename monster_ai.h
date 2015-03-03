@@ -58,7 +58,7 @@ class MonsterAI {
   SERIALIZATION_DECL(MonsterAI);
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 
   ~MonsterAI();
 

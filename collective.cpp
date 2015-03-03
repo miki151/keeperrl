@@ -2304,8 +2304,8 @@ const TaskMap<Collective::CostInfo>& Collective::getTaskMap() const {
 }
 
 template <class Archive>
-void Collective::registerTypes(Archive& ar) {
+void Collective::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, LeaderControlOverride);
 }
 
-REGISTER_TYPES(Collective);
+REGISTER_TYPES(Collective::registerTypes);

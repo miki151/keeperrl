@@ -603,8 +603,58 @@ class ShopkeeperController : public Monster {
   bool SERIAL2(firstMove, true);
 };
 
+// OBSOLETE
+class GreenDragonController : public Monster {
+  public:
+  using Monster::Monster;
+
+  virtual void sleeping() override {
+    Effect::applyToCreature(getCreature(), EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
+  }
+
+  virtual void makeMove() override {
+    Effect::applyToCreature(getCreature(), EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
+    Monster::makeMove();
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Monster);
+  }
+};
+
+class RedDragonController : public Monster {
+  public:
+  RedDragonController(Creature* c, MonsterAIFactory f) : Monster(c, f) {}
+
+  virtual void makeMove() override {
+    if (getCreature()->getTime() > lastSpawn + 10)
+      for (Square* square : getCreature()->getSquares(Rectangle(-Vec2(5, 5), Vec2(5, 5)).getAllSquares()))
+        if (const Creature* c = square->getCreature())
+          if (getCreature()->isEnemy(c)) {
+            Effect::applyToCreature(getCreature(), EffectId::FIRE_SPHERE_PET, EffectStrength::NORMAL);
+            lastSpawn = getCreature()->getTime();
+          }
+    Monster::makeMove();
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Monster)
+      & SVAR(lastSpawn);
+    CHECK_SERIAL;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(RedDragonController);
+
+  private:
+  double SERIAL2(lastSpawn, -100);
+};
+
 template <class Archive>
-void CreatureFactory::registerTypes(Archive& ar) {
+void CreatureFactory::registerTypes(Archive& ar, int version) {
+  REGISTER_TYPE(ar, GreenDragonController);
+  REGISTER_TYPE(ar, RedDragonController);
   REGISTER_TYPE(ar, BoulderController);
   REGISTER_TYPE(ar, Boulder);
   REGISTER_TYPE(ar, KrakenController);
@@ -612,7 +662,7 @@ void CreatureFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, ShopkeeperController);
 }
 
-REGISTER_TYPES(CreatureFactory);
+REGISTER_TYPES(CreatureFactory::registerTypes);
 
 PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& items) {
   for (ItemType item : items) {

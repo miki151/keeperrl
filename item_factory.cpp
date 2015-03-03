@@ -433,7 +433,7 @@ class TrapItem : public Item {
 };
 
 template <class Archive>
-void ItemFactory::registerTypes(Archive& ar) {
+void ItemFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, TrapItem);
   REGISTER_TYPE(ar, SkillBook);
   REGISTER_TYPE(ar, TechBook);
@@ -448,7 +448,7 @@ void ItemFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, LastingEffectItem);
 }
 
-REGISTER_TYPES(ItemFactory);
+REGISTER_TYPES(ItemFactory::registerTypes);
 
 ItemFactory::ItemFactory(const vector<ItemInfo>& _items,
       const vector<ItemType>& _unique) : unique(_unique) {

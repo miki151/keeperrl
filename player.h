@@ -38,7 +38,7 @@ class Player : public Controller, public CreatureView {
   SERIALIZATION_DECL(Player);
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 
   protected:
   Player(Creature*, Model*, bool greeting, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);

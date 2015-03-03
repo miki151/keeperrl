@@ -55,11 +55,11 @@ class Constant : public Tribe {
 };
 
 template <class Archive>
-void Tribe::registerTypes(Archive& ar) {
+void Tribe::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Constant);
 }
 
-REGISTER_TYPES(Tribe);
+REGISTER_TYPES(Tribe::registerTypes);
 
 Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
 }
