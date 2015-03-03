@@ -541,7 +541,7 @@ class Fighter : public Behaviour {
         if (MoveInfo move = getThrowMove(enemyDir))
           return move;
       }
-      if (chase && !other->dontChase()) {
+      if (chase && !other->dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(creature->getPosition() + enemyDir))
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=] {
@@ -549,6 +549,8 @@ class Fighter : public Behaviour {
             GlobalEvents.addCombatEvent(other);
             lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel(),
                 LastSeen::ATTACK, other};
+            if (!chaseFreeze.count(other) || other->getTime() > chaseFreeze.at(other).second)
+              chaseFreeze[other] = make_pair(other->getTime() + 20, other->getTime() + 70);
           })};
       }
     }
@@ -592,6 +594,12 @@ class Fighter : public Behaviour {
     }
   };
   optional<LastSeen> SERIAL(lastSeen);
+  map<const Creature*, pair<double, double>> chaseFreeze;
+
+  bool isChaseFrozen(const Creature* c) {
+    return chaseFreeze.count(c) && chaseFreeze.at(c).first <= c->getTime()
+      && chaseFreeze.at(c).second >= c->getTime();
+  }
 };
 
 class GuardTarget : public Behaviour {
@@ -1130,9 +1138,33 @@ class AttackPest : public Behaviour {
   }
 };
 
+class AvoidFire : public Behaviour {
+  public:
+  using Behaviour::Behaviour;
+
+  virtual MoveInfo getMove() override {
+    if (creature->getSquare()->isBurning() && !creature->isFireResistant()) {
+      for (Square* s : creature->getSquares(Vec2::directions8(true)))
+        if (!s->isBurning())
+          if (auto action = creature->move(s->getPosition() - creature->getPosition()))
+            return action;
+      for (Square* s : creature->getSquares(Vec2::directions8(true)))
+        if (auto action = creature->forceMove(s->getPosition() - creature->getPosition()))
+          return action;
+    }
+    return NoMove;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(AvoidFire);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour);
+  }
+};
 
 template <class Archive>
-void MonsterAI::registerTypes(Archive& ar) {
+void MonsterAI::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Heal);
   REGISTER_TYPE(ar, Rest);
   REGISTER_TYPE(ar, MoveRandomly);
@@ -1150,9 +1182,11 @@ void MonsterAI::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, ByCollective);
   REGISTER_TYPE(ar, ChooseRandom);
   REGISTER_TYPE(ar, SingleTask);
+  if (version >= 4)
+    REGISTER_TYPE(ar, AvoidFire);
 }
 
-REGISTER_TYPES(MonsterAI);
+REGISTER_TYPES(MonsterAI::registerTypes);
 
 MonsterAI::MonsterAI(Creature* c, const vector<Behaviour*>& beh, const vector<int>& w, bool pick) :
     weights(w), creature(c), pickItems(pick) {
@@ -1214,22 +1248,24 @@ MonsterAIFactory MonsterAIFactory::monster() {
 MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
+        new AvoidFire(c),
         new Heal(c, false),
         new Fighter(c, 0.6, true),
         new ByCollective(c, col),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
-        { 6, 5, 2, 1}, false);
+        { 10, 6, 5, 2, 1}, false);
       });
 }
 
 MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l, bool moveRandomly) {
   return MonsterAIFactory([=](Creature* c) {
       vector<Behaviour*> actors { 
+          new AvoidFire(c),
           new Heal(c),
           new Thief(c),
           new Fighter(c, 0.6, true),
           new GoldLust(c)};
-      vector<int> weights { 5, 4, 3, 1 };
+      vector<int> weights { 10, 5, 4, 3, 1 };
       if (l != nullptr) {
         actors.push_back(new GuardArea(c, l));
         weights.push_back(1);
@@ -1304,11 +1340,12 @@ MonsterAIFactory MonsterAIFactory::summoned(Creature* leader, int ttl) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
           new Summoned(c, leader, 1, 3, ttl),
+          new AvoidFire(c),
           new Heal(c),
           new Fighter(c, 0.6, true),
           new MoveRandomly(c, 3),
           new GoldLust(c)},
-          { 5, 4, 3, 1, 1 });
+          { 6, 5, 4, 3, 1, 1 });
       });
 }
 
@@ -1316,11 +1353,12 @@ MonsterAIFactory MonsterAIFactory::dieTime(double dieTime) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
           new DieTime(c, dieTime),
+          new AvoidFire(c),
           new Heal(c),
           new Fighter(c, 0.6, true),
           new MoveRandomly(c, 3),
           new GoldLust(c)},
-          { 5, 4, 3, 1, 1 });
+          { 6, 5, 4, 3, 1, 1 });
       });
 }
 

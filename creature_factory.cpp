@@ -603,6 +603,7 @@ class ShopkeeperController : public Monster {
   bool SERIAL2(firstMove, true);
 };
 
+// OBSOLETE
 class GreenDragonController : public Monster {
   public:
   using Monster::Monster;
@@ -651,7 +652,7 @@ class RedDragonController : public Monster {
 };
 
 template <class Archive>
-void CreatureFactory::registerTypes(Archive& ar) {
+void CreatureFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, GreenDragonController);
   REGISTER_TYPE(ar, RedDragonController);
   REGISTER_TYPE(ar, BoulderController);
@@ -661,7 +662,7 @@ void CreatureFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, ShopkeeperController);
 }
 
-REGISTER_TYPES(CreatureFactory);
+REGISTER_TYPES(CreatureFactory::registerTypes);
 
 PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& items) {
   for (ItemType item : items) {
@@ -1073,8 +1074,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::CYCLOPS;
           c.attr[AttrType::SPEED] = 90;
           c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 35;
-          c.attr[AttrType::DEXTERITY] = 25;
+          c.attr[AttrType::STRENGTH] = 33;
+          c.attr[AttrType::DEXTERITY] = 23;
           c.barehandedDamage = 10;
           c.barehandedAttack = AttackType::EAT;
           c.humanoid = true;
@@ -1086,8 +1087,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::GREEN_DRAGON;
           c.attr[AttrType::SPEED] = 90;
           c.size = CreatureSize::HUGE;
-          c.attr[AttrType::STRENGTH] = 40;
-          c.attr[AttrType::DEXTERITY] = 30;
+          c.attr[AttrType::STRENGTH] = 38;
+          c.attr[AttrType::DEXTERITY] = 28;
           c.barehandedDamage = 10;
           c.barehandedAttack = AttackType::EAT;
           c.humanoid = false;
@@ -1103,7 +1104,7 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(GREEN_DRAGON,
           c.viewId = ViewId::RED_DRAGON;
           c.attr[AttrType::SPEED] = 110;
-          c.attr[AttrType::STRENGTH] = 50;
+          c.attr[AttrType::STRENGTH] = 47;
           c.fireCreature = true;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 0;
           c.speciesName = "red dragon";
@@ -1932,14 +1933,6 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
     case CreatureId::FIRE_SPHERE:
       return ControllerFactory([=](Creature* c) {
           return new KamikazeController(c, normalFactory);
-          });
-    case CreatureId::GREEN_DRAGON:
-      return ControllerFactory([=](Creature* c) {
-          return new GreenDragonController(c, normalFactory);
-          });
-    case CreatureId::RED_DRAGON:
-      return ControllerFactory([=](Creature* c) {
-          return new RedDragonController(c, normalFactory);
           });
     default: return Monster::getFactory(normalFactory);
   }

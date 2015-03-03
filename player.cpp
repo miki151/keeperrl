@@ -106,21 +106,24 @@ void Player::onBump(Creature*) {
   FAIL << "Shouldn't call onBump on a player";
 }
 
+string Player::getInventoryItemName(const Item* item, bool plural) {
+  if (getCreature()->getEquipment().isEquiped(item))
+    return item->getNameAndModifiers(plural, getCreature()->isBlind()) + " " 
+      + getSlotSuffix(item->getEquipmentSlot());
+  else
+    return item->getNameAndModifiers(plural, getCreature()->isBlind());
+}
+
 void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
     ItemPredicate predicate) {
   map<string, vector<Item*> > ret = groupBy<Item*, string>(items, 
-      [this] (Item* const& item) { 
-        if (getCreature()->getEquipment().isEquiped(item))
-          return item->getNameAndModifiers(false, getCreature()->isBlind()) + " " 
-              + getSlotSuffix(item->getEquipmentSlot());
-        else
-          return item->getNameAndModifiers(false, getCreature()->isBlind());});
+      [this] (Item* const& item) { return getInventoryItemName(item, false); });
   for (auto elem : ret) {
     if (elem.second.size() == 1)
-      names.emplace_back(elem.first, predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
+      names.emplace_back(getInventoryItemName(elem.second[0], false),
+          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
     else
-      names.emplace_back(toString<int>(elem.second.size()) + " " 
-          + elem.second[0]->getNameAndModifiers(true, getCreature()->isBlind()),
+      names.emplace_back(toString<int>(elem.second.size()) + " " + getInventoryItemName(elem.second[0], true),
           predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
     groups.push_back(elem.second);
   }
@@ -447,11 +450,11 @@ void Player::displayInventory() {
       applyItem(item);
       return;
     } if (options[*index].getText() == "remove")
-      tryToPerform(getCreature()->unequip(getOnlyElement(item)));
+      tryToPerform(getCreature()->unequip(item[0]));
     if (options[*index].getText() == "equip")
       tryToPerform(getCreature()->equip(item[0]));
-    displayInventory();
   }
+  displayInventory();
 }
 
 void Player::hideAction() {
@@ -1156,9 +1159,9 @@ double Player::getTime() const {
 }
 
 template <class Archive>
-void Player::registerTypes(Archive& ar) {
+void Player::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, PossessedController);
 }
 
-REGISTER_TYPES(Player);
+REGISTER_TYPES(Player::registerTypes);
 

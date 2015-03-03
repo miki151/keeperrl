@@ -267,6 +267,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void removePermanentEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
   bool isAffectedPermanently(LastingEffect) const;
+  bool isFireResistant() const;
 
   vector<AttackLevel> getAttackLevels() const;
   bool hasSuicidalAttack() const;
@@ -296,7 +297,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void updateViewObject();
   int getStrengthAttackBonus() const;
   BodyPart getBodyPart(AttackLevel attack) const;
-  bool isFireResistant() const;
   void injure(BodyPart, bool drop);
   AttackLevel getRandomAttackLevel() const;
   AttackType getAttackType() const;

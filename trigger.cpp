@@ -290,11 +290,11 @@ PTrigger Trigger::getMeteorShower(Creature* c, double duration) {
 }
 
 template <class Archive>
-void Trigger::registerTypes(Archive& ar) {
+void Trigger::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Torch);
   REGISTER_TYPE(ar, Trap);
   REGISTER_TYPE(ar, Portal);
   REGISTER_TYPE(ar, MeteorShower);
 }
 
-REGISTER_TYPES(Trigger);
+REGISTER_TYPES(Trigger::registerTypes);

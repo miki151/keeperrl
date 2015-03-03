@@ -33,7 +33,8 @@ enum class AttackTriggerId {
   POWER,
   SELF_VICTIMS,
   ENEMY_POPULATION,
-  GOLD
+  GOLD,
+  STOLEN_ITEMS,
 };
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
@@ -49,6 +50,14 @@ class VillageControl : public CollectiveControl {
     TRIBE_AND_NAME,
   };
 
+  enum WelcomeMessage {
+    DRAGON_WELCOME,
+  };
+
+  enum ItemTheftMessage {
+    DRAGON_THEFT,
+  };
+
   struct Villain {
     int SERIAL(minPopulation);
     int SERIAL(minTeamSize);
@@ -56,11 +65,14 @@ class VillageControl : public CollectiveControl {
     vector<Trigger> SERIAL(triggers);
     Behaviour SERIAL(behaviour);
     AttackMessage SERIAL(attackMessage);
+    optional<WelcomeMessage> SERIAL(welcomeMessage);
+    optional<ItemTheftMessage> SERIAL(itemTheftMessage);
     bool SERIAL2(leaderAttacks, false);
 
     PTask getAttackTask(VillageControl* self);
     double getAttackProbability(const VillageControl* self) const;
     double getTriggerValue(const Trigger&, const VillageControl* self, const Collective* villain) const;
+    bool contains(const Creature*);
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
@@ -80,13 +92,21 @@ class VillageControl : public CollectiveControl {
   const string& getAttackMessage(const Villain&) const;
   string getAttackMessage(const Villain&, const vector<Creature*> attackers) const;
   void launchAttack(Villain&, vector<Creature*> attackers);
+  optional<Villain&> getVillain(const Creature*);
+  void considerWelcomeMessage();
 
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
+  REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 
   const Location* SERIAL(location);
   vector<Villain> SERIAL(villains);
 
   map<const Collective*, double> SERIAL(victims);
+  EntitySet<Item> SERIAL(myItems);
+  map<const Collective*, int> SERIAL(stolenItemCount);
 };
+
+BOOST_CLASS_VERSION(VillageControl, 1)
+BOOST_CLASS_VERSION(VillageControl::Villain, 1)
 
 #endif

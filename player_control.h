@@ -67,7 +67,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   SERIALIZATION_DECL(PlayerControl);
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 
   protected:
   // from CreatureView

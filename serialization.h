@@ -24,19 +24,15 @@ typedef portable_oarchive OutputArchive;
 #define SERIALIZABLE(T) \
    template void T::serialize(InputArchive&, unsigned); \
    template void T::serialize(OutputArchive&, unsigned);
- //  template void T::serialize(boost::archive::xml_iarchive&, unsigned);
- //  template void T::serialize(boost::archive::xml_oarchive&, unsigned);
 
 #define SERIALIZABLE_TMPL(T, ...) \
    template class T<__VA_ARGS__>;\
    template void T<__VA_ARGS__>::serialize(InputArchive&, unsigned); \
    template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned);
 
-#define REGISTER_TYPES(T) \
-   template void T::registerTypes(InputArchive&); \
-   template void T::registerTypes(OutputArchive&);
- //  template void T::registerTypes(boost::archive::xml_iarchive&);
-//   template void T::registerTypes(boost::archive::xml_oarchive&);
+#define REGISTER_TYPES(M) \
+   template void M(InputArchive&, int); \
+   template void M(OutputArchive&, int);
 
 #define REGISTER_TYPE(T, A)\
 (T).register_type(static_cast<A*>(nullptr))
@@ -77,7 +73,7 @@ typedef portable_oarchive OutputArchive;
 class Serialization {
   public:
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 };
 
 class SerialChecker {

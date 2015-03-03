@@ -82,7 +82,7 @@ class Task : public UniqueEntity<Task> {
   void serialize(Archive& ar, const unsigned int version);
 
   template <class Archive>
-  static void registerTypes(Archive& ar);
+  static void registerTypes(Archive& ar, int version);
 
   protected:
   void setDone();

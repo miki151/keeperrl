@@ -15,8 +15,9 @@ class FileSharing {
     string displayName;
     string filename;
     time_t time;
+    int version;
   };
-  vector<GameInfo> listGames(int version);
+  vector<GameInfo> listGames();
   optional<string> download(const string& filename, const string& dir, ProgressMeter&);
   void uploadHighscores(const string& path);
   string downloadHighscores();

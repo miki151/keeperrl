@@ -392,11 +392,12 @@ Vec2 Creature::getPosition() const {
 }
 
 void Creature::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
-  level->globalMessage(this, playerCanSee, cant);
+  if (level)
+    level->globalMessage(this, playerCanSee, cant);
 }
 
 void Creature::monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
-  if (!isPlayer())
+  if (level && !isPlayer())
     level->globalMessage(this, playerCanSee, cant);
 }
 
@@ -1718,7 +1719,15 @@ CreatureAction Creature::construct(Vec2 direction, SquareType type) {
   for (Square* s : getSquare(direction))
     if (s->canConstruct(type) && canConstruct(type))
       return CreatureAction([=]() {
-        s->construct(type);
+        if (s->construct(type)) {
+          if (type.getId() == SquareId::FLOOR) {
+            monsterMessage(getName().the() + " digs a tunnel");
+            playerMessage("You dig a tunnel");
+          } else {
+            monsterMessage(getName().the() + " builds " + getSafeSquare(direction)->getName());
+            playerMessage("You build " + getSafeSquare(direction)->getName());
+          }
+        }
         spendTime(1);
       });
   return CreatureAction();

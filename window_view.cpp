@@ -869,6 +869,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     return none;
   RenderLock lock(renderMutex);
   uiLock = true;
+  renderer.flushEvents(Event::KeyPressed);
   inputQueue.push(UserInputId::REFRESH);
   TempClockPause pause(clock);
   SyncQueue<optional<int>> returnQueue;

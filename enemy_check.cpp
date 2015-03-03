@@ -81,10 +81,10 @@ EnemyCheck* EnemyCheck::friendlyAnimals(double weight) {
 }
 
 template <class Archive>
-void EnemyCheck::registerTypes(Archive& ar) {
+void EnemyCheck::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, AllEnemies);
   REGISTER_TYPE(ar, FriendlyAnimals);
 }
 
-REGISTER_TYPES(EnemyCheck);
+REGISTER_TYPES(EnemyCheck::registerTypes);
 

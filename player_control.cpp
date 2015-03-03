@@ -1251,8 +1251,9 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           selection = SELECT;
           PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribe(),
               MonsterAIFactory::collective(getCollective()));
-          for (Square* square : getLevel()->getSquares(pos.neighbors8(true)))
-            if (square->canEnter(imp.get()) && canSee(square->getPosition())) {
+          for (Square* square : getLevel()->getSquares(concat(pos.neighbors8(true), {pos})))
+            if (square->canEnter(imp.get())
+                && (canSee(square->getPosition()) || getCollective()->containsSquare(square->getPosition()))) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
               getCollective()->addCreature(std::move(imp), square->getPosition(), {MinionTrait::WORKER});
               break;
@@ -1281,7 +1282,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
       break;
     case BuildInfo::DESTROY:
-        if (getCollective()->isKnownSquare(pos)) {
+        if (getCollective()->isKnownSquare(pos) && !getCollective()->getLevel()->getSafeSquare(pos)->isBurning()) {
           selection = SELECT;
           getCollective()->destroySquare(pos);
           updateSquareMemory(pos);
@@ -1433,7 +1434,7 @@ void PlayerControl::considerDeityFight() {
 
 void PlayerControl::checkKeeperDanger() {
   Creature* controlled = getControlled();
-  if (!retired && controlled != getKeeper()) { 
+  if (!retired && getKeeper() && controlled != getKeeper()) { 
     if ((getCollective()->isInCombat(getKeeper()) || getKeeper()->getHealth() < 1)
         && lastControlKeeperQuestion < getCollective()->getTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getTime();
@@ -1595,7 +1596,7 @@ void PlayerControl::addImp(Creature* c) {
 }
 
 void PlayerControl::onConqueredLand() {
-  if (retired)
+  if (retired || !getKeeper())
     return;
   model->conquered(*getKeeper()->getFirstName(), getCollective()->getKills(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
@@ -1605,7 +1606,7 @@ void PlayerControl::onConqueredLand() {
 
 void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
   visibilityMap.remove(victim);
-  if (!getKeeper() && !retired) {
+  if (!getKeeper() && !retired && !model->isGameOver()) {
     model->gameOver(victim, getCollective()->getKills().size(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());
   }
@@ -1719,9 +1720,9 @@ vector<const Creature*> PlayerControl::getVisibleEnemies() const {
 }
 
 template <class Archive>
-void PlayerControl::registerTypes(Archive& ar) {
+void PlayerControl::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, MinionController);
 }
 
-REGISTER_TYPES(PlayerControl);
+REGISTER_TYPES(PlayerControl::registerTypes);
 

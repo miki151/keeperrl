@@ -297,7 +297,7 @@ class Tree : public Square {
     s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
     getLevel()->getModel()->addWoodCount(numWood);
     int numCut = getLevel()->getModel()->getWoodCount();
-    if (numCut > 1000 && Random.roll(max(30, (3000 - numCut) / 20)))
+    if (numCut > 1500 && Random.roll(max(50, (3000 - numCut) / 10)))
       Effect::summon(getLevel(), CreatureFactory::singleType(
             getLevel()->getModel()->getKillEveryoneTribe(), creature), getPosition(), 1, 100000);
   }
@@ -828,7 +828,7 @@ PSquare SquareFactory::getAltar(Creature* creature) {
 }
 
 template <class Archive>
-void SquareFactory::registerTypes(Archive& ar) {
+void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Laboratory);
   REGISTER_TYPE(ar, Staircase);
   REGISTER_TYPE(ar, Magma);
@@ -852,7 +852,7 @@ void SquareFactory::registerTypes(Archive& ar) {
   REGISTER_TYPE(ar, Hatchery);
 }
 
-REGISTER_TYPES(SquareFactory);
+REGISTER_TYPES(SquareFactory::registerTypes);
 
 PSquare SquareFactory::get(SquareType s) {
   return PSquare(getPtr(s));
