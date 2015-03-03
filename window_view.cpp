@@ -29,6 +29,7 @@
 #include "view_index.h"
 #include "map_memory.h"
 #include "progress_meter.h"
+#include "version.h"
 
 using sf::Color;
 using sf::String;
@@ -222,6 +223,8 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
       (mouthPos2 + menuMouth.getSize().y) * scale, sf::Color(60, 76, 48));
   renderer.drawImage((renderer.getSize().x - width) / 2, 0, menuCore, scale);
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
+  renderer.drawText(colors[ColorId::WHITE], 30, renderer.getSize().y - 40, "Version " BUILD_DATE " " BUILD_VERSION,
+      false, 16);
 }
 
 void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type, function<void()> cancelFun) {

@@ -92,9 +92,10 @@ void Jukebox::refresh() {
       music[currentPlaying].setVolume(max(0.0f, music[currentPlaying].getVolume() - volumeDec));
   } else
   if (music[current].getStatus() == sf::SoundSource::Stopped) {
-    if (nextType)
+    if (nextType) {
       setCurrent(*nextType);
-    else
+      nextType.reset();
+    } else
       continueCurrent();
     currentPlaying = current;
     music[current].play();
