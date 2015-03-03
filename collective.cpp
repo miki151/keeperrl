@@ -1033,8 +1033,10 @@ void Collective::tick(double time) {
     vector<Vec2> enemyPos = getEnemyPositions();
     if (!enemyPos.empty())
       delayDangerousTasks(enemyPos, getTime() + 20);
-    else
+    else {
       alarmInfo.finishTime() = -1000;
+      control->onNoEnemies();
+    }
     bool allSurrender = true;
     for (Vec2 v : enemyPos)
       if (!prisonerInfo.count(NOTNULL(getLevel()->getSafeSquare(v)->getCreature()))) {

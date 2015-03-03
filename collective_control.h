@@ -21,6 +21,7 @@ class CollectiveControl {
   virtual void removeAssaultNotification(const Collective*) {}
   virtual void onDiscoveredLocation(const Location*) {}
   virtual void onConstructed(Vec2, SquareType) {}
+  virtual void onNoEnemies() {}
 
   SERIALIZATION_DECL(CollectiveControl);
 

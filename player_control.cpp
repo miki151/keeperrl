@@ -1457,6 +1457,10 @@ void PlayerControl::checkKeeperDanger() {
 const double messageTimeout = 80;
 const double warningFrequency = 200;
 
+void PlayerControl::onNoEnemies() {
+  model->setCurrentMusic(MusicType::PEACEFUL, false);
+}
+
 void PlayerControl::tick(double time) {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
@@ -1501,7 +1505,7 @@ void PlayerControl::tick(double time) {
       if (canSee(c)) {
         addImportantLongMessage(assault.second.message(), c->getPosition());
         assaultNotifications.erase(assault.first);
-        model->setCurrentMusic(MusicType::BATTLE);
+        model->setCurrentMusic(MusicType::BATTLE, true);
         break;
       }
   if (model->getOptions()->getBoolValue(OptionId::HINTS) && time > hintFrequency) {

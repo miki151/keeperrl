@@ -28,7 +28,7 @@ class Jukebox {
   public:
   Jukebox(Options*, vector<pair<MusicType, string>> tracks);
 
-  void setType(MusicType);
+  void setType(MusicType, bool now);
   void toggle(bool on);
 
   private:
@@ -47,6 +47,7 @@ class Jukebox {
   int currentPlaying = 0;
   bool on = false;
   int numTracks = 0;
+  optional<MusicType> nextType;
   optional<AsyncLoop> refreshLoop;
 };
 
