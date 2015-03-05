@@ -115,7 +115,7 @@ class WindowView: public View {
   void keyboardAction(Event::KeyEvent key);
 
   PGuiElem drawListGui(const string& title, const vector<ListElem>& options, MenuType, int& height,
-      int* highlight = nullptr, int* choice = nullptr);
+      int* highlight, int* choice, int* mouseOverElem);
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();

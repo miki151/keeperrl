@@ -222,13 +222,13 @@ PGuiElem GuiFactory::label(const string& s, int size, Color c) {
         }));
 }
 
-PGuiElem GuiFactory::variableLabel(function<string()> fun, int size, Color c) {
+PGuiElem GuiFactory::variableLabel(function<string()> fun, bool center, int size, Color c) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           string s = fun();
-          r.drawText(transparency(colors[ColorId::BLACK], 100),
-            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, false, size);
-          r.drawText(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, false, size);
+          int x = center ? bounds.middle().x : bounds.getTopLeft().x;
+          r.drawText(transparency(colors[ColorId::BLACK], 100), x + 1, bounds.getTopLeft().y + 2, s, center, size);
+          r.drawText(c, x, bounds.getTopLeft().y, s, center, size);
         }));
 }
 

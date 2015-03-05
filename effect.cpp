@@ -470,7 +470,6 @@ void Effect::applyDirected(Creature* c, Vec2 direction, DirEffectType type, Effe
     case DirEffectId::CREATURE_EFFECT:
         creatureEffect(c, type.get<EffectType>(), strength, direction, creatureEffectRange[int(strength)]);
         break;
-    default: FAIL << "Can't apply directed " << int(type.getId());
   }
 }
 
@@ -500,7 +499,34 @@ string Effect::getName(EffectType type) {
     case EffectId::METEOR_SHOWER: return "meteor shower";
     case EffectId::LASTING: return getName(type.get<LastingEffect>());
   }
-  return "";
+}
+
+string Effect::getDescription(EffectType type) {
+  switch (type.getId()) {
+    case EffectId::HEAL: return "Heals your wounds.";
+    case EffectId::TELEPORT: return "Teleports to a safer location close by.";
+    case EffectId::ROLLING_BOULDER: return "rolling boulder";
+    case EffectId::PORTAL: return "Creates a magic portal. Two portals are needed for a connection.";
+    case EffectId::EMIT_POISON_GAS: return "poison gas";
+    case EffectId::DESTROY_EQUIPMENT: return "Destroys a random piece of equipment.";
+    case EffectId::ENHANCE_WEAPON: return "Increases weapon damage or accuracy.";
+    case EffectId::ENHANCE_ARMOR: return "Increases armor defense.";
+    case EffectId::FIRE_SPHERE_PET: return "Creates a following fire sphere.";
+    case EffectId::WORD_OF_POWER: return "Causes an explosion around the spellcaster.";
+    case EffectId::DECEPTION: return "Creates multiple illusions of the spellcaster to confuse the enemy.";
+    case EffectId::SUMMON_INSECTS: return "Summons insects to distract the enemy.";
+    case EffectId::LEAVE_BODY: return "Lets the spellcaster leave his body and possess another one.";
+    case EffectId::FIRE: return "fire";
+    case EffectId::ACID: return "acid";
+    case EffectId::GUARDING_BOULDER: return "boulder";
+    case EffectId::ALARM: return "alarm";
+    case EffectId::TELE_ENEMIES: return "surprise";
+    case EffectId::SUMMON_SPIRIT: return "Summons guarding spirits.";
+    case EffectId::SILVER_DAMAGE: return "silver";
+    case EffectId::CURE_POISON: return "Cures poisoning.";
+    case EffectId::METEOR_SHOWER: return "Initiates a deadly meteor shower at the site.";
+    case EffectId::LASTING: return getDescription(type.get<LastingEffect>());
+  }
 }
 
 string Effect::getName(LastingEffect type) {
@@ -524,5 +550,38 @@ string Effect::getName(LastingEffect type) {
     case LastingEffect::INSANITY: return "insanity";
     case LastingEffect::MAGIC_SHIELD: return "magic shield";
   }
-  return "";
 }
+
+string Effect::getDescription(LastingEffect type) {
+  switch (type) {
+    case LastingEffect::SLOWED: return "Causes unnaturally slow movement for some turns.";
+    case LastingEffect::SPEED: return "Causes unnaturally quick movement for some turns.";
+    case LastingEffect::BLIND: return "Causes blindness for some turns";
+    case LastingEffect::INVISIBLE: return "Causes invisibility for some turns.";
+    case LastingEffect::POISON: return "Poisons for some turns.";
+    case LastingEffect::POISON_RESISTANT: return "Gives poison resistance for some turns.";
+    case LastingEffect::FLYING: return "Causes levitation for some turns.";
+    case LastingEffect::PANIC: return "Increases defense and lowers damage for some turns.";
+    case LastingEffect::RAGE: return "Increases damage and lowers defense for some turns.";
+    case LastingEffect::HALLU: return "Causes hallucinations.";
+    case LastingEffect::STR_BONUS: return "Gives a strength bonus for some turns.";
+    case LastingEffect::DEX_BONUS: return "Gives a dexterity bonus for some turns.";
+    case LastingEffect::SLEEP: return "Puts to sleep.";
+    case LastingEffect::ENTANGLED: return "web";
+    case LastingEffect::STUNNED: return "Causes stunning for some turns.";
+    case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance for some turns.";
+    case LastingEffect::INSANITY: return "Confuses the target about who is friend and who is foe.";
+    case LastingEffect::MAGIC_SHIELD: return "Gives protection from physical attacks for some turns.";
+  }
+}
+
+string Effect::getDescription(DirEffectType type) {
+  switch (type.getId()) {
+    case DirEffectId::BLAST: return "Creates a directed blast that throws back creatures and items.";
+    case DirEffectId::CREATURE_EFFECT:
+        return "Creates a directed wave that " + noCapitalFirst(getDescription(type.get<EffectType>()));
+        break;
+  }
+}
+
+

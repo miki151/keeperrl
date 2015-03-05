@@ -560,7 +560,7 @@ void Player::spellAction() {
   for (Spell* spell : spells)
     list.push_back(View::ListElem(spell->getName() + " " + (!getCreature()->isReady(spell) ? "(ready in " +
           toString(int(getCreature()->getSpellDelay(spell) + 0.9999)) + " turns)" : ""),
-          getCreature()->isReady(spell) ? View::NORMAL : View::INACTIVE));
+          getCreature()->isReady(spell) ? View::NORMAL : View::INACTIVE).setTip(spell->getDescription()));
   auto index = model->getView()->chooseFromList("Cast a spell:", list);
   if (!index)
     return;

@@ -50,6 +50,7 @@ class Spell : public Singleton<Spell, SpellId> {
   EffectType getEffectType() const;
   DirEffectType getDirEffectType() const;
   int getDifficulty() const;
+  string getDescription() const;
 
   static void init();
 

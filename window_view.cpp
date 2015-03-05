@@ -470,8 +470,8 @@ void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
   collective->refreshGameInfo(gameInfo);
   mapGui->setSpriteMode(currentTileLayout.sprites);
   bool spectator = gameInfo.infoType == GameInfo::InfoType::SPECTATOR;
-  mapGui->updateObjects(collective, mapLayout, options->getBoolValue(OptionId::SMOOTH_MOVEMENT)
-      && (currentTileLayout.sprites || spectator), !spectator, guiBuilder.showMorale());
+  mapGui->updateObjects(collective, mapLayout, currentTileLayout.sprites || spectator,
+      !spectator, guiBuilder.showMorale());
   updateMinimap(collective);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);
@@ -882,6 +882,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int count = 0;
   double* scrollPos = scrollPos1;
   int index = index1;
+  int mouseOverElem = -1;
   vector<int> indexes(options.size());
   vector<int> optionIndexes;
   int elemCount = 0;
@@ -899,12 +900,18 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   double localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
-  PGuiElem stuff = drawListGui(title, options, menuType, contentHeight, &index, &choice);
+  PGuiElem stuff = drawListGui(title, options, menuType, contentHeight, &index, &choice, &mouseOverElem);
   PGuiElem dismissBut = gui.margins(gui.stack(makeVec<PGuiElem>(
         gui.button([&](){ choice = -100; }),
         gui.mouseHighlight(gui.mainMenuHighlight(), count, &index),
-        gui.centerHoriz(
-            gui.label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss")))), 0, 5, 0, 0);
+        gui.variableLabel([&]()->string {
+            if (index >= 0 && !options[optionIndexes[index]].getTip().empty())
+              return options[optionIndexes[index]].getTip(); 
+            else
+            if (mouseOverElem > -1 && !options[mouseOverElem].getTip().empty())
+              return options[mouseOverElem].getTip();
+            else
+              return string("Dismiss");}, true))), 0, 5, 0, 0);
   if (menuType != MAIN_MENU) {
     stuff = gui.scrollable(std::move(stuff), contentHeight, scrollPos);
     stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);
@@ -1015,7 +1022,7 @@ PGuiElem WindowView::getHighlight(View::MenuType type, const string& label, int 
 }
 
 PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& options, MenuType menuType,
-    int& height, int* highlight, int* choice) {
+    int& height, int* highlight, int* choice, int* mouseOverElem) {
   vector<PGuiElem> lines;
   vector<int> heights;
   int lineHeight = 30;
@@ -1064,6 +1071,9 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
       line = gui.horizontalList(makeVec<PGuiElem>(std::move(line),
             gui.label(options[i].getSecondColumn())), columnWidth + 80, 0);
     lines.push_back(menuElemMargins(std::move(line)));
+    lines.back() = gui.stack(makeVec<PGuiElem>(
+          std::move(lines.back()),
+          gui.mouseOverAction([=] { *mouseOverElem = i; })));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = gui.stack(makeVec<PGuiElem>(
             gui.button([=]() { *choice = numActive; }),

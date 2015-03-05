@@ -37,10 +37,12 @@ RICH_ENUM(TechId,
 
 class Technology : public Singleton<Technology, TechId> {
   public:
-  Technology(const string& name, int cost, const vector<TechId>& prerequisites, bool canResearch = true);
+  Technology(const string& name, const string& description, int cost, const vector<TechId>& prerequisites = {},
+      bool canResearch = true);
   const string& getName() const;
   int getCost() const;
   bool canResearch() const;
+  const string& getDescription() const;
   static vector<Technology*> getSorted();
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
@@ -52,6 +54,7 @@ class Technology : public Singleton<Technology, TechId> {
   private:
   bool canLearnFrom(const vector<Technology*>&) const;
   string name;
+  string description;
   int cost;
   vector<Technology*> prerequisites;
   bool research;

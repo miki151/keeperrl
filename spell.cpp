@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "spell.h"
+#include "effect.h"
 
 const string& Spell::getName() const {
   return name;
@@ -37,6 +38,12 @@ Spell::Spell(const string& n, EffectType e, int diff) : name(n), effect(e), diff
 Spell::Spell(const string& n, DirEffectType e, int diff) : name(n), effect(e), difficulty(diff) {
 }
 
+string Spell::getDescription() const {
+  if (isDirected())
+    return Effect::getDescription(boost::get<DirEffectType>(effect));
+  else
+    return Effect::getDescription(boost::get<EffectType>(effect));
+}
 
 void Spell::init() {
   set(SpellId::HEALING, new Spell("healing", EffectId::HEAL, 30));

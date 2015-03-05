@@ -639,7 +639,7 @@ void PlayerControl::handlePersonalSpells(View* view) {
       mod = View::INACTIVE;
       suff = requires(getCollective()->getNeededTech(spell));
     }
-    options.emplace_back(spell->getName() + suff, mod);
+    options.push_back(View::ListElem(spell->getName() + suff, mod).setTip(spell->getDescription()));
   }
   view->presentList("Sorcery", options);
 }
@@ -670,12 +670,12 @@ void PlayerControl::handleLibrary(View* view) {
   for (Technology* tech : techs) {
     int cost = getCollective()->getTechCost(tech);
     string text = tech->getName() + " (" + toString(cost) + " mana)";
-    options.emplace_back(text, cost <= int(getCollective()->numResource(ResourceId::MANA))
-        && !allInactive ? View::NORMAL : View::INACTIVE);
+    options.push_back(View::ListElem(text, cost <= int(getCollective()->numResource(ResourceId::MANA))
+        && !allInactive ? View::NORMAL : View::INACTIVE).setTip(tech->getDescription()));
   }
   options.emplace_back("Researched:", View::TITLE);
   for (Technology* tech : getCollective()->getTechnologies())
-    options.emplace_back(tech->getName(), View::INACTIVE);
+    options.push_back(View::ListElem(tech->getName(), View::INACTIVE).setTip(tech->getDescription()));
   auto index = view->chooseFromList("Library", options);
   if (!index)
     return;

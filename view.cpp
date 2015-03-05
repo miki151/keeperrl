@@ -29,12 +29,21 @@ View::ListElem::ListElem(const string& t, const string& sec, ElemMod m) : text(t
 View::ListElem::ListElem(const char* s, ElemMod m, optional<UserInputId> a) : text(s), mod(m), action(a) {
 }
 
+View::ListElem& View::ListElem::setTip(const string& s) {
+  tooltip = s;
+  return *this;
+}
+
 const string& View::ListElem::getText() const {
   return text;
 }
 
 const string& View::ListElem::getSecondColumn() const {
   return secondColumn;
+}
+
+const string& View::ListElem::getTip() const {
+  return tooltip;
 }
 
 View::ElemMod View::ListElem::getMod() const {

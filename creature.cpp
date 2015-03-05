@@ -1629,6 +1629,7 @@ vector<PItem> Creature::getCorpse() {
 }
 
 void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
+  CHECK(!dead);
   lastAttacker = attacker;
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   controller->onKilled(attacker);
