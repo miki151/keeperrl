@@ -692,19 +692,26 @@ PGuiElem GuiFactory::translate(PGuiElem e, Vec2 v, Rectangle newSize) {
 
 class MouseOverAction : public GuiElem {
   public:
-  MouseOverAction(function<void()> f) : callback(f) {}
+  MouseOverAction(function<void()> f, function<void()> f2) : callback(f), outCallback(f2) {}
 
   virtual void onMouseMove(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
+    if (pos.inRectangle(getBounds())) {
       callback();
+      in = true;
+    } else if (in && outCallback) {
+      in = false;
+      outCallback();
+    }
   }
 
   private:
   function<void()> callback;
+  bool in = false;
+  function<void()> outCallback;
 };
 
-PGuiElem GuiFactory::mouseOverAction(function<void()> callback) {
-  return PGuiElem(new MouseOverAction(callback));
+PGuiElem GuiFactory::mouseOverAction(function<void()> callback, function<void()> outCallback) {
+  return PGuiElem(new MouseOverAction(callback, outCallback));
 }
 
 class MouseHighlight : public GuiLayout {

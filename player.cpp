@@ -120,11 +120,12 @@ void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, ve
       [this] (Item* const& item) { return getInventoryItemName(item, false); });
   for (auto elem : ret) {
     if (elem.second.size() == 1)
-      names.emplace_back(getInventoryItemName(elem.second[0], false),
-          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
+      names.push_back(View::ListElem(getInventoryItemName(elem.second[0], false),
+          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE).setTip(elem.second[0]->getDescription()));
     else
-      names.emplace_back(toString<int>(elem.second.size()) + " " + getInventoryItemName(elem.second[0], true),
-          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
+      names.push_back(View::ListElem(toString<int>(elem.second.size()) + " " 
+            + getInventoryItemName(elem.second[0], true),
+          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE).setTip(elem.second[0]->getDescription()));
     groups.push_back(elem.second);
   }
 }
@@ -1144,9 +1145,9 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.lyingItems.clear();
   for (auto stack : Item::stackItems(getCreature()->getPickUpOptions()))
     if (stack.second.size() == 1)
-      info.lyingItems.push_back({stack.first, stack.second[0]->getViewObject()});
+      info.lyingItems.push_back({stack.first, stack.second[0]->getDescription(), stack.second[0]->getViewObject()});
     else info.lyingItems.push_back({toString(stack.second.size()) + " "
-        + stack.second[0]->getName(true), stack.second[0]->getViewObject()});
+        + stack.second[0]->getName(true), stack.second[0]->getDescription(), stack.second[0]->getViewObject()});
 
 }
 

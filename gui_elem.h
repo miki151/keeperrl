@@ -77,7 +77,7 @@ class GuiFactory {
   PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);
   PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
   PGuiElem centerHoriz(PGuiElem, int width);
-  PGuiElem mouseOverAction(function<void()>);
+  PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
   PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlight2(PGuiElem highlight);
   PGuiElem mouseHighlightGameChoice(PGuiElem, View::GameTypeChoice my,

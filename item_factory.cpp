@@ -1243,6 +1243,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.name = "first aid kit";
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
+            i.description = "Heals your wounds, but requires a few turns to do that.";
             i.applyTime = 3;
             i.uses = Random.get(3, 6);
             i.usedUpMsg = true;
@@ -1275,6 +1276,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.viewId = ViewId::PUCE_POTION;
             i.name = "potion of " + Effect::getName(effect);
             i.plural = "potions of " + Effect::getName(effect);
+            i.description = Effect::getDescription(effect);
             i.blindName = "potion";
             i.itemClass = ItemClass::POTION;
             i.fragile = true;
@@ -1288,6 +1290,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             EffectType effect = item.get<EffectType>();
             i.viewId = ViewId::MUSHROOM;
             i.name = Effect::getName(effect) + " mushroom";
+            i.description = Effect::getDescription(effect);
             i.itemClass= ItemClass::FOOD;
             i.weight = 0.1;
             i.modifiers[ModifierType::THROWN_DAMAGE] = -15;
@@ -1300,6 +1303,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.viewId = ViewId::SCROLL;
             i.name = "scroll of " + Effect::getName(effect);
             i.plural= "scrolls of " + Effect::getName(effect);
+            i.description = Effect::getDescription(effect);
             i.blindName = "scroll";
             i.itemClass = ItemClass::SCROLL;
             i.weight = 0.1;

@@ -102,6 +102,7 @@ class GameInfo {
     vector<Effect> effects;
     struct ItemInfo {
       string name;
+      string description;
       ViewObject viewObject;
     };
     vector<ItemInfo> lyingItems;

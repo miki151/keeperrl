@@ -501,6 +501,11 @@ string Effect::getName(EffectType type) {
   }
 }
 
+static string getLastingDescription(string desc) {
+  // Leave out the full stop.
+  return desc.substr(0, desc.size() - 1) + " for some turns.";
+}
+
 string Effect::getDescription(EffectType type) {
   switch (type.getId()) {
     case EffectId::HEAL: return "Heals your wounds.";
@@ -525,7 +530,7 @@ string Effect::getDescription(EffectType type) {
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "Cures poisoning.";
     case EffectId::METEOR_SHOWER: return "Initiates a deadly meteor shower at the site.";
-    case EffectId::LASTING: return getDescription(type.get<LastingEffect>());
+    case EffectId::LASTING: return getLastingDescription(getDescription(type.get<LastingEffect>()));
   }
 }
 
@@ -554,24 +559,24 @@ string Effect::getName(LastingEffect type) {
 
 string Effect::getDescription(LastingEffect type) {
   switch (type) {
-    case LastingEffect::SLOWED: return "Causes unnaturally slow movement for some turns.";
-    case LastingEffect::SPEED: return "Causes unnaturally quick movement for some turns.";
-    case LastingEffect::BLIND: return "Causes blindness for some turns";
-    case LastingEffect::INVISIBLE: return "Causes invisibility for some turns.";
-    case LastingEffect::POISON: return "Poisons for some turns.";
-    case LastingEffect::POISON_RESISTANT: return "Gives poison resistance for some turns.";
-    case LastingEffect::FLYING: return "Causes levitation for some turns.";
-    case LastingEffect::PANIC: return "Increases defense and lowers damage for some turns.";
-    case LastingEffect::RAGE: return "Increases damage and lowers defense for some turns.";
+    case LastingEffect::SLOWED: return "Causes unnaturally slow movement.";
+    case LastingEffect::SPEED: return "Causes unnaturally quick movement.";
+    case LastingEffect::BLIND: return "Causes blindness";
+    case LastingEffect::INVISIBLE: return "Causes invisibility.";
+    case LastingEffect::POISON: return "Poisons.";
+    case LastingEffect::POISON_RESISTANT: return "Gives poison resistance.";
+    case LastingEffect::FLYING: return "Causes levitation.";
+    case LastingEffect::PANIC: return "Increases defense and lowers damage.";
+    case LastingEffect::RAGE: return "Increases damage and lowers defense.";
     case LastingEffect::HALLU: return "Causes hallucinations.";
-    case LastingEffect::STR_BONUS: return "Gives a strength bonus for some turns.";
-    case LastingEffect::DEX_BONUS: return "Gives a dexterity bonus for some turns.";
+    case LastingEffect::STR_BONUS: return "Gives a strength bonus.";
+    case LastingEffect::DEX_BONUS: return "Gives a dexterity bonus.";
     case LastingEffect::SLEEP: return "Puts to sleep.";
     case LastingEffect::ENTANGLED: return "web";
-    case LastingEffect::STUNNED: return "Causes stunning for some turns.";
-    case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance for some turns.";
+    case LastingEffect::STUNNED: return "Causes stunning.";
+    case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
     case LastingEffect::INSANITY: return "Confuses the target about who is friend and who is foe.";
-    case LastingEffect::MAGIC_SHIELD: return "Gives protection from physical attacks for some turns.";
+    case LastingEffect::MAGIC_SHIELD: return "Gives protection from physical attacks.";
   }
 }
 

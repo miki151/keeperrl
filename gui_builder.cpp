@@ -458,6 +458,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
         lines.push_back(gui.stack(gui.horizontalList(makeVec<PGuiElem>(
                 gui.viewObject(info.lyingItems[i].viewObject, tilesOk),
                 gui.label(info.lyingItems[i].name)), viewObjectWidth, 0),
+            getHintCallback(info.lyingItems[i].description),
             gui.button(getButtonCallback({UserInputId::PICK_UP_ITEM, i}))));
       }
     }

@@ -339,7 +339,7 @@ void WindowView::rebuildGui() {
         break;
   }
   resetMapBounds();
-  int bottomOffset = 15;
+  int bottomOffset = 35;
   int leftMargin = 20;
   int rightMargin = 20;
   int sideOffset = 10;
@@ -884,11 +884,13 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int index = index1;
   int mouseOverElem = -1;
   vector<int> indexes(options.size());
+  vector<int> allIndexes(options.size());
   vector<int> optionIndexes;
   int elemCount = 0;
   for (int i : All(options)) {
     if (options[i].getMod() == View::NORMAL) {
       indexes[count] = elemCount;
+      allIndexes[count] = i;
       optionIndexes.push_back(i);
       ++count;
     }
@@ -1073,7 +1075,7 @@ PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& op
     lines.push_back(menuElemMargins(std::move(line)));
     lines.back() = gui.stack(makeVec<PGuiElem>(
           std::move(lines.back()),
-          gui.mouseOverAction([=] { *mouseOverElem = i; })));
+          gui.mouseOverAction([=] { *mouseOverElem = i; }, [=] { *mouseOverElem = -1; })));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = gui.stack(makeVec<PGuiElem>(
             gui.button([=]() { *choice = numActive; }),
