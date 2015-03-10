@@ -19,6 +19,7 @@
 #include "util.h"
 #include "enum_variant.h"
 #include "unique_entity.h"
+#include "game_info.h"
 
 enum class UserInputId {
 // common
@@ -52,9 +53,7 @@ enum class UserInputId {
     PICK_UP_ITEM,
     DROP,
     EXT_DROP,
-    SHOW_INVENTORY,
     APPLY_ITEM,
-    EQUIPMENT,
     THROW,
     THROW_DIR,
     SHOW_HISTORY,
@@ -65,6 +64,7 @@ enum class UserInputId {
     UNPOSSESS,
     CAST_SPELL,
     CONSUME,
+    INVENTORY_ITEM,
 };
 
 struct BuildingInfo : public NamedTupleBase<Vec2, int> {
@@ -79,7 +79,14 @@ struct TeamLeaderInfo : public NamedTupleBase<TeamId, UniqueEntity<Creature>::Id
   NAME_ELEM(1, creatureId);
 };
 
-typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, Vec2, TeamLeaderInfo),
+struct InventoryItemInfo : public NamedTupleBase<vector<UniqueEntity<Item>::Id>,
+    GameInfo::PlayerInfo::ItemInfo::Action> {
+  NAMED_TUPLE_STUFF(InventoryItemInfo);
+  NAME_ELEM(0, items);
+  NAME_ELEM(1, action);
+};
+
+typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamLeaderInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
@@ -93,6 +100,8 @@ typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, Vec2, TeamLeaderInfo),
             UserInputId::PICK_UP_ITEM,
             UserInputId::MESSAGE_INFO,
             UserInputId::COMMAND_TEAM),
+        ASSIGN(InventoryItemInfo,
+            UserInputId::INVENTORY_ITEM),
         ASSIGN(Vec2,
             UserInputId::POSSESS,
             UserInputId::MOVE, 

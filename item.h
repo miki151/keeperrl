@@ -79,6 +79,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   string getAName(bool plural = false, bool blind = false) const;
   string getNameAndModifiers(bool plural = false, bool blind = false) const;
   string getArtifactName() const;
+  string getShortName(bool shortModifiers) const;
 
   virtual optional<EffectType> getEffectType() const;
   optional<EffectType> getAttackEffect() const;
@@ -149,10 +150,13 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   bool SERIAL2(discarded, false);
 
   private:
+  string getModifiers(bool shorten = false) const;
   string getVisibleName(bool plural) const;
   string getBlindName(bool plural) const;
   const Creature* SERIAL2(shopkeeper, nullptr);
   Fire SERIAL(fire);
 };
+
+BOOST_CLASS_VERSION(Item, 1)
 
 #endif

@@ -51,7 +51,7 @@ class MapGui : public GuiElem {
   void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, bool showMorale);
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
-  void setHint(const string&);
+  void setHint(const vector<string>&);
   void addAnimation(PAnimation animation, Vec2 position);
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
@@ -64,7 +64,7 @@ class MapGui : public GuiElem {
       const EnumMap<HighlightType, double>&);
   void drawCreatureHighlights(Renderer&, const ViewObject&, Rectangle tile);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
-  void drawHint(Renderer& renderer, Color color, const string& text);
+  void drawHint(Renderer& renderer, Color color, const vector<string>& text);
   void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
   void renderExtraBorders(Renderer&, int currentTimeReal);
   void renderHighlights(Renderer&, Vec2 size, int currentTimeReal);
@@ -87,7 +87,7 @@ class MapGui : public GuiElem {
   Callbacks callbacks;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
-  string hint;
+  vector<string> hint;
   struct AnimationInfo {
     PAnimation animation;
     Vec2 position;

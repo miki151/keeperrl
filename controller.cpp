@@ -64,7 +64,7 @@ void DoNothingController::you(const string& param) {
 }
 
 void DoNothingController::makeMove() {
-  getCreature()->wait().perform();
+  getCreature()->wait().perform(getCreature());
 }
 
 void DoNothingController::onBump(Creature* c) {

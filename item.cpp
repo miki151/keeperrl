@@ -26,9 +26,12 @@
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
-  ItemAttributes::serialize(ar, version);
-  ar& SUBCLASS(UniqueEntity)
-    & SUBCLASS(Renderable)
+  if (version == 0)   // OBSOLETE
+    ItemAttributes::serialize(ar, version);
+  ar& SUBCLASS(UniqueEntity);
+  if (version >= 1)
+    ar & SUBCLASS(ItemAttributes);
+  ar& SUBCLASS(Renderable)
     & SVAR(discarded)
     & SVAR(shopkeeper)
     & SVAR(fire);
@@ -296,8 +299,13 @@ string Item::getArtifactName() const {
   return *artifactName;
 }
 
-string Item::getNameAndModifiers(bool getPlural, bool blind) const {
-  string artStr = artifactName ? " named " + *artifactName : "";
+string Item::getModifiers(bool shorten) const {
+  string artStr;
+  if (artifactName) {
+    artStr = *artifactName;
+    if (!shorten)
+      artStr = " named " + artStr;
+  }
   EnumSet<ModifierType> printMod;
   switch (getClass()) {
     case ItemClass::WEAPON:
@@ -313,21 +321,36 @@ string Item::getNameAndModifiers(bool getPlural, bool blind) const {
       break;
     default: break;
   }
-  for (auto mod : ENUM_ALL(ModifierType))
-    if (modifiers[mod] != 0)
-      printMod.insert(mod);
+  if (!shorten)
+    for (auto mod : ENUM_ALL(ModifierType))
+      if (modifiers[mod] != 0)
+        printMod.insert(mod);
   vector<string> attrStrings;
   for (auto mod : printMod)
-    attrStrings.push_back(withSign(modifiers[mod]) + " " + Creature::getModifierName(mod));
-  for (auto attr : ENUM_ALL(AttrType))
-    if (attrs[attr] != 0)
-      attrStrings.push_back(withSign(attrs[attr]) + " " + Creature::getAttrName(attr));
-  string attrString = combine(attrStrings);
+    attrStrings.push_back(withSign(modifiers[mod]) + (shorten ? "" : " " + Creature::getModifierName(mod)));
+  if (!shorten)
+    for (auto attr : ENUM_ALL(AttrType))
+      if (attrs[attr] != 0)
+        attrStrings.push_back(withSign(attrs[attr]) + " " + Creature::getAttrName(attr));
+  string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = " (" + attrString + ")";
   if (uses > -1 && displayUses) 
     attrString += " (" + toString(uses) + " uses left)";
-  return getName(getPlural, blind) + artStr + attrString;
+  return artStr + attrString;
+}
+
+string Item::getShortName(bool shortMod) const {
+  string name = getModifiers(shortMod);
+  if (shortName)
+    name = *shortName + " " + name;
+  if (getShopkeeper())
+    name = name + " (unpaid)";
+  return name;
+}
+
+string Item::getNameAndModifiers(bool getPlural, bool blind) const {
+  return getName(getPlural, blind) + getModifiers();
 }
 
 string Item::getBlindName(bool plural) const {

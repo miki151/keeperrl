@@ -97,6 +97,8 @@ class Player : public Controller, public CreatureView {
   void takeOffAction();
   void hideAction();
   void displayInventory();
+  void handleItems(const vector<UniqueEntity<Item>::Id>&, GameInfo::PlayerInfo::ItemInfo::Action);
+  vector<GameInfo::PlayerInfo::ItemInfo::Action> getItemActions(Item*) const;
   bool interruptedByEnemy();
   void travelAction();
   void targetAction();
@@ -108,7 +110,7 @@ class Player : public Controller, public CreatureView {
   vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
   void getItemNames(vector<Item*> it, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());
-  string getInventoryItemName(const Item*, bool plural);
+  string getInventoryItemName(const Item*, bool plural) const;
   string getPluralName(Item* item, int num);
   bool SERIAL2(travelling, false);
   Vec2 SERIAL(travelDir);
@@ -122,6 +124,9 @@ class Player : public Controller, public CreatureView {
   vector<PlayerMessage> SERIAL(messages);
   vector<string> SERIAL(messageHistory);
   string getRemainingString(LastingEffect) const;
+  string getShortItemName(const Item*) const;
+  vector<GameInfo::PlayerInfo::ItemInfo> getItemInfos(const vector<Item*>&) const;
+  GameInfo::PlayerInfo::ItemInfo getItemInfo(const vector<Item*>&) const;
   struct TimePosInfo {
     Vec2 pos;
     double time;

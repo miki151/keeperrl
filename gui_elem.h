@@ -31,11 +31,14 @@ class GuiElem {
   virtual void onRefreshBounds() {}
   virtual void onKeyPressed(char) {}
   virtual void onKeyPressed2(Event::KeyEvent) {}
+  virtual void onMouseWheel(Vec2 mousePos, bool up) {}
 
   void setBounds(Rectangle);
   Rectangle getBounds();
 
   virtual ~GuiElem();
+
+  static void propagateEvent(const Event&, vector<GuiElem*>);
 
   private:
   Rectangle bounds;
@@ -48,6 +51,8 @@ class GuiFactory {
 
   PGuiElem button(function<void()> fun, char hotkey = 0);
   PGuiElem button(function<void()> fun, Event::KeyEvent);
+  PGuiElem button(function<void(Rectangle buttonBounds)> fun, char hotkey = 0);
+  PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent);
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
@@ -82,7 +87,7 @@ class GuiFactory {
   PGuiElem mouseHighlight2(PGuiElem highlight);
   PGuiElem mouseHighlightGameChoice(PGuiElem, View::GameTypeChoice my,
       optional<View::GameTypeChoice>& highlight);
-  PGuiElem scrollable(PGuiElem content, int contentHeight, double* scrollPos);
+  PGuiElem scrollable(PGuiElem content, double* scrollPos);
   PGuiElem getScrollButton();
   PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);

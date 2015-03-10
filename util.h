@@ -906,7 +906,7 @@ string makeSentence(string s);
 
 string lowercase(string s);
 
-string combine(const vector<string>& adj);
+string combine(const vector<string>& adj, bool commasOnly = false);
 
 string getPlural(const string& singular, const string& plural, int num);
 string getPlural(const string&, int num);

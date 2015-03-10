@@ -236,7 +236,7 @@ class MoveRandomly : public Behaviour {
     if (direction == Vec2(0, 0))
       return {val, creature->wait() };
     else
-      return {val, creature->move(direction).append([=] {
+      return {val, creature->move(direction).append([=] (Creature* creature) {
           updateMem(creature->getPosition());
       })};
   }
@@ -380,7 +380,7 @@ class Fighter : public Behaviour {
       if (auto move = getFireMove(other->getPosition() - creature->getPosition()))
         return {weight, move.move};
     if (auto action = creature->moveAway(other->getPosition(), chase))
-      return {weight, action.prepend([=] {
+      return {weight, action.prepend([=](Creature* creature) {
         GlobalEvents.addCombatEvent(creature);
         GlobalEvents.addCombatEvent(other);
         lastSeen = {creature->getPosition(), creature->getTime(), creature->getLevel(), LastSeen::PANIC, other};
@@ -476,7 +476,7 @@ class Fighter : public Behaviour {
       if (auto action = tryEffect(effect, dir.shorten()))
         return action;
     if (auto action = creature->fire(dir.shorten()))
-      return {1.0, action.append([=] {
+      return {1.0, action.append([=](Creature* creature) {
           GlobalEvents.addCombatEvent(creature);
       })};
     return NoMove;
@@ -495,13 +495,13 @@ class Fighter : public Behaviour {
     }
     if (chase && lastSeen->type == LastSeen::ATTACK)
       if (auto action = creature->moveTowards(lastSeen->pos)) {
-        return {0.5, action.append([=] {
+        return {0.5, action.append([=](Creature* creature) {
             GlobalEvents.addCombatEvent(creature);
         })};
       }
     if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()) < 4)
       if (auto action = creature->moveAway(lastSeen->pos, chase))
-        return {0.5, action.append([=] {
+        return {0.5, action.append([=](Creature* creature) {
             GlobalEvents.addCombatEvent(creature);
         })};
     return NoMove;
@@ -519,10 +519,9 @@ class Fighter : public Behaviour {
     if (creature->isHumanoid() && !creature->getWeapon()) {
       if (Item* weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
-          return {3.0 / (2.0 + distance), action.prepend([=] {
+          return {3.0 / (2.0 + distance), action.prepend([=](Creature* creature) {
             GlobalEvents.addCombatEvent(creature);
             GlobalEvents.addCombatEvent(other);
-            creature->globalMessage(creature->getName().the() + " draws " + weapon->getAName());
         })};
     }
     if (distance <= 5)
@@ -544,7 +543,7 @@ class Fighter : public Behaviour {
       if (chase && !other->dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(creature->getPosition() + enemyDir))
-          return {max(0., 1.0 - double(distance) / 10), action.prepend([=] {
+          return {max(0., 1.0 - double(distance) / 10), action.prepend([=](Creature* creature) {
             GlobalEvents.addCombatEvent(creature);
             GlobalEvents.addCombatEvent(other);
             lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel(),
@@ -556,7 +555,7 @@ class Fighter : public Behaviour {
     }
     if (distance == 1)
       if (auto action = creature->attack(other))
-        return {1.0, action.prepend([=] {
+        return {1.0, action.prepend([=](Creature* creature) {
             GlobalEvents.addCombatEvent(creature);
             GlobalEvents.addCombatEvent(other);
         })};
@@ -697,7 +696,7 @@ class DieTime : public Behaviour {
 
   virtual MoveInfo getMove() override {
     if (creature->getTime() > dieTime) {
-      return {1.0, CreatureAction([=] {
+      return {1.0, CreatureAction(creature, [=](Creature* creature) {
         creature->die(nullptr, false, false);
       })};
     }
@@ -733,7 +732,7 @@ class Summoned : public GuardTarget {
 
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getTime() > dieTime) {
-      return {1.0, CreatureAction([=] {
+      return {1.0, CreatureAction(creature, [=](Creature* creature) {
         creature->die(nullptr, false, false);
       })};
     }
@@ -793,7 +792,7 @@ class Thief : public Behaviour {
             allGold.push_back(it);
         if (allGold.size() > 0)
           if (auto action = creature->stealFrom(other->getPosition() - creature->getPosition(), allGold))
-          return {1.0, action.append([=] {
+          return {1.0, action.append([=](Creature* creature) {
             other->playerMessage(creature->getName().the() + " steals all your gold!");
             robbed.push_back(other);
           })};
@@ -1231,7 +1230,7 @@ void MonsterAI::makeMove() {
       break;
   }
   CHECK(winner.value > 0);
-  winner.move.perform();
+  winner.move.perform(creature);
 }
 
 PMonsterAI MonsterAIFactory::getMonsterAI(Creature* c) {

@@ -80,7 +80,7 @@ class TempClockPause {
 };
 
 int rightBarWidthCollective = 330;
-int rightBarWidthPlayer = 290;
+int rightBarWidthPlayer = 330;
 int bottomBarHeightCollective = 62;
 int bottomBarHeightPlayer = 62;
 
@@ -115,8 +115,9 @@ void WindowView::resetMapBounds() {
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(params.gui), useTiles(params.useTiles),
     options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, {
         [this](UserInput input) { inputQueue.push(input);},
-        [this](const string& s) { mapGui->setHint(s);},
-        [this](sf::Event::KeyEvent ev) { keyboardAction(ev);}}), fullScreenTrigger(-1) {}
+        [this](const vector<string>& s) { mapGui->setHint(s);},
+        [this](sf::Event::KeyEvent ev) { keyboardAction(ev);},
+        [this]() { refreshScreen(false);}}), fullScreenTrigger(-1) {}
 
 void WindowView::initialize() {
   renderer.initialize(options->getBoolValue(OptionId::FULLSCREEN));
@@ -198,7 +199,7 @@ void WindowView::reset() {
 }
 
 void WindowView::displayOldSplash() {
-  Rectangle menuPosition = getMenuPosition(View::MAIN_MENU_NO_TILES);
+  Rectangle menuPosition = guiBuilder.getMenuPosition(View::MAIN_MENU_NO_TILES);
   int margin = 10;
   renderer.drawImage(renderer.getSize().x / 2 - 415, menuPosition.getKY() + margin,
       gui.get(GuiFactory::TexId::SPLASH1));
@@ -303,6 +304,7 @@ void WindowView::rebuildGui() {
   vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;
   int bottomBarHeight = 0;
+  int rightBottomMargin = 30;
   tempGuiElems.clear();
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::SPECTATOR:
@@ -348,7 +350,8 @@ void WindowView::rebuildGui() {
     tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight));
     tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
-    tempGuiElems.back()->setBounds(Rectangle(Vec2(renderer.getSize().x - rightBarWidth, 0), renderer.getSize()));
+    tempGuiElems.back()->setBounds(Rectangle(Vec2(renderer.getSize().x - rightBarWidth, 0),
+          renderer.getSize() - Vec2(0, rightBottomMargin)));
     tempGuiElems.push_back(gui.margins(std::move(bottom), 80, 10, 80, 0));
     tempGuiElems.back()->setBounds(Rectangle(
           0, renderer.getSize().y - bottomBarHeight,
@@ -709,30 +712,6 @@ int getScrollPos(int index, int count) {
   return max(0, min(count - 1, index - 3));
 }
 
-Rectangle WindowView::getMenuPosition(View::MenuType type) {
-  int windowWidth = 800;
-  int windowHeight = 400;
-  int ySpacing;
-  int yOffset = 0;
-  switch (type) {
-    case View::MAIN_MENU_NO_TILES:
-      ySpacing = (renderer.getSize().y - windowHeight) / 2;
-      break;
-    case View::MAIN_MENU:
-      windowWidth = 0.41 * renderer.getSize().y;
-      ySpacing = renderer.getSize().y / 3;
-      break;
-    case View::GAME_CHOICE_MENU:
-      windowWidth = 0.41 * renderer.getSize().y;
-      ySpacing = renderer.getSize().y * 0.28;
-      yOffset = renderer.getSize().y * 0.05;
-      break;
-    default: ySpacing = 100; break;
-  }
-  int xSpacing = (renderer.getSize().x - windowWidth) / 2;
-  return Rectangle(xSpacing, ySpacing + yOffset, xSpacing + windowWidth, renderer.getSize().y - ySpacing + yOffset);
-}
-
 PGuiElem WindowView::drawGameChoices(optional<View::GameTypeChoice>& choice,optional<View::GameTypeChoice>& index) {
   return gui.verticalAspect(
       gui.marginFit(
@@ -798,7 +777,7 @@ View::GameTypeChoice WindowView::chooseGameType() {
   PGuiElem stuff = drawGameChoices(choice, index);
   while (1) {
     refreshScreen(false);
-    stuff->setBounds(getMenuPosition(View::GAME_CHOICE_MENU));
+    stuff->setBounds(guiBuilder.getMenuPosition(View::GAME_CHOICE_MENU));
     stuff->render(renderer);
     renderer.drawAndClearBuffer();
     Event event;
@@ -902,20 +881,20 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   double localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
-  PGuiElem stuff = drawListGui(title, options, menuType, contentHeight, &index, &choice, &mouseOverElem);
+  PGuiElem stuff = guiBuilder.drawListGui(title, options, menuType, &contentHeight, &index, &choice, &mouseOverElem);
   PGuiElem dismissBut = gui.margins(gui.stack(makeVec<PGuiElem>(
         gui.button([&](){ choice = -100; }),
         gui.mouseHighlight(gui.mainMenuHighlight(), count, &index),
         gui.variableLabel([&]()->string {
-            if (index >= 0 && !options[optionIndexes[index]].getTip().empty())
-              return options[optionIndexes[index]].getTip(); 
+            if (index >= 0 && index < count && !options[allIndexes[index]].getTip().empty())
+              return options[allIndexes[index]].getTip(); 
             else
             if (mouseOverElem > -1 && !options[mouseOverElem].getTip().empty())
               return options[mouseOverElem].getTip();
             else
               return string("Dismiss");}, true))), 0, 5, 0, 0);
   if (menuType != MAIN_MENU) {
-    stuff = gui.scrollable(std::move(stuff), contentHeight, scrollPos);
+    stuff = gui.scrollable(std::move(stuff), scrollPos);
     stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);
     stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
         std::move(stuff), 30, gui.BOTTOM);
@@ -923,7 +902,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   }
   while (1) {
     refreshScreen(false);
-    stuff->setBounds(getMenuPosition(menuType));
+    stuff->setBounds(guiBuilder.getMenuPosition(menuType));
     stuff->render(renderer);
     renderer.drawAndClearBuffer();
     Event event;
@@ -968,21 +947,6 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   return returnQueue.pop();
 }
 
-vector<string> WindowView::breakText(const string& text, int maxWidth) {
-  if (text.empty())
-    return {""};
-  vector<string> rows;
-  for (string line : split(text, {'\n'})) {
-    rows.push_back("");
-    for (string word : split(line, {' '}))
-      if (renderer.getTextLength(rows.back() + ' ' + word) <= maxWidth)
-        rows.back().append((rows.back().size() > 0 ? " " : "") + word);
-      else
-        rows.push_back(word);
-  }
-  return rows;
-}
-
 void WindowView::presentText(const string& title, const string& text) {
   TempClockPause pause(clock);
   presentList(title, View::getListElem({text}), false);
@@ -996,99 +960,6 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
       e.setMod(View::TEXT);
   double scrollPos = scrollDown ? options.size() - 1 : 0;
   chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, none, {});
-}
-
-const double menuLabelVPadding = 0.15;
-
-vector<PGuiElem> WindowView::getMultiLine(const string& text, Color color, View::MenuType menuType, int maxWidth) {
-  vector<PGuiElem> ret;
-  for (const string& s : breakText(text, maxWidth)) {
-    if (menuType != View::MenuType::MAIN_MENU)
-      ret.push_back(gui.label(s, color));
-    else
-      ret.push_back(gui.mainMenuLabelBg(s, menuLabelVPadding));
-
-  }
-  return ret;
-}
-
-PGuiElem WindowView::menuElemMargins(PGuiElem elem) {
-  return gui.margins(std::move(elem), 10, 3, 10, 0);
-}
-
-PGuiElem WindowView::getHighlight(View::MenuType type, const string& label, int height) {
-  switch (type) {
-    case View::MAIN_MENU: return menuElemMargins(gui.mainMenuLabel(label, menuLabelVPadding));
-    default: return gui.highlight(height);
-  }
-}
-
-PGuiElem WindowView::drawListGui(const string& title, const vector<ListElem>& options, MenuType menuType,
-    int& height, int* highlight, int* choice, int* mouseOverElem) {
-  vector<PGuiElem> lines;
-  vector<int> heights;
-  int lineHeight = 30;
-  int brokenLineHeight = 24;
-  if (!title.empty()) {
-    lines.push_back(gui.label(capitalFirst(title), colors[ColorId::WHITE]));
-    heights.push_back(lineHeight);
-    lines.push_back(gui.empty());
-    heights.push_back(lineHeight);
-  } else {
-    lines.push_back(gui.empty());
-    heights.push_back(lineHeight / 2);
-  }
-  int numActive = 0;
-  int secColumnWidth = 0;
-  int columnWidth = 300;
-  for (auto& elem : options) {
-    columnWidth = max(columnWidth, renderer.getTextLength(elem.getText()) + 50);
-    if (!elem.getSecondColumn().empty())
-      secColumnWidth = max(secColumnWidth, 80 + renderer.getTextLength(elem.getSecondColumn()));
-  }
-  columnWidth = min(columnWidth, getMenuPosition(menuType).getW() - secColumnWidth - 140);
-  if (menuType == MAIN_MENU)
-    columnWidth = 1000000;
-  for (int i : All(options)) {
-    Color color;
-    switch (options[i].getMod()) {
-      case View::TITLE: color = gui.titleText; break;
-      case View::INACTIVE: color = gui.inactiveText; break;
-      case View::TEXT:
-      case View::NORMAL: color = gui.text; break;
-    }
-    vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, columnWidth);
-    if (options.size() == 1 && label1.size() > 1) { // hacky way of checking that we display a wall of text
-      heights = vector<int>(label1.size(), lineHeight);
-      lines = std::move(label1);
-      break;
-    }
-    heights.push_back((label1.size() - 1) * brokenLineHeight + lineHeight);
-    PGuiElem line;
-    if (menuType != MAIN_MENU)
-      line = gui.verticalList(std::move(label1), brokenLineHeight, 0);
-    else
-      line = std::move(getOnlyElement(label1));
-    if (!options[i].getSecondColumn().empty())
-      line = gui.horizontalList(makeVec<PGuiElem>(std::move(line),
-            gui.label(options[i].getSecondColumn())), columnWidth + 80, 0);
-    lines.push_back(menuElemMargins(std::move(line)));
-    lines.back() = gui.stack(makeVec<PGuiElem>(
-          std::move(lines.back()),
-          gui.mouseOverAction([=] { *mouseOverElem = i; }, [=] { *mouseOverElem = -1; })));
-    if (highlight && options[i].getMod() == View::NORMAL) {
-      lines.back() = gui.stack(makeVec<PGuiElem>(
-            gui.button([=]() { *choice = numActive; }),
-            std::move(lines.back()),
-            gui.mouseHighlight(getHighlight(menuType, options[i].getText(), lineHeight), numActive, highlight)));
-      ++numActive;
-    }
-  }
-  height = accumulate(heights.begin(), heights.end(), 0);
-  if (menuType != MAIN_MENU)
-    return gui.verticalList(std::move(lines), heights, 0);
-  else
-    return gui.verticalListFit(std::move(lines), 0.0);
 }
 
 void WindowView::switchZoom() {
@@ -1176,7 +1047,8 @@ void WindowView::processEvents() {
         renderer.flushEvents(Event::KeyPressed);
         break;
       case Event::MouseWheelMoved:
-        zoom(event.mouseWheel.delta < 0);
+        if (renderer.getMousePos().inRectangle(mapGui->getBounds()))
+          zoom(event.mouseWheel.delta < 0);
         break;
       case Event::MouseButtonPressed :
         if (event.mouseButton.button == sf::Mouse::Right)
@@ -1197,51 +1069,17 @@ void WindowView::processEvents() {
 void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
   CHECK(currentThreadId() == renderThreadId);
   if (gameReady)
-    mapGui->setHint("");
+    mapGui->setHint({});
   switch (event.type) {
-    case Event::MouseButtonReleased : {
-      Vec2 mousePos(event.mouseButton.x, event.mouseButton.y);
-      for (GuiElem* elem : guiElems)
-        elem->onMouseRelease();
+    case Event::MouseButtonReleased:
       mapGui->onMouseRelease(); // MapGui needs this event otherwise it will sometimes lock the mouse button
-    break; }
-    case Event::MouseMoved: {
-      Vec2 mousePos(event.mouseMove.x, event.mouseMove.y);
-      for (GuiElem* elem : guiElems) {
-        elem->onMouseMove(mousePos);
-/*        if (mousePos.inRectangle(elem->getBounds()))
-          break;*/
-      }
-      break; }
-    case Event::MouseButtonPressed: {
+      break;
+    case Event::MouseButtonPressed:
       lockKeyboard = true;
-      Vec2 clickPos(event.mouseButton.x, event.mouseButton.y);
-      for (GuiElem* elem : guiElems) {
-        if (event.mouseButton.button == sf::Mouse::Right)
-          if (elem->onRightClick(clickPos))
-            break;
-        if (event.mouseButton.button == sf::Mouse::Left)
-          if (elem->onLeftClick(clickPos))
-            break;
-      }
-      }
       break;
-    case Event::KeyPressed:
-      for (GuiElem* elem : guiElems)
-        elem->onKeyPressed2(event.key);
-      break;
-    case Event::TextEntered:
-      if (event.text.unicode < 128) {
-        char key = event.text.unicode;
-        for (GuiElem* elem : guiElems)
-          elem->onKeyPressed(key);
-      }
-      break;
-    default: break;
+    default:break;
   }
-  if (gameReady)
-    for (GuiElem* elem : guiElems)
-      elem->onRefreshBounds();
+  GuiElem::propagateEvent(event, guiElems);
 }
 
 UserInputId getDirActionId(const Event::KeyEvent& key) {
@@ -1298,10 +1136,8 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1))); break;
     case Keyboard::Return:
     case Keyboard::Numpad5: inputQueue.push(UserInput(UserInputId::PICK_UP)); break;
-    case Keyboard::I: inputQueue.push(UserInput(UserInputId::SHOW_INVENTORY)); break;
     case Keyboard::D: inputQueue.push(UserInput(key.shift ? UserInputId::EXT_DROP : UserInputId::DROP)); break;
     case Keyboard::A: inputQueue.push(UserInput(UserInputId::APPLY_ITEM)); break;
-    case Keyboard::E: inputQueue.push(UserInput(UserInputId::EQUIPMENT)); break;
     case Keyboard::T: inputQueue.push(UserInput(UserInputId::THROW)); break;
     case Keyboard::M: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
     case Keyboard::H: inputQueue.push(UserInput(UserInputId::HIDE)); break;

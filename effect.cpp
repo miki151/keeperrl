@@ -64,7 +64,7 @@ class IllusionController : public DoNothingController {
     if (creature->getTime() >= deathTime)
       kill();
     else
-      creature->wait().perform();
+      creature->wait().perform(getCreature());
   }
 
   template <class Archive>

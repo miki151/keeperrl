@@ -1084,6 +1084,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::ROBE: return ITATTR(
             i.viewId = ViewId::ROBE;
             i.name = "robe";
+            i.shortName = "robe";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 2;
@@ -1091,6 +1092,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::LEATHER_GLOVES: return ITATTR(
             i.viewId = ViewId::LEATHER_GLOVES;
+            i.shortName = "leather";
             i.name = "pair of leather gloves";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::GLOVES;
@@ -1099,7 +1101,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::DEXTERITY_GLOVES: return ITATTR(
             i.viewId = ViewId::DEXTERITY_GLOVES;
-            i.name = "pair of gloves of dexterity";
+            i.shortName = "dexterity";
+            i.name = "gloves of " + *i.shortName;
+            i.plural = "pairs of " + *i.name;
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::GLOVES;
             i.weight = 0.3;
@@ -1108,7 +1112,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::STRENGTH_GLOVES: return ITATTR(
             i.viewId = ViewId::STRENGTH_GLOVES;
-            i.name = "gauntlets of strength";
+            i.shortName = "strength";
+            i.name = "gloves of " + *i.shortName;
+            i.plural = "pairs of " + *i.name;
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::GLOVES;
             i.weight = 0.3;
@@ -1117,6 +1123,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::LEATHER_ARMOR: return ITATTR(
             i.viewId = ViewId::LEATHER_ARMOR;
+            i.shortName = "leather";
             i.name = "leather armor";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
@@ -1125,6 +1132,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 3 + maybePlusMinusOne(4););
     case ItemId::LEATHER_HELM: return ITATTR(
             i.viewId = ViewId::LEATHER_HELM;
+            i.shortName = "leather";
             i.name = "leather helm";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::HELMET;
@@ -1133,6 +1141,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::CHAIN_ARMOR: return ITATTR(
             i.viewId = ViewId::CHAIN_ARMOR;
+            i.shortName = "chain";
             i.name = "chain armor";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
@@ -1141,6 +1150,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 5 + maybePlusMinusOne(4););
     case ItemId::IRON_HELM: return ITATTR(
             i.viewId = ViewId::IRON_HELM;
+            i.shortName = "iron";
             i.name = "iron helm";
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::HELMET;
@@ -1149,8 +1159,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE]= 2 + maybePlusMinusOne(4););
     case ItemId::TELEPATHY_HELM: return ITATTR(
             i.viewId = ViewId::TELEPATHY_HELM;
-            i.name = "helm of telepathy";
-            i.plural = "helms of telepathy";
+            i.shortName = "telepathy";
+            i.name = "helm of " + *i.shortName;
+            i.plural = "helms of " + *i.shortName;
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::HELMET;
             i.weight = 1.5;
@@ -1158,6 +1169,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE]= 1 + maybePlusMinusOne(4););
     case ItemId::LEATHER_BOOTS: return ITATTR(
             i.viewId = ViewId::LEATHER_BOOTS;
+            i.shortName = "leather";
             i.name = "pair of leather boots";
             i.plural = "pairs of leather boots";
             i.itemClass = ItemClass::ARMOR;
@@ -1167,6 +1179,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::IRON_BOOTS: return ITATTR(
             i.viewId = ViewId::IRON_BOOTS;
+            i.shortName = "iron";
             i.name = "pair of iron boots";
             i.plural = "pairs of iron boots";
             i.itemClass = ItemClass::ARMOR;
@@ -1176,8 +1189,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 2 + maybePlusMinusOne(4););
     case ItemId::SPEED_BOOTS: return ITATTR(
             i.viewId = ViewId::SPEED_BOOTS;
-            i.name = "pair of boots of speed";
-            i.plural = "pairs of boots of speed";
+            i.shortName = "speed";
+            i.name = "boots of " + *i.shortName;
+            i.plural = "pairs of boots of " + *i.shortName;
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
@@ -1186,8 +1200,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::LEVITATION_BOOTS: return ITATTR(
             i.viewId = ViewId::LEVITATION_BOOTS;
-            i.name = "pair of boots of levitation";
-            i.plural = "pairs of boots of levitation";
+            i.shortName = "levitation";
+            i.name = "boots of " + *i.shortName;
+            i.plural = "pairs of boots of " + *i.shortName;
             i.itemClass = ItemClass::ARMOR;
             i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
@@ -1195,16 +1210,18 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::RING: return ITATTR(
             i.viewId = getRingViewId(item.get<LastingEffect>());
-            i.name = "ring of " + Effect::getName(item.get<LastingEffect>());
-            i.plural = "rings of " + Effect::getName(item.get<LastingEffect>());
+            i.shortName = Effect::getName(item.get<LastingEffect>());
+            i.name = "ring of " + *i.shortName;
+            i.plural = "rings of " + *i.shortName;
             i.weight = 0.05;
             i.equipmentSlot = EquipmentSlot::RINGS;
             i.itemClass = ItemClass::RING;
             i.price = 200;);
     case ItemId::WARNING_AMULET: return ITATTR(
             i.viewId = ViewId::STEEL_AMULET;
-            i.name = "amulet of warning";
-            i.plural = "amulets of warning";
+            i.shortName = "warning";
+            i.name = "amulet of " + *i.shortName;
+            i.plural = "amulets of " + *i.shortName;
             i.description = "Warns about dangerous beasts and enemies.";
             i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
@@ -1212,8 +1229,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 0.3;);
     case ItemId::HEALING_AMULET: return ITATTR(
             i.viewId = ViewId::AMBER_AMULET;
-            i.name = "amulet of healing";
-            i.plural = "amulets of healing";
+            i.shortName = "healing";
+            i.name = "amulet of " + *i.shortName;
+            i.plural = "amulets of " + *i.shortName;
             i.description = "Slowly heals all wounds.";
             i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
@@ -1221,8 +1239,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 0.3;);
     case ItemId::DEFENSE_AMULET: return ITATTR(
             i.viewId = ViewId::COPPER_AMULET;
-            i.name = "amulet of defense";
-            i.plural = "amulets of defense";
+            i.shortName = "defense";
+            i.name = "amulet of " + *i.shortName;
+            i.plural = "amulets of " + *i.shortName;
             i.description = "Increases the toughness of your skin and flesh, making you harder to wound.";
             i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
@@ -1231,8 +1250,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 0.3;);
     case ItemId::FRIENDLY_ANIMALS_AMULET: return ITATTR(
             i.viewId = ViewId::WOODEN_AMULET;
-            i.name = "amulet of nature affinity";
-            i.plural = "amulets of nature affinity";
+            i.shortName = "nature affinity";
+            i.name = "amulet of " + *i.shortName;
+            i.plural = "amulets of " + *i.shortName;
             i.description = "Makes all animals peaceful.";
             i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
@@ -1243,7 +1263,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.name = "first aid kit";
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
-            i.description = "Heals your wounds, but requires a few turns to do that.";
+            i.description = "Heals your wounds. Usage requires three turns.";
             i.applyTime = 3;
             i.uses = Random.get(3, 6);
             i.usedUpMsg = true;
@@ -1274,8 +1294,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::POTION: return ITATTR(
             EffectType effect = item.get<EffectType>();
             i.viewId = ViewId::PUCE_POTION;
-            i.name = "potion of " + Effect::getName(effect);
-            i.plural = "potions of " + Effect::getName(effect);
+            i.shortName = Effect::getName(effect);
+            i.name = "potion of " + *i.shortName;
+            i.plural = "potions of " + *i.shortName;
             i.description = Effect::getDescription(effect);
             i.blindName = "potion";
             i.itemClass = ItemClass::POTION;
@@ -1289,7 +1310,8 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::MUSHROOM: return ITATTR(
             EffectType effect = item.get<EffectType>();
             i.viewId = ViewId::MUSHROOM;
-            i.name = Effect::getName(effect) + " mushroom";
+            i.shortName = Effect::getName(effect);
+            i.name = *i.shortName + " mushroom";
             i.description = Effect::getDescription(effect);
             i.itemClass= ItemClass::FOOD;
             i.weight = 0.1;
@@ -1301,8 +1323,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
         return ITATTR(
             EffectType effect = item.get<EffectType>();
             i.viewId = ViewId::SCROLL;
-            i.name = "scroll of " + Effect::getName(effect);
-            i.plural= "scrolls of " + Effect::getName(effect);
+            i.shortName = Effect::getName(effect);
+            i.name = "scroll of " + *i.shortName;
+            i.plural= "scrolls of "  + *i.shortName;
             i.description = Effect::getDescription(effect);
             i.blindName = "scroll";
             i.itemClass = ItemClass::SCROLL;
@@ -1316,6 +1339,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.viewId = ViewId::SCROLL;
             i.name = "scroll of fire";
             i.plural= "scrolls of fire";
+            i.shortName = "fire";
             i.description = "Sets itself on fire.";
             i.blindName = "scroll";
             i.itemClass= ItemClass::SCROLL;
@@ -1326,8 +1350,9 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.uses = 1;);
     case ItemId::TECH_BOOK: return ITATTR(
             i.viewId = ViewId::BOOK;
-            i.name = "book of " + Technology::get(item.get<TechId>())->getName();
-            i.plural = "books of " + Technology::get(item.get<TechId>())->getName();
+            i.shortName = Technology::get(item.get<TechId>())->getName();
+            i.name = "book of " + *i.shortName;
+            i.plural = "books of " + *i.shortName;
             i.weight = 1;
             i.itemClass = ItemClass::BOOK;
             i.applyTime = 3;
@@ -1369,8 +1394,6 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.resourceId = CollectiveResourceId::GOLD;
             i.weight = 0.01;);
   }
-  FAIL << "unhandled item " << (int) item.getId();
-  return {};
 }
   
 vector<PItem> ItemFactory::fromId(ItemType id, int num) {

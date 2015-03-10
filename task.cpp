@@ -91,7 +91,7 @@ class Construction : public Task {
     Vec2 dir = position - c->getPosition();
     if (dir.length8() == 1) {
       if (auto action = c->construct(dir, type))
-        return {1.0, action.append([=] {
+        return {1.0, action.append([=](Creature* c) {
           if (!c->construct(dir, type)) {
             setDone();
             callback->onConstructed(position, type);
@@ -137,7 +137,7 @@ class BuildTorch : public Task {
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(c->hasSkill(Skill::get(SkillId::CONSTRUCTION)));
     if (c->getPosition() == position)
-      return c->wait().append([=] {
+      return c->wait().append([=](Creature* c) {
           PTrigger torch = Trigger::getTorch(attachmentDir, c->getLevel(), position);
           Trigger* tRef = torch.get();
           c->getSquare()->addTrigger(std::move(torch));
@@ -238,7 +238,7 @@ class PickItem : public NonTransferable {
       }
       items = hereItems;
       if (auto action = c->pickUp(hereItems))
-        return {1.0, action.append([=] {
+        return {1.0, action.append([=](Creature* c) {
           pickedUp = true;
           onPickedUp();
           callback->onPickedUp(position, hereItems);
@@ -301,7 +301,7 @@ class PickAndEquipItem : public PickItem {
     vector<Item*> it = c->getEquipment().getItems(items.containsPredicate());
     if (!it.empty()) {
       if (auto action = c->equip(getOnlyElement(it)))
-        return {1.0, action.append([=] {
+        return {1.0, action.append([=](Creature* c) {
           setDone();
         })};
     } else
@@ -334,7 +334,7 @@ class EquipItem : public NonTransferable {
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(contains(c->getEquipment().getItems(), item) && c->getEquipment().canEquip(item));
     if (auto action = c->equip(item))
-      return action.append([=] {setDone();});
+      return action.append([=](Creature* c) {setDone();});
     else
       return NoMove;
   }
@@ -376,7 +376,7 @@ class BringItem : public PickItem {
       : PickItem(c, position, items), target(chooseRandomClose(position, _target)) {}
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) {
-    return c->drop(it).append([=] {
+    return c->drop(it).append([=](Creature* c) {
         callback->onBrought(c->getPosition(), it);
     });
   }
@@ -394,7 +394,7 @@ class BringItem : public PickItem {
     if (c->getPosition() == target) {
       vector<Item*> myItems = c->getEquipment().getItems(items.containsPredicate());
       if (auto action = getBroughtAction(c, myItems))
-        return {1.0, action.append([=] {setDone();})};
+        return {1.0, action.append([=](Creature* c) {setDone();})};
       else {
         setDone();
         return NoMove;
@@ -444,7 +444,7 @@ class ApplyItem : public BringItem {
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) override {
     Item* item = getOnlyElement(it);
-    return c->applyItem(item).prepend([=] {
+    return c->applyItem(item).prepend([=](Creature* c) {
         callback->onAppliedItem(c->getPosition(), item);
     });
   }
@@ -481,7 +481,7 @@ class ApplySquare : public NonTransferable {
     }
     if (c->getPosition() == position) {
       if (auto action = c->applySquare())
-        return {1.0, action.append([=] {
+        return {1.0, action.append([=](Creature* c) {
             setDone();
             if (callback)
               callback->onAppliedSquare(c->getPosition());
@@ -561,7 +561,7 @@ class Kill : public NonTransferable {
       return NoMove;
     }
     if (auto action = getAction(c))
-      return action.append([=] { if (creature->isDead()) setDone(); });
+      return action.append([=](Creature* c) { if (creature->isDead()) setDone(); });
     else
       return c->moveTowards(creature->getPosition());
   }
@@ -607,7 +607,7 @@ class Sacrifice : public NonTransferable {
     if (creature->isDead()) {
       if (sacrificePos) {
         if (sacrificePos == c->getPosition())
-          return c->applySquare().append([=] { setDone(); });
+          return c->applySquare().append([=](Creature* c) { setDone(); });
         else
           return c->moveTowards(*sacrificePos);
       } else {
@@ -618,7 +618,7 @@ class Sacrifice : public NonTransferable {
     if (creature->getSquare()->getApplyType(creature) == SquareApplyType::PRAY)
       if (auto action = c->attack(creature)) {
         Vec2 pos = creature->getPosition();
-        return action.append([=] { if (creature->isDead()) sacrificePos = pos; });
+        return action.append([=](Creature* c) { if (creature->isDead()) sacrificePos = pos; });
       }
     return c->moveTowards(creature->getPosition());
   }
@@ -664,7 +664,7 @@ class DestroySquare : public NonTransferable {
   virtual MoveInfo getMove(Creature* c) override {
     if (c->getPosition().dist8(position) == 1)
       if (auto action = c->destroy(position - c->getPosition(), Creature::DESTROY))
-        return action.append([=] { 
+        return action.append([=](Creature* c) { 
           if (!c->getLevel()->getSafeSquare(position)->canDestroy(c))
             setDone();
           });
@@ -787,7 +787,7 @@ class Explore : public NonTransferable {
     if (!Random.roll(3))
       return NoMove;
     if (auto action = c->moveTowards(position))
-      return action.append([=] {
+      return action.append([=](Creature* c) {
           if (c->getPosition().dist8(position) < 5)
             setDone();
       });
@@ -969,7 +969,7 @@ class CreateBed : public NonTransferable {
           other->removeEffect(LastingEffect::SLEEP);
       return c->moveTowards(position);
     } else
-      return c->wait().append([=] {
+      return c->wait().append([=](Creature* c) {
         if (c->getPosition() == position) {
           c->getLevel()->replaceSquare(position, SquareFactory::get(toType));
           callback->onBedCreated(position, fromType, toType);
@@ -1013,7 +1013,7 @@ class ConsumeItem : public NonTransferable {
   ConsumeItem(Callback* c, vector<Item*> _items) : items(_items), callback(c) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    return c->wait().append([=] {
+    return c->wait().append([=](Creature* c) {
         c->getEquipment().removeItems(c->getEquipment().getItems(items.containsPredicate())); });
   }
 
@@ -1058,7 +1058,7 @@ class Copulate : public NonTransferable {
             if (auto action = c->move(v))
               return action;
       if (auto action = c->copulate(target->getPosition() - c->getPosition()))
-        return action.append([=] {
+        return action.append([=](Creature* c) {
           if (--numTurns == 0) {
             setDone();
             callback->onCopulated(c, target);
@@ -1107,7 +1107,7 @@ class Consume : public NonTransferable {
     }
     if (c->getPosition().dist8(target->getPosition()) == 1) {
       if (auto action = c->consume(target->getPosition() - c->getPosition()))
-        return action.append([=] {
+        return action.append([=](Creature* c) {
           setDone();
           callback->onConsumed(c, target);
         });
