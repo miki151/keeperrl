@@ -124,7 +124,6 @@ class Player : public Controller, public CreatureView {
   vector<PlayerMessage> SERIAL(messages);
   vector<string> SERIAL(messageHistory);
   string getRemainingString(LastingEffect) const;
-  string getShortItemName(const Item*) const;
   vector<GameInfo::PlayerInfo::ItemInfo> getItemInfos(const vector<Item*>&) const;
   GameInfo::PlayerInfo::ItemInfo getItemInfo(const vector<Item*>&) const;
   struct TimePosInfo {

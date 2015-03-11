@@ -79,7 +79,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   string getAName(bool plural = false, bool blind = false) const;
   string getNameAndModifiers(bool plural = false, bool blind = false) const;
   string getArtifactName() const;
-  string getShortName(bool shortModifiers) const;
+  string getShortName(bool shortModifiers, bool blind = false) const;
 
   virtual optional<EffectType> getEffectType() const;
   optional<EffectType> getAttackEffect() const;
@@ -100,8 +100,8 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
 
   void tick(double time, Level*, Vec2 position);
   
-  string getApplyMsgThirdPerson() const;
-  string getApplyMsgFirstPerson() const;
+  string getApplyMsgThirdPerson(bool blind) const;
+  string getApplyMsgFirstPerson(bool blind) const;
   string getNoSeeApplyMsg() const;
 
   void onEquip(Creature*);

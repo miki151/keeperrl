@@ -459,8 +459,12 @@ PGuiElem GuiBuilder::getItemLine(const GameInfo::PlayerInfo::ItemInfo& item, fun
   line.push_back(gui.label(item.name, color));
   widths.push_back(100);
   return gui.margins(gui.stack(gui.horizontalList(std::move(line), widths, 0),
-      gui.conditional(gui.tooltip(getItemHint(item)), [this] (GuiElem*) { return !disableTooltip;}),
+      getTooltip(getItemHint(item)),
       gui.button(onClick)), -4, 0, 0, 0);
+}
+
+PGuiElem GuiBuilder::getTooltip(const vector<string>& text) {
+  return gui.conditional(gui.tooltip(text), [this] (GuiElem*) { return !disableTooltip;});
 }
 
 void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInfo& info) {
@@ -468,7 +472,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
     return;
   vector<PGuiElem> lines;
   const int maxElems = 6;
-  const string title = "Click to pick up:";
+  const string title = "Click or press enter to pick up:";
   int numElems = min<int>(maxElems, info.lyingItems.size());
   Vec2 size = Vec2(renderer.getTextLength(title), (1 + numElems) * legendLineHeight);
   if (!info.lyingItems.empty()) {
@@ -486,7 +490,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
       }
     }
   }
-  ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0), size, OverlayInfo::LEFT});
+  ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0), size, OverlayInfo::BOTTOM_RIGHT});
 }
 
 struct KeyInfo {
@@ -552,9 +556,12 @@ void GuiBuilder::handleItemChoice(const GameInfo::PlayerInfo::ItemInfo& itemInfo
   int count = options.size();
   PGuiElem stuff = drawListGui("", View::getListElem(options), View::NORMAL_MENU, &contentHeight, &index, &choice);
   stuff = gui.miniWindow(gui.margins(std::move(stuff), 0, 0, 0, 0));
+  Vec2 size(150, options.size() * listLineHeight + 25);
+  menuPos.x = min(menuPos.x, renderer.getSize().x - size.x);
+  menuPos.y = min(menuPos.y, renderer.getSize().y - size.y);
   while (1) {
     callbacks.refreshScreen();
-    stuff->setBounds(Rectangle(menuPos, menuPos + Vec2(150, options.size() * listLineHeight + 25)));
+    stuff->setBounds(Rectangle(menuPos, menuPos + size));
     stuff->render(renderer);
     renderer.drawAndClearBuffer();
     Event event;
@@ -650,7 +657,7 @@ PGuiElem GuiBuilder::drawPlayerStats(GameInfo::PlayerInfo& info) {
     elems.push_back(gui.label("barehanded", colors[ColorId::RED]));
   elems.push_back(gui.empty());
   for (auto& elem : info.attributes) {
-    elems.push_back(gui.stack(getHintCallback({elem.help}),
+    elems.push_back(gui.stack(getTooltip({elem.help}),
         gui.horizontalList(makeVec<PGuiElem>(
           gui.label(capitalFirst(elem.name + ":"), colors[ColorId::WHITE]),
           gui.label(toString(elem.value), getBonusColor(elem.bonus))), 100, 1)));
@@ -658,7 +665,7 @@ PGuiElem GuiBuilder::drawPlayerStats(GameInfo::PlayerInfo& info) {
   elems.push_back(gui.empty());
   elems.push_back(gui.label("Skills:", colors[ColorId::WHITE]));
   for (auto& elem : info.skills) {
-    elems.push_back(gui.stack(getHintCallback({elem.help}),
+    elems.push_back(gui.stack(getTooltip({elem.help}),
           gui.label(capitalFirst(elem.name), colors[ColorId::WHITE])));
   }
   elems.push_back(gui.empty());
@@ -833,7 +840,7 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& 
   append(lines, std::move(freeLines));
   ret.push_back({gui.verticalList(std::move(lines), lineHeight, 0),
       Vec2(taskMapWindowWidth, (info.taskMap.size() + 1) * lineHeight),
-      OverlayInfo::RIGHT});
+      OverlayInfo::TOP_RIGHT});
 }
 
 const int minionWindowWidth = 300;
@@ -866,7 +873,7 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo
   }
   ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0),
       Vec2(minionWindowWidth, (chosen.size() + 2) * legendLineHeight),
-      OverlayInfo::RIGHT});
+      OverlayInfo::TOP_RIGHT});
 }
 
 void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
@@ -882,7 +889,7 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandIn
   int height = lines.size() * legendLineHeight;
   ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0),
       Vec2(minionWindowWidth, height),
-      OverlayInfo::LEFT});
+      OverlayInfo::BOTTOM_RIGHT});
 }
 
 void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {

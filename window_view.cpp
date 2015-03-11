@@ -366,9 +366,13 @@ void WindowView::rebuildGui() {
       int width = leftMargin + rightMargin + overlay.size.x;
       int height = overlay.size.y + bottomMargin + topMargin;
       switch (overlay.alignment) {
-        case GuiBuilder::OverlayInfo::RIGHT:
+        case GuiBuilder::OverlayInfo::TOP_RIGHT:
           pos = Vec2(renderer.getSize().x - rightBarWidth - sideOffset - width,
               rightWindowHeight);
+          break;
+        case GuiBuilder::OverlayInfo::BOTTOM_RIGHT:
+          pos = Vec2(renderer.getSize().x - rightBarWidth - sideOffset - width,
+              renderer.getSize().y - bottomBarHeight - bottomOffset - height);
           break;
         case GuiBuilder::OverlayInfo::LEFT:
           pos = Vec2(sideOffset,

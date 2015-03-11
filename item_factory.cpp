@@ -321,6 +321,7 @@ PItem ItemFactory::corpse(const string& name, const string& rottenName, double w
         ITATTR(
           i.viewId = ViewId::BODY_PART;
           i.name = name;
+          i.shortName = name;
           i.itemClass = itemClass;
           i.weight = weight;),
         rottenName,
@@ -1263,7 +1264,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.name = "first aid kit";
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
-            i.description = "Heals your wounds. Usage requires three turns.";
+            i.description = "Heals your wounds, but requires a few turns to apply.";
             i.applyTime = 3;
             i.uses = Random.get(3, 6);
             i.usedUpMsg = true;
@@ -1312,6 +1313,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.viewId = ViewId::MUSHROOM;
             i.shortName = Effect::getName(effect);
             i.name = *i.shortName + " mushroom";
+            i.blindName = "mushroom";
             i.description = Effect::getDescription(effect);
             i.itemClass= ItemClass::FOOD;
             i.weight = 0.1;

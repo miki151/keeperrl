@@ -176,7 +176,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   typedef GameInfo::PlayerInfo::SkillInfo SkillInfo;
   vector<SkillInfo> getSkillNames() const;
 
-  string getPluralName(Item* item, int num);
+  string getPluralName(Item* item, int num) const;
   CreatureAction move(Vec2 direction) const;
   CreatureAction forceMove(Vec2 direction) const;
   CreatureAction swapPosition(Vec2 direction, bool force = false) const;
@@ -220,6 +220,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void learnLocation(const Location*);
 
   Item* getWeapon() const;
+  vector<vector<Item*>> stackItems(vector<Item*>) const;
 
   CreatureAction moveTowards(Vec2 pos, bool stepOnTile = false);
   CreatureAction moveAway(Vec2 pos, bool pathfinding = true);

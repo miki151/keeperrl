@@ -213,25 +213,25 @@ void Item::apply(Creature* c, Level* l) {
   }
 }
 
-string Item::getApplyMsgThirdPerson() const {
+string Item::getApplyMsgThirdPerson(bool blind) const {
   switch (getClass()) {
-    case ItemClass::SCROLL: return "reads " + getAName();
-    case ItemClass::POTION: return "drinks " + getAName();
-    case ItemClass::BOOK: return "reads " + getAName();
-    case ItemClass::TOOL: return "applies " + getAName();
-    case ItemClass::FOOD: return "eats " + getAName();
+    case ItemClass::SCROLL: return "reads " + getAName(false, blind);
+    case ItemClass::POTION: return "drinks " + getAName(false, blind);
+    case ItemClass::BOOK: return "reads " + getAName(false, blind);
+    case ItemClass::TOOL: return "applies " + getAName(false, blind);
+    case ItemClass::FOOD: return "eats " + getAName(false, blind);
     default: FAIL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
 
-string Item::getApplyMsgFirstPerson() const {
+string Item::getApplyMsgFirstPerson(bool blind) const {
   switch (getClass()) {
-    case ItemClass::SCROLL: return "read " + getAName();
-    case ItemClass::POTION: return "drink " + getAName();
-    case ItemClass::BOOK: return "read " + getAName();
-    case ItemClass::TOOL: return "apply " + getAName();
-    case ItemClass::FOOD: return "eat " + getAName();
+    case ItemClass::SCROLL: return "read " + getAName(false, blind);
+    case ItemClass::POTION: return "drink " + getAName(false, blind);
+    case ItemClass::BOOK: return "read " + getAName(false, blind);
+    case ItemClass::TOOL: return "apply " + getAName(false, blind);
+    case ItemClass::FOOD: return "eat " + getAName(false, blind);
     default: FAIL << "Bad type for applying " << (int)getClass();
   }
   return "";
@@ -340,7 +340,9 @@ string Item::getModifiers(bool shorten) const {
   return artStr + attrString;
 }
 
-string Item::getShortName(bool shortMod) const {
+string Item::getShortName(bool shortMod, bool blind) const {
+  if (blind && blindName)
+    return getBlindName(false);
   string name = getModifiers(shortMod);
   if (shortName)
     name = *shortName + " " + name;

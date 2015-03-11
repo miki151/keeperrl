@@ -56,7 +56,7 @@ class GuiBuilder {
   struct OverlayInfo {
     PGuiElem elem;
     Vec2 size;
-    enum { LEFT, RIGHT, MESSAGES, GAME_SPEED, INVISIBLE } alignment;
+    enum { LEFT, TOP_RIGHT, BOTTOM_RIGHT, MESSAGES, GAME_SPEED, INVISIBLE } alignment;
   };
   void drawPlayerOverlay(vector<OverlayInfo>&, GameInfo::PlayerInfo&);
   void drawBandOverlay(vector<OverlayInfo>&, GameInfo::BandInfo&);
@@ -99,6 +99,7 @@ class GuiBuilder {
   Clock* clock;
   Callbacks callbacks;
   PGuiElem getHintCallback(const vector<string>&);
+  PGuiElem getTooltip(const vector<string>&);
   function<void()> getButtonCallback(UserInput);
   int activeBuilding = 0;
   int activeLibrary = -1;

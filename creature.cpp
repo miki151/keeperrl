@@ -429,7 +429,7 @@ vector<Item*> Creature::getPickUpOptions() const {
     return getSquare()->getItems();
 }
 
-string Creature::getPluralName(Item* item, int num) {
+string Creature::getPluralName(Item* item, int num) const {
   if (num == 1)
     return item->getTheName(false, isBlind());
   else
@@ -448,9 +448,10 @@ CreatureAction Creature::pickUp(const vector<Item*>& items, bool spendT) const {
   return CreatureAction(this, [=](Creature* c) {
     Debug() << getName().the() << " pickup ";
     if (spendT)
-      for (auto elem : Item::stackItems(items)) {
-        monsterMessage(getName().the() + " picks up " + elem.first);
-        playerMessage("You pick up " + elem.first);
+      for (auto stack : stackItems(items)) {
+        string name = getPluralName(stack[0], stack.size());
+        monsterMessage(getName().the() + " picks up " + name);
+        playerMessage("You pick up " + name);
       }
     for (auto item : items) {
       c->equipment.addItem(c->getSquare()->removeItem(item));
@@ -463,14 +464,21 @@ CreatureAction Creature::pickUp(const vector<Item*>& items, bool spendT) const {
   });
 }
 
+vector<vector<Item*>> Creature::stackItems(vector<Item*> items) const {
+  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items, 
+      [this] (Item* const& item) { return item->getNameAndModifiers(false, isBlind()); });
+  return getValues(stacks);
+}
+
 CreatureAction Creature::drop(const vector<Item*>& items) const {
   if (!isHumanoid())
     return CreatureAction("You can't drop this item!");
   return CreatureAction(this, [=](Creature* c) {
     Debug() << getName().the() << " drop";
-    for (auto elem : Item::stackItems(items)) {
-      monsterMessage(getName().the() + " drops " + elem.first);
-      playerMessage("You drop " + elem.first);
+    for (auto stack : stackItems(items)) {
+      string name = getPluralName(stack[0], stack.size());
+      monsterMessage(getName().the() + " drops " + name);
+      playerMessage("You drop " + name);
     }
     for (auto item : items) {
       c->getSquare()->dropItem(c->equipment.removeItem(item));
@@ -1930,8 +1938,8 @@ CreatureAction Creature::applyItem(Item* item) const {
     return CreatureAction("You have no healthy arms!");
   return CreatureAction(this, [=] (Creature* c) {
       double time = item->getApplyTime();
-      playerMessage("You " + item->getApplyMsgFirstPerson());
-      monsterMessage(getName().the() + " " + item->getApplyMsgThirdPerson(), item->getNoSeeApplyMsg());
+      playerMessage("You " + item->getApplyMsgFirstPerson(isBlind()));
+      monsterMessage(getName().the() + " " + item->getApplyMsgThirdPerson(isBlind()), item->getNoSeeApplyMsg());
       item->apply(c, level);
       if (item->isDiscarded()) {
         c->equipment.removeItem(item);

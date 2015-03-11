@@ -182,9 +182,9 @@ void Player::pickUpAction(bool extended) {
 }
 
 void Player::pickUpItemAction(int numItem) {
-  auto items = Item::stackItems(getCreature()->getPickUpOptions());
+  auto items = getCreature()->stackItems(getCreature()->getPickUpOptions());
   CHECK(numItem < items.size());
-  tryToPerform(getCreature()->pickUp(items[numItem].second));
+  tryToPerform(getCreature()->pickUp(items[numItem]));
 }
 
 void Player::tryToPerform(CreatureAction action) {
@@ -1070,8 +1070,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     info.effects.push_back({s, true});
   info.squareName = getCreature()->getSquare()->getName();
   info.lyingItems.clear();
-  for (auto stack : Item::stackItems(getCreature()->getPickUpOptions()))
-    info.lyingItems.push_back(getItemInfo(stack.second));
+  for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))
+    info.lyingItems.push_back(getItemInfo(stack));
   info.inventory.clear();
   map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
       getCreature()->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
@@ -1080,18 +1080,11 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
       info.inventory.push_back({getText(elem), getItemInfos(typeGroups[elem])});
 }
 
-string Player::getShortItemName(const Item* item) const {
-  if (getCreature()->isBlind())
-    return "";
-  else
-    return item->getShortName(true);
-}
-
 ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
   return {
-    getShortItemName(stack[0]),
-    stack[0]->getNameAndModifiers(),
-    stack[0]->getDescription(),
+    stack[0]->getShortName(true, getCreature()->isBlind()),
+    stack[0]->getNameAndModifiers(false, getCreature()->isBlind()),
+    getCreature()->isBlind() ? "" : stack[0]->getDescription(),
     int(stack.size()),
     stack[0]->getViewObject(),
     transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();}),
