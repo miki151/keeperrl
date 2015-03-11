@@ -990,11 +990,6 @@ class SplashItems : public Task::Callback {
     items[pos] = v;
   }
 
-  virtual void onBrought(Vec2 pos, EntitySet<Item>) override {
-    removeElementMaybe(targetsGold, pos);
-    removeElementMaybe(targetsCorpse, pos);
-  }
-
   Vec2 chooseClosest(Vec2 pos) {
     Vec2 ret(1000, 1000);
     for (Vec2 v : getKeys(items))
@@ -1019,7 +1014,9 @@ class SplashItems : public Task::Callback {
     vector<Vec2>& targets = it[0]->getClass() == ItemClass::GOLD ? targetsGold : targetsCorpse;
     if (targets.empty())
       return nullptr;
-    return Task::bringItem(this, pos, it, {chooseRandom(targets)});
+    Vec2 target = chooseRandom(targets);
+    removeElement(targets, target);
+    return Task::bringItem(this, pos, it, {target}, 100);
   }
 
   void setInitialized(const string& splashPath) {

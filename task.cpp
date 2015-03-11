@@ -194,7 +194,8 @@ class NonTransferable : public Task {
 
 class PickItem : public NonTransferable {
   public:
-  PickItem(Callback* c, Vec2 pos, vector<Item*> _items) : items(_items), position(pos), callback(c) {
+  PickItem(Callback* c, Vec2 pos, vector<Item*> _items, int retries = 10)
+      : items(_items), position(pos), callback(c), tries(retries) {
     CHECK(!items.empty());
   }
 
@@ -275,8 +276,8 @@ class PickItem : public NonTransferable {
   EntitySet<Item> SERIAL(items);
   bool SERIAL2(pickedUp, false);
   Vec2 SERIAL(position);
-  int SERIAL2(tries, 10);
   Callback* SERIAL(callback);
+  int SERIAL(tries);
 };
 
 PTask Task::pickItem(Callback* c, Vec2 position, vector<Item*> items) {
@@ -372,6 +373,9 @@ static Vec2 chooseRandomClose(Vec2 start, const vector<Vec2>& squares) {
 
 class BringItem : public PickItem {
   public:
+  BringItem(Callback* c, Vec2 position, vector<Item*> items, vector<Vec2> _target, int retries)
+      : PickItem(c, position, items, retries), target(chooseRandomClose(position, _target)) {}
+
   BringItem(Callback* c, Vec2 position, vector<Item*> items, vector<Vec2> _target)
       : PickItem(c, position, items), target(chooseRandomClose(position, _target)) {}
 
@@ -425,8 +429,8 @@ class BringItem : public PickItem {
   Vec2 SERIAL(target);
 };
 
-PTask Task::bringItem(Callback* c, Vec2 position, vector<Item*> items, vector<Vec2> target) {
-  return PTask(new BringItem(c, position, items, target));
+PTask Task::bringItem(Callback* c, Vec2 position, vector<Item*> items, vector<Vec2> target, int numRetries) {
+  return PTask(new BringItem(c, position, items, target, numRetries));
 }
 
 class ApplyItem : public BringItem {
