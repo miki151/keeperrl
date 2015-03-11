@@ -18,6 +18,7 @@
 #include "gui_elem.h"
 #include "view_object.h"
 #include "tile.h"
+#include "clock.h"
 
 using sf::Color;
 
@@ -76,6 +77,9 @@ class ButtonKey : public Button {
   private:
   Event::KeyEvent hotkey;
 };
+
+GuiFactory::GuiFactory(Clock* c) : clock(c) {
+}
 
 PGuiElem GuiFactory::button(function<void(Rectangle)> fun, char hotkey) {
   return PGuiElem(new ButtonChar(fun, hotkey));
@@ -797,6 +801,50 @@ PGuiElem GuiFactory::mouseHighlightGameChoice(PGuiElem elem,
 
 PGuiElem GuiFactory::mouseHighlight2(PGuiElem elem) {
   return PGuiElem(new MouseHighlight2(std::move(elem)));
+}
+
+const static int tooltipLineHeight = 28;
+const static int tooltipHMargin = 15;
+const static int tooltipVMargin = 15;
+const static Vec2 tooltipOffset = Vec2(10, 10);
+const static int tooltipDelay = 700;
+
+class Tooltip : public GuiElem {
+  public:
+  Tooltip(const vector<string>& t, PGuiElem bg, Clock* c) : text(t), background(std::move(bg)),
+      lastTimeOut(c->getRealMillis()), clock(c) {
+  }
+
+  virtual void render(Renderer& r) override {
+    if (r.getMousePos().inRectangle(getBounds())) {
+      if (clock->getRealMillis() > lastTimeOut + tooltipDelay) {
+        Vec2 size(0, text.size() * tooltipLineHeight + 2 * tooltipVMargin);
+        for (const string& t : text)
+          size.x = max(size.x, r.getTextLength(t) + 2 * tooltipHMargin);
+        Vec2 pos = getBounds().getBottomLeft() + tooltipOffset;
+        pos.x = min(pos.x, r.getSize().x - size.x);
+        pos.y = min(pos.y, r.getSize().y - size.y);
+        r.setTopLayer();
+        background->setBounds(Rectangle(pos, pos + size));
+        background->render(r);
+        for (int i : All(text))
+          r.drawText(colors[ColorId::WHITE], pos.x + tooltipHMargin, pos.y + tooltipVMargin + i * tooltipLineHeight,
+              text[i]);
+        r.popLayer();
+      }
+    } else 
+      lastTimeOut = clock->getRealMillis();
+  }
+
+  private:
+  vector<string> text;
+  PGuiElem background;
+  int lastTimeOut;
+  Clock* clock;
+};
+
+PGuiElem GuiFactory::tooltip(const vector<string>& v) {
+  return PGuiElem(new Tooltip(v, miniBorder(background(background1)), clock));
 }
 
 class ScrollBar : public GuiLayout {

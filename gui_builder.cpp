@@ -459,7 +459,7 @@ PGuiElem GuiBuilder::getItemLine(const GameInfo::PlayerInfo::ItemInfo& item, fun
   line.push_back(gui.label(item.name, color));
   widths.push_back(100);
   return gui.margins(gui.stack(gui.horizontalList(std::move(line), widths, 0),
-      getHintCallback(getItemHint(item)),
+      gui.conditional(gui.tooltip(getItemHint(item)), [this] (GuiElem*) { return !disableTooltip;}),
       gui.button(onClick)), -4, 0, 0, 0);
 }
 
@@ -498,8 +498,6 @@ struct KeyInfo {
 PGuiElem GuiBuilder::drawPlayerHelp(GameInfo::PlayerInfo& info) {
   vector<PGuiElem> lines;
   vector<KeyInfo> bottomKeys =  {
-      { "I", "Inventory", {Keyboard::I}},
-      { "E", "Equipment", {Keyboard::E}},
       { "Enter", "Interact or pick up", {Keyboard::Return}},
       { "D", "Drop item", {Keyboard::D}},
       { "A", "Apply item", {Keyboard::A}},
@@ -546,6 +544,8 @@ void GuiBuilder::handleItemChoice(const GameInfo::PlayerInfo::ItemInfo& itemInfo
   int choice = -1;
   int index = 0;
   int mouseOverElem;
+  disableTooltip = true;
+  DestructorFunction dFun([this] { disableTooltip = false; });
   vector<string> options = transform2<string>(itemInfo.actions, bindFunction(getActionText));
   if (options.empty())
     return;

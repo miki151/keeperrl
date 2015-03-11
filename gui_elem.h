@@ -20,6 +20,7 @@
 #include "view.h"
 
 class ViewObject;
+class Clock;
 
 class GuiElem {
   public:
@@ -46,6 +47,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
+  GuiFactory(Clock*);
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
@@ -97,6 +99,7 @@ class GuiFactory {
   PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
       Vec2 offset = Vec2(0, 0), double alpha = 1);
   PGuiElem sprite(Texture&, double scale);
+  PGuiElem tooltip(const vector<string>&);
 
   enum class TexId {
     SCROLLBAR,
@@ -187,6 +190,7 @@ class GuiFactory {
 
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;
+  Clock* clock;
 };
 
 

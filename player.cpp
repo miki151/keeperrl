@@ -1037,7 +1037,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.attributes = {
     {"level",
       getCreature()->getExpLevel(), 0,
-      "Describes general combat value of the getCreature()."},
+      "Describes general combat value of the creature."},
     {"attack",
       getCreature()->getModifier(ModifierType::DAMAGE),
       getCreature()->isAffected(LastingEffect::RAGE) ? 1 : getCreature()->isAffected(LastingEffect::PANIC) ? -1 : 0,
@@ -1062,7 +1062,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     {"speed",
       getCreature()->getAttr(AttrType::SPEED),
       getCreature()->isAffected(LastingEffect::SPEED) ? 1 : getCreature()->isAffected(LastingEffect::SLOWED) ? -1 : 0,
-      "Affects how much time every action takes."}};
+      "Affects how much game time every action uses."}};
   info.skills = getCreature()->getSkillNames();
   gameInfo.time = getCreature()->getTime();
   info.effects.clear();

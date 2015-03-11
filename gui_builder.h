@@ -109,6 +109,7 @@ class GuiBuilder {
   double playerStatsScroll = 0;
   double buildingsScroll = 0;
   double minionsScroll = 0;
+  bool disableTooltip = false;
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
   MinionTab minionTab = MinionTab::STATS;
   bool gameSpeedDialogOpen = false;
