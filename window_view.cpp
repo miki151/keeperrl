@@ -863,13 +863,11 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int index = index1;
   int mouseOverElem = -1;
   vector<int> indexes(options.size());
-  vector<int> allIndexes(options.size());
   vector<int> optionIndexes;
   int elemCount = 0;
   for (int i : All(options)) {
     if (options[i].getMod() == View::NORMAL) {
       indexes[count] = elemCount;
-      allIndexes[count] = i;
       optionIndexes.push_back(i);
       ++count;
     }
@@ -881,18 +879,11 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   double localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
-  PGuiElem stuff = guiBuilder.drawListGui(title, options, menuType, &contentHeight, &index, &choice, &mouseOverElem);
+  PGuiElem stuff = guiBuilder.drawListGui(title, options, menuType, &contentHeight, &index, &choice);
   PGuiElem dismissBut = gui.margins(gui.stack(makeVec<PGuiElem>(
         gui.button([&](){ choice = -100; }),
         gui.mouseHighlight(gui.mainMenuHighlight(), count, &index),
-        gui.variableLabel([&]()->string {
-            if (index >= 0 && index < count && !options[allIndexes[index]].getTip().empty())
-              return options[allIndexes[index]].getTip(); 
-            else
-            if (mouseOverElem > -1 && !options[mouseOverElem].getTip().empty())
-              return options[mouseOverElem].getTip();
-            else
-              return string("Dismiss");}, true))), 0, 5, 0, 0);
+        gui.centeredLabel("Dismiss"))), 0, 5, 0, 0);
   if (menuType != MAIN_MENU) {
     stuff = gui.scrollable(std::move(stuff), scrollPos);
     stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);

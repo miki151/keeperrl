@@ -91,7 +91,7 @@ class GuiBuilder {
   bool showMorale() const;
   Rectangle getMenuPosition(View::MenuType);
   PGuiElem drawListGui(const string& title, const vector<View::ListElem>& options,
-      View::MenuType, int* height, int* highlight, int* choice, int* mouseOverElem);
+      View::MenuType, int* height, int* highlight, int* choice);
 
   private:
   Renderer& renderer;

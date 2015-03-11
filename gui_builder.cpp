@@ -543,7 +543,6 @@ void GuiBuilder::handleItemChoice(const GameInfo::PlayerInfo::ItemInfo& itemInfo
   int contentHeight;
   int choice = -1;
   int index = 0;
-  int mouseOverElem;
   disableTooltip = true;
   DestructorFunction dFun([this] { disableTooltip = false; });
   vector<string> options = transform2<string>(itemInfo.actions, bindFunction(getActionText));
@@ -551,8 +550,7 @@ void GuiBuilder::handleItemChoice(const GameInfo::PlayerInfo::ItemInfo& itemInfo
     return;
   options.push_back("cancel");
   int count = options.size();
-  PGuiElem stuff = drawListGui("", View::getListElem(options), View::NORMAL_MENU, &contentHeight, &index, &choice,
-      &mouseOverElem);
+  PGuiElem stuff = drawListGui("", View::getListElem(options), View::NORMAL_MENU, &contentHeight, &index, &choice);
   stuff = gui.miniWindow(gui.margins(std::move(stuff), 0, 0, 0, 0));
   while (1) {
     callbacks.refreshScreen();
@@ -1074,7 +1072,7 @@ PGuiElem GuiBuilder::getHighlight(View::MenuType type, const string& label, int 
 }
 
 PGuiElem GuiBuilder::drawListGui(const string& title, const vector<View::ListElem>& options,
-    View::MenuType menuType, int* height, int* highlight, int* choice, int* mouseOverElem) {
+    View::MenuType menuType, int* height, int* highlight, int* choice) {
   vector<PGuiElem> lines;
   vector<int> heights;
   if (!title.empty()) {
@@ -1120,13 +1118,13 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<View::ListEle
       line = gui.verticalList(std::move(label1), listBrokenLineHeight, 0);
     else
       line = std::move(getOnlyElement(label1));
+    if (!options[i].getTip().empty())
+      line = gui.stack(std::move(line),
+          gui.tooltip({options[i].getTip()}));
     if (!options[i].getSecondColumn().empty())
       line = gui.horizontalList(makeVec<PGuiElem>(std::move(line),
             gui.label(options[i].getSecondColumn())), columnWidth + 80, 0);
     lines.push_back(menuElemMargins(std::move(line)));
-    lines.back() = gui.stack(makeVec<PGuiElem>(
-          std::move(lines.back()),
-          gui.mouseOverAction([=] { *mouseOverElem = i; }, [=] { *mouseOverElem = -1; })));
     if (highlight && options[i].getMod() == View::NORMAL) {
       lines.back() = gui.stack(makeVec<PGuiElem>(
           gui.button([=]() { *choice = numActive; }),

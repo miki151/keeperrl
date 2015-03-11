@@ -234,6 +234,15 @@ PGuiElem GuiFactory::label(const string& s, int size, Color c) {
         }));
 }
 
+PGuiElem GuiFactory::centeredLabel(const string& s, int size, Color c) {
+  return PGuiElem(new DrawCustom(
+        [=] (Renderer& r, Rectangle bounds) {
+          r.drawText(transparency(colors[ColorId::BLACK], 100),
+            bounds.middle().x + 1, bounds.getTopLeft().y + 2, s, true, size);
+          r.drawText(c, bounds.middle().x, bounds.getTopLeft().y, s, true, size);
+        }));
+}
+
 PGuiElem GuiFactory::variableLabel(function<string()> fun, bool center, int size, Color c) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
