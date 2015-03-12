@@ -526,6 +526,14 @@ vector<T> getKeys(const map<T, V>& m) {
 }
 
 template <typename T, typename V>
+vector<V> getValues(const map<T, V>& m) {
+  vector<V> ret;
+  for (auto elem : m)
+    ret.push_back(elem.second);
+  return ret;
+}
+
+template <typename T, typename V>
 vector<T> getKeys(const unordered_map<T, V>& m) {
   vector<T> ret;
   for (auto elem : m)
@@ -906,7 +914,7 @@ string makeSentence(string s);
 
 string lowercase(string s);
 
-string combine(const vector<string>& adj);
+string combine(const vector<string>& adj, bool commasOnly = false);
 
 string getPlural(const string& singular, const string& plural, int num);
 string getPlural(const string&, int num);

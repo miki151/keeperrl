@@ -76,7 +76,8 @@ class Model {
   void exitAction();
   double getTime() const;
   MusicType getCurrentMusic() const;
-  void setCurrentMusic(MusicType);
+  void setCurrentMusic(MusicType, bool now);
+  bool changeMusicNow() const;
 
   View* getView();
   void setView(View*);
@@ -156,6 +157,7 @@ class Model {
   Highscores* highscores;
   string SERIAL(worldName);
   MusicType SERIAL(musicType);
+  bool SERIAL2(finishCurrentMusic, false);
   optional<ExitInfo> exitInfo;
   unique_ptr<CreatureView> SERIAL(spectator);
   Trigger* SERIAL2(danglingPortal, nullptr);
@@ -165,6 +167,6 @@ class Model {
   string SERIAL(gameDisplayName);
 };
 
-BOOST_CLASS_VERSION(Model, 1)
+BOOST_CLASS_VERSION(Model, 2)
 
 #endif

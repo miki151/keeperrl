@@ -49,6 +49,8 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(identifyOnEquip)
     & SVAR(modifiers)
     & SVAR(attrs);
+  if (version >= 1)   // OBSOLETE
+    ar & SVAR(shortName);
   CHECK_SERIAL;
 }
 

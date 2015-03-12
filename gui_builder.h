@@ -29,8 +29,9 @@ class GuiBuilder {
   enum class GameSpeed;
   struct Callbacks {
     function<void(UserInput)> inputCallback;
-    function<void(const string&)> hintCallback;
+    function<void(const vector<string>&)> hintCallback;
     function<void(sf::Event::KeyEvent)> keyboardCallback;
+    function<void()> refreshScreen;
   };
   GuiBuilder(Renderer&, GuiFactory&, Clock*, Callbacks);
   void reset();
@@ -42,6 +43,7 @@ class GuiBuilder {
   PGuiElem drawRightPlayerInfo(GameInfo::PlayerInfo&);
   PGuiElem drawPlayerStats(GameInfo::PlayerInfo&);
   PGuiElem drawPlayerHelp(GameInfo::PlayerInfo&);
+  PGuiElem drawPlayerInventory(GameInfo::PlayerInfo&);
   PGuiElem drawBottomBandInfo(GameInfo&);
   PGuiElem drawRightBandInfo(GameInfo::BandInfo&, GameInfo::VillageInfo&);
   PGuiElem drawBuildings(GameInfo::BandInfo&);
@@ -54,7 +56,7 @@ class GuiBuilder {
   struct OverlayInfo {
     PGuiElem elem;
     Vec2 size;
-    enum { LEFT, RIGHT, MESSAGES, GAME_SPEED, INVISIBLE } alignment;
+    enum { LEFT, TOP_RIGHT, BOTTOM_RIGHT, MESSAGES, GAME_SPEED, INVISIBLE } alignment;
   };
   void drawPlayerOverlay(vector<OverlayInfo>&, GameInfo::PlayerInfo&);
   void drawBandOverlay(vector<OverlayInfo>&, GameInfo::BandInfo&);
@@ -75,6 +77,7 @@ class GuiBuilder {
 
   enum class MinionTab {
     STATS,
+    INVENTORY,
     HELP,
   };
 
@@ -86,19 +89,28 @@ class GuiBuilder {
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
   bool showMorale() const;
+  Rectangle getMenuPosition(View::MenuType);
+  PGuiElem drawListGui(const string& title, const vector<View::ListElem>& options,
+      View::MenuType, int* height, int* highlight, int* choice);
 
   private:
   Renderer& renderer;
   GuiFactory& gui;
   Clock* clock;
   Callbacks callbacks;
-  PGuiElem getHintCallback(const string&);
+  PGuiElem getHintCallback(const vector<string>&);
+  PGuiElem getTooltip(const vector<string>&);
   function<void()> getButtonCallback(UserInput);
   int activeBuilding = 0;
   int activeLibrary = -1;
   string chosenCreature;
   bool showTasks = false;
   bool tilesOk;
+  double inventoryScroll = 0;
+  double playerStatsScroll = 0;
+  double buildingsScroll = 0;
+  double minionsScroll = 0;
+  bool disableTooltip = false;
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
   MinionTab minionTab = MinionTab::STATS;
   bool gameSpeedDialogOpen = false;
@@ -128,7 +140,14 @@ class GuiBuilder {
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
   PGuiElem getStandingGui(double standing);
+  PGuiElem getItemLine(const GameInfo::PlayerInfo::ItemInfo&, function<void(Rectangle)> onClick);
+  vector<string> getItemHint(const GameInfo::PlayerInfo::ItemInfo&);
   bool morale = false;
+  void handleItemChoice(const GameInfo::PlayerInfo::ItemInfo&, Vec2);
+  vector<PGuiElem> getMultiLine(const string& text, Color, View::MenuType, int maxWidth);
+  PGuiElem menuElemMargins(PGuiElem);
+  PGuiElem getHighlight(View::MenuType, const string& label, int height);
+  vector<string> breakText(const string& text, int maxWidth);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

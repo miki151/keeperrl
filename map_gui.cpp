@@ -454,12 +454,16 @@ void MapGui::setCenter(Vec2 v) {
   setCenter(v.x, v.y);
 }
 
-void MapGui::drawHint(Renderer& renderer, Color color, const string& text) {
-  int height = 30;
-  int width = renderer.getTextLength(text) + 110;
+void MapGui::drawHint(Renderer& renderer, Color color, const vector<string>& text) {
+  int lineHeight = 30;
+  int height = lineHeight * text.size();
+  int width = 0;
+  for (auto& s : text)
+    width = max(width, renderer.getTextLength(s) + 110);
   Vec2 pos(getBounds().getKX() - width, getBounds().getKY() - height);
   renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, Color(0, 0, 0, 150));
-  renderer.drawText(color, pos.x + 10, pos.y + 1, text);
+  for (int i : All(text))
+    renderer.drawText(color, pos.x + 10, pos.y + 1 + i * lineHeight, text[i]);
 }
 
 void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, Vec2 size, DirSet dirs) {
@@ -585,7 +589,7 @@ void MapGui::renderHint(Renderer& renderer, const optional<ViewObject>& highligh
       col = colors[ColorId::RED];
     else if (highlighted->isFriendly())
       col = colors[ColorId::GREEN];
-    drawHint(renderer, col, highlighted->getDescription(true));
+    drawHint(renderer, col, {highlighted->getDescription(true)});
   }
 }
 
@@ -685,7 +689,7 @@ void MapGui::render(Renderer& renderer) {
   renderHint(renderer, highlightedInfo.object);
 }
 
-void MapGui::setHint(const string& h) {
+void MapGui::setHint(const vector<string>& h) {
   hint = h;
 }
 

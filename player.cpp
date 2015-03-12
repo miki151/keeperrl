@@ -95,18 +95,19 @@ ControllerFactory Player::getFactory(Model *m, map<UniqueEntity<Level>::Id, MapM
 }
 
 static string getSlotSuffix(EquipmentSlot slot) {
-  switch (slot) {
+  return "(equiped)";
+/*  switch (slot) {
     case EquipmentSlot::WEAPON: return "(weapon ready)";
     case EquipmentSlot::RANGED_WEAPON: return "(ranged weapon ready)";
     default: return "(being worn)";
-  }
+  }*/
 }
 
 void Player::onBump(Creature*) {
   FAIL << "Shouldn't call onBump on a player";
 }
 
-string Player::getInventoryItemName(const Item* item, bool plural) {
+string Player::getInventoryItemName(const Item* item, bool plural) const {
   if (getCreature()->getEquipment().isEquiped(item))
     return item->getNameAndModifiers(plural, getCreature()->isBlind()) + " " 
       + getSlotSuffix(item->getEquipmentSlot());
@@ -120,11 +121,12 @@ void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, ve
       [this] (Item* const& item) { return getInventoryItemName(item, false); });
   for (auto elem : ret) {
     if (elem.second.size() == 1)
-      names.emplace_back(getInventoryItemName(elem.second[0], false),
-          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
+      names.push_back(View::ListElem(getInventoryItemName(elem.second[0], false),
+          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE).setTip(elem.second[0]->getDescription()));
     else
-      names.emplace_back(toString<int>(elem.second.size()) + " " + getInventoryItemName(elem.second[0], true),
-          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE);
+      names.push_back(View::ListElem(toString<int>(elem.second.size()) + " " 
+            + getInventoryItemName(elem.second[0], true),
+          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE).setTip(elem.second[0]->getDescription()));
     groups.push_back(elem.second);
   }
 }
@@ -148,7 +150,7 @@ void Player::pickUpAction(bool extended) {
   if (square->getApplyType(getCreature())) {
     string question = getSquareQuestion(*square->getApplyType(getCreature()), square->getName());
     if (!question.empty() && (items.empty() || model->getView()->yesOrNoPrompt(question))) {
-      getCreature()->applySquare().perform();
+      getCreature()->applySquare().perform(getCreature());
       return;
     }
   }
@@ -180,14 +182,14 @@ void Player::pickUpAction(bool extended) {
 }
 
 void Player::pickUpItemAction(int numItem) {
-  auto items = Item::stackItems(getCreature()->getPickUpOptions());
+  auto items = getCreature()->stackItems(getCreature()->getPickUpOptions());
   CHECK(numItem < items.size());
-  tryToPerform(getCreature()->pickUp(items[numItem].second));
+  tryToPerform(getCreature()->pickUp(items[numItem]));
 }
 
 void Player::tryToPerform(CreatureAction action) {
   if (action)
-    action.perform();
+    action.perform(getCreature());
   else
     getCreature()->playerMessage(action.getFailedReason());
 }
@@ -355,106 +357,36 @@ void Player::consumeAction() {
   }
 }
 
-void Player::equipmentAction() {
-  if (!getCreature()->isHumanoid()) {
-    privateMessage("You can't use any equipment.");
-    return;
+typedef GameInfo::PlayerInfo::ItemInfo ItemInfo;
+
+vector<ItemInfo::Action> Player::getItemActions(Item* item) const {
+  vector<ItemInfo::Action> actions;
+  if (getCreature()->equip(item)) {
+    actions.push_back(ItemInfo::EQUIP);
   }
-  vector<EquipmentSlot> slots;
-  for (auto slot : Equipment::slotTitles)
-    slots.push_back(slot.first);
-  int index = 0;
-  getCreature()->startEquipChain();
-  while (1) {
-    vector<View::ListElem> list;
-    vector<Item*> itemsChoice;
-    vector<EquipmentSlot> slotsChoice;
-    for (auto slot : slots) {
-      list.push_back(View::ListElem(Equipment::slotTitles.at(slot), View::TITLE));
-      vector<Item*> items = getCreature()->getEquipment().getItem(slot);
-      for (Item* item : items) {
-        list.push_back(item->getNameAndModifiers());
-        itemsChoice.push_back(item);
-        slotsChoice.push_back(EquipmentSlot::WEAPON); // anything
-      }
-      if (items.size() < getCreature()->getEquipment().getMaxItems(slot)) {
-        list.push_back("[Equip]");
-        slotsChoice.push_back(slot);
-        itemsChoice.push_back(nullptr);
-      }
-    }
-    model->getView()->updateView(this, true);
-    optional<int> newIndex = model->getView()->chooseFromList("Equipment", list, index, View::NORMAL_MENU, nullptr,
-        UserInputId::EQUIPMENT);
-    if (!newIndex) {
-      getCreature()->finishEquipChain();
-      return;
-    }
-    index = *newIndex;
-    EquipmentSlot slot = slotsChoice[index];
-    if (Item* item = itemsChoice[index]) {
-      tryToPerform(getCreature()->unequip(item));
-    } else {
-      vector<Item*> items = chooseItem("Choose an item to equip:", [=](const Item* item) {
-          return item->canEquip()
-          && !getCreature()->getEquipment().isEquiped(item)
-          && item->getEquipmentSlot() == slot;});
-      if (items.size() == 0) {
-        continue;
-      }
-      if (slot == EquipmentSlot::WEAPON && getCreature()->getAttr(AttrType::STRENGTH) < items[0]->getMinStrength()
-          && !model->getView()->yesOrNoPrompt(items[0]->getTheName() + " is too heavy, and will incur an accuracy penaulty.\n Do you want to continue?")) {
-        getCreature()->finishEquipChain();
-        return;
-      }
-      tryToPerform(getCreature()->equip(items[0]));
-    }
+  if (getCreature()->applyItem(item)) {
+    actions.push_back(ItemInfo::APPLY);
   }
+  if (getCreature()->unequip(item))
+    actions.push_back(ItemInfo::UNEQUIP);
+  else {
+    actions.push_back(ItemInfo::THROW);
+    actions.push_back(ItemInfo::DROP);
+  }
+  return actions;
 }
 
-void Player::displayInventory() {
-  if (!getCreature()->isHumanoid()) {
-    model->getView()->presentText("", "You can't use inventory.");
-    return;
+void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemInfo::Action action) {
+  vector<Item*> items = getCreature()->getEquipment().getItems(
+      [&](const Item* it) { return contains(itemIds, it->getUniqueId());});
+  CHECK(items.size() == itemIds.size());
+  switch (action) {
+    case ItemInfo::DROP: tryToPerform(getCreature()->drop(items)); break;
+    case ItemInfo::THROW: throwItem(items); break;
+    case ItemInfo::APPLY: applyItem(items); break;
+    case ItemInfo::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
+    case ItemInfo::EQUIP: tryToPerform(getCreature()->equip(items[0])); break;
   }
-  if (getCreature()->getEquipment().isEmpty()) {
-    model->getView()->presentText("", "Your inventory is empty.");
-    return;
-  }
-  vector<Item*> item = chooseItem("Inventory:", alwaysTrue<const Item*>(), UserInputId::SHOW_INVENTORY);
-  if (item.size() == 0) {
-    return;
-  }
-  vector<View::ListElem> options;
-  if (getCreature()->equip(item[0])) {
-    options.push_back("equip");
-  }
-  if (getCreature()->applyItem(item[0])) {
-    options.push_back("apply");
-  }
-  if (getCreature()->unequip(item[0]))
-    options.push_back("remove");
-  else {
-    options.push_back("throw");
-    options.push_back("drop");
-  }
-  auto index = model->getView()->chooseFromList("What to do with "
-      + getCreature()->getPluralName(item[0], item.size()) + "?", options);
-  if (index) {
-    if (options[*index].getText() == "drop")
-      tryToPerform(getCreature()->drop(item));
-    if (options[*index].getText() == "throw") {
-      throwItem(item);
-      return;
-    } if (options[*index].getText() == "apply") {
-      applyItem(item);
-      return;
-    } if (options[*index].getText() == "remove")
-      tryToPerform(getCreature()->unequip(item[0]));
-    if (options[*index].getText() == "equip")
-      tryToPerform(getCreature()->equip(item[0]));
-  }
-  displayInventory();
 }
 
 void Player::hideAction() {
@@ -508,7 +440,7 @@ void Player::targetAction() {
     return;
   }
   if (auto action = getCreature()->moveTowards(*target))
-    action.perform();
+    action.perform(getCreature());
   else
     target = none;
   itemsMessage();
@@ -560,7 +492,7 @@ void Player::spellAction() {
   for (Spell* spell : spells)
     list.push_back(View::ListElem(spell->getName() + " " + (!getCreature()->isReady(spell) ? "(ready in " +
           toString(int(getCreature()->getSpellDelay(spell) + 0.9999)) + " turns)" : ""),
-          getCreature()->isReady(spell) ? View::NORMAL : View::INACTIVE));
+          getCreature()->isReady(spell) ? View::NORMAL : View::INACTIVE).setTip(spell->getDescription()));
   auto index = model->getView()->chooseFromList("Cast a spell:", list);
   if (!index)
     return;
@@ -597,7 +529,7 @@ void Player::attackAction(Creature* other) {
       case AttackLevel::HIGH: elems.push_back("High"); break;
     }
   if (auto ind = model->getView()->chooseFromList("Choose level of the attack:", elems))
-    getCreature()->attack(other, levels[*ind]).perform();;
+    getCreature()->attack(other, levels[*ind]).perform(getCreature());
 }
 
 void Player::retireMessages() {
@@ -673,28 +605,25 @@ void Player::makeMove() {
           }
         direction.push_back(dir);
       } else
-        if (action.get<Vec2>() != getCreature()->getPosition()) {
-          target = action.get<Vec2>();
-          target = Vec2(min(getCreature()->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
-              min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
-          // Just in case
-          if (!target->inRectangle(getCreature()->getLevel()->getBounds()))
-            target = none;
-        }
-        else
-          pickUpAction(false);
+      if (action.get<Vec2>() != getCreature()->getPosition()) {
+        target = action.get<Vec2>();
+        target = Vec2(min(getCreature()->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
+            min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
+      }
+      else
+        pickUpAction(false);
       break;
-    case UserInputId::SHOW_INVENTORY: displayInventory(); break;
+    case UserInputId::INVENTORY_ITEM:
+      handleItems(action.get<InventoryItemInfo>().items(), action.get<InventoryItemInfo>().action()); break;
     case UserInputId::PICK_UP: pickUpAction(false); break;
     case UserInputId::EXT_PICK_UP: pickUpAction(true); break;
     case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
     case UserInputId::DROP: dropAction(false); break;
     case UserInputId::EXT_DROP: dropAction(true); break;
-    case UserInputId::WAIT: getCreature()->wait().perform(); break;
+    case UserInputId::WAIT: getCreature()->wait().perform(getCreature()); break;
     case UserInputId::APPLY_ITEM: applyAction(); break; 
     case UserInputId::THROW: throwAction(); break;
     case UserInputId::THROW_DIR: throwAction(action.get<Vec2>()); break;
-    case UserInputId::EQUIPMENT: equipmentAction(); break;
     case UserInputId::HIDE: hideAction(); break;
     case UserInputId::PAY_DEBT: payDebtAction(); break;
     case UserInputId::CHAT: chatAction(); break;
@@ -754,16 +683,16 @@ static string getForceMovementQuestion(const Square* square) {
 
 void Player::moveAction(Vec2 dir) {
   if (auto action = getCreature()->move(dir)) {
-    action.perform();
+    action.perform(getCreature());
     itemsMessage();
   } else if (auto action = getCreature()->forceMove(dir)) {
     for (Square* square : getCreature()->getSquare(dir))
       if (model->getView()->yesOrNoPrompt(getForceMovementQuestion(square)))
-        action.perform();
+        action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
-    action.perform();
+    action.perform(getCreature());
   else if (auto action = getCreature()->destroy(dir, Creature::BASH))
-    action.perform();
+    action.perform(getCreature());
 }
 
 bool Player::isPlayer() const {
@@ -1108,7 +1037,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.attributes = {
     {"level",
       getCreature()->getExpLevel(), 0,
-      "Describes general combat value of the getCreature()."},
+      "Describes general combat value of the creature."},
     {"attack",
       getCreature()->getModifier(ModifierType::DAMAGE),
       getCreature()->isAffected(LastingEffect::RAGE) ? 1 : getCreature()->isAffected(LastingEffect::PANIC) ? -1 : 0,
@@ -1133,21 +1062,43 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     {"speed",
       getCreature()->getAttr(AttrType::SPEED),
       getCreature()->isAffected(LastingEffect::SPEED) ? 1 : getCreature()->isAffected(LastingEffect::SLOWED) ? -1 : 0,
-      "Affects how much time every action takes."}};
+      "Affects how much game time every action uses."}};
   info.skills = getCreature()->getSkillNames();
-  info.attributes.push_back({"gold", int(getCreature()->getGold(100000000).size()), 0, ""});
   gameInfo.time = getCreature()->getTime();
   info.effects.clear();
   for (string s : getCreature()->getAdjectives())
     info.effects.push_back({s, true});
   info.squareName = getCreature()->getSquare()->getName();
   info.lyingItems.clear();
-  for (auto stack : Item::stackItems(getCreature()->getPickUpOptions()))
-    if (stack.second.size() == 1)
-      info.lyingItems.push_back({stack.first, stack.second[0]->getViewObject()});
-    else info.lyingItems.push_back({toString(stack.second.size()) + " "
-        + stack.second[0]->getName(true), stack.second[0]->getViewObject()});
+  for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))
+    info.lyingItems.push_back(getItemInfo(stack));
+  info.inventory.clear();
+  map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
+      getCreature()->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
+  for (auto elem : typeDisplayOrder) 
+    if (typeGroups[elem].size() > 0)
+      info.inventory.push_back({getText(elem), getItemInfos(typeGroups[elem])});
+}
 
+ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
+  return {
+    stack[0]->getShortName(true, getCreature()->isBlind()),
+    stack[0]->getNameAndModifiers(false, getCreature()->isBlind()),
+    getCreature()->isBlind() ? "" : stack[0]->getDescription(),
+    int(stack.size()),
+    stack[0]->getViewObject(),
+    transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();}),
+    getItemActions(stack[0]),
+    getCreature()->getEquipment().isEquiped(stack[0])};
+}
+
+vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
+  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items, 
+      [this] (Item* const& item) { return getInventoryItemName(item, false); });
+  vector<ItemInfo> ret;
+  for (auto elem : stacks)
+    ret.push_back(getItemInfo(elem.second));
+  return ret;
 }
 
 vector<const Creature*> Player::getVisibleEnemies() const {

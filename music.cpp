@@ -65,12 +65,17 @@ MusicType Jukebox::getCurrentType() {
 
 const int volumeDec = 20;
 
-void Jukebox::setType(MusicType c) {
-  MusicLock lock(musicMutex);
-  if (byType[c].empty())
-    return;
-  if (getCurrentType() != c)
-    current = chooseRandom(byType[c]);
+void Jukebox::setType(MusicType c, bool now) {
+  if (!now)
+    nextType = c;
+  else {
+    nextType.reset();
+    MusicLock lock(musicMutex);
+    if (byType[c].empty())
+      return;
+    if (getCurrentType() != c)
+      current = chooseRandom(byType[c]);
+  }
 }
 
 void Jukebox::refresh() {
@@ -87,7 +92,11 @@ void Jukebox::refresh() {
       music[currentPlaying].setVolume(max(0.0f, music[currentPlaying].getVolume() - volumeDec));
   } else
   if (music[current].getStatus() == sf::SoundSource::Stopped) {
-    continueCurrent();
+    if (nextType) {
+      setCurrent(*nextType);
+      nextType.reset();
+    } else
+      continueCurrent();
     currentPlaying = current;
     music[current].play();
   }

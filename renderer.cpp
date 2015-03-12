@@ -57,8 +57,7 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s
   }
   t.setPosition(x + ox, y + oy);
   t.setColor(color);
-  renderList.push_back(
-      [this, t] { display->draw(t); });
+  addRenderElem([this, t] { display->draw(t); });
 }
 
 String Renderer::toUnicode(const string& s) {
@@ -100,8 +99,7 @@ void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, doubl
   if (scale != 1) {
     s.setScale(scale, scale);
   }
-  renderList.push_back(
-      [this, s] { display->draw(s); });
+  addRenderElem([this, s] { display->draw(s); });
 }
 
 void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, optional<Color> color,
@@ -124,8 +122,7 @@ void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, Ve
     s.setColor(*color);
   if (targetSize.x != -1)
     s.setScale(double(targetSize.x) / size.x, double(targetSize.y) / size.y);
-  renderList.push_back(
-      [this, s] { display->draw(s); });
+  addRenderElem([this, s] { display->draw(s); });
 }
 
 void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
@@ -136,8 +133,7 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Col
     r.setOutlineThickness(-2);
     r.setOutlineColor(*outline);
   }
-  renderList.push_back(
-      [this, r] { display->draw(r); });
+  addRenderElem([this, r] { display->draw(r); });
 }
 
 void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline) {
@@ -157,9 +153,22 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
 
 void Renderer::drawQuads() {
   vector<Vertex>& quadsTmp = quads;
-  renderList.push_back(
-      [this, quadsTmp] { display->draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
+  addRenderElem([this, quadsTmp] { display->draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
   quads.clear();
+}
+
+void Renderer::addRenderElem(function<void()> f) {
+  renderList[currentLayer].push_back(f);
+}
+
+void Renderer::setTopLayer() {
+  layerStack.push(currentLayer);
+  currentLayer = 1;
+}
+
+void Renderer::popLayer() {
+  currentLayer = layerStack.top();
+  layerStack.pop();
 }
 
 Vec2 Renderer::getSize() {
@@ -315,9 +324,11 @@ bool Renderer::loadTilesFromFile(const string& path, Vec2 size) {
 }
 
 void Renderer::drawAndClearBuffer() {
-  for (auto& elem : renderList)
-    elem();
-  renderList.clear();
+  for (int i : All(renderList)) {
+    for (auto& elem : renderList[i])
+      elem();
+    renderList[i].clear();
+  }
   display->display();
   display->clear(Color(0, 0, 0));
 }

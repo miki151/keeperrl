@@ -85,8 +85,11 @@ class View {
         optional<UserInputId> triggerAction = none);
     ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
 
+    ListElem& setTip(const string&);
+
     const string& getText() const;
     const string& getSecondColumn() const;
+    const string& getTip() const;
     ElemMod getMod() const;
     optional<UserInputId> getAction() const;
     void setMod(ElemMod);
@@ -94,6 +97,7 @@ class View {
     private:
     string text;
     string secondColumn;
+    string tooltip;
     ElemMod mod;
     optional<UserInputId> action;
   };

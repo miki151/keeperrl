@@ -36,6 +36,9 @@ class Effect {
   static void summon(Level*, CreatureFactory, Vec2 pos, int num, int ttl);
   static string getName(EffectType);
   static string getName(LastingEffect);
+  static string getDescription(EffectType);
+  static string getDescription(DirEffectType);
+  static string getDescription(LastingEffect);
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);

@@ -55,7 +55,7 @@ class Task : public UniqueEntity<Task> {
 
   static PTask construction(Callback*, Vec2 target, SquareType);
   static PTask buildTorch(Callback*, Vec2 target, Dir attachmentDir);
-  static PTask bringItem(Callback*, Vec2 position, vector<Item*>, vector<Vec2> target);
+  static PTask bringItem(Callback*, Vec2 position, vector<Item*>, vector<Vec2> target, int numRetries = 10);
   static PTask applyItem(Callback*, Vec2 position, Item* item, Vec2 target);
   static PTask applySquare(Callback*, vector<Vec2> squares);
   static PTask pickAndEquipItem(Callback*, Vec2 position, Item* item);

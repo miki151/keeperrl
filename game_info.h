@@ -102,9 +102,21 @@ class GameInfo {
     vector<Effect> effects;
     struct ItemInfo {
       string name;
+      string fullName;
+      string description;
+      int number;
       ViewObject viewObject;
+      vector<UniqueEntity<Item>::Id> ids;
+      enum Action { DROP, APPLY, EQUIP, UNEQUIP, THROW };
+      vector<Action> actions;
+      bool equiped;
     };
     vector<ItemInfo> lyingItems;
+    struct InventorySection {
+      string title;
+      vector<ItemInfo> items;
+    };
+    vector<InventorySection> inventory;
     string squareName;
     vector<CreatureInfo> team;
   } playerInfo;
