@@ -57,13 +57,15 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(statistics)
     & SVAR(spectator)
     & SVAR(tribeSet);
-  if (version == 1) {
+  if (version >= 1) {
     ar & SVAR(gameIdentifier)
        & SVAR(gameDisplayName);
   } else {
     gameIdentifier = *playerControl->getKeeper()->getFirstName() + "_" + worldName;
     gameDisplayName = *playerControl->getKeeper()->getFirstName() + " of " + worldName;
   }
+  if (version >= 2)
+    ar & SVAR(finishCurrentMusic);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
   updateSunlightInfo();
@@ -121,8 +123,13 @@ MusicType Model::getCurrentMusic() const {
   return musicType;
 }
 
-void Model::setCurrentMusic(MusicType type) {
+void Model::setCurrentMusic(MusicType type, bool now) {
   musicType = type;
+  finishCurrentMusic = now;
+}
+
+bool Model::changeMusicNow() const {
+  return finishCurrentMusic;
 }
 
 const Model::SunlightInfo& Model::getSunlightInfo() const {

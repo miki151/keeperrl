@@ -636,10 +636,10 @@ void Range::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Range);
 SERIALIZATION_CONSTRUCTOR_IMPL(Range);
 
-string combine(const vector<string>& adj) {
+string combine(const vector<string>& adj, bool commasOnly) {
   string res;
   for (int i : All(adj)) {
-    if (i == adj.size() - 1 && i > 0)
+    if (i == adj.size() - 1 && i > 0 && !commasOnly)
       res.append(" and ");
     else if (i > 0)
       res.append(", ");

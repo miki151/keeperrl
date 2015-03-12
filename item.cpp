@@ -26,9 +26,12 @@
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
-  ItemAttributes::serialize(ar, version);
-  ar& SUBCLASS(UniqueEntity)
-    & SUBCLASS(Renderable)
+  if (version == 0)   // OBSOLETE
+    ItemAttributes::serialize(ar, version);
+  ar& SUBCLASS(UniqueEntity);
+  if (version >= 1)
+    ar & SUBCLASS(ItemAttributes);
+  ar& SUBCLASS(Renderable)
     & SVAR(discarded)
     & SVAR(shopkeeper)
     & SVAR(fire);
@@ -210,25 +213,25 @@ void Item::apply(Creature* c, Level* l) {
   }
 }
 
-string Item::getApplyMsgThirdPerson() const {
+string Item::getApplyMsgThirdPerson(bool blind) const {
   switch (getClass()) {
-    case ItemClass::SCROLL: return "reads " + getAName();
-    case ItemClass::POTION: return "drinks " + getAName();
-    case ItemClass::BOOK: return "reads " + getAName();
-    case ItemClass::TOOL: return "applies " + getAName();
-    case ItemClass::FOOD: return "eats " + getAName();
+    case ItemClass::SCROLL: return "reads " + getAName(false, blind);
+    case ItemClass::POTION: return "drinks " + getAName(false, blind);
+    case ItemClass::BOOK: return "reads " + getAName(false, blind);
+    case ItemClass::TOOL: return "applies " + getAName(false, blind);
+    case ItemClass::FOOD: return "eats " + getAName(false, blind);
     default: FAIL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
 
-string Item::getApplyMsgFirstPerson() const {
+string Item::getApplyMsgFirstPerson(bool blind) const {
   switch (getClass()) {
-    case ItemClass::SCROLL: return "read " + getAName();
-    case ItemClass::POTION: return "drink " + getAName();
-    case ItemClass::BOOK: return "read " + getAName();
-    case ItemClass::TOOL: return "apply " + getAName();
-    case ItemClass::FOOD: return "eat " + getAName();
+    case ItemClass::SCROLL: return "read " + getAName(false, blind);
+    case ItemClass::POTION: return "drink " + getAName(false, blind);
+    case ItemClass::BOOK: return "read " + getAName(false, blind);
+    case ItemClass::TOOL: return "apply " + getAName(false, blind);
+    case ItemClass::FOOD: return "eat " + getAName(false, blind);
     default: FAIL << "Bad type for applying " << (int)getClass();
   }
   return "";
@@ -296,8 +299,13 @@ string Item::getArtifactName() const {
   return *artifactName;
 }
 
-string Item::getNameAndModifiers(bool getPlural, bool blind) const {
-  string artStr = artifactName ? " named " + *artifactName : "";
+string Item::getModifiers(bool shorten) const {
+  string artStr;
+  if (artifactName) {
+    artStr = *artifactName;
+    if (!shorten)
+      artStr = " named " + artStr;
+  }
   EnumSet<ModifierType> printMod;
   switch (getClass()) {
     case ItemClass::WEAPON:
@@ -313,21 +321,38 @@ string Item::getNameAndModifiers(bool getPlural, bool blind) const {
       break;
     default: break;
   }
-  for (auto mod : ENUM_ALL(ModifierType))
-    if (modifiers[mod] != 0)
-      printMod.insert(mod);
+  if (!shorten)
+    for (auto mod : ENUM_ALL(ModifierType))
+      if (modifiers[mod] != 0)
+        printMod.insert(mod);
   vector<string> attrStrings;
   for (auto mod : printMod)
-    attrStrings.push_back(withSign(modifiers[mod]) + " " + Creature::getModifierName(mod));
-  for (auto attr : ENUM_ALL(AttrType))
-    if (attrs[attr] != 0)
-      attrStrings.push_back(withSign(attrs[attr]) + " " + Creature::getAttrName(attr));
-  string attrString = combine(attrStrings);
+    attrStrings.push_back(withSign(modifiers[mod]) + (shorten ? "" : " " + Creature::getModifierName(mod)));
+  if (!shorten)
+    for (auto attr : ENUM_ALL(AttrType))
+      if (attrs[attr] != 0)
+        attrStrings.push_back(withSign(attrs[attr]) + " " + Creature::getAttrName(attr));
+  string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = " (" + attrString + ")";
   if (uses > -1 && displayUses) 
     attrString += " (" + toString(uses) + " uses left)";
-  return getName(getPlural, blind) + artStr + attrString;
+  return artStr + attrString;
+}
+
+string Item::getShortName(bool shortMod, bool blind) const {
+  if (blind && blindName)
+    return getBlindName(false);
+  string name = getModifiers(shortMod);
+  if (shortName)
+    name = *shortName + " " + name;
+  if (getShopkeeper())
+    name = name + " (unpaid)";
+  return name;
+}
+
+string Item::getNameAndModifiers(bool getPlural, bool blind) const {
+  return getName(getPlural, blind) + getModifiers();
 }
 
 string Item::getBlindName(bool plural) const {

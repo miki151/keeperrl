@@ -18,6 +18,7 @@
 #include "gui_elem.h"
 #include "view_object.h"
 #include "tile.h"
+#include "clock.h"
 
 using sf::Color;
 
@@ -37,27 +38,27 @@ GuiElem::~GuiElem() {
 
 class Button : public GuiElem {
   public:
-  Button(function<void()> f) : fun(f) {}
+  Button(function<void(Rectangle)> f) : fun(f) {}
 
   virtual bool onLeftClick(Vec2 pos) override {
     if (pos.inRectangle(getBounds())) {
-      fun();
+      fun(getBounds());
       return true;
     }
     return false;
   }
 
   protected:
-  function<void()> fun;
+  function<void(Rectangle)> fun;
 };
 
 class ButtonChar : public Button {
   public:
-  ButtonChar(function<void()> f, char key) : Button(f), hotkey(key) {}
+  ButtonChar(function<void(Rectangle)> f, char key) : Button(f), hotkey(key) {}
 
   virtual void onKeyPressed(char c) override {
     if (hotkey == c)
-      fun();
+      fun(getBounds());
   }
 
   private:
@@ -66,23 +67,34 @@ class ButtonChar : public Button {
 
 class ButtonKey : public Button {
   public:
-  ButtonKey(function<void()> f, Event::KeyEvent key) : Button(f), hotkey(key) {}
+  ButtonKey(function<void(Rectangle)> f, Event::KeyEvent key) : Button(f), hotkey(key) {}
 
   virtual void onKeyPressed2(Event::KeyEvent key) override {
     if (hotkey.code == key.code && hotkey.shift == key.shift)
-      fun();
+      fun(getBounds());
   }
 
   private:
   Event::KeyEvent hotkey;
 };
 
-PGuiElem GuiFactory::button(function<void()> fun, char hotkey) {
+GuiFactory::GuiFactory(Clock* c) : clock(c) {
+}
+
+PGuiElem GuiFactory::button(function<void(Rectangle)> fun, char hotkey) {
   return PGuiElem(new ButtonChar(fun, hotkey));
 }
 
-PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey) {
+PGuiElem GuiFactory::button(function<void(Rectangle)> fun, Event::KeyEvent hotkey) {
   return PGuiElem(new ButtonKey(fun, hotkey));
+}
+
+PGuiElem GuiFactory::button(function<void()> fun, char hotkey) {
+  return PGuiElem(new ButtonChar([=](Rectangle) { fun(); }, hotkey));
+}
+
+PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey) {
+  return PGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey));
 }
 
 class DrawCustom : public GuiElem {
@@ -222,13 +234,22 @@ PGuiElem GuiFactory::label(const string& s, int size, Color c) {
         }));
 }
 
-PGuiElem GuiFactory::variableLabel(function<string()> fun, int size, Color c) {
+PGuiElem GuiFactory::centeredLabel(const string& s, int size, Color c) {
+  return PGuiElem(new DrawCustom(
+        [=] (Renderer& r, Rectangle bounds) {
+          r.drawText(transparency(colors[ColorId::BLACK], 100),
+            bounds.middle().x + 1, bounds.getTopLeft().y + 2, s, true, size);
+          r.drawText(c, bounds.middle().x, bounds.getTopLeft().y, s, true, size);
+        }));
+}
+
+PGuiElem GuiFactory::variableLabel(function<string()> fun, bool center, int size, Color c) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           string s = fun();
-          r.drawText(transparency(colors[ColorId::BLACK], 100),
-            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, false, size);
-          r.drawText(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, false, size);
+          int x = center ? bounds.middle().x : bounds.getTopLeft().x;
+          r.drawText(transparency(colors[ColorId::BLACK], 100), x + 1, bounds.getTopLeft().y + 2, s, center, size);
+          r.drawText(c, x, bounds.getTopLeft().y, s, center, size);
         }));
 }
 
@@ -312,6 +333,11 @@ class GuiLayout : public GuiElem {
       elems[i]->onKeyPressed2(key);
   }
 
+  virtual void onMouseWheel(Vec2 v, bool up) override {
+    for (int i : All(elems))
+      elems[i]->onMouseWheel(v, up);
+  }
+
   virtual Rectangle getElemBounds(int num) {
     return getBounds();
   }
@@ -340,7 +366,7 @@ class VerticalList : public GuiLayout {
   public:
   VerticalList(vector<PGuiElem> e, vector<int> h, int space, int alignBack = 0)
     : GuiLayout(std::move(e)), heights(h), spacing(space), numAlignBack(alignBack) {
-    CHECK(heights.size() > 0);
+    //CHECK(heights.size() > 0);
     CHECK(heights.size() == elems.size());
   }
 
@@ -390,6 +416,10 @@ class VerticalList : public GuiLayout {
 
   int getSize() {
     return heights.size();
+  }
+
+  int getTotalHeight() {
+    return getElemsHeight(getSize());
   }
 
   protected:
@@ -692,19 +722,26 @@ PGuiElem GuiFactory::translate(PGuiElem e, Vec2 v, Rectangle newSize) {
 
 class MouseOverAction : public GuiElem {
   public:
-  MouseOverAction(function<void()> f) : callback(f) {}
+  MouseOverAction(function<void()> f, function<void()> f2) : callback(f), outCallback(f2) {}
 
   virtual void onMouseMove(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
+    if (pos.inRectangle(getBounds())) {
       callback();
+      in = true;
+    } else if (in && outCallback) {
+      in = false;
+      outCallback();
+    }
   }
 
   private:
   function<void()> callback;
+  bool in = false;
+  function<void()> outCallback;
 };
 
-PGuiElem GuiFactory::mouseOverAction(function<void()> callback) {
-  return PGuiElem(new MouseOverAction(callback));
+PGuiElem GuiFactory::mouseOverAction(function<void()> callback, function<void()> outCallback) {
+  return PGuiElem(new MouseOverAction(callback, outCallback));
 }
 
 class MouseHighlight : public GuiLayout {
@@ -775,6 +812,50 @@ PGuiElem GuiFactory::mouseHighlight2(PGuiElem elem) {
   return PGuiElem(new MouseHighlight2(std::move(elem)));
 }
 
+const static int tooltipLineHeight = 28;
+const static int tooltipHMargin = 15;
+const static int tooltipVMargin = 15;
+const static Vec2 tooltipOffset = Vec2(10, 10);
+const static int tooltipDelay = 700;
+
+class Tooltip : public GuiElem {
+  public:
+  Tooltip(const vector<string>& t, PGuiElem bg, Clock* c) : text(t), background(std::move(bg)),
+      lastTimeOut(c->getRealMillis()), clock(c) {
+  }
+
+  virtual void render(Renderer& r) override {
+    if (r.getMousePos().inRectangle(getBounds())) {
+      if (clock->getRealMillis() > lastTimeOut + tooltipDelay) {
+        Vec2 size(0, text.size() * tooltipLineHeight + 2 * tooltipVMargin);
+        for (const string& t : text)
+          size.x = max(size.x, r.getTextLength(t) + 2 * tooltipHMargin);
+        Vec2 pos = getBounds().getBottomLeft() + tooltipOffset;
+        pos.x = min(pos.x, r.getSize().x - size.x);
+        pos.y = min(pos.y, r.getSize().y - size.y);
+        r.setTopLayer();
+        background->setBounds(Rectangle(pos, pos + size));
+        background->render(r);
+        for (int i : All(text))
+          r.drawText(colors[ColorId::WHITE], pos.x + tooltipHMargin, pos.y + tooltipVMargin + i * tooltipLineHeight,
+              text[i]);
+        r.popLayer();
+      }
+    } else 
+      lastTimeOut = clock->getRealMillis();
+  }
+
+  private:
+  vector<string> text;
+  PGuiElem background;
+  int lastTimeOut;
+  Clock* clock;
+};
+
+PGuiElem GuiFactory::tooltip(const vector<string>& v) {
+  return PGuiElem(new Tooltip(v, miniBorder(background(background1)), clock));
+}
+
 class ScrollBar : public GuiLayout {
   public:
   ScrollBar(PGuiElem b, VerticalList* _content, Vec2 butSize, int vMarg, double* scrollP, int contentH)
@@ -804,6 +885,16 @@ class ScrollBar : public GuiLayout {
             * double(getBounds().getH() - buttonSize.y - 2 * vMargin)
             / double(scrollLength()));
     return ret;
+  }
+
+  virtual void onMouseWheel(Vec2 v, bool up) override {
+    if (v.inRectangle(Rectangle(Vec2(content->getBounds().getPX(), getBounds().getPY()),
+        getBounds().getBottomRight()))) {
+      if (up)
+        *scrollPos = max<double>(0, *scrollPos - 1);
+      else
+        *scrollPos = min<double>(scrollLength(), *scrollPos + 1);
+    }
   }
 
   virtual bool onLeftClick(Vec2 v) override {
@@ -837,10 +928,10 @@ class ScrollBar : public GuiLayout {
   }
 
   private:
+  optional<int> held;
   Vec2 buttonSize;
   int vMargin;
   double* scrollPos;
-  optional<int> held;
   VerticalList* content;
   int listSize;
   int contentHeight;
@@ -1041,20 +1132,19 @@ PGuiElem GuiFactory::conditional(PGuiElem elem, PGuiElem alter, function<bool(Gu
       PGuiElem(new Conditional(std::move(alter), [=] (GuiElem* e) { return !f(e);})));
 }
 
-PGuiElem GuiFactory::scrollable(PGuiElem content, int contentHeight, double* scrollPos) {
+PGuiElem GuiFactory::scrollable(PGuiElem content, double* scrollPos) {
   VerticalList* list = dynamic_cast<VerticalList*>(content.release());
+  int contentHeight = list->getTotalHeight();
   CHECK(list) << "Scrolling only implemented for vertical list";
   PGuiElem scrollable(new Scrollable(PVerticalList(list), contentHeight, scrollPos));
   int scrollBarMargin = get(TexId::SCROLL_UP).getSize().y;
   PGuiElem bar(new ScrollBar(
         std::move(getScrollButton()), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight));
   PGuiElem barButtons = getScrollbar();
-  int hMargin = 30;
-  int vMargin = 0;
   barButtons = conditional(std::move(barButtons), [=] (GuiElem* e) {
       return e->getBounds().getH() < contentHeight;});
   return margin(stack(std::move(barButtons), std::move(bar)),
-        margins(std::move(scrollable), hMargin, vMargin, hMargin, vMargin), scrollbarWidth, RIGHT);
+        std::move(scrollable), scrollbarWidth, RIGHT);
 }
 
 PGuiElem GuiFactory::background(Color c) {
@@ -1168,3 +1258,45 @@ PGuiElem GuiFactory::mainMenuLabelBg(const string& s, double vPadding, Color col
       mainMenuLabel(s, vPadding, color));
 }
 
+void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
+  switch (event.type) {
+    case Event::MouseButtonReleased:
+      for (GuiElem* elem : guiElems)
+        elem->onMouseRelease();
+      break;
+    case Event::MouseMoved:
+      for (GuiElem* elem : guiElems)
+        elem->onMouseMove(Vec2(event.mouseMove.x, event.mouseMove.y));
+      break;
+    case Event::MouseButtonPressed: {
+      Vec2 clickPos(event.mouseButton.x, event.mouseButton.y);
+      for (GuiElem* elem : guiElems) {
+        if (event.mouseButton.button == sf::Mouse::Right)
+          if (elem->onRightClick(clickPos))
+            break;
+        if (event.mouseButton.button == sf::Mouse::Left)
+          if (elem->onLeftClick(clickPos))
+            break;
+      }
+      }
+      break;
+    case Event::KeyPressed:
+      for (GuiElem* elem : guiElems)
+        elem->onKeyPressed2(event.key);
+      break;
+    case Event::TextEntered:
+      if (event.text.unicode < 128) {
+        char key = event.text.unicode;
+        for (GuiElem* elem : guiElems)
+          elem->onKeyPressed(key);
+      }
+      break;
+    case Event::MouseWheelMoved:
+      for (GuiElem* elem : guiElems)
+        elem->onMouseWheel(Vec2(event.mouseWheel.x, event.mouseWheel.y), event.mouseWheel.delta > 0);
+      break;
+    default: break;
+  }
+  for (GuiElem* elem : guiElems)
+    elem->onRefreshBounds();
+}

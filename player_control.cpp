@@ -639,7 +639,7 @@ void PlayerControl::handlePersonalSpells(View* view) {
       mod = View::INACTIVE;
       suff = requires(getCollective()->getNeededTech(spell));
     }
-    options.emplace_back(spell->getName() + suff, mod);
+    options.push_back(View::ListElem(spell->getName() + suff, mod).setTip(spell->getDescription()));
   }
   view->presentList("Sorcery", options);
 }
@@ -670,12 +670,12 @@ void PlayerControl::handleLibrary(View* view) {
   for (Technology* tech : techs) {
     int cost = getCollective()->getTechCost(tech);
     string text = tech->getName() + " (" + toString(cost) + " mana)";
-    options.emplace_back(text, cost <= int(getCollective()->numResource(ResourceId::MANA))
-        && !allInactive ? View::NORMAL : View::INACTIVE);
+    options.push_back(View::ListElem(text, cost <= int(getCollective()->numResource(ResourceId::MANA))
+        && !allInactive ? View::NORMAL : View::INACTIVE).setTip(tech->getDescription()));
   }
   options.emplace_back("Researched:", View::TITLE);
   for (Technology* tech : getCollective()->getTechnologies())
-    options.emplace_back(tech->getName(), View::INACTIVE);
+    options.push_back(View::ListElem(tech->getName(), View::INACTIVE).setTip(tech->getDescription()));
   auto index = view->chooseFromList("Library", options);
   if (!index)
     return;
@@ -1457,6 +1457,10 @@ void PlayerControl::checkKeeperDanger() {
 const double messageTimeout = 80;
 const double warningFrequency = 200;
 
+void PlayerControl::onNoEnemies() {
+  model->setCurrentMusic(MusicType::PEACEFUL, false);
+}
+
 void PlayerControl::tick(double time) {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
@@ -1501,7 +1505,7 @@ void PlayerControl::tick(double time) {
       if (canSee(c)) {
         addImportantLongMessage(assault.second.message(), c->getPosition());
         assaultNotifications.erase(assault.first);
-        model->setCurrentMusic(MusicType::BATTLE);
+        model->setCurrentMusic(MusicType::BATTLE, true);
         break;
       }
   if (model->getOptions()->getBoolValue(OptionId::HINTS) && time > hintFrequency) {

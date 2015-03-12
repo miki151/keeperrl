@@ -199,7 +199,7 @@ void MainLoop::playModel(PModel model, bool withMusic) {
       return;
     }
     if (lastMusicUpdate < totTime - 1 && withMusic) {
-      jukebox->setType(model->getCurrentMusic());
+      jukebox->setType(model->getCurrentMusic(), model->changeMusicNow());
       lastMusicUpdate = totTime;
     } if (model->isTurnBased())
     ++totTime;
@@ -235,7 +235,7 @@ void MainLoop::playGameChoice() {
     if (model) {
       model->setOptions(options);
       model->setHighscores(highscores);
-      jukebox->setType(MusicType::PEACEFUL);
+      jukebox->setType(MusicType::PEACEFUL, true);
       playModel(std::move(model));
     }
     view->reset();
@@ -244,7 +244,7 @@ void MainLoop::playGameChoice() {
 
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
-  jukebox->setType(MusicType::INTRO);
+  jukebox->setType(MusicType::INTRO, true);
   NameGenerator::init(dataFreePath + "/names");
   playModel(ModelBuilder::splashModel(meter, view, dataFreePath + "/splash.txt"), false);
 }
@@ -276,11 +276,11 @@ void MainLoop::start(bool tilesPresent) {
     view->presentText("", "You are playing a version of KeeperRL without graphical tiles. "
         "Besides lack of graphics and music, this "
         "is the same exact game as the full version. If you'd like to buy the full version, "
-        "please visit keeperrl.com.\n \nYou can also get it by donating to any wildlife charity."
+        "please visit keeperrl.com.\n \nYou can also get it by donating to any wildlife charity. "
         "More information on the website.");
   int lastIndex = 0;
   while (1) {
-    jukebox->setType(MusicType::MAIN);
+    jukebox->setType(MusicType::MAIN, true);
     auto choice = view->chooseFromList("", {
         "Play game", "Change settings", "View high scores", "View credits", "Quit"}, lastIndex, View::MAIN_MENU);
     if (!choice)

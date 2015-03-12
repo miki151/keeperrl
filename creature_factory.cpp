@@ -113,7 +113,7 @@ class BoulderController : public Monster {
       }
     }
     if (stopped) {
-      getCreature()->wait().perform();
+      getCreature()->wait().perform(getCreature());
       return;
     }
     for (Square* square : getCreature()->getSquare(direction))
@@ -121,7 +121,7 @@ class BoulderController : public Monster {
         if (Creature* c = square->getCreature()) {
           if (!c->isCorporal()) {
             if (auto action = getCreature()->swapPosition(direction, true))
-              action.perform();
+              action.perform(getCreature());
           } else {
             decreaseHealth(c->getSize());
             if (health < 0) {
@@ -138,16 +138,16 @@ class BoulderController : public Monster {
           }
         }
         if (auto action = getCreature()->destroy(direction, Creature::DESTROY))
-          action.perform();
+          action.perform(getCreature());
       }
     if (auto action = getCreature()->move(direction))
-      action.perform();
+      action.perform(getCreature());
     else for (Square* square : getCreature()->getSquare(direction)) {
       if (health >= 0.9 && square->canConstruct(SquareId::FLOOR)) {
         getCreature()->globalMessage("The " + square->getName() + " is destroyed!");
         while (!square->construct(SquareId::FLOOR)) {} // This should use destroy() probably
         if (auto action = getCreature()->move(direction))
-          action.perform();
+          action.perform(getCreature());
         health = 0.1;
       } else {
         getCreature()->getLevel()->globalMessage(getCreature()->getPosition() + direction,
@@ -341,7 +341,7 @@ class KrakenController : public Monster {
   virtual void makeMove() override {
     int radius = 10;
     if (waitNow) {
-      getCreature()->wait().perform();
+      getCreature()->wait().perform(getCreature());
       waitNow = false;
       return;
     }
@@ -414,7 +414,7 @@ class KrakenController : public Monster {
     if (!isEnemy && spawns.size() == 0 && father && Random.roll(5)) {
       getCreature()->die(nullptr, false, false);
     }
-    getCreature()->wait().perform();
+    getCreature()->wait().perform(getCreature());
   }
 
   template <class Archive>
@@ -525,7 +525,7 @@ class ShopkeeperController : public Monster {
       CHECK(item->getClass() == ItemClass::GOLD);
       --debt[from];
     }
-    getCreature()->pickUp(items, false).perform();
+    getCreature()->pickUp(items, false).perform(getCreature());
     CHECK(debt[from] == 0) << "Bad debt " << debt[from];
     debt.erase(from);
     for (Item* it : from->getEquipment().getItems())

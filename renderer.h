@@ -133,6 +133,9 @@ class Renderer {
   void waitEvent(Event&);
   Vec2 getMousePos();
 
+  void setTopLayer();
+  void popLayer();
+
   void startMonkey();
   bool isMonkey();
   Event getRandomEvent();
@@ -157,7 +160,10 @@ class Renderer {
   bool monkey = false;
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
-  vector<function<void()>> renderList;
+  void addRenderElem(function<void()>);
+  stack<int> layerStack;
+  int currentLayer = 0;
+  array<vector<function<void()>>, 2> renderList;
   vector<Vertex> quads;
   Vec2 mousePos;
   Font textFont;

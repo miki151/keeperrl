@@ -22,7 +22,6 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::MUSIC, 1},
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
-  {OptionId::SMOOTH_MOVEMENT, 1},
   {OptionId::FULLSCREEN, 0},
   {OptionId::ONLINE, 1},
   {OptionId::FAST_IMMIGRATION, 0},
@@ -38,7 +37,6 @@ const map<OptionId, string> names {
   {OptionId::MUSIC, "Music"},
   {OptionId::KEEP_SAVEFILES, "Keep save files"},
   {OptionId::SHOW_MAP, "Show map"},
-  {OptionId::SMOOTH_MOVEMENT, "Smooth movement"},
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::ONLINE, "Online exchange of dungeons and highscores"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
@@ -48,13 +46,27 @@ const map<OptionId, string> names {
   {OptionId::ADVENTURER_NAME, "Adventurer's name"},
 };
 
+const map<OptionId, string> hints {
+  {OptionId::HINTS, "Display some extra helpful information during the game."},
+  {OptionId::ASCII, "Switch to old school roguelike graphics."},
+  {OptionId::MUSIC, ""},
+  {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
+  {OptionId::SHOW_MAP, ""},
+  {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
+  {OptionId::ONLINE, "Upload your highscores and retired dungeons to keeperrl.com."},
+  {OptionId::FAST_IMMIGRATION, ""},
+  {OptionId::STARTING_RESOURCE, ""},
+  {OptionId::START_WITH_NIGHT, ""},
+  {OptionId::KEEPER_NAME, ""},
+  {OptionId::ADVENTURER_NAME, ""},
+};
+
 const map<OptionSet, vector<OptionId>> optionSets {
   {OptionSet::GENERAL, {
       OptionId::HINTS,
       OptionId::ASCII,
       OptionId::MUSIC,
       OptionId::KEEP_SAVEFILES,
-      OptionId::SMOOTH_MOVEMENT,
       OptionId::FULLSCREEN,
       OptionId::ONLINE,
 #ifndef RELEASE
@@ -120,7 +132,6 @@ string Options::getValueString(OptionId id, Options::Value value) {
   switch (id) {
     case OptionId::HINTS:
     case OptionId::ASCII:
-    case OptionId::SMOOTH_MOVEMENT:
     case OptionId::FULLSCREEN:
     case OptionId::MUSIC: return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
@@ -177,7 +188,8 @@ bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
   vector<View::ListElem> options;
   options.emplace_back("Change settings:", View::TITLE);
   for (OptionId option : optionSets.at(set))
-    options.emplace_back(names.at(option), getValueString(option, getValue(option)));
+    options.push_back(View::ListElem(names.at(option),
+          getValueString(option, getValue(option))).setTip(hints.at(option)));
   options.emplace_back("Done");
   if (lastIndex == -1)
     lastIndex = optionSets.at(set).size();
@@ -195,7 +207,8 @@ void Options::handle(View* view, OptionSet set, int lastIndex) {
   vector<View::ListElem> options;
   options.emplace_back("Change settings:", View::TITLE);
   for (OptionId option : optionSets.at(set))
-    options.emplace_back(names.at(option), getValueString(option, getValue(option)));
+    options.push_back(View::ListElem(names.at(option),
+          getValueString(option, getValue(option))).setTip(hints.at(option)));
   options.emplace_back("Done");
   auto index = view->chooseFromList("", options, lastIndex, getMenuType(set));
   if (!index || (*index) == optionSets.at(set).size())

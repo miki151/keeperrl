@@ -1316,6 +1316,8 @@ class Roads : public LevelMaker {
           Vec2::directions4(true), p1 ,p2);
       Vec2 prev(-1, -1);
       for (Vec2 v = p2; v != p1; v = path.getNextMove(v)) {
+        if (!path.isReachable(v))
+          failGen();
         SquareType roadType = getRoadType(builder, v);
         if (v != p2 && v != p1 && builder->getType(v) != roadType)
           builder->putSquare(v, roadType);

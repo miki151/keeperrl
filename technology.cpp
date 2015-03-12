@@ -19,19 +19,32 @@
 #include "skill.h"
 
 void Technology::init() {
-  Technology::set(TechId::ALCHEMY, new Technology("alchemy", 80, {}));
-  Technology::set(TechId::ALCHEMY_ADV, new Technology("advanced alchemy", 200, {TechId::ALCHEMY}));
-  Technology::set(TechId::HUMANOID_MUT, new Technology("humanoid mutation", 400,{}));
-  Technology::set(TechId::BEAST_MUT, new Technology("beast mutation", 400, {}));
-  Technology::set(TechId::CRAFTING, new Technology("crafting", 40, {}));
-  Technology::set(TechId::IRON_WORKING, new Technology("iron working", 60, {TechId::CRAFTING}));
-  Technology::set(TechId::JEWELLERY, new Technology("jewellery", 200, {TechId::IRON_WORKING}));
-  Technology::set(TechId::TWO_H_WEAP, new Technology("two-handed weapons", 100, {TechId::IRON_WORKING}, true));
-  Technology::set(TechId::TRAPS, new Technology("traps", 100, {TechId::CRAFTING}));
-  Technology::set(TechId::ARCHERY, new Technology("archery", 100, {TechId::CRAFTING}, true));
-  Technology::set(TechId::SPELLS, new Technology("sorcery", 60, {}));
-  Technology::set(TechId::SPELLS_ADV, new Technology("advanced sorcery", 120, {TechId::SPELLS}));
-  Technology::set(TechId::SPELLS_MAS, new Technology("master sorcery", 350, {TechId::SPELLS_ADV}));
+  Technology::set(TechId::ALCHEMY, new Technology(
+        "alchemy", "Build a laboratory and produce basic potions.", 80));
+  Technology::set(TechId::ALCHEMY_ADV, new Technology(
+        "advanced alchemy", "Produce more powerful potions.", 200, {TechId::ALCHEMY}));
+  Technology::set(TechId::HUMANOID_MUT, new Technology(
+        "humanoid mutation", "Breed new, very powerful humanoid species.", 400,{}));
+  Technology::set(TechId::BEAST_MUT, new Technology(
+        "beast mutation", "Breed new, very powerful beast species.", 400, {}));
+  Technology::set(TechId::CRAFTING, new Technology(
+        "crafting", "Build a workshop and produce basic equipment.", 40, {}));
+  Technology::set(TechId::IRON_WORKING, new Technology(
+        "iron working", "Build a forge and produce metal weapons and armor.", 60, {TechId::CRAFTING}));
+  Technology::set(TechId::JEWELLERY, new Technology(
+        "jewellery", "Build a jeweler room and produce magical rings and amulets.", 200, {TechId::IRON_WORKING}));
+  Technology::set(TechId::TWO_H_WEAP, new Technology(
+        "two-handed weapons", "Produce war hammers and battle axes.", 100, {TechId::IRON_WORKING}, true));
+  Technology::set(TechId::TRAPS, new Technology(
+        "traps", "Produce traps in the workshop.", 100, {TechId::CRAFTING}));
+  Technology::set(TechId::ARCHERY, new Technology(
+        "archery", "Produce bows and arrows.", 100, {TechId::CRAFTING}, true));
+  Technology::set(TechId::SPELLS, new Technology(
+        "sorcery", "Learn basic spells.", 60, {}));
+  Technology::set(TechId::SPELLS_ADV, new Technology(
+        "advanced sorcery", "Learn more advanced spells.", 120, {TechId::SPELLS}));
+  Technology::set(TechId::SPELLS_MAS, new Technology(
+        "master sorcery", "Learn the most powerful spells.", 350, {TechId::SPELLS_ADV}));
 }
 
 bool Technology::canResearch() const {
@@ -50,8 +63,8 @@ vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current)
   return ret;
 }
 
-Technology::Technology(const string& n, int c, const vector<TechId>& pre, bool canR)
-    : name(n), cost(c), research(canR) {
+Technology::Technology(const string& n, const string& d, int c, const vector<TechId>& pre, bool canR)
+    : name(n), description(d), cost(c), research(canR) {
   for (TechId id : pre)
     prerequisites.push_back(Technology::get(id));
 }
@@ -65,6 +78,10 @@ bool Technology::canLearnFrom(const vector<Technology*>& techs) const {
 
 const string& Technology::getName() const {
   return name;
+}
+
+const string& Technology::getDescription() const {
+  return description;
 }
 
 vector<Technology*> Technology::getSorted() {

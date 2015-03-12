@@ -58,6 +58,7 @@ class ItemAttributes {
   MustInitialize<ViewId> SERIAL(viewId);
   MustInitialize<string> SERIAL(name);
   string SERIAL(description);
+  optional<string> SERIAL(shortName);
   MustInitialize<double> SERIAL(weight);
   MustInitialize<ItemClass> SERIAL(itemClass);
   optional<string> SERIAL(plural);
@@ -82,10 +83,11 @@ class ItemAttributes {
   int SERIAL2(uses, -1);
   bool SERIAL2(usedUpMsg, false);
   bool SERIAL2(displayUses, false);
-  bool SERIAL2(identifyOnApply, true);
+  bool SERIAL2(identifyOnApply, true); // OBSOLETE
   bool SERIAL2(identifiable, false);
   bool SERIAL2(identifyOnEquip, true);
-
 };
+
+BOOST_CLASS_VERSION(ItemAttributes, 1)
 
 #endif

@@ -171,11 +171,11 @@ int main(int argc, char* argv[]) {
   makeDir(userPath);
   Options options(userPath + "/options.txt");
   Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
-  GuiFactory guiFactory;
+  Clock clock;
+  GuiFactory guiFactory(&clock);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent)
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
-  Clock clock;
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));

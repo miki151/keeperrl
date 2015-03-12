@@ -126,7 +126,8 @@ Tile::TileCoord Tile::getSpriteCoord(DirSet c) const {
   }
   if (connections[c])
     return *connections[c];
-  else return *tileCoord;
+  else
+    return *tileCoord;
 }
 
 EnumMap<ViewId, optional<Tile>> Tile::tiles;

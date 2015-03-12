@@ -20,6 +20,7 @@
 #include "view.h"
 
 class ViewObject;
+class Clock;
 
 class GuiElem {
   public:
@@ -31,11 +32,14 @@ class GuiElem {
   virtual void onRefreshBounds() {}
   virtual void onKeyPressed(char) {}
   virtual void onKeyPressed2(Event::KeyEvent) {}
+  virtual void onMouseWheel(Vec2 mousePos, bool up) {}
 
   void setBounds(Rectangle);
   Rectangle getBounds();
 
   virtual ~GuiElem();
+
+  static void propagateEvent(const Event&, vector<GuiElem*>);
 
   private:
   Rectangle bounds;
@@ -43,11 +47,14 @@ class GuiElem {
 
 class GuiFactory {
   public:
+  GuiFactory(Clock*);
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
   PGuiElem button(function<void()> fun, char hotkey = 0);
   PGuiElem button(function<void()> fun, Event::KeyEvent);
+  PGuiElem button(function<void(Rectangle buttonBounds)> fun, char hotkey = 0);
+  PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent);
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
@@ -66,7 +73,9 @@ class GuiFactory {
   PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
-  PGuiElem variableLabel(function<string()>, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
+  PGuiElem centeredLabel(const string&, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
+  PGuiElem variableLabel(function<string()>,
+      bool center = false, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
   PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_ON]);
   PGuiElem mainMenuLabelBg(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_OFF]);
   PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
@@ -76,12 +85,12 @@ class GuiFactory {
   PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);
   PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
   PGuiElem centerHoriz(PGuiElem, int width);
-  PGuiElem mouseOverAction(function<void()>);
+  PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
   PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlight2(PGuiElem highlight);
   PGuiElem mouseHighlightGameChoice(PGuiElem, View::GameTypeChoice my,
       optional<View::GameTypeChoice>& highlight);
-  PGuiElem scrollable(PGuiElem content, int contentHeight, double* scrollPos);
+  PGuiElem scrollable(PGuiElem content, double* scrollPos);
   PGuiElem getScrollButton();
   PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
@@ -91,6 +100,7 @@ class GuiFactory {
   PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
       Vec2 offset = Vec2(0, 0), double alpha = 1);
   PGuiElem sprite(Texture&, double scale);
+  PGuiElem tooltip(const vector<string>&);
 
   enum class TexId {
     SCROLLBAR,
@@ -181,6 +191,7 @@ class GuiFactory {
 
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;
+  Clock* clock;
 };
 
 

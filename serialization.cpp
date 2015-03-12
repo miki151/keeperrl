@@ -51,7 +51,7 @@ void Serialization::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, DoNothingController);
   Tribe::registerTypes(ar, version);
   Trigger::registerTypes(ar, version);
-  VillageControl::registerTypes(ar, version);
+  VillageControl::registerTypes(ar, version); // OBSOLETE
   Task::registerTypes(ar, version);
   Player::registerTypes(ar, version);
   PlayerControl::registerTypes(ar, version);
