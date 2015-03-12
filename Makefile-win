@@ -21,7 +21,7 @@ GFLAG += -DRELEASE
 endif
 
 ifdef OPT
-GFLAG += -O2
+GFLAG += -O2 -fno-inline -fno-omit-frame-pointer
 endif
 
 
