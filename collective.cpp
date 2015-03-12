@@ -254,7 +254,7 @@ Creature* Collective::getLeader() {
 }
 
 Level* Collective::getLevel() {
-  return NOTNULL(level);
+  return level;
 }
 
 const Level* Collective::getLevel() const {

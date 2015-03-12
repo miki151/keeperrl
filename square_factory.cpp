@@ -285,32 +285,30 @@ class Tree : public Square {
           c.constructions = construct;)), numWood(_numWood), creature(c) {}
 
   virtual void destroy() override {
-    if (destroyed)
-      return;
     getLevel()->globalMessage(getPosition(), "The tree falls.");
-    destroyed = true;
-    setVision(VisionId::NORMAL);
-    setViewObject(ViewObject(ViewId::FALLEN_TREE, ViewLayer::FLOOR, "Fallen tree"));
+    getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::TREE_TRUNK));
   }
 
   virtual void onConstructNewSquare(Square* s) override {
-    s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
-    getLevel()->getModel()->addWoodCount(numWood);
-    int numCut = getLevel()->getModel()->getWoodCount();
-    if (numCut > 1500 && Random.roll(max(50, (3000 - numCut) / 10)))
-      Effect::summon(getLevel(), CreatureFactory::singleType(
-            getLevel()->getModel()->getKillEveryoneTribe(), creature), getPosition(), 1, 100000);
+    if (numWood > 0) {
+      s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
+      getLevel()->getModel()->addWoodCount(numWood);
+      int numCut = getLevel()->getModel()->getWoodCount();
+      if (numCut > 1500 && Random.roll(max(50, (3000 - numCut) / 10)))
+        Effect::summon(getLevel(), CreatureFactory::singleType(
+              getLevel()->getModel()->getKillEveryoneTribe(), creature), getPosition(), 1, 100000);
+    }
   }
 
   virtual void burnOut() override {
-    setVision(VisionId::NORMAL);
-    setViewObject(ViewObject(ViewId::BURNT_TREE, ViewLayer::FLOOR, "Burnt tree"));
+    numWood = 0;
+    getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::BURNT_TREE));
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & SVAR(destroyed)
+      & SVAR(destroyed)  // OBSOLETE
       & SVAR(creature)
       & SVAR(numWood);
     CHECK_SERIAL;
@@ -1028,6 +1026,12 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR, "tree trunk"),
           CONSTRUCT(Square::Params,
             c.name = "tree trunk";
+            c.movementType = {MovementTrait::WALK};
+            c.vision = VisionId::NORMAL;));
+    case SquareId::BURNT_TREE:
+        return new Square(ViewObject(ViewId::BURNT_TREE, ViewLayer::FLOOR, "burnt tree"),
+          CONSTRUCT(Square::Params,
+            c.name = "burnt tree";
             c.movementType = {MovementTrait::WALK};
             c.vision = VisionId::NORMAL;));
     case SquareId::BED:

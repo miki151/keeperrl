@@ -134,8 +134,7 @@ bool Square::construct(SquareType type) {
   setDirty();
   CHECK(canConstruct(type));
   if (--constructions[type.getId()] <= 0) {
-    PSquare newSquare = PSquare(SquareFactory::get(type));
-    level->replaceSquare(position, std::move(newSquare));
+    level->replaceSquare(position, SquareFactory::get(type));
     return true;
   } else
     return false;

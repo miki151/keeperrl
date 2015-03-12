@@ -192,6 +192,7 @@ void WindowView::reset() {
   RenderLock lock(renderMutex);
   mapLayout = &currentTileLayout.normalLayout;
   gameReady = false;
+  wasRendered = false;
   minimapGui->clear();
   mapGui->clearCenter();
   guiBuilder.reset();
