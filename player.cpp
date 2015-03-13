@@ -675,7 +675,8 @@ void Player::moveAction(Vec2 dir) {
     action.perform(getCreature());
   } else if (auto action = getCreature()->forceMove(dir)) {
     for (Square* square : getCreature()->getSquare(dir))
-      if (model->getView()->yesOrNoPrompt(getForceMovementQuestion(square, getCreature())))
+      if (square->getMovementType() == getCreature()->getSquare()->getMovementType() ||
+          model->getView()->yesOrNoPrompt(getForceMovementQuestion(square, getCreature()), true))
         action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
@@ -797,7 +798,9 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
 }
 
 void Player::onKilled(const Creature* attacker) {
-  showHistory();
+  model->getView()->updateView(this, false);
+  if (model->getView()->yesOrNoPrompt("Display message history?"))
+    showHistory();
   model->gameOver(getCreature(), getCreature()->getKills().size(), "monsters", getCreature()->getPoints());
 }
 

@@ -99,7 +99,7 @@ class ReplayView : public T {
       return action;
     }
 
-    virtual bool yesOrNoPrompt(const string& message) override {
+    virtual bool yesOrNoPrompt(const string& message, bool defNo) override {
       checkMethod(LoggingToken::YES_OR_NO_PROMPT);
       bool action;
       input >> action;

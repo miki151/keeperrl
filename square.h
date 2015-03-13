@@ -97,6 +97,8 @@ class Square : public Renderable {
   bool canEnter(MovementType) const;
   //@}
 
+  const MovementType& getMovementType() const;
+
   //@{
   /** Checks if this square is can be entered by the creature. Doesn't take into account other 
     * creatures on the square.*/
@@ -240,7 +242,6 @@ class Square : public Renderable {
   virtual void tickSpecial(double time) {}
   Inventory SERIAL(inventory);
   string SERIAL(name);
-  const MovementType& getMovementType() const;
   void setMovementType(MovementType);
   void setDirty();
 

@@ -626,8 +626,9 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
   return returnQueue.pop();
 }
 
-bool WindowView::yesOrNoPrompt(const string& message) {
-  return chooseFromListInternal("", {ListElem(message, TITLE), "Yes", "No"}, 0, MenuType::NORMAL_MENU, nullptr,
+bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
+  int index = defaultNo ? 1 : 0;
+  return chooseFromListInternal("", {ListElem(message, TITLE), "Yes", "No"}, index, MenuType::YES_NO_MENU, nullptr,
       none, none, {}) == 0;
 }
 
@@ -844,7 +845,6 @@ View::GameTypeChoice WindowView::chooseGameType() {
   });
   lock.unlock();
   return returnQueue.pop();
-
 }
 
 optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
@@ -889,12 +889,17 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
         gui.button([&](){ choice = -100; }),
         gui.mouseHighlight(gui.mainMenuHighlight(), count, &index),
         gui.centeredLabel("Dismiss"))), 0, 5, 0, 0);
-  if (menuType != MAIN_MENU) {
-    stuff = gui.scrollable(std::move(stuff), scrollPos);
-    stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);
-    stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
-        std::move(stuff), 30, gui.BOTTOM);
-    stuff = gui.window(std::move(stuff));
+  switch (menuType) {
+    case MAIN_MENU: break;
+    case YES_NO_MENU:
+      stuff = gui.miniWindow(std::move(stuff)); break;
+    default:
+      stuff = gui.scrollable(std::move(stuff), scrollPos);
+      stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);
+      stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
+          std::move(stuff), 30, gui.BOTTOM);
+      stuff = gui.window(std::move(stuff));
+      break;
   }
   while (1) {
     refreshScreen(false);

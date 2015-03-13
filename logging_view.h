@@ -90,8 +90,8 @@ class LoggingView : public T {
       return res;
     }
 
-    virtual bool yesOrNoPrompt(const string& message) override {
-      auto res = T::yesOrNoPrompt(message);
+    virtual bool yesOrNoPrompt(const string& message, bool defNo) override {
+      auto res = T::yesOrNoPrompt(message, defNo);
       auto token = LoggingToken::YES_OR_NO_PROMPT;
       output << token << res;
       return res;

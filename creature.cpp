@@ -317,8 +317,6 @@ void Creature::makeMove() {
   unknownAttacker.clear();
   if (fireCreature && Random.roll(5))
     getSquare()->setOnFire(1);
-  if (getSquare()->sunlightBurns())
-    shineLight();
 }
 
 Square* Creature::getSquare() {
@@ -1081,7 +1079,8 @@ void Creature::tick(double realTime) {
     you(MsgType::DIE_OF, isAffected(LastingEffect::POISON) ? "poisoning" : "bleeding");
     die(lastAttacker);
   }
-
+  if (getSquare()->sunlightBurns())
+    shineLight();
 }
 
 BodyPart Creature::armOrWing() const {

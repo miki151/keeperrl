@@ -556,7 +556,7 @@ void GuiBuilder::handleItemChoice(const GameInfo::PlayerInfo::ItemInfo& itemInfo
   int count = options.size();
   PGuiElem stuff = drawListGui("", View::getListElem(options), View::NORMAL_MENU, &contentHeight, &index, &choice);
   stuff = gui.miniWindow(gui.margins(std::move(stuff), 0, 0, 0, 0));
-  Vec2 size(150, options.size() * listLineHeight + 25);
+  Vec2 size(150, options.size() * listLineHeight + 35);
   menuPos.x = min(menuPos.x, renderer.getSize().x - size.x);
   menuPos.y = min(menuPos.y, renderer.getSize().y - size.y);
   while (1) {
@@ -597,7 +597,6 @@ void GuiBuilder::handleItemChoice(const GameInfo::PlayerInfo::ItemInfo& itemInfo
         }
     }
   }
- 
 }
 
 PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
@@ -1020,6 +1019,10 @@ Rectangle GuiBuilder::getMenuPosition(View::MenuType type) {
   int ySpacing;
   int yOffset = 0;
   switch (type) {
+    case View::YES_NO_MENU:
+      ySpacing = (renderer.getSize().y - 135) / 2;
+      yOffset = - ySpacing + 100;
+      break;
     case View::MAIN_MENU_NO_TILES:
       ySpacing = (renderer.getSize().y - windowHeight) / 2;
       break;
