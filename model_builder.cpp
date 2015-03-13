@@ -91,7 +91,6 @@ static vector<EnemyInfo> getVaults(Tribe::Set& tribeSet) {
             c.attackMessage = VillageControl::CREATURE_TITLE;)}),
     getVault(SettlementType::VAULT, CreatureFactory::insects(tribeSet.monster.get()),
         tribeSet.monster.get(), Random.get(6, 12)),
-    getVault(SettlementType::VAULT, CreatureId::ORC, tribeSet.keeper.get(), Random.get(3, 8)),
     getVault(SettlementType::VAULT, CreatureId::CYCLOPS, tribeSet.monster.get(), 1,
         ItemFactory::mushrooms(true)),
     getVault(SettlementType::VAULT, CreatureId::RAT, tribeSet.pest.get(), Random.get(3, 8),

@@ -317,7 +317,7 @@ void Creature::makeMove() {
   unknownAttacker.clear();
   if (fireCreature && Random.roll(5))
     getSquare()->setOnFire(1);
-  if (level->getSunlight(position) > 0.99 )
+  if (getSquare()->sunlightBurns())
     shineLight();
 }
 
@@ -2083,7 +2083,8 @@ MovementType Creature::getMovementType() const {
       hasSkill(Skill::get(SkillId::SWIMMING)),
       contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size),
       isBlind() || isHeld() || forceMovement,
-      isFireResistant()});
+      isFireResistant(),
+      undead});
 }
 
 int Creature::numBodyParts(BodyPart part) const {

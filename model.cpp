@@ -252,8 +252,11 @@ const vector<Collective*> Model::getMainVillains() const {
 void Model::tick(double time) {
   auto previous = sunlightInfo.state;
   updateSunlightInfo();
-  if (previous != sunlightInfo.state)
+  if (previous != sunlightInfo.state) {
     GlobalEvents.addSunlightChangeEvent();
+    for (PLevel& l : levels)
+      l->updateSunlightMovement();
+  }
   Debug() << "Turn " << time;
   for (Creature* c : timeQueue.getAllCreatures()) {
     c->tick(time);

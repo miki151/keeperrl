@@ -2201,6 +2201,7 @@ LevelMaker* LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
     CreatureFactory imps, const string& splashPath) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::BLACK_FLOOR));
+  queue->addMaker(new SetCovered());
   Rectangle leaderSpawn(
           Level::getSplashVisibleBounds().getKX() + 1, Level::getSplashVisibleBounds().middle().y,
           Level::getSplashVisibleBounds().getKX() + 2, Level::getSplashVisibleBounds().middle().y + 1);
@@ -2221,7 +2222,6 @@ LevelMaker* LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
           MonsterAIFactory::splashImps(splashPath))));
   queue->addMaker(new SpecificArea(monsterSpawn2, new Creatures(imps, 15,
           MonsterAIFactory::splashImps(splashPath))));
-  queue->addMaker(new SetCovered());
   return new BorderGuard(queue, SquareId::BLACK_WALL);
 }
 

@@ -194,18 +194,6 @@ void Player::tryToPerform(CreatureAction action) {
     getCreature()->playerMessage(action.getFailedReason());
 }
 
-void Player::itemsMessage() {
-/*  vector<View::ListElem> names;
-  vector<vector<Item*> > groups;
-  getItemNames(getCreature()->getPickUpOptions(), names, groups);
-  if (names.size() > 1)
-    privateMessage(getCreature()->isBlind() ? "You feel here some items" : "You see here some items.");
-  else if (names.size() == 1)
-    privateMessage((getCreature()->isBlind() ? string("You feel here ") : ("You see here ")) + 
-        (groups[0].size() == 1 ? "a " + groups[0][0]->getNameAndModifiers(false, getCreature()->isBlind()) :
-            names[0].getText()));*/
-}
-
 ItemClass typeDisplayOrder[] {
   ItemClass::WEAPON,
     ItemClass::RANGED_WEAPON,
@@ -414,7 +402,6 @@ void Player::travelAction() {
     return;
   }
   tryToPerform(getCreature()->move(travelDir));
-  itemsMessage();
   const Location* currentLocation = getCreature()->getLevel()->getLocation(getCreature()->getPosition());
   if (lastLocation != currentLocation && currentLocation != nullptr && currentLocation->hasName()) {
     privateMessage("You arrive at " + addAParticle(currentLocation->getName()));
@@ -443,7 +430,6 @@ void Player::targetAction() {
     action.perform(getCreature());
   else
     target = none;
-  itemsMessage();
   if (interruptedByEnemy())
     target = none;
 }
@@ -672,11 +658,14 @@ void Player::showHistory() {
   model->getView()->presentList("Message history:", View::getListElem(messageHistory), true);
 }
 
-static string getForceMovementQuestion(const Square* square) {
+static string getForceMovementQuestion(const Square* square, const Creature* creature) {
   if (square->isBurning())
     return "Walk into the fire?";
   else if (square->canEnterEmpty(MovementTrait::SWIM))
     return "The water is very deep, are you sure?";
+  else if (square->canEnterEmpty({MovementTrait::WALK}) &&
+      creature->getMovementType().hasTrait(MovementTrait::SUNLIGHT_VULNERABLE))
+    return "Walk into the sunlight?";
   else
     return "Walk into the " + square->getName() + "?";
 }
@@ -684,10 +673,9 @@ static string getForceMovementQuestion(const Square* square) {
 void Player::moveAction(Vec2 dir) {
   if (auto action = getCreature()->move(dir)) {
     action.perform(getCreature());
-    itemsMessage();
   } else if (auto action = getCreature()->forceMove(dir)) {
     for (Square* square : getCreature()->getSquare(dir))
-      if (model->getView()->yesOrNoPrompt(getForceMovementQuestion(square)))
+      if (model->getView()->yesOrNoPrompt(getForceMovementQuestion(square, getCreature())))
         action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
