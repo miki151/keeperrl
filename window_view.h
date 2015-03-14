@@ -60,7 +60,7 @@ class WindowView: public View {
       optional<UserInputId> exitAction = none) override;
   virtual GameTypeChoice chooseGameType() override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
-  virtual bool yesOrNoPrompt(const string& message) override;
+  virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
   virtual void animation(Vec2 pos, AnimationId) override;
   virtual double getGameSpeed() override;
@@ -95,7 +95,6 @@ class WindowView: public View {
   void mapLeftClickFun(Vec2);
   void mapCreatureClickFun(UniqueEntity<Creature>::Id);
   void mapRightClickFun(Vec2);
-  Rectangle getMenuPosition(View::MenuType type);
   Rectangle getTextInputPosition();
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
       double* scrollPos, optional<UserInputId> exitAction, optional<sf::Event::KeyEvent> exitKey,
@@ -104,18 +103,12 @@ class WindowView: public View {
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   PGuiElem drawGameChoices(optional<View::GameTypeChoice>& choice, optional<View::GameTypeChoice>& index);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
-  vector<PGuiElem> getMultiLine(const string& text, Color color, View::MenuType menuType, int maxWidth);
-  PGuiElem menuElemMargins(PGuiElem);
-  PGuiElem getHighlight(View::MenuType type, const string& label, int height);
-  vector<string> breakText(const string&, int maxWidth);
   void rebuildGui();
   void drawMap();
   optional<sf::Event::KeyEvent> getEventFromMenu();
   void propagateEvent(const Event& event, vector<GuiElem*>);
   void keyboardAction(Event::KeyEvent key);
 
-  PGuiElem drawListGui(const string& title, const vector<ListElem>& options, MenuType, int& height,
-      int* highlight, int* choice, int* mouseOverElem);
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();

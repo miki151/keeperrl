@@ -461,7 +461,7 @@ PGuiElem GuiFactory::verticalListFit(vector<PGuiElem> e, double spacing) {
 class HorizontalListFit : public GuiLayout {
   public:
   HorizontalListFit(vector<PGuiElem> e, double space) : GuiLayout(std::move(e)), spacing(space) {
-    CHECK(!elems.empty());
+    //CHECK(!elems.empty());
   }
 
   virtual Rectangle getElemBounds(int num) override {
@@ -540,6 +540,8 @@ class CenterHoriz : public GuiLayout {
 };
 
 PGuiElem GuiFactory::centerHoriz(PGuiElem e, int width) {
+  if (width == 0)
+    return empty();
   return PGuiElem(new CenterHoriz(std::move(e), width));
 }
 

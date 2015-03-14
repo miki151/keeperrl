@@ -252,8 +252,11 @@ const vector<Collective*> Model::getMainVillains() const {
 void Model::tick(double time) {
   auto previous = sunlightInfo.state;
   updateSunlightInfo();
-  if (previous != sunlightInfo.state)
+  if (previous != sunlightInfo.state) {
     GlobalEvents.addSunlightChangeEvent();
+    for (PLevel& l : levels)
+      l->updateSunlightMovement();
+  }
   Debug() << "Turn " << time;
   for (Creature* c : timeQueue.getAllCreatures()) {
     c->tick(time);
@@ -275,6 +278,10 @@ void Model::tick(double time) {
     } else // temp fix to the player gets the location message
       playerControl->tick(time);
   }
+  if (musicType == MusicType::PEACEFUL && sunlightInfo.state == SunlightInfo::NIGHT)
+    setCurrentMusic(MusicType::NIGHT, true);
+  else if (musicType == MusicType::NIGHT && sunlightInfo.state == SunlightInfo::DAY)
+    setCurrentMusic(MusicType::PEACEFUL, true);
 }
 
 void Model::addCreature(PCreature c) {

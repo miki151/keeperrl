@@ -23,11 +23,26 @@ bool MovementType::hasTrait(MovementTrait t) const {
   return traits[t];
 }
 
+static vector<MovementTrait> necessaryTraits { MovementTrait::FIRE_RESISTANT };
+static vector<MovementTrait> reverseTraits { MovementTrait::SUNLIGHT_VULNERABLE };
+
+static bool isReverseTrait(MovementTrait trait) {
+  return trait == MovementTrait::SUNLIGHT_VULNERABLE;
+}
+
 bool MovementType::canEnter(const MovementType& t) const {
   if (tribe && t.tribe && t.tribe != tribe)
     return false;
+  if (!t.hasTrait(MovementTrait::BY_FORCE)) {
+    for (auto trait : necessaryTraits)
+      if (hasTrait(trait) && !t.hasTrait(trait))
+        return false;
+    for (auto trait : reverseTraits)
+      if (t.hasTrait(trait) && !hasTrait(trait))
+        return false;
+  }
   for (auto trait : traits)
-    if (t.hasTrait(trait))
+    if (t.hasTrait(trait) && !isReverseTrait(trait))
       return true;
   return false;
 }

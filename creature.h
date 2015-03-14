@@ -176,7 +176,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   typedef GameInfo::PlayerInfo::SkillInfo SkillInfo;
   vector<SkillInfo> getSkillNames() const;
 
-  string getPluralName(Item* item, int num) const;
+  string getPluralTheName(Item* item, int num) const;
+  string getPluralAName(Item* item, int num) const;
   CreatureAction move(Vec2 direction) const;
   CreatureAction forceMove(Vec2 direction) const;
   CreatureAction swapPosition(Vec2 direction, bool force = false) const;

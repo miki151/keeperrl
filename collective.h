@@ -314,7 +314,7 @@ class Collective : public Task::Callback {
   virtual void onBedCreated(Vec2, SquareType fromType, SquareType toType) override;
   virtual void onCopulated(Creature* who, Creature* with) override;
   virtual void onConsumed(Creature* consumer, Creature* who) override;
-
+  virtual bool isConstructionReachable(Vec2) override;
 
   private:
   friend class CollectiveBuilder;

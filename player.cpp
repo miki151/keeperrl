@@ -27,6 +27,7 @@
 #include "pantheon.h"
 #include "item_factory.h"
 #include "effect.h"
+#include "view_id.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -194,18 +195,6 @@ void Player::tryToPerform(CreatureAction action) {
     getCreature()->playerMessage(action.getFailedReason());
 }
 
-void Player::itemsMessage() {
-/*  vector<View::ListElem> names;
-  vector<vector<Item*> > groups;
-  getItemNames(getCreature()->getPickUpOptions(), names, groups);
-  if (names.size() > 1)
-    privateMessage(getCreature()->isBlind() ? "You feel here some items" : "You see here some items.");
-  else if (names.size() == 1)
-    privateMessage((getCreature()->isBlind() ? string("You feel here ") : ("You see here ")) + 
-        (groups[0].size() == 1 ? "a " + groups[0][0]->getNameAndModifiers(false, getCreature()->isBlind()) :
-            names[0].getText()));*/
-}
-
 ItemClass typeDisplayOrder[] {
   ItemClass::WEAPON,
     ItemClass::RANGED_WEAPON,
@@ -291,7 +280,7 @@ void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   int num = groups[*index].size(); //groups[index].size() == 1 ? 1 : howMany(model->getView(), groups[index].size());
   if (num < 1)
     return;
-  privateMessage("You take " + getCreature()->getPluralName(groups[*index][0], num));
+  privateMessage("You take " + getCreature()->getPluralTheName(groups[*index][0], num));
   tryToPerform(getCreature()->pickUp(getPrefix(groups[*index], num), false));
 }
 
@@ -414,7 +403,6 @@ void Player::travelAction() {
     return;
   }
   tryToPerform(getCreature()->move(travelDir));
-  itemsMessage();
   const Location* currentLocation = getCreature()->getLevel()->getLocation(getCreature()->getPosition());
   if (lastLocation != currentLocation && currentLocation != nullptr && currentLocation->hasName()) {
     privateMessage("You arrive at " + addAParticle(currentLocation->getName()));
@@ -443,7 +431,6 @@ void Player::targetAction() {
     action.perform(getCreature());
   else
     target = none;
-  itemsMessage();
   if (interruptedByEnemy())
     target = none;
 }
@@ -672,11 +659,14 @@ void Player::showHistory() {
   model->getView()->presentList("Message history:", View::getListElem(messageHistory), true);
 }
 
-static string getForceMovementQuestion(const Square* square) {
+static string getForceMovementQuestion(const Square* square, const Creature* creature) {
   if (square->isBurning())
     return "Walk into the fire?";
   else if (square->canEnterEmpty(MovementTrait::SWIM))
     return "The water is very deep, are you sure?";
+  else if (square->canEnterEmpty({MovementTrait::WALK}) &&
+      creature->getMovementType().hasTrait(MovementTrait::SUNLIGHT_VULNERABLE))
+    return "Walk into the sunlight?";
   else
     return "Walk into the " + square->getName() + "?";
 }
@@ -684,10 +674,10 @@ static string getForceMovementQuestion(const Square* square) {
 void Player::moveAction(Vec2 dir) {
   if (auto action = getCreature()->move(dir)) {
     action.perform(getCreature());
-    itemsMessage();
   } else if (auto action = getCreature()->forceMove(dir)) {
     for (Square* square : getCreature()->getSquare(dir))
-      if (model->getView()->yesOrNoPrompt(getForceMovementQuestion(square)))
+      if (square->getMovementType() == getCreature()->getSquare()->getMovementType() ||
+          model->getView()->yesOrNoPrompt(getForceMovementQuestion(square, getCreature()), true))
         action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
@@ -809,7 +799,9 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
 }
 
 void Player::onKilled(const Creature* attacker) {
-  showHistory();
+  model->getView()->updateView(this, false);
+  if (model->getView()->yesOrNoPrompt("Display message history?"))
+    showHistory();
   model->gameOver(getCreature(), getCreature()->getKills().size(), "monsters", getCreature()->getPoints());
 }
 
@@ -1035,34 +1027,43 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.levelName = location && location->hasName() 
     ? capitalFirst(location->getName()) : getLevel()->getName();
   info.attributes = {
-    {"level",
-      getCreature()->getExpLevel(), 0,
-      "Describes general combat value of the creature."},
-    {"attack",
+    { "Attack",
+      ViewId::STAT_ATT,
       getCreature()->getModifier(ModifierType::DAMAGE),
       getCreature()->isAffected(LastingEffect::RAGE) ? 1 : getCreature()->isAffected(LastingEffect::PANIC) ? -1 : 0,
       "Affects if and how much damage is dealt in combat."},
-    {"defense",
+    { "Defense",
+      ViewId::STAT_DEF,
       getCreature()->getModifier(ModifierType::DEFENSE),
       getCreature()->isAffected(LastingEffect::RAGE) ? -1 : (getCreature()->isAffected(LastingEffect::PANIC) 
           || getCreature()->isAffected(LastingEffect::MAGIC_SHIELD)) ? 1 : 0,
       "Affects if and how much damage is taken in combat."},
-    {"accuracy",
-      getCreature()->getModifier(ModifierType::ACCURACY),
-      getCreature()->accuracyBonus(),
-      "Defines the chance of a successful melee attack and dodging."},
-    {"strength",
+    { "Strength",
+      ViewId::STAT_STR,
       getCreature()->getAttr(AttrType::STRENGTH),
       getCreature()->isAffected(LastingEffect::STR_BONUS),
       "Affects the values of attack, defense and carrying capacity."},
-    {"dexterity",
+    { "Dexterity",
+      ViewId::STAT_DEX,
       getCreature()->getAttr(AttrType::DEXTERITY),
       getCreature()->isAffected(LastingEffect::DEX_BONUS),
       "Affects the values of melee and ranged accuracy, and ranged damage."},
-    {"speed",
+    { "Accuracy",
+      ViewId::STAT_ACC,
+      getCreature()->getModifier(ModifierType::ACCURACY),
+      getCreature()->accuracyBonus(),
+      "Defines the chance of a successful melee attack and dodging."},
+    { "Speed",
+      ViewId::STAT_SPD,
       getCreature()->getAttr(AttrType::SPEED),
       getCreature()->isAffected(LastingEffect::SPEED) ? 1 : getCreature()->isAffected(LastingEffect::SLOWED) ? -1 : 0,
-      "Affects how much game time every action uses."}};
+      "Affects how much game time every action uses."},
+/*    { "Level",
+      ViewId::STAT_LVL,
+      getCreature()->getExpLevel(), 0,
+      "Describes general combat value of the creature."}*/
+  };
+  info.level = getCreature()->getExpLevel();
   info.skills = getCreature()->getSkillNames();
   gameInfo.time = getCreature()->getTime();
   info.effects.clear();

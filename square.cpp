@@ -134,8 +134,7 @@ bool Square::construct(SquareType type) {
   setDirty();
   CHECK(canConstruct(type));
   if (--constructions[type.getId()] <= 0) {
-    PSquare newSquare = PSquare(SquareFactory::get(type));
-    level->replaceSquare(position, std::move(newSquare));
+    level->replaceSquare(position, SquareFactory::get(type));
     return true;
   } else
     return false;
@@ -206,17 +205,26 @@ void Square::setFog(double val) {
   fog = val;
 }
 
+bool Square::sunlightBurns() const {
+  return level->isInSunlight(position);
+}
+
+void Square::updateSunlightMovement(bool isSunlight) {
+  if (isSunlight) {
+    movementType.removeTrait(MovementTrait::SUNLIGHT_VULNERABLE);
+  } else
+    movementType.addTrait(MovementTrait::SUNLIGHT_VULNERABLE);
+}
+
 void Square::updateMovement() {
   if (fire.isBurning()) {
     if (!movementType.hasTrait(MovementTrait::FIRE_RESISTANT)) {
       movementType.addTrait(MovementTrait::FIRE_RESISTANT);
-      movementType.addTrait(MovementTrait::BY_FORCE);
-      movementType.removeTrait(MovementTrait::WALK);
       level->updateConnectivity(position);
     }
   } else
-  if (!movementType.hasTrait(MovementTrait::WALK)) {
-    movementType.addTrait(MovementTrait::WALK);
+  if (movementType.hasTrait(MovementTrait::FIRE_RESISTANT)) {
+    movementType.removeTrait(MovementTrait::FIRE_RESISTANT);
     level->updateConnectivity(position);
   }
 }

@@ -1048,7 +1048,9 @@ class MinionController : public Player {
       vector<Creature*> t) : Player(c, m, false, memory), control(ctrl), team(t) {}
 
   virtual void onKilled(const Creature* attacker) override {
-    showHistory();
+    model->getView()->updateView(this, false);
+    if (model->getView()->yesOrNoPrompt("Display message history?"))
+      showHistory();
     //creature->popController(); this makes the controller crash if creature committed suicide
   }
 

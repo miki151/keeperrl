@@ -559,6 +559,13 @@ class TileCoordLookup {
     Tile::addTile(ViewId::SPECIAL_HUMANOID, sprite(2, 10));
     Tile::addTile(ViewId::TEAM_BUTTON, sprite("team_button"));
     Tile::addTile(ViewId::TEAM_BUTTON_HIGHLIGHT, sprite("team_button_highlight"));
+    Tile::addTile(ViewId::STAT_ATT, sprite(12, 9, 3));
+    Tile::addTile(ViewId::STAT_DEF, sprite(2, 10, 3));
+    Tile::addTile(ViewId::STAT_STR, sprite(9, 12, 3));
+    Tile::addTile(ViewId::STAT_DEX, sprite(20, 11, 3));
+    Tile::addTile(ViewId::STAT_LVL, sprite(19, 2, 3));
+    Tile::addTile(ViewId::STAT_SPD, sprite(7, 4, 3));
+    Tile::addTile(ViewId::STAT_ACC, sprite(11, 6, 3));
   }
 
   Tile symbol(const string& s, ColorId id, bool symbol = false) {
@@ -809,6 +816,13 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::SPECIAL_HUMANOID, symbol('H', ColorId::PURPLE));
     Tile::addSymbol(ViewId::TEAM_BUTTON, symbol("⚐", ColorId::WHITE, true));
     Tile::addSymbol(ViewId::TEAM_BUTTON_HIGHLIGHT, symbol("⚐", ColorId::GREEN, true));
+    Tile::addSymbol(ViewId::STAT_ATT, symbol("A", ColorId::BLUE));
+    Tile::addSymbol(ViewId::STAT_DEF, symbol("D", ColorId::BLUE));
+    Tile::addSymbol(ViewId::STAT_STR, symbol("S", ColorId::BLUE));
+    Tile::addSymbol(ViewId::STAT_DEX, symbol("X", ColorId::BLUE));
+    Tile::addSymbol(ViewId::STAT_LVL, symbol("L", ColorId::BLUE));
+    Tile::addSymbol(ViewId::STAT_SPD, symbol("P", ColorId::BLUE));
+    Tile::addSymbol(ViewId::STAT_ACC, symbol("C", ColorId::BLUE));
   }
  
   private:

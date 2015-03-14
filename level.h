@@ -213,12 +213,13 @@ class Level : public UniqueEntity<Level> {
   double getLight(Vec2) const;
 
   /** Returns the amount of sunlight in the square, capped within (0, 1).*/
-  double getSunlight(Vec2) const;
+  double isInSunlight(Vec2 pos) const;
 
   /** Returns if two squares are connected assuming given movement.*/
   bool areConnected(Vec2, Vec2, const MovementType&) const;
 
   void updateConnectivity(Vec2);
+  void updateSunlightMovement();
 
   /* Notify that there are squares enterable only by this tribe and custom movement type needs to be tracked.*/
   void addSquareOwner(const Tribe*);
@@ -292,6 +293,7 @@ class Level : public UniqueEntity<Level> {
     void popMap();
     
     private:
+    bool isInSunlight(Vec2);
     Vec2 transform(Vec2);
     Table<PSquare> squares;
     Table<double> heightMap;

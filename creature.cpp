@@ -317,8 +317,6 @@ void Creature::makeMove() {
   unknownAttacker.clear();
   if (fireCreature && Random.roll(5))
     getSquare()->setOnFire(1);
-  if (level->getSunlight(position) > 0.99 )
-    shineLight();
 }
 
 Square* Creature::getSquare() {
@@ -429,13 +427,19 @@ vector<Item*> Creature::getPickUpOptions() const {
     return getSquare()->getItems();
 }
 
-string Creature::getPluralName(Item* item, int num) const {
+string Creature::getPluralTheName(Item* item, int num) const {
   if (num == 1)
     return item->getTheName(false, isBlind());
   else
     return toString(num) + " " + item->getTheName(true, isBlind());
 }
 
+string Creature::getPluralAName(Item* item, int num) const {
+  if (num == 1)
+    return item->getAName(false, isBlind());
+  else
+    return toString(num) + " " + item->getAName(true, isBlind());
+}
 
 CreatureAction Creature::pickUp(const vector<Item*>& items, bool spendT) const {
   if (!isHumanoid())
@@ -449,9 +453,8 @@ CreatureAction Creature::pickUp(const vector<Item*>& items, bool spendT) const {
     Debug() << getName().the() << " pickup ";
     if (spendT)
       for (auto stack : stackItems(items)) {
-        string name = getPluralName(stack[0], stack.size());
-        monsterMessage(getName().the() + " picks up " + name);
-        playerMessage("You pick up " + name);
+        monsterMessage(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
+        playerMessage("You pick up " + getPluralTheName(stack[0], stack.size()));
       }
     for (auto item : items) {
       c->equipment.addItem(c->getSquare()->removeItem(item));
@@ -476,9 +479,8 @@ CreatureAction Creature::drop(const vector<Item*>& items) const {
   return CreatureAction(this, [=](Creature* c) {
     Debug() << getName().the() << " drop";
     for (auto stack : stackItems(items)) {
-      string name = getPluralName(stack[0], stack.size());
-      monsterMessage(getName().the() + " drops " + name);
-      playerMessage("You drop " + name);
+      monsterMessage(getName().the() + " drops " + getPluralAName(stack[0], stack.size()));
+      playerMessage("You drop " + getPluralTheName(stack[0], stack.size()));
     }
     for (auto item : items) {
       c->getSquare()->dropItem(c->equipment.removeItem(item));
@@ -525,13 +527,13 @@ CreatureAction Creature::equip(Item* item) const {
     Debug() << getName().the() << " equip " << item->getName();
     EquipmentSlot slot = item->getEquipmentSlot();
     if (c->equipment.getItem(slot).size() >= c->equipment.getMaxItems(slot)) {
-      c->equipment.unequip(c->equipment.getItem(slot)[0]);
-      item->onUnequip(c);
+      Item* previousItem = c->equipment.getItem(slot)[0];
+      c->equipment.unequip(previousItem);
+      previousItem->onUnequip(c);
     }
     c->equipment.equip(item, slot);
     c->playerMessage("You equip " + item->getTheName(false, isBlind()));
-    c->monsterMessage(c->getName().the() + (slot == EquipmentSlot::WEAPON ? " draws " : " equips ") +
-        item->getAName());
+    c->monsterMessage(c->getName().the() + " equips " + item->getAName());
     item->onEquip(c);
     GlobalEvents.addEquipEvent(c, item);
     c->spendTime(1);
@@ -1081,7 +1083,8 @@ void Creature::tick(double realTime) {
     you(MsgType::DIE_OF, isAffected(LastingEffect::POISON) ? "poisoning" : "bleeding");
     die(lastAttacker);
   }
-
+  if (getSquare()->sunlightBurns())
+    shineLight();
 }
 
 BodyPart Creature::armOrWing() const {
@@ -1718,6 +1721,10 @@ CreatureAction Creature::construct(Vec2 direction, SquareType type) const {
     if (s->canConstruct(type) && canConstruct(type))
       return CreatureAction(this, [=](Creature* c) {
         if (c->getSafeSquare(direction)->construct(type)) {
+          if (type.getId() == SquareId::TREE_TRUNK) {
+            monsterMessage(getName().the() + " cuts a tree");
+            playerMessage("You cut a tree");
+          } else
           if (type.getId() == SquareId::FLOOR) {
             monsterMessage(getName().the() + " digs a tunnel");
             playerMessage("You dig a tunnel");
@@ -2083,7 +2090,8 @@ MovementType Creature::getMovementType() const {
       hasSkill(Skill::get(SkillId::SWIMMING)),
       contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size),
       isBlind() || isHeld() || forceMovement,
-      isFireResistant()});
+      isFireResistant(),
+      undead});
 }
 
 int Creature::numBodyParts(BodyPart part) const {

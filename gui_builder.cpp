@@ -249,11 +249,12 @@ void GuiBuilder::addUpsCounterTick() {
   upsCounter.addTick();
 }
 
+const int resourceSpace = 110;
+
 PGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   GameInfo::BandInfo& info = gameInfo.bandInfo;
   GameInfo::SunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
   vector<PGuiElem> topLine;
-  int resourceSpace = 110;
   for (int i : All(info.numResource)) {
     vector<PGuiElem> res;
     res.push_back(gui.viewObject(info.numResource[i].viewObject, tilesOk));
@@ -409,31 +410,35 @@ PGuiElem GuiBuilder::getTurnInfoGui(int turn) {
       gui.label("T: " + toString(turn), colors[ColorId::WHITE]));
 }
 
+static Color getBonusColor(int bonus) {
+  if (bonus < 0)
+    return colors[ColorId::RED];
+  if (bonus > 0)
+    return colors[ColorId::GREEN];
+  return colors[ColorId::WHITE];
+}
+
 PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
   GameInfo::PlayerInfo& info = gameInfo.playerInfo;
-  GameInfo::SunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
-  string title = info.title;
-  if (!info.adjectives.empty() || !info.playerName.empty())
-    title = " " + title;
-  for (int i : All(info.adjectives))
-    title = string(i <info.adjectives.size() - 1 ? ", " : " ") + info.adjectives[i] + title;
   vector<PGuiElem> topLine;
-  vector<int> topWidths;
-  string nameLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title);
-  topLine.push_back(gui.label(nameLine, colors[ColorId::WHITE]));
-  topWidths.push_back(renderer.getTextLength(nameLine) + 50);
-  topLine.push_back(gui.label(info.levelName, colors[ColorId::WHITE]));
-  topWidths.push_back(200);
+  for (int i : All(info.attributes)) {
+    auto& elem = info.attributes[i];
+    topLine.push_back(gui.stack(getTooltip({elem.name, elem.help}),
+        gui.horizontalList(makeVec<PGuiElem>(
+          gui.viewObject(elem.viewId, tilesOk),
+          gui.label(toString(elem.value), getBonusColor(elem.bonus))), 30, 1)));
+  }
   vector<PGuiElem> bottomLine;
-  vector<int> bottomWidths;
-  bottomLine.push_back(getTurnInfoGui(gameInfo.time));;
-  bottomWidths.push_back(100);
-  bottomLine.push_back(getSunlightInfoGui(sunlightInfo));
-  bottomWidths.push_back(100);
-  int keySpacing = 50;
+  bottomLine.push_back(getTurnInfoGui(gameInfo.time));
+  bottomLine.push_back(getSunlightInfoGui(gameInfo.sunlightInfo));
+  int numTop = topLine.size();
+  int numBottom = bottomLine.size();
   return gui.verticalList(makeVec<PGuiElem>(
-        gui.centerHoriz(gui.horizontalList(std::move(topLine), topWidths, 0), 300),
-        gui.centerHoriz(gui.horizontalList(std::move(bottomLine), bottomWidths, keySpacing), 300)), 28, 0);
+      gui.centerHoriz(gui.horizontalList(std::move(topLine), resourceSpace, 0), numTop * resourceSpace),
+      gui.centerHoriz(gui.horizontalList(std::move(bottomLine), 140, 0, 3), numBottom * 140)), 28, 0);
+ /* return gui.verticalList(makeVec<PGuiElem>(
+        gui.horizontalListFit(std::move(topLine), 0.1),
+        gui.horizontalListFit(std::move(bottomLine), 0.1)), 28, 0);*/
 }
 
 static int viewObjectWidth = 27;
@@ -556,7 +561,7 @@ void GuiBuilder::handleItemChoice(const GameInfo::PlayerInfo::ItemInfo& itemInfo
   int count = options.size();
   PGuiElem stuff = drawListGui("", View::getListElem(options), View::NORMAL_MENU, &contentHeight, &index, &choice);
   stuff = gui.miniWindow(gui.margins(std::move(stuff), 0, 0, 0, 0));
-  Vec2 size(150, options.size() * listLineHeight + 25);
+  Vec2 size(150, options.size() * listLineHeight + 35);
   menuPos.x = min(menuPos.x, renderer.getSize().x - size.x);
   menuPos.y = min(menuPos.y, renderer.getSize().y - size.y);
   while (1) {
@@ -597,11 +602,60 @@ void GuiBuilder::handleItemChoice(const GameInfo::PlayerInfo::ItemInfo& itemInfo
         }
     }
   }
- 
+}
+
+string GuiBuilder::getPlayerTitle(GameInfo::PlayerInfo& info) {
+  string title = info.title;
+  if (!info.adjectives.empty() || !info.playerName.empty())
+    title = " " + title;
+  for (int i : All(info.adjectives)) {
+    title = string(i <info.adjectives.size() - 1 ? ", " : " ") + info.adjectives[i] + title;
+    break; // more than one won't fit the line
+  }
+  return title;
 }
 
 PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
   vector<PGuiElem> lines;
+  string title = getPlayerTitle(info);
+  string nameLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title);
+  lines.push_back(gui.label(nameLine, colors[ColorId::WHITE]));
+  lines.push_back(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
+  lines.push_back(gui.empty());
+  if (!info.team.empty()) {
+    const int numPerLine = 6;
+    vector<int> widths { 60 };
+    vector<PGuiElem> currentLine = makeVec<PGuiElem>(
+        gui.label("Team: ", colors[ColorId::WHITE]));
+    for (auto& elem : info.team) {
+      currentLine.push_back(gui.stack(
+            gui.viewObject(elem.viewObject, tilesOk),
+            gui.label(toString(elem.expLevel), 12)));
+      widths.push_back(30);
+      if (currentLine.size() >= numPerLine) {
+        lines.push_back(gui.horizontalList(std::move(currentLine), widths, 0));
+        widths.clear();
+      }
+    }
+    if (!currentLine.empty())
+      lines.push_back(gui.horizontalList(std::move(currentLine), widths, 0));
+    lines.push_back(gui.empty());
+  }
+  if (!info.effects.empty()) {
+    lines.push_back(gui.label("Effects", colors[ColorId::YELLOW]));
+    for (auto effect : info.effects)
+      lines.push_back(gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::GREEN]));
+    lines.push_back(gui.empty());
+  }
+  if (!info.skills.empty()) {
+    lines.push_back(gui.label("Skills", colors[ColorId::YELLOW]));
+    for (auto& elem : info.skills)
+      lines.push_back(gui.stack(getTooltip({elem.help}),
+            gui.label(capitalFirst(elem.name), colors[ColorId::WHITE])));
+    lines.push_back(gui.empty());
+  }
+  if (info.inventory.empty())
+    lines.push_back(gui.label("Inventory empty."));
   for (auto& section : info.inventory) {
     lines.push_back(gui.label(section.title, colors[ColorId::YELLOW]));
     for (auto& item : section.items)
@@ -614,7 +668,6 @@ PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
 
 PGuiElem GuiBuilder::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
   vector<PGuiElem> buttons = makeVec<PGuiElem>(
-    gui.icon(gui.MINION),
     gui.icon(gui.DIPLOMACY),
     gui.icon(gui.HELP));
   for (int i : All(buttons)) {
@@ -627,7 +680,6 @@ PGuiElem GuiBuilder::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
   }
   PGuiElem main;
   vector<pair<MinionTab, PGuiElem>> elems = makeVec<pair<MinionTab, PGuiElem>>(
-    make_pair(MinionTab::STATS, drawPlayerStats(info)),
     make_pair(MinionTab::INVENTORY, drawPlayerInventory(info)),
     make_pair(MinionTab::HELP, drawPlayerHelp(info)));
   for (auto& elem : elems)
@@ -640,28 +692,9 @@ PGuiElem GuiBuilder::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
   return gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
 }
 
-static Color getBonusColor(int bonus) {
-  if (bonus < 0)
-    return colors[ColorId::RED];
-  if (bonus > 0)
-    return colors[ColorId::GREEN];
-  return colors[ColorId::WHITE];
-}
-
 PGuiElem GuiBuilder::drawPlayerStats(GameInfo::PlayerInfo& info) {
   vector<PGuiElem> elems;
-  if (info.weaponName != "") {
-    elems.push_back(gui.label("Wielding:", colors[ColorId::WHITE]));
-    elems.push_back(gui.label(info.weaponName, colors[ColorId::WHITE]));
-  } else
-    elems.push_back(gui.label("barehanded", colors[ColorId::RED]));
   elems.push_back(gui.empty());
-  for (auto& elem : info.attributes) {
-    elems.push_back(gui.stack(getTooltip({elem.help}),
-        gui.horizontalList(makeVec<PGuiElem>(
-          gui.label(capitalFirst(elem.name + ":"), colors[ColorId::WHITE]),
-          gui.label(toString(elem.value), getBonusColor(elem.bonus))), 100, 1)));
-  }
   elems.push_back(gui.empty());
   elems.push_back(gui.label("Skills:", colors[ColorId::WHITE]));
   for (auto& elem : info.skills) {
@@ -676,7 +709,6 @@ PGuiElem GuiBuilder::drawPlayerStats(GameInfo::PlayerInfo& info) {
         gui.label("Team: ", colors[ColorId::WHITE]));
     for (auto& elem : info.team) {
       currentLine.push_back(gui.stack(
- //             gui.button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo(teamId, elem)})),
             gui.viewObject(elem.viewObject, tilesOk),
             gui.label(toString(elem.expLevel), 12)));
       widths.push_back(30);
@@ -1020,6 +1052,10 @@ Rectangle GuiBuilder::getMenuPosition(View::MenuType type) {
   int ySpacing;
   int yOffset = 0;
   switch (type) {
+    case View::YES_NO_MENU:
+      ySpacing = (renderer.getSize().y - 135) / 2;
+      yOffset = - ySpacing + 100;
+      break;
     case View::MAIN_MENU_NO_TILES:
       ySpacing = (renderer.getSize().y - windowHeight) / 2;
       break;

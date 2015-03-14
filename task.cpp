@@ -87,6 +87,8 @@ class Construction : public Task {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
+    if (!callback->isConstructionReachable(position))
+      return NoMove;
     CHECK(c->hasSkill(Skill::get(SkillId::CONSTRUCTION)));
     Vec2 dir = position - c->getPosition();
     if (dir.length8() == 1) {

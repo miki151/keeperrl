@@ -71,6 +71,7 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
     fieldOfView[vision] = FieldOfView(squares, vision);
   for (Vec2 pos : squares.getBounds())
     addLightSource(pos, squares[pos]->getLightEmission(), 1);
+  updateSunlightMovement();
 }
 
 Rectangle Level::getMaxBounds() {
@@ -145,6 +146,7 @@ void Level::replaceSquare(Vec2 pos, PSquare square) {
   }
   addLightSource(pos, squares[pos]->getLightEmission(), 1);
   updateVisibility(pos);
+  squares[pos]->updateSunlightMovement(isInSunlight(pos));
   updateConnectivity(pos);
 }
 
@@ -184,8 +186,8 @@ Model* Level::getModel() {
   return model;
 }
 
-double Level::getSunlight(Vec2 pos) const {
-  return coverInfo[pos].covered() ? 0 : coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount;
+double Level::isInSunlight(Vec2 pos) const {
+  return !coverInfo[pos].covered() && model->getSunlightInfo().state == Model::SunlightInfo::DAY;
 }
 
 double Level::getLight(Vec2 pos) const {
@@ -529,6 +531,11 @@ void Level::Builder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<S
   for (SquareAttrib at : attr)
     attrib[pos].insert(at);
   type[pos] = t;
+  squares[pos]->updateSunlightMovement(isInSunlight(pos));
+}
+
+bool Level::Builder::isInSunlight(Vec2 pos) {
+  return !coverInfo[pos].covered();
 }
 
 void Level::Builder::addLocation(Location* l, Rectangle area) {
@@ -638,6 +645,8 @@ Vec2 Level::Builder::transform(Vec2 v) {
 
 void Level::Builder::setCoverInfo(Vec2 pos, CoverInfo info) {
   coverInfo[transform(pos)] = info;
+  if (squares[pos])
+    squares[pos]->updateSunlightMovement(isInSunlight(pos));
 }
 
 bool Level::inBounds(Vec2 pos) const {
@@ -677,6 +686,12 @@ bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement1) const 
         newSectors.add(v);
   }
   return sectors.at(movement).same(p1, p2);
+}
+
+void Level::updateSunlightMovement() {
+  for (Vec2 v : getBounds())
+    squares[v]->updateSunlightMovement(isInSunlight(v));
+  sectors.clear();
 }
 
 void Level::addSquareOwner(const Tribe* t) {
