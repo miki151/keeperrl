@@ -110,6 +110,7 @@ class View {
     MAIN_MENU_NO_TILES,
     MINION_MENU,
     GAME_CHOICE_MENU,
+    YES_NO_MENU,
   };
 
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
@@ -130,7 +131,7 @@ class View {
   virtual optional<Vec2> chooseDirection(const string& message) = 0;
 
   /** Asks the player a yer-or-no question.*/
-  virtual bool yesOrNoPrompt(const string& message) = 0;
+  virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) = 0;
 
   /** Draws a window with some text. The text is formatted to fit the window.*/
   virtual void presentText(const string& title, const string& text) = 0;

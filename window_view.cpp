@@ -192,6 +192,7 @@ void WindowView::reset() {
   RenderLock lock(renderMutex);
   mapLayout = &currentTileLayout.normalLayout;
   gameReady = false;
+  wasRendered = false;
   minimapGui->clear();
   mapGui->clearCenter();
   guiBuilder.reset();
@@ -352,7 +353,7 @@ void WindowView::rebuildGui() {
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
     tempGuiElems.back()->setBounds(Rectangle(Vec2(renderer.getSize().x - rightBarWidth, 0),
           renderer.getSize() - Vec2(0, rightBottomMargin)));
-    tempGuiElems.push_back(gui.margins(std::move(bottom), 80, 10, 80, 0));
+    tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
     tempGuiElems.back()->setBounds(Rectangle(
           0, renderer.getSize().y - bottomBarHeight,
           renderer.getSize().x - rightBarWidth, renderer.getSize().y));
@@ -625,8 +626,9 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
   return returnQueue.pop();
 }
 
-bool WindowView::yesOrNoPrompt(const string& message) {
-  return chooseFromListInternal("", {ListElem(message, TITLE), "Yes", "No"}, 0, MenuType::NORMAL_MENU, nullptr,
+bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
+  int index = defaultNo ? 1 : 0;
+  return chooseFromListInternal("", {ListElem(message, TITLE), "Yes", "No"}, index, MenuType::YES_NO_MENU, nullptr,
       none, none, {}) == 0;
 }
 
@@ -843,7 +845,6 @@ View::GameTypeChoice WindowView::chooseGameType() {
   });
   lock.unlock();
   return returnQueue.pop();
-
 }
 
 optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
@@ -888,12 +889,17 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
         gui.button([&](){ choice = -100; }),
         gui.mouseHighlight(gui.mainMenuHighlight(), count, &index),
         gui.centeredLabel("Dismiss"))), 0, 5, 0, 0);
-  if (menuType != MAIN_MENU) {
-    stuff = gui.scrollable(std::move(stuff), scrollPos);
-    stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);
-    stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
-        std::move(stuff), 30, gui.BOTTOM);
-    stuff = gui.window(std::move(stuff));
+  switch (menuType) {
+    case MAIN_MENU: break;
+    case YES_NO_MENU:
+      stuff = gui.miniWindow(std::move(stuff)); break;
+    default:
+      stuff = gui.scrollable(std::move(stuff), scrollPos);
+      stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);
+      stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
+          std::move(stuff), 30, gui.BOTTOM);
+      stuff = gui.window(std::move(stuff));
+      break;
   }
   while (1) {
     refreshScreen(false);

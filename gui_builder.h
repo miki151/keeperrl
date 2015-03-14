@@ -76,7 +76,6 @@ class GuiBuilder {
   CollectiveTab getCollectiveTab() const;
 
   enum class MinionTab {
-    STATS,
     INVENTORY,
     HELP,
   };
@@ -112,7 +111,7 @@ class GuiBuilder {
   double minionsScroll = 0;
   bool disableTooltip = false;
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
-  MinionTab minionTab = MinionTab::STATS;
+  MinionTab minionTab = MinionTab::INVENTORY;
   bool gameSpeedDialogOpen = false;
   atomic<GameSpeed> gameSpeed;
   string getGameSpeedName(GameSpeed) const;
@@ -148,6 +147,7 @@ class GuiBuilder {
   PGuiElem menuElemMargins(PGuiElem);
   PGuiElem getHighlight(View::MenuType, const string& label, int height);
   vector<string> breakText(const string& text, int maxWidth);
+  string getPlayerTitle(GameInfo::PlayerInfo&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

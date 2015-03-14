@@ -9,7 +9,8 @@ RICH_ENUM(MovementTrait,
   SWIM,
   WADE,
   BY_FORCE,
-  FIRE_RESISTANT
+  FIRE_RESISTANT,
+  SUNLIGHT_VULNERABLE
 );
 
 class Tribe;

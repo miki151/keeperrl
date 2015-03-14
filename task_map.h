@@ -33,9 +33,6 @@ class TaskMap {
   CostInfo removeTask(UniqueEntity<Task>::Id);
   bool isPriorityTask(const Task*) const;
   bool hasPriorityTasks(Vec2) const;
-  bool isLocked(const Creature*, const Task*) const;
-  void lock(const Creature*, const Task*);
-  void clearAllLocked();
   void freeTaskDelay(Task*, double delayTime);
   void setPriorityTasks(Vec2 pos);
   Task* getTaskForWorker(Creature* c);
@@ -51,9 +48,17 @@ class TaskMap {
   Table<Task*> SERIAL(marked);
   Table<HighlightType> SERIAL(highlight);
   map<Task*, CostInfo> SERIAL(completionCost);
-  set<pair<const Creature*, UniqueEntity<Creature>::Id>> SERIAL(lockedTasks);
   map<UniqueEntity<Creature>::Id, double> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
 };
+namespace boost { 
+namespace serialization {
+template<typename CostInfo>
+struct version<TaskMap<CostInfo>>
+{
+    BOOST_STATIC_CONSTANT(unsigned int, value = 1);
+};
+}
+}
 
 #endif

@@ -97,6 +97,8 @@ class Square : public Renderable {
   bool canEnter(MovementType) const;
   //@}
 
+  const MovementType& getMovementType() const;
+
   //@{
   /** Checks if this square is can be entered by the creature. Doesn't take into account other 
     * creatures on the square.*/
@@ -196,10 +198,13 @@ class Square : public Renderable {
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(double time);
+  void updateSunlightMovement(bool isSunlight);
 
   virtual bool canLock() const { return false; }
   virtual bool isLocked() const { FAIL << "BAD"; return false; }
   virtual void lock() { FAIL << "BAD"; }
+
+  bool sunlightBurns() const;
 
   optional<ViewObject> getBackgroundObject() const;
   void setBackground(const Square*);
@@ -237,7 +242,6 @@ class Square : public Renderable {
   virtual void tickSpecial(double time) {}
   Inventory SERIAL(inventory);
   string SERIAL(name);
-  const MovementType& getMovementType() const;
   void setMovementType(MovementType);
   void setDirty();
 
