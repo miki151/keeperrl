@@ -11,7 +11,7 @@ void TaskMap<CostInfo>::serialize(Archive& ar, const unsigned int version) {
     & SVAR(reversePositions)
     & SVAR(creatureMap)
     & SVAR(marked);
-  if (version == 0) {
+  if (version == 0) { // OBSOLETE
     set<pair<const Creature*, UniqueEntity<Creature>::Id>> lockedTasks;
     ar & boost::serialization::make_nvp("lockedTasks", lockedTasks);
   }
