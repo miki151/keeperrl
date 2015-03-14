@@ -523,8 +523,9 @@ CreatureAction Creature::equip(Item* item) const {
     Debug() << getName().the() << " equip " << item->getName();
     EquipmentSlot slot = item->getEquipmentSlot();
     if (c->equipment.getItem(slot).size() >= c->equipment.getMaxItems(slot)) {
-      c->equipment.unequip(c->equipment.getItem(slot)[0]);
-      item->onUnequip(c);
+      Item* previousItem = c->equipment.getItem(slot)[0];
+      c->equipment.unequip(previousItem);
+      previousItem->onUnequip(c);
     }
     c->equipment.equip(item, slot);
     c->playerMessage("You equip " + item->getTheName(false, isBlind()));
@@ -1717,6 +1718,10 @@ CreatureAction Creature::construct(Vec2 direction, SquareType type) const {
     if (s->canConstruct(type) && canConstruct(type))
       return CreatureAction(this, [=](Creature* c) {
         if (c->getSafeSquare(direction)->construct(type)) {
+          if (type.getId() == SquareId::TREE_TRUNK) {
+            monsterMessage(getName().the() + " cuts a tree");
+            playerMessage("You cut a tree");
+          } else
           if (type.getId() == SquareId::FLOOR) {
             monsterMessage(getName().the() + " digs a tunnel");
             playerMessage("You dig a tunnel");

@@ -79,6 +79,7 @@ class GameInfo {
     public:
     struct AttributeInfo {
       string name;
+      ViewId viewId;
       int value;
       int bonus;
       string help;
@@ -91,6 +92,7 @@ class GameInfo {
     vector<SkillInfo> skills;
     bool spellcaster;
     string playerName;
+    int level;
     vector<string> adjectives;
     string title;
     string levelName;

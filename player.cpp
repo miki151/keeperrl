@@ -27,6 +27,7 @@
 #include "pantheon.h"
 #include "item_factory.h"
 #include "effect.h"
+#include "view_id.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -1026,34 +1027,43 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.levelName = location && location->hasName() 
     ? capitalFirst(location->getName()) : getLevel()->getName();
   info.attributes = {
-    {"level",
-      getCreature()->getExpLevel(), 0,
-      "Describes general combat value of the creature."},
-    {"attack",
+    { "Attack",
+      ViewId::STAT_ATT,
       getCreature()->getModifier(ModifierType::DAMAGE),
       getCreature()->isAffected(LastingEffect::RAGE) ? 1 : getCreature()->isAffected(LastingEffect::PANIC) ? -1 : 0,
       "Affects if and how much damage is dealt in combat."},
-    {"defense",
+    { "Defense",
+      ViewId::STAT_DEF,
       getCreature()->getModifier(ModifierType::DEFENSE),
       getCreature()->isAffected(LastingEffect::RAGE) ? -1 : (getCreature()->isAffected(LastingEffect::PANIC) 
           || getCreature()->isAffected(LastingEffect::MAGIC_SHIELD)) ? 1 : 0,
       "Affects if and how much damage is taken in combat."},
-    {"accuracy",
-      getCreature()->getModifier(ModifierType::ACCURACY),
-      getCreature()->accuracyBonus(),
-      "Defines the chance of a successful melee attack and dodging."},
-    {"strength",
+    { "Strength",
+      ViewId::STAT_STR,
       getCreature()->getAttr(AttrType::STRENGTH),
       getCreature()->isAffected(LastingEffect::STR_BONUS),
       "Affects the values of attack, defense and carrying capacity."},
-    {"dexterity",
+    { "Dexterity",
+      ViewId::STAT_DEX,
       getCreature()->getAttr(AttrType::DEXTERITY),
       getCreature()->isAffected(LastingEffect::DEX_BONUS),
       "Affects the values of melee and ranged accuracy, and ranged damage."},
-    {"speed",
+    { "Accuracy",
+      ViewId::STAT_ACC,
+      getCreature()->getModifier(ModifierType::ACCURACY),
+      getCreature()->accuracyBonus(),
+      "Defines the chance of a successful melee attack and dodging."},
+    { "Speed",
+      ViewId::STAT_SPD,
       getCreature()->getAttr(AttrType::SPEED),
       getCreature()->isAffected(LastingEffect::SPEED) ? 1 : getCreature()->isAffected(LastingEffect::SLOWED) ? -1 : 0,
-      "Affects how much game time every action uses."}};
+      "Affects how much game time every action uses."},
+/*    { "Level",
+      ViewId::STAT_LVL,
+      getCreature()->getExpLevel(), 0,
+      "Describes general combat value of the creature."}*/
+  };
+  info.level = getCreature()->getExpLevel();
   info.skills = getCreature()->getSkillNames();
   gameInfo.time = getCreature()->getTime();
   info.effects.clear();

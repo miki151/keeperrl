@@ -353,7 +353,7 @@ void WindowView::rebuildGui() {
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
     tempGuiElems.back()->setBounds(Rectangle(Vec2(renderer.getSize().x - rightBarWidth, 0),
           renderer.getSize() - Vec2(0, rightBottomMargin)));
-    tempGuiElems.push_back(gui.margins(std::move(bottom), 80, 10, 80, 0));
+    tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
     tempGuiElems.back()->setBounds(Rectangle(
           0, renderer.getSize().y - bottomBarHeight,
           renderer.getSize().x - rightBarWidth, renderer.getSize().y));
