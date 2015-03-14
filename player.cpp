@@ -280,7 +280,7 @@ void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   int num = groups[*index].size(); //groups[index].size() == 1 ? 1 : howMany(model->getView(), groups[index].size());
   if (num < 1)
     return;
-  privateMessage("You take " + getCreature()->getPluralName(groups[*index][0], num));
+  privateMessage("You take " + getCreature()->getPluralTheName(groups[*index][0], num));
   tryToPerform(getCreature()->pickUp(getPrefix(groups[*index], num), false));
 }
 

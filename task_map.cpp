@@ -10,9 +10,12 @@ void TaskMap<CostInfo>::serialize(Archive& ar, const unsigned int version) {
     & SVAR(positionMap)
     & SVAR(reversePositions)
     & SVAR(creatureMap)
-    & SVAR(marked)
-    & SVAR(lockedTasks)
-    & SVAR(completionCost)
+    & SVAR(marked);
+  if (version == 0) {
+    set<pair<const Creature*, UniqueEntity<Creature>::Id>> lockedTasks;
+    ar & boost::serialization::make_nvp("lockedTasks", lockedTasks);
+  }
+  ar & SVAR(completionCost)
     & SVAR(priorityTasks)
     & SVAR(delayedTasks)
     & SVAR(highlight);
@@ -38,15 +41,13 @@ Task* TaskMap<CostInfo>::getTaskForWorker(Creature* c) {
       if (!task->isDone() && (!owner || (task->canTransfer() && (*pos - owner->getPosition()).length8() > dist))
           && (!closest || dist < (*getPosition(closest) - c->getPosition()).length8()
               || isPriorityTask(task.get()))
-          && !isLocked(c, task.get())
           && (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
         bool valid = task->getMove(c);
         if (valid) {
           closest = task.get();
           if (isPriorityTask(task.get()))
             return task.get();
-        } else
-          lock(c, task.get());
+        }
       }
     }
   }
@@ -118,21 +119,6 @@ bool TaskMap<CostInfo>::hasPriorityTasks(Vec2 pos) const {
     if (isPriorityTask(task))
       return true;
   return false;
-}
-
-template <class CostInfo>
-bool TaskMap<CostInfo>::isLocked(const Creature* c, const Task* t) const {
-  return lockedTasks.count({c, t->getUniqueId()});
-}
-
-template <class CostInfo>
-void TaskMap<CostInfo>::lock(const Creature* c, const Task* t) {
-  lockedTasks.insert({c, t->getUniqueId()});
-}
-
-template <class CostInfo>
-void TaskMap<CostInfo>::clearAllLocked() {
-  lockedTasks.clear();
 }
 
 template <class CostInfo>
@@ -246,3 +232,13 @@ const map<Task*, CostInfo>& TaskMap<CostInfo>::getCompletionCosts() const {
 }
 
 template class TaskMap<Collective::CostInfo>;
+
+namespace boost { 
+namespace serialization {
+template<typename CostInfo>
+const unsigned int version<TaskMap<CostInfo>>::value;
+template struct version<TaskMap<Collective::CostInfo>>;
+
+}
+}
+

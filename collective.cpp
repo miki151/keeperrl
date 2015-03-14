@@ -1743,6 +1743,13 @@ void Collective::onTorchBuilt(Vec2 pos, Trigger* t) {
   torches.at(pos).trigger() = t;
 }
 
+bool Collective::isConstructionReachable(Vec2 pos) {
+  for (Vec2 v : pos.neighbors8())
+    if (knownTiles.isKnown(v))
+      return true;
+  return false;
+}
+
 void Collective::onConstructionCancelled(Vec2 pos) {
   if (constructions.count(pos)) {
     constructions.at(pos).built() = false;
@@ -1760,8 +1767,6 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   mySquares[type].insert(pos);
   if (efficiencySquares.count(type))
     updateEfficiency(pos, type);
-  if (contains({SquareId::FLOOR, SquareId::BRIDGE, SquareId::BARRICADE}, type.getId()))
-    taskMap.clearAllLocked();
   if (taskMap.getMarked(pos))
     taskMap.unmarkSquare(pos);
   if (constructions.count(pos)) {
@@ -1782,7 +1787,6 @@ bool Collective::tryLockingDoor(Vec2 pos) {
     Square* square = getLevel()->getSafeSquare(pos);
     if (square->canLock()) {
       square->lock();
-      taskMap.clearAllLocked();
       return true;
     }
   }
