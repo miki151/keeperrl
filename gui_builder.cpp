@@ -418,6 +418,19 @@ static Color getBonusColor(int bonus) {
   return colors[ColorId::WHITE];
 }
 
+typedef GameInfo::PlayerInfo::AttributeInfo::Id AttrId;
+
+static GuiFactory::IconId getAttrIcon(AttrId id) {
+  switch (id) {
+    case AttrId::ATT: return GuiFactory::STAT_ATT;
+    case AttrId::DEF: return GuiFactory::STAT_DEF;
+    case AttrId::STR: return GuiFactory::STAT_STR;
+    case AttrId::DEX: return GuiFactory::STAT_DEX;
+    case AttrId::ACC: return GuiFactory::STAT_ACC;
+    case AttrId::SPD: return GuiFactory::STAT_SPD;
+  }
+}
+
 PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
   GameInfo::PlayerInfo& info = gameInfo.playerInfo;
   vector<PGuiElem> topLine;
@@ -425,8 +438,8 @@ PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
     auto& elem = info.attributes[i];
     topLine.push_back(gui.stack(getTooltip({elem.name, elem.help}),
         gui.horizontalList(makeVec<PGuiElem>(
-          gui.viewObject(elem.viewId, tilesOk),
-          gui.label(toString(elem.value), getBonusColor(elem.bonus))), 30, 1)));
+          gui.icon(getAttrIcon(elem.id)),
+          gui.margins(gui.label(toString(elem.value), getBonusColor(elem.bonus)), 0, 2, 0, 0)), 30, 1)));
   }
   vector<PGuiElem> bottomLine;
   bottomLine.push_back(getTurnInfoGui(gameInfo.time));

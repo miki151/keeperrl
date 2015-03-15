@@ -1007,7 +1007,6 @@ const int scrollbarWidth = 22;
 const int borderWidth = 8;
 const int borderHeight = 11;
 const int backgroundSize = 128;
-const int iconWidth = 42;
 
 Texture& GuiFactory::get(TexId id) {
   return textures.at(id);
@@ -1071,9 +1070,17 @@ void GuiFactory::loadFreeImages(const string& path) {
             "splash2b.png",
             "splash2c.png",
             "splash2d.png"))));
+  const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i) {
     iconTextures.emplace_back();
-    CHECK(iconTextures.back().loadFromFile(path + "/icons.png", sf::IntRect(0, i * iconWidth, iconWidth, iconWidth)));
+    CHECK(iconTextures.back().loadFromFile(path + "/icons.png",
+          sf::IntRect(0, i * tabIconWidth, tabIconWidth, tabIconWidth)));
+  }
+  const int statIconWidth = 18;
+  for (int i = 0; i < 6; ++i) {
+    iconTextures.emplace_back();
+    CHECK(iconTextures.back().loadFromFile(path + "/stat_icons.png",
+          sf::IntRect(i * statIconWidth, 0, statIconWidth, statIconWidth)));
   }
 }
 

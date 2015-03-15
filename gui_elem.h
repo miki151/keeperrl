@@ -178,6 +178,12 @@ class GuiFactory {
     HELP = 3,
     DEITIES = 6,
     TEAM = 7,
+    STAT_ATT = 8,
+    STAT_DEF = 9,
+    STAT_STR = 12,
+    STAT_DEX = 13,
+    STAT_ACC = 10,
+    STAT_SPD = 11,
   };
 
   PGuiElem icon(IconId);
