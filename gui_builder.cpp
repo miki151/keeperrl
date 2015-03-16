@@ -449,9 +449,6 @@ PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
   return gui.verticalList(makeVec<PGuiElem>(
       gui.centerHoriz(gui.horizontalList(std::move(topLine), resourceSpace, 0), numTop * resourceSpace),
       gui.centerHoriz(gui.horizontalList(std::move(bottomLine), 140, 0, 3), numBottom * 140)), 28, 0);
- /* return gui.verticalList(makeVec<PGuiElem>(
-        gui.horizontalListFit(std::move(topLine), 0.1),
-        gui.horizontalListFit(std::move(bottomLine), 0.1)), 28, 0);*/
 }
 
 static int viewObjectWidth = 27;
@@ -1066,7 +1063,7 @@ Rectangle GuiBuilder::getMenuPosition(View::MenuType type) {
   int yOffset = 0;
   switch (type) {
     case View::YES_NO_MENU:
-      ySpacing = (renderer.getSize().y - 135) / 2;
+      ySpacing = (renderer.getSize().y - 200) / 2;
       yOffset = - ySpacing + 100;
       break;
     case View::MAIN_MENU_NO_TILES:

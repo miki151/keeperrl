@@ -112,6 +112,7 @@ class WindowView: public View {
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
+  void displayAutosaveSplash(const ProgressMeter&);
 
   void switchZoom();
   void zoom(bool out);

@@ -22,6 +22,8 @@ class MainLoop {
 
   void start(bool tilesPresent);
 
+  static int getAutosaveFreq();
+
   private:
 
   struct SaveFileInfo {
@@ -33,7 +35,7 @@ class MainLoop {
   View::ListElem getGameName(const SaveFileInfo& save);
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const string& path);
-  void saveUI(PModel model, Model::GameType type);
+  void saveUI(PModel& model, Model::GameType type, View::SplashType splashType);
   void getSaveOptions(const vector<pair<Model::GameType, string>>&,
       vector<View::ListElem>& options, vector<SaveFileInfo>& allFiles);
 
@@ -42,15 +44,18 @@ class MainLoop {
   optional<SaveFileInfo> chooseSaveFile(const vector<View::ListElem>& options, const vector<SaveFileInfo>& allFiles,
       string noSaveMsg, View*);
 
-  void playModel(PModel, bool withMusic = true);
+  void playModel(PModel, bool withMusic = true, bool noAutoSave = false);
   void playGameChoice();
   void splashScreen();
   void showCredits(const string& path, View*);
+  void autosave(PModel&);
 
   PModel keeperGame();
   PModel adventurerGame();
   PModel loadModel(string file, bool erase);
   PModel loadPrevious(bool erase);
+  string getSavePath(Model*, Model::GameType);
+  void eraseAutosave(Model*);
 
   bool downloadGame(const string& filename);
   static bool eraseSave(Options* options);

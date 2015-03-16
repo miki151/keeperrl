@@ -229,6 +229,34 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
       false, 16);
 }
 
+void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
+  splashDone = false;
+  renderDialog = [=, &meter] {
+    PGuiElem window = gui.miniWindow(gui.empty());
+    Vec2 windowSize(440, 70);
+    Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
+    Rectangle progressBar(bounds.minusMargin(15));
+    window->setBounds(bounds);
+    while (!splashDone) {
+      refreshScreen(false);
+      window->render(renderer);
+      Rectangle bar(progressBar.getTopLeft(), Vec2(1 + progressBar.getPX() * (1.0 - meter.getProgress()) +
+            progressBar.getKX() * meter.getProgress(), progressBar.getKY()));
+      renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
+      renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.getPY() + 20, "Autosaving", true);
+      renderer.drawAndClearBuffer();
+      sf::sleep(sf::milliseconds(30));
+      Event event;
+      while (renderer.pollEvent(event)) {
+        if (event.type == Event::Resized) {
+          resize(event.size.width, event.size.height, {});
+        }
+      }
+    }
+    renderDialog = nullptr;
+  };
+}
+
 void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type, function<void()> cancelFun) {
   RenderLock lock(renderMutex);
   string text;
@@ -238,6 +266,7 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
     case View::SAVING: text = "Saving the game..."; break;
     case View::UPLOADING: text = "Uploading the game..."; break;
     case View::DOWNLOADING: text = "Downloading the game..."; break;
+    case View::AUTOSAVING: displayAutosaveSplash(meter); return;
   }
   splashDone = false;
   renderDialog = [=, &meter] {
@@ -248,7 +277,7 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
     while (!splashDone) {
       Vec2 textPos = useTiles ? Vec2(renderer.getSize().x / 2, renderer.getSize().y * 0.5)
         : Vec2(renderer.getSize().x / 2, renderer.getSize().y - 60);
-    Rectangle cancelBut(textPos.x - renderer.getTextLength(cancelText) / 2, textPos.y + 30,
+      Rectangle cancelBut(textPos.x - renderer.getTextLength(cancelText) / 2, textPos.y + 30,
         textPos.x + renderer.getTextLength(cancelText) / 2, textPos.y + 60);
       if (useTiles)
         drawMenuBackground(meter.getProgress(), min(1.0, double(clock->getRealMillis() - t0) / mouthMillis));
@@ -277,6 +306,7 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
 
 void WindowView::clearSplash() {
   splashDone = true;
+  while (renderDialog) {}
 }
 
 void WindowView::resize(int width, int height, vector<GuiElem*> gui) {
@@ -892,7 +922,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   switch (menuType) {
     case MAIN_MENU: break;
     case YES_NO_MENU:
-      stuff = gui.miniWindow(std::move(stuff)); break;
+      stuff = gui.window(std::move(stuff)); break;
     default:
       stuff = gui.scrollable(std::move(stuff), scrollPos);
       stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);

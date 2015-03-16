@@ -37,7 +37,7 @@ class Model {
   public:
   ~Model();
 
-  enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER };
+  enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER, AUTOSAVE };
 
   class ExitInfo {
     public:
