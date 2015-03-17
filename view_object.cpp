@@ -29,6 +29,8 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
     & SVAR(attachmentDir)
     & SVAR(position)
     & SVAR(creatureId);
+  if (version >= 1)
+    ar & SVAR(adjectives);
   CHECK_SERIAL;
 }
 
@@ -172,7 +174,11 @@ string ViewObject::getAttributeString(Attribute attr) const {
     return toString(getAttribute(attr));
 }
 
-string ViewObject::getDescription(bool stats) const {
+void ViewObject::setAdjectives(const vector<string>& adj) {
+  adjectives = adj;
+}
+
+vector<string> ViewObject::getDescription(bool stats) const {
   EnumMap<Attribute, string> namedAttr {
       { Attribute::ATTACK, "attack"},
       { Attribute::DEFENSE, "defense"},
@@ -200,10 +206,13 @@ string ViewObject::getDescription(bool stats) const {
   if (position.x > -1)
     mods.push_back(toString(position.x) + ", " + toString(position.y));
 #endif
+  vector<string> ret;
   if (mods.size() > 0)
-    return description + attr + "(" + combine(mods) + ")";
+    ret.push_back(description + attr + "(" + combine(mods) + ")");
   else
-    return description + attr;
+    ret.push_back(description + attr);
+  append(ret, adjectives);
+  return ret;
 }
 
 ViewLayer ViewObject::layer() const {

@@ -589,7 +589,7 @@ void MapGui::renderHint(Renderer& renderer, const optional<ViewObject>& highligh
       col = colors[ColorId::RED];
     else if (highlighted->isFriendly())
       col = colors[ColorId::GREEN];
-    drawHint(renderer, col, {highlighted->getDescription(true)});
+    drawHint(renderer, col, highlighted->getDescription(true));
   }
 }
 

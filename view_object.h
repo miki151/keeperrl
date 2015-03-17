@@ -58,7 +58,7 @@ class ViewObject {
   ViewObject& setAttribute(Attribute, double);
   double getAttribute(Attribute) const;
 
-  string getDescription(bool stats = false) const;
+  vector<string> getDescription(bool stats = false) const;
   string getBareDescription() const;
 
   ViewLayer layer() const;
@@ -67,6 +67,8 @@ class ViewObject {
 
   void setPosition(Vec2);
   int getPositionHash() const;
+
+  void setAdjectives(const vector<string>&);
 
   struct MovementInfo {
     Vec2 direction;
@@ -100,6 +102,7 @@ class ViewObject {
   optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL2(position, Vec2(-1, -1));
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
+  vector<string> SERIAL(adjectives);
 
   class MovementQueue {
     public:
@@ -115,5 +118,7 @@ class ViewObject {
     int totalMoves = 0;
   } movementQueue;
 };
+
+BOOST_CLASS_VERSION(ViewObject, 1)
 
 #endif

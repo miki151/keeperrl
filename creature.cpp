@@ -1416,6 +1416,7 @@ void Creature::updateViewObject() {
   modViewObject().setAttribute(ViewObject::Attribute::LEVEL, getExpLevel());
   modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
   modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
+  modViewObject().setAdjectives(getAdjectives());
   if (isAffected(LastingEffect::SLEEP))
     modViewObject().setModifier(ViewObject::Modifier::SLEEPING);
   else
@@ -2427,7 +2428,12 @@ vector<string> Creature::getMainAdjectives() const {
 }
 
 vector<string> Creature::getAdjectives() const {
-  vector<string> ret = getMainAdjectives();
+  vector<string> ret;
+  if (const Item* weapon = getWeapon())
+    ret.push_back("Wielding " + weapon->getAName());
+  else
+    ret.push_back("No weapon");
+  append(ret, getMainAdjectives());
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = injuredBodyParts[part])
       ret.push_back(getPlural("injured " + getBodyPartName(part), num));
