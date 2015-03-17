@@ -173,6 +173,7 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
         else
           inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo(pos, activeBuilding)));
       }
+    default:
       break;
   }
 }
@@ -886,11 +887,11 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     return none;
   RenderLock lock(renderMutex);
   uiLock = true;
-  renderer.flushEvents(Event::KeyPressed);
   inputQueue.push(UserInputId::REFRESH);
   TempClockPause pause(clock);
   SyncQueue<optional<int>> returnQueue;
   addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
+  renderer.flushEvents(Event::KeyPressed);
   int contentHeight;
   int choice = -1;
   int count = 0;

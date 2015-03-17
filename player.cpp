@@ -551,8 +551,6 @@ void Player::makeMove() {
   if (displayGreeting && model->getOptions()->getBoolValue(OptionId::HINTS)) {
     CHECK(getCreature()->getFirstName());
     model->getView()->presentText("", "Dear " + *getCreature()->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + model->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
-/*    model->getView()->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
-        "\n \nYou can turn these messages off in the options (press F2).");*/
     displayGreeting = false;
     model->getView()->updateView(this, false);
   }
@@ -562,18 +560,22 @@ void Player::makeMove() {
       specialCreatures.push_back(c);
     }
   }
-  if (travelling)
+  UserInput action = model->getView()->getAction();
+  if (travelling && action.getId() == UserInputId::IDLE)
     travelAction();
-  else if (target)
+  else if (target&& action.getId() == UserInputId::IDLE)
     targetAction();
   else {
-    UserInput action = model->getView()->getAction();
     Debug() << "Action " << int(action.getId());
   vector<Vec2> direction;
   bool travel = false;
+  bool wasJustTravelling = travelling || !!target;
   if (action.getId() != UserInputId::IDLE) {
-    if (action.getId() != UserInputId::REFRESH && action.getId() != UserInputId::BUTTON_RELEASE)
+    if (action.getId() != UserInputId::REFRESH && action.getId() != UserInputId::BUTTON_RELEASE) {
       retireMessages();
+      travelling = false;
+      target = none;
+    }
     updateView = true;
   }
   switch (action.getId()) {
@@ -593,9 +595,11 @@ void Player::makeMove() {
         direction.push_back(dir);
       } else
       if (action.get<Vec2>() != getCreature()->getPosition()) {
-        target = action.get<Vec2>();
-        target = Vec2(min(getCreature()->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
-            min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
+        if (!wasJustTravelling) {
+          target = action.get<Vec2>();
+          target = Vec2(min(getCreature()->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
+              min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
+        }
       }
       else
         pickUpAction(false);

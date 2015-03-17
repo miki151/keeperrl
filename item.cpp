@@ -348,6 +348,8 @@ string Item::getShortName(bool shortMod, bool blind) const {
     name = *shortName + " " + name;
   if (getShopkeeper())
     name = name + " (unpaid)";
+  if (fire.isBurning())
+    name.append(" (burning)");
   return name;
 }
 
