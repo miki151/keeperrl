@@ -1073,8 +1073,10 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.skills = getCreature()->getSkillNames();
   gameInfo.time = getCreature()->getTime();
   info.effects.clear();
-  for (string s : getCreature()->getAdjectives())
+  for (string s : getCreature()->getBadAdjectives())
     info.effects.push_back({s, true});
+  for (string s : getCreature()->getGoodAdjectives())
+    info.effects.push_back({s, false});
   info.squareName = getCreature()->getSquare()->getName();
   info.lyingItems.clear();
   for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))

@@ -97,7 +97,7 @@ Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin, double tEnd) con
   bool attack = false;
   for (int i : Range(min<int>(totalMoves, elems.size())))
     if (elems[i].tBegin > tBegin) {
-      if (elems[i].type == MovementInfo::ATTACK && ret.length8() == 0) {
+      if (elems[i].type == MovementInfo::ATTACK/* && ret.length8() == 0*/) {
         attack = true;
         ret = elems[i].direction;
       } else {
@@ -142,7 +142,7 @@ double ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 
-string ViewObject::getBareDescription() const {
+string ViewObject::getDescription() const {
   return description;
 }
 
@@ -166,39 +166,25 @@ void ViewObject::setAdjectives(const vector<string>& adj) {
   adjectives = adj;
 }
 
-vector<string> ViewObject::getDescription(bool stats) const {
-  EnumMap<Attribute, string> namedAttr {
-      { Attribute::ATTACK, "attack"},
-      { Attribute::DEFENSE, "defense"},
-      { Attribute::LEVEL, "level"},
-      { Attribute::EFFICIENCY, "efficiency"},
-  //    { Attribute::HEIGHT, "height"}
-  };
-  string attr;
-  if (stats)
-    for (Attribute a : ENUM_ALL(Attribute))
-      if (!namedAttr[a].empty() && getAttribute(a) > -1)
-        attr += " " + namedAttr[a] + ": " + getAttributeString(a);
-  vector<string> mods;
+vector<string> ViewObject::getLegend() const {
+  vector<string> ret { description };
+  if (getAttribute(Attribute::LEVEL) > -1)
+    ret[0] = ret[0] + ", level " + toString(getAttribute(Attribute::LEVEL));
+  if (getAttribute(Attribute::EFFICIENCY) > -1)
+    ret[0] = ret[0] + ", efficiency " + toString(getAttribute(Attribute::EFFICIENCY));
+  if (getAttribute(Attribute::ATTACK) > -1)
+    ret.push_back("attack " + toString(getAttribute(Attribute::ATTACK)) +
+          " " + toString(getAttribute(Attribute::ATTACK)));
   if (getAttribute(Attribute::BLEEDING) > 0) 
-    mods.push_back("wounded");
-  if (hasModifier(Modifier::BLIND))
-    mods.push_back("blind");
-  if (hasModifier(Modifier::POISONED))
-    mods.push_back("poisoned");
+    ret.push_back("Wounded");
   if (hasModifier(Modifier::PLANNED))
-    mods.push_back("planned");
+    ret.push_back("Planned");
   if (hasModifier(Modifier::SLEEPING))
-    mods.push_back("sleeping");
+    ret.push_back("Sleeping");
 #ifndef RELEASE
   if (position.x > -1)
-    mods.push_back(toString(position.x) + ", " + toString(position.y));
+    ret.push_back(toString(position.x) + ", " + toString(position.y));
 #endif
-  vector<string> ret;
-  if (mods.size() > 0)
-    ret.push_back(description + attr + "(" + combine(mods) + ")");
-  else
-    ret.push_back(description + attr);
   append(ret, adjectives);
   return ret;
 }

@@ -53,8 +53,8 @@ class ViewObject {
   ViewObject& setAttribute(Attribute, double);
   double getAttribute(Attribute) const;
 
-  vector<string> getDescription(bool stats = false) const;
-  string getBareDescription() const;
+  vector<string> getLegend() const;
+  string getDescription() const;
 
   ViewLayer layer() const;
   ViewId id() const;

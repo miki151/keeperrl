@@ -324,9 +324,10 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     state = min(1.0, max(0.0, (state - minStopTime) / (1.0 - 2 * minStopTime)));
   } else
     return Vec2(0, 0);
-  if (object.getLastMovementInfo().type == ViewObject::MovementInfo::ATTACK && dir.length8() == 1)
-    return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
-        (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - getJumpOffset(state)) * size.y);
+  if (object.getLastMovementInfo().type == ViewObject::MovementInfo::ATTACK)
+    if (dir.length8() == 1)
+      return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
+          (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - getJumpOffset(state)) * size.y);
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(state)) * size.y);
 }
 
@@ -680,7 +681,7 @@ void MapGui::render(Renderer& renderer) {
     Color col = colors[ColorId::WHITE];
     if (highlightedInfo.isEnemy)
       col = colors[ColorId::RED];
-    drawHint(renderer, col, highlightedInfo.object->getDescription(true));
+    drawHint(renderer, col, highlightedInfo.object->getLegend());
   }
 }
 

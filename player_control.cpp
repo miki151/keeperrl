@@ -402,7 +402,7 @@ void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, ve
       lOpt.emplace_back(elem->getName(), View::INACTIVE);
     lOpt.emplace_back("", View::INACTIVE);
   }
-  for (string s : c->getAdjectives())
+  for (string s : concat(c->getWeaponAdjective(), c->getBadAdjectives(), c->getGoodAdjectives()))
     lOpt.emplace_back(s, View::INACTIVE);
 }
 

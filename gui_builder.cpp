@@ -505,7 +505,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
       }
     }
   }
-  ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0), size, OverlayInfo::BOTTOM_RIGHT});
+  ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0), size, OverlayInfo::TOP_RIGHT});
 }
 
 struct KeyInfo {
@@ -654,7 +654,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
   if (!info.effects.empty()) {
     lines.push_back(gui.label("Status", colors[ColorId::YELLOW]));
     for (auto effect : info.effects)
-      lines.push_back(gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::GREEN]));
+      lines.push_back(gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::WHITE]));
     lines.push_back(gui.empty());
   }
   if (!info.skills.empty()) {
@@ -931,7 +931,7 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandIn
   int height = lines.size() * legendLineHeight;
   ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0),
       Vec2(minionWindowWidth, height),
-      OverlayInfo::BOTTOM_RIGHT});
+      OverlayInfo::TOP_RIGHT});
 }
 
 void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
