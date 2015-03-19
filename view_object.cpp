@@ -169,12 +169,12 @@ void ViewObject::setAdjectives(const vector<string>& adj) {
 vector<string> ViewObject::getLegend() const {
   vector<string> ret { description };
   if (getAttribute(Attribute::LEVEL) > -1)
-    ret[0] = ret[0] + ", level " + toString(getAttribute(Attribute::LEVEL));
+    ret[0] = ret[0] + ", level " + getAttributeString(Attribute::LEVEL);
   if (getAttribute(Attribute::EFFICIENCY) > -1)
-    ret[0] = ret[0] + ", efficiency " + toString(getAttribute(Attribute::EFFICIENCY));
+    ret[0] = ret[0] + ", efficiency " + getAttributeString(Attribute::EFFICIENCY);
   if (getAttribute(Attribute::ATTACK) > -1)
-    ret.push_back("attack " + toString(getAttribute(Attribute::ATTACK)) +
-          " " + toString(getAttribute(Attribute::ATTACK)));
+    ret.push_back("Attack " + getAttributeString(Attribute::ATTACK) +
+          " defense " + getAttributeString(Attribute::ATTACK));
   if (getAttribute(Attribute::BLEEDING) > 0) 
     ret.push_back("Wounded");
   if (hasModifier(Modifier::PLANNED))
