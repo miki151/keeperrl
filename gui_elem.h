@@ -90,7 +90,8 @@ class GuiFactory {
   PGuiElem mouseHighlight2(PGuiElem highlight);
   PGuiElem mouseHighlightGameChoice(PGuiElem, View::GameTypeChoice my,
       optional<View::GameTypeChoice>& highlight);
-  PGuiElem scrollable(PGuiElem content, double* scrollPos);
+  static int getHeldInitValue();
+  PGuiElem scrollable(PGuiElem content, double* scrollPos, int* held = nullptr);
   PGuiElem getScrollButton();
   PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);

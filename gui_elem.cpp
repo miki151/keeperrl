@@ -858,12 +858,23 @@ PGuiElem GuiFactory::tooltip(const vector<string>& v) {
   return PGuiElem(new Tooltip(v, miniBorder(background(background1)), clock));
 }
 
+const static int notHeld = -1000;
+
+int GuiFactory::getHeldInitValue() {
+  return notHeld;
+}
+
 class ScrollBar : public GuiLayout {
   public:
-  ScrollBar(PGuiElem b, VerticalList* _content, Vec2 butSize, int vMarg, double* scrollP, int contentH)
-      : GuiLayout(makeVec<PGuiElem>(std::move(b))), buttonSize(butSize), vMargin(vMarg), scrollPos(scrollP),
-      content(_content), contentHeight(contentH) {
+
+  ScrollBar(PGuiElem b, VerticalList* _content, Vec2 butSize, int vMarg, double* scrollP, int contentH, int* h)
+      : GuiLayout(makeVec<PGuiElem>(std::move(b))), buttonSize(butSize), vMargin(vMarg),
+      scrollPos(scrollP), content(_content), contentHeight(contentH) {
     listSize = content->getSize();
+    if (h)
+      held = h;
+    else
+      held = &localHeld;
   }
 
   virtual Rectangle getElemBounds(int num) override {
@@ -901,7 +912,7 @@ class ScrollBar : public GuiLayout {
 
   virtual bool onLeftClick(Vec2 v) override {
     if (v.inRectangle(getElemBounds(0))) {
-      held = v.y - calcButHeight();
+      *held = v.y - calcButHeight();
       return true;
     } else
     if (v.inRectangle(getBounds())) {
@@ -917,12 +928,12 @@ class ScrollBar : public GuiLayout {
   }
 
   virtual void onMouseMove(Vec2 v) override {
-    if (held)
+    if (*held != notHeld)
       *scrollPos = scrollLength() * calcPos(v.y - *held);
   }
 
   virtual void onMouseRelease() override {
-    held = none;
+    *held = notHeld;
   }
 
   virtual bool isVisible(int num) {
@@ -930,7 +941,8 @@ class ScrollBar : public GuiLayout {
   }
 
   private:
-  optional<int> held;
+  int* held;
+  int localHeld = notHeld;
   Vec2 buttonSize;
   int vMargin;
   double* scrollPos;
@@ -1141,14 +1153,14 @@ PGuiElem GuiFactory::conditional(PGuiElem elem, PGuiElem alter, function<bool(Gu
       PGuiElem(new Conditional(std::move(alter), [=] (GuiElem* e) { return !f(e);})));
 }
 
-PGuiElem GuiFactory::scrollable(PGuiElem content, double* scrollPos) {
+PGuiElem GuiFactory::scrollable(PGuiElem content, double* scrollPos, int* held) {
   VerticalList* list = dynamic_cast<VerticalList*>(content.release());
   int contentHeight = list->getTotalHeight();
   CHECK(list) << "Scrolling only implemented for vertical list";
   PGuiElem scrollable(new Scrollable(PVerticalList(list), contentHeight, scrollPos));
   int scrollBarMargin = get(TexId::SCROLL_UP).getSize().y;
   PGuiElem bar(new ScrollBar(
-        std::move(getScrollButton()), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight));
+        std::move(getScrollButton()), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight, held));
   PGuiElem barButtons = getScrollbar();
   barButtons = conditional(std::move(barButtons), [=] (GuiElem* e) {
       return e->getBounds().getH() < contentHeight;});

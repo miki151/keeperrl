@@ -158,8 +158,8 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<GameInfo::BandInfo::Button> butt
 }
 
 PGuiElem GuiBuilder::drawBuildings(GameInfo::BandInfo& info) {
-  return gui.verticalList(drawButtons(info.buildings, activeBuilding, CollectiveTab::BUILDINGS),
-      legendLineHeight, 0);
+  return gui.scrollable(gui.verticalList(drawButtons(info.buildings, activeBuilding, CollectiveTab::BUILDINGS),
+      legendLineHeight, 0), &buildingsScroll, &scrollbarsHeld);
 }
 
 PGuiElem GuiBuilder::getStandingGui(double standing) {
@@ -307,8 +307,6 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
   }
   if (collectiveTab != CollectiveTab::MINIONS)
     chosenCreature = "";
-  PGuiElem main;
-  vector<PGuiElem> invisible;
   vector<pair<CollectiveTab, PGuiElem>> elems = makeVec<pair<CollectiveTab, PGuiElem>>(
       make_pair(CollectiveTab::MINIONS, drawMinions(info)),
       make_pair(CollectiveTab::BUILDINGS, drawBuildings(info)),
@@ -316,11 +314,13 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(info)),
       make_pair(CollectiveTab::WORKSHOP, drawDeities(info)),
       make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
+  vector<PGuiElem> tabs;
   for (auto& elem : elems)
     if (elem.first == collectiveTab)
-      main = std::move(elem.second);
+      tabs.push_back(std::move(elem.second));
     else
-      invisible.push_back(gui.invisible(std::move(elem.second)));
+      tabs.push_back(gui.invisible(std::move(elem.second)));
+  PGuiElem main = gui.stack(std::move(tabs));
   main = gui.margins(std::move(main), 15, 15, 15, 5);
   PGuiElem butGui = gui.margins(gui.horizontalList(std::move(buttons), 50, 0), 0, 5, 0, 5);
   vector<PGuiElem> bottomLine;
@@ -340,8 +340,7 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       std::move(bottomElem)), 30, 0);
   main = gui.margin(gui.margins(std::move(bottomElem), 25, 0, 0, 0),
       std::move(main), 48, gui.BOTTOM);
-  return gui.stack(gui.stack(std::move(invisible)),
-      gui.margin(std::move(butGui), std::move(main), 55, gui.TOP));
+  return gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
 }
 
 GuiBuilder::GameSpeed GuiBuilder::getGameSpeed() const {
@@ -855,7 +854,7 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
   if (!creatureMap.count(chosenCreature)) {
     chosenCreature = "";
   }
-  return gui.verticalList(std::move(list), legendLineHeight, 0);
+  return gui.scrollable(gui.verticalList(std::move(list), legendLineHeight, 0), &minionsScroll, &scrollbarsHeld);
 }
 
 bool GuiBuilder::showMorale() const {
