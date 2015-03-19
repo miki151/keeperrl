@@ -254,6 +254,7 @@ void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
         }
       }
     }
+    splashDone = false;
     renderDialog = nullptr;
   };
 }
@@ -301,13 +302,14 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
         }
       }
     }
+    splashDone = false;
     renderDialog = nullptr;
   };
 }
 
 void WindowView::clearSplash() {
   splashDone = true;
-  while (renderDialog) {}
+  while (splashDone) {}
 }
 
 void WindowView::resize(int width, int height, vector<GuiElem*> gui) {
