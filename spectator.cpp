@@ -41,7 +41,7 @@ double Spectator::getTime() const {
   return level->getModel()->getTime();
 }
 
-vector<const Creature*> Spectator::getVisibleEnemies() const {
+vector<Vec2> Spectator::getVisibleEnemies() const {
   return {};
 }
 

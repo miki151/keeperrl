@@ -29,6 +29,8 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
     & SVAR(attachmentDir)
     & SVAR(position)
     & SVAR(creatureId);
+  if (version >= 1)
+    ar & SVAR(adjectives);
   CHECK_SERIAL;
 }
 
@@ -95,7 +97,7 @@ Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin, double tEnd) con
   bool attack = false;
   for (int i : Range(min<int>(totalMoves, elems.size())))
     if (elems[i].tBegin > tBegin) {
-      if (elems[i].type == MovementInfo::ATTACK && ret.length8() == 0) {
+      if (elems[i].type == MovementInfo::ATTACK/* && ret.length8() == 0*/) {
         attack = true;
         ret = elems[i].direction;
       } else {
@@ -140,19 +142,7 @@ double ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 
-void ViewObject::setEnemyStatus(EnemyStatus s) {
-  enemyStatus = s;
-}
-
-bool ViewObject::isHostile() const {
-  return enemyStatus == HOSTILE;
-}
-
-bool ViewObject::isFriendly() const {
-  return enemyStatus == FRIENDLY;
-}
-
-string ViewObject::getBareDescription() const {
+string ViewObject::getDescription() const {
   return description;
 }
 
@@ -172,38 +162,31 @@ string ViewObject::getAttributeString(Attribute attr) const {
     return toString(getAttribute(attr));
 }
 
-string ViewObject::getDescription(bool stats) const {
-  EnumMap<Attribute, string> namedAttr {
-      { Attribute::ATTACK, "attack"},
-      { Attribute::DEFENSE, "defense"},
-      { Attribute::LEVEL, "level"},
-      { Attribute::EFFICIENCY, "efficiency"},
-  //    { Attribute::HEIGHT, "height"}
-  };
-  string attr;
-  if (stats)
-    for (Attribute a : ENUM_ALL(Attribute))
-      if (!namedAttr[a].empty() && getAttribute(a) > -1)
-        attr += " " + namedAttr[a] + ": " + getAttributeString(a);
-  vector<string> mods;
+void ViewObject::setAdjectives(const vector<string>& adj) {
+  adjectives = adj;
+}
+
+vector<string> ViewObject::getLegend() const {
+  vector<string> ret { description };
+  if (getAttribute(Attribute::LEVEL) > -1)
+    ret[0] = ret[0] + ", level " + getAttributeString(Attribute::LEVEL);
+  if (getAttribute(Attribute::EFFICIENCY) > -1)
+    ret[0] = ret[0] + ", efficiency " + getAttributeString(Attribute::EFFICIENCY);
+  if (getAttribute(Attribute::ATTACK) > -1)
+    ret.push_back("Attack " + getAttributeString(Attribute::ATTACK) +
+          " defense " + getAttributeString(Attribute::ATTACK));
   if (getAttribute(Attribute::BLEEDING) > 0) 
-    mods.push_back("wounded");
-  if (hasModifier(Modifier::BLIND))
-    mods.push_back("blind");
-  if (hasModifier(Modifier::POISONED))
-    mods.push_back("poisoned");
+    ret.push_back("Wounded");
   if (hasModifier(Modifier::PLANNED))
-    mods.push_back("planned");
+    ret.push_back("Planned");
   if (hasModifier(Modifier::SLEEPING))
-    mods.push_back("sleeping");
+    ret.push_back("Sleeping");
 #ifndef RELEASE
   if (position.x > -1)
-    mods.push_back(toString(position.x) + ", " + toString(position.y));
+    ret.push_back(toString(position.x) + ", " + toString(position.y));
 #endif
-  if (mods.size() > 0)
-    return description + attr + "(" + combine(mods) + ")";
-  else
-    return description + attr;
+  append(ret, adjectives);
+  return ret;
 }
 
 ViewLayer ViewObject::layer() const {

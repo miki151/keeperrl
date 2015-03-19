@@ -109,6 +109,7 @@ class GuiBuilder {
   double playerStatsScroll = 0;
   double buildingsScroll = 0;
   double minionsScroll = 0;
+  int scrollbarsHeld = GuiFactory::getHeldInitValue();
   bool disableTooltip = false;
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
   MinionTab minionTab = MinionTab::INVENTORY;

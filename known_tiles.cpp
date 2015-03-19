@@ -28,5 +28,5 @@ const set<Vec2>& KnownTiles::getBorderTiles() const {
 }
 
 bool KnownTiles::isKnown(Vec2 pos) const {
-  return known[pos];
+  return pos.inRectangle(known.getBounds()) && known[pos];
 };

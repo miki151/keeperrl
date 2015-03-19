@@ -90,7 +90,8 @@ class GuiFactory {
   PGuiElem mouseHighlight2(PGuiElem highlight);
   PGuiElem mouseHighlightGameChoice(PGuiElem, View::GameTypeChoice my,
       optional<View::GameTypeChoice>& highlight);
-  PGuiElem scrollable(PGuiElem content, double* scrollPos);
+  static int getHeldInitValue();
+  PGuiElem scrollable(PGuiElem content, double* scrollPos, int* held = nullptr);
   PGuiElem getScrollButton();
   PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
@@ -178,6 +179,12 @@ class GuiFactory {
     HELP = 3,
     DEITIES = 6,
     TEAM = 7,
+    STAT_ATT = 8,
+    STAT_DEF = 9,
+    STAT_STR = 12,
+    STAT_DEX = 13,
+    STAT_ACC = 10,
+    STAT_SPD = 11,
   };
 
   PGuiElem icon(IconId);

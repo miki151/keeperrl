@@ -497,6 +497,8 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
+  if (!Random.roll(5))
+    return nullptr;
   autoEquipment(c, Random.roll(10));
   for (Item* it : c->getEquipment().getItems())
     if (!c->getEquipment().isEquiped(it) && c->getEquipment().canEquip(it))
@@ -961,8 +963,8 @@ static vector<BirthSpawn> birthSpawns {
   { CreatureId::HARPY, 0.5 },
   { CreatureId::OGRE, 0.5 },
   { CreatureId::WEREWOLF, 0.5 },
-  { CreatureId::SPECIAL_HUMANOID, 2, TechId::HUMANOID_MUT},
-  { CreatureId::SPECIAL_MONSTER_KEEPER, 2, TechId::BEAST_MUT },
+  { CreatureId::SPECIAL_HUMANOID, 3, TechId::HUMANOID_MUT},
+  { CreatureId::SPECIAL_MONSTER_KEEPER, 3, TechId::BEAST_MUT },
 };
 
 void Collective::considerBirths() {
@@ -1527,8 +1529,8 @@ void Collective::autoEquipment(Creature* creature, bool replace) {
           //should happen only when an item leaves the fortress and then is braught back
       minionEquipment.discard(it);
   }
-  vector<Item*> possibleItems = getAllItems([&](const Item* it) {
-      return minionEquipment.needs(creature, it, false, replace) && !minionEquipment.getOwner(it); }, false);
+  vector<Item*> possibleItems = filter(getAllItems(ItemIndex::MINION_EQUIPMENT, false), [&](const Item* it) {
+      return minionEquipment.needs(creature, it, false, replace) && !minionEquipment.getOwner(it); });
   sortByEquipmentValue(possibleItems);
   for (Item* it : possibleItems) {
     if (!it->canEquip()

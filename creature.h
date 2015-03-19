@@ -23,7 +23,6 @@
 #include "shortest_path.h"
 #include "tribe.h"
 #include "skill.h"
-#include "map_memory.h"
 #include "controller.h"
 #include "unique_entity.h"
 #include "event.h"
@@ -276,7 +275,9 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   const MinionTaskMap& getMinionTasks() const;
   int accuracyBonus() const;
   vector<string> getMainAdjectives() const;
-  vector<string> getAdjectives() const;
+  vector<string> getGoodAdjectives() const;
+  vector<string> getWeaponAdjective() const;
+  vector<string> getBadAdjectives() const;
 
   vector<string> popPersonalEvents();
 

@@ -402,7 +402,7 @@ void PlayerControl::getMinionOptions(Creature* c, vector<MinionOption>& mOpt, ve
       lOpt.emplace_back(elem->getName(), View::INACTIVE);
     lOpt.emplace_back("", View::INACTIVE);
   }
-  for (string s : c->getAdjectives())
+  for (string s : concat(c->getWeaponAdjective(), c->getBadAdjectives(), c->getGoodAdjectives()))
     lOpt.emplace_back(s, View::INACTIVE);
 }
 
@@ -1721,8 +1721,8 @@ void PlayerControl::updateVisibleCreatures(Rectangle range) {
     }
 }
 
-vector<const Creature*> PlayerControl::getVisibleEnemies() const {
-  return visibleEnemies;
+vector<Vec2> PlayerControl::getVisibleEnemies() const {
+  return transform2<Vec2>(visibleEnemies, [](const Creature* c) { return c->getPosition(); });
 }
 
 template <class Archive>

@@ -308,6 +308,7 @@ void Creature::makeMove() {
   }
   int range = FieldOfView::sightRange;
   updateVisibleCreatures(Rectangle(getPosition() - Vec2(range, range), getPosition() + Vec2(range, range)));
+  updateViewObject();
   if (swapPositionCooldown)
     --swapPositionCooldown;
   MEASURE(controller->makeMove(), "creature move time");
@@ -1416,6 +1417,7 @@ void Creature::updateViewObject() {
   modViewObject().setAttribute(ViewObject::Attribute::LEVEL, getExpLevel());
   modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
   modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
+  modViewObject().setAdjectives(concat(getWeaponAdjective(), getBadAdjectives(), getGoodAdjectives()));
   if (isAffected(LastingEffect::SLEEP))
     modViewObject().setModifier(ViewObject::Modifier::SLEEPING);
   else
@@ -2392,8 +2394,8 @@ const MinionTaskMap& Creature::getMinionTasks() const {
 void Creature::updateVisibleCreatures(Rectangle range) {
   visibleEnemies.clear();
   for (const Creature* c : getLevel()->getAllCreatures(range)) 
-    if (canSee(c) &&  isEnemy(c))
-        visibleEnemies.push_back(c);
+    if (canSee(c) && isEnemy(c))
+      visibleEnemies.push_back(c);
   for (const Creature* c : getUnknownAttacker())
     if (!contains(visibleEnemies, c))
       visibleEnemies.push_back(c);
@@ -2426,41 +2428,65 @@ vector<string> Creature::getMainAdjectives() const {
   return ret;
 }
 
-vector<string> Creature::getAdjectives() const {
-  vector<string> ret = getMainAdjectives();
-  for (BodyPart part : ENUM_ALL(BodyPart))
-    if (int num = injuredBodyParts[part])
-      ret.push_back(getPlural("injured " + getBodyPartName(part), num));
-  for (BodyPart part : ENUM_ALL(BodyPart))
-    if (int num = lostBodyParts[part])
-      ret.push_back(getPlural("lost " + getBodyPartName(part), num));
+vector<string> Creature::getWeaponAdjective() const {
+  if (const Item* weapon = getWeapon())
+    return {"Wielding " + weapon->getAName()};
+  else
+    return {};
+}
+
+vector<string> Creature::getGoodAdjectives() const {
+  vector<string> ret;
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect)) {
       bool addCount = true;
       switch (effect) {
-        case LastingEffect::POISON: ret.push_back("poisoned"); break;
-        case LastingEffect::SLEEP: ret.push_back("sleeping"); break;
-        case LastingEffect::ENTANGLED: ret.push_back("entangled"); break;
-        case LastingEffect::INVISIBLE: ret.push_back("invisible"); break;
-        case LastingEffect::PANIC: ret.push_back("panic"); break;
-        case LastingEffect::RAGE: ret.push_back("enraged"); break;
-        case LastingEffect::HALLU: ret.push_back("hallucinating"); break;
-        case LastingEffect::STR_BONUS: ret.push_back("strength bonus"); break;
-        case LastingEffect::DEX_BONUS: ret.push_back("dexterity bonus"); break;
-        case LastingEffect::SPEED: ret.push_back("speed bonus"); break;
-        case LastingEffect::SLOWED: ret.push_back("slowed"); break;
-        case LastingEffect::POISON_RESISTANT: ret.push_back("poison resistant"); break;
-        case LastingEffect::FIRE_RESISTANT: ret.push_back("fire resistant"); break;
-        case LastingEffect::FLYING: ret.push_back("flying"); break;
-        case LastingEffect::INSANITY: ret.push_back("insane"); break;
-        case LastingEffect::MAGIC_SHIELD: ret.push_back("magic shield"); break;
+        case LastingEffect::INVISIBLE: ret.push_back("Invisible"); break;
+        case LastingEffect::PANIC: ret.push_back("Panic"); break;
+        case LastingEffect::RAGE: ret.push_back("Enraged"); break;
+        case LastingEffect::HALLU: ret.push_back("Hallucinating"); break;
+        case LastingEffect::STR_BONUS: ret.push_back("Strength bonus"); break;
+        case LastingEffect::DEX_BONUS: ret.push_back("Dexterity bonus"); break;
+        case LastingEffect::SPEED: ret.push_back("Speed bonus"); break;
+        case LastingEffect::POISON_RESISTANT: ret.push_back("Poison resistant"); break;
+        case LastingEffect::FIRE_RESISTANT: ret.push_back("Fire resistant"); break;
+        case LastingEffect::FLYING: ret.push_back("Flying"); break;
+        case LastingEffect::MAGIC_SHIELD: ret.push_back("Magic shield"); break;
+        default: addCount = false; break;
+      }
+      if (addCount && !isAffectedPermanently(effect))
+        ret.back() += "  " + getRemainingString(effect);
+    }
+  return ret;
+}
+
+vector<string> Creature::getBadAdjectives() const {
+  vector<string> ret;
+  if (!getWeapon())
+    ret.push_back("No weapon");
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    if (int num = injuredBodyParts[part])
+      ret.push_back(getPlural("Injured " + getBodyPartName(part), num));
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    if (int num = lostBodyParts[part])
+      ret.push_back(getPlural("Lost " + getBodyPartName(part), num));
+  for (LastingEffect effect : ENUM_ALL(LastingEffect))
+    if (isAffected(effect)) {
+      bool addCount = true;
+      switch (effect) {
+        case LastingEffect::POISON: ret.push_back("Poisoned"); break;
+        case LastingEffect::SLEEP: ret.push_back("Sleeping"); break;
+        case LastingEffect::ENTANGLED: ret.push_back("Entangled"); break;
+        case LastingEffect::SLOWED: ret.push_back("Slowed"); break;
+        case LastingEffect::FLYING: ret.push_back("Flying"); break;
+        case LastingEffect::INSANITY: ret.push_back("Insane"); break;
         default: addCount = false; break;
       }
       if (addCount && !isAffectedPermanently(effect))
         ret.back() += "  " + getRemainingString(effect);
     }
   if (isBlind())
-    ret.push_back("blind"
+    ret.push_back("Blind"
         + (isAffected(LastingEffect::BLIND) ? (" " + getRemainingString(LastingEffect::BLIND)) : ""));
   return ret;
 }

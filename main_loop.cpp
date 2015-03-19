@@ -55,6 +55,7 @@ static string getSaveSuffix(Model::GameType t) {
     case Model::GameType::KEEPER: return ".kep";
     case Model::GameType::ADVENTURER: return ".adv";
     case Model::GameType::RETIRED_KEEPER: return ".ret";
+    case Model::GameType::AUTOSAVE: return ".aut";
   }
 }
 
@@ -88,7 +89,7 @@ string stripNonAscii(string s) {
   return s;
 }
 
-static void saveGame(unique_ptr<Model> model, const string& path) {
+static void saveGame(PModel& model, const string& path) {
   CompressedOutput out(path);
   Serialization::registerTypes(out.getArchive(), saveVersion);
   string game = model->getGameDisplayName();
@@ -116,7 +117,6 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
   }
 }
 
-
 void MainLoop::uploadFile(const string& path) {
   ProgressMeter meter(1);
   atomic<bool> cancelled(false);
@@ -127,16 +127,24 @@ void MainLoop::uploadFile(const string& path) {
     view->presentText("Error uploading file", *error);
 }
 
-void MainLoop::saveUI(PModel model, Model::GameType type) {
+string MainLoop::getSavePath(Model* model, Model::GameType gameType) {
+  return userPath + "/" + stripNonAscii(model->getGameIdentifier()) + getSaveSuffix(gameType);
+}
+
+void MainLoop::saveUI(PModel& model, Model::GameType type, View::SplashType splashType) {
   ProgressMeter meter(1.0 / 62500);
   Square::progressMeter = &meter;
-  view->displaySplash(meter, View::SAVING);
-  string path = userPath + "/" + stripNonAscii(model->getGameIdentifier()) + getSaveSuffix(type);
-  saveGame(std::move(model), path);
+  view->displaySplash(meter, splashType);
+  string path = getSavePath(model.get(), type);
+  saveGame(model, path);
   view->clearSplash();
   Square::progressMeter = nullptr;
   if (type == Model::GameType::RETIRED_KEEPER && options->getBoolValue(OptionId::ONLINE))
     uploadFile(path);
+}
+
+void MainLoop::eraseAutosave(Model* model) {
+  remove(getSavePath(model, Model::GameType::AUTOSAVE).c_str());
 }
 
 void MainLoop::getSaveOptions(const vector<pair<Model::GameType, string>>& games,
@@ -185,27 +193,39 @@ optional<MainLoop::SaveFileInfo> MainLoop::chooseSaveFile(const vector<View::Lis
     return none;
 }
 
-void MainLoop::playModel(PModel model, bool withMusic) {
+void MainLoop::playModel(PModel model, bool withMusic, bool noAutoSave) {
   view->reset();
   const int stepTimeMilli = 3;
   Intervalometer meter(stepTimeMilli);
   double totTime = model->getTime();
   double lastMusicUpdate = -1000;
+  double lastAutoSave = model->getTime();
   while (1) {
     double gameTimeStep = view->getGameSpeed() / stepTimeMilli;
     if (auto exitInfo = model->update(totTime)) {
       if (!exitInfo->isAbandoned())
-        saveUI(std::move(model), exitInfo->getGameType());
+        saveUI(model, exitInfo->getGameType(), View::SAVING);
+      eraseAutosave(model.get());
       return;
     }
     if (lastMusicUpdate < totTime - 1 && withMusic) {
       jukebox->setType(model->getCurrentMusic(), model->changeMusicNow());
       lastMusicUpdate = totTime;
-    } if (model->isTurnBased())
-    ++totTime;
+    }
+    if (model->isTurnBased())
+      ++totTime;
     else
       totTime += min(1.0, double(meter.getCount(view->getTimeMilli())) * gameTimeStep);
+    if (options->getBoolValue(OptionId::AUTOSAVE) && lastAutoSave < model->getTime() - getAutosaveFreq()
+        && !noAutoSave) {
+      saveUI(model, Model::GameType::AUTOSAVE, View::AUTOSAVING);
+      lastAutoSave = model->getTime();
+    }
   }
+}
+
+int MainLoop::getAutosaveFreq() {
+  return 1500;
 }
 
 void MainLoop::playGameChoice() {
@@ -246,7 +266,7 @@ void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
   NameGenerator::init(dataFreePath + "/names");
-  playModel(ModelBuilder::splashModel(meter, view, dataFreePath + "/splash.txt"), false);
+  playModel(ModelBuilder::splashModel(meter, view, dataFreePath + "/splash.txt"), false, true);
 }
 
 void MainLoop::showCredits(const string& path, View* view) {
@@ -356,7 +376,9 @@ PModel MainLoop::adventurerGame() {
 PModel MainLoop::loadPrevious(bool erase) {
   vector<View::ListElem> options;
   vector<SaveFileInfo> files;
-  getSaveOptions({{Model::GameType::KEEPER, "Keeper games:"},
+  getSaveOptions({
+      {Model::GameType::AUTOSAVE, "Recovered games:"},
+      {Model::GameType::KEEPER, "Keeper games:"},
       {Model::GameType::ADVENTURER, "Adventurer games:"}}, options, files);
   optional<SaveFileInfo> savedGame = chooseSaveFile(options, files, "No save files found.", view);
   if (savedGame)
