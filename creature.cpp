@@ -2393,8 +2393,8 @@ const MinionTaskMap& Creature::getMinionTasks() const {
 void Creature::updateVisibleCreatures(Rectangle range) {
   visibleEnemies.clear();
   for (const Creature* c : getLevel()->getAllCreatures(range)) 
-    if (canSee(c) &&  isEnemy(c))
-        visibleEnemies.push_back(c);
+    if (canSee(c) && isEnemy(c))
+      visibleEnemies.push_back(c);
   for (const Creature* c : getUnknownAttacker())
     if (!contains(visibleEnemies, c))
       visibleEnemies.push_back(c);

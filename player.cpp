@@ -28,6 +28,7 @@
 #include "item_factory.h"
 #include "effect.h"
 #include "view_id.h"
+#include "map_memory.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -1107,8 +1108,8 @@ vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
   return ret;
 }
 
-vector<const Creature*> Player::getVisibleEnemies() const {
-  return getCreature()->getVisibleEnemies();
+vector<Vec2> Player::getVisibleEnemies() const {
+  return transform2<Vec2>(getCreature()->getVisibleEnemies(), [](const Creature* c) { return c->getPosition(); });
 }
 
 double Player::getTime() const {

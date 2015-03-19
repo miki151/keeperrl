@@ -1721,8 +1721,8 @@ void PlayerControl::updateVisibleCreatures(Rectangle range) {
     }
 }
 
-vector<const Creature*> PlayerControl::getVisibleEnemies() const {
-  return visibleEnemies;
+vector<Vec2> PlayerControl::getVisibleEnemies() const {
+  return transform2<Vec2>(visibleEnemies, [](const Creature* c) { return c->getPosition(); });
 }
 
 template <class Archive>

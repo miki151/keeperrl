@@ -142,18 +142,6 @@ double ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 
-void ViewObject::setEnemyStatus(EnemyStatus s) {
-  enemyStatus = s;
-}
-
-bool ViewObject::isHostile() const {
-  return enemyStatus == HOSTILE;
-}
-
-bool ViewObject::isFriendly() const {
-  return enemyStatus == FRIENDLY;
-}
-
 string ViewObject::getBareDescription() const {
   return description;
 }

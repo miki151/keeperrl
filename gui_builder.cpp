@@ -652,7 +652,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
     lines.push_back(gui.empty());
   }
   if (!info.effects.empty()) {
-    lines.push_back(gui.label("Effects", colors[ColorId::YELLOW]));
+    lines.push_back(gui.label("Status", colors[ColorId::YELLOW]));
     for (auto effect : info.effects)
       lines.push_back(gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::GREEN]));
     lines.push_back(gui.empty());

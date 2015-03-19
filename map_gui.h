@@ -72,10 +72,10 @@ class MapGui : public GuiElem {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;
     optional<ViewObject> object;
+    bool isEnemy;
   };
   void renderMapObjects(Renderer&, Vec2 size, HighlightedInfo&, int currentTimeReal);
   HighlightedInfo getHighlightedInfo(Renderer&, Vec2 size, int currentTimeReal);
-  void renderHint(Renderer&, const optional<ViewObject>& highlighted);
   void renderAnimations(Renderer&, int currentTimeReal);
 
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, int curTimeReal);
@@ -128,6 +128,8 @@ class MapGui : public GuiElem {
   bool mouseUI = false;
   vector<pair<Rectangle, UniqueEntity<Creature>::Id>> creatureMap;
   bool showMorale;
+  DirtyTable<bool> enemyPositions;
+  void updateEnemyPositions(const vector<Vec2>&);
 };
 
 #endif

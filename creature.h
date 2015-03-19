@@ -23,7 +23,6 @@
 #include "shortest_path.h"
 #include "tribe.h"
 #include "skill.h"
-#include "map_memory.h"
 #include "controller.h"
 #include "unique_entity.h"
 #include "event.h"

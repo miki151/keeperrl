@@ -41,11 +41,6 @@ class ViewObject {
   typedef ViewObjectAttribute Attribute;
   ViewObject(ViewId id, ViewLayer l, const string& description);
 
-  enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
-  void setEnemyStatus(EnemyStatus);
-  bool isHostile() const;
-  bool isFriendly() const;
-
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;
@@ -93,7 +88,8 @@ class ViewObject {
 
   private:
   string getAttributeString(Attribute) const;
-  EnemyStatus SERIAL2(enemyStatus, UNKNOWN);
+  enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
+  EnemyStatus SERIAL2(enemyStatus, UNKNOWN); // OBSOLETE
   EnumSet<Modifier> SERIAL(modifiers);
   EnumMap<Attribute, double> SERIAL(attributes);
   ViewId SERIAL(resource_id);
