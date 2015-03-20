@@ -249,6 +249,7 @@ void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
       sf::sleep(sf::milliseconds(30));
       Event event;
       while (renderer.pollEvent(event)) {
+        propagateEvent(event, {});
         if (event.type == Event::Resized) {
           resize(event.size.width, event.size.height, {});
         }
