@@ -2478,7 +2478,6 @@ vector<string> Creature::getBadAdjectives() const {
         case LastingEffect::SLEEP: ret.push_back("Sleeping"); break;
         case LastingEffect::ENTANGLED: ret.push_back("Entangled"); break;
         case LastingEffect::SLOWED: ret.push_back("Slowed"); break;
-        case LastingEffect::FLYING: ret.push_back("Flying"); break;
         case LastingEffect::INSANITY: ret.push_back("Insane"); break;
         default: addCount = false; break;
       }
