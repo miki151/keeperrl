@@ -566,7 +566,7 @@ CreatureAction Creature::heal(Vec2 direction) const {
   if (!getLevel()->inBounds(position + direction))
     return CreatureAction();
   const Creature* other = getSafeSquare(direction)->getCreature();
-  if (!hasSkill(Skill::get(SkillId::HEALING)) || !other || other->getHealth() >= 0.9999)
+  if (!hasSkill(Skill::get(SkillId::HEALING)) || !other || other->getHealth() >= 0.9999 || other == this)
     return CreatureAction();
   return CreatureAction(this, [=](Creature *c) {
     Creature* other = c->getSafeSquare(direction)->getCreature();
@@ -1895,9 +1895,10 @@ CreatureAction Creature::consume(Vec2 direction) const {
     consumeAttr(c->passiveAttack, other->passiveAttack, adjectives, "");
     consumeAttr(c->gender, other->gender, adjectives);
     consumeAttr(c->skills, other->skills, adjectives);
-    if (!adjectives.empty())
+    if (!adjectives.empty()) {
       you(MsgType::BECOME, combine(adjectives));
-    c->personalEvents.push_back(getName().the() + " becomes " + combine(adjectives));
+      c->personalEvents.push_back(getName().the() + " becomes " + combine(adjectives));
+    }
     c->consumeBodyParts(other->bodyParts);
     c->consumeEffects(other->permanentEffects);
     c->getSafeSquare(direction)->getCreature()->die(this, true, false);
