@@ -39,7 +39,7 @@ class CreatureView {
   virtual optional<MovementInfo> getMovementInfo() const = 0;
   virtual const Level* getLevel() const = 0;
   virtual double getTime() const = 0;
-  virtual vector<const Creature*> getVisibleEnemies() const = 0;
+  virtual vector<Vec2> getVisibleEnemies() const = 0;
 
   virtual ~CreatureView() {}
 };

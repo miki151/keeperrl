@@ -29,7 +29,7 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(behaviour)
     & SVAR(leaderAttacks)
     & SVAR(attackMessage);
-  if (version == 1) {
+  if (version == 1) { // OBSOLETE
     ar & SVAR(itemTheftMessage)
        & SVAR(welcomeMessage);
   }
@@ -85,7 +85,9 @@ void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& ite
 void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers) {
   Debug() << getAttackMessage(villain, attackers);
   villain.collective->addAssaultNotification(getCollective(), attackers, getAttackMessage(villain, attackers));
-  getCollective()->getTeams().activate(getCollective()->getTeams().create(attackers));
+  TeamId team = getCollective()->getTeams().create(attackers);
+  getCollective()->getTeams().activate(team);
+  getCollective()->freeTeamMembers(team);
   for (Creature* c : attackers)
     getCollective()->setTask(c, villain.getAttackTask(this));
 }
@@ -172,6 +174,8 @@ static double powerClosenessFun(double myPower, double hisPower) {
     return 0;
   double a = myPower / hisPower;
   double valueAt2 = 0.5;
+  if (a < 0.4)
+    return 0;
   if (a < 1)
     return a * a * a; // fast growth close to 1
   else if (a < 2)

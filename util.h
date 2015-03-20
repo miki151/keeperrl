@@ -655,6 +655,13 @@ vector<T> concat(vector<T> v, const vector<T>& w) {
   return v;
 }
 
+template <typename T>
+vector<T> concat(vector<T> v, const vector<T>& w, const vector<T>& u) {
+  append(v, w);
+  append(v, u);
+  return v;
+}
+
 template <class T>
 function<bool(const T&)> alwaysTrue() {
   return [](T) { return true; };

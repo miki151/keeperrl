@@ -20,7 +20,7 @@
 #include "tile.h"
 #include "location.h"
 #include "renderer.h"
-#include "creature.h"
+#include "map_memory.h"
 #include "square.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
@@ -102,11 +102,9 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
   }
   memory.clearUpdated();
   info.player = *creature->getPosition(true);
-  for (const Creature* c : creature->getVisibleEnemies()) {
-    Vec2 pos = c->getPosition();
+  for (Vec2 pos : creature->getVisibleEnemies())
     if (pos.inRectangle(bounds))
       info.enemies.push_back(pos);
-  }
   if (printLocations)
     for (const Location* loc : level->getAllLocations()) {
       bool seen = false;

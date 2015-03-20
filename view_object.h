@@ -41,11 +41,6 @@ class ViewObject {
   typedef ViewObjectAttribute Attribute;
   ViewObject(ViewId id, ViewLayer l, const string& description);
 
-  enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
-  void setEnemyStatus(EnemyStatus);
-  bool isHostile() const;
-  bool isFriendly() const;
-
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;
@@ -58,8 +53,8 @@ class ViewObject {
   ViewObject& setAttribute(Attribute, double);
   double getAttribute(Attribute) const;
 
-  string getDescription(bool stats = false) const;
-  string getBareDescription() const;
+  vector<string> getLegend() const;
+  string getDescription() const;
 
   ViewLayer layer() const;
   ViewId id() const;
@@ -67,6 +62,8 @@ class ViewObject {
 
   void setPosition(Vec2);
   int getPositionHash() const;
+
+  void setAdjectives(const vector<string>&);
 
   struct MovementInfo {
     Vec2 direction;
@@ -91,7 +88,8 @@ class ViewObject {
 
   private:
   string getAttributeString(Attribute) const;
-  EnemyStatus SERIAL2(enemyStatus, UNKNOWN);
+  enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
+  EnemyStatus SERIAL2(enemyStatus, UNKNOWN); // OBSOLETE
   EnumSet<Modifier> SERIAL(modifiers);
   EnumMap<Attribute, double> SERIAL(attributes);
   ViewId SERIAL(resource_id);
@@ -100,6 +98,7 @@ class ViewObject {
   optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL2(position, Vec2(-1, -1));
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
+  vector<string> SERIAL(adjectives);
 
   class MovementQueue {
     public:
@@ -115,5 +114,7 @@ class ViewObject {
     int totalMoves = 0;
   } movementQueue;
 };
+
+BOOST_CLASS_VERSION(ViewObject, 1)
 
 #endif

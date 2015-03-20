@@ -28,6 +28,7 @@
 #include "item_factory.h"
 #include "effect.h"
 #include "view_id.h"
+#include "map_memory.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -551,8 +552,6 @@ void Player::makeMove() {
   if (displayGreeting && model->getOptions()->getBoolValue(OptionId::HINTS)) {
     CHECK(getCreature()->getFirstName());
     model->getView()->presentText("", "Dear " + *getCreature()->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + model->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
-/*    model->getView()->presentText("", "Every settlement that you find has a leader, and they may have quests for you."
-        "\n \nYou can turn these messages off in the options (press F2).");*/
     displayGreeting = false;
     model->getView()->updateView(this, false);
   }
@@ -562,18 +561,22 @@ void Player::makeMove() {
       specialCreatures.push_back(c);
     }
   }
-  if (travelling)
+  UserInput action = model->getView()->getAction();
+  if (travelling && action.getId() == UserInputId::IDLE)
     travelAction();
-  else if (target)
+  else if (target&& action.getId() == UserInputId::IDLE)
     targetAction();
   else {
-    UserInput action = model->getView()->getAction();
     Debug() << "Action " << int(action.getId());
   vector<Vec2> direction;
   bool travel = false;
+  bool wasJustTravelling = travelling || !!target;
   if (action.getId() != UserInputId::IDLE) {
-    if (action.getId() != UserInputId::REFRESH && action.getId() != UserInputId::BUTTON_RELEASE)
+    if (action.getId() != UserInputId::REFRESH && action.getId() != UserInputId::BUTTON_RELEASE) {
       retireMessages();
+      travelling = false;
+      target = none;
+    }
     updateView = true;
   }
   switch (action.getId()) {
@@ -593,9 +596,11 @@ void Player::makeMove() {
         direction.push_back(dir);
       } else
       if (action.get<Vec2>() != getCreature()->getPosition()) {
-        target = action.get<Vec2>();
-        target = Vec2(min(getCreature()->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
-            min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
+        if (!wasJustTravelling) {
+          target = action.get<Vec2>();
+          target = Vec2(min(getCreature()->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
+              min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
+        }
       }
       else
         pickUpAction(false);
@@ -1026,35 +1031,36 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   const Location* location = getLevel()->getLocation(getCreature()->getPosition());
   info.levelName = location && location->hasName() 
     ? capitalFirst(location->getName()) : getLevel()->getName();
+  typedef GameInfo::PlayerInfo::AttributeInfo::Id AttrId;
   info.attributes = {
     { "Attack",
-      ViewId::STAT_ATT,
+      AttrId::ATT,
       getCreature()->getModifier(ModifierType::DAMAGE),
       getCreature()->isAffected(LastingEffect::RAGE) ? 1 : getCreature()->isAffected(LastingEffect::PANIC) ? -1 : 0,
       "Affects if and how much damage is dealt in combat."},
     { "Defense",
-      ViewId::STAT_DEF,
+      AttrId::DEF,
       getCreature()->getModifier(ModifierType::DEFENSE),
       getCreature()->isAffected(LastingEffect::RAGE) ? -1 : (getCreature()->isAffected(LastingEffect::PANIC) 
           || getCreature()->isAffected(LastingEffect::MAGIC_SHIELD)) ? 1 : 0,
       "Affects if and how much damage is taken in combat."},
     { "Strength",
-      ViewId::STAT_STR,
+      AttrId::STR,
       getCreature()->getAttr(AttrType::STRENGTH),
       getCreature()->isAffected(LastingEffect::STR_BONUS),
       "Affects the values of attack, defense and carrying capacity."},
     { "Dexterity",
-      ViewId::STAT_DEX,
+      AttrId::DEX,
       getCreature()->getAttr(AttrType::DEXTERITY),
       getCreature()->isAffected(LastingEffect::DEX_BONUS),
       "Affects the values of melee and ranged accuracy, and ranged damage."},
     { "Accuracy",
-      ViewId::STAT_ACC,
+      AttrId::ACC,
       getCreature()->getModifier(ModifierType::ACCURACY),
       getCreature()->accuracyBonus(),
       "Defines the chance of a successful melee attack and dodging."},
     { "Speed",
-      ViewId::STAT_SPD,
+      AttrId::SPD,
       getCreature()->getAttr(AttrType::SPEED),
       getCreature()->isAffected(LastingEffect::SPEED) ? 1 : getCreature()->isAffected(LastingEffect::SLOWED) ? -1 : 0,
       "Affects how much game time every action uses."},
@@ -1067,8 +1073,10 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.skills = getCreature()->getSkillNames();
   gameInfo.time = getCreature()->getTime();
   info.effects.clear();
-  for (string s : getCreature()->getAdjectives())
+  for (string s : getCreature()->getBadAdjectives())
     info.effects.push_back({s, true});
+  for (string s : getCreature()->getGoodAdjectives())
+    info.effects.push_back({s, false});
   info.squareName = getCreature()->getSquare()->getName();
   info.lyingItems.clear();
   for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))
@@ -1102,8 +1110,8 @@ vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
   return ret;
 }
 
-vector<const Creature*> Player::getVisibleEnemies() const {
-  return getCreature()->getVisibleEnemies();
+vector<Vec2> Player::getVisibleEnemies() const {
+  return transform2<Vec2>(getCreature()->getVisibleEnemies(), [](const Creature* c) { return c->getPosition(); });
 }
 
 double Player::getTime() const {

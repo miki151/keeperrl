@@ -158,8 +158,8 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<GameInfo::BandInfo::Button> butt
 }
 
 PGuiElem GuiBuilder::drawBuildings(GameInfo::BandInfo& info) {
-  return gui.verticalList(drawButtons(info.buildings, activeBuilding, CollectiveTab::BUILDINGS),
-      legendLineHeight, 0);
+  return gui.scrollable(gui.verticalList(drawButtons(info.buildings, activeBuilding, CollectiveTab::BUILDINGS),
+      legendLineHeight, 0), &buildingsScroll, &scrollbarsHeld);
 }
 
 PGuiElem GuiBuilder::getStandingGui(double standing) {
@@ -307,8 +307,6 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
   }
   if (collectiveTab != CollectiveTab::MINIONS)
     chosenCreature = "";
-  PGuiElem main;
-  vector<PGuiElem> invisible;
   vector<pair<CollectiveTab, PGuiElem>> elems = makeVec<pair<CollectiveTab, PGuiElem>>(
       make_pair(CollectiveTab::MINIONS, drawMinions(info)),
       make_pair(CollectiveTab::BUILDINGS, drawBuildings(info)),
@@ -316,11 +314,13 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(info)),
       make_pair(CollectiveTab::WORKSHOP, drawDeities(info)),
       make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
+  vector<PGuiElem> tabs;
   for (auto& elem : elems)
     if (elem.first == collectiveTab)
-      main = std::move(elem.second);
+      tabs.push_back(std::move(elem.second));
     else
-      invisible.push_back(gui.invisible(std::move(elem.second)));
+      tabs.push_back(gui.invisible(std::move(elem.second)));
+  PGuiElem main = gui.stack(std::move(tabs));
   main = gui.margins(std::move(main), 15, 15, 15, 5);
   PGuiElem butGui = gui.margins(gui.horizontalList(std::move(buttons), 50, 0), 0, 5, 0, 5);
   vector<PGuiElem> bottomLine;
@@ -340,8 +340,7 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       std::move(bottomElem)), 30, 0);
   main = gui.margin(gui.margins(std::move(bottomElem), 25, 0, 0, 0),
       std::move(main), 48, gui.BOTTOM);
-  return gui.stack(gui.stack(std::move(invisible)),
-      gui.margin(std::move(butGui), std::move(main), 55, gui.TOP));
+  return gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
 }
 
 GuiBuilder::GameSpeed GuiBuilder::getGameSpeed() const {
@@ -418,6 +417,19 @@ static Color getBonusColor(int bonus) {
   return colors[ColorId::WHITE];
 }
 
+typedef GameInfo::PlayerInfo::AttributeInfo::Id AttrId;
+
+static GuiFactory::IconId getAttrIcon(AttrId id) {
+  switch (id) {
+    case AttrId::ATT: return GuiFactory::STAT_ATT;
+    case AttrId::DEF: return GuiFactory::STAT_DEF;
+    case AttrId::STR: return GuiFactory::STAT_STR;
+    case AttrId::DEX: return GuiFactory::STAT_DEX;
+    case AttrId::ACC: return GuiFactory::STAT_ACC;
+    case AttrId::SPD: return GuiFactory::STAT_SPD;
+  }
+}
+
 PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
   GameInfo::PlayerInfo& info = gameInfo.playerInfo;
   vector<PGuiElem> topLine;
@@ -425,8 +437,8 @@ PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
     auto& elem = info.attributes[i];
     topLine.push_back(gui.stack(getTooltip({elem.name, elem.help}),
         gui.horizontalList(makeVec<PGuiElem>(
-          gui.viewObject(elem.viewId, tilesOk),
-          gui.label(toString(elem.value), getBonusColor(elem.bonus))), 30, 1)));
+          gui.icon(getAttrIcon(elem.id)),
+          gui.margins(gui.label(toString(elem.value), getBonusColor(elem.bonus)), 0, 2, 0, 0)), 30, 1)));
   }
   vector<PGuiElem> bottomLine;
   bottomLine.push_back(getTurnInfoGui(gameInfo.time));
@@ -436,9 +448,6 @@ PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
   return gui.verticalList(makeVec<PGuiElem>(
       gui.centerHoriz(gui.horizontalList(std::move(topLine), resourceSpace, 0), numTop * resourceSpace),
       gui.centerHoriz(gui.horizontalList(std::move(bottomLine), 140, 0, 3), numBottom * 140)), 28, 0);
- /* return gui.verticalList(makeVec<PGuiElem>(
-        gui.horizontalListFit(std::move(topLine), 0.1),
-        gui.horizontalListFit(std::move(bottomLine), 0.1)), 28, 0);*/
 }
 
 static int viewObjectWidth = 27;
@@ -495,7 +504,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
       }
     }
   }
-  ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0), size, OverlayInfo::BOTTOM_RIGHT});
+  ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0), size, OverlayInfo::TOP_RIGHT});
 }
 
 struct KeyInfo {
@@ -642,9 +651,9 @@ PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
     lines.push_back(gui.empty());
   }
   if (!info.effects.empty()) {
-    lines.push_back(gui.label("Effects", colors[ColorId::YELLOW]));
+    lines.push_back(gui.label("Status", colors[ColorId::YELLOW]));
     for (auto effect : info.effects)
-      lines.push_back(gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::GREEN]));
+      lines.push_back(gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::WHITE]));
     lines.push_back(gui.empty());
   }
   if (!info.skills.empty()) {
@@ -845,7 +854,7 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
   if (!creatureMap.count(chosenCreature)) {
     chosenCreature = "";
   }
-  return gui.verticalList(std::move(list), legendLineHeight, 0);
+  return gui.scrollable(gui.verticalList(std::move(list), legendLineHeight, 0), &minionsScroll, &scrollbarsHeld);
 }
 
 bool GuiBuilder::showMorale() const {
@@ -921,7 +930,7 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandIn
   int height = lines.size() * legendLineHeight;
   ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0),
       Vec2(minionWindowWidth, height),
-      OverlayInfo::BOTTOM_RIGHT});
+      OverlayInfo::TOP_RIGHT});
 }
 
 void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
@@ -1053,7 +1062,7 @@ Rectangle GuiBuilder::getMenuPosition(View::MenuType type) {
   int yOffset = 0;
   switch (type) {
     case View::YES_NO_MENU:
-      ySpacing = (renderer.getSize().y - 135) / 2;
+      ySpacing = (renderer.getSize().y - 200) / 2;
       yOffset = - ySpacing + 100;
       break;
     case View::MAIN_MENU_NO_TILES:

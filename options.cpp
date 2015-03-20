@@ -15,6 +15,7 @@
 
 #include "stdafx.h"
 #include "options.h"
+#include "main_loop.h"
 
 const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
@@ -24,6 +25,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
   {OptionId::ONLINE, 1},
+  {OptionId::AUTOSAVE, 1},
   {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
@@ -39,6 +41,7 @@ const map<OptionId, string> names {
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::ONLINE, "Online exchange of dungeons and highscores"},
+  {OptionId::AUTOSAVE, "Autosave"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
@@ -54,6 +57,8 @@ const map<OptionId, string> hints {
   {OptionId::SHOW_MAP, ""},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::ONLINE, "Upload your highscores and retired dungeons to keeperrl.com."},
+  {OptionId::AUTOSAVE, "Autosave the game every " + toString(MainLoop::getAutosaveFreq()) + " turns. "
+    "The save file will be used to recover in case of a crash."},
   {OptionId::FAST_IMMIGRATION, ""},
   {OptionId::STARTING_RESOURCE, ""},
   {OptionId::START_WITH_NIGHT, ""},
@@ -66,10 +71,11 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::HINTS,
       OptionId::ASCII,
       OptionId::MUSIC,
-      OptionId::KEEP_SAVEFILES,
       OptionId::FULLSCREEN,
       OptionId::ONLINE,
+      OptionId::AUTOSAVE,
 #ifndef RELEASE
+      OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
 #endif
   }},
@@ -133,6 +139,7 @@ string Options::getValueString(OptionId id, Options::Value value) {
     case OptionId::HINTS:
     case OptionId::ASCII:
     case OptionId::FULLSCREEN:
+    case OptionId::AUTOSAVE:
     case OptionId::MUSIC: return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:

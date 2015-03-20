@@ -79,7 +79,8 @@ class GameInfo {
     public:
     struct AttributeInfo {
       string name;
-      ViewId viewId;
+      enum Id { ATT, DEF, STR, DEX, ACC, SPD };
+      Id id;
       int value;
       int bonus;
       string help;

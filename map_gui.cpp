@@ -31,7 +31,7 @@ using sf::Keyboard;
 
 MapGui::MapGui(Callbacks call, Clock* c) : objects(Level::getMaxBounds()), callbacks(call), clock(c),
     fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
-    connectionMap(Level::getMaxBounds()) {
+    connectionMap(Level::getMaxBounds()), enemyPositions(Level::getMaxBounds(), false) {
   clearCenter();
 }
 
@@ -324,9 +324,10 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     state = min(1.0, max(0.0, (state - minStopTime) / (1.0 - 2 * minStopTime)));
   } else
     return Vec2(0, 0);
-  if (object.getLastMovementInfo().type == ViewObject::MovementInfo::ATTACK && dir.length8() == 1)
-    return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
-        (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - getJumpOffset(state)) * size.y);
+  if (object.getLastMovementInfo().type == ViewObject::MovementInfo::ATTACK)
+    if (dir.length8() == 1)
+      return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
+          (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - getJumpOffset(state)) * size.y);
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(state)) * size.y);
 }
 
@@ -579,20 +580,6 @@ void MapGui::renderAnimations(Renderer& renderer, int currentTimeReal) {
         currentTimeReal);
 }
 
-void MapGui::renderHint(Renderer& renderer, const optional<ViewObject>& highlighted) {
-  if (!hint.empty())
-    drawHint(renderer, colors[ColorId::WHITE], hint);
-  else
-  if (highlighted) {
-    Color col = colors[ColorId::WHITE];
-    if (highlighted->isHostile())
-      col = colors[ColorId::RED];
-    else if (highlighted->isFriendly())
-      col = colors[ColorId::GREEN];
-    drawHint(renderer, col, {highlighted->getDescription(true)});
-  }
-}
-
 MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size, int currentTimeReal) {
   HighlightedInfo ret;
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
@@ -610,6 +597,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size
             ret.tilePos = none;
             ret.object = object;
             ret.creaturePos = pos + movement;
+            ret.isEnemy = enemyPositions.getValue(wpos);
             break;
           }
         }
@@ -686,16 +674,31 @@ void MapGui::render(Renderer& renderer) {
     Vec2 pos = topLeftCorner + (*highlightedInfo.tilePos - allTiles.getTopLeft()).mult(layout->getSquareSize());
     renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
-  renderHint(renderer, highlightedInfo.object);
+  if (!hint.empty())
+    drawHint(renderer, colors[ColorId::WHITE], hint);
+  else
+  if (highlightedInfo.object) {
+    Color col = colors[ColorId::WHITE];
+    if (highlightedInfo.isEnemy)
+      col = colors[ColorId::RED];
+    drawHint(renderer, col, highlightedInfo.object->getLegend());
+  }
 }
 
 void MapGui::setHint(const vector<string>& h) {
   hint = h;
 }
 
+void MapGui::updateEnemyPositions(const vector<Vec2>& positions) {
+  enemyPositions.clear();
+  for (Vec2 v : positions)
+    enemyPositions.setValue(v, true);
+}
+
 void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui, bool moral) {
   const Level* level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
+  updateEnemyPositions(view->getVisibleEnemies());
   mouseUI = ui;
   showMorale = moral;
   layout = mapLayout;
