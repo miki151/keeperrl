@@ -385,11 +385,11 @@ bool Renderer::pollEventOrFromQueue(Event& ev) {
     ev = eventQueue.front();
     eventQueue.pop_front();
     return true;
-  } else {
-    bool ret = display->pollEvent(ev);
+  } else if (display->pollEvent(ev)) {
     considerMouseMoveEvent(ev);
-    return ret;
-  }
+    return true;
+  } else
+    return false;
 }
 
 void Renderer::considerMouseMoveEvent(Event& ev) {
