@@ -268,8 +268,8 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
     case View::CREATING: text = "Creating a new world, just for you..."; break;
     case View::LOADING: text = "Loading the game..."; break;
     case View::SAVING: text = "Saving the game..."; break;
-    case View::UPLOADING: text = "Uploading the game..."; break;
-    case View::DOWNLOADING: text = "Downloading the game..."; break;
+    case View::UPLOADING: text = "Uploading the map..."; break;
+    case View::DOWNLOADING: text = "Downloading the map..."; break;
     case View::AUTOSAVING: displayAutosaveSplash(meter); return;
   }
   splashDone = false;
