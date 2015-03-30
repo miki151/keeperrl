@@ -1606,7 +1606,7 @@ void PlayerControl::onConqueredLand() {
     return;
   model->conquered(*getKeeper()->getFirstName(), getCollective()->getKills(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
-  model->getView()->presentText("", "When you are ready, retire your dungeon and share it online."
+  model->getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
       "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
 }
 

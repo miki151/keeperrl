@@ -174,7 +174,7 @@ vector<string> ViewObject::getLegend() const {
     ret[0] = ret[0] + ", efficiency " + getAttributeString(Attribute::EFFICIENCY);
   if (getAttribute(Attribute::ATTACK) > -1)
     ret.push_back("Attack " + getAttributeString(Attribute::ATTACK) +
-          " defense " + getAttributeString(Attribute::ATTACK));
+          " defense " + getAttributeString(Attribute::DEFENSE));
   if (getAttribute(Attribute::BLEEDING) > 0) 
     ret.push_back("Wounded");
   if (hasModifier(Modifier::PLANNED))
