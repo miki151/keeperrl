@@ -152,9 +152,11 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
 }
 
 void Renderer::drawQuads() {
-  vector<Vertex>& quadsTmp = quads;
-  addRenderElem([this, quadsTmp] { display->draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
-  quads.clear();
+  if (!quads.empty()) {
+    vector<Vertex>& quadsTmp = quads;
+    addRenderElem([this, quadsTmp] { display->draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
+    quads.clear();
+  }
 }
 
 void Renderer::addRenderElem(function<void()> f) {

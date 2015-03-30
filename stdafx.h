@@ -98,10 +98,8 @@ using std::map;
 using std::set;
 using std::deque;
 using std::string;
-using boost::none;
 
 #endif
-
 
 using std::queue;
 using std::unique_ptr;
@@ -143,6 +141,7 @@ using std::remove_if;
 using boost::variant;
 using boost::optional;
 using boost::none_t;
+using boost::none;
 using boost::replace_all;
 using eos::portable_oarchive;
 using eos::portable_iarchive;
