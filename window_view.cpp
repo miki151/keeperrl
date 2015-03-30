@@ -241,8 +241,9 @@ void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
     while (!splashDone) {
       refreshScreen(false);
       window->render(renderer);
-      Rectangle bar(progressBar.getTopLeft(), Vec2(1 + progressBar.getPX() * (1.0 - meter.getProgress()) +
-            progressBar.getKX() * meter.getProgress(), progressBar.getKY()));
+      double progress = meter.getProgress();
+      Rectangle bar(progressBar.getTopLeft(), Vec2(1 + progressBar.getPX() * (1.0 - progress) +
+            progressBar.getKX() * progress, progressBar.getKY()));
       renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
       renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.getPY() + 20, "Autosaving", true);
       renderer.drawAndClearBuffer();
@@ -267,8 +268,8 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
     case View::CREATING: text = "Creating a new world, just for you..."; break;
     case View::LOADING: text = "Loading the game..."; break;
     case View::SAVING: text = "Saving the game..."; break;
-    case View::UPLOADING: text = "Uploading the game..."; break;
-    case View::DOWNLOADING: text = "Downloading the game..."; break;
+    case View::UPLOADING: text = "Uploading the map..."; break;
+    case View::DOWNLOADING: text = "Downloading the map..."; break;
     case View::AUTOSAVING: displayAutosaveSplash(meter); return;
   }
   splashDone = false;

@@ -581,7 +581,7 @@ void MapGui::renderAnimations(Renderer& renderer, int currentTimeReal) {
 }
 
 MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size, int currentTimeReal) {
-  HighlightedInfo ret;
+  HighlightedInfo ret {};
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
   if (renderer.getMousePos().inRectangle(getBounds()) && mouseUI) {
