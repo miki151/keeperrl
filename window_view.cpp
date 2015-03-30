@@ -241,8 +241,9 @@ void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
     while (!splashDone) {
       refreshScreen(false);
       window->render(renderer);
-      Rectangle bar(progressBar.getTopLeft(), Vec2(1 + progressBar.getPX() * (1.0 - meter.getProgress()) +
-            progressBar.getKX() * meter.getProgress(), progressBar.getKY()));
+      double progress = meter.getProgress();
+      Rectangle bar(progressBar.getTopLeft(), Vec2(1 + progressBar.getPX() * (1.0 - progress) +
+            progressBar.getKX() * progress, progressBar.getKY()));
       renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
       renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.getPY() + 20, "Autosaving", true);
       renderer.drawAndClearBuffer();

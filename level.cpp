@@ -132,7 +132,7 @@ void Level::addLightSource(Vec2 pos, double radius, int numLight) {
 void Level::replaceSquare(Vec2 pos, PSquare square) {
   squares[pos]->onConstructNewSquare(square.get());
   Creature* c = squares[pos]->getCreature();
-  for (Item* it : squares[pos]->getItems())
+  for (Item* it : copyOf(squares[pos]->getItems()))
     square->dropItem(squares[pos]->removeItem(it));
   addLightSource(pos, squares[pos]->getLightEmission(), -1);
   square->setPosition(pos);

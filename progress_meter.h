@@ -25,7 +25,7 @@ class ProgressMeter {
 
   private:
   atomic<int> progress;
-  double increase;
+  atomic<double> increase;
 };
 
 #endif

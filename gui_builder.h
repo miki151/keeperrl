@@ -101,6 +101,7 @@ class GuiBuilder {
   PGuiElem getTooltip(const vector<string>&);
   function<void()> getButtonCallback(UserInput);
   int activeBuilding = 0;
+  bool hideBuildingOverlay = false;
   int activeLibrary = -1;
   string chosenCreature;
   bool showTasks = false;

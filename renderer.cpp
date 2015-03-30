@@ -152,9 +152,11 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
 }
 
 void Renderer::drawQuads() {
-  vector<Vertex>& quadsTmp = quads;
-  addRenderElem([this, quadsTmp] { display->draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
-  quads.clear();
+  if (!quads.empty()) {
+    vector<Vertex>& quadsTmp = quads;
+    addRenderElem([this, quadsTmp] { display->draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
+    quads.clear();
+  }
 }
 
 void Renderer::addRenderElem(function<void()> f) {
@@ -385,11 +387,11 @@ bool Renderer::pollEventOrFromQueue(Event& ev) {
     ev = eventQueue.front();
     eventQueue.pop_front();
     return true;
-  } else {
-    bool ret = display->pollEvent(ev);
+  } else if (display->pollEvent(ev)) {
     considerMouseMoveEvent(ev);
-    return ret;
-  }
+    return true;
+  } else
+    return false;
 }
 
 void Renderer::considerMouseMoveEvent(Event& ev) {

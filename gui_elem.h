@@ -73,7 +73,8 @@ class GuiFactory {
   PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
-  PGuiElem centeredLabel(const string&, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
+  PGuiElem centeredLabel(const string&, int size, Color = colors[ColorId::WHITE]);
+  PGuiElem centeredLabel(const string&, Color = colors[ColorId::WHITE]);
   PGuiElem variableLabel(function<string()>,
       bool center = false, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
   PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_ON]);

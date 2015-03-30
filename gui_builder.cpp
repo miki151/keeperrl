@@ -107,6 +107,7 @@ PGuiElem GuiBuilder::getButtonLine(GameInfo::BandInfo::Button button, int num, i
   if (button.inactiveReason == "" || button.inactiveReason == "inactive")
     buttonFun = [this, &active, num, tab] {
       active = num;
+      hideBuildingOverlay = false;
       setCollectiveTab(tab);
     };
   else {
@@ -133,6 +134,7 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<GameInfo::BandInfo::Button> butt
       GameInfo::BandInfo::Button button1 = groupedButtons.front();
       function<void()> buttonFun = [=, &active] {
         active = firstItem;
+        hideBuildingOverlay = false;
       };
       vector<PGuiElem> line;
       line.push_back(gui.viewObject(button1.object, tilesOk));
@@ -918,7 +920,7 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo
 }
 
 void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
-  if (activeBuilding == -1 || info.buildings[activeBuilding].groupName.empty())
+  if (activeBuilding == -1 || info.buildings[activeBuilding].groupName.empty() || hideBuildingOverlay)
     return;
   string groupName = info.buildings[activeBuilding].groupName;
   vector<PGuiElem> lines;
@@ -927,7 +929,10 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandIn
     if (elem.groupName == groupName)
       lines.push_back(getButtonLine(elem, i, activeBuilding, collectiveTab));
   }
-  int height = lines.size() * legendLineHeight;
+  lines.push_back(gui.stack(
+        gui.centeredLabel("[close]", colors[ColorId::LIGHT_BLUE]),
+        gui.button([=] { hideBuildingOverlay = true;})));
+  int height = lines.size() * legendLineHeight - 8;
   ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0),
       Vec2(minionWindowWidth, height),
       OverlayInfo::TOP_RIGHT});

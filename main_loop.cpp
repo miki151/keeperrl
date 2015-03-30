@@ -164,6 +164,8 @@ void MainLoop::getSaveOptions(const vector<pair<Model::GameType, string>>& games
 void MainLoop::getDownloadOptions(vector<View::ListElem>& options, vector<SaveFileInfo>& allFiles,
     const string& title) {
   vector<FileSharing::GameInfo> games = fileSharing->listGames();
+  sort(games.begin(), games.end(), [] (const FileSharing::GameInfo& a, const FileSharing::GameInfo& b) {
+      return a.time > b.time; });
   options.emplace_back(title, View::TITLE);
   for (FileSharing::GameInfo info : games)
     if (isCompatible(info.version)) {

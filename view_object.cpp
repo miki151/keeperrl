@@ -181,10 +181,8 @@ vector<string> ViewObject::getLegend() const {
     ret.push_back("Planned");
   if (hasModifier(Modifier::SLEEPING))
     ret.push_back("Sleeping");
-#ifndef RELEASE
   if (position.x > -1)
     ret.push_back(toString(position.x) + ", " + toString(position.y));
-#endif
   append(ret, adjectives);
   return ret;
 }
@@ -192,7 +190,6 @@ vector<string> ViewObject::getLegend() const {
 ViewLayer ViewObject::layer() const {
   return viewLayer;
 }
-
 
 static vector<ViewId> creatureIds {
   ViewId::PLAYER,

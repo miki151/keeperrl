@@ -243,6 +243,10 @@ PGuiElem GuiFactory::centeredLabel(const string& s, int size, Color c) {
         }));
 }
 
+PGuiElem GuiFactory::centeredLabel(const string& s, Color c) {
+  return centeredLabel(s, Renderer::textSize, c);
+}
+
 PGuiElem GuiFactory::variableLabel(function<string()> fun, bool center, int size, Color c) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
