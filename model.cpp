@@ -204,7 +204,7 @@ optional<Model::ExitInfo> Model::update(double totalTime) {
   do {
     Creature* creature = timeQueue.getNextCreature();
     CHECK(creature) << "No more creatures";
-    Debug() << creature->getName().the() << " moving now " << creature->getTime();
+    //Debug() << creature->getName().the() << " moving now " << creature->getTime();
     currentTime = creature->getTime();
     if (spectator)
       while (1) {

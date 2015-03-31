@@ -296,7 +296,6 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       gui.icon(gui.BUILDING),
       gui.icon(gui.MINION),
       gui.icon(gui.LIBRARY),
-      gui.icon(gui.DEITIES),
       gui.icon(gui.DIPLOMACY),
       gui.icon(gui.HELP));
   for (int i : All(buttons)) {
@@ -314,7 +313,6 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       make_pair(CollectiveTab::BUILDINGS, drawBuildings(info)),
       make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
       make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(info)),
-      make_pair(CollectiveTab::WORKSHOP, drawDeities(info)),
       make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
   vector<PGuiElem> tabs;
   for (auto& elem : elems)
@@ -324,7 +322,9 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::Villa
       tabs.push_back(gui.invisible(std::move(elem.second)));
   PGuiElem main = gui.stack(std::move(tabs));
   main = gui.margins(std::move(main), 15, 15, 15, 5);
-  PGuiElem butGui = gui.margins(gui.horizontalList(std::move(buttons), 50, 0), 0, 5, 0, 5);
+  int numButtons = buttons.size();
+  PGuiElem butGui = gui.margins(
+      gui.centerHoriz(gui.horizontalList(std::move(buttons), 50, 0), numButtons * 50), 0, 5, 0, 5);
   vector<PGuiElem> bottomLine;
   bottomLine.push_back(gui.stack(
       gui.horizontalList(makeVec<PGuiElem>(

@@ -67,7 +67,6 @@ class GuiBuilder {
     BUILDINGS,
     MINIONS,
     TECHNOLOGY,
-    WORKSHOP,
     VILLAGES,
     KEY_MAPPING,
   };
