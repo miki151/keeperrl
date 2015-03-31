@@ -218,9 +218,9 @@ void MainLoop::playModel(PModel model, bool withMusic, bool noAutoSave) {
       ++totTime;
     else
       totTime += min(1.0, double(meter.getCount(view->getTimeMilli())) * gameTimeStep);
-    if (options->getBoolValue(OptionId::AUTOSAVE) && lastAutoSave < model->getTime() - getAutosaveFreq()
-        && !noAutoSave) {
-      saveUI(model, Model::GameType::AUTOSAVE, View::AUTOSAVING);
+    if (lastAutoSave < model->getTime() - getAutosaveFreq() && !noAutoSave) {
+      if (options->getBoolValue(OptionId::AUTOSAVE))
+        saveUI(model, Model::GameType::AUTOSAVE, View::AUTOSAVING);
       lastAutoSave = model->getTime();
     }
   }
