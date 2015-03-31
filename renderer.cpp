@@ -35,7 +35,10 @@ Color transparency(const Color& color, int trans) {
 
 int Renderer::getTextLength(string s) {
   CHECK(currentThreadId() == renderThreadId);
-  Text t(toUnicode(s), textFont, textSize);
+  static Text t;
+  t.setFont(textFont);
+  t.setCharacterSize(textSize);
+  t.setString(s);
   return t.getLocalBounds().width;
 }
 
@@ -48,16 +51,21 @@ Font& Renderer::getFont(Renderer::FontId id) {
 }
 
 void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s, bool center) {
-  int ox = 0;
-  int oy = 0;
-  Text t(s, getFont(id), size);
-  if (center) {
-    sf::FloatRect bounds = t.getLocalBounds();
-    ox -= bounds.left + bounds.width / 2;
-  }
-  t.setPosition(x + ox, y + oy);
-  t.setColor(color);
-  addRenderElem([this, t] { display->draw(t); });
+  addRenderElem([this, s, center, size, color, x, y] {
+      int ox = 0;
+      int oy = 0;
+      static Text t;
+      t.setFont(textFont);
+      t.setCharacterSize(size);
+      t.setString(s);
+      if (center) {
+      sf::FloatRect bounds = t.getLocalBounds();
+      ox -= bounds.left + bounds.width / 2;
+      }
+      t.setPosition(x + ox, y + oy);
+      t.setColor(color);
+      display->draw(t);
+  });
 }
 
 String Renderer::toUnicode(const string& s) {
