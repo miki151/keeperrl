@@ -185,8 +185,8 @@ void Player::pickUpAction(bool extended) {
 
 void Player::pickUpItemAction(int numItem) {
   auto items = getCreature()->stackItems(getCreature()->getPickUpOptions());
-  CHECK(numItem < items.size());
-  tryToPerform(getCreature()->pickUp(items[numItem]));
+  if (numItem < items.size())
+    tryToPerform(getCreature()->pickUp(items[numItem]));
 }
 
 void Player::tryToPerform(CreatureAction action) {
@@ -417,7 +417,11 @@ void Player::travelAction() {
     return;
   }
   optional<int> myIndex = findElement(squareDirs, -travelDir);
-  CHECK(myIndex) << "Bad travel data in square";
+  if (!myIndex) { // This was an assertion but was failing
+    travelling = false;
+    Debug() << "Stopped by bad travel data";
+    return;
+  }
   travelDir = squareDirs[(*myIndex + 1) % 2];
 }
 
