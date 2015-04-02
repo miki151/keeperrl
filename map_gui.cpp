@@ -403,7 +403,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     else
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
     if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
-      renderer.drawTile(pos + move, tile.getHighlightCoord(), size, color);
+      if (auto coord = tile.getHighlightCoord())
+        renderer.drawTile(pos + move, *coord, size, color);
     if (auto id = object.getCreatureId())
       creatureMap.emplace_back(Rectangle(pos + move, pos + move + size), *id);
     if (tile.hasCorners()) {

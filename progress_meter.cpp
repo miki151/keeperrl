@@ -6,7 +6,7 @@ ProgressMeter::ProgressMeter(double inc) : progress(0), increase(inc) {
 }
 
 double ProgressMeter::getProgress() const {
-  return min(1.0, progress * increase);
+  return max(0.0, min(1.0, progress * increase));
 }
 
 void ProgressMeter::addProgress() {
