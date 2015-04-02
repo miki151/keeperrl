@@ -84,8 +84,8 @@ Tile Tile::addHighlight(TileCoord coord) {
   return *this;
 }
 
-Tile::TileCoord Tile::getHighlightCoord() const {
-  return *highlightCoord;
+optional<Tile::TileCoord> Tile::getHighlightCoord() const {
+  return highlightCoord;
 }
 
 const vector<ViewId>& Tile::getExtraBorderIds() const {
@@ -110,6 +110,7 @@ bool Tile::hasSpriteCoord() const {
 }
 
 Tile::TileCoord Tile::getSpriteCoord() const {
+  CHECK(tileCoord);
   return *tileCoord;
 }
 
@@ -121,13 +122,17 @@ Tile::TileCoord Tile::getSpriteCoord(DirSet c) const {
   if (connectionOption) {
     if (c.has(connectionOption->first))
       return connectionOption->second;
-    else
+    else {
+      CHECK(tileCoord);
       return *tileCoord;
+    }
   }
   if (connections[c])
     return *connections[c];
-  else
+  else {
+    CHECK(tileCoord);
     return *tileCoord;
+  }
 }
 
 EnumMap<ViewId, optional<Tile>> Tile::tiles;
@@ -837,10 +842,14 @@ void Tile::initialize(Renderer& renderer, bool useTiles) {
 }
 
 const Tile& Tile::getTile(ViewId id, bool sprite) {
-  if (sprite)
+  if (sprite) {
+    CHECK(tiles[id]);
     return *tiles[id];
-  else
+  }
+  else {
+    CHECK(symbols[id]);
     return *symbols[id];
+  }
 }
 
 Color Tile::getColor(const ViewObject& object) {

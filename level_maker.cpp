@@ -259,6 +259,8 @@ class Connector : public LevelMaker {
       if (builder->getType(v) == SquareId::FLOOR || 
           builder->getType(v) == SquareId::BRIDGE || 
           builder->getType(v) == SquareId::DOOR) {
+        if (!path.isReachable(v))
+          failGen();
         builder->getSquare(v)->addTravelDir(path.getNextMove(v) - v);
         if (prev.x > -100)
           builder->getSquare(v)->addTravelDir(prev - v);

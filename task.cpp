@@ -335,7 +335,8 @@ class EquipItem : public NonTransferable {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    CHECK(contains(c->getEquipment().getItems(), item) && c->getEquipment().canEquip(item));
+    CHECK(contains(c->getEquipment().getItems(), item));
+    CHECK(c->getEquipment().canEquip(item));
     if (auto action = c->equip(item))
       return action.append([=](Creature* c) {setDone();});
     else
