@@ -102,6 +102,7 @@ class BoulderController : public Monster {
                   other->you(MsgType::DISARM_TRAP, "");
                   GlobalEvents.addTrapDisarmEvent(getCreature()->getLevel(), other, getCreature()->getPosition());
                   getCreature()->die();
+                  return;
                 }
               }
             if (!square->canEnterEmpty(getCreature()))

@@ -51,11 +51,11 @@ Font& Renderer::getFont(Renderer::FontId id) {
 }
 
 void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s, bool center) {
-  addRenderElem([this, s, center, size, color, x, y] {
+  addRenderElem([this, s, center, size, color, x, y, id] {
       int ox = 0;
       int oy = 0;
       static Text t;
-      t.setFont(textFont);
+      t.setFont(getFont(id));
       t.setCharacterSize(size);
       t.setString(s);
       if (center) {
