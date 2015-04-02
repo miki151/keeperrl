@@ -84,8 +84,8 @@ Tile Tile::addHighlight(TileCoord coord) {
   return *this;
 }
 
-Tile::TileCoord Tile::getHighlightCoord() const {
-  return *highlightCoord;
+optional<Tile::TileCoord> Tile::getHighlightCoord() const {
+  return highlightCoord;
 }
 
 const vector<ViewId>& Tile::getExtraBorderIds() const {
