@@ -335,6 +335,7 @@ class EquipItem : public NonTransferable {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
+    CHECK(c->isHumanoid());
     CHECK(contains(c->getEquipment().getItems(), item));
     CHECK(c->getEquipment().canEquip(item));
     if (auto action = c->equip(item))
@@ -833,7 +834,7 @@ class AttackLeader : public NonTransferable {
   AttackLeader(Collective* col) : collective(col) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getLevel() != collective->getLevel())
+    if (c->getLevel() != collective->getLevel() || !collective->getLeader())
       return NoMove;
     return c->moveTowards(collective->getLeader()->getPosition());
   }
