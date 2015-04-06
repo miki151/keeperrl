@@ -33,10 +33,6 @@ namespace boost {
 
 Debug::Debug(DebugType t, const string& msg, int line) 
     : out((string[]) { "INFO ", "FATAL "}[t] + msg + ":" + toString(line) + " "), type(t) {
-  if (t == DebugType::FATAL) {
-    (ofstream("stacktrace.out") << "Assertion at " << msg << ":" << line << std::endl).flush();
-    fail();
-  }
 }
 
 static ofstream output;
@@ -51,10 +47,9 @@ void Debug::add(const string& a) {
   out += a;
 }
 Debug::~Debug() {
-  if (type == FATAL) {
-    output << out << endl;
-    output.flush();
-    throw out;
+  if (type == DebugType::FATAL) {
+    (ofstream("stacktrace.out") << out << endl).flush();
+    fail();
   } else {
 #ifndef RELEASE
     //output << out << endl;

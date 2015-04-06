@@ -422,7 +422,7 @@ static EnumMap<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
 }
 
 PModel ModelBuilder::collectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
-  for (int i : Range(5)) {
+  for (int i : Range(10)) {
     try {
       return tryCollectiveModel(meter, options, view, worldName);
     } catch (LevelGenException ex) {
