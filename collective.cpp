@@ -1356,7 +1356,7 @@ void Collective::updateEfficiency(Vec2 pos, SquareType type) {
     for (Vec2 v : pos.neighbors8())
       if (getSquares(type).count(v)) {
         --squareEfficiency[v];
-        CHECK(squareEfficiency[v] >=0) << type;
+        CHECK(squareEfficiency[v] >=0) << EnumInfo<SquareId>::getString(type.getId());
       }
   }
 }
