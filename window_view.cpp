@@ -944,8 +944,10 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     Event event;
     while (renderer.pollEvent(event)) {
       propagateEvent(event, {stuff.get()});
-      if (choice > -1)
+      if (choice > -1) {
+        CHECK(choice < indexes.size()) << choice;
         return indexes[choice];
+      }
       if (choice == -100)
         return none;
       if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
@@ -971,7 +973,11 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
               *scrollPos = min<int>(options.size() - 1, *scrollPos + 1);
             break;
           case Keyboard::Numpad5:
-          case Keyboard::Return: if (count > 0 && index > -1) return indexes[index];
+          case Keyboard::Return: 
+            if (count > 0 && index > -1) {
+              CHECK(index < indexes.size()) << index;
+              return indexes[index];
+            }
           case Keyboard::Escape: return none;
                                  //       case Keyboard::Space : refreshScreen(); return;
           default: break;
