@@ -410,6 +410,7 @@ double getDuration(const Creature* c, LastingEffect e, int strength) {
     case LastingEffect::SLOWED:
     case LastingEffect::SPEED:
     case LastingEffect::RAGE:
+    case LastingEffect::DARKNESS_SOURCE:
     case LastingEffect::PANIC: return panicTime[strength];
     case LastingEffect::POISON: return poisonTime[strength];
     case LastingEffect::DEX_BONUS:
@@ -554,6 +555,7 @@ string Effect::getName(LastingEffect type) {
     case LastingEffect::FIRE_RESISTANT: return "fire resistance";
     case LastingEffect::INSANITY: return "insanity";
     case LastingEffect::MAGIC_SHIELD: return "magic shield";
+    case LastingEffect::DARKNESS_SOURCE: return "source of darkness";
   }
 }
 
@@ -577,6 +579,7 @@ string Effect::getDescription(LastingEffect type) {
     case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
     case LastingEffect::INSANITY: return "Confuses the target about who is friend and who is foe.";
     case LastingEffect::MAGIC_SHIELD: return "Gives protection from physical attacks.";
+    case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
   }
 }
 

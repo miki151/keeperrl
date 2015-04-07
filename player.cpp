@@ -169,6 +169,8 @@ void Player::pickUpAction(bool extended) {
     else
       index = *res;
   }
+  CHECK(index < groups.size());
+  CHECK(index >= 0);
   int num = groups[index].size();
   if (num < 1)
     return;
@@ -278,6 +280,8 @@ void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
   if (!index) {
     return;
   }
+  CHECK(*index >= 0);
+  CHECK(*index < groups.size());
   int num = groups[*index].size(); //groups[index].size() == 1 ? 1 : howMany(model->getView(), groups[index].size());
   if (num < 1)
     return;
