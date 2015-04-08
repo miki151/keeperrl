@@ -135,7 +135,6 @@ class BoulderController : public Monster {
             } else {
               c->you(MsgType::KILLED_BY, getCreature()->getName().the());
               c->die(getCreature());
-              return;
             }
           }
         }

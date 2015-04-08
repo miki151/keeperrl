@@ -68,7 +68,8 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(finishCurrentMusic);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
-  updateSunlightInfo();
+  if (Archive::is_loading::value)
+    updateSunlightInfo();
 }
 
 
@@ -165,10 +166,14 @@ void Model::updateSunlightInfo() {
     }
   }
   if (previous != sunlightInfo.state) {
-    GlobalEvents.addSunlightChangeEvent();
     for (PLevel& l : levels)
       l->updateSunlightMovement();
   }
+}
+
+void Model::onTechBookRead(Technology* tech) {
+  if (playerControl)
+    playerControl->onTechBookRead(tech);
 }
 
 const char* Model::SunlightInfo::getText() {

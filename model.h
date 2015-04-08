@@ -29,6 +29,7 @@ class Options;
 class CreatureView;
 class Trigger;
 class Highscores;
+class Technology;
 
 /**
   * Main class that holds all game logic.
@@ -120,6 +121,8 @@ class Model {
   Tribe* getPestTribe();
   Tribe* getKillEveryoneTribe();
   Tribe* getPeacefulTribe();
+
+  void onTechBookRead(Technology*);
 
   private:
   REGISTER_HANDLER(KilledLeaderEvent, const Collective*, const Creature*);

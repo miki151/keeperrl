@@ -74,7 +74,7 @@ Square::~Square() {
 }
 
 void Square::putCreature(Creature* c) {
-  CHECK(canEnter(c));
+  CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
   creature = c;
   onEnter(c);
 }

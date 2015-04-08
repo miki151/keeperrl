@@ -484,7 +484,7 @@ Rectangle::Rectangle(Vec2 d) : px(0), py(0), kx(d.x), ky(d.y), w(d.x), h(d.y) {
 
 Rectangle::Rectangle(int px1, int py1, int kx1, int ky1) : px(px1), py(py1), kx(kx1), ky(ky1), w(kx1 - px1),
     h(ky1 - py1) {
-  CHECK(kx > px && ky > py);
+  CHECK(kx > px && ky > py) << "(" << px << " " << py << ") (" << kx << " " << ky << ") ";
 }
 
 Rectangle::Rectangle(Vec2 p, Vec2 k) : px(p.x), py(p.y), kx(k.x), ky(k.y), w(k.x - p.x), h(k.y - p.y) {

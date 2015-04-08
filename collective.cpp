@@ -1356,7 +1356,7 @@ void Collective::updateEfficiency(Vec2 pos, SquareType type) {
     for (Vec2 v : pos.neighbors8())
       if (getSquares(type).count(v)) {
         --squareEfficiency[v];
-        CHECK(squareEfficiency[v] >=0);
+        CHECK(squareEfficiency[v] >=0) << EnumInfo<SquareId>::getString(type.getId());
       }
   }
 }
@@ -1409,7 +1409,7 @@ void Collective::freeFromGuardPost(const Creature* c) {
 }
 
 double Collective::getTime() const {
-  return creatures.front()->getTime();
+  return getLevel()->getModel()->getTime();
 }
 
 void Collective::addGuardPost(Vec2 pos) {
@@ -1474,7 +1474,7 @@ void Collective::takeResource(CostInfo cost) {
           return;
       }
     }
-  FAIL << "Not enough " << resourceInfo.at(cost.id()).name;
+  FAIL << "Not enough " << resourceInfo.at(cost.id()).name << " missing " << num << " of " << cost.value();
 }
 
 void Collective::returnResource(CostInfo amount) {

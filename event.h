@@ -57,14 +57,12 @@ class EventListener {
   EVENT(SquareDestroyedEvent, const Level*, Vec2 pos);
   EVENT(ChangeLevelEvent, const Creature*, const Level* from, Vec2 pos, const Level* to, Vec2 toPos);
   EVENT(AlarmEvent, const Level*, Vec2 pos);
-  EVENT(TechBookEvent, Technology*);
   EVENT(EquipEvent, const Creature*, const Item*);
   EVENT(SurrenderEvent, Creature* who, const Creature* to);
   EVENT(TortureEvent, Creature* who, const Creature* torturer);
   EVENT(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
   EVENT(WorshipEvent, Creature* who, const Deity* to, WorshipType);
   EVENT(KilledLeaderEvent, const Collective*, const Creature*);
-  EVENT(SunlightChangeEvent);
 };
 
 extern EventListener GlobalEvents;
