@@ -845,7 +845,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.nextPayout = getCollective()->getNextSalaries();
   for (Creature* c : getCollective()->getCreaturesAnyOf(
         {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER})) {
-    if (getCollective()->isInCombat(c))
+    if (c->wasInCombat(5))
       info.tasks[c->getUniqueId()] = "fighting";
     info.minions.push_back(c);
   }
@@ -1437,7 +1437,7 @@ void PlayerControl::considerDeityFight() {
 void PlayerControl::checkKeeperDanger() {
   Creature* controlled = getControlled();
   if (!retired && getKeeper() && controlled != getKeeper()) { 
-    if ((getCollective()->isInCombat(getKeeper()) || getKeeper()->getHealth() < 1)
+    if ((getKeeper()->wasInCombat(5) || getKeeper()->getHealth() < 1)
         && lastControlKeeperQuestion < getCollective()->getTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getTime();
       if (model->getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {

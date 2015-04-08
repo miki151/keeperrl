@@ -30,7 +30,7 @@ class Behaviour {
   virtual void onAttacked(const Creature* attacker) {}
   virtual double itemValue(const Item*) { return 0; }
   Item* getBestWeapon();
-  const Creature* getClosestEnemy();
+  Creature* getClosestEnemy();
   MoveInfo tryEffect(EffectType, double maxTurns);
   MoveInfo tryEffect(DirEffectType, Vec2);
 
@@ -69,13 +69,13 @@ Behaviour::Behaviour(Creature* c) : creature(c) {
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Behaviour);
 
-const Creature* Behaviour::getClosestEnemy() {
+Creature* Behaviour::getClosestEnemy() {
   int dist = 1000000000;
-  const Creature* result = nullptr;
+  Creature* result = nullptr;
   for (const Creature* other : creature->getVisibleEnemies()) {
     int curDist = other->getPosition().dist8(creature->getPosition());
     if (curDist < dist && (!other->dontChase() || curDist == 1)) {
-      result = other;
+      result = const_cast<Creature*>(other);
       dist = (other->getPosition() - creature->getPosition()).length8();
     }
   }
@@ -339,7 +339,7 @@ class Fighter : public Behaviour {
   }
 
   virtual MoveInfo getMove() override {
-    const Creature* other = getClosestEnemy();
+    Creature* other = getClosestEnemy();
     if (other != nullptr) {
       double myDamage = creature->getModifier(ModifierType::DAMAGE);
       Item* weapon = getBestWeapon();
@@ -373,7 +373,7 @@ class Fighter : public Behaviour {
       return getLastSeenMove();
   }
 
-  MoveInfo getPanicMove(const Creature* other, double weight) {
+  MoveInfo getPanicMove(Creature* other, double weight) {
     if (auto teleMove = tryEffect(EffectId::TELEPORT, 1))
       return {weight, teleMove.move};
     if (other->getPosition().dist8(creature->getPosition()) > 3)
@@ -381,8 +381,8 @@ class Fighter : public Behaviour {
         return {weight, move.move};
     if (auto action = creature->moveAway(other->getPosition(), chase))
       return {weight, action.prepend([=](Creature* creature) {
-        GlobalEvents.addCombatEvent(creature);
-        GlobalEvents.addCombatEvent(other);
+        creature->setInCombat();
+        other->setInCombat();
         lastSeen = {creature->getPosition(), creature->getTime(), creature->getLevel(), LastSeen::PANIC, other};
       })};
     else
@@ -454,7 +454,7 @@ class Fighter : public Behaviour {
       }
     if (best)
       if (auto action = creature->throwItem(best, dir)) {
-        GlobalEvents.addCombatEvent(creature);
+        creature->setInCombat();
         return {1.0, action };
       }
     return NoMove;
@@ -477,7 +477,7 @@ class Fighter : public Behaviour {
         return action;
     if (auto action = creature->fire(dir.shorten()))
       return {1.0, action.append([=](Creature* creature) {
-          GlobalEvents.addCombatEvent(creature);
+          creature->setInCombat();
       })};
     return NoMove;
   }
@@ -496,18 +496,18 @@ class Fighter : public Behaviour {
     if (chase && lastSeen->type == LastSeen::ATTACK)
       if (auto action = creature->moveTowards(lastSeen->pos)) {
         return {0.5, action.append([=](Creature* creature) {
-            GlobalEvents.addCombatEvent(creature);
+            creature->setInCombat();
         })};
       }
     if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()) < 4)
       if (auto action = creature->moveAway(lastSeen->pos, chase))
         return {0.5, action.append([=](Creature* creature) {
-            GlobalEvents.addCombatEvent(creature);
+            creature->setInCombat();
         })};
     return NoMove;
   }
 
-  MoveInfo getAttackMove(const Creature* other, bool chase) {
+  MoveInfo getAttackMove(Creature* other, bool chase) {
     int radius = 4;
     int distance = 10000;
     CHECK(other);
@@ -520,8 +520,8 @@ class Fighter : public Behaviour {
       if (Item* weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=](Creature* creature) {
-            GlobalEvents.addCombatEvent(creature);
-            GlobalEvents.addCombatEvent(other);
+            creature->setInCombat();
+            other->setInCombat();
         })};
     }
     if (distance <= 5)
@@ -544,8 +544,8 @@ class Fighter : public Behaviour {
         lastSeen = none;
         if (auto action = creature->moveTowards(creature->getPosition() + enemyDir))
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=](Creature* creature) {
-            GlobalEvents.addCombatEvent(creature);
-            GlobalEvents.addCombatEvent(other);
+            creature->setInCombat();
+            other->setInCombat();
             lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel(),
                 LastSeen::ATTACK, other};
             if (!chaseFreeze.count(other) || other->getTime() > chaseFreeze.at(other).second)
@@ -556,8 +556,8 @@ class Fighter : public Behaviour {
     if (distance == 1)
       if (auto action = creature->attack(other))
         return {1.0, action.prepend([=](Creature* creature) {
-            GlobalEvents.addCombatEvent(creature);
-            GlobalEvents.addCombatEvent(other);
+            creature->setInCombat();
+            other->setInCombat();
         })};
     return NoMove;
   }
