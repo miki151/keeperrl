@@ -158,6 +158,9 @@ class Square : public Renderable {
   /** Removes the creature from the square.*/
   void removeCreature();
 
+  /** Removes a killed creature from the square.*/
+  void killCreature(Creature* attacker);
+
   //@{
   /** Returns the creature from the square.*/
   Creature* getCreature();
@@ -240,6 +243,7 @@ class Square : public Renderable {
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(double time) {}
+  virtual void onKilled(Creature* victim, Creature* attacker);
   Inventory SERIAL(inventory);
   string SERIAL(name);
   void setMovementType(MovementType);

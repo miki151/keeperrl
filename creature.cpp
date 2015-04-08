@@ -959,13 +959,11 @@ double maxLevelGain = 2;
 double minLevelGain = 0.1;
 double maxLevelDiff = 7;
 
-void Creature::onKillEvent(const Creature* victim, const Creature* killer) {
-  if (killer == this) {
-    points += victim->getDifficultyPoints();
-    double levelDiff = victim->getExpLevelDouble() - getExpLevelDouble();
-    increaseExpLevel(max(0.05, min(maxLevelGain, 
-            (maxLevelGain - minLevelGain) * (levelDiff + maxLevelDiff) / (2.0 * maxLevelDiff) + minLevelGain)));
-  }
+void Creature::onKilled(const Creature* victim) {
+  points += victim->getDifficultyPoints();
+  double levelDiff = victim->getExpLevelDouble() - getExpLevelDouble();
+  increaseExpLevel(max(0.05, min(maxLevelGain, 
+      (maxLevelGain - minLevelGain) * (levelDiff + maxLevelDiff) / (2.0 * maxLevelDiff) + minLevelGain)));
 }
 
 double Creature::getInventoryWeight() const {
@@ -1273,7 +1271,7 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackLevel> att
     you(MsgType::ATTACK_SURPRISE, enemyName);
   }
   AttackLevel attackLevel = attackLevel1 ? (*attackLevel1) : getRandomAttackLevel();
-  Attack attack(this, attackLevel, getAttackType(), accuracy, damage, backstab,
+  Attack attack(c, attackLevel, getAttackType(), accuracy, damage, backstab,
       getWeapon() ? getWeapon()->getAttackEffect() : attackEffect);
   Creature* other = c->getSafeSquare(dir)->getCreature();
   if (!other->dodgeAttack(attack)) {
@@ -1297,7 +1295,7 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackLevel> att
   });
 }
 
-bool Creature::dodgeAttack(const Attack& attack) {
+bool Creature::dodgeAttack(Attack attack) {
   ++numAttacksThisTurn;
   Debug() << getName().the() << " dodging " << attack.getAttacker()->getName().bare()
     << " accuracy " << attack.getAccuracy() << " dodge " << getModifier(ModifierType::ACCURACY);
@@ -1329,9 +1327,9 @@ bool Creature::isCritical(BodyPart part) const {
     || (part == BodyPart::HEAD && numGood(part) == 0 && !isUndead());
 }
 
-bool Creature::takeDamage(const Attack& attack) {
+bool Creature::takeDamage(Attack attack) {
   AttackType attackType = attack.getType();
-  Creature* other = const_cast<Creature*>(attack.getAttacker());
+  Creature* other = attack.getAttacker();
   if (other)
     if (!contains(privateEnemies, other) && other->getTribe() != tribe)
       privateEnemies.push_back(other);
@@ -1632,7 +1630,7 @@ vector<PItem> Creature::getCorpse() {
         {getUniqueId(), true, numBodyParts(BodyPart::HEAD) > 0, false}));
 }
 
-void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
+void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   CHECK(!dead);
   lastAttacker = attacker;
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
@@ -1646,8 +1644,7 @@ void Creature::die(const Creature* attacker, bool dropInventory, bool dCorpse) {
   dead = true;
   if (dropInventory && dCorpse && !uncorporal)
     dropCorpse();
-  level->killCreature(this);
-  GlobalEvents.addKillEvent(this, attacker);
+  level->killCreature(this, attacker);
   if (innocent)
     level->getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
   level->getModel()->getStatistics().add(StatId::DEATH);
@@ -1664,7 +1661,7 @@ CreatureAction Creature::flyAway() const {
     Debug() << getName().the() << " fly away";
     monsterMessage(getName().the() + " flies away.");
     c->dead = true;
-    level->killCreature(c);
+    level->killCreature(c, nullptr);
   });
 }
 
@@ -1673,7 +1670,7 @@ CreatureAction Creature::disappear() const {
     Debug() << getName().the() << " disappears";
     monsterMessage(getName().the() + " disappears.");
     c->dead = true;
-    level->killCreature(c);
+    level->killCreature(c, nullptr);
   });
 }
 
@@ -1903,7 +1900,7 @@ CreatureAction Creature::consume(Vec2 direction) const {
     }
     c->consumeBodyParts(other->bodyParts);
     c->consumeEffects(other->permanentEffects);
-    c->getSafeSquare(direction)->getCreature()->die(this, true, false);
+    c->getSafeSquare(direction)->getCreature()->die(c, true, false);
     c->spendTime(2);
   });
 }
@@ -1985,12 +1982,12 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) const {
     damage += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, ModifierType::THROWN_DAMAGE);
     accuracy += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, ModifierType::THROWN_ACCURACY);
   }
-  Attack attack(this, getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, none);
-  return CreatureAction(this, [=](Creature* c) {
+  return CreatureAction(this, [=](Creature* self) {
+    Attack attack(self, getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, none);
     playerMessage("You throw " + item->getAName(false, isBlind()));
     monsterMessage(getName().the() + " throws " + item->getAName());
-    level->throwItem(c->equipment.removeItem(item), attack, dist, getPosition(), direction, getVision());
-    c->spendTime(1);
+    level->throwItem(self->equipment.removeItem(item), attack, dist, getPosition(), direction, getVision());
+    self->spendTime(1);
   });
 }
 

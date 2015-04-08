@@ -1622,7 +1622,7 @@ void PlayerControl::onConqueredLand() {
       "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
 }
 
-void PlayerControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
+void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {
   visibilityMap.remove(victim);
   if (!getKeeper() && !retired && !model->isGameOver()) {
     model->gameOver(victim, getCollective()->getKills().size(), "enemies",

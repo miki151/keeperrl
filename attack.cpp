@@ -19,10 +19,10 @@
 
 
 
-Attack::Attack(const Creature* a, AttackLevel l, AttackType t, int h, int s, bool b, optional<EffectType> _effect)
+Attack::Attack(Creature* a, AttackLevel l, AttackType t, int h, int s, bool b, optional<EffectType> _effect)
     : attacker(a), level(l), type(t), accuracy(h), strength(s), back(b), effect(_effect) {}
   
-const Creature* Attack::getAttacker() const {
+Creature* Attack::getAttacker() {
   return attacker;
 }
 

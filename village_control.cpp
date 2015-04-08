@@ -51,14 +51,15 @@ optional<VillageControl::Villain&> VillageControl::getVillain(const Creature* c)
   return none;
 }
 
-void VillageControl::onKillEvent(const Creature* victim, const Creature* killer) {
+void VillageControl::onOtherKilled(const Creature* victim, const Creature* killer) {
   if (victim->getTribe() == getCollective()->getTribe())
-    if (auto villain = getVillain(killer)) {
-      if (contains(getCollective()->getCreatures(), victim))
-        victims[villain->collective] += 1;
-      else
-        victims[villain->collective] += 0.15; // small increase for same tribe but different village
-    }
+    if (auto villain = getVillain(killer))
+      victims[villain->collective] += 0.15; // small increase for same tribe but different village
+}
+
+void VillageControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+  if (auto villain = getVillain(killer))
+    victims[villain->collective] += 1;
 }
 
 void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& items) {

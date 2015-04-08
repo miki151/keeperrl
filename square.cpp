@@ -462,10 +462,18 @@ const Creature* Square::getCreature() const {
   return creature;
 }
 
+void Square::killCreature(Creature* attacker) {
+  onKilled(creature, attacker);
+  removeCreature();
+}
+
+void Square::onKilled(Creature* victim, Creature* attacker) {
+}
+
 void Square::removeCreature() {
   setDirty();
   CHECK(creature);
-  creature = 0;
+  creature = nullptr;
 }
 
 bool Square::canSeeThru(VisionId v) const {

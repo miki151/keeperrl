@@ -85,6 +85,8 @@ class VillageControl : public CollectiveControl {
   protected:
   virtual void tick(double time) override;
   virtual MoveInfo getMove(Creature*);
+  virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
 
   SERIALIZATION_DECL(VillageControl);
 
@@ -95,7 +97,6 @@ class VillageControl : public CollectiveControl {
   optional<Villain&> getVillain(const Creature*);
   void considerWelcomeMessage();
 
-  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
   REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 
   const Location* SERIAL(location);

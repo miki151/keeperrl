@@ -315,11 +315,6 @@ class Fighter : public Behaviour {
   virtual ~Fighter() {
   }
 
-  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
-    if (lastSeen && victim == lastSeen->creature)
-      lastSeen = none;
-  }
-
   REGISTER_HANDLER(ThrowEvent, const Level* l, const Creature* thrower, const Item* item, const vector<Vec2>& traj) {
     if (!creature->isHumanoid() || l != creature->getLevel())
       return;
@@ -483,9 +478,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getLastSeenMove() {
-    if (!lastSeen) {
-      return NoMove;
-    }
+    auto lastSeen = getLastSeen();
     double lastSeenTimeout = 20;
     if (lastSeen->level != creature->getLevel() ||
         lastSeen->time < creature->getTime() - lastSeenTimeout ||
@@ -593,6 +586,11 @@ class Fighter : public Behaviour {
     }
   };
   optional<LastSeen> SERIAL(lastSeen);
+  optional<LastSeen>& getLastSeen() {
+    if (lastSeen && lastSeen->creature->isDead())
+      lastSeen.reset();
+    return lastSeen;
+  }
   map<const Creature*, pair<double, double>> chaseFreeze;
 
   bool isChaseFrozen(const Creature* c) {

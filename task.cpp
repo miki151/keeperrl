@@ -883,20 +883,19 @@ class KillFighters : public NonTransferable {
   KillFighters(Collective* col, int numC) : collective(col), numCreatures(numC) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    who = c;
-    targets = collective->getCreaturesAnyOf({MinionTrait::FIGHTER, MinionTrait::LEADER});
-    if (numCreatures <= 0 || targets.empty()) {
+    for (const Creature* target : collective->getCreaturesAnyOf({MinionTrait::FIGHTER, MinionTrait::LEADER}))
+      targets.insert(target);
+    int numKilled = 0;
+    for (const Creature* victim : c->getKills())
+      if (targets.contains(victim))
+        ++numKilled;
+    if (numKilled >= numCreatures || targets.empty()) {
       setDone();
       return NoMove;
     }
     if (c->getLevel() != collective->getLevel())
       return NoMove;
     return c->moveTowards(collective->getLeader()->getPosition());
-  }
-
-  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
-    if (killer && killer == who && targets.contains(victim))
-      --numCreatures;
   }
 
   virtual string getDescription() const override {
@@ -907,7 +906,7 @@ class KillFighters : public NonTransferable {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
       & SVAR(collective)
-      & SVAR(who)
+      & SVAR(who) // OBSOLETE
       & SVAR(numCreatures)
       & SVAR(targets);
     CHECK_SERIAL;
@@ -917,7 +916,7 @@ class KillFighters : public NonTransferable {
 
   private:
   Collective* SERIAL(collective);
-  const Creature* SERIAL2(who, nullptr);
+  const Creature* SERIAL2(who, nullptr);  // OBSOLETE
   int SERIAL(numCreatures);
   EntitySet<Creature> SERIAL(targets);
 };

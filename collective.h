@@ -287,6 +287,8 @@ class Collective : public Task::Callback {
   void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message);
   void removeAssaultNotification(const Collective*);
 
+  void onKilled(Creature* victim, Creature* killer);
+
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
   void freeTeamMembers(TeamId);
@@ -336,7 +338,6 @@ class Collective : public Task::Callback {
   void addProducesMessage(const Creature*, const vector<PItem>&);
   
   SERIAL_CHECKER;
-  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity*, WorshipType);
   REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker);
   REGISTER_HANDLER(SquareDestroyedEvent, const Level*, Vec2 pos);

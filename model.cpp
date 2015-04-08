@@ -294,8 +294,13 @@ void Model::addCreature(PCreature c) {
   timeQueue.addCreature(std::move(c));
 }
 
-void Model::removeCreature(Creature* c) {
+void Model::killCreature(Creature* c, Creature* attacker) {
   deadCreatures.push_back(timeQueue.removeCreature(c));
+  if (attacker)
+    attacker->onKilled(c);
+  c->getTribe()->onMemberKilled(c, attacker);
+  for (auto& col : collectives)
+    col->onKilled(c, attacker);
 }
 
 Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker) {

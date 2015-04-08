@@ -42,6 +42,8 @@ class Tribe {
   void addEnemy(vector<Tribe*>);
   void addFriend(Tribe*);
 
+  void onMemberKilled(Creature* member, Creature* killer);
+
   SERIALIZATION_DECL(Tribe);
 
   template <class Archive>
@@ -68,7 +70,6 @@ class Tribe {
   };
 
   private:
-  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
   REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker);
 
   bool SERIAL(diplomatic);

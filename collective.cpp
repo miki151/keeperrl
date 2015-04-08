@@ -1152,9 +1152,8 @@ void Collective::decreaseMoraleForKill(const Creature* killer, const Creature* v
     c->addMorale(victim == getLeader() ? -2 : -0.015);
 }
 
-void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
-  if (contains(creatures, victim1)) {
-    Creature* victim = const_cast<Creature*>(victim1);
+void Collective::onKilled(Creature* victim, Creature* killer) {
+  if (contains(creatures, victim)) {
     if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer)
       && prisonerInfo.at(victim).state() == PrisonerState::EXECUTE)
       returnResource({ResourceId::PRISONER_HEAD, 1});
@@ -1179,22 +1178,23 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
       removeElement(bySpawnType[*spawnType], victim);
     for (auto team : teams.getContaining(victim))
       teams.remove(team, victim);
-    control->onCreatureKilled(victim, killer);
+    control->onMemberKilled(victim, killer);
     if (killer)
       control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
             PlayerMessage::HIGH).setPosition(victim->getPosition()));
     else
       control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
           .setPosition(victim->getPosition()));
-  }
-  if (victim1->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
-    addMana(getKillManaScore(victim1));
-    addMoraleForKill(killer, victim1);
-    kills.push_back(victim1);
-    points += victim1->getDifficultyPoints();
+  } else
+    control->onOtherKilled(victim, killer);
+  if (victim->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
+    addMana(getKillManaScore(victim));
+    addMoraleForKill(killer, victim);
+    kills.push_back(victim);
+    points += victim->getDifficultyPoints();
     if (killer)
-      control->addMessage(PlayerMessage(victim1->getName().a() + " is killed by " + killer->getName().a())
-          .setPosition(victim1->getPosition()));
+      control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
+          .setPosition(victim->getPosition()));
   }
 }
 

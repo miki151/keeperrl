@@ -244,13 +244,13 @@ Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
   return Vec2(0, 0);
 }
 
-void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId vision) {
+void Level::throwItem(PItem item, Attack attack, int maxDist, Vec2 position, Vec2 direction, VisionId vision) {
   vector<PItem> v;
   v.push_back(std::move(item));
   throwItem(std::move(v), attack, maxDist, position, direction, vision);
 }
 
-void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction,
+void Level::throwItem(vector<PItem> item, Attack attack, int maxDist, Vec2 position, Vec2 direction,
     VisionId vision) {
   CHECK(!item.empty());
   CHECK(direction.length8() == 1);
@@ -274,11 +274,11 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
   }
 }
 
-void Level::killCreature(Creature* creature) {
+void Level::killCreature(Creature* creature, Creature* attacker) {
   bucketMap.removeElement(creature->getPosition(), creature);
   removeElement(creatures, creature);
-  getSafeSquare(creature->getPosition())->removeCreature();
-  model->removeCreature(creature);
+  getSafeSquare(creature->getPosition())->killCreature(attacker);
+  model->killCreature(creature, attacker);
   if (creature->isPlayer())
     updatePlayer();
 }

@@ -560,8 +560,8 @@ class Altar : public Square {
       return none;
   }
 
-  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer) {
-    if (victim->getLevel() == getLevel() && victim->getPosition() == getPosition() && killer) {
+  virtual void onKilled(Creature* victim, Creature* killer) override {
+    if (killer) {
       recentKiller = killer;
       recentVictim = victim;
       killTime = killer->getTime();

@@ -88,7 +88,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void removeAssaultNotification(const Collective*) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onDiscoveredLocation(const Location*) override;
-  virtual void onCreatureKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onConstructed(Vec2, SquareType) override;
   virtual void onNoEnemies() override;
 

@@ -101,7 +101,7 @@ class Level : public UniqueEntity<Level> {
   vector<Vec2> getLandingSquares(StairDirection, StairKey) const;
 
   /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
-  void killCreature(Creature*);
+  void killCreature(Creature*, Creature* attacker);
 
   /** Recalculates visibility data assuming that \paramname{changedSquare} has changed
       its obstructing/non-obstructing attribute. */
@@ -147,8 +147,8 @@ class Level : public UniqueEntity<Level> {
   void changeLevel(Level* destination, Vec2 landing, Creature* c);
 
   /** Performs a throw of the item, with all consequences of the event.*/
-  void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
-  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
+  void throwItem(PItem item, Attack attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
+  void throwItem(vector<PItem> item, Attack attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
 
   /** Sets the creature that is assumed to be the player.*/
   void updatePlayer();

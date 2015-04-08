@@ -24,10 +24,10 @@ class Creature;
 
 class Attack {
   public:
-  Attack(const Creature* attacker, AttackLevel level, AttackType type, int toHit, int strength,
+  Attack(Creature* attacker, AttackLevel level, AttackType type, int toHit, int strength,
       bool back, optional<EffectType> effect = none);
 
-  const Creature* getAttacker() const;
+  Creature* getAttacker();
   int getStrength() const;
   int getAccuracy() const;
   AttackType getType() const;
@@ -36,7 +36,7 @@ class Attack {
   optional<EffectType> getEffect() const;
 
   private:
-  const Creature* attacker;
+  Creature* attacker;
   AttackLevel level;
   AttackType type;
   int accuracy;

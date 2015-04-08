@@ -14,7 +14,8 @@ class CollectiveControl {
   CollectiveControl(Collective*);
   virtual MoveInfo getMove(Creature*);
   virtual void tick(double time) = 0;
-  virtual void onCreatureKilled(const Creature* victim, const Creature* killer);
+  virtual void onMemberKilled(const Creature* victim, const Creature* killer);
+  virtual void onOtherKilled(const Creature* victim, const Creature* killer);
   virtual void update(Creature*);
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message) {}

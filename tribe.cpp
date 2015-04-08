@@ -119,19 +119,17 @@ double Tribe::getMultiplier(const Creature* member) {
     return 1;
 }
 
-void Tribe::onKillEvent(const Creature* member, const Creature* attacker) {
-  if (contains(members, member)) {
-    CHECK(member->getTribe() == this);
-    if (attacker == nullptr)
-      return;
-    initStanding(attacker);
-    standing[attacker] -= killPenalty * getMultiplier(member);
-    for (Tribe* t : enemyTribes)
-      if (t->diplomatic) {
-        t->initStanding(attacker);
-        t->standing[attacker] += killBonus * getMultiplier(member);
-      }
-  }
+void Tribe::onMemberKilled(Creature* member, Creature* attacker) {
+  CHECK(member->getTribe() == this);
+  if (attacker == nullptr)
+    return;
+  initStanding(attacker);
+  standing[attacker] -= killPenalty * getMultiplier(member);
+  for (Tribe* t : enemyTribes)
+    if (t->diplomatic) {
+      t->initStanding(attacker);
+      t->standing[attacker] += killBonus * getMultiplier(member);
+    }
 }
 
 void Tribe::onAttackEvent(Creature* member, Creature* attacker) {

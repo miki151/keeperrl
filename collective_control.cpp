@@ -38,7 +38,10 @@ MoveInfo CollectiveControl::getMove(Creature*) {
 }
 
 
-void CollectiveControl::onCreatureKilled(const Creature* victim, const Creature* killer) {
+void CollectiveControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+}
+
+void CollectiveControl::onOtherKilled(const Creature* victim, const Creature* killer) {
 }
 
 CollectiveControl::~CollectiveControl() {

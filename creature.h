@@ -66,8 +66,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   vector<const Square*> getSquares(const vector<Vec2>& direction) const;
   void setPosition(Vec2 pos);
   Vec2 getPosition() const;
-  bool dodgeAttack(const Attack&);
-  bool takeDamage(const Attack&);
+  bool dodgeAttack(Attack);
+  bool takeDamage(Attack);
   void heal(double amount = 1, bool replaceLimbs = false);
   double getHealth() const;
   double getMorale() const;
@@ -229,7 +229,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   bool isSameSector(Vec2) const;
 
   bool atTarget() const;
-  void die(const Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
+  void die(Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
   void bleed(double severity);
   void setOnFire(double amount);
   void poisonWithGas(double amount);
@@ -282,9 +282,9 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   vector<string> popPersonalEvents();
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
+  void onKilled(const Creature* victim);
 
   private:
-  REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
 
   double getExpLevelDouble() const;
   double getRawAttr(AttrType) const;
@@ -323,7 +323,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   EnumMap<BodyPart, int> SERIAL(injuredBodyParts);
   EnumMap<BodyPart, int> SERIAL(lostBodyParts);
   bool SERIAL2(hidden, false);
-  const Creature* SERIAL2(lastAttacker, nullptr);
+  Creature* SERIAL2(lastAttacker, nullptr);
   int SERIAL2(swapPositionCooldown, 0);
   vector<const Creature*> SERIAL(unknownAttacker);
   vector<const Creature*> SERIAL(privateEnemies);
@@ -331,7 +331,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   PController SERIAL(controller);
   vector<PController> SERIAL(controllerStack);
   vector<CreatureVision*> SERIAL(creatureVisions);
-  mutable vector<const Creature*> SERIAL(kills);
+  vector<const Creature*> SERIAL(kills);
   mutable double SERIAL2(difficultyPoints, 0);
   int SERIAL2(points, 0);
   int SERIAL2(numAttacksThisTurn, 0);
