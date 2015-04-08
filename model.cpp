@@ -166,7 +166,6 @@ void Model::updateSunlightInfo() {
     }
   }
   if (previous != sunlightInfo.state) {
-    GlobalEvents.addSunlightChangeEvent();
     for (PLevel& l : levels)
       l->updateSunlightMovement();
   }

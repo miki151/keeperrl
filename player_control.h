@@ -95,8 +95,9 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   REGISTER_HANDLER(TechBookEvent, Technology*);
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity* to, WorshipType);
   REGISTER_HANDLER(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
-  REGISTER_HANDLER(SunlightChangeEvent);
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
+
+  void considerNightfall();
 
   friend class KeeperControlOverride;
 
@@ -257,6 +258,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool newTeam = false;
   VisibilityMap SERIAL(visibilityMap);
   bool firstRender = true;
+  bool isNight = true;
 };
 
 #endif
