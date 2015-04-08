@@ -67,7 +67,7 @@ static bool tilesPresent;
 #ifdef OSX // see thread comment in stdafx.h
 static thread::attributes getAttributes() {
   thread::attributes attr;
-  attr.set_stack_size(4096 * 2000);
+  attr.set_stack_size(4096 * 4000);
   return attr;
 }
 #endif
