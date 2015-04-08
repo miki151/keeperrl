@@ -1409,7 +1409,7 @@ void Collective::freeFromGuardPost(const Creature* c) {
 }
 
 double Collective::getTime() const {
-  return creatures.front()->getTime();
+  return getLevel()->getModel()->getTime();
 }
 
 void Collective::addGuardPost(Vec2 pos) {

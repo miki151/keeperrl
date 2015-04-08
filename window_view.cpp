@@ -975,7 +975,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
           case Keyboard::Numpad5:
           case Keyboard::Return: 
             if (count > 0 && index > -1) {
-              CHECK(index < indexes.size()) << index;
+              CHECK(index < indexes.size()) << index << " " << indexes.size() << " " << count << " " << options.size();
               return indexes[index];
             }
           case Keyboard::Escape: return none;

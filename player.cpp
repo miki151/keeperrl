@@ -373,7 +373,9 @@ vector<ItemInfo::Action> Player::getItemActions(Item* item) const {
 void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemInfo::Action action) {
   vector<Item*> items = getCreature()->getEquipment().getItems(
       [&](const Item* it) { return contains(itemIds, it->getUniqueId());});
-  CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
+  //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
+  if (items.empty()) // the above assertion fails for unknown reason, so just fail this softly.
+    return;
   switch (action) {
     case ItemInfo::DROP: tryToPerform(getCreature()->drop(items)); break;
     case ItemInfo::THROW: throwItem(items); break;

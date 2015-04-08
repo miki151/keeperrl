@@ -68,7 +68,8 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(finishCurrentMusic);
   CHECK_SERIAL;
   Deity::serializeAll(ar);
-  updateSunlightInfo();
+  if (Archive::is_loading::value)
+    updateSunlightInfo();
 }
 
 

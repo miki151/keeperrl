@@ -271,7 +271,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
   return CollectiveConfig::keeper(
       fastImmigration ? 0.1 : 0.011,
       500,
-      3,
+      2,
       {
       CONSTRUCT(ImmigrantInfo,
         c.id = CreatureId::GOBLIN;
