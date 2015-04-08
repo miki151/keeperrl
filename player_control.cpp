@@ -1569,7 +1569,7 @@ void PlayerControl::onPickupEvent(const Creature* c, const vector<Item*>& items)
     getCollective()->ownItems(c, items);
 }
 
-void PlayerControl::onTechBookEvent(Technology* tech) {
+void PlayerControl::onTechBookRead(Technology* tech) {
   if (retired) {
     model->getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
         + ", but you do not comprehend it.");

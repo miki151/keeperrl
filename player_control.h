@@ -69,6 +69,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 
+  void onTechBookRead(Technology*);
+
   protected:
   // from CreatureView
   virtual const Level* getLevel() const;
@@ -92,7 +94,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   private:
 
-  REGISTER_HANDLER(TechBookEvent, Technology*);
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity* to, WorshipType);
   REGISTER_HANDLER(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);

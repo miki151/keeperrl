@@ -171,6 +171,11 @@ void Model::updateSunlightInfo() {
   }
 }
 
+void Model::onTechBookRead(Technology* tech) {
+  if (playerControl)
+    playerControl->onTechBookRead(tech);
+}
+
 const char* Model::SunlightInfo::getText() {
   switch (state) {
     case NIGHT: return "night";

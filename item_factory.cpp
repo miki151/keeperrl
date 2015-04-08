@@ -386,7 +386,7 @@ class TechBook : public Item {
 
   virtual void apply(Creature* c, Level* l) override {
     if (!read || !!tech) {
-      GlobalEvents.addTechBookEvent(tech ? Technology::get(*tech) : nullptr);
+      l->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
       read = true;
     }
   }
