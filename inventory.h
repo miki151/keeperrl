@@ -19,6 +19,7 @@
 #include <functional>
 
 #include "util.h"
+#include "unique_entity.h"
 
 class Item;
 
@@ -50,6 +51,7 @@ class Inventory {
   const vector<Item*>& getItems(ItemIndex) const;
 
   bool hasItem(const Item*) const;
+  Item* getItemById(UniqueEntity<Item>::Id);
   int size() const;
 
   bool isEmpty() const;

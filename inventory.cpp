@@ -84,6 +84,14 @@ vector<Item*> Inventory::getItems(function<bool (Item*)> predicate) const {
   return ret;
 }
 
+Item* Inventory::getItemById(UniqueEntity<Item>::Id id) {
+  Item* ret = nullptr;
+  for (PItem& item : items)
+    if (item->getUniqueId() == id)
+      ret = item.get();
+  return ret;
+}
+
 function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
   switch (index) {
     case ItemIndex::GOLD: return Item::classPredicate(ItemClass::GOLD);
