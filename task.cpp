@@ -1183,6 +1183,8 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, CreateBed);
   REGISTER_TYPE(ar, ConsumeItem);
   REGISTER_TYPE(ar, Copulate);
+  if (version >= 5)
+    REGISTER_TYPE(ar, Consume);
 }
 
 REGISTER_TYPES(Task::registerTypes);
