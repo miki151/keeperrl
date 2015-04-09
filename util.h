@@ -1080,7 +1080,7 @@ class EnumMap {
     for (int i : All(elems))
       tmp.push_back(std::move(elems[i]));
     ar & tmp;
-    CHECK(tmp.size() <= elems.size());
+    CHECK(tmp.size() <= elems.size()) << tmp.size() << " " << elems.size();
     for (int i : All(tmp))
       elems[i] = std::move(tmp[i]);
   }
