@@ -41,7 +41,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(knownTiles)
     & SVAR(technologies)
     & SVAR(numFreeTech)
-    & SVAR(lastCombat)
+    & SVAR(lastCombat) // OBSOLETE
     & SVAR(kills)
     & SVAR(points)
     & SVAR(currentTasks)
@@ -2163,17 +2163,6 @@ void Collective::acquireTech(Technology* tech, bool free) {
 
 vector<Technology*> Collective::getTechnologies() const {
   return transform2<Technology*>(technologies, [] (const TechId t) { return Technology::get(t); });
-}
-
-void Collective::onCombatEvent(const Creature* c) {
-  CHECK(c != nullptr);
-  if (contains(creatures, c))
-    lastCombat[c] = c->getTime();
-}
-
-bool Collective::isInCombat(const Creature* c) const {
-  double timeout = 5;
-  return lastCombat.count(c) && lastCombat.at(c) > c->getTime() -5;
 }
 
 vector<const Creature*> Collective::getKills() const {

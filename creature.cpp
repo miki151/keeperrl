@@ -73,6 +73,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(visibleEnemies)
     & SVAR(vision)
     & SVAR(personalEvents);
+  if (version >= 1)  // OBSOLETE
+    ar & SVAR(lastCombatTime);
   CHECK_SERIAL;
 }
 
@@ -2493,5 +2495,13 @@ vector<string> Creature::getBadAdjectives() const {
 
 bool Creature::isSameSector(Vec2 pos) const {
   return level->areConnected(position, pos, getMovementType());
+}
+
+void Creature::setInCombat() {
+  lastCombatTime = getTime();
+}
+
+bool Creature::wasInCombat(double numLastTurns) const {
+  return lastCombatTime && *lastCombatTime >= getTime() - numLastTurns;
 }
 

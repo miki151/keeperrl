@@ -43,8 +43,6 @@ void unlink##Name(void* obj) {\
 
 class EventListener {
   public:
-  // triggered when the monster AI is either attacking, chasing or fleeing
-  EVENT(CombatEvent, const Creature*);
   EVENT(PickupEvent, const Creature*, const vector<Item*>& items);
   EVENT(DropEvent, const Creature*, const vector<Item*>& items);
   EVENT(ItemsAppearedEvent, const Level*, Vec2 position, const vector<Item*>& items);
