@@ -267,6 +267,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   bool isAffected(LastingEffect) const;
   bool isAffectedPermanently(LastingEffect) const;
   bool isFireResistant() const;
+  bool isDarknessSource() const;
 
   vector<AttackLevel> getAttackLevels() const;
   bool hasSuicidalAttack() const;

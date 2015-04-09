@@ -37,7 +37,7 @@ void Inventory::addItem(PItem item) {
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && getIndexPredicate(ind)(item.get()))
       indexes[ind]->push_back(item.get()); 
-  items.push_back(move(item));
+  items.push_back(std::move(item));
 }
 
 void Inventory::addItems(vector<PItem> v) {
@@ -73,7 +73,7 @@ vector<PItem> Inventory::removeAllItems() {
   itemsCache.clear();
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     indexes[ind] = none;
-  return move(items);
+  return std::move(items);
 }
 
 vector<Item*> Inventory::getItems(function<bool (Item*)> predicate) const {
@@ -81,6 +81,14 @@ vector<Item*> Inventory::getItems(function<bool (Item*)> predicate) const {
   for (const PItem& item : items)
     if (predicate(item.get()))
       ret.push_back(item.get());
+  return ret;
+}
+
+Item* Inventory::getItemById(UniqueEntity<Item>::Id id) {
+  Item* ret = nullptr;
+  for (PItem& item : items)
+    if (item->getUniqueId() == id)
+      ret = item.get();
   return ret;
 }
 
