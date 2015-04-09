@@ -269,26 +269,6 @@ void Player::dropAction(bool extended) {
   tryToPerform(getCreature()->drop(getPrefix(items, num)));
 }
 
-void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
-  if (!getCreature()->pickUp(items))
-    return;
-  vector<View::ListElem> names;
-  vector<vector<Item*> > groups;
-  getItemNames(items, names, groups);
-  CHECK(groups.size() == names.size()) << int(groups.size()) << " " << int(names.size());
-  CHECK(!names.empty());
-  optional<int> index = model->getView()->chooseFromList("Do you want to take this item?", names);
-  if (!index) {
-    return;
-  }
-  CHECK(*index >= 0 && *index < groups.size()) << *index << " " << int(groups.size());
-  int num = groups[*index].size(); //groups[index].size() == 1 ? 1 : howMany(model->getView(), groups[index].size());
-  if (num < 1)
-    return;
-  privateMessage("You take " + getCreature()->getPluralTheName(groups[*index][0], num));
-  tryToPerform(getCreature()->pickUp(getPrefix(groups[*index], num), false));
-}
-
 void Player::applyAction() {
   vector<Item*> items = chooseItem("Choose an item to apply:", [this](const Item* item) {
       return getCreature()->applyItem(const_cast<Item*>(item));}, UserInputId::APPLY_ITEM);

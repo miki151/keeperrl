@@ -327,7 +327,7 @@ PTask Task::pickAndEquipItem(Callback* c, Vec2 position, Item* items) {
 namespace {
 class EquipItem : public NonTransferable {
   public:
-  EquipItem(Item* _item) : item(_item) {
+  EquipItem(Item* item) : itemId(item->getUniqueId()) {
   }
 
   virtual string getDescription() const override {
@@ -336,28 +336,37 @@ class EquipItem : public NonTransferable {
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(c->isHumanoid()) << c->getName().bare();
-    CHECK(c->getEquipment().canEquip(item)) << c->getName().bare() << " can't equip" << item->getName();
-    if (!contains(c->getEquipment().getItems(), item)) { // Creature managed to drop the item already
+    if (Item* item = c->getEquipment().getItemById(itemId)) {
+      CHECK(c->getEquipment().canEquip(item)) << c->getName().bare() << " can't equip" << item->getName();
+      if (auto action = c->equip(item))
+        return action.append([=](Creature* c) {setDone();});
+      else
+        return NoMove;
+    } else { // either item was dropped or doesn't exist anymore.
       setDone();
       return NoMove;
     }
-    if (auto action = c->equip(item))
-      return action.append([=](Creature* c) {setDone();});
-    else
-      return NoMove;
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(item);
+    if (version >= 1)
+      ar & SVAR(itemId);
+    else {
+      Item *item; //SERIAL(item)
+      ar & SVAR(item);
+      itemId = item->getUniqueId();
+    }
   }
   
   SERIALIZATION_CONSTRUCTOR(EquipItem);
 
   private:
-  Item* SERIAL(item);
+  UniqueEntity<Item>::Id SERIAL(itemId);
 };
 }
+
+BOOST_CLASS_VERSION(EquipItem, 1)
 
 PTask Task::equipItem(Item* item) {
   return PTask(new EquipItem(item));
