@@ -39,7 +39,6 @@ DEF_UNIQUE_PTR(Creature);
 DEF_UNIQUE_PTR(Square);
 DEF_UNIQUE_PTR(MonsterAI);
 DEF_UNIQUE_PTR(Behaviour);
-DEF_UNIQUE_PTR(Obstacle);
 DEF_UNIQUE_PTR(Task);
 DEF_UNIQUE_PTR(Controller);
 DEF_UNIQUE_PTR(Trigger);
