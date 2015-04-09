@@ -901,7 +901,6 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int count = 0;
   double* scrollPos = scrollPos1;
   int index = index1;
-  int mouseOverElem = -1;
   vector<int> indexes(options.size());
   vector<int> optionIndexes;
   int elemCount = 0;
@@ -922,7 +921,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   PGuiElem stuff = guiBuilder.drawListGui(title, options, menuType, &contentHeight, &index, &choice);
   PGuiElem dismissBut = gui.margins(gui.stack(makeVec<PGuiElem>(
         gui.button([&](){ choice = -100; }),
-        gui.mouseHighlight(gui.mainMenuHighlight(), count, &index),
+        gui.mouseHighlight2(gui.mainMenuHighlight()),
         gui.centeredLabel("Dismiss"))), 0, 5, 0, 0);
   switch (menuType) {
     case MAIN_MENU: break;
@@ -944,8 +943,10 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     Event event;
     while (renderer.pollEvent(event)) {
       propagateEvent(event, {stuff.get()});
-      if (choice > -1)
+      if (choice > -1) {
+        CHECK(choice < indexes.size()) << choice;
         return indexes[choice];
+      }
       if (choice == -100)
         return none;
       if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
@@ -971,9 +972,12 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
               *scrollPos = min<int>(options.size() - 1, *scrollPos + 1);
             break;
           case Keyboard::Numpad5:
-          case Keyboard::Return: if (count > 0 && index > -1) return indexes[index];
+          case Keyboard::Return: 
+            if (count > 0 && index > -1) {
+              CHECK(index < indexes.size()) << index << " " << indexes.size() << " " << count << " " << options.size();
+              return indexes[index];
+            }
           case Keyboard::Escape: return none;
-                                 //       case Keyboard::Space : refreshScreen(); return;
           default: break;
         }
     }

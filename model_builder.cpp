@@ -271,7 +271,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
   return CollectiveConfig::keeper(
       fastImmigration ? 0.1 : 0.011,
       500,
-      3,
+      2,
       {
       CONSTRUCT(ImmigrantInfo,
         c.id = CreatureId::GOBLIN;
@@ -422,7 +422,7 @@ static EnumMap<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
 }
 
 PModel ModelBuilder::collectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
-  for (int i : Range(5)) {
+  for (int i : Range(10)) {
     try {
       return tryCollectiveModel(meter, options, view, worldName);
     } catch (LevelGenException ex) {

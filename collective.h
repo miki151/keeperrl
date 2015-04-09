@@ -253,7 +253,6 @@ class Collective : public Task::Callback {
   vector<Spell*> getAllSpells() const;
   vector<Spell*> getAvailableSpells() const;
   TechId getNeededTech(Spell*) const;
-  bool isInCombat(const Creature*) const;
   void addKnownTile(Vec2 pos);
 
   vector<const Creature*> getKills() const;
@@ -337,7 +336,6 @@ class Collective : public Task::Callback {
   void addProducesMessage(const Creature*, const vector<PItem>&);
   
   SERIAL_CHECKER;
-  REGISTER_HANDLER(CombatEvent, const Creature*);
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity*, WorshipType);
   REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker);
@@ -437,7 +435,7 @@ class Collective : public Task::Callback {
   double manaRemainder = 0;
   double getKillManaScore(const Creature*) const;
   void addMana(double);
-  unordered_map<const Creature*, double> SERIAL(lastCombat);
+  unordered_map<const Creature*, double> SERIAL(lastCombat); // OBSOLETE
   vector<const Creature*> SERIAL(kills);
   int SERIAL2(points, 0);
   unordered_map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);

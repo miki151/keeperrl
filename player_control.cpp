@@ -845,7 +845,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.nextPayout = getCollective()->getNextSalaries();
   for (Creature* c : getCollective()->getCreaturesAnyOf(
         {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER})) {
-    if (getCollective()->isInCombat(c))
+    if (c->wasInCombat(5))
       info.tasks[c->getUniqueId()] = "fighting";
     info.minions.push_back(c);
   }
@@ -1437,7 +1437,7 @@ void PlayerControl::considerDeityFight() {
 void PlayerControl::checkKeeperDanger() {
   Creature* controlled = getControlled();
   if (!retired && getKeeper() && controlled != getKeeper()) { 
-    if ((getCollective()->isInCombat(getKeeper()) || getKeeper()->getHealth() < 1)
+    if ((getKeeper()->wasInCombat(5) || getKeeper()->getHealth() < 1)
         && lastControlKeeperQuestion < getCollective()->getTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getTime();
       if (model->getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
@@ -1463,11 +1463,23 @@ void PlayerControl::onNoEnemies() {
   model->setCurrentMusic(MusicType::PEACEFUL, false);
 }
 
+void PlayerControl::considerNightfall() {
+  if (model->getSunlightInfo().state == Model::SunlightInfo::NIGHT) {
+    if (!isNight) {
+      addMessage(PlayerMessage("Night is falling. Killing enemies in their sleep yields double mana.",
+            PlayerMessage::HIGH));
+      isNight = true;
+    }
+  } else
+    isNight = false;
+}
+
 void PlayerControl::tick(double time) {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
   messages = filter(messages, [&] (const PlayerMessage& msg) {
       return msg.getFreshness() > 0; });
+  considerNightfall();
   for (Warning w : ENUM_ALL(Warning))
     if (getCollective()->isWarning(w)) {
       if (!currentWarning || currentWarning->warning() != w || currentWarning->lastView()+warningFrequency < time) {
@@ -1557,7 +1569,7 @@ void PlayerControl::onPickupEvent(const Creature* c, const vector<Item*>& items)
     getCollective()->ownItems(c, items);
 }
 
-void PlayerControl::onTechBookEvent(Technology* tech) {
+void PlayerControl::onTechBookRead(Technology* tech) {
   if (retired) {
     model->getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
         + ", but you do not comprehend it.");
@@ -1660,12 +1672,6 @@ void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType t
         break;
       default: break;
     }
-}
-
-void PlayerControl::onSunlightChangeEvent() {
-  if (model->getSunlightInfo().state == Model::SunlightInfo::NIGHT)
-      addMessage(PlayerMessage("Night is falling. Killing enemies in their sleep yields double mana.",
-            PlayerMessage::HIGH));
 }
 
 void PlayerControl::onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType type) {

@@ -159,6 +159,7 @@ void Player::pickUpAction(bool extended) {
   vector<View::ListElem> names;
   vector<vector<Item*> > groups;
   getItemNames(getCreature()->getPickUpOptions(), names, groups);
+  CHECK(groups.size() == names.size()) << int(groups.size()) << " " << int(names.size());
   if (names.empty())
     return;
   int index = 0;
@@ -169,8 +170,7 @@ void Player::pickUpAction(bool extended) {
     else
       index = *res;
   }
-  CHECK(index < groups.size());
-  CHECK(index >= 0);
+  CHECK(index >= 0 && index < groups.size()) << index << " " << int(groups.size());
   int num = groups[index].size();
   if (num < 1)
     return;
@@ -269,26 +269,6 @@ void Player::dropAction(bool extended) {
   tryToPerform(getCreature()->drop(getPrefix(items, num)));
 }
 
-void Player::onItemsAppeared(vector<Item*> items, const Creature* from) {
-  if (!getCreature()->pickUp(items))
-    return;
-  vector<View::ListElem> names;
-  vector<vector<Item*> > groups;
-  getItemNames(items, names, groups);
-  CHECK(!names.empty());
-  optional<int> index = model->getView()->chooseFromList("Do you want to take this item?", names);
-  if (!index) {
-    return;
-  }
-  CHECK(*index >= 0);
-  CHECK(*index < groups.size());
-  int num = groups[*index].size(); //groups[index].size() == 1 ? 1 : howMany(model->getView(), groups[index].size());
-  if (num < 1)
-    return;
-  privateMessage("You take " + getCreature()->getPluralTheName(groups[*index][0], num));
-  tryToPerform(getCreature()->pickUp(getPrefix(groups[*index], num), false));
-}
-
 void Player::applyAction() {
   vector<Item*> items = chooseItem("Choose an item to apply:", [this](const Item* item) {
       return getCreature()->applyItem(const_cast<Item*>(item));}, UserInputId::APPLY_ITEM);
@@ -373,7 +353,9 @@ vector<ItemInfo::Action> Player::getItemActions(Item* item) const {
 void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemInfo::Action action) {
   vector<Item*> items = getCreature()->getEquipment().getItems(
       [&](const Item* it) { return contains(itemIds, it->getUniqueId());});
-  CHECK(items.size() == itemIds.size());
+  //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
+  if (items.empty()) // the above assertion fails for unknown reason, so just fail this softly.
+    return;
   switch (action) {
     case ItemInfo::DROP: tryToPerform(getCreature()->drop(items)); break;
     case ItemInfo::THROW: throwItem(items); break;

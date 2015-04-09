@@ -41,7 +41,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(knownTiles)
     & SVAR(technologies)
     & SVAR(numFreeTech)
-    & SVAR(lastCombat)
+    & SVAR(lastCombat) // OBSOLETE
     & SVAR(kills)
     & SVAR(points)
     & SVAR(currentTasks)
@@ -1356,7 +1356,7 @@ void Collective::updateEfficiency(Vec2 pos, SquareType type) {
     for (Vec2 v : pos.neighbors8())
       if (getSquares(type).count(v)) {
         --squareEfficiency[v];
-        CHECK(squareEfficiency[v] >=0);
+        CHECK(squareEfficiency[v] >=0) << EnumInfo<SquareId>::getString(type.getId());
       }
   }
 }
@@ -1409,7 +1409,7 @@ void Collective::freeFromGuardPost(const Creature* c) {
 }
 
 double Collective::getTime() const {
-  return creatures.front()->getTime();
+  return getLevel()->getModel()->getTime();
 }
 
 void Collective::addGuardPost(Vec2 pos) {
@@ -1474,7 +1474,7 @@ void Collective::takeResource(CostInfo cost) {
           return;
       }
     }
-  FAIL << "Not enough " << resourceInfo.at(cost.id()).name;
+  FAIL << "Not enough " << resourceInfo.at(cost.id()).name << " missing " << num << " of " << cost.value();
 }
 
 void Collective::returnResource(CostInfo amount) {
@@ -2163,17 +2163,6 @@ void Collective::acquireTech(Technology* tech, bool free) {
 
 vector<Technology*> Collective::getTechnologies() const {
   return transform2<Technology*>(technologies, [] (const TechId t) { return Technology::get(t); });
-}
-
-void Collective::onCombatEvent(const Creature* c) {
-  CHECK(c != nullptr);
-  if (contains(creatures, c))
-    lastCombat[c] = c->getTime();
-}
-
-bool Collective::isInCombat(const Creature* c) const {
-  double timeout = 5;
-  return lastCombat.count(c) && lastCombat.at(c) > c->getTime() -5;
 }
 
 vector<const Creature*> Collective::getKills() const {

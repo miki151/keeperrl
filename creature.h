@@ -281,6 +281,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   vector<string> getBadAdjectives() const;
 
   vector<string> popPersonalEvents();
+  void setInCombat();
+  bool wasInCombat(double numLastTurns) const;
 
   private:
   REGISTER_HANDLER(KillEvent, const Creature* victim, const Creature* killer);
@@ -345,7 +347,10 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void updateVision();
   vector<string> SERIAL(personalEvents);
   bool forceMovement = false;
+  optional<double> SERIAL(lastCombatTime);
 };
+
+BOOST_CLASS_VERSION(Creature, 1)
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };
 

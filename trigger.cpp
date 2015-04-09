@@ -67,14 +67,30 @@ namespace {
 
 class Portal : public Trigger {
   public:
+
+  Portal* getOther(Model::PortalInfo info) const {
+    for (Trigger* t : info.level()->getSafeSquare(info.position())->getTriggers())
+      if (Portal* ret = dynamic_cast<Portal*>(t))
+        return ret;
+    return nullptr;
+  }
+
+  Portal* getOther() const {
+    if (otherPortal)
+      return getOther(*otherPortal);
+    return nullptr;
+  }
+
   Portal(const ViewObject& obj, Level* l, Vec2 position) : Trigger(obj, l, position) {
-    if (Portal* previous = dynamic_cast<Portal*>(l->getModel()->getDanglingPortal())) {
-      other = previous;
-      other->other = this;
-      l->getModel()->setDanglingPortal(nullptr);
-      startTime = other->startTime = -1;
-    } else
-      l->getModel()->setDanglingPortal(this);
+    if (auto portalInfo = l->getModel()->getDanglingPortal())
+      if (Portal* previous = getOther(*portalInfo)) {
+        otherPortal = portalInfo;
+        previous->otherPortal = Model::PortalInfo(l, position);
+        l->getModel()->resetDanglingPortal();
+        startTime = previous->startTime = -1;
+        return;
+      }
+    l->getModel()->setDanglingPortal(Model::PortalInfo(l, position));
   }
 
   virtual void onCreatureEnter(Creature* c) override {
@@ -82,7 +98,7 @@ class Portal : public Trigger {
       active = true;
       return;
     }
-    if (other) {
+    if (Portal* other = getOther()) {
       other->active = false;
       c->you(MsgType::ENTER_PORTAL, "");
       if (other->level == level) {
@@ -98,18 +114,18 @@ class Portal : public Trigger {
       } else
         level->changeLevel(other->level, other->position, c);
     } else
-      c->playerMessage("Creating another portal will open a connection.");
+      c->playerMessage("The portal is inactive. Create another one to open a connection.");
   }
 
   virtual bool interceptsFlyingItem(Item* it) const override {
-    return other && !Random.roll(5);
+    return getOther() && !Random.roll(5);
   }
 
   virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir,
       VisionId vision) {
     string name = it[0]->getTheName(it.size() > 1);
     level->globalMessage(position, name + " disappears in the portal.");
-    other->level->throwItem(std::move(it), a, remainingDist, other->position, dir, vision);
+    NOTNULL(getOther())->level->throwItem(std::move(it), a, remainingDist, NOTNULL(getOther())->position, dir, vision);
   }
 
   virtual void tick(double time) override {
@@ -125,8 +141,15 @@ class Portal : public Trigger {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Trigger)
       & SVAR(startTime)
-      & SVAR(active)
-      & SVAR(other);
+      & SVAR(active);
+    if (version >= 1)
+      ar & SVAR(otherPortal);
+    else {
+      Portal* p; // SERIAL(p)
+      ar & SVAR(p);
+      if (p)
+        otherPortal = Model::PortalInfo(p->level, p->position);
+    }
     CHECK_SERIAL;
   }
 
@@ -135,10 +158,12 @@ class Portal : public Trigger {
   private:
   double SERIAL2(startTime, 1000000);
   bool SERIAL2(active, true);
-  Portal* SERIAL2(other, nullptr);
+  optional<Model::PortalInfo> SERIAL(otherPortal);
 };
 
 }
+
+BOOST_CLASS_VERSION(Portal, 1)
 
 PTrigger Trigger::getPortal(const ViewObject& obj, Level* l, Vec2 position) {
   return PTrigger(new Portal(obj, l, position));
