@@ -171,6 +171,7 @@ int main(int argc, char* argv[]) {
   makeDir(userPath);
   Options options(userPath + "/options.txt");
   Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
+  sf::err().rdbuf(Debug::sfOut.rdbuf());
   Clock clock;
   GuiFactory guiFactory(&clock);
   guiFactory.loadFreeImages(freeDataPath + "/images");

@@ -82,6 +82,8 @@ class Debug {
   Debug& operator<<(const vector<vector<T> >& container);
   ~Debug();
 
+  static std::ofstream sfOut;
+
   private:
   string out;
   DebugType type;
