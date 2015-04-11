@@ -18,16 +18,14 @@
 #include "debug.h"
 #include "util.h"
 
-std::ofstream Debug::sfOut;
 
 static void fail() {
-  Debug::sfOut.flush();
   *((int*) 0x1234) = 0; // best way to fail
 }
 
 namespace boost {
   void assertion_failed(char const * expr, char const * function, char const * file, long line) {
-    Debug::sfOut << "Assertion at " << file << ":" << line << std::endl;
+    (ofstream("stacktrace.out") << "Assertion at " << file << ":" << line << std::endl).flush();
     fail();
   }
 }
@@ -40,7 +38,6 @@ Debug::Debug(DebugType t, const string& msg, int line)
 static ofstream output;
 
 void Debug::init() {
-  sfOut.open("stacktrace.out");
 #ifndef RELEASE
   output.open("log.out");
 #endif
@@ -51,7 +48,7 @@ void Debug::add(const string& a) {
 }
 Debug::~Debug() {
   if (type == DebugType::FATAL) {
-    Debug::sfOut << out << endl;
+    (ofstream("stacktrace.out") << out << endl).flush();
     fail();
   } else {
 #ifndef RELEASE
