@@ -160,7 +160,7 @@ class BoulderController : public Monster {
     double speed = getCreature()->getAttr(AttrType::SPEED);
     double deceleration = 0.1;
     speed -= deceleration * 100 * 100 / speed;
-    if (speed < 30) {
+    if (speed < 30 && !getCreature()->isDead()) {
       if (myTribe) {
         getCreature()->die();
         return;
