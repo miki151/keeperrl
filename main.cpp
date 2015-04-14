@@ -119,6 +119,7 @@ int main(int argc, char* argv[]) {
     ("user_dir", value<string>(), "Directory for options and save files")
     ("data_dir", value<string>(), "Directory containing the game data")
     ("upload_url", value<string>(), "URL for uploading maps")
+    ("override_settings", value<string>(), "Override settings")
     ("run_tests", "Run all unit tests and exit")
     ("gen_world_exit", "Exit after creating a world")
     ("force_keeper", "Skip main menu and force keeper mode")
@@ -169,7 +170,10 @@ int main(int argc, char* argv[]) {
   else
     uploadUrl = "http://keeperrl.com/retired";
   makeDir(userPath);
-  Options options(userPath + "/options.txt");
+  string overrideSettings;
+  if (vars.count("override_settings"))
+    overrideSettings = vars["override_settings"].as<string>();
+  Options options(userPath + "/options.txt", overrideSettings);
   Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
   Clock clock;
   GuiFactory guiFactory(&clock);

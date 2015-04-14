@@ -672,7 +672,7 @@ void Player::moveAction(Vec2 dir) {
     action.perform(getCreature());
   } else if (auto action = getCreature()->forceMove(dir)) {
     for (Square* square : getCreature()->getSquare(dir))
-      if (square->getMovementType() == getCreature()->getSquare()->getMovementType() ||
+      if (square->canEnterEmpty(getCreature()) == getCreature()->getSquare()->canEnterEmpty(getCreature()) ||
           model->getView()->yesOrNoPrompt(getForceMovementQuestion(square, getCreature()), true))
         action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))

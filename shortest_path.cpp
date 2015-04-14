@@ -69,13 +69,7 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
   auto entryFun = [=](Vec2 pos) { 
       if (level->getSafeSquare(pos)->canEnter(creature) || creature->getPosition() == pos) 
         return 1.0;
-      if (level->getSafeSquare(pos)->canEnterEmpty(creature)) {
-        if (const Creature* other = level->getSafeSquare(pos)->getCreature())
-          if (other->isStationary())
-            return 100.0;
-        return 5.0;
-      }
-      if (level->getSafeSquare(pos)->canDestroy(creature))
+      if (level->getSafeSquare(pos)->canNavigate(creature->getMovementType()))
         return 5.0;
       return infinity;};
   CHECK(to.inRectangle(level->getBounds()));

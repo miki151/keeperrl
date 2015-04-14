@@ -872,26 +872,26 @@ void removeElement(vector<T*>& v, const T* element) {
 
 template<class T>
 T getOnlyElement(const vector<T>& v) {
-  CHECK(v.size() == 1);
+  CHECK(v.size() == 1) << v.size();
   return v[0];
 }
 
 template<class T>
 T& getOnlyElement(vector<T>& v) {
-  CHECK(v.size() == 1);
+  CHECK(v.size() == 1) << v.size();
   return v[0];
 }
 
 // TODO: write a template that works with all containers
 template<class T>
 T getOnlyElement(const set<T>& v) {
-  CHECK(v.size() == 1);
+  CHECK(v.size() == 1) << v.size();
   return *v.begin();
 }
 
 template<class T>
 T getOnlyElement(vector<T>&& v) {
-  CHECK(v.size() == 1);
+  CHECK(v.size() == 1) << v.size();
   return std::move(v[0]);
 }
 
