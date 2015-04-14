@@ -223,7 +223,6 @@ CreatureAction Creature::move(Vec2 direction) const {
   if ((direction.length8() != 1 || !level->canMoveCreature(this, direction)) && !swapPosition(direction))
     return CreatureAction();
   return CreatureAction(this, [=](Creature* c) {
-    c->stationary = false;
     Debug() << getName().the() << " moving " << direction;
     if (isAffected(LastingEffect::ENTANGLED)) {
       playerMessage("You can't break free!");
@@ -234,6 +233,7 @@ CreatureAction Creature::move(Vec2 direction) const {
       level->moveCreature(c, direction);
     else
       c->swapPosition(direction).perform(c);
+    c->stationary = false;
     double oldTime = getTime();
     if (collapsed) {
       you(MsgType::CRAWL, getSquare()->getName());

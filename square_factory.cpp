@@ -78,7 +78,7 @@ class Magma : public Square {
   virtual void onEnterSpecial(Creature* c) override {
     MovementType realMovement = c->getMovementType();
     realMovement.removeTrait(MovementTrait::BY_FORCE);
-    if (!getMovementType().canEnter(realMovement)) {
+    if (!canEnterEmpty(realMovement)) {
       c->you(MsgType::BURN, getName());
       c->die(nullptr, false);
     }
@@ -118,7 +118,7 @@ class Water : public Square {
   virtual void onEnterSpecial(Creature* c) override {
     MovementType realMovement = c->getMovementType();
     realMovement.removeTrait(MovementTrait::BY_FORCE);
-    if (!getMovementType().canEnter(realMovement)) {
+    if (!canEnterEmpty(realMovement)) {
       c->you(MsgType::DROWN, getName());
       c->die(nullptr, false);
     }
