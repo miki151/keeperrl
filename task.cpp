@@ -463,10 +463,17 @@ class ApplyItem : public BringItem {
   }
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) override {
-    Item* item = getOnlyElement(it);
-    return c->applyItem(item).prepend([=](Creature* c) {
-        callback->onAppliedItem(c->getPosition(), item);
-    });
+    if (it.empty()) {
+      cancel();
+      return c->wait();
+    } else {
+      if (it.size() > 1)
+        FAIL << it[0]->getName() << " " << it[0]->getUniqueId() << " "  << it[1]->getName() << " " << it[1]->getUniqueId();
+      Item* item = getOnlyElement(it);
+      return c->applyItem(item).prepend([=](Creature* c) {
+          callback->onAppliedItem(c->getPosition(), item);
+      });
+    }
   }
 
   template <class Archive> 

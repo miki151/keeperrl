@@ -99,10 +99,29 @@ void Options::addTrigger(OptionId id, Trigger trigger) {
   triggers[id] = trigger;
 }
 
-Options::Options(const string& path) : filename(path) {
+static EnumMap<OptionId, optional<Options::Value>> parseOverrides(const string& s) {
+  EnumMap<OptionId, optional<Options::Value>> ret;
+  for (string op : split(s, {','})) {
+    auto parts = split(op, {'='});
+    CHECK(parts.size() == 2);
+    OptionId id = EnumInfo<OptionId>::fromString(parts[0]);
+    if (parts[1] == "n")
+      ret[id] = false;
+    else if (parts[1] == "y")
+      ret[id] = true;
+    else
+      FAIL << "Bad override " << parts;
+  }
+  return ret;
+}
+
+Options::Options(const string& path, const string& _overrides)
+    : filename(path), overrides(parseOverrides(_overrides)) {
 }
 
 Options::Value Options::getValue(OptionId id) {
+  if (overrides[id])
+    return *overrides[id];
   return readValues()[id];
 }
 

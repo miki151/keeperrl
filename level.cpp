@@ -718,7 +718,7 @@ const string& Level::getName() const {
 
 void Level::updateConnectivity(Vec2 pos) {
   for (auto& elem : sectors)
-    if (getSafeSquare(pos)->canEnterEmpty(elem.first) || getSafeSquare(pos)->canDestroy(elem.first.getTribe()))
+    if (getSafeSquare(pos)->canNavigate(elem.first))
       elem.second.add(pos);
     else
       elem.second.remove(pos);
@@ -730,7 +730,7 @@ bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement1) const 
     sectors[movement] = Sectors(getBounds());
     Sectors& newSectors = sectors.at(movement);
     for (Vec2 v : getBounds())
-      if (getSafeSquare(v)->canEnterEmpty(movement) || getSafeSquare(v)->canDestroy(movement.getTribe()))
+      if (getSafeSquare(v)->canNavigate(movement))
         newSectors.add(v);
   }
   return sectors.at(movement).same(p1, p2);

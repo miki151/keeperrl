@@ -46,7 +46,7 @@ enum class OptionSet {
 class Options {
   public:
   typedef variant<bool, string> Value;
-  Options(const string& path);
+  Options(const string& path, const string& overrides);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
   void handle(View*, OptionSet, int lastIndex = 0);
@@ -64,6 +64,7 @@ class Options {
   void writeValues(const EnumMap<OptionId, Value>&);
   string filename;
   EnumMap<OptionId, string> defaultStrings;
+  EnumMap<OptionId, optional<Value>> overrides;
 };
 
 

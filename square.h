@@ -97,7 +97,7 @@ class Square : public Renderable {
   bool canEnter(MovementType) const;
   //@}
 
-  const MovementType& getMovementType() const;
+  bool canNavigate(MovementType) const;
 
   //@{
   /** Checks if this square is can be entered by the creature. Doesn't take into account other 
@@ -247,6 +247,7 @@ class Square : public Renderable {
 
   private:
   Item* getTopItem() const;
+  const MovementType& getMovementType() const;
 
   Level* SERIAL2(level, nullptr);
   Vec2 SERIAL(position);
