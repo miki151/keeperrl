@@ -77,6 +77,8 @@ void Square::putCreature(Creature* c) {
   CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
   creature = c;
   onEnter(c);
+  if (c->isStationary())
+    level->addTickingSquare(position);
 }
 
 void Square::setPosition(Vec2 v) {
@@ -263,6 +265,8 @@ void Square::tick(double time) {
   }
   for (Trigger* t : extractRefs(triggers))
     t->tick(time);
+  if (creature && creature->isStationary())
+    level->updateConnectivity(position);
   tickSpecial(time);
 }
 
@@ -307,15 +311,23 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
     dropItems(std::move(item));
 }
 
+bool Square::canNavigate(MovementType type) const {
+  return canEnterEmpty(type) || canDestroy(type.getTribe()) || 
+      (creature && creature->isStationary() && type.getTribe() != creature->getTribe());
+}
+
 bool Square::canEnter(MovementType movement) const {
   return creature == nullptr && canEnterEmpty(movement);
 }
 
 bool Square::canEnterEmpty(MovementType movement) const {
-  return movementType.canEnter(movement);
+  return getMovementType().canEnter(movement);
 }
 
 const MovementType& Square::getMovementType() const {
+  static MovementType empty;
+  if (creature && creature->isStationary())
+    return empty;
   return movementType;
 }
 
@@ -324,7 +336,7 @@ bool Square::canEnter(const Creature* c) const {
 }
 
 bool Square::canEnterEmpty(const Creature* c) const {
-  return movementType.canEnter(c->getMovementType());
+  return getMovementType().canEnter(c->getMovementType());
 }
 
 void Square::setOnFire(double amount) {
@@ -473,7 +485,10 @@ void Square::onKilled(Creature* victim, Creature* attacker) {
 void Square::removeCreature() {
   setDirty();
   CHECK(creature);
+  Creature* tmp = creature;
   creature = nullptr;
+  if (tmp->isStationary())
+    level->updateConnectivity(position);
 }
 
 bool Square::canSeeThru(VisionId v) const {

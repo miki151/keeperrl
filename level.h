@@ -209,11 +209,14 @@ class Level : public UniqueEntity<Level> {
   void addLightSource(Vec2, double radius);
   void removeLightSource(Vec2, double radius);
 
+  void addDarknessSource(Vec2, double radius);
+  void removeDarknessSource(Vec2, double radius);
+
   /** Returns the amount of light in the square, capped within (0, 1).*/
   double getLight(Vec2) const;
 
-  /** Returns the amount of sunlight in the square, capped within (0, 1).*/
-  double isInSunlight(Vec2 pos) const;
+  /** Returns whether the square is in direct sunlight.*/
+  bool isInSunlight(Vec2 pos) const;
 
   /** Returns if two squares are connected assuming given movement.*/
   bool areConnected(Vec2, Vec2, const MovementType&) const;
@@ -332,6 +335,7 @@ class Level : public UniqueEntity<Level> {
   Table<CoverInfo> SERIAL(coverInfo);
   BucketMap<Creature*> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
+  Table<double> SERIAL(lightCapAmount);
   mutable unordered_map<MovementType, Sectors> SERIAL(sectors);
   unordered_set<const Tribe*> SERIAL(squareOwners);
   
@@ -339,6 +343,7 @@ class Level : public UniqueEntity<Level> {
       Table<CoverInfo> coverInfo);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
+  void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;
   vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
   bool isWithinVision(Vec2 from, Vec2 to, VisionId) const;
@@ -346,5 +351,7 @@ class Level : public UniqueEntity<Level> {
   /** Notify relevant locations about creature position. */
   void notifyLocations(Creature*);
 };
+
+BOOST_CLASS_VERSION(Level, 1)
 
 #endif

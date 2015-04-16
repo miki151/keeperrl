@@ -223,7 +223,6 @@ CreatureAction Creature::move(Vec2 direction) const {
   if ((direction.length8() != 1 || !level->canMoveCreature(this, direction)) && !swapPosition(direction))
     return CreatureAction();
   return CreatureAction(this, [=](Creature* c) {
-    c->stationary = false;
     Debug() << getName().the() << " moving " << direction;
     if (isAffected(LastingEffect::ENTANGLED)) {
       playerMessage("You can't break free!");
@@ -234,6 +233,7 @@ CreatureAction Creature::move(Vec2 direction) const {
       level->moveCreature(c, direction);
     else
       c->swapPosition(direction).perform(c);
+    c->stationary = false;
     double oldTime = getTime();
     if (collapsed) {
       you(MsgType::CRAWL, getSquare()->getName());
@@ -732,6 +732,7 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
     case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "now fire resistant"); break;
     case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "insane"); break;
     case LastingEffect::MAGIC_SHIELD: if (msg) you(MsgType::FEEL, "protected"); break;
+    case LastingEffect::DARKNESS_SOURCE: break;
   }
 }
 
@@ -781,6 +782,7 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
       break;
     case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "sane again"); break;
     case LastingEffect::MAGIC_SHIELD: if (msg) you(MsgType::FEEL, "less protected"); break;
+    case LastingEffect::DARKNESS_SOURCE: break;
   } 
 }
 
@@ -828,6 +830,10 @@ bool Creature::isAffectedPermanently(LastingEffect effect) const {
 
 bool Creature::isBlind() const {
   return isAffected(LastingEffect::BLIND) || (numLost(BodyPart::HEAD) > 0 && numBodyParts(BodyPart::HEAD) == 0);
+}
+
+bool Creature::isDarknessSource() const {
+  return isAffected(LastingEffect::DARKNESS_SOURCE);
 }
 
 double Creature::getRawAttr(AttrType type) const {
@@ -2452,6 +2458,7 @@ vector<string> Creature::getGoodAdjectives() const {
         case LastingEffect::FIRE_RESISTANT: ret.push_back("Fire resistant"); break;
         case LastingEffect::FLYING: ret.push_back("Flying"); break;
         case LastingEffect::MAGIC_SHIELD: ret.push_back("Magic shield"); break;
+        case LastingEffect::DARKNESS_SOURCE: ret.push_back("Source of darkness"); break;
         default: addCount = false; break;
       }
       if (addCount && !isAffectedPermanently(effect))

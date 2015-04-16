@@ -264,7 +264,6 @@ void PlayerControl::leaveControl() {
     model->getView()->resetCenter();
   if (controlled->isPlayer())
     controlled->popController();
-  ViewObject::setHallu(false);
   for (TeamId team : getCollective()->getTeams().getActiveTeams(controlled))
     if (!getCollective()->getTeams().isHidden(team)) {
       if (getCollective()->getTeams().getMembers(team).size() == 1)
@@ -284,6 +283,7 @@ void PlayerControl::render(View* view) {
     initialize();
   }
   if (!getControlled()) {
+    ViewObject::setHallu(false);
     view->updateView(this, false);
   }
   if (showWelcomeMsg && model->getOptions()->getBoolValue(OptionId::HINTS)) {

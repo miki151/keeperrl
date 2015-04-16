@@ -112,8 +112,14 @@ class Model {
 
   Encyclopedia keeperopedia;
 
-  Trigger* getDanglingPortal();
-  void setDanglingPortal(Trigger*);
+  struct PortalInfo : public NamedTupleBase<Level*, Vec2> {
+    NAMED_TUPLE_STUFF(PortalInfo);
+    NAME_ELEM(0, level);
+    NAME_ELEM(1, position);
+  };
+  optional<PortalInfo> getDanglingPortal();
+  void setDanglingPortal(PortalInfo);
+  void resetDanglingPortal();
 
   void addWoodCount(int);
   int getWoodCount() const;
@@ -163,13 +169,13 @@ class Model {
   bool SERIAL2(finishCurrentMusic, false);
   optional<ExitInfo> exitInfo;
   unique_ptr<CreatureView> SERIAL(spectator);
-  Trigger* SERIAL2(danglingPortal, nullptr);
+  optional<PortalInfo> SERIAL(danglingPortal);
   int SERIAL2(woodCount, 0);
   Statistics SERIAL(statistics);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
 };
 
-BOOST_CLASS_VERSION(Model, 2)
+BOOST_CLASS_VERSION(Model, 3)
 
 #endif

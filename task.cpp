@@ -327,7 +327,7 @@ PTask Task::pickAndEquipItem(Callback* c, Vec2 position, Item* items) {
 namespace {
 class EquipItem : public NonTransferable {
   public:
-  EquipItem(Item* _item) : item(_item) {
+  EquipItem(Item* item) : itemId(item->getUniqueId()) {
   }
 
   virtual string getDescription() const override {
@@ -336,28 +336,37 @@ class EquipItem : public NonTransferable {
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(c->isHumanoid()) << c->getName().bare();
-    CHECK(c->getEquipment().canEquip(item)) << c->getName().bare() << " can't equip" << item->getName();
-    if (!contains(c->getEquipment().getItems(), item)) { // Creature managed to drop the item already
+    if (Item* item = c->getEquipment().getItemById(itemId)) {
+      CHECK(c->getEquipment().canEquip(item)) << c->getName().bare() << " can't equip" << item->getName();
+      if (auto action = c->equip(item))
+        return action.append([=](Creature* c) {setDone();});
+      else
+        return NoMove;
+    } else { // either item was dropped or doesn't exist anymore.
       setDone();
       return NoMove;
     }
-    if (auto action = c->equip(item))
-      return action.append([=](Creature* c) {setDone();});
-    else
-      return NoMove;
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(item);
+    if (version >= 1)
+      ar & SVAR(itemId);
+    else {
+      Item *item; //SERIAL(item)
+      ar & SVAR(item);
+      itemId = item->getUniqueId();
+    }
   }
   
   SERIALIZATION_CONSTRUCTOR(EquipItem);
 
   private:
-  Item* SERIAL(item);
+  UniqueEntity<Item>::Id SERIAL(itemId);
 };
 }
+
+BOOST_CLASS_VERSION(EquipItem, 1)
 
 PTask Task::equipItem(Item* item) {
   return PTask(new EquipItem(item));
@@ -454,10 +463,17 @@ class ApplyItem : public BringItem {
   }
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) override {
-    Item* item = getOnlyElement(it);
-    return c->applyItem(item).prepend([=](Creature* c) {
-        callback->onAppliedItem(c->getPosition(), item);
-    });
+    if (it.empty()) {
+      cancel();
+      return c->wait();
+    } else {
+      if (it.size() > 1)
+        FAIL << it[0]->getName() << " " << it[0]->getUniqueId() << " "  << it[1]->getName() << " " << it[1]->getUniqueId();
+      Item* item = getOnlyElement(it);
+      return c->applyItem(item).prepend([=](Creature* c) {
+          callback->onAppliedItem(c->getPosition(), item);
+      });
+    }
   }
 
   template <class Archive> 
@@ -1173,6 +1189,8 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, CreateBed);
   REGISTER_TYPE(ar, ConsumeItem);
   REGISTER_TYPE(ar, Copulate);
+  if (version >= 5)
+    REGISTER_TYPE(ar, Consume);
 }
 
 REGISTER_TYPES(Task::registerTypes);

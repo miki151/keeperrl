@@ -219,8 +219,8 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
   Texture& menuMouth = gui.get(GuiFactory::TexId::MENU_MOUTH);
   double scale = double(renderer.getSize().y) / menuCore.getSize().y;
   int width = menuCore.getSize().x * scale;
-  double mouthPos1 = 184;
-  double mouthPos2 = 214;
+  double mouthPos1 = 184 * menuCore.getSize().x / 1920;
+  double mouthPos2 = 214 * menuCore.getSize().x / 1920;
   double mouthX = (renderer.getSize().x - (menuMouth.getSize().x + 5) * scale) / 2;
   renderer.drawFilledRectangle(mouthX, mouthPos1 * scale, 1 + mouthX + barState * menuMouth.getSize().x * scale,
       (mouthPos2 + menuMouth.getSize().y) * scale, sf::Color(60, 76, 48));
@@ -901,7 +901,6 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int count = 0;
   double* scrollPos = scrollPos1;
   int index = index1;
-  int mouseOverElem = -1;
   vector<int> indexes(options.size());
   vector<int> optionIndexes;
   int elemCount = 0;
@@ -922,7 +921,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   PGuiElem stuff = guiBuilder.drawListGui(title, options, menuType, &contentHeight, &index, &choice);
   PGuiElem dismissBut = gui.margins(gui.stack(makeVec<PGuiElem>(
         gui.button([&](){ choice = -100; }),
-        gui.mouseHighlight(gui.mainMenuHighlight(), count, &index),
+        gui.mouseHighlight2(gui.mainMenuHighlight()),
         gui.centeredLabel("Dismiss"))), 0, 5, 0, 0);
   switch (menuType) {
     case MAIN_MENU: break;
@@ -979,7 +978,6 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
               return indexes[index];
             }
           case Keyboard::Escape: return none;
-                                 //       case Keyboard::Space : refreshScreen(); return;
           default: break;
         }
     }

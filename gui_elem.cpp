@@ -1111,8 +1111,12 @@ void GuiFactory::loadNonFreeImages(const string& path) {
   textures[TexId::ADVENTURER_HIGHLIGHT].setSmooth(true);
   CHECK(textures[TexId::MENU_ITEM].loadFromFile(path + "/barmid.png"));
   textures[TexId::MENU_ITEM].setSmooth(true);
-  CHECK(textures[TexId::MENU_CORE].loadFromFile(path + "/menu_core.png"));
-  CHECK(textures[TexId::MENU_MOUTH].loadFromFile(path + "/menu_mouth.png"));
+  if (textures[TexId::MENU_CORE].loadFromFile(path + "/menu_core.png")) {
+    CHECK(textures[TexId::MENU_MOUTH].loadFromFile(path + "/menu_mouth.png"));
+  } else {
+    CHECK(textures[TexId::MENU_CORE].loadFromFile(path + "/menu_core_sm.png"));
+    CHECK(textures[TexId::MENU_MOUTH].loadFromFile(path + "/menu_mouth_sm.png"));
+  }
   textures[TexId::MENU_CORE].setSmooth(true);
   textures[TexId::MENU_MOUTH].setSmooth(true);
 }

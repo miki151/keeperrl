@@ -78,7 +78,7 @@ class Magma : public Square {
   virtual void onEnterSpecial(Creature* c) override {
     MovementType realMovement = c->getMovementType();
     realMovement.removeTrait(MovementTrait::BY_FORCE);
-    if (!getMovementType().canEnter(realMovement)) {
+    if (!canEnterEmpty(realMovement)) {
       c->you(MsgType::BURN, getName());
       c->die(nullptr, false);
     }
@@ -118,7 +118,7 @@ class Water : public Square {
   virtual void onEnterSpecial(Creature* c) override {
     MovementType realMovement = c->getMovementType();
     realMovement.removeTrait(MovementTrait::BY_FORCE);
-    if (!getMovementType().canEnter(realMovement)) {
+    if (!canEnterEmpty(realMovement)) {
       c->you(MsgType::DROWN, getName());
       c->die(nullptr, false);
     }
@@ -428,8 +428,9 @@ class Barricade : public Square {
         c.name = "barricade";
         c.vision = VisionId::NORMAL;
         c.canDestroy = true;
-        c.flamability = 0.5;)),
-      tribe(t), destructionStrength(destStrength) {
+        c.flamability = 0.5;
+        c.owner = t;)),
+      destructionStrength(destStrength) {
   }
 
   virtual void destroyBy(Creature* c) override {
@@ -445,18 +446,22 @@ class Barricade : public Square {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(tribe)
-      & SVAR(destructionStrength);
+    ar& SUBCLASS(Square);
+    if (version < 1) { // OBSOLETE
+      Tribe* tribe; // SERIAL(tribe)
+      ar & SVAR(tribe);
+    }
+    ar & SVAR(destructionStrength);
     CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Barricade);
 
   private:
-  const Tribe* SERIAL(tribe);
   int SERIAL(destructionStrength);
 };
+
+BOOST_CLASS_VERSION(Barricade, 1)
 
 class Furniture : public Square {
   public:

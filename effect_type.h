@@ -47,7 +47,8 @@ RICH_ENUM(LastingEffect,
     FIRE_RESISTANT,
     FLYING,
     INSANITY,
-    MAGIC_SHIELD
+    MAGIC_SHIELD,
+    DARKNESS_SOURCE
 );
 
 

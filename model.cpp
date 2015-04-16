@@ -51,9 +51,14 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(adventurer)
     & SVAR(currentTime)
     & SVAR(worldName)
-    & SVAR(musicType)
-    & SVAR(danglingPortal)
-    & SVAR(woodCount)
+    & SVAR(musicType);
+  if (version >= 3)
+    ar & SVAR(danglingPortal);
+  else {
+    Trigger* tmp; // SERIAL(tmp)
+    ar & SVAR(tmp);
+  }
+  ar & SVAR(woodCount)
     & SVAR(statistics)
     & SVAR(spectator)
     & SVAR(tribeSet);
@@ -85,12 +90,16 @@ const double nightLength = 1500;
 
 const double duskLength  = 180;
 
-Trigger* Model::getDanglingPortal() {
+optional<Model::PortalInfo> Model::getDanglingPortal() {
   return danglingPortal;
 }
 
-void Model::setDanglingPortal(Trigger* p) {
+void Model::setDanglingPortal(Model::PortalInfo p) {
   danglingPortal = p;
+}
+
+void Model::resetDanglingPortal() {
+  danglingPortal.reset();
 }
 
 void Model::addWoodCount(int cnt) {
