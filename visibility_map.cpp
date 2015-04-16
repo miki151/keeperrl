@@ -18,8 +18,11 @@ VisibilityMap::VisibilityMap(Rectangle bounds) : visibilityCount(bounds, 0) {
 void VisibilityMap::update(const Creature* c, vector<Vec2> visibleTiles) {
   remove(c);
   lastUpdates[c] = visibleTiles;
-  for (Vec2 v : visibleTiles)
+  for (Vec2 v : visibleTiles) {
+    CHECK(v.inRectangle(visibilityCount.getBounds())) << v << " " << c->getPosition() << " " << c->getName().bare()
+        << " " << c->getTime();
     ++visibilityCount[v];
+  }
 }
 
 void VisibilityMap::remove(const Creature* c) {
