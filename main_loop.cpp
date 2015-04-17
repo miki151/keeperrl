@@ -105,7 +105,7 @@ View::ListElem MainLoop::getGameName(const SaveFileInfo& save) {
   CompressedInput input(userPath + "/" + save.filename.c_str());
   string name;
   int version;
-  input.getArchive() >> version >> name;
+  input.getArchive() >> BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(name);
   return View::ListElem(name, getDateString(save.date));
 }
 
@@ -114,7 +114,7 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
     CompressedInput input(userPath + "/" + save.filename.c_str());
     string name;
     int version;
-    input.getArchive() >> version;
+    input.getArchive() >> BOOST_SERIALIZATION_NVP(version);
     return version;
   } catch (boost::archive::archive_exception& ex) {
     return -1;

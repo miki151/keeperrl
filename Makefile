@@ -58,6 +58,10 @@ ifdef SERIAL_DEBUG
 CFLAGS += -DSERIALIZATION_DEBUG
 endif
 
+ifdef TEXT_SERIALIZATION
+CFLAGS += -DTEXT_SERIALIZATION
+endif
+
 ifdef OPT
 OBJDIR = obj-opt
 else
@@ -73,7 +77,7 @@ IPATH = -I. -I./extern
 CFLAGS += $(IPATH)
 
 ifdef OSX
-BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system -lboost_thread-mt
+BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system -lboost_thread
 else
 BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system
 endif
