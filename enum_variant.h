@@ -66,7 +66,7 @@ class EnumVariant {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & id & values;
+    ar & SVAR(id) & SVAR(values);
   }
 
   private:
@@ -86,8 +86,8 @@ class EnumVariant {
     Id id;
   };
 
-  Id id;
-  Variant values;
+  Id SERIAL(id);
+  Variant SERIAL(values);
 };
 
 #define FIRST(first, ...) first

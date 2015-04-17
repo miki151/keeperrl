@@ -16,8 +16,13 @@
 #ifndef _SERIALIZATION
 #define _SERIALIZATION
 
+#ifdef TEXT_SERIALIZATION
+typedef text_iarchive InputArchive;
+typedef text_oarchive OutputArchive;
+#else
 typedef portable_iarchive InputArchive;
 typedef portable_oarchive OutputArchive;
+#endif
 
 #define SUBCLASS(X) boost::serialization::make_nvp("Base", boost::serialization::base_object<X>(*this))
 
