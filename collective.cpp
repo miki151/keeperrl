@@ -1191,7 +1191,9 @@ void Collective::onKillEvent(const Creature* victim1, const Creature* killer) {
     addMana(getKillManaScore(victim1));
     addMoraleForKill(killer, victim1);
     kills.push_back(victim1);
-    points += victim1->getDifficultyPoints();
+    int difficulty = victim1->getDifficultyPoints();
+    CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim1->getName().bare();
+    points += difficulty;
     if (killer)
       control->addMessage(PlayerMessage(victim1->getName().a() + " is killed by " + killer->getName().a())
           .setPosition(victim1->getPosition()));
@@ -1649,7 +1651,7 @@ void Collective::removeConstruction(Vec2 pos) {
 }
 
 void Collective::destroySquare(Vec2 pos) {
-  if (level->getSafeSquare(pos)->canDestroy() && containsSquare(pos))
+  if (level->getSafeSquare(pos)->isDestroyable() && containsSquare(pos))
     level->getSafeSquare(pos)->destroy();
   if (Creature* c = level->getSafeSquare(pos)->getCreature())
     if (c->isStationary())

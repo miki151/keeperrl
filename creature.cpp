@@ -967,7 +967,9 @@ double maxLevelDiff = 7;
 
 void Creature::onKillEvent(const Creature* victim, const Creature* killer) {
   if (killer == this) {
-    points += victim->getDifficultyPoints();
+    int difficulty = victim->getDifficultyPoints();
+    CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
+    points += difficulty;
     double levelDiff = victim->getExpLevelDouble() - getExpLevelDouble();
     increaseExpLevel(max(0.05, min(maxLevelGain, 
             (maxLevelGain - minLevelGain) * (levelDiff + maxLevelDiff) / (2.0 * maxLevelDiff) + minLevelGain)));

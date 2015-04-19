@@ -140,7 +140,7 @@ void MainLoop::saveUI(PModel& model, Model::GameType type, View::SplashType spla
   Square::progressMeter = &meter;
   view->displaySplash(meter, splashType);
   string path = getSavePath(model.get(), type);
-  saveGame(model, path);
+  MEASURE(saveGame(model, path), "saving time");
   view->clearSplash();
   Square::progressMeter = nullptr;
   if (type == Model::GameType::RETIRED_KEEPER && options->getBoolValue(OptionId::ONLINE))

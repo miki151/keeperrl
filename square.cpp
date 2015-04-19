@@ -49,7 +49,7 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(updateViewIndex)
     & SVAR(updateMemory)
     & SVAR(viewIndex)
-    & SVAR(canDestroySquare)
+    & SVAR(destroyable)
     & SVAR(owner);
   CHECK_SERIAL;
   if (progressMeter)
@@ -67,7 +67,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
-    movementType(p.movementType), canDestroySquare(p.canDestroy), owner(p.owner) {
+    movementType(p.movementType), destroyable(p.canDestroy), owner(p.owner) {
 }
 
 Square::~Square() {
@@ -143,15 +143,15 @@ bool Square::construct(SquareType type) {
 }
 
 bool Square::canDestroy(const Tribe* tribe) const {
-  return canDestroySquare && tribe != owner && !fire.isBurning();
+  return destroyable && tribe != owner && !fire.isBurning();
 }
 
-bool Square::canDestroy() const {
-  return canDestroySquare;
+bool Square::isDestroyable() const {
+  return destroyable;
 }
 
 void Square::destroy() {
-  CHECK(canDestroy());
+  CHECK(isDestroyable());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   GlobalEvents.addSquareDestroyedEvent(getLevel(), getPosition());
@@ -160,7 +160,7 @@ void Square::destroy() {
 
 bool Square::canDestroy(const Creature* c) const {
   return canDestroy(c->getTribe())
-    || (canDestroySquare && c->isInvincible()); // so that boulders destroy keeper doors
+    || (destroyable && c->isInvincible()); // so that boulders destroy keeper doors
 }
 
 void Square::destroyBy(Creature* c) {

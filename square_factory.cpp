@@ -440,10 +440,6 @@ class Barricade : public Square {
     }
   }
 
-  virtual bool canDestroy(const Creature* c) const override {
-    return c->isInvincible(); // hack to make boulders destroy barricade
-  }
-
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square);

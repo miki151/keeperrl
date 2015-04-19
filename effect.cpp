@@ -185,7 +185,7 @@ static void blast(Creature* who, Square* square, Vec2 direction, int maxDistance
         Attack(who, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
           elem.second[0]->getAttackType(), 15, 15, false), maxDistance, position, direction, VisionId::NORMAL);
   }
-  if (square->canDestroy())
+  if (square->isDestroyable())
     square->destroy();
 }
 
@@ -364,7 +364,7 @@ static void rollingBoulder(Creature* c) {
         PlayerMessage("A huge rolling boulder appears!", PlayerMessage::CRITICAL),
         PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
     Square* target = l->getSafeSquare(pos + dir * dist);
-    if (target->canDestroy())
+    if (target->isDestroyable())
       target->destroy();
     if (Creature *c = target->getCreature()) {
       c->you(MsgType::ARE, "killed by the boulder");
