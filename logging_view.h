@@ -43,28 +43,28 @@ class LoggingView : public T {
     virtual int getTimeMilli() override {
       int res = T::getTimeMilli();
       auto token = LoggingToken::GET_TIME;
-      output << token << res;
+      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
       return res;
     }
 
     virtual double getGameSpeed() override {
       double res = T::getGameSpeed();
       auto token = LoggingToken::GET_GAME_SPEED;
-      output << token << res;
+      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
       return res;
     }
 
     virtual bool isClockStopped() override {
       bool res = T::isClockStopped();
       auto token = LoggingToken::IS_CLOCK_STOPPED;
-      output << token << res;
+      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
       return res;
     }
     
     virtual UserInput getAction() override {
       UserInput res = T::getAction();
       auto token = LoggingToken::GET_ACTION;
-      output << token << res;
+      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
       return res;
     }
 
@@ -72,35 +72,35 @@ class LoggingView : public T {
         View::MenuType type, double* scrollPos, optional<UserInputId> action) override {
       auto res = T::chooseFromList(title, options, index, type, scrollPos, action);
       auto token = LoggingToken::CHOOSE_FROM_LIST;
-      output << token << res;
+      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
       return res;
     }
 
     virtual View::GameTypeChoice chooseGameType() override {
       auto res = T::chooseGameType();
       auto token = LoggingToken::CHOOSE_GAME_TYPE;
-      output << token << res;
+      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
       return res;
     }
 
     virtual optional<Vec2> chooseDirection(const string& message) override {
       auto res = T::chooseDirection(message);
       auto token = LoggingToken::CHOOSE_DIRECTION;
-      output << token << res;
+      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
       return res;
     }
 
     virtual bool yesOrNoPrompt(const string& message, bool defNo) override {
       auto res = T::yesOrNoPrompt(message, defNo);
       auto token = LoggingToken::YES_OR_NO_PROMPT;
-      output << token << res;
+      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
       return res;
     }
 
     virtual optional<int> getNumber(const string& title, int min, int max, int increments) override {
       auto res = T::getNumber(title, min, max, increments);
       auto token = LoggingToken::GET_NUMBER;
-      output << token << res;
+      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
       return res;
     }
   private:

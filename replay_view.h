@@ -39,21 +39,21 @@ class ReplayView : public T {
 
     void checkMethod(LoggingToken token) {
       LoggingToken t;
-      input >> t;
+      input >> BOOST_SERIALIZATION_NVP(t);
       CHECKEQ(int(t), int(token));
     }
 
     virtual int getTimeMilli() override {
       checkMethod(LoggingToken::GET_TIME);
       int time;
-      input >> time;
+      input >> BOOST_SERIALIZATION_NVP(time);
       return time;
     }
 
     virtual double getGameSpeed() override {
       checkMethod(LoggingToken::GET_GAME_SPEED);
       double s;
-      input >> s;
+      input >> BOOST_SERIALIZATION_NVP(s);
       return s;
     }
 
@@ -65,7 +65,7 @@ class ReplayView : public T {
       T::isClockStopped();
       checkMethod(LoggingToken::IS_CLOCK_STOPPED);
       bool ret;
-      input >> ret;
+      input >> BOOST_SERIALIZATION_NVP(ret);
       return ret;
     }
 
@@ -73,7 +73,7 @@ class ReplayView : public T {
       T::getAction();
       checkMethod(LoggingToken::GET_ACTION);
       UserInput action;
-      input >> action;
+      input >> BOOST_SERIALIZATION_NVP(action);
       return action;
     }
 
@@ -81,35 +81,35 @@ class ReplayView : public T {
         View::MenuType, double* scrollPos, optional<UserInputId> a) override {
       checkMethod(LoggingToken::CHOOSE_FROM_LIST);
       optional<int> action;
-      input >> action;
+      input >> BOOST_SERIALIZATION_NVP(action);
       return action;
     }
 
     virtual View::GameTypeChoice chooseGameType() override {
       checkMethod(LoggingToken::CHOOSE_GAME_TYPE);
       View::GameTypeChoice action;
-      input >> action;
+      input >> BOOST_SERIALIZATION_NVP(action);
       return action;
     }
 
     virtual optional<Vec2> chooseDirection(const string& message) override {
       checkMethod(LoggingToken::CHOOSE_DIRECTION);
       optional<Vec2> action;
-      input >> action;
+      input >> BOOST_SERIALIZATION_NVP(action);
       return action;
     }
 
     virtual bool yesOrNoPrompt(const string& message, bool defNo) override {
       checkMethod(LoggingToken::YES_OR_NO_PROMPT);
       bool action;
-      input >> action;
+      input >> BOOST_SERIALIZATION_NVP(action);
       return action;
     }
 
     virtual optional<int> getNumber(const string& title, int min, int max, int increments) override {
       checkMethod(LoggingToken::GET_NUMBER);
       optional<int> action;
-      input >> action;
+      input >> BOOST_SERIALIZATION_NVP(action);
       return action;
     }
   private:

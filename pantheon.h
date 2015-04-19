@@ -89,12 +89,12 @@ class Deity {
 
   template <class Archive>
   static void serializeAll(Archive& ar) {
-    ar & deities & byEpithet;
+    ar & SVAR(deities) & SVAR(byEpithet);
   }
 
   private:
-  static vector<Deity*> deities;
-  static EnumMap<EpithetId, Deity*> byEpithet;
+  static vector<Deity*> SERIAL(deities);
+  static EnumMap<EpithetId, Deity*> SERIAL(byEpithet);
   string SERIAL(name);
   Gender SERIAL(gender);
   vector<EpithetId> SERIAL(epithets);
