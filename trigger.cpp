@@ -154,8 +154,8 @@ class Portal : public Trigger {
   SERIALIZATION_CONSTRUCTOR(Portal);
 
   private:
-  double SERIAL2(startTime, 1000000);
-  bool SERIAL2(active, true);
+  double SERIAL(startTime) = 1000000;
+  bool SERIAL(active) = true;
   optional<Model::PortalInfo> SERIAL(otherPortal);
 };
 

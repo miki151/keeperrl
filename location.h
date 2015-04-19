@@ -46,7 +46,7 @@ class Location {
   optional<string> SERIAL(description);
   const Level* SERIAL(level);
   Rectangle SERIAL(bounds);
-  bool SERIAL2(surprise, false);
+  bool SERIAL(surprise) = false;
 };
 
 #endif

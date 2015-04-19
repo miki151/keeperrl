@@ -40,7 +40,7 @@ class CollectiveControl {
   const Collective* getCollective() const;
 
   private:
-  Collective* SERIAL2(collective, nullptr);
+  Collective* SERIAL(collective) = nullptr;
 };
 
 

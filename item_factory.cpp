@@ -66,7 +66,7 @@ class FireScroll : public Item {
   SERIALIZATION_CONSTRUCTOR(FireScroll);
 
   private:
-  bool SERIAL2(set, false);
+  bool SERIAL(set) = false;
 };
 
 class AmuletOfWarning : public Item {
@@ -145,7 +145,7 @@ class AmuletOfHealing : public Item {
   SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
 
   private:
-  double SERIAL2(lastTick, -1);
+  double SERIAL(lastTick) = -1;
 };
 
 class AmuletOfEnemyCheck : public Item {
@@ -298,8 +298,8 @@ class Corpse : public Item {
 
   private:
   ViewObject SERIAL(object2);
-  bool SERIAL2(rotten, false);
-  double SERIAL2(rottenTime, -1);
+  bool SERIAL(rotten) = false;
+  double SERIAL(rottenTime) = -1;
   double SERIAL(rottingTime);
   string SERIAL(rottenName);
   CorpseInfo SERIAL(corpseInfo);
@@ -347,7 +347,7 @@ class Potion : public Item {
   SERIALIZATION_CONSTRUCTOR(Potion);
 
   private:
-  double SERIAL2(heat, 0);
+  double SERIAL(heat) = 0;
 };
 
 class SkillBook : public Item {
@@ -392,7 +392,7 @@ class TechBook : public Item {
 
   private:
   optional<TechId> SERIAL(tech);
-  bool SERIAL2(read, false);
+  bool SERIAL(read) = false;
 };
 
 class TrapItem : public Item {

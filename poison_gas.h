@@ -30,7 +30,7 @@ class PoisonGas {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  double SERIAL2(amount, 0);
+  double SERIAL(amount) = 0;
 };
 
 #endif

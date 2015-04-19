@@ -78,44 +78,43 @@ class CreatureAttributes {
   optional<string> SERIAL(chatReactionHostile);
   optional<string> SERIAL(firstName);
   optional<string> SERIAL(speciesName);
-  bool SERIAL2(specialMonster, false);
-  int SERIAL2(barehandedDamage, 0);
+  bool SERIAL(specialMonster) = false;
+  int SERIAL(barehandedDamage) = 0;
   optional<AttackType> SERIAL(barehandedAttack);
   optional<EffectType> SERIAL(attackEffect);
-  bool SERIAL2(harmlessApply, false); // apply the attack effect even if attack was harmless
+  bool SERIAL(harmlessApply) = false; // apply the attack effect even if attack was harmless
   optional<EffectType> SERIAL(passiveAttack);
-  Gender SERIAL2(gender, Gender::male);
-  EnumMap<BodyPart, int> bodyParts { 
+  Gender SERIAL(gender) = Gender::male;
+  EnumMap<BodyPart, int> SERIAL(bodyParts) { 
     { BodyPart::ARM, 2},
     { BodyPart::LEG, 2},
     { BodyPart::HEAD, 1}};
-  SERIAL3(bodyParts);
   optional<SpawnType> SERIAL(spawnType);
-  bool SERIAL2(innocent, false);
-  bool SERIAL2(uncorporal, false);
-  bool SERIAL2(fireCreature, false);
-  bool SERIAL2(breathing, true);
+  bool SERIAL(innocent) = false;
+  bool SERIAL(uncorporal) = false;
+  bool SERIAL(fireCreature) = false;
+  bool SERIAL(breathing) = true;
   MustInitialize<bool> SERIAL(humanoid);
-  bool SERIAL2(animal, false);
-  bool SERIAL2(undead, false);
-  bool SERIAL2(notLiving, false);
-  bool SERIAL2(brain, true);
-  bool SERIAL2(hatcheryAnimal, false);
-  bool SERIAL2(isFood, false);
-  bool SERIAL2(stationary, false);
-  bool SERIAL2(noSleep, false);
-  double SERIAL2(courage, 1);
-  bool SERIAL2(carryAnything, false);
-  bool SERIAL2(invincible, false);
-  bool SERIAL2(worshipped, false);
-  bool SERIAL2(dontChase, false);
-  double SERIAL2(damageMultiplier, 1);
-  double SERIAL2(attributeGain, 0.5);
+  bool SERIAL(animal) = false;
+  bool SERIAL(undead) = false;
+  bool SERIAL(notLiving) = false;
+  bool SERIAL(brain) = true;
+  bool SERIAL(hatcheryAnimal) = false;
+  bool SERIAL(isFood) = false;
+  bool SERIAL(stationary) = false;
+  bool SERIAL(noSleep) = false;
+  double SERIAL(courage) = 1;
+  bool SERIAL(carryAnything) = false;
+  bool SERIAL(invincible) = false;
+  bool SERIAL(worshipped) = false;
+  bool SERIAL(dontChase) = false;
+  double SERIAL(damageMultiplier) = 1;
+  double SERIAL(attributeGain) = 0.5;
   Skillset SERIAL(skills);
   SpellMap SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   MinionTaskMap SERIAL(minionTasks);
-  string SERIAL2(groupName, "group");
+  string SERIAL(groupName) = "group";
 };
 
 #endif

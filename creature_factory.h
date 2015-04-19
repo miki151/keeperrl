@@ -185,7 +185,7 @@ class CreatureFactory {
   vector<double> SERIAL(weights);
   vector<CreatureId> SERIAL(unique);
   EnumMap<CreatureId, Tribe*> SERIAL(tribeOverrides);
-  double SERIAL2(levelIncrease, 0);
+  double SERIAL(levelIncrease) = 0;
 };
 
 

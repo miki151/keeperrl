@@ -78,7 +78,7 @@ class Tribe {
 
   unordered_map<const Creature*, double> SERIAL(standing);
   vector<pair<Creature*, Creature*>> SERIAL(attacks);
-  const Creature* SERIAL2(leader, nullptr);
+  const Creature* SERIAL(leader) = nullptr;
   vector<const Creature*> SERIAL(members);
   unordered_set<Tribe*> SERIAL(enemyTribes);
   string SERIAL(name);

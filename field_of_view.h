@@ -47,8 +47,7 @@ class FieldOfView {
     SERIALIZATION_DECL(Visibility);
 
     private:
-    char visible[sightRange * 2 + 1][sightRange * 2 + 1];
-    SERIAL3(visible);
+    char SERIAL(visible)[sightRange * 2 + 1][sightRange * 2 + 1];
     vector<Vec2> SERIAL(visibleTiles);
     void calculate(int,int,int,int, int, int, int, int,
         function<bool (int, int)> isBlocking,

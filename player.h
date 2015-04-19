@@ -110,10 +110,10 @@ class Player : public Controller, public CreatureView {
       ItemPredicate = alwaysTrue<const Item*>());
   string getInventoryItemName(const Item*, bool plural) const;
   string getPluralName(Item* item, int num);
-  bool SERIAL2(travelling, false);
+  bool SERIAL(travelling) = false;
   Vec2 SERIAL(travelDir);
   optional<Vec2> SERIAL(target);
-  const Location* SERIAL2(lastLocation, nullptr);
+  const Location* SERIAL(lastLocation) = nullptr;
   vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);
   vector<EpithetId> SERIAL(usedEpithets);

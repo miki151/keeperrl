@@ -67,25 +67,25 @@ class ItemAttributes {
   optional<string> SERIAL(artifactName);
   optional<TrapType> SERIAL(trapType);
   optional<CollectiveResourceId> SERIAL(resourceId);
-  double SERIAL2(flamability, 0);
-  int SERIAL2(price, 0);
-  bool SERIAL2(noArticle, false);
+  double SERIAL(flamability) = 0;
+  int SERIAL(price) = 0;
+  bool SERIAL(noArticle) = false;
   EnumMap<ModifierType, int> SERIAL(modifiers);
   EnumMap<AttrType, int> SERIAL(attrs);
-  bool SERIAL2(twoHanded, false);
-  AttackType SERIAL2(attackType, AttackType::HIT);
-  double SERIAL2(attackTime, 1);
+  bool SERIAL(twoHanded) = false;
+  AttackType SERIAL(attackType) = AttackType::HIT;
+  double SERIAL(attackTime) = 1;
   optional<EquipmentSlot> SERIAL(equipmentSlot);
-  double SERIAL2(applyTime, 1);
-  bool SERIAL2(fragile, false);
+  double SERIAL(applyTime) = 1;
+  bool SERIAL(fragile) = false;
   optional<EffectType> SERIAL(effect);
   optional<EffectType> SERIAL(attackEffect);
-  int SERIAL2(uses, -1);
-  bool SERIAL2(usedUpMsg, false);
-  bool SERIAL2(displayUses, false);
-  bool SERIAL2(identifyOnApply, true); // OBSOLETE
-  bool SERIAL2(identifiable, false);
-  bool SERIAL2(identifyOnEquip, true);
+  int SERIAL(uses) = -1;
+  bool SERIAL(usedUpMsg) = false;
+  bool SERIAL(displayUses) = false;
+  bool SERIAL(identifyOnApply) = true; // OBSOLETE
+  bool SERIAL(identifiable) = false;
+  bool SERIAL(identifyOnEquip) = true;
 };
 
 BOOST_CLASS_VERSION(ItemAttributes, 1)

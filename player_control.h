@@ -222,17 +222,17 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void setCurrentTeam(optional<TeamId>);
   optional<TeamId> SERIAL(currentTeam);
   Model* SERIAL(model);
-  bool SERIAL2(showWelcomeMsg, true);
+  bool SERIAL(showWelcomeMsg) = true;
   struct SelectionInfo {
     Vec2 corner1;
     Vec2 corner2;
     bool deselect;
   };
   optional<SelectionInfo> rectSelection;
-  double SERIAL2(lastControlKeeperQuestion, -100);
-  int SERIAL2(startImpNum, -1);
-  bool SERIAL2(retired, false);
-  bool SERIAL2(payoutWarning, false);
+  double SERIAL(lastControlKeeperQuestion) = -100;
+  int SERIAL(startImpNum) = -1;
+  bool SERIAL(retired) = false;
+  bool SERIAL(payoutWarning) = false;
   unordered_set<Vec2> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   ViewObject getMinionViewObject(CreatureId) const;

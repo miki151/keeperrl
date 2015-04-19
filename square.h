@@ -247,9 +247,9 @@ class Square : public Renderable {
   /** Checks if this square can be destroyed by member of the tribe.*/
   bool canDestroy(const Tribe*) const;
 
-  Level* SERIAL2(level, nullptr);
+  Level* SERIAL(level) = nullptr;
   Vec2 SERIAL(position);
-  Creature* SERIAL2(creature, nullptr);
+  Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
   optional<ViewObject> SERIAL(backgroundObject);
   optional<VisionId> SERIAL(vision);
@@ -262,13 +262,13 @@ class Square : public Renderable {
   PoisonGas SERIAL(poisonGas);
   map<SquareId, int> SERIAL(constructions);
   bool SERIAL(ticking);
-  double SERIAL2(fog, 0);
+  double SERIAL(fog) = 0;
   MovementType SERIAL(movementType);
   void updateMovement();
-  bool SERIAL2(updateMemory, true);
-  mutable bool SERIAL2(updateViewIndex, true);
+  bool SERIAL(updateMemory) = true;
+  mutable bool SERIAL(updateViewIndex) = true;
   mutable ViewIndex SERIAL(viewIndex);
-  bool SERIAL2(destroyable, false);
+  bool SERIAL(destroyable) = false;
   const Tribe* SERIAL(owner);
 };
 

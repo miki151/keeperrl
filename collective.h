@@ -350,7 +350,7 @@ class Collective : public Task::Callback {
   EnumMap<ResourceId, int> SERIAL(credit);
   TaskMap<CostInfo> SERIAL(taskMap);
   vector<TechId> SERIAL(technologies);
-  int SERIAL2(numFreeTech, 0);
+  int SERIAL(numFreeTech) = 0;
   bool isItemMarked(const Item*) const;
   void markItem(const Item*);
   void unmarkItem(UniqueEntity<Item>::Id);
@@ -394,9 +394,9 @@ class Collective : public Task::Callback {
   EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   EnumMap<SpawnType, vector<Creature*>> SERIAL(bySpawnType);
   PCollectiveControl SERIAL(control);
-  Tribe* SERIAL2(tribe, nullptr);
+  Tribe* SERIAL(tribe) = nullptr;
   map<const Deity*, double> SERIAL(deityStanding);
-  Level* SERIAL2(level, nullptr);
+  Level* SERIAL(level) = nullptr;
   unordered_map<SquareType, set<Vec2>> SERIAL(mySquares);
   map<Vec2, int> SERIAL(squareEfficiency);
   set<Vec2> SERIAL(allSquares);
@@ -436,7 +436,7 @@ class Collective : public Task::Callback {
   void addMana(double);
   unordered_map<const Creature*, double> SERIAL(lastCombat); // OBSOLETE
   vector<const Creature*> SERIAL(kills);
-  int SERIAL2(points, 0);
+  int SERIAL(points) = 0;
   unordered_map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);
   int SERIAL(nextPayoutTime);
   unordered_map<const Creature*, vector<AttractionInfo>> SERIAL(minionAttraction);

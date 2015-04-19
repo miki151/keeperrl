@@ -224,7 +224,7 @@ class Chest : public Square {
   string SERIAL(msgItem);
   string SERIAL(msgMonster);
   string SERIAL(msgGold);
-  bool SERIAL2(opened, false);
+  bool SERIAL(opened) = false;
   ItemFactory SERIAL(itemFactory);
   ViewObject SERIAL(openedObject);
 };
@@ -263,7 +263,7 @@ class Fountain : public Square {
   SERIALIZATION_CONSTRUCTOR(Fountain);
 
   private:
-  int SERIAL2(seed, Random.get(123456));
+  int SERIAL(seed) = Random.get(123456);
 };
 
 class Tree : public Square {
@@ -312,7 +312,7 @@ class Tree : public Square {
   SERIALIZATION_CONSTRUCTOR(Tree);
 
   private:
-  bool SERIAL2(destroyed, false);
+  bool SERIAL(destroyed) = false;
   int SERIAL(numWood);
   CreatureId SERIAL(creature);
 };
@@ -344,7 +344,7 @@ class TrapSquare : public Square {
   SERIALIZATION_CONSTRUCTOR(TrapSquare);
 
   private:
-  bool SERIAL2(active, true);
+  bool SERIAL(active) = true;
   EffectType SERIAL(effect);
 };
 
@@ -411,7 +411,7 @@ class TribeDoor : public Door {
   private:
   const Tribe* SERIAL(tribe);
   int SERIAL(destructionStrength);
-  bool SERIAL2(locked, false);
+  bool SERIAL(locked) = false;
 };
 
 class Barricade : public Square {
@@ -589,9 +589,9 @@ class Altar : public Square {
   SERIALIZATION_CONSTRUCTOR(Altar);
 
   private:
-  const Creature* SERIAL2(recentKiller, nullptr);
-  const Creature* SERIAL2(recentVictim, nullptr);
-  double SERIAL2(killTime, -100);
+  const Creature* SERIAL(recentKiller) = nullptr;
+  const Creature* SERIAL(recentVictim) = nullptr;
+  double SERIAL(killTime) = -100;
   const double sacrificeTimeout = 50;
 };
 

@@ -64,7 +64,7 @@ class ViewIndex {
   std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);
   vector<ViewObject> SERIAL(objects);
   EnumMap<HighlightType, double> SERIAL(highlight);
-  bool SERIAL2(anyHighlight, false);
+  bool SERIAL(anyHighlight) = false;
   optional<ViewId> hiddenId;
 };
 

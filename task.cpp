@@ -272,7 +272,7 @@ class PickItem : public NonTransferable {
 
   protected:
   EntitySet<Item> SERIAL(items);
-  bool SERIAL2(pickedUp, false);
+  bool SERIAL(pickedUp) = false;
   Vec2 SERIAL(position);
   Callback* SERIAL(callback);
   int SERIAL(tries);
@@ -547,8 +547,8 @@ class ApplySquare : public NonTransferable {
   private:
   vector<Vec2> SERIAL(positions);
   set<Vec2> SERIAL(rejectedPosition);
-  int SERIAL2(invalidCount, 5);
-  Vec2 SERIAL2(position, Vec2(-1, -1));
+  int SERIAL(invalidCount) = 5;
+  Vec2 SERIAL(position) = Vec2(-1, -1);
   Callback* SERIAL(callback);
 };
 
@@ -781,7 +781,7 @@ class Chain : public Task {
 
   private:
   vector<PTask> SERIAL(tasks);
-  int SERIAL2(current, 0);
+  int SERIAL(current) = 0;
 };
 
 }
@@ -920,7 +920,7 @@ class KillFighters : public NonTransferable {
 
   private:
   Collective* SERIAL(collective);
-  const Creature* SERIAL2(who, nullptr);
+  const Creature* SERIAL(who) = nullptr;
   int SERIAL(numCreatures);
   EntitySet<Creature> SERIAL(targets);
 };

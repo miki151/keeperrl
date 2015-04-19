@@ -325,12 +325,12 @@ class Level : public UniqueEntity<Level> {
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
   vector<Creature*> SERIAL(creatures);
-  Model* SERIAL2(model, nullptr);
+  Model* SERIAL(model) = nullptr;
   mutable EnumMap<VisionId, FieldOfView> SERIAL(fieldOfView);
   string SERIAL(entryMessage);
   string SERIAL(name);
-  Creature* SERIAL2(player, nullptr);
-  const Level* SERIAL2(backgroundLevel, nullptr);
+  Creature* SERIAL(player) = nullptr;
+  const Level* SERIAL(backgroundLevel) = nullptr;
   Vec2 SERIAL(backgroundOffset);
   Table<CoverInfo> SERIAL(coverInfo);
   BucketMap<Creature*> SERIAL(bucketMap);

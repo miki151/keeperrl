@@ -43,8 +43,6 @@ typedef portable_oarchive OutputArchive;
 (T).register_type(static_cast<A*>(nullptr))
 
 #define SERIAL(X) X
-#define SERIAL2(X, Y) X = Y
-#define SERIAL3(X)
 #define SVAR(X) boost::serialization::make_nvp(#X, X)
 
 #define SERIALIZATION_DECL(A) \
