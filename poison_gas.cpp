@@ -23,7 +23,6 @@
 template <class Archive> 
 void PoisonGas::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(amount);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(PoisonGas);

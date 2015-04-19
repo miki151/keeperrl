@@ -27,7 +27,6 @@ void ShortestPath::serialize(Archive& ar, const unsigned int version) {
     & SVAR(directions)
     & SVAR(bounds)
     & SVAR(reversed);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(ShortestPath);

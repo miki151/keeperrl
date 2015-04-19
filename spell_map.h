@@ -32,7 +32,6 @@ class SpellMap {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  SERIAL_CHECKER;
   EnumMap<SpellId, optional<double>> SERIAL(elems);
 };
 

@@ -66,7 +66,6 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(permanentEffects)
     & SVAR(minionTasks)
     & SVAR(groupName);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(CreatureAttributes);

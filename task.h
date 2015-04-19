@@ -89,7 +89,6 @@ class Task : public UniqueEntity<Task> {
   void setDone();
 
   private:
-  SERIAL_CHECKER;
   bool SERIAL2(done, false);
 };
 

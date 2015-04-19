@@ -93,7 +93,6 @@ class Magma : public Square {
     ar& SUBCLASS(Square)
       & SVAR(itemMessage)
       & SVAR(noSeeMsg);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Magma);
@@ -133,7 +132,6 @@ class Water : public Square {
     ar& SUBCLASS(Square)
       & SVAR(itemMessage)
       & SVAR(noSeeMsg);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Water);
@@ -216,7 +214,6 @@ class Chest : public Square {
       & SVAR(opened)
       & SVAR(itemFactory)
       & SVAR(openedObject);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Chest);
@@ -261,7 +258,6 @@ class Fountain : public Square {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
       & SVAR(seed);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Fountain);
@@ -311,7 +307,6 @@ class Tree : public Square {
       & SVAR(destroyed)  // OBSOLETE
       & SVAR(creature)
       & SVAR(numWood);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Tree);
@@ -344,7 +339,6 @@ class TrapSquare : public Square {
     ar& SUBCLASS(Square)
       & SVAR(active)
       & SVAR(effect);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(TrapSquare);
@@ -410,7 +404,6 @@ class TribeDoor : public Door {
       & SVAR(tribe)
       & SVAR(destructionStrength)
       & SVAR(locked);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(TribeDoor);
@@ -448,7 +441,6 @@ class Barricade : public Square {
       ar & SVAR(tribe);
     }
     ar & SVAR(destructionStrength);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Barricade);
@@ -483,7 +475,6 @@ class Furniture : public Square {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
       & SVAR(applyType);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Furniture);
@@ -593,7 +584,6 @@ class Altar : public Square {
       & SVAR(recentKiller)
       & SVAR(recentVictim)
       & SVAR(killTime);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Altar);
@@ -641,7 +631,6 @@ class DeityAltar : public Altar {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Altar)
       & SVAR(deity);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(DeityAltar);
@@ -684,7 +673,6 @@ class CreatureAltar : public Altar {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Altar)
       & SVAR(creature);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(CreatureAltar);
@@ -710,7 +698,6 @@ class ConstructionDropItems : public Square {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
       & SVAR(items);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(ConstructionDropItems);

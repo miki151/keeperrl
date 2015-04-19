@@ -30,7 +30,6 @@ MapMemory::MapMemory(const MapMemory& other) : table(other.table.getWidth(), oth
 template <class Archive> 
 void MapMemory::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(table);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(MapMemory);

@@ -27,7 +27,6 @@ void Location::serialize(Archive& ar, const unsigned int version) {
     & SVAR(bounds)
     & SVAR(level)
     & SVAR(surprise);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Location);
@@ -93,7 +92,6 @@ class TowerTopLocation : public Location {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Location) & SVAR(entered);
-    CHECK_SERIAL;
   }
 
   private:

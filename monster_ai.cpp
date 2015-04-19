@@ -50,7 +50,6 @@ void MonsterAI::serialize(Archive& ar, const unsigned int version) {
     & SVAR(weights)
     & SVAR(creature)
     & SVAR(pickItems);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(MonsterAI);
@@ -60,7 +59,6 @@ SERIALIZATION_CONSTRUCTOR_IMPL(MonsterAI);
 template <class Archive> 
 void Behaviour::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(creature);
-  CHECK_SERIAL;
 }
 
 
@@ -174,7 +172,6 @@ class Heal : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour) & SVAR(hasBed) & SVAR(useBeds);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Heal);
@@ -256,7 +253,6 @@ class MoveRandomly : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour) & SVAR(memory) & SVAR(memSize);
-    CHECK_SERIAL;
   }
 
   private:
@@ -281,7 +277,6 @@ class BirdFlyAway : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour) & SVAR(maxDist);
-    CHECK_SERIAL;
   }
 
   private:
@@ -570,7 +565,6 @@ class Fighter : public Behaviour {
       & SVAR(maxPowerRatio)
       & SVAR(chase)
       & SVAR(lastSeen);
-    CHECK_SERIAL;
   }
 
   private:
@@ -610,7 +604,6 @@ class GuardTarget : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour) & SVAR(minDist) & SVAR(maxDist);
-    CHECK_SERIAL;
   }
 
   protected:
@@ -647,7 +640,6 @@ class GuardArea : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour) & SVAR(location);
-    CHECK_SERIAL;
   }
 
   private:
@@ -667,7 +659,6 @@ class GuardSquare : public GuardTarget {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(GuardTarget) & SVAR(pos);
-    CHECK_SERIAL;
   }
 
   private:
@@ -709,7 +700,6 @@ class DieTime : public Behaviour {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Behaviour)
       & SVAR(dieTime);
-    CHECK_SERIAL;
   }
 
   private:
@@ -759,7 +749,6 @@ class Summoned : public GuardTarget {
       & SVAR(target) 
       & SVAR(levelChanges)
       & SVAR(dieTime);
-    CHECK_SERIAL;
   }
 
   private:
@@ -806,7 +795,6 @@ class Thief : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour) & SVAR(robbed);
-    CHECK_SERIAL;
   }
 
   private:
@@ -826,7 +814,6 @@ class ByCollective : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour) & SVAR(collective);
-    CHECK_SERIAL;
   }
 
   private:
@@ -846,7 +833,6 @@ class ChooseRandom : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour) & SVAR(behaviours) & SVAR(weights);
-    CHECK_SERIAL;
   }
 
   private:
@@ -867,7 +853,6 @@ class SingleTask : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour) & SVAR(task);
-    CHECK_SERIAL;
   }
 
   private:
@@ -901,7 +886,6 @@ class SplashHeroes : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour);
-    CHECK_SERIAL;
   }
 
   private:
@@ -936,7 +920,6 @@ class SplashHeroLeader : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour);
-    CHECK_SERIAL;
   }
 
   private:
@@ -976,7 +959,6 @@ class SplashMonsters : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour);
-    CHECK_SERIAL;
   }
 
   private:
@@ -1094,7 +1076,6 @@ class SplashImps : public Behaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Behaviour);
-    CHECK_SERIAL;
   }
 
   private:

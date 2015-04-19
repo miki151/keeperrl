@@ -31,8 +31,6 @@ class MinionTaskMap {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
   
-  SERIAL_CHECKER;
-
   private:
   EnumMap<MinionTask, double> SERIAL(tasks);
 };

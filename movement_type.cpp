@@ -5,7 +5,6 @@
 template <class Archive> 
 void MovementType::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(traits) & SVAR(tribe);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(MovementType);

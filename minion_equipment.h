@@ -35,8 +35,6 @@ class MinionEquipment {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
-  SERIAL_CHECKER;
-
   static int getItemValue(const Item*);
 
   private:

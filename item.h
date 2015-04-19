@@ -36,13 +36,13 @@ RICH_ENUM(TrapType,
 );
 
 RICH_ENUM(CollectiveResourceId,
-    GOLD,
-    WOOD,
-    IRON,
-    STONE,
-    MANA,
-    PRISONER_HEAD,
-    CORPSE
+  GOLD,
+  WOOD,
+  IRON,
+  STONE,
+  MANA,
+  PRISONER_HEAD,
+  CORPSE
 );
 
 RICH_ENUM(ItemClass,

@@ -42,28 +42,16 @@ typedef portable_oarchive OutputArchive;
 #define REGISTER_TYPE(T, A)\
 (T).register_type(static_cast<A*>(nullptr))
 
-#ifdef SERIALIZATION_DEBUG
-#define SERIAL_CHECKER SerialChecker serialChecker
-#define CHECK_SERIAL serialChecker.checkSerial();
-#define SERIAL(X) X; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker)
-#define SERIAL2(X, Y) X = Y; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker)
-#define SERIAL3(X) SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker);
-#define SVAR(X) boost::serialization::make_nvp(#X, checkSerial(X, X##_Check))
-#else
-#define SERIAL_CHECKER
-#define CHECK_SERIAL
 #define SERIAL(X) X
 #define SERIAL2(X, Y) X = Y
 #define SERIAL3(X)
 #define SVAR(X) boost::serialization::make_nvp(#X, X)
-#endif
 
 #define SERIALIZATION_DECL(A) \
   friend boost::serialization::access; \
   A(); \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version); \
-  SERIAL_CHECKER
+  void serialize(Archive& ar, const unsigned int version);
 
 #define SERIALIZATION_CONSTRUCTOR_IMPL(A) \
   A::A() {}
@@ -72,43 +60,13 @@ typedef portable_oarchive OutputArchive;
   A::B() {}
 
 #define SERIALIZATION_CONSTRUCTOR(A) \
-  A() {} \
-  SERIAL_CHECKER
+  A() {}
 
 class Serialization {
   public:
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 };
-
-class SerialChecker {
-  public:
-  SerialChecker() {}
-  SerialChecker(const SerialChecker&);
-  void checkSerial();
-
-  SerialChecker& operator = (const SerialChecker&);
-
-  class Check {
-    public:
-    Check(SerialChecker& checker);
-    Check(const Check&);
-    Check& operator = (const Check&);
-    void tick();
-    void tickOff();
-    void setNewCopy(SerialChecker*);
-
-    private:
-    bool ticked = false;
-    SerialChecker* newCopy = nullptr;
-  };
-
-  void addCheck(Check* c);
-
-  private:
-  vector<Check*> checks;
-};
-
 
 template <class T, class U>
 class StreamCombiner {
@@ -125,14 +83,6 @@ class StreamCombiner {
   T stream;
   U archive;
 };
-
-
-template <class T>
-T& checkSerial(T& t, SerialChecker::Check& check) {
-  check.tick();
-  return t;
-}
-
 
 
 namespace boost { 

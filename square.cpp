@@ -51,7 +51,6 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(viewIndex)
     & SVAR(destroyable)
     & SVAR(owner);
-  CHECK_SERIAL;
   if (progressMeter)
     progressMeter->addProgress();
   updateViewIndex = true;
@@ -75,7 +74,7 @@ Square::~Square() {
 
 void Square::putCreature(Creature* c) {
   CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
-  creature = c;
+  setCreature(c);
   onEnter(c);
   if (c->isStationary())
     level->addTickingSquare(position);
@@ -178,7 +177,7 @@ const vector<Vec2>& Square::getTravelDir() const {
   return travelDir;
 }
 
-void Square::putCreatureSilently(Creature* c) {
+void Square::setCreature(Creature* c) {
   creature = c;
 }
 
@@ -188,10 +187,6 @@ void Square::setLevel(Level* l) {
     level->addTickingSquare(position);
   if (owner)
     level->addSquareOwner(owner);
-}
-
-const Level* Square::getConstLevel() const {
-  return level;
 }
 
 Level* Square::getLevel() {
@@ -501,14 +496,10 @@ int Square::getStrength() const {
 }
 
 Item* Square::getTopItem() const {
-  Item* last = nullptr;
   if (!inventory.isEmpty())
-  for (Item* it : inventory.getItems()) {
-    last = it;
-    if (it->getViewObject().layer() == ViewLayer::LARGE_ITEM)
-      return it;
-  }
-  return last;
+    return inventory.getItems().back();
+  else
+    return nullptr;
 }
 
 vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {

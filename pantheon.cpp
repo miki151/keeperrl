@@ -27,7 +27,6 @@ void Deity::serialize(Archive& ar, const unsigned int version) {
     & SVAR(gender)
     & SVAR(epithets)
     & SVAR(habitat);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Deity);
