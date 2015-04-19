@@ -38,7 +38,6 @@ string Gender::god() const {
 template <class Archive>
 void Gender::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(fem);
-  CHECK_SERIAL;
 }
 
 bool Gender::operator == (const Gender& o) const {

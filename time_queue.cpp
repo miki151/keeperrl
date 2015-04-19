@@ -23,7 +23,6 @@ void TimeQueue::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(creatures)
     & SVAR(queue)
     & SVAR(dead);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(TimeQueue);

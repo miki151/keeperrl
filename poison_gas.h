@@ -29,8 +29,6 @@ class PoisonGas {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  SERIAL_CHECKER;
-
   private:
   double SERIAL2(amount, 0);
 };

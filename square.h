@@ -153,7 +153,7 @@ class Square : public Renderable {
   void putCreature(Creature*);
 
   /** Puts a creature on the square without triggering any mechanisms that happen when a creature enters.*/ 
-  void putCreatureSilently(Creature*);
+  void setCreature(Creature*);
 
   /** Removes the creature from the square.*/
   void removeCreature();
@@ -222,8 +222,6 @@ class Square : public Renderable {
   virtual optional<SquareApplyType> getApplyType(const Creature*) const { return none; }
   virtual void onApply(Creature* c) { Debug(FATAL) << "Bad square applied"; }
  
-  const Level* getConstLevel() const;
-
   virtual ~Square();
 
   void setFog(double val);

@@ -22,7 +22,6 @@ ViewObject& Renderable::modViewObject() {
 template <class Archive> 
 void Renderable::serialize(Archive& ar, const unsigned int version) { 
   ar & SVAR(viewObject);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Renderable);

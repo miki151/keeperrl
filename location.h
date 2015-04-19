@@ -41,8 +41,6 @@ class Location {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  SERIAL_CHECKER;
-
   private:
   optional<string> SERIAL(name);
   optional<string> SERIAL(description);

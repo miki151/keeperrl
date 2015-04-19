@@ -31,7 +31,6 @@ void ViewObject::serialize(Archive& ar, const unsigned int version) {
     & SVAR(creatureId);
   if (version >= 1)
     ar & SVAR(adjectives);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(ViewObject);

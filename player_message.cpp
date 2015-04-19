@@ -63,7 +63,6 @@ void PlayerMessage::serialize(Archive& ar, const unsigned int version) {
      & SVAR(position)
      & SVAR(creature)
      & SVAR(location);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(PlayerMessage);

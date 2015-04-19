@@ -58,7 +58,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(torches)
     & SVAR(name)
     & SVAR(config);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Collective);
@@ -197,7 +196,6 @@ class LeaderControlOverride : public Creature::MoraleOverride {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Creature::MoraleOverride) & SVAR(collective) & SVAR(creature);
-    CHECK_SERIAL;
   }
 
   private:

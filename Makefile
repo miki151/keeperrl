@@ -54,10 +54,6 @@ ifdef DEBUG_STL
 CFLAGS += -DDEBUG_STL
 endif
 
-ifdef SERIAL_DEBUG
-CFLAGS += -DSERIALIZATION_DEBUG
-endif
-
 ifdef OPT
 OBJDIR = obj-opt
 else

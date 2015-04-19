@@ -72,7 +72,6 @@ class IllusionController : public DoNothingController {
     ar& SUBCLASS(DoNothingController) 
       & SVAR(creature)
       & SVAR(deathTime);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(IllusionController);

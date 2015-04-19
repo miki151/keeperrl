@@ -31,7 +31,6 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
 template <class Archive> 
 void Equipment::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(Inventory) & SVAR(items);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Equipment);

@@ -25,7 +25,6 @@ void FieldOfView::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(squares)
      & SVAR(visibility)
      & SVAR(vision);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(FieldOfView);
@@ -36,7 +35,6 @@ void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int version)
     & SVAR(visibleTiles)
     & SVAR(px)
     & SVAR(py);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(FieldOfView::Visibility);

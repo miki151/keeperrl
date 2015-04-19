@@ -35,7 +35,6 @@ void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
     & SVAR(unique)
     & SVAR(tribeOverrides)
     & SVAR(levelIncrease);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(CreatureFactory);
@@ -51,8 +50,7 @@ bool CreatureFactory::SingleCreature::operator == (const SingleCreature& o) cons
 template <class Archive> 
 void CreatureFactory::SingleCreature::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(tribe)
-    & SVAR(id)
-  CHECK_SERIAL;
+    & SVAR(id);
 }
 
 SERIALIZABLE(CreatureFactory::SingleCreature);
@@ -211,7 +209,6 @@ class BoulderController : public Monster {
       & SVAR(direction)
       & SVAR(stopped)
       & SVAR(myTribe);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(BoulderController);
@@ -427,7 +424,6 @@ class KrakenController : public Monster {
       & SVAR(held)
       & SVAR(spawns)
       & SVAR(father);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(KrakenController);
@@ -588,7 +584,6 @@ class ShopkeeperController : public Monster {
       & SVAR(shopArea)
       & SVAR(myItems)
       & SVAR(firstMove);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
@@ -643,7 +638,6 @@ class RedDragonController : public Monster {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Monster)
       & SVAR(lastSpawn);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(RedDragonController);

@@ -60,8 +60,6 @@ class ViewIndex {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  SERIAL_CHECKER;
-
   private:
   std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);
   vector<ViewObject> SERIAL(objects);

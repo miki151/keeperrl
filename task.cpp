@@ -28,7 +28,6 @@ template <class Archive>
 void Task::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(UniqueEntity)
     & SVAR(done);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Task);
@@ -113,7 +112,6 @@ class Construction : public Task {
       & SVAR(position)
       & SVAR(type)
       & SVAR(callback);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(Construction);
@@ -160,7 +158,6 @@ class BuildTorch : public Task {
       & SVAR(position)
       & SVAR(callback)
       & SVAR(attachmentDir);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(BuildTorch);
@@ -269,7 +266,6 @@ class PickItem : public NonTransferable {
       & SVAR(position)
       & SVAR(tries)
       & SVAR(callback);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(PickItem);
@@ -436,7 +432,6 @@ class BringItem : public PickItem {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(PickItem)
       & SVAR(target);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(BringItem);
@@ -545,7 +540,6 @@ class ApplySquare : public NonTransferable {
       & SVAR(invalidCount)
       & SVAR(position)
       & SVAR(callback);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(ApplySquare);
@@ -603,7 +597,6 @@ class Kill : public NonTransferable {
       & SVAR(creature)
       & SVAR(type)
       & SVAR(callback);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(Kill);
@@ -664,7 +657,6 @@ class Sacrifice : public NonTransferable {
       & SVAR(creature)
       & SVAR(sacrificePos)
       & SVAR(callback);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(Sacrifice);
@@ -711,7 +703,6 @@ class DestroySquare : public NonTransferable {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
       & SVAR(position);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(DestroySquare);
@@ -784,7 +775,6 @@ class Chain : public Task {
     ar& SUBCLASS(Task)
       & SVAR(tasks)
       & SVAR(current);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(Chain);
@@ -831,7 +821,6 @@ class Explore : public NonTransferable {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
       & SVAR(position);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(Explore);
@@ -862,7 +851,6 @@ class AttackLeader : public NonTransferable {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
       & SVAR(collective);
-    CHECK_SERIAL;
   }
 
   virtual string getDescription() const override {
@@ -926,7 +914,6 @@ class KillFighters : public NonTransferable {
       & SVAR(who)
       & SVAR(numCreatures)
       & SVAR(targets);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(KillFighters);
@@ -1016,7 +1003,6 @@ class CreateBed : public NonTransferable {
       & SVAR(fromType)
       & SVAR(toType)
       & SVAR(callback);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(CreateBed);
@@ -1049,7 +1035,6 @@ class ConsumeItem : public NonTransferable {
     ar& SUBCLASS(NonTransferable)
       & SVAR(items)
       & SVAR(callback);
-    CHECK_SERIAL;
   }
 
   virtual string getDescription() const override {
@@ -1106,7 +1091,6 @@ class Copulate : public NonTransferable {
       & SVAR(target)
       & SVAR(numTurns)
       & SVAR(callback);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(Copulate);
@@ -1153,7 +1137,6 @@ class Consume : public NonTransferable {
     ar& SUBCLASS(NonTransferable)
       & SVAR(target)
       & SVAR(callback);
-    CHECK_SERIAL;
   }
   
   SERIALIZATION_CONSTRUCTOR(Consume);

@@ -25,7 +25,6 @@ template <class Archive>
 void MarkovChain<T>::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(state)
     & SVAR(transitions);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(MarkovChain<MinionTask>);

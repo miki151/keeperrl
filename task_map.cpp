@@ -19,7 +19,6 @@ void TaskMap<CostInfo>::serialize(Archive& ar, const unsigned int version) {
     & SVAR(priorityTasks)
     & SVAR(delayedTasks)
     & SVAR(highlight);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(TaskMap<Collective::CostInfo>);

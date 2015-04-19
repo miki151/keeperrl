@@ -56,7 +56,6 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(visibleFriends)
     & SVAR(notifiedConquered)
     & SVAR(visibilityMap);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(PlayerControl);

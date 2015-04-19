@@ -45,8 +45,6 @@ class EntitySet {
   Iter begin() const;
   Iter end() const;
 
-  SERIAL_CHECKER;
-
   private:
   set<typename UniqueEntity<T>::Id> SERIAL(elems);
 };

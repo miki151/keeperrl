@@ -24,7 +24,6 @@ void Fire::serialize(Archive& ar, const unsigned int version) {
     & SVAR(size)
     & SVAR(weight)
     & SVAR(flamability);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Fire);

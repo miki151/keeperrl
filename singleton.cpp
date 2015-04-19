@@ -35,7 +35,6 @@ template<class T, class E>
 template<class Archive>
 void Singleton<T, E>::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(id);
-  CHECK_SERIAL;
 }
 
 template<class T, class E>

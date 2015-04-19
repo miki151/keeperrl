@@ -37,8 +37,6 @@ class MapMemory {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  SERIAL_CHECKER;
-
   private:
   Table<optional<ViewIndex>> SERIAL(table);
   mutable unordered_set<Vec2> updated;
