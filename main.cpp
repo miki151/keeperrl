@@ -40,6 +40,7 @@
 #include "dirent.h"
 #include "clock.h"
 #include "skill.h"
+#include "parse_game.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."

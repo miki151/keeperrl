@@ -1,19 +1,16 @@
 #include "stdafx.h"
 
-#include "debug.h"
-#include "util.h"
-
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <boost/program_options.hpp>
-
 #include "gzstream.h"
 
-using namespace boost::iostreams;
+#include "debug.h"
+#include "util.h"
+#include "parse_game.h"
+
+#include <boost/program_options.hpp>
+
+
 using namespace boost::program_options;
 using namespace boost::archive;
-
-typedef StreamCombiner<igzstream, InputArchive> CompressedInput;
 
 int main(int argc, char* argv[]) {
   options_description flags("Flags");
@@ -30,12 +27,9 @@ int main(int argc, char* argv[]) {
   }
   string path = vars["input"].as<string>();
 
-  CompressedInput input(path.c_str());
-  string name;
-  int version;
-  input.getArchive() >> version >> name;
+  auto info = getNameAndVersion(path);
   if (vars.count("display_name"))
-    std::cout << name << endl;
+    std::cout << info->first << endl;
   if (vars.count("version"))
-    std::cout << version << endl;
+    std::cout << info->second << endl;
 }

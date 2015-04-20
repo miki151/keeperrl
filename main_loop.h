@@ -12,9 +12,6 @@ class FileSharing;
 class Options;
 class Jukebox;
 
-typedef StreamCombiner<ogzstream, OutputArchive> CompressedOutput;
-typedef StreamCombiner<igzstream, InputArchive> CompressedInput;
-
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath, Options* o,

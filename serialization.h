@@ -19,25 +19,30 @@
 #ifdef TEXT_SERIALIZATION
 typedef text_iarchive InputArchive;
 typedef text_oarchive OutputArchive;
+typedef portable_iarchive InputArchive2;
 #else
 typedef portable_iarchive InputArchive;
 typedef portable_oarchive OutputArchive;
+typedef text_iarchive InputArchive2;
 #endif
 
 #define SUBCLASS(X) boost::serialization::make_nvp("Base", boost::serialization::base_object<X>(*this))
 
 #define SERIALIZABLE(T) \
    template void T::serialize(InputArchive&, unsigned); \
-   template void T::serialize(OutputArchive&, unsigned);
+   template void T::serialize(OutputArchive&, unsigned); \
+   template void T::serialize(InputArchive2&, unsigned);
 
 #define SERIALIZABLE_TMPL(T, ...) \
    template class T<__VA_ARGS__>;\
    template void T<__VA_ARGS__>::serialize(InputArchive&, unsigned); \
-   template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned);
+   template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned); \
+   template void T<__VA_ARGS__>::serialize(InputArchive2&, unsigned);
 
 #define REGISTER_TYPES(M) \
    template void M(InputArchive&, int); \
-   template void M(OutputArchive&, int);
+   template void M(OutputArchive&, int); \
+   template void M(InputArchive2&, int);
 
 #define REGISTER_TYPE(T, A)\
 (T).register_type(static_cast<A*>(nullptr))

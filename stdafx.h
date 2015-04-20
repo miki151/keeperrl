@@ -57,10 +57,8 @@
 #define BOOST_ENABLE_ASSERT_HANDLER
 #include <boost/assert.hpp>
 
-#ifdef TEXT_SERIALIZATION
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#endif
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/deque.hpp>
@@ -149,9 +147,7 @@ using boost::none;
 using boost::replace_all;
 using eos::portable_oarchive;
 using eos::portable_iarchive;
-#ifdef TEXT_SERIALIZATION
 using boost::archive::text_iarchive;
 using boost::archive::text_oarchive;
-#endif
 #include "serialization.h"
 #endif
