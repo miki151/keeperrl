@@ -35,7 +35,6 @@ void Item::serialize(Archive& ar, const unsigned int version) {
     & SVAR(discarded)
     & SVAR(shopkeeper)
     & SVAR(fire);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Item);
@@ -67,8 +66,6 @@ string Item::getTrapName(TrapType type) {
     case TrapType::SURPRISE: return "surprise";
     case TrapType::TERROR: return "terror";
   }
-  FAIL << "wef";
-  return "";
 }
 
 ItemPredicate Item::effectPredicate(EffectType type) {
@@ -140,12 +137,12 @@ void Item::tick(double time, Level* level, Vec2 position) {
 
 void Item::onHitSquareMessage(Vec2 position, Square* s, bool plural) {
   if (fragile) {
-    s->getConstLevel()->globalMessage(position,
+    s->getLevel()->globalMessage(position,
         getTheName(plural) + chooseElem<string>({" crashes", " crash"}, int(plural)) + " on the " + s->getName(),
         "You hear a crash");
     discarded = true;
   } else
-    s->getConstLevel()->globalMessage(position, getTheName(plural) +
+    s->getLevel()->globalMessage(position, getTheName(plural) +
         chooseElem<string>({" hits", " hit"}, int(plural)) + " the " + s->getName());
 }
 

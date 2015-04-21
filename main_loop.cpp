@@ -12,6 +12,7 @@
 #include "square.h"
 #include "clock.h"
 #include "model_builder.h"
+#include "parse_game.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin)
@@ -59,25 +60,28 @@ static string getSaveSuffix(Model::GameType t) {
   }
 }
 
-static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
+template <typename InputType>
+static unique_ptr<Model> loadGameUsing(const string& filename, bool eraseFile) {
   unique_ptr<Model> model;
-#ifdef RELEASE
   try {
-#endif
-    CompressedInput input(filename.c_str());
+    InputType input(filename.c_str());
     string discard;
     int version;
     input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard);
     Serialization::registerTypes(input.getArchive(), version);
     input.getArchive() >> BOOST_SERIALIZATION_NVP(model);
-#ifdef RELEASE
   } catch (boost::archive::archive_exception& ex) {
     return nullptr;
   }
-#endif
   if (eraseFile)
     remove(filename.c_str());
   return model;
+}
+
+static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
+  if (auto model = loadGameUsing<CompressedInput>(filename, eraseFile))
+    return model;
+  return loadGameUsing<CompressedInput2>(filename, eraseFile);
 }
 
 bool isNonAscii(char c) {
@@ -102,23 +106,15 @@ static void saveGame(PModel& model, const string& path) {
 }
 
 View::ListElem MainLoop::getGameName(const SaveFileInfo& save) {
-  CompressedInput input(userPath + "/" + save.filename.c_str());
-  string name;
-  int version;
-  input.getArchive() >> version >> name;
-  return View::ListElem(name, getDateString(save.date));
+  auto info = getNameAndVersion(userPath + "/" + save.filename);
+  return View::ListElem(info->first, getDateString(save.date));
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
-  try {
-    CompressedInput input(userPath + "/" + save.filename.c_str());
-    string name;
-    int version;
-    input.getArchive() >> version;
-    return version;
-  } catch (boost::archive::archive_exception& ex) {
+  if (auto info = getNameAndVersion(userPath + "/" + save.filename))
+    return info->second;
+  else
     return -1;
-  }
 }
 
 void MainLoop::uploadFile(const string& path) {
@@ -140,7 +136,7 @@ void MainLoop::saveUI(PModel& model, Model::GameType type, View::SplashType spla
   Square::progressMeter = &meter;
   view->displaySplash(meter, splashType);
   string path = getSavePath(model.get(), type);
-  saveGame(model, path);
+  MEASURE(saveGame(model, path), "saving time");
   view->clearSplash();
   Square::progressMeter = nullptr;
   if (type == Model::GameType::RETIRED_KEEPER && options->getBoolValue(OptionId::ONLINE))

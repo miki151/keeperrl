@@ -35,7 +35,6 @@ void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
     & SVAR(unique)
     & SVAR(tribeOverrides)
     & SVAR(levelIncrease);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(CreatureFactory);
@@ -51,8 +50,7 @@ bool CreatureFactory::SingleCreature::operator == (const SingleCreature& o) cons
 template <class Archive> 
 void CreatureFactory::SingleCreature::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(tribe)
-    & SVAR(id)
-  CHECK_SERIAL;
+    & SVAR(id);
 }
 
 SERIALIZABLE(CreatureFactory::SingleCreature);
@@ -211,15 +209,14 @@ class BoulderController : public Monster {
       & SVAR(direction)
       & SVAR(stopped)
       & SVAR(myTribe);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(BoulderController);
 
   private:
   Vec2 SERIAL(direction);
-  bool SERIAL2(stopped, false);
-  Tribe* SERIAL2(myTribe, nullptr);
+  bool SERIAL(stopped) = false;
+  Tribe* SERIAL(myTribe) = nullptr;
   double health = 1;
 };
 
@@ -427,18 +424,17 @@ class KrakenController : public Monster {
       & SVAR(held)
       & SVAR(spawns)
       & SVAR(father);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(KrakenController);
 
   private:
-  int SERIAL2(numSpawns, 0);
-  bool SERIAL2(waitNow, true);
-  bool SERIAL2(ready, false);
-  Creature* SERIAL2(held, nullptr);
+  int SERIAL(numSpawns) = 0;
+  bool SERIAL(waitNow) = true;
+  bool SERIAL(ready) = false;
+  Creature* SERIAL(held) = nullptr;
   vector<Creature*> SERIAL(spawns);
-  KrakenController* SERIAL2(father, nullptr);
+  KrakenController* SERIAL(father) = nullptr;
 };
 
 class KamikazeController : public Monster {
@@ -588,7 +584,6 @@ class ShopkeeperController : public Monster {
       & SVAR(shopArea)
       & SVAR(myItems)
       & SVAR(firstMove);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
@@ -601,7 +596,7 @@ class ShopkeeperController : public Monster {
   unordered_map<const Creature*, EntitySet<Item>> SERIAL(unpaidItems);
   Location* SERIAL(shopArea);
   EntitySet<Item> SERIAL(myItems);
-  bool SERIAL2(firstMove, true);
+  bool SERIAL(firstMove) = true;
 };
 
 // OBSOLETE
@@ -643,13 +638,12 @@ class RedDragonController : public Monster {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Monster)
       & SVAR(lastSpawn);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(RedDragonController);
 
   private:
-  double SERIAL2(lastSpawn, -100);
+  double SERIAL(lastSpawn) = -100;
 };
 
 template <class Archive>

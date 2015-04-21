@@ -60,13 +60,11 @@ class ViewIndex {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  SERIAL_CHECKER;
-
   private:
   std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);
   vector<ViewObject> SERIAL(objects);
   EnumMap<HighlightType, double> SERIAL(highlight);
-  bool SERIAL2(anyHighlight, false);
+  bool SERIAL(anyHighlight) = false;
   optional<ViewId> hiddenId;
 };
 

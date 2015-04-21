@@ -27,7 +27,6 @@ void Tribe::serialize(Archive& ar, const unsigned int version) {
     & SVAR(members)
     & SVAR(enemyTribes)
     & SVAR(name);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Tribe);
@@ -45,10 +44,7 @@ class Constant : public Tribe {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Tribe) & SVAR(standing);
-    CHECK_SERIAL;
   }
-
-  SERIAL_CHECKER;
 
   private:
   double SERIAL(standing);

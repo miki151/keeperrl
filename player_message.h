@@ -37,7 +37,7 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
   double SERIAL(freshness);
   optional<Vec2> SERIAL(position);
   optional<UniqueEntity<Creature>::Id> SERIAL(creature);
-  const Location* SERIAL2(location, nullptr);
+  const Location* SERIAL(location) = nullptr;
 };
 
 #endif

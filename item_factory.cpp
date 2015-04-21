@@ -36,7 +36,6 @@ void ItemFactory::serialize(Archive& ar, const unsigned int version) {
     & SVAR(minCount)
     & SVAR(maxCount)
     & SVAR(unique);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(ItemFactory);
@@ -62,13 +61,12 @@ class FireScroll : public Item {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Item)
       & SVAR(set);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(FireScroll);
 
   private:
-  bool SERIAL2(set, false);
+  bool SERIAL(set) = false;
 };
 
 class AmuletOfWarning : public Item {
@@ -113,7 +111,6 @@ class AmuletOfWarning : public Item {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Item)
       & SVAR(radius);
-    CHECK_SERIAL;
   }
  
   SERIALIZATION_CONSTRUCTOR(AmuletOfWarning);
@@ -143,13 +140,12 @@ class AmuletOfHealing : public Item {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Item)
       & SVAR(lastTick);
-    CHECK_SERIAL;
   }
  
   SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
 
   private:
-  double SERIAL2(lastTick, -1);
+  double SERIAL(lastTick) = -1;
 };
 
 class AmuletOfEnemyCheck : public Item {
@@ -168,7 +164,6 @@ class AmuletOfEnemyCheck : public Item {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Item)
       & SVAR(check);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(AmuletOfEnemyCheck);
@@ -205,7 +200,6 @@ class ItemOfCreatureVision : public Item {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Item)
       & SVAR(vision);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(ItemOfCreatureVision);
@@ -230,7 +224,6 @@ class LastingEffectItem : public Item {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Item)
       & SVAR(effect);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(LastingEffectItem);
@@ -299,15 +292,14 @@ class Corpse : public Item {
       & SVAR(rottingTime)
       & SVAR(rottenName)
       & SVAR(corpseInfo);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Corpse);
 
   private:
   ViewObject SERIAL(object2);
-  bool SERIAL2(rotten, false);
-  double SERIAL2(rottenTime, -1);
+  bool SERIAL(rotten) = false;
+  double SERIAL(rottenTime) = -1;
   double SERIAL(rottingTime);
   string SERIAL(rottenName);
   CorpseInfo SERIAL(corpseInfo);
@@ -350,13 +342,12 @@ class Potion : public Item {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Item) 
       & SVAR(heat);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Potion);
 
   private:
-  double SERIAL2(heat, 0);
+  double SERIAL(heat) = 0;
 };
 
 class SkillBook : public Item {
@@ -371,7 +362,6 @@ class SkillBook : public Item {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Item)
       & SVAR(skill);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(SkillBook);
@@ -396,14 +386,13 @@ class TechBook : public Item {
     ar& SUBCLASS(Item)
       & SVAR(tech)
       & SVAR(read);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(TechBook);
 
   private:
   optional<TechId> SERIAL(tech);
-  bool SERIAL2(read, false);
+  bool SERIAL(read) = false;
 };
 
 class TrapItem : public Item {
@@ -423,7 +412,6 @@ class TrapItem : public Item {
     ar& SUBCLASS(Item)
       & SVAR(effect)
       & SVAR(trapObject);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(TrapItem);

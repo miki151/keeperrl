@@ -7,7 +7,6 @@ template <class Archive>
 void BucketMap<T>::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(bucketSize)
     & SVAR(buckets);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(BucketMap<Creature*>);

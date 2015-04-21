@@ -36,7 +36,6 @@ class MovementType {
   MovementType getWithNoTribe() const;
 
   private:
-  SERIAL_CHECKER;
   EnumSet<MovementTrait> SERIAL(traits);
   const Tribe* SERIAL(tribe);
 };

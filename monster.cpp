@@ -23,7 +23,6 @@ void Monster::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(Controller)
      & SVAR(monsterAI)
      & SVAR(enemies);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Monster);

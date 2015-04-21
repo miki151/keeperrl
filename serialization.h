@@ -16,49 +16,45 @@
 #ifndef _SERIALIZATION
 #define _SERIALIZATION
 
+#ifdef TEXT_SERIALIZATION
+typedef text_iarchive InputArchive;
+typedef text_oarchive OutputArchive;
+typedef portable_iarchive InputArchive2;
+#else
 typedef portable_iarchive InputArchive;
 typedef portable_oarchive OutputArchive;
+typedef text_iarchive InputArchive2;
+#endif
 
 #define SUBCLASS(X) boost::serialization::make_nvp("Base", boost::serialization::base_object<X>(*this))
 
 #define SERIALIZABLE(T) \
    template void T::serialize(InputArchive&, unsigned); \
-   template void T::serialize(OutputArchive&, unsigned);
+   template void T::serialize(OutputArchive&, unsigned); \
+   template void T::serialize(InputArchive2&, unsigned);
 
 #define SERIALIZABLE_TMPL(T, ...) \
    template class T<__VA_ARGS__>;\
    template void T<__VA_ARGS__>::serialize(InputArchive&, unsigned); \
-   template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned);
+   template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned); \
+   template void T<__VA_ARGS__>::serialize(InputArchive2&, unsigned);
 
 #define REGISTER_TYPES(M) \
    template void M(InputArchive&, int); \
-   template void M(OutputArchive&, int);
+   template void M(OutputArchive&, int); \
+   template void M(InputArchive2&, int);
 
 #define REGISTER_TYPE(T, A)\
 (T).register_type(static_cast<A*>(nullptr))
 
-#ifdef SERIALIZATION_DEBUG
-#define SERIAL_CHECKER SerialChecker serialChecker
-#define CHECK_SERIAL serialChecker.checkSerial();
-#define SERIAL(X) X; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker)
-#define SERIAL2(X, Y) X = Y; SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker)
-#define SERIAL3(X) SerialChecker::Check X##_Check = SerialChecker::Check(serialChecker);
-#define SVAR(X) boost::serialization::make_nvp(#X, checkSerial(X, X##_Check))
-#else
-#define SERIAL_CHECKER
-#define CHECK_SERIAL
 #define SERIAL(X) X
-#define SERIAL2(X, Y) X = Y
-#define SERIAL3(X)
 #define SVAR(X) boost::serialization::make_nvp(#X, X)
-#endif
 
 #define SERIALIZATION_DECL(A) \
   friend boost::serialization::access; \
   A(); \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version); \
-  SERIAL_CHECKER
+  void serialize(Archive& ar, const unsigned int version);
 
 #define SERIALIZATION_CONSTRUCTOR_IMPL(A) \
   A::A() {}
@@ -67,43 +63,13 @@ typedef portable_oarchive OutputArchive;
   A::B() {}
 
 #define SERIALIZATION_CONSTRUCTOR(A) \
-  A() {} \
-  SERIAL_CHECKER
+  A() {}
 
 class Serialization {
   public:
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 };
-
-class SerialChecker {
-  public:
-  SerialChecker() {}
-  SerialChecker(const SerialChecker&);
-  void checkSerial();
-
-  SerialChecker& operator = (const SerialChecker&);
-
-  class Check {
-    public:
-    Check(SerialChecker& checker);
-    Check(const Check&);
-    Check& operator = (const Check&);
-    void tick();
-    void tickOff();
-    void setNewCopy(SerialChecker*);
-
-    private:
-    bool ticked = false;
-    SerialChecker* newCopy = nullptr;
-  };
-
-  void addCheck(Check* c);
-
-  private:
-  vector<Check*> checks;
-};
-
 
 template <class T, class U>
 class StreamCombiner {
@@ -120,14 +86,6 @@ class StreamCombiner {
   T stream;
   U archive;
 };
-
-
-template <class T>
-T& checkSerial(T& t, SerialChecker::Check& check) {
-  check.tick();
-  return t;
-}
-
 
 
 namespace boost { 
@@ -325,9 +283,9 @@ inline void serialize(Archive & ar, std::vector<T, Allocator> & t, unsigned int 
 }
 
 #ifdef CLANG // clang doesn't see the serialization of std::array in boost, for some reason
-
+#ifndef OSX
 template <class Archive, class T, std::size_t N>
-void serialize(Archive& ar, std::array<T,N>& a, const unsigned int /* version */)
+void serialize(Archive& ar, std::array<T,N>& a, const unsigned int)
 {
     ar & boost::serialization::make_nvp(
         "elems",
@@ -336,6 +294,7 @@ void serialize(Archive& ar, std::array<T,N>& a, const unsigned int /* version */
 
 }
 
+#endif
 #endif
 
 #ifdef DEBUG_STL

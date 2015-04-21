@@ -118,14 +118,11 @@ class Square : public Renderable {
   /** Returns the strength, i.e. resistance to demolition.*/
   int getStrength() const;
 
-  /** Checks if this square can be destroyed by member of the tribe.*/
-  bool canDestroy(const Tribe*) const;
-
   /** Checks if this square can be destroyed using the 'destroy' order.*/
-  bool canDestroy() const;
+  bool isDestroyable() const;
 
   /** Checks if this square can be destroyed by a creature. Pathfinding will not take into account this result.*/
-  virtual bool canDestroy(const Creature*) const;
+  bool canDestroy(const Creature*) const;
 
   /** Called when something is destroying this square (may take a few turns to destroy).*/
   virtual void destroyBy(Creature* c);
@@ -153,7 +150,7 @@ class Square : public Renderable {
   void putCreature(Creature*);
 
   /** Puts a creature on the square without triggering any mechanisms that happen when a creature enters.*/ 
-  void putCreatureSilently(Creature*);
+  void setCreature(Creature*);
 
   /** Removes the creature from the square.*/
   void removeCreature();
@@ -225,8 +222,6 @@ class Square : public Renderable {
   virtual optional<SquareApplyType> getApplyType(const Creature*) const { return none; }
   virtual void onApply(Creature* c) { Debug(FATAL) << "Bad square applied"; }
  
-  const Level* getConstLevel() const;
-
   virtual ~Square();
 
   void setFog(double val);
@@ -253,9 +248,12 @@ class Square : public Renderable {
   Item* getTopItem() const;
   const MovementType& getMovementType() const;
 
-  Level* SERIAL2(level, nullptr);
+  /** Checks if this square can be destroyed by member of the tribe.*/
+  bool canDestroy(const Tribe*) const;
+
+  Level* SERIAL(level) = nullptr;
   Vec2 SERIAL(position);
-  Creature* SERIAL2(creature, nullptr);
+  Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
   optional<ViewObject> SERIAL(backgroundObject);
   optional<VisionId> SERIAL(vision);
@@ -268,13 +266,13 @@ class Square : public Renderable {
   PoisonGas SERIAL(poisonGas);
   map<SquareId, int> SERIAL(constructions);
   bool SERIAL(ticking);
-  double SERIAL2(fog, 0);
+  double SERIAL(fog) = 0;
   MovementType SERIAL(movementType);
   void updateMovement();
-  bool SERIAL2(updateMemory, true);
-  mutable bool SERIAL2(updateViewIndex, true);
+  bool SERIAL(updateMemory) = true;
+  mutable bool SERIAL(updateViewIndex) = true;
   mutable ViewIndex SERIAL(viewIndex);
-  bool SERIAL2(canDestroySquare, false);
+  bool SERIAL(destroyable) = false;
   const Tribe* SERIAL(owner);
 };
 

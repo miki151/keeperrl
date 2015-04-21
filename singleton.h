@@ -34,8 +34,6 @@ class Singleton {
 
   E getId() const;
 
-  SERIAL_CHECKER;
-
   protected:
   static void set(E, T*);
   static void clearAll();

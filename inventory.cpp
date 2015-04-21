@@ -23,7 +23,6 @@ template <class Archive>
 void Inventory::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(items)
     & SVAR(itemsCache);
-  CHECK_SERIAL;
 }
 
 Inventory::~Inventory() {}

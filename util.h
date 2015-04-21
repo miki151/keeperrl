@@ -1075,10 +1075,10 @@ class EnumMap {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    vector<U> tmp;
+    vector<U> SERIAL(tmp);
     for (int i : All(elems))
       tmp.push_back(std::move(elems[i]));
-    ar & tmp;
+    ar & SVAR(tmp);
     CHECK(tmp.size() <= elems.size()) << tmp.size() << " " << elems.size();
     for (int i : All(tmp))
       elems[i] = std::move(tmp[i]);
@@ -1280,12 +1280,12 @@ class BiMap {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & m1 & m2;
+    ar & SVAR(m1) & SVAR(m2);
   }
 
   private:
-  map<U, V> m1;
-  map<V, U> m2;
+  map<U, V> SERIAL(m1);
+  map<V, U> SERIAL(m2);
 };
 
 class Semaphore {

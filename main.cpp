@@ -40,6 +40,7 @@
 #include "dirent.h"
 #include "clock.h"
 #include "skill.h"
+#include "parse_game.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -67,7 +68,7 @@ static bool tilesPresent;
 #ifdef OSX // see thread comment in stdafx.h
 static thread::attributes getAttributes() {
   thread::attributes attr;
-  attr.set_stack_size(4096 * 2000);
+  attr.set_stack_size(4096 * 4000);
   return attr;
 }
 #endif

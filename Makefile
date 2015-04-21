@@ -18,6 +18,7 @@ endif
 ifdef OSX
 LDFLAGS = -Wl
 CFLAGS += -stdlib=libc++ -DOSX -m32 -mmacosx-version-min=10.7
+CFLAGS += -DTEXT_SERIALIZATION
 else
 LDFLAGS = -Wl,-rpath=$(RPATH) -static-libstdc++
 endif
@@ -54,8 +55,8 @@ ifdef DEBUG_STL
 CFLAGS += -DDEBUG_STL
 endif
 
-ifdef SERIAL_DEBUG
-CFLAGS += -DSERIALIZATION_DEBUG
+ifdef TEXT_SERIALIZATION
+CFLAGS += -DTEXT_SERIALIZATION
 endif
 
 ifdef OPT
@@ -73,7 +74,7 @@ IPATH = -I. -I./extern
 CFLAGS += $(IPATH)
 
 ifdef OSX
-BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system -lboost_thread-mt
+BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system -lboost_thread
 else
 BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system
 endif

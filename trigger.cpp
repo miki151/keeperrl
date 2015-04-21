@@ -31,7 +31,6 @@ void Trigger::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(viewObject)
     & SVAR(level)
     & SVAR(position);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Trigger);
@@ -150,14 +149,13 @@ class Portal : public Trigger {
       if (p)
         otherPortal = Model::PortalInfo(p->level, p->position);
     }
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Portal);
 
   private:
-  double SERIAL2(startTime, 1000000);
-  bool SERIAL2(active, true);
+  double SERIAL(startTime) = 1000000;
+  bool SERIAL(active) = true;
   optional<Model::PortalInfo> SERIAL(otherPortal);
 };
 
@@ -207,7 +205,6 @@ class Trap : public Trigger {
     ar& SUBCLASS(Trigger) 
       & SVAR(effect)
       & SVAR(tribe);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Trap);
@@ -237,7 +234,6 @@ class Torch : public Trigger {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Trigger);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Torch);
@@ -298,7 +294,6 @@ class MeteorShower : public Trigger {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Trigger) & SVAR(creature) & SVAR(endTime);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(MeteorShower);

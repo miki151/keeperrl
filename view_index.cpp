@@ -25,7 +25,6 @@ void ViewIndex::serialize(Archive& ar, const unsigned int version) {
     & SVAR(highlight)
     & SVAR(objects)
     & SVAR(anyHighlight);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(ViewIndex);

@@ -72,7 +72,6 @@ template <class T>
 template <class Archive> 
 void EntitySet<T>::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(elems);
-  CHECK_SERIAL;
 }
 
 template <class T>

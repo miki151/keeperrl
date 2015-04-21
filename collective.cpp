@@ -58,7 +58,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(torches)
     & SVAR(name)
     & SVAR(config);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Collective);
@@ -197,7 +196,6 @@ class LeaderControlOverride : public Creature::MoraleOverride {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Creature::MoraleOverride) & SVAR(collective) & SVAR(creature);
-    CHECK_SERIAL;
   }
 
   private:
@@ -1191,7 +1189,9 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
     addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
     kills.push_back(victim);
-    points += victim->getDifficultyPoints();
+    int difficulty = victim1->getDifficultyPoints();
+    CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim1->getName().bare();
+    points += difficulty;
     if (killer)
       control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
           .setPosition(victim->getPosition()));
@@ -1649,7 +1649,7 @@ void Collective::removeConstruction(Vec2 pos) {
 }
 
 void Collective::destroySquare(Vec2 pos) {
-  if (level->getSafeSquare(pos)->canDestroy() && containsSquare(pos))
+  if (level->getSafeSquare(pos)->isDestroyable() && containsSquare(pos))
     level->getSafeSquare(pos)->destroy();
   if (Creature* c = level->getSafeSquare(pos)->getCreature())
     if (c->isStationary())

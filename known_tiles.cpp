@@ -5,7 +5,6 @@ template <class Archive>
 void KnownTiles::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(known)
     & SVAR(border);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(KnownTiles);

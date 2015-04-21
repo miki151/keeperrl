@@ -67,7 +67,7 @@ class VillageControl : public CollectiveControl {
     AttackMessage SERIAL(attackMessage);
     optional<WelcomeMessage> SERIAL(welcomeMessage);
     optional<ItemTheftMessage> SERIAL(itemTheftMessage);
-    bool SERIAL2(leaderAttacks, false);
+    bool SERIAL(leaderAttacks) = false;
 
     PTask getAttackTask(VillageControl* self);
     double getAttackProbability(const VillageControl* self) const;

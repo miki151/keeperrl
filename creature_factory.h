@@ -180,13 +180,12 @@ class CreatureFactory {
   CreatureFactory(Tribe* tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
       const vector<CreatureId>& unique, EnumMap<CreatureId, Tribe*> overrides = {}, double levelIncrease = 0);
   Tribe* getTribeFor(CreatureId);
-  SERIAL_CHECKER;
   Tribe* SERIAL(tribe);
   vector<CreatureId> SERIAL(creatures);
   vector<double> SERIAL(weights);
   vector<CreatureId> SERIAL(unique);
   EnumMap<CreatureId, Tribe*> SERIAL(tribeOverrides);
-  double SERIAL2(levelIncrease, 0);
+  double SERIAL(levelIncrease) = 0;
 };
 
 

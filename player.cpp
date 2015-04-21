@@ -44,7 +44,6 @@ void Player::serialize(Archive& ar, const unsigned int version) {
     & SVAR(model)
     & SVAR(messages)
     & SVAR(messageHistory);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Player);
@@ -864,7 +863,6 @@ class PossessedController : public Player {
     ar& SUBCLASS(Player)
       & SVAR(owner)
       & SVAR(isGhost);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(PossessedController);

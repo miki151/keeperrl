@@ -22,7 +22,6 @@ void Sectors::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(bounds)
     & SVAR(sectors)
     & SVAR(sizes);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(Sectors);

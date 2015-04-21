@@ -49,9 +49,8 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(updateViewIndex)
     & SVAR(updateMemory)
     & SVAR(viewIndex)
-    & SVAR(canDestroySquare)
+    & SVAR(destroyable)
     & SVAR(owner);
-  CHECK_SERIAL;
   if (progressMeter)
     progressMeter->addProgress();
   updateViewIndex = true;
@@ -67,7 +66,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
-    movementType(p.movementType), canDestroySquare(p.canDestroy), owner(p.owner) {
+    movementType(p.movementType), destroyable(p.canDestroy), owner(p.owner) {
 }
 
 Square::~Square() {
@@ -75,7 +74,7 @@ Square::~Square() {
 
 void Square::putCreature(Creature* c) {
   CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
-  creature = c;
+  setCreature(c);
   onEnter(c);
   if (c->isStationary())
     level->addTickingSquare(position);
@@ -143,15 +142,15 @@ bool Square::construct(SquareType type) {
 }
 
 bool Square::canDestroy(const Tribe* tribe) const {
-  return canDestroySquare && tribe != owner && !fire.isBurning();
+  return destroyable && tribe != owner && !fire.isBurning();
 }
 
-bool Square::canDestroy() const {
-  return canDestroySquare;
+bool Square::isDestroyable() const {
+  return destroyable;
 }
 
 void Square::destroy() {
-  CHECK(canDestroy());
+  CHECK(isDestroyable());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   GlobalEvents.addSquareDestroyedEvent(getLevel(), getPosition());
@@ -160,7 +159,7 @@ void Square::destroy() {
 
 bool Square::canDestroy(const Creature* c) const {
   return canDestroy(c->getTribe())
-    || (canDestroySquare && c->isInvincible()); // so that boulders destroy keeper doors
+    || (destroyable && c->isInvincible()); // so that boulders destroy keeper doors
 }
 
 void Square::destroyBy(Creature* c) {
@@ -178,7 +177,7 @@ const vector<Vec2>& Square::getTravelDir() const {
   return travelDir;
 }
 
-void Square::putCreatureSilently(Creature* c) {
+void Square::setCreature(Creature* c) {
   creature = c;
 }
 
@@ -188,10 +187,6 @@ void Square::setLevel(Level* l) {
     level->addTickingSquare(position);
   if (owner)
     level->addSquareOwner(owner);
-}
-
-const Level* Square::getConstLevel() const {
-  return level;
 }
 
 Level* Square::getLevel() {
@@ -509,14 +504,10 @@ int Square::getStrength() const {
 }
 
 Item* Square::getTopItem() const {
-  Item* last = nullptr;
   if (!inventory.isEmpty())
-  for (Item* it : inventory.getItems()) {
-    last = it;
-    if (it->getViewObject().layer() == ViewLayer::LARGE_ITEM)
-      return it;
-  }
-  return last;
+    return inventory.getItems().back();
+  else
+    return nullptr;
 }
 
 vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {

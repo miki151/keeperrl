@@ -32,8 +32,8 @@ class Fire {
   SERIALIZATION_DECL(Fire);
 
   private:
-  double SERIAL2(burnt, 0);
-  double SERIAL2(size, 0);
+  double SERIAL(burnt) = 0;
+  double SERIAL(size) = 0;
   double SERIAL(weight);
   double SERIAL(flamability);
 };

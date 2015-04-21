@@ -49,7 +49,6 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(lightCapAmount);
   else
     lightCapAmount = Table<double>(squares.getBounds(), 1);
-  CHECK_SERIAL;
 }  
 
 SERIALIZABLE(Level);
@@ -106,7 +105,6 @@ void Level::putCreature(Vec2 position, Creature* c) {
   bucketMap.addElement(position, c);
   c->setLevel(this);
   c->setPosition(position);
-  //getSquare(position)->putCreatureSilently(c);
   getSafeSquare(position)->putCreature(c);
   if (c->isDarknessSource())
     addDarknessSource(c->getPosition(), darknessRadius);
@@ -170,7 +168,7 @@ void Level::replaceSquare(Vec2 pos, PSquare square) {
   square->setBackground(squares[pos].get());
   squares[pos] = std::move(square);
   if (c) {
-    squares[pos]->putCreatureSilently(c);
+    squares[pos]->setCreature(c);
   }
   addLightSource(pos, squares[pos]->getLightEmission(), 1);
   updateVisibility(pos);

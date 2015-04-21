@@ -36,13 +36,13 @@ RICH_ENUM(TrapType,
 );
 
 RICH_ENUM(CollectiveResourceId,
-    GOLD,
-    WOOD,
-    IRON,
-    STONE,
-    MANA,
-    PRISONER_HEAD,
-    CORPSE
+  GOLD,
+  WOOD,
+  IRON,
+  STONE,
+  MANA,
+  PRISONER_HEAD,
+  CORPSE
 );
 
 RICH_ENUM(ItemClass,
@@ -147,13 +147,13 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   protected:
   virtual void specialTick(double time, Level*, Vec2 position) {}
   void setName(const string& name);
-  bool SERIAL2(discarded, false);
+  bool SERIAL(discarded) = false;
 
   private:
   string getModifiers(bool shorten = false) const;
   string getVisibleName(bool plural) const;
   string getBlindName(bool plural) const;
-  const Creature* SERIAL2(shopkeeper, nullptr);
+  const Creature* SERIAL(shopkeeper) = nullptr;
   Fire SERIAL(fire);
 };
 

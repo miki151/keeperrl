@@ -93,7 +93,6 @@ class Magma : public Square {
     ar& SUBCLASS(Square)
       & SVAR(itemMessage)
       & SVAR(noSeeMsg);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Magma);
@@ -133,7 +132,6 @@ class Water : public Square {
     ar& SUBCLASS(Square)
       & SVAR(itemMessage)
       & SVAR(noSeeMsg);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Water);
@@ -216,7 +214,6 @@ class Chest : public Square {
       & SVAR(opened)
       & SVAR(itemFactory)
       & SVAR(openedObject);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Chest);
@@ -227,7 +224,7 @@ class Chest : public Square {
   string SERIAL(msgItem);
   string SERIAL(msgMonster);
   string SERIAL(msgGold);
-  bool SERIAL2(opened, false);
+  bool SERIAL(opened) = false;
   ItemFactory SERIAL(itemFactory);
   ViewObject SERIAL(openedObject);
 };
@@ -261,13 +258,12 @@ class Fountain : public Square {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
       & SVAR(seed);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Fountain);
 
   private:
-  int SERIAL2(seed, Random.get(123456));
+  int SERIAL(seed) = Random.get(123456);
 };
 
 class Tree : public Square {
@@ -311,13 +307,12 @@ class Tree : public Square {
       & SVAR(destroyed)  // OBSOLETE
       & SVAR(creature)
       & SVAR(numWood);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Tree);
 
   private:
-  bool SERIAL2(destroyed, false);
+  bool SERIAL(destroyed) = false;
   int SERIAL(numWood);
   CreatureId SERIAL(creature);
 };
@@ -344,13 +339,12 @@ class TrapSquare : public Square {
     ar& SUBCLASS(Square)
       & SVAR(active)
       & SVAR(effect);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(TrapSquare);
 
   private:
-  bool SERIAL2(active, true);
+  bool SERIAL(active) = true;
   EffectType SERIAL(effect);
 };
 
@@ -410,7 +404,6 @@ class TribeDoor : public Door {
       & SVAR(tribe)
       & SVAR(destructionStrength)
       & SVAR(locked);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(TribeDoor);
@@ -418,7 +411,7 @@ class TribeDoor : public Door {
   private:
   const Tribe* SERIAL(tribe);
   int SERIAL(destructionStrength);
-  bool SERIAL2(locked, false);
+  bool SERIAL(locked) = false;
 };
 
 class Barricade : public Square {
@@ -440,10 +433,6 @@ class Barricade : public Square {
     }
   }
 
-  virtual bool canDestroy(const Creature* c) const override {
-    return c->isInvincible(); // hack to make boulders destroy barricade
-  }
-
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square);
@@ -452,7 +441,6 @@ class Barricade : public Square {
       ar & SVAR(tribe);
     }
     ar & SVAR(destructionStrength);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Barricade);
@@ -487,7 +475,6 @@ class Furniture : public Square {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
       & SVAR(applyType);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Furniture);
@@ -597,15 +584,14 @@ class Altar : public Square {
       & SVAR(recentKiller)
       & SVAR(recentVictim)
       & SVAR(killTime);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(Altar);
 
   private:
-  const Creature* SERIAL2(recentKiller, nullptr);
-  const Creature* SERIAL2(recentVictim, nullptr);
-  double SERIAL2(killTime, -100);
+  const Creature* SERIAL(recentKiller) = nullptr;
+  const Creature* SERIAL(recentVictim) = nullptr;
+  double SERIAL(killTime) = -100;
   const double sacrificeTimeout = 50;
 };
 
@@ -645,7 +631,6 @@ class DeityAltar : public Altar {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Altar)
       & SVAR(deity);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(DeityAltar);
@@ -688,7 +673,6 @@ class CreatureAltar : public Altar {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Altar)
       & SVAR(creature);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(CreatureAltar);
@@ -714,7 +698,6 @@ class ConstructionDropItems : public Square {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
       & SVAR(items);
-    CHECK_SERIAL;
   }
 
   SERIALIZATION_CONSTRUCTOR(ConstructionDropItems);

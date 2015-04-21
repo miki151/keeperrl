@@ -35,7 +35,6 @@ static vector<EffectType> combatConsumables {
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(owners);
-  CHECK_SERIAL;
 }
 
 SERIALIZABLE(MinionEquipment);
@@ -47,8 +46,6 @@ int MinionEquipment::getEquipmentLimit(EquipmentType type) const {
     case MinionEquipment::HEALING: return 6;
     case MinionEquipment::ARCHERY: return 40;
   }
-  FAIL << "wfe";
-  return 0;
 }
 
 optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {

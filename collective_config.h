@@ -52,8 +52,6 @@ struct AttractionInfo {
 };
 
 struct ImmigrantInfo {
-  SERIAL_CHECKER;
-
   CreatureId SERIAL(id);
   double SERIAL(frequency);
   vector<AttractionInfo> SERIAL(attractions);

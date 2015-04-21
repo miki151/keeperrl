@@ -50,14 +50,25 @@ int addr2line(char const * const program_name, void const * const addr)
     STACKFRAME frame = { 0 };
 
     /* setup initial stack frame */
+#ifdef AMD64
+    frame.AddrPC.Offset         = context->Rip;
+    frame.AddrStack.Offset      = context->Rsp;
+    frame.AddrFrame.Offset      = context->Rsp;
+#else
     frame.AddrPC.Offset         = context->Eip;
-    frame.AddrPC.Mode           = AddrModeFlat;
     frame.AddrStack.Offset      = context->Esp;
-    frame.AddrStack.Mode        = AddrModeFlat;
     frame.AddrFrame.Offset      = context->Ebp;
+#endif
+    frame.AddrPC.Mode           = AddrModeFlat;
+    frame.AddrStack.Mode        = AddrModeFlat;
     frame.AddrFrame.Mode        = AddrModeFlat;
 
-    while (StackWalk(IMAGE_FILE_MACHINE_I386 ,
+#ifdef AMD64
+    auto image = IMAGE_FILE_MACHINE_AMD64;
+#else
+    auto image = IMAGE_FILE_MACHINE_I386;
+#endif
+    while (StackWalk64(image,
                      GetCurrentProcess(),
                      GetCurrentThread(),
                      &frame,
@@ -150,7 +161,11 @@ int addr2line(char const * const program_name, void const * const addr)
     }
     else
     {
+#ifdef AMD64
+        addr2line(icky_global_program_name, (void*)ExceptionInfo->ContextRecord->Rip);
+#else
         addr2line(icky_global_program_name, (void*)ExceptionInfo->ContextRecord->Eip);
+#endif
     }
 
     return EXCEPTION_EXECUTE_HANDLER;

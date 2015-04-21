@@ -32,8 +32,6 @@ class TimeQueue {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  SERIAL_CHECKER;
-
   private:
   void removeDead();
   Creature* getMinCreature();
