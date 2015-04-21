@@ -151,6 +151,10 @@ const Creature* Tribe::getLeader() const {
   return leader;
 }
 
+bool Tribe::isEnemy(const Creature* c) const {
+  return getStanding(c) < 0;
+}
+
 vector<const Creature*> Tribe::getMembers(bool includeDead) {
   if (includeDead)
     return members;

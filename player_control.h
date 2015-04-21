@@ -126,10 +126,11 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   struct BuildInfo {
     struct SquareInfo {
       SquareType type;
-      Collective::CostInfo cost;
+      CostInfo cost;
       string name;
       bool buildImmediatly;
       bool noCredit;
+      double costExponent;
     } squareInfo;
 
     struct TrapInfo {
@@ -141,7 +142,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     struct MinionInfo {
       CreatureId id;
       EnumSet<MinionTrait> traits;
-      Collective::CostInfo cost;
+      CostInfo cost;
     } minionInfo;
 
     enum BuildType {
@@ -167,8 +168,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
         string group = "");
     BuildInfo(TrapInfo info, optional<TechId> techId = none, const string& h = "", char hotkey = 0,
         string group = "");
-    BuildInfo(DeityHabitat, Collective::CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
-    BuildInfo(const Creature*, Collective::CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
+    BuildInfo(DeityHabitat, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
+    BuildInfo(const Creature*, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
     BuildInfo(MinionInfo, optional<TechId> techId, const string& groupName, const string& h = "");
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
   };
@@ -181,7 +182,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static vector<BuildInfo> minionsInfo;
 
   ViewObject getResourceViewObject(Collective::ResourceId id) const;
-  optional<pair<ViewObject, int>> getCostObj(Collective::CostInfo) const;
+  optional<pair<ViewObject, int>> getCostObj(CostInfo) const;
+  CostInfo getRoomCost(SquareType, CostInfo baseCost, double exponent) const;
 
   typedef GameInfo::BandInfo::TechButton TechButton;
 

@@ -35,7 +35,7 @@ class CreatureView;
 class Attack;
 class ProgressMeter;
 
-enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP, TORTURE };
+enum class SquareApplyType { DRINK, USE_CHEST, ASCEND, DESCEND, PRAY, SLEEP, TRAIN, WORKSHOP, TORTURE, PIGSTY };
 
 class Square : public Renderable {
   public:

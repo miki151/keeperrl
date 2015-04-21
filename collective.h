@@ -28,6 +28,8 @@
 #include "collective_teams.h"
 #include "game_info.h"
 #include "collective_config.h"
+#include "cost_info.h"
+#include "construction_map.h"
 
 class Creature;
 class CollectiveControl;
@@ -136,12 +138,6 @@ class Collective : public Task::Callback {
   void setWarning(Warning, bool state = true);
   bool isWarning(Warning) const;
 
-  struct CostInfo : public NamedTupleBase<ResourceId, int> {
-    NAMED_TUPLE_STUFF(CostInfo);
-    NAME_ELEM(0, id);
-    NAME_ELEM(1, value);
-  };
-
   struct ResourceInfo {
     vector<SquareType> storageType;
     optional<ItemIndex> itemIndex;
@@ -151,7 +147,7 @@ class Collective : public Task::Callback {
   };
 
   struct MinionTaskInfo {
-    enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME } type;
+    enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME, EAT } type;
     MinionTaskInfo(vector<SquareType>, const string& description, optional<Warning> = none, double cost = 0,
         bool centerOnly = false);
     MinionTaskInfo(Type, const string&);
@@ -182,15 +178,7 @@ class Collective : public Task::Callback {
     Warning warning;
   };
 
-  struct ConstructionInfo : public NamedTupleBase<CostInfo, bool, bool, SquareType, UniqueEntity<Task>::Id> {
-    NAMED_TUPLE_STUFF(ConstructionInfo);
-    NAME_ELEM(0, cost);
-    NAME_ELEM(1, built);
-    NAME_ELEM(2, marked);
-    NAME_ELEM(3, type);
-    NAME_ELEM(4, task);
-  };
-  const map<Vec2, ConstructionInfo>& getConstructions() const;
+  const ConstructionMap& getConstructions() const;
 
   void setMinionTask(const Creature* c, MinionTask task);
 
@@ -210,27 +198,11 @@ class Collective : public Task::Callback {
 
   const map<UniqueEntity<Creature>::Id, string>& getMinionTaskStrings() const;
 
-  struct TrapInfo : public NamedTupleBase<TrapType, bool, bool> {
-    NAMED_TUPLE_STUFF(TrapInfo);
-    NAME_ELEM(0, type);
-    NAME_ELEM(1, armed);
-    NAME_ELEM(2, marked);
-  };
-  const map<Vec2, TrapInfo>& getTraps() const;
   void addTrap(Vec2, TrapType);
   void removeTrap(Vec2);
   void addConstruction(Vec2, SquareType, CostInfo, bool immediately, bool noCredit);
   void removeConstruction(Vec2);
   void destroySquare(Vec2);
-  struct TorchInfo : public NamedTupleBase<bool, bool, UniqueEntity<Task>::Id, Dir, Trigger*> {
-    NAMED_TUPLE_STUFF(TorchInfo);
-    NAME_ELEM(0, built);
-    NAME_ELEM(1, marked);
-    NAME_ELEM(2, task);
-    NAME_ELEM(3, attachmentDir);
-    NAME_ELEM(4, trigger);
-  };
-  const map<Vec2, TorchInfo>& getTorches() const;
   bool isPlannedTorch(Vec2) const;
   bool canPlaceTorch(Vec2) const;
   void removeTorch(Vec2);
@@ -296,7 +268,7 @@ class Collective : public Task::Callback {
 
   const string& getName() const;
 
-  const TaskMap<CostInfo>& getTaskMap() const;
+  const TaskMap& getTaskMap() const;
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
@@ -349,7 +321,7 @@ class Collective : public Task::Callback {
 
   MinionEquipment SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
-  TaskMap<CostInfo> SERIAL(taskMap);
+  TaskMap SERIAL(taskMap);
   vector<TechId> SERIAL(technologies);
   int SERIAL(numFreeTech) = 0;
   bool isItemMarked(const Item*) const;
@@ -413,11 +385,9 @@ class Collective : public Task::Callback {
   };
   map<Vec2, GuardPostInfo> SERIAL(guardPosts);
   MoveInfo getGuardPostMove(Creature* c);
-  map<Vec2, ConstructionInfo> SERIAL(constructions);
+  ConstructionMap SERIAL(constructions);
   EntitySet<Item> SERIAL(markedItems);
   ItemPredicate unMarkedItems() const;
-  map<Vec2, TrapInfo> SERIAL(traps);
-  map<Vec2, TorchInfo> SERIAL(torches);
   enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };
   struct PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueEntity<Task>::Id> {
     NAMED_TUPLE_STUFF(PrisonerInfo);

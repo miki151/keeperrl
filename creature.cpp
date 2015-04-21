@@ -2079,13 +2079,10 @@ bool Creature::hasBrain() const {
   return brain;
 }
 
-bool Creature::isHatcheryAnimal() const {
-  return hatcheryAnimal;
-}
-
 bool Creature::dontChase() const {
   return CreatureAttributes::dontChase;
 }
+
 optional<SpawnType> Creature::getSpawnType() const {
   return spawnType;
 }

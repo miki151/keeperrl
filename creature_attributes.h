@@ -99,7 +99,6 @@ class CreatureAttributes {
   bool SERIAL(undead) = false;
   bool SERIAL(notLiving) = false;
   bool SERIAL(brain) = true;
-  bool SERIAL(hatcheryAnimal) = false;
   bool SERIAL(isFood) = false;
   bool SERIAL(stationary) = false;
   bool SERIAL(noSleep) = false;

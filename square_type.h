@@ -79,16 +79,18 @@ RICH_ENUM(SquareId,
   EYEBALL
 );
 
-typedef EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId, const Tribe*),
+typedef EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId, CreatureFactory::SingleCreature,
+      const Tribe*),
     ASSIGN(DeityHabitat, SquareId::ALTAR),
     ASSIGN(const Creature*, SquareId::CREATURE_ALTAR),
     ASSIGN(CreatureId,
         SquareId::CHEST,
         SquareId::COFFIN,
-        SquareId::HATCHERY,
         SquareId::DECID_TREE,
         SquareId::CANIF_TREE,
         SquareId::BUSH),
+    ASSIGN(CreatureFactory::SingleCreature,
+        SquareId::HATCHERY),
     ASSIGN(const Tribe*,
         SquareId::TRIBE_DOOR,
         SquareId::BARRICADE)

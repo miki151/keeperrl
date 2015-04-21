@@ -62,7 +62,6 @@ SERIALIZABLE(PlayerControl);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(PlayerControl);
 
-typedef Collective::CostInfo CostInfo;
 typedef Collective::ResourceId ResourceId;
 
 PlayerControl::BuildInfo::BuildInfo(SquareInfo info, optional<TechId> id, const string& h, char key, string group)
@@ -102,14 +101,16 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
         "All equipment for your minions can be stored here.", 0, "Storage"),
     BuildInfo({SquareId::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, none,
         "Only wood, iron and granite can be stored here.", 0, "Storage"),
+    BuildInfo({SquareId::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, none,
+        "Mana is regenerated here.", 'y'),
     BuildInfo({SquareId::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, none,
         "Stores gold."),
+    BuildInfo({{SquareId::HATCHERY, CreatureFactory::SingleCreature(const_cast<Tribe*>(tribe), CreatureId::PIG)},
+        {ResourceId::GOLD, 20}, "Pigsty", false, false, 1.0 / 16}, none, "Pigs breed here.", 'p'),
     BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, none,
         "Humanoid minions place their beds here.", 'm'),
     BuildInfo({SquareId::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, none,
         "Used to level up your minions.", 't'),
-    BuildInfo({SquareId::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, none,
-        "Mana is regenerated here.", 'y'),
     BuildInfo({SquareId::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"}, TechId::CRAFTING,
         "Produces leather equipment, traps, first-aid kits and other.", 'w', workshop),
     BuildInfo({SquareId::FORGE, {ResourceId::IRON, 15}, "Forge"}, TechId::IRON_WORKING,
@@ -136,7 +137,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
       if (c->isWorshipped())
         buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", c->getSpeciesName(), 0));*/
   append(buildInfo, {
-    BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'p', "Orders"),
+ //   BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'p', "Orders"),
     BuildInfo(BuildInfo::CLAIM_TILE, "Claim a tile. Building anything has the same effect.", 0, "Orders"),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
     BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to give it a high priority.", 'a', "Orders"),
@@ -727,7 +728,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            buttons.push_back({
                viewObj,
                elem.name,
-               getCostObj(elem.cost),
+               getCostObj(getRoomCost(elem.type, elem.cost, elem.costExponent)),
                description,
                (elem.noCredit && !availableNow) ? "inactive" : isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
            }
@@ -989,19 +990,17 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (rectSelection
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
-  const map<Vec2, Collective::TrapInfo>& traps = getCollective()->getTraps();
-  const map<Vec2, Collective::ConstructionInfo>& constructions = getCollective()->getConstructions();
+  const ConstructionMap& constructions = getCollective()->getConstructions();
   if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
-    if (traps.count(pos))
-      index.insert(getTrapObject(traps.at(pos).type(), traps.at(pos).armed()));
+    if (constructions.containsTrap(pos))
+      index.insert(getTrapObject(constructions.getTrap(pos).getType(), constructions.getTrap(pos).isArmed()));
     if (getCollective()->isGuardPost(pos))
       index.insert(ViewObject(ViewId::GUARD_POST, ViewLayer::LARGE_ITEM, "Guard post"));
-    if (constructions.count(pos) && !constructions.at(pos).built())
-      index.insert(getConstructionObject(constructions.at(pos).type()));
+    if (constructions.containsSquare(pos) && !constructions.getSquare(pos).isBuilt())
+      index.insert(getConstructionObject(constructions.getSquare(pos).getSquareType()));
   }
-  const map<Vec2, Collective::TorchInfo>& torches = getCollective()->getTorches();
-  if (torches.count(pos) && !torches.at(pos).built())
-    index.insert(copyOf(Trigger::getTorchViewObject(torches.at(pos).attachmentDir()))
+  if (constructions.containsTorch(pos) && !constructions.getTorch(pos).isBuilt())
+    index.insert(copyOf(Trigger::getTorchViewObject(constructions.getTorch(pos).getAttachmentDir()))
         .setModifier(ViewObject::Modifier::PLANNED));
   if (surprises.count(pos) && !getCollective()->isKnownSquare(pos))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
@@ -1031,6 +1030,11 @@ optional<CreatureView::MovementInfo> PlayerControl::getMovementInfo() const {
 }
 
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
+
+CostInfo PlayerControl::getRoomCost(SquareType type, CostInfo baseCost, double exponent) const {
+  return {baseCost.id(), int(baseCost.value() * pow(2, exponent * 
+        getCollective()->getConstructions().getSquareCount(type)))};
+}
 
 int PlayerControl::getImpCost() const {
   int numImps = 0;
@@ -1095,13 +1099,13 @@ bool PlayerControl::canBuildDoor(Vec2 pos) const {
   auto wallFun = [=](Vec2 pos) {
       return getLevel()->getSafeSquare(pos)->canConstruct(SquareId::FLOOR) ||
           !pos.inRectangle(innerRect); };
-  return !getCollective()->getTraps().count(pos) && pos.inRectangle(innerRect) && 
+  return !getCollective()->getConstructions().containsTrap(pos) && pos.inRectangle(innerRect) && 
       ((wallFun(pos - Vec2(0, 1)) && wallFun(pos - Vec2(0, -1))) ||
        (wallFun(pos - Vec2(1, 0)) && wallFun(pos - Vec2(-1, 0))));
 }
 
 bool PlayerControl::canPlacePost(Vec2 pos) const {
-  return !getCollective()->isGuardPost(pos) && !getCollective()->getTraps().count(pos) &&
+  return !getCollective()->isGuardPost(pos) && !getCollective()->getConstructions().containsTrap(pos) &&
       getLevel()->getSafeSquare(pos)->canEnterEmpty({MovementTrait::WALK}) && getCollective()->isKnownSquare(pos);
 }
   
@@ -1275,7 +1279,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
         break;
     case BuildInfo::TRAP:
-        if (getCollective()->getTraps().count(pos)) {
+        if (getCollective()->getConstructions().containsTrap(pos)) {
           getCollective()->removeTrap(pos);// Does this mean I can remove the order if the trap physically exists?
         } else
         if (canPlacePost(pos) && getCollective()->getSquares(SquareId::FLOOR).count(pos)) {
@@ -1342,7 +1346,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         getCollective()->setPriorityTasks(pos);
         break;
     case BuildInfo::SQUARE:
-        if (getCollective()->getConstructions().count(pos)) {
+        if (getCollective()->getConstructions().containsSquare(pos)) {
           if (selection != SELECT) {
             getCollective()->removeConstruction(pos);
             selection = DESELECT;
@@ -1350,9 +1354,10 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         } else {
           BuildInfo::SquareInfo info = building.squareInfo;
           if (getCollective()->isKnownSquare(pos) && getLevel()->getSafeSquare(pos)->canConstruct(info.type) 
-              && !getCollective()->getTraps().count(pos)
+              && !getCollective()->getConstructions().containsTrap(pos)
               && (info.type.getId() != SquareId::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT) {
-            getCollective()->addConstruction(pos, info.type, info.cost, info.buildImmediatly, info.noCredit);
+            CostInfo cost = getRoomCost(info.type, info.cost, info.costExponent);
+            getCollective()->addConstruction(pos, info.type, cost, info.buildImmediatly, info.noCredit);
             selection = SELECT;
           }
         }

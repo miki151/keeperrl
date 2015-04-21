@@ -140,7 +140,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   bool isNotLiving() const;
   bool isCorporal() const;
   bool isWorshipped() const;
-  bool isHatcheryAnimal() const;
   bool dontChase() const;
   optional<SpawnType> getSpawnType() const;
   MovementType getMovementType() const;

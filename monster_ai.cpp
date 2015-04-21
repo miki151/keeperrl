@@ -260,6 +260,34 @@ class MoveRandomly : public Behaviour {
   int SERIAL(memSize);
 };
 
+class StayInPigsty : public Behaviour {
+  public:
+  StayInPigsty(Creature* c, Vec2 orig, SquareApplyType t) : Behaviour(c), origin(orig), type(t) {}
+
+  MoveInfo getMove() override {
+    if (creature->getSquare()->getApplyType(creature) != type)
+      if (auto move = creature->moveTowards(origin, true))
+        return move;
+    if (Random.roll(10))
+      for (Square* s : creature->getSquares(Vec2::directions8(true)))
+        if (s->canEnter(creature) && s->getApplyType(creature) == type)
+          return creature->move(s->getPosition() - creature->getPosition());
+    return creature->wait();
+  }
+
+  SERIALIZATION_CONSTRUCTOR(StayInPigsty);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Behaviour) & SVAR(origin) & SVAR(type);
+  }
+
+  private:
+  Vec2 SERIAL(origin);
+  SquareApplyType SERIAL(type);
+
+};
+
 class BirdFlyAway : public Behaviour {
   public:
   BirdFlyAway(Creature* c, double _maxDist) : Behaviour(c), maxDist(_maxDist) {}
@@ -1159,6 +1187,8 @@ void MonsterAI::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, SingleTask);
   if (version >= 4)
     REGISTER_TYPE(ar, AvoidFire);
+  if (version >= 6)
+    REGISTER_TYPE(ar, StayInPigsty);
 }
 
 REGISTER_TYPES(MonsterAI::registerTypes);
@@ -1281,6 +1311,16 @@ MonsterAIFactory MonsterAIFactory::moveRandomly() {
       return new MonsterAI(c, {
           new MoveRandomly(c, 3)},
           {1});
+      });
+}
+
+MonsterAIFactory MonsterAIFactory::stayInPigsty(Vec2 origin, SquareApplyType type) {
+  return MonsterAIFactory([origin, type](Creature* c) {
+      return new MonsterAI(c, {
+          new AvoidFire(c),
+          new Fighter(c, 0.6, true),
+          new StayInPigsty(c, origin, type)},
+          {5, 2, 1});
       });
 }
 

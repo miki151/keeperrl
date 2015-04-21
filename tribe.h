@@ -31,6 +31,7 @@ class Tribe {
 
   virtual double getStanding(const Creature*) const;
 
+  bool isEnemy(const Creature*) const;
   void onItemsStolen(const Creature* thief);
   void makeSlightEnemy(const Creature*);
   void addMember(const Creature*);

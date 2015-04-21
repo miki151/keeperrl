@@ -87,6 +87,7 @@ class MonsterAIFactory {
   static MonsterAIFactory summoned(Creature*, int ttl);
   static MonsterAIFactory dieTime(double time);
   static MonsterAIFactory moveRandomly();
+  static MonsterAIFactory stayInPigsty(Vec2 origin, SquareApplyType);
   static MonsterAIFactory idle();
   static MonsterAIFactory splashHeroes(bool leader);
   static MonsterAIFactory splashMonsters();

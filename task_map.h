@@ -3,11 +3,11 @@
 
 #include "util.h"
 #include "entity_set.h"
+#include "cost_info.h"
 
 class Task;
 class Creature;
 
-template<typename CostInfo>
 class TaskMap {
   public:
   TaskMap(Rectangle bounds);
@@ -51,14 +51,7 @@ class TaskMap {
   map<UniqueEntity<Creature>::Id, double> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
 };
-namespace boost { 
-namespace serialization {
-template<typename CostInfo>
-struct version<TaskMap<CostInfo>>
-{
-    BOOST_STATIC_CONSTANT(unsigned int, value = 1);
-};
-}
-}
+
+BOOST_CLASS_VERSION(TaskMap, 1);
 
 #endif

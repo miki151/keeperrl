@@ -760,11 +760,12 @@ class Workshop : public Furniture {
 
 class Hatchery : public Square {
   public:
-  Hatchery(const ViewObject& object, const string& name, CreatureId c) : Square(object,
+  Hatchery(const ViewObject& object, const string& name, CreatureFactory c) : Square(object,
       CONSTRUCT(Square::Params,
         c.name = name;
         c.vision = VisionId::NORMAL;
         c.movementType = {MovementTrait::WALK};
+        c.canDestroy = true;
         c.ticking = true;)),
     creature(c) {}
 
@@ -772,11 +773,18 @@ class Hatchery : public Square {
     if (getCreature() || !Random.roll(10))
       return;
     for (Square* s : getLevel()->getSquares(getPosition().neighbors8()))
-      if (Creature* c = s->getCreature())
-        if (c->isHatcheryAnimal())
-          return;
-    getLevel()->addCreature(getPosition(), CreatureFactory::fromId(creature,
-          getLevel()->getModel()->getPeacefulTribe(), MonsterAIFactory::moveRandomly()));
+      if (s->getCreature())
+        return;
+    if (Random.roll(5))
+      getLevel()->addCreature(getPosition(), creature.random(
+            MonsterAIFactory::stayInPigsty(getPosition(), SquareApplyType::PIGSTY)));
+  }
+
+  virtual optional<SquareApplyType> getApplyType(const Creature*) const override {
+    return SquareApplyType::PIGSTY;
+  }
+
+  virtual void onApply(Creature* c) override {
   }
 
   template <class Archive> 
@@ -788,7 +796,7 @@ class Hatchery : public Square {
   SERIALIZATION_CONSTRUCTOR(Hatchery);
 
   private:
-  CreatureId SERIAL(creature);
+  CreatureFactory SERIAL(creature);
 };
 
 class Laboratory : public Workshop {
@@ -857,6 +865,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::TRIBE_DOOR] = 10;
               c.constructions[SquareId::TRAINING_ROOM] = 10;
               c.constructions[SquareId::LIBRARY] = 10;
+              c.constructions[SquareId::HATCHERY] = 10;
               c.constructions[SquareId::STOCKPILE] = 1;
               c.constructions[SquareId::STOCKPILE_EQUIP] = 1;
               c.constructions[SquareId::STOCKPILE_RES] = 1;
@@ -1120,7 +1129,7 @@ Square* SquareFactory::getPtr(SquareType s) {
       return new Workshop(ViewObject(ViewId::JEWELER, ViewLayer::FLOOR, "Jeweler stand"),"jeweler stand", 1);
     case SquareId::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery",
-            s.get<CreatureId>());
+            s.get<CreatureFactory::SingleCreature>());
     case SquareId::ALTAR:
         return new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
               Deity::getDeity(s.get<DeityHabitat>()));
