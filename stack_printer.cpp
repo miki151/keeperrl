@@ -64,11 +64,10 @@ int addr2line(char const * const program_name, void const * const addr)
     frame.AddrFrame.Mode        = AddrModeFlat;
 
 #ifdef AMD64
-    auto image = IMAGE_FILE_MACHINE_AMD64;
+    while (StackWalk64(IMAGE_FILE_MACHINE_AMD64,
 #else
-    auto image = IMAGE_FILE_MACHINE_I386;
+    while (StackWalk(IMAGE_FILE_MACHINE_I386,
 #endif
-    while (StackWalk64(image,
                      GetCurrentProcess(),
                      GetCurrentThread(),
                      &frame,
