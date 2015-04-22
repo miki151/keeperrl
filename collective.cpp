@@ -1877,8 +1877,8 @@ void Collective::fetchItems(Vec2 pos, const ItemFetchInfo& elem) {
   }
 }
 
-void Collective::onSurrenderEvent(Creature* who, const Creature* to) {
-  if (contains(getCreatures(), to) && !contains(getCreatures(), who) && !prisonerInfo.count(who) && who->isHumanoid())
+void Collective::onSurrender(Creature* who) {
+  if (!contains(getCreatures(), who) && !prisonerInfo.count(who) && who->isHumanoid())
     prisonerInfo[who] = {PrisonerState::SURRENDER, 0};
 }
 

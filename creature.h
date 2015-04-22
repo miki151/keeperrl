@@ -214,6 +214,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   CreatureAction consume(Vec2 direction) const;
   bool canConsume(const Creature*) const;
   
+  void surrender(const Creature* to);
+  
   virtual void onChat(Creature*);
 
   void learnLocation(const Location*);

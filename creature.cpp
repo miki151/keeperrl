@@ -1701,6 +1701,10 @@ CreatureAction Creature::torture(Creature* other) const {
   });
 }
 
+void Creature::surrender(const Creature* to) {
+  getLevel()->getModel()->onSurrender(this, to);
+}
+
 void Creature::give(const Creature* whom, vector<Item*> items) {
   getLevel()->getSafeSquare(whom->getPosition())->getCreature()->takeItems(equipment.removeItems(items), this);
 }

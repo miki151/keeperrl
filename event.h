@@ -53,7 +53,6 @@ class EventListener {
   EVENT(TrapDisarmEvent, const Level*, const Creature*, Vec2 pos);
   EVENT(SquareDestroyedEvent, const Level*, Vec2 pos);
   EVENT(EquipEvent, const Creature*, const Item*);
-  EVENT(SurrenderEvent, Creature* who, const Creature* to);
 };
 
 extern EventListener GlobalEvents;

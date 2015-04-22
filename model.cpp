@@ -470,6 +470,12 @@ void Model::onTorture(const Creature* who, const Creature* torturer) {
       col->onTorture(who, torturer);
 }
 
+void Model::onSurrender(Creature* who, const Creature* to) {
+  for (auto& col : collectives)
+    if (contains(col->getCreatures(), to))
+      col->onSurrender(who);
+}
+
 View* Model::getView() {
   return view;
 }
