@@ -498,6 +498,12 @@ void Model::onSquareDestroyed(const Level* l, Vec2 pos) {
       col->onSquareDestroyed(pos);
 }
 
+void Model::onEquip(const Creature* c, const Item* it) {
+  for (auto& col : collectives)
+    if (contains(col->getCreatures(), c))
+      col->onEquip(c, it);
+}
+
 View* Model::getView() {
   return view;
 }

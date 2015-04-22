@@ -537,7 +537,7 @@ CreatureAction Creature::equip(Item* item) const {
     playerMessage("You equip " + item->getTheName(false, isBlind()));
     monsterMessage(getName().the() + " equips " + item->getAName());
     item->onEquip(self);
-    GlobalEvents.addEquipEvent(self, item);
+    level->getModel()->onEquip(self, item);
     self->spendTime(1);
   });
 }

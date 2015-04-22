@@ -2123,9 +2123,8 @@ const map<UniqueEntity<Creature>::Id, string>& Collective::getMinionTaskStrings(
   return minionTaskStrings;
 }
 
-void Collective::onEquipEvent(const Creature* c, const Item* it) {
-  if (contains(creatures, c))
-    minionEquipment.own(c, it);
+void Collective::onEquip(const Creature* c, const Item* it) {
+  minionEquipment.own(c, it);
 }
 
 void Collective::ownItems(const Creature* who, const vector<Item*> items) {
