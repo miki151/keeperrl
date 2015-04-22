@@ -1877,16 +1877,16 @@ void Collective::onSquareDestroyedEvent(const Level* l, Vec2 pos) {
   }
 }
 
-void Collective::onTrapTriggerEvent(const Level* l, Vec2 pos) {
-  if (constructions.containsTrap(pos) && l == getLevel()) {
+void Collective::onTrapTrigger(Vec2 pos) {
+  if (constructions.containsTrap(pos)) {
     constructions.getTrap(pos).reset();
     if (constructions.getTrap(pos).getType() == TrapType::SURPRISE)
       handleSurprise(pos);
   }
 }
 
-void Collective::onTrapDisarmEvent(const Level* l, const Creature* who, Vec2 pos) {
-  if (constructions.containsTrap(pos) && l == getLevel()) {
+void Collective::onTrapDisarm(const Creature* who, Vec2 pos) {
+  if (constructions.containsTrap(pos)) {
     control->addMessage(PlayerMessage(who->getName().a() + " disarms a " 
           + Item::getTrapName(constructions.getTrap(pos).getType()) + " trap.",
           PlayerMessage::HIGH).setPosition(pos));

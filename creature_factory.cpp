@@ -91,14 +91,16 @@ class BoulderController : public Monster {
                   direction = v;
                   stopped = false;
                   found = true;
-                  GlobalEvents.addTrapTriggerEvent(getCreature()->getLevel(), getCreature()->getPosition());
+                  getCreature()->getLevel()->getModel()->
+                      onTrapTrigger(getCreature()->getLevel(), getCreature()->getPosition());
                   getCreature()->monsterMessage(
                       PlayerMessage("The boulder starts rolling.", PlayerMessage::CRITICAL),
                       PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
                   break;
                 } else {
                   other->you(MsgType::DISARM_TRAP, "");
-                  GlobalEvents.addTrapDisarmEvent(getCreature()->getLevel(), other, getCreature()->getPosition());
+                  getCreature()->getLevel()->getModel()->
+                      onTrapDisarm(getCreature()->getLevel(), other, getCreature()->getPosition());
                   getCreature()->die();
                   return;
                 }

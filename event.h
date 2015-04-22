@@ -48,8 +48,6 @@ class EventListener {
   EVENT(ItemsAppearedEvent, const Level*, Vec2 position, const vector<Item*>& items);
   EVENT(ThrowEvent, const Level*, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory);
   EVENT(ExplosionEvent, const Level* level, Vec2 pos);
-  EVENT(TrapTriggerEvent, const Level*, Vec2 pos);
-  EVENT(TrapDisarmEvent, const Level*, const Creature*, Vec2 pos);
   EVENT(SquareDestroyedEvent, const Level*, Vec2 pos);
   EVENT(EquipEvent, const Creature*, const Item*);
 };

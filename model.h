@@ -134,6 +134,8 @@ class Model {
   void onTorture(const Creature* who, const Creature* torturer);
   void onSurrender(Creature* who, const Creature* to);
   void onAttack(Creature* victim, Creature* attacker);
+  void onTrapTrigger(const Level*, Vec2 pos);
+  void onTrapDisarm(const Level*, const Creature*, Vec2 pos);
 
   private:
   Model(View* view, const string& worldName, Tribe::Set&&);

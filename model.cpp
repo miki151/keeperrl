@@ -480,6 +480,18 @@ void Model::onAttack(Creature* victim, Creature* attacker) {
   victim->getTribe()->onMemberAttacked(victim, attacker);
 }
 
+void Model::onTrapTrigger(const Level* l, Vec2 pos) {
+  for (auto& col : collectives)
+    if (col->getLevel() == l && col->containsSquare(pos))
+      col->onTrapTrigger(pos);
+}
+
+void Model::onTrapDisarm(const Level* l, const Creature* who, Vec2 pos) {
+  for (auto& col : collectives)
+    if (col->getLevel() == l && col->containsSquare(pos))
+      col->onTrapDisarm(who, pos);
+}
+
 View* Model::getView() {
   return view;
 }
