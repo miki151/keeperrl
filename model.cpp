@@ -184,6 +184,20 @@ void Model::onTechBookRead(Technology* tech) {
     playerControl->onTechBookRead(tech);
 }
 
+void Model::onAlarm(Level* l, Vec2 pos) {
+  for (auto& col : collectives)
+    if (col->getLevel() == l && col->containsSquare(pos))
+      col->onAlarm(pos);
+  for (const PLevel& l : levels)
+    if (const Creature* c = l->getPlayer()) {
+      if (pos == c->getPosition())
+        c->playerMessage("An alarm sounds near you.");
+      else
+        c->playerMessage("An alarm sounds in the " + 
+            getCardinalName((pos - c->getPosition()).getBearing().getCardinalDir()));
+    }
+}
+
 const char* Model::SunlightInfo::getText() {
   switch (state) {
     case NIGHT: return "night";

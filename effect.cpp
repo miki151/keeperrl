@@ -385,7 +385,7 @@ static void acid(Creature* c) {
 }
 
 static void alarm(Creature* c) {
-  GlobalEvents.addAlarmEvent(c->getLevel(), c->getPosition());
+  c->getLevel()->getModel()->onAlarm(c->getLevel(), c->getPosition());
 }
 
 static void teleEnemies(Creature* c) { // handled by Collective

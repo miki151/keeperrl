@@ -1365,15 +1365,13 @@ void Collective::updateEfficiency(Vec2 pos, SquareType type) {
 
 static const int alarmTime = 100;
 
-void Collective::onAlarmEvent(const Level* l, Vec2 pos) {
-  if (l == getLevel() && containsSquare(pos)) {
-    control->addMessage(PlayerMessage("An alarm goes off.", PlayerMessage::HIGH).setPosition(pos));
-    alarmInfo.finishTime() = getTime() + alarmTime;
-    alarmInfo.position() = pos;
-    for (Creature* c : byTrait[MinionTrait::FIGHTER])
-      if (c->isAffected(LastingEffect::SLEEP))
-        c->removeEffect(LastingEffect::SLEEP);
-  }
+void Collective::onAlarm(Vec2 pos) {
+  control->addMessage(PlayerMessage("An alarm goes off.", PlayerMessage::HIGH).setPosition(pos));
+  alarmInfo.finishTime() = getTime() + alarmTime;
+  alarmInfo.position() = pos;
+  for (Creature* c : byTrait[MinionTrait::FIGHTER])
+    if (c->isAffected(LastingEffect::SLEEP))
+      c->removeEffect(LastingEffect::SLEEP);
 }
 
 MoveInfo Collective::getAlarmMove(Creature* c) {

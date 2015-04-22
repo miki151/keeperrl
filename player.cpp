@@ -83,11 +83,6 @@ void Player::onExplosionEvent(const Level* level, Vec2 pos) {
 
 void Player::onAlarmEvent(const Level* l, Vec2 pos) {
   if (l == getCreature()->getLevel()) {
-    if (pos == getCreature()->getPosition())
-      privateMessage("An alarm sounds near you.");
-    else
-      privateMessage("An alarm sounds in the " + 
-          getCardinalName((pos - getCreature()->getPosition()).getBearing().getCardinalDir()));
   }
 }
 

@@ -129,6 +129,7 @@ class Model {
   Tribe* getPeacefulTribe();
 
   void onTechBookRead(Technology*);
+  void onAlarm(Level*, Vec2);
 
   private:
   REGISTER_HANDLER(KilledLeaderEvent, const Collective*, const Creature*);

@@ -260,6 +260,7 @@ class Collective : public Task::Callback {
   void removeAssaultNotification(const Collective*);
 
   void onKilled(Creature* victim, Creature* killer);
+  void onAlarm(Vec2);
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
@@ -312,7 +313,6 @@ class Collective : public Task::Callback {
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity*, WorshipType);
   REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker);
   REGISTER_HANDLER(SquareDestroyedEvent, const Level*, Vec2 pos);
-  REGISTER_HANDLER(AlarmEvent, const Level*, Vec2 pos);
   REGISTER_HANDLER(SurrenderEvent, Creature* who, const Creature* to);
   REGISTER_HANDLER(TrapTriggerEvent, const Level*, Vec2 pos);
   REGISTER_HANDLER(TrapDisarmEvent, const Level*, const Creature*, Vec2 pos);

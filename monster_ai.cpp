@@ -741,30 +741,16 @@ class Summoned : public GuardTarget {
   virtual ~Summoned() {
   }
 
-  REGISTER_HANDLER(ChangeLevelEvent, const Creature* c, const Level* from, Vec2 pos, const Level* to, Vec2 toPos) {
-    if (c == target)
-      levelChanges[from] = pos;
-  }
-
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
         creature->die(nullptr, false, false);
       })};
     }
-    if (target->getLevel() == creature->getLevel()) {
+    if (target->getLevel() == creature->getLevel())
       if (MoveInfo move = getMoveTowards(target->getPosition()))
         return move.setValue(0.5);
-      else
-        return NoMove;
-    }
-    if (!levelChanges.count(creature->getLevel()))
-      return NoMove;
-    Vec2 stairs = levelChanges.at(creature->getLevel());
-    if (stairs == creature->getPosition() && creature->getSquare()->getApplyType(creature))
-      return {0.5, creature->applySquare()};
-    else
-      return getMoveTowards(stairs);
+    return NoMove;
   }
 
   SERIALIZATION_CONSTRUCTOR(Summoned);
@@ -773,13 +759,11 @@ class Summoned : public GuardTarget {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(GuardTarget)
       & SVAR(target) 
-      & SVAR(levelChanges)
       & SVAR(dieTime);
   }
 
   private:
   Creature* SERIAL(target);
-  map<const Level*, Vec2> SERIAL(levelChanges);
   double SERIAL(dieTime);
 };
 
