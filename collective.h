@@ -261,6 +261,7 @@ class Collective : public Task::Callback {
 
   void onKilled(Creature* victim, Creature* killer);
   void onAlarm(Vec2);
+  void onTorture(const Creature* who, const Creature* torturer);
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
@@ -317,7 +318,6 @@ class Collective : public Task::Callback {
   REGISTER_HANDLER(TrapTriggerEvent, const Level*, Vec2 pos);
   REGISTER_HANDLER(TrapDisarmEvent, const Level*, const Creature*, Vec2 pos);
   REGISTER_HANDLER(EquipEvent, const Creature*, const Item*);
-  REGISTER_HANDLER(TortureEvent, Creature* who, const Creature* torturer);
 
   MinionEquipment SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);

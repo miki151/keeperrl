@@ -131,6 +131,7 @@ class Model {
   void onTechBookRead(Technology*);
   void onAlarm(Level*, Vec2);
   void onKilledLeader(const Collective*, const Creature*);
+  void onTorture(const Creature* who, const Creature* torturer);
 
   private:
   Model(View* view, const string& worldName, Tribe::Set&&);

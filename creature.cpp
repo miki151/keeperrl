@@ -1696,7 +1696,7 @@ CreatureAction Creature::torture(Creature* other) const {
       else
         other->bleed(1);
     }
-    GlobalEvents.addTortureEvent(other, this);
+    level->getModel()->onTorture(other, this);
     self->spendTime(1);
   });
 }

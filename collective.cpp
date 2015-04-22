@@ -2169,9 +2169,8 @@ void Collective::ownItems(const Creature* who, const vector<Item*> items) {
       minionEquipment.own(who, it);
 }
 
-void Collective::onTortureEvent(Creature* who, const Creature* torturer) {
-  if (contains(creatures, torturer))
-    returnResource({ResourceId::MANA, 1});
+void Collective::onTorture(const Creature* who, const Creature* torturer) {
+  returnResource({ResourceId::MANA, 1});
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {

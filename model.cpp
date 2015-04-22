@@ -463,6 +463,13 @@ void Model::onKilledLeader(const Collective* victim, const Creature* leader) {
     killedKeeper(*c->getFirstName(), leader->getNameAndTitle(), worldName, c->getKills(), c->getPoints());
   }
 }
+
+void Model::onTorture(const Creature* who, const Creature* torturer) {
+  for (auto& col : collectives)
+    if (contains(col->getCreatures(), torturer))
+      col->onTorture(who, torturer);
+}
+
 View* Model::getView() {
   return view;
 }
