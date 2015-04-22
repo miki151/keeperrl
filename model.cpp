@@ -457,7 +457,7 @@ string Model::getGameIdentifier() const {
   return gameIdentifier;
 }
 
-void Model::onKilledLeaderEvent(const Collective* victim, const Creature* leader) {
+void Model::onKilledLeader(const Collective* victim, const Creature* leader) {
   if (playerControl && playerControl->isRetired() && playerCollective == victim) {
     const Creature* c = getPlayer();
     killedKeeper(*c->getFirstName(), leader->getNameAndTitle(), worldName, c->getKills(), c->getPoints());

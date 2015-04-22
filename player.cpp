@@ -81,11 +81,6 @@ void Player::onExplosionEvent(const Level* level, Vec2 pos) {
   }
 }
 
-void Player::onAlarmEvent(const Level* l, Vec2 pos) {
-  if (l == getCreature()->getLevel()) {
-  }
-}
-
 ControllerFactory Player::getFactory(Model *m, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory) {
   return ControllerFactory([=](Creature* c) { return new Player(c, m, true, levelMemory);});
 }

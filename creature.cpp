@@ -1987,8 +1987,8 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) const {
     damage += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, ModifierType::THROWN_DAMAGE);
     accuracy += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, ModifierType::THROWN_ACCURACY);
   }
-  Attack attack(this, getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, none);
   return CreatureAction(this, [=](Creature* self) {
+    Attack attack(self, getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, none);
     playerMessage("You throw " + item->getAName(false, isBlind()));
     monsterMessage(getName().the() + " throws " + item->getAName());
     level->throwItem(self->equipment.removeItem(item), attack, dist, getPosition(), direction, getVision());

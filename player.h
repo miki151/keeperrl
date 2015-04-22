@@ -79,7 +79,6 @@ class Player : public Controller, public CreatureView {
   private:
   REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);
   REGISTER_HANDLER(ExplosionEvent, const Level*, Vec2);
-  REGISTER_HANDLER(AlarmEvent, const Level*, Vec2);
   REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity* to, WorshipType);
 
   void tryToPerform(CreatureAction);

@@ -1158,7 +1158,7 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
       && prisonerInfo.at(victim).state() == PrisonerState::EXECUTE)
       returnResource({ResourceId::PRISONER_HEAD, 1});
     if (hasTrait(victim, MinionTrait::LEADER))
-      GlobalEvents.addKilledLeaderEvent(this, victim);
+      getLevel()->getModel()->onKilledLeader(this, victim);
     prisonerInfo.erase(victim);
     freeFromGuardPost(victim);
     decreaseMoraleForKill(killer, victim);
@@ -1191,8 +1191,8 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
     addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
     kills.push_back(victim);
-    int difficulty = victim1->getDifficultyPoints();
-    CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim1->getName().bare();
+    int difficulty = victim->getDifficultyPoints();
+    CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
     if (killer)
       control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
