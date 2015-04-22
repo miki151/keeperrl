@@ -136,6 +136,7 @@ class Model {
   void onAttack(Creature* victim, Creature* attacker);
   void onTrapTrigger(const Level*, Vec2 pos);
   void onTrapDisarm(const Level*, const Creature*, Vec2 pos);
+  void onSquareDestroyed(const Level*, Vec2 pos);
 
   private:
   Model(View* view, const string& worldName, Tribe::Set&&);

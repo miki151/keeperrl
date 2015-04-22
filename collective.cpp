@@ -1863,18 +1863,16 @@ void Collective::onSurrender(Creature* who) {
     prisonerInfo[who] = {PrisonerState::SURRENDER, 0};
 }
 
-void Collective::onSquareDestroyedEvent(const Level* l, Vec2 pos) {
-  if (l == getLevel()) {
-    for (auto& elem : mySquares)
-      if (elem.second.count(pos)) {
-        elem.second.erase(pos);
-        if (efficiencySquares.count(elem.first))
-          updateEfficiency(pos, elem.first);
-      }
-    mySquares[SquareId::FLOOR].insert(pos);
-    if (constructions.containsSquare(pos))
-      constructions.getSquare(pos).reset();
-  }
+void Collective::onSquareDestroyed(Vec2 pos) {
+  for (auto& elem : mySquares)
+    if (elem.second.count(pos)) {
+      elem.second.erase(pos);
+      if (efficiencySquares.count(elem.first))
+        updateEfficiency(pos, elem.first);
+    }
+  mySquares[SquareId::FLOOR].insert(pos);
+  if (constructions.containsSquare(pos))
+    constructions.getSquare(pos).reset();
 }
 
 void Collective::onTrapTrigger(Vec2 pos) {

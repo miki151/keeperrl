@@ -492,6 +492,12 @@ void Model::onTrapDisarm(const Level* l, const Creature* who, Vec2 pos) {
       col->onTrapDisarm(who, pos);
 }
 
+void Model::onSquareDestroyed(const Level* l, Vec2 pos) {
+  for (auto& col : collectives)
+    if (col->getLevel() == l && col->containsSquare(pos))
+      col->onSquareDestroyed(pos);
+}
+
 View* Model::getView() {
   return view;
 }

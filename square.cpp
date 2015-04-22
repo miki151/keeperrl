@@ -23,6 +23,7 @@
 #include "view_object.h"
 #include "trigger.h"
 #include "progress_meter.h"
+#include "model.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -153,7 +154,7 @@ void Square::destroy() {
   CHECK(isDestroyable());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
-  GlobalEvents.addSquareDestroyedEvent(getLevel(), getPosition());
+  level->getModel()->onSquareDestroyed(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
@@ -169,7 +170,7 @@ void Square::destroyBy(Creature* c) {
 void Square::burnOut() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
-  GlobalEvents.addSquareDestroyedEvent(getLevel(), getPosition());
+  level->getModel()->onSquareDestroyed(getLevel(), getPosition());
   getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
