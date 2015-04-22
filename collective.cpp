@@ -1255,20 +1255,6 @@ void Collective::onEpithetWorship(Creature* who, WorshipType type, EpithetId id)
   }
 }
 
-void Collective::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
-  if (contains(creatures, who)) {
-    double increase = 0;
-    switch (type) {
-      case WorshipType::PRAYER: increase = 1.0 / 2000; break;
-      case WorshipType::SACRIFICE: increase = 1.0 / 5; break;
-      case WorshipType::DESTROY_ALTAR: deityStanding[to] = -1; return;
-    }
-    deityStanding[to] = min(1.0, deityStanding[to] + increase);
-    for (EpithetId id : to->getEpithets())
-      onEpithetWorship(who, type, id);
-  }
-}
-
 double Collective::getEfficiency(const Creature* c) const {
   return pow(2.0, c->getMorale());
 }

@@ -54,8 +54,6 @@ class EventListener {
   EVENT(SquareDestroyedEvent, const Level*, Vec2 pos);
   EVENT(EquipEvent, const Creature*, const Item*);
   EVENT(SurrenderEvent, Creature* who, const Creature* to);
-  EVENT(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
-  EVENT(WorshipEvent, Creature* who, const Deity* to, WorshipType);
 };
 
 extern EventListener GlobalEvents;

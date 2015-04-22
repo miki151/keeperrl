@@ -1655,36 +1655,6 @@ void PlayerControl::uncoverRandomLocation() {
         getCollective()->addKnownTile(v);
 }
 
-void PlayerControl::onWorshipEvent(Creature* who, const Deity* to, WorshipType type) {
-  if (type == WorshipType::DESTROY_ALTAR) {
-    model->getView()->presentText("", "A shrine to " + to->getName() + " has been devastated by " + who->getName().a() + ".");
-    return;
-  }
-  if (!contains(getCreatures(), who))
-    return;
-  for (EpithetId id : to->getEpithets())
-    switch (id) {
-      case EpithetId::DEATH:
- /*       if (!who->isUndead() && Random.roll(500))
-          who->makeUndead();
-        if (type == WorshipType::SACRIFICE && Random.roll(10) && getKeeper())
-          getKeeper()->makeUndead();*/
-        break;
-      case EpithetId::SECRETS:
-        if (Random.roll(200) || type == WorshipType::SACRIFICE)
-          uncoverRandomLocation();
-        break;
-      default: break;
-    }
-}
-
-void PlayerControl::onWorshipCreatureEvent(Creature* who, const Creature* to, WorshipType type) {
-  if (type == WorshipType::DESTROY_ALTAR) {
-    model->getView()->presentText("", "Shrine to " + to->getName().bare() + " has been devastated by " + who->getName().a());
-    return;
-  }
-}
-
 void PlayerControl::addAssaultNotification(const Collective* col, const vector<Creature*>& c, const string& message) {
   assaultNotifications[col].creatures() = c;
   assaultNotifications[col].message() = message;

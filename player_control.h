@@ -94,8 +94,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   private:
 
-  REGISTER_HANDLER(WorshipEvent, Creature* who, const Deity* to, WorshipType);
-  REGISTER_HANDLER(WorshipCreatureEvent, Creature* who, const Creature* to, WorshipType);
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
 
   void considerNightfall();

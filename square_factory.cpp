@@ -615,16 +615,16 @@ class DeityAltar : public Altar {
   }
 
   virtual void destroyBy(Creature* c) override {
-    GlobalEvents.addWorshipEvent(c, deity, WorshipType::DESTROY_ALTAR);
-    Altar::destroyBy(c);
+ //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::DESTROY_ALTAR);
+ //   Altar::destroyBy(c);
   }
 
   virtual void onPrayer(Creature* c) override {
-    GlobalEvents.addWorshipEvent(c, deity, WorshipType::PRAYER);
+ //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::PRAYER);
   }
 
   virtual void onSacrifice(Creature* c) override {
-    GlobalEvents.addWorshipEvent(c, deity, WorshipType::SACRIFICE);
+ //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::SACRIFICE);
   }
 
   template <class Archive> 
@@ -653,8 +653,8 @@ class CreatureAltar : public Altar {
   }
 
   virtual void destroyBy(Creature* c) override {
-    GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::DESTROY_ALTAR);
-    Altar::destroyBy(c);
+  //  GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::DESTROY_ALTAR);
+  //  Altar::destroyBy(c);
   }
 
   virtual string getName() override {
@@ -662,11 +662,11 @@ class CreatureAltar : public Altar {
   }
 
   virtual void onPrayer(Creature* c) override {
-    GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::PRAYER);
+//    GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::PRAYER);
   }
 
   virtual void onSacrifice(Creature* c) override {
-    GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::SACRIFICE);
+ //   GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::SACRIFICE);
   }
 
   template <class Archive> 
