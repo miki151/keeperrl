@@ -476,6 +476,10 @@ void Model::onSurrender(Creature* who, const Creature* to) {
       col->onSurrender(who);
 }
 
+void Model::onAttack(Creature* victim, Creature* attacker) {
+  victim->getTribe()->onMemberAttacked(victim, attacker);
+}
+
 View* Model::getView() {
   return view;
 }

@@ -801,72 +801,6 @@ const vector<Creature*> Player::getTeam() const {
   return {};
 }
 
-class PossessedController : public Player {
-  public:
-  PossessedController(Creature* c, Creature* _owner, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory,
-      bool ghost)
-    : Player(c, m, false, memory), owner(_owner), isGhost(ghost) {}
-
-  void onKilled(const Creature* attacker) override {
-    if (attacker)
-      owner->popController();
-  }
-
-  REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker) {
-    if (!getCreature()->isDead() && victim == owner)
-      unpossess();
-  }
-
-  bool unpossess() override {
-    owner->popController();
-    if (isGhost) {
-      getCreature()->die();
-      return false;
-    } else
-      return true;
-  }
-
-  void moveAction(Vec2 dir) override {
-    if (!isGhost) {
-      Player::moveAction(dir);
-      return;
-    }
-    for (Square* square : getCreature()->getSquare(dir))
-      if (Creature *c = square->getCreature()) {
-        if (c == owner)
-          owner->popController();
-        else
-          c->pushController(PController(new PossessedController(c, owner, model, levelMemory, false)));
-        getCreature()->die();
-        return;
-      }
-    Player::moveAction(dir);
-  }
-
-  void onFellAsleep() override {
-    getCreature()->die();
-    owner->popController();
-  }
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Player)
-      & SVAR(owner)
-      & SVAR(isGhost);
-  }
-
-  SERIALIZATION_CONSTRUCTOR(PossessedController);
-
-  private:
-  Creature* SERIAL(owner);
-  bool SERIAL(isGhost);
-};
-
-Controller* Player::getPossessedController(Creature* c) {
-  getCreature()->pushController(PController(new DoNothingController(getCreature())));
-  return new PossessedController(c, getCreature(), model, levelMemory, true);
-}
-
 void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.messageBuffer = messages;
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
@@ -972,11 +906,4 @@ vector<Vec2> Player::getVisibleEnemies() const {
 double Player::getTime() const {
   return getCreature()->getTime();
 }
-
-template <class Archive>
-void Player::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, PossessedController);
-}
-
-REGISTER_TYPES(Player::registerTypes);
 

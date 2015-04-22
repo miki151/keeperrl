@@ -44,6 +44,7 @@ class Tribe {
   void addFriend(Tribe*);
 
   void onMemberKilled(Creature* member, Creature* killer);
+  void onMemberAttacked(Creature* member, Creature* attacker);
 
   SERIALIZATION_DECL(Tribe);
 
@@ -71,8 +72,6 @@ class Tribe {
   };
 
   private:
-  REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker);
-
   bool SERIAL(diplomatic);
 
   void initStanding(const Creature*);

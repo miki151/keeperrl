@@ -31,14 +31,10 @@ class Creature;
 class Player : public Controller, public CreatureView {
   public:
   virtual ~Player();
-  virtual Controller* getPossessedController(Creature* c) override;
 
   static ControllerFactory getFactory(Model*, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);
 
   SERIALIZATION_DECL(Player);
-
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
 
   protected:
   Player(Creature*, Model*, bool greeting, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);

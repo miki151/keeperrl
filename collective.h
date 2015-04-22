@@ -312,7 +312,6 @@ class Collective : public Task::Callback {
   bool isItemNeeded(const Item*) const;
   void addProducesMessage(const Creature*, const vector<PItem>&);
   
-  REGISTER_HANDLER(AttackEvent, Creature* victim, Creature* attacker);
   REGISTER_HANDLER(SquareDestroyedEvent, const Level*, Vec2 pos);
   REGISTER_HANDLER(TrapTriggerEvent, const Level*, Vec2 pos);
   REGISTER_HANDLER(TrapDisarmEvent, const Level*, const Creature*, Vec2 pos);

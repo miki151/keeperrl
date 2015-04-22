@@ -615,25 +615,6 @@ void Collective::considerHealingLeader() {
       }
 }
 
-void Collective::onAttackEvent(Creature* victim, Creature* attacker) {
-  Creature* leader = getLeader();
-  if (victim == leader) {
-    if (Deity* deity = Deity::getDeity(EpithetId::LIGHTNING))
-      if (getStanding(deity) > 0)
-        if (Random.rollD(5 / getStanding(deity))) {
-          attacker->you(MsgType::ARE, " struck by lightning!");
-          attacker->bleed(Random.getDouble(0.2, 0.5));
-        }
-    if (Deity* deity = Deity::getDeity(EpithetId::DEFENSE))
-      if (getStanding(deity) > 0)
-        if (Random.rollD(10 / getStanding(deity))) {
-          victim->globalMessage(
-              deity->getName() + " sends " + deity->getGender().his() + " servant with help.");
-          Effect::summon(getLevel(), deity->getServant(getTribe()), leader->getPosition(), 1, 30);
-        }
-  }
-}
-
 vector<Vec2> Collective::getExtendedTiles(int maxRadius, int minRadius) const {
   map<Vec2, int> extendedTiles;
   vector<Vec2> extendedQueue;

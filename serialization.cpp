@@ -53,7 +53,6 @@ void Serialization::registerTypes(Archive& ar, int version) {
   Trigger::registerTypes(ar, version);
   VillageControl::registerTypes(ar, version); // OBSOLETE
   Task::registerTypes(ar, version);
-  Player::registerTypes(ar, version);
   PlayerControl::registerTypes(ar, version);
   CollectiveControl::registerTypes(ar, version);
   Collective::registerTypes(ar, version);

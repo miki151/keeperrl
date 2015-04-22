@@ -1294,7 +1294,7 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackLevel> att
   }
   else
     you(MsgType::MISS_ATTACK, enemyName);
-  GlobalEvents.addAttackEvent(other, c);
+  level->getModel()->onAttack(other, c);
   double oldTime = getTime();
   if (spend)
     c->spendTime(1);

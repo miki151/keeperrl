@@ -128,9 +128,7 @@ void Tribe::onMemberKilled(Creature* member, Creature* attacker) {
     }
 }
 
-void Tribe::onAttackEvent(Creature* member, Creature* attacker) {
-  if (member->getTribe() != this)
-    return;
+void Tribe::onMemberAttacked(Creature* member, Creature* attacker) {
   if (contains(attacks, make_pair(member, attacker)))
     return;
   attacks.emplace_back(member, attacker);
