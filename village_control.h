@@ -107,7 +107,4 @@ class VillageControl : public CollectiveControl {
   map<const Collective*, int> SERIAL(stolenItemCount);
 };
 
-BOOST_CLASS_VERSION(VillageControl, 1)
-BOOST_CLASS_VERSION(VillageControl::Villain, 1)
-
 #endif

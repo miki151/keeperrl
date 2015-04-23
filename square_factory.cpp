@@ -304,7 +304,6 @@ class Tree : public Square {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & SVAR(destroyed)  // OBSOLETE
       & SVAR(creature)
       & SVAR(numWood);
   }
@@ -312,7 +311,6 @@ class Tree : public Square {
   SERIALIZATION_CONSTRUCTOR(Tree);
 
   private:
-  bool SERIAL(destroyed) = false;
   int SERIAL(numWood);
   CreatureId SERIAL(creature);
 };
@@ -435,12 +433,8 @@ class Barricade : public Square {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square);
-    if (version < 1) { // OBSOLETE
-      Tribe* tribe; // SERIAL(tribe)
-      ar & SVAR(tribe);
-    }
-    ar & SVAR(destructionStrength);
+    ar& SUBCLASS(Square)
+      & SVAR(destructionStrength);
   }
 
   SERIALIZATION_CONSTRUCTOR(Barricade);
@@ -448,8 +442,6 @@ class Barricade : public Square {
   private:
   int SERIAL(destructionStrength);
 };
-
-BOOST_CLASS_VERSION(Barricade, 1)
 
 class Furniture : public Square {
   public:

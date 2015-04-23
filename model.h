@@ -183,6 +183,4 @@ class Model {
   string SERIAL(gameDisplayName);
 };
 
-BOOST_CLASS_VERSION(Model, 3)
-
 #endif

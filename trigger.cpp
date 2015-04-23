@@ -140,15 +140,8 @@ class Portal : public Trigger {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Trigger)
       & SVAR(startTime)
-      & SVAR(active);
-    if (version >= 1)
-      ar & SVAR(otherPortal);
-    else {
-      Portal* p; // SERIAL(p)
-      ar & SVAR(p);
-      if (p)
-        otherPortal = Model::PortalInfo(p->level, p->position);
-    }
+      & SVAR(active)
+      & SVAR(otherPortal);
   }
 
   SERIALIZATION_CONSTRUCTOR(Portal);
@@ -160,8 +153,6 @@ class Portal : public Trigger {
 };
 
 }
-
-BOOST_CLASS_VERSION(Portal, 1)
 
 PTrigger Trigger::getPortal(const ViewObject& obj, Level* l, Vec2 position) {
   return PTrigger(new Portal(obj, l, position));

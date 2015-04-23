@@ -20,17 +20,15 @@
 
 template <class Archive> 
 void ViewObject::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(enemyStatus)
-    & SVAR(resource_id)
+  ar& SVAR(resource_id)
     & SVAR(viewLayer)
     & SVAR(description)
     & SVAR(modifiers)
     & SVAR(attributes)
     & SVAR(attachmentDir)
     & SVAR(position)
-    & SVAR(creatureId);
-  if (version >= 1)
-    ar & SVAR(adjectives);
+    & SVAR(creatureId)
+    & SVAR(adjectives);
 }
 
 SERIALIZABLE(ViewObject);

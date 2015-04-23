@@ -40,7 +40,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(knownTiles)
     & SVAR(technologies)
     & SVAR(numFreeTech)
-    & SVAR(lastCombat) // OBSOLETE
     & SVAR(kills)
     & SVAR(points)
     & SVAR(currentTasks)

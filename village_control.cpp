@@ -28,11 +28,9 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(triggers)
     & SVAR(behaviour)
     & SVAR(leaderAttacks)
-    & SVAR(attackMessage);
-  if (version == 1) { // OBSOLETE
-    ar & SVAR(itemTheftMessage)
-       & SVAR(welcomeMessage);
-  }
+    & SVAR(attackMessage)
+    & SVAR(itemTheftMessage)
+    & SVAR(welcomeMessage);
 }
 
 VillageControl::VillageControl(Collective* col, const Location* l, vector<Villain> v)
@@ -277,11 +275,9 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl)
     & SVAR(location)
     & SVAR(villains)
-    & SVAR(victims);
-  if (version == 1) {
-    ar & SVAR(myItems)
-       & SVAR(stolenItemCount);
-  }
+    & SVAR(victims)
+    & SVAR(myItems)
+    & SVAR(stolenItemCount);
 }
 
 SERIALIZABLE(VillageControl);

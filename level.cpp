@@ -44,11 +44,8 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     & SVAR(bucketMap)
     & SVAR(sectors)
     & SVAR(squareOwners)
-    & SVAR(lightAmount);
-  if (version >= 1)
-    ar & SVAR(lightCapAmount);
-  else
-    lightCapAmount = Table<double>(squares.getBounds(), 1);
+    & SVAR(lightAmount)
+    & SVAR(lightCapAmount);
 }  
 
 SERIALIZABLE(Level);

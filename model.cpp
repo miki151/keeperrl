@@ -51,26 +51,15 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(adventurer)
     & SVAR(currentTime)
     & SVAR(worldName)
-    & SVAR(musicType);
-  if (version >= 3)
-    ar & SVAR(danglingPortal);
-  else {
-    Trigger* tmp; // SERIAL(tmp)
-    ar & SVAR(tmp);
-  }
-  ar & SVAR(woodCount)
+    & SVAR(musicType)
+    & SVAR(danglingPortal)
+    & SVAR(woodCount)
     & SVAR(statistics)
     & SVAR(spectator)
-    & SVAR(tribeSet);
-  if (version >= 1) {
-    ar & SVAR(gameIdentifier)
-       & SVAR(gameDisplayName);
-  } else {
-    gameIdentifier = *playerControl->getKeeper()->getFirstName() + "_" + worldName;
-    gameDisplayName = *playerControl->getKeeper()->getFirstName() + " of " + worldName;
-  }
-  if (version >= 2)
-    ar & SVAR(finishCurrentMusic);
+    & SVAR(tribeSet)
+    & SVAR(gameIdentifier)
+    & SVAR(gameDisplayName)
+    & SVAR(finishCurrentMusic);
   Deity::serializeAll(ar);
   if (Archive::is_loading::value)
     updateSunlightInfo();

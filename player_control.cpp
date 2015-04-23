@@ -328,7 +328,6 @@ static vector<ItemType> marketItems {
   ItemId::WARNING_AMULET,
   ItemId::HEALING_AMULET,
   ItemId::DEFENSE_AMULET,
-  ItemId::FRIENDLY_ANIMALS_AMULET,
   {ItemId::RING, LastingEffect::FIRE_RESISTANT},
   {ItemId::RING, LastingEffect::POISON_RESISTANT},
 };

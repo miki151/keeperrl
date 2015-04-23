@@ -18,7 +18,6 @@
 #include "creature.h"
 #include "creature_factory.h"
 #include "level.h"
-#include "enemy_check.h"
 #include "ranged_weapon.h"
 #include "statistics.h"
 #include "options.h"
@@ -46,7 +45,6 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(shortestPath)
     & SVAR(knownHiding)
     & SVAR(tribe)
-    & SVAR(enemyChecks)
     & SVAR(health)
     & SVAR(morale)
     & SVAR(dead)
@@ -72,9 +70,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(attrIncrease)
     & SVAR(visibleEnemies)
     & SVAR(vision)
-    & SVAR(personalEvents);
-  if (version >= 1)  // OBSOLETE
-    ar & SVAR(lastCombatTime);
+    & SVAR(personalEvents)
+    & SVAR(lastCombatTime);
 }
 
 SERIALIZABLE(Creature);
@@ -1000,20 +997,7 @@ pair<double, double> Creature::getStanding(const Creature* c) const {
     standing = -1;
     bestWeight = 1;
   }
-  for (EnemyCheck* enemyCheck : enemyChecks)
-    if (enemyCheck->hasStanding(c) && enemyCheck->getWeight() > bestWeight) {
-      standing = enemyCheck->getStanding(c);
-      bestWeight = enemyCheck->getWeight();
-    }
   return make_pair(standing, bestWeight);
-}
-
-void Creature::addEnemyCheck(EnemyCheck* c) {
-  enemyChecks.push_back(c);
-}
-
-void Creature::removeEnemyCheck(EnemyCheck* c) {
-  removeElement(enemyChecks, c);
 }
 
 bool Creature::isEnemy(const Creature* c) const {

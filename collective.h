@@ -404,7 +404,6 @@ class Collective : public Task::Callback {
   double manaRemainder = 0;
   double getKillManaScore(const Creature*) const;
   void addMana(double);
-  unordered_map<const Creature*, double> SERIAL(lastCombat); // OBSOLETE
   vector<const Creature*> SERIAL(kills);
   int SERIAL(points) = 0;
   unordered_map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);

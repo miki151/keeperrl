@@ -1095,37 +1095,6 @@ class SplashImps : public Behaviour {
   string splashPath;
 };
 
-// SERIALIZATION_OBSOLETE
-class AttackPest : public Behaviour {
-  public:
-  AttackPest(Creature* c) : Behaviour(c) {}
-
-  virtual MoveInfo getMove() override {
-    if (creature->getTribe() == creature->getLevel()->getModel()->getPestTribe())
-      return NoMove;
-    const Creature* other = nullptr;
-    for (Square* square : creature->getSquares(Vec2::directions8(true)))
-      if (const Creature* c = square->getCreature())
-        if (c->getTribe() == creature->getLevel()->getModel()->getPestTribe()) {
-          other = c;
-          break;
-        }
-    if (!other)
-      return NoMove;
-    if (CreatureAction action = creature->attack(other))
-      return {1.0, action};
-    else
-      return NoMove;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(AttackPest);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
-};
-
 class AvoidFire : public Behaviour {
   public:
   using Behaviour::Behaviour;
@@ -1156,7 +1125,6 @@ void MonsterAI::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Heal);
   REGISTER_TYPE(ar, Rest);
   REGISTER_TYPE(ar, MoveRandomly);
-  REGISTER_TYPE(ar, AttackPest);  
   REGISTER_TYPE(ar, BirdFlyAway);
   REGISTER_TYPE(ar, GoldLust);
   REGISTER_TYPE(ar, Fighter);
@@ -1170,10 +1138,8 @@ void MonsterAI::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, ByCollective);
   REGISTER_TYPE(ar, ChooseRandom);
   REGISTER_TYPE(ar, SingleTask);
-  if (version >= 4)
-    REGISTER_TYPE(ar, AvoidFire);
-  if (version >= 6)
-    REGISTER_TYPE(ar, StayInPigsty);
+  REGISTER_TYPE(ar, AvoidFire);
+  REGISTER_TYPE(ar, StayInPigsty);
 }
 
 REGISTER_TYPES(MonsterAI::registerTypes);

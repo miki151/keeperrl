@@ -20,7 +20,6 @@
 #include "creature_factory.h"
 #include "util.h"
 #include "ranged_weapon.h"
-#include "enemy_check.h"
 #include "technology.h"
 #include "effect.h"
 #include "square.h"
@@ -28,6 +27,7 @@
 #include "view_id.h"
 #include "trigger.h"
 #include "model.h"
+#include "creature.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -146,30 +146,6 @@ class AmuletOfHealing : public Item {
 
   private:
   double SERIAL(lastTick) = -1;
-};
-
-class AmuletOfEnemyCheck : public Item {
-  public:
-  AmuletOfEnemyCheck(const ItemAttributes& attr, EnemyCheck* c) : Item(attr), check(c) {}
-
-  virtual void onEquipSpecial(Creature* c) {
-    c->addEnemyCheck(check);
-  }
-
-  virtual void onUnequipSpecial(Creature* c) {
-    c->removeEnemyCheck(check);
-  }
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(check);
-  }
-
-  SERIALIZATION_CONSTRUCTOR(AmuletOfEnemyCheck);
-
-  private:
-  EnemyCheck* SERIAL(check);
 };
 
 class Telepathy : public CreatureVision {
@@ -430,7 +406,6 @@ void ItemFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, FireScroll);
   REGISTER_TYPE(ar, AmuletOfWarning);
   REGISTER_TYPE(ar, AmuletOfHealing);
-  REGISTER_TYPE(ar, AmuletOfEnemyCheck);
   REGISTER_TYPE(ar, Telepathy);
   REGISTER_TYPE(ar, ItemOfCreatureVision);
   REGISTER_TYPE(ar, Corpse);
@@ -503,7 +478,6 @@ ItemFactory ItemFactory::villageShop() {
       {ItemId::WARNING_AMULET, 0.5 },
       {ItemId::HEALING_AMULET, 0.5 },
       {ItemId::DEFENSE_AMULET, 0.5 },
-      {ItemId::FRIENDLY_ANIMALS_AMULET, 0.5},
       {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 0.5},
       {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 0.5},
       {ItemId::FIRST_AID_KIT, 5},
@@ -686,8 +660,7 @@ ItemFactory ItemFactory::amulets() {
   return ItemFactory({
     {ItemId::WARNING_AMULET, 1},
     {ItemId::HEALING_AMULET, 1},
-    {ItemId::DEFENSE_AMULET, 1},
-    {ItemId::FRIENDLY_ANIMALS_AMULET, 1},}
+    {ItemId::DEFENSE_AMULET, 1},}
   );
 }
 
@@ -733,7 +706,6 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::WARNING_AMULET, 3 },
       {ItemId::HEALING_AMULET, 3 },
       {ItemId::DEFENSE_AMULET, 3 },
-      {ItemId::FRIENDLY_ANIMALS_AMULET, 3},
       {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 3},
       {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 3},
       {ItemId::FIRST_AID_KIT, 30 }});
@@ -915,8 +887,6 @@ PItem ItemFactory::fromId(ItemType item) {
     case ItemId::TELEPATHY_HELM: return PItem(new ItemOfCreatureVision(getAttributes(item), new Telepathy()));
     case ItemId::LEVITATION_BOOTS: return PItem(new LastingEffectItem(getAttributes(item), LastingEffect::FLYING));
     case ItemId::HEALING_AMULET: return PItem(new AmuletOfHealing(getAttributes(item)));
-    case ItemId::FRIENDLY_ANIMALS_AMULET:
-        return PItem(new AmuletOfEnemyCheck(getAttributes(item), EnemyCheck::friendlyAnimals(0.5)));
     case ItemId::FIRE_SCROLL: return PItem(new FireScroll(getAttributes(item)));
     case ItemId::RANDOM_TECH_BOOK: return PItem(new TechBook(getAttributes(item), none));
     case ItemId::TECH_BOOK: return PItem(new TechBook(getAttributes(item), item.get<TechId>()));
@@ -1237,16 +1207,6 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 300;
             i.modifiers[ModifierType::DEFENSE] = 3 + maybePlusMinusOne(4); 
-            i.weight = 0.3;);
-    case ItemId::FRIENDLY_ANIMALS_AMULET: return ITATTR(
-            i.viewId = ViewId::WOODEN_AMULET;
-            i.shortName = "nature affinity";
-            i.name = "amulet of " + *i.shortName;
-            i.plural = "amulets of " + *i.shortName;
-            i.description = "Makes all animals peaceful.";
-            i.itemClass = ItemClass::AMULET;
-            i.equipmentSlot = EquipmentSlot::AMULET;
-            i.price = 120;
             i.weight = 0.3;);
     case ItemId::FIRST_AID_KIT: return ITATTR(
             i.viewId = ViewId::FIRST_AID;

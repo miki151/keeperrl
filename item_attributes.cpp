@@ -44,13 +44,9 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(uses)
     & SVAR(usedUpMsg)
     & SVAR(displayUses)
-    & SVAR(identifyOnApply)
-    & SVAR(identifiable)
-    & SVAR(identifyOnEquip)
     & SVAR(modifiers)
-    & SVAR(attrs);
-  if (version >= 1)   // OBSOLETE
-    ar & SVAR(shortName);
+    & SVAR(attrs)
+    & SVAR(shortName);
 }
 
 SERIALIZABLE(ItemAttributes);

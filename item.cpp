@@ -26,12 +26,7 @@
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
-  if (version == 0)   // OBSOLETE
-    ItemAttributes::serialize(ar, version);
-  ar& SUBCLASS(UniqueEntity);
-  if (version >= 1)
-    ar & SUBCLASS(ItemAttributes);
-  ar& SUBCLASS(Renderable)
+  ar& SUBCLASS(UniqueEntity) & SUBCLASS(ItemAttributes) & SUBCLASS(Renderable)
     & SVAR(discarded)
     & SVAR(shopkeeper)
     & SVAR(fire);

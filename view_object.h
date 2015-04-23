@@ -89,7 +89,6 @@ class ViewObject {
   private:
   string getAttributeString(Attribute) const;
   enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
-  EnemyStatus SERIAL(enemyStatus) = UNKNOWN; // OBSOLETE
   EnumSet<Modifier> SERIAL(modifiers);
   EnumMap<Attribute, double> SERIAL(attributes);
   ViewId SERIAL(resource_id);
@@ -114,7 +113,5 @@ class ViewObject {
     int totalMoves = 0;
   } movementQueue;
 };
-
-BOOST_CLASS_VERSION(ViewObject, 1)
 
 #endif

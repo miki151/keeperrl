@@ -83,11 +83,6 @@ class ItemAttributes {
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
-  bool SERIAL(identifyOnApply) = true; // OBSOLETE
-  bool SERIAL(identifiable) = false;
-  bool SERIAL(identifyOnEquip) = true;
 };
-
-BOOST_CLASS_VERSION(ItemAttributes, 1)
 
 #endif

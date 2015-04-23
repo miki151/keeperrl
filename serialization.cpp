@@ -20,7 +20,6 @@
 #include "square_factory.h"
 #include "monster_ai.h"
 #include "effect.h"
-#include "enemy_check.h"
 #include "skill.h"
 #include "tribe.h"
 #include "trigger.h"
@@ -42,7 +41,6 @@ void Serialization::registerTypes(Archive& ar, int version) {
   SquareFactory::registerTypes(ar, version);
   MonsterAI::registerTypes(ar, version);
   Effect::registerTypes(ar, version);
-  EnemyCheck::registerTypes(ar, version);
   REGISTER_TYPE(ar, Player);
   REGISTER_TYPE(ar, Monster);
   REGISTER_TYPE(ar, RangedWeapon);
@@ -51,7 +49,6 @@ void Serialization::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, DoNothingController);
   Tribe::registerTypes(ar, version);
   Trigger::registerTypes(ar, version);
-  VillageControl::registerTypes(ar, version); // OBSOLETE
   Task::registerTypes(ar, version);
   PlayerControl::registerTypes(ar, version);
   CollectiveControl::registerTypes(ar, version);

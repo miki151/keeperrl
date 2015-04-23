@@ -346,13 +346,7 @@ class EquipItem : public NonTransferable {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    if (version >= 1)
-      ar & SVAR(itemId);
-    else {
-      Item *item; //SERIAL(item)
-      ar & SVAR(item);
-      itemId = item->getUniqueId();
-    }
+    ar & SUBCLASS(NonTransferable) & SVAR(itemId);
   }
   
   SERIALIZATION_CONSTRUCTOR(EquipItem);
@@ -361,8 +355,6 @@ class EquipItem : public NonTransferable {
   UniqueEntity<Item>::Id SERIAL(itemId);
 };
 }
-
-BOOST_CLASS_VERSION(EquipItem, 1)
 
 PTask Task::equipItem(Item* item) {
   return PTask(new EquipItem(item));
@@ -910,7 +902,6 @@ class KillFighters : public NonTransferable {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
       & SVAR(collective)
-      & SVAR(who) // OBSOLETE
       & SVAR(numCreatures)
       & SVAR(targets);
   }
@@ -919,7 +910,6 @@ class KillFighters : public NonTransferable {
 
   private:
   Collective* SERIAL(collective);
-  const Creature* SERIAL(who) = nullptr; // OBSOLETE
   int SERIAL(numCreatures);
   EntitySet<Creature> SERIAL(targets);
 };
@@ -1249,8 +1239,7 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, CreateBed);
   REGISTER_TYPE(ar, ConsumeItem);
   REGISTER_TYPE(ar, Copulate);
-  if (version >= 5)
-    REGISTER_TYPE(ar, Consume);
+  REGISTER_TYPE(ar, Consume);
 }
 
 REGISTER_TYPES(Task::registerTypes);

@@ -157,6 +157,5 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   Fire SERIAL(fire);
 };
 
-BOOST_CLASS_VERSION(Item, 1)
 
 #endif

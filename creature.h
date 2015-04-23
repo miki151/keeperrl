@@ -37,7 +37,6 @@
 
 class Level;
 class Tribe;
-class EnemyCheck;
 class ViewObject;
 
 class Creature : private CreatureAttributes, public Renderable, public UniqueEntity<Creature> {
@@ -111,8 +110,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   const Tribe* getTribe() const;
   Tribe* getTribe();
   bool isFriend(const Creature*) const;
-  void addEnemyCheck(EnemyCheck*);
-  void removeEnemyCheck(EnemyCheck*);
   int getDebt(const Creature* debtor) const;
   vector<Item*> getGold(int num) const;
 
@@ -317,7 +314,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   optional<ShortestPath> SERIAL(shortestPath);
   unordered_set<const Creature*> SERIAL(knownHiding);
   Tribe* SERIAL(tribe);
-  vector<EnemyCheck*> SERIAL(enemyChecks);
   double SERIAL(health) = 1;
   double SERIAL(morale) = 0;
   bool SERIAL(dead) = false;
@@ -351,8 +347,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   bool forceMovement = false;
   optional<double> SERIAL(lastCombatTime);
 };
-
-BOOST_CLASS_VERSION(Creature, 1)
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };
 

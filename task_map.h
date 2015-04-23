@@ -52,6 +52,4 @@ class TaskMap {
   EntitySet<Task> SERIAL(priorityTasks);
 };
 
-BOOST_CLASS_VERSION(TaskMap, 1);
-
 #endif

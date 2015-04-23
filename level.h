@@ -352,6 +352,4 @@ class Level : public UniqueEntity<Level> {
   void notifyLocations(Creature*);
 };
 
-BOOST_CLASS_VERSION(Level, 1)
-
 #endif
