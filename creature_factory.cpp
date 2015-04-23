@@ -859,7 +859,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 3);
         } else {
           c.chatReactionFriendly = c.chatReactionHostile = "The " + name + " snarls.";
         }
@@ -1250,7 +1250,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spawnType = SpawnType::UNDEAD;
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.name = "zombie";);
     case CreatureId::SKELETON: 
       return CATTR(
@@ -1284,7 +1284,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::SORCERY, 0.1);
           c.name = "vampire";);
     case CreatureId::VAMPIRE_LORD: 
@@ -1331,7 +1331,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spawnType = SpawnType::UNDEAD;
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.name = EntityName("mummy", "mummies"););
     case CreatureId::MUMMY_LORD: 
       return INHERIT(MUMMY,
@@ -1359,7 +1359,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::TRAIN, 4);
           c.minionTasks.setValue(MinionTask::LABORATORY, 0.5); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "orc";);
     case CreatureId::ORC_SHAMAN:
@@ -1371,7 +1371,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::LABORATORY, 4); 
           c.minionTasks.setValue(MinionTask::STUDY, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::SORCERY, 0.7);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.0);
           c.skills.insert(SkillId::HEALING);
@@ -1426,7 +1426,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::TRAIN, 1); 
           c.minionTasks.setValue(MinionTask::LABORATORY, 0.5); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.insert(SkillId::DISARM_TRAPS);
           c.name = "goblin";);
     case CreatureId::IMP: 
@@ -1711,7 +1711,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spawnType = SpawnType::BEAST;
           c.minionTasks.setValue(MinionTask::EXPLORE_CAVES, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.name = "cave bear";);
     case CreatureId::RAT: 
       return CATTR(
@@ -1832,7 +1832,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
           c.minionTasks.setValue(MinionTask::TRAIN, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.name = EntityName("werewolf", "werewolves"););    
     case CreatureId::DOG: 
       return INHERIT(WOLF,

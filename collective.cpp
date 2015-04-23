@@ -996,11 +996,11 @@ void Collective::tick(double time) {
   considerBirths();
   if (Random.rollD(1.0 / config.getImmigrantFrequency()))
     considerImmigration();
-  if (nextPayoutTime > -1 && time > nextPayoutTime) {
+/*  if (nextPayoutTime > -1 && time > nextPayoutTime) {
     nextPayoutTime += config.getPayoutTime();
     makePayouts();
   }
-  cashPayouts();
+  cashPayouts();*/
   if (config.getWarnings() && Random.roll(5)) {
     considerWeaponWarning();
     setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
