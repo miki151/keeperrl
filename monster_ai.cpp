@@ -501,25 +501,26 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getLastSeenMove() {
-    auto lastSeen = getLastSeen();
-    double lastSeenTimeout = 20;
-    if (lastSeen->level != creature->getLevel() ||
-        lastSeen->time < creature->getTime() - lastSeenTimeout ||
-        lastSeen->pos == creature->getPosition()) {
-      lastSeen = none;
-      return NoMove;
-    }
-    if (chase && lastSeen->type == LastSeen::ATTACK)
-      if (auto action = creature->moveTowards(lastSeen->pos)) {
-        return {0.5, action.append([=](Creature* creature) {
-            creature->setInCombat();
-        })};
+    if (auto lastSeen = getLastSeen()) {
+      double lastSeenTimeout = 20;
+      if (lastSeen->level != creature->getLevel() ||
+          lastSeen->time < creature->getTime() - lastSeenTimeout ||
+          lastSeen->pos == creature->getPosition()) {
+        lastSeen = none;
+        return NoMove;
       }
-    if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()) < 4)
-      if (auto action = creature->moveAway(lastSeen->pos, chase))
-        return {0.5, action.append([=](Creature* creature) {
-            creature->setInCombat();
-        })};
+      if (chase && lastSeen->type == LastSeen::ATTACK)
+        if (auto action = creature->moveTowards(lastSeen->pos)) {
+          return {0.5, action.append([=](Creature* creature) {
+              creature->setInCombat();
+              })};
+        }
+      if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()) < 4)
+        if (auto action = creature->moveAway(lastSeen->pos, chase))
+          return {0.5, action.append([=](Creature* creature) {
+              creature->setInCombat();
+              })};
+    }
     return NoMove;
   }
 

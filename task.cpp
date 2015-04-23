@@ -1150,6 +1150,83 @@ PTask Task::consume(Callback* c, Creature* target) {
   return PTask(new Consume(c, target));
 }
 
+namespace {
+
+class Eat : public Task {
+  public:
+  Eat(set<Vec2> pos) : positions(pos) {}
+
+  virtual bool canTransfer() override {
+    return false;
+  }
+
+  Item* getDeadChicken(Square* s) {
+    vector<Item*> chickens = s->getItems(Item::classPredicate(ItemClass::FOOD));
+    if (chickens.empty())
+      return nullptr;
+    else
+      return chickens[0];
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (!position) {
+      for (Vec2 v : positions)
+        if (!rejectedPosition.count(v) && (!position ||
+              (*position - c->getPosition()).length8() > (v - c->getPosition()).length8()))
+          position = v;
+      if (!position) {
+        setDone();
+        return NoMove;
+      }
+    }
+    Item* chicken = getDeadChicken(c->getSquare());
+    if (chicken)
+      return c->eat(chicken).append([=] (Creature* c) {
+        setDone();
+      });
+    for (Square* square : c->getSquares(Vec2::directions8(true))) {
+      Item* chicken = getDeadChicken(square);
+      if (chicken) 
+        if (auto move = c->move(square->getPosition() - c->getPosition()))
+          return move;
+      if (Creature* ch = square->getCreature())
+        if (ch->isMinionFood())
+          if (auto move = c->attack(ch)) {
+            return move;
+      }
+    }
+    return c->moveTowards(*position);
+  }
+
+  virtual string getDescription() const override {
+    if (position)
+      return "Eat at " + toString(*position);
+    else
+      return "Eat";
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Task)
+      & SVAR(position)
+      & SVAR(positions)
+      & SVAR(rejectedPosition);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Eat);
+
+  private:
+  optional<Vec2> SERIAL(position);
+  set<Vec2> SERIAL(positions);
+  set<Vec2> SERIAL(rejectedPosition);
+};
+
+}
+
+PTask Task::eat(set<Vec2> hatcherySquares) {
+  return PTask(new Eat(hatcherySquares));
+}
+
 template <class Archive>
 void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Construction);

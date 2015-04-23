@@ -773,7 +773,7 @@ class Hatchery : public Square {
     if (getCreature() || !Random.roll(10))
       return;
     for (Square* s : getLevel()->getSquares(getPosition().neighbors8()))
-      if (s->getCreature())
+      if (s->getCreature() && s->getCreature()->isMinionFood())
         return;
     if (Random.roll(5))
       getLevel()->addCreature(getPosition(), creature.random(

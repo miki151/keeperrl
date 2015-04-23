@@ -54,6 +54,7 @@ RICH_ENUM(CollectiveWarning,
     LIBRARY,
     BEDS,
     TRAINING,
+    NO_HATCHERY,
     WORKSHOP,
     NO_WEAPONS,
     GRAVES,
@@ -150,7 +151,7 @@ class Collective : public Task::Callback {
     enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME, EAT } type;
     MinionTaskInfo(vector<SquareType>, const string& description, optional<Warning> = none, double cost = 0,
         bool centerOnly = false);
-    MinionTaskInfo(Type, const string&);
+    MinionTaskInfo(Type, const string& description, optional<Warning> = none);
     vector<SquareType> squares;
     string description;
     optional<Warning> warning;
@@ -188,6 +189,7 @@ class Collective : public Task::Callback {
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
   static void sortByEquipmentValue(vector<Item*>&);
+  static SquareType getHatcheryType(Tribe* tribe);
 
   static vector<SquareType> getEquipmentStorageSquares();
   vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = set<Vec2>()) const;
@@ -341,7 +343,7 @@ class Collective : public Task::Callback {
   void setRandomTask(const Creature*);
 
   void handleSurprise(Vec2 pos);
-  EnumSet<Warning> warnings;
+  EnumSet<Warning> SERIAL(warnings);
   MoveInfo getDropItems(Creature*);
   MoveInfo getWorkerMove(Creature*);
   MoveInfo getTeamMemberMove(Creature*);

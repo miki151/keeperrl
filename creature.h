@@ -213,6 +213,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   bool canCopulateWith(const Creature*) const;
   CreatureAction consume(Vec2 direction) const;
   bool canConsume(const Creature*) const;
+  bool isMinionFood() const;
   
   void surrender(const Creature* to);
   

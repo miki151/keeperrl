@@ -537,7 +537,8 @@ CreatureAction Creature::equip(Item* item) const {
     playerMessage("You equip " + item->getTheName(false, isBlind()));
     monsterMessage(getName().the() + " equips " + item->getAName());
     item->onEquip(self);
-    level->getModel()->onEquip(self, item);
+    if (level)
+      level->getModel()->onEquip(self, item);
     self->spendTime(1);
   });
 }
@@ -1612,6 +1613,10 @@ bool Creature::canSleep() const {
   return !noSleep;
 }
 
+bool Creature::isMinionFood() const {
+  return isFood;
+}
+
 void Creature::take(vector<PItem> items) {
   for (PItem& elem : items)
     take(std::move(elem));
@@ -1754,6 +1759,8 @@ bool Creature::canConstruct(SquareType type) const {
 
 CreatureAction Creature::eat(Item* item) const {
   return CreatureAction(this, [=](Creature* self) {
+    monsterMessage(getName().the() + " eats " + item->getAName());
+    playerMessage("You eat " + item->getAName());
     self->getSquare()->removeItem(item);
     self->spendTime(3);
   });

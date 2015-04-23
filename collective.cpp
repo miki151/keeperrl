@@ -55,7 +55,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(teams)
     & SVAR(knownLocations)
     & SVAR(name)
-    & SVAR(config);
+    & SVAR(config)
+    & SVAR(warnings);
 }
 
 SERIALIZABLE(Collective);
@@ -75,7 +76,8 @@ Collective::MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& d
     : type(APPLY_SQUARE), squares(s), description(desc), warning(w), cost(_cost), centerOnly(center) {
 }
 
-Collective::MinionTaskInfo::MinionTaskInfo(Type t, const string& desc) : type(t), description(desc) {
+Collective::MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<Warning> w)
+    : type(t), description(desc), warning(w) {
   CHECK(type != APPLY_SQUARE);
 }
 
@@ -123,12 +125,13 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", none, 1}},
     {MinionTask::JEWELER, {{SquareId::JEWELER}, "jewellery", none, 1}},
     {MinionTask::SLEEP, {{SquareId::BED}, "sleeping", Collective::Warning::BEDS}},
-    {MinionTask::EAT, {MinionTaskInfo::EAT, "eating"}},
+    {MinionTask::EAT, {MinionTaskInfo::EAT, "eating", Collective::Warning::NO_HATCHERY}},
     {MinionTask::GRAVE, {{SquareId::GRAVE}, "sleeping", Collective::Warning::GRAVES}},
     {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
     {MinionTask::STUDY, {{SquareId::LIBRARY}, "studying", Collective::Warning::LIBRARY, 1}},
     {MinionTask::PRISON, {{SquareId::PRISON}, "prison", Collective::Warning::NO_PRISON}},
-    {MinionTask::TORTURE, {{SquareId::TORTURE_TABLE}, "torture ordered", Collective::Warning::TORTURE_ROOM, 0, true}},
+    {MinionTask::TORTURE, {{SquareId::TORTURE_TABLE}, "torture ordered",
+                            Collective::Warning::TORTURE_ROOM, 0, true}},
     {MinionTask::RITUAL, {{SquareId::RITUAL_ROOM}, "rituals"}},
     {MinionTask::COPULATE, {MinionTaskInfo::COPULATE, "copulation"}},
     {MinionTask::CONSUME, {MinionTaskInfo::CONSUME, "consumption"}},
@@ -347,6 +350,7 @@ int Collective::getTaskDuration(const Creature* c, MinionTask task) const {
     case MinionTask::COPULATE:
     case MinionTask::GRAVE:
     case MinionTask::LAIR:
+    case MinionTask::EAT:
     case MinionTask::SLEEP: return 1;
     default: return 500 + 250 * c->getMorale();
   }
@@ -423,40 +427,40 @@ PTask Collective::getStandardTask(Creature* c) {
   MinionTaskInfo info = getTaskInfo().at(task);
   PTask ret;
   switch (info.type) {
-    case MinionTaskInfo::APPLY_SQUARE:
-      if (getAllSquares(info.squares, info.centerOnly).empty()) {
-        if (info.warning)
-          setWarning(*info.warning, true);
-        currentTasks.erase(c->getUniqueId());
-        return nullptr;
-      }
-      ret = Task::applySquare(this, getAllSquares(info.squares, info.centerOnly));
-      break;
+    case MinionTaskInfo::APPLY_SQUARE: {
+      vector<Vec2> squares = getAllSquares(info.squares, info.centerOnly);
+      if (!squares.empty())
+        ret = Task::applySquare(this, squares);
+      break; }
     case MinionTaskInfo::EXPLORE:
       if (auto pos = getTileToExplore(c, task))
         ret = Task::explore(*pos);
-      else
-        return nullptr;
       break;
     case MinionTaskInfo::COPULATE:
       if (Creature* target = getCopulationTarget(c))
         ret = Task::copulate(this, target, 20);
-      else
-        currentTasks.erase(c->getUniqueId());
       break;
     case MinionTaskInfo::CONSUME:
       if (Creature* target = getConsumptionTarget(c))
         ret = Task::consume(this, target);
-      else
-        currentTasks.erase(c->getUniqueId());
       break;
-    case MinionTaskInfo::EAT:
-      ret = nullptr;
+    case MinionTaskInfo::EAT: {
+      const set<Vec2>& hatchery = getSquares(getHatcheryType(tribe));
+      if (!hatchery.empty())
+        ret = Task::eat(hatchery);
+      break; }
   }
-  if (ret && info.warning)
-    setWarning(*info.warning, false);
-  minionTaskStrings[c->getUniqueId()] = info.description;
+  if (info.warning)
+    setWarning(*info.warning, !ret);
+  if (!ret)
+    currentTasks.erase(c->getUniqueId());
+  else
+    minionTaskStrings[c->getUniqueId()] = info.description;
   return ret;
+}
+
+SquareType Collective::getHatcheryType(Tribe* tribe) {
+  return {SquareId::HATCHERY, CreatureFactory::SingleCreature(tribe, CreatureId::PIG)};
 }
 
 Creature* Collective::getCopulationTarget(Creature* succubus) {

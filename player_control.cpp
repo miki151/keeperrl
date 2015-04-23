@@ -105,7 +105,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
         "Mana is regenerated here.", 'y'),
     BuildInfo({SquareId::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, none,
         "Stores gold."),
-    BuildInfo({{SquareId::HATCHERY, CreatureFactory::SingleCreature(const_cast<Tribe*>(tribe), CreatureId::PIG)},
+    BuildInfo({Collective::getHatcheryType(const_cast<Tribe*>(tribe)),
         {ResourceId::GOLD, 20}, "Pigsty", false, false, 1.0 / 16}, none, "Pigs breed here.", 'p'),
     BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, none,
         "Humanoid minions place their beds here.", 'm'),
@@ -193,6 +193,7 @@ string PlayerControl::getWarningText(Collective::Warning w) {
     case Warning::LIBRARY: return "Build a library to start research.";
     case Warning::BEDS: return "You need to build a dormitory for your minions.";
     case Warning::TRAINING: return "Build a training room for your minions.";
+    case Warning::NO_HATCHERY: return "You need to build a pigsty.";
     case Warning::WORKSHOP: return "Build a workshop to produce equipment and traps.";
     case Warning::NO_WEAPONS: return "You need weapons for your minions.";
     case Warning::GRAVES: return "You need a graveyard to collect corpses";

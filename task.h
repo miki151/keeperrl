@@ -78,6 +78,7 @@ class Task : public UniqueEntity<Task> {
   static PTask copulate(Callback*, Creature* target, int numTurns);
   static PTask consume(Callback*, Creature* target);
   static PTask stayInLocationUntil(const Location*, double time);
+  static PTask eat(set<Vec2> hatcherySquares);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
