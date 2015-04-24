@@ -11,6 +11,7 @@
 #include "spectator.h"
 #include "creature.h"
 #include "square.h"
+#include "location.h"
 
 static Location* getVillageLocation(bool markSurprise = false) {
   return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext(), "", markSurprise);

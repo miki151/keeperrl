@@ -25,6 +25,7 @@
 #include "effect.h"
 #include "item_factory.h"
 #include "square.h"
+#include "location.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -960,7 +961,7 @@ int Creature::getPoints() const {
 
 double maxLevelGain = 5.0;
 double minLevelGain = 0.02;
-double equalLevelGain = 0.1;
+double equalLevelGain = 0.2;
 double maxLevelDiff = 30;
 
 void Creature::onKilled(const Creature* victim) {
@@ -2180,15 +2181,14 @@ CreatureAction Creature::continueMoving() {
 }
 
 CreatureAction Creature::stayIn(const Location* location) {
-  Rectangle area = location->getBounds();
   if (getLevel() != location->getLevel())
     return CreatureAction();
-  if (!getPosition().inRectangle(area)) {
+  if (!location->contains(getPosition())) {
     for (Vec2 v : Vec2::directions8())
-      if ((getPosition() + v).inRectangle(area))
+      if (location->contains((getPosition() + v)))
         if (auto action = move(v))
           return action;
-    return moveTowards(Vec2((area.getPX() + area.getKX()) / 2, (area.getPY() + area.getKY()) / 2));
+    return moveTowards(location->getMiddle());
   }
   return CreatureAction();
 }

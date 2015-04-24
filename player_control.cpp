@@ -35,6 +35,7 @@
 #include "effect.h"
 #include "trigger.h"
 #include "music.h"
+#include "location.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -106,7 +107,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, none,
         "Stores gold."),
     BuildInfo({Collective::getHatcheryType(const_cast<Tribe*>(tribe)),
-        {ResourceId::GOLD, 20}, "Pigsty", false, false, 1.0 / 16}, none, "Pigs breed here.", 'p'),
+        {ResourceId::WOOD, 20}, "Pigsty"}, none, "Pigs breed here.", 'p'),
     BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, none,
         "Humanoid minions place their beds here.", 'm'),
     BuildInfo({SquareId::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, none,
@@ -242,7 +243,7 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
       getMemory(level).addObject(v, level->getSafeSquare(v)->getViewObject());
   for(const Location* loc : level->getAllLocations())
     if (loc->isMarkedAsSurprise())
-      surprises.insert(loc->getBounds().middle());
+      surprises.insert(loc->getMiddle());
   m->getOptions()->addTrigger(OptionId::SHOW_MAP, [&] (bool val) { seeEverything = val; });
 }
 
@@ -1165,7 +1166,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
               scrollPos.push(c->getPosition());
           } else if (auto loc = message->getLocation()) {
             vector<Vec2> visible;
-            for (Vec2 v : loc->getBounds())
+            for (Vec2 v : loc->getAllSquares())
               if (getCollective()->isKnownSquare(v))
                 visible.push_back(v);
             scrollPos.push(Rectangle::boundingBox(visible).middle());
@@ -1645,13 +1646,13 @@ Level* PlayerControl::getLevel() {
 void PlayerControl::uncoverRandomLocation() {
   const Location* location = nullptr;
   for (auto loc : randomPermutation(getLevel()->getAllLocations()))
-    if (!getCollective()->isKnownSquare(loc->getBounds().middle())) {
+    if (!getCollective()->isKnownSquare(loc->getMiddle())) {
       location = loc;
       break;
     }
   double radius = 8.5;
   if (location)
-    for (Vec2 v : location->getBounds().middle().circle(radius))
+    for (Vec2 v : location->getMiddle().circle(radius))
       if (getLevel()->inBounds(v))
         getCollective()->addKnownTile(v);
 }

@@ -26,6 +26,7 @@
 #include "view_object.h"
 #include "view_id.h"
 #include "collective.h"
+#include "location.h"
 
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
@@ -477,7 +478,7 @@ class ShopkeeperController : public Monster {
       return;
     }
     if (firstMove) {
-      for (Vec2 v : shopArea->getBounds())
+      for (Vec2 v : shopArea->getAllSquares())
         for (Item* item : getCreature()->getLevel()->getSafeSquare(v)->getItems()) {
           myItems.insert(item);
           item->setShopkeeper(getCreature());
@@ -485,7 +486,8 @@ class ShopkeeperController : public Monster {
       firstMove = false;
     }
     vector<const Creature*> creatures;
-    for (Square* square : getCreature()->getLevel()->getSquares(shopArea->getBounds().minusMargin(-1).getAllSquares()))
+    for (Square* square : getCreature()->getLevel()->getSquares(
+          shopArea->getAllSquares()))
       if (const Creature* c = square->getCreature()) {
         creatures.push_back(c);
         if (!prevCreatures.count(c) && !thieves.count(c) && !getCreature()->isEnemy(c)) {
@@ -537,7 +539,7 @@ class ShopkeeperController : public Monster {
   
   REGISTER_HANDLER(ItemsAppearedEvent, const Level* l, Vec2 position, const vector<Item*>& items) {
     if (l == getCreature()->getLevel())
-      if (position.inRectangle(shopArea->getBounds())) {
+      if (shopArea->contains(position)) {
         for (Item* it : items) {
           it->setShopkeeper(getCreature());
           myItems.insert(it);
@@ -546,7 +548,7 @@ class ShopkeeperController : public Monster {
   }
 
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items) {
-    if (c->getLevel() == getCreature()->getLevel() && c->getPosition().inRectangle(shopArea->getBounds())) {
+    if (c->getLevel() == getCreature()->getLevel() && shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
         if (myItems.contains(item)) {
           debt[c] += item->getPrice();
@@ -556,7 +558,7 @@ class ShopkeeperController : public Monster {
   }
 
   REGISTER_HANDLER(DropEvent, const Creature* c, const vector<Item*>& items) {
-    if (c->getLevel() == getCreature()->getLevel() && c->getPosition().inRectangle(shopArea->getBounds())) {
+    if (c->getLevel() == getCreature()->getLevel() && shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
         if (myItems.contains(item)) {
           if ((debt[c] -= item->getPrice()) <= 0)

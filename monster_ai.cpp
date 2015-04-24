@@ -22,6 +22,7 @@
 #include "effect.h"
 #include "item.h"
 #include "creature.h"
+#include "location.h"
 
 class Behaviour {
   public:

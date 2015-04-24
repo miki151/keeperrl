@@ -16,12 +16,10 @@
 #ifndef _ACTOR_H
 #define _ACTOR_H
 
-#include "location.h"
 #include "creature_action.h"
 
 class Creature;
-
-class Creature;
+class Location;
 
 struct MoveInfo {
   MoveInfo(double val, CreatureAction m) : value(m ? val : 0), move(m) {}

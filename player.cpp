@@ -67,7 +67,7 @@ void Player::onThrowEvent(const Level* l, const Creature* thrower, const Item* i
 }
 
 void Player::learnLocation(const Location* loc) {
-  for (Vec2 v : loc->getBounds())
+  for (Vec2 v : loc->getAllSquares())
     (*levelMemory)[getCreature()->getLevel()->getUniqueId()]
         .addObject(v, getCreature()->getLevel()->getSafeSquare(v)->getViewObject());
 }

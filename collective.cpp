@@ -15,6 +15,7 @@
 #include "trigger.h"
 #include "model.h"
 #include "spell.h"
+#include "location.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {

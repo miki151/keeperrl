@@ -108,17 +108,17 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
   if (printLocations)
     for (const Location* loc : level->getAllLocations()) {
       bool seen = false;
-      for (Vec2 v : loc->getBounds())
+      for (Vec2 v : loc->getAllSquares())
         if (memory.hasViewIndex(v)) {
           seen = true;
           break;
         }
       if (loc->isMarkedAsSurprise() && !seen) {
-        Vec2 pos = loc->getBounds().middle();
+        Vec2 pos = loc->getMiddle();
         info.locations.push_back({pos, ""});
       }
       if (loc->hasName() && seen) {
-        Vec2 pos = loc->getBounds().getBottomRight();
+        Vec2 pos = loc->getBottomRight();
         info.locations.push_back({pos, loc->getName()});
       }
     }

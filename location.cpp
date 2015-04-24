@@ -24,20 +24,25 @@ template <class Archive>
 void Location::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(name)
     & SVAR(description)
-    & SVAR(bounds)
+    & SVAR(squares)
     & SVAR(level)
-    & SVAR(surprise);
+    & SVAR(table)
+    & SVAR(surprise)
+    & SVAR(middle)
+    & SVAR(bottomRight);
 }
 
 SERIALIZABLE(Location);
 
 Location::Location(const string& _name, const string& desc, bool sup)
-    : name(_name), description(desc), bounds(-1, -1, 1, 1), surprise(sup) {
+    : name(_name), description(desc), surprise(sup) {
 }
 
-Location::Location(bool s) : bounds(-1, -1, 1, 1), surprise(s) {}
+Location::Location(bool s) : surprise(s) {}
 
-Location::Location(Level* l, Rectangle b) : level(l), bounds(b) {
+Location::Location(Level* l, Rectangle b) : level(l), squares(b.getAllSquares()) {
+  for (Vec2 v : squares)
+    table[v] = true;
 }
 
 bool Location::isMarkedAsSurprise() const {
@@ -56,13 +61,29 @@ bool Location::hasName() const {
   return !!name;
 }
 
-Rectangle Location::getBounds() const {
-  CHECK(bounds.getPX() > -1) << "Location bounds not initialized";
-  return bounds;
+const vector<Vec2>& Location::getAllSquares() const {
+  CHECK(level) << "Location bounds not initialized";
+  return squares;
+}
+
+bool Location::contains(Vec2 pos) const {
+  return table[pos];
+}
+
+Vec2 Location::getMiddle() const {
+  return middle;
+}
+
+Vec2 Location::getBottomRight() const {
+  return bottomRight;
 }
 
 void Location::setBounds(Rectangle b) {
-  bounds = b;
+  squares = b.getAllSquares();
+  for (Vec2 v : squares)
+    table[v] = true;
+  middle = b.middle();
+  bottomRight = b.getBottomRight();
 }
 
 void Location::setLevel(const Level* l) {
@@ -71,34 +92,5 @@ void Location::setLevel(const Level* l) {
 
 const Level* Location::getLevel() const {
   return level;
-}
-
-class TowerTopLocation : public Location {
-  public:
-
-  virtual void onCreature(Creature* c) override {
-    if (!c->isPlayer())
-      return;
-    if (!entered.count(c) && !c->isBlind()) {
- /*     for (Vec2 v : c->getLevel()->getBounds())
-        if ((v - c->getPosition()).lengthD() < 300 && !c->getLevel()->getSquare(v)->isCovered())
-          c->remember(v, c->getLevel()->getSquare(v)->getViewObject());*/
-      c->playerMessage("You stand at the top of a very tall stone tower.");
-      c->playerMessage("You see distant land in all directions.");
-      entered.insert(c);
-    }
-  }
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Location) & SVAR(entered);
-  }
-
-  private:
-  unordered_set<Creature*> SERIAL(entered);
-};
-
-Location* Location::towerTopLocation() {
-  return new TowerTopLocation();
 }
 

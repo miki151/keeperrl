@@ -23,6 +23,7 @@
 #include "collective.h"
 #include "shortest_path.h"
 #include "creature.h"
+#include "location.h"
 
 namespace {
 

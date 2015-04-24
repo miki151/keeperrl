@@ -23,6 +23,7 @@
 #include "square.h"
 #include "collective.h"
 #include "trigger.h"
+#include "location.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {

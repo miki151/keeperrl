@@ -347,9 +347,6 @@ class Level : public UniqueEntity<Level> {
   FieldOfView& getFieldOfView(VisionId vision) const;
   vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
   bool isWithinVision(Vec2 from, Vec2 to, VisionId) const;
-
-  /** Notify relevant locations about creature position. */
-  void notifyLocations(Creature*);
 };
 
 #endif

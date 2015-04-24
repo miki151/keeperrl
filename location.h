@@ -17,8 +17,7 @@
 #define _LOCATION_H
 
 #include "util.h"
-
-class Level;
+#include "level.h"
 
 class Location {
   public:
@@ -29,14 +28,13 @@ class Location {
   string getDescription() const;
   bool hasName() const;
   bool isMarkedAsSurprise() const;
-  Rectangle getBounds() const;
   void setBounds(Rectangle);
+  bool contains(Vec2) const;
+  Vec2 getMiddle() const;
+  Vec2 getBottomRight() const;
+  const vector<Vec2>& getAllSquares() const;
   void setLevel(const Level*);
   const Level* getLevel() const;
-
-  virtual void onCreature(Creature* c) {}
-
-  static Location* towerTopLocation();
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
@@ -44,8 +42,11 @@ class Location {
   private:
   optional<string> SERIAL(name);
   optional<string> SERIAL(description);
-  const Level* SERIAL(level);
-  Rectangle SERIAL(bounds);
+  const Level* SERIAL(level) = nullptr;
+  vector<Vec2> SERIAL(squares);
+  Table<bool> SERIAL(table) = Table<bool>(Level::getMaxBounds(), false);
+  Vec2 SERIAL(middle);
+  Vec2 SERIAL(bottomRight);
   bool SERIAL(surprise) = false;
 };
 

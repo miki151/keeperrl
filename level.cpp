@@ -105,13 +105,6 @@ void Level::putCreature(Vec2 position, Creature* c) {
   getSafeSquare(position)->putCreature(c);
   if (c->isDarknessSource())
     addDarknessSource(c->getPosition(), darknessRadius);
-  notifyLocations(c);
-}
-  
-void Level::notifyLocations(Creature* c) {
-  for (Location* l : locations)
-    if (c->getPosition().inRectangle(l->getBounds()))
-      l->onCreature(c);
 }
 
 void Level::addLightSource(Vec2 pos, double radius) {
@@ -196,7 +189,7 @@ const Creature* Level::getPlayer() const {
 
 const Location* Level::getLocation(Vec2 pos) const {
   for (Location* l : locations)
-    if (pos.inRectangle(l->getBounds()))
+    if (l->contains(pos))
       return l;
   return nullptr;
 }
@@ -416,7 +409,6 @@ void Level::moveCreature(Creature* creature, Vec2 direction) {
     addDarknessSource(position + direction, darknessRadius);
     removeDarknessSource(position, darknessRadius);
   }
-  notifyLocations(creature);
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {
@@ -440,8 +432,6 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
     addDarknessSource(position1, darknessRadius);
     removeDarknessSource(position2, darknessRadius);
   }
-  notifyLocations(c1);
-  notifyLocations(c2);
 }
 
 vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
