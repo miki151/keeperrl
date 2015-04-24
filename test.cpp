@@ -203,9 +203,7 @@ void testOptional() {
 void testMustInitialize() {
   MustInitialize<int> x;
   x = 5;
-  int y = *x;
   MustInitialize<int> z(x);
-  int v = *z;
 }
 
 template<class T>
@@ -326,7 +324,7 @@ void testVec2Box2() {
 
 void testRandomExit() {
   Rectangle r(5, 10, 15, 20);
-  for (int i : Range(1000)) {
+  for (int __attribute__((unused)) i : Range(1000)) {
     Vec2 v = LevelMaker::getRandomExit(r);
     CHECK((v.x == 5) ^ (v.x == 14) ^ (v.y == 10) ^ (v.y == 19));
   }
@@ -394,12 +392,12 @@ void testSectors3() {
   Table<bool> t(bounds, true);
   Rectangle bounds2(15, 15);
   Rectangle bounds3(3, 3);
-  for (int i : Range(40)) {
+  for (int __attribute__((unused)) i : Range(40)) {
     Vec2 pos(bounds.randomVec2());
     for (Vec2 v : bounds2.translate(pos).intersection(bounds))
       t[v] = false;
   }
-  for (int i : Range(100)) {
+  for (int __attribute__((unused)) i : Range(100)) {
     Vec2 pos(bounds.randomVec2());
     for (Vec2 v : bounds3.translate(pos).intersection(bounds))
       t[v] = true;
@@ -407,7 +405,7 @@ void testSectors3() {
   for (Vec2 v : bounds)
     if (t[v])
       s.add(v);
-  for (int i : Range(100000)) {
+    for (int __attribute__((unused)) i : Range(100000)) {
     Vec2 v = bounds.randomVec2();
     if (Random.roll(3)) {
       s.remove(v);

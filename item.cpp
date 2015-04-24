@@ -66,6 +66,8 @@ string Item::getTrapName(TrapType type) {
     case TrapType::SURPRISE: return "surprise";
     case TrapType::TERROR: return "terror";
   }
+  assert("__FUNCTION__ case unknown trap type");
+  return "";
 }
 
 ItemPredicate Item::effectPredicate(EffectType type) {

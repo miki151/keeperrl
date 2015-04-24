@@ -152,6 +152,8 @@ PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
     case VillageBehaviourId::KILL_MEMBERS: return Task::killFighters(collective, behaviour.get<int>());
     case VillageBehaviourId::STEAL_GOLD: return Task::stealFrom(collective, self->getCollective());
   }
+  assert("__FUNCTION__ case unknown behaviour id");
+  return Task::attackLeader(collective);
 }
 
 string VillageControl::getAttackMessage(const Villain& villain, const vector<Creature*> attackers) const {

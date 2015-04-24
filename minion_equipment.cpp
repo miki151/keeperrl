@@ -46,6 +46,8 @@ int MinionEquipment::getEquipmentLimit(EquipmentType type) const {
     case MinionEquipment::HEALING: return 6;
     case MinionEquipment::ARCHERY: return 40;
   }
+  assert("__FUNCTION__ case unknown equipment type");
+  return 0;
 }
 
 optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {

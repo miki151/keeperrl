@@ -58,6 +58,8 @@ static string getSaveSuffix(Model::GameType t) {
     case Model::GameType::RETIRED_KEEPER: return ".ret";
     case Model::GameType::AUTOSAVE: return ".aut";
   }
+  assert("__FUNCTION__ case unknown item action");
+  return "";
 }
 
 template <typename InputType>

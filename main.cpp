@@ -184,8 +184,6 @@ int main(int argc, char* argv[]) {
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
- // int forceMode = vars.count("force_keeper") ? 0 : -1;
-  bool genExit = vars.count("gen_world_exit");
   if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;

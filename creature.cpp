@@ -1144,6 +1144,8 @@ static string getAttackParam(AttackType type) {
     case AttackType::SPELL: return "spell";
     case AttackType::POSSESS: return "touch";
   }
+  assert("__FUNCTION__ case unknown attack type");
+  return "";
 }
 
 string Creature::getBodyPartName(BodyPart part) {
@@ -1155,6 +1157,8 @@ string Creature::getBodyPartName(BodyPart part) {
     case BodyPart::TORSO: return "torso";
     case BodyPart::BACK: return "back";
   }
+  assert("__FUNCTION__ case unknown body part");
+  return "";
 }
 
 string Creature::getAttrName(AttrType attr) {
@@ -1163,6 +1167,8 @@ string Creature::getAttrName(AttrType attr) {
     case AttrType::DEXTERITY: return "dexterity";
     case AttrType::SPEED: return "speed";
   }
+  assert("__FUNCTION__ case unknown attr");
+  return "";
 }
 
 static string getAttrNameMore(AttrType attr) {
@@ -1171,6 +1177,8 @@ static string getAttrNameMore(AttrType attr) {
     case AttrType::DEXTERITY: return "more agile";
     case AttrType::SPEED: return "faster";
   }
+  assert("__FUNCTION__ case unknown attr");
+  return "";
 }
 
 string Creature::getModifierName(ModifierType attr) {
@@ -1184,6 +1192,8 @@ string Creature::getModifierName(ModifierType attr) {
     case ModifierType::DEFENSE: return "defense";
     case ModifierType::INV_LIMIT: return "carry capacity";
   }
+  assert("__FUNCTION__ case unknown attr");
+  return "";
 }
 
 static string getBodyPartBone(BodyPart part) {
@@ -2167,7 +2177,7 @@ void Creature::exerciseAttr(AttrType t, double value) {
 
 void Creature::increaseExpLevel(double increase) {
   double l = getExpLevelDouble();
-  for (int i : Range(100000)) {
+  for (int __attribute__((unused)) i : Range(100000)) {
     exerciseAttr(chooseRandom<AttrType>(), 0.05);
     if (getExpLevelDouble() >= l + increase)
       break;

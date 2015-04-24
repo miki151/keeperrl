@@ -149,7 +149,7 @@ bool TaskMap<CostInfo>::hasTask(const Creature* c) const {
   if (creatureMap.contains(c))
     return !creatureMap.get(c)->isDone();
   else
-    return nullptr;
+    return false;
 }
 
 template <class CostInfo>

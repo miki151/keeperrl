@@ -1977,7 +1977,7 @@ class ItemList {
   }
 
   ItemList& add(ItemType id, int num = 1) {
-    for (int i : Range(num))
+    for (int __attribute__((unused)) i : Range(num))
       ret.push_back(id);
     return *this;
   }

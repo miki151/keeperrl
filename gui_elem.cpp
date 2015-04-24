@@ -578,6 +578,8 @@ class MarginGui : public GuiLayout {
         case GuiFactory::BOTTOM:
           return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(0, width));
       }
+    assert("__FUNCTION__ unknown elemental bounds");
+    return {0,0};
   }
 
   private:
@@ -620,6 +622,8 @@ class MarginFit : public GuiLayout {
         case GuiFactory::BOTTOM:
           return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(0, width * h));
       }
+    assert("__FUNCTION__ unknown elemental bounds");
+    return {0,0};
   }
 
   private:

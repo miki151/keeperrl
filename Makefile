@@ -4,7 +4,8 @@ ifndef RPATH
 RPATH = .
 endif
 
-CFLAGS = -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare
+CFLAGS = -Wall -std=c++0x -Wno-sign-compare -Wfatal-errors
+# -Wno-unused-variable  -Wno-shift-count-overflow
 
 ifdef CLANG
 CC = clang++

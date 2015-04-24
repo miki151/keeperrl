@@ -266,7 +266,7 @@ class MeteorShower : public Trigger {
       level->getSafeSquare(position)->removeTrigger(this);
       return;
     } else
-      for (int i : Range(10))
+      for (int __attribute__((unused)) i : Range(10))
         if (shootMeteorite())
           break;
   }

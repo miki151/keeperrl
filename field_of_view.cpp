@@ -71,9 +71,6 @@ void FieldOfView::Visibility::setVisible(int x, int y) {
   }
 }
 
-static int totalIter = 0;
-static int numSamples = 0;
-
 FieldOfView::Visibility::Visibility(const Table<PSquare>& squares, VisionId vision, int x, int y) : px(x), py(y) {
   memset(visible, 0, (2 * sightRange + 1) * (2 * sightRange + 1));
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,

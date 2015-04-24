@@ -503,7 +503,6 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getAttackMove(Creature* other, bool chase) {
-    int radius = 4;
     int distance = 10000;
     CHECK(other);
     if (other->isInvincible())
