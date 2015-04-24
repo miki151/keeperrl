@@ -958,17 +958,18 @@ int Creature::getPoints() const {
   return points;
 }
 
-double maxLevelGain = 2;
-double minLevelGain = 0.1;
-double maxLevelDiff = 7;
+double maxLevelGain = 5.0;
+double minLevelGain = 0.02;
+double equalLevelGain = 0.1;
+double maxLevelDiff = 30;
 
 void Creature::onKilled(const Creature* victim) {
   int difficulty = victim->getDifficultyPoints();
   CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
   points += difficulty;
   double levelDiff = victim->getExpLevelDouble() - getExpLevelDouble();
-  increaseExpLevel(max(0.05, min(maxLevelGain, 
-      (maxLevelGain - minLevelGain) * (levelDiff + maxLevelDiff) / (2.0 * maxLevelDiff) + minLevelGain)));
+  increaseExpLevel(max(minLevelGain, min(maxLevelGain, 
+      (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
 }
 
 double Creature::getInventoryWeight() const {
