@@ -175,6 +175,8 @@ string Options::getValueString(OptionId id, Options::Value value) {
           return val;
         }
   }
+  assert("__FUNCTION__ case unknown option id");
+  return "";
 }
 
 static optional<Options::Value> readValue(OptionId id, const string& input) {

@@ -342,7 +342,7 @@ PCreature Model::makePlayer(int handicap) {
       ItemId::LEATHER_GLOVES,
       ItemId::LEATHER_ARMOR,
       ItemId::LEATHER_HELM});
-  for (int i : Range(Random.get(70, 131)))
+  for (int __attribute__((unused)) i : Range(Random.get(70, 131)))
     player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
   return player;
 }

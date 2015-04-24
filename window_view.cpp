@@ -99,6 +99,8 @@ Rectangle WindowView::getMapGuiBounds() const {
           (renderer.getSize() + levelSize.mult(mapLayout->getSquareSize())) / 2);
       }
   }
+  assert("__FUNCTION__ case unknown info type");
+  return Rectangle(0,0);
 }
 
 Rectangle WindowView::getMinimapBounds() const {
@@ -1256,4 +1258,6 @@ double WindowView::getGameSpeed() {
     case GuiBuilder::GameSpeed::FAST: return 0.04;
     case GuiBuilder::GameSpeed::VERY_FAST: return 0.06;
   }
+  assert("__FUNCTION__ case unknown game speed");
+  return 0.0f;
 }

@@ -761,7 +761,7 @@ vector<Vec2> Collective::getBedPositions(const vector<PCreature>& creatures, con
   optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
   vector<Vec2> bedPos;
   for (int i : All(creatures))
-    for (int j : Range(30)) {
+    for (int __attribute__((unused)) j : Range(30)) {
       optional<Vec2> newPos;
       if (!bedType)
         newPos = chooseRandom(removeVector(getSquares(dormType), bedPos));
@@ -808,7 +808,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   if (info.techId && !hasTech(*info.techId))
     return false;
   vector<PCreature> creatures;
-  for (int i : (info.groupSize ? Range(Random.get(*info.groupSize)) : Range(1)))
+  for (int __attribute__((unused)) i : (info.groupSize ? Range(Random.get(*info.groupSize)) : Range(1)))
     creatures.push_back(CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this)));
   if (!creatures[0]->getSpawnType())
     return considerNonSpawnImmigrant(info, std::move(creatures));
@@ -894,7 +894,7 @@ void Collective::considerImmigration() {
   }
   if (!ok)
     return;
-  for (int i : Range(10))
+  for (int __attribute__((unused)) i : Range(10))
     if (considerImmigrant(chooseRandom(config.getImmigrantInfo(), weights)))
       break;
 }
@@ -2059,7 +2059,7 @@ void Collective::onAppliedSquare(Vec2 pos) {
   if (contains(getAllSquares(workshopSquares), pos))
     if (Random.rollD(40.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
       vector<PItem> items;
-      for (int i : Range(20)) {
+      for (int __attribute__((unused)) i : Range(20)) {
         auto workshopInfo = getWorkshopInfo(this, pos);
         items = workshopInfo.factory.random();
         if (isItemNeeded(items[0].get()))

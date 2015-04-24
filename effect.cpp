@@ -107,7 +107,7 @@ static int summonCreatures(Creature* c, int radius, vector<PCreature> creatures)
 
 static void deception(Creature* c) {
   vector<PCreature> creatures;
-  for (int i : Range(Random.get(3, 7))) {
+  for (int __attribute__((unused)) i : Range(Random.get(3, 7))) {
     ViewObject viewObject(c->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
     viewObject.setModifier(ViewObject::Modifier::ILLUSION);
     creatures.push_back(PCreature(new Creature(viewObject, c->getTribe(), CATTR(
@@ -231,14 +231,14 @@ static void guardingBuilder(Creature* c) {
 
 void Effect::summon(Creature* c, CreatureId id, int num, int ttl) {
   vector<PCreature> creatures;
-  for (int i : Range(num))
+  for (int __attribute__((unused)) i : Range(num))
     creatures.push_back(CreatureFactory::fromId(id, c->getTribe(), MonsterAIFactory::summoned(c, ttl)));
   summonCreatures(c, 2, std::move(creatures));
 }
 
 void Effect::summon(Level* level, CreatureFactory factory, Vec2 pos, int num, int ttl) {
   vector<PCreature> creatures;
-  for (int i : Range(num))
+  for (int __attribute__((unused)) i : Range(num))
     creatures.push_back(factory.random(MonsterAIFactory::dieTime(level->getModel()->getTime() + ttl)));
   summonCreatures(level, pos, 2, std::move(creatures));
 }
@@ -292,7 +292,6 @@ static void portal(Creature* c) {
 
 static void teleport(Creature* c) {
   Vec2 pos = c->getPosition();
-  int cnt = 1000;
   Vec2 enemyRadius(12, 12);
   Vec2 teleRadius(6, 6);
   Level* l = c->getLevel();
@@ -499,6 +498,8 @@ string Effect::getName(EffectType type) {
     case EffectId::METEOR_SHOWER: return "meteor shower";
     case EffectId::LASTING: return getName(type.get<LastingEffect>());
   }
+  assert("__FUNCTION__ case unknown ");
+  return "";
 }
 
 static string getLastingDescription(string desc) {
@@ -532,6 +533,8 @@ string Effect::getDescription(EffectType type) {
     case EffectId::METEOR_SHOWER: return "Initiates a deadly meteor shower at the site.";
     case EffectId::LASTING: return getLastingDescription(getDescription(type.get<LastingEffect>()));
   }
+  assert("__FUNCTION__ case unknown effect type");
+  return "";
 }
 
 string Effect::getName(LastingEffect type) {
@@ -556,6 +559,8 @@ string Effect::getName(LastingEffect type) {
     case LastingEffect::MAGIC_SHIELD: return "magic shield";
     case LastingEffect::DARKNESS_SOURCE: return "source of darkness";
   }
+  assert("__FUNCTION__ case unknown lasting effect");
+  return "";
 }
 
 string Effect::getDescription(LastingEffect type) {
@@ -580,6 +585,8 @@ string Effect::getDescription(LastingEffect type) {
     case LastingEffect::MAGIC_SHIELD: return "Gives protection from physical attacks.";
     case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
   }
+  assert("__FUNCTION__ case unknown lasting effect");
+  return "";
 }
 
 string Effect::getDescription(DirEffectType type) {
@@ -589,6 +596,8 @@ string Effect::getDescription(DirEffectType type) {
         return "Creates a directed wave that " + noCapitalFirst(getDescription(type.get<EffectType>()));
         break;
   }
+  assert("__FUNCTION__ case unknown effect type");
+  return "";
 }
 
 

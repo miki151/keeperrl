@@ -113,6 +113,8 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
         return it->getClass() == ItemClass::RANGED_WEAPON;};
     case ItemIndex::CAN_EQUIP: return [](const Item* it) {return it->canEquip();};
   }
+  assert("__FUNCTION__ case unknown item index");
+  return Item::classPredicate(ItemClass::GOLD);
 }
 
 const vector<Item*>& Inventory::getItems(ItemIndex index) const {

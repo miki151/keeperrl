@@ -33,7 +33,7 @@ string getSyllable() {
 string getWord() {
   int syllables = chooseRandom({1, 2, 3, 4}, {1, 4, 3, 1});
   string ret;
-  for (int i : Range(syllables))
+  for (int __attribute__((unused)) i : Range(syllables))
     ret += getSyllable();
   return ret;
 }
@@ -51,10 +51,10 @@ vector<string> readLines(const string& path) {
 void NameGenerator::init(const string& namesPath) {
   clearAll();
   vector<string> input;
-  for (int i : Range(1000)) {
+  for (int __attribute__((unused)) i : Range(1000)) {
     string ret;
     int parts = chooseRandom({1, 2}, {3, 1});
-    for (int k : Range(parts))
+    for (int __attribute__((unused)) k : Range(parts))
       ret += getWord() + " ";
     trim(ret);
     input.push_back(ret);

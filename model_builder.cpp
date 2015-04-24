@@ -96,7 +96,7 @@ static vector<EnemyInfo> getVaults(Tribe::Set& tribeSet) {
     getVault(SettlementType::VAULT, CreatureId::RAT, tribeSet.pest.get(), Random.get(3, 8),
         ItemFactory::armory()),
   };
-  for (int i : Range(Random.get(1, 3))) {
+  for (int __attribute__((unused)) i : Range(Random.get(1, 3))) {
     FriendlyVault v = chooseRandom(friendlyVaults);
     ret.push_back(getVault(SettlementType::VAULT, v.id, tribeSet.keeper.get(), Random.get(v.min, v.max)));
   }
@@ -105,7 +105,7 @@ static vector<EnemyInfo> getVaults(Tribe::Set& tribeSet) {
 
 vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
   vector<EnemyInfo> ret;
-  for (int i : Range(6, 12)) {
+  for (int __attribute__((unused)) i : Range(6, 12)) {
     ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::COTTAGE;
         c.creatures = CreatureFactory::humanVillage(tribeSet.human.get());
@@ -114,7 +114,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
         c.tribe = tribeSet.human.get();
         c.buildingId = BuildingId::WOOD;), CollectiveConfig::noImmigrants(), {}});
   }
-  for (int i : Range(2, 5)) {
+  for (int __attribute__((unused)) i : Range(2, 5)) {
     ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::SMALL_MINETOWN;
         c.creatures = CreatureFactory::gnomeVillage(tribeSet.dwarven.get());
@@ -422,7 +422,7 @@ static EnumMap<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
 }
 
 PModel ModelBuilder::collectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
-  for (int i : Range(10)) {
+  for (int __attribute__((unused)) i : Range(10)) {
     try {
       return tryCollectiveModel(meter, options, view, worldName);
     } catch (LevelGenException ex) {
@@ -439,7 +439,7 @@ static string getNewIdSuffix() {
     if (isalnum(c))
       chars.push_back(c);
   string ret;
-  for (int i : Range(4))
+  for (int __attribute__((unused)) i : Range(4))
     ret += chooseRandom(chars);
   return ret;
 }
@@ -475,7 +475,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
   top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
-  for (int i : Range(4)) {
+  for (int __attribute__((unused)) i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, m->tribeSet.keeper.get(),
         MonsterAIFactory::collective(m->playerCollective));
     top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());

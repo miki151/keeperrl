@@ -1034,7 +1034,7 @@ enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
 int PlayerControl::getImpCost() const {
   int numImps = 0;
-  for (Creature* c : getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}))
+  for (Creature __attribute__((unused)) *c : getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}))
     ++numImps;
   if (numImps < startImpNum)
     return 0;

@@ -282,6 +282,8 @@ string GuiBuilder::getGameSpeedName(GuiBuilder::GameSpeed gameSpeed) const {
     case GameSpeed::FAST: return "fast";
     case GameSpeed::VERY_FAST: return "very fast";
   }
+  assert("__FUNCTION__ case unknown game speed");
+  return "";
 }
 
 string GuiBuilder::getCurrentGameSpeedName() const {
@@ -364,6 +366,8 @@ static Event::KeyEvent getHotkey(GuiBuilder::GameSpeed speed) {
     case GuiBuilder::GameSpeed::FAST: return Event::KeyEvent{Keyboard::Num3};
     case GuiBuilder::GameSpeed::VERY_FAST: return Event::KeyEvent{Keyboard::Num4};
   }
+  assert("__FUNCTION__ case unknown game speed") ;
+  return Event::KeyEvent{Keyboard::Num1};
 }
 
 void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
@@ -430,6 +434,8 @@ static GuiFactory::IconId getAttrIcon(AttrId id) {
     case AttrId::ACC: return GuiFactory::STAT_ACC;
     case AttrId::SPD: return GuiFactory::STAT_SPD;
   }
+  assert("__FUNCTION__ case unknown getAttrIcon") ;
+  return GuiFactory::STAT_ATT;
 }
 
 PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
@@ -553,6 +559,8 @@ static string getActionText(GameInfo::PlayerInfo::ItemInfo::Action a) {
     case GameInfo::PlayerInfo::ItemInfo::UNEQUIP: return "remove";
     case GameInfo::PlayerInfo::ItemInfo::APPLY: return "apply";
   }
+  assert("__FUNCTION__ case unknown item action");
+  return "";
 }
 
 const int listLineHeight = 30;

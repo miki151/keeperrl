@@ -1385,11 +1385,13 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.resourceId = CollectiveResourceId::GOLD;
             i.weight = 0.01;);
   }
+  assert("__FUNCTION__ case unknown item id");
+  return ITATTR();
 }
   
 vector<PItem> ItemFactory::fromId(ItemType id, int num) {
   vector<PItem> ret;
-  for (int i : Range(num))
+  for (int __attribute__((unused)) i : Range(num))
     ret.push_back(fromId(id));
   return ret;
 }

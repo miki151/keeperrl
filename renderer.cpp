@@ -48,6 +48,8 @@ Font& Renderer::getFont(Renderer::FontId id) {
     case Renderer::TILE_FONT: return tileFont;
     case Renderer::SYMBOL_FONT: return symbolFont;
   }
+  assert("__FUNCTION__ case unknown font id");
+  return textFont;
 }
 
 void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s, bool center) {

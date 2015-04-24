@@ -435,7 +435,6 @@ Creature* Square::getCreature() {
 void Square::addTrigger(PTrigger t) {
   setDirty();
   level->addTickingSquare(position);
-  Trigger* ref = t.get();
   level->addLightSource(position, t->getLightEmission());
   triggers.push_back(std::move(t));
 }

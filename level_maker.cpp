@@ -274,7 +274,7 @@ class Connector : public LevelMaker {
     vector<Vec2> points = filter(area.getAllSquares(), [&] (Vec2 v) { return connectPred.apply(builder, v);});
     if (points.size() < 2)
       return;
-    for (int i : Range(30)) {
+    for (int __attribute__((unused)) i : Range(30)) {
       p1 = chooseRandom(points);
       p2 = chooseRandom(points);
       if (p1 != p2)
@@ -336,7 +336,7 @@ class DungeonFeatures : public LevelMaker {
     checkGen(maxTotal <= available.size());
     for (auto iter : squareTypes) {
       int num = Random.get(iter.min, iter.max);
-      for (int i : Range(num)) {
+      for (int __attribute__((unused)) i : Range(num)) {
         int vInd = Random.get(available.size());
         builder->putSquare(available[vInd], iter.type);
         if (attr)
@@ -371,7 +371,7 @@ class Creatures : public LevelMaker {
       actorFactory = MonsterAIFactory::stayInLocation(loc);
     }
     Table<char> taken(area.getKX(), area.getKY());
-    for (int i : Range(numCreature)) {
+    for (int __attribute__((unused)) i : Range(numCreature)) {
       PCreature creature = cfactory.random(*actorFactory);
       Vec2 pos;
       int numTries = 100;
@@ -405,7 +405,7 @@ class Items : public LevelMaker {
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
     int numItem = Random.get(minItem, maxItem);
-    for (int i : Range(numItem)) {
+    for (int __attribute__((unused)) i : Range(numItem)) {
       Vec2 pos;
       do {
         pos = Vec2(Random.get(area.getPX(), area.getKX()), Random.get(area.getPY(), area.getKY()));
@@ -489,7 +489,7 @@ class RepeatMaker : public LevelMaker {
   RepeatMaker(int num, LevelMaker* m) : number(num), maker(m) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
-    for (int i : Range(number))
+    for (int __attribute__((unused)) i : Range(number))
       maker->make(builder, area);
   }
 
@@ -546,7 +546,7 @@ class MountainRiver : public LevelMaker {
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
     set<Vec2> allWaterTiles;
-    for (int i : Range(number)) {
+    for (int __attribute__((unused)) i : Range(number)) {
       set<Vec2> waterTiles;
       Vec2 pos = startPredicate.getRandomPosition(builder, area);
       int width = Random.get(3, 6);
@@ -723,6 +723,8 @@ static BuildingInfo get(BuildingId id) {
     case BuildingId::BRICK: return brickBuilding;
     case BuildingId::DUNGEON: return dungeonBuilding;
   }
+  assert("__FUNCTION__ case unknown building id");
+  return woodBuilding;
 }
 
 class Buildings : public LevelMaker {
@@ -749,7 +751,6 @@ class Buildings : public LevelMaker {
     int height = area.getH();
     for (Vec2 v : area)
       filled[v] =  0;
-    int sizeVar = 1;
     int spaceBetween = 1;
     int alignHeight = 0;
     if (align) {
@@ -982,7 +983,7 @@ class RandomLocations : public LevelMaker {
     vector<LocationPredicate::Precomputed> precomputed;
     for (int i : All(insideMakers))
       precomputed.push_back(predicate[i].precompute(builder, area));
-    for (int i : Range(3000))
+    for (int __attribute__((unused)) i : Range(3000))
       if (tryMake(builder, precomputed, area))
         return;
     failGen(); // "Failed to find free space for " << (int)sizes.size() << " areas";
@@ -992,7 +993,7 @@ class RandomLocations : public LevelMaker {
     vector<Rectangle> occupied;
     vector<Rectangle> makerBounds;
     vector<Level::Builder::Rot> maps;
-    for (int i : All(insideMakers))
+    for (int __attribute__((unused)) i : All(insideMakers))
       maps.push_back(chooseRandom(
             {Level::Builder::CW0, Level::Builder::CW1, Level::Builder::CW2, Level::Builder::CW3}));
     for (int i : All(insideMakers)) {
@@ -1078,7 +1079,7 @@ class Shrine : public LevelMaker {
       wallPredicate(wallPred), newWall(_newWall), locationMaker(_locationMaker) {}
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
-    for (int i : Range(10009)) {
+    for (int __attribute__((unused)) i : Range(10009)) {
       Vec2 pos = area.randomVec2();
       if (!wallPredicate.apply(builder, pos))
         continue;
@@ -1136,7 +1137,6 @@ Table<double> genNoiseMap(Rectangle area, vector<int> cornerLevels, double varia
   wys[(width - 1) / 2][(width - 1) / 2] = cornerLevels[4];
 
   double variance = 0.5;
-  double heightDiff = 0.1;
   for (int a = width - 1; a >= 2; a /= 2) {
     if (a < width - 1)
       for (Vec2 pos1 : Rectangle((width - 1) / a, (width - 1) / a)) {
@@ -1457,7 +1457,7 @@ class ShopMaker : public LevelMaker {
         pos.push_back(v);
     builder->putCreature(pos[Random.get(pos.size())], std::move(shopkeeper));
     builder->putSquare(pos[Random.get(pos.size())], SquareId::TORCH);
-    for (int i : Range(numItems)) {
+    for (int __attribute__((unused)) i : Range(numItems)) {
       Vec2 v = pos[Random.get(pos.size())];
       builder->getSquare(v)->dropItems(factory.random());
     }
@@ -1881,6 +1881,8 @@ Vec2 getSize(SettlementType type) {
     case SettlementType::VAULT: return {10, 10};
     case SettlementType::ISLAND_VAULT: return {Random.get(15, 25), Random.get(15, 25)};
   }
+  assert("__FUNCTION__ case unknown settlement type");
+  return {0,0};
 }
 
 RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
@@ -1911,7 +1913,7 @@ static MakerQueue* genericMineTownMaker(SettlementInfo info, int numCavern, int 
   LevelMaker* cavern = new UniformBlob(SquareId::FLOOR);
   vector<LevelMaker*> vCavern;
   vector<pair<int, int>> sizes;
-  for (int i : Range(numCavern)) {
+  for (int __attribute__((unused)) i : Range(numCavern)) {
     sizes.push_back(make_pair(Random.get(5, maxCavernSize), Random.get(5, maxCavernSize)));
     vCavern.push_back(cavern);
   }
@@ -2071,19 +2073,19 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
       Predicate::attrib(SquareAttrib::LOWLAND),
       Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
   for (LevelMaker* cottage : cottages)
-    for (int i : Range(Random.get(1, 3))) {
+    for (int __attribute__((unused)) i : Range(Random.get(1, 3))) {
       locations->add(new UniformBlob(SquareId::CROPS), {Random.get(7, 12), Random.get(7, 12)},
           lowlandPred);
       locations->setMaxDistanceLast(cottage, 13);
     }
  /* for (int i : Range(Random.get(1, 4)))
     locations->add(new Lake(), {20, 20}, Predicate::attrib(SquareAttrib::LOWLAND));*/
-  for (int i : Range(Random.get(3, 6))) {
+ for (int __attribute__((unused)) i : Range(Random.get(3, 6))) {
     locations->add(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE), 
         {Random.get(5, 30), Random.get(5, 30)}, Predicate::type(SquareId::MOUNTAIN2));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
   }
-  for (int i : Range(Random.get(3, 5))) {
+  for (int __attribute__((unused)) i : Range(Random.get(3, 5))) {
     locations->add(new UniformBlob(SquareId::FLOOR, none), 
         {Random.get(5, 12), Random.get(5, 12)}, Predicate::type(SquareId::MOUNTAIN2));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
