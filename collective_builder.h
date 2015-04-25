@@ -17,7 +17,8 @@ class CollectiveBuilder {
   CollectiveBuilder& setLevel(Level*);
   CollectiveBuilder& setCredit(EnumMap<CollectiveResourceId, int>);
   CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
-  PCollective build(const string& name);
+  PCollective build(const Location*);
+  PCollective build();
   bool hasCreatures() const;
 
   private:

@@ -53,6 +53,10 @@ bool CollectiveConfig::getWorkerFollowLeader() const {
   return type == KEEPER;
 }
 
+bool CollectiveConfig::sleepOnlyAtNight() const {
+  return type != KEEPER;
+}
+
 double CollectiveConfig::getImmigrantFrequency() const {
   return immigrantFrequency;
 }

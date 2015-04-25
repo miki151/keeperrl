@@ -382,8 +382,10 @@ class Creatures : public LevelMaker {
           || (squareType && builder->getType(pos) != *squareType)));
       checkGen(numTries > 0);
       if (collective) {
-        collective->addCreature(creature.get(),
-            { creature->isInnocent() ? MinionTrait::WORKER : MinionTrait::FIGHTER });
+        if (creature->isInnocent())
+          collective->addCreature(creature.get(), {});
+        else
+          collective->addCreature(creature.get(), { MinionTrait::FIGHTER });
         builder->addCollective(collective);
       }
       builder->putCreature(pos, std::move(creature));

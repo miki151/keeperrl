@@ -1073,6 +1073,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Die!\"";
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "knight";);
     case CreatureId::CASTLE_GUARD: 
       return INHERIT(KNIGHT,
@@ -1086,6 +1087,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.courage = 3;
           c.barehandedDamage += 5;
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext(););
     case CreatureId::WARRIOR:
       return INHERIT(KNIGHT,
@@ -1119,6 +1121,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Die!\"";
           c.skills.setValue(SkillId::ARCHERY, 1);
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "archer";);
     case CreatureId::PESEANT: 
       return CATTR(
@@ -1133,6 +1136,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Heeelp!\"";
+          c.minionTasks.setValue(MinionTask::CROPS, 4);
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "peasant";);
     case CreatureId::CHILD: 
       return INHERIT(PESEANT,
@@ -1361,6 +1366,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 45;
           c.chatReactionFriendly = "talks about digging";
           c.chatReactionHostile = "\"Die!\"";
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "gnome";);
     case CreatureId::GOBLIN: 
       return CATTR(
@@ -1495,6 +1501,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 50;
           c.chatReactionFriendly = "curses all humans";
           c.chatReactionHostile = "\"Die!\"";
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = EntityName("lizardman", "lizardmen"););
     case CreatureId::LIZARDLORD: 
       return INHERIT(LIZARDMAN,
@@ -1520,6 +1527,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionHostile = "\"Die!\"";
           c.spells.add(SpellId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = EntityName("elf", "elves"););
     case CreatureId::ELF_ARCHER: 
       return INHERIT(ELF,
@@ -1527,6 +1535,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::SPEED] += 20;
           c.innocent = false;
           c.skills.setValue(SkillId::ARCHERY, 1);
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "elven archer";);
     case CreatureId::ELF_CHILD: 
       return INHERIT(ELF,
@@ -1538,6 +1547,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 0;
           c.weight = 25;
           c.spells.clear();
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = EntityName("elf child", "elf children"););
     case CreatureId::ELF_LORD: 
       return INHERIT(ELF_ARCHER,
@@ -1553,6 +1563,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.skills.insert(SkillId::HEALING);
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "elf lord";);
     case CreatureId::HORSE: 
       return CATTR(

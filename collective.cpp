@@ -16,6 +16,7 @@
 #include "model.h"
 #include "spell.h"
 #include "location.h"
+#include "view_id.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -132,6 +133,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::PRISON, {{SquareId::PRISON}, "prison", Collective::Warning::NO_PRISON}},
     {MinionTask::TORTURE, {{SquareId::TORTURE_TABLE}, "torture ordered",
                             Collective::Warning::TORTURE_ROOM, 0, true}},
+    {MinionTask::CROPS, {{SquareId::CROPS}, "crops"}},
     {MinionTask::RITUAL, {{SquareId::RITUAL_ROOM}, "rituals"}},
     {MinionTask::COPULATE, {MinionTaskInfo::COPULATE, "copulation"}},
     {MinionTask::CONSUME, {MinionTaskInfo::CONSUME, "consumption"}},
@@ -216,8 +218,7 @@ void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> 
 }
 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
-  if (traits[MinionTrait::FIGHTER] || traits[MinionTrait::WORKER])
-    c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
+  c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
   if (creatures.empty())
     traits.insert(MinionTrait::LEADER);
   CHECK(c->getTribe() == tribe);
@@ -366,8 +367,12 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
   if (minionPayment.count(c) && minionPayment.at(c).debt() > 0 && getTaskInfo().at(task).cost > 0)
     return false;
   switch (task) {
+    case MinionTask::CROPS:
     case MinionTask::EXPLORE:
         return getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::DAY;
+    case MinionTask::SLEEP:
+        if (!config.sleepOnlyAtNight())
+          return true;
     case MinionTask::EXPLORE_NOCTURNAL:
         return getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::NIGHT;
     default: return true;
@@ -423,6 +428,8 @@ PTask Collective::getStandardTask(Creature* c) {
     currentTasks.erase(c->getUniqueId());
   if (!currentTasks.count(c->getUniqueId()))
     setRandomTask(c);
+  if (!currentTasks.count(c->getUniqueId()))
+    return nullptr;
   MinionTask task = currentTasks[c->getUniqueId()].task();
   MinionTaskInfo info = getTaskInfo().at(task);
   PTask ret;
@@ -1271,6 +1278,12 @@ const set<Vec2>& Collective::getAllSquares() const {
 
 void Collective::claimSquare(Vec2 pos) {
   allSquares.insert(pos);
+  if (!creatures.empty()) {
+    if (level->getSafeSquare(pos)->getApplyType(creatures[0]) == SquareApplyType::SLEEP)
+      mySquares[SquareId::BED].insert(pos);
+    if (level->getSafeSquare(pos)->getApplyType(creatures[0]) == SquareApplyType::CROPS)
+      mySquares[SquareId::CROPS].insert(pos);
+  }
 }
 
 void Collective::changeSquareType(Vec2 pos, SquareType from, SquareType to) {

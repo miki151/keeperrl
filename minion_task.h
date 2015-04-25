@@ -24,7 +24,8 @@ RICH_ENUM(MinionTask,
   EXPLORE_CAVES,
   COPULATE,
   CONSUME,
-  RITUAL
+  RITUAL,
+  CROPS
 );
 
 inline vector<MinionTask> getWorkshopTasks() {

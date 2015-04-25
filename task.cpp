@@ -1241,6 +1241,7 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, ConsumeItem);
   REGISTER_TYPE(ar, Copulate);
   REGISTER_TYPE(ar, Consume);
+  REGISTER_TYPE(ar, Eat);
 }
 
 REGISTER_TYPES(Task::registerTypes);

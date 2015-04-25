@@ -460,7 +460,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet.keeper.get())
       .setLevel(top)
       .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
-      .build("Keeper"));
+      .build());
  
   m->playerCollective = m->collectives.back().get();
   m->playerControl = new PlayerControl(m->playerCollective, m, top);
@@ -488,11 +488,10 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
       continue;
     PVillageControl control;
     Location* location = enemyInfo[i].settlement.location;
-    PCollective collective = enemyInfo[i].settlement.collective->build(
-        location->hasName() ? location->getName() : "");
+    PCollective collective = enemyInfo[i].settlement.collective->build(location);
     if (!enemyInfo[i].villains.empty())
       getOnlyElement(enemyInfo[i].villains).collective = m->playerCollective;
-    control.reset(new VillageControl(collective.get(), location, enemyInfo[i].villains));
+    control.reset(new VillageControl(collective.get(), enemyInfo[i].villains));
     if (location->hasName())
       m->mainVillains.push_back(collective.get());
     collective->setControl(std::move(control));

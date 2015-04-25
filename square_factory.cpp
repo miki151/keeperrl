@@ -805,6 +805,23 @@ class Laboratory : public Workshop {
   }
 };
 
+class Crops : public Square {
+  public:
+  using Square::Square;
+
+  virtual optional<SquareApplyType> getApplyType(const Creature*) const override {
+    return SquareApplyType::PIGSTY;
+  }
+
+  virtual void onApply(Creature* c) override {
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Square);
+  }
+};
+
 PSquare SquareFactory::getAltar(Deity* deity) {
   return PSquare(new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity));
 }
@@ -836,6 +853,7 @@ void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, TrainingDummy);
   REGISTER_TYPE(ar, Workshop);
   REGISTER_TYPE(ar, Hatchery);
+  REGISTER_TYPE(ar, Crops);
 }
 
 REGISTER_TYPES(SquareFactory::registerTypes);
@@ -897,8 +915,8 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::EYEBALL] = 5;
               c.constructions[SquareId::IMPALED_HEAD] = 5;));
     case SquareId::CROPS:
-        return new Square(ViewObject(chooseRandom({ViewId::CROPS, ViewId::CROPS2}),
-                ViewLayer::FLOOR_BACKGROUND, "Wheat"),
+        return new Crops(ViewObject(chooseRandom({ViewId::CROPS, ViewId::CROPS2}),
+                ViewLayer::FLOOR_BACKGROUND, "Potatoes"),
             CONSTRUCT(Square::Params,
               c.name = "potatoes";
               c.vision = VisionId::NORMAL;

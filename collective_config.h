@@ -85,6 +85,7 @@ class CollectiveConfig {
   bool getWarnings() const;
   bool getConstructions() const;
   int getMaxPopulation() const;
+  bool sleepOnlyAtNight() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
 
   SERIALIZATION_DECL(CollectiveConfig);

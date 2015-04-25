@@ -80,7 +80,7 @@ class VillageControl : public CollectiveControl {
 
   friend struct Villain;
 
-  VillageControl(Collective*, const Location*, vector<Villain>);
+  VillageControl(Collective*, vector<Villain>);
 
   protected:
   virtual void tick(double time) override;
@@ -99,7 +99,6 @@ class VillageControl : public CollectiveControl {
 
   REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 
-  const Location* SERIAL(location);
   vector<Villain> SERIAL(villains);
 
   map<const Collective*, double> SERIAL(victims);

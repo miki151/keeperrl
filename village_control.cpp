@@ -19,7 +19,6 @@
 #include "collective.h"
 #include "creature.h"
 #include "square.h"
-#include "location.h"
 
 template <class Archive>
 void VillageControl::Villain::serialize(Archive& ar, const unsigned int version) {
@@ -34,13 +33,11 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(welcomeMessage);
 }
 
-VillageControl::VillageControl(Collective* col, const Location* l, vector<Villain> v)
-    : CollectiveControl(col), location(l), villains(v) {
-  for (Vec2 v : l->getAllSquares()) {
-    getCollective()->claimSquare(v);
+VillageControl::VillageControl(Collective* col, vector<Villain> v)
+    : CollectiveControl(col), villains(v) {
+  for (Vec2 v : col->getAllSquares())
     for (Item* it : getCollective()->getLevel()->getSafeSquare(v)->getItems())
       myItems.insert(it);
-  }
 }
 
 optional<VillageControl::Villain&> VillageControl::getVillain(const Creature* c) {
@@ -62,7 +59,7 @@ void VillageControl::onMemberKilled(const Creature* victim, const Creature* kill
 }
 
 void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& items) {
-  if (location->contains(who->getPosition()))
+  if (getCollective()->containsSquare(who->getPosition()))
     if (auto villain = getVillain(who)) {
       bool wasTheft = false;
       for (const Item* it : items)
@@ -98,7 +95,7 @@ void VillageControl::considerWelcomeMessage() {
       if (villain.welcomeMessage)
         switch (*villain.welcomeMessage) {
           case DRAGON_WELCOME:
-            for (Vec2 pos : location->getAllSquares())
+            for (Vec2 pos : getCollective()->getAllSquares())
               if (Creature* c = getCollective()->getLevel()->getSafeSquare(pos)->getCreature())
                 if (c->isAffected(LastingEffect::INVISIBLE) && villain.contains(c) && c->isPlayer()
                     && leader->canSee(c->getPosition())) {
@@ -274,7 +271,6 @@ SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
 template <class Archive>
 void VillageControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl)
-    & SVAR(location)
     & SVAR(villains)
     & SVAR(victims)
     & SVAR(myItems)
