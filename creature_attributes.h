@@ -102,6 +102,7 @@ class CreatureAttributes {
   bool SERIAL(isFood) = false;
   bool SERIAL(stationary) = false;
   bool SERIAL(noSleep) = false;
+  bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
   bool SERIAL(carryAnything) = false;
   bool SERIAL(invincible) = false;

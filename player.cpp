@@ -87,11 +87,6 @@ ControllerFactory Player::getFactory(Model *m, map<UniqueEntity<Level>::Id, MapM
 
 static string getSlotSuffix(EquipmentSlot slot) {
   return "(equiped)";
-/*  switch (slot) {
-    case EquipmentSlot::WEAPON: return "(weapon ready)";
-    case EquipmentSlot::RANGED_WEAPON: return "(ranged weapon ready)";
-    default: return "(being worn)";
-  }*/
 }
 
 void Player::onBump(Creature*) {

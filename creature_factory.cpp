@@ -1401,6 +1401,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.courage = 0.1;
           c.carryAnything = true;
           c.dontChase = true;
+          c.cantEquip = true;
           c.skills.insert(SkillId::CONSTRUCTION);
           c.chatReactionFriendly = "talks about digging";
           c.chatReactionHostile = "\"Die!\"";

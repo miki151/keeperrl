@@ -500,6 +500,11 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
       *reason = "Only humanoids can equip items!";
     return false;
   }
+  if (cantEquip) {
+    if (reason)
+      *reason = "You can't equip items!";
+    return false;
+  }
   if (numGood(BodyPart::ARM) == 0) {
     if (reason)
       *reason = "You have no healthy arms!";

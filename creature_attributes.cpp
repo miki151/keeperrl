@@ -53,6 +53,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(isFood)
     & SVAR(stationary)
     & SVAR(noSleep)
+    & SVAR(cantEquip)
     & SVAR(courage)
     & SVAR(carryAnything)
     & SVAR(invincible)
