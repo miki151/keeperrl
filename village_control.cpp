@@ -29,7 +29,6 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(behaviour)
     & SVAR(leaderAttacks)
     & SVAR(attackMessage)
-    & SVAR(itemTheftMessage)
     & SVAR(welcomeMessage);
 }
 
@@ -60,22 +59,18 @@ void VillageControl::onMemberKilled(const Creature* victim, const Creature* kill
 
 void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& items) {
   if (getCollective()->containsSquare(who->getPosition()))
-    if (auto villain = getVillain(who)) {
-      bool wasTheft = false;
-      for (const Item* it : items)
-        if (myItems.contains(it)) {
-          wasTheft = true;
-          ++stolenItemCount[villain->collective];
-          myItems.erase(it);
+    if (auto villain = getVillain(who))
+      if (contains(villain->triggers, AttackTriggerId::STOLEN_ITEMS)) {
+        bool wasTheft = false;
+        for (const Item* it : items)
+          if (myItems.contains(it)) {
+            wasTheft = true;
+            ++stolenItemCount[villain->collective];
+            myItems.erase(it);
+          }
+        if (getCollective()->getLeader() && wasTheft) {
+          who->playerMessage(PlayerMessage("You are going to regret this", PlayerMessage::HIGH));
         }
-      if (getCollective()->getLeader() && wasTheft && villain->itemTheftMessage) {
-        switch (*villain->itemTheftMessage) {
-          case DRAGON_THEFT:
-            who->playerMessage(PlayerMessage("You are going to regret this", PlayerMessage::HIGH));
-            break;
-        }
-        villain->itemTheftMessage.reset();
-      }
     }
 }
 

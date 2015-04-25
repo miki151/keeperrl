@@ -66,7 +66,6 @@ class VillageControl : public CollectiveControl {
     Behaviour SERIAL(behaviour);
     AttackMessage SERIAL(attackMessage);
     optional<WelcomeMessage> SERIAL(welcomeMessage);
-    optional<ItemTheftMessage> SERIAL(itemTheftMessage);
     bool SERIAL(leaderAttacks) = false;
 
     PTask getAttackTask(VillageControl* self);
