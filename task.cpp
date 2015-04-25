@@ -486,7 +486,11 @@ class ApplySquare : public NonTransferable {
 
   virtual MoveInfo getMove(Creature* c) override {
     if (position.x == -1) {
-      vector<Vec2> candidates = filter(positions, [&](Vec2 v) { return !rejectedPosition.count(v); });
+      vector<Vec2> candidates = filter(positions, [&](Vec2 v) {
+          if (Creature* other = c->getLevel()->getSafeSquare(v)->getCreature())
+            if (other->isAffected(LastingEffect::SLEEP))
+              return false;
+          return !rejectedPosition.count(v);});
       if (!candidates.empty())
         position = chooseRandomClose(c->getPosition(), candidates);
       else {
