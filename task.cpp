@@ -334,11 +334,10 @@ class EquipItem : public NonTransferable {
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(c->isHumanoid()) << c->getName().bare();
     if (Item* item = c->getEquipment().getItemById(itemId)) {
-      CHECK(c->getEquipment().canEquip(item)) << c->getName().bare() << " can't equip" << item->getName();
       if (auto action = c->equip(item))
         return action.append([=](Creature* c) {setDone();});
-      else
-        return NoMove;
+      setDone();
+      return NoMove;
     } else { // either item was dropped or doesn't exist anymore.
       setDone();
       return NoMove;
