@@ -978,7 +978,7 @@ class CreateBed : public NonTransferable {
     } else
       return c->wait().append([=](Creature* c) {
         if (c->getPosition() == position) {
-          c->getLevel()->replaceSquare(position, SquareFactory::get(toType));
+          c->getLevel()->replaceSquare(position, SquareFactory::get(toType), false);
           callback->onBedCreated(position, fromType, toType);
           setDone();
         }

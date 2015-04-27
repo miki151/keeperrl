@@ -29,6 +29,7 @@ template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(UniqueEntity)
     & SVAR(squares)
+    & SVAR(oldSquares)
     & SVAR(landingSquares)
     & SVAR(locations)
     & SVAR(tickingSquares)
@@ -56,9 +57,9 @@ Level::~Level() {}
 
 Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n,
     Table<CoverInfo> covers) 
-    : squares(std::move(s)), locations(l), model(m), entryMessage(message), name(n), coverInfo(std::move(covers)),
-      bucketMap(squares.getBounds().getW(), squares.getBounds().getH(), FieldOfView::sightRange),
-      lightAmount(squares.getBounds(), 0), lightCapAmount(squares.getBounds(), 1) {
+    : squares(std::move(s)), oldSquares(squares.getBounds()), locations(l), model(m), entryMessage(message),
+      name(n), coverInfo(std::move(covers)), bucketMap(squares.getBounds().getW(), squares.getBounds().getH(),
+      FieldOfView::sightRange), lightAmount(squares.getBounds(), 0), lightCapAmount(squares.getBounds(), 1) {
   for (Vec2 pos : squares.getBounds()) {
     squares[pos]->setLevel(this);
     optional<pair<StairDirection, StairKey>> link = squares[pos]->getLandingLink();
@@ -145,9 +146,18 @@ void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
   }
 }
 
-void Level::replaceSquare(Vec2 pos, PSquare square) {
+void Level::removeSquare(Vec2 pos, PSquare defaultSquare) {
+  if (!oldSquares[pos])
+    replaceSquare(pos, std::move(defaultSquare), false);
+  else
+    replaceSquare(pos, std::move(oldSquares[pos]), false);
+}
+
+void Level::replaceSquare(Vec2 pos, PSquare square, bool storePrevious) {
   squares[pos]->onConstructNewSquare(square.get());
   Creature* c = squares[pos]->getCreature();
+  if (c)
+    squares[pos]->removeCreature();
   for (Item* it : copyOf(squares[pos]->getItems()))
     square->dropItem(squares[pos]->removeItem(it));
   addLightSource(pos, squares[pos]->getLightEmission(), -1);
@@ -156,6 +166,8 @@ void Level::replaceSquare(Vec2 pos, PSquare square) {
   for (PTrigger& t : squares[pos]->removeTriggers())
     square->addTrigger(std::move(t));
   square->setBackground(squares[pos].get());
+  if (storePrevious)
+    oldSquares[pos] = std::move(squares[pos]);
   squares[pos] = std::move(square);
   if (c) {
     squares[pos]->setCreature(c);

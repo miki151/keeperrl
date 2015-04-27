@@ -155,7 +155,7 @@ void Square::destroy() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   level->getModel()->onSquareDestroyed(getLevel(), getPosition());
-  getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
+  getLevel()->removeSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
 bool Square::canDestroy(const Creature* c) const {
@@ -171,7 +171,7 @@ void Square::burnOut() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
   level->getModel()->onSquareDestroyed(getLevel(), getPosition());
-  getLevel()->replaceSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
+  getLevel()->removeSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
 }
 
 const vector<Vec2>& Square::getTravelDir() const {

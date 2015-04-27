@@ -132,7 +132,8 @@ class Level : public UniqueEntity<Level> {
   Square* getSafeSquare(Vec2);
   //@}
 
-  void replaceSquare(Vec2 pos, PSquare square);
+  void replaceSquare(Vec2 pos, PSquare square, bool storePrevious = true);
+  void removeSquare(Vec2 pos, PSquare defaultSquare);
 
   /** The given square's method Square::tick() will be called every turn. */
   void addTickingSquare(Vec2 pos);
@@ -323,6 +324,7 @@ class Level : public UniqueEntity<Level> {
   private:
   Vec2 transform(Vec2);
   Table<PSquare> SERIAL(squares);
+  Table<PSquare> SERIAL(oldSquares);
   map<pair<StairDirection, StairKey>, vector<Vec2>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
