@@ -284,6 +284,8 @@ class Level : public UniqueEntity<Level> {
     /** Adds a location to the level and sets its coordinates.*/
     void addLocation(Location*, Rectangle area);
 
+    Rectangle toGlobalCoordinates(Rectangle);
+
     /** Adds a collective to the level and initializes it.*/
     void addCollective(CollectiveBuilder*);
 

@@ -231,8 +231,11 @@ class Square : public Renderable {
   PItem removeItem(Item*);
   vector<PItem> removeItems(vector<Item*>);
 
-  virtual optional<SquareApplyType> getApplyType(const Creature*) const { return none; }
+  virtual optional<SquareApplyType> getApplyType() const { return none; }
+  virtual bool canApply(const Creature*) const { return true; }
   virtual void onApply(Creature* c) { Debug(FATAL) << "Bad square applied"; }
+  virtual double getApplyTime() const { return 1.0; }
+  optional<SquareApplyType> getApplyType(const Creature*) const;
  
   virtual ~Square();
 

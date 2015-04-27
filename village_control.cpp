@@ -95,7 +95,7 @@ void VillageControl::considerWelcomeMessage() {
                 if (c->isAffected(LastingEffect::INVISIBLE) && villain.contains(c) && c->isPlayer()
                     && leader->canSee(c->getPosition())) {
                   c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
-                        "I hear your breath. Come along!\"", PlayerMessage::HIGH));
+                        "I hear your breath. Come along!\"", PlayerMessage::CRITICAL));
                   villain.welcomeMessage.reset();
                 }
             break;

@@ -967,18 +967,22 @@ class RandomLocations : public LevelMaker {
 
   void setMinDistance(LevelMaker* m1, LevelMaker* m2, double dist) {
     minDistance[{m1, m2}] = dist;
+    minDistance[{m2, m1}] = dist;
   }
 
   void setMaxDistance(LevelMaker* m1, LevelMaker* m2, double dist) {
     maxDistance[{m1, m2}] = dist;
+    maxDistance[{m2, m1}] = dist;
   }
 
   void setMinDistanceLast(LevelMaker* m, double dist) {
     minDistance[{m, insideMakers.back()}]  = dist;
+    minDistance[{insideMakers.back(), m}]  = dist;
   }
 
   void setMaxDistanceLast(LevelMaker* m, double dist) {
     maxDistance[{m, insideMakers.back()}] = dist;
+    maxDistance[{insideMakers.back(), m}] = dist;
   }
 
   virtual void make(Level::Builder* builder, Rectangle area) override {
@@ -1390,6 +1394,18 @@ class LocationMaker : public LevelMaker {
   
   private:
   Location* location;
+};
+
+class AddSquaresToCollective : public LevelMaker {
+  public:
+  AddSquaresToCollective(CollectiveBuilder* c) : collective(c) {}
+
+  virtual void make(Level::Builder* builder, Rectangle area) override {
+    collective->addSquares(builder->toGlobalCoordinates(area).getAllSquares());
+  }
+  
+  private:
+  CollectiveBuilder* collective;
 };
 
 class ForEachSquare : public LevelMaker {
@@ -1873,7 +1889,7 @@ LevelMaker* LevelMaker::towerLevel(optional<StairKey> down, optional<StairKey> u
 Vec2 getSize(SettlementType type) {
   switch (type) {
     case SettlementType::WITCH_HOUSE:
-    case SettlementType::COTTAGE: return {Random.get(8, 12), Random.get(8, 12)};
+    case SettlementType::COTTAGE: return {Random.get(8, 10), Random.get(8, 10)};
     case SettlementType::VILLAGE2: return {30, 20};
     case SettlementType::VILLAGE:
     case SettlementType::CASTLE: return {30, 20};
@@ -2033,7 +2049,11 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   RandomLocations* locations = new RandomLocations();
   LevelMaker* startingPos = new StartingPos(Predicate::type(SquareId::HILL), StairKey::PLAYER_SPAWN);
   locations->add(startingPos, Vec2(4, 4), Predicate::type(SquareId::HILL));
-  vector<LevelMaker*> cottages;
+  struct CottageInfo {
+    LevelMaker* maker;
+    CollectiveBuilder* collective;
+  };
+  vector<CottageInfo> cottages;
   for (SettlementInfo settlement : settlements) {
     LevelMaker* queue = nullptr;
     switch (settlement.type) {
@@ -2045,7 +2065,7 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
       case SettlementType::CASTLE2: queue = castle2(settlement); break;
       case SettlementType::COTTAGE:
           queue = cottage(settlement);
-          cottages.push_back(queue);
+          cottages.push_back({queue, settlement.collective});
           break;
       case SettlementType::WITCH_HOUSE:
           queue = cottage(settlement, {{ SquareId::CAULDRON, 2, 5}});
@@ -2073,11 +2093,14 @@ LevelMaker* LevelMaker::topLevel(CreatureFactory forrestCreatures, vector<Settle
   Predicate lowlandPred = Predicate::andPred(
       Predicate::attrib(SquareAttrib::LOWLAND),
       Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
-  for (LevelMaker* cottage : cottages)
+  for (auto& cottage : cottages)
     for (int i : Range(Random.get(1, 3))) {
-      locations->add(new UniformBlob(SquareId::CROPS), {Random.get(7, 12), Random.get(7, 12)},
+      locations->add(new MakerQueue({
+            new UniformBlob(SquareId::CROPS),
+            new AddSquaresToCollective(cottage.collective)}),
+          {Random.get(7, 12), Random.get(7, 12)},
           lowlandPred);
-      locations->setMaxDistanceLast(cottage, 13);
+      locations->setMaxDistanceLast(cottage.maker, 13);
     }
  /* for (int i : Range(Random.get(1, 4)))
     locations->add(new Lake(), {20, 20}, Predicate::attrib(SquareAttrib::LOWLAND));*/

@@ -117,9 +117,9 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
         Vec2 pos = loc->getMiddle();
         info.locations.push_back({pos, ""});
       }
-      if (loc->hasName() && seen) {
+      if (loc->getName() && seen) {
         Vec2 pos = loc->getBottomRight();
-        info.locations.push_back({pos, loc->getName()});
+        info.locations.push_back({pos, *loc->getName()});
       }
     }
 }

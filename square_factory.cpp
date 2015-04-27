@@ -43,7 +43,7 @@ class Staircase : public Square {
     c->playerMessage("There are " + getName() + " here.");
   }
 
-  virtual optional<SquareApplyType> getApplyType(const Creature*) const override {
+  virtual optional<SquareApplyType> getApplyType() const override {
     switch (getLandingLink()->first) {
       case StairDirection::DOWN: return SquareApplyType::DESCEND;
       case StairDirection::UP: return SquareApplyType::ASCEND;
@@ -172,8 +172,12 @@ class Chest : public Square {
       s->dropItems(itemFactory.random());
   }
 
-  virtual optional<SquareApplyType> getApplyType(const Creature* c) const override { 
-    if (opened || !c->isHumanoid()) 
+  virtual bool canApply(const Creature* c) const {
+    return c->isHumanoid();
+  }
+
+  virtual optional<SquareApplyType> getApplyType() const override { 
+    if (opened) 
       return none;
     else
       return SquareApplyType::USE_CHEST;
@@ -240,7 +244,7 @@ class Fountain : public Square {
         c.movementType = {MovementTrait::WALK};
         c.strength = 100;)) {}
 
-  virtual optional<SquareApplyType> getApplyType(const Creature*) const override { 
+  virtual optional<SquareApplyType> getApplyType() const override { 
     return SquareApplyType::DRINK;
   }
 
@@ -457,7 +461,7 @@ class Furniture : public Square {
             c.movementType = {MovementTrait::WALK};
             c.flamability = flamability;)), applyType(_applyType) {}
 
-  virtual optional<SquareApplyType> getApplyType(const Creature*) const override {
+  virtual optional<SquareApplyType> getApplyType() const override {
     return applyType;
   }
 
@@ -479,7 +483,7 @@ class Bed : public Furniture {
   public:
   Bed(const ViewObject& object, const string& name, double flamability = 1) : Furniture(object, name, flamability) {}
 
-  virtual optional<SquareApplyType> getApplyType(const Creature*) const override { 
+  virtual optional<SquareApplyType> getApplyType() const override { 
     return SquareApplyType::SLEEP;
   }
 
@@ -505,11 +509,12 @@ class Grave : public Bed {
   public:
   Grave(const ViewObject& object, const string& name) : Bed(object, name, 0) {}
 
-  virtual optional<SquareApplyType> getApplyType(const Creature* c) const override { 
-    if (c->isUndead())
-      return SquareApplyType::SLEEP;
-    else
-      return none;
+  virtual bool canApply(const Creature* c) const {
+    return c->isUndead();
+  }
+
+  virtual optional<SquareApplyType> getApplyType() const override { 
+    return SquareApplyType::SLEEP;
   }
 
   virtual void onApply(Creature* c) override {
@@ -537,11 +542,12 @@ class Altar : public Square {
         c.strength = 100;)) {
   }
 
-  virtual optional<SquareApplyType> getApplyType(const Creature* c) const override { 
-    if (c->isHumanoid())
-      return SquareApplyType::PRAY;
-    else
-      return none;
+  virtual bool canApply(const Creature* c) const {
+    return c->isHumanoid();
+  }
+
+  virtual optional<SquareApplyType> getApplyType() const override { 
+    return SquareApplyType::PRAY;
   }
 
   virtual void onKilled(Creature* victim, Creature* killer) override {
@@ -702,7 +708,7 @@ class TrainingDummy : public Furniture {
   public:
   TrainingDummy(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
 
-  virtual optional<SquareApplyType> getApplyType(const Creature*) const override { 
+  virtual optional<SquareApplyType> getApplyType() const override { 
     return SquareApplyType::TRAIN;
   }
 
@@ -737,7 +743,7 @@ class Workshop : public Furniture {
   public:
   using Furniture::Furniture;
 
-  virtual optional<SquareApplyType> getApplyType(const Creature*) const override { 
+  virtual optional<SquareApplyType> getApplyType() const override { 
     return SquareApplyType::WORKSHOP;
   }
 
@@ -772,7 +778,7 @@ class Hatchery : public Square {
             MonsterAIFactory::stayInPigsty(getPosition(), SquareApplyType::PIGSTY)));
   }
 
-  virtual optional<SquareApplyType> getApplyType(const Creature*) const override {
+  virtual optional<SquareApplyType> getApplyType() const override {
     return SquareApplyType::PIGSTY;
   }
 
@@ -809,11 +815,17 @@ class Crops : public Square {
   public:
   using Square::Square;
 
-  virtual optional<SquareApplyType> getApplyType(const Creature*) const override {
-    return SquareApplyType::PIGSTY;
+  virtual optional<SquareApplyType> getApplyType() const override {
+    return SquareApplyType::CROPS;
   }
 
   virtual void onApply(Creature* c) override {
+    if (Random.roll(3))
+      c->globalMessage(c->getName().the() + " scythes the field.");
+  }
+
+  virtual double getApplyTime() const {
+    return 3.0;
   }
 
   template <class Archive> 
@@ -916,9 +928,9 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::IMPALED_HEAD] = 5;));
     case SquareId::CROPS:
         return new Crops(ViewObject(chooseRandom({ViewId::CROPS, ViewId::CROPS2}),
-                ViewLayer::FLOOR_BACKGROUND, "Potatoes"),
+                ViewLayer::FLOOR_BACKGROUND, "Wheat"),
             CONSTRUCT(Square::Params,
-              c.name = "potatoes";
+              c.name = "wheat";
               c.vision = VisionId::NORMAL;
               c.movementType = {MovementTrait::WALK};));
     case SquareId::MUD:

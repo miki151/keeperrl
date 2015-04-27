@@ -599,7 +599,7 @@ CreatureAction Creature::applySquare() const {
     return CreatureAction(this, [=](Creature* self) {
       Debug() << getName().the() << " applying " << getSquare()->getName();
       self->getSquare()->onApply(self);
-      self->spendTime(1);
+      self->spendTime(self->getSquare()->getApplyTime());
     });
   else
     return CreatureAction();

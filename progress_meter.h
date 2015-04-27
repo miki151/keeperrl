@@ -22,6 +22,7 @@ class ProgressMeter {
   double getProgress() const;
   void setProgress(double);
   void addProgress();
+  void reset();
 
   private:
   atomic<int> progress;

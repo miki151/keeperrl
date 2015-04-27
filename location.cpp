@@ -49,16 +49,12 @@ bool Location::isMarkedAsSurprise() const {
   return surprise;
 }
 
-string Location::getName() const {
-  return *name;
+const optional<string>& Location::getName() const {
+  return name;
 }
 
 string Location::getDescription() const {
   return *description;
-}
-
-bool Location::hasName() const {
-  return !!name;
 }
 
 const vector<Vec2>& Location::getAllSquares() const {

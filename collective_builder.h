@@ -17,8 +17,8 @@ class CollectiveBuilder {
   CollectiveBuilder& setLevel(Level*);
   CollectiveBuilder& setCredit(EnumMap<CollectiveResourceId, int>);
   CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
-  PCollective build(const Location*);
-  PCollective build();
+  CollectiveBuilder& addSquares(const vector<Vec2>&);
+  PCollective build(const string& name = "");
   bool hasCreatures() const;
 
   private:
@@ -31,6 +31,7 @@ class CollectiveBuilder {
   CollectiveConfig config;
   Tribe* tribe;
   EnumMap<CollectiveResourceId, int> credit;
+  vector<Vec2> squares;
 };
 
 #endif

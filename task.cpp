@@ -946,7 +946,7 @@ class StayInLocationUntil : public NonTransferable {
   }
 
   virtual string getDescription() const override {
-    return "Stay in " + (location->hasName() ? location->getName() : "location") + " until " + toString(time);
+    return "Stay in " + (location->getName().get_value_or("location")) + " until " + toString(time);
   }
 
   SERIALIZATION_CONSTRUCTOR(StayInLocationUntil);

@@ -1667,8 +1667,8 @@ void PlayerControl::removeAssaultNotification(const Collective* col) {
 }
 
 void PlayerControl::onDiscoveredLocation(const Location* loc) {
-  if (loc->hasName())
-    addMessage(PlayerMessage("Your minions discover the location of " + loc->getName(), PlayerMessage::HIGH)
+  if (auto name = loc->getName())
+    addMessage(PlayerMessage("Your minions discover the location of " + *name, PlayerMessage::HIGH)
         .setLocation(loc));
   else if (loc->isMarkedAsSurprise())
     addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));

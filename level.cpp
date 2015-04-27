@@ -569,8 +569,12 @@ bool Level::Builder::isInSunlight(Vec2 pos) {
   return !coverInfo[pos].covered();
 }
 
+Rectangle Level::Builder::toGlobalCoordinates(Rectangle area) {
+  return area.apply([this](Vec2 v) { return transform(v); });
+}
+
 void Level::Builder::addLocation(Location* l, Rectangle area) {
-  l->setBounds(area.apply([this](Vec2 v) { return transform(v); }));
+  l->setBounds(toGlobalCoordinates(area));
   locations.push_back(l);
 }
 

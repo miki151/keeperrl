@@ -12,6 +12,7 @@
 #include "creature.h"
 #include "square.h"
 #include "location.h"
+#include "progress_meter.h"
 
 static Location* getVillageLocation(bool markSurprise = false) {
   return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext(), "", markSurprise);
@@ -432,6 +433,7 @@ static EnumMap<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
 PModel ModelBuilder::collectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
   for (int i : Range(10)) {
     try {
+      meter.reset();
       return tryCollectiveModel(meter, options, view, worldName);
     } catch (LevelGenException ex) {
       Debug() << "Retrying level gen";
@@ -495,11 +497,12 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
       continue;
     PVillageControl control;
     Location* location = enemyInfo[i].settlement.location;
-    PCollective collective = enemyInfo[i].settlement.collective->build(location);
+    PCollective collective = enemyInfo[i].settlement.collective->addSquares(location->getAllSquares())
+        .build(location->getName().get_value_or(""));
     if (!enemyInfo[i].villains.empty())
       getOnlyElement(enemyInfo[i].villains).collective = m->playerCollective;
     control.reset(new VillageControl(collective.get(), enemyInfo[i].villains));
-    if (location->hasName())
+    if (location->getName())
       m->mainVillains.push_back(collective.get());
     collective->setControl(std::move(control));
     m->collectives.push_back(std::move(collective));

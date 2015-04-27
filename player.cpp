@@ -375,8 +375,8 @@ void Player::travelAction() {
   }
   tryToPerform(getCreature()->move(travelDir));
   const Location* currentLocation = getCreature()->getLevel()->getLocation(getCreature()->getPosition());
-  if (lastLocation != currentLocation && currentLocation != nullptr && currentLocation->hasName()) {
-    privateMessage("You arrive at " + addAParticle(currentLocation->getName()));
+  if (lastLocation != currentLocation && currentLocation != nullptr && currentLocation->getName()) {
+    privateMessage("You arrive at " + addAParticle(*currentLocation->getName()));
     travelling = false;
     return;
   }
@@ -813,8 +813,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   for (const Creature* c : getTeam())
     info.team.push_back(c);
   const Location* location = getLevel()->getLocation(getCreature()->getPosition());
-  info.levelName = location && location->hasName() 
-    ? capitalFirst(location->getName()) : getLevel()->getName();
+  info.levelName = location && location->getName()
+    ? capitalFirst(*location->getName()) : getLevel()->getName();
   typedef GameInfo::PlayerInfo::AttributeInfo::Id AttrId;
   info.attributes = {
     { "Attack",

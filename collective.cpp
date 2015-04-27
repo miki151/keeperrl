@@ -1278,12 +1278,10 @@ const set<Vec2>& Collective::getAllSquares() const {
 
 void Collective::claimSquare(Vec2 pos) {
   allSquares.insert(pos);
-  if (!creatures.empty()) {
-    if (level->getSafeSquare(pos)->getApplyType(creatures[0]) == SquareApplyType::SLEEP)
-      mySquares[SquareId::BED].insert(pos);
-    if (level->getSafeSquare(pos)->getApplyType(creatures[0]) == SquareApplyType::CROPS)
-      mySquares[SquareId::CROPS].insert(pos);
-  }
+  if (level->getSafeSquare(pos)->getApplyType() == SquareApplyType::SLEEP)
+    mySquares[SquareId::BED].insert(pos);
+  if (level->getSafeSquare(pos)->getApplyType() == SquareApplyType::CROPS)
+    mySquares[SquareId::CROPS].insert(pos);
 }
 
 void Collective::changeSquareType(Vec2 pos, SquareType from, SquareType to) {

@@ -552,3 +552,10 @@ void Square::setMovementType(MovementType t) {
     level->updateConnectivity(position);
 }
 
+optional<SquareApplyType> Square::getApplyType(const Creature* c) const {
+  if (auto ret = getApplyType())
+    if (canApply(c))
+      return ret;
+  return none;
+}
+

@@ -22,20 +22,17 @@ CollectiveBuilder& CollectiveBuilder::setCredit(EnumMap<CollectiveResourceId, in
   return *this;
 }
 
-PCollective CollectiveBuilder::build(const Location* location) {
-  Collective* c = new Collective(NOTNULL(level), config, tribe, credit,
-      location->hasName() ? location->getName() : "");
-  for (auto& elem : creatures)
-    c->addCreature(elem.creature, elem.traits);
-  for (Vec2 v : location->getAllSquares())
-    c->claimSquare(v);
-  return PCollective(c);
+CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Vec2>& v) {
+  append(squares, v);
+  return *this;
 }
 
-PCollective CollectiveBuilder::build() {
-  Collective* c = new Collective(NOTNULL(level), config, tribe, credit, "");
+PCollective CollectiveBuilder::build(const string& name) {
+  Collective* c = new Collective(NOTNULL(level), config, tribe, credit, name);
   for (auto& elem : creatures)
     c->addCreature(elem.creature, elem.traits);
+  for (Vec2 v : squares)
+    c->claimSquare(v);
   return PCollective(c);
 }
 

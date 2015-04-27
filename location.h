@@ -24,9 +24,8 @@ class Location {
   Location(const string& name, const string& description, bool surprise = false);
   Location(bool surprise = false);
   Location(Level* l, Rectangle bounds);
-  string getName() const;
+  const optional<string>& getName() const;
   string getDescription() const;
-  bool hasName() const;
   bool isMarkedAsSurprise() const;
   void setBounds(Rectangle);
   bool contains(Vec2) const;
