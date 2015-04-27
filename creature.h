@@ -48,6 +48,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
 
   static string getBodyPartName(BodyPart);
 
+  const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
   double getTime() const;
   void setTime(double t);

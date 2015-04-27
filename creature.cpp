@@ -99,6 +99,13 @@ Creature::~Creature() {
     tribe->removeMember(this);
 }
 
+const ViewObject& Creature::getViewObjectFor(const Tribe* observer) const {
+  if (illusionViewObject && observer->isEnemy(this))
+    return *illusionViewObject;
+  else
+    return getViewObject();
+}
+
 bool Creature::isFireResistant() const {
   return fireCreature || isAffected(LastingEffect::FIRE_RESISTANT);
 }

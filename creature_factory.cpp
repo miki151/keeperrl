@@ -1929,7 +1929,8 @@ ItemType randomHealing() {
 }
 
 ItemType randomBackup() {
-  return chooseRandom({{ItemId::SCROLL, EffectId::TELEPORT}, randomHealing()}, {1, 4});
+  return chooseRandom({{ItemId::SCROLL, EffectId::DECEPTION}, {ItemId::SCROLL, EffectId::TELEPORT},
+      randomHealing()}, {1, 1, 8});
 }
 
 ItemType randomArmor() {
@@ -2044,6 +2045,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::SWORD)
         .maybe(0.3, randomBackup())
+        .add({ItemId::SCROLL, EffectId::DECEPTION})
         .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36)));
     case CreatureId::GREAT_ORC: 
       return ItemList()

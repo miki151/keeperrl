@@ -548,6 +548,7 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::STR_BONUS),
           EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS),
           EffectType(EffectId::LASTING, LastingEffect::SPEED),
+          EffectType(EffectId::DECEPTION),
           EffectType(EffectId::SUMMON_SPIRIT)})
         if (MoveInfo move = tryEffect(effect, 1))
           return move;

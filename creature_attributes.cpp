@@ -23,6 +23,7 @@ template <class Archive>
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(viewId)
     & SVAR(undeadViewId)
+    & SVAR(illusionViewObject)
     & SVAR(spawnType)
     & SVAR(name)
     & SVAR(undeadName)

@@ -105,13 +105,14 @@ static int summonCreatures(Creature* c, int radius, vector<PCreature> creatures)
   return summonCreatures(c->getLevel(), c->getPosition(), radius, std::move(creatures));
 }
 
-static void deception(Creature* c) {
+static void deception(Creature* creature) {
   vector<PCreature> creatures;
   for (int i : Range(Random.get(3, 7))) {
-    ViewObject viewObject(c->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
+    ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
     viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-    creatures.push_back(PCreature(new Creature(viewObject, c->getTribe(), CATTR(
+    creatures.push_back(PCreature(new Creature(viewObject, creature->getTribe(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
+          c.illusionViewObject = creature->getViewObject();
           c.attr[AttrType::SPEED] = 100;
           c.weight = 1;
           c.size = CreatureSize::LARGE;
@@ -126,10 +127,10 @@ static void deception(Creature* c) {
           c.uncorporal = true;
           c.humanoid = true;
           c.name = "illusion";),
-        ControllerFactory([c] (Creature* o) { return new IllusionController(o, c->getTime()
+        ControllerFactory([creature] (Creature* o) { return new IllusionController(o, creature->getTime()
             + Random.get(5, 10));}))));
   }
-  summonCreatures(c, 2, std::move(creatures));
+  summonCreatures(creature, 2, std::move(creatures));
 }
 
 static void leaveBody(Creature* creature) {
