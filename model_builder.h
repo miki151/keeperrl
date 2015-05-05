@@ -15,6 +15,7 @@ class ModelBuilder {
   static PModel splashModel(ProgressMeter&, View*, const string& splashPath);
 
   static int getPigstyPopulationIncrease();
+  static int getStatuePopulationIncrease();
 
   private:
   static PModel tryCollectiveModel(ProgressMeter&, Options*, View*, const string& worldName);

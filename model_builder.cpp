@@ -280,6 +280,10 @@ int ModelBuilder::getPigstyPopulationIncrease() {
   return 4;
 }
 
+int ModelBuilder::getStatuePopulationIncrease() {
+  return 1;
+}
+
 static CollectiveConfig getKeeperConfig(bool fastImmigration) {
   return CollectiveConfig::keeper(
       fastImmigration ? 0.1 : 0.011,
@@ -291,7 +295,12 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
         c.type = SquareApplyType::PIGSTY;
         c.increase = ModelBuilder::getPigstyPopulationIncrease();
         c.oneTime = true;
-        c.minSize = 16;)
+        c.minSize = 16;),
+      CONSTRUCT(PopulationIncrease,
+        c.type = SquareApplyType::STATUE;
+        c.increase = ModelBuilder::getStatuePopulationIncrease();
+        c.oneTime = false;
+        c.minSize = 1;)
       },
       {
       CONSTRUCT(ImmigrantInfo,

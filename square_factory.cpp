@@ -704,25 +704,6 @@ class ConstructionDropItems : public Square {
   vector<PItem> SERIAL(items);
 };
 
-class TrainingDummy : public Furniture {
-  public:
-  TrainingDummy(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
-
-  virtual optional<SquareApplyType> getApplyType() const override { 
-    return SquareApplyType::TRAIN;
-  }
-
-  virtual void onApply(Creature* c) override {
-  }
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture);
-  }
-
-  SERIALIZATION_CONSTRUCTOR(TrainingDummy);
-};
-
 class Torch : public Furniture {
   public:
   Torch(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
@@ -737,23 +718,6 @@ class Torch : public Furniture {
   }
 
   SERIALIZATION_CONSTRUCTOR(Torch);
-};
-
-class Workshop : public Furniture {
-  public:
-  using Furniture::Furniture;
-
-  virtual optional<SquareApplyType> getApplyType() const override { 
-    return SquareApplyType::WORKSHOP;
-  }
-
-  virtual void onApply(Creature* c) override {
-  }
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture);
-  }
 };
 
 class Hatchery : public Square {
@@ -797,9 +761,9 @@ class Hatchery : public Square {
   CreatureFactory SERIAL(creature);
 };
 
-class Laboratory : public Workshop {
+class Laboratory : public Furniture {
   public:
-  using Workshop::Workshop;
+  Laboratory(ViewObject object, const string& name) : Furniture(object, name, 0, SquareApplyType::WORKSHOP) {}
 
   virtual void onApply(Creature* c) override {
     c->playerMessage("You mix the concoction.");
@@ -807,8 +771,10 @@ class Laboratory : public Workshop {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Workshop);
+    ar & SUBCLASS(Furniture);
   }
+  
+  SERIALIZATION_CONSTRUCTOR(Laboratory);
 };
 
 class Crops : public Square {
@@ -862,8 +828,6 @@ void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, DeityAltar);
   REGISTER_TYPE(ar, CreatureAltar);
   REGISTER_TYPE(ar, ConstructionDropItems);
-  REGISTER_TYPE(ar, TrainingDummy);
-  REGISTER_TYPE(ar, Workshop);
   REGISTER_TYPE(ar, Hatchery);
   REGISTER_TYPE(ar, Crops);
 }
@@ -905,6 +869,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::ALTAR] = 35;
               c.constructions[SquareId::EYEBALL] = 5;
               c.constructions[SquareId::CREATURE_ALTAR] = 35;
+              c.constructions[SquareId::MINION_STATUE] = 35;
               c.constructions[SquareId::RITUAL_ROOM] = 10;));
     case SquareId::BLACK_FLOOR:
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
@@ -1111,8 +1076,8 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.movementType = {MovementTrait::WALK};
             c.vision = VisionId::NORMAL;));
     case SquareId::TRAINING_ROOM:
-        return new TrainingDummy(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training room"), 
-            "training room");
+        return new Furniture(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training room"), 
+            "training room", 1, SquareApplyType::TRAIN);
     case SquareId::RITUAL_ROOM:
         return new Square(ViewObject(ViewId::RITUAL_ROOM, ViewLayer::FLOOR, "Ritual room"),
           CONSTRUCT(Square::Params,
@@ -1137,18 +1102,24 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.movementType = {MovementTrait::WALK};
             c.vision = VisionId::NORMAL;));
     case SquareId::LIBRARY:
-        return new TrainingDummy(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Library"), 
-            "library");
+        return new Furniture(ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR, "Library"), 
+            "library", 1, SquareApplyType::TRAIN);
     case SquareId::CAULDRON:
-        return new Laboratory(ViewObject(ViewId::CAULDRON, ViewLayer::FLOOR, "cauldron"), "cauldron", 0);
+        return new Laboratory(ViewObject(ViewId::CAULDRON, ViewLayer::FLOOR, "cauldron"), "cauldron");
     case SquareId::LABORATORY:
-      return new Laboratory(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "Laboratory"), "laboratory", 0);
+      return new Laboratory(ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR, "Laboratory"), "laboratory");
     case SquareId::FORGE:
-        return new Workshop(ViewObject(ViewId::FORGE, ViewLayer::FLOOR, "Forge"), "forge", 1);
+        return new Furniture(ViewObject(ViewId::FORGE, ViewLayer::FLOOR, "Forge"), "forge", 1,
+            SquareApplyType::WORKSHOP);
     case SquareId::WORKSHOP:
-      return new Workshop(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"),"workshop stand", 1);
+      return new Furniture(ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR, "Workshop stand"),"workshop stand", 1,
+            SquareApplyType::WORKSHOP);
     case SquareId::JEWELER:
-      return new Workshop(ViewObject(ViewId::JEWELER, ViewLayer::FLOOR, "Jeweler stand"),"jeweler stand", 1);
+      return new Furniture(ViewObject(ViewId::JEWELER, ViewLayer::FLOOR, "Jeweler stand"),"jeweler stand", 1,
+            SquareApplyType::WORKSHOP);
+    case SquareId::MINION_STATUE:
+      return new Furniture(ViewObject(ViewId::CREATURE_ALTAR, ViewLayer::FLOOR, "Statue"),"statue", 0,
+            SquareApplyType::STATUE);
     case SquareId::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery",
             s.get<CreatureFactory::SingleCreature>());

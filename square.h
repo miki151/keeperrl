@@ -46,7 +46,9 @@ RICH_ENUM(SquareApplyType,
   WORKSHOP,
   TORTURE,
   PIGSTY,
-  CROPS
+  CROPS,
+  STATUE,
+  WELL
 );
 
 class Square : public Renderable {
