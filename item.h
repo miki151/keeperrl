@@ -80,6 +80,8 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   string getNameAndModifiers(bool plural = false, bool blind = false) const;
   string getArtifactName() const;
   string getShortName(bool shortModifiers, bool blind = false) const;
+  string getPluralTheName(int count) const;
+  string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
   virtual optional<EffectType> getEffectType() const;
   optional<EffectType> getAttackEffect() const;
@@ -111,7 +113,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   virtual void setOnFire(double amount, const Level* level, Vec2 position);
   double getFireSize() const;
 
-  void onHitSquareMessage(Vec2 position, Square*, bool plural);
+  void onHitSquareMessage(Vec2 position, Square*, int numItems);
   void onHitCreature(Creature* c, const Attack& attack, bool plural);
 
   double getApplyTime() const;

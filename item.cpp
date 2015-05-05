@@ -130,15 +130,13 @@ void Item::tick(double time, Level* level, Vec2 position) {
   specialTick(time, level, position);
 }
 
-void Item::onHitSquareMessage(Vec2 position, Square* s, bool plural) {
+void Item::onHitSquareMessage(Vec2 position, Square* s, int numItems) {
   if (fragile) {
     s->getLevel()->globalMessage(position,
-        getTheName(plural) + chooseElem<string>({" crashes", " crash"}, int(plural)) + " on the " + s->getName(),
-        "You hear a crash");
+        getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + s->getName(), "You hear a crash");
     discarded = true;
   } else
-    s->getLevel()->globalMessage(position, getTheName(plural) +
-        chooseElem<string>({" hits", " hit"}, int(plural)) + " the " + s->getName());
+    s->getLevel()->globalMessage(position, getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + s->getName());
 }
 
 void Item::onHitCreature(Creature* c, const Attack& attack, bool plural) {
@@ -266,6 +264,17 @@ string Item::getAName(bool getPlural, bool blind) const {
 string Item::getTheName(bool getPlural, bool blind) const {
   string the = (noArticle || getPlural) ? "" : "the ";
   return the + getName(getPlural, blind);
+}
+
+string Item::getPluralTheName(int count) const {
+  if (count > 1)
+    return toString(count) + " " + getTheName(true);
+  else
+    return getTheName(false);
+}
+
+string Item::getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const {
+  return getPluralTheName(count) + " " + (count > 1 ? verbPlural : verbSingle);
 }
 
 string Item::getVisibleName(bool getPlural) const {

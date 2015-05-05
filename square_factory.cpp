@@ -67,13 +67,12 @@ class Staircase : public Square {
 
 class Magma : public Square {
   public:
-  Magma(const ViewObject& object, const string& name, const string& itemMsg, const string& noSee) : Square(object,
+  Magma(const ViewObject& object, const string& name) : Square(object,
       CONSTRUCT(Square::Params,
         c.name = name;
         c.vision = VisionId::NORMAL;
         c.constructions[SquareId::BRIDGE] = 20;
-        c.movementType = {MovementTrait::FLY};)),
-    itemMessage(itemMsg), noSeeMsg(noSee) {}
+        c.movementType = {MovementTrait::FLY};)) {}
 
   virtual void onEnterSpecial(Creature* c) override {
     MovementType realMovement = c->getMovementType();
@@ -84,35 +83,30 @@ class Magma : public Square {
     }
   }
 
-  virtual void dropItem(PItem item) override {
-    getLevel()->globalMessage(getPosition(), item->getTheName() + " " + itemMessage, noSeeMsg);
+  virtual void dropItems(vector<PItem> items) override {
+    for (auto elem : Item::stackItems(extractRefs(items)))
+      getLevel()->globalMessage(getPosition(), elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
+            "burns", "burn") + " in the magma.");
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(itemMessage)
-      & SVAR(noSeeMsg);
+    ar& SUBCLASS(Square);
   }
 
   SERIALIZATION_CONSTRUCTOR(Magma);
-
-  private:
-  string SERIAL(itemMessage);
-  string SERIAL(noSeeMsg);
 };
 
 class Water : public Square {
   public:
-  Water(ViewObject object, const string& name, const string& itemMsg, const string& noSee, double _depth)
+  Water(ViewObject object, const string& name, double _depth)
       : Square(object.setAttribute(ViewObject::Attribute::WATER_DEPTH, _depth),
           CONSTRUCT(Square::Params,
             c.name = name;
             c.vision = VisionId::NORMAL;
             c.constructions[SquareId::BRIDGE] = 20;
             c.movementType = getMovement(_depth);
-          )),
-        itemMessage(itemMsg), noSeeMsg(noSee) {}
+          )) {}
 
   virtual void onEnterSpecial(Creature* c) override {
     MovementType realMovement = c->getMovementType();
@@ -123,15 +117,15 @@ class Water : public Square {
     }
   }
 
-  virtual void dropItem(PItem item) override {
-    getLevel()->globalMessage(getPosition(), item->getTheName() + " " + itemMessage, noSeeMsg);
+  virtual void dropItems(vector<PItem> items) override {
+    for (auto elem : Item::stackItems(extractRefs(items)))
+      getLevel()->globalMessage(getPosition(), elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
+            "sinks", "sink") + " in the water.", "You hear a splash.");
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(itemMessage)
-      & SVAR(noSeeMsg);
+    ar& SUBCLASS(Square);
   }
 
   SERIALIZATION_CONSTRUCTOR(Water);
@@ -143,9 +137,6 @@ class Water : public Square {
     else
       return {{MovementTrait::SWIM, MovementTrait::FLY, MovementTrait::BY_FORCE, MovementTrait::WADE}};
   }
-
-  string SERIAL(itemMessage);
-  string SERIAL(noSeeMsg);
 };
 
 class Chest : public Square {
@@ -980,11 +971,9 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.constructions[SquareId::IMPALED_HEAD] = 5;
             c.movementType = {MovementTrait::WALK};));
     case SquareId::WATER:
-        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water",
-            "sinks in the water", "You hear a splash", 100);
+        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water", 100);
     case SquareId::MAGMA: 
-        return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR, "Magma"),
-            "magma", "burns in the magma", "");
+        return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR, "Magma"), "magma");
     case SquareId::ABYSS: 
         FAIL << "Unimplemented";
     case SquareId::SAND:
@@ -1213,6 +1202,5 @@ PSquare SquareFactory::getStairs(StairDirection direction, StairKey key, StairLo
 }
   
 PSquare SquareFactory::getWater(double depth) {
-  return PSquare(new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water",
-      "sinks in the water", "You hear a splash", depth));
+  return PSquare(new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water", depth));
 }

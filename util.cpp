@@ -649,7 +649,7 @@ string combine(const vector<string>& adj, bool commasOnly) {
 }
 
 bool hasSentenceEnding(const string& s) {
-  return s.back() == '.' || s.back() == '?' || s.back() == '!' || s.back() != '\"';
+  return s.back() == '.' || s.back() == '?' || s.back() == '!' || s.back() == '\"';
 }
 
 string combineSentences(const vector<string>& v) {

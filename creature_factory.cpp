@@ -1984,7 +1984,11 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 
       return ItemList()
-        .add(ItemId::ROBE);
+        .add(ItemId::ROBE)
+        .add({ItemId::SCROLL, EffectId::WORD_OF_POWER})
+        .add({ItemId::SCROLL, EffectId::WORD_OF_POWER})
+        .add({ItemId::SCROLL, EffectId::WORD_OF_POWER})
+        .add({ItemId::SCROLL, EffectId::WORD_OF_POWER});
     case CreatureId::DEATH: 
       return ItemList()
         .add(ItemId::SCYTHE);
@@ -2045,7 +2049,6 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::SWORD)
         .maybe(0.3, randomBackup())
-        .add({ItemId::SCROLL, EffectId::DECEPTION})
         .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36)));
     case CreatureId::GREAT_ORC: 
       return ItemList()

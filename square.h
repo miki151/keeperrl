@@ -192,8 +192,8 @@ class Square : public Renderable {
 
   //@{
   /** Drops item or items on the square. The square assumes ownership.*/
-  virtual void dropItem(PItem);
-  void dropItems(vector<PItem>);
+  void dropItem(PItem);
+  virtual void dropItems(vector<PItem>);
   //@}
 
   /** Checks if a given item is present on the square.*/

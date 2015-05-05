@@ -122,9 +122,10 @@ class Portal : public Trigger {
 
   virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir,
       VisionId vision) {
-    string name = it[0]->getTheName(it.size() > 1);
-    level->globalMessage(position, name + " disappears in the portal.");
-    NOTNULL(getOther())->level->throwItem(std::move(it), a, remainingDist, NOTNULL(getOther())->position, dir, vision);
+    level->globalMessage(position, it[0]->getPluralTheNameAndVerb(it.size(), "disappears", "disappear") +
+        " in the portal.");
+    NOTNULL(getOther())->level->throwItem(
+        std::move(it), a, remainingDist, NOTNULL(getOther())->position, dir, vision);
   }
 
   virtual void tick(double time) override {

@@ -272,7 +272,7 @@ bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
       return true;
     else {
       if (item.size() > 1)
-        creature->you(MsgType::MISS_THROWN_ITEM_PLURAL, item[0]->getTheName(true));
+        creature->you(MsgType::MISS_THROWN_ITEM_PLURAL, item[0]->getPluralTheName(item.size()));
       else
         creature->you(MsgType::MISS_THROWN_ITEM, item[0]->getTheName());
       return false;
@@ -302,7 +302,7 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
       return;
     }
 
-  item[0]->onHitSquareMessage(position, this, item.size() > 1);
+  item[0]->onHitSquareMessage(position, this, item.size());
   if (!item[0]->isDiscarded())
     dropItems(std::move(item));
 }
@@ -414,15 +414,15 @@ void Square::onEnter(Creature* c) {
 }
 
 void Square::dropItem(PItem item) {
-  setDirty();
-  if (level)  // if level == null, then it's being constructed, square will be added later
-    level->addTickingSquare(getPosition());
-  inventory.addItem(std::move(item));
+  dropItems(makeVec<PItem>(std::move(item)));
 }
 
 void Square::dropItems(vector<PItem> items) {
+  setDirty();
+  if (level)  // if level == null, then it's being constructed, square will be added later
+    level->addTickingSquare(getPosition());
   for (PItem& it : items)
-    dropItem(std::move(it));
+    inventory.addItem(std::move(it));
 }
 
 bool Square::hasItem(Item* it) const {

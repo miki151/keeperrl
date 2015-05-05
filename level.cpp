@@ -295,7 +295,7 @@ void Level::throwItem(vector<PItem> item, Attack attack, int maxDist, Vec2 posit
   for (Vec2 v = position + direction;; v += direction) {
     trajectory.push_back(v);
     if (getSafeSquare(v)->itemBounces(item[0].get(), vision)) {
-        item[0]->onHitSquareMessage(v, getSafeSquare(v), item.size() > 1);
+        item[0]->onHitSquareMessage(v, getSafeSquare(v), item.size());
         trajectory.pop_back();
         GlobalEvents.addThrowEvent(this, attack.getAttacker(), item[0].get(), trajectory);
         if (!item[0]->isDiscarded())
