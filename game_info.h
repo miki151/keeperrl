@@ -29,7 +29,7 @@ class GameInfo {
       string name;
       optional<pair<ViewObject, int>> cost;
       string count;
-      string inactiveReason;
+      enum { ACTIVE, GRAY_CLICKABLE, INACTIVE} state;
       string help;
       char hotkey;
       string groupName;
@@ -37,6 +37,8 @@ class GameInfo {
     vector<Button> buildings;
     vector<Button> minionButtons;
     vector<Button> libraryButtons;
+    int minionCount;
+    int minionLimit;
     string monsterHeader;
     vector<CreatureInfo> minions;
     vector<CreatureInfo> enemies;

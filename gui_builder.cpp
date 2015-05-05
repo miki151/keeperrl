@@ -88,7 +88,7 @@ PGuiElem GuiBuilder::getButtonLine(GameInfo::BandInfo::Button button, int num, i
   vector<PGuiElem> line;
   line.push_back(gui.viewObject(button.object, tilesOk));
   vector<int> widths { 35 };
-  if (!button.inactiveReason.empty())
+  if (button.state != GameInfo::BandInfo::Button::ACTIVE)
     line.push_back(gui.label(button.name + " " + button.count, colors[ColorId::GRAY], button.hotkey));
   else
     line.push_back(gui.conditional(
@@ -104,17 +104,14 @@ PGuiElem GuiBuilder::getButtonLine(GameInfo::BandInfo::Button button, int num, i
     widths.push_back(25);
   }
   function<void()> buttonFun;
-  if (button.inactiveReason == "" || button.inactiveReason == "inactive")
+  if (button.state != GameInfo::BandInfo::Button::INACTIVE)
     buttonFun = [this, &active, num, tab] {
       active = num;
       hideBuildingOverlay = false;
       setCollectiveTab(tab);
     };
   else {
-    string s = button.inactiveReason;
-    buttonFun = [this, s] {
-//      presentText("", s);
-    };
+    buttonFun = [] {};
   }
   return gui.stack(
       getHintCallback({capitalFirst(button.help)}),
@@ -268,6 +265,7 @@ PGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   vector<PGuiElem> bottomLine;
   bottomLine.push_back(getTurnInfoGui(gameInfo.time));
   bottomLine.push_back(getSunlightInfoGui(sunlightInfo));
+  bottomLine.push_back(gui.label("population: " + toString(gameInfo.bandInfo.minionCount) + " / " + toString(gameInfo.bandInfo.minionLimit)));
   int numTop = topLine.size();
   int numBottom = bottomLine.size();
   return gui.verticalList(makeVec<PGuiElem>(

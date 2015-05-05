@@ -67,10 +67,20 @@ struct ImmigrantInfo {
   void serialize(Archive& ar, const unsigned int version);
 };
 
+struct PopulationIncrease {
+  SquareApplyType SERIAL(type);
+  int SERIAL(increase);
+  int SERIAL(minSize);
+  bool SERIAL(oneTime);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+};
+
 class CollectiveConfig {
   public:
   static CollectiveConfig keeper(double immigrantFrequency, int payoutTime, double payoutMultiplier,
-      vector<ImmigrantInfo>);
+      int maxPopulation, vector<PopulationIncrease>, vector<ImmigrantInfo>);
   static CollectiveConfig withImmigrants(double immigrantFrequency, int maxPopulation, vector<ImmigrantInfo>);
   static CollectiveConfig noImmigrants();
 
@@ -87,18 +97,20 @@ class CollectiveConfig {
   int getMaxPopulation() const;
   bool sleepOnlyAtNight() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
+  const vector<PopulationIncrease>& getPopulationIncreases() const;
 
   SERIALIZATION_DECL(CollectiveConfig);
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
-  CollectiveConfig(double immigrantFrequency, int payoutTime, double payoutMultiplier, int maxPopulation,
-      vector<ImmigrantInfo>, CollectiveType);
+  CollectiveConfig(double immigrantFrequency, int payoutTime, double payoutMultiplier,
+      vector<ImmigrantInfo>, CollectiveType, int maxPopulation, vector<PopulationIncrease>);
 
   double SERIAL(immigrantFrequency);
   int SERIAL(payoutTime);
   double SERIAL(payoutMultiplier);
   int SERIAL(maxPopulation);
+  vector<PopulationIncrease> SERIAL(populationIncreases);
   vector<ImmigrantInfo> SERIAL(immigrantInfo);
   CollectiveType SERIAL(type);
 };

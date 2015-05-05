@@ -276,11 +276,23 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
   return ret;
 }
 
+int ModelBuilder::getPigstyPopulationIncrease() {
+  return 4;
+}
+
 static CollectiveConfig getKeeperConfig(bool fastImmigration) {
   return CollectiveConfig::keeper(
       fastImmigration ? 0.1 : 0.011,
       500,
       2,
+      8,
+      {
+      CONSTRUCT(PopulationIncrease,
+        c.type = SquareApplyType::PIGSTY;
+        c.increase = ModelBuilder::getPigstyPopulationIncrease();
+        c.oneTime = true;
+        c.minSize = 16;)
+      },
       {
       CONSTRUCT(ImmigrantInfo,
         c.id = CreatureId::GOBLIN;

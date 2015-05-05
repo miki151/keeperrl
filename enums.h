@@ -18,15 +18,6 @@
 
 #include "serialization.h"
 
-#define ENUM_HASH(name) \
-namespace std { \
-  template <> struct hash<name> { \
-    size_t operator()(const name& l) const { \
-      return (size_t)l; \
-    } \
-  }; \
-}
-
 typedef int TeamId;
 
 enum class MusicType;

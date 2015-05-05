@@ -917,6 +917,7 @@ string capitalFirst(string s);
 string noCapitalFirst(string s);
 vector<string> makeSentences(string s);
 string makeSentence(string s);
+string combineSentences(const vector<string>&);
 
 string lowercase(string s);
 

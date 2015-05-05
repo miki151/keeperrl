@@ -33,16 +33,32 @@ void AttractionInfo::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(AttractionInfo);
 SERIALIZATION_CONSTRUCTOR_IMPL(AttractionInfo);
 
-CollectiveConfig CollectiveConfig::keeper(double freq, int payout, double payoutMult, vector<ImmigrantInfo> im) {
-  return CollectiveConfig(freq, payout, payoutMult, 100000, im, KEEPER);
+template <class Archive>
+void PopulationIncrease::serialize(Archive& ar, const unsigned int version) {
+  ar& SVAR(type)
+    & SVAR(increase)
+    & SVAR(minSize)
+    & SVAR(oneTime);
+}
+
+SERIALIZABLE(PopulationIncrease);
+
+CollectiveConfig::CollectiveConfig(double freq, int payoutT, double payoutM, vector<ImmigrantInfo> im,
+    CollectiveType t, int maxPop, vector<PopulationIncrease> popInc)
+    : immigrantFrequency(freq), payoutTime(payoutT), payoutMultiplier(payoutM),
+    maxPopulation(maxPop), populationIncreases(popInc), immigrantInfo(im), type(t) {}
+
+CollectiveConfig CollectiveConfig::keeper(double freq, int payout, double payoutMult, int maxPopulation,
+    vector<PopulationIncrease> increases, vector<ImmigrantInfo> im) {
+  return CollectiveConfig(freq, payout, payoutMult, im, KEEPER, maxPopulation, increases);
 }
 
 CollectiveConfig CollectiveConfig::withImmigrants(double frequency, int maxPopulation, vector<ImmigrantInfo> im) {
-  return CollectiveConfig(frequency, 0, 0, maxPopulation, im, VILLAGE);
+  return CollectiveConfig(frequency, 0, 0, im, VILLAGE, maxPopulation, {});
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
-  return CollectiveConfig(0, 0, 0, 10000, {}, VILLAGE);
+  return CollectiveConfig(0, 0, 0, {}, VILLAGE, 10000, {});
 }
 
 bool CollectiveConfig::getManageEquipment() const {
@@ -97,20 +113,22 @@ const vector<ImmigrantInfo>& CollectiveConfig::getImmigrantInfo() const {
   return immigrantInfo;
 }
 
+const vector<PopulationIncrease>& CollectiveConfig::getPopulationIncreases() const {
+  return populationIncreases;
+}
+
+
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(immigrantFrequency)
     & SVAR(payoutTime)
     & SVAR(payoutMultiplier)
     & SVAR(maxPopulation)
+    & SVAR(populationIncreases)
     & SVAR(immigrantInfo)
     & SVAR(type);
 }
 
 SERIALIZABLE(CollectiveConfig);
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
-
-CollectiveConfig::CollectiveConfig(double freq, int payoutT, double payoutM, int maxPop, vector<ImmigrantInfo> im,
-    CollectiveType t) : immigrantFrequency(freq), payoutTime(payoutT), payoutMultiplier(payoutM),
-    maxPopulation(maxPop), immigrantInfo(im), type(t) {}
 

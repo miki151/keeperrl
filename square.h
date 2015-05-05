@@ -35,7 +35,7 @@ class CreatureView;
 class Attack;
 class ProgressMeter;
 
-enum class SquareApplyType {
+RICH_ENUM(SquareApplyType,
   DRINK,
   USE_CHEST,
   ASCEND,
@@ -47,7 +47,7 @@ enum class SquareApplyType {
   TORTURE,
   PIGSTY,
   CROPS
-};
+);
 
 class Square : public Renderable {
   public:

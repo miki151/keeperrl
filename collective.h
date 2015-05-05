@@ -30,6 +30,7 @@
 #include "collective_config.h"
 #include "cost_info.h"
 #include "construction_map.h"
+#include "square.h"
 
 class Creature;
 class CollectiveControl;
@@ -117,6 +118,7 @@ class Collective : public Task::Callback {
   Creature* getLeader();
 
   const set<Vec2>& getSquares(SquareType) const;
+  const set<Vec2>& getSquares(SquareApplyType) const;
   vector<SquareType> getSquareTypes() const;
   vector<Vec2> getAllSquares(const vector<SquareType>&, bool centerOnly = false) const;
   const set<Vec2>& getAllSquares() const;
@@ -254,6 +256,9 @@ class Collective : public Task::Callback {
   int getNextSalaries() const;
   bool hasMinionDebt() const;
 
+  int getPopulationSize() const;
+  int getMaxPopulation() const;
+
   bool tryLockingDoor(Vec2);
   void orderConsumption(Creature* consumer, Creature* who);
   vector<Creature*>getConsumptionTargets(Creature* consumer);
@@ -370,6 +375,7 @@ class Collective : public Task::Callback {
   map<const Deity*, double> SERIAL(deityStanding);
   Level* SERIAL(level) = nullptr;
   unordered_map<SquareType, set<Vec2>> SERIAL(mySquares);
+  unordered_map<SquareApplyType, set<Vec2>> SERIAL(mySquares2);
   map<Vec2, int> SERIAL(squareEfficiency);
   set<Vec2> SERIAL(allSquares);
   struct AlarmInfo : NamedTupleBase<double, Vec2> {

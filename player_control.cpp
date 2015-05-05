@@ -36,6 +36,7 @@
 #include "trigger.h"
 #include "music.h"
 #include "location.h"
+#include "model_builder.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -84,9 +85,6 @@ PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, s
   CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH, DISPATCH, CLAIM_TILE, TORCH}, type));
 }
 
-PlayerControl::BuildInfo::BuildInfo(MinionInfo info, optional<TechId> tech, const string& group, const string& h)
-    : minionInfo(info), buildType(MINION), techId(tech), help(h), hotkey(0), groupName(group) {}
-
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
   return getBuildInfo(getLevel(), getTribe());
 }
@@ -107,7 +105,8 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, none,
         "Stores gold."),
     BuildInfo({Collective::getHatcheryType(const_cast<Tribe*>(tribe)),
-        {ResourceId::WOOD, 20}, "Pigsty"}, none, "Pigs breed here.", 'p'),
+        {ResourceId::WOOD, 20}, "Pigsty"}, TechId::PIGSTY, "Increases minion population limit by " +
+            toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
     BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, none,
         "Humanoid minions place their beds here.", 'm'),
     BuildInfo({SquareId::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, none,
@@ -731,31 +730,32 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                elem.name,
                getCostObj(getRoomCost(elem.type, elem.cost, elem.costExponent)),
                description,
-               (elem.noCredit && !availableNow) ? "inactive" : isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
+               (elem.noCredit && !availableNow) ?
+                  GameInfo::BandInfo::Button::GRAY_CLICKABLE : GameInfo::BandInfo::Button::ACTIVE });
            }
            break;
       case BuildInfo::DIG: {
              buttons.push_back({
                  ViewObject(ViewId::DIG_ICON, ViewLayer::LARGE_ITEM, ""),
-                 "Dig or cut tree", none, "", ""});
+                 "Dig or cut tree", none, "", GameInfo::BandInfo::Button::ACTIVE});
            }
            break;
       case BuildInfo::FETCH: {
              buttons.push_back({
                  ViewObject(ViewId::FETCH_ICON, ViewLayer::LARGE_ITEM, ""),
-                 "Fetch items", none, "", ""});
+                 "Fetch items", none, "", GameInfo::BandInfo::Button::ACTIVE});
            }
            break;
       case BuildInfo::CLAIM_TILE: {
              buttons.push_back({
                  ViewObject(ViewId::KEEPER_FLOOR, ViewLayer::LARGE_ITEM, ""),
-                 "Claim tile", none, "", ""});
+                 "Claim tile", none, "", GameInfo::BandInfo::Button::ACTIVE});
            }
            break;
       case BuildInfo::DISPATCH: {
              buttons.push_back({
                  ViewObject(ViewId::IMP, ViewLayer::LARGE_ITEM, ""),
-                 "Prioritize task", none, "", ""});
+                 "Prioritize task", none, "", GameInfo::BandInfo::Button::ACTIVE});
            }
            break;
       case BuildInfo::TRAP: {
@@ -765,8 +765,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                  ViewObject(elem.viewId, ViewLayer::LARGE_ITEM, ""),
                  elem.name,
                  none,
-                 "(" + toString(numTraps) + " ready)",
-                 isTech ? "" : "Requires " + Technology::get(*button.techId)->getName() });
+                 "(" + toString(numTraps) + " ready)" });
            }
            break;
       case BuildInfo::IMP: {
@@ -777,36 +776,30 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                cost,
                "[" + toString(
                    getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}).size()) + "]",
-               getImpCost() <= getCollective()->numResource(ResourceId::MANA) ? "" : "inactive"});
-           break; }
-      case BuildInfo::MINION: {
-           BuildInfo::MinionInfo& elem = button.minionInfo;
-           buttons.push_back({
-               getMinionViewObject(elem.id),
-               "Summon " + getMinionName(elem.id),
-               getCostObj(elem.cost),
-               "",
-               !getCollective()->hasResource(elem.cost) ? "inactive" : isTech ? "" 
-                  : "Requires " + Technology::get(*button.techId)->getName()});
+               getImpCost() <= getCollective()->numResource(ResourceId::MANA) ?
+                  GameInfo::BandInfo::Button::ACTIVE : GameInfo::BandInfo::Button::GRAY_CLICKABLE});
            break; }
       case BuildInfo::DESTROY:
            buttons.push_back({
                ViewObject(ViewId::DESTROY_BUTTON, ViewLayer::CREATURE, ""), "Remove construction", none, "",
-                   ""});
+                   GameInfo::BandInfo::Button::ACTIVE});
            break;
       case BuildInfo::GUARD_POST:
            buttons.push_back({
-               ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", none, "", ""});
+               ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", none, "",
+               GameInfo::BandInfo::Button::ACTIVE});
            break;
       case BuildInfo::TORCH:
            buttons.push_back({
-               ViewObject(ViewId::TORCH, ViewLayer::CREATURE, ""), "Torch", none, "", ""});
+               ViewObject(ViewId::TORCH, ViewLayer::CREATURE, ""), "Torch", none, "",
+               GameInfo::BandInfo::Button::ACTIVE});
            break;
     }
-    if (!isTech)
-      buttons.back().help = "Requires " + Technology::get(*button.techId)->getName();
-    if (buttons.back().help.empty())
-      buttons.back().help = button.help;
+    if (!isTech) {
+      buttons.back().help = "Requires " + Technology::get(*button.techId)->getName() + ".";
+      buttons.back().state = GameInfo::BandInfo::Button::INACTIVE;
+    }
+    buttons.back().help = combineSentences({button.help, buttons.back().help});
     buttons.back().hotkey = button.hotkey;
     buttons.back().groupName = button.groupName;
   }
@@ -851,7 +844,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       info.tasks[c->getUniqueId()] = "fighting";
     info.minions.push_back(c);
   }
-  info.monsterHeader = "Minions: ";
+  info.minionCount = getCollective()->getPopulationSize();
+  info.minionLimit = getCollective()->getMaxPopulation();
+  info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemies.clear();
   for (Vec2 v : getCollective()->getAllSquares())
     if (const Creature* c = getLevel()->getSafeSquare(v)->getCreature())
@@ -1262,20 +1257,8 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             if (square->canEnter(imp.get())
                 && (canSee(square->getPosition()) || getCollective()->containsSquare(square->getPosition()))) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
-              getCollective()->addCreature(std::move(imp), square->getPosition(), {MinionTrait::WORKER});
-              break;
-            }
-        }
-        break;
-    case BuildInfo::MINION:
-        if (getCollective()->hasResource(building.minionInfo.cost) && selection == NONE && !rectangle) {
-          const BuildInfo::MinionInfo& elem = building.minionInfo;
-          selection = SELECT;
-          PCreature creature = CreatureFactory::fromId(elem.id, getTribe(),
-              MonsterAIFactory::collective(getCollective()));
-          if (getLevel()->getSafeSquare(pos)->canEnter(creature.get()) && canSee(pos)) {
-              getCollective()->takeResource(elem.cost);
-              getCollective()->addCreature(std::move(creature), pos, elem.traits);
+              getCollective()->addCreature(std::move(imp), square->getPosition(),
+                  {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT});
               break;
             }
         }
@@ -1612,11 +1595,11 @@ MoveInfo PlayerControl::getMove(Creature* c) {
 }
 
 void PlayerControl::addKeeper(Creature* c) {
-  getCollective()->addCreature(c, {MinionTrait::LEADER});
+  getCollective()->addCreature(c, {MinionTrait::LEADER, MinionTrait::NO_LIMIT});
 }
 
 void PlayerControl::addImp(Creature* c) {
-  getCollective()->addCreature(c, {MinionTrait::WORKER, MinionTrait::NO_EQUIPMENT});
+  getCollective()->addCreature(c, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT});
 }
 
 void PlayerControl::onConqueredLand() {

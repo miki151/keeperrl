@@ -137,17 +137,10 @@ class PlayerControl : public CreatureView, public CollectiveControl {
       ViewId viewId;
     } trapInfo;
 
-    struct MinionInfo {
-      CreatureId id;
-      EnumSet<MinionTrait> traits;
-      CostInfo cost;
-    } minionInfo;
-
     enum BuildType {
       DIG,
       SQUARE,
       IMP,
-      MINION,
       TRAP,
       GUARD_POST,
       DESTROY,
@@ -168,7 +161,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
         string group = "");
     BuildInfo(DeityHabitat, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
     BuildInfo(const Creature*, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
-    BuildInfo(MinionInfo, optional<TechId> techId, const string& groupName, const string& h = "");
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
   };
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);

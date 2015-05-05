@@ -29,6 +29,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(bySpawnType)
     & SVAR(deityStanding)
     & SVAR(mySquares)
+    & SVAR(mySquares2)
     & SVAR(allSquares)
     & SVAR(squareEfficiency)
     & SVAR(alarmInfo)
@@ -178,8 +179,6 @@ double Collective::getAttractionValue(MinionAttraction attraction) {
     case AttractionId::ITEM_INDEX: 
       return getAllItems(attraction.get<ItemIndex>(), true).size();
   }
-  FAIL << "wefok";
-  return 0;
 }
 
 namespace {
@@ -876,7 +875,7 @@ double Collective::getImmigrantChance(const ImmigrantInfo& info) {
 }
 
 void Collective::considerImmigration() {
-  if (getCreatures().size() >= config.getMaxPopulation() || !getLeader())
+  if (getPopulationSize() >= getMaxPopulation() || !getLeader())
     return;
   vector<double> weights;
   bool ok = false;
@@ -1268,6 +1267,14 @@ const set<Vec2>& Collective::getSquares(SquareType type) const {
     return empty;
 }
 
+const set<Vec2>& Collective::getSquares(SquareApplyType type) const {
+  static set<Vec2> empty;
+  if (mySquares2.count(type))
+    return mySquares2.at(type);
+  else
+    return empty;
+}
+
 vector<SquareType> Collective::getSquareTypes() const {
   return getKeys(mySquares);
 }
@@ -1282,11 +1289,18 @@ void Collective::claimSquare(Vec2 pos) {
     mySquares[SquareId::BED].insert(pos);
   if (level->getSafeSquare(pos)->getApplyType() == SquareApplyType::CROPS)
     mySquares[SquareId::CROPS].insert(pos);
+  if (auto type = level->getSafeSquare(pos)->getApplyType())
+    mySquares2[*type].insert(pos);
 }
 
 void Collective::changeSquareType(Vec2 pos, SquareType from, SquareType to) {
   mySquares[from].erase(pos);
   mySquares[to].insert(pos);
+  for (auto& elem : mySquares2)
+    if (elem.second.count(pos))
+      elem.second.erase(pos);
+  if (auto type = level->getSafeSquare(pos)->getApplyType())
+    mySquares2[*type].insert(pos);
 }
 
 bool Collective::containsSquare(Vec2 pos) const {
@@ -1750,6 +1764,8 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
           constructions.getTorch(v).getAttachmentDir() == (pos - v).getCardinalDir())
         removeTorch(v);
   }
+  if (auto type = level->getSafeSquare(pos)->getApplyType())
+    mySquares2[*type].insert(pos);
   control->onConstructed(pos, type);
 }
 
@@ -1885,6 +1901,9 @@ void Collective::onSquareDestroyed(Vec2 pos) {
       if (efficiencySquares.count(elem.first))
         updateEfficiency(pos, elem.first);
     }
+  for (auto& elem : mySquares2)
+    if (elem.second.count(pos))
+      elem.second.erase(pos);
   mySquares[SquareId::FLOOR].insert(pos);
   if (constructions.containsSquare(pos))
     constructions.getSquare(pos).reset();
@@ -2253,6 +2272,21 @@ GameInfo::VillageInfo::Village Collective::getVillageInfo() const {
 
 const TaskMap& Collective::getTaskMap() const {
   return taskMap;
+}
+
+int Collective::getPopulationSize() const {
+  return getCreatures().size() - getCreatures(MinionTrait::NO_LIMIT).size();
+}
+
+int Collective::getMaxPopulation() const {
+  int ret = config.getMaxPopulation();
+  for (auto& elem : config.getPopulationIncreases()) {
+    int sz = getSquares(elem.type).size();
+    if (elem.oneTime)
+      sz = min(sz, elem.minSize);
+    ret += sz / elem.minSize * elem.increase;
+  }
+  return ret;
 }
 
 template <class Archive>

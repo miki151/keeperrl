@@ -648,6 +648,27 @@ string combine(const vector<string>& adj, bool commasOnly) {
   return res;
 }
 
+bool hasSentenceEnding(const string& s) {
+  return s.back() == '.' || s.back() == '?' || s.back() == '!' || s.back() != '\"';
+}
+
+string combineSentences(const vector<string>& v) {
+  if (v.empty())
+    return "";
+  string ret;
+  for (string s : v) {
+    if (s.empty())
+      continue;
+    if (!ret.empty()) {
+      if (!hasSentenceEnding(ret))
+        ret += ".";
+      ret += " ";
+    }
+    ret += s;
+  }
+  return ret;
+}
+
 string addAParticle(const string& s) {
   if (isupper(s[0]))
     return s;
@@ -673,7 +694,7 @@ string makeSentence(string s) {
   s = capitalFirst(s);
   if (s.size() > 1 && s[0] == '\"' && islower(s[1]))
     s[1] = toupper(s[1]);
-  if (s.back() != '.' && s.back() != '?' && s.back() != '!' && s.back() != '\"')
+  if (!hasSentenceEnding(s))
     s.append(".");
   return s;
 }
