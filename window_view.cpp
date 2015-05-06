@@ -342,6 +342,8 @@ void WindowView::rebuildGui() {
   int bottomBarHeight = 0;
   int rightBottomMargin = 30;
   tempGuiElems.clear();
+  tempGuiElems.push_back(gui.mouseWheel([this](bool up) { zoom(!up); }));
+  tempGuiElems.back()->setBounds(getMapGuiBounds());
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::SPECTATOR:
         right = gui.empty();
@@ -1086,10 +1088,6 @@ void WindowView::processEvents() {
         keyboardAction(event.key);
         renderer.flushEvents(Event::KeyPressed);
         break;
-      case Event::MouseWheelMoved:
-        if (renderer.getMousePos().inRectangle(mapGui->getBounds()))
-          zoom(event.mouseWheel.delta < 0);
-        break;
       case Event::MouseButtonPressed :
         if (event.mouseButton.button == sf::Mouse::Right)
           guiBuilder.closeOverlayWindows();
@@ -1137,11 +1135,6 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
   lockKeyboard = true;
   switch (key.code) {
     case Keyboard::Z: switchZoom(); break;
-    case Keyboard::F1:
-      if (auto ev = getEventFromMenu()) {
-        lockKeyboard = false;
-        keyboardAction(*ev);
-      } break;
     case Keyboard::F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
     case Keyboard::Space:
       inputQueue.push(UserInput(UserInputId::WAIT));
@@ -1176,20 +1169,11 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1))); break;
     case Keyboard::Return:
     case Keyboard::Numpad5: inputQueue.push(UserInput(UserInputId::PICK_UP)); break;
-    case Keyboard::D: inputQueue.push(UserInput(key.shift ? UserInputId::EXT_DROP : UserInputId::DROP)); break;
-    case Keyboard::A: inputQueue.push(UserInput(UserInputId::APPLY_ITEM)); break;
-    case Keyboard::T: inputQueue.push(UserInput(UserInputId::THROW)); break;
     case Keyboard::M: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
     case Keyboard::H: inputQueue.push(UserInput(UserInputId::HIDE)); break;
-    case Keyboard::P:
-      if (key.shift)
-        inputQueue.push(UserInput(UserInputId::EXT_PICK_UP));
-      else
-        inputQueue.push(UserInput(UserInputId::PAY_DEBT));
-      break;
+    case Keyboard::P: inputQueue.push(UserInput(UserInputId::PAY_DEBT)); break;
     case Keyboard::C: inputQueue.push(UserInput(key.shift ? UserInputId::CONSUME : UserInputId::CHAT)); break;
     case Keyboard::U: inputQueue.push(UserInput(UserInputId::UNPOSSESS)); break;
-    case Keyboard::S: inputQueue.push(UserInput(UserInputId::CAST_SPELL)); break;
     default: break;
   }
 }
@@ -1205,48 +1189,6 @@ UserInput WindowView::getAction() {
   else
     return UserInput(UserInputId::IDLE);
   return UserInput(UserInputId::IDLE);
-}
-
-vector<KeyInfo> keyInfo {
-//  { "I", "Inventory", {Keyboard::I}},
-//  { "E", "Manage equipment", {Keyboard::E}},
-//  { "Enter", "Pick up items or interact with square", {Keyboard::Return}},
-//  { "D", "Drop item", {Keyboard::D}},
-  { "Shift + D", "Extended drop - choose the number of items", {Keyboard::D, false, false, true}},
-  { "Shift + P", "Extended pick up - choose the number of items", {Keyboard::P, false, false, true}},
-//  { "A", "Apply item", {Keyboard::A}},
-//  { "T", "Throw item", {Keyboard::T}},
-//  { "S", "Cast spell", {Keyboard::S}},
-//  { "M", "Show message history", {Keyboard::M}},
-//  { "C", "Chat with someone", {Keyboard::C}},
-//  { "H", "Hide", {Keyboard::H}},
-//  { "P", "Pay debt", {Keyboard::P}},
-  //{ "U", "Unpossess", {Keyboard::U}},
-//  { "Space", "Wait", {Keyboard::Space}},
-  //{ "Z", "Zoom in/out", {Keyboard::Z}},
-  { "F2", "Change settings", {Keyboard::F2}},
-//  { "Escape", "Quit", {Keyboard::Escape}},
-};
-
-optional<Event::KeyEvent> WindowView::getEventFromMenu() {
-  vector<View::ListElem> options {
-      View::ListElem("Move around with the number pad.", View::TITLE),
-      View::ListElem("Extended attack with ctrl + arrow.", View::TITLE),
-      View::ListElem("Fast travel with ctrl + arrow.", View::TITLE),
-      View::ListElem("Fire arrows with alt + arrow.", View::TITLE),
-      View::ListElem("Choose action:", View::TITLE) };
-  for (int i : All(keyInfo)) {
-    Debug() << "Action " << keyInfo[i].action;
-    options.push_back(keyInfo[i].action + "   [ " + keyInfo[i].keyDesc + " ]");
-  }
-  vector<Event::KeyEvent> shortCuts;
-  for (KeyInfo key : keyInfo)
-    shortCuts.push_back(key.event);
-  auto index = chooseFromListInternal("", options, 0, NORMAL_MENU, nullptr, none,
-      optional<Event::KeyEvent>(Event::KeyEvent{Keyboard::F1}), shortCuts);
-  if (!index)
-    return none;
-  return keyInfo[*index].event;
 }
 
 double WindowView::getGameSpeed() {

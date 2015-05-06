@@ -486,25 +486,22 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
     return;
   vector<PGuiElem> lines;
   const int maxElems = 6;
-  const string title = "Click or press enter to pick up:";
+  const string title = "Click to pick up:";
   int numElems = min<int>(maxElems, info.lyingItems.size());
-  Vec2 size = Vec2(renderer.getTextLength(title), (1 + numElems) * legendLineHeight);
+  Vec2 size = Vec2(60 + renderer.getTextLength(title), (1 + numElems) * legendLineHeight);
   if (!info.lyingItems.empty()) {
-    lines.push_back(gui.label(title));
     for (int i : All(info.lyingItems)) {
-      if (i == maxElems - 1) {
-        lines.push_back(gui.stack(
-            gui.label("[more]", colors[ColorId::LIGHT_BLUE]),
-            gui.button(getButtonCallback(UserInputId::PICK_UP))));
-        break;
-      } else {
-        size.x = max(size.x, viewObjectWidth + renderer.getTextLength(info.lyingItems[i].name));
-        lines.push_back(getItemLine(info.lyingItems[i],
-            [this, i](Rectangle) { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, i}); }));
-      }
+      size.x = max(size.x, 40 + viewObjectWidth + renderer.getTextLength(info.lyingItems[i].name));
+      lines.push_back(getItemLine(info.lyingItems[i],
+          [this, i](Rectangle) { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, i}); }));
     }
   }
-  ret.push_back({gui.verticalList(std::move(lines), legendLineHeight, 0), size, OverlayInfo::TOP_RIGHT});
+  ret.push_back({gui.margin(
+        gui.label(title),
+        gui.scrollable(
+          gui.verticalList(std::move(lines), legendLineHeight, 0), &lyingItemsScroll),
+        legendLineHeight, GuiFactory::TOP),
+      size, OverlayInfo::TOP_RIGHT});
 }
 
 struct KeyInfo {
@@ -515,24 +512,24 @@ struct KeyInfo {
 
 PGuiElem GuiBuilder::drawPlayerHelp(GameInfo::PlayerInfo& info) {
   vector<PGuiElem> lines;
-  vector<KeyInfo> bottomKeys =  {
+  vector<KeyInfo> bottomKeys = {
       { "Enter", "Interact or pick up", {Keyboard::Return}},
-      { "D", "Drop item", {Keyboard::D}},
-      { "A", "Apply item", {Keyboard::A}},
-      { "T", "Throw item", {Keyboard::T}},
-      { "S", "Cast spell", {Keyboard::S}},
       { "U", "Leave minion", {Keyboard::U}},
       { "C", "Chat with someone", {Keyboard::C}},
       { "H", "Hide", {Keyboard::H}},
       { "P", "Pay debt", {Keyboard::P}},
       { "M", "Message history", {Keyboard::M}},
       { "Space", "Wait", {Keyboard::Space}},
-      { "F1", "More actions", {Keyboard::F1}},
   };
-/*  if (info.possessed)
-    bottomKeys = concat({{ "U", "Leave minion", {Keyboard::U}}}, bottomKeys);
-  if (info.spellcaster)
-    bottomKeys = concat({{ "S", "Cast spell", {Keyboard::S}}}, bottomKeys);*/
+  vector<string> help = {
+      "Move around with number pad.",
+      "Extended attack: ctrl + arrow.",
+      "Fast travel: ctrl + arrow.",
+      "Fire arrows: alt + arrow.",
+      "",
+  };
+  for (auto& elem : help)
+    lines.push_back(gui.label(elem, colors[ColorId::LIGHT_BLUE]));
   for (int i : All(bottomKeys)) {
     string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
     Event::KeyEvent key = bottomKeys[i].event;
@@ -630,6 +627,10 @@ PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
   string nameLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title);
   lines.push_back(gui.label(nameLine, colors[ColorId::WHITE]));
   lines.push_back(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
+  if (!info.effects.empty()) {
+    for (auto effect : info.effects)
+      lines.push_back(gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::WHITE]));
+  }
   lines.push_back(gui.empty());
   if (!info.team.empty()) {
     const int numPerLine = 6;
@@ -650,12 +651,6 @@ PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
       lines.push_back(gui.horizontalList(std::move(currentLine), widths, 0));
     lines.push_back(gui.empty());
   }
-  if (!info.effects.empty()) {
-    lines.push_back(gui.label("Status", colors[ColorId::YELLOW]));
-    for (auto effect : info.effects)
-      lines.push_back(gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::WHITE]));
-    lines.push_back(gui.empty());
-  }
   if (!info.skills.empty()) {
     lines.push_back(gui.label("Skills", colors[ColorId::YELLOW]));
     for (auto& elem : info.skills)
@@ -663,13 +658,23 @@ PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
             gui.label(capitalFirst(elem.name), colors[ColorId::WHITE])));
     lines.push_back(gui.empty());
   }
-  if (info.inventory.empty())
-    lines.push_back(gui.label("Inventory empty."));
-  for (auto& section : info.inventory) {
-    lines.push_back(gui.label(section.title, colors[ColorId::YELLOW]));
-    for (auto& item : section.items)
-      lines.push_back(getItemLine(item, [=](Rectangle butBounds) {
-            handleItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0)); }));
+  if (!info.spells.empty()) {
+    lines.push_back(gui.label("Spells", colors[ColorId::YELLOW]));
+    for (int i : All(info.spells))
+      lines.push_back(gui.stack(getTooltip({info.spells[i].help}),
+            gui.button(getButtonCallback({UserInputId::CAST_SPELL, i})),
+            gui.label(capitalFirst(info.spells[i].name),
+                colors[info.spells[i].available ? ColorId::WHITE : ColorId::GRAY])));
+    lines.push_back(gui.empty());
+  }
+  if (!info.inventory.empty()) {
+    lines.push_back(gui.label("Inventory", colors[ColorId::YELLOW]));
+    for (auto& section : info.inventory) {
+      //   lines.push_back(gui.label(section.title, colors[ColorId::YELLOW]));
+      for (auto& item : section.items)
+        lines.push_back(getItemLine(item, [=](Rectangle butBounds) {
+              handleItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0)); }));
+    }
   }
   return gui.margins(
       gui.scrollable(gui.verticalList(std::move(lines), legendLineHeight, 0), &inventoryScroll), -5, 0, 0, 0);

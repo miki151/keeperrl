@@ -80,11 +80,8 @@ class Player : public Controller, public CreatureView {
   void attackAction(Creature* other);
   void pickUpAction(bool extended);
   void pickUpItemAction(int item);
-  void dropAction(bool extended);
   void equipmentAction();
-  void applyAction();
   void applyItem(vector<Item*> item);
-  void throwAction(optional<Vec2> dir = none);
   void throwItem(vector<Item*> item, optional<Vec2> dir = none);
   void takeOffAction();
   void hideAction();
@@ -96,7 +93,7 @@ class Player : public Controller, public CreatureView {
   void targetAction();
   void payDebtAction();
   void chatAction(optional<Vec2> dir = none);
-  void spellAction();
+  void spellAction(int spell);
   void consumeAction();
   void fireAction(Vec2 dir);
   vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);

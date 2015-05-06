@@ -32,7 +32,7 @@ class GuiElem {
   virtual void onRefreshBounds() {}
   virtual void onKeyPressed(char) {}
   virtual void onKeyPressed2(Event::KeyEvent) {}
-  virtual void onMouseWheel(Vec2 mousePos, bool up) {}
+  virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
 
   void setBounds(Rectangle);
   Rectangle getBounds();
@@ -55,6 +55,7 @@ class GuiFactory {
   PGuiElem button(function<void()> fun, Event::KeyEvent);
   PGuiElem button(function<void(Rectangle buttonBounds)> fun, char hotkey = 0);
   PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent);
+  PGuiElem mouseWheel(function<void(bool)>);
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);

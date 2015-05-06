@@ -105,6 +105,12 @@ class GameInfo {
       bool bad;
     };
     vector<Effect> effects;
+    struct Spell {
+      string name;
+      string help;
+      bool available;
+    };
+    vector<Spell> spells;
     struct ItemInfo {
       string name;
       string fullName;

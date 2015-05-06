@@ -127,7 +127,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", none, 1}},
     {MinionTask::JEWELER, {{SquareId::JEWELER}, "jewellery", none, 1}},
     {MinionTask::SLEEP, {{SquareId::BED}, "sleeping", Collective::Warning::BEDS}},
-    {MinionTask::EAT, {MinionTaskInfo::EAT, "eating", Collective::Warning::NO_HATCHERY}},
+    {MinionTask::EAT, {MinionTaskInfo::EAT, "eating"}},
     {MinionTask::GRAVE, {{SquareId::GRAVE}, "sleeping", Collective::Warning::GRAVES}},
     {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
     {MinionTask::STUDY, {{SquareId::LIBRARY}, "studying", Collective::Warning::LIBRARY, 1}},

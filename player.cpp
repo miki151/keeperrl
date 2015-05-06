@@ -131,42 +131,14 @@ static string getSquareQuestion(SquareApplyType type, string name) {
 }
 
 void Player::pickUpAction(bool extended) {
-  auto items = getCreature()->getPickUpOptions();
   const Square* square = getCreature()->getSquare();
   if (square->getApplyType(getCreature())) {
     string question = getSquareQuestion(*square->getApplyType(getCreature()), square->getName());
-    if (!question.empty() && (items.empty() || model->getView()->yesOrNoPrompt(question))) {
+    if (!question.empty()) {
       getCreature()->applySquare().perform(getCreature());
       return;
     }
   }
-  vector<View::ListElem> names;
-  vector<vector<Item*> > groups;
-  getItemNames(getCreature()->getPickUpOptions(), names, groups);
-  CHECK(groups.size() == names.size()) << int(groups.size()) << " " << int(names.size());
-  if (names.empty())
-    return;
-  int index = 0;
-  if (names.size() > 1) {
-    optional<int> res = model->getView()->chooseFromList("Choose an item to pick up:", names);
-    if (!res)
-      return;
-    else
-      index = *res;
-  }
-  CHECK(index >= 0 && index < groups.size()) << index << " " << int(groups.size());
-  int num = groups[index].size();
-  if (num < 1)
-    return;
-  if (extended && num > 1) {
-    optional<int> res = model->getView()->getNumber("Pick up how many " + groups[index][0]->getName(true) + "?",
-        1, num);
-    if (!res)
-      return;
-    num = *res;
-  }
-  vector<Item*> pickUpItems = getPrefix(groups[index], num);
-  tryToPerform(getCreature()->pickUp(pickUpItems));
 }
 
 void Player::pickUpItemAction(int numItem) {
@@ -237,30 +209,6 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, op
   return vector<Item*>();
 }
 
-void Player::dropAction(bool extended) {
-  vector<Item*> items = chooseItem("Choose an item to drop:", [this](const Item* item) {
-      return !getCreature()->getEquipment().isEquiped(item) || item->getClass() == ItemClass::WEAPON;}, UserInputId::DROP);
-  int num = items.size();
-  if (num < 1)
-    return;
-  if (extended && num > 1) {
-    optional<int> res = model->getView()->getNumber("Drop how many " + items[0]->getName(true, getCreature()->isBlind()) 
-        + "?", 1, num);
-    if (!res)
-      return;
-    num = *res;
-  }
-  tryToPerform(getCreature()->drop(getPrefix(items, num)));
-}
-
-void Player::applyAction() {
-  vector<Item*> items = chooseItem("Choose an item to apply:", [this](const Item* item) {
-      return getCreature()->applyItem(const_cast<Item*>(item));}, UserInputId::APPLY_ITEM);
-  if (items.size() == 0)
-    return;
-  applyItem(items);
-}
-
 void Player::applyItem(vector<Item*> items) {
   if (getCreature()->isBlind() && contains({ItemClass::SCROLL, ItemClass::BOOK}, items[0]->getClass())) {
     privateMessage("You can't read while blind!");
@@ -277,14 +225,6 @@ void Player::applyItem(vector<Item*> items) {
       }
   }
   tryToPerform(getCreature()->applyItem(items[0]));
-}
-
-void Player::throwAction(optional<Vec2> dir) {
-  vector<Item*> items = chooseItem("Choose an item to throw:", [this](const Item* item) {
-      return !getCreature()->getEquipment().isEquiped(item);}, UserInputId::THROW);
-  if (items.size() == 0)
-    return;
-  throwItem(items, dir);
 }
 
 void Player::throwItem(vector<Item*> items, optional<Vec2> dir) {
@@ -448,17 +388,11 @@ void Player::fireAction(Vec2 dir) {
   tryToPerform(getCreature()->fire(dir));
 }
 
-void Player::spellAction() {
-  vector<View::ListElem> list;
+void Player::spellAction(int spellNum) {
   vector<Spell*> spells = getCreature()->getSpells();
-  for (Spell* spell : spells)
-    list.push_back(View::ListElem(spell->getName() + " " + (!getCreature()->isReady(spell) ? "(ready in " +
-          toString(int(getCreature()->getSpellDelay(spell) + 0.9999)) + " turns)" : ""),
-          getCreature()->isReady(spell) ? View::NORMAL : View::INACTIVE).setTip(spell->getDescription()));
-  auto index = model->getView()->chooseFromList("Cast a spell:", list);
-  if (!index)
+  if (spellNum >= spells.size())
     return;
-  Spell* spell = spells[*index];
+  Spell* spell = spells[spellNum];
   if (!spell->isDirected())
     tryToPerform(getCreature()->castSpell(spell));
   else if (auto dir = model->getView()->chooseDirection("Which direction?"))
@@ -583,14 +517,8 @@ void Player::makeMove() {
     case UserInputId::INVENTORY_ITEM:
       handleItems(action.get<InventoryItemInfo>().items(), action.get<InventoryItemInfo>().action()); break;
     case UserInputId::PICK_UP: pickUpAction(false); break;
-    case UserInputId::EXT_PICK_UP: pickUpAction(true); break;
     case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
-    case UserInputId::DROP: dropAction(false); break;
-    case UserInputId::EXT_DROP: dropAction(true); break;
     case UserInputId::WAIT: getCreature()->wait().perform(getCreature()); break;
-    case UserInputId::APPLY_ITEM: applyAction(); break; 
-    case UserInputId::THROW: throwAction(); break;
-    case UserInputId::THROW_DIR: throwAction(action.get<Vec2>()); break;
     case UserInputId::HIDE: hideAction(); break;
     case UserInputId::PAY_DEBT: payDebtAction(); break;
     case UserInputId::CHAT: chatAction(); break;
@@ -600,7 +528,7 @@ void Player::makeMove() {
       if (unpossess())
         return;
       break;
-    case UserInputId::CAST_SPELL: spellAction(); break;
+    case UserInputId::CAST_SPELL: spellAction(action.get<int>()); break;
     case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(this); break;
     case UserInputId::EXIT: model->exitAction(); return;
     default: break;
@@ -861,6 +789,13 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     info.effects.push_back({s, true});
   for (string s : getCreature()->getGoodAdjectives())
     info.effects.push_back({s, false});
+  info.spells.clear();
+  for (Spell* spell : getCreature()->getSpells()) {
+    bool ready = getCreature()->isReady(spell);
+    info.spells.push_back({ spell->getName() +
+        (ready ? "" : " [" + toString<int>(getCreature()->getSpellDelay(spell)) + "]"),
+        spell->getDescription(), ready});
+  }
   info.squareName = getCreature()->getSquare()->getName();
   info.lyingItems.clear();
   for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))

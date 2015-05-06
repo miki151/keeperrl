@@ -105,7 +105,6 @@ class WindowView: public View {
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
   void drawMap();
-  optional<sf::Event::KeyEvent> getEventFromMenu();
   void propagateEvent(const Event& event, vector<GuiElem*>);
   void keyboardAction(Event::KeyEvent key);
 

@@ -97,6 +97,26 @@ PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey) {
   return PGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey));
 }
 
+class MouseWheel : public GuiElem {
+  public:
+  MouseWheel(function<void(bool)> f) : fun(f) {}
+
+  virtual bool onMouseWheel(Vec2 mousePos, bool up) override {
+    if (mousePos.inRectangle(getBounds())) {
+      fun(up);
+      return true;
+    }
+    return false;
+  }
+
+  private:
+  function<void(bool)> fun;
+};
+
+PGuiElem GuiFactory::mouseWheel(function<void(bool)> fun) {
+  return PGuiElem(new MouseWheel(fun));
+}
+
 class DrawCustom : public GuiElem {
   public:
   DrawCustom(function<void(Renderer&, Rectangle)> fun) : drawFun(fun) {}
@@ -337,9 +357,12 @@ class GuiLayout : public GuiElem {
       elems[i]->onKeyPressed2(key);
   }
 
-  virtual void onMouseWheel(Vec2 v, bool up) override {
+  virtual bool onMouseWheel(Vec2 v, bool up) override {
     for (int i : All(elems))
-      elems[i]->onMouseWheel(v, up);
+      if (isVisible(i))
+        if (elems[i]->onMouseWheel(v, up))
+          return true;
+    return false;
   }
 
   virtual Rectangle getElemBounds(int num) {
@@ -893,7 +916,7 @@ class ScrollBar : public GuiLayout {
   }
 
   int scrollLength() {
-    return content->getLastTopElem(getBounds().getH());
+    return max(1, content->getLastTopElem(getBounds().getH()));
   }
 
   int calcButHeight() {
@@ -904,14 +927,16 @@ class ScrollBar : public GuiLayout {
     return ret;
   }
 
-  virtual void onMouseWheel(Vec2 v, bool up) override {
+  virtual bool onMouseWheel(Vec2 v, bool up) override {
     if (v.inRectangle(Rectangle(Vec2(content->getBounds().getPX(), getBounds().getPY()),
         getBounds().getBottomRight()))) {
       if (up)
         *scrollPos = max<double>(0, *scrollPos - 1);
       else
         *scrollPos = min<double>(scrollLength(), *scrollPos + 1);
+      return true;
     }
+    return false;
   }
 
   virtual bool onLeftClick(Vec2 v) override {
@@ -1322,7 +1347,8 @@ void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       break;
     case Event::MouseWheelMoved:
       for (GuiElem* elem : guiElems)
-        elem->onMouseWheel(Vec2(event.mouseWheel.x, event.mouseWheel.y), event.mouseWheel.delta > 0);
+        if (elem->onMouseWheel(Vec2(event.mouseWheel.x, event.mouseWheel.y), event.mouseWheel.delta > 0))
+          break;
       break;
     default: break;
   }
