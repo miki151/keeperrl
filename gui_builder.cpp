@@ -629,7 +629,9 @@ PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
   lines.push_back(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
   if (!info.effects.empty()) {
     for (auto effect : info.effects)
-      lines.push_back(gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::WHITE]));
+      lines.push_back(gui.stack(
+            getTooltip({effect.help}),
+            gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::WHITE])));
   }
   lines.push_back(gui.empty());
   if (!info.team.empty()) {

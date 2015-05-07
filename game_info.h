@@ -102,6 +102,7 @@ class GameInfo {
     string weaponName;
     struct Effect {
       string name;
+      string help;
       bool bad;
     };
     vector<Effect> effects;

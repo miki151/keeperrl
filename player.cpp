@@ -785,10 +785,10 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.skills = getCreature()->getSkillNames();
   gameInfo.time = getCreature()->getTime();
   info.effects.clear();
-  for (string s : getCreature()->getBadAdjectives())
-    info.effects.push_back({s, true});
-  for (string s : getCreature()->getGoodAdjectives())
-    info.effects.push_back({s, false});
+  for (auto& adj : getCreature()->getBadAdjectives())
+    info.effects.push_back({adj.name, adj.help, true});
+  for (auto& adj : getCreature()->getGoodAdjectives())
+    info.effects.push_back({adj.name, adj.help, false});
   info.spells.clear();
   for (Spell* spell : getCreature()->getSpells()) {
     bool ready = getCreature()->isReady(spell);

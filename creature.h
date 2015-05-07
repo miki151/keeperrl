@@ -276,9 +276,13 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   const MinionTaskMap& getMinionTasks() const;
   int accuracyBonus() const;
   vector<string> getMainAdjectives() const;
-  vector<string> getGoodAdjectives() const;
-  vector<string> getWeaponAdjective() const;
-  vector<string> getBadAdjectives() const;
+  struct AdjectiveInfo {
+    string name;
+    string help;
+  };
+  vector<AdjectiveInfo> getGoodAdjectives() const;
+  vector<AdjectiveInfo> getWeaponAdjective() const;
+  vector<AdjectiveInfo> getBadAdjectives() const;
 
   vector<string> popPersonalEvents();
   void setInCombat();

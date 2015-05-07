@@ -1417,13 +1417,18 @@ bool Creature::takeDamage(Attack attack) {
   return false;
 }
 
+static vector<string> extractNames(const vector<Creature::AdjectiveInfo>& adjectives) {
+  return transform2<string>(adjectives, [] (const Creature::AdjectiveInfo& e) { return e.name; });
+}
+
 void Creature::updateViewObject() {
   modViewObject().setAttribute(ViewObject::Attribute::DEFENSE, getModifier(ModifierType::DEFENSE));
   modViewObject().setAttribute(ViewObject::Attribute::ATTACK, getModifier(ModifierType::DAMAGE));
   modViewObject().setAttribute(ViewObject::Attribute::LEVEL, getExpLevel());
   modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
   modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
-  modViewObject().setAdjectives(concat(getWeaponAdjective(), getBadAdjectives(), getGoodAdjectives()));
+  modViewObject().setAdjectives(extractNames(concat(
+          getWeaponAdjective(), getBadAdjectives(), getGoodAdjectives())));
   if (isAffected(LastingEffect::SLEEP))
     modViewObject().setModifier(ViewObject::Modifier::SLEEPING);
   else
@@ -2438,66 +2443,68 @@ vector<string> Creature::getMainAdjectives() const {
   return ret;
 }
 
-vector<string> Creature::getWeaponAdjective() const {
+vector<Creature::AdjectiveInfo> Creature::getWeaponAdjective() const {
   if (const Item* weapon = getWeapon())
-    return {"Wielding " + weapon->getAName()};
+    return {{"Wielding " + weapon->getAName(), ""}};
   else
     return {};
 }
 
-vector<string> Creature::getGoodAdjectives() const {
-  vector<string> ret;
+vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
+  vector<AdjectiveInfo> ret;
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect)) {
-      bool addCount = true;
+      string name;
       switch (effect) {
-        case LastingEffect::INVISIBLE: ret.push_back("Invisible"); break;
-        case LastingEffect::PANIC: ret.push_back("Panic"); break;
-        case LastingEffect::RAGE: ret.push_back("Enraged"); break;
-        case LastingEffect::HALLU: ret.push_back("Hallucinating"); break;
-        case LastingEffect::STR_BONUS: ret.push_back("Strength bonus"); break;
-        case LastingEffect::DEX_BONUS: ret.push_back("Dexterity bonus"); break;
-        case LastingEffect::SPEED: ret.push_back("Speed bonus"); break;
-        case LastingEffect::POISON_RESISTANT: ret.push_back("Poison resistant"); break;
-        case LastingEffect::FIRE_RESISTANT: ret.push_back("Fire resistant"); break;
-        case LastingEffect::FLYING: ret.push_back("Flying"); break;
-        case LastingEffect::MAGIC_SHIELD: ret.push_back("Magic shield"); break;
-        case LastingEffect::DARKNESS_SOURCE: ret.push_back("Source of darkness"); break;
-        default: addCount = false; break;
+        case LastingEffect::INVISIBLE: name = "Invisible"; break;
+        case LastingEffect::PANIC: name = "Panic"; break;
+        case LastingEffect::RAGE: name = "Enraged"; break;
+        case LastingEffect::HALLU: name = "Hallucinating"; break;
+        case LastingEffect::STR_BONUS: name = "Strength bonus"; break;
+        case LastingEffect::DEX_BONUS: name = "Dexterity bonus"; break;
+        case LastingEffect::SPEED: name = "Speed bonus"; break;
+        case LastingEffect::POISON_RESISTANT: name = "Poison resistant"; break;
+        case LastingEffect::FIRE_RESISTANT: name = "Fire resistant"; break;
+        case LastingEffect::FLYING: name = "Flying"; break;
+        case LastingEffect::MAGIC_SHIELD: name = "Magic shield"; break;
+        case LastingEffect::DARKNESS_SOURCE: name = "Source of darkness"; break;
+        default: continue;
       }
-      if (addCount && !isAffectedPermanently(effect))
-        ret.back() += "  " + getRemainingString(effect);
+      ret.push_back({name, Effect::getDescription(effect)});
+      if (!isAffectedPermanently(effect))
+        ret.back().name += "  " + getRemainingString(effect);
     }
   return ret;
 }
 
-vector<string> Creature::getBadAdjectives() const {
-  vector<string> ret;
+vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
+  vector<AdjectiveInfo> ret;
   if (!getWeapon())
-    ret.push_back("No weapon");
+    ret.push_back({"No weapon", ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = injuredBodyParts[part])
-      ret.push_back(getPlural("Injured " + getBodyPartName(part), num));
+      ret.push_back({getPlural("Injured " + getBodyPartName(part), num), ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = lostBodyParts[part])
-      ret.push_back(getPlural("Lost " + getBodyPartName(part), num));
+      ret.push_back({getPlural("Lost " + getBodyPartName(part), num), ""});
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect)) {
-      bool addCount = true;
+      string name;
       switch (effect) {
-        case LastingEffect::POISON: ret.push_back("Poisoned"); break;
-        case LastingEffect::SLEEP: ret.push_back("Sleeping"); break;
-        case LastingEffect::ENTANGLED: ret.push_back("Entangled"); break;
-        case LastingEffect::SLOWED: ret.push_back("Slowed"); break;
-        case LastingEffect::INSANITY: ret.push_back("Insane"); break;
-        default: addCount = false; break;
+        case LastingEffect::POISON: name = "Poisoned"; break;
+        case LastingEffect::SLEEP: name = "Sleeping"; break;
+        case LastingEffect::ENTANGLED: name = "Entangled"; break;
+        case LastingEffect::SLOWED: name = "Slowed"; break;
+        case LastingEffect::INSANITY: name = "Insane"; break;
+        default: continue;
       }
-      if (addCount && !isAffectedPermanently(effect))
-        ret.back() += "  " + getRemainingString(effect);
+      ret.push_back({name, Effect::getDescription(effect)});
+      if (!isAffectedPermanently(effect))
+        ret.back().name += "  " + getRemainingString(effect);
     }
   if (isBlind())
-    ret.push_back("Blind"
-        + (isAffected(LastingEffect::BLIND) ? (" " + getRemainingString(LastingEffect::BLIND)) : ""));
+    ret.push_back({"Blind"
+        + (isAffected(LastingEffect::BLIND) ? (" " + getRemainingString(LastingEffect::BLIND)) : ""), ""});
   return ret;
 }
 
