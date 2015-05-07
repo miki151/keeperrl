@@ -291,7 +291,7 @@ bool Square::itemBounces(Item* item, VisionId v) const {
 void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionId vision) {
   setDirty();
   if (creature) {
-    item[0]->onHitCreature(creature, attack, item.size() > 1);
+    item[0]->onHitCreature(creature, attack, item.size());
     if (!item[0]->isDiscarded())
       dropItems(std::move(item));
     return;

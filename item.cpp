@@ -139,12 +139,12 @@ void Item::onHitSquareMessage(Vec2 position, Square* s, int numItems) {
     s->getLevel()->globalMessage(position, getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + s->getName());
 }
 
-void Item::onHitCreature(Creature* c, const Attack& attack, bool plural) {
+void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
   if (fragile) {
-    c->you(plural ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getTheName(plural));
+    c->you(plural ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getPluralTheName(numItems));
     discarded = true;
   } else
-    c->you(plural ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getTheName(plural));
+    c->you(plural ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
   if (c->takeDamage(attack))
     return;
   if (effect && getClass() == ItemClass::POTION) {

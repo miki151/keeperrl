@@ -114,7 +114,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   double getFireSize() const;
 
   void onHitSquareMessage(Vec2 position, Square*, int numItems);
-  void onHitCreature(Creature* c, const Attack& attack, bool plural);
+  void onHitCreature(Creature* c, const Attack& attack, int numItems);
 
   double getApplyTime() const;
   double getWeight() const;
