@@ -573,12 +573,20 @@ class Fighter : public Behaviour {
       }
     }
     if (distance == 1)
-      if (auto action = creature->attack(other))
+      if (auto action = creature->attack(other, getAttackParams(other)))
         return {1.0, action.prepend([=](Creature* creature) {
             creature->setInCombat();
             other->setInCombat();
         })};
     return NoMove;
+  }
+
+  Creature::AttackParams getAttackParams(const Creature* enemy) {
+    int damDiff = enemy->getModifier(ModifierType::DAMAGE) - creature->getModifier(ModifierType::DAMAGE);
+    if (damDiff > 10)
+      return CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::WILD;);
+    if (damDiff < -10)
+      return CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::SWIFT;);
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter);
