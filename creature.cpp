@@ -1252,23 +1252,35 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
   return MsgType(0);
 }
 
-CreatureAction Creature::attack(const Creature* other, optional<AttackLevel> attackLevel1, bool spend) const {
+CreatureAction Creature::attack(const Creature* other, optional<AttackParams> attackParams, bool spend) const {
   CHECK(!other->isDead());
   Vec2 dir = other->getPosition() - getPosition();
   if (dir.length8() != 1)
     return CreatureAction();
-  if (attackLevel1 && !contains(getAttackLevels(), *attackLevel1))
-    return CreatureAction("Invalid attack level.");
   return CreatureAction(this, [=] (Creature* c) {
   Debug() << getName().the() << " attacking " << other->getName().the();
-  int accuracy =  getModifier(ModifierType::ACCURACY);
+  int accuracy = getModifier(ModifierType::ACCURACY);
   int damage = getModifier(ModifierType::DAMAGE);
   int accuracyVariance = 1 + accuracy / 3;
   int damageVariance = 1 + damage / 3;
   auto rAccuracy = [=] () { return Random.get(-accuracyVariance, accuracyVariance); };
   auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
+  double timeSpent = 1;
   accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
+  if (attackParams && attackParams->mod)
+    switch (*attackParams->mod) {
+      case AttackParams::WILD: 
+        damage *= 1.2;
+        accuracy *= 0.8;
+        timeSpent *= 1.5;
+        break;
+      case AttackParams::SWIFT: 
+        damage *= 0.8;
+        accuracy *= 1.2;
+        timeSpent *= 0.7;
+        break;
+    }
   bool backstab = false;
   string enemyName = getLevel()->playerCanSee(other) ? other->getName().the() : "something";
   if (other->isPlayer())
@@ -1280,7 +1292,9 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackLevel> att
  //   }
     you(MsgType::ATTACK_SURPRISE, enemyName);
   }
-  AttackLevel attackLevel = attackLevel1 ? (*attackLevel1) : getRandomAttackLevel();
+  AttackLevel attackLevel = getRandomAttackLevel();
+  if (attackParams && attackParams->level)
+    attackLevel = *attackParams->level;
   Attack attack(c, attackLevel, getAttackType(), accuracy, damage, backstab,
       getWeapon() ? getWeapon()->getAttackEffect() : attackEffect);
   Creature* other = c->getSafeSquare(dir)->getCreature();
@@ -1300,7 +1314,7 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackLevel> att
   level->getModel()->onAttack(other, c);
   double oldTime = getTime();
   if (spend)
-    c->spendTime(1);
+    c->spendTime(timeSpent);
   c->modViewObject().addMovementInfo({dir, oldTime, getTime(), ViewObject::MovementInfo::ATTACK});
   });
 }

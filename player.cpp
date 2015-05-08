@@ -423,12 +423,18 @@ void Player::attackAction(Creature* other) {
   vector<AttackLevel> levels = getCreature()->getAttackLevels();
   for (auto level : levels)
     switch (level) {
-      case AttackLevel::LOW: elems.push_back("Low"); break;
-      case AttackLevel::MIDDLE: elems.push_back("Middle"); break;
-      case AttackLevel::HIGH: elems.push_back("High"); break;
+      case AttackLevel::LOW: elems.push_back(View::ListElem("Low").setTip("Aim at lower parts of the body.")); break;
+      case AttackLevel::MIDDLE: elems.push_back(View::ListElem("Middle").setTip("Aim at middle parts of the body.")); break;
+      case AttackLevel::HIGH: elems.push_back(View::ListElem("High").setTip("Aim at higher parts of the body.")); break;
     }
-  if (auto ind = model->getView()->chooseFromList("Choose level of the attack:", elems))
-    getCreature()->attack(other, levels[*ind]).perform(getCreature());
+  elems.push_back(View::ListElem("Wild").setTip("+20\% damage, -20\% accuracy, +50\% time spent."));
+  elems.push_back(View::ListElem("Swift").setTip("-20\% damage, +20\% accuracy, -30\% time spent."));
+  if (auto ind = model->getView()->chooseFromList("Choose attack parameters:", elems)) {
+    if (*ind <= levels.size())
+      getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.level = levels[*ind];)).perform(getCreature());
+    else
+      getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::Mod(*ind - levels.size());)).perform(getCreature());
+  }
 }
 
 void Player::retireMessages() {
