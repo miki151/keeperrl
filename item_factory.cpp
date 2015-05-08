@@ -184,30 +184,6 @@ class ItemOfCreatureVision : public Item {
   unique_ptr<CreatureVision> SERIAL(vision);
 };
 
-class LastingEffectItem : public Item {
-  public:
-  LastingEffectItem(const ItemAttributes& attr, LastingEffect e) : Item(attr), effect(e) {}
-
-  virtual void onEquipSpecial(Creature* c) {
-    c->addPermanentEffect(effect);
-  }
-
-  virtual void onUnequipSpecial(Creature* c) {
-    c->removePermanentEffect(effect);
-  }
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(effect);
-  }
-
-  SERIALIZATION_CONSTRUCTOR(LastingEffectItem);
-
-  private:
-  LastingEffect SERIAL(effect);
-};
-
 class Corpse : public Item {
   public:
   Corpse(const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN, 
@@ -409,7 +385,6 @@ void ItemFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Telepathy);
   REGISTER_TYPE(ar, ItemOfCreatureVision);
   REGISTER_TYPE(ar, Corpse);
-  REGISTER_TYPE(ar, LastingEffectItem);
 }
 
 REGISTER_TYPES(ItemFactory::registerTypes);
@@ -885,7 +860,6 @@ PItem ItemFactory::fromId(ItemType item) {
     case ItemId::WARNING_AMULET: return PItem(new AmuletOfWarning(getAttributes(item), 5));
     case ItemId::BOW: return PItem(new RangedWeapon(getAttributes(item)));
     case ItemId::TELEPATHY_HELM: return PItem(new ItemOfCreatureVision(getAttributes(item), new Telepathy()));
-    case ItemId::LEVITATION_BOOTS: return PItem(new LastingEffectItem(getAttributes(item), LastingEffect::FLYING));
     case ItemId::HEALING_AMULET: return PItem(new AmuletOfHealing(getAttributes(item)));
     case ItemId::FIRE_SCROLL: return PItem(new FireScroll(getAttributes(item)));
     case ItemId::RANDOM_TECH_BOOK: return PItem(new TechBook(getAttributes(item), none));
@@ -893,7 +867,6 @@ PItem ItemFactory::fromId(ItemType item) {
     case ItemId::POTION: return PItem(new Potion(getAttributes(item)));
     case ItemId::TRAP_ITEM:
         return getTrap(getAttributes(item), item.get<TrapInfo>().trapType(), item.get<TrapInfo>().effectType());
-    case ItemId::RING: return PItem(new LastingEffectItem(getAttributes(item), item.get<LastingEffect>()));
     default: return PItem(new Item(getAttributes(item)));
   }
   return PItem();
@@ -1161,6 +1134,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::LEVITATION_BOOTS: return ITATTR(
             i.viewId = ViewId::LEVITATION_BOOTS;
             i.shortName = "levitation";
+            i.lastingEffect = LastingEffect::FLYING;
             i.name = "boots of " + *i.shortName;
             i.plural = "pairs of boots of " + *i.shortName;
             i.itemClass = ItemClass::ARMOR;
@@ -1171,6 +1145,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::RING: return ITATTR(
             i.viewId = getRingViewId(item.get<LastingEffect>());
             i.shortName = Effect::getName(item.get<LastingEffect>());
+            i.lastingEffect = item.get<LastingEffect>();
             i.name = "ring of " + *i.shortName;
             i.plural = "rings of " + *i.shortName;
             i.weight = 0.05;

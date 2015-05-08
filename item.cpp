@@ -96,10 +96,14 @@ vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, functi
 
 void Item::onEquip(Creature* c) {
   onEquipSpecial(c);
+  if (lastingEffect)
+    c->addPermanentEffect(*lastingEffect);
 }
 
 void Item::onUnequip(Creature* c) {
   onUnequipSpecial(c);
+  if (lastingEffect)
+    c->removePermanentEffect(*lastingEffect);
 }
 
 void Item::setOnFire(double amount, const Level* level, Vec2 position) {
