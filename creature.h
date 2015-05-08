@@ -223,6 +223,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   vector<vector<Item*>> stackItems(vector<Item*>) const;
 
   CreatureAction moveTowards(Vec2 pos, bool stepOnTile = false);
+  bool canNavigateTo(Vec2) const;
   CreatureAction moveAway(Vec2 pos, bool pathfinding = true);
   CreatureAction continueMoving();
   CreatureAction stayIn(const Location*);

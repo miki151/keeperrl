@@ -52,8 +52,8 @@ Debug::~Debug() {
     fail();
   } else {
 #ifndef RELEASE
-    //output << out << endl;
-    //output.flush();
+    output << out << endl;
+    output.flush();
 #endif
   }
 }

@@ -2214,20 +2214,21 @@ CreatureAction Creature::moveTowards(Vec2 pos, bool stepOnTile) {
   return moveTowards(pos, false, stepOnTile);
 }
 
+bool Creature::canNavigateTo(Vec2 pos) const {
+  MovementType movement = getMovementType();
+  for (Vec2 v : pos.neighbors8())
+    if (v.inRectangle(level->getBounds()) && level->areConnected(position, v, movement))
+      return true;
+  return false;
+}
+
 CreatureAction Creature::moveTowards(Vec2 pos, bool away, bool stepOnTile) {
   if (stepOnTile && !level->getSafeSquare(pos)->canEnterEmpty(this))
     return CreatureAction();
-  if (!away) {
-    bool sectorOk = false;
-    MovementType movement = getMovementType();
-    for (Vec2 v : pos.neighbors8())
-      if (v.inRectangle(level->getBounds()) && level->areConnected(position, v, movement)) {
-        sectorOk = true;
-        break;
-      }
-    if (!sectorOk)
-      return CreatureAction();
-  }
+  MEASURE(
+  if (!away && !canNavigateTo(pos))
+    return CreatureAction();
+  , "Creature Sector checking " + getName().bare() + " from " + toString(position) + " to " + toString(pos));
   Debug() << "" << getPosition() << (away ? "Moving away from" : " Moving toward ") << pos;
   bool newPath = false;
   bool targetChanged = shortestPath && shortestPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10;

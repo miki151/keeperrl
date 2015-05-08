@@ -138,7 +138,6 @@ void Model::updateSunlightInfo() {
   double d = 0;
 /*  if (options->getBoolValue(OptionId::START_WITH_NIGHT))
     d = -dayLength + 10;*/
-  auto previous = sunlightInfo.state;
   while (1) {
     d += dayLength;
     if (d > currentTime) {
@@ -161,10 +160,6 @@ void Model::updateSunlightInfo() {
       sunlightInfo = {1 - (d - currentTime) / duskLength, d - currentTime, SunlightInfo::NIGHT};
       break;
     }
-  }
-  if (previous != sunlightInfo.state) {
-    for (PLevel& l : levels)
-      l->updateSunlightMovement();
   }
 }
 
@@ -272,7 +267,12 @@ const vector<Collective*> Model::getMainVillains() const {
 }
 
 void Model::tick(double time) {
+  auto previous = sunlightInfo.state;
   updateSunlightInfo();
+  if (previous != sunlightInfo.state) {
+    for (PLevel& l : levels)
+      l->updateSunlightMovement();
+  }
   Debug() << "Turn " << time;
   for (Creature* c : timeQueue.getAllCreatures()) {
     c->tick(time);
