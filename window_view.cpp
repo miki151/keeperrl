@@ -920,7 +920,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   double localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
-  PGuiElem stuff = guiBuilder.drawListGui(title, options, menuType, &contentHeight, &index, &choice);
+  PGuiElem stuff = guiBuilder.drawListGui(CapitalFirst(title), options, menuType, &contentHeight, &index, &choice);
   PGuiElem dismissBut = gui.margins(gui.stack(makeVec<PGuiElem>(
         gui.button([&](){ choice = -100; }),
         gui.mouseHighlight2(gui.mainMenuHighlight()),

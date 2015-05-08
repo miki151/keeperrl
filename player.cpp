@@ -285,7 +285,10 @@ void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemInfo
     case ItemInfo::THROW: throwItem(items); break;
     case ItemInfo::APPLY: applyItem(items); break;
     case ItemInfo::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
-    case ItemInfo::EQUIP: tryToPerform(getCreature()->equip(items[0])); break;
+    case ItemInfo::EQUIP: 
+      if (getCreature()->isEquipmentAppropriate(items[0]) || model->getView()->yesOrNoPrompt(
+          items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
+        tryToPerform(getCreature()->equip(items[0])); break;
   }
 }
 

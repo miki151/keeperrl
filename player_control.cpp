@@ -550,7 +550,7 @@ void PlayerControl::handleEquipment(View* view, Creature* creature) {
             if (Creature* c = const_cast<Creature*>(getCollective()->getMinionEquipment().getOwner(chosenItem)))
               c->removeEffect(LastingEffect::SLEEP);
             if (chosenItem->getEquipmentSlot() != EquipmentSlot::WEAPON
-                || chosenItem->getMinStrength() <= creature->getAttr(AttrType::STRENGTH)
+                || creature->isEquipmentAppropriate(chosenItem)
                 || view->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " + creature->getName().the() 
                   + ", and will incur an accuracy penaulty.\n Do you want to continue?"))
               getCollective()->getMinionEquipment().own(creature, chosenItem);

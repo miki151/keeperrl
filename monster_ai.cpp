@@ -424,7 +424,7 @@ class Fighter : public Behaviour {
       return 1;
     if (item->getClass() == ItemClass::AMMO && creature->getSkillValue(Skill::get(SkillId::ARCHERY)) > 0)
       return 0.1;
-    if (item->getClass() != ItemClass::WEAPON || creature->getAttr(AttrType::STRENGTH) < item->getMinStrength())
+    if (!creature->isEquipmentAppropriate(item))
       return 0;
     if (item->getModifier(ModifierType::THROWN_DAMAGE) > 0)
       return (double)item->getModifier(ModifierType::THROWN_DAMAGE) / 50;

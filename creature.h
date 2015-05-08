@@ -186,6 +186,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   CreatureAction bumpInto(Vec2 direction) const;
   CreatureAction applyItem(Item* item) const;
   CreatureAction equip(Item* item) const;
+  bool isEquipmentAppropriate(const Item* item) const;
   CreatureAction unequip(Item* item) const;
   bool canEquipIfEmptySlot(const Item* item, string* reason = nullptr) const;
   bool canEquip(const Item* item) const;

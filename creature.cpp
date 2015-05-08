@@ -529,6 +529,10 @@ bool Creature::canEquip(const Item* item) const {
   return canEquipIfEmptySlot(item, nullptr) && equipment.canEquip(item);
 }
 
+bool Creature::isEquipmentAppropriate(const Item* item) const {
+  return item->getClass() != ItemClass::WEAPON || item->getMinStrength() <= getAttr(AttrType::STRENGTH);
+}
+
 CreatureAction Creature::equip(Item* item) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))

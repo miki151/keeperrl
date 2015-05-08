@@ -105,7 +105,7 @@ void MinionEquipment::own(const Creature* c, const Item* it) {
 }
 
 bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) const {
-  return it->getClass() != ItemClass::WEAPON || c->getAttr(AttrType::STRENGTH) >= it->getMinStrength();
+  return c->isEquipmentAppropriate(it);
 }
 
 int MinionEquipment::getItemValue(const Item* it) {
