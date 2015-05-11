@@ -244,6 +244,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void setHeld(const Creature* holding);
   bool isHeld() const;
 
+  void you(MsgType type, const vector<string>& param) const;
   void you(MsgType type, const string& param) const;
   void you(const string& param) const;
   void playerMessage(const PlayerMessage&) const;

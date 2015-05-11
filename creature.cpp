@@ -258,6 +258,10 @@ void Creature::takeItems(vector<PItem> items, const Creature* from) {
   controller->onItemsAppeared(ref, from);
 }
 
+void Creature::you(MsgType type, const vector<string>& param) const {
+  controller->you(type, param);
+}
+
 void Creature::you(MsgType type, const string& param) const {
   controller->you(type, param);
 }
@@ -1268,17 +1272,20 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
   double timeSpent = 1;
   accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
+  vector<string> attackAdjective;
   if (attackParams && attackParams->mod)
     switch (*attackParams->mod) {
       case AttackParams::WILD: 
         damage *= 1.2;
         accuracy *= 0.8;
         timeSpent *= 1.5;
+        attackAdjective.push_back("wildly");
         break;
       case AttackParams::SWIFT: 
         damage *= 0.8;
         accuracy *= 1.2;
         timeSpent *= 0.7;
+        attackAdjective.push_back("swiftly");
         break;
     }
   bool backstab = false;
@@ -1300,12 +1307,12 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
   Creature* other = c->getSafeSquare(dir)->getCreature();
   if (!other->dodgeAttack(attack)) {
     if (getWeapon()) {
-      you(getAttackMsg(attack.getType(), true, attack.getLevel()), getWeapon()->getName());
+      you(getAttackMsg(attack.getType(), true, attack.getLevel()), concat({getWeapon()->getName()}, attackAdjective));
       if (!canSee(other))
         playerMessage("You hit something.");
     }
     else {
-      you(getAttackMsg(attack.getType(), false, attack.getLevel()), enemyName);
+      you(getAttackMsg(attack.getType(), false, attack.getLevel()), concat({enemyName}, attackAdjective));
     }
     other->takeDamage(attack);
   }

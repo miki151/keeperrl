@@ -284,6 +284,10 @@ int ModelBuilder::getStatuePopulationIncrease() {
   return 1;
 }
 
+int ModelBuilder::getThronePopulationIncrease() {
+  return 10;
+}
+
 static CollectiveConfig getKeeperConfig(bool fastImmigration) {
   return CollectiveConfig::keeper(
       fastImmigration ? 0.1 : 0.011,
@@ -300,6 +304,11 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
         c.type = SquareApplyType::STATUE;
         c.increase = ModelBuilder::getStatuePopulationIncrease();
         c.oneTime = false;
+        c.minSize = 1;),
+      CONSTRUCT(PopulationIncrease,
+        c.type = SquareApplyType::THRONE;
+        c.increase = ModelBuilder::getThronePopulationIncrease();
+        c.oneTime = true;
         c.minSize = 1;)
       },
       {

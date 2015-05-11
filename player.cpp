@@ -430,7 +430,7 @@ void Player::attackAction(Creature* other) {
   elems.push_back(View::ListElem("Wild").setTip("+20\% damage, -20\% accuracy, +50\% time spent."));
   elems.push_back(View::ListElem("Swift").setTip("-20\% damage, +20\% accuracy, -30\% time spent."));
   if (auto ind = model->getView()->chooseFromList("Choose attack parameters:", elems)) {
-    if (*ind <= levels.size())
+    if (*ind < levels.size())
       getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.level = levels[*ind];)).perform(getCreature());
     else
       getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::Mod(*ind - levels.size());)).perform(getCreature());
@@ -621,6 +621,20 @@ void Player::you(const string& param) {
   privateMessage("You " + param);
 }
 
+void Player::you(MsgType type, const vector<string>& param) {
+  string msg;
+  switch (type) {
+    case MsgType::SWING_WEAPON: msg = "You swing your " + param.at(0); break;
+    case MsgType::THRUST_WEAPON: msg = "You thrust your " + param.at(0); break;
+    case MsgType::KICK: msg = "You kick " + param.at(0); break;
+    case MsgType::PUNCH: msg = "You punch " + param.at(0); break;
+    default: you(type, param.at(0)); break;
+  }
+  if (param.size() > 1)
+    msg += " " + param[1];
+  privateMessage(msg);
+}
+
 void Player::you(MsgType type, const string& param) {
   string msg;
   switch (type) {
@@ -646,12 +660,8 @@ void Player::you(MsgType type, const string& param) {
     case MsgType::COLLAPSE: msg = "You collapse."; break;
     case MsgType::TRIGGER_TRAP: msg = "You trigger something."; break;
     case MsgType::DISARM_TRAP: msg = "You disarm the trap."; break;
-    case MsgType::SWING_WEAPON: msg = "You swing your " + param; break;
-    case MsgType::THRUST_WEAPON: msg = "You thrust your " + param; break;
     case MsgType::ATTACK_SURPRISE: msg = "You sneak attack " + param; break;
-    case MsgType::KICK: msg = "You kick " + param; break;
     case MsgType::BITE: msg = "You bite " + param; break;
-    case MsgType::PUNCH: msg = "You punch " + param; break;
     case MsgType::PANIC:
           msg = !getCreature()->isAffected(LastingEffect::HALLU) ? "You are suddenly very afraid" : "You freak out completely"; break;
     case MsgType::RAGE:

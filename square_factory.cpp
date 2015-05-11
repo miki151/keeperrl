@@ -861,6 +861,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::EYEBALL] = 5;
               c.constructions[SquareId::CREATURE_ALTAR] = 35;
               c.constructions[SquareId::MINION_STATUE] = 35;
+              c.constructions[SquareId::THRONE] = 100;
               c.constructions[SquareId::RITUAL_ROOM] = 10;));
     case SquareId::BLACK_FLOOR:
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
@@ -1067,6 +1068,9 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::TRAINING_ROOM:
         return new Furniture(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training room"), 
             "training room", 1, SquareApplyType::TRAIN);
+    case SquareId::THRONE:
+        return new Furniture(ViewObject(ViewId::THRONE, ViewLayer::FLOOR, "Throne"), 
+            "throne", 0, SquareApplyType::THRONE);
     case SquareId::RITUAL_ROOM:
         return new Square(ViewObject(ViewId::RITUAL_ROOM, ViewLayer::FLOOR, "Ritual room"),
           CONSTRUCT(Square::Params,

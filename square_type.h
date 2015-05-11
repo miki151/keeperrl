@@ -77,7 +77,8 @@ RICH_ENUM(SquareId,
   ALTAR,
   CREATURE_ALTAR,
   EYEBALL,
-  MINION_STATUE
+  MINION_STATUE,
+  THRONE
 );
 
 typedef EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId, CreatureFactory::SingleCreature,

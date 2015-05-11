@@ -373,6 +373,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WELL, sprite(5, 8, 2).setNoShadow());
     Tile::addTile(ViewId::STATUE1, sprite(6, 5, 2).setNoShadow());
     Tile::addTile(ViewId::STATUE2, sprite(7, 5, 2).setNoShadow());
+    Tile::addTile(ViewId::THRONE, sprite(7, 4, 2).setNoShadow());
     Tile::addTile(ViewId::GREAT_ORC, sprite(6, 14));
     Tile::addTile(ViewId::ORC, sprite("orc"));
     Tile::addTile(ViewId::ORC_SHAMAN, sprite("shaman"));
@@ -640,6 +641,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WELL, symbol("0", ColorId::BLUE));
     Tile::addSymbol(ViewId::STATUE1, symbol("&", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::STATUE2, symbol("&", ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::THRONE, symbol("Ω", ColorId::YELLOW));
     Tile::addSymbol(ViewId::GREAT_ORC, symbol("o", ColorId::PURPLE));
     Tile::addSymbol(ViewId::ORC, symbol("o", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::ORC_SHAMAN, symbol("o", ColorId::YELLOW));
