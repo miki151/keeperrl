@@ -38,7 +38,11 @@ void advance(View* view, const Technology* tech) {
   if (!spells.empty())
     text += "Teaches spells: " + combine(spells) + "\n";
   const vector<PlayerControl::RoomInfo>& rooms = filter(PlayerControl::getRoomInfo(), 
-      [tech] (const PlayerControl::RoomInfo& info) { return info.techId && Technology::get(*info.techId) == tech;});
+      [tech] (const PlayerControl::RoomInfo& info) {
+          for (auto& req : info.requirements)
+            if (req.getId() == PlayerControl::RequirementId::TECHNOLOGY && req.get<TechId>() == tech->getId())
+              return true;
+          return false;});
   if (!rooms.empty())
     text += "Unlocks rooms: " + combine(rooms) + "\n";
   if (!tech->canResearch())
@@ -76,8 +80,8 @@ void skills(View* view, int lastInd = 0) {
 
 void room(View* view, PlayerControl::RoomInfo& info) {
   string text = info.description;
-  if (info.techId)
-    text += "\n \nRequires: " + Technology::get(*info.techId)->getName();
+  for (auto& req : info.requirements)
+    text += "\n \nRequires: " + PlayerControl::getRequirementText(req) + ".";
   view->presentText(info.name, text);
 }
 
