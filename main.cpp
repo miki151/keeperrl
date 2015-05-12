@@ -50,6 +50,10 @@
 #define USER_DIR "."
 #endif
 
+#ifdef OSX_APP
+#include "ResourcePath.hpp"
+#endif
+
 using namespace boost::iostreams;
 using namespace boost::program_options;
 using namespace boost::archive;
@@ -127,15 +131,64 @@ int main(int argc, char* argv[]) {
     ("seed", value<int>(), "Use given seed")
     ("replay", value<string>(), "Replay game from file");
   variables_map vars;
-  store(parse_command_line(argc, argv, flags), vars);
-  if (vars.count("help")) {
-    std::cout << flags << endl;
+  string dataPath;
+  string userPath;
+  string uploadUrl;
+  string overrideSettings;
+  int seed;
+  bool genExit;
+  bool replay;
+  try
+  {
+    store(parse_command_line(argc, argv, flags), vars);
+        
+    if (vars.count("help")) {
+      std::cout << flags << endl;
+      return 0;
+    }
+    if (vars.count("run_tests")) {
+      testAll();
+      return 0;
+    }
+      
+    if (vars.count("data_dir"))
+      dataPath = vars["data_dir"].as<string>();
+    else
+#ifdef OSX_APP
+      dataPath = resourcePath();
+#else
+      dataPath = DATA_DIR;
+#endif
+      
+    if (vars.count("user_dir"))
+      userPath = vars["user_dir"].as<string>();
+    else
+    if (const char* localPath = std::getenv("XDG_DATA_HOME"))
+      userPath = localPath + string("/KeeperRL");
+    else
+      userPath = USER_DIR;
+    
+    if (vars.count("upload_url"))
+      uploadUrl = vars["upload_url"].as<string>();
+    else
+      uploadUrl = "http://keeperrl.com/retired";
+    
+    if (vars.count("override_settings"))
+      overrideSettings = vars["override_settings"].as<string>();
+      
+    seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
+      
+    genExit = vars.count("gen_world_exit");
+    replay = vars.count("replay");
+  }
+  catch(error& e)
+  {
+    std::cout << "Error parsing flags: ";
+    for (int count = 1; count < argc; ++count)
+        std::cout << argv[count] << endl;
     return 0;
   }
-  if (vars.count("run_tests")) {
-    testAll();
-    return 0;
-  }
+    
   unique_ptr<View> view;
   unique_ptr<CompressedInput> input;
   unique_ptr<CompressedOutput> output;
@@ -146,34 +199,16 @@ int main(int argc, char* argv[]) {
   Spell::init();
   Epithet::init();
   Vision::init();
-  string dataPath;
-  if (vars.count("data_dir"))
-    dataPath = vars["data_dir"].as<string>();
-  else
-    dataPath = DATA_DIR;
+  
   string freeDataPath = dataPath + "/data_free";
   string paidDataPath = dataPath + "/data";
   string contribDataPath = dataPath + "/data_contrib";
   tilesPresent = !!opendir(paidDataPath.c_str());
-  string userPath;
-  if (vars.count("user_dir"))
-    userPath = vars["user_dir"].as<string>();
-  else
-  if (const char* localPath = std::getenv("XDG_DATA_HOME"))
-    userPath = localPath + string("/KeeperRL");
-  else
-    userPath = USER_DIR;
+  
   Debug() << "Data path: " << dataPath;
   Debug() << "User path: " << userPath;
-  string uploadUrl;
-  if (vars.count("upload_url"))
-    uploadUrl = vars["upload_url"].as<string>();
-  else
-    uploadUrl = "http://keeperrl.com/retired";
+  
   makeDir(userPath);
-  string overrideSettings;
-  if (vars.count("override_settings"))
-    overrideSettings = vars["override_settings"].as<string>();
   Options options(userPath + "/options.txt", overrideSettings);
   Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
   Clock clock;
@@ -183,10 +218,9 @@ int main(int argc, char* argv[]) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
-  int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
+  
  // int forceMode = vars.count("force_keeper") ? 0 : -1;
-  bool genExit = vars.count("gen_world_exit");
-  if (vars.count("replay")) {
+  if (replay) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;
     seed = fromString<int>(fname.substr(lognamePref.size()));
