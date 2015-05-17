@@ -51,7 +51,7 @@
 #endif
 
 #ifdef OSX_APP
-#include "ResourcePath.hpp"
+#include "resource_path.hpp"
 #endif
 
 using namespace boost::iostreams;
