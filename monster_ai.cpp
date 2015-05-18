@@ -585,8 +585,10 @@ class Fighter : public Behaviour {
     int damDiff = enemy->getModifier(ModifierType::DAMAGE) - creature->getModifier(ModifierType::DAMAGE);
     if (damDiff > 10)
       return CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::WILD;);
-    if (damDiff < -10)
+    else if (damDiff < -10)
       return CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::SWIFT;);
+    else
+      return Creature::AttackParams {};
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter);

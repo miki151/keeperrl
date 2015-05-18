@@ -74,7 +74,8 @@ void Monster::you(MsgType type, const vector<string>& param) {
   }
   if (param.size() > 1)
     msg += " " + param[1];
-  privateMessage(msg);
+  if (!msg.empty())
+    getCreature()->monsterMessage(msg);
 }
 
 void Monster::you(MsgType type, const string& param) {
