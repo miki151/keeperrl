@@ -1013,6 +1013,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.size = CreatureSize::MEDIUM;
           c.attr[AttrType::STRENGTH] = 14;
           c.attr[AttrType::DEXTERITY] = 12;
+          c.firstName = "Cornelia";
           c.barehandedDamage = 6;
           c.humanoid = true;
           c.weight = 50;
@@ -1984,7 +1985,11 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 
       return ItemList()
-        .add(ItemId::ROBE);
+        .add(ItemId::ROBE)
+        .add(ItemId::FIRE_SCROLL)
+        .add(ItemId::FIRE_SCROLL)
+        .add(ItemId::FIRE_SCROLL)
+        .add(ItemId::FIRE_SCROLL);
     case CreatureId::DEATH: 
       return ItemList()
         .add(ItemId::SCYTHE);

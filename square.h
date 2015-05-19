@@ -62,7 +62,7 @@ class Square : public Renderable {
     double flamability;
     map<SquareId, int> constructions;
     bool ticking;
-    MovementType movementType;
+    MovementSet movementSet;
     bool canDestroy;
     const Tribe* owner;
   };
@@ -259,12 +259,12 @@ class Square : public Renderable {
   virtual void onKilled(Creature* victim, Creature* attacker);
   Inventory SERIAL(inventory);
   string SERIAL(name);
-  void setMovementType(MovementType);
+  void addTraitForTribe(const Tribe*, MovementTrait);
+  void removeTraitForTribe(const Tribe*, MovementTrait);
   void setDirty();
 
   private:
   Item* getTopItem() const;
-  const MovementType& getMovementType() const;
 
   /** Checks if this square can be destroyed by member of the tribe.*/
   bool canDestroy(const Tribe*) const;
@@ -285,7 +285,7 @@ class Square : public Renderable {
   map<SquareId, int> SERIAL(constructions);
   bool SERIAL(ticking);
   double SERIAL(fog) = 0;
-  MovementType SERIAL(movementType);
+  MovementSet SERIAL(movementSet);
   void updateMovement();
   bool SERIAL(updateMemory) = true;
   mutable bool SERIAL(updateViewIndex) = true;

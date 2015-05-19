@@ -2131,10 +2131,10 @@ MovementType Creature::getMovementType() const {
       true,
       isAffected(LastingEffect::FLYING),
       hasSkill(Skill::get(SkillId::SWIMMING)),
-      contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size),
-      isBlind() || isHeld() || forceMovement,
-      isFireResistant(),
-      undead});
+      *size == CreatureSize::HUGE || *size == CreatureSize::LARGE})
+    .setForced(isBlind() || isHeld() || forceMovement)
+    .setFireResistant(isFireResistant())
+    .setSunlightVulnerable(undead);
 }
 
 int Creature::numBodyParts(BodyPart part) const {

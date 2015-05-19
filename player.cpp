@@ -581,8 +581,7 @@ static string getForceMovementQuestion(const Square* square, const Creature* cre
     return "Walk into the fire?";
   else if (square->canEnterEmpty(MovementTrait::SWIM))
     return "The water is very deep, are you sure?";
-  else if (square->canEnterEmpty({MovementTrait::WALK}) &&
-      creature->getMovementType().hasTrait(MovementTrait::SUNLIGHT_VULNERABLE))
+  else if (square->canEnterEmpty({MovementTrait::WALK}) && creature->getMovementType().isSunlightVulnerable())
     return "Walk into the sunlight?";
   else
     return "Walk into the " + square->getName() + "?";
