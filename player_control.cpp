@@ -82,7 +82,7 @@ PlayerControl::BuildInfo::BuildInfo(const Creature* c, CostInfo cost, const stri
 
 PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, string group)
     : buildType(type), help(h), hotkey(key), groupName(group) {
-  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FETCH, DISPATCH, CLAIM_TILE, TORCH}, type));
+  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FORBID_ZONE, FETCH, DISPATCH, CLAIM_TILE, TORCH}, type));
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
@@ -144,6 +144,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
     BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to give it a high priority.", 'a', "Orders"),
     BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
+    BuildInfo(BuildInfo::FORBID_ZONE, "Mark tiles to keep minions from entering.", 'b', "Orders"),
     BuildInfo({{SquareId::TRIBE_DOOR, tribe}, {ResourceId::WOOD, 5}, "Door"},
         {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "Click on a built door to lock it.", 'o', "Installations"),
     BuildInfo({SquareId::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, {},
@@ -809,6 +810,11 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                ViewObject(ViewId::DESTROY_BUTTON, ViewLayer::CREATURE, ""), "Remove construction", none, "",
                    GameInfo::BandInfo::Button::ACTIVE});
            break;
+      case BuildInfo::FORBID_ZONE:
+           buttons.push_back({
+               ViewObject(ViewId::FORBID_ZONE, ViewLayer::CREATURE, ""), "Forbid zone", none, "",
+                   GameInfo::BandInfo::Button::ACTIVE});
+           break;
       case BuildInfo::GUARD_POST:
            buttons.push_back({
                ViewObject(ViewId::GUARD_POST, ViewLayer::CREATURE, ""), "Guard post", none, "",
@@ -1011,6 +1017,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(getCollective()->getMarkHighlight(pos));
   if (getCollective()->hasPriorityTasks(pos))
     index.setHighlight(HighlightType::PRIORITY_TASK);
+  if (square->isTribeForbidden(getCollective()->getTribe()))
+    index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (rectSelection
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
@@ -1273,7 +1281,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       return;
   if (!getLevel()->inBounds(pos))
     return;
-  if (deselectOnly && !contains({BuildInfo::DIG, BuildInfo::SQUARE}, building.buildType))
+  if (deselectOnly && !contains({BuildInfo::FORBID_ZONE, BuildInfo::DIG, BuildInfo::SQUARE}, building.buildType))
     return;
   switch (building.buildType) {
     case BuildInfo::IMP:
@@ -1305,6 +1313,17 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           getCollective()->destroySquare(pos);
           updateSquareMemory(pos);
         }
+        break;
+    case BuildInfo::FORBID_ZONE:
+        for (Square* square : getCollective()->getLevel()->getSquare(pos))
+          if (square->isTribeForbidden(getCollective()->getTribe()) && selection != SELECT) {
+            square->allowMovementForTribe(getCollective()->getTribe());
+            selection = DESELECT;
+          } 
+          else if (!square->isTribeForbidden(getCollective()->getTribe()) && selection != DESELECT) {
+            square->forbidMovementForTribe(getCollective()->getTribe());
+            selection = SELECT;
+          }
         break;
     case BuildInfo::GUARD_POST:
         if (getCollective()->isGuardPost(pos) && selection != SELECT) {

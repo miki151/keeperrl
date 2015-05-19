@@ -239,6 +239,11 @@ class Square : public Renderable {
   virtual void onApply(Creature* c) { Debug(FATAL) << "Bad square applied"; }
   virtual double getApplyTime() const { return 1.0; }
   optional<SquareApplyType> getApplyType(const Creature*) const;
+
+  void forbidMovementForTribe(const Tribe*);
+  void allowMovementForTribe(const Tribe*);
+  bool isTribeForbidden(const Tribe*) const;
+  const Tribe* getForbiddenTribe() const;
  
   virtual ~Square();
 
@@ -292,6 +297,7 @@ class Square : public Renderable {
   mutable ViewIndex SERIAL(viewIndex);
   bool SERIAL(destroyable) = false;
   const Tribe* SERIAL(owner);
+  const Tribe* SERIAL(forbiddenTribe) = nullptr;
 };
 
 #endif

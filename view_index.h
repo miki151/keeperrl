@@ -32,7 +32,8 @@ RICH_ENUM(HighlightType,
   MEMORY,
   NIGHT,
   EFFICIENCY,
-  PRIORITY_TASK
+  PRIORITY_TASK,
+  FORBIDDEN_ZONE
 );
 
 class ViewIndex {

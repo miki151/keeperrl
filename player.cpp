@@ -583,6 +583,8 @@ static string getForceMovementQuestion(const Square* square, const Creature* cre
     return "The water is very deep, are you sure?";
   else if (square->canEnterEmpty({MovementTrait::WALK}) && creature->getMovementType().isSunlightVulnerable())
     return "Walk into the sunlight?";
+  else if (square->isTribeForbidden(creature->getTribe()))
+    return "Walk into the forbidden zone?";
   else
     return "Walk into the " + square->getName() + "?";
 }
@@ -592,7 +594,8 @@ void Player::moveAction(Vec2 dir) {
     action.perform(getCreature());
   } else if (auto action = getCreature()->forceMove(dir)) {
     for (Square* square : getCreature()->getSquare(dir))
-      if (square->canEnterEmpty(getCreature()) == getCreature()->getSquare()->canEnterEmpty(getCreature()) ||
+      if (getForceMovementQuestion(square, getCreature()) ==
+              getForceMovementQuestion(getCreature()->getSquare(), getCreature()) ||
           model->getView()->yesOrNoPrompt(getForceMovementQuestion(square, getCreature()), true))
         action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
@@ -716,6 +719,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHiddenId(square->getViewObject().id());
   if (!canSee && getMemory().hasViewIndex(pos))
     index.mergeFromMemory(getMemory().getViewIndex(pos));
+  if (square->isTribeForbidden(getCreature()->getTribe()))
+    index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (const Creature* c = square->getCreature()) {
     if (getCreature()->canSee(c) || c == getCreature())
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));

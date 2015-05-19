@@ -54,6 +54,7 @@ class Tile {
   Tile addCorner(DirSet cornerDef, DirSet borders, TileCoord);
   Tile setTranslucent(double v);
   Tile addHighlight(TileCoord);
+  Tile setColor(Color);
   optional<TileCoord> getHighlightCoord() const;
 
   const vector<ViewId>& getExtraBorderIds() const;

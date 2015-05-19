@@ -100,9 +100,10 @@ void MovementSet::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(MovementSet);
 
 bool MovementSet::canEnter(const MovementType& creature) const {
-  if (!creature.isForced() && ((sunlight && creature.isSunlightVulnerable()) ||
-        (onFire && !creature.isFireResistant())))
-    return false;
+  if (!creature.isForced()) {
+    if ((sunlight && creature.isSunlightVulnerable()) || (onFire && !creature.isFireResistant()))
+      return false;
+  }
   EnumSet<MovementTrait> rightTraits = (tribeOverrides && tribeOverrides->first == creature.getTribe()) ?
       tribeOverrides->second : traits;
   if (creature.isForced())

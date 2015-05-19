@@ -51,7 +51,8 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(updateMemory)
     & SVAR(viewIndex)
     & SVAR(destroyable)
-    & SVAR(owner);
+    & SVAR(owner)
+    & SVAR(forbiddenTribe);
   if (progressMeter)
     progressMeter->addProgress();
   updateViewIndex = true;
@@ -305,7 +306,7 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
 }
 
 bool Square::canNavigate(MovementType type) const {
-  return canEnterEmpty(type) || canDestroy(type.getTribe()) || 
+  return canEnterEmpty(type) || (canDestroy(type.getTribe()) && !canEnterEmpty(type.setForced())) || 
       (creature && creature->isStationary() && type.getTribe() != creature->getTribe());
 }
 
@@ -315,6 +316,8 @@ bool Square::canEnter(MovementType movement) const {
 
 bool Square::canEnterEmpty(MovementType movement) const {
   if (creature && creature->isStationary())
+    return false;
+  if (!movement.isForced() && forbiddenTribe && forbiddenTribe == movement.getTribe())
     return false;
   return movementSet.canEnter(movement);
 }
@@ -546,6 +549,27 @@ void Square::addTraitForTribe(const Tribe* tribe, MovementTrait trait) {
 void Square::removeTraitForTribe(const Tribe* tribe, MovementTrait trait) {
   movementSet.removeTraitForTribe(tribe, trait);
   level->updateConnectivity(position);
+}
+
+void Square::forbidMovementForTribe(const Tribe* tribe) {
+  CHECK(!forbiddenTribe || forbiddenTribe == tribe);
+  forbiddenTribe = tribe;
+  level->addSquareOwner(tribe);
+  level->updateConnectivity(position);
+}
+
+void Square::allowMovementForTribe(const Tribe* tribe) {
+  CHECK(!forbiddenTribe || forbiddenTribe == tribe);
+  forbiddenTribe = nullptr;
+  level->updateConnectivity(position);
+}
+
+bool Square::isTribeForbidden(const Tribe* tribe) const {
+  return forbiddenTribe == tribe;
+}
+
+const Tribe* Square::getForbiddenTribe() const {
+  return forbiddenTribe;
 }
 
 optional<SquareApplyType> Square::getApplyType(const Creature* c) const {

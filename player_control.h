@@ -158,6 +158,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
       FETCH,
       DISPATCH,
       CLAIM_TILE,
+      FORBID_ZONE,
       TORCH,
     } buildType;
 
