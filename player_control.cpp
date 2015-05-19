@@ -1548,7 +1548,9 @@ void PlayerControl::tick(double time) {
     if (c->getSpawnType() && !contains(getCreatures(), c)) {
       addedCreatures.push_back(const_cast<Creature*>(c));
       getCollective()->addCreature(const_cast<Creature*>(c), {MinionTrait::FIGHTER});
-    }
+    } else  
+    if (c->isMinionFood() && !contains(getCreatures(), c))
+      getCollective()->addCreature(const_cast<Creature*>(c), {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
   if (!addedCreatures.empty()) {
     getCollective()->addNewCreatureMessage(addedCreatures);
   }
