@@ -67,7 +67,6 @@
 		FCC49A031B0DB84700E91EF7 /* name_generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCC499731B0DB84600E91EF7 /* name_generator.cpp */; };
 		FCC49A041B0DB84700E91EF7 /* options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCC499751B0DB84600E91EF7 /* options.cpp */; };
 		FCC49A051B0DB84700E91EF7 /* pantheon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCC499771B0DB84600E91EF7 /* pantheon.cpp */; };
-		FCC49A061B0DB84700E91EF7 /* parse_game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCC499791B0DB84600E91EF7 /* parse_game.cpp */; };
 		FCC49A071B0DB84700E91EF7 /* player_control.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCC4997B1B0DB84600E91EF7 /* player_control.cpp */; };
 		FCC49A081B0DB84700E91EF7 /* player_message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCC4997D1B0DB84600E91EF7 /* player_message.cpp */; };
 		FCC49A091B0DB84700E91EF7 /* player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCC4997F1B0DB84600E91EF7 /* player.cpp */; };
@@ -237,8 +236,6 @@
 		FCC499761B0DB84600E91EF7 /* options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = options.h; path = ../options.h; sourceTree = SOURCE_ROOT; };
 		FCC499771B0DB84600E91EF7 /* pantheon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pantheon.cpp; path = ../pantheon.cpp; sourceTree = SOURCE_ROOT; };
 		FCC499781B0DB84600E91EF7 /* pantheon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pantheon.h; path = ../pantheon.h; sourceTree = SOURCE_ROOT; };
-		FCC499791B0DB84600E91EF7 /* parse_game.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = parse_game.cpp; path = ../parse_game.cpp; sourceTree = SOURCE_ROOT; };
-		FCC4997A1B0DB84600E91EF7 /* parse_game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = parse_game.h; path = ../parse_game.h; sourceTree = SOURCE_ROOT; };
 		FCC4997B1B0DB84600E91EF7 /* player_control.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = player_control.cpp; path = ../player_control.cpp; sourceTree = SOURCE_ROOT; };
 		FCC4997C1B0DB84600E91EF7 /* player_control.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = player_control.h; path = ../player_control.h; sourceTree = SOURCE_ROOT; };
 		FCC4997D1B0DB84600E91EF7 /* player_message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = player_message.cpp; path = ../player_message.cpp; sourceTree = SOURCE_ROOT; };
@@ -479,8 +476,6 @@
 				FCC499761B0DB84600E91EF7 /* options.h */,
 				FCC499771B0DB84600E91EF7 /* pantheon.cpp */,
 				FCC499781B0DB84600E91EF7 /* pantheon.h */,
-				FCC499791B0DB84600E91EF7 /* parse_game.cpp */,
-				FCC4997A1B0DB84600E91EF7 /* parse_game.h */,
 				FCC4997B1B0DB84600E91EF7 /* player_control.cpp */,
 				FCC4997C1B0DB84600E91EF7 /* player_control.h */,
 				FCC4997D1B0DB84600E91EF7 /* player_message.cpp */,
@@ -746,7 +741,6 @@
 				FCC49A1E1B0DB84700E91EF7 /* task.cpp in Sources */,
 				FCC499DF1B0DB84700E91EF7 /* entity_name.cpp in Sources */,
 				FCC499F91B0DB84700E91EF7 /* markov_chain.cpp in Sources */,
-				FCC49A061B0DB84700E91EF7 /* parse_game.cpp in Sources */,
 				FCC499DB1B0DB84700E91EF7 /* creature.cpp in Sources */,
 				FCC49A231B0DB84700E91EF7 /* tribe.cpp in Sources */,
 				FCC499E51B0DB84700E91EF7 /* fire.cpp in Sources */,
