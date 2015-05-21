@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FC239A931B027EC600B725E4 /* data_free in Resources */ = {isa = PBXBuildFile; fileRef = FC239A921B027EC600B725E4 /* data_free */; };
-		FC239A951B027ED700B725E4 /* data_contrib in Resources */ = {isa = PBXBuildFile; fileRef = FC239A941B027ED700B725E4 /* data_contrib */; };
 		FC7F2C511B0DB30200A914B5 /* keeper-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FC7F2C501B0DB30200A914B5 /* keeper-Info.plist */; };
+		FCB1481A1B0E638900FE530D /* data_contrib in Resources */ = {isa = PBXBuildFile; fileRef = FCB148161B0E638900FE530D /* data_contrib */; };
+		FCB1481B1B0E638900FE530D /* data_free in Resources */ = {isa = PBXBuildFile; fileRef = FCB148171B0E638900FE530D /* data_free */; };
+		FCB1481C1B0E638900FE530D /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = FCB148181B0E638900FE530D /* LICENSE */; };
+		FCB1481D1B0E638900FE530D /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = FCB148191B0E638900FE530D /* README.md */; };
 		FCC499CD1B0DB84700E91EF7 /* animation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCC498FF1B0DB84600E91EF7 /* animation.cpp */; };
 		FCC499CE1B0DB84700E91EF7 /* attack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCC499011B0DB84600E91EF7 /* attack.cpp */; };
 		FCC499CF1B0DB84700E91EF7 /* bucket_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCC499031B0DB84600E91EF7 /* bucket_map.cpp */; };
@@ -111,9 +113,11 @@
 
 /* Begin PBXFileReference section */
 		FC2399481AFDDD8800B725E4 /* keeper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = keeper.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FC239A921B027EC600B725E4 /* data_free */ = {isa = PBXFileReference; lastKnownFileType = folder; name = data_free; path = ../../keeperrl/data_free; sourceTree = "<group>"; };
-		FC239A941B027ED700B725E4 /* data_contrib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = data_contrib; path = ../../keeperrl/data_contrib; sourceTree = "<group>"; };
-		FC7F2C501B0DB30200A914B5 /* keeper-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "keeper-Info.plist"; path = "../../keeperrl/mac/keeper-Info.plist"; sourceTree = "<group>"; };
+		FC7F2C501B0DB30200A914B5 /* keeper-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "keeper-Info.plist"; sourceTree = SOURCE_ROOT; };
+		FCB148161B0E638900FE530D /* data_contrib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = data_contrib; path = ../data_contrib; sourceTree = SOURCE_ROOT; };
+		FCB148171B0E638900FE530D /* data_free */ = {isa = PBXFileReference; lastKnownFileType = folder; name = data_free; path = ../data_free; sourceTree = SOURCE_ROOT; };
+		FCB148181B0E638900FE530D /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = SOURCE_ROOT; };
+		FCB148191B0E638900FE530D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = SOURCE_ROOT; };
 		FCC498FF1B0DB84600E91EF7 /* animation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = animation.cpp; path = ../animation.cpp; sourceTree = SOURCE_ROOT; };
 		FCC499001B0DB84600E91EF7 /* animation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = animation.h; path = ../animation.h; sourceTree = SOURCE_ROOT; };
 		FCC499011B0DB84600E91EF7 /* attack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = attack.cpp; path = ../attack.cpp; sourceTree = SOURCE_ROOT; };
@@ -567,7 +571,6 @@
 		FC23994B1AFDDD8800B725E4 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				FC7F2C501B0DB30200A914B5 /* keeper-Info.plist */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -575,8 +578,11 @@
 		FC2399521AFDDD8800B725E4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				FC239A941B027ED700B725E4 /* data_contrib */,
-				FC239A921B027EC600B725E4 /* data_free */,
+				FC7F2C501B0DB30200A914B5 /* keeper-Info.plist */,
+				FCB148161B0E638900FE530D /* data_contrib */,
+				FCB148171B0E638900FE530D /* data_free */,
+				FCB148181B0E638900FE530D /* LICENSE */,
+				FCB148191B0E638900FE530D /* README.md */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -638,9 +644,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FCB1481A1B0E638900FE530D /* data_contrib in Resources */,
+				FCB1481B1B0E638900FE530D /* data_free in Resources */,
+				FCB1481C1B0E638900FE530D /* LICENSE in Resources */,
 				FC7F2C511B0DB30200A914B5 /* keeper-Info.plist in Resources */,
-				FC239A951B027ED700B725E4 /* data_contrib in Resources */,
-				FC239A931B027EC600B725E4 /* data_free in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -733,6 +740,7 @@
 				FCC499F81B0DB84700E91EF7 /* map_memory.cpp in Sources */,
 				FCC499EF1B0DB84700E91EF7 /* item.cpp in Sources */,
 				FCC49A001B0DB84700E91EF7 /* monster.cpp in Sources */,
+				FCB1481D1B0E638900FE530D /* README.md in Sources */,
 				FCC49A041B0DB84700E91EF7 /* options.cpp in Sources */,
 				FCC499E21B0DB84700E91EF7 /* event.cpp in Sources */,
 				FCC499F01B0DB84700E91EF7 /* known_tiles.cpp in Sources */,
