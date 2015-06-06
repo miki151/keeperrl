@@ -101,10 +101,10 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
       {ItemIndex::GOLD, unMarkedItems(), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
       {ItemIndex::MINION_EQUIPMENT, [this](const Item* it)
           { return it->getClass() != ItemClass::GOLD && !isItemMarked(it);},
-          equipmentStorage, false, {}, Warning::STORAGE},
-      {ItemIndex::WOOD, unMarkedItems(), resourceStorage, false, {SquareId::TREE_TRUNK}, Warning::STORAGE},
-      {ItemIndex::IRON, unMarkedItems(), resourceStorage, false, {}, Warning::STORAGE},
-      {ItemIndex::STONE, unMarkedItems(), resourceStorage, false, {}, Warning::STORAGE},
+          equipmentStorage, false, {}, Warning::EQUIPMENT_STORAGE},
+      {ItemIndex::WOOD, unMarkedItems(), resourceStorage, false, {SquareId::TREE_TRUNK}, Warning::RESOURCE_STORAGE},
+      {ItemIndex::IRON, unMarkedItems(), resourceStorage, false, {}, Warning::RESOURCE_STORAGE},
+      {ItemIndex::STONE, unMarkedItems(), resourceStorage, false, {}, Warning::RESOURCE_STORAGE},
   };
   return itemFetchInfo;
 }

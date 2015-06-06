@@ -195,7 +195,8 @@ typedef Collective::Warning Warning;
 string PlayerControl::getWarningText(Collective::Warning w) {
   switch (w) {
     case Warning::DIGGING: return "Dig into the mountain and start building a dungeon.";
-    case Warning::STORAGE: return "You need to build a storage room.";
+    case Warning::RESOURCE_STORAGE: return "Storage room for resources is needed.";
+    case Warning::EQUIPMENT_STORAGE: return "Storage room for equipment is needed.";
     case Warning::LIBRARY: return "Build a library to start research.";
     case Warning::BEDS: return "You need to build a dormitory for your minions.";
     case Warning::TRAINING: return "Build a training room for your minions.";
