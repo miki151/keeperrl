@@ -45,12 +45,6 @@ const Tribe* MovementType::getTribe() const {
   return tribe;
 }
 
-MovementType MovementType::getWithNoTribe() const {
-  MovementType ret(*this);
-  ret.tribe = nullptr;
-  return ret;
-} 
-
 MovementType& MovementType::removeTrait(MovementTrait trait) {
   traits.erase(trait);
   return *this;
@@ -104,7 +98,7 @@ bool MovementSet::canEnter(const MovementType& creature) const {
     if ((sunlight && creature.isSunlightVulnerable()) || (onFire && !creature.isFireResistant()))
       return false;
   }
-  EnumSet<MovementTrait> rightTraits = (tribeOverrides && tribeOverrides->first == creature.getTribe()) ?
+  EnumSet<MovementTrait> rightTraits = (tribeOverrides && !tribeOverrides->first->isEnemy(creature.getTribe())) ?
       tribeOverrides->second : traits;
   if (creature.isForced())
     rightTraits = rightTraits.sum(forcibleTraits);

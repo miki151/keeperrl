@@ -44,7 +44,6 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     & SVAR(coverInfo)
     & SVAR(bucketMap)
     & SVAR(sectors)
-    & SVAR(squareOwners)
     & SVAR(lightAmount)
     & SVAR(lightCapAmount);
 }  
@@ -725,8 +724,7 @@ void Level::updateConnectivity(Vec2 pos) {
       elem.second.remove(pos);
 }
 
-bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement1) const {
-  MovementType movement = squareOwners.count(movement1.getTribe()) ? movement1 : movement1.getWithNoTribe();
+bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement) const {
   if (!sectors.count(movement)) {
     sectors[movement] = Sectors(getBounds());
     Sectors& newSectors = sectors.at(movement);
@@ -743,6 +741,3 @@ void Level::updateSunlightMovement() {
   sectors.clear();
 }
 
-void Level::addSquareOwner(const Tribe* t) {
-  squareOwners.insert(t);
-}

@@ -70,7 +70,7 @@ void Monster::you(MsgType type, const vector<string>& param) {
       msg = getCreature()->getName().the() + " thrusts " + getCreature()->getGender().his() + " " + param.at(0); break;
     case MsgType::KICK: msg = getCreature()->getName().the() + addName(" kicks", param.at(0)); break;
     case MsgType::PUNCH: msg = getCreature()->getName().the() + addName(" punches", param.at(0)); break;
-    default: you(type, param.at(0)); break;
+    default: you(type, param.at(0)); return;
   }
   if (param.size() > 1)
     msg += " " + param[1];

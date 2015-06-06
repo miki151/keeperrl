@@ -35,8 +35,6 @@ class MovementType {
   bool operator == (const MovementType&) const;
   const EnumSet<MovementTrait>& getTraits() const;
 
-  MovementType getWithNoTribe() const;
-
   private:
   bool SERIAL(sunlightVulnerable) = false;
   bool SERIAL(fireResistant) = false;

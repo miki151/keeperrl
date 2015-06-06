@@ -225,9 +225,6 @@ class Level : public UniqueEntity<Level> {
   void updateConnectivity(Vec2);
   void updateSunlightMovement();
 
-  /* Notify that there are squares enterable only by this tribe and custom movement type needs to be tracked.*/
-  void addSquareOwner(const Tribe*);
-
   /** Class used to initialize a level object.*/
   class Builder {
     public:
@@ -341,7 +338,6 @@ class Level : public UniqueEntity<Level> {
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
   mutable unordered_map<MovementType, Sectors> SERIAL(sectors);
-  unordered_set<const Tribe*> SERIAL(squareOwners);
   
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name,
       Table<CoverInfo> coverInfo);

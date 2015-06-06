@@ -187,8 +187,6 @@ void Square::setLevel(Level* l) {
   level = l;
   if (ticking || !inventory.isEmpty())
     level->addTickingSquare(position);
-  if (owner)
-    level->addSquareOwner(owner);
 }
 
 Level* Square::getLevel() {
@@ -554,7 +552,6 @@ void Square::removeTraitForTribe(const Tribe* tribe, MovementTrait trait) {
 void Square::forbidMovementForTribe(const Tribe* tribe) {
   CHECK(!forbiddenTribe || forbiddenTribe == tribe);
   forbiddenTribe = tribe;
-  level->addSquareOwner(tribe);
   level->updateConnectivity(position);
 }
 

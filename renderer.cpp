@@ -38,7 +38,7 @@ int Renderer::getTextLength(string s) {
   static Text t;
   t.setFont(textFont);
   t.setCharacterSize(textSize);
-  t.setString(s);
+  t.setString(toUnicode(s));
   return t.getLocalBounds().width;
 }
 

@@ -153,6 +153,10 @@ bool Tribe::isEnemy(const Creature* c) const {
   return getStanding(c) < 0;
 }
 
+bool Tribe::isEnemy(const Tribe* t) const {
+  return enemyTribes.count(const_cast<Tribe*>(t));
+}
+
 vector<const Creature*> Tribe::getMembers(bool includeDead) {
   if (includeDead)
     return members;

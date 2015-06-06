@@ -457,7 +457,7 @@ PTask Collective::getStandardTask(Creature* c) {
         ret = Task::eat(hatchery);
       break; }
   }
-  if (info.warning)
+  if (info.warning && !getAllSquares().empty())
     setWarning(*info.warning, !ret);
   if (!ret)
     currentTasks.erase(c->getUniqueId());
@@ -1163,20 +1163,22 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
       } else
         taskMap.freeTaskDelay(task, getTime() + 50);
     }
-    for (MinionTrait t : ENUM_ALL(MinionTrait))
-      if (contains(byTrait[t], victim))
-        removeElement(byTrait[t], victim);
     if (auto spawnType = victim->getSpawnType())
       removeElement(bySpawnType[*spawnType], victim);
     for (auto team : teams.getContaining(victim))
       teams.remove(team, victim);
     control->onMemberKilled(victim, killer);
-    if (killer)
-      control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
-            PlayerMessage::HIGH).setPosition(victim->getPosition()));
-    else
-      control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
-          .setPosition(victim->getPosition()));
+    if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
+      if (killer)
+        control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
+              PlayerMessage::HIGH).setPosition(victim->getPosition()));
+      else
+        control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
+            .setPosition(victim->getPosition()));
+    }
+    for (MinionTrait t : ENUM_ALL(MinionTrait))
+      if (contains(byTrait[t], victim))
+        removeElement(byTrait[t], victim);
   } else
     control->onOtherKilled(victim, killer);
   if (victim->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
