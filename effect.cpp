@@ -53,10 +53,12 @@ class IllusionController : public DoNothingController {
 
   void kill() {
     creature->monsterMessage("The illusion disappears.");
-    creature->die();
+    if (!creature->isDead())
+      creature->die();
   }
 
-  virtual void onBump(Creature*) override {
+  virtual void onBump(Creature* c) override {
+    c->attack(getCreature(), none, false).perform(c);
     kill();
   }
 
@@ -122,7 +124,6 @@ static void deception(Creature* creature) {
           c.attr[AttrType::DEXTERITY] = 1;
           c.barehandedDamage = 20; // just so it's not ignored by creatures
           c.stationary = true;
-          c.permanentEffects[LastingEffect::BLIND] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noSleep = true;
           c.breathing = false;
