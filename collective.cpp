@@ -1043,11 +1043,14 @@ void Collective::tick(double time) {
           Creature* c = elem.first;
           Vec2 pos = c->getPosition();
           if (containsSquare(pos) && !c->isDead()) {
-            getLevel()->globalMessage(pos, c->getName().the() + " surrenders.");
-            control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
-            c->die(nullptr, true, false);
-            addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
-                  MonsterAIFactory::collective(this)), pos, {MinionTrait::PRISONER});
+            PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
+                  MonsterAIFactory::collective(this));
+            if (getLevel()->getSafeSquare(pos)->canEnterEmpty(prisoner.get())) {
+              getLevel()->globalMessage(pos, c->getName().the() + " surrenders.");
+              control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
+              c->die(nullptr, true, false);
+              addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER});
+            }
           }
           prisonerInfo.erase(c);
         }
