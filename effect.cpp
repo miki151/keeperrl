@@ -110,9 +110,11 @@ static void deception(Creature* creature) {
   for (int i : Range(Random.get(3, 7))) {
     ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
     viewObject.setModifier(ViewObject::Modifier::ILLUSION);
+    viewObject.removeModifier(ViewObject::Modifier::INVISIBLE);
     creatures.push_back(PCreature(new Creature(viewObject, creature->getTribe(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
           c.illusionViewObject = creature->getViewObject();
+          c.illusionViewObject->removeModifier(ViewObject::Modifier::INVISIBLE);
           c.attr[AttrType::SPEED] = 100;
           c.weight = 1;
           c.size = CreatureSize::LARGE;
