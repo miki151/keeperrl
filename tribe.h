@@ -27,30 +27,21 @@ class Creature;
 
 class Tribe {
   public:
-  Tribe(const string& name, bool diplomatic);
-
-  virtual double getStanding(const Creature*) const;
-
+  double getStanding(const Creature*) const;
   bool isEnemy(const Creature*) const;
   bool isEnemy(const Tribe*) const;
-  void onItemsStolen(const Creature* thief);
   void makeSlightEnemy(const Creature*);
   void addMember(const Creature*);
   void removeMember(const Creature*);
-  void setLeader(const Creature*);
-  const Creature* getLeader() const;
-  vector<const Creature*> getMembers(bool includeDead = false);
   const string& getName() const;
   void addEnemy(vector<Tribe*>);
   void addFriend(Tribe*);
 
   void onMemberKilled(Creature* member, Creature* killer);
   void onMemberAttacked(Creature* member, Creature* attacker);
+  void onItemsStolen(const Creature* thief);
 
   SERIALIZATION_DECL(Tribe);
-
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
 
   struct Set {
     Set();
@@ -72,7 +63,11 @@ class Tribe {
     void serialize(Archive& ar, const unsigned int version);
   };
 
+  friend struct Set;
+
   private:
+  Tribe(const string& name, bool diplomatic);
+
   bool SERIAL(diplomatic);
 
   void initStanding(const Creature*);
@@ -80,7 +75,6 @@ class Tribe {
 
   unordered_map<const Creature*, double> SERIAL(standing);
   vector<pair<Creature*, Creature*>> SERIAL(attacks);
-  const Creature* SERIAL(leader) = nullptr;
   vector<const Creature*> SERIAL(members);
   unordered_set<Tribe*> SERIAL(enemyTribes);
   string SERIAL(name);

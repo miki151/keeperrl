@@ -1173,7 +1173,6 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
       removeElement(bySpawnType[*spawnType], victim);
     for (auto team : teams.getContaining(victim))
       teams.remove(team, victim);
-    control->onMemberKilled(victim, killer);
     if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
       if (killer)
         control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
@@ -1185,9 +1184,10 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
     for (MinionTrait t : ENUM_ALL(MinionTrait))
       if (contains(byTrait[t], victim))
         removeElement(byTrait[t], victim);
+    control->onMemberKilled(victim, killer);
   } else
     control->onOtherKilled(victim, killer);
-  if (victim->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
+  if (victim->getTribe() != getTribe() && (/*!killer || */contains(creatures, killer))) {
     addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
     kills.push_back(victim);
