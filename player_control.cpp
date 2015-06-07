@@ -257,7 +257,7 @@ const int basicImpCost = 20;
 
 Creature* PlayerControl::getControlled() {
   for (TeamId team : getCollective()->getTeams().getActiveTeams()) {
-    if (!getCollective()->getTeams().isHidden(team) && getCollective()->getTeams().getLeader(team)->isPlayer())
+    if (getCollective()->getTeams().getLeader(team)->isPlayer())
       return getCollective()->getTeams().getLeader(team);
   }
   return nullptr;
@@ -273,7 +273,7 @@ void PlayerControl::leaveControl() {
   if (controlled->isPlayer())
     controlled->popController();
   for (TeamId team : getCollective()->getTeams().getActiveTeams(controlled))
-    if (!getCollective()->getTeams().isHidden(team)) {
+    if (!getCollective()->getTeams().isPersistent(team)) {
       if (getCollective()->getTeams().getMembers(team).size() == 1)
         getCollective()->getTeams().cancel(team);
       else
@@ -896,12 +896,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.currentTeam = getCurrentTeam();
   info.teams.clear();
   info.newTeam = newTeam;
-  for (TeamId team :getCollective()->getTeams().getAll()) 
-    if (!getCollective()->getTeams().isHidden(team)) {
-      info.teams[team].clear();
-      for (Creature* c : getCollective()->getTeams().getMembers(team))
-        info.teams[team].push_back(c->getUniqueId());
-    }
+  for (TeamId team :getCollective()->getTeams().getAll()) {
+    info.teams[team].clear();
+    for (Creature* c : getCollective()->getTeams().getMembers(team))
+      info.teams[team].push_back(c->getUniqueId());
+  }
   info.techButtons.clear();
   for (TechInfo tech : getTechInfo())
     info.techButtons.push_back(tech.button);

@@ -85,15 +85,15 @@ TeamId CollectiveTeams::create(vector<Creature*> c) {
   return nextId++;
 }
 
-TeamId CollectiveTeams::createHidden(vector<Creature*> c) {
+TeamId CollectiveTeams::createPersistent(vector<Creature*> c) {
   TeamId id = create(c);
-  teamInfo[id].hidden() = true;
+  teamInfo[id].persistent() = true;
   return id;
 }
 
-bool CollectiveTeams::isHidden(TeamId id) const {
+bool CollectiveTeams::isPersistent(TeamId id) const {
   CHECK(exists(id));
-  return teamInfo.at(id).hidden();
+  return teamInfo.at(id).persistent();
 }
 
 bool CollectiveTeams::exists(TeamId id) const {

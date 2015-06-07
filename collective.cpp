@@ -783,7 +783,7 @@ bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCr
   if (spawnPos.size() < creatures.size())
     return false;
   if (info.autoTeam)
-    teams.activate(teams.createHidden(extractRefs(creatures)));
+    teams.activate(teams.createPersistent(extractRefs(creatures)));
   for (int i : All(creatures)) {
     Creature* c = creatures[i].get();
     addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
@@ -837,7 +837,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
       return false;
   }
   if (info.autoTeam)
-    teams.activate(teams.createHidden(extractRefs(creatures)));
+    teams.activate(teams.createPersistent(extractRefs(creatures)));
   for (int i : All(creatures)) {
     Creature* c = creatures[i].get();
     if (i == 0)

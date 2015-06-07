@@ -30,7 +30,7 @@ class CollectiveTeams {
   void activate(TeamId);
   void deactivate(TeamId);
   TeamId create(vector<Creature*>);
-  TeamId createHidden(vector<Creature*>);
+  TeamId createPersistent(vector<Creature*>);
   const Creature* getLeader(TeamId) const;
   Creature* getLeader(TeamId);
   const vector<Creature*>& getMembers(TeamId) const;
@@ -41,7 +41,7 @@ class CollectiveTeams {
   vector<TeamId> getActiveTeams() const;
   void cancel(TeamId);
   bool exists(TeamId) const;
-  bool isHidden(TeamId) const;
+  bool isPersistent(TeamId) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -51,7 +51,7 @@ class CollectiveTeams {
     NAMED_TUPLE_STUFF(TeamInfo);
     NAME_ELEM(0, creatures);
     NAME_ELEM(1, active);
-    NAME_ELEM(2, hidden);
+    NAME_ELEM(2, persistent);
   };
   map<TeamId, TeamInfo> SERIAL(teamInfo);
   TeamId SERIAL(nextId) = 1;
