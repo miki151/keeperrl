@@ -35,7 +35,8 @@ RICH_ENUM(SkillId,
   DISARM_TRAPS,
   SORCERY,
   CONSUMPTION,
-  HEALING
+  HEALING,
+  STEALTH
 );
 
 class Creature;

@@ -352,6 +352,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   EnumMap<AttrType, double> SERIAL(attrIncrease);
   void updateVisibleCreatures(Rectangle range);
   vector<const Creature*> SERIAL(visibleEnemies);
+  vector<Creature*> SERIAL(visibleCreatures);
   double getTimeRemaining(LastingEffect) const;
   string getRemainingString(LastingEffect) const;
   VisionId SERIAL(vision);

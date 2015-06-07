@@ -1799,6 +1799,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::TRAIN, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.skills.insert(SkillId::STEALTH);
           c.name = EntityName("werewolf", "werewolves"););    
     case CreatureId::DOG: 
       return INHERIT(WOLF,

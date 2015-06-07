@@ -70,6 +70,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(moraleOverrides)
     & SVAR(attrIncrease)
     & SVAR(visibleEnemies)
+    & SVAR(visibleCreatures)
     & SVAR(vision)
     & SVAR(personalEvents)
     & SVAR(lastCombatTime);
@@ -1307,13 +1308,12 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
   Creature* other = c->getSafeSquare(dir)->getCreature();
   if (!other->dodgeAttack(attack)) {
     if (getWeapon()) {
-      you(getAttackMsg(attack.getType(), true, attack.getLevel()), concat({getWeapon()->getName()}, attackAdjective));
+      you(getAttackMsg(attack.getType(), true, attack.getLevel()),
+          concat({getWeapon()->getName()}, attackAdjective));
       if (!canSee(other))
         playerMessage("You hit something.");
-    }
-    else {
+    } else
       you(getAttackMsg(attack.getType(), false, attack.getLevel()), concat({enemyName}, attackAdjective));
-    }
     other->takeDamage(attack);
   }
   else
@@ -1333,8 +1333,6 @@ bool Creature::dodgeAttack(Attack attack) {
   if (const Creature* c = attack.getAttacker()) {
     if (!canSee(c))
       unknownAttacker.push_back(c);
-    if (!contains(privateEnemies, c) && c->getTribe() != tribe)
-      privateEnemies.push_back(c);
   }
   return canSee(attack.getAttacker()) && attack.getAccuracy() <= getModifier(ModifierType::ACCURACY);
 }
@@ -1361,10 +1359,15 @@ bool Creature::isCritical(BodyPart part) const {
 bool Creature::takeDamage(Attack attack) {
   AttackType attackType = attack.getType();
   Creature* other = attack.getAttacker();
-  if (other)
-    if (!contains(privateEnemies, other) && other->getTribe() != tribe)
+  if (other) {
+    if (!contains(privateEnemies, other) && (other->getTribe() != tribe || Random.roll(3)))
       privateEnemies.push_back(other);
-  if (attackType == AttackType::POSSESS) {
+    if (!other->hasSkill(Skill::get(SkillId::STEALTH)))
+      for (Creature* c : visibleCreatures)
+        if (c->getPosition().dist8(position) < 10)
+          c->removeEffect(LastingEffect::SLEEP);
+  }
+  if (other && attackType == AttackType::POSSESS) {
     you(MsgType::ARE, "possessed by " + other->getName().the());
     other->die(nullptr, false, false);
     addEffect(LastingEffect::INSANITY, 10);
@@ -2434,9 +2437,13 @@ const MinionTaskMap& Creature::getMinionTasks() const {
 
 void Creature::updateVisibleCreatures(Rectangle range) {
   visibleEnemies.clear();
-  for (const Creature* c : getLevel()->getAllCreatures(range)) 
-    if (canSee(c) && isEnemy(c))
-      visibleEnemies.push_back(c);
+  visibleCreatures.clear();
+  for (Creature* c : getLevel()->getAllCreatures(range)) 
+    if (canSee(c)) {
+      visibleCreatures.push_back(c);
+      if (isEnemy(c))
+        visibleEnemies.push_back(c);
+    }
   for (const Creature* c : getUnknownAttacker())
     if (!contains(visibleEnemies, c))
       visibleEnemies.push_back(c);
