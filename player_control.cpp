@@ -107,7 +107,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, {},
         "Stores gold."),
     BuildInfo({Collective::getHatcheryType(const_cast<Tribe*>(tribe)),
-        {ResourceId::WOOD, 20}, "Pigsty"}, {{RequirementId::TECHNOLOGY, TechId::PIGSTY}}, "Increases minion population limit by " +
+        {ResourceId::WOOD, 20}, "Pigsty"}, {{RequirementId::TECHNOLOGY, TechId::PIGSTY}}, "Increases minion population limit by up to " +
             toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
     BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, {},
         "Humanoid minions place their beds here.", 'm'),

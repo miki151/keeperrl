@@ -54,6 +54,7 @@ class CollectiveTeams {
     NAME_ELEM(2, hidden);
   };
   map<TeamId, TeamInfo> SERIAL(teamInfo);
+  TeamId SERIAL(nextId) = 1;
 };
 
 #endif

@@ -82,6 +82,18 @@ void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers)
   getCollective()->freeTeamMembers(team);
   for (Creature* c : attackers)
     getCollective()->setTask(c, villain.getAttackTask(this));
+  attackSizes[team] = attackers.size();
+}
+
+void VillageControl::considerCancellingAttack() {
+  for (auto team : getCollective()->getTeams().getAll()) {
+    vector<Creature*> members = getCollective()->getTeams().getMembers(team);
+    if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 && members[0]->getHealth() < 0.5)) {
+      for (Creature* c : members)
+        getCollective()->cancelTask(c);
+      getCollective()->getTeams().cancel(team);
+    }
+  }
 }
 
 void VillageControl::considerWelcomeMessage() {
@@ -104,6 +116,7 @@ void VillageControl::considerWelcomeMessage() {
 
 void VillageControl::tick(double time) {
   considerWelcomeMessage();
+  considerCancellingAttack();
   vector<Creature*> allMembers = getCollective()->getCreatures();
   for (auto team : getCollective()->getTeams().getAll()) {
     for (const Creature* c : getCollective()->getTeams().getMembers(team))
@@ -128,7 +141,7 @@ void VillageControl::tick(double time) {
       double prob = villain.getAttackProbability(this) / updateFreq;
       if (prob > 0 && Random.roll(1 / prob)) {
         launchAttack(villain, getPrefix(randomPermutation(fighters),
-              Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
+            Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
         break;
       }
     }
@@ -269,7 +282,8 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(villains)
     & SVAR(victims)
     & SVAR(myItems)
-    & SVAR(stolenItemCount);
+    & SVAR(stolenItemCount)
+    & SVAR(attackSizes);
 }
 
 SERIALIZABLE(VillageControl);

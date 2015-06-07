@@ -553,10 +553,9 @@ MoveInfo Collective::getTeamMemberMove(Creature* c) {
 
 void Collective::setTask(const Creature *c, PTask task) {
   if (Task* task = taskMap.getTask(c)) {
-    if (!task->canTransfer()) {
-      task->cancel();
+    if (!task->canTransfer())
       returnResource(taskMap.removeTask(task));
-    } else
+    else
       taskMap.freeTaskDelay(task, getTime() + 50);
   }
   taskMap.addTask(std::move(task), c);
@@ -564,6 +563,11 @@ void Collective::setTask(const Creature *c, PTask task) {
 
 bool Collective::hasTask(const Creature* c) const {
   return taskMap.hasTask(c);
+}
+
+void Collective::cancelTask(const Creature* c) {
+  if (Task* task = taskMap.getTask(c))
+    taskMap.removeTask(task);
 }
 
 MoveInfo Collective::getMove(Creature* c) {
@@ -1160,10 +1164,9 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
     removeElement(creatures, victim);
     minionAttraction.erase(victim);
     if (Task* task = taskMap.getTask(victim)) {
-      if (!task->canTransfer()) {
-        task->cancel();
+      if (!task->canTransfer())
         returnResource(taskMap.removeTask(task));
-      } else
+      else
         taskMap.freeTaskDelay(task, getTime() + 50);
     }
     if (auto spawnType = victim->getSpawnType())
@@ -2288,9 +2291,7 @@ int Collective::getMaxPopulation() const {
   int ret = config.getMaxPopulation();
   for (auto& elem : config.getPopulationIncreases()) {
     int sz = getSquares(elem.type).size();
-    if (elem.oneTime)
-      sz = min(sz, elem.minSize);
-    ret += sz / elem.minSize * elem.increase;
+    ret += min<int>(elem.maxIncrease, elem.increasePerSquare * sz);
   }
   return ret;
 }
