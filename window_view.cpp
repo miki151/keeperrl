@@ -344,6 +344,11 @@ void WindowView::rebuildGui() {
   tempGuiElems.clear();
   tempGuiElems.push_back(gui.mouseWheel([this](bool up) { zoom(!up); }));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
+  tempGuiElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
+  tempGuiElems.back()->setBounds(getMapGuiBounds());
+  tempGuiElems.push_back(gui.conditional(gui.rectangle(sf::Color(0, 0, 0, 150)),
+        [=](GuiElem*){return guiBuilder.isPlayerOverlayFocused();}));
+  tempGuiElems.back()->setBounds(getMapGuiBounds());
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::SPECTATOR:
         right = gui.empty();
@@ -751,10 +756,6 @@ optional<string> WindowView::getText(const string& title, const string& value, i
 
 }
 
-int getScrollPos(int index, int count) {
-  return max(0, min(count - 1, index - 3));
-}
-
 PGuiElem WindowView::drawGameChoices(optional<View::GameTypeChoice>& choice,optional<View::GameTypeChoice>& index) {
   return gui.verticalAspect(
       gui.marginFit(
@@ -917,7 +918,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   }
   if (optionIndexes.empty())
     optionIndexes.push_back(0);
-  double localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index], options.size()) : 0;
+  double localScrollPos = index >= 0 ? guiBuilder.getScrollPos(optionIndexes[index], options.size()) : 0;
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
   PGuiElem stuff = guiBuilder.drawListGui(capitalFirst(title), options, menuType, &contentHeight, &index, &choice);
@@ -961,7 +962,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
           case Keyboard::Up:
             if (count > 0) {
               index = (index - 1 + count) % count;
-              *scrollPos = getScrollPos(optionIndexes[index], options.size());
+              *scrollPos = guiBuilder.getScrollPos(optionIndexes[index], options.size());
             } else
               *scrollPos = max<double>(0, *scrollPos - 1);
             break;
@@ -969,7 +970,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
           case Keyboard::Down:
             if (count > 0) {
               index = (index + 1 + count) % count;
-              *scrollPos = getScrollPos(optionIndexes[index], options.size());
+              *scrollPos = guiBuilder.getScrollPos(optionIndexes[index], options.size());
             } else
               *scrollPos = min<int>(options.size() - 1, *scrollPos + 1);
             break;
@@ -1085,7 +1086,6 @@ void WindowView::processEvents() {
       propagateEvent(event, getClickableGuiElems());
     switch (event.type) {
       case Event::KeyPressed:
-        keyboardAction(event.key);
         renderer.flushEvents(Event::KeyPressed);
         break;
       case Event::MouseButtonPressed :

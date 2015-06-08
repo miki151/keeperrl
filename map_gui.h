@@ -46,7 +46,7 @@ class MapGui : public GuiElem {
   virtual bool onRightClick(Vec2) override;
   virtual void onMouseMove(Vec2) override;
   virtual void onMouseRelease() override;
-  virtual void onKeyPressed2(Event::KeyEvent) override;
+  virtual bool onKeyPressed2(Event::KeyEvent) override;
 
   void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, bool showMorale);
   void setSpriteMode(bool);

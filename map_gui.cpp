@@ -154,11 +154,11 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
   }
 }
 
-void MapGui::onKeyPressed2(Event::KeyEvent key) {
+bool MapGui::onKeyPressed2(Event::KeyEvent key) {
   const double shiftScroll = 10;
   const double normalScroll = 2.5;
   if (!keyScrolling)
-    return;
+    return false;
   switch (key.code) {
     case Keyboard::Up:
     case Keyboard::Numpad8:
@@ -196,6 +196,7 @@ void MapGui::onKeyPressed2(Event::KeyEvent key) {
   }
   center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
   center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
+  return false;
 }
 
 bool MapGui::onLeftClick(Vec2 v) {

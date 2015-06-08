@@ -481,26 +481,56 @@ PGuiElem GuiBuilder::getTooltip(const vector<string>& text) {
   return gui.conditional(gui.tooltip(text), [this] (GuiElem*) { return !disableTooltip;});
 }
 
+const int listLineHeight = 30;
+const int listBrokenLineHeight = 24;
+
+bool GuiBuilder::isPlayerOverlayFocused() const {
+  return playerOverlayFocused;
+}
+
+int GuiBuilder::getScrollPos(int index, int count) {
+  return max(0, min(count - 1, index - 3));
+}
+
 void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInfo& info) {
-  if (info.lyingItems.empty())
+  if (info.lyingItems.empty()) {
+    playerOverlayFocused = false;
     return;
+  }
   vector<PGuiElem> lines;
   const int maxElems = 6;
-  const string title = "Click to pick up:";
+  const string title = "Click or [Enter] to pick up:";
   int numElems = min<int>(maxElems, info.lyingItems.size());
   Vec2 size = Vec2(60 + renderer.getTextLength(title), (1 + numElems) * legendLineHeight);
   if (!info.lyingItems.empty()) {
     for (int i : All(info.lyingItems)) {
       size.x = max(size.x, 40 + viewObjectWidth + renderer.getTextLength(info.lyingItems[i].name));
-      lines.push_back(getItemLine(info.lyingItems[i],
-          [this, i](Rectangle) { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, i}); }));
+      lines.push_back(gui.leftMargin(14, gui.stack(
+            gui.mouseHighlight(gui.highlight(listLineHeight), i, &itemIndex),
+            gui.leftMargin(6, getItemLine(info.lyingItems[i],
+          [this, i](Rectangle) { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, i}); })))));
     }
   }
-  ret.push_back({gui.margin(
-        gui.label(title),
-        gui.scrollable(
-          gui.verticalList(std::move(lines), legendLineHeight, 0), &lyingItemsScroll),
-        legendLineHeight, GuiFactory::TOP),
+  int totalElems = info.lyingItems.size();
+  ret.push_back({gui.stack(makeVec<PGuiElem>(
+        gui.keyHandler([=] { if (!playerOverlayFocused) itemIndex = 0; },
+            {{Keyboard::Return}, {Keyboard::Numpad5}}),
+        gui.keyHandler([=] { itemIndex = -1; }, {{Keyboard::Escape}}),
+        gui.focusable(gui.stack(
+            gui.keyHandler([=] { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, itemIndex});
+                if (itemIndex >= totalElems - 1) --itemIndex; },
+                {{Keyboard::Return}, {Keyboard::Numpad5}}, true),
+            gui.keyHandler([=] { itemIndex = (itemIndex + 1) % totalElems;
+                lyingItemsScroll = getScrollPos(itemIndex, totalElems - 1);},
+                {{Keyboard::Down}, {Keyboard::Numpad2}}, true),
+            gui.keyHandler([=] { itemIndex = (itemIndex + totalElems - 1) % totalElems;
+                lyingItemsScroll = getScrollPos(itemIndex, totalElems - 1); },
+                {{Keyboard::Up}, {Keyboard::Numpad8}}, true)),
+              {{Keyboard::Return}, {Keyboard::Numpad5}}, {{Keyboard::Escape}}, playerOverlayFocused),
+        gui.margin(
+          gui.leftMargin(3, gui.label(title, colors[ColorId::YELLOW])),
+          gui.scrollable(gui.verticalList(std::move(lines), legendLineHeight, 0), &lyingItemsScroll),
+          legendLineHeight, GuiFactory::TOP))),
       size, OverlayInfo::TOP_RIGHT});
 }
 
@@ -549,9 +579,6 @@ static string getActionText(GameInfo::PlayerInfo::ItemInfo::Action a) {
     case GameInfo::PlayerInfo::ItemInfo::APPLY: return "apply";
   }
 }
-
-const int listLineHeight = 30;
-const int listBrokenLineHeight = 24;
 
 void GuiBuilder::handleItemChoice(const GameInfo::PlayerInfo::ItemInfo& itemInfo, Vec2 menuPos) {
   renderer.flushEvents(Event::KeyPressed);

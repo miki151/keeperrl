@@ -87,9 +87,11 @@ class GuiBuilder {
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
   bool showMorale() const;
+  bool isPlayerOverlayFocused() const;
   Rectangle getMenuPosition(View::MenuType);
   PGuiElem drawListGui(const string& title, const vector<View::ListElem>& options,
       View::MenuType, int* height, int* highlight, int* choice);
+  int getScrollPos(int index, int count);
 
   private:
   Renderer& renderer;
@@ -110,6 +112,8 @@ class GuiBuilder {
   double buildingsScroll = 0;
   double minionsScroll = 0;
   double lyingItemsScroll = 0;
+  int itemIndex = -1;
+  bool playerOverlayFocused = false;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   bool disableTooltip = false;
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
