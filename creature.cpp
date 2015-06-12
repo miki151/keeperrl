@@ -70,6 +70,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(moraleOverrides)
     & SVAR(attrIncrease)
     & SVAR(visibleEnemies)
+    & SVAR(visibleCreatures)
     & SVAR(vision)
     & SVAR(personalEvents)
     & SVAR(lastCombatTime);
@@ -256,6 +257,10 @@ void Creature::takeItems(vector<PItem> items, const Creature* from) {
   vector<Item*> ref = extractRefs(items);
   getSquare()->dropItems(std::move(items));
   controller->onItemsAppeared(ref, from);
+}
+
+void Creature::you(MsgType type, const vector<string>& param) const {
+  controller->you(type, param);
 }
 
 void Creature::you(MsgType type, const string& param) const {
@@ -527,6 +532,10 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
 
 bool Creature::canEquip(const Item* item) const {
   return canEquipIfEmptySlot(item, nullptr) && equipment.canEquip(item);
+}
+
+bool Creature::isEquipmentAppropriate(const Item* item) const {
+  return item->getClass() != ItemClass::WEAPON || item->getMinStrength() <= getAttr(AttrType::STRENGTH);
 }
 
 CreatureAction Creature::equip(Item* item) const {
@@ -1248,23 +1257,38 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
   return MsgType(0);
 }
 
-CreatureAction Creature::attack(const Creature* other, optional<AttackLevel> attackLevel1, bool spend) const {
+CreatureAction Creature::attack(const Creature* other, optional<AttackParams> attackParams, bool spend) const {
   CHECK(!other->isDead());
   Vec2 dir = other->getPosition() - getPosition();
   if (dir.length8() != 1)
     return CreatureAction();
-  if (attackLevel1 && !contains(getAttackLevels(), *attackLevel1))
-    return CreatureAction("Invalid attack level.");
   return CreatureAction(this, [=] (Creature* c) {
   Debug() << getName().the() << " attacking " << other->getName().the();
-  int accuracy =  getModifier(ModifierType::ACCURACY);
+  int accuracy = getModifier(ModifierType::ACCURACY);
   int damage = getModifier(ModifierType::DAMAGE);
   int accuracyVariance = 1 + accuracy / 3;
   int damageVariance = 1 + damage / 3;
   auto rAccuracy = [=] () { return Random.get(-accuracyVariance, accuracyVariance); };
   auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
+  double timeSpent = 1;
   accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
+  vector<string> attackAdjective;
+  if (attackParams && attackParams->mod)
+    switch (*attackParams->mod) {
+      case AttackParams::WILD: 
+        damage *= 1.2;
+        accuracy *= 0.8;
+        timeSpent *= 1.5;
+        attackAdjective.push_back("wildly");
+        break;
+      case AttackParams::SWIFT: 
+        damage *= 0.8;
+        accuracy *= 1.2;
+        timeSpent *= 0.7;
+        attackAdjective.push_back("swiftly");
+        break;
+    }
   bool backstab = false;
   string enemyName = getLevel()->playerCanSee(other) ? other->getName().the() : "something";
   if (other->isPlayer())
@@ -1276,19 +1300,20 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackLevel> att
  //   }
     you(MsgType::ATTACK_SURPRISE, enemyName);
   }
-  AttackLevel attackLevel = attackLevel1 ? (*attackLevel1) : getRandomAttackLevel();
+  AttackLevel attackLevel = getRandomAttackLevel();
+  if (attackParams && attackParams->level)
+    attackLevel = *attackParams->level;
   Attack attack(c, attackLevel, getAttackType(), accuracy, damage, backstab,
       getWeapon() ? getWeapon()->getAttackEffect() : attackEffect);
   Creature* other = c->getSafeSquare(dir)->getCreature();
   if (!other->dodgeAttack(attack)) {
     if (getWeapon()) {
-      you(getAttackMsg(attack.getType(), true, attack.getLevel()), getWeapon()->getName());
+      you(getAttackMsg(attack.getType(), true, attack.getLevel()),
+          concat({getWeapon()->getName()}, attackAdjective));
       if (!canSee(other))
         playerMessage("You hit something.");
-    }
-    else {
-      you(getAttackMsg(attack.getType(), false, attack.getLevel()), enemyName);
-    }
+    } else
+      you(getAttackMsg(attack.getType(), false, attack.getLevel()), concat({enemyName}, attackAdjective));
     other->takeDamage(attack);
   }
   else
@@ -1296,7 +1321,7 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackLevel> att
   level->getModel()->onAttack(other, c);
   double oldTime = getTime();
   if (spend)
-    c->spendTime(1);
+    c->spendTime(timeSpent);
   c->modViewObject().addMovementInfo({dir, oldTime, getTime(), ViewObject::MovementInfo::ATTACK});
   });
 }
@@ -1308,8 +1333,6 @@ bool Creature::dodgeAttack(Attack attack) {
   if (const Creature* c = attack.getAttacker()) {
     if (!canSee(c))
       unknownAttacker.push_back(c);
-    if (!contains(privateEnemies, c) && c->getTribe() != tribe)
-      privateEnemies.push_back(c);
   }
   return canSee(attack.getAttacker()) && attack.getAccuracy() <= getModifier(ModifierType::ACCURACY);
 }
@@ -1336,10 +1359,15 @@ bool Creature::isCritical(BodyPart part) const {
 bool Creature::takeDamage(Attack attack) {
   AttackType attackType = attack.getType();
   Creature* other = attack.getAttacker();
-  if (other)
-    if (!contains(privateEnemies, other) && other->getTribe() != tribe)
+  if (other) {
+    if (!contains(privateEnemies, other) && (other->getTribe() != tribe || Random.roll(3)))
       privateEnemies.push_back(other);
-  if (attackType == AttackType::POSSESS) {
+    if (!other->hasSkill(Skill::get(SkillId::STEALTH)))
+      for (Creature* c : visibleCreatures)
+        if (c->getPosition().dist8(position) < 10)
+          c->removeEffect(LastingEffect::SLEEP);
+  }
+  if (other && attackType == AttackType::POSSESS) {
     you(MsgType::ARE, "possessed by " + other->getName().the());
     other->die(nullptr, false, false);
     addEffect(LastingEffect::INSANITY, 10);
@@ -2106,10 +2134,10 @@ MovementType Creature::getMovementType() const {
       true,
       isAffected(LastingEffect::FLYING),
       hasSkill(Skill::get(SkillId::SWIMMING)),
-      contains({CreatureSize::HUGE, CreatureSize::LARGE}, *size),
-      isBlind() || isHeld() || forceMovement,
-      isFireResistant(),
-      undead});
+      *size == CreatureSize::HUGE || *size == CreatureSize::LARGE})
+    .setForced(isBlind() || isHeld() || forceMovement)
+    .setFireResistant(isFireResistant())
+    .setSunlightVulnerable(undead);
 }
 
 int Creature::numBodyParts(BodyPart part) const {
@@ -2409,9 +2437,13 @@ const MinionTaskMap& Creature::getMinionTasks() const {
 
 void Creature::updateVisibleCreatures(Rectangle range) {
   visibleEnemies.clear();
-  for (const Creature* c : getLevel()->getAllCreatures(range)) 
-    if (canSee(c) && isEnemy(c))
-      visibleEnemies.push_back(c);
+  visibleCreatures.clear();
+  for (Creature* c : getLevel()->getAllCreatures(range)) 
+    if (canSee(c)) {
+      visibleCreatures.push_back(c);
+      if (isEnemy(c))
+        visibleEnemies.push_back(c);
+    }
   for (const Creature* c : getUnknownAttacker())
     if (!contains(visibleEnemies, c))
       visibleEnemies.push_back(c);

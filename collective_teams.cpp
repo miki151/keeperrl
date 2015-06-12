@@ -80,23 +80,20 @@ vector<TeamId> CollectiveTeams::getActiveTeams() const {
 }
 
 TeamId CollectiveTeams::create(vector<Creature*> c) {
-  TeamId id = 1;
-  for (TeamId id1 : getKeys(teamInfo))
-    id = max(id, id1 + 1);
   CHECK(!c.empty());
-  teamInfo[id].creatures() = c;
-  return id;
+  teamInfo[nextId].creatures() = c;
+  return nextId++;
 }
 
-TeamId CollectiveTeams::createHidden(vector<Creature*> c) {
+TeamId CollectiveTeams::createPersistent(vector<Creature*> c) {
   TeamId id = create(c);
-  teamInfo[id].hidden() = true;
+  teamInfo[id].persistent() = true;
   return id;
 }
 
-bool CollectiveTeams::isHidden(TeamId id) const {
+bool CollectiveTeams::isPersistent(TeamId id) const {
   CHECK(exists(id));
-  return teamInfo.at(id).hidden();
+  return teamInfo.at(id).persistent();
 }
 
 bool CollectiveTeams::exists(TeamId id) const {
@@ -113,7 +110,7 @@ void CollectiveTeams::cancel(TeamId team) {
 
 template <class Archive>
 void CollectiveTeams::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(teamInfo);
+  ar & SVAR(teamInfo) & SVAR(nextId);
 }
 
 SERIALIZABLE(CollectiveTeams);

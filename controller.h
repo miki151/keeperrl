@@ -33,6 +33,7 @@ class Controller {
   virtual bool isPlayer() const = 0;
 
   virtual void you(MsgType type, const string& param) = 0;
+  virtual void you(MsgType type, const vector<string>& param) = 0;
   virtual void you(const string& param) = 0;
   virtual void privateMessage(const PlayerMessage& message) {}
 
@@ -68,6 +69,7 @@ class DoNothingController : public Controller {
 
   virtual bool isPlayer() const override;
   virtual void you(MsgType type, const string& param) override;
+  virtual void you(MsgType type, const vector<string>& param) override;
   virtual void you(const string& param) override;
   virtual void makeMove() override;
   virtual void onBump(Creature*) override;

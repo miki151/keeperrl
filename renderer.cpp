@@ -38,7 +38,7 @@ int Renderer::getTextLength(string s) {
   static Text t;
   t.setFont(textFont);
   t.setCharacterSize(textSize);
-  t.setString(s);
+  t.setString(toUnicode(s));
   return t.getLocalBounds().width;
 }
 
@@ -276,7 +276,7 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
   const Tile& tile = Tile::getTile(id, useSprite);
   if (tile.hasSpriteCoord())
-    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color);
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color * tile.color);
   else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, pos.x, pos.y, tile.text);
 }

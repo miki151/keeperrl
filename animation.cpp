@@ -14,8 +14,8 @@ void Animation::setBegin(double time) {
 }
 
 void Animation::render(Renderer& r, Rectangle bounds, Vec2 origin, double time) {
-  CHECK(begin >= 0);
-  CHECK(time - begin <= duration);
+  CHECK(begin >= 0) << begin;
+  CHECK(time - begin <= duration) << time << " " << begin << " " << duration;
   renderSpec(r, bounds, origin, (time - begin) / duration);
 }
 

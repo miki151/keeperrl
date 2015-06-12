@@ -30,8 +30,8 @@ class GuiElem {
   virtual void onMouseMove(Vec2) {}
   virtual void onMouseRelease() {}
   virtual void onRefreshBounds() {}
-  virtual void onKeyPressed(char) {}
-  virtual void onKeyPressed2(Event::KeyEvent) {}
+  virtual bool onKeyPressed(char) { return false;}
+  virtual bool onKeyPressed2(Event::KeyEvent) { return false;}
   virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
 
   void setBounds(Rectangle);
@@ -51,11 +51,15 @@ class GuiFactory {
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
-  PGuiElem button(function<void()> fun, char hotkey = 0);
-  PGuiElem button(function<void()> fun, Event::KeyEvent);
-  PGuiElem button(function<void(Rectangle buttonBounds)> fun, char hotkey = 0);
-  PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent);
+  PGuiElem button(function<void()> fun, char hotkey = 0, bool capture = false);
+  PGuiElem button(function<void()> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button(function<void(Rectangle buttonBounds)> fun, char hotkey = 0, bool capture = false);
+  PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
+      vector<Event::KeyEvent> defocusEvent, bool& focused);
   PGuiElem mouseWheel(function<void(bool)>);
+  PGuiElem keyHandler(function<void(Event::KeyEvent)>);
+  PGuiElem keyHandler(function<void()>, vector<Event::KeyEvent>, bool capture = false);
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
@@ -72,6 +76,7 @@ class GuiFactory {
   PGuiElem margin(PGuiElem top, PGuiElem rest, int height, MarginType);
   PGuiElem marginFit(PGuiElem top, PGuiElem rest, double height, MarginType);
   PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
+  PGuiElem leftMargin(int size, PGuiElem content);
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(const string&, int size, Color = colors[ColorId::WHITE]);

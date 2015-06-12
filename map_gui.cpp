@@ -97,9 +97,8 @@ Color getHighlightColor(HighlightType type, double amount) {
     case HighlightType::NIGHT: return transparency(colors[ColorId::NIGHT_BLUE], amount * 160);
     case HighlightType::EFFICIENCY: return transparency(Color(255, 0, 0) , 120 * (1 - amount));
     case HighlightType::PRIORITY_TASK: return transparency(Color(0, 255, 0), 120);
+    case HighlightType::FORBIDDEN_ZONE: return transparency(Color(255, 0, 0), 120);
   }
-  FAIL << "pokpok";
-  return Color();
 }
 
 set<Vec2> shadowed;
@@ -155,11 +154,11 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
   }
 }
 
-void MapGui::onKeyPressed2(Event::KeyEvent key) {
+bool MapGui::onKeyPressed2(Event::KeyEvent key) {
   const double shiftScroll = 10;
   const double normalScroll = 2.5;
   if (!keyScrolling)
-    return;
+    return false;
   switch (key.code) {
     case Keyboard::Up:
     case Keyboard::Numpad8:
@@ -197,6 +196,7 @@ void MapGui::onKeyPressed2(Event::KeyEvent key) {
   }
   center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
   center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
+  return false;
 }
 
 bool MapGui::onLeftClick(Vec2 v) {
@@ -551,6 +551,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal
             case HighlightType::CUT_TREE:
                 if (spriteMode && index->hasObject(ViewLayer::FLOOR))
                   break;
+            case HighlightType::FORBIDDEN_ZONE:
             case HighlightType::FETCH_ITEMS:
             case HighlightType::RECT_SELECTION:
             case HighlightType::RECT_DESELECTION:

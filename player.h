@@ -57,6 +57,7 @@ class Player : public Controller, public CreatureView {
   virtual void sleeping() override;
   virtual bool isPlayer() const override;
   virtual void you(MsgType type, const string& param) override;
+  virtual void you(MsgType type, const vector<string>& param) override;
   virtual void you(const string& param) override;
   virtual void privateMessage(const PlayerMessage& message) override;
   virtual void learnLocation(const Location*) override;

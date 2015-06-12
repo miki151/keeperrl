@@ -285,7 +285,10 @@ void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemInfo
     case ItemInfo::THROW: throwItem(items); break;
     case ItemInfo::APPLY: applyItem(items); break;
     case ItemInfo::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
-    case ItemInfo::EQUIP: tryToPerform(getCreature()->equip(items[0])); break;
+    case ItemInfo::EQUIP: 
+      if (getCreature()->isEquipmentAppropriate(items[0]) || model->getView()->yesOrNoPrompt(
+          items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
+        tryToPerform(getCreature()->equip(items[0])); break;
   }
 }
 
@@ -420,12 +423,18 @@ void Player::attackAction(Creature* other) {
   vector<AttackLevel> levels = getCreature()->getAttackLevels();
   for (auto level : levels)
     switch (level) {
-      case AttackLevel::LOW: elems.push_back("Low"); break;
-      case AttackLevel::MIDDLE: elems.push_back("Middle"); break;
-      case AttackLevel::HIGH: elems.push_back("High"); break;
+      case AttackLevel::LOW: elems.push_back(View::ListElem("Low").setTip("Aim at lower parts of the body.")); break;
+      case AttackLevel::MIDDLE: elems.push_back(View::ListElem("Middle").setTip("Aim at middle parts of the body.")); break;
+      case AttackLevel::HIGH: elems.push_back(View::ListElem("High").setTip("Aim at higher parts of the body.")); break;
     }
-  if (auto ind = model->getView()->chooseFromList("Choose level of the attack:", elems))
-    getCreature()->attack(other, levels[*ind]).perform(getCreature());
+  elems.push_back(View::ListElem("Wild").setTip("+20\% damage, -20\% accuracy, +50\% time spent."));
+  elems.push_back(View::ListElem("Swift").setTip("-20\% damage, +20\% accuracy, -30\% time spent."));
+  if (auto ind = model->getView()->chooseFromList("Choose attack parameters:", elems)) {
+    if (*ind < levels.size())
+      getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.level = levels[*ind];)).perform(getCreature());
+    else
+      getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::Mod(*ind - levels.size());)).perform(getCreature());
+  }
 }
 
 void Player::retireMessages() {
@@ -572,9 +581,10 @@ static string getForceMovementQuestion(const Square* square, const Creature* cre
     return "Walk into the fire?";
   else if (square->canEnterEmpty(MovementTrait::SWIM))
     return "The water is very deep, are you sure?";
-  else if (square->canEnterEmpty({MovementTrait::WALK}) &&
-      creature->getMovementType().hasTrait(MovementTrait::SUNLIGHT_VULNERABLE))
+  else if (square->canEnterEmpty({MovementTrait::WALK}) && creature->getMovementType().isSunlightVulnerable())
     return "Walk into the sunlight?";
+  else if (square->isTribeForbidden(creature->getTribe()))
+    return "Walk into the forbidden zone?";
   else
     return "Walk into the " + square->getName() + "?";
 }
@@ -584,8 +594,7 @@ void Player::moveAction(Vec2 dir) {
     action.perform(getCreature());
   } else if (auto action = getCreature()->forceMove(dir)) {
     for (Square* square : getCreature()->getSquare(dir))
-      if (square->canEnterEmpty(getCreature()) == getCreature()->getSquare()->canEnterEmpty(getCreature()) ||
-          model->getView()->yesOrNoPrompt(getForceMovementQuestion(square, getCreature()), true))
+      if (model->getView()->yesOrNoPrompt(getForceMovementQuestion(square, getCreature()), true))
         action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
@@ -610,6 +619,20 @@ void Player::privateMessage(const PlayerMessage& message) {
 
 void Player::you(const string& param) {
   privateMessage("You " + param);
+}
+
+void Player::you(MsgType type, const vector<string>& param) {
+  string msg;
+  switch (type) {
+    case MsgType::SWING_WEAPON: msg = "You swing your " + param.at(0); break;
+    case MsgType::THRUST_WEAPON: msg = "You thrust your " + param.at(0); break;
+    case MsgType::KICK: msg = "You kick " + param.at(0); break;
+    case MsgType::PUNCH: msg = "You punch " + param.at(0); break;
+    default: you(type, param.at(0)); break;
+  }
+  if (param.size() > 1)
+    msg += " " + param[1];
+  privateMessage(msg);
 }
 
 void Player::you(MsgType type, const string& param) {
@@ -637,12 +660,8 @@ void Player::you(MsgType type, const string& param) {
     case MsgType::COLLAPSE: msg = "You collapse."; break;
     case MsgType::TRIGGER_TRAP: msg = "You trigger something."; break;
     case MsgType::DISARM_TRAP: msg = "You disarm the trap."; break;
-    case MsgType::SWING_WEAPON: msg = "You swing your " + param; break;
-    case MsgType::THRUST_WEAPON: msg = "You thrust your " + param; break;
     case MsgType::ATTACK_SURPRISE: msg = "You sneak attack " + param; break;
-    case MsgType::KICK: msg = "You kick " + param; break;
     case MsgType::BITE: msg = "You bite " + param; break;
-    case MsgType::PUNCH: msg = "You punch " + param; break;
     case MsgType::PANIC:
           msg = !getCreature()->isAffected(LastingEffect::HALLU) ? "You are suddenly very afraid" : "You freak out completely"; break;
     case MsgType::RAGE:
@@ -698,6 +717,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHiddenId(square->getViewObject().id());
   if (!canSee && getMemory().hasViewIndex(pos))
     index.mergeFromMemory(getMemory().getViewIndex(pos));
+  if (square->isTribeForbidden(getCreature()->getTribe()))
+    index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (const Creature* c = square->getCreature()) {
     if (getCreature()->canSee(c) || c == getCreature())
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));

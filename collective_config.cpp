@@ -36,9 +36,8 @@ SERIALIZATION_CONSTRUCTOR_IMPL(AttractionInfo);
 template <class Archive>
 void PopulationIncrease::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(type)
-    & SVAR(increase)
-    & SVAR(minSize)
-    & SVAR(oneTime);
+    & SVAR(increasePerSquare)
+    & SVAR(maxIncrease);
 }
 
 SERIALIZABLE(PopulationIncrease);

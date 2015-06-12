@@ -72,7 +72,7 @@ ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to
       if (target->canNavigate(creature->getMovementType())) {
         if (const Creature* other = target->getCreature())
           if (other->isFriend(creature))
-            return 2.0;
+            return 1.5;
         return 5.0;
       }
       return infinity;};

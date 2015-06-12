@@ -35,7 +35,7 @@ Tile Tile::fromString(const string& ch, ColorId colorId, bool symbol) {
   return unicode(tmp[0], colorId, symbol);
 }
 
-Tile::Tile(TileCoord c) : tileCoord(c) {
+Tile::Tile(TileCoord c) : color(255, 255, 255), tileCoord(c) {
 }
 
 Tile Tile::setNoShadow() {
@@ -65,6 +65,11 @@ Tile Tile::addOption(Dir d, TileCoord coord) {
 
 Tile Tile::addBackground(TileCoord coord) {
   backgroundCoord = coord;
+  return *this;
+}
+
+Tile Tile::setColor(Color col) {
+  color = col;
   return *this;
 }
 
@@ -299,6 +304,7 @@ class TileCoordLookup {
   void genTiles() {
     Tile::addTile(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
     Tile::addTile(ViewId::DIG_MARK, sprite("dig_mark"));
+    Tile::addTile(ViewId::FORBID_ZONE, sprite("dig_mark").setColor(colors[ColorId::RED]));
     Tile::addTile(ViewId::DESTROY_BUTTON, sprite("remove"));
     Tile::addTile(ViewId::EMPTY, empty());
     Tile::addTile(ViewId::BORDER_GUARD, empty());
@@ -373,6 +379,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WELL, sprite(5, 8, 2).setNoShadow());
     Tile::addTile(ViewId::STATUE1, sprite(6, 5, 2).setNoShadow());
     Tile::addTile(ViewId::STATUE2, sprite(7, 5, 2).setNoShadow());
+    Tile::addTile(ViewId::THRONE, sprite(7, 4, 2).setNoShadow());
     Tile::addTile(ViewId::GREAT_ORC, sprite(6, 14));
     Tile::addTile(ViewId::ORC, sprite("orc"));
     Tile::addTile(ViewId::ORC_SHAMAN, sprite("shaman"));
@@ -640,6 +647,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WELL, symbol("0", ColorId::BLUE));
     Tile::addSymbol(ViewId::STATUE1, symbol("&", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::STATUE2, symbol("&", ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::THRONE, symbol("Ω", ColorId::YELLOW));
     Tile::addSymbol(ViewId::GREAT_ORC, symbol("o", ColorId::PURPLE));
     Tile::addSymbol(ViewId::ORC, symbol("o", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::ORC_SHAMAN, symbol("o", ColorId::YELLOW));
@@ -811,6 +819,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::FALLEN_TREE, symbol("*", ColorId::GREEN));
     Tile::addSymbol(ViewId::GUARD_POST, symbol("⚐", ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::DESTROY_BUTTON, symbol("X", ColorId::RED));
+    Tile::addSymbol(ViewId::FORBID_ZONE, symbol("#", ColorId::RED));
     Tile::addSymbol(ViewId::MANA, symbol("✱", ColorId::BLUE, true));
     Tile::addSymbol(ViewId::EYEBALL, symbol("e", ColorId::BLUE));
     Tile::addSymbol(ViewId::DANGER, symbol("*", ColorId::RED));

@@ -23,7 +23,6 @@ void Tribe::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(diplomatic)
     & SVAR(standing)
     & SVAR(attacks)
-    & SVAR(leader)
     & SVAR(members)
     & SVAR(enemyTribes)
     & SVAR(name);
@@ -33,36 +32,10 @@ SERIALIZABLE(Tribe);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Tribe);
 
-class Constant : public Tribe {
-  public:
-  Constant() {}
-  Constant(double s) : Tribe("", false), standing(s) {}
-  virtual double getStanding(const Creature*) const override {
-    return standing;
-  }
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Tribe) & SVAR(standing);
-  }
-
-  private:
-  double SERIAL(standing);
-};
-
-template <class Archive>
-void Tribe::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, Constant);
-}
-
-REGISTER_TYPES(Tribe::registerTypes);
-
 Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
 }
 
 void Tribe::removeMember(const Creature* c) {
-  if (c == leader)
-    leader = nullptr;
   removeElement(members, c);
 }
 
@@ -71,12 +44,12 @@ const string& Tribe::getName() const {
 }
 
 double Tribe::getStanding(const Creature* c) const {
+  if (enemyTribes.count(const_cast<Tribe*>(c->getTribe())))
+    return -1;
   if (c->getTribe() == this)
     return 1;
   if (standing.count(c)) 
     return standing.at(c);
-  if (enemyTribes.count(const_cast<Tribe*>(c->getTribe())))
-    return -1;
   return 0;
 }
 
@@ -86,9 +59,9 @@ void Tribe::initStanding(const Creature* c) {
 
 void Tribe::addEnemy(vector<Tribe*> tribes) {
   for (Tribe* t : tribes) {
-    CHECK(t != this);
     enemyTribes.insert(t);
-    t->enemyTribes.insert(this);
+    if (t != this)
+      t->enemyTribes.insert(this);
   }
 }
 
@@ -106,13 +79,9 @@ static const double killBonus = 0.1;
 static const double killPenalty = 0.5;
 static const double attackPenalty = 0.2;
 static const double thiefPenalty = 0.5;
-static const double importantMemberMult = 0.5 / killBonus;
 
 double Tribe::getMultiplier(const Creature* member) {
-  if (member == leader)
-    return importantMemberMult;
-  else
-    return 1;
+  return 1;
 }
 
 void Tribe::onMemberKilled(Creature* member, Creature* attacker) {
@@ -140,24 +109,12 @@ void Tribe::addMember(const Creature* c) {
   members.push_back(c);
 }
 
-void Tribe::setLeader(const Creature* c) {
-  CHECK(!leader);
-  leader = c;
-}
-
-const Creature* Tribe::getLeader() const {
-  return leader;
-}
-
 bool Tribe::isEnemy(const Creature* c) const {
   return getStanding(c) < 0;
 }
 
-vector<const Creature*> Tribe::getMembers(bool includeDead) {
-  if (includeDead)
-    return members;
-  else
-    return filter(members, [](const Creature* c)->bool { return !c->isDead(); });
+bool Tribe::isEnemy(const Tribe* t) const {
+  return enemyTribes.count(const_cast<Tribe*>(t));
 }
 
 void Tribe::onItemsStolen(const Creature* attacker) {
@@ -197,14 +154,16 @@ Tribe::Set::Set() {
   adventurer.reset(new Tribe("player", false));
   keeper.reset(new Tribe("keeper", false));
   bandit.reset(new Tribe("bandits", false));
-  killEveryone.reset(new Constant(-1));
-  peaceful.reset(new Constant(1));
+  killEveryone.reset(new Tribe("hostile", false));
+  peaceful.reset(new Tribe("peaceful", false));
   keeper->addEnemy({adventurer.get(), elven.get(), dwarven.get(), human.get(), lizard.get(), pest.get(),
       monster.get(), bandit.get() });
   elven->addEnemy({ dwarven.get(), bandit.get() });
   human->addEnemy({ lizard.get(), bandit.get() });
   adventurer->addEnemy({ monster.get(), pest.get(), bandit.get(), wildlife.get() });
   monster->addEnemy({wildlife.get()});
+  killEveryone->addEnemy({monster.get(), lizard.get(), pest.get(), wildlife.get(), elven.get(), human.get(),
+      dwarven.get(), adventurer.get(), keeper.get(), bandit.get(), killEveryone.get(), peaceful.get()});
 }
 
 

@@ -136,8 +136,6 @@ const Model::SunlightInfo& Model::getSunlightInfo() const {
 
 void Model::updateSunlightInfo() {
   double d = 0;
-/*  if (options->getBoolValue(OptionId::START_WITH_NIGHT))
-    d = -dayLength + 10;*/
   while (1) {
     d += dayLength;
     if (d > currentTime) {

@@ -424,7 +424,7 @@ class Fighter : public Behaviour {
       return 1;
     if (item->getClass() == ItemClass::AMMO && creature->getSkillValue(Skill::get(SkillId::ARCHERY)) > 0)
       return 0.1;
-    if (item->getClass() != ItemClass::WEAPON || creature->getAttr(AttrType::STRENGTH) < item->getMinStrength())
+    if (!creature->isEquipmentAppropriate(item))
       return 0;
     if (item->getModifier(ModifierType::THROWN_DAMAGE) > 0)
       return (double)item->getModifier(ModifierType::THROWN_DAMAGE) / 50;
@@ -573,12 +573,22 @@ class Fighter : public Behaviour {
       }
     }
     if (distance == 1)
-      if (auto action = creature->attack(other))
+      if (auto action = creature->attack(other, getAttackParams(other)))
         return {1.0, action.prepend([=](Creature* creature) {
             creature->setInCombat();
             other->setInCombat();
         })};
     return NoMove;
+  }
+
+  Creature::AttackParams getAttackParams(const Creature* enemy) {
+    int damDiff = enemy->getModifier(ModifierType::DAMAGE) - creature->getModifier(ModifierType::DAMAGE);
+    if (damDiff > 10)
+      return CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::WILD;);
+    else if (damDiff < -10)
+      return CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::SWIFT;);
+    else
+      return Creature::AttackParams {};
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter);

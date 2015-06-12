@@ -16,6 +16,7 @@ class ModelBuilder {
 
   static int getPigstyPopulationIncrease();
   static int getStatuePopulationIncrease();
+  static int getThronePopulationIncrease();
 
   private:
   static PModel tryCollectiveModel(ProgressMeter&, Options*, View*, const string& worldName);

@@ -101,10 +101,10 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
       {ItemIndex::GOLD, unMarkedItems(), {SquareId::TREASURE_CHEST}, false, {}, Warning::CHESTS},
       {ItemIndex::MINION_EQUIPMENT, [this](const Item* it)
           { return it->getClass() != ItemClass::GOLD && !isItemMarked(it);},
-          equipmentStorage, false, {}, Warning::STORAGE},
-      {ItemIndex::WOOD, unMarkedItems(), resourceStorage, false, {SquareId::TREE_TRUNK}, Warning::STORAGE},
-      {ItemIndex::IRON, unMarkedItems(), resourceStorage, false, {}, Warning::STORAGE},
-      {ItemIndex::STONE, unMarkedItems(), resourceStorage, false, {}, Warning::STORAGE},
+          equipmentStorage, false, {}, Warning::EQUIPMENT_STORAGE},
+      {ItemIndex::WOOD, unMarkedItems(), resourceStorage, false, {SquareId::TREE_TRUNK}, Warning::RESOURCE_STORAGE},
+      {ItemIndex::IRON, unMarkedItems(), resourceStorage, false, {}, Warning::RESOURCE_STORAGE},
+      {ItemIndex::STONE, unMarkedItems(), resourceStorage, false, {}, Warning::RESOURCE_STORAGE},
   };
   return itemFetchInfo;
 }
@@ -217,7 +217,8 @@ void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> 
 }
 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
-  c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
+  if (!traits[MinionTrait::FARM_ANIMAL])
+    c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
   if (creatures.empty())
     traits.insert(MinionTrait::LEADER);
   CHECK(c->getTribe() == tribe);
@@ -456,7 +457,7 @@ PTask Collective::getStandardTask(Creature* c) {
         ret = Task::eat(hatchery);
       break; }
   }
-  if (info.warning)
+  if (info.warning && !getAllSquares().empty())
     setWarning(*info.warning, !ret);
   if (!ret)
     currentTasks.erase(c->getUniqueId());
@@ -552,10 +553,9 @@ MoveInfo Collective::getTeamMemberMove(Creature* c) {
 
 void Collective::setTask(const Creature *c, PTask task) {
   if (Task* task = taskMap.getTask(c)) {
-    if (!task->canTransfer()) {
-      task->cancel();
+    if (!task->canTransfer())
       returnResource(taskMap.removeTask(task));
-    } else
+    else
       taskMap.freeTaskDelay(task, getTime() + 50);
   }
   taskMap.addTask(std::move(task), c);
@@ -563,6 +563,11 @@ void Collective::setTask(const Creature *c, PTask task) {
 
 bool Collective::hasTask(const Creature* c) const {
   return taskMap.hasTask(c);
+}
+
+void Collective::cancelTask(const Creature* c) {
+  if (Task* task = taskMap.getTask(c))
+    taskMap.removeTask(task);
 }
 
 MoveInfo Collective::getMove(Creature* c) {
@@ -778,7 +783,7 @@ bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCr
   if (spawnPos.size() < creatures.size())
     return false;
   if (info.autoTeam)
-    teams.activate(teams.createHidden(extractRefs(creatures)));
+    teams.activate(teams.createPersistent(extractRefs(creatures)));
   for (int i : All(creatures)) {
     Creature* c = creatures[i].get();
     addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
@@ -832,7 +837,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
       return false;
   }
   if (info.autoTeam)
-    teams.activate(teams.createHidden(extractRefs(creatures)));
+    teams.activate(teams.createPersistent(extractRefs(creatures)));
   for (int i : All(creatures)) {
     Creature* c = creatures[i].get();
     if (i == 0)
@@ -1042,11 +1047,14 @@ void Collective::tick(double time) {
           Creature* c = elem.first;
           Vec2 pos = c->getPosition();
           if (containsSquare(pos) && !c->isDead()) {
-            getLevel()->globalMessage(pos, c->getName().the() + " surrenders.");
-            control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
-            c->die(nullptr, true, false);
-            addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
-                  MonsterAIFactory::collective(this)), pos, {MinionTrait::PRISONER});
+            PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
+                  MonsterAIFactory::collective(this));
+            if (getLevel()->getSafeSquare(pos)->canEnterEmpty(prisoner.get())) {
+              getLevel()->globalMessage(pos, c->getName().the() + " surrenders.");
+              control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
+              c->die(nullptr, true, false);
+              addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER});
+            }
           }
           prisonerInfo.erase(c);
         }
@@ -1156,29 +1164,30 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
     removeElement(creatures, victim);
     minionAttraction.erase(victim);
     if (Task* task = taskMap.getTask(victim)) {
-      if (!task->canTransfer()) {
-        task->cancel();
+      if (!task->canTransfer())
         returnResource(taskMap.removeTask(task));
-      } else
+      else
         taskMap.freeTaskDelay(task, getTime() + 50);
     }
-    for (MinionTrait t : ENUM_ALL(MinionTrait))
-      if (contains(byTrait[t], victim))
-        removeElement(byTrait[t], victim);
     if (auto spawnType = victim->getSpawnType())
       removeElement(bySpawnType[*spawnType], victim);
     for (auto team : teams.getContaining(victim))
       teams.remove(team, victim);
+    if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
+      if (killer)
+        control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
+              PlayerMessage::HIGH).setPosition(victim->getPosition()));
+      else
+        control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
+            .setPosition(victim->getPosition()));
+    }
+    for (MinionTrait t : ENUM_ALL(MinionTrait))
+      if (contains(byTrait[t], victim))
+        removeElement(byTrait[t], victim);
     control->onMemberKilled(victim, killer);
-    if (killer)
-      control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
-            PlayerMessage::HIGH).setPosition(victim->getPosition()));
-    else
-      control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
-          .setPosition(victim->getPosition()));
   } else
     control->onOtherKilled(victim, killer);
-  if (victim->getTribe() != getTribe() && (!killer || contains(creatures, killer))) {
+  if (victim->getTribe() != getTribe() && (/*!killer || */contains(creatures, killer))) {
     addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
     kills.push_back(victim);
@@ -2282,9 +2291,7 @@ int Collective::getMaxPopulation() const {
   int ret = config.getMaxPopulation();
   for (auto& elem : config.getPopulationIncreases()) {
     int sz = getSquares(elem.type).size();
-    if (elem.oneTime)
-      sz = min(sz, elem.minSize);
-    ret += sz / elem.minSize * elem.increase;
+    ret += min<int>(elem.maxIncrease, elem.increasePerSquare * sz);
   }
   return ret;
 }

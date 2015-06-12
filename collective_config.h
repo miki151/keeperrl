@@ -69,9 +69,8 @@ struct ImmigrantInfo {
 
 struct PopulationIncrease {
   SquareApplyType SERIAL(type);
-  int SERIAL(increase);
-  int SERIAL(minSize);
-  bool SERIAL(oneTime);
+  double SERIAL(increasePerSquare);
+  int SERIAL(maxIncrease);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

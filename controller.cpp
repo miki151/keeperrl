@@ -56,6 +56,9 @@ bool DoNothingController::isPlayer() const {
   return false;
 }
 
+void DoNothingController::you(MsgType type, const vector<string>& param) {
+}
+
 void DoNothingController::you(MsgType type, const string& param) {
 }
 

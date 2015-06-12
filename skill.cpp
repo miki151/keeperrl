@@ -118,6 +118,7 @@ void Skill::init() {
   Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
         "Absorb other creatures and retain their attributes.", true, false));
   Skill::set(SkillId::HEALING, new Skill("healing", "Heal friendly creatures.", true));
+  Skill::set(SkillId::STEALTH, new Skill("stealth", "Fight without waking up creatures sleeping nearby.", true));
 }
 
 bool Skill::transferOnConsumption() const {

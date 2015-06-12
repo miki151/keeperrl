@@ -61,6 +61,23 @@ void Monster::onBump(Creature* c) {
     action.perform(c);
 }
 
+void Monster::you(MsgType type, const vector<string>& param) {
+  string msg;
+  switch (type) {
+    case MsgType::SWING_WEAPON:
+      msg = getCreature()->getName().the() + " swings " + getCreature()->getGender().his() + " " + param.at(0); break;
+    case MsgType::THRUST_WEAPON:
+      msg = getCreature()->getName().the() + " thrusts " + getCreature()->getGender().his() + " " + param.at(0); break;
+    case MsgType::KICK: msg = getCreature()->getName().the() + addName(" kicks", param.at(0)); break;
+    case MsgType::PUNCH: msg = getCreature()->getName().the() + addName(" punches", param.at(0)); break;
+    default: you(type, param.at(0)); return;
+  }
+  if (param.size() > 1)
+    msg += " " + param[1];
+  if (!msg.empty())
+    getCreature()->monsterMessage(msg);
+}
+
 void Monster::you(MsgType type, const string& param) {
   string msg, msgNoSee;
   switch (type) {
@@ -91,13 +108,7 @@ void Monster::you(MsgType type, const string& param) {
     case MsgType::DISARM_TRAP: msg = getCreature()->getName().the() + " disarms a trap."; break;
     case MsgType::PANIC: msg = getCreature()->getName().the() + " panics."; break;
     case MsgType::RAGE: msg = getCreature()->getName().the() + " is enraged."; break;
-    case MsgType::SWING_WEAPON: msg = getCreature()->getName().the() + " swings " + getCreature()->getGender().his() + " " +
-                                    param; break;
-    case MsgType::THRUST_WEAPON: msg = getCreature()->getName().the() + " thrusts " + getCreature()->getGender().his() + " " +
-                                 param; break;
-    case MsgType::KICK: msg = getCreature()->getName().the() + addName(" kicks", param); break;
     case MsgType::BITE: msg = getCreature()->getName().the() + addName(" bites", param); break;
-    case MsgType::PUNCH: msg = getCreature()->getName().the() + addName(" punches", param); break;
     case MsgType::CRAWL: msg = getCreature()->getName().the() + " is crawling"; break;
     case MsgType::STAND_UP: msg = getCreature()->getName().the() + " is back on " + getCreature()->getGender().his() + " feet ";
                             break;

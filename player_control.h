@@ -54,10 +54,19 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void retire();
   void leaveControl();
 
+  enum class RequirementId {
+    TECHNOLOGY,
+    VILLAGE_CONQUERED,
+  };
+  typedef EnumVariant<RequirementId, TYPES(TechId),
+      ASSIGN(TechId, RequirementId::TECHNOLOGY)> Requirement;
+
+  static string getRequirementText(Requirement);
+
   struct RoomInfo {
     string name;
     string description;
-    optional<TechId> techId;
+    vector<Requirement> requirements;
   };
   static vector<RoomInfo> getRoomInfo();
   static vector<RoomInfo> getWorkshopInfo();
@@ -121,6 +130,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handleCreatureButton(Creature* c, View* view);
   void controlSingle(const Creature*);
   void commandTeam(TeamId);
+
   struct BuildInfo {
     struct SquareInfo {
       SquareType type;
@@ -129,6 +139,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
       bool buildImmediatly;
       bool noCredit;
       double costExponent;
+      optional<int> maxNumber;
     } squareInfo;
 
     struct TrapInfo {
@@ -147,22 +158,24 @@ class PlayerControl : public CreatureView, public CollectiveControl {
       FETCH,
       DISPATCH,
       CLAIM_TILE,
+      FORBID_ZONE,
       TORCH,
     } buildType;
 
-    optional<TechId> techId;
+    vector<Requirement> requirements;
     string help;
     char hotkey;
     string groupName;
 
-    BuildInfo(SquareInfo info, optional<TechId> techId = none, const string& h = "", char hotkey = 0,
+    BuildInfo(SquareInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
         string group = "");
-    BuildInfo(TrapInfo info, optional<TechId> techId = none, const string& h = "", char hotkey = 0,
+    BuildInfo(TrapInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
         string group = "");
     BuildInfo(DeityHabitat, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
     BuildInfo(const Creature*, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
     BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
   };
+  bool meetsRequirement(Requirement) const;
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   vector<BuildInfo> getBuildInfo() const;

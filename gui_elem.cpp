@@ -54,47 +54,59 @@ class Button : public GuiElem {
 
 class ButtonChar : public Button {
   public:
-  ButtonChar(function<void(Rectangle)> f, char key) : Button(f), hotkey(key) {}
+  ButtonChar(function<void(Rectangle)> f, char key, bool cap) : Button(f), hotkey(key), capture(cap) {}
 
-  virtual void onKeyPressed(char c) override {
-    if (hotkey == c)
+  virtual bool onKeyPressed(char c) override {
+    if (hotkey == c) {
       fun(getBounds());
+      return capture;
+    }
+    return false;
   }
 
   private:
   char hotkey;
+  bool capture;
 };
+
+static bool keyEventEqual(Event::KeyEvent k1, Event::KeyEvent k2) {
+  return k1.code == k2.code && k1.shift == k2.shift;
+}
 
 class ButtonKey : public Button {
   public:
-  ButtonKey(function<void(Rectangle)> f, Event::KeyEvent key) : Button(f), hotkey(key) {}
+  ButtonKey(function<void(Rectangle)> f, Event::KeyEvent key, bool cap) : Button(f), hotkey(key), capture(cap) {}
 
-  virtual void onKeyPressed2(Event::KeyEvent key) override {
-    if (hotkey.code == key.code && hotkey.shift == key.shift)
+  virtual bool onKeyPressed2(Event::KeyEvent key) override {
+    if (keyEventEqual(hotkey, key)) {
       fun(getBounds());
+      return capture;
+    }
+    return false;
   }
 
   private:
   Event::KeyEvent hotkey;
+  bool capture;
 };
 
 GuiFactory::GuiFactory(Clock* c) : clock(c) {
 }
 
-PGuiElem GuiFactory::button(function<void(Rectangle)> fun, char hotkey) {
-  return PGuiElem(new ButtonChar(fun, hotkey));
+PGuiElem GuiFactory::button(function<void(Rectangle)> fun, char hotkey, bool capture) {
+  return PGuiElem(new ButtonChar(fun, hotkey, capture));
 }
 
-PGuiElem GuiFactory::button(function<void(Rectangle)> fun, Event::KeyEvent hotkey) {
-  return PGuiElem(new ButtonKey(fun, hotkey));
+PGuiElem GuiFactory::button(function<void(Rectangle)> fun, Event::KeyEvent hotkey, bool capture) {
+  return PGuiElem(new ButtonKey(fun, hotkey, capture));
 }
 
-PGuiElem GuiFactory::button(function<void()> fun, char hotkey) {
-  return PGuiElem(new ButtonChar([=](Rectangle) { fun(); }, hotkey));
+PGuiElem GuiFactory::button(function<void()> fun, char hotkey, bool capture) {
+  return PGuiElem(new ButtonChar([=](Rectangle) { fun(); }, hotkey, capture));
 }
 
-PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey) {
-  return PGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey));
+PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey, bool capture) {
+  return PGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey, capture));
 }
 
 class MouseWheel : public GuiElem {
@@ -347,14 +359,18 @@ class GuiLayout : public GuiElem {
       elems[i]->setBounds(getElemBounds(i));
   }
 
-  virtual void onKeyPressed(char key) override {
+  virtual bool onKeyPressed(char key) override {
     for (int i : All(elems))
-      elems[i]->onKeyPressed(key);
+      if (elems[i]->onKeyPressed(key))
+        return true;
+    return false;
   }
 
-  virtual void onKeyPressed2(Event::KeyEvent key) override {
+  virtual bool onKeyPressed2(Event::KeyEvent key) override {
     for (int i : All(elems))
-      elems[i]->onKeyPressed2(key);
+      if (elems[i]->onKeyPressed2(key))
+        return true;
+    return false;
   }
 
   virtual bool onMouseWheel(Vec2 v, bool up) override {
@@ -387,6 +403,98 @@ PGuiElem GuiFactory::stack(PGuiElem g1, PGuiElem g2) {
 
 PGuiElem GuiFactory::stack(PGuiElem g1, PGuiElem g2, PGuiElem g3) {
   return stack(makeVec<PGuiElem>(std::move(g1), std::move(g2), std::move(g3)));
+}
+
+class Focusable : public GuiLayout {
+  public:
+  Focusable(PGuiElem content, vector<Event::KeyEvent> focus, vector<Event::KeyEvent> defocus, bool& foc) :
+      GuiLayout(makeVec<PGuiElem>(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc) {}
+
+  virtual bool onLeftClick(Vec2 pos) override {
+    if (focused && !pos.inRectangle(getBounds())) {
+      focused = false;
+      return true;
+    }
+    return GuiLayout::onLeftClick(pos);
+  }
+
+  virtual bool onKeyPressed(char key) override {
+    if (focused) {
+      GuiLayout::onKeyPressed(key);
+      return true;
+    } else
+      return false;
+  }
+
+  virtual bool onKeyPressed2(Event::KeyEvent key) override {
+    if (!focused)
+      for (auto& elem : focusEvent)
+        if (keyEventEqual(elem, key)) {
+          focused = true;
+          return true;
+        }
+    if (focused)
+      for (auto& elem : defocusEvent)
+        if (keyEventEqual(elem, key)) {
+          focused = false;
+          return true;
+        }
+    if (focused) {
+      GuiLayout::onKeyPressed2(key);
+      return true;
+    } else
+      return false;
+  }
+
+  private:
+  vector<Event::KeyEvent> focusEvent;
+  vector<Event::KeyEvent> defocusEvent;
+  bool& focused;
+};
+
+PGuiElem GuiFactory::focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent, vector<Event::KeyEvent> defocusEvent,
+    bool& focused) {
+  return PGuiElem(new Focusable(std::move(content), focusEvent, defocusEvent, focused));
+}
+
+class KeyHandler : public GuiElem {
+  public:
+  KeyHandler(function<void(Event::KeyEvent)> f) : fun(f) {}
+
+  virtual bool onKeyPressed2(Event::KeyEvent key) override {
+    fun(key);
+    return false;
+  }
+
+  private:
+  function<void(Event::KeyEvent)> fun;
+};
+ 
+PGuiElem GuiFactory::keyHandler(function<void(Event::KeyEvent)> fun) {
+  return PGuiElem(new KeyHandler(fun));
+}
+
+class KeyHandler2 : public GuiElem {
+  public:
+  KeyHandler2(function<void()> f, vector<Event::KeyEvent> k, bool cap) : fun(f), key(k), capture(cap) {}
+
+  virtual bool onKeyPressed2(Event::KeyEvent k) override {
+    for (auto& elem : key)
+      if (keyEventEqual(k, elem)) {
+        fun();
+        return capture;
+      }
+    return false;
+  }
+
+  private:
+  function<void()> fun;
+  vector<Event::KeyEvent> key;
+  bool capture;
+};
+
+PGuiElem GuiFactory::keyHandler(function<void()> fun, vector<Event::KeyEvent> key, bool capture) {
+  return PGuiElem(new KeyHandler2(fun, key, capture));
 }
 
 class VerticalList : public GuiLayout {
@@ -673,6 +781,10 @@ class Margins : public GuiLayout {
 
 PGuiElem GuiFactory::margins(PGuiElem content, int left, int top, int right, int bottom) {
   return PGuiElem(new Margins(std::move(content), left, top, right, bottom));
+}
+
+PGuiElem GuiFactory::leftMargin(int size, PGuiElem content) {
+  return PGuiElem(new Margins(std::move(content), size, 0, 0, 0));
 }
 
 class Invisible : public GuiLayout {
@@ -1028,12 +1140,12 @@ class Scrollable : public GuiElem {
     content->onMouseRelease();
   }
 
-  virtual void onKeyPressed(char c) override {
-    content->onKeyPressed(c);
+  virtual bool onKeyPressed(char c) override {
+    return content->onKeyPressed(c);
   }
 
-  virtual void onKeyPressed2(Event::KeyEvent key) override {
-    content->onKeyPressed2(key);
+  virtual bool onKeyPressed2(Event::KeyEvent key) override {
+    return content->onKeyPressed2(key);
   }
 
   private:
@@ -1336,13 +1448,15 @@ void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       break;
     case Event::KeyPressed:
       for (GuiElem* elem : guiElems)
-        elem->onKeyPressed2(event.key);
+        if (elem->onKeyPressed2(event.key))
+          break;
       break;
     case Event::TextEntered:
       if (event.text.unicode < 128) {
         char key = event.text.unicode;
         for (GuiElem* elem : guiElems)
-          elem->onKeyPressed(key);
+          if (elem->onKeyPressed(key))
+            break;
       }
       break;
     case Event::MouseWheelMoved:

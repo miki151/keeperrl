@@ -182,10 +182,16 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   CreatureAction pickUp(const vector<Item*>& item, bool spendTime = true) const;
   CreatureAction drop(const vector<Item*>& item) const;
   void drop(vector<PItem> item);
-  CreatureAction attack(const Creature*, optional<AttackLevel> = none, bool spendTime = true) const;
+  struct AttackParams {
+    optional<AttackLevel> level;
+    enum Mod { WILD, SWIFT};
+    optional<Mod> mod;
+  };
+  CreatureAction attack(const Creature*, optional<AttackParams> = none, bool spendTime = true) const;
   CreatureAction bumpInto(Vec2 direction) const;
   CreatureAction applyItem(Item* item) const;
   CreatureAction equip(Item* item) const;
+  bool isEquipmentAppropriate(const Item* item) const;
   CreatureAction unequip(Item* item) const;
   bool canEquipIfEmptySlot(const Item* item, string* reason = nullptr) const;
   bool canEquip(const Item* item) const;
@@ -238,6 +244,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void setHeld(const Creature* holding);
   bool isHeld() const;
 
+  void you(MsgType type, const vector<string>& param) const;
   void you(MsgType type, const string& param) const;
   void you(const string& param) const;
   void playerMessage(const PlayerMessage&) const;
@@ -345,6 +352,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   EnumMap<AttrType, double> SERIAL(attrIncrease);
   void updateVisibleCreatures(Rectangle range);
   vector<const Creature*> SERIAL(visibleEnemies);
+  vector<Creature*> SERIAL(visibleCreatures);
   double getTimeRemaining(LastingEffect) const;
   string getRemainingString(LastingEffect) const;
   VisionId SERIAL(vision);

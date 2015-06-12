@@ -46,7 +46,8 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(displayUses)
     & SVAR(modifiers)
     & SVAR(attrs)
-    & SVAR(shortName);
+    & SVAR(shortName)
+    & SVAR(lastingEffect);
 }
 
 SERIALIZABLE(ItemAttributes);

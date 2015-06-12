@@ -51,7 +51,8 @@ RICH_ENUM(SpawnType,
 
 RICH_ENUM(CollectiveWarning,
     DIGGING,
-    STORAGE,
+    RESOURCE_STORAGE,
+    EQUIPMENT_STORAGE,
     LIBRARY,
     BEDS,
     TRAINING,
@@ -88,6 +89,7 @@ class Collective : public Task::Callback {
   GameInfo::VillageInfo::Village getVillageInfo() const;
   void setTask(const Creature*, PTask);
   bool hasTask(const Creature*) const;
+  void cancelTask(const Creature*);
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;

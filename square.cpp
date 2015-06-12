@@ -46,12 +46,13 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(constructions)
     & SVAR(ticking)
     & SVAR(fog)
-    & SVAR(movementType)
+    & SVAR(movementSet)
     & SVAR(updateViewIndex)
     & SVAR(updateMemory)
     & SVAR(viewIndex)
     & SVAR(destroyable)
-    & SVAR(owner);
+    & SVAR(owner)
+    & SVAR(forbiddenTribe);
   if (progressMeter)
     progressMeter->addProgress();
   updateViewIndex = true;
@@ -67,7 +68,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
-    movementType(p.movementType), destroyable(p.canDestroy), owner(p.owner) {
+    movementSet(p.movementSet), destroyable(p.canDestroy), owner(p.owner) {
 }
 
 Square::~Square() {
@@ -155,7 +156,7 @@ void Square::destroy() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
   level->getModel()->onSquareDestroyed(getLevel(), getPosition());
-  getLevel()->removeSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
+  getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
 bool Square::canDestroy(const Creature* c) const {
@@ -171,7 +172,7 @@ void Square::burnOut() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
   level->getModel()->onSquareDestroyed(getLevel(), getPosition());
-  getLevel()->removeSquare(getPosition(), PSquare(SquareFactory::get(SquareId::FLOOR)));
+  getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
 const vector<Vec2>& Square::getTravelDir() const {
@@ -186,8 +187,6 @@ void Square::setLevel(Level* l) {
   level = l;
   if (ticking || !inventory.isEmpty())
     level->addTickingSquare(position);
-  if (owner)
-    level->addSquareOwner(owner);
 }
 
 Level* Square::getLevel() {
@@ -208,21 +207,18 @@ bool Square::sunlightBurns() const {
 }
 
 void Square::updateSunlightMovement(bool isSunlight) {
-  if (isSunlight) {
-    movementType.removeTrait(MovementTrait::SUNLIGHT_VULNERABLE);
-  } else
-    movementType.addTrait(MovementTrait::SUNLIGHT_VULNERABLE);
+  movementSet.setSunlight(isSunlight);
 }
 
 void Square::updateMovement() {
   if (fire.isBurning()) {
-    if (!movementType.hasTrait(MovementTrait::FIRE_RESISTANT)) {
-      movementType.addTrait(MovementTrait::FIRE_RESISTANT);
+    if (!movementSet.isOnFire()) {
+      movementSet.setOnFire(true);
       level->updateConnectivity(position);
     }
   } else
-  if (movementType.hasTrait(MovementTrait::FIRE_RESISTANT)) {
-    movementType.removeTrait(MovementTrait::FIRE_RESISTANT);
+  if (movementSet.isOnFire()) {
+    movementSet.setOnFire(false);
     level->updateConnectivity(position);
   }
 }
@@ -308,7 +304,7 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
 }
 
 bool Square::canNavigate(MovementType type) const {
-  return canEnterEmpty(type) || canDestroy(type.getTribe()) || 
+  return canEnterEmpty(type) || (canDestroy(type.getTribe()) && !canEnterEmpty(type.setForced())) || 
       (creature && creature->isStationary() && type.getTribe() != creature->getTribe());
 }
 
@@ -317,14 +313,11 @@ bool Square::canEnter(MovementType movement) const {
 }
 
 bool Square::canEnterEmpty(MovementType movement) const {
-  return getMovementType().canEnter(movement);
-}
-
-const MovementType& Square::getMovementType() const {
-  static MovementType empty;
   if (creature && creature->isStationary())
-    return empty;
-  return movementType;
+    return false;
+  if (!movement.isForced() && forbiddenTribe && forbiddenTribe == movement.getTribe())
+    return false;
+  return movementSet.canEnter(movement);
 }
 
 bool Square::canEnter(const Creature* c) const {
@@ -332,7 +325,7 @@ bool Square::canEnter(const Creature* c) const {
 }
 
 bool Square::canEnterEmpty(const Creature* c) const {
-  return getMovementType().canEnter(c->getMovementType());
+  return canEnterEmpty(c->getMovementType());
 }
 
 void Square::setOnFire(double amount) {
@@ -546,10 +539,34 @@ bool Square::needsMemoryUpdate() const {
   return updateMemory;
 }
 
-void Square::setMovementType(MovementType t) {
-  movementType = t;
-  if (level)
-    level->updateConnectivity(position);
+void Square::addTraitForTribe(const Tribe* tribe, MovementTrait trait) {
+  movementSet.addTraitForTribe(tribe, trait);
+  level->updateConnectivity(position);
+}
+
+void Square::removeTraitForTribe(const Tribe* tribe, MovementTrait trait) {
+  movementSet.removeTraitForTribe(tribe, trait);
+  level->updateConnectivity(position);
+}
+
+void Square::forbidMovementForTribe(const Tribe* tribe) {
+  CHECK(!forbiddenTribe || forbiddenTribe == tribe);
+  forbiddenTribe = tribe;
+  level->updateConnectivity(position);
+}
+
+void Square::allowMovementForTribe(const Tribe* tribe) {
+  CHECK(!forbiddenTribe || forbiddenTribe == tribe);
+  forbiddenTribe = nullptr;
+  level->updateConnectivity(position);
+}
+
+bool Square::isTribeForbidden(const Tribe* tribe) const {
+  return forbiddenTribe == tribe;
+}
+
+const Tribe* Square::getForbiddenTribe() const {
+  return forbiddenTribe;
 }
 
 optional<SquareApplyType> Square::getApplyType(const Creature* c) const {

@@ -1013,6 +1013,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.size = CreatureSize::MEDIUM;
           c.attr[AttrType::STRENGTH] = 14;
           c.attr[AttrType::DEXTERITY] = 12;
+          c.firstName = "Cornelia";
           c.barehandedDamage = 6;
           c.humanoid = true;
           c.weight = 50;
@@ -1408,11 +1409,19 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.name = "imp";);
     case CreatureId::PRISONER:
-      return INHERIT(IMP,
+      return CATTR(
           c.viewId = ViewId::PRISONER;
           c.attr[AttrType::SPEED] = 100;
+          c.attr[AttrType::STRENGTH] = 8;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.size = CreatureSize::LARGE;
           c.weight = 60;
+          c.humanoid = true;
+          c.courage = 0.1;
+          c.carryAnything = true;
+          c.dontChase = true;
+          c.cantEquip = true;
+          c.skills.insert(SkillId::CONSTRUCTION);
           c.chatReactionFriendly = "talks about escape plans";
           c.minionTasks.setValue(MinionTask::PRISON, 1);
           c.minionTasks.setValue(MinionTask::TORTURE, 0.0001); 
@@ -1602,6 +1611,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.innocent = true;
           c.weight = 150;
+          c.dontChase = true;
           c.animal = true;
           c.isFood = true;
           c.name = "pig";);
@@ -1798,6 +1808,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::TRAIN, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.skills.insert(SkillId::STEALTH);
           c.name = EntityName("werewolf", "werewolves"););    
     case CreatureId::DOG: 
       return INHERIT(WOLF,
@@ -1984,11 +1995,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 
       return ItemList()
-        .add(ItemId::ROBE)
-        .add({ItemId::SCROLL, EffectId::WORD_OF_POWER})
-        .add({ItemId::SCROLL, EffectId::WORD_OF_POWER})
-        .add({ItemId::SCROLL, EffectId::WORD_OF_POWER})
-        .add({ItemId::SCROLL, EffectId::WORD_OF_POWER});
+        .add(ItemId::ROBE);
     case CreatureId::DEATH: 
       return ItemList()
         .add(ItemId::SCYTHE);
