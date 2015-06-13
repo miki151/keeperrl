@@ -696,9 +696,33 @@ CreatureFactory CreatureFactory::humanCastle(Tribe* tribe) {
       { 10, 6, 2, 1, 1, 1, 1, 1}, {CreatureId::AVATAR});
 }
 
+static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
+
+void CreatureFactory::initSplash(Tribe* tribe) {
+  splashFactories = chooseRandom<optional<pair<CreatureFactory, CreatureFactory>>>( {
+      make_pair(CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {}),
+        CreatureFactory::singleType(tribe, CreatureId::AVATAR)),
+      make_pair(CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {}),
+        CreatureFactory::singleType(tribe, CreatureId::SHAMAN)),
+      make_pair(CreatureFactory(tribe, { CreatureId::ELF_ARCHER}, { 1}, {}),
+        CreatureFactory::singleType(tribe, CreatureId::ELF_LORD)),
+      make_pair(CreatureFactory(tribe, { CreatureId::DWARF}, { 1}, {}),
+        CreatureFactory::singleType(tribe, CreatureId::DWARF_BARON)),
+      make_pair(CreatureFactory(tribe, { CreatureId::LIZARDMAN}, { 1}, {}),
+        CreatureFactory::singleType(tribe, CreatureId::LIZARDLORD)),
+      });
+}
+
 CreatureFactory CreatureFactory::splashHeroes(Tribe* tribe) {
-  return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER},
-      { 1, 1}, {});
+  if (!splashFactories)
+    initSplash(tribe);
+  return splashFactories->first;
+}
+
+CreatureFactory CreatureFactory::splashLeader(Tribe* tribe) {
+  if (!splashFactories)
+    initSplash(tribe);
+  return splashFactories->second;
 }
 
 CreatureFactory CreatureFactory::splashMonsters(Tribe* tribe) {
@@ -2085,13 +2109,14 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_BOOTS)
         .add(ItemId::IRON_HELM)
-        .add(ItemId::GOLD_PIECE, Random.get(100, 200));
+        .add(ItemId::GOLD_PIECE, Random.get(200, 400));
     case CreatureId::ELF_LORD: 
       return ItemList()
         .add(ItemId::SPECIAL_ELVEN_SWORD)
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::BOW)
         .add(ItemId::ARROW, Random.get(20, 36))
+        .add(ItemId::GOLD_PIECE, Random.get(100, 300))
         .add(randomBackup());
     case CreatureId::ELF_ARCHER: 
       return ItemList()
@@ -2099,6 +2124,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::BOW)
         .add(ItemId::ARROW, Random.get(20, 36))
+        .add(ItemId::GOLD_PIECE, Random.get(10, 30))
         .add(randomBackup());
     case CreatureId::MUMMY_LORD: 
       return ItemList()

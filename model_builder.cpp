@@ -542,7 +542,7 @@ PModel ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string&
   Level* l = m->buildLevel(
       Level::Builder(meter, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness", false),
       LevelMaker::splashLevel(
-          CreatureFactory::singleType(m->tribeSet.human.get(), CreatureId::AVATAR),
+          CreatureFactory::splashLeader(m->tribeSet.human.get()),
           CreatureFactory::splashHeroes(m->tribeSet.human.get()),
           CreatureFactory::splashMonsters(m->tribeSet.keeper.get()),
           CreatureFactory::singleType(m->tribeSet.keeper.get(), CreatureId::IMP), splashPath));
