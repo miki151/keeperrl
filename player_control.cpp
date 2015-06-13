@@ -403,7 +403,7 @@ void PlayerControl::minionEquipmentAction(Creature* creature, const View::Minion
 
 vector<GameInfo::PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
   vector<GameInfo::PlayerInfo> minions;
-  for (Creature* c : getCollective()->getCreatures())
+  for (Creature* c : getCreatures())
     if (c->getSpeciesName() == like->getSpeciesName()) {
       minions.emplace_back();
       minions.back().readFrom(c);
@@ -415,6 +415,9 @@ vector<GameInfo::PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
       minions.back().creatureId = c->getUniqueId();
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minions.back());
+      minions.back().actions = { GameInfo::PlayerInfo::CONTROL, GameInfo::PlayerInfo::RENAME };
+      if (!getCollective()->hasTrait(c, MinionTrait::LEADER))
+        minions.back().actions.push_back(GameInfo::PlayerInfo::BANISH);
     }
   sort(minions.begin(), minions.end(), [] (const GameInfo::PlayerInfo& m1, const GameInfo::PlayerInfo& m2) {
         return m1.level > m2.level;
@@ -425,7 +428,18 @@ vector<GameInfo::PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
 void PlayerControl::minionView(Creature* creature) {
   UniqueEntity<Creature>::Id currentId = creature->getUniqueId();
   while (1) {
-    auto actionInfo = model->getView()->getMinionAction(getMinionGroup(creature), currentId);
+    vector<GameInfo::PlayerInfo> group = getMinionGroup(creature);
+    if (group.empty())
+      return;
+    bool isId = false;
+    for (auto& elem : group)
+      if (elem.creatureId == currentId) {
+        isId = true;
+        break;
+      }
+    if (!isId)
+      currentId = group[0].creatureId;
+    auto actionInfo = model->getView()->getMinionAction(group, currentId);
     if (!actionInfo)
       return;
     if (Creature* c = getCreature(currentId))
@@ -441,6 +455,11 @@ void PlayerControl::minionView(Creature* creature) {
           return;
         case 3:
           c->setFirstName(boost::get<View::MinionAction::RenameAction>(actionInfo->action).newName);
+          break;
+        case 4:
+          if (model->getView()->yesOrNoPrompt("Do you want to banish " + c->getName().the() + " forever? "
+                "Banishing has a negative impact on morale of other minions."))
+            getCollective()->banishCreature(c);
           break;
     }
   }
@@ -851,12 +870,12 @@ void PlayerControl::addImportantLongMessage(const string& msg, optional<Vec2> po
 }
 
 void PlayerControl::initialize() {
-  for (Creature* c : getCollective()->getCreatures())
+  for (Creature* c : getCreatures())
     update(c);
 }
 
 void PlayerControl::update(Creature* c) {
-  if (!retired && contains(getCollective()->getCreatures(), c)) {
+  if (!retired && contains(getCreatures(), c)) {
     vector<Vec2> visibleTiles = getCollective()->getLevel()->getVisibleTiles(c);
     visibilityMap.update(c, visibleTiles);
     for (Vec2 pos : visibleTiles) {
@@ -1351,7 +1370,7 @@ void PlayerControl::addToMemory(Vec2 pos) {
 void PlayerControl::addDeityServant(Deity* deity, Vec2 deityPos, Vec2 victimPos) {
   PTask task = Task::chain(Task::destroySquare(victimPos), Task::disappear());
   PCreature creature = deity->getServant(getLevel()->getModel()->getKillEveryoneTribe()).random(
-      MonsterAIFactory::singleTask(task));
+      MonsterAIFactory::singleTask(std::move(task)));
   for (Square* square : getLevel()->getSquares(concat({deityPos}, deityPos.neighbors8(true))))
     if (square->canEnter(creature.get())) {
       getLevel()->addCreature(square->getPosition(), std::move(creature));
@@ -1463,7 +1482,7 @@ void PlayerControl::tick(double time) {
   }
   vector<Creature*> addedCreatures;
   for (const Creature* c : visibleFriends)
-    if (c->getSpawnType() && !contains(getCreatures(), c)) {
+    if (c->getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
       addedCreatures.push_back(const_cast<Creature*>(c));
       getCollective()->addCreature(const_cast<Creature*>(c), {MinionTrait::FIGHTER});
     } else  

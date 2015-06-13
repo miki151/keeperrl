@@ -1378,17 +1378,26 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const vector<GameInfo::
 
 vector<PGuiElem> GuiBuilder::drawMinionActions(const GameInfo::PlayerInfo& minion, MinionMenuCallback callback) {
   vector<PGuiElem> line;
-  line.push_back(gui.stack(
-      gui.label("[Control]", colors[ColorId::LIGHT_BLUE]),
-      gui.button([=] { callback(View::MinionAction{View::MinionAction::ControlAction()}); })));
-  line.push_back(gui.stack(
-      gui.label("[Rename]", colors[ColorId::LIGHT_BLUE]),
-      gui.button([=] { 
-          if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel"))
-            callback(View::MinionAction{View::MinionAction::RenameAction{*name}}); })));
-  line.push_back(gui.stack(
-      gui.label("[Banish]", colors[ColorId::LIGHT_BLUE]),
-      gui.button([=] { callback(View::MinionAction{View::MinionAction::BanishAction()}); })));
+  for (auto action : minion.actions)
+    switch (action) {
+      case GameInfo::PlayerInfo::CONTROL:
+        line.push_back(gui.stack(
+            gui.label("[Control]", colors[ColorId::LIGHT_BLUE]),
+            gui.button([=] { callback(View::MinionAction{View::MinionAction::ControlAction()}); })));
+        break;
+      case GameInfo::PlayerInfo::RENAME:
+        line.push_back(gui.stack(
+            gui.label("[Rename]", colors[ColorId::LIGHT_BLUE]),
+            gui.button([=] { 
+                if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel"))
+                callback(View::MinionAction{View::MinionAction::RenameAction{*name}}); })));
+        break;
+      case GameInfo::PlayerInfo::BANISH:
+        line.push_back(gui.stack(
+            gui.label("[Banish]", colors[ColorId::LIGHT_BLUE]),
+            gui.button([=] { callback(View::MinionAction{View::MinionAction::BanishAction()}); })));
+        break;
+    }
   return line;
 }
 

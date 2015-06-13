@@ -90,6 +90,8 @@ class Collective : public Task::Callback {
   void setTask(const Creature*, PTask);
   bool hasTask(const Creature*) const;
   void cancelTask(const Creature*);
+  void banishCreature(Creature*);
+  bool wasBanished(const Creature*) const;
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;
@@ -315,12 +317,14 @@ class Collective : public Task::Callback {
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
   void cashPayouts();
+  void removeCreature(Creature*);
 
   const vector<ItemFetchInfo>& getFetchInfo() const;
   void fetchItems(Vec2 pos, const ItemFetchInfo&);
 
   void addMoraleForKill(const Creature* killer, const Creature* victim);
   void decreaseMoraleForKill(const Creature* killer, const Creature* victim);
+  void decreaseMoraleForBanishing(const Creature*);
 
   double getAttractionValue(MinionAttraction);
   double getImmigrantChance(const ImmigrantInfo&);
@@ -431,6 +435,7 @@ class Collective : public Task::Callback {
   set<const Location*> SERIAL(knownLocations);
   string SERIAL(name);
   CollectiveConfig SERIAL(config);
+  vector<const Creature*> SERIAL(banished);
 };
 
 #endif

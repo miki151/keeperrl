@@ -2,7 +2,7 @@
 
 CC = g++
 LD = g++
-CFLAGS = -Wall -std=c++0x -Wno-sign-compare -Wno-unused-variable -Wl,--stack,16000000
+CFLAGS = -Wall -std=c++14 -Wno-sign-compare -Wno-unused-variable -Wl,--stack,16000000
 
 ifdef DATA_DIR
 	CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"

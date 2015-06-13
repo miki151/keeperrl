@@ -1221,6 +1221,70 @@ PTask Task::eat(set<Vec2> hatcherySquares) {
   return PTask(new Eat(hatcherySquares));
 }
 
+namespace {
+class GoTo : public NonTransferable {
+  public:
+  GoTo(Vec2 pos) : target(pos) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (c->getPosition() == target) {
+      setDone();
+      return NoMove;
+    } else
+      return c->moveTowards(target);
+  }
+
+  virtual string getDescription() const override {
+    return "Go to " + toString(target);
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(target);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(GoTo);
+
+  protected:
+  Vec2 SERIAL(target);
+};
+}
+
+PTask Task::goTo(Vec2 pos) {
+  return PTask(new GoTo(pos));
+}
+
+namespace {
+class DropItems : public NonTransferable {
+  public:
+  DropItems(EntitySet<Item> it) : items(it) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    return c->drop(c->getEquipment().getItems(items.containsPredicate())).append([=] (Creature*) { setDone(); });
+  }
+
+  virtual string getDescription() const override {
+    return "Drop items";
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(items);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(DropItems);
+
+  protected:
+  EntitySet<Item> SERIAL(items);
+};
+}
+
+PTask Task::dropItems(vector<Item*> items) {
+  return PTask(new DropItems(items));
+}
+
 template <class Archive>
 void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Construction);
@@ -1245,6 +1309,8 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Copulate);
   REGISTER_TYPE(ar, Consume);
   REGISTER_TYPE(ar, Eat);
+  REGISTER_TYPE(ar, GoTo);
+  REGISTER_TYPE(ar, DropItems);
 }
 
 REGISTER_TYPES(Task::registerTypes);

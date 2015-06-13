@@ -58,7 +58,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(knownLocations)
     & SVAR(name)
     & SVAR(config)
-    & SVAR(warnings);
+    & SVAR(warnings)
+    & SVAR(banished);
 }
 
 SERIALIZABLE(Collective);
@@ -234,6 +235,45 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (traits[MinionTrait::FIGHTER]) {
     c->addMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this, c)));
   }
+}
+
+void Collective::removeCreature(Creature* c) {
+  removeElement(creatures, c);
+  prisonerInfo.erase(c);
+  freeFromGuardPost(c);
+  minionAttraction.erase(c);
+  if (Task* task = taskMap.getTask(c)) {
+    if (!task->canTransfer())
+      returnResource(taskMap.removeTask(task));
+    else
+      taskMap.freeTaskDelay(task, getTime() + 50);
+  }
+  if (auto spawnType = c->getSpawnType())
+    removeElement(bySpawnType[*spawnType], c);
+  for (auto team : teams.getContaining(c))
+    teams.remove(team, c);
+  for (MinionTrait t : ENUM_ALL(MinionTrait))
+    if (contains(byTrait[t], c))
+      removeElement(byTrait[t], c);
+}
+
+void Collective::banishCreature(Creature* c) {
+  decreaseMoraleForBanishing(c);
+  removeCreature(c);
+  vector<Vec2> exitTiles = getExtendedTiles(20, 10);
+  vector<PTask> tasks;
+  vector<Item*> items = c->getEquipment().getItems();
+  if (!items.empty())
+    tasks.push_back(Task::dropItems(items));
+  if (!exitTiles.empty())
+    tasks.push_back(Task::goTo(chooseRandom(exitTiles)));
+  tasks.push_back(Task::disappear());
+  c->setController(PController(new Monster(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks))))));
+  banished.push_back(c);
+}
+
+bool Collective::wasBanished(const Creature* c) const {
+  return contains(banished, c);
 }
 
 vector<Creature*>& Collective::getCreatures() {
@@ -1169,6 +1209,11 @@ void Collective::decreaseMoraleForKill(const Creature* killer, const Creature* v
     c->addMorale(victim == getLeader() ? -2 : -0.015);
 }
 
+void Collective::decreaseMoraleForBanishing(const Creature*) {
+  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
+    c->addMorale(-0.05);
+}
+
 void Collective::onKilled(Creature* victim, Creature* killer) {
   if (contains(creatures, victim)) {
     if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer)
@@ -1176,21 +1221,7 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
       returnResource({ResourceId::PRISONER_HEAD, 1});
     if (hasTrait(victim, MinionTrait::LEADER))
       getLevel()->getModel()->onKilledLeader(this, victim);
-    prisonerInfo.erase(victim);
-    freeFromGuardPost(victim);
     decreaseMoraleForKill(killer, victim);
-    removeElement(creatures, victim);
-    minionAttraction.erase(victim);
-    if (Task* task = taskMap.getTask(victim)) {
-      if (!task->canTransfer())
-        returnResource(taskMap.removeTask(task));
-      else
-        taskMap.freeTaskDelay(task, getTime() + 50);
-    }
-    if (auto spawnType = victim->getSpawnType())
-      removeElement(bySpawnType[*spawnType], victim);
-    for (auto team : teams.getContaining(victim))
-      teams.remove(team, victim);
     if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
       if (killer)
         control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
@@ -1199,9 +1230,7 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
         control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
             .setPosition(victim->getPosition()));
     }
-    for (MinionTrait t : ENUM_ALL(MinionTrait))
-      if (contains(byTrait[t], victim))
-        removeElement(byTrait[t], victim);
+    removeCreature(victim);
     control->onMemberKilled(victim, killer);
   } else
     control->onOtherKilled(victim, killer);

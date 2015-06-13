@@ -169,7 +169,7 @@ class GuiBuilder {
   PGuiElem getStandingGui(double standing);
   PGuiElem getItemLine(const GameInfo::ItemInfo&, function<void(Rectangle)> onClick);
   vector<string> getItemHint(const GameInfo::ItemInfo&);
-  bool morale = false;
+  bool morale = true;
   optional<GameInfo::ItemInfo::Action> getItemChoice(const GameInfo::ItemInfo& itemInfo, Vec2 menuPos,
       bool autoDefault);
   vector<PGuiElem> getMultiLine(const string& text, Color, View::MenuType, int maxWidth);

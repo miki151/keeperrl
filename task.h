@@ -79,6 +79,8 @@ class Task : public UniqueEntity<Task> {
   static PTask consume(Callback*, Creature* target);
   static PTask stayInLocationUntil(const Location*, double time);
   static PTask eat(set<Vec2> hatcherySquares);
+  static PTask goTo(Vec2);
+  static PTask dropItems(vector<Item*>);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

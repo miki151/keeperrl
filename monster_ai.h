@@ -77,7 +77,7 @@ class MonsterAIFactory {
 
   static MonsterAIFactory collective(Collective*);
   static MonsterAIFactory monster();
-  static MonsterAIFactory singleTask(PTask&);
+  static MonsterAIFactory singleTask(PTask&&);
   static MonsterAIFactory stayInLocation(Location*, bool moveRandomly = true);
   static MonsterAIFactory guardSquare(Vec2 pos);
   static MonsterAIFactory wildlifeNonPredator();

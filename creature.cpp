@@ -2457,6 +2457,18 @@ string Creature::getRemainingString(LastingEffect effect) const {
   return "[" + toString<int>(getTimeRemaining(effect)) + "]";
 }
 
+const char* getMoraleText(double morale) {
+  if (morale >= 0.01)
+    return "merry";
+  if (morale >= 0.5)
+    return "ecstatic";
+  if (morale < -0.01)
+    return "unhappy";
+  if (morale < -0.5)
+    return "depressed";
+  return nullptr;
+}
+
 vector<string> Creature::getMainAdjectives() const {
   vector<string> ret;
   if (isBlind())
@@ -2473,6 +2485,8 @@ vector<string> Creature::getMainAdjectives() const {
     ret.push_back("legless");
   if (isAffected(LastingEffect::HALLU))
     ret.push_back("tripped");
+  if (auto text = getMoraleText(getMorale()))
+    ret.push_back(text);
   return ret;
 }
 
@@ -2508,7 +2522,12 @@ vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
         ret.back().name += "  " + getRemainingString(effect);
     }
   if (isUndead())
-    ret.push_back({"undead", "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
+    ret.push_back({"Undead",
+        "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
+  if (morale > 0)
+    if (auto text = getMoraleText(getMorale()))
+      ret.push_back({capitalFirst(text),
+          "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
 }
 
@@ -2540,6 +2559,10 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
   if (isBlind())
     ret.push_back({"Blind"
         + (isAffected(LastingEffect::BLIND) ? (" " + getRemainingString(LastingEffect::BLIND)) : ""), ""});
+  if (morale < 0)
+    if (auto text = getMoraleText(getMorale()))
+      ret.push_back({capitalFirst(text),
+          "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
 }
 

@@ -142,6 +142,12 @@ class GameInfo {
     UniqueEntity<Creature>::Id creatureId;
     double morale;
     ViewId viewId;
+    enum Action {
+      CONTROL,
+      RENAME,
+      BANISH
+    };
+    vector<Action> actions;
   } playerInfo;
 
   class VillageInfo {
