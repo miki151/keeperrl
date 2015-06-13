@@ -110,7 +110,7 @@ class View {
     MAIN_MENU_NO_TILES,
     MINION_MENU,
     GAME_CHOICE_MENU,
-    YES_NO_MENU,
+    YES_NO_MENU
   };
 
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
@@ -127,7 +127,7 @@ class View {
 
   virtual GameTypeChoice chooseGameType() = 0;
 
-  /** Let's the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
+  /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(const string& message) = 0;
 
   /** Asks the player a yer-or-no question.*/
@@ -140,12 +140,33 @@ class View {
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
       MenuType = NORMAL_MENU, optional<UserInputId> exitAction = none) = 0;
 
-  /** Let's the player choose a number. Returns none if the player cancelled the choice.*/
+  /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
   virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
 
-  /** Let's the player input a string. Returns none if the player cancelled the choice.*/
+  /** Lets the player input a string. Returns none if the player cancelled the choice.*/
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint = "") = 0;
+
+  struct MinionAction {
+    struct ItemAction {
+      vector<UniqueEntity<Item>::Id> ids;
+      optional<EquipmentSlot> slot;
+      GameInfo::ItemInfo::Action action;
+    };
+    struct ControlAction {
+    };
+    struct RenameAction {
+    };
+    struct BanishAction {
+    };
+    variant<MinionTask, ItemAction, ControlAction, RenameAction, BanishAction> action;
+  };
+
+  virtual optional<MinionAction> getMinionAction(const vector<GameInfo::PlayerInfo>&,
+      UniqueEntity<Creature>::Id& current) = 0;
+
+  virtual optional<int> chooseItem(const vector<GameInfo::PlayerInfo>&, UniqueEntity<Creature>::Id& current,
+      const vector<GameInfo::ItemInfo>& items, double* scrollpos) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;
@@ -164,7 +185,6 @@ class View {
   virtual void stopClock() = 0;
 
   /** Continues the real time clock after it had been stopped.*/
-
   virtual void continueClock() = 0;
 
   /** Returns whether the real time clock is currently stopped.*/

@@ -54,6 +54,15 @@ bool MinionTaskMap::hasAnyTask() const {
   return false;
 }
 
+vector<MinionTask> MinionTaskMap::getAll() const {
+  vector<MinionTask> ret;
+  for (auto task : ENUM_ALL(MinionTask))
+    if (tasks[task] > 0)
+      ret.push_back(task);
+  sort(ret.begin(), ret.end(), [this] (MinionTask a, MinionTask b) { return tasks[a] > tasks[b];});
+  return ret;
+}
+
 template <class Archive>
 void MinionTaskMap::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(tasks);

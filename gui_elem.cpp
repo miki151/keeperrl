@@ -97,7 +97,7 @@ PGuiElem GuiFactory::button(function<void(Rectangle)> fun, char hotkey, bool cap
   return PGuiElem(new ButtonChar(fun, hotkey, capture));
 }
 
-PGuiElem GuiFactory::button(function<void(Rectangle)> fun, Event::KeyEvent hotkey, bool capture) {
+PGuiElem GuiFactory::button2(function<void(Rectangle)> fun, Event::KeyEvent hotkey, bool capture) {
   return PGuiElem(new ButtonKey(fun, hotkey, capture));
 }
 
@@ -105,9 +105,33 @@ PGuiElem GuiFactory::button(function<void()> fun, char hotkey, bool capture) {
   return PGuiElem(new ButtonChar([=](Rectangle) { fun(); }, hotkey, capture));
 }
 
-PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey, bool capture) {
+PGuiElem GuiFactory::button2(function<void()> fun, Event::KeyEvent hotkey, bool capture) {
   return PGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey, capture));
 }
+
+class ReverseButton : public GuiElem {
+  public:
+  ReverseButton(function<void()> f, bool cap) : fun(f), capture(cap) {}
+
+  virtual bool onLeftClick(Vec2 pos) override {
+    if (!pos.inRectangle(getBounds())) {
+      fun();
+      return capture;
+    }
+    return false;
+  }
+
+  protected:
+  function<void()> fun;
+  bool capture;
+};
+
+PGuiElem GuiFactory::reverseButton(function<void()> fun, vector<Event::KeyEvent> hotkey, bool capture) {
+  return stack(
+      keyHandler(fun, hotkey),
+      PGuiElem(new ReverseButton(fun, capture)));
+}
+
 
 class MouseWheel : public GuiElem {
   public:
@@ -254,6 +278,15 @@ PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
           r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
             bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, 0);
           r.drawTextWithHotkey(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, hotkey);
+        }));
+}
+
+PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun) {
+  return PGuiElem(new DrawCustom(
+        [=] (Renderer& r, Rectangle bounds) {
+          r.drawText(transparency(colors[ColorId::BLACK], 100),
+            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s);
+          r.drawText(colorFun(), bounds.getTopLeft().x, bounds.getTopLeft().y, s);
         }));
 }
 
@@ -499,14 +532,14 @@ PGuiElem GuiFactory::keyHandler(function<void()> fun, vector<Event::KeyEvent> ke
 
 class VerticalList : public GuiLayout {
   public:
-  VerticalList(vector<PGuiElem> e, vector<int> h, int space, int alignBack = 0)
-    : GuiLayout(std::move(e)), heights(h), spacing(space), numAlignBack(alignBack) {
+  VerticalList(vector<PGuiElem> e, vector<int> h, int alignBack = 0)
+    : GuiLayout(std::move(e)), heights(h), numAlignBack(alignBack) {
     //CHECK(heights.size() > 0);
     CHECK(heights.size() == elems.size());
   }
 
   Rectangle getBackPosition(int num) {
-    int height = std::accumulate(heights.begin() + num + 1, heights.end(), 0) + (heights.size() - num) * spacing;
+    int height = std::accumulate(heights.begin() + num + 1, heights.end(), 0);
     return Rectangle(getBounds().getBottomLeft() - Vec2(0, height + heights[num]), getBounds().getBottomRight() 
         - Vec2(0, height));
   }
@@ -514,7 +547,7 @@ class VerticalList : public GuiLayout {
   virtual Rectangle getElemBounds(int num) override {
     if (num >= heights.size() - numAlignBack)
       return getBackPosition(num);
-    int height = std::accumulate(heights.begin(), heights.begin() + num, 0) + num * spacing;
+    int height = std::accumulate(heights.begin(), heights.begin() + num, 0);
     return Rectangle(getBounds().getTopLeft() + Vec2(0, height), getBounds().getTopRight() 
         + Vec2(0, height + heights[num]));
   }
@@ -559,17 +592,16 @@ class VerticalList : public GuiLayout {
 
   protected:
   vector<int> heights;
-  int spacing;
   int numAlignBack;
 };
 
-PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights, int spacing) {
-  return PGuiElem(new VerticalList(std::move(e), heights, spacing, 0));
+PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights) {
+  return PGuiElem(new VerticalList(std::move(e), heights, 0));
 }
 
-PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, int height, int spacing) {
+PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, int height) {
   vector<int> heights(e.size(), height);
-  return PGuiElem(new VerticalList(std::move(e), heights, spacing, 0));
+  return PGuiElem(new VerticalList(std::move(e), heights, 0));
 }
 
 class VerticalListFit : public GuiLayout {
@@ -619,7 +651,7 @@ class HorizontalList : public VerticalList {
   using VerticalList::VerticalList;
 
   Rectangle getBackPosition(int num) {
-    int height = std::accumulate(heights.begin() + num + 1, heights.end(), 0) + (heights.size() - num) * spacing;
+    int height = std::accumulate(heights.begin() + num + 1, heights.end(), 0);
     return Rectangle(getBounds().getTopRight() - Vec2(height + heights[num], 0), getBounds().getBottomRight() 
         - Vec2(height, 0));
   }
@@ -627,19 +659,19 @@ class HorizontalList : public VerticalList {
   virtual Rectangle getElemBounds(int num) override {
     if (num >= heights.size() - numAlignBack)
       return getBackPosition(num);
-    int height = std::accumulate(heights.begin(), heights.begin() + num, 0) + num * spacing;
+    int height = std::accumulate(heights.begin(), heights.begin() + num, 0);
     return Rectangle(getBounds().getTopLeft() + Vec2(height, 0), getBounds().getBottomLeft() 
         + Vec2(height + heights[num], 0));
   }
 };
 
-PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, vector<int> widths, int spacing, int numAlignRight) {
-  return PGuiElem(new HorizontalList(std::move(e), widths, spacing, numAlignRight));
+PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, vector<int> widths, int numAlignRight) {
+  return PGuiElem(new HorizontalList(std::move(e), widths, numAlignRight));
 }
 
-PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, int width, int spacing, int numAlignRight) {
+PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, int width, int numAlignRight) {
   vector<int> widths(e.size(), width);
-  return horizontalList(std::move(e), widths, spacing, numAlignRight);
+  return horizontalList(std::move(e), widths, numAlignRight);
 }
 
 class VerticalAspect : public GuiLayout {
@@ -720,6 +752,31 @@ PGuiElem GuiFactory::margin(PGuiElem top, PGuiElem rest, int width, MarginType t
   return PGuiElem(new MarginGui(std::move(top), std::move(rest), width, type));
 }
 
+class MaybeMargin : public MarginGui {
+  public:
+  MaybeMargin(PGuiElem top, PGuiElem rest, int width, GuiFactory::MarginType type, function<bool(Rectangle)> p)
+      : MarginGui(std::move(top), std::move(rest), width, type), pred(p) {}
+
+  virtual Rectangle getElemBounds(int num) override {
+    if (pred(getBounds()))
+      return MarginGui::getElemBounds(num);
+    else
+      return getBounds();
+  }
+
+  virtual bool isVisible(int num) override {
+    return pred(getBounds()) || num == 1;
+  }
+
+  private:
+  function<bool(Rectangle)> pred;
+};
+
+PGuiElem GuiFactory::maybeMargin(PGuiElem top, PGuiElem rest, int width, MarginType type,
+    function<bool(Rectangle)> pred) {
+  return PGuiElem(new MaybeMargin(std::move(top), std::move(rest), width, type, pred));
+}
+
 class MarginFit : public GuiLayout {
   public:
   MarginFit(PGuiElem top, PGuiElem rest, double _width, GuiFactory::MarginType t)
@@ -785,6 +842,10 @@ PGuiElem GuiFactory::margins(PGuiElem content, int left, int top, int right, int
 
 PGuiElem GuiFactory::leftMargin(int size, PGuiElem content) {
   return PGuiElem(new Margins(std::move(content), size, 0, 0, 0));
+}
+
+PGuiElem GuiFactory::topMargin(int size, PGuiElem content) {
+  return PGuiElem(new Margins(std::move(content), 0, size, 0, 0));
 }
 
 class Invisible : public GuiLayout {
@@ -994,6 +1055,8 @@ class Tooltip : public GuiElem {
 };
 
 PGuiElem GuiFactory::tooltip(const vector<string>& v) {
+  if (v.empty() || (v.size() == 1 && v[0].empty()))
+    return empty();
   return PGuiElem(new Tooltip(v, miniBorder(background(background1)), clock));
 }
 
@@ -1095,7 +1158,17 @@ class ScrollBar : public GuiLayout {
 class Scrollable : public GuiElem {
   public:
   Scrollable(PVerticalList c, int cHeight, double* scrollP)
-      : content(std::move(c)), contentHeight(cHeight), scrollPos(scrollP) {
+      : content(std::move(c)), contentHeight(cHeight) {
+    if (scrollP)
+      scrollPos = scrollP;
+    else {
+      defaultPos.reset(new double);
+      scrollPos = defaultPos.get();
+    }
+  }
+
+  double* getScrollPosPtr() {
+    return scrollPos;
   }
 
   int getScrollOffset() {
@@ -1152,6 +1225,7 @@ class Scrollable : public GuiElem {
   PVerticalList content;
   int contentHeight;
   double* scrollPos;
+  unique_ptr<double> defaultPos;
 };
 
 const int border2Width = 6;
@@ -1303,14 +1377,16 @@ PGuiElem GuiFactory::scrollable(PGuiElem content, double* scrollPos, int* held) 
   int contentHeight = list->getTotalHeight();
   CHECK(list) << "Scrolling only implemented for vertical list";
   PGuiElem scrollable(new Scrollable(PVerticalList(list), contentHeight, scrollPos));
+  scrollPos = ((Scrollable*)(scrollable.get()))->getScrollPosPtr();
   int scrollBarMargin = get(TexId::SCROLL_UP).getSize().y;
   PGuiElem bar(new ScrollBar(
         std::move(getScrollButton()), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight, held));
   PGuiElem barButtons = getScrollbar();
   barButtons = conditional(std::move(barButtons), [=] (GuiElem* e) {
       return e->getBounds().getH() < contentHeight;});
-  return margin(stack(std::move(barButtons), std::move(bar)),
-        std::move(scrollable), scrollbarWidth, RIGHT);
+  return maybeMargin(stack(std::move(barButtons), std::move(bar)),
+        std::move(scrollable), scrollbarWidth, RIGHT,
+        [=] (Rectangle bounds) { return bounds.getH() < contentHeight; });
 }
 
 PGuiElem GuiFactory::background(Color c) {
@@ -1387,18 +1463,18 @@ PGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight) {
           margin(sprite(get(TexId::HORI_BAR_MINI), Alignment::BOTTOM), empty(), 85, TOP),
           sprite(get(TexId::VERT_BAR), Alignment::RIGHT, false, true),
           sprite(get(TexId::VERT_BAR), Alignment::LEFT),
-          sprite(get(TexId::CORNER_TOP_LEFT), Alignment::TOP_LEFT, false, false, Vec2(-8, 0)),
-          sprite(get(TexId::CORNER_TOP_RIGHT), Alignment::TOP_RIGHT),
-          sprite(get(TexId::CORNER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT)
+          sprite(get(TexId::CORNER_TOP_LEFT), Alignment::TOP_RIGHT, false, true, Vec2(8, 0)),
+          sprite(get(TexId::CORNER_TOP_RIGHT), Alignment::TOP_LEFT, false, true),
+          sprite(get(TexId::CORNER_BOTTOM_RIGHT), Alignment::BOTTOM_LEFT, false, true)
       )),
       stack(makeVec<PGuiElem>(
           margin(background(background2), empty(), bottomBarHeight, BOTTOM),
           sprite(get(TexId::HORI_LINE), Alignment::BOTTOM),
  //         sprite(get(TexId::HORI_MIDDLE), Alignment::BOTTOM_CENTER),
-          sprite(get(TexId::HORI_CORNER1), Alignment::BOTTOM_LEFT),
-          sprite(get(TexId::HORI_CORNER2), Alignment::BOTTOM_RIGHT, false, false, Vec2(93, 0)))),
+          sprite(get(TexId::HORI_CORNER1), Alignment::BOTTOM_RIGHT, false, true),
+          sprite(get(TexId::HORI_CORNER2), Alignment::BOTTOM_LEFT, false, true, Vec2(-93, 0)))),
       rightBarWidth,
-      RIGHT);
+      LEFT);
 }
 
 PGuiElem GuiFactory::translucentBackground(PGuiElem content) {
@@ -1422,6 +1498,10 @@ PGuiElem GuiFactory::mainMenuLabelBg(const string& s, double vPadding, Color col
       marginFit(empty(), sprite(get(TexId::MENU_ITEM), Alignment::CENTER_STRETCHED),
           0.12, BOTTOM),
       mainMenuLabel(s, vPadding, color));
+}
+
+PGuiElem GuiFactory::darken() {
+  return rectangle(Color(0, 0, 0, 150));
 }
 
 void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {

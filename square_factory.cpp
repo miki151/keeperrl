@@ -733,10 +733,10 @@ class Hatchery : public Square {
     creature(c) {}
 
   virtual void tickSpecial(double time) override {
-    if (getCreature() || !Random.roll(10))
+    if (getCreature() || !Random.roll(10) || getPoisonGasAmount() > 0)
       return;
     for (Square* s : getLevel()->getSquares(getPosition().neighbors8()))
-      if (s->getCreature() && s->getCreature()->isMinionFood() || s->getPoisonGasAmount() > 0)
+      if (s->getCreature() && s->getCreature()->isMinionFood())
         return;
     if (Random.roll(5))
       getLevel()->addCreature(getPosition(), creature.random(

@@ -52,9 +52,10 @@ class GuiFactory {
   void loadNonFreeImages(const string& path);
 
   PGuiElem button(function<void()> fun, char hotkey = 0, bool capture = false);
-  PGuiElem button(function<void()> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button2(function<void()> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem reverseButton(function<void()> fun, vector<Event::KeyEvent> = {}, bool capture = false);
   PGuiElem button(function<void(Rectangle buttonBounds)> fun, char hotkey = 0, bool capture = false);
-  PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button2(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
   PGuiElem focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
       vector<Event::KeyEvent> defocusEvent, bool& focused);
   PGuiElem mouseWheel(function<void(bool)>);
@@ -64,21 +65,25 @@ class GuiFactory {
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
   PGuiElem rectangle(sf::Color color, optional<sf::Color> borderColor = none);
-  PGuiElem verticalList(vector<PGuiElem>, int elemHeight, int spacing);
-  PGuiElem verticalList(vector<PGuiElem>, vector<int> elemHeight, int spacing);
+  PGuiElem verticalList(vector<PGuiElem>, int elemHeight);
+  PGuiElem verticalList(vector<PGuiElem>, vector<int> elemHeight);
   PGuiElem verticalListFit(vector<PGuiElem>, double spacing);
-  PGuiElem horizontalList(vector<PGuiElem>, int elemWidth, int spacing, int numAlignRight = 0);
-  PGuiElem horizontalList(vector<PGuiElem>, vector<int> elemWidth, int spacing, int numAlignRight = 0);
-  PGuiElem horizontalListFit(vector<PGuiElem>, double spacing);
+  PGuiElem horizontalList(vector<PGuiElem>, int elemWidth, int numAlignRight = 0);
+  PGuiElem horizontalList(vector<PGuiElem>, vector<int> elemWidth, int numAlignRight = 0);
+  PGuiElem horizontalListFit(vector<PGuiElem>, double spacing = 0);
   PGuiElem verticalAspect(PGuiElem, double ratio);
   PGuiElem empty();
   enum MarginType { TOP, LEFT, RIGHT, BOTTOM};
   PGuiElem margin(PGuiElem top, PGuiElem rest, int height, MarginType);
+  PGuiElem margin(PGuiElem top, PGuiElem rest, function<int(Rectangle)> width, MarginType type);
+  PGuiElem maybeMargin(PGuiElem top, PGuiElem rest, int width, MarginType, function<bool(Rectangle)>);
   PGuiElem marginFit(PGuiElem top, PGuiElem rest, double height, MarginType);
   PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
   PGuiElem leftMargin(int size, PGuiElem content);
+  PGuiElem topMargin(int size, PGuiElem content);
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
+  PGuiElem label(const string&, function<Color()>);
   PGuiElem centeredLabel(const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(const string&, Color = colors[ColorId::WHITE]);
   PGuiElem variableLabel(function<string()>,
@@ -98,7 +103,7 @@ class GuiFactory {
   PGuiElem mouseHighlightGameChoice(PGuiElem, View::GameTypeChoice my,
       optional<View::GameTypeChoice>& highlight);
   static int getHeldInitValue();
-  PGuiElem scrollable(PGuiElem content, double* scrollPos, int* held = nullptr);
+  PGuiElem scrollable(PGuiElem content, double* scrollPos = nullptr, int* held = nullptr);
   PGuiElem getScrollButton();
   PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
@@ -109,6 +114,7 @@ class GuiFactory {
       Vec2 offset = Vec2(0, 0), double alpha = 1);
   PGuiElem sprite(Texture&, double scale);
   PGuiElem tooltip(const vector<string>&);
+  PGuiElem darken();
 
   enum class TexId {
     SCROLLBAR,

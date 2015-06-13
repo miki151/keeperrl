@@ -86,7 +86,7 @@ ControllerFactory Player::getFactory(Model *m, map<UniqueEntity<Level>::Id, MapM
 }
 
 static string getSlotSuffix(EquipmentSlot slot) {
-  return "(equiped)";
+  return "(equipped)";
 }
 
 void Player::onBump(Creature*) {
@@ -255,40 +255,39 @@ void Player::consumeAction() {
   }
 }
 
-typedef GameInfo::PlayerInfo::ItemInfo ItemInfo;
-
-vector<ItemInfo::Action> Player::getItemActions(Item* item) const {
-  vector<ItemInfo::Action> actions;
+vector<GameInfo::ItemInfo::Action> Player::getItemActions(Item* item) const {
+  vector<GameInfo::ItemInfo::Action> actions;
   if (getCreature()->equip(item)) {
-    actions.push_back(ItemInfo::EQUIP);
+    actions.push_back(GameInfo::ItemInfo::EQUIP);
   }
   if (getCreature()->applyItem(item)) {
-    actions.push_back(ItemInfo::APPLY);
+    actions.push_back(GameInfo::ItemInfo::APPLY);
   }
   if (getCreature()->unequip(item))
-    actions.push_back(ItemInfo::UNEQUIP);
+    actions.push_back(GameInfo::ItemInfo::UNEQUIP);
   else {
-    actions.push_back(ItemInfo::THROW);
-    actions.push_back(ItemInfo::DROP);
+    actions.push_back(GameInfo::ItemInfo::THROW);
+    actions.push_back(GameInfo::ItemInfo::DROP);
   }
   return actions;
 }
 
-void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemInfo::Action action) {
+void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, GameInfo::ItemInfo::Action action) {
   vector<Item*> items = getCreature()->getEquipment().getItems(
       [&](const Item* it) { return contains(itemIds, it->getUniqueId());});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
   if (items.empty()) // the above assertion fails for unknown reason, so just fail this softly.
     return;
   switch (action) {
-    case ItemInfo::DROP: tryToPerform(getCreature()->drop(items)); break;
-    case ItemInfo::THROW: throwItem(items); break;
-    case ItemInfo::APPLY: applyItem(items); break;
-    case ItemInfo::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
-    case ItemInfo::EQUIP: 
+    case GameInfo::ItemInfo::DROP: tryToPerform(getCreature()->drop(items)); break;
+    case GameInfo::ItemInfo::THROW: throwItem(items); break;
+    case GameInfo::ItemInfo::APPLY: applyItem(items); break;
+    case GameInfo::ItemInfo::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
+    case GameInfo::ItemInfo::EQUIP: 
       if (getCreature()->isEquipmentAppropriate(items[0]) || model->getView()->yesOrNoPrompt(
           items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
         tryToPerform(getCreature()->equip(items[0])); break;
+    default: FAIL << "Unhandled item action " << int(action);
   }
 }
 
@@ -751,73 +750,15 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   Model::SunlightInfo sunlightInfo = getLevel()->getModel()->getSunlightInfo();
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
   gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
+  gameInfo.time = getCreature()->getTime();
   GameInfo::PlayerInfo& info = gameInfo.playerInfo;
-  info.playerName = getCreature()->getFirstName().get_value_or("");
-  info.title = getCreature()->getName().bare();
-  info.spellcaster = !getCreature()->getSpells().empty();
-  info.adjectives = getCreature()->getMainAdjectives();
-  Item* weapon = getCreature()->getWeapon();
-  info.weaponName = weapon ? weapon->getName() : "";
+  info.readFrom(getCreature());
   info.team.clear();
   for (const Creature* c : getTeam())
     info.team.push_back(c);
   const Location* location = getLevel()->getLocation(getCreature()->getPosition());
   info.levelName = location && location->getName()
     ? capitalFirst(*location->getName()) : getLevel()->getName();
-  typedef GameInfo::PlayerInfo::AttributeInfo::Id AttrId;
-  info.attributes = {
-    { "Attack",
-      AttrId::ATT,
-      getCreature()->getModifier(ModifierType::DAMAGE),
-      getCreature()->isAffected(LastingEffect::RAGE) ? 1 : getCreature()->isAffected(LastingEffect::PANIC) ? -1 : 0,
-      "Affects if and how much damage is dealt in combat."},
-    { "Defense",
-      AttrId::DEF,
-      getCreature()->getModifier(ModifierType::DEFENSE),
-      getCreature()->isAffected(LastingEffect::RAGE) ? -1 : (getCreature()->isAffected(LastingEffect::PANIC) 
-          || getCreature()->isAffected(LastingEffect::MAGIC_SHIELD)) ? 1 : 0,
-      "Affects if and how much damage is taken in combat."},
-    { "Strength",
-      AttrId::STR,
-      getCreature()->getAttr(AttrType::STRENGTH),
-      getCreature()->isAffected(LastingEffect::STR_BONUS),
-      "Affects the values of attack, defense and carrying capacity."},
-    { "Dexterity",
-      AttrId::DEX,
-      getCreature()->getAttr(AttrType::DEXTERITY),
-      getCreature()->isAffected(LastingEffect::DEX_BONUS),
-      "Affects the values of melee and ranged accuracy, and ranged damage."},
-    { "Accuracy",
-      AttrId::ACC,
-      getCreature()->getModifier(ModifierType::ACCURACY),
-      getCreature()->accuracyBonus(),
-      "Defines the chance of a successful melee attack and dodging."},
-    { "Speed",
-      AttrId::SPD,
-      getCreature()->getAttr(AttrType::SPEED),
-      getCreature()->isAffected(LastingEffect::SPEED) ? 1 : getCreature()->isAffected(LastingEffect::SLOWED) ? -1 : 0,
-      "Affects how much game time every action uses."},
-/*    { "Level",
-      ViewId::STAT_LVL,
-      getCreature()->getExpLevel(), 0,
-      "Describes general combat value of the creature."}*/
-  };
-  info.level = getCreature()->getExpLevel();
-  info.skills = getCreature()->getSkillNames();
-  gameInfo.time = getCreature()->getTime();
-  info.effects.clear();
-  for (auto& adj : getCreature()->getBadAdjectives())
-    info.effects.push_back({adj.name, adj.help, true});
-  for (auto& adj : getCreature()->getGoodAdjectives())
-    info.effects.push_back({adj.name, adj.help, false});
-  info.spells.clear();
-  for (Spell* spell : getCreature()->getSpells()) {
-    bool ready = getCreature()->isReady(spell);
-    info.spells.push_back({ spell->getName() +
-        (ready ? "" : " [" + toString<int>(getCreature()->getSpellDelay(spell)) + "]"),
-        spell->getDescription(), ready});
-  }
-  info.squareName = getCreature()->getSquare()->getName();
   info.lyingItems.clear();
   for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))
     info.lyingItems.push_back(getItemInfo(stack));
@@ -826,25 +767,25 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
       getCreature()->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
   for (auto elem : typeDisplayOrder) 
     if (typeGroups[elem].size() > 0)
-      info.inventory.push_back({getText(elem), getItemInfos(typeGroups[elem])});
+      append(info.inventory, getItemInfos(typeGroups[elem]));
 }
 
-ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
-  return {
-    stack[0]->getShortName(true, getCreature()->isBlind()),
-    stack[0]->getNameAndModifiers(false, getCreature()->isBlind()),
-    getCreature()->isBlind() ? "" : stack[0]->getDescription(),
-    int(stack.size()),
-    stack[0]->getViewObject(),
-    transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();}),
-    getItemActions(stack[0]),
-    getCreature()->getEquipment().isEquiped(stack[0])};
+GameInfo::ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
+  return CONSTRUCT(GameInfo::ItemInfo,
+    c.name = stack[0]->getShortName(true, getCreature()->isBlind());
+    c.fullName = stack[0]->getNameAndModifiers(false, getCreature()->isBlind());
+    c.description = getCreature()->isBlind() ? "" : stack[0]->getDescription();
+    c.number = stack.size();
+    c.viewId = stack[0]->getViewObject().id();
+    c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
+    c.actions = getItemActions(stack[0]);
+    c.equiped = getCreature()->getEquipment().isEquiped(stack[0]); );
 }
 
-vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
+vector<GameInfo::ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
   map<string, vector<Item*> > stacks = groupBy<Item*, string>(items, 
       [this] (Item* const& item) { return getInventoryItemName(item, false); });
-  vector<ItemInfo> ret;
+  vector<GameInfo::ItemInfo> ret;
   for (auto elem : stacks)
     ret.push_back(getItemInfo(elem.second));
   return ret;

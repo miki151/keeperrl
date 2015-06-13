@@ -18,6 +18,7 @@
 #include "view.h"
 #include "creature.h"
 #include "collective.h"
+#include "spell.h"
 
 
 View::ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
@@ -71,12 +72,73 @@ View::~View() {
 }
 
 GameInfo::CreatureInfo::CreatureInfo(const Creature* c) 
-    : viewObject(c->getViewObject()),
+    : viewId(c->getViewObject().id()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
       speciesName(c->getSpeciesName()),
       expLevel(c->getExpLevel()),
       morale(c->getMorale()) {
+}
+
+void GameInfo::PlayerInfo::readFrom(const Creature* c) {
+  playerName = c->getFirstName().get_value_or(c->getName().bare());
+  title = capitalFirst(c->getName().bare());
+  adjectives = c->getMainAdjectives();
+  Item* weapon = c->getWeapon();
+  weaponName = weapon ? weapon->getName() : "";
+  viewId = c->getViewObject().id();
+  typedef GameInfo::PlayerInfo::AttributeInfo::Id AttrId;
+  attributes = {
+    { "Attack",
+      AttrId::ATT,
+      c->getModifier(ModifierType::DAMAGE),
+      c->isAffected(LastingEffect::RAGE) ? 1 : c->isAffected(LastingEffect::PANIC) ? -1 : 0,
+      "Affects if and how much damage is dealt in combat."},
+    { "Defense",
+      AttrId::DEF,
+      c->getModifier(ModifierType::DEFENSE),
+      c->isAffected(LastingEffect::RAGE) ? -1 : (c->isAffected(LastingEffect::PANIC) 
+          || c->isAffected(LastingEffect::MAGIC_SHIELD)) ? 1 : 0,
+      "Affects if and how much damage is taken in combat."},
+    { "Strength",
+      AttrId::STR,
+      c->getAttr(AttrType::STRENGTH),
+      c->isAffected(LastingEffect::STR_BONUS),
+      "Affects the values of attack, defense and carrying capacity."},
+    { "Dexterity",
+      AttrId::DEX,
+      c->getAttr(AttrType::DEXTERITY),
+      c->isAffected(LastingEffect::DEX_BONUS),
+      "Affects the values of melee and ranged accuracy, and ranged damage."},
+    { "Accuracy",
+      AttrId::ACC,
+      c->getModifier(ModifierType::ACCURACY),
+      c->accuracyBonus(),
+      "Defines the chance of a successful melee attack and dodging."},
+    { "Speed",
+      AttrId::SPD,
+      c->getAttr(AttrType::SPEED),
+      c->isAffected(LastingEffect::SPEED) ? 1 : c->isAffected(LastingEffect::SLOWED) ? -1 : 0,
+      "Affects how much game time every action uses."},
+/*    { "Level",
+      ViewId::STAT_LVL,
+      c->getExpLevel(), 0,
+      "Describes general combat value of the creature."}*/
+  };
+  level = c->getExpLevel();
+  skills = c->getSkillNames();
+  effects.clear();
+  for (auto& adj : c->getBadAdjectives())
+    effects.push_back({adj.name, adj.help, true});
+  for (auto& adj : c->getGoodAdjectives())
+    effects.push_back({adj.name, adj.help, false});
+  spells.clear();
+  for (::Spell* spell : c->getSpells()) {
+    bool ready = c->isReady(spell);
+    spells.push_back({ spell->getName() +
+        (ready ? "" : " [" + toString<int>(c->getSpellDelay(spell)) + "]"),
+        spell->getDescription(), ready});
+  }
 }
 
 GameInfo::CreatureInfo& GameInfo::BandInfo::getMinion(UniqueEntity<Creature>::Id id) {

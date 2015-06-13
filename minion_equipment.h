@@ -30,6 +30,7 @@ class MinionEquipment {
   const Creature* getOwner(const Item*) const;
   void own(const Creature*, const Item*);
   void discard(const Item*);
+  void discard(UniqueEntity<Item>::Id);
   void updateOwners(const vector<Item*>);
 
   template <class Archive>

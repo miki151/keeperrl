@@ -87,11 +87,9 @@ int bottomBarHeightPlayer = 62;
 Rectangle WindowView::getMapGuiBounds() const {
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::PLAYER:
-      return Rectangle(0, 0, renderer.getSize().x - rightBarWidthPlayer,
-          renderer.getSize().y - bottomBarHeightPlayer);
+      return Rectangle(Vec2(rightBarWidthPlayer, 0), renderer.getSize() - Vec2(0, bottomBarHeightPlayer));
     case GameInfo::InfoType::BAND:
-      return Rectangle(0, 0, renderer.getSize().x - rightBarWidthCollective,
-          renderer.getSize().y - bottomBarHeightCollective);
+      return Rectangle(Vec2(rightBarWidthCollective, 0), renderer.getSize() - Vec2(0, bottomBarHeightCollective));
     case GameInfo::InfoType::SPECTATOR: {
       Vec2 levelSize = Level::getSplashVisibleBounds().getSize();
       return Rectangle(
@@ -102,8 +100,9 @@ Rectangle WindowView::getMapGuiBounds() const {
 }
 
 Rectangle WindowView::getMinimapBounds() const {
-  Vec2 offset(20, 70);
-  return Rectangle(offset, offset + Vec2(renderer.getSize().x, renderer.getSize().x) / 12);
+  Vec2 offset(-20, 70);
+  Vec2 size(Vec2(renderer.getSize().x, renderer.getSize().x) / 12);
+  return Rectangle(Vec2(renderer.getSize().x - size.x, 0), Vec2(renderer.getSize().x, size.y)).translate(offset);
 }
 
 void WindowView::resetMapBounds() {
@@ -232,7 +231,7 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
 
 void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
   splashDone = false;
-  renderDialog = [=, &meter] {
+  renderDialog.push([=, &meter] {
     PGuiElem window = gui.miniWindow(gui.empty());
     Vec2 windowSize(440, 70);
     Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
@@ -252,13 +251,13 @@ void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
       while (renderer.pollEvent(event)) {
         propagateEvent(event, {});
         if (event.type == Event::Resized) {
-          resize(event.size.width, event.size.height, {});
+          resize(event.size.width, event.size.height);
         }
       }
     }
     splashDone = false;
-    renderDialog = nullptr;
-  };
+    renderDialog.pop();
+  });
 }
 
 void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type, function<void()> cancelFun) {
@@ -273,7 +272,7 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
     case View::AUTOSAVING: displayAutosaveSplash(meter); return;
   }
   splashDone = false;
-  renderDialog = [=, &meter] {
+  renderDialog.push([=, &meter] {
     int t0 = clock->getRealMillis();
     int mouthMillis = 400;
     Texture& loadingSplash = gui.get(GuiFactory::TexId::LOADING_SPLASH);
@@ -296,7 +295,7 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
       Event event;
       while (renderer.pollEvent(event)) {
         if (event.type == Event::Resized) {
-          resize(event.size.width, event.size.height, {});
+          resize(event.size.width, event.size.height);
         }
         if (event.type == Event::MouseButtonPressed && cancelFun) {
           if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(cancelBut))
@@ -305,8 +304,8 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
       }
     }
     splashDone = false;
-    renderDialog = nullptr;
-  };
+    renderDialog.pop();
+  });
 }
 
 void WindowView::clearSplash() {
@@ -314,7 +313,7 @@ void WindowView::clearSplash() {
   while (splashDone) {}
 }
 
-void WindowView::resize(int width, int height, vector<GuiElem*> gui) {
+void WindowView::resize(int width, int height) {
   renderer.resize(width, height);
   refreshInput = true;
 }
@@ -346,8 +345,7 @@ void WindowView::rebuildGui() {
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   tempGuiElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
-  tempGuiElems.push_back(gui.conditional(gui.rectangle(sf::Color(0, 0, 0, 150)),
-        [=](GuiElem*){return guiBuilder.isPlayerOverlayFocused();}));
+  tempGuiElems.push_back(gui.conditional(gui.darken(), [=](GuiElem*){return guiBuilder.isPlayerOverlayFocused();}));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::SPECTATOR:
@@ -393,12 +391,11 @@ void WindowView::rebuildGui() {
     tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight));
     tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
-    tempGuiElems.back()->setBounds(Rectangle(Vec2(renderer.getSize().x - rightBarWidth, 0),
-          renderer.getSize() - Vec2(0, rightBottomMargin)));
+    tempGuiElems.back()->setBounds(Rectangle(Vec2(0, 0),
+          Vec2(rightBarWidth, renderer.getSize().y - rightBottomMargin)));
     tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
     tempGuiElems.back()->setBounds(Rectangle(
-          0, renderer.getSize().y - bottomBarHeight,
-          renderer.getSize().x - rightBarWidth, renderer.getSize().y));
+          Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight), renderer.getSize()));
     guiBuilder.drawMessages(overlays, gameInfo.messageBuffer,
         renderer.getSize().x - rightBarWidth - leftMargin - rightMargin);
     guiBuilder.drawGameSpeedDialog(overlays);
@@ -410,11 +407,10 @@ void WindowView::rebuildGui() {
       int height = overlay.size.y + bottomMargin + topMargin;
       switch (overlay.alignment) {
         case GuiBuilder::OverlayInfo::TOP_RIGHT:
-          pos = Vec2(renderer.getSize().x - rightBarWidth - sideOffset - width,
-              rightWindowHeight);
+          pos = Vec2(rightBarWidth + sideOffset, rightWindowHeight);
           break;
         case GuiBuilder::OverlayInfo::BOTTOM_RIGHT:
-          pos = Vec2(renderer.getSize().x - rightBarWidth - sideOffset - width,
+          pos = Vec2(rightBarWidth + sideOffset,
               renderer.getSize().y - bottomBarHeight - bottomOffset - height);
           break;
         case GuiBuilder::OverlayInfo::LEFT:
@@ -422,13 +418,13 @@ void WindowView::rebuildGui() {
               renderer.getSize().y - bottomBarHeight - bottomOffset - height);
           break;
         case GuiBuilder::OverlayInfo::MESSAGES:
+          pos = Vec2(rightBarWidth, 0);
           width -= rightMargin - 10;
           height -= bottomMargin + topMargin + 6;
           topMargin = 2;
-          pos = Vec2(0, 0);
           break;
         case GuiBuilder::OverlayInfo::GAME_SPEED:
-          pos = renderer.getSize() - overlay.size - Vec2(90, 90);
+          pos = Vec2(26, renderer.getSize().y - overlay.size.y - 90);
           break;
         case GuiBuilder::OverlayInfo::INVISIBLE:
           pos = Vec2(renderer.getSize().x, 0);
@@ -481,13 +477,13 @@ void WindowView::resetCenter() {
 void WindowView::addVoidDialog(function<void()> fun) {
   RenderLock lock(renderMutex);
   Semaphore sem;
-  renderDialog = [this, &sem, fun] {
+  renderDialog.push([this, &sem, fun] {
     fun();
     sem.v();
-    renderDialog = nullptr;
-  };
+    renderDialog.pop();
+  });
   if (currentThreadId() == renderThreadId)
-    renderDialog();
+    renderDialog.top()();
   lock.unlock();
   sem.p();
 }
@@ -553,12 +549,12 @@ void WindowView::refreshView() {
     CHECK(currentThreadId() == renderThreadId);
     if (gameReady)
       processEvents();
-    if (renderDialog)
-      renderDialog();
-    if (uiLock && !renderDialog)
+    if (!renderDialog.empty())
+      renderDialog.top()();
+    if (uiLock && renderDialog.empty())
       return;
   }
-  if (!renderDialog && gameReady)
+  if (renderDialog.empty() && gameReady)
     refreshScreen(true);
 }
 
@@ -619,7 +615,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
   do {
     Event event;
     renderer.waitEvent(event);
-    considerResizeEvent(event, getAllGuiElems());
+    considerResizeEvent(event);
     if (event.type == Event::MouseMoved || event.type == Event::MouseButtonPressed) {
       if (auto pos = mapGui->getHighlightedTile(renderer)) {
         refreshScreen(false);
@@ -704,7 +700,7 @@ PGuiElem WindowView::getTextContent(const string& title, const string& value, co
       gui.variableLabel([&] { return title + ":  " + value + "_"; }));
   if (!hint.empty())
     lines.push_back(gui.label(hint, gui.inactiveText));
-  return gui.verticalList(std::move(lines), 40, 0);
+  return gui.verticalList(std::move(lines), 40);
 }
 
 optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
@@ -733,7 +729,7 @@ optional<string> WindowView::getText(const string& title, const string& value, i
       propagateEvent(event, {stuff.get()});
       if (dismiss)
         return none;
-      if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
+      if (considerResizeEvent(event))
         continue;
       if (event.type == Event::TextEntered)
         if ((isalnum(event.text.unicode) || event.text.unicode == ' ') && text.size() < maxLength)
@@ -753,7 +749,83 @@ optional<string> WindowView::getText(const string& title, const string& value, i
   });
   lock.unlock();
   return returnQueue.pop();
+}
 
+optional<View::MinionAction> WindowView::getMinionAction(const vector<GameInfo::PlayerInfo>& minions,
+    UniqueEntity<Creature>::Id& currentMinion) {
+  RenderLock lock(renderMutex);
+  uiLock = true;
+  TempClockPause pause(clock);
+  SyncQueue<optional<MinionAction>> returnQueue;
+  addReturnDialog<optional<MinionAction>>(returnQueue, [=, &currentMinion] ()-> optional<MinionAction> {
+    optional<optional<MinionAction>> ret;
+    tempGuiElems.push_back(gui.stack(gui.reverseButton([&ret] { ret = optional<MinionAction>(none); }),
+        gui.window(guiBuilder.drawMinionMenu(minions, currentMinion, [&] (optional<MinionAction> r) { ret = r; }))));
+    GuiElem* menu = tempGuiElems.back().get();
+    menu->setBounds(guiBuilder.getMinionMenuPosition());
+    PGuiElem bg = gui.darken();
+    bg->setBounds(getMapGuiBounds());
+    while (1) {
+      refreshScreen(false);
+      bg->render(renderer);
+      menu->render(renderer);
+      renderer.drawAndClearBuffer();
+      Event event;
+      while (renderer.pollEvent(event)) {
+        propagateEvent(event, {menu});
+        if (ret)
+          return *ret;
+        if (considerResizeEvent(event))
+          continue;
+      }
+    }
+  });
+  lock.unlock();
+  return returnQueue.pop();
+}
+
+optional<int> WindowView::chooseItem(const vector<GameInfo::PlayerInfo>& minions, UniqueEntity<Creature>::Id& cur,
+    const vector<GameInfo::ItemInfo>& items, double* scrollPos1) {
+  RenderLock lock(renderMutex);
+  uiLock = true;
+  TempClockPause pause(clock);
+  SyncQueue<optional<int>> returnQueue;
+  addReturnDialog<optional<int>>(returnQueue, [=, &cur] ()-> optional<int> {
+    double* scrollPos = scrollPos1;
+    double localScrollPos;
+    if (!scrollPos)
+      scrollPos = &localScrollPos;
+    optional<optional<int>> retVal;
+    vector<PGuiElem> lines = guiBuilder.drawItemMenu(items,
+      [&retVal] (Rectangle butBounds, optional<int> a) { retVal = a;}, true);
+    int menuHeight = lines.size() * guiBuilder.getStandardLineHeight() + 30;
+    PGuiElem menu = gui.stack(gui.reverseButton([&retVal] { retVal = optional<int>(none); }),
+        gui.miniWindow(gui.margins(
+            gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
+        15, 15, 15, 15)));
+    PGuiElem bg1 = gui.window(guiBuilder.drawMinionMenu(minions, cur, [&] (optional<MinionAction>) { }));
+    bg1->setBounds(guiBuilder.getMinionMenuPosition());
+    PGuiElem bg2 = gui.darken();
+    bg2->setBounds(renderer.getSize());
+    while (1) {
+      refreshScreen(false);
+      menu->setBounds(guiBuilder.getEquipmentMenuPosition(menuHeight));
+      bg1->render(renderer);
+      bg2->render(renderer);
+      menu->render(renderer);
+      renderer.drawAndClearBuffer();
+      Event event;
+      while (renderer.pollEvent(event)) {
+        propagateEvent(event, {menu.get()});
+        if (retVal)
+          return *retVal;
+        if (considerResizeEvent(event))
+          continue;
+      }
+    }
+  });
+  lock.unlock();
+  return returnQueue.pop();
 }
 
 PGuiElem WindowView::drawGameChoices(optional<View::GameTypeChoice>& choice,optional<View::GameTypeChoice>& index) {
@@ -829,7 +901,7 @@ View::GameTypeChoice WindowView::chooseGameType() {
       propagateEvent(event, {stuff.get()});
       if (choice)
         return *choice;
-      if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
+      if (considerResizeEvent(event))
         continue;
       if (event.type == Event::KeyPressed)
         switch (event.key.code) {
@@ -952,7 +1024,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
       }
       if (choice == -100)
         return none;
-      if (considerResizeEvent(event, concat({stuff.get()}, getAllGuiElems())))
+      if (considerResizeEvent(event))
         continue;
       if (event.type == Event::MouseWheelMoved)
           *scrollPos = min<double>(options.size() - 1, max<double>(0, *scrollPos - event.mouseWheel.delta));
@@ -1059,9 +1131,9 @@ void WindowView::continueClock() {
 bool WindowView::isClockStopped() {
   return clock->isPaused();
 }
-bool WindowView::considerResizeEvent(sf::Event& event, vector<GuiElem*> gui) {
+bool WindowView::considerResizeEvent(sf::Event& event) {
   if (event.type == Event::Resized) {
-    resize(event.size.width, event.size.height, gui);
+    resize(event.size.width, event.size.height);
     return true;
   }
   return false;
@@ -1072,7 +1144,7 @@ Vec2 lastGoTo(-1, -1);
 void WindowView::processEvents() {
   Event event;
   while (renderer.pollEvent(event)) {
-    considerResizeEvent(event, getAllGuiElems());
+    considerResizeEvent(event);
     if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
       switch (event.type) {
         case Event::KeyPressed:

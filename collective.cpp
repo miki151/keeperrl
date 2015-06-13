@@ -361,6 +361,13 @@ void Collective::setMinionTask(const Creature* c, MinionTask task) {
   currentTasks[c->getUniqueId()] = {task, c->getTime() + getTaskDuration(c, task)};
 }
 
+optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
+  if (currentTasks.count(c->getUniqueId()))
+    return currentTasks.at(c->getUniqueId()).task();
+  else
+    return none;
+}
+
 bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
   if (c->getMinionTasks().getValue(task) == 0)
     return false;
@@ -419,6 +426,41 @@ optional<Vec2> Collective::getTileToExplore(const Creature* c, MinionTask task) 
   return none;
 }
 
+bool Collective::isMinionTaskPossible(Creature* c, MinionTask task) {
+  return isTaskGood(c, task) && generateMinionTask(c, task);
+}
+
+PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
+  MinionTaskInfo info = getTaskInfo().at(task);
+  switch (info.type) {
+    case MinionTaskInfo::APPLY_SQUARE: {
+      vector<Vec2> squares = getAllSquares(info.squares, info.centerOnly);
+      if (!squares.empty())
+        return Task::applySquare(this, squares);
+      break;
+      }
+    case MinionTaskInfo::EXPLORE:
+      if (auto pos = getTileToExplore(c, task))
+        return Task::explore(*pos);
+      break;
+    case MinionTaskInfo::COPULATE:
+      if (Creature* target = getCopulationTarget(c))
+        return Task::copulate(this, target, 20);
+      break;
+    case MinionTaskInfo::CONSUME:
+      if (Creature* target = getConsumptionTarget(c))
+        return Task::consume(this, target);
+      break;
+    case MinionTaskInfo::EAT: {
+      const set<Vec2>& hatchery = getSquares(getHatcheryType(tribe));
+      if (!hatchery.empty())
+        return Task::eat(hatchery);
+      break;
+      }
+  }
+  return nullptr;
+}
+
 PTask Collective::getStandardTask(Creature* c) {
   if (!c->getMinionTasks().hasAnyTask())
     return nullptr;
@@ -432,31 +474,7 @@ PTask Collective::getStandardTask(Creature* c) {
     return nullptr;
   MinionTask task = currentTasks[c->getUniqueId()].task();
   MinionTaskInfo info = getTaskInfo().at(task);
-  PTask ret;
-  switch (info.type) {
-    case MinionTaskInfo::APPLY_SQUARE: {
-      vector<Vec2> squares = getAllSquares(info.squares, info.centerOnly);
-      if (!squares.empty())
-        ret = Task::applySquare(this, squares);
-      break; }
-    case MinionTaskInfo::EXPLORE:
-      if (auto pos = getTileToExplore(c, task))
-        ret = Task::explore(*pos);
-      break;
-    case MinionTaskInfo::COPULATE:
-      if (Creature* target = getCopulationTarget(c))
-        ret = Task::copulate(this, target, 20);
-      break;
-    case MinionTaskInfo::CONSUME:
-      if (Creature* target = getConsumptionTarget(c))
-        ret = Task::consume(this, target);
-      break;
-    case MinionTaskInfo::EAT: {
-      const set<Vec2>& hatchery = getSquares(getHatcheryType(tribe));
-      if (!hatchery.empty())
-        ret = Task::eat(hatchery);
-      break; }
-  }
+  PTask ret = generateMinionTask(c, task);
   if (info.warning && !getAllSquares().empty())
     setWarning(*info.warning, !ret);
   if (!ret)
@@ -1053,7 +1071,7 @@ void Collective::tick(double time) {
               getLevel()->globalMessage(pos, c->getName().the() + " surrenders.");
               control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
               c->die(nullptr, true, false);
-              addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER});
+              addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
             }
           }
           prisonerInfo.erase(c);

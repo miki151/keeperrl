@@ -36,6 +36,7 @@ class GuiBuilder {
   GuiBuilder(Renderer&, GuiFactory&, Clock*, Callbacks);
   void reset();
   void setTilesOk(bool);
+  int getStandardLineHeight() const;
   
   PGuiElem getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo);
   PGuiElem getTurnInfoGui(int turn);
@@ -62,6 +63,11 @@ class GuiBuilder {
   void drawBandOverlay(vector<OverlayInfo>&, GameInfo::BandInfo&);
   void drawMessages(vector<OverlayInfo>&, const vector<PlayerMessage>&, int guiLength);
   void drawGameSpeedDialog(vector<OverlayInfo>&);
+  typedef function<void(optional<View::MinionAction>)> MinionMenuCallback;
+  PGuiElem drawMinionMenu(const vector<GameInfo::PlayerInfo>&, UniqueEntity<Creature>::Id& current,
+      MinionMenuCallback);
+  typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
+  vector<PGuiElem> drawItemMenu(const vector<GameInfo::ItemInfo>&, ItemMenuCallback, bool doneBut = false);
   
   enum class CollectiveTab {
     BUILDINGS,
@@ -89,6 +95,8 @@ class GuiBuilder {
   bool showMorale() const;
   bool isPlayerOverlayFocused() const;
   Rectangle getMenuPosition(View::MenuType);
+  Rectangle getMinionMenuPosition();
+  Rectangle getEquipmentMenuPosition(int height);
   PGuiElem drawListGui(const string& title, const vector<View::ListElem>& options,
       View::MenuType, int* height, int* highlight, int* choice);
   int getScrollPos(int index, int count);
@@ -100,7 +108,18 @@ class GuiBuilder {
   Callbacks callbacks;
   PGuiElem getHintCallback(const vector<string>&);
   PGuiElem getTooltip(const vector<string>&);
+  vector<PGuiElem> drawPlayerAttributes(const vector<GameInfo::PlayerInfo::AttributeInfo>&);
+  PGuiElem drawMinionButtons(const vector<GameInfo::PlayerInfo>&, UniqueEntity<Creature>::Id& current);
+  PGuiElem drawMinionPage(const GameInfo::PlayerInfo&, MinionMenuCallback);
+  PGuiElem drawActivityButton(const GameInfo::PlayerInfo&, MinionMenuCallback);
+  vector<PGuiElem> drawAttributesOnPage(vector<PGuiElem>&&);
+  vector<PGuiElem> drawEquipmentAndConsumables(const vector<GameInfo::ItemInfo>&, MinionMenuCallback);
+  vector<PGuiElem> drawSkillsList(const GameInfo::PlayerInfo&);
+  vector<PGuiElem> drawSpellsList(const GameInfo::PlayerInfo&);
+  vector<PGuiElem> drawMinionActions(const GameInfo::PlayerInfo&, MinionMenuCallback);
+  vector<PGuiElem> joinLists(vector<PGuiElem>&&, vector<PGuiElem>&&);
   function<void()> getButtonCallback(UserInput);
+  void drawMiniMenu(vector<PGuiElem>, function<bool(int)> callback, Vec2 menuPos, int width);
   int activeBuilding = 0;
   bool hideBuildingOverlay = false;
   int activeLibrary = -1;
@@ -145,10 +164,11 @@ class GuiBuilder {
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
   PGuiElem getStandingGui(double standing);
-  PGuiElem getItemLine(const GameInfo::PlayerInfo::ItemInfo&, function<void(Rectangle)> onClick);
-  vector<string> getItemHint(const GameInfo::PlayerInfo::ItemInfo&);
+  PGuiElem getItemLine(const GameInfo::ItemInfo&, function<void(Rectangle)> onClick);
+  vector<string> getItemHint(const GameInfo::ItemInfo&);
   bool morale = false;
-  void handleItemChoice(const GameInfo::PlayerInfo::ItemInfo&, Vec2);
+  optional<GameInfo::ItemInfo::Action> getItemChoice(const GameInfo::ItemInfo& itemInfo, Vec2 menuPos,
+      bool autoDefault);
   vector<PGuiElem> getMultiLine(const string& text, Color, View::MenuType, int maxWidth);
   PGuiElem menuElemMargins(PGuiElem);
   PGuiElem getHighlight(View::MenuType, const string& label, int height);

@@ -354,11 +354,6 @@ const ViewObject& ViewObject::empty() {
   return ret;
 }
 
-const ViewObject& ViewObject::mana() {
-  static ViewObject ret(ViewId::MANA, ViewLayer::FLOOR, "");
-  return ret;
-}
-
 void ViewObject::setPosition(Vec2 pos) {
   position = pos;
 }

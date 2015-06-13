@@ -72,6 +72,8 @@ void NameGenerator::init(const string& namesPath) {
   set(NameGeneratorId::DOG, new NameGenerator(readLines(namesPath + "/dogs.txt")));
   set(NameGeneratorId::DRAGON, new NameGenerator(readLines(namesPath + "/dragons.txt")));
   set(NameGeneratorId::CYCLOPS, new NameGenerator(readLines(namesPath + "/cyclops.txt")));
+  set(NameGeneratorId::ORC, new NameGenerator(readLines(namesPath + "/orc.txt")));
+  set(NameGeneratorId::VAMPIRE, new NameGenerator(readLines(namesPath + "/vampires.txt")));
 }
 
 

@@ -4,6 +4,7 @@
 #include "view_object.h"
 #include "unique_entity.h"
 #include "player_message.h"
+#include "minion_task.h"
 
 /** Represents all the game information displayed around the map window.*/
 class GameInfo {
@@ -13,7 +14,7 @@ class GameInfo {
 
   struct CreatureInfo {
     CreatureInfo(const Creature*);
-    ViewObject viewObject;
+    ViewId viewId;
     UniqueEntity<Creature>::Id uniqueId;
     string name;
     string speciesName;
@@ -25,9 +26,9 @@ class GameInfo {
     public:
     string warning;
     struct Button {
-      ViewObject object;
+      ViewId viewId;
       string name;
-      optional<pair<ViewObject, int>> cost;
+      optional<pair<ViewId, int>> cost;
       string count;
       enum { ACTIVE, GRAY_CLICKABLE, INACTIVE} state;
       string help;
@@ -44,7 +45,7 @@ class GameInfo {
     vector<CreatureInfo> enemies;
     map<UniqueEntity<Creature>::Id, string> tasks;
     struct Resource {
-      ViewObject viewObject;
+      ViewId viewId;
       int count;
       string name;
     };
@@ -76,9 +77,25 @@ class GameInfo {
     };
     vector<Task> taskMap;
   } bandInfo;
+  struct ItemInfo {
+    string name;
+    string fullName;
+    string description;
+    int number;
+    ViewId viewId;
+    vector<UniqueEntity<Item>::Id> ids;
+    enum Action { DROP, APPLY, EQUIP, UNEQUIP, THROW, LOCK, UNLOCK, REPLACE };
+    vector<Action> actions;
+    bool equiped;
+    bool locked;
+    bool pending;
+    optional<EquipmentSlot> slot;
+    optional<CreatureInfo> owner;
+  };
 
   class PlayerInfo {
     public:
+    void readFrom(const Creature*);
     struct AttributeInfo {
       string name;
       enum Id { ATT, DEF, STR, DEX, ACC, SPD };
@@ -93,7 +110,6 @@ class GameInfo {
       string help;
     };
     vector<SkillInfo> skills;
-    bool spellcaster;
     string playerName;
     int level;
     vector<string> adjectives;
@@ -112,25 +128,18 @@ class GameInfo {
       bool available;
     };
     vector<Spell> spells;
-    struct ItemInfo {
-      string name;
-      string fullName;
-      string description;
-      int number;
-      ViewObject viewObject;
-      vector<UniqueEntity<Item>::Id> ids;
-      enum Action { DROP, APPLY, EQUIP, UNEQUIP, THROW };
-      vector<Action> actions;
-      bool equiped;
-    };
     vector<ItemInfo> lyingItems;
-    struct InventorySection {
-      string title;
-      vector<ItemInfo> items;
-    };
-    vector<InventorySection> inventory;
-    string squareName;
+    vector<ItemInfo> inventory;
     vector<CreatureInfo> team;
+    struct MinionTaskInfo {
+      MinionTask task;
+      bool inactive;
+      bool current;
+    };
+    vector<MinionTaskInfo> minionTasks;
+    UniqueEntity<Creature>::Id creatureId;
+    double morale;
+    ViewId viewId;
   } playerInfo;
 
   class VillageInfo {

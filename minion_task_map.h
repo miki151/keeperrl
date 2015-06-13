@@ -27,6 +27,7 @@ class MinionTaskMap {
   double getValue(MinionTask) const;
   MinionTask getRandom() const;
   bool hasAnyTask() const;
+  vector<MinionTask> getAll() const;
   
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

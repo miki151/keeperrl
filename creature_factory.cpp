@@ -1245,6 +1245,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::SORCERY, 0.1);
+          c.name = NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext();
           c.name = "vampire";);
     case CreatureId::VAMPIRE_LORD: 
       return INHERIT(VAMPIRE,
@@ -1320,6 +1321,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
+          c.firstName = NameGenerator::get(NameGeneratorId::ORC)->getNext();
           c.name = "orc";);
     case CreatureId::ORC_SHAMAN:
       return INHERIT(ORC,
@@ -1388,6 +1390,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.insert(SkillId::DISARM_TRAPS);
+          c.firstName = NameGenerator::get(NameGeneratorId::ORC)->getNext();
           c.name = "goblin";);
     case CreatureId::IMP: 
       return CATTR(
@@ -1425,7 +1428,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "talks about escape plans";
           c.minionTasks.setValue(MinionTask::PRISON, 1);
           c.minionTasks.setValue(MinionTask::TORTURE, 0.0001); 
- //         c.minionTasks.setValue(MinionTask::SACRIFICE, 0.0001); 
           c.minionTasks.setValue(MinionTask::EXECUTE, 0.0001);
           c.name = "prisoner";);
     case CreatureId::OGRE: 
@@ -1794,6 +1796,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.groupName = "pack";
           c.skills.insert(SkillId::NIGHT_VISION);
           c.spawnType = SpawnType::BEAST;
+          c.firstName = NameGenerator::get(NameGeneratorId::DOG)->getNext();
           c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.name = EntityName("wolf", "wolves"););    

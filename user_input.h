@@ -73,8 +73,7 @@ struct TeamLeaderInfo : public NamedTupleBase<TeamId, UniqueEntity<Creature>::Id
   NAME_ELEM(1, creatureId);
 };
 
-struct InventoryItemInfo : public NamedTupleBase<vector<UniqueEntity<Item>::Id>,
-    GameInfo::PlayerInfo::ItemInfo::Action> {
+struct InventoryItemInfo : public NamedTupleBase<vector<UniqueEntity<Item>::Id>, GameInfo::ItemInfo::Action> {
   NAMED_TUPLE_STUFF(InventoryItemInfo);
   NAME_ELEM(0, items);
   NAME_ELEM(1, action);

@@ -71,8 +71,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static vector<RoomInfo> getRoomInfo();
   static vector<RoomInfo> getWorkshopInfo();
 
-  enum class MinionOption;
-
   SERIALIZATION_DECL(PlayerControl);
 
   template <class Archive>
@@ -184,8 +182,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static vector<BuildInfo> libraryInfo;
   static vector<BuildInfo> minionsInfo;
 
-  ViewObject getResourceViewObject(Collective::ResourceId id) const;
-  optional<pair<ViewObject, int>> getCostObj(CostInfo) const;
+  ViewId getResourceViewId(Collective::ResourceId id) const;
+  optional<pair<ViewId, int>> getCostObj(CostInfo) const;
   CostInfo getRoomCost(SquareType, CostInfo baseCost, double exponent) const;
 
   typedef GameInfo::BandInfo::TechButton TechButton;
@@ -203,19 +201,20 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool canPlacePost(Vec2 pos) const;
   void handleMarket(View*, int prevItem = 0);
   void getEquipmentItem(View* view, ItemPredicate predicate);
-  Item* chooseEquipmentItem(View* view, vector<Item*> currentItems, ItemPredicate predicate,
-      int* index = nullptr, double* scrollPos = nullptr) const;
-
-  void getMinionOptions(Creature*, vector<MinionOption>&, vector<View::ListElem>&);
+  Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
+      double* scrollPos = nullptr);
 
   int getNumMinions() const;
-  void minionView(View* view, Creature* creature, int prevItem = 0);
+  void minionView(Creature* creature);
+  vector<GameInfo::PlayerInfo> getMinionGroup(Creature* like);
+  void minionEquipmentAction(Creature* creature, const View::MinionAction::ItemAction&);
+  void addEquipment(Creature*, EquipmentSlot);
+  void addConsumableItem(Creature*);
   void handleEquipment(View* view, Creature* creature);
-  void handleNecromancy(View*);
+  void fillEquipment(Creature*, GameInfo::PlayerInfo&);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   static ViewObject getTrapObject(TrapType, bool built);
-  bool underAttack() const;
   void addToMemory(Vec2 pos);
   void getSquareViewIndex(const Square*, bool canSee, ViewIndex&) const;
   void tryLockingDoor(Vec2 pos);
@@ -240,7 +239,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool SERIAL(payoutWarning) = false;
   unordered_set<Vec2> SERIAL(surprises);
   string getMinionName(CreatureId) const;
-  ViewObject getMinionViewObject(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
   struct AssaultInfo : public NamedTupleBase<string, vector<Creature*>> {
     NAMED_TUPLE_STUFF(AssaultInfo);

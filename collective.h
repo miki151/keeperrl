@@ -137,6 +137,7 @@ class Collective : public Task::Callback {
   void addGuardPost(Vec2);
   void removeGuardPost(Vec2);
   void freeFromGuardPost(const Creature*);
+  bool usesEquipment(const Creature* c) const;
 
   ~Collective();
 
@@ -186,6 +187,8 @@ class Collective : public Task::Callback {
   const ConstructionMap& getConstructions() const;
 
   void setMinionTask(const Creature* c, MinionTask task);
+  optional<MinionTask> getMinionTask(const Creature*) const;
+  bool isMinionTaskPossible(Creature* c, MinionTask task);
 
   set<TrapType> getNeededTraps() const;
 
@@ -347,6 +350,7 @@ class Collective : public Task::Callback {
   PTask getEquipmentTask(Creature* c);
   PTask getHealingTask(Creature* c);
   bool isTaskGood(const Creature*, MinionTask) const;
+  PTask generateMinionTask(Creature*, MinionTask);
   void setRandomTask(const Creature*);
 
   void handleSurprise(Vec2 pos);
@@ -354,7 +358,6 @@ class Collective : public Task::Callback {
   MoveInfo getDropItems(Creature*);
   MoveInfo getWorkerMove(Creature*);
   MoveInfo getTeamMemberMove(Creature*);
-  bool usesEquipment(const Creature* c) const;
   void autoEquipment(Creature* creature, bool replace);
   Item* getWorstItem(vector<Item*> items) const;
   int getTaskDuration(const Creature*, MinionTask) const;

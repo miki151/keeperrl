@@ -71,7 +71,10 @@ class WindowView: public View {
   virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
-
+  virtual optional<MinionAction> getMinionAction(const vector<GameInfo::PlayerInfo>&,
+      UniqueEntity<Creature>::Id&) override;
+  virtual optional<int> chooseItem(const vector<GameInfo::PlayerInfo>& minions, UniqueEntity<Creature>::Id& cur,
+      const vector<GameInfo::ItemInfo>& items, double* scrollpos) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual int getTimeMilli() override;
@@ -115,13 +118,13 @@ class WindowView: public View {
 
   void switchZoom();
   void zoom(bool out);
-  void resize(int width, int height, vector<GuiElem*> gui);
+  void resize(int width, int height);
   Rectangle getMapGuiBounds() const;
   Rectangle getMinimapBounds() const;
   void resetMapBounds();
   void switchTiles();
 
-  bool considerResizeEvent(sf::Event&, vector<GuiElem*> gui);
+  bool considerResizeEvent(sf::Event&);
 
   int messageInd = 0;
   std::deque<string> currentMessage = std::deque<string>(3, "");
@@ -162,18 +165,18 @@ class WindowView: public View {
   bool lockKeyboard = false;
 
   thread::id renderThreadId;
-  function<void()> renderDialog;
+  stack<function<void()>> renderDialog;
 
   void addVoidDialog(function<void()>);
 
   template <class T>
   void addReturnDialog(SyncQueue<T>& q, function<T()> fun) {
-    renderDialog = [&q, fun, this] {
+    renderDialog.push([&q, fun, this] {
       q.push(fun());
-      renderDialog = nullptr;
-    };
+      renderDialog.pop();
+    });
     if (currentThreadId() == renderThreadId)
-      renderDialog();
+      renderDialog.top()();
   }
   atomic<bool> splashDone;
   bool useTiles;
