@@ -156,6 +156,7 @@ class View {
     struct ControlAction {
     };
     struct RenameAction {
+      string newName;
     };
     struct BanishAction {
     };

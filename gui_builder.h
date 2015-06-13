@@ -42,7 +42,6 @@ class GuiBuilder {
   PGuiElem getTurnInfoGui(int turn);
   PGuiElem drawBottomPlayerInfo(GameInfo&);
   PGuiElem drawRightPlayerInfo(GameInfo::PlayerInfo&);
-  PGuiElem drawPlayerStats(GameInfo::PlayerInfo&);
   PGuiElem drawPlayerHelp(GameInfo::PlayerInfo&);
   PGuiElem drawPlayerInventory(GameInfo::PlayerInfo&);
   PGuiElem drawBottomBandInfo(GameInfo&);
@@ -53,6 +52,7 @@ class GuiBuilder {
   PGuiElem drawDeities(GameInfo::BandInfo&);
   PGuiElem drawMinions(GameInfo::BandInfo&);
   PGuiElem drawKeeperHelp();
+  optional<string> getTextInput(const string& title, const string& value, int maxLength, const string& hint);
 
   struct OverlayInfo {
     PGuiElem elem;
@@ -97,6 +97,7 @@ class GuiBuilder {
   Rectangle getMenuPosition(View::MenuType);
   Rectangle getMinionMenuPosition();
   Rectangle getEquipmentMenuPosition(int height);
+  Rectangle getTextInputPosition();
   PGuiElem drawListGui(const string& title, const vector<View::ListElem>& options,
       View::MenuType, int* height, int* highlight, int* choice);
   int getScrollPos(int index, int count);
@@ -116,10 +117,12 @@ class GuiBuilder {
   vector<PGuiElem> drawEquipmentAndConsumables(const vector<GameInfo::ItemInfo>&, MinionMenuCallback);
   vector<PGuiElem> drawSkillsList(const GameInfo::PlayerInfo&);
   vector<PGuiElem> drawSpellsList(const GameInfo::PlayerInfo&);
+  vector<PGuiElem> drawEffectsList(const GameInfo::PlayerInfo&);
   vector<PGuiElem> drawMinionActions(const GameInfo::PlayerInfo&, MinionMenuCallback);
   vector<PGuiElem> joinLists(vector<PGuiElem>&&, vector<PGuiElem>&&);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(vector<PGuiElem>, function<bool(int)> callback, Vec2 menuPos, int width);
+  PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   int activeBuilding = 0;
   bool hideBuildingOverlay = false;
   int activeLibrary = -1;

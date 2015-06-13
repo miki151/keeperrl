@@ -96,6 +96,8 @@ class GameInfo {
   class PlayerInfo {
     public:
     void readFrom(const Creature*);
+    string getFirstName() const;
+    string getTitle() const;
     struct AttributeInfo {
       string name;
       enum Id { ATT, DEF, STR, DEX, ACC, SPD };
@@ -110,10 +112,10 @@ class GameInfo {
       string help;
     };
     vector<SkillInfo> skills;
-    string playerName;
+    string firstName;
+    string name;
     int level;
     vector<string> adjectives;
-    string title;
     string levelName;
     string weaponName;
     struct Effect {

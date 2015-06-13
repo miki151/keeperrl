@@ -686,17 +686,6 @@ optional<GameInfo::ItemInfo::Action> GuiBuilder::getItemChoice(const GameInfo::I
   }
 }
 
-string GuiBuilder::getPlayerTitle(GameInfo::PlayerInfo& info) {
-  string title = info.title;
-  if (!info.adjectives.empty() || !info.playerName.empty())
-    title = " " + title;
-  for (int i : All(info.adjectives)) {
-    title = string(i <info.adjectives.size() - 1 ? ", " : " ") + info.adjectives[i] + title;
-    break; // more than one won't fit the line
-  }
-  return title;
-}
-
 vector<PGuiElem> GuiBuilder::drawSkillsList(const GameInfo::PlayerInfo& info) {
   vector<PGuiElem> lines;
   if (!info.skills.empty()) {
@@ -721,18 +710,21 @@ vector<PGuiElem> GuiBuilder::drawSpellsList(const GameInfo::PlayerInfo& info) {
   return lines;
 }
 
+vector<PGuiElem> GuiBuilder::drawEffectsList(const GameInfo::PlayerInfo& info) {
+  vector<PGuiElem> lines;
+  for (auto effect : info.effects)
+    lines.push_back(gui.stack(
+          getTooltip({effect.help}),
+          gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::WHITE])));
+  return lines;
+}
+
 PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
   vector<PGuiElem> lines;
-  string title = getPlayerTitle(info);
-  string nameLine = capitalFirst(!info.playerName.empty() ? info.playerName + " the" + title : title);
-  lines.push_back(gui.label(nameLine, colors[ColorId::WHITE]));
+  lines.push_back(gui.label(info.getTitle(), colors[ColorId::WHITE]));
   lines.push_back(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
-  if (!info.effects.empty()) {
-    for (auto effect : info.effects)
-      lines.push_back(gui.stack(
-            getTooltip({effect.help}),
-            gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::WHITE])));
-  }
+  for (auto& elem : drawEffectsList(info))
+    lines.push_back(std::move(elem));
   lines.push_back(gui.empty());
   if (!info.team.empty()) {
     const int numPerLine = 6;
@@ -800,40 +792,6 @@ PGuiElem GuiBuilder::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
   PGuiElem butGui = gui.margins(
       gui.centerHoriz(gui.horizontalList(std::move(buttons), 50), numButtons * 50), 0, 5, 0, 5);
   return gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
-}
-
-PGuiElem GuiBuilder::drawPlayerStats(GameInfo::PlayerInfo& info) {
-  vector<PGuiElem> elems;
-  elems.push_back(gui.empty());
-  elems.push_back(gui.empty());
-  elems.push_back(gui.label("Skills:", colors[ColorId::WHITE]));
-  for (auto& elem : info.skills) {
-    elems.push_back(gui.stack(getTooltip({elem.help}),
-          gui.label(capitalFirst(elem.name), colors[ColorId::WHITE])));
-  }
-  elems.push_back(gui.empty());
-  if (!info.team.empty()) {
-    const int numPerLine = 6;
-    vector<int> widths { 60 };
-    vector<PGuiElem> currentLine = makeVec<PGuiElem>(
-        gui.label("Team: ", colors[ColorId::WHITE]));
-    for (auto& elem : info.team) {
-      currentLine.push_back(gui.stack(
-            gui.viewObject(elem.viewId, tilesOk),
-            gui.label(toString(elem.expLevel), 12)));
-      widths.push_back(30);
-      if (currentLine.size() >= numPerLine) {
-        elems.push_back(gui.horizontalList(std::move(currentLine), widths));
-        widths.clear();
-      }
-    }
-    if (!currentLine.empty())
-      elems.push_back(gui.horizontalList(std::move(currentLine), widths));
-    elems.push_back(gui.empty());
-  }
-  for (auto effect : info.effects)
-    elems.push_back(gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::GREEN]));
-  return gui.scrollable(gui.verticalList(std::move(elems), legendLineHeight), &playerStatsScroll);
 }
 
 typedef GameInfo::CreatureInfo CreatureInfo;
@@ -1313,7 +1271,7 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<GameInfo::PlayerInfo>& minio
     list.push_back(gui.stack(
         gui.button([&current, minionId] { current = minionId;}),
         gui.horizontalList(makeVec<PGuiElem>(
-            gui.label(minions[i].playerName, colorFun),
+            gui.label(minions[i].getFirstName(), colorFun),
             gui.label("L:" + toString(minions[i].level), colorFun)), 42, 1)));
   }
   return gui.verticalList(std::move(list), legendLineHeight);
@@ -1366,7 +1324,7 @@ vector<PGuiElem> GuiBuilder::drawItemMenu(const vector<GameInfo::ItemInfo>& item
 }
 
 PGuiElem GuiBuilder::drawActivityButton(const GameInfo::PlayerInfo& minion, MinionMenuCallback callback) {
-  string curTask;
+  string curTask = "(none)";
   for (auto task : minion.minionTasks)
     if (task.current)
       curTask = getTaskText(task.task);
@@ -1425,7 +1383,9 @@ vector<PGuiElem> GuiBuilder::drawMinionActions(const GameInfo::PlayerInfo& minio
       gui.button([=] { callback(View::MinionAction{View::MinionAction::ControlAction()}); })));
   line.push_back(gui.stack(
       gui.label("[Rename]", colors[ColorId::LIGHT_BLUE]),
-      gui.button([=] { callback(View::MinionAction{View::MinionAction::RenameAction()}); })));
+      gui.button([=] { 
+          if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel"))
+            callback(View::MinionAction{View::MinionAction::RenameAction{*name}}); })));
   line.push_back(gui.stack(
       gui.label("[Banish]", colors[ColorId::LIGHT_BLUE]),
       gui.button([=] { callback(View::MinionAction{View::MinionAction::BanishAction()}); })));
@@ -1443,14 +1403,14 @@ vector<PGuiElem> GuiBuilder::joinLists(vector<PGuiElem>&& v1, vector<PGuiElem>&&
 
 PGuiElem GuiBuilder::drawMinionPage(const GameInfo::PlayerInfo& minion, MinionMenuCallback callback) {
   vector<PGuiElem> lines;
-  lines.push_back(gui.label(minion.title));
+  lines.push_back(gui.label(minion.getTitle()));
   lines.push_back(gui.horizontalList(drawMinionActions(minion, callback), 140));
   vector<PGuiElem> leftLines;
   leftLines.push_back(gui.label("Attributes", colors[ColorId::YELLOW]));
   for (auto& elem : drawAttributesOnPage(drawPlayerAttributes(minion.attributes)))
     leftLines.push_back(std::move(elem));
-  for (auto& effect : minion.effects)
-    leftLines.push_back(gui.label(effect.name, colors[effect.bad ? ColorId::RED : ColorId::WHITE]));
+  for (auto& elem : drawEffectsList(minion))
+    leftLines.push_back(std::move(elem));
   leftLines.push_back(gui.empty());
   leftLines.push_back(gui.label("Activity", colors[ColorId::YELLOW]));
   leftLines.push_back(drawActivityButton(minion, callback));
@@ -1484,4 +1444,61 @@ PGuiElem GuiBuilder::drawMinionMenu(const vector<GameInfo::PlayerInfo>& minions,
             0, -15, 0, -15)), minionListWidth),
       gui.leftMargin(minionListWidth + 20, gui.stack(std::move(minionPages))));
 }
+
+Rectangle GuiBuilder::getTextInputPosition() {
+  Vec2 center = renderer.getSize() / 2;
+  return Rectangle(center - Vec2(300, 129), center + Vec2(300, 129));
+}
+
+PGuiElem GuiBuilder::getTextContent(const string& title, const string& value, const string& hint) {
+  vector<PGuiElem> lines = makeVec<PGuiElem>(
+      gui.variableLabel([&] { return title + ":  " + value + "_"; }));
+  if (!hint.empty())
+    lines.push_back(gui.label(hint, gui.inactiveText));
+  return gui.verticalList(std::move(lines), 40);
+}
+
+optional<string> GuiBuilder::getTextInput(const string& title, const string& value, int maxLength,
+    const string& hint) {
+  bool dismiss = false;
+  string text = value;
+  PGuiElem dismissBut = gui.margins(gui.stack(makeVec<PGuiElem>(
+        gui.button([&](){ dismiss = true; }),
+        gui.mouseHighlight2(gui.mainMenuHighlight()),
+        gui.centerHoriz(
+            gui.label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss")))), 0, 5, 0, 0);
+  PGuiElem stuff = gui.margins(getTextContent(title, text, hint), 30, 50, 0, 0);
+  stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
+    std::move(stuff), 30, gui.BOTTOM);
+  stuff = gui.window(std::move(stuff));
+  PGuiElem bg = gui.darken();
+  bg->setBounds(renderer.getSize());
+  while (1) {
+    callbacks.refreshScreen();
+    bg->render(renderer);
+    stuff->setBounds(getTextInputPosition());
+    stuff->render(renderer);
+    renderer.drawAndClearBuffer();
+    Event event;
+    while (renderer.pollEvent(event)) {
+      GuiElem::propagateEvent(event, {stuff.get()});
+      if (dismiss)
+        return none;
+      if (event.type == Event::TextEntered)
+        if ((isalnum(event.text.unicode) || event.text.unicode == ' ') && text.size() < maxLength)
+          text += event.text.unicode;
+      if (event.type == Event::KeyPressed)
+        switch (event.key.code) {
+          case Keyboard::BackSpace:
+              if (!text.empty())
+                text.pop_back();
+              break;
+          case Keyboard::Return: return text;
+          case Keyboard::Escape: return none;
+          default: break;
+        }
+    }
+  }
+}
+
 

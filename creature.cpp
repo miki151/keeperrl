@@ -2507,6 +2507,8 @@ vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
       if (!isAffectedPermanently(effect))
         ret.back().name += "  " + getRemainingString(effect);
     }
+  if (isUndead())
+    ret.push_back({"undead", "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
   return ret;
 }
 

@@ -80,9 +80,27 @@ GameInfo::CreatureInfo::CreatureInfo(const Creature* c)
       morale(c->getMorale()) {
 }
 
+string GameInfo::PlayerInfo::getFirstName() const {
+  if (!firstName.empty())
+    return firstName;
+  else
+    return capitalFirst(name);
+}
+
+string GameInfo::PlayerInfo::getTitle() const {
+  string title = name;
+  for (int i : All(adjectives)) {
+    title = adjectives[i] + " " + title;
+    break; // only use the first one
+  }
+  if (!firstName.empty())
+    title = firstName + " the " + title;
+  return capitalFirst(title);
+}
+
 void GameInfo::PlayerInfo::readFrom(const Creature* c) {
-  playerName = c->getFirstName().get_value_or(c->getName().bare());
-  title = capitalFirst(c->getName().bare());
+  firstName = c->getFirstName().get_value_or("");
+  name = c->getName().bare();
   adjectives = c->getMainAdjectives();
   Item* weapon = c->getWeapon();
   weaponName = weapon ? weapon->getName() : "";

@@ -818,6 +818,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         }
         c.name = name;
         c.speciesName = humanoid ? "legendary humanoid" : "legendary beast";
+        c.firstName = NameGenerator::get(NameGeneratorId::DEMON)->getNext();
         if (!(*c.humanoid) && Random.roll(10)) {
           c.uncorporal = true;
           c.bodyParts.clear();

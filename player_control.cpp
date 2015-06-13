@@ -439,6 +439,9 @@ void PlayerControl::minionView(Creature* creature) {
         case 2:
           controlSingle(c);
           return;
+        case 3:
+          c->setFirstName(boost::get<View::MinionAction::RenameAction>(actionInfo->action).newName);
+          break;
     }
   }
 }

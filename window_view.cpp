@@ -690,62 +690,12 @@ optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
   return chooseFromListInternal(title, options, index, type, scrollPos, exitAction, none, {});
 }
 
-Rectangle WindowView::getTextInputPosition() {
-  Vec2 center = renderer.getSize() / 2;
-  return Rectangle(center - Vec2(300, 129), center + Vec2(300, 129));
-}
-
-PGuiElem WindowView::getTextContent(const string& title, const string& value, const string& hint) {
-  vector<PGuiElem> lines = makeVec<PGuiElem>(
-      gui.variableLabel([&] { return title + ":  " + value + "_"; }));
-  if (!hint.empty())
-    lines.push_back(gui.label(hint, gui.inactiveText));
-  return gui.verticalList(std::move(lines), 40);
-}
-
 optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
   RenderLock lock(renderMutex);
   TempClockPause pause(clock);
   SyncQueue<optional<string>> returnQueue;
   addReturnDialog<optional<string>>(returnQueue, [=] ()-> optional<string> {
-  bool dismiss = false;
-  string text = value;
-  PGuiElem dismissBut = gui.margins(gui.stack(makeVec<PGuiElem>(
-        gui.button([&](){ dismiss = true; }),
-        gui.mouseHighlight2(gui.mainMenuHighlight()),
-        gui.centerHoriz(
-            gui.label("Dismiss", colors[ColorId::WHITE]), renderer.getTextLength("Dismiss")))), 0, 5, 0, 0);
-  PGuiElem stuff = gui.margins(getTextContent(title, text, hint), 30, 50, 0, 0);
-  stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
-    std::move(stuff), 30, gui.BOTTOM);
-  stuff = gui.window(std::move(stuff));
-  while (1) {
-    refreshScreen(false);
-    stuff->setBounds(getTextInputPosition());
-    stuff->render(renderer);
-    renderer.drawAndClearBuffer();
-    Event event;
-    while (renderer.pollEvent(event)) {
-      propagateEvent(event, {stuff.get()});
-      if (dismiss)
-        return none;
-      if (considerResizeEvent(event))
-        continue;
-      if (event.type == Event::TextEntered)
-        if ((isalnum(event.text.unicode) || event.text.unicode == ' ') && text.size() < maxLength)
-          text += event.text.unicode;
-      if (event.type == Event::KeyPressed)
-        switch (event.key.code) {
-          case Keyboard::BackSpace:
-              if (!text.empty())
-                text.pop_back();
-              break;
-          case Keyboard::Return: return text;
-          case Keyboard::Escape: return none;
-          default: break;
-        }
-    }
-  }
+    return guiBuilder.getTextInput(title, value, maxLength, hint);
   });
   lock.unlock();
   return returnQueue.pop();
