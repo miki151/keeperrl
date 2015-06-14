@@ -224,7 +224,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   mutable unique_ptr<map<UniqueEntity<Level>::Id, MapMemory>> SERIAL(memory);
   optional<TeamId> getCurrentTeam() const;
   void setCurrentTeam(optional<TeamId>);
-  optional<TeamId> SERIAL(currentTeam);
+  optional<TeamId> currentTeam;
   Model* SERIAL(model);
   bool SERIAL(showWelcomeMsg) = true;
   struct SelectionInfo {

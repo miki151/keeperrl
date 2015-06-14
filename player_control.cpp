@@ -42,7 +42,6 @@ template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl)
     & SVAR(memory)
-    & SVAR(currentTeam)
     & SVAR(model)
     & SVAR(showWelcomeMsg)
     & SVAR(lastControlKeeperQuestion)
@@ -1141,11 +1140,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
 
         }
         break;
+    case UserInputId::CONFIRM_TEAM:
+        setCurrentTeam(none);
+        break;
     case UserInputId::EDIT_TEAM:
-        if (getCurrentTeam() == input.get<TeamId>())
-          setCurrentTeam(none);
-        else
-          setCurrentTeam(input.get<TeamId>());
+        setCurrentTeam(input.get<TeamId>());
         newTeam = false;
         break;
     case UserInputId::CREATE_TEAM:

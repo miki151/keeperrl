@@ -68,6 +68,8 @@ void GuiBuilder::setTilesOk(bool ok) {
 
 void GuiBuilder::setCollectiveTab(CollectiveTab t) {
   collectiveTab = t;
+  if (t != CollectiveTab::MINIONS)
+    callbacks.inputCallback(UserInputId::CONFIRM_TEAM);
 }
 
 GuiBuilder::CollectiveTab GuiBuilder::getCollectiveTab() const {
@@ -851,7 +853,8 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
     const int numPerLine = 8;
     vector<PGuiElem> currentLine = makeVec<PGuiElem>(
         gui.stack(
-          gui.button(getButtonCallback({UserInputId::EDIT_TEAM, teamId})),
+          gui.button(getButtonCallback(info.currentTeam == teamId ? UserInput(UserInputId::CONFIRM_TEAM)
+              : UserInput(UserInputId::EDIT_TEAM, teamId))),
           info.currentTeam == teamId 
               ? gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk)
               : gui.viewObject(ViewId::TEAM_BUTTON, tilesOk),
@@ -973,7 +976,8 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo
           gui.button(getButtonCallback(UserInput(UserInputId::CREATURE_BUTTON, c.uniqueId))),
           gui.horizontalList(std::move(line), 40)));
   }
-  ret.push_back({gui.verticalList(std::move(lines), legendLineHeight),
+  ret.push_back({gui.stack(gui.keyHandler([=] { chosenCreature = ""; }, {{Keyboard::Escape}}, true),
+      gui.verticalList(std::move(lines), legendLineHeight)),
       Vec2(minionWindowWidth, (chosen.size() + 2) * legendLineHeight),
       OverlayInfo::TOP_RIGHT});
 }
@@ -992,7 +996,8 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandIn
         gui.centeredLabel("[close]", colors[ColorId::LIGHT_BLUE]),
         gui.button([=] { hideBuildingOverlay = true;})));
   int height = lines.size() * legendLineHeight - 8;
-  ret.push_back({gui.verticalList(std::move(lines), legendLineHeight),
+  ret.push_back({gui.stack(gui.keyHandler([=] { hideBuildingOverlay = true; }, {{Keyboard::Escape}}, true),
+      gui.verticalList(std::move(lines), legendLineHeight)),
       Vec2(minionWindowWidth, height),
       OverlayInfo::TOP_RIGHT});
 }

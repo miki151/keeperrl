@@ -39,6 +39,7 @@ enum class UserInputId {
     CREATURE_BUTTON,
     CREATE_TEAM,
     EDIT_TEAM,
+    CONFIRM_TEAM,
     CANCEL_TEAM,
     COMMAND_TEAM,
     SET_TEAM_LEADER,
