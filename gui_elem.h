@@ -27,7 +27,8 @@ class GuiElem {
   virtual void render(Renderer&) {}
   virtual bool onLeftClick(Vec2) { return false; }
   virtual bool onRightClick(Vec2) { return false; }
-  virtual void onMouseMove(Vec2) {}
+  virtual bool onMouseMove(Vec2) { return false;}
+  virtual void onMouseGone() {}
   virtual void onMouseRelease() {}
   virtual void onRefreshBounds() {}
   virtual bool onKeyPressed(char) { return false;}
@@ -115,6 +116,7 @@ class GuiFactory {
   PGuiElem sprite(Texture&, double scale);
   PGuiElem tooltip(const vector<string>&);
   PGuiElem darken();
+  PGuiElem stopMouseMovement();
 
   enum class TexId {
     SCROLLBAR,

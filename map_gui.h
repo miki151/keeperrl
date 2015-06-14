@@ -44,7 +44,8 @@ class MapGui : public GuiElem {
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
   virtual bool onRightClick(Vec2) override;
-  virtual void onMouseMove(Vec2) override;
+  virtual bool onMouseMove(Vec2) override;
+  virtual void onMouseGone() override;
   virtual void onMouseRelease() override;
   virtual bool onKeyPressed2(Event::KeyEvent) override;
 
@@ -68,6 +69,7 @@ class MapGui : public GuiElem {
   void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
   void renderExtraBorders(Renderer&, int currentTimeReal);
   void renderHighlights(Renderer&, Vec2 size, int currentTimeReal);
+  optional<Vec2> getMousePos();
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;
@@ -101,6 +103,7 @@ class MapGui : public GuiElem {
     double y;
   } mouseOffset, center;
   Vec2 lastMousePos;
+  optional<Vec2> lastMouseMove;
   bool isScrollingNow = false;
   double currentTimeGame = 0;
   struct ScreenMovement {

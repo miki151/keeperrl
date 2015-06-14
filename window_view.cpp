@@ -976,8 +976,6 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
         return none;
       if (considerResizeEvent(event))
         continue;
-      if (event.type == Event::MouseWheelMoved)
-          *scrollPos = min<double>(options.size() - 1, max<double>(0, *scrollPos - event.mouseWheel.delta));
       if (event.type == Event::KeyPressed)
         switch (event.key.code) {
           case Keyboard::Numpad8:

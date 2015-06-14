@@ -76,12 +76,18 @@ void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
   animations.push_back({std::move(animation), pos});
 }
 
+optional<Vec2> MapGui::getMousePos() {
+  if (lastMouseMove && lastMouseMove->inRectangle(getBounds()))
+    return lastMouseMove;
+  else
+    return none;
+}
 
 optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
-  Vec2 pos = renderer.getMousePos();
-  if (!pos.inRectangle(getBounds()))
+  if (auto pos = getMousePos())
+    return layout->projectOnMap(getBounds(), getScreenPos(), *pos);
+  else
     return none;
-  return layout->projectOnMap(getBounds(), getScreenPos(), pos);
 }
 
 Color getHighlightColor(HighlightType type, double amount) {
@@ -219,7 +225,12 @@ bool MapGui::onRightClick(Vec2 pos) {
   return false;
 }
 
-void MapGui::onMouseMove(Vec2 v) {
+void MapGui::onMouseGone() {
+  lastMouseMove = none;
+}
+
+bool MapGui::onMouseMove(Vec2 v) {
+  lastMouseMove = v;
   Vec2 pos = layout->projectOnMap(getBounds(), getScreenPos(), v);
   if (v.inRectangle(getBounds()) && mouseHeldPos && *mouseHeldPos != pos) {
     callbacks.leftClickFun(pos);
@@ -234,6 +245,7 @@ void MapGui::onMouseMove(Vec2 v) {
     mouseOffset.y = max(mouseOffset.y, center.y - levelBounds.getKY());
     callbacks.refreshFun();
   }
+  return false;
 }
 
 void MapGui::onMouseRelease() {
@@ -586,25 +598,26 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size
   HighlightedInfo ret {};
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
-  if (renderer.getMousePos().inRectangle(getBounds()) && mouseUI) {
-    ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), renderer.getMousePos());
-    if (ret.tilePos->inRectangle(objects.getBounds()))
-      for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
-          .intersection(objects.getBounds())) {
-        Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
-        if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::CREATURE)) {
-          const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
-          Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal);
-          if (renderer.getMousePos().inRectangle(Rectangle(pos + movement, pos + movement + size))) {
-            ret.tilePos = none;
-            ret.object = object;
-            ret.creaturePos = pos + movement;
-            ret.isEnemy = enemyPositions.getValue(wpos);
-            break;
+  if (auto mousePos = getMousePos())
+    if (mouseUI) {
+      ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), *mousePos);
+      if (ret.tilePos->inRectangle(objects.getBounds()))
+        for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
+            .intersection(objects.getBounds())) {
+          Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
+          if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::CREATURE)) {
+            const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
+            Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal);
+            if (mousePos->inRectangle(Rectangle(pos + movement, pos + movement + size))) {
+              ret.tilePos = none;
+              ret.object = object;
+              ret.creaturePos = pos + movement;
+              ret.isEnemy = enemyPositions.getValue(wpos);
+              break;
+            }
           }
         }
-      }
-  }
+    }
   return ret;
 }
 

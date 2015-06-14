@@ -592,7 +592,6 @@ Rectangle::Iter Rectangle::end() const {
 }
 
 Range::Range(int a, int b) : start(a), finish(b) {
-  CHECK(a <= b);
 }
 Range::Range(int a) : Range(0, a) {}
 
@@ -612,7 +611,7 @@ Range::Iter Range::end() {
   return Iter(finish, start, finish);
 }
 
-Range::Iter::Iter(int i, int a, int b) : ind(i), min(a), max(b) {}
+Range::Iter::Iter(int i, int a, int b) : ind(i), min(a), max(b), increment(a < b ? 1 : -1) {}
 
 int Range::Iter::operator* () const {
   return ind;
@@ -623,7 +622,8 @@ bool Range::Iter::operator != (const Iter& other) const {
 }
 
 const Range::Iter& Range::Iter::operator++ () {
-  CHECK(++ind <= max);
+  ind += increment;
+  //CHECK(ind <= max && ind >= min) << ind << " " << min << " " << max;
   return *this;
 }
 

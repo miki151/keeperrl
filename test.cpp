@@ -164,6 +164,30 @@ void testRange() {
   CHECKEQ(a, b);
 }
 
+void testRange2() {
+  vector<int> a;
+  const vector<int> b {6,5,4,3,2,1,0};
+  for (int x : Range(6, -1))
+    a.push_back(x);
+  CHECKEQ(a, b);
+  a.clear();
+  for (int x : Range(4, 0))
+    a.push_back(x);
+  CHECKEQ(getSubsequence(b, 2, 4), a);
+  a.clear();
+  for (int x : All(b)) {
+    a.push_back(b[x]);
+  }
+  CHECKEQ(a, b);
+  a.clear();
+  for (int x : Range(4, 4))
+    a.push_back(x);
+  a.clear();
+  for (int x : Range(4, 3))
+    a.push_back(x);
+  CHECK(getOnlyElement(a) == 4);
+}
+
 void testContains() {
   CHECK(contains({0, 1, 2, 3}, 2));
   CHECK(!contains({0, 1, 2, 3}, 4));
@@ -458,6 +482,7 @@ int testAll() {
   testShortestPathReverse();
   testRandom();
   testRange();
+  testRange2();
   testContains();
   testPredicates();
   testOptional();

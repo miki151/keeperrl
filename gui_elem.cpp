@@ -153,6 +153,17 @@ PGuiElem GuiFactory::mouseWheel(function<void(bool)> fun) {
   return PGuiElem(new MouseWheel(fun));
 }
 
+class StopMouseMovement : public GuiElem {
+  public:
+  virtual bool onMouseMove(Vec2 pos) override {
+    return pos.inRectangle(getBounds());
+  }
+};
+
+PGuiElem GuiFactory::stopMouseMovement() {
+  return PGuiElem(new StopMouseMovement());
+}
+
 class DrawCustom : public GuiElem {
   public:
   DrawCustom(function<void(Renderer&, Rectangle)> fun) : drawFun(fun) {}
@@ -354,7 +365,7 @@ class GuiLayout : public GuiElem {
   GuiLayout(vector<PGuiElem> e) : elems(std::move(e)) {}
 
   virtual bool onLeftClick(Vec2 pos) override {
-    for (int i : All(elems))
+    for (int i : AllReverse(elems))
       if (isVisible(i))
         if (elems[i]->onLeftClick(pos))
           return true;
@@ -362,21 +373,33 @@ class GuiLayout : public GuiElem {
   }
 
   virtual bool onRightClick(Vec2 pos) override {
-    for (int i : All(elems))
+    for (int i : AllReverse(elems))
       if (isVisible(i))
         if (elems[i]->onRightClick(pos))
           return true;
     return false;
   }
 
-  virtual void onMouseMove(Vec2 pos) override {
-    for (int i : All(elems))
-      if (isVisible(i))
-        elems[i]->onMouseMove(pos);
+  virtual bool onMouseMove(Vec2 pos) override {
+    bool gone = false;
+    for (int i : AllReverse(elems))
+      if (isVisible(i)) {
+        if (!gone) {
+          if (elems[i]->onMouseMove(pos))
+            gone = true;
+        } else
+          elems[i]->onMouseGone();
+      }
+    return false;
+  }
+
+  virtual void onMouseGone() override {
+    for (int i : AllReverse(elems))
+      elems[i]->onMouseGone();
   }
 
   virtual void onMouseRelease() override {
-    for (int i : All(elems))
+    for (int i : AllReverse(elems))
       if (isVisible(i))
         elems[i]->onMouseRelease();
   }
@@ -393,21 +416,21 @@ class GuiLayout : public GuiElem {
   }
 
   virtual bool onKeyPressed(char key) override {
-    for (int i : All(elems))
+    for (int i : AllReverse(elems))
       if (elems[i]->onKeyPressed(key))
         return true;
     return false;
   }
 
   virtual bool onKeyPressed2(Event::KeyEvent key) override {
-    for (int i : All(elems))
+    for (int i : AllReverse(elems))
       if (elems[i]->onKeyPressed2(key))
         return true;
     return false;
   }
 
   virtual bool onMouseWheel(Vec2 v, bool up) override {
-    for (int i : All(elems))
+    for (int i : AllReverse(elems))
       if (isVisible(i))
         if (elems[i]->onMouseWheel(v, up))
           return true;
@@ -926,7 +949,7 @@ class MouseOverAction : public GuiElem {
   public:
   MouseOverAction(function<void()> f, function<void()> f2) : callback(f), outCallback(f2) {}
 
-  virtual void onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos) override {
     if (pos.inRectangle(getBounds())) {
       callback();
       in = true;
@@ -934,6 +957,7 @@ class MouseOverAction : public GuiElem {
       in = false;
       outCallback();
     }
+    return false;
   }
 
   private:
@@ -951,11 +975,12 @@ class MouseHighlight : public GuiLayout {
   MouseHighlight(PGuiElem h, int ind, int* highlight)
     : GuiLayout(makeVec<PGuiElem>(std::move(h))), myIndex(ind), highlighted(highlight) {}
 
-  virtual void onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos) override {
     if (pos.inRectangle(getBounds()))
       *highlighted = myIndex;
     else if (*highlighted == myIndex)
       *highlighted = -1;
+    return false;
   }
 
   virtual void render(Renderer& r) override {
@@ -988,11 +1013,12 @@ class MouseHighlightGameChoice : public GuiLayout {
   MouseHighlightGameChoice(PGuiElem h, View::GameTypeChoice my, optional<View::GameTypeChoice>& highlight)
     : GuiLayout(makeVec<PGuiElem>(std::move(h))), myChoice(my), highlighted(highlight) {}
 
-  virtual void onMouseMove(Vec2 pos) override {
+  virtual bool onMouseMove(Vec2 pos) override {
     if (pos.inRectangle(getBounds()))
       highlighted = myChoice;
     else if (highlighted == myChoice)
       highlighted = none;
+    return false;
   }
 
   virtual void render(Renderer& r) override {
@@ -1026,8 +1052,17 @@ class Tooltip : public GuiElem {
       lastTimeOut(c->getRealMillis()), clock(c) {
   }
 
+  virtual bool onMouseMove(Vec2 pos) override {
+    canRender = pos.inRectangle(getBounds());
+    return false;
+  }
+
+  virtual void onMouseGone() override {
+    canRender = false;
+  }
+
   virtual void render(Renderer& r) override {
-    if (r.getMousePos().inRectangle(getBounds())) {
+    if (canRender) {
       if (clock->getRealMillis() > lastTimeOut + tooltipDelay) {
         Vec2 size(0, text.size() * tooltipLineHeight + 2 * tooltipVMargin);
         for (const string& t : text)
@@ -1048,6 +1083,7 @@ class Tooltip : public GuiElem {
   }
 
   private:
+  bool canRender = false;
   vector<string> text;
   PGuiElem background;
   int lastTimeOut;
@@ -1131,9 +1167,10 @@ class ScrollBar : public GuiLayout {
     return false;
   }
 
-  virtual void onMouseMove(Vec2 v) override {
+  virtual bool onMouseMove(Vec2 v) override {
     if (*held != notHeld)
       *scrollPos = scrollLength() * calcPos(v.y - *held);
+    return false;
   }
 
   virtual void onMouseRelease() override {
@@ -1204,9 +1241,9 @@ class Scrollable : public GuiElem {
     return false;
   }
 
-  virtual void onMouseMove(Vec2 v) override {
+  virtual bool onMouseMove(Vec2 v) override {
 //    if (v.inRectangle(getBounds()))
-      content->onMouseMove(v);
+    return content->onMouseMove(v);
   }
 
   virtual void onMouseRelease() override {
@@ -1442,6 +1479,7 @@ PGuiElem GuiFactory::border(PGuiElem content) {
 
 PGuiElem GuiFactory::miniWindow(PGuiElem content) {
   return miniBorder(stack(makeVec<PGuiElem>(
+        stopMouseMovement(),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         std::move(content))));
@@ -1449,6 +1487,7 @@ PGuiElem GuiFactory::miniWindow(PGuiElem content) {
 
 PGuiElem GuiFactory::window(PGuiElem content) {
   return border(stack(makeVec<PGuiElem>(
+        stopMouseMovement(),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         margins(std::move(content), 20, 35, 30, 30))));
@@ -1510,10 +1549,14 @@ void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       for (GuiElem* elem : guiElems)
         elem->onMouseRelease();
       break;
-    case Event::MouseMoved:
+    case Event::MouseMoved: {
+      bool captured = false;
       for (GuiElem* elem : guiElems)
-        elem->onMouseMove(Vec2(event.mouseMove.x, event.mouseMove.y));
-      break;
+        if (!captured)
+          captured |= elem->onMouseMove(Vec2(event.mouseMove.x, event.mouseMove.y));
+        else
+          elem->onMouseGone();
+      break;}
     case Event::MouseButtonPressed: {
       Vec2 clickPos(event.mouseButton.x, event.mouseButton.y);
       for (GuiElem* elem : guiElems) {
@@ -1527,6 +1570,8 @@ void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       }
       break;
     case Event::KeyPressed:
+      for (GuiElem* elem : guiElems)
+        elem->onMouseGone();
       for (GuiElem* elem : guiElems)
         if (elem->onKeyPressed2(event.key))
           break;

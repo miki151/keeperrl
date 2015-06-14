@@ -256,6 +256,7 @@ class Range {
     int ind;
     int min;
     int max;
+    int increment;
   };
 
   Iter begin();
@@ -271,6 +272,11 @@ class Range {
 template <class T>
 Range All(const T& container) {
   return Range(container.size());
+}
+
+template <class T>
+Range AllReverse(const T& container) {
+  return Range(container.size() - 1, -1);
 }
 
 extern const vector<Vec2> neighbors;
