@@ -827,8 +827,20 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
     Color col = elem.first == chosenCreature ? colors[ColorId::GREEN] : colors[ColorId::WHITE];
     line.push_back(gui.label(toString(elem.second.count) + "   " + elem.first, col));
     widths.push_back(200);
-    list.push_back(gui.margins(gui.stack(
-            gui.button(getButtonCallback({UserInputId::CREATURE_BUTTON, elem.second.any.uniqueId})),
+    function<void()> action;
+    if (info.currentTeam) {
+      if (chosenCreature == elem.first)
+        action = [this] () {
+          chosenCreature = "";
+        };
+      else
+        action = [this, elem] () {
+          chosenCreature = elem.first;
+          showTasks = false;
+        };
+    } else
+      action = getButtonCallback({UserInputId::CREATURE_BUTTON, elem.second.any.uniqueId});
+    list.push_back(gui.margins(gui.stack(gui.button(action),
             gui.horizontalList(std::move(line), widths)), 20, 0, 0, 0));
   }
   list.push_back(gui.label("Teams: ", colors[ColorId::WHITE]));
@@ -941,15 +953,14 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo
     drawTasksOverlay(ret, info);
     return;
   }
-  if (chosenCreature == "")
+  if (chosenCreature == "" || !info.currentTeam)
     return;
   vector<PGuiElem> lines;
   vector<CreatureInfo> chosen;
   for (auto& c : info.minions)
     if (c.speciesName == chosenCreature)
       chosen.push_back(c);
-  lines.push_back(gui.label(info.currentTeam ? "Click to add to team:" : "Click to control:",
-        colors[ColorId::LIGHT_BLUE]));
+  lines.push_back(gui.label("Click to add to team:", colors[ColorId::LIGHT_BLUE]));
   for (auto& c : chosen) {
     string text = "L: " + toString(c.expLevel) + "    " + info.tasks[c.uniqueId];
     if (c.speciesName != c.name)
