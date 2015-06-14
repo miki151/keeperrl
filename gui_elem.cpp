@@ -390,7 +390,7 @@ class GuiLayout : public GuiElem {
         } else
           elems[i]->onMouseGone();
       }
-    return false;
+    return gone;
   }
 
   virtual void onMouseGone() override {

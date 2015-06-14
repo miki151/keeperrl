@@ -488,6 +488,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::FIZZY_POTION, sprite(9, 0, 3));
     Tile::addTile(ViewId::MILKY_POTION, sprite(11, 0, 3));
     Tile::addTile(ViewId::MUSHROOM, sprite(5, 4, 3));
+    Tile::addTile(ViewId::KEY, sprite(5, 6, 3));
     Tile::addTile(ViewId::FOUNTAIN, sprite(0, 7, 2).setNoShadow());
     Tile::addTile(ViewId::GOLD, sprite(8, 3, 3).setNoShadow());
     Tile::addTile(ViewId::TREASURE_CHEST, sprite("treasurydeco").setNoShadow().addBackground(byName("treasury")));
@@ -761,6 +762,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::FIZZY_POTION, symbol("!", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::MILKY_POTION, symbol("!", ColorId::WHITE));
     Tile::addSymbol(ViewId::MUSHROOM, symbol(0x22c6, ColorId::PINK, true));
+    Tile::addSymbol(ViewId::KEY, symbol("*", ColorId::YELLOW));
     Tile::addSymbol(ViewId::FOUNTAIN, symbol("0", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::GOLD, symbol("$", ColorId::YELLOW));
     Tile::addSymbol(ViewId::TREASURE_CHEST, symbol("=", ColorId::BROWN));

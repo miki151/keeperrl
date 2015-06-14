@@ -395,6 +395,14 @@ void PlayerControl::minionEquipmentAction(Creature* creature, const View::Minion
         addEquipment(creature, *action.slot);
       else
         addConsumableItem(creature);
+    case GameInfo::ItemInfo::Action::LOCK:
+      for (auto id : action.ids)
+        getCollective()->getMinionEquipment().setLocked(creature, id, true);
+      break;
+    case GameInfo::ItemInfo::Action::UNLOCK:
+      for (auto id : action.ids)
+        getCollective()->getMinionEquipment().setLocked(creature, id, false);
+      break;
     default: 
       break;
   }
@@ -464,7 +472,7 @@ void PlayerControl::minionView(Creature* creature) {
   }
 }
 
-static GameInfo::ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending) {
+static GameInfo::ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked) {
   return CONSTRUCT(GameInfo::ItemInfo,
     c.name = stack[0]->getShortName(true);
     c.fullName = stack[0]->getNameAndModifiers(false);
@@ -476,6 +484,7 @@ static GameInfo::ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, 
     c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
     c.actions = {GameInfo::ItemInfo::DROP};
     c.equiped = equiped;
+    c.locked = locked;
     c.pending = pending;);
 }
 
@@ -525,13 +534,16 @@ void PlayerControl::fillEquipment(Creature* creature, GameInfo::PlayerInfo& info
     for (int i = creature->getEquipment().getMaxItems(slot); i < items.size(); ++i)
       // a rare occurence that minion owns too many items of the same slot,
       //should happen only when an item leaves the fortress and then is braught back
-      getCollective()->getMinionEquipment().discard(items[i]);
+      if (!getCollective()->getMinionEquipment().isLocked(creature, items[i]->getUniqueId()))
+        getCollective()->getMinionEquipment().discard(items[i]);
     append(slotItems, items);
     append(slotIndex, vector<EquipmentSlot>(items.size(), slot));
     for (Item* item : items) {
       removeElement(ownedItems, item);
       bool equiped = creature->getEquipment().isEquiped(item);
-      info.inventory.push_back(getItemInfo({item}, equiped, !equiped));
+      bool locked = getCollective()->getMinionEquipment().isLocked(creature, item->getUniqueId());
+      info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked));
+      info.inventory.back().actions.push_back(locked ? GameInfo::ItemInfo::UNLOCK : GameInfo::ItemInfo::LOCK);
     }
     if (creature->getEquipment().getMaxItems(slot) > items.size()) {
       info.inventory.push_back(getEmptySlotItem(slot));
@@ -543,7 +555,7 @@ void PlayerControl::fillEquipment(Creature* creature, GameInfo::PlayerInfo& info
       [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
   for (auto elem : consumables)
     info.inventory.push_back(getItemInfo(elem.second, false,
-          !creature->getEquipment().hasItem(elem.second.at(0))));
+          !creature->getEquipment().hasItem(elem.second.at(0)), false));
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
@@ -568,9 +580,9 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   vector<Item*> allStacked;
   vector<GameInfo::ItemInfo> options;
   for (Item* it : currentItems)
-    options.push_back(getItemInfo({it}, true, false));
+    options.push_back(getItemInfo({it}, true, false, false));
   for (auto elem : concat(Item::stackItems(availableItems), usedStacks)) {
-    options.emplace_back(getItemInfo(elem.second, false, false));
+    options.emplace_back(getItemInfo(elem.second, false, false, false));
     if (const Creature* c = getCollective()->getMinionEquipment().getOwner(elem.second.at(0)))
       options.back().owner = GameInfo::CreatureInfo(c);
     allStacked.push_back(elem.second.front());

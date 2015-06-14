@@ -723,8 +723,10 @@ optional<View::MinionAction> WindowView::getMinionAction(const vector<GameInfo::
       Event event;
       while (renderer.pollEvent(event)) {
         propagateEvent(event, {menu});
-        if (ret)
+        if (ret) {
+          tempGuiElems.pop_back();
           return *ret;
+        }
         if (considerResizeEvent(event))
           continue;
       }
@@ -766,7 +768,7 @@ optional<int> WindowView::chooseItem(const vector<GameInfo::PlayerInfo>& minions
       renderer.drawAndClearBuffer();
       Event event;
       while (renderer.pollEvent(event)) {
-        propagateEvent(event, {menu.get()});
+        propagateEvent(event, {menu.get(), bg1.get()});
         if (retVal)
           return *retVal;
         if (considerResizeEvent(event))

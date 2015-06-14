@@ -363,7 +363,7 @@ class Collective : public Task::Callback {
   MoveInfo getWorkerMove(Creature*);
   MoveInfo getTeamMemberMove(Creature*);
   void autoEquipment(Creature* creature, bool replace);
-  Item* getWorstItem(vector<Item*> items) const;
+  Item* getWorstItem(const Creature*, vector<Item*> items) const;
   int getTaskDuration(const Creature*, MinionTask) const;
   map<UniqueEntity<Creature>::Id, string> SERIAL(minionTaskStrings);
   double getStanding(EpithetId id) const;

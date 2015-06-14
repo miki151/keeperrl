@@ -468,12 +468,20 @@ vector<string> GuiBuilder::getItemHint(const GameInfo::ItemInfo& item) {
     out.push_back("Equipped.");
   if (item.pending)
     out.push_back("Not equipped yet.");
+  if (item.locked)
+    out.push_back("Locked: minion won't change to another item.");
   return out;
 }
 
 PGuiElem GuiBuilder::getItemLine(const GameInfo::ItemInfo& item, function<void(Rectangle)> onClick) {
   vector<PGuiElem> line;
   vector<int> widths;
+  int leftMargin = -4;
+  if (item.locked) {
+    line.push_back(gui.viewObject(ViewId::KEY, tilesOk));
+    widths.push_back(viewObjectWidth);
+    leftMargin -= viewObjectWidth - 3;
+  }
   line.push_back(gui.viewObject(item.viewId, tilesOk));
   widths.push_back(viewObjectWidth);
   Color color = colors[item.equiped ? ColorId::GREEN : item.pending ? ColorId::GRAY : ColorId::WHITE];
@@ -491,7 +499,7 @@ PGuiElem GuiBuilder::getItemLine(const GameInfo::ItemInfo& item, function<void(R
   }
   return gui.margins(gui.stack(gui.horizontalList(std::move(line), widths, item.owner ? 2 : 0),
       getTooltip(getItemHint(item)),
-      gui.button(onClick)), -4, 0, 0, 0);
+      gui.button(onClick)), leftMargin, 0, 0, 0);
 }
 
 PGuiElem GuiBuilder::getTooltip(const vector<string>& text) {

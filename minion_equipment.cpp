@@ -34,7 +34,7 @@ static vector<EffectType> combatConsumables {
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(owners);
+  ar & SVAR(owners) & SVAR(locked);
 }
 
 SERIALIZABLE(MinionEquipment);
@@ -115,5 +115,16 @@ bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) const
 int MinionEquipment::getItemValue(const Item* it) {
   return it->getModifier(ModifierType::ACCURACY) + it->getModifier(ModifierType::DAMAGE)
     + it->getModifier(ModifierType::DEFENSE);
+}
+
+void MinionEquipment::setLocked(const Creature* c, UniqueEntity<Item>::Id it, bool lock) {
+  if (lock)
+    locked.insert(make_pair(c->getUniqueId(), it));
+  else
+    locked.erase(make_pair(c->getUniqueId(), it));
+}
+
+bool MinionEquipment::isLocked(const Creature* c, UniqueEntity<Item>::Id it) const {
+  return locked.count(make_pair(c->getUniqueId(), it));
 }
 

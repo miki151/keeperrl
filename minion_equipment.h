@@ -38,6 +38,9 @@ class MinionEquipment {
 
   static int getItemValue(const Item*);
 
+  void setLocked(const Creature*, UniqueEntity<Item>::Id, bool locked);
+  bool isLocked(const Creature*, UniqueEntity<Item>::Id) const;
+
   private:
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
 
@@ -46,6 +49,7 @@ class MinionEquipment {
   bool isItemAppropriate(const Creature*, const Item*) const;
 
   map<UniqueEntity<Item>::Id, const Creature*> SERIAL(owners);
+  set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>> SERIAL(locked);
 };
 
 #endif

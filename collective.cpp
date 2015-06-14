@@ -1561,10 +1561,11 @@ bool Collective::usesEquipment(const Creature* c) const {
     && !hasTrait(c, MinionTrait::PRISONER);
 }
 
-Item* Collective::getWorstItem(vector<Item*> items) const {
+Item* Collective::getWorstItem(const Creature* c, vector<Item*> items) const {
   Item* ret = nullptr;
   for (Item* it : items)
-    if (ret == nullptr || minionEquipment.getItemValue(it) < minionEquipment.getItemValue(ret))
+    if (!minionEquipment.isLocked(c, it->getUniqueId()) &&
+        (ret == nullptr || minionEquipment.getItemValue(it) < minionEquipment.getItemValue(ret)))
       ret = it;
   return ret;
 }
@@ -1579,27 +1580,32 @@ void Collective::autoEquipment(Creature* creature, bool replace) {
       slots[slot].push_back(it);
     } else  // a rare occurence that minion owns too many items of the same slot,
           //should happen only when an item leaves the fortress and then is braught back
-      minionEquipment.discard(it);
+      if (!minionEquipment.isLocked(creature, it->getUniqueId()))
+        minionEquipment.discard(it);
   }
   vector<Item*> possibleItems = filter(getAllItems(ItemIndex::MINION_EQUIPMENT, false), [&](const Item* it) {
       return minionEquipment.needs(creature, it, false, replace) && !minionEquipment.getOwner(it); });
   sortByEquipmentValue(possibleItems);
   for (Item* it : possibleItems) {
-    if (!it->canEquip()
-        || slots[it->getEquipmentSlot()].size() < creature->getEquipment().getMaxItems(it->getEquipmentSlot())
-        || minionEquipment.getItemValue(getWorstItem(slots[it->getEquipmentSlot()]))
-            < minionEquipment.getItemValue(it)) {
+    if (!it->canEquip()) {
       minionEquipment.own(creature, it);
-      if (it->canEquip()
-        && slots[it->getEquipmentSlot()].size() == creature->getEquipment().getMaxItems(it->getEquipmentSlot())) {
-        Item* removed = getWorstItem(slots[it->getEquipmentSlot()]);
-        minionEquipment.discard(removed);
-        removeElement(slots[it->getEquipmentSlot()], removed); 
-      }
-      if (it->canEquip())
-        slots[it->getEquipmentSlot()].push_back(it);
       if (it->getClass() != ItemClass::AMMO)
         break;
+      else
+        continue;  
+    }
+    Item* replacedItem = getWorstItem(creature, slots[it->getEquipmentSlot()]);
+    int slotSize = creature->getEquipment().getMaxItems(it->getEquipmentSlot());
+    int numInSlot = slots[it->getEquipmentSlot()].size();
+    if (numInSlot < slotSize ||
+        (replacedItem && minionEquipment.getItemValue(replacedItem) < minionEquipment.getItemValue(it))) {
+      if (numInSlot == slotSize) {
+        minionEquipment.discard(replacedItem);
+        removeElement(slots[it->getEquipmentSlot()], replacedItem); 
+      }
+      minionEquipment.own(creature, it);
+      slots[it->getEquipmentSlot()].push_back(it);
+      break;
     }
   }
 }
