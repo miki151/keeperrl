@@ -67,6 +67,7 @@ static vector<EnemyInfo> getVaults(Tribe::Set& tribeSet) {
             c.minTeamSize = 1;
             c.leaderAttacks = true;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 22}, AttackTriggerId::STOLEN_ITEMS);
+            c.prerequisites = LIST(AttackPrerequisite::THRONE);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;
             c.attackMessage = VillageControl::CREATURE_TITLE;)}),
@@ -77,6 +78,7 @@ static vector<EnemyInfo> getVaults(Tribe::Set& tribeSet) {
             c.minTeamSize = 1;
             c.leaderAttacks = true;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 30}, AttackTriggerId::STOLEN_ITEMS);
+            c.prerequisites = LIST(AttackPrerequisite::THRONE);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 12);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;
             c.attackMessage = VillageControl::CREATURE_TITLE;)}),
@@ -86,7 +88,7 @@ static vector<EnemyInfo> getVaults(Tribe::Set& tribeSet) {
             c.minPopulation = 0;
             c.minTeamSize = 1;
             c.leaderAttacks = true;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 15});
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 14});
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 4);
             c.attackMessage = VillageControl::CREATURE_TITLE;)}),
     getVault(SettlementType::VAULT, CreatureFactory::insects(tribeSet.monster.get()),
@@ -150,7 +152,9 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
        {CONSTRUCT(VillainInfo,
           c.minPopulation = 6;
           c.minTeamSize = 5;
-          c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS}, AttackTriggerId::STOLEN_ITEMS);
+          c.triggers = LIST(
+            {AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS}, AttackTriggerId::STOLEN_ITEMS);
+          c.prerequisites = LIST(AttackPrerequisite::THRONE);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
@@ -173,6 +177,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
               AttackTriggerId::STOLEN_ITEMS);
+          c.prerequisites = LIST(AttackPrerequisite::THRONE);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
@@ -194,6 +199,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
           c.minPopulation = 4;
           c.minTeamSize = 4;
           c.triggers = LIST(AttackTriggerId::STOLEN_ITEMS);
+          c.prerequisites = LIST(AttackPrerequisite::THRONE);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
@@ -216,6 +222,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
               AttackTriggerId::STOLEN_ITEMS);
+          c.prerequisites = LIST(AttackPrerequisite::THRONE);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 3);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
@@ -243,6 +250,7 @@ vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
           c.minTeamSize = 10;
           c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
               AttackTriggerId::STOLEN_ITEMS);
+          c.prerequisites = LIST(AttackPrerequisite::THRONE);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,

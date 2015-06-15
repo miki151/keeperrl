@@ -39,7 +39,7 @@ static ofstream output;
 
 void Debug::init() {
 #ifndef RELEASE
-  output.open("log.out");
+//  output.open("log.out");
 #endif
 }
 
@@ -52,8 +52,8 @@ Debug::~Debug() {
     fail();
   } else {
 #ifndef RELEASE
-    output << out << endl;
-    output.flush();
+//    output << out << endl;
+//    output.flush();
 #endif
   }
 }

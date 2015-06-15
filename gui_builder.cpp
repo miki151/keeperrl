@@ -393,8 +393,10 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
             getHotkey(speed))));
   }
   reverse(lines.begin(), lines.end());
-  Vec2 size(150, legendLineHeight * lines.size() - 10);
-  PGuiElem dialog = gui.verticalList(std::move(lines), legendLineHeight);
+  int margin = 20;
+  Vec2 size(150 + 2 * margin, legendLineHeight * lines.size() - 10 + 2 * margin);
+  PGuiElem dialog = gui.miniWindow(
+      gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin, margin, margin, margin));
   overlays.push_back({std::move(dialog), size,
       gameSpeedDialogOpen ? OverlayInfo::GAME_SPEED : OverlayInfo::INVISIBLE});
 }
@@ -537,10 +539,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
     }
   }
   int totalElems = info.lyingItems.size();
-  ret.push_back({gui.stack(makeVec<PGuiElem>(
-        gui.keyHandler([=] { if (!playerOverlayFocused) itemIndex = 0; },
-            {{Keyboard::Return}, {Keyboard::Numpad5}}),
-        gui.keyHandler([=] { itemIndex = -1; }, {{Keyboard::Escape}}),
+  PGuiElem content = gui.stack(makeVec<PGuiElem>(
         gui.focusable(gui.stack(
             gui.keyHandler([=] { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, itemIndex});
                 if (itemIndex >= totalElems - 1) --itemIndex; },
@@ -552,11 +551,19 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
                 lyingItemsScroll = getScrollPos(itemIndex, totalElems - 1); },
                 {{Keyboard::Up}, {Keyboard::Numpad8}}, true)),
               {{Keyboard::Return}, {Keyboard::Numpad5}}, {{Keyboard::Escape}}, playerOverlayFocused),
+        gui.keyHandler([=] { if (!playerOverlayFocused) itemIndex = 0; },
+            {{Keyboard::Return}, {Keyboard::Numpad5}}),
+        gui.keyHandler([=] { itemIndex = -1; }, {{Keyboard::Escape}}),
         gui.margin(
           gui.leftMargin(3, gui.label(title, colors[ColorId::YELLOW])),
           gui.scrollable(gui.verticalList(std::move(lines), legendLineHeight), &lyingItemsScroll),
-          legendLineHeight, GuiFactory::TOP))),
-      size, OverlayInfo::TOP_RIGHT});
+          legendLineHeight, GuiFactory::TOP)));
+  int margin = 14;
+  content = gui.stack(
+      gui.conditional(gui.miniWindow(), gui.translucentBackground(),
+        [=] (GuiElem*) { return playerOverlayFocused;}),
+      gui.margins(std::move(content), margin, margin, margin, margin));
+  ret.push_back({std::move(content), size + Vec2(margin, margin) * 2, OverlayInfo::TOP_RIGHT});
 }
 
 struct KeyInfo {
@@ -952,7 +959,7 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& 
             gui.label(elem.name, colors[elem.priority ? ColorId::GREEN : ColorId::WHITE])), 35));
   int lineHeight = 25;
   append(lines, std::move(freeLines));
-  ret.push_back({gui.verticalList(std::move(lines), lineHeight),
+  ret.push_back({gui.miniWindow(gui.verticalList(std::move(lines), lineHeight)),
       Vec2(taskMapWindowWidth, (info.taskMap.size() + 1) * lineHeight),
       OverlayInfo::TOP_RIGHT});
 }
@@ -984,9 +991,11 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo
           gui.button(getButtonCallback(UserInput(UserInputId::CREATURE_BUTTON, c.uniqueId))),
           gui.horizontalList(std::move(line), 40)));
   }
-  ret.push_back({gui.stack(gui.keyHandler([=] { chosenCreature = ""; }, {{Keyboard::Escape}}, true),
-      gui.verticalList(std::move(lines), legendLineHeight)),
-      Vec2(minionWindowWidth, (chosen.size() + 2) * legendLineHeight),
+  int margin = 20;
+  ret.push_back({gui.miniWindow(gui.stack(
+          gui.keyHandler([=] { chosenCreature = ""; }, {{Keyboard::Escape}}, true),
+          gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin, margin, margin, margin))),
+      Vec2(minionWindowWidth + 2 * margin, (chosen.size() + 2) * legendLineHeight + 2 * margin),
       OverlayInfo::TOP_RIGHT});
 }
 
@@ -1003,10 +1012,12 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandIn
   lines.push_back(gui.stack(
         gui.centeredLabel("[close]", colors[ColorId::LIGHT_BLUE]),
         gui.button([=] { hideBuildingOverlay = true;})));
+  int margin = 20;
   int height = lines.size() * legendLineHeight - 8;
-  ret.push_back({gui.stack(gui.keyHandler([=] { hideBuildingOverlay = true; }, {{Keyboard::Escape}}, true),
-      gui.verticalList(std::move(lines), legendLineHeight)),
-      Vec2(minionWindowWidth, height),
+  ret.push_back({gui.miniWindow(gui.stack(
+          gui.keyHandler([=] { hideBuildingOverlay = true; }, {{Keyboard::Escape}}, true),
+          gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin, margin, margin, margin))),
+      Vec2(minionWindowWidth + 2 * margin, height + 2 * margin),
       OverlayInfo::TOP_RIGHT});
 }
 
@@ -1091,7 +1102,9 @@ static void cutToFit(Renderer& renderer, string& s, int maxLength) {
 
 void GuiBuilder::drawMessages(vector<OverlayInfo>& ret,
     const vector<PlayerMessage>& messageBuffer, int maxMessageLength) {
-  vector<vector<PlayerMessage>> messages = fitMessages(renderer, messageBuffer, maxMessageLength,
+  int hMargin = 10;
+  int vMargin = 5;
+  vector<vector<PlayerMessage>> messages = fitMessages(renderer, messageBuffer, maxMessageLength - 2 * hMargin,
       getNumMessageLines());
   int lineHeight = 20;
   vector<PGuiElem> lines;
@@ -1100,7 +1113,7 @@ void GuiBuilder::drawMessages(vector<OverlayInfo>& ret,
     vector<int> lengths;
     for (auto& message : messages[i]) {
       string text = (line.empty() ? "" : " ") + message.getText();
-      cutToFit(renderer, text, maxMessageLength);
+      cutToFit(renderer, text, maxMessageLength - 2 * hMargin);
       line.push_back(gui.stack(
             gui.button(getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
             gui.label(text, getMessageColor(message))));
@@ -1114,7 +1127,8 @@ void GuiBuilder::drawMessages(vector<OverlayInfo>& ret,
       lines.push_back(gui.horizontalList(std::move(line), lengths));
   }
   if (!lines.empty())
-    ret.push_back({gui.verticalList(std::move(lines), lineHeight),
+    ret.push_back({gui.translucentBackground(
+        gui.margins(gui.verticalList(std::move(lines), lineHeight), hMargin, vMargin, hMargin, vMargin)),
         Vec2(maxMessageLength, lineHeight * messages.size() + 15), OverlayInfo::MESSAGES});
 }
 
@@ -1380,6 +1394,8 @@ vector<PGuiElem> GuiBuilder::drawAttributesOnPage(vector<PGuiElem>&& attrs) {
 
 vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const vector<GameInfo::ItemInfo>& items,
     MinionMenuCallback callback) {
+  if (items.empty())
+    return {};
   vector<PGuiElem> lines;
   vector<PGuiElem> itemElems = drawItemMenu(items,
       [=](Rectangle butBounds, optional<int> index) {

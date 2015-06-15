@@ -1093,7 +1093,7 @@ class Tooltip : public GuiElem {
 PGuiElem GuiFactory::tooltip(const vector<string>& v) {
   if (v.empty() || (v.size() == 1 && v[0].empty()))
     return empty();
-  return PGuiElem(new Tooltip(v, miniBorder(background(background1)), clock));
+  return PGuiElem(new Tooltip(v, stack(background(background1), miniBorder()), clock));
 }
 
 const static int notHeld = -1000;
@@ -1453,8 +1453,8 @@ PGuiElem GuiFactory::border2(PGuiElem content) {
         sprite(get(TexId::BORDER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT, false, false, Vec2(0, 0), alpha)));
 }
 
-PGuiElem GuiFactory::miniBorder(PGuiElem content) {
-  return stack(makeVec<PGuiElem>(std::move(content),
+PGuiElem GuiFactory::miniBorder() {
+  return stack(makeVec<PGuiElem>(
         sprite(get(TexId::HORI_BAR_MINI), Alignment::BOTTOM, true, false),
         sprite(get(TexId::HORI_BAR_MINI), Alignment::TOP, false, false),
         sprite(get(TexId::VERT_BAR_MINI), Alignment::RIGHT, false, true),
@@ -1478,11 +1478,20 @@ PGuiElem GuiFactory::border(PGuiElem content) {
 }
 
 PGuiElem GuiFactory::miniWindow(PGuiElem content) {
-  return miniBorder(stack(makeVec<PGuiElem>(
+  return stack(makeVec<PGuiElem>(
         stopMouseMovement(),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
-        std::move(content))));
+        miniBorder(),
+        std::move(content)));
+}
+
+PGuiElem GuiFactory::miniWindow() {
+  return stack(makeVec<PGuiElem>(
+        stopMouseMovement(),
+        rectangle(colors[ColorId::BLACK]),
+        background(background1),
+        miniBorder()));
 }
 
 PGuiElem GuiFactory::window(PGuiElem content) {
@@ -1518,6 +1527,10 @@ PGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight) {
 
 PGuiElem GuiFactory::translucentBackground(PGuiElem content) {
   return background(std::move(content), translucentBgColor);
+}
+
+PGuiElem GuiFactory::translucentBackground() {
+  return rectangle(translucentBgColor);
 }
 
 PGuiElem GuiFactory::background(PGuiElem content, Color color) {
@@ -1570,8 +1583,6 @@ void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       }
       break;
     case Event::KeyPressed:
-      for (GuiElem* elem : guiElems)
-        elem->onMouseGone();
       for (GuiElem* elem : guiElems)
         if (elem->onKeyPressed2(event.key))
           break;

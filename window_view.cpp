@@ -383,8 +383,6 @@ void WindowView::rebuildGui() {
   }
   resetMapBounds();
   int bottomOffset = 35;
-  int leftMargin = 20;
-  int rightMargin = 20;
   int sideOffset = 10;
   int rightWindowHeight = 80;
   if (rightBarWidth > 0) {
@@ -396,15 +394,12 @@ void WindowView::rebuildGui() {
     tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
     tempGuiElems.back()->setBounds(Rectangle(
           Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight), renderer.getSize()));
-    guiBuilder.drawMessages(overlays, gameInfo.messageBuffer,
-        renderer.getSize().x - rightBarWidth - leftMargin - rightMargin);
+    guiBuilder.drawMessages(overlays, gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth);
     guiBuilder.drawGameSpeedDialog(overlays);
     for (auto& overlay : overlays) {
       Vec2 pos;
-      int topMargin = 20;
-      int bottomMargin = 20;
-      int width = leftMargin + rightMargin + overlay.size.x;
-      int height = overlay.size.y + bottomMargin + topMargin;
+      int width = overlay.size.x;
+      int height = overlay.size.y;
       switch (overlay.alignment) {
         case GuiBuilder::OverlayInfo::TOP_RIGHT:
           pos = Vec2(rightBarWidth + sideOffset, rightWindowHeight);
@@ -419,28 +414,16 @@ void WindowView::rebuildGui() {
           break;
         case GuiBuilder::OverlayInfo::MESSAGES:
           pos = Vec2(rightBarWidth, 0);
-          width -= rightMargin - 10;
-          height -= bottomMargin + topMargin + 6;
-          topMargin = 2;
           break;
         case GuiBuilder::OverlayInfo::GAME_SPEED:
-          pos = Vec2(26, renderer.getSize().y - overlay.size.y - 90);
+          pos = Vec2(26, renderer.getSize().y - height - 50);
           break;
         case GuiBuilder::OverlayInfo::INVISIBLE:
           pos = Vec2(renderer.getSize().x, 0);
           overlay.elem = gui.invisible(std::move(overlay.elem));
           break;
       }
-      PGuiElem elem = gui.margins(std::move(overlay.elem), leftMargin, topMargin, rightMargin, bottomMargin);
-      switch (overlay.alignment) {
-        case GuiBuilder::OverlayInfo::MESSAGES:
-          elem = gui.translucentBackground(std::move(elem));
-          break;
-        default:
-          elem = gui.miniWindow(std::move(elem));
-          break;
-      }
-      tempGuiElems.push_back(std::move(elem));
+      tempGuiElems.push_back(std::move(overlay.elem));
       tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(width, height)));
       Debug() << "Overlay " << overlay.alignment << " bounds " << tempGuiElems.back()->getBounds();
     }
@@ -1168,27 +1151,35 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
     case Keyboard::Up:
     case Keyboard::Numpad8:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(0, -1)));
+      mapGui->onMouseGone();
       break;
     case Keyboard::Numpad9:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1)));
+      mapGui->onMouseGone();
       break;
     case Keyboard::Right: 
     case Keyboard::Numpad6:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0)));
+      mapGui->onMouseGone();
       break;
     case Keyboard::Numpad3:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 1)));
+      mapGui->onMouseGone();
       break;
     case Keyboard::Down:
     case Keyboard::Numpad2:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1))); break;
+      mapGui->onMouseGone();
     case Keyboard::Numpad1:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1))); break;
+      mapGui->onMouseGone();
     case Keyboard::Left:
     case Keyboard::Numpad4:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0))); break;
+      mapGui->onMouseGone();
     case Keyboard::Numpad7:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1))); break;
+      mapGui->onMouseGone();
     case Keyboard::Return:
     case Keyboard::Numpad5: inputQueue.push(UserInput(UserInputId::PICK_UP)); break;
     case Keyboard::M: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;

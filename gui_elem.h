@@ -166,15 +166,17 @@ class GuiFactory {
   PGuiElem mainMenuHighlight();
   PGuiElem insideBackground(PGuiElem content);
   PGuiElem window(PGuiElem content);
+  PGuiElem miniWindow();
   PGuiElem miniWindow(PGuiElem content);
   PGuiElem mapWindow(PGuiElem content);
   PGuiElem border(PGuiElem content);
-  PGuiElem miniBorder(PGuiElem content);
+  PGuiElem miniBorder();
   PGuiElem border2(PGuiElem content);
   PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
   PGuiElem invisible(PGuiElem content);
   PGuiElem background(PGuiElem content, Color);
   PGuiElem translucentBackground(PGuiElem content);
+  PGuiElem translucentBackground();
   Color translucentBgColor;
   void changeBackground(int r, int g, int b);
   void setBackground(int r, int g, int b);

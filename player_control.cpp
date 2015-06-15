@@ -1594,7 +1594,7 @@ MoveInfo PlayerControl::getMove(Creature* c) {
 }
 
 void PlayerControl::addKeeper(Creature* c) {
-  getCollective()->addCreature(c, {MinionTrait::LEADER, MinionTrait::NO_LIMIT});
+  getCollective()->addCreature(c, {MinionTrait::LEADER});
 }
 
 void PlayerControl::addImp(Creature* c) {

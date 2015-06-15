@@ -276,6 +276,17 @@ bool Collective::wasBanished(const Creature* c) const {
   return contains(banished, c);
 }
 
+bool Collective::meetsPrerequisites(const vector<AttackPrerequisite>& prereq) const {
+  for (auto elem : prereq)
+    switch (elem) {
+      case AttackPrerequisite::THRONE: 
+        if (getSquares(SquareId::THRONE).empty())
+          return false;
+        break;
+    }
+  return true;
+}
+
 vector<Creature*>& Collective::getCreatures() {
   return creatures;
 }
@@ -565,22 +576,25 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
-  if (!Random.roll(5))
+  if (!Random.roll(20))
     return nullptr;
   autoEquipment(c, Random.roll(10));
+  vector<PTask> tasks;
   for (Item* it : c->getEquipment().getItems())
     if (!c->getEquipment().isEquiped(it) && c->getEquipment().canEquip(it))
-      return Task::equipItem(it);
+      tasks.push_back(Task::equipItem(it));
   for (Vec2 v : getAllSquares(equipmentStorage)) {
-    vector<Item*> it = getLevel()->getSafeSquare(v)->getItems([this, c] (const Item* it) {
-        return minionEquipment.getOwner(it) == c && it->canEquip(); });
+    vector<Item*> it = filter(getLevel()->getSafeSquare(v)->getItems(ItemIndex::MINION_EQUIPMENT), 
+        [this, c] (const Item* it) { return minionEquipment.getOwner(it) == c && it->canEquip(); });
     if (!it.empty())
-      return Task::pickAndEquipItem(this, v, it[0]);
-    it = getLevel()->getSafeSquare(v)->getItems([this, c] (const Item* it) {
-      return minionEquipment.getOwner(it) == c; });
+      tasks.push_back(Task::pickAndEquipItem(this, v, it[0]));
+    it = filter(getLevel()->getSafeSquare(v)->getItems(ItemIndex::MINION_EQUIPMENT), 
+        [this, c] (const Item* it) { return minionEquipment.getOwner(it) == c; });
     if (!it.empty())
-      return Task::pickItem(this, v, it);
+      tasks.push_back(Task::pickItem(this, v, it));
   }
+  if (!tasks.empty())
+    return Task::chain(std::move(tasks));
   return nullptr;
 }
 

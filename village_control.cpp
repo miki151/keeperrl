@@ -26,6 +26,7 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(minTeamSize)
     & SVAR(collective)
     & SVAR(triggers)
+    & SVAR(prerequisites)
     & SVAR(behaviour)
     & SVAR(leaderAttacks)
     & SVAR(attackMessage)
@@ -128,23 +129,24 @@ void VillageControl::tick(double time) {
   }
   double updateFreq = 0.1;
   if (Random.roll(1 / updateFreq))
-    for (auto& villain : villains) {
-      vector<Creature*> fighters;
-      if (villain.leaderAttacks)
-        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER});
-      else
-        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::LEADER});
-      Debug() << getCollective()->getName() << " fighters: " << int(fighters.size())
-        << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
-      if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
-        continue;
-      double prob = villain.getAttackProbability(this) / updateFreq;
-      if (prob > 0 && Random.roll(1 / prob)) {
-        launchAttack(villain, getPrefix(randomPermutation(fighters),
-            Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
-        break;
+    for (auto& villain : villains)
+      if (villain.collective->meetsPrerequisites(villain.prerequisites)) {
+        vector<Creature*> fighters;
+        if (villain.leaderAttacks)
+          fighters = getCollective()->getCreatures({MinionTrait::FIGHTER});
+        else
+          fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::LEADER});
+        Debug() << getCollective()->getName() << " fighters: " << int(fighters.size())
+          << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
+        if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
+          continue;
+        double prob = villain.getAttackProbability(this) / updateFreq;
+        if (prob > 0 && Random.roll(1 / prob)) {
+          launchAttack(villain, getPrefix(randomPermutation(fighters),
+                Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
+          break;
+        }
       }
-    }
 }
 
 MoveInfo VillageControl::getMove(Creature* c) {

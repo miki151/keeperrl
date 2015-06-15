@@ -40,6 +40,8 @@ enum class AttackTriggerId {
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> AttackTrigger;
 
+enum class AttackPrerequisite;
+
 class VillageControl : public CollectiveControl {
   public:
   typedef VillageBehaviour Behaviour;
@@ -63,6 +65,7 @@ class VillageControl : public CollectiveControl {
     int SERIAL(minTeamSize);
     Collective* SERIAL(collective);
     vector<Trigger> SERIAL(triggers);
+    vector<AttackPrerequisite> SERIAL(prerequisites);
     Behaviour SERIAL(behaviour);
     AttackMessage SERIAL(attackMessage);
     optional<WelcomeMessage> SERIAL(welcomeMessage);
