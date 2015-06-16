@@ -134,7 +134,7 @@ void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, Ve
       if (color)
         s.setColor(*color);
       else
-        s.setColor(sf::Color(255, 255, 255, 0));
+        s.setColor(sf::Color(255, 255, 255));
       if (targetSize.x != -1)
         s.setScale(double(targetSize.x) / size.x, double(targetSize.y) / size.y);
       else
