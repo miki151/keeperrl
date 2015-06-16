@@ -141,10 +141,18 @@ void Player::pickUpAction(bool extended) {
   }
 }
 
-void Player::pickUpItemAction(int numItem) {
-  auto items = getCreature()->stackItems(getCreature()->getPickUpOptions());
-  if (numItem < items.size())
-    tryToPerform(getCreature()->pickUp(items[numItem]));
+void Player::pickUpItemAction(int numStack, bool multi) {
+  auto stacks = getCreature()->stackItems(getCreature()->getPickUpOptions());
+  if (numStack < stacks.size()) {
+    vector<Item*> items = stacks[numStack];
+    if (multi && items.size() > 1) {
+      auto num = model->getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?", 1, items.size());
+      if (!num)
+        return;
+      items = getPrefix(items, *num);
+    }
+    tryToPerform(getCreature()->pickUp(items));
+  }
 }
 
 void Player::tryToPerform(CreatureAction action) {
@@ -255,19 +263,21 @@ void Player::consumeAction() {
   }
 }
 
-vector<GameInfo::ItemInfo::Action> Player::getItemActions(Item* item) const {
+vector<GameInfo::ItemInfo::Action> Player::getItemActions(const vector<Item*>& item) const {
   vector<GameInfo::ItemInfo::Action> actions;
-  if (getCreature()->equip(item)) {
+  if (getCreature()->equip(item[0])) {
     actions.push_back(GameInfo::ItemInfo::EQUIP);
   }
-  if (getCreature()->applyItem(item)) {
+  if (getCreature()->applyItem(item[0])) {
     actions.push_back(GameInfo::ItemInfo::APPLY);
   }
-  if (getCreature()->unequip(item))
+  if (getCreature()->unequip(item[0]))
     actions.push_back(GameInfo::ItemInfo::UNEQUIP);
   else {
     actions.push_back(GameInfo::ItemInfo::THROW);
     actions.push_back(GameInfo::ItemInfo::DROP);
+    if (item.size() > 1)
+      actions.push_back(GameInfo::ItemInfo::DROP_MULTI);
   }
   return actions;
 }
@@ -280,6 +290,9 @@ void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, GameInfo
     return;
   switch (action) {
     case GameInfo::ItemInfo::DROP: tryToPerform(getCreature()->drop(items)); break;
+    case GameInfo::ItemInfo::DROP_MULTI:
+      if (auto num = model->getView()->getNumber("Drop how many " + items[0]->getName(true) + "?", 1, items.size()))
+        tryToPerform(getCreature()->drop(getPrefix(items, *num))); break;
     case GameInfo::ItemInfo::THROW: throwItem(items); break;
     case GameInfo::ItemInfo::APPLY: applyItem(items); break;
     case GameInfo::ItemInfo::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
@@ -526,6 +539,7 @@ void Player::makeMove() {
       handleItems(action.get<InventoryItemInfo>().items(), action.get<InventoryItemInfo>().action()); break;
     case UserInputId::PICK_UP: pickUpAction(false); break;
     case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
+    case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
     case UserInputId::WAIT: getCreature()->wait().perform(getCreature()); break;
     case UserInputId::HIDE: hideAction(); break;
     case UserInputId::PAY_DEBT: payDebtAction(); break;
@@ -778,7 +792,7 @@ GameInfo::ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
     c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
-    c.actions = getItemActions(stack[0]);
+    c.actions = getItemActions(stack);
     c.equiped = getCreature()->getEquipment().isEquiped(stack[0]); );
 }
 

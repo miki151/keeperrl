@@ -84,7 +84,7 @@ class GameInfo {
     int number;
     ViewId viewId;
     vector<UniqueEntity<Item>::Id> ids;
-    enum Action { DROP, APPLY, EQUIP, UNEQUIP, THROW, LOCK, UNLOCK, REPLACE };
+    enum Action { DROP, DROP_MULTI, APPLY, EQUIP, UNEQUIP, THROW, LOCK, UNLOCK, REPLACE };
     vector<Action> actions;
     bool equiped;
     bool locked;

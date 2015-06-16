@@ -80,7 +80,7 @@ class Player : public Controller, public CreatureView {
   void tryToPerform(CreatureAction);
   void attackAction(Creature* other);
   void pickUpAction(bool extended);
-  void pickUpItemAction(int item);
+  void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();
   void applyItem(vector<Item*> item);
   void throwItem(vector<Item*> item, optional<Vec2> dir = none);
@@ -88,7 +88,7 @@ class Player : public Controller, public CreatureView {
   void hideAction();
   void displayInventory();
   void handleItems(const vector<UniqueEntity<Item>::Id>&, GameInfo::ItemInfo::Action);
-  vector<GameInfo::ItemInfo::Action> getItemActions(Item*) const;
+  vector<GameInfo::ItemInfo::Action> getItemActions(const vector<Item*>&) const;
   bool interruptedByEnemy();
   void travelAction();
   void targetAction();

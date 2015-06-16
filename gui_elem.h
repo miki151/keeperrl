@@ -60,7 +60,7 @@ class GuiFactory {
   PGuiElem focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
       vector<Event::KeyEvent> defocusEvent, bool& focused);
   PGuiElem mouseWheel(function<void(bool)>);
-  PGuiElem keyHandler(function<void(Event::KeyEvent)>);
+  PGuiElem keyHandler(function<void(Event::KeyEvent)>, bool capture = false);
   PGuiElem keyHandler(function<void()>, vector<Event::KeyEvent>, bool capture = false);
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);

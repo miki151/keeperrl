@@ -945,24 +945,11 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
       stuff = gui.window(std::move(stuff));
       break;
   }
-  while (1) {
-    refreshScreen(false);
-    stuff->setBounds(guiBuilder.getMenuPosition(menuType));
-    stuff->render(renderer);
-    renderer.drawAndClearBuffer();
-    Event event;
-    while (renderer.pollEvent(event)) {
-      propagateEvent(event, {stuff.get()});
-      if (choice > -1) {
-        CHECK(choice < indexes.size()) << choice;
-        return indexes[choice];
-      }
-      if (choice == -100)
-        return none;
-      if (considerResizeEvent(event))
-        continue;
-      if (event.type == Event::KeyPressed)
-        switch (event.key.code) {
+  optional<optional<int>> callbackRet;
+  stuff = gui.stack(
+      std::move(stuff),
+      gui.keyHandler([&] (Event::KeyEvent event) {
+        switch (event.code) {
           case Keyboard::Numpad8:
           case Keyboard::Up:
             if (count > 0) {
@@ -982,12 +969,33 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
           case Keyboard::Numpad5:
           case Keyboard::Return: 
             if (count > 0 && index > -1) {
-              CHECK(index < indexes.size()) << index << " " << indexes.size() << " " << count << " " << options.size();
-              return indexes[index];
+              CHECK(index < indexes.size()) <<
+                  index << " " << indexes.size() << " " << count << " " << options.size();
+              callbackRet = indexes[index];
+              break;
             }
-          case Keyboard::Escape: return none;
+          case Keyboard::Escape: callbackRet = optional<int>(none);
           default: break;
-        }
+        }        
+      }, true));
+  while (1) {
+    refreshScreen(false);
+    stuff->setBounds(guiBuilder.getMenuPosition(menuType));
+    stuff->render(renderer);
+    renderer.drawAndClearBuffer();
+    Event event;
+    while (renderer.pollEvent(event)) {
+      propagateEvent(event, concat({stuff.get()}, getClickableGuiElems()));
+      if (choice > -1) {
+        CHECK(choice < indexes.size()) << choice;
+        return indexes[choice];
+      }
+      if (choice == -100)
+        return none;
+      if (callbackRet)
+        return *callbackRet;
+      if (considerResizeEvent(event))
+        continue;
     }
   }
   });

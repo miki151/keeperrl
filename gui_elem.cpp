@@ -515,19 +515,20 @@ PGuiElem GuiFactory::focusable(PGuiElem content, vector<Event::KeyEvent> focusEv
 
 class KeyHandler : public GuiElem {
   public:
-  KeyHandler(function<void(Event::KeyEvent)> f) : fun(f) {}
+  KeyHandler(function<void(Event::KeyEvent)> f, bool cap) : fun(f), capture(cap) {}
 
   virtual bool onKeyPressed2(Event::KeyEvent key) override {
     fun(key);
-    return false;
+    return capture;
   }
 
   private:
   function<void(Event::KeyEvent)> fun;
+  bool capture;
 };
  
-PGuiElem GuiFactory::keyHandler(function<void(Event::KeyEvent)> fun) {
-  return PGuiElem(new KeyHandler(fun));
+PGuiElem GuiFactory::keyHandler(function<void(Event::KeyEvent)> fun, bool capture) {
+  return PGuiElem(new KeyHandler(fun, capture));
 }
 
 class KeyHandler2 : public GuiElem {
@@ -975,6 +976,11 @@ class MouseHighlight : public GuiLayout {
   MouseHighlight(PGuiElem h, int ind, int* highlight)
     : GuiLayout(makeVec<PGuiElem>(std::move(h))), myIndex(ind), highlighted(highlight) {}
 
+  virtual void onMouseGone() override {
+    if (*highlighted == myIndex)
+      *highlighted = -1;
+  }
+
   virtual bool onMouseMove(Vec2 pos) override {
     if (pos.inRectangle(getBounds()))
       *highlighted = myIndex;
@@ -1012,6 +1018,11 @@ class MouseHighlightGameChoice : public GuiLayout {
   public:
   MouseHighlightGameChoice(PGuiElem h, View::GameTypeChoice my, optional<View::GameTypeChoice>& highlight)
     : GuiLayout(makeVec<PGuiElem>(std::move(h))), myChoice(my), highlighted(highlight) {}
+
+  virtual void onMouseGone() override {
+    if (*highlighted == myChoice)
+      highlighted = none;
+  }
 
   virtual bool onMouseMove(Vec2 pos) override {
     if (pos.inRectangle(getBounds()))
@@ -1239,6 +1250,10 @@ class Scrollable : public GuiElem {
     if (v.inRectangle(getBounds()))
       return content->onRightClick(v);
     return false;
+  }
+
+  virtual void onMouseGone() override {
+    content->onMouseGone();
   }
 
   virtual bool onMouseMove(Vec2 v) override {
@@ -1526,11 +1541,15 @@ PGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight) {
 }
 
 PGuiElem GuiFactory::translucentBackground(PGuiElem content) {
-  return background(std::move(content), translucentBgColor);
+  return stack(
+      stopMouseMovement(),
+      background(std::move(content), translucentBgColor));
 }
 
 PGuiElem GuiFactory::translucentBackground() {
-  return rectangle(translucentBgColor);
+  return stack(
+      stopMouseMovement(),
+      rectangle(translucentBgColor));
 }
 
 PGuiElem GuiFactory::background(PGuiElem content, Color color) {

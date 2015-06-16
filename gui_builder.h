@@ -167,7 +167,8 @@ class GuiBuilder {
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
   PGuiElem getStandingGui(double standing);
-  PGuiElem getItemLine(const GameInfo::ItemInfo&, function<void(Rectangle)> onClick);
+  PGuiElem getItemLine(const GameInfo::ItemInfo&, function<void(Rectangle)> onClick,
+      function<void()> onMultiClick = nullptr);
   vector<string> getItemHint(const GameInfo::ItemInfo&);
   bool morale = true;
   optional<GameInfo::ItemInfo::Action> getItemChoice(const GameInfo::ItemInfo& itemInfo, Vec2 menuPos,

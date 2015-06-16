@@ -475,7 +475,8 @@ vector<string> GuiBuilder::getItemHint(const GameInfo::ItemInfo& item) {
   return out;
 }
 
-PGuiElem GuiBuilder::getItemLine(const GameInfo::ItemInfo& item, function<void(Rectangle)> onClick) {
+PGuiElem GuiBuilder::getItemLine(const GameInfo::ItemInfo& item, function<void(Rectangle)> onClick,
+    function<void()> onMultiClick) {
   vector<PGuiElem> line;
   vector<int> widths;
   int leftMargin = -4;
@@ -493,15 +494,25 @@ PGuiElem GuiBuilder::getItemLine(const GameInfo::ItemInfo& item, function<void(R
   }
   line.push_back(gui.label(item.name, color));
   widths.push_back(100);
+  for (auto& elem : line)
+    elem = gui.stack(gui.button(onClick), std::move(elem), getTooltip(getItemHint(item)));
+  int numAlignRight = 0;
   if (item.owner) {
     line.push_back(gui.viewObject(item.owner->viewId, tilesOk));
     widths.push_back(viewObjectWidth);
     line.push_back(gui.label("L:" + toString(item.owner->expLevel)));
     widths.push_back(60);
+    numAlignRight = 2;
   }
-  return gui.margins(gui.stack(gui.horizontalList(std::move(line), widths, item.owner ? 2 : 0),
-      getTooltip(getItemHint(item)),
-      gui.button(onClick)), leftMargin, 0, 0, 0);
+  if (onMultiClick && item.number > 1) {
+    line.push_back(gui.stack(
+        gui.label("[#]"),
+        gui.button(onMultiClick),
+        getTooltip({"Click to choose how many to pick up."})));
+    widths.push_back(25);
+    numAlignRight = 1;
+  }
+  return gui.margins(gui.horizontalList(std::move(line), widths, numAlignRight), leftMargin, 0, 0, 0);
 }
 
 PGuiElem GuiBuilder::getTooltip(const vector<string>& text) {
@@ -535,14 +546,16 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
       lines.push_back(gui.leftMargin(14, gui.stack(
             gui.mouseHighlight(gui.highlight(listLineHeight), i, &itemIndex),
             gui.leftMargin(6, getItemLine(info.lyingItems[i],
-          [this, i](Rectangle) { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, i}); })))));
+          [this, i](Rectangle) { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, i}); },
+          [this, i]() { callbacks.inputCallback({UserInputId::PICK_UP_ITEM_MULTI, i}); })))));
     }
   }
   int totalElems = info.lyingItems.size();
+  if (itemIndex >= totalElems)
+    itemIndex = totalElems - 1;
   PGuiElem content = gui.stack(makeVec<PGuiElem>(
         gui.focusable(gui.stack(
-            gui.keyHandler([=] { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, itemIndex});
-                if (itemIndex >= totalElems - 1) --itemIndex; },
+            gui.keyHandler([=] { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, itemIndex});},
                 {{Keyboard::Return}, {Keyboard::Numpad5}}, true),
             gui.keyHandler([=] { itemIndex = (itemIndex + 1) % totalElems;
                 lyingItemsScroll = getScrollPos(itemIndex, totalElems - 1);},
@@ -605,6 +618,7 @@ PGuiElem GuiBuilder::drawPlayerHelp(GameInfo::PlayerInfo& info) {
 static string getActionText(GameInfo::ItemInfo::Action a) {
   switch (a) {
     case GameInfo::ItemInfo::DROP: return "drop";
+    case GameInfo::ItemInfo::DROP_MULTI: return "drop some";
     case GameInfo::ItemInfo::EQUIP: return "equip";
     case GameInfo::ItemInfo::THROW: return "throw";
     case GameInfo::ItemInfo::UNEQUIP: return "remove";
