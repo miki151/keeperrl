@@ -310,7 +310,8 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
 
 void WindowView::clearSplash() {
   splashDone = true;
-  while (splashDone) {}
+  if (currentThreadId() != renderThreadId)
+    while (splashDone) {}
 }
 
 void WindowView::resize(int width, int height) {
@@ -487,7 +488,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
 }
 
 void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
-  if (!wasRendered)
+  if (!wasRendered && currentThreadId() != renderThreadId)
     return;
   RenderLock lock(renderMutex);
   wasRendered = false;
@@ -504,6 +505,8 @@ void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
   updateMinimap(collective);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);
+  if (currentThreadId() == renderThreadId)
+    refreshView();
 }
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
@@ -524,6 +527,8 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
 }
 
 void WindowView::refreshView() {
+  if (currentThreadId() != renderThreadId)
+    return;
   {
     RenderLock lock(renderMutex);
     if (!wasRendered)
@@ -1176,18 +1181,22 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
       break;
     case Keyboard::Down:
     case Keyboard::Numpad2:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1))); break;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1)));
       mapGui->onMouseGone();
+      break;
     case Keyboard::Numpad1:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1))); break;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1)));
       mapGui->onMouseGone();
+      break;
     case Keyboard::Left:
     case Keyboard::Numpad4:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0))); break;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0)));
       mapGui->onMouseGone();
+      break;
     case Keyboard::Numpad7:
-      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1))); break;
+      inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1)));
       mapGui->onMouseGone();
+      break;
     case Keyboard::Return:
     case Keyboard::Numpad5: inputQueue.push(UserInput(UserInputId::PICK_UP)); break;
     case Keyboard::M: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
@@ -1209,7 +1218,6 @@ UserInput WindowView::getAction() {
     return *input;
   else
     return UserInput(UserInputId::IDLE);
-  return UserInput(UserInputId::IDLE);
 }
 
 double WindowView::getGameSpeed() {

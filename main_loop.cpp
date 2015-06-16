@@ -15,9 +15,9 @@
 #include "parse_game.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
-    const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin)
+    const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), finished(fin) {
+        highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread) {
 }
 
 vector<MainLoop::SaveFileInfo> MainLoop::getSaveFiles(const string& path, const string& suffix) {
@@ -118,11 +118,16 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
 }
 
 void MainLoop::uploadFile(const string& path) {
-  ProgressMeter meter(1);
   atomic<bool> cancelled(false);
-  view->displaySplash(meter, View::UPLOADING, [&] { cancelled = true; fileSharing->getCancelFun()();});
-  optional<string> error = fileSharing->uploadRetired(path, meter);
-  view->clearSplash();
+  optional<string> error;
+  doWithSplash(View::UPLOADING, 1,
+      [&] (ProgressMeter& meter) {
+        error = fileSharing->uploadRetired(path, meter);
+      },
+      [&] {
+        cancelled = true;
+        fileSharing->cancel();
+      });
   if (error && !cancelled)
     view->presentText("Error uploading file", *error);
 }
@@ -132,12 +137,11 @@ string MainLoop::getSavePath(Model* model, Model::GameType gameType) {
 }
 
 void MainLoop::saveUI(PModel& model, Model::GameType type, View::SplashType splashType) {
-  ProgressMeter meter(1.0 / 62500);
-  Square::progressMeter = &meter;
-  view->displaySplash(meter, splashType);
   string path = getSavePath(model.get(), type);
-  MEASURE(saveGame(model, path), "saving time");
-  view->clearSplash();
+  doWithSplash(View::SAVING, 62500,
+      [&] (ProgressMeter& meter) {
+        Square::progressMeter = &meter;
+        MEASURE(saveGame(model, path), "saving time")});
   Square::progressMeter = nullptr;
   if (type == Model::GameType::RETIRED_KEEPER && options->getBoolValue(OptionId::ONLINE))
     uploadFile(path);
@@ -223,6 +227,8 @@ void MainLoop::playModel(PModel model, bool withMusic, bool noAutoSave) {
         saveUI(model, Model::GameType::AUTOSAVE, View::AUTOSAVING);
       lastAutoSave = model->getTime();
     }
+    if (useSingleThread)
+      view->refreshView();
   }
 }
 
@@ -290,6 +296,8 @@ void MainLoop::showCredits(const string& path, View* view) {
 }
 
 void MainLoop::start(bool tilesPresent) {
+  if (useSingleThread)
+    view->initialize();
   if (options->getBoolValue(OptionId::MUSIC))
     jukebox->toggle(true);
   splashScreen();
@@ -320,38 +328,59 @@ void MainLoop::start(bool tilesPresent) {
   }
 }
 
+void MainLoop::doWithSplash(View::SplashType type, int totalProgress, function<void(ProgressMeter&)> fun,
+    function<void()> cancelFun) {
+  ProgressMeter meter(1.0 / totalProgress);
+  view->displaySplash(meter, type, cancelFun);
+  if (useSingleThread) {
+    // A bit confusing, but the flag refers to using a single thread for rendering and gameplay.
+    // This forces us to build the world on an extra thread to be able to display a progress bar.
+    thread t([fun, &meter, this] { fun(meter); view->clearSplash(); });
+    view->refreshView();
+    t.join();
+  } else {
+    fun(meter);
+    view->clearSplash();
+  }
+}
+
 PModel MainLoop::keeperGame() {
   PModel model;
-  string ex;
-  ProgressMeter meter(1.0 / 166000);
-  view->displaySplash(meter, View::CREATING);
   NameGenerator::init(dataFreePath + "/names");
-  model = ModelBuilder::collectiveModel(meter, options, view,
-      NameGenerator::get(NameGeneratorId::WORLD)->getNext());
-  view->clearSplash();
+  doWithSplash(View::CREATING, 166000,
+      [&model, this] (ProgressMeter& meter) {
+        model = ModelBuilder::collectiveModel(meter, options, view,
+            NameGenerator::get(NameGeneratorId::WORLD)->getNext());
+      });
   return model;
 }
 
 PModel MainLoop::loadModel(string file, bool erase) {
-  ProgressMeter meter(1.0 / 62500);
-  Square::progressMeter = &meter;
-  view->displaySplash(meter, View::LOADING);
-  Debug() << "Loading from " << file;
-  PModel ret = loadGame(userPath + "/" + file, erase);
-  view->clearSplash();
-  if (ret) {
-    ret->setView(view);
+  PModel model;
+  doWithSplash(View::LOADING, 62500,
+      [&] (ProgressMeter& meter) {
+        Square::progressMeter = &meter;
+        Debug() << "Loading from " << file;
+        model = loadGame(userPath + "/" + file, erase);});
+  if (model) {
+    model->setView(view);
   } else
     view->presentText("Sorry", "This save file is corrupted :(");
-  return ret;
+  Square::progressMeter = nullptr;
+  return model;
 }
 
 bool MainLoop::downloadGame(const string& filename) {
-  ProgressMeter meter(1);
   atomic<bool> cancelled(false);
-  view->displaySplash(meter, View::DOWNLOADING, [&] { cancelled = true; fileSharing->getCancelFun()();});
-  optional<string> error = fileSharing->download(filename, userPath, meter);
-  view->clearSplash();
+  optional<string> error;
+  doWithSplash(View::DOWNLOADING, 1,
+      [&] (ProgressMeter& meter) {
+        error = fileSharing->download(filename, userPath, meter);
+      },
+      [&] {
+        cancelled = true;
+        fileSharing->cancel();
+      });
   if (error && !cancelled)
     view->presentText("Error downloading file", *error);
   return !error;

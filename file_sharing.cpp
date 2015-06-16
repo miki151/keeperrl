@@ -132,8 +132,8 @@ vector<FileSharing::GameInfo> FileSharing::listGames() {
   return {};
 }
 
-function<void()> FileSharing::getCancelFun() {
-  return [] { cancel = true;};
+void FileSharing::cancel() {
+  ::cancel = true;
 }
 
 static size_t writeToFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {

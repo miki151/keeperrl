@@ -22,7 +22,7 @@ class FileSharing {
   void uploadHighscores(const string& path);
   string downloadHighscores();
 
-  function<void()> getCancelFun();
+  void cancel();
   
   private:
   string uploadUrl;

@@ -117,6 +117,7 @@ int main(int argc, char* argv[]) {
   options_description flags("Flags");
   flags.add_options()
     ("help", "Print help")
+    ("single_thread", "Use a single thread for rendering and game logic")
     ("user_dir", value<string>(), "Directory for options and save files")
     ("data_dir", value<string>(), "Directory containing the game data")
     ("upload_url", value<string>(), "URL for uploading maps")
@@ -136,6 +137,7 @@ int main(int argc, char* argv[]) {
     testAll();
     return 0;
   }
+  bool useSingleThread = vars.count("single_thread");
   unique_ptr<View> view;
   unique_ptr<CompressedInput> input;
   unique_ptr<CompressedOutput> output;
@@ -209,14 +211,15 @@ int main(int argc, char* argv[]) {
 #endif
   } 
   std::atomic<bool> gameFinished(false);
-  std::atomic<bool> viewInitialized(false);
+  std::atomic<bool> viewInitialized(useSingleThread);
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
   FileSharing fileSharing(uploadUrl);
   Highscores highscores(userPath + "/" + "highscores.txt", fileSharing, &options);
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished);
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished,
+      useSingleThread);
   auto game = [&] { while (!viewInitialized) {} loop.start(tilesPresent); };
-  auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
+  auto render = [&] { if (!useSingleThread) renderLoop(view.get(), &options, gameFinished, viewInitialized); };
 #ifdef OSX // see thread comment in stdafx.h
   thread t(getAttributes(), game);
   render();

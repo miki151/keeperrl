@@ -15,7 +15,7 @@ class Jukebox;
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath, Options* o,
-      Jukebox* j, std::atomic<bool>& finished);
+      Jukebox* j, std::atomic<bool>& finished, bool useSingleThread);
 
   void start(bool tilesPresent);
 
@@ -40,6 +40,9 @@ class MainLoop {
 
   optional<SaveFileInfo> chooseSaveFile(const vector<View::ListElem>& options, const vector<SaveFileInfo>& allFiles,
       string noSaveMsg, View*);
+
+  void doWithSplash(View::SplashType, int totalProgress, function<void(ProgressMeter&)> fun,
+    function<void()> cancelFun = nullptr);
 
   void playModel(PModel, bool withMusic = true, bool noAutoSave = false);
   void playGameChoice();
@@ -66,6 +69,7 @@ class MainLoop {
   Highscores* highscores;
   FileSharing* fileSharing;
   std::atomic<bool>& finished;
+  bool useSingleThread;
 };
 
 

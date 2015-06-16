@@ -102,12 +102,14 @@ void Renderer::drawImage(Rectangle target, Rectangle source, const Texture& imag
 }
 
 void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, double scale) {
-  Sprite s(t, sf::IntRect(0, 0, (kx - px) / scale, (ky - py) / scale));
-  s.setPosition(px, py);
-  if (scale != 1) {
-    s.setScale(scale, scale);
-  }
-  addRenderElem([this, s] { display->draw(s); });
+  addRenderElem([this, &t, px, py, kx, ky, scale] {
+      static Sprite s;
+      s.setPosition(px, py);
+      s.setTexture(t);
+      s.setTextureRect(sf::IntRect(0, 0, (kx - px) / scale, (ky - py) / scale));
+      s.setScale(scale, scale);
+      display->draw(s);
+  });
 }
 
 void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, optional<Color> color,
@@ -124,24 +126,36 @@ void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
 
 void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, Vec2 targetSize,
     optional<Color> color) {
-  Sprite s(t, sf::IntRect(source.x, source.y, size.x, size.y));
-  s.setPosition(pos.x, pos.y);
-  if (color)
-    s.setColor(*color);
-  if (targetSize.x != -1)
-    s.setScale(double(targetSize.x) / size.x, double(targetSize.y) / size.y);
-  addRenderElem([this, s] { display->draw(s); });
+  addRenderElem([this, &t, pos, source, size, targetSize, color] {
+      static Sprite s;
+      s.setTexture(t);
+      s.setTextureRect(sf::IntRect(source.x, source.y, size.x, size.y));
+      s.setPosition(pos.x, pos.y);
+      if (color)
+        s.setColor(*color);
+      else
+        s.setColor(sf::Color(255, 255, 255, 0));
+      if (targetSize.x != -1)
+        s.setScale(double(targetSize.x) / size.x, double(targetSize.y) / size.y);
+      else
+        s.setScale(1, 1);
+      display->draw(s);   
+  });
 }
 
 void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
-  RectangleShape r(Vector2f(t.getW(), t.getH()));
-  r.setPosition(t.getPX(), t.getPY());
-  r.setFillColor(color);
-  if (outline) {
-    r.setOutlineThickness(-2);
-    r.setOutlineColor(*outline);
-  }
-  addRenderElem([this, r] { display->draw(r); });
+  addRenderElem([this, t, color, outline] {
+      static RectangleShape r;
+      r.setSize(Vector2f(t.getW(), t.getH()));
+      r.setPosition(t.getPX(), t.getPY());
+      r.setFillColor(color);
+      if (outline) {
+        r.setOutlineThickness(-2);
+        r.setOutlineColor(*outline);
+      } else
+        r.setOutlineThickness(0);
+      display->draw(r);
+  });
 }
 
 void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline) {
