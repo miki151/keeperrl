@@ -490,6 +490,8 @@ void WindowView::updateMinimap(const CreatureView* creature) {
 void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
+  GameInfo newInfo;
+  collective->refreshGameInfo(newInfo);
   RenderLock lock(renderMutex);
   wasRendered = false;
   guiBuilder.addUpsCounterTick();
@@ -497,7 +499,7 @@ void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
   if (!noRefresh)
     uiLock = false;
   switchTiles();
-  collective->refreshGameInfo(gameInfo);
+  gameInfo = newInfo;
   mapGui->setSpriteMode(currentTileLayout.sprites);
   bool spectator = gameInfo.infoType == GameInfo::InfoType::SPECTATOR;
   mapGui->updateObjects(collective, mapLayout, currentTileLayout.sprites || spectator,

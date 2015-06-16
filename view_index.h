@@ -48,6 +48,7 @@ class ViewIndex {
   void mergeFromMemory(const ViewIndex& memory);
   bool isEmpty() const;
   bool noObjects() const;
+  bool hasAnyHighlight() const;
   ~ViewIndex();
   // If the tile is not visible, we still need the id of the floor tile to render connections properly.
   optional<ViewId> getHiddenId() const;

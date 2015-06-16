@@ -52,10 +52,7 @@ void MapGui::ViewIdMap::add(Vec2 pos, ViewId id) {
 }
 
 bool MapGui::ViewIdMap::has(Vec2 pos, ViewId id) {
-  if (!pos.inRectangle(ids.getBounds()) || !ids.isDirty(pos))
-    return false;
-  else
-    return ids.getDirtyValue(pos)[id];
+  return ids.getValue(pos)[id];
 }
 
 void MapGui::ViewIdMap::clear() {
@@ -527,7 +524,7 @@ void MapGui::renderExtraBorders(Renderer& renderer, int currentTimeReal) {
         if (connectionMap.has(wpos, underId)) {
           DirSet dirs = 0;
           for (Vec2 v : Vec2::directions4())
-            if (connectionMap.has(wpos + v, id))
+            if ((wpos + v).inRectangle(levelBounds) && connectionMap.has(wpos + v, id))
               dirs.insert(v.getCardinalDir());
           if (auto coord = tile.getExtraBorderCoord(dirs)) {
             Vec2 pos = projectOnScreen(wpos, currentTimeReal);
@@ -555,31 +552,32 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
   for (Vec2 wpos : allTiles)
-    if (auto index = objects[wpos]) {
-      Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
-      for (HighlightType highlight : ENUM_ALL(HighlightType))
-        if (index->getHighlight(highlight) > 0)
-          switch (highlight) {
-            case HighlightType::CUT_TREE:
+    if (auto& index = objects[wpos])
+      if (index->hasAnyHighlight()) {
+        Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
+        for (HighlightType highlight : ENUM_ALL(HighlightType))
+          if (index->getHighlight(highlight) > 0)
+            switch (highlight) {
+              case HighlightType::CUT_TREE:
                 if (spriteMode && index->hasObject(ViewLayer::FLOOR))
                   break;
-            case HighlightType::FORBIDDEN_ZONE:
-            case HighlightType::FETCH_ITEMS:
-            case HighlightType::RECT_SELECTION:
-            case HighlightType::RECT_DESELECTION:
-            case HighlightType::PRIORITY_TASK:
-            case HighlightType::DIG:
+              case HighlightType::FORBIDDEN_ZONE:
+              case HighlightType::FETCH_ITEMS:
+              case HighlightType::RECT_SELECTION:
+              case HighlightType::RECT_DESELECTION:
+              case HighlightType::PRIORITY_TASK:
+              case HighlightType::DIG:
                 if (spriteMode) {
                   renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
                       getHighlightColor(highlight, index->getHighlight(highlight)));
                   break;
                 }
-            default:
+              default:
                 renderer.addQuad(Rectangle(pos, pos + size),
                     getHighlightColor(highlight, index->getHighlight(highlight)));
-              break;
-          }
-    }
+                break;
+            }
+      }
   renderer.drawQuads();
 }
 

@@ -421,7 +421,7 @@ class DirtyTable {
   public:
   DirtyTable(Rectangle bounds, T dirty) : val(bounds), dirty(bounds, 0), dirtyVal(dirty) {} 
 
-  T getValue(Vec2 v) const {
+  const T& getValue(Vec2 v) const {
     return dirty[v] < counter ? dirtyVal : val[v];
   }
 

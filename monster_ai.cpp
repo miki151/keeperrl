@@ -1249,21 +1249,19 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l, bool moveRandomly
   });
 }
 
-template<typename T>
-auto makeFunction(T&& lambda) {
-  auto holder = std::make_shared<typename std::decay<T>::type>(std::forward<T>(lambda));
-  return [holder](auto&&... args) { return (*holder)(std::forward<decltype(args)>(args)... ); };
-}
-
 MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
-  return MonsterAIFactory(makeFunction([=, task = std::move(t)](Creature* c) mutable {
+  Task* released = t.release();
+  return MonsterAIFactory([=](Creature* c) mutable {
+      CHECK(released);
+      Task* task = released;
+      released = nullptr;
       return new MonsterAI(c, {
         new Heal(c, false),
         new Fighter(c, 0.6, false),
-        new SingleTask(c, std::move(task)),
+        new SingleTask(c, PTask(task)),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
         { 6, 5, 2, 1}, true);
-      }));
+      });
 }
 
 MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
