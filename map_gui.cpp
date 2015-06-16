@@ -385,7 +385,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (!object.hasModifier(ViewObject::Modifier::PLANNED))
       if (auto connectionId = getConnectionId(object))
         for (Vec2 dir : getConnectionDirs(object.id())) {
-          if (connectionMap.has(tilePos + dir, *connectionId))
+          if ((tilePos + dir).inRectangle(levelBounds) && connectionMap.has(tilePos + dir, *connectionId))
             dirs.insert(dir.getCardinalDir());
           else
             borderDirs.insert(dir.getCardinalDir());
