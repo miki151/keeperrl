@@ -41,6 +41,7 @@
 #include "clock.h"
 #include "skill.h"
 #include "parse_game.h"
+#include "version.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -218,7 +219,12 @@ int main(int argc, char* argv[]) {
   Highscores highscores(userPath + "/" + "highscores.txt", fileSharing, &options);
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished,
       useSingleThread);
-  auto game = [&] { while (!viewInitialized) {} loop.start(tilesPresent); };
+  auto game = [&] {
+    while (!viewInitialized) {}
+    ofstream systemInfo(userPath + "/system_info.txt");
+    systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
+    renderer.printSystemInfo(systemInfo);
+    loop.start(tilesPresent); };
   auto render = [&] { if (!useSingleThread) renderLoop(view.get(), &options, gameFinished, viewInitialized); };
 #ifdef OSX // see thread comment in stdafx.h
   thread t(getAttributes(), game);

@@ -140,6 +140,8 @@ class Renderer {
   bool isMonkey();
   Event getRandomEvent();
 
+  void printSystemInfo(ostream&);
+
   TileCoord getTileCoord(const string&);
   Vec2 getNominalSize() const;
   vector<Texture> tiles;

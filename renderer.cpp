@@ -211,6 +211,11 @@ void Renderer::initialize(bool fullscreen) {
   display->setVerticalSyncEnabled(true);
 }
 
+void Renderer::printSystemInfo(ostream& out) {
+  sf::ContextSettings settings = display->getSettings();
+  out << "OpenGL Major: " << settings.majorVersion << " minor: " << settings.minorVersion << std::endl;
+}
+
 Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : nominalSize(nominal) {
   CHECK(textFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
   CHECK(tileFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
