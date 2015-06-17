@@ -119,30 +119,26 @@ void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, ve
 
 static string getSquareQuestion(SquareApplyType type, string name) {
   switch (type) {
-    case SquareApplyType::DESCEND: return "Descend the " + name;
-    case SquareApplyType::ASCEND: return "Ascend the " + name;
-    case SquareApplyType::USE_CHEST: return "Open the " + name;
-    case SquareApplyType::DRINK: return "Drink from the " + name;
-    case SquareApplyType::PRAY: return "Pray at the " + name;
-    case SquareApplyType::SLEEP: return "Go to sleep on the " + name;
+    case SquareApplyType::DESCEND: return "descend " + name;
+    case SquareApplyType::ASCEND: return "ascend " + name;
+    case SquareApplyType::USE_CHEST: return "loot " + name;
+    case SquareApplyType::DRINK: return "drink from " + name;
+    case SquareApplyType::PRAY: return "pray at " + name;
+    case SquareApplyType::SLEEP: return "sleep on " + name;
     default: break;
   }
   return "";
 }
 
-void Player::pickUpAction(bool extended) {
-  const Square* square = getCreature()->getSquare();
-  if (square->getApplyType(getCreature())) {
-    string question = getSquareQuestion(*square->getApplyType(getCreature()), square->getName());
-    if (!question.empty()) {
+void Player::pickUpItemAction(int numStack, bool multi) {
+  auto stacks = getCreature()->stackItems(getCreature()->getPickUpOptions());
+  if (getUsableSquareApplyType()) {
+    --numStack;
+    if (numStack == -1) {
       getCreature()->applySquare().perform(getCreature());
       return;
     }
   }
-}
-
-void Player::pickUpItemAction(int numStack, bool multi) {
-  auto stacks = getCreature()->stackItems(getCreature()->getPickUpOptions());
   if (numStack < stacks.size()) {
     vector<Item*> items = stacks[numStack];
     if (multi && items.size() > 1) {
@@ -533,12 +529,9 @@ void Player::makeMove() {
               min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
         }
       }
-      else
-        pickUpAction(false);
       break;
     case UserInputId::INVENTORY_ITEM:
       handleItems(action.get<InventoryItemInfo>().items(), action.get<InventoryItemInfo>().action()); break;
-    case UserInputId::PICK_UP: pickUpAction(false); break;
     case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
     case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
     case UserInputId::WAIT: getCreature()->wait().perform(getCreature()); break;
@@ -759,6 +752,14 @@ const vector<Creature*> Player::getTeam() const {
   return {};
 }
 
+optional<SquareApplyType> Player::getUsableSquareApplyType() const {
+  const Square* square = getCreature()->getSquare();
+  if (auto applyType = square->getApplyType(getCreature()))
+    if (!getSquareQuestion(*applyType, square->getName()).empty())
+      return *applyType;
+  return none;
+}
+
 void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.messageBuffer = messages;
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
@@ -775,6 +776,11 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.levelName = location && location->getName()
     ? capitalFirst(*location->getName()) : getLevel()->getName();
   info.lyingItems.clear();
+  const Square* square = getCreature()->getSquare();
+  if (auto applyType = getUsableSquareApplyType()) {
+    string question = getSquareQuestion(*applyType, square->getName());
+    info.lyingItems.push_back(getApplySquareInfo(question, square->getViewObject().id()));
+  }
   for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))
     info.lyingItems.push_back(getItemInfo(stack));
   info.inventory.clear();
@@ -783,6 +789,15 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto elem : typeDisplayOrder) 
     if (typeGroups[elem].size() > 0)
       append(info.inventory, getItemInfos(typeGroups[elem]));
+}
+
+GameInfo::ItemInfo Player::getApplySquareInfo(const string& question, ViewId viewId) const {
+  return CONSTRUCT(GameInfo::ItemInfo,
+    c.name = question;
+    c.fullName = c.name;
+    c.description = "Click to " + c.name;
+    c.number = 1;
+    c.viewId = viewId;);
 }
 
 GameInfo::ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {

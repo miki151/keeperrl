@@ -48,7 +48,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Clock*);
+  GuiFactory(Renderer&, Clock*);
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
@@ -117,6 +117,7 @@ class GuiFactory {
   PGuiElem tooltip(const vector<string>&);
   PGuiElem darken();
   PGuiElem stopMouseMovement();
+  PGuiElem fullScreen(PGuiElem);
 
   enum class TexId {
     SCROLLBAR,
@@ -216,6 +217,7 @@ class GuiFactory {
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;
   Clock* clock;
+  Renderer& renderer;
 };
 
 

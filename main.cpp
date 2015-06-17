@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
   Options options(userPath + "/options.txt", overrideSettings);
   Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
   Clock clock;
-  GuiFactory guiFactory(&clock);
+  GuiFactory guiFactory(renderer, &clock);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent)
     guiFactory.loadNonFreeImages(paidDataPath + "/images");

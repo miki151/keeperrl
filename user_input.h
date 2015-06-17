@@ -49,7 +49,6 @@ enum class UserInputId {
     MOVE_TO,
     TRAVEL,
     FIRE,
-    PICK_UP,
     PICK_UP_ITEM,
     PICK_UP_ITEM_MULTI,
     SHOW_HISTORY,

@@ -346,8 +346,6 @@ void WindowView::rebuildGui() {
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   tempGuiElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
-  tempGuiElems.push_back(gui.conditional(gui.darken(), [=](GuiElem*){return guiBuilder.isPlayerOverlayFocused();}));
-  tempGuiElems.back()->setBounds(getMapGuiBounds());
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::SPECTATOR:
         right = gui.empty();
@@ -1199,8 +1197,6 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1)));
       mapGui->onMouseGone();
       break;
-    case Keyboard::Return:
-    case Keyboard::Numpad5: inputQueue.push(UserInput(UserInputId::PICK_UP)); break;
     case Keyboard::M: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
     case Keyboard::H: inputQueue.push(UserInput(UserInputId::HIDE)); break;
     case Keyboard::P: inputQueue.push(UserInput(UserInputId::PAY_DEBT)); break;

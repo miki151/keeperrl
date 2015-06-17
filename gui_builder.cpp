@@ -522,10 +522,6 @@ PGuiElem GuiBuilder::getTooltip(const vector<string>& text) {
 const int listLineHeight = 30;
 const int listBrokenLineHeight = 24;
 
-bool GuiBuilder::isPlayerOverlayFocused() const {
-  return playerOverlayFocused;
-}
-
 int GuiBuilder::getScrollPos(int index, int count) {
   return max(0, min(count - 1, index - 3));
 }
@@ -537,7 +533,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
   }
   vector<PGuiElem> lines;
   const int maxElems = 6;
-  const string title = "Click or [Enter] to pick up:";
+  const string title = "Click or press [Enter]:";
   int numElems = min<int>(maxElems, info.lyingItems.size());
   Vec2 size = Vec2(60 + renderer.getTextLength(title), (1 + numElems) * legendLineHeight);
   if (!info.lyingItems.empty()) {
@@ -573,7 +569,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInf
           legendLineHeight, GuiFactory::TOP)));
   int margin = 14;
   content = gui.stack(
-      gui.conditional(gui.miniWindow(), gui.translucentBackground(),
+      gui.conditional(gui.stack(gui.fullScreen(gui.darken()), gui.miniWindow()), gui.translucentBackground(),
         [=] (GuiElem*) { return playerOverlayFocused;}),
       gui.margins(std::move(content), margin, margin, margin, margin));
   ret.push_back({std::move(content), size + Vec2(margin, margin) * 2, OverlayInfo::TOP_RIGHT});

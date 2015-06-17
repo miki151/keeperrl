@@ -90,7 +90,7 @@ class ButtonKey : public Button {
   bool capture;
 };
 
-GuiFactory::GuiFactory(Clock* c) : clock(c) {
+GuiFactory::GuiFactory(Renderer& r, Clock* c) : clock(c), renderer(r) {
 }
 
 PGuiElem GuiFactory::button(function<void(Rectangle)> fun, char hotkey, bool capture) {
@@ -799,6 +799,27 @@ class MaybeMargin : public MarginGui {
 PGuiElem GuiFactory::maybeMargin(PGuiElem top, PGuiElem rest, int width, MarginType type,
     function<bool(Rectangle)> pred) {
   return PGuiElem(new MaybeMargin(std::move(top), std::move(rest), width, type, pred));
+}
+
+class FullScreen : public GuiLayout {
+  public:
+  FullScreen(PGuiElem content, Renderer& r) : GuiLayout(makeVec<PGuiElem>(std::move(content))), renderer(r) {
+  }
+
+  virtual void render(Renderer& r) override {
+    GuiLayout::render(r);
+  }
+
+  virtual Rectangle getElemBounds(int num) override {
+    return Rectangle(renderer.getSize());
+  }
+
+  private:
+  Renderer& renderer;
+};
+
+PGuiElem GuiFactory::fullScreen(PGuiElem content) {
+  return PGuiElem(new FullScreen(std::move(content), renderer));
 }
 
 class MarginFit : public GuiLayout {

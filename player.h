@@ -79,7 +79,6 @@ class Player : public Controller, public CreatureView {
 
   void tryToPerform(CreatureAction);
   void attackAction(Creature* other);
-  void pickUpAction(bool extended);
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();
   void applyItem(vector<Item*> item);
@@ -116,6 +115,9 @@ class Player : public Controller, public CreatureView {
   string getRemainingString(LastingEffect) const;
   vector<GameInfo::ItemInfo> getItemInfos(const vector<Item*>&) const;
   GameInfo::ItemInfo getItemInfo(const vector<Item*>&) const;
+  GameInfo::ItemInfo getApplySquareInfo(const Square*) const;
+  GameInfo::ItemInfo getApplySquareInfo(const string& question, ViewId viewId) const;
+  optional<SquareApplyType> getUsableSquareApplyType() const;
   struct TimePosInfo {
     Vec2 pos;
     double time;

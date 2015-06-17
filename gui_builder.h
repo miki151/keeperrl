@@ -93,7 +93,6 @@ class GuiBuilder {
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
   bool showMorale() const;
-  bool isPlayerOverlayFocused() const;
   Rectangle getMenuPosition(View::MenuType);
   Rectangle getMinionMenuPosition();
   Rectangle getEquipmentMenuPosition(int height);
