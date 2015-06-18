@@ -127,6 +127,7 @@ int main(int argc, char* argv[]) {
     ("gen_world_exit", "Exit after creating a world")
     ("force_keeper", "Skip main menu and force keeper mode")
     ("seed", value<int>(), "Use given seed")
+    ("record", value<string>(), "Record game to file")
     ("replay", value<string>(), "Replay game from file");
   variables_map vars;
   store(parse_command_line(argc, argv, flags), vars);
@@ -192,27 +193,30 @@ int main(int argc, char* argv[]) {
   if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;
-    seed = fromString<int>(fname.substr(lognamePref.size()));
-    Random.init(seed);
     input.reset(new CompressedInput(fname));
+    input->getArchive() >> seed;
+    Random.init(seed);
     view.reset(WindowView::createReplayView(input->getArchive(),
           {renderer, guiFactory, tilesPresent, &options, &clock}));
   } else {
     Random.init(seed);
-#ifndef RELEASE
-    string fname(lognamePref);
-    fname += toString(seed);
-    output.reset(new CompressedOutput(fname));
-    Debug() << "Writing to " << fname;
-    view.reset(WindowView::createLoggingView(output->getArchive(),
-          {renderer, guiFactory, tilesPresent, &options, &clock}));
-#else
-    view.reset(WindowView::createDefaultView(
-          {renderer, guiFactory, tilesPresent, &options, &clock}));
-#endif
+    if (vars.count("record")) {
+      string fname = vars["record"].as<string>();
+      output.reset(new CompressedOutput(fname));
+      output->getArchive() << seed;
+      Debug() << "Writing to " << fname;
+      view.reset(WindowView::createLoggingView(output->getArchive(),
+            {renderer, guiFactory, tilesPresent, &options, &clock}));
+    } else 
+      view.reset(WindowView::createDefaultView(
+            {renderer, guiFactory, tilesPresent, &options, &clock}));
   } 
   std::atomic<bool> gameFinished(false);
-  std::atomic<bool> viewInitialized(useSingleThread);
+  std::atomic<bool> viewInitialized(false);
+  if (useSingleThread) {
+    view->initialize();
+    viewInitialized = true;
+  }
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
   FileSharing fileSharing(uploadUrl);

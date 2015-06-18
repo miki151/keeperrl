@@ -296,8 +296,6 @@ void MainLoop::showCredits(const string& path, View* view) {
 }
 
 void MainLoop::start(bool tilesPresent) {
-  if (useSingleThread)
-    view->initialize();
   if (options->getBoolValue(OptionId::MUSIC))
     jukebox->toggle(true);
   splashScreen();

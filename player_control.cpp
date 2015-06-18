@@ -802,9 +802,9 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
-  gameInfo.bandInfo.deities.clear();
+ /* gameInfo.bandInfo.deities.clear();
   for (Deity* deity : Deity::getDeities())
-    gameInfo.bandInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});
+    gameInfo.bandInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});*/
   gameInfo.villageInfo.villages.clear();
   for (const Collective* c : model->getMainVillains())
     gameInfo.villageInfo.villages.push_back(c->getVillageInfo());
@@ -817,7 +817,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   //info.tasks = getCollective()->getMinionTaskStrings();
   info.minions.clear();
   info.payoutTimeRemaining = -1;
-/*  int payoutTime = getCollective()->getNextPayoutTime(); 
+/*  int payoutTime = getCollective()->getNextPayoutTime();
   if (payoutTime > -1)
     info.payoutTimeRemaining = payoutTime - getCollective()->getTime();
   else

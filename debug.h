@@ -29,7 +29,7 @@
 
 #else
 
-#define CHECK(exp) if (!(exp)) NoDebug() << 1
+#define CHECK(exp) exp
 #define TRY(exp, msg) exp
 #endif
 
@@ -48,6 +48,12 @@
 
 #define MEASURE(exp, text) exp;
 
+#endif
+
+#ifdef RELEASE
+#define NO_RELEASE(exp)
+#else
+#define NO_RELEASE(exp) exp
 #endif
 
 enum DebugType { INFO, FATAL };

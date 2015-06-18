@@ -17,103 +17,162 @@
 #define _REPLAY_VIEW
 
 #include "logging_view.h"
+#include "pantheon.h"
 
-template <class T>
-class ReplayView : public T {
+class ReplayView : public View {
   public:
-    template <typename... Args>
-    ReplayView(InputArchive& iff, Args... args) : T(args...),  input(iff) {
+    ReplayView(InputArchive& iff, View* d) : input(iff), delegate(d) {
     }
 
-    virtual void close() override {
-      T::close();
-    }
-
-    virtual void drawLevelMap(const CreatureView*) override {
-      return;
-    }
-
-    bool equal(double a, double b) {
-      return fabs(a - b) < 0.001;
-    }
-
-    void checkMethod(LoggingToken token) {
+    template <class T>
+    T readValue(LoggingToken token) {
       LoggingToken t;
       input >> BOOST_SERIALIZATION_NVP(t);
       CHECKEQ(int(t), int(token));
-    }
-
-    virtual int getTimeMilli() override {
-      checkMethod(LoggingToken::GET_TIME);
-      int time;
-      input >> BOOST_SERIALIZATION_NVP(time);
-      return time;
-    }
-
-    virtual double getGameSpeed() override {
-      checkMethod(LoggingToken::GET_GAME_SPEED);
-      double s;
-      input >> BOOST_SERIALIZATION_NVP(s);
-      return s;
-    }
-
-    virtual void presentText(const string& title, const string& text) override {
-      return;
-    }
-
-    virtual bool isClockStopped() override {
-      T::isClockStopped();
-      checkMethod(LoggingToken::IS_CLOCK_STOPPED);
-      bool ret;
+      T ret;
       input >> BOOST_SERIALIZATION_NVP(ret);
       return ret;
     }
 
+    virtual int getTimeMilli() override {
+      return readValue<int>(LoggingToken::GET_TIME);
+    }
+
+    virtual int getTimeMilliAbsolute() override {
+      return readValue<int>(LoggingToken::GET_TIME_ABSOLUTE);
+    }
+
+    virtual double getGameSpeed() override {
+      return readValue<double>(LoggingToken::GET_GAME_SPEED);
+    }
+
+    virtual bool isClockStopped() override {
+      return readValue<bool>(LoggingToken::IS_CLOCK_STOPPED);
+    }
+
     virtual UserInput getAction() override {
-      T::getAction();
-      checkMethod(LoggingToken::GET_ACTION);
-      UserInput action;
-      input >> BOOST_SERIALIZATION_NVP(action);
-      return action;
+      return readValue<UserInput>(LoggingToken::GET_ACTION);
     }
 
     virtual optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
         View::MenuType, double* scrollPos, optional<UserInputId> a) override {
-      checkMethod(LoggingToken::CHOOSE_FROM_LIST);
-      optional<int> action;
-      input >> BOOST_SERIALIZATION_NVP(action);
-      return action;
+      return readValue<optional<int>>(LoggingToken::CHOOSE_FROM_LIST);
     }
 
     virtual View::GameTypeChoice chooseGameType() override {
-      checkMethod(LoggingToken::CHOOSE_GAME_TYPE);
-      View::GameTypeChoice action;
-      input >> BOOST_SERIALIZATION_NVP(action);
-      return action;
+      return readValue<View::GameTypeChoice>(LoggingToken::CHOOSE_GAME_TYPE);
     }
 
     virtual optional<Vec2> chooseDirection(const string& message) override {
-      checkMethod(LoggingToken::CHOOSE_DIRECTION);
-      optional<Vec2> action;
-      input >> BOOST_SERIALIZATION_NVP(action);
-      return action;
+      return readValue<optional<Vec2>>(LoggingToken::CHOOSE_DIRECTION);
     }
 
     virtual bool yesOrNoPrompt(const string& message, bool defNo) override {
-      checkMethod(LoggingToken::YES_OR_NO_PROMPT);
-      bool action;
-      input >> BOOST_SERIALIZATION_NVP(action);
-      return action;
+      return readValue<bool>(LoggingToken::YES_OR_NO_PROMPT);
     }
 
     virtual optional<int> getNumber(const string& title, int min, int max, int increments) override {
-      checkMethod(LoggingToken::GET_NUMBER);
-      optional<int> action;
-      input >> BOOST_SERIALIZATION_NVP(action);
-      return action;
+      return readValue<optional<int>>(LoggingToken::GET_NUMBER);
     }
+
+    virtual optional<View::MinionAction> getMinionAction(const vector<GameInfo::PlayerInfo>&,
+        UniqueEntity<Creature>::Id& current) override {
+      return readValue<optional<View::MinionAction>>(LoggingToken::GET_MINION_ACTION);
+    }
+
+    virtual optional<int> chooseItem(const vector<GameInfo::PlayerInfo>&, UniqueEntity<Creature>::Id& current,
+        const vector<GameInfo::ItemInfo>& items, double* scrollpos) override {
+      return readValue<optional<int>>(LoggingToken::CHOOSE_ITEM);
+    }
+
+    virtual bool travelInterrupt() override {
+      return readValue<bool>(LoggingToken::TRAVEL_INTERRUPT);
+    }
+
+    virtual optional<string> getText(const string& title, const string& value, int maxLength,
+        const string& hint = "") override {
+      return readValue<optional<string>>(LoggingToken::GET_TEXT);
+    }
+
+    virtual void initialize() override {
+      if (delegate)
+        delegate->initialize();
+    }
+
+    virtual void reset() override {
+      if (delegate)
+        delegate->reset();
+    }
+
+    virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {
+ //     if (delegate)
+ //       delegate->displaySplash(m, type, cancelFun);
+    }
+
+    virtual void clearSplash() override {
+ //     if (delegate)
+ //       delegate->clearSplash();
+    }
+
+    virtual void close() override {
+      if (delegate)
+        delegate->close();
+    }
+
+    virtual void refreshView() override {
+      if (delegate)
+        delegate->refreshView();
+    }
+
+    virtual void presentText(const string& title, const string& text) override {
+ //     if (delegate)
+ //       delegate->presentText(title, text);
+    };
+
+    virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown,
+        MenuType menu, optional<UserInputId> exitAction) override {
+//      if (delegate)
+//        delegate->presentList(title, options, scrollDown, menu, exitAction);
+    }
+
+    virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override {
+      if (delegate)
+        delegate->animateObject(trajectory, object);
+    }
+
+    virtual void animation(Vec2 pos, AnimationId id) override {
+      if (delegate)
+        delegate->animation(pos, id);
+    }
+
+    virtual void stopClock() override {
+      if (delegate)
+        delegate->stopClock();
+    }
+
+    virtual void continueClock() override {
+      if (delegate)
+        delegate->continueClock();
+    }
+
+    virtual void updateView(const CreatureView* creatureView, bool noRefresh) override {
+      if (delegate)
+        delegate->updateView(creatureView, noRefresh);
+    }
+
+    virtual void drawLevelMap(const CreatureView* view) override {
+//      if (delegate)
+//        delegate->drawLevelMap(view);
+    }
+
+    virtual void resetCenter() override {
+      if (delegate)
+        delegate->resetCenter();
+    }
+
   private:
     InputArchive& input;
+    View* delegate;
 };
 
 #endif

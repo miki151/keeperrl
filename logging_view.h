@@ -26,85 +26,151 @@ enum class LoggingToken {
   GET_NUMBER,
   GET_GAME_SPEED,
   CHOOSE_GAME_TYPE,
+  GET_MINION_ACTION,
+  GET_TIME_ABSOLUTE,
+  CHOOSE_ITEM,
+  TRAVEL_INTERRUPT,
+  GET_TEXT
 };
 
-template <class T>
-class LoggingView : public T {
+#include "view.h"
+
+class LoggingView : public View {
   public:
-    template <typename... Args>
-    LoggingView(OutputArchive& of, Args... args) : T(args...), output(of) {
+    LoggingView(OutputArchive& of, View* d) : output(of), delegate(d) {
     }
 
-    virtual void close() override {
- //     output.close();
-      T::close();
+    template<class T>
+    T logAndGet(T val, LoggingToken token) {
+      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(val);
+      return val;
     }
 
     virtual int getTimeMilli() override {
-      int res = T::getTimeMilli();
-      auto token = LoggingToken::GET_TIME;
-      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
-      return res;
+      return logAndGet(delegate->getTimeMilli(), LoggingToken::GET_TIME);
+    }
+
+    virtual int getTimeMilliAbsolute() override {
+      return logAndGet(delegate->getTimeMilliAbsolute(), LoggingToken::GET_TIME_ABSOLUTE);
     }
 
     virtual double getGameSpeed() override {
-      double res = T::getGameSpeed();
-      auto token = LoggingToken::GET_GAME_SPEED;
-      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
-      return res;
+      return logAndGet(delegate->getGameSpeed(), LoggingToken::GET_GAME_SPEED);
     }
 
     virtual bool isClockStopped() override {
-      bool res = T::isClockStopped();
-      auto token = LoggingToken::IS_CLOCK_STOPPED;
-      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
-      return res;
+      return logAndGet(delegate->isClockStopped(), LoggingToken::IS_CLOCK_STOPPED);
     }
     
     virtual UserInput getAction() override {
-      UserInput res = T::getAction();
-      auto token = LoggingToken::GET_ACTION;
-      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
-      return res;
+      return logAndGet(delegate->getAction(), LoggingToken::GET_ACTION);
     }
 
     virtual optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
         View::MenuType type, double* scrollPos, optional<UserInputId> action) override {
-      auto res = T::chooseFromList(title, options, index, type, scrollPos, action);
-      auto token = LoggingToken::CHOOSE_FROM_LIST;
-      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
-      return res;
+      return logAndGet(delegate->chooseFromList(title, options, index, type, scrollPos, action),
+          LoggingToken::CHOOSE_FROM_LIST);
     }
 
     virtual View::GameTypeChoice chooseGameType() override {
-      auto res = T::chooseGameType();
-      auto token = LoggingToken::CHOOSE_GAME_TYPE;
-      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
-      return res;
+      return logAndGet(delegate->chooseGameType(), LoggingToken::CHOOSE_GAME_TYPE);
     }
 
     virtual optional<Vec2> chooseDirection(const string& message) override {
-      auto res = T::chooseDirection(message);
-      auto token = LoggingToken::CHOOSE_DIRECTION;
-      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
-      return res;
+      return logAndGet(delegate->chooseDirection(message), LoggingToken::CHOOSE_DIRECTION);
     }
 
     virtual bool yesOrNoPrompt(const string& message, bool defNo) override {
-      auto res = T::yesOrNoPrompt(message, defNo);
-      auto token = LoggingToken::YES_OR_NO_PROMPT;
-      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
-      return res;
+      return logAndGet(delegate->yesOrNoPrompt(message, defNo), LoggingToken::YES_OR_NO_PROMPT);
     }
 
     virtual optional<int> getNumber(const string& title, int min, int max, int increments) override {
-      auto res = T::getNumber(title, min, max, increments);
-      auto token = LoggingToken::GET_NUMBER;
-      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(res);
-      return res;
+      return logAndGet(delegate->getNumber(title, min, max, increments), LoggingToken::GET_NUMBER);
     }
+
+    virtual optional<View::MinionAction> getMinionAction(const vector<GameInfo::PlayerInfo>& info,
+        UniqueEntity<Creature>::Id& current) override {
+      return logAndGet(delegate->getMinionAction(info, current), LoggingToken::GET_MINION_ACTION);
+    }
+
+    virtual optional<int> chooseItem(const vector<GameInfo::PlayerInfo>& info, UniqueEntity<Creature>::Id& current,
+        const vector<GameInfo::ItemInfo>& items, double* scrollpos) override {
+      return logAndGet(delegate->chooseItem(info, current, items, scrollpos), LoggingToken::CHOOSE_ITEM);
+    }
+
+    virtual bool travelInterrupt() override {
+      return logAndGet(delegate->travelInterrupt(), LoggingToken::TRAVEL_INTERRUPT);
+    }
+
+    virtual optional<string> getText(const string& title, const string& value, int maxLength,
+        const string& hint = "") override {
+      return logAndGet(delegate->getText(title, value, maxLength, hint), LoggingToken::GET_TEXT);
+    }
+
+    virtual void initialize() override {
+      delegate->initialize();
+    }
+
+    virtual void reset() override {
+      delegate->reset();
+    }
+
+    virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {
+      delegate->displaySplash(m, type, cancelFun);
+    }
+
+    virtual void clearSplash() override {
+      delegate->clearSplash();
+    }
+
+    virtual void close() override {
+      delegate->close();
+    }
+
+    virtual void refreshView() override {
+      delegate->refreshView();
+    }
+
+    virtual void presentText(const string& title, const string& text) override {
+      delegate->presentText(title, text);
+    };
+
+    virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown,
+      MenuType menu, optional<UserInputId> exitAction) override {
+      delegate->presentList(title, options, scrollDown, menu, exitAction);
+    }
+
+    virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override {
+      delegate->animateObject(trajectory, object);
+    }
+
+    virtual void animation(Vec2 pos, AnimationId id) override {
+      delegate->animation(pos, id);
+    }
+
+    virtual void stopClock() override {
+      delegate->stopClock();
+    }
+
+    virtual void continueClock() override {
+      delegate->continueClock();
+    }
+
+    virtual void updateView(const CreatureView* creatureView, bool noRefresh) override {
+      delegate->updateView(creatureView, noRefresh);
+    }
+
+    virtual void drawLevelMap(const CreatureView* view) override {
+      delegate->drawLevelMap(view);
+    }
+
+    virtual void resetCenter() override {
+      delegate->resetCenter();
+    }
+
   private:
     OutputArchive& output;
+    View* delegate;
 };
 
 #endif

@@ -53,11 +53,11 @@ View* WindowView::createDefaultView(ViewParams params) {
 }
 
 View* WindowView::createLoggingView(OutputArchive& of, ViewParams params) {
-  return new LoggingView<WindowView>(of, params);
+  return new LoggingView(of, new WindowView(params));
 }
 
 View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
-  return new ReplayView<WindowView>(ifs, params);
+  return new ReplayView(ifs, new WindowView(params));
 }
 
 class TempClockPause {
@@ -505,8 +505,6 @@ void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
   updateMinimap(collective);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);
-  if (currentThreadId() == renderThreadId)
-    refreshView();
 }
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
@@ -1077,6 +1075,7 @@ void WindowView::continueClock() {
 bool WindowView::isClockStopped() {
   return clock->isPaused();
 }
+
 bool WindowView::considerResizeEvent(sf::Event& event) {
   if (event.type == Event::Resized) {
     resize(event.size.width, event.size.height);

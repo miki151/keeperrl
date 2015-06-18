@@ -78,6 +78,7 @@ void NameGenerator::init(const string& namesPath) {
 
 
 string NameGenerator::getNext() {
+  CHECK(!names.empty());
   string ret = names.front();
   if (!oneName) {
     names.pop();

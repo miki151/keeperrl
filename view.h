@@ -149,18 +149,36 @@ class View {
 
   struct MinionAction {
     struct ItemAction {
-      vector<UniqueEntity<Item>::Id> ids;
-      optional<EquipmentSlot> slot;
-      GameInfo::ItemInfo::Action action;
+      vector<UniqueEntity<Item>::Id> SERIAL(ids);
+      optional<EquipmentSlot> SERIAL(slot);
+      GameInfo::ItemInfo::Action SERIAL(action);
+      template <class Archive> 
+      void serialize(Archive& ar, const unsigned int version) {
+        ar & SVAR(ids) & SVAR(slot) & SVAR(action);
+      }
     };
     struct ControlAction {
+      template <class Archive> 
+      void serialize(Archive& ar, const unsigned int version) {
+      }
     };
     struct RenameAction {
-      string newName;
+      template <class Archive> 
+      void serialize(Archive& ar, const unsigned int version) {
+        ar & SVAR(newName);
+      }
+      string SERIAL(newName);
     };
     struct BanishAction {
+      template <class Archive> 
+      void serialize(Archive& ar, const unsigned int version) {
+      }
     };
-    variant<MinionTask, ItemAction, ControlAction, RenameAction, BanishAction> action;
+    variant<MinionTask, ItemAction, ControlAction, RenameAction, BanishAction> SERIAL(action);
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & SVAR(action);
+    }
   };
 
   virtual optional<MinionAction> getMinionAction(const vector<GameInfo::PlayerInfo>&,
