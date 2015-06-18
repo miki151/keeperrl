@@ -153,7 +153,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo(BuildInfo::TORCH, "Place it on tiles next to a wall.", 'c', "Installations"),
     BuildInfo({SquareId::EYEBALL, {ResourceId::MANA, 10}, "Eyeball"}, {},
       "Makes the area around it visible.", 0, "Installations"),
-    BuildInfo({SquareId::MINION_STATUE, {ResourceId::GOLD, 50}, "Statue", false, false, 1}, {},
+    BuildInfo({SquareId::MINION_STATUE, {ResourceId::GOLD, 300}, "Statue", false, false}, {},
       "Increases minion population limit by " +
             toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
     BuildInfo({SquareId::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, {},
