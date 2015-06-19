@@ -102,6 +102,7 @@ RICH_ENUM(CreatureId,
     COW,
     PIG,
     GOAT,
+    DONKEY,
     
     LEPRECHAUN,
     

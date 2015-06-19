@@ -681,8 +681,8 @@ CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const ve
 
 CreatureFactory CreatureFactory::humanVillage(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::PESEANT,
-      CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
-      { 2, 1, 1, 1, 1, 0}, {});
+      CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
+      { 2, 1, 1, 1, 1, 1, 1}, {});
 }
 
 CreatureFactory CreatureFactory::gnomeVillage(Tribe* tribe) {
@@ -692,8 +692,9 @@ CreatureFactory CreatureFactory::gnomeVillage(Tribe* tribe) {
 
 CreatureFactory CreatureFactory::humanCastle(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
-      CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
-      { 10, 6, 2, 1, 1, 1, 1, 1}, {CreatureId::AVATAR});
+      CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
+      CreatureId::PIG, CreatureId::DOG },
+      { 10, 6, 2, 1, 1, 1, 1, 1, 1}, {CreatureId::AVATAR});
 }
 
 static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
@@ -1628,6 +1629,11 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.animal = true;
           c.dontChase = true;
           c.name = "cow";);
+    case CreatureId::DONKEY: 
+      return INHERIT(COW,
+          c.viewId = ViewId::DONKEY;
+          c.weight = 200;
+          c.name = "donkey";);
     case CreatureId::PIG: 
       return CATTR(
           c.viewId = ViewId::PIG;
