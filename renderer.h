@@ -97,10 +97,11 @@ class Renderer {
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(string s);
-  void drawText(FontId, int size, Color, int x, int y, String, bool center = false);
+  enum CenterType { NONE, HOR, VER, HOR_VER };
+  void drawText(FontId, int size, Color, int x, int y, String, CenterType center = NONE);
   void drawTextWithHotkey(Color, int x, int y, const string&, char key);
-  void drawText(Color, int x, int y, string, bool center = false, int size = textSize);
-  void drawText(Color, int x, int y, const char* c, bool center = false, int size = textSize);
+  void drawText(Color, int x, int y, string, CenterType center = NONE, int size = textSize);
+  void drawText(Color, int x, int y, const char* c, CenterType center = NONE, int size = textSize);
   void drawImage(int px, int py, const Texture&, double scale = 1);
   void drawImage(int px, int py, int kx, int ky, const Texture&, double scale = 1);
   void drawImage(Rectangle target, Rectangle source, const Texture&);

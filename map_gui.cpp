@@ -80,6 +80,13 @@ optional<Vec2> MapGui::getMousePos() {
     return none;
 }
 
+optional<Vec2> MapGui::projectOnMap(Vec2 screenCoord) {
+  if (screenCoord.inRectangle(getBounds()))
+    return layout->projectOnMap(getBounds(), getScreenPos(), screenCoord);
+  else
+    return none;
+}
+
 optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
   if (auto pos = getMousePos())
     return layout->projectOnMap(getBounds(), getScreenPos(), *pos);
@@ -435,14 +442,16 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
-        tilePos.x, tilePos.y, tile.text, true);
+        tilePos.x, tilePos.y, tile.text, Renderer::HOR);
     if (auto id = object.getCreatureId())
       creatureMap.emplace_back(Rectangle(tilePos, tilePos + size), *id);
     double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
     if (burningVal > 0) {
-      renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ', true);
+      renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ',
+          Renderer::HOR);
       if (burningVal > 0.5)
-        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'Ѡ', true);
+        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'Ѡ',
+          Renderer::HOR);
     }
   }
 }

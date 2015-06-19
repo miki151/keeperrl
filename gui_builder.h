@@ -115,7 +115,8 @@ class GuiBuilder {
   vector<PGuiElem> drawAttributesOnPage(vector<PGuiElem>&&);
   vector<PGuiElem> drawEquipmentAndConsumables(const vector<GameInfo::ItemInfo>&, MinionMenuCallback);
   vector<PGuiElem> drawSkillsList(const GameInfo::PlayerInfo&);
-  vector<PGuiElem> drawSpellsList(const GameInfo::PlayerInfo&);
+  vector<PGuiElem> drawSpellsList(const GameInfo::PlayerInfo&, bool active);
+  PGuiElem getSpellIcon(const GameInfo::PlayerInfo::Spell&, bool active);
   vector<PGuiElem> drawEffectsList(const GameInfo::PlayerInfo&);
   vector<PGuiElem> drawMinionActions(const GameInfo::PlayerInfo&, MinionMenuCallback);
   vector<PGuiElem> joinLists(vector<PGuiElem>&&, vector<PGuiElem>&&);

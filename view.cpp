@@ -153,9 +153,11 @@ void GameInfo::PlayerInfo::readFrom(const Creature* c) {
   spells.clear();
   for (::Spell* spell : c->getSpells()) {
     bool ready = c->isReady(spell);
-    spells.push_back({ spell->getName() +
-        (ready ? "" : " [" + toString<int>(c->getSpellDelay(spell)) + "]"),
-        spell->getDescription(), ready});
+    spells.push_back({
+        spell->getId(),
+        spell->getName() + (ready ? "" : " [" + toString<int>(c->getSpellDelay(spell)) + "]"),
+        spell->getDescription(),
+        c->isReady(spell) ? none : optional<int>(c->getSpellDelay(spell))});
   }
 }
 

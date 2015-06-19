@@ -93,7 +93,7 @@ class Player : public Controller, public CreatureView {
   void targetAction();
   void payDebtAction();
   void chatAction(optional<Vec2> dir = none);
-  void spellAction(int spell);
+  void spellAction(SpellId);
   void consumeAction();
   void fireAction(Vec2 dir);
   vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);

@@ -6,6 +6,8 @@
 #include "player_message.h"
 #include "minion_task.h"
 
+enum class SpellId;
+
 /** Represents all the game information displayed around the map window.*/
 class GameInfo {
   public:
@@ -125,9 +127,10 @@ class GameInfo {
     };
     vector<Effect> effects;
     struct Spell {
+      SpellId id;
       string name;
       string help;
-      bool available;
+      optional<int> timeout;
     };
     vector<Spell> spells;
     vector<ItemInfo> lyingItems;

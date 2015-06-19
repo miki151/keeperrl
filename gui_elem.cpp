@@ -19,6 +19,7 @@
 #include "view_object.h"
 #include "tile.h"
 #include "clock.h"
+#include "spell.h"
 
 using sf::Color;
 
@@ -305,38 +306,51 @@ PGuiElem GuiFactory::label(const string& s, int size, Color c) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
-            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, false, size);
-          r.drawText(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, false, size);
+            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, Renderer::NONE, size);
+          r.drawText(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, Renderer::NONE, size);
         }));
 }
 
-PGuiElem GuiFactory::centeredLabel(const string& s, int size, Color c) {
+static Vec2 getTextPos(Rectangle bounds, Renderer::CenterType center) {
+  switch (center) {
+    case Renderer::HOR:
+      return Vec2(bounds.middle().x, bounds.getTopLeft().y);
+    case Renderer::VER:
+      return Vec2(bounds.getTopLeft().x, bounds.middle().y);
+    case Renderer::HOR_VER:
+      return bounds.middle();
+    default:
+      return bounds.getTopLeft();
+  }
+}
+
+PGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s, int size, Color c) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(transparency(colors[ColorId::BLACK], 100),
-            bounds.middle().x + 1, bounds.getTopLeft().y + 2, s, true, size);
-          r.drawText(c, bounds.middle().x, bounds.getTopLeft().y, s, true, size);
+          Vec2 pos = getTextPos(bounds, center);
+          r.drawText(transparency(colors[ColorId::BLACK], 100), pos.x + 1, pos.y + 2, s, center, size);
+          r.drawText(c, pos.x, pos.y, s, center, size);
         }));
 }
 
-PGuiElem GuiFactory::centeredLabel(const string& s, Color c) {
-  return centeredLabel(s, Renderer::textSize, c);
+PGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s, Color c) {
+  return centeredLabel(center, s, Renderer::textSize, c);
 }
 
-PGuiElem GuiFactory::variableLabel(function<string()> fun, bool center, int size, Color c) {
+PGuiElem GuiFactory::variableLabel(function<string()> fun, Renderer::CenterType center, int size, Color c) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           string s = fun();
-          int x = center ? bounds.middle().x : bounds.getTopLeft().x;
-          r.drawText(transparency(colors[ColorId::BLACK], 100), x + 1, bounds.getTopLeft().y + 2, s, center, size);
-          r.drawText(c, x, bounds.getTopLeft().y, s, center, size);
+          Vec2 pos = getTextPos(bounds, center);
+          r.drawText(transparency(colors[ColorId::BLACK], 100), pos.x + 1, pos.y + 2, s, center, size);
+          r.drawText(c, pos.x, pos.y, s, center, size);
         }));
 }
 
 PGuiElem GuiFactory::labelUnicode(const String& s, Color color, int size, Renderer::FontId fontId) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(fontId, size, color, bounds.getTopLeft().x, bounds.getTopLeft().y, s, false);
+          r.drawText(fontId, size, color, bounds.getTopLeft().x, bounds.getTopLeft().y, s);
         }));
 }
 
@@ -347,7 +361,7 @@ class MainMenuLabel : public GuiElem {
   virtual void render(Renderer& renderer) override {
     int size = (0.9 - 2 * vPadding) * getBounds().getH();
     double height = getBounds().getPY() + vPadding * getBounds().getH();
-    renderer.drawText(color, getBounds().middle().x, height - size / 11, text, true, size);
+    renderer.drawText(color, getBounds().middle().x, height - size / 11, text, Renderer::HOR, size);
   }
 
   private:
@@ -618,6 +632,30 @@ class VerticalList : public GuiLayout {
   vector<int> heights;
   int numAlignBack;
 };
+
+
+GuiFactory::ListBuilder::ListBuilder(GuiFactory& g, int defSz) : gui(g), defaultSize(defSz) {}
+
+void GuiFactory::ListBuilder::addElem(PGuiElem elem, int size) {
+  if (size == 0) {
+    CHECK(defaultSize > 0);
+    size = defaultSize;
+  }
+  elems.push_back(std::move(elem));
+  sizes.push_back(size);
+}
+
+int GuiFactory::ListBuilder::getSize() const {
+  return std::accumulate(sizes.begin(), sizes.end(), 0);
+}
+
+PGuiElem GuiFactory::ListBuilder::buildVerticalList() {
+  return gui.verticalList(std::move(elems), sizes);
+}
+
+PGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
+  return gui.horizontalList(std::move(elems), sizes);
+}
 
 PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights) {
   return PGuiElem(new VerticalList(std::move(e), heights, 0));
@@ -1382,6 +1420,12 @@ void GuiFactory::loadFreeImages(const string& path) {
     CHECK(iconTextures.back().loadFromFile(path + "/stat_icons.png",
           sf::IntRect(i * statIconWidth, 0, statIconWidth, statIconWidth)));
   }
+  const int spellIconWidth = 40;
+  for (SpellId id : ENUM_ALL(SpellId)) {
+    spellTextures.emplace_back();
+    CHECK(spellTextures.back().loadFromFile(path + "/spells.png",
+          sf::IntRect(0, int(id) * spellIconWidth, spellIconWidth, spellIconWidth)));
+  }
 }
 
 void GuiFactory::loadNonFreeImages(const string& path) {
@@ -1579,6 +1623,10 @@ PGuiElem GuiFactory::background(PGuiElem content, Color color) {
 
 PGuiElem GuiFactory::icon(IconId id) {
   return sprite(getIconTex(id), Alignment::CENTER);
+}
+
+PGuiElem GuiFactory::spellIcon(SpellId id) {
+  return sprite(spellTextures[int(id)], Alignment::CENTER);
 }
 
 PGuiElem GuiFactory::sprite(TexId id, Alignment a) {

@@ -21,6 +21,7 @@
 
 class ViewObject;
 class Clock;
+enum class SpellId;
 
 class GuiElem {
   public:
@@ -66,6 +67,21 @@ class GuiFactory {
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
   PGuiElem rectangle(sf::Color color, optional<sf::Color> borderColor = none);
+  class ListBuilder {
+    public:
+    ListBuilder(GuiFactory&, int defaultSize = 0);
+    void addElem(PGuiElem, int size = 0);
+    PGuiElem buildVerticalList();
+    PGuiElem buildHorizontalList();
+    int getSize() const;
+
+    private:
+    GuiFactory& gui;
+    vector<PGuiElem> elems;
+    vector<int> sizes;
+    int defaultSize = 0;
+  };
+  ListBuilder getListBuilder(int defaultSize = 0);
   PGuiElem verticalList(vector<PGuiElem>, int elemHeight);
   PGuiElem verticalList(vector<PGuiElem>, vector<int> elemHeight);
   PGuiElem verticalListFit(vector<PGuiElem>, double spacing);
@@ -85,10 +101,10 @@ class GuiFactory {
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem label(const string&, function<Color()>);
-  PGuiElem centeredLabel(const string&, int size, Color = colors[ColorId::WHITE]);
-  PGuiElem centeredLabel(const string&, Color = colors[ColorId::WHITE]);
+  PGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);
+  PGuiElem centeredLabel(Renderer::CenterType, const string&, Color = colors[ColorId::WHITE]);
   PGuiElem variableLabel(function<string()>,
-      bool center = false, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
+      Renderer::CenterType = Renderer::NONE, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
   PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_ON]);
   PGuiElem mainMenuLabelBg(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_OFF]);
   PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
@@ -207,6 +223,7 @@ class GuiFactory {
 
   PGuiElem icon(IconId);
   Texture& get(TexId);
+  PGuiElem spellIcon(SpellId);
 
   private:
 
@@ -216,6 +233,7 @@ class GuiFactory {
 
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;
+  vector<Texture> spellTextures;
   Clock* clock;
   Renderer& renderer;
 };

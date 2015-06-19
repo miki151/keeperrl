@@ -50,7 +50,7 @@ Font& Renderer::getFont(Renderer::FontId id) {
   }
 }
 
-void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s, bool center) {
+void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s, CenterType center) {
   addRenderElem([this, s, center, size, color, x, y, id] {
       int ox = 0;
       int oy = 0;
@@ -58,9 +58,20 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s
       t.setFont(getFont(id));
       t.setCharacterSize(size);
       t.setString(s);
-      if (center) {
       sf::FloatRect bounds = t.getLocalBounds();
-      ox -= bounds.left + bounds.width / 2;
+      switch (center) {
+        case HOR:
+          ox -= bounds.left + bounds.width / 2;
+          break;
+        case VER:
+          oy -= bounds.top + bounds.height / 2;
+          break;
+        case HOR_VER:
+          ox -= bounds.left + bounds.width / 2;
+          oy -= bounds.top + bounds.height / 2;
+          break;
+        default:
+          break;
       }
       t.setPosition(x + ox, y + oy);
       t.setColor(color);
@@ -74,11 +85,11 @@ String Renderer::toUnicode(const string& s) {
   return utf32;
 }
 
-void Renderer::drawText(Color color, int x, int y, string s, bool center, int size) {
+void Renderer::drawText(Color color, int x, int y, string s, CenterType center, int size) {
   drawText(TEXT_FONT, size, color, x, y, toUnicode(s), center);
 }
 
-void Renderer::drawText(Color color, int x, int y, const char* c, bool center, int size) {
+void Renderer::drawText(Color color, int x, int y, const char* c, CenterType center, int size) {
   drawText(TEXT_FONT, size, color, x, y, String(c), center);
 }
 

@@ -301,7 +301,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       fastImmigration ? 0.1 : 0.011,
       500,
       2,
-      8,
+      10,
       {
       CONSTRUCT(PopulationIncrease,
         c.type = SquareApplyType::PIGSTY;

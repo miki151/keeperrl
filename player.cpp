@@ -399,11 +399,8 @@ void Player::fireAction(Vec2 dir) {
   tryToPerform(getCreature()->fire(dir));
 }
 
-void Player::spellAction(int spellNum) {
-  vector<Spell*> spells = getCreature()->getSpells();
-  if (spellNum >= spells.size())
-    return;
-  Spell* spell = spells[spellNum];
+void Player::spellAction(SpellId id) {
+  Spell* spell = Spell::get(id);
   if (!spell->isDirected())
     tryToPerform(getCreature()->castSpell(spell));
   else if (auto dir = model->getView()->chooseDirection("Which direction?"))
@@ -544,7 +541,7 @@ void Player::makeMove() {
       if (unpossess())
         return;
       break;
-    case UserInputId::CAST_SPELL: spellAction(action.get<int>()); break;
+    case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
     case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(this); break;
     case UserInputId::EXIT: model->exitAction(); return;
     default: break;

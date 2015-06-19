@@ -59,6 +59,7 @@ class MapGui : public GuiElem {
   void clearCenter();
   bool isCentered() const;
   Vec2 getScreenPos() const;
+  optional<Vec2> projectOnMap(Vec2 screenCoord);
 
   private:
   void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal,

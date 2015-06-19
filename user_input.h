@@ -80,7 +80,9 @@ struct InventoryItemInfo : public NamedTupleBase<vector<UniqueEntity<Item>::Id>,
   NAME_ELEM(1, action);
 };
 
-typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamLeaderInfo),
+enum class SpellId;
+
+typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamLeaderInfo, SpellId),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
@@ -94,7 +96,6 @@ typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec
             UserInputId::PICK_UP_ITEM,
             UserInputId::PICK_UP_ITEM_MULTI,
             UserInputId::MESSAGE_INFO,
-            UserInputId::CAST_SPELL,
             UserInputId::COMMAND_TEAM),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM),
@@ -107,6 +108,8 @@ typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec
             UserInputId::RECT_SELECTION,
             UserInputId::RECT_DESELECTION),
         ASSIGN(TeamLeaderInfo,
-            UserInputId::SET_TEAM_LEADER)> UserInput;
+            UserInputId::SET_TEAM_LEADER),
+        ASSIGN(SpellId,
+            UserInputId::CAST_SPELL)> UserInput;
 
 #endif

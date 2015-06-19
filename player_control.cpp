@@ -856,7 +856,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.messageBuffer = messages;
   info.taskMap.clear();
   for (const Task* task : getCollective()->getTaskMap().getAllTasks()) {
-    optional<UniqueEntity<Creature>::Id> creature;
+    optional<UniqueEntity<Creature>::Id> creature(0);
     if (const Creature *c = getCollective()->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
     info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});

@@ -226,7 +226,7 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
   renderer.drawImage((renderer.getSize().x - width) / 2, 0, menuCore, scale);
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
   renderer.drawText(colors[ColorId::WHITE], 30, renderer.getSize().y - 40, "Version " BUILD_DATE " " BUILD_VERSION,
-      false, 16);
+      Renderer::NONE, 16);
 }
 
 void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
@@ -244,7 +244,7 @@ void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
       Rectangle bar(progressBar.getTopLeft(), Vec2(1 + progressBar.getPX() * (1.0 - progress) +
             progressBar.getKX() * progress, progressBar.getKY()));
       renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
-      renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.getPY() + 20, "Autosaving", true);
+      renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.getPY() + 20, "Autosaving", Renderer::HOR);
       renderer.drawAndClearBuffer();
       sf::sleep(sf::milliseconds(30));
       Event event;
@@ -287,7 +287,7 @@ void WindowView::displaySplash(const ProgressMeter& meter, View::SplashType type
       else
         renderer.drawImage((renderer.getSize().x - loadingSplash.getSize().x) / 2,
             (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
-      renderer.drawText(colors[ColorId::WHITE], textPos.x, textPos.y, text, true);
+      renderer.drawText(colors[ColorId::WHITE], textPos.x, textPos.y, text, Renderer::HOR);
       if (cancelFun)
         renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.getPX(), cancelBut.getPY(), cancelText);
       renderer.drawAndClearBuffer();
@@ -603,7 +603,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
     renderer.waitEvent(event);
     considerResizeEvent(event);
     if (event.type == Event::MouseMoved || event.type == Event::MouseButtonPressed) {
-      if (auto pos = mapGui->getHighlightedTile(renderer)) {
+      if (auto pos = mapGui->projectOnMap(renderer.getMousePos())) {
         refreshScreen(false);
         int numArrow = 0;
         Vec2 middle = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos())
@@ -618,7 +618,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
         else {
           static sf::Uint32 arrows[] = { L'⇐', L'⇖', L'⇑', L'⇗', L'⇒', L'⇘', L'⇓', L'⇙'};
           renderer.drawText(Renderer::SYMBOL_FONT, 20, colors[ColorId::WHITE],
-              wpos.x + mapLayout->getSquareSize().x / 2, wpos.y, arrows[numArrow], true);
+              wpos.x + mapLayout->getSquareSize().x / 2, wpos.y, arrows[numArrow], Renderer::HOR);
         }
         renderer.drawAndClearBuffer();
         if (event.type == Event::MouseButtonPressed)
@@ -935,7 +935,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   PGuiElem dismissBut = gui.margins(gui.stack(makeVec<PGuiElem>(
         gui.button([&](){ choice = -100; }),
         gui.mouseHighlight2(gui.mainMenuHighlight()),
-        gui.centeredLabel("Dismiss"))), 0, 5, 0, 0);
+        gui.centeredLabel(Renderer::HOR, "Dismiss"))), 0, 5, 0, 0);
   switch (menuType) {
     case MAIN_MENU: break;
     case YES_NO_MENU:
