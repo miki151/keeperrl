@@ -696,7 +696,8 @@ optional<View::MinionAction> WindowView::getMinionAction(const vector<GameInfo::
   addReturnDialog<optional<MinionAction>>(returnQueue, [=, &currentMinion] ()-> optional<MinionAction> {
     optional<optional<MinionAction>> ret;
     tempGuiElems.push_back(gui.stack(gui.reverseButton([&ret] { ret = optional<MinionAction>(none); }),
-        gui.window(guiBuilder.drawMinionMenu(minions, currentMinion, [&] (optional<MinionAction> r) { ret = r; }))));
+        gui.window(guiBuilder.drawMinionMenu(minions, currentMinion, [&] (optional<MinionAction> r) { ret = r; }),
+          [&ret] { ret = optional<MinionAction>(none); })));
     GuiElem* menu = tempGuiElems.back().get();
     menu->setBounds(guiBuilder.getMinionMenuPosition());
     PGuiElem bg = gui.darken();
@@ -741,7 +742,8 @@ optional<int> WindowView::chooseItem(const vector<GameInfo::PlayerInfo>& minions
         gui.miniWindow(gui.margins(
             gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
         15, 15, 15, 15)));
-    PGuiElem bg1 = gui.window(guiBuilder.drawMinionMenu(minions, cur, [&] (optional<MinionAction>) { }));
+    PGuiElem bg1 = gui.window(guiBuilder.drawMinionMenu(minions, cur, [&] (optional<MinionAction>) { }),
+          [&retVal] { retVal = optional<int>(none); });
     bg1->setBounds(guiBuilder.getMinionMenuPosition());
     PGuiElem bg2 = gui.darken();
     bg2->setBounds(renderer.getSize());
@@ -939,13 +941,13 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   switch (menuType) {
     case MAIN_MENU: break;
     case YES_NO_MENU:
-      stuff = gui.window(std::move(stuff)); break;
+      stuff = gui.window(std::move(stuff), [&choice] { choice = -100;}); break;
     default:
       stuff = gui.scrollable(std::move(stuff), scrollPos);
       stuff = gui.margins(std::move(stuff), 0, 15, 0, 0);
       stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
           std::move(stuff), 30, gui.BOTTOM);
-      stuff = gui.window(std::move(stuff));
+      stuff = gui.window(std::move(stuff), [&choice] { choice = -100;});
       break;
   }
   optional<optional<int>> callbackRet;

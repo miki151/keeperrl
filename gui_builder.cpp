@@ -529,6 +529,7 @@ int GuiBuilder::getScrollPos(int index, int count) {
 void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInfo& info) {
   if (info.lyingItems.empty()) {
     playerOverlayFocused = false;
+    itemIndex = -1;
     return;
   }
   vector<PGuiElem> lines;
@@ -1328,6 +1329,19 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<View::ListEle
     return gui.verticalListFit(std::move(lines), 0.0);
 }
 
+static optional<GuiFactory::IconId> getMoraleIcon(double morale) {
+  if (morale >= 0.5)
+    return GuiFactory::MORALE_4;
+  if (morale >= 0.01)
+    return GuiFactory::MORALE_3;
+  if (morale < -0.5)
+    return GuiFactory::MORALE_1;
+  if (morale < -0.01)
+    return GuiFactory::MORALE_2;
+  else
+    return none;
+}
+
 PGuiElem GuiBuilder::drawMinionButtons(const vector<GameInfo::PlayerInfo>& minions,
     UniqueEntity<Creature>::Id& current) {
   vector<PGuiElem> list;
@@ -1336,11 +1350,15 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<GameInfo::PlayerInfo>& minio
   for (int i : All(minions)) {
     auto minionId = minions[i].creatureId;
     auto colorFun = [&current, minionId] { return colors[current == minionId ? ColorId::GREEN : ColorId::WHITE];};
+    GuiFactory::ListBuilder line(gui);
+    line.addElem(gui.label(minions[i].getFirstName(), colorFun),
+        renderer.getTextLength(minions[i].getFirstName()) + 5);
+    if (auto icon = getMoraleIcon(minions[i].morale))
+      line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
+    line.addBackElem(gui.label("L:" + toString(minions[i].level), colorFun), 42);
     list.push_back(gui.stack(
         gui.button([&current, minionId] { current = minionId;}),
-        gui.horizontalList(makeVec<PGuiElem>(
-            gui.label(minions[i].getFirstName(), colorFun),
-            gui.label("L:" + toString(minions[i].level), colorFun)), 42, 1)));
+        line.buildHorizontalList()));
   }
   return gui.verticalList(std::move(list), legendLineHeight);
 }
@@ -1555,7 +1573,7 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
   PGuiElem stuff = gui.margins(getTextContent(title, text, hint), 30, 50, 0, 0);
   stuff = gui.margin(gui.centerHoriz(std::move(dismissBut), renderer.getTextLength("Dismiss") + 100),
     std::move(stuff), 30, gui.BOTTOM);
-  stuff = gui.window(std::move(stuff));
+  stuff = gui.window(std::move(stuff), [&dismiss] { dismiss = true; });
   PGuiElem bg = gui.darken();
   bg->setBounds(renderer.getSize());
   while (1) {

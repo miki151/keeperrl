@@ -540,6 +540,30 @@ class KeyHandler : public GuiElem {
   function<void(Event::KeyEvent)> fun;
   bool capture;
 };
+
+class AlignmentGui : public GuiLayout {
+  public:
+  AlignmentGui(PGuiElem e, Vec2 sz, GuiFactory::Alignment align)
+      : GuiLayout(makeVec<PGuiElem>(std::move(e))), alignment(align), size(sz) {}
+
+  virtual Rectangle getElemBounds(int num) override {
+    switch (alignment) {
+      case GuiFactory::Alignment::TOP_RIGHT:
+        return Rectangle(getBounds().getTopRight() + size.mult(Vec2(-1, 0)),
+            getBounds().getTopRight() + size.mult(Vec2(0, 1)));
+      default: FAIL << "Unhandled";
+    }
+    return Rectangle();
+  }
+
+  private:
+  GuiFactory::Alignment alignment;
+  Vec2 size;
+};
+
+PGuiElem GuiFactory::alignment(PGuiElem content, Vec2 size, GuiFactory::Alignment alignment) {
+  return PGuiElem(new AlignmentGui(std::move(content), size, alignment));
+}
  
 PGuiElem GuiFactory::keyHandler(function<void(Event::KeyEvent)> fun, bool capture) {
   return PGuiElem(new KeyHandler(fun, capture));
@@ -637,6 +661,17 @@ class VerticalList : public GuiLayout {
 GuiFactory::ListBuilder::ListBuilder(GuiFactory& g, int defSz) : gui(g), defaultSize(defSz) {}
 
 void GuiFactory::ListBuilder::addElem(PGuiElem elem, int size) {
+  CHECK(!backElems);
+  if (size == 0) {
+    CHECK(defaultSize > 0);
+    size = defaultSize;
+  }
+  elems.push_back(std::move(elem));
+  sizes.push_back(size);
+}
+
+void GuiFactory::ListBuilder::addBackElem(PGuiElem elem, int size) {
+  ++backElems;
   if (size == 0) {
     CHECK(defaultSize > 0);
     size = defaultSize;
@@ -650,20 +685,20 @@ int GuiFactory::ListBuilder::getSize() const {
 }
 
 PGuiElem GuiFactory::ListBuilder::buildVerticalList() {
-  return gui.verticalList(std::move(elems), sizes);
+  return gui.verticalList(std::move(elems), sizes, backElems);
 }
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
-  return gui.horizontalList(std::move(elems), sizes);
+  return gui.horizontalList(std::move(elems), sizes, backElems);
 }
 
-PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights) {
-  return PGuiElem(new VerticalList(std::move(e), heights, 0));
+PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights, int numAlignBottom) {
+  return PGuiElem(new VerticalList(std::move(e), heights, numAlignBottom));
 }
 
-PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, int height) {
+PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, int height, int numAlignBottom) {
   vector<int> heights(e.size(), height);
-  return PGuiElem(new VerticalList(std::move(e), heights, 0));
+  return PGuiElem(new VerticalList(std::move(e), heights, numAlignBottom));
 }
 
 class VerticalListFit : public GuiLayout {
@@ -1397,6 +1432,7 @@ void GuiFactory::loadFreeImages(const string& path) {
   CHECK(textures[TexId::SCROLL_UP].loadFromFile(path + "/ui/up.png"));
   CHECK(textures[TexId::SCROLL_DOWN].loadFromFile(path + "/ui/down.png"));
   CHECK(textures[TexId::WINDOW_CORNER].loadFromFile(path + "/ui/corner1.png"));
+  CHECK(textures[TexId::WINDOW_CORNER_EXIT].loadFromFile(path + "/ui/corner2X.png"));
   CHECK(textures[TexId::WINDOW_VERT_BAR].loadFromFile(path + "/ui/vertibarmsg1.png"));
   textures[TexId::WINDOW_VERT_BAR].setRepeated(true);
   CHECK(textures[TexId::MAIN_MENU_HIGHLIGHT].loadFromFile(path + "/ui/menu_highlight.png"));
@@ -1419,6 +1455,12 @@ void GuiFactory::loadFreeImages(const string& path) {
     iconTextures.emplace_back();
     CHECK(iconTextures.back().loadFromFile(path + "/stat_icons.png",
           sf::IntRect(i * statIconWidth, 0, statIconWidth, statIconWidth)));
+  }
+  const int moraleIconWidth = 16;
+  for (int i = 0; i < 4; ++i) {
+    iconTextures.emplace_back();
+    CHECK(iconTextures.back().loadFromFile(path + "/morale_icons.png",
+          sf::IntRect(0, i * moraleIconWidth, moraleIconWidth, moraleIconWidth)));
   }
   const int spellIconWidth = 40;
   for (SpellId id : ENUM_ALL(SpellId)) {
@@ -1545,18 +1587,6 @@ PGuiElem GuiFactory::miniBorder() {
         sprite(get(TexId::CORNER_MINI), Alignment::TOP_LEFT, false, false)));
 }
 
-PGuiElem GuiFactory::border(PGuiElem content) {
-  return stack(makeVec<PGuiElem>(std::move(content),
-        sprite(get(TexId::HORI_BAR), Alignment::BOTTOM, true, false),
-        sprite(get(TexId::HORI_BAR), Alignment::TOP, false, false),
-        sprite(get(TexId::WINDOW_VERT_BAR), Alignment::RIGHT, false, false),
-        sprite(get(TexId::WINDOW_VERT_BAR), Alignment::LEFT, false, true),
-        sprite(get(TexId::WINDOW_CORNER), Alignment::BOTTOM_RIGHT, true, true, Vec2(6, 2)),
-        sprite(get(TexId::WINDOW_CORNER), Alignment::BOTTOM_LEFT, true, false, Vec2(-6, 2)),
-        sprite(get(TexId::WINDOW_CORNER), Alignment::TOP_RIGHT, false, true, Vec2(6, -2)),
-        sprite(get(TexId::WINDOW_CORNER), Alignment::TOP_LEFT, false, false, Vec2(-6, -2))));
-}
-
 PGuiElem GuiFactory::miniWindow(PGuiElem content) {
   return stack(makeVec<PGuiElem>(
         stopMouseMovement(),
@@ -1574,12 +1604,22 @@ PGuiElem GuiFactory::miniWindow() {
         miniBorder()));
 }
 
-PGuiElem GuiFactory::window(PGuiElem content) {
-  return border(stack(makeVec<PGuiElem>(
+PGuiElem GuiFactory::window(PGuiElem content, function<void()> onExitButton) {
+  return stack(makeVec<PGuiElem>(
         stopMouseMovement(),
+        alignment(button(onExitButton), Vec2(33, 33), Alignment::TOP_RIGHT),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
-        margins(std::move(content), 20, 35, 30, 30))));
+        margins(std::move(content), 20, 35, 30, 30),
+        sprite(get(TexId::HORI_BAR), Alignment::BOTTOM, true, false),
+        sprite(get(TexId::HORI_BAR), Alignment::TOP, false, false),
+        sprite(get(TexId::WINDOW_VERT_BAR), Alignment::RIGHT, false, false),
+        sprite(get(TexId::WINDOW_VERT_BAR), Alignment::LEFT, false, true),
+        sprite(get(TexId::WINDOW_CORNER), Alignment::BOTTOM_RIGHT, true, true, Vec2(6, 2)),
+        sprite(get(TexId::WINDOW_CORNER), Alignment::BOTTOM_LEFT, true, false, Vec2(-6, 2)),
+        sprite(get(TexId::WINDOW_CORNER_EXIT), Alignment::TOP_RIGHT, false, false, Vec2(6, -2)),
+        sprite(get(TexId::WINDOW_CORNER), Alignment::TOP_LEFT, false, false, Vec2(-6, -2))
+        ));
 }
 
 PGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight) {

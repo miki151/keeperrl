@@ -71,6 +71,7 @@ class GuiFactory {
     public:
     ListBuilder(GuiFactory&, int defaultSize = 0);
     void addElem(PGuiElem, int size = 0);
+    void addBackElem(PGuiElem, int size = 0);
     PGuiElem buildVerticalList();
     PGuiElem buildHorizontalList();
     int getSize() const;
@@ -80,10 +81,11 @@ class GuiFactory {
     vector<PGuiElem> elems;
     vector<int> sizes;
     int defaultSize = 0;
+    int backElems = 0;
   };
   ListBuilder getListBuilder(int defaultSize = 0);
-  PGuiElem verticalList(vector<PGuiElem>, int elemHeight);
-  PGuiElem verticalList(vector<PGuiElem>, vector<int> elemHeight);
+  PGuiElem verticalList(vector<PGuiElem>, int elemHeight, int numAlignBottom = 0);
+  PGuiElem verticalList(vector<PGuiElem>, vector<int> elemHeight, int numAlignBottom = 0);
   PGuiElem verticalListFit(vector<PGuiElem>, double spacing);
   PGuiElem horizontalList(vector<PGuiElem>, int elemWidth, int numAlignRight = 0);
   PGuiElem horizontalList(vector<PGuiElem>, vector<int> elemWidth, int numAlignRight = 0);
@@ -134,6 +136,7 @@ class GuiFactory {
   PGuiElem darken();
   PGuiElem stopMouseMovement();
   PGuiElem fullScreen(PGuiElem);
+  PGuiElem alignment(PGuiElem, Vec2 size, GuiFactory::Alignment);
 
   enum class TexId {
     SCROLLBAR,
@@ -162,6 +165,7 @@ class GuiFactory {
     SCROLL_UP,
     SCROLL_DOWN,
     WINDOW_CORNER,
+    WINDOW_CORNER_EXIT,
     WINDOW_VERT_BAR,
     MAIN_MENU_HIGHLIGHT,
     KEEPER_CHOICE,
@@ -182,11 +186,10 @@ class GuiFactory {
   PGuiElem highlight(double height);
   PGuiElem mainMenuHighlight();
   PGuiElem insideBackground(PGuiElem content);
-  PGuiElem window(PGuiElem content);
+  PGuiElem window(PGuiElem content, function<void()> onExitButton);
   PGuiElem miniWindow();
   PGuiElem miniWindow(PGuiElem content);
   PGuiElem mapWindow(PGuiElem content);
-  PGuiElem border(PGuiElem content);
   PGuiElem miniBorder();
   PGuiElem border2(PGuiElem content);
   PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
@@ -219,6 +222,10 @@ class GuiFactory {
     STAT_DEX = 13,
     STAT_ACC = 10,
     STAT_SPD = 11,
+    MORALE_1 = 14,
+    MORALE_2 = 15,
+    MORALE_3 = 16,
+    MORALE_4 = 17,
   };
 
   PGuiElem icon(IconId);

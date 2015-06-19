@@ -156,6 +156,7 @@ Tribe::Set::Set() {
   bandit.reset(new Tribe("bandits", false));
   killEveryone.reset(new Tribe("hostile", false));
   peaceful.reset(new Tribe("peaceful", false));
+  dwarven->addEnemy({bandit.get()});
   keeper->addEnemy({adventurer.get(), elven.get(), dwarven.get(), human.get(), lizard.get(), pest.get(),
       monster.get(), bandit.get() });
   elven->addEnemy({ dwarven.get(), bandit.get() });

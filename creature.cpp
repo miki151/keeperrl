@@ -2458,14 +2458,14 @@ string Creature::getRemainingString(LastingEffect effect) const {
 }
 
 const char* getMoraleText(double morale) {
-  if (morale >= 0.01)
-    return "merry";
   if (morale >= 0.5)
     return "ecstatic";
-  if (morale < -0.01)
-    return "unhappy";
+  if (morale >= 0.01)
+    return "merry";
   if (morale < -0.5)
     return "depressed";
+  if (morale < -0.01)
+    return "unhappy";
   return nullptr;
 }
 

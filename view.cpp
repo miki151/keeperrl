@@ -105,6 +105,7 @@ void GameInfo::PlayerInfo::readFrom(const Creature* c) {
   Item* weapon = c->getWeapon();
   weaponName = weapon ? weapon->getName() : "";
   viewId = c->getViewObject().id();
+  morale = c->getMorale();
   typedef GameInfo::PlayerInfo::AttributeInfo::Id AttrId;
   attributes = {
     { "Attack",
