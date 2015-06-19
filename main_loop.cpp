@@ -138,7 +138,7 @@ string MainLoop::getSavePath(Model* model, Model::GameType gameType) {
 
 void MainLoop::saveUI(PModel& model, Model::GameType type, View::SplashType splashType) {
   string path = getSavePath(model.get(), type);
-  doWithSplash(View::SAVING, 62500,
+  doWithSplash(splashType, 62500,
       [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
         MEASURE(saveGame(model, path), "saving time")});

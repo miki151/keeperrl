@@ -488,8 +488,8 @@ Rectangle::Rectangle(int px1, int py1, int kx1, int ky1) : px(px1), py(py1), kx(
 }
 
 Rectangle::Rectangle(Vec2 p, Vec2 k) : px(p.x), py(p.y), kx(k.x), ky(k.y), w(k.x - p.x), h(k.y - p.y) {
-  CHECK(k.x > p.x);
-  CHECK(k.y > p.y);
+  CHECK(k.x > p.x) << p << " " << k;
+  CHECK(k.y > p.y) << p << " " << k;
 }
 
 Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), px(px1), py(py1), kx(kx1), ky(ky1) {}
