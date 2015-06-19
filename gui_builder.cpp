@@ -968,7 +968,7 @@ bool GuiBuilder::showMorale() const {
   return morale;
 }
 
-const int taskMapWindowWidth = 350;
+const int taskMapWindowWidth = 400;
 
 void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
   if (info.taskMap.empty())
@@ -985,9 +985,12 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& 
             gui.empty(),
             gui.label(elem.name, colors[elem.priority ? ColorId::GREEN : ColorId::WHITE])), 35));
   int lineHeight = 25;
+  int margin = 20;
   append(lines, std::move(freeLines));
-  ret.push_back({gui.miniWindow(gui.verticalList(std::move(lines), lineHeight)),
-      Vec2(taskMapWindowWidth, (info.taskMap.size() + 1) * lineHeight),
+  ret.push_back({gui.miniWindow(gui.stack(
+        gui.keyHandler([=] { showTasks = false; }, {{Keyboard::Escape}}, true),
+        gui.margins(gui.verticalList(std::move(lines), lineHeight), margin, margin, margin, margin))),
+      Vec2(taskMapWindowWidth, info.taskMap.size() * lineHeight + 2 * margin),
       OverlayInfo::TOP_RIGHT});
 }
 

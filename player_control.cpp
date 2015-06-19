@@ -824,7 +824,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.payoutTimeRemaining = -1;
   info.nextPayout = getCollective()->getNextSalaries();*/
   for (Creature* c : getCollective()->getCreaturesAnyOf(
-        {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER})) {
+        {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER})) {
     info.minions.push_back(c);
   }
   info.minionCount = getCollective()->getPopulationSize();
@@ -856,7 +856,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.messageBuffer = messages;
   info.taskMap.clear();
   for (const Task* task : getCollective()->getTaskMap().getAllTasks()) {
-    optional<UniqueEntity<Creature>::Id> creature(0);
+    optional<UniqueEntity<Creature>::Id> creature;
     if (const Creature *c = getCollective()->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
     info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
