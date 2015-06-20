@@ -1241,8 +1241,8 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
       returnResource({ResourceId::PRISONER_HEAD, 1});
     if (hasTrait(victim, MinionTrait::LEADER))
       getLevel()->getModel()->onKilledLeader(this, victim);
-    decreaseMoraleForKill(killer, victim);
     if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
+      decreaseMoraleForKill(killer, victim);
       if (killer)
         control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
               PlayerMessage::HIGH).setPosition(victim->getPosition()));
