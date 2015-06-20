@@ -91,7 +91,7 @@ class Collective : public Task::Callback {
   void update(Creature*);
   void addNewCreatureMessage(const vector<Creature*>&);
   GameInfo::VillageInfo::Village getVillageInfo() const;
-  void setTask(const Creature*, PTask);
+  void setTask(const Creature*, PTask, bool priority = false);
   bool hasTask(const Creature*) const;
   void cancelTask(const Creature*);
   void banishCreature(Creature*);

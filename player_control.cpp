@@ -255,9 +255,9 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
 const int basicImpCost = 20;
 
 Creature* PlayerControl::getControlled() {
-  for (TeamId team : getCollective()->getTeams().getActiveTeams()) {
-    if (getCollective()->getTeams().getLeader(team)->isPlayer())
-      return getCollective()->getTeams().getLeader(team);
+  for (TeamId team : getTeams().getActiveTeams()) {
+    if (getTeams().getLeader(team)->isPlayer())
+      return getTeams().getLeader(team);
   }
   return nullptr;
 }
@@ -271,12 +271,12 @@ void PlayerControl::leaveControl() {
     model->getView()->resetCenter();
   if (controlled->isPlayer())
     controlled->popController();
-  for (TeamId team : getCollective()->getTeams().getActiveTeams(controlled))
-    if (!getCollective()->getTeams().isPersistent(team)) {
-      if (getCollective()->getTeams().getMembers(team).size() == 1)
-        getCollective()->getTeams().cancel(team);
+  for (TeamId team : getTeams().getActiveTeams(controlled))
+    if (!getTeams().isPersistent(team)) {
+      if (getTeams().getMembers(team).size() == 1)
+        getTeams().cancel(team);
       else
-        getCollective()->getTeams().deactivate(team);
+        getTeams().deactivate(team);
       break;
     }
   model->getView()->stopClock();
@@ -842,13 +842,18 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
           {getResourceViewId(elem.first), getCollective()->numResourcePlusDebt(elem.first), elem.second.name});
   info.warning = "";
   gameInfo.time = getCollective()->getTime();
-  info.currentTeam = getCurrentTeam();
+  info.currentTeam.reset();
   info.teams.clear();
   info.newTeam = newTeam;
-  for (TeamId team :getCollective()->getTeams().getAll()) {
-    info.teams[team].clear();
-    for (Creature* c : getCollective()->getTeams().getMembers(team))
-      info.teams[team].push_back(c->getUniqueId());
+  for (int i : All(getTeams().getAll())) {
+    TeamId team = getTeams().getAll()[i];
+    info.teams.emplace_back();
+    for (Creature* c : getTeams().getMembers(team))
+      info.teams.back().members.push_back(c->getUniqueId());
+    info.teams.back().active = getTeams().isActive(team);
+    info.teams.back().id = team;
+    if (getCurrentTeam() == team)
+      info.currentTeam = i;
   }
   info.techButtons.clear();
   for (TechInfo tech : getTechInfo())
@@ -931,7 +936,7 @@ void PlayerControl::setCurrentTeam(optional<TeamId> team) {
 }
 
 optional<TeamId> PlayerControl::getCurrentTeam() const {
-  if (currentTeam && getCollective()->getTeams().exists(*currentTeam))
+  if (currentTeam && getTeams().exists(*currentTeam))
     return currentTeam;
   else
     return none;
@@ -958,7 +963,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = square->getCreature())
-    if (getCurrentTeam() && getCollective()->getTeams().contains(*getCurrentTeam(), c)
+    if (getCurrentTeam() && getTeams().contains(*getCurrentTeam(), c)
         && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (getCollective()->isMarked(pos))
@@ -1069,7 +1074,7 @@ void PlayerControl::controlSingle(const Creature* cr) {
   CHECK(contains(getCreatures(), cr));
   CHECK(!cr->isDead());
   Creature* c = const_cast<Creature*>(cr);
-  commandTeam(getCollective()->getTeams().create({c}));
+  commandTeam(getTeams().create({c}));
 }
 
 bool PlayerControl::canBuildDoor(Vec2 pos) const {
@@ -1101,26 +1106,26 @@ void PlayerControl::handleCreatureButton(Creature* c, View* view) {
     minionView(c);
   else if (getCollective()->hasAnyTrait(c, {MinionTrait::FIGHTER, MinionTrait::LEADER})) {
     if (newTeam) {
-      setCurrentTeam(getCollective()->getTeams().create({c}));
+      setCurrentTeam(getTeams().create({c}));
       newTeam = false;
     }
-    else if (getCollective()->getTeams().contains(*getCurrentTeam(), c)) {
-      getCollective()->getTeams().remove(*getCurrentTeam(), c);
+    else if (getTeams().contains(*getCurrentTeam(), c)) {
+      getTeams().remove(*getCurrentTeam(), c);
       if (!getCurrentTeam())  // team disappeared so it was the last minion in it
         newTeam = true;
     } else
-      getCollective()->getTeams().add(*getCurrentTeam(), c);
+      getTeams().add(*getCurrentTeam(), c);
   }
 }
 
 void PlayerControl::commandTeam(TeamId team) {
   if (getControlled())
     leaveControl();
-  Creature* c = getCollective()->getTeams().getLeader(team);
-  vector<Creature*> members = getCollective()->getTeams().getMembers(team);
+  Creature* c = getTeams().getLeader(team);
+  vector<Creature*> members = getTeams().getMembers(team);
   removeElement(members, c);
   c->pushController(PController(new MinionController(c, model, memory.get(), this, members)));
-  getCollective()->getTeams().activate(team);
+  getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
 }
 
@@ -1129,6 +1134,14 @@ optional<PlayerMessage> PlayerControl::findMessage(PlayerMessage::Id id){
     if (elem.getUniqueId() == id)
       return elem;
   return none;
+}
+
+CollectiveTeams& PlayerControl::getTeams() {
+  return getCollective()->getTeams();
+}
+
+const CollectiveTeams& PlayerControl::getTeams() const {
+  return getCollective()->getTeams();
 }
 
 void PlayerControl::processInput(View* view, UserInput input) {
@@ -1149,7 +1162,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
                 visible.push_back(v);
             scrollPos.push(Rectangle::boundingBox(visible).middle());
           }
-
         }
         break;
     case UserInputId::CONFIRM_TEAM:
@@ -1158,23 +1170,37 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::EDIT_TEAM:
         setCurrentTeam(input.get<TeamId>());
         newTeam = false;
+        scrollPos.push(getTeams().getLeader(input.get<TeamId>())->getPosition());
         break;
     case UserInputId::CREATE_TEAM:
         newTeam = !newTeam;
         setCurrentTeam(none);
         break;
     case UserInputId::COMMAND_TEAM:
-        if (!getCurrentTeam() || getCollective()->getTeams().getMembers(*getCurrentTeam()).empty())
+        if (!getCurrentTeam() || getTeams().getMembers(*getCurrentTeam()).empty())
           break;
         commandTeam(*getCurrentTeam());
         setCurrentTeam(none);
         break;
     case UserInputId::CANCEL_TEAM:
-        getCollective()->getTeams().cancel(input.get<TeamId>());
+        getTeams().cancel(input.get<TeamId>());
+        break;
+    case UserInputId::ACTIVATE_TEAM:
+        if (!getTeams().isActive(input.get<TeamId>()))
+          getTeams().activate(input.get<TeamId>());
+        else
+          getTeams().deactivate(input.get<TeamId>());
         break;
     case UserInputId::SET_TEAM_LEADER:
         if (Creature* c = getCreature(input.get<TeamLeaderInfo>().creatureId()))
-          getCollective()->getTeams().setLeader(input.get<TeamLeaderInfo>().team(), c);
+          getTeams().setLeader(input.get<TeamLeaderInfo>().team(), c);
+        break;
+    case UserInputId::MOVE_TO:
+        if (currentTeam && getTeams().isActive(*currentTeam) && getCollective()->isKnownSquare(input.get<Vec2>())) {
+          getCollective()->freeTeamMembers(*currentTeam);
+          getCollective()->setTask(getTeams().getLeader(*currentTeam), Task::goTo(input.get<Vec2>()), true);
+          view->continueClock();
+        }
         break;
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DEITIES: model->keeperopedia.deity(view, Deity::getDeities()[input.get<int>()]); break;

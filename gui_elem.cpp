@@ -1607,7 +1607,7 @@ PGuiElem GuiFactory::miniWindow() {
 PGuiElem GuiFactory::window(PGuiElem content, function<void()> onExitButton) {
   return stack(makeVec<PGuiElem>(
         stopMouseMovement(),
-        alignment(button(onExitButton), Vec2(33, 33), Alignment::TOP_RIGHT),
+        alignment(button(onExitButton), Vec2(38, 38), Alignment::TOP_RIGHT),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         margins(std::move(content), 20, 35, 30, 30),

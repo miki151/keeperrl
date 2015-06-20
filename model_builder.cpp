@@ -337,7 +337,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.salary = 20;),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::ORC_SHAMAN;
-          c.frequency = 0.15;
+          c.frequency = 0.10;
           c.attractions = LIST(
             {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
             {{AttractionId::SQUARE, SquareId::LABORATORY}, 1.0, 9.0},
@@ -379,7 +379,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.spawnAtDorm = true;),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::VAMPIRE;
-          c.frequency = 0.3;
+          c.frequency = 0.2;
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 40;
           c.spawnAtDorm = true;
@@ -447,7 +447,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.salary = 0;),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::SPECIAL_MONSTER_KEEPER;
-          c.frequency = 0.2;
+          c.frequency = 0.1;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
           c.spawnAtDorm = true;
           c.techId = TechId::BEAST_MUT;

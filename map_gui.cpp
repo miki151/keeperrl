@@ -354,7 +354,7 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
     drawMorale(renderer, tile, object.getAttribute(ViewObject::Attribute::MORALE));
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
-    renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::DARK_GREEN]);
+    renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::YELLOW]);
   }
 }
 

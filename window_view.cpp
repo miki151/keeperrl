@@ -162,8 +162,12 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
       inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
       break;
     case GameInfo::InfoType::BAND:
+      if (collectiveTab == GuiBuilder::CollectiveTab::MINIONS)
+        inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
+      else
       if (collectiveTab == GuiBuilder::CollectiveTab::TECHNOLOGY && activeLibrary >= 0)
         inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo(pos, activeLibrary)));
+      else
       if (collectiveTab == GuiBuilder::CollectiveTab::BUILDINGS) {
         if (Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift))
           inputQueue.push(UserInput(UserInputId::RECT_SELECTION, pos));

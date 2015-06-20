@@ -618,19 +618,24 @@ MoveInfo Collective::getTeamMemberMove(Creature* c) {
               return c->moveTowards(teams.getLeader(team)->getPosition());
             else
               return c->wait();
-        }
+        } else
+        if (c == leader)
+          return c->wait();
     }
   return NoMove;
 }
 
-void Collective::setTask(const Creature *c, PTask task) {
+void Collective::setTask(const Creature *c, PTask task, bool priority) {
   if (Task* task = taskMap.getTask(c)) {
     if (!task->canTransfer())
       returnResource(taskMap.removeTask(task));
     else
       taskMap.freeTaskDelay(task, getTime() + 50);
   }
-  taskMap.addTask(std::move(task), c);
+  if (priority)
+    taskMap.addPriorityTask(std::move(task), c);
+  else
+    taskMap.addTask(std::move(task), c);
 }
 
 bool Collective::hasTask(const Creature* c) const {
@@ -680,7 +685,7 @@ MoveInfo Collective::getMove(Creature* c) {
     if (t->getMove(c))
       return taskMap.addTask(std::move(t), c)->getMove(c);
   if (!hasTrait(c, MinionTrait::NO_RETURNING) && !getAllSquares().empty() &&
-      !getAllSquares().count(c->getPosition()))
+      !getAllSquares().count(c->getPosition()) && teams.getActiveTeams(c).empty())
     return c->moveTowards(chooseRandom(getAllSquares()));
   else
     return NoMove;

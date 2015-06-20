@@ -220,6 +220,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void tryLockingDoor(Vec2 pos);
   void uncoverRandomLocation();
   Creature* getControlled();
+  CollectiveTeams& getTeams();
+  const CollectiveTeams& getTeams() const;
 
   mutable unique_ptr<map<UniqueEntity<Level>::Id, MapMemory>> SERIAL(memory);
   optional<TeamId> getCurrentTeam() const;

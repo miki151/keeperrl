@@ -52,9 +52,14 @@ class GameInfo {
       string name;
     };
     vector<Resource> numResource;
-    optional<TeamId> currentTeam;
+    struct Team {
+      TeamId id;
+      vector<UniqueEntity<Creature>::Id> members;
+      bool active;
+    };
+    vector<Team> teams;
+    optional<int> currentTeam;
     bool newTeam;
-    map<TeamId, vector<UniqueEntity<Creature>::Id>> teams;
     CreatureInfo& getMinion(UniqueEntity<Creature>::Id);
     int nextPayout;
     int payoutTimeRemaining;
@@ -148,7 +153,7 @@ class GameInfo {
     enum Action {
       CONTROL,
       RENAME,
-      BANISH
+      BANISH,
     };
     vector<Action> actions;
   } playerInfo;

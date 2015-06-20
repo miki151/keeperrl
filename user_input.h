@@ -42,6 +42,7 @@ enum class UserInputId {
     CONFIRM_TEAM,
     CANCEL_TEAM,
     COMMAND_TEAM,
+    ACTIVATE_TEAM,
     SET_TEAM_LEADER,
     TECHNOLOGY,
 // turn-based actions
@@ -93,6 +94,7 @@ typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec
             UserInputId::CREATURE_BUTTON,
             UserInputId::EDIT_TEAM,
             UserInputId::CANCEL_TEAM,
+            UserInputId::ACTIVATE_TEAM,
             UserInputId::PICK_UP_ITEM,
             UserInputId::PICK_UP_ITEM_MULTI,
             UserInputId::MESSAGE_INFO,

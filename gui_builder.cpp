@@ -873,7 +873,7 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
     line.push_back(gui.label(toString(elem.second.count) + "   " + elem.first, col));
     widths.push_back(200);
     function<void()> action;
-    if (info.currentTeam) {
+    if (info.currentTeam || info.newTeam) {
       if (chosenCreature == elem.first)
         action = [this] () {
           chosenCreature = "";
@@ -890,38 +890,43 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
   }
   list.push_back(gui.label("Teams: ", colors[ColorId::WHITE]));
   const int elemWidth = 30;
-  for (auto elem : info.teams) {
-    TeamId teamId = elem.first;
-    const auto team = elem.second;
+  for (int i : All(info.teams)) {
+    auto& team = info.teams[i];
     const int numPerLine = 8;
     vector<PGuiElem> currentLine = makeVec<PGuiElem>(
         gui.stack(
-          gui.button(getButtonCallback(info.currentTeam == teamId ? UserInput(UserInputId::CONFIRM_TEAM)
-              : UserInput(UserInputId::EDIT_TEAM, teamId))),
-          info.currentTeam == teamId 
+          gui.button(getButtonCallback(info.currentTeam == i ? UserInput(UserInputId::CONFIRM_TEAM)
+              : UserInput(UserInputId::EDIT_TEAM, team.id))),
+          info.currentTeam == i 
               ? gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk)
               : gui.viewObject(ViewId::TEAM_BUTTON, tilesOk),
           gui.mouseHighlight2(gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk))));
-    for (auto elem : team) {
+    for (auto member : team.members) {
       currentLine.push_back(gui.stack(makeVec<PGuiElem>(
-            gui.button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo(teamId, elem)})),
-            gui.viewObject(info.getMinion(elem).viewId, tilesOk),
+            gui.button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo(team.id, member)})),
+            gui.viewObject(info.getMinion(member).viewId, tilesOk),
             gui.mouseHighlight2(gui.margins(
                 gui.rectangle(colors[ColorId::TRANSPARENT], colors[ColorId::WHITE]), -3, -2, 3, 2)),
-            gui.label(toString(info.getMinion(elem).expLevel), 12))));
+            gui.label(toString(info.getMinion(member).expLevel), 12))));
       if (currentLine.size() >= numPerLine)
         list.push_back(gui.horizontalList(std::move(currentLine), elemWidth));
     }
     if (!currentLine.empty())
       list.push_back(gui.horizontalList(std::move(currentLine), elemWidth));
-    if (info.currentTeam == teamId)
+    if (info.currentTeam == i)
       list.push_back(gui.horizontalList(makeVec<PGuiElem>(
               gui.stack(
-                  gui.button(getButtonCallback({UserInputId::COMMAND_TEAM, teamId})),
+                  gui.button(getButtonCallback({UserInputId::COMMAND_TEAM, team.id})),
                   gui.label("[command]")),
               gui.stack(
-                  gui.button(getButtonCallback({UserInputId::CANCEL_TEAM, teamId})),
-                  gui.label("[disband]"))), 100));
+                  gui.button(getButtonCallback({UserInputId::CANCEL_TEAM, team.id})),
+                  gui.label("[disband]")),
+              gui.stack(
+                  getHintCallback({"You can order an active team to move by clicking anywhere on known territory"}),
+                  gui.button(getButtonCallback({UserInputId::ACTIVATE_TEAM, team.id})),
+                  gui.label("[activate]", colors[team.active ? ColorId::GREEN : ColorId::WHITE]))),
+            {renderer.getTextLength("[command]") + 3, renderer.getTextLength("[disband]") + 3,
+             renderer.getTextLength("[activate]") + 3}));
   }
   if (!info.newTeam)
     list.push_back(gui.stack(
@@ -931,6 +936,8 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
     list.push_back(gui.horizontalList(makeVec<PGuiElem>(
         gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk),
         gui.label("Click on minions to add.", colors[ColorId::LIGHT_BLUE])), elemWidth));
+  if (info.currentTeam)
+    list.push_back(gui.label("Click members to change leader.", colors[ColorId::LIGHT_BLUE]));
   list.push_back(gui.empty());
   if (info.payoutTimeRemaining > -1) {
     vector<PGuiElem> res;
@@ -959,9 +966,8 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
       list.push_back(gui.horizontalList(std::move(line), 20));
     }
   }
-  if (!creatureMap.count(chosenCreature)) {
+  if (!creatureMap.count(chosenCreature) || (!info.newTeam && !info.currentTeam))
     chosenCreature = "";
-  }
   return gui.scrollable(gui.verticalList(std::move(list), legendLineHeight), &minionsScroll, &scrollbarsHeld);
 }
 
@@ -1002,7 +1008,7 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo
     drawTasksOverlay(ret, info);
     return;
   }
-  if (chosenCreature == "" || !info.currentTeam)
+  if (chosenCreature == "" || (!info.currentTeam && !info.newTeam))
     return;
   vector<PGuiElem> lines;
   vector<CreatureInfo> chosen;
@@ -1016,7 +1022,7 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo
       text = c.name + " " + text;
     vector<PGuiElem> line;
     line.push_back(gui.viewObject(c.viewId, tilesOk));
-    line.push_back(gui.label(text, (info.currentTeam && contains(info.teams[*info.currentTeam],c.uniqueId))
+    line.push_back(gui.label(text, (info.currentTeam && contains(info.teams[*info.currentTeam].members, c.uniqueId))
           ? colors[ColorId::GREEN] : colors[ColorId::WHITE]));
     lines.push_back(gui.stack(
           gui.button(getButtonCallback(UserInput(UserInputId::CREATURE_BUTTON, c.uniqueId))),
@@ -1477,7 +1483,7 @@ vector<PGuiElem> GuiBuilder::drawMinionActions(const GameInfo::PlayerInfo& minio
         line.push_back(gui.stack(
             gui.label("[Rename]", colors[ColorId::LIGHT_BLUE]),
             gui.button([=] { 
-                if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel"))
+                if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel."))
                 callback(View::MinionAction{View::MinionAction::RenameAction{*name}}); })));
         break;
       case GameInfo::PlayerInfo::BANISH:
