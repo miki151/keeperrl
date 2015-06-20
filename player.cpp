@@ -724,11 +724,16 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (square->isTribeForbidden(getCreature()->getTribe()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (const Creature* c = square->getCreature()) {
-    if (getCreature()->canSee(c) || c == getCreature())
+    if (getCreature()->canSee(c) || c == getCreature()) {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
-    else if (contains(getCreature()->getUnknownAttacker(), c))
+      if (contains(getTeam(), c))
+        index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
+    } else if (contains(getCreature()->getUnknownAttacker(), c))
       index.insert(copyOf(ViewObject::unknownMonster()));
   }
+  if (pos == getCreature()->getPosition() && index.hasObject(ViewLayer::CREATURE))
+      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);
+  
 }
 
 void Player::onKilled(const Creature* attacker) {

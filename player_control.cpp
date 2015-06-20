@@ -965,7 +965,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (const Creature* c = square->getCreature())
     if (getCurrentTeam() && getTeams().contains(*getCurrentTeam(), c)
         && index.hasObject(ViewLayer::CREATURE))
-      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
+      index.getObject(ViewLayer::CREATURE).setModifier(getTeams().getLeader(*getCurrentTeam()) == c ?
+          ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT : ViewObject::Modifier::TEAM_HIGHLIGHT);
   if (getCollective()->isMarked(pos))
     index.setHighlight(getCollective()->getMarkHighlight(pos));
   if (getCollective()->hasPriorityTasks(pos))
@@ -1101,18 +1102,17 @@ Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) {
   return nullptr;
 }
 
-void PlayerControl::handleCreatureButton(Creature* c, View* view) {
-  if (!getCurrentTeam() && !newTeam)
-    minionView(c);
-  else if (getCollective()->hasAnyTrait(c, {MinionTrait::FIGHTER, MinionTrait::LEADER})) {
-    if (newTeam) {
+void PlayerControl::handleAddToTeam(Creature* c) {
+  if (getCollective()->hasAnyTrait(c, {MinionTrait::FIGHTER, MinionTrait::LEADER})) {
+    if (!getCurrentTeam()) {
       setCurrentTeam(getTeams().create({c}));
+      getTeams().activate(*getCurrentTeam());
       newTeam = false;
     }
     else if (getTeams().contains(*getCurrentTeam(), c)) {
       getTeams().remove(*getCurrentTeam(), c);
-      if (!getCurrentTeam())  // team disappeared so it was the last minion in it
-        newTeam = true;
+ /*     if (!getCurrentTeam())  // team disappeared so it was the last minion in it
+        newTeam = true;*/
     } else
       getTeams().add(*getCurrentTeam(), c);
   }
@@ -1207,7 +1207,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::CREATURE_BUTTON: 
         if (Creature* c = getCreature(input.get<int>()))
-          handleCreatureButton(c, view);
+          minionView(c);
+        break;
+    case UserInputId::ADD_TO_TEAM: 
+        if (Creature* c = getCreature(input.get<int>()))
+          handleAddToTeam(c);
         break;
     case UserInputId::POSSESS: {
         Vec2 pos = input.get<Vec2>();

@@ -125,7 +125,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   Creature* getConsumptionTarget(View*, Creature* consumer);
   void onWorshipEpithet(EpithetId);
   Creature* getCreature(UniqueEntity<Creature>::Id id);
-  void handleCreatureButton(Creature* c, View* view);
+  void handleAddToTeam(Creature* c);
   void controlSingle(const Creature*);
   void commandTeam(TeamId);
 

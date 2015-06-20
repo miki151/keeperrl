@@ -922,7 +922,8 @@ PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
                   gui.button(getButtonCallback({UserInputId::CANCEL_TEAM, team.id})),
                   gui.label("[disband]")),
               gui.stack(
-                  getHintCallback({"You can order an active team to move by clicking anywhere on known territory"}),
+                  getHintCallback({"You can order an active team to move by clicking anywhere on known "
+                      "territory."}),
                   gui.button(getButtonCallback({UserInputId::ACTIVATE_TEAM, team.id})),
                   gui.label("[activate]", colors[team.active ? ColorId::GREEN : ColorId::WHITE]))),
             {renderer.getTextLength("[command]") + 3, renderer.getTextLength("[disband]") + 3,
@@ -1025,7 +1026,7 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo
     line.push_back(gui.label(text, (info.currentTeam && contains(info.teams[*info.currentTeam].members, c.uniqueId))
           ? colors[ColorId::GREEN] : colors[ColorId::WHITE]));
     lines.push_back(gui.stack(
-          gui.button(getButtonCallback(UserInput(UserInputId::CREATURE_BUTTON, c.uniqueId))),
+          gui.button(getButtonCallback(UserInput(UserInputId::ADD_TO_TEAM, c.uniqueId))),
           gui.horizontalList(std::move(line), 40)));
   }
   int margin = 20;

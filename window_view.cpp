@@ -148,7 +148,11 @@ void WindowView::initialize() {
 }
 
 void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
-  inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
+  if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl)) {
+    inputQueue.push(UserInput(UserInputId::ADD_TO_TEAM, id));
+    guiBuilder.setCollectiveTab(GuiBuilder::CollectiveTab::MINIONS);
+  } else
+    inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
 }
 
 void WindowView::mapLeftClickFun(Vec2 pos) {
@@ -477,7 +481,7 @@ void WindowView::addVoidDialog(function<void()> fun) {
 void WindowView::drawLevelMap(const CreatureView* creature) {
   TempClockPause pause(clock);
   addVoidDialog([=] {
-    minimapGui->presentMap(creature, getMapGuiBounds(), renderer,
+    minimapGui->presentMap(creature, Rectangle(renderer.getSize()), renderer,
         [this](double x, double y) { mapGui->setCenter(x, y);}); });
 }
 

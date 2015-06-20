@@ -190,7 +190,8 @@ class LeaderControlOverride : public Creature::MoraleOverride {
 
   virtual optional<double> getMorale() override {
     for (auto team : collective->getTeams().getContaining(collective->getLeader()))
-      if (collective->getTeams().isActive(team) && collective->getTeams().contains(team, creature))
+      if (collective->getTeams().isActive(team) && collective->getTeams().contains(team, creature) &&
+          collective->getTeams().getLeader(team) == collective->getLeader())
         return 1;
     return none;
   }
