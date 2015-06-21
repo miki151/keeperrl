@@ -18,10 +18,6 @@
 
 #include "util.h"
 #include "debug.h"
-#include "inventory.h"
-#include "view_index.h"
-#include "poison_gas.h"
-#include "fire.h"
 #include "renderable.h"
 #include "movement_type.h"
 #include "view_object.h"
@@ -33,6 +29,10 @@ class CreatureView;
 class Attack;
 class ProgressMeter;
 class SquareType;
+class ViewIndex;
+class Fire;
+class PoisonGas;
+class Inventory;
 
 class Square : public Renderable {
   public:
@@ -245,7 +245,7 @@ class Square : public Renderable {
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(double time) {}
   virtual void onKilled(Creature* victim, Creature* attacker);
-  Inventory SERIAL(inventory);
+  HeapAllocated<Inventory> SERIAL(inventory);
   string SERIAL(name);
   void addTraitForTribe(const Tribe*, MovementTrait);
   void removeTraitForTribe(const Tribe*, MovementTrait);
@@ -268,8 +268,8 @@ class Square : public Renderable {
   double SERIAL(height);
   vector<Vec2> SERIAL(travelDir);
   optional<pair<StairDirection, StairKey>> SERIAL(landingLink);
-  Fire SERIAL(fire);
-  PoisonGas SERIAL(poisonGas);
+  HeapAllocated<Fire> SERIAL(fire);
+  HeapAllocated<PoisonGas> SERIAL(poisonGas);
   map<SquareId, int> SERIAL(constructions);
   bool SERIAL(ticking);
   double SERIAL(fog) = 0;
@@ -277,7 +277,7 @@ class Square : public Renderable {
   void updateMovement();
   bool SERIAL(updateMemory) = true;
   mutable bool SERIAL(updateViewIndex) = true;
-  mutable ViewIndex SERIAL(viewIndex);
+  unique_ptr<ViewIndex> SERIAL(viewIndex);
   bool SERIAL(destroyable) = false;
   const Tribe* SERIAL(owner);
   const Tribe* SERIAL(forbiddenTribe) = nullptr;

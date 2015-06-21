@@ -36,6 +36,9 @@
 #include "level_maker.h"
 #include "map_memory.h"
 #include "level_builder.h"
+#include "tribe.h"
+#include "time_queue.h"
+#include "visibility_map.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -100,23 +103,23 @@ int Model::getWoodCount() const {
   return woodCount;
 }
 Statistics& Model::getStatistics() {
-  return statistics;
+  return *statistics;
 }
 
 const Statistics& Model::getStatistics() const {
-  return statistics;
+  return *statistics;
 }
 
 Tribe* Model::getPestTribe() {
-  return tribeSet.pest.get();
+  return tribeSet->pest.get();
 }
 
 Tribe* Model::getKillEveryoneTribe() {
-  return tribeSet.killEveryone.get();
+  return tribeSet->killEveryone.get();
 }
 
 Tribe* Model::getPeacefulTribe() {
-  return tribeSet.peaceful.get();
+  return tribeSet->peaceful.get();
 }
 
 MusicType Model::getCurrentMusic() const {
@@ -213,7 +216,7 @@ optional<Model::ExitInfo> Model::update(double totalTime) {
     lastUpdate = absoluteTime;
   } 
   do {
-    Creature* creature = timeQueue.getNextCreature();
+    Creature* creature = timeQueue->getNextCreature();
     CHECK(creature) << "No more creatures";
     //Debug() << creature->getName().the() << " moving now " << creature->getTime();
     currentTime = creature->getTime();
@@ -274,7 +277,7 @@ void Model::tick(double time) {
       l->updateSunlightMovement();
   }
   Debug() << "Turn " << time;
-  for (Creature* c : timeQueue.getAllCreatures()) {
+  for (Creature* c : timeQueue->getAllCreatures()) {
     c->tick(time);
   }
   for (PLevel& l : levels)
@@ -301,12 +304,12 @@ void Model::tick(double time) {
 }
 
 void Model::addCreature(PCreature c) {
-  c->setTime(timeQueue.getCurrentTime() + 1 + Random.getDouble());
-  timeQueue.addCreature(std::move(c));
+  c->setTime(timeQueue->getCurrentTime() + 1 + Random.getDouble());
+  timeQueue->addCreature(std::move(c));
 }
 
 void Model::killCreature(Creature* c, Creature* attacker) {
-  deadCreatures.push_back(timeQueue.removeCreature(c));
+  deadCreatures.push_back(timeQueue->removeCreature(c));
   if (attacker)
     attacker->onKilled(c);
   c->getTribe()->onMemberKilled(c, attacker);
@@ -320,7 +323,7 @@ Level* Model::buildLevel(LevelBuilder&& b, LevelMaker* maker) {
   return levels.back().get();
 }
 
-Model::Model(View* v, const string& world, Tribe::Set&& tribes)
+Model::Model(View* v, const string& world, TribeSet&& tribes)
   : tribeSet(std::move(tribes)), view(v), worldName(world), musicType(MusicType::PEACEFUL) {
   updateSunlightInfo();
 }
@@ -331,7 +334,7 @@ Model::~Model() {
 PCreature Model::makePlayer(int handicap) {
   map<UniqueEntity<Level>::Id, MapMemory>* levelMemory = new map<UniqueEntity<Level>::Id, MapMemory>();
   PCreature player = CreatureFactory::addInventory(
-      PCreature(new Creature(tribeSet.adventurer.get(),
+      PCreature(new Creature(tribeSet->adventurer.get(),
       CATTR(
           c.viewId = ViewId::PLAYER;
           c.attr[AttrType::SPEED] = 100;
@@ -343,7 +346,7 @@ PCreature Model::makePlayer(int handicap) {
           c.humanoid = true;
           c.name = "Adventurer";
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
-          c.skills.insert(SkillId::AMBUSH);), Player::getFactory(this, levelMemory))), {
+          c.skills->insert(SkillId::AMBUSH);), Player::getFactory(this, levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
@@ -422,7 +425,7 @@ void Model::exitAction() {
 
 void Model::retireCollective() {
   CHECK(playerControl);
-  statistics.clear();
+  statistics->clear();
   playerControl->retire();
   won = false;
   addHero = true;
@@ -550,7 +553,7 @@ void Model::conquered(const string& title, vector<const Creature*> kills, int po
   string text= "You have conquered this land. You killed " + toString(kills.size()) +
       " innocent beings and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
-  for (string stat : statistics.getText())
+  for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Victory", text);
   Highscores::Score score = CONSTRUCT(Highscores::Score,
@@ -570,7 +573,7 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
       ". You killed " + toString(kills.size()) +
       " enemies and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
-  for (string stat : statistics.getText())
+  for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Victory", text);
   Highscores::Score score = CONSTRUCT(Highscores::Score,
@@ -597,7 +600,7 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
   }
   text += ". He killed " + toString(numKills) 
       + " " + enemiesString + " and scored " + toString(points) + " points.\n \n";
-  for (string stat : statistics.getText())
+  for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Game over", text);
   Highscores::Score score = CONSTRUCT(Highscores::Score,
@@ -619,7 +622,7 @@ const string& Model::getWorldName() const {
 Level* Model::prepareTopLevel(ProgressMeter& meter, vector<SettlementInfo> settlements) {
   Level* top = buildLevel(
       LevelBuilder(meter, 250, 250, "Wilderness", false),
-      LevelMaker::topLevel(CreatureFactory::forrest(tribeSet.wildlife.get()), settlements));
+      LevelMaker::topLevel(CreatureFactory::forrest(tribeSet->wildlife.get()), settlements));
   return top;
 }
 

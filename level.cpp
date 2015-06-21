@@ -29,6 +29,7 @@
 #include "attack.h"
 #include "player_message.h"
 #include "vision.h"
+#include "event.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {

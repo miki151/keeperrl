@@ -25,9 +25,7 @@
 #include "effect.h"
 #include "minion_task.h"
 #include "item_attributes.h"
-#include "minion_task_map.h"
 #include "entity_name.h"
-#include "spell_map.h"
 #include "view_object.h"
 
 // WTF is this defined
@@ -58,14 +56,14 @@ enum class SpawnType;
 #define CATTR(X) CreatureAttributes([&](CreatureAttributes& c) { X })
 
 struct SpellInfo;
+class MinionTaskMap;
+class SpellMap;
 
 class CreatureAttributes {
   public:
-  CreatureAttributes(function<void(CreatureAttributes&)> fun) {
-    fun(*this);
-  }
-
+  CreatureAttributes(function<void(CreatureAttributes&)>);
   CreatureAttributes(const CreatureAttributes& other) = default;
+  ~CreatureAttributes();
   SERIALIZATION_DECL(CreatureAttributes);
 
   MustInitialize<ViewId> SERIAL(viewId);
@@ -112,10 +110,10 @@ class CreatureAttributes {
   bool SERIAL(dontChase) = false;
   double SERIAL(damageMultiplier) = 1;
   double SERIAL(attributeGain) = 0.5;
-  Skillset SERIAL(skills);
-  SpellMap SERIAL(spells);
+  HeapAllocated<Skillset> SERIAL(skills);
+  HeapAllocated<SpellMap> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
-  MinionTaskMap SERIAL(minionTasks);
+  HeapAllocated<MinionTaskMap> SERIAL(minionTasks);
   string SERIAL(groupName) = "group";
 };
 

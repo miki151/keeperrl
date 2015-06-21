@@ -20,6 +20,7 @@
 #include "util.h"
 
 class ViewObject;
+class ViewIndex;
 
 class MapMemory {
   public:
@@ -31,14 +32,14 @@ class MapMemory {
   void clearUpdated() const;
   void clearSquare(Vec2 pos);
   bool hasViewIndex(Vec2 pos) const;
-  ViewIndex getViewIndex(Vec2 pos) const;
+  const ViewIndex& getViewIndex(Vec2 pos) const;
   static const MapMemory& empty();
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  Table<optional<ViewIndex>> SERIAL(table);
+  HeapAllocated<Table<optional<ViewIndex>>> SERIAL(table);
   mutable unordered_set<Vec2> updated;
 };
 

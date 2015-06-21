@@ -2,12 +2,12 @@
 #define _COLLECTIVE_CONTROL_H
 
 #include "monster_ai.h"
-#include "square_type.h"
 #include "player_message.h"
 
 class Creature;
 class Collective;
 class Tribe;
+class SquareType;
 
 class CollectiveControl {
   public:
@@ -21,7 +21,7 @@ class CollectiveControl {
   virtual void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message) {}
   virtual void removeAssaultNotification(const Collective*) {}
   virtual void onDiscoveredLocation(const Location*) {}
-  virtual void onConstructed(Vec2, SquareType) {}
+  virtual void onConstructed(Vec2, const SquareType&) {}
   virtual void onNoEnemies() {}
 
   SERIALIZATION_DECL(CollectiveControl);

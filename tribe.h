@@ -43,27 +43,7 @@ class Tribe {
 
   SERIALIZATION_DECL(Tribe);
 
-  struct Set {
-    Set();
-
-    PTribe SERIAL(monster);
-    PTribe SERIAL(pest);
-    PTribe SERIAL(wildlife);
-    PTribe SERIAL(human);
-    PTribe SERIAL(elven);
-    PTribe SERIAL(dwarven);
-    PTribe SERIAL(adventurer);
-    PTribe SERIAL(bandit);
-    PTribe SERIAL(killEveryone);
-    PTribe SERIAL(peaceful);
-    PTribe SERIAL(keeper);
-    PTribe SERIAL(lizard);
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-  };
-
-  friend struct Set;
+  friend struct TribeSet;
 
   private:
   Tribe(const string& name, bool diplomatic);
@@ -79,5 +59,26 @@ class Tribe {
   unordered_set<Tribe*> SERIAL(enemyTribes);
   string SERIAL(name);
 };
+
+struct TribeSet {
+  TribeSet();
+
+  PTribe SERIAL(monster);
+  PTribe SERIAL(pest);
+  PTribe SERIAL(wildlife);
+  PTribe SERIAL(human);
+  PTribe SERIAL(elven);
+  PTribe SERIAL(dwarven);
+  PTribe SERIAL(adventurer);
+  PTribe SERIAL(bandit);
+  PTribe SERIAL(killEveryone);
+  PTribe SERIAL(peaceful);
+  PTribe SERIAL(keeper);
+  PTribe SERIAL(lizard);
+
+  template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+};
+
 
 #endif

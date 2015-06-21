@@ -24,6 +24,9 @@
 #include "creature.h"
 #include "location.h"
 #include "player_message.h"
+#include "equipment.h"
+#include "spell.h"
+#include "event.h"
 
 class Behaviour {
   public:

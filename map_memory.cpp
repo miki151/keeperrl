@@ -22,9 +22,9 @@
 MapMemory::MapMemory() : table(Level::getMaxBounds()) {
 }
 
-MapMemory::MapMemory(const MapMemory& other) : table(other.table.getWidth(), other.table.getHeight()) {
-  for (Vec2 v : table.getBounds())
-    table[v] = other.table[v];
+MapMemory::MapMemory(const MapMemory& other) : table(other.table->getWidth(), other.table->getHeight()) {
+  for (Vec2 v : table->getBounds())
+    (*table)[v] = (*other.table)[v];
 }
 
 template <class Archive> 
@@ -35,30 +35,30 @@ void MapMemory::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(MapMemory);
 
 void MapMemory::addObject(Vec2 pos, const ViewObject& obj) {
-  if (!table[pos])
-    table[pos] = ViewIndex();
-  table[pos]->insert(obj);
-  table[pos]->setHighlight(HighlightType::MEMORY);
+  if (!(*table)[pos])
+    (*table)[pos] = ViewIndex();
+  (*table)[pos]->insert(obj);
+  (*table)[pos]->setHighlight(HighlightType::MEMORY);
   updated.insert(pos);
 }
 
 void MapMemory::update(Vec2 pos, const ViewIndex& index) {
-  table[pos] = index;
-  table[pos]->setHighlight(HighlightType::MEMORY);
-  table[pos]->removeObject(ViewLayer::CREATURE);
+  (*table)[pos] = index;
+  (*table)[pos]->setHighlight(HighlightType::MEMORY);
+  (*table)[pos]->removeObject(ViewLayer::CREATURE);
   updated.insert(pos);
 }
 
 void MapMemory::clearSquare(Vec2 pos) {
-  table[pos] = none;
+  (*table)[pos] = none;
 }
 
 bool MapMemory::hasViewIndex(Vec2 pos) const {
-  return !!table[pos];
+  return !!(*table)[pos];
 }
 
-ViewIndex MapMemory::getViewIndex(Vec2 pos) const {
-  return *table[pos];
+const ViewIndex& MapMemory::getViewIndex(Vec2 pos) const {
+  return *(*table)[pos];
 }
   
 const MapMemory& MapMemory::empty() {

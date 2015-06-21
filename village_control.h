@@ -19,6 +19,7 @@
 #include "event.h"
 #include "task.h"
 #include "collective_control.h"
+#include "enum_variant.h"
 
 enum class VillageBehaviourId {
   KILL_LEADER,

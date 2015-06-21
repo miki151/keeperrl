@@ -17,9 +17,6 @@
 #define _MODEL_H
 
 #include "util.h"
-#include "time_queue.h"
-#include "statistics.h"
-#include "tribe.h"
 
 class PlayerControl;
 class Level;
@@ -33,6 +30,9 @@ class View;
 class LevelMaker;
 struct SettlementInfo;
 class LevelBuilder;
+class TimeQueue;
+class Statistics;
+struct TribeSet;
 
 enum class SunlightState { DAY, NIGHT};
 
@@ -155,7 +155,7 @@ class Model {
   void onEquip(const Creature*, const Item*);
 
   private:
-  Model(View* view, const string& worldName, Tribe::Set&&);
+  Model(View* view, const string& worldName, TribeSet&&);
 
   friend class ModelBuilder;
 
@@ -167,13 +167,13 @@ class Model {
   void addLink(StairDirection, StairKey, Level*, Level*);
   Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 
-  Tribe::Set SERIAL(tribeSet);
+  HeapAllocated<TribeSet> SERIAL(tribeSet);
   vector<PLevel> SERIAL(levels);
   vector<PCollective> SERIAL(collectives);
   Collective* SERIAL(playerCollective);
   vector<Collective*> SERIAL(mainVillains);
   View* view;
-  TimeQueue SERIAL(timeQueue);
+  HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(lastTick) = -1000;
   map<tuple<StairDirection, StairKey, Level*>, Level*> SERIAL(levelLinks);
@@ -193,7 +193,7 @@ class Model {
   unique_ptr<CreatureView> SERIAL(spectator);
   optional<PortalInfo> SERIAL(danglingPortal);
   int SERIAL(woodCount) = 0;
-  Statistics SERIAL(statistics);
+  HeapAllocated<Statistics> SERIAL(statistics);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
 };

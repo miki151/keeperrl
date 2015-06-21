@@ -29,6 +29,8 @@
 #include "monster_ai.h"
 #include "player_message.h"
 #include "square_apply_type.h"
+#include "event.h"
+#include "tribe.h"
 
 class Staircase : public Square {
   public:

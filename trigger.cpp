@@ -27,6 +27,7 @@
 #include "model.h"
 #include "attack.h"
 #include "player_message.h"
+#include "tribe.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {

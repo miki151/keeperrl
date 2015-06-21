@@ -27,9 +27,11 @@ enum class AttractionId {
   ITEM_INDEX,
 };
 
-typedef EnumVariant<AttractionId, TYPES(SquareType, ItemIndex),
+class MinionAttraction : public EnumVariant<AttractionId, TYPES(SquareType, ItemIndex),
     ASSIGN(SquareType, AttractionId::SQUARE),
-    ASSIGN(ItemIndex, AttractionId::ITEM_INDEX)> MinionAttraction;
+    ASSIGN(ItemIndex, AttractionId::ITEM_INDEX)> {
+  using EnumVariant::EnumVariant;
+};
 
 namespace std {
   template <> struct hash<MinionAttraction> {

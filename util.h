@@ -1300,6 +1300,52 @@ class BiMap {
   map<V, U> SERIAL(m2);
 };
 
+template <class T>
+class HeapAllocated {
+  public:
+
+  template <typename... Args>
+  HeapAllocated(Args... a) : elem(new T(a...)) {}
+
+  HeapAllocated(T&& o) : elem(new T(std::move(o))) {}
+
+  HeapAllocated(const HeapAllocated& o) : elem(new T(*o)) {}
+
+  T* operator -> () {
+    return elem.get();
+  }
+
+  const T* operator -> () const {
+    return elem.get();
+  }
+
+  T& operator * () {
+    return *elem.get();
+  }
+
+  const T& operator * () const {
+    return *elem.get();
+  }
+
+  HeapAllocated& operator = (const T& t) {
+    *elem.get() = t;
+    return *this;
+  }
+
+  HeapAllocated& operator = (const HeapAllocated& t) {
+    *elem.get() = *t;
+    return *this;
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(elem);
+  }
+
+  private:
+  unique_ptr<T> SERIAL(elem);
+};
+
 class Semaphore {
   public:
   Semaphore(int val = 0);

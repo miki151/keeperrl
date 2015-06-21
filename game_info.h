@@ -154,6 +154,22 @@ class PlayerInfo {
   vector<Action> actions;
 };
 
+class VillageInfo {
+  public:
+    struct Village {
+      string name;
+      string tribeName;
+      string state;
+    };
+    vector<Village> villages;
+};
+
+class GameSunlightInfo {
+  public:
+  string description;
+  int timeRemaining;
+};
+
 /** Represents all the game information displayed around the map window.*/
 class GameInfo {
   public:
@@ -162,22 +178,8 @@ class GameInfo {
 
   CollectiveInfo collectiveInfo;
   PlayerInfo playerInfo;
-
-  class VillageInfo {
-    public:
-    struct Village {
-      string name;
-      string tribeName;
-      string state;
-    };
-    vector<Village> villages;
-  } villageInfo;
-
-  class SunlightInfo {
-    public:
-    string description;
-    int timeRemaining;
-  } sunlightInfo;
+  VillageInfo villageInfo;
+  GameSunlightInfo sunlightInfo;
 
   vector<PlayerMessage> messageBuffer;
 };

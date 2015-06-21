@@ -66,10 +66,12 @@ struct TrapInfo : public NamedTupleBase<TrapType, EffectType> {
   NAME_ELEM(1, effectType);
 };
 
-typedef EnumVariant<ItemId, TYPES(EffectType, TrapInfo, LastingEffect, TechId),
+class ItemType : public EnumVariant<ItemId, TYPES(EffectType, TrapInfo, LastingEffect, TechId),
         ASSIGN(EffectType, ItemId::SCROLL, ItemId::POTION, ItemId::MUSHROOM),
         ASSIGN(TrapInfo, ItemId::TRAP_ITEM),
         ASSIGN(LastingEffect, ItemId::RING),
-        ASSIGN(TechId, ItemId::TECH_BOOK)> ItemType;
+        ASSIGN(TechId, ItemId::TECH_BOOK)> {
+  using EnumVariant::EnumVariant;
+};
 
 #endif

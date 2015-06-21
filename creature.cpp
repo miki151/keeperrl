@@ -32,6 +32,11 @@
 #include "vision.h"
 #include "square_type.h"
 #include "square_apply_type.h"
+#include "equipment.h"
+#include "shortest_path.h"
+#include "spell_map.h"
+#include "minion_task_map.h"
+#include "tribe.h"
 
 
 template <class Archive> 
@@ -120,20 +125,20 @@ bool Creature::isFireResistant() const {
 }
 
 void Creature::addSpell(Spell* spell) {
-  spells.add(spell);
+  spells->add(spell);
 }
 
 vector<Spell*> Creature::getSpells() const {
-  return spells.getAll();
+  return spells->getAll();
 }
 
 double Creature::getSpellDelay(Spell* spell) const {
   CHECK(!isReady(spell));
-  return spells.getReadyTime(spell) - getTime();
+  return spells->getReadyTime(spell) - getTime();
 }
 
 bool Creature::isReady(Spell* spell) const {
-  return spells.getReadyTime(spell) < getTime();
+  return spells->getReadyTime(spell) < getTime();
 }
 
 static double getWillpowerMult(double sorcerySkill) {
@@ -141,7 +146,7 @@ static double getWillpowerMult(double sorcerySkill) {
 }
 
 CreatureAction Creature::castSpell(Spell* spell) const {
-  CHECK(spells.contains(spell));
+  CHECK(spells->contains(spell));
   CHECK(!spell->isDirected());
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
@@ -150,14 +155,14 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     playerMessage("You cast " + spell->getName());
     Effect::applyToCreature(c, spell->getEffectType(), EffectStrength::NORMAL);
     c->level->getModel()->getStatistics().add(StatId::SPELL_CAST);
-    c->spells.setReadyTime(spell, getTime() + spell->getDifficulty()
+    c->spells->setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     c->spendTime(1);
   });
 }
 
 CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
-  CHECK(spells.contains(spell));
+  CHECK(spells->contains(spell));
   CHECK(spell->isDirected());
   CHECK(dir.length8() == 1);
   if (!isReady(spell))
@@ -167,7 +172,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     playerMessage("You cast " + spell->getName());
     Effect::applyDirected(c, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
     level->getModel()->getStatistics().add(StatId::SPELL_CAST);
-    c->spells.setReadyTime(spell, getTime() + spell->getDifficulty()
+    c->spells->setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     c->spendTime(1);
   });
@@ -381,19 +386,19 @@ CreatureAction Creature::wait() const {
 }
 
 const Equipment& Creature::getEquipment() const {
-  return equipment;
+  return *equipment;
 }
 
 Equipment& Creature::getEquipment() {
-  return equipment;
+  return *equipment;
 }
 
 vector<PItem> Creature::steal(const vector<Item*> items) {
-  return equipment.removeItems(items);
+  return equipment->removeItems(items);
 }
 
 Item* Creature::getAmmo() const {
-  for (Item* item : equipment.getItems())
+  for (Item* item : equipment->getItems())
     if (item->getClass() == ItemClass::AMMO)
       return item;
   return nullptr;
@@ -431,21 +436,21 @@ void Creature::monsterMessage(const PlayerMessage& playerCanSee) const {
 
 void Creature::addSkill(Skill* skill) {
   if (!hasSkill(skill)) {
-    skills.insert(skill->getId());
+    skills->insert(skill->getId());
     playerMessage(skill->getHelpText());
   }
 }
 
 bool Creature::hasSkill(Skill* skill) const {
-  return skills.hasDiscrete(skill->getId());
+  return skills->hasDiscrete(skill->getId());
 }
 
 double Creature::getSkillValue(const Skill* skill) const {
-  return skills.getValue(skill->getId());
+  return skills->getValue(skill->getId());
 }
 
 const EnumSet<SkillId>& Creature::getDiscreteSkills() const {
-  return skills.getAllDiscrete();
+  return skills->getAllDiscrete();
 }
 
 vector<Item*> Creature::getPickUpOptions() const {
@@ -485,7 +490,7 @@ CreatureAction Creature::pickUp(const vector<Item*>& items, bool spendT) const {
         playerMessage("You pick up " + getPluralTheName(stack[0], stack.size()));
       }
     for (auto item : items) {
-      self->equipment.addItem(self->getSquare()->removeItem(item));
+      self->equipment->addItem(self->getSquare()->removeItem(item));
     }
     if (getInventoryWeight() > getModifier(ModifierType::INV_LIMIT))
       playerMessage("You are overloaded.");
@@ -511,7 +516,7 @@ CreatureAction Creature::drop(const vector<Item*>& items) const {
       playerMessage("You drop " + getPluralTheName(stack[0], stack.size()));
     }
     for (auto item : items) {
-      self->getSquare()->dropItem(self->equipment.removeItem(item));
+      self->getSquare()->dropItem(self->equipment->removeItem(item));
     }
     GlobalEvents.addDropEvent(this, items);
     self->spendTime(1);
@@ -547,7 +552,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
 }
 
 bool Creature::canEquip(const Item* item) const {
-  return canEquipIfEmptySlot(item, nullptr) && equipment.canEquip(item);
+  return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item);
 }
 
 bool Creature::isEquipmentAppropriate(const Item* item) const {
@@ -558,17 +563,17 @@ CreatureAction Creature::equip(Item* item) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
-  if (contains(equipment.getItem(item->getEquipmentSlot()), item))
+  if (contains(equipment->getItem(item->getEquipmentSlot()), item))
     return CreatureAction();
   return CreatureAction(this, [=](Creature *self) {
     Debug() << getName().the() << " equip " << item->getName();
     EquipmentSlot slot = item->getEquipmentSlot();
-    if (self->equipment.getItem(slot).size() >= self->equipment.getMaxItems(slot)) {
-      Item* previousItem = self->equipment.getItem(slot)[0];
-      self->equipment.unequip(previousItem);
+    if (self->equipment->getItem(slot).size() >= self->equipment->getMaxItems(slot)) {
+      Item* previousItem = self->equipment->getItem(slot)[0];
+      self->equipment->unequip(previousItem);
       previousItem->onUnequip(self);
     }
-    self->equipment.equip(item, slot);
+    self->equipment->equip(item, slot);
     playerMessage("You equip " + item->getTheName(false, isBlind()));
     monsterMessage(getName().the() + " equips " + item->getAName());
     item->onEquip(self);
@@ -579,7 +584,7 @@ CreatureAction Creature::equip(Item* item) const {
 }
 
 CreatureAction Creature::unequip(Item* item) const {
-  if (!equipment.isEquiped(item))
+  if (!equipment->isEquiped(item))
     return CreatureAction("This item is not equiped.");
   if (!isHumanoid())
     return CreatureAction("You can't remove this item!");
@@ -587,9 +592,9 @@ CreatureAction Creature::unequip(Item* item) const {
     return CreatureAction("You have no healthy arms!");
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " unequip";
-    CHECK(equipment.isEquiped(item)) << "Item not equiped.";
+    CHECK(equipment->isEquiped(item)) << "Item not equiped.";
     EquipmentSlot slot = item->getEquipmentSlot();
-    self->equipment.unequip(item);
+    self->equipment->unequip(item);
     playerMessage("You " + string(slot == EquipmentSlot::WEAPON ? " sheathe " : " remove ") +
         item->getTheName(false, isBlind()));
     monsterMessage(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
@@ -692,7 +697,7 @@ CreatureAction Creature::stealFrom(Vec2 direction, const vector<Item*>& items) c
     if (s->getCreature())
       return CreatureAction(this, [=](Creature *self) {
         Creature* other = NOTNULL(self->getSafeSquare(direction)->getCreature());
-        self->equipment.addItems(other->steal(items));
+        self->equipment->addItems(other->steal(items));
       });
   return CreatureAction();
 }
@@ -896,8 +901,8 @@ int simulAttackPen(int attackers) {
 
 int Creature::getAttr(AttrType type) const {
   int def = getRawAttr(type);
-  for (Item* item : equipment.getItems())
-    if (equipment.isEquiped(item))
+  for (Item* item : equipment->getItems())
+    if (equipment->isEquiped(item))
       def += item->getAttr(type);
   switch (type) {
     case AttrType::STRENGTH:
@@ -940,8 +945,8 @@ int Creature::accuracyBonus() const {
 
 int Creature::getModifier(ModifierType type) const {
   int def = 0;
-  for (Item* item : equipment.getItems())
-    if (equipment.isEquiped(item))
+  for (Item* item : equipment->getItems())
+    if (equipment->isEquiped(item))
       def += item->getModifier(type);
   for (SkillId skill : ENUM_ALL(SkillId))
     def += Skill::get(skill)->getModifier(this, type);
@@ -1056,7 +1061,7 @@ bool Creature::isEnemy(const Creature* c) const {
 
 vector<Item*> Creature::getGold(int num) const {
   vector<Item*> ret;
-  for (Item* item : equipment.getItems([](Item* it) { return it->getClass() == ItemClass::GOLD; })) {
+  for (Item* item : equipment->getItems([](Item* it) { return it->getClass() == ItemClass::GOLD; })) {
     ret.push_back(item);
     if (ret.size() == num)
       return ret;
@@ -1084,10 +1089,10 @@ void Creature::tick(double realTime) {
   updateVision();
   if (Random.roll(5))
     getDifficultyPoints();
-  for (Item* item : equipment.getItems()) {
+  for (Item* item : equipment->getItems()) {
     item->tick(time, level, position);
     if (item->isDiscarded())
-      equipment.removeItem(item);
+      equipment->removeItem(item);
   }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (lastingEffects[effect] > 0 && lastingEffects[effect] < realTime) {
@@ -1240,7 +1245,7 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
     case BodyPart::ARM:
       if (getWeapon()) {
         you(MsgType::DROP_WEAPON, getWeapon()->getName());
-        getSquare()->dropItem(equipment.removeItem(getWeapon()));
+        getSquare()->dropItem(equipment->removeItem(getWeapon()));
       }
       break;
     case BodyPart::WING:
@@ -1671,7 +1676,7 @@ void Creature::take(vector<PItem> items) {
 
 void Creature::take(PItem item) {
   Item* ref = item.get();
-  equipment.addItem(std::move(item));
+  equipment->addItem(std::move(item));
   if (auto action = equip(ref))
     action.perform(this);
 }
@@ -1695,7 +1700,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   if (attacker)
     attacker->kills.push_back(this);
   if (dropInventory)
-    for (PItem& item : equipment.removeAllItems()) {
+    for (PItem& item : equipment->removeAllItems()) {
       getSquare()->dropItem(std::move(item));
     }
   dead = true;
@@ -1758,7 +1763,7 @@ void Creature::surrender(const Creature* to) {
 }
 
 void Creature::give(const Creature* whom, vector<Item*> items) {
-  getLevel()->getSafeSquare(whom->getPosition())->getCreature()->takeItems(equipment.removeItems(items), this);
+  getLevel()->getSafeSquare(whom->getPosition())->getCreature()->takeItems(equipment->removeItems(items), this);
 }
 
 CreatureAction Creature::fire(Vec2 direction) const {
@@ -1770,7 +1775,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
   if (!getAmmo())
     return CreatureAction("Out of ammunition");
   return CreatureAction(this, [=](Creature* self) {
-    PItem ammo = self->equipment.removeItem(NOTNULL(getAmmo()));
+    PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()));
     RangedWeapon* weapon = NOTNULL(dynamic_cast<RangedWeapon*>(
         getOnlyElement(self->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))));
     weapon->fire(self, level, std::move(ammo), direction);
@@ -1956,7 +1961,7 @@ CreatureAction Creature::consume(Vec2 direction) const {
     consumeAttr(self->attackEffect, other->attackEffect, adjectives, "");
     consumeAttr(self->passiveAttack, other->passiveAttack, adjectives, "");
     consumeAttr(self->gender, other->gender, adjectives);
-    consumeAttr(self->skills, other->skills, adjectives);
+    consumeAttr(*self->skills, *other->skills, adjectives);
     if (!adjectives.empty()) {
       you(MsgType::BECOME, combine(adjectives));
       self->personalEvents.push_back(getName().the() + " becomes " + combine(adjectives));
@@ -1986,7 +1991,7 @@ AttackLevel Creature::getRandomAttackLevel() const {
 }
 
 Item* Creature::getWeapon() const {
-  vector<Item*> it = equipment.getItem(EquipmentSlot::WEAPON);
+  vector<Item*> it = equipment->getItem(EquipmentSlot::WEAPON);
   if (it.empty())
     return nullptr;
   else
@@ -2014,7 +2019,7 @@ CreatureAction Creature::applyItem(Item* item) const {
       monsterMessage(getName().the() + " " + item->getApplyMsgThirdPerson(isBlind()), item->getNoSeeApplyMsg());
       item->apply(self, level);
       if (item->isDiscarded()) {
-        self->equipment.removeItem(item);
+        self->equipment->removeItem(item);
       }
       self->spendTime(time);
   });
@@ -2049,7 +2054,7 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) const {
     Attack attack(self, getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, none);
     playerMessage("You throw " + item->getAName(false, isBlind()));
     monsterMessage(getName().the() + " throws " + item->getAName());
-    level->throwItem(self->equipment.removeItem(item), attack, dist, getPosition(), direction, getVision());
+    level->throwItem(self->equipment->removeItem(item), attack, dist, getPosition(), direction, getVision());
     self->spendTime(1);
   });
 }
@@ -2279,9 +2284,9 @@ CreatureAction Creature::moveTowards(Vec2 pos, bool away, bool stepOnTile) {
   if (!shortestPath || targetChanged || shortestPath->isReversed() != away) {
     newPath = true;
     if (!away)
-      shortestPath = ShortestPath(getLevel(), this, pos, getPosition());
+      shortestPath.reset(new ShortestPath(getLevel(), this, pos, getPosition()));
     else
-      shortestPath = ShortestPath(getLevel(), this, pos, getPosition(), -1.5);
+      shortestPath.reset(new ShortestPath(getLevel(), this, pos, getPosition(), -1.5));
   }
   CHECK(shortestPath);
   if (shortestPath->isReachable(getPosition())) {
@@ -2293,9 +2298,9 @@ CreatureAction Creature::moveTowards(Vec2 pos, bool away, bool stepOnTile) {
     return CreatureAction();
   Debug() << "Reconstructing shortest path.";
   if (!away)
-    shortestPath = ShortestPath(getLevel(), this, pos, getPosition());
+    shortestPath.reset(new ShortestPath(getLevel(), this, pos, getPosition()));
   else
-    shortestPath = ShortestPath(getLevel(), this, pos, getPosition(), -1.5);
+    shortestPath.reset(new ShortestPath(getLevel(), this, pos, getPosition(), -1.5));
   if (shortestPath->isReachable(getPosition())) {
     Vec2 pos2 = shortestPath->getNextMove(getPosition());
     if (auto action = move(pos2 - getPosition()))
@@ -2438,7 +2443,7 @@ VisionId Creature::getVision() const {
 }
 
 const MinionTaskMap& Creature::getMinionTasks() const {
-  return minionTasks;
+  return *minionTasks;
 }
 
 void Creature::updateVisibleCreatures(Rectangle range) {

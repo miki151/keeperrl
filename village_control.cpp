@@ -20,6 +20,8 @@
 #include "creature.h"
 #include "square.h"
 #include "level.h"
+#include "collective_teams.h"
+#include "tribe.h"
 
 template <class Archive>
 void VillageControl::Villain::serialize(Archive& ar, const unsigned int version) {

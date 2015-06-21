@@ -24,6 +24,7 @@
 #include "view_object.h"
 #include "model.h"
 #include "player_message.h"
+#include "fire.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -108,26 +109,26 @@ void Item::onUnequip(Creature* c) {
 }
 
 void Item::setOnFire(double amount, const Level* level, Vec2 position) {
-  bool burning = fire.isBurning();
+  bool burning = fire->isBurning();
   string noBurningName = getTheName();
-  fire.set(amount);
-  if (!burning && fire.isBurning()) {
-    level->globalMessage(position, noBurningName + " catches fire.");
-    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
+  fire->set(amount);
+  if (!burning && fire->isBurning()) {
+    level->globalMessage(position, noBurningName + " catches fire->");
+    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
   }
 }
 
 double Item::getFireSize() const {
-  return fire.getSize();
+  return fire->getSize();
 }
 
 void Item::tick(double time, Level* level, Vec2 position) {
-  if (fire.isBurning()) {
-    Debug() << getName() << " burning " << fire.getSize();
-    level->getSafeSquare(position)->setOnFire(fire.getSize());
-    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
-    fire.tick(level, position);
-    if (!fire.isBurning()) {
+  if (fire->isBurning()) {
+    Debug() << getName() << " burning " << fire->getSize();
+    level->getSafeSquare(position)->setOnFire(fire->getSize());
+    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+    fire->tick(level, position);
+    if (!fire->isBurning()) {
       level->globalMessage(position, getTheName() + " burns out");
       discarded = true;
     }
@@ -250,7 +251,7 @@ void Item::setName(const string& n) {
 
 string Item::getName(bool plural, bool blind) const {
   string suff;
-  if (fire.isBurning())
+  if (fire->isBurning())
     suff.append(" (burning)");
   if (getShopkeeper())
     suff += " (" + toString(getPrice()) + (plural ? " zorkmids each)" : " zorkmids)");
@@ -354,7 +355,7 @@ string Item::getShortName(bool shortMod, bool blind) const {
     name = *shortName + " " + name;
   if (getShopkeeper())
     name = name + " (unpaid)";
-  if (fire.isBurning())
+  if (fire->isBurning())
     name.append(" (burning)");
   return name;
 }

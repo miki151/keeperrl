@@ -23,9 +23,9 @@
 #include "view.h"
 #include "collective_control.h"
 #include "event.h"
-#include "visibility_map.h"
 #include "cost_info.h"
 #include "game_info.h"
+#include "square_type.h"
 
 class Model;
 class Technology;
@@ -33,6 +33,7 @@ class View;
 class Collective;
 class CollectiveTeams;
 class MapMemory;
+class VisibilityMap;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
@@ -99,7 +100,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onDiscoveredLocation(const Location*) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
-  virtual void onConstructed(Vec2, SquareType) override;
+  virtual void onConstructed(Vec2, const SquareType&) override;
   virtual void onNoEnemies() override;
 
   private:
@@ -265,7 +266,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<const Creature*> SERIAL(visibleFriends);
   unordered_set<const Collective*> SERIAL(notifiedConquered);
   bool newTeam = false;
-  VisibilityMap SERIAL(visibilityMap);
+  HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
   bool firstRender = true;
   bool isNight = true;
 };

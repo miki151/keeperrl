@@ -2,6 +2,7 @@
 #include "construction_map.h"
 #include "creature.h"
 #include "trigger.h"
+#include "tribe.h"
 
 const ConstructionMap::SquareInfo& ConstructionMap::getSquare(Vec2 pos) const {
   return squares.at(pos);

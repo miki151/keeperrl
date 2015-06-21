@@ -41,6 +41,15 @@
 #include "map_memory.h"
 #include "square_factory.h"
 #include "item_action.h"
+#include "equipment.h"
+#include "collective_teams.h"
+#include "minion_equipment.h"
+#include "task_map.h"
+#include "construction_map.h"
+#include "minion_task_map.h"
+#include "spell.h"
+#include "tribe.h"
+#include "visibility_map.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -805,8 +814,8 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   return ret;
 }
 
-static GameInfo::VillageInfo::Village getVillageInfo(const Collective* col) {
-  GameInfo::VillageInfo::Village info;
+static VillageInfo::Village getVillageInfo(const Collective* col) {
+  VillageInfo::Village info;
   info.name = col->getName();
   info.tribeName = col->getTribe()->getName();
   if (col->isConquered())
@@ -906,7 +915,7 @@ void PlayerControl::initialize() {
 void PlayerControl::update(Creature* c) {
   if (!retired && contains(getCreatures(), c)) {
     vector<Vec2> visibleTiles = getCollective()->getLevel()->getVisibleTiles(c);
-    visibilityMap.update(c, visibleTiles);
+    visibilityMap->update(c, visibleTiles);
     for (Vec2 pos : visibleTiles) {
       getCollective()->addKnownTile(pos);
       addToMemory(pos);
@@ -1582,7 +1591,7 @@ bool PlayerControl::canSee(const Creature* c) const {
 bool PlayerControl::canSee(Vec2 position) const {
   if (seeEverything)
     return true;
-  if (visibilityMap.isVisible(position))
+  if (visibilityMap->isVisible(position))
       return true;
   for (Vec2 pos : getCollective()->getSquares(SquareId::EYEBALL))
     if (getLevel()->canSee(pos, position, VisionId::NORMAL))
@@ -1661,7 +1670,7 @@ void PlayerControl::onConqueredLand() {
 }
 
 void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {
-  visibilityMap.remove(victim);
+  visibilityMap->remove(victim);
   if (!getKeeper() && !retired && !model->isGameOver()) {
     model->gameOver(victim, getCollective()->getKills().size(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());
@@ -1712,7 +1721,7 @@ void PlayerControl::updateSquareMemory(Vec2 pos) {
   getMemory(getLevel()).update(pos, index);
 }
 
-void PlayerControl::onConstructed(Vec2 pos, SquareType type) {
+void PlayerControl::onConstructed(Vec2 pos, const SquareType& type) {
   updateSquareMemory(pos);
   if (type == SquareId::FLOOR) {
     Vec2 visRadius(3, 3);

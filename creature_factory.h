@@ -21,12 +21,12 @@
 #include <functional>
 
 #include "util.h"
-#include "tribe.h"
-#include "item_type.h"
 
 class Creature;
 class MonsterAIFactory;
 class Location;
+class Tribe;
+class ItemType;
 
 RICH_ENUM(CreatureId,
     KEEPER,

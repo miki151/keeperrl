@@ -2,6 +2,7 @@
 #include "util.h"
 #include "creature.h"
 #include "collective_config.h"
+#include "tribe.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}

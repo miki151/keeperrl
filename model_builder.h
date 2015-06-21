@@ -1,7 +1,6 @@
 #ifndef _MODEL_BUILDER_H
 
 #include "village_control.h"
-#include "collective_config.h"
 
 class Level;
 class Model;

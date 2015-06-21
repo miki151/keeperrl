@@ -22,6 +22,7 @@
 #include "technology.h"
 #include "creature_factory.h"
 #include "creature.h"
+#include "spell.h"
 
 void bestiary(View* view, int lastInd) {
 }

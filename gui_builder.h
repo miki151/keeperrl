@@ -38,17 +38,17 @@ class GuiBuilder {
   void setTilesOk(bool);
   int getStandardLineHeight() const;
   
-  PGuiElem getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo);
+  PGuiElem getSunlightInfoGui(GameSunlightInfo& sunlightInfo);
   PGuiElem getTurnInfoGui(int turn);
   PGuiElem drawBottomPlayerInfo(GameInfo&);
   PGuiElem drawRightPlayerInfo(PlayerInfo&);
   PGuiElem drawPlayerHelp(PlayerInfo&);
   PGuiElem drawPlayerInventory(PlayerInfo&);
   PGuiElem drawBottomBandInfo(GameInfo&);
-  PGuiElem drawRightBandInfo(CollectiveInfo&, GameInfo::VillageInfo&);
+  PGuiElem drawRightBandInfo(CollectiveInfo&, VillageInfo&);
   PGuiElem drawBuildings(CollectiveInfo&);
   PGuiElem drawTechnology(CollectiveInfo&);
-  PGuiElem drawVillages(GameInfo::VillageInfo&);
+  PGuiElem drawVillages(VillageInfo&);
   PGuiElem drawDeities(CollectiveInfo&);
   PGuiElem drawMinions(CollectiveInfo&);
   PGuiElem drawKeeperHelp();

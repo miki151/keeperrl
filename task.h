@@ -19,14 +19,15 @@
 #include "monster_ai.h"
 #include "unique_entity.h"
 #include "entity_set.h"
-#include "square_type.h"
+
+class SquareType;
 
 class Task : public UniqueEntity<Task> {
   public:
 
   class Callback {
     public:
-    virtual void onConstructed(Vec2 pos, SquareType) {}
+    virtual void onConstructed(Vec2 pos, const SquareType&) {}
     virtual void onConstructionCancelled(Vec2 pos) {}
     virtual bool isConstructionReachable(Vec2 pos) { return true; }
     virtual void onTorchBuilt(Vec2 pos, Trigger*) {}
@@ -37,7 +38,7 @@ class Task : public UniqueEntity<Task> {
     virtual void onBrought(Vec2 pos, EntitySet<Item>) {}
     virtual void onCantPickItem(EntitySet<Item> items) {}
     virtual void onKillCancelled(Creature*) {}
-    virtual void onBedCreated(Vec2 pos, SquareType fromType, SquareType toType) {}
+    virtual void onBedCreated(Vec2 pos, const SquareType& fromType, const SquareType& toType) {}
     virtual void onCopulated(Creature* who, Creature* with) {}
     virtual void onConsumed(Creature* consumer, Creature* who) {}
 
@@ -54,7 +55,7 @@ class Task : public UniqueEntity<Task> {
   virtual string getDescription() const = 0;
   bool isDone();
 
-  static PTask construction(Callback*, Vec2 target, SquareType);
+  static PTask construction(Callback*, Vec2 target, const SquareType&);
   static PTask buildTorch(Callback*, Vec2 target, Dir attachmentDir);
   static PTask bringItem(Callback*, Vec2 position, vector<Item*>, vector<Vec2> target, int numRetries = 10);
   static PTask applyItem(Callback*, Vec2 position, Item* item, Vec2 target);
@@ -73,7 +74,7 @@ class Task : public UniqueEntity<Task> {
   static PTask attackLeader(Collective*);
   static PTask killFighters(Collective*, int numFighters);
   static PTask stealFrom(Collective*, Callback*);
-  static PTask createBed(Callback*, Vec2, SquareType fromType, SquareType toType);
+  static PTask createBed(Callback*, Vec2, const SquareType& fromType, const SquareType& toType);
   static PTask consumeItem(Callback*, vector<Item*> items);
   static PTask copulate(Callback*, Creature* target, int numTurns);
   static PTask consume(Callback*, Creature* target);

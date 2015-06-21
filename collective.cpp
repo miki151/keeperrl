@@ -17,6 +17,16 @@
 #include "spell.h"
 #include "location.h"
 #include "view_id.h"
+#include "equipment.h"
+#include "view_index.h"
+#include "minion_equipment.h"
+#include "task_map.h"
+#include "collective_teams.h"
+#include "known_tiles.h"
+#include "construction_map.h"
+#include "minion_task_map.h"
+#include "tribe.h"
+#include "collective_config.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -150,7 +160,8 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   return ret;
 };
 
-Collective::Collective(Level* l, CollectiveConfig cfg, Tribe* t, EnumMap<ResourceId, int> _credit, const string& n) 
+Collective::Collective(Level* l, const CollectiveConfig& cfg, Tribe* t, EnumMap<ResourceId, int> _credit,
+    const string& n) 
   : credit(_credit), taskMap(l->getBounds()), knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
   tribe(NOTNULL(t)), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
@@ -162,7 +173,7 @@ const string& Collective::getName() const {
 Collective::~Collective() {
 }
 
-double Collective::getAttractionOccupation(MinionAttraction attraction) {
+double Collective::getAttractionOccupation(const MinionAttraction& attraction) {
   double res = 0;
   for (auto& elem : minionAttraction)
     for (auto& info : elem.second)
@@ -171,7 +182,7 @@ double Collective::getAttractionOccupation(MinionAttraction attraction) {
   return res;
 }
 
-double Collective::getAttractionValue(MinionAttraction attraction) {
+double Collective::getAttractionValue(const MinionAttraction& attraction) {
   switch (attraction.getId()) {
     case AttractionId::SQUARE: 
       return getSquares(attraction.get<SquareType>()).size();
@@ -209,7 +220,7 @@ class LeaderControlOverride : public Creature::MoraleOverride {
 }
 
 void Collective::addCreature(PCreature creature, Vec2 pos, EnumSet<MinionTrait> traits) {
-  if (config.getStripSpawns())
+  if (config->getStripSpawns())
     creature->getEquipment().removeAllItems();
   Creature* c = creature.get();
   getLevel()->addCreature(pos, std::move(creature));
@@ -228,7 +239,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (auto spawnType = c->getSpawnType())
     bySpawnType[*spawnType].push_back(c);
   for (const Item* item : c->getEquipment().getItems())
-    minionEquipment.own(c, item);
+    minionEquipment->own(c, item);
   if (traits[MinionTrait::PRISONER])
     prisonerInfo[c] = {PrisonerState::PRISON, 0};
   if (traits[MinionTrait::FIGHTER]) {
@@ -241,16 +252,16 @@ void Collective::removeCreature(Creature* c) {
   prisonerInfo.erase(c);
   freeFromGuardPost(c);
   minionAttraction.erase(c);
-  if (Task* task = taskMap.getTask(c)) {
+  if (Task* task = taskMap->getTask(c)) {
     if (!task->canTransfer())
-      returnResource(taskMap.removeTask(task));
+      returnResource(taskMap->removeTask(task));
     else
-      taskMap.freeTaskDelay(task, getTime() + 50);
+      taskMap->freeTaskDelay(task, getTime() + 50);
   }
   if (auto spawnType = c->getSpawnType())
     removeElement(bySpawnType[*spawnType], c);
-  for (auto team : teams.getContaining(c))
-    teams.remove(team, c);
+  for (auto team : teams->getContaining(c))
+    teams->remove(team, c);
   for (MinionTrait t : ENUM_ALL(MinionTrait))
     if (contains(byTrait[t], c))
       removeElement(byTrait[t], c);
@@ -335,7 +346,7 @@ double Collective::getWarLevel() const {
 MoveInfo Collective::getDropItems(Creature *c) {
   if (containsSquare(c->getPosition())) {
     vector<Item*> items = c->getEquipment().getItems([this, c](const Item* item) {
-        return minionEquipment.isItemUseful(item) && minionEquipment.getOwner(item) != c; });
+        return minionEquipment->isItemUseful(item) && minionEquipment->getOwner(item) != c; });
     if (!items.empty())
       return c->drop(items);
   }
@@ -368,18 +379,18 @@ void Collective::onKillCancelled(Creature* c) {
     prisonerInfo.at(c).task() = 0;
 }
 
-void Collective::onBedCreated(Vec2 pos, SquareType fromType, SquareType toType) {
+void Collective::onBedCreated(Vec2 pos, const SquareType& fromType, const SquareType& toType) {
   changeSquareType(pos, fromType, toType);
 }
 
 MoveInfo Collective::getWorkerMove(Creature* c) {
-  if (Task* task = taskMap.getTask(c))
+  if (Task* task = taskMap->getTask(c))
     return task->getMove(c);
-  if (Task* closest = taskMap.getTaskForWorker(c)) {
-    taskMap.takeTask(c, closest);
+  if (Task* closest = taskMap->getTaskForWorker(c)) {
+    taskMap->takeTask(c, closest);
     return closest->getMove(c);
   } else {
-    if (config.getWorkerFollowLeader() && getLeader() && !containsSquare(c->getPosition())
+    if (config->getWorkerFollowLeader() && getLeader() && !containsSquare(c->getPosition())
         && getLeader()->getLevel() == c->getLevel()) {
       Vec2 leaderPos = getLeader()->getPosition();
       if (leaderPos.dist8(c->getPosition()) < 3)
@@ -428,7 +439,7 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
     case MinionTask::EXPLORE:
         return getLevel()->getModel()->getSunlightInfo().state == SunlightState::DAY;
     case MinionTask::SLEEP:
-        if (!config.sleepOnlyAtNight())
+        if (!config->sleepOnlyAtNight())
           return true;
     case MinionTask::EXPLORE_NOCTURNAL:
         return getLevel()->getModel()->getSunlightInfo().state == SunlightState::NIGHT;
@@ -461,7 +472,7 @@ static optional<Vec2> getRandomCloseTile(Vec2 from, const vector<Vec2>& tiles, f
 }
 
 optional<Vec2> Collective::getTileToExplore(const Creature* c, MinionTask task) const {
-  vector<Vec2> border = randomPermutation(knownTiles.getBorderTiles());
+  vector<Vec2> border = randomPermutation(knownTiles->getBorderTiles());
   switch (task) {
     case MinionTask::EXPLORE_CAVES:
         if (auto pos = getRandomCloseTile(c->getPosition(), border,
@@ -570,8 +581,8 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
   setMinionTask(who, MinionTask::CONSUME);
   MinionTaskInfo info = getTaskInfo().at(currentTasks[consumer->getUniqueId()].task());
   minionTaskStrings[consumer->getUniqueId()] = info.description;
-  taskMap.freeFromTask(consumer);
-  taskMap.addTask(Task::consume(this, who), consumer);
+  taskMap->freeFromTask(consumer);
+  taskMap->addTask(Task::consume(this, who), consumer);
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
@@ -584,11 +595,11 @@ PTask Collective::getEquipmentTask(Creature* c) {
       tasks.push_back(Task::equipItem(it));
   for (Vec2 v : getAllSquares(equipmentStorage)) {
     vector<Item*> it = filter(getLevel()->getSafeSquare(v)->getItems(ItemIndex::MINION_EQUIPMENT), 
-        [this, c] (const Item* it) { return minionEquipment.getOwner(it) == c && it->canEquip(); });
+        [this, c] (const Item* it) { return minionEquipment->getOwner(it) == c && it->canEquip(); });
     if (!it.empty())
       tasks.push_back(Task::pickAndEquipItem(this, v, it[0]));
     it = filter(getLevel()->getSafeSquare(v)->getItems(ItemIndex::MINION_EQUIPMENT), 
-        [this, c] (const Item* it) { return minionEquipment.getOwner(it) == c; });
+        [this, c] (const Item* it) { return minionEquipment->getOwner(it) == c; });
     if (!it.empty())
       tasks.push_back(Task::pickItem(this, v, it));
   }
@@ -609,12 +620,12 @@ PTask Collective::getHealingTask(Creature* c) {
 }
 
 MoveInfo Collective::getTeamMemberMove(Creature* c) {
-  for (auto team : teams.getContaining(c))
-    if (teams.isActive(team)) {
-        const Creature* leader = teams.getLeader(team);
+  for (auto team : teams->getContaining(c))
+    if (teams->isActive(team)) {
+        const Creature* leader = teams->getLeader(team);
         if (c != leader && leader->getLevel() == c->getLevel()) {
             if (leader->getPosition().dist8(c->getPosition()) > 1)
-              return c->moveTowards(teams.getLeader(team)->getPosition());
+              return c->moveTowards(teams->getLeader(team)->getPosition());
             else
               return c->wait();
         } else
@@ -625,25 +636,25 @@ MoveInfo Collective::getTeamMemberMove(Creature* c) {
 }
 
 void Collective::setTask(const Creature *c, PTask task, bool priority) {
-  if (Task* task = taskMap.getTask(c)) {
+  if (Task* task = taskMap->getTask(c)) {
     if (!task->canTransfer())
-      returnResource(taskMap.removeTask(task));
+      returnResource(taskMap->removeTask(task));
     else
-      taskMap.freeTaskDelay(task, getTime() + 50);
+      taskMap->freeTaskDelay(task, getTime() + 50);
   }
   if (priority)
-    taskMap.addPriorityTask(std::move(task), c);
+    taskMap->addPriorityTask(std::move(task), c);
   else
-    taskMap.addTask(std::move(task), c);
+    taskMap->addTask(std::move(task), c);
 }
 
 bool Collective::hasTask(const Creature* c) const {
-  return taskMap.hasTask(c);
+  return taskMap->hasTask(c);
 }
 
 void Collective::cancelTask(const Creature* c) {
-  if (Task* task = taskMap.getTask(c))
-    taskMap.removeTask(task);
+  if (Task* task = taskMap->getTask(c))
+    taskMap->removeTask(task);
 }
 
 MoveInfo Collective::getMove(Creature* c) {
@@ -651,8 +662,8 @@ MoveInfo Collective::getMove(Creature* c) {
   CHECK(contains(creatures, c));
   if (c->getLevel() != getLevel())
     return NoMove;
-  if (Task* task = taskMap.getTask(c))
-    if (taskMap.isPriorityTask(task))
+  if (Task* task = taskMap->getTask(c))
+    if (taskMap->isPriorityTask(task))
       return task->getMove(c);
   if (MoveInfo move = getTeamMemberMove(c))
     return move;
@@ -660,7 +671,7 @@ MoveInfo Collective::getMove(Creature* c) {
     return move;
   if (hasTrait(c, MinionTrait::WORKER))
     return getWorkerMove(c);
-  if (config.getFetchItems())
+  if (config->getFetchItems())
     if (MoveInfo move = getDropItems(c))
       return move;
   if (hasTrait(c, MinionTrait::FIGHTER)) {
@@ -669,22 +680,22 @@ MoveInfo Collective::getMove(Creature* c) {
     if (MoveInfo move = getGuardPostMove(c))
       return move;
   }
-  if (Task* task = taskMap.getTask(c))
+  if (Task* task = taskMap->getTask(c))
     return task->getMove(c);
   if (PTask t = getHealingTask(c))
     if (t->getMove(c))
-      return taskMap.addTask(std::move(t), c)->getMove(c);
+      return taskMap->addTask(std::move(t), c)->getMove(c);
   if (usesEquipment(c))
     if (PTask t = getEquipmentTask(c))
       if (t->getMove(c))
-        return taskMap.addTask(std::move(t), c)->getMove(c);
+        return taskMap->addTask(std::move(t), c)->getMove(c);
   if (PTask t = getPrisonerTask(c))
-    return taskMap.addTask(std::move(t), c)->getMove(c);
+    return taskMap->addTask(std::move(t), c)->getMove(c);
   if (PTask t = getStandardTask(c))
     if (t->getMove(c))
-      return taskMap.addTask(std::move(t), c)->getMove(c);
+      return taskMap->addTask(std::move(t), c)->getMove(c);
   if (!hasTrait(c, MinionTrait::NO_RETURNING) && !getAllSquares().empty() &&
-      !getAllSquares().count(c->getPosition()) && teams.getActiveTeams(c).empty())
+      !getAllSquares().count(c->getPosition()) && teams->getActiveTeams(c).empty())
     return c->moveTowards(chooseRandom(getAllSquares()));
   else
     return NoMove;
@@ -859,7 +870,7 @@ bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCr
   if (spawnPos.size() < creatures.size())
     return false;
   if (info.autoTeam)
-    teams.activate(teams.createPersistent(extractRefs(creatures)));
+    teams->activate(teams->createPersistent(extractRefs(creatures)));
   for (int i : All(creatures)) {
     Creature* c = creatures[i].get();
     addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
@@ -913,14 +924,14 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
       return false;
   }
   if (info.autoTeam)
-    teams.activate(teams.createPersistent(extractRefs(creatures)));
+    teams->activate(teams->createPersistent(extractRefs(creatures)));
   for (int i : All(creatures)) {
     Creature* c = creatures[i].get();
     if (i == 0)
       c->increaseExpLevel(2);
     addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
     if (bedType) {
-      taskMap.addPriorityTask(Task::createBed(this, bedPos[i], dormType, *bedType), c);
+      taskMap->addPriorityTask(Task::createBed(this, bedPos[i], dormType, *bedType), c);
       Debug() << c->getName().bare() << " creating bed " << bedPos[i];
     }
     minionPayment[c] = {info.salary, 0.0, 0};
@@ -960,7 +971,7 @@ void Collective::considerImmigration() {
     return;
   vector<double> weights;
   bool ok = false;
-  for (auto& elem : config.getImmigrantInfo()) {
+  for (auto& elem : config->getImmigrantInfo()) {
     weights.push_back(getImmigrantChance(elem));
     if (weights.back() > 0)
       ok = true;
@@ -968,7 +979,7 @@ void Collective::considerImmigration() {
   if (!ok)
     return;
   for (int i : Range(10))
-    if (considerImmigrant(chooseRandom(config.getImmigrantInfo(), weights)))
+    if (considerImmigrant(chooseRandom(config->getImmigrantInfo(), weights)))
       break;
 }
 
@@ -978,8 +989,8 @@ int Collective::getPaymentAmount(const Creature* c) const {
   if (!minionPayment.count(c))
     return 0;
   else
-    return config.getPayoutMultiplier() *
-      minionPayment.at(c).salary() * minionPayment.at(c).workAmount() / config.getPayoutTime();
+    return config->getPayoutMultiplier() *
+      minionPayment.at(c).salary() * minionPayment.at(c).workAmount() / config->getPayoutTime();
 }
 
 int Collective::getNextSalaries() const {
@@ -1072,7 +1083,7 @@ void Collective::considerWeaponWarning() {
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
   int numNeededWeapons = 0;
   for (Creature* c : getCreatures(MinionTrait::FIGHTER))
-    if (usesEquipment(c) && minionEquipment.needs(c, genWeapon.get(), true, true))
+    if (usesEquipment(c) && minionEquipment->needs(c, genWeapon.get(), true, true))
       ++numNeededWeapons;
   setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
 }
@@ -1081,19 +1092,19 @@ void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
   considerBirths();
-  if (Random.rollD(1.0 / config.getImmigrantFrequency()))
+  if (Random.rollD(1.0 / config->getImmigrantFrequency()))
     considerImmigration();
 /*  if (nextPayoutTime > -1 && time > nextPayoutTime) {
-    nextPayoutTime += config.getPayoutTime();
+    nextPayoutTime += config->getPayoutTime();
     makePayouts();
   }
   cashPayouts();*/
-  if (config.getWarnings() && Random.roll(5)) {
+  if (config->getWarnings() && Random.roll(5)) {
     considerWeaponWarning();
     setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
     setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
     setWarning(Warning::MORE_LIGHTS,
-        constructions.getTorches().size() * 25 < getAllSquares(roomsNeedingLight).size());
+        constructions->getTorches().size() * 25 < getAllSquares(roomsNeedingLight).size());
     for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
       DormInfo info = getDormInfo()[spawnType];
       if (info.warning && info.getBedType())
@@ -1103,7 +1114,7 @@ void Collective::tick(double time) {
       if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
         setWarning(*elem.second.warning, false);
   }
-  if (config.getEnemyPositions() && Random.roll(5)) {
+  if (config->getEnemyPositions() && Random.roll(5)) {
     vector<Vec2> enemyPos = getEnemyPositions();
     if (!enemyPos.empty())
       delayDangerousTasks(enemyPos, getTime() + 20);
@@ -1136,9 +1147,9 @@ void Collective::tick(double time) {
         }
     }
   }
-  if (config.getConstructions())
+  if (config->getConstructions())
     updateConstructions();
-  if (config.getFetchItems() && Random.roll(5))
+  if (config->getFetchItems() && Random.roll(5))
     for (const ItemFetchInfo& elem : getFetchInfo()) {
       for (Vec2 pos : getAllSquares())
         fetchItems(pos, elem);
@@ -1146,8 +1157,8 @@ void Collective::tick(double time) {
         for (Vec2 pos : getSquares(type))
           fetchItems(pos, elem);
     }
-  if (config.getManageEquipment() && Random.roll(10))
-    minionEquipment.updateOwners(getAllItems(true));
+  if (config->getManageEquipment() && Random.roll(10))
+    minionEquipment->updateOwners(getAllItems(true));
 }
 
 const vector<Creature*>& Collective::getCreatures(MinionTrait trait) const {
@@ -1382,7 +1393,7 @@ bool Collective::containsSquare(Vec2 pos) const {
 }
 
 bool Collective::isKnownSquare(Vec2 pos) const {
-  return knownTiles.isKnown(pos);
+  return knownTiles->isKnown(pos);
 }
 
 void Collective::update(Creature* c) {
@@ -1505,10 +1516,10 @@ int Collective::numResource(ResourceId id) const {
 
 int Collective::numResourcePlusDebt(ResourceId id) const {
   int ret = numResource(id);
-  for (auto& elem : constructions.getSquares())
+  for (auto& elem : constructions->getSquares())
     if (!elem.second.isBuilt() && elem.second.getCost().id() == id)
       ret -= elem.second.getCost().value();
-  for (auto& elem : taskMap.getCompletionCosts())
+  for (auto& elem : taskMap->getCompletionCosts())
     if (elem.second.id() == id && !elem.first->isDone())
       ret += elem.second.value();
   if (id == ResourceId::GOLD)
@@ -1573,7 +1584,7 @@ vector<pair<Item*, Vec2>> Collective::getTrapItems(TrapType type, set<Vec2> squa
 }
 
 bool Collective::usesEquipment(const Creature* c) const {
-  return config.getManageEquipment()
+  return config->getManageEquipment()
     && c->isHumanoid() 
     && !hasTrait(c, MinionTrait::NO_EQUIPMENT)
     && !hasTrait(c, MinionTrait::PRISONER);
@@ -1582,8 +1593,8 @@ bool Collective::usesEquipment(const Creature* c) const {
 Item* Collective::getWorstItem(const Creature* c, vector<Item*> items) const {
   Item* ret = nullptr;
   for (Item* it : items)
-    if (!minionEquipment.isLocked(c, it->getUniqueId()) &&
-        (ret == nullptr || minionEquipment.getItemValue(it) < minionEquipment.getItemValue(ret)))
+    if (!minionEquipment->isLocked(c, it->getUniqueId()) &&
+        (ret == nullptr || minionEquipment->getItemValue(it) < minionEquipment->getItemValue(ret)))
       ret = it;
   return ret;
 }
@@ -1591,22 +1602,22 @@ Item* Collective::getWorstItem(const Creature* c, vector<Item*> items) const {
 void Collective::autoEquipment(Creature* creature, bool replace) {
   map<EquipmentSlot, vector<Item*>> slots;
   vector<Item*> myItems = filter(getAllItems(ItemIndex::CAN_EQUIP), [&](const Item* it) {
-      return minionEquipment.getOwner(it) == creature;});
+      return minionEquipment->getOwner(it) == creature;});
   for (Item* it : myItems) {
     EquipmentSlot slot = it->getEquipmentSlot();
     if (slots[slot].size() < creature->getEquipment().getMaxItems(slot)) {
       slots[slot].push_back(it);
     } else  // a rare occurence that minion owns too many items of the same slot,
           //should happen only when an item leaves the fortress and then is braught back
-      if (!minionEquipment.isLocked(creature, it->getUniqueId()))
-        minionEquipment.discard(it);
+      if (!minionEquipment->isLocked(creature, it->getUniqueId()))
+        minionEquipment->discard(it);
   }
   vector<Item*> possibleItems = filter(getAllItems(ItemIndex::MINION_EQUIPMENT, false), [&](const Item* it) {
-      return minionEquipment.needs(creature, it, false, replace) && !minionEquipment.getOwner(it); });
+      return minionEquipment->needs(creature, it, false, replace) && !minionEquipment->getOwner(it); });
   sortByEquipmentValue(possibleItems);
   for (Item* it : possibleItems) {
     if (!it->canEquip()) {
-      minionEquipment.own(creature, it);
+      minionEquipment->own(creature, it);
       if (it->getClass() != ItemClass::AMMO)
         break;
       else
@@ -1616,12 +1627,12 @@ void Collective::autoEquipment(Creature* creature, bool replace) {
     int slotSize = creature->getEquipment().getMaxItems(it->getEquipmentSlot());
     int numInSlot = slots[it->getEquipmentSlot()].size();
     if (numInSlot < slotSize ||
-        (replacedItem && minionEquipment.getItemValue(replacedItem) < minionEquipment.getItemValue(it))) {
+        (replacedItem && minionEquipment->getItemValue(replacedItem) < minionEquipment->getItemValue(it))) {
       if (numInSlot == slotSize) {
-        minionEquipment.discard(replacedItem);
+        minionEquipment->discard(replacedItem);
         removeElement(slots[it->getEquipmentSlot()], replacedItem); 
       }
-      minionEquipment.own(creature, it);
+      minionEquipment->own(creature, it);
       slots[it->getEquipmentSlot()].push_back(it);
       break;
     }
@@ -1670,7 +1681,7 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
 
 void Collective::clearPrisonerTask(Creature* prisoner) {
   if (prisonerInfo.at(prisoner).task()) {
-    taskMap.removeTask(prisonerInfo.at(prisoner).task());
+    taskMap->removeTask(prisonerInfo.at(prisoner).task());
     prisonerInfo.at(prisoner).task() = 0;
   }
 }
@@ -1712,13 +1723,13 @@ void Collective::unmarkItem(UniqueEntity<Item>::Id id) {
 }
 
 void Collective::removeTrap(Vec2 pos) {
-  constructions.removeTrap(pos);
+  constructions->removeTrap(pos);
 }
 
 void Collective::removeConstruction(Vec2 pos) {
-  if (constructions.getSquare(pos).hasTask())
-    returnResource(taskMap.removeTask(constructions.getSquare(pos).getTask()));
-  constructions.removeSquare(pos);
+  if (constructions->getSquare(pos).hasTask())
+    returnResource(taskMap->removeTask(constructions->getSquare(pos).getTask()));
+  constructions->removeSquare(pos);
 }
 
 void Collective::destroySquare(Vec2 pos) {
@@ -1727,12 +1738,12 @@ void Collective::destroySquare(Vec2 pos) {
   if (Creature* c = level->getSafeSquare(pos)->getCreature())
     if (c->isStationary())
       c->die(nullptr, false);
-  if (constructions.containsTrap(pos)) {
+  if (constructions->containsTrap(pos)) {
     removeTrap(pos);
   }
-  if (constructions.containsSquare(pos))
+  if (constructions->containsSquare(pos))
     removeConstruction(pos);
-  if (constructions.containsTorch(pos))
+  if (constructions->containsTorch(pos))
     removeTorch(pos);
   level->getSafeSquare(pos)->removeTriggers();
 }
@@ -1742,90 +1753,90 @@ void Collective::addConstruction(Vec2 pos, SquareType type, CostInfo cost, bool 
     while (!getLevel()->getSafeSquare(pos)->construct(type)) {}
     onConstructed(pos, type);
   } else if (!noCredit || hasResource(cost)) {
-    constructions.addSquare(pos, ConstructionMap::SquareInfo(type, cost));
+    constructions->addSquare(pos, ConstructionMap::SquareInfo(type, cost));
     updateConstructions();
   }
 }
 
 const ConstructionMap& Collective::getConstructions() const {
-  return constructions;
+  return *constructions;
 }
 
 void Collective::dig(Vec2 pos) {
-  taskMap.markSquare(pos, HighlightType::DIG, Task::construction(this, pos, SquareId::FLOOR));
+  taskMap->markSquare(pos, HighlightType::DIG, Task::construction(this, pos, SquareId::FLOOR));
 }
 
 void Collective::cancelMarkedTask(Vec2 pos) {
-  taskMap.unmarkSquare(pos);
+  taskMap->unmarkSquare(pos);
 }
 
 bool Collective::isMarked(Vec2 pos) const {
-  return taskMap.getMarked(pos);
+  return taskMap->getMarked(pos);
 }
 
 HighlightType Collective::getMarkHighlight(Vec2 pos) const {
-  return taskMap.getHighlightType(pos);
+  return taskMap->getHighlightType(pos);
 }
 
 void Collective::setPriorityTasks(Vec2 pos) {
-  taskMap.setPriorityTasks(pos);
+  taskMap->setPriorityTasks(pos);
 }
 
 bool Collective::hasPriorityTasks(Vec2 pos) const {
-  return taskMap.hasPriorityTasks(pos);
+  return taskMap->hasPriorityTasks(pos);
 }
 
 void Collective::cutTree(Vec2 pos) {
-  taskMap.markSquare(pos, HighlightType::CUT_TREE, Task::construction(this, pos, SquareId::TREE_TRUNK));
+  taskMap->markSquare(pos, HighlightType::CUT_TREE, Task::construction(this, pos, SquareId::TREE_TRUNK));
 }
 
 set<TrapType> Collective::getNeededTraps() const {
   set<TrapType> ret;
-  for (auto elem : constructions.getTraps())
+  for (auto elem : constructions->getTraps())
     if (!elem.second.isMarked() && !elem.second.isArmed())
       ret.insert(elem.second.getType());
   return ret;
 }
 
 void Collective::addTrap(Vec2 pos, TrapType type) {
-  constructions.addTrap(pos, ConstructionMap::TrapInfo(type));
+  constructions->addTrap(pos, ConstructionMap::TrapInfo(type));
   updateConstructions();
 }
 
 void Collective::onAppliedItem(Vec2 pos, Item* item) {
   CHECK(item->getTrapType());
-  if (constructions.containsTrap(pos))
-    constructions.getTrap(pos).setArmed();
+  if (constructions->containsTrap(pos))
+    constructions->getTrap(pos).setArmed();
 }
 
 void Collective::onAppliedItemCancel(Vec2 pos) {
-  if (constructions.containsTrap(pos))
-    constructions.getTrap(pos).reset();
+  if (constructions->containsTrap(pos))
+    constructions->getTrap(pos).reset();
 }
 
 void Collective::onTorchBuilt(Vec2 pos, Trigger* t) {
-  if (!constructions.containsTorch(pos)) {
+  if (!constructions->containsTorch(pos)) {
     if (canPlaceTorch(pos))
       addTorch(pos);
     else
       return;
   }
-  constructions.getTorch(pos).setBuilt(t);
+  constructions->getTorch(pos).setBuilt(t);
 }
 
 bool Collective::isConstructionReachable(Vec2 pos) {
   for (Vec2 v : pos.neighbors8())
-    if (knownTiles.isKnown(v))
+    if (knownTiles->isKnown(v))
       return true;
   return false;
 }
 
 void Collective::onConstructionCancelled(Vec2 pos) {
-  if (constructions.containsSquare(pos))
-    constructions.getSquare(pos).reset();
+  if (constructions->containsSquare(pos))
+    constructions->getSquare(pos).reset();
 }
 
-void Collective::onConstructed(Vec2 pos, SquareType type) {
+void Collective::onConstructed(Vec2 pos, const SquareType& type) {
   if (!contains({SquareId::TREE_TRUNK}, type.getId()))
     allSquares.insert(pos);
   CHECK(!getSquares(type).count(pos));
@@ -1834,14 +1845,14 @@ void Collective::onConstructed(Vec2 pos, SquareType type) {
   mySquares[type].insert(pos);
   if (efficiencySquares.count(type))
     updateEfficiency(pos, type);
-  if (taskMap.getMarked(pos))
-    taskMap.unmarkSquare(pos);
-  if (constructions.containsSquare(pos))
-    constructions.getSquare(pos).setBuilt();
+  if (taskMap->getMarked(pos))
+    taskMap->unmarkSquare(pos);
+  if (constructions->containsSquare(pos))
+    constructions->getSquare(pos).setBuilt();
   if (type == SquareId::FLOOR) {
     for (Vec2 v : pos.neighbors4())
-      if (constructions.containsTorch(v) &&
-          constructions.getTorch(v).getAttachmentDir() == (pos - v).getCardinalDir())
+      if (constructions->containsTorch(v) &&
+          constructions->getTorch(v).getAttachmentDir() == (pos - v).getCardinalDir())
         removeTorch(v);
   }
   if (auto type = level->getSafeSquare(pos)->getApplyType())
@@ -1864,31 +1875,31 @@ void Collective::updateConstructions() {
   map<TrapType, vector<pair<Item*, Vec2>>> trapItems;
   for (TrapType type : ENUM_ALL(TrapType))
     trapItems[type] = getTrapItems(type, getAllSquares());
-  for (auto elem : constructions.getTraps())
+  for (auto elem : constructions->getTraps())
     if (!isDelayed(elem.first)) {
       vector<pair<Item*, Vec2>>& items = trapItems.at(elem.second.getType());
       if (!items.empty()) {
         if (!elem.second.isArmed() && !elem.second.isMarked()) {
           Vec2 pos = items.back().second;
-          taskMap.addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
+          taskMap->addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
           markItem(items.back().first);
           items.pop_back();
-          constructions.getTrap(elem.first).setMarked();
+          constructions->getTrap(elem.first).setMarked();
         }
       }
     }
-  for (auto& elem : constructions.getSquares())
+  for (auto& elem : constructions->getSquares())
     if (!isDelayed(elem.first) && !elem.second.hasTask() && !elem.second.isBuilt()) {
       if (!hasResource(elem.second.getCost()))
         continue;
-      constructions.getSquare(elem.first).setTask(
-          taskMap.addTaskCost(Task::construction(this, elem.first, elem.second.getSquareType()), elem.first,
+      constructions->getSquare(elem.first).setTask(
+          taskMap->addTaskCost(Task::construction(this, elem.first, elem.second.getSquareType()), elem.first,
           elem.second.getCost())->getUniqueId());
       takeResource(elem.second.getCost());
     }
-  for (auto& elem : constructions.getTorches())
+  for (auto& elem : constructions->getTorches())
     if (!isDelayed(elem.first) && !elem.second.hasTask() && !elem.second.isBuilt())
-      constructions.getTorch(elem.first).setTask(taskMap.addTask(
+      constructions->getTorch(elem.first).setTask(taskMap->addTask(
           Task::buildTorch(this, elem.first, elem.second.getAttachmentDir()), elem.first)->getUniqueId());
 }
 
@@ -1942,14 +1953,14 @@ void Collective::fetchAllItems(Vec2 pos) {
       }
     }
     if (!tasks.empty())
-      taskMap.markSquare(pos, HighlightType::FETCH_ITEMS, Task::chain(std::move(tasks)));
+      taskMap->markSquare(pos, HighlightType::FETCH_ITEMS, Task::chain(std::move(tasks)));
   }
 }
 
 void Collective::fetchItems(Vec2 pos, const ItemFetchInfo& elem) {
-  if (isDelayed(pos) || (constructions.containsTrap(pos) &&
-        constructions.getTrap(pos).getType() == TrapType::BOULDER &&
-        constructions.getTrap(pos).isArmed()))
+  if (isDelayed(pos) || (constructions->containsTrap(pos) &&
+        constructions->getTrap(pos).getType() == TrapType::BOULDER &&
+        constructions->getTrap(pos).isArmed()))
     return;
   for (SquareType type : elem.destination)
     if (getSquares(type).count(pos))
@@ -1961,7 +1972,7 @@ void Collective::fetchItems(Vec2 pos, const ItemFetchInfo& elem) {
       setWarning(elem.warning, false);
       if (elem.oneAtATime)
         equipment = {equipment[0]};
-      taskMap.addTask(Task::bringItem(this, pos, equipment, destination), pos);
+      taskMap->addTask(Task::bringItem(this, pos, equipment, destination), pos);
       for (Item* it : equipment)
         markItem(it);
     } else
@@ -1985,24 +1996,24 @@ void Collective::onSquareDestroyed(Vec2 pos) {
     if (elem.second.count(pos))
       elem.second.erase(pos);
   mySquares[SquareId::FLOOR].insert(pos);
-  if (constructions.containsSquare(pos))
-    constructions.getSquare(pos).reset();
+  if (constructions->containsSquare(pos))
+    constructions->getSquare(pos).reset();
 }
 
 void Collective::onTrapTrigger(Vec2 pos) {
-  if (constructions.containsTrap(pos)) {
-    constructions.getTrap(pos).reset();
-    if (constructions.getTrap(pos).getType() == TrapType::SURPRISE)
+  if (constructions->containsTrap(pos)) {
+    constructions->getTrap(pos).reset();
+    if (constructions->getTrap(pos).getType() == TrapType::SURPRISE)
       handleSurprise(pos);
   }
 }
 
 void Collective::onTrapDisarm(const Creature* who, Vec2 pos) {
-  if (constructions.containsTrap(pos)) {
+  if (constructions->containsTrap(pos)) {
     control->addMessage(PlayerMessage(who->getName().a() + " disarms a " 
-          + Item::getTrapName(constructions.getTrap(pos).getType()) + " trap.",
+          + Item::getTrapName(constructions->getTrap(pos).getType()) + " trap.",
           PlayerMessage::HIGH).setPosition(pos));
-    constructions.getTrap(pos).reset();
+    constructions->getTrap(pos).reset();
   }
 }
 
@@ -2037,16 +2048,16 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
 }
 
 void Collective::addKnownTile(Vec2 pos) {
-  if (!knownTiles.isKnown(pos)) {
+  if (!knownTiles->isKnown(pos)) {
     if (const Location* loc = getLevel()->getLocation(pos))
       if (!knownLocations.count(loc)) {
         knownLocations.insert(loc);
         control->onDiscoveredLocation(loc);
       }
-    knownTiles.addTile(pos);
-    if (Task* task = taskMap.getMarked(pos))
+    knownTiles->addTile(pos);
+    if (Task* task = taskMap->getMarked(pos))
       if (task->isImpossible(getLevel()))
-        taskMap.removeTask(task);
+        taskMap->removeTask(task);
   }
 }
 
@@ -2109,7 +2120,7 @@ void Collective::onAppliedSquare(Vec2 pos) {
   MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
   if (getTaskInfo().at(currentTask).cost > 0) {
     if (nextPayoutTime == -1 && minionPayment.count(c) && minionPayment.at(c).salary() > 0)
-      nextPayoutTime = getTime() + config.getPayoutTime();
+      nextPayoutTime = getTime() + config->getPayoutTime();
     minionPayment[c].workAmount() += getTaskInfo().at(currentTask).cost;
   }
   if (getSquares(SquareId::LIBRARY).count(pos)) {
@@ -2238,13 +2249,13 @@ const map<UniqueEntity<Creature>::Id, string>& Collective::getMinionTaskStrings(
 }
 
 void Collective::onEquip(const Creature* c, const Item* it) {
-  minionEquipment.own(c, it);
+  minionEquipment->own(c, it);
 }
 
 void Collective::ownItems(const Creature* who, const vector<Item*> items) {
   for (const Item* it : items)
-    if (minionEquipment.isItemUseful(it))
-      minionEquipment.own(who, it);
+    if (minionEquipment->isItemUseful(it))
+      minionEquipment->own(who, it);
 }
 
 void Collective::onTorture(const Creature* who, const Creature* torturer) {
@@ -2270,11 +2281,11 @@ void Collective::onConsumed(Creature* consumer, Creature* who) {
 }
 
 MinionEquipment& Collective::getMinionEquipment() {
-  return minionEquipment;
+  return *minionEquipment;
 }
 
 const MinionEquipment& Collective::getMinionEquipment() const {
-  return minionEquipment;
+  return *minionEquipment;
 }
 
 int Collective::getSalary(const Creature* c) const {
@@ -2297,15 +2308,15 @@ void Collective::removeAssaultNotification(const Collective* col) {
 }
 
 CollectiveTeams& Collective::getTeams() {
-  return teams;
+  return *teams;
 }
 
 const CollectiveTeams& Collective::getTeams() const {
-  return teams;
+  return *teams;
 }
 
 void Collective::freeTeamMembers(TeamId id) {
-  for (Creature* c : teams.getMembers(id)) {
+  for (Creature* c : teams->getMembers(id)) {
     freeFromGuardPost(c);
     if (c->isAffected(LastingEffect::SLEEP))
       c->removeEffect(LastingEffect::SLEEP);
@@ -2320,29 +2331,29 @@ static optional<Vec2> getAdjacentWall(const Level* l, Vec2 pos) {
 }
 
 bool Collective::isPlannedTorch(Vec2 pos) const {
-  return constructions.containsTorch(pos) && !constructions.getTorch(pos).isBuilt();
+  return constructions->containsTorch(pos) && !constructions->getTorch(pos).isBuilt();
 }
 
 void Collective::removeTorch(Vec2 pos) {
-  if (constructions.getTorch(pos).hasTask())
-    taskMap.removeTask(constructions.getTorch(pos).getTask());
-  if (auto trigger = constructions.getTorch(pos).getTrigger())
+  if (constructions->getTorch(pos).hasTask())
+    taskMap->removeTask(constructions->getTorch(pos).getTask());
+  if (auto trigger = constructions->getTorch(pos).getTrigger())
     getLevel()->getSafeSquare(pos)->removeTrigger(trigger);
-  constructions.removeTorch(pos);
+  constructions->removeTorch(pos);
 }
 
 void Collective::addTorch(Vec2 pos) {
   CHECK(canPlaceTorch(pos));
-  constructions.addTorch(pos, ConstructionMap::TorchInfo((*getAdjacentWall(getLevel(), pos) - pos).getCardinalDir()));
+  constructions->addTorch(pos, ConstructionMap::TorchInfo((*getAdjacentWall(getLevel(), pos) - pos).getCardinalDir()));
 }
 
 bool Collective::canPlaceTorch(Vec2 pos) const {
-  return getAdjacentWall(getLevel(), pos) && !constructions.containsTorch(pos) &&
+  return getAdjacentWall(getLevel(), pos) && !constructions->containsTorch(pos) &&
     isKnownSquare(pos) && getLevel()->getSafeSquare(pos)->canEnterEmpty({MovementTrait::WALK});
 }
 
 const TaskMap& Collective::getTaskMap() const {
-  return taskMap;
+  return *taskMap;
 }
 
 int Collective::getPopulationSize() const {
@@ -2350,8 +2361,8 @@ int Collective::getPopulationSize() const {
 }
 
 int Collective::getMaxPopulation() const {
-  int ret = config.getMaxPopulation();
-  for (auto& elem : config.getPopulationIncreases()) {
+  int ret = config->getMaxPopulation();
+  for (auto& elem : config->getPopulationIncreases()) {
     int sz = getSquares(elem.type).size();
     ret += min<int>(elem.maxIncrease, elem.increasePerSquare * sz);
   }

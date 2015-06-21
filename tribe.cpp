@@ -125,7 +125,7 @@ void Tribe::onItemsStolen(const Creature* attacker) {
 }
 
 template <class Archive> 
-void Tribe::Set::serialize(Archive& ar, const unsigned int version) { 
+void TribeSet::serialize(Archive& ar, const unsigned int version) { 
   ar& SVAR(monster)
     & SVAR(pest)
     & SVAR(wildlife)
@@ -140,10 +140,10 @@ void Tribe::Set::serialize(Archive& ar, const unsigned int version) {
     & SVAR(lizard);
 }
 
-SERIALIZABLE(Tribe::Set);
+SERIALIZABLE(TribeSet);
 
 
-Tribe::Set::Set() {
+TribeSet::TribeSet() {
   monster.reset(new Tribe("monsters", false));
   lizard.reset(new Tribe("lizardmen", true));
   pest.reset(new Tribe("pests", false));

@@ -17,16 +17,11 @@
 
 #include "monster_ai.h"
 #include "task.h"
-#include "minion_equipment.h"
-#include "task_map.h"
 #include "minion_task.h"
-#include "known_tiles.h"
-#include "collective_teams.h"
-#include "collective_config.h"
 #include "cost_info.h"
-#include "construction_map.h"
 #include "square_apply_type.h"
 #include "resource_id.h"
+#include "square_type.h"
 
 class Creature;
 class CollectiveControl;
@@ -37,6 +32,14 @@ class Trigger;
 struct ImmigrantInfo;
 struct AttractionInfo;
 class Spell;
+class MinionEquipment;
+class TaskMap;
+class KnownTiles;
+class CollectiveTeams;
+class ConstructionMap;
+class Technology;
+class CollectiveConfig;
+class MinionAttraction;
 
 RICH_ENUM(SpawnType,
   HUMANOID,
@@ -300,19 +303,19 @@ class Collective : public Task::Callback {
   virtual void onAppliedItemCancel(Vec2 pos) override;
   virtual void onPickedUp(Vec2 pos, EntitySet<Item>) override;
   virtual void onCantPickItem(EntitySet<Item> items) override;
-  virtual void onConstructed(Vec2, SquareType) override;
+  virtual void onConstructed(Vec2, const SquareType&) override;
   virtual void onConstructionCancelled(Vec2) override;
   virtual void onTorchBuilt(Vec2, Trigger*) override;
   virtual void onAppliedSquare(Vec2 pos) override;
   virtual void onKillCancelled(Creature*) override;
-  virtual void onBedCreated(Vec2, SquareType fromType, SquareType toType) override;
+  virtual void onBedCreated(Vec2, const SquareType& fromType, const SquareType& toType) override;
   virtual void onCopulated(Creature* who, Creature* with) override;
   virtual void onConsumed(Creature* consumer, Creature* who) override;
   virtual bool isConstructionReachable(Vec2) override;
 
   private:
   friend class CollectiveBuilder;
-  Collective(Level*, CollectiveConfig, Tribe*, EnumMap<ResourceId, int> credit, const string& name);
+  Collective(Level*, const CollectiveConfig&, Tribe*, EnumMap<ResourceId, int> credit, const string& name);
   void updateEfficiency(Vec2, SquareType);
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
@@ -326,22 +329,22 @@ class Collective : public Task::Callback {
   void decreaseMoraleForKill(const Creature* killer, const Creature* victim);
   void decreaseMoraleForBanishing(const Creature*);
 
-  double getAttractionValue(MinionAttraction);
+  double getAttractionValue(const MinionAttraction&);
   double getImmigrantChance(const ImmigrantInfo&);
 
   bool isItemNeeded(const Item*) const;
   void addProducesMessage(const Creature*, const vector<PItem>&);
   
-  MinionEquipment SERIAL(minionEquipment);
+  HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
-  TaskMap SERIAL(taskMap);
+  HeapAllocated<TaskMap> SERIAL(taskMap);
   vector<TechId> SERIAL(technologies);
   int SERIAL(numFreeTech) = 0;
   bool isItemMarked(const Item*) const;
   void markItem(const Item*);
   void unmarkItem(UniqueEntity<Item>::Id);
 
-  KnownTiles SERIAL(knownTiles);
+  HeapAllocated<KnownTiles> SERIAL(knownTiles);
 
   struct CurrentTaskInfo : NamedTupleBase<MinionTask, double> {
     NAMED_TUPLE_STUFF(CurrentTaskInfo);
@@ -399,7 +402,7 @@ class Collective : public Task::Callback {
   };
   map<Vec2, GuardPostInfo> SERIAL(guardPosts);
   MoveInfo getGuardPostMove(Creature* c);
-  ConstructionMap SERIAL(constructions);
+  HeapAllocated<ConstructionMap> SERIAL(constructions);
   EntitySet<Item> SERIAL(markedItems);
   ItemPredicate unMarkedItems() const;
   enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };
@@ -424,15 +427,15 @@ class Collective : public Task::Callback {
   unordered_map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);
   int SERIAL(nextPayoutTime);
   unordered_map<const Creature*, vector<AttractionInfo>> SERIAL(minionAttraction);
-  double getAttractionOccupation(MinionAttraction);
+  double getAttractionOccupation(const MinionAttraction&);
   Creature* getCopulationTarget(Creature* succubus);
   Creature* getConsumptionTarget(Creature* consumer);
   deque<Creature*> SERIAL(pregnancies);
   mutable vector<ItemFetchInfo> itemFetchInfo;
-  CollectiveTeams SERIAL(teams);
+  HeapAllocated<CollectiveTeams> SERIAL(teams);
   set<const Location*> SERIAL(knownLocations);
   string SERIAL(name);
-  CollectiveConfig SERIAL(config);
+  HeapAllocated<CollectiveConfig> SERIAL(config);
   vector<const Creature*> SERIAL(banished);
 };
 

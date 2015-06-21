@@ -29,6 +29,8 @@
 #include "monster_ai.h"
 #include "attack.h"
 #include "player_message.h"
+#include "equipment.h"
+#include "event.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};

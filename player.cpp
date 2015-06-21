@@ -33,6 +33,8 @@
 #include "square_apply_type.h"
 #include "item_action.h"
 #include "game_info.h"
+#include "equipment.h"
+#include "spell.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {

@@ -25,6 +25,8 @@
 #include "trigger.h"
 #include "location.h"
 #include "square_factory.h"
+#include "equipment.h"
+#include "tribe.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -67,7 +69,7 @@ namespace {
 
 class Construction : public Task {
   public:
-  Construction(Callback* c, Vec2 pos, SquareType _type) : type(_type), position(pos), callback(c) {}
+  Construction(Callback* c, Vec2 pos, const SquareType& _type) : type(_type), position(pos), callback(c) {}
 
   virtual bool isImpossible(const Level* level) {
     return !level->getSafeSquare(position)->canConstruct(type);
@@ -126,7 +128,7 @@ class Construction : public Task {
 
 }
 
-PTask Task::construction(Callback* c, Vec2 target, SquareType type) {
+PTask Task::construction(Callback* c, Vec2 target, const SquareType& type) {
   return PTask(new Construction(c, target, type));
 }
 
@@ -976,7 +978,7 @@ namespace {
 
 class CreateBed : public NonTransferable {
   public:
-  CreateBed(Callback* call, Vec2 pos, SquareType from, SquareType to)
+  CreateBed(Callback* call, Vec2 pos, const SquareType& from, const SquareType& to)
     : callback(call), position(pos), fromType(from), toType(to) {}
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -1019,7 +1021,7 @@ class CreateBed : public NonTransferable {
 
 }
 
-PTask Task::createBed(Callback* call, Vec2 pos, SquareType from, SquareType to) {
+PTask Task::createBed(Callback* call, Vec2 pos, const SquareType& from, const SquareType& to) {
   return PTask(new CreateBed(call, pos, from, to));
 }
 

@@ -259,7 +259,7 @@ const int resourceSpace = 110;
 
 PGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   CollectiveInfo& info = gameInfo.collectiveInfo;
-  GameInfo::SunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
+  GameSunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
   vector<PGuiElem> topLine;
   for (int i : All(info.numResource)) {
     vector<PGuiElem> res;
@@ -297,7 +297,7 @@ string GuiBuilder::getCurrentGameSpeedName() const {
     return getGameSpeedName(gameSpeed);
 }
 
-PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, GameInfo::VillageInfo& villageInfo) {
+PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villageInfo) {
   vector<PGuiElem> buttons = makeVec<PGuiElem>(
       gui.icon(gui.BUILDING),
       gui.icon(gui.MINION),
@@ -403,7 +403,7 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
       gameSpeedDialogOpen ? OverlayInfo::GAME_SPEED : OverlayInfo::INVISIBLE});
 }
 
-PGuiElem GuiBuilder::getSunlightInfoGui(GameInfo::SunlightInfo& sunlightInfo) {
+PGuiElem GuiBuilder::getSunlightInfoGui(GameSunlightInfo& sunlightInfo) {
   vector<PGuiElem> line;
   Color color = sunlightInfo.description == "day" ? colors[ColorId::WHITE] : colors[ColorId::LIGHT_BLUE];
   line.push_back(gui.label(sunlightInfo.description, color));
@@ -1172,7 +1172,7 @@ void GuiBuilder::drawMessages(vector<OverlayInfo>& ret,
         Vec2(maxMessageLength, lineHeight * messages.size() + 15), OverlayInfo::MESSAGES});
 }
 
-PGuiElem GuiBuilder::drawVillages(GameInfo::VillageInfo& info) {
+PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   vector<PGuiElem> lines;
   for (auto elem : info.villages) {
     lines.push_back(gui.label(capitalFirst(elem.name), colors[ColorId::WHITE]));

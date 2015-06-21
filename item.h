@@ -19,12 +19,12 @@
 #include "util.h"
 #include "item_attributes.h"
 #include "enums.h"
-#include "fire.h"
 #include "unique_entity.h"
 #include "renderable.h"
 
 class Level;
 class Attack;
+class Fire;
 
 RICH_ENUM(TrapType,
   BOULDER,
@@ -146,7 +146,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   string getVisibleName(bool plural) const;
   string getBlindName(bool plural) const;
   const Creature* SERIAL(shopkeeper) = nullptr;
-  Fire SERIAL(fire);
+  HeapAllocated<Fire> SERIAL(fire);
 };
 
 

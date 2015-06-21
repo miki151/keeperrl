@@ -63,7 +63,7 @@ static vector<FriendlyVault> friendlyVaults {
   {CreatureId::VAMPIRE, 2, 5},
 };
 
-static vector<EnemyInfo> getVaults(Tribe::Set& tribeSet) {
+static vector<EnemyInfo> getVaults(TribeSet& tribeSet) {
   vector<EnemyInfo> ret {
     getVault(SettlementType::CAVE, CreatureId::GREEN_DRAGON,
         tribeSet.killEveryone.get(), 1, ItemFactory::dragonCave(),
@@ -110,7 +110,7 @@ static vector<EnemyInfo> getVaults(Tribe::Set& tribeSet) {
   return ret;
 }
 
-vector<EnemyInfo> getEnemyInfo(Tribe::Set& tribeSet) {
+vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
   vector<EnemyInfo> ret;
   for (int i : Range(6, 12)) {
     ret.push_back({CONSTRUCT(SettlementInfo,
@@ -495,9 +495,9 @@ static string getNewIdSuffix() {
 }
 
 PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
-  Model* m = new Model(view, worldName, Tribe::Set());
+  Model* m = new Model(view, worldName, TribeSet());
   m->setOptions(options);
-  vector<EnemyInfo> enemyInfo = getEnemyInfo(m->tribeSet);
+  vector<EnemyInfo> enemyInfo = getEnemyInfo(*m->tribeSet);
   vector<SettlementInfo> settlements;
   for (auto& elem : enemyInfo) {
     elem.settlement.collective =
@@ -506,7 +506,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
   }
   Level* top = m->prepareTopLevel(meter, settlements);
   m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet.keeper.get())
+        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
       .setLevel(top)
       .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
       .build());
@@ -514,7 +514,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
   m->playerCollective = m->collectives.back().get();
   m->playerControl = new PlayerControl(m->playerCollective, m, top);
   m->playerCollective->setControl(PCollectiveControl(m->playerControl));
-  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, m->tribeSet.keeper.get(),
+  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, m->tribeSet->keeper.get(),
       MonsterAIFactory::collective(m->playerCollective));
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   if (!keeperName.empty())
@@ -526,7 +526,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
   for (int i : Range(4)) {
-    PCreature c = CreatureFactory::fromId(CreatureId::IMP, m->tribeSet.keeper.get(),
+    PCreature c = CreatureFactory::fromId(CreatureId::IMP, m->tribeSet->keeper.get(),
         MonsterAIFactory::collective(m->playerCollective));
     top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
     m->playerControl->addImp(c.get());
@@ -551,14 +551,14 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
 }
 
 PModel ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string& splashPath) {
-  Model* m = new Model(view, "", Tribe::Set());
+  Model* m = new Model(view, "", TribeSet());
   Level* l = m->buildLevel(
       LevelBuilder(meter, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness", false),
       LevelMaker::splashLevel(
-          CreatureFactory::splashLeader(m->tribeSet.human.get()),
-          CreatureFactory::splashHeroes(m->tribeSet.human.get()),
-          CreatureFactory::splashMonsters(m->tribeSet.keeper.get()),
-          CreatureFactory::singleType(m->tribeSet.keeper.get(), CreatureId::IMP), splashPath));
+          CreatureFactory::splashLeader(m->tribeSet->human.get()),
+          CreatureFactory::splashHeroes(m->tribeSet->human.get()),
+          CreatureFactory::splashMonsters(m->tribeSet->keeper.get()),
+          CreatureFactory::singleType(m->tribeSet->keeper.get(), CreatureId::IMP), splashPath));
   m->spectator.reset(new Spectator(l));
   return PModel(m);
 }

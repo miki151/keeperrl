@@ -17,7 +17,15 @@
 
 #include "creature_attributes.h"
 #include "creature.h"
+#include "spell_map.h"
+#include "minion_task_map.h"
+#include "skill.h"
 
+CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
+  fun(*this);
+}
+
+CreatureAttributes::~CreatureAttributes() {}
 
 template <class Archive> 
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {

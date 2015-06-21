@@ -17,9 +17,7 @@
 #define _CREATURE_H
 
 #include "creature_attributes.h"
-#include "equipment.h"
 #include "enums.h"
-#include "shortest_path.h"
 #include "unique_entity.h"
 #include "creature_action.h"
 #include "renderable.h"
@@ -36,6 +34,9 @@ class PlayerMessage;
 class CreatureVision;
 class SquareType;
 class Location;
+class ShortestPath;
+class Equipment;
+class Spell;
 
 class Creature : private CreatureAttributes, public Renderable, public UniqueEntity<Creature> {
   public:
@@ -321,8 +322,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   Level* SERIAL(level) = nullptr;
   Vec2 SERIAL(position);
   double SERIAL(time) = 1;
-  Equipment SERIAL(equipment);
-  optional<ShortestPath> SERIAL(shortestPath);
+  HeapAllocated<Equipment> SERIAL(equipment);
+  unique_ptr<ShortestPath> SERIAL(shortestPath);
   unordered_set<const Creature*> SERIAL(knownHiding);
   Tribe* SERIAL(tribe);
   double SERIAL(health) = 1;

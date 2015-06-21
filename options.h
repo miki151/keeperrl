@@ -16,7 +16,6 @@
 #ifndef _OPTIONS_H
 #define _OPTIONS_H
 
-#include "view.h"
 #include "util.h"
 
 RICH_ENUM(OptionId,
@@ -42,6 +41,8 @@ enum class OptionSet {
   KEEPER,
   ADVENTURER,
 };
+
+class View;
 
 class Options {
   public:

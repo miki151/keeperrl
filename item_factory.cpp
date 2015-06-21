@@ -33,6 +33,7 @@
 #include "player_message.h"
 #include "vision.h"
 #include "resource_id.h"
+#include "equipment.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
