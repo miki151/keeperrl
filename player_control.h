@@ -16,20 +16,22 @@
 #ifndef _PLAYER_CONTROL_H
 #define _PLAYER_CONTROL_H
 
-#include "map_memory.h"
 #include "creature_view.h"
 #include "task.h"
 #include "entity_set.h"
 #include "event.h"
 #include "view.h"
 #include "collective_control.h"
-#include "collective.h"
 #include "event.h"
 #include "visibility_map.h"
+#include "cost_info.h"
 
 class Model;
 class Technology;
 class View;
+class Collective;
+class CollectiveTeams;
+class MapMemory;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
@@ -118,7 +120,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void considerDeityFight();
   void checkKeeperDanger();
   void addDeityServant(Deity*, Vec2 deityPos, Vec2 victimPos);
-  static string getWarningText(Collective::Warning);
+  static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Vec2);
   bool isEnemy(const Creature*) const;
 
@@ -182,7 +184,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static vector<BuildInfo> libraryInfo;
   static vector<BuildInfo> minionsInfo;
 
-  ViewId getResourceViewId(Collective::ResourceId id) const;
+  ViewId getResourceViewId(CollectiveResourceId id) const;
   optional<pair<ViewId, int>> getCostObj(CostInfo) const;
   CostInfo getRoomCost(SquareType, CostInfo baseCost, double exponent) const;
 
@@ -248,7 +250,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     NAME_ELEM(1, creatures);
   };
   map<const Collective*, AssaultInfo> SERIAL(assaultNotifications);
-  struct CurrentWarningInfo : public NamedTupleBase<Collective::Warning, double> {
+  struct CurrentWarningInfo : public NamedTupleBase<CollectiveWarning, double> {
     NAMED_TUPLE_STUFF(CurrentWarningInfo);
     NAME_ELEM(0, warning);
     NAME_ELEM(1, lastView);

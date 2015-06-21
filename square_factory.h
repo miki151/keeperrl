@@ -31,28 +31,6 @@ enum class StairLook {
   DUNGEON_ENTRANCE_MUD,
 };
 
-enum class StairKey {
-  DWARF,
-  CRYPT,
-  ORC,
-  PLAYER_SPAWN,
-  HERO_SPAWN,
-  PYRAMID,
-  TOWER,
-  CASTLE_CELLAR,
-  DRAGON
-};
-
-enum class StairDirection { UP, DOWN };
-
-inline StairDirection opposite(StairDirection d) {
-  switch (d) {
-    case StairDirection::DOWN: return StairDirection::UP;
-    case StairDirection::UP: return StairDirection::DOWN;
-  }
-  return StairDirection(0);
-}
-
 class SquareFactory {
   public:
   static PSquare get(SquareType);

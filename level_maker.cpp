@@ -24,6 +24,9 @@
 #include "shortest_path.h"
 #include "creature.h"
 #include "location.h"
+#include "level_builder.h"
+#include "square_factory.h"
+#include "model.h"
 
 namespace {
 
@@ -38,11 +41,11 @@ void checkGen(bool b) {
 
 class Predicate {
   public:
-  bool apply(Level::Builder* builder, Vec2 pos) const {
+  bool apply(LevelBuilder* builder, Vec2 pos) const {
     return predFun(builder, pos);
   }
 
-  Vec2 getRandomPosition(Level::Builder* builder, Rectangle area) {
+  Vec2 getRandomPosition(LevelBuilder* builder, Rectangle area) {
     vector<Vec2> good;
     for (Vec2 v : area)
       if (apply(builder, v))
@@ -53,45 +56,45 @@ class Predicate {
   }
 
   static Predicate attrib(SquareAttrib attr) {
-    return Predicate([=] (Level::Builder* builder, Vec2 pos) { return builder->hasAttrib(pos, attr);});
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return builder->hasAttrib(pos, attr);});
   }
 
   static Predicate negate(Predicate p) {
-    return Predicate([=] (Level::Builder* builder, Vec2 pos) { return !p.apply(builder, pos);});
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return !p.apply(builder, pos);});
   }
 
   static Predicate type(SquareType t) {
-    return Predicate([=] (Level::Builder* builder, Vec2 pos) { return builder->getType(pos) == t;});
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return builder->getType(pos) == t;});
   }
 
   static Predicate type(vector<SquareType> t) {
-    return Predicate([=] (Level::Builder* builder, Vec2 pos) { return contains(t, builder->getType(pos));});
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return contains(t, builder->getType(pos));});
   }
 
   static Predicate alwaysTrue() {
-    return Predicate([=] (Level::Builder* builder, Vec2 pos) { return true;});
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return true;});
   }
 
   static Predicate alwaysFalse() {
-    return Predicate([=] (Level::Builder* builder, Vec2 pos) { return false;});
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return false;});
   }
 
   static Predicate andPred(Predicate p1, Predicate p2) {
-    return Predicate([=] (Level::Builder* builder, Vec2 pos) {
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) {
         return p1.apply(builder, pos) && p2.apply(builder, pos);});
   }
 
   static Predicate orPred(Predicate p1, Predicate p2) {
-    return Predicate([=] (Level::Builder* builder, Vec2 pos) {
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) {
         return p1.apply(builder, pos) || p2.apply(builder, pos);});
   }
 
   static Predicate canEnter(MovementType m) {
-    return Predicate([=] (Level::Builder* builder, Vec2 pos) { return builder->getSquare(pos)->canEnter(m);});
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return builder->getSquare(pos)->canEnter(m);});
   }
 
   private:
-  typedef function<bool(Level::Builder*, Vec2)> PredFun;
+  typedef function<bool(LevelBuilder*, Vec2)> PredFun;
   Predicate(PredFun fun) : predFun(fun) {}
   PredFun predFun;
 };
@@ -100,7 +103,7 @@ class Empty : public LevelMaker {
   public:
   Empty(SquareType s, optional<SquareAttrib> attr = none) : square(s), attrib(attr) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (Vec2 v : area) {
       builder->putSquare(v, square, attrib);
     }
@@ -129,7 +132,7 @@ class RoomMaker : public LevelMaker {
       insideMakers(_insideMakers),
       diggableCorners(_diggableCorners) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     int spaceBetween = 0;
     Table<int> taken(area.getKX(), area.getKY());
     for (Vec2 v : area)
@@ -201,7 +204,7 @@ class Connector : public LevelMaker {
         Predicate pred = Predicate::canEnter({MovementTrait::WALK}))
       : doorType(_doorType), doorProb(_doorProb), diggingCost(_diggingCost), connectPred(pred) {
   }
-  double getValue(Level::Builder* builder, Vec2 pos, Rectangle area) {
+  double getValue(LevelBuilder* builder, Vec2 pos, Rectangle area) {
     if (builder->getSquare(pos)->canNavigate({MovementTrait::WALK}))
       return 1;
     if (builder->hasAttrib(pos, SquareAttrib::NO_DIG))
@@ -225,7 +228,7 @@ class Connector : public LevelMaker {
     return diggingCost;
   }
 
-  void connect(Level::Builder* builder, Vec2 p1, Vec2 p2, Rectangle area) {
+  void connect(LevelBuilder* builder, Vec2 p1, Vec2 p2, Rectangle area) {
     ShortestPath path(area,
         [builder, this, &area](Vec2 pos) { return getValue(builder, pos, area); }, 
         [] (Vec2 v) { return v.length4(); },
@@ -268,7 +271,7 @@ class Connector : public LevelMaker {
     }
   }
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     Vec2 p1, p2;
     vector<Vec2> points = filter(area.getAllSquares(), [&] (Vec2 v) { return connectPred.apply(builder, v);});
     if (points.size() < 2)
@@ -323,7 +326,7 @@ class DungeonFeatures : public LevelMaker {
       squareTypes(_squareTypes), predicate(pred), attr(setAttr) {
   }
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     vector<Vec2> available;
     for (Vec2 v : area)
       if (predicate.apply(builder, v))
@@ -363,7 +366,7 @@ class Creatures : public LevelMaker {
   Creatures(CreatureFactory cf, int numC, optional<SquareType> type = none) :
       cfactory(cf), numCreature(numC), squareType(type) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     if (!actorFactory) {
       Location* loc = new Location();
       builder->addLocation(loc, area);
@@ -404,7 +407,7 @@ class Items : public LevelMaker {
   Items(ItemFactory _factory, SquareType _onType, int minc, int maxc) : 
       factory(_factory), onType(_onType), minItem(minc), maxItem(maxc) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     int numItem = Random.get(minItem, maxItem);
     for (int i : Range(numItem)) {
       Vec2 pos;
@@ -426,7 +429,7 @@ class River : public LevelMaker {
   public:
   River(int _width, SquareType _squareType) : width(_width), squareType(_squareType){}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     int wind = 5;
     int middle = (area.getPX() + area.getKX()) / 2;
     int px = Random.get(middle - wind, middle + width);
@@ -489,7 +492,7 @@ class RepeatMaker : public LevelMaker {
   public:
   RepeatMaker(int num, LevelMaker* m) : number(num), maker(m) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (int i : Range(number))
       maker->make(builder, area);
   }
@@ -505,7 +508,7 @@ class MountainRiver : public LevelMaker {
   MountainRiver(int num, SquareType waterType, SquareType sandType, Predicate startPred)
     : number(num), water(waterType), sand(sandType), startPredicate(startPred) {}
 
-  optional<Vec2> fillLake(Level::Builder* builder, set<Vec2>& waterTiles, Rectangle area, Vec2 pos) {
+  optional<Vec2> fillLake(LevelBuilder* builder, set<Vec2>& waterTiles, Rectangle area, Vec2 pos) {
     vector<Vec2> ret;
     double height = builder->getHeightMap(pos);
     queue<Vec2> q;
@@ -545,7 +548,7 @@ class MountainRiver : public LevelMaker {
     }
   }
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     set<Vec2> allWaterTiles;
     for (int i : Range(number)) {
       set<Vec2> waterTiles;
@@ -593,9 +596,9 @@ class Blob : public LevelMaker {
   public:
   Blob(double _insideRatio = 0.333) : insideRatio(_insideRatio) {}
 
-  virtual void addSquare(Level::Builder* builder, Vec2 pos, int edgeDist) = 0;
+  virtual void addSquare(LevelBuilder* builder, Vec2 pos, int edgeDist) = 0;
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     vector<Vec2> squares;
     Table<char> isInside(area, 0);
     Vec2 center((area.getKX() + area.getPX()) / 2, (area.getKY() + area.getPY()) / 2);
@@ -651,7 +654,7 @@ class UniformBlob : public Blob {
       optional<SquareAttrib> _attrib = none, double insideRatio = 0.3333) : Blob(insideRatio),
       inside(insideSquare), border(borderSquare), attrib(_attrib) {}
 
-  virtual void addSquare(Level::Builder* builder, Vec2 pos, int edgeDist) override {
+  virtual void addSquare(LevelBuilder* builder, Vec2 pos, int edgeDist) override {
     if (edgeDist == 1 && border)
       builder->putSquare(pos, *border, attrib);
     else
@@ -666,7 +669,7 @@ class UniformBlob : public Blob {
 
 class Lake : public Blob {
   public:
-  virtual void addSquare(Level::Builder* builder, Vec2 pos, int edgeDist) override {
+  virtual void addSquare(LevelBuilder* builder, Vec2 pos, int edgeDist) override {
     if (edgeDist == 1)
       builder->putSquare(pos, SquareId::SAND, SquareAttrib::LAKE);
     else
@@ -734,7 +737,7 @@ class Buildings : public LevelMaker {
       CHECK(insideMakers.size() <= minBuildings);
     }
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     Table<bool> filled(area);
     int width = area.getW();
     int height = area.getH();
@@ -829,7 +832,7 @@ class BorderGuard : public LevelMaker {
 
   BorderGuard(LevelMaker* inside, SquareType _type = SquareId::BORDER_GUARD) : type(_type), insideMaker(inside) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (int i : Range(area.getPX(), area.getKX())) {
       builder->putSquare(Vec2(i, area.getPY()), type);
       builder->putSquare(Vec2(i, area.getKY() - 1), type);
@@ -856,7 +859,7 @@ class MakerQueue : public LevelMaker {
     makers.push_back(maker);
   }
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (LevelMaker* maker : makers)
       maker->make(builder, area);
   }
@@ -867,7 +870,7 @@ class MakerQueue : public LevelMaker {
 
 class PredicatePrecalc {
   public:
-  PredicatePrecalc(const Predicate& predicate, Level::Builder* builder, Rectangle area)
+  PredicatePrecalc(const Predicate& predicate, LevelBuilder* builder, Rectangle area)
       : counts(Rectangle(area.getTopLeft(), area.getBottomRight() + Vec2(1, 1))) {
     int px = counts.getBounds().getPX();
     int py = counts.getBounds().getPY();
@@ -917,7 +920,7 @@ class RandomLocations : public LevelMaker {
 
     class Precomputed {
       public:
-      Precomputed(Level::Builder* builder, Rectangle area, Predicate p1, Predicate p2, int minSec, int maxSec)
+      Precomputed(LevelBuilder* builder, Rectangle area, Predicate p1, Predicate p2, int minSec, int maxSec)
         : pred1(p1, builder, area), pred2(p2, builder, area), minSecond(minSec), maxSecond(maxSec) {
       }
 
@@ -934,7 +937,7 @@ class RandomLocations : public LevelMaker {
       int maxSecond;
     };
 
-    Precomputed precompute(Level::Builder* builder, Rectangle area) {
+    Precomputed precompute(LevelBuilder* builder, Rectangle area) {
       return Precomputed(builder, area, predicate, second, minSecond, maxSecond);
     }
 
@@ -973,7 +976,7 @@ class RandomLocations : public LevelMaker {
     maxDistance[{insideMakers.back(), m}] = dist;
   }
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     vector<LocationPredicate::Precomputed> precomputed;
     for (int i : All(insideMakers))
       precomputed.push_back(predicate[i].precompute(builder, area));
@@ -983,17 +986,17 @@ class RandomLocations : public LevelMaker {
     failGen(); // "Failed to find free space for " << (int)sizes.size() << " areas";
   }
 
-  bool tryMake(Level::Builder* builder, vector<LocationPredicate::Precomputed>& precomputed, Rectangle area) {
+  bool tryMake(LevelBuilder* builder, vector<LocationPredicate::Precomputed>& precomputed, Rectangle area) {
     vector<Rectangle> occupied;
     vector<Rectangle> makerBounds;
-    vector<Level::Builder::Rot> maps;
+    vector<LevelBuilder::Rot> maps;
     for (int i : All(insideMakers))
       maps.push_back(chooseRandom(
-            {Level::Builder::CW0, Level::Builder::CW1, Level::Builder::CW2, Level::Builder::CW3}));
+            {LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3}));
     for (int i : All(insideMakers)) {
       int width = sizes[i].first;
       int height = sizes[i].second;
-      if (contains({Level::Builder::CW1, Level::Builder::CW3}, maps[i]))
+      if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, maps[i]))
         std::swap(width, height);
       CHECK(width <= area.getW() && height <= area.getH());
       int px;
@@ -1052,7 +1055,7 @@ class Margin : public LevelMaker {
   Margin(int _left, int _top, int _right, int _bottom, LevelMaker* in) 
       :left(_left) ,top(_top), right(_right), bottom(_bottom), inside(in) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     CHECK(area.getW() > left + right && area.getH() > top + bottom);
     inside->make(builder, Rectangle(
           area.getPX() + left,
@@ -1072,7 +1075,7 @@ class Shrine : public LevelMaker {
       LevelMaker* _locationMaker = nullptr) : deity(_deity), floorType(_floorType),
       wallPredicate(wallPred), newWall(_newWall), locationMaker(_locationMaker) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (int i : Range(10009)) {
       Vec2 pos = area.randomVec2();
       if (!wallPredicate.apply(builder, pos))
@@ -1215,7 +1218,7 @@ class Mountains : public LevelMaker {
   }
 
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     Table<double> wys = genNoiseMap(area, cornerLevels, varianceMult);
     raiseLocalMinima(wys);
     vector<double> values = sortedValues(wys);
@@ -1277,7 +1280,7 @@ class Roads : public LevelMaker {
   public:
   Roads(SquareType roadSquare) : square(roadSquare) {}
 
-  double getValue(Level::Builder* builder, Vec2 pos) {
+  double getValue(LevelBuilder* builder, Vec2 pos) {
     if ((!builder->getSquare(pos)->canEnter(MovementType({MovementTrait::WALK, MovementTrait::SWIM})) && 
          !builder->hasAttrib(pos, SquareAttrib::ROAD_CUT_THRU)) ||
         builder->hasAttrib(pos, SquareAttrib::NO_ROAD))
@@ -1290,14 +1293,14 @@ class Roads : public LevelMaker {
     return 1 + pow(1 + builder->getHeightMap(pos), 2);
   }
 
-  SquareType getRoadType(Level::Builder* builder, Vec2 pos) {
+  SquareType getRoadType(LevelBuilder* builder, Vec2 pos) {
     if (builder->getType(pos) == SquareId::WATER)
       return SquareId::BRIDGE;
     else
       return SquareId::ROAD;
   }
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     vector<Vec2> points;
     for (Vec2 v : area)
       if (builder->hasAttrib(v, SquareAttrib::CONNECT_ROAD)) {
@@ -1336,7 +1339,7 @@ class StartingPos : public LevelMaker {
 
   StartingPos(Predicate pred, StairKey key) : predicate(pred), stairKey(key) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (Vec2 pos : area)
       if (predicate.apply(builder, pos))
         builder->getSquare(pos)->setLandingLink(StairDirection::UP, stairKey);
@@ -1352,7 +1355,7 @@ class Forrest : public LevelMaker {
   Forrest(double _ratio, double _density, SquareType _onType, vector<SquareType> _types, vector<double> _probs) 
       : ratio(_ratio), density(_density), types(_types), probs(_probs), onType(_onType) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     Table<double> wys = genNoiseMap(area, {0, 0, 0, 0, 0}, 0.9);
     vector<double> values = sortedValues(wys);
     double cutoff = values[values.size() * ratio];
@@ -1376,7 +1379,7 @@ class LocationMaker : public LevelMaker {
   public:
   LocationMaker(Location* l) : location(l) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     builder->addLocation(location, area);
   }
   
@@ -1388,7 +1391,7 @@ class AddSquaresToCollective : public LevelMaker {
   public:
   AddSquaresToCollective(CollectiveBuilder* c) : collective(c) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     collective->addSquares(builder->toGlobalCoordinates(area).getAllSquares());
   }
   
@@ -1398,30 +1401,30 @@ class AddSquaresToCollective : public LevelMaker {
 
 class ForEachSquare : public LevelMaker {
   public:
-  ForEachSquare(function<void(Level::Builder*, Vec2 pos)> f, Predicate _onPred = Predicate::alwaysTrue())
+  ForEachSquare(function<void(LevelBuilder*, Vec2 pos)> f, Predicate _onPred = Predicate::alwaysTrue())
     : fun(f), onPred(_onPred) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (Vec2 v : area)
       if (onPred.apply(builder, v))
         fun(builder, v);
   }
   
   protected:
-  function<void(Level::Builder*, Vec2 pos)> fun;
+  function<void(LevelBuilder*, Vec2 pos)> fun;
   Predicate onPred;
 };
 
 class AddAttrib : public ForEachSquare {
   public:
   AddAttrib(SquareAttrib attr, Predicate onPred = Predicate::alwaysTrue()) 
-      : ForEachSquare([attr](Level::Builder* b, Vec2 pos) { b->addAttrib(pos, attr); }, onPred) {}
+      : ForEachSquare([attr](LevelBuilder* b, Vec2 pos) { b->addAttrib(pos, attr); }, onPred) {}
 };
 
 class RemoveAttrib : public ForEachSquare {
   public:
   RemoveAttrib(SquareAttrib attr, Predicate onPred = Predicate::alwaysTrue()) 
-    : ForEachSquare([attr](Level::Builder* b, Vec2 pos) { b->removeAttrib(pos, attr); }, onPred) {}
+    : ForEachSquare([attr](LevelBuilder* b, Vec2 pos) { b->removeAttrib(pos, attr); }, onPred) {}
 };
 
 class Stairs : public LevelMaker {
@@ -1430,7 +1433,7 @@ class Stairs : public LevelMaker {
       StairLook look = StairLook::NORMAL) : direction(dir), key(k), onPredicate(onPred), setAttr(_setAttr),
       stairLook(look) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     vector<Vec2> pos;
     for (Vec2 v : area)
       if (onPredicate.apply(builder, v))
@@ -1454,7 +1457,7 @@ class ShopMaker : public LevelMaker {
   ShopMaker(ItemFactory _factory, Tribe* _tribe, int _numItems, BuildingInfo _building)
       : factory(_factory), tribe(_tribe), numItems(_numItems), building(_building) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     Location *loc = new Location();
     builder->addLocation(loc, area);
     PCreature shopkeeper = CreatureFactory::getShopkeeper(loc, tribe);
@@ -1482,7 +1485,7 @@ class LevelExit : public LevelMaker {
   LevelExit(SquareType _exitType, optional<SquareAttrib> _attrib = none, int _minCornerDist = 1)
       : exitType(_exitType), attrib(_attrib), minCornerDist(_minCornerDist) {}
   
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     builder->putSquare(getRandomExit(area, minCornerDist), exitType, attrib);
   }
 
@@ -1505,7 +1508,7 @@ class Division : public LevelMaker {
   Division(bool, double _vRatio, LevelMaker* _top, LevelMaker* _bottom, optional<SquareType> _wall = none) 
       : vRatio(_vRatio), hRatio(-1), upperLeft(_top), lowerLeft(_bottom), wall(_wall) {}
 
-  void makeHorizDiv(Level::Builder* builder, Rectangle area) {
+  void makeHorizDiv(LevelBuilder* builder, Rectangle area) {
     int hDiv = area.getPX() + min(area.getW() - 1, max(1, (int) (hRatio * area.getW())));
     if (upperLeft)
       upperLeft->make(builder, Rectangle(area.getPX(), area.getPY(), hDiv, area.getKY()));
@@ -1516,7 +1519,7 @@ class Division : public LevelMaker {
         builder->putSquare(Vec2(hDiv, i), *wall);
   }
 
-  void makeVertDiv(Level::Builder* builder, Rectangle area) {
+  void makeVertDiv(LevelBuilder* builder, Rectangle area) {
     int vDiv = area.getPY() + min(area.getH() - 1, max(1, (int) (vRatio * area.getH())));
     if (upperLeft)
       upperLeft->make(builder, Rectangle(area.getPX(), area.getPY(), area.getKX(), vDiv));
@@ -1527,7 +1530,7 @@ class Division : public LevelMaker {
         builder->putSquare(Vec2(i, vDiv), *wall);
   }
 
-  void makeDiv(Level::Builder* builder, Rectangle area) {
+  void makeDiv(LevelBuilder* builder, Rectangle area) {
     int vDiv = area.getPY() + min(area.getH() - 1, max(1, (int) (vRatio * area.getH())));
     int hDiv = area.getPX() + min(area.getW() - 1, max(1, (int) (hRatio * area.getW())));
     int wallSpace = wall ? 1 : 0;
@@ -1547,7 +1550,7 @@ class Division : public LevelMaker {
     }
   }
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     if (vRatio < 0)
       makeHorizDiv(builder, area);
     else if (hRatio < 0)
@@ -1569,7 +1572,7 @@ class Circle : public LevelMaker {
   public:
   Circle(ItemId _item) : item(_item) {}
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     Vec2 center = area.middle();
     double r = min(area.getH(), area.getW()) / 2 - 1;
     Vec2 lastPos;
@@ -1599,7 +1602,7 @@ class AreaCorners : public LevelMaker {
       Rectangle(area.getBottomRight() - size, area.getBottomRight())};
   }
 
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     vector<Rectangle> corners = randomPermutation(getCorners(area));
     for (int i : All(corners)) {
       maker->make(builder, corners[i]);
@@ -1619,7 +1622,7 @@ class CastleExit : public LevelMaker {
   CastleExit(Tribe* _guardTribe, BuildingInfo _building, CreatureId _guardId)
     : guardTribe(_guardTribe), building(_building), guardId(_guardId) {}
   
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     Vec2 loc(area.getKX() - 1, area.middle().y);
     builder->putSquare(loc + Vec2(2, 0), building.floorInside);
     builder->putSquare(loc + Vec2(2, 0), building.door, SquareAttrib::CONNECT_ROAD);
@@ -1646,7 +1649,7 @@ class CastleExit : public LevelMaker {
 
 class SetCovered : public LevelMaker {
   public:
-  virtual void make(Level::Builder* builder, Rectangle area) override {
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (Vec2 v : area)
       builder->setCoverInfo(v, {true, 1.0});
   }
@@ -2143,44 +2146,6 @@ LevelMaker* LevelMaker::pyramidLevel(optional<CreatureFactory> cfactory, vector<
   return queue;
 }
 
-LevelMaker* LevelMaker::cellarLevel(CreatureFactory cfactory, SquareType wallType, StairLook stairLook,
-    vector<StairKey> up, vector<StairKey> down) {
-  MakerQueue* queue = new MakerQueue();
-  vector<FeatureInfo> featureCount {
-      { {SquareId::CHEST, CreatureId::RAT}, 3, 7}};
-  queue->addMaker(new Empty(SquareId::FLOOR));
-  queue->addMaker(new Empty(wallType));
-  queue->addMaker(new RoomMaker(Random.get(8, 15), 3, 5, wallType, wallType));
-  queue->addMaker(new Connector(SquareId::DOOR, 0));
-  queue->addMaker(new DungeonFeatures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), featureCount));
-  for (StairKey key : down)
-    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(SquareId::FLOOR), none,
-          stairLook));
-  for (StairKey key : up)
-    queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(SquareId::FLOOR), none, stairLook));
-  queue->addMaker(new Creatures(cfactory, Random.get(10, 15), MonsterAIFactory::monster()));
-  queue->addMaker(new Items(ItemFactory::dungeon(), SquareId::FLOOR, 5, 10));
-  return new BorderGuard(queue, wallType);
-}
-
-LevelMaker* LevelMaker::cavernLevel(CreatureFactory cfactory, SquareType wallType, SquareType floorType,
-    StairLook stairLook, vector<StairKey> up, vector<StairKey> down) {
-  MakerQueue* queue = new MakerQueue();
-  vector<FeatureInfo> featureCount { 
-      { {SquareId::CHEST, CreatureId::RAT}, 10, 14}};
-  queue->addMaker(new Empty(wallType));
-  queue->addMaker(new UniformBlob(floorType));
-  queue->addMaker(new DungeonFeatures(Predicate::type(floorType), featureCount));
-  for (StairKey key : down)
-    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(floorType), none,
-          stairLook));
-  for (StairKey key : up)
-    queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(floorType), none, stairLook));
-  queue->addMaker(new Creatures(cfactory, 1, MonsterAIFactory::monster()));
-  queue->addMaker(new Items(ItemFactory::dungeon(), floorType, 10, 15));
-  return new BorderGuard(queue, wallType);
-}
-
 LevelMaker* LevelMaker::grassAndTrees() {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::GRASS));
@@ -2203,7 +2168,7 @@ class SpecificArea : public LevelMaker {
   public:
   SpecificArea(Rectangle a, LevelMaker* m) : area(a), maker(m) {}
 
-  virtual void make(Level::Builder* builder, Rectangle) override {
+  virtual void make(LevelBuilder* builder, Rectangle) override {
     maker->make(builder, area);
   }
 

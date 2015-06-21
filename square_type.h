@@ -81,8 +81,8 @@ RICH_ENUM(SquareId,
   THRONE
 );
 
-typedef EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId, CreatureFactory::SingleCreature,
-      const Tribe*),
+class SquareType : public EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId,
+      CreatureFactory::SingleCreature, const Tribe*),
     ASSIGN(DeityHabitat, SquareId::ALTAR),
     ASSIGN(const Creature*, SquareId::CREATURE_ALTAR),
     ASSIGN(CreatureId,
@@ -95,8 +95,9 @@ typedef EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId, C
         SquareId::HATCHERY),
     ASSIGN(const Tribe*,
         SquareId::TRIBE_DOOR,
-        SquareId::BARRICADE)
-> SquareType;
+        SquareId::BARRICADE)> {
+  using EnumVariant::EnumVariant;
+};
 
 
 bool isWall(SquareType);

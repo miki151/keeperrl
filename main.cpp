@@ -42,6 +42,7 @@
 #include "skill.h"
 #include "parse_game.h"
 #include "version.h"
+#include "vision.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."

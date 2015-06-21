@@ -3,10 +3,11 @@
 
 #include "view_object.h"
 #include "unique_entity.h"
-#include "player_message.h"
 #include "minion_task.h"
 
 enum class SpellId;
+
+class PlayerMessage;
 
 /** Represents all the game information displayed around the map window.*/
 class GameInfo {

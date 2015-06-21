@@ -13,6 +13,7 @@
 #include "clock.h"
 #include "model_builder.h"
 #include "parse_game.h"
+#include "name_generator.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread)

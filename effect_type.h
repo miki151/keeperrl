@@ -52,15 +52,19 @@ RICH_ENUM(LastingEffect,
 );
 
 
-typedef EnumVariant<EffectId, TYPES(LastingEffect),
-        ASSIGN(LastingEffect, EffectId::LASTING)> EffectType;
+class EffectType : public EnumVariant<EffectId, TYPES(LastingEffect),
+        ASSIGN(LastingEffect, EffectId::LASTING)> {
+  using EnumVariant::EnumVariant;
+};
 
 enum class DirEffectId {
   BLAST,
   CREATURE_EFFECT,
 };
 
-typedef EnumVariant<DirEffectId, TYPES(EffectType),
-        ASSIGN(EffectType, DirEffectId::CREATURE_EFFECT)> DirEffectType;
+class DirEffectType : public EnumVariant<DirEffectId, TYPES(EffectType),
+        ASSIGN(EffectType, DirEffectId::CREATURE_EFFECT)> {
+  using EnumVariant::EnumVariant;
+};
 
 #endif

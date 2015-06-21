@@ -33,7 +33,9 @@
 #include "music.h"
 #include "trigger.h"
 #include "highscores.h"
-
+#include "level_maker.h"
+#include "map_memory.h"
+#include "level_builder.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -139,23 +141,23 @@ void Model::updateSunlightInfo() {
   while (1) {
     d += dayLength;
     if (d > currentTime) {
-      sunlightInfo = {1, d - currentTime, SunlightInfo::DAY};
+      sunlightInfo = {1, d - currentTime, SunlightState::DAY};
       break;
     }
     d += duskLength;
     if (d > currentTime) {
       sunlightInfo = {(d - currentTime) / duskLength, d + nightLength - duskLength - currentTime,
-        SunlightInfo::NIGHT};
+        SunlightState::NIGHT};
       break;
     }
     d += nightLength - 2 * duskLength;
     if (d > currentTime) {
-      sunlightInfo = {0, d + duskLength - currentTime, SunlightInfo::NIGHT};
+      sunlightInfo = {0, d + duskLength - currentTime, SunlightState::NIGHT};
       break;
     }
     d += duskLength;
     if (d > currentTime) {
-      sunlightInfo = {1 - (d - currentTime) / duskLength, d - currentTime, SunlightInfo::NIGHT};
+      sunlightInfo = {1 - (d - currentTime) / duskLength, d - currentTime, SunlightState::NIGHT};
       break;
     }
   }
@@ -182,8 +184,8 @@ void Model::onAlarm(Level* l, Vec2 pos) {
 
 const char* Model::SunlightInfo::getText() {
   switch (state) {
-    case NIGHT: return "night";
-    case DAY: return "day";
+    case SunlightState::NIGHT: return "night";
+    case SunlightState::DAY: return "day";
   }
   return "";
 }
@@ -292,9 +294,9 @@ void Model::tick(double time) {
     } else // temp fix to the player gets the location message
       playerControl->tick(time);
   }
-  if (musicType == MusicType::PEACEFUL && sunlightInfo.state == SunlightInfo::NIGHT)
+  if (musicType == MusicType::PEACEFUL && sunlightInfo.state == SunlightState::NIGHT)
     setCurrentMusic(MusicType::NIGHT, true);
-  else if (musicType == MusicType::NIGHT && sunlightInfo.state == SunlightInfo::DAY)
+  else if (musicType == MusicType::NIGHT && sunlightInfo.state == SunlightState::DAY)
     setCurrentMusic(MusicType::PEACEFUL, true);
 }
 
@@ -312,8 +314,8 @@ void Model::killCreature(Creature* c, Creature* attacker) {
     col->onKilled(c, attacker);
 }
 
-Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker) {
-  Level::Builder builder(std::move(b));
+Level* Model::buildLevel(LevelBuilder&& b, LevelMaker* maker) {
+  LevelBuilder builder(std::move(b));
   levels.push_back(builder.build(this, maker));
   return levels.back().get();
 }
@@ -511,6 +513,14 @@ void Model::setHighscores(Highscores* h) {
   highscores = h;
 }
 
+static StairDirection opposite(StairDirection d) {
+  switch (d) {
+    case StairDirection::DOWN: return StairDirection::UP;
+    case StairDirection::UP: return StairDirection::DOWN;
+  }
+  return StairDirection(0);
+}
+
 void Model::addLink(StairDirection dir, StairKey key, Level* l1, Level* l2) {
   levelLinks[make_tuple(dir, key, l1)] = l2;
   levelLinks[make_tuple(opposite(dir), key, l2)] = l1;
@@ -608,7 +618,7 @@ const string& Model::getWorldName() const {
 
 Level* Model::prepareTopLevel(ProgressMeter& meter, vector<SettlementInfo> settlements) {
   Level* top = buildLevel(
-      Level::Builder(meter, 250, 250, "Wilderness", false),
+      LevelBuilder(meter, 250, 250, "Wilderness", false),
       LevelMaker::topLevel(CreatureFactory::forrest(tribeSet.wildlife.get()), settlements));
   return top;
 }

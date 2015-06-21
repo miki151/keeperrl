@@ -81,7 +81,7 @@ class DoNothingController : public Controller {
 class ControllerFactory {
   public:
   ControllerFactory(function<Controller* (Creature*)>);
-  PController get(Creature*);
+  PController get(Creature*) const;
 
   private:
   function<Controller* (Creature*)> fun;

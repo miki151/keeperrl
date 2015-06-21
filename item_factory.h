@@ -21,7 +21,6 @@
 #include <functional>
 
 #include "util.h"
-#include "name_generator.h"
 #include "item.h"
 #include "item_type.h"
 

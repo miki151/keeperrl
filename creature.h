@@ -19,31 +19,29 @@
 #include "creature_attributes.h"
 #include "equipment.h"
 #include "enums.h"
-#include "attack.h"
 #include "shortest_path.h"
-#include "tribe.h"
-#include "skill.h"
-#include "controller.h"
 #include "unique_entity.h"
-#include "event.h"
-#include "sectors.h"
-#include "vision.h"
-#include "square_type.h"
 #include "creature_action.h"
 #include "renderable.h"
 #include "movement_type.h"
-#include "player_message.h"
-#include "game_info.h"
 
+class Skill;
 class Level;
 class Tribe;
 class ViewObject;
+class Attack;
+class Controller;
+class ControllerFactory;
+class PlayerMessage;
+class CreatureVision;
+class SquareType;
+class Location;
 
 class Creature : private CreatureAttributes, public Renderable, public UniqueEntity<Creature> {
   public:
   typedef CreatureAttributes CreatureAttributes;
-  Creature(Tribe*, const CreatureAttributes&, ControllerFactory);
-  Creature(const ViewObject&, Tribe*, const CreatureAttributes&, ControllerFactory);
+  Creature(Tribe*, const CreatureAttributes&, const ControllerFactory&);
+  Creature(const ViewObject&, Tribe*, const CreatureAttributes&, const ControllerFactory&);
   virtual ~Creature();
 
   static string getBodyPartName(BodyPart);
@@ -66,8 +64,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   vector<const Square*> getSquares(const vector<Vec2>& direction) const;
   void setPosition(Vec2 pos);
   Vec2 getPosition() const;
-  bool dodgeAttack(Attack);
-  bool takeDamage(Attack);
+  bool dodgeAttack(const Attack&);
+  bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);
   double getHealth() const;
   double getMorale() const;
@@ -121,8 +119,10 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void dropCorpse();
   virtual vector<PItem> getCorpse();
   
-  void monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant = "") const;
-  void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant = "") const;
+  void monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
+  void monsterMessage(const PlayerMessage& playerCanSee) const;
+  void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
+  void globalMessage(const PlayerMessage& playerCanSee) const;
 
   bool isDead() const;
   bool isBlind() const;
@@ -169,8 +169,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   bool hasSkill(Skill*) const;
   double getSkillValue(const Skill*) const;
   const EnumSet<SkillId>& getDiscreteSkills() const;
-  typedef GameInfo::PlayerInfo::SkillInfo SkillInfo;
-  vector<SkillInfo> getSkillNames() const;
 
   string getPluralTheName(Item* item, int num) const;
   string getPluralAName(Item* item, int num) const;
@@ -208,8 +206,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
   void give(const Creature* whom, vector<Item*> items);
   CreatureAction fire(Vec2 direction) const;
-  CreatureAction construct(Vec2 direction, SquareType) const;
-  bool canConstruct(SquareType) const;
+  CreatureAction construct(Vec2 direction, const SquareType&) const;
+  bool canConstruct(const SquareType&) const;
   CreatureAction eat(Item*) const;
   enum DestroyAction { BASH, EAT, DESTROY };
   CreatureAction destroy(Vec2 direction, DestroyAction) const;

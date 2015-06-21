@@ -23,6 +23,7 @@
 #include "square.h"
 #include "view_object.h"
 #include "model.h"
+#include "player_message.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {

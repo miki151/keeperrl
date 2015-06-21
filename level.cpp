@@ -24,6 +24,11 @@
 #include "collective_builder.h"
 #include "trigger.h"
 #include "progress_meter.h"
+#include "level_maker.h"
+#include "movement_type.h"
+#include "attack.h"
+#include "player_message.h"
+#include "vision.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -224,11 +229,13 @@ Model* Level::getModel() {
 }
 
 bool Level::isInSunlight(Vec2 pos) const {
-  return !coverInfo[pos].covered() && lightCapAmount[pos] == 1 && model->getSunlightInfo().state == Model::SunlightInfo::DAY;
+  return !coverInfo[pos].covered() && lightCapAmount[pos] == 1 &&
+      model->getSunlightInfo().state == SunlightState::DAY;
 }
 
 double Level::getLight(Vec2 pos) const {
-  return max(0.0, min(lightCapAmount[pos], lightAmount[pos] + coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount));
+  return max(0.0, min(lightCapAmount[pos], lightAmount[pos] +
+        coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount));
 }
 
 vector<Vec2> Level::getLandingSquares(StairDirection dir, StairKey key) const {
@@ -281,13 +288,13 @@ Vec2 Level::landCreature(vector<Vec2> landing, Creature* creature) {
   return Vec2(0, 0);
 }
 
-void Level::throwItem(PItem item, Attack attack, int maxDist, Vec2 position, Vec2 direction, VisionId vision) {
+void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId vision) {
   vector<PItem> v;
   v.push_back(std::move(item));
   throwItem(std::move(v), attack, maxDist, position, direction, vision);
 }
 
-void Level::throwItem(vector<PItem> item, Attack attack, int maxDist, Vec2 position, Vec2 direction,
+void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction,
     VisionId vision) {
   CHECK(!item.empty());
   CHECK(direction.length8() == 1);
@@ -329,6 +336,10 @@ void Level::globalMessage(Vec2 position, const PlayerMessage& ifPlayerCanSee, co
     else if (player->getPosition().dist8(position) < hearingRange)
       player->playerMessage(cannot);
   }
+}
+
+void Level::globalMessage(Vec2 position, const PlayerMessage& playerCanSee) const {
+  globalMessage(position, playerCanSee, "");
 }
 
 void Level::globalMessage(const Creature* c, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const {
@@ -521,180 +532,6 @@ void Level::addTickingSquare(Vec2 pos) {
 void Level::tick(double time) {
   for (Vec2 pos : tickingSquares)
     squares[pos]->tick(time);
-}
-
-Level::Builder::Builder(ProgressMeter& meter, int width, int height, const string& n, bool covered)
-  : squares(width, height), heightMap(width, height, 0),
-    coverInfo(width, height, {covered, covered ? 0.0 : 1.0}), attrib(width, height),
-    type(width, height, SquareType(SquareId(0))), items(width, height), name(n), progressMeter(meter) {
-}
-
-bool Level::Builder::hasAttrib(Vec2 posT, SquareAttrib attr) {
-  Vec2 pos = transform(posT);
-  CHECK(squares[pos] != nullptr);
-  return attrib[pos][attr];
-}
-
-void Level::Builder::addAttrib(Vec2 pos, SquareAttrib attr) {
-  attrib[transform(pos)].insert(attr);
-}
-
-void Level::Builder::removeAttrib(Vec2 pos, SquareAttrib attr) {
-  attrib[transform(pos)].erase(attr);
-}
-
-Square* Level::Builder::getSquare(Vec2 pos) {
-  return squares[transform(pos)].get();
-}
-    
-const SquareType& Level::Builder::getType(Vec2 pos) {
-  return type[transform(pos)];
-}
-
-void Level::Builder::putSquare(Vec2 pos, SquareType t, optional<SquareAttrib> at) {
-  putSquare(pos, SquareFactory::get(t), t, at);
-}
-
-void Level::Builder::putSquare(Vec2 pos, SquareType t, vector<SquareAttrib> at) {
-  putSquare(pos, SquareFactory::get(t), t, at);
-}
-
-void Level::Builder::putSquare(Vec2 pos, PSquare square, SquareType t, optional<SquareAttrib> attr) {
-  putSquare(pos, std::move(square), t, attr ? vector<SquareAttrib>({*attr}) : vector<SquareAttrib>());
-}
-
-void Level::Builder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<SquareAttrib> attr) {
-  progressMeter.addProgress();
-  Vec2 pos = transform(posT);
-  CHECK(!contains({SquareId::UP_STAIRS, SquareId::DOWN_STAIRS}, type[pos].getId()))
-    << "Attempted to overwrite stairs";
-  square->setPosition(pos);
-  if (squares[pos])
-    square->setBackground(squares[pos].get());
-  squares[pos] = std::move(square);
-  for (SquareAttrib at : attr)
-    attrib[pos].insert(at);
-  type[pos] = t;
-  squares[pos]->updateSunlightMovement(isInSunlight(pos));
-}
-
-bool Level::Builder::isInSunlight(Vec2 pos) {
-  return !coverInfo[pos].covered();
-}
-
-Rectangle Level::Builder::toGlobalCoordinates(Rectangle area) {
-  return area.apply([this](Vec2 v) { return transform(v); });
-}
-
-void Level::Builder::addLocation(Location* l, Rectangle area) {
-  l->setBounds(toGlobalCoordinates(area));
-  locations.push_back(l);
-}
-
-void Level::Builder::addCollective(CollectiveBuilder* col) {
-  if (!contains(collectives, col))
-    collectives.push_back(col);
-}
-
-void Level::Builder::setHeightMap(Vec2 pos, double h) {
-  heightMap[transform(pos)] = h;
-}
-
-double Level::Builder::getHeightMap(Vec2 pos) {
-  return heightMap[transform(pos)];
-}
-
-void Level::Builder::putCreature(Vec2 pos, PCreature creature) {
-  creature->setPosition(transform(pos));
-  creatures.push_back(NOTNULL(std::move(creature)));
-}
-
-void Level::Builder::putItems(Vec2 posT, vector<PItem> it) {
-  Vec2 pos = transform(posT);
-  CHECK(squares[pos]->canEnterEmpty(MovementType({MovementTrait::WALK})));
-  append(items[pos], std::move(it));
-}
-
-bool Level::Builder::canPutCreature(Vec2 posT, Creature* c) {
-  Vec2 pos = transform(posT);
-  if (!squares[pos]->canEnter(c))
-    return false;
-  for (PCreature& c : creatures) {
-    if (c->getPosition() == pos)
-      return false;
-  }
-  return true;
-}
-
-void Level::Builder::setMessage(const string& message) {
-  entryMessage = message;
-}
-
-PLevel Level::Builder::build(Model* m, LevelMaker* maker) {
-  CHECK(mapStack.empty());
-  maker->make(this, squares.getBounds());
-  for (Vec2 v : heightMap.getBounds()) {
-    squares[v]->setHeight(heightMap[v]);
-    squares[v]->dropItems(std::move(items[v]));
-  }
-  PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo)));
-  for (PCreature& c : creatures) {
-    Vec2 pos = c->getPosition();
-    l->addCreature(pos, std::move(c));
-  }
-  for (CollectiveBuilder* c : collectives)
-    c->setLevel(l.get());
-  return l;
-}
-
-static Vec2::LinearMap identity() {
-  return [](Vec2 v) { return v; };
-}
-
-static Vec2::LinearMap deg90(Rectangle bounds) {
-  return [bounds](Vec2 v) {
-    v -= bounds.getTopLeft();
-    return bounds.getTopLeft() + Vec2(v.y, v.x);
-  };
-}
-
-static Vec2::LinearMap deg180(Rectangle bounds) {
-  return [bounds](Vec2 v) {
-    return bounds.getTopLeft() - v + bounds.getBottomRight() - Vec2(1, 1);
-  };
-}
-
-static Vec2::LinearMap deg270(Rectangle bounds) {
-  return [bounds](Vec2 v) {
-    v -= bounds.getTopRight() - Vec2(1, 0);
-    return bounds.getTopLeft() + Vec2(v.y, -v.x);
-  };
-}
-
-void Level::Builder::pushMap(Rectangle bounds, Rot rot) {
-  switch (rot) {
-    case CW0: mapStack.push_back(identity()); break;
-    case CW1: mapStack.push_back(deg90(bounds)); break;
-    case CW2: mapStack.push_back(deg180(bounds)); break;
-    case CW3: mapStack.push_back(deg270(bounds)); break;
-  }
-}
-
-void Level::Builder::popMap() {
-  mapStack.pop_back();
-}
-
-Vec2 Level::Builder::transform(Vec2 v) {
-  for (auto m : reverse2(mapStack)) {
-    v = m(v);
-  }
-  return v;
-}
-
-void Level::Builder::setCoverInfo(Vec2 pos, CoverInfo info) {
-  coverInfo[transform(pos)] = info;
-  if (squares[pos])
-    squares[pos]->updateSunlightMovement(isInSunlight(pos));
 }
 
 bool Level::inBounds(Vec2 pos) const {

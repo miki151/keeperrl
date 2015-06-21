@@ -24,6 +24,7 @@
 #include "collective.h"
 #include "trigger.h"
 #include "location.h"
+#include "square_factory.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {

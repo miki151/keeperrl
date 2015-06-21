@@ -26,6 +26,13 @@
 #include "item_factory.h"
 #include "square.h"
 #include "location.h"
+#include "controller.h"
+#include "player_message.h"
+#include "attack.h"
+#include "vision.h"
+#include "square_type.h"
+#include "square_apply_type.h"
+
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -80,7 +87,8 @@ SERIALIZABLE(Creature);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Creature);
 
-Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes& attributes, ControllerFactory f)
+Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes& attributes,
+    const ControllerFactory& f)
     : CreatureAttributes(attributes), Renderable(object), tribe(t), controller(f.get(this)) {
   if (tribe)
     tribe->addMember(this);
@@ -91,7 +99,7 @@ Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes&
   updateVision();    
 }
 
-Creature::Creature(Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
+Creature::Creature(Tribe* t, const CreatureAttributes& attr, const ControllerFactory& f)
     : Creature(ViewObject(*attr.viewId, ViewLayer::CREATURE, (*attr.name).bare()), t, attr, f) {
 }
 
@@ -403,6 +411,10 @@ Vec2 Creature::getPosition() const {
   return position;
 }
 
+void Creature::globalMessage(const PlayerMessage& playerCanSee) const {
+  globalMessage(playerCanSee, "");
+}
+
 void Creature::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
   if (level)
     level->globalMessage(this, playerCanSee, cant);
@@ -411,6 +423,10 @@ void Creature::globalMessage(const PlayerMessage& playerCanSee, const PlayerMess
 void Creature::monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
   if (level && !isPlayer())
     level->globalMessage(this, playerCanSee, cant);
+}
+
+void Creature::monsterMessage(const PlayerMessage& playerCanSee) const {
+  monsterMessage(playerCanSee, "");
 }
 
 void Creature::addSkill(Skill* skill) {
@@ -1326,7 +1342,7 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
   });
 }
 
-bool Creature::dodgeAttack(Attack attack) {
+bool Creature::dodgeAttack(const Attack& attack) {
   ++numAttacksThisTurn;
   Debug() << getName().the() << " dodging " << attack.getAttacker()->getName().bare()
     << " accuracy " << attack.getAccuracy() << " dodge " << getModifier(ModifierType::ACCURACY);
@@ -1356,7 +1372,7 @@ bool Creature::isCritical(BodyPart part) const {
     || (part == BodyPart::HEAD && numGood(part) == 0 && !isUndead());
 }
 
-bool Creature::takeDamage(Attack attack) {
+bool Creature::takeDamage(const Attack& attack) {
   AttackType attackType = attack.getType();
   Creature* other = attack.getAttacker();
   if (other) {
@@ -1762,7 +1778,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
   });
 }
 
-CreatureAction Creature::construct(Vec2 direction, SquareType type) const {
+CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const {
   for (const Square* s : getSquare(direction))
     if (s->canConstruct(type) && canConstruct(type))
       return CreatureAction(this, [=](Creature* self) {
@@ -1784,7 +1800,7 @@ CreatureAction Creature::construct(Vec2 direction, SquareType type) const {
   return CreatureAction();
 }
 
-bool Creature::canConstruct(SquareType type) const {
+bool Creature::canConstruct(const SquareType& type) const {
   return hasSkill(Skill::get(SkillId::CONSTRUCTION));
 }
 
@@ -2419,16 +2435,6 @@ void Creature::updateVision() {
 
 VisionId Creature::getVision() const {
   return vision;
-}
-
-vector<Creature::SkillInfo> Creature::getSkillNames() const {
-  vector<SkillInfo> ret;
-  for (auto skill : getDiscreteSkills())
-    ret.push_back({Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
-  for (SkillId id : ENUM_ALL(SkillId))
-    if (!Skill::get(id)->isDiscrete() && getSkillValue(Skill::get(id)) > 0)
-      ret.push_back({Skill::get(id)->getNameForCreature(this), Skill::get(id)->getHelpText()});
-  return ret;
 }
 
 const MinionTaskMap& Creature::getMinionTasks() const {

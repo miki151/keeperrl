@@ -18,6 +18,7 @@
 #include "inventory.h"
 #include "item.h"
 #include "minion_equipment.h"
+#include "resource_id.h"
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {

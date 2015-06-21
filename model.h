@@ -17,10 +17,9 @@
 #define _MODEL_H
 
 #include "util.h"
-#include "encyclopedia.h"
 #include "time_queue.h"
-#include "level_maker.h"
 #include "statistics.h"
+#include "tribe.h"
 
 class PlayerControl;
 class Level;
@@ -30,6 +29,24 @@ class CreatureView;
 class Trigger;
 class Highscores;
 class Technology;
+class View;
+class LevelMaker;
+struct SettlementInfo;
+class LevelBuilder;
+
+enum class SunlightState { DAY, NIGHT};
+
+enum class StairKey {
+  DWARF,
+  CRYPT,
+  ORC,
+  PLAYER_SPAWN,
+  HERO_SPAWN,
+  PYRAMID,
+  TOWER,
+  CASTLE_CELLAR,
+  DRAGON
+};
 
 /**
   * Main class that holds all game logic.
@@ -101,7 +118,7 @@ class Model {
   struct SunlightInfo {
     double lightAmount;
     double timeRemaining;
-    enum State { DAY, NIGHT } state;
+    SunlightState state;
     const char* getText();
   };
   const SunlightInfo& getSunlightInfo() const;
@@ -109,8 +126,6 @@ class Model {
   const string& getWorldName() const;
 
   SERIALIZATION_DECL(Model);
-
-  Encyclopedia keeperopedia;
 
   struct PortalInfo : public NamedTupleBase<Level*, Vec2> {
     NAMED_TUPLE_STUFF(PortalInfo);
@@ -148,7 +163,7 @@ class Model {
   PCreature makePlayer(int handicap);
   const Creature* getPlayer() const;
   void landHeroPlayer();
-  Level* buildLevel(Level::Builder&&, LevelMaker*);
+  Level* buildLevel(LevelBuilder&&, LevelMaker*);
   void addLink(StairDirection, StairKey, Level*, Level*);
   Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 

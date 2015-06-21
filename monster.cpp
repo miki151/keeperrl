@@ -17,6 +17,8 @@
 
 #include "monster.h"
 #include "map_memory.h"
+#include "creature.h"
+#include "player_message.h"
 
 template <class Archive> 
 void Monster::serialize(Archive& ar, const unsigned int version) {

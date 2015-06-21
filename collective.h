@@ -17,20 +17,16 @@
 
 #include "monster_ai.h"
 #include "task.h"
-#include "event.h"
 #include "minion_equipment.h"
 #include "task_map.h"
-#include "sectors.h"
 #include "minion_task.h"
-#include "gender.h"
-#include "item.h"
 #include "known_tiles.h"
 #include "collective_teams.h"
-#include "game_info.h"
 #include "collective_config.h"
 #include "cost_info.h"
 #include "construction_map.h"
-#include "square.h"
+#include "square_apply_type.h"
+#include "resource_id.h"
 
 class Creature;
 class CollectiveControl;
@@ -90,7 +86,6 @@ class Collective : public Task::Callback {
   double getTime() const;
   void update(Creature*);
   void addNewCreatureMessage(const vector<Creature*>&);
-  GameInfo::VillageInfo::Village getVillageInfo() const;
   void setTask(const Creature*, PTask, bool priority = false);
   bool hasTask(const Creature*) const;
   void cancelTask(const Creature*);
@@ -430,8 +425,6 @@ class Collective : public Task::Callback {
   int SERIAL(nextPayoutTime);
   unordered_map<const Creature*, vector<AttractionInfo>> SERIAL(minionAttraction);
   double getAttractionOccupation(MinionAttraction);
-  unique_ptr<Sectors> SERIAL(sectors);
-  unique_ptr<Sectors> SERIAL(flyingSectors);
   Creature* getCopulationTarget(Creature* succubus);
   Creature* getConsumptionTarget(Creature* consumer);
   deque<Creature*> SERIAL(pregnancies);

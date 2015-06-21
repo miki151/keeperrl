@@ -16,10 +16,11 @@
 #ifndef _MONSTER_H
 #define _MONSTER_H
 
-#include "creature.h"
-#include "shortest_path.h"
 #include "enums.h"
 #include "monster_ai.h"
+#include "controller.h"
+
+class Creature;
 
 class Monster : public Controller {
   public:

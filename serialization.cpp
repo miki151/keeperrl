@@ -33,6 +33,7 @@
 #include "item_factory.h"
 #include "collective_control.h"
 #include "collective.h"
+#include "map_memory.h"
 
 template <class Archive>
 void Serialization::registerTypes(Archive& ar, int version) {

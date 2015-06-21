@@ -27,6 +27,10 @@
 #include "view_id.h"
 #include "collective.h"
 #include "location.h"
+#include "creature.h"
+#include "model.h"
+#include "name_generator.h"
+#include "player_message.h"
 
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
@@ -655,7 +659,11 @@ Tribe* CreatureFactory::getTribeFor(CreatureId id) {
     return tribe;
 }
 
-PCreature CreatureFactory::random(MonsterAIFactory actorFactory) {
+PCreature CreatureFactory::random() {
+  return random(MonsterAIFactory::monster());
+}
+
+PCreature CreatureFactory::random(const MonsterAIFactory& actorFactory) {
   CreatureId id;
   if (unique.size() > 0) {
     id = unique.back();
@@ -2151,7 +2159,11 @@ vector<ItemType> getInventory(CreatureId id) {
   }
 }
 
-PCreature CreatureFactory::fromId(CreatureId id, Tribe* t, MonsterAIFactory factory) {
+PCreature CreatureFactory::fromId(CreatureId id, Tribe* t) {
+  return fromId(id, t, MonsterAIFactory::monster());
+}
+
+PCreature CreatureFactory::fromId(CreatureId id, Tribe* t, const MonsterAIFactory& factory) {
   return addInventory(get(id, t, factory), getInventory(id));
 }
 

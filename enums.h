@@ -21,6 +21,7 @@
 typedef int TeamId;
 
 enum class MusicType;
+enum class SunlightState;
 
 enum class CollectiveResourceId;
 enum class CollectiveConfigId;
@@ -34,6 +35,7 @@ enum class ItemClass;
 enum class EquipmentSlot;
 
 enum class SquareApplyType;
+enum class SquareId;
 
 enum class MinionTask;
 enum class MinionTrait;

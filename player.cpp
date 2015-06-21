@@ -29,6 +29,8 @@
 #include "effect.h"
 #include "view_id.h"
 #include "map_memory.h"
+#include "player_message.h"
+#include "square_apply_type.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {

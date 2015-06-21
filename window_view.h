@@ -19,8 +19,6 @@
 #include "util.h"
 #include "view.h"
 #include "map_layout.h"
-#include "map_gui.h"
-#include "minimap_gui.h"
 #include "input_queue.h"
 #include "animation.h"
 #include "gui_builder.h"
@@ -28,6 +26,8 @@
 class ViewIndex;
 class Options;
 class Clock;
+class MinimapGui;
+class MapGui;
 
 /** See view.h for documentation.*/
 class WindowView: public View {

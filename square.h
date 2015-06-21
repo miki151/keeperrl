@@ -21,9 +21,7 @@
 #include "inventory.h"
 #include "view_index.h"
 #include "poison_gas.h"
-#include "vision.h"
 #include "fire.h"
-#include "square_type.h"
 #include "renderable.h"
 #include "movement_type.h"
 #include "view_object.h"
@@ -34,23 +32,7 @@ class Item;
 class CreatureView;
 class Attack;
 class ProgressMeter;
-
-RICH_ENUM(SquareApplyType,
-  DRINK,
-  USE_CHEST,
-  ASCEND,
-  DESCEND,
-  PRAY,
-  SLEEP,
-  TRAIN,
-  WORKSHOP,
-  TORTURE,
-  PIGSTY,
-  CROPS,
-  STATUE,
-  WELL,
-  THRONE
-);
+class SquareType;
 
 class Square : public Renderable {
   public:
@@ -122,7 +104,8 @@ class Square : public Renderable {
   //@}
 
   /** Checks if this square obstructs view.*/
-  bool canSeeThru(VisionId = VisionId::NORMAL) const;
+  bool canSeeThru(VisionId) const;
+  bool canSeeThru() const;
 
   /** Sets if this square obstructs view.*/
   void setVision(VisionId);
@@ -201,11 +184,11 @@ class Square : public Renderable {
   bool hasItem(Item*) const;
 
   /** Checks if another square can be constructed from this one.*/
-  bool canConstruct(SquareType) const;
+  bool canConstruct(const SquareType&) const;
 
   /** Constructs another square. The construction might finish after several attempts.
     Returns true if construction was finishd.*/
-  bool construct(SquareType);
+  bool construct(const SquareType&);
 
   /** Called just before swapping the old square for the new constructed one.*/
   virtual void onConstructNewSquare(Square* newSquare) {}

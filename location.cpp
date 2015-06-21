@@ -35,12 +35,13 @@ void Location::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Location);
 
 Location::Location(const string& _name, const string& desc, bool sup)
-    : name(_name), description(desc), surprise(sup) {
+    : name(_name), description(desc), table(Level::getMaxBounds(), false), surprise(sup) {
 }
 
-Location::Location(bool s) : surprise(s) {}
+Location::Location(bool s) : table(Level::getMaxBounds(), false), surprise(s) {}
 
-Location::Location(Level* l, Rectangle b) : level(l), squares(b.getAllSquares()) {
+Location::Location(Level* l, Rectangle b) : level(l), squares(b.getAllSquares()),
+    table(Level::getMaxBounds(), false) {
   for (Vec2 v : squares)
     table[v] = true;
 }

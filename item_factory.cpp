@@ -28,6 +28,11 @@
 #include "trigger.h"
 #include "model.h"
 #include "creature.h"
+#include "monster_ai.h"
+#include "name_generator.h"
+#include "player_message.h"
+#include "vision.h"
+#include "resource_id.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {

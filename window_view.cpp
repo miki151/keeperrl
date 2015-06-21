@@ -30,6 +30,9 @@
 #include "map_memory.h"
 #include "progress_meter.h"
 #include "version.h"
+#include "map_gui.h"
+#include "minimap_gui.h"
+#include "player_message.h"
 
 using sf::Color;
 using sf::String;

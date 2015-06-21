@@ -23,6 +23,7 @@
 #include "item.h"
 #include "creature.h"
 #include "location.h"
+#include "player_message.h"
 
 class Behaviour {
   public:

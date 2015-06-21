@@ -19,7 +19,7 @@
 #include "creature.h"
 #include "collective.h"
 #include "spell.h"
-
+#include "item.h"
 
 View::ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
@@ -98,6 +98,16 @@ string GameInfo::PlayerInfo::getTitle() const {
   return capitalFirst(title);
 }
 
+vector<GameInfo::PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
+  vector<GameInfo::PlayerInfo::SkillInfo> ret;
+  for (auto skill : c->getDiscreteSkills())
+    ret.push_back({Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
+  for (SkillId id : ENUM_ALL(SkillId))
+    if (!Skill::get(id)->isDiscrete() && c->getSkillValue(Skill::get(id)) > 0)
+      ret.push_back({Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
+  return ret;
+}
+
 void GameInfo::PlayerInfo::readFrom(const Creature* c) {
   firstName = c->getFirstName().get_value_or("");
   name = c->getName().bare();
@@ -145,7 +155,7 @@ void GameInfo::PlayerInfo::readFrom(const Creature* c) {
       "Describes general combat value of the creature."}*/
   };
   level = c->getExpLevel();
-  skills = c->getSkillNames();
+  skills = getSkillNames(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())
     effects.push_back({adj.name, adj.help, true});

@@ -17,7 +17,6 @@
 #define _REPLAY_VIEW
 
 #include "logging_view.h"
-#include "pantheon.h"
 
 class ReplayView : public View {
   public:

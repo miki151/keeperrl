@@ -4,6 +4,7 @@
 #include "cost_info.h"
 #include "util.h"
 #include "square_type.h"
+#include "unique_entity.h"
 
 class ConstructionMap {
   public:

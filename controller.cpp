@@ -46,7 +46,7 @@ Controller* Controller::getPossessedController(Creature* c) {
 
 ControllerFactory::ControllerFactory(function<Controller* (Creature*)> f) : fun(f) {}
 
-PController ControllerFactory::get(Creature* c) {
+PController ControllerFactory::get(Creature* c) const {
   return PController(fun(c));
 }
 

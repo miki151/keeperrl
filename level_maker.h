@@ -17,7 +17,6 @@
 #define _LEVEL_MAKER_H
 
 #include "util.h"
-#include "level.h"
 #include "creature_factory.h"
 #include "item_factory.h"
 
@@ -25,6 +24,7 @@ enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
 
 class ItemFactory;
 class CollectiveBuilder;
+class LevelBuilder;
 
 class LevelGenException {
 };
@@ -67,14 +67,10 @@ struct SettlementInfo {
 
 class LevelMaker {
   public:
-  virtual void make(Level::Builder* builder, Rectangle area) = 0;
+  virtual void make(LevelBuilder* builder, Rectangle area) = 0;
 
   static LevelMaker* cryptLevel(CreatureFactory roomFactory, CreatureId coffinCreature,
       vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* cellarLevel(CreatureFactory cfactory, SquareType wallType, StairLook stairLook,
-      vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* cavernLevel(CreatureFactory cfactory, SquareType wallType, SquareType floorType,
-      StairLook stairLook, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* topLevel(CreatureFactory forrest, vector<SettlementInfo> village);
   static LevelMaker* mineTownLevel(SettlementInfo);
   static LevelMaker* splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,

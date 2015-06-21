@@ -26,6 +26,9 @@
 #include "view_id.h"
 #include "model.h"
 #include "trigger.h"
+#include "monster_ai.h"
+#include "attack.h"
+#include "player_message.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};
@@ -240,7 +243,8 @@ void Effect::summon(Creature* c, CreatureId id, int num, int ttl) {
   summonCreatures(c, 2, std::move(creatures));
 }
 
-void Effect::summon(Level* level, CreatureFactory factory, Vec2 pos, int num, int ttl) {
+void Effect::summon(Level* level, const CreatureFactory& factory1, Vec2 pos, int num, int ttl) {
+  CreatureFactory factory(factory1);
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(factory.random(MonsterAIFactory::dieTime(level->getModel()->getTime() + ttl)));
@@ -431,7 +435,7 @@ double getDuration(const Creature* c, LastingEffect e, int strength) {
   return 0;
 }
 
-void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength strengthEnum) {
+void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength strengthEnum) {
   int strength = int(strengthEnum);
   switch (type.getId()) {
     case EffectId::LEAVE_BODY: leaveBody(c); break;
@@ -461,14 +465,14 @@ void Effect::applyToCreature(Creature* c, EffectType type, EffectStrength streng
   }
 }
 
-void Effect::applyToPosition(Level* level, Vec2 pos, EffectType type, EffectStrength strength) {
+void Effect::applyToPosition(Level* level, Vec2 pos, const EffectType& type, EffectStrength strength) {
   switch (type.getId()) {
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(level, pos, int(strength), false); break;
     default: FAIL << "Can't apply to position " << int(type.getId());
   }
 }
 
-void Effect::applyDirected(Creature* c, Vec2 direction, DirEffectType type, EffectStrength strength) {
+void Effect::applyDirected(Creature* c, Vec2 direction, const DirEffectType& type, EffectStrength strength) {
   switch (type.getId()) {
     case DirEffectId::BLAST: blast(c, direction, blastRange[int(strength)]); break;
     case DirEffectId::CREATURE_EFFECT:
@@ -477,7 +481,7 @@ void Effect::applyDirected(Creature* c, Vec2 direction, DirEffectType type, Effe
   }
 }
 
-string Effect::getName(EffectType type) {
+string Effect::getName(const EffectType& type) {
   switch (type.getId()) {
     case EffectId::HEAL: return "healing";
     case EffectId::TELEPORT: return "teleport";
@@ -510,7 +514,7 @@ static string getLastingDescription(string desc) {
   return desc.substr(0, desc.size() - 1) + " for some turns.";
 }
 
-string Effect::getDescription(EffectType type) {
+string Effect::getDescription(const EffectType& type) {
   switch (type.getId()) {
     case EffectId::HEAL: return "Heals your wounds.";
     case EffectId::TELEPORT: return "Teleports to a safer location close by.";
@@ -586,7 +590,7 @@ string Effect::getDescription(LastingEffect type) {
   }
 }
 
-string Effect::getDescription(DirEffectType type) {
+string Effect::getDescription(const DirEffectType& type) {
   switch (type.getId()) {
     case DirEffectId::BLAST: return "Creates a directed blast that throws back creatures and items.";
     case DirEffectId::CREATURE_EFFECT:

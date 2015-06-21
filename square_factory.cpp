@@ -26,6 +26,9 @@
 #include "view_object.h"
 #include "view_id.h"
 #include "model.h"
+#include "monster_ai.h"
+#include "player_message.h"
+#include "square_apply_type.h"
 
 class Staircase : public Square {
   public:

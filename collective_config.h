@@ -19,7 +19,6 @@
 #include "square_type.h"
 #include "util.h"
 #include "minion_task.h"
-#include "model.h"
 
 enum class ItemClass;
 
@@ -59,7 +58,7 @@ struct ImmigrantInfo {
   bool SERIAL(spawnAtDorm);
   int SERIAL(salary);
   optional<TechId> SERIAL(techId);
-  optional<Model::SunlightInfo::State> SERIAL(limit);
+  optional<SunlightState> SERIAL(limit);
   optional<Range> SERIAL(groupSize);
   bool SERIAL(autoTeam);
 

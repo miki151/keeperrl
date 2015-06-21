@@ -18,6 +18,7 @@
 #include "clock.h"
 #include "renderer.h"
 #include "view_id.h"
+#include "player_message.h"
 
 using sf::Color;
 using sf::String;

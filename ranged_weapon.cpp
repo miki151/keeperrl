@@ -18,6 +18,7 @@
 #include "ranged_weapon.h"
 #include "creature.h"
 #include "level.h"
+#include "attack.h"
 
 template <class Archive> 
 void RangedWeapon::serialize(Archive& ar, const unsigned int version) {

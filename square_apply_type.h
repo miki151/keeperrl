@@ -1,0 +1,23 @@
+#ifndef _SQUARE_APPLY_TYPE_H
+#define _SQUARE_APPLY_TYPE_H
+
+
+RICH_ENUM(SquareApplyType,
+  DRINK,
+  USE_CHEST,
+  ASCEND,
+  DESCEND,
+  PRAY,
+  SLEEP,
+  TRAIN,
+  WORKSHOP,
+  TORTURE,
+  PIGSTY,
+  CROPS,
+  STATUE,
+  WELL,
+  THRONE
+);
+
+
+#endif

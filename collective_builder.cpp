@@ -17,7 +17,7 @@ CollectiveBuilder& CollectiveBuilder::addCreature(Creature* c, EnumSet<MinionTra
   return *this;
 }
 
-CollectiveBuilder& CollectiveBuilder::setCredit(EnumMap<CollectiveResourceId, int> c) {
+CollectiveBuilder& CollectiveBuilder::setCredit(map<CollectiveResourceId, int> c) {
   credit = c;
   return *this;
 }

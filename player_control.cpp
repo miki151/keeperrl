@@ -37,6 +37,9 @@
 #include "music.h"
 #include "location.h"
 #include "model_builder.h"
+#include "encyclopedia.h"
+#include "map_memory.h"
+#include "square_factory.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -797,8 +800,17 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   ret.push_back({{ViewId::LIBRARY, "Library", 'l'},
       [this](PlayerControl* c, View* view) { c->handleLibrary(view); }});
   ret.push_back({{ViewId::BOOK, "Keeperopedia"},
-      [this](PlayerControl* c, View* view) { model->keeperopedia.present(view); }});
+      [this](PlayerControl* c, View* view) { Encyclopedia().present(view); }});
   return ret;
+}
+
+static GameInfo::VillageInfo::Village getVillageInfo(const Collective* col) {
+  GameInfo::VillageInfo::Village info;
+  info.name = col->getName();
+  info.tribeName = col->getTribe()->getName();
+  if (col->isConquered())
+    info.state = "conquered";
+  return info;
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
@@ -806,8 +818,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (Deity* deity : Deity::getDeities())
     gameInfo.bandInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});*/
   gameInfo.villageInfo.villages.clear();
-  for (const Collective* c : model->getMainVillains())
-    gameInfo.villageInfo.villages.push_back(c->getVillageInfo());
+  for (const Collective* col : model->getMainVillains())
+    gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
   gameInfo.infoType = GameInfo::InfoType::BAND;
@@ -1203,7 +1215,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         break;
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
-    case UserInputId::DEITIES: model->keeperopedia.deity(view, Deity::getDeities()[input.get<int>()]); break;
+    case UserInputId::DEITIES: Encyclopedia().deity(view, Deity::getDeities()[input.get<int>()]); break;
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::CREATURE_BUTTON: 
         if (Creature* c = getCreature(input.get<int>()))
@@ -1487,7 +1499,7 @@ void PlayerControl::onNoEnemies() {
 }
 
 void PlayerControl::considerNightfall() {
-  if (model->getSunlightInfo().state == Model::SunlightInfo::NIGHT) {
+  if (model->getSunlightInfo().state == SunlightState::NIGHT) {
     if (!isNight) {
       addMessage(PlayerMessage("Night is falling. Killing enemies in their sleep yields double mana.",
             PlayerMessage::HIGH));

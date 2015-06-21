@@ -1,10 +1,13 @@
 #ifndef _MODEL_BUILDER_H
 
-#include "model.h"
 #include "village_control.h"
 #include "collective_config.h"
 
 class Level;
+class Model;
+class ProgressMeter;
+class Options;
+class View;
 
 class ModelBuilder {
   public:

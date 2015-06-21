@@ -24,6 +24,9 @@
 #include "trigger.h"
 #include "progress_meter.h"
 #include "model.h"
+#include "vision.h"
+#include "player_message.h"
+#include "square_type.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -129,11 +132,11 @@ void Square::addTravelDir(Vec2 dir) {
     travelDir.push_back(dir);
 }
 
-bool Square::canConstruct(SquareType type) const {
+bool Square::canConstruct(const SquareType& type) const {
   return constructions.count(type.getId());
 }
 
-bool Square::construct(SquareType type) {
+bool Square::construct(const SquareType& type) {
   setDirty();
   CHECK(canConstruct(type));
   if (--constructions[type.getId()] <= 0) {
@@ -482,6 +485,10 @@ void Square::removeCreature() {
 
 bool Square::canSeeThru(VisionId v) const {
   return vision && (v == *vision || Vision::get(v)->getInheritedFov() == Vision::get(*vision));
+}
+
+bool Square::canSeeThru() const {
+  return canSeeThru(VisionId::NORMAL);
 }
 
 void Square::setVision(VisionId v) {

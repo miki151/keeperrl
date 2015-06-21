@@ -13,6 +13,11 @@
 #include "square.h"
 #include "location.h"
 #include "progress_meter.h"
+#include "collective.h"
+#include "name_generator.h"
+#include "level_maker.h"
+#include "model.h"
+#include "level_builder.h"
 
 static Location* getVillageLocation(bool markSurprise = false) {
   return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext(), "", markSurprise);
@@ -417,13 +422,13 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::RAVEN;
           c.frequency = 1.0;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.limit = Model::SunlightInfo::DAY;
+          c.limit = SunlightState::DAY;
           c.salary = 0;),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::BAT;
           c.frequency = 1.0;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.limit = Model::SunlightInfo::NIGHT;
+          c.limit = SunlightState::NIGHT;
           c.salary = 0;),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::WOLF;
@@ -454,10 +459,10 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.salary = 0;)});
 }
 
-static EnumMap<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
+static map<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
   return {{CollectiveResourceId::MANA, 200}};
   if (resourceBonus) {
-    EnumMap<CollectiveResourceId, int> credit;
+    map<CollectiveResourceId, int> credit;
     for (auto elem : ENUM_ALL(CollectiveResourceId))
       credit[elem] = 10000;
     return credit;
@@ -548,7 +553,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
 PModel ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string& splashPath) {
   Model* m = new Model(view, "", Tribe::Set());
   Level* l = m->buildLevel(
-      Level::Builder(meter, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness", false),
+      LevelBuilder(meter, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness", false),
       LevelMaker::splashLevel(
           CreatureFactory::splashLeader(m->tribeSet.human.get()),
           CreatureFactory::splashHeroes(m->tribeSet.human.get()),

@@ -35,16 +35,6 @@ RICH_ENUM(TrapType,
   TERROR
 );
 
-RICH_ENUM(CollectiveResourceId,
-  GOLD,
-  WOOD,
-  IRON,
-  STONE,
-  MANA,
-  PRISONER_HEAD,
-  CORPSE
-);
-
 RICH_ENUM(ItemClass,
   WEAPON,
   RANGED_WEAPON,

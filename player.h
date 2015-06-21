@@ -19,7 +19,6 @@
 #include "creature_action.h"
 #include "event.h"
 #include "controller.h"
-#include "item.h"
 #include "user_input.h"
 #include "view.h"
 #include "creature_view.h"
@@ -27,6 +26,7 @@
 class View;
 class Model;
 class Creature;
+class Item;
 
 class Player : public Controller, public CreatureView {
   public:

@@ -49,8 +49,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(credit)
     & SVAR(level)
     & SVAR(minionPayment)
-    & SVAR(flyingSectors)
-    & SVAR(sectors)
     & SVAR(pregnancies)
     & SVAR(nextPayoutTime)
     & SVAR(minionAttraction)
@@ -428,12 +426,12 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
   switch (task) {
     case MinionTask::CROPS:
     case MinionTask::EXPLORE:
-        return getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::DAY;
+        return getLevel()->getModel()->getSunlightInfo().state == SunlightState::DAY;
     case MinionTask::SLEEP:
         if (!config.sleepOnlyAtNight())
           return true;
     case MinionTask::EXPLORE_NOCTURNAL:
-        return getLevel()->getModel()->getSunlightInfo().state == Model::SunlightInfo::NIGHT;
+        return getLevel()->getModel()->getSunlightInfo().state == SunlightState::NIGHT;
     default: return true;
   }
 }
@@ -2341,15 +2339,6 @@ void Collective::addTorch(Vec2 pos) {
 bool Collective::canPlaceTorch(Vec2 pos) const {
   return getAdjacentWall(getLevel(), pos) && !constructions.containsTorch(pos) &&
     isKnownSquare(pos) && getLevel()->getSafeSquare(pos)->canEnterEmpty({MovementTrait::WALK});
-}
-
-GameInfo::VillageInfo::Village Collective::getVillageInfo() const {
-  GameInfo::VillageInfo::Village info;
-  info.name = getName();
-  info.tribeName = getTribe()->getName();
-  if (isConquered())
-    info.state = "conquered";
-  return info;
 }
 
 const TaskMap& Collective::getTaskMap() const {

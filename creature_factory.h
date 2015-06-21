@@ -22,10 +22,11 @@
 
 #include "util.h"
 #include "tribe.h"
-#include "monster_ai.h"
 #include "item_type.h"
 
 class Creature;
+class MonsterAIFactory;
+class Location;
 
 RICH_ENUM(CreatureId,
     KEEPER,
@@ -139,7 +140,8 @@ class CreatureFactory {
   };
   CreatureFactory(const SingleCreature&);
 
-  static PCreature fromId(CreatureId, Tribe*, MonsterAIFactory = MonsterAIFactory::monster());
+  static PCreature fromId(CreatureId, Tribe*, const MonsterAIFactory&);
+  static PCreature fromId(CreatureId, Tribe*);
   static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
   static CreatureFactory humanVillage(Tribe*);
   static CreatureFactory splashHeroes(Tribe*);
@@ -163,7 +165,8 @@ class CreatureFactory {
   static CreatureFactory lavaCreatures(Tribe* tribe);
   static CreatureFactory waterCreatures(Tribe* tribe);
   
-  PCreature random(MonsterAIFactory = MonsterAIFactory::monster());
+  PCreature random(const MonsterAIFactory&);
+  PCreature random();
 
   static PCreature getShopkeeper(Location* shopArea, Tribe*);
   static PCreature getRollingBoulder(Vec2 direction, Tribe*);

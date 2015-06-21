@@ -25,6 +25,8 @@
 #include "view_object.h"
 #include "item_factory.h"
 #include "model.h"
+#include "attack.h"
+#include "player_message.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {

@@ -17,7 +17,8 @@
 #define _LOCATION_H
 
 #include "util.h"
-#include "level.h"
+
+class Level;
 
 class Location {
   public:
@@ -43,7 +44,7 @@ class Location {
   optional<string> SERIAL(description);
   const Level* SERIAL(level) = nullptr;
   vector<Vec2> SERIAL(squares);
-  Table<bool> SERIAL(table) = Table<bool>(Level::getMaxBounds(), false);
+  Table<bool> SERIAL(table);
   Vec2 SERIAL(middle);
   Vec2 SERIAL(bottomRight);
   bool SERIAL(surprise) = false;
