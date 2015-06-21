@@ -552,24 +552,34 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
   int totalElems = info.lyingItems.size();
   if (itemIndex >= totalElems)
     itemIndex = totalElems - 1;
-  PGuiElem content = gui.stack(makeVec<PGuiElem>(
-        gui.focusable(gui.stack(
-            gui.keyHandler([=] { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, itemIndex});},
-                {{Keyboard::Return}, {Keyboard::Numpad5}}, true),
-            gui.keyHandler([=] { itemIndex = (itemIndex + 1) % totalElems;
-                lyingItemsScroll = getScrollPos(itemIndex, totalElems - 1);},
-                {{Keyboard::Down}, {Keyboard::Numpad2}}, true),
-            gui.keyHandler([=] { itemIndex = (itemIndex + totalElems - 1) % totalElems;
-                lyingItemsScroll = getScrollPos(itemIndex, totalElems - 1); },
-                {{Keyboard::Up}, {Keyboard::Numpad8}}, true)),
-              {{Keyboard::Return}, {Keyboard::Numpad5}}, {{Keyboard::Escape}}, playerOverlayFocused),
-        gui.keyHandler([=] { if (!playerOverlayFocused) itemIndex = 0; },
-            {{Keyboard::Return}, {Keyboard::Numpad5}}),
-        gui.keyHandler([=] { itemIndex = -1; }, {{Keyboard::Escape}}),
+  PGuiElem content;
+  if (totalElems == 1)
+    content = gui.stack(
         gui.margin(
           gui.leftMargin(3, gui.label(title, colors[ColorId::YELLOW])),
           gui.scrollable(gui.verticalList(std::move(lines), legendLineHeight), &lyingItemsScroll),
-          legendLineHeight, GuiFactory::TOP)));
+          legendLineHeight, GuiFactory::TOP),
+        gui.keyHandler([=] { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, 0});},
+            {{Keyboard::Return}, {Keyboard::Numpad5}}, true));
+  else
+    content = gui.stack(makeVec<PGuiElem>(
+          gui.focusable(gui.stack(
+              gui.keyHandler([=] { callbacks.inputCallback({UserInputId::PICK_UP_ITEM, itemIndex});},
+                {{Keyboard::Return}, {Keyboard::Numpad5}}, true),
+              gui.keyHandler([=] { itemIndex = (itemIndex + 1) % totalElems;
+                lyingItemsScroll = getScrollPos(itemIndex, totalElems - 1);},
+                {{Keyboard::Down}, {Keyboard::Numpad2}}, true),
+              gui.keyHandler([=] { itemIndex = (itemIndex + totalElems - 1) % totalElems;
+                lyingItemsScroll = getScrollPos(itemIndex, totalElems - 1); },
+                {{Keyboard::Up}, {Keyboard::Numpad8}}, true)),
+            {{Keyboard::Return}, {Keyboard::Numpad5}}, {{Keyboard::Escape}}, playerOverlayFocused),
+          gui.keyHandler([=] { if (!playerOverlayFocused) itemIndex = 0; },
+            {{Keyboard::Return}, {Keyboard::Numpad5}}),
+          gui.keyHandler([=] { itemIndex = -1; }, {{Keyboard::Escape}}),
+          gui.margin(
+            gui.leftMargin(3, gui.label(title, colors[ColorId::YELLOW])),
+            gui.scrollable(gui.verticalList(std::move(lines), legendLineHeight), &lyingItemsScroll),
+            legendLineHeight, GuiFactory::TOP)));
   int margin = 14;
   content = gui.stack(
       gui.conditional(gui.stack(gui.fullScreen(gui.darken()), gui.miniWindow()), gui.translucentBackground(),
