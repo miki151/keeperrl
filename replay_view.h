@@ -74,13 +74,13 @@ class ReplayView : public View {
       return readValue<optional<int>>(LoggingToken::GET_NUMBER);
     }
 
-    virtual optional<View::MinionAction> getMinionAction(const vector<GameInfo::PlayerInfo>&,
+    virtual optional<View::MinionAction> getMinionAction(const vector<PlayerInfo>&,
         UniqueEntity<Creature>::Id& current) override {
       return readValue<optional<View::MinionAction>>(LoggingToken::GET_MINION_ACTION);
     }
 
-    virtual optional<int> chooseItem(const vector<GameInfo::PlayerInfo>&, UniqueEntity<Creature>::Id& current,
-        const vector<GameInfo::ItemInfo>& items, double* scrollpos) override {
+    virtual optional<int> chooseItem(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,
+        const vector<ItemInfo>& items, double* scrollpos) override {
       return readValue<optional<int>>(LoggingToken::CHOOSE_ITEM);
     }
 

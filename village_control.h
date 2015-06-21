@@ -18,7 +18,6 @@
 
 #include "event.h"
 #include "task.h"
-#include "game_info.h"
 #include "collective_control.h"
 
 enum class VillageBehaviourId {

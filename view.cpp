@@ -20,6 +20,7 @@
 #include "collective.h"
 #include "spell.h"
 #include "item.h"
+#include "game_info.h"
 
 View::ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
@@ -71,7 +72,7 @@ View::View() {
 View::~View() {
 }
 
-GameInfo::CreatureInfo::CreatureInfo(const Creature* c) 
+CreatureInfo::CreatureInfo(const Creature* c) 
     : viewId(c->getViewObject().id()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
@@ -80,14 +81,14 @@ GameInfo::CreatureInfo::CreatureInfo(const Creature* c)
       morale(c->getMorale()) {
 }
 
-string GameInfo::PlayerInfo::getFirstName() const {
+string PlayerInfo::getFirstName() const {
   if (!firstName.empty())
     return firstName;
   else
     return capitalFirst(name);
 }
 
-string GameInfo::PlayerInfo::getTitle() const {
+string PlayerInfo::getTitle() const {
   string title = name;
   for (int i : All(adjectives)) {
     title = adjectives[i] + " " + title;
@@ -98,17 +99,17 @@ string GameInfo::PlayerInfo::getTitle() const {
   return capitalFirst(title);
 }
 
-vector<GameInfo::PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
-  vector<GameInfo::PlayerInfo::SkillInfo> ret;
+vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
+  vector<PlayerInfo::SkillInfo> ret;
   for (auto skill : c->getDiscreteSkills())
-    ret.push_back({Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
+    ret.push_back(PlayerInfo::SkillInfo{Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
   for (SkillId id : ENUM_ALL(SkillId))
     if (!Skill::get(id)->isDiscrete() && c->getSkillValue(Skill::get(id)) > 0)
-      ret.push_back({Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
+      ret.push_back(PlayerInfo::SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
   return ret;
 }
 
-void GameInfo::PlayerInfo::readFrom(const Creature* c) {
+void PlayerInfo::readFrom(const Creature* c) {
   firstName = c->getFirstName().get_value_or("");
   name = c->getName().bare();
   adjectives = c->getMainAdjectives();
@@ -116,7 +117,7 @@ void GameInfo::PlayerInfo::readFrom(const Creature* c) {
   weaponName = weapon ? weapon->getName() : "";
   viewId = c->getViewObject().id();
   morale = c->getMorale();
-  typedef GameInfo::PlayerInfo::AttributeInfo::Id AttrId;
+  typedef PlayerInfo::AttributeInfo::Id AttrId;
   attributes = {
     { "Attack",
       AttrId::ATT,
@@ -172,7 +173,7 @@ void GameInfo::PlayerInfo::readFrom(const Creature* c) {
   }
 }
 
-GameInfo::CreatureInfo& GameInfo::BandInfo::getMinion(UniqueEntity<Creature>::Id id) {
+CreatureInfo& CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) {
   for (auto& elem : minions)
     if (elem.uniqueId == id)
       return elem;

@@ -86,8 +86,8 @@ class Player : public Controller, public CreatureView {
   void takeOffAction();
   void hideAction();
   void displayInventory();
-  void handleItems(const vector<UniqueEntity<Item>::Id>&, GameInfo::ItemInfo::Action);
-  vector<GameInfo::ItemInfo::Action> getItemActions(const vector<Item*>&) const;
+  void handleItems(const vector<UniqueEntity<Item>::Id>&, ItemAction);
+  vector<ItemAction> getItemActions(const vector<Item*>&) const;
   bool interruptedByEnemy();
   void travelAction();
   void targetAction();
@@ -113,10 +113,10 @@ class Player : public Controller, public CreatureView {
   vector<PlayerMessage> SERIAL(messages);
   vector<string> SERIAL(messageHistory);
   string getRemainingString(LastingEffect) const;
-  vector<GameInfo::ItemInfo> getItemInfos(const vector<Item*>&) const;
-  GameInfo::ItemInfo getItemInfo(const vector<Item*>&) const;
-  GameInfo::ItemInfo getApplySquareInfo(const Square*) const;
-  GameInfo::ItemInfo getApplySquareInfo(const string& question, ViewId viewId) const;
+  vector<ItemInfo> getItemInfos(const vector<Item*>&) const;
+  ItemInfo getItemInfo(const vector<Item*>&) const;
+  ItemInfo getApplySquareInfo(const Square*) const;
+  ItemInfo getApplySquareInfo(const string& question, ViewId viewId) const;
   optional<SquareApplyType> getUsableSquareApplyType() const;
   struct TimePosInfo {
     Vec2 pos;

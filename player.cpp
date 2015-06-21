@@ -31,6 +31,8 @@
 #include "map_memory.h"
 #include "player_message.h"
 #include "square_apply_type.h"
+#include "item_action.h"
+#include "game_info.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -261,40 +263,40 @@ void Player::consumeAction() {
   }
 }
 
-vector<GameInfo::ItemInfo::Action> Player::getItemActions(const vector<Item*>& item) const {
-  vector<GameInfo::ItemInfo::Action> actions;
+vector<ItemAction> Player::getItemActions(const vector<Item*>& item) const {
+  vector<ItemAction> actions;
   if (getCreature()->equip(item[0])) {
-    actions.push_back(GameInfo::ItemInfo::EQUIP);
+    actions.push_back(ItemAction::EQUIP);
   }
   if (getCreature()->applyItem(item[0])) {
-    actions.push_back(GameInfo::ItemInfo::APPLY);
+    actions.push_back(ItemAction::APPLY);
   }
   if (getCreature()->unequip(item[0]))
-    actions.push_back(GameInfo::ItemInfo::UNEQUIP);
+    actions.push_back(ItemAction::UNEQUIP);
   else {
-    actions.push_back(GameInfo::ItemInfo::THROW);
-    actions.push_back(GameInfo::ItemInfo::DROP);
+    actions.push_back(ItemAction::THROW);
+    actions.push_back(ItemAction::DROP);
     if (item.size() > 1)
-      actions.push_back(GameInfo::ItemInfo::DROP_MULTI);
+      actions.push_back(ItemAction::DROP_MULTI);
   }
   return actions;
 }
 
-void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, GameInfo::ItemInfo::Action action) {
+void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemAction action) {
   vector<Item*> items = getCreature()->getEquipment().getItems(
       [&](const Item* it) { return contains(itemIds, it->getUniqueId());});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
   if (items.empty()) // the above assertion fails for unknown reason, so just fail this softly.
     return;
   switch (action) {
-    case GameInfo::ItemInfo::DROP: tryToPerform(getCreature()->drop(items)); break;
-    case GameInfo::ItemInfo::DROP_MULTI:
+    case ItemAction::DROP: tryToPerform(getCreature()->drop(items)); break;
+    case ItemAction::DROP_MULTI:
       if (auto num = model->getView()->getNumber("Drop how many " + items[0]->getName(true) + "?", 1, items.size()))
         tryToPerform(getCreature()->drop(getPrefix(items, *num))); break;
-    case GameInfo::ItemInfo::THROW: throwItem(items); break;
-    case GameInfo::ItemInfo::APPLY: applyItem(items); break;
-    case GameInfo::ItemInfo::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
-    case GameInfo::ItemInfo::EQUIP: 
+    case ItemAction::THROW: throwItem(items); break;
+    case ItemAction::APPLY: applyItem(items); break;
+    case ItemAction::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
+    case ItemAction::EQUIP: 
       if (getCreature()->isEquipmentAppropriate(items[0]) || model->getView()->yesOrNoPrompt(
           items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
         tryToPerform(getCreature()->equip(items[0])); break;
@@ -771,7 +773,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
   gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
   gameInfo.time = getCreature()->getTime();
-  GameInfo::PlayerInfo& info = gameInfo.playerInfo;
+  PlayerInfo& info = gameInfo.playerInfo;
   info.readFrom(getCreature());
   info.team.clear();
   for (const Creature* c : getTeam())
@@ -795,8 +797,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
       append(info.inventory, getItemInfos(typeGroups[elem]));
 }
 
-GameInfo::ItemInfo Player::getApplySquareInfo(const string& question, ViewId viewId) const {
-  return CONSTRUCT(GameInfo::ItemInfo,
+ItemInfo Player::getApplySquareInfo(const string& question, ViewId viewId) const {
+  return CONSTRUCT(ItemInfo,
     c.name = question;
     c.fullName = c.name;
     c.description = "Click to " + c.name;
@@ -804,8 +806,8 @@ GameInfo::ItemInfo Player::getApplySquareInfo(const string& question, ViewId vie
     c.viewId = viewId;);
 }
 
-GameInfo::ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
-  return CONSTRUCT(GameInfo::ItemInfo,
+ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
+  return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(true, getCreature()->isBlind());
     c.fullName = stack[0]->getNameAndModifiers(false, getCreature()->isBlind());
     c.description = getCreature()->isBlind() ? "" : stack[0]->getDescription();
@@ -816,10 +818,10 @@ GameInfo::ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
     c.equiped = getCreature()->getEquipment().isEquiped(stack[0]); );
 }
 
-vector<GameInfo::ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
+vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
   map<string, vector<Item*> > stacks = groupBy<Item*, string>(items, 
       [this] (Item* const& item) { return getInventoryItemName(item, false); });
-  vector<GameInfo::ItemInfo> ret;
+  vector<ItemInfo> ret;
   for (auto elem : stacks)
     ret.push_back(getItemInfo(elem.second));
   return ret;

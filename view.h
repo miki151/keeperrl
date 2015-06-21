@@ -20,12 +20,13 @@
 #include "debug.h"
 #include "view_object.h"
 #include "user_input.h"
-#include "game_info.h"
 
 class CreatureView;
 class Level;
 class Jukebox;
 class ProgressMeter;
+class PlayerInfo;
+struct ItemInfo;
 
 class View {
   public:
@@ -148,10 +149,10 @@ class View {
       const string& hint = "") = 0;
 
   struct MinionAction {
-    struct ItemAction {
+    struct MinionItemAction {
       vector<UniqueEntity<Item>::Id> SERIAL(ids);
       optional<EquipmentSlot> SERIAL(slot);
-      GameInfo::ItemInfo::Action SERIAL(action);
+      ItemAction SERIAL(action);
       template <class Archive> 
       void serialize(Archive& ar, const unsigned int version) {
         ar & SVAR(ids) & SVAR(slot) & SVAR(action);
@@ -174,18 +175,18 @@ class View {
       void serialize(Archive& ar, const unsigned int version) {
       }
     };
-    variant<MinionTask, ItemAction, ControlAction, RenameAction, BanishAction> SERIAL(action);
+    variant<MinionTask, MinionItemAction, ControlAction, RenameAction, BanishAction> SERIAL(action);
     template <class Archive> 
     void serialize(Archive& ar, const unsigned int version) {
       ar & SVAR(action);
     }
   };
 
-  virtual optional<MinionAction> getMinionAction(const vector<GameInfo::PlayerInfo>&,
+  virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&,
       UniqueEntity<Creature>::Id& current) = 0;
 
-  virtual optional<int> chooseItem(const vector<GameInfo::PlayerInfo>&, UniqueEntity<Creature>::Id& current,
-      const vector<GameInfo::ItemInfo>& items, double* scrollpos) = 0;
+  virtual optional<int> chooseItem(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,
+      const vector<ItemInfo>& items, double* scrollpos) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;

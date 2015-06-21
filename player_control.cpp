@@ -40,6 +40,7 @@
 #include "encyclopedia.h"
 #include "map_memory.h"
 #include "square_factory.h"
+#include "item_action.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -387,22 +388,22 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
   }
 }
 
-void PlayerControl::minionEquipmentAction(Creature* creature, const View::MinionAction::ItemAction& action) {
+void PlayerControl::minionEquipmentAction(Creature* creature, const View::MinionAction::MinionItemAction& action) {
   switch (action.action) {
-    case GameInfo::ItemInfo::Action::DROP:
+    case ItemAction::DROP:
       for (auto id : action.ids)
         getCollective()->getMinionEquipment().discard(id);
       break;
-    case GameInfo::ItemInfo::Action::REPLACE:
+    case ItemAction::REPLACE:
       if (action.slot)
         addEquipment(creature, *action.slot);
       else
         addConsumableItem(creature);
-    case GameInfo::ItemInfo::Action::LOCK:
+    case ItemAction::LOCK:
       for (auto id : action.ids)
         getCollective()->getMinionEquipment().setLocked(creature, id, true);
       break;
-    case GameInfo::ItemInfo::Action::UNLOCK:
+    case ItemAction::UNLOCK:
       for (auto id : action.ids)
         getCollective()->getMinionEquipment().setLocked(creature, id, false);
       break;
@@ -411,8 +412,8 @@ void PlayerControl::minionEquipmentAction(Creature* creature, const View::Minion
   }
 }
 
-vector<GameInfo::PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
-  vector<GameInfo::PlayerInfo> minions;
+vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
+  vector<PlayerInfo> minions;
   for (Creature* c : getCreatures())
     if (c->getSpeciesName() == like->getSpeciesName()) {
       minions.emplace_back();
@@ -425,11 +426,11 @@ vector<GameInfo::PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
       minions.back().creatureId = c->getUniqueId();
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minions.back());
-      minions.back().actions = { GameInfo::PlayerInfo::CONTROL, GameInfo::PlayerInfo::RENAME };
+      minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
       if (!getCollective()->hasTrait(c, MinionTrait::LEADER))
-        minions.back().actions.push_back(GameInfo::PlayerInfo::BANISH);
+        minions.back().actions.push_back(PlayerInfo::BANISH);
     }
-  sort(minions.begin(), minions.end(), [] (const GameInfo::PlayerInfo& m1, const GameInfo::PlayerInfo& m2) {
+  sort(minions.begin(), minions.end(), [] (const PlayerInfo& m1, const PlayerInfo& m2) {
         return m1.level > m2.level;
       });
   return minions;
@@ -438,7 +439,7 @@ vector<GameInfo::PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
 void PlayerControl::minionView(Creature* creature) {
   UniqueEntity<Creature>::Id currentId = creature->getUniqueId();
   while (1) {
-    vector<GameInfo::PlayerInfo> group = getMinionGroup(creature);
+    vector<PlayerInfo> group = getMinionGroup(creature);
     if (group.empty())
       return;
     bool isId = false;
@@ -458,7 +459,7 @@ void PlayerControl::minionView(Creature* creature) {
           getCollective()->setMinionTask(c, boost::get<MinionTask>(actionInfo->action));
           break;
         case 1:
-          minionEquipmentAction(c, boost::get<View::MinionAction::ItemAction>(actionInfo->action));
+          minionEquipmentAction(c, boost::get<View::MinionAction::MinionItemAction>(actionInfo->action));
           break;
         case 2:
           controlSingle(c);
@@ -475,8 +476,8 @@ void PlayerControl::minionView(Creature* creature) {
   }
 }
 
-static GameInfo::ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked) {
-  return CONSTRUCT(GameInfo::ItemInfo,
+static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked) {
+  return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(true);
     c.fullName = stack[0]->getNameAndModifiers(false);
     c.description = stack[0]->getDescription();
@@ -485,7 +486,7 @@ static GameInfo::ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, 
       c.slot = stack[0]->getEquipmentSlot();
     c.viewId = stack[0]->getViewObject().id();
     c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
-    c.actions = {GameInfo::ItemInfo::DROP};
+    c.actions = {ItemAction::DROP};
     c.equiped = equiped;
     c.locked = locked;
     c.pending = pending;);
@@ -504,20 +505,20 @@ static ViewId getSlotViewId(EquipmentSlot slot) {
   }
 }
 
-static GameInfo::ItemInfo getEmptySlotItem(EquipmentSlot slot) {
-  return CONSTRUCT(GameInfo::ItemInfo,
+static ItemInfo getEmptySlotItem(EquipmentSlot slot) {
+  return CONSTRUCT(ItemInfo,
     c.name = "";
     c.fullName = "";
     c.description = "";
     c.slot = slot;
     c.number = 1;
     c.viewId = getSlotViewId(slot);
-    c.actions = {GameInfo::ItemInfo::REPLACE};
+    c.actions = {ItemAction::REPLACE};
     c.equiped = false;
     c.pending = false;);
 }
 
-void PlayerControl::fillEquipment(Creature* creature, GameInfo::PlayerInfo& info) {
+void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) {
   if (!creature->isHumanoid())
     return;
   int index = 0;
@@ -546,7 +547,7 @@ void PlayerControl::fillEquipment(Creature* creature, GameInfo::PlayerInfo& info
       bool equiped = creature->getEquipment().isEquiped(item);
       bool locked = getCollective()->getMinionEquipment().isLocked(creature, item->getUniqueId());
       info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked));
-      info.inventory.back().actions.push_back(locked ? GameInfo::ItemInfo::UNLOCK : GameInfo::ItemInfo::LOCK);
+      info.inventory.back().actions.push_back(locked ? ItemAction::UNLOCK : ItemAction::LOCK);
     }
     if (creature->getEquipment().getMaxItems(slot) > items.size()) {
       info.inventory.push_back(getEmptySlotItem(slot));
@@ -581,13 +582,13 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
         const Creature* c = NOTNULL(getCollective()->getMinionEquipment().getOwner(it));
         return " owned by " + c->getName().a() + " (level " + toString(c->getExpLevel()) + ")";});
   vector<Item*> allStacked;
-  vector<GameInfo::ItemInfo> options;
+  vector<ItemInfo> options;
   for (Item* it : currentItems)
     options.push_back(getItemInfo({it}, true, false, false));
   for (auto elem : concat(Item::stackItems(availableItems), usedStacks)) {
     options.emplace_back(getItemInfo(elem.second, false, false, false));
     if (const Creature* c = getCollective()->getMinionEquipment().getOwner(elem.second.at(0)))
-      options.back().owner = GameInfo::CreatureInfo(c);
+      options.back().owner = CreatureInfo(c);
     allStacked.push_back(elem.second.front());
   }
   auto creatureId = creature->getUniqueId();
@@ -683,7 +684,7 @@ void PlayerControl::handleLibrary(View* view) {
   handleLibrary(view);
 }
 
-typedef GameInfo::BandInfo::Button Button;
+typedef CollectiveInfo::Button Button;
 
 optional<pair<ViewId, int>> PlayerControl::getCostObj(CostInfo cost) const {
   if (cost.value() > 0 && !Collective::resourceInfo.at(cost.id()).dontDisplay)
@@ -739,20 +740,20 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                getCostObj(getRoomCost(elem.type, elem.cost, elem.costExponent)),
                description,
                (elem.noCredit && !availableNow) ?
-                  GameInfo::BandInfo::Button::GRAY_CLICKABLE : GameInfo::BandInfo::Button::ACTIVE });
+                  CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
            }
            break;
       case BuildInfo::DIG:
-           buttons.push_back({ViewId::DIG_ICON, "Dig or cut tree", none, "", GameInfo::BandInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::DIG_ICON, "Dig or cut tree", none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::FETCH:
-           buttons.push_back({ViewId::FETCH_ICON, "Fetch items", none, "", GameInfo::BandInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::FETCH_ICON, "Fetch items", none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::CLAIM_TILE:
-           buttons.push_back({ViewId::KEEPER_FLOOR, "Claim tile", none, "", GameInfo::BandInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::KEEPER_FLOOR, "Claim tile", none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::DISPATCH:
-           buttons.push_back({ViewId::IMP, "Prioritize task", none, "", GameInfo::BandInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::IMP, "Prioritize task", none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::TRAP: {
              BuildInfo::TrapInfo& elem = button.trapInfo;
@@ -765,27 +766,27 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                "[" + toString(
                    getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}).size()) + "]",
                getImpCost() <= getCollective()->numResource(ResourceId::MANA) ?
-                  GameInfo::BandInfo::Button::ACTIVE : GameInfo::BandInfo::Button::GRAY_CLICKABLE});
+                  CollectiveInfo::Button::ACTIVE : CollectiveInfo::Button::GRAY_CLICKABLE});
            break; }
       case BuildInfo::DESTROY:
            buttons.push_back({ViewId::DESTROY_BUTTON, "Remove construction", none, "",
-                   GameInfo::BandInfo::Button::ACTIVE});
+                   CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::FORBID_ZONE:
-           buttons.push_back({ViewId::FORBID_ZONE, "Forbid zone", none, "", GameInfo::BandInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::FORBID_ZONE, "Forbid zone", none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::GUARD_POST:
-           buttons.push_back({ViewId::GUARD_POST, "Guard post", none, "", GameInfo::BandInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::GUARD_POST, "Guard post", none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::TORCH:
-           buttons.push_back({ViewId::TORCH, "Torch", none, "", GameInfo::BandInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::TORCH, "Torch", none, "", CollectiveInfo::Button::ACTIVE});
            break;
     }
     vector<string> unmetReqText;
     for (auto& req : button.requirements)
       if (!meetsRequirement(req)) {
         unmetReqText.push_back("Requires " + getRequirementText(req) + ".");
-        buttons.back().state = GameInfo::BandInfo::Button::INACTIVE;
+        buttons.back().state = CollectiveInfo::Button::INACTIVE;
       }
     buttons.back().help = combineSentences(concat({button.help}, unmetReqText));
     buttons.back().hotkey = button.hotkey;
@@ -814,16 +815,16 @@ static GameInfo::VillageInfo::Village getVillageInfo(const Collective* col) {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
- /* gameInfo.bandInfo.deities.clear();
+ /* gameInfo.collectiveInfo.deities.clear();
   for (Deity* deity : Deity::getDeities())
-    gameInfo.bandInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});*/
+    gameInfo.collectiveInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});*/
   gameInfo.villageInfo.villages.clear();
   for (const Collective* col : model->getMainVillains())
     gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
   gameInfo.infoType = GameInfo::InfoType::BAND;
-  GameInfo::BandInfo& info = gameInfo.bandInfo;
+  CollectiveInfo& info = gameInfo.collectiveInfo;
   info.buildings = fillButtons(getBuildInfo());
   info.libraryButtons = fillButtons(libraryInfo);
   //info.tasks = getCollective()->getMinionTaskStrings();

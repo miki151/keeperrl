@@ -25,6 +25,7 @@
 #include "event.h"
 #include "visibility_map.h"
 #include "cost_info.h"
+#include "game_info.h"
 
 class Model;
 class Technology;
@@ -177,7 +178,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   };
   bool meetsRequirement(Requirement) const;
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
-  vector<GameInfo::BandInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
+  vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   vector<BuildInfo> getBuildInfo() const;
   static vector<BuildInfo> getBuildInfo(const Level*, const Tribe*);
   static vector<BuildInfo> workshopInfo;
@@ -188,7 +189,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   optional<pair<ViewId, int>> getCostObj(CostInfo) const;
   CostInfo getRoomCost(SquareType, CostInfo baseCost, double exponent) const;
 
-  typedef GameInfo::BandInfo::TechButton TechButton;
+  typedef CollectiveInfo::TechButton TechButton;
 
   int getMinLibrarySize() const;
 
@@ -208,12 +209,12 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   int getNumMinions() const;
   void minionView(Creature* creature);
-  vector<GameInfo::PlayerInfo> getMinionGroup(Creature* like);
-  void minionEquipmentAction(Creature* creature, const View::MinionAction::ItemAction&);
+  vector<PlayerInfo> getMinionGroup(Creature* like);
+  void minionEquipmentAction(Creature* creature, const View::MinionAction::MinionItemAction&);
   void addEquipment(Creature*, EquipmentSlot);
   void addConsumableItem(Creature*);
   void handleEquipment(View* view, Creature* creature);
-  void fillEquipment(Creature*, GameInfo::PlayerInfo&);
+  void fillEquipment(Creature*, PlayerInfo&);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   static ViewObject getTrapObject(TrapType, bool built);

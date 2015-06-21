@@ -384,8 +384,8 @@ void WindowView::rebuildGui() {
         guiBuilder.drawPlayerOverlay(overlays, gameInfo.playerInfo);
         break;
     case GameInfo::InfoType::BAND:
-        right = guiBuilder.drawRightBandInfo(gameInfo.bandInfo, gameInfo.villageInfo);
-        guiBuilder.drawBandOverlay(overlays, gameInfo.bandInfo);
+        right = guiBuilder.drawRightBandInfo(gameInfo.collectiveInfo, gameInfo.villageInfo);
+        guiBuilder.drawBandOverlay(overlays, gameInfo.collectiveInfo);
         bottom = guiBuilder.drawBottomBandInfo(gameInfo);
         rightBarWidth = rightBarWidthCollective;
         bottomBarHeight = bottomBarHeightCollective;
@@ -698,7 +698,7 @@ optional<string> WindowView::getText(const string& title, const string& value, i
   return returnQueue.pop();
 }
 
-optional<View::MinionAction> WindowView::getMinionAction(const vector<GameInfo::PlayerInfo>& minions,
+optional<View::MinionAction> WindowView::getMinionAction(const vector<PlayerInfo>& minions,
     UniqueEntity<Creature>::Id& currentMinion) {
   RenderLock lock(renderMutex);
   uiLock = true;
@@ -734,8 +734,8 @@ optional<View::MinionAction> WindowView::getMinionAction(const vector<GameInfo::
   return returnQueue.pop();
 }
 
-optional<int> WindowView::chooseItem(const vector<GameInfo::PlayerInfo>& minions, UniqueEntity<Creature>::Id& cur,
-    const vector<GameInfo::ItemInfo>& items, double* scrollPos1) {
+optional<int> WindowView::chooseItem(const vector<PlayerInfo>& minions, UniqueEntity<Creature>::Id& cur,
+    const vector<ItemInfo>& items, double* scrollPos1) {
   RenderLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);

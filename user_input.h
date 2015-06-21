@@ -19,7 +19,6 @@
 #include "util.h"
 #include "enum_variant.h"
 #include "unique_entity.h"
-#include "game_info.h"
 
 enum class UserInputId {
 // common
@@ -76,7 +75,7 @@ struct TeamLeaderInfo : public NamedTupleBase<TeamId, UniqueEntity<Creature>::Id
   NAME_ELEM(1, creatureId);
 };
 
-struct InventoryItemInfo : public NamedTupleBase<vector<UniqueEntity<Item>::Id>, GameInfo::ItemInfo::Action> {
+struct InventoryItemInfo : public NamedTupleBase<vector<UniqueEntity<Item>::Id>, ItemAction> {
   NAMED_TUPLE_STUFF(InventoryItemInfo);
   NAME_ELEM(0, items);
   NAME_ELEM(1, action);

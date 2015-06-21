@@ -90,12 +90,12 @@ int GuiBuilder::getActiveLibrary() const {
   return activeLibrary;
 }
 
-PGuiElem GuiBuilder::getButtonLine(GameInfo::BandInfo::Button button, int num, int& active,
+PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, int& active,
     CollectiveTab tab) {
   vector<PGuiElem> line;
   line.push_back(gui.viewObject(button.viewId, tilesOk));
   vector<int> widths { 35 };
-  if (button.state != GameInfo::BandInfo::Button::ACTIVE)
+  if (button.state != CollectiveInfo::Button::ACTIVE)
     line.push_back(gui.label(button.name + " " + button.count, colors[ColorId::GRAY], button.hotkey));
   else
     line.push_back(gui.conditional(
@@ -111,7 +111,7 @@ PGuiElem GuiBuilder::getButtonLine(GameInfo::BandInfo::Button button, int num, i
     widths.push_back(25);
   }
   function<void()> buttonFun;
-  if (button.state != GameInfo::BandInfo::Button::INACTIVE)
+  if (button.state != CollectiveInfo::Button::INACTIVE)
     buttonFun = [this, &active, num, tab] {
       active = num;
       hideBuildingOverlay = false;
@@ -126,16 +126,16 @@ PGuiElem GuiBuilder::getButtonLine(GameInfo::BandInfo::Button button, int num, i
       gui.horizontalList(std::move(line), widths, button.cost ? 2 : 0));
 }
 
-vector<PGuiElem> GuiBuilder::drawButtons(vector<GameInfo::BandInfo::Button> buttons, int& active,
+vector<PGuiElem> GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons, int& active,
     CollectiveTab tab) {
   vector<PGuiElem> elems;
   vector<PGuiElem> invisible;
-  vector<GameInfo::BandInfo::Button> groupedButtons;
+  vector<CollectiveInfo::Button> groupedButtons;
   for (int i = 0; i <= buttons.size(); ++i) {
     if (!groupedButtons.empty() && (i == buttons.size() || buttons[i].groupName != groupedButtons[0].groupName)) {
       int firstItem = i - groupedButtons.size();
       int lastItem = i - 1;
-      GameInfo::BandInfo::Button button1 = groupedButtons.front();
+      CollectiveInfo::Button button1 = groupedButtons.front();
       function<void()> buttonFun = [=, &active] {
         active = firstItem;
         hideBuildingOverlay = false;
@@ -163,7 +163,7 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<GameInfo::BandInfo::Button> butt
   return elems;
 }
 
-PGuiElem GuiBuilder::drawBuildings(GameInfo::BandInfo& info) {
+PGuiElem GuiBuilder::drawBuildings(CollectiveInfo& info) {
   return gui.scrollable(gui.verticalList(drawButtons(info.buildings, activeBuilding, CollectiveTab::BUILDINGS),
       legendLineHeight), &buildingsScroll, &scrollbarsHeld);
 }
@@ -179,7 +179,7 @@ PGuiElem GuiBuilder::getStandingGui(double standing) {
     return gui.label("good", color);
 }
 
-PGuiElem GuiBuilder::drawDeities(GameInfo::BandInfo& info) {
+PGuiElem GuiBuilder::drawDeities(CollectiveInfo& info) {
   vector<PGuiElem> lines;
   for (int i : All(info.deities)) {
     lines.push_back(gui.stack(
@@ -192,7 +192,7 @@ PGuiElem GuiBuilder::drawDeities(GameInfo::BandInfo& info) {
   return gui.verticalList(std::move(lines), legendLineHeight);
 }
 
-PGuiElem GuiBuilder::drawTechnology(GameInfo::BandInfo& info) {
+PGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
   vector<PGuiElem> lines = drawButtons(info.libraryButtons, activeLibrary, CollectiveTab::TECHNOLOGY);
   for (int i : All(info.techButtons)) {
     vector<PGuiElem> line;
@@ -258,7 +258,7 @@ void GuiBuilder::addUpsCounterTick() {
 const int resourceSpace = 110;
 
 PGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
-  GameInfo::BandInfo& info = gameInfo.bandInfo;
+  CollectiveInfo& info = gameInfo.collectiveInfo;
   GameInfo::SunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
   vector<PGuiElem> topLine;
   for (int i : All(info.numResource)) {
@@ -272,7 +272,8 @@ PGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   vector<PGuiElem> bottomLine;
   bottomLine.push_back(getTurnInfoGui(gameInfo.time));
   bottomLine.push_back(getSunlightInfoGui(sunlightInfo));
-  bottomLine.push_back(gui.label("population: " + toString(gameInfo.bandInfo.minionCount) + " / " + toString(gameInfo.bandInfo.minionLimit)));
+  bottomLine.push_back(gui.label("population: " + toString(gameInfo.collectiveInfo.minionCount) + " / " +
+        toString(gameInfo.collectiveInfo.minionLimit)));
   int numTop = topLine.size();
   int numBottom = bottomLine.size();
   return gui.verticalList(makeVec<PGuiElem>(
@@ -296,7 +297,7 @@ string GuiBuilder::getCurrentGameSpeedName() const {
     return getGameSpeedName(gameSpeed);
 }
 
-PGuiElem GuiBuilder::drawRightBandInfo(GameInfo::BandInfo& info, GameInfo::VillageInfo& villageInfo) {
+PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, GameInfo::VillageInfo& villageInfo) {
   vector<PGuiElem> buttons = makeVec<PGuiElem>(
       gui.icon(gui.BUILDING),
       gui.icon(gui.MINION),
@@ -426,7 +427,7 @@ static Color getBonusColor(int bonus) {
   return colors[ColorId::WHITE];
 }
 
-typedef GameInfo::PlayerInfo::AttributeInfo::Id AttrId;
+typedef PlayerInfo::AttributeInfo::Id AttrId;
 
 static GuiFactory::IconId getAttrIcon(AttrId id) {
   switch (id) {
@@ -439,7 +440,7 @@ static GuiFactory::IconId getAttrIcon(AttrId id) {
   }
 }
 
-vector<PGuiElem> GuiBuilder::drawPlayerAttributes(const vector<GameInfo::PlayerInfo::AttributeInfo>& attr) {
+vector<PGuiElem> GuiBuilder::drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>& attr) {
   vector<PGuiElem> ret;
   for (auto& elem : attr)
     ret.push_back(gui.stack(getTooltip({elem.name, elem.help}),
@@ -450,7 +451,7 @@ vector<PGuiElem> GuiBuilder::drawPlayerAttributes(const vector<GameInfo::PlayerI
 }
 
 PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
-  GameInfo::PlayerInfo& info = gameInfo.playerInfo;
+  PlayerInfo& info = gameInfo.playerInfo;
   vector<PGuiElem> topLine = drawPlayerAttributes(info.attributes);
   vector<PGuiElem> bottomLine;
   bottomLine.push_back(getTurnInfoGui(gameInfo.time));
@@ -463,7 +464,7 @@ PGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
 }
 
 static int viewObjectWidth = 27;
-vector<string> GuiBuilder::getItemHint(const GameInfo::ItemInfo& item) {
+vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
   vector<string> out { capitalFirst(item.fullName)};
   if (!item.description.empty())
     out.push_back(item.description);
@@ -476,7 +477,7 @@ vector<string> GuiBuilder::getItemHint(const GameInfo::ItemInfo& item) {
   return out;
 }
 
-PGuiElem GuiBuilder::getItemLine(const GameInfo::ItemInfo& item, function<void(Rectangle)> onClick,
+PGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)> onClick,
     function<void()> onMultiClick) {
   vector<PGuiElem> line;
   vector<int> widths;
@@ -527,7 +528,7 @@ int GuiBuilder::getScrollPos(int index, int count) {
   return max(0, min(count - 1, index - 3));
 }
 
-void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, GameInfo::PlayerInfo& info) {
+void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
   if (info.lyingItems.empty()) {
     playerOverlayFocused = false;
     itemIndex = -1;
@@ -583,7 +584,7 @@ struct KeyInfo {
   Event::KeyEvent event;
 };
 
-PGuiElem GuiBuilder::drawPlayerHelp(GameInfo::PlayerInfo& info) {
+PGuiElem GuiBuilder::drawPlayerHelp(PlayerInfo& info) {
   vector<PGuiElem> lines;
   vector<KeyInfo> bottomKeys = {
       { "Enter", "Interact or pick up", {Keyboard::Return}},
@@ -613,17 +614,17 @@ PGuiElem GuiBuilder::drawPlayerHelp(GameInfo::PlayerInfo& info) {
   return gui.verticalList(std::move(lines), legendLineHeight);
 }
 
-static string getActionText(GameInfo::ItemInfo::Action a) {
+static string getActionText(ItemAction a) {
   switch (a) {
-    case GameInfo::ItemInfo::DROP: return "drop";
-    case GameInfo::ItemInfo::DROP_MULTI: return "drop some";
-    case GameInfo::ItemInfo::EQUIP: return "equip";
-    case GameInfo::ItemInfo::THROW: return "throw";
-    case GameInfo::ItemInfo::UNEQUIP: return "remove";
-    case GameInfo::ItemInfo::APPLY: return "apply";
-    case GameInfo::ItemInfo::REPLACE: return "replace";
-    case GameInfo::ItemInfo::LOCK: return "lock";
-    case GameInfo::ItemInfo::UNLOCK: return "unlock";
+    case ItemAction::DROP: return "drop";
+    case ItemAction::DROP_MULTI: return "drop some";
+    case ItemAction::EQUIP: return "equip";
+    case ItemAction::THROW: return "throw";
+    case ItemAction::UNEQUIP: return "remove";
+    case ItemAction::APPLY: return "apply";
+    case ItemAction::REPLACE: return "replace";
+    case ItemAction::LOCK: return "lock";
+    case ItemAction::UNLOCK: return "unlock";
   }
 }
 
@@ -657,7 +658,7 @@ void GuiBuilder::drawMiniMenu(vector<PGuiElem> elems, function<bool(int)> callba
 
 }
 
-optional<GameInfo::ItemInfo::Action> GuiBuilder::getItemChoice(const GameInfo::ItemInfo& itemInfo, Vec2 menuPos,
+optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos,
     bool autoDefault) {
   if (itemInfo.actions.empty())
     return none;
@@ -715,7 +716,7 @@ optional<GameInfo::ItemInfo::Action> GuiBuilder::getItemChoice(const GameInfo::I
   }
 }
 
-vector<PGuiElem> GuiBuilder::drawSkillsList(const GameInfo::PlayerInfo& info) {
+vector<PGuiElem> GuiBuilder::drawSkillsList(const PlayerInfo& info) {
   vector<PGuiElem> lines;
   if (!info.skills.empty()) {
     lines.push_back(gui.label("Skills", colors[ColorId::YELLOW]));
@@ -730,7 +731,7 @@ vector<PGuiElem> GuiBuilder::drawSkillsList(const GameInfo::PlayerInfo& info) {
 const int spellsPerRow = 5;
 const Vec2 spellIconSize = Vec2(47, 47);
 
-PGuiElem GuiBuilder::getSpellIcon(const GameInfo::PlayerInfo::Spell& spell, bool active) {
+PGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active) {
   vector<PGuiElem> ret = makeVec<PGuiElem>(
       getTooltip({spell.name, spell.help}),
       gui.spellIcon(spell.id));
@@ -743,7 +744,7 @@ PGuiElem GuiBuilder::getSpellIcon(const GameInfo::PlayerInfo::Spell& spell, bool
   return gui.stack(std::move(ret));
 }
 
-vector<PGuiElem> GuiBuilder::drawSpellsList(const GameInfo::PlayerInfo& info, bool active) {
+vector<PGuiElem> GuiBuilder::drawSpellsList(const PlayerInfo& info, bool active) {
   vector<PGuiElem> list;
   if (!info.spells.empty()) {
     vector<PGuiElem> line;
@@ -758,7 +759,7 @@ vector<PGuiElem> GuiBuilder::drawSpellsList(const GameInfo::PlayerInfo& info, bo
   return list;
 }
 
-vector<PGuiElem> GuiBuilder::drawEffectsList(const GameInfo::PlayerInfo& info) {
+vector<PGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
   vector<PGuiElem> lines;
   for (auto effect : info.effects)
     lines.push_back(gui.stack(
@@ -767,7 +768,7 @@ vector<PGuiElem> GuiBuilder::drawEffectsList(const GameInfo::PlayerInfo& info) {
   return lines;
 }
 
-PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
+PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(info.getTitle(), colors[ColorId::WHITE]));
   list.addElem(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
@@ -814,7 +815,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(GameInfo::PlayerInfo& info) {
       gui.scrollable(list.buildVerticalList(), &inventoryScroll), -5, 0, 0, 0);
 }
 
-PGuiElem GuiBuilder::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
+PGuiElem GuiBuilder::drawRightPlayerInfo(PlayerInfo& info) {
   vector<PGuiElem> buttons = makeVec<PGuiElem>(
     gui.icon(gui.DIPLOMACY),
     gui.icon(gui.HELP));
@@ -840,7 +841,7 @@ PGuiElem GuiBuilder::drawRightPlayerInfo(GameInfo::PlayerInfo& info) {
   return gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
 }
 
-typedef GameInfo::CreatureInfo CreatureInfo;
+typedef CreatureInfo CreatureInfo;
 
 struct CreatureMapElem {
   ViewId viewId;
@@ -860,7 +861,7 @@ static map<string, CreatureMapElem> getCreatureMap(vector<CreatureInfo>& creatur
   return creatureMap;
 }
 
-PGuiElem GuiBuilder::drawMinions(GameInfo::BandInfo& info) {
+PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
   map<string, CreatureMapElem> creatureMap = getCreatureMap(info.minions);
   map<string, CreatureMapElem> enemyMap = getCreatureMap(info.enemies);
   vector<PGuiElem> list;
@@ -979,7 +980,7 @@ bool GuiBuilder::showMorale() const {
 
 const int taskMapWindowWidth = 400;
 
-void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
+void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
   if (info.taskMap.empty())
     return;
   vector<PGuiElem> lines;
@@ -1005,7 +1006,7 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& 
 
 const int minionWindowWidth = 300;
 
-void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
+void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
   if (showTasks) {
     drawTasksOverlay(ret, info);
     return;
@@ -1038,7 +1039,7 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo
       OverlayInfo::TOP_RIGHT});
 }
 
-void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
+void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
   if (activeBuilding == -1 || info.buildings[activeBuilding].groupName.empty() || hideBuildingOverlay)
     return;
   string groupName = info.buildings[activeBuilding].groupName;
@@ -1060,7 +1061,7 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, GameInfo::BandIn
       OverlayInfo::TOP_RIGHT});
 }
 
-void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, GameInfo::BandInfo& info) {
+void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
   switch (collectiveTab) {
     case CollectiveTab::MINIONS: return drawMinionsOverlay(ret, info);
     case CollectiveTab::BUILDINGS: return drawBuildingsOverlay(ret, info);
@@ -1350,7 +1351,7 @@ static optional<GuiFactory::IconId> getMoraleIcon(double morale) {
     return none;
 }
 
-PGuiElem GuiBuilder::drawMinionButtons(const vector<GameInfo::PlayerInfo>& minions,
+PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions,
     UniqueEntity<Creature>::Id& current) {
   vector<PGuiElem> list;
   CHECK(!minions.empty());
@@ -1396,7 +1397,7 @@ static string getTaskText(MinionTask option) {
   }
 }
 
-static ColorId getTaskColor(GameInfo::PlayerInfo::MinionTaskInfo info) {
+static ColorId getTaskColor(PlayerInfo::MinionTaskInfo info) {
   if (info.inactive)
     return ColorId::GRAY;
   if (info.current)
@@ -1405,7 +1406,7 @@ static ColorId getTaskColor(GameInfo::PlayerInfo::MinionTaskInfo info) {
     return ColorId::WHITE;
 }
 
-vector<PGuiElem> GuiBuilder::drawItemMenu(const vector<GameInfo::ItemInfo>& items, ItemMenuCallback callback,
+vector<PGuiElem> GuiBuilder::drawItemMenu(const vector<ItemInfo>& items, ItemMenuCallback callback,
     bool doneBut) {
   vector<PGuiElem> lines;
   for (int i : All(items))
@@ -1417,7 +1418,7 @@ vector<PGuiElem> GuiBuilder::drawItemMenu(const vector<GameInfo::ItemInfo>& item
   return lines;
 }
 
-PGuiElem GuiBuilder::drawActivityButton(const GameInfo::PlayerInfo& minion, MinionMenuCallback callback) {
+PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion, MinionMenuCallback callback) {
   string curTask = "(none)";
   for (auto task : minion.minionTasks)
     if (task.current)
@@ -1448,16 +1449,16 @@ vector<PGuiElem> GuiBuilder::drawAttributesOnPage(vector<PGuiElem>&& attrs) {
         gui.horizontalList(std::move(lines[1]), elemWidth));
 }
 
-vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const vector<GameInfo::ItemInfo>& items,
+vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const vector<ItemInfo>& items,
     MinionMenuCallback callback) {
   if (items.empty())
     return {};
   vector<PGuiElem> lines;
   vector<PGuiElem> itemElems = drawItemMenu(items,
       [=](Rectangle butBounds, optional<int> index) {
-        const GameInfo::ItemInfo& item = items[*index];
+        const ItemInfo& item = items[*index];
         if (auto choice = getItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0), true))
-          callback(View::MinionAction{View::MinionAction::ItemAction{item.ids, item.slot, *choice}});
+          callback(View::MinionAction{View::MinionAction::MinionItemAction{item.ids, item.slot, *choice}});
       });
   lines.push_back(gui.label("Equipment", colors[ColorId::YELLOW]));
   for (int i : All(itemElems)) {
@@ -1467,28 +1468,28 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const vector<GameInfo::
   }
   lines.push_back(gui.stack(
       gui.label("[add consumable]", colors[ColorId::LIGHT_BLUE]),
-      gui.button([=] { callback(View::MinionAction{View::MinionAction::ItemAction{{}, none,
-          GameInfo::ItemInfo::REPLACE}});})));
+      gui.button([=] { callback(View::MinionAction{View::MinionAction::MinionItemAction{{}, none,
+          ItemAction::REPLACE}});})));
   return lines;
 }
 
-vector<PGuiElem> GuiBuilder::drawMinionActions(const GameInfo::PlayerInfo& minion, MinionMenuCallback callback) {
+vector<PGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, MinionMenuCallback callback) {
   vector<PGuiElem> line;
   for (auto action : minion.actions)
     switch (action) {
-      case GameInfo::PlayerInfo::CONTROL:
+      case PlayerInfo::CONTROL:
         line.push_back(gui.stack(
             gui.label("[Control]", colors[ColorId::LIGHT_BLUE]),
             gui.button([=] { callback(View::MinionAction{View::MinionAction::ControlAction()}); })));
         break;
-      case GameInfo::PlayerInfo::RENAME:
+      case PlayerInfo::RENAME:
         line.push_back(gui.stack(
             gui.label("[Rename]", colors[ColorId::LIGHT_BLUE]),
             gui.button([=] { 
                 if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel."))
                 callback(View::MinionAction{View::MinionAction::RenameAction{*name}}); })));
         break;
-      case GameInfo::PlayerInfo::BANISH:
+      case PlayerInfo::BANISH:
         line.push_back(gui.stack(
             gui.label("[Banish]", colors[ColorId::LIGHT_BLUE]),
             gui.button([=] { callback(View::MinionAction{View::MinionAction::BanishAction()}); })));
@@ -1506,7 +1507,7 @@ vector<PGuiElem> GuiBuilder::joinLists(vector<PGuiElem>&& v1, vector<PGuiElem>&&
   return ret;
 }
 
-PGuiElem GuiBuilder::drawMinionPage(const GameInfo::PlayerInfo& minion, MinionMenuCallback callback) {
+PGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, MinionMenuCallback callback) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(minion.getTitle()));
   list.addElem(gui.horizontalList(drawMinionActions(minion, callback), 140));
@@ -1538,7 +1539,7 @@ PGuiElem GuiBuilder::drawMinionPage(const GameInfo::PlayerInfo& minion, MinionMe
       topMargin, GuiFactory::TOP);
 }
 
-PGuiElem GuiBuilder::drawMinionMenu(const vector<GameInfo::PlayerInfo>& minions,
+PGuiElem GuiBuilder::drawMinionMenu(const vector<PlayerInfo>& minions,
     UniqueEntity<Creature>::Id& current, MinionMenuCallback callback) {
   vector<PGuiElem> minionPages;
   for (int i : All(minions)) {

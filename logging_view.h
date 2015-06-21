@@ -88,13 +88,13 @@ class LoggingView : public View {
       return logAndGet(delegate->getNumber(title, min, max, increments), LoggingToken::GET_NUMBER);
     }
 
-    virtual optional<View::MinionAction> getMinionAction(const vector<GameInfo::PlayerInfo>& info,
+    virtual optional<View::MinionAction> getMinionAction(const vector<PlayerInfo>& info,
         UniqueEntity<Creature>::Id& current) override {
       return logAndGet(delegate->getMinionAction(info, current), LoggingToken::GET_MINION_ACTION);
     }
 
-    virtual optional<int> chooseItem(const vector<GameInfo::PlayerInfo>& info, UniqueEntity<Creature>::Id& current,
-        const vector<GameInfo::ItemInfo>& items, double* scrollpos) override {
+    virtual optional<int> chooseItem(const vector<PlayerInfo>& info, UniqueEntity<Creature>::Id& current,
+        const vector<ItemInfo>& items, double* scrollpos) override {
       return logAndGet(delegate->chooseItem(info, current, items, scrollpos), LoggingToken::CHOOSE_ITEM);
     }
 
