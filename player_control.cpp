@@ -1328,7 +1328,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             (getCollective()->getMarkHighlight(pos) == HighlightType::DIG ||
              getCollective()->getMarkHighlight(pos) == HighlightType::CUT_TREE);
         if (markedToDig && selection != SELECT) {
-          getCollective()->dontDig(pos);
+          getCollective()->cancelMarkedTask(pos);
           selection = DESELECT;
         } else
         if (!markedToDig && selection != DESELECT) {
@@ -1345,7 +1345,14 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         break;
         }
     case BuildInfo::FETCH:
-        getCollective()->fetchAllItems(pos);
+        if (getCollective()->isMarked(pos) &&
+            getCollective()->getMarkHighlight(pos) == HighlightType::FETCH_ITEMS && selection != SELECT) {
+          getCollective()->cancelMarkedTask(pos);
+          selection = DESELECT;
+        } else if (selection != DESELECT && !getCollective()->isMarked(pos)) {
+          getCollective()->fetchAllItems(pos);
+          selection = SELECT;
+        }
         break;
     case BuildInfo::CLAIM_TILE:
         if (getCollective()->isKnownSquare(pos)

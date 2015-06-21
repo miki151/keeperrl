@@ -225,7 +225,7 @@ class Collective : public Task::Callback {
   void addTorch(Vec2);
   void fetchAllItems(Vec2);
   void dig(Vec2);
-  void dontDig(Vec2);
+  void cancelMarkedTask(Vec2);
   void cutTree(Vec2);
   double getDangerLevel(bool includeExecutions = true) const;
   bool isMarked(Vec2) const;

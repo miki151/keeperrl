@@ -1757,7 +1757,7 @@ void Collective::dig(Vec2 pos) {
   taskMap.markSquare(pos, HighlightType::DIG, Task::construction(this, pos, SquareId::FLOOR));
 }
 
-void Collective::dontDig(Vec2 pos) {
+void Collective::cancelMarkedTask(Vec2 pos) {
   taskMap.unmarkSquare(pos);
 }
 

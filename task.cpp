@@ -218,6 +218,10 @@ class PickItem : public NonTransferable {
     return "Pick item " + toString(position);
   }
 
+  virtual void cancel() override {
+    callback->onCantPickItem(items);
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(!pickedUp);
     if (!itemsExist(c->getLevel()->getSafeSquare(position))) {
@@ -749,6 +753,11 @@ class Chain : public Task {
 
   virtual bool canTransfer() override {
     return tasks.at(current)->canTransfer();
+  }
+
+  virtual void cancel() override {
+    for (int i = current; i < tasks.size(); ++i)
+      tasks[i]->cancel();
   }
 
   virtual MoveInfo getMove(Creature* c) override {
