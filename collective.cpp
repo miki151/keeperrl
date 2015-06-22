@@ -629,7 +629,7 @@ MoveInfo Collective::getTeamMemberMove(Creature* c) {
             else
               return c->wait();
         } else
-        if (c == leader)
+        if (c == leader && !teams->isPersistent(team))
           return c->wait();
     }
   return NoMove;
@@ -824,44 +824,6 @@ vector<Vec2> Collective::getSpawnPos(const vector<Creature*>& creatures) {
   return spawnPos;
 }
 
-template <typename T>
-static set<T> addVector(const set<T>& s, const vector<T>& v) {
-  set<T> ret(s);
-  ret.insert(v.begin(), v.end());
-  return ret;
-}
-
-template <typename T>
-static set<T> removeVector(const set<T>& s, const vector<T>& v) {
-  set<T> ret(s);
-  for (auto elem : v)
-    ret.erase(elem);
-  return ret;
-}
-
-vector<Vec2> Collective::getBedPositions(const vector<PCreature>& creatures, const ImmigrantInfo& info) {
-  SpawnType spawnType = *creatures[0]->getSpawnType();
-  SquareType dormType = getDormInfo()[spawnType].dormType;
-  optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
-  vector<Vec2> bedPos;
-  for (int i : All(creatures))
-    for (int j : Range(30)) {
-      optional<Vec2> newPos;
-      if (!bedType)
-        newPos = chooseRandom(removeVector(getSquares(dormType), bedPos));
-      else if (getCreatures(spawnType).size() + bedPos.size() < getSquares(*bedType).size()) {
-        newPos = chooseRandom(removeVector(getSquares(*bedType), bedPos));
-      } else
-        newPos = chooseBedPos(removeVector(getSquares(dormType), bedPos), addVector(getSquares(*bedType), bedPos));
-      if (newPos && !contains(bedPos, *newPos) &&
-          (!info.spawnAtDorm || level->getSafeSquare(*newPos)->canEnter(creatures[i].get()))) {
-        bedPos.push_back(*newPos);
-        break;
-      }
-    }
-  return bedPos;
-}
-
 bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCreature> creatures) {
   CHECK(!info.spawnAtDorm);
   auto creatureRefs = extractRefs(creatures);
@@ -892,53 +854,69 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   if (info.techId && !hasTech(*info.techId))
     return false;
   vector<PCreature> creatures;
-  for (int i : (info.groupSize ? Range(Random.get(*info.groupSize)) : Range(1)))
+  int groupSize = info.groupSize ? Random.get(*info.groupSize) : 1;
+  groupSize = min(groupSize, getMaxPopulation() - getPopulationSize());
+  for (int i : Range(groupSize))
     creatures.push_back(CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this)));
   if (!creatures[0]->getSpawnType())
     return considerNonSpawnImmigrant(info, std::move(creatures));
-  CHECK(creatures[0]->getSpawnType()) << "No spawn type for immigrant " << creatures[0]->getName().bare();
   SpawnType spawnType = *creatures[0]->getSpawnType();
   SquareType dormType = getDormInfo()[spawnType].dormType;
-  if (!hasResource(getSpawnCost(spawnType, creatures.size())))
+  if (!hasResource(getSpawnCost(spawnType, groupSize)))
     return false;
-  takeResource(getSpawnCost(spawnType, creatures.size()));
-  if (getSquares(dormType).empty())
-    return false;
-  optional<SquareType> bedType = getDormInfo()[spawnType].getBedType();
-  vector<Vec2> bedPos = getBedPositions(creatures, info);
-  if (info.groupSize) {
-    if (bedPos.size() < info.groupSize->getStart())
-      return false;
-    if (bedPos.size() < creatures.size())
-      creatures.resize(bedPos.size());
-  }
-  else if (bedPos.empty())
-    return false;
-  auto creatureRefs = extractRefs(creatures);
   vector<Vec2> spawnPos;
-  if (info.spawnAtDorm)
-    spawnPos = bedPos;
-  else {
-    spawnPos = getSpawnPos(creatureRefs);
-    if (spawnPos.size() < creatures.size())
-      return false;
+  if (info.spawnAtDorm) {
+    for (Vec2 v : randomPermutation(getSquares(dormType)))
+      if (getLevel()->getSafeSquare(v)->canEnter(creatures[spawnPos.size()].get())) {
+        spawnPos.push_back(v);
+        if (spawnPos.size() >= creatures.size())
+          break;
+      }
+  } else
+    spawnPos = getSpawnPos(extractRefs(creatures));
+  groupSize = min<int>(groupSize, spawnPos.size());
+  if (auto bedType = getDormInfo()[spawnType].getBedType()) {
+    int neededBeds = bySpawnType[spawnType].size() + groupSize - getSquares(*bedType).size() -
+        constructions->getSquareCount(*bedType);
+    if (neededBeds > 0) {
+      int numBuilt = tryBuildingBeds(spawnType, neededBeds);
+      if (numBuilt == 0)
+        return false;
+      groupSize -= neededBeds - numBuilt;
+    }
   }
-  if (info.autoTeam)
+  if (creatures.size() > groupSize)
+    creatures.resize(groupSize);
+  takeResource(getSpawnCost(spawnType, creatures.size()));
+  if (info.autoTeam && groupSize > 1)
     teams->activate(teams->createPersistent(extractRefs(creatures)));
+  addNewCreatureMessage(extractRefs(creatures));
   for (int i : All(creatures)) {
     Creature* c = creatures[i].get();
-    if (i == 0)
+    if (i == 0 && groupSize > 1) // group leader
       c->increaseExpLevel(2);
     addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
-    if (bedType) {
-      taskMap->addPriorityTask(Task::createBed(this, bedPos[i], dormType, *bedType), c);
-      Debug() << c->getName().bare() << " creating bed " << bedPos[i];
-    }
     minionPayment[c] = {info.salary, 0.0, 0};
     minionAttraction[c] = info.attractions;
   }
-  addNewCreatureMessage(creatureRefs);
   return true;
+}
+
+int Collective::tryBuildingBeds(SpawnType spawnType, int numBeds) {
+  int numBuilt = 0;
+  SquareType bedType = *getDormInfo()[spawnType].getBedType();
+  SquareType dormType = getDormInfo()[spawnType].dormType;
+  set<Vec2> bedPos = getSquares(bedType);
+  set<Vec2> dormPos = getSquares(dormType);
+  for (int i : Range(numBeds))
+    if (auto newPos = chooseBedPos(dormPos, bedPos)) {
+      ++numBuilt;
+      addConstruction(*newPos, bedType, CostInfo::noCost(), false, false);
+      bedPos.insert(*newPos);
+      dormPos.erase(*newPos);
+    } else
+      break;
+  return numBuilt;
 }
 
 void Collective::addNewCreatureMessage(const vector<Creature*>& creatures) {
@@ -956,7 +934,7 @@ double Collective::getImmigrantChance(const ImmigrantInfo& info) {
     return 0;
   double result = 0;
   if (info.attractions.empty())
-    result = 1;
+    return -1;
   for (auto& attraction : info.attractions) {
     double value = getAttractionValue(attraction.attraction);
     if (value < 0.001 && attraction.mandatory)
@@ -973,9 +951,23 @@ void Collective::considerImmigration() {
   bool ok = false;
   for (auto& elem : config->getImmigrantInfo()) {
     weights.push_back(getImmigrantChance(elem));
-    if (weights.back() > 0)
+    if (weights.back() > 0 || weights.back() < -0.9)
       ok = true;
   }
+  double avgWeight = 0; 
+  int numPositive = 0;
+  for (double elem : weights)
+    if (elem > 0) {
+      ++numPositive;
+      avgWeight += elem;
+    }
+  for (double& elem : weights)
+    if (elem < -0.9) {
+      if (numPositive == 0)
+        elem = 1;
+      else
+        elem = avgWeight / numPositive;
+    }
   if (!ok)
     return;
   for (int i : Range(10))
@@ -1848,7 +1840,7 @@ void Collective::onConstructed(Vec2 pos, const SquareType& type) {
   if (taskMap->getMarked(pos))
     taskMap->unmarkSquare(pos);
   if (constructions->containsSquare(pos))
-    constructions->getSquare(pos).setBuilt();
+    constructions->removeSquare(pos);
   if (type == SquareId::FLOOR) {
     for (Vec2 v : pos.neighbors4())
       if (constructions->containsTorch(v) &&
@@ -2344,7 +2336,8 @@ void Collective::removeTorch(Vec2 pos) {
 
 void Collective::addTorch(Vec2 pos) {
   CHECK(canPlaceTorch(pos));
-  constructions->addTorch(pos, ConstructionMap::TorchInfo((*getAdjacentWall(getLevel(), pos) - pos).getCardinalDir()));
+  constructions->addTorch(pos,
+      ConstructionMap::TorchInfo((*getAdjacentWall(getLevel(), pos) - pos).getCardinalDir()));
 }
 
 bool Collective::canPlaceTorch(Vec2 pos) const {

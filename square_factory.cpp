@@ -1031,6 +1031,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.name = "floor";
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.canDestroy = true;
+            c.constructions[SquareId::BED] = 10;
             c.vision = VisionId::NORMAL;));
     case SquareId::TORCH: return new Torch(ViewObject(ViewId::TORCH, ViewLayer::FLOOR, "Torch"), "torch");
     case SquareId::STOCKPILE:
@@ -1078,6 +1079,7 @@ Square* SquareFactory::getPtr(SquareType s) {
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.canDestroy = true;
+            c.constructions[SquareId::BEAST_CAGE] = 10;
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.vision = VisionId::NORMAL;));
     case SquareId::TRAINING_ROOM:
@@ -1162,6 +1164,7 @@ Square* SquareFactory::getPtr(SquareType s) {
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.canDestroy = true;
+            c.constructions[SquareId::GRAVE] = 10;
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.vision = VisionId::NORMAL;));
     case SquareId::GRAVE:

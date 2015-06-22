@@ -374,9 +374,9 @@ class Collective : public Task::Callback {
   void considerHealingLeader();
   bool considerImmigrant(const ImmigrantInfo&);
   bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
-  vector<Vec2> getBedPositions(const vector<PCreature>&, const ImmigrantInfo& info);
   vector<Vec2> getSpawnPos(const vector<Creature*>&);
   void considerImmigration();
+  int tryBuildingBeds(SpawnType spawnType, int numBeds);
   void considerBirths();
   void considerWeaponWarning();
   vector<Creature*> SERIAL(creatures);

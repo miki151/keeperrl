@@ -1349,13 +1349,13 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<View::ListEle
 }
 
 static optional<GuiFactory::IconId> getMoraleIcon(double morale) {
-  if (morale >= 0.5)
+  if (morale >= 0.7)
     return GuiFactory::MORALE_4;
-  if (morale >= 0.01)
+  if (morale >= 0.2)
     return GuiFactory::MORALE_3;
-  if (morale < -0.5)
+  if (morale < -0.7)
     return GuiFactory::MORALE_1;
-  if (morale < -0.01)
+  if (morale < -0.2)
     return GuiFactory::MORALE_2;
   else
     return none;
