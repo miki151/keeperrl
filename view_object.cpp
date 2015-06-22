@@ -180,6 +180,9 @@ vector<string> ViewObject::getLegend() const {
     ret.push_back("Sleeping");
   if (position.x > -1)
     ret.push_back(toString(position.x) + ", " + toString(position.y));
+#ifndef RELEASE
+  ret.push_back("Morale " + getAttributeString(Attribute::MORALE));
+#endif
   append(ret, adjectives);
   return ret;
 }

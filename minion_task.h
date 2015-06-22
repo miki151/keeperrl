@@ -44,4 +44,11 @@ RICH_ENUM(MinionTrait,
 );
 
 
+RICH_ENUM(SpawnType,
+  HUMANOID,
+  UNDEAD,
+  BEAST,
+  DEMON
+);
+
 #endif

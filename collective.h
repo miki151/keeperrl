@@ -41,13 +41,6 @@ class Technology;
 class CollectiveConfig;
 class MinionAttraction;
 
-RICH_ENUM(SpawnType,
-  HUMANOID,
-  UNDEAD,
-  BEAST,
-  DEMON
-);
-
 RICH_ENUM(CollectiveWarning,
     DIGGING,
     RESOURCE_STORAGE,
@@ -58,6 +51,7 @@ RICH_ENUM(CollectiveWarning,
     NO_HATCHERY,
     WORKSHOP,
     NO_WEAPONS,
+    LOW_MORALE,
     GRAVES,
     CHESTS,
     NO_PRISON,
@@ -379,6 +373,8 @@ class Collective : public Task::Callback {
   int tryBuildingBeds(SpawnType spawnType, int numBeds);
   void considerBirths();
   void considerWeaponWarning();
+  void considerMoraleWarning();
+  void decayMorale();
   vector<Creature*> SERIAL(creatures);
   EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   EnumMap<SpawnType, vector<Creature*>> SERIAL(bySpawnType);

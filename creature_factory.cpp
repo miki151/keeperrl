@@ -25,7 +25,6 @@
 #include "square.h"
 #include "view_object.h"
 #include "view_id.h"
-#include "collective.h"
 #include "location.h"
 #include "creature.h"
 #include "model.h"
@@ -36,6 +35,7 @@
 #include "spell_map.h"
 #include "event.h"
 #include "tribe.h"
+#include "square_type.h"
 
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {

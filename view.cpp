@@ -17,7 +17,6 @@
 
 #include "view.h"
 #include "creature.h"
-#include "collective.h"
 #include "spell.h"
 #include "item.h"
 #include "game_info.h"

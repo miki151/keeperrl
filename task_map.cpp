@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "task_map.h"
-#include "collective.h"
 #include "creature.h"
+#include "task.h"
 
 template <class Archive>
 void TaskMap::serialize(Archive& ar, const unsigned int version) {

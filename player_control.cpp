@@ -215,6 +215,7 @@ string PlayerControl::getWarningText(Collective::Warning w) {
     case Warning::NO_HATCHERY: return "You need to build a pigsty.";
     case Warning::WORKSHOP: return "Build a workshop to produce equipment and traps.";
     case Warning::NO_WEAPONS: return "You need weapons for your minions.";
+    case Warning::LOW_MORALE: return "Kill some enemies or summon a succubus to increase morale of your minions.";
     case Warning::GRAVES: return "You need a graveyard to collect corpses";
     case Warning::CHESTS: return "You need to build a treasure room.";
     case Warning::NO_PRISON: return "You need to build a prison.";

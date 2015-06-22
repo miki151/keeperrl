@@ -885,6 +885,8 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
       groupSize -= neededBeds - numBuilt;
     }
   }
+  if (groupSize < 1)
+    return false;
   if (creatures.size() > groupSize)
     creatures.resize(groupSize);
   takeResource(getSpawnCost(spawnType, creatures.size()));
@@ -1080,10 +1082,22 @@ void Collective::considerWeaponWarning() {
   setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
 }
 
+void Collective::considerMoraleWarning() {
+  vector<Creature*> minions = getCreatures(MinionTrait::FIGHTER);
+  setWarning(Warning::LOW_MORALE,
+      filter(minions, [] (const Creature* c) { return c->getMorale() < -0.2; }).size() > minions.size() / 2);
+}
+
+void Collective::decayMorale() {
+  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
+    c->addMorale(-c->getMorale() * 0.0008);
+}
+
 void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
   considerBirths();
+  decayMorale();
   if (Random.rollD(1.0 / config->getImmigrantFrequency()))
     considerImmigration();
 /*  if (nextPayoutTime > -1 && time > nextPayoutTime) {
@@ -1093,6 +1107,7 @@ void Collective::tick(double time) {
   cashPayouts();*/
   if (config->getWarnings() && Random.roll(5)) {
     considerWeaponWarning();
+    considerMoraleWarning();
     setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
     setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
     setWarning(Warning::MORE_LIGHTS,
