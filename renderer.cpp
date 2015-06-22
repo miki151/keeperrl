@@ -210,16 +210,26 @@ Vec2 Renderer::getSize() {
   return Vec2(display->getSize().x, display->getSize().y);
 }
 
-void Renderer::initialize(bool fullscreen) {
+bool Renderer::isFullscreen() {
+  return fullscreen;
+}
+
+void Renderer::initialize(bool fs, int mode) {
+  fullscreen = fs;
   renderThreadId = currentThreadId();
   if (display)
     display->close();
   if (fullscreen)
-    display = new RenderWindow(sf::VideoMode::getFullscreenModes()[0], "KeeperRL", sf::Style::Fullscreen);
+    display = new RenderWindow(sf::VideoMode::getFullscreenModes()[mode], "KeeperRL", sf::Style::Fullscreen);
   else
     display = new RenderWindow(sf::VideoMode::getDesktopMode(), "KeeperRL");
   sfView = new sf::View(display->getDefaultView());
   display->setVerticalSyncEnabled(true);
+}
+
+vector<string> Renderer::getFullscreenResolutions() {
+  return transform2<string>(sf::VideoMode::getFullscreenModes(),
+      [] (const VideoMode& m) { return toString(m.width) + "x" + toString(m.height);});
 }
 
 void Renderer::printSystemInfo(ostream& out) {

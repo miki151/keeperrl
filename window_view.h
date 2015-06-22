@@ -184,6 +184,7 @@ class WindowView: public View {
   GuiBuilder guiBuilder;
   void drawMenuBackground(double barState, double mouthState);
   atomic<int> fullScreenTrigger;
+  atomic<int> fullScreenResolution;
 };
 
 

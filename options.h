@@ -24,6 +24,7 @@ RICH_ENUM(OptionId,
   MUSIC,
   KEEP_SAVEFILES,
   FULLSCREEN,
+  FULLSCREEN_RESOLUTION,
   ONLINE,
   AUTOSAVE,
 
@@ -46,18 +47,21 @@ class View;
 
 class Options {
   public:
-  typedef variant<bool, string> Value;
+  typedef variant<int, string> Value;
   Options(const string& path, const string& overrides);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
+  int getChoiceValue(OptionId);
   void handle(View*, OptionSet, int lastIndex = 0);
   bool handleOrExit(View*, OptionSet, int lastIndex = -1);
-  typedef function<void(bool)> Trigger;
+  typedef function<void(int)> Trigger;
   void addTrigger(OptionId, Trigger trigger);
   void setDefaultString(OptionId, const string&);
+  void setChoices(OptionId, const vector<string>&);
 
   private:
   void setValue(OptionId, Value);
+  optional<Value> readValue(OptionId, const string&);
   void changeValue(OptionId, const Options::Value&, View*);
   string getValueString(OptionId, Options::Value);
   Value getValue(OptionId);
@@ -66,6 +70,7 @@ class Options {
   string filename;
   EnumMap<OptionId, string> defaultStrings;
   EnumMap<OptionId, optional<Value>> overrides;
+  EnumMap<OptionId, vector<string>> choices;
 };
 
 

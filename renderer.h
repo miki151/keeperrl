@@ -93,7 +93,9 @@ class Renderer {
   };
 
   Renderer(const string& windowTile, Vec2 nominalTileSize, const string& fontPath);
-  void initialize(bool fullscreen);
+  void initialize(bool fullscreen, int mode = 0);
+  bool isFullscreen();
+  static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(string s);
@@ -174,6 +176,7 @@ class Renderer {
   Font symbolFont;
   Font& getFont(Renderer::FontId);
   thread::id renderThreadId;
+  bool fullscreen;
 };
 
 #endif

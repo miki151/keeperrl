@@ -24,6 +24,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
+  {OptionId::FULLSCREEN_RESOLUTION, 0},
   {OptionId::ONLINE, 1},
   {OptionId::AUTOSAVE, 1},
   {OptionId::FAST_IMMIGRATION, 0},
@@ -40,6 +41,7 @@ const map<OptionId, string> names {
   {OptionId::KEEP_SAVEFILES, "Keep save files"},
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
+  {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
   {OptionId::ONLINE, "Online exchange of dungeons and highscores"},
   {OptionId::AUTOSAVE, "Autosave"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
@@ -56,6 +58,7 @@ const map<OptionId, string> hints {
   {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
   {OptionId::SHOW_MAP, ""},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
+  {OptionId::FULLSCREEN_RESOLUTION, "Choose resolution for fullscreen mode."},
   {OptionId::ONLINE, "Upload your highscores and retired dungeons to keeperrl.com."},
   {OptionId::AUTOSAVE, "Autosave the game every " + toString(MainLoop::getAutosaveFreq()) + " turns. "
     "The save file will be used to recover in case of a crash."},
@@ -72,6 +75,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::ASCII,
       OptionId::MUSIC,
       OptionId::FULLSCREEN,
+      OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ONLINE,
       OptionId::AUTOSAVE,
 #ifndef RELEASE
@@ -126,18 +130,22 @@ Options::Value Options::getValue(OptionId id) {
 }
 
 bool Options::getBoolValue(OptionId id) {
-  return boost::get<bool>(getValue(id));
+  return boost::get<int>(getValue(id));
 }
 
 string Options::getStringValue(OptionId id) {
   return getValueString(id, getValue(id));
 }
 
+int Options::getChoiceValue(OptionId id) {
+  return boost::get<int>(getValue(id));
+}
+
 void Options::setValue(OptionId id, Value value) {
   auto values = readValues();
   values[id] = value;
   if (triggers.count(id))
-    triggers.at(id)(boost::get<bool>(value));
+    triggers.at(id)(boost::get<int>(value));
   writeValues(values);
 }
 
@@ -146,11 +154,11 @@ void Options::setDefaultString(OptionId id, const string& s) {
 }
 
 static string getOnOff(const Options::Value& value) {
-  return boost::get<bool>(value) ? "on" : "off";
+  return boost::get<int>(value) ? "on" : "off";
 }
 
 static string getYesNo(const Options::Value& value) {
-  return boost::get<bool>(value) ? "yes" : "no";
+  return boost::get<int>(value) ? "yes" : "no";
 }
 
 string Options::getValueString(OptionId id, Options::Value value) {
@@ -174,10 +182,11 @@ string Options::getValueString(OptionId id, Options::Value value) {
         else
           return val;
         }
+    case OptionId::FULLSCREEN_RESOLUTION: return choices[id][boost::get<int>(value)];
   }
 }
 
-static optional<Options::Value> readValue(OptionId id, const string& input) {
+optional<Options::Value> Options::readValue(OptionId id, const string& input) {
   switch (id) {
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_NAME: return Options::Value(input);
@@ -203,9 +212,16 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
               "Leave blank to use a random name."))
           setValue(id, *val);
         break;
+    case OptionId::FULLSCREEN_RESOLUTION:
+        if (auto index = view->chooseFromList("Choose resolution.", View::getListElem(choices[id])))
+          setValue(id, *index);
     default:
-        setValue(id, !boost::get<bool>(value));
+        setValue(id, !boost::get<int>(value));
   }
+}
+
+void Options::setChoices(OptionId id, const vector<string>& v) {
+  choices[id] = v;
 }
 
 bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {

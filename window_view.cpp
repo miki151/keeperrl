@@ -119,11 +119,12 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
         [this](UserInput input) { inputQueue.push(input);},
         [this](const vector<string>& s) { mapGui->setHint(s);},
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);},
-        [this]() { refreshScreen(false);}}), fullScreenTrigger(-1) {}
+        [this]() { refreshScreen(false);}}), fullScreenTrigger(-1), fullScreenResolution(-1) {}
 
 void WindowView::initialize() {
-  renderer.initialize(options->getBoolValue(OptionId::FULLSCREEN));
-  options->addTrigger(OptionId::FULLSCREEN, [this] (bool on) { fullScreenTrigger = on; });
+  renderer.initialize(options->getBoolValue(OptionId::FULLSCREEN), options->getChoiceValue(OptionId::FULLSCREEN_RESOLUTION));
+  options->addTrigger(OptionId::FULLSCREEN, [this] (int on) { fullScreenTrigger = on; });
+  options->addTrigger(OptionId::FULLSCREEN_RESOLUTION, [this] (int index) { fullScreenResolution = index; });
   renderThreadId = currentThreadId();
   vector<ViewLayer> allLayers;
   for (auto l : ENUM_ALL(ViewLayer))
@@ -567,6 +568,11 @@ void WindowView::refreshScreen(bool flipBuffer) {
     if (fullScreenTrigger > -1) {
       renderer.initialize(fullScreenTrigger);
       fullScreenTrigger = -1;
+    }
+    if (fullScreenResolution > -1) {
+      if (renderer.isFullscreen())
+        renderer.initialize(true, fullScreenResolution);
+      fullScreenResolution = -1;
     }
     if (!gameReady) {
       if (useTiles)

@@ -180,6 +180,7 @@ int main(int argc, char* argv[]) {
   if (vars.count("override_settings"))
     overrideSettings = vars["override_settings"].as<string>();
   Options options(userPath + "/options.txt", overrideSettings);
+  options.setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
   Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
   Clock clock;
   GuiFactory guiFactory(renderer, &clock);
