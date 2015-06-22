@@ -160,7 +160,7 @@ class Renderer {
   bool pollEventWorkaroundMouseReleaseBug(Event&);
   bool pollEventOrFromQueue(Event&);
   void considerMouseMoveEvent(Event&);
-  RenderWindow* display = nullptr;
+  RenderWindow display;
   sf::View* sfView;
   bool monkey = false;
   deque<Event> eventQueue;
@@ -175,7 +175,7 @@ class Renderer {
   Font tileFont;
   Font symbolFont;
   Font& getFont(Renderer::FontId);
-  thread::id renderThreadId;
+  optional<thread::id> renderThreadId;
   bool fullscreen;
 };
 

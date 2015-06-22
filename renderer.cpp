@@ -34,7 +34,7 @@ Color transparency(const Color& color, int trans) {
 }
 
 int Renderer::getTextLength(string s) {
-  CHECK(currentThreadId() == renderThreadId);
+  CHECK(currentThreadId() == *renderThreadId);
   static Text t;
   t.setFont(textFont);
   t.setCharacterSize(textSize);
@@ -75,7 +75,7 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s
       }
       t.setPosition(x + ox, y + oy);
       t.setColor(color);
-      display->draw(t);
+      display.draw(t);
   });
 }
 
@@ -119,7 +119,7 @@ void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, doubl
       s.setTexture(t);
       s.setTextureRect(sf::IntRect(0, 0, (kx - px) / scale, (ky - py) / scale));
       s.setScale(scale, scale);
-      display->draw(s);
+      display.draw(s);
   });
 }
 
@@ -150,7 +150,7 @@ void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, Ve
         s.setScale(double(targetSize.x) / size.x, double(targetSize.y) / size.y);
       else
         s.setScale(1, 1);
-      display->draw(s);   
+      display.draw(s);   
   });
 }
 
@@ -165,7 +165,7 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Col
         r.setOutlineColor(*outline);
       } else
         r.setOutlineThickness(0);
-      display->draw(r);
+      display.draw(r);
   });
 }
 
@@ -187,7 +187,7 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
 void Renderer::drawQuads() {
   if (!quads.empty()) {
     vector<Vertex>& quadsTmp = quads;
-    addRenderElem([this, quadsTmp] { display->draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
+    addRenderElem([this, quadsTmp] { display.draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
     quads.clear();
   }
 }
@@ -207,33 +207,42 @@ void Renderer::popLayer() {
 }
 
 Vec2 Renderer::getSize() {
-  return Vec2(display->getSize().x, display->getSize().y);
+  return Vec2(display.getSize().x, display.getSize().y);
 }
 
 bool Renderer::isFullscreen() {
   return fullscreen;
 }
 
+static vector<VideoMode> getResolutions() {
+  static VideoMode desktopMode = sf::VideoMode::getDesktopMode();
+  return filter(sf::VideoMode::getFullscreenModes(),
+      [&] (const VideoMode& m) { return m.bitsPerPixel == desktopMode.bitsPerPixel; });
+}
+
 void Renderer::initialize(bool fs, int mode) {
   fullscreen = fs;
-  renderThreadId = currentThreadId();
-  if (display)
-    display->close();
-  if (fullscreen)
-    display = new RenderWindow(sf::VideoMode::getFullscreenModes()[mode], "KeeperRL", sf::Style::Fullscreen);
+  if (!renderThreadId)
+    renderThreadId = currentThreadId();
   else
-    display = new RenderWindow(sf::VideoMode::getDesktopMode(), "KeeperRL");
-  sfView = new sf::View(display->getDefaultView());
-  display->setVerticalSyncEnabled(true);
+    CHECK(currentThreadId() == *renderThreadId);
+  VideoMode vMode = getResolutions()[mode];
+  CHECK(vMode.isValid());
+  if (fullscreen)
+    display.create(vMode, "KeeperRL", sf::Style::Fullscreen);
+  else
+    display.create(sf::VideoMode::getDesktopMode(), "KeeperRL");
+  sfView = new sf::View(display.getDefaultView());
+  display.setVerticalSyncEnabled(true);
 }
 
 vector<string> Renderer::getFullscreenResolutions() {
-  return transform2<string>(sf::VideoMode::getFullscreenModes(),
+  return transform2<string>(getResolutions(),
       [] (const VideoMode& m) { return toString(m.width) + "x" + toString(m.height);});
 }
 
 void Renderer::printSystemInfo(ostream& out) {
-  sf::ContextSettings settings = display->getSettings();
+  sf::ContextSettings settings = display.getSettings();
   out << "OpenGL Major: " << settings.majorVersion << " minor: " << settings.minorVersion << std::endl;
 }
 
@@ -379,12 +388,12 @@ void Renderer::drawAndClearBuffer() {
       elem();
     renderList[i].clear();
   }
-  display->display();
-  display->clear(Color(0, 0, 0));
+  display.display();
+  display.clear(Color(0, 0, 0));
 }
 
 void Renderer::resize(int width, int height) {
-  display->setView(*(sfView = new sf::View(sf::FloatRect(0, 0, width, height))));
+  display.setView(*(sfView = new sf::View(sf::FloatRect(0, 0, width, height))));
   ++setViewCount;
 }
 
@@ -435,7 +444,7 @@ bool Renderer::pollEventOrFromQueue(Event& ev) {
     ev = eventQueue.front();
     eventQueue.pop_front();
     return true;
-  } else if (display->pollEvent(ev)) {
+  } else if (display.pollEvent(ev)) {
     considerMouseMoveEvent(ev);
     return true;
   } else
@@ -459,7 +468,7 @@ bool Renderer::pollEvent(Event& ev) {
 
 void Renderer::flushEvents(Event::EventType type) {
   Event ev;
-  while (display->pollEvent(ev)) {
+  while (display.pollEvent(ev)) {
     considerMouseMoveEvent(ev);
     if (ev.type != type)
       eventQueue.push_back(ev);
@@ -475,7 +484,7 @@ void Renderer::waitEvent(Event& ev) {
       ev = eventQueue.front();
       eventQueue.pop_front();
     } else {
-      display->waitEvent(ev);
+      display.waitEvent(ev);
       considerMouseMoveEvent(ev);
     }
   }

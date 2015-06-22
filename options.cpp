@@ -215,6 +215,7 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
     case OptionId::FULLSCREEN_RESOLUTION:
         if (auto index = view->chooseFromList("Choose resolution.", View::getListElem(choices[id])))
           setValue(id, *index);
+        break;
     default:
         setValue(id, !boost::get<int>(value));
   }
