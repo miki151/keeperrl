@@ -700,7 +700,7 @@ CreatureFactory CreatureFactory::humanVillage(Tribe* tribe) {
 
 CreatureFactory CreatureFactory::gnomeVillage(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::GNOME },
-      { 1}, {});
+      { 1}, { CreatureId::GNOME_CHIEF});
 }
 
 CreatureFactory CreatureFactory::humanCastle(Tribe* tribe) {
@@ -788,7 +788,7 @@ CreatureFactory CreatureFactory::lizardTown(Tribe* tribe) {
 }
 
 CreatureFactory CreatureFactory::dwarfTown(Tribe* tribe) {
-  return CreatureFactory(tribe, { CreatureId::DWARF}, { 1}, { CreatureId::DWARF_BARON});
+  return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1},{ CreatureId::DWARF_BARON});
 }
 
 CreatureFactory CreatureFactory::splash(Tribe* tribe) {
@@ -1410,6 +1410,12 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionHostile = "\"Die!\"";
           c.minionTasks->setValue(MinionTask::SLEEP, 1);
           c.name = "gnome";);
+    case CreatureId::GNOME_CHIEF:
+      return INHERIT(GNOME,
+          c.viewId = ViewId::GNOME_BOSS;
+          c.attr[AttrType::STRENGTH] += 3;
+          c.attr[AttrType::DEXTERITY] += 3;
+          c.name = "gnome chief";);
     case CreatureId::GOBLIN: 
       return CATTR(
           c.viewId = ViewId::GOBLIN;
@@ -1527,6 +1533,10 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "curses all orcs";
           c.chatReactionHostile = "\"Die!\"";
           c.name = EntityName("dwarf", "dwarves"););
+    case CreatureId::DWARF_FEMALE:
+      return INHERIT(DWARF,
+          c.viewId = ViewId::DWARF_FEMALE;
+          c.gender = Gender::female;);
     case CreatureId::DWARF_BARON: 
       return INHERIT(DWARF,
           c.viewId = ViewId::DWARF_BARON;
@@ -2129,6 +2139,10 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::IRON_BOOTS)
         .add(ItemId::IRON_HELM)
         .add(ItemId::GOLD_PIECE, Random.get(200, 400));
+    case CreatureId::GNOME_CHIEF:
+      return ItemList()
+        .add(ItemId::SWORD)
+        .add(randomBackup());
     case CreatureId::ELF_LORD: 
       return ItemList()
         .add(ItemId::SPECIAL_ELVEN_SWORD)

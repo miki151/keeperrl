@@ -75,7 +75,9 @@ RICH_ENUM(CreatureId,
     SKELETON,
     
     GNOME,
+    GNOME_CHIEF,
     DWARF,
+    DWARF_FEMALE,
     DWARF_BARON,
 
     IMP,
