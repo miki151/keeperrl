@@ -18,8 +18,9 @@
 
 #include "view_object.h"
 #include "renderer.h"
-#include "view_id.h"
 #include "util.h"
+
+enum class ViewId;
 
 class Tile {
   public:
@@ -89,8 +90,6 @@ class Tile {
   vector<ViewId> extraBorderIds;
   static void addTile(ViewId, Tile);
   static void addSymbol(ViewId, Tile);
-  static EnumMap<ViewId, optional<Tile>> tiles;
-  static EnumMap<ViewId, optional<Tile>> symbols;
 };
 
 

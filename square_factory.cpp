@@ -1128,7 +1128,7 @@ Square* SquareFactory::getPtr(SquareType s) {
       return new Furniture(ViewObject(ViewId::JEWELER, ViewLayer::FLOOR, "Jeweler stand"),"jeweler stand", 1,
             SquareApplyType::WORKSHOP);
     case SquareId::MINION_STATUE:
-      return new Furniture(ViewObject(ViewId::CREATURE_ALTAR, ViewLayer::FLOOR, "Statue"),"statue", 0,
+      return new Furniture(ViewObject(ViewId::MINION_STATUE, ViewLayer::FLOOR, "Statue"),"statue", 0,
             SquareApplyType::STATUE);
     case SquareId::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery",

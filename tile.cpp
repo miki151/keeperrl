@@ -16,7 +16,7 @@
 #include "stdafx.h"
 #include "tile.h"
 #include "gui_elem.h"
-
+#include "view_id.h"
 
 Tile::Tile() {
 }
@@ -140,8 +140,8 @@ Tile::TileCoord Tile::getSpriteCoord(DirSet c) const {
   }
 }
 
-EnumMap<ViewId, optional<Tile>> Tile::tiles;
-EnumMap<ViewId, optional<Tile>> Tile::symbols;
+static EnumMap<ViewId, optional<Tile>> tiles;
+static EnumMap<ViewId, optional<Tile>> symbols;
 
 void Tile::addTile(ViewId id, Tile tile) {
   tiles[id] = tile;
@@ -160,7 +160,7 @@ class TileCoordLookup {
     genTiles();
     bool bad = false;
     for (ViewId id : ENUM_ALL(ViewId))
-      if (!Tile::tiles[id]) {
+      if (!tiles[id]) {
         Debug() << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
         bad = true;
       }
@@ -171,7 +171,7 @@ class TileCoordLookup {
     genSymbols();
     bool bad = false;
     for (ViewId id : ENUM_ALL(ViewId))
-      if (!Tile::symbols[id]) {
+      if (!symbols[id]) {
         Debug() << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
         bad = true;
       }
@@ -379,6 +379,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::DOWN_STAIRCASE_PYR, sprite(8, 8, 1).setNoShadow());
     Tile::addTile(ViewId::UP_STAIRCASE_PYR, sprite(7, 8, 1).setNoShadow());
     Tile::addTile(ViewId::WELL, sprite(5, 8, 2).setNoShadow());
+    Tile::addTile(ViewId::MINION_STATUE, sprite("statue").setNoShadow());
     Tile::addTile(ViewId::STATUE1, sprite(6, 5, 2).setNoShadow());
     Tile::addTile(ViewId::STATUE2, sprite(7, 5, 2).setNoShadow());
     Tile::addTile(ViewId::THRONE, sprite(7, 4, 2).setNoShadow());
@@ -651,6 +652,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DOWN_STAIRCASE_PYR, symbol(0x2798, ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::UP_STAIRCASE_PYR, symbol(0x279a, ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::WELL, symbol("0", ColorId::BLUE));
+    Tile::addSymbol(ViewId::MINION_STATUE, symbol("&", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::STATUE1, symbol("&", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::STATUE2, symbol("&", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::THRONE, symbol("Ω", ColorId::YELLOW));
