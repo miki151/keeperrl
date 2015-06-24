@@ -29,6 +29,49 @@
 #include "collective_config.h"
 #include "entity_name.h"
 
+struct Collective::ItemFetchInfo {
+  ItemIndex index;
+  ItemPredicate predicate;
+  vector<SquareType> destination;
+  bool oneAtATime;
+  vector<SquareType> additionalPos;
+  Warning warning;
+};
+
+struct Collective::MinionTaskInfo {
+  enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME, EAT } type;
+  MinionTaskInfo(vector<SquareType>, const string& description, optional<Warning> = none, double cost = 0,
+      bool centerOnly = false);
+  MinionTaskInfo(Type, const string& description, optional<Warning> = none);
+  vector<SquareType> squares;
+  string description;
+  optional<Warning> warning;
+  double cost = 0;
+  bool centerOnly = false;
+};
+
+struct Collective::MinionPaymentInfo : public NamedTupleBase<int, double, int> {
+  NAMED_TUPLE_STUFF(MinionPaymentInfo);
+  NAME_ELEM(0, salary);
+  NAME_ELEM(1, workAmount);
+  NAME_ELEM(2, debt);
+};
+
+struct Collective::CurrentTaskInfo : NamedTupleBase<MinionTask, double> {
+  NAMED_TUPLE_STUFF(CurrentTaskInfo);
+  NAME_ELEM(0, task);
+  NAME_ELEM(1, finishTime);
+};
+struct Collective::GuardPostInfo : public NamedTupleBase<const Creature*> {
+  NAME_ELEM(0, attender);
+};
+
+struct Collective::PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueEntity<Task>::Id> {
+  NAMED_TUPLE_STUFF(PrisonerInfo);
+  NAME_ELEM(0, state);
+  NAME_ELEM(1, task);
+};
+
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Task::Callback)
@@ -75,48 +118,6 @@ SERIALIZABLE(Collective);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
 
-struct Collective::ItemFetchInfo {
-  ItemIndex index;
-  ItemPredicate predicate;
-  vector<SquareType> destination;
-  bool oneAtATime;
-  vector<SquareType> additionalPos;
-  Warning warning;
-};
-
-struct Collective::MinionTaskInfo {
-  enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME, EAT } type;
-  MinionTaskInfo(vector<SquareType>, const string& description, optional<Warning> = none, double cost = 0,
-      bool centerOnly = false);
-  MinionTaskInfo(Type, const string& description, optional<Warning> = none);
-  vector<SquareType> squares;
-  string description;
-  optional<Warning> warning;
-  double cost = 0;
-  bool centerOnly = false;
-};
-
-struct Collective::MinionPaymentInfo : public NamedTupleBase<int, double, int> {
-  NAMED_TUPLE_STUFF(MinionPaymentInfo);
-  NAME_ELEM(0, salary);
-  NAME_ELEM(1, workAmount);
-  NAME_ELEM(2, debt);
-};
-
-struct Collective::CurrentTaskInfo : NamedTupleBase<MinionTask, double> {
-  NAMED_TUPLE_STUFF(CurrentTaskInfo);
-  NAME_ELEM(0, task);
-  NAME_ELEM(1, finishTime);
-};
-struct Collective::GuardPostInfo : public NamedTupleBase<const Creature*> {
-  NAME_ELEM(0, attender);
-};
-
-struct Collective::PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueEntity<Task>::Id> {
-  NAMED_TUPLE_STUFF(PrisonerInfo);
-  NAME_ELEM(0, state);
-  NAME_ELEM(1, task);
-};
 void Collective::setWarning(Warning w, bool state) {
   warnings[w] = state;
 }
