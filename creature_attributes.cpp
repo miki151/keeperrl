@@ -17,9 +17,6 @@
 
 #include "creature_attributes.h"
 #include "creature.h"
-#include "spell_map.h"
-#include "minion_task_map.h"
-#include "skill.h"
 
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
@@ -42,7 +39,6 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(chatReactionHostile)
     & SVAR(firstName)
     & SVAR(speciesName)
-    & SVAR(specialMonster)
     & SVAR(barehandedDamage)
     & SVAR(barehandedAttack)
     & SVAR(attackEffect)
@@ -50,6 +46,8 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(passiveAttack)
     & SVAR(gender)
     & SVAR(bodyParts)
+    & SVAR(injuredBodyParts)
+    & SVAR(lostBodyParts)
     & SVAR(innocent)
     & SVAR(uncorporal)
     & SVAR(fireCreature)
@@ -68,13 +66,14 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(invincible)
     & SVAR(worshipped)
     & SVAR(dontChase)
-    & SVAR(damageMultiplier)
     & SVAR(attributeGain)
     & SVAR(skills)
     & SVAR(spells)
     & SVAR(permanentEffects)
+    & SVAR(lastingEffects)
     & SVAR(minionTasks)
-    & SVAR(groupName);
+    & SVAR(groupName)
+    & SVAR(attrIncrease);
 }
 
 SERIALIZABLE(CreatureAttributes);

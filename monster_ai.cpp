@@ -27,6 +27,8 @@
 #include "equipment.h"
 #include "spell.h"
 #include "event.h"
+#include "entity_name.h"
+#include "skill.h"
 
 class Behaviour {
   public:

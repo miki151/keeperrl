@@ -32,6 +32,7 @@
 #include "poison_gas.h"
 #include "fire.h"
 #include "tribe.h"
+#include "entity_name.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 

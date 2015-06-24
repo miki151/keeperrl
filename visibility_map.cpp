@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "visibility_map.h"
 #include "creature.h"
-
+#include "entity_name.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VisibilityMap);
 

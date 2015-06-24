@@ -27,6 +27,8 @@
 #include "square_factory.h"
 #include "equipment.h"
 #include "tribe.h"
+#include "skill.h"
+#include "entity_name.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {

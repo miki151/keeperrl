@@ -35,6 +35,7 @@
 #include "game_info.h"
 #include "equipment.h"
 #include "spell.h"
+#include "entity_name.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -484,12 +485,6 @@ void Player::makeMove() {
     model->getView()->presentText("", "Judging by the corpses lying around here, you suspect that new circumstances may have arisen.");
     displayGreeting = false;
     model->getView()->updateView(this, false);
-  }
-  for (const Creature* c : getCreature()->getVisibleEnemies()) {
-    if (c->isSpecialMonster() && !contains(specialCreatures, c)) {
-      privateMessage(PlayerMessage(c->getDescription(), PlayerMessage::CRITICAL));
-      specialCreatures.push_back(c);
-    }
   }
   UserInput action = model->getView()->getAction();
   if (travelling && action.getId() == UserInputId::IDLE)

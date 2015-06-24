@@ -34,6 +34,9 @@ enum class AttrType;
 enum class ItemClass;
 enum class EquipmentSlot;
 
+enum class SpawnType;
+enum class CreatureSize;
+
 enum class SquareApplyType;
 enum class SquareId;
 enum class ItemAction;

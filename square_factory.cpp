@@ -31,6 +31,7 @@
 #include "square_apply_type.h"
 #include "event.h"
 #include "tribe.h"
+#include "entity_name.h"
 
 class Staircase : public Square {
   public:

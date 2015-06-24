@@ -20,6 +20,8 @@
 #include "spell.h"
 #include "item.h"
 #include "game_info.h"
+#include "entity_name.h"
+#include "skill.h"
 
 View::ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }

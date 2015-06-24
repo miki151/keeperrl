@@ -34,6 +34,7 @@
 #include "vision.h"
 #include "resource_id.h"
 #include "equipment.h"
+#include "skill.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {

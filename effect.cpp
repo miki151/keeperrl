@@ -31,6 +31,8 @@
 #include "player_message.h"
 #include "equipment.h"
 #include "event.h"
+#include "creature_attributes.h"
+#include "entity_name.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};
