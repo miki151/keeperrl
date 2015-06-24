@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "level_builder.h"
 #include "square_factory.h"
 #include "progress_meter.h"

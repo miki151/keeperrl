@@ -252,7 +252,7 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
   double stolenMaxProb = 1.0 / 300;
   switch (trigger.getId()) {
     case AttackTriggerId::POWER: 
-      return powerMaxProb * powerClosenessFun(self->getCollective()->getWarLevel(), villain->getWarLevel());
+      return powerMaxProb * powerClosenessFun(self->getCollective()->getDangerLevel(), villain->getDangerLevel());
     case AttackTriggerId::SELF_VICTIMS:
       return victimsMaxProb * victimsFun(self->victims.count(villain) ? self->victims.at(villain) : 0, 0);
     case AttackTriggerId::ENEMY_POPULATION:

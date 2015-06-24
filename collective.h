@@ -77,7 +77,6 @@ class Collective : public Task::Callback {
   const Tribe* getTribe() const;
   Tribe* getTribe();
   double getStanding(const Deity*) const;
-  double getWarLevel() const;
   Level* getLevel();
   const Level* getLevel() const;
   double getTime() const;
@@ -110,7 +109,6 @@ class Collective : public Task::Callback {
 
   double getTechCostMultiplier() const;
   double getCraftingMultiplier() const;
-  double getWarMultiplier() const;
   double getBeastMultiplier() const;
   double getUndeadMultiplier() const;
 
@@ -127,7 +125,6 @@ class Collective : public Task::Callback {
   void changeSquareType(Vec2 pos, SquareType from, SquareType to);
   bool containsSquare(Vec2 pos) const;
   bool isKnownSquare(Vec2 pos) const;
-  bool underAttack() const;
 
   double getEfficiency(Vec2) const;
   bool hasEfficiency(Vec2) const;
@@ -143,6 +140,11 @@ class Collective : public Task::Callback {
   void setWarning(Warning, bool state = true);
   bool isWarning(Warning) const;
 
+  struct ResourceInfo;
+  struct MinionTaskInfo;
+
+  map<MinionTask, MinionTaskInfo> getTaskInfo() const;
+
   struct ResourceInfo {
     vector<SquareType> storageType;
     optional<ItemIndex> itemIndex;
@@ -151,22 +153,7 @@ class Collective : public Task::Callback {
     bool dontDisplay;
   };
 
-  struct MinionTaskInfo {
-    enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME, EAT } type;
-    MinionTaskInfo(vector<SquareType>, const string& description, optional<Warning> = none, double cost = 0,
-        bool centerOnly = false);
-    MinionTaskInfo(Type, const string& description, optional<Warning> = none);
-    vector<SquareType> squares;
-    string description;
-    optional<Warning> warning;
-    double cost = 0;
-    bool centerOnly = false;
-  };
-
-  map<MinionTask, MinionTaskInfo> getTaskInfo() const;
-
   const static map<ResourceId, ResourceInfo> resourceInfo;
-
 
   int numResource(ResourceId) const;
   int numResourcePlusDebt(ResourceId) const;
@@ -174,14 +161,7 @@ class Collective : public Task::Callback {
   void takeResource(CostInfo);
   void returnResource(CostInfo);
 
-  struct ItemFetchInfo {
-    ItemIndex index;
-    ItemPredicate predicate;
-    vector<SquareType> destination;
-    bool oneAtATime;
-    vector<SquareType> additionalPos;
-    Warning warning;
-  };
+  struct ItemFetchInfo;
 
   const ConstructionMap& getConstructions() const;
 
@@ -219,7 +199,7 @@ class Collective : public Task::Callback {
   void dig(Vec2);
   void cancelMarkedTask(Vec2);
   void cutTree(Vec2);
-  double getDangerLevel(bool includeExecutions = true) const;
+  double getDangerLevel() const;
   bool isMarked(Vec2) const;
   HighlightType getMarkHighlight(Vec2) const;
   void setPriorityTasks(Vec2);
@@ -248,12 +228,7 @@ class Collective : public Task::Callback {
   static optional<SquareType> getSecondarySquare(SquareType);
   static optional<Vec2> chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds);
 
-  struct MinionPaymentInfo : public NamedTupleBase<int, double, int> {
-    NAMED_TUPLE_STUFF(MinionPaymentInfo);
-    NAME_ELEM(0, salary);
-    NAME_ELEM(1, workAmount);
-    NAME_ELEM(2, debt);
-  };
+  struct MinionPaymentInfo;
 
   int getNextPayoutTime() const;
   int getSalary(const Creature*) const;
@@ -340,11 +315,7 @@ class Collective : public Task::Callback {
 
   HeapAllocated<KnownTiles> SERIAL(knownTiles);
 
-  struct CurrentTaskInfo : NamedTupleBase<MinionTask, double> {
-    NAMED_TUPLE_STUFF(CurrentTaskInfo);
-    NAME_ELEM(0, task);
-    NAME_ELEM(1, finishTime);
-  };
+  struct CurrentTaskInfo;
   map<UniqueEntity<Creature>::Id, CurrentTaskInfo> SERIAL(currentTasks);
   optional<Vec2> getTileToExplore(const Creature*, MinionTask) const;
   PTask getStandardTask(Creature* c);
@@ -393,20 +364,14 @@ class Collective : public Task::Callback {
     NAME_ELEM(1, position);
   } SERIAL(alarmInfo);
   MoveInfo getAlarmMove(Creature* c);
-  struct GuardPostInfo : public NamedTupleBase<const Creature*> {
-    NAME_ELEM(0, attender);
-  };
+  struct GuardPostInfo;
   map<Vec2, GuardPostInfo> SERIAL(guardPosts);
   MoveInfo getGuardPostMove(Creature* c);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
   EntitySet<Item> SERIAL(markedItems);
   ItemPredicate unMarkedItems() const;
   enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };
-  struct PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueEntity<Task>::Id> {
-    NAMED_TUPLE_STUFF(PrisonerInfo);
-    NAME_ELEM(0, state);
-    NAME_ELEM(1, task);
-  };
+  struct PrisonerInfo;
   PTask getPrisonerTask(Creature* prisoner);
   void clearPrisonerTask(Creature* prisoner);
   map<Creature*, PrisonerInfo> SERIAL(prisonerInfo);
@@ -420,7 +385,7 @@ class Collective : public Task::Callback {
   void addMana(double);
   vector<const Creature*> SERIAL(kills);
   int SERIAL(points) = 0;
-  unordered_map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);
+  map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);
   int SERIAL(nextPayoutTime);
   unordered_map<const Creature*, vector<AttractionInfo>> SERIAL(minionAttraction);
   double getAttractionOccupation(const MinionAttraction&);
