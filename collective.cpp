@@ -27,6 +27,7 @@
 #include "minion_task_map.h"
 #include "tribe.h"
 #include "collective_config.h"
+#include "entity_name.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {

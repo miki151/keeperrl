@@ -16,7 +16,6 @@
 #ifndef _CREATURE_H
 #define _CREATURE_H
 
-#include "creature_attributes.h"
 #include "enums.h"
 #include "unique_entity.h"
 #include "creature_action.h"
@@ -37,10 +36,14 @@ class Location;
 class ShortestPath;
 class Equipment;
 class Spell;
+class CreatureAttributes;
+class MinionTaskMap;
+class EntityName;
+class Gender;
+class SpellMap;
 
-class Creature : private CreatureAttributes, public Renderable, public UniqueEntity<Creature> {
+class Creature : public Renderable, public UniqueEntity<Creature> {
   public:
-  typedef CreatureAttributes CreatureAttributes;
   Creature(Tribe*, const CreatureAttributes&, const ControllerFactory&);
   Creature(const ViewObject&, Tribe*, const CreatureAttributes&, const ControllerFactory&);
   virtual ~Creature();
@@ -155,7 +158,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
 
   double getCourage() const;
   void setCourage(double);
-  Gender getGender() const;
+  const Gender& getGender() const;
 
   int getDifficultyPoints() const;
   int getExpLevel() const;
@@ -163,7 +166,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   void increaseExpLevel(double increase);
 
   string getDescription() const;
-  bool isSpecialMonster() const;
   bool isInnocent() const;
 
   void addSkill(Skill* skill);
@@ -298,6 +300,8 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
 
   private:
 
+  SpellMap& getSpellMap();
+  const SpellMap& getSpellMap() const;
   double getExpLevelDouble() const;
   double getRawAttr(AttrType) const;
   bool affects(LastingEffect effect) const;
@@ -319,6 +323,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   BodyPart armOrWing() const;
   pair<double, double> getStanding(const Creature* c) const;
 
+  HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Level* SERIAL(level) = nullptr;
   Vec2 SERIAL(position);
   double SERIAL(time) = 1;
@@ -331,8 +336,6 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   bool SERIAL(dead) = false;
   double SERIAL(lastTick) = 0;
   bool SERIAL(collapsed) = false;
-  EnumMap<BodyPart, int> SERIAL(injuredBodyParts);
-  EnumMap<BodyPart, int> SERIAL(lostBodyParts);
   bool SERIAL(hidden) = false;
   Creature* SERIAL(lastAttacker) = nullptr;
   int SERIAL(swapPositionCooldown) = 0;
@@ -346,9 +349,7 @@ class Creature : private CreatureAttributes, public Renderable, public UniqueEnt
   mutable double SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
   int SERIAL(numAttacksThisTurn) = 0;
-  EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   vector<PMoraleOverride> SERIAL(moraleOverrides);
-  EnumMap<AttrType, double> SERIAL(attrIncrease);
   void updateVisibleCreatures(Rectangle range);
   vector<const Creature*> SERIAL(visibleEnemies);
   vector<Creature*> SERIAL(visibleCreatures);

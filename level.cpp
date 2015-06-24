@@ -353,15 +353,12 @@ void Level::globalMessage(const Creature* c, const PlayerMessage& ifPlayerCanSee
 }
 
 void Level::changeLevel(StairDirection dir, StairKey key, Creature* c) {
-  Vec2 fromPosition = c->getPosition();
   removeElement(creatures, c);
   getSafeSquare(c->getPosition())->removeCreature();
   bucketMap.removeElement(c->getPosition(), c);
-  Vec2 toPosition = model->changeLevel(dir, key, c);
 }
 
 void Level::changeLevel(Level* destination, Vec2 landing, Creature* c) {
-  Vec2 fromPosition = c->getPosition();
   removeElement(creatures, c);
   getSafeSquare(c->getPosition())->removeCreature();
   bucketMap.removeElement(c->getPosition(), c);

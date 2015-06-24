@@ -23,6 +23,7 @@
 #include "creature_factory.h"
 #include "creature.h"
 #include "spell.h"
+#include "skill.h"
 
 void bestiary(View* view, int lastInd) {
 }

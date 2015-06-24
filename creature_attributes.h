@@ -27,6 +27,9 @@
 #include "item_attributes.h"
 #include "entity_name.h"
 #include "view_object.h"
+#include "spell_map.h"
+#include "minion_task_map.h"
+#include "skill.h"
 
 // WTF is this defined
 #undef HUGE
@@ -78,7 +81,6 @@ class CreatureAttributes {
   optional<string> SERIAL(chatReactionHostile);
   optional<string> SERIAL(firstName);
   optional<string> SERIAL(speciesName);
-  bool SERIAL(specialMonster) = false;
   int SERIAL(barehandedDamage) = 0;
   optional<AttackType> SERIAL(barehandedAttack);
   optional<EffectType> SERIAL(attackEffect);
@@ -89,6 +91,8 @@ class CreatureAttributes {
     { BodyPart::ARM, 2},
     { BodyPart::LEG, 2},
     { BodyPart::HEAD, 1}};
+  EnumMap<BodyPart, int> SERIAL(injuredBodyParts);
+  EnumMap<BodyPart, int> SERIAL(lostBodyParts);
   optional<SpawnType> SERIAL(spawnType);
   bool SERIAL(innocent) = false;
   bool SERIAL(uncorporal) = false;
@@ -108,13 +112,14 @@ class CreatureAttributes {
   bool SERIAL(invincible) = false;
   bool SERIAL(worshipped) = false;
   bool SERIAL(dontChase) = false;
-  double SERIAL(damageMultiplier) = 1;
   double SERIAL(attributeGain) = 0.5;
-  HeapAllocated<Skillset> SERIAL(skills);
-  HeapAllocated<SpellMap> SERIAL(spells);
+  Skillset SERIAL(skills);
+  SpellMap SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
-  HeapAllocated<MinionTaskMap> SERIAL(minionTasks);
+  EnumMap<LastingEffect, double> SERIAL(lastingEffects);
+  MinionTaskMap SERIAL(minionTasks);
   string SERIAL(groupName) = "group";
+  EnumMap<AttrType, double> SERIAL(attrIncrease);
 };
 
 #endif

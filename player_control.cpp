@@ -50,6 +50,7 @@
 #include "spell.h"
 #include "tribe.h"
 #include "visibility_map.h"
+#include "entity_name.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {

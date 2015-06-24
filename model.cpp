@@ -39,6 +39,8 @@
 #include "tribe.h"
 #include "time_queue.h"
 #include "visibility_map.h"
+#include "entity_name.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -346,7 +348,7 @@ PCreature Model::makePlayer(int handicap) {
           c.humanoid = true;
           c.name = "Adventurer";
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
-          c.skills->insert(SkillId::AMBUSH);), Player::getFactory(this, levelMemory))), {
+          c.skills.insert(SkillId::AMBUSH);), Player::getFactory(this, levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
